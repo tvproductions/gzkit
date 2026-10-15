@@ -2138,296 +2138,1368 @@
   {
    "text": "### Stage 2: Implement (skipped by `--from=verify` or `--from=ceremony`)",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "### Stage 2: Implement (skipped by `--from=verify` or `--from=ceremony`)",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "#### Red-Green-Refactor discipline (binding — applies to BOTH modes below)",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "#### Red-Green-Refactor discipline (binding — applies to BOTH modes below)",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "Stage 2 is Test-Driven Development, not test-after. The law is absolute:\n**no production code without a failing test first**, and the red must be a\n**verified** red. This binds the inline path AND every dispatched implementer.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-001",
+     "quote": "Stage 2 is Test-Driven Development, not test-after. The law is absolute:\n**no production code without a failing test first**, and the red must be a\n**verified** red.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "Stage 2 is Test-Driven Development, not test-after. The law is absolute:\n**no production code without a failing test first**, and the red must be a\n**verified** red.",
+     "reworded": null
+    },
+    {
+     "id": "S2-002",
+     "quote": "This binds the inline path AND every dispatched implementer.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "This binds the inline path AND every dispatched implementer.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "The per-behavior cycle (never batch all tests then implement the whole unit):",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-003",
+     "quote": "The per-behavior cycle (never batch all tests then implement the whole unit):",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "The per-behavior cycle (never batch all tests then implement the whole unit):",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "1. **RED — write ONE minimal test** for the next single behavior (one behavior\n   per test, descriptive name, real code usage, minimal mocking).",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-004",
+     "quote": "1. **RED — write ONE minimal test** for the next single behavior (one behavior\n   per test, descriptive name, real code usage, minimal mocking).",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "1. **RED — write ONE minimal test** for the next single behavior (one behavior\n   per test, descriptive name, real code usage, minimal mocking).",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "2. **Watch it fail — MANDATORY, never skip.** Run the test and confirm all three:\n   - it **FAILS** (an assertion fires) — *not* errors, *not* passes;\n   - the **failure message matches the expected behavior** (e.g. `SystemExit not\n     raised`, `marker not active`, `0 != 1`), not an unrelated message;\n   - it fails because **the feature is missing**, not because of a typo or a\n     missing import.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-005",
+     "quote": "2. **Watch it fail — MANDATORY, never skip.** Run the test and confirm all three:\n   - it **FAILS** (an assertion fires) — *not* errors, *not* passes;\n   - the **failure message matches the expected behavior** (e.g. `SystemExit not\n     raised`, `marker not active`, `0 != 1`), not an unrelated message;\n   - it fails because **the feature is missing**, not because of a typo or a\n     missing import.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "2. **Watch it fail — MANDATORY, never skip.** Run the test and confirm all three:\n   - it **FAILS** (an assertion fires) — *not* errors, *not* passes;\n   - the **failure message matches the expected behavior** (e.g. `SystemExit not\n     raised`, `marker not active`, `0 != 1`), not an unrelated message;\n   - it fails because **the feature is missing**, not because of a typo or a\n     missing import.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "   *\"If you didn't watch the test fail, you don't know if it tests the right\n   thing.\"*",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "   *\"If you didn't watch the test fail, you don't know if it tests the right\n   thing.\"*",
+     "class": "rationale",
+     "explains": "S2-005",
+     "reason": "the quoted maxim behind watching the red"
+    }
+   ]
   },
   {
    "text": "3. **GREEN — write the simplest code** that makes that one test pass.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-006",
+     "quote": "3. **GREEN — write the simplest code** that makes that one test pass.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "3. **GREEN — write the simplest code** that makes that one test pass.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "4. **REFACTOR** — clean up (duplication, names, helpers) with the bar staying green.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-007",
+     "quote": "4. **REFACTOR** — clean up (duplication, names, helpers) with the bar staying green.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "4. **REFACTOR** — clean up (duplication, names, helpers) with the bar staying green.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "5. Repeat for the next behavior.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-008",
+     "quote": "5. Repeat for the next behavior.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "5. Repeat for the next behavior.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "**Execute acceptance proof before review (GHI #985).** For the current task's\nBEHAVIOR obligations, write a proof specification naming its production source,\nfull covering test IDs, and exact behavioral substitutions; run\n`uv run gz obpi acceptance {OBPI-SLUG} prove --spec {controls.json}`. The command\nobserves the baseline, activated controls, nominated assertion failures, source\nrestoration, and restored green run. A runtime error or skipped selector cannot\nearn a behavioral kill. SUPPORT and STRUCTURAL-FENCE specifications name only the\nREQ; the command executes their existing canonical proof resolvers. The complete\nschema is in the acceptance manpage. Historical RED evidence remains useful, but\ndoes not substitute for this current execution record.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S2-009",
+     "quote": "**Execute acceptance proof before review (GHI #985).** For the current task's\nBEHAVIOR obligations, write a proof specification naming its production source,\nfull covering test IDs, and exact behavioral substitutions; run\n`uv run gz obpi acceptance {OBPI-SLUG} prove --spec {controls.json}`.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": "GHI #985",
+     "delivered_span": "**Execute acceptance proof before review (GHI #985).** For the current task's\nBEHAVIOR obligations, write a proof specification naming its production source,\nfull covering test IDs, and exact behavioral substitutions; run\n`uv run gz obpi acceptance {OBPI-SLUG} prove --spec {controls.json}`.",
+     "reworded": null
+    },
+    {
+     "id": "S2-010",
+     "quote": "A runtime error or skipped selector cannot\nearn a behavioral kill.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "A runtime error or skipped selector cannot\nearn a behavioral kill.",
+     "reworded": null
+    },
+    {
+     "id": "S2-011",
+     "quote": "SUPPORT and STRUCTURAL-FENCE specifications name only the\nREQ; the command executes their existing canonical proof resolvers.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "SUPPORT and STRUCTURAL-FENCE specifications name only the\nREQ; the command executes their existing canonical proof resolvers.",
+     "reworded": null
+    },
+    {
+     "id": "S2-012",
+     "quote": "Historical RED evidence remains useful, but\ndoes not substitute for this current execution record.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "Historical RED evidence remains useful, but\ndoes not substitute for this current execution record.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "The command\nobserves the baseline, activated controls, nominated assertion failures, source\nrestoration, and restored green run.",
+     "class": "rationale",
+     "explains": "S2-009",
+     "reason": "what the prove command observes"
+    },
+    {
+     "quote": "The complete\nschema is in the acceptance manpage.",
+     "class": "rationale",
+     "explains": "S2-009",
+     "reason": "pointer to the schema"
+    }
+   ]
   },
   {
    "text": "The reviewer must still judge whether the oracle and control express the\nrequirement, exercise production behavior, and include legitimate positive cases.\nThe command proves recorded observations, not the semantic adequacy of arbitrary\nassertions. Do not build an all-assertions classifier or count mutations as coverage.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S2-013",
+     "quote": "The reviewer must still judge whether the oracle and control express the\nrequirement, exercise production behavior, and include legitimate positive cases.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "The reviewer must still judge whether the oracle and control express the\nrequirement, exercise production behavior, and include legitimate positive cases.",
+     "reworded": null
+    },
+    {
+     "id": "S2-014",
+     "quote": "Do not build an all-assertions classifier or count mutations as coverage.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "Do not build an all-assertions classifier or count mutations as coverage.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "The command proves recorded observations, not the semantic adequacy of arbitrary\nassertions.",
+     "class": "rationale",
+     "explains": "S2-009",
+     "reason": "the limit of what the command proves"
+    }
+   ]
   },
   {
    "text": "> **Anti-pattern — the import-error red (the false red).** A first run that\n> ERRORs with `ModuleNotFoundError` / `ImportError` / `AttributeError` because\n> the module or symbol under construction does not exist yet is **not a verified\n> red**. It proves the *module is absent* — it does **not** prove the test's\n> assertion bites the behavior, because no assertion ran. A test that can only\n> fail on a missing import cannot distinguish \"behavior present\" from \"behavior\n> absent\" — the tautological/facade smell gzkit exists to kill. **Recovery:** get\n> to an assertion-level failure first — create the importable skeleton (define\n> the symbol as a no-op stub so the test imports cleanly), then watch each test\n> fail on its OWN assertion for the right reason, *then* implement the behavior.\n> Seeing the assertion-level red is the cheap negative control proving the test\n> is not tautological. Do not report \"RGR followed\" when the only red observed\n> was an import/collection error.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S2-015",
+     "quote": "A first run that\n> ERRORs with `ModuleNotFoundError` / `ImportError` / `AttributeError` because\n> the module or symbol under construction does not exist yet is **not a verified\n> red**.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "A first run that\n> ERRORs with `ModuleNotFoundError` / `ImportError` / `AttributeError` because\n> the module or symbol under construction does not exist yet is **not a verified\n> red**.",
+     "reworded": null
+    },
+    {
+     "id": "S2-016",
+     "quote": "**Recovery:** get\n> to an assertion-level failure first — create the importable skeleton (define\n> the symbol as a no-op stub so the test imports cleanly), then watch each test\n> fail on its OWN assertion for the right reason, *then* implement the behavior.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "**Recovery:** get\n> to an assertion-level failure first — create the importable skeleton (define\n> the symbol as a no-op stub so the test imports cleanly), then watch each test\n> fail on its OWN assertion for the right reason, *then* implement the behavior.",
+     "reworded": null
+    },
+    {
+     "id": "S2-017",
+     "quote": "Do not report \"RGR followed\" when the only red observed\n> was an import/collection error.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "Do not report \"RGR followed\" when the only red observed\n> was an import/collection error.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "**Anti-pattern — the import-error red (the false red).**",
+     "class": "rationale",
+     "explains": "S2-015",
+     "reason": "the anti-pattern's name"
+    },
+    {
+     "quote": "It proves the *module is absent* — it does **not** prove the test's\n> assertion bites the behavior, because no assertion ran. A test that can only\n> fail on a missing import cannot distinguish \"behavior present\" from \"behavior\n> absent\" — the tautological/facade smell gzkit exists to kill.",
+     "class": "rationale",
+     "explains": "S2-015",
+     "reason": "why an import error proves nothing about the assertion"
+    },
+    {
+     "quote": "Seeing the assertion-level red is the cheap negative control proving the test\n> is not tautological.",
+     "class": "rationale",
+     "explains": "S2-016",
+     "reason": "why the assertion-level red matters"
+    }
+   ]
   },
   {
    "text": "**Check for a single-driver declaration first.** If this run is declared single-driver, skip to the [Inline Fallback](#inline-fallback-declared-single-driver) below.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-018",
+     "quote": "**Check for a single-driver declaration first.** If this run is declared single-driver, skip to the [Inline Fallback](#inline-fallback-declared-single-driver) below.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "**Check for a single-driver declaration first.** If this run is declared single-driver, skip to the [Inline Fallback](#inline-fallback-declared-single-driver) below.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "#### Subagent Dispatch Mode (default)",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "#### Subagent Dispatch Mode (default)",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "1. **Extract plan tasks** from the approved plan file using `extract_plan_tasks()` patterns (headings or numbered items).",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-019",
+     "quote": "1. **Extract plan tasks** from the approved plan file using `extract_plan_tasks()` patterns (headings or numbered items).",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "1. **Extract plan tasks** from the approved plan file using `extract_plan_tasks()` patterns (headings or numbered items).",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "2. **Create task list:**\n   - Last task MUST be \"Present OBPI Acceptance Ceremony\" (universal human gate per ADR-0.0.36)",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-020",
+     "quote": "2. **Create task list:**\n   - Last task MUST be \"Present OBPI Acceptance Ceremony\" (universal human gate per ADR-0.0.36)",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": "ADR-0.0.36",
+     "delivered_span": "2. **Create task list:**\n   - Last task MUST be \"Present OBPI Acceptance Ceremony\" (universal human gate per ADR-0.0.36)",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "3. **Read brief requirements** — extract the `## Requirements (FAIL-CLOSED)` section from the OBPI brief. These are passed to each implementer as scoped context.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-021",
+     "quote": "3. **Read brief requirements** — extract the `## Requirements (FAIL-CLOSED)` section from the OBPI brief. These are passed to each implementer as scoped context.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "3. **Read brief requirements** — extract the `## Requirements (FAIL-CLOSED)` section from the OBPI brief. These are passed to each implementer as scoped context.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "4. **For each plan task** (sequential — one implementer at a time, never parallel):",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-022",
+     "quote": "4. **For each plan task** (sequential — one implementer at a time, never parallel):",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "4. **For each plan task** (sequential — one implementer at a time, never parallel):",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "   a. **Classify complexity** based on allowed file count:\n      - 1-2 files → `simple`\n      - 3-5 files → `standard`\n      - 6+ files → `complex`",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-023",
+     "quote": "   a. **Classify complexity** based on allowed file count:\n      - 1-2 files → `simple`\n      - 3-5 files → `standard`\n      - 6+ files → `complex`",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "   a. **Classify complexity** based on allowed file count:\n      - 1-2 files → `simple`\n      - 3-5 files → `standard`\n      - 6+ files → `complex`",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "   b. **Select model tier:**\n      - `simple` → `haiku` (fast, economical)\n      - `standard` → `sonnet` (balanced)\n      - `complex` → `opus` (most capable)",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-024",
+     "quote": "   b. **Select model tier:**\n      - `simple` → `haiku` (fast, economical)\n      - `standard` → `sonnet` (balanced)\n      - `complex` → `opus` (most capable)",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "   b. **Select model tier:**\n      - `simple` → `haiku` (fast, economical)\n      - `standard` → `sonnet` (balanced)\n      - `complex` → `opus` (most capable)",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "   c. **Compose implementer prompt** via `compose_implementer_prompt(task, brief_requirements, why=..., project_root=..., extra_context=...)`:\n      - Task description from the plan\n      - Allowed files from the brief allowlist\n      - Test expectations from the brief\n      - Brief requirements (the FAIL-CLOSED list)\n      - `why` and `project_root` are required keyword arguments (GHI #861). The\n        composer emits the `implementer` persona frame from `project_root` and a\n        `### Why` block from `why` — AGENTS.md § Behavior Rules — Always #6 makes\n        the Why unconditional, so omitting it is a `TypeError`, not a thinner prompt.\n      - The Red-Green-Refactor rules, including the `gz arb red` witness, are\n        emitted by the composer and match `.claude/agents/implementer.md` — do not\n        restate them by hand and do not weaken them\n      - **The Red-Green-Refactor discipline above** — instruct the implementer to\n        work one behavior per cycle and to report the *verified* red it watched\n        (the assertion-level failure message), not merely that it wrote tests.\n        A `HandoffResult` claiming RGR whose only red was an import error is a\n        red-verification miss — treat it as a review finding in step h.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S2-025",
+     "quote": "c. **Compose implementer prompt** via `compose_implementer_prompt(task, brief_requirements, why=..., project_root=..., extra_context=...)`:\n      - Task description from the plan\n      - Allowed files from the brief allowlist\n      - Test expectations from the brief\n      - Brief requirements (the FAIL-CLOSED list)",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "c. **Compose implementer prompt** via `compose_implementer_prompt(task, brief_requirements, why=..., project_root=..., extra_context=...)`:\n      - Task description from the plan\n      - Allowed files from the brief allowlist\n      - Test expectations from the brief\n      - Brief requirements (the FAIL-CLOSED list)",
+     "reworded": null
+    },
+    {
+     "id": "S2-026",
+     "quote": "- `why` and `project_root` are required keyword arguments (GHI #861).",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": "GHI #861",
+     "delivered_span": "- `why` and `project_root` are required keyword arguments (GHI #861).",
+     "reworded": null
+    },
+    {
+     "id": "S2-027",
+     "quote": "- The Red-Green-Refactor rules, including the `gz arb red` witness, are\n        emitted by the composer and match `.claude/agents/implementer.md` — do not\n        restate them by hand and do not weaken them",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "- The Red-Green-Refactor rules, including the `gz arb red` witness, are\n        emitted by the composer and match `.claude/agents/implementer.md` — do not\n        restate them by hand and do not weaken them",
+     "reworded": null
+    },
+    {
+     "id": "S2-028",
+     "quote": "- **The Red-Green-Refactor discipline above** — instruct the implementer to\n        work one behavior per cycle and to report the *verified* red it watched\n        (the assertion-level failure message), not merely that it wrote tests.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "- **The Red-Green-Refactor discipline above** — instruct the implementer to\n        work one behavior per cycle and to report the *verified* red it watched\n        (the assertion-level failure message), not merely that it wrote tests.",
+     "reworded": null
+    },
+    {
+     "id": "S2-029",
+     "quote": "A `HandoffResult` claiming RGR whose only red was an import error is a\n        red-verification miss — treat it as a review finding in step h.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "A `HandoffResult` claiming RGR whose only red was an import error is a\n        red-verification miss — treat it as a review finding in step h.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "The\n        composer emits the `implementer` persona frame from `project_root` and a\n        `### Why` block from `why` — AGENTS.md § Behavior Rules — Always #6 makes\n        the Why unconditional, so omitting it is a `TypeError`, not a thinner prompt.",
+     "class": "rationale",
+     "explains": "S2-026",
+     "reason": "what the composer emits and why omission is a TypeError"
+    }
+   ]
   },
   {
    "text": "   d. **Dispatch via Agent tool:**\n      ```\n      Agent tool call:\n        subagent_type: \"implementer\"\n        model: <selected tier from step b>\n        prompt: <composed prompt from step c>\n        description: \"Implement task N: <short description>\"\n      ```",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-030",
+     "quote": "   d. **Dispatch via Agent tool:**\n      ```\n      Agent tool call:\n        subagent_type: \"implementer\"\n        model: <selected tier from step b>\n        prompt: <composed prompt from step c>\n        description: \"Implement task N: <short description>\"\n      ```",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "   d. **Dispatch via Agent tool:**\n      ```\n      Agent tool call:\n        subagent_type: \"implementer\"\n        model: <selected tier from step b>\n        prompt: <composed prompt from step c>\n        description: \"Implement task N: <short description>\"\n      ```",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "   e. **Parse HandoffResult** from the subagent output — look for a JSON code block with `status`, `files_changed`, `tests_added`, `concerns` fields.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-031",
+     "quote": "   e. **Parse HandoffResult** from the subagent output — look for a JSON code block with `status`, `files_changed`, `tests_added`, `concerns` fields.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "   e. **Parse HandoffResult** from the subagent output — look for a JSON code block with `status`, `files_changed`, `tests_added`, `concerns` fields.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "   f. **Record dispatch** — run `uv run gz obpi dispatch <OBPI-ID> --role Implementer --model <tier> --task <n>`. This appends a `stage2_dispatch_recorded` event to the ledger, which is what Stage 5 credits; the marker's `dispatch_state` is refreshed only as a cache. The credit therefore SURVIVES `--clear-stale` and a relaunch (GHI #886) — it did not before 2026-08-27, and a compliant 3/3 run lost its whole review record to that sanctioned recovery path. **Credit is never inferred** — `gz obpi precomplete` fails closed on an unrecorded Stage-2 dispatch, and the presence of code proves nothing about who wrote it (GHI #845). If this session genuinely cannot dispatch, declare it instead: `uv run gz obpi dispatch <OBPI-ID> --single-driver --reason \"<why>\"`. Declared single-driver passes Stage 5; silent single-driver does not.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S2-032",
+     "quote": "f. **Record dispatch** — run `uv run gz obpi dispatch <OBPI-ID> --role Implementer --model <tier> --task <n>`.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "f. **Record dispatch** — run `uv run gz obpi dispatch <OBPI-ID> --role Implementer --model <tier> --task <n>`.",
+     "reworded": null
+    },
+    {
+     "id": "S2-033",
+     "quote": "**Credit is never inferred** — `gz obpi precomplete` fails closed on an unrecorded Stage-2 dispatch, and the presence of code proves nothing about who wrote it (GHI #845).",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": "GHI #845",
+     "delivered_span": "**Credit is never inferred** — `gz obpi precomplete` fails closed on an unrecorded Stage-2 dispatch, and the presence of code proves nothing about who wrote it (GHI #845).",
+     "reworded": null
+    },
+    {
+     "id": "S2-034",
+     "quote": "If this session genuinely cannot dispatch, declare it instead: `uv run gz obpi dispatch <OBPI-ID> --single-driver --reason \"<why>\"`.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "If this session genuinely cannot dispatch, declare it instead: `uv run gz obpi dispatch <OBPI-ID> --single-driver --reason \"<why>\"`.",
+     "reworded": null
+    },
+    {
+     "id": "S2-035",
+     "quote": "Declared single-driver passes Stage 5; silent single-driver does not.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "Declared single-driver passes Stage 5; silent single-driver does not.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "This appends a `stage2_dispatch_recorded` event to the ledger, which is what Stage 5 credits; the marker's `dispatch_state` is refreshed only as a cache. The credit therefore SURVIVES `--clear-stale` and a relaunch (GHI #886) — it did not before 2026-08-27, and a compliant 3/3 run lost its whole review record to that sanctioned recovery path.",
+     "class": "rationale",
+     "explains": "S2-032",
+     "reason": "what the event does and the GHI #886 history"
+    }
+   ]
   },
   {
    "text": "   g. **Handle result status:**\n      - `DONE` or `DONE_WITH_CONCERNS` → proceed to **two-stage review** (step h)\n      - `NEEDS_CONTEXT` → provide additional context from the brief and redispatch **once**. A second `NEEDS_CONTEXT` is treated as `BLOCKED`.\n      - `BLOCKED` → halt Stage 2, record blocker reason, present to user. **Do not continue to the next task.**",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-036",
+     "quote": "   g. **Handle result status:**\n      - `DONE` or `DONE_WITH_CONCERNS` → proceed to **two-stage review** (step h)\n      - `NEEDS_CONTEXT` → provide additional context from the brief and redispatch **once**. A second `NEEDS_CONTEXT` is treated as `BLOCKED`.\n      - `BLOCKED` → halt Stage 2, record blocker reason, present to user. **Do not continue to the next task.**",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "   g. **Handle result status:**\n      - `DONE` or `DONE_WITH_CONCERNS` → proceed to **two-stage review** (step h)\n      - `NEEDS_CONTEXT` → provide additional context from the brief and redispatch **once**. A second `NEEDS_CONTEXT` is treated as `BLOCKED`.\n      - `BLOCKED` → halt Stage 2, record blocker reason, present to user. **Do not continue to the next task.**",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "   h. **Two-stage review dispatch** (only when implementer returned `DONE` or `DONE_WITH_CONCERNS`):",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-037",
+     "quote": "   h. **Two-stage review dispatch** (only when implementer returned `DONE` or `DONE_WITH_CONCERNS`):",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "   h. **Two-stage review dispatch** (only when implementer returned `DONE` or `DONE_WITH_CONCERNS`):",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "      Use `should_dispatch_review(status)` to gate this step. Skip review entirely for\n      `BLOCKED` or `NEEDS_CONTEXT` results — those tasks did not produce code to review.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-038",
+     "quote": "      Use `should_dispatch_review(status)` to gate this step. Skip review entirely for\n      `BLOCKED` or `NEEDS_CONTEXT` results — those tasks did not produce code to review.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "      Use `should_dispatch_review(status)` to gate this step. Skip review entirely for\n      `BLOCKED` or `NEEDS_CONTEXT` results — those tasks did not produce code to review.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "      i. **Select review model** via `select_review_model(complexity)`:\n         - `simple`/`standard` → `sonnet` (reviews always require judgment — never haiku)\n         - `complex` → `opus`",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-039",
+     "quote": "      i. **Select review model** via `select_review_model(complexity)`:\n         - `simple`/`standard` → `sonnet` (reviews always require judgment — never haiku)\n         - `complex` → `opus`",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "      i. **Select review model** via `select_review_model(complexity)`:\n         - `simple`/`standard` → `sonnet` (reviews always require judgment — never haiku)\n         - `complex` → `opus`",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "      ii. **Compose spec reviewer prompt** via `compose_spec_review_prompt(task, brief_requirements, files_changed, why=..., project_root=..., acceptance_context=...)`:\n         - Includes the task description, brief requirements, and the diff produced\n         - Instructs the reviewer: \"The implementer may be optimistic. Verify everything independently.\"\n         - `why` and `project_root` are required keyword arguments — the composer emits the `spec-reviewer` persona frame and the Why block from them (GHI #861)",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-040",
+     "quote": "      ii. **Compose spec reviewer prompt** via `compose_spec_review_prompt(task, brief_requirements, files_changed, why=..., project_root=..., acceptance_context=...)`:\n         - Includes the task description, brief requirements, and the diff produced\n         - Instructs the reviewer: \"The implementer may be optimistic. Verify everything independently.\"\n         - `why` and `project_root` are required keyword arguments — the composer emits the `spec-reviewer` persona frame and the Why block from them (GHI #861)",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": "GHI #861",
+     "delivered_span": "      ii. **Compose spec reviewer prompt** via `compose_spec_review_prompt(task, brief_requirements, files_changed, why=..., project_root=..., acceptance_context=...)`:\n         - Includes the task description, brief requirements, and the diff produced\n         - Instructs the reviewer: \"The implementer may be optimistic. Verify everything independently.\"\n         - `why` and `project_root` are required keyword arguments — the composer emits the `spec-reviewer` persona frame and the Why block from them (GHI #861)",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "      iii. **Compose quality reviewer prompt** via `compose_quality_review_prompt(files_changed, test_files, why=..., project_root=..., acceptance_context=...)`:\n         - Includes changed files, test files, and quality criteria (SOLID, coverage, error handling, cross-platform, Pydantic)\n         - The size/complexity criterion is rendered from `.gzkit/rules/complexity-thresholds.json`, never restated as literals (GHI #861)\n         - Findings are scoped by the obligation they affect. A mapped defect\n           blocks regardless of severity; optional style observations stay\n           unmapped and do not create another acceptance requirement.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-041",
+     "quote": "      iii. **Compose quality reviewer prompt** via `compose_quality_review_prompt(files_changed, test_files, why=..., project_root=..., acceptance_context=...)`:\n         - Includes changed files, test files, and quality criteria (SOLID, coverage, error handling, cross-platform, Pydantic)\n         - The size/complexity criterion is rendered from `.gzkit/rules/complexity-thresholds.json`, never restated as literals (GHI #861)\n         - Findings are scoped by the obligation they affect. A mapped defect\n           blocks regardless of severity; optional style observations stay\n           unmapped and do not create another acceptance requirement.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": "GHI #861",
+     "delivered_span": "      iii. **Compose quality reviewer prompt** via `compose_quality_review_prompt(files_changed, test_files, why=..., project_root=..., acceptance_context=...)`:\n         - Includes changed files, test files, and quality criteria (SOLID, coverage, error handling, cross-platform, Pydantic)\n         - The size/complexity criterion is rendered from `.gzkit/rules/complexity-thresholds.json`, never restated as literals (GHI #861)\n         - Findings are scoped by the obligation they affect. A mapped defect\n           blocks regardless of severity; optional style observations stay\n           unmapped and do not create another acceptance requirement.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "         **Evidence handoff (GHI #984):** append the paths to the implementer's\n         observed execution records to BOTH composed prompts before dispatch.\n         Include the relevant requirement, test selector, base/changed revision\n         (and dirty-tree source identity), command, actual result, and failure\n         traceback for any RED or negative-control claim. If missing, obtain the\n         record from the implementer; do not reconstruct it from a summary.\n         Reviewers read the records against the code and contract. A green\n         coverage inventory does not establish semantic adequacy. Check where\n         expected values come from and whether the test exercises production\n         behavior; shared-parser agreement is not independent boundary proof.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S2-042",
+     "quote": "**Evidence handoff (GHI #984):** append the paths to the implementer's\n         observed execution records to BOTH composed prompts before dispatch.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": "GHI #984",
+     "delivered_span": "**Evidence handoff (GHI #984):** append the paths to the implementer's\n         observed execution records to BOTH composed prompts before dispatch.",
+     "reworded": null
+    },
+    {
+     "id": "S2-043",
+     "quote": "Include the relevant requirement, test selector, base/changed revision\n         (and dirty-tree source identity), command, actual result, and failure\n         traceback for any RED or negative-control claim.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "Include the relevant requirement, test selector, base/changed revision\n         (and dirty-tree source identity), command, actual result, and failure\n         traceback for any RED or negative-control claim.",
+     "reworded": null
+    },
+    {
+     "id": "S2-044",
+     "quote": "If missing, obtain the\n         record from the implementer; do not reconstruct it from a summary.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "If missing, obtain the\n         record from the implementer; do not reconstruct it from a summary.",
+     "reworded": null
+    },
+    {
+     "id": "S2-045",
+     "quote": "Reviewers read the records against the code and contract.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "Reviewers read the records against the code and contract.",
+     "reworded": null
+    },
+    {
+     "id": "S2-046",
+     "quote": "Check where\n         expected values come from and whether the test exercises production\n         behavior; shared-parser agreement is not independent boundary proof.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "Check where\n         expected values come from and whether the test exercises production\n         behavior; shared-parser agreement is not independent boundary proof.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "A green\n         coverage inventory does not establish semantic adequacy.",
+     "class": "rationale",
+     "explains": "S2-045",
+     "reason": "why reading the records matters"
+    }
+   ]
   },
   {
    "text": "         Supply `acceptance_context` from\n         `uv run gz obpi acceptance {OBPI-SLUG} status --stage stage2 --json`.\n         A blocked status before reviews is expected; its payload contains the\n         canonical obligations, actual proofs, and retained findings. The composer\n         requests one `gzkit.acceptance.review.v1` envelope only; `parse_review_result`\n         derives `ReviewResult` from it (GHI #1095). The reviewer uses actual IDs and digest from\n         that context and explicitly lists `accepted_proof_ids`; the importer\n         assigns the review and receipt IDs. Missing proof is recorded as a\n         mapped `missing-proof` finding with no invented proof or approval ID.\n         Each approved proof carries a `grounds` citation: the file the reviewer\n         read (or the proof's recorded evidence) and an excerpt copied from it.\n         The importer refuses an uncited approval from a reviewer whose grant has\n         no shell or cannot be resolved (no single plain `--agent` persona, or a\n         tool-override flag), and any excerpt that is not where it says (GHI #994). A check\n         the reviewer could not perform stays in `verification_gaps`.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S2-047",
+     "quote": "Supply `acceptance_context` from\n         `uv run gz obpi acceptance {OBPI-SLUG} status --stage stage2 --json`.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "Supply `acceptance_context` from\n         `uv run gz obpi acceptance {OBPI-SLUG} status --stage stage2 --json`.",
+     "reworded": null
+    },
+    {
+     "id": "S2-048",
+     "quote": "The composer\n         requests one `gzkit.acceptance.review.v1` envelope only; `parse_review_result`\n         derives `ReviewResult` from it (GHI #1095).",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": "GHI #1095",
+     "delivered_span": "The composer\n         requests one `gzkit.acceptance.review.v1` envelope only; `parse_review_result`\n         derives `ReviewResult` from it (GHI #1095).",
+     "reworded": null
+    },
+    {
+     "id": "S2-049",
+     "quote": "The reviewer uses actual IDs and digest from\n         that context and explicitly lists `accepted_proof_ids`;",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "The reviewer uses actual IDs and digest from\n         that context and explicitly lists `accepted_proof_ids`;",
+     "reworded": null
+    },
+    {
+     "id": "S2-050",
+     "quote": "Missing proof is recorded as a\n         mapped `missing-proof` finding with no invented proof or approval ID.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "Missing proof is recorded as a\n         mapped `missing-proof` finding with no invented proof or approval ID.",
+     "reworded": null
+    },
+    {
+     "id": "S2-051",
+     "quote": "Each approved proof carries a `grounds` citation: the file the reviewer\n         read (or the proof's recorded evidence) and an excerpt copied from it.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "Each approved proof carries a `grounds` citation: the file the reviewer\n         read (or the proof's recorded evidence) and an excerpt copied from it.",
+     "reworded": null
+    },
+    {
+     "id": "S2-052",
+     "quote": "A check\n         the reviewer could not perform stays in `verification_gaps`.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "A check\n         the reviewer could not perform stays in `verification_gaps`.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "A blocked status before reviews is expected; its payload contains the\n         canonical obligations, actual proofs, and retained findings.",
+     "class": "rationale",
+     "explains": "S2-047",
+     "reason": "what the status payload holds before review"
+    },
+    {
+     "quote": "the importer\n         assigns the review and receipt IDs.",
+     "class": "rationale",
+     "explains": "S2-049",
+     "reason": "who assigns the ids"
+    },
+    {
+     "quote": "The importer refuses an uncited approval from a reviewer whose grant has\n         no shell or cannot be resolved (no single plain `--agent` persona, or a\n         tool-override flag), and any excerpt that is not where it says (GHI #994).",
+     "class": "rationale",
+     "explains": "S2-051",
+     "reason": "what the importer refuses (GHI #994)"
+    }
+   ]
   },
   {
    "text": "      iv. **Dispatch both reviewers concurrently through receipted agent execution.**\n         Preserve the selected model, the `spec-reviewer` and `quality-reviewer`\n         personas, their read-only tool grants, and separate contexts. Wrap each\n         actual reviewer invocation in `gz arb step --max-output-chars -1`; do\n         not wrap a command that merely prints previously authored review JSON.\n         Native Claude execution is admitted for these Stage-2 roles. For example,\n         with the composed prompt saved at the named path:",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S2-053",
+     "quote": "iv. **Dispatch both reviewers concurrently through receipted agent execution.**\n         Preserve the selected model, the `spec-reviewer` and `quality-reviewer`\n         personas, their read-only tool grants, and separate contexts.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "iv. **Dispatch both reviewers concurrently through receipted agent execution.**\n         Preserve the selected model, the `spec-reviewer` and `quality-reviewer`\n         personas, their read-only tool grants, and separate contexts.",
+     "reworded": null
+    },
+    {
+     "id": "S2-054",
+     "quote": "Wrap each\n         actual reviewer invocation in `gz arb step --max-output-chars -1`; do\n         not wrap a command that merely prints previously authored review JSON.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "Wrap each\n         actual reviewer invocation in `gz arb step --max-output-chars -1`; do\n         not wrap a command that merely prints previously authored review JSON.",
+     "reworded": null
+    },
+    {
+     "id": "S2-055",
+     "quote": "Native Claude execution is admitted for these Stage-2 roles.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "Native Claude execution is admitted for these Stage-2 roles.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "For example,\n         with the composed prompt saved at the named path:",
+     "class": "structure",
+     "explains": null,
+     "reason": "lead-in to the example"
+    }
+   ]
   },
   {
    "text": "         ```bash\n         uv run gz arb step --name specreview --max-output-chars -1 -- \\\n           claude --agent spec-reviewer --model sonnet --print \\\n           'Read /tmp/obpi-spec-review-prompt.md and perform that review.'\n         ```",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-056",
+     "quote": "         ```bash\n         uv run gz arb step --name specreview --max-output-chars -1 -- \\\n           claude --agent spec-reviewer --model sonnet --print \\\n           'Read /tmp/obpi-spec-review-prompt.md and perform that review.'\n         ```",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "         ```bash\n         uv run gz arb step --name specreview --max-output-chars -1 -- \\\n           claude --agent spec-reviewer --model sonnet --print \\\n           'Read /tmp/obpi-spec-review-prompt.md and perform that review.'\n         ```",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "         Use the quality persona and its own prompt for the second invocation.\n         Wait for both, derive each `ReviewResult` with `parse_review_result`, and import each actual\n         ARB run ID with\n         `uv run gz obpi acceptance {OBPI-SLUG} review --receipt {arb-run-id}`.\n         A native Agent-tool summary alone does not supply the required receipt.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-057",
+     "quote": "Use the quality persona and its own prompt for the second invocation.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "Use the quality persona and its own prompt for the second invocation.",
+     "reworded": null
+    },
+    {
+     "id": "S2-058",
+     "quote": "Wait for both, derive each `ReviewResult` with `parse_review_result`, and import each actual\n         ARB run ID with\n         `uv run gz obpi acceptance {OBPI-SLUG} review --receipt {arb-run-id}`.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "Wait for both, derive each `ReviewResult` with `parse_review_result`, and import each actual\n         ARB run ID with\n         `uv run gz obpi acceptance {OBPI-SLUG} review --receipt {arb-run-id}`.",
+     "reworded": null
+    },
+    {
+     "id": "S2-059",
+     "quote": "A native Agent-tool summary alone does not supply the required receipt.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "A native Agent-tool summary alone does not supply the required receipt.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "      v. **Record review dispatches** — run `uv run gz obpi dispatch <OBPI-ID> --role SpecReviewer --model <tier> --task <n>` and the same for `--role QualityReviewer`. Partial dispatch is still SINGLE-DRIVER: the reviewers catch what the implementer cannot see in its own work, so recording only the implementer launders the review that never ran. This records one `stage2_dispatch_recorded` ledger event per\n         reviewer, and refreshes the marker's `SubagentDispatchRecord` cache with model, timestamps, and result.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S2-060",
+     "quote": "v. **Record review dispatches** — run `uv run gz obpi dispatch <OBPI-ID> --role SpecReviewer --model <tier> --task <n>` and the same for `--role QualityReviewer`.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "v. **Record review dispatches** — run `uv run gz obpi dispatch <OBPI-ID> --role SpecReviewer --model <tier> --task <n>` and the same for `--role QualityReviewer`.",
+     "reworded": null
+    },
+    {
+     "id": "S2-061",
+     "quote": "Partial dispatch is still SINGLE-DRIVER: the reviewers catch what the implementer cannot see in its own work, so recording only the implementer launders the review that never ran.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "Partial dispatch is still SINGLE-DRIVER: the reviewers catch what the implementer cannot see in its own work, so recording only the implementer launders the review that never ran.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "This records one `stage2_dispatch_recorded` ledger event per\n         reviewer, and refreshes the marker's `SubagentDispatchRecord` cache with model, timestamps, and result.",
+     "class": "rationale",
+     "explains": "S2-060",
+     "reason": "what the record writes"
+    }
+   ]
   },
   {
    "text": "      vi. **Handle review results** via `handle_review_cycle(state, task_index, spec_result, quality_result, acceptance=...)`:\n         - Both reviewers pass AND current task-scoped Stage-2 acceptance is ready\n           → **advance** to the next task. Obtain that readiness using\n           `status --stage stage2 --req {REQ-ID}` (repeat `--req` for this task's\n           obligations). Scope selects the readiness decision; the full canonical\n           roster and finding history remain retained. Before leaving Stage 2,\n           require unscoped `status --stage stage2` to clear every obligation.\n         - Any mapped acceptance finding remains blocking until an independent\n           closure names its original finding, obligation, and current proof.\n         - Critical finding from either reviewer → **fix** — redispatch the implementer with\n           the finding as additional context, then re-review after the fix\n         - Fix cycles are bounded: maximum 2 fix cycles per task (`MAX_REVIEW_FIX_CYCLES`).\n           After exhausting fix cycles → **blocked** — halt Stage 2 and escalate to user.\n         - When both reviewers find critical issues, combine findings into a single fix dispatch.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-062",
+     "quote": "      vi. **Handle review results** via `handle_review_cycle(state, task_index, spec_result, quality_result, acceptance=...)`:\n         - Both reviewers pass AND current task-scoped Stage-2 acceptance is ready\n           → **advance** to the next task. Obtain that readiness using\n           `status --stage stage2 --req {REQ-ID}` (repeat `--req` for this task's\n           obligations). Scope selects the readiness decision; the full canonical\n           roster and finding history remain retained. Before leaving Stage 2,\n           require unscoped `status --stage stage2` to clear every obligation.\n         - Any mapped acceptance finding remains blocking until an independent\n           closure names its original finding, obligation, and current proof.\n         - Critical finding from either reviewer → **fix** — redispatch the implementer with\n           the finding as additional context, then re-review after the fix\n         - Fix cycles are bounded: maximum 2 fix cycles per task (`MAX_REVIEW_FIX_CYCLES`).\n           After exhausting fix cycles → **blocked** — halt Stage 2 and escalate to user.\n         - When both reviewers find critical issues, combine findings into a single fix dispatch.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "      vi. **Handle review results** via `handle_review_cycle(state, task_index, spec_result, quality_result, acceptance=...)`:\n         - Both reviewers pass AND current task-scoped Stage-2 acceptance is ready\n           → **advance** to the next task. Obtain that readiness using\n           `status --stage stage2 --req {REQ-ID}` (repeat `--req` for this task's\n           obligations). Scope selects the readiness decision; the full canonical\n           roster and finding history remain retained. Before leaving Stage 2,\n           require unscoped `status --stage stage2` to clear every obligation.\n         - Any mapped acceptance finding remains blocking until an independent\n           closure names its original finding, obligation, and current proof.\n         - Critical finding from either reviewer → **fix** — redispatch the implementer with\n           the finding as additional context, then re-review after the fix\n         - Fix cycles are bounded: maximum 2 fix cycles per task (`MAX_REVIEW_FIX_CYCLES`).\n           After exhausting fix cycles → **blocked** — halt Stage 2 and escalate to user.\n         - When both reviewers find critical issues, combine findings into a single fix dispatch.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "      vii. **Log review concerns** — if `DONE_WITH_CONCERNS` from implementer, pass concerns\n         as additional context to reviewers. Accumulate review findings in dispatch state for\n         the Stage 4 ceremony.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-063",
+     "quote": "      vii. **Log review concerns** — if `DONE_WITH_CONCERNS` from implementer, pass concerns\n         as additional context to reviewers. Accumulate review findings in dispatch state for\n         the Stage 4 ceremony.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "      vii. **Log review concerns** — if `DONE_WITH_CONCERNS` from implementer, pass concerns\n         as additional context to reviewers. Accumulate review findings in dispatch state for\n         the Stage 4 ceremony.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "      viii. **Read `verification_gaps` separately from `findings` (GHI #941).** Reviewers are\n         granted `Read, Glob, Grep` and **cannot execute anything**. Both composers now disclose\n         that grant — read from the agent definition, so it tracks the file rather than a prose\n         claim — and instruct the reviewer to put its tool limitations into\n         `verification_gaps`, never into `findings`.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-064",
+     "quote": "      viii. **Read `verification_gaps` separately from `findings` (GHI #941).** Reviewers are\n         granted `Read, Glob, Grep` and **cannot execute anything**. Both composers now disclose\n         that grant — read from the agent definition, so it tracks the file rather than a prose\n         claim — and instruct the reviewer to put its tool limitations into\n         `verification_gaps`, never into `findings`.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": "GHI #941",
+     "delivered_span": "      viii. **Read `verification_gaps` separately from `findings` (GHI #941).** Reviewers are\n         granted `Read, Glob, Grep` and **cannot execute anything**. Both composers now disclose\n         that grant — read from the agent definition, so it tracks the file rather than a prose\n         claim — and instruct the reviewer to put its tool limitations into\n         `verification_gaps`, never into `findings`.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "         A reviewer capability gap is **not** a defect and never blocks: `review_blocks_advancement` reads\n         `findings`, so a gap kept in its own channel cannot pull a passing review down\n         (incident: GHI #941).",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-065",
+     "quote": "         A reviewer capability gap is **not** a defect and never blocks: `review_blocks_advancement` reads\n         `findings`, so a gap kept in its own channel cannot pull a passing review down\n         (incident: GHI #941).",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": "GHI #941",
+     "delivered_span": "         A reviewer capability gap is **not** a defect and never blocks: `review_blocks_advancement` reads\n         `findings`, so a gap kept in its own channel cannot pull a passing review down\n         (incident: GHI #941).",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "         **Do not ask a reviewer to verify by running.** If a check needs execution, run it\n         yourself and hand the reviewer the observed output to check *against the code*. A\n         non-empty `verification_gaps` is a signal to you, not a verdict: it names what this\n         review did not cover, and the coverage is yours to close.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-066",
+     "quote": "         **Do not ask a reviewer to verify by running.** If a check needs execution, run it\n         yourself and hand the reviewer the observed output to check *against the code*. A\n         non-empty `verification_gaps` is a signal to you, not a verdict: it names what this\n         review did not cover, and the coverage is yours to close.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "         **Do not ask a reviewer to verify by running.** If a check needs execution, run it\n         yourself and hand the reviewer the observed output to check *against the code*. A\n         non-empty `verification_gaps` is a signal to you, not a verdict: it names what this\n         review did not cover, and the coverage is yours to close.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "         **Proving a test can fail is the orchestrator's duty (GHI #968).** Reviewers catch\n         hollow tests by reading; no repo surface can scope execution to reviewers alone. Run\n         `gzkit.mutation_witness.run_mutation_sweep` (GHI #963) and hand over its verdict.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-067",
+     "quote": "         **Proving a test can fail is the orchestrator's duty (GHI #968).** Reviewers catch\n         hollow tests by reading; no repo surface can scope execution to reviewers alone. Run\n         `gzkit.mutation_witness.run_mutation_sweep` (GHI #963) and hand over its verdict.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": "GHI #968",
+     "delivered_span": "         **Proving a test can fail is the orchestrator's duty (GHI #968).** Reviewers catch\n         hollow tests by reading; no repo surface can scope execution to reviewers alone. Run\n         `gzkit.mutation_witness.run_mutation_sweep` (GHI #963) and hand over its verdict.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "         Distinguish that limitation from an identified defect in REQUIRED proof:\n         an import failure described as an assertion failure, a test that never\n         calls the required behavior, or an unsupported acceptance claim belongs\n         in `findings`, with its requirement and consequence. Do not demote such\n         a finding because the reviewer also lacks an execution tool.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-068",
+     "quote": "         Distinguish that limitation from an identified defect in REQUIRED proof:\n         an import failure described as an assertion failure, a test that never\n         calls the required behavior, or an unsupported acceptance claim belongs\n         in `findings`, with its requirement and consequence. Do not demote such\n         a finding because the reviewer also lacks an execution tool.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "         Distinguish that limitation from an identified defect in REQUIRED proof:\n         an import failure described as an assertion failure, a test that never\n         calls the required behavior, or an unsupported acceptance claim belongs\n         in `findings`, with its requirement and consequence. Do not demote such\n         a finding because the reviewer also lacks an execution tool.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "5. **Persist dispatch state** after each task completes (success or failure), including review results.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-069",
+     "quote": "5. **Persist dispatch state** after each task completes (success or failure), including review results.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "5. **Persist dispatch state** after each task completes (success or failure), including review results.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "6. **After all tasks complete:** persist dispatch summary for `gz roles --pipeline` queries.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-070",
+     "quote": "6. **After all tasks complete:** persist dispatch summary for `gz roles --pipeline` queries.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "6. **After all tasks complete:** persist dispatch summary for `gz roles --pipeline` queries.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "> **Labor-subdivision discipline (GHI #590).** The pipeline mints one\n> `seq=01` TASK per REQ as the coarse default bucket. When a REQ's labor was\n> genuinely multi-step, subdivide it — `uv run gz task start --seq next` mints\n> `seq=02`, `seq=03`, … so the attribution matches the work. When every REQ is\n> genuinely one indivisible unit (no labor below the REQ), declare\n> `req_atomic:` in the brief frontmatter with inline per-REQ rationale. Make\n> this call **here**, where the labor happens — an OBPI that reaches Stage 5\n> `seq=01`-only without a `req_atomic:` exemption is blocked fail-closed by the\n> task-envelope chokepoint gate (Stage 5 Step 0 / `gz obpi complete`), so\n> deferring the decision only stalls completion.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S2-071",
+     "quote": "When a REQ's labor was\n> genuinely multi-step, subdivide it — `uv run gz task start --seq next` mints\n> `seq=02`, `seq=03`, … so the attribution matches the work.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": "GHI #590",
+     "delivered_span": "When a REQ's labor was\n> genuinely multi-step, subdivide it — `uv run gz task start --seq next` mints\n> `seq=02`, `seq=03`, … so the attribution matches the work.",
+     "reworded": null
+    },
+    {
+     "id": "S2-072",
+     "quote": "When every REQ is\n> genuinely one indivisible unit (no labor below the REQ), declare\n> `req_atomic:` in the brief frontmatter with inline per-REQ rationale.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": "GHI #590",
+     "delivered_span": "When every REQ is\n> genuinely one indivisible unit (no labor below the REQ), declare\n> `req_atomic:` in the brief frontmatter with inline per-REQ rationale.",
+     "reworded": null
+    },
+    {
+     "id": "S2-073",
+     "quote": "Make\n> this call **here**, where the labor happens",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "Make\n> this call **here**, where the labor happens",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "**Labor-subdivision discipline (GHI #590).** The pipeline mints one\n> `seq=01` TASK per REQ as the coarse default bucket.",
+     "class": "rationale",
+     "explains": "S2-071",
+     "reason": "what the pipeline mints by default (GHI #590)"
+    },
+    {
+     "quote": "— an OBPI that reaches Stage 5\n> `seq=01`-only without a `req_atomic:` exemption is blocked fail-closed by the\n> task-envelope chokepoint gate (Stage 5 Step 0 / `gz obpi complete`), so\n> deferring the decision only stalls completion.",
+     "class": "rationale",
+     "explains": "S2-073",
+     "reason": "what happens at Stage 5 when the call is deferred"
+    }
+   ]
   },
   {
    "text": "**Abort if:** Any task returns `BLOCKED` after retry or after exhausting review fix cycles. Surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-074",
+     "quote": "**Abort if:** Any task returns `BLOCKED` after retry or after exhausting review fix cycles. Surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "**Abort if:** Any task returns `BLOCKED` after retry or after exhausting review fix cycles. Surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "#### Inline Fallback (declared single-driver)",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "#### Inline Fallback (declared single-driver)",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "When the run is declared single-driver, Stage 2 runs entirely in the main session (no Agent tool dispatch):",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-075",
+     "quote": "When the run is declared single-driver, Stage 2 runs entirely in the main session (no Agent tool dispatch):",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "When the run is declared single-driver, Stage 2 runs entirely in the main session (no Agent tool dispatch):",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "1. Create task list from plan steps (same as above)",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-076",
+     "quote": "1. Create task list from plan steps (same as above)",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "1. Create task list from plan steps (same as above)",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "2. Follow the approved plan step by step",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-077",
+     "quote": "2. Follow the approved plan step by step",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "2. Follow the approved plan step by step",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "3. Keep edits inside the brief allowlist and transaction contract",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-078",
+     "quote": "3. Keep edits inside the brief allowlist and transaction contract",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "3. Keep edits inside the brief allowlist and transaction contract",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "4. Implement each behavior via the **Red-Green-Refactor discipline above**: one\n   minimal test → watch it fail on its assertion for the right reason (not an\n   import error) → simplest code to pass → refactor green. Use `unittest`,\n   `TempDBMixin` for DB, coverage >= 40%. Do not batch all tests then implement.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-079",
+     "quote": "4. Implement each behavior via the **Red-Green-Refactor discipline above**: one\n   minimal test → watch it fail on its assertion for the right reason (not an\n   import error) → simplest code to pass → refactor green. Use `unittest`,\n   `TempDBMixin` for DB, coverage >= 40%. Do not batch all tests then implement.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "4. Implement each behavior via the **Red-Green-Refactor discipline above**: one\n   minimal test → watch it fail on its assertion for the right reason (not an\n   import error) → simplest code to pass → refactor green. Use `unittest`,\n   `TempDBMixin` for DB, coverage >= 40%. Do not batch all tests then implement.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "5. Run `uv run ruff check . --fix && uv run ruff format .` after code changes",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-080",
+     "quote": "5. Run `uv run ruff check . --fix && uv run ruff format .` after code changes",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "5. Run `uv run ruff check . --fix && uv run ruff format .` after code changes",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "6. Run `uv run gz test` after implementation",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-081",
+     "quote": "6. Run `uv run gz test` after implementation",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "6. Run `uv run gz test` after implementation",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "The declaration is the only route to this mode: `uv run gz obpi dispatch {OBPI-SLUG} --single-driver --reason \"<why>\"`\nrecords it on the ledger, and the Stage-5 dispatch verdict reads that event.\n`gz obpi pipeline` has no flag for it (GHI #1166). Declare when the session\ncannot dispatch or the operator has ruled a single-session run. Execute the same\nproof commands and retain mapped findings. Step 4b remains mandatory, and neither\nthe declaration nor an inline implementation can close its own acceptance finding.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S2-082",
+     "quote": "The declaration is the only route to this mode: `uv run gz obpi dispatch {OBPI-SLUG} --single-driver --reason \"<why>\"`\nrecords it on the ledger, and the Stage-5 dispatch verdict reads that event.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "The declaration is the only route to this mode: `uv run gz obpi dispatch {OBPI-SLUG} --single-driver --reason \"<why>\"`\nrecords it on the ledger, and the Stage-5 dispatch verdict reads that event.",
+     "reworded": null
+    },
+    {
+     "id": "S2-083",
+     "quote": "Declare when the session\ncannot dispatch or the operator has ruled a single-session run.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "Declare when the session\ncannot dispatch or the operator has ruled a single-session run.",
+     "reworded": null
+    },
+    {
+     "id": "S2-084",
+     "quote": "Execute the same\nproof commands and retain mapped findings.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "Execute the same\nproof commands and retain mapped findings.",
+     "reworded": null
+    },
+    {
+     "id": "S2-085",
+     "quote": "Step 4b remains mandatory, and neither\nthe declaration nor an inline implementation can close its own acceptance finding.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "Step 4b remains mandatory, and neither\nthe declaration nor an inline implementation can close its own acceptance finding.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "`gz obpi pipeline` has no flag for it (GHI #1166).",
+     "class": "rationale",
+     "explains": "S2-082",
+     "reason": "why there is no launch flag"
+    }
+   ]
   },
   {
    "text": "**Abort if:** Tests fail after 2 fix attempts. Surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-086",
+     "quote": "**Abort if:** Tests fail after 2 fix attempts. Surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "**Abort if:** Tests fail after 2 fix attempts. Surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "**MANDATORY TRANSITION → Stage 3.** Do not summarize. Do not report. Proceed.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S2-087",
+     "quote": "**MANDATORY TRANSITION → Stage 3.** Do not summarize. Do not report. Proceed.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "**MANDATORY TRANSITION → Stage 3.** Do not summarize. Do not report. Proceed.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
