@@ -13,401 +13,1475 @@
   {
    "text": "# gz-obpi-pipeline",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "# gz-obpi-pipeline",
+     "class": "structure",
+     "explains": null,
+     "reason": "title"
+    }
+   ]
   },
   {
    "text": "Post-plan execution pipeline: implement the approved plan, verify, present evidence, and sync.",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "Post-plan execution pipeline: implement the approved plan, verify, present evidence, and sync.",
+     "class": "structure",
+     "explains": null,
+     "reason": "one-line summary of the skill"
+    }
+   ]
   },
   {
    "text": "Planning happens in Claude Code's native plan mode. This pipeline picks up **after** the plan is approved and enforces the governance stages that get lost in freeform execution.",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "Planning happens in Claude Code's native plan mode. This pipeline picks up **after** the plan is approved and enforces the governance stages that get lost in freeform execution.",
+     "class": "rationale",
+     "explains": "I-034",
+     "reason": "where planning happens and why the pipeline starts after it"
+    }
+   ]
   },
   {
    "text": "The canonical runtime launch surface is `uv run gz obpi pipeline`. The CLI\nruntime, generated hook surfaces, and reminder messages share the same\nruntime engine in `src/gzkit/pipeline_runtime.py`. This skill remains the\nwrapper/operator ritual around that runtime rather than a second stage engine.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "I-001",
+     "quote": "The canonical runtime launch surface is `uv run gz obpi pipeline`.",
+     "applies_at": [
+      "invocation"
+     ],
+     "cause": null,
+     "delivered_span": "The canonical runtime launch surface is `uv run gz obpi pipeline`.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "The CLI\nruntime, generated hook surfaces, and reminder messages share the same\nruntime engine in `src/gzkit/pipeline_runtime.py`. This skill remains the\nwrapper/operator ritual around that runtime rather than a second stage engine.",
+     "class": "rationale",
+     "explains": "I-001",
+     "reason": "how the runtime and this skill relate"
+    }
+   ]
   },
   {
    "text": "**Durable acceptance (GHI #985).** The existing stages share the ledger-backed\n`gz obpi acceptance` contract: canonical obligations, executed proof, scoped\nindependent reviews, and explicit finding closure. Read\n`docs/governance/acceptance-obligations.md` and\n`docs/user/manpages/obpi-acceptance.md` before producing or importing these records.\nThis replaces authored standing-verdict lines as the acceptance authority;\nhistorical verdicts remain unchanged. It does not authorize starting an OBPI:\nthe operator initiates this pipeline, and GHI corrective work retains its direct route.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "I-002",
+     "quote": "Read\n`docs/governance/acceptance-obligations.md` and\n`docs/user/manpages/obpi-acceptance.md` before producing or importing these records.",
+     "applies_at": [
+      "invocation"
+     ],
+     "cause": "GHI #985",
+     "delivered_span": "Read\n`docs/governance/acceptance-obligations.md` and\n`docs/user/manpages/obpi-acceptance.md` before producing or importing these records.",
+     "reworded": null
+    },
+    {
+     "id": "I-003",
+     "quote": "This replaces authored standing-verdict lines as the acceptance authority;\nhistorical verdicts remain unchanged.",
+     "applies_at": [
+      "invocation"
+     ],
+     "cause": "GHI #985",
+     "delivered_span": "This replaces authored standing-verdict lines as the acceptance authority;\nhistorical verdicts remain unchanged.",
+     "reworded": null
+    },
+    {
+     "id": "I-004",
+     "quote": "It does not authorize starting an OBPI:\nthe operator initiates this pipeline, and GHI corrective work retains its direct route.",
+     "applies_at": [
+      "invocation"
+     ],
+     "cause": null,
+     "delivered_span": "It does not authorize starting an OBPI:\nthe operator initiates this pipeline, and GHI corrective work retains its direct route.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "**Durable acceptance (GHI #985).** The existing stages share the ledger-backed\n`gz obpi acceptance` contract: canonical obligations, executed proof, scoped\nindependent reviews, and explicit finding closure.",
+     "class": "rationale",
+     "explains": "I-002",
+     "reason": "what the acceptance contract carries"
+    }
+   ]
   },
   {
    "text": "## Persona",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "## Persona",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "**Active driver:** `pipeline-orchestrator` — read `.gzkit/personas/pipeline-orchestrator.md` and adopt its behavioral identity before executing this skill. Stage discipline, ceremony completion, and evidence anchoring are not rules to follow — they are who you are when running this pipeline.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "I-005",
+     "quote": "**Active driver:** `pipeline-orchestrator` — read `.gzkit/personas/pipeline-orchestrator.md` and adopt its behavioral identity before executing this skill.",
+     "applies_at": [
+      "invocation"
+     ],
+     "cause": "ADR-0.0.11",
+     "delivered_span": "**Active driver:** `pipeline-orchestrator` — read `.gzkit/personas/pipeline-orchestrator.md` and adopt its behavioral identity before executing this skill.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "Stage discipline, ceremony completion, and evidence anchoring are not rules to follow — they are who you are when running this pipeline.",
+     "class": "rationale",
+     "explains": "I-005",
+     "reason": "why the persona is adopted"
+    }
+   ]
   },
   {
    "text": "## Persona Dispatch",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "## Persona Dispatch",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "The pipeline dispatches four subagent personas across its stages. Stage-2 implementer/spec-reviewer/quality-reviewer dispatch is documented procedurally below (§ Stage 2); the Stage-4 narrator dispatch is declared here:",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "The pipeline dispatches four subagent personas across its stages. Stage-2 implementer/spec-reviewer/quality-reviewer dispatch is documented procedurally below (§ Stage 2); the Stage-4 narrator dispatch is declared here:",
+     "class": "structure",
+     "explains": null,
+     "reason": "introduces the dispatch table"
+    }
+   ]
   },
   {
    "text": "| Persona | Function in this ceremony | Invoked at |",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "| Persona | Function in this ceremony | Invoked at |",
+     "class": "structure",
+     "explains": null,
+     "reason": "table header"
+    }
+   ]
   },
   {
    "text": "|---|---|---|",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "|---|---|---|",
+     "class": "structure",
+     "explains": null,
+     "reason": "table separator"
+    }
+   ]
   },
   {
    "text": "| `implementer` | Methodical, test-first code authoring per the approved plan; one task at a time; complete units (imports + usage + tests + docs as one edit) | Stage 2 step c–g (see § Stage 2 for dispatch mechanics) |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-006",
+     "quote": "| `implementer` | Methodical, test-first code authoring per the approved plan; one task at a time; complete units (imports + usage + tests + docs as one edit) | Stage 2 step c–g (see § Stage 2 for dispatch mechanics) |",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "| `implementer` | Methodical, test-first code authoring per the approved plan; one task at a time; complete units (imports + usage + tests + docs as one edit) | Stage 2 step c–g (see § Stage 2 for dispatch mechanics) |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| `spec-reviewer` | Independent requirement-tracing against the brief's `## Requirements (FAIL-CLOSED)` list; each REQ must map to implementation and test. **Cannot execute** — reviews by reading (GHI #941, #968) | Stage 2 step h.i–viii (two-stage review) |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-007",
+     "quote": "| `spec-reviewer` | Independent requirement-tracing against the brief's `## Requirements (FAIL-CLOSED)` list; each REQ must map to implementation and test. **Cannot execute** — reviews by reading (GHI #941, #968) | Stage 2 step h.i–viii (two-stage review) |",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": "GHI #941, #968",
+     "delivered_span": "| `spec-reviewer` | Independent requirement-tracing against the brief's `## Requirements (FAIL-CLOSED)` list; each REQ must map to implementation and test. **Cannot execute** — reviews by reading (GHI #941, #968) | Stage 2 step h.i–viii (two-stage review) |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| `quality-reviewer` | Independent architectural assessment: SOLID, size-discipline, maintainability of the produced diff. **Cannot execute** — reviews by reading (GHI #941, #968) | Stage 2 step h.i–viii (two-stage review) |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-008",
+     "quote": "| `quality-reviewer` | Independent architectural assessment: SOLID, size-discipline, maintainability of the produced diff. **Cannot execute** — reviews by reading (GHI #941, #968) | Stage 2 step h.i–viii (two-stage review) |",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": "GHI #941, #968",
+     "delivered_span": "| `quality-reviewer` | Independent architectural assessment: SOLID, size-discipline, maintainability of the produced diff. **Cannot execute** — reviews by reading (GHI #941, #968) | Stage 2 step h.i–viii (two-stage review) |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| `narrator` | Composes the Stage 4 evidence packet in operator-value framing — value narrative, key proof, evidence table, REQ coverage rendered for the human's attestation decision | Stage 4 (Present Evidence) — see § Stage 4 |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-009",
+     "quote": "| `narrator` | Composes the Stage 4 evidence packet in operator-value framing — value narrative, key proof, evidence table, REQ coverage rendered for the human's attestation decision | Stage 4 (Present Evidence) — see § Stage 4 |",
+     "applies_at": [
+      "stage4"
+     ],
+     "cause": null,
+     "delivered_span": "| `narrator` | Composes the Stage 4 evidence packet in operator-value framing — value narrative, key proof, evidence table, REQ coverage rendered for the human's attestation decision | Stage 4 (Present Evidence) — see § Stage 4 |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "The mechanical attestation that these dispatches occurred was scoped by `ADR-pool.obpi-pipeline-dispatch-attestation` Target Scopes #5/#6. That ADR is **Superseded** (`absorbed_into: ADR-0.0.73`, itself Validated 9/9), so there is no promotion pending and nothing arrives from one — the absorption delivered an absorption-marker audit, and that ADR's own § Notes place the receipt machinery (ledger events, bail-to-inline gates, validator scopes) in \"a future feature-kind ADR work surface\" that is not yet authored (GHI #846). **Stage-2 dispatch IS attestable today**: record each one with `uv run gz obpi dispatch <OBPI-ID> --role <Role> --model <tier>`, and `gz obpi precomplete` fails closed on a silent single-driver run (GHI #845). Credit is never inferred. The Stage-4 narrator dispatch has no channel yet.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "I-010",
+     "quote": "**Stage-2 dispatch IS attestable today**: record each one with `uv run gz obpi dispatch <OBPI-ID> --role <Role> --model <tier>`, and `gz obpi precomplete` fails closed on a silent single-driver run (GHI #845). Credit is never inferred.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": "GHI #845",
+     "delivered_span": "**Stage-2 dispatch IS attestable today**: record each one with `uv run gz obpi dispatch <OBPI-ID> --role <Role> --model <tier>`, and `gz obpi precomplete` fails closed on a silent single-driver run (GHI #845). Credit is never inferred.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "The mechanical attestation that these dispatches occurred was scoped by `ADR-pool.obpi-pipeline-dispatch-attestation` Target Scopes #5/#6. That ADR is **Superseded** (`absorbed_into: ADR-0.0.73`, itself Validated 9/9), so there is no promotion pending and nothing arrives from one — the absorption delivered an absorption-marker audit, and that ADR's own § Notes place the receipt machinery (ledger events, bail-to-inline gates, validator scopes) in \"a future feature-kind ADR work surface\" that is not yet authored (GHI #846).",
+     "class": "rationale",
+     "explains": "I-010",
+     "reason": "history of the dispatch-attestation ADR"
+    },
+    {
+     "quote": "The Stage-4 narrator dispatch has no channel yet.",
+     "class": "rationale",
+     "explains": "I-009",
+     "reason": "what the narrator dispatch lacks"
+    }
+   ]
   },
   {
    "text": "Persona doctrine reference: ADR-0.0.11-persona-driven-agent-identity-frames (Validated). Runtime mapping: `src/gzkit/pipeline_dispatch.py` (`ROLE_PERSONA_MAP`).",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "Persona doctrine reference: ADR-0.0.11-persona-driven-agent-identity-frames (Validated). Runtime mapping: `src/gzkit/pipeline_dispatch.py` (`ROLE_PERSONA_MAP`).",
+     "class": "structure",
+     "explains": null,
+     "reason": "references"
+    }
+   ]
   },
   {
    "text": "---",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "---",
+     "class": "structure",
+     "explains": null,
+     "reason": "rule"
+    }
+   ]
   },
   {
    "text": "## The Iron Law",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "## The Iron Law",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "```\nTHE PIPELINE IS NOT COMPLETE UNTIL STAGE 5 FINISHES.\n```",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-011",
+     "quote": "```\nTHE PIPELINE IS NOT COMPLETE UNTIL STAGE 5 FINISHES.\n```",
+     "applies_at": [
+      "invocation",
+      "stage1",
+      "stage2",
+      "stage3",
+      "stage4",
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "```\nTHE PIPELINE IS NOT COMPLETE UNTIL STAGE 5 FINISHES.\n```",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "Every stage flows into the next. No \"stop and summarize\" between stages. No pause except the Stage 4 human attestation in Normal mode — and that pause comes only **after** Step 4b (the independent adversary) has run and its verdict is on the table. Soliciting attestation with Step 4b skipped is not a valid pause; it is a gate bypass. If you have not reached the end of Stage 5, you are not done — and violating the spirit of this rule is violating the rule. One other stop is legitimate: when Stage 4's round bound is reached or a round repeats the prior round's root, record `gz obpi block` and put the decision to the operator (§ Stage 4 — The review window, the bound, and the exit). That is the pipeline working, not a premature summary.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "I-012",
+     "quote": "Every stage flows into the next. No \"stop and summarize\" between stages.",
+     "applies_at": [
+      "invocation",
+      "stage1",
+      "stage2",
+      "stage3",
+      "stage4",
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "Every stage flows into the next. No \"stop and summarize\" between stages.",
+     "reworded": null
+    },
+    {
+     "id": "I-013",
+     "quote": "No pause except the Stage 4 human attestation in Normal mode — and that pause comes only **after** Step 4b (the independent adversary) has run and its verdict is on the table.",
+     "applies_at": [
+      "stage4"
+     ],
+     "cause": null,
+     "delivered_span": "No pause except the Stage 4 human attestation in Normal mode — and that pause comes only **after** Step 4b (the independent adversary) has run and its verdict is on the table.",
+     "reworded": null
+    },
+    {
+     "id": "I-014",
+     "quote": "Soliciting attestation with Step 4b skipped is not a valid pause; it is a gate bypass.",
+     "applies_at": [
+      "stage4"
+     ],
+     "cause": null,
+     "delivered_span": "Soliciting attestation with Step 4b skipped is not a valid pause; it is a gate bypass.",
+     "reworded": null
+    },
+    {
+     "id": "I-015",
+     "quote": "If you have not reached the end of Stage 5, you are not done — and violating the spirit of this rule is violating the rule.",
+     "applies_at": [
+      "invocation",
+      "stage1",
+      "stage2",
+      "stage3",
+      "stage4",
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "If you have not reached the end of Stage 5, you are not done — and violating the spirit of this rule is violating the rule.",
+     "reworded": null
+    },
+    {
+     "id": "I-016",
+     "quote": "One other stop is legitimate: when Stage 4's round bound is reached or a round repeats the prior round's root, record `gz obpi block` and put the decision to the operator (§ Stage 4 — The review window, the bound, and the exit).",
+     "applies_at": [
+      "stage4"
+     ],
+     "cause": "GHI #887",
+     "delivered_span": "One other stop is legitimate: when Stage 4's round bound is reached or a round repeats the prior round's root, record `gz obpi block` and put the decision to the operator (§ Stage 4 — The review window, the bound, and the exit).",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "That is the pipeline working, not a premature summary.",
+     "class": "rationale",
+     "explains": "I-016",
+     "reason": "why the block is not a premature stop"
+    }
+   ]
   },
   {
    "text": "### Rationalization Prevention",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "### Rationalization Prevention",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "These thoughts mean STOP — you are about to break the pipeline:",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-017",
+     "quote": "These thoughts mean STOP — you are about to break the pipeline:",
+     "applies_at": [
+      "invocation",
+      "stage1",
+      "stage2",
+      "stage3",
+      "stage4",
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "These thoughts mean STOP — you are about to break the pipeline:",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| Thought | Reality |",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "| Thought | Reality |",
+     "class": "structure",
+     "explains": null,
+     "reason": "table header"
+    }
+   ]
   },
   {
    "text": "|---------|---------|",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "|---------|---------|",
+     "class": "structure",
+     "explains": null,
+     "reason": "table separator"
+    }
+   ]
   },
   {
    "text": "| \"Implementation/tests done, let me summarize\" | You are between stages. The pipeline runs to Stage 5. Proceed. |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-018",
+     "quote": "| \"Implementation/tests done, let me summarize\" | You are between stages. The pipeline runs to Stage 5. Proceed. |",
+     "applies_at": [
+      "stage2",
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "| \"Implementation/tests done, let me summarize\" | You are between stages. The pipeline runs to Stage 5. Proceed. |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| \"No plan receipt exists — the brief is clear enough to skip planning\" | The plan-audit handoff is a governance checkpoint. Invoke `/gz-plan-audit <OBPI-ID>` in this same turn (see § The Plan-Mode Gate); do not end the turn to ask permission. |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-019",
+     "quote": "| \"No plan receipt exists — the brief is clear enough to skip planning\" | The plan-audit handoff is a governance checkpoint. Invoke `/gz-plan-audit <OBPI-ID>` in this same turn (see § The Plan-Mode Gate); do not end the turn to ask permission. |",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": "GHI #288",
+     "delivered_span": "| \"No plan receipt exists — the brief is clear enough to skip planning\" | The plan-audit handoff is a governance checkpoint. Invoke `/gz-plan-audit <OBPI-ID>` in this same turn (see § The Plan-Mode Gate); do not end the turn to ask permission. |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| \"The hook blocked me, I'll work around it\" | Hook blocks are signals. Diagnose the cause. NEVER create marker files manually to bypass. |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-020",
+     "quote": "| \"The hook blocked me, I'll work around it\" | Hook blocks are signals. Diagnose the cause. NEVER create marker files manually to bypass. |",
+     "applies_at": [
+      "invocation",
+      "stage1",
+      "stage2",
+      "stage3",
+      "stage4",
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "| \"The hook blocked me, I'll work around it\" | Hook blocks are signals. Diagnose the cause. NEVER create marker files manually to bypass. |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| \"`gz obpi complete` needs a TTY, so I'll ask the operator to run it themselves\" | No. There is no TTY gate. A plain non-TTY `uv run gz obpi complete ... --attestation-text \"<operator's verbatim attestation>\"` call completes the brief for every lane / kind / sensitivity. The operator already attested in Stage 4 — relay that phrase, never hand the invocation back. |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-021",
+     "quote": "| \"`gz obpi complete` needs a TTY, so I'll ask the operator to run it themselves\" | No. There is no TTY gate. A plain non-TTY `uv run gz obpi complete ... --attestation-text \"<operator's verbatim attestation>\"` call completes the brief for every lane / kind / sensitivity. The operator already attested in Stage 4 — relay that phrase, never hand the invocation back. |",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "| \"`gz obpi complete` needs a TTY, so I'll ask the operator to run it themselves\" | No. There is no TTY gate. A plain non-TTY `uv run gz obpi complete ... --attestation-text \"<operator's verbatim attestation>\"` call completes the brief for every lane / kind / sensitivity. The operator already attested in Stage 4 — relay that phrase, never hand the invocation back. |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| \"The operator said `attest completed` — maybe they want me to explain what to do next\" | No. `attest completed` IS the attestation. Run `gz obpi complete` immediately with that phrase (enriched per § Attestation) in `--attestation-text`. Do not produce runbook-style instructions for the operator to execute. |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-022",
+     "quote": "| \"The operator said `attest completed` — maybe they want me to explain what to do next\" | No. `attest completed` IS the attestation. Run `gz obpi complete` immediately with that phrase (enriched per § Attestation) in `--attestation-text`. Do not produce runbook-style instructions for the operator to execute. |",
+     "applies_at": [
+      "stage4",
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "| \"The operator said `attest completed` — maybe they want me to explain what to do next\" | No. `attest completed` IS the attestation. Run `gz obpi complete` immediately with that phrase (enriched per § Attestation) in `--attestation-text`. Do not produce runbook-style instructions for the operator to execute. |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| \"My Step 4a evidence is green — tests pass, REQs covered — so I can present it and await attestation\" | STOP. Green-on-your-own-evidence is the EXACT state Step 4b exists to distrust. You authored that evidence; you are the GHI #643 fabrication surface. You may NOT solicit attestation until applicable independent approval and closure have been imported for the current proof claims. Confidence from the authoring agent is worth zero at this gate. |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-023",
+     "quote": "| \"My Step 4a evidence is green — tests pass, REQs covered — so I can present it and await attestation\" | STOP. Green-on-your-own-evidence is the EXACT state Step 4b exists to distrust. You authored that evidence; you are the GHI #643 fabrication surface. You may NOT solicit attestation until applicable independent approval and closure have been imported for the current proof claims. Confidence from the authoring agent is worth zero at this gate. |",
+     "applies_at": [
+      "stage4"
+     ],
+     "cause": "GHI #643",
+     "delivered_span": "| \"My Step 4a evidence is green — tests pass, REQs covered — so I can present it and await attestation\" | STOP. Green-on-your-own-evidence is the EXACT state Step 4b exists to distrust. You authored that evidence; you are the GHI #643 fabrication surface. You may NOT solicit attestation until applicable independent approval and closure have been imported for the current proof claims. Confidence from the authoring agent is worth zero at this gate. |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| \"Step 4b is probably overkill for this small/authoring-only/obviously-correct OBPI\" | Step 4b is expected on every lane, size and kind, and `gz obpi complete` refuses on every lane until the acceptance record holds a current independent adversarial review (`acceptance_store.completion_review`, GHI #985). \"Obviously correct\" is the precise feeling that precedes a hollow-test or fabricated-evidence skip. Dispatch the adversary. You are not the exception. |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-024",
+     "quote": "| \"Step 4b is probably overkill for this small/authoring-only/obviously-correct OBPI\" | Step 4b is expected on every lane, size and kind, and `gz obpi complete` refuses on every lane until the acceptance record holds a current independent adversarial review (`acceptance_store.completion_review`, GHI #985). \"Obviously correct\" is the precise feeling that precedes a hollow-test or fabricated-evidence skip. Dispatch the adversary. You are not the exception. |",
+     "applies_at": [
+      "stage4"
+     ],
+     "cause": "GHI #985",
+     "delivered_span": "| \"Step 4b is probably overkill for this small/authoring-only/obviously-correct OBPI\" | Step 4b is expected on every lane, size and kind, and `gz obpi complete` refuses on every lane until the acceptance record holds a current independent adversarial review (`acceptance_store.completion_review`, GHI #985). \"Obviously correct\" is the precise feeling that precedes a hollow-test or fabricated-evidence skip. Dispatch the adversary. You are not the exception. |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| \"I'll present Step 4a now and run the adversary after the operator responds / in the next turn\" | Sequence violation. The adversary runs BEFORE attestation, not after — the operator attests holding the adversary's verdict. Presenting 4a as the terminal step of the turn, with 4b deferred, is the skip this gate forbids. Dispatch any missing required review before soliciting attestation; retain already applicable imported review. |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-025",
+     "quote": "| \"I'll present Step 4a now and run the adversary after the operator responds / in the next turn\" | Sequence violation. The adversary runs BEFORE attestation, not after — the operator attests holding the adversary's verdict. Presenting 4a as the terminal step of the turn, with 4b deferred, is the skip this gate forbids. Dispatch any missing required review before soliciting attestation; retain already applicable imported review. |",
+     "applies_at": [
+      "stage4"
+     ],
+     "cause": null,
+     "delivered_span": "| \"I'll present Step 4a now and run the adversary after the operator responds / in the next turn\" | Sequence violation. The adversary runs BEFORE attestation, not after — the operator attests holding the adversary's verdict. Presenting 4a as the terminal step of the turn, with 4b deferred, is the skip this gate forbids. Dispatch any missing required review before soliciting attestation; retain already applicable imported review. |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| \"An independent Claude subagent is fine for 4b — I don't need Codex\" | Tier-order bypass (GHI #678). A Claude validating Claude shares this agent's blind spots — the exact failure Step 4b exists to break. Codex (tier 1) is REQUIRED first; tier 2 is permitted ONLY after a checked `ready: false`. Run `codex:setup`; if `ready: true`, the Claude subagent is forbidden. \"It was convenient\" is not a fallback reason. |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-026",
+     "quote": "| \"An independent Claude subagent is fine for 4b — I don't need Codex\" | Tier-order bypass (GHI #678). A Claude validating Claude shares this agent's blind spots — the exact failure Step 4b exists to break. Codex (tier 1) is REQUIRED first; tier 2 is permitted ONLY after a checked `ready: false`. Run `codex:setup`; if `ready: true`, the Claude subagent is forbidden. \"It was convenient\" is not a fallback reason. |",
+     "applies_at": [
+      "stage4"
+     ],
+     "cause": "GHI #678",
+     "delivered_span": "| \"An independent Claude subagent is fine for 4b — I don't need Codex\" | Tier-order bypass (GHI #678). A Claude validating Claude shares this agent's blind spots — the exact failure Step 4b exists to break. Codex (tier 1) is REQUIRED first; tier 2 is permitted ONLY after a checked `ready: false`. Run `codex:setup`; if `ready: true`, the Claude subagent is forbidden. \"It was convenient\" is not a fallback reason. |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| \"The adversary is there to find problems, so a round that confirms the feature works is a soft round\" | Inverted. A second model CONFIRMING the first model's implementation is correct is the entire point of Step 4b; probing is how that confirmation is earned. A round that only lists what it broke, and never demonstrates the feature doing its job, has not done the job. |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-027",
+     "quote": "| \"The adversary is there to find problems, so a round that confirms the feature works is a soft round\" | Inverted. A second model CONFIRMING the first model's implementation is correct is the entire point of Step 4b; probing is how that confirmation is earned. A round that only lists what it broke, and never demonstrates the feature doing its job, has not done the job. |",
+     "applies_at": [
+      "stage4"
+     ],
+     "cause": null,
+     "delivered_span": "| \"The adversary is there to find problems, so a round that confirms the feature works is a soft round\" | Inverted. A second model CONFIRMING the first model's implementation is correct is the entire point of Step 4b; probing is how that confirmation is earned. A round that only lists what it broke, and never demonstrates the feature doing its job, has not done the job. |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| \"The adversary refuted again, so I'll fix these findings and re-run\" | Check its `Weakest point` against the previous round FIRST. If it names the same root, another fix cycle surfaces it one layer deeper — that is three rounds and ~9 hours in the measured case. Stop and put the design to the operator. |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-028",
+     "quote": "| \"The adversary refuted again, so I'll fix these findings and re-run\" | Check its `Weakest point` against the previous round FIRST. If it names the same root, another fix cycle surfaces it one layer deeper — that is three rounds and ~9 hours in the measured case. Stop and put the design to the operator. |",
+     "applies_at": [
+      "stage4"
+     ],
+     "cause": "operator ruling 2026-09-03",
+     "delivered_span": "| \"The adversary refuted again, so I'll fix these findings and re-run\" | Check its `Weakest point` against the previous round FIRST. If it names the same root, another fix cycle surfaces it one layer deeper — that is three rounds and ~9 hours in the measured case. Stop and put the design to the operator. |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| \"I'll tell the adversary to REFUTE the claim — that's what adversarial means\" | It is not, and this exact wording cost OBPI-0.35.0-04 six rounds. A model told \"your job is to REFUTE this, not to confirm it\" will escalate until something falls, and its best available outcome is \"I could not refute it\" — absence of evidence, never confirmation. Prompt for independent confirmation, with probing as the method. |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-029",
+     "quote": "| \"I'll tell the adversary to REFUTE the claim — that's what adversarial means\" | It is not, and this exact wording cost OBPI-0.35.0-04 six rounds. A model told \"your job is to REFUTE this, not to confirm it\" will escalate until something falls, and its best available outcome is \"I could not refute it\" — absence of evidence, never confirmation. Prompt for independent confirmation, with probing as the method. |",
+     "applies_at": [
+      "stage4"
+     ],
+     "cause": null,
+     "delivered_span": "| \"I'll tell the adversary to REFUTE the claim — that's what adversarial means\" | It is not, and this exact wording cost OBPI-0.35.0-04 six rounds. A model told \"your job is to REFUTE this, not to confirm it\" will escalate until something falls, and its best available outcome is \"I could not refute it\" — absence of evidence, never confirmation. Prompt for independent confirmation, with probing as the method. |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| \"This is a security property, so the claim should be absolute\" | An absolute claim cannot be refuted in bounded time: the adversary escalates the attacker until something falls. Declare the threat model in the brief FIRST, state it in the prompt, and forbid out-of-scope findings — otherwise the gate never converges. |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-030",
+     "quote": "| \"This is a security property, so the claim should be absolute\" | An absolute claim cannot be refuted in bounded time: the adversary escalates the attacker until something falls. Declare the threat model in the brief FIRST, state it in the prompt, and forbid out-of-scope findings — otherwise the gate never converges. |",
+     "applies_at": [
+      "stage4"
+     ],
+     "cause": "operator ruling 2026-09-03",
+     "delivered_span": "| \"This is a security property, so the claim should be absolute\" | An absolute claim cannot be refuted in bounded time: the adversary escalates the attacker until something falls. Declare the threat model in the brief FIRST, state it in the prompt, and forbid out-of-scope findings — otherwise the gate never converges. |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| \"The adversary found something, so the OBPI cannot pass\" | Apply the September 5 independent-closure rule below: every finding against the agreed requirements or their required proof needs a disposition and independent closure. Severity alone does not clear it. Track independent discoveries without silently making them acceptance prerequisites; never dismiss a relevant finding merely because it arose in an auxiliary audit. |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-031",
+     "quote": "| \"The adversary found something, so the OBPI cannot pass\" | Apply the September 5 independent-closure rule below: every finding against the agreed requirements or their required proof needs a disposition and independent closure. Severity alone does not clear it. Track independent discoveries without silently making them acceptance prerequisites; never dismiss a relevant finding merely because it arose in an auxiliary audit. |",
+     "applies_at": [
+      "stage4"
+     ],
+     "cause": "operator ruling 2026-09-05",
+     "delivered_span": "| \"The adversary found something, so the OBPI cannot pass\" | Apply the September 5 independent-closure rule below: every finding against the agreed requirements or their required proof needs a disposition and independent closure. Severity alone does not clear it. Track independent discoveries without silently making them acceptance prerequisites; never dismiss a relevant finding merely because it arose in an auxiliary audit. |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| \"The round refuted, but I fixed everything it found — I'll complete and explain the fixes in `--adversary-resolution`\" | **Refused, and a resolution string does not change that (GHI #960).** *\"refuted is an outcome, but it is an input into if(4a && 4b) pass; else: loop\"* (operator, 2026-09-04). Execute proof for the repaired obligation and import explicit independent closure. The current acceptance records determine readiness; preserve the original refutation as history. |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-032",
+     "quote": "| \"The round refuted, but I fixed everything it found — I'll complete and explain the fixes in `--adversary-resolution`\" | **Refused, and a resolution string does not change that (GHI #960).** *\"refuted is an outcome, but it is an input into if(4a && 4b) pass; else: loop\"* (operator, 2026-09-04). Execute proof for the repaired obligation and import explicit independent closure. The current acceptance records determine readiness; preserve the original refutation as history. |",
+     "applies_at": [
+      "stage4",
+      "stage5"
+     ],
+     "cause": "GHI #960",
+     "delivered_span": "| \"The round refuted, but I fixed everything it found — I'll complete and explain the fixes in `--adversary-resolution`\" | **Refused, and a resolution string does not change that (GHI #960).** *\"refuted is an outcome, but it is an input into if(4a && 4b) pass; else: loop\"* (operator, 2026-09-04). Execute proof for the repaired obligation and import explicit independent closure. The current acceptance records determine readiness; preserve the original refutation as history. |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| \"The block says refuted can't complete, so I'll pass `not-refuted` since the findings are fixed anyway\" | A caller-supplied word cannot close a finding. Import the independent review's actual executed output with its original finding IDs and current proof IDs. `gz obpi acceptance ... status --stage stage4` derives readiness; historical verdicts remain unchanged. |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-033",
+     "quote": "| \"The block says refuted can't complete, so I'll pass `not-refuted` since the findings are fixed anyway\" | A caller-supplied word cannot close a finding. Import the independent review's actual executed output with its original finding IDs and current proof IDs. `gz obpi acceptance ... status --stage stage4` derives readiness; historical verdicts remain unchanged. |",
+     "applies_at": [
+      "stage4",
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "| \"The block says refuted can't complete, so I'll pass `not-refuted` since the findings are fixed anyway\" | A caller-supplied word cannot close a finding. Import the independent review's actual executed output with its original finding IDs and current proof IDs. `gz obpi acceptance ... status --stage stage4` derives readiness; historical verdicts remain unchanged. |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "### The Plan-Mode Gate",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "### The Plan-Mode Gate",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "**No plan receipt → no implementation.** If Stage 1 finds no `.plan-audit-receipt-<OBPI-ID>.json` (or the existing receipt's `obpi_id` does not match this OBPI) and the pipeline was invoked without `--from`, you MUST produce a canonical-name plan and a fresh PASS receipt before touching any source file.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-034",
+     "quote": "**No plan receipt → no implementation.** If Stage 1 finds no `.plan-audit-receipt-<OBPI-ID>.json` (or the existing receipt's `obpi_id` does not match this OBPI) and the pipeline was invoked without `--from`, you MUST produce a canonical-name plan and a fresh PASS receipt before touching any source file.",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": "GHI #288",
+     "delivered_span": "**No plan receipt → no implementation.** If Stage 1 finds no `.plan-audit-receipt-<OBPI-ID>.json` (or the existing receipt's `obpi_id` does not match this OBPI) and the pipeline was invoked without `--from`, you MUST produce a canonical-name plan and a fresh PASS receipt before touching any source file.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "**The mechanical action is: invoke `/gz-plan-audit <OBPI-ID>` in this same turn.** The `gz-plan-audit` skill authors a plan file in the project-local `.claude/plans/` directory under a canonical name and writes the receipt directly. After the receipt is in place, Stage 2 begins.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "I-035",
+     "quote": "**The mechanical action is: invoke `/gz-plan-audit <OBPI-ID>` in this same turn.**",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "**The mechanical action is: invoke `/gz-plan-audit <OBPI-ID>` in this same turn.**",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "The `gz-plan-audit` skill authors a plan file in the project-local `.claude/plans/` directory under a canonical name and writes the receipt directly. After the receipt is in place, Stage 2 begins.",
+     "class": "rationale",
+     "explains": "I-035",
+     "reason": "what the plan-audit skill produces"
+    }
+   ]
   },
   {
    "text": "**Why `/gz-plan-audit` and not `EnterPlanMode` first (GHI #288).** Claude Code's native plan mode pins the plan file to a harness-generated random-name path under `~/.claude/plans/<random>.md` and forbids edits to any other path while plan mode is active. The `plan-audit-gate.py` PreToolUse hook scans both `.claude/plans/` and `~/.claude/plans/` and self-runs `gz plan audit` on `ExitPlanMode`, but a first-run OBPI with no canonical-name plan in the project-local dir can deadlock the harness — the hook fails closed and the agent cannot satisfy both surfaces simultaneously. Routing through `/gz-plan-audit` first sidesteps the deadlock by producing the canonical artifact in the project-local dir up front.",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "**Why `/gz-plan-audit` and not `EnterPlanMode` first (GHI #288).** Claude Code's native plan mode pins the plan file to a harness-generated random-name path under `~/.claude/plans/<random>.md` and forbids edits to any other path while plan mode is active. The `plan-audit-gate.py` PreToolUse hook scans both `.claude/plans/` and `~/.claude/plans/` and self-runs `gz plan audit` on `ExitPlanMode`, but a first-run OBPI with no canonical-name plan in the project-local dir can deadlock the harness — the hook fails closed and the agent cannot satisfy both surfaces simultaneously. Routing through `/gz-plan-audit` first sidesteps the deadlock by producing the canonical artifact in the project-local dir up front.",
+     "class": "rationale",
+     "explains": "I-035",
+     "reason": "why plan-audit precedes native plan mode (GHI #288)"
+    }
+   ]
   },
   {
    "text": "**If you choose to also use native plan mode** (for example, to compose the plan interactively with the operator), enter plan mode *after* `/gz-plan-audit` has written a PASS receipt, and re-run `/gz-plan-audit <OBPI-ID>` after `ExitPlanMode` to refresh the receipt against the harness-named plan. The `plan-audit-gate` hook will then accept the exit because a valid receipt newer than the plan file exists.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-036",
+     "quote": "**If you choose to also use native plan mode** (for example, to compose the plan interactively with the operator), enter plan mode *after* `/gz-plan-audit` has written a PASS receipt, and re-run `/gz-plan-audit <OBPI-ID>` after `ExitPlanMode` to refresh the receipt against the harness-named plan. The `plan-audit-gate` hook will then accept the exit because a valid receipt newer than the plan file exists.",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "**If you choose to also use native plan mode** (for example, to compose the plan interactively with the operator), enter plan mode *after* `/gz-plan-audit` has written a PASS receipt, and re-run `/gz-plan-audit <OBPI-ID>` after `ExitPlanMode` to refresh the receipt against the harness-named plan. The `plan-audit-gate` hook will then accept the exit because a valid receipt newer than the plan file exists.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "**Stopping the turn to ask \"should I run plan-audit?\" is a violation, not compliance.** The skill's \"STOP\" language directs you to stop *making source edits* and *redirect to plan-audit*, not to stop your turn and solicit permission. If you catch yourself composing a message that says \"Required next step: invoke gz-plan-audit\" or \"Want me to proceed with plan-audit on the next turn?\" — you are rationalizing. Call `/gz-plan-audit <OBPI-ID>` in this same turn instead.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "I-037",
+     "quote": "**Stopping the turn to ask \"should I run plan-audit?\" is a violation, not compliance.**",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "**Stopping the turn to ask \"should I run plan-audit?\" is a violation, not compliance.**",
+     "reworded": null
+    },
+    {
+     "id": "I-038",
+     "quote": "Call `/gz-plan-audit <OBPI-ID>` in this same turn instead.",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "Call `/gz-plan-audit <OBPI-ID>` in this same turn instead.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "The skill's \"STOP\" language directs you to stop *making source edits* and *redirect to plan-audit*, not to stop your turn and solicit permission. If you catch yourself composing a message that says \"Required next step: invoke gz-plan-audit\" or \"Want me to proceed with plan-audit on the next turn?\" — you are rationalizing.",
+     "class": "rationale",
+     "explains": "I-037",
+     "reason": "what the STOP language means"
+    }
+   ]
   },
   {
    "text": "This is not optional. This is not something you can \"derive informally.\" The plan-audit handoff exists because agents consistently skip planning when allowed to. You are not the exception.",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "This is not optional. This is not something you can \"derive informally.\" The plan-audit handoff exists because agents consistently skip planning when allowed to. You are not the exception.",
+     "class": "rationale",
+     "explains": "I-034",
+     "reason": "why the gate is not optional"
+    }
+   ]
   },
   {
    "text": "---",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "---",
+     "class": "structure",
+     "explains": null,
+     "reason": "rule"
+    }
+   ]
   },
   {
    "text": "## Work selection (operator rulings, verbatim canon)",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "## Work selection (operator rulings, verbatim canon)",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "- The active docs/governance/*-campaign-*.md plan governs work selection; handoffs and triage advise. Select its topmost unchecked item whose gate is met, subject to ascending feature-ADR order and operator-only OBPI initiation. Campaign amendments require operator ratification; ADR, OBPI, and GHI repair remain the work mechanisms.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-039",
+     "quote": "- The active docs/governance/*-campaign-*.md plan governs work selection; handoffs and triage advise. Select its topmost unchecked item whose gate is met, subject to ascending feature-ADR order and operator-only OBPI initiation. Campaign amendments require operator ratification; ADR, OBPI, and GHI repair remain the work mechanisms.",
+     "applies_at": [
+      "invocation"
+     ],
+     "cause": "operator ruling 2026-06-10",
+     "delivered_span": "- The active docs/governance/*-campaign-*.md plan governs work selection; handoffs and triage advise. Select its topmost unchecked item whose gate is met, subject to ascending feature-ADR order and operator-only OBPI initiation. Campaign amendments require operator ratification; ADR, OBPI, and GHI repair remain the work mechanisms.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "- Work feature ADRs in ascending semver order: the lowest version with unlanded OBPIs is in flight. Do not work, author, or recommend a higher feature ADR ahead of it. The campaign selects work but cannot override that order. If campaign sequencing conflicts, semver governs; surface the conflict to the operator rather than silently resolving it. “One feature at a time” does not authorize swapping the order. An ADR in flight may be revised to take more OBPIs. The revision updates the document (an Intent amendment, a Decision item, a checklist item and the scorecard baseline) and the briefs table in the same change. A Validated ADR is not revised: scope missed from one enters the in-flight ADR as a repair assignment that cites the obligation it repairs. An item off the ADR's theme is labelled as such in the Intent amendment. The (m)ADR is a stopgap: a release-increment bucket, meant to be thematically cohesive. Its successor is a feature bundle between an enhancement proposal and a feature specification. Names are chosen later. This replaces the exception of 2026-09-29 (GHI #871), by which a correction to a Validated ADR took the next unallocated feature semver and could be worked ahead of the in-flight ADR; that route is retired (operator rulings 2026-10-04: 'the new loosening law here is we need to be able to revise an adr to allow for more obpis - the document and briefs table gets updated'; 'A, in-flight only'; the wording and the retirement, each 'A').",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "I-040",
+     "quote": "- Work feature ADRs in ascending semver order: the lowest version with unlanded OBPIs is in flight. Do not work, author, or recommend a higher feature ADR ahead of it. The campaign selects work but cannot override that order. If campaign sequencing conflicts, semver governs; surface the conflict to the operator rather than silently resolving it. “One feature at a time” does not authorize swapping the order.",
+     "applies_at": [
+      "invocation"
+     ],
+     "cause": "operator ruling 2026-09-27",
+     "delivered_span": "- Work feature ADRs in ascending semver order: the lowest version with unlanded OBPIs is in flight. Do not work, author, or recommend a higher feature ADR ahead of it. The campaign selects work but cannot override that order. If campaign sequencing conflicts, semver governs; surface the conflict to the operator rather than silently resolving it. “One feature at a time” does not authorize swapping the order.",
+     "reworded": null
+    },
+    {
+     "id": "I-041",
+     "quote": "An ADR in flight may be revised to take more OBPIs. The revision updates the document (an Intent amendment, a Decision item, a checklist item and the scorecard baseline) and the briefs table in the same change.",
+     "applies_at": [
+      "invocation"
+     ],
+     "cause": "operator ruling 2026-10-04",
+     "delivered_span": "An ADR in flight may be revised to take more OBPIs. The revision updates the document (an Intent amendment, a Decision item, a checklist item and the scorecard baseline) and the briefs table in the same change.",
+     "reworded": null
+    },
+    {
+     "id": "I-042",
+     "quote": "A Validated ADR is not revised: scope missed from one enters the in-flight ADR as a repair assignment that cites the obligation it repairs. An item off the ADR's theme is labelled as such in the Intent amendment.",
+     "applies_at": [
+      "invocation"
+     ],
+     "cause": "operator ruling 2026-10-04",
+     "delivered_span": "A Validated ADR is not revised: scope missed from one enters the in-flight ADR as a repair assignment that cites the obligation it repairs. An item off the ADR's theme is labelled as such in the Intent amendment.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "The (m)ADR is a stopgap: a release-increment bucket, meant to be thematically cohesive. Its successor is a feature bundle between an enhancement proposal and a feature specification. Names are chosen later.",
+     "class": "rationale",
+     "explains": "I-041",
+     "reason": "what the (m)ADR is and its successor"
+    },
+    {
+     "quote": "This replaces the exception of 2026-09-29 (GHI #871), by which a correction to a Validated ADR took the next unallocated feature semver and could be worked ahead of the in-flight ADR; that route is retired (operator rulings 2026-10-04: 'the new loosening law here is we need to be able to revise an adr to allow for more obpis - the document and briefs table gets updated'; 'A, in-flight only'; the wording and the retirement, each 'A').",
+     "class": "rationale",
+     "explains": "I-041",
+     "reason": "the retired 2026-09-29 route and the rulings"
+    }
+   ]
   },
   {
    "text": "> Carried verbatim from root `AGENTS.md` § Operator Doctrine on 2026-09-17 (GHI #921); the corpus `.gzkit/corpus/AGENTS.md.jsonl` keeps the ruling's history.",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "> Carried verbatim from root `AGENTS.md` § Operator Doctrine on 2026-09-17 (GHI #921); the corpus `.gzkit/corpus/AGENTS.md.jsonl` keeps the ruling's history.",
+     "class": "structure",
+     "explains": null,
+     "reason": "provenance pointer"
+    }
+   ]
   },
   {
    "text": "## When to Use",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "## When to Use",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "- After exiting plan mode for an OBPI (plan approved, ready to execute)",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-043",
+     "quote": "- After exiting plan mode for an OBPI (plan approved, ready to execute)",
+     "applies_at": [
+      "invocation"
+     ],
+     "cause": null,
+     "delivered_span": "- After exiting plan mode for an OBPI (plan approved, ready to execute)",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "- When the user says `execute OBPI-X.Y.Z-NN` or `complete OBPI-X.Y.Z-NN`",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-044",
+     "quote": "- When the user says `execute OBPI-X.Y.Z-NN` or `complete OBPI-X.Y.Z-NN`",
+     "applies_at": [
+      "invocation"
+     ],
+     "cause": null,
+     "delivered_span": "- When the user says `execute OBPI-X.Y.Z-NN` or `complete OBPI-X.Y.Z-NN`",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "- When implementation is already done but governance stages (verify, ceremony, or\n  sync) were skipped — use `--from=verify` or `--from=ceremony`",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-045",
+     "quote": "- When implementation is already done but governance stages (verify, ceremony, or\n  sync) were skipped — use `--from=verify` or `--from=ceremony`",
+     "applies_at": [
+      "invocation"
+     ],
+     "cause": null,
+     "delivered_span": "- When implementation is already done but governance stages (verify, ceremony, or\n  sync) were skipped — use `--from=verify` or `--from=ceremony`",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "## Corrections belong to the active OBPI",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "## Corrections belong to the active OBPI",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "Within an operator-initiated OBPI, implementation, test, documentation, and\nevidence corrections necessary to satisfy its approved obligations remain part\nof that OBPI. Do not create a GHI for each adjustment or re-ask permission for\nan authorized correction. A real requirement/allowlist/threat-model amendment\nstill needs the existing operator ruling. A GHI is reserved for a finding that\nneeds an independent work order or disposition, including separate infrastructure\nor post-acceptance defects, or an explicit operator request to file an issue.\nFiling one does not discharge an unmet obligation.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-046",
+     "quote": "Within an operator-initiated OBPI, implementation, test, documentation, and\nevidence corrections necessary to satisfy its approved obligations remain part\nof that OBPI.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "Within an operator-initiated OBPI, implementation, test, documentation, and\nevidence corrections necessary to satisfy its approved obligations remain part\nof that OBPI.",
+     "reworded": null
+    },
+    {
+     "id": "I-047",
+     "quote": "Do not create a GHI for each adjustment or re-ask permission for\nan authorized correction.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "Do not create a GHI for each adjustment or re-ask permission for\nan authorized correction.",
+     "reworded": null
+    },
+    {
+     "id": "I-048",
+     "quote": "A real requirement/allowlist/threat-model amendment\nstill needs the existing operator ruling.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "A real requirement/allowlist/threat-model amendment\nstill needs the existing operator ruling.",
+     "reworded": null
+    },
+    {
+     "id": "I-049",
+     "quote": "A GHI is reserved for a finding that\nneeds an independent work order or disposition, including separate infrastructure\nor post-acceptance defects, or an explicit operator request to file an issue.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "A GHI is reserved for a finding that\nneeds an independent work order or disposition, including separate infrastructure\nor post-acceptance defects, or an explicit operator request to file an issue.",
+     "reworded": null
+    },
+    {
+     "id": "I-050",
+     "quote": "Filing one does not discharge an unmet obligation.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "Filing one does not discharge an unmet obligation.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "Keep a concise `### Change Log` under the brief's existing `## Evidence` section.\nRecord substantive corrections and decisions: the finding identity when one\nexists, its REQ or contract clause, what changed, and the proof/independent-closure\nreferences. Reuse identities; do not invent a parallel finding roster. Log related\nrepairs together, not every edit or command. Link receipts and transcripts rather\nthan reproducing them. Keep approved amendments in their normative sections and\nreference the operator ruling from the log; history cannot amend the contract.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-051",
+     "quote": "Keep a concise `### Change Log` under the brief's existing `## Evidence` section.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "Keep a concise `### Change Log` under the brief's existing `## Evidence` section.",
+     "reworded": null
+    },
+    {
+     "id": "I-052",
+     "quote": "Record substantive corrections and decisions: the finding identity when one\nexists, its REQ or contract clause, what changed, and the proof/independent-closure\nreferences.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "Record substantive corrections and decisions: the finding identity when one\nexists, its REQ or contract clause, what changed, and the proof/independent-closure\nreferences.",
+     "reworded": null
+    },
+    {
+     "id": "I-053",
+     "quote": "Reuse identities; do not invent a parallel finding roster.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "Reuse identities; do not invent a parallel finding roster.",
+     "reworded": null
+    },
+    {
+     "id": "I-054",
+     "quote": "Log related\nrepairs together, not every edit or command.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "Log related\nrepairs together, not every edit or command.",
+     "reworded": null
+    },
+    {
+     "id": "I-055",
+     "quote": "Link receipts and transcripts rather\nthan reproducing them.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "Link receipts and transcripts rather\nthan reproducing them.",
+     "reworded": null
+    },
+    {
+     "id": "I-056",
+     "quote": "Keep approved amendments in their normative sections and\nreference the operator ruling from the log; history cannot amend the contract.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "Keep approved amendments in their normative sections and\nreference the operator ruling from the log; history cannot amend the contract.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "The log is a human-readable index. Existing ledger records continue to govern\nproof, review, closure, and readiness. Optional commentary does not create a new\ndeliverable, and historical prose edits alone do not require another review.\nA concrete counterexample against an obligation or its required proof still does.\nFor existing briefs, add the log during the authorized run; do not retrofit other\nlive or completed briefs. Keep independently routed issue links in Tracked Defects.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "I-057",
+     "quote": "A concrete counterexample against an obligation or its required proof still does.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "A concrete counterexample against an obligation or its required proof still does.",
+     "reworded": null
+    },
+    {
+     "id": "I-058",
+     "quote": "For existing briefs, add the log during the authorized run; do not retrofit other\nlive or completed briefs.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "For existing briefs, add the log during the authorized run; do not retrofit other\nlive or completed briefs.",
+     "reworded": null
+    },
+    {
+     "id": "I-059",
+     "quote": "Keep independently routed issue links in Tracked Defects.",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "Keep independently routed issue links in Tracked Defects.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "The log is a human-readable index. Existing ledger records continue to govern\nproof, review, closure, and readiness. Optional commentary does not create a new\ndeliverable, and historical prose edits alone do not require another review.",
+     "class": "rationale",
+     "explains": "I-051",
+     "reason": "what the log is and is not"
+    }
+   ]
   },
   {
    "text": "## When NOT to Use",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "## When NOT to Use",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "- For planning — use Claude Code plan mode instead",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-060",
+     "quote": "- For planning — use Claude Code plan mode instead",
+     "applies_at": [
+      "invocation"
+     ],
+     "cause": null,
+     "delivered_span": "- For planning — use Claude Code plan mode instead",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "- When no OBPI brief exists for the work",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-061",
+     "quote": "- When no OBPI brief exists for the work",
+     "applies_at": [
+      "invocation"
+     ],
+     "cause": null,
+     "delivered_span": "- When no OBPI brief exists for the work",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "- For independently routed defect repairs: use AGENTS.md § Defect-fix routing and its GHI direct-repair authority. Do not start an OBPI merely to repair a defect. Corrections already owned by the active, operator-initiated OBPI stay in that pipeline regardless of patch size.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-062",
+     "quote": "- For independently routed defect repairs: use AGENTS.md § Defect-fix routing and its GHI direct-repair authority. Do not start an OBPI merely to repair a defect. Corrections already owned by the active, operator-initiated OBPI stay in that pipeline regardless of patch size.",
+     "applies_at": [
+      "invocation"
+     ],
+     "cause": null,
+     "delivered_span": "- For independently routed defect repairs: use AGENTS.md § Defect-fix routing and its GHI direct-repair authority. Do not start an OBPI merely to repair a defect. Corrections already owned by the active, operator-initiated OBPI stay in that pipeline regardless of patch size.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "---",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "---",
+     "class": "structure",
+     "explains": null,
+     "reason": "rule"
+    }
+   ]
   },
   {
    "text": "## Invocation",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "## Invocation",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "```text\n/gz-obpi-pipeline OBPI-0.14.0-05\n/gz-obpi-pipeline OBPI-0.14.0-05 --from=verify\n/gz-obpi-pipeline OBPI-0.14.0-05 --from=ceremony\n```",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-063",
+     "quote": "```text\n/gz-obpi-pipeline OBPI-0.14.0-05\n/gz-obpi-pipeline OBPI-0.14.0-05 --from=verify\n/gz-obpi-pipeline OBPI-0.14.0-05 --from=ceremony\n```",
+     "applies_at": [
+      "invocation"
+     ],
+     "cause": null,
+     "delivered_span": "```text\n/gz-obpi-pipeline OBPI-0.14.0-05\n/gz-obpi-pipeline OBPI-0.14.0-05 --from=verify\n/gz-obpi-pipeline OBPI-0.14.0-05 --from=ceremony\n```",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "Short-form OBPI IDs are accepted: `0.14.0-05` expands to `OBPI-0.14.0-05`.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-064",
+     "quote": "Short-form OBPI IDs are accepted: `0.14.0-05` expands to `OBPI-0.14.0-05`.",
+     "applies_at": [
+      "invocation"
+     ],
+     "cause": null,
+     "delivered_span": "Short-form OBPI IDs are accepted: `0.14.0-05` expands to `OBPI-0.14.0-05`.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "### `--from` Flag",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "### `--from` Flag",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "| Flag | Stages Run | Use Case |",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "| Flag | Stages Run | Use Case |",
+     "class": "structure",
+     "explains": null,
+     "reason": "table header"
+    }
+   ]
   },
   {
    "text": "|------|------------|----------|",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "|------|------------|----------|",
+     "class": "structure",
+     "explains": null,
+     "reason": "table separator"
+    }
+   ]
   },
   {
    "text": "| *(none)* | 1 → 2 → 3 → 4 → 5 | Full post-plan execution |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-065",
+     "quote": "| *(none)* | 1 → 2 → 3 → 4 → 5 | Full post-plan execution |",
+     "applies_at": [
+      "invocation"
+     ],
+     "cause": null,
+     "delivered_span": "| *(none)* | 1 → 2 → 3 → 4 → 5 | Full post-plan execution |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| `--from=verify` | 1 → 3 → 4 → 5 | Already implemented, need governance |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-066",
+     "quote": "| `--from=verify` | 1 → 3 → 4 → 5 | Already implemented, need governance |",
+     "applies_at": [
+      "invocation"
+     ],
+     "cause": null,
+     "delivered_span": "| `--from=verify` | 1 → 3 → 4 → 5 | Already implemented, need governance |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| `--from=ceremony` | 1 → 4 → 5 | Already verified, need attestation + sync |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-067",
+     "quote": "| `--from=ceremony` | 1 → 4 → 5 | Already verified, need attestation + sync |",
+     "applies_at": [
+      "invocation"
+     ],
+     "cause": null,
+     "delivered_span": "| `--from=ceremony` | 1 → 4 → 5 | Already verified, need attestation + sync |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "Stage 1 always runs — context is needed for ceremony and sync regardless of entry point.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-068",
+     "quote": "Stage 1 always runs — context is needed for ceremony and sync regardless of entry point.",
+     "applies_at": [
+      "invocation"
+     ],
+     "cause": null,
+     "delivered_span": "Stage 1 always runs — context is needed for ceremony and sync regardless of entry point.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "---",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "---",
+     "class": "structure",
+     "explains": null,
+     "reason": "rule"
+    }
+   ]
   },
   {
    "text": "## Pipeline Stages",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "## Pipeline Stages",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "The pipeline executes 5 stages sequentially. **Stage 4 behavior depends on execution mode** — all other stages are autonomous.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-069",
+     "quote": "The pipeline executes 5 stages sequentially. **Stage 4 behavior depends on execution mode** — all other stages are autonomous.",
+     "applies_at": [
+      "invocation",
+      "stage1",
+      "stage2",
+      "stage3",
+      "stage4",
+      "stage5"
+     ],
+     "cause": "ADR-0.0.36",
+     "delivered_span": "The pipeline executes 5 stages sequentially. **Stage 4 behavior depends on execution mode** — all other stages are autonomous.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "```text\n┌──────────────────────────────────────────────────────────────┐\n│  Stage 1: LOAD CONTEXT       (autonomous)                    │\n│  Stage 2: IMPLEMENT          (autonomous)                    │\n│  ├─ DO NOT STOP HERE. Proceed to Stage 3.                    │\n│  Stage 3: VERIFY             (autonomous)                    │\n│  ├─ DO NOT STOP HERE. Proceed to Stage 4.                    │\n│  Stage 4: PRESENT EVIDENCE   (human gate — universal)        │\n│  ├─ WAIT for human attestation, then Stage 5.                │\n│  Stage 5: SYNC AND ACCOUNT   (autonomous)                   │\n│  └─ Pipeline complete. NOW you may report status.            │\n└──────────────────────────────────────────────────────────────┘\n\nStage 4 = HUMAN GATE (wait for attestation) — universal per ADR-0.0.36\n```",
-   "controls": [],
+   "controls": [
+    {
+     "id": "I-070",
+     "quote": "```text\n┌──────────────────────────────────────────────────────────────┐\n│  Stage 1: LOAD CONTEXT       (autonomous)                    │\n│  Stage 2: IMPLEMENT          (autonomous)                    │\n│  ├─ DO NOT STOP HERE. Proceed to Stage 3.                    │\n│  Stage 3: VERIFY             (autonomous)                    │\n│  ├─ DO NOT STOP HERE. Proceed to Stage 4.                    │\n│  Stage 4: PRESENT EVIDENCE   (human gate — universal)        │\n│  ├─ WAIT for human attestation, then Stage 5.                │\n│  Stage 5: SYNC AND ACCOUNT   (autonomous)                   │\n│  └─ Pipeline complete. NOW you may report status.            │\n└──────────────────────────────────────────────────────────────┘\n\nStage 4 = HUMAN GATE (wait for attestation) — universal per ADR-0.0.36\n```",
+     "applies_at": [
+      "invocation",
+      "stage1",
+      "stage2",
+      "stage3",
+      "stage4",
+      "stage5"
+     ],
+     "cause": "ADR-0.0.36",
+     "delivered_span": "```text\n┌──────────────────────────────────────────────────────────────┐\n│  Stage 1: LOAD CONTEXT       (autonomous)                    │\n│  Stage 2: IMPLEMENT          (autonomous)                    │\n│  ├─ DO NOT STOP HERE. Proceed to Stage 3.                    │\n│  Stage 3: VERIFY             (autonomous)                    │\n│  ├─ DO NOT STOP HERE. Proceed to Stage 4.                    │\n│  Stage 4: PRESENT EVIDENCE   (human gate — universal)        │\n│  ├─ WAIT for human attestation, then Stage 5.                │\n│  Stage 5: SYNC AND ACCOUNT   (autonomous)                   │\n│  └─ Pipeline complete. NOW you may report status.            │\n└──────────────────────────────────────────────────────────────┘\n\nStage 4 = HUMAN GATE (wait for attestation) — universal per ADR-0.0.36\n```",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
