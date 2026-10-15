@@ -136,6 +136,11 @@
       "owner": "gzkit/guard_canary.py",
       "kind": "code",
       "purpose": "Reviewed guard mutation canaries: one mutant bound by hash to each registered enforcement claim, killed on an isolated copy of the tree by a designated test (GHI #1154 item 5)."
+    },
+    "obpi_pipeline_control_inventory.json": {
+      "owner": "gzkit/governance/pipeline_control_inventory.py",
+      "kind": "code",
+      "purpose": "The control inventory of the gz-obpi-pipeline skill body: the partition the checker verifies before any text leaves the skill (OBPI-0.35.0-17)."
     }
   }
 }

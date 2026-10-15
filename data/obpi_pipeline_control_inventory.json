@@ -1,0 +1,2369 @@
+{
+ "_doc": "The control inventory of the gz-obpi-pipeline skill body (OBPI-0.35.0-17 § Control Inventory Contract). A complete partition of the pinned baseline body into blocks; every meaningful character of every block lies inside a control quote or a non-control quote. Read by gzkit.governance.pipeline_control_inventory, whose checker is pure and total. Authored under the harbor pilotage of 2026-10-15; mapping proceeds stage by stage and the committed file always reproduces the pinned body.",
+ "citation": "docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-17-stage-procedure-served-by-runtime.md § Control Inventory Contract (operator ruling 2026-10-04, Q4 and Q6); docs/governance/harbor-pilotage-candidate-2026-10-15.md § Mandate item 5",
+ "baseline": {
+  "path": ".gzkit/skills/gz-obpi-pipeline/SKILL.md",
+  "commit": "072317673",
+  "skill_version": "6.67.0",
+  "body_sha256": "fe97fe3139282b0ceec5b11866e97efad11761d8e35a5e4977c84f3d6b388367"
+ },
+ "extracted_by": "claude-fable-5-1 session 4fd13b45-724e-4433-ab23-fd6c5df2b932",
+ "mapped_by": "claude-fable-5-1 session 4fd13b45-724e-4433-ab23-fd6c5df2b932",
+ "blocks": [
+  {
+   "text": "# gz-obpi-pipeline",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Post-plan execution pipeline: implement the approved plan, verify, present evidence, and sync.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Planning happens in Claude Code's native plan mode. This pipeline picks up **after** the plan is approved and enforces the governance stages that get lost in freeform execution.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "The canonical runtime launch surface is `uv run gz obpi pipeline`. The CLI\nruntime, generated hook surfaces, and reminder messages share the same\nruntime engine in `src/gzkit/pipeline_runtime.py`. This skill remains the\nwrapper/operator ritual around that runtime rather than a second stage engine.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Durable acceptance (GHI #985).** The existing stages share the ledger-backed\n`gz obpi acceptance` contract: canonical obligations, executed proof, scoped\nindependent reviews, and explicit finding closure. Read\n`docs/governance/acceptance-obligations.md` and\n`docs/user/manpages/obpi-acceptance.md` before producing or importing these records.\nThis replaces authored standing-verdict lines as the acceptance authority;\nhistorical verdicts remain unchanged. It does not authorize starting an OBPI:\nthe operator initiates this pipeline, and GHI corrective work retains its direct route.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "## Persona",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Active driver:** `pipeline-orchestrator` — read `.gzkit/personas/pipeline-orchestrator.md` and adopt its behavioral identity before executing this skill. Stage discipline, ceremony completion, and evidence anchoring are not rules to follow — they are who you are when running this pipeline.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "## Persona Dispatch",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "The pipeline dispatches four subagent personas across its stages. Stage-2 implementer/spec-reviewer/quality-reviewer dispatch is documented procedurally below (§ Stage 2); the Stage-4 narrator dispatch is declared here:",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| Persona | Function in this ceremony | Invoked at |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "|---|---|---|",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| `implementer` | Methodical, test-first code authoring per the approved plan; one task at a time; complete units (imports + usage + tests + docs as one edit) | Stage 2 step c–g (see § Stage 2 for dispatch mechanics) |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| `spec-reviewer` | Independent requirement-tracing against the brief's `## Requirements (FAIL-CLOSED)` list; each REQ must map to implementation and test. **Cannot execute** — reviews by reading (GHI #941, #968) | Stage 2 step h.i–viii (two-stage review) |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| `quality-reviewer` | Independent architectural assessment: SOLID, size-discipline, maintainability of the produced diff. **Cannot execute** — reviews by reading (GHI #941, #968) | Stage 2 step h.i–viii (two-stage review) |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| `narrator` | Composes the Stage 4 evidence packet in operator-value framing — value narrative, key proof, evidence table, REQ coverage rendered for the human's attestation decision | Stage 4 (Present Evidence) — see § Stage 4 |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "The mechanical attestation that these dispatches occurred was scoped by `ADR-pool.obpi-pipeline-dispatch-attestation` Target Scopes #5/#6. That ADR is **Superseded** (`absorbed_into: ADR-0.0.73`, itself Validated 9/9), so there is no promotion pending and nothing arrives from one — the absorption delivered an absorption-marker audit, and that ADR's own § Notes place the receipt machinery (ledger events, bail-to-inline gates, validator scopes) in \"a future feature-kind ADR work surface\" that is not yet authored (GHI #846). **Stage-2 dispatch IS attestable today**: record each one with `uv run gz obpi dispatch <OBPI-ID> --role <Role> --model <tier>`, and `gz obpi precomplete` fails closed on a silent single-driver run (GHI #845). Credit is never inferred. The Stage-4 narrator dispatch has no channel yet.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Persona doctrine reference: ADR-0.0.11-persona-driven-agent-identity-frames (Validated). Runtime mapping: `src/gzkit/pipeline_dispatch.py` (`ROLE_PERSONA_MAP`).",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "---",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "## The Iron Law",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "```\nTHE PIPELINE IS NOT COMPLETE UNTIL STAGE 5 FINISHES.\n```",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Every stage flows into the next. No \"stop and summarize\" between stages. No pause except the Stage 4 human attestation in Normal mode — and that pause comes only **after** Step 4b (the independent adversary) has run and its verdict is on the table. Soliciting attestation with Step 4b skipped is not a valid pause; it is a gate bypass. If you have not reached the end of Stage 5, you are not done — and violating the spirit of this rule is violating the rule. One other stop is legitimate: when Stage 4's round bound is reached or a round repeats the prior round's root, record `gz obpi block` and put the decision to the operator (§ Stage 4 — The review window, the bound, and the exit). That is the pipeline working, not a premature summary.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "### Rationalization Prevention",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "These thoughts mean STOP — you are about to break the pipeline:",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| Thought | Reality |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "|---------|---------|",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| \"Implementation/tests done, let me summarize\" | You are between stages. The pipeline runs to Stage 5. Proceed. |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| \"No plan receipt exists — the brief is clear enough to skip planning\" | The plan-audit handoff is a governance checkpoint. Invoke `/gz-plan-audit <OBPI-ID>` in this same turn (see § The Plan-Mode Gate); do not end the turn to ask permission. |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| \"The hook blocked me, I'll work around it\" | Hook blocks are signals. Diagnose the cause. NEVER create marker files manually to bypass. |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| \"`gz obpi complete` needs a TTY, so I'll ask the operator to run it themselves\" | No. There is no TTY gate. A plain non-TTY `uv run gz obpi complete ... --attestation-text \"<operator's verbatim attestation>\"` call completes the brief for every lane / kind / sensitivity. The operator already attested in Stage 4 — relay that phrase, never hand the invocation back. |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| \"The operator said `attest completed` — maybe they want me to explain what to do next\" | No. `attest completed` IS the attestation. Run `gz obpi complete` immediately with that phrase (enriched per § Attestation) in `--attestation-text`. Do not produce runbook-style instructions for the operator to execute. |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| \"My Step 4a evidence is green — tests pass, REQs covered — so I can present it and await attestation\" | STOP. Green-on-your-own-evidence is the EXACT state Step 4b exists to distrust. You authored that evidence; you are the GHI #643 fabrication surface. You may NOT solicit attestation until applicable independent approval and closure have been imported for the current proof claims. Confidence from the authoring agent is worth zero at this gate. |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| \"Step 4b is probably overkill for this small/authoring-only/obviously-correct OBPI\" | Step 4b is expected on every lane, size and kind, and `gz obpi complete` refuses on every lane until the acceptance record holds a current independent adversarial review (`acceptance_store.completion_review`, GHI #985). \"Obviously correct\" is the precise feeling that precedes a hollow-test or fabricated-evidence skip. Dispatch the adversary. You are not the exception. |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| \"I'll present Step 4a now and run the adversary after the operator responds / in the next turn\" | Sequence violation. The adversary runs BEFORE attestation, not after — the operator attests holding the adversary's verdict. Presenting 4a as the terminal step of the turn, with 4b deferred, is the skip this gate forbids. Dispatch any missing required review before soliciting attestation; retain already applicable imported review. |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| \"An independent Claude subagent is fine for 4b — I don't need Codex\" | Tier-order bypass (GHI #678). A Claude validating Claude shares this agent's blind spots — the exact failure Step 4b exists to break. Codex (tier 1) is REQUIRED first; tier 2 is permitted ONLY after a checked `ready: false`. Run `codex:setup`; if `ready: true`, the Claude subagent is forbidden. \"It was convenient\" is not a fallback reason. |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| \"The adversary is there to find problems, so a round that confirms the feature works is a soft round\" | Inverted. A second model CONFIRMING the first model's implementation is correct is the entire point of Step 4b; probing is how that confirmation is earned. A round that only lists what it broke, and never demonstrates the feature doing its job, has not done the job. |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| \"The adversary refuted again, so I'll fix these findings and re-run\" | Check its `Weakest point` against the previous round FIRST. If it names the same root, another fix cycle surfaces it one layer deeper — that is three rounds and ~9 hours in the measured case. Stop and put the design to the operator. |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| \"I'll tell the adversary to REFUTE the claim — that's what adversarial means\" | It is not, and this exact wording cost OBPI-0.35.0-04 six rounds. A model told \"your job is to REFUTE this, not to confirm it\" will escalate until something falls, and its best available outcome is \"I could not refute it\" — absence of evidence, never confirmation. Prompt for independent confirmation, with probing as the method. |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| \"This is a security property, so the claim should be absolute\" | An absolute claim cannot be refuted in bounded time: the adversary escalates the attacker until something falls. Declare the threat model in the brief FIRST, state it in the prompt, and forbid out-of-scope findings — otherwise the gate never converges. |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| \"The adversary found something, so the OBPI cannot pass\" | Apply the September 5 independent-closure rule below: every finding against the agreed requirements or their required proof needs a disposition and independent closure. Severity alone does not clear it. Track independent discoveries without silently making them acceptance prerequisites; never dismiss a relevant finding merely because it arose in an auxiliary audit. |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| \"The round refuted, but I fixed everything it found — I'll complete and explain the fixes in `--adversary-resolution`\" | **Refused, and a resolution string does not change that (GHI #960).** *\"refuted is an outcome, but it is an input into if(4a && 4b) pass; else: loop\"* (operator, 2026-09-04). Execute proof for the repaired obligation and import explicit independent closure. The current acceptance records determine readiness; preserve the original refutation as history. |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| \"The block says refuted can't complete, so I'll pass `not-refuted` since the findings are fixed anyway\" | A caller-supplied word cannot close a finding. Import the independent review's actual executed output with its original finding IDs and current proof IDs. `gz obpi acceptance ... status --stage stage4` derives readiness; historical verdicts remain unchanged. |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "### The Plan-Mode Gate",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**No plan receipt → no implementation.** If Stage 1 finds no `.plan-audit-receipt-<OBPI-ID>.json` (or the existing receipt's `obpi_id` does not match this OBPI) and the pipeline was invoked without `--from`, you MUST produce a canonical-name plan and a fresh PASS receipt before touching any source file.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**The mechanical action is: invoke `/gz-plan-audit <OBPI-ID>` in this same turn.** The `gz-plan-audit` skill authors a plan file in the project-local `.claude/plans/` directory under a canonical name and writes the receipt directly. After the receipt is in place, Stage 2 begins.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Why `/gz-plan-audit` and not `EnterPlanMode` first (GHI #288).** Claude Code's native plan mode pins the plan file to a harness-generated random-name path under `~/.claude/plans/<random>.md` and forbids edits to any other path while plan mode is active. The `plan-audit-gate.py` PreToolUse hook scans both `.claude/plans/` and `~/.claude/plans/` and self-runs `gz plan audit` on `ExitPlanMode`, but a first-run OBPI with no canonical-name plan in the project-local dir can deadlock the harness — the hook fails closed and the agent cannot satisfy both surfaces simultaneously. Routing through `/gz-plan-audit` first sidesteps the deadlock by producing the canonical artifact in the project-local dir up front.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**If you choose to also use native plan mode** (for example, to compose the plan interactively with the operator), enter plan mode *after* `/gz-plan-audit` has written a PASS receipt, and re-run `/gz-plan-audit <OBPI-ID>` after `ExitPlanMode` to refresh the receipt against the harness-named plan. The `plan-audit-gate` hook will then accept the exit because a valid receipt newer than the plan file exists.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Stopping the turn to ask \"should I run plan-audit?\" is a violation, not compliance.** The skill's \"STOP\" language directs you to stop *making source edits* and *redirect to plan-audit*, not to stop your turn and solicit permission. If you catch yourself composing a message that says \"Required next step: invoke gz-plan-audit\" or \"Want me to proceed with plan-audit on the next turn?\" — you are rationalizing. Call `/gz-plan-audit <OBPI-ID>` in this same turn instead.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "This is not optional. This is not something you can \"derive informally.\" The plan-audit handoff exists because agents consistently skip planning when allowed to. You are not the exception.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "---",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "## Work selection (operator rulings, verbatim canon)",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "- The active docs/governance/*-campaign-*.md plan governs work selection; handoffs and triage advise. Select its topmost unchecked item whose gate is met, subject to ascending feature-ADR order and operator-only OBPI initiation. Campaign amendments require operator ratification; ADR, OBPI, and GHI repair remain the work mechanisms.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "- Work feature ADRs in ascending semver order: the lowest version with unlanded OBPIs is in flight. Do not work, author, or recommend a higher feature ADR ahead of it. The campaign selects work but cannot override that order. If campaign sequencing conflicts, semver governs; surface the conflict to the operator rather than silently resolving it. “One feature at a time” does not authorize swapping the order. An ADR in flight may be revised to take more OBPIs. The revision updates the document (an Intent amendment, a Decision item, a checklist item and the scorecard baseline) and the briefs table in the same change. A Validated ADR is not revised: scope missed from one enters the in-flight ADR as a repair assignment that cites the obligation it repairs. An item off the ADR's theme is labelled as such in the Intent amendment. The (m)ADR is a stopgap: a release-increment bucket, meant to be thematically cohesive. Its successor is a feature bundle between an enhancement proposal and a feature specification. Names are chosen later. This replaces the exception of 2026-09-29 (GHI #871), by which a correction to a Validated ADR took the next unallocated feature semver and could be worked ahead of the in-flight ADR; that route is retired (operator rulings 2026-10-04: 'the new loosening law here is we need to be able to revise an adr to allow for more obpis - the document and briefs table gets updated'; 'A, in-flight only'; the wording and the retirement, each 'A').",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "> Carried verbatim from root `AGENTS.md` § Operator Doctrine on 2026-09-17 (GHI #921); the corpus `.gzkit/corpus/AGENTS.md.jsonl` keeps the ruling's history.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "## When to Use",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "- After exiting plan mode for an OBPI (plan approved, ready to execute)",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "- When the user says `execute OBPI-X.Y.Z-NN` or `complete OBPI-X.Y.Z-NN`",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "- When implementation is already done but governance stages (verify, ceremony, or\n  sync) were skipped — use `--from=verify` or `--from=ceremony`",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "## Corrections belong to the active OBPI",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Within an operator-initiated OBPI, implementation, test, documentation, and\nevidence corrections necessary to satisfy its approved obligations remain part\nof that OBPI. Do not create a GHI for each adjustment or re-ask permission for\nan authorized correction. A real requirement/allowlist/threat-model amendment\nstill needs the existing operator ruling. A GHI is reserved for a finding that\nneeds an independent work order or disposition, including separate infrastructure\nor post-acceptance defects, or an explicit operator request to file an issue.\nFiling one does not discharge an unmet obligation.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Keep a concise `### Change Log` under the brief's existing `## Evidence` section.\nRecord substantive corrections and decisions: the finding identity when one\nexists, its REQ or contract clause, what changed, and the proof/independent-closure\nreferences. Reuse identities; do not invent a parallel finding roster. Log related\nrepairs together, not every edit or command. Link receipts and transcripts rather\nthan reproducing them. Keep approved amendments in their normative sections and\nreference the operator ruling from the log; history cannot amend the contract.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "The log is a human-readable index. Existing ledger records continue to govern\nproof, review, closure, and readiness. Optional commentary does not create a new\ndeliverable, and historical prose edits alone do not require another review.\nA concrete counterexample against an obligation or its required proof still does.\nFor existing briefs, add the log during the authorized run; do not retrofit other\nlive or completed briefs. Keep independently routed issue links in Tracked Defects.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "## When NOT to Use",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "- For planning — use Claude Code plan mode instead",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "- When no OBPI brief exists for the work",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "- For independently routed defect repairs: use AGENTS.md § Defect-fix routing and its GHI direct-repair authority. Do not start an OBPI merely to repair a defect. Corrections already owned by the active, operator-initiated OBPI stay in that pipeline regardless of patch size.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "---",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "## Invocation",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "```text\n/gz-obpi-pipeline OBPI-0.14.0-05\n/gz-obpi-pipeline OBPI-0.14.0-05 --from=verify\n/gz-obpi-pipeline OBPI-0.14.0-05 --from=ceremony\n```",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Short-form OBPI IDs are accepted: `0.14.0-05` expands to `OBPI-0.14.0-05`.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "### `--from` Flag",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| Flag | Stages Run | Use Case |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "|------|------------|----------|",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| *(none)* | 1 → 2 → 3 → 4 → 5 | Full post-plan execution |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| `--from=verify` | 1 → 3 → 4 → 5 | Already implemented, need governance |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| `--from=ceremony` | 1 → 4 → 5 | Already verified, need attestation + sync |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Stage 1 always runs — context is needed for ceremony and sync regardless of entry point.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "---",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "## Pipeline Stages",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "The pipeline executes 5 stages sequentially. **Stage 4 behavior depends on execution mode** — all other stages are autonomous.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "```text\n┌──────────────────────────────────────────────────────────────┐\n│  Stage 1: LOAD CONTEXT       (autonomous)                    │\n│  Stage 2: IMPLEMENT          (autonomous)                    │\n│  ├─ DO NOT STOP HERE. Proceed to Stage 3.                    │\n│  Stage 3: VERIFY             (autonomous)                    │\n│  ├─ DO NOT STOP HERE. Proceed to Stage 4.                    │\n│  Stage 4: PRESENT EVIDENCE   (human gate — universal)        │\n│  ├─ WAIT for human attestation, then Stage 5.                │\n│  Stage 5: SYNC AND ACCOUNT   (autonomous)                   │\n│  └─ Pipeline complete. NOW you may report status.            │\n└──────────────────────────────────────────────────────────────┘\n\nStage 4 = HUMAN GATE (wait for attestation) — universal per ADR-0.0.36\n```",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "### Stage 1: Load Context",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "1. Read this OBPI's plan-audit receipt, `.claude/plans/.plan-audit-receipt-<OBPI-ID>.json`, to find the approved plan (the bare `.plan-audit-receipt.json` is the legacy name, accepted only as a fallback)\n   - If receipt exists and OBPI matches: load the plan file from `.claude/plans/`, extract implementation steps\n   - If receipt verdict is `FAIL`: **abort** — plan did not pass audit\n   - If no receipt found AND `--from` flag is NOT set: **STOP — invoke `/gz-plan-audit <OBPI-ID>` in this same turn** (see § The Plan-Mode Gate for why this comes before native plan mode — GHI #288). The skill authors a canonical-name plan in `.claude/plans/` and writes the receipt directly. Only resume the pipeline after the plan-audit receipt is written. Do NOT \"derive tasks informally\" or \"proceed without a plan.\" The plan-audit handoff is a governance checkpoint, not an optimization.\n   - If no receipt found AND `--from=verify` or `--from=ceremony`: proceed (the user is explicitly resuming a partially-completed pipeline where implementation already happened)",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "2. Locate the OBPI brief under:\n   - `docs/design/adr/**/obpis/OBPI-{id}-*.md`\n   - `docs/design/adr/**/briefs/OBPI-{id}-*.md`",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "3. **Resolve the full OBPI slug** from the brief's frontmatter `id` field (e.g.\n   `OBPI-0.0.12-02-implementer-agent-persona`). Use this full slug for ALL\n   subsequent `gz obpi` commands (`reconcile`, `complete`, `lock claim`,\n   `lock release`). The short form (e.g. `OBPI-0.0.12-02`) may fail ledger\n   lookup. Set a variable like `obpi_slug` at this step and reuse it throughout.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "5. Extract: objective, requirements, allowed/denied paths, acceptance criteria, lane, verification commands",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "6. Identify the parent ADR and inherit its lane and execution constraints.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "7. All OBPIs require human attestation — universal per ADR-0.0.36.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "8. Check for existing handoffs and resume context when present:\n   - `uv run gz handoff resume --adr <ADR-ID>` — handoffs live in `.gzkit/handoffs/`; the per-ADR `handoffs/` folders were retired (ADR-0.0.65)",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "9. Claim OBPI lock: `uv run gz obpi lock claim {OBPI-SLUG}` (use the full slug from step 3)",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "10. Create pipeline markers. **Preferred path: invoke the runtime to author the marker.**\n    The runtime writes the canonical marker shape (including a ledger-witnessed\n    `nonce` the validator binds against) — hand-authored markers are a maintenance\n    surface that drifts (GHI #586).",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "    - Preferred: `uv run gz obpi pipeline {OBPI-SLUG}` (the runtime writes\n      `.claude/plans/.pipeline-active-{OBPI-SLUG}.json` and the legacy\n      `.pipeline-active.json` with the canonical schema).\n    - Hand-author fallback (only when the runtime cannot be invoked):\n      - `.claude/plans/.pipeline-active-{OBPI-ID}.json`\n      - `.claude/plans/.pipeline-active.json` as a legacy compatibility marker\n        for the same OBPI\n      - Marker payload MUST include `obpi_id`, `parent_adr`, `lane`, `entry`,\n        `execution_mode`, `current_stage`, `started_at`, `updated_at`,\n        `receipt_state`, `blockers`, `required_human_action`, `next_command`,\n        and `resume_point`.\n      - `current_stage` MUST be one of the canonical enum values the validator\n        accepts (`adr_audit.py` `_PIPELINE_MARKER_VALID_STAGES`):\n        `implement` | `verify` | `ceremony` | `sync` | `audit`. Prose stage\n        headings like `\"Stage 2: Implement\"` are **rejected** by the validator\n        and are not the same string as the enum. Set `current_stage` to the\n        enum value matching the lifecycle step in progress.\n    - This unblocks the pipeline-gate PreToolUse hook for src/ and tests/ writes.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "11. Apply the brief allowlist as the working scope contract before any edits.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "12. Initialize the acceptance population once:\n    `uv run gz obpi acceptance {OBPI-SLUG} init --author {implementing-session-id}`.\n    Reuse the recorded author and obligations when resuming. Initialization reads\n    the canonical brief and parent ADR; it cannot erase history or silently\n    replace the obligation roster. `--from` does not waive current proof or review.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "> **In-flight status is advanced AT LAUNCH (GHI #646, corrected by GHI #992).**\n> Launching the pipeline emits `pipeline_launched`, which IS the `in_progress`\n> transition — `_derive_obpi_runtime_state` resolves a launched OBPI to\n> `in_progress`, and `status_vocab` maps that to frontmatter `Active`. Layer-1\n> mirrors that truth **inside the launch transaction**: `obpi_pipeline_cmd`\n> calls `_advance_brief_status_on_launch` immediately after appending the\n> event.\n>\n> **Derived never meant deferred.** Operator ruling 2026-09-11, verbatim: *\"if\n> we start work on a obpi with draft status, its not draft.\"* Until #992 the\n> flip waited on a human typing `uv run gz frontmatter reconcile`, so a\n> launched brief asserted `Draft` for the entire in-flight window and the\n> pre-push `gz check` blocked every push on a frontmatter mismatch. The only\n> mandatory catch was `gz obpi precomplete`'s `_check_reconcile_idempotent` —\n> self-described *\"Reactive triage at Stage 5\"*, the far end of the pipeline\n> from where the drift is created.\n>\n> Do not hand-write the lifecycle field here. The advance routes through\n> `guarded_obpi_status_write`, so the terminal-clobber verdict stays in the one\n> monitor ADR-0.31.0 Decision item 4 declares — a terminal brief is refused,\n> and a re-launch is a no-op (mirrors how completion is surfaced, not authored,\n> by the pipeline).",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Abort if:** brief not found, brief already `Completed`, or plan receipt verdict is `FAIL`.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**On any abort:** Surrender the lock per [Abort surrender](#abort-surrender), then run `/gz-session-handoff` to preserve context.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "#### Stage 1→2 Justification Gate",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Before Stage 2 begins, check the approved plan against the brief for three conditions. Do not rate your confidence: a self-reported figure has no basis. This block supersedes the trigger it was authored with — Prime Directive invariant 11's \"less than 90% sure\" — which the operator retired on 2026-08-17 (`AGENTS.md` § Operator Doctrine: \"Stop and ask the operator in case of uncertainty… Supersedes the prior '90% convinced/confident' framing\").",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Run the walkthrough when any of these holds:",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "1. The brief's scope boundary is ambiguous: an allowed or denied path the plan touches is unclear, or the plan reaches a surface the brief does not name.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "2. The plan leaves an integration point unresolved: a caller, consumer, validator or mirror it has not named.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "3. The plan relies on a surface you have not read, only searched or inferred.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "```bash\nuv run -m gzkit justify <current-OBPI-id> --save\n```",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "The walkthrough renders an 8-section scaffold grounded in gathered evidence (matching rules, ledger events, recent commits, related anchors, regression taxonomy). Fill each `_[To be filled]_` block per the `gz-justify` skill's Procedure — no fabrication, every citation grounded in the gathered evidence. Then validate the filled artifact via `uv run -m gzkit justify validate <file>` and cite the artifact path in the subsequent implementer prompts (Stage 2) and in the Key Proof evidence (Stage 4).",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "The walkthrough takes 3-10 minutes on a clear anchor and 15-30 minutes on an ambiguous one; both are an order of magnitude cheaper than a discarded Stage 2 pass.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "When none of the three holds, proceed to Stage 2 and say so in one line naming what you read. When one holds and the walkthrough does not resolve it, stop and ask the operator.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "### Stage 2: Implement (skipped by `--from=verify` or `--from=ceremony`)",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "#### Red-Green-Refactor discipline (binding — applies to BOTH modes below)",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Stage 2 is Test-Driven Development, not test-after. The law is absolute:\n**no production code without a failing test first**, and the red must be a\n**verified** red. This binds the inline path AND every dispatched implementer.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "The per-behavior cycle (never batch all tests then implement the whole unit):",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "1. **RED — write ONE minimal test** for the next single behavior (one behavior\n   per test, descriptive name, real code usage, minimal mocking).",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "2. **Watch it fail — MANDATORY, never skip.** Run the test and confirm all three:\n   - it **FAILS** (an assertion fires) — *not* errors, *not* passes;\n   - the **failure message matches the expected behavior** (e.g. `SystemExit not\n     raised`, `marker not active`, `0 != 1`), not an unrelated message;\n   - it fails because **the feature is missing**, not because of a typo or a\n     missing import.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "   *\"If you didn't watch the test fail, you don't know if it tests the right\n   thing.\"*",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "3. **GREEN — write the simplest code** that makes that one test pass.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "4. **REFACTOR** — clean up (duplication, names, helpers) with the bar staying green.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "5. Repeat for the next behavior.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Execute acceptance proof before review (GHI #985).** For the current task's\nBEHAVIOR obligations, write a proof specification naming its production source,\nfull covering test IDs, and exact behavioral substitutions; run\n`uv run gz obpi acceptance {OBPI-SLUG} prove --spec {controls.json}`. The command\nobserves the baseline, activated controls, nominated assertion failures, source\nrestoration, and restored green run. A runtime error or skipped selector cannot\nearn a behavioral kill. SUPPORT and STRUCTURAL-FENCE specifications name only the\nREQ; the command executes their existing canonical proof resolvers. The complete\nschema is in the acceptance manpage. Historical RED evidence remains useful, but\ndoes not substitute for this current execution record.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "The reviewer must still judge whether the oracle and control express the\nrequirement, exercise production behavior, and include legitimate positive cases.\nThe command proves recorded observations, not the semantic adequacy of arbitrary\nassertions. Do not build an all-assertions classifier or count mutations as coverage.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "> **Anti-pattern — the import-error red (the false red).** A first run that\n> ERRORs with `ModuleNotFoundError` / `ImportError` / `AttributeError` because\n> the module or symbol under construction does not exist yet is **not a verified\n> red**. It proves the *module is absent* — it does **not** prove the test's\n> assertion bites the behavior, because no assertion ran. A test that can only\n> fail on a missing import cannot distinguish \"behavior present\" from \"behavior\n> absent\" — the tautological/facade smell gzkit exists to kill. **Recovery:** get\n> to an assertion-level failure first — create the importable skeleton (define\n> the symbol as a no-op stub so the test imports cleanly), then watch each test\n> fail on its OWN assertion for the right reason, *then* implement the behavior.\n> Seeing the assertion-level red is the cheap negative control proving the test\n> is not tautological. Do not report \"RGR followed\" when the only red observed\n> was an import/collection error.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Check for a single-driver declaration first.** If this run is declared single-driver, skip to the [Inline Fallback](#inline-fallback-declared-single-driver) below.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "#### Subagent Dispatch Mode (default)",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "1. **Extract plan tasks** from the approved plan file using `extract_plan_tasks()` patterns (headings or numbered items).",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "2. **Create task list:**\n   - Last task MUST be \"Present OBPI Acceptance Ceremony\" (universal human gate per ADR-0.0.36)",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "3. **Read brief requirements** — extract the `## Requirements (FAIL-CLOSED)` section from the OBPI brief. These are passed to each implementer as scoped context.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "4. **For each plan task** (sequential — one implementer at a time, never parallel):",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "   a. **Classify complexity** based on allowed file count:\n      - 1-2 files → `simple`\n      - 3-5 files → `standard`\n      - 6+ files → `complex`",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "   b. **Select model tier:**\n      - `simple` → `haiku` (fast, economical)\n      - `standard` → `sonnet` (balanced)\n      - `complex` → `opus` (most capable)",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "   c. **Compose implementer prompt** via `compose_implementer_prompt(task, brief_requirements, why=..., project_root=..., extra_context=...)`:\n      - Task description from the plan\n      - Allowed files from the brief allowlist\n      - Test expectations from the brief\n      - Brief requirements (the FAIL-CLOSED list)\n      - `why` and `project_root` are required keyword arguments (GHI #861). The\n        composer emits the `implementer` persona frame from `project_root` and a\n        `### Why` block from `why` — AGENTS.md § Behavior Rules — Always #6 makes\n        the Why unconditional, so omitting it is a `TypeError`, not a thinner prompt.\n      - The Red-Green-Refactor rules, including the `gz arb red` witness, are\n        emitted by the composer and match `.claude/agents/implementer.md` — do not\n        restate them by hand and do not weaken them\n      - **The Red-Green-Refactor discipline above** — instruct the implementer to\n        work one behavior per cycle and to report the *verified* red it watched\n        (the assertion-level failure message), not merely that it wrote tests.\n        A `HandoffResult` claiming RGR whose only red was an import error is a\n        red-verification miss — treat it as a review finding in step h.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "   d. **Dispatch via Agent tool:**\n      ```\n      Agent tool call:\n        subagent_type: \"implementer\"\n        model: <selected tier from step b>\n        prompt: <composed prompt from step c>\n        description: \"Implement task N: <short description>\"\n      ```",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "   e. **Parse HandoffResult** from the subagent output — look for a JSON code block with `status`, `files_changed`, `tests_added`, `concerns` fields.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "   f. **Record dispatch** — run `uv run gz obpi dispatch <OBPI-ID> --role Implementer --model <tier> --task <n>`. This appends a `stage2_dispatch_recorded` event to the ledger, which is what Stage 5 credits; the marker's `dispatch_state` is refreshed only as a cache. The credit therefore SURVIVES `--clear-stale` and a relaunch (GHI #886) — it did not before 2026-08-27, and a compliant 3/3 run lost its whole review record to that sanctioned recovery path. **Credit is never inferred** — `gz obpi precomplete` fails closed on an unrecorded Stage-2 dispatch, and the presence of code proves nothing about who wrote it (GHI #845). If this session genuinely cannot dispatch, declare it instead: `uv run gz obpi dispatch <OBPI-ID> --single-driver --reason \"<why>\"`. Declared single-driver passes Stage 5; silent single-driver does not.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "   g. **Handle result status:**\n      - `DONE` or `DONE_WITH_CONCERNS` → proceed to **two-stage review** (step h)\n      - `NEEDS_CONTEXT` → provide additional context from the brief and redispatch **once**. A second `NEEDS_CONTEXT` is treated as `BLOCKED`.\n      - `BLOCKED` → halt Stage 2, record blocker reason, present to user. **Do not continue to the next task.**",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "   h. **Two-stage review dispatch** (only when implementer returned `DONE` or `DONE_WITH_CONCERNS`):",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "      Use `should_dispatch_review(status)` to gate this step. Skip review entirely for\n      `BLOCKED` or `NEEDS_CONTEXT` results — those tasks did not produce code to review.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "      i. **Select review model** via `select_review_model(complexity)`:\n         - `simple`/`standard` → `sonnet` (reviews always require judgment — never haiku)\n         - `complex` → `opus`",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "      ii. **Compose spec reviewer prompt** via `compose_spec_review_prompt(task, brief_requirements, files_changed, why=..., project_root=..., acceptance_context=...)`:\n         - Includes the task description, brief requirements, and the diff produced\n         - Instructs the reviewer: \"The implementer may be optimistic. Verify everything independently.\"\n         - `why` and `project_root` are required keyword arguments — the composer emits the `spec-reviewer` persona frame and the Why block from them (GHI #861)",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "      iii. **Compose quality reviewer prompt** via `compose_quality_review_prompt(files_changed, test_files, why=..., project_root=..., acceptance_context=...)`:\n         - Includes changed files, test files, and quality criteria (SOLID, coverage, error handling, cross-platform, Pydantic)\n         - The size/complexity criterion is rendered from `.gzkit/rules/complexity-thresholds.json`, never restated as literals (GHI #861)\n         - Findings are scoped by the obligation they affect. A mapped defect\n           blocks regardless of severity; optional style observations stay\n           unmapped and do not create another acceptance requirement.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "         **Evidence handoff (GHI #984):** append the paths to the implementer's\n         observed execution records to BOTH composed prompts before dispatch.\n         Include the relevant requirement, test selector, base/changed revision\n         (and dirty-tree source identity), command, actual result, and failure\n         traceback for any RED or negative-control claim. If missing, obtain the\n         record from the implementer; do not reconstruct it from a summary.\n         Reviewers read the records against the code and contract. A green\n         coverage inventory does not establish semantic adequacy. Check where\n         expected values come from and whether the test exercises production\n         behavior; shared-parser agreement is not independent boundary proof.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "         Supply `acceptance_context` from\n         `uv run gz obpi acceptance {OBPI-SLUG} status --stage stage2 --json`.\n         A blocked status before reviews is expected; its payload contains the\n         canonical obligations, actual proofs, and retained findings. The composer\n         requests one `gzkit.acceptance.review.v1` envelope only; `parse_review_result`\n         derives `ReviewResult` from it (GHI #1095). The reviewer uses actual IDs and digest from\n         that context and explicitly lists `accepted_proof_ids`; the importer\n         assigns the review and receipt IDs. Missing proof is recorded as a\n         mapped `missing-proof` finding with no invented proof or approval ID.\n         Each approved proof carries a `grounds` citation: the file the reviewer\n         read (or the proof's recorded evidence) and an excerpt copied from it.\n         The importer refuses an uncited approval from a reviewer whose grant has\n         no shell or cannot be resolved (no single plain `--agent` persona, or a\n         tool-override flag), and any excerpt that is not where it says (GHI #994). A check\n         the reviewer could not perform stays in `verification_gaps`.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "      iv. **Dispatch both reviewers concurrently through receipted agent execution.**\n         Preserve the selected model, the `spec-reviewer` and `quality-reviewer`\n         personas, their read-only tool grants, and separate contexts. Wrap each\n         actual reviewer invocation in `gz arb step --max-output-chars -1`; do\n         not wrap a command that merely prints previously authored review JSON.\n         Native Claude execution is admitted for these Stage-2 roles. For example,\n         with the composed prompt saved at the named path:",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "         ```bash\n         uv run gz arb step --name specreview --max-output-chars -1 -- \\\n           claude --agent spec-reviewer --model sonnet --print \\\n           'Read /tmp/obpi-spec-review-prompt.md and perform that review.'\n         ```",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "         Use the quality persona and its own prompt for the second invocation.\n         Wait for both, derive each `ReviewResult` with `parse_review_result`, and import each actual\n         ARB run ID with\n         `uv run gz obpi acceptance {OBPI-SLUG} review --receipt {arb-run-id}`.\n         A native Agent-tool summary alone does not supply the required receipt.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "      v. **Record review dispatches** — run `uv run gz obpi dispatch <OBPI-ID> --role SpecReviewer --model <tier> --task <n>` and the same for `--role QualityReviewer`. Partial dispatch is still SINGLE-DRIVER: the reviewers catch what the implementer cannot see in its own work, so recording only the implementer launders the review that never ran. This records one `stage2_dispatch_recorded` ledger event per\n         reviewer, and refreshes the marker's `SubagentDispatchRecord` cache with model, timestamps, and result.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "      vi. **Handle review results** via `handle_review_cycle(state, task_index, spec_result, quality_result, acceptance=...)`:\n         - Both reviewers pass AND current task-scoped Stage-2 acceptance is ready\n           → **advance** to the next task. Obtain that readiness using\n           `status --stage stage2 --req {REQ-ID}` (repeat `--req` for this task's\n           obligations). Scope selects the readiness decision; the full canonical\n           roster and finding history remain retained. Before leaving Stage 2,\n           require unscoped `status --stage stage2` to clear every obligation.\n         - Any mapped acceptance finding remains blocking until an independent\n           closure names its original finding, obligation, and current proof.\n         - Critical finding from either reviewer → **fix** — redispatch the implementer with\n           the finding as additional context, then re-review after the fix\n         - Fix cycles are bounded: maximum 2 fix cycles per task (`MAX_REVIEW_FIX_CYCLES`).\n           After exhausting fix cycles → **blocked** — halt Stage 2 and escalate to user.\n         - When both reviewers find critical issues, combine findings into a single fix dispatch.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "      vii. **Log review concerns** — if `DONE_WITH_CONCERNS` from implementer, pass concerns\n         as additional context to reviewers. Accumulate review findings in dispatch state for\n         the Stage 4 ceremony.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "      viii. **Read `verification_gaps` separately from `findings` (GHI #941).** Reviewers are\n         granted `Read, Glob, Grep` and **cannot execute anything**. Both composers now disclose\n         that grant — read from the agent definition, so it tracks the file rather than a prose\n         claim — and instruct the reviewer to put its tool limitations into\n         `verification_gaps`, never into `findings`.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "         A reviewer capability gap is **not** a defect and never blocks: `review_blocks_advancement` reads\n         `findings`, so a gap kept in its own channel cannot pull a passing review down\n         (incident: GHI #941).",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "         **Do not ask a reviewer to verify by running.** If a check needs execution, run it\n         yourself and hand the reviewer the observed output to check *against the code*. A\n         non-empty `verification_gaps` is a signal to you, not a verdict: it names what this\n         review did not cover, and the coverage is yours to close.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "         **Proving a test can fail is the orchestrator's duty (GHI #968).** Reviewers catch\n         hollow tests by reading; no repo surface can scope execution to reviewers alone. Run\n         `gzkit.mutation_witness.run_mutation_sweep` (GHI #963) and hand over its verdict.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "         Distinguish that limitation from an identified defect in REQUIRED proof:\n         an import failure described as an assertion failure, a test that never\n         calls the required behavior, or an unsupported acceptance claim belongs\n         in `findings`, with its requirement and consequence. Do not demote such\n         a finding because the reviewer also lacks an execution tool.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "5. **Persist dispatch state** after each task completes (success or failure), including review results.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "6. **After all tasks complete:** persist dispatch summary for `gz roles --pipeline` queries.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "> **Labor-subdivision discipline (GHI #590).** The pipeline mints one\n> `seq=01` TASK per REQ as the coarse default bucket. When a REQ's labor was\n> genuinely multi-step, subdivide it — `uv run gz task start --seq next` mints\n> `seq=02`, `seq=03`, … so the attribution matches the work. When every REQ is\n> genuinely one indivisible unit (no labor below the REQ), declare\n> `req_atomic:` in the brief frontmatter with inline per-REQ rationale. Make\n> this call **here**, where the labor happens — an OBPI that reaches Stage 5\n> `seq=01`-only without a `req_atomic:` exemption is blocked fail-closed by the\n> task-envelope chokepoint gate (Stage 5 Step 0 / `gz obpi complete`), so\n> deferring the decision only stalls completion.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Abort if:** Any task returns `BLOCKED` after retry or after exhausting review fix cycles. Surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "#### Inline Fallback (declared single-driver)",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "When the run is declared single-driver, Stage 2 runs entirely in the main session (no Agent tool dispatch):",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "1. Create task list from plan steps (same as above)",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "2. Follow the approved plan step by step",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "3. Keep edits inside the brief allowlist and transaction contract",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "4. Implement each behavior via the **Red-Green-Refactor discipline above**: one\n   minimal test → watch it fail on its assertion for the right reason (not an\n   import error) → simplest code to pass → refactor green. Use `unittest`,\n   `TempDBMixin` for DB, coverage >= 40%. Do not batch all tests then implement.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "5. Run `uv run ruff check . --fix && uv run ruff format .` after code changes",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "6. Run `uv run gz test` after implementation",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "The declaration is the only route to this mode: `uv run gz obpi dispatch {OBPI-SLUG} --single-driver --reason \"<why>\"`\nrecords it on the ledger, and the Stage-5 dispatch verdict reads that event.\n`gz obpi pipeline` has no flag for it (GHI #1166). Declare when the session\ncannot dispatch or the operator has ruled a single-session run. Execute the same\nproof commands and retain mapped findings. Step 4b remains mandatory, and neither\nthe declaration nor an inline implementation can close its own acceptance finding.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Abort if:** Tests fail after 2 fix attempts. Surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**MANDATORY TRANSITION → Stage 3.** Do not summarize. Do not report. Proceed.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "### Stage 3: Verify (skipped by `--from=ceremony`)",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Stage 3 runs two phases: **baseline quality checks** and **REQ-level verification dispatch**.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "#### Phase 1: Baseline Quality Checks",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Run the standard quality checks sequentially (these are always inline, never dispatched). Each baseline command is ARB-wrapped so a green Stage 3 result emits canonical attestation receipts at parity with `AGENTS.md` § Attestation (GHI #317):",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "```bash\n# Always — emits arb-ruff-*, arb-step-typecheck-*, arb-step-unittest-* receipts\nuv run gz arb ruff\nuv run gz arb typecheck\nuv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer\n\n# If Heavy lane (emits arb-step-mkdocs-* and arb-step-behave-* receipts)\nuv run gz arb step --name mkdocs -- uv run mkdocs build --strict\nuv run gz arb step --name behave -- uv run -m behave --tags=@REQ-X.Y.Z-NN-MM,... features/\nuv run gz validate --documents\n```",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Verification exit-code integrity (binding, GHI #589).** NEVER pipe a\nverification command through `tail`/`head`/`grep`/`Select-Object`. A shell pipe\nreports the *last* process's exit code (the filter's — always 0), masking a\nnon-zero unittest/behave/mkdocs exit: a green-looking Stage 3 over a red suite.\nThe harness `Background command … (exit code 0)` notification on a piped command\nis the filter's status, not the verifier's — treat it as unverified. The\nARB receipt records the true `exit_status` (GHI #317): after each `gz arb step`,\nread the emitted `arb-step-*` receipt and confirm `exit_status == 0` before\nadvancing to Stage 4. If you must trim console output for readability, redirect\nto a file (`> out.log 2>&1`) and read the receipt — never `| tail`.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Scope discipline (GHI #160, #185, #420).** At OBPI Stage 3, the\nruntime resolves this OBPI's `@REQ-...` behave tags via\n`resolve_obpi_behave_tags` and scopes the behave invocation to those\ntags. When the OBPI has no @REQ-tagged scenarios, behave is omitted\nfrom Stage 3 entirely — the full `features/` sweep is deferred to ADR\ncloseout (Stage 5 of the parent ADR), where cross-OBPI interactions\nare caught. Commit hooks don't run the suite (`unittest` is `stages: [manual]`);\nthe pre-push `gz check` does, so it isn't bypassed — just not re-run\nsynchronously at every OBPI increment. Heavy-lane BDD runs via\n`gz test --bdd` at ADR closeout.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "If any baseline check fails, attempt fix and re-verify once. If still failing, surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "#### Phase 1b: REQ → @covers Parity Gate (#113)",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Every **BEHAVIOR** REQ defined in the brief MUST be reachable from a `@covers` reference in the test tree. The pipeline does not advance to Stage 4 until parity holds for those REQs.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Proof channels are per-kind (ADR-0.0.59).** SUPPORT REQs are proven by a ledger event plus a structural validator scope; STRUCTURAL-FENCE REQs by a parent-ADR `## Boundary Invariants` entry. Neither carries a `@covers` test. **Never author a unit test merely to make a non-BEHAVIOR REQ appear covered** — that is the exact category error ADR-0.0.59 exists to prohibit (GHI #531 -> #571).",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "```bash\nuv run gz covers {OBPI-SLUG} --json\n```",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Read the JSON output. **If `summary.uncovered_reqs > 0`, parity has failed.** The list of unreachable REQs is in `entries` (each entry with `covered: false`).",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "When parity fails:",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "1. Identify each uncovered REQ.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "2. Add a `@covers REQ-X.Y.Z-NN-MM` reference in the relevant test — either as a decorator (`@covers(\"REQ-X.Y.Z-NN-MM\")`) or in the test docstring (`@covers REQ-X.Y.Z-NN-MM`). Both forms are detected by the canonical scanner (#120).",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "3. Re-run `uv run gz covers {OBPI-SLUG} --json` and confirm `uncovered_reqs == 0`.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "The Stage 4 evidence template requires the `@covers` location for every REQ — the parity gate makes that requirement mechanical instead of aspirational.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Anti-pattern:** Filling in the Stage 4 REQ coverage table without first running the parity gate. The table is verified evidence, not author-attestation prose.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "#### Phase 1c: RED Falsifiability Witness (GHI #642)",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Phase 1b proves every REQ **has** a covering test. It never proves that test **can fail**. A BEHAVIOR test authored after the production code, passing on its first run, is byte-indistinguishable from a genuine RED-first test — `@covers` parity, the two-stage review, and Gate 5 all accept both identically.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "For each **BEHAVIOR** REQ in the brief (SUPPORT and STRUCTURAL-FENCE REQs are exempt by proof channel — they carry no `@covers` test):",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "```bash\nuv run gz arb red --req {REQ-ID} --obpi {OBPI-SLUG}\n```",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "This reconstructs the base tree in a throwaway git worktree, copies in **only** the test files, and runs the covering test there. The production hunks are deliberately withheld — that asymmetry is the experiment. It emits an `arb-red-<REQ>` receipt and a `red_receipt_emitted` ledger event.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| `failure_class` | Meaning | Action |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "|---|---|---|",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| `assertion` | Strong RED — the test failed on an assertion | Proceed |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| `error` | Weak RED — failed for the wrong reason (usually a not-yet-existing symbol) | Proceed **only on a `working-tree` base**; on a `reconstructed` base it is inconclusive (below). **Never** report it as an assertion RED. Report it to the operator as a constraints sortie not flown (`.gzkit/rules/weaponeering.md`, advisory: a finding, not a refusal) |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| `none` | The test PASSED without its implementation | **Blocking.** Rewrite the test to assert the REQ's semantics, then re-run |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| `not-applicable` | The run could not tell; `output_tail` names why: nothing withheld, nothing executed, an invalid baseline (the covering test fails on the current tree), a covering test absent from the base graft, or a failure only in tests the REQ does not name (GHI #1154) | **Non-blocking.** NOT a finding about the test; do **not** rewrite it for that. An invalid baseline is repaired on HEAD and re-run; otherwise note in the evidence that the witness did not run |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Every receipt and ledger event also records a **`base_provenance`**, and it changes what `error` means:",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| `base_provenance` | Which tree | What `error` means there |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "|---|---|---|",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| `working-tree` | HEAD, with the production change still uncommitted | A weak RED. The withheld hunk is the only difference, so the import can only have failed for the missing implementation |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| `reconstructed` | The parent of the commit that introduced the covering test | **Inconclusive — not a RED and not an accusation.** The tree can be months older than the test, so the import is as likely to have failed on unrelated drift |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "A `none` verdict means the test cannot fail when the business logic changes (AGENTS.md § DO IT RIGHT Rule 6), so it witnesses nothing. `uv run gz validate --red-parity`, a bound `gz check` step, re-audits this repo-wide past the cutover. It also accepts a valid executed acceptance proof with at least one killed mutation control as the REQ's witness (GHI #1094), which is the only witness still obtainable once the production hunks have landed.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**On the `--from=verify` path the witness now runs, against a reconstructed base (GHI #849).** It used to be inert there: the base was HEAD, so once the production code landed the base tree already carried the implementation, nothing was withheld, and every BEHAVIOR REQ returned `not-applicable` — the pipeline mandating, on its own already-implemented path, a check that structurally could not execute. The base is now resolved from the commit that introduced the REQ's covering test, whose parent predates both the test and its implementation.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**What that path can and cannot conclude.** A `none` is a real finding on either base — a test that passes against a tree without its implementation cannot fail, whichever tree it was. An `error` is not: see the provenance table above. So `--from=verify` can still catch a hollow test, and cannot bank a weak RED. `not-applicable` survives for the case where no earlier tree exists at all (the `@covers` string is absent from the test tree's history, or the commit that introduced it is a root commit).",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Read a non-verdict as *the experiment had no premise*, never as a verdict — a `none` that means \"I could not run the experiment\" must not share a name with a `none` that means \"your test cannot fail\", and the locally obvious response to ten blocking verdicts (rewrite ten passing tests until the witness goes quiet) weakens real assertions to satisfy a degenerate experiment. The strongest evidence still comes from running the witness **while the work is in flight**, before it lands: that is the only condition under which `error` counts for anything.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Anti-pattern:** Treating the `error` class as equivalent to `assertion`. An ImportError proves only that the symbol is absent — not that the test asserts the REQ's semantics.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "The historical RED classifications above do not determine acceptance readiness.\nThe current `acceptance prove` record supplies the executed behavioral control;\nspec and quality reviewers judge its adequacy. Preserve RED receipts without\npromoting a weak or unavailable experiment into a current proof.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Behavioral evidence remains necessary (GHI #984).** The provenance rules above\nclassify the RED experiment; they do not certify the covering test's assertions.\nWhere that experiment cannot demonstrate the required behavior, inspect the\ntest and use a focused behavioral control for the unresolved claim under\n`.gzkit/rules/tests.md`. Preserve its green baseline, activated change, selector,\nactual failure and restoration result. A non-zero run does not identify the\nguard or assertion that failed. If a claim names that assertion, inspect the\ntraceback; if another guard masks it, repair the fixture. Do not infer exclusive\ndetection or comparative strength, and do not build an all-assertions classifier\nto satisfy a requirement that asks for production behavior.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "#### Phase 2: REQ-Level Verification Dispatch",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Check for a single-driver declaration first.** If this run is declared single-driver, skip to the [Inline Verification Fallback](#inline-verification-fallback) below.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "After baseline checks pass, dispatch parallel verification subagents for the brief's requirements:",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "1. **Extract verification scopes** from the brief using `prepare_stage3_verification(brief_content, test_paths)`. Each numbered `REQUIREMENT:` line becomes one `VerificationScope`.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "2. **Analyze path overlap** — the `VerificationPlan` partitions requirements into independent groups:\n   - Requirements with **non-overlapping test paths** are placed in **separate groups** (can run in parallel).\n   - Requirements with **overlapping test paths** are merged into the **same group** (must run sequentially within a single subagent).\n   - **NEVER dispatch parallel verification for overlapping file paths** — data corruption risk.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "3. **Dispatch strategy selection:**\n   - `parallel` — all groups are singletons (fully parallel dispatch)\n   - `mixed` — some groups have multiple REQs (parallel between groups, sequential within)\n   - `sequential` — single group or no test paths (fall back to inline)",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "4. **For each independent group** (concurrent dispatch using `run_in_background: true`):",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "   a. **Compose verification prompt** via `compose_verification_prompt(group_scopes, group_label=...)`. Each subagent receives:\n      - Requirement text for each REQ in the group\n      - Test file paths to run\n      - Expected pass criteria\n      - Current branch state (included in prompt context)",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "   b. **Dispatch verification subagent:**\n      ```\n      Agent tool call:\n        subagent_type: \"general-purpose\"\n        isolation: \"worktree\"\n        run_in_background: true\n        prompt: <verification prompt from step a>\n        description: \"Verify REQ group N\"\n      ```",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "   c. Worktree cleanup is **automatic** — the Agent tool cleans up the worktree when the subagent completes or fails. No orphaned worktrees.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "5. **Wait for all verification subagents to complete.** All subagents MUST finish before Stage 3 advances.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "6. **Parse and aggregate results:**\n   - Parse each subagent output via `parse_verification_results(agent_output)`.\n   - Aggregate via `aggregate_verification_results(results, expected_req_indices)`.\n   - Create dispatch records via `create_verification_dispatch_records(plan, results)` and persist in the pipeline marker.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "7. **Record timing metrics** via `compute_verification_timing(start_ns, end_ns, strategy, group_count)`. Always record wall-clock time savings from parallel vs sequential execution.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "8. **Handle aggregate results:**\n   - All REQs pass → advance to Stage 4.\n   - Any REQ fails → attempt fix and re-verify once. If still failing, surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "#### Inline Verification Fallback",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "When the run is declared single-driver, or when the verification plan strategy is `sequential`:",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "1. Run each brief-specific verification command sequentially inline.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "2. Run any commands from the brief's Verification section.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "3. Record all outputs as evidence.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "No subagent dispatch, no worktree isolation, no parallel execution.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Abort if:** Any verification fails. Attempt fix, re-verify once. If still failing, surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**MANDATORY TRANSITION → Stage 4.** Do not summarize. Do not report. Proceed.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "### Stage 4: Present Evidence",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Stage 4 is three steps and one bounded loop:",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "```\n4a author the packet → 4a-v replay the packet → 4b independent review → pass condition met?\n   ├─ yes → present 4a + 4a-v + 4b together → await attestation\n   └─ no  → ONE repair round (§ The review window) → re-enter at 4a\n```",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "You do not get to skip 4b because your own evidence looks green. Your evidence\nlooking green is *why* 4b exists. You are not the exception. The sequence admits\nno size, lane, or kind exception. An earlier turn or equivalent successful execution\ndoes not invalidate review by itself; the acceptance consumer decides applicability.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "#### The pass condition — stated once",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**One authority.** Stage 4 passes when this command reports ready, and only then may\nattestation be solicited:",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "```bash\nuv run gz obpi acceptance {OBPI-SLUG} status --stage stage4 --json\n```",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Everything under this heading explains that verdict. None of it is a second test to\nsatisfy separately, and the rest of Stage 4 does not restate it. If this prose and the\ncommand disagree, the command governs and the disagreement is a defect to report.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Binding rule:** No OBPI reaches attestation without an independent adversary\nreview applicable to its current proof claims, with explicit closure of required\nfindings. A Stage 4 that solicits attestation while required Step 4b approval or\nclosure is missing violates the gate. A turn boundary alone requires no repeat. There is no\nOBPI too small, too authoring-only, or too obviously-correct to exempt — those\nare the precise descriptors that precede a skipped check.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Step 4b closes on independent confirmation of the corrected state (operator ruling 2026-09-05).** Operator verbatim: \"I think we want that as a matter of course moving forward. I don't want 12 iterations like with OBPI-0.35.0-04, but I don't think we should attest without the fixes creating a clean adversarial (4b) review.\"",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "The prior 2026-09-03 rule said: \"A round returning no critical and no high IN-SCOPE findings converges the gate.\" This ruling supersedes that severity-only stopping condition: do not solicit completion attestation while any finding against the agreed OBPI requirements remains unresolved, or while a claimed fix has only the implementing agent's confirmation. A non-refuting verdict on the earlier state does not independently verify later repairs, including repairs to evidence or missing witnesses.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Readiness is derived; historical verdicts are immutable (GHI #985).** Run:",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "```bash\nuv run gz obpi acceptance {OBPI-SLUG} status --stage stage4 --json\n```",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Readiness requires current valid proof, accepted spec/quality/adversarial reviews\nfor every obligation, and independently verified closure of all mapped findings.\nThe ledger-backed single-driver declaration retains its documented Stage-2\nspec/quality exception; proof and Step-4b closure remain mandatory.\nAn unchanged obligation cannot lose its finding because an auxiliary audit was\nremoved. An edit confined to recognized history sections does not invalidate executable proof.\nThe earlier GHI #964 standing-line convention is superseded as a gate: preserve\nexisting historical words, but never edit a Markdown verdict to change readiness.\n`gz obpi precomplete` and completion consume the durable records.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Clean means no unresolved in-scope findings, not absence of all limitations.** Accepted residual risks and future ADR-wide obligations remain disclosed separately; they are not failed present-tense OBPI requirements. Filing a GHI alone does not discharge an unmet requirement. A newly proposed boundary change requires operator ruling and independent revalidation; the implementing agent cannot move a finding outside scope to clear the gate. Before soliciting attestation, the retained independent review set must supply applicable approval and explicit closure on the corrected proof claims. Raw verdict wording alone neither grants approval nor reopens a closed obligation. Scope-boundary disclosures may remain, provided the adversary distinguishes them from unresolved findings.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Do not redispatch merely to remove harmless caveat wording after independent\nclosure is established. If a follow-up exposes the same root cause again, use\nthe design-escalation rule below. The runtime checks proof identities, current\ninput digests, and explicit closure links. Whether an oracle or control fulfills\nthe requirement remains the independent reviewer's judgment.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Act on mapped findings before attestation.** A current counterexample or missing\nrequired proof returns its obligation to repair, regardless of verdict or severity.\nAfter repair, execute proof and import independent closure. Historical refutations\nand auxiliary commentary with no unmet obligation do not require another repair or\nreview. Retain their provenance and present the applicable review set alongside\nStep 4a; never relabel a required gap as auxiliary to clear acceptance.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**The gate consumes current closure (GHI #985).** A resolution string or new\ncaller-supplied verdict cannot discharge an open finding. Repair its obligation,\nexecute current proof, and import independent closure before soliciting\nattestation. Historical refutations do not block a correctly closed current\nstate merely because their original words remain in the brief.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "#### The review window, the bound, and the exit",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Know what stales a review before you touch anything.** Proof and review currency is\nONE digest over the whole audited population — `src/`, `tests/`, `features/`, `data/`,\n`scripts/`, the canonical rules and schemas, the workflows and config files — plus the\nbrief's contract (`acceptance_execution.input_digest`). It is not per-obligation. Any\nedit under those paths, however small and however unrelated, stales EVERY proof and\nEVERY imported review for this OBPI at once. Edits confined to the brief's recognized\nhistory sections and its Change Log do not move it. This is why an unplanned edit\nbetween 4a and 4b costs a full round, and why the order below is binding.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**A round reviews a frozen subject.** Before dispatching 4b — first round or follow-up:",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "1. Finish every edit. Nothing is left to tidy afterwards.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "2. Run `acceptance prove` for every obligation (a repair stales them all; see above).",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "3. Refresh the packet (`gz obpi present-evidence`) and replay it (Step 4a-v).",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "4. Record `git status --short` and the reviewed revision in the dispatch prompt.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "5. Dispatch. From dispatch until the review is imported, edit nothing under the\n   audited population: not the source, not a test, not a data file, not a rule, and\n   do not `gz git-sync` in other work. An edit inside the window spends the round.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**When a round returns findings, run ONE repair round.** Collect all of them first.\nRepair them as one batch (§ Repair the whole obligation, below). Then repeat steps 1–5\nonce, dispatching the focused follow-up described below — never one dispatch per\nfinding, and never a fresh unrestricted review.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "After fixing a finding, obtain a focused independent Step 4b follow-up. Supply the prior findings, the changed artifacts and evidence, and the unchanged scope/threat-model boundary. The adversary must verify each claimed closure and check the affected requirements for regressions; it must not restart an unrestricted search for stronger guarantees. Record the actual new verdict and receipt, with each prior finding's disposition and demonstrated evidence. Preserve earlier rounds as history. Never request a preferred verdict or relabel `CORROBORATED-WITH-CAVEATS` as clean yourself.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Repair the whole obligation before redispatch (GHI #984).** Carry the accepted\nfinding back through the existing implementation and verification stages. Trace\nthe relevant producers, consumers, fresh/retry paths, early returns and cleanup;\nuse the states needed by the requirement, not an unlimited neighboring audit.\nA retry retaining its journal does not prove it restores durability before\nwitnessing. A rejection does not prove which guard caused it. Recheck affected\ncontrols when a repair adds another guard that could mask them. Preserve the\ncomplete finding and the execution record beside its closure, rather than\nreplacing it with a new explanatory claim.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "For an operator-initiated OBPI, authorized corrections continue within its\napproved scope; the initiation rule is not a new permission checkpoint for\neach finding. A real requirement/allowlist/threat-model amendment still needs\nthe existing operator ruling. Repeated roots trigger the design escalation\nbelow, not a round cap or a waived defect. Auxiliary diagnostic errors may be\nremoved from the acceptance argument when no requirement depends on them;\nretain their history and every still-relevant finding. If required proof does\ndepend on the diagnostic, repair and verify it before using its result.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**The loop is bounded, and it has an exit.** Two focused follow-up rounds after the\nfirst Step 4b round is the limit — three rounds in all (operator ruling 2026-09-18,\nverbatim: \"N=2\"). When the limit is reached with a mapped finding still open, or when a round repeats the\nprior round's root (next paragraph), stop dispatching:",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "```bash\nuv run gz obpi block {OBPI-SLUG} \\\n  --reason \"<which findings remain open, and after how many rounds>\" \\\n  --next-action \"<the design or scope decision the operator owes>\"\n```",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Then present the open findings, what each round changed, and one recommendation. This\nis the second legitimate stop in the pipeline (§ The Iron Law), not a premature summary:\nanother round without a decision is the failure, and recording that a human is needed\nis the honest act (§ Blocked on the Operator).",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**When a round repeats the prior round's ROOT, stop dispatching and escalate the DESIGN (operator ruling 2026-09-03).** Compare each round's `Weakest point` against the last. If it names the same root cause at a different surface, another fix cycle will surface it again one layer deeper: stop, and put the design decision to the operator (§ Behavior Rules — Always #9). Measured: rounds 2, 3 and 4 each patched a different surfacing of one root cause — provenance inferred from a witness's self-consistent claims rather than chained to prior ledger state — at roughly 3h per cycle; the operator ruled the design in a single exchange and it closed in one pass. Round 4's fix also INTRODUCED round 5's critical, which is the signature of patching a surfacing rather than the design.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "#### Normal Mode — HUMAN GATE",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Trigger:** \"Present OBPI Acceptance Ceremony\" task becomes next pending. Mark `in_progress`.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Narrator dispatch** (per § Persona Dispatch). Stage 4 evidence composition is the narrator's function — \"evidence-to-decision,\" \"operator-value-framing,\" \"every word load-bearing.\" Dispatch a `narrator` subagent with the populated template fields (Value Narrative input, REQ coverage table from Stage 3, ARB receipts from quality gates) and instruct it to render the final attestation surface per the template below. The narrator dispatch has no recording channel yet (§ Persona Dispatch, GHI #846); do not improvise one through `SubagentDispatchRecord`, which accepts Stage-2 roles only.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Compose from inspected evidence (GHI #984).** Give the narrator the actual\nartifact paths and observed results, including limits, not only a success\nsummary. Keep one current REQ proof table; preserve prior rounds separately as\nhistory tied to their reviewed state. The Proof cell states what the observation\nestablishes and any unresolved limitation. Do not invent counts, line references,\nfailure mechanisms, independence claims, or claims about the remedy's benefit.\nTool-emitted output establishes only what its method measures. Interpretation\nmust be identified as interpretation and supported; reproduction alone does not\nmake its method sound. Expected output may explain a planned demonstration but\ncannot substitute for observed output in the Key Proof of completed work.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Load `gz obpi acceptance {OBPI-SLUG} status --stage stage4 --json` and give the\nnarrator its canonical obligations, current proof IDs, open findings, and imported\nreview records. The missing adversarial review blocks final readiness until 4b\nruns; it does not prevent preparing 4a. Cite those proof IDs in the REQ table.\nPreserve their executed payloads rather than reconstructing another evidence\nclassification. Packet replay remains a separate check of displayed transcripts.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Run `gz obpi present-evidence {OBPI-SLUG} --json` to generate Step-4a review input.\nIt exits 3 on proof blockers; when Stage-2 proof is ready and only Step-4b closure\nis pending, it exits 0 with `attestable: false` and separate `review_blockers`.\nGive that packet to the adversary. Do not confuse successful packet generation\nwith permission to solicit attestation. After importing independent approval and\nfinding closure, refresh the packet; final validation requires both proof and\nreview blockers to clear.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Present evidence using the **exact template below**. This is the human's attestation surface — they cannot provide attestation without seeing this output. Every field is mandatory. Do not omit, reorder, or freeform this.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Required output template:**",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "```\n## Stage 4: Present OBPI Acceptance Ceremony (Normal Mode — HUMAN GATE)\n\n**1. Value Narrative**\n\n<What problem existed before this OBPI? What capability exists now? 2-3 sentences.>\n\n**2. Key Proof**\n\n<One concrete command and its observed output. Cite the executed proof record.\nExpected output is not evidence of completed work.>\n\n**3. Evidence**\n\n**Quality checks:**\n\n> **Rendering rule (GHI #293):** Markdown table cells overflow in Claude\n> Code's renderer when ARB-wrapped invocations embed their nested\n> sub-command (e.g. `uv run gz arb step --name unittest -- uv run -m\n> unittest discover -s tests/governance`). When a Command cell would\n> exceed ~40 characters, hold a short label in the cell (e.g. `arb:unittest`,\n> `arb:ruff`) and render the full incantation in a fenced code block\n> beneath the table. Place the receipt ID in the Result cell. Operators\n> attest against this table — overflow erodes legibility.\n\n| Check | Command | Result |\n|-------|---------|--------|\n| Tests | `arb:unittest` (see below) | <N>/<N> pass — receipt `arb-step-unittest-<id>` |\n| Lint | `arb:ruff` (see below) | clean — receipt `arb-ruff-<id>` |\n| Typecheck | `arb:typecheck` (see below) | clean — receipt `arb-step-typecheck-<id>` |\n| OBPI tests | `arb:unittest-scoped` (see below) | <N>/<N> pass — receipt `arb-step-unittest-<id>` |\n| <brief-specific> | `<short-label>` (see below) | <result> — receipt `<id>` |\n\n```bash",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "# arb:unittest — full unittest sweep",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "uv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "# arb:ruff — lint",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "uv run gz arb ruff",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "# arb:typecheck — static type check",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "uv run gz arb typecheck",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "# arb:unittest-scoped — OBPI-scoped tests",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "uv run gz arb step --name unittest -- uv run -m unittest tests.<test_module> -v",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "```\n\nShort Command cells (under ~40 characters, e.g. `uv run gz lint` or\n`uv run gz test`) may stay inline without a fenced block — the rule\nfires only when the incantation would overflow.\n\n**Files created:**\n- <path> (<description>)\n\n**Files modified:**\n- <path> (<description>)\n\n**REQ coverage:** (every row populated; every cell concrete; BEHAVIOR rows verified by Stage 3 Phase 1b)\n\n> **Rendering rule (GHI #301, generalizes GHI #293):** The REQ coverage\n> table is the canonical single form — render it as a markdown table and\n> nothing else. Do **not** append a plain-text labeled-list duplicate of\n> the same rows beneath the table. When Claude Code's renderer truncates\n> a cell, the fix is to shorten the cell, not to add a second rendering.\n> When any cell (Mechanism, `@covers` location, Test Coverage) would\n> exceed ~40 characters — long structural assertions like\n> `test -d .gzkit/chores/<slug>/proofs && test -s ...`, multi-flag `uv run` invocations,\n> file lists, or SHA-bearing paths — hold a short label in the cell\n> (e.g. `req-01:absence-check`, `req-02:scoped-tests`) and render the\n> full incantation in a single fenced code block beneath the table,\n> keyed by the same label. One render, one form. The labeled-list\n> fallback is the operator-confusion vector the rule exists to prevent.\n\n| REQ | Kind | Mechanism | Proof location | Proof | Result |\n|-----|------|-----------|----------------|-------|--------|\n| REQ-X.Y.Z-NN-01 | BEHAVIOR | <function/mechanism> | `tests/<file>.py:<line>` or `TestClass.test_method` | <test class> (N tests) | Pass |\n| REQ-X.Y.Z-NN-02 | SUPPORT | <artifact> | `<ledger event type>` + `gz validate --<scope>` | event cites path; validator admits shape | Pass |\n| REQ-X.Y.Z-NN-03 | STRUCTURAL-FENCE | <invariant> | parent-ADR `## Boundary Invariants` anchor | audited at ADR closeout | Pass |\n\nIf any row uses short labels for long cells, expand them in a single fenced block immediately after the table:\n\n```text",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "# req-01:scoped-tests — REQ-X.Y.Z-NN-01 (BEHAVIOR) Proof",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "uv run -m unittest tests.<module> -v",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "# req-02:support-proof — REQ-X.Y.Z-NN-02 (SUPPORT) Proof",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "uv run gz validate --<scope>   # structural validator admits the artifact's shape",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "```\n\nThe **Proof location** column is proof-channel specific, not always `@covers`. For BEHAVIOR REQs cite the `@covers` test location; for SUPPORT REQs cite the ledger event type/path and the `gz validate` scope; for STRUCTURAL-FENCE REQs cite the parent-ADR `## Boundary Invariants` anchor. A missing BEHAVIOR `@covers` location is a blocker — the Phase 1b parity gate will fail and the pipeline will not advance. **A non-BEHAVIOR REQ must never be forced into a unit test to fill the cell** (GHI #571).\n\n**4. Awaiting attestation.** Do NOT proceed to Stage 5 until human responds.\n```",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Every field above MUST be populated.** Do not skip the evidence table. Do not skip REQ coverage. Do not skip files created/modified. The human needs all of this to make an attestation decision. **This template is Step 4a — the agent's presentation. It is necessary but not sufficient: an agent authoring its own evidence is the GHI #643 fabrication surface. Step 4b is mandatory before attestation.**",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "#### Step 4a-v — Re-run the packet's own transcripts (GHI #942)",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Write the composed packet to `.gzkit/evidence/<OBPI-ID>.stage4a.md`, then run it back\nthrough the tool before presenting it:",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "```bash\nuv run gz obpi verify-packet .gzkit/evidence/<OBPI-ID>.stage4a.md\n```",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Exit 0 = VERIFIED. Exit 3 = a pasted line did not reproduce; repair the packet and\nre-run. Present the verdict alongside 4a and 4b — the operator attests against all\nthree.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Why replay is separate from Step 4b.** 4b re-derives the *claim* from the REQs and\nthe repository; historically it was not handed the *packet*, so a fabricated transcript passed an\nadversary that never looks at it. Observed 2026-09-02 on OBPI-0.35.0-04: a `$` block\nrendered `gz covers --json` output with keys the command does not emit (`obpi_id`,\n`coverage_pct`) around figures that were themselves correct — the numbers came from\nthe dispatch prompt and the *evidence was constructed around them*. It was caught only\nbecause a human happened to re-run the commands.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**The authoring contract.** A `$` prompt is a claim — *\"I ran this and this came\nback\"* — and every one of them is re-executed:",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "- **Paste only what the command produced.** The comparison is containment, so\n  abridging and re-indenting are fine; a line the command never wrote is a blocker.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "- **Elide what cannot reproduce.** A timestamp or a freshly minted receipt id is\n  written `...`, never pasted. Pasting an unreproducible line is what fails.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "- **Cite proof commands as transcripts.** A command offered as proof of a REQ goes\n  under a `$` prompt with its output. The second half of the same observed instance\n  was a REQ-08 proof command that returns nothing when run — as a transcript that is\n  a `witnesses nothing` blocker; left bare it is only reported.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "- **For a silent assert-shaped probe, show the status:** `$ <cmd>; echo \"exit $?\"`.\n  The exit code is the information the reader needs, and it reproduces. **Then paste the\n  line it emits.** The probe moves the status out of the process — the shell exits 0\n  because `echo` succeeded — so a packet that appends the probe and omits the `exit 1` it\n  printed is presenting a failing command as success again. Omitting it is a blocker, and\n  `...` does not satisfy it: elision is for output that cannot reproduce, never for output\n  you would rather not show.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "- **A fenced shell block with no `$` claims no output** and is never re-run — that is\n  what the `arb:` incantation blocks are, and their result is carried by the receipt\n  rows. They are listed back as citations so the operator sees what was *not*\n  witnessed.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "- **A failing command cannot be presented as success.** A non-zero exit is a blocker\n  outright, because containment alone lets a packet quote only the success lines of a\n  command that failed — every quoted line reproduces, and the omission is the lie. To\n  show a RED run, use the status form above **and paste the status it prints**; the\n  convention is not the enforcement, and the check holds you to both halves.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "- **Do not pipe a verifier into a filter.** The shell reports the filter's status, so a\n  failing suite would replay green. Use `set -o pipefail` or redirect to a file.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Reach, stated plainly.** Replay verifies *displayed output against command output*. It\ndoes **not** prove the packet is **complete** — that the transcripts chosen are the ones\nthe REQs needed — nor that its **interpretation** is correct, that a reproducing command\ndemonstrates what the prose around it claims. It does not verify a command cited without a\nprompt, and the piped-verifier guard covers recognized verifiers only, not every generic\ncommand piped without `pipefail`. Those judgments stay with Step 4b and the operator.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "#### Step 4b — Independent Adversarial Validation (GHI #643) — MANDATORY, NON-SKIPPABLE",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**WHY THIS GATE EXISTS AT ALL — and why the second model is CODEX specifically.**",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "GHI #643: an agent presented Stage-4 evidence claiming the OBPI's central deliverable was\nbuilt and working. It was not built. `run_meta_validator()` discovered **zero** production\nclaims, and that was found only at Stage 5 by an operator who happened to run the brief's own\n`## Demo`. **The operator had already attested \"completed\" against the fabricated evidence.**\nNo mechanical gate fired. Operator verdict, verbatim: *\"you have outright lied, repeatedly, at\nthe pipeline's stage 4.\"*",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "That is the whole reason this gate is here. Step 4a is a model reporting on its own work, and\na model that has fabricated a deliverable will fabricate the evidence for it just as fluently.\nSo a SECOND model, which did not write the code and has no stake in the story, goes and checks\nwhether the thing actually exists and actually works.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Codex, because a Claude checking Claude is the same eyes twice.** The failure mode is not\ncarelessness — it is a shared blind spot. An independent Claude subagent has a fresh context\nand still shares this model's priors about what \"looks right\", so it can miss exactly what\nthis model missed. A different vendor's model does not inherit those priors. That is the only\nreason the tier order is binding rather than a preference: tier 1 is not \"the better tool\",\nit is *the different eyes*.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Read those two paragraphs before writing a Step-4b prompt. Every prompt this skill has\nproduced was built from the § Dispatch contract below, so an error there reproduces perfectly,\nround after round, in every OBPI — and the one that sat there for ten weeks inverted the\npurpose above into its opposite.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**What Step 4b is FOR (read this before writing any prompt).**",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Step 4b is an ACCEPTANCE REVIEW.** The decision it supports is: *\"Does this\nimplementation correctly fulfill the bounded requirements?\"* Therefore its purpose\nmust be independent corroboration.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Refutation remains essential, but as a METHOD:",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "1. Re-derive the claim independently.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "2. Try hard to falsify it within the declared scope.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "3. Demonstrate the intended behavior positively.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "4. Corroborate only if both directions hold.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "> **Purpose:** independently corroborate correctness.\n> **Method:** adversarially attempt to falsify it.\n> **Boundary:** the brief, requirements, and threat model.\n> **Pass condition:** positive behavior demonstrated and independent closure of findings\n> against the agreed requirements and their required proof, per § The pass condition above.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "That gives the operator EVIDENCE FOR AN ATTESTATION DECISION, instead of an\nunbounded argument.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**THE REVIEWER REPLAYS IN A DISPOSABLE WRITABLE CHECKOUT (operator instruction 2026-09-10,\nGHI #961).** Step 4b judges executed proof, and judging it by reading is weaker than judging it\nby running it. `codex-companion.mjs:414` still pins `sandbox: \"read-only\"` on the\n`adversarial-review` path, so that subcommand can never replay a mutation. **It is no longer the\nStep-4b dispatch.** The `task` path honours `--write` (`codex-companion.mjs:491`,\n`sandbox: request.write ? \"workspace-write\" : \"read-only\"`), takes `--cwd`, and accepts\n`--prompt-file`.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Point that writable sandbox at a THROWAWAY COPY of the reviewed source, never at the operator's\ntree. Build it first:",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "```bash\nuv run gz obpi adversary-workspace <OBPI-ID>\n```",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "It copies tracked content at `HEAD` plus uncommitted modifications, prints a `source_digest` over\nthe materialized file set, and prints the dispatch below already pointed at the checkout. Measured\n2026-09-10 under `task --write --cwd <checkout>`: `tempfile.mkdtemp()` returns a real path, a write\ninside the checkout succeeds, and a write to the active repository is **refused**\n(`operation not permitted`). The active checkout is protected by the sandbox boundary itself, not\nby asking the reviewer nicely.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Dispatch, ARB-wrapped as always:",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "```bash\nuv run gz arb step --name codexadversary --max-output-chars -1 -- \\\n  node \"$HOME/.claude/plugins/cache/openai-codex/codex/<ver>/scripts/codex-companion.mjs\" \\\n  task --write --cwd <checkout> --prompt-file <prompt.md>\n```",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Tier 1 is unaffected: the argv is still `node .../codex-companion.mjs`, `receipt_proves_cross_vendor`\nwalks past `node`, and `data/mandated_tier1_dispatch.json` declares this surface alongside the\nread-only one. The plugin remains the only tier-1 dispatch surface — this changes which of its\nsubcommands Step 4b uses, never the vendor boundary, and `codex exec` stays FORBIDDEN.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Ask for the replay, and take nothing on faith.** Instruct the reviewer to run the baseline, apply\nthe recorded substitution, observe the named test fail on its OWN ASSERTION, restore the source\nbyte-identically, and re-run. It reports those observations in a `replay` array on its\n`gzkit.acceptance.review.v1` object — obligation, proof id, workspace digest, selectors, mutation\nlabel, three runs, and the source digest before and after. Ingestion REFUSES a claim the record\ndoes not support: a baseline that was not green, a failure whose class is `error` rather than\n`assertion`, a selector that executed zero tests, a record with no substitution, a source not\nrestored, or a digest naming some other tree. Absence of the block claims nothing and is left\nalone — silence is honest, only a claim is checked. Delete the checkout when the round ends.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**This constrains a technique. It does not lower the pass condition.** GHI #643's fabricated\nevidence was entirely plausible ON READING — that is what made it fabricable, and running the\nDemo is what exposed it. Demonstration is the point of this gate. An agent that softens\n*\"positive behavior demonstrated\"* because some technique is unavailable has confused the\nreviewer's tooling with the gate's objective, which is the same error the June-24 framing made\nin the other direction.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**The June-24 framing confused the reviewer's TECHNIQUE with its OBJECTIVE.**\n*\"Your job is to refute\"* creates a motivated critic that can continually expand\nthe attacker, or move outside the requirements, until something fails. It also\nproduces the exact measured pathology: on OBPI-0.35.0-04, six rounds tested\nrefusal paths while none demonstrated that the feature still worked.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Step 4a is authored by the same agent that may have fabricated it, so Step 4b does\nnot take 4a's word for anything: it RE-DERIVES the completion claim from the REQs\nand the repository and must paste observed command output for every check. The\noperator attests holding **both** outcomes.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Confirmation must be EARNED, not inferred from silence.** \"I looked and found nothing\" is\nnot a confirmation. A corroborating round demonstrates, with pasted output, that each guard\nFIRES when it should AND does NOT fire when it should not — a legitimate operation still\nsucceeds. A guard never made to fire is a guard not confirmed; a refusal path never exercised\nwith a legitimate input is a false-positive risk not ruled out. Ask for both\ndirections explicitly: six rounds on OBPI-0.35.0-04 tested refusals and not one asked whether the\nfeature still worked.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**The adversary must satisfy three properties AND be selected by the binding tier order.** The properties — *independent context + does-not-trust-4a framing (re-derive from the REQs and the repo; adversarial probing as method) + evidence-backed (pastes real command output)* — are necessary but NOT sufficient: \"independent context\" does not make the vendor interchangeable. A Claude validating Claude satisfies all three properties and still shares this agent's failure modes, which is the exact blind spot Step 4b exists to break. Vendor order is therefore **binding, not advisory** — you do not get to pick a lower tier because it is the frictionless path.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Tier order (binding). You MUST attempt tier 1 and may only drop a tier after establishing its precondition:**",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "1. **Codex** — REQUIRED FIRST: a different-vendor model shares none of this agent's blind spots. **Dispatch through the Codex plugin's writable `task` path, exactly as shown in § THE REVIEWER REPLAYS IN A DISPOSABLE WRITABLE CHECKOUT above** — it is the only plugin subcommand that can replay a mutation, and the only one that returns the reviewer's output verbatim, which the acceptance importer requires. `/codex:adversarial-review` remains a mandated tier-1 surface (`data/mandated_tier1_dispatch.json`) and its receipt proves the tier, but it is read-only and renders a summary, so a review object authored through it does not survive transport (observed 2026-09-10: import refused, `exit 3`). Do not use it for Step 4b. Run the dispatch in the **foreground** (a single blocking call — no polling; use `timeout: 600000`, reviews run ~7–8 min); if you detach it, read progress via the **`/codex:status <task-id>`** slash command. Do NOT hand-roll a `node codex-companion.mjs status` poll loop — that is the low-level plumbing, not the published surface (operator-flagged, 2026-07-15). The general `codex:rescue` / `codex:codex-rescue` agent is an acceptable fallback dispatch path when you need a bespoke confirmation prompt. Before dropping to tier 2, you MUST check availability — run `codex:setup` (or the companion `setup --json`) and read `ready`. If `ready: true`, Codex is available and tier 2/3 are **forbidden**.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "2. **Independent Claude subagent** — permitted ONLY when the tier-1 availability check returned `ready: false` (Codex not installed / not authenticated / unreachable). Dispatch a fresh `general-purpose` agent (separate context) with the same confirmation-framed prompt. Using this tier without a checked, genuine tier-1 unavailability is a Step 4b bypass of the same class as skipping 4b entirely (GHI #678).",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "3. **Human-as-adversary** — degraded floor: if neither fires, say so explicitly (\"adversarial validation ran in degraded human-only mode\") so the operator knows the independent check did not run.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "> **⚠ Clear prop before firing up the tier-1 Codex adversary.** The Codex runtime (`openai/codex-plugin-cc`) routes every rescue through a long-lived, shared broker process that can silently wedge — a stale/hung broker is reused without a health check, and the adversarial job then **hangs indefinitely with no output** (the job log reaches \"Turn started\" and never completes; upstream `openai/codex-plugin-cc` #509). Before dispatching, *clear prop*: if a prior run may have left one wedged, reset it — `rm -f ~/.claude/plugins/data/codex-openai-codex/state/<workspace-slug>/broker.json` and kill any stray `app-server-broker` / `codex app-server` processes — then run `codex:setup` and confirm `ready: true`. **A wedged broker is NOT a genuine tier-1 unavailability.** `codex:setup` checks only the binary + auth, so it reports `ready: true` even when the broker is hung; the true signature is `ready: true` but a `task` that emits nothing within ~30s. In that case clear prop and retry tier 1 — do **not** record it as `ready: false` and drop to tier 2, which would be a tier-order bypass (GHI #678).",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Record the tier and why.** Preserve the actual reviewer execution and observed\nfallback reason in the acceptance record. Completion carries its derived tier\nand provenance into the `adversarial_validation` event (GHI #676, #985).\nA caller declaration cannot promote a same-vendor execution to tier 1 or replace\nmissing review evidence. \"The Claude subagent was convenient\" is not a fallback\nreason. `gz obpi complete` takes no tier, reviewer or fallback-reason flag\n(GHI #1163); the acceptance record is the only source.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Acceptance transport preserves that tier order (GHI #985).** The acceptance\nimporter derives tier from actual execution; do not put a caller-authored `tier`\nin the review JSON. A native Claude adversarial fallback includes\n`fallback_reason` naming the observed tier-1 unavailability. Native Claude spec\nand quality execution needs no fallback reason. If the operator explicitly acts\nas the degraded human adversary after reviewing current proof and findings,\nrecord their exact ruling with `gz obpi acceptance {OBPI-SLUG} human-review\n--attestor g0 --ruling '<verbatim judgment>'`. This records the current proof\napproval and finding closure as tier 3, without inventing an agent receipt.\nNever infer that ruling from permission to implement or repair, and retain the\nseparate completion attestation. Completion records the resulting derived tier.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "> ### 🛑 THE PLUGIN IS THE ONLY TIER-1 DISPATCH SURFACE (operator directive, 2026-08-25)\n>\n> **`codex exec` is FORBIDDEN as a tier-1 invocation.** Dispatch through OpenAI's Codex\n> plugin for Claude Code — its runtime `codex-companion.mjs`, on the `task --write` path\n> shown above for Step 4b — and nothing else. Wrapping the raw binary in\n> `gz arb step` is NOT an acceptable substitute, and this section used to show exactly\n> that, which is how the violation happened.\n>\n> **Measured cost of one hand-rolled run (2026-08-25, OBPI-0.35.0-02):** ~15 minutes\n> wedged at 0.07s CPU because `codex exec` blocked on an unredirected stdin — a state\n> `codex:setup` reports as `ready: true`; then a 500KB undifferentiated blob that had to\n> be `sed`-sliced to find the verdict; then a re-run **refused outright** by an upstream\n> cyber filter (*\"This content was flagged for possible cybersecurity risk\"*) because a\n> hand-written refute prompt named Unicode bypass techniques. The plugin path, launched\n> against the identical work, streamed structured findings with severity and confidence\n> and surfaced a **high**-severity defect the hand-rolled run had missed entirely.\n>\n> The failure was not the agent forgetting the rule — the rule was stated here and then\n> contradicted three paragraphs later by a worked example using the forbidden form. An\n> agent following the example is following this skill. **Never reintroduce a `codex exec`\n> incantation to this file, even as an illustration.**",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Prove the tier; nothing declares it (GHI #765, #780, #985).** The tier is derived\nfrom the argv the reviewer run executed, never from a flag or a name. Wrap the PLUGIN\ninvocation in ARB, then import that run:",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "```bash\nuv run gz arb step --name codexadversary --max-output-chars -1 -- \\\n  node \"$HOME/.claude/plugins/cache/openai-codex/codex/<ver>/scripts/codex-companion.mjs\" \\\n  task --write --cwd <checkout> --prompt-file <prompt.md>\n# → arb step name=codexadversary exit_status=0 receipt=.../arb-step-codexadversary-<hash>.json\nuv run gz obpi acceptance <OBPI> review --receipt arb-step-codexadversary-<hash>\n```",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "The executed output must contain the structured acceptance judgment described\nbelow. The receipt's successful exit alone cannot establish acceptance.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "The importer **resolves** the receipt: it must record `exit_status: 0`, and its\n`step.command` must invoke an agent. The scan walks past a bounded set of runtime\nwrappers (`node`, `npx`, `python`, `uv`, ...) to the binary they front and **stops at\nthe first non-wrapper**, so the mandated plugin dispatch `node .../codex-companion.mjs`\nproves tier 1 while a vendor named only in the adversary's PROMPT does not (GHI #884).",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "If the run cannot be ARB-wrapped there is no receipt to import, and that is a\n**tier-2 outcome**: run the native Claude fallback under ARB with `fallback_reason`\nnaming the observed unavailability. Reaching for `codex exec` to make a receipt appear\nis the substitution this gate exists to catch.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Dispatch contract.** Give the adversary the completion CLAIM (the brief's REQs\nand what the agent says it built), the actual Step-4a packet path, source/test\npaths, relevant raw execution artifacts, and prior findings with dispositions.\nIdentify the reviewed revision and dirty-tree artifact identities. Give the gzkit\ntools as its framework — `gz obpi present-evidence <OBPI>`, `gz covers <OBPI> --json`,\nthe scoped tests, the brief's Demo, `git status --short` and `git diff` — subject to\nthe documented execution limits above. Instruct it to **INDEPENDENTLY CONFIRM THE\nIMPLEMENTATION IS CORRECT**, probing the bounded requirements in both directions.\nJudge whether each cited method supports its acceptance claim, not just whether\nits output reproduces. For each finding, name the violated requirement or\nrequired-proof claim, the counterexample or concrete evidence gap, and the\nrelevant verification. Review allegations also need source/observed support;\ndo not adopt an explanation solely because another reviewer wrote it.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Require `CORROBORATED` | `CORROBORATED-WITH-CAVEATS` | `NOT-CORROBORATED`, the\nseparate verdict token, output for checks it executed, artifact references for\nrecords it inspected, an explicit statement of what it could NOT confirm, and\na \"Weakest point\" section. An auxiliary audit is not automatically a new\ndeliverable. Determine a finding's relevance by the acceptance claim it affects,\nnot the document or review round where it originated.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Also supply the current acceptance status JSON and require exactly one\n`gzkit.acceptance.review.v1` object in the actual reviewer output, rendered with\n`gzkit.acceptance_context.acceptance_review_frame(\"adversarial\", <status json>)`:\nthe Stage-2 frame, carrying the schema, identities and import rules (GHI #1095).\nExplicitly list `accepted_proof_ids` for the proof the reviewer approves; never\ninfer this set from a global verdict. The `accepted`/`refuted` verdict is retained\nas review history. Mapped findings and explicit proof approvals govern readiness,\nso an auxiliary observation cannot revoke an approved requirement through its\nwording. Mapped findings retain stable IDs. A verified repair emits a closure\ncontaining `finding_id`, `obligation_id`, and the current `proof_id`. Record the review through `gz obpi acceptance ... review --receipt ...`, including\ntruthful refutations, so the next round receives the same outstanding obligations.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Two transport facts that decide what actually reaches it (measured 2026-09-04, re-measured 2026-09-10 on the writable path, GHI #961).** The suite runs under the venv interpreter, never `uv run` — uv cannot initialize its cache in the sandbox. Inside the disposable checkout, run it as `PYTHONPATH=<checkout>/src <repo>/.venv/bin/python -m unittest <selector>`; the editable install points at the ORIGINAL `src`, so without that `PYTHONPATH` the reviewer would mutate the copy and import the original — a replay that proves nothing. `gz obpi adversary-workspace` prints the exact invocation. Second: the `task` path DOES take `--prompt-file` and stdin, so the positional-only limitation belongs to `adversarial-review` alone and no longer applies; still name large artifacts BY PATH and let the reviewer open them. And where `renderReviewResult` collapses a review to a rendered summary, `renderTaskResult` (`lib/render.mjs:315`) emits the reviewer's `rawOutput` **verbatim** — which is why the review object now reaches the ARB receipt the importer reads. Observed 2026-09-10: a complete, correct review object authored through `adversarial-review` was lost in transport and the import refused it (`exit 3`).",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "> **`not-refuted` IS the corroborated state — it is phrased passively, not missing.** Operator\n> ruling 2026-09-04, verbatim: *\"NOT-REFUTED is arguably a passive way of saying CORROBORATED\"*.\n> A model that attacked the implementation and could not break it has corroborated it, so\n> `CORROBORATED` records as `not-refuted` and that is a faithful record, NOT a rounding. An\n> earlier revision of this note claimed the enum \"has no corroboration state\" and that the\n> mapping was a documented lie-by-rounding; both were wrong (GHI #954, narrowed by its own\n> author). No change to `gz obpi complete` is warranted.\n>\n> Still require BOTH lines from the adversary — the `CORROBORATED | CORROBORATED-WITH-CAVEATS |\n> NOT-CORROBORATED` line and the enum word — because the distinction that matters is\n> *attacked hard and demonstrated working* versus *looked and found nothing*, and that\n> distinction lives in the PROMPT's demand for positive demonstration, never in the verdict\n> word. Two rounds can both land on `not-refuted` and mean entirely different things; the\n> pasted evidence is what tells them apart. Record the outcome by importing the review (`gz obpi acceptance <OBPI> review --receipt <run-id>`); `gz obpi complete` writes the `adversarial_validation` event from the accepted review — the ledger event is the durable record, not a dispatch marker.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Bound the claim BEFORE the first round, or the gate cannot converge (operator ruling 2026-09-03).** An adversary instructed to REFUTE will escalate the attacker one notch each round, so an ABSOLUTE claim (\"no X can occur without Y\") is unrefutable-in-bounded-time by construction. For any OBPI whose subject is a trust chain, provenance, or a tamper-evidence property, the brief MUST carry a `## Threat Model` section BEFORE Step 4b is first dispatched, naming what an attacker may do and what is an accepted residual — and the dispatch prompt MUST state that boundary and forbid the adversary from reporting an out-of-scope attack as a finding. Measured on OBPI-0.35.0-04: five rounds, 53 minutes of adversary compute across a 12.5-hour wall clock (7%); the rest was fix cycles. Rounds 4 and 5 spent ~9 hours hardening attacks whose reproduction required appending arbitrary rows to `.gzkit/ledger.jsonl` — strictly inside a residual the operator had already accepted for `.gzkit/ownership/`, the same directory and the same access. `docs/governance/trust-doctrine.md` covers AGENT trust-chain poisoning and declares no filesystem threat model, so nothing bounded the adversary and the agent never asked whether the attacker was in scope.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Wait for the human to respond \"Accepted\", \"Completed\", \"attest completed\", or equivalent. Do NOT proceed until attestation is received.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Do NOT mark ceremony task `completed` until attestation is received.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**When attestation arrives, immediately invoke `gz obpi complete` (Stage 5 Step 2) with the operator's phrase in `--attestation-text`.** The operator's short phrase is the attestation; the pipeline must not pause to ask for longer text and must not print runbook-style instructions for the operator to execute. Enrich the attestation text per `AGENTS.md` § Attestation (em-dash + concrete session evidence + receipt IDs) before passing it through.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Human rejects:** Record feedback, return to Stage 2 with corrections.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**MANDATORY TRANSITION → Stage 5.** Once attestation is received, proceed to Stage 5 immediately. Do not summarize. Do not wait.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "### Stage 5: Sync And Account",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "After attestation:",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Two-sync pattern:** Stage 5 uses two git-sync cycles. The `gz obpi complete`\ncommand atomically writes the attestation to the ADR-level audit ledger, updates\nthe brief to Completed, emits the completion receipt, and surrenders the lock.\nGit-sync #1 commits these governance edits, the Step 4b brief section and marker\ncleanup. Git-sync #2 commits\nthe reconcile output and ADR status refresh.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "0. **Pre-flight checklist (MANDATORY, GHI #195)** — `uv run gz obpi precomplete {OBPI-SLUG}`\n   Mechanical verification of all Stage 5 preconditions, each with a named\n   remediation: brief authored readiness, reconcile idempotence (catches GHI\n   #193 drift before it bites), lock ownership, ARB receipts passed (the newest\n   lint/typecheck/unittest receipt since the lock claim each records exit 0 —\n   GHI #889), plan-audit\n   receipt PASS, brief-heading shape, scoped behave REQ coverage, and\n   **task-envelope coherence** (GHI #590 — early warning that the OBPI would\n   close with residue on any of the three signatures: Sig (a) a worklog event\n   under an active TASK with no `task_id`, Sig (b) `seq=01`-only without a\n   `req_atomic:` exemption, Sig (c) layer-drift across discovery channels;\n   remediation: subdivide labor via `uv run gz task start --seq next` or declare\n   `req_atomic:` (Sig b), attribute worklog events with a `task_id` (Sig a),\n   reconcile divergent TASK ids across channels (Sig c) —\n   `uv run gz task envelope diagnose {OBPI-SLUG}`), and **current acceptance\n   proof plus independent closure** (GHI #985). The acceptance records are\n   already in the ledger before this check; Markdown review history does not\n   supply the current verdict.\n   **If exit code is non-zero, do NOT invoke `gz obpi complete` — fix each\n   reported precondition first using the named remediation.** Exit 0 here is\n   the gate that prevents the reactive-triage class of failure (the original\n   OBPI-04 Stage 5 cost ~3 turns to discover the same gaps one at a time).\n   Note: `gz obpi complete` **independently re-enforces** the task-envelope,\n   REQ-coverage, and Step-4b gates fail-closed (precomplete is the bypassable\n   pre-flight; the completion command is the chokepoint), so the residue cannot\n   reach `main` even if this step is skipped. `gz check` then re-audits the\n   captured verdict repo-wide via `gz validate --adversarial-validation`.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "1. **Closure-narrative gate (MANDATORY, GHI #267)** — Before invoking `gz obpi complete`, present the resolved Implementation Summary and Key Proof prose to the operator inline, in the exact form that will be written to the brief. This is the brief-narrative analog of the Stage 4 evidence gate: the brief is Layer 1 canon authorship surface, and a future reader six months from now will read the brief, not the ledger event. Empty or placeholder prose is a defect — `gz obpi complete` fails closed on it (exit 1, no ledger event, no brief mutation), but the skill must catch it before the CLI does.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "   **Required walkthrough format:**",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "   ```\n   ## Stage 5: Closure Narrative (preview before gz obpi complete)",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "   **Implementation Summary** (will be written to ### Implementation Summary):",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "   <verbatim text — bulleted \"- Key: value\" form preferred so the\n    `_has_substantive_implementation_summary` check accepts it>",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "   **Key Proof** (will be written to ### Key Proof):",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "   <verbatim text — at least one concrete command + observed output,\n    with ARB receipt ID(s) cited inline per AGENTS.md § Attestation>",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "   **Source:** [--implementation-summary flag | existing brief body at <line range>]\n   **Source:** [--key-proof flag | existing brief body at <line range>]\n   ```",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "   The operator already attested in Stage 4, but the prose is the artifact that survives the ledger event — name it explicitly so the operator can refuse before write.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "   If the operator silently accepts (no objection), proceed. If they reject, return to authoring the brief sections directly, then re-present.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "2. **Complete OBPI atomically** — `uv run gz obpi complete {OBPI-SLUG} --attestor {attestor} --attestation-text \"{text}\" [--implementation-summary \"{summary}\"] [--key-proof \"{proof}\"]`\n   This single command atomically: validates brief state, writes attestation to the\n   ADR-level audit ledger, updates the brief (status, evidence sections, human\n   attestation), and emits the completion receipt to the main ledger. If any step\n   fails, all changes are rolled back — no partial writes.\n   - Pass the operator's attestation phrase (e.g. \"attest completed\") verbatim through `--attestation-text`, enriched per `AGENTS.md` § Attestation (em-dash + session evidence + receipt IDs). The operator's `attest completed` (or equivalent) IS the attestation — it is not a request for more instructions. Do not stop the turn to ask the operator to run the command themselves.\n   - Use `--implementation-summary` and `--key-proof` to supply evidence sections.\n     If omitted, the command reads existing content from the brief — but it MUST\n     be substantive (non-empty, non-placeholder, satisfies\n     `_has_substantive_implementation_summary` / `_has_substantive_key_proof`),\n     or the command exits 1 with a recovery hint. The Step 1 walkthrough above\n     is what catches this before the CLI does.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "   **Gate-5 attestation.** The operator's Stage-4 verbatim attestation\n   (e.g. \"attest completed\"), relayed via `--attestation-text`, IS the\n   Gate-5 attestation for every lane / kind / sensitivity — the completion\n   receipt records `attestation_type: operator-verbatim-conversational`.\n   There is no TTY-typed `ATTEST` ceremony, no `--attestor-present`\n   co-presence proxy, and no PTY launcher: a plain non-TTY `uv run gz obpi\n   complete ...` call from the Bash tool completes the brief. A non-empty\n   `--attestation-text` is required (it IS the attestation); an empty one\n   exits 1. Never hand the invocation back to the operator — they already\n   attested in Stage 4.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "   **Completion uses the imported current review (GHI #985).** The command\n   derives the accepted adversarial judgment from durable acceptance records\n   after every current obligation and mapped finding clears. Legacy\n   `--adversary-*` arguments remain compatibility/provenance inputs; they cannot\n   replace a missing review, invent approval, or discharge a finding. Preserve\n   the binding tier and observed fallback requirements in Step 4b.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "   Operator ruling 2026-09-04 remains verbatim: ***\"refuted is an outcome, but it\n   is an input into if(4a && 4b) pass; else: loop\"***. The loop now preserves the\n   obligation and verified closure. Fix the required behavior or obtain the\n   existing operator ruling for an actual contract boundary amendment, then\n   independently verify the changed proof. A GHI or resolution paragraph alone\n   cannot satisfy a missing obligation. Historical round verdicts remain exact;\n   no authored standing line determines the current acceptance decision.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "   ```bash\n   uv run gz obpi complete {OBPI-SLUG} \\\n     --attestor '{attestor}' \\\n     --attestation-text \"$(cat /tmp/obpi-attestation.txt)\" \\\n     --implementation-summary \"$(cat /tmp/obpi-summary.md)\" \\\n     --key-proof \"$(cat /tmp/obpi-keyproof.md)\" \\\n     [--adversary-job-id '{job-id}'] \\\n     [--refuted-claim \"$(cat /tmp/obpi-refuted-claim.txt)\"] \\\n     [--adversary-resolution \"$(cat /tmp/obpi-adversary-resolution.txt)\"]\n   ```",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "   Write long `--attestation-text` / `--implementation-summary` /\n   `--key-proof` payloads to `/tmp/*.txt|md` first to keep the invocation\n   tractable.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "3. **Confirm the lock is gone — `gz obpi complete` released it.** After its\n   atomic transaction commits, `gz obpi complete` writes the completion register\n   entry (`.gzkit/locks/exchange/<ts>-{OBPI-SLUG}-complete.md`) and, if a lock is\n   held, deletes it and emits `obpi_lock_released` citing that entry (GHI #619,\n   `_surrender_lock_at_completion` in `src/gzkit/commands/obpi_complete.py`). Run\n   `uv run gz obpi lock list` to confirm. Do not run `gz obpi lock release`\n   afterwards; it prints `No lock found`. If the register entry could not be\n   written, the lock is left for TTL reaping. Report that to the operator, and\n   never `--abandon` a completed OBPI.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "3b. **Exit accounting (GHI #1185; operator ruling 2026-10-10, \"1185 now\")** —\n   `uv run gz airlock out --target {OBPI-SLUG}`. Books the `airlock_out` event for\n   this transit, holding the files the transit changed against the brief's Allowed\n   Paths and reporting each one outside them. Run it here, before git-sync #1,\n   while the tree still holds the transit's changes. The exit reports and never\n   refuses; the refusal on an out-of-scope file is `gz obpi complete`'s (step 2,\n   GHI #1181). A finding here after a completion that passed is a defect in one of\n   the two comparisons, not a reason to re-run completion.\n3a. **Heavy lane: author the brief's `### Step 4b — Independent Adversarial\n   Validation` section** under `## Evidence`. `gz obpi complete` does not write it,\n   and `gz validate --adversarial-validation` (in `gz check`, so the pre-push gate)\n   fails a Completed or Validated heavy-lane brief without it. It carries the\n   adversary's identity and tier, one row per round (ARB receipt, verdict, claims\n   broken), and how each finding was resolved, citing operator rulings verbatim.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "4. Remove `.claude/plans/.pipeline-active-{OBPI-ID}.json` if it was created.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "5. Remove `.claude/plans/.pipeline-active.json` only when it still points at\n   the same OBPI as the per-OBPI marker.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "6. **Git-sync #1** — `uv run gz git-sync --apply`\n   Commits all governance edits from steps 2-5. Tree is now clean.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "7. Run `uv run gz obpi sync {OBPI-SLUG}` to confirm receipt and brief agree.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "8. Run `uv run gz adr status {PARENT-ADR} --json` so the parent ADR view\n   reflects the reconciled OBPI state.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "9. **Git-sync #2** — `uv run gz git-sync --apply`\n   Commits the reconcile output (step 7) and ADR status refresh (step 8).",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "10. Author the session handoff with `/gz-session-handoff`. Its \"Pending Work /\n    Open Loops\" names the remaining parent-ADR OBPIs and any deferred follow-up.\n    The completion register entry from step 3 is the lock's exchange record, not\n    this handoff.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**GHI closure discipline (cross-reference):** When a GHI is closed as part of\npipeline execution or handoff, apply `ghi-close` v2.4.0's dead-letter doctrine:\nevery close MUST cite a real, registered destination (commit SHA, ADR ID visible\nin `gz adr report`, OBPI brief ID, or higher-numbered open GHI). A GHI closed\nwith a vague route-promise (\"should become an ADR\", \"the operator can handle this\nlater\") is a dead-letter and is forbidden. If no destination exists yet, leave the\nGHI open with a blocker comment naming the next concrete operator action. See\n`.gzkit/skills/ghi-close/SKILL.md` § Doctrine — NEVER, EVER, EVER dead-letter a\nGHI for the binding rule.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "---",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "## Gate Friction: Evaluator Escalation (stale brief/OBPI vs. reality)",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "A pipeline gate (Stage 1 reconcile; Stage 5 `precomplete` / `gz obpi complete`\nreconcile-freshness, lock-handoff coupling, or security floor) can block not\nbecause the *work* is wrong but because the *brief/OBPI has drifted from current\nrepo reality* — a stale allowlist, an under-declared coupled surface, a missing\n`sensitivity:` axis, or a plan authored against an earlier tree. The two wrong\nresponses are (a) contorting convention-correct code to satisfy a stale brief,\nand (b) filing a GHI and stalling. **The brief is the artifact that adjusts to\nreality; code that follows established convention is usually right.**",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "When a gate blocks and you suspect the brief — not the code — is stale, run the\n**implementer → evaluator → human-approval** loop instead of working around it:",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "1. **Dispatch an evaluator agent** (Agent tool; `general-purpose` or a review\n   persona; read-only) with a `Why` naming the suspected staleness and the\n   decision it drives. Ask it to determine, with cited evidence:\n   - The established convention / prior art — how sibling code and sibling\n     briefs handled the *identical* pattern (file placement, allowlist\n     declaration, sensitivity, override precedent).\n   - Whether the brief/OBPI under-declared or mis-declared the surface the gate\n     is blocking on.\n   - Whether the actual change is what the gate fears (e.g. a genuine security\n     change) or a false positive (additive, no new surface introduced).\n   - One concrete recommended resolution.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "2. **Make a determination** from the evidence. Do not rubber-stamp — confirm the\n   citations resolve (file paths, line numbers, sibling-brief frontmatter).",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "3. **Present the recommendation(s) to the operator** — the determination, the\n   evidence, and the proposed brief/OBPI adjustment (allowlist amendment,\n   sensitivity declaration, override flag + reason). One tight decision with a\n   recommendation, not a re-derivation (operator economy of effort).",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "4. **On operator approval, adjust the brief/OBPI to fit reality** — amend the\n   allowlist *surgically* (only genuinely-touched coupled surfaces, never the\n   false positives the gate over-flagged), then proceed with the documented\n   override (`--accept-stale-reconciliation --reason '<text>'`,\n   `--accept-security-floor '<reason>'`, etc.). Append an `improvement` insight\n   (Behavior Rule Always #11) capturing the staleness and the adjustment.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "This loop keeps the human as final witness (the operator approves the\nadjustment) while letting the system adjust the governance artifact to match\nverified reality — fewer GHIs, less friction, the brief stays honest.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "> **Anti-pattern:** silently applying an `--accept-*` override without the\n> evaluator determination + operator approval. The override is the *outcome* of\n> the loop, not a shortcut around it. Equally an anti-pattern: relocating\n> convention-correct code into an awkward home purely to satisfy a stale\n> allowlist — fix the brief, not the code.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "---",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "## Error Recovery",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| Failure Point | Action |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "|---------------|--------|",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| Brief not found | Report error, abort surrender (below), stop |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| Receipt verdict FAIL | Report audit failure, abort surrender (below), stop |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| No receipt found (full run) | STOP — enter plan mode, get approval, then resume pipeline |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| No receipt found (`--from` set) | Proceed — user is resuming a partial pipeline |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| Tests fail during implementation | Attempt fix (2 tries), then abort surrender (below) + handoff |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| Verification fails | Attempt fix (1 try), then abort surrender (below) + handoff |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| Human rejects attestation | Record feedback, return to Stage 2 with corrections |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| `git sync` fails or repo remains unsynced | Stop before `gz obpi complete` and repair blockers |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| Gate blocks on stale brief/allowlist (reconcile drift, security floor, under-declared coupled surface) | Run the **Gate Friction: Evaluator Escalation** loop (above) — dispatch evaluator → determination → operator approval → surgical brief amendment + documented override. Do NOT contort code to fit the brief or file a GHI to stall. |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| A lock survives `gz obpi complete` | The completion register entry could not be written, so the lock was left for TTL reaping (Stage 5 step 3). Report it; never `--abandon` a completed OBPI. |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Lock bracket:** Lock is claimed at Stage 1 and surrendered by `gz obpi complete` at Stage 5, or by an abort surrender.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "### Abort surrender",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "On an abort the lock is surrendered with a recorded category (GHI #1167):",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "```bash\nuv run gz obpi lock release {OBPI-SLUG} --abandon <category>:<reason>\n```",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "A release without `--abandon` exits 3 and leaves the lock in place\n(`.gzkit/rules/token-block-discipline.md` § Sub-Invariant 5). `--force` waives\nthe ownership check only. A session handoff is not an exchange record and\ndischarges nothing. The categories are a closed enum, listed in\n`docs/user/manpages/obpi-lock-release.md`; if none describes the abort, do not\npick one that misdescribes it. Leave the lock held, name it in the handoff and\nreport it to the operator; a lock past its TTL is reaped with its own register\nentry.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Handoff creation:** On any abort, after the surrender, run `/gz-session-handoff` to preserve context for the next session.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "---",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "## Blocked on the Operator (GHI #887)",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**When the next legitimate action is a human's, say so in the ledger and stop.**",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "A brief becomes *blocked* — not failed, not abandoned — when every remaining\nfinding needs an operator decision rather than an implementation: a REQ amendment\nunder attestation, an allowlist widening, a Denied-Path collision, a\nconflicting-canon ruling. `AGENTS.md` § Behavior Rules — Always #18 and #9 both\naddress the agent here (*\"Surface blocking failures clearly and upfront\"*;\n*\"STOP, name confusion, present tradeoff, wait\"*), and until GHI #887 neither had\na state the pipeline could enter.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "```bash\nuv run gz obpi block {OBPI-SLUG} \\\n  --reason \"<what cannot proceed without a human>\" \\\n  --next-action \"<the concrete decision the operator owes>\"\n```",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "While the block stands, `gz obpi pipeline` refuses to launch against the OBPI\n(exit 3) and `gz obpi precomplete` reports it instead of `READY`. The operator\nclears it with their own words:",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "```bash\nuv run gz obpi unblock {OBPI-SLUG} --ruling \"<decision>\" --operator \"<who>\"\n```",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Why this is not a lock, a park, or a withdrawal.** The lock says *who is\nworking*; `obpi_parked` says *the parent ADR left active status* (its `parked_to`\nis a pool id, and here the parent is live); withdrawal is permanent and attested.\nA block says only that a decision is owed, and it is reversible by construction.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**No attestor is required to record a block.** Requiring a human to authorize\nthe statement *\"a human is needed\"* would reproduce the deadlock it exists to\nbreak. The ruling that clears it is the operator's; the observation that one is\nneeded is the agent's, and recording it is the honest act.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**Measured cost of not having this** (`OBPI-0.35.0-02`, 2026-08-25/26): 21\n`red_receipt_emitted`, 10 `task_started`, **zero** `task_completed`, four\n`pipeline_launched` and three adversary rounds in the 24 hours after the brief\nbecame structurally uncompletable. Four agents each re-derived that a human was\nneeded; none could record it, so each kept working the surrounding surface.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "---",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "## Evidence Capture",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "> See references/evidence-capture.md for the full stage-by-stage evidence table.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "---",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "## Plan-Audit-Receipt Contract",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "> See references/plan-audit-receipt-contract.md for the receipt JSON schema and contract details.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "---",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "## Parallel Execution",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "Use one writer per governed checkout. Read-only investigation may run independently.\nOnly the operator initiates OBPI work; separate sessions do not grant initiation.\nCapture the contract and input components before review and verify applicability\nbefore consuming it. Sequence shared acceptance/schema writes outside review windows.\nIf another run changes the subject, identify affected evidence before continuing.\nNever stash, pop, reset, revert, or sync another active run's work to clean the tree.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "All OBPIs require per-OBPI human attestation (universal per ADR-0.0.36).",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "---",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "## Relationship to Existing Skills",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| CLI Command / Skill | Role in Pipeline |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "|---------------------|-----------------|",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| `gz obpi lock claim/release` | Stage 1 claim, Stage 5 release, abort release (`--force`) |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| `/gz-plan-audit` | Pre-pipeline — runs in plan mode, produces receipt |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| `gz obpi complete` | Stage 5 atomic completion (attestation + brief + receipt) |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| `gz obpi sync` | Stage 5 confirmation — receipt and brief agree |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "| `/gz-session-handoff` | Error recovery — preserves context on abort |",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "---",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "## Completion Contract",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "The pipeline is complete when — and ONLY when — all of these are true:",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "1. `gz obpi complete` ran successfully — attestation, brief and receipt written atomically, and the lock surrendered (Stage 5, Steps 2–3)",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "2. Heavy lane: the brief carries its `### Step 4b` section (Stage 5, Step 3a)",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "3. Pipeline markers cleaned (Stage 5, Steps 4–5)",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "4. Git-sync #1 committed governance edits (Stage 5, Step 6)",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "5. `gz obpi sync` passed (Stage 5, Step 7)",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "6. Git-sync #2 committed reconcile output (Stage 5, Step 9)",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "If any of these have not happened, the pipeline is not complete. Do not claim otherwise.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**What \"done\" looks like:** The final output of a successful pipeline run is a short status line confirming Stage 5 completed — not a summary of the implementation, not a recap of what was built. Just: \"Pipeline complete. OBPI-X.Y.Z-NN synced.\"",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "### Anti-Pattern: The Premature Summary",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "The single most common pipeline failure is: the agent finishes writing code, prints a summary of files created and tests passing, and stops. This abandons the OBPI in a half-finished governance state — implemented but unverified, unattested, unsynced. The operator must then manually re-invoke the pipeline with `--from=verify` to finish the job.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "**This is the failure mode this skill exists to prevent.** If you find yourself writing a summary after Stage 2 or Stage 3, you are committing this exact anti-pattern. Stop writing the summary. Start the next stage.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "### Anti-Pattern: Hook Bypass",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "If a pipeline hook blocks a write, that means the pipeline is not active or evidence is missing. The correct response is to diagnose the cause — NOT to manually create marker files or ledger entries to bypass the hook. Manually creating files to bypass hooks defeats the entire enforcement mechanism.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "---",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "## Design Notes",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "> See references/design-notes.md for architectural context, hook enforcement details, and AirlineOps lineage.",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "---",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "## Related",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "- OBPI Acceptance Protocol: `AGENTS.md` § OBPI Acceptance Protocol",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "- Plan audit: `.claude/skills/gz-plan-audit/SKILL.md`",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "- Session handoff: `.gzkit/skills/gz-session-handoff/SKILL.md`",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "- Governance workflow: `docs/user/concepts/workflow.md`",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "- Runbook: `docs/user/runbook.md`",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "- Transaction contract: `docs/governance/GovZero/obpi-transaction-contract.md`",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "## Related ADRs",
+   "controls": [],
+   "non_control": []
+  },
+  {
+   "text": "- **ADR-0.0.19** — Pre-execution reasoning walkthrough. The Stage 1→2\n  Justification Gate routes a plan with an ambiguous scope boundary, an\n  unresolved integration point or an unread surface into the `gz-justify`\n  walkthrough before implementation begins.",
+   "controls": [],
+   "non_control": []
+  }
+ ]
+}
