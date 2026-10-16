@@ -2532,7 +2532,8 @@
     ],
     "templates/safe_mode_contract.md": [
       "03263cb350d0d156c6f85ca261af1fa29fdb1f5d089c17fdd7f35a991de7a422",
-      "9e3e403a8fc8bf20b603d2aa5841e1c1d40ef3d3954db7d8521e1934ffaa2217"
+      "9e3e403a8fc8bf20b603d2aa5841e1c1d40ef3d3954db7d8521e1934ffaa2217",
+      "c7ab97b5aff00a164088a38adcdda645bb4fe85921ca7094b8521f244c1cf867"
     ],
     "templates/skill.md": [
       "005a59ec76edce159ff2f51dcc62de12b624ca376c84b4be78afbd5f1ecd11ab",

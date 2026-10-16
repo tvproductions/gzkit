@@ -29,7 +29,7 @@ which design questions about events are put to the operator rather than decided 
 
 - **The pilot** plans, measures, drafts and rules with the operator; it executes a cut itself
   only when the cut is the measurement's own finding and small enough to read in one sitting.
-- **Cheaper sessions** execute the work orders under § Records.
+- **Cheaper sessions** execute the work packages under § Records.
 - **The operator** rules every structural question with the facts and at most three options,
   enters and exits through the `gz-mx` skill, and attests every completion.
 
@@ -102,7 +102,7 @@ package; the session; the two artifacts the operator attests from; the record be
 
 Numbered, dated, with the reason; the operator may overrule any by a word.
 
-## Work orders
+## Work packages
 
 In order. Each is a GHI with a closure contract, executed under § Records, closed through
 `ghi-close`.

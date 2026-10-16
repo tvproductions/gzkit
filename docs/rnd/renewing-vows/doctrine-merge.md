@@ -132,8 +132,9 @@ Ruled whole by the operator on 2026-10-10: 'it stands, add the seventh'.
   **Seaworthy.** The one condition on which safe mode ends. **Handback.** The amendment the
   captain ratifies at seaworthiness; civil rule resumes on it. **Voyage.** Ordinary operations
   under the Magna Carta. **Pilotage chart** and **passage log.** The leg-by-leg instrument and
-  the act-by-act record. **Work order.** A pilotage tasking instrument, a GHI with a closure
-  contract, that leaves with the contract; not the work package. *(Rulings of 2026-10-15 and
+  the act-by-act record. The labor unit under safe mode is the **work package** of the ladder,
+  keyed to a GHI (its tasking order's carrier) until the catalog lands; the term "work order"
+  was retired on 2026-10-16 (verbatim: 'retire it, work package everywhere'). *(Rulings of 2026-10-15 and
   2026-10-16; entrenched on the ruling of 2026-10-16, verbatim: 'keep these metaphor
   entrenched in canon, this won't be the last time we need to reach for this approach'.
   Doctrine: `docs/governance/safe-mode-doctrine.md`.)*
