@@ -19,7 +19,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from gzkit.content.retention import _is_meaningful_char, _leading_marker_len, split_blocks
+from gzkit.content.retention import meaningful_positions, split_blocks
 from gzkit.governance.trust_audits.config_derivation import PROVENANCE_KEYS
 from gzkit.registries import load_registry
 
@@ -126,14 +126,9 @@ def _coverage_violations(index: int, block: Block) -> list[Violation]:
             )
         else:
             covered[at : at + len(quote)] = b"\x01" * len(quote)
-    marker = _leading_marker_len(text)
-    first: int | None = None
-    last: int | None = None
-    for pos, ch in enumerate(text):
-        if _is_meaningful_char(ch, pos, marker) and not covered[pos]:
-            first = pos if first is None else first
-            last = pos
-    if first is not None and last is not None:
+    uncovered = [pos for pos in meaningful_positions(text) if not covered[pos]]
+    if uncovered:
+        first, last = uncovered[0], uncovered[-1]
         out.append(
             Violation(kind="uncovered", where=f"block {index}", detail=text[first : last + 1][:120])
         )

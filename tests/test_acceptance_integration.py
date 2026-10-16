@@ -22,6 +22,7 @@ from gzkit.commands.obpi_stages import (
     _run_pipeline_ceremony_stage,
     _run_pipeline_verify_stage,
 )
+from gzkit.pipeline_procedure import seed_stage_procedures
 from tests.test_acceptance_execution import BRIEF, REQ, ExecutionFixture
 from tests.test_acceptance_store import OBPI, captured_receipt
 
@@ -32,6 +33,9 @@ class TestAcceptanceAdvancement(ExecutionFixture):
         self.write(".gzkit.json", json.dumps({"paths": {"design_root": "design"}}))
         self.brief = self.brief.rename(self.brief.with_name(f"{OBPI}.md"))
         initialize(self.root, OBPI, "implementer-session")
+        # A stage runner serves its procedure at entry and refuses without it
+        # (OBPI-0.35.0-17); seed the files the runtime pins, as gz init does.
+        seed_stage_procedures(self.root)
         self.output = io.StringIO()
         self.console = Console(file=self.output, width=180, color_system=None)
 

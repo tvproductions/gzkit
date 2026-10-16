@@ -148,7 +148,7 @@ def _is_meaningful_char(ch: str, position: int, marker_len: int) -> bool:
     Whitespace, markdown markup (``_MARKUP_CHARS``), and the block's
     leading list marker (its first *marker_len* characters) are excluded;
     every other non-whitespace character — including symbols such as
-    ``--``, ``>=``, ``%`` — changes meaning and must lie inside some
+    ``--``, ``<=``, ``%`` — changes meaning and must lie inside some
     condition or non-binding quote (Requirement 3).
     """
     if ch.isspace():
@@ -156,6 +156,18 @@ def _is_meaningful_char(ch: str, position: int, marker_len: int) -> bool:
     if ch in _MARKUP_CHARS:
         return False
     return position >= marker_len
+
+
+def meaningful_positions(block_text: str) -> list[int]:
+    """Return the positions in *block_text* that a quote must cover (Requirement 3).
+
+    The public seam over the marker and markup rules: whitespace, markdown markup
+    and the block's leading list marker are excluded; every other character is
+    meaning. The pipeline control inventory reads coverage through this function
+    (OBPI-0.35.0-17) rather than through the private helpers.
+    """
+    marker = _leading_marker_len(block_text)
+    return [pos for pos, ch in enumerate(block_text) if _is_meaningful_char(ch, pos, marker)]
 
 
 def _is_indented(line: str) -> bool:

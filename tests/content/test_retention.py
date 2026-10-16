@@ -1666,3 +1666,21 @@ class TestValidateRetentionWholeMapValidation(unittest.TestCase):
             reason_violations,
             "A DROPPED condition on an unknown entry is still checked for a reason",
         )
+
+
+class TestMeaningfulPositions(unittest.TestCase):
+    """The public coverage seam: which characters of a block a quote must account for."""
+
+    def test_markers_markup_and_whitespace_are_not_meaningful(self):
+        from gzkit.content.retention import meaningful_positions
+
+        # "- **Go** now": the list marker, the asterisks and the spaces are excluded.
+        self.assertEqual(meaningful_positions("- **Go** now"), [4, 5, 9, 10, 11])
+
+    def test_symbols_are_meaningful_and_a_bare_marker_covers_nothing(self):
+        from gzkit.content.retention import meaningful_positions
+
+        # ">" is markdown markup (a blockquote marker) and is excluded wherever it sits.
+        self.assertEqual(meaningful_positions("x <= 5%"), [0, 2, 3, 5, 6])
+        self.assertEqual(meaningful_positions("x >= 5%"), [0, 3, 5, 6])
+        self.assertEqual(meaningful_positions("- "), [])

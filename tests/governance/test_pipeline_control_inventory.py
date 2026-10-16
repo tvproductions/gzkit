@@ -181,6 +181,41 @@ class TestBeforeStateChecks(unittest.TestCase):
         reworded = ControlInventory.model_validate(data)
         self.assertEqual(check_before_state(reworded, BODY), [])
 
+    def test_uncovered_detail_runs_over_the_meaningful_characters_a_quote_leaves_out(self):
+        """The reported span starts at the first and ends at the last uncovered meaningful char.
+
+        Coverage is read through the retention module's public seam
+        (``meaningful_positions``); the list marker, the asterisks and the spaces
+        around the quote are not what the detail names.
+        """
+        body = "- **Go** now, please.\n"
+        block_text = split_blocks(body)[0]
+        inv = ControlInventory(
+            baseline=Baseline(
+                path=".gzkit/skills/x/SKILL.md",
+                commit="abc1234",
+                skill_version="1.0.0",
+                body_sha256=body_digest(body),
+            ),
+            extracted_by="reviewer",
+            mapped_by="author",
+            blocks=[
+                Block(
+                    text=block_text,
+                    controls=[
+                        Control(
+                            id="S1-001",
+                            quote="**Go**",
+                            applies_at=["stage1"],
+                            delivered_span="**Go**",
+                        )
+                    ],
+                )
+            ],
+        )
+        uncovered = [v for v in check_before_state(inv, body) if v.kind == "uncovered"]
+        self.assertEqual([v.detail for v in uncovered], ["now, please."])
+
     def test_a_control_with_no_position_is_reported(self):
         inv = _complete_inventory()
         data = inv.model_dump(by_alias=True)
