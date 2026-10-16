@@ -171,7 +171,7 @@ pilot's, because they carry the catalog's shape and the re-cut, which the operat
 - **WO-7 (pilot).** The re-cut of 16 to 20 as work packages by contract, with the TASK as
   increment and the commit-grain witness on the pipeline route; the three re-cut decisions
   put to the operator with the cut.
-- **WO-8.** The obligation column on the advisory scorecard.
+- **WO-8.** The obligation column on the advisory scorecard. GHI #1247 (filed 2026-10-16).
 
 Not work orders under martial law: the identifier ladder's timing, the crew split's final
 shape, the second-substrate sortie, the Matrix's replacement text. These are civil-rule
@@ -299,10 +299,10 @@ leg's reading column moves only by an act in that log. WO-10 below makes the rea
 | H1 | Session start bounded | `TestCampaignBlockIsBounded`; orientation under 8 KB | met, 4,831 B | done |
 | H2 | AGENTS.md within budget | `gz validate --instructions-files-budget`, no advisory | met by ruling, 846 chars headroom | done |
 | H3 | Pipeline invoke bounded | `gz skill audit`; § Passage log | met, 125,923 B to 11,445 B | done |
-| H4 | Per-turn rules and skill descriptions cut | the two sizes in the passage log before and after; `gz skill audit` | not started: rules 150 KB over 26 files, descriptions 15,085 chars | cheaper session, WO-11 |
+| H4 | Per-turn rules and skill descriptions cut | the two sizes in the passage log before and after; `gz skill audit` | not started: rules 150 KB over 26 files, descriptions 15,085 chars | cheaper session, WO-11, GHI #1246 |
 | H5 | The catalog exists and is used | `data/requirements_catalog.json` loads through the registry seam; briefs 16 to 20 carry `assignments:` | not started; shapes decided below | pilot authors, WO-4 |
 | H6 | The TASK is the increment on one package | ledger: one package's TASKs each with a `red_commit_receipt_emitted`, in one session | not started | pilot cuts, cheaper session flies, WO-7 |
-| H7 | Every control names its contract | `gz validate --advisory-scorecard` reads an obligation column | not started | cheaper session, WO-8 |
+| H7 | Every control names its contract | `gz validate --advisory-scorecard` reads an obligation column | not started | cheaper session, WO-8, GHI #1247 |
 | H8 | The toggle is on the record | `.gzkit/mx.json` with `mode: safe`, bound to its event | the verb exists (`ac3b0005e`); the operator has not entered | operator |
 | H9 | 17 and 20 attested | `gz obpi status` shows `attested_completed` for both | `Draft`; disclosures recorded in the log | operator |
 | H10 | Handback | the campaign amendment listing every pilot commit, kept or reverted, with this log, restoring the initiation clause | not started | pilot drafts, operator ratifies |
@@ -348,9 +348,9 @@ the passage log, and then the campaign carries the rest.
 
 ### Work orders added
 
-- **WO-10.** The orientation prints this chart's readings while `.gzkit/mx.json` is in safe mode:
+- **WO-10 (GHI #1245).** The orientation prints this chart's readings while `.gzkit/mx.json` is in safe mode:
   each leg's witness run and its reading, so the path is read from the tree, never from memory.
-- **WO-11.** The per-turn rules narrative lift and the skill-description cut (H4), measured
+- **WO-11 (GHI #1246).** The per-turn rules narrative lift and the skill-description cut (H4), measured
   before and after, nothing compressed in a binding clause.
 
 ## What does not change
