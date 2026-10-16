@@ -13048,3 +13048,10 @@ Unit tests passed.
 - Recommendation: `proofs/recommendation-2026-10-15.md`; three options (A budget at the invariant floor plus margin, B operator re-tiering, C per-consumer delivery) put to the operator. No edit made.
 - Step 1 drift noted: the chore's compose command validated a stale on-disk candidate (2026-10-10) rather than rendering the corpus; the committed rendition served as the baseline. The chore text's "59 entries, 4 compressible" figures in § 4 are 2026-06 records; the corpus holds 517 entries.
 - Filed as GHI #1243 (WO-2's work order, through ghi-author). Awaiting the operator's verbatim ruling before any § 5 arm runs.
+
+## 2026-10-16 — § 4 ruling received; § 5 edit made
+
+- Operator ruling on GHI #1243, verbatim: **'A, record the budget at the invariant floor'**. Recorded here before the edit, as § 4 requires.
+- Applied: `data/instructions_files_budget.json` `AGENTS.md` 20000 → 25000 (the attested invariant floor 22,599 B plus margin); dated entry in `docs/governance/instructions-files-budget-history.md`; `docs/governance/agents-md-doctrine.md` § Budget targets repaired to say the enforced value now sits above the doctrine ceiling.
+- Not applied, carried forward as declined by this ruling: B (re-tiering named invariant canon) and C (per-consumer delivery); the three pointer-line lifts in `proofs/recommendation-2026-10-15.md` were not ruled on and stand as candidates for the next pass.
+- Measured after: `gz validate --instructions-files-budget` exit 0 with no budget advisory; AGENTS.md 24,154 chars against 25,000, 846 chars of headroom; Codex cap headroom 41,257 B.

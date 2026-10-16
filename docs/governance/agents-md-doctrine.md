@@ -52,13 +52,13 @@ The operator selected "Moderate" (halve current weight; preserve binding-bullet 
 | `CLAUDE.md` | 40,000 chars | 4,000 chars | Already 1,378 chars; 4k provides 2.6k headroom for model-specific addenda |
 | `.claude/rules/*.md` | 16,000 chars/file | 16,000 chars/file | Unchanged; per-file shape audit deferred to OBPI-0.0.54-04 |
 
-Budget is enforced by `gz validate --instructions-files-budget` reading `data/instructions_files_budget.json` — the single source of truth. The **live enforced** values are whatever that JSON carries. Since the 2026-09-19 third ruling, `AGENTS.md`'s enforced budget is 20,000 chars — equal to its ceiling, so for that row the ceiling is a currently-enforced number and not only a destination, while the distance to the 15,000-char ideal stays destination work. `CLAUDE.md` and the `.claude/rules/*.md` glob remain above their targets and stay destinations, deferred to `ADR-0.35.0-canon-entry-corpus-landing` § Decision 3. (The intermediate hop through GHI #533 is retired — that issue closed 2026-09-01 `superseded` into this ADR.)
+Budget is enforced by `gz validate --instructions-files-budget` reading `data/instructions_files_budget.json` — the single source of truth. The **live enforced** values are whatever that JSON carries. From the 2026-09-19 third ruling to 2026-10-16, `AGENTS.md`'s enforced budget was 20,000 chars, equal to its ceiling. On 2026-10-16 the operator ruled on GHI #1243, verbatim "A, record the budget at the invariant floor": the enforced budget is now the attested invariant floor plus margin (see the [budget history](instructions-files-budget-history.md), 2026-10-16), which sits above the 20,000-char ceiling, so every row of this table is again a destination and the enforced numbers are the JSON's. The distance from the enforced value back to the ceiling and down to the ideal is closed by `ADR-0.35.0-canon-entry-corpus-landing` § Decision 3 or by an operator re-tiering of invariant canon, never by a trim of operator words. `CLAUDE.md` and the `.claude/rules/*.md` glob remain above their targets as well. (The intermediate hop through GHI #533 is retired — that issue closed 2026-09-01 `superseded` into this ADR.)
 
-> The 15,000–20,000-char range above is the doctrine *destination*: aim for the ideal, never pass the ceiling. Since the
-> 2026-09-19 third ruling the enforced budget for `AGENTS.md` **is** the 20,000-char ceiling, so the ceiling is mechanical
-> rather than prose and only the distance to the 15,000-char ideal is still destination work. The live
-> enforced value is always whatever `data/instructions_files_budget.json` carries —
-> the single source of truth — never a number duplicated into prose or tests.
+> The 15,000–20,000-char range above is the doctrine *destination*: aim for the ideal, never pass the ceiling. From the
+> 2026-09-19 third ruling to 2026-10-16 the enforced budget for `AGENTS.md` was the 20,000-char ceiling; since the
+> 2026-10-16 ruling the enforced budget records the attested invariant floor plus margin, above the ceiling, so the
+> whole range is destination work again. The live enforced value is always whatever
+> `data/instructions_files_budget.json` carries — the single source of truth — never a number duplicated into prose or tests.
 >
 > The predecessor pointer to `ADR-0.0.37` is **retired**: that ADR went terminal
 > 2026-07-18 (§ Terminal Disposition, "Split-and-Supersede") with its
