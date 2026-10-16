@@ -13,7 +13,7 @@ import pathlib
 import subprocess
 import time
 from collections.abc import Callable
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
 from typing import Any
 
 from rich.markup import escape
@@ -886,9 +886,14 @@ def _run_check_steps(
     """Run every step and return results in the declared list order.
 
     Two phases, per the declaration's stated protocol: writers serially first,
-    then every read-only step concurrently.  The boundary is a conservative
-    default against UNDECLARED dependencies — no measured edge crosses it (GHI
-    #905) — so it holds without needing a general dependency graph.
+    then every read-only step concurrently. A gated reader starts the moment the
+    writer lane finishes, not when the overlapping readers do (GHI #1255): until
+    then the lane and ``Test`` shared one pool that the gated readers waited to
+    drain, which held the guard-canary sweep behind the whole unit tier.
+
+    The boundary is a conservative default against UNDECLARED dependencies — no
+    measured edge crosses it (GHI #905) — so it holds without needing a general
+    dependency graph.
 
     **One reader is allowed to overlap the writer phase (GHI #904.)** The phase
     boundary charges every reader for a dependency none of them turned out to
@@ -944,31 +949,39 @@ def _run_check_steps(
         """Run every writer in list order. One task, so the order is preserved."""
         return [(name, _run_one(name, runner)) for name, runner in serial]
 
-    if early:
-        workers = min(_MAX_CONCURRENT_STEPS, len(early) + 1, (os.cpu_count() or 4))
-        with ThreadPoolExecutor(max_workers=workers) as pool:
-            lane = pool.submit(_run_writer_lane)
-            pending = {pool.submit(_run_one, name, runner): name for name, runner in early}
-            for future in as_completed(pending):
-                name = pending[future]
-                progress.advance(name)
-                collected[name] = _seam(name, future.result(), project_root)
-            for name, result in lane.result():
-                progress.advance(name)
-                collected[name] = _seam(name, result, project_root)
-    else:
-        for name, runner in serial:
-            progress.advance(name)
-            collected[name] = _seam(name, _run_one(name, runner), project_root)
+    def _record(name: str, result: QualityResult) -> None:
+        progress.advance(name)
+        collected[name] = _seam(name, result, project_root)
 
-    if gated:
-        workers = min(_MAX_CONCURRENT_STEPS, len(gated), (os.cpu_count() or 4))
-        with ThreadPoolExecutor(max_workers=workers) as pool:
-            pending = {pool.submit(_run_one, name, runner): name for name, runner in gated}
-            for future in as_completed(pending):
-                name = pending[future]
-                progress.advance(name)
-                collected[name] = _seam(name, future.result(), project_root)
+    # The writer lane holds one reader slot while it runs; the gated readers are
+    # submitted only when it finishes, so they never use more than `reader_slots`
+    # threads together. Each overlapping reader carries its own thread.
+    reader_slots = min(_MAX_CONCURRENT_STEPS, max(len(gated), 1), (os.cpu_count() or 4))
+    with ThreadPoolExecutor(max_workers=len(early) + reader_slots) as pool:
+        pending: dict[Future[Any], str | None] = {
+            pool.submit(_run_one, name, runner): name for name, runner in early
+        }
+        # Gated readers wait for the WRITER LANE, never for an overlapping reader
+        # (GHI #1255): `None` marks the lane's future.
+        if serial:
+            pending[pool.submit(_run_writer_lane)] = None
+        else:
+            pending.update({pool.submit(_run_one, name, runner): name for name, runner in gated})
+        while pending:
+            done, _ = wait(pending, return_when=FIRST_COMPLETED)
+            for future in done:
+                name = pending.pop(future)
+                if name is not None:
+                    _record(name, future.result())
+                    continue
+                for lane_name, result in future.result():
+                    _record(lane_name, result)
+                pending.update(
+                    {
+                        pool.submit(_run_one, gated_name, runner): gated_name
+                        for gated_name, runner in gated
+                    }
+                )
 
     return [(name, collected[name]) for name, _ in steps]
 

@@ -229,5 +229,90 @@ class OverlapRunnerTest(unittest.TestCase):
         self.assertTrue(all(r.success for _, r in results))
 
 
+@dataclass
+class _GatedRun:
+    """What one gated-reader run observed; typed for the same reason as `_Run`."""
+
+    lane_active: bool = False
+    test_saw_lint_start: bool = False
+    lint_saw_lane_active: bool = True
+    results: list[tuple[str, QualityResult]] = field(default_factory=list)
+    progress: list[str] = field(default_factory=list)
+    seam_threads: list[str] = field(default_factory=list)
+
+
+class GatedReaderStartTest(unittest.TestCase):
+    """A gated reader waits for the writer lane, never for an overlapping reader (GHI #1255).
+
+    The overlap lane admitted ``Test`` to run beside the writers (GHI #904), but
+    the runner started the gated readers only when the whole first pool drained,
+    ``Test`` included. On CI run 38875151441 the gate's wall equalled ``Test`` plus
+    the guard-canary sweep within 3 percent on both platforms. ``Test`` writes
+    nothing, so no gated reader has an edge to it.
+    """
+
+    def _run(self) -> _GatedRun:
+        state = _GatedRun()
+        lint_started = threading.Event()
+
+        def behave(_root: Path) -> QualityResult:
+            state.lane_active = True
+            threading.Event().wait(0.2)
+            state.lane_active = False
+            return _ok("Behave")
+
+        def test(_root: Path) -> QualityResult:
+            # A slow overlapping reader: it ends only when the gated reader has
+            # started, or after a bound long enough to mean it never will.
+            state.test_saw_lint_start = lint_started.wait(5.0)
+            return _ok("Test")
+
+        def lint(_root: Path) -> QualityResult:
+            state.lint_saw_lane_active = state.lane_active
+            lint_started.set()
+            return _ok("Lint")
+
+        steps: list[tuple[str, CheckStepRunner]] = [
+            ("Behave", behave),
+            ("Test", test),
+            ("Lint", lint),
+        ]
+        progress = _Progress()
+
+        def seam(_name: str, result: QualityResult, _p: Path) -> QualityResult:
+            state.seam_threads.append(threading.current_thread().name)
+            return result
+
+        classes = {"Behave": "writes", "Test": "read_only", "Lint": "read_only"}
+        with (
+            mock.patch("gzkit.commands.quality._step_concurrency_classes", return_value=classes),
+            mock.patch("gzkit.commands.quality._steps_overlapping_writers", return_value={"Test"}),
+            mock.patch("gzkit.commands.quality._seam", side_effect=seam),
+        ):
+            state.results = _run_check_steps(steps, get_project_root(), progress)
+        state.progress = progress.seen
+        return state
+
+    def test_a_gated_reader_starts_while_an_overlapping_reader_is_still_running(self) -> None:
+        self.assertTrue(
+            self._run().test_saw_lint_start,
+            "Lint started only after Test ended: a gated reader waited for a reader",
+        )
+
+    def test_a_gated_reader_still_waits_for_the_writer_lane(self) -> None:
+        """The negative control: the start may move earlier, never past the writers."""
+        self.assertFalse(self._run().lint_saw_lane_active, "a gated reader overlapped a writer")
+
+    def test_each_step_reports_once_on_the_calling_thread_in_list_order(self) -> None:
+        state = self._run()
+        self.assertEqual(["Behave", "Test", "Lint"], [n for n, _ in state.results])
+        self.assertEqual(["Behave", "Lint", "Test"], sorted(state.progress))
+        self.assertEqual(
+            {threading.main_thread().name},
+            set(state.seam_threads),
+            "the MX seam must fire on the calling thread (REQ-0.0.74-20-01)",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
