@@ -27,6 +27,19 @@ on:
 permissions:
   contents: read
 
+# A newer push supersedes the run in flight on the same ref (GHI #1254). On
+# 2026-10-16, 11 of 15 runs on main started while the previous run was still
+# going, each a full two-platform sweep judging a tree nobody would ship.
+# The group is per workflow and ref, so a pull request cancels only its own
+# older runs and never a run on main.
+# What is given up: an intermediate commit on main superseded before its run
+# ends gets no CI verdict of its own; the next run judges the combined tree.
+# The pre-push `gz check` still runs locally on every push. Operator ruling,
+# 2026-10-16, verbatim: "cancel superseded runs is fine".
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   check:
     # Windows is in the matrix because `.claude/rules/cross-platform.md` declares
