@@ -285,6 +285,74 @@ With the three ruled, WO-4 authors the entries for the obligations of `OBPI-0.35
 `-20`, thirty-three BEHAVIOR and twelve SUPPORT lines today, each with its contract, and
 WO-7 re-cuts the briefs as work packages by contract.
 
+## Pilotage chart — the path into the harbor, the drydock, and seaworthiness (2026-10-16)
+
+Written under crisis mode at the operator's word (verbatim: *"in safemode/martial law, you need to
+lean in and make executive decisions to achieve outcomes"*). The chart is the tracking instrument:
+one row per leg, each with its witness and its last reading. The passage log records each act; a
+leg's reading column moves only by an act in that log. WO-10 below makes the readings mechanical.
+
+### The path into the harbor (martial law ends at the quay)
+
+| Leg | What it means | Witness | Reading 2026-10-16 | Owner |
+|---|---|---|---|---|
+| H1 | Session start bounded | `TestCampaignBlockIsBounded`; orientation under 8 KB | met, 4,831 B | done |
+| H2 | AGENTS.md within budget | `gz validate --instructions-files-budget`, no advisory | met by ruling, 846 chars headroom | done |
+| H3 | Pipeline invoke bounded | `gz skill audit`; § Passage log | met, 125,923 B to 11,445 B | done |
+| H4 | Per-turn rules and skill descriptions cut | the two sizes in the passage log before and after; `gz skill audit` | not started: rules 150 KB over 26 files, descriptions 15,085 chars | cheaper session, WO-11 |
+| H5 | The catalog exists and is used | `data/requirements_catalog.json` loads through the registry seam; briefs 16 to 20 carry `assignments:` | not started; shapes decided below | pilot authors, WO-4 |
+| H6 | The TASK is the increment on one package | ledger: one package's TASKs each with a `red_commit_receipt_emitted`, in one session | not started | pilot cuts, cheaper session flies, WO-7 |
+| H7 | Every control names its contract | `gz validate --advisory-scorecard` reads an obligation column | not started | cheaper session, WO-8 |
+| H8 | The toggle is on the record | `.gzkit/mx.json` with `mode: safe`, bound to its event | the verb exists (`ac3b0005e`); the operator has not entered | operator |
+| H9 | 17 and 20 attested | `gz obpi status` shows `attested_completed` for both | `Draft`; disclosures recorded in the log | operator |
+| H10 | Handback | the campaign amendment listing every pilot commit, kept or reverted, with this log, restoring the initiation clause | not started | pilot drafts, operator ratifies |
+
+At the quay: H1 to H10 met and `gz mx exit` green at full strength. Civil rule resumes there.
+
+### The drydock (civil rule, on the redesign)
+
+Drydock is the structural work that changes canon and therefore waits for civil rule; it is
+sequenced by the campaign, not by this contract. The pilot leaves it specified:
+
+| Repair | What is rebuilt | Seaworthiness witness |
+|---|---|---|
+| D1 | The ladder: ADR records decisions and lands contracts; the release artifact (its own rung) governs a version; the work package replaces the OBPI as the labor unit; the TASK is the increment | one release planned and closed through the release artifact, with `gz closeout` keyed to it |
+| D2 | The catalog as the product's truth: every live REQ an entry with its contract and state; legacy ids as aliases | `gz validate` scope that fails on a brief assignment naming no entry |
+| D3 | GHIs classified by the contract they repair; MX visits likewise | `ghi-triage` reports the contract per issue; an unclassified issue is a finding |
+| D4 | The control plane: every control names its contract; incident history lives in rationale records | the obligation column full; no rule body carries a dated narrative |
+| D5 | The airlock derives the slice from the contract's `modules` | a transit whose reach exceeds the contract's modules is refused |
+| D6 | Eval checks module design against module code | one eval run on one package, reported |
+
+### Seaworthy again
+
+The ship is seaworthy when a cheaper session, under civil rule, takes one work package from the
+catalog, cuts its TASKs, lands each as one commit with its trailer and its `red_commit_receipt`
+on the pipeline route, and the operator attests the package from two artifacts only: its entries'
+states and its TASK receipts. That is one sea trial, not a checklist; it is passed once, recorded in
+the passage log, and then the campaign carries the rest.
+
+### Executive decisions taken 2026-10-16 (the operator may overrule any by a word)
+
+1. **WO-4 shapes, decided as recommended:** `REQ-C<n>` sequential ids with category as metadata;
+   one JSON file `data/requirements_catalog.json` read through the registry seam with a derived
+   Markdown view; assignments in brief frontmatter with the legacy `REQ-X.Y.Z-NN-MM` line kept as
+   the alias the proof channels bind to.
+2. **The release artifact, decided for drydock D1:** a separate rung, one document per version
+   under `docs/design/releases/`, carrying the entries whose state advances, the packages shipped,
+   the lane's gates and the operator's signature; ADRs stop carrying a version at the migration;
+   patch releases use the same artifact with a short list.
+3. **The disclosures of the cutover row stand as recorded.** The pilot cannot attest; it proceeds
+   on them and the operator rules at H9.
+4. **Execution leaves the pilot.** Every leg marked "cheaper session" is a GHI with a closure
+   contract written by the pilot; the pilot executes nothing deterministic from here.
+
+### Work orders added
+
+- **WO-10.** The orientation prints this chart's readings while `.gzkit/mx.json` is in safe mode:
+  each leg's witness run and its reading, so the path is read from the tree, never from memory.
+- **WO-11.** The per-turn rules narrative lift and the skill-description cut (H4), measured
+  before and after, nothing compressed in a binding clause.
+
 ## What does not change
 
 Gate 5. The ledger rule. Every control standing under § Amendments 2026-10-04 (2). The
@@ -305,3 +373,4 @@ inside it.
 | 2026-10-16 | WO-2 opened: `instructions-files-diet` steps 1 to 3 run and stopped at § 4 (GHI #1243) | AGENTS.md 24,154 chars against a 20,000-char budget; nothing measured | the delivered rendition is 22,599 B invariant text over 101 live entries, 876 B compressible over 4 (all Judgment, three of them one-line pointers), 804 B structure; required delta 4,154; the gap exceeds the compressible budget (§ When to stop and ask, state 2); no edit made | `5c6e9a493` | `proofs/baseline-2026-10-15.txt`, `proofs/recommendation-2026-10-15.md`, `proofs/CHORE-LOG.md`; three options put to the operator in GHI #1243: A the budget recorded at the invariant floor plus margin (25,000) with a dated history entry, B operator re-tiering of named canon, C per-consumer delivery; the chore's step 1 command validated a stale on-disk candidate rather than rendering the corpus, noted in the log. Per-turn load outside the budget: `.claude/rules/*.md` 150 KB in 26 files and 15,085 chars of skill descriptions over 73 skills |
 | 2026-10-16 | safe mode, the martial-law toggle, built as a mode of the MX hangar (GHI #1244; operator ruling verbatim *"A, extend gz mx with a safe mode - which is 'martial law' toggle"*) | martial law existed only as this contract: no marker, no per-turn banner, no ledger anchor, no exit gate; the hangar demoted guards and knew no mode | `gz mx enter --mode safe --contract <path>` opens the marker in safe mode: the marker and the `mx_session_opened` event carry `mode` and `contract`; the banner and the orientation name them each turn; `checkpoint.hangar_demotes` is true only under `mode: mx`, so every guard stays at full strength; a missing or outside contract, or a contract under the hangar, is refused; `gz mx exit` closes either mode through the same hard gate; rule 1.5.0 with § Safe mode (Coverage Ledger row 62f, Promotable), skill 1.2.0 with its flags corrected, manpages updated | `ac3b0005e` | 9 tests RED first across marker, checkpoint, awareness and enter, then 12 more to drive every hunk; `gz check` passed; `gz cli audit` passed; `gz arb red --commit ac3b0005e` 18 killed, 0 survived, 17 `inconclusive` (declaration hunks and reverts that error rather than assert; receipt `arb-red-commit-ac3b0005e9f0-0c3a60a8eb8047b9a5d3d80e03896fc4`). Three earlier cuts were `undriven` (13, then 2, then 1 hunks: the hook mirror and template, the parser flags, the typed event, the enter and exit labels, an unreachable assert that was removed, and two guards whose refusal message no test read); each re-cut before pushing. **Next:** the operator enters the present pilotage through the verb so the ledger carries the toggle: `uv run gz mx enter --mode safe --contract docs/governance/harbor-pilotage-candidate-2026-10-15.md --reason "harbor pilotage" --attestor g0` |
 | 2026-10-16 | WO-2 closed by ruling (GHI #1243, operator verbatim *"A, record the budget at the invariant floor"*) | AGENTS.md 24,154 chars against a 20,000-char budget; the chore stopped at § 4 because 876 B of compressible text could not close a 4,154-char gap | the enforced budget is 25,000 chars, the attested invariant floor (22,599 B) plus margin, with a dated entry in `docs/governance/instructions-files-budget-history.md`; the doctrine page says the enforced value sits above the 20,000 ceiling, which is destination work again; options B and C recorded as declined; `gz validate --instructions-files-budget` exits 0 with no advisory; 846 chars of headroom | `e0dab8ee4` | data and docs only: `gz arb red --commit e0dab8ee4` verdict `no-production-hunks` (receipt `arb-red-commit-e0dab8ee443c-860c9d481d8649469a524129803afc2b`); `gz check` and `mkdocs build --strict` green (the strict build caught a lifted version-history link from the safe-mode commit, repaired here); GHI #1243 closed `fixed`. Exit condition 2 is met by ruling, not by trimming |
+| 2026-10-16 | pilotage chart written: harbor legs H1 to H10 with witnesses and readings, drydock repairs D1 to D6 with seaworthiness witnesses, the sea trial, four executive decisions (WO-4 shapes, the release artifact as its own rung, the disclosures stand, execution leaves the pilot), WO-10 and WO-11 added | the path existed as seven exit conditions and a passage log; no instrument read the legs | § Pilotage chart; readings move only by a logged act | this commit | the operator's word of 2026-10-16 (*"lean in and make executive decisions"*); nothing executed |
