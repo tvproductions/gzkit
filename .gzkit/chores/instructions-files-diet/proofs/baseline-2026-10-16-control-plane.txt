@@ -1,0 +1,15 @@
+baseline 2026-10-16 (safe mode, the control-plane cut; operator: "A (in safe mode - make backups!!! - help me test how much we can cut and remain effective, I need to better balance context bloat)")
+Backup: annotated tag control-plane-baseline-2026-10-16 at eff2062c8, pushed. Restore one surface: git checkout control-plane-baseline-2026-10-16 -- <path>
+Measured from the working tree at eff2062c8 (bytes = UTF-8 file size; chars for descriptions = stripped frontmatter description text):
+  AGENTS.md                      24,629 B   (budget 25,000, data/instructions_files_budget.json)
+  CLAUDE.md                       2,305 B   (budget 15,000)
+  .claude/rules/*.md             149,529 B over 26 files; largest tests.md 11,618 B, chores.md 8,433 B, token-block-discipline.md 8,031 B
+  skill descriptions             15,816 chars over 73 skills (loaded every turn); 11 skills user-invoked only
+  skill bodies (SKILL.md)        639,408 B over 73 skills (loaded on invocation)
+  .claude/agents/*.md            10,799 B over 5 definitions (loaded on every dispatch)
+  nested AGENTS.md (repo side)   175,877 B over 17 files (loaded when the agent works in that subtree); wheel and codex mirrors excluded
+  .gzkit/personas/*.md           24,879 B (loaded when a persona is assigned)
+  .claude/hooks/*.py             17 scripts; settings.json 5,366 B; per-turn injected text: orientation 4,831 B (H1) plus the MX banner when a marker is open
+  chores                         41 directories (loaded when a chore runs)
+Method: python over the tracked tree (see docs/governance/harbor-pilotage-candidate-2026-10-15.md § Passage log, 2026-10-16, the control-plane cut).
+Not a budget. The exit numbers are in the contract's drydock table; the enforced values land in data/instructions_files_budget.json under WP-13.

@@ -304,7 +304,7 @@ mechanical.
 | Phase | Regime | Produces | Done when |
 |---|---|---|---|
 | Harbor | safe mode | load cut, inventory, serving, the toggle, the budget | H1 to H9 met |
-| Drydock | safe mode | the catalog, the Release Package type, work packages for 16 to 20, controls naming their contracts, the ladder migrated, the first release | the first release built and published through a Release Package, with the drydock exit numbers met |
+| Drydock | safe mode | the catalog, the Release Package type, work packages for 16 to 20, controls naming their contracts, the control plane cut to budget and measured, the ladder migrated, the first release | the first release built and published through a Release Package, with the drydock exit numbers met |
 | Sea trial | safe mode | a fresh project on the released wheel runs one work package end to end | the trial recorded in the passage log |
 | Handback | ratification | the amendment: every pilot commit kept or reverted, the passage log carried, the initiation clause restored | the operator's word; `/gz-mx` exits through the hard gate |
 | Voyage | Magna Carta | releases planned, packaged, witnessed, attested | ordinary operations |
@@ -332,18 +332,23 @@ Safe mode is left once, at seaworthiness. Nothing returns to civil rule in betwe
 | D1 | The ladder: ADR records decisions and lands contracts; the Release Package (its own rung, § The Release Package) governs a version; the work package replaces the OBPI as the labor unit; the TASK is the increment | the first release planned and closed through a Release Package, with `gz closeout` keyed to it; the `gz-release` skill of WP-12 (GHI #1248) measures the pressure and runs the ceremony |
 | D2 | The catalog as the product's truth: every live REQ an entry with its contract and state; legacy ids as aliases | a `gz validate` scope that fails on a brief assignment naming no entry |
 | D3 | GHIs classified by the contract they repair; MX visits likewise | `ghi-triage` reports the contract per issue; an unclassified issue is a finding |
-| D4 | The control plane subtracted: every control names its contract or retires; no rule body carries a dated narrative | the obligation column full; the counts below |
+| D4 | The control plane subtracted: every control names its contract or retires; no rule body carries a dated narrative; every surface an agent loads is within its budget, cut in stages and each stage measured before the next (WP-13 to WP-16) | the obligation column full; the counts below, read by the WP-13 witness |
 | D5 | The airlock derives the slice from the contract's `modules` | a transit whose reach exceeds the contract's modules is refused |
 | D6 | Eval checks module design against module code | one eval run on one package, reported |
 
-**Drydock exit numbers** (executive decisions 2026-10-16; the operator may move any by a word):
+**Drydock exit numbers** (executive decisions 2026-10-16, widened the same day to every loaded surface on the operator's ruling A; the operator may move any by a word; backup: tag `control-plane-baseline-2026-10-16`; baseline proof `.gzkit/chores/instructions-files-diet/proofs/baseline-2026-10-16-control-plane.txt`):
 
 | Measure | Today | Exit |
 |---|---|---|
 | Per-turn load: AGENTS.md | 24,154 chars | at or under the ruled budget, 25,000 |
-| Per-turn load: skill descriptions, all skills | 15,085 chars | at or under 8,000 chars |
-| Per-turn load: rules, total and largest | 150 KB over 26 files; `tests.md` 11,618 B | at or under 90 KB; no rule over 6,000 B |
-| Skills in the catalogue | 73 | every skill either model-invoked with a one-sentence description or `disable-model-invocation: true`; the count is reported, not targeted |
+| Per-turn load: skill descriptions, all skills | 15,816 chars | at or under 6,000 chars |
+| Per-turn load: rules, total and largest | 149,529 B over 26 files; `tests.md` 11,618 B | at or under 60 KB; no rule over 4,000 B |
+| Skills in the catalogue | 73; bodies 639,408 B | at most 40; every skill either model-invoked with a one-sentence description or `disable-model-invocation: true`; every body under its `skill_contract` ceiling (WP-14) |
+| On dispatch: agent definitions, `.claude/agents/` | 10,799 B over 5 | at or under 6 KB (WP-15) |
+| In a subtree: nested `AGENTS.md`, repo side | 175,877 B over 17 files | at or under 60 KB in total (WP-15, after the rules cut) |
+| On assignment: personas | 24,879 B | at or under 12 KB (WP-15) |
+| Per turn: text the hooks inject | orientation 4,831 B plus the MX banner | at or under 4 KB per turn (WP-15) |
+| Every number above | measured by hand (the proof file) | read by `gz validate --instructions-files-budget` from `data/instructions_files_budget.json` (WP-13); each cut stage carries its effectiveness report (WP-16) |
 | Controls with no named contract | 189 scored, 0 assigned | 0 unassigned: each names its contract or is retired by a logged act |
 | Operator attestations | one per OBPI | one per release, plus the sea trial |
 
@@ -381,6 +386,14 @@ Passed once and recorded here, the ship is seaworthy and the handback follows.
 4. **Execution leaves the pilot.** Every leg marked "cheaper session" is a GHI with a closure
    contract written by the pilot; the pilot executes nothing deterministic from here.
 5. **The drydock exit numbers above.**
+6. **The control-plane cut, ruled A by the operator** (2026-10-16, verbatim *"A (in safe mode - make
+   backups!!! - help me test how much we can cut and remain effective, I need to better balance
+   context bloat)"*): one exit number per surface an agent loads; the backup is the pushed tag
+   `control-plane-baseline-2026-10-16`; the cut proceeds in stages and no stage is accepted without
+   WP-16's report (meaning retention, instruction eval, one work package flown on the cut surfaces);
+   canon is reset against the trimmed state (operator, verbatim *"we can reset canon against the
+   trimmed state"*) through `gz content retire` and `gz content land` with retention maps, never by
+   editing a rendition. Harbor leg H4 (#1246) is stage 1.
 
 ### Work packages added
 
@@ -395,6 +408,15 @@ Passed once and recorded here, the ship is seaworthy and the handback follows.
   or `minor`; on the operator's word it runs the ceremony and subsumes `gz-patch-release`, which
   retires from every surface root. Drydock D1's mechanism; the first Release Package is the
   drydock's own release.
+- **WP-13 (GHI #1249).** A budget for every surface an agent loads in `data/instructions_files_budget.json`,
+  read by `gz validate --instructions-files-budget`; lands before the cuts so each is read by the witness.
+- **WP-14 (GHI #1250).** The skills catalogue merged to at most 40, one-sentence descriptions, bodies
+  under ceiling; the merge plan put to the operator before the first deletion; staged.
+- **WP-15 (GHI #1251).** Nested `AGENTS.md`, agent definitions, personas and injected hook text to
+  budget, after the rules cut.
+- **WP-16 (GHI #1252, pilot writes the protocol).** The effectiveness measure of each cut stage:
+  retention maps and a compression-sweep read, `gz readiness evaluate` before and after, one work
+  package flown by a fresh session on the cut surfaces; a report per stage under `docs/evals/`.
 
 ## What does not change
 
@@ -425,3 +447,4 @@ inside it.
 | 2026-10-16 | the release management document type named the Release Package and WP-12 written (operator, verbatim *"Release Package it is, rename and write WP-12"*) | the type was called the release plan; no mechanism measured whether a release was due | one document type with its lifecycle in `status`; the vocabulary runs work package, Release Package, release; renamed across the doctrine, both templates (`.gzkit/templates/release_package.md`), the glossary and this contract; WP-12 filed as GHI #1248 with its closure contract: `gz release pressure` reads the ledger, the tags and the catalog against `data/release_pressure.json`, recommends, and the skill runs the ceremony, subsuming `gz-patch-release` | this commit | `mkdocs build --strict`, `gz validate --distribution` (regenerated) and `gz check` green; nothing executed |
 | 2026-10-16 | safe mode is the sole term (operator, verbatim *"safe mode is the sole term, update the canon"*) | two names for one regime | every authored surface says safe mode: the doctrine's title and terms, the rule heading (1.5.2) and scorecard row 62f, the skill (1.3.2), the banner, the enter and exit labels, the parser help, the manpages, the templates, the glossary and the AGENTS.md corpus entry; "martial law" survives only inside the operator's quoted words | this commit | tests updated; `gz check` green |
 | 2026-10-16 | sync pass order repaired: the package copy of `.gzkit/skills/<slug>/` ran before the nested `AGENTS.md` pass, so the wheel copy of a skill-scoped `AGENTS.md` lagged one sync behind canon (found while renaming the safe-mode heading; `src/gzkit/skills/gz-mx/AGENTS.md` still read the old heading after a sync) | one stale derived view in the wheel | `sync_pkg_surfaces` runs downstream of `sync_nested_agents_md`, as the skill mirrors already do; one sync delivers the nested file to the package side | this commit | `tests/test_sync.py::test_the_package_copy_of_a_skill_carries_its_nested_agents_md_in_one_sync`, red then green; 376 sync-suite tests green |
+| 2026-10-16 | the control-plane cut booked (operator: *"where in this safe-mode drydock plan will you aggressively trim all control plane artifacts (agents, rules, skills and any other items that an agent loads and saturates context)?"*, then *"A (in safe mode - make backups!!! - help me test how much we can cut and remain effective, I need to better balance context bloat)"*) | the chart carried exit numbers for two of seven loaded surfaces; the skill count was "reported, not targeted" | backup tag `control-plane-baseline-2026-10-16` pushed; baseline proof written; D4, the exit table, the regime row and the doctrine's standing measures widened to every loaded surface; executive decision 6; WP-13 #1249, WP-14 #1250, WP-15 #1251, WP-16 #1252 filed with closure contracts | this commit | measured: rules 149,529 B/26, descriptions 15,816 chars, bodies 639,408 B/73, agents 10,799 B/5, nested AGENTS.md 175,877 B/17, personas 24,879 B, hooks 17 |

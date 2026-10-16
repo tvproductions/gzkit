@@ -78,12 +78,17 @@ the operator):
 | D1 | The ladder: ADR records decisions and lands contracts; the Release Package governs a version; the work package is the labor unit; the TASK is the increment | one release planned and closed through a Release Package, `gz closeout` keyed to it |
 | D2 | The catalog as the product's truth | a validator that fails on a brief assignment naming no entry |
 | D3 | GHIs and MX visits classified by the contract they repair | `ghi-triage` reports the contract per issue |
-| D4 | The control plane subtracted: every control names its contract or retires; no rule body carries a dated narrative | the obligation column full; the exit measures |
+| D4 | The control plane subtracted: every control names its contract or retires; no rule body carries a dated narrative; every surface an agent loads is within its budget | the obligation column full; the exit measures, one per loaded surface |
 | D5 | The airlock derives the slice from the contract's modules | a transit beyond the modules is refused |
 | D6 | Eval checks module design against module code | one eval run on one package, reported |
 
-**Drydock exit measures.** The instance sets the values; the measures are standing: per-turn load
-(the root contract, the skill descriptions, the rules in total and the largest), the count of
+**Drydock exit measures.** The instance sets the values; the measures are standing: the load of
+every surface an agent reads — the root contract, the rules in total and the largest, the skill
+descriptions and the skill bodies, the agent definitions, the nested `AGENTS.md`, the personas, the
+text the hooks inject each turn (operator, 2026-10-16: *"aggressively trim all control plane
+artifacts (agents, rules, skills and any other items that an agent loads and saturates context)"*;
+ruled A, one exit number per loaded surface, backups first, each cut measured for effectiveness
+before the next), the count of
 controls with no named contract (exit at zero, each named or retired by a logged act), and the
 operator's attestations per release (one per release and the sea trial, never one per brief).
 The first instance's values are in its contract.
