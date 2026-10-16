@@ -16,6 +16,17 @@ MX_BANNER = (
     "MX MODE ACTIVE — most guards advisory; gate5_invariants and the PRIME DIRECTIVE still bind"
 )
 
+
+def safe_mode_banner(contract: str) -> str:
+    """Return the per-turn banner for safe mode, the martial-law toggle (GHI #1244)."""
+    return (
+        f"SAFE MODE ACTIVE (martial law) — OBPI initiation and brief ceremony are suspended "
+        f"under {contract or '<no contract recorded>'}; every guard runs at full strength; "
+        "gate5_invariants, the ledger through gz verbs, operator PII and the PRIME "
+        "DIRECTIVE still bind; every act is one commit with its trailer and its witness"
+    )
+
+
 _MARKER_RELPATH = (".gzkit", "mx.json")
 _HOOK_RELPATH = (".claude", "hooks", "mx-awareness.py")
 _SETTINGS_RELPATH = (".claude", "settings.json")
@@ -39,15 +50,29 @@ def _is_marker_active(project_root: Path) -> bool:
     return project_root.joinpath(*_MARKER_RELPATH).is_file()
 
 
+def _marker_mode(project_root: Path) -> tuple[str, str]:
+    """Return ``(mode, contract)`` from the marker JSON; an unreadable marker is the hangar."""
+    try:
+        raw = json.loads(project_root.joinpath(*_MARKER_RELPATH).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return "mx", ""
+    if not isinstance(raw, dict):
+        return "mx", ""
+    return str(raw.get("mode") or "mx"), str(raw.get("contract") or "")
+
+
 def get_banner(project_root: Path | None = None) -> str:
-    """Return the MX banner when the marker is present; empty string otherwise.
+    """Return the banner for the open marker's mode; empty string when no marker.
 
     stdlib-only: no gzkit imports — fires even when gz itself is the patient.
     """
     root = project_root if project_root is not None else _find_project_root()
-    if _is_marker_active(root):
-        return MX_BANNER
-    return ""
+    if not _is_marker_active(root):
+        return ""
+    mode, contract = _marker_mode(root)
+    if mode == "safe":
+        return safe_mode_banner(contract)
+    return MX_BANNER
 
 
 class LivenessResult:

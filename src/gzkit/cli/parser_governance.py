@@ -809,6 +809,8 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
                 reason=a.reason,
                 attestor=a.attestor,
                 inspection_scope=a.inspection_scope,
+                mode=a.mode,
+                contract=a.contract,
             )
         elif a.mx_command == "exit":
             from gzkit.commands.mx_cmd import mx_exit_cmd  # noqa: PLC0415
@@ -848,10 +850,28 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
             [
                 'gz mx enter --reason "re-true locks under ADR-0.0.74" --attestor g0',
                 "gz mx enter --reason 'repair ledger' --attestor g0 --scope ADR-0.0.74",
+                "gz mx enter --mode safe --contract docs/governance/pilotage.md "
+                "--reason 'harbor pilotage' --attestor g0",
             ]
         ),
     )
     p_mx_enter.add_argument("--reason", required=True, help="Reason for entering MX mode")
+    p_mx_enter.add_argument(
+        "--mode",
+        choices=("mx", "safe"),
+        default="mx",
+        help=(
+            "mx (default): the Maintenance Hangar, guards demote to advisory; "
+            "safe: the martial-law toggle, ceremony suspended under --contract, "
+            "guards at full strength (GHI #1244)"
+        ),
+    )
+    p_mx_enter.add_argument(
+        "--contract",
+        default=None,
+        metavar="PATH",
+        help="Project-relative path of the safe-mode contract (required with --mode safe)",
+    )
     p_mx_enter.add_argument(
         "--attestor",
         required=True,

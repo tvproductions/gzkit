@@ -34,8 +34,25 @@ def _banner_stdlib(cwd: str | None) -> str:
 
     start = Path(cwd).resolve() if cwd else Path.cwd()
     for candidate in (start, *start.parents):
-        if (candidate / ".gzkit").is_dir():
-            return _BANNER if candidate.joinpath(*_MARKER).is_file() else ""
+        if not (candidate / ".gzkit").is_dir():
+            continue
+        path = candidate.joinpath(*_MARKER)
+        if not path.is_file():
+            return ""
+        try:
+            raw = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return _BANNER
+        if isinstance(raw, dict) and raw.get("mode") == "safe":
+            contract = str(raw.get("contract") or "<no contract recorded>")
+            return (
+                "SAFE MODE ACTIVE (martial law) — OBPI initiation and brief "
+                f"ceremony are suspended under {contract}; every guard runs at "
+                "full strength; gate5_invariants, the ledger through gz verbs, "
+                "operator PII and the PRIME DIRECTIVE still bind; every act is "
+                "one commit with its trailer and its witness"
+            )
+        return _BANNER
     return ""
 
 

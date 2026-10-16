@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -54,6 +55,16 @@ class Marker(BaseModel):
     attestor: str = Field("", description="Operator who opened the hangar")
     inspection_scope: list[str] = Field(
         default_factory=list, description="ADRs/OBPIs under inspection"
+    )
+    mode: Literal["mx", "safe"] = Field(
+        "mx",
+        description=(
+            "mx: the Maintenance Hangar, guards demote to advisory; safe: the martial-law "
+            "toggle, ceremony suspended under a contract, guards at full strength (GHI #1244)"
+        ),
+    )
+    contract: str = Field(
+        "", description="Project-relative path of the safe-mode contract; empty under mx"
     )
 
 

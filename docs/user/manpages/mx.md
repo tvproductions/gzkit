@@ -17,7 +17,7 @@ Open the Maintenance Hangar.
 
 <!-- gz-validate-skip: command-shape -->
 ```bash
-gz mx enter --reason REASON --attestor ATTESTOR [--scope ADR_OR_OBPI ...]
+gz mx enter --reason REASON --attestor ATTESTOR [--scope ADR_OR_OBPI ...] [--mode {mx,safe}] [--contract PATH]
 ```
 
 Sets the marker file, writes one `mx_session_opened` ledger event, and captures the
@@ -29,6 +29,14 @@ autonomously; only an operator may initiate an MX session (ADR-0.0.74 Decision #
 
 Empty or whitespace-only `--reason` or `--attestor` fails closed with exit 1 — no
 marker is written, no ledger event is emitted.
+
+**Safe mode, the martial-law toggle (GHI #1244).** `--mode safe --contract PATH` opens the
+marker in safe mode: OBPI initiation and brief ceremony are suspended under the named
+contract, every guard runs at full strength (the checkpoint demotes nothing), and the
+awareness banner states the mode and the contract each turn. The contract is the document
+that says what the mode suspends and what still binds; `--mode safe` without a readable one
+fails closed, and `--mode mx` refuses a contract. `gz mx exit` closes either mode through
+the same hard gate.
 
 ### exit
 

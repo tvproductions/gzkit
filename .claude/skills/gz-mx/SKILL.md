@@ -9,11 +9,11 @@ description: >
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-19
+last_reviewed: 2026-10-16
 model: haiku
 gz_command: mx
 metadata:
-  skill-version: "1.1.1"
+  skill-version: "1.2.0"
 ---
 
 # gz mx
@@ -41,18 +41,28 @@ out to `gz mx enter` or `gz mx exit` directly.
 
 1. **Open the hangar**
    ```bash
-   uv run gz mx enter
+   uv run gz mx enter --reason "<why>" --attestor g0 [--scope ADR-X.Y.Z ...]
    ```
-   Creates `.gzkit/mx.json` marker. Most governance guards drop to advisory.
+   Creates `.gzkit/mx.json` marker. Most governance guards drop to advisory. `--reason`
+   and `--attestor` are required; the attestor is the operator, never an agent.
+
+   **Safe mode, the martial-law toggle (GHI #1244):**
+   ```bash
+   uv run gz mx enter --mode safe --contract docs/governance/<contract>.md --reason "<why>" --attestor g0
+   ```
+   Same marker, `mode: safe`. OBPI initiation and brief ceremony are suspended under the
+   contract; every guard runs at full strength; the banner names the contract each turn.
+   The contract says what is suspended, what binds, what each act records, and how the
+   mode exits. Write it before entering; the verb refuses a missing file.
 
 2. **Perform the repair**
    Work on the governance surfaces that needed fixing. Gate 5 invariants and
    the PRIME DIRECTIVE still bind — guards drop to advisory so you can repair
    governance itself, not so defects can be deferred.
 
-3. **Close the hangar**
+3. **Close the hangar, or safe mode**
    ```bash
-   uv run gz mx exit
+   uv run gz mx exit --attestor g0
    ```
    Removes `.gzkit/mx.json` marker. Every guard re-runs at full strength;
    exit is a hard gate (all guards must pass before exit succeeds).
@@ -61,13 +71,13 @@ out to `gz mx enter` or `gz mx exit` directly.
 
 ```bash
 # Enter the hangar to repair a drifted OBPI brief
-uv run gz mx enter
+uv run gz mx enter --reason "repair a drifted OBPI brief" --attestor g0
 
 # Perform repair work (briefs, rules, docs)
 # ...
 
 # Exit — guards re-enforce; exit fails if any guard is still red
-uv run gz mx exit
+uv run gz mx exit --attestor g0
 ```
 
 ## Repairing a ledger row

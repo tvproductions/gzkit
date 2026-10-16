@@ -202,6 +202,8 @@ def _mx_session_opened_event(
     reason: str,
     attestor: str,
     inspection_scope: list[str],
+    mode: str = "mx",
+    contract: str = "",
 ) -> LedgerEvent:
     """Build the mx_session_opened ledger event (the enter anchor).
 
@@ -215,8 +217,44 @@ def _mx_session_opened_event(
             "reason": reason,
             "attestor": attestor,
             "inspection_scope": list(inspection_scope),
+            "mode": mode,
+            "contract": contract,
         },
     )
+
+
+def _resolve_contract(root: Path, mode: str, contract: str | None) -> str:
+    """Return the contract path safe mode records, or exit 1 with the reason.
+
+    Safe mode (GHI #1244) is entered under a contract that says what it suspends and
+    what still binds; the hangar carries none. The path is project-relative and must
+    name a readable file, so the banner every turn points at something real.
+    """
+    if mode == "mx":
+        if contract:
+            console.print(
+                "[red]ERROR:[/red] --contract belongs to --mode safe; the hangar carries no "
+                "contract."
+            )
+            sys.exit(1)
+        return ""
+    text = (contract or "").strip()
+    if not text:
+        console.print(
+            "[red]ERROR:[/red] --mode safe requires --contract <path>: the contract names what "
+            "safe mode suspends and what still binds (GHI #1244)."
+        )
+        sys.exit(1)
+    relative = Path(text)
+    target = relative if relative.is_absolute() else root / relative
+    if not target.is_file():
+        console.print(f"[red]ERROR:[/red] --contract {contract} is not a readable file.")
+        sys.exit(1)
+    try:
+        return target.resolve().relative_to(root.resolve()).as_posix()
+    except ValueError:
+        console.print(f"[red]ERROR:[/red] --contract {contract} is outside the project.")
+        sys.exit(1)
 
 
 def mx_enter_cmd(
@@ -225,14 +263,18 @@ def mx_enter_cmd(
     inspection_scope: list[str],
     project_root: Path | None = None,
     *,
+    mode: str = "mx",
+    contract: str | None = None,
     _airlock_reach: Callable[[str], list[str] | None] | None = None,
 ) -> None:
-    """Open the MX maintenance hangar.
+    """Open the MX maintenance hangar, or safe mode with ``mode="safe"``.
 
     Sets the marker file, writes one ``mx_session_opened`` ledger event, and
     captures the inspection scope.  The operator (``attestor``) is required;
     an agent cannot open the hangar autonomously.  Empty or whitespace-only
-    ``reason`` or ``attestor`` fails closed with exit 1.
+    ``reason`` or ``attestor`` fails closed with exit 1. Safe mode, the
+    martial-law toggle (GHI #1244), requires a readable ``contract`` and demotes
+    no guard; the hangar refuses a contract.
     """
     if not reason.strip():
         console.print("[red]ERROR:[/red] --reason cannot be empty.")
@@ -245,6 +287,10 @@ def mx_enter_cmd(
         sys.exit(1)
 
     root = project_root if project_root is not None else get_project_root()
+    if mode not in ("mx", "safe"):
+        console.print(f"[red]ERROR:[/red] --mode must be mx or safe, not {mode!r}.")
+        sys.exit(1)
+    contract_path = _resolve_contract(root, mode, contract)
 
     if marker.is_active(root):
         console.print("[red]ERROR:[/red] MX mode is already active.")
@@ -287,17 +333,23 @@ def mx_enter_cmd(
         reason=reason.strip(),
         attestor=attestor.strip(),
         inspection_scope=list(inspection_scope),
+        mode=mode,
+        contract=contract_path,
     )
     marker.write(m, root)
 
     # Write the mx_session_opened ledger event (binds the marker anti-contrivance).
     ledger = Ledger(root.joinpath(*_LEDGER_RELPATH))
     ledger.append(
-        _mx_session_opened_event(session_id, reason.strip(), attestor.strip(), inspection_scope)
+        _mx_session_opened_event(
+            session_id, reason.strip(), attestor.strip(), inspection_scope, mode, contract_path
+        )
     )
 
+    label = "Safe mode (martial law) opened" if mode == "safe" else "MX session opened"
     console.print(
-        f"[green]MX session opened.[/green] session_id={session_id}, attestor={attestor.strip()}"
+        f"[green]{label}.[/green] session_id={session_id}, attestor={attestor.strip()}"
+        + (f", contract={contract_path}" if contract_path else "")
     )
 
 
@@ -391,6 +443,5 @@ def mx_exit_cmd(
     # (GHI #848).
     _release_session_lock(root)
 
-    console.print(
-        f"[green]MX session closed.[/green] session_id={m.session_id}, attestor={attestor.strip()}"
-    )
+    label = "Safe mode (martial law) closed" if m.mode == "safe" else "MX session closed"
+    console.print(f"[green]{label}.[/green] session_id={m.session_id}, attestor={attestor.strip()}")

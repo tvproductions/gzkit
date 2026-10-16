@@ -1941,6 +1941,16 @@
           "items": {
             "type": "string"
           }
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "mx",
+            "safe"
+          ]
+        },
+        "contract": {
+          "type": "string"
         }
       }
     },

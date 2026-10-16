@@ -232,3 +232,37 @@ class TestMxExitLiveNegativeControl(SilencedConsoleTestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestMxExitSafeModeOutputForm(unittest.TestCase):
+    """GHI #1244: closing a safe-mode marker says so, through the same hard gate."""
+
+    # output-contract: the closing line is the operator-facing rendering of the mode.
+
+    def test_exit_names_safe_mode(self) -> None:
+        import io
+        from unittest.mock import patch
+
+        from rich.console import Console
+
+        from gzkit.commands.mx_cmd import mx_enter_cmd, mx_exit_cmd
+
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            contract = root / "docs" / "governance" / "pilotage.md"
+            contract.parent.mkdir(parents=True)
+            contract.write_text("# contract\n", encoding="utf-8")
+            buffer = io.StringIO()
+            console = Console(file=buffer, width=200, color_system=None)
+            with patch("gzkit.commands.mx_cmd.console", console):
+                mx_enter_cmd(
+                    reason="martial law",
+                    attestor="g0",
+                    inspection_scope=[],
+                    project_root=root,
+                    mode="safe",
+                    contract="docs/governance/pilotage.md",
+                )
+                mx_exit_cmd(attestor="g0", project_root=root, _run_guards=_green_guard)
+            self.assertFalse(marker.is_active(root))
+            self.assertIn("Safe mode (martial law) closed", buffer.getvalue())

@@ -1354,3 +1354,32 @@ class TestRenditionLandedRegistration(unittest.TestCase):
 
     def test_discriminator_is_registered_in_the_live_typed_union(self) -> None:
         self.assertIn("rendition_landed", _live_event_discriminators())
+
+
+class TestMxSessionOpenedCarriesItsMode(unittest.TestCase):
+    """GHI #1244: the enter event records the mode and the contract; an unknown mode is refused."""
+
+    def test_safe_mode_round_trips_and_the_default_is_the_hangar(self) -> None:
+        opened = MxSessionOpenedEvent(
+            event="mx_session_opened",
+            id="s-1",
+            session_id="s-1",
+            reason="harbor pilotage",
+            attestor="g0",
+            mode="safe",
+            contract="docs/governance/pilotage.md",
+        )
+        self.assertEqual((opened.mode, opened.contract), ("safe", "docs/governance/pilotage.md"))
+        hangar = MxSessionOpenedEvent(
+            event="mx_session_opened", id="s-2", session_id="s-2", reason="repair", attestor="g0"
+        )
+        self.assertEqual((hangar.mode, hangar.contract), ("mx", ""))
+        with self.assertRaises(ValidationError):
+            MxSessionOpenedEvent(
+                event="mx_session_opened",
+                id="s-3",
+                session_id="s-3",
+                reason="x",
+                attestor="g0",
+                mode="lenient",
+            )

@@ -149,3 +149,28 @@ class TestValidateCmdWiring(unittest.TestCase):
             imports_checkpoint,
             "validate_cmd.py must import the checkpoint module to wire the funnel",
         )
+
+
+class TestSafeMode(unittest.TestCase):
+    """GHI #1244: a safe-mode marker suspends ceremony, never guards; nothing demotes."""
+
+    def test_ordinary_guard_keeps_its_level_under_a_safe_mode_marker(self) -> None:
+        from gzkit.mx import checkpoint, disposition, levels
+
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            marker.write(Marker(session_id="safe-session", mode="safe"), root)
+            self.assertFalse(checkpoint.is_advisory("gate3-docs", root))
+            self.assertEqual(
+                checkpoint.resolve("gate3-docs", levels.ERROR, root),
+                disposition.route(levels.ERROR),
+            )
+            self.assertTrue(checkpoint.blocks("gate3-docs", levels.ERROR, root))
+
+    def test_the_hangar_mode_still_demotes(self) -> None:
+        from gzkit.mx import checkpoint
+
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            marker.write(Marker(session_id="mx-session", mode="mx"), root)
+            self.assertTrue(checkpoint.is_advisory("gate3-docs", root))

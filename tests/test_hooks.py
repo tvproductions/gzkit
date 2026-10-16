@@ -488,6 +488,9 @@ class TestGenerateClaudeSettings(unittest.TestCase):
             self.assertIn(".claude/hooks/mx-awareness.py", created)
             body = hook_path.read_text(encoding="utf-8")
             self.assertIn("MX MODE ACTIVE", body)
+            # The fallback banner is mode-aware (GHI #1244): the generated script says so.
+            self.assertIn("SAFE MODE ACTIVE (martial law)", body)
+            self.assertIn('raw.get("mode") == "safe"', body)
 
 
 class TestRepoClaudeSettingsAnchorScripts(unittest.TestCase):

@@ -57,6 +57,57 @@ class TestGetBannerFunction(unittest.TestCase):
 
         self.assertEqual(result, MX_BANNER)
 
+    def test_safe_mode_banner_names_the_mode_and_the_contract(self):
+        """GHI #1244: under a safe-mode marker the banner says what is suspended and what binds."""
+        from gzkit.mx.awareness import MX_BANNER, get_banner, safe_mode_banner
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            (root / ".gzkit").mkdir()
+            (root / ".gzkit" / "mx.json").write_text(
+                '{"session_id": "s", "mode": "safe", "contract": "docs/governance/pilotage.md"}',
+                encoding="utf-8",
+            )
+            result = get_banner(root)
+
+        self.assertEqual(result, safe_mode_banner("docs/governance/pilotage.md"))
+        self.assertNotEqual(result, MX_BANNER)
+        self.assertIn("SAFE MODE ACTIVE", result)
+        self.assertIn("docs/governance/pilotage.md", result)
+        self.assertIn("gate5_invariants", result)
+
+    def test_an_unreadable_or_non_object_marker_is_read_as_the_hangar(self):
+        """GHI #1244: a marker that cannot say its mode keeps the hangar's presence reading."""
+        from gzkit.mx.awareness import MX_BANNER, get_banner
+
+        for raw in ("{not json", "[]", '"safe"'):
+            with self.subTest(raw=raw), tempfile.TemporaryDirectory() as tmpdir:
+                root = Path(tmpdir)
+                (root / ".gzkit").mkdir()
+                (root / ".gzkit" / "mx.json").write_text(raw, encoding="utf-8")
+                self.assertEqual(get_banner(root), MX_BANNER)
+
+    def test_the_hook_fallback_reads_the_mode_without_gzkit(self):
+        """GHI #1244: the stdlib fallback in the hook script names safe mode and its contract."""
+        from gzkit.mx.awareness import MX_BANNER, safe_mode_banner
+
+        hook = _load_hook_module()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            (root / ".gzkit").mkdir()
+            marker = root / ".gzkit" / "mx.json"
+            marker.write_text(
+                '{"session_id": "s", "mode": "safe", "contract": "docs/governance/pilotage.md"}',
+                encoding="utf-8",
+            )
+            self.assertEqual(
+                hook._banner_stdlib(str(root)), safe_mode_banner("docs/governance/pilotage.md")
+            )
+            marker.write_text('{"session_id": "s"}', encoding="utf-8")
+            self.assertEqual(hook._banner_stdlib(str(root)), MX_BANNER)
+            marker.write_text("{not json", encoding="utf-8")
+            self.assertEqual(hook._banner_stdlib(str(root)), MX_BANNER)
+
     @covers("REQ-0.0.74-07-01")
     def test_empty_when_marker_absent(self):
         from gzkit.mx.awareness import get_banner

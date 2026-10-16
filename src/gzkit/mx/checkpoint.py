@@ -28,9 +28,22 @@ def resolve(
     """
     if guard_name in GATE5_INVARIANTS:
         return _disposition.route(_levels.CRITICAL)
-    if marker.is_active(project_root) and emitted_level != _levels.CRITICAL:
+    if hangar_demotes(project_root) and emitted_level != _levels.CRITICAL:
         return _disposition.Route.ADVISORY
     return _disposition.route(emitted_level)
+
+
+def hangar_demotes(project_root: Path | None = None) -> bool:
+    """Return True when an open marker demotes guards: the hangar does, safe mode does not.
+
+    Safe mode (GHI #1244) suspends initiation and brief ceremony under a contract and
+    keeps every guard at full strength; only ``mode: mx`` demotes. An unreadable
+    marker keeps the hangar's original presence-only reading.
+    """
+    if not marker.is_active(project_root):
+        return False
+    parsed = marker.read(project_root)
+    return parsed is None or parsed.mode == "mx"
 
 
 def is_advisory(guard_name: str, project_root: Path | None = None) -> bool:

@@ -12,13 +12,15 @@ exit 0 + artifact_edited ledger event — verified at Stage 3, not here.
 from __future__ import annotations
 
 import json
+import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from gzkit import lock_manager
+from gzkit.cli import main
 from gzkit.mx import marker
 from gzkit.traceability import covers
-from tests.commands.common import SilencedConsoleTestCase
+from tests.commands.common import CliRunner, SilencedConsoleTestCase
 
 
 def _mk_root(tmp: str) -> Path:
@@ -222,3 +224,191 @@ class TestMxEnterUsesLockManagerRail(SilencedConsoleTestCase):
                     reason="second entry", attestor="tester", inspection_scope=[], project_root=root
                 )
             self.assertEqual(ctx.exception.code, 1)
+
+
+class TestMxEnterSafeMode(SilencedConsoleTestCase):
+    """GHI #1244: ``--mode safe --contract <path>`` opens safe mode, the martial-law toggle."""
+
+    def _contract(self, root: Path) -> str:
+        path = root / "docs" / "governance" / "pilotage.md"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("# contract\n", encoding="utf-8")
+        return "docs/governance/pilotage.md"
+
+    def test_safe_mode_writes_mode_and_contract_to_marker_and_event(self) -> None:
+        from gzkit.commands.mx_cmd import mx_enter_cmd
+
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            contract = self._contract(root)
+            mx_enter_cmd(
+                reason="martial law",
+                attestor="g0",
+                inspection_scope=[],
+                project_root=root,
+                mode="safe",
+                contract=contract,
+            )
+            m = marker.read(root)
+            self.assertIsNotNone(m)
+            self.assertEqual((m.mode, m.contract), ("safe", contract))
+            events = _read_ledger_events(root, "mx_session_opened")
+            self.assertEqual(len(events), 1)
+            self.assertEqual(events[0].get("mode"), "safe")
+            self.assertEqual(events[0].get("contract"), contract)
+
+    def test_the_default_mode_is_the_hangar(self) -> None:
+        from gzkit.commands.mx_cmd import mx_enter_cmd
+
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            mx_enter_cmd(reason="repair", attestor="g0", inspection_scope=[], project_root=root)
+            m = marker.read(root)
+            self.assertEqual((m.mode, m.contract), ("mx", ""))
+            self.assertEqual(_read_ledger_events(root, "mx_session_opened")[0].get("mode"), "mx")
+
+    def test_safe_mode_without_a_contract_is_refused(self) -> None:
+        import io
+        from unittest.mock import patch
+
+        from rich.console import Console
+
+        from gzkit.commands.mx_cmd import mx_enter_cmd
+
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            buffer = io.StringIO()
+            console = Console(file=buffer, width=200, color_system=None)
+            with (
+                patch("gzkit.commands.mx_cmd.console", console),
+                self.assertRaises(SystemExit) as ctx,
+            ):
+                mx_enter_cmd(
+                    reason="martial law",
+                    attestor="g0",
+                    inspection_scope=[],
+                    project_root=root,
+                    mode="safe",
+                )
+            self.assertEqual(ctx.exception.code, 1)
+            # The refusal names the missing contract, not a file that could not be read.
+            self.assertIn("requires --contract", buffer.getvalue())
+            self.assertNotIn("not a readable file", buffer.getvalue())
+            self.assertFalse(marker.is_active(root))
+            self.assertEqual(_read_ledger_events(root, "mx_session_opened"), [])
+
+    def test_safe_mode_with_a_missing_contract_file_is_refused(self) -> None:
+        from gzkit.commands.mx_cmd import mx_enter_cmd
+
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            with self.assertRaises(SystemExit) as ctx:
+                mx_enter_cmd(
+                    reason="martial law",
+                    attestor="g0",
+                    inspection_scope=[],
+                    project_root=root,
+                    mode="safe",
+                    contract="docs/governance/absent.md",
+                )
+            self.assertEqual(ctx.exception.code, 1)
+            self.assertFalse(marker.is_active(root))
+
+    def test_a_contract_under_the_hangar_mode_is_refused(self) -> None:
+        from gzkit.commands.mx_cmd import mx_enter_cmd
+
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            contract = self._contract(root)
+            with self.assertRaises(SystemExit) as ctx:
+                mx_enter_cmd(
+                    reason="repair",
+                    attestor="g0",
+                    inspection_scope=[],
+                    project_root=root,
+                    contract=contract,
+                )
+            self.assertEqual(ctx.exception.code, 1)
+            self.assertFalse(marker.is_active(root))
+
+    def test_an_unknown_mode_is_refused(self) -> None:
+        from gzkit.commands.mx_cmd import mx_enter_cmd
+
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            # A valid contract rides along, so the refusal can only come from the mode guard.
+            contract = self._contract(root)
+            with self.assertRaises(SystemExit) as ctx:
+                mx_enter_cmd(
+                    reason="x",
+                    attestor="g0",
+                    inspection_scope=[],
+                    project_root=root,
+                    mode="lenient",
+                    contract=contract,
+                )
+            self.assertEqual(ctx.exception.code, 1)
+            self.assertFalse(marker.is_active(root))
+
+    def test_a_contract_outside_the_project_is_refused(self) -> None:
+        from gzkit.commands.mx_cmd import mx_enter_cmd
+
+        with TemporaryDirectory() as tmp, TemporaryDirectory() as elsewhere:
+            root = _mk_root(tmp)
+            outside = Path(elsewhere) / "contract.md"
+            outside.write_text("# elsewhere\n", encoding="utf-8")
+            with self.assertRaises(SystemExit) as ctx:
+                mx_enter_cmd(
+                    reason="x",
+                    attestor="g0",
+                    inspection_scope=[],
+                    project_root=root,
+                    mode="safe",
+                    contract=str(outside),
+                )
+            self.assertEqual(ctx.exception.code, 1)
+            self.assertFalse(marker.is_active(root))
+
+
+class TestMxEnterCliOutputForm(unittest.TestCase):
+    """The parser carries ``--mode`` and ``--contract``, and the verb says which mode opened."""
+
+    # output-contract: the opened-mode line and the help example are the operator-facing rendering.
+
+    def test_the_verb_opens_safe_mode_through_its_flags(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            root = Path.cwd()
+            (root / ".gzkit").mkdir()
+            contract = root / "docs" / "governance" / "pilotage.md"
+            contract.parent.mkdir(parents=True)
+            contract.write_text("# contract\n", encoding="utf-8")
+            result = runner.invoke(
+                main,
+                [
+                    "mx",
+                    "enter",
+                    "--mode",
+                    "safe",
+                    "--contract",
+                    "docs/governance/pilotage.md",
+                    "--reason",
+                    "harbor pilotage",
+                    "--attestor",
+                    "g0",
+                ],
+            )
+            self.assertEqual(result.exit_code, 0, result.output)
+            opened = marker.read(root)
+            self.assertIsNotNone(opened)
+            self.assertEqual(
+                (opened.mode, opened.contract), ("safe", "docs/governance/pilotage.md")
+            )
+            self.assertIn("Safe mode (martial law) opened", result.output)
+            self.assertIn("contract=docs/governance/pilotage.md", result.output)
+
+    def test_the_help_shows_the_safe_mode_example(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(main, ["mx", "enter", "--help"])
+            self.assertIn("--mode safe --contract", " ".join(result.output.split()))

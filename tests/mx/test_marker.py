@@ -65,6 +65,26 @@ class TestMarkerPresence(unittest.TestCase):
             marker.write(m, root)
             self.assertEqual(marker.read(root), m)
 
+    def test_mode_and_contract_round_trip_and_an_old_marker_reads_as_mx(self) -> None:
+        """Safe mode (GHI #1244): the marker carries mode and contract; absent, it is the hangar."""
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            m = Marker(
+                session_id="s-43",
+                reason="harbor pilotage",
+                attestor="g0",
+                mode="safe",
+                contract="docs/governance/harbor-pilotage-candidate-2026-10-15.md",
+            )
+            marker.write(m, root)
+            self.assertEqual(marker.read(root), m)
+            marker.marker_path(root).write_text('{"session_id": "s-44"}', encoding="utf-8")
+            old = marker.read(root)
+            self.assertIsNotNone(old)
+            self.assertEqual((old.mode, old.contract), ("mx", ""))
+            with self.assertRaises(ValueError):
+                Marker(session_id="s-45", mode="lenient")
+
     @covers("REQ-0.0.74-01-01")
     def test_malformed_marker_reads_as_none_but_is_present(self) -> None:
         with TemporaryDirectory() as tmp:
