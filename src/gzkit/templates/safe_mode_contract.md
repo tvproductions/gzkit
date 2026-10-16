@@ -1,6 +1,6 @@
 # Safe mode contract — {{title}}
 
-> Template for a safe-mode (martial law) period. Doctrine: `docs/governance/safe-mode-doctrine.md`.
+> Template for a safe-mode period. Doctrine: `docs/governance/safe-mode-doctrine.md`.
 > The `gz-mx` skill reads this document before entry and refuses when a required section is
 > missing. Fill every section; delete this note.
 

@@ -122,7 +122,7 @@ Ruled whole by the operator on 2026-10-10: 'it stands, add the seventh'.
   order binds one work package and carries the role's auspices. *(Line 2.)*
 - **Release.** The captain's signature on what ships; in gzkit, Gate 5 attestation, which is
   return to service. *(Line 6; `AGENTS.md` § Gate Covenant; 14 CFR § 43.9 as landed.)*
-- **Safe mode (martial law).** The regime for a crisis the ordinary ceremony cannot govern:
+- **Safe mode.** The regime for a crisis the ordinary ceremony cannot govern:
   entered and left only through the `gz-mx` skill under a written contract; one exceptional
   period through harbor, drydock and sea trial; exit at seaworthiness. **Harbor pilot.** The
   strongest model, booked by the captain, that takes the conn for the passage in; it plans,

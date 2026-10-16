@@ -862,7 +862,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
         default="mx",
         help=(
             "mx (default): the Maintenance Hangar, guards demote to advisory; "
-            "safe: the martial-law toggle, ceremony suspended under --contract, "
+            "safe: safe mode, ceremony suspended under --contract, "
             "guards at full strength (GHI #1244)"
         ),
     )

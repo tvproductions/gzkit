@@ -236,7 +236,7 @@ A value written in a Markdown doc is ILLUSTRATIVE, never authoritative. Executio
 
 The constitution is `docs/governance/GovZero/command-doctrine.md` (statement of command, ten articles). Read it before governance code, rule, or audit work: every gate, check, and template traces upward to an article.
 
-Safe mode (martial law) is the regime for a crisis the ordinary ceremony cannot govern: entered and left only through the gz-mx skill under a written contract, one exceptional period through harbor, drydock and sea trial, exit at seaworthiness. Doctrine and terms: docs/governance/safe-mode-doctrine.md; contract template: .gzkit/templates/safe_mode_contract.md.
+Safe mode is the regime for a crisis the ordinary ceremony cannot govern: entered and left only through the gz-mx skill under a written contract, one exceptional period through harbor, drydock and sea trial, exit at seaworthiness. Doctrine and terms: docs/governance/safe-mode-doctrine.md; contract template: .gzkit/templates/safe_mode_contract.md.
 ## Architectural Boundaries
 
 4. Do not let reconciliation remain a maintenance chore. Witness: `gz validate --reconcile-freshness`.

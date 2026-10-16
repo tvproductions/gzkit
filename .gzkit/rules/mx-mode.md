@@ -10,11 +10,11 @@ paths:
   - "src/gzkit/mx/awareness.py"
   - "src/gzkit/hooks/guards.py"
 ---
-<!-- rule-version: 1.5.1 -->
+<!-- rule-version: 1.5.2 -->
 
 # MX Mode (Maintenance Hangar) (gzkit)
 
-> **Rule version:** `1.5.1` — § Safe mode points at its doctrine and its contract template, entrenched on the operator's ruling of 2026-10-16 (*"keep these metaphor entrenched in canon"*). Prior `1.5.0` and earlier lifted to [Rule Version History](../../docs/governance/rule-version-history.md#mx-modemd). Binding rules unchanged.
+> **Rule version:** `1.5.2` — safe mode is the sole term for the regime (operator ruling 2026-10-16, verbatim *"safe mode is the sole term, update the canon"*); the heading and wording follow. Prior `1.5.1` and earlier lifted to [Rule Version History](../../docs/governance/rule-version-history.md#mx-modemd). Binding rules unchanged.
 
 ## Non-negotiable rules
 
@@ -60,7 +60,7 @@ un-forced negative controls in `test_gate5_invariants_live_nc.py`
 *outside* it, so the carve-out cannot silently invert. A new guard inherits
 demotion by default and must opt into the floor explicitly.
 
-### Safe mode: the martial-law toggle
+### Safe mode: ceremony suspended under a contract
 
 `gz mx enter --mode safe --contract <path>` opens the same marker in safe mode (GHI #1244).
 The marker's `mode` and `contract` fields, and the `mx_session_opened` event that binds them,

@@ -16,7 +16,7 @@ gz mx enter --reason REASON --attestor ATTESTOR [--scope ADR_OR_OBPI ...] [--mod
 | `--reason REASON` | Reason for entering MX mode (required; must be non-empty) |
 | `--attestor ATTESTOR` | Operator identity (required; never an agent — only operators may open the hangar) |
 | `--scope ADR_OR_OBPI ...` | ADRs/OBPIs under inspection (optional; 0 or more) |
-| `--mode {mx,safe}` | `mx` (default): the Maintenance Hangar, most guards demote to advisory. `safe`: safe mode, the martial-law toggle (GHI #1244): OBPI initiation and brief ceremony are suspended under the contract, every guard runs at full strength |
+| `--mode {mx,safe}` | `mx` (default): the Maintenance Hangar, most guards demote to advisory. `safe`: safe mode (GHI #1244): OBPI initiation and brief ceremony are suspended under the contract, every guard runs at full strength |
 | `--contract PATH` | Project-relative path of the safe-mode contract, the document that says what the mode suspends and what still binds. Required with `--mode safe`; refused with `--mode mx` |
 
 ## Runtime Behavior
@@ -65,7 +65,7 @@ gz mx enter --reason "repair marker binding" --attestor g0 --scope ADR-0.0.74 OB
 # Multiple scope items
 gz mx enter --reason "broad repair" --attestor g0 --scope ADR-0.0.74 ADR-0.0.73 OBPI-0.0.74-02
 
-# Safe mode, the martial-law toggle, under a written contract
+# Safe mode, under a written contract
 gz mx enter --mode safe --contract docs/governance/harbor-pilotage-candidate-2026-10-15.md --reason "harbor pilotage" --attestor g0
 ```
 

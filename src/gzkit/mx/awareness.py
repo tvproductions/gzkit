@@ -18,9 +18,9 @@ MX_BANNER = (
 
 
 def safe_mode_banner(contract: str) -> str:
-    """Return the per-turn banner for safe mode, the martial-law toggle (GHI #1244)."""
+    """Return the per-turn banner for safe mode (GHI #1244)."""
     return (
-        f"SAFE MODE ACTIVE (martial law) — OBPI initiation and brief ceremony are suspended "
+        f"SAFE MODE ACTIVE — OBPI initiation and brief ceremony are suspended "
         f"under {contract or '<no contract recorded>'}; every guard runs at full strength; "
         "gate5_invariants, the ledger through gz verbs, operator PII and the PRIME "
         "DIRECTIVE still bind; every act is one commit with its trailer and its witness"

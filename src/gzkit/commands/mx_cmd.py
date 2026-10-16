@@ -273,7 +273,7 @@ def mx_enter_cmd(
     captures the inspection scope.  The operator (``attestor``) is required;
     an agent cannot open the hangar autonomously.  Empty or whitespace-only
     ``reason`` or ``attestor`` fails closed with exit 1. Safe mode, the
-    martial-law toggle (GHI #1244), requires a readable ``contract`` and demotes
+    toggle (GHI #1244), requires a readable ``contract`` and demotes
     no guard; the hangar refuses a contract.
     """
     if not reason.strip():
@@ -346,7 +346,7 @@ def mx_enter_cmd(
         )
     )
 
-    label = "Safe mode (martial law) opened" if mode == "safe" else "MX session opened"
+    label = "Safe mode opened" if mode == "safe" else "MX session opened"
     console.print(
         f"[green]{label}.[/green] session_id={session_id}, attestor={attestor.strip()}"
         + (f", contract={contract_path}" if contract_path else "")
@@ -443,5 +443,5 @@ def mx_exit_cmd(
     # (GHI #848).
     _release_session_lock(root)
 
-    label = "Safe mode (martial law) closed" if m.mode == "safe" else "MX session closed"
+    label = "Safe mode closed" if m.mode == "safe" else "MX session closed"
     console.print(f"[green]{label}.[/green] session_id={m.session_id}, attestor={attestor.strip()}")

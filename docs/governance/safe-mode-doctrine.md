@@ -1,6 +1,6 @@
 <!-- markdownlint-configure-file { "MD013": { "line_length": 9999 } } -->
 
-# Safe-Mode Doctrine — Martial Law, the Harbor Pilot, Drydock and Seaworthiness
+# Safe-Mode Doctrine — the Harbor Pilot, Drydock and Seaworthiness
 
 **Authority:** operator rulings of 2026-10-15 and 2026-10-16, verbatim where quoted below; the ratified glossary in `docs/rnd/renewing-vows/doctrine-merge.md` Part 0 § Terms carries the terms.
 
@@ -21,7 +21,7 @@ Safe mode is the Maintenance Hangar's sibling, not its extension. The hangar dem
 The regime is nautical because the nautical record already separates the three things a crisis confuses: who has the conn, where the ship is, and when it may sail again.
 
 - **The harbor pilot.** The strongest model available, booked by the operator, takes the conn for the passage into port. The pilot plans, measures, diagnoses and takes rulings with the operator; it executes a cut itself only when the cut is the measurement's own finding and small enough to read in one sitting. Operator, 2026-10-15: *"I wanted to PLAN in Fable, but not do all the work in fable."* The captain remains the operator: the pilot advises the helm and carries no signature.
-- **Martial law.** The temporary arrangement under which the pilot acts: *"this is a TEMPORARY ARRANGEMENT until we get to port and dry dock."* It is entered by the operator's word and a written contract, and it yields back to the Magna Carta, gzkit's campaign under civil rule.
+- **Safe mode.** The temporary arrangement under which the pilot acts (the operator's word for it was martial law; safe mode is the sole term by the ruling of 2026-10-16, verbatim *"safe mode is the sole term, update the canon"*): *"this is a TEMPORARY ARRANGEMENT until we get to port and dry dock."* It is entered by the operator's word and a written contract, and it yields back to the Magna Carta, gzkit's campaign under civil rule.
 - **The harbor.** The passage in: the load cuts and the instruments that make the ship steerable again, measured leg by leg.
 - **Drydock.** The structural rebuild that cannot be done under way: the ladder, the catalog, the Release Package, the control plane subtracted. The ship is out of the water; it is not on a normal voyage, so the exceptional regime continues.
 - **The sea trial.** The proof that the rebuilt ship sails: a fresh project on the released wheel runs one work package end to end. The constitution's governor rule is the ground: doctrine under construction is proven on another project before it binds its own making.

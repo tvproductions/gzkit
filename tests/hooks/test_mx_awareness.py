@@ -76,6 +76,25 @@ class TestGetBannerFunction(unittest.TestCase):
         self.assertIn("docs/governance/pilotage.md", result)
         self.assertIn("gate5_invariants", result)
 
+    def test_safe_mode_is_the_sole_term_of_the_banner(self):
+        """Operator ruling 2026-10-16: safe mode is the sole term; the banner and the
+        hook's stdlib fallback name no other regime."""
+        from gzkit.mx.awareness import safe_mode_banner
+
+        hook = _load_hook_module()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            (root / ".gzkit").mkdir()
+            (root / ".gzkit" / "mx.json").write_text(
+                '{"session_id": "s", "mode": "safe", "contract": "docs/governance/pilotage.md"}',
+                encoding="utf-8",
+            )
+            fallback = hook._banner_stdlib(str(root))
+        for banner in (safe_mode_banner("docs/governance/pilotage.md"), fallback):
+            with self.subTest(banner=banner[:40]):
+                self.assertTrue(banner.startswith("SAFE MODE ACTIVE — "))
+                self.assertNotIn("martial", banner.lower())
+
     def test_an_unreadable_or_non_object_marker_is_read_as_the_hangar(self):
         """GHI #1244: a marker that cannot say its mode keeps the hangar's presence reading."""
         from gzkit.mx.awareness import MX_BANNER, get_banner

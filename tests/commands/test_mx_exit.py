@@ -256,7 +256,7 @@ class TestMxExitSafeModeOutputForm(unittest.TestCase):
             console = Console(file=buffer, width=200, color_system=None)
             with patch("gzkit.commands.mx_cmd.console", console):
                 mx_enter_cmd(
-                    reason="martial law",
+                    reason="harbor pilotage",
                     attestor="g0",
                     inspection_scope=[],
                     project_root=root,
@@ -265,4 +265,4 @@ class TestMxExitSafeModeOutputForm(unittest.TestCase):
                 )
                 mx_exit_cmd(attestor="g0", project_root=root, _run_guards=_green_guard)
             self.assertFalse(marker.is_active(root))
-            self.assertIn("Safe mode (martial law) closed", buffer.getvalue())
+            self.assertIn("Safe mode closed", buffer.getvalue())

@@ -59,8 +59,8 @@ class Marker(BaseModel):
     mode: Literal["mx", "safe"] = Field(
         "mx",
         description=(
-            "mx: the Maintenance Hangar, guards demote to advisory; safe: the martial-law "
-            "toggle, ceremony suspended under a contract, guards at full strength (GHI #1244)"
+            "mx: the Maintenance Hangar, guards demote to advisory; safe: safe mode, "
+            "ceremony suspended under a contract, guards at full strength (GHI #1244)"
         ),
     )
     contract: str = Field(

@@ -227,7 +227,7 @@ class TestMxEnterUsesLockManagerRail(SilencedConsoleTestCase):
 
 
 class TestMxEnterSafeMode(SilencedConsoleTestCase):
-    """GHI #1244: ``--mode safe --contract <path>`` opens safe mode, the martial-law toggle."""
+    """GHI #1244: ``--mode safe --contract <path>`` opens safe mode."""
 
     def _contract(self, root: Path) -> str:
         path = root / "docs" / "governance" / "pilotage.md"
@@ -242,7 +242,7 @@ class TestMxEnterSafeMode(SilencedConsoleTestCase):
             root = _mk_root(tmp)
             contract = self._contract(root)
             mx_enter_cmd(
-                reason="martial law",
+                reason="harbor pilotage",
                 attestor="g0",
                 inspection_scope=[],
                 project_root=root,
@@ -284,7 +284,7 @@ class TestMxEnterSafeMode(SilencedConsoleTestCase):
                 self.assertRaises(SystemExit) as ctx,
             ):
                 mx_enter_cmd(
-                    reason="martial law",
+                    reason="harbor pilotage",
                     attestor="g0",
                     inspection_scope=[],
                     project_root=root,
@@ -304,7 +304,7 @@ class TestMxEnterSafeMode(SilencedConsoleTestCase):
             root = _mk_root(tmp)
             with self.assertRaises(SystemExit) as ctx:
                 mx_enter_cmd(
-                    reason="martial law",
+                    reason="harbor pilotage",
                     attestor="g0",
                     inspection_scope=[],
                     project_root=root,
@@ -404,7 +404,7 @@ class TestMxEnterCliOutputForm(unittest.TestCase):
             self.assertEqual(
                 (opened.mode, opened.contract), ("safe", "docs/governance/pilotage.md")
             )
-            self.assertIn("Safe mode (martial law) opened", result.output)
+            self.assertIn("Safe mode opened", result.output)
             self.assertIn("contract=docs/governance/pilotage.md", result.output)
 
     def test_the_help_shows_the_safe_mode_example(self) -> None:
@@ -412,3 +412,17 @@ class TestMxEnterCliOutputForm(unittest.TestCase):
         with runner.isolated_filesystem():
             result = runner.invoke(main, ["mx", "enter", "--help"])
             self.assertIn("--mode safe --contract", " ".join(result.output.split()))
+            # Safe mode is the sole term (operator ruling 2026-10-16).
+            self.assertNotIn("martial", result.output.lower())
+
+    def test_safe_mode_is_the_sole_term_on_the_mode_fields(self) -> None:
+        """Operator ruling 2026-10-16, verbatim "safe mode is the sole term, update the
+        canon": the marker's and the event's ``mode`` descriptions name safe mode and no
+        other regime."""
+        from gzkit.events import MxSessionOpenedEvent
+
+        for model in (marker.Marker, MxSessionOpenedEvent):
+            with self.subTest(model=model.__name__):
+                description = (model.model_fields["mode"].description or "").lower()
+                self.assertIn("safe mode", description)
+                self.assertNotIn("martial", description)

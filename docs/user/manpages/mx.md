@@ -30,7 +30,7 @@ autonomously; only an operator may initiate an MX session (ADR-0.0.74 Decision #
 Empty or whitespace-only `--reason` or `--attestor` fails closed with exit 1 — no
 marker is written, no ledger event is emitted.
 
-**Safe mode, the martial-law toggle (GHI #1244).** `--mode safe --contract PATH` opens the
+**Safe mode (GHI #1244).** `--mode safe --contract PATH` opens the
 marker in safe mode: OBPI initiation and brief ceremony are suspended under the named
 contract, every guard runs at full strength (the checkpoint demotes nothing), and the
 awareness banner states the mode and the contract each turn. The contract is the document

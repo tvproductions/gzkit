@@ -2,7 +2,7 @@
 name: gz-mx
 persona: main-session
 description: >
-  Enter and exit the MX Maintenance Hangar or safe mode (the martial-law toggle) —
+  Enter and exit the MX Maintenance Hangar or safe mode —
   operator's interface to gz mx. Use when opening the hangar for governance repair,
   entering safe mode under a written contract, checking which mode is open, or
   exiting through the hard gate. Operator operates the skill; the skill invokes gz mx.
@@ -13,7 +13,7 @@ last_reviewed: 2026-10-16
 model: haiku
 gz_command: mx
 metadata:
-  skill-version: "1.3.1"
+  skill-version: "1.3.2"
 ---
 
 # gz mx
@@ -26,7 +26,7 @@ guards drop to advisory so repair work can proceed without the checked-in
 surfaces blocking the repair itself. Two guards NEVER drop: `gate5_invariants`
 and the PRIME DIRECTIVE (ownership — "fix what you know AND what you find").
 
-The same marker carries a second mode. **Safe mode** is the martial-law toggle
+The same marker carries a second mode. **Safe mode** is the toggle
 (GHI #1244): OBPI initiation and brief ceremony are suspended under a written
 contract, every guard runs at full strength, and the banner names the contract each
 turn. Gate 5, the ledger through `gz` verbs, operator PII and the PRIME DIRECTIVE bind
@@ -70,7 +70,7 @@ operator a raw `gz mx` command is a defect in the surface that gave it.
    Removes `.gzkit/mx.json` marker. Every guard re-runs at full strength;
    exit is a hard gate (all guards must pass before exit succeeds).
 
-## Workflow — safe mode (the martial-law toggle, GHI #1244)
+## Workflow — safe mode (GHI #1244)
 
 1. **Confirm the contract before anything is written.** The operator names the contract
    document, written from `.gzkit/templates/safe_mode_contract.md` under

@@ -1031,7 +1031,7 @@ class MxSessionOpenedEvent(_EventBase):
         default_factory=list, description="ADRs/OBPIs under inspection (the enter-time scope)"
     )
     mode: Literal["mx", "safe"] = Field(
-        "mx", description="mx: the hangar; safe: the martial-law toggle (GHI #1244)"
+        "mx", description="mx: the hangar; safe: safe mode (GHI #1244)"
     )
     contract: str = Field("", description="Safe-mode contract path; empty under mx")
 
