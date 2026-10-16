@@ -137,6 +137,13 @@ Ruled whole by the operator on 2026-10-10: 'it stands, add the seventh'.
   2026-10-16; entrenched on the ruling of 2026-10-16, verbatim: 'keep these metaphor
   entrenched in canon, this won't be the last time we need to reach for this approach'.
   Doctrine: `docs/governance/safe-mode-doctrine.md`.)*
+- **Release plan.** The release management document type: one document per version under
+  `docs/design/releases/`, carrying the catalog entries whose state advances, the work
+  packages shipped, the lane's gates and the captain's attestation, the version's intent and
+  the one-open-defect assessment; the rung the ADR does not carry. *(Rulings of 2026-10-16,
+  verbatim 'adrs are not releases' and 'i must have a release management document type too';
+  shape confirmed 'confirm all three'. Doctrine: `docs/governance/safe-mode-doctrine.md`
+  § The release plan; template `.gzkit/templates/release_plan.md`.)*
 
 ## Article 3, title amended, and one sentence added to the body (ruled 2026-10-10)
 

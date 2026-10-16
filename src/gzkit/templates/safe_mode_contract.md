@@ -58,17 +58,45 @@ Numbered. Each item names an outcome, not a task.
 | Handback | ratification | the amendment | the operator's word; the exit through the hard gate |
 | Voyage | civil rule | | |
 
-### Legs
+### Harbor legs (the standard set; keep the letters, mark a leg not applicable with its reason)
 
 | Leg | What it means | Witness | Reading | Owner |
 |---|---|---|---|---|
-| H1 | | | | |
+| H1 | Session start bounded | | | |
+| H2 | The root contract within budget | `gz validate --instructions-files-budget` | | |
+| H3 | Pipeline invoke bounded | `gz skill audit`; bytes at invoke | | |
+| H4 | Per-turn rules and skill descriptions cut | sizes before and after | | |
+| H5 | The catalog exists and is used | | | |
+| H6 | The TASK is the increment on one package | | | |
+| H7 | Every control names its contract | | | |
+| H8 | The toggle is on the record | `.gzkit/mx.json` with `mode: safe` | | |
+| H9 | Executed briefs attested | `gz obpi status` | | |
 
-### Drydock exit numbers
+### Drydock repairs (the standard set)
+
+| Repair | What is rebuilt | Witness |
+|---|---|---|
+| D1 | The ladder: release plan, work package, TASK | one release through a release plan |
+| D2 | The catalog as the product's truth | |
+| D3 | GHIs and MX visits classified by contract | |
+| D4 | The control plane subtracted | |
+| D5 | The airlock derives the slice from the contract | |
+| D6 | Eval checks design against code | |
+
+### Drydock exit numbers (the standing measures; set the values)
 
 | Measure | Today | Exit |
 |---|---|---|
-| | | |
+| Per-turn load: the root contract | | |
+| Per-turn load: skill descriptions, all skills | | |
+| Per-turn load: rules, total and largest | | |
+| Controls with no named contract | | 0 |
+| Operator attestations | | one per release, plus the sea trial |
+
+### The sea trial
+
+The release plan it rides on; the substrate (a fresh project on the released wheel); the
+package; the session; the two artifacts the operator attests from; the record below.
 
 ### Executive decisions
 

@@ -2527,8 +2527,12 @@
     "templates/release_notes.md": [
       "5d1fae0510e7dd642a1f7f94346382bec03f9b6b0f63d02aa5163f0459ff3b71"
     ],
+    "templates/release_plan.md": [
+      "db15ba0df03ebff4ed3d5a0a8b566e811a7239b964d4b6489e33de39ac30b294"
+    ],
     "templates/safe_mode_contract.md": [
-      "03263cb350d0d156c6f85ca261af1fa29fdb1f5d089c17fdd7f35a991de7a422"
+      "03263cb350d0d156c6f85ca261af1fa29fdb1f5d089c17fdd7f35a991de7a422",
+      "9e3e403a8fc8bf20b603d2aa5841e1c1d40ef3d3954db7d8521e1934ffaa2217"
     ],
     "templates/skill.md": [
       "005a59ec76edce159ff2f51dcc62de12b624ca376c84b4be78afbd5f1ecd11ab",
