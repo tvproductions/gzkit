@@ -13,7 +13,8 @@ gz check [OPTIONS]
 | Flag | Description |
 |------|-------------|
 | `--json` | Output results as JSON to stdout |
-| `--full` | Full sweep: the default steps plus `Test`, `Behave`, `Docs build`, `Preflight` and `Guard canary sweep`. CI runs it on every code push |
+| `--full` | Full sweep: the default steps plus `Test`, `Behave`, `Docs build`, `Preflight` and `Guard canary sweep`. CI runs it on Linux on every code push |
+| `--cross-platform` | The full sweep minus the steps whose verdict no platform can change. CI runs it on Windows. Cannot be combined with `--full` |
 | `--reuse-verified` | Skip the run when this exact staged tree already passed a check covering the requested scope. Used by the pre-push gate |
 
 ### Default scope: the per-change gate
@@ -50,6 +51,22 @@ nothing to sweep.
 
 The `--fast` flag was retired on 2026-10-11 (GHI #1191): the default scope took
 its shape, so it named nothing the default did not.
+
+### `--cross-platform`
+
+Runs the `cross-platform` scope declared in `src/gzkit/check_step_scopes.json`:
+the full sweep minus `Guard canary sweep` and `Preflight` (GHI #1253). CI runs
+it on Windows, beside the Linux `--full` run of the same push.
+
+Windows is in the CI matrix to catch one failure class: compared paths, console
+and subprocess encoding, line endings. Every step that reads paths, spawns a
+subprocess, decodes output or compares bytes reaches that class, so it stays.
+The two dropped steps cannot reach it. The canary sweep grades whether tests
+kill their mutants, which is a property of the test logic. Preflight's verdict
+depends on how old a marker is. The Linux run returns both verdicts.
+
+A cross-platform pass never records the reuse fingerprint, and only a `--full`
+pass satisfies `--cross-platform --reuse-verified`.
 
 ### `--reuse-verified`
 

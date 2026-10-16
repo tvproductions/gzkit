@@ -1080,8 +1080,9 @@ def _unfingerprinted_findings(project_root: pathlib.Path) -> list:
 def _report_reuse_skip(project_root: pathlib.Path, *, scope: str, as_json: bool) -> bool:
     """Announce and return True when this exact tree already passed a gate covering *scope*.
 
-    A ``full`` request accepts only a full pass: a ``change`` pass never ran
-    ``Behave`` (GHI #1088). A matching tree is also refused when a step whose
+    Only a ``change`` request accepts a ``change`` pass. Every broader scope accepts
+    only a full pass: a ``change`` pass never ran ``Behave`` (GHI #1088) or the
+    whole unit tier (GHI #1253). A matching tree is also refused when a step whose
     input the fingerprint does not hash has findings, so the gate runs and reports
     them (GHI #1017).
     """
@@ -1090,7 +1091,7 @@ def _report_reuse_skip(project_root: pathlib.Path, *, scope: str, as_json: bool)
 
     from gzkit.check_fingerprint import RECORDABLE_SCOPES, already_verified  # noqa: PLC0415
 
-    accept = frozenset({"full"}) if scope == "full" else RECORDABLE_SCOPES
+    accept = RECORDABLE_SCOPES if scope == "change" else frozenset({"full"})
     verified = already_verified(project_root, accept=accept)
     if verified is None or _unfingerprinted_findings(project_root):
         return False
@@ -1248,6 +1249,7 @@ def check(
     as_json: bool = False,
     reuse_verified: bool = False,
     full: bool = False,
+    cross_platform: bool = False,
 ) -> None:
     """Run the quality checks for the selected scope (lint, format, typecheck, test, audits).
 
@@ -1256,7 +1258,9 @@ def check(
     change touches. It drops the whole unit tier, ``Behave``, the docs build,
     ``Preflight`` and the guard-canary sweep (``check_step_scopes.json``).
     ``full`` is the explicit full sweep: CI runs it on every code push, and it
-    belongs at release and in the ``quality-check`` chore. Measured 2026-10-11 (a
+    belongs at release and in the ``quality-check`` chore. ``cross_platform`` is the
+    full sweep minus the steps no platform can change, for the second CI platform
+    (GHI #1253). Measured 2026-10-11 (a
     dated record) on a 10-core host: the unit tier 117s in-gate, the remaining
     steps 16s together.
 
@@ -1276,7 +1280,7 @@ def check(
 
     project_root = get_project_root()
     fmt = OutputFormatter()
-    scope = "full" if full else "change"
+    scope = "full" if full else "cross-platform" if cross_platform else "change"
 
     if reuse_verified and _report_reuse_skip(project_root, scope=scope, as_json=as_json):
         return

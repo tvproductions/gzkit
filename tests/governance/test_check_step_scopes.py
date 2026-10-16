@@ -231,7 +231,9 @@ class TestTheDefaultIsThePerChangeGate(unittest.TestCase):
                 handler = mock.MagicMock()
                 with mock.patch("gzkit.cli.parser_maintenance._lazy", return_value=handler):
                     args.func(args)
-                handler.assert_called_once_with(as_json=False, reuse_verified=False, full=full)
+                handler.assert_called_once_with(
+                    as_json=False, reuse_verified=False, full=full, cross_platform=False
+                )
 
     def test_the_retired_fast_flag_is_a_usage_error(self) -> None:
         from gzkit.cli.main import _build_parser  # noqa: PLC0415
@@ -239,6 +241,120 @@ class TestTheDefaultIsThePerChangeGate(unittest.TestCase):
         with self.assertRaises(SystemExit) as raised:
             _build_parser().parse_args(["check", "--fast"])
         self.assertEqual(raised.exception.code, 2)
+
+
+class TestTheCrossPlatformScope(unittest.TestCase):
+    """The second CI platform runs what can fail differently there, and no more (GHI #1253).
+
+    Windows is in the CI matrix for one failure class (`.github/workflows/ci.yml`,
+    the comment above `strategy:`): compared paths (#383), console encoding (#275),
+    subprocess decoding (#582), line endings (#681), and a typecheck exclude glob
+    that never matched (#788). Every step that reads paths, spawns a subprocess,
+    decodes output or compares bytes stays. A step whose verdict cannot depend on
+    the platform is dropped there; Linux still runs it in the same CI run.
+    """
+
+    _PLATFORM_SENSITIVE = (
+        "Test",
+        "Behave",
+        "Typecheck",
+        "Lint",
+        "Line endings",
+        "Surface fidelity",
+        "Smoke tier",
+        "Docs build",
+        "Validate default scopes",
+    )
+
+    def test_it_keeps_every_step_the_platform_failure_class_reaches(self) -> None:
+        steps = [name for name, _ in _select_check_steps("cross-platform")]
+        for step in self._PLATFORM_SENSITIVE:
+            with self.subTest(step=step):
+                self.assertIn(step, steps)
+
+    def test_it_runs_the_whole_unit_tier_not_the_changed_tests(self) -> None:
+        steps = [name for name, _ in _select_check_steps("cross-platform")]
+        self.assertIn("Test", steps)
+        self.assertNotIn("Test (changed)", steps)
+
+    def test_it_is_the_full_sweep_minus_exactly_the_declared_skips(self) -> None:
+        full = {name for name, _ in _select_check_steps("full")}
+        cross = {name for name, _ in _select_check_steps("cross-platform")}
+        declared = _scope_skips("cross-platform")
+        self.assertTrue(declared, "the scope must be declared, or it silently runs everything")
+        self.assertEqual(full - cross, set(declared))
+        self.assertEqual(cross - full, set())
+
+    def test_it_drops_the_guard_canary_sweep(self) -> None:
+        """The sweep grades test strength; it sits last on the Windows critical path."""
+        steps = [name for name, _ in _select_check_steps("cross-platform")]
+        self.assertNotIn("Guard canary sweep", steps)
+
+    def test_it_never_records_the_verified_fingerprint(self) -> None:
+        self.assertFalse(_scope_records_verified("cross-platform"))
+
+    def test_a_change_pass_does_not_satisfy_a_cross_platform_reuse(self) -> None:
+        """A per-change pass never ran the unit tier, so it cannot stand in for it."""
+        from gzkit.commands.quality import _report_reuse_skip  # noqa: PLC0415
+
+        with (
+            tempfile.TemporaryDirectory() as tmp,
+            mock.patch("gzkit.check_fingerprint.already_verified", return_value=None) as seen,
+        ):
+            self.assertFalse(_report_reuse_skip(Path(tmp), scope="cross-platform", as_json=True))
+        self.assertEqual(seen.call_args.kwargs["accept"], frozenset({"full"}))
+
+    def test_the_flag_hands_the_cross_platform_scope_to_the_handler(self) -> None:
+        from gzkit.cli.main import _build_parser  # noqa: PLC0415
+
+        args = _build_parser().parse_args(["check", "--cross-platform"])
+        handler = mock.MagicMock()
+        with mock.patch("gzkit.cli.parser_maintenance._lazy", return_value=handler):
+            args.func(args)
+        handler.assert_called_once_with(
+            as_json=False, reuse_verified=False, full=False, cross_platform=True
+        )
+
+    def test_every_scope_flag_has_a_help_example_that_parses(self) -> None:
+        """`gz check --help` shows an operator how to reach each scope, and each example runs."""
+        import shlex  # noqa: PLC0415
+
+        from gzkit.cli.main import _build_parser  # noqa: PLC0415
+
+        parser = _build_parser()
+        check = parser._subparsers._group_actions[0].choices["check"]  # noqa: SLF001
+        examples = [
+            line.strip()
+            for line in (check.epilog or "").split("Exit codes")[0].splitlines()
+            if line.strip().startswith("gz check")
+        ]
+        for example in examples:
+            with self.subTest(example=example):
+                parser.parse_args(shlex.split(example)[1:])
+        for flag in ("--full", "--cross-platform"):
+            with self.subTest(flag=flag):
+                self.assertTrue(
+                    any(flag in shlex.split(example) for example in examples),
+                    f"no `gz check --help` example reaches the {flag} scope",
+                )
+
+    def test_full_and_cross_platform_together_are_a_usage_error(self) -> None:
+        from gzkit.cli.main import _build_parser  # noqa: PLC0415
+
+        with self.assertRaises(SystemExit) as raised:
+            _build_parser().parse_args(["check", "--full", "--cross-platform"])
+        self.assertEqual(raised.exception.code, 2)
+
+    def test_the_check_handler_runs_the_cross_platform_steps(self) -> None:
+        from gzkit.commands import quality  # noqa: PLC0415
+
+        with (
+            mock.patch.object(quality, "_select_check_steps", side_effect=RuntimeError) as sel,
+            mock.patch.object(quality, "get_project_root", return_value=Path(".")),
+            self.assertRaises(RuntimeError),
+        ):
+            quality.check(cross_platform=True)
+        sel.assert_called_once_with("cross-platform")
 
 
 if __name__ == "__main__":

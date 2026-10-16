@@ -97,4 +97,17 @@ jobs:
         run: uv sync --frozen --all-extras
 
       - name: Run gz check --full (lint, format, typecheck, test, behave, validators, canary sweep)
+        if: runner.os != 'Windows'
         run: uv run gz check --full
+
+      # Windows runs the full sweep minus the steps whose verdict no platform can
+      # change, which this run's Linux job already returns (GHI #1253). The scope
+      # and its per-step reasons are declared in `src/gzkit/check_step_scopes.json`
+      # (`cross-platform`): every step that reads paths, spawns a subprocess,
+      # decodes output or compares bytes stays, because that is the class this
+      # platform is in the matrix to catch. Measured on CI run 38875151441 (a dated
+      # record): the guard-canary sweep took 280.51s here and ran after the unit
+      # tier finished, directly on the critical path.
+      - name: Run gz check --cross-platform (the full sweep minus platform-independent steps)
+        if: runner.os == 'Windows'
+        run: uv run gz check --cross-platform

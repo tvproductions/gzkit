@@ -222,16 +222,23 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             [
                 "gz check",
                 "gz check --full",
+                "gz check --cross-platform",
                 "gz check --reuse-verified",
                 "gz check --json",
             ]
         ),
     )
     add_json_flag(p_check)
-    p_check.add_argument(
+    check_scope = p_check.add_mutually_exclusive_group()
+    check_scope.add_argument(
         "--full",
         action="store_true",
         help="Full sweep: unit tier, behave, docs build, preflight, canary sweep",
+    )
+    check_scope.add_argument(
+        "--cross-platform",
+        action="store_true",
+        help="Full sweep minus steps no platform can change (second CI platform)",
     )
     p_check.add_argument(
         "--reuse-verified",
@@ -240,7 +247,10 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
     )
     p_check.set_defaults(
         func=lambda a: _lazy("check")(
-            as_json=a.as_json, reuse_verified=a.reuse_verified, full=a.full
+            as_json=a.as_json,
+            reuse_verified=a.reuse_verified,
+            full=a.full,
+            cross_platform=a.cross_platform,
         )
     )
 
