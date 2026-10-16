@@ -660,6 +660,40 @@ class TestSyncControlSurfaces(unittest.TestCase):
             self.assertEqual(second, third)
             self.assertEqual(second, sorted(second))
 
+    def test_the_package_copy_of_a_skill_carries_its_nested_agents_md_in_one_sync(self) -> None:
+        """A rule scoped to a skill directory yields a nested AGENTS.md inside it, and the wheel
+        copy under src/gzkit/skills/<slug>/ ships every *.md of the skill. One sync must deliver
+        the nested file to the package side; a copy that lags one sync behind is a stale
+        derived view in the wheel (found 2026-10-16 renaming the safe-mode heading)."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            skill_dir = project_root / config.paths.skills / "demo-skill"
+            skill_dir.mkdir(parents=True, exist_ok=True)
+            (skill_dir / "SKILL.md").write_text(_skill_markdown("demo-skill"), encoding="utf-8")
+            rules_dir = project_root / ".gzkit" / "rules"
+            rules_dir.mkdir(parents=True, exist_ok=True)
+            (rules_dir / "demo.md").write_text(
+                "---\nid: demo\ndescription: Demo rule\npaths:\n"
+                '  - ".gzkit/skills/demo-skill/**"\n---\n'
+                "<!-- rule-version: 0.1.0 -->\n\n# Demo rule\n\n"
+                "> **Rule version:** `0.1.0` — first.\n\nUse the demo skill.\n",
+                encoding="utf-8",
+            )
+            pkg_skills = project_root / "src" / "gzkit" / "skills"
+            pkg_skills.mkdir(parents=True, exist_ok=True)
+            (pkg_skills / "__init__.py").write_text("", encoding="utf-8")
+
+            updated = sync_all(project_root, config)
+
+            nested = (skill_dir / "AGENTS.md").read_text(encoding="utf-8")
+            self.assertIn("Use the demo skill.", nested)
+            self.assertIn("src/gzkit/skills/demo-skill/AGENTS.md", updated)
+            self.assertEqual(
+                (pkg_skills / "demo-skill" / "AGENTS.md").read_text(encoding="utf-8"), nested
+            )
+
     def test_find_stale_mirror_paths_is_explicit_and_non_destructive(self) -> None:
         """Stale mirror paths are detected and preserved for manual recovery."""
         with tempfile.TemporaryDirectory() as tmpdir:

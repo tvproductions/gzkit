@@ -1076,9 +1076,6 @@ def sync_all(
     # Migrate legacy skill layouts into canonical path when needed.
     updated.extend(bootstrap_canonical_skills(project_root, config))
 
-    # Pkg surfaces: .gzkit/<surface>/ → src/gzkit/<surface>/ (REQ-0.0.32-08-02)
-    updated.extend(sync_pkg_surfaces(project_root, config))
-
     # Vendor-neutral surfaces (AGENTS.md generated before vendor rules so that
     # sync_nested_agents_md reads instruction files already rendered by
     # render_rules_to_dir; caller must ensure this ordering is preserved)
@@ -1122,6 +1119,13 @@ def sync_all(
     # written, so the first and subsequent runs observe the same tree and sync
     # stays idempotent across repeated invocations.
     updated.extend(sync_nested_agents_md(project_root, config))
+
+    # Pkg surfaces: .gzkit/<surface>/ → src/gzkit/<surface>/ (REQ-0.0.32-08-02).
+    # Downstream of sync_nested_agents_md, like the skill mirrors: the skills copy
+    # ships every *.md of a skill, so a nested AGENTS.md written inside
+    # `.gzkit/skills/<slug>/` must already be on disk, or the wheel copy lags one
+    # sync behind canon (observed 2026-10-16 on `gz-mx`).
+    updated.extend(sync_pkg_surfaces(project_root, config))
 
     # Vendor-aware skill mirrors
     mirrored = sync_skill_mirrors(project_root, config, vendor_aware=vendor_aware)
