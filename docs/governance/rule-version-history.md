@@ -584,7 +584,9 @@ Lifted 2026-08-29 at version `0.5.1` (rule now at `0.6.0`).
 
 ## `mx-mode.md`
 
-Lifted 2026-08-29 at version `1.3.0`; `1.4.0` lifted 2026-10-16 (rule now at `1.5.0`).
+Lifted 2026-08-29 at version `1.3.0`; `1.4.0` and `1.5.0` lifted 2026-10-16 (rule now at `1.5.1`).
+
+> **Rule version:** `1.5.0` — the marker carries a mode: `mx`, the hangar, and `safe`, the martial-law toggle that suspends ceremony under a contract and demotes no guard (operator ruling 2026-10-16, GHI #1244). Prior `1.4.0` and earlier lifted to [Rule Version History](#mx-modemd). Binding rules unchanged for the hangar; § Safe mode is new.
 
 > **Rule version:** `1.4.0` — diet pass under GHI #921 (operator ruling 2026-08-29, *"we are compressing everything and anything that the agent can consume"*). Version history lifted to [Rule Version History](#mx-modemd). Binding rules unchanged.
 

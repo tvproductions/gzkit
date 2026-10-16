@@ -1,10 +1,10 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "a367c0eb03f608cb751bf529f574f7715c113333befbc59d8dd217106da05ff8",
-  "corpus_entry_count": 517,
-  "rendition_fingerprint": "22d206f2e4ccadcc7477d616a6f3fd8ad7771e8eef6c628f5ee4f176f2b0423d",
-  "committed_ts": "2026-10-11T17:46:57.623265+00:00",
+  "corpus_fingerprint": "530aa2c844b2955d7f5d7871af46f0d12faa4610e4355ecc998a2e3064a905b4",
+  "corpus_entry_count": 518,
+  "rendition_fingerprint": "917cc17efcb8a94cf08e9264a373a4936685942f72faa20ff0a6311c113ce96b",
+  "committed_ts": "2026-10-16T07:34:16.105429+00:00",
   "attestor": "g0",
-  "attestation_text": "direct fix 1187, then git sync | evidence: GHI #1187, closure contract at issuecomment-6111872871; one entry added, corpus-governance-doctrine-surfaces-2026-10-11T17:46:43.217551+00:00; no block of the prior rendition removed",
-  "landing_id": "landing-20261011T174657Z-a30185b7"
+  "attestation_text": "keep these metaphor entrenched in canon, this won't be the last time we need to reach for this approach (operator, 2026-10-16, verbatim; relayed by the pilot under the harbor-pilotage contract). Evidence: one compressible Judgment entry added to § Governance doctrine surfaces, corpus-governance-doctrine-surfaces-2026-10-16T07:31:32.835896+00:00, pointing at docs/governance/safe-mode-doctrine.md and .gzkit/templates/safe_mode_contract.md; root candidate 24,643 B against the committed 24,279 B, the diff is that entry alone; no block dropped; invariant text unchanged at 22,599 B.",
+  "landing_id": "landing-20261016T073416Z-061bc361"
 }

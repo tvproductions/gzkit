@@ -122,6 +122,21 @@ Ruled whole by the operator on 2026-10-10: 'it stands, add the seventh'.
   order binds one work package and carries the role's auspices. *(Line 2.)*
 - **Release.** The captain's signature on what ships; in gzkit, Gate 5 attestation, which is
   return to service. *(Line 6; `AGENTS.md` § Gate Covenant; 14 CFR § 43.9 as landed.)*
+- **Safe mode (martial law).** The regime for a crisis the ordinary ceremony cannot govern:
+  entered and left only through the `gz-mx` skill under a written contract; one exceptional
+  period through harbor, drydock and sea trial; exit at seaworthiness. **Harbor pilot.** The
+  strongest model, booked by the captain, that takes the conn for the passage in; it plans,
+  measures, diagnoses and rules with the operator and carries no signature. **Harbor.** The
+  passage in: the load cuts and the instruments. **Drydock.** The structural rebuild out of the
+  water. **Sea trial.** One work package run on a fresh install of the released wheel.
+  **Seaworthy.** The one condition on which safe mode ends. **Handback.** The amendment the
+  captain ratifies at seaworthiness; civil rule resumes on it. **Voyage.** Ordinary operations
+  under the Magna Carta. **Pilotage chart** and **passage log.** The leg-by-leg instrument and
+  the act-by-act record. **Work order.** A pilotage tasking instrument, a GHI with a closure
+  contract, that leaves with the contract; not the work package. *(Rulings of 2026-10-15 and
+  2026-10-16; entrenched on the ruling of 2026-10-16, verbatim: 'keep these metaphor
+  entrenched in canon, this won't be the last time we need to reach for this approach'.
+  Doctrine: `docs/governance/safe-mode-doctrine.md`.)*
 
 ## Article 3, title amended, and one sentence added to the body (ruled 2026-10-10)
 

@@ -13,7 +13,7 @@ last_reviewed: 2026-10-16
 model: haiku
 gz_command: mx
 metadata:
-  skill-version: "1.3.0"
+  skill-version: "1.3.1"
 ---
 
 # gz mx
@@ -73,7 +73,9 @@ operator a raw `gz mx` command is a defect in the surface that gave it.
 ## Workflow — safe mode (the martial-law toggle, GHI #1244)
 
 1. **Confirm the contract before anything is written.** The operator names the contract
-   document (today: `docs/governance/harbor-pilotage-candidate-2026-10-15.md`). The skill
+   document, written from `.gzkit/templates/safe_mode_contract.md` under
+   `docs/governance/safe-mode-doctrine.md` (first instance:
+   `docs/governance/harbor-pilotage-candidate-2026-10-15.md`). The skill
    reads it and confirms it carries § Entry (whose word opened the mode), § Mandate,
    § Records (one commit per act with its trailer and its `gz arb red --commit` witness),
    and § Exit or a chart with legs and witnesses. A contract missing any of these is

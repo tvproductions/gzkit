@@ -167,7 +167,8 @@
       "constitution.md",
       "obpi.md",
       "prd.md",
-      "release_notes.md"
+      "release_notes.md",
+      "safe_mode_contract.md"
     ],
     "chores": [
       "README.md",
