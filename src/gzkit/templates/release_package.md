@@ -18,7 +18,7 @@ attestation:
 # Release {{version}}
 
 > The release management document type: one per version, the rung the ADR does not carry.
-> Doctrine: `docs/governance/safe-mode-doctrine.md` § The release plan. Delete this note.
+> Doctrine: `docs/governance/safe-mode-doctrine.md` § The Release Package. Delete this note.
 
 ## Intent
 

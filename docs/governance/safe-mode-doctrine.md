@@ -23,7 +23,7 @@ The regime is nautical because the nautical record already separates the three t
 - **The harbor pilot.** The strongest model available, booked by the operator, takes the conn for the passage into port. The pilot plans, measures, diagnoses and takes rulings with the operator; it executes a cut itself only when the cut is the measurement's own finding and small enough to read in one sitting. Operator, 2026-10-15: *"I wanted to PLAN in Fable, but not do all the work in fable."* The captain remains the operator: the pilot advises the helm and carries no signature.
 - **Martial law.** The temporary arrangement under which the pilot acts: *"this is a TEMPORARY ARRANGEMENT until we get to port and dry dock."* It is entered by the operator's word and a written contract, and it yields back to the Magna Carta, gzkit's campaign under civil rule.
 - **The harbor.** The passage in: the load cuts and the instruments that make the ship steerable again, measured leg by leg.
-- **Drydock.** The structural rebuild that cannot be done under way: the ladder, the catalog, the release plan, the control plane subtracted. The ship is out of the water; it is not on a normal voyage, so the exceptional regime continues.
+- **Drydock.** The structural rebuild that cannot be done under way: the ladder, the catalog, the Release Package, the control plane subtracted. The ship is out of the water; it is not on a normal voyage, so the exceptional regime continues.
 - **The sea trial.** The proof that the rebuilt ship sails: a fresh project on the released wheel runs one work package end to end. The constitution's governor rule is the ground: doctrine under construction is proven on another project before it binds its own making.
 - **Seaworthy.** The one condition on which safe mode ends. Not the harbor's quay, not the drydock's gate: the trial passed and recorded.
 - **Handback.** The amendment the operator ratifies at seaworthiness: every pilot commit listed, kept or reverted; the passage log carried; the suspended rules restored. Civil rule resumes on the ratification. Operator, 2026-10-15: *"martial law to get us on the diagram's plan including control plane and work/design modularization, then a return to magna carta (civilian rule)."*
@@ -34,7 +34,7 @@ The regime is nautical because the nautical record already separates the three t
 | Phase | Regime | Produces | Done when |
 |---|---|---|---|
 | Harbor | safe mode | the instruments and the load cuts | every harbor leg met |
-| Drydock | safe mode | the structural rebuild and its first release | the release published through a release plan; the drydock exit numbers met |
+| Drydock | safe mode | the structural rebuild and its first release | the release published through a Release Package; the drydock exit numbers met |
 | Sea trial | safe mode | one work package run on a fresh install of the release | the trial recorded in the passage log |
 | Handback | ratification | the amendment | the operator's word; the exit through the hard gate |
 | Voyage | civil rule | ordinary operations | — |
@@ -75,7 +75,7 @@ the operator):
 
 | Repair | What is rebuilt | Witness |
 |---|---|---|
-| D1 | The ladder: ADR records decisions and lands contracts; the release plan governs a version; the work package is the labor unit; the TASK is the increment | one release planned and closed through a release plan, `gz closeout` keyed to it |
+| D1 | The ladder: ADR records decisions and lands contracts; the Release Package governs a version; the work package is the labor unit; the TASK is the increment | one release planned and closed through a Release Package, `gz closeout` keyed to it |
 | D2 | The catalog as the product's truth | a validator that fails on a brief assignment naming no entry |
 | D3 | GHIs and MX visits classified by the contract they repair | `ghi-triage` reports the contract per issue |
 | D4 | The control plane subtracted: every control names its contract or retires; no rule body carries a dated narrative | the obligation column full; the exit measures |
@@ -88,12 +88,17 @@ controls with no named contract (exit at zero, each named or retired by a logged
 operator's attestations per release (one per release and the sea trial, never one per brief).
 The first instance's values are in its contract.
 
-## The release plan
+## The Release Package
 
 The release management document type, the rung the ADR wrongly carried until 2026-10-16 (operator,
-verbatim: *"adrs are not releases"*; *"i must have a release management document type too"*).
+verbatim: *"adrs are not releases"*; *"i must have a release management document type too"*;
+named the same day: *"Release Package it is"*). The vocabulary runs in one line: the work package
+is the labor on one contract, the Release Package is the set of work packages and the entry states a
+version ships, the release is the captain's signature on it. One document type carries the
+lifecycle in its `status`: `planned` while it is filled, `in-flight` while its packages land,
+`released` when the operator signs.
 One document per version under `docs/design/releases/`, named by the version it governs, from
-`.gzkit/templates/release_plan.md`:
+`.gzkit/templates/release_package.md`:
 
 - frontmatter: the version; `status` (`planned`, `in-flight`, `released`); the catalog entries
   whose state advances, each with its from and to state; the work packages shipped; the lane and
@@ -102,13 +107,13 @@ One document per version under `docs/design/releases/`, named by the version it 
   assessment the constitution's policy 12 requires.
 
 `gz closeout` keys to it at the D1 migration; until then it is the planning document the first
-drydock release is built through. The campaign sequences releases; a release plan says what one
+drydock release is built through. The campaign sequences releases; a Release Package says what one
 release contains. ADRs stop carrying a version at the migration; a patch release uses the same
 document with a short list.
 
 ## The sea trial, as procedure
 
-1. The drydock's release is built and published through a release plan.
+1. The drydock's release is built and published through a Release Package.
 2. A fresh project installs that release from the wheel; `gz init` scaffolds it. gzkit's own
    tree is never the substrate: doctrine under construction is proven on another project before
    it binds its own making (the constitution's governor rule).

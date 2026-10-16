@@ -53,7 +53,7 @@ Numbered. Each item names an outcome, not a task.
 | Phase | Regime | Produces | Done when |
 |---|---|---|---|
 | Harbor | safe mode | | |
-| Drydock | safe mode | | the first release through a release plan; the exit numbers met |
+| Drydock | safe mode | | the first release through a Release Package; the exit numbers met |
 | Sea trial | safe mode | one work package on a fresh install of the release | the trial recorded below |
 | Handback | ratification | the amendment | the operator's word; the exit through the hard gate |
 | Voyage | civil rule | | |
@@ -76,7 +76,7 @@ Numbered. Each item names an outcome, not a task.
 
 | Repair | What is rebuilt | Witness |
 |---|---|---|
-| D1 | The ladder: release plan, work package, TASK | one release through a release plan |
+| D1 | The ladder: Release Package, work package, TASK | one release through a Release Package |
 | D2 | The catalog as the product's truth | |
 | D3 | GHIs and MX visits classified by contract | |
 | D4 | The control plane subtracted | |
@@ -95,7 +95,7 @@ Numbered. Each item names an outcome, not a task.
 
 ### The sea trial
 
-The release plan it rides on; the substrate (a fresh project on the released wheel); the
+The Release Package it rides on; the substrate (a fresh project on the released wheel); the
 package; the session; the two artifacts the operator attests from; the record below.
 
 ### Executive decisions
