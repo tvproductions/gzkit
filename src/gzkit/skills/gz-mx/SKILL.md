@@ -2,10 +2,10 @@
 name: gz-mx
 persona: main-session
 description: >
-  Enter and exit the MX Maintenance Hangar — operator's interface to gz mx.
-  Use when entering the hangar to perform governance repair, checking hangar
-  status mid-session, or cleanly exiting when repair is complete.
-  Operator operates the skill; the skill invokes gz mx; nobody shells out.
+  Enter and exit the MX Maintenance Hangar or safe mode (the martial-law toggle) —
+  operator's interface to gz mx. Use when opening the hangar for governance repair,
+  entering safe mode under a written contract, checking which mode is open, or
+  exiting through the hard gate. Operator operates the skill; the skill invokes gz mx.
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
@@ -13,7 +13,7 @@ last_reviewed: 2026-10-16
 model: haiku
 gz_command: mx
 metadata:
-  skill-version: "1.2.0"
+  skill-version: "1.3.0"
 ---
 
 # gz mx
@@ -26,8 +26,16 @@ guards drop to advisory so repair work can proceed without the checked-in
 surfaces blocking the repair itself. Two guards NEVER drop: `gate5_invariants`
 and the PRIME DIRECTIVE (ownership — "fix what you know AND what you find").
 
+The same marker carries a second mode. **Safe mode** is the martial-law toggle
+(GHI #1244): OBPI initiation and brief ceremony are suspended under a written
+contract, every guard runs at full strength, and the banner names the contract each
+turn. Gate 5, the ledger through `gz` verbs, operator PII and the PRIME DIRECTIVE bind
+in both modes.
+
 The operator operates this skill; the skill invokes `gz mx`; nobody shells
-out to `gz mx enter` or `gz mx exit` directly.
+out to `gz mx enter` or `gz mx exit` directly. The operator never types the verb:
+entry and exit are the skill's steps below, and an instruction that hands the
+operator a raw `gz mx` command is a defect in the surface that gave it.
 
 ## When to Use
 
@@ -36,6 +44,10 @@ out to `gz mx enter` or `gz mx exit` directly.
 - **Checking hangar status** — confirming whether the hangar is currently
   open mid-session
 - **Clean exit** — repair is complete; re-enforce all guards at full strength
+- **Entering safe mode** — the operator has written a contract that says what the
+  mode suspends, what still binds, what each act records and how the mode exits
+- **Exiting safe mode** — the contract's exit legs are met; the skill reads them
+  before the hard gate runs
 
 ## Workflow
 
@@ -46,26 +58,57 @@ out to `gz mx enter` or `gz mx exit` directly.
    Creates `.gzkit/mx.json` marker. Most governance guards drop to advisory. `--reason`
    and `--attestor` are required; the attestor is the operator, never an agent.
 
-   **Safe mode, the martial-law toggle (GHI #1244):**
-   ```bash
-   uv run gz mx enter --mode safe --contract docs/governance/<contract>.md --reason "<why>" --attestor g0
-   ```
-   Same marker, `mode: safe`. OBPI initiation and brief ceremony are suspended under the
-   contract; every guard runs at full strength; the banner names the contract each turn.
-   The contract says what is suspended, what binds, what each act records, and how the
-   mode exits. Write it before entering; the verb refuses a missing file.
-
 2. **Perform the repair**
    Work on the governance surfaces that needed fixing. Gate 5 invariants and
    the PRIME DIRECTIVE still bind — guards drop to advisory so you can repair
    governance itself, not so defects can be deferred.
 
-3. **Close the hangar, or safe mode**
+3. **Close the hangar**
    ```bash
    uv run gz mx exit --attestor g0
    ```
    Removes `.gzkit/mx.json` marker. Every guard re-runs at full strength;
    exit is a hard gate (all guards must pass before exit succeeds).
+
+## Workflow — safe mode (the martial-law toggle, GHI #1244)
+
+1. **Confirm the contract before anything is written.** The operator names the contract
+   document (today: `docs/governance/harbor-pilotage-candidate-2026-10-15.md`). The skill
+   reads it and confirms it carries § Entry (whose word opened the mode), § Mandate,
+   § Records (one commit per act with its trailer and its `gz arb red --commit` witness),
+   and § Exit or a chart with legs and witnesses. A contract missing any of these is
+   reported and the mode is not entered.
+
+2. **Enter safe mode**
+   ```bash
+   uv run gz mx enter --mode safe --contract <contract path> --reason "<why>" --attestor g0
+   ```
+   Same marker, `mode: safe`, bound to its `mx_session_opened` event. The verb refuses a
+   missing or outside contract and refuses a contract under `--mode mx`. From this turn
+   the banner names the contract; guards are not demoted.
+
+3. **Work under the contract.** Each act is one commit with its `Task:` trailer, its
+   commit-grain witness, and a passage-log row with the measurement before and after.
+   The ledger is written only through `gz` verbs; no control is removed.
+
+4. **Read the chart before exit.** The skill reads the contract's exit legs (the
+   orientation's Pilotage block once GHI #1245 lands; until then the chart's reading
+   column, each witness re-run) and names any leg not met. One unmet leg stops here:
+   the exit is not attempted, and the operator decides whether the leg is waived by a
+   recorded ruling or worked.
+
+5. **Exit through the hard gate**
+   ```bash
+   uv run gz mx exit --attestor g0
+   ```
+   The marker is removed, every guard re-runs at full strength, the enter-to-exit log
+   is rendered for the operator, and `mx_session_closed` is written. A red guard
+   restores the marker and refuses.
+
+6. **Hand back.** The contract's handback amendment (every pilot commit listed, kept or
+   reverted, the passage log carried, the suspended rules restored) is drafted by the
+   session and ratified by the operator. Civil rule resumes on that ratification, not on
+   the exit.
 
 ## Example
 
@@ -77,6 +120,18 @@ uv run gz mx enter --reason "repair a drifted OBPI brief" --attestor g0
 # ...
 
 # Exit — guards re-enforce; exit fails if any guard is still red
+uv run gz mx exit --attestor g0
+```
+
+Safe mode, as the skill runs it for the operator:
+
+```bash
+# Step 2 — enter under the pilotage contract
+uv run gz mx enter --mode safe --contract docs/governance/harbor-pilotage-candidate-2026-10-15.md --reason "harbor pilotage" --attestor g0
+
+# Steps 3 and 4 — acts under § Records; the chart read before exit
+
+# Step 5 — exit through the hard gate
 uv run gz mx exit --attestor g0
 ```
 
@@ -114,7 +169,10 @@ since been resolved — it leaves the liveness reading but stays evidence), and
 
 ## Constraints
 
-- Operator operates the skill; the skill invokes `gz mx`; nobody shells out
+- Operator operates the skill; the skill invokes `gz mx`; nobody shells out, and no
+  surface hands the operator a raw `gz mx` command
+- Safe mode is entered only under a contract that carries § Entry, § Mandate, § Records
+  and an exit chart; exit is attempted only after the chart is read
 - `gate5_invariants` and the PRIME DIRECTIVE bind throughout the session
 - Exit is a hard gate — do not attempt exit until all detectable defects are fixed
 - See `.gzkit/rules/mx-mode.md` for the binding agent rule for hangar sessions
