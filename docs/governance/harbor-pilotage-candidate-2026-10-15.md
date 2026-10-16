@@ -285,53 +285,85 @@ With the three ruled, WO-4 authors the entries for the obligations of `OBPI-0.35
 `-20`, thirty-three BEHAVIOR and twelve SUPPORT lines today, each with its contract, and
 WO-7 re-cuts the briefs as work packages by contract.
 
-## Pilotage chart — the path into the harbor, the drydock, and seaworthiness (2026-10-16)
+## Pilotage chart — one exceptional period: harbor, drydock, sea trial, handback (amended 2026-10-16)
 
-Written under crisis mode at the operator's word (verbatim: *"in safemode/martial law, you need to
-lean in and make executive decisions to achieve outcomes"*). The chart is the tracking instrument:
-one row per leg, each with its witness and its last reading. The passage log records each act; a
-leg's reading column moves only by an act in that log. WO-10 below makes the readings mechanical.
+Written under crisis mode at the operator's word (verbatim: *"lean in and make executive decisions
+to achieve outcomes"*; *"gzkit has become untenable"*). Amended the same day on three
+confirmations, verbatim *"confirm all three, amend the chart"*: safe mode runs through the drydock
+and the sea trial and ends at seaworthiness; the sea trial substrate is a fresh project on the
+released wheel; the release plan has the shape in § The release plan. The chart is the tracking
+instrument: one row per leg, each with its witness and its last reading. The passage log records
+each act; a leg's reading moves only by an act in that log. WO-10 (GHI #1245) makes the readings
+mechanical.
 
-### The path into the harbor (martial law ends at the quay)
+### The regime
+
+| Phase | Regime | Produces | Done when |
+|---|---|---|---|
+| Harbor | safe mode | load cut, inventory, serving, the toggle, the budget | H1 to H9 met |
+| Drydock | safe mode | the catalog, the release plan type, work packages for 16 to 20, controls naming their contracts, the ladder migrated, the first release | the first release built and published through a release plan, with the drydock exit numbers met |
+| Sea trial | safe mode | a fresh project on the released wheel runs one work package end to end | the trial recorded in the passage log |
+| Handback | ratification | the amendment: every pilot commit kept or reverted, the passage log carried, the initiation clause restored | the operator's word; `/gz-mx` exits through the hard gate |
+| Voyage | Magna Carta | releases planned, packaged, witnessed, attested | ordinary operations |
+
+Safe mode is left once, at seaworthiness. Nothing returns to civil rule in between.
+
+### Harbor legs
 
 | Leg | What it means | Witness | Reading 2026-10-16 | Owner |
 |---|---|---|---|---|
 | H1 | Session start bounded | `TestCampaignBlockIsBounded`; orientation under 8 KB | met, 4,831 B | done |
-| H2 | AGENTS.md within budget | `gz validate --instructions-files-budget`, no advisory | met by ruling, 846 chars headroom | done |
+| H2 | AGENTS.md within budget | `gz validate --instructions-files-budget`, no advisory | met by ruling (GHI #1243), 846 chars headroom | done |
 | H3 | Pipeline invoke bounded | `gz skill audit`; § Passage log | met, 125,923 B to 11,445 B | done |
 | H4 | Per-turn rules and skill descriptions cut | the two sizes in the passage log before and after; `gz skill audit` | not started: rules 150 KB over 26 files, descriptions 15,085 chars | cheaper session, WO-11, GHI #1246 |
-| H5 | The catalog exists and is used | `data/requirements_catalog.json` loads through the registry seam; briefs 16 to 20 carry `assignments:` | not started; shapes decided below | pilot authors, WO-4 |
+| H5 | The catalog exists and is used | `data/requirements_catalog.json` loads through the registry seam; briefs 16 to 20 carry `assignments:` | not started; shapes decided below | pilot, WO-4 |
 | H6 | The TASK is the increment on one package | ledger: one package's TASKs each with a `red_commit_receipt_emitted`, in one session | not started | pilot cuts, cheaper session flies, WO-7 |
 | H7 | Every control names its contract | `gz validate --advisory-scorecard` reads an obligation column | not started | cheaper session, WO-8, GHI #1247 |
 | H8 | The toggle is on the record | `.gzkit/mx.json` with `mode: safe`, bound to its event | the verb exists (`ac3b0005e`); the operator has not entered through the gz-mx skill | operator, through the gz-mx skill |
 | H9 | 17 and 20 attested | `gz obpi status` shows `attested_completed` for both | `Draft`; disclosures recorded in the log | operator |
-| H10 | Handback | the campaign amendment listing every pilot commit, kept or reverted, with this log, restoring the initiation clause | not started | pilot drafts, operator ratifies |
 
-At the quay: H1 to H10 met, then the exit through the gz-mx skill, whose step 4 reads this
-chart and whose step 5 runs the hard gate at full strength. Civil rule resumes on the
-handback ratification (H10), not on the exit.
+### Drydock repairs (under safe mode; the pilot specifies and cuts, cheaper sessions execute)
 
-### The drydock (civil rule, on the redesign)
-
-Drydock is the structural work that changes canon and therefore waits for civil rule; it is
-sequenced by the campaign, not by this contract. The pilot leaves it specified:
-
-| Repair | What is rebuilt | Seaworthiness witness |
+| Repair | What is rebuilt | Witness |
 |---|---|---|
-| D1 | The ladder: ADR records decisions and lands contracts; the release artifact (its own rung) governs a version; the work package replaces the OBPI as the labor unit; the TASK is the increment | one release planned and closed through the release artifact, with `gz closeout` keyed to it |
-| D2 | The catalog as the product's truth: every live REQ an entry with its contract and state; legacy ids as aliases | `gz validate` scope that fails on a brief assignment naming no entry |
+| D1 | The ladder: ADR records decisions and lands contracts; the release plan (its own rung, § The release plan) governs a version; the work package replaces the OBPI as the labor unit; the TASK is the increment | the first release planned and closed through a release plan, with `gz closeout` keyed to it |
+| D2 | The catalog as the product's truth: every live REQ an entry with its contract and state; legacy ids as aliases | a `gz validate` scope that fails on a brief assignment naming no entry |
 | D3 | GHIs classified by the contract they repair; MX visits likewise | `ghi-triage` reports the contract per issue; an unclassified issue is a finding |
-| D4 | The control plane: every control names its contract; incident history lives in rationale records | the obligation column full; no rule body carries a dated narrative |
+| D4 | The control plane subtracted: every control names its contract or retires; no rule body carries a dated narrative | the obligation column full; the counts below |
 | D5 | The airlock derives the slice from the contract's `modules` | a transit whose reach exceeds the contract's modules is refused |
 | D6 | Eval checks module design against module code | one eval run on one package, reported |
 
-### Seaworthy again
+**Drydock exit numbers** (executive decisions 2026-10-16; the operator may move any by a word):
 
-The ship is seaworthy when a cheaper session, under civil rule, takes one work package from the
-catalog, cuts its TASKs, lands each as one commit with its trailer and its `red_commit_receipt`
-on the pipeline route, and the operator attests the package from two artifacts only: its entries'
-states and its TASK receipts. That is one sea trial, not a checklist; it is passed once, recorded in
-the passage log, and then the campaign carries the rest.
+| Measure | Today | Exit |
+|---|---|---|
+| Per-turn load: AGENTS.md | 24,154 chars | at or under the ruled budget, 25,000 |
+| Per-turn load: skill descriptions, all skills | 15,085 chars | at or under 8,000 chars |
+| Per-turn load: rules, total and largest | 150 KB over 26 files; `tests.md` 11,618 B | at or under 90 KB; no rule over 6,000 B |
+| Skills in the catalogue | 73 | every skill either model-invoked with a one-sentence description or `disable-model-invocation: true`; the count is reported, not targeted |
+| Controls with no named contract | 189 scored, 0 assigned | 0 unassigned: each names its contract or is retired by a logged act |
+| Operator attestations | one per OBPI | one per release, plus the sea trial |
+
+### The release plan
+
+One document per version under `docs/design/releases/`, named by the version it governs.
+Frontmatter: the version; `status` (`planned`, `in-flight`, `released`); the catalog entries whose
+state advances, each with its from and to state; the work packages shipped; the lane and its gates;
+the operator's attestation. Body: the intent of the version for the operator and for adopters, and
+the one-open-defect assessment the constitution's policy 12 requires. `gz closeout` keys to it
+(D1). The campaign sequences releases; a release plan says what one release contains. ADRs stop
+carrying a version at the migration; a patch release uses the same document with a short list.
+
+### The sea trial
+
+The drydock's product is the first release, built and published through the first release plan.
+The trial: a fresh project installs that release from the wheel, `gz init` scaffolds it, and a
+cheaper session takes one work package from the catalog, cuts its TASKs, lands each as one commit
+with its trailer and its `red_commit_receipt` on the pipeline route; the operator attests the
+package from two artifacts only, its entries' states and its TASK receipts. The constitution's
+governor rule is the ground: doctrine under construction is proven on another project before it
+binds its own making. A second substrate, if the operator names one, flies as a flight-test sortie.
+Passed once and recorded here, the ship is seaworthy and the handback follows.
 
 ### Executive decisions taken 2026-10-16 (the operator may overrule any by a word)
 
@@ -339,14 +371,12 @@ the passage log, and then the campaign carries the rest.
    one JSON file `data/requirements_catalog.json` read through the registry seam with a derived
    Markdown view; assignments in brief frontmatter with the legacy `REQ-X.Y.Z-NN-MM` line kept as
    the alias the proof channels bind to.
-2. **The release artifact, decided for drydock D1:** a separate rung, one document per version
-   under `docs/design/releases/`, carrying the entries whose state advances, the packages shipped,
-   the lane's gates and the operator's signature; ADRs stop carrying a version at the migration;
-   patch releases use the same artifact with a short list.
+2. **The release plan, confirmed by the operator** (§ The release plan).
 3. **The disclosures of the cutover row stand as recorded.** The pilot cannot attest; it proceeds
    on them and the operator rules at H9.
 4. **Execution leaves the pilot.** Every leg marked "cheaper session" is a GHI with a closure
    contract written by the pilot; the pilot executes nothing deterministic from here.
+5. **The drydock exit numbers above.**
 
 ### Work orders added
 
@@ -377,3 +407,4 @@ inside it.
 | 2026-10-16 | WO-2 closed by ruling (GHI #1243, operator verbatim *"A, record the budget at the invariant floor"*) | AGENTS.md 24,154 chars against a 20,000-char budget; the chore stopped at § 4 because 876 B of compressible text could not close a 4,154-char gap | the enforced budget is 25,000 chars, the attested invariant floor (22,599 B) plus margin, with a dated entry in `docs/governance/instructions-files-budget-history.md`; the doctrine page says the enforced value sits above the 20,000 ceiling, which is destination work again; options B and C recorded as declined; `gz validate --instructions-files-budget` exits 0 with no advisory; 846 chars of headroom | `e0dab8ee4` | data and docs only: `gz arb red --commit e0dab8ee4` verdict `no-production-hunks` (receipt `arb-red-commit-e0dab8ee443c-860c9d481d8649469a524129803afc2b`); `gz check` and `mkdocs build --strict` green (the strict build caught a lifted version-history link from the safe-mode commit, repaired here); GHI #1243 closed `fixed`. Exit condition 2 is met by ruling, not by trimming |
 | 2026-10-16 | pilotage chart written: harbor legs H1 to H10 with witnesses and readings, drydock repairs D1 to D6 with seaworthiness witnesses, the sea trial, four executive decisions (WO-4 shapes, the release artifact as its own rung, the disclosures stand, execution leaves the pilot), WO-10 and WO-11 added | the path existed as seven exit conditions and a passage log; no instrument read the legs | § Pilotage chart; readings move only by a logged act | this commit | the operator's word of 2026-10-16 (*"lean in and make executive decisions"*); nothing executed |
 | 2026-10-16 | entry and exit made skill-driven (operator correction, verbatim *"these need to be skill driven: 'gz mx exit'"*) | the chart and the handoff handed the operator raw `gz mx enter` and `gz mx exit` commands; the skill carried only the hangar | gz-mx skill 1.3.0 carries the safe-mode workflow: confirm the contract, enter, work under § Records, read the chart, exit through the hard gate, hand back; the chart's H8 and the quay name the skill | this commit | `gz skill audit` and `gz validate --cli-alignment` green after `gz agent sync control-surfaces`; insight recorded |
+| 2026-10-16 | the chart amended to one exceptional period (operator, verbatim *"confirm all three, amend the chart"*): safe mode runs through the drydock and the sea trial and ends at seaworthiness; the sea trial is a fresh project on the released wheel; the release plan is its own rung with the shape in § The release plan | the chart had put the drydock under civil rule and the exit at the harbor's quay | § The regime, § Drydock repairs with exit numbers, § The release plan, § The sea trial; H10 folded into the handback phase; WO and WP distinguished (WO a pilotage instrument of 2026-10-15, WP the ruled civil-rule unit of 2026-10-05) | this commit | nothing executed; insight recorded |
