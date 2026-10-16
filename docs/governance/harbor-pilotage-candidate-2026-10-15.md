@@ -173,6 +173,22 @@ Not work orders under martial law: the identifier ladder's timing, the crew spli
 shape, the second-substrate sortie, the Matrix's replacement text. These are civil-rule
 decisions this pilotage prepares.
 
+Booked for civil rule on 2026-10-16, from the operator's words that day:
+
+- **The release artifact.** Verbatim: *"adrs are not releases, i am surprised you
+  recommend this."* An ADR records a decision and lands contracts on REQs; a separate
+  release artifact says which REQ states advance in a version and which work packages ship,
+  and carries the closeout that is the release today. The pilot's recommendation to reshape
+  the feature ADR into the release plan is withdrawn; the feature ADR's semver and `gz
+  closeout`'s "a feature/minor closeout is a release" are the conflation the migration
+  retires.
+- **Safe mode.** Verbatim: *"we need a 'safe mode' that allows this sort of unencumbered
+  'martial law' as a toggle."* This contract is a hand-written instance of it. The nearest
+  existing toggle is the MX hangar (`gz mx enter`, `.gzkit/mx.json`, `.gzkit/rules/mx-mode.md`),
+  which demotes guards to advisory while the Gate 5 invariants, the ledger and the PRIME
+  DIRECTIVE still bind; safe mode differs in what it suspends (initiation and brief ceremony,
+  not guards) and in carrying a contract: entry, mandate, records, exit.
+
 ### WO-4 draft — the three catalog shapes (drafted 2026-10-15, for ruling)
 
 Three shapes, each composed from fields the candidate design already names
