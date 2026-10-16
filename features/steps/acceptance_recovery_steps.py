@@ -24,6 +24,7 @@ from gzkit.acceptance_store import (
 from gzkit.commands.obpi_acceptance import _execute_proof
 from gzkit.commands.obpi_stages import _run_pipeline_ceremony_stage
 from gzkit.mutation_witness import Mutation
+from gzkit.pipeline_procedure import seed_stage_procedures
 
 
 @given("a disposable acceptance project")
@@ -31,6 +32,9 @@ def acceptance_project(context):
     fixture = ExecutionFixture()
     fixture.setUp()
     context.add_cleanup(fixture.doCleanups)
+    # The runtime refuses stage entry without the served procedures
+    # (OBPI-0.35.0-17); a disposable project carries them as `gz init` would.
+    seed_stage_procedures(fixture.root)
     fixture.write(".gzkit.json", json.dumps({"paths": {"design_root": "design"}}))
     fixture.brief = fixture.brief.rename(fixture.brief.with_name(f"{OBPI}.md"))
     initialize(fixture.root, OBPI, "implementer-session")

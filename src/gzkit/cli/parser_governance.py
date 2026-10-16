@@ -860,11 +860,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
         "--mode",
         choices=("mx", "safe"),
         default="mx",
-        help=(
-            "mx (default): the Maintenance Hangar, guards demote to advisory; "
-            "safe: safe mode, ceremony suspended under --contract, "
-            "guards at full strength (GHI #1244)"
-        ),
+        help="mx (default): Maintenance Hangar; safe: safe mode under --contract (GHI #1244)",
     )
     p_mx_enter.add_argument(
         "--contract",
