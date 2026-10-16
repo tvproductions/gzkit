@@ -1,0 +1,16 @@
+baseline 2026-10-15 (harbor pilotage, WO-2) — bytes per consumer, measured from the committed rendition
+The committed rendition is the delivered surface: .gzkit/renditions/AGENTS.md/root.md == AGENTS.md (cmp), 24279 B;
+root.corpus.json: landing-20261011T174657Z-a30185b7, attestor g0, corpus fingerprint a367c0eb…05ff8, 517 entries.
+  root  24279 B  (lineage: 22 sections; invariant text 22599 B over 101 live entries; compressible text 876 B over 4 live entries)
+  codex 15755 B  (.gzkit/renditions/AGENTS.md/codex.md)
+gz validate --instructions-files-budget (exit 0, advisory):
+  AGENTS.md is 24154 chars, exceeds 20000-char budget by 4154
+  surface-delivery-witness: 24279 B against the codex delivery cap 65536 B — 41257 B of headroom
+  codex-delivery-witness: 24279 B of 24279 B delivered
+gz validate --invariant-coherence: exit 0 (no delivery-routing defect; § 2(b))
+corpus: 517 entries (302 invariant 83977 B, 215 compressible 54673 B, retractions and retired entries included);
+  live in the root rendition: 101 invariant entries 22599 B, 4 compressible entries 876 B (all four classified Judgment).
+§ 2(c): required delta 4154 chars; available compressible budget in the rendition 876 B. The gap exceeds the compressible budget.
+Step 1 note: `gz content compose … --candidate .gzkit/renditions/AGENTS.md/root.candidate.md` validated the STALE candidate
+  left on disk on 2026-10-10 (25603 B) and refused it on the invariant entry restored 2026-10-11; EXPLICIT mode measures the
+  candidate it is given, not the corpus, and GENERATED mode needs a tty. The committed rendition is the baseline here.

@@ -13040,3 +13040,11 @@ OK (skipped=7)
 
 Unit tests passed.
 ```
+
+## 2026-10-15 — WO-2 under the harbor pilotage: steps 1–3 run, stopped at § 4
+
+- Baseline: `proofs/baseline-2026-10-15.txt` (root 24,279 B, codex 15,755 B; delivered surface equals the committed rendition).
+- § 2(c): required delta 4,154 chars; compressible text live in the rendition 876 B over 4 Judgment entries. Gap exceeds the compressible budget — § When to stop and ask, state 2.
+- Recommendation: `proofs/recommendation-2026-10-15.md`; three options (A budget at the invariant floor plus margin, B operator re-tiering, C per-consumer delivery) put to the operator. No edit made.
+- Step 1 drift noted: the chore's compose command validated a stale on-disk candidate (2026-10-10) rather than rendering the corpus; the committed rendition served as the baseline. The chore text's "59 entries, 4 compressible" figures in § 4 are 2026-06 records; the corpus holds 517 entries.
+- Filed as GHI #1243 (WO-2's work order, through ghi-author). Awaiting the operator's verbatim ruling before any § 5 arm runs.
