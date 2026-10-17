@@ -24,6 +24,7 @@ allowlist:
   - tests/commands/test_obpi_pipeline.py
   - features/obpi_pipeline_stage_procedure.feature
   - features/steps/obpi_pipeline_stage_procedure_steps.py
+  - features/steps/acceptance_recovery_steps.py
   - docs/user/manpages/obpi-pipeline.md
   - docs/user/runbook.md
   - docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-17-stage-procedure-served-by-runtime.md
@@ -102,6 +103,7 @@ Paths marked (Q1) or (Q4) follow the ruling on that question in § Open Design Q
 - `tests/commands/test_obpi_stages.py`, `tests/commands/test_obpi_pipeline.py` — stage-entry output through the command layer
 - `features/obpi_pipeline_stage_procedure.feature` — **CREATE**, sibling of the subagent-pipeline feature in the same directory
 - `features/steps/obpi_pipeline_stage_procedure_steps.py` — **CREATE**, sibling of the subagent-pipeline steps in the same directory
+- `features/steps/acceptance_recovery_steps.py` — coupled consumer (`AGENTS.md` § DO IT RIGHT 1a): its disposable acceptance project seeds the served stage procedures, because stage entry refuses without them (Requirement 7); edited in `f88ea9a7e`, recorded here by operator ruling 2026-10-17
 - `docs/user/manpages/obpi-pipeline.md` — the command contract: what stage entry delivers, the refusal and its recovery
 - `docs/user/runbook.md` — the operator flow where it describes what a stage entry prints
 - `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-17-stage-procedure-served-by-runtime.md`
@@ -355,7 +357,7 @@ The stage-entry command line itself is fixed by OBPI-0.35.0-16. When that brief 
      operator explicitly requests an issue; link it back to the owning work.
      Keep this subsection under Evidence so history is not treated as contract. -->
 
-_No substantive adjustments recorded yet._
+- 2026-10-17 — Allowed Paths amended: `features/steps/acceptance_recovery_steps.py` added as a coupled consumer of Requirement 7's stage-entry refusal. The fixture edit landed in `f88ea9a7e`, outside the brief's Allowed Paths as written. Operator ruling, verbatim: *"accept all four disclosures, A for the coupled consumer"*. The same ruling accepts the cutover disclosures (a) to (d) recorded in `docs/governance/harbor-pilotage-candidate-2026-10-15.md` § Passage log, row `d47de23c8`.
 
 ### Gate 1 (ADR)
 
