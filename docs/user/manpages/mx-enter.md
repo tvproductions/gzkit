@@ -35,8 +35,9 @@ gz mx enter --reason REASON --attestor ATTESTOR [--scope ADR_OR_OBPI ...] [--mod
   attested deferred calibration frontier.
 - Resolves the mode. `--mode safe` requires `--contract` naming a readable file inside the
   project and fails closed (exit 1) without one; `--mode mx` refuses `--contract`. Under
-  safe mode `gzkit.mx.checkpoint` demotes no guard: the marker suspends ceremony, not
-  enforcement, and the awareness banner names the contract every turn.
+  safe mode `gzkit.mx.checkpoint` demotes every guard outside `gate5_invariants` to
+  advisory, as the hangar does (operator ruling 2026-10-17); the marker also suspends
+  ceremony, and the awareness banner names the contract every turn.
 - Writes the marker file (`.gzkit/mx.json`) with `session_id`, `opened_at`, `reason`,
   `attestor`, `inspection_scope`, `mode`, and `contract`.
 - Writes one `mx_session_opened` ledger event carrying the same fields, binding the marker to

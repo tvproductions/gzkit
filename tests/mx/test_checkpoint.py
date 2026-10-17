@@ -152,20 +152,41 @@ class TestValidateCmdWiring(unittest.TestCase):
 
 
 class TestSafeMode(unittest.TestCase):
-    """GHI #1244: a safe-mode marker suspends ceremony, never guards; nothing demotes."""
+    """Safe mode lowers every guard outside the floor to advisory, as the hangar does.
 
-    def test_ordinary_guard_keeps_its_level_under_a_safe_mode_marker(self) -> None:
+    Operator ruling 2026-10-17 (R6, "A on all five"): while a safe-mode marker is open,
+    every guard outside ``GATE5_INVARIANTS`` drops to advisory and the hard-gate exit
+    re-runs all at full strength. GHI #1244 built safe mode with every guard at full
+    strength; that was the disposition the ruling replaced.
+    """
+
+    def test_ordinary_guard_is_advisory_under_a_safe_mode_marker(self) -> None:
         from gzkit.mx import checkpoint, disposition, levels
 
         with TemporaryDirectory() as tmp:
             root = _mk_root(tmp)
             marker.write(Marker(session_id="safe-session", mode="safe"), root)
-            self.assertFalse(checkpoint.is_advisory("gate3-docs", root))
+            self.assertTrue(checkpoint.is_advisory("gate3-docs", root))
             self.assertEqual(
                 checkpoint.resolve("gate3-docs", levels.ERROR, root),
-                disposition.route(levels.ERROR),
+                disposition.Route.ADVISORY,
             )
-            self.assertTrue(checkpoint.blocks("gate3-docs", levels.ERROR, root))
+            self.assertFalse(checkpoint.blocks("gate3-docs", levels.ERROR, root))
+
+    def test_floor_guard_stays_critical_under_a_safe_mode_marker(self) -> None:
+        from gzkit.mx import checkpoint, disposition, levels
+        from gzkit.mx.invariants import GATE5_INVARIANTS
+
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            marker.write(Marker(session_id="safe-session", mode="safe"), root)
+            for name in GATE5_INVARIANTS:
+                self.assertFalse(checkpoint.is_advisory(name, root), name)
+                self.assertEqual(
+                    checkpoint.resolve(name, levels.ERROR, root),
+                    disposition.route(levels.CRITICAL),
+                    name,
+                )
 
     def test_the_hangar_mode_still_demotes(self) -> None:
         from gzkit.mx import checkpoint

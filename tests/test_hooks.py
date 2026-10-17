@@ -1533,6 +1533,25 @@ class TestPipelineGateHook(unittest.TestCase):
             encoding="utf-8",
         )
 
+    def test_open_safe_mode_marker_lowers_the_gate_to_advisory(self) -> None:
+        # Operator ruling 2026-10-17 (R6): while an MX marker is open, every guard
+        # outside the floor is advisory, this gate included; an armed OBPI with no
+        # pipeline would otherwise block the src write.
+        from gzkit.mx import marker as mx_marker
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            (project_root / ".gzkit").mkdir()
+            plans_dir = project_root / ".claude" / "plans"
+            script_path = self._create_hook(project_root)
+            self._write_receipt(plans_dir, obpi_id="OBPI-0.12.0-04", verdict="PASS")
+            mx_marker.write(mx_marker.Marker(session_id="safe-session", mode="safe"), project_root)
+
+            result = self._run_hook(script_path, project_root, file_path="src/demo.py")
+
+            self.assertEqual(result.returncode, 0)
+            self.assertIn("[MX advisory]", result.stderr)
+
     def test_allows_non_implementation_paths(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)

@@ -278,3 +278,24 @@ class TestLivenessCheck(unittest.TestCase):
 
         self.assertTrue(result.ok)
         self.assertIsNone(result.defect)
+
+
+class TestSafeModeBannerStatesTheDemotion(unittest.TestCase):
+    """Operator ruling 2026-10-17 (R6): safe mode lowers guards, and the banner says so."""
+
+    def test_banner_and_stdlib_fallback_say_most_guards_are_advisory(self):
+        from gzkit.mx.awareness import safe_mode_banner
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / ".gzkit").mkdir()
+            (root / ".gzkit" / "mx.json").write_text(
+                '{"session_id": "s", "mode": "safe", "contract": "docs/governance/pilotage.md"}',
+                encoding="utf-8",
+            )
+            hook = _load_hook_module()
+            fallback = hook._banner_stdlib(str(root))
+        for banner in (safe_mode_banner("docs/governance/pilotage.md"), fallback):
+            with self.subTest(banner=banner[:40]):
+                self.assertIn("most guards advisory", banner)
+                self.assertNotIn("full strength", banner)

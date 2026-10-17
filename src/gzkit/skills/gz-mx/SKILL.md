@@ -13,7 +13,7 @@ last_reviewed: 2026-10-17
 model: haiku
 gz_command: mx
 metadata:
-  skill-version: "1.4.0"
+  skill-version: "1.5.0"
 ---
 
 # gz mx
@@ -28,7 +28,7 @@ and the PRIME DIRECTIVE (ownership — "fix what you know AND what you find").
 
 The same marker carries a second mode. **Safe mode** is the toggle
 (GHI #1244): OBPI initiation and brief ceremony are suspended under a written
-contract, every guard runs at full strength, and the banner names the contract each
+contract, every guard outside the floor drops to advisory as in the hangar, and the banner names the contract each
 turn. Gate 5, the ledger through `gz` verbs, operator PII and the PRIME DIRECTIVE bind
 in both modes.
 
@@ -89,7 +89,7 @@ operator a raw `gz mx` command is a defect in the surface that gave it.
    ```
    Same marker, `mode: safe`, bound to its `mx_session_opened` event. The verb refuses a
    missing or outside contract and refuses a contract under `--mode mx`. From this turn
-   the banner names the contract; guards are not demoted.
+   the banner names the contract; guards outside the floor are advisory until the exit.
 
 3. **Work the repair orders under the contract.** Each act is one commit with its
    `Task:` trailer naming its repair order, its commit-grain witness, and a passage-log

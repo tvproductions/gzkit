@@ -434,6 +434,19 @@ def _pipeline_gate_script() -> str:
                 except Exception:
                     sys.exit(0)
 
+                # An open MX marker, the hangar or safe mode, lowers this gate to
+                # advisory with every other guard outside the floor; the hard-gate
+                # exit re-runs it at full strength (operator ruling 2026-10-17, R6).
+                try:
+                    from gzkit.mx import checkpoint as _checkpoint
+                except ImportError:
+                    _checkpoint = None
+                if _checkpoint is not None and _checkpoint.is_advisory(
+                    "pipeline-gate", project_root
+                ):
+                    print(_checkpoint.demote_notice("pipeline-gate"), file=sys.stderr)
+                    sys.exit(0)
+
                 plans_dir = pipeline_plans_dir(project_root)
                 docs_root = project_root / "docs"
 

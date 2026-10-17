@@ -10,11 +10,11 @@ paths:
   - "src/gzkit/mx/awareness.py"
   - "src/gzkit/hooks/guards.py"
 ---
-<!-- rule-version: 1.5.2 -->
+<!-- rule-version: 1.6.0 -->
 
 # MX Mode (Maintenance Hangar) (gzkit)
 
-> **Rule version:** `1.5.2` — safe mode is the sole term for the regime (operator ruling 2026-10-16, verbatim *"safe mode is the sole term, update the canon"*); the heading and wording follow. Prior `1.5.1` and earlier lifted to [Rule Version History](../../docs/governance/rule-version-history.md#mx-modemd). Binding rules unchanged.
+> **Rule version:** `1.6.0` — safe mode lowers every guard outside the floor to advisory while its marker is open, as the hangar does (operator ruling 2026-10-17, R6, verbatim *"A on all five"*); `hangar_demotes` is true for either mode and the pipeline gate honors the marker. **Binding rules changed:** the safe-mode strength clause of `1.5.2`. Prior `1.5.2` and earlier lifted to [Rule Version History](../../docs/governance/rule-version-history.md#mx-modemd).
 
 ## Non-negotiable rules
 
@@ -69,14 +69,16 @@ say which mode is open; the awareness banner names it every turn.
 - **What safe mode suspends:** the operator-only initiation of OBPI work and the brief
   ceremony, as the named contract declares. The operator's word at entry is the initiation.
 - **What still binds:** `gate5_invariants`, the ledger written only through `gz` verbs,
-  operator PII, no removal of a control, and the PRIME DIRECTIVE. Every guard runs at full
-  strength: `gzkit.mx.checkpoint.hangar_demotes` is true only under `mode: mx`.
+  operator PII, no removal of a control, and the PRIME DIRECTIVE. Every other guard drops
+  to advisory while the marker is open, as in the hangar: `gzkit.mx.checkpoint.hangar_demotes`
+  is true under either mode, and the pipeline gate honors the marker (R6, 2026-10-17);
+  `gz mx exit` re-runs every guard at full strength.
 - **What it records:** every act is one commit with its `Task:` trailer and its
   `gz arb red --commit` witness, and the contract's passage log carries bytes or counts before
   and after.
 - **How it ends:** `gz mx exit`, the same hard gate, then the contract's exit conditions.
-- **Doctrine and template:** `docs/governance/safe-mode-doctrine.md` (the regime: harbor,
-  drydock, sea trial, handback; safe mode ends at seaworthiness) and
+- **Doctrine and template:** `docs/governance/safe-mode-doctrine.md` (the drydock and the
+  repair order; safe mode is an occasional flip inside the standing maintenance mode) and
   `.gzkit/templates/safe_mode_contract.md` (the contract the skill reads before entry).
 
 Witness: `tests/mx/test_checkpoint.py::TestSafeMode`, `tests/commands/test_mx_enter.py::TestMxEnterSafeMode`,

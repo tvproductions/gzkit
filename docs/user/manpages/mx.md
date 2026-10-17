@@ -32,7 +32,7 @@ marker is written, no ledger event is emitted.
 
 **Safe mode (GHI #1244).** `--mode safe --contract PATH` opens the
 marker in safe mode: OBPI initiation and brief ceremony are suspended under the named
-contract, every guard runs at full strength (the checkpoint demotes nothing), and the
+contract, every guard outside `gate5_invariants` runs at advisory (the checkpoint demotes as it does for the hangar; ruled 2026-10-17), and the
 awareness banner states the mode and the contract each turn. The contract is the document
 that says what the mode suspends and what still binds; `--mode safe` without a readable one
 fails closed, and `--mode mx` refuses a contract. `gz mx exit` closes either mode through

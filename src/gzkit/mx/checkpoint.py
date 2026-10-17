@@ -34,16 +34,15 @@ def resolve(
 
 
 def hangar_demotes(project_root: Path | None = None) -> bool:
-    """Return True when an open marker demotes guards: the hangar does, safe mode does not.
+    """Return True when an open marker demotes guards: the hangar and safe mode both do.
 
-    Safe mode (GHI #1244) suspends initiation and brief ceremony under a contract and
-    keeps every guard at full strength; only ``mode: mx`` demotes. An unreadable
-    marker keeps the hangar's original presence-only reading.
+    Safe mode lowers every guard outside ``GATE5_INVARIANTS`` to advisory while its
+    marker is open, as the hangar does, and the hard-gate exit re-runs all at full
+    strength (operator ruling 2026-10-17, R6). GHI #1244 first built safe mode with
+    every guard at full strength; that disposition was replaced by the ruling. An
+    unreadable marker keeps the hangar's original presence-only reading.
     """
-    if not marker.is_active(project_root):
-        return False
-    parsed = marker.read(project_root)
-    return parsed is None or parsed.mode == "mx"
+    return marker.is_active(project_root)
 
 
 def is_advisory(guard_name: str, project_root: Path | None = None) -> bool:

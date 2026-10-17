@@ -47,8 +47,8 @@ def _banner_stdlib(cwd: str | None) -> str:
             contract = str(raw.get("contract") or "<no contract recorded>")
             return (
                 "SAFE MODE ACTIVE — OBPI initiation and brief "
-                f"ceremony are suspended under {contract}; every guard runs at "
-                "full strength; gate5_invariants, the ledger through gz verbs, "
+                f"ceremony are suspended under {contract}; most guards "
+                "advisory; gate5_invariants, the ledger through gz verbs, "
                 "operator PII and the PRIME DIRECTIVE still bind; every act is "
                 "one commit with its trailer and its witness"
             )
