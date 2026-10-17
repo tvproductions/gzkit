@@ -87,6 +87,61 @@ Use “brief” as the understandable name for the existing OBPI work package.
 Capability categories may aid navigation; they need not own briefs or require
 a new hierarchy. The PRD remains the source of product intent under Q-02.
 
+## The joined requirements model
+
+**Recorded 2026-10-17 at the operator's word; awaiting ratification.** Operator: **g0**. Verbatim:
+*"i want the feature files and steps AND the REQ system. think of functional and non-functional
+requirements. we needed Work Packages, Release Packages, but also fdau-like feature/req
+organization"*, then *"A, write it into canon"*. Ruling record:
+[`OPEN-QUESTIONS.md` Q-19](OPEN-QUESTIONS.md#q-19-what-joins-requirements-features-bdd-and-the-ladder).
+Later the same day the operator ruled that the drydock repairs and realigns structure and does not
+populate it, so this model is civil-rule design input for the catalog's first voyage, tied to no
+drydock work. Where it differs from the ratified
+[general arrangement](../harbor-pilotage-candidate-2026-10-15.md#the-general-arrangement) the
+arrangement governs: there is no engineering order or bounded-advance document (ruled 2026-10-17),
+the ADR is a peer of the catalog rather than a layer above the work, and a work package is cut from
+the catalog directly or from an ADR where one exists.
+
+It joins directions already booked, none of them reopened: the FDAU separation (`Q-16`), the five
+roles (`Q-17`, Magna Carta §3 of 2026-09-25), the feature-bundle successor to the (m)ADR (`Q-18`),
+the artifact ladder of 2026-10-05 (engineering order, work package, task card, ADR reserved for
+architecture decisions), the Release Package of 2026-10-16, and features as first-class requirement
+areas (2026-10-17). Before this section, no one place joined them, and the functional /
+non-functional split of the PRD and the Gherkin feature files had no place in any of them.
+
+| Layer | What it holds | Governs |
+|---|---|---|
+| PRD | Product intent: functional requirements (§6, `FR-nnn`) and non-functional requirements (§7, quality attributes) | why the product exists |
+| Feature area | A first-class requirement area in a registry beside the catalog, typed **functional** (traced to a PRD `FR-nnn`) or **non-functional** (traced to a PRD §7 quality attribute) | which REQs belong together |
+| REQ (catalog entry) | One obligation in exactly one area: statement, contract, state, revision history, legacy `REQ-X.Y.Z-NN-MM` id kept as an alias | what must be true |
+| Feature file and steps | The executable behaviour of one functional area: one `.feature` file declares one area, an area may have several files, a file never spans two; each scenario is tagged with the REQs it proves; step modules are shared | proof of functional REQs |
+| Non-functional proof | The channel each quality attribute needs: measurement, structural or unit tests; a scenario only where behaviour exhibits the property | proof of non-functional REQs |
+| Engineering order (the feature bundle) | One bounded advance: the REQs it moves and the contracts it lands on them | the design of an advance |
+| ADR | One architecture decision and its rationale | architecture only |
+| Work package, then task cards | An assignment of REQs sharing one contract; each TASK one commit with its trailer and its commit-grain witness | the labor |
+| Release Package | Which REQ states advance in a version, and which work packages ship | what ships |
+
+**Two axes stay separate.** A REQ's area type (functional or non-functional) says what kind of
+product need it is. Its kind (BEHAVIOR, SUPPORT, STRUCTURAL-FENCE; ADR-0.0.59) says which proof
+channel binds it. Neither is derived from the other.
+
+**The BDD alignment check.** Every scenario's REQ tag resolves, through the alias where needed, to a
+catalog entry in the area its file declares. A functional area with no scenario is reported, and so
+is a non-functional REQ with no proof channel. The 415 existing `@REQ-` scenario tags keep resolving
+through the aliases, so no scenario is retagged to adopt the model; the 79 feature files, today
+named by the ADR or OBPI that produced them, are regrouped by area as later drydock work.
+
+**Open for the operator's ruling before WP-4 authors entries:**
+
+1. How a cross-cutting non-functional REQ states where it applies (areas, commands or configurations).
+2. Whether the PRD's `FR-001` to `FR-012` and its four §7 attributes are the starting set of areas, or
+   the set is drawn from the behaviour the product actually has (the airlock, handoffs and the
+   ledger are not named in the PRD's FR list).
+3. The registry's form: the slug grammar and its file under `data/`, beside the catalog.
+4. How a feature file declares its area: a tag, or its `Feature:` title.
+5. The relation of areas to the PRD's bounded contexts (§2.2): an area sits inside one context; the
+   2026-09-25 design review kept categories and DDD contexts apart, and this model keeps them apart.
+
 ## Extract meaning from ADRs as well as briefs
 
 The extraction unit is a statement and its governing context, not a file, a
@@ -177,7 +232,10 @@ A catalog entry needs stable identity, the requirement statement, rationale or
 source, applicability, and retained revision/approval history. It links upward
 to the relevant product need or decision. Its change history distinguishes
 proposed wording from approved obligations. A category is navigation metadata;
-moving an entry between categories should not force identity changes.
+moving an entry between categories should not force identity changes. *(Amended
+2026-10-17: the category is a first-class feature area, per
+[§ The joined requirements model](#the-joined-requirements-model); moving an entry between
+areas still changes no identity.)*
 
 An assignment needs the catalog identity and exact applicable revision, the
 contribution promised, local acceptance criteria, applicable design constraints,

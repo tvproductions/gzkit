@@ -1,11 +1,13 @@
 # Safe mode to civil rule — the harbor pilotage contract
 
 Status: **RATIFIED 2026-10-15** (operator, verbatim: *"ratify the contract, draft the three
-catalog shapes"*). Drafted the same day in session `4fd13b45-724e-4433-ab23-fd6c5df2b932`.
+catalog shapes"*); **AMENDED 2026-10-17** to the ratified drydock plan (operator rulings of that
+day, § Rulings of 2026-10-17). Drafted 2026-10-15 in session `4fd13b45-724e-4433-ab23-fd6c5df2b932`.
 This file is the binding text; the campaign plan carries a pointer entry at
 [`build-to-1.0-campaign-2026-09-20.md`](build-to-1.0-campaign-2026-09-20.md)
 § Amendments 2026-10-15 so that the plan, which the orientation and every session read for
-sequencing, knows the phase is in force and where its terms are.
+sequencing, knows the phase is in force and where its terms are. The sections the 2026-10-17
+amendment replaced are kept verbatim under § Superseded on 2026-10-17 as a record.
 
 ## Authority
 
@@ -36,7 +38,213 @@ Operator (`g0`), verbatim, 2026-10-15, in order:
 
 Each is on the insights file at the time it was given.
 
-## Entry
+Operator (`g0`), verbatim, 2026-10-17, the drydock's purpose restated after two days of drift:
+
+> safe mode isn't here to drive req/feature work, it is for deep repairs/realignments
+
+> When I told you take charge and use a deep, rich model like Fable to plan, it was to plan what
+> the dry dock order of work would be, right? What are we retooling, redesigning, reconfiguring?
+
+> your whole dry dock plan was ill conceived - can we get the purpose of safe mode and dry dock
+> clear please?
+
+## Purpose
+
+Safe mode is an occasional flip inside the standing maintenance mode (the Maintenance Hangar, the
+chores, the patch releases, and the GitHub issues that carry repair and refactor work). It lowers
+the ceremony's constraints and most of its safeguards so that structure can be re-rigged,
+reconfigured, retooled and restructured quickly, and it is turned off when that is done. Operator,
+2026-10-17, verbatim:
+
+> Safe mode has to be a way to quickly, without all the uh, constraints of the ceremony and all
+> those other safeguards, which are important, to be able to just lower all that, to be able to
+> make the re-rigging, reconfiguring, retooling, restructuring, and all that. But once we do that,
+> we then want to turn off safe mode and return to normal operations under the new structures.
+
+This period is a drydock: the ship is out of the water so the structure can be repaired and
+realigned. It designs and lands the new structures and does not populate them (operator, verbatim:
+*"yes, repair and realign the structure, don't populate it"*). The new structures are the general
+arrangement below. Normal voyages, ordinary operations under them (work-package management,
+release management, the feature and requirement backlog), resume when safe mode is turned off.
+
+A drydock session holds repair orders. A repair order is the maintenance mirror of the work
+package: one bounded repair with a scope, a witness and an owner, recorded to the ledger, and held
+as a GitHub issue under the repair tagging scheme once RO-5 lands it (operator, verbatim: *"dry
+dock orders can have repair orders... Those can still go over to the ledger. And for all I know, we
+might even be able to make them as a part of the GitHub issue system, which I'd be fine with"*).
+
+## The general arrangement
+
+![gzkit general arrangement, 2026-10-17](general-arrangement-2026-10-17.svg)
+
+Redrawn 2026-10-17 from § Entry of the 2026-10-15 text and the operator's rulings of that day; the
+pilot's original drawing of 2026-10-15 was made outside this repository and is not recoverable.
+Verified from first principles the same day (§ Rulings of 2026-10-17). The bands, top to bottom:
+
+| Band | Carrier | Holds | Relation downward |
+|---|---|---|---|
+| Product intent | PRD | functional requirements (`FR-nnn`) and non-functional requirements (§7 quality attributes) | feature areas trace to an FR or a quality attribute |
+| The product's truth, and decisions, as peers | Requirements catalog, beside the ADR | Catalog: feature areas, first-class and typed functional or non-functional; REQs, each in one area, carrying its contract, state, revision history and its legacy id as an alias; Gherkin feature files prove functional REQs where there is a user (the `gz` CLI). ADR: a decision and its rationale, made only where a decision is needed; it lands contracts on the REQs it touches and carries no version and no release. The REQ–ADR link is two-way for those REQs. Not every requirement or feature needs an ADR | a work package is cut from the catalog directly in the ordinary case, or from an ADR where one exists |
+| Labor | Work package, then task cards | a work package selects the REQs sharing one contract, from the catalog or from an ADR, and always names its REQs; a task card is the increment: one commit, one trailer, one commit-grain witness citing the REQ | the Release Package ships work packages; the release record carries the task cards' witnesses |
+| Version | Release Package, and the ledger release record | the Release Package (planned, in-flight, released) selects the work packages that ship and says which REQ states advance in the version; the version lives here. The ledger release record says what actually shipped. The campaign sequences releases; a Release Package says what one release contains | — |
+
+The rails: the control plane reads the contract (the airlock derives its slice from the contract's
+modules; GHIs and MX visits classify by the contract they repair; eval checks module design
+against module code; every control names the contract it protects; every surface an agent loads
+is within a witnessed budget; the ledger is the record and the human attests). Maintenance mode is
+standing (the hangar, the chores, the patch releases; GHIs carry repair and refactor work, never
+feature or requirements work); safe mode is an occasional flip inside it; a drydock is one session
+of safe mode holding repair orders.
+
+There is no bounded-advance document. The feature area groups the requirements and the Release
+Package selects the work packages that ship together, so which work packages advance a feature
+together is a query over those records. The engineering-order rung of the 2026-10-05 ladder is
+retired (operator, verbatim: *"A, no separate document — retire the engineering order rung"*);
+the ladder's other rungs stand, and identifiers still migrate at 1.0 with aliases before it.
+
+Every arrow is realizable by a stored field on one condition the as-built tree violates: REQ
+identity independent of the ADR and the work package. Today the ADR's semver is embedded in every
+REQ, TASK and OBPI id, so the drawing is a target until that seam lands (RO-2).
+
+## What is suspended, and what is not
+
+Suspended while `.gzkit/mx.json` carries `mode: safe`, by the ruling of 2026-10-17 (R6, "A"):
+
+- Every guard outside the four below drops to advisory, as the Maintenance Hangar's do, and the
+  hard-gate exit re-runs every guard at full strength. The mechanism is RO-0's second act; until
+  it lands, every guard still binds and the banner says so.
+- The IRON LAW's initiation clause, for repair orders: the session cuts, authors and executes
+  repair orders toward the general arrangement without an initiation per order.
+- Brief ceremony. No OBPI is initiated or completed under safe mode; OBPI completion is work in the
+  paradigm the drydock replaces (R4; operator, verbatim: *"I don't know why you would do an OBPI,
+  which is actually completed work in the old paradigm, when I'm still actually discussing what the
+  new paradigm might look like"*).
+
+Not suspended, under any reading:
+
+- Gate 5. A completion is attested by the operator's own words or it is not complete.
+- The ledger as system of record, written only through `gz` commands; never hand-edited.
+- The operator-PII rule. The Prime Directive.
+- No control is removed. Lowered to advisory is not removed; the exit restores it.
+- Rulings. Structure is decided by the operator on the session's draft.
+
+## Division of labor
+
+- **The session** appraises, plans, measures, drafts and rules with the operator, and executes a
+  repair order itself only when it is the measurement's own finding and small enough to read in
+  one sitting (operator, 2026-10-16: *"fable extra is expensive if you have a deterministic plan
+  you are now executing"*).
+- **Cheaper sessions** execute the deterministic repair orders under § Records.
+- **The operator** rules every structural question, with the facts and at most three options,
+  enters and exits through the `gz-mx` skill, and attests.
+
+## Mandate
+
+1. Cut what every agent loads to a witnessed budget, each cut measured for effect.
+2. Give REQ, TASK and release identity independent of the ADR, by alias and resolver, renaming
+   nothing before 1.0.
+3. Land the requirements store and the feature-area registry as empty structure, with their
+   validators and the BDD alignment check.
+4. Detach the release from the ADR: one release shape, the Release Package with the ledger release
+   record, and `gz closeout` keyed to it.
+5. Land the work-package, task-card and repair-order structure, with the repair tagging scheme for
+   GitHub issues.
+6. Retire the canon the general arrangement contradicts, with retention maps.
+7. Dispose of the in-flight work and hand back.
+
+## Records
+
+- Every change is one commit, `fix(<scope>): … (GHI #N)` or `feat(<scope>): …`, with a `Task:`
+  trailer naming its repair order (`TASK-ro<n>-<slug>` until the repair tagging scheme lands), a
+  failing test observed before a code change, and `gz arb red --commit <sha>` run after it with its
+  verdict recorded; an `undriven` verdict is repaired in the same commit before it counts.
+- Every operator ruling is an insight record when given and an `[operator-ruled]` handoff entry.
+- Every session ends with a handoff citing this file and listing the commits since the last.
+- § Passage log is appended per act with bytes or counts before and after.
+- § Repair orders is the register of this drydock until RO-5 moves repair orders to GitHub issues;
+  an order's state moves only by an act in the passage log.
+
+## Repair orders
+
+In dependency order. RO-1 and RO-7 run in parallel with the rest on cheaper sessions. Each names
+the band of the general arrangement it serves.
+
+| Order | Serves | What it lands | Witness | Owner |
+|---|---|---|---|---|
+| RO-0 | the drydock itself | this contract rewritten to the ratified plan with the drawing saved beside it; the doctrine page and the contract template to match; safe mode lowering every guard but the four to advisory while the marker is open (R6); the uncommitted 2026-10-17 drift disposed | `mkdocs build --strict`; `gz validate --distribution`; the guard tests | the session |
+| RO-1 | control plane | the bleeding stopped: session-start text under 4 KB on one channel; the dead `instruction-router` hook removed; skill descriptions to one sentence, under 6,000 chars in total; rule version banners lifted to rule-version-history; the governance read mandate pointed at the Coverage Ledger section; the budget witness extended to every loaded surface, measuring the skills that load | `gz validate --instructions-files-budget` over every surface; the proof file; WP-16's effectiveness read per cut | cheaper sessions (GHIs #1246, #1249, #1252) |
+| RO-2 | catalog, labor, version | the keystone: one id-resolution seam shared by every reader (phase 1 of `ADR-pool.identifier-ladder-migration`, pulled forward by R5); explicit parent fields on REQ and TASK read everywhere the regex sites recover them today; the nine width-loose grammar copies replaced by the one body; no identifier changes | a validator proving every reader resolves through the seam; the 412 behave tags and every `@covers` still resolve | the session specifies; a cheaper session lands |
+| RO-3 | catalog | the requirements store as empty structure: the schema for `data/requirements_catalog.json` and for the feature-area registry (area typed functional or non-functional, traced to a PRD FR or §7 attribute); REQ lifecycle events; a validator that fails a brief assignment naming no entry; acceptance records keyed by REQ; the BDD alignment validator (a feature file declares one area; each scenario's REQ tag resolves through the alias to an entry in that area; areas with no scenario reported). No entry authored | schemas validate; `gz test` green; the validators registered | the session specifies; a cheaper session lands |
+| RO-4 | version | release detached from the ADR (R3): the Release Package as the plan and the ledger release record as the shipped claim; the version lives on the release; `version_sync` stops deriving from the ADR id (Q-08); `gz closeout` keyed to a Release Package; patch qualification stated on the receipt; `gz-release` subsumes `gz-patch-release` (GHI #1248); `releases/README.md` and `adr-lifecycle.md` ADR-as-carrier text retired | `gz validate --version-release`; a dry-run closeout keyed to an empty Release Package | the session specifies; a cheaper session lands |
+| RO-5 | labor, maintenance | the work-package and task-card structure: lane held once, on the work package; checklist to brief link by stored id, not position; the decomposition matrix detached from lane and kind; the repair-order template and the repair tagging scheme for GitHub issues; a repair-order lifecycle event with the issue number as alias; `ghi-close` carrying the PR-closeout distinctions | schema validation; one repair order of this drydock run through the new template | the session specifies; a cheaper session lands |
+| RO-6 | every band | contradicted canon retired with retention maps: PRD INV-013, INV-017, INV-023, FR-005a, FR-006 and its stale frontmatter; the GovZero docs stale as a class (GHI #1188); the IEEE README's bars and Q-18's "names chosen later"; the engineering-order rung in the ladder records; Astra's rejection reconciled in DISAGREEMENTS; the glossary | `mkdocs build --strict`; `gz validate --adr-status-fresh`; the retention maps | cheaper sessions |
+| RO-7 | control plane | the rest of the cut, staged, one WP-16 report per stage: skill bodies' rationalizations and doctrine restatements to `references/`, the catalogue merged toward 40 with the merge plan put to the operator first (GHI #1250); rules narrative lifted (GHI #1246); personas, agents and nested `AGENTS.md` to budget after confirming what Claude loads (GHI #1251); AGENTS.md only by operator retire or re-tier of invariant entries | `gz validate --instructions-files-budget`; the stage reports under `docs/evals/` | cheaper sessions |
+| RO-8 | the in-flight work | ADR-0.35.0 frozen (R4): no further OBPI completions; briefs 17 and 20 stand on the passage log and their receipts; the unlanded items and the obligations of 11 to 20 carried into the catalog at civil rule; the Movement A to F boxes and the handback's kept-or-reverted list | the handback amendment | the operator rules; the session drafts |
+
+## Exit — seaworthiness
+
+Safe mode ends when every repair order is closed and each of the following reads true from its
+witness, or earlier at the operator's word:
+
+1. Every surface an agent loads is within a witnessed budget, with an effectiveness report per cut.
+2. The resolver and the parent fields are in place and every regex reader is replaced.
+3. The catalog, feature-area and release schemas and their validators are landed, empty.
+4. One release shape is ruled and `gz closeout` is keyed to it.
+5. The contradicted canon is retired.
+6. The in-flight work is disposed.
+7. The handback amendment is ratified: every drydock commit listed, kept or reverted; this
+   passage log carried; the suspended rules restored. Civil rule resumes on the ratification.
+
+The sea trial (a fresh project on the released wheel runs one work package end to end) is civil
+rule's first act, in Movement E of the campaign where it already lives; it is not an exit
+condition of the drydock.
+
+## Rulings of 2026-10-17
+
+Operator, verbatim, in order; each is also an insight record at the time it was given.
+
+- *"proceed with H8, invoke /gz-mx"* — safe mode entered through the skill (H8 met).
+- *"accept all four disclosures, A for the coupled consumer"* — the cutover disclosures (a) to (d)
+  of `d47de23c8` accepted; `features/steps/acceptance_recovery_steps.py` recorded in brief 17.
+- *"A, features are first-class requirement areas (will this bdd align?)"*.
+- *"yes, repair and realign the structure, don't populate it"*.
+- *"We're not sunsetting ADRs. They've got to stop driving release"*.
+- *"I use GitHub issues largely for repair and, and address and refactor and all that. I don't do
+  it for feature work or requirements work at all... I'd like maintenance mode and GitHub issues to
+  be very tightly coupled."*
+- *"maintenance mode is really rich... I just am able to go to safe mode occasionally"*; *"there's
+  equal entries between requirements and ADRs"*.
+- *"You're still insisting that ADRs always lead to work packages and that's just not true... It's
+  possible that ADR could lead to work package, or the requirements catalog could lead to it."*
+- *"A, no separate document — retire the engineering order rung"*.
+- *"A on all five"*: R1 the repair order mirrors the work package and the work order stays retired;
+  R2 Gate 5 stays per work package with a release attestation on top; R3 the Release Package is
+  the plan and the ledger release record the shipped claim, `gz-release` subsumes
+  `gz-patch-release`; R4 ADR-0.35.0 frozen, no further OBPI completions; R5 the alias resolver
+  pulled into the drydock as RO-2; R6 safe mode drops every guard to advisory except Gate 5, the
+  ledger through `gz`, operator PII and the Prime Directive.
+
+Rulings of 2026-10-15 and 2026-10-16 that stand unchanged: the contract ratified; the control
+inventory attested; "adrs are not releases" and the Release Package; safe mode as a mode of the
+hangar and the sole term; the work order retired; the control-plane cut ruled A with backups; the
+chart amended to one exceptional period, now superseded by § Exit above.
+
+## What does not change
+
+Gate 5. The ledger rule. The operator-PII rule. The Prime Directive. TOPMOST remains `ADR-0.35.0`
+until RO-8 disposes of it; the drydock works inside the campaign, which sequences what follows.
+
+## Superseded on 2026-10-17 (record, not binding)
+
+The text below is the contract as it stood from 2026-10-15 to 2026-10-17: the diagram prose of
+§ Entry, the first mandate, the harbor and drydock legs, the exit numbers, the sea trial as exit, the
+executive decisions and the work packages. It is kept verbatim because the passage log cites it.
+Where it conflicts with the sections above, the sections above govern. Standing from it: the
+WP-4 shapes as civil-rule design input (the category field is a first-class feature area; no
+engineering order); executive decisions 2, 3 and 6; the backup tag `control-plane-baseline-2026-10-16`
+and the measured baseline; WP-10 to WP-16 as filed, now the GHIs RO-1 and RO-7 cite.
+
+### Entry
 
 Safe mode entered 2026-10-15 at the operator's word above. Its purpose is one sentence:
 **get gzkit onto the diagram's plan, control plane and work-design modularization both, and
@@ -50,7 +258,7 @@ derives the slice from the contract, GHIs and MX visits classify by the contract
 repair, eval checks module design against module code; every control in the plane names the
 contract it protects.
 
-## What is suspended, and what is not
+### What is suspended, and what is not
 
 **Suspended for the duration, by the operator's "take control of everything":**
 
@@ -73,7 +281,7 @@ contract it protects.
   and does not decide. The two standing rulings the second substrate touches ("ADR ORDER
   IS ABSOLUTE"; "wait for ADR-0.38.0 in strict order") fall only by the operator's word.
 
-## On the ledger, for the operator's ruling
+### On the ledger, for the operator's ruling
 
 The operator holds that ledger writing still matters. The pilot agrees, and distinguishes
 two things the ledger carries today. The acts that matter to the handback are few: commits
@@ -87,7 +295,7 @@ catalog-centred shape keeps: events keyed by contract and work package, with pro
 demoted to derived views. That is a design question, not a safe-mode act, and it is put
 to the operator with the catalog.
 
-## Division of labor
+### Division of labor
 
 - **The pilot, a Fable-class session,** plans, measures, drafts and rules with the
   operator. It writes this contract, the work packages, the candidate canon and the catalog's
@@ -98,7 +306,7 @@ to the operator with the catalog.
 - **The operator** rules every structural question the pilotage surfaces, with the facts
   and at most three options, and attests every completion.
 
-## Mandate
+### Mandate
 
 1. Cut context load at session start, per edit turn and at pipeline invoke.
 2. Author the requirements catalog's first entries from the obligations OBPI-0.35.0-16
@@ -110,7 +318,7 @@ to the operator with the catalog.
    of the per-turn load into rationale records keyed by control.
 6. Measure before and after every act; report counts with what they show and do not show.
 
-## Records
+### Records
 
 - Every pilot change is one commit, `fix(<scope>): … (GHI #N)` or
   `feat(<scope>): … (GHI #N)`, with a `Task:` trailer, a failing test observed before the
@@ -122,7 +330,7 @@ to the operator with the catalog.
   last.
 - This file's § Passage log is appended per act with bytes or counts before and after.
 
-## Exit — port, then dry dock, then civil rule
+### Exit — port, then dry dock, then civil rule
 
 Safe mode ends when all of the following hold, each read from its witness, or earlier at
 the operator's word. It does not renew itself. A session that cannot meet a condition says
@@ -155,7 +363,7 @@ so in its handoff.
    initiation clause, and declares civil rule resumed. The campaign then sequences the
    catalog-first work; dry dock is that work.
 
-## Work packages
+### Work packages
 
 In order. Each is a GHI through `ghi-author`, executed under § Records, closed through
 `ghi-close`. WP-1 to WP-3 and WP-5 to WP-6 go to cheaper sessions; WP-4 and WP-7 are the
@@ -170,6 +378,7 @@ pilot's, because they carry the catalog's shape and the re-cut, which the operat
   body ceiling re-derived.
 - **WP-4 (pilot).** The catalog's first entries, with contracts, from the obligations of
   16 to 20; the three shapes (entry, assignment row, contract) put to the operator first.
+  Amended 2026-10-17: the entries follow [the joined requirements model](ieee/design-candidates.md#the-joined-requirements-model) (`Q-19`), each in one first-class feature area typed functional or non-functional; no entry is authored until the operator ratifies that model and rules its five open points.
 - **WP-5.** `extract_plan_tasks` stops dispatching rejected alternatives; interim until
   the dispatch unit is the TASK.
 - **WP-6.** One tracker for the 27 helper-or-loop gates of the 2026-10-14 sweep.
@@ -198,7 +407,7 @@ Booked for civil rule on 2026-10-16, from the operator's words that day:
   DIRECTIVE still bind; safe mode differs in what it suspends (initiation and brief ceremony,
   not guards) and in carrying a contract: entry, mandate, records, exit.
 
-### WP-4 draft — the three catalog shapes (drafted 2026-10-15, for ruling)
+#### WP-4 draft — the three catalog shapes (drafted 2026-10-15, for ruling)
 
 Three shapes, each composed from fields the candidate design already names
 ([`ieee/design-candidates.md`](ieee/design-candidates.md) § Requirement, assignment, and
@@ -292,7 +501,7 @@ With the three ruled, WP-4 authors the entries for the obligations of `OBPI-0.35
 `-20`, thirty-three BEHAVIOR and twelve SUPPORT lines today, each with its contract, and
 WP-7 re-cuts the briefs as work packages by contract.
 
-## Pilotage chart — one exceptional period: harbor, drydock, sea trial, handback (amended 2026-10-16)
+### Pilotage chart — one exceptional period: harbor, drydock, sea trial, handback (amended 2026-10-16)
 
 Written under crisis mode at the operator's word (verbatim: *"lean in and make executive decisions
 to achieve outcomes"*; *"gzkit has become untenable"*). Amended the same day on three
@@ -303,7 +512,7 @@ instrument: one row per leg, each with its witness and its last reading. The pas
 each act; a leg's reading moves only by an act in that log. WP-10 (GHI #1245) makes the readings
 mechanical.
 
-### The regime
+#### The regime
 
 | Phase | Regime | Produces | Done when |
 |---|---|---|---|
@@ -315,7 +524,7 @@ mechanical.
 
 Safe mode is left once, at seaworthiness. Nothing returns to civil rule in between.
 
-### Harbor legs
+#### Harbor legs
 
 | Leg | What it means | Witness | Reading 2026-10-16 | Owner |
 |---|---|---|---|---|
@@ -329,7 +538,7 @@ Safe mode is left once, at seaworthiness. Nothing returns to civil rule in betwe
 | H8 | The toggle is on the record | `.gzkit/mx.json` with `mode: safe`, bound to its event | met 2026-10-17: `mode: safe`, bound to `mx_session_opened` at 2026-10-17T08:36:59Z | done |
 | H9 | 17 and 20 attested | `gz obpi status` shows `attested_completed` for both | `Draft`; disclosures recorded in the log | operator |
 
-### Drydock repairs (under safe mode; the pilot specifies and cuts, cheaper sessions execute)
+#### Drydock repairs (under safe mode; the pilot specifies and cuts, cheaper sessions execute)
 
 | Repair | What is rebuilt | Witness |
 |---|---|---|
@@ -356,7 +565,7 @@ Safe mode is left once, at seaworthiness. Nothing returns to civil rule in betwe
 | Controls with no named contract | 189 scored, 0 assigned | 0 unassigned: each names its contract or is retired by a logged act |
 | Operator attestations | one per OBPI | one per release, plus the sea trial |
 
-### The Release Package
+#### The Release Package
 
 Entrenched as a document type in `docs/governance/safe-mode-doctrine.md` § The Release Package with
 the template `.gzkit/templates/release_package.md`. One document per version under `docs/design/releases/`, named by the version it governs.
@@ -367,7 +576,7 @@ the one-open-defect assessment the constitution's policy 12 requires. `gz closeo
 (D1). The campaign sequences releases; a Release Package says what one release contains. ADRs stop
 carrying a version at the migration; a patch release uses the same document with a short list.
 
-### The sea trial
+#### The sea trial
 
 The drydock's product is the first release, built and published through the first Release Package.
 The trial: a fresh project installs that release from the wheel, `gz init` scaffolds it, and a
@@ -378,7 +587,7 @@ governor rule is the ground: doctrine under construction is proven on another pr
 binds its own making. A second substrate, if the operator names one, flies as a flight-test sortie.
 Passed once and recorded here, the ship is seaworthy and the handback follows.
 
-### Executive decisions taken 2026-10-16 (the operator may overrule any by a word)
+#### Executive decisions taken 2026-10-16 (the operator may overrule any by a word)
 
 1. **WP-4 shapes, decided as recommended:** `REQ-C<n>` sequential ids, each entry in one
    first-class feature area (amended 2026-10-17, operator verbatim *"A, features are
@@ -401,7 +610,7 @@ Passed once and recorded here, the ship is seaworthy and the handback follows.
    trimmed state"*) through `gz content retire` and `gz content land` with retention maps, never by
    editing a rendition. Harbor leg H4 (#1246) is stage 1.
 
-### Work packages added
+#### Work packages added
 
 - **WP-10 (GHI #1245).** The orientation prints this chart's readings while `.gzkit/mx.json` is in safe mode:
   each leg's witness run and its reading, so the path is read from the tree, never from memory.
@@ -424,12 +633,6 @@ Passed once and recorded here, the ship is seaworthy and the handback follows.
 - **WP-16 (GHI #1252, pilot writes the protocol).** The effectiveness measure of each cut stage:
   retention maps and a compression-sweep read, `gz readiness evaluate` before and after, one work
   package flown by a fresh session on the cut surfaces; a report per stage under `docs/evals/`.
-
-## What does not change
-
-Gate 5. The ledger rule. Every control standing under § Amendments 2026-10-04 (2). The
-operator-PII rule. The Prime Directive. TOPMOST remains `ADR-0.35.0`; the pilotage works
-inside it.
 
 ## Passage log
 
@@ -458,3 +661,5 @@ inside it.
 | 2026-10-17 | H8: safe mode entered through the gz-mx skill under this contract (operator, verbatim *"proceed with H8, invoke /gz-mx"*) | the regime lived in this contract only; `.gzkit/mx.json` absent; no `mx_session_opened` event carried `mode: safe` | `.gzkit/mx.json` with `mode: safe` and `contract` naming this file; `mx_session_opened` (session `696ca9a4-7b6b-4d3a-8611-0da2766bf075`, ts 2026-10-17T08:36:59Z, attestor `g0`) in the ledger; every guard at full strength | this commit | the marker and the ledger row; the skill confirmed § Entry, § Mandate, § Records and § Exit with the chart before entry |
 | 2026-10-17 | H9, first half: the cutover disclosures ruled and the coupled consumer recorded (operator, verbatim *"accept all four disclosures, A for the coupled consumer"*) | disclosures (a) to (d) of the `d47de23c8` row unruled; `features/steps/acceptance_recovery_steps.py`, edited in `f88ea9a7e`, outside OBPI-0.35.0-17's Allowed Paths | brief 17: the file is in the frontmatter `allowlist:` and § Allowed Paths as a coupled consumer (DO IT RIGHT 1a), with a Change Log entry citing the ruling; brief 20: a Change Log entry accepting (a) to (d) as recorded; the ruling is an insight record (scope `harbor-pilotage-h9`). Attestation of 17 and 20 still awaits the operator's words | this commit | `gz obpi brief-drift OBPI-0.35.0-17` and `OBPI-0.35.0-20` both clean (all five deltas 0) after the edits; `gz obpi brief-drift --apply` adds only `src/` modules, so the amendment was hand-made under safe mode's brief-ceremony suspension |
 | 2026-10-17 | the ladder restored to canon, and features made first-class requirement areas (operator, verbatim *"A, features are first-class requirement areas (will this bdd align?)"*, after *"I thought this was all settled?"*) | § Entry and D1 gave the ADR the role of landing contracts and named no engineering order, against the 2026-10-05 ladder ruling and Q-18; executive decision 1 made the REQ's category navigation metadata | § Entry and D1 carry the 2026-10-05 ladder: catalog governs REQs (Q-17, Magna Carta §3 of 2026-09-25), the engineering order lands contracts for one bounded advance, ADR for architecture decisions only; WP-4 shape 1 and executive decision 1 name one first-class feature area per entry, held in a registry beside the catalog, ids unchanged on a move | this commit | insight records `harbor-pilotage-wp4` and `campaign-ladder-drift`; the doctrine page's standard chart is amended in the same commit |
+| 2026-10-17 | the joined requirements model written into canon (operator, verbatim *"A, write it into canon"*, after *"i want the feature files and steps AND the REQ system. think of functional and non-functional requirements"*) | every direction booked (Q-16 to Q-18, the 2026-10-05 ladder, the Release Package) with no record joining them; the PRD's FR/NFR split and the 79 Gherkin feature files placed nowhere | `ieee/design-candidates.md` § The joined requirements model: PRD, typed feature areas, catalog REQs, feature files and steps, non-functional proof, engineering order, ADR, work package and task cards, Release Package; the BDD alignment check; five open points; `OPEN-QUESTIONS.md` Q-19; WP-4 waits on ratification | this commit | `mkdocs build --strict` |
+| 2026-10-17 | RO-0, first act: the contract rewritten to the ratified drydock plan (operator rulings of the day, § Rulings of 2026-10-17: structure not population; safe mode an occasional flip in the standing maintenance mode; the ADR a peer of the catalog, not a layer above the work; no engineering order; R1 to R6 ruled A) | the chart: harbor legs H1 to H9, drydock repairs D1 to D6, exit numbers, a sea trial as the exit, Mandate 2 to 4 populating the catalog; the drawing existed only as prose | § Purpose, § The general arrangement with `general-arrangement-2026-10-17.svg` verified from first principles, § Repair orders RO-0 to RO-8, § Exit as structural conditions, § Rulings of 2026-10-17; the old text kept under § Superseded; `safe-mode-doctrine.md` and `.gzkit/templates/safe_mode_contract.md` rewritten to the same shape; the 2026-10-17 drift (Q-19, the joined requirements model) kept as civil-rule design input with no work tie | this commit | `mkdocs build --strict`; `gz validate --distribution` after the control-surface sync; the guard lowering (R6) is RO-0's second act and is not yet in force |

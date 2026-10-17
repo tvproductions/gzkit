@@ -625,9 +625,32 @@ record of the successor direction only.
 **Scope.** `Q-08` and `Q-10` remain ruled. Phases 5 to 8 remain unauthorised. No
 finding changes status, and no identifier, parser or proof binding changes.
 
+### Q-19 — What joins requirements, features, BDD and the ladder?
+
+**RECORDED 2026-10-17 — the joined requirements model is written into canon for ratification.**
+Operator: **g0**. Asked whether this was settled, the agent found that every direction was booked
+(`Q-16`, `Q-17`, `Q-18`, the ladder of 2026-10-05, the Release Package of 2026-10-16) but no record
+joined them, and the PRD's functional / non-functional split and the Gherkin feature files had no
+place in any of them. Operator words, verbatim, in order:
+
+> A, features are first-class requirement areas (will this bdd align?)
+
+> i want the feature files and steps AND the REQ system. think of functional and non-functional requirements. we needed Work Packages, Release Packages, but also fdau-like feature/req organization. i really though all of this was worked out
+
+> A, write it into canon
+
+**Where it lives:** [`design-candidates.md` § The joined requirements model](design-candidates.md#the-joined-requirements-model),
+with its five open points. **Scope:** a recorded model awaiting ratification. It reopens no
+earlier ruling, changes no identifier, parser or proof binding, and authorizes no migration; the
+harbor pilotage contract's WP-4 waits on it.
+
 ---
 
 ## Amendments
+
+- **2026-10-17 — `Q-19` records the joined requirements model.** Preserved the operator's words on
+  first-class feature areas, the functional / non-functional split, BDD and the ladder, and
+  pointed at the model in `design-candidates.md`. No earlier ruling reopened.
 
 - **2026-10-04 — `Q-18` records the successor direction for the (m)ADR.**
   Preserved the operator's words on the stopgap bucket, thematic cohesion, the

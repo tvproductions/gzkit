@@ -6,106 +6,77 @@
 
 ## Authority
 
-The operator's words that declare the crisis and book the pilot, verbatim and dated. Each is
-also on the insights file at the time it was given.
+The operator's words that declare the need and book the pilot, verbatim and dated. Each is also
+on the insights file at the time it was given.
 
-## Entry
+## Purpose
 
-Entered on {{date}} at the operator's word above. The purpose in one sentence, and the target
-shape in one line per band.
+What this flip is for, in one paragraph: what structure is re-rigged, reconfigured, retooled or
+restructured, and what it does not do. Safe mode designs and lands structure; it does not populate
+it, and it is turned off when the re-rigging is done.
+
+## The general arrangement
+
+The drawing of the target structure, saved beside this contract and ratified by the operator, with
+one line per band and the rails. Every repair order below names the band it serves.
 
 ## What is suspended, and what is not
 
-Suspended: the operator-only initiation of OBPI work and the brief ceremony, as named here.
-Not suspended, in every mode: Gate 5 attestation; the ledger written only through `gz` verbs;
-operator PII; the removal of a control; the PRIME DIRECTIVE.
-
-## On the ledger
-
-How the ledger is written during the period (through the verbs that already write it) and
-which design questions about events are put to the operator rather than decided here.
+Suspended while the marker is open: every guard outside the four below, lowered to advisory; the
+operator-only initiation clause, for repair orders; the brief ceremony. Not suspended, in every
+mode: Gate 5 attestation; the ledger written only through `gz` verbs; operator PII; the PRIME
+DIRECTIVE; no control is removed.
 
 ## Division of labor
 
-- **The pilot** plans, measures, drafts and rules with the operator; it executes a cut itself
-  only when the cut is the measurement's own finding and small enough to read in one sitting.
-- **Cheaper sessions** execute the work packages under § Records.
+- **The session** appraises, plans, measures, drafts and rules with the operator; it executes a
+  repair order itself only when it is the measurement's own finding and small enough to read in
+  one sitting.
+- **Cheaper sessions** execute the deterministic repair orders under § Records.
 - **The operator** rules every structural question with the facts and at most three options,
-  enters and exits through the `gz-mx` skill, and attests every completion.
+  enters and exits through the `gz-mx` skill, and attests.
 
 ## Mandate
 
-Numbered. Each item names an outcome, not a task.
+Numbered. Each item names a structural outcome, not a task, and serves a band of the general
+arrangement.
 
 ## Records
 
-- Every pilot change is one commit with a `Task:` trailer, a failing test observed before the
-  change, and `gz arb red --commit <sha>` run after it with its verdict recorded; an `undriven`
-  verdict is repaired in the same commit before it counts.
+- Every change is one commit with a `Task:` trailer naming its repair order, a failing test
+  observed before a code change, and `gz arb red --commit <sha>` run after it with its verdict
+  recorded; an `undriven` verdict is repaired in the same commit before it counts.
 - Every operator ruling is an insight record when given and an `[operator-ruled]` handoff entry.
-- Every session ends with a handoff citing this file and listing the pilot commits since the last.
+- Every session ends with a handoff citing this file and listing the commits since the last.
 - § Passage log is appended per act with bytes or counts before and after.
+- § Repair orders is the register until the repair tagging scheme carries the orders as issues.
 
-## Exit — the pilotage chart
+## Repair orders
 
-### The regime
+In dependency order (the standard shape; keep the numbers, mark an order not applicable with its
+reason, add orders as the appraisal finds them).
 
-| Phase | Regime | Produces | Done when |
-|---|---|---|---|
-| Harbor | safe mode | | |
-| Drydock | safe mode | | the first release through a Release Package; the exit numbers met |
-| Sea trial | safe mode | one work package on a fresh install of the release | the trial recorded below |
-| Handback | ratification | the amendment | the operator's word; the exit through the hard gate |
-| Voyage | civil rule | | |
-
-### Harbor legs (the standard set; keep the letters, mark a leg not applicable with its reason)
-
-| Leg | What it means | Witness | Reading | Owner |
+| Order | Serves | What it lands | Witness | Owner |
 |---|---|---|---|---|
-| H1 | Session start bounded | | | |
-| H2 | The root contract within budget | `gz validate --instructions-files-budget` | | |
-| H3 | Pipeline invoke bounded | `gz skill audit`; bytes at invoke | | |
-| H4 | Per-turn rules and skill descriptions cut | sizes before and after | | |
-| H5 | The catalog exists and is used | | | |
-| H6 | The TASK is the increment on one package | | | |
-| H7 | Every control names its contract | | | |
-| H8 | The toggle is on the record | `.gzkit/mx.json` with `mode: safe` | | |
-| H9 | Executed briefs attested | `gz obpi status` | | |
+| RO-0 | the drydock itself | this contract and the drawing ratified; the suspension in force; prior drift disposed | | |
+| RO-1 | control plane | the bleeding stopped: loaded surfaces cut to budget first, measured for effect | | |
+| RO-2 | identity | the identity seam by alias and resolver, renaming nothing | | |
+| RO-3 | catalog | the requirements store and feature-area registry as empty structure | | |
+| RO-4 | version | the release detached and keyed to one release shape | | |
+| RO-5 | labor, maintenance | the work-package, task-card and repair-order structure | | |
+| RO-6 | every band | contradicted canon retired with retention maps | | |
+| RO-7 | control plane | the rest of the cut, staged, with an effectiveness report per stage | | |
+| RO-8 | the in-flight work | disposition of what was open, and the handback | | |
 
-### Drydock repairs (the standard set)
+## Exit — seaworthiness
 
-| Repair | What is rebuilt | Witness |
-|---|---|---|
-| D1 | The ladder: ADR for architecture decisions, engineering order (the feature bundle), Release Package, work package, TASK | one release through a Release Package |
-| D2 | The catalog as the product's truth | |
-| D3 | GHIs and MX visits classified by contract | |
-| D4 | The control plane subtracted | |
-| D5 | The airlock derives the slice from the contract | |
-| D6 | Eval checks design against code | |
+Numbered structural conditions, each read from its witness; the handback amendment the operator
+ratifies (every commit kept or reverted, the passage log carried, the suspended rules restored).
+The sea trial belongs to civil rule's first voyage, not to the exit.
 
-### Drydock exit numbers (the standing measures; set the values)
+## Rulings
 
-| Measure | Today | Exit |
-|---|---|---|
-| Per-turn load: the root contract | | |
-| Per-turn load: skill descriptions, all skills | | |
-| Per-turn load: rules, total and largest | | |
-| Controls with no named contract | | 0 |
-| Operator attestations | | one per release, plus the sea trial |
-
-### The sea trial
-
-The Release Package it rides on; the substrate (a fresh project on the released wheel); the
-package; the session; the two artifacts the operator attests from; the record below.
-
-### Executive decisions
-
-Numbered, dated, with the reason; the operator may overrule any by a word.
-
-## Work packages
-
-In order. Each is a GHI with a closure contract, executed under § Records, closed through
-`ghi-close`.
+The operator's words during the period, verbatim and dated, each also an insight record.
 
 ## Passage log
 

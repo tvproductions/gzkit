@@ -9,11 +9,11 @@ description: >
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-16
+last_reviewed: 2026-10-17
 model: haiku
 gz_command: mx
 metadata:
-  skill-version: "1.3.2"
+  skill-version: "1.4.0"
 ---
 
 # gz mx
@@ -76,10 +76,12 @@ operator a raw `gz mx` command is a defect in the surface that gave it.
    document, written from `.gzkit/templates/safe_mode_contract.md` under
    `docs/governance/safe-mode-doctrine.md` (first instance:
    `docs/governance/harbor-pilotage-candidate-2026-10-15.md`). The skill
-   reads it and confirms it carries § Entry (whose word opened the mode), § Mandate,
-   § Records (one commit per act with its trailer and its `gz arb red --commit` witness),
-   and § Exit or a chart with legs and witnesses. A contract missing any of these is
-   reported and the mode is not entered.
+   reads it and confirms it carries § Authority (whose word opened the mode), § Purpose,
+   § The general arrangement (the target structure, drawn), § What is suspended and what
+   is not, § Mandate, § Records (one commit per act with its trailer and its
+   `gz arb red --commit` witness), § Repair orders (the register, each naming the band it
+   serves) and § Exit (structural conditions, each with a witness). A contract missing any
+   of these is reported and the mode is not entered.
 
 2. **Enter safe mode**
    ```bash
@@ -89,15 +91,16 @@ operator a raw `gz mx` command is a defect in the surface that gave it.
    missing or outside contract and refuses a contract under `--mode mx`. From this turn
    the banner names the contract; guards are not demoted.
 
-3. **Work under the contract.** Each act is one commit with its `Task:` trailer, its
-   commit-grain witness, and a passage-log row with the measurement before and after.
-   The ledger is written only through `gz` verbs; no control is removed.
+3. **Work the repair orders under the contract.** Each act is one commit with its
+   `Task:` trailer naming its repair order, its commit-grain witness, and a passage-log
+   row with the measurement before and after. The ledger is written only through `gz`
+   verbs; no control is removed.
 
-4. **Read the chart before exit.** The skill reads the contract's exit legs (the
-   orientation's Pilotage block once GHI #1245 lands; until then the chart's reading
-   column, each witness re-run) and names any leg not met. One unmet leg stops here:
-   the exit is not attempted, and the operator decides whether the leg is waived by a
-   recorded ruling or worked.
+4. **Read the exit before leaving.** The skill reads the contract's § Exit conditions
+   and § Repair orders (the orientation's drydock block once GHI #1245 lands; until
+   then each witness re-run) and names any condition not met or order still open. One
+   unmet condition stops here: the exit is not attempted, and the operator decides
+   whether it is waived by a recorded ruling or worked.
 
 5. **Exit through the hard gate**
    ```bash
@@ -131,7 +134,7 @@ Safe mode, as the skill runs it for the operator:
 # Step 2 — enter under the pilotage contract
 uv run gz mx enter --mode safe --contract docs/governance/harbor-pilotage-candidate-2026-10-15.md --reason "harbor pilotage" --attestor g0
 
-# Steps 3 and 4 — acts under § Records; the chart read before exit
+# Steps 3 and 4 — repair orders under § Records; § Exit read before leaving
 
 # Step 5 — exit through the hard gate
 uv run gz mx exit --attestor g0
@@ -173,8 +176,9 @@ since been resolved — it leaves the liveness reading but stays evidence), and
 
 - Operator operates the skill; the skill invokes `gz mx`; nobody shells out, and no
   surface hands the operator a raw `gz mx` command
-- Safe mode is entered only under a contract that carries § Entry, § Mandate, § Records
-  and an exit chart; exit is attempted only after the chart is read
+- Safe mode is entered only under a contract that carries § Authority, § Purpose, § The
+  general arrangement, § What is suspended, § Mandate, § Records, § Repair orders and
+  § Exit; exit is attempted only after § Exit and the register are read
 - `gate5_invariants` and the PRIME DIRECTIVE bind throughout the session
 - Exit is a hard gate — do not attempt exit until all detectable defects are fixed
 - See `.gzkit/rules/mx-mode.md` for the binding agent rule for hangar sessions
