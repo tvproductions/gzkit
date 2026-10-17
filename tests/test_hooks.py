@@ -1,5 +1,6 @@
 """Tests for gzkit hooks module."""
 
+import ast
 import json
 import os
 import shlex
@@ -1492,6 +1493,28 @@ class TestPipelineRouterHook(unittest.TestCase):
             self.assertIn("OBPI plan approved: OBPI-0.12.0-03", result.stdout)
             self.assertIn("uv run gz obpi pipeline OBPI-0.12.0-03", result.stdout)
             self.assertEqual(result.stderr, "")
+
+
+class TestCommittedHooksMatchTheirTemplates(unittest.TestCase):
+    """The committed hook is the render of its template, byte for byte.
+
+    The behaviour tests exercise one side of each pair only: the gate tests run a
+    fresh render of the template, and the awareness tests load the committed file.
+    Without this parity check either side can drift from the other unnoticed
+    (observed on the drydock's RO-0 second act, 2026-10-17, where the commit
+    witness reported each generated hook and its template as separate hunks).
+    """
+
+    def test_pipeline_gate_and_mx_awareness_are_current(self) -> None:
+        # Compared as syntax trees: the sync formats the committed file with the
+        # repository's formatter settings and a temp render is formatted with the
+        # defaults, so byte equality would fail on line wrapping alone.
+        repo = Path(__file__).resolve().parents[1]
+        for name in ("pipeline-gate.py", "mx-awareness.py"):
+            with self.subTest(hook=name):
+                rendered = (_HOOK_TEMPLATE_HOOKS / name).read_text(encoding="utf-8")
+                committed = (repo / ".claude" / "hooks" / name).read_text(encoding="utf-8")
+                self.assertEqual(ast.dump(ast.parse(committed)), ast.dump(ast.parse(rendered)))
 
 
 class TestPipelineGateHook(unittest.TestCase):
