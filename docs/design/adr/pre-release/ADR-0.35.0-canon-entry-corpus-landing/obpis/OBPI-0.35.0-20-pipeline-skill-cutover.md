@@ -283,7 +283,7 @@ The real run of Requirement 10 is recorded in Key Proof.
      operator explicitly requests an issue; link it back to the owning work.
      Keep this subsection under Evidence so history is not treated as contract. -->
 
-- 2026-10-17 — Cutover disclosures accepted. Operator ruling, verbatim: *"accept all four disclosures, A for the coupled consumer"*. The pilot ran the cutover (`d47de23c8`) under the ratified safe-mode contract `docs/governance/harbor-pilotage-candidate-2026-10-15.md`, and § Passage log, row `d47de23c8`, records four disclosures: (a) the cutover ran outside the OBPI pipeline and before `OBPI-0.35.0-17`'s ledger completion, against Requirements 2 and 10; (b) the renderer `src/gzkit/governance/pipeline_procedure_render.py` and its test module sit outside Allowed Paths; (c) one non-control inventory row, the Stage 1→2 block's citation of invariant 11, was reclassified from `rationale` to `structure` because attested REQ-0.0.19-04-06 requires the block to keep it, with no control row changed and the baseline untouched; (d) a `git reset --hard` taken to re-cut the commit discarded two uncommitted red receipts for retired SHAs, and both witnesses were re-run. All four are accepted as recorded.
+- 2026-10-17 — Cutover disclosures (a) to (d), recorded in `docs/governance/harbor-pilotage-candidate-2026-10-15.md` § Passage log row `d47de23c8`, accepted as recorded. Operator, verbatim: *"accept all four disclosures, A for the coupled consumer"*.
 
 ### Gate 1 (ADR)
 

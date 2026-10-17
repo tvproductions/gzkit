@@ -103,7 +103,7 @@ Paths marked (Q1) or (Q4) follow the ruling on that question in § Open Design Q
 - `tests/commands/test_obpi_stages.py`, `tests/commands/test_obpi_pipeline.py` — stage-entry output through the command layer
 - `features/obpi_pipeline_stage_procedure.feature` — **CREATE**, sibling of the subagent-pipeline feature in the same directory
 - `features/steps/obpi_pipeline_stage_procedure_steps.py` — **CREATE**, sibling of the subagent-pipeline steps in the same directory
-- `features/steps/acceptance_recovery_steps.py` — coupled consumer (`AGENTS.md` § DO IT RIGHT 1a): its disposable acceptance project seeds the served stage procedures, because stage entry refuses without them (Requirement 7); edited in `f88ea9a7e`, recorded here by operator ruling 2026-10-17
+- `features/steps/acceptance_recovery_steps.py` — coupled consumer, per the Change Log
 - `docs/user/manpages/obpi-pipeline.md` — the command contract: what stage entry delivers, the refusal and its recovery
 - `docs/user/runbook.md` — the operator flow where it describes what a stage entry prints
 - `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-17-stage-procedure-served-by-runtime.md`
@@ -317,7 +317,6 @@ The stage-entry command line itself is fixed by OBPI-0.35.0-16. When that brief 
 
 ## Acceptance Criteria
 
-<!-- REQ kinds per ADR-0.0.59; enforced by gz validate --req-kind-discipline. -->
 
 - [ ] REQ-0.35.0-17-01 [BEHAVIOR]: Given an inventory, a baseline body, an invocation text, a served text per stage and a rationale record, when the checker runs, then it returns every violation the § Control Inventory Contract lists and not only the first, and it returns none for a complete inventory. Each violation kind is proven on a synthetic fixture by a case that fails when that check is removed.
 - [ ] REQ-0.35.0-17-02 [BEHAVIOR]: Given the committed inventory and the baseline it pins, when the checker runs the before-state checks, then the blocks reproduce the baseline body digest, every block is fully covered, and no violation is returned. Removing one control row or one covered sentence from the inventory makes the check fail and name the uncovered text.
@@ -329,7 +328,6 @@ The stage-entry command line itself is fixed by OBPI-0.35.0-16. When that brief 
 
 ## Completion Checklist
 
-<!-- Verify all gates before marking OBPI accepted. -->
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
 - [ ] **Gate 2 (TDD):** RGR cycle followed, tests derived from brief, coverage maintained
@@ -347,17 +345,7 @@ The stage-entry command line itself is fixed by OBPI-0.35.0-16. When that brief 
 
 ### Change Log
 
-<!-- Keep substantive implementation, test, documentation, and evidence
-     corrections within this OBPI. Reuse existing finding identities and cite
-     the affected REQ or contract clause, change, and proof/closure references.
-     Group related repairs; do not log every edit or duplicate transcripts.
-     This is an index to evidence, not a second acceptance ledger. Record approved
-     amendments in their normative sections and reference the ruling here.
-     Create a GHI only when independent work or disposition is needed, or the
-     operator explicitly requests an issue; link it back to the owning work.
-     Keep this subsection under Evidence so history is not treated as contract. -->
-
-- 2026-10-17 — Allowed Paths amended: `features/steps/acceptance_recovery_steps.py` added as a coupled consumer of Requirement 7's stage-entry refusal. The fixture edit landed in `f88ea9a7e`, outside the brief's Allowed Paths as written. Operator ruling, verbatim: *"accept all four disclosures, A for the coupled consumer"*. The same ruling accepts the cutover disclosures (a) to (d) recorded in `docs/governance/harbor-pilotage-candidate-2026-10-15.md` § Passage log, row `d47de23c8`.
+- 2026-10-17 — `features/steps/acceptance_recovery_steps.py` added to Allowed Paths: a coupled consumer of Requirement 7 (DO IT RIGHT 1a), edited in `f88ea9a7e`. Operator, verbatim: *"accept all four disclosures, A for the coupled consumer"*.
 
 ### Gate 1 (ADR)
 
