@@ -34,7 +34,7 @@ already-written tool is not wired to anything.
 |---|---|---|
 | Test files | 508 | `find tests -name 'test_*.py' -type f \| wc -l` |
 | Files using `subTest` | 84 (16.5%) | `grep -rl "subTest" tests --include='test_*.py' \| wc -l` |
-| Slow-test profiler | exists, wired to nothing | `scripts/profile_unittest_modules.py` |
+| Slow-test profiler | exists; wired to `.github/workflows/unit-tier-profile.yml` since 2026-10-16 (GHI #1171) | `scripts/profile_unittest_modules.py` |
 
 Re-measured 2026-07-31 on the chore's first run: 508 files / 84 using `subTest`
 (16.5%), up from 497 / 78 (15.7%) at authoring on 2026-07-27, and from GHI
@@ -42,6 +42,8 @@ Re-measured 2026-07-31 on the chore's first run: 508 files / 84 using `subTest`
 denominators in five weeks — **re-measure before acting rather than trusting
 any figure above.** The ratio is drifting upward on its own, which is worth
 knowing before treating the sweep as urgent.
+
+AMENDED 2026-10-16 (GHI #1171): the profiler is no longer wired to nothing. `.github/workflows/unit-tier-profile.yml` runs it on both CI platforms when the profiler or that workflow changes, or on demand, and uploads its `--json` record. It still gates nothing, so scope item 2 below (ranking the slow tail and a quarantine policy) is open. The paragraph below is the record of 2026-07-31.
 
 The "wired to nothing" row still holds: `grep -rn profile_unittest_modules`
 across `*.py`/`*.md`/`*.json`/`*.toml`/`*.yml` returns only this CHORE.md, its

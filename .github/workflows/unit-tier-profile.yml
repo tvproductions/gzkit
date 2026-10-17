@@ -1,0 +1,71 @@
+name: Unit tier profile
+
+# Per-module durations of the unit tier on both CI platforms from one commit
+# (GHI #1171): why does the tier take two to three times as long on
+# windows-latest as on ubuntu-latest? The `gz check --full` log carries only
+# the tier's total, and that total is measured inside a gate where Test shares
+# the runner's cores with Behave and the other steps. This job runs the tier in
+# ONE process per platform with nothing beside it, so each module's figure is
+# its own cost and the two platforms' records join module by module.
+#
+# It runs only when the profiler or this workflow changes, or on demand: a
+# serial run of the whole tier is far slower than the gate's, and it answers a
+# question, not a gate. Its verdict gates nothing; a failing test is recorded in
+# the uploaded record (`successful`, `failures`, `errors`) because a profile of
+# a broken tree describes a different run.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/profile_unittest_modules.py"
+      - ".github/workflows/unit-tier-profile.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  profile:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # tests read git history, as in ci.yml
+
+      # The same bot identity ci.yml configures, for the same reason: tests that
+      # create commits need an identity, and a fresh checkout sets none.
+      - name: Configure git identity
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13.16"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.2.0
+        with:
+          enable-cache: true
+
+      - name: Sync dependencies
+        run: uv sync --frozen --all-extras
+
+      - name: Profile the unit tier in one process
+        run: uv run python scripts/profile_unittest_modules.py --json unit-tier-profile-${{ matrix.os }}.json --top 40
+
+      - name: Upload the profile record
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: unit-tier-profile-${{ matrix.os }}
+          path: unit-tier-profile-${{ matrix.os }}.json
+          if-no-files-found: error
