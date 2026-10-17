@@ -1561,3 +1561,5 @@
 {"ts": "2026-10-17T05:33:49Z", "source": "20261017T053342Z-ci-health-six-ghis-closed.md", "text": "Fix #1255 (verbatim: \"fix #1255 now\")."}
 {"ts": "2026-10-17T05:33:49Z", "source": "20261017T053342Z-ci-health-six-ghis-closed.md", "text": "Fix #1171 (verbatim: \"fix #1171 now\")."}
 {"ts": "2026-10-17T05:33:49Z", "source": "20261017T053342Z-ci-health-six-ghis-closed.md", "text": "Fix #1256 and close it on the profile's evidence (verbatim: \"fix #1256 now\", then \"close #1256 when the profile finishes\")."}
+{"ts": "2026-10-17T07:51:13Z", "source": "20261017T075108Z-fidelity-gate-one-worktree-back-to-drydock.md", "text": "Fix the slowest unit test (verbatim: \"fix the 190s test in test_qc_binding_self_check\")."}
+{"ts": "2026-10-17T07:51:13Z", "source": "20261017T075108Z-fidelity-gate-one-worktree-back-to-drydock.md", "text": "Course-correction: the drydock was being displaced by CI work (verbatim: \"i am not doing any work towards the dry dock over this ci work, what is going on?\")."}
