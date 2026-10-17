@@ -30,29 +30,50 @@ from __future__ import annotations
 import contextlib
 import errno
 import sys
+import time
 from collections.abc import Iterator
 from pathlib import Path
 from typing import IO
+
+#: Codes a refused Windows lock attempt reports when another handle holds the
+#: byte: ``LK_NBLCK`` reports ``EACCES``; ``LK_LOCK`` reports ``EDEADLK`` once its
+#: own ten one-second tries expire (GHI #1178). Anything else is a broken handle.
+_CONTENTION = frozenset({errno.EACCES, errno.EDEADLK})
+#: First pause after a refused try, and the longest the doubling reaches. A
+#: waiter wakes within that longest pause of the holder's release (GHI #1256).
+_FIRST_PAUSE = 0.001
+_LONGEST_PAUSE = 0.05
+
+
+def _pause(seconds: float) -> None:
+    """Wait between refused lock attempts. A seam, so tests can observe the waits."""
+    time.sleep(seconds)
+
 
 if sys.platform == "win32":  # pragma: no cover - selected by platform, not by test
 
     def _take_exclusive(handle: IO[bytes]) -> None:
         """Block until this process holds the lock byte (Windows).
 
-        ``LK_LOCK`` alone does not block: it polls once a second and raises
-        ``OSError`` with ``EDEADLK`` after ten tries, where ``flock`` waits
-        without bound. An expired wait is contention, so the call is made
-        again; any other ``OSError`` is a failure of the handle and is raised
-        (GHI #1178).
+        ``LK_LOCK`` is not a blocking wait: it retries once a second, so a
+        writer that found the byte held slept a whole second however soon the
+        holder released, where ``flock`` wakes on release (GHI #1256). Each
+        try is ``LK_NBLCK``, which is refused at once, and a refusal pauses
+        from 1 ms doubling to 50 ms before the next try. Contention is never
+        a failure (GHI #1178); any other ``OSError`` is a failure of the handle
+        and is raised.
         """
         import msvcrt  # noqa: PLC0415 - platform-conditional, unimportable elsewhere
 
+        delay = _FIRST_PAUSE
         while True:
             try:
-                msvcrt.locking(handle.fileno(), msvcrt.LK_LOCK, 1)
+                msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
             except OSError as exc:
-                if exc.errno != errno.EDEADLK:
+                if exc.errno not in _CONTENTION:
                     raise
+                _pause(delay)
+                delay = min(delay * 2, _LONGEST_PAUSE)
             else:
                 return
 

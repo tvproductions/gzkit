@@ -138,14 +138,18 @@ class TestExclusiveFileLock(unittest.TestCase):
 class TestContendedWindowsAcquirerKeepsWaiting(unittest.TestCase):
     """Taking the lock succeeds or keeps waiting; it never gives up (GHI #1178).
 
-    The Windows lock call is a bounded wait: it polls once a second and
-    raises ``OSError`` with ``EDEADLK`` after ten tries. The POSIX call has
-    no bound. These tests execute the module's Windows branch on every
-    platform, with the lock call injected in place of ``msvcrt``.
+    ...and it wakes within milliseconds of a release, not in whole seconds
+    (GHI #1256). ``LK_LOCK`` retries once a second, so every contended acquire
+    cost at least a second where POSIX ``flock`` wakes on release; three racing
+    tests took 49.7 s on windows-latest against under 1.67 s each on Ubuntu.
+    The branch now tries ``LK_NBLCK`` and backs off briefly between tries.
+    These tests execute the module's Windows branch on every platform, with the
+    lock call injected in place of ``msvcrt``.
     """
 
     _LK_UNLCK = 0
     _LK_LOCK = 1
+    _LK_NBLCK = 2
 
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
@@ -154,8 +158,8 @@ class TestContendedWindowsAcquirerKeepsWaiting(unittest.TestCase):
     def tearDown(self) -> None:
         self._tempdir.cleanup()
 
-    def _lock_through_the_windows_branch(self, locking) -> list[Exception]:
-        """Take and release the lock on the Windows branch; return what it raised.
+    def _lock_through_the_windows_branch(self, locking) -> tuple[list[Exception], list[float]]:
+        """Take and release the lock on the Windows branch; return what it raised and slept.
 
         The branch is chosen when the module is executed, so a second copy is
         executed with the platform reading ``win32``. The lock is taken off
@@ -163,12 +167,16 @@ class TestContendedWindowsAcquirerKeepsWaiting(unittest.TestCase):
         a wait that never returned would hang the suite instead of failing it.
         """
         stand_in = types.SimpleNamespace(
-            LK_LOCK=self._LK_LOCK, LK_UNLCK=self._LK_UNLCK, locking=locking
+            LK_LOCK=self._LK_LOCK,
+            LK_NBLCK=self._LK_NBLCK,
+            LK_UNLCK=self._LK_UNLCK,
+            locking=locking,
         )
         spec = importlib.util.spec_from_file_location("file_lock_on_windows", file_lock.__file__)
         assert spec is not None and spec.loader is not None
         on_windows = importlib.util.module_from_spec(spec)
         raised: list[Exception] = []
+        slept: list[float] = []
 
         def run() -> None:
             try:
@@ -183,37 +191,58 @@ class TestContendedWindowsAcquirerKeepsWaiting(unittest.TestCase):
             mock.patch.dict(sys.modules, {"msvcrt": stand_in}),
         ):
             spec.loader.exec_module(on_windows)
-            thread.start()
-            thread.join(_ACQUIRE_TIMEOUT)
+            with mock.patch.object(on_windows, "_pause", side_effect=slept.append):
+                thread.start()
+                thread.join(_ACQUIRE_TIMEOUT)
         self.assertFalse(thread.is_alive(), "the acquirer never returned")
-        return raised
+        return raised, slept
 
-    def test_an_acquirer_that_outlasts_the_bounded_wait_still_acquires(self) -> None:
-        """A holder slower than one bounded wait delays the next writer, no more."""
-        expired_waits = 3
+    def _contended(self, refusals: int, errno_code: int):
         modes: list[int] = []
 
         def locking(_fd: int, mode: int, _nbytes: int) -> None:
             modes.append(mode)
-            takes = modes.count(self._LK_LOCK)
-            if mode == self._LK_LOCK and takes <= expired_waits:
-                raise OSError(errno.EDEADLK, "Resource deadlock avoided")
+            if mode == self._LK_UNLCK:
+                return
+            tries = len([m for m in modes if m != self._LK_UNLCK])
+            if tries <= refusals:
+                raise OSError(errno_code, "contended")
             # Not an OSError, so a loop that tries again while holding the
             # lock fails here instead of spinning.
-            if mode == self._LK_LOCK and takes > expired_waits + 1:
+            if tries > refusals + 1:
                 raise AssertionError("tried again after the lock was acquired")
 
-        raised = self._lock_through_the_windows_branch(locking)
+        return modes, locking
 
-        self.assertEqual(raised, [], "an expired wait must not fail the acquirer")
-        self.assertEqual(
-            modes,
-            [self._LK_LOCK] * (expired_waits + 1) + [self._LK_UNLCK],
-            "the acquirer tries again after each expired wait, then holds and releases once",
-        )
+    def test_a_contended_acquirer_keeps_trying_until_it_holds_the_lock(self) -> None:
+        """Contention is waited out, whichever code the platform reports for it."""
+        for code in (errno.EACCES, errno.EDEADLK):
+            with self.subTest(errno=errno.errorcode[code]):
+                modes, locking = self._contended(refusals=3, errno_code=code)
+                raised, _ = self._lock_through_the_windows_branch(locking)
+                self.assertEqual(raised, [], "contention must not fail the acquirer")
+                self.assertEqual(
+                    modes,
+                    [self._LK_NBLCK] * 4 + [self._LK_UNLCK],
+                    "each try is non-blocking; it holds after the refusals, then releases once",
+                )
+
+    def test_the_pause_between_tries_is_milliseconds_not_a_second(self) -> None:
+        """The waiter wakes soon after a release: no pause reaches the old 1 s step."""
+        _, locking = self._contended(refusals=20, errno_code=errno.EACCES)
+        raised, slept = self._lock_through_the_windows_branch(locking)
+        self.assertEqual(raised, [])
+        self.assertEqual(len(slept), 20, "one pause per refused try")
+        self.assertTrue(all(0 < s <= 0.05 for s in slept), f"pauses out of range: {slept}")
+
+    def test_an_uncontended_acquirer_does_not_pause(self) -> None:
+        _, locking = self._contended(refusals=0, errno_code=errno.EACCES)
+        raised, slept = self._lock_through_the_windows_branch(locking)
+        self.assertEqual(raised, [])
+        self.assertEqual(slept, [])
 
     def test_a_failure_that_is_not_contention_is_raised(self) -> None:
-        """Only an expired wait is waited out; a broken handle is not."""
+        """Only contention is waited out; a broken handle is not."""
         modes: list[int] = []
 
         def locking(_fd: int, mode: int, _nbytes: int) -> None:
@@ -224,12 +253,24 @@ class TestContendedWindowsAcquirerKeepsWaiting(unittest.TestCase):
                 raise AssertionError("retried a failure that is not contention")
             raise OSError(errno.EBADF, "Bad file descriptor")
 
-        raised = self._lock_through_the_windows_branch(locking)
+        raised, slept = self._lock_through_the_windows_branch(locking)
 
         self.assertEqual(len(raised), 1, "the failure must reach the caller")
         self.assertIsInstance(raised[0], OSError)
         self.assertEqual(getattr(raised[0], "errno", None), errno.EBADF)
-        self.assertEqual(modes, [self._LK_LOCK], "a lock that was never held is not retried")
+        self.assertEqual(modes, [self._LK_NBLCK], "a lock that was never held is not retried")
+        self.assertEqual(slept, [])
+
+
+class TestThePauseWaits(unittest.TestCase):
+    """The real pause between refused tries waits; the Windows tests replace it (GHI #1256)."""
+
+    def test_the_pause_waits_at_least_the_time_it_is_given(self) -> None:
+        import time  # noqa: PLC0415
+
+        started = time.monotonic()
+        file_lock._pause(0.02)
+        self.assertGreaterEqual(time.monotonic() - started, 0.015)
 
 
 class TestOneImplementationTwoCallers(unittest.TestCase):
