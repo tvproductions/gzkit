@@ -229,6 +229,9 @@ class OverlapRunnerTest(unittest.TestCase):
         self.assertTrue(all(r.success for _, r in results))
 
 
+_CALLER = "scheduler-caller"
+
+
 @dataclass
 class _GatedRun:
     """What one gated-reader run observed; typed for the same reason as `_Run`."""
@@ -289,7 +292,20 @@ class GatedReaderStartTest(unittest.TestCase):
             mock.patch("gzkit.commands.quality._steps_overlapping_writers", return_value={"Test"}),
             mock.patch("gzkit.commands.quality._seam", side_effect=seam),
         ):
-            state.results = _run_check_steps(steps, get_project_root(), progress)
+            # Bounded, so a scheduler that deadlocks fails here in seconds instead
+            # of hanging the unit tier: a reverted hunk of this loop hung the
+            # 48c2d3109 red witness past its 600s bound (GHI #1255).
+            caller = threading.Thread(
+                target=lambda: setattr(
+                    state, "results", _run_check_steps(steps, get_project_root(), progress)
+                ),
+                name=_CALLER,
+                daemon=True,
+            )
+            caller.start()
+            caller.join(30.0)
+            if caller.is_alive():
+                raise AssertionError("_run_check_steps did not return within 30s: deadlock")
         state.progress = progress.seen
         return state
 
@@ -308,7 +324,7 @@ class GatedReaderStartTest(unittest.TestCase):
         self.assertEqual(["Behave", "Test", "Lint"], [n for n, _ in state.results])
         self.assertEqual(["Behave", "Lint", "Test"], sorted(state.progress))
         self.assertEqual(
-            {threading.main_thread().name},
+            {_CALLER},
             set(state.seam_threads),
             "the MX seam must fire on the calling thread (REQ-0.0.74-20-01)",
         )
