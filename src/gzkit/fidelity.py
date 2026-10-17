@@ -196,31 +196,41 @@ def parse_fidelity_assertions(adr_path: Path) -> list[FidelityAssertion]:
 WORKTREE_UNAVAILABLE = -2
 
 
-def _run_at_head(assertion: FidelityAssertion, project_root: Path) -> int:
-    """Run one assertion in a fresh detached worktree at HEAD; return its exit code.
+def _run_in(assertion: FidelityAssertion, worktree: Path, project_root: Path) -> int:
+    """Run one assertion with *worktree* as its cwd; return its exit code.
 
     ``uv run`` and ``python`` resolve the worktree's ``src`` through the live,
     unsynced venv (``demo_env``, the GHI #1093 Stage-4 Demo environment), so no
     command reaches the live checkout through its cwd or its interpreter.
     """
     from gzkit.governance.stage4_evidence import demo_env  # noqa: PLC0415
-    from gzkit.red_witness import base_tree_worktree  # noqa: PLC0415
 
     try:
-        with base_tree_worktree(project_root, "HEAD") as worktree:
-            try:
-                proc = subprocess.run(  # noqa: S603 — runs in a disposable worktree
-                    shlex.split(assertion.command),
-                    cwd=worktree,
-                    env=demo_env(project_root, worktree),
-                    capture_output=True,
-                    check=False,
-                )
-            except (OSError, ValueError):
-                return -1
-            return proc.returncode
-    except (RuntimeError, OSError, subprocess.SubprocessError):
-        return WORKTREE_UNAVAILABLE
+        proc = subprocess.run(  # noqa: S603 — runs in a disposable worktree
+            shlex.split(assertion.command),
+            cwd=worktree,
+            env=demo_env(project_root, worktree),
+            capture_output=True,
+            check=False,
+        )
+    except (OSError, ValueError):
+        return -1
+    return proc.returncode
+
+
+def _restore_head(worktree: Path, head: str) -> bool:
+    """Return *worktree* to exactly the commit *head*; report whether it worked.
+
+    A forced detached checkout undoes tracked edits, deletions and a moved HEAD;
+    ``clean -ffdx`` removes untracked and ignored files. What the next row sees
+    is then the committed tree and nothing a previous row left (GHI #1156).
+    """
+    from gzkit.red_witness import _git  # noqa: PLC0415
+
+    checkout = _git(["checkout", "--force", "--quiet", "--detach", head], worktree)
+    if checkout.returncode != 0:
+        return False
+    return _git(["clean", "-ffdxq"], worktree).returncode == 0
 
 
 def run_fidelity_gate(
@@ -230,25 +240,48 @@ def run_fidelity_gate(
 ) -> list[FidelityAssertion]:
     """Run each assertion against the committed tree and return updated assertions.
 
-    The gate grades the ADR's shipped state, so each command runs in its own
-    detached worktree at ``project_root``'s HEAD, never in the live checkout:
-    uncommitted or untracked files cannot satisfy an assertion, and a command
-    that writes cannot mutate the tree, ledger or canon being attested (GHI
-    #1156, operator ruling 2026-10-01). When no worktree can be built the
-    assertion fails closed with ``observed=WORKTREE_UNAVAILABLE`` and is never
-    run live.
+    The gate grades the ADR's shipped state, so every command runs in a detached
+    worktree at ``project_root``'s HEAD, never in the live checkout: uncommitted
+    or untracked files cannot satisfy an assertion, and a command that writes
+    cannot mutate the tree, ledger or canon being attested (GHI #1156, operator
+    ruling 2026-10-01). When no worktree can be built, or one cannot be restored
+    to HEAD, the assertion fails closed with ``observed=WORKTREE_UNAVAILABLE``
+    and is never run live.
+
+    One worktree serves the whole run and is restored to HEAD before every row
+    after the first, so each row still starts from exactly the committed tree.
+    Building a fresh checkout per row cost a full checkout of the repository
+    each time: the ADR-0.0.73 self-check took 190 s on windows-latest for seven
+    rows (unit-tier profile run 38984988910).
 
     Each assertion's ``observed`` is set to the subprocess return code and
     ``result`` is ``"pass"`` when ``observed == expected_exit`` else ``"fail"``.
     Pydantic frozen models are immutable; new instances are created via
     ``model_copy(update=...)``.
     """
-    results: list[FidelityAssertion] = []
-    for assertion in assertions:
-        observed = _run_at_head(assertion, project_root)
-        result = "pass" if observed == assertion.expected_exit else "fail"
-        results.append(assertion.model_copy(update={"observed": observed, "result": result}))
-    return results
+    from gzkit.red_witness import base_tree_worktree, resolve_base_commit  # noqa: PLC0415
+
+    observed: list[int] = []
+    try:
+        head = resolve_base_commit(project_root)
+        with base_tree_worktree(project_root, head) as worktree:
+            for index, assertion in enumerate(assertions):
+                if index and not _restore_head(worktree, head):
+                    observed.append(WORKTREE_UNAVAILABLE)
+                    continue
+                observed.append(_run_in(assertion, worktree, project_root))
+    except (RuntimeError, OSError, subprocess.SubprocessError):
+        pass
+    observed += [WORKTREE_UNAVAILABLE] * (len(assertions) - len(observed))
+    return [
+        assertion.model_copy(
+            update={
+                "observed": code,
+                "result": "pass" if code == assertion.expected_exit else "fail",
+            }
+        )
+        for assertion, code in zip(assertions, observed, strict=True)
+    ]
 
 
 def failure_hint(assertion: FidelityAssertion) -> str:
