@@ -75,7 +75,7 @@ the operator):
 
 | Repair | What is rebuilt | Witness |
 |---|---|---|
-| D1 | The ladder: ADR records decisions and lands contracts; the Release Package governs a version; the work package is the labor unit; the TASK is the increment | one release planned and closed through a Release Package, `gz closeout` keyed to it |
+| D1 | The ladder (ruled 2026-10-05): ADR records architecture decisions; the engineering order, the feature bundle, lands contracts on REQs for one bounded advance; the Release Package governs a version; the work package is the labor unit; the TASK is the increment | one release planned and closed through a Release Package, `gz closeout` keyed to it |
 | D2 | The catalog as the product's truth | a validator that fails on a brief assignment naming no entry |
 | D3 | GHIs and MX visits classified by the contract they repair | `ghi-triage` reports the contract per issue |
 | D4 | The control plane subtracted: every control names its contract or retires; no rule body carries a dated narrative; every surface an agent loads is within its budget | the obligation column full; the exit measures, one per loaded surface |

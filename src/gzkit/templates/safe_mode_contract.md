@@ -76,7 +76,7 @@ Numbered. Each item names an outcome, not a task.
 
 | Repair | What is rebuilt | Witness |
 |---|---|---|
-| D1 | The ladder: Release Package, work package, TASK | one release through a Release Package |
+| D1 | The ladder: ADR for architecture decisions, engineering order (the feature bundle), Release Package, work package, TASK | one release through a Release Package |
 | D2 | The catalog as the product's truth | |
 | D3 | GHIs and MX visits classified by contract | |
 | D4 | The control plane subtracted | |

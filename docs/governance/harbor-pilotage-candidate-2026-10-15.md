@@ -41,8 +41,10 @@ Each is on the insights file at the time it was given.
 Safe mode entered 2026-10-15 at the operator's word above. Its purpose is one sentence:
 **get gzkit onto the diagram's plan, control plane and work-design modularization both, and
 hand back to the Magna Carta.** The diagram, one line per band: the requirements catalog is
-the product's truth, each REQ carrying its contract and state; the ADR lands contracts on
-REQs, the Release Package says which REQ states advance in a version, the work package selects
+the product's truth, each REQ in one first-class feature area and carrying its contract and
+state; the engineering order, the feature bundle that succeeds the (m)ADR (Q-18; ladder ruled
+2026-10-05), lands contracts on REQs for one bounded advance, and an ADR records an
+architecture decision only; the Release Package says which REQ states advance in a version, the work package selects
 the REQs sharing one contract, the TASK is the increment that proves them; the airlock
 derives the slice from the contract, GHIs and MX visits classify by the contract they
 repair, eval checks module design against module code; every control in the plane names the
@@ -215,7 +217,7 @@ never authored.
   "id": "REQ-C0001",
   "statement": "Given an in-flight pipeline run whose position is recorded on disk, when a process holding only the repository reads the run through `gz obpi status` or the session orientation, then it obtains the next command for that position, and the read changes no marker field and appends no ledger event.",
   "kind": "BEHAVIOR",
-  "category": "pipeline runtime",
+  "feature": "pipeline-runtime",
   "source": ["ADR-0.13.0 § Decision", "ADR-0.35.0 checklist item 16"],
   "applicability": "gzkit >= 0.35.0",
   "state": "approved",
@@ -227,8 +229,10 @@ never authored.
 }
 ```
 
-`id` is a sequential integer under a `REQ-C` prefix and is never reused; `category` is
-navigation metadata, so moving an entry between categories changes no identity. `state` is
+`id` is a sequential integer under a `REQ-C` prefix and is never reused. `feature` names one
+first-class feature area: a requirement area with its own registry entry beside the catalog
+(slug, name, scope statement), FDAU's semantic area made explicit (operator, 2026-10-17). Moving
+an entry between areas is a new revision and changes no identity. `state` is
 one of `proposed`, `approved`, `implemented`, `verified`, `retired`; a retirement is a new
 revision with the reason, never a deletion. `kind` and `proof.channel` keep the three kinds
 and their channels from ADR-0.0.59.
@@ -329,7 +333,7 @@ Safe mode is left once, at seaworthiness. Nothing returns to civil rule in betwe
 
 | Repair | What is rebuilt | Witness |
 |---|---|---|
-| D1 | The ladder: ADR records decisions and lands contracts; the Release Package (its own rung, § The Release Package) governs a version; the work package replaces the OBPI as the labor unit; the TASK is the increment | the first release planned and closed through a Release Package, with `gz closeout` keyed to it; the `gz-release` skill of WP-12 (GHI #1248) measures the pressure and runs the ceremony |
+| D1 | The ladder (ruled 2026-10-05): ADR records architecture decisions; the engineering order, the feature bundle, lands contracts on REQs for one bounded advance; the Release Package (its own rung, § The Release Package) governs a version; the work package replaces the OBPI as the labor unit; the TASK is the increment | the first release planned and closed through a Release Package, with `gz closeout` keyed to it; the `gz-release` skill of WP-12 (GHI #1248) measures the pressure and runs the ceremony |
 | D2 | The catalog as the product's truth: every live REQ an entry with its contract and state; legacy ids as aliases | a `gz validate` scope that fails on a brief assignment naming no entry |
 | D3 | GHIs classified by the contract they repair; MX visits likewise | `ghi-triage` reports the contract per issue; an unclassified issue is a finding |
 | D4 | The control plane subtracted: every control names its contract or retires; no rule body carries a dated narrative; every surface an agent loads is within its budget, cut in stages and each stage measured before the next (WP-13 to WP-16) | the obligation column full; the counts below, read by the WP-13 witness |
@@ -376,7 +380,9 @@ Passed once and recorded here, the ship is seaworthy and the handback follows.
 
 ### Executive decisions taken 2026-10-16 (the operator may overrule any by a word)
 
-1. **WP-4 shapes, decided as recommended:** `REQ-C<n>` sequential ids with category as metadata;
+1. **WP-4 shapes, decided as recommended:** `REQ-C<n>` sequential ids, each entry in one
+   first-class feature area (amended 2026-10-17, operator verbatim *"A, features are
+   first-class requirement areas"*, overruling category as navigation metadata);
    one JSON file `data/requirements_catalog.json` read through the registry seam with a derived
    Markdown view; assignments in brief frontmatter with the legacy `REQ-X.Y.Z-NN-MM` line kept as
    the alias the proof channels bind to.
@@ -451,3 +457,4 @@ inside it.
 | 2026-10-16 | the control-plane cut booked (operator: *"where in this safe-mode drydock plan will you aggressively trim all control plane artifacts (agents, rules, skills and any other items that an agent loads and saturates context)?"*, then *"A (in safe mode - make backups!!! - help me test how much we can cut and remain effective, I need to better balance context bloat)"*) | the chart carried exit numbers for two of seven loaded surfaces; the skill count was "reported, not targeted" | backup tag `control-plane-baseline-2026-10-16` pushed; baseline proof written; D4, the exit table, the regime row and the doctrine's standing measures widened to every loaded surface; executive decision 6; WP-13 #1249, WP-14 #1250, WP-15 #1251, WP-16 #1252 filed with closure contracts | this commit | measured: rules 149,529 B/26, descriptions 15,816 chars, bodies 639,408 B/73, agents 10,799 B/5, nested AGENTS.md 175,877 B/17, personas 24,879 B, hooks 17 |
 | 2026-10-17 | H8: safe mode entered through the gz-mx skill under this contract (operator, verbatim *"proceed with H8, invoke /gz-mx"*) | the regime lived in this contract only; `.gzkit/mx.json` absent; no `mx_session_opened` event carried `mode: safe` | `.gzkit/mx.json` with `mode: safe` and `contract` naming this file; `mx_session_opened` (session `696ca9a4-7b6b-4d3a-8611-0da2766bf075`, ts 2026-10-17T08:36:59Z, attestor `g0`) in the ledger; every guard at full strength | this commit | the marker and the ledger row; the skill confirmed § Entry, § Mandate, § Records and § Exit with the chart before entry |
 | 2026-10-17 | H9, first half: the cutover disclosures ruled and the coupled consumer recorded (operator, verbatim *"accept all four disclosures, A for the coupled consumer"*) | disclosures (a) to (d) of the `d47de23c8` row unruled; `features/steps/acceptance_recovery_steps.py`, edited in `f88ea9a7e`, outside OBPI-0.35.0-17's Allowed Paths | brief 17: the file is in the frontmatter `allowlist:` and § Allowed Paths as a coupled consumer (DO IT RIGHT 1a), with a Change Log entry citing the ruling; brief 20: a Change Log entry accepting (a) to (d) as recorded; the ruling is an insight record (scope `harbor-pilotage-h9`). Attestation of 17 and 20 still awaits the operator's words | this commit | `gz obpi brief-drift OBPI-0.35.0-17` and `OBPI-0.35.0-20` both clean (all five deltas 0) after the edits; `gz obpi brief-drift --apply` adds only `src/` modules, so the amendment was hand-made under safe mode's brief-ceremony suspension |
+| 2026-10-17 | the ladder restored to canon, and features made first-class requirement areas (operator, verbatim *"A, features are first-class requirement areas (will this bdd align?)"*, after *"I thought this was all settled?"*) | § Entry and D1 gave the ADR the role of landing contracts and named no engineering order, against the 2026-10-05 ladder ruling and Q-18; executive decision 1 made the REQ's category navigation metadata | § Entry and D1 carry the 2026-10-05 ladder: catalog governs REQs (Q-17, Magna Carta §3 of 2026-09-25), the engineering order lands contracts for one bounded advance, ADR for architecture decisions only; WP-4 shape 1 and executive decision 1 name one first-class feature area per entry, held in a registry beside the catalog, ids unchanged on a move | this commit | insight records `harbor-pilotage-wp4` and `campaign-ladder-drift`; the doctrine page's standard chart is amended in the same commit |
