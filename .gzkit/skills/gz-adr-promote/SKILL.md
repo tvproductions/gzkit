@@ -1,13 +1,13 @@
 ---
 name: gz-adr-promote
 persona: main-session
-description: Promote a pool ADR into canonical ADR package structure. Use when moving a backlog item (ADR-pool.*) into an active, versioned ADR.
+description: Use to promote a pool ADR (ADR-pool.*) into an active, versioned ADR package.
 category: adr-lifecycle
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-29
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "1.8.1"
+  skill-version: "1.8.2"
 model: sonnet
 ---
 

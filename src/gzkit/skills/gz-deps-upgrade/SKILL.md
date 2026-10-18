@@ -1,14 +1,14 @@
 ---
 name: gz-deps-upgrade
 persona: main-session
-description: Move the toolchain and dependencies to current upstream in one pass: uv itself, global uv tools, the Python 3.13.x runtime, `pyproject.toml` pins and `uv.lock`. Use when the operator asks to update or upgrade deps, Python, uv, pyproject or the lockfile.
+description: Use when the operator asks to upgrade deps, Python, uv, pyproject or the lockfile; moves them all to upstream at once.
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-11
+last_reviewed: 2026-10-17
 model: haiku
 metadata:
-  skill-version: "1.3.1"
+  skill-version: "1.3.2"
 ---
 
 # gz deps-upgrade

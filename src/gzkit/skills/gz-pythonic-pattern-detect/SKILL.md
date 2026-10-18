@@ -1,13 +1,13 @@
 ---
 name: gz-pythonic-pattern-detect
 persona: main-session
-description: Surface Pythonic-design-pattern refactor candidates after ADR closeout. Use when ruff/ty are zeroed and complexity gates are green but the code shape still looks Java-flavored — Strategy classes that should be functions, Singletons that should be module-level constants, Visitor ladders that should be `match`. Wields the `pythonic-design-pattern-detection` chore. Pair with `gz-pythonic-pattern-apply` for the evidence side.
+description: Use when gates are green but code still looks Java-flavored, to surface Pythonic refactor candidates.
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-11
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "1.2.0"
+  skill-version: "1.2.1"
 gz_command: chores run pythonic-design-pattern-detection
 model: sonnet
 ---

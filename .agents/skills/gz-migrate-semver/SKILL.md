@@ -1,12 +1,12 @@
 ---
 name: gz-migrate-semver
-description: Record semver identifier migration events. Use when applying canonical ADR or OBPI renaming migrations.
+description: Use to record ADR or OBPI semver renaming migration events.
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-26
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "0.2.0"
+  skill-version: "0.2.1"
 model: haiku
 ---
 

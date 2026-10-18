@@ -1,13 +1,13 @@
 ---
 name: ghi-author
 persona: main-session
-description: Author a GitHub Issue (GHI) when a finding needs an independent work order or disposition, or the operator explicitly requests an issue. Corrections to an active, operator-initiated OBPI stay in that OBPI's change log.
+description: Use to file a GitHub issue when a finding needs its own work order or the operator asks; OBPI corrections stay in its change log.
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-05
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "1.11.0"
+  skill-version: "1.11.1"
 model: sonnet
 ---
 

@@ -1,12 +1,12 @@
 ---
 name: gz-cli-audit
-description: Audit CLI documentation coverage and headings. Use when verifying command manpage and index parity.
+description: Use to verify every CLI command has its manpage, headings and index entry.
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-26
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "0.2.0"
+  skill-version: "0.2.1"
 model: haiku
 ---
 

@@ -1,12 +1,12 @@
 ---
 name: gz-validate
-description: Validate governance artifacts against schema rules. Use when checking manifest, ledger, document, or surface validity.
+description: Use to check manifest, ledger, document or surface validity against schema rules.
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-26
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "0.2.0"
+  skill-version: "0.2.1"
 model: haiku
 ---
 

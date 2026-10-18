@@ -1,12 +1,12 @@
 ---
 name: gz-obpi-brief-drift
-description: Reconcile an OBPI brief against current project state and optionally write operator-attested amendments. Use when a brief's allowlist, discovery checklist, verification verbs, REQ count, or citation tuples may have drifted from reality.
+description: Use when an OBPI brief may have drifted from the project; reconciles it and can write attested amendments.
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-27
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "0.8.0"
+  skill-version: "0.8.1"
 model: haiku
 gz_command: gz obpi brief-drift
 ---

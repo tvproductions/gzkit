@@ -1,12 +1,12 @@
 ---
 name: gz-state
-description: Query artifact relationships and readiness state. Use when reporting lineage or artifact graph status.
+description: Use to report artifact lineage, relationships or readiness.
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-12
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "0.3.1"
+  skill-version: "0.3.2"
 model: haiku
 ---
 

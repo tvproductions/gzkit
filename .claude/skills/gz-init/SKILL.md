@@ -1,13 +1,13 @@
 ---
 name: gz-init
-description: Initialize gzkit governance scaffolding and project skeleton for a repository. Use when bootstrapping, reinitializing, or repairing project governance surfaces.
+description: Use to bootstrap, reinitialize or repair a repository's gzkit governance scaffolding.
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-27
+last_reviewed: 2026-10-17
 gz_command: init
 metadata:
-  skill-version: "6.4.0"
+  skill-version: "6.4.1"
 model: sonnet
 ---
 

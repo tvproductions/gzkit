@@ -1,13 +1,13 @@
 ---
 name: gz-obpi-pipeline
 persona: pipeline-orchestrator
-description: Post-plan OBPI execution pipeline — implement, verify, present evidence, and sync after a plan is approved. Use after exiting plan mode for an OBPI, when the user says "execute OBPI-X.Y.Z-NN", or to enforce governance on already-implemented work via --from=verify or --from=ceremony.
+description: Use after a plan is approved, or when the operator says "execute OBPI-X.Y.Z-NN", to implement, verify and sync an OBPI.
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-15
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "6.69.0"
+  skill-version: "6.69.1"
 model: sonnet
 ---
 

@@ -1,11 +1,11 @@
 ---
 name: gz-adr-audit
 persona: pipeline-orchestrator
-description: Gate-5 audit templates and procedure for ADR verification. GovZero v6 skill.
+description: Use for an ADR's Gate-5 audit; provides the audit templates and procedure.
 category: adr-audit
 compatibility: GovZero v6 framework; provides audit procedure for COMPLETED→VALIDATED ADR transition
 metadata:
-  skill-version: "6.15.0"
+  skill-version: "6.15.1"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -16,7 +16,7 @@ gz_command: audit
 invocation: uv run gz audit <adr-id>
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-18
+last_reviewed: 2026-10-17
 model: opus
 ---
 

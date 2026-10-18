@@ -1,12 +1,12 @@
 ---
 name: gz-constitute
-description: Create constitution artifacts. Use when governance constitutions must be created or refreshed.
+description: Use to create or refresh governance constitution artifacts.
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-27
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "0.3.0"
+  skill-version: "0.3.1"
 model: opus
 ---
 

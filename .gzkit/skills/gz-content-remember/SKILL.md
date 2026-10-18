@@ -1,12 +1,12 @@
 ---
 name: gz-content-remember
-description: Capture an addressed entry into a surface's append-only corpus via gz content remember, never editing a rendered surface. Use when an operator says "remember X" for a control surface (AGENTS.md, CLAUDE.md) or an agent course-correction should persist to the corpus source of truth.
+description: Use when the operator says "remember X" for a control surface; captures the entry into its corpus, never the rendered file.
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-08-21
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "0.2.0"
+  skill-version: "0.2.1"
 model: haiku
 gz_command: gz content remember
 ---

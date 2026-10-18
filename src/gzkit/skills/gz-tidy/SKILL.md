@@ -1,14 +1,14 @@
 ---
 name: gz-tidy
 persona: main-session
-description: Report governance maintenance findings, exiting 3 on a breach, and regenerate control surfaces with --fix. Use for repository hygiene and governance maintenance operations.
+description: Use for repository hygiene; reports governance maintenance findings and regenerates surfaces with --fix.
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-28
+last_reviewed: 2026-10-17
 model: haiku
 metadata:
-  skill-version: "1.3.0"
+  skill-version: "1.3.1"
 ---
 
 # gz tidy

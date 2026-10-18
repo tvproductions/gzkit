@@ -1,12 +1,12 @@
 ---
 name: gz-plan
-description: Create ADR artifacts for planned change. Use when recording architecture intent and lane-specific scope.
+description: Use to create an ADR, a pool ADR included, recording architecture intent and lane scope.
 category: adr-lifecycle
 metadata:
-  skill-version: "1.8.0"
+  skill-version: "1.8.1"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-04
+last_reviewed: 2026-10-17
 model: opus
 ---
 

@@ -1,13 +1,13 @@
 ---
 name: gz-pythonic-pattern-apply
 persona: main-session
-description: Capture before/after evidence with mechanical-delta proof when a Pythonic-pattern rewrite is applied. Use after `gz-pythonic-pattern-detect` flagged a candidate marked `applied` — the rewrite must be backed by a semantics-pinning test, a TDD GREEN receipt, and non-regressing xenon/radon deltas, written to `.gzkit/chores/pythonic-design-pattern-application/proofs/`.
+description: Use after gz-pythonic-pattern-detect marks a candidate applied, to capture the rewrite's before/after proof.
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-19
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "1.1.0"
+  skill-version: "1.1.1"
 gz_command: chores run pythonic-design-pattern-application
 model: sonnet
 ---

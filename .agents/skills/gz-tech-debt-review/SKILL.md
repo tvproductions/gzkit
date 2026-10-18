@@ -1,13 +1,13 @@
 ---
 name: gz-tech-debt-review
 persona: quality-reviewer
-description: Survey scoped technical debt across existing gzkit probes and render a prioritized, line-grounded report with route recommendations. Use for tech-debt review requests across touched files, paths, ADRs, OBPIs, or the whole repo. Produces diagnosis only; findings route to chores, in-flight fixes, or at most one GHI per run, never directly to OBPI.
+description: Use for a tech-debt review of files, paths, ADRs, OBPIs or the repo; produces a prioritized report.
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-18
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "1.4.0"
+  skill-version: "1.4.1"
 model: sonnet
 ---
 

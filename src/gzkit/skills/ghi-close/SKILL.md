@@ -1,13 +1,13 @@
 ---
 name: ghi-close
 persona: main-session
-description: Do the work described in a GHI, then close it with verifiable evidence. Use to execute and resolve an open defect, enhancement, or investigation — the skill performs the fix, verifies artifacts, and closes the issue in one sweep.
+description: Use to do the work a GHI describes, verify it and close the issue with evidence in one sweep.
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-05
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "2.12.0"
+  skill-version: "2.12.1"
 model: opus
 ---
 

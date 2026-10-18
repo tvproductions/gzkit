@@ -1,16 +1,16 @@
 ---
 name: airlineops-parity-scan
 persona: main-session
-description: Run a repeatable governance parity scan that mines ../airlineops, gzkit's genesis and first adopter, for process habits gzkit lacks. gzkit leads; AirlineOps adopts.
+description: Use to mine ../airlineops for governance habits gzkit lacks; produces a parity scan report (gzkit leads, AirlineOps adopts).
 category: cross-repository
 # Withheld from delivery: this scan's subject is `../airlineops`, a sibling
 # checkout only the gzkit repository has (GHI #915).
 project_local: true
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-11
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "1.3.0"
+  skill-version: "1.3.1"
 model: haiku
 ---
 

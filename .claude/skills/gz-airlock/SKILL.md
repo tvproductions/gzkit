@@ -1,21 +1,15 @@
 ---
 name: gz-airlock
 persona: main-session
-description: >
-  Cross the airlock membrane — the entry/exit gate every unit of work passes
-  through (ADR-0.33.0). Use to inspect a target's seam-map before touching it
-  (`gz airlock in`), account for what a transit disturbed (`gz airlock out`),
-  or make a governed ad-hoc reconnaissance entry with light repair at most
-  (`gz permitted-entry`). Diagnostic-only for now — a staged posture, not the
-  declared end state; never writes L1 canon.
+description: Use to read a target's seam map before touching it (gz airlock in), account for what a transit disturbed (gz airlock out), or enter ad hoc (gz permitted-entry).
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-24
+last_reviewed: 2026-10-17
 model: haiku
 gz_command: airlock
 metadata:
-  skill-version: "1.2.0"
+  skill-version: "1.2.1"
 ---
 
 # gz airlock

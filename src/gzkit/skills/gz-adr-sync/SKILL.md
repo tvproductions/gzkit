@@ -1,17 +1,17 @@
 ---
 name: gz-adr-sync
-description: End-to-end ADR governance sync — discover @covers evidence, reconcile OBPI ledger state, and register ADR files. Accepts an optional ADR-ID for scoped reconciliation.
+description: Use to reconcile an ADR end to end by discovering @covers evidence, reconciling OBPI ledger state and registering files.
 category: adr-operations
 compatibility: GovZero v6 framework
 metadata:
-  skill-version: "7.1.2"
+  skill-version: "7.1.3"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
 gz_command: register-adrs
 invocation: uv run gz register-adrs
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-08-18
+last_reviewed: 2026-10-17
 model: haiku
 ---
 

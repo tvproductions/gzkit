@@ -1,14 +1,14 @@
 ---
 name: gz-how
 persona: main-session
-description: Answer "how do I …?" and "what can I …?" about gzkit by placing the question in one of its flows — which skill to run, which look-alike not to confuse it with, which steps only the operator may take, and what comes next. Use when the operator asks how to do something or what is possible, when unsure which gzkit skill or flow applies, or when choosing between two skills that look alike.
+description: Use when the operator asks "how do I …?" or "what can I …?", or when unsure which skill applies or two look alike.
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-28
+last_reviewed: 2026-10-17
 model: sonnet
 metadata:
-  skill-version: "1.0.1"
+  skill-version: "1.0.2"
 ---
 
 # gz-how

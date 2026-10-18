@@ -1,18 +1,18 @@
 ---
 name: gz-obpi-sync
 persona: main-session
-description: OBPI brief reconciliation — audit briefs against evidence, reconcile brief and ADR table from the ledger, and report what only the operator can resolve.
+description: Use to reconcile OBPI briefs and the ADR table against the ledger and report what only the operator can resolve.
 category: obpi-pipeline
 compatibility: GovZero v6 framework with OBPI briefs
 metadata:
-  skill-version: "3.4.0"
+  skill-version: "3.4.1"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   skill-type: "orchestrator"
   govzero_layer: "Layer 1 - Evidence Gathering"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-19
+last_reviewed: 2026-10-17
 model: sonnet
 ---
 

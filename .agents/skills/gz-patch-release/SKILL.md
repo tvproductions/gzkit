@@ -1,11 +1,11 @@
 ---
 name: gz-patch-release
 persona: main-session
-description: "Orchestrate the GHI-driven patch release ceremony, and the notes and publication of a minor release handed over by gz closeout: draft narrative release notes, operator approval, RELEASE_NOTES update, git-sync, and GitHub release."
+description: Use to run a GHI-driven patch release, or to publish a minor release handed over by gz closeout.
 category: adr-audit
 compatibility: GovZero v6 framework; provides ceremony walkthrough for GHI-driven patch releases
 metadata:
-  skill-version: "1.14.0"
+  skill-version: "1.14.1"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/releases/patch-release.md, docs/design/adr/foundation/ADR-0.0.15-ghi-driven-patch-release-ceremony/ADR-0.0.15-ghi-driven-patch-release-ceremony.md"
@@ -13,7 +13,7 @@ metadata:
   govzero_layer: "Layer 2 - Ledger Consumption"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-11
+last_reviewed: 2026-10-17
 model: sonnet
 ---
 

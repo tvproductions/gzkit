@@ -1,12 +1,12 @@
 ---
 name: gz-status
-description: Report project workflow fronts alongside ADR lifecycle and gate status. Use for ordinary status inquiries, blockers, and next actions, or a focused governance status check.
+description: Use for status inquiries, blockers and next actions; reports workflow fronts with ADR lifecycle and gates.
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-04
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "1.7.0"
+  skill-version: "1.7.1"
 model: haiku
 ---
 

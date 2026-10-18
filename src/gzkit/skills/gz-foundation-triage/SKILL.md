@@ -1,15 +1,13 @@
 ---
 name: gz-foundation-triage
 persona: main-session
-description: Rank the in-flight foundation backlog by priority — cross-references
-  agent-insights.jsonl signal count, GHI occurrence count, and declared invariants;
-  flags port/adapter reclassification candidates; diagnosis only, ephemeral ranked report.
+description: Use to rank the in-flight foundation backlog by insight signal, GHI count and invariants.
 category: adr-lifecycle
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-11
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "1.1.0"
+  skill-version: "1.1.1"
 model: sonnet
 ---
 

@@ -1,13 +1,13 @@
 ---
 name: gz-agent-sync
 persona: main-session
-description: Synchronize generated control surfaces and skill mirrors. Use after skill or governance-surface updates.
+description: Use after a skill or governance-surface change to regenerate the control surfaces and skill mirrors.
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-27
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "1.3.0"
+  skill-version: "1.3.1"
 model: haiku
 ---
 

@@ -1,12 +1,12 @@
 ---
 name: gz-insights-remember
-description: Record a course-correction, defect, defect-resolution, or discovery insight via the governed gz insights remember verb. Use when an operator course-corrects in flight (AGENTS.md § Behavior Rules), an agent surfaces a defect/discovery, or a defect-resolution outcome needs recording — never hand-append a line to .gzkit/insights/agent-insights.jsonl.
+description: Use when the operator course-corrects or a defect, resolution or discovery needs recording through gz insights remember.
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-26
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "0.1.1"
+  skill-version: "0.1.2"
 model: haiku
 gz_command: gz insights remember
 ---

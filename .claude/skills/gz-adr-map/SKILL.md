@@ -1,10 +1,10 @@
 ---
 name: gz-adr-map
-description: Build ADR-to-artifact traceability using gz state and repository search.
+description: Use to trace an ADR to its artifacts with gz state and repository search.
 category: adr-operations
 compatibility: GovZero v6 framework; manual mapping workflow
 metadata:
-  skill-version: "1.2.2"
+  skill-version: "1.2.3"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero_layer: "Layer 1 - Evidence Gathering"
@@ -12,7 +12,7 @@ gz_command: state
 invocation: uv run gz state --json
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-08-02
+last_reviewed: 2026-10-17
 model: haiku
 ---
 

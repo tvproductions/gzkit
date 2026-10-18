@@ -1,12 +1,12 @@
 ---
 name: gz-advisor-qc
-description: Judge the information-retained-per-byte of a candidate rendition and record the verdict via gz content advise-rendition — advisory, never gating. Use after composing a candidate (gz content compose) and before operator attestation, to produce the advisor-QC receipt the operator cites in the corpus attestation.
+description: Use between gz content compose and corpus attestation to judge a candidate rendition and record its advisory QC receipt.
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-11
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "0.2.1"
+  skill-version: "0.2.2"
 model: sonnet
 gz_command: gz content advise-rendition
 ---

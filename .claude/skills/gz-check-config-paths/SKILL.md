@@ -1,12 +1,12 @@
 ---
 name: gz-check-config-paths
-description: Validate configured and manifest path coherence. Use when diagnosing control-surface or path drift.
+description: Use to diagnose control-surface or path drift between config and manifest.
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-27
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "0.2.1"
+  skill-version: "0.2.2"
 model: haiku
 ---
 

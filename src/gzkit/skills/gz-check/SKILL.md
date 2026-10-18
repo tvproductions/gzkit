@@ -1,14 +1,14 @@
 ---
 name: gz-check
 persona: main-session
-description: Run the per-change quality gate in one pass, or the full sweep with --full. Use for pre-merge or pre-attestation quality verification.
+description: Use for pre-merge or pre-attestation verification; runs the per-change gate, or the full sweep with --full.
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-11
+last_reviewed: 2026-10-17
 model: haiku
 metadata:
-  skill-version: "1.7.1"
+  skill-version: "1.7.2"
 ---
 
 # gz check

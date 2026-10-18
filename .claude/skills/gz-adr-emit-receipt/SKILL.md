@@ -1,12 +1,12 @@
 ---
 name: gz-adr-emit-receipt
-description: Emit ADR receipt events with scoped evidence payloads. Use when recording a completed, validated or closed ADR receipt event.
+description: Use to record a completed, validated or closed ADR receipt event with its evidence.
 category: adr-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-27
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "1.1.1"
+  skill-version: "1.1.2"
 model: haiku
 ---
 

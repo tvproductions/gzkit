@@ -1,14 +1,14 @@
 ---
 name: gz-justify
 persona: main-session
-description: Pre-execution reasoning walkthrough for a GHI, OBPI or draft. Use before implementation when direction is unsure, scope boundaries are ambiguous, or a `gz-adr-evaluate` score lands below 3.0. Renders an evidence-anchored scaffold to fill and attach.
+description: Use before implementing a GHI, OBPI or draft when direction or scope is unsure; renders a reasoning scaffold.
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: "2026-09-19"
+last_reviewed: 2026-10-17
 gz_command: justify
 metadata:
-  skill-version: "6.4.0"
+  skill-version: "6.4.1"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero_layer: "Layer 1 - Evidence Gathering"

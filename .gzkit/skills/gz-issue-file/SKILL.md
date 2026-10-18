@@ -1,13 +1,13 @@
 ---
 name: gz-issue-file
 persona: main-session
-description: File a defect or enhancement against gzkit from inside a consuming repository. Use when the finding is about the `gz` CLI, its schemas, validators, ledger events, or files under `.gzkit/**` or `src/gzkit/**`. Files at `tvproductions/gzkit` with a provenance trailer.
+description: Use from a consuming repository to file a gzkit defect or enhancement at tvproductions/gzkit.
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-19
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "1.0.3"
+  skill-version: "1.0.4"
   govzero-framework-version: "v6"
 model: sonnet
 ---

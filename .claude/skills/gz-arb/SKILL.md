@@ -1,15 +1,15 @@
 ---
 name: gz-arb
 persona: main-session
-description: Wrap QA commands in ARB receipts for attestation evidence. Use when producing Heavy-lane attestation evidence, diagnosing recurring lint patterns, or auditing QA compliance via receipts.
+description: Use to wrap QA commands in ARB receipts for attestation evidence or to audit lint patterns from receipts.
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-18
+last_reviewed: 2026-10-17
 model: haiku
 gz_command: arb advise
 metadata:
-  skill-version: "1.4.0"
+  skill-version: "1.4.1"
 revived_on: "2026-04-14"
 revived_under: OBPI-0.25.0-33
 revival_note: "ARB surface absorbed from airlineops/opsdev/arb under OBPI-0.25.0-33. The earlier retirement (2026-04-03, 'consolidated into gz-check') was itself drift — gz check never implemented ARB receipt emission, so the rule contract in .gzkit/rules/arb.md was referencing a nonexistent surface. Revival restores parity with the rule."

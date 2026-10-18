@@ -1,12 +1,12 @@
 ---
 name: gz-complexity-distill
-description: Run a complexity distillation pass against the exemplar corpus to refresh distilled-characteristics doctrine. Use when the operator says "run distillation", "refresh complexity corpus", or "distill complexity" — or when a cadence trigger below makes a pass due (annual calendar, advisor verdict-frequency drift > 25% from baseline, or operator judgment for a ground-breaking project). A pass is OBPI work the operator initiates.
+description: Use when the operator says "run distillation" or "refresh complexity corpus", or a distillation pass is due.
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-11
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "0.4.0"
+  skill-version: "0.4.1"
   govzero-framework-version: "v6"
   govzero_layer: "Layer 3 - File Sync"
 gz_command: complexity distill

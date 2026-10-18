@@ -1,14 +1,14 @@
 ---
 name: gz-context-diet
 persona: main-session
-description: Trim per-turn instruction load (AGENTS.md, CLAUDE.md, `.claude/rules/**`) by lifting narrative to `docs/governance/`. Use when the operator asks for a "diet" or "progressive disclosure" pass, or a per-turn surface has accreted rationale prose. Wraps the `instructions-files-diet` chore.
+description: Use when the operator asks for a "diet" or "progressive disclosure" pass on AGENTS.md, CLAUDE.md or the rules.
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-11
+last_reviewed: 2026-10-17
 gz_command: chores show instructions-files-diet
 metadata:
-  skill-version: "1.1.3"
+  skill-version: "1.1.4"
 model: sonnet
 ---
 

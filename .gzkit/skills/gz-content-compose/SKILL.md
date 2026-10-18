@@ -1,12 +1,12 @@
 ---
 name: gz-content-compose
-description: Validate and stage a candidate rendition from the corpus via gz content compose. Use when the agent has made compression decisions (drop/combine/rewrite of compressible corpus entries toward the declared setpoint) and wants the tool to validate invariant-floor compliance, compute byte evidence, write the candidate artifact, and emit a ledger event.
+description: Use after compression decisions on a corpus to validate and stage the candidate rendition with byte evidence.
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-25
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "1.1.0"
+  skill-version: "1.1.1"
 model: sonnet
 gz_command: gz content compose
 ---

@@ -1,12 +1,12 @@
 ---
 name: gz-prd
-description: Create product requirement artifacts. Use when defining or revising project-level intent before ADR planning.
+description: Use to define or revise project-level intent as a PRD before ADR planning.
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-27
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "0.3.0"
+  skill-version: "0.3.1"
 model: opus
 ---
 

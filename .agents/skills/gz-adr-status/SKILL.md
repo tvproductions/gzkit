@@ -1,10 +1,10 @@
 ---
 name: gz-adr-status
-description: Show the ADR table for summary requests, or show focused lifecycle and OBPI detail for one ADR.
+description: Use for the ADR table, or one ADR's lifecycle and OBPI detail.
 category: adr-lifecycle
 compatibility: GovZero v6 framework; uses gz CLI status surfaces
 metadata:
-  skill-version: "1.13.1"
+  skill-version: "1.13.2"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero_layer: "Layer 1 - Evidence Gathering"
@@ -12,7 +12,7 @@ gz_command: adr status
 invocation: uv run gz adr report | uv run gz adr status ADR-0.3.0
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-19
+last_reviewed: 2026-10-17
 model: haiku
 ---
 

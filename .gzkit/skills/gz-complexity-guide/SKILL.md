@@ -1,12 +1,12 @@
 ---
 name: gz-complexity-guide
-description: Preview authoring-time complexity hints before committing. Use when the operator says "authoring-time complexity hint", "complexity guide preview", "preview before commit", or "advise-band hints".
+description: Use when the operator asks for an authoring-time complexity hint or a complexity guide preview before commit.
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-26
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "0.2.2"
+  skill-version: "0.2.3"
   govzero-framework-version: "v6"
   govzero_layer: "Layer 3 - File Sync"
 gz_command: complexity guide

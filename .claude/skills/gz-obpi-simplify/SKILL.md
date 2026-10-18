@@ -1,13 +1,13 @@
 ---
 name: gz-obpi-simplify
 persona: quality-reviewer
-description: OBPI-scoped code review for reuse, quality, and efficiency. Resolves scope from the brief's Allowed Paths, reviews across three dimensions, and applies fixes. Use after implementation, before reconcile.
+description: Use after an OBPI's implementation, before reconcile, to review its code for reuse, quality and efficiency.
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-18
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "6.1.1"
+  skill-version: "6.1.2"
 model: sonnet
 ---
 

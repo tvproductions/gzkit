@@ -1,11 +1,11 @@
 ---
 name: gz-adr-closeout-ceremony
 persona: pipeline-orchestrator
-description: Execute the ADR closeout ceremony protocol for human attestation. GovZero v6 skill.
+description: Use to run an ADR's closeout ceremony through to the operator's attestation.
 category: adr-audit
 compatibility: GovZero v6 framework; provides runbook walkthrough for human ADR attestation
 metadata:
-  skill-version: "7.21.0"
+  skill-version: "7.21.1"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -13,7 +13,7 @@ metadata:
   govzero_layer: "Layer 2 - Ledger Consumption"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-11
+last_reviewed: 2026-10-17
 model: opus
 ---
 

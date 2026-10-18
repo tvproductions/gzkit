@@ -1,0 +1,62 @@
+- airlineops-parity-scan: Use to mine ../airlineops for governance habits gzkit lacks; produces a parity scan report (gzkit leads, AirlineOps adopts).
+- ghi-author: Use to file a GitHub issue when a finding needs its own work order or the operator asks; OBPI corrections stay in its change log.
+- ghi-close: Use to do the work a GHI describes, verify it and close the issue with evidence in one sweep.
+- ghi-triage: Use to triage the open GHI queue before planning or choosing what to pull; produces a ranked deliverable.
+- gz-adr-audit: Use for an ADR's Gate-5 audit; provides the audit templates and procedure.
+- gz-adr-closeout-ceremony: Use to run an ADR's closeout ceremony through to the operator's attestation.
+- gz-adr-create: Use to create and book an ADR with its OBPI briefs under five-gate compliance.
+- gz-adr-emit-receipt: Use to record a completed, validated or closed ADR receipt event with its evidence.
+- gz-adr-evaluate: Use after authoring an ADR or OBPI to score its quality and optionally run the red-team challenges.
+- gz-adr-map: Use to trace an ADR to its artifacts with gz state and repository search.
+- gz-adr-promote: Use to promote a pool ADR (ADR-pool.*) into an active, versioned ADR package.
+- gz-adr-status: Use for the ADR table, or one ADR's lifecycle and OBPI detail.
+- gz-adr-sync: Use to reconcile an ADR end to end by discovering @covers evidence, reconciling OBPI ledger state and registering files.
+- gz-advisor-qc: Use between gz content compose and corpus attestation to judge a candidate rendition and record its advisory QC receipt.
+- gz-agent-sync: Use after a skill or governance-surface change to regenerate the control surfaces and skill mirrors.
+- gz-airlock: Use to read a target's seam map before touching it (gz airlock in), account for what a transit disturbed (gz airlock out), or enter ad hoc (gz permitted-entry).
+- gz-arb: Use to wrap QA commands in ARB receipts for attestation evidence or to audit lint patterns from receipts.
+- gz-check: Use for pre-merge or pre-attestation verification; runs the per-change gate, or the full sweep with --full.
+- gz-check-config-paths: Use to diagnose control-surface or path drift between config and manifest.
+- gz-chore-runner: Use to run a chore from the registry end to end (show, plan, advise, execute, validate).
+- gz-cli-audit: Use to verify every CLI command has its manpage, headings and index entry.
+- gz-competitor-radar: Use for the monthly competitor-discovery radar over spec-driven and agent-workflow tools.
+- gz-complexity-advisor: Use when the operator says "preview complexity advisor", "complexity diagnosis" or "intrinsic complexity attestation".
+- gz-complexity-distill: Use when the operator says "run distillation" or "refresh complexity corpus", or a distillation pass is due.
+- gz-complexity-guide: Use when the operator asks for an authoring-time complexity hint or a complexity guide preview before commit.
+- gz-constitute: Use to create or refresh governance constitution artifacts.
+- gz-content-compose: Use after compression decisions on a corpus to validate and stage the candidate rendition with byte evidence.
+- gz-content-remember: Use when the operator says "remember X" for a control surface; captures the entry into its corpus, never the rendered file.
+- gz-context-diet: Use when the operator asks for a "diet" or "progressive disclosure" pass on AGENTS.md, CLAUDE.md or the rules.
+- gz-deps-upgrade: Use when the operator asks to upgrade deps, Python, uv, pyproject or the lockfile; moves them all to upstream at once.
+- gz-design: Use for "design X", "let's design", "brainstorm X" or "I want to build X"; a dialogue that produces ADR artifacts.
+- gz-flighttest: Use when the operator says "fly sortie S<N>" or "run a flight test"; flies one sortie with a human Go/No-Go.
+- gz-foundation-triage: Use to rank the in-flight foundation backlog by insight signal, GHI count and invariants.
+- gz-how: Use when the operator asks "how do I …?" or "what can I …?", or when unsure which skill applies or two look alike.
+- gz-implement: Use to run Gate 2 for an ADR and record the result.
+- gz-init: Use to bootstrap, reinitialize or repair a repository's gzkit governance scaffolding.
+- gz-insights-remember: Use when the operator course-corrects or a defect, resolution or discovery needs recording through gz insights remember.
+- gz-intent-trace: Use when asking whether what shipped fulfils what was decided, or a capability "exists but doesn't really work".
+- gz-issue-file: Use from a consuming repository to file a gzkit defect or enhancement at tvproductions/gzkit.
+- gz-justify: Use before implementing a GHI, OBPI or draft when direction or scope is unsure; renders a reasoning scaffold.
+- gz-migrate-semver: Use to record ADR or OBPI semver renaming migration events.
+- gz-mx: Use to open or exit the MX hangar or safe mode, or to check which mode is open.
+- gz-obpi-brief-drift: Use when an OBPI brief may have drifted from the project; reconciles it and can write attested amendments.
+- gz-obpi-lock: Use to claim, release or list OBPI work locks.
+- gz-obpi-pipeline: Use after a plan is approved, or when the operator says "execute OBPI-X.Y.Z-NN", to implement, verify and sync an OBPI.
+- gz-obpi-simplify: Use after an OBPI's implementation, before reconcile, to review its code for reuse, quality and efficiency.
+- gz-obpi-specify: Use to decompose an ADR item into an authored OBPI brief.
+- gz-obpi-sync: Use to reconcile OBPI briefs and the ADR table against the ledger and report what only the operator can resolve.
+- gz-ontology: Use to sweep the governance shape, trace a node's lineage, diff against the last sweep, or read its blast radius.
+- gz-patch-release: Use to run a GHI-driven patch release, or to publish a minor release handed over by gz closeout.
+- gz-plan: Use to create an ADR, a pool ADR included, recording architecture intent and lane scope.
+- gz-plan-audit: Use when exiting plan mode or before implementing to verify ADR intent, OBPI scope and plan agree.
+- gz-prd: Use to define or revise project-level intent as a PRD before ADR planning.
+- gz-pythonic-pattern-apply: Use after gz-pythonic-pattern-detect marks a candidate applied, to capture the rewrite's before/after proof.
+- gz-pythonic-pattern-detect: Use when gates are green but code still looks Java-flavored, to surface Pythonic refactor candidates.
+- gz-session-handoff: Use to create or resume a session handoff document.
+- gz-skill-review: Use to review a skill by re-verifying its claims against the code it wields, then correct it and move last_reviewed.
+- gz-state: Use to report artifact lineage, relationships or readiness.
+- gz-status: Use for status inquiries, blockers and next actions; reports workflow fronts with ADR lifecycle and gates.
+- gz-tech-debt-review: Use for a tech-debt review of files, paths, ADRs, OBPIs or the repo; produces a prioritized report.
+- gz-tidy: Use for repository hygiene; reports governance maintenance findings and regenerates surfaces with --fix.
+- gz-validate: Use to check manifest, ledger, document or surface validity against schema rules.

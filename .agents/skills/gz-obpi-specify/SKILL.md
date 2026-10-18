@@ -1,13 +1,13 @@
 ---
 name: gz-obpi-specify
 persona: main-session
-description: Create and semantically author OBPI briefs linked to parent ADR items. Use when decomposing implementation into OBPI increments.
+description: Use to decompose an ADR item into an authored OBPI brief.
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-11
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "1.9.3"
+  skill-version: "1.9.4"
 model: opus
 ---
 

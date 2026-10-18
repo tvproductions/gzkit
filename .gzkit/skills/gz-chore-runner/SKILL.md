@@ -1,13 +1,13 @@
 ---
 name: gz-chore-runner
 persona: main-session
-description: Run a gzkit chore end-to-end (show, plan, advise, execute, validate). Use when executing scheduled maintenance, refactoring, or code quality work items from the chores registry.
+description: Use to run a chore from the registry end to end (show, plan, advise, execute, validate).
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-11
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "1.5.4"
+  skill-version: "1.5.5"
 model: sonnet
 ---
 

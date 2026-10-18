@@ -1,14 +1,14 @@
 ---
 name: gz-design
 persona: main-session
-description: Collaborative design dialogue that produces GovZero ADR artifacts. Use when exploring a new feature, capability, or architectural change before implementation — replaces superpowers brainstorming for this project. Triggers on "design X", "let's design", "brainstorm X", "I want to build X", "gz-design".
+description: Use for "design X", "let's design", "brainstorm X" or "I want to build X"; a dialogue that produces ADR artifacts.
 category: adr-lifecycle
 metadata:
-  skill-version: "1.9.0"
+  skill-version: "1.9.1"
   govzero-framework-version: "v6"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-04
+last_reviewed: 2026-10-17
 model: opus
 ---
 

@@ -1,13 +1,13 @@
 ---
 name: ghi-triage
 persona: main-session
-description: Triage every open GHI — read each body, classify severity, and produce a deterministic rank-ordered deliverable. The bundled script handles fetch + routing + final rendering; the agent does the body-reading judgment pass between them. Use when reviewing the open-issue queue, before a planning session, or when deciding what to actually pull next.
+description: Use to triage the open GHI queue before planning or choosing what to pull; produces a ranked deliverable.
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-27
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "5.4.0"
+  skill-version: "5.4.1"
 model: sonnet
 ---
 

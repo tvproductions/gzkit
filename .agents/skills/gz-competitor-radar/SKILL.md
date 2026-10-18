@@ -1,6 +1,6 @@
 ---
 name: gz-competitor-radar
-description: Run a monthly B+ competitor-discovery radar for spec-driven and agent-workflow tools, render JSON-governed reports, grill suggested gzkit moves, and route approved opportunities without unattended governance mutation.
+description: Use for the monthly competitor-discovery radar over spec-driven and agent-workflow tools.
 compatibility: Project-local skill contract.
 # Withheld from delivery: this radar judges candidates by whether they name a
 # gzkit-relevant strength and recommends gzkit governance moves, and the wheel
@@ -8,13 +8,13 @@ compatibility: Project-local skill contract.
 project_local: true
 category: agent-operations
 metadata:
-  skill-version: "1.1.0"
+  skill-version: "1.1.1"
   govzero-framework-version: "v6"
   govzero-author: "gzkit-governance"
   govzero_layer: "Layer 1 - Evidence Gathering"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-26
+last_reviewed: 2026-10-17
 model: opus
 ---
 

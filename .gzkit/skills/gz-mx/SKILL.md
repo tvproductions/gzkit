@@ -1,11 +1,7 @@
 ---
 name: gz-mx
 persona: main-session
-description: >
-  Enter and exit the MX Maintenance Hangar or safe mode —
-  operator's interface to gz mx. Use when opening the hangar for governance repair,
-  entering safe mode under a written contract, checking which mode is open, or
-  exiting through the hard gate. Operator operates the skill; the skill invokes gz mx.
+description: Use to open or exit the MX hangar or safe mode, or to check which mode is open.
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
@@ -13,7 +9,7 @@ last_reviewed: 2026-10-17
 model: haiku
 gz_command: mx
 metadata:
-  skill-version: "1.5.0"
+  skill-version: "1.5.1"
 ---
 
 # gz mx

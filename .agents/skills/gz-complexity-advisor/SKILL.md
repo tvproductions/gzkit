@@ -1,12 +1,12 @@
 ---
 name: gz-complexity-advisor
-description: Preview complexity advisor diagnosis, understand auto-chain context, or check intrinsic complexity attestation guidance. Use when the operator says "preview complexity advisor", "complexity diagnosis", "advisor recommendation", "what does the advisor say", or "intrinsic complexity attestation".
+description: Use when the operator says "preview complexity advisor", "complexity diagnosis" or "intrinsic complexity attestation".
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-26
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "0.2.3"
+  skill-version: "0.2.4"
   govzero-framework-version: "v6"
   govzero_layer: "Layer 3 - File Sync"
 gz_command: complexity advise

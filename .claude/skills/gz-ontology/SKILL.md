@@ -1,12 +1,12 @@
 ---
 name: gz-ontology
-description: Image the governance shape with the read-only ontology sonar. Use to sweep the current structural shape, trace a node's lineage, diff versus the last sweep (the airlock re-sense gate), or read a node's downstream blast-radius before reasoning about lineage.
+description: Use to sweep the governance shape, trace a node's lineage, diff against the last sweep, or read its blast radius.
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-26
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "0.1.1"
+  skill-version: "0.1.2"
 model: haiku
 ---
 

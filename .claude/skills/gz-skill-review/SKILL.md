@@ -1,14 +1,14 @@
 ---
 name: gz-skill-review
 persona: main-session
-description: Review a skill by re-verifying every claim it makes against the code it wields, then correct it and move last_reviewed. Use when the operator asks to review a skill, when the skill audit warns a review is ageing or stale, or when a skill's command changed under it.
+description: Use to review a skill by re-verifying its claims against the code it wields, then correct it and move last_reviewed.
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-26
+last_reviewed: 2026-10-17
 model: sonnet
 metadata:
-  skill-version: "1.0.0"
+  skill-version: "1.0.1"
 ---
 
 # gz skill-review

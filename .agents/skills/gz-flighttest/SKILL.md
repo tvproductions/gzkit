@@ -1,13 +1,13 @@
 ---
 name: gz-flighttest
 persona: flight-test-engineer
-description: Fly one flight-test sortie that proves a gzkit workflow end-to-end against a target substrate. Use when the operator says "fly sortie S<N>", "run a flight test" or "prove gzkit against <target>". One sortie per run, with a human Go/No-Go.
+description: Use when the operator says "fly sortie S<N>" or "run a flight test"; flies one sortie with a human Go/No-Go.
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-18
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "0.1.1"
+  skill-version: "0.1.2"
 model: sonnet
 ---
 

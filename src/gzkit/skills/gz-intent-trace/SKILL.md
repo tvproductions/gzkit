@@ -1,13 +1,13 @@
 ---
 name: gz-intent-trace
 persona: spec-reviewer
-description: Trace sampled ADRs from declared intent to shipped surface and route each gap as a correction under its owning ADR. Use when asking whether what shipped fulfils what was decided, or the operator says a capability "exists but doesn't really work". Diagnosis and routing only.
+description: Use when asking whether what shipped fulfils what was decided, or a capability "exists but doesn't really work".
 category: adr-audit
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-18
+last_reviewed: 2026-10-17
 metadata:
-  skill-version: "1.0.2"
+  skill-version: "1.0.3"
 model: sonnet
 ---
 
