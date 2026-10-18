@@ -186,3 +186,14 @@ class TestCoverageScopedToBriefUnit(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestDeriveAdrIdFromSlugBearingObpi(unittest.TestCase):
+    """The parent ADR is read from the semver triplet, never the last dash (GHI #622 class)."""
+
+    def test_full_and_short_obpi_ids_derive_the_same_adr(self) -> None:
+        from gzkit.commands.obpi_audit_cmd import _derive_adr_id
+
+        self.assertEqual(_derive_adr_id("OBPI-0.28.0-01-context-core"), "ADR-0.28.0")
+        self.assertEqual(_derive_adr_id("OBPI-0.28.0-01"), "ADR-0.28.0")
+        self.assertIsNone(_derive_adr_id("ADR-0.28.0"))

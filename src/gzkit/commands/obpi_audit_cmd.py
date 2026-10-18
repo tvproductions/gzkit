@@ -9,6 +9,7 @@ from pathlib import Path
 
 from gzkit.commands.common import console
 from gzkit.governance.brief_path_validity import extract_allowed_paths
+from gzkit.lock_manager import _adr_id_from_obpi
 
 
 def obpi_audit_cmd(obpi_id: str | None, adr_id: str | None, as_json: bool) -> None:
@@ -194,12 +195,8 @@ def _print_result(result: dict) -> None:
 
 
 def _derive_adr_id(obpi_id: str) -> str | None:
-    """Derive ADR-X.Y.Z from OBPI-X.Y.Z-NN."""
-    if not obpi_id.startswith("OBPI-"):
-        return None
-    suffix = obpi_id[5:]
-    parts = suffix.rsplit("-", 1)
-    return f"ADR-{parts[0]}" if len(parts) == 2 else None
+    """Derive ADR-X.Y.Z from OBPI-X.Y.Z-NN[-slug], anchored on the semver (GHI #622)."""
+    return _adr_id_from_obpi(obpi_id)
 
 
 def _find_adr_dir(project_root: Path, adr_id: str) -> Path | None:
