@@ -31,7 +31,6 @@
     "src/gzkit/insights/correction_mining.py::DEFAULT_RECURRENCE_THRESHOLD",
     "src/gzkit/insights/correction_mining.py::QUOTE_MAX_CHARS",
     "src/gzkit/insights/correction_mining.py::RUN_LOG_MAX_BYTES",
-    "src/gzkit/insights/failure_classes.py::DEFAULT_MIN_DEPTH",
     "src/gzkit/justify/evidence.py::_DEFAULT_TIMEOUT_SECONDS",
     "src/gzkit/justify/evidence.py::_PER_SOURCE_SUBPROCESS_TIMEOUT",
     "src/gzkit/mutation_witness.py::_RUN_TIMEOUT_S",

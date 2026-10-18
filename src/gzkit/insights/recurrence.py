@@ -22,13 +22,10 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from gzkit.registries import load_registry_field, registry_path
+from gzkit.registries import RegistryError, load_registry_field
 
 #: The registry holding the threshold (`data/recurrence_threshold.json`).
 THRESHOLD_REGISTRY = "recurrence_threshold.json"
-
-#: Used only when a project carries no registry; a present, broken one raises.
-DEFAULT_MIN_OCCURRENCES = 3
 
 
 class RecurrenceVerdict(BaseModel):
@@ -46,14 +43,19 @@ class RecurrenceVerdict(BaseModel):
 
 
 def load_min_occurrences(project_root: Path) -> int:
-    """Return the recurrence threshold from the registry, or the default without one."""
-    if not registry_path(project_root, THRESHOLD_REGISTRY).is_file():
-        return DEFAULT_MIN_OCCURRENCES
-    return int(
-        load_registry_field(
-            project_root, THRESHOLD_REGISTRY, "min_occurrences", DEFAULT_MIN_OCCURRENCES
+    """Return the recurrence threshold from the registry.
+
+    The value lives only in `data/recurrence_threshold.json` (GHI #1066: no policy
+    constant in a module body). A missing, malformed or field-less registry
+    raises ``RegistryError``: defaulting past it would report a configured check
+    that was not one.
+    """
+    value = load_registry_field(project_root, THRESHOLD_REGISTRY, "min_occurrences")
+    if not isinstance(value, int) or isinstance(value, bool) or value < 1:
+        raise RegistryError(
+            f"{THRESHOLD_REGISTRY} must carry min_occurrences as a positive integer, got {value!r}"
         )
-    )
+    return value
 
 
 def check_recurrence(

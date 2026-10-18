@@ -37,6 +37,21 @@ _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 _RULE_PATH = _PROJECT_ROOT / ".gzkit" / "rules" / "complexity-doctrine.md"
 
 
+def _canonical_rule_version() -> str:
+    """Read the body-level rule-version marker from the canonical rule.
+
+    The tests pinned "0.4.0" at authoring, and every banner bump broke them
+    (2026-10-18); what the REQs require is that the marker, the block quote and
+    each mirror agree, so the version is read, never pinned.
+    """
+    match = re.search(
+        r"<!--\s*rule-version:\s*([0-9.]+)\s*-->", _RULE_PATH.read_text(encoding="utf-8")
+    )
+    if match is None:
+        raise AssertionError("canonical rule-version marker missing")
+    return match.group(1)
+
+
 class ComplexityDoctrineRuleAuthorship(unittest.TestCase):
     """Pin the rule file's authorship contract."""
 
@@ -62,15 +77,11 @@ class ComplexityDoctrineRuleAuthorship(unittest.TestCase):
     @covers("REQ-0.0.27-01-01")
     def test_rule_body_carries_version_marker_and_block_quote(self) -> None:
         _, body = _parse_canonical_frontmatter(_RULE_PATH)
-        self.assertIn(
-            "<!-- rule-version: 0.4.0 -->",
-            body,
-            "body must carry the canonical body-level rule-version HTML comment",
-        )
+        version = _canonical_rule_version()
         self.assertRegex(
             body,
-            r">\s+\*\*Rule version:\*\*\s+`0\.4\.0`",
-            "body must carry the visible rule-version block quote",
+            r">\s+\*\*Rule version:\*\*\s+`" + re.escape(version) + r"`",
+            "body must carry the visible rule-version block quote, agreeing with the marker",
         )
 
     @covers("REQ-0.0.27-01-02")
@@ -203,7 +214,7 @@ class ComplexityDoctrineCrossSurfaceBindings(unittest.TestCase):
                     f"vendor mirror missing: {mirror.relative_to(_PROJECT_ROOT).as_posix()}",
                 )
                 self.assertIn(
-                    "<!-- rule-version: 0.4.0 -->",
+                    f"<!-- rule-version: {_canonical_rule_version()} -->",
                     mirror.read_text(encoding="utf-8"),
                     "vendor mirror must carry the body-level rule-version marker",
                 )

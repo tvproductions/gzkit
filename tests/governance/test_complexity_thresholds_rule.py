@@ -65,7 +65,24 @@ _RULE_PATH = _PROJECT_ROOT / ".gzkit" / "rules" / "complexity-thresholds.md"
 _DATA_PATH = _PROJECT_ROOT / ".gzkit" / "rules" / "complexity-thresholds.json"
 _TRIGGER_VOCABULARY = ("block", "warn", "advise")
 _BOOTSTRAP_METRICS = ("radon_mi", "lizard_nesting_depth", "cohesion_lcom4")
-_RULE_VERSION = "0.5.0"
+
+
+def _canonical_rule_version() -> str:
+    """Read the body-level rule-version marker from the canonical rule.
+
+    The tests pinned "0.5.0" at authoring, and every banner bump broke them
+    (2026-10-18); what the REQs require is that the marker, the block quote and
+    each mirror agree, so the version is read, never pinned.
+    """
+    match = re.search(
+        r"<!--\s*rule-version:\s*([0-9.]+)\s*-->", _RULE_PATH.read_text(encoding="utf-8")
+    )
+    if match is None:
+        raise AssertionError("canonical rule-version marker missing")
+    return match.group(1)
+
+
+_RULE_VERSION = _canonical_rule_version()
 
 
 class ComplexityThresholdsRuleAuthorship(unittest.TestCase):

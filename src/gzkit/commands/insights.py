@@ -250,7 +250,8 @@ def recurrence(*, cites: list[str], as_json: bool) -> None:
     """Handle ``gz insights recurrence CITE...``: the maxim-13 recurrence check.
 
     Exit 0 when the citations reach the threshold with every pair a session lease
-    apart, 3 when they do not, 1 when a citation names no insight record or GHI.
+    apart, 3 when they do not, 1 when a citation names no insight record or GHI
+    or the threshold registry is missing or malformed.
     """
     from gzkit import lock_manager  # noqa: PLC0415
     from gzkit.cli.formatters import OutputFormatter  # noqa: PLC0415
@@ -261,6 +262,7 @@ def recurrence(*, cites: list[str], as_json: bool) -> None:
         check_recurrence,
         load_min_occurrences,
     )
+    from gzkit.registries import RegistryError  # noqa: PLC0415
 
     root = get_project_root()
     store = insight_lines_by_ts(root / DEFAULT_INSIGHTS_PATH)
@@ -272,11 +274,15 @@ def recurrence(*, cites: list[str], as_json: bool) -> None:
             sys.exit(1)
         resolved[found[0]] = found[1]
 
-    verdict = check_recurrence(
-        resolved,
-        min_occurrences=load_min_occurrences(root),
-        separation_hours=lock_manager.DEFAULT_LOCK_TTL_MINUTES / 60,
-    )
+    try:
+        verdict = check_recurrence(
+            resolved,
+            min_occurrences=load_min_occurrences(root),
+            separation_hours=lock_manager.DEFAULT_LOCK_TTL_MINUTES / 60,
+        )
+    except RegistryError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        sys.exit(1)
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
     if as_json:
         fmt.data(verdict.model_dump(mode="json"))

@@ -200,7 +200,7 @@ def delete_lock(project_root: Path, obpi_id: str) -> bool:
     return True
 
 
-def _adr_id_from_obpi(obpi_id: str) -> str | None:
+def adr_id_from_obpi(obpi_id: str) -> str | None:
     """Derive ``ADR-X.Y.Z`` from an ``OBPI-X.Y.Z-NN[-slug]`` identifier.
 
     Anchored on the semver triplet — never ``rsplit("-", 1)``, which mis-parses
@@ -227,7 +227,7 @@ def list_locks(project_root: Path, adr_filter: str | None = None) -> list[LockDa
         except (json.JSONDecodeError, OSError, TypeError, ValueError):
             continue
 
-        if adr_filter is not None and _adr_id_from_obpi(lock.obpi_id) != adr_filter:
+        if adr_filter is not None and adr_id_from_obpi(lock.obpi_id) != adr_filter:
             continue
 
         locks.append(lock)
@@ -273,7 +273,7 @@ def _write_reaping_exchange(project_root: Path, lock: LockData, reaper_agent: st
     # OBPI id into `adr_id`, a value `_ADR_ID_RE` rejects outright, so the reaping
     # register entry this function exists to guarantee could not itself validate.
     # `adr_id` is optional (GHI #709), so absence is now representable.
-    adr_id = _adr_id_from_obpi(lock.obpi_id)
+    adr_id = adr_id_from_obpi(lock.obpi_id)
     frontmatter = {
         "mode": "CREATE",
         "adr_id": adr_id,

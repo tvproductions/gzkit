@@ -70,6 +70,13 @@ def _remember(runner: CliRunner, summary: str) -> str:
     return json.loads(store.read_text(encoding="utf-8").splitlines()[-1])["ts"]
 
 
+def _registry(min_occurrences: int) -> None:
+    Path("data").mkdir(exist_ok=True)
+    Path("data/recurrence_threshold.json").write_text(
+        json.dumps({"min_occurrences": min_occurrences}), encoding="utf-8"
+    )
+
+
 def _rewrite_ts(old: str, new: datetime) -> str:
     store = Path(".gzkit") / "insights" / "agent-insights.jsonl"
     text = store.read_text(encoding="utf-8").replace(old, new.isoformat())
@@ -84,6 +91,7 @@ class TestInsightsRecurrenceCommand(unittest.TestCase):
         self._runner = CliRunner()
 
     def _three_insights(self, *hours: float) -> list[str]:
+        _registry(3)
         return [
             _rewrite_ts(_remember(self._runner, f"failure {i}"), _BASE + timedelta(hours=h))
             for i, h in enumerate(hours)
@@ -132,6 +140,25 @@ class TestInsightsRecurrenceCommand(unittest.TestCase):
             self.assertIn(cites[1], result.output)
             self.assertIn("inside one lease", result.output)
 
+    def test_a_missing_registry_exits_one_and_names_it(self) -> None:
+        with self._runner.isolated_filesystem():
+            cites = self._three_insights(0, 30, 60)
+            Path("data/recurrence_threshold.json").unlink()
+            result = self._runner.invoke(main, ["insights", "recurrence", *cites])
+            self.assertEqual(result.exit_code, 1, msg=result.output)
+            self.assertIn("recurrence_threshold.json", result.output)
+            # Reported by the verb, not caught as an unexpected crash by gz main.
+            self.assertNotIn("Unexpected error", result.output)
+
+    def test_a_non_positive_threshold_exits_one(self) -> None:
+        with self._runner.isolated_filesystem():
+            cites = self._three_insights(0, 30, 60)
+            _registry(0)
+            result = self._runner.invoke(main, ["insights", "recurrence", *cites])
+            self.assertEqual(result.exit_code, 1, msg=result.output)
+            self.assertIn("positive integer", result.output)
+            self.assertNotIn("Unexpected error", result.output)
+
     def test_a_ghi_citation_resolves_to_its_creation_time(self) -> None:
         with self._runner.isolated_filesystem():
             cites = self._three_insights(0, 30)
@@ -149,10 +176,7 @@ class TestInsightsRecurrenceCommand(unittest.TestCase):
     def test_the_threshold_is_read_from_the_registry(self) -> None:
         with self._runner.isolated_filesystem():
             cites = self._three_insights(0, 30)
-            Path("data").mkdir()
-            Path("data/recurrence_threshold.json").write_text(
-                json.dumps({"min_occurrences": 2}), encoding="utf-8"
-            )
+            _registry(2)
             result = self._runner.invoke(main, ["insights", "recurrence", *cites, "--json"])
             self.assertEqual(result.exit_code, 0, msg=result.output)
             self.assertEqual(json.loads(result.output)["required"], 2)

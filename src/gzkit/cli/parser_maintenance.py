@@ -923,10 +923,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         "--mx-hardening",
         dest="check_mx_hardening",
         action="store_true",
-        help=(
-            "Run the MX hangar's TTL, debt-aging and dangling-state guards; announce a "
-            "session past its lease, exit 3 on a dangling or over-max session (GHI #1257)."
-        ),
+        help="MX hangar guards: exit 3 on a dangling or over-max session (GHI #1257).",
     )
     p_validate.add_argument(
         "--distribution",

@@ -28,6 +28,7 @@ from pathlib import Path
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.insights.recurrence import load_min_occurrences
+from gzkit.registries import RegistryError
 
 #: The section every ``/ghi-author`` GHI carries. Captured up to the next H2.
 _SECTION = re.compile(r"##\s*Class of failure\s*\n+(.*?)(?=\n##\s|\Z)", re.IGNORECASE | re.DOTALL)
@@ -326,7 +327,11 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
     if args.min_depth is None:
-        args.min_depth = load_min_occurrences(Path.cwd())
+        try:
+            args.min_depth = load_min_occurrences(Path.cwd())
+        except RegistryError as exc:
+            sys.stderr.write(f"failure-class-index: {exc}\n")
+            return 1
 
     records = load_snapshot(args.snapshot)
     entries = build_index(records)

@@ -2028,7 +2028,7 @@
           ]
         },
         "supersedes": {
-          "type": "string",
+          "type": ["string", "null"],
           "min_length": 1
         }
       }
@@ -2065,7 +2065,7 @@
           "type": "string"
         },
         "commit": {
-          "type": "string",
+          "type": ["string", "null"],
           "min_length": 1
         }
       }

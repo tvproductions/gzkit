@@ -1,3 +1,4 @@
 {
+  "_doc": "Maxim-13 recurrence threshold, operator ruling 2026-10-18 ('3 occurrences (Rec.)'): the number of cited insight or GHI records, each pair a session lease apart, a failure needs before it becomes a rule. Recorded in docs/governance/ieee/requirements-model.md § 11 and read by gz insights recurrence and the failure-class index.",
   "min_occurrences": 3
 }

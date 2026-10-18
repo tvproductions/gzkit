@@ -89,7 +89,7 @@ Parent ADR-0.9.0 is Lite in the ledger (`adr_created` lane: lite).
 **Existing Code (understand current state):**
 
 - [x] Existing intake decisions: `docs/design/adr/pre-release/ADR-0.9.0-airlineops-surface-breadth-parity/claude-hooks-intake-matrix.md`
-- [x] Existing non-blocking imports: `.claude/hooks/instruction-router.py`, `.claude/hooks/post-edit-ruff.py`
+- [x] Existing non-blocking imports: `.claude/hooks/instruction-router.py`, `.claude/hooks/post-edit-ruff.py` (instruction-router.py not present since 2026-10-17: removed by drydock RO-1 act b)
 
 ## Quality Gates
 

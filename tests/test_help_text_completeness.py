@@ -100,6 +100,16 @@ class TestHelpTextCompleteness(unittest.TestCase):
             f"Forbidden patterns in help text ({len(violations)}):\n" + "\n".join(violations),
         )
 
+    def test_mx_hardening_help_fits_the_line(self):
+        """The --mx-hardening help read 151 chars until 2026-10-18; keep it under 80."""
+        helps = [
+            action.help
+            for _path, action in _walk_arguments(self.parser)
+            if "--mx-hardening" in (action.option_strings or [])
+        ]
+        self.assertEqual(len(helps), 1)
+        self.assertLessEqual(len(helps[0]), 80, helps[0])
+
     @covers("REQ-0.0.4-04-04")
     def test_help_text_under_80_chars(self):
         """All help text must be 80 characters or fewer."""

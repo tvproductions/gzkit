@@ -5,10 +5,10 @@ description: Use before implementing a GHI, OBPI or draft when direction or scop
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: "2026-10-18"
 gz_command: justify
 metadata:
-  skill-version: "6.4.1"
+  skill-version: "6.4.2"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero_layer: "Layer 1 - Evidence Gathering"

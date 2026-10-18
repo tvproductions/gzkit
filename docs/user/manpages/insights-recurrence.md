@@ -11,8 +11,8 @@ rule only when it recurs. The operator's rulings of 2026-10-18 set what
 recurrence means:
 
 - **Threshold** (*"3 occurrences (Rec.)"*): the number of cited records required,
-  read from `data/recurrence_threshold.json` (`min_occurrences`). A project
-  without that file uses 3.
+  read from `data/recurrence_threshold.json` (`min_occurrences`). A missing or
+  malformed file exits 1: the threshold is never defaulted.
 - **Unit** (*"Cited records (Rec.)"*): a proposal cites insight records (by `ts`)
   or GHIs (`#N`) of one class of failure. The proposer judges the class, and this
   verb checks only the count and the separation.
@@ -44,7 +44,7 @@ gz insights recurrence [--json] CITE [CITE ...]
 | Code | Meaning |
 |------|---------|
 | 0 | Met: enough citations, every pair at least a lease apart |
-| 1 | A citation names no insight record or resolvable GHI |
+| 1 | A citation names no insight record or resolvable GHI, or the threshold registry is missing or malformed |
 | 2 | Usage error |
 | 3 | Not met: too few citations, or a pair inside one lease |
 

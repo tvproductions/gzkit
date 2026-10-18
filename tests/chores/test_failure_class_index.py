@@ -324,6 +324,30 @@ class TestMinDepthReadsTheRecurrenceRegistry(unittest.TestCase):
         # One pair: one chain reaches the registry's 2, none reaches the old 3.
         self.assertIn("failure-class-index: 1 chain(s) with >= 2 authored", out.getvalue())
 
+    def test_a_missing_registry_returns_one(self):
+        import contextlib
+        import io
+        import os
+
+        from gzkit.insights.failure_classes import main
+
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            snapshot = root / "snap.json"
+            snapshot.write_text("[]", encoding="utf-8")
+            err = io.StringIO()
+            cwd = Path.cwd()
+            os.chdir(root)
+            try:
+                with contextlib.redirect_stderr(err):
+                    code = main(["--snapshot", str(snapshot), "--dry-run"])
+            except Exception as exc:  # noqa: BLE001 — the chore must report, never raise
+                self.fail(f"a missing registry raised {exc!r} instead of returning 1")
+            finally:
+                os.chdir(cwd)
+        self.assertEqual(code, 1)
+        self.assertIn("recurrence_threshold.json", err.getvalue())
+
     def test_the_headline_counts_chains_at_the_cut_it_names(self):
         # Two pairs: zero chains reach 3 authored, two reach 2.
         records = [

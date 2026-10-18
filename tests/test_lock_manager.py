@@ -417,6 +417,15 @@ class TestListLocks(unittest.TestCase):
             self.assertEqual(len(locks), 1)
             self.assertEqual(locks[0].obpi_id, "OBPI-0.0.72-02-handoff-frontmatter-reconcile")
 
+    def test_the_parent_rule_is_public_and_anchored_on_the_semver(self):
+        # Promoted from a private name 2026-10-18 so obpi_audit_cmd shares it
+        # without a private cross-package import.
+        from gzkit.lock_manager import adr_id_from_obpi
+
+        self.assertEqual(adr_id_from_obpi("OBPI-0.28.0-01-context-core"), "ADR-0.28.0")
+        self.assertEqual(adr_id_from_obpi("OBPI-0.28.0-01"), "ADR-0.28.0")
+        self.assertIsNone(adr_id_from_obpi("ADR-0.28.0"))
+
     @covers("REQ-0.0.14-01-06")
     def test_adr_filter_excludes_all(self):
         with tempfile.TemporaryDirectory() as tmp:

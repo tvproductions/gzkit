@@ -197,3 +197,16 @@ class TestDeriveAdrIdFromSlugBearingObpi(unittest.TestCase):
         self.assertEqual(_derive_adr_id("OBPI-0.28.0-01-context-core"), "ADR-0.28.0")
         self.assertEqual(_derive_adr_id("OBPI-0.28.0-01"), "ADR-0.28.0")
         self.assertIsNone(_derive_adr_id("ADR-0.28.0"))
+
+    def test_the_derivation_is_the_lock_managers_public_rule(self) -> None:
+        """One anchored rule, public in lock_manager, no private cross-package import."""
+        import importlib
+
+        try:
+            lock_manager = importlib.import_module("gzkit.lock_manager")
+            audit = importlib.import_module("gzkit.commands.obpi_audit_cmd")
+            derived = audit._derive_adr_id("OBPI-0.9.0-02-compatibility-adaptation-blocking-hooks")
+        except (ImportError, NameError, AttributeError) as exc:
+            self.fail(f"the shared derivation is not reachable: {exc!r}")
+        self.assertTrue(callable(getattr(lock_manager, "adr_id_from_obpi", None)))
+        self.assertEqual(derived, "ADR-0.9.0")

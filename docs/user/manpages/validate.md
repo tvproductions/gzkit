@@ -2340,7 +2340,7 @@ and the session orientation announces the same findings at session start.
 | Guard | Finding | Disposition |
 |-------|---------|-------------|
 | `mx-ttl-max-open` (lease) | An open session past its lease, the `mx-session` lock's TTL | Announced, never grounds; booked once as `mx_session_lease_expired` at session start |
-| `mx-debt-aging` | The age of the advisory debt an open session carries | Announced at a rising level, never grounds |
+| `mx-debt-aging` | The age of the advisory debt, from the first safe-mode open under the open session's contract (a session cycle keeps it, GHI #1258); a session without a contract ages alone | Announced at a rising level, never grounds |
 | `mx-dangling-state` | A session open in the ledger with `.gzkit/mx.json` missing | Exit 3 outside the hangar |
 | `mx-ttl-max-open` (max-open) | More than one session open at once | Exit 3, in or out of the hangar (CRITICAL) |
 

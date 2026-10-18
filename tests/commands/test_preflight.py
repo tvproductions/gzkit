@@ -39,6 +39,13 @@ class TestPreflightCommand(unittest.TestCase):
             self.assertIn("marker", result.output.lower())
 
     def test_detects_expired_lock(self) -> None:
+        """An expired orphan session lock is an issue; a work lock is not (never evict).
+
+        Re-seated 2026-10-18 onto the one lock still reaped, the ``mx-session``
+        lock of a closed hangar: an expired work lock is booked and stays held
+        (operator ruling, worked example 6 of attested-req-subject-retirement.md;
+        covered in test_preflight_expired_leases.py).
+        """
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init("lite")
@@ -46,7 +53,7 @@ class TestPreflightCommand(unittest.TestCase):
             locks_dir.mkdir(parents=True, exist_ok=True)
             expired_time = (datetime.now(UTC) - timedelta(hours=3)).isoformat()
             lock = {
-                "obpi_id": "OBPI-0.2.0-01",
+                "obpi_id": "mx-session",
                 "claimed_at": expired_time,
                 "ttl_minutes": 120,
                 "agent": "claude-code",
@@ -54,10 +61,10 @@ class TestPreflightCommand(unittest.TestCase):
                 "session_id": "test",
                 "branch": "main",
             }
-            (locks_dir / "OBPI-0.2.0-01.lock.json").write_text(json.dumps(lock), encoding="utf-8")
+            (locks_dir / "mx-session.lock.json").write_text(json.dumps(lock), encoding="utf-8")
             result = runner.invoke(main, ["preflight"])
             self.assertEqual(result.exit_code, 1)
-            self.assertIn("OBPI-0.2.0-01", result.output)
+            self.assertIn("mx-session", result.output)
             self.assertIn("lock", result.output.lower())
 
     def test_detects_orphan_receipt(self) -> None:
@@ -119,18 +126,21 @@ class TestPreflightCommand(unittest.TestCase):
             self.assertFalse(receipt_path.exists())
 
     def test_apply_removes_expired_lock(self) -> None:
-        """GHI #139: expired OBPI locks are deleted by --apply."""
+        """GHI #139: an expired orphan session lock is deleted by --apply.
+
+        Re-seated 2026-10-18 from a work lock, which is now booked and kept held.
+        """
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init("lite")
             locks_dir = Path(".gzkit/locks/obpi")
             locks_dir.mkdir(parents=True, exist_ok=True)
             expired_time = (datetime.now(UTC) - timedelta(hours=3)).isoformat()
-            lock_path = locks_dir / "OBPI-0.2.0-01.lock.json"
+            lock_path = locks_dir / "mx-session.lock.json"
             lock_path.write_text(
                 json.dumps(
                     {
-                        "obpi_id": "OBPI-0.2.0-01",
+                        "obpi_id": "mx-session",
                         "claimed_at": expired_time,
                         "ttl_minutes": 120,
                         "agent": "claude-code",
@@ -149,18 +159,19 @@ class TestPreflightCommand(unittest.TestCase):
         """Defect 4: --apply routes expired-lock cleanup through the canonical
         token-block reaper, not a silent unlink. The surrender MUST leave an
         ``obpi_lock_released`` ledger event and an ``abandoned_by_reaper``
-        register entry (token-block-discipline.md § Sub-Invariant 3)."""
+        register entry (token-block-discipline.md § Sub-Invariant 3). Re-seated
+        2026-10-18 onto the orphan session lock, the one lock still reaped."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init("lite")
             locks_dir = Path(".gzkit/locks/obpi")
             locks_dir.mkdir(parents=True, exist_ok=True)
             expired_time = (datetime.now(UTC) - timedelta(hours=30)).isoformat()
-            lock_path = locks_dir / "OBPI-0.2.0-01.lock.json"
+            lock_path = locks_dir / "mx-session.lock.json"
             lock_path.write_text(
                 json.dumps(
                     {
-                        "obpi_id": "OBPI-0.2.0-01",
+                        "obpi_id": "mx-session",
                         "claimed_at": expired_time,
                         "ttl_minutes": 1440,
                         "agent": "claude-code",
@@ -178,9 +189,9 @@ class TestPreflightCommand(unittest.TestCase):
             # ... but never silently: a release event is in the ledger ...
             ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertIn("obpi_lock_released", ledger_text)
-            self.assertIn("OBPI-0.2.0-01", ledger_text)
+            self.assertIn("mx-session", ledger_text)
             # ... and a reaping register entry exists on disk.
-            register_entries = list(Path(".gzkit/locks/exchange").glob("*OBPI-0.2.0-01*reaped*.md"))
+            register_entries = list(Path(".gzkit/locks/exchange").glob("*mx-session*reaped*.md"))
             self.assertTrue(
                 register_entries,
                 "reaping must write an abandoned_by_reaper register entry",
