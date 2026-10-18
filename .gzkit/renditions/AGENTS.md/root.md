@@ -204,8 +204,6 @@ Operator rulings. The corpus (`.gzkit/corpus/AGENTS.md.jsonl`) keeps each ruling
 - Local worktrees for subagents (operator, 2026-09-27, verbatim: 'local worktrees are fine'): a subagent may work in an ephemeral local git worktree that is never pushed; its result lands on main through the single writer, never by merging a branch. The no-branches directive is unchanged.
 ## Governance doctrine surfaces
 
-Before governance code, rule, or audit work, read docs/governance/trust-doctrine.md, docs/governance/advisory-rules-audit.md, and docs/governance/state-doctrine.md.
-
 A value written in a Markdown doc is ILLUSTRATIVE, never authoritative. Execution reads thresholds, budgets, rosters and state from JSON or code. Cite the authority, not the value: "the threshold table in `.gzkit/rules/complexity-thresholds.json`", not the number it holds. A dated record states its date and that it is a record. Where prose is unavoidably the state, measure the instance before relying on it (`docs/governance/governance-core-rationale.md`).
 
 `uv run gz check` runs every registered validator; a failing validator's message names the rule and its recovery, and the Coverage Ledger in `docs/governance/advisory-rules-audit.md` maps each rule to its witness. Mechanical scopes that bind here:
@@ -237,6 +235,8 @@ A value written in a Markdown doc is ILLUSTRATIVE, never authoritative. Executio
 The constitution is `docs/governance/GovZero/command-doctrine.md` (statement of command, ten articles). Read it before governance code, rule, or audit work: every gate, check, and template traces upward to an article.
 
 Safe mode is the regime for a crisis the ordinary ceremony cannot govern: entered and left only through the gz-mx skill under a written contract, one exceptional period through harbor, drydock and sea trial, exit at seaworthiness. Doctrine and terms: docs/governance/safe-mode-doctrine.md; contract template: .gzkit/templates/safe_mode_contract.md.
+
+Before governance code, rule, or audit work, read the Coverage Ledger section of docs/governance/advisory-rules-audit.md and the scorecard rows of the rule you touch; read docs/governance/trust-doctrine.md when the change moves a witness or gate, and docs/governance/state-doctrine.md when it moves state between layers.
 ## Architectural Boundaries
 
 4. Do not let reconciliation remain a maintenance chore. Witness: `gz validate --reconcile-freshness`.

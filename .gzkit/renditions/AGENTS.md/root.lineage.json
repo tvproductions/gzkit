@@ -267,7 +267,6 @@
   "governance-doctrine-surfaces": {
     "owned": true,
     "entry_ids": [
-      "corpus-governance-doctrine-surfaces-2026-09-18T01:52:09.729182+00:00",
       "corpus-governance-doctrine-surfaces-2026-09-18T01:52:09.880030+00:00",
       "corpus-governance-doctrine-surfaces-2026-09-18T01:52:10.028173+00:00",
       "corpus-governance-doctrine-surfaces-2026-09-18T01:52:10.179613+00:00",
@@ -283,11 +282,12 @@
       "corpus-governance-doctrine-surfaces-2026-09-24T10:35:54.824200+00:00",
       "corpus-governance-doctrine-surfaces-2026-09-24T10:35:54.990937+00:00",
       "corpus-governance-doctrine-surfaces-2026-10-11T17:46:43.217551+00:00",
-      "corpus-governance-doctrine-surfaces-2026-10-16T08:26:53.342263+00:00"
+      "corpus-governance-doctrine-surfaces-2026-10-16T08:26:53.342263+00:00",
+      "corpus-governance-doctrine-surfaces-2026-10-18T07:45:29.432603+00:00"
     ],
     "byte_span": [
       19914,
-      23745
+      23901
     ]
   },
   "architectural-boundaries": {
@@ -299,8 +299,8 @@
       "corpus-architectural-boundaries-2026-10-10T13:36:48.462663+00:00"
     ],
     "byte_span": [
-      23745,
-      24629
+      23901,
+      24785
     ]
   }
 }

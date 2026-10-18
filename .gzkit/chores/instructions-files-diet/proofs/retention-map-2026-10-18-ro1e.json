@@ -1,0 +1,79 @@
+{
+  "surface": "AGENTS.md",
+  "consumer": "root",
+  "extracted_by": "spec-reviewer",
+  "mapped_by": "main-session",
+  "blocks": [
+    {
+      "removed": "Before governance code, rule, or audit work, read docs/governance/trust-doctrine.md, docs/governance/advisory-rules-audit.md, and docs/governance/state-doctrine.md.",
+      "non_binding": [
+        {
+          "quote": ", ",
+          "reason": "List separator between document names; binds nothing."
+        },
+        {
+          "quote": ".",
+          "reason": "Terminal full stop; binds nothing."
+        }
+      ],
+      "conditions": [
+        {
+          "id": "C1",
+          "quote": "Before governance code, rule, or audit work, read",
+          "disposition": "kept",
+          "span": "Before governance code, rule, or audit work, read",
+          "reason": null
+        },
+        {
+          "id": "C2",
+          "quote": "governance code",
+          "disposition": "kept",
+          "span": "governance code",
+          "reason": null
+        },
+        {
+          "id": "C3",
+          "quote": "rule",
+          "disposition": "kept",
+          "span": "rule",
+          "reason": null
+        },
+        {
+          "id": "C4",
+          "quote": "audit work",
+          "disposition": "kept",
+          "span": "audit work",
+          "reason": null
+        },
+        {
+          "id": "C5",
+          "quote": "docs/governance/trust-doctrine.md",
+          "disposition": "dropped",
+          "span": null,
+          "reason": "The unconditional read is narrowed by operator ruling 2026-10-18, 'A: Ledger + scoped (Rec.)' to a read when the change moves a witness or gate: 'read docs/governance/trust-doctrine.md when the change moves a witness or gate'."
+        },
+        {
+          "id": "C6",
+          "quote": "docs/governance/advisory-rules-audit.md",
+          "disposition": "dropped",
+          "span": null,
+          "reason": "The whole-document read (208,766 B) is narrowed by operator ruling 2026-10-18, 'A: Ledger + scoped (Rec.)' to its Coverage Ledger section and the touched rule's scorecard rows: 'read the Coverage Ledger section of docs/governance/advisory-rules-audit.md and the scorecard rows of the rule you touch'."
+        },
+        {
+          "id": "C7",
+          "quote": "docs/governance/state-doctrine.md",
+          "disposition": "dropped",
+          "span": null,
+          "reason": "The unconditional read is narrowed by operator ruling 2026-10-18, 'A: Ledger + scoped (Rec.)' to a read when the change moves state between layers: 'docs/governance/state-doctrine.md when it moves state between layers'."
+        },
+        {
+          "id": "C8",
+          "quote": ", and docs/governance/state-doctrine.md",
+          "disposition": "dropped",
+          "span": null,
+          "reason": "All three documents are no longer required together; operator ruling 2026-10-18, 'A: Ledger + scoped (Rec.)' makes each read scoped to what the change touches."
+        }
+      ]
+    }
+  ]
+}

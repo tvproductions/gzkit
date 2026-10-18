@@ -1,10 +1,10 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "e3496a8b1bf80170c08190dc43f1f04cc1bac7a5191d7415964601184df57aef",
-  "corpus_entry_count": 520,
-  "rendition_fingerprint": "c566bc56411b15012e6493253595c8904cd76cf5a8d2d34db6e612cfcdf7c8d6",
-  "committed_ts": "2026-10-16T08:27:40.430364+00:00",
+  "corpus_fingerprint": "55a3c35e2d3b8d359f1fa655a7db32915302b475dc5ccf59af77e979050d14d6",
+  "corpus_entry_count": 522,
+  "rendition_fingerprint": "40fe24e51c87c2fff2ef0ea3e57499670e6a41da0f2fe451eca1770b457dcdeb",
+  "committed_ts": "2026-10-18T07:47:10.565178+00:00",
   "attestor": "g0",
-  "attestation_text": "safe mode is the sole term, update the canon",
-  "landing_id": "landing-20261016T082740Z-ae41b777"
+  "attestation_text": "A: Ledger + scoped (Rec.) — retention map .gzkit/chores/instructions-files-diet/proofs/retention-map-2026-10-18-ro1e.json: C1 to C4 kept; C5, C6, C7 and C8 dropped as unconditional reads narrowed to scoped ones",
+  "landing_id": "landing-20261018T074710Z-a227ba41"
 }
