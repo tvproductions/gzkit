@@ -6,9 +6,9 @@ paths:
 
 # Brief Heading Conventions (gzkit)
 
-<!-- rule-version: 0.2.0 -->
+<!-- rule-version: 0.2.1 -->
 
-> **Rule version:** `0.2.0` — scored for real under GHI #921 (2026-08-30). This rule sat in `data/advisory_scorecard_grandfather.json`, pinned at `0.1.0` against a version nobody recorded; the pin is stripped by any edit, so its clauses were re-read and its Coverage Ledger rows added or corrected in the same commit. Prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#brief-heading-conventionsmd). Binding rules unchanged.
+> **Rule version:** `0.2.1` — version narrative lifted to [Rule Version History](../../docs/governance/rule-version-history.md#brief-heading-conventionsmd); binding rules unchanged.
 
 OBPI brief evidence sections MUST use H3 (`###`), not H2 (`##`).
 

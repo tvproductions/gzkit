@@ -7,9 +7,9 @@ description: ADR audit verification procedures
 
 # ADR Audit (gzkit)
 
-<!-- rule-version: 0.3.2 -->
+<!-- rule-version: 0.3.3 -->
 
-> **Rule version:** `0.3.2` — the receipt example no longer prompts for a human's real name in `--attestor` (operator-identity rule; GHI #921, #1031). Prior `0.3.1` and earlier lifted to [Rule Version History](../../docs/governance/rule-version-history.md#adr-auditmd). Binding rules unchanged.
+> **Rule version:** `0.3.3` — version narrative lifted to [Rule Version History](../../docs/governance/rule-version-history.md#adr-auditmd); binding rules unchanged.
 
 Purpose: verify ADR completion claims using reproducible evidence.
 

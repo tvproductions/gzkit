@@ -55,32 +55,32 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 
 | Rule file | Scored at rule-version |
 |---|---|
-| `agents-md-map-doctrine.md` | `0.13.0` |
-| `adr-audit.md` | `0.3.2` |
-| `agent-failure-modes.md` | `0.8.2` |
-| `brief-heading-conventions.md` | `0.2.0` |
-| `changelog-release-notes.md` | `1.2.1` |
-| `complexity-doctrine.md` | `0.4.0` |
-| `complexity-thresholds.md` | `0.5.0` |
-| `gh-cli.md` | `0.7.0` |
-| `hexagonal-architecture.md` | `0.3.0` |
-| `models.md` | `0.2.0` |
-| `model-selection.md` | `0.7.1` |
-| `weaponeering.md` | `0.1.0` |
-| `security-sensitivity.md` | `0.6.0` |
-| `skill-surface-sync.md` | `0.13.0` |
-| `skill-authoring.md` | `0.2.0` |
-| `chores.md` | `0.6.1` |
-| `cli.md` | `0.9.1` |
-| `cross-platform.md` | `0.7.0` |
-| `gate5-runbook-code-covenant.md` | `0.3.1` |
+| `agents-md-map-doctrine.md` | `0.13.1` |
+| `adr-audit.md` | `0.3.3` |
+| `agent-failure-modes.md` | `0.8.3` |
+| `brief-heading-conventions.md` | `0.2.1` |
+| `changelog-release-notes.md` | `1.2.2` |
+| `complexity-doctrine.md` | `0.4.1` |
+| `complexity-thresholds.md` | `0.5.1` |
+| `gh-cli.md` | `0.7.1` |
+| `hexagonal-architecture.md` | `0.3.1` |
+| `models.md` | `0.2.1` |
+| `model-selection.md` | `0.7.2` |
+| `weaponeering.md` | `0.1.1` |
+| `security-sensitivity.md` | `0.6.1` |
+| `skill-surface-sync.md` | `0.13.1` |
+| `skill-authoring.md` | `0.2.1` |
+| `chores.md` | `0.6.2` |
+| `cli.md` | `0.9.2` |
+| `cross-platform.md` | `0.7.1` |
+| `gate5-runbook-code-covenant.md` | `0.3.2` |
 | `guardrail-feedback-prose.md` | `0.3.1` |
-| `mx-mode.md` | `1.5.2` |
-| `pythonic.md` | `0.5.3` |
-| `tool-skill-runbook-alignment.md` | `0.5.2` |
-| `tests.md` | `0.27.1` |
-| `task-discovery.md` | `0.10.0` |
-| `token-block-discipline.md` | `0.9.0` |
+| `mx-mode.md` | `1.6.1` |
+| `pythonic.md` | `0.5.4` |
+| `tool-skill-runbook-alignment.md` | `0.5.3` |
+| `tests.md` | `0.27.2` |
+| `task-discovery.md` | `0.10.1` |
+| `token-block-discipline.md` | `0.9.1` |
 
 **Re-read 2026-09-19 (GHIs #1040–#1043).** Model selection, release notes, tests, chores, CLI and tool/skill alignment were read against their existing authorities. Corrections concern nested version metadata, release approval terminology, test-tier selectors and same-patch/direct-repair routing. Their binding obligations and scores are unchanged; the release-note curation note below now uses the correct approval subject. No mechanical promotion or new witness is claimed.
 
@@ -459,7 +459,7 @@ The Claude-specific invariant 10a is scored as a row rather than in prose:
 | 62c | **Both enforcement surfaces honor the marker (GHI #843).** | **Promotable** | **Added 2026-08-22 (rule `1.2.0`, GHI #843).** The clause exists because its absence was load-bearing: every guard in `gzkit.hooks.guards` self-decided fatality with a bare `return 1`, verbatim the "named coverage defect" of ADR-0.0.74 BI#2, and two chore checkers ran as their own pre-commit entrypoints consulting nothing. Third recurrence of one class after GHI #638 (the `gz check` step layer) and GHI #651 (the enforcement floor). Two fences, deliberately at different altitudes because one cannot see the other's gap: `tests/test_hooks_guards.py::TestMxCheckpointSeam` fences the inventory INSIDE `guards.py` (a `forbid_*` guard added without a `_GUARD_META` entry is unreachable, and `run_guards` may not call one directly), while `tests/mx/test_precommit_checkpoint_surface.py::TestPrecommitSurfaceInventory` walks `.pre-commit-config.yaml` itself, so a NEW hook that is its own entrypoint must consult the checkpoint or be excused in `_NOT_A_GZKIT_GUARD` with a stated reason. The surface fence is AST-based rather than a substring scan after a first draft's mutant SURVIVED on the word "checkpoint" appearing in a docstring — the presence-check failure AGENTS.md names. Nine mutants run, all killed. **Scored Promotable, not Mechanical, deliberately.** The fences above are unit tests, and this scorecard reserves Mechanical for a row citing a registered `NC:<claim-id>` from the `@enforces` enforcement registry — a scope-level test proves the gate is alive, never that THIS property is covered. Claiming Mechanical on unit tests alone would be the false-green shape `pythonic.md` `0.3.0` recorded, where four rows asserted enforcement that did not exist. Promotion path: author an un-forced `@enforces` NC per ADR-0.0.74 items 15-19 (fixture builds the violation, a production entrypoint decides catch/no-catch, the runner reads one uniform signal) and cite its claim id here. `source=.gzkit/rules/mx-mode.md` |
 | 62d | **Demotion never reaches an integrity guard, on either surface.** | **Promotable** | **Added 2026-08-22 (rule `1.2.0`, GHI #843).** The consumer-side restatement of 62a, and the reason #843 closes WITHOUT unblocking the ledger repair that surfaced it: `ledger` and `gate5-attestation` are `GATE5_INVARIANTS` members, so `checkpoint.resolve` short-circuits before the marker is ever read, and a hand-edit of `.gzkit/ledger.jsonl` is refused inside the hangar exactly as outside. The hangar was never the governed route out of a mis-ordered ledger; that route is the append-only corrective-action primitive of GHI #611. Pinned in both directions and mutation-tested: stripping either floor NAME, downgrading either CRITICAL level, silencing the demotion notice, and flipping the fail-closed catch to fail-open each kill at least one test. The residual is a NAMING one, not a mechanism one — floor membership is a string match, so a guard enforcing a floor concern under a non-floor name still demotes silently, which is GHI #852 on the `authorship` scope. **Scored Promotable, not Mechanical, deliberately.** The fences above are unit tests, and this scorecard reserves Mechanical for a row citing a registered `NC:<claim-id>` from the `@enforces` enforcement registry — a scope-level test proves the gate is alive, never that THIS property is covered. Claiming Mechanical on unit tests alone would be the false-green shape `pythonic.md` `0.3.0` recorded, where four rows asserted enforcement that did not exist. Promotion path: author an un-forced `@enforces` NC per ADR-0.0.74 items 15-19 (fixture builds the violation, a production entrypoint decides catch/no-catch, the runner reads one uniform signal) and cite its claim id here. `source=.gzkit/rules/mx-mode.md` |
 | 62e | Opting a guard into the floor — two mechanisms, and default to LEVEL | **Judgment** | **Added 2026-08-22 (rule `1.3.0`), GHI #855.** The mechanism half is mechanical and already holds — `checkpoint.resolve` pins by NAME (`GATE5_INVARIANTS`) or by LEVEL (emit CRITICAL), and 62a/62d fence both directions. What this row scores is the CHOICE, and it is a reading: NAME is forbidden when the guard is *a narrower proxy for the floor concern* (ADR-0.0.74 § Consequences/Negative #7), and whether a given check covers its concern **in full** or only a checkable slice is not a property any surface models. `84519da5` (GHI #852) is the worked example — an email-suffix check on the git identity is a slice of the operator-PII prohibition, which also spans trailers, file content, attestation text and the ledger, so it pinned by LEVEL. A mechanical arm would have to decide concern-coverage, which is the `shape-graded-not-substance` signature ADR-0.0.73 refuses. **No mechanical witness, and none is planned.** What the rule now carries instead is the reasoning itself, which had been derived correctly and recorded only in a commit body — the settled-twice-recorded-nowhere shape `governance-core.md` `0.13.0` names. Reclassify on an observed instance of a guard pinned by the wrong mechanism shipping and being caught late. `source=.gzkit/rules/mx-mode.md` |
-| 62f | Safe mode: ceremony suspended under a contract | **Promotable** | **Added 2026-10-16 (rule `1.5.0`), GHI #1244, operator ruling verbatim *"A, extend gz mx with a safe mode - which is 'martial law' toggle"*.** The mechanism half is pinned by unit tests: `tests/mx/test_checkpoint.py::TestSafeMode` holds `checkpoint.hangar_demotes` false under `mode: safe` and true under `mode: mx`, so an ERROR-level guard resolves ERROR in safe mode; `tests/commands/test_mx_enter.py::TestMxEnterSafeMode` holds the entry fail-closed (no contract, a missing contract file, a contract under the hangar mode) and the marker and `mx_session_opened` event carrying `mode` and `contract`; `tests/hooks/test_mx_awareness.py` holds the per-turn banner to the mode and the contract. The ceremony half is a reading: what safe mode suspends is declared by the named contract and followed by the agent, and nothing downstream distinguishes an OBPI started under the contract from one started outside it except the open marker and the contract's passage log. **Scored Promotable, not Mechanical, deliberately**, as 62c and 62d are: this scorecard reserves Mechanical for a row citing a registered `NC:<claim-id>`. Promotion path: an un-forced `@enforces` NC that opens a safe-mode marker and proves a demotable guard still grounds, and cite its claim id here. `source=.gzkit/rules/mx-mode.md` |
+| 62f | Safe mode: ceremony suspended under a contract | **Promotable** | **Added 2026-10-16 (rule `1.5.0`), GHI #1244, operator ruling verbatim *"A, extend gz mx with a safe mode - which is 'martial law' toggle"*.** **Re-scored 2026-10-17 (rule `1.6.0`, R6): safe mode demotes as the hangar does.** The mechanism half is pinned by unit tests: `tests/mx/test_checkpoint.py::TestSafeMode` holds an ordinary guard advisory under a safe-mode marker and a floor guard CRITICAL, since `checkpoint.hangar_demotes` is true under either mode (it was false under `mode: safe` until R6); `tests/commands/test_mx_enter.py::TestMxEnterSafeMode` holds the entry fail-closed (no contract, a missing contract file, a contract under the hangar mode) and the marker and `mx_session_opened` event carrying `mode` and `contract`; `tests/hooks/test_mx_awareness.py` holds the per-turn banner to the mode and the contract. The ceremony half is a reading: what safe mode suspends is declared by the named contract and followed by the agent, and nothing downstream distinguishes an OBPI started under the contract from one started outside it except the open marker and the contract's passage log. **Scored Promotable, not Mechanical, deliberately**, as 62c and 62d are: this scorecard reserves Mechanical for a row citing a registered `NC:<claim-id>`. Promotion path: an un-forced `@enforces` NC that opens a safe-mode marker and proves a floor guard still grounds, and cite its claim id here. `source=.gzkit/rules/mx-mode.md` |
 | 63 | PRIME DIRECTIVE binds the entire hangar session — ownership never relaxes; operate the skill, not the shell | **Judgment** | "Fix what you know AND what you find; 'not my work' stays forbidden in the bay" requires agent judgment to apply. Mechanizing ownership is the broader gzkit mission, not a single validator scope. `source=.gzkit/rules/mx-mode.md` |
 
 ### Hexagonal Architecture (`.gzkit/rules/hexagonal-architecture.md`)

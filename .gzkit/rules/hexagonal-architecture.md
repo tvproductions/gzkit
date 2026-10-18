@@ -5,11 +5,11 @@ paths:
 description: Ports & adapters as gzkit's primary code architecture directive
 ---
 
-<!-- rule-version: 0.3.0 -->
+<!-- rule-version: 0.3.1 -->
 
 # Hexagonal Architecture (Ports & Adapters) — Primary Code Directive
 
-> **Rule version:** `0.3.0` — scored for real under GHI #921 (2026-08-30). This rule sat in `data/advisory_scorecard_grandfather.json`, pinned at `0.2.1` against a version nobody recorded; the pin is stripped by any edit, so its clauses were re-read and its Coverage Ledger rows added or corrected in the same commit. Prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#hexagonal-architecturemd). Binding rules unchanged.
+> **Rule version:** `0.3.1` — version narrative lifted to [Rule Version History](../../docs/governance/rule-version-history.md#hexagonal-architecturemd); binding rules unchanged.
 
 > Ports & adapters is gzkit's **primary code-architecture directive**. Every
 > external dependency is confined to an **adapter** behind a **port**; the inner

@@ -136,6 +136,12 @@ Lifted at version `0.5.0` (rule now at `0.5.1`).
 > notes, the one artifact `changelog-release-notes.md` forbids hand-editing.
 > Prior: unversioned since authoring.
 
+### Lifted 2026-10-17 at version `0.9.1` (rule now at `0.9.2`)
+
+The version banner as it stood, lifted verbatim to keep the per-turn banner to its one-sentence rationale (drydock RO-1 act d):
+
+> **Rule version:** `0.9.1` — purpose documentation follows the already-settled planned-work versus direct-GHI route (GHI #1043). Prior history: [Rule Version History](rule-version-history.md#climd); analysis: [CLI architecture](../design/cli-architecture-analysis.md).
+
 ## `gate5-runbook-code-covenant.md`
 
 Lifted at version `0.3.0` (rule now at `0.3.1`).
@@ -154,6 +160,12 @@ Lifted at version `0.3.0` (rule now at `0.3.1`).
 > `gz-adr-closeout-ceremony/SKILL.md:317`; the rule side was never reconciled.
 > Prior `0.1.0` — initial shape conformance pass; renamed prohibited heading
 > (OBPI-0.0.54-04).
+
+### Lifted 2026-10-17 at version `0.3.1` (rule now at `0.3.2`)
+
+The version banner as it stood, lifted verbatim to keep the per-turn banner to its one-sentence rationale (drydock RO-1 act d):
+
+> **Rule version:** `0.3.1` — diet pass under GHI #921 (operator ruling 2026-08-30, *"do 3, 4, and 5"*): the superseded `0.3.0`–`0.2.1` version chain is lifted to [Rule Version History](rule-version-history.md#gate5-runbook-code-covenantmd), restoring the one-sentence shape `skill-surface-sync.md` § Non-negotiable rules #2 requires. Binding rules unchanged; scoped `docs/**` and `src/gzkit/**`, this rule loads on every docs or source edit, so narrative is the most expensive thing it can carry.
 
 ## `chores.md`
 
@@ -196,6 +208,12 @@ Lifted at version `0.3.2` (rule now at `0.3.3`).
 
 > **Rule version:** `0.5.2` — the Lite-lane typecheck line is the canonical `uv run ty check . --exclude features` (GHI #921). Binding rules unchanged. (Recovered from `7422e33ab`; the `0.5.3` edit replaced it without lifting it.)
 
+### Lifted 2026-10-17 at version `0.6.1` (rule now at `0.6.2`)
+
+The version banner as it stood, lifted verbatim to keep the per-turn banner to its one-sentence rationale (drydock RO-1 act d):
+
+> **Rule version:** `0.6.1` — § Correct Evidence names `gz check --full` as the full-repository check, since plain `gz check` is the per-change gate (GHI #1191). Prior history: [Rule Version History](rule-version-history.md#choresmd).
+
 ## `adr-audit.md`
 
 Lifted at version `0.2.0` (rule now at `0.2.1`).
@@ -217,6 +235,12 @@ Lifted at version `0.2.0` (rule now at `0.2.1`).
 ### Lifted 2026-09-19 at version `0.3.1` (rule now at `0.3.2`)
 
 > **Rule version:** `0.3.1` — the `unittest` ARB step names the canonical parallel command (`CANONICAL_STEP_COMMANDS["unittest"]`); the serial form it carried is no longer the canonical one and `gz arb validate` flags it. Prior `0.3.0`: scored for real under GHI #921 (2026-08-30). This rule sat in `data/advisory_scorecard_grandfather.json`, pinned at `0.2.1` against a version nobody recorded; the pin is stripped by any edit, so its clauses were re-read and its Coverage Ledger rows added or corrected in the same commit. Prior version history lifted to [Rule Version History](#adr-auditmd). Binding rules unchanged.
+
+### Lifted 2026-10-17 at version `0.3.2` (rule now at `0.3.3`)
+
+The version banner as it stood, lifted verbatim to keep the per-turn banner to its one-sentence rationale (drydock RO-1 act d):
+
+> **Rule version:** `0.3.2` — the receipt example no longer prompts for a human's real name in `--attestor` (operator-identity rule; GHI #921, #1031). Prior `0.3.1` and earlier lifted to [Rule Version History](rule-version-history.md#adr-auditmd). Binding rules unchanged.
 
 ## `gh-cli.md`
 
@@ -255,6 +279,12 @@ Lifted at version `0.3.0` (rule now at `0.3.1`).
 ### Lifted 2026-09-19 at version `0.5.1` (rule now at `0.5.2`)
 
 > **Rule version:** `0.5.1` — GHI #972 reopened (2026-09-07): two statements in `0.5.0` corrected. The count form printed only `.total_count`, hiding the `incomplete_results` field the same clause required checking — the command now refuses to print a number on an incomplete search. And *"a result whose length equals its `--limit` is a truncated page"* overstated: equality proves nothing either way (`--limit 40` returned 40 against a 40-issue queue, complete), so completeness is UNPROVEN until pagination or an authoritative total establishes it. `0.5.0` added § Census queries under the same GHI; scored **Judgment** at row 51c. Prior version history lifted to [Rule Version History](#gh-climd).
+
+### Lifted 2026-10-17 at version `0.7.0` (rule now at `0.7.1`)
+
+The version banner as it stood, lifted verbatim to keep the per-turn banner to its one-sentence rationale (drydock RO-1 act d):
+
+> **Rule version:** `0.7.0` — operator ruling 2026-09-27 (*"Add reopen to the rule"*): § Allowed commands gains `gh issue reopen`. `/ghi-author` Step 0 requires re-opening a GHI closed in the last 30 days when the same root cause regresses, and this allowlist did not carry the verb, the same unreachable-step gap `0.6.0` closed for `comment`. Measured at GHI #1017, whose regression evidence could not be filed as the skill requires. **Binding rules changed: the allowlist widens by one verb.** Prior `0.6.0` and earlier lifted to [Rule Version History](rule-version-history.md#gh-climd).
 
 ## `task-discovery.md`
 
@@ -353,6 +383,12 @@ Lifted at version `0.7.1` (rule now at `0.9.0`).
 > anchor is optional (operator moratorium 2026-06-01). Prior `0.3.0` — ADR-0.0.64
 > closeout reconciliation.
 
+### Lifted 2026-10-17 at version `0.10.0` (rule now at `0.10.1`)
+
+The version banner as it stood, lifted verbatim to keep the per-turn banner to its one-sentence rationale (drydock RO-1 act d):
+
+> **Rule version:** `0.10.0` — diet pass under GHI #921: rollout histories (GHI #752/#753 deferrals, the 19-day `_crossing_channels` split, the trailer-set recurrence measurement) lifted to [Rule Version History](rule-version-history.md#task-discoverymd); `paths:` narrowed from `.gzkit/**` and `docs/design/adr/**` to the surfaces the four channels are written on (`.gzkit/hooks/**`, the OBPI briefs), since the old scope fanned this rule into every `.gzkit` and ADR subtree contract. Binding rules unchanged.
+
 ## `pythonic.md`
 
 Lifted at version `0.5.0` (rule now at `0.5.1`).
@@ -372,6 +408,12 @@ Lifted at version `0.5.0` (rule now at `0.5.1`).
 
 > **Rule version:** `0.5.2` — the full-suite test invocation is `uv run gz test`, the parallel canonical runner; the serial `-m unittest` form is retired (operator ruling 2026-09-18, under GHI #921). Prior `0.5.1`: diet pass under GHI #921 (operator ruling 2026-08-30, *"do 1 and 2"*): the superseded `0.5.0`–`0.2.1` version chain is lifted to [Rule Version History](#pythonicmd), restoring the one-sentence shape `skill-surface-sync.md` § Non-negotiable rules #2 requires. Binding rules unchanged; scoped `**/*.py`, this rule loads on every Python edit, so narrative is the most expensive thing it can carry.
 
+### Lifted 2026-10-17 at version `0.5.3` (rule now at `0.5.4`)
+
+The version banner as it stood, lifted verbatim to keep the per-turn banner to its one-sentence rationale (drydock RO-1 act d):
+
+> **Rule version:** `0.5.3` — `ty` and `xenon` are spelled as the gates run them, `uv run`, not `uvx` (GHI #921). Prior `0.5.2` and earlier lifted to [Rule Version History](rule-version-history.md#pythonicmd). Binding rules unchanged.
+
 ## `hexagonal-architecture.md`
 
 Lifted at version `0.2.0` (rule now at `0.2.1`).
@@ -386,6 +428,12 @@ Lifted at version `0.2.0` (rule now at `0.2.1`).
 ### Lifted 2026-08-30 at version `0.2.1` (rule now at `0.3.0`)
 
 > **Rule version:** `0.2.1` — seats HA inside the DDD → HA → BDD → TDD spine and adds the binding cohesion doctrine (`0.2.0`); prior version history lifted to [Rule Version History](#hexagonal-architecturemd). Binding rules unchanged.
+
+### Lifted 2026-10-17 at version `0.3.0` (rule now at `0.3.1`)
+
+The version banner as it stood, lifted verbatim to keep the per-turn banner to its one-sentence rationale (drydock RO-1 act d):
+
+> **Rule version:** `0.3.0` — scored for real under GHI #921 (2026-08-30). This rule sat in `data/advisory_scorecard_grandfather.json`, pinned at `0.2.1` against a version nobody recorded; the pin is stripped by any edit, so its clauses were re-read and its Coverage Ledger rows added or corrected in the same commit. Prior version history lifted to [Rule Version History](rule-version-history.md#hexagonal-architecturemd). Binding rules unchanged.
 
 ## `agent-failure-modes.md`
 
@@ -451,6 +499,12 @@ failure, not the instance"), per the 2026-04-30 text that first cited it.
 
 > **Rule version:** `0.6.2` — Fable/Mythos 5 card consumed (GHI #751): patterns 1–6 now carry direct current-generation observations — the card's own § 2.3.3 failure tags use this taxonomy's vocabulary (`Safeguard circumvention` / `Fabrication` / `Skipped cheap verification` / `Reckless action` / `Correction fails`) with real-usage cluster frequencies — and pattern 9 gains Anthropic-side corroboration (§§ 6.1.2, 6.4.1.2: grader-satisfying reasoning, almost never verbalized). Prior `0.6.1` — re-sourced to current-card-only citations; origin lineage lifted to [Rule Version History](#agent-failure-modesmd). Patterns and backstops unchanged since `0.6.0` (nine patterns).
 
+### Lifted 2026-10-17 at version `0.8.2` (rule now at `0.8.3`)
+
+The version banner as it stood, lifted verbatim to keep the per-turn banner to its one-sentence rationale (drydock RO-1 act d):
+
+> **Rule version:** `0.8.2` — the OpenAI-tier source re-sourced to the GPT-6 Astra System Card (GHI #1019); pattern 9 maps to the card's *oversight gaming*; patterns unchanged (nine). Prior version history lifted to [Rule Version History](rule-version-history.md#agent-failure-modesmd).
+
 ## `agents-md-map-doctrine.md`
 
 ### 0.13.0 — 2026-09-17
@@ -458,6 +512,12 @@ failure, not the instance"), per the 2026-04-30 text that first cited it.
 Diet pass under GHI #921 (operator: "A" on the full before/after, 11,982 B → 7,083 B). Binding rules unchanged. Lifted verbatim as dated records — the `0.12.0` note, § Five prohibited shapes (a restatement of § Invariant), the § Budget pointer history, the GHI #822 naming paragraph and the attestation-granularity measurement:
 
 > **Rule version:** `0.12.0` — adds § Writing levers, the authoring tests for every per-turn surface, distilled from Matt Pocock's `writing-for-agents` skill and Anthropic's current prompting guidance (operator direction 2026-09-17). Prior versions lifted to [Rule Version History](#agents-md-map-doctrinemd). Binding rules unchanged.
+
+### Lifted 2026-10-17 at version `0.13.0` (rule now at `0.13.1`)
+
+The version banner as it stood, lifted verbatim to keep the per-turn banner to its one-sentence rationale (drydock RO-1 act d):
+
+> **Rule version:** `0.13.0` — diet pass under GHI #921: the § Budget history (the retired ADR-0.0.37 and GHI #533 pointers, the GHI #815 truncation record, the `560 B` correction) and the § Attestation granularity measurement lifted to [Rule Version History](rule-version-history.md#agents-md-map-doctrinemd). Binding rules unchanged.
 
 ## Five prohibited shapes
 
@@ -515,6 +575,12 @@ Lifted 2026-08-29 at version `0.7.0` (rule now at `0.8.0`).
 Lifted 2026-08-29 at version `0.6.0` (rule now at `0.7.0`).
 
 > **Rule version:** `0.6.0` — added § Delivered path literals (GHI #900), and widened `paths:` to `src/gzkit/**/*.md` so the rule loads where that defect is authored. The platform-co-equality posture below was already contradicted by a path rooted at one machine, but no clause enforced the posture against a literal, so four wheel-shipped files told adopters to open a path that existed on one laptop while `gz validate --distribution` read green -- byte-equivalent delivery of an instruction that cannot resolve. Prior `0.5.0` — added § Subprocess reads (GHI #582): text-mode subprocess captures MUST pass `errors="replace"`, since `encoding="utf-8"` alone still raises `UnicodeDecodeError` (a `ValueError` that `except OSError` misses) on non-UTF-8 tool/git output. Prior `0.4.0` — corrected the platform framing: removed the inaccurate "Windows (primary)" label and the miscited `Doctrine: ADR-0.0.1` reference (ADR-0.0.1 is canonical-govzero-parity; no cross-platform ADR exists). gzkit targets all platforms co-equally (operator directive 2026-06-28). Prior `0.3.0` — diet pass under GHI #327; lifted helper patterns and scope-boundary details to `docs/governance/cross-platform-rationale.md`.
+
+### Lifted 2026-10-17 at version `0.7.0` (rule now at `0.7.1`)
+
+The version banner as it stood, lifted verbatim to keep the per-turn banner to its one-sentence rationale (drydock RO-1 act d):
+
+> **Rule version:** `0.7.0` — diet pass under GHI #921 (operator ruling 2026-08-29, *"we are compressing everything and anything that the agent can consume"*). Version history lifted to [Rule Version History](rule-version-history.md#cross-platformmd). Binding rules unchanged.
 
 ## `guardrail-feedback-prose.md`
 
@@ -582,6 +648,12 @@ Lifted 2026-08-29 at version `0.5.1` (rule now at `0.6.0`).
 
 > **Rule version:** `0.5.1` — discharges the fable-calibration pending note via the card consumption (GHI #751); routing unchanged. Prior `0.5.0` — adds the `fable` tier (operator ruling 2026-08-02: "It seems like we should incorporate fable for the cases and times"): Mythos-class judgment work — doctrine evaluation, design dialogues, adversarial review, system-card evaluation — under operator supervision. Fable is NOT the pipeline or mechanical default; initial effort calibration landed with the card consumption (GHI #751) — see `docs/governance/opus-tuning.md` § Fable (Mythos-class) calibration: start `high` not `max`, expect prompt-steerable overeagerness, and treat cyber-classifier fallback to a prior Opus tier as silent degradation. `skill_model` Literal and router test extended in the same commit. Prior `0.4.0` — adds operative claim 5 (subagent claims are relayed only with independent evidence), closing the relay gap the Claude Opus 5 System Card § 6.1.3 named: *"the model can relay claims from subagents to users without verifying them"*, with multi-agent coverage acknowledged as an unmeasured limitation of that card's whole audit. gzkit dispatches `narrator`/`implementer`/`quality-reviewer`/`spec-reviewer` and relays their output into ceremony evidence, so the gap was live here. Also retires the two-generations-stale model mapping (`opus` → `claude-opus-4-7`) and compresses it to one line. Prior `0.3.0` — renamed prohibited headings; lifted Rationale to expansion doc (OBPI-0.0.54-04 shape conformance pass).
 
+### Lifted 2026-10-17 at version `0.7.1` (rule now at `0.7.2`)
+
+The version banner as it stood, lifted verbatim to keep the per-turn banner to its one-sentence rationale (drydock RO-1 act d):
+
+> **Rule version:** `0.7.1` — § Do Not no longer offers prompt-level effort as the alternative to a hardcoded model ID, which claim 4 (0.7.0) declares inert, and its example no longer names a superseded model (found by the rule-conflict audit, maintenance visit E, 2026-10-10). Routing policy and claims unchanged. Prior history, including `0.7.0`: [Rule Version History](rule-version-history.md#model-selectionmd).
+
 ## `mx-mode.md`
 
 Lifted 2026-08-29 at version `1.3.0`; `1.4.0`, `1.5.0` and `1.5.1` lifted 2026-10-16 (rule now at `1.5.2`).
@@ -618,11 +690,23 @@ Lifted 2026-08-29 at version `1.3.0`; `1.4.0`, `1.5.0` and `1.5.1` lifted 2026-1
 > `.gzkit/mx.json`; `e2d38c3c0` bumped the
 > HTML marker only (GHI #650). Prior `1.0.0` — initial authoring under ADR-0.0.74 (OBPI-0.0.74-08).
 
+### Lifted 2026-10-17 at version `1.6.0` (rule now at `1.6.1`)
+
+The version banner as it stood, lifted verbatim to keep the per-turn banner to its one-sentence rationale (drydock RO-1 act d):
+
+> **Rule version:** `1.6.0` — safe mode lowers every guard outside the floor to advisory while its marker is open, as the hangar does (operator ruling 2026-10-17, R6, verbatim *"A on all five"*); `hangar_demotes` is true for either mode and the pipeline gate honors the marker. **Binding rules changed:** the safe-mode strength clause of `1.5.2`. Prior `1.5.2` and earlier lifted to [Rule Version History](rule-version-history.md#mx-modemd).
+
 ## `security-sensitivity.md`
 
 Lifted 2026-08-29 at version `0.5.1` (rule now at `0.6.0`).
 
 > **Rule version:** `0.5.1` — aligned the MX-marker path in § 3 to code truth: the hangar marker file is `.gzkit/mx.json` (`src/gzkit/mx/marker.py:29`), not `.gzkit/mx-active` (GHI #650). Prior `0.5.0` — named two unenforced surfaces the rule had been asserting as binding (Pass A conflict-matrix rows 22 and 23, run 2026-07-16). The auto-detect floor's "escape is fail-closed" language silently does not hold inside the MX hangar — `sensitivity` is not in `GATE5_INVARIANTS`, so the scope resolves ADVISORY and its exit-3 errors are dropped; the demotion is deliberate (a fail-closed sensitivity scope would lock the hangar against the briefs an operator enters it to repair — GHI #682) but was unannounced. The § Registry contract's self-bootstrapping clause presupposes an editing brief, which the operator-canon direct-fix path never has, leaving the floor unenforced on the path canon mandates. Both are now stated rather than implied. Prior `0.4.0` — GHI #625: the auto-detect floor now fails closed (`sensitivity-floor-violation`, exit 3) on an *omitted* declaration over a registered overlap, not only on a *wrong* one; pre-cutover briefs are grandfathered via `data/sensitivity_floor_grandfather.json`. Prior `0.3.2` — renamed prohibited `## Anti-patterns` heading → `## Do Not` (OBPI-0.0.54-04 shape conformance pass).
+
+### Lifted 2026-10-17 at version `0.6.0` (rule now at `0.6.1`)
+
+The version banner as it stood, lifted verbatim to keep the per-turn banner to its one-sentence rationale (drydock RO-1 act d):
+
+> **Rule version:** `0.6.0` — diet pass under GHI #921 (operator ruling 2026-08-29, *"we are compressing everything and anything that the agent can consume"*). Version history lifted to [Rule Version History](rule-version-history.md#security-sensitivitymd). Binding rules unchanged.
 
 ## `skill-surface-sync.md`
 
@@ -640,6 +724,12 @@ Diet pass under GHI #921 (operator: "A" on the full before/after, 11,719 B → 5
        skill-version: "0.3.0"
      ```
    - **Rules** carry a body-level `<!-- rule-version: X.Y.Z -->` HTML comment immediately after the frontmatter, plus a visible `> **Rule version:** \`X.Y.Z\`` block quote with a one-sentence rationale. The rule frontmatter schema (`RuleFrontmatter` in `src/gzkit/rules/__init__.py`) is `extra="forbid"` and rejects a `skill-version:` key on rule files — that is intentional. The "skill-version" name on a non-skill artifact was a doctrine smell; the body-level marker resolves it.
+
+### Lifted 2026-10-17 at version `0.13.0` (rule now at `0.13.1`)
+
+The version banner as it stood, lifted verbatim to keep the per-turn banner to its one-sentence rationale (drydock RO-1 act d):
+
+> **Rule version:** `0.13.0` — diet pass under GHI #921: the GHI #307/#921 histories, the version-discipline and conflict-resolution tables and the class-classifier narrative lifted to [Rule Version History](rule-version-history.md#skill-surface-syncmd) and [Skill-Surface-Sync Rationale](skill-surface-sync-rationale.md). Binding rules unchanged.
 
 ## Procedure
 
@@ -781,6 +871,12 @@ Lifted 2026-10-11 at version `0.27.0` (rule now at `0.27.1`).
 
 > **Rule version:** `0.27.0` — § Two runners: the per-change gate runs the tests a change touches, and the whole unit tier runs under `gz check --full` (operator ruling 2026-10-11, GHI #1191). Rationale: [Tests — Rationale](tests-rationale.md); history: [Rule Version History](#testsmd).
 
+### Lifted 2026-10-17 at version `0.27.1` (rule now at `0.27.2`)
+
+The version banner as it stood, lifted verbatim to keep the per-turn banner to its one-sentence rationale (drydock RO-1 act d):
+
+> **Rule version:** `0.27.1` — § Two runners cites the scope declaration where it now ships, inside the package at `src/gzkit/check_step_scopes.json`, so every project that installs gzkit runs the same per-change gate (GHI #1192). Binding rules unchanged. Rationale: [Tests — Rationale](tests-rationale.md); history: [Rule Version History](rule-version-history.md#testsmd).
+
 ## `token-block-discipline.md`
 
 ### Lifted 2026-09-24 at version `0.8.0` (rule now at `0.9.0`)
@@ -808,6 +904,12 @@ Lifted 2026-08-29 at version `0.6.0` (rule now at `0.7.0`).
 
 > **Rule version:** `0.6.0` — GHI #764: adds § Binding Sub-Invariant 7 (the exchange record carries an observation report). The record is two things by operator canon — the fact of block vacation AND an observation report of what happened during possession — and only the first half was implemented: the completion writer had three content inlets for seven sections, so four sections emitted boilerplate byte-identical across all 33 records on disk, and those four are the observation report's own subject matter. The implementation summary was also filed under `## Pending Work / Open Loops`, a prospective heading for retrospective content. Inlets are OPTIONAL and sourced from the brief, so GHI #619's input-free floor is unchanged. Prior `0.5.0` — GHI #763: the token block's register entry is an **exchange record**, named and stored as one. It lived in `.gzkit/handoffs/` under session-handoff identifiers, so system membership had to be *inferred* from a shared word, path, and directory rather than read from a discriminator — and was inferred wrongly twice in one session. Records now live in `.gzkit/locks/exchange/` (location types membership), the writers/finder are `exchange`-named in `gzkit.exchange_records`, and `--lock-handoff-coupling` survives as a deprecated alias of `--lock-exchange-coupling`. § Sub-Invariant 5's predicate is now **default-deny**: it admits only the shape an exchange writer emits, so a document kind nobody admitted is refused without having to be enumerated first. The ledger payload key `handoff_path` is FROZEN on the wire — 204 append-only events carry it. Prior `0.4.0` — GHI #756: § Binding Sub-Invariant 5 now names `mode: CHECKPOINT` as a third disqualifier alongside `abandoned: true`. `mode` was `Literal["CREATE", "RESUME"]` and `find_exchange_for_release` never read it, so once the mid-flight bookmark mode existed, a bookmark postdating the claim would have satisfied the release precondition — a token surrendered on the evidence of a session that never departed. The predicate now skips checkpoints at the live gate and `gz validate --lock-exchange-coupling` backstops it on ledger replay. Prior `0.3.1` — diet pass (operator ruling 2026-08-02): lifted § Vocabulary, § Cross-Links, and § Audit Path to `docs/governance/token-block-doctrine.md` (correcting the retired "5:1 governance ratio" citation in transit); binding sub-invariants unchanged. Prior `0.3.0` — added § Binding Sub-Invariant 6 (completion surrender is mechanical): `gz obpi complete` (and the `gz obpi pipeline` sync stage that invokes it) writes the register-entry handoff and releases any held lock automatically (GHI #619), so the token's exit edge no longer requires an operator-authored handoff or a manual `gz obpi lock release`. This does NOT relax Sub-Invariant 5 — completion produces the register entry mechanically rather than demanding the operator author one; the fail-closed manual release path is unchanged for mid-traversal surrender. Prior `0.2.0` — Sub-Invariant 2 minimum-information channels are now named per-field: items 1/2/4 are frontmatter keys, item 3 is the `## Decisions Made` body section. Resolves the rule↔validator↔producer drift where the prose said "frontmatter or body" but both `gz validate --lock-exchange-coupling` and the machine-generated reaping handoff already use frontmatter. Prior `0.1.1` — trimmed railway-history pedagogy while preserving all lock-release and handoff invariants.
 
+### Lifted 2026-10-17 at version `0.9.0` (rule now at `0.9.1`)
+
+The version banner as it stood, lifted verbatim to keep the per-turn banner to its one-sentence rationale (drydock RO-1 act d):
+
+> **Rule version:** `0.9.0` — carries the operator's three-subjects ruling verbatim, so the transit/exchange/handoff fence and the airlock's purposes load where lock and exchange work happens (GHI #1091, sweep finding S08). Prior `0.8.0` lifted to [Rule Version History](rule-version-history.md#token-block-disciplinemd). Binding rules unchanged apart from the carried ruling.
+
 ## `tool-skill-runbook-alignment.md`
 
 ### Lifted 2026-09-17 at version `0.5.0` (rule now at `0.5.1`)
@@ -818,6 +920,12 @@ Lifted 2026-08-29 at version `0.4.0` (rule now at `0.5.0`).
 
 > **Rule version:** `0.4.0` — § When to apply — *Authoring a new CLI verb* now names the wielding skill as **one of seven** obligations and points at `.gzkit/rules/cli.md` § Adding CLI Features — New Subcommand as the authority, instead of reading as the whole requirement. Measured 2026-08-22: the new-verb obligation set was described in three places and no two agreed — this row named 1 obligation, `cli.md` § Consistency named 3, and `cli.md` § New Subcommand named 4, against 7 that fail closed. An author who found this row first shipped a skill and nothing else. This is GHI #787's class recurring on a second surface: a point-of-use coupling checklist that undercounts its own obligations, discovered by the slowest gate rather than the cheapest. One authority, others point at it. Prior `0.3.0` — Movement C family closure, rules arm: adds § Enforcement posture, which states in the rule's own text that Invariant 1 is mechanical while Invariants 2 and 3 are advisory by design. The scorecard carried rows 29 and 30 as **Promotable** for months on the premise that the skill→runbook cross-reference and output-form fixtures were merely unbuilt. They are not merely unbuilt: both invariants turn on *"the same operator moment"*, and no repository surface represents an operator moment as a comparable object — the runbook prescribes verbs in prose, so a checker would have to score the agreement of two prose surfaces, which is grading by shape. The section also names the mechanical witness that DOES exist nearby (`gz validate --cli-alignment`, which catches the renamed-verb half of Invariant 2) so the advisory scope is the residue, not the whole. Re-scored `Judgment` at `docs/governance/advisory-rules-audit.md` rows 29 and 30; re-scoring without this text edit would have been laundering (operator ruling 2026-08-08). Prior `0.2.0` — lifted pedagogy, canonical violations, and enforcement details to rationale doc under GHI #327.
 
+### Lifted 2026-10-17 at version `0.5.2` (rule now at `0.5.3`)
+
+The version banner as it stood, lifted verbatim to keep the per-turn banner to its one-sentence rationale (drydock RO-1 act d):
+
+> **Rule version:** `0.5.2` — remove the follow-up-issue alternative that contradicted the governing same-patch skill obligation (GHI #1043). Prior history: [Rule Version History](rule-version-history.md#tool-skill-runbook-alignmentmd).
+
 ## `brief-heading-conventions.md`
 
 Lifted 2026-08-30 at version `0.1.0` (rule now at `0.2.0`).
@@ -827,11 +935,23 @@ Lifted 2026-08-30 at version `0.1.0` (rule now at `0.2.0`).
 > carried (Pass A run 2026-07-16 marker sweep). Content unchanged; no conflict
 > row was raised against this rule.
 
+### Lifted 2026-10-17 at version `0.2.0` (rule now at `0.2.1`)
+
+The version banner as it stood, lifted verbatim to keep the per-turn banner to its one-sentence rationale (drydock RO-1 act d):
+
+> **Rule version:** `0.2.0` — scored for real under GHI #921 (2026-08-30). This rule sat in `data/advisory_scorecard_grandfather.json`, pinned at `0.1.0` against a version nobody recorded; the pin is stripped by any edit, so its clauses were re-read and its Coverage Ledger rows added or corrected in the same commit. Prior version history lifted to [Rule Version History](rule-version-history.md#brief-heading-conventionsmd). Binding rules unchanged.
+
 ## `changelog-release-notes.md`
 
 Lifted 2026-08-30 at version `1.1.0` (rule now at `1.2.0`).
 
 > **Rule version:** `1.1.0` — the hermetic `gz validate --changelog` structural scope landed; corrected the release-notes enforcement wording (no mechanical release-notes validator exists) (GHI #685).
+
+### Lifted 2026-10-17 at version `1.2.1` (rule now at `1.2.2`)
+
+The version banner as it stood, lifted verbatim to keep the per-turn banner to its one-sentence rationale (drydock RO-1 act d):
+
+> **Rule version:** `1.2.1` — distinguish operator release approval from OBPI/ADR Gate 5 completion (GHI #1041), preserving release review and provenance. Prior history: [Rule Version History](rule-version-history.md#changelog-release-notesmd).
 
 ## `complexity-doctrine.md`
 
@@ -839,17 +959,35 @@ Lifted 2026-08-30 at version `0.3.1` (rule now at `0.4.0`).
 
 > **Rule version:** `0.3.1` — renamed prohibited `## Corpus Anti-Patterns` heading → `## Corpus Disqualifiers` (OBPI-0.0.54-04 shape conformance pass).
 
+### Lifted 2026-10-17 at version `0.4.0` (rule now at `0.4.1`)
+
+The version banner as it stood, lifted verbatim to keep the per-turn banner to its one-sentence rationale (drydock RO-1 act d):
+
+> **Rule version:** `0.4.0` — scored for real under GHI #921 (2026-08-30). This rule sat in `data/advisory_scorecard_grandfather.json`, pinned at `0.3.1` against a version nobody recorded; the pin is stripped by any edit, so its clauses were re-read and its Coverage Ledger rows added or corrected in the same commit. Prior version history lifted to [Rule Version History](rule-version-history.md#complexity-doctrinemd). Binding rules unchanged.
+
 ## `complexity-thresholds.md`
 
 Lifted 2026-08-30 at version `0.4.0` (rule now at `0.5.0`).
 
 > **Rule version:** `0.4.0` — GHI #469: corrected `> See [...]` pointer paths from file-relative `../../docs/...` to repo-root-relative `docs/...` so `gz validate --pointer-anchors` resolves them correctly (ADR-0.0.33 Invariant 3).
 
+### Lifted 2026-10-17 at version `0.5.0` (rule now at `0.5.1`)
+
+The version banner as it stood, lifted verbatim to keep the per-turn banner to its one-sentence rationale (drydock RO-1 act d):
+
+> **Rule version:** `0.5.0` — scored for real under GHI #921 (2026-08-30). This rule sat in `data/advisory_scorecard_grandfather.json`, pinned at `0.4.0` against a version nobody recorded; the pin is stripped by any edit, so its clauses were re-read and its Coverage Ledger rows added or corrected in the same commit. Prior version history lifted to [Rule Version History](rule-version-history.md#complexity-thresholdsmd). Binding rules unchanged.
+
 ## `models.md`
 
 Lifted 2026-08-30 at version `0.1.0` (rule now at `0.2.0`).
 
 > **Rule version:** `0.1.0` — initial shape conformance pass; renamed prohibited heading (OBPI-0.0.54-04).
+
+### Lifted 2026-10-17 at version `0.2.0` (rule now at `0.2.1`)
+
+The version banner as it stood, lifted verbatim to keep the per-turn banner to its one-sentence rationale (drydock RO-1 act d):
+
+> **Rule version:** `0.2.0` — scored for real under GHI #921 (2026-08-30). This rule sat in `data/advisory_scorecard_grandfather.json`, pinned at `0.1.0` against a version nobody recorded; the pin is stripped by any edit, so its clauses were re-read and its Coverage Ledger rows added or corrected in the same commit. Prior version history lifted to [Rule Version History](rule-version-history.md#modelsmd). Binding rules unchanged.
 
 ## `weaponeering.md`
 
@@ -858,3 +996,17 @@ Lifted 2026-08-30 at version `0.1.0` (rule now at `0.2.0`).
 First edition. Six operative claims from the operator's ruling of 2026-10-05 (*"A with
 evidence-cited subtraction and free addition"*); advisory until the runtime check lands with
 the sortie layer proposed after `ADR-0.35.0` briefs 15 to 20. No prior marker.
+
+### Lifted 2026-10-17 at version `0.1.0` (rule now at `0.1.1`)
+
+The version banner as it stood, lifted verbatim to keep the per-turn banner to its one-sentence rationale (drydock RO-1 act d):
+
+> **Rule version:** `0.1.0` — first edition, from R&D run `renewing-vows` (operator ruling 2026-10-05, verbatim: *"A with evidence-cited subtraction and free addition"*; landed on the operator's *"land it"* under the go on row 4, 2026-10-10). **Advisory until its witness lands**: the runtime check is part of the sortie layer proposed after `ADR-0.35.0` briefs 15 to 20. Until then the planner reads this rule and the completion gate does not; a sortie set that departs from it is a finding for the operator, not a refusal.
+
+## `skill-authoring.md`
+
+### Lifted 2026-10-17 at version `0.2.0` (rule now at `0.2.1`)
+
+The version banner as it stood, lifted verbatim to keep the per-turn banner to its one-sentence rationale (drydock RO-1 act d):
+
+> **Rule version:** `0.2.0` — clause 6 carries the compress-before-lift order (operator ruling 2026-09-20, *"if we hit a limit then the agent htting the limit needs to stop and look for opportunities for compression and merging. We can't just have these grow, we need a discipline."*). `0.1.1` — the declared standard for skill bodies (operator ruling 2026-09-19, *"its both an authoring AND chore scope"*); until now the only statement of it lived inside the `skill-authoring-quality` chore.

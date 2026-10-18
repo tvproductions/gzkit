@@ -7,11 +7,11 @@ paths:
 description: GitHub CLI guardrails and cross-repo filing protocol.
 ---
 
-<!-- rule-version: 0.7.0 -->
+<!-- rule-version: 0.7.1 -->
 
 # GitHub CLI Guardrails (gzkit)
 
-> **Rule version:** `0.7.0` — operator ruling 2026-09-27 (*"Add reopen to the rule"*): § Allowed commands gains `gh issue reopen`. `/ghi-author` Step 0 requires re-opening a GHI closed in the last 30 days when the same root cause regresses, and this allowlist did not carry the verb, the same unreachable-step gap `0.6.0` closed for `comment`. Measured at GHI #1017, whose regression evidence could not be filed as the skill requires. **Binding rules changed: the allowlist widens by one verb.** Prior `0.6.0` and earlier lifted to [Rule Version History](../../docs/governance/rule-version-history.md#gh-climd).
+> **Rule version:** `0.7.1` — version narrative lifted to [Rule Version History](../../docs/governance/rule-version-history.md#gh-climd); binding rules unchanged.
 
 Use `gh` for defect tracking, ADR closeout, release ceremony, or active brief / explicit user request.
 

@@ -7,9 +7,9 @@ paths:
 
 # Gate 5 Runbook-Code Covenant (gzkit)
 
-<!-- rule-version: 0.3.1 -->
+<!-- rule-version: 0.3.2 -->
 
-> **Rule version:** `0.3.1` — diet pass under GHI #921 (operator ruling 2026-08-30, *"do 3, 4, and 5"*): the superseded `0.3.0`–`0.2.1` version chain is lifted to [Rule Version History](../../docs/governance/rule-version-history.md#gate5-runbook-code-covenantmd), restoring the one-sentence shape `skill-surface-sync.md` § Non-negotiable rules #2 requires. Binding rules unchanged; scoped `docs/**` and `src/gzkit/**`, this rule loads on every docs or source edit, so narrative is the most expensive thing it can carry.
+> **Rule version:** `0.3.2` — version narrative lifted to [Rule Version History](../../docs/governance/rule-version-history.md#gate5-runbook-code-covenantmd); binding rules unchanged.
 
 Documentation is a first-class deliverable and must track behavior changes in the same patch set.
 

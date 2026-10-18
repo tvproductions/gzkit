@@ -6,9 +6,9 @@ paths:
 
 # Pythonic Standards (Idiomatic Code Contract)
 
-<!-- rule-version: 0.5.3 -->
+<!-- rule-version: 0.5.4 -->
 
-> **Rule version:** `0.5.3` — `ty` and `xenon` are spelled as the gates run them, `uv run`, not `uvx` (GHI #921). Prior `0.5.2` and earlier lifted to [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd). Binding rules unchanged.
+> **Rule version:** `0.5.4` — version narrative lifted to [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd); binding rules unchanged.
 
 ## Core Principles
 

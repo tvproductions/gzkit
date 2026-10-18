@@ -8,11 +8,11 @@ paths:
 description: The requirement's kind fixes the sorties a work package flies; subtraction cites evidence, addition is free
 ---
 
-<!-- rule-version: 0.1.0 -->
+<!-- rule-version: 0.1.1 -->
 
 # Weaponeering (gzkit)
 
-> **Rule version:** `0.1.0` — first edition, from R&D run `renewing-vows` (operator ruling 2026-10-05, verbatim: *"A with evidence-cited subtraction and free addition"*; landed on the operator's *"land it"* under the go on row 4, 2026-10-10). **Advisory until its witness lands**: the runtime check is part of the sortie layer proposed after `ADR-0.35.0` briefs 15 to 20. Until then the planner reads this rule and the completion gate does not; a sortie set that departs from it is a finding for the operator, not a refusal.
+> **Rule version:** `0.1.1` — version narrative lifted to [Rule Version History](../../docs/governance/rule-version-history.md#weaponeeringmd); binding rules unchanged.
 
 ## Operative claims
 

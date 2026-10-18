@@ -6,11 +6,11 @@ paths:
 description: Security-sensitivity third axis of attestation rigor (ADR-0.0.22).
 ---
 
-<!-- rule-version: 0.6.0 -->
+<!-- rule-version: 0.6.1 -->
 
 # Security Sensitivity (gzkit)
 
-> **Rule version:** `0.6.0` — diet pass under GHI #921 (operator ruling 2026-08-29, *"we are compressing everything and anything that the agent can consume"*). Version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#security-sensitivitymd). Binding rules unchanged.
+> **Rule version:** `0.6.1` — version narrative lifted to [Rule Version History](../../docs/governance/rule-version-history.md#security-sensitivitymd); binding rules unchanged.
 
 ## Invariant
 

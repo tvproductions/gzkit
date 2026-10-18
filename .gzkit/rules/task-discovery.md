@@ -7,11 +7,11 @@ paths:
 description: Four-channel TASK attribution discovery taxonomy for governance traceability
 ---
 
-<!-- rule-version: 0.10.0 -->
+<!-- rule-version: 0.10.1 -->
 
 # TASK Discovery (gzkit)
 
-> **Rule version:** `0.10.0` — diet pass under GHI #921: rollout histories (GHI #752/#753 deferrals, the 19-day `_crossing_channels` split, the trailer-set recurrence measurement) lifted to [Rule Version History](../../docs/governance/rule-version-history.md#task-discoverymd); `paths:` narrowed from `.gzkit/**` and `docs/design/adr/**` to the surfaces the four channels are written on (`.gzkit/hooks/**`, the OBPI briefs), since the old scope fanned this rule into every `.gzkit` and ADR subtree contract. Binding rules unchanged.
+> **Rule version:** `0.10.1` — version narrative lifted to [Rule Version History](../../docs/governance/rule-version-history.md#task-discoverymd); binding rules unchanged.
 
 ## Invariant
 

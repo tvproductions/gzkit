@@ -7,11 +7,11 @@ paths:
 description: Cross-platform development policy (Windows, macOS, Linux — co-equal)
 ---
 
-<!-- rule-version: 0.7.0 -->
+<!-- rule-version: 0.7.1 -->
 
 # Cross-Platform Development Policy (Binding)
 
-> **Rule version:** `0.7.0` — diet pass under GHI #921 (operator ruling 2026-08-29, *"we are compressing everything and anything that the agent can consume"*). Version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#cross-platformmd). Binding rules unchanged.
+> **Rule version:** `0.7.1` — version narrative lifted to [Rule Version History](../../docs/governance/rule-version-history.md#cross-platformmd); binding rules unchanged.
 
 **Platforms:** Windows, macOS, Linux — co-equal. Max cross-platform; no platform is favored over another.
 

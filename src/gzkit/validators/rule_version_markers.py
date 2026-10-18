@@ -18,6 +18,11 @@ Two violations are detected:
     are required by the same clause, and `skill-surface-sync.md`
     § Conflict resolution keys on version equality — a bump applied to one and
     not the other reintroduces the ambiguity the marker exists to remove.
+``banner-not-one-sentence``
+    The block quote's rationale runs past one sentence. The same clause asks for
+    a one-sentence rationale; the banner loads on every turn the rule applies,
+    and version history accreted there (10,707 B over 27 rules, measured
+    2026-10-17) belongs in ``docs/governance/rule-version-history.md``.
 
 Read-only by contract — never writes files, never invokes shell=True, never
 calls an LLM, never reads outside ``.gzkit/rules/*.md``.
@@ -26,6 +31,7 @@ calls an LLM, never reads outside ``.gzkit/rules/*.md``.
 from __future__ import annotations
 
 import re
+from itertools import takewhile
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
@@ -45,6 +51,9 @@ _EXEMPT_FILENAMES = NESTED_SURFACE_NAMES
 
 _MARKER_RE = re.compile(r"<!--\s*rule-version:\s*(\d+\.\d+\.\d+)\s*-->")
 _BLOCKQUOTE_RE = re.compile(r">\s*\*\*Rule version:\*\*\s*`(\d+\.\d+\.\d+)`")
+# Code spans carry full stops (`e.g. x`, `a.b.c`) that end no sentence.
+_INERT_RE = re.compile(r"`[^`]*`")
+_SENTENCE_END_RE = re.compile(r"[.!?](?=\s|$)")
 
 
 class MarkerViolation(BaseModel):
@@ -53,7 +62,7 @@ class MarkerViolation(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     file: str
-    reason: Literal["missing-marker", "marker-blockquote-drift"]
+    reason: Literal["missing-marker", "marker-blockquote-drift", "banner-not-one-sentence"]
     marker_version: str | None = None
     blockquote_version: str | None = None
 
@@ -120,7 +129,23 @@ def audit_rule_version_markers(project_root: Path) -> list[MarkerViolation]:
                     blockquote_version=quote.group(1),
                 )
             )
+            continue
+        if _banner_sentences(body, quote.start()) > 1:
+            violations.append(
+                MarkerViolation(
+                    file=path.name,
+                    reason="banner-not-one-sentence",
+                    marker_version=marker.group(1),
+                    blockquote_version=quote.group(1),
+                )
+            )
     return violations
+
+
+def _banner_sentences(body: str, start: int) -> int:
+    """Count the sentences in the version banner: the block-quote lines from ``start``."""
+    banner = takewhile(lambda line: line.startswith(">"), body[start:].splitlines())
+    return len(_SENTENCE_END_RE.findall(_INERT_RE.sub(" ", " ".join(banner))))
 
 
 def run_rule_version_markers(project_root: Path) -> RuleVersionMarkersResult:
@@ -163,6 +188,13 @@ def format_violation(violation: MarkerViolation) -> str:
         return (
             f".gzkit/rules/{violation.file}: no `<!-- rule-version: X.Y.Z -->` marker "
             "(skill-surface-sync.md § Non-negotiable rules #2)"
+        )
+    if violation.reason == "banner-not-one-sentence":
+        return (
+            f".gzkit/rules/{violation.file}: the version banner runs past one sentence; "
+            "keep a one-sentence rationale and lift the rest to "
+            "docs/governance/rule-version-history.md (skill-surface-sync.md "
+            "§ Non-negotiable rules #2)"
         )
     if violation.blockquote_version is None:
         return (

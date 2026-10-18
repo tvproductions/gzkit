@@ -79,6 +79,41 @@ Body with no visible version block quote.
 """
 
 
+_ACCRETED = """---
+id: sample
+paths:
+  - "**/*.py"
+description: A rule whose banner carries its version history
+---
+
+<!-- rule-version: 1.2.3 -->
+
+# Sample
+
+> **Rule version:** `1.2.3` — tightened the scope. Prior `1.2.2` added a clause, and
+> `1.2.1` before it reworded the witness (GHI #1).
+
+Body.
+"""
+
+_ONE_SENTENCE_WITH_LINK_AND_CODE = """---
+id: sample
+paths:
+  - "**/*.py"
+description: A one-sentence banner whose code span holds a full stop
+---
+
+<!-- rule-version: 1.2.4 -->
+
+# Sample
+
+> **Rule version:** `1.2.4` — narrative lifted to
+> [the history](../../docs/x.md#samplemd), `e.g. this` unchanged.
+
+Body.
+"""
+
+
 class RuleVersionMarkerAudit(unittest.TestCase):
     """The audit reports exactly the rules that break the invariant."""
 
@@ -94,6 +129,18 @@ class RuleVersionMarkerAudit(unittest.TestCase):
 
     def test_well_formed_rule_produces_no_violation(self) -> None:
         root = self._tree(sample=_GOOD)
+        self.assertEqual(audit_rule_version_markers(root), [])
+
+    def test_a_banner_of_more_than_one_sentence_is_reported(self) -> None:
+        """skill-surface-sync.md § Non-negotiable rules #2: a one-sentence rationale;
+        version history belongs in rule-version-history, not in the per-turn banner."""
+        root = self._tree(sample=_ACCRETED)
+        violations = audit_rule_version_markers(root)
+        self.assertEqual([v.reason for v in violations], ["banner-not-one-sentence"])
+        self.assertIn("rule-version-history", format_violation(violations[0]))
+
+    def test_a_full_stop_inside_a_code_span_does_not_count(self) -> None:
+        root = self._tree(sample=_ONE_SENTENCE_WITH_LINK_AND_CODE)
         self.assertEqual(audit_rule_version_markers(root), [])
 
     def test_missing_marker_is_reported(self) -> None:

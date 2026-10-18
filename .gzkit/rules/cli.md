@@ -7,9 +7,9 @@ description: CLI contract doctrine and design principles
 
 # CLI Contract Doctrine
 
-<!-- rule-version: 0.9.1 -->
+<!-- rule-version: 0.9.2 -->
 
-> **Rule version:** `0.9.1` — purpose documentation follows the already-settled planned-work versus direct-GHI route (GHI #1043). Prior history: [Rule Version History](../../docs/governance/rule-version-history.md#climd); analysis: [CLI architecture](../../docs/design/cli-architecture-analysis.md).
+> **Rule version:** `0.9.2` — version narrative lifted to [Rule Version History](../../docs/governance/rule-version-history.md#climd); binding rules unchanged.
 
 **Baseline:** [clig.dev](https://clig.dev/). **Canonical specification:** [`docs/design/cli-standards-v3.md`](../../docs/design/cli-standards-v3.md) (ADR-0.0.4) — read its § Document status before citing a section; parts are live-and-met, live-but-unmet, or retired. **Mechanical check:** `uv run gz cli audit`. **Heavy lane trigger:** any CLI contract change — subcommands, flags, exit codes, output schemas.
 

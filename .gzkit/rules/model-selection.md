@@ -9,9 +9,9 @@ description: Token-efficient model routing across skills, subagents, and work su
 
 # Model Selection (gzkit)
 
-<!-- rule-version: 0.7.1 -->
+<!-- rule-version: 0.7.2 -->
 
-> **Rule version:** `0.7.1` — § Do Not no longer offers prompt-level effort as the alternative to a hardcoded model ID, which claim 4 (0.7.0) declares inert, and its example no longer names a superseded model (found by the rule-conflict audit, maintenance visit E, 2026-10-10). Routing policy and claims unchanged. Prior history, including `0.7.0`: [Rule Version History](../../docs/governance/rule-version-history.md#model-selectionmd).
+> **Rule version:** `0.7.2` — version narrative lifted to [Rule Version History](../../docs/governance/rule-version-history.md#model-selectionmd); binding rules unchanged.
 
 ## Operative claims (binding)
 

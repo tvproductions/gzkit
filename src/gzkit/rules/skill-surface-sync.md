@@ -8,11 +8,11 @@ paths:
 description: Version-disciplined editing and sync for skill and rule surfaces
 ---
 
-<!-- rule-version: 0.13.0 -->
+<!-- rule-version: 0.13.1 -->
 
 # Skill & Surface Sync (gzkit)
 
-> **Rule version:** `0.13.0` — diet pass under GHI #921: the GHI #307/#921 histories, the version-discipline and conflict-resolution tables and the class-classifier narrative lifted to [Rule Version History](../../docs/governance/rule-version-history.md#skill-surface-syncmd) and [Skill-Surface-Sync Rationale](../../docs/governance/skill-surface-sync-rationale.md). Binding rules unchanged.
+> **Rule version:** `0.13.1` — version narrative lifted to [Rule Version History](../../docs/governance/rule-version-history.md#skill-surface-syncmd); binding rules unchanged.
 
 ## Non-negotiable rules
 
