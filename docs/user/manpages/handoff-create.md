@@ -62,6 +62,11 @@ Only `--decisions` is argparse-required; the other six section flags are enforce
 by the validation gate, so their absence is a refusal with every empty section
 named at once rather than one error at a time.
 
+Every section flag is **repeatable**: each occurrence adds one line to its section,
+in the order given, so `--decisions "- [operator-ruled] …" --decisions "- [agent-chose] …"`
+writes both entries. Before 2026-10-18 a repeated flag kept only its last value,
+which silently dropped five operator rulings from a handoff.
+
 ---
 
 ## Checkpoint mode (GHI #756)

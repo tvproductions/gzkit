@@ -790,10 +790,6 @@ class TestHandoffCreate(_HandoffCliCase, SilencedConsoleTestCase):
         )
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 class TestHandoffCreateMode(_HandoffCliCase, SilencedConsoleTestCase):
     """`--mode` reaches the written frontmatter (GHI #756).
 
@@ -857,6 +853,48 @@ class TestHandoffCreateMode(_HandoffCliCase, SilencedConsoleTestCase):
             ]
         )
         self.assertEqual(namespace.mode, "CHECKPOINT")
+
+
+class TestHandoffCreateRepeatedSectionFlags(unittest.TestCase):
+    """A repeated section flag accumulates; it never silently keeps only the last.
+
+    Observed 2026-10-18: five `--decisions` flags reached the handler as one, the
+    last, so five operator rulings left a handoff with no refusal. A handoff
+    exists to carry rulings forward, so a dropped value is lost canon.
+    """
+
+    _FLAGS = {
+        "--summary": "summary",
+        "--context": "context",
+        "--decisions": "decisions",
+        "--next-steps": "next_steps",
+        "--pending": "pending",
+        "--verification": "verification",
+        "--evidence": "evidence",
+    }
+
+    def _handler_kwargs(self, argv: list[str]) -> Any:
+        handler = mock.Mock()
+        with mock.patch("gzkit.cli.parser_handoff._lazy", return_value=handler):
+            namespace = _build_parser().parse_args(argv)
+            namespace.func(namespace)
+        return handler.call_args.kwargs
+
+    def test_every_repeated_section_flag_reaches_the_handler_whole(self) -> None:
+        argv = ["handoff", "create", "--slug", "s", "--agent", "g0"]
+        for flag in self._FLAGS:
+            argv += [flag, f"first {flag}", flag, f"second {flag}"]
+        kwargs = self._handler_kwargs(argv)
+        for flag, param in self._FLAGS.items():
+            with self.subTest(flag=flag):
+                self.assertEqual(kwargs[param].splitlines(), [f"first {flag}", f"second {flag}"])
+
+    def test_a_single_flag_is_passed_unchanged(self) -> None:
+        kwargs = self._handler_kwargs(
+            ["handoff", "create", "--slug", "s", "--agent", "g0", "--decisions", "only one"]
+        )
+        self.assertEqual(kwargs["decisions"], "only one")
+        self.assertIsNone(kwargs["summary"])
 
 
 class TestHandoffCreateWarnsOnSilentChainRoot(_HandoffCliCase):
@@ -923,3 +961,7 @@ class TestHandoffCreateWarnsOnSilentChainRoot(_HandoffCliCase):
         self.assertNotIn(
             "--continues-from", emitted, f"First handoff must be quiet; got {emitted!r}"
         )
+
+
+if __name__ == "__main__":
+    unittest.main()

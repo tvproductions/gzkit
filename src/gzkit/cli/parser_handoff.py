@@ -28,6 +28,15 @@ from gzkit.cli.helpers import (
 from gzkit.cli.parser_handler_manifest import _lazy
 
 
+def _joined(values: list[str] | None) -> str | None:
+    """Join a repeated section flag's values, one per line; ``None`` when unsupplied.
+
+    Section flags append rather than keep the last value: a repeated
+    ``--decisions`` once dropped five operator rulings without a refusal.
+    """
+    return None if values is None else "\n".join(values)
+
+
 def _handoff_decide_description(verb: str) -> str:
     """Return the shared description for `decide` and its `authorize` alias."""
     return (
@@ -212,18 +221,32 @@ def register_handoff_parsers(commands: argparse._SubParsersAction) -> None:
     )
     p_create.add_argument("--slug", required=True, help="Filename slug for the handoff")
     p_create.add_argument("--agent", required=True, help="Authoring agent identity")
-    p_create.add_argument("--decisions", required=True, help="Decisions Made section body")
+    p_create.add_argument(
+        "--decisions", required=True, action="append", help="Decisions Made section body"
+    )
     p_create.add_argument("--branch", default=None, help="Branch (default: current git branch)")
-    p_create.add_argument("--summary", default=None, help="Current State Summary section body")
-    p_create.add_argument("--context", default=None, help="Important Context section body")
     p_create.add_argument(
-        "--next-steps", dest="next_steps", default=None, help="Immediate Next Steps section body"
+        "--summary", action="append", default=None, help="Current State Summary section body"
     )
-    p_create.add_argument("--pending", default=None, help="Pending Work / Open Loops section body")
     p_create.add_argument(
-        "--verification", default=None, help="Verification Checklist section body"
+        "--context", action="append", default=None, help="Important Context section body"
     )
-    p_create.add_argument("--evidence", default=None, help="Evidence / Artifacts section body")
+    p_create.add_argument(
+        "--next-steps",
+        dest="next_steps",
+        action="append",
+        default=None,
+        help="Immediate Next Steps section body",
+    )
+    p_create.add_argument(
+        "--pending", action="append", default=None, help="Pending Work / Open Loops section body"
+    )
+    p_create.add_argument(
+        "--verification", action="append", default=None, help="Verification Checklist section body"
+    )
+    p_create.add_argument(
+        "--evidence", action="append", default=None, help="Evidence / Artifacts section body"
+    )
     p_create.add_argument("--obpi", default=None, help="OBPI id this handoff scopes to")
     p_create.add_argument(
         "--continues-from",
@@ -253,15 +276,15 @@ def register_handoff_parsers(commands: argparse._SubParsersAction) -> None:
             adr=a.adr,
             slug=a.slug,
             agent=a.agent,
-            decisions=a.decisions,
+            decisions=_joined(a.decisions),
             settled=a.settled,
             branch=a.branch,
-            summary=a.summary,
-            context=a.context,
-            next_steps=a.next_steps,
-            pending=a.pending,
-            verification=a.verification,
-            evidence=a.evidence,
+            summary=_joined(a.summary),
+            context=_joined(a.context),
+            next_steps=_joined(a.next_steps),
+            pending=_joined(a.pending),
+            verification=_joined(a.verification),
+            evidence=_joined(a.evidence),
             obpi=a.obpi,
             continues_from=a.continues_from,
             session_id=a.session_id,
