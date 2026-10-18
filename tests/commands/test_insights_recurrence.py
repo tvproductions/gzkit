@@ -112,6 +112,25 @@ class TestInsightsRecurrenceCommand(unittest.TestCase):
                 main, ["insights", "recurrence", "2026-01-01T00:00:00+00:00"]
             )
             self.assertEqual(result.exit_code, 1, msg=result.output)
+            self.assertIn("names no insight record or resolvable GHI", result.output)
+
+    def test_a_naive_insight_ts_is_read_as_utc(self) -> None:
+        with self._runner.isolated_filesystem():
+            naive = _rewrite_ts(_remember(self._runner, "f"), datetime(2026, 1, 1))
+            cites = [naive, *self._three_insights(30, 60)]
+            result = self._runner.invoke(main, ["insights", "recurrence", *cites, "--json"])
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+
+    def test_human_output_names_each_pair_inside_one_lease(self) -> None:
+        # output-contract: the human verdict names the pairs counted as one occurrence
+        with self._runner.isolated_filesystem():
+            cites = self._three_insights(0, 2, 60)
+            result = self._runner.invoke(main, ["insights", "recurrence", *cites])
+            self.assertEqual(result.exit_code, 3, msg=result.output)
+            self.assertIn("Recurrence not met", result.output)
+            self.assertIn(cites[0], result.output)
+            self.assertIn(cites[1], result.output)
+            self.assertIn("inside one lease", result.output)
 
     def test_a_ghi_citation_resolves_to_its_creation_time(self) -> None:
         with self._runner.isolated_filesystem():
@@ -137,6 +156,36 @@ class TestInsightsRecurrenceCommand(unittest.TestCase):
             result = self._runner.invoke(main, ["insights", "recurrence", *cites, "--json"])
             self.assertEqual(result.exit_code, 0, msg=result.output)
             self.assertEqual(json.loads(result.output)["required"], 2)
+
+
+class TestGhIssueCreatedAt(unittest.TestCase):
+    """The gh adapter resolves createdAt, and anything unresolved is None."""
+
+    def _call(self, rc: int, out: str):
+        from gzkit.commands.insights import gh_issue_created_at
+
+        with patch("gzkit.utils.run_exec", return_value=(rc, out, "")) as run:
+            try:
+                value = gh_issue_created_at("1257", Path("."))
+            except Exception as exc:  # noqa: BLE001 — the adapter's contract is never to raise
+                self.fail(f"gh_issue_created_at raised {exc!r} on {out!r}")
+        self.assertEqual(run.call_args.args[0][:4], ["gh", "issue", "view", "1257"])
+        return value
+
+    def test_created_at_resolves(self) -> None:
+        self.assertEqual(
+            self._call(0, '{"createdAt": "2026-10-18T13:00:00Z"}'),
+            datetime(2026, 10, 18, 13, tzinfo=UTC),
+        )
+
+    def test_a_failed_gh_call_is_none(self) -> None:
+        # A non-zero exit is not trusted even when stdout parses.
+        self.assertIsNone(self._call(1, '{"createdAt": "2026-10-18T13:00:00Z"}'))
+
+    def test_malformed_payloads_are_none(self) -> None:
+        for out in ("not json", "[]", '{"createdAt": 7}', '{"createdAt": "yesterday"}'):
+            with self.subTest(out=out):
+                self.assertIsNone(self._call(0, out))
 
 
 if __name__ == "__main__":

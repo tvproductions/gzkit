@@ -308,7 +308,11 @@ class TestMinDepthReadsTheRecurrenceRegistry(unittest.TestCase):
                 json.dumps({"min_occurrences": 2}), encoding="utf-8"
             )
             snapshot = root / "snap.json"
-            snapshot.write_text("[]", encoding="utf-8")
+            pairs = [
+                _record(310, "## Class of failure\n\nRoot.\n"),
+                _record(311, "## Class of failure\n\nSame class as #310.\n"),
+            ]
+            snapshot.write_text(json.dumps(pairs), encoding="utf-8")
             out = io.StringIO()
             cwd = Path.cwd()
             os.chdir(root)
@@ -317,7 +321,8 @@ class TestMinDepthReadsTheRecurrenceRegistry(unittest.TestCase):
                     main(["--snapshot", str(snapshot), "--dry-run"])
             finally:
                 os.chdir(cwd)
-        self.assertIn(">= 2 authored diagnoses", out.getvalue())
+        # One pair: one chain reaches the registry's 2, none reaches the old 3.
+        self.assertIn("failure-class-index: 1 chain(s) with >= 2 authored", out.getvalue())
 
     def test_the_headline_counts_chains_at_the_cut_it_names(self):
         # Two pairs: zero chains reach 3 authored, two reach 2.
