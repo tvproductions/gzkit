@@ -62,19 +62,36 @@ def obpi_lock_claim_cmd(
     resolved_agent = resolve_agent(agent)
     existing = read_lock(project_root, obpi_id)
 
-    if existing is not None and not existing.is_expired and existing.agent != resolved_agent:
+    # An expired lock is still held: expiry is booked and announced, never an
+    # eviction (operator ruling 2026-10-18), so it refuses another agent's claim.
+    if existing is not None and existing.agent != resolved_agent:
         if as_json:
-            print(json.dumps({"status": "conflict", "holder": existing.model_dump()}))
+            print(
+                json.dumps(
+                    {
+                        "status": "conflict",
+                        "holder": existing.model_dump(),
+                        "expired": existing.is_expired,
+                    }
+                )
+            )
         else:
             console.print(
                 f"[red]CONFLICT:[/red] {obpi_id} locked by {existing.agent} "
                 f"at {existing.claimed_at} (TTL {existing.ttl_minutes}m, "
                 f"{existing.elapsed_minutes:.0f}m elapsed)"
             )
+            if existing.is_expired:
+                console.print(
+                    "  The lease has expired; the lock stays held and expiry is booked, "
+                    "never evicted. It is freed by its holder's completion, or by "
+                    f"`gz obpi lock release {obpi_id} --force --abandon <category>:<reason>` "
+                    "on the operator's word."
+                )
         sys.exit(1)
 
-    # Same-agent re-claim or expired lock: delete first to make room for the
-    # exclusive-creation write below.
+    # Same-agent re-claim: delete first to make room for the exclusive-creation
+    # write below.
     if existing is not None:
         delete_lock(project_root, obpi_id)
 
@@ -280,12 +297,13 @@ def obpi_lock_check_cmd(obpi_id: str, as_json: bool) -> None:
 
     existing = read_lock(project_root, obpi_id)
 
-    if existing is not None and not existing.is_expired:
+    if existing is not None:
         if as_json:
             print(
                 json.dumps(
                     {
                         "status": "held",
+                        "expired": existing.is_expired,
                         "lock": existing.model_dump(exclude={"is_expired", "elapsed_minutes"}),
                         "elapsed_minutes": round(existing.elapsed_minutes, 1),
                         "remaining_minutes": round(
@@ -296,9 +314,10 @@ def obpi_lock_check_cmd(obpi_id: str, as_json: bool) -> None:
             )
         else:
             remaining = max(0, existing.ttl_minutes - existing.elapsed_minutes)
+            lease = "  [yellow]lease expired[/yellow]" if existing.is_expired else ""
             console.print(
                 f"[green]HELD:[/green] {obpi_id}  agent={existing.agent}  "
-                f"elapsed={existing.elapsed_minutes:.0f}m  remaining={remaining:.0f}m"
+                f"elapsed={existing.elapsed_minutes:.0f}m  remaining={remaining:.0f}m{lease}"
             )
         return  # exit 0
 
@@ -310,7 +329,11 @@ def obpi_lock_check_cmd(obpi_id: str, as_json: bool) -> None:
 
 
 def obpi_lock_list_cmd(adr_id: str | None, as_json: bool) -> None:
-    """List active OBPI locks after reaping expired ones."""
+    """List held OBPI locks, an expired one marked and its expiry booked.
+
+    An expired lock stays held (operator ruling 2026-10-18); only the orphan session
+    lock is reaped.
+    """
     config = ensure_initialized()
     project_root = get_project_root()
 
@@ -320,17 +343,18 @@ def obpi_lock_list_cmd(adr_id: str | None, as_json: bool) -> None:
         ledger=ledger,
         reaper_agent=resolve_agent(None),
     )
-    locks = list_locks(project_root, adr_filter=adr_id)
-    # After reaping, only non-expired locks remain in the directory.
-    # Filter out any that are still expired (race or TTL boundary).
-    active = [lk for lk in locks if not lk.is_expired]
+    active = list_locks(project_root, adr_filter=adr_id)
 
     if as_json:
         print(
             json.dumps(
                 {
                     "locks": [
-                        lk.model_dump(exclude={"is_expired", "elapsed_minutes"}) for lk in active
+                        {
+                            **lk.model_dump(exclude={"is_expired", "elapsed_minutes"}),
+                            "expired": lk.is_expired,
+                        }
+                        for lk in active
                     ],
                     "reaped": [
                         lk.model_dump(exclude={"is_expired", "elapsed_minutes"}) for lk in reaped
@@ -347,8 +371,9 @@ def obpi_lock_list_cmd(adr_id: str | None, as_json: bool) -> None:
             console.print("[dim]No active locks.[/dim]")
             return
         for lk in active:
+            state = "[yellow]LEASE EXPIRED[/yellow]" if lk.is_expired else "[green]ACTIVE[/green]"
             console.print(
-                f"  {lk.obpi_id}  [green]ACTIVE[/green]  agent={lk.agent}  "
+                f"  {lk.obpi_id}  {state}  agent={lk.agent}  "
                 f"elapsed={lk.elapsed_minutes:.0f}m  ttl={lk.ttl_minutes}m"
             )
 

@@ -70,8 +70,8 @@ escalation: the attestation is a true historical record of what was decided on
 its date, the ruling is a true statement of what is decided now, and
 reconciling two true records on an unamendable artifact is a governance
 decision rather than an editing task. Do not stretch the procedure above to
-cover it. Four instances have been escalated and ruled (§ Worked examples 3,
-4 and 5); each ruling decided its own case and none is a procedure for the next one.
+cover it. Five instances have been escalated and ruled (§ Worked examples 3,
+4, 5 and 6); each ruling decided its own case and none is a procedure for the next one.
 
 ## Worked example 1 — four `@covers` tests (GHI #819, `da935dc35`, 2026-08-17)
 
@@ -215,6 +215,30 @@ ADR."* So:
 
 This is the first of the escalations resolved without amending a REQ: the work
 was routed so that the literal assertion stays true.
+
+## Worked example 6 — REQs that assert reaping, after "never evict" (2026-10-18)
+
+The operator ruled that expiry is never an eviction, for the token block as for the
+hangar (*"at worst, we book a status at least expiry and notify"*). Six attested
+BEHAVIOR REQs under Validated `ADR-0.0.14` and `ADR-0.0.41` literally assert reaping
+(`REQ-0.0.14-01-06`, `-01-08`, `REQ-0.0.41-03-02`, `-03-03`, `-03-04`, `-05-02`), and
+two SUPPORT REQs name it in documents (`-01-04`, `-03-06`). No surface repair could
+keep "stale locks are auto-reaped" true.
+
+It was escalated with three choices, on the worked example 3 precedent: amend in place,
+leave as history and drop the `@covers` bindings, or hold the fix. The operator ruled,
+verbatim: *"Amend in place (Rec.)"*. So:
+
+- each REQ line keeps its attested text and gains a dated `Amended 2026-10-18` note
+  quoting the ruling;
+- the covering tests keep their `@covers` tags and assert book-and-announce. Where a
+  REQ still holds for the one lock that is reaped, the orphan `mx-session` lock, its
+  test was moved onto that lock, so `-03-04`'s fail-closed ordering is still exercised
+  and not left passing vacuously;
+- `REQ-0.0.41-05-01` (the 50 % warning) and `REQ-0.0.14-01-05` ("exits 0 when held")
+  were doctrine-neutral and kept their text: an expired lock is still held;
+- `REQ-0.0.41-05-01` and `-05-02` had no `@covers` binding at all (the covering test
+  `-05-02` named never existed); the binding was added with the amendment.
 
 ## What this is not
 

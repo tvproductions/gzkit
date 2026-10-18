@@ -901,6 +901,17 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `token-block-discipline.md`
 
+### `0.10.0` (2026-10-18)
+
+§ Sub-Invariants 3 and 4: an expired work lock is booked as `obpi_lock_lease_expired` and
+announced, never evicted, and another agent's claim over it is refused. The operator ruled that
+the hangar and the token block share one lifecycle and that expiry is booked and notified, then
+selected *"Drydock act under RO-5 (Rec.)"*, *"Holder or your word (Rec.)"* and, for the attested
+REQs that assert reaping, *"Amend in place (Rec.)"*. **Binding rules changed:** reaping now
+applies only to the orphan `mx-session` lock; reaping before expiry with `--force` is gone with
+it. Prior banner (`0.9.1`): *"version narrative lifted to Rule Version History; binding rules
+unchanged."*
+
 ### Lifted 2026-09-24 at version `0.8.0` (rule now at `0.9.0`)
 
 The three-subjects ruling was carried into the rule (GHI #1091). Lifted verbatim as a dated record:

@@ -755,6 +755,31 @@ def obpi_lock_ttl_warning_event(
     )
 
 
+def obpi_lock_lease_expired_event(
+    obpi_id: str,
+    agent: str,
+    claimed_at: str,
+    ttl_minutes: int,
+    elapsed_minutes: float,
+) -> LedgerEvent:
+    """Create an OBPI lock lease-expiry event: a booked status, never an eviction.
+
+    Operator ruling 2026-10-18: expiry is booked and announced, never evicted, for the
+    token block as for the hangar. The lock stays held; the holder's completion or a
+    release with an abandon category on the operator's word frees it.
+    """
+    return LedgerEvent(
+        event="obpi_lock_lease_expired",
+        id=obpi_id,
+        extra={
+            "agent": agent,
+            "claimed_at": claimed_at,
+            "ttl_minutes": ttl_minutes,
+            "elapsed_minutes": elapsed_minutes,
+        },
+    )
+
+
 def pipeline_launched_event(
     obpi_id: str,
     parent_adr: str,

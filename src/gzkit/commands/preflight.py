@@ -19,6 +19,8 @@ from gzkit.lock_manager import (
     reap_expired_locks,
     resolve_agent,
 )
+from gzkit.mx import marker as mx_marker
+from gzkit.mx.marker import SESSION_LOCK_KEY
 from gzkit.pipeline_markers import plan_declares_obpi
 from gzkit.pipeline_runtime import (
     find_stale_pipeline_markers,
@@ -160,18 +162,29 @@ def _receipt_field(source_bytes: bytes, key: str) -> str:
         return "unreadable"
 
 
+def _expired_lock_stays_held(project_root: Path, obpi_id: str) -> bool:
+    """Whether an expired lock stays held: every work lock, and an open hangar's lock.
+
+    An unreadable lock file is not a lock anyone holds, so it stays cleanable.
+    """
+    if obpi_id in ("unreadable", "unknown"):
+        return False
+    return obpi_id != SESSION_LOCK_KEY or mx_marker.is_valid(project_root)
+
+
 def _apply_cleanup(
     project_root: Path,
     ledger: Ledger,
     stale_markers: list[tuple[Path, dict[str, Any]]],
     orphan_receipts: list[tuple[Path, str]],
 ) -> None:
-    """Remove stale markers, PRESERVE orphan receipts, and reap expired locks.
+    """Remove stale markers, PRESERVE orphan receipts, and book or reap expired locks.
 
     Markers are plain artifacts — a raw unlink is correct. Expired locks are
-    tokens: their surrender is routed through the canonical ``reap_expired_locks``
-    so every release writes an ``abandoned_by_reaper`` register entry and emits
-    ``obpi_lock_released`` BEFORE the lock file is removed
+    tokens routed through the canonical ``reap_expired_locks``: an expired work
+    lock is booked and stays held, never evicted (operator ruling 2026-10-18); the
+    orphan session lock is surrendered with an ``abandoned_by_reaper`` register
+    entry and ``obpi_lock_released`` BEFORE its file is removed
     (token-block-discipline.md § Sub-Invariant 3).
 
     Receipts are neither (GHI #967). A plan-audit receipt carries a verdict, so it
@@ -194,6 +207,45 @@ def _apply_cleanup(
     reap_expired_locks(project_root, ledger=ledger, reaper_agent=resolve_agent(None))
 
 
+def _scan_json(stale_markers, orphan_receipts, expired_locks, held: set[str]) -> str:
+    """Render the scan as JSON; each expired lock says whether it stays held."""
+    data = {
+        "stale_markers": [
+            {"path": str(p.name), "obpi_id": str(m.get("obpi_id", "unknown"))}
+            for p, m in stale_markers
+        ],
+        "orphan_receipts": [{"path": str(p.name), "obpi_id": oid} for p, oid in orphan_receipts],
+        "expired_locks": [
+            {"path": str(p.name), "obpi_id": oid, "age_minutes": round(age, 1), "held": oid in held}
+            for p, oid, age in expired_locks
+        ],
+    }
+    return json.dumps(data, indent=2)
+
+
+def _print_held_leases(expired_locks, held: set[str]) -> None:
+    """Announce each expired lock that stays held: booked, never evicted (2026-10-18)."""
+    for path, obpi_id, age in expired_locks:
+        if obpi_id in held:
+            console.print(
+                f"  Expired lease:   {path.name} ({obpi_id}, {age:.0f}m) — held; expiry "
+                "booked, never evicted. Freed by its holder's completion or a release "
+                "on the operator's word."
+            )
+
+
+def _print_issues(stale_markers, orphan_receipts, cleanable) -> None:
+    """List the artifacts --apply would clean."""
+    console.print("Preflight scan:")
+    for path, marker in stale_markers:
+        obpi_id = str(marker.get("obpi_id", "unknown"))
+        console.print(f"  Stale marker:   {path.name} ({obpi_id})")
+    for path, obpi_id in orphan_receipts:
+        console.print(f"  Orphan receipt:  {path.name} ({obpi_id})")
+    for path, obpi_id, age in cleanable:
+        console.print(f"  Expired lock:    {path.name} ({obpi_id}, {age:.0f}m)")
+
+
 def preflight_cmd(*, apply: bool = False, as_json: bool = False) -> None:
     """Scan for stale pipeline artifacts and optionally clean them up."""
     config = ensure_initialized()
@@ -205,41 +257,24 @@ def preflight_cmd(*, apply: bool = False, as_json: bool = False) -> None:
     stale_markers = find_stale_pipeline_markers(plans_dir) if plans_dir.is_dir() else []
     orphan_receipts = _find_orphan_receipts(plans_dir) if plans_dir.is_dir() else []
     expired_locks = _find_expired_locks(locks_dir)
+    held = {oid for _, oid, _ in expired_locks if _expired_lock_stays_held(project_root, oid)}
+    cleanable = [entry for entry in expired_locks if entry[1] not in held]
 
     if as_json:
-        data = {
-            "stale_markers": [
-                {"path": str(p.name), "obpi_id": str(m.get("obpi_id", "unknown"))}
-                for p, m in stale_markers
-            ],
-            "orphan_receipts": [
-                {"path": str(p.name), "obpi_id": oid} for p, oid in orphan_receipts
-            ],
-            "expired_locks": [
-                {"path": str(p.name), "obpi_id": oid, "age_minutes": round(age, 1)}
-                for p, oid, age in expired_locks
-            ],
-        }
-        print(json.dumps(data, indent=2))  # noqa: T201
+        print(_scan_json(stale_markers, orphan_receipts, expired_locks, held))  # noqa: T201
         if apply:
             _apply_cleanup(project_root, ledger, stale_markers, orphan_receipts)
         return
 
-    total = len(stale_markers) + len(orphan_receipts) + len(expired_locks)
-
+    _print_held_leases(expired_locks, held)
+    total = len(stale_markers) + len(orphan_receipts) + len(cleanable)
     if total == 0:
+        if apply and held:
+            _apply_cleanup(project_root, ledger, stale_markers, orphan_receipts)
         console.print("Preflight scan: clean")
         return
 
-    console.print("Preflight scan:")
-    for path, marker in stale_markers:
-        obpi_id = str(marker.get("obpi_id", "unknown"))
-        console.print(f"  Stale marker:   {path.name} ({obpi_id})")
-    for path, obpi_id in orphan_receipts:
-        console.print(f"  Orphan receipt:  {path.name} ({obpi_id})")
-    for path, obpi_id, age in expired_locks:
-        console.print(f"  Expired lock:    {path.name} ({obpi_id}, {age:.0f}m)")
-
+    _print_issues(stale_markers, orphan_receipts, cleanable)
     if apply:
         _apply_cleanup(project_root, ledger, stale_markers, orphan_receipts)
         console.print("Cleanup applied.")

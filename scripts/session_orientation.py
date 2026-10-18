@@ -938,15 +938,15 @@ def collect_remote_state() -> dict | None:
 
 
 def collect_obpi_locks(repo_root: Path) -> list[dict]:
-    """Reap past-TTL OBPI locks, warn on past-50%-TTL ones, return the held ones.
+    """Book past-TTL OBPI locks, warn on past-50%-TTL ones, return every held one.
 
     Mirrors ``gz obpi lock list`` (token-block-discipline.md § Sub-Invariant
-    3/4): each expired lock is reaped through the canonical reaper, which writes
-    an ``abandoned_by_reaper`` register entry and emits ``obpi_lock_released``
-    BEFORE the lock file is removed — the SessionStart auto-reap cadence the
-    rule promises. A held (non-expired) lock past 50% of its TTL is flagged
-    ``ttl_warning: True`` and logged to the ledger (warn-then-reap escalation,
-    GHI #603) — still surfaced, not touched.
+    3/4). Expiry is booked and announced, never evicted (operator ruling
+    2026-10-18): the canonical reaper books each expired work lock once as
+    ``obpi_lock_lease_expired`` and leaves it held, and it is surfaced here with
+    ``lease_expired: True``; only the orphan session lock is still reaped. A live
+    lock past 50% of its TTL is flagged ``ttl_warning: True`` and logged to the
+    ledger (GHI #603) — still surfaced, not touched.
 
     Guarded end-to-end: any failure (gzkit not importable, ledger I/O error)
     degrades to an empty list so the boot hook never crashes (module docstring
@@ -959,9 +959,19 @@ def collect_obpi_locks(repo_root: Path) -> list[dict]:
 
         ledger = Ledger(repo_root / ".gzkit" / "ledger.jsonl")
         reap_expired_locks(repo_root, ledger=ledger, reaper_agent=resolve_agent(None))
-        held = [lock for lock in list_locks(repo_root) if not lock.is_expired]
+        held = list_locks(repo_root)
         result = []
         for lock in held:
+            if lock.is_expired:
+                result.append(
+                    {
+                        "obpi_id": lock.obpi_id,
+                        "agent": lock.agent,
+                        "ttl_warning": False,
+                        "lease_expired": True,
+                    }
+                )
+                continue
             ttl_warning = lock.elapsed_minutes >= lock.ttl_minutes * 0.5
             if ttl_warning:
                 ledger.append(
@@ -1385,7 +1395,12 @@ def render(state: dict, now: datetime) -> str:
                 obpi = lock.get("obpi_id", "?")
                 agent = lock.get("agent", "?")
                 lines.append(f"- {obpi} (claimed by {agent})")
-                if lock.get("ttl_warning"):
+                if lock.get("lease_expired"):
+                    lines.append(
+                        "  - WARNING: lease expired; booked, never evicted. Freed by its holder's "
+                        "completion or an abandon release on the operator's word."
+                    )
+                elif lock.get("ttl_warning"):
                     lines.append(
                         "  - WARNING: past 50% TTL; hand off and release via gz-session-handoff."
                     )

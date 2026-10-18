@@ -47,7 +47,7 @@ categories are rejected at parse time (exit 1).
 | `external_blocker` | External service/dependency failure blocking normal completion |
 | `wrong_obpi_claimed` | Agent claimed a lock intended for a different OBPI; discovered in release window |
 | `tool_failure` | Toolchain crash, corruption, or unrecoverable state requiring operator intervention |
-| `reaping` | Forced surrender of an expired token by a different agent (used by `lock_manager.reap_expired_locks`) |
+| `reaping` | Forced surrender of an expired token by a different agent, on the operator's word (`--force`), or by `lock_manager.reap_expired_locks` for the orphan `mx-session` lock |
 
 ### Fail-closed release (OBPI-03, landed)
 
@@ -62,9 +62,13 @@ validation but does NOT bypass the register-entry requirement.
 
 ### Reaping behavior (OBPI-03)
 
-`lock_manager.reap_expired_locks` (invoked by `gz obpi lock list` and the
-SessionStart hook) makes forcible surrender as auditable as voluntary
-release. For each expired lock the reaper writes an `abandoned_by_reaper`
+An expired work lock is never reaped: its expiry is booked as
+`obpi_lock_lease_expired` and the lock stays held until its holder completes or a
+release with `--force --abandon <category>:<reason>` is made on the operator's word
+(operator ruling 2026-10-18). `lock_manager.reap_expired_locks` (invoked by
+`gz obpi lock list`, `gz preflight` and the SessionStart hook) still reaps the orphan
+`mx-session` lock, whose hangar is no longer open, and makes that surrender as
+auditable as voluntary release: the reaper writes an `abandoned_by_reaper`
 register entry to `.gzkit/locks/exchange/` **before** deleting the lock — frontmatter
 carries `abandoned: true`, `category: reaping`, `abandoned_by`, `abandoned_at`,
 `previous_agent`, plus the Sub-Invariant 2 minimum-information fields — then

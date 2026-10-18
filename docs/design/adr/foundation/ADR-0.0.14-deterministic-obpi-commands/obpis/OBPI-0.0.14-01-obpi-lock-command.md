@@ -108,9 +108,9 @@ accounting for every state transition.
 - [x] REQ-0.0.14-01-03: `gz obpi lock release` removes lock file and emits ledger event
 - [x] REQ-0.0.14-01-04: `gz obpi lock release` rejects wrong owner without `--force` (exit 1)
 - [x] REQ-0.0.14-01-05: `gz obpi lock check` exits 0 when held, 1 when free
-- [x] REQ-0.0.14-01-06: `gz obpi lock list` reaps stale locks and lists active ones
+- [x] REQ-0.0.14-01-06: `gz obpi lock list` reaps stale locks and lists active ones *Amended 2026-10-18 (operator ruling, verbatim "Amend in place (Rec.)"; expiry is never an eviction, "at worst, we book a status at least expiry and notify"):* an expired lock is listed as held, marked expired, and its expiry booked as `obpi_lock_lease_expired`; only the orphan `mx-session` lock is still reaped. Covering tests: `tests/test_obpi_lock_cmd.py::TestLockList`.
 - [x] REQ-0.0.14-01-07: All subcommands produce valid JSON with `--json`
-- [x] REQ-0.0.14-01-08: Stale locks (past TTL) are auto-reaped on claim or list
+- [x] REQ-0.0.14-01-08: Stale locks (past TTL) are auto-reaped on claim or list *Amended 2026-10-18 (operator ruling, verbatim "Amend in place (Rec.)"; expiry is never an eviction, "at worst, we book a status at least expiry and notify"):* an expired work lock is booked and stays held, and a claim over it by another agent is refused; only the orphan `mx-session` lock is still reaped. Covering tests: `tests/test_lock_manager.py::TestReapExpiredLocks`.
 
 ## Completion Checklist
 

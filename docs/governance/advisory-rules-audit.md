@@ -80,7 +80,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `tool-skill-runbook-alignment.md` | `0.5.3` |
 | `tests.md` | `0.27.2` |
 | `task-discovery.md` | `0.10.1` |
-| `token-block-discipline.md` | `0.9.1` |
+| `token-block-discipline.md` | `0.10.0` |
 
 **Re-read 2026-09-19 (GHIs #1040–#1043).** Model selection, release notes, tests, chores, CLI and tool/skill alignment were read against their existing authorities. Corrections concern nested version metadata, release approval terminology, test-tier selectors and same-patch/direct-repair routing. Their binding obligations and scores are unchanged; the release-note curation note below now uses the correct approval subject. No mechanical promotion or new witness is claimed.
 

@@ -154,6 +154,7 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         "mx_session_opened",
         "obpi_completion_uncovered_accept",
         "obpi_lock_claimed",
+        "obpi_lock_lease_expired",
         "obpi_lock_released",
         "obpi_lock_ttl_warning",
         "patch-release",

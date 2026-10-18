@@ -969,7 +969,12 @@ class TestCollectObpiLocks(unittest.TestCase):
         )
         return path
 
-    def test_expired_lock_is_reaped_with_audit_trail(self):
+    @covers("REQ-0.0.41-05-02")
+    def test_expired_lock_is_booked_and_kept(self):
+        """Amended 2026-10-18: REQ-0.0.41-05-02 keeps its attested text; the operator
+        ruled expiry is never an eviction ("Amend in place (Rec.)"). SessionStart still
+        invokes the canonical reaper at full TTL, which now books the expiry and leaves
+        the lock held, surfaced as lease-expired."""
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             expired = (datetime.now(UTC) - timedelta(hours=30)).isoformat()
@@ -977,17 +982,27 @@ class TestCollectObpiLocks(unittest.TestCase):
 
             result = self.mod.collect_obpi_locks(root)
 
-            # No active locks remain to surface ...
-            self.assertEqual(result, [])
-            # ... the lock is surrendered ...
-            self.assertFalse(lock_path.exists())
-            # ... and the surrender is audit-coupled, not a silent vanish.
+            self.assertEqual(
+                result,
+                [
+                    {
+                        "obpi_id": "OBPI-0.2.0-01",
+                        "agent": "agent-a",
+                        "ttl_warning": False,
+                        "lease_expired": True,
+                    }
+                ],
+            )
+            self.assertTrue(lock_path.exists())
             ledger_text = (root / ".gzkit" / "ledger.jsonl").read_text(encoding="utf-8")
-            self.assertIn("obpi_lock_released", ledger_text)
-            # Reaping writes an EXCHANGE record, not a session handoff (GHI #763).
-            exchange = root / ".gzkit" / "locks" / "exchange"
-            register_entries = list(exchange.glob("*OBPI-0.2.0-01*reaped*.md"))
-            self.assertTrue(register_entries, "reaping must write a register entry")
+            self.assertIn("obpi_lock_lease_expired", ledger_text)
+            self.assertNotIn("obpi_lock_released", ledger_text)
+
+    @covers("REQ-0.0.41-05-02")
+    def test_an_expired_lock_renders_its_booked_expiry(self):
+        state = {"obpi_locks": [{"obpi_id": "OBPI-0.2.0-01", "agent": "a", "lease_expired": True}]}
+        text = self.mod.render(state, datetime.now(UTC))
+        self.assertIn("lease expired; booked, never evicted", text)
 
     def test_active_lock_is_surfaced_not_reaped(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -1009,6 +1024,7 @@ class TestCollectObpiLocks(unittest.TestCase):
                 self.assertNotIn("obpi_lock_released", ledger_text)
                 self.assertNotIn("obpi_lock_ttl_warning", ledger_text)
 
+    @covers("REQ-0.0.41-05-01")
     def test_lock_past_warn_threshold_is_flagged_and_logged(self):
         """Sub-Invariant 4: >=50% TTL (not yet expired) warns to console + ledger."""
         with tempfile.TemporaryDirectory() as tmp:

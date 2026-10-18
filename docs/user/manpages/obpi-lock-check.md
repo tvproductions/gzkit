@@ -19,8 +19,8 @@ gz obpi lock check OBPI-X.Y.Z-NN [--json]
 
 | Code | Meaning |
 |------|---------|
-| 0 | OBPI is locked (prints holder info) |
-| 1 | OBPI is free (not locked or lock expired) |
+| 0 | OBPI is locked (prints holder info), including a lock whose lease has expired: it stays held until released (operator ruling 2026-10-18) |
+| 1 | OBPI is free (not locked) |
 
 ## Examples
 
@@ -35,6 +35,7 @@ When held:
 ```json
 {
   "status": "held",
+  "expired": false,
   "lock": { "obpi_id": "...", "agent": "...", ... },
   "elapsed_minutes": 15.2,
   "remaining_minutes": 104.8

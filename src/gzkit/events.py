@@ -331,6 +331,20 @@ class ObpiLockTtlWarningEvent(_EventBase):
     ttl_minutes: int
 
 
+class ObpiLockLeaseExpiredEvent(_EventBase):
+    """obpi_lock_lease_expired event — a work lock outlived its TTL and stays held.
+
+    A booked status, never an eviction (operator ruling 2026-10-18, applied to the
+    token block as to the hangar). Booked once per claim by the lock reaper.
+    """
+
+    event: Literal["obpi_lock_lease_expired"]
+    agent: str
+    claimed_at: str
+    ttl_minutes: int
+    elapsed_minutes: float
+
+
 class ObpiWithdrawnEvent(_EventBase):
     """obpi_withdrawn event — withdrawal record for a non-completing OBPI brief."""
 
@@ -1678,6 +1692,7 @@ TypedLedgerEvent = Annotated[
     | ObpiLockClaimedEvent
     | ObpiLockReleasedEvent
     | ObpiLockTtlWarningEvent
+    | ObpiLockLeaseExpiredEvent
     | ObpiWithdrawnEvent
     | ObpiParkedEvent
     | ObpiUnparkedEvent

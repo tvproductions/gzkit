@@ -25,6 +25,7 @@ from gzkit.lock_manager import (
     resolve_agent,
     write_lock,
 )
+from gzkit.mx.marker import SESSION_LOCK_KEY
 
 
 def covers(target: str):  # noqa: D401
@@ -443,43 +444,65 @@ class TestListLocks(unittest.TestCase):
 
 @covers("OBPI-0.0.14-01")
 class TestReapExpiredLocks(unittest.TestCase):
-    """Unit tests for reap_expired_locks()."""
+    """Unit tests for reap_expired_locks().
+
+    Amended 2026-10-18: REQ-0.0.14-01-08 ("Stale locks (past TTL) are auto-reaped on
+    claim or list") keeps its attested text; the operator ruled that expiry is never
+    an eviction ("what are we going to do? evict? at worst, we book a status at least
+    expiry and notify"; then "Amend in place (Rec.)"). An expired work lock is now
+    booked as ``obpi_lock_lease_expired`` and kept; only the orphan session lock, with
+    no open hangar behind it, is still reaped.
+    """
 
     @covers("REQ-0.0.14-01-08")
-    def test_reaps_expired_lock(self):
+    def test_an_expired_work_lock_is_kept(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             old_time = (datetime.now(UTC) - timedelta(minutes=200)).isoformat()
-            expired = _make_lock("OBPI-0.0.14-01", claimed_at=old_time, ttl_minutes=120)
-            write_lock(root, expired)
+            write_lock(root, _make_lock("OBPI-0.0.14-01", claimed_at=old_time, ttl_minutes=120))
 
-            reaped = reap_expired_locks(root)
-            self.assertEqual(len(reaped), 1)
-            self.assertEqual(reaped[0].obpi_id, "OBPI-0.0.14-01")
-            # File should be gone
-            self.assertIsNone(read_lock(root, "OBPI-0.0.14-01"))
+            self.assertEqual(reap_expired_locks(root), [])
+            self.assertIsNotNone(read_lock(root, "OBPI-0.0.14-01"))
+
+    @covers("REQ-0.0.14-01-08")
+    def test_an_expired_work_lock_is_booked_not_released(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            old_time = (datetime.now(UTC) - timedelta(minutes=200)).isoformat()
+            write_lock(
+                root,
+                _make_lock("OBPI-0.0.14-01", agent="agent-a", claimed_at=old_time, ttl_minutes=120),
+            )
+            sink = _CapturingLedger()
+            reap_expired_locks(root, ledger=sink)
+
+            (booked,) = sink.events
+            self.assertEqual(booked.event, "obpi_lock_lease_expired")
+            self.assertEqual(booked.id, "OBPI-0.0.14-01")
+            self.assertEqual(booked.extra["agent"], "agent-a")
+            self.assertEqual(booked.extra["claimed_at"], old_time)
 
     @covers("REQ-0.0.14-01-08")
     def test_preserves_active_lock(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_lock(root, _make_lock("OBPI-0.0.14-01", ttl_minutes=120))
+            sink = _CapturingLedger()
 
-            reaped = reap_expired_locks(root)
-            self.assertEqual(reaped, [])
+            self.assertEqual(reap_expired_locks(root, ledger=sink), [])
             self.assertIsNotNone(read_lock(root, "OBPI-0.0.14-01"))
+            self.assertEqual(sink.events, [])
 
     @covers("REQ-0.0.14-01-08")
-    def test_mixed_reaps_only_expired(self):
+    def test_the_orphan_session_lock_is_still_reaped(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            old_time = (datetime.now(UTC) - timedelta(minutes=200)).isoformat()
-            write_lock(root, _make_lock("OBPI-0.0.14-01", claimed_at=old_time, ttl_minutes=120))
-            write_lock(root, _make_lock("OBPI-0.0.14-02", ttl_minutes=120))
+            old_time = (datetime.now(UTC) - timedelta(minutes=2000)).isoformat()
+            write_lock(root, _make_lock(SESSION_LOCK_KEY, claimed_at=old_time, ttl_minutes=120))
+            write_lock(root, _make_lock("OBPI-0.0.14-02", claimed_at=old_time, ttl_minutes=120))
 
             reaped = reap_expired_locks(root)
-            self.assertEqual(len(reaped), 1)
-            self.assertEqual(reaped[0].obpi_id, "OBPI-0.0.14-01")
+            self.assertEqual([lock.obpi_id for lock in reaped], [SESSION_LOCK_KEY])
             self.assertIsNotNone(read_lock(root, "OBPI-0.0.14-02"))
 
     @covers("REQ-0.0.14-01-08")
@@ -494,23 +517,28 @@ class TestReapExpiredLocks(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 
+def _orphan_session_lock(root: Path, agent: str = "agent-a") -> None:
+    """An expired mx-session lock with no open hangar: the one lock still reaped."""
+    old_time = (datetime.now(UTC) - timedelta(minutes=2000)).isoformat()
+    write_lock(root, _make_lock(SESSION_LOCK_KEY, agent=agent, claimed_at=old_time))
+
+
 @covers("OBPI-0.0.41-03")
 class TestReapWritesRegisterEntry(unittest.TestCase):
-    """Reaping is as auditable as voluntary release (Sub-Invariant 3)."""
+    """Reaping is as auditable as voluntary release (Sub-Invariant 3).
+
+    Amended 2026-10-18: REQ-0.0.41-03-02 and -03-03 keep their attested text, which
+    now holds for the one lock still reaped, the orphan session lock (operator ruling,
+    "Amend in place (Rec.)"). An expired work lock is booked and kept, so it writes no
+    register entry and emits no release.
+    """
 
     @covers("REQ-0.0.41-03-02")
     def test_reap_writes_abandoned_by_reaper_handoff(self):
         """Each reaped lock yields an abandoned_by_reaper register entry."""
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            old_time = (datetime.now(UTC) - timedelta(minutes=200)).isoformat()
-            expired = _make_lock(
-                "OBPI-0.0.41-03",
-                agent="agent-a",
-                claimed_at=old_time,
-                ttl_minutes=120,
-            )
-            write_lock(root, expired)
+            _orphan_session_lock(root)
 
             reaped = reap_expired_locks(root, reaper_agent="reaper-b")
             self.assertEqual(len(reaped), 1)
@@ -528,16 +556,22 @@ class TestReapWritesRegisterEntry(unittest.TestCase):
             self.assertIn("last_lock_event_timestamp:", text)
             self.assertIn("last_commit_sha:", text)
 
+    @covers("REQ-0.0.41-03-02")
+    def test_an_expired_work_lock_writes_no_register_entry(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            old_time = (datetime.now(UTC) - timedelta(minutes=200)).isoformat()
+            write_lock(root, _make_lock("OBPI-0.0.41-03", claimed_at=old_time, ttl_minutes=120))
+
+            reap_expired_locks(root, reaper_agent="reaper-b")
+            self.assertEqual(list(exchange_dir(root).glob("*.md")), [])
+
     @covers("REQ-0.0.41-03-03")
     def test_reap_emits_ledger_event_with_handoff_path(self):
         """A reaped lock emits obpi_lock_released with handoff_path at the entry."""
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            old_time = (datetime.now(UTC) - timedelta(minutes=200)).isoformat()
-            write_lock(
-                root,
-                _make_lock("OBPI-0.0.41-03", claimed_at=old_time, ttl_minutes=120),
-            )
+            _orphan_session_lock(root)
 
             sink = _CapturingLedger()
             reaped = reap_expired_locks(root, ledger=sink, reaper_agent="reaper-b")
@@ -556,17 +590,24 @@ class TestReapWritesRegisterEntry(unittest.TestCase):
         """Backward-compat: reap_expired_locks(root) with no ledger still reaps."""
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            old_time = (datetime.now(UTC) - timedelta(minutes=200)).isoformat()
-            write_lock(
-                root,
-                _make_lock("OBPI-0.0.41-03", claimed_at=old_time, ttl_minutes=120),
-            )
+            _orphan_session_lock(root)
 
             reaped = reap_expired_locks(root)
             self.assertEqual(len(reaped), 1)
-            self.assertIsNone(read_lock(root, "OBPI-0.0.41-03"))
+            self.assertIsNone(read_lock(root, SESSION_LOCK_KEY))
             # Register entry still written even without a ledger
             self.assertEqual(len(list(exchange_dir(root).glob("*.md"))), 1)
+
+    @covers("REQ-0.0.41-03-03")
+    def test_an_expired_work_lock_emits_no_release(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            old_time = (datetime.now(UTC) - timedelta(minutes=200)).isoformat()
+            write_lock(root, _make_lock("OBPI-0.0.41-03", claimed_at=old_time, ttl_minutes=120))
+            sink = _CapturingLedger()
+
+            reap_expired_locks(root, ledger=sink)
+            self.assertEqual([e for e in sink.events if e.event == "obpi_lock_released"], [])
 
 
 class TestInjectableClockSeam(unittest.TestCase):

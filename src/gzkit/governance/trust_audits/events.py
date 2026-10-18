@@ -149,6 +149,11 @@ _NO_GRAPH_IMPACT: dict[str, str] = {
     "artifact_edited": "Session activity log; consumed by anchor analysis, not graph.",
     "obpi_lock_claimed": "L3 ephemeral lock file; consumed by gz obpi lock, not graph.",
     "obpi_lock_released": "L3 ephemeral lock file; consumed by gz obpi lock, not graph.",
+    "obpi_lock_lease_expired": (
+        "A booked status, never an eviction (operator ruling 2026-10-18): a held work "
+        "lock outlived its TTL and stays held. Consumed by session orientation and "
+        "gz obpi lock, not the artifact graph."
+    ),
     "obpi_lock_ttl_warning": (
         "SessionStart escalation record (token-block-discipline.md § Sub-Invariant 4, "
         "GHI #603) — a held lock crossed 50% TTL. Consumed by session orientation and "

@@ -25,7 +25,11 @@ gz obpi lock claim OBPI-X.Y.Z-NN [--ttl MINUTES] [--agent NAME]
   concurrent claim attempts (ADR-0.0.41 — token-block discipline)
 - Emits `obpi_lock_claimed` event to ledger for audit trail
 - Returns error if lock already held by another agent OR if a
-  concurrent claimer won the race to write the lock file first
+  concurrent claimer won the race to write the lock file first. A lock
+  whose lease has expired is still held: another agent's claim is refused
+  (`status: conflict`, `"expired": true`) and the refusal names the release
+  on the operator's word (operator ruling 2026-10-18). The holder may
+  re-claim its own expired lock.
 
 ## Race-condition interlock
 

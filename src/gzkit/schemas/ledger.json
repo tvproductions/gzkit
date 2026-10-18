@@ -924,6 +924,32 @@
         }
       }
     },
+    "obpi_lock_lease_expired": {
+      "required": [
+        "agent",
+        "claimed_at",
+        "ttl_minutes",
+        "elapsed_minutes"
+      ],
+      "properties": {
+        "agent": {
+          "type": "string",
+          "min_length": 1
+        },
+        "claimed_at": {
+          "type": "string",
+          "min_length": 1
+        },
+        "ttl_minutes": {
+          "type": "integer",
+          "min": 0
+        },
+        "elapsed_minutes": {
+          "type": "number",
+          "min": 0
+        }
+      }
+    },
     "obpi_lock_ttl_warning": {
       "required": [
         "agent",

@@ -222,7 +222,9 @@ class TestLockManagerIO(unittest.TestCase):
             self.assertFalse(result)
 
     @covers("REQ-0.0.14-01-08")
-    def test_reap_expired_locks_removes_expired(self):
+    def test_reap_expired_locks_keeps_an_expired_work_lock(self):
+        """Amended 2026-10-18: expiry is booked and announced, never evicted (operator
+        ruling, "Amend in place (Rec.)"); the attested REQ text stands."""
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             expired_lock = _make_lock(
@@ -231,10 +233,8 @@ class TestLockManagerIO(unittest.TestCase):
                 ttl_minutes=120,
             )
             write_lock(root, expired_lock)
-            reaped = reap_expired_locks(root)
-            self.assertEqual(len(reaped), 1)
-            self.assertEqual(reaped[0].obpi_id, "OBPI-0.0.14-01")
-            self.assertFalse(lock_path(root, "OBPI-0.0.14-01").exists())
+            self.assertEqual(reap_expired_locks(root), [])
+            self.assertTrue(lock_path(root, "OBPI-0.0.14-01").exists())
 
     @covers("REQ-0.0.14-01-08")
     def test_reap_expired_locks_preserves_active(self):
@@ -382,6 +382,47 @@ class TestLockClaim(unittest.TestCase):
             event = json.loads(lines[-1])
             self.assertEqual(event["event"], "obpi_lock_claimed")
             self.assertEqual(event["id"], "OBPI-0.0.14-01")
+
+    @patch("gzkit.commands.obpi_lock.get_project_root")
+    @patch("gzkit.commands.obpi_lock.ensure_initialized")
+    @covers("REQ-0.0.14-01-02")
+    def test_claim_over_another_agents_expired_lock_is_refused(self, mock_init, mock_root):
+        """Amended 2026-10-18: a claim over an expired lock no longer evicts its holder."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _setup_project(tmp)
+            mock_root.return_value = root
+            mock_init.return_value = _mock_config()
+            write_lock(
+                root,
+                _make_lock(obpi_id="OBPI-0.0.14-01", agent="agent-a", claimed_at=_expired_iso()),
+            )
+
+            with patch("builtins.print") as mock_print, self.assertRaises(SystemExit) as ctx:
+                obpi_lock_claim_cmd(
+                    obpi_id="OBPI-0.0.14-01", ttl_minutes=120, as_json=True, agent="agent-b"
+                )
+            self.assertEqual(ctx.exception.code, 1)
+            output = json.loads(mock_print.call_args[0][0])
+            self.assertEqual((output["status"], output["expired"]), ("conflict", True))
+            self.assertEqual(read_lock(root, "OBPI-0.0.14-01").agent, "agent-a")
+
+    @patch("gzkit.commands.obpi_lock.get_project_root")
+    @patch("gzkit.commands.obpi_lock.ensure_initialized")
+    @covers("REQ-0.0.14-01-02")
+    def test_the_holder_may_reclaim_its_expired_lock(self, mock_init, mock_root):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _setup_project(tmp)
+            mock_root.return_value = root
+            mock_init.return_value = _mock_config()
+            write_lock(
+                root,
+                _make_lock(obpi_id="OBPI-0.0.14-01", agent="agent-a", claimed_at=_expired_iso()),
+            )
+
+            obpi_lock_claim_cmd(
+                obpi_id="OBPI-0.0.14-01", ttl_minutes=120, as_json=False, agent="agent-a"
+            )
+            self.assertFalse(read_lock(root, "OBPI-0.0.14-01").is_expired)
 
     @patch("gzkit.commands.obpi_lock.get_project_root")
     @patch("gzkit.commands.obpi_lock.ensure_initialized")
@@ -628,7 +669,10 @@ class TestLockCheck(unittest.TestCase):
     @patch("gzkit.commands.obpi_lock.get_project_root")
     @patch("gzkit.commands.obpi_lock.ensure_initialized")
     @covers("REQ-0.0.14-01-05")
-    def test_check_exits_1_when_expired(self, mock_init, mock_root):
+    def test_check_reports_an_expired_lock_held(self, mock_init, mock_root):
+        """Amended 2026-10-18: expiry is booked and announced, never evicted (operator
+        ruling, "Amend in place (Rec.)"); the attested REQ text stands. An expired lock
+        is still held, so check exits 0."""
         with tempfile.TemporaryDirectory() as tmp:
             root = _setup_project(tmp)
             mock_root.return_value = root
@@ -641,9 +685,10 @@ class TestLockCheck(unittest.TestCase):
             )
             write_lock(root, expired)
 
-            with self.assertRaises(SystemExit) as ctx:
-                obpi_lock_check_cmd(obpi_id="OBPI-0.0.14-01", as_json=False)
-            self.assertEqual(ctx.exception.code, 1)
+            with patch("builtins.print") as mock_print:
+                obpi_lock_check_cmd(obpi_id="OBPI-0.0.14-01", as_json=True)
+            output = json.loads(mock_print.call_args[0][0])
+            self.assertEqual((output["status"], output["expired"]), ("held", True))
 
     @patch("gzkit.commands.obpi_lock.get_project_root")
     @patch("gzkit.commands.obpi_lock.ensure_initialized")
@@ -713,7 +758,9 @@ class TestLockList(unittest.TestCase):
     @patch("gzkit.commands.obpi_lock.ensure_initialized")
     @covers("REQ-0.0.14-01-06")
     @covers("REQ-0.0.14-01-08")
-    def test_list_reaps_expired_before_listing(self, mock_init, mock_root):
+    def test_list_shows_an_expired_lock_still_held(self, mock_init, mock_root):
+        """Amended 2026-10-18: expiry is booked and announced, never evicted (operator
+        ruling, "Amend in place (Rec.)"); the attested REQ text stands."""
         with tempfile.TemporaryDirectory() as tmp:
             root = _setup_project(tmp)
             mock_root.return_value = root
@@ -729,12 +776,9 @@ class TestLockList(unittest.TestCase):
             with patch("builtins.print") as mock_print:
                 obpi_lock_list_cmd(adr_id=None, as_json=True)
                 output = json.loads(mock_print.call_args[0][0])
-                # Expired lock must NOT appear in active locks
-                active_ids = [lk["obpi_id"] for lk in output["locks"]]
-                self.assertNotIn("OBPI-0.0.14-01", active_ids)
-                # It should appear in reaped
-                reaped_ids = [lk["obpi_id"] for lk in output["reaped"]]
-                self.assertIn("OBPI-0.0.14-01", reaped_ids)
+                held = {lk["obpi_id"]: lk["expired"] for lk in output["locks"]}
+                self.assertEqual(held, {"OBPI-0.0.14-01": True})
+                self.assertEqual(output["reaped"], [])
 
     @patch("gzkit.commands.obpi_lock.get_project_root")
     @patch("gzkit.commands.obpi_lock.ensure_initialized")

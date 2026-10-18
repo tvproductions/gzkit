@@ -34,6 +34,7 @@ from gzkit.exchange_records import (
     write_degenerate_exchange,
 )
 from gzkit.lock_manager import lock_path, reap_expired_locks, write_lock
+from gzkit.mx.marker import SESSION_LOCK_KEY
 from tests.commands.common import SilencedConsoleTestCase
 from tests.test_obpi_lock_cmd import _make_lock, _mock_config, _setup_project
 
@@ -244,13 +245,19 @@ class TestReapFailsClosed(unittest.TestCase):
 
     @covers("REQ-0.0.41-03-04")
     def test_reap_fails_closed_when_handoff_write_fails(self) -> None:
-        """Handoff write OSError → lock survives, no event, not in reaped list."""
+        """Handoff write OSError → lock survives, no event, not in reaped list.
+
+        Amended 2026-10-18: expiry is never an eviction (operator ruling, "Amend in
+        place (Rec.)"), so the one lock still reaped is the orphan session lock; the
+        fail-closed ordering is asserted on it. An expired work lock never reaches the
+        write.
+        """
         with tempfile.TemporaryDirectory() as tmp:
             root = _setup_project(tmp)
-            old_time = (datetime.now(UTC) - timedelta(minutes=200)).isoformat()
+            old_time = (datetime.now(UTC) - timedelta(minutes=2000)).isoformat()
             write_lock(
                 root,
-                _make_lock(obpi_id="OBPI-0.0.41-03", claimed_at=old_time, ttl_minutes=120),
+                _make_lock(obpi_id=SESSION_LOCK_KEY, claimed_at=old_time, ttl_minutes=120),
             )
 
             ledger = _CapturingLedger()
@@ -263,7 +270,7 @@ class TestReapFailsClosed(unittest.TestCase):
 
             # Ordering invariant: no handoff → no delete, no event, not reaped.
             self.assertEqual(reaped, [])
-            self.assertTrue(lock_path(root, "OBPI-0.0.41-03").exists())
+            self.assertTrue(lock_path(root, SESSION_LOCK_KEY).exists())
             self.assertEqual(
                 [e for e in ledger.events if e.event == "obpi_lock_released"],
                 [],

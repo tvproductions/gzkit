@@ -306,15 +306,34 @@ def _write_reaping_exchange(project_root: Path, lock: LockData, reaper_agent: st
     return path
 
 
+def _lease_expiry_booked(ledger: _LedgerSink, lock: LockData) -> bool:
+    """Whether this claim's expiry is already booked; a sink that cannot be read has not."""
+    query = getattr(ledger, "query", None)
+    if not callable(query):
+        return False
+    return any(
+        event.id == lock.obpi_id and event.extra.get("claimed_at") == lock.claimed_at
+        for event in query(event_type="obpi_lock_lease_expired")
+    )
+
+
 def reap_expired_locks(
     project_root: Path,
     *,
     ledger: _LedgerSink | None = None,
     reaper_agent: str | None = None,
 ) -> list[LockData]:
-    """Reap expired locks, pairing each surrender with a register entry.
+    """Book expired work locks; reap only the orphan session lock.
 
-    For every expired lock the reaper writes an ``abandoned_by_reaper`` register
+    Operator ruling 2026-10-18 ("at worst, we book a status at least expiry and
+    notify", applied to the token block as to the hangar): an expired work lock is
+    never evicted. It is booked once as ``obpi_lock_lease_expired`` (when *ledger* is
+    given) and stays held; the holder's completion, or a release with an abandon
+    category on the operator's word, frees it. The one lock still reaped is the
+    ``mx-session`` lock with no open hangar behind it, the crash orphan (GHI #848),
+    which no occupant holds. The return value lists the locks reaped.
+
+    For every reaped lock the reaper writes an ``abandoned_by_reaper`` register
     entry BEFORE deleting the lock (token-block discipline § Sub-Invariant 3),
     then deletes the lock, then — only after a successful delete — emits the
     ``obpi_lock_released`` event. The ordering is the load-bearing invariant:
@@ -338,17 +357,32 @@ def reap_expired_locks(
     # then succeeds even when reap is the first caller to touch the ledger stack
     # (e.g. an isolated unit test, which is how the REQ-coverage gate runs).
     import gzkit.ledger  # noqa: F401, PLC0415 — force-load to settle the cycle
-    from gzkit.ledger_events import obpi_lock_released_event  # noqa: PLC0415
+    from gzkit.ledger_events import (  # noqa: PLC0415
+        obpi_lock_lease_expired_event,
+        obpi_lock_released_event,
+    )
 
     agent = reaper_agent or resolve_agent(None)
     reaped: list[LockData] = []
     for lock in list_locks(project_root):
         if not lock.is_expired:
             continue
+        if lock.obpi_id != mx_marker.SESSION_LOCK_KEY:
+            if ledger is not None and not _lease_expiry_booked(ledger, lock):
+                ledger.append(
+                    obpi_lock_lease_expired_event(
+                        obpi_id=lock.obpi_id,
+                        agent=lock.agent,
+                        claimed_at=lock.claimed_at,
+                        ttl_minutes=lock.ttl_minutes,
+                        elapsed_minutes=round(lock.elapsed_minutes, 1),
+                    )
+                )
+            continue
         # The hangar's lease is not evicted while its session is open: expiry is
         # booked and announced instead (GHI #1257, operator ruling 2026-10-18).
         # A session lock no open hangar backs is the crash orphan, reaped as before.
-        if lock.obpi_id == mx_marker.SESSION_LOCK_KEY and mx_marker.is_valid(project_root):
+        if mx_marker.is_valid(project_root):
             continue
         try:
             handoff_path = _write_reaping_exchange(project_root, lock, agent)
