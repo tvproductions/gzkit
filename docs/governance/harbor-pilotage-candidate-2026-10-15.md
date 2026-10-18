@@ -383,7 +383,7 @@ pilot's, because they carry the catalog's shape and the re-cut, which the operat
   body ceiling re-derived.
 - **WP-4 (pilot).** The catalog's first entries, with contracts, from the obligations of
   16 to 20; the three shapes (entry, assignment row, contract) put to the operator first.
-  Amended 2026-10-17: the entries follow [the joined requirements model](ieee/design-candidates.md#the-joined-requirements-model) (`Q-19`), each in one first-class feature area typed functional or non-functional; no entry is authored until the operator ratifies that model and rules its five open points. Amended 2026-10-18: the operator ruled the model and its open points; it now lives in [the requirements model](ieee/requirements-model.md), and entries wait only on the operator's choice of family scheme.
+  Amended 2026-10-17: the entries follow [the joined requirements model](ieee/design-candidates.md#the-joined-requirements-model) (`Q-19`), each in one first-class feature area typed functional or non-functional; no entry is authored until the operator ratifies that model and rules its five open points. Amended 2026-10-18: the operator ruled the model and its open points; it now lives in [the requirements model](ieee/requirements-model.md), and its family legend is ruled (decision 8.3), so entries are no longer blocked on the model.
 - **WP-5.** `extract_plan_tasks` stops dispatching rejected alternatives; interim until
   the dispatch unit is the TASK.
 - **WP-6.** One tracker for the 27 helper-or-loop gates of the 2026-10-14 sweep.

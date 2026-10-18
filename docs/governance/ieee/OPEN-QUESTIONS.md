@@ -649,7 +649,8 @@ selection booked verbatim as an insight record, scope `harbor-pilotage-wp4`), in
 operator's words *"there is something to learn from superpowers-backplane"* and *"work in bdd as
 well, that is a part of requirements management when we KNOW there is user-facing behavior"*. The
 ruled model, its three candidate family schemes and the paper migration test now live in
-[`requirements-model.md`](requirements-model.md). Open: the operator's choice of family scheme. It
+[`requirements-model.md`](requirements-model.md). The family legend was ruled the same day on
+MIL-STD-881's model, product elements plus common elements (decision 8.3). It
 re-rules the 2026-10-05 work-package grammar (no version in any id) and still authorizes no
 migration.
 

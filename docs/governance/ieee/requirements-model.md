@@ -2,7 +2,7 @@
 
 # The requirements model — families, outcomes, REQs, work and release
 
-**2026-10-18. Status: decisions ruled; the family scheme awaits the operator's selection.**
+**2026-10-18. Status: decisions ruled, including the family legend (decision 8.3).**
 Operator: **g0**. This document replaces
 [`design-candidates.md` § The joined requirements model](design-candidates.md#the-joined-requirements-model),
 which recorded the model of 2026-10-17 for ratification with five open points
@@ -121,7 +121,8 @@ the earlier "which REQ states advance".
    shared coverage with a named combined-result owner).
 2. **Starting families.** Drawn from the behaviour gzkit actually has, not from the PRD's FR list;
    every PRD FR and §7 attribute receives a disposition (mapped, split, retired), the operator picks
-   a scheme, and the PRD is then amended to match. The candidates are in § Family schemes.
+   a scheme, and the PRD is then amended to match. The candidates are in § Family schemes; the
+   selection is decision 8.3 below.
 3. **Registry form.** Settled by decisions 2 and 3: the family legend and the catalog live under
    `data/catalog/`; mnemonic codes replace a slug grammar.
 4. **How a feature file declares its area.** Settled by decisions 2 and 4: a feature file belongs to
@@ -152,21 +153,43 @@ resolving through the aliases; regrouping the files by outcome is later drydock 
 **Two axes stay separate**, as before: a REQ's family type (functional or quality attribute) says
 what kind of need it is; its kind (ADR-0.0.59) says which proof channel binds it.
 
-## Family schemes — for the operator's selection
+### 8.3. The family legend — MIL-STD-881's compromise
+
+Ruled 2026-10-18. Torn between Schemes A and B (operator, verbatim: *"torn here, there are reasons for
+A and B"*, then *"so, perhaps MIL-STD-881 had the best compromise?"*), the operator selected one tree
+on the model of MIL-STD-881F: a product-oriented hierarchy whose cross-cutting work sits in a fixed
+set of **common elements** at the second level, siblings of the product, rather than in a second
+hierarchy (Appendix K lists integration, assembly, test and checkout; systems engineering; program
+management; system test and evaluation; data; and others). Scheme A's families are kept and banded:
+
+| Band | Families | The 881 analogue |
+|---|---|---|
+| Product elements, the responsibilities gzkit delivers | X airlock and entry · H session continuity · C control surfaces and corpus · M maintenance · P packaging and release · D decision records | the prime mission product and its subsystems |
+| Common elements, serving every product family | R requirements and work · G gates and verification · A attestation and closeout · L ledger and state · Q quality attributes | R ≈ systems engineering and program management · G ≈ system test and evaluation, and integration and test · L ≈ data · A ≈ acceptance within test and evaluation · Q has no direct analogue: it carries the cross-cutting NFRs (decision 8.1) |
+
+**The placement rule for checks**, as 881 places test: a gate or validator that spans families
+belongs to G; a unit's own `@covers` tests stay with its outcome. A product outcome that relies on a
+common element says so with `depends_on` (the hangar's exit gate depends on G's guard re-run). No
+`loop_stage` facet is kept: "every verification gzkit has" is the G family.
+
+## Family schemes — the candidates, as drafted for selection
+
+Selected: Scheme A, banded as decision 8.3 records. Schemes B and C are kept as the alternatives
+considered.
 
 FDAU's adoption checklist asks which labels "describe stable domain areas, and which currently
 describe a release, team, or temporary campaign", and asks for each family's one-sentence scope.
 Three schemes follow, drawn from the `gz` verb surface and `src/gzkit` as of 2026-10-18. The letters
 are this project's legend, not FDAU's.
 
-### Scheme A — product responsibility (recommended)
+### Scheme A — product responsibility (selected, banded by decision 8.3)
 
 | Letter | Family scope | Belongs | Does not belong |
 |---|---|---|---|
 | R | Requirements and work: intent, the catalog and the labor that delivers it | PRD, constitution, catalog, work packages, task cards, Release Packages; today's `prd`, `constitute`, `specify`, `plan`, `obpi`, `task` verbs | decision records |
 | D | Decision records | ADR authoring, decision status, supersession, pool and promotion, evaluation | delivery state of any kind |
 | L | Ledger and state | the append-only ledger and its schema, state and status views, frontmatter coherence, the alias layer, the backlog board, bulletins | the evidence producers themselves |
-| G | Gates and verification | `check`, tests, smoke, behave, `covers`, drift, test shape, validators, ARB receipts, canaries | human attestation |
+| G | Gates and verification | `check`, tests, smoke, behave, `covers`, drift, test shape, every validator that spans families (the corpus lineage and shape validators among them), ARB receipts, canaries | human attestation; a unit's own tests, which stay with its outcome |
 | A | Attestation and closeout | Gate 5, attestation, closeout, audit, completion reversal | automated verification |
 | X | Airlock and entry | the airlock, permitted entry, ontology imaging, the focused context loader | session memory |
 | H | Session continuity | handoffs, the ruling store, session orientation, insights | ecosystem transit (X) |
@@ -235,15 +258,15 @@ feature flags (P), and the operator bulletin (L, pooled).
 ## Paper migration test
 
 FDAU's five-step test, run on paper on 2026-10-18 over the four kinds of item it names. Codes below
-use Scheme A for illustration only; the operator has not chosen a scheme, and no catalog entry,
-alias or event was written.
+use Scheme A, which the operator then selected (decision 8.3); no catalog entry, alias or event was
+written.
 
 ### Step 1 — freeze and alias
 
 | Item | FDAU's kind | Legacy identity | Under the model |
 |---|---|---|---|
 | ADR-0.0.74 MX hangar | foundation-like ADR | 1 ADR, 20 OBPIs, 77 distinct REQs, 23 test files, 0 tagged scenarios | decision record `ADR-0.0.74` (accepted); family M1 "maintenance hangar" with one outcome per delivered mechanism (marker, checkpoint, floor, enter, exit, MX log, awareness hook, skill binding, lease); item 10 is a withdrawal record, not an outcome; 77 REQs keep their ids as aliases with `member_of` set |
-| ADR-0.35.0 canon-entry corpus landing | feature ADR with a real decision | 1 ADR, 20 OBPIs (11 complete), 169 REQs, 17 feature files, 47 tagged REQs | decision record `ADR-0.35.0` holds the tombstone algebra; items 1–14 become outcomes in C; items 15–20 (pipeline run position, next command, served procedure, dispatch recording, lock continuity, skill cutover) become outcomes in R3, not governed by the tombstone decision |
+| ADR-0.35.0 canon-entry corpus landing | feature ADR with a real decision | 1 ADR, 20 OBPIs (11 complete), 169 REQs, 17 feature files, 47 tagged REQs | decision record `ADR-0.35.0` holds the tombstone algebra; items 1–14 become outcomes in C, except the rendition-lineage validator (item 6) and the corpus shape witness (item 11), which go to G under decision 8.3; items 15–20 (pipeline run position, next command, served procedure, dispatch recording, lock continuity, skill cutover) become outcomes in R3, not governed by the tombstone decision |
 | ADR-0.28.0 focused context loader | feature with no new architectural choice | 1 ADR, 2 OBPIs, 13 REQs, lite lane | one outcome in X with `governed_by: []`; its five numbered "decisions" (a verb, Markdown output, `@covers`-first discovery, two OBPIs, lite lane) are local design choices that belong in the outcome's design, not an ADR |
 | ADR-pool.operator-bulletin | pooled idea | 1 pool file, no OBPIs | outcomes `queued` in L with `depends_on` the token-block and hangar occupancy outcomes; the pool file becomes a decision record with status `proposed` for its four selections |
 
@@ -305,8 +328,9 @@ aliases, and supersession moves decision authority without erasing shipped histo
 
 ### Step 5 — approval
 
-Not reached. The operator chooses a family scheme and approves the compatibility path (RO-2's
-resolver, RO-3's schema) before any creation, audit, promotion or release tooling changes. The
+Half reached. The operator chose the family legend (decision 8.3). The compatibility path (RO-2's
+resolver, RO-3's schema) still needs approval before any creation, audit, promotion or release
+tooling changes. The
 current gates stay in force until then.
 
 ## What adopting the model changes elsewhere
@@ -319,6 +343,6 @@ Nothing below is changed by this document; each is a coupled surface the adoptio
 - The identifier migration program's work-package row (amended there 2026-10-18).
 - `docs/governance/GovZero/adr-lifecycle.md`, its own identifier scheme (already flagged by the
   identifier program's phase 0).
-- The PRD, once a scheme is chosen.
+- The PRD, amended to the dispositions above now that the legend is chosen.
 - The `gz-design`, `gz-obpi-pipeline` and `gz-adr-create` skills, which assume an ADR parents its
   work.
