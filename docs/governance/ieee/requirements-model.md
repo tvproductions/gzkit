@@ -226,7 +226,8 @@ already carried by the `user_facing` flag (decision 10), so the family would rep
 
 ### PRD dispositions
 
-Every PRD item receives one disposition; the PRD is amended to match once a scheme is chosen.
+Every PRD item receives one disposition. The PRD was amended to match on 2026-10-18
+([PRD § 19](../../design/prd/PRD-GZKIT-1.0.0.md#19-amendments)).
 
 | PRD item | A | B | C | Disposition |
 |---|---|---|---|---|
@@ -249,7 +250,9 @@ Every PRD item receives one disposition; the PRD is amended to match once a sche
 | §7 Explainability | Q | Q | Q | mapped |
 | §7 Accessibility | Q | Q | Q | mapped |
 
-**Behaviour the PRD does not name** needs a new FR when the PRD is amended: the airlock (A: X),
+**Behaviour the PRD does not name** received new FRs on 2026-10-18 (FR-013 to FR-031, with the
+requirements catalog itself added as FR-015 and work package and outcome validation as FR-013 and
+FR-014): the airlock (A: X),
 handoffs and the ruling store (H), insights (H), the MX hangar and safe mode (M), chores (M),
 cross-repo issue filing (M), the content corpus and AGENTS.md composition (C), skills and vendor sync
 (C), ARB receipts and canaries (G), task cards and Release Packages (R), patch release, git-sync and
@@ -343,6 +346,6 @@ Nothing below is changed by this document; each is a coupled surface the adoptio
 - The identifier migration program's work-package row (amended there 2026-10-18).
 - `docs/governance/GovZero/adr-lifecycle.md`, its own identifier scheme (already flagged by the
   identifier program's phase 0).
-- The PRD, amended to the dispositions above now that the legend is chosen.
+- ~~The PRD~~ — amended 2026-10-18 (FR-004 retired, FR-005/005a/005b split, FR-013 to FR-031 added).
 - The `gz-design`, `gz-obpi-pipeline` and `gz-adr-create` skills, which assume an ADR parents its
   work.

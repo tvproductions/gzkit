@@ -36,8 +36,8 @@ See [Section 18: Attestation Block](#18-attestation-block) for attestation statu
 - Product/Feature Name: gzkit (GovZero Kit) 1.0.0
 - Author(s): JB
 - Date Created: 2026-01-13
-- Last Updated: 2026-10-10 (amendment pass, § 19)
-- Version: 0.3 (Draft - GovZero Depth Expansion)
+- Last Updated: 2026-10-18 (amendment pass, § 19)
+- Version: 0.4 (Draft - requirements model reconciliation)
 - Constitution: [gzkit Charter](../../user/reference/charter.md)
 - Lane: Heavy (external CLI contract)
 
@@ -300,7 +300,14 @@ gz audit ADR-0.1.0                    # Day N: generate audit
 
 ## 6. Functional Requirements
 
+Each requirement names its family in the [requirements model](../../governance/ieee/requirements-model.md) (decision 8.3: product elements X, H, C, M,
+P, D; common elements R, G, A, L, Q). **As built** means the behaviour ships today; **target** means
+the requirements model rules it and the id-resolution seam (harbor pilotage RO-2) and catalog schema
+(RO-3) must land first; **proposed** means a pool ADR holds it and it is not 1.0 scope until promoted.
+
 ### FR-001: Project Initialization
+
+**Family:** P (packaging and release). **As built.**
 
 `gz init [project-name]` SHALL:
 
@@ -308,15 +315,14 @@ gz audit ADR-0.1.0                    # Day N: generate audit
 - Create `.gzkit/ledger.jsonl` (empty ledger file)
 - Create `.claude/settings.json` with hook configuration
 - Create `.claude/hooks/` directory with ledger-writer script
-- Create `docs/constitutions/` directory
-- Create `docs/briefs/` directory
-- Create `docs/adr/` directory
-- Create `docs/audit/` directory
-- Create `docs/prd/` directory
+- Create the `design/constitutions/`, `design/adr/` and `design/prd/` directories
+- ~~Create `docs/briefs/` and `docs/audit/` directories~~ *(corrected 2026-10-18, § 19: `gz init` creates neither, and the design tree sits at `design/`, not `docs/`)*
 - Append `project_init` event to ledger
 - Fail with clear error if structure already exists (no silent overwrite)
 
 ### FR-002: PRD Management
+
+**Family:** R (requirements and work). **As built.**
 
 `gz prd [name]` SHALL:
 
@@ -330,6 +336,8 @@ gz audit ADR-0.1.0                    # Day N: generate audit
 
 ### FR-003: Constitution Management
 
+**Family:** R (requirements and work). **As built.**
+
 `gz constitute [name]` SHALL:
 
 - Create constitution from template if not exists
@@ -340,32 +348,47 @@ gz audit ADR-0.1.0                    # Day N: generate audit
 
 ### FR-004: Brief Creation
 
-`gz specify <brief-name>` SHALL:
+**Retired 2026-10-18** (§ 19). `gz specify` now creates an OBPI (FR-005a), and no standalone brief
+exists. The intent this requirement carried, a scoped statement written before work begins, is held
+by work package authoring (FR-013). The text stays visible, struck, as the record of what this PRD
+said at 0.3.
 
-- Create brief from template in configured briefs directory
-- Insert constitution reference automatically
-- Generate unique brief ID
-- Append `brief_created` event to ledger with `parent` reference
-- Fail if constitution does not exist
+~~`gz specify <brief-name>` SHALL:~~
+
+- ~~Create brief from template in configured briefs directory~~
+- ~~Insert constitution reference automatically~~
+- ~~Generate unique brief ID~~
+- ~~Append `brief_created` event to ledger with `parent` reference~~
+- ~~Fail if constitution does not exist~~
 
 ### FR-005: ADR Creation
 
+**Family:** D (decision records). **Split 2026-10-18** (§ 19). The ADR is a decision record, a peer
+of the catalog and never its parent (requirements model, decision 9). The lines marked *legacy*
+describe (m)ADR delivery machinery: they hold as built for existing ADRs and retire at migration,
+when work packages (FR-013) carry delivery and outcomes (FR-015) carry the user-facing test that
+selected the lane (decision 10).
+
 `gz plan <adr-name>` SHALL:
 
-- Run mandatory Q&A interview to shape ADR content (including checklist items)
+- Run mandatory Q&A interview to shape ADR content (*legacy:* including checklist items)
 - Create ADR folder structure: `docs/design/adr/{foundation|pre-release|<major>.0}/ADR-X.Y.Z-{slug}/`
 - Create ADR document from template populated with interview answers
-- Create `obpis/` subdirectory for OBPIs
+- *Legacy:* create `obpis/` subdirectory for OBPIs
 - Create `audit/` subdirectory for post-attestation audit
-- Create `ADR-CLOSEOUT-FORM.md` template
+- *Legacy:* create `ADR-CLOSEOUT-FORM.md` template
 - Embed the Q&A transcript in the ADR body as a `## Q&A Transcript` section
-- Link to specified brief(s) via `--brief` flag
-- Determine lane (Lite/Heavy) from interview
+- ~~Link to specified brief(s) via `--brief` flag~~ *(retired with FR-004)*
+- *Legacy:* determine lane (Lite/Heavy) from interview
 - Append `adr_created` event to ledger with `parent` and `blocks` references
-- Fail if referenced brief does not exist
+- ~~Fail if referenced brief does not exist~~ *(retired with FR-004)*
 - Refuse to create ADR without completing interview
 
 ### FR-005a: OBPI Brief Creation
+
+**Family:** R (requirements and work). **Split 2026-10-18** (§ 19): as built for existing ADRs, and
+frozen at migration. Work package authoring (FR-013) succeeds it; existing OBPI identifiers resolve
+to their successors through the ledger's rename events and are never rewritten (decisions 2 and 7).
 
 `gz specify <brief-name> --parent <adr-id> --item <n>` SHALL:
 
@@ -384,6 +407,10 @@ gz audit ADR-0.1.0                    # Day N: generate audit
 
 ### FR-005b: Closeout Ceremony
 
+**Family:** A (attestation and closeout). **Split 2026-10-18** (§ 19): the evidence presentation and
+the attestation stay here, as built, for (m)ADR closeout. Outcome validation (FR-014) succeeds the
+"all OBPIs complete" check for new work.
+
 `gz closeout <adr-id>` SHALL:
 
 - Verify all OBPIs are complete (acceptance criteria met)
@@ -393,13 +420,15 @@ gz audit ADR-0.1.0                    # Day N: generate audit
   - Gate 2: Test command (`uv run -m unittest`)
   - Gate 3: Docs command (`uv run mkdocs build --strict`) (Heavy only)
   - Gate 4: BDD command (`uv run behave`) (Heavy only)
-  - Gate 5: Awaiting human attestation (Heavy only)
+  - Gate 5: Awaiting human attestation (every lane; ADR-0.0.36, corrected 2026-10-18, § 19)
 - Wait for explicit human attestation term
 - Record attestation in ADR-CLOSEOUT-FORM.md
 - Append `closeout_initiated` event to ledger
 - NOT run audit (audit is post-attestation via `gz audit`)
 
 ### FR-006: Gate Verification
+
+**Family:** G (gates and verification). **As built.**
 
 `gz implement` SHALL:
 
@@ -419,6 +448,8 @@ gz audit ADR-0.1.0                    # Day N: generate audit
 
 ### FR-007: State Management
 
+**Family:** L (ledger and state). **As built.**
+
 `gz state` SHALL:
 
 - Parse `.gzkit/ledger.jsonl` and compute current state
@@ -430,6 +461,8 @@ gz audit ADR-0.1.0                    # Day N: generate audit
 
 ### FR-008: Status Display
 
+**Family:** L (ledger and state). **As built.**
+
 `gz status` SHALL:
 
 - Display current lane (Lite/Heavy)
@@ -438,6 +471,8 @@ gz audit ADR-0.1.0                    # Day N: generate audit
 - Support `--json` for machine-readable output
 
 ### FR-009: Attestation Recording
+
+**Family:** A (attestation and closeout). **As built.**
 
 `gz attest` SHALL:
 
@@ -450,6 +485,8 @@ gz audit ADR-0.1.0                    # Day N: generate audit
 
 ### FR-010: Audit Generation
 
+**Family:** A (attestation and closeout). **As built.**
+
 `gz audit` SHALL:
 
 - Generate audit artifact from ADR and gate evidence
@@ -459,6 +496,8 @@ gz audit ADR-0.1.0                    # Day N: generate audit
 - Write to configured audit directory
 
 ### FR-011: Ledger System
+
+**Family:** L (ledger and state). **As built.**
 
 The ledger system SHALL:
 
@@ -486,6 +525,8 @@ The ledger system SHALL:
 
 ### FR-012: Claude Hooks Integration
 
+**Family:** C (control surfaces and corpus). **As built.**
+
 `gz init` SHALL scaffold Claude hooks:
 
 - `.claude/settings.json` with PostToolUse hook configuration
@@ -512,7 +553,210 @@ PreToolUse hooks MAY:
 
 ---
 
+### FR-013: Work Package Authoring
+
+**Family:** R (requirements and work). **Target** (requirements model, decision 6). Succeeds FR-005a.
+
+A work package SHALL:
+
+- Deliver exactly one outcome, and carry a sequential identifier with no version (`WP-<NN>-<slug>`)
+- Freeze that outcome's REQ set as its baseline when the operator freezes it, recorded in the ledger
+- Carry the task cards that execute it (FR-016)
+- Close by the 100% rule: every baselined REQ SATISFIED at its current revision or moved out by a recorded disposition, and nothing landed that no REQ asked for
+- Never be edited after freeze; a reopened outcome takes a new work package, with a ledger record naming the REQs that changed
+
+### FR-014: Outcome Validation
+
+**Family:** A (attestation and closeout). **Target** (requirements model, decision 4). Succeeds the "all OBPIs complete" check of FR-005b.
+
+Outcome validation SHALL:
+
+- Move an outcome from `verified` to `validated` only on a Gate 5 human attestation recorded in the ledger
+- Present the inspector's report on the outcome, not the implementer's summary, to the attesting human
+- Refuse when any member REQ is not SATISFIED at its current revision
+- Record the attestation as its own event, distinct from verification
+
+### FR-015: Requirements Catalog
+
+**Family:** R (requirements and work). **Target** (requirements model, decisions 2 to 5, 8 and 10).
+
+The catalog SHALL:
+
+- Hold families, outcomes and REQs as Layer-1 canon under `data/catalog/`, edited only through `gz` verbs that also book a ledger event
+- Identify families and outcomes by mnemonic code (`H1`, `H1.4`) and REQs by sequential, area-free identifiers, with membership as a field
+- Never reuse a retired code, and never derive parentage from a code's spelling
+- Record each REQ's kind, revision and proof result (SATISFIED, UNSATISFIED or UNKNOWN), with missing evidence UNKNOWN
+- Record `depends_on` edges between outcomes, gates and external boundaries, validated to exist and to be acyclic
+- Record `user_facing` on each outcome, and require a tagged passing scenario for every BEHAVIOR REQ of a user-facing outcome
+- Resolve every legacy `REQ-`, `OBPI-` and `TASK-` identifier through the ledger's rename events
+
+### FR-016: Task Cards
+
+**Family:** R (requirements and work). **As built** (ADR-0.22.0, ADR-0.0.64).
+
+`gz task` SHALL:
+
+- List the TASKs of an OBPI, and start, complete, block or escalate one, each transition appended to the ledger
+- Require a reason to block or escalate
+- Show the TASK fan-out for a REQ
+- Bind each TASK to one commit through its `Task:` trailer
+
+### FR-017: Release Packages
+
+**Family:** R (requirements and work). **Target** (requirements model, decision 7).
+
+A Release Package SHALL:
+
+- Select the outcomes a version is planned to carry, mutable while a target, each change booked as a ledger event
+- Carry the version; no outcome, work package or REQ identifier carries one
+- Leave `released_in` to the ledger release record, which never changes
+
+### FR-018: Airlock
+
+**Family:** X (airlock and entry). **As built** (ADR-0.33.0; calibration in ADR-0.37.0).
+
+`gz airlock` and `gz permitted-entry` SHALL:
+
+- Run an entry preflight (`gz airlock in`) and an exit drift-diff (`gz airlock out`) over the seams a target touches
+- Name any unaccounted seam and its provenance on a NO-GO
+- Offer a third, ad-hoc door (`gz permitted-entry`) for reconnaissance with light repair at most
+- Stay diagnostic-only until calibration rules otherwise: a NO-GO is reported and the verb exits 0
+
+### FR-019: Session Handoffs and the Ruling Store
+
+**Family:** H (session continuity). **As built** (ADR-0.0.65).
+
+`gz handoff` SHALL:
+
+- Author handoffs only through the fail-closed validation gate, refusing any of the seven required sections when empty
+- List and resume handoffs read-only, with a staleness classification
+- Book the operator's resume decision verbatim to the ledger, gating nothing
+- Carry operator rulings forward in an append-only ruling store, searchable with `gz handoff rulings`
+- Archive old handoffs by moving, never deleting, and never orphan a resume chain
+
+### FR-020: Insights
+
+**Family:** H (session continuity). **As built** (ADR-0.0.72).
+
+`gz insights remember` SHALL:
+
+- Append exactly one schema-valid record (defect, defect-resolution, improvement or discovery) to `.gzkit/insights/agent-insights.jsonl`
+- Fail closed, writing nothing, when the type, scope or summary is empty or the type is unknown
+
+### FR-021: Maintenance Hangar and Safe Mode
+
+**Family:** M (maintenance). **As built** (ADR-0.0.74; safe mode in `docs/governance/safe-mode-doctrine.md`).
+
+`gz mx` SHALL:
+
+- Open the hangar only on the operator's word (`gz mx enter`, with a reason and an attestor), writing the marker and a ledger event
+- Make most guards advisory while the marker is present, and never relax the `gate5_invariants` floor
+- Close only through `gz mx exit`, which re-runs every guard at full strength over the captured scope and refuses on any red
+- Book a lease expiry to the ledger and announce it, never evicting the session
+
+### FR-022: Chores
+
+**Family:** M (maintenance). **As built** (ADR-0.0.21, ADR-0.8.0).
+
+`gz chores` SHALL:
+
+- List, show, plan, advise on and run the registered chores, each packaged with its procedure and machine-readable acceptance criteria
+- Report every chore's staleness band without running it, announcing and never gating
+- Audit chore log presence, and re-scaffold missing canonical chores
+
+### FR-023: Cross-Repository Issue Filing
+
+**Family:** M (maintenance). **As built** (ADR-0.0.23).
+
+`gz issue file` SHALL:
+
+- File a defect or enhancement issue against gzkit from any consuming repository
+- Stamp a provenance trailer on the filed issue
+- Support a dry run that files nothing
+
+### FR-024: Content Corpus and AGENTS.md Composition
+
+**Family:** C (control surfaces and corpus). **As built** (ADR-0.0.34, ADR-0.16.0, ADR-0.35.0).
+
+`gz content` SHALL:
+
+- Import, list, show, render and edit control-surface files as canonical content models
+- Append addressed entries to a surface's append-only corpus, and retire a superseded entry by an append-only tombstone (`gz content retire`)
+- Compose a candidate rendition from the corpus and promote it to the committed rendition, landing a corpus delta across every routed consumer (`gz content land`)
+- Keep root `AGENTS.md` byte-identical to the playback of its committed rendition
+
+### FR-025: Skills and Vendor Control-Surface Sync
+
+**Family:** C (control surfaces and corpus). **As built** (ADR-0.4.0, ADR-0.5.0, ADR-0.24.0, ADR-0.0.2).
+
+`gz skill` and `gz agent sync control-surfaces` SHALL:
+
+- Create, list and audit skills, including lifecycle state and mirror parity
+- Regenerate every vendor mirror from the canonical `.gzkit/skills` and rules, so no mirror is edited directly
+
+### FR-026: ARB Receipts
+
+**Family:** G (gates and verification). **As built** (ADR-0.0.24).
+
+`gz arb` SHALL:
+
+- Wrap lint, type checks, coverage and arbitrary steps, emitting a schema-validated receipt for each run
+- Witness a test failing without the code it covers (`gz arb red`)
+- Validate, summarize and archive receipts, never deleting one that is cited
+
+### FR-027: Guard Canaries
+
+**Family:** G (gates and verification). **As built** (GHI #1036).
+
+`gz canary review` SHALL:
+
+- Record the operator's review of one or more guard mutation canaries as ledger events
+- Require the operator's verbatim words and an attestor, never defaulted
+
+### FR-028: Patch Release
+
+**Family:** P (packaging and release). **As built** (ADR-0.0.15).
+
+`gz patch release` SHALL:
+
+- Run the patch release ceremony from the GHIs closed since the previous release, appending a release record to the ledger
+- Support a dry run that changes nothing
+
+### FR-029: Guarded Git Sync
+
+**Family:** P (packaging and release). **As built.**
+
+`gz git-sync` SHALL:
+
+- Fetch before reading divergence, show its plan as a dry run, and act only with `--apply`
+- Never force-push
+- Register the ledger merge driver, which reconciles append-only JSONL as a timestamp-ordered union
+
+### FR-030: Feature Flags
+
+**Family:** P (packaging and release). **As built** (ADR-0.0.8).
+
+`gz flags` and `gz flag explain` SHALL:
+
+- List every registered flag with its resolved value and source, and show only stale flags on request
+- Show one flag's full metadata and resolved state
+
+### FR-031: Operator Bulletin
+
+**Family:** L (ledger and state). **Proposed** (`ADR-pool.operator-bulletin`); not 1.0 scope until promoted.
+
+The bulletin SHALL:
+
+- Derive operator notices from ledger events, with a priority and severity
+- Present them on the board and in the agent's session context
+- Clear a notice when its condition clears
+- Announce occupancy and lease state of work-package token blocks and the MX hangar
+
 ## 7. Non-Functional Requirements
+
+**Family:** Q (quality attributes), every attribute below. Each is an NFR owned by one Q outcome and
+carries `applies_to` (requirements model, decision 8.1); the budgets stated here are illustrative and
+move to JSON when the catalog lands.
 
 ### Performance
 
@@ -601,12 +845,17 @@ PreToolUse hooks MAY:
 
 ### AC-003: Brief Creation
 
-- [ ] `gz specify my-feature` creates brief in configured directory
-- [ ] Brief contains constitution reference
-- [ ] Brief has unique ID
-- [ ] Command fails if no constitution exists
+**Retired 2026-10-18 with FR-004** (§ 19).
+
+- [ ] ~~`gz specify my-feature` creates brief in configured directory~~
+- [ ] ~~Brief contains constitution reference~~
+- [ ] ~~Brief has unique ID~~
+- [ ] ~~Command fails if no constitution exists~~
 
 ### AC-004: ADR Creation
+
+Split with FR-005 (§ 19): the brief-linkage lines retire; the checklist, `obpis/`, closeout-form and
+lane lines hold for legacy (m)ADRs and retire at migration.
 
 - [ ] `gz plan ADR-0.1.0 --brief my-feature` runs mandatory Q&A interview
 - [ ] Interview answers populate ADR template
@@ -614,13 +863,15 @@ PreToolUse hooks MAY:
 - [ ] ADR folder structure created: `docs/design/adr/pre-release/ADR-0.1.0-{slug}/`
 - [ ] `obpis/` and `audit/` subdirectories created
 - [ ] `ADR-CLOSEOUT-FORM.md` template created
-- [ ] ADR contains brief linkage
+- [ ] ~~ADR contains brief linkage~~ *(retired with FR-004)*
 - [ ] ADR contains checklist items from interview
 - [ ] ADR declares lane (Lite/Heavy) from interview
-- [ ] Command fails if referenced brief does not exist
+- [ ] ~~Command fails if referenced brief does not exist~~ *(retired with FR-004)*
 - [ ] Command fails if interview not completed (no skip option)
 
 ### AC-004a: OBPI Generation
+
+Split with FR-005a (§ 19): holds as built for existing ADRs; AC-013 succeeds it for new work.
 
 - [ ] `gz specify setup-db --parent ADR-0.1.0 --item 1` parses checklist item mapping from ADR
 - [ ] One OBPI brief created per checklist item
@@ -631,6 +882,8 @@ PreToolUse hooks MAY:
 - [ ] Command fails if ADR has no checklist items
 
 ### AC-004b: Closeout Ceremony
+
+Split with FR-005b (§ 19): holds for (m)ADR closeout; AC-014 succeeds the OBPI check for new work.
 
 - [ ] `gz closeout ADR-0.1.0` verifies all OBPIs complete
 - [ ] Closeout presents evidence paths and commands only (no outcomes)
@@ -698,6 +951,31 @@ PreToolUse hooks MAY:
 - [ ] Hook fires on Edit/Write to governance artifacts
 - [ ] Hook appends `artifact_edited` event to ledger
 - [ ] Hook includes session ID in event
+
+### AC-013 to AC-031: the requirements added 2026-10-18
+
+One criterion set per requirement added by the § 19 pass of 2026-10-18. A **target** or **proposed**
+requirement's criteria are unchecked until its work lands.
+
+- [ ] AC-013 (FR-013): a frozen work package names one outcome and its REQ baseline in the ledger, and closes only when every baselined REQ is SATISFIED or dispositioned
+- [ ] AC-014 (FR-014): an outcome reaches `validated` only through a recorded Gate 5 attestation, and validation refuses while any member REQ is not SATISFIED
+- [ ] AC-015 (FR-015): a REQ moved between outcomes keeps its id and proof history; a legacy REQ id resolves through the rename events; a cycle in `depends_on` is refused
+- [ ] AC-016 (FR-016): each TASK transition is a ledger event, and block or escalate without a reason is refused
+- [ ] AC-017 (FR-017): moving an outcome to another Release Package changes membership only; `released_in` is unchanged
+- [ ] AC-018 (FR-018): `gz airlock in` names an unaccounted seam and its provenance on a NO-GO and exits 0 while diagnostic-only
+- [ ] AC-019 (FR-019): `gz handoff create` with an empty required section writes nothing; a booked operator ruling is returned by `gz handoff rulings`
+- [ ] AC-020 (FR-020): `gz insights remember` with an empty summary exits non-zero and writes no line
+- [ ] AC-021 (FR-021): `gz mx exit` refuses on any red guard, and an expired lease is booked and announced without eviction
+- [ ] AC-022 (FR-022): the chores staleness report runs no chore and never gates
+- [ ] AC-023 (FR-023): a dry-run `gz issue file` files nothing
+- [ ] AC-024 (FR-024): root `AGENTS.md` matches its committed rendition's playback byte for byte
+- [ ] AC-025 (FR-025): `gz agent sync control-surfaces` regenerates every vendor mirror from canon
+- [ ] AC-026 (FR-026): every ARB run emits a schema-valid receipt, and archiving keeps cited receipts
+- [ ] AC-027 (FR-027): `gz canary review` without an attestor or operator text is refused
+- [ ] AC-028 (FR-028): a dry-run `gz patch release` changes nothing
+- [ ] AC-029 (FR-029): `gz git-sync` without `--apply` changes nothing, and no path force-pushes
+- [ ] AC-030 (FR-030): a flag past its review date appears in the stale list
+- [ ] AC-031 (FR-031): a notice clears when its condition clears
 
 ---
 
@@ -917,3 +1195,34 @@ which received its go on 2026-10-10 ('go on row four'); this entry is part 4 of 
 Not changed by this pass: the PRD's status (Draft), its attestation block, and its
 requirements. The IOC waypoint is sequencing and lives in the campaign plan (§ Amendments
 2026-10-10), not here (ruled 2026-10-07).
+
+### 2026-10-18 — reconciliation with the requirements model (operator-directed)
+
+The operator ruled the requirements model on 2026-10-18 (`docs/governance/ieee/requirements-model.md`,
+including decision 8.2: *"From behaviour, PRD reconciled"*, under which every FR and § 7 attribute takes
+a disposition and the PRD is amended to match) and then directed this pass, verbatim: *"Amend the PRD
+to the dispositions in requirements-model.md: retire FR-004, split FR-005/005a/005b, and add the new
+FRs for the behaviour it doesn't name."*
+
+1. **Families.** Every FR and the § 7 block name their family under the model's legend (decision
+   8.3), and § 6 states what *as built*, *target* and *proposed* mean.
+2. **FR-004 and AC-003 retired.** `gz specify` creates an OBPI; no standalone brief exists. Struck,
+   not deleted. FR-005's brief linkage and AC-004's brief lines retire with it.
+3. **FR-005, FR-005a and FR-005b split.** FR-005 is the decision record (family D), its delivery
+   lines marked *legacy*; FR-005a holds as built and is succeeded by FR-013; FR-005b keeps evidence
+   presentation and attestation and is succeeded by FR-014 for new work. Existing identifiers keep
+   their ids and resolve through rename events.
+4. **FR-013 to FR-031 added**, with AC-013 to AC-031: work packages, outcome validation, the catalog,
+   task cards and Release Packages (R and A, the first three and the fifth *target*); the airlock (X);
+   handoffs, the ruling store and insights (H); the MX hangar and safe mode, chores and cross-repo issue
+   filing (M); the content corpus, skills and vendor sync (C); ARB receipts and guard canaries (G);
+   patch release, git-sync and feature flags (P); and the operator bulletin (L, *proposed*). Each *as
+   built* requirement was written from the verb's help and manpage on 2026-10-18.
+5. **Two corrections found while splitting.** FR-001 named `docs/briefs/`, `docs/adr/` and
+   `docs/audit/`; `gz init` creates `design/adr/`, `design/constitutions/` and `design/prd/`
+   (observed in a scratch repository the same day). FR-005b marked Gate 5 "Heavy only", against
+   `AGENTS.md` § Gate Covenant (ADR-0.0.36): corrected to every lane, as INV-007 was on 2026-10-10.
+
+Not changed by this pass: the PRD's status (Draft), its attestation block, the lane language of
+FR-006 and FR-008 (it moves to the outcome's `user_facing` flag only when the catalog lands), and § 7's
+budgets.
