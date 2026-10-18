@@ -261,7 +261,25 @@ def main(argv: list[str] | None = None) -> int:
         print(  # noqa: T201
             f"[ledger] recorded {len(recorded)} governance {noun} the tool locus did not see"
         )
+    _book_contract_amendment(Path.cwd())
     return 0
+
+
+def _book_contract_amendment(root: Path) -> None:
+    """Book an open safe-mode session's contract when this commit changed it.
+
+    Operator ruling 2026-10-18 ("Hash at entry + amend event"): the commit is the
+    locus at which a contract edit has state, as it is for the backstop above.
+    """
+    from gzkit.mx import contract  # noqa: PLC0415
+
+    try:
+        booked = contract.book_committed_contract_amendment(root)
+    except Exception as exc:  # noqa: BLE001 - never let a recorder break a commit
+        print(f"[ledger] safe-mode contract booking skipped: {exc}", file=sys.stderr)  # noqa: T201
+        return
+    if booked:
+        print("[ledger] recorded an amendment to the open safe-mode contract")  # noqa: T201
 
 
 if __name__ == "__main__":

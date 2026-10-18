@@ -656,7 +656,7 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `mx-mode.md`
 
-Lifted 2026-08-29 at version `1.3.0`; `1.4.0`, `1.5.0` and `1.5.1` lifted 2026-10-16 (rule now at `1.5.2`).
+Lifted 2026-08-29 at version `1.3.0`; `1.4.0`, `1.5.0` and `1.5.1` lifted 2026-10-16; later versions are recorded below as they land (rule now at `1.8.0`).
 
 > **Rule version:** `1.5.1` — § Safe mode points at its doctrine and its contract template, entrenched on the operator's ruling of 2026-10-16 (*"keep these metaphor entrenched in canon"*). Prior `1.5.0` and earlier lifted to [Rule Version History](#mx-modemd). Binding rules unchanged.
 
@@ -689,6 +689,17 @@ Lifted 2026-08-29 at version `1.3.0`; `1.4.0`, `1.5.0` and `1.5.1` lifted 2026-1
 > `docs/governance/advisory-rules-audit.md` row 62. Prior `1.0.1` — marker path aligned to
 > `.gzkit/mx.json`; `e2d38c3c0` bumped the
 > HTML marker only (GHI #650). Prior `1.0.0` — initial authoring under ADR-0.0.74 (OBPI-0.0.74-08).
+
+### `1.8.0` (2026-10-18)
+
+Adds the contract pin to § Safe mode. The safe-mode entry of 2026-10-17 recorded only the
+contract's path; the contract was rewritten three hours later and edited nine times while
+the session stayed open, so the ledger could not say which suspensions and exit conditions
+were in force. Measured against maxim 14 of the operator's Bodies of Knowledge note, the
+operator selected *"Hash at entry + amend event"*. **Binding rules changed:** none removed;
+the entry event and the commit-locus recorder now record the contract. Prior banner
+(`1.7.0`): *"adds § The lease: hangar expiry is booked and announced, never evicted, and exit
+holds the marker through its re-run (operator ruling 2026-10-18, GHI #1257)."*
 
 ### `1.7.0` (2026-10-18)
 

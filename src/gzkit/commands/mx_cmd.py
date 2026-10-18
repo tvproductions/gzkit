@@ -31,6 +31,7 @@ from gzkit.commands.common import console, get_project_root
 from gzkit.ledger import Ledger, LedgerEvent
 from gzkit.lock_manager import LockData
 from gzkit.mx import log, marker
+from gzkit.mx.contract import contract_pin_for
 from gzkit.mx.marker import Marker
 
 
@@ -201,10 +202,13 @@ def _mx_session_opened_event(
     inspection_scope: list[str],
     mode: str = "mx",
     contract: str = "",
+    contract_pin: dict[str, str] | None = None,
 ) -> LedgerEvent:
     """Build the mx_session_opened ledger event (the enter anchor).
 
-    Typed by :class:`gzkit.events.MxSessionOpenedEvent` at parse time.
+    Typed by :class:`gzkit.events.MxSessionOpenedEvent` at parse time. Under safe mode
+    ``contract_pin`` carries the contract's hash and its suspended and exit bodies, so
+    the ledger records what was switched off at entry (operator ruling 2026-10-18).
     """
     return LedgerEvent(
         event="mx_session_opened",
@@ -216,6 +220,7 @@ def _mx_session_opened_event(
             "inspection_scope": list(inspection_scope),
             "mode": mode,
             "contract": contract,
+            **(contract_pin or {}),
         },
     )
 
@@ -339,7 +344,13 @@ def mx_enter_cmd(
     ledger = Ledger(root.joinpath(*_LEDGER_RELPATH))
     ledger.append(
         _mx_session_opened_event(
-            session_id, reason.strip(), attestor.strip(), inspection_scope, mode, contract_path
+            session_id,
+            reason.strip(),
+            attestor.strip(),
+            inspection_scope,
+            mode,
+            contract_path,
+            contract_pin_for(root / contract_path) if contract_path else None,
         )
     )
 

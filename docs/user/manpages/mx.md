@@ -38,6 +38,13 @@ that says what the mode suspends and what still binds; `--mode safe` without a r
 fails closed, and `--mode mx` refuses a contract. `gz mx exit` closes either mode through
 the same hard gate.
 
+**The contract is pinned (operator ruling 2026-10-18).** In safe mode the
+`mx_session_opened` event records the contract's SHA-256 (`contract_sha256`) and the bodies
+of its § What is suspended (`contract_suspended`) and § Exit (`contract_exit`) sections. Each
+commit that changes the contract while the session is open books `mx_contract_amended`, with
+the new hash, the hash it replaces and the commit, through the post-commit ledger recorder.
+An edit that is never committed is not booked.
+
 ### exit
 
 Close the Maintenance Hangar — hard gate.

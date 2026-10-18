@@ -10,11 +10,11 @@ paths:
   - "src/gzkit/mx/awareness.py"
   - "src/gzkit/hooks/guards.py"
 ---
-<!-- rule-version: 1.7.0 -->
+<!-- rule-version: 1.8.0 -->
 
 # MX Mode (Maintenance Hangar) (gzkit)
 
-> **Rule version:** `1.7.0` — adds § The lease: hangar expiry is booked and announced, never evicted, and exit holds the marker through its re-run (operator ruling 2026-10-18, GHI #1257); version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#mx-modemd).
+> **Rule version:** `1.8.0` — safe-mode entry pins its contract in the ledger and each committed contract edit is booked (operator ruling 2026-10-18); version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#mx-modemd).
 
 ## Non-negotiable rules
 
@@ -76,13 +76,18 @@ say which mode is open; the awareness banner names it every turn.
 - **What it records:** every act is one commit with its `Task:` trailer and its
   `gz arb red --commit` witness, and the contract's passage log carries bytes or counts before
   and after.
+- **The contract is pinned** (operator ruling 2026-10-18, *"Hash at entry + amend event"*):
+  `mx_session_opened` carries the contract's SHA-256 and the bodies of its § What is
+  suspended and § Exit sections, and each commit that changes the contract while the session
+  is open books `mx_contract_amended` with the new hash. Edits stay allowed; an edit never
+  committed is not booked.
 - **How it ends:** `gz mx exit`, the same hard gate, then the contract's exit conditions.
 - **Doctrine and template:** `docs/governance/safe-mode-doctrine.md` (the drydock and the
   repair order; safe mode is an occasional flip inside the standing maintenance mode) and
   `.gzkit/templates/safe_mode_contract.md` (the contract the skill reads before entry).
 
 Witness: `tests/mx/test_checkpoint.py::TestSafeMode`, `tests/commands/test_mx_enter.py::TestMxEnterSafeMode`,
-`tests/hooks/test_mx_awareness.py`.
+`tests/hooks/test_mx_awareness.py`, `tests/mx/test_contract_pin.py`.
 
 ### The lease: expiry is booked and announced, never evicted
 

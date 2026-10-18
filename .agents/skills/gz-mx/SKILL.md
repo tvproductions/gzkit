@@ -9,7 +9,7 @@ last_reviewed: 2026-10-18
 model: haiku
 gz_command: mx
 metadata:
-  skill-version: "1.5.2"
+  skill-version: "1.6.0"
 ---
 
 # gz mx
@@ -86,6 +86,9 @@ operator a raw `gz mx` command is a defect in the surface that gave it.
    Same marker, `mode: safe`, bound to its `mx_session_opened` event. The verb refuses a
    missing or outside contract and refuses a contract under `--mode mx`. From this turn
    the banner names the contract; guards outside the floor are advisory until the exit.
+   The entry event pins the contract: its SHA-256 and the bodies of § What is suspended
+   and § Exit. Each commit that edits the contract while the session is open books
+   `mx_contract_amended`, so the ledger always says which version is in force.
 
 3. **Work the repair orders under the contract.** Each act is one commit with its
    `Task:` trailer naming its repair order, its commit-grain witness, and a passage-log

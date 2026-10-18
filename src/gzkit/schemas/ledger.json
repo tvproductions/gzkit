@@ -1951,6 +1951,15 @@
         },
         "contract": {
           "type": "string"
+        },
+        "contract_sha256": {
+          "type": "string"
+        },
+        "contract_suspended": {
+          "type": "string"
+        },
+        "contract_exit": {
+          "type": "string"
         }
       }
     },
@@ -1993,6 +2002,43 @@
           ]
         },
         "supersedes": {
+          "type": "string",
+          "min_length": 1
+        }
+      }
+    },
+    "mx_contract_amended": {
+      "required": [
+        "session_id",
+        "contract",
+        "contract_sha256",
+        "previous_sha256",
+        "contract_suspended",
+        "contract_exit"
+      ],
+      "properties": {
+        "session_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "contract": {
+          "type": "string",
+          "min_length": 1
+        },
+        "contract_sha256": {
+          "type": "string",
+          "min_length": 64
+        },
+        "previous_sha256": {
+          "type": "string"
+        },
+        "contract_suspended": {
+          "type": "string"
+        },
+        "contract_exit": {
+          "type": "string"
+        },
+        "commit": {
           "type": "string",
           "min_length": 1
         }

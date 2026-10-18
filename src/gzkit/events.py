@@ -1034,6 +1034,11 @@ class MxSessionOpenedEvent(_EventBase):
         "mx", description="mx: the hangar; safe: safe mode (GHI #1244)"
     )
     contract: str = Field("", description="Safe-mode contract path; empty under mx")
+    contract_sha256: str = Field("", description="SHA-256 of the contract at entry; safe mode")
+    contract_suspended: str = Field(
+        "", description="The contract's § What is suspended body at entry; safe mode"
+    )
+    contract_exit: str = Field("", description="The contract's § Exit body at entry; safe mode")
 
 
 class MxSessionClosedEvent(_EventBase):
@@ -1062,6 +1067,24 @@ class MxSessionLeaseExpiredEvent(_EventBase):
     opened_at: str = Field(..., description="ISO-8601 ts of the matching mx_session_opened")
     lease_minutes: int = Field(..., description="The lease the session outlived")
     age_minutes: float = Field(..., description="Session age when the expiry was booked")
+
+
+class MxContractAmendedEvent(_EventBase):
+    """mx_contract_amended event — the open safe-mode session's contract changed.
+
+    Operator ruling 2026-10-18, "Hash at entry + amend event": the contract may be
+    edited while safe mode is open, and each committed edit is booked with its new
+    hash, so the ledger says which suspensions and exit conditions were in force.
+    """
+
+    event: Literal["mx_contract_amended"]
+    session_id: str = Field(..., description="The open safe-mode session")
+    contract: str = Field(..., description="The contract path the session was entered under")
+    contract_sha256: str = Field(..., description="SHA-256 of the contract as amended")
+    previous_sha256: str = Field(..., description="The hash this amendment replaces")
+    contract_suspended: str = Field(..., description="§ What is suspended body as amended")
+    contract_exit: str = Field(..., description="§ Exit body as amended")
+    commit: str | None = Field(None, description="The commit that carried the amendment")
 
 
 class InsightRecordedEvent(_EventBase):
@@ -1696,6 +1719,7 @@ TypedLedgerEvent = Annotated[
     | MxSessionClosedEvent
     | MxSessionLeaseExpiredEvent
     | InsightRecordedEvent
+    | MxContractAmendedEvent
     | BlocksEvent
     | BlockedByEvent
     | DiscoveredFromEvent
