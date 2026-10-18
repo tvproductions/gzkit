@@ -644,9 +644,22 @@ with its five open points. **Scope:** a recorded model awaiting ratification. It
 earlier ruling, changes no identifier, parser or proof binding, and authorizes no migration; the
 harbor pilotage contract's WP-4 waits on it.
 
+**RULED 2026-10-18 — the model's decisions.** The operator ruled it one decision at a time (each
+selection booked verbatim as an insight record, scope `harbor-pilotage-wp4`), including the
+operator's words *"there is something to learn from superpowers-backplane"* and *"work in bdd as
+well, that is a part of requirements management when we KNOW there is user-facing behavior"*. The
+ruled model, its three candidate family schemes and the paper migration test now live in
+[`requirements-model.md`](requirements-model.md). Open: the operator's choice of family scheme. It
+re-rules the 2026-10-05 work-package grammar (no version in any id) and still authorizes no
+migration.
+
 ---
 
 ## Amendments
+
+- **2026-10-18 — `Q-19` ruled.** Pointed at `requirements-model.md`, which replaces
+  `design-candidates.md` § The joined requirements model (kept there as the 2026-10-17 record).
+  Re-ruled: the work-package identifier drops its version.
 
 - **2026-10-17 — `Q-19` records the joined requirements model.** Preserved the operator's words on
   first-class feature areas, the functional / non-functional split, BDD and the ladder, and

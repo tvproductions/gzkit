@@ -98,7 +98,12 @@ of safe mode holding repair orders.
 
 There is no bounded-advance document. The feature area groups the requirements and the Release
 Package selects the work packages that ship together, so which work packages advance a feature
-together is a query over those records. The engineering-order rung of the 2026-10-05 ladder is
+together is a query over those records.
+
+**Amended 2026-10-18.** The operator ruled [the requirements model](ieee/requirements-model.md):
+a work package delivers exactly one outcome (an outcome's REQs are those sharing its contract), and
+the Release Package selects outcomes, not REQ states. Where the table above says otherwise, that
+model governs. The engineering-order rung of the 2026-10-05 ladder is
 retired (operator, verbatim: *"A, no separate document — retire the engineering order rung"*);
 the ladder's other rungs stand, and identifiers still migrate at 1.0 with aliases before it.
 
@@ -378,7 +383,7 @@ pilot's, because they carry the catalog's shape and the re-cut, which the operat
   body ceiling re-derived.
 - **WP-4 (pilot).** The catalog's first entries, with contracts, from the obligations of
   16 to 20; the three shapes (entry, assignment row, contract) put to the operator first.
-  Amended 2026-10-17: the entries follow [the joined requirements model](ieee/design-candidates.md#the-joined-requirements-model) (`Q-19`), each in one first-class feature area typed functional or non-functional; no entry is authored until the operator ratifies that model and rules its five open points.
+  Amended 2026-10-17: the entries follow [the joined requirements model](ieee/design-candidates.md#the-joined-requirements-model) (`Q-19`), each in one first-class feature area typed functional or non-functional; no entry is authored until the operator ratifies that model and rules its five open points. Amended 2026-10-18: the operator ruled the model and its open points; it now lives in [the requirements model](ieee/requirements-model.md), and entries wait only on the operator's choice of family scheme.
 - **WP-5.** `extract_plan_tasks` stops dispatching rejected alternatives; interim until
   the dispatch unit is the TASK.
 - **WP-6.** One tracker for the 27 helper-or-loop gates of the 2026-10-14 sweep.

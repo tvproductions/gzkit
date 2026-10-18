@@ -14,7 +14,7 @@ to 1.0, full operational capability):
 |---|---|---|---|
 | pool ADR | change proposal | `ECP-<slug>` | ruled; "change proposal" in no landed source |
 | feature ADR, the "(m)ADR" | engineering order | `EO-<semver>-<slug>` | ruled; "engineering order" a maintenance term only (AC 120-16G § 7-1c) |
-| OBPI | work package | `WP-<semver>-<NN>-<slug>` | ruled; "work package" verified (AC 120-16G § 6-1) |
+| OBPI | work package | `WP-<NN>-<slug>` | ruled; "work package" verified (AC 120-16G § 6-1); re-ruled 2026-10-18, no version in the id ([requirements model](../../governance/ieee/requirements-model.md#7-release)) |
 | TASK | task card | `TASK-…` kept | ruled; "task card" verified (AC 120-16G § 3-3d) |
 | ADR | architecture decision record | `ADR-<n>` | ruled: reserved for architecture decisions; the closed `0.0.x` series kept as the certification basis and not renamed |
 | release | block | no identifier | ruled; "block" in no landed source |

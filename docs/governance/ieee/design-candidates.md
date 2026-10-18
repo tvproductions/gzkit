@@ -89,6 +89,13 @@ a new hierarchy. The PRD remains the source of product intent under Q-02.
 
 ## The joined requirements model
 
+> **Replaced 2026-10-18 by [the requirements model](requirements-model.md).** The operator ruled
+> this model one decision at a time on 2026-10-18 (identity, authority, lifecycle and proof,
+> dependencies, work package, release, the five open points below, ADR links and BDD). The ruled
+> model supersedes this section where they differ: a work package delivers one outcome rather than
+> selecting REQs by contract, the Release Package selects outcomes rather than REQ states, and the
+> five open points are answered there. The text below is kept as the 2026-10-17 record.
+
 **Recorded 2026-10-17 at the operator's word; awaiting ratification.** Operator: **g0**. Verbatim:
 *"i want the feature files and steps AND the REQ system. think of functional and non-functional
 requirements. we needed Work Packages, Release Packages, but also fdau-like feature/req
