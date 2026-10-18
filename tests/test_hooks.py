@@ -1,6 +1,8 @@
 """Tests for gzkit hooks module."""
 
 import ast
+import contextlib
+import io
 import json
 import os
 import shlex
@@ -12,6 +14,7 @@ import textwrap
 import unittest
 from datetime import UTC, datetime
 from pathlib import Path
+from unittest import mock
 
 from gzkit.config import GzkitConfig
 from gzkit.hooks.claude import generate_claude_settings, setup_claude_hooks
@@ -2474,3 +2477,115 @@ class TestObpiCompletionValidatorHook(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestSessionStartAdvisementIsOneChannel(unittest.TestCase):
+    """Session-start text reaches the agent once (drydock RO-1 act a, ruled 2026-10-17).
+
+    Where the project carries `scripts/session_orientation.py`, the orientation's
+    handoff section carries the advisement, so gzkit registers no second hook for
+    it. A project without the orientation keeps the advisement hook, which then
+    speaks on one channel: `additionalContext`, never also `initialUserMessage`.
+    """
+
+    @staticmethod
+    def _session_start_commands(settings: dict) -> list[str]:
+        return [
+            hook["command"]
+            for group in settings.get("hooks", {}).get("SessionStart", [])
+            for hook in group.get("hooks", [])
+        ]
+
+    def _project(self, *, orientation: bool) -> Path:
+        root = Path(self.enterContext(tempfile.TemporaryDirectory()))
+        if orientation:
+            (root / "scripts").mkdir()
+            (root / "scripts" / "session_orientation.py").write_text("", encoding="utf-8")
+        return root
+
+    def test_no_advisement_hook_is_registered_where_the_orientation_carries_it(self) -> None:
+        root = self._project(orientation=True)
+        config = GzkitConfig(project_name="gzkit-test")
+        settings = generate_claude_settings(config, project_root=root)
+        self.assertNotIn(
+            _expected_hook_command("session-start-advisement.py"),
+            self._session_start_commands(settings),
+        )
+        created = setup_claude_hooks(root, config)
+        self.assertNotIn(".claude/hooks/session-start-advisement.py", created)
+        self.assertFalse((root / ".claude" / "hooks" / "session-start-advisement.py").exists())
+
+    def test_a_project_without_the_orientation_keeps_the_advisement_hook(self) -> None:
+        root = self._project(orientation=False)
+        settings = generate_claude_settings(
+            GzkitConfig(project_name="gzkit-test"), project_root=root
+        )
+        self.assertIn(
+            _expected_hook_command("session-start-advisement.py"),
+            self._session_start_commands(settings),
+        )
+
+    def test_a_sync_drops_a_previously_registered_advisement_hook(self) -> None:
+        root = self._project(orientation=True)
+        config = GzkitConfig(project_name="gzkit-test")
+        settings_path = root / ".claude" / "settings.json"
+        settings_path.parent.mkdir(parents=True)
+        previous = generate_claude_settings(config)
+        previous["hooks"]["SessionStart"][0]["hooks"].append(
+            {"type": "command", "command": "uv run python scripts/session_orientation.py"}
+        )
+        settings_path.write_text(json.dumps(previous), encoding="utf-8")
+        setup_claude_hooks(root, config)
+        commands = self._session_start_commands(
+            json.loads(settings_path.read_text(encoding="utf-8"))
+        )
+        self.assertEqual(commands, ["uv run python scripts/session_orientation.py"])
+
+    def test_the_generated_surfaces_describe_one_channel(self) -> None:
+        # output-contract: the hooks README and the hook's own docstring are the
+        # delivered description of the registration; a retired second channel
+        # described there is the drift this guards.
+        readme = (_HOOK_TEMPLATE_HOOKS / "README.md").read_text(encoding="utf-8")
+        hook = (_HOOK_TEMPLATE_HOOKS / "session-start-advisement.py").read_text(encoding="utf-8")
+        for surface in (readme, hook):
+            self.assertNotIn("Dual-channel", surface)
+            self.assertNotIn("Claude-side upgrade", surface)
+        order = readme.split("## Registration Order", 1)[1]
+        start = order.split("`SessionStart`", 1)[1].split("\n- `", 1)[0]
+        self.assertIn("scripts/session_orientation.py", start)
+
+    def test_the_sync_writer_registers_no_advisement_where_the_orientation_carries_it(self) -> None:
+        from gzkit.sync_surfaces import sync_claude_settings
+
+        root = self._project(orientation=True)
+        config = GzkitConfig(project_name="gzkit-test")
+        sync_claude_settings(root, config)
+        settings = json.loads((root / config.paths.claude_settings).read_text(encoding="utf-8"))
+        self.assertNotIn(
+            _expected_hook_command("session-start-advisement.py"),
+            self._session_start_commands(settings),
+        )
+
+    def test_the_advisement_hook_speaks_on_one_channel(self) -> None:
+        root = self._project(orientation=False)
+        (root / ".gzkit" / "handoffs").mkdir(parents=True)
+        hook = _HOOK_TEMPLATE_HOOKS / "session-start-advisement.py"
+        advice = "## Resumed handoff — review before acting\n\n- Path: `x.md` (Fresh)"
+        module: dict[str, object] = {"__name__": "advisement_hook"}
+        exec(compile(hook.read_text(encoding="utf-8"), str(hook), "exec"), module)
+        out = io.StringIO()
+        with (
+            mock.patch(
+                "gzkit.session_start.build_advisement",
+                return_value=mock.Mock(present=True, text=advice),
+            ),
+            mock.patch("sys.stdin", io.StringIO(json.dumps({"cwd": str(root)}))),
+            contextlib.redirect_stdout(out),
+            self.assertRaises(SystemExit),
+        ):
+            main = module["main"]
+            assert callable(main)
+            main()
+        payload = json.loads(out.getvalue())
+        self.assertEqual(payload["hookSpecificOutput"]["additionalContext"], advice)
+        self.assertNotIn("initialUserMessage", payload)

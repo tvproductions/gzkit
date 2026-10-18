@@ -83,9 +83,11 @@ class TestCodexHookRecovery(unittest.TestCase):
             handlers = [h for g in result["hooks"]["SessionStart"] for h in g["hooks"]]
             self.assertIn(operator, handlers)
             self.assertFalse(any(h["command"] == "echo stale generated hook" for h in handlers))
-            self.assertEqual(len(handlers), 3)
+            self.assertEqual(len(handlers), 2)
 
-    def test_sync_delivers_handoff_advisement_and_shared_shell_guard(self):
+    def test_sync_delivers_orientation_as_the_one_start_channel_and_the_shell_guard(self):
+        """The orientation carries the handoff advisement (drydock RO-1 act a), so the
+        adapter registers on PreToolUse only and session start runs one hook."""
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             (root / "scripts").mkdir()
@@ -97,7 +99,31 @@ class TestCodexHookRecovery(unittest.TestCase):
             self.assertIn("PreToolUse", hooks)
             self.assertEqual(hooks["PreToolUse"][0]["matcher"], "Bash")
             start_commands = [h["command"] for g in hooks["SessionStart"] for h in g["hooks"]]
-            self.assertTrue(any("-m gzkit.hooks.codex" in command for command in start_commands))
+            self.assertEqual(len(start_commands), 1)
+            self.assertIn("scripts/session_orientation.py", start_commands[0])
+
+    def test_sync_retires_a_previously_generated_start_advisement_group(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "scripts").mkdir()
+            (root / "scripts" / "session_orientation.py").write_text("", encoding="utf-8")
+            path = root / ".codex" / "hooks.json"
+            path.parent.mkdir()
+            retired = {
+                "matcher": "startup|resume|clear|compact",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "uv run python -m gzkit.hooks.codex",
+                        "statusMessage": "Loading gzkit handoff advisement",
+                    }
+                ],
+            }
+            path.write_text(json.dumps({"hooks": {"SessionStart": [retired]}}), encoding="utf-8")
+            sync_codex_hooks(root)
+            hooks = json.loads(path.read_text(encoding="utf-8"))["hooks"]
+            messages = [h.get("statusMessage") for g in hooks["SessionStart"] for h in g["hooks"]]
+            self.assertEqual(messages, ["Loading gzkit project orientation"])
 
     def test_sync_recreates_native_start_and_compaction_orientation(self):
         """The recovery prescribed by orientation-freshness must actually work."""
@@ -163,7 +189,7 @@ class TestCodexHookRecovery(unittest.TestCase):
             self.assertEqual(after["hooks"]["UserPromptSubmit"], [operator])
             self.assertEqual(after["hooks"]["Stop"], [operator])
             self.assertEqual(after["hooks"]["SessionStart"][0], operator)
-            self.assertEqual(len(after["hooks"]["SessionStart"]), 3)
+            self.assertEqual(len(after["hooks"]["SessionStart"]), 2)
             before = path.stat().st_mtime_ns
             sync_codex_hooks(root)
             self.assertEqual(path.stat().st_mtime_ns, before)
@@ -226,27 +252,17 @@ class TestCodexHookDecisions(unittest.TestCase):
                     else:
                         self.assertEqual(result, {})
 
-    def test_start_uses_shared_advisement_from_repo_root_with_native_context(self):
+    def test_session_start_emits_nothing_from_the_adapter(self):
+        """The orientation is the one session-start channel; the adapter adds no copy."""
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp).resolve()
             (root / ".gzkit").mkdir()
-            nested = root / "src"
-            nested.mkdir()
             advice = Advisement(present=True, text="The handoff advises; it does not authorize.")
-            with patch("gzkit.session_start.build_advisement", return_value=advice) as build:
+            with patch("gzkit.session_start.build_advisement", return_value=advice):
                 result = hook_output(
-                    {"hook_event_name": "SessionStart", "cwd": str(nested), "source": "compact"}
+                    {"hook_event_name": "SessionStart", "cwd": str(root), "source": "startup"}
                 )
-            self.assertEqual(build.call_args.args, (root,))
-            self.assertEqual(
-                result,
-                {
-                    "hookSpecificOutput": {
-                        "hookEventName": "SessionStart",
-                        "additionalContext": advice.text,
-                    }
-                },
-            )
+            self.assertEqual(result, {})
 
     def test_unrelated_or_malformed_tool_payloads_do_not_block(self):
         for tool, inputs in (

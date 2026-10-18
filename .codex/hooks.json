@@ -12,17 +12,6 @@
             "additionalContextLimit": 6000
           }
         ]
-      },
-      {
-        "matcher": "startup|resume|clear|compact",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "uv run --project \"$(git rev-parse --show-toplevel)\" --cache-dir \"$(git rev-parse --show-toplevel)/.gzkit/cache/uv\" python -m gzkit.hooks.codex",
-            "timeout": 10,
-            "statusMessage": "Loading gzkit handoff advisement"
-          }
-        ]
       }
     ],
     "PreToolUse": [

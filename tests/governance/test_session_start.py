@@ -58,6 +58,41 @@ class AdvisementTests(unittest.TestCase):
         self.assertIn("seeded", advisement.handoff_path)
         self.assertIn("Close the open GHI queue.", advisement.text)
 
+    def test_advisement_names_the_handoff_by_its_project_relative_path(self) -> None:
+        """The injected text carries no absolute path, so no host account name.
+
+        Observed 2026-10-17: the advisement read ``Path: `/Users/<name>/…``` into
+        every session, the operator's account name included, while the path a
+        reader needs is the one relative to the project.
+        """
+        root = self._root()
+        handoff = self._seed(root)
+
+        text = build_advisement(root, now="2026-08-05T11:00:00Z").text
+
+        self.assertNotIn(str(root.resolve()), text)
+        self.assertNotIn(str(root), text)
+        relative = handoff.resolve().relative_to(root.resolve()).as_posix()
+        self.assertIn(f"`{relative}`", text)
+
+    def test_the_count_warning_is_closed_off_from_the_line_after_it(self) -> None:
+        """A list item directly under a blockquote is lazily continued into it."""
+        from types import SimpleNamespace
+
+        from gzkit.session_start import _render
+
+        result = SimpleNamespace(path="h.md", staleness="Fresh", next_steps=["Step."], chain=[])
+        lines = _render(result, [(3, "1/10")]).splitlines()
+        warning = next(i for i, line in enumerate(lines) if line.startswith("> "))
+        self.assertEqual(lines[warning + 1], "")
+
+    def test_a_handoff_outside_the_project_keeps_its_own_path(self) -> None:
+        from gzkit.session_start import _project_relative
+
+        root = self._root()
+        outside = Path(self.enterContext(tempfile.TemporaryDirectory())) / "elsewhere.md"
+        self.assertEqual(_project_relative(root, str(outside)), str(outside))
+
     def test_advisement_states_that_it_advises_rather_than_authorizes(self) -> None:
         """The seeded turn must not read as a licence to execute.
 

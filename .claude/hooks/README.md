@@ -42,9 +42,10 @@ Current hook surface in gzkit:
   prose; fail-open, one block per turn (ADR-0.0.70).
 - `session-start-advisement.py`
   SessionStart (`*`) hook that surfaces the newest handoff and its
-  advised steps via `additionalContext` (universal) and
-  `initialUserMessage` (Claude-side upgrade seeding a real first
-  turn). Binds by seeding, never by refusing; it ADVISES, and
+  advised steps via `additionalContext`, its one channel. Not
+  registered where `scripts/session_orientation.py` exists: the
+  orientation carries the advisement. Binds by seeding, never by
+  refusing; it ADVISES, and
   since 2026-08-15 that is the WHOLE mechanism — the PreToolUse
   resume gate is retired (operator ruling: a handoff is an advisor,
   not a gate-keeping nanny). `gz handoff decide` still books the
@@ -79,7 +80,8 @@ Current hook surface in gzkit:
 - `PostToolUse` `Edit|Write`: `post-edit-ruff.py`,
   then `ledger-writer.py`
 - `Stop` `*`: `stop-turn-feedback.py`
-- `SessionStart` `*`: `session-start-advisement.py`
+- `SessionStart` `*`: `session-start-advisement.py` (only without
+  `scripts/session_orientation.py`)
 - `SessionEnd` `*`: `session-exit-bookmark.py`
 - Historical intake matrix:
   `docs/design/adr/pre-release/ADR-0.9.0-airlineops-surface-breadth-parity/

@@ -5,14 +5,14 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "7.6.2"
+  skill-version: "7.6.3"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-11
+last_reviewed: 2026-10-17
 model: sonnet
 ---
 
@@ -240,19 +240,9 @@ The CLI wraps `gzkit.handoff_api` (OBPI-0.0.65-02): `create_handoff`, `scaffold_
 
 ## Auto-load on session start (CAP-13, GHI #326)
 
-A SessionStart hook (`.claude/settings.json` for Claude Code,
-`.codex/hooks.json` for Codex CLI) runs `scripts/session_orientation.py` on
-every session boot. The orientation script's "Most-recent handoff" section
-selects the newest file under `.gzkit/handoffs/` and classifies its age via
-the same Fresh / Slightly-Stale / Stale / Very-Stale buckets this skill
-uses. The hook output is injected as session context, so the resuming
-agent sees the handoff path, freshness bucket, and first-next-step before
-its first response without operator prompting.
+A SessionStart hook (`.claude/settings.json` for Claude Code, `.codex/hooks.json` for Codex CLI) runs `scripts/session_orientation.py` on every session boot. Its "Most-recent handoff" section selects the newest file under `.gzkit/handoffs/`, classifies its age in the Fresh / Slightly-Stale / Stale / Very-Stale buckets this skill uses, and carries the lineage, every advised step and the `gz handoff decide` pointer, so the resuming agent sees them before its first response without operator prompting.
 
-The hook is the mechanical floor; this skill's RESUME workflow remains the
-canonical path when an operator wants the full chain traversal, branch
-verification, or staleness classification. Operators who do not want orientation
-injection can disable the hook in their local settings.
+That section is the one session-start channel for the handoff; a project without the orientation script gets the same advisement from `.claude/hooks/session-start-advisement.py`, on `additionalContext` only (drydock RO-1 act a, 2026-10-17). The hook is the mechanical floor; this skill's RESUME workflow remains the canonical path for the full chain traversal, branch verification, or staleness classification. Operators who do not want orientation injection can disable the hook in their local settings.
 
 ## RESUME Procedure
 

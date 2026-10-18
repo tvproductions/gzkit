@@ -9,12 +9,12 @@ regularly running /clear during multi-task sessions"*).
 **Binding without a gate.** The fix is to seed the turn, not to add a second
 refusal: the entry edge already blocks hard, and doubling down on the edge that
 was never the problem is what made the lifecycle lopsided in the first place.
-Claude Code's ``SessionStart`` accepts ``initialUserMessage``, which becomes an
-actual first turn; Codex has no equivalent and injects passively. So the text
-this module builds is emitted through BOTH channels — passive context always,
-seeded turn where the harness supports it. Advisement must work passively, with
-``initialUserMessage`` as a Claude-side upgrade rather than a correctness
-dependency.
+The text this module builds reaches the agent on ONE channel (drydock RO-1
+act a, operator ruling 2026-10-17): where the project carries the orientation
+script, its handoff section hosts this body; elsewhere the advisement hook
+emits it as ``additionalContext``. The ``initialUserMessage`` copy, a
+Claude-side seeded turn, was retired with that ruling: it delivered the same
+text a second time.
 
 **Advises, never authorizes.** GHI #574's obligation survives untouched: a
 handoff must never become self-authorizing. Seeding the turn makes the review
@@ -49,7 +49,23 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.remote_divergence import RemoteDivergence, behind_origin_caveat, probe_remote_divergence
 
-__all__ = ["ADVISEMENT_CHAR_BUDGET", "Advisement", "build_advisement"]
+__all__ = [
+    "ADVISEMENT_CHAR_BUDGET",
+    "ORIENTATION_SCRIPT",
+    "Advisement",
+    "build_advisement",
+    "orientation_carries_advisement",
+]
+
+#: The project orientation script. Where it exists, its handoff section hosts this
+#: advisement and no second hook delivers it (drydock RO-1 act a, 2026-10-17).
+ORIENTATION_SCRIPT = "scripts/session_orientation.py"
+
+
+def orientation_carries_advisement(project_root: Path) -> bool:
+    """Report whether the project's orientation is this advisement's one channel."""
+    return (project_root / ORIENTATION_SCRIPT).is_file()
+
 
 #: Claude Code caps `SessionStart` hook output at 10,000 characters; over-cap
 #: output spills to a file and is replaced by a preview. Codex's
@@ -103,7 +119,7 @@ def build_advisement(
     if divergence is None:
         divergence = _probe_divergence(project_root)
     findings = _transcribed_count_findings(project_root, result.path)
-    body = _render(result, findings, divergence)
+    body = _render(result, findings, divergence, path=_project_relative(project_root, result.path))
     truncated = len(body) > ADVISEMENT_CHAR_BUDGET
     if truncated:
         body = body[: ADVISEMENT_CHAR_BUDGET - len(_TRUNCATION_NOTE)] + _TRUNCATION_NOTE
@@ -116,6 +132,19 @@ def build_advisement(
         truncated=truncated,
         transcribed_count_lines=tuple(number for number, _ in findings),
     )
+
+
+def _project_relative(project_root: Path, path: str) -> str:
+    """Name the handoff relative to the project, as every reader of it needs.
+
+    The text is injected into the session, so an absolute path would carry the
+    host's account name into every context (observed 2026-10-17). A path outside
+    the project keeps its own form rather than raising.
+    """
+    try:
+        return Path(path).resolve().relative_to(project_root.resolve()).as_posix()
+    except (OSError, ValueError):
+        return path
 
 
 def _probe_divergence(project_root: Path) -> RemoteDivergence | None:
@@ -190,6 +219,8 @@ def _render(
     result: object,
     findings: list[tuple[int, str]] | None = None,
     divergence: RemoteDivergence | None = None,
+    *,
+    path: str | None = None,
 ) -> str:
     """Render the advisement body from a ``ResumeResult``.
 
@@ -206,7 +237,7 @@ def _render(
     fundamental doubt: the count warning says this document's figures are
     stale, while the caveat says this may not be the right document at all.
     """
-    path = getattr(result, "path", "")
+    path = path if path is not None else getattr(result, "path", "")
     staleness = getattr(result, "staleness", "")
     steps = list(getattr(result, "next_steps", []) or [])
 
@@ -224,24 +255,13 @@ def _render(
     if (chain_line := _chain_line(result)) is not None:
         lines.append(chain_line)
     if findings:
-        lines += ["", _render_count_warning(findings)]
+        lines += ["", _render_count_warning(findings), ""]
     lines += [
-        "",
-        "A handoff **advises**; it does not authorize. Present its advised steps "
-        "to the operator and obtain an explicit ruling before executing any of "
-        "them. Book the ruling with:",
-        "",
-        "```",
-        "uv run gz handoff decide --handoff <path> --session-id <id> \\",
-        '  --decision proceed --operator-text "<their exact words>"',
-        "```",
-        "",
-        "`proceed`, `pause`, `hold`, and `revert` are equally bookable rulings; "
-        "none gates anything — the record is Layer-2 provenance of what was "
-        "decided, not an authorization. Use `--set-aside` to record any advised "
-        "step the operator declines.",
+        "- It ADVISES, never authorizes: get the operator's ruling first and book it "
+        "with `uv run gz handoff decide --handoff <path> --session-id <id> "
+        '--operator-text "<their exact words>"`.',
     ]
     if steps:
-        lines += ["", "### Advised steps", ""]
+        lines += ["", "Advised steps:"]
         lines += [f"{i}. {step}" for i, step in enumerate(steps, start=1)]
     return "\n".join(lines)

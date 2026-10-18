@@ -59,10 +59,8 @@ SECTION_HEADINGS: tuple[str, ...] = (
     "Open session-handoff GHIs",
     "Active OBPI claims",
     "Active ADR pipeline state",
-    "Recent ledger events (last 24h)",
     # CONDITIONAL — emitted only when a chore is due or overdue (GHI #936).
     "Chores due or overdue",
-    "Open blockers",
     "Skill-awareness re-injection",
 )
 
@@ -71,38 +69,29 @@ SECTION_HEADINGS: tuple[str, ...] = (
 # announcement before it summarizes the remainder — the count is always the true
 # total and the overflow is stated, as with ACCOUNT_COMMIT_LIMIT.
 CHORE_STATUS_TIMEOUT_SEC = 15
-CHORE_ANNOUNCE_LIMIT = 10
+CHORE_ANNOUNCE_LIMIT = 3
 # Unreviewed guard canaries named before the announcement summarizes the rest.
 CANARY_ANNOUNCE_LIMIT = 10
 
 REMOTE_FETCH_TIMEOUT_SEC = 8
 REMOTE_QUERY_TIMEOUT_SEC = 4
 
+# Pointers, not restatement (drydock RO-1 act a): the rulings themselves live in
+# the plan and in `gz-obpi-pipeline`, which carries them verbatim.
 CAMPAIGN_AUTHORITY_NOTE = (
-    "The campaign RULES the sequencing (operator rulings, 2026-06-10): work "
-    "the topmost unchecked item whose gate is met, executing it through its "
-    "governed path — ADR, OBPI, and GHI repair remain the primary propellants; "
-    "the campaign refines and facilitates that machinery, never substitutes "
-    "for it. Handoffs and triage ADVISE; the campaign governs what is pulled "
-    "next. Amendments are operator-ratified. Reduction is PRE-1.0 (Movement C) "
-    "— the 'reductive moves wait for post-1.0' ruling was WITHDRAWN 2026-07-18 "
-    "as deadlocked: accretion was what blocked 1.0."
+    "The campaign rules the sequencing (operator rulings, 2026-06-10): work the "
+    "topmost unchecked item whose gate is met, through its governed path. "
+    "Handoffs and triage advise; the campaign governs what is pulled next."
 )
 
 POST_COMPACTION_NOTE = (
-    "Post-compaction trigger: if context budget falls below 50%, re-read "
-    "AGENTS.md § Behavior Rules and the active OBPI brief before continuing. "
-    "Real-world testing shows skill awareness degrades sharply at this "
-    "threshold; orientation re-injection is the mechanical backstop."
+    "Below 50% context, re-read AGENTS.md § Behavior Rules and the active OBPI "
+    "brief before continuing."
 )
 
 # The agent picks skills on its own; the flow guide helps only if it is named at
 # the moment of choosing (GHI #1106).
-SKILL_SELECTION_NOTE = (
-    "Choosing a skill: when no skill clearly matches, or two look alike, consult "
-    "`gz-how` first. It places the task in its flow and names the skill to run, "
-    "the look-alike not to use, and the steps only the operator may take."
-)
+SKILL_SELECTION_NOTE = "When no skill clearly matches, or two look alike, consult `gz-how` first."
 
 
 def collect_campaign(repo_root: Path) -> dict | None:
@@ -240,8 +229,8 @@ def _campaign_adr_refs(topmost: str | None, limit: int = CAMPAIGN_ADR_REF_LIMIT)
     return list(ordered)[:limit]
 
 
-CAMPAIGN_TOPMOST_HEAD_CHARS = 240
-CAMPAIGN_CHECKBOX_HEAD_CHARS = 120
+CAMPAIGN_TOPMOST_HEAD_CHARS = 160
+CAMPAIGN_CHECKBOX_HEAD_CHARS = 48
 _CAMPAIGN_FRONT_NAME_RE = re.compile(r"^- \*\*(.+?)\*\*", re.MULTILINE)
 
 
@@ -705,22 +694,14 @@ def _render_handoff_account(lines: list[str], payload: object) -> None:
 
     if payload.get("current"):
         lines.append(
-            "- VERDICT: the anchor is still a current account — nothing has landed, "
-            "run, or been left uncommitted since it was written. Treat it as this "
-            "session's context, subject to the operator's ruling."
+            "- VERDICT: the anchor is still a current account; nothing has landed, "
+            "run, or been left uncommitted since."
         )
     else:
         lines.append(
-            "- VERDICT: the anchor is NOT a current account. The evidence above "
-            "postdates it and no authored document describes it. Read the delta "
-            "before acting on the handoff, and fold it into a successor that "
-            "supersedes the anchor."
+            "- VERDICT: the anchor is NOT a current account; read the delta and fold "
+            "it into a successor."
         )
-    lines.append(
-        "- This account is assembled evidence, not narrative. It reports what "
-        "happened, never what it meant — that reading is the agent's to do and "
-        "the operator's to rule on."
-    )
 
 
 def collect_exit_bookmarks(repo_root: Path, now: datetime) -> dict[str, object] | None:
@@ -806,11 +787,7 @@ def _render_exit_bookmarks(lines: list[str], payload: object) -> None:
         return
     lines.append("")
     lines.append("## Session-exit bookmarks awaiting sensemaking")
-    lines.append(
-        f"- {len(entries)} floor bookmark(s) written since the last authored handoff. "
-        "These are mechanical exit-beat records, not authored context — the writer "
-        "could not enumerate open loops and says so."
-    )
+    lines.append(f"- {len(entries)} mechanical floor bookmark(s) since the last authored handoff:")
     for entry in entries:
         if not isinstance(entry, dict):
             continue
@@ -824,19 +801,8 @@ def _render_exit_bookmarks(lines: list[str], payload: object) -> None:
             "rather than clean. Check with `git status --short .gzkit/handoffs/`."
         )
     lines.append(
-        "- OFFER THE OPERATOR SENSEMAKING on these before other work: read each "
-        "against live state, fold whatever is still live into an authored handoff "
-        "that supersedes them, and include any untracked file in that same commit."
-    )
-    lines.append(
-        "- Flagged for inclusion because the exit beat structurally cannot commit "
-        "its own output — it fires after the session's last chance to. A bookmark "
-        "left untracked is a Layer-2 `handoff_path` with no referent in a fresh "
-        "clone (GHI #759)."
-    )
-    lines.append(
-        "- A bookmark ADVISES, like any handoff — and a mechanically drafted one "
-        "advises with less authority, not more. Do not act on its contents unprompted."
+        "- OFFER THE OPERATOR SENSEMAKING first: fold what is live into a superseding "
+        "authored handoff, committing an untracked one with it (GHI #759)."
     )
 
 
@@ -882,33 +848,30 @@ def collect_session_handoff_ghis() -> list[dict]:
     return [item for item in payload if isinstance(item, dict)]
 
 
-def collect_recent_events(ledger_path: Path, now: datetime) -> list[dict]:
-    if not ledger_path.exists():
-        return []
-    cutoff = now - timedelta(hours=24)
-    out: list[dict] = []
-    for line in ledger_path.read_text(encoding="utf-8", errors="replace").splitlines():
-        line = line.strip()
-        if not line:
-            continue
-        try:
-            event = json.loads(line)
-        except json.JSONDecodeError:
-            continue
-        if not isinstance(event, dict):
-            continue
-        ts_raw = event.get("timestamp") or event.get("ts")
-        if not ts_raw:
-            continue
-        try:
-            ts = datetime.fromisoformat(str(ts_raw).replace("Z", "+00:00"))
-        except ValueError:
-            continue
-        if ts.tzinfo is None:
-            ts = ts.replace(tzinfo=UTC)
-        if ts >= cutoff:
-            out.append(event)
-    return out
+def collect_advisement(repo_root: Path, now: datetime, remote_state: object) -> object | None:
+    """Build the handoff advisement this digest carries. Never raises.
+
+    The advisement is the one renderer of a resumed handoff
+    (``gzkit.session_start``); the orientation hosts it rather than a second hook
+    delivering it (drydock RO-1 act a). The divergence measured by
+    ``collect_remote_state`` is passed in so the caveat is not probed twice.
+    """
+    try:
+        from gzkit.remote_divergence import RemoteDivergence
+        from gzkit.session_start import build_advisement
+
+        divergence = None
+        if isinstance(remote_state, dict):
+            divergence = RemoteDivergence(
+                branch=str(remote_state.get("branch") or "?"),
+                ahead=int(remote_state.get("ahead") or 0),
+                behind=int(remote_state.get("behind") or 0),
+            )
+        stamp = now.replace(microsecond=0).isoformat().replace("+00:00", "Z")
+        advisement = build_advisement(repo_root, now=stamp, divergence=divergence)
+    except Exception:
+        advisement = None
+    return advisement
 
 
 def _git_run(args: list[str], timeout: int) -> subprocess.CompletedProcess[str] | None:
@@ -1103,8 +1066,8 @@ def _render_chore_staleness(lines: list[str], payload: object) -> None:
     lines.append("## Chores due or overdue")
     lines.append(
         f"- {counts.get('overdue', 0)} overdue, {counts.get('due', 0)} due "
-        f"({counts.get('unmeasured', 0)} unmeasured, {counts.get('paused', 0)} paused). "
-        "Staleness announces a chore run; it gates nothing. Board: `uv run gz chores status`."
+        f"({counts.get('unmeasured', 0)} unmeasured, {counts.get('paused', 0)} paused); "
+        "announces, never gates. Board: `uv run gz chores status`."
     )
     for band in ("overdue", "due"):
         slugs = [
@@ -1200,19 +1163,19 @@ def collect_state(repo_root: Path, now: datetime) -> dict:
         # Resolved here, not in `collect_campaign`: this is the one place that
         # pays the subprocess cost, so it is the one place it can be bounded.
         campaign["live_adr_counts"] = collect_live_adr_counts(campaign.get("adr_refs") or [])
+    remote_state = collect_remote_state()
     return {
         "campaign": campaign,
-        "remote_state": collect_remote_state(),
+        "remote_state": remote_state,
         "handoff": collect_handoff(repo_root, now),
+        "advisement": collect_advisement(repo_root, now, remote_state),
         "handoff_account": collect_handoff_account(repo_root, now),
         "exit_bookmarks": collect_exit_bookmarks(repo_root, now),
         "session_handoff_ghis": collect_session_handoff_ghis(),
         "obpi_locks": collect_obpi_locks(repo_root),
         "adr_pipeline": collect_adr_pipeline(repo_root),
-        "recent_events": collect_recent_events(repo_root / ".gzkit" / "ledger.jsonl", now),
         "chore_staleness": collect_chore_staleness(),
         "unreviewed_canaries": collect_unreviewed_canaries(repo_root),
-        "blockers": [],
     }
 
 
@@ -1237,8 +1200,7 @@ def render(state: dict, now: datetime) -> str:
         # block injected at every session start is bounded independent of it.
         if topmost:
             lines.append(
-                f"- Topmost (sequenced): {_campaign_head(topmost)} "
-                f"(read § Topmost in `{plan_path}`)"
+                f"- Topmost (sequenced): {_campaign_head(topmost)} (read § Topmost in the plan)"
             )
             live_counts = campaign.get("live_adr_counts") or []
             if live_counts:
@@ -1266,21 +1228,17 @@ def render(state: dict, now: datetime) -> str:
                     f"{_campaign_head(item, CAMPAIGN_CHECKBOX_HEAD_CHARS)}"
                 )
         lines.append(f"- {CAMPAIGN_AUTHORITY_NOTE}")
-        lines.append("")
-        lines.append("### Workflow fronts — declared campaign context")
-        lines.append(
-            f"Source: `{plan_path}#workflow-fronts` (read the fronts there; names only here)"
-        )
         fronts_body = campaign.get("workflow_fronts") or ""
         front_names = _campaign_front_names(fronts_body)
+        fronts_label = f"- Workflow fronts (`{plan_path}#workflow-fronts`):"
         if front_names:
-            lines.append("- Fronts: " + ", ".join(front_names))
+            lines.append(f"{fronts_label} " + ", ".join(front_names))
         elif fronts_body.strip():
             # A fronts section with no bold names still reaches the digest,
             # as a bounded head, so an edit to it is visible at boot.
-            lines.append(f"- Fronts: {_campaign_head(fronts_body)}")
+            lines.append(f"{fronts_label} {_campaign_head(fronts_body)}")
         else:
-            lines.append("(Workflow fronts unavailable in campaign)")
+            lines.append(f"{fronts_label} (unavailable in campaign)")
     else:
         lines.append(
             "- (no ACTIVE campaign found — flag this to the operator; "
@@ -1309,7 +1267,20 @@ def render(state: dict, now: datetime) -> str:
 
     lines.append("## Most-recent handoff")
     handoff = state.get("handoff")
-    if isinstance(handoff, dict):
+    advisement = state.get("advisement")
+    if getattr(advisement, "present", False):
+        # The one session-start channel (drydock RO-1 act a, operator ruling
+        # 2026-10-17): the advisement's body, which carries every advised step,
+        # the lineage, the count warning, the behind-origin caveat and the
+        # ruling verb, renders here under this section's heading instead of
+        # arriving as a second hook's copy of the same handoff.
+        body = str(getattr(advisement, "text", "")).splitlines()
+        if body and body[0].startswith("## "):
+            body = body[1:]
+        while body and not body[0]:
+            body = body[1:]
+        lines.extend(body)
+    elif isinstance(handoff, dict):
         lines.append(f"- Path: `{handoff.get('path', '?')}`")
         lines.append(f"- Freshness: {handoff.get('freshness', '?')}")
         if handoff.get("first_action"):
@@ -1365,9 +1336,7 @@ def render(state: dict, now: datetime) -> str:
                 lines.append(f"- {obpi} (claimed by {agent})")
                 if lock.get("ttl_warning"):
                     lines.append(
-                        f"  - WARNING: lock held by {agent} has exceeded 50% TTL; "
-                        "consider the gz-session-handoff skill to create a register "
-                        "entry and release."
+                        "  - WARNING: past 50% TTL; hand off and release via gz-session-handoff."
                     )
     else:
         lines.append("- (no active locks)")
@@ -1376,35 +1345,8 @@ def render(state: dict, now: datetime) -> str:
     lines.append("## Active ADR pipeline state")
     _render_adr_pipeline(lines, state.get("adr_pipeline"))
 
-    lines.append("## Recent ledger events (last 24h)")
-    events = state.get("recent_events") or []
-    if isinstance(events, list) and events:
-        lines.append(f"- Count: {len(events)}")
-        kind_counts: dict[str, int] = {}
-        for event in events:
-            if not isinstance(event, dict):
-                continue
-            kind = str(
-                event.get("event") or event.get("event_type") or event.get("type") or "unknown"
-            )
-            kind_counts[kind] = kind_counts.get(kind, 0) + 1
-        for kind, count in sorted(kind_counts.items()):
-            lines.append(f"  - {kind}: {count}")
-    else:
-        lines.append("- (no events in window)")
-    lines.append("")
-
     _render_chore_staleness(lines, state.get("chore_staleness"))
     _render_unreviewed_canaries(lines, state.get("unreviewed_canaries"))
-
-    lines.append("## Open blockers")
-    blockers = state.get("blockers") or []
-    if isinstance(blockers, list) and blockers:
-        for blocker in blockers:
-            lines.append(f"- {blocker}")
-    else:
-        lines.append("- (no blockers reported)")
-    lines.append("")
 
     lines.append("## Skill-awareness re-injection")
     lines.append(f"- {POST_COMPACTION_NOTE}")
@@ -1419,17 +1361,8 @@ def main(argv: list[str] | None = None) -> int:
     if callable(reconfigure):
         reconfigure(encoding="utf-8")
 
-    # Secondary MX banner — per-turn hook is the load-bearing surface; this
-    # fires on SessionStart/PreCompact only (when no tool has run yet).
-    try:
-        from gzkit.mx.awareness import get_banner
-
-        mx_banner = get_banner()
-        if mx_banner:
-            sys.stdout.write(mx_banner + "\n\n")
-    except Exception:
-        pass
-
+    # No MX banner here: the per-turn mx-awareness hook prints it on every
+    # prompt, and a copy at session start was its second channel (RO-1 act a).
     now = datetime.now(UTC)
     state = collect_state(REPO_ROOT, now)
     sys.stdout.write(render(state, now))

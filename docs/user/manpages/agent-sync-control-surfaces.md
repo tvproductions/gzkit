@@ -53,8 +53,10 @@ appends none.
 ### Codex interim delivery
 
 For enabled Codex projects carrying `scripts/session_orientation.py`, sync
-registers orientation and shared handoff advisement on startup, resume, clear,
-and compaction, plus the shared verification exit-code guard on shell calls.
+registers orientation on startup, resume, clear, and compaction, plus the shared
+verification exit-code guard on shell calls. The orientation carries the handoff
+advisement, so session start runs one hook; a sync removes the advisement group
+an earlier sync registered.
 It migrates the old command-array hook format and preserves unrelated handlers.
 The generated `statusMessage` labels identify the owned handlers for subsequent
 repair. Projects without the orientation script receive no dangling registration.

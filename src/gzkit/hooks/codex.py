@@ -9,13 +9,12 @@ from __future__ import annotations
 
 import json
 import sys
-from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from gzkit.session_start import ORIENTATION_SCRIPT as _ORIENTATION
 from gzkit.surface_write import write_text_if_changed
 
-_ORIENTATION = "scripts/session_orientation.py"
 _ROOT = "$(git rev-parse --show-toplevel)"
 _COMMAND = f'uv run --cache-dir "{_ROOT}/.gzkit/cache/uv" python "{_ROOT}/{_ORIENTATION}"'
 _ADAPTER = (
@@ -23,6 +22,9 @@ _ADAPTER = (
 )
 _LABELS = {
     "orientation": "Loading gzkit project orientation",
+    # Retired 2026-10-17: the orientation carries the handoff advisement, so the
+    # adapter no longer registers on SessionStart. The label stays as the
+    # ownership marker that lets a sync remove a group an earlier sync wrote.
     "SessionStart": "Loading gzkit handoff advisement",
     "PreToolUse": "Checking verification exit-code integrity",
 }
@@ -104,9 +106,9 @@ def sync_codex_hooks(project_root: Path) -> list[str]:
             hooks[event] = retained
         else:
             hooks.pop(event, None)
+    # One session-start channel: the orientation, which hosts the advisement.
     hooks.setdefault("SessionStart", []).append(_orientation_group())
-    for event in ("SessionStart", "PreToolUse"):
-        hooks.setdefault(event, []).append(_adapter_group(event))
+    hooks.setdefault("PreToolUse", []).append(_adapter_group("PreToolUse"))
     write_text_if_changed(path, json.dumps(payload, indent=2) + "\n")
     return [path.relative_to(project_root).as_posix()]
 
@@ -132,22 +134,6 @@ def hook_output(payload: dict[str, Any]) -> dict[str, Any]:
                     "hookEventName": "PreToolUse",
                     "permissionDecision": "deny",
                     "permissionDecisionReason": verdict.reason,
-                }
-            }
-    elif event == "SessionStart" and isinstance(payload.get("cwd"), str):
-        from gzkit.session_start import build_advisement  # noqa: PLC0415
-
-        cwd = Path(payload["cwd"]).resolve()
-        root = next((p for p in (cwd, *cwd.parents) if (p / ".gzkit").is_dir()), None)
-        if root is None:
-            return {}
-        now = datetime.now(UTC).isoformat().replace("+00:00", "Z")
-        advisement = build_advisement(root, now=now)
-        if advisement.present:
-            return {
-                "hookSpecificOutput": {
-                    "hookEventName": "SessionStart",
-                    "additionalContext": advisement.text,
                 }
             }
     return {}

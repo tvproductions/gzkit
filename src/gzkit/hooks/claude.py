@@ -37,6 +37,7 @@ from gzkit.hooks.scripts.validation import (
     _ledger_writer_script,
     _obpi_completion_validator_script,
 )
+from gzkit.session_start import orientation_carries_advisement
 from gzkit.surface_write import ensure_dir, write_if_changed, write_text_if_changed
 
 # Top-level settings keys whose gzkit-declared entries merge into whatever the
@@ -94,9 +95,10 @@ def _claude_hooks_readme() -> str:
             "  prose; fail-open, one block per turn (ADR-0.0.70).",
             "- `session-start-advisement.py`",
             "  SessionStart (`*`) hook that surfaces the newest handoff and its",
-            "  advised steps via `additionalContext` (universal) and",
-            "  `initialUserMessage` (Claude-side upgrade seeding a real first",
-            "  turn). Binds by seeding, never by refusing; it ADVISES, and",
+            "  advised steps via `additionalContext`, its one channel. Not",
+            "  registered where `scripts/session_orientation.py` exists: the",
+            "  orientation carries the advisement. Binds by seeding, never by",
+            "  refusing; it ADVISES, and",
             "  since 2026-08-15 that is the WHOLE mechanism — the PreToolUse",
             "  resume gate is retired (operator ruling: a handoff is an advisor,",
             "  not a gate-keeping nanny). `gz handoff decide` still books the",
@@ -131,7 +133,8 @@ def _claude_hooks_readme() -> str:
             "- `PostToolUse` `Edit|Write`: `post-edit-ruff.py`,",
             "  then `ledger-writer.py`",
             "- `Stop` `*`: `stop-turn-feedback.py`",
-            "- `SessionStart` `*`: `session-start-advisement.py`",
+            "- `SessionStart` `*`: `session-start-advisement.py` (only without",
+            "  `scripts/session_orientation.py`)",
             "- `SessionEnd` `*`: `session-exit-bookmark.py`",
             "- Historical intake matrix:",
             "  `docs/design/adr/pre-release/ADR-0.9.0-airlineops-surface-breadth-parity/",
@@ -194,18 +197,21 @@ def gzkit_owned_phases() -> tuple[str, ...]:
     )
 
 
-def generate_claude_settings(config: GzkitConfig) -> dict:
+def generate_claude_settings(config: GzkitConfig, project_root: Path | None = None) -> dict:
     """Generate .claude/settings.json content.
 
     Args:
         config: Project configuration.
+        project_root: Project root. Where it carries the orientation script, the
+            orientation hosts the handoff advisement and no SessionStart hook is
+            generated for it (drydock RO-1 act a: one session-start channel).
 
     Returns:
         Settings dictionary for Claude Code.
 
     """
     hooks_dir = config.paths.claude_hooks
-    return {
+    settings: dict = {
         "enabledPlugins": {"superpowers@claude-plugins-official": False},
         "hooks": {
             "PreToolUse": [
@@ -317,9 +323,8 @@ def generate_claude_settings(config: GzkitConfig) -> dict:
             "SessionStart": [
                 {
                     # The entry beat (GHI #757). Surfaces the newest handoff and
-                    # its advised steps through additionalContext (universal) and
-                    # initialUserMessage (Claude-side upgrade that seeds a real
-                    # first turn). Binds by seeding, never by refusing — and since
+                    # its advised steps through additionalContext, its one
+                    # channel. Binds by seeding, never by refusing — and since
                     # the PreToolUse resume gate was retired (2026-08-15) that is
                     # the whole mechanism. `gz handoff decide` still books the
                     # operator's ruling; no hook gates on the absence of one.
@@ -350,6 +355,9 @@ def generate_claude_settings(config: GzkitConfig) -> dict:
             ],
         },
     }
+    if project_root is not None and orientation_carries_advisement(project_root):
+        del settings["hooks"]["SessionStart"]
+    return settings
 
 
 def _is_gzkit_owned_hook(hook_entry: dict, hooks_dir: str) -> bool:
@@ -559,10 +567,13 @@ def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) ->
         ("README.md", _claude_hooks_readme, False),
     )
 
+    if orientation_carries_advisement(project_root):
+        scripts = tuple(entry for entry in scripts if entry[0] != "session-start-advisement.py")
+
     created = _write_hook_dir(project_root, hooks_path, scripts)
 
     # Write settings.json — merge to preserve user-added hooks
-    gzkit_settings = generate_claude_settings(config)
+    gzkit_settings = generate_claude_settings(config, project_root)
     settings_path = project_root / config.paths.claude_settings
     ensure_dir(settings_path.parent)
 

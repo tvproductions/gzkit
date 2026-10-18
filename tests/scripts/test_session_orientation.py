@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import contextlib
 import importlib.util
+import io
 import json
 import re
 import subprocess
@@ -52,8 +53,6 @@ SECTION_HEADINGS = (
     "## Open session-handoff GHIs",
     "## Active OBPI claims",
     "## Active ADR pipeline state",
-    "## Recent ledger events (last 24h)",
-    "## Open blockers",
     "## Skill-awareness re-injection",
 )
 
@@ -160,37 +159,6 @@ class TestRenderEmitsAllSections(unittest.TestCase):
         a = self.mod.render(state, self.now)
         b = self.mod.render(state, self.now)
         self.assertEqual(a, b, "render must be deterministic for fixed state")
-
-
-class TestCollectRecentEvents(unittest.TestCase):
-    def setUp(self):
-        self.mod = _load_orientation_module()
-        self.now = datetime(2026, 4, 25, 12, 0, 0, tzinfo=UTC)
-
-    def test_ledger_window_filters_to_last_24h(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            ledger = Path(tmp) / "ledger.jsonl"
-            recent = (self.now - timedelta(hours=2)).isoformat()
-            old = (self.now - timedelta(days=3)).isoformat()
-            ledger.write_text(
-                "\n".join(
-                    [
-                        json.dumps({"event": "adr_recorded", "ts": recent}),
-                        json.dumps({"event": "obpi_completed", "ts": old}),
-                        json.dumps({"event_type": "receipt", "timestamp": recent}),
-                    ]
-                )
-                + "\n",
-                encoding="utf-8",
-            )
-            events = self.mod.collect_recent_events(ledger, self.now)
-            self.assertEqual(len(events), 2, "must filter out events older than 24h")
-            kinds = {e.get("event") or e.get("event_type") for e in events}
-            self.assertEqual(kinds, {"adr_recorded", "receipt"})
-
-    def test_missing_ledger_returns_empty_list(self):
-        events = self.mod.collect_recent_events(Path("nonexistent-ledger.jsonl"), self.now)
-        self.assertEqual(events, [])
 
 
 class TestCollectHandoff(unittest.TestCase):
@@ -1703,8 +1671,8 @@ class TestExitBookmarkSensemakingSection(unittest.TestCase):
         rendered = "\n".join(lines)
         self.assertIn("## Session-exit bookmarks awaiting sensemaking", rendered)
         self.assertIn("OFFER THE OPERATOR SENSEMAKING", rendered)
-        self.assertIn("Flagged for inclusion", rendered)
-        self.assertIn(".gzkit/handoffs/bm.md", rendered)
+        entry = next(line for line in rendered.splitlines() if ".gzkit/handoffs/bm.md" in line)
+        self.assertIn("UNTRACKED", entry)
 
     def test_nothing_renders_when_there_is_nothing_to_say(self):
         """An empty section every session is noise that teaches the reader to skip it."""
@@ -1937,3 +1905,206 @@ class LiveCampaignCarriesItsSteeringMarkerTests(unittest.TestCase):
             "next item. Restore the exact marker; amendment prose goes AFTER it.",
         )
         self.assertTrue(str(campaign["topmost"]).strip())
+
+
+class TestSessionStartIsOneChannelUnderBudget(unittest.TestCase):
+    """The orientation is the one session-start channel, under 4 KB (drydock RO-1 act a).
+
+    Measured 2026-10-17: the agent received the handoff advisement twice
+    (``additionalContext`` and ``initialUserMessage``, 1,743 B each), the
+    orientation repeated the handoff a third time, and the orientation itself ran
+    6,362 B, past Codex's 6,000-char ``additionalContextLimit``. Operator ruling:
+    the orientation is the one channel. The handoff section therefore carries what
+    the advisement alone carried — every advised step and the ruling verb — and
+    the whole text fits the contract's per-turn hook-text number.
+    """
+
+    def setUp(self):
+        self.mod = _load_orientation_module()
+        self.now = datetime(2026, 10, 17, 12, 0, 0, tzinfo=UTC)
+
+    @staticmethod
+    def _advisement(steps: list[str]):
+        """The advisement as the shared renderer builds it, not a hand-written body."""
+        from types import SimpleNamespace
+
+        from gzkit.session_start import Advisement, _render
+
+        path = ".gzkit/handoffs/20261017T114454Z-drydock.md"
+        chain = [f".gzkit/handoffs/2026101{i:02d}-ancestor.md" for i in range(19)] + [path]
+        result = SimpleNamespace(
+            path=path, staleness="Fresh", next_steps=steps, chain=chain, chain_truncated=True
+        )
+        return Advisement(present=True, text=_render(result), handoff_path=path, staleness="Fresh")
+
+    #: Filler that brings the fixture to the measured 2026-10-17 boot (3,974 B on
+    #: the real tree once cut), so the fixed text has no slack: any of the cut
+    #: prose growing back pushes the whole past the budget.
+    STEP_FILLER = 720
+
+    def _heavy_state(self, *, current: bool = False) -> dict:
+        """A state as large as the measured 2026-10-17 boot, section for section."""
+        steps = [
+            "Cheaper session: RO-1, in this order, one commit per act: " + "x" * self.STEP_FILLER,
+            "Session that specifies: RO-2, the identity seam, " + "y" * 80,
+            "Operator: the handback is drafted at the drydock's exit, " + "z" * 60,
+        ]
+        return {
+            "campaign": {
+                "path": "docs/governance/build-to-1.0-campaign-2026-09-20.md",
+                "done": 7,
+                "total": 30,
+                "topmost": "**AMENDED 2026-10-05 (operator-ratified)** " + "t" * 900,
+                "next_items": ["a" * 300, "b" * 300, "c" * 300],
+                "workflow_fronts": "**handoff system** **ghi triage** **adr/obpi campaign**",
+            },
+            "remote_state": {"branch": "main", "ahead": 0, "behind": 0, "is_behind": False},
+            "handoff": {
+                "path": ".gzkit/handoffs/20261017T114454Z-drydock.md",
+                "freshness": "Fresh",
+                "first_action": steps[0],
+            },
+            "advisement": self._advisement(steps),
+            "handoff_steps": steps,
+            "handoff_account": {
+                "anchor": ".gzkit/handoffs/20261017T114454Z-drydock.md",
+                "anchor_age": "Fresh",
+                "landed": "eae913ff8",
+                "commits_total": 0,
+                "commits": [],
+                "events_total": 2,
+                "events": [("obpi_lock_ttl_warning", 1), ("session_exit_bookmark_skipped", 1)],
+                "bookmarks": 1,
+                "dirty": not current,
+                "current": current,
+            },
+            "exit_bookmarks": {
+                "entries": [
+                    {
+                        "path": ".gzkit/handoffs/20261017T115019Z-session-exit-bookmark.md",
+                        "age": "Fresh",
+                        "inclusion": "tracked",
+                    }
+                ]
+            },
+            "session_handoff_ghis": [],
+            "obpi_locks": [
+                {"obpi_id": "mx-session", "agent": "claude-code-696ca9a4", "ttl_warning": True}
+            ],
+            "adr_pipeline": [],
+            "chore_staleness": {
+                "chores": [{"slug": f"chore-number-{i:02d}", "band": "overdue"} for i in range(27)]
+                + [{"slug": f"due-chore-{i}", "band": "due"} for i in range(3)],
+                "counts": {"overdue": 27, "due": 3, "unmeasured": 3, "paused": 0},
+            },
+            "blockers": [],
+        }
+
+    def test_the_handoff_section_carries_every_advised_step_and_the_ruling_verb(self):
+        state = self._heavy_state()
+        rendered = self.mod.render(state, self.now)
+        section = rendered.split("## Most-recent handoff", 1)[1].split("\n## ", 1)[0]
+        for number, step in enumerate(state["handoff_steps"], start=1):
+            self.assertIn(f"{number}. {step}", section)
+        self.assertIn("gz handoff decide", section)
+        self.assertIn("Chained from", section)
+        # One heading per section: the advisement's own heading is not nested in,
+        # and neither is a sub-heading of its own.
+        self.assertNotIn("Resumed handoff — review before acting", rendered)
+        self.assertNotIn("\n### ", section)
+
+    def test_without_an_advisement_the_selection_still_renders(self):
+        state = self._heavy_state()
+        state["advisement"] = None
+        rendered = self.mod.render(state, self.now)
+        section = rendered.split("## Most-recent handoff", 1)[1].split("\n## ", 1)[0]
+        self.assertIn("20261017T114454Z-drydock.md", section)
+        self.assertIn("Cheaper session: RO-1", section)
+
+    def test_a_measured_boot_fits_the_session_start_budget(self):
+        for current in (False, True):
+            with self.subTest(account_current=current):
+                rendered = self.mod.render(self._heavy_state(current=current), self.now)
+                size = len(rendered.encode("utf-8"))
+                self.assertLessEqual(size, 4000, f"session-start text is {size} B")
+
+    def test_the_fronts_line_names_its_label_once_when_the_plan_has_none(self):
+        state = self._heavy_state()
+        state["campaign"]["workflow_fronts"] = ""
+        rendered = self.mod.render(state, self.now)
+        section = rendered.split("## Active campaign", 1)[1].split("\n## ", 1)[0]
+        self.assertEqual(section.count("Workflow fronts"), 1)
+        self.assertIn("#workflow-fronts", section)
+
+    def test_the_advisement_is_collected_against_the_measured_divergence(self):
+        """The caveat comes from the remote state already measured, not a second probe."""
+        from gzkit.handoff_api import create_handoff
+        from gzkit.handoff_validation import REQUIRED_SECTIONS
+
+        root = Path(self.enterContext(tempfile.TemporaryDirectory()))
+        (root / ".gzkit" / "handoffs").mkdir(parents=True)
+        sections = {section: f"Seeded {section}." for section in REQUIRED_SECTIONS}
+        sections["Decisions Made"] = "- [operator-ruled] Seeded."
+        sections["Immediate Next Steps"] = "1. Land act (a)."
+        create_handoff(
+            adr_id=None,
+            branch="main",
+            agent="g0",
+            slug="seeded",
+            sections=sections,
+            base_path=root,
+            timestamp="2026-10-17T11:00:00Z",
+        )
+        remote = {"branch": "main", "ahead": 0, "behind": 3, "is_behind": True}
+        with mock.patch("gzkit.session_start.probe_remote_divergence") as probe:
+            advisement = self.mod.collect_advisement(root, self.now, remote)
+        probe.assert_not_called()
+        assert advisement is not None
+        self.assertTrue(advisement.present)
+        self.assertIn("Land act (a).", advisement.text)
+        self.assertIn("3 commits behind", advisement.text)
+        level = self.mod.collect_advisement(root, self.now, dict(remote, behind=0))
+        assert level is not None
+        self.assertNotIn("commits behind", level.text)
+
+    def test_a_collection_failure_degrades_to_no_advisement(self):
+        with mock.patch("gzkit.session_start.build_advisement", side_effect=RuntimeError):
+            self.assertIsNone(self.mod.collect_advisement(Path("."), self.now, None))
+
+    def test_collect_state_hands_the_advisement_the_remote_state(self):
+        remote = {"branch": "main", "ahead": 0, "behind": 0, "is_behind": False}
+        collectors = {
+            name: mock.patch.object(self.mod, name, return_value=None)
+            for name in dir(self.mod)
+            if name.startswith("collect_") and name not in {"collect_state", "collect_advisement"}
+        }
+        with contextlib.ExitStack() as stack:
+            for patcher in collectors.values():
+                stack.enter_context(patcher)
+            probe = stack.enter_context(
+                mock.patch.object(self.mod, "collect_remote_state", return_value=remote)
+            )
+            collect = stack.enter_context(
+                mock.patch.object(self.mod, "collect_advisement", return_value="ADVICE")
+            )
+            state = self.mod.collect_state(Path("."), self.now)
+        self.assertEqual(state["advisement"], "ADVICE")
+        self.assertEqual(collect.call_args.args[2], remote)
+        self.assertEqual(state["remote_state"], remote)
+        self.assertEqual(probe.call_count, 1, "the remote is fetched once per boot")
+
+    def test_the_orientation_does_not_repeat_the_per_turn_mx_banner(self):
+        """The mx-awareness hook prints the banner on every prompt; a second copy here
+        was the banner's second channel."""
+        out = io.StringIO()
+        with (
+            mock.patch.object(self.mod, "collect_state", return_value={}),
+            mock.patch("gzkit.mx.awareness.get_banner", return_value="SAFE MODE ACTIVE — x"),
+            contextlib.redirect_stdout(out),
+        ):
+            self.mod.main([])
+        self.assertNotIn("SAFE MODE ACTIVE", out.getvalue())
+
+    def test_no_ledger_window_summary_repeats_the_account(self):
+        rendered = self.mod.render(self._heavy_state(), self.now)
+        self.assertNotIn("Recent ledger events", rendered)

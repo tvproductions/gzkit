@@ -95,11 +95,10 @@ def _session_exit_bookmark_script() -> str:
 def _session_start_advisement_script() -> str:
     """Return the SessionStart handoff-advisement hook script (GHI #757).
 
-    Emits the advisement through BOTH channels: ``additionalContext`` (passive,
-    universal — the only channel Codex has) and ``initialUserMessage`` (which
-    seeds an actual first turn, Claude-only). The passive channel is the
-    correctness path; the seeded turn is the upgrade that makes the review
-    undismissable where the harness supports it.
+    Emits the advisement on one channel, ``additionalContext``; the
+    ``initialUserMessage`` copy was retired with drydock RO-1 act a (operator
+    ruling 2026-10-17). Registered only where the project has no orientation
+    script to host it (``gzkit.session_start.orientation_carries_advisement``).
 
     Always exits 0. A SessionStart hook that fails takes orientation down with
     it, and there is no agent yet to read the traceback.
@@ -118,9 +117,10 @@ def _session_start_advisement_script() -> str:
             was skippable, not that it was unguarded. A handoff ADVISES; this
             hook never authorizes, and says so in the text it injects.
 
-            Dual-channel: `additionalContext` is passive and universal (Codex
-            has only this); `initialUserMessage` seeds a real first turn and is
-            a Claude-side upgrade, never a correctness dependency.
+            One channel: `additionalContext`. `initialUserMessage` carried a
+            second copy of the same text and was retired with drydock RO-1 act a
+            (2026-10-17). A project with `scripts/session_orientation.py` does not
+            register this hook; its orientation carries the advisement.
 
             Thin adapter only: the decision is `gzkit.session_start.build_advisement`.
 
@@ -173,7 +173,6 @@ def _session_start_advisement_script() -> str:
                                 "hookEventName": "SessionStart",
                                 "additionalContext": advisement.text,
                             },
-                            "initialUserMessage": advisement.text,
                         }
                     )
                 )
