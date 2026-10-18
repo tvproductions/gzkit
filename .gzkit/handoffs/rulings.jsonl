@@ -1614,3 +1614,5 @@
 {"ts": "2026-10-18T22:51:02Z", "source": "20261018T225102Z-ro2-specified-recurrence-and-debt-landed.md", "text": "RO-2's shape, verbatim selection: 'One RO, tranches (Rec.)'."}
 {"ts": "2026-10-18T22:51:02Z", "source": "20261018T225102Z-ro2-specified-recurrence-and-debt-landed.md", "text": "RO-2's witness, verbatim selection: 'Ratchet to zero (Rec.)'."}
 {"ts": "2026-10-18T22:51:02Z", "source": "20261018T225102Z-ro2-specified-recurrence-and-debt-landed.md", "text": "The task-resolver fix against attested REQ-0.35.0-15-02, verbatim selection: 'Re-seat the fixture (Rec.)'."}
+{"ts": "2026-10-18T23:35:30Z", "source": "20261018T233530Z-ci-green-full-tier-repaired.md", "text": "The live OBPI-0.9.0-02 brief's stale Discovery row, verbatim selection: 'Dated note on the row (Rec.)' — line 92 keeps its observation and gains '(instruction-router.py not present since 2026-10-17: removed by drydock RO-1 act b)'."}
+{"ts": "2026-10-18T23:35:30Z", "source": "20261018T233530Z-ci-green-full-tier-repaired.md", "text": "The mx-hardening guard canary, verbatim: 'approve the mx-hardening canary' (booked by gz canary review as guard_canary_reviewed)."}
