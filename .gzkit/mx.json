@@ -1,9 +1,10 @@
 {
-  "session_id": "696ca9a4-7b6b-4d3a-8611-0da2766bf075",
-  "opened_at": "2026-10-17T08:36:59.291206+00:00",
-  "reason": "harbor pilotage",
+  "session_id": "e6800367-eb28-4b68-9624-65d94f7cdf17",
+  "opened_at": "2026-10-18T16:50:05.739994+00:00",
+  "reason": "harbor pilotage drydock, session cycle (operator: close and open drydock)",
   "attestor": "g0",
   "inspection_scope": [],
   "mode": "safe",
-  "contract": "docs/governance/harbor-pilotage-candidate-2026-10-15.md"
+  "contract": "docs/governance/harbor-pilotage-candidate-2026-10-15.md",
+  "exiting": false
 }
