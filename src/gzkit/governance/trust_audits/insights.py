@@ -21,6 +21,8 @@ from pathlib import Path
 from gzkit.validate import ValidationError
 
 _INSIGHTS_FILE = Path(".gzkit") / "insights" / "agent-insights.jsonl"
+_LEDGER_FILE = Path(".gzkit") / "ledger.jsonl"
+_POINTER_EVENT = "insight_recorded"
 
 # GHI #358: existing entries authored before the schema lock landed —
 # waived by content hash rather than line number so fixture files in
@@ -77,14 +79,65 @@ def _validate_insight_line(raw: str, artifact: str) -> ValidationError | None:
     return None
 
 
+def _ledger_pointers(project_root: Path) -> list[dict[str, object]]:
+    """Every ``insight_recorded`` row in the ledger, in ledger order."""
+    try:
+        text = (project_root / _LEDGER_FILE).read_text(encoding="utf-8")
+    except OSError:
+        return []
+    rows: list[dict[str, object]] = []
+    for raw in text.splitlines():
+        if _POINTER_EVENT not in raw:
+            continue
+        try:
+            row = json.loads(raw)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(row, dict) and row.get("event") == _POINTER_EVENT:
+            rows.append(row)
+    return rows
+
+
+def _audit_pointers(project_root: Path) -> list[ValidationError]:
+    """Hold each recorded insight to the fingerprint its ledger pointer carries.
+
+    Operator ruling 2026-10-18 ("Pointer + 3 fields"): a record edited after it was
+    recorded, or removed, is a finding. A record with no pointer predates the ruling
+    and is not backfilled.
+    """
+    from gzkit.insights.ledger_ref import insight_lines_by_ts, insight_sha256  # noqa: PLC0415
+
+    lines = insight_lines_by_ts(project_root / _INSIGHTS_FILE)
+    artifact = _INSIGHTS_FILE.as_posix()
+    errors: list[ValidationError] = []
+    for row in _ledger_pointers(project_root):
+        ts = str(row.get("insight_ts", ""))
+        line = lines.get(ts)
+        if line is None:
+            message = f"insight_recorded names the record at {ts}, which the store no longer has"
+        elif insight_sha256(line) != row.get("insight_sha256"):
+            message = (
+                f"the record at {ts} differs from the line its insight_recorded event "
+                "fingerprinted: it was edited after it was recorded"
+            )
+        else:
+            continue
+        errors.append(ValidationError(type="insights_shape", artifact=artifact, message=message))
+    return errors
+
+
 def audit_insights_shape(project_root: Path) -> list[ValidationError]:
-    """Validate every record in ``.gzkit/insights/agent-insights.jsonl``."""
+    """Validate every record in ``.gzkit/insights/agent-insights.jsonl``.
+
+    Also holds each record the ledger names by an ``insight_recorded`` event to that
+    event's fingerprint.
+    """
     import hashlib  # noqa: PLC0415
 
     insights_path = project_root / _INSIGHTS_FILE
+    errors: list[ValidationError] = _audit_pointers(project_root)
     if not insights_path.is_file():
-        return []
-    errors: list[ValidationError] = []
+        return errors
     artifact_root = _INSIGHTS_FILE.as_posix()
     for lineno, raw in enumerate(insights_path.read_text(encoding="utf-8").splitlines(), start=1):
         if not raw.strip():

@@ -145,6 +145,7 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         # Dispositioned as it always was: session-scoped, the handoff is already a
         # node via its frontmatter, and there is no second node for an edge.
         "handoff_resume_blocked",
+        "insight_recorded",
         "intrinsic-complexity-attestation",
         "lifecycle_transition",
         "mx_session_closed",

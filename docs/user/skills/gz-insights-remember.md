@@ -23,7 +23,8 @@ gz insights remember --type <improvement|defect|defect-resolution|discovery> \
   --scope "<surface or skill the record names>" \
   --summary "<one-sentence record body>" \
   [--evidence "<command or path>" ...] \
-  [--next-action "<what changes structurally to prevent recurrence>"]
+  [--next-action "<what changes structurally to prevent recurrence>"] \
+  [--source operator|agent] [--supersedes <ts>]
 ```
 
 - `--type` is validated against the `InsightRecord` enum; an out-of-enum value
@@ -32,6 +33,12 @@ gz insights remember --type <improvement|defect|defect-resolution|discovery> \
   `ValidationError` at record construction — the verb exits 1 and writes no line.
 - `--evidence` is repeatable and becomes the record's `evidence` list.
 - `ts` is stamped automatically (ISO8601 with timezone; date-only is rejected).
+- `--source` says whose words the record carries (`operator` or `agent`, default
+  `agent`); `--supersedes <ts>` names an earlier record it replaces, and is refused
+  when no record carries that `ts`.
+- Each record is also named in the ledger by one `insight_recorded` event (its
+  `ts`, a SHA-256 of the line, the source and any supersedes), so a hand edit after
+  recording fails `gz validate --insights-shape` (operator ruling 2026-10-18).
 
 ## When to use
 

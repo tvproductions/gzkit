@@ -4,9 +4,9 @@ description: Use when the operator course-corrects or a defect, resolution or di
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-10-18
 metadata:
-  skill-version: "0.1.2"
+  skill-version: "0.2.0"
 model: haiku
 gz_command: gz insights remember
 ---
@@ -40,12 +40,18 @@ hand-authoring a JSONL line for the insights store.
 3. Optionally attach `--evidence <command-or-path>` (repeatable — pass it
    once per witnessing command or file) and `--next-action <text>`
    (what changes structurally to prevent recurrence).
+   Say whose words the record carries with `--source operator|agent`
+   (default `agent`): pass `operator` only for the operator's own words; an
+   agent's reading of them stays `agent` (operator ruling 2026-10-18). When
+   the record replaces an earlier one, name it with `--supersedes <ts>`; a
+   `ts` no record carries is refused before anything is written.
 4. Run the capture:
 
    ```bash
    uv run gz insights remember --type <defect|defect-resolution|improvement|discovery> \
      --scope <surface-or-skill> --summary "<one-sentence body>" \
-     [--evidence <command-or-path> ...] [--next-action "<structural change>"]
+     [--evidence <command-or-path> ...] [--next-action "<structural change>"] \
+     [--source operator|agent] [--supersedes <ts>]
    ```
 
 5. The command fails closed (non-zero exit, no line written) when
@@ -58,6 +64,9 @@ hand-authoring a JSONL line for the insights store.
   file/dir is created on first use).
 - The line's `ts` field is stamped with the current UTC instant
   automatically — no manual timestamp is ever required.
+- One `insight_recorded` event is appended to the ledger naming the record:
+  its `ts`, a SHA-256 of the line, the `source`, and any `supersedes`. A
+  recorded line edited by hand afterwards fails `gz validate --insights-shape`.
 
 ## Example
 

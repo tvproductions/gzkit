@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import argparse
 import sys
-from typing import get_args
+from typing import Literal, get_args
 
 from gzkit.insights.model import InsightType
 
@@ -99,6 +99,17 @@ def _register_remember(insights_commands: argparse._SubParsersAction) -> None:
         default=None,
         help="What changes structurally to prevent recurrence.",
     )
+    p.add_argument(
+        "--source",
+        choices=["operator", "agent"],
+        default="agent",
+        help="Whose words the record carries; booked on the ledger pointer (default: agent).",
+    )
+    p.add_argument(
+        "--supersedes",
+        default=None,
+        help="ts of an earlier record this one supersedes; refused when no record has it.",
+    )
     p.set_defaults(
         func=lambda a: remember(
             insight_type=a.insight_type,
@@ -106,6 +117,8 @@ def _register_remember(insights_commands: argparse._SubParsersAction) -> None:
             summary=a.summary,
             evidence=a.evidence,
             next_action=a.next_action,
+            source=a.source,
+            supersedes=a.supersedes,
         )
     )
 
@@ -117,6 +130,8 @@ def remember(
     summary: str,
     evidence: list[str] | None,
     next_action: str | None,
+    source: Literal["operator", "agent"] = "agent",
+    supersedes: str | None = None,
 ) -> None:
     """Handle ``gz insights remember --type ... --scope ... --summary ...``.
 
@@ -124,6 +139,10 @@ def remember(
     serializes. An empty required field raises ``ValidationError`` at
     construction — caught here and turned into exit 1 with no line written
     (out-of-enum ``--type`` is already rejected by argparse ``choices``).
+
+    The record is then named in the ledger by one ``insight_recorded`` event
+    (operator ruling 2026-10-18). A ``supersedes`` that names no existing record is
+    refused before anything is written.
     """
     from pydantic import ValidationError  # noqa: PLC0415
 
@@ -132,8 +151,20 @@ def remember(
         DEFAULT_INSIGHTS_PATH,
         append_insight_record,
     )
+    from gzkit.insights.ledger_ref import (  # noqa: PLC0415
+        book_insight_recorded,
+        insight_lines_by_ts,
+    )
 
-    path = get_project_root() / DEFAULT_INSIGHTS_PATH
+    root = get_project_root()
+    path = root / DEFAULT_INSIGHTS_PATH
+    if supersedes is not None and supersedes not in insight_lines_by_ts(path):
+        print(
+            f"Error: --supersedes {supersedes} names no record in {path.as_posix()}; "
+            "no line written.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
     try:
         line = append_insight_record(
             type=insight_type,
@@ -150,4 +181,7 @@ def remember(
         )
         sys.exit(1)
 
+    book_insight_recorded(
+        root / ".gzkit" / "ledger.jsonl", line, source=source, supersedes=supersedes
+    )
     print(f"Appended insight record to {path.as_posix()}: {line}")

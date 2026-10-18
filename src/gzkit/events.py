@@ -1064,6 +1064,22 @@ class MxSessionLeaseExpiredEvent(_EventBase):
     age_minutes: float = Field(..., description="Session age when the expiry was booked")
 
 
+class InsightRecordedEvent(_EventBase):
+    """insight_recorded event — the ledger's pointer to one insights-store record.
+
+    Operator ruling 2026-10-18 ("Pointer + 3 fields"): the insight stays in
+    ``.gzkit/insights/agent-insights.jsonl``; the ledger, the system of record, notes
+    that it was recorded and names it, so a ruling recorded as an insight has
+    happened in the ledger (requirements model § 11, maxim 15).
+    """
+
+    event: Literal["insight_recorded"]
+    insight_ts: str = Field(..., description="ts of the insights-store record this names")
+    insight_sha256: str = Field(..., description="SHA-256 of the record's serialized line")
+    source: Literal["operator", "agent"] = Field(..., description="Whose words the record carries")
+    supersedes: str | None = Field(None, description="ts of an earlier record this supersedes")
+
+
 # ---------------------------------------------------------------------------
 # Work-domain L2 edge events (ADR-0.32.0, OBPI-06). The four net-new,
 # append-only edge event types expressing work coupling: precedence
@@ -1679,6 +1695,7 @@ TypedLedgerEvent = Annotated[
     | MxSessionOpenedEvent
     | MxSessionClosedEvent
     | MxSessionLeaseExpiredEvent
+    | InsightRecordedEvent
     | BlocksEvent
     | BlockedByEvent
     | DiscoveredFromEvent

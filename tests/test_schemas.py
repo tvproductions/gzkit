@@ -48,6 +48,7 @@ from gzkit.events import (
     HandoffResumeAuthorizedEvent,
     HandoffResumeBlockedEvent,
     HandoffResumeDecidedEvent,
+    InsightRecordedEvent,
     IntrinsicComplexityAttestationEvent,
     LedgerEventCorrectedEvent,
     LifecycleTransitionEvent,
@@ -343,6 +344,7 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "mx_session_opened": MxSessionOpenedEvent,
     "mx_session_closed": MxSessionClosedEvent,
     "mx_session_lease_expired": MxSessionLeaseExpiredEvent,
+    "insight_recorded": InsightRecordedEvent,
     # Work-domain L2 edge events (ADR-0.32.0, OBPI-06)
     "blocks": BlocksEvent,
     "blocked_by": BlockedByEvent,

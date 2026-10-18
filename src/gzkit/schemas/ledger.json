@@ -1970,6 +1970,34 @@
         }
       }
     },
+    "insight_recorded": {
+      "required": [
+        "insight_ts",
+        "insight_sha256",
+        "source"
+      ],
+      "properties": {
+        "insight_ts": {
+          "type": "string",
+          "min_length": 1
+        },
+        "insight_sha256": {
+          "type": "string",
+          "min_length": 64
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "operator",
+            "agent"
+          ]
+        },
+        "supersedes": {
+          "type": "string",
+          "min_length": 1
+        }
+      }
+    },
     "mx_session_lease_expired": {
       "required": [
         "session_id",
