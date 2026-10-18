@@ -351,6 +351,18 @@ class TestDebtAgesPerContract(unittest.TestCase):
     def test_a_session_without_a_contract_ages_alone(self) -> None:
         self.assertEqual(self._after_cycle(None), (1.0, levels.INFO))
 
+    @covers("REQ-0.0.74-14-03")
+    def test_cycled_hangar_sessions_share_no_debt(self) -> None:
+        """Two contract-less sessions are never one period, however close."""
+        from gzkit.mx import hardening
+
+        cycle = _BASE + timedelta(hours=20)
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_ledger(root, [_opened("s1", _BASE), _closed("s1", cycle), _opened("s2", cycle)])
+            result = hardening.debt_aging_status(root, now=cycle + timedelta(hours=1))
+        self.assertEqual((result.age_hours, result.emitted_level), (1.0, levels.INFO))
+
 
 class TestDanglingState(unittest.TestCase):
     """REQ-0.0.74-14-04: ledger says open but the marker is missing on disk."""
