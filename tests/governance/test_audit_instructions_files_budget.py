@@ -23,6 +23,7 @@ from pathlib import Path
 
 from gzkit.advisory import ADVISORY_MARKER
 from gzkit.governance.trust_audits import audit_instructions_files_budget
+from gzkit.governance.trust_audits.instructions_files_budget import _load_budget_config
 
 
 def _run(root: Path) -> tuple[list[object], str]:
@@ -359,16 +360,27 @@ class LiveBudgetFileTests(unittest.TestCase):
     """The project's budget file names every surface the drydock exit table lists."""
 
     def test_every_loaded_surface_has_a_budget(self) -> None:
+        # Read the budgets the way the audit resolves them, then run the audit on
+        # the live tree: each surface must be measured, not merely listed.
         root = Path(__file__).resolve().parents[2]
-        config = json.loads((root / "data" / "instructions_files_budget.json").read_text("utf-8"))
-        surfaces = {entry["surface"] for entry in config["totals"]}
-        self.assertEqual(
-            surfaces,
-            {"rules", "skill descriptions", "agent definitions", "nested AGENTS.md", "personas"},
-        )
+        surfaces = {
+            "rules",
+            "skill descriptions",
+            "agent definitions",
+            "nested AGENTS.md",
+            "personas",
+        }
+        config = _load_budget_config(root)
+        self.assertEqual({entry["surface"] for entry in config["totals"]}, surfaces)
         self.assertIn("max_bytes", config["injected_hook_text"])
         rule_globs = [g for g in config["globs"] if g["pattern"] == ".claude/rules/*.md"]
         self.assertEqual(len(rule_globs), 1)
+        _, stream = _run(root)
+        for surface in (*sorted(surfaces), "MX banner"):
+            self.assertTrue(
+                f"{surface}: " in stream or f"{surface} is " in stream,
+                f"the audit did not measure {surface!r}",
+            )
 
 
 if __name__ == "__main__":

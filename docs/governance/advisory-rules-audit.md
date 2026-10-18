@@ -537,7 +537,7 @@ decays in whichever direction the next reader's grep happens to point.
 
 | Score | Rows | % of scored rows |
 |-------|-------|---|
-| **Mechanical** | 69 | 37% |
+| **Mechanical** | 70 | 37% |
 | **Promotable** | 42 | 22% |
 | **Judgment** | 78 | 41% |
 | **Ambiguous** | 0 | 0% |
@@ -556,7 +556,7 @@ decays in whichever direction the next reader's grep happens to point.
      158 as of row 58c (GHI #962, 2026-09-05), and 159 as of row 88 (the CLI
      lane-is-not-route carve-out, 2026-09-06), and 160 as of row 89 (mutation-sweep
      integrity, GHI #963), and 161 as of row 51c (census-query completeness,
-     GHI #972), and 163 as of rows 91-92 (the exit-code-2 relabel, GHI #1001), and 167 as of rows 56a-56b (suppression is not a repair, GHI #999), and 168 as of row 93 (verbosity flags realigned to the specification, 2026-09-14), and 180 as of row 53c (skill selection routes through gz-how, GHI #1106, 2026-09-27), and 181 as of row 51d (gh issue reopen for ghi-author's regression case, 2026-09-27); the entries between 131 and 158 were
+     GHI #972), and 163 as of rows 91-92 (the exit-code-2 relabel, GHI #1001), and 167 as of rows 56a-56b (suppression is not a repair, GHI #999), and 168 as of row 93 (verbosity flags realigned to the specification, 2026-09-14), and 180 as of row 53c (skill selection routes through gz-how, GHI #1106, 2026-09-27), and 181 as of row 51d (gh issue reopen for ghi-author's regression case, 2026-09-27), and 190 as of row 62g (the MX lease is booked and announced, GHI #1257, 2026-10-18); the entries between 131 and 158 were
      not recorded here as they landed, so this list names the endpoints it can
      evidence rather than reconstructing a history it cannot. -->
 

@@ -2533,11 +2533,14 @@ class TestSessionStartAdvisementIsOneChannel(unittest.TestCase):
         self.assertEqual(commands, ["uv run python scripts/session_orientation.py"])
 
     def test_the_generated_surfaces_describe_one_channel(self) -> None:
-        # output-contract: the hooks README and the hook's own docstring are the
-        # delivered description of the registration; a retired second channel
-        # described there is the drift this guards.
-        readme = (_HOOK_TEMPLATE_HOOKS / "README.md").read_text(encoding="utf-8")
-        hook = (_HOOK_TEMPLATE_HOOKS / "session-start-advisement.py").read_text(encoding="utf-8")
+        # output-contract: the hooks README and the hook's own docstring, as the
+        # installer writes them, are the delivered description of the registration;
+        # a retired second channel described there is the drift this guards.
+        root = self._project(orientation=False)
+        setup_claude_hooks(root, GzkitConfig(project_name="gzkit-test"))
+        installed = root / ".claude" / "hooks"
+        readme = (installed / "README.md").read_text(encoding="utf-8")
+        hook = (installed / "session-start-advisement.py").read_text(encoding="utf-8")
         for surface in (readme, hook):
             self.assertNotIn("Dual-channel", surface)
             self.assertNotIn("Claude-side upgrade", surface)
@@ -2560,7 +2563,8 @@ class TestSessionStartAdvisementIsOneChannel(unittest.TestCase):
     def test_the_advisement_hook_speaks_on_one_channel(self) -> None:
         root = self._project(orientation=False)
         (root / ".gzkit" / "handoffs").mkdir(parents=True)
-        hook = _HOOK_TEMPLATE_HOOKS / "session-start-advisement.py"
+        setup_claude_hooks(root, GzkitConfig(project_name="gzkit-test"))
+        hook = root / ".claude" / "hooks" / "session-start-advisement.py"
         advice = "## Resumed handoff — review before acting\n\n- Path: `x.md` (Fresh)"
         module: dict[str, object] = {"__name__": "advisement_hook"}
         exec(compile(hook.read_text(encoding="utf-8"), str(hook), "exec"), module)
