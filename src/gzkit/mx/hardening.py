@@ -226,6 +226,25 @@ def _debt_level(age: float) -> int:
     return levels.INFO
 
 
+def _debt_since(root: Path, sessions: dict[str, str]) -> dict[str, str]:
+    """Map each open session to the ts its debt ages from: per contract, else its own open.
+
+    A safe-mode session cycle under one contract renews the lease, never the debt
+    (GHI #1258, operator ruling 2026-10-18 'Per contract (Rec.)').
+    """
+    opened = Ledger(root.joinpath(*_LEDGER_RELPATH)).query(event_type="mx_session_opened")
+    first: dict[str, str] = {}
+    contract_of: dict[str, str] = {}
+    for event in opened:
+        contract = event.extra.get("contract")
+        if not isinstance(contract, str) or not contract:
+            continue
+        contract_of[str(event.extra.get("session_id"))] = contract
+        if contract not in first or event.ts < first[contract]:
+            first[contract] = event.ts
+    return {sid: first.get(contract_of.get(sid, ""), ts) for sid, ts in sessions.items()}
+
+
 def debt_aging_status(
     root: Path | None = None,
     *,
@@ -241,7 +260,8 @@ def debt_aging_status(
     now = now or datetime.now(UTC)
     sessions = open_sessions(root)
 
-    oldest = max((age_hours(ts, now) for ts in sessions.values()), default=0.0)
+    since = _debt_since(root, sessions)
+    oldest = max((age_hours(ts, now) for ts in since.values()), default=0.0)
     emitted = _debt_level(oldest) if sessions else levels.INFO
     route = checkpoint.resolve("mx-debt-aging", emitted, root)
     return DebtAgingResult(

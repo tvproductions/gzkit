@@ -122,7 +122,9 @@ one definition for both. An open session past its lease is never evicted (operat
 2026-10-18): the next session start books one `mx_session_lease_expired` ledger event for it and
 the session orientation announces it under `## MX hangar`; the lock reaper leaves the lock of an
 open hangar in place. `gz validate --mx-hardening`, a `gz check` step, announces the same finding
-and the advisory debt the session carries, and never blocks `gz mx exit` on either. It grounds
+and the advisory debt the session carries, and never blocks `gz mx exit` on either. Debt ages
+from the first safe-mode open under the session's contract, so closing and reopening under one
+contract renews the lease without resetting the debt (GHI #1258). It grounds
 only a dangling session (ledger open, marker missing) and more than one open session (GHI #1257).
 
 ## Exit Codes

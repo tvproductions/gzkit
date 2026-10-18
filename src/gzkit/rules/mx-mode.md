@@ -10,11 +10,11 @@ paths:
   - "src/gzkit/mx/awareness.py"
   - "src/gzkit/hooks/guards.py"
 ---
-<!-- rule-version: 1.8.0 -->
+<!-- rule-version: 1.9.0 -->
 
 # MX Mode (Maintenance Hangar) (gzkit)
 
-> **Rule version:** `1.8.0` — safe-mode entry pins its contract in the ledger and each committed contract edit is booked (operator ruling 2026-10-18); version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#mx-modemd).
+> **Rule version:** `1.9.0` — advisory debt ages per contract, so a safe-mode session cycle renews the lease but never resets the debt (operator ruling 2026-10-18, GHI #1258); version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#mx-modemd).
 
 ## Non-negotiable rules
 
@@ -96,6 +96,10 @@ Witness: `tests/mx/test_checkpoint.py::TestSafeMode`, `tests/commands/test_mx_en
 - Past the lease nothing is evicted (operator ruling 2026-10-18, verbatim *"at worst, we book
   a status at least expiry and notify"*): session start books one `mx_session_lease_expired`
   and announces it, and the lock reaper leaves an open hangar's lock in place.
+- Advisory debt ages per contract (operator ruling 2026-10-18, *"Per contract (Rec.)"*, GHI #1258):
+  from the first safe-mode `mx_session_opened` under the open session's contract, so closing and
+  reopening under one contract renews the lease but carries the debt on until handback. A
+  session without a contract ages alone.
 - Neither the lease nor the advisory debt blocks `gz mx exit`. Exit holds the marker, marked
   `exiting`, through its full-strength re-run, so the session it closes is never dangling.
 - What grounds: a dangling session (ledger open, marker missing) outside the hangar, and more

@@ -309,6 +309,49 @@ class TestDebtAging(unittest.TestCase):
         self.assertFalse(result.grounds)
 
 
+def _opened_under(session_id: str, ts: datetime, contract: str) -> dict:
+    return {**_opened(session_id, ts), "mode": "safe", "contract": contract}
+
+
+class TestDebtAgesPerContract(unittest.TestCase):
+    """GHI #1258: debt ages from the first safe-mode open under the same contract.
+
+    Operator ruling 2026-10-18, 'Per contract (Rec.)': a session cycle renews the
+    lease but does not reset the drydock's debt.
+    """
+
+    _CONTRACT = "docs/governance/harbor.md"
+
+    def _after_cycle(self, second_contract: str | None) -> tuple[float, int]:
+        from gzkit.mx import hardening
+
+        cycle = _BASE + timedelta(hours=20)
+        second = (
+            _opened_under("s2", cycle, second_contract) if second_contract else _opened("s2", cycle)
+        )
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_ledger(
+                root,
+                [_opened_under("s1", _BASE, self._CONTRACT), _closed("s1", cycle), second],
+            )
+            result = hardening.debt_aging_status(root, now=cycle + timedelta(hours=1))
+        return result.age_hours, result.emitted_level
+
+    @covers("REQ-0.0.74-14-03")
+    def test_a_cycle_under_the_same_contract_keeps_the_debt(self) -> None:
+        # 21 h is past half the 24 h lease; the second session alone is 1 h old.
+        self.assertEqual(self._after_cycle(self._CONTRACT), (21.0, levels.WARNING))
+
+    @covers("REQ-0.0.74-14-03")
+    def test_a_new_contract_starts_its_own_debt(self) -> None:
+        self.assertEqual(self._after_cycle("docs/governance/other.md"), (1.0, levels.INFO))
+
+    @covers("REQ-0.0.74-14-03")
+    def test_a_session_without_a_contract_ages_alone(self) -> None:
+        self.assertEqual(self._after_cycle(None), (1.0, levels.INFO))
+
+
 class TestDanglingState(unittest.TestCase):
     """REQ-0.0.74-14-04: ledger says open but the marker is missing on disk."""
 

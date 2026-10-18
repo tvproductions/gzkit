@@ -656,7 +656,7 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `mx-mode.md`
 
-Lifted 2026-08-29 at version `1.3.0`; `1.4.0`, `1.5.0` and `1.5.1` lifted 2026-10-16; later versions are recorded below as they land (rule now at `1.8.0`).
+Lifted 2026-08-29 at version `1.3.0`; `1.4.0`, `1.5.0` and `1.5.1` lifted 2026-10-16; later versions are recorded below as they land (rule now at `1.9.0`).
 
 > **Rule version:** `1.5.1` — § Safe mode points at its doctrine and its contract template, entrenched on the operator's ruling of 2026-10-16 (*"keep these metaphor entrenched in canon"*). Prior `1.5.0` and earlier lifted to [Rule Version History](#mx-modemd). Binding rules unchanged.
 
@@ -689,6 +689,17 @@ Lifted 2026-08-29 at version `1.3.0`; `1.4.0`, `1.5.0` and `1.5.1` lifted 2026-1
 > `docs/governance/advisory-rules-audit.md` row 62. Prior `1.0.1` — marker path aligned to
 > `.gzkit/mx.json`; `e2d38c3c0` bumped the
 > HTML marker only (GHI #650). Prior `1.0.0` — initial authoring under ADR-0.0.74 (OBPI-0.0.74-08).
+
+### `1.9.0` (2026-10-18)
+
+Adds the per-contract debt clause to § The lease. Debt aged from the open session's own
+`mx_session_opened`, so the drydock's close-and-reopen of 2026-10-18 (session `696ca9a4`
+closed at 16:49:57Z, `e6800367` opened eight seconds later under the same contract) dropped
+debt from WARNING at over 31 h to zero while every guard stayed advisory (GHI #1258). The
+operator selected *"Per contract (Rec.)"*. **Binding rules changed:** debt now ages from the
+first safe-mode open under the session's contract; the lease stays per session. Prior banner
+(`1.8.0`): *"safe-mode entry pins its contract in the ledger and each committed contract
+edit is booked (operator ruling 2026-10-18)."*
 
 ### `1.8.0` (2026-10-18)
 
