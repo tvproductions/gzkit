@@ -66,19 +66,57 @@ class TestTtlMaxOpen(unittest.TestCase):
     """REQ-0.0.74-14-01: TTL / max-open guard flags an over-long or over-count hangar."""
 
     @covers("REQ-0.0.74-14-01")
-    def test_session_past_ttl_flagged_and_grounds_outside_marker(self) -> None:
+    def test_session_past_its_lease_is_announced_and_never_grounds(self) -> None:
+        """Past its lease a session is flagged and announced; nothing grounds on it.
+
+        Amended at the surface (GHI #1257, operator ruling 2026-10-18: "a hangar
+        past its TTL announces but never blocks gz mx exit"; "at worst, we book a
+        status at expiry and notify"). The guard once emitted ERROR here, which
+        grounds wherever the marker does not demote: outside the hangar and in
+        exit's full-strength re-run. The REQ asserts a flag and a GZ_<LEVEL>
+        through the checkpoint, and both still hold at WARNING.
+        """
         from gzkit.mx import hardening
 
-        with TemporaryDirectory() as tmp:
+        states = {
+            "no marker": None,
+            "hangar open": Marker(session_id="s1"),
+            "exit re-run": Marker(session_id="s1", exiting=True),
+        }
+        for label, held in states.items():
+            with self.subTest(state=label), TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                _write_ledger(root, [_opened("s1", _BASE)])
+                if held is not None:
+                    marker.write(held, root)
+                result = hardening.ttl_max_open_status(root, now=_BASE + timedelta(hours=30))
+                self.assertIn("s1", result.flagged_sessions)
+                self.assertEqual(result.emitted_level, levels.WARNING)
+                self.assertFalse(result.grounds)
+
+    @covers("REQ-0.0.74-14-01")
+    def test_the_hangar_lease_is_the_session_lock_ttl(self) -> None:
+        """One lease, as in the token block: the hangar reads the lock rail's TTL.
+
+        The TTL is moved under the guard, so a guard that kept its own 24h constant
+        would still flag at 30 minutes and fail here.
+        """
+        from unittest.mock import patch
+
+        from gzkit import lock_manager
+        from gzkit.mx import hardening
+
+        with (
+            TemporaryDirectory() as tmp,
+            patch.object(lock_manager, "DEFAULT_LOCK_TTL_MINUTES", 60),
+        ):
             root = Path(tmp)
             _write_ledger(root, [_opened("s1", _BASE)])
-            now = _BASE + timedelta(hours=30)  # past the 24h TTL
-            result = hardening.ttl_max_open_status(root, now=now)
-
-        self.assertIn("s1", result.flagged_sessions)
-        self.assertEqual(result.emitted_level, levels.ERROR)
-        # No marker on disk → ERROR is not demoted → grounds.
-        self.assertTrue(result.grounds)
+            before = hardening.ttl_max_open_status(root, now=_BASE + timedelta(minutes=59))
+            after = hardening.ttl_max_open_status(root, now=_BASE + timedelta(minutes=61))
+            self.assertEqual(hardening.lease_hours(), 1.0)
+        self.assertEqual(before.flagged_sessions, [])
+        self.assertEqual(after.flagged_sessions, ["s1"])
 
     @covers("REQ-0.0.74-14-01")
     def test_session_within_ttl_not_flagged(self) -> None:
@@ -124,9 +162,8 @@ class TestTtlMaxOpen(unittest.TestCase):
             result = hardening.ttl_max_open_status(root, now=now)
 
         self.assertIn("s1", result.flagged_sessions)
-        self.assertEqual(result.emitted_level, levels.ERROR)
-        # Marker active + ERROR (non-CRITICAL) → checkpoint demotes to ADVISORY.
-        # The guard is loud outside the hangar, advisory inside — does NOT ground.
+        self.assertEqual(result.emitted_level, levels.WARNING)
+        # Marker active → checkpoint demotes to ADVISORY; it does NOT ground.
         self.assertFalse(result.grounds)
 
 
@@ -202,9 +239,32 @@ class TestDebtAging(unittest.TestCase):
                 for h in (1, 8, 13, 25)
             ]
 
-        self.assertEqual(levels_seen, [levels.INFO, levels.NOTICE, levels.WARNING, levels.ERROR])
+        # The top rung is WARNING, never a grounding level: debt past the lease
+        # announces at full volume but blocks nothing (GHI #1257, operator ruling
+        # 2026-10-18). Amended at the surface; the REQ asserts a rising level.
+        self.assertEqual(levels_seen, [levels.INFO, levels.NOTICE, levels.WARNING, levels.WARNING])
         # Monotonic non-decreasing: debt never gets quieter as it ages.
         self.assertEqual(levels_seen, sorted(levels_seen))
+
+    @covers("REQ-0.0.74-14-03")
+    def test_the_debt_rungs_are_fractions_of_the_lease(self) -> None:
+        """A quarter of the lease is NOTICE and a half warns, whatever the lease is."""
+        from unittest.mock import patch
+
+        from gzkit import lock_manager
+        from gzkit.mx import hardening
+
+        with (
+            TemporaryDirectory() as tmp,
+            patch.object(lock_manager, "DEFAULT_LOCK_TTL_MINUTES", 60),
+        ):
+            root = Path(tmp)
+            _write_ledger(root, [_opened("s1", _BASE)])
+            seen = [
+                hardening.debt_aging_status(root, now=_BASE + timedelta(minutes=m)).emitted_level
+                for m in (10, 16, 31)
+            ]
+        self.assertEqual(seen, [levels.INFO, levels.NOTICE, levels.WARNING])
 
     @covers("REQ-0.0.74-14-03")
     def test_no_open_session_is_silent(self) -> None:
@@ -226,13 +286,26 @@ class TestDebtAging(unittest.TestCase):
             root = Path(tmp)
             _write_ledger(root, [_opened("s1", _BASE)])
             marker.write(Marker(session_id="s1"), root)  # hangar open
-            now = _BASE + timedelta(hours=30)  # past ERROR threshold
+            now = _BASE + timedelta(hours=30)  # past the lease
             result = hardening.debt_aging_status(root, now=now)
 
         self.assertTrue(result.flagged)
-        self.assertEqual(result.emitted_level, levels.ERROR)
-        # Under the active marker, ERROR is non-CRITICAL → checkpoint demotes to
-        # ADVISORY. Debt grows louder but does not ground while the hangar is open.
+        self.assertEqual(result.emitted_level, levels.WARNING)
+        # Debt grows louder but does not ground, in the hangar or out of it.
+        self.assertFalse(result.grounds)
+
+    @covers("REQ-0.0.74-14-03")
+    def test_aged_debt_never_grounds_exit(self) -> None:
+        """Exit's full-strength re-run sees aged debt and is not blocked by it."""
+        from gzkit.mx import hardening
+
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_ledger(root, [_opened("s1", _BASE)])
+            marker.write(Marker(session_id="s1", exiting=True), root)
+            result = hardening.debt_aging_status(root, now=_BASE + timedelta(hours=72))
+
+        self.assertTrue(result.flagged)
         self.assertFalse(result.grounds)
 
 
@@ -312,13 +385,14 @@ class TestStructuralFence(unittest.TestCase):
             root = Path(tmp)
             # One open session aged 30h, no marker file on disk. From this fixture
             # the REQ semantics fix each guard's emitted level without consulting
-            # the guard: TTL past 24h → ERROR; debt aged >=24h → ERROR; ledger-open
-            # + marker-missing → ERROR; no marker → release guard emits INFO.
+            # the guard: TTL past the lease → WARNING; debt aged past the lease →
+            # WARNING; ledger-open + marker-missing → ERROR; no marker → release
+            # guard emits INFO.
             _write_ledger(root, [_opened("s1", _BASE)])
             now = _BASE + timedelta(hours=30)
             cases = (
-                (hardening.ttl_max_open_status(root, now=now), "mx-ttl-max-open", levels.ERROR),
-                (hardening.debt_aging_status(root, now=now), "mx-debt-aging", levels.ERROR),
+                (hardening.ttl_max_open_status(root, now=now), "mx-ttl-max-open", levels.WARNING),
+                (hardening.debt_aging_status(root, now=now), "mx-debt-aging", levels.WARNING),
                 (hardening.dangling_state_status(root), "mx-dangling-state", levels.ERROR),
                 (hardening.normal_release_blocked(root), "mx-normal-release", levels.INFO),
             )

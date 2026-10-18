@@ -5,11 +5,11 @@ description: Use to open or exit the MX hangar or safe mode, or to check which m
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-10-18
 model: haiku
 gz_command: mx
 metadata:
-  skill-version: "1.5.1"
+  skill-version: "1.5.2"
 ---
 
 # gz mx
@@ -102,9 +102,10 @@ operator a raw `gz mx` command is a defect in the surface that gave it.
    ```bash
    uv run gz mx exit --attestor g0
    ```
-   The marker is removed, every guard re-runs at full strength, the enter-to-exit log
-   is rendered for the operator, and `mx_session_closed` is written. A red guard
-   restores the marker and refuses.
+   Every guard re-runs at full strength with the marker held (marked `exiting`), the
+   enter-to-exit log is rendered for the operator, `mx_session_closed` is written, and
+   the marker is removed. A red guard puts the marker back and refuses. A session past
+   its lease is announced, booked as `mx_session_lease_expired`, and never blocks exit.
 
 6. **Hand back.** The contract's handback amendment (every pilot commit listed, kept or
    reverted, the passage log carried, the suspended rules restored) is drafted by the

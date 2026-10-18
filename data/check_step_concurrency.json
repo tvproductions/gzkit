@@ -154,6 +154,10 @@
       "class": "read_only",
       "measured_seconds": 1.31
     },
+    "MX hardening": {
+      "class": "read_only",
+      "measured_seconds": 0.85
+    },
     "Tautological debt": {
       "class": "read_only",
       "measured_seconds": 2.74

@@ -1970,6 +1970,32 @@
         }
       }
     },
+    "mx_session_lease_expired": {
+      "required": [
+        "session_id",
+        "opened_at",
+        "lease_minutes",
+        "age_minutes"
+      ],
+      "properties": {
+        "session_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "opened_at": {
+          "type": "string",
+          "min_length": 1
+        },
+        "lease_minutes": {
+          "type": "integer",
+          "min": 0
+        },
+        "age_minutes": {
+          "type": "number",
+          "min": 0
+        }
+      }
+    },
     "blocks": {
       "required": [
         "blocker",

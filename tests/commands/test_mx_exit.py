@@ -70,27 +70,47 @@ def _red_guard(root: Path) -> int:  # noqa: ARG001
 
 
 class TestMxExitFullStrengthRerun(SilencedConsoleTestCase):
-    """REQ-0.0.74-05-01: guards re-run at full strength (marker absent during run)."""
+    """REQ-0.0.74-05-01: guards re-run at full strength (no advisory demotion during run).
+
+    Amended at the surface (GHI #1257, operator ruling 2026-10-18 "exit keeps state
+    through its checks"): the re-run once reached full strength by deleting the
+    marker, which manufactured the "ledger open, marker missing" dangling state on
+    every exit. Exit now holds the marker, marked ``exiting``, as ``gz obpi
+    complete`` holds its lock through its checks. The REQ asserts full strength,
+    not an absent marker, so the assertion moved to the checkpoint's verdict.
+    """
 
     @covers("REQ-0.0.74-05-01")
-    def test_exit_removes_marker_during_rerun(self) -> None:
+    def test_exit_rerun_is_full_strength_with_the_marker_held(self) -> None:
         from gzkit.commands.mx_cmd import mx_exit_cmd
+        from gzkit.mx import checkpoint, disposition, hardening, levels
 
         with TemporaryDirectory() as tmp:
             root = _mk_root_with_session(tmp)
             self.assertTrue(marker.is_active(root))
 
-            marker_state_during_run: list[bool] = []
+            seen: list[tuple[bool, bool, bool]] = []
 
             def capturing_guard(r: Path) -> int:
-                marker_state_during_run.append(marker.is_active(r))
+                route = checkpoint.resolve("lint", levels.ERROR, r)
+                seen.append(
+                    (
+                        disposition.grounds(route),
+                        marker.is_active(r),
+                        hardening.dangling_state_status(r).dangling,
+                    )
+                )
                 return 0
 
             mx_exit_cmd(attestor="tester", project_root=root, _run_guards=capturing_guard)
 
-            self.assertEqual(len(marker_state_during_run), 1)
-            # Marker MUST be absent during the guard run (full-strength — no advisory demotion).
-            self.assertFalse(marker_state_during_run[0])
+            self.assertEqual(len(seen), 1)
+            grounds, held, dangling = seen[0]
+            # An ERROR grounds during the re-run: no in-hangar advisory demotion.
+            self.assertTrue(grounds)
+            # The marker is held through the checks, so exit is no dangling state.
+            self.assertTrue(held)
+            self.assertFalse(dangling)
 
     @covers("REQ-0.0.74-05-01")
     def test_exit_passes_project_root_to_guards(self) -> None:
@@ -132,8 +152,12 @@ class TestMxExitHardRefuseOnRed(SilencedConsoleTestCase):
             root = _mk_root_with_session(tmp)
             with self.assertRaises(SystemExit):
                 mx_exit_cmd(attestor="tester", project_root=root, _run_guards=_red_guard)
-            # Marker MUST remain after a red refuse.
+            # Marker MUST remain after a red refuse, back in its demoting state.
             self.assertTrue(marker.is_active(root))
+            held = marker.read(root)
+            self.assertIsNotNone(held)
+            assert held is not None
+            self.assertFalse(held.exiting)
 
     @covers("REQ-0.0.74-05-02")
     def test_exit_red_writes_no_closed_event(self) -> None:

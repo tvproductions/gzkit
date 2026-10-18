@@ -1248,6 +1248,18 @@ def run_brief_size_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --brief-size", cwd=project_root)
 
 
+def run_mx_hardening_audit(project_root: Path) -> QualityResult:
+    """Run the MX hangar hardening guards (GHI #1257).
+
+    Fails closed when an MX session is open in the ledger with no marker on disk,
+    or when more than one session is open. A session past its lease, and the
+    advisory debt it carries, are announced and never fail the step. Recovery:
+    close the hangar with `gz mx exit` through the gz-mx skill, then
+    `uv run gz validate --mx-hardening`.
+    """
+    return run_command("uv run gz validate --mx-hardening", cwd=project_root)
+
+
 def run_invariant_coherence_audit(project_root: Path) -> QualityResult:
     """Run the composition-drift gate: AGENTS.md vs committed rendition playback.
 

@@ -33,9 +33,6 @@ from gzkit.lock_manager import LockData
 from gzkit.mx import log, marker
 from gzkit.mx.marker import Marker
 
-# Lock identity on the token rail — singleton key for the MX session.
-_MX_LOCK_KEY = "mx-session"
-
 
 def _release_session_lock(project_root: Path) -> bool:
     """Delete the MX session lock. Returns True when one was present (GHI #848).
@@ -46,7 +43,7 @@ def _release_session_lock(project_root: Path) -> bool:
     refused forever. Idempotent: exit must not fail because the lock is already
     gone.
     """
-    return lock_manager.delete_lock(project_root, _MX_LOCK_KEY)
+    return lock_manager.delete_lock(project_root, marker.SESSION_LOCK_KEY)
 
 
 def _clear_expired_session_lock(project_root: Path) -> bool:
@@ -57,10 +54,10 @@ def _clear_expired_session_lock(project_root: Path) -> bool:
     entry regardless of age. A live lock is never cleared — that exclusion is
     the property the lock exists to provide.
     """
-    existing = lock_manager.read_lock(project_root, _MX_LOCK_KEY)
+    existing = lock_manager.read_lock(project_root, marker.SESSION_LOCK_KEY)
     if existing is None or not existing.is_expired:
         return False
-    return lock_manager.delete_lock(project_root, _MX_LOCK_KEY)
+    return lock_manager.delete_lock(project_root, marker.SESSION_LOCK_KEY)
 
 
 def _entry_refusal_message(existing: LockData | None) -> str:
@@ -79,7 +76,7 @@ def _entry_refusal_message(existing: LockData | None) -> str:
         return (
             f"the mx-session lock is EXPIRED (held by {existing.agent}, claimed "
             f"{existing.claimed_at}). No session is running; this is an orphan. "
-            f"Release it with `uv run gz obpi lock release {_MX_LOCK_KEY} --force "
+            f"Release it with `uv run gz obpi lock release {marker.SESSION_LOCK_KEY} --force "
             f'--abandon reaping:"<why>"` and retry. Both flags are required: the '
             "lock is held by a different agent id, and token-block discipline "
             "fail-closes any release without an exchange record."
@@ -299,7 +296,7 @@ def mx_enter_cmd(
     # Acquire the session on the lock_manager token rail to serialize concurrent entry.
     session_id = lock_manager.resolve_session_id()
     lock = LockData(
-        obpi_id=_MX_LOCK_KEY,
+        obpi_id=marker.SESSION_LOCK_KEY,
         agent=lock_manager.resolve_agent(),
         pid=os.getpid(),
         session_id=session_id,
@@ -315,7 +312,7 @@ def mx_enter_cmd(
     except FileExistsError:
         console.print(
             f"[red]ERROR:[/red] MX entry refused — {
-                _entry_refusal_message(lock_manager.read_lock(root, _MX_LOCK_KEY))
+                _entry_refusal_message(lock_manager.read_lock(root, marker.SESSION_LOCK_KEY))
             }"
         )
         sys.exit(1)
@@ -369,7 +366,7 @@ def _mx_session_closed_event(session_id: str, attestor: str) -> LedgerEvent:
 
 
 def _default_run_guards(project_root: Path) -> int:
-    """Run gz check at full strength (marker is absent — advisory demotion bypassed)."""
+    """Run gz check at full strength (the held marker is ``exiting`` — nothing demotes)."""
     result = subprocess.run(["uv", "run", "gz", "check"], cwd=project_root)
     return result.returncode
 
@@ -383,10 +380,12 @@ def mx_exit_cmd(
 ) -> None:
     """Hard gate: re-run every guard at full strength; write mx_session_closed on all-green.
 
-    Temporarily removes the marker before running guards so checkpoint.resolve()
-    sees no active session and emits at real severity — no advisory demotion.
-    Restores the marker and exits 3 if any guard is red.  On all-green, writes
-    the mx_session_closed ledger event (marker stays removed).
+    Holds the marker through the re-run, marked ``exiting``, so checkpoint.resolve()
+    demotes nothing and every guard emits at real severity, while the marker stays
+    on disk and the open session is never a dangling state — as ``gz obpi complete``
+    holds its lock through its checks (GHI #1257). Puts the marker back unchanged
+    and exits 3 if any guard is red. On all-green, writes the mx_session_closed
+    ledger event, then removes the marker.
     """
     if not attestor.strip():
         console.print("[red]ERROR:[/red] --attestor cannot be empty.")
@@ -405,11 +404,11 @@ def mx_exit_cmd(
 
     runner = _run_guards if _run_guards is not None else _default_run_guards
 
-    # Temporarily remove the marker so checkpoint.resolve() sees no active session
-    # (guards emit at their real severity — no advisory demotion).
+    # Hold the marker, marked exiting, so checkpoint.resolve() demotes nothing
+    # (guards emit at their real severity) and the session stays bound to it.
     marker_file = marker.marker_path(root)
     saved = marker_file.read_text(encoding="utf-8")
-    marker_file.unlink()
+    marker.write(m.model_copy(update={"exiting": True}), root)
 
     try:
         exit_code = runner(root)
@@ -434,9 +433,11 @@ def mx_exit_cmd(
     # before the close signature. DIAGNOSTIC-ONLY (real-entry accounting deferred).
     _run_mx_airlock_out_diagnostic(m.inspection_scope, root, reach_fn=_airlock_reach)
 
-    # Signature: write mx_session_closed, marker stays removed.
+    # Signature: write mx_session_closed, then clear the marker. The close event
+    # lands first, so no window shows an open session with no marker (BI#4).
     ledger = Ledger(root.joinpath(*_LEDGER_RELPATH))
     ledger.append(_mx_session_closed_event(m.session_id, attestor.strip()))
+    marker_file.unlink(missing_ok=True)
 
     # Release the lock the matching enter claimed. Without this the hangar is
     # single-use per repository: write_lock refuses on the orphan forever

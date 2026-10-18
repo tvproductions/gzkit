@@ -635,6 +635,21 @@ def _ep_brief_size_admits_grandfathered(root: Path) -> int:
     return 0 if audit_brief_size(root) else 1
 
 
+def _ep_mx_hardening(root: Path) -> list[ValidationError]:
+    """Return the dangling-state finding, and nothing when any other finding fired.
+
+    The runner passes a control on any truthy result carrying the expected text,
+    so an unfiltered return would let a gate that grounds on the lease, or on an
+    ordinary open hangar, pass this control too.
+    """
+    from gzkit.governance.trust_audits.mx_hardening import audit_mx_hardening  # noqa: PLC0415
+
+    errors = audit_mx_hardening(root)
+    if any("mx-dangling-state" not in error.message for error in errors):
+        return []
+    return errors
+
+
 def _ep_brief_structure(root: Path) -> list[ValidationError]:
     from gzkit.governance.trust_audits.brief_structure import (  # noqa: PLC0415
         validate_brief_structure,

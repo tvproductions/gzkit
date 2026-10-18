@@ -18,6 +18,7 @@ import yaml
 from pydantic import BaseModel, ConfigDict, Field, computed_field
 
 from gzkit.exchange_records import exchange_dir
+from gzkit.mx import marker as mx_marker
 
 if TYPE_CHECKING:
     from gzkit.ledger import LedgerEvent
@@ -343,6 +344,11 @@ def reap_expired_locks(
     reaped: list[LockData] = []
     for lock in list_locks(project_root):
         if not lock.is_expired:
+            continue
+        # The hangar's lease is not evicted while its session is open: expiry is
+        # booked and announced instead (GHI #1257, operator ruling 2026-10-18).
+        # A session lock no open hangar backs is the crash orphan, reaped as before.
+        if lock.obpi_id == mx_marker.SESSION_LOCK_KEY and mx_marker.is_valid(project_root):
             continue
         try:
             handoff_path = _write_reaping_exchange(project_root, lock, agent)

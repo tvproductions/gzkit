@@ -1340,6 +1340,49 @@ def _build_brief_size_grandfathered() -> Path:
     return root
 
 
+def _build_mx_hardening() -> Path:
+    """Build a ledger-open MX session with no marker — the gate MUST fire (GHI #1257).
+
+    Decoy: a second session that opened and closed, past its lease, which must
+    stay silent; the entrypoint reports no catch when anything but the dangling
+    finding fires, so a gate that counts closed sessions, or grounds a session
+    for its age, fails the control.
+    """
+    from datetime import UTC, datetime, timedelta  # noqa: PLC0415
+
+    root = _mkroot("mx-hardening")
+    now = datetime.now(UTC)
+    rows = [
+        {
+            "event": "mx_session_opened",
+            "id": "nc-closed",
+            "session_id": "nc-closed",
+            "ts": (now - timedelta(days=3)).isoformat(),
+            "reason": "nc",
+            "attestor": "g0",
+        },
+        {
+            "event": "mx_session_closed",
+            "id": "nc-closed",
+            "session_id": "nc-closed",
+            "ts": (now - timedelta(days=2)).isoformat(),
+            "attestor": "g0",
+        },
+        {
+            "event": "mx_session_opened",
+            "id": "nc-dangling",
+            "session_id": "nc-dangling",
+            "ts": (now - timedelta(minutes=5)).isoformat(),
+            "reason": "nc",
+            "attestor": "g0",
+        },
+    ]
+    _write_jsonl(
+        root / ".gzkit" / "ledger.jsonl", [{"schema": "gzkit.ledger.v1", **row} for row in rows]
+    )
+    return root
+
+
 def _build_brief_structure() -> Path:
     """Build a LIVE brief with no structured frontmatter — the gate MUST fire (GHI #615).
 
@@ -1910,6 +1953,7 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
     ("invariant-coherence", _build_invariant_coherence, _ep._ep_invariant_coherence),
     ("corpus-retirement-witness", _cr.build_retirement_witness, _ep._ep_corpus_retirement_witness),
     ("brief-structure", _build_brief_structure, _ep._ep_brief_structure),
+    ("mx-hardening", _build_mx_hardening, _ep._ep_mx_hardening, "mx-dangling-state"),
     ("brief-size", _build_brief_size, _ep._ep_brief_size, "OBPI-0.0.99-01-over measures"),
     # Admit half: a recorded ceiling, exercised at a brief past the bound (GHI #1196).
     (

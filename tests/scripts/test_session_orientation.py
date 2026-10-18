@@ -2176,3 +2176,125 @@ class TestSessionStartIsOneChannelUnderBudget(unittest.TestCase):
     def test_no_ledger_window_summary_repeats_the_account(self):
         rendered = self.mod.render(self._heavy_state(), self.now)
         self.assertNotIn("Recent ledger events", rendered)
+
+
+class TestMxHangarReachesSessionStart(unittest.TestCase):
+    """The hangar's bounds are announced at session start, and expiry is booked (GHI #1257).
+
+    The TTL, debt-aging and dangling-state guards shipped with no caller, so a hangar
+    past its lease raised no signal; the only 24h event was the reaping of its lock.
+    Operator ruling 2026-10-18: at expiry, book a status and notify, never evict.
+    """
+
+    def setUp(self):
+        self.mod = _load_orientation_module()
+        self.now = datetime(2026, 10, 18, 12, 0, 0, tzinfo=UTC)
+
+    def _root(self, tmp: str, opened: datetime, *, with_marker: bool) -> Path:
+        from gzkit.mx import marker  # noqa: PLC0415
+        from gzkit.mx.marker import Marker  # noqa: PLC0415
+
+        root = Path(tmp)
+        (root / ".gzkit").mkdir(parents=True)
+        row = {
+            "schema": "gzkit.ledger.v1",
+            "event": "mx_session_opened",
+            "id": "s1",
+            "ts": opened.isoformat(),
+            "session_id": "s1",
+            "reason": "test",
+            "attestor": "g0",
+        }
+        (root / ".gzkit" / "ledger.jsonl").write_text(json.dumps(row) + "\n", encoding="utf-8")
+        if with_marker:
+            marker.write(Marker(session_id="s1", mode="safe"), root)
+        return root
+
+    def _ledger_events(self, root: Path) -> list[str]:
+        text = (root / ".gzkit" / "ledger.jsonl").read_text(encoding="utf-8")
+        return [json.loads(line)["event"] for line in text.splitlines() if line.strip()]
+
+    def test_a_hangar_past_its_lease_is_booked_once_and_announced(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._root(tmp, self.now - timedelta(hours=30), with_marker=True)
+            first = self.mod.collect_mx_hangar(root, self.now)
+            second = self.mod.collect_mx_hangar(root, self.now + timedelta(hours=1))
+            events = self._ledger_events(root)
+        self.assertEqual(events.count("mx_session_lease_expired"), 1)
+        self.assertEqual(first["booked"], ["s1"])
+        self.assertEqual(second["booked"], [])
+        self.assertEqual(
+            {f["guard"] for f in first["findings"]}, {"mx-ttl-max-open", "mx-debt-aging"}
+        )
+
+    def test_the_announcement_is_the_scope_s_own_rendering(self):
+        """One rendering for the boot hook and `gz validate --mx-hardening`."""
+        from gzkit.governance.trust_audits import mx_hardening  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._root(tmp, self.now - timedelta(hours=30), with_marker=True)
+            found = self.mod.collect_mx_hangar(root, self.now)
+            expected = [f.message for f in mx_hardening.mx_hardening_findings(root, now=self.now)]
+        self.assertEqual([f["message"] for f in found["findings"]], expected)
+
+    def test_the_section_names_each_finding_with_its_level(self):
+        payload = {
+            "booked": ["s1"],
+            "findings": [
+                {"guard": "mx-ttl-max-open", "level": "WARNING", "message": "past its lease"}
+            ],
+        }
+        out = self.mod.render({"mx_hangar": payload}, self.now)
+        self.assertIn("## MX hangar", out)
+        self.assertIn("WARNING", out)
+        self.assertIn("past its lease", out)
+        self.assertIn("mx_session_lease_expired", out)
+
+    def test_a_failure_degrades_to_silence(self):
+        with mock.patch("gzkit.mx.lease.book_lease_expiries", side_effect=OSError("disk")):
+            self.assertIsNone(self.mod.collect_mx_hangar(Path("/repo"), self.now))
+
+    def test_every_conditional_heading_rendered_is_in_the_roster_in_order(self):
+        """SECTION_HEADINGS is the canonical roster; a section missing from it is drift.
+
+        Measured 2026-10-18: the guard-canary section (GHI #1154) rendered with no
+        roster entry, so the roster claimed a canonical order it did not hold.
+        """
+        state = {
+            "unreviewed_canaries": ["pending-one"],
+            "mx_hangar": {
+                "booked": [],
+                "findings": [{"guard": "mx-debt-aging", "level": "NOTICE", "message": "aged"}],
+            },
+        }
+        out = self.mod.render(state, self.now)
+        rendered = [line[3:] for line in out.splitlines() if line.startswith("## ")]
+        roster = list(self.mod.SECTION_HEADINGS)
+        for heading in rendered:
+            self.assertIn(heading, roster)
+        positions = [roster.index(h) for h in rendered]
+        self.assertEqual(positions, sorted(positions))
+        self.assertIn("MX hangar", rendered)
+        self.assertIn("Guard canaries awaiting operator review", rendered)
+
+    def test_a_quiet_hangar_renders_no_section(self):
+        for label, payload in (
+            ("nothing found", {"booked": [], "findings": []}),
+            ("unavailable", None),
+        ):
+            with self.subTest(label):
+                out = self.mod.render({"mx_hangar": payload}, self.now)
+                self.assertNotIn("## MX hangar", out)
+
+    def test_the_boot_state_carries_the_hangar(self):
+        others = [
+            name
+            for name in dir(self.mod)
+            if name.startswith("collect_") and name not in {"collect_state", "collect_mx_hangar"}
+        ]
+        with tempfile.TemporaryDirectory() as tmp, contextlib.ExitStack() as stack:
+            root = self._root(tmp, self.now - timedelta(hours=30), with_marker=True)
+            for name in others:
+                stack.enter_context(mock.patch.object(self.mod, name, return_value=None))
+            state = self.mod.collect_state(root, self.now)
+        self.assertEqual(state["mx_hangar"]["booked"], ["s1"])

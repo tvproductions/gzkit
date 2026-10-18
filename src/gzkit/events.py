@@ -1049,6 +1049,21 @@ class MxSessionClosedEvent(_EventBase):
     attestor: str = Field(..., description="Operator who closed the hangar")
 
 
+class MxSessionLeaseExpiredEvent(_EventBase):
+    """mx_session_lease_expired event — an open hangar session outlived its lease (GHI #1257).
+
+    A booked status, never an eviction: the session, its marker and its lock stay
+    where they are (operator ruling 2026-10-18, "at worst, we book a status at
+    least expiry and notify"). Booked once per session by the session orientation.
+    """
+
+    event: Literal["mx_session_lease_expired"]
+    session_id: str = Field(..., description="The open session past its lease")
+    opened_at: str = Field(..., description="ISO-8601 ts of the matching mx_session_opened")
+    lease_minutes: int = Field(..., description="The lease the session outlived")
+    age_minutes: float = Field(..., description="Session age when the expiry was booked")
+
+
 # ---------------------------------------------------------------------------
 # Work-domain L2 edge events (ADR-0.32.0, OBPI-06). The four net-new,
 # append-only edge event types expressing work coupling: precedence
@@ -1663,6 +1678,7 @@ TypedLedgerEvent = Annotated[
     | EnforcementClaimVerifiedEvent
     | MxSessionOpenedEvent
     | MxSessionClosedEvent
+    | MxSessionLeaseExpiredEvent
     | BlocksEvent
     | BlockedByEvent
     | DiscoveredFromEvent

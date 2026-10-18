@@ -19,7 +19,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--rendition-floor-coherence] [--rendition-lineage]
             [--corpus-retirement-witness]
             [--invariant-coherence] [--invariant-witness] [--brief-reconcile] [--brief-structure]
-            [--brief-size]
+            [--brief-size] [--mx-hardening]
             [--router-tables]
             [--kind-invariance] [--persona-witness] [--req-kind-discipline] [--brief-command-shape]
             [--status-writer-coverage]
@@ -2330,6 +2330,55 @@ Runs in the default `gz check` pipeline as **Brief size**.
 **Related:** GHI #1196 (no size bound was measured at authoring or during a run),
 `docs/governance/GovZero/obpi-decomposition-matrix.md` (the rule this scope witnesses).
 
+### `--mx-hardening`
+
+Runs the Maintenance Hangar's hardening guards (ADR-0.0.74 Decision item 14) over the
+ledger's open MX sessions. Three of the four guards shipped with no caller, so the
+hangar's bounds bounded nothing (GHI #1257); this scope is their caller in `gz check`,
+and the session orientation announces the same findings at session start.
+
+| Guard | Finding | Disposition |
+|-------|---------|-------------|
+| `mx-ttl-max-open` (lease) | An open session past its lease, the `mx-session` lock's TTL | Announced, never grounds; booked once as `mx_session_lease_expired` at session start |
+| `mx-debt-aging` | The age of the advisory debt an open session carries | Announced at a rising level, never grounds |
+| `mx-dangling-state` | A session open in the ledger with `.gzkit/mx.json` missing | Exit 3 outside the hangar |
+| `mx-ttl-max-open` (max-open) | More than one session open at once | Exit 3, in or out of the hangar (CRITICAL) |
+
+A session past its lease is never evicted (operator ruling 2026-10-18), and neither the
+lease nor the debt blocks `gz mx exit`: exit holds the marker, marked `exiting`, through
+its full-strength re-run, so the session it is closing is never a dangling state. Each
+guard resolves its route through the shared MX checkpoint; announcements are
+`[advisory]` lines and change no exit code.
+
+**Usage:**
+
+```bash
+gz validate --mx-hardening
+```
+
+**Observed output** (safe mode open past its lease):
+
+```console
+$ uv run gz validate --mx-hardening
+[advisory] mx-hardening [mx-ttl-max-open, WARNING]: MX session 696ca9a4-7b6b-4d3a-8611-0da2766bf075 is past its lease (24h, the session lock's TTL). Expiry is booked as `mx_session_lease_expired` and announced, never evicted (GHI #1257, operator ruling 2026-10-18). When the work is done, close the hangar with `gz mx exit` through the gz-mx skill.
+[advisory] mx-hardening [mx-debt-aging, WARNING]: MX session 696ca9a4-7b6b-4d3a-8611-0da2766bf075 has carried advisory debt for 29.3h at WARNING: every guard outside gate5_invariants has been advisory that long (ADR-0.0.74 item 14, debt aging). When the work is done, close the hangar with `gz mx exit` through the gz-mx skill, which re-runs them at full strength.
+Validated: mx_hardening
+
+✓ All validations passed (1 scopes).
+```
+
+**Exit codes:**
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | No grounding finding; announcements, if any, are printed | — |
+| 3 | A dangling session outside the hangar, or more than one open session | Restore the marker the session's `mx_session_opened` event binds, then close it with `gz mx exit` through the gz-mx skill |
+
+Runs in the default `gz check` pipeline as **MX hardening**.
+
+**Related:** GHI #1257, ADR-0.0.74 (MX hangar), `gz mx` (the lease and the exit),
+`.gzkit/rules/mx-mode.md`.
+
 ### `--router-tables`
 
 Audits the six namespace-router skills authored under ADR-0.27.0 (`gz-workflow`,
@@ -2871,6 +2920,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--task-envelope-coherence` | opt-in | Fail closed (exit 3) on TASK attribution drift: worklog without task_id, all-seq=01 without req_atomic, layer-drift across channels, or obpi_id divergence on one task_id (ADR-0.0.64 / OBPI-04, GHI #653) |
 | `--brief-reconcile` | opt-in | Check the OBPI brief corpus against project shape across five drift dimensions (frontmatter coherence, lane mismatch, unreplaced scaffold defaults, and more) (ADR-0.0.37) |
 | `--brief-size` | opt-in | Every live OBPI brief is inside its declared size bounds on REQs, requirements, allowed paths, contract bytes and total bytes (GHI #1196) |
+| `--mx-hardening` | opt-in | No MX session is dangling or over max-open; a session past its lease and its advisory debt are announced (GHI #1257) |
 | `--brief-structure` | opt-in | Every live OBPI brief carries valid structured frontmatter (`allowlist`, `reqs`, `verification`) instead of falling back to `LegacyBriefShape` |
 | `--changelog` | opt-in | Hermetic structural audit of `CHANGELOG.md` against `.gzkit/templates/changelog.md`: version headers and section headings (GHI #685) |
 | `--config-registry` | opt-in | Every top-level registry under `data/` is declared, with an owner and a loader (GHI #929) |

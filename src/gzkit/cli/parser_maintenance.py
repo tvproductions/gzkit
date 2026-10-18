@@ -920,6 +920,15 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Every live OBPI brief is inside its declared size bounds, exit 3 (GHI #1196).",
     )
     p_validate.add_argument(
+        "--mx-hardening",
+        dest="check_mx_hardening",
+        action="store_true",
+        help=(
+            "Run the MX hangar's TTL, debt-aging and dangling-state guards; announce a "
+            "session past its lease, exit 3 on a dangling or over-max session (GHI #1257)."
+        ),
+    )
+    p_validate.add_argument(
         "--distribution",
         dest="check_distribution",
         action="store_true",
@@ -1187,6 +1196,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_brief_reconcile=a.check_brief_reconcile,
             check_brief_structure=a.check_brief_structure,
             check_brief_size=a.check_brief_size,
+            check_mx_hardening=a.check_mx_hardening,
             check_router_tables=a.check_router_tables,
             check_req_kind_discipline=a.check_req_kind_discipline,
             check_status_writer_coverage=a.check_status_writer_coverage,

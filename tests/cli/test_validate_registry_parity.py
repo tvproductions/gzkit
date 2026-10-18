@@ -184,6 +184,10 @@ _POST_SNAPSHOT_EXPLICIT_ADDITIONS: frozenset[str] = frozenset(
         # `in_check` from the outset, because a brief grows inside a run and a
         # gate that waits for an operator to pass the flag never sees it grow.
         "brief_size",
+        # MX hangar hardening guards (GHI #1257). Explicit tier: its subject is the
+        # ledger's open MX sessions. `in_check` from the outset, because the guards
+        # shipped with no caller and a gate behind a remembered flag bounds nothing.
+        "mx_hardening",
     }
 )
 

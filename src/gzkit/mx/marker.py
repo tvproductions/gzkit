@@ -35,6 +35,11 @@ _LEDGER_RELPATH = (".gzkit", "ledger.jsonl")
 _OPENED_EVENT = "mx_session_opened"
 _CLOSED_EVENT = "mx_session_closed"
 
+# The hangar's lease on the token rail: the singleton lock key `gz mx enter` claims.
+# Named here, beside the marker it leases, so the lock reaper and the MX commands
+# read one definition (GHI #1257).
+SESSION_LOCK_KEY = "mx-session"
+
 
 class Marker(BaseModel):
     """The marker payload. ``session_id`` is the binding key to the ledger.
@@ -65,6 +70,13 @@ class Marker(BaseModel):
     )
     contract: str = Field(
         "", description="Project-relative path of the safe-mode contract; empty under mx"
+    )
+    exiting: bool = Field(
+        False,
+        description=(
+            "True while gz mx exit re-runs the guards: the marker is held through the "
+            "checks, as gz obpi complete holds its lock, and demotes nothing (GHI #1257)"
+        ),
     )
 
 

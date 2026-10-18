@@ -99,12 +99,24 @@ gz mx exit --attestor g0
 
 1. Validates `--attestor` is non-empty. Fails closed (exit 1) if empty.
 2. Checks the hangar is open (`marker.is_active`). Fails closed (exit 1) if not.
-3. Temporarily removes the marker file — checkpoint sees no active session, so every guard
-   emits at its real `GZ_<LEVEL>` severity (no advisory demotion).
+3. Holds the marker, marked `exiting: true` — checkpoint demotes nothing, so every guard
+   emits at its real `GZ_<LEVEL>` severity (no advisory demotion), and the session stays
+   bound to its marker (GHI #1257).
 4. Runs every guard at full strength.
-5. If any guard is red: restores the marker, exits 3 — hangar stays open.
-6. If all guards are green: writes one `mx_session_closed` ledger event (the marker stays
-   removed); the operator's `--attestor` is the airworthiness signature.
+5. If any guard is red: puts the marker back as it was, exits 3 — hangar stays open.
+6. If all guards are green: writes one `mx_session_closed` ledger event, then removes the
+   marker; the operator's `--attestor` is the airworthiness signature.
+
+### Lease
+
+The hangar runs the token block's lifecycle: declare entry, gain a lease, do the work, close.
+The lease is the `mx-session` lock's TTL on the token rail (`lock_manager.DEFAULT_LOCK_TTL_MINUTES`),
+one definition for both. An open session past its lease is never evicted (operator ruling
+2026-10-18): the next session start books one `mx_session_lease_expired` ledger event for it and
+the session orientation announces it under `## MX hangar`; the lock reaper leaves the lock of an
+open hangar in place. `gz validate --mx-hardening`, a `gz check` step, announces the same finding
+and the advisory debt the session carries, and never blocks `gz mx exit` on either. It grounds
+only a dangling session (ledger open, marker missing) and more than one open session (GHI #1257).
 
 ## Exit Codes
 

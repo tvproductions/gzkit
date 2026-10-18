@@ -104,6 +104,11 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     "brief-size": "brief-size-grandfathered",
     # The admit half reads the same gate and admits nothing of its own.
     "brief-size-grandfathered": EXEMPTS_NONE,
+    # Runs the MX hangar's hardening guards over the ledger's open sessions. No
+    # waiver table, allowlist or flag admits a finding; in-hangar advisory comes
+    # from the shared checkpoint every guard passes through, not from this gate,
+    # and a session past its lease announces by its guard's level. GHI #1257.
+    "mx-hardening": EXEMPTS_NONE,
     # AST scan of tests/** for a literal `git` argv spawned without the boundary
     # env. No waiver table, allowlist, escape marker or opt-in flag admits an
     # offender; the literal-argv scope is a scope predicate, disclosed in the

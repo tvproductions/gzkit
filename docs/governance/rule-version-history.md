@@ -690,6 +690,17 @@ Lifted 2026-08-29 at version `1.3.0`; `1.4.0`, `1.5.0` and `1.5.1` lifted 2026-1
 > `.gzkit/mx.json`; `e2d38c3c0` bumped the
 > HTML marker only (GHI #650). Prior `1.0.0` — initial authoring under ADR-0.0.74 (OBPI-0.0.74-08).
 
+### `1.7.0` (2026-10-18)
+
+Adds § The lease. GHI #1257 found three of the four MX hardening guards with no runtime
+caller, so a hangar past its lease raised no signal; the only 24-hour event was the reaper
+removing its lock, which ended nothing because the marker kept the session open. The
+operator ruled that the hangar and the token block share one lifecycle and that expiry is
+booked and notified, never evicted. **Binding rules changed:** the lease clause is new; the
+hangar's TTL is the session lock's, and exit holds the marker through its re-run instead of
+deleting it. Prior banner (`1.6.1`): *"version narrative lifted to Rule Version History;
+binding rules unchanged."*
+
 ### Lifted 2026-10-17 at version `1.6.0` (rule now at `1.6.1`)
 
 The version banner as it stood, lifted verbatim to keep the per-turn banner to its one-sentence rationale (drydock RO-1 act d):

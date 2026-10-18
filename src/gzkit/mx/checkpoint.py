@@ -41,8 +41,15 @@ def hangar_demotes(project_root: Path | None = None) -> bool:
     strength (operator ruling 2026-10-17, R6). GHI #1244 first built safe mode with
     every guard at full strength; that disposition was replaced by the ruling. An
     unreadable marker keeps the hangar's original presence-only reading.
+
+    A marker ``gz mx exit`` holds through its re-run is marked ``exiting`` and
+    demotes nothing, so the re-run is at full strength while the marker stays on
+    disk and the session never looks dangling (GHI #1257).
     """
-    return marker.is_active(project_root)
+    if not marker.is_active(project_root):
+        return False
+    held = marker.read(project_root)
+    return held is None or not held.exiting
 
 
 def is_advisory(guard_name: str, project_root: Path | None = None) -> bool:

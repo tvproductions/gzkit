@@ -61,6 +61,10 @@ SECTION_HEADINGS: tuple[str, ...] = (
     "Active ADR pipeline state",
     # CONDITIONAL — emitted only when a chore is due or overdue (GHI #936).
     "Chores due or overdue",
+    # CONDITIONAL — emitted only when an MX hardening guard found something (GHI #1257).
+    "MX hangar",
+    # CONDITIONAL — emitted only when a guard canary awaits operator review (GHI #1154).
+    "Guard canaries awaiting operator review",
     "Skill-awareness re-injection",
 )
 
@@ -1127,6 +1131,45 @@ def _render_unreviewed_canaries(lines: list[str], payload: object) -> None:
     lines.append("")
 
 
+def collect_mx_hangar(repo_root: Path, now: datetime) -> dict | None:
+    """Book any hangar lease that has expired, then return what the hardening guards found.
+
+    The hangar's lease is the session lock's TTL. At expiry the operator ruled
+    (2026-10-18): book a status and notify, never evict, so this books one
+    ``mx_session_lease_expired`` per session and leaves the session where it is.
+    The findings are `gz validate --mx-hardening`'s own rendering, read rather than
+    re-derived (GHI #1257). Guarded end-to-end: any failure returns ``None`` so the
+    boot hook never crashes.
+    """
+    try:
+        from gzkit.governance.trust_audits.mx_hardening import mx_hardening_findings
+        from gzkit.mx.lease import book_lease_expiries
+
+        booked = book_lease_expiries(repo_root, now=now)
+        findings = [
+            {"guard": f.guard, "level": f.level, "message": f.message}
+            for f in mx_hardening_findings(repo_root, now=now)
+        ]
+        return {"booked": booked, "findings": findings}
+    except Exception:  # noqa: BLE001 — boot hook boundary: degrade, never crash
+        return None
+
+
+def _render_mx_hangar(lines: list[str], payload: object) -> None:
+    """Announce each hardening finding with its level; render nothing when none fired."""
+    if not isinstance(payload, dict) or not payload.get("findings"):
+        return
+    lines.append("## MX hangar")
+    for finding in payload["findings"]:
+        lines.append(f"- {finding.get('level', '?')}: {finding.get('message', '')}")
+    booked = payload.get("booked") or []
+    if booked:
+        lines.append(
+            f"- Booked `mx_session_lease_expired` for {', '.join(booked)} at this session start."
+        )
+    lines.append("")
+
+
 def _render_adr_pipeline(lines: list[str], payload: object) -> None:
     """Name each in-flight run, the stage it has reached, its position and its resume command.
 
@@ -1183,6 +1226,7 @@ def collect_state(repo_root: Path, now: datetime) -> dict:
         "adr_pipeline": collect_adr_pipeline(repo_root),
         "chore_staleness": collect_chore_staleness(),
         "unreviewed_canaries": collect_unreviewed_canaries(repo_root),
+        "mx_hangar": collect_mx_hangar(repo_root, now),
     }
 
 
@@ -1353,6 +1397,7 @@ def render(state: dict, now: datetime) -> str:
     _render_adr_pipeline(lines, state.get("adr_pipeline"))
 
     _render_chore_staleness(lines, state.get("chore_staleness"))
+    _render_mx_hangar(lines, state.get("mx_hangar"))
     _render_unreviewed_canaries(lines, state.get("unreviewed_canaries"))
 
     lines.append("## Skill-awareness re-injection")

@@ -52,6 +52,7 @@ from gzkit.events import (
     LedgerEventCorrectedEvent,
     LifecycleTransitionEvent,
     MxSessionClosedEvent,
+    MxSessionLeaseExpiredEvent,
     MxSessionOpenedEvent,
     ObpiBlockedOnOperatorEvent,
     ObpiCompletionRepudiatedEvent,
@@ -341,6 +342,7 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "enforcement_claim_verified": EnforcementClaimVerifiedEvent,
     "mx_session_opened": MxSessionOpenedEvent,
     "mx_session_closed": MxSessionClosedEvent,
+    "mx_session_lease_expired": MxSessionLeaseExpiredEvent,
     # Work-domain L2 edge events (ADR-0.32.0, OBPI-06)
     "blocks": BlocksEvent,
     "blocked_by": BlockedByEvent,

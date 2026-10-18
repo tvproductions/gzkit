@@ -195,3 +195,33 @@ class TestSafeMode(unittest.TestCase):
             root = _mk_root(tmp)
             marker.write(Marker(session_id="mx-session", mode="mx"), root)
             self.assertTrue(checkpoint.is_advisory("gate3-docs", root))
+
+
+class TestExitingMarker(unittest.TestCase):
+    """A marker held by `gz mx exit` demotes nothing (GHI #1257).
+
+    Exit keeps the marker through its re-run, as `gz obpi complete` keeps its lock
+    through its checks, and marks it ``exiting``; the re-run must still see every
+    guard at full strength (REQ-0.0.74-05-01).
+    """
+
+    def test_an_exiting_marker_does_not_demote(self) -> None:
+        from gzkit.mx import checkpoint, disposition, levels
+
+        for mode in ("mx", "safe"):
+            with self.subTest(mode=mode), TemporaryDirectory() as tmp:
+                root = _mk_root(tmp)
+                marker.write(Marker(session_id="s", mode=mode, exiting=True), root)
+                self.assertFalse(checkpoint.hangar_demotes(root))
+                self.assertEqual(
+                    checkpoint.resolve("gate3-docs", levels.ERROR, root),
+                    disposition.route(levels.ERROR),
+                )
+
+    def test_an_unreadable_marker_keeps_the_presence_reading(self) -> None:
+        from gzkit.mx import checkpoint
+
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            marker.marker_path(root).write_text("{not json", encoding="utf-8")
+            self.assertTrue(checkpoint.hangar_demotes(root))

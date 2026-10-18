@@ -4,8 +4,9 @@ Four guards bound the Maintenance Hangar so it cannot stay open forever, ship a
 release mid-repair, let advisory debt sit silent, or leave a hand-deleted marker
 undetected:
 
-1. :func:`ttl_max_open_status` — flags a session open past its TTL or beyond the
-   max-open count.
+1. :func:`ttl_max_open_status` — flags a session open past its lease or beyond
+   the max-open count. Past the lease it announces and never grounds: expiry is
+   booked and notified, never an eviction (GHI #1257, operator ruling 2026-10-18).
 2. :func:`normal_release_blocked` — refuses a normal release while the hangar is
    open (wired at the real release funnels — ``gz patch release`` / ``gz closeout``).
 3. :func:`debt_aging_status` — accrued advisory debt grows *louder* the longer an
@@ -31,20 +32,15 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict
 
+from gzkit import lock_manager
 from gzkit.ledger import Ledger
 from gzkit.mx import checkpoint, disposition, levels, marker
 
-# Hangar bounds. TTL mirrors the token-block lock canon (.gzkit/rules/
-# token-block-discipline.md § Binding Sub-Invariant 4: warn at 12h, reap at 24h);
-# the hangar is single-occupancy, so more than one open session is a hard breach.
-_TTL_HOURS = 24
+# Hangar bounds. The lease is the session lock's TTL on the token rail, read from
+# lock_manager at call time and never restated here: one definition, as in the
+# token block (.gzkit/rules/token-block-discipline.md § Sub-Invariant 4; GHI #1257).
+# The hangar is single-occupancy, so more than one open session is a hard breach.
 _MAX_OPEN = 1
-
-# Debt-aging age buckets (hours → emitted level). The ladder tracks the TTL canon:
-# fresh debt is INFO, half-TTL warns, full TTL grounds.
-_DEBT_NOTICE_HOURS = 6
-_DEBT_WARNING_HOURS = 12
-_DEBT_ERROR_HOURS = 24
 
 _LEDGER_RELPATH = (".gzkit", "ledger.jsonl")
 
@@ -106,7 +102,7 @@ class DanglingStateResult(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-def _open_sessions(root: Path) -> dict[str, str]:
+def open_sessions(root: Path) -> dict[str, str]:
     """Map ``session_id`` → earliest ``opened_at`` ts for still-open MX sessions.
 
     A session is open when it has an ``mx_session_opened`` event and no matching
@@ -126,7 +122,12 @@ def _open_sessions(root: Path) -> dict[str, str]:
     return out
 
 
-def _age_hours(opened_at: str, now: datetime) -> float:
+def lease_hours() -> float:
+    """Return the hangar's lease in hours: the session lock's TTL on the token rail."""
+    return lock_manager.DEFAULT_LOCK_TTL_MINUTES / 60
+
+
+def age_hours(opened_at: str, now: datetime) -> float:
     """Hours between *opened_at* (ISO-8601) and *now*; 0 on an unparseable ts."""
     try:
         opened = datetime.fromisoformat(opened_at)
@@ -146,26 +147,29 @@ def ttl_max_open_status(
     root: Path | None = None,
     *,
     now: datetime | None = None,
-    ttl_hours: int = _TTL_HOURS,
+    ttl_hours: float | None = None,
     max_open: int = _MAX_OPEN,
 ) -> TtlMaxOpenResult:
-    """Flag an MX session open past its TTL or beyond the max-open count.
+    """Flag an MX session open past its lease or beyond the max-open count.
 
-    Past-TTL emits ``ERROR`` (grounds outside the hangar, visible advisory debt
-    inside it); exceeding ``max_open`` is a hard single-occupancy breach and emits
+    Past the lease emits ``WARNING``: announced, never grounding, in the hangar,
+    outside it and in exit's full-strength re-run (GHI #1257). Expiry is booked as a
+    ledger status by :func:`gzkit.mx.lease.book_lease_expiries`, not enforced by
+    eviction. Exceeding ``max_open`` is a hard single-occupancy breach and emits
     ``CRITICAL``, which the checkpoint pins through an active marker.
     """
     root = root or Path.cwd()
     now = now or datetime.now(UTC)
-    sessions = _open_sessions(root)
+    ttl = lease_hours() if ttl_hours is None else ttl_hours
+    sessions = open_sessions(root)
 
-    flagged = sorted(sid for sid, ts in sessions.items() if _age_hours(ts, now) > ttl_hours)
+    flagged = sorted(sid for sid, ts in sessions.items() if age_hours(ts, now) > ttl)
     over_max = len(sessions) > max_open
 
     if over_max:
         emitted = levels.CRITICAL
     elif flagged:
-        emitted = levels.ERROR
+        emitted = levels.WARNING
     else:
         emitted = levels.INFO
 
@@ -207,13 +211,17 @@ def normal_release_blocked(root: Path | None = None) -> ReleaseLockResult:
 # ---------------------------------------------------------------------------
 
 
-def _debt_level(age_hours: float) -> int:
-    """Map the oldest open session's age to a rising emitted level."""
-    if age_hours >= _DEBT_ERROR_HOURS:
-        return levels.ERROR
-    if age_hours >= _DEBT_WARNING_HOURS:
+def _debt_level(age: float) -> int:
+    """Map the oldest open session's age to a rising, never-grounding level.
+
+    The rungs are fractions of the lease: a quarter is NOTICE, a half warns. The top
+    rung is WARNING, never a grounding level: debt past the lease announces at full
+    volume and blocks nothing, exit included (GHI #1257, operator ruling 2026-10-18).
+    """
+    lease = lease_hours()
+    if age >= lease / 2:
         return levels.WARNING
-    if age_hours >= _DEBT_NOTICE_HOURS:
+    if age >= lease / 4:
         return levels.NOTICE
     return levels.INFO
 
@@ -231,14 +239,14 @@ def debt_aging_status(
     """
     root = root or Path.cwd()
     now = now or datetime.now(UTC)
-    sessions = _open_sessions(root)
+    sessions = open_sessions(root)
 
-    age_hours = max((_age_hours(ts, now) for ts in sessions.values()), default=0.0)
-    emitted = _debt_level(age_hours) if sessions else levels.INFO
+    oldest = max((age_hours(ts, now) for ts in sessions.values()), default=0.0)
+    emitted = _debt_level(oldest) if sessions else levels.INFO
     route = checkpoint.resolve("mx-debt-aging", emitted, root)
     return DebtAgingResult(
         flagged=emitted >= levels.NOTICE,
-        age_hours=age_hours,
+        age_hours=oldest,
         emitted_level=emitted,
         route=route,
         grounds=disposition.grounds(route),
@@ -259,7 +267,7 @@ def dangling_state_status(root: Path | None = None) -> DanglingStateResult:
     does not demote, so ``ERROR`` grounds.
     """
     root = root or Path.cwd()
-    sessions = _open_sessions(root)
+    sessions = open_sessions(root)
     dangling = bool(sessions) and not marker.is_active(root)
     dangling_sessions = sorted(sessions) if dangling else []
 

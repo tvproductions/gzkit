@@ -141,6 +141,9 @@ from gzkit.governance.trust_audits.lock_exchange_coupling import (
     validate_lock_exchange_coupling,
 )
 from gzkit.governance.trust_audits.models import audit_pydantic_models
+from gzkit.governance.trust_audits.mx_hardening import (
+    audit_mx_hardening,
+)
 from gzkit.governance.trust_audits.okf_conformance import audit_okf_conformance
 from gzkit.governance.trust_audits.orientation import audit_orientation_freshness
 from gzkit.governance.trust_audits.orphaned_implementation import (
@@ -235,6 +238,7 @@ __all__ = [
     "audit_brief_demo_section",
     "audit_brief_headings",
     "audit_brief_size",
+    "audit_mx_hardening",
     "audit_agents_md_map_conformance",
     "audit_chore_metadata_authority",
     "audit_chore_rung_conformance",
