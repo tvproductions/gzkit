@@ -2435,33 +2435,42 @@ class TestABoundaryIsRecordedUnderTheIdTheLaunchCarries(_LaunchableThroughTheCli
         rows = list(Ledger(Path(".gzkit/ledger.jsonl")).read_all())
         self.assertEqual(runs_in_flight(rows), [], "the receipt under the first id ended the run")
 
-    def _seed_a_parked_sibling(self) -> None:
-        """Put a second key under the run's short form on the ledger graph.
+    def _seed_an_active_sibling(self) -> None:
+        """Put a second, active key under the run's short form on the ledger graph.
 
-        The reviewers' counterexample, as the live ledger holds it: an OBPI
-        created under the same semver and item, parked when its ADR was
-        demoted, and never launched. The ledger is append-only, so its graph
-        key stays, and the short form then prefixes two keys.
+        A parked sibling no longer makes the short form ambiguous: parked and
+        withdrawn keys are not candidates (GHI #1162), and ``gz task`` resolves
+        through that rule. Two active OBPIs sharing a semver and item still are,
+        and no resolver may guess between them (GHI #653). Re-seated 2026-10-18
+        from a parked sibling (operator ruling, "Re-seat the fixture (Rec.)").
         """
         ledger = Ledger(Path(".gzkit/ledger.jsonl"))
         ledger.append(obpi_created_event(_CLI_SIBLING_OBPI, _CLI_ADR))
-        ledger.append(obpi_parked_event(_CLI_SIBLING_OBPI, _CLI_ADR, "ADR-pool.interrogate"))
+
+    def _write_the_sibling_brief(self) -> None:
+        """Put the active sibling's brief on disk beside the launched OBPI's."""
+        brief = next(Path.cwd().rglob(f"{_CLI_OBPI}.md"))
+        brief.with_name(f"{_CLI_SIBLING_OBPI}.md").write_text(
+            brief.read_text(encoding="utf-8").replace(_CLI_OBPI, _CLI_SIBLING_OBPI),
+            encoding="utf-8",
+        )
 
     @covers("REQ-0.35.0-15-02")
-    def test_each_task_verb_records_under_the_launch_id_beside_a_parked_sibling(self) -> None:
+    def test_each_task_verb_records_under_the_launch_id_beside_an_active_sibling(self) -> None:
         """A TASK's first ``gz task start`` reaches the recorder with the short id.
 
         Review findings fc1-REQ02-task-verbs-resolve-the-obpi-apart-from-the-launcher
         and fc1-REQ02-task-start-resolves-its-obpi-id-unlike-the-launcher. A
-        TASK id carries only the semver and the item. With two graph keys
-        under that prefix ``gz task start`` cannot pick one, so it files
-        ``task_started`` under the short form (its own ruled behaviour, GHI
-        #653, asserted here as the precondition) and every later verb on that
-        TASK reads the short form back. Each verb is still a ruled boundary of
-        the run in flight, and each lands on the id the launch carries.
+        TASK id carries only the semver and the item. With two active OBPIs
+        under that prefix, each with its brief, ``gz task start`` cannot pick
+        one, so it files ``task_started`` under the short form (GHI #653,
+        asserted here as the precondition) and every later verb on that TASK
+        reads the short form back. Each verb is still a ruled boundary of the
+        run in flight, and each lands on the id the launch carries.
         """
-        self._seed_a_parked_sibling()
+        self._seed_an_active_sibling()
         self._gz("obpi", "pipeline", _CLI_OBPI)
+        self._write_the_sibling_brief()
         to_complete, to_block, to_escalate = (f"TASK-0.13.0-01-01-{seq:02d}" for seq in (2, 3, 4))
         verbs: tuple[tuple[tuple[str, ...], str, str], ...] = (
             (("task", "start", to_complete), to_complete, "gz task start"),
@@ -2508,17 +2517,13 @@ class TestABoundaryIsRecordedUnderTheIdTheLaunchCarries(_LaunchableThroughTheCli
         """``gz task start --req`` falls back to the short form when two briefs share it.
 
         That verb tells a phantom graph key from a real OBPI by the brief on
-        disk, so the parked sibling alone does not divert it. With the
+        disk, so an active sibling key alone does not divert it. With the
         sibling's brief also on disk it cannot choose, files ``task_started``
         under the short form, and hands that to the recorder.
         """
-        self._seed_a_parked_sibling()
+        self._seed_an_active_sibling()
         self._gz("obpi", "pipeline", _CLI_OBPI)
-        brief = next(Path.cwd().rglob(f"{_CLI_OBPI}.md"))
-        brief.with_name(f"{_CLI_SIBLING_OBPI}.md").write_text(
-            brief.read_text(encoding="utf-8").replace(_CLI_OBPI, _CLI_SIBLING_OBPI),
-            encoding="utf-8",
-        )
+        self._write_the_sibling_brief()
 
         self._gz("task", "start", "--req", _CLI_REQS[0], "--seq", "next")
 

@@ -326,5 +326,35 @@ class TestSigCComparisonSurface(unittest.TestCase):
         )
 
 
+class TestResolveObpiIdSkipsParkedSiblings(unittest.TestCase):
+    """A reused short prefix resolves past a parked sibling, brief or no brief.
+
+    `_resolve_task_context` calls the resolver without a project root, so the
+    on-disk filter never runs there. `OBPI-0.28.0-01` names a parked
+    `chores-cli` and the live `context-core`; the shared rule of GHI #1162
+    (`active_prefix_matches`) drops the parked key.
+    """
+
+    def test_parked_sibling_is_dropped_without_a_project_root(self) -> None:
+        live = "OBPI-0.28.0-01-context-core"
+        parked = "OBPI-0.28.0-01-chores-cli"
+        with TemporaryDirectory() as tmp:
+            ledger = _ledger_with(Path(tmp), [parked, live])
+            with ledger.path.open("a", encoding="utf-8") as fh:
+                fh.write(
+                    json.dumps(
+                        {
+                            "schema": "gzkit.ledger.v1",
+                            "event": "obpi_parked",
+                            "id": parked,
+                            "ts": "2026-07-30T00:00:00+00:00",
+                            "parked_to": "ADR-pool.chores-system-maturity-absorption",
+                        }
+                    )
+                    + "\n"
+                )
+            self.assertEqual(_resolve_obpi_id(ledger, "OBPI-0.28.0-01"), live)
+
+
 if __name__ == "__main__":
     unittest.main()

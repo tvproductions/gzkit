@@ -10,6 +10,7 @@ from typing import TypedDict
 
 from rich.markup import escape
 
+from gzkit.artifact_prefix import active_prefix_matches
 from gzkit.commands.closeout_form import _append_frontmatter_list_value
 from gzkit.commands.common import GzCliError, console, ensure_initialized, get_project_root
 from gzkit.events import (
@@ -94,8 +95,9 @@ def _resolve_obpi_id(ledger: Ledger, short_obpi: str, *, project_root: Path | No
     to the pipeline's instead of writing a divergent short form (GHI #653).
     """
     graph = ledger.get_artifact_graph()
-    prefix = f"{short_obpi}-"
-    matches = [key for key in graph if key.startswith(prefix)]
+    # Parked and withdrawn siblings of a reused short prefix drop here, with or
+    # without a project root: the shared rule of GHI #1162.
+    matches = active_prefix_matches(graph, short_obpi)
     if len(matches) == 1:
         return matches[0]
     if len(matches) > 1 and project_root is not None:

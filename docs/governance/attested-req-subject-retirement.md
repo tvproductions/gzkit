@@ -240,6 +240,28 @@ verbatim: *"Amend in place (Rec.)"*. So:
 - `REQ-0.0.41-05-01` and `-05-02` had no `@covers` binding at all (the covering test
   `-05-02` named never existed); the binding was added with the amendment.
 
+## Worked example 7 — a precondition a later rule removed (2026-10-18)
+
+`gz task` resolved a short OBPI id by raw prefix, so a *parked* sibling made it
+ambiguous and `gz task start` booked the short form. GHI #1162 had already ruled
+that parked and withdrawn siblings are not candidates, and the launcher and
+`gz obpi status` follow that rule. Aligning `gz task` with it (the RO-2 inventory's
+finding) stranded two tests covering `REQ-0.35.0-15-02` under Completed
+`OBPI-0.35.0-15`. They seeded a parked sibling and asserted, as a precondition, that
+the short form reached the recorder, then proved the recorder lands on the launch id.
+
+The REQ asserts that a boundary is readable however its command spelled the OBPI, and
+that is doctrine-neutral: it still holds. Only the fixture's way of producing the
+short form was gone. Brought to the operator because the ADR is frozen, it was ruled,
+verbatim: *"Re-seat the fixture (Rec.)"*. So:
+
+- both tests seed an *active* sibling with its brief on disk, the case GHI #653 still
+  refuses to guess between, and keep asserting the short form reaches the recorder and
+  lands on the launch id;
+- their `@covers("REQ-0.35.0-15-02")` bindings, the brief and the REQ text are untouched;
+- the reason is recorded in the fixture helper's docstring
+  (`tests/test_pipeline_position.py`, `_seed_an_active_sibling`).
+
 ## What this is not
 
 - **Not GHI #611** (open) — that covers undoing agent or human *error*. Here
