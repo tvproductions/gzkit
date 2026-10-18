@@ -1,5 +1,5 @@
 {
-  "_doc": "Per-file char budgets read by gz validate --instructions-files-budget; advisory until 1.0 (operator ruling 2026-08-17). Decision history: docs/governance/instructions-files-budget-history.md.",
+  "_doc": "Budgets read by gz validate --instructions-files-budget; advisory until 1.0 (operator ruling 2026-08-17). files and globs: per-file chars. totals: every surface an agent loads, UTF-8 bytes unless measure is description_chars (drydock exit numbers, GHI #1249). injected_hook_text: per-injection bytes; the orientation reads it at render, the validator measures the MX banner. Skill bodies are bounded per skill by src/gzkit/skill_contract.py, not here. Decision history: docs/governance/instructions-files-budget-history.md.",
   "files": {
     "AGENTS.md": 25000,
     "CLAUDE.md": 15000
@@ -7,7 +7,39 @@
   "globs": [
     {
       "pattern": ".claude/rules/*.md",
-      "max_chars_per_file": 30000
+      "max_chars_per_file": 4000
     }
-  ]
+  ],
+  "totals": [
+    {
+      "surface": "rules",
+      "pattern": ".claude/rules/*.md",
+      "max_bytes": 60000
+    },
+    {
+      "surface": "skill descriptions",
+      "pattern": ".claude/skills/*/SKILL.md",
+      "measure": "description_chars",
+      "max_chars": 6000
+    },
+    {
+      "surface": "agent definitions",
+      "pattern": ".claude/agents/*.md",
+      "max_bytes": 6000
+    },
+    {
+      "surface": "nested AGENTS.md",
+      "pattern": "**/AGENTS.md",
+      "exclude": ["AGENTS.md", ".agents/", ".claude/", "src/gzkit/skills/", "src/gzkit/chores/"],
+      "max_bytes": 60000
+    },
+    {
+      "surface": "personas",
+      "pattern": ".gzkit/personas/*.md",
+      "max_bytes": 12000
+    }
+  ],
+  "injected_hook_text": {
+    "max_bytes": 4000
+  }
 }

@@ -1516,6 +1516,73 @@ def subprocess_completed(stdout: str = "", returncode: int = 0):
     return _sp.CompletedProcess(args=[], returncode=returncode, stdout=stdout, stderr="")
 
 
+class TestSessionStartBudgetIsReadAndSelfChecked(unittest.TestCase):
+    """The orientation reads its budget from the budget file and measures itself.
+
+    Operator ruling A, 2026-10-18 (drydock RO-1 act f, GHI #1249): the validator
+    cannot run the orientation, which reaps locks and appends ledger rows, so the
+    orientation checks its own rendered size against
+    ``data/instructions_files_budget.json`` § injected_hook_text at every boot.
+    """
+
+    def setUp(self):
+        self.mod = _load_orientation_module()
+
+    def _root_with_budget(self, tmp: str, payload: object) -> Path:
+        root = Path(tmp)
+        target = root / "data" / "instructions_files_budget.json"
+        target.parent.mkdir(parents=True)
+        target.write_text(json.dumps(payload), encoding="utf-8")
+        return root
+
+    def test_the_budget_is_read_from_the_budget_file(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._root_with_budget(tmp, {"injected_hook_text": {"max_bytes": 1234}})
+            self.assertEqual(self.mod.load_session_start_budget(root), 1234)
+
+    def test_the_live_budget_file_sets_the_session_start_budget(self):
+        config = json.loads(
+            (REPO_ROOT / "data" / "instructions_files_budget.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            self.mod.load_session_start_budget(REPO_ROOT),
+            config["injected_hook_text"]["max_bytes"],
+        )
+
+    def test_an_absent_or_malformed_budget_falls_back_without_crashing_the_boot(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fallback = self.mod.load_session_start_budget(Path(tmp))
+            root = self._root_with_budget(tmp, {"injected_hook_text": "nope"})
+            self.assertEqual(self.mod.load_session_start_budget(root), fallback)
+        self.assertGreater(fallback, 0)
+
+    def test_text_over_budget_carries_a_warning_naming_its_size_and_budget(self):
+        checked = self.mod.check_session_start_budget("x" * 120, 100)
+        warning = checked[120:]
+        self.assertTrue(checked.startswith("x" * 120))
+        self.assertIn("120", warning)
+        self.assertIn("100", warning)
+        self.assertIn("instructions_files_budget.json", warning)
+
+    def test_text_within_budget_is_unchanged(self):
+        self.assertEqual(self.mod.check_session_start_budget("x" * 100, 100), "x" * 100)
+
+    def test_the_budget_counts_utf8_bytes(self):
+        self.assertNotEqual(self.mod.check_session_start_budget("é" * 60, 100), "é" * 60)
+
+    def test_main_applies_the_check_to_what_it_prints(self):
+        with (
+            mock.patch.object(self.mod, "collect_state", return_value={}),
+            mock.patch.object(self.mod, "render", return_value="y" * 50),
+            mock.patch.object(self.mod, "load_session_start_budget", return_value=10),
+            contextlib.redirect_stdout(io.StringIO()) as out,
+        ):
+            self.mod.main([])
+        printed = out.getvalue()
+        self.assertTrue(printed.startswith("y" * 50))
+        self.assertIn("50", printed[50:])
+
+
 if __name__ == "__main__":
     unittest.main()
 
@@ -2022,11 +2089,12 @@ class TestSessionStartIsOneChannelUnderBudget(unittest.TestCase):
         self.assertIn("Cheaper session: RO-1", section)
 
     def test_a_measured_boot_fits_the_session_start_budget(self):
+        budget = self.mod.load_session_start_budget(REPO_ROOT)
         for current in (False, True):
             with self.subTest(account_current=current):
                 rendered = self.mod.render(self._heavy_state(current=current), self.now)
                 size = len(rendered.encode("utf-8"))
-                self.assertLessEqual(size, 4000, f"session-start text is {size} B")
+                self.assertLessEqual(size, budget, f"session-start text is {size} B")
 
     def test_the_fronts_line_names_its_label_once_when_the_plan_has_none(self):
         state = self._heavy_state()

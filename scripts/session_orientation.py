@@ -76,6 +76,13 @@ CANARY_ANNOUNCE_LIMIT = 10
 REMOTE_FETCH_TIMEOUT_SEC = 8
 REMOTE_QUERY_TIMEOUT_SEC = 4
 
+# The orientation measures its own size at render, because running it reaps locks
+# and appends ledger rows, so the budget validator cannot (operator ruling A,
+# 2026-10-18, GHI #1249). The budget lives in the budget file; this is the floor
+# used only when that file is absent or unreadable.
+BUDGET_FILE = Path("data") / "instructions_files_budget.json"
+SESSION_START_BUDGET_FALLBACK = 4000
+
 # Pointers, not restatement (drydock RO-1 act a): the rulings themselves live in
 # the plan and in `gz-obpi-pipeline`, which carries them verbatim.
 CAMPAIGN_AUTHORITY_NOTE = (
@@ -1356,6 +1363,29 @@ def render(state: dict, now: datetime) -> str:
     return "\n".join(lines)
 
 
+def load_session_start_budget(repo_root: Path) -> int:
+    """Return ``injected_hook_text.max_bytes`` from the budget file, or the fallback.
+
+    Never raises: a missing or malformed file must not cost the session its boot.
+    """
+    try:
+        config = json.loads((repo_root / BUDGET_FILE).read_text(encoding="utf-8"))
+        return int(config["injected_hook_text"]["max_bytes"])
+    except (OSError, ValueError, KeyError, TypeError):
+        return SESSION_START_BUDGET_FALLBACK
+
+
+def check_session_start_budget(rendered: str, budget: int) -> str:
+    """Append a warning line when *rendered* exceeds *budget* UTF-8 bytes."""
+    size = len(rendered.encode("utf-8"))
+    if size <= budget:
+        return rendered
+    return (
+        f"{rendered}\n- WARNING: this orientation is {size} B, over its {budget}-B budget "
+        f"(`{BUDGET_FILE.as_posix()}` § injected_hook_text)."
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     reconfigure = getattr(sys.stdout, "reconfigure", None)
     if callable(reconfigure):
@@ -1365,7 +1395,8 @@ def main(argv: list[str] | None = None) -> int:
     # prompt, and a copy at session start was its second channel (RO-1 act a).
     now = datetime.now(UTC)
     state = collect_state(REPO_ROOT, now)
-    sys.stdout.write(render(state, now))
+    budget = load_session_start_budget(REPO_ROOT)
+    sys.stdout.write(check_session_start_budget(render(state, now), budget))
     sys.stdout.write("\n")
     return 0
 
