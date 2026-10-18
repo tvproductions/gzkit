@@ -472,7 +472,7 @@ the attestation stay here, as built, for (m)ADR closeout. Outcome validation (FR
 
 ### FR-009: Attestation Recording
 
-**Family:** A (attestation and closeout). **As built.**
+**Family:** A (attestation and closeout). **As built.** For outcome validation (FR-014) the terms map to the gate's outcomes: Completed = proceed, Partial = redirect naming its REQs, Dropped = terminate (requirements model § 11).
 
 `gz attest` SHALL:
 
@@ -564,6 +564,8 @@ A work package SHALL:
 - Carry the task cards that execute it (FR-016)
 - Close by the 100% rule: every baselined REQ SATISFIED at its current revision or moved out by a recorded disposition, and nothing landed that no REQ asked for
 - Never be edited after freeze; a reopened outcome takes a new work package, with a ledger record naming the REQs that changed
+- Carry a short risk note at freeze (how its evidence could be green and still wrong) and its residual at validation
+- Before freeze, have an independent reviewer check each baselined REQ against BABOK's nine quality criteria, returning failures by name
 
 ### FR-014: Outcome Validation
 
@@ -575,6 +577,7 @@ Outcome validation SHALL:
 - Present the inspector's report on the outcome, not the implementer's summary, to the attesting human
 - Refuse when any member REQ is not SATISFIED at its current revision
 - Record the attestation as its own event, distinct from verification
+- Record exactly one gate outcome: proceed (`validated`), redirect (a reopening and a new work package), pause (`deferred`, with a revisit condition) or terminate (a withdrawal, never counted as delivered)
 
 ### FR-015: Requirements Catalog
 
@@ -586,6 +589,9 @@ The catalog SHALL:
 - Identify families and outcomes by mnemonic code (`H1`, `H1.4`) and REQs by sequential, area-free identifiers, with membership as a field
 - Never reuse a retired code, and never derive parentage from a code's spelling
 - Record each REQ's kind, revision and proof result (SATISFIED, UNSATISFIED or UNKNOWN), with missing evidence UNKNOWN
+- Give each REQ a statement (effect and rationale) and one or more pass/fail criteria, with proof bound to the criteria
+- Record on each REQ the PRD FR or § 7 attributes it refines (`derives_from`), and report an FR that no REQ derives from
+- Refuse an edit to a REQ in a frozen baseline except through a reopening that carries the operator's words and attestor
 - Record `depends_on` edges between outcomes, gates and external boundaries, validated to exist and to be acyclic
 - Record `user_facing` on each outcome, and require a tagged passing scenario for every BEHAVIOR REQ of a user-facing outcome
 - Resolve every legacy `REQ-`, `OBPI-` and `TASK-` identifier through the ledger's rename events
@@ -642,6 +648,7 @@ A Release Package SHALL:
 
 - Append exactly one schema-valid record (defect, defect-resolution, improvement or discovery) to `.gzkit/insights/agent-insights.jsonl`
 - Fail closed, writing nothing, when the type, scope or summary is empty or the type is unknown
+- *Target (requirements model § 11):* append an `insight_recorded` ledger event naming the insight's timestamp, a content hash, whose words they are (operator or agent) and an optional `supersedes` reference
 
 ### FR-021: Maintenance Hangar and Safe Mode
 
@@ -1222,6 +1229,11 @@ FRs for the behaviour it doesn't name."*
    `docs/audit/`; `gz init` creates `design/adr/`, `design/constitutions/` and `design/prd/`
    (observed in a scratch repository the same day). FR-005b marked Gate 5 "Heavy only", against
    `AGENTS.md` § Gate Covenant (ADR-0.0.36): corrected to every lane, as INV-007 was on 2026-10-10.
+
+**Later the same day** the operator's review of the Bodies of Knowledge note added, under the
+requirements model § 11: the risk note and the REQ quality check (FR-013); the four gate outcomes
+(FR-014, and FR-009's terms mapped to them); statement and criteria, `derives_from` and the freeze
+lock (FR-015); and the `insight_recorded` ledger event as a target of FR-020.
 
 Not changed by this pass: the PRD's status (Draft), its attestation block, the lane language of
 FR-006 and FR-008 (it moves to the outcome's `user_facing` flag only when the catalog lands), and § 7's

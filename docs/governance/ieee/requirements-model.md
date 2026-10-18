@@ -172,6 +172,36 @@ belongs to G; a unit's own `@covers` tests stay with its outcome. A product outc
 common element says so with `depends_on` (the hangar's exit gate depends on G's guard re-run). No
 `loop_stage` facet is kept: "every verification gzkit has" is the G family.
 
+### 11. Grounding against the Bodies of Knowledge note
+
+Ruled 2026-10-18, one decision at a time, after the operator asked that the whole note be reviewed
+"so we can see how it can help gzkit while it is in drydock". Each selection is booked verbatim as an
+insight record. Maxims and concepts are the note's numbering.
+
+| Item | The note | Ruled |
+|---|---|---|
+| Rulings in the ledger | maxim 15 | Every `gz insights remember` also appends an `insight_recorded` ledger event: the insight's `ts`, a content hash, whose words they are (operator or agent), an optional `supersedes` reference. Insights stay the store (operator: *"what is the harm that the ledger notes that an insight was recorded and references it?"*) |
+| The REQ as trace key | maxim 5 | Baseline and forward rule: RO-2 records the before-figures (361 of 736 test files carry `@covers`; 731 REQs have no test; 1,340 of 19,241 ledger events name a REQ); every new delivery event names its REQ or outcome; nothing legacy is backfilled |
+| The safe-mode entry record | maxim 14 | The safe-mode entry event records the contract's content hash, its suspended list and its exit conditions; a contract edit while a session is open books a contract-amended event |
+| Tampering | maxim 13 | RO-1 and RO-7 classify each cut candidate as common or special cause from its recorded provenance; special-cause clauses move to rationale records. A single failure is recorded as an insight and becomes a rule only on recurrence, at a threshold the operator sets in JSON |
+| The operator's variety | maxim 17 | The operator initiates a work package, not each slice; Gate 5 sits per outcome; the passage log carries the baseline of human acts per delivered outcome |
+| Acceptance criteria | maxim 8 | A REQ carries a statement (effect and rationale) and one or more pass/fail criteria (state or input → required outcome → evidence), on the `ghi-close` closure-contract precedent; proof binds to the criteria |
+| Done drift | maxim 2 | Agents may draft REQs before freeze; after freeze the catalog verb refuses an edit to a baselined REQ except a reopening carrying the operator's words and attestor, which opens a new work package and resets that REQ's proof |
+| REQ quality | protocol step 1 | Before freeze, the independent reviewer checks each baselined REQ against BABOK's nine criteria and returns failures by name, never rewriting; the validator checks only *testable* and *atomic*; *prioritized* is met at package level |
+| Risk | maxim 12 | A short note at freeze (how the evidence could be green and still wrong) and the residual at validation, read at Gate 5; no scored register |
+| Gate outcomes | protocol step 8 | Gate 5 on an outcome records one of proceed (→ `validated`), redirect (→ reopening, new work package), pause (→ `deferred` with a revisit condition) or terminate (→ withdrawal, never delivered); PRD FR-009's Completed, Partial and Dropped map to proceed, redirect and terminate |
+| Derive | concept 3 | A REQ names the PRD FR or § 7 attributes it refines (`derives_from`); an FR with no deriving REQ is reported, and a PRD change lists the REQs it touches |
+| Needs and requirements | concept 1 | The PRD FR or § 7 attribute is the stakeholder need, written by the operator; the catalog REQ is the system requirement derived from it, drafted by an agent and frozen by the operator. Solution wording in FRs is flagged for later rewording |
+
+**The note's terms, mapped.** The note is grounding, not canon; where its glossary and this model
+differ, this model governs and the mapping is:
+
+| The note's term | The ruled records |
+|---|---|
+| work package, "a release-sequencing group of REQs, frozen for a release" | an outcome (the deliverable and its REQs), its work package (one dated, frozen attempt to deliver it) and its Release Package membership (the sequencing) |
+| REQ, "an atomic statement of intent or needed effect" | intent is the PRD FR or § 7 attribute; the REQ is the system requirement derived from it, with pass/fail criteria |
+| safe mode, "named governance rules are turned off" | every guard outside the `gate5_invariants` floor goes advisory; the contract names the suspensions, and the ledger pins the contract by hash at entry |
+
 ## Family schemes — the candidates, as drafted for selection
 
 Selected: Scheme A, banded as decision 8.3 records. Schemes B and C are kept as the alternatives
