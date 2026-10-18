@@ -819,6 +819,15 @@ uv run gz handoff archive --older-than 30d --dry-run  # preview move-not-delete 
 uv run gz handoff archive --older-than 30d            # move eligible handoffs into archive/
 ```
 
+When a control-plane cut is classified by cause (drydock RO-1 and RO-7), a
+clause answering one recorded incident is special cause. Only a recurring
+failure earns a rule, and the citations must pass the recurrence check
+(threshold in `data/recurrence_threshold.json`, records a session lease apart):
+
+```bash
+uv run gz insights recurrence <insight-ts> '#<N>' '#<M>'   # exit 0 met, 3 not met
+```
+
 The ARB receipt store carries the sibling retention verb (GHI #594), on the same
 move-not-delete shape and the same `--older-than` grammar. A receipt cited in the
 ledger is never relocated — receipt ids are the canonical Heavy-lane attestation

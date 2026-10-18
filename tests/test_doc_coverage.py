@@ -459,6 +459,30 @@ class TestIntegration(unittest.TestCase):
         for cmd in commands:
             self.assertIsInstance(cmd, DiscoveredCommand)
 
+    def test_every_live_parser_leaf_is_discovered(self) -> None:
+        """The AST scan sees every leaf the real parser builds, wherever it registers.
+
+        `gz insights` registered from a flat `commands/insights.py`, which the scan
+        did not read, so its missing manpage never surfaced (drydock RO-1 act g).
+        """
+        import argparse  # noqa: PLC0415
+
+        from gzkit.cli.main import _get_parser  # noqa: PLC0415
+
+        def leaves(parser: argparse.ArgumentParser, prefix: str) -> set[str]:
+            found: set[str] = set()
+            for action in parser._actions:
+                if isinstance(action, argparse._SubParsersAction):
+                    for name, sub in action.choices.items():
+                        path = f"{prefix} {name}".strip()
+                        found |= leaves(sub, path) or {path}
+            return found
+
+        live = leaves(_get_parser(), "")
+        discovered = {c.name for c in scan_cli_commands(self.project_root)}
+        self.assertIn("insights recurrence", live)
+        self.assertEqual(live - discovered, set())
+
     def test_check_surfaces_report_returns_valid_report(self) -> None:
         report = check_surfaces_report(self.project_root)
         self.assertIsInstance(report, CoverageReport)

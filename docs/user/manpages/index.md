@@ -95,6 +95,8 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz canary review`](canary-review.md) | Record the operator's review of guard mutation canaries as ledger witnesses |
 | [`gz handoff authorize`](handoff-authorize.md) | Deprecated alias for `gz handoff decide` |
 | [`gz handoff archive`](handoff-archive.md) | Move handoffs older than a threshold into `.gzkit/handoffs/archive/` (move-not-delete) |
+| [`gz insights remember`](insights-remember.md) | Append one schema-valid record to the insights store and its ledger pointer |
+| [`gz insights recurrence`](insights-recurrence.md) | Check whether cited records qualify a failure to become a rule (maxim 13) |
 | [`gz roles`](roles.md) | List pipeline agent roles and handoff contracts |
 | [`gz task list`](task-list.md) | List tasks for an OBPI with status |
 | [`gz task start`](task-start.md) | Start or resume a task |

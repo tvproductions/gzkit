@@ -27,9 +27,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
-#: Chains shorter than this are noise — two GHIs sharing a cause is a pair, not
-#: yet a family worth a campaign box.
-DEFAULT_MIN_DEPTH = 3
+from gzkit.insights.recurrence import load_min_occurrences
 
 #: The section every ``/ghi-author`` GHI carries. Captured up to the next H2.
 _SECTION = re.compile(r"##\s*Class of failure\s*\n+(.*?)(?=\n##\s|\Z)", re.IGNORECASE | re.DOTALL)
@@ -233,7 +231,8 @@ def render_report(
         f"- GHIs carrying `## Class of failure`: **{stats['entries']}**",
         f"- Declaring a recurrence of a prior class: **{stats['declaring_recurrence']}**"
         f" ({stats['recurrence_rate']:.0%})",
-        f"- Chains: **{stats['chains']}** ({stats['chains_3_plus']} with"
+        f"- Chains: **{stats['chains']}**"
+        f" ({sum(1 for c in chains if c.authored_depth >= min_depth)} with"
         f" >= {min_depth} authored diagnoses)",
         f"- Deepest chain: **{stats['deepest_authored']}** authored"
         f" (spanning {stats['deepest_chain']} GHI numbers)",
@@ -314,13 +313,20 @@ def main(argv: list[str] | None = None) -> int:
         help="Print the summary without writing the report or run telemetry.",
     )
     parser.add_argument("--proofs-dir", type=Path, default=None)
-    parser.add_argument("--min-depth", type=int, default=DEFAULT_MIN_DEPTH)
+    parser.add_argument(
+        "--min-depth",
+        type=int,
+        default=None,
+        help="Chain depth to report; defaults to the recurrence threshold registry.",
+    )
     parser.add_argument(
         "--stamp",
         default="latest",
         help="Filename stamp for emitted proofs; pass a UTC date for an archival run.",
     )
     args = parser.parse_args(argv)
+    if args.min_depth is None:
+        args.min_depth = load_min_occurrences(Path.cwd())
 
     records = load_snapshot(args.snapshot)
     entries = build_index(records)
@@ -331,7 +337,8 @@ def main(argv: list[str] | None = None) -> int:
     # chain is a different fact from a run that read an empty snapshot, and only
     # stdout can carry that under --dry-run (the GHI #614 negative-signal shape).
     sys.stdout.write(
-        f"failure-class-index: {stats['chains_3_plus']} chain(s) with "
+        f"failure-class-index: "
+        f"{sum(1 for c in chains if c.authored_depth >= args.min_depth)} chain(s) with "
         f">= {args.min_depth} authored diagnoses\n"
     )
     sys.stdout.write(

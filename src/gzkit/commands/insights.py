@@ -11,7 +11,10 @@ drifting past the schema the way hand-authored appends did.
 from __future__ import annotations
 
 import argparse
+import json
 import sys
+from datetime import UTC, datetime
+from pathlib import Path
 from typing import Literal, get_args
 
 from gzkit.insights.model import InsightType
@@ -56,6 +59,34 @@ def register_insights_parsers(commands: argparse._SubParsersAction) -> None:
     insights_commands.required = True
 
     _register_remember(insights_commands)
+    _register_recurrence(insights_commands)
+
+
+def _register_recurrence(insights_commands: argparse._SubParsersAction) -> None:
+    p = insights_commands.add_parser(
+        "recurrence",
+        help="Check whether cited records qualify a failure to become a rule",
+        description=(
+            "Resolve each cited insight (by its ts) or GHI (#N) to its full timestamp and "
+            "report whether the citations reach the recurrence threshold in "
+            "data/recurrence_threshold.json with every pair at least one session lease "
+            "apart (maxim 13; operator rulings 2026-10-18). Exits 3 when not met."
+        ),
+        epilog=_build_epilog(
+            [
+                "gz insights recurrence 2026-10-01T09:00:00+00:00 '#1257' '#1258'",
+                "gz insights recurrence 2026-10-01T09:00:00+00:00 '#1257' --json",
+            ]
+        ),
+    )
+    p.add_argument(
+        "cites",
+        nargs="+",
+        metavar="CITE",
+        help="An insight record's ts, or a GHI number as #N or N.",
+    )
+    p.add_argument("--json", dest="as_json", action="store_true", help="Emit JSON to stdout.")
+    p.set_defaults(func=lambda a: recurrence(cites=a.cites, as_json=a.as_json))
 
 
 def _register_remember(insights_commands: argparse._SubParsersAction) -> None:
@@ -185,3 +216,76 @@ def remember(
         root / ".gzkit" / "ledger.jsonl", line, source=source, supersedes=supersedes
     )
     print(f"Appended insight record to {path.as_posix()}: {line}")
+
+
+def gh_issue_created_at(number: str, project_root: Path) -> datetime | None:
+    """Return a GHI's creation time via the ``gh`` read verb, or None when unresolved."""
+    from gzkit.utils import run_exec  # noqa: PLC0415
+
+    rc, out, _ = run_exec(
+        ["gh", "issue", "view", number, "--json", "createdAt"], project_root, timeout=10
+    )
+    if rc != 0:
+        return None
+    try:
+        created = json.loads(out).get("createdAt")
+        return datetime.fromisoformat(created) if isinstance(created, str) else None
+    except (json.JSONDecodeError, AttributeError, ValueError):
+        return None
+
+
+def _resolve_cite(cite: str, store: dict[str, str], root: Path) -> tuple[str, datetime] | None:
+    """Map one citation to its label and full timestamp, or None when it names nothing."""
+    number = cite.removeprefix("#")
+    if number.isdigit():
+        created = gh_issue_created_at(number, root)
+        return (f"#{number}", created) if created is not None else None
+    if cite not in store:
+        return None
+    stamp = datetime.fromisoformat(cite)
+    return cite, stamp if stamp.tzinfo else stamp.replace(tzinfo=UTC)
+
+
+def recurrence(*, cites: list[str], as_json: bool) -> None:
+    """Handle ``gz insights recurrence CITE...``: the maxim-13 recurrence check.
+
+    Exit 0 when the citations reach the threshold with every pair a session lease
+    apart, 3 when they do not, 1 when a citation names no insight record or GHI.
+    """
+    from gzkit import lock_manager  # noqa: PLC0415
+    from gzkit.cli.formatters import OutputFormatter  # noqa: PLC0415
+    from gzkit.commands.common import get_project_root  # noqa: PLC0415
+    from gzkit.insights.append import DEFAULT_INSIGHTS_PATH  # noqa: PLC0415
+    from gzkit.insights.ledger_ref import insight_lines_by_ts  # noqa: PLC0415
+    from gzkit.insights.recurrence import (  # noqa: PLC0415
+        check_recurrence,
+        load_min_occurrences,
+    )
+
+    root = get_project_root()
+    store = insight_lines_by_ts(root / DEFAULT_INSIGHTS_PATH)
+    resolved: dict[str, datetime] = {}
+    for cite in cites:
+        found = _resolve_cite(cite, store, root)
+        if found is None:
+            print(f"Error: {cite} names no insight record or resolvable GHI.", file=sys.stderr)
+            sys.exit(1)
+        resolved[found[0]] = found[1]
+
+    verdict = check_recurrence(
+        resolved,
+        min_occurrences=load_min_occurrences(root),
+        separation_hours=lock_manager.DEFAULT_LOCK_TTL_MINUTES / 60,
+    )
+    fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
+    if as_json:
+        fmt.data(verdict.model_dump(mode="json"))
+    else:
+        state = "met" if verdict.met else "not met"
+        fmt.emit(
+            f"Recurrence {state}: {verdict.cited} cited of {verdict.required} required, "
+            f"each pair at least {verdict.separation_hours:g} h apart."
+        )
+        for a, b in verdict.too_close:
+            fmt.emit(f"  one occurrence: {a} and {b} are inside one lease")
+    sys.exit(0 if verdict.met else 3)

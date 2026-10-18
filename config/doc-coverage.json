@@ -802,10 +802,20 @@
       },
       "governance_relevant": true
     },
+    "insights recurrence": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
     "insights remember": {
       "surfaces": {
-        "manpage": false,
-        "index_entry": false,
+        "manpage": true,
+        "index_entry": true,
         "operator_runbook": false,
         "governance_runbook": false,
         "docstring": true

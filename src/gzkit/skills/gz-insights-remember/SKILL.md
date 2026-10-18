@@ -6,7 +6,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-10-18
 metadata:
-  skill-version: "0.2.0"
+  skill-version: "0.3.0"
 model: haiku
 gz_command: gz insights remember
 ---
@@ -67,6 +67,20 @@ hand-authoring a JSONL line for the insights store.
 - One `insight_recorded` event is appended to the ledger naming the record:
   its `ts`, a SHA-256 of the line, the `source`, and any `supersedes`. A
   recorded line edited by hand afterwards fails `gz validate --insights-shape`.
+
+## Before a recorded failure becomes a rule
+
+A single failure stays an insight (maxim 13). To propose that a recurring failure
+become a rule, cite its records and run the recurrence check; propose the rule
+only on exit 0:
+
+```bash
+uv run gz insights recurrence <insight-ts> '#<N>' '#<M>'
+```
+
+You judge that the cited records share one class of failure; the verb checks
+only the count against `data/recurrence_threshold.json` and that every pair is a
+session lease apart. Manpage: `docs/user/manpages/insights-recurrence.md`.
 
 ## Example
 

@@ -17,3 +17,8 @@ Feature: Governed insight authoring (gz insights remember)
     When I run the gz command "insights remember --type improvement --scope obpi-pipeline --summary """
     Then the command exits non-zero
     And the file ".gzkit/insights/agent-insights.jsonl" does not exist
+
+  # Drydock RO-1 (maxim 13): a citation that names no record fails closed
+  Scenario: recurrence refuses a citation that names no insight record
+    When I run the gz command "insights recurrence 2026-01-01T00:00:00+00:00"
+    Then the command exits non-zero

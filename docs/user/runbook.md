@@ -912,6 +912,14 @@ uv run gz handoff rulings --search "attest"   # what has already been ruled on
 uv run gz handoff create --adr ADR-0.5.0-skill-lifecycle-governance --slug session-wrap --agent g0 --decisions "Completed OBPI-0.5.0-05; next is ADR closeout."
 ```
 
+A failure recorded once is an insight, not a rule (maxim 13). Before proposing
+that a recorded failure become a rule, check that the records you cite meet the
+recurrence threshold, each pair at least one session lease apart:
+
+```bash
+uv run gz insights recurrence 2026-10-01T09:00:00+00:00 '#1257' '#1258'
+```
+
 Resuming a handoff does **not** authorize acting on it. That contract binds the
 agent; since 2026-08-15 no hook enforces it (the resume gate is retired —
 a handoff advises, it does not gate). Rule, and have the agent book your verbatim

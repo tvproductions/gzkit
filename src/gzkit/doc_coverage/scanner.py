@@ -484,10 +484,12 @@ def _read_cli_sources(project_root: Path) -> str:
     for parser_file in sorted(cli_dir.glob("parser_*.py")):
         parts.append(parser_file.read_text(encoding="utf-8"))
     # Some command groups register parsers from their package __init__.py
-    # (e.g. commands/content/__init__.py owns register_content_parsers).
-    # Include those so the AST scanner discovers their leaf subcommands.
+    # (e.g. commands/content/__init__.py owns register_content_parsers) or
+    # from a flat module (commands/insights.py owns register_insights_parsers).
+    # Include both so the AST scanner discovers their leaf subcommands.
     commands_dir = package_dir / "commands"
-    for cmd_init in sorted(commands_dir.glob("*/__init__.py")):
+    registrars = [*commands_dir.glob("*/__init__.py"), *commands_dir.glob("*.py")]
+    for cmd_init in sorted(registrars):
         text = cmd_init.read_text(encoding="utf-8")
         if "register_" in text and "add_parser" in text:
             parts.append(text)

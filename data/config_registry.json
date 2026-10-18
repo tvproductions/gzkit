@@ -82,6 +82,11 @@
       "kind": "code",
       "purpose": "Which OBPI completions mandate a tier-1 adversarial dispatch."
     },
+    "recurrence_threshold.json": {
+      "owner": "gzkit/insights/recurrence.py",
+      "kind": "code",
+      "purpose": "Maxim-13 recurrence threshold: how many cited insight or GHI records, each pair a session lease apart, a failure needs before it becomes a rule (operator rulings 2026-10-18; `gz insights recurrence`)."
+    },
     "security_surfaces.json": {
       "owner": "gzkit/models/security_surfaces.py",
       "kind": "code",

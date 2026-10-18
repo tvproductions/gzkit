@@ -195,8 +195,8 @@ class TestAuthoredDepth(unittest.TestCase):
         self.assertGreater(chains[1].depth, chains[0].depth)
 
     def test_min_depth_cut_reads_authored_depth(self):
-        # A pair is a pair however many ancestors it names. The module's own
-        # DEFAULT_MIN_DEPTH docstring calls two-sharing-a-cause "not yet a family".
+        # A pair is a pair however many ancestors it names: two GHIs sharing a
+        # cause are "not yet a family" (the recurrence threshold is 3).
         records = [
             _record(188, "## Class of failure\n\nSame class as #114, #128, #139, #140.\n"),
             _record(564, "## Class of failure\n\nSame class as GHI #188, #142, #187.\n"),
@@ -289,6 +289,47 @@ class TestReport(unittest.TestCase):
         text = render_report(entries, resolve_chains(entries), min_depth=3)
         self.assertIn("#692", text)
         self.assertNotIn("outside the indexed window", text)
+
+
+class TestMinDepthReadsTheRecurrenceRegistry(unittest.TestCase):
+    """The chain cut defaults to data/recurrence_threshold.json (drydock RO-1)."""
+
+    def test_default_min_depth_is_the_registry_threshold(self):
+        import contextlib
+        import io
+        import os
+
+        from gzkit.insights.failure_classes import main
+
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "data").mkdir()
+            (root / "data" / "recurrence_threshold.json").write_text(
+                json.dumps({"min_occurrences": 2}), encoding="utf-8"
+            )
+            snapshot = root / "snap.json"
+            snapshot.write_text("[]", encoding="utf-8")
+            out = io.StringIO()
+            cwd = Path.cwd()
+            os.chdir(root)
+            try:
+                with contextlib.redirect_stdout(out):
+                    main(["--snapshot", str(snapshot), "--dry-run"])
+            finally:
+                os.chdir(cwd)
+        self.assertIn(">= 2 authored diagnoses", out.getvalue())
+
+    def test_the_headline_counts_chains_at_the_cut_it_names(self):
+        # Two pairs: zero chains reach 3 authored, two reach 2.
+        records = [
+            _record(310, "## Class of failure\n\nRoot.\n"),
+            _record(311, "## Class of failure\n\nSame class as #310.\n"),
+            _record(320, "## Class of failure\n\nRoot.\n"),
+            _record(321, "## Class of failure\n\nSame class as #320.\n"),
+        ]
+        entries = build_index(records)
+        text = render_report(entries, resolve_chains(entries), min_depth=2)
+        self.assertIn("(2 with >= 2 authored diagnoses)", text)
 
 
 if __name__ == "__main__":
