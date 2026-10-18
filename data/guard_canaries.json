@@ -362,7 +362,8 @@
       },
       "binding_sha256": "f4df76560d78eb90129c8b185dd1e088966df3ad628b706923b673e5bd0df03f",
       "authority": "GHI #1257; GHI #1154 item 5 (every registered claim binds a reviewed canary)",
-      "proposed_by": "claude-code session 2026-10-18"
+      "proposed_by": "claude-code session 2026-10-18",
+      "reviewed_by": "g0"
     }
   ]
 }
