@@ -370,17 +370,17 @@ Initializing gzkit for demo-proj in lite mode...
   Created design/adr/
   Created .gitignore
   Created .pre-commit-config.yaml (pre-push gz check gate)
+  Installed pre-commit, pre-push hooks (session-green gate active)
   Registered git merge driver 'gzkit-jsonl' for append-only JSONL
   Scaffolded 71 core skills
-  Scaffolded 32 core chores
+  Scaffolded 31 core chores
   Scaffolded 7 core personas
-  Scaffolded 12 core templates
+  Scaffolded 14 core templates
   ...
   Generated AGENTS.md
   Generated CLAUDE.md
-  ...
-  Scaffolded 26 core rules
-  Created .claude/hooks/instruction-router.py
+  Scaffolded 27 core rules
+  Created .claude/hooks/post-edit-ruff.py
   ...
   Created .claude/settings.json
   (No existing artifacts to register)
@@ -395,6 +395,10 @@ Next steps:
   /gz-plan                   gz plan create <name>
   /gz-status                 gz status
   /gz-check                  gz check
+
+Skills add interview logic, forcing functions, and governance
+validation that bare CLI commands do not. Use them when available.
+See: /user/skills/ in the docs or run gz skill list.
 ```
 
 ---

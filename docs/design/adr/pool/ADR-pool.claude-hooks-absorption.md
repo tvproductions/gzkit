@@ -87,7 +87,7 @@ airlineops has 13 Claude hook scripts in `.claude/hooks/` that have been develop
 | 1 | OBPI-0.34.0-01 | Compare `obpi-completion-validator.py` -- validates OBPI completion claims | Heavy | Pending |
 | 2 | OBPI-0.34.0-02 | Absorb `obpi-completion-recorder.py` -- records OBPI completions to ledger | Heavy | Pending |
 | 3 | OBPI-0.34.0-03 | Absorb `insight-harvester.py` -- harvests agent insights from conversations | Heavy | Pending |
-| 4 | OBPI-0.34.0-04 | Compare `instruction-router.py` -- routes instructions based on context | Heavy | Pending |
+| 4 | OBPI-0.34.0-04 | Compare `instruction-router.py` -- routes instructions based on context | Heavy | Moot: the hook was retired 2026-10-17 (drydock RO-1 act b); Claude loads the rules natively from `.claude/rules/` |
 | 5 | OBPI-0.34.0-05 | Compare `post-edit-ruff.py` -- runs ruff after file edits | Heavy | Pending |
 | 6 | OBPI-0.34.0-06 | Compare `pipeline-router.py` -- routes pipeline execution | Heavy | Pending |
 | 7 | OBPI-0.34.0-07 | Compare `plan-audit-gate.py` -- gates plan execution with audit checks | Heavy | Pending |

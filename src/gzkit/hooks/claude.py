@@ -24,7 +24,6 @@ from gzkit.hooks.scripts.quality import (
     _verifier_pipe_gate_script,
 )
 from gzkit.hooks.scripts.routing import (
-    _instruction_router_script,
     _pipeline_gate_script,
     _pipeline_router_script,
 )
@@ -65,9 +64,6 @@ def _claude_hooks_readme() -> str:
             "- `session-staleness-check.py`",
             "  PreToolUse (`Write|Edit`) hook that detects stale pipeline",
             "  artifacts from previous sessions and emits warnings.",
-            "- `instruction-router.py`",
-            "  PreToolUse (`Write|Edit`) hook that auto-surfaces",
-            "  `.github/instructions/*.instructions.md` constraints.",
             "- `obpi-completion-validator.py`",
             "  PreToolUse (`Write|Edit`) hook that gates OBPI brief completion",
             "  by checking ledger evidence before allowing status changes.",
@@ -125,8 +121,7 @@ def _claude_hooks_readme() -> str:
             "- `PreToolUse` `ExitPlanMode`: `plan-audit-gate.py`",
             "- `PostToolUse` `ExitPlanMode`: `pipeline-router.py`",
             "- `PreToolUse` `Write|Edit|NotebookEdit`: `session-staleness-check.py`,",
-            "  then `pipeline-gate.py`, then `obpi-completion-validator.py`,",
-            "  then `instruction-router.py`",
+            "  then `pipeline-gate.py`, then `obpi-completion-validator.py`",
             "- `PreToolUse` `Bash`: `verifier-pipe-gate.py`,",
             "  then `pipeline-completion-reminder.py`,",
             "  then `ghi-triage-chat-silence.py`",
@@ -244,10 +239,6 @@ def generate_claude_settings(config: GzkitConfig, project_root: Path | None = No
                         {
                             "type": "command",
                             "command": _hook_command(hooks_dir, "obpi-completion-validator.py"),
-                        },
-                        {
-                            "type": "command",
-                            "command": _hook_command(hooks_dir, "instruction-router.py"),
                         },
                     ],
                 },
@@ -528,6 +519,22 @@ def _write_hook_dir(
     return written
 
 
+#: Hooks gzkit once generated and has retired. A sync deletes them, because the
+#: settings merge already drops their registration and a file left behind is a
+#: dead hook on disk. Only names gzkit itself wrote belong here.
+_RETIRED_HOOKS: tuple[str, ...] = (
+    # Read `.github/instructions/`, which nothing renders since GHI #924; Claude
+    # loads the same rules natively from `.claude/rules/` (drydock RO-1 act b).
+    "instruction-router.py",
+)
+
+
+def _remove_retired_hooks(hooks_path: Path) -> None:
+    """Delete the retired gzkit hooks a previous sync wrote."""
+    for name in _RETIRED_HOOKS:
+        (hooks_path / name).unlink(missing_ok=True)
+
+
 def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) -> list[str]:
     """Set up Claude Code hooks for the project.
 
@@ -548,7 +555,6 @@ def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) ->
     # write blocks, so the staging pass in ``_write_hook_dir`` can treat every
     # generated hook uniformly.
     scripts: tuple[tuple[str, Callable[[], str], bool], ...] = (
-        ("instruction-router.py", _instruction_router_script, True),
         ("post-edit-ruff.py", _post_edit_ruff_script, True),
         ("plan-audit-gate.py", _plan_audit_gate_script, True),
         ("pipeline-router.py", _pipeline_router_script, True),
@@ -571,6 +577,7 @@ def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) ->
         scripts = tuple(entry for entry in scripts if entry[0] != "session-start-advisement.py")
 
     created = _write_hook_dir(project_root, hooks_path, scripts)
+    _remove_retired_hooks(hooks_path)
 
     # Write settings.json — merge to preserve user-added hooks
     gzkit_settings = generate_claude_settings(config, project_root)

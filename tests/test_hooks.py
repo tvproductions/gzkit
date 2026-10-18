@@ -287,10 +287,6 @@ class TestGenerateClaudeSettings(unittest.TestCase):
                             "type": "command",
                             "command": _expected_hook_command("obpi-completion-validator.py"),
                         },
-                        {
-                            "type": "command",
-                            "command": _expected_hook_command("instruction-router.py"),
-                        },
                     ],
                 },
                 {
@@ -369,8 +365,9 @@ class TestGenerateClaudeSettings(unittest.TestCase):
         # `Write|Edit|NotebookEdit`, 13 when the Bash arm was removed
         # (2026-08-14), 12 when the hook itself was retired (2026-08-15, operator
         # ruling: a handoff is an advisor, not a gate-keeping nanny). Nothing
-        # registers it on any matcher now.
-        self.assertEqual(len(commands), 12, commands)
+        # registers it on any matcher now. 11 since the instruction router's
+        # retirement (2026-10-17, drydock RO-1 act b).
+        self.assertEqual(len(commands), 11, commands)
         for command in commands:
             self.assertIn('"$CLAUDE_PROJECT_DIR/', command, command)
             self.assertNotIn("python .claude/hooks/", command, command)
@@ -579,7 +576,6 @@ class TestSetupClaudeHooks(unittest.TestCase):
             created = [path.replace("\\", "/") for path in created]
 
             hooks_dir = project_root / ".claude" / "hooks"
-            instruction_router = hooks_dir / "instruction-router.py"
             post_edit_ruff = hooks_dir / "post-edit-ruff.py"
             plan_audit_gate = hooks_dir / "plan-audit-gate.py"
             pipeline_router = hooks_dir / "pipeline-router.py"
@@ -594,7 +590,6 @@ class TestSetupClaudeHooks(unittest.TestCase):
             settings_path = project_root / ".claude" / "settings.json"
 
             for path in (
-                instruction_router,
                 post_edit_ruff,
                 plan_audit_gate,
                 pipeline_router,
@@ -610,7 +605,7 @@ class TestSetupClaudeHooks(unittest.TestCase):
             ):
                 self.assertTrue(path.exists(), path)
 
-            self.assertIn(".claude/hooks/instruction-router.py", created)
+            self.assertNotIn(".claude/hooks/instruction-router.py", created)
             self.assertIn(".claude/hooks/post-edit-ruff.py", created)
             self.assertIn(".claude/hooks/plan-audit-gate.py", created)
             self.assertIn(".claude/hooks/pipeline-router.py", created)
@@ -658,10 +653,6 @@ class TestSetupClaudeHooks(unittest.TestCase):
                             {
                                 "type": "command",
                                 "command": _expected_hook_command("obpi-completion-validator.py"),
-                            },
-                            {
-                                "type": "command",
-                                "command": _expected_hook_command("instruction-router.py"),
                             },
                         ],
                     },
@@ -718,7 +709,7 @@ class TestSetupClaudeHooks(unittest.TestCase):
 
             readme_text = readme.read_text(encoding="utf-8")
             self.assertIn("Current hook surface in gzkit:", readme_text)
-            self.assertIn("hook that auto-surfaces", readme_text)
+            self.assertNotIn("instruction-router.py", readme_text)
             self.assertIn("plan-audit-gate.py", readme_text)
             self.assertIn("pipeline-router.py", readme_text)
             self.assertIn("pipeline-gate.py", readme_text)
@@ -2589,3 +2580,36 @@ class TestSessionStartAdvisementIsOneChannel(unittest.TestCase):
         payload = json.loads(out.getvalue())
         self.assertEqual(payload["hookSpecificOutput"]["additionalContext"], advice)
         self.assertNotIn("initialUserMessage", payload)
+
+
+class TestInstructionRouterIsRetired(unittest.TestCase):
+    """The instruction router is retired (drydock RO-1 act b, 2026-10-17).
+
+    It read `.github/instructions/*.instructions.md`, a tree gzkit no longer
+    renders (the Copilot vendor is undeclared, GHI #924), while Claude loads the
+    same rules natively from `.claude/rules/` (ADR-0.14.0). Measured: 0 B of
+    output and one `uv run` interpreter start on every Write, Edit and
+    NotebookEdit.
+    """
+
+    def test_no_hook_phase_registers_the_router(self) -> None:
+        settings = generate_claude_settings(GzkitConfig(project_name="gzkit-test"))
+        commands = [
+            hook["command"]
+            for groups in settings["hooks"].values()
+            for group in groups
+            for hook in group["hooks"]
+        ]
+        self.assertFalse([c for c in commands if "instruction-router" in c], commands)
+
+    def test_a_sync_removes_the_router_an_earlier_sync_wrote(self) -> None:
+        root = Path(self.enterContext(tempfile.TemporaryDirectory()))
+        config = GzkitConfig(project_name="gzkit-test")
+        hooks_dir = root / ".claude" / "hooks"
+        hooks_dir.mkdir(parents=True)
+        (hooks_dir / "instruction-router.py").write_text("# generated\n", encoding="utf-8")
+        operator_hook = hooks_dir / "my-router.py"
+        operator_hook.write_text("# the operator's own\n", encoding="utf-8")
+        setup_claude_hooks(root, config)
+        self.assertFalse((hooks_dir / "instruction-router.py").exists())
+        self.assertTrue(operator_hook.exists())

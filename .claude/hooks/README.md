@@ -12,9 +12,6 @@ Current hook surface in gzkit:
 - `session-staleness-check.py`
   PreToolUse (`Write|Edit`) hook that detects stale pipeline
   artifacts from previous sessions and emits warnings.
-- `instruction-router.py`
-  PreToolUse (`Write|Edit`) hook that auto-surfaces
-  `.github/instructions/*.instructions.md` constraints.
 - `obpi-completion-validator.py`
   PreToolUse (`Write|Edit`) hook that gates OBPI brief completion
   by checking ledger evidence before allowing status changes.
@@ -72,8 +69,7 @@ Current hook surface in gzkit:
 - `PreToolUse` `ExitPlanMode`: `plan-audit-gate.py`
 - `PostToolUse` `ExitPlanMode`: `pipeline-router.py`
 - `PreToolUse` `Write|Edit|NotebookEdit`: `session-staleness-check.py`,
-  then `pipeline-gate.py`, then `obpi-completion-validator.py`,
-  then `instruction-router.py`
+  then `pipeline-gate.py`, then `obpi-completion-validator.py`
 - `PreToolUse` `Bash`: `verifier-pipe-gate.py`,
   then `pipeline-completion-reminder.py`,
   then `ghi-triage-chat-silence.py`
