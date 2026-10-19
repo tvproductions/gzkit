@@ -52,6 +52,10 @@ QC_CLAIM_POPULATIONS: dict[str, Callable[[], Sequence[str]] | str] = {
     # Reads the ledger's open MX sessions; the members are whatever sessions are
     # open, never a set another surface declares (GHI #1257).
     "mx-hardening": POPULATION_NONE,
+    # Walks src/gzkit/** and the tests, features and briefs in code; the members are
+    # whatever files exist, never a set another surface declares (drydock RO-2).
+    "identity-seam": POPULATION_NONE,
+    "identity-seam-baselined": POPULATION_NONE,
     # Walks tests/** in code; the members are whatever test files exist, never a set
     # another surface declares (GHI #808).
     "tautological-debt": POPULATION_NONE,

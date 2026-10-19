@@ -143,6 +143,7 @@ _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
     "Brief structure": ("audit", "docs/", "bound", "python_function"),
     "Brief size": ("audit", "docs/", "bound", "python_function"),
     "MX hardening": ("audit", ".gzkit/", "bound", "python_function"),
+    "Identity seam": ("audit", "src/", "bound", "python_function"),
     "Session green gate": ("audit", ".gzkit/", "bound", "python_function"),
     "Closeout proof": ("audit", "docs/", "bound", "python_function"),
     "Kind invariance": ("audit", "docs/", "bound", "python_function"),

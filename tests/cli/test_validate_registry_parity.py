@@ -188,6 +188,10 @@ _POST_SNAPSHOT_EXPLICIT_ADDITIONS: frozenset[str] = frozenset(
         # ledger's open MX sessions. `in_check` from the outset, because the guards
         # shipped with no caller and a gate behind a remembered flag bounds nothing.
         "mx_hardening",
+        # The identity seam's ratchet and resolution check (drydock RO-2). Explicit
+        # tier: its subject is the id grammar outside the seam and every cited id.
+        # `in_check` from the outset, as RO-2's witness binds on every change.
+        "id_seam",
     }
 )
 

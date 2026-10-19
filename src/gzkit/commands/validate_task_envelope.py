@@ -14,6 +14,7 @@ from datetime import datetime
 from pathlib import Path
 
 from gzkit.commands.validate_briefs import _find_obpi_briefs
+from gzkit.core.models import TASK_ID_BODY
 from gzkit.doc_coverage.manifest import MANPAGE_DIR
 from gzkit.ledger import extract_bare_obpi_id
 from gzkit.validate import ValidationError
@@ -487,9 +488,7 @@ def _collect_obpi_brief_frontmatter(
     return out
 
 
-_SIG_B_TASK_ID_RE = re.compile(
-    r"^TASK-(?P<semver>\d+\.\d+\.\d+)-(?P<obpi_item>\d+)-(?P<req_index>\d+)-(?P<seq>\d+)$"
-)
+_SIG_B_TASK_ID_RE = re.compile(rf"^{TASK_ID_BODY}$")
 
 
 def _scan_ledger_for_obpi_completions_and_tasks(

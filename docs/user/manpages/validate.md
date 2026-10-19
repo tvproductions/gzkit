@@ -19,7 +19,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--rendition-floor-coherence] [--rendition-lineage]
             [--corpus-retirement-witness]
             [--invariant-coherence] [--invariant-witness] [--brief-reconcile] [--brief-structure]
-            [--brief-size] [--mx-hardening]
+            [--brief-size] [--mx-hardening] [--id-seam]
             [--router-tables]
             [--kind-invariance] [--persona-witness] [--req-kind-discipline] [--brief-command-shape]
             [--status-writer-coverage]
@@ -2379,6 +2379,51 @@ Runs in the default `gz check` pipeline as **MX hardening**.
 **Related:** GHI #1257, ADR-0.0.74 (MX hangar), `gz mx` (the lease and the exit),
 `.gzkit/rules/mx-mode.md`.
 
+### `--id-seam`
+
+The witness of the identity seam (drydock RO-2,
+[`harbor-ro2-identity-seam.md`](../../governance/harbor-ro2-identity-seam.md)). One grammar
+body per kind lives in `gzkit.core.models`, and one resolver and parent lookup in
+`gzkit.core.id_resolver`; nothing outside them spells an ADR, OBPI, REQ or TASK grammar
+or derives a parent from an id's spelling. The scope runs three checks:
+
+| Check | Finding | Disposition |
+|-------|---------|-------------|
+| Scan | A regex literal or `pattern=` keyword encoding an id grammar, a split, slice or prefix rewrite of an id (`parent`), or an id-shaped f-string composing one (`compose`), under `src/gzkit` outside the seam | Exit 3 unless `data/id_seam_baseline.json` holds the site, keyed by file, enclosing symbol and kind |
+| Baseline | A baseline row whose sites are gone or fewer | Exit 3: the baseline only shrinks and carries no dead rows |
+| Resolution | A `@covers` REQ, a scenario `@REQ-…` tag, or a brief frontmatter OBPI or ADR id that names no single artifact | Exit 3 |
+
+The baseline is a `shrink-ratchet` in `data/waiver_ratchet_registry.json`; RO-2 closes when
+it is empty. An embedded hook script (a string handed to `dedent`) is parsed and scanned
+as the Python it is.
+
+**Usage:**
+
+```bash
+gz validate --id-seam
+```
+
+**Observed output:**
+
+```console
+$ uv run gz validate --id-seam
+Validated: id_seam
+
+✓ All validations passed (1 scopes).
+```
+
+**Exit codes:**
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Every site is baselined exactly and every cited id resolves | — |
+| 3 | A new site, a dead or shrunk baseline row, or an unresolved id | Import the grammar body from `gzkit.core.models` or call `gzkit.core.id_resolver`; lower or delete a shrunk row; correct the citation |
+
+Runs in the default `gz check` pipeline as **Identity seam**.
+
+**Related:** [`harbor-ro2-identity-seam.md`](../../governance/harbor-ro2-identity-seam.md),
+ADR-0.0.10 (the identity layer the seam extends).
+
 ### `--router-tables`
 
 Audits the six namespace-router skills authored under ADR-0.27.0 (`gz-workflow`,
@@ -2921,6 +2966,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--brief-reconcile` | opt-in | Check the OBPI brief corpus against project shape across five drift dimensions (frontmatter coherence, lane mismatch, unreplaced scaffold defaults, and more) (ADR-0.0.37) |
 | `--brief-size` | opt-in | Every live OBPI brief is inside its declared size bounds on REQs, requirements, allowed paths, contract bytes and total bytes (GHI #1196) |
 | `--mx-hardening` | opt-in | No MX session is dangling or over max-open; a session past its lease and its advisory debt are announced (GHI #1257) |
+| `--id-seam` | opt-in | No id grammar or spelling-derived parent outside the identity seam beyond its shrink-only baseline, and every cited id resolves (drydock RO-2) |
 | `--brief-structure` | opt-in | Every live OBPI brief carries valid structured frontmatter (`allowlist`, `reqs`, `verification`) instead of falling back to `LegacyBriefShape` |
 | `--changelog` | opt-in | Hermetic structural audit of `CHANGELOG.md` against `.gzkit/templates/changelog.md`: version headers and section headings (GHI #685) |
 | `--config-registry` | opt-in | Every top-level registry under `data/` is declared, with an owner and a loader (GHI #929) |

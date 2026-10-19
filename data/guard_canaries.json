@@ -364,6 +364,32 @@
       "authority": "GHI #1257; GHI #1154 item 5 (every registered claim binds a reviewed canary)",
       "proposed_by": "claude-code session 2026-10-18",
       "reviewed_by": "g0"
+    },
+    {
+      "claim_id": "identity-seam",
+      "guard": "gzkit.governance.trust_audits.id_seam:check_seam_baseline",
+      "failing_test": "tests.governance.test_id_seam_audit.TestTheBaselineOnlyShrinks.test_a_new_site_fails_and_names_the_seam",
+      "mutation": {
+        "find": "        if count > allowed:\n",
+        "replace": "        if False:\n",
+        "label": "a site the baseline does not hold is never refused"
+      },
+      "binding_sha256": "aeaffdbeb93c5d5796a51976f1ccdb1024d6b234437012015066f85918a5cbc9",
+      "authority": "docs/governance/harbor-ro2-identity-seam.md (drydock RO-2 tranche 1); GHI #1154 item 5 (every registered claim binds a reviewed canary)",
+      "proposed_by": "claude-code session 2026-10-19"
+    },
+    {
+      "claim_id": "identity-seam-baselined",
+      "guard": "gzkit.governance.trust_audits.id_seam:check_seam_baseline",
+      "failing_test": "tests.governance.test_id_seam_audit.TestTheBaselineOnlyShrinks.test_the_seeded_sites_pass",
+      "mutation": {
+        "find": "        allowed = seeded.get(key, 0)\n",
+        "replace": "        allowed = 0\n",
+        "label": "a baselined site is refused as new"
+      },
+      "binding_sha256": "31fbf885f06defa930a0dad8dfef1399511fb08709e2f4950157269a598eeafd",
+      "authority": "docs/governance/harbor-ro2-identity-seam.md (drydock RO-2 tranche 1); GHI #1154 item 5 (every registered claim binds a reviewed canary)",
+      "proposed_by": "claude-code session 2026-10-19"
     }
   ]
 }

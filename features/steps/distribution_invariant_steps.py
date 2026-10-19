@@ -13,7 +13,6 @@ data/distribution_baseline_manifest.json.
 @covers REQ-0.0.32-06-07
 @covers REQ-0.0.32-06-08
 @covers REQ-0.0.32-06-09
-@covers REQ-0.0.32-06-10
 """
 
 from __future__ import annotations

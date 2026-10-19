@@ -19,15 +19,14 @@ from typing import TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.core.models import TASK_ID_BODY
 from gzkit.ledger_corrections import live_events
 
 # ---------------------------------------------------------------------------
 # TASK identifier
 # ---------------------------------------------------------------------------
 
-_TASK_PATTERN = re.compile(
-    r"^TASK-(?P<semver>\d+\.\d+\.\d+)-(?P<obpi_item>\d+)-(?P<req_index>\d+)-(?P<seq>\d+)$"
-)
+_TASK_PATTERN = re.compile(rf"^{TASK_ID_BODY}$")
 
 
 class TaskId(BaseModel):

@@ -62,7 +62,7 @@
       "type": "array",
       "items": {
         "type": "string",
-        "pattern": "^TASK-\\d+\\.\\d+\\.\\d+-\\d+-\\d+-\\d+$"
+        "pattern": "^TASK-\\d+\\.\\d+\\.\\d+-\\d{2}-\\d{2}-\\d{2}$"
       },
       "description": "TASK IDs this artifact advances (ADR-0.0.64 / OBPI-02; GHI #753)"
     },

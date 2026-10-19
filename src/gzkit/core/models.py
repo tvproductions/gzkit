@@ -6,12 +6,83 @@ JSON schema. Pure domain logic — no I/O operations.
 
 from __future__ import annotations
 
+import enum
 from typing import Any, Literal, get_args, get_origin
 
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic import ValidationError as PydanticValidationError
 
 from gzkit.skill_contract import SKILL_DESCRIPTION_MAX_CHARS
+
+# ---------------------------------------------------------------------------
+# Identity grammar — one body per kind (drydock RO-2, the identity seam)
+# ---------------------------------------------------------------------------
+#
+# Nothing outside the seam spells an ADR, OBPI, REQ or TASK grammar
+# (`docs/governance/harbor-ro2-identity-seam.md` § The seam, item 1); readers embed
+# these bodies, and `gz validate --id-seam` ratchets the copies that remain.
+# Widths are settled here, at the two digits the JSON schemas and the REQ grammar
+# already pinned (GHI #615). Measured 2026-10-18 before the TASK and identity-surface
+# tightening: no live id in the ledger, the briefs, the commit trailers, the
+# `@covers` bindings or the scenario tags uses another width.
+
+SEMVER_BODY = r"\d+\.\d+\.\d+"
+SLUG_BODY = r"[a-z0-9-]+"
+ITEM_BODY = r"\d{2}"
+
+ADR_SHORT_ID_BODY = rf"ADR-{SEMVER_BODY}"
+ADR_ID_BODY = rf"{ADR_SHORT_ID_BODY}-{SLUG_BODY}"
+ADR_POOL_ID_BODY = rf"ADR-pool\.{SLUG_BODY}"
+OBPI_SHORT_ID_BODY = rf"OBPI-{SEMVER_BODY}-{ITEM_BODY}"
+OBPI_ID_BODY = rf"{OBPI_SHORT_ID_BODY}-{SLUG_BODY}"
+REQ_ID_BODY = (
+    rf"REQ-(?P<semver>{SEMVER_BODY})-(?P<obpi_item>{ITEM_BODY})-(?P<criterion>{ITEM_BODY})"
+)
+#: The REQ grammar with no capture groups, for readers that embed it.
+REQ_ID_BODY_PLAIN = rf"REQ-{SEMVER_BODY}-{ITEM_BODY}-{ITEM_BODY}"
+TASK_ID_BODY = (
+    rf"TASK-(?P<semver>{SEMVER_BODY})-(?P<obpi_item>{ITEM_BODY})"
+    rf"-(?P<req_index>{ITEM_BODY})-(?P<seq>{ITEM_BODY})"
+)
+#: The numeric TASK grammar with no capture groups.
+TASK_ID_BODY_PLAIN = rf"TASK-{SEMVER_BODY}-{ITEM_BODY}-{ITEM_BODY}-{ITEM_BODY}"
+#: The direct-fix TASK form, a kebab slug with an optional GHI anchor (GHI #552).
+TASK_SLUG_ID_BODY = r"TASK-[a-z][a-z0-9-]*(?:-#\d+)?"
+
+#: The frontmatter ``id`` patterns the JSON schemas carry byte for byte.
+ADR_FRONTMATTER_ID_PATTERN = rf"^(?:{ADR_POOL_ID_BODY}|{ADR_ID_BODY})$"
+OBPI_FRONTMATTER_ID_PATTERN = rf"^{OBPI_SHORT_ID_BODY}(-{SLUG_BODY})?$"
+
+
+class IdKind(enum.StrEnum):
+    """The four identifier kinds the seam governs."""
+
+    ADR = "ADR"
+    OBPI = "OBPI"
+    REQ = "REQ"
+    TASK = "TASK"
+
+
+def id_kind(identifier: str) -> IdKind:
+    """Return the kind an identifier's leading token names.
+
+    Raises ``ValueError`` for an identifier no kind claims.
+    """
+    head, _, rest = identifier.partition("-")
+    if rest:
+        for kind in IdKind:
+            if head == kind.value:
+                return kind
+    msg = f"Not an ADR, OBPI, REQ or TASK identifier: {identifier!r}"
+    raise ValueError(msg)
+
+
+def is_foundation_semver(semver: str) -> bool:
+    """Return True for the foundation series, ``0.0.x``."""
+    major, _, rest = semver.partition(".")
+    minor = rest.partition(".")[0]
+    return major == "0" and minor == "0"
+
 
 # ---------------------------------------------------------------------------
 # Frontmatter models
@@ -23,9 +94,7 @@ class AdrFrontmatter(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="allow")
 
-    id: str = Field(
-        ..., pattern=r"^(?:ADR-pool\.[a-z0-9-]+|ADR-[0-9]+\.[0-9]+\.[0-9]+-[a-z0-9-]+)$"
-    )
+    id: str = Field(..., pattern=ADR_FRONTMATTER_ID_PATTERN)
     status: Literal[
         "Pool",
         "Pending",
@@ -50,7 +119,7 @@ class ObpiFrontmatter(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="allow")
 
-    id: str = Field(..., pattern=r"^OBPI-[0-9]+\.[0-9]+\.[0-9]+-[0-9]{2}(-[a-z0-9-]+)?$")
+    id: str = Field(..., pattern=OBPI_FRONTMATTER_ID_PATTERN)
     parent: str
     item: str | int
     lane: Literal["lite", "heavy", "Lite", "Heavy"]
@@ -156,7 +225,7 @@ class AdrId(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    raw: str = Field(..., description="Canonical ADR identifier", pattern=r"^ADR-\d+\.\d+\.\d+$")
+    raw: str = Field(..., description="Canonical ADR identifier", pattern=rf"^{ADR_SHORT_ID_BODY}$")
 
     @classmethod
     def parse(cls, value: str) -> AdrId:
@@ -177,7 +246,7 @@ class ObpiId(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     raw: str = Field(
-        ..., description="Canonical OBPI identifier", pattern=r"^OBPI-\d+\.\d+\.\d+-\d+$"
+        ..., description="Canonical OBPI identifier", pattern=rf"^{OBPI_SHORT_ID_BODY}$"
     )
 
     @classmethod
@@ -198,9 +267,7 @@ class ReqId(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    raw: str = Field(
-        ..., description="Canonical REQ identifier", pattern=r"^REQ-\d+\.\d+\.\d+-\d+-\d+$"
-    )
+    raw: str = Field(..., description="Canonical REQ identifier", pattern=rf"^{REQ_ID_BODY_PLAIN}$")
 
     @classmethod
     def parse(cls, value: str) -> ReqId:
@@ -221,7 +288,7 @@ class TaskId(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     raw: str = Field(
-        ..., description="Canonical TASK identifier", pattern=r"^TASK-\d+\.\d+\.\d+-\d+-\d+-\d+$"
+        ..., description="Canonical TASK identifier", pattern=rf"^{TASK_ID_BODY_PLAIN}$"
     )
 
     @classmethod

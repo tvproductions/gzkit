@@ -2,7 +2,7 @@
 
 # RO-2 specification — one identity seam for every reader
 
-**2026-10-18. Status: specified; tranche 1 not started.** Operator: **g0**. Repair order RO-2 of the
+**2026-10-18. Status: tranche 1 landed (2026-10-19, the seam, its witness and a seeded baseline of 187 rows); tranches 2 to 5 open.** Operator: **g0**. Repair order RO-2 of the
 [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders), mandate item 2:
 give REQ, TASK and release identity independent of the ADR, by alias and resolver, renaming nothing
 before 1.0. This is phase 1 of [`ADR-pool.identifier-ladder-migration`](../design/adr/pool/ADR-pool.identifier-ladder-migration.md),
@@ -61,8 +61,9 @@ illustrative, and the baseline file is the authority.
 **Defects the inventory surfaced** (recorded as insights; direct fixes under `AGENTS.md` § Defect-fix
 routing, independent of the tranches):
 
-- `obpi_audit_cmd._derive_adr_id` uses `rsplit("-", 1)`, so `OBPI-0.28.0-01-context-core` gives
-  `ADR-0.28.0-01-context`.
+- `obpi_audit_cmd._derive_adr_id` used `rsplit("-", 1)`, so `OBPI-0.28.0-01-context-core` gave
+  `ADR-0.28.0-01-context`. Fixed in `d111c1259` (2026-10-18): it reads the semver through
+  `lock_manager.adr_id_from_obpi`, a site the baseline now holds.
 - `commands/task.py:146` resolves a short OBPI id without `project_root`, ignoring the parked flag,
   so `OBPI-0.28.0-01` can be booked in short form (the GHI #653 divergence).
 - `pipeline_markers.find_obpi_brief` and `obpi_precomplete.resolve_brief_path` glob `{id}*.md` with
@@ -92,6 +93,15 @@ root as parameters (rule 4).
    `triangle.REQ_ID_BODY` and `tasks.TaskId` re-export from the seam, so existing imports keep
    working. The two JSON schemas take their patterns from the seam, by generation or by a test
    asserting byte equality.
+
+   *Settled at tranche 1 (2026-10-19).* Every body pins two digits for an OBPI item, a REQ
+   criterion and each TASK component, which tightened the TASK parser and the identity surfaces
+   from `\d+`. Measured before the change, no live id in the ledger, the briefs, the commit
+   trailers, the `@covers` bindings or the scenario tags uses another width; the odd widths that
+   appear are captured test output and fixtures. The resolver takes no width into its match, so
+   attested REQ-0.35.0-15-02 (an item's short form is the whole item number, whatever its width)
+   stays true of it. `obpi.json`, `obpi_brief_structure.json` and `adr.json` carry the seam's
+   patterns byte for byte (`tests/test_id_seam_grammar.py`).
 2. **One resolver**, `resolve(id) -> Resolution`, built on the rename fold and
    `active_prefix_matches`:
    - It returns the canonical id, its kind, and whether it is active, parked or withdrawn.
@@ -109,7 +119,9 @@ root as parameters (rule 4).
 
    Deriving a parent from an id's spelling survives only inside the seam, as the fallback for an
    artifact with no stored field. It is marked and counted, and it shrinks as RO-3's `member_of`
-   lands.
+   lands. Every link it makes carries `source="spelling"`. A REQ no brief lists still resolves
+   when its spelled OBPI is parked or withdrawn (pool demotion removes the brief and parks the
+   OBPI), recorded as such; a REQ its live OBPI's brief does not list names nothing.
 
 ## The witness
 
@@ -119,7 +131,12 @@ Tranche 1 lands `gz validate --id-seam`, one scope in the default `gz check`:
   - every string literal handed to `re.compile`, `re.match`, `re.search`, `re.fullmatch`,
     `re.findall` or `re.sub`, or to a `pattern=` keyword, that encodes an `ADR-`, `OBPI-`, `REQ-` or
     `TASK-` grammar;
-  - every slice, `split` or `rsplit` on a value the scan can tie to an id.
+  - every slice, `split` or `rsplit` on a value the scan can tie to an id, and every prefix
+    rewrite (`replace`, `removeprefix`) of an id prefix (kind `parent`);
+  - every id-shaped f-string (a kind prefix first, no whitespace) that composes an id from parts:
+    a parent recovered from parsed fields, a child-prefix scan, an input normalized to an id
+    (kind `compose`). Without it the close condition could not see the spelling-derived parents
+    and reverse prefix scans tranche 5 retires.
 
   Code inside the seam module is exempt. Embedded hook scripts (`src/gzkit/hooks/scripts/`) are
   scanned as the strings they are, or listed in the baseline as one row each.
@@ -130,7 +147,8 @@ Tranche 1 lands `gz validate --id-seam`, one scope in the default `gz check`:
   cannot carry dead rows.
 - **The resolution check.** Every `@covers` REQ, every scenario REQ tag, and every OBPI and ADR id
   in brief frontmatter resolves through `resolve` to exactly one active canonical id, or to a parked
-  or withdrawn one recorded as such.
+  or withdrawn one recorded as such. A `@covers` binds on a module- or class-level definition; one
+  on a function nested in a test body is that test's fixture (`covers()`'s own negative tests).
 - **Close condition.** The baseline is empty; the resolution check passes; `gz check` passes.
 
 ## Tranches
@@ -146,20 +164,30 @@ moved in the same commit.
 | 2 | REQ and TASK readers: the 23 REQ and 10 TASK copies, and the slug TASK form | No REQ or TASK row remains in the baseline |
 | 3 | OBPI readers and brief finders, the separator-less globs included | No OBPI row remains |
 | 4 | ADR readers and package finders | No ADR row remains |
-| 5 | The 28 parent-recovery sites and the reverse prefix scans, through `parent_of` | No spelling-derived parent remains outside the seam. The baseline is empty, and RO-2 closes. |
+| 5 | The 28 parent-recovery sites and the reverse prefix scans, through `parent_of`: the `parent` and `compose` rows | No spelling-derived parent remains outside the seam. The baseline is empty, and RO-2 closes. |
 
 **Boundaries.** RO-2 renames nothing, writes no `artifact_renamed` event, changes no grammar a live id
 depends on without an operator ruling, and authors no catalog entry (that is RO-3). `tests/` and
 `features/` are read by the resolution check but are not scanned for copies. A copy found there is a
 finding for the tranche that owns its kind.
 
-**Known uncertainties.**
+**Known uncertainties, read at tranche 1 before the baseline was seeded (2026-10-19).**
 
-- Whether `obpi_precomplete.resolve_obpi_at_entry` adds logic beyond `resolve_obpi_file`.
-- Whether the embedded hook scripts duplicate shipped hook files.
-- Whether any test or feature parses ids by regex.
+- `obpi_precomplete.resolve_obpi_at_entry` adds no resolution logic. It loads the config, builds
+  the ledger, calls `resolve_obpi_file` and translates its two errors into `ObpiEntryError`.
+  Tranche 3 moves `resolve_obpi` under it, and the wrapper follows unchanged.
+- The embedded hook scripts are the source of the shipped hooks, not copies of them. `gz agent
+  sync` renders each generator in `src/gzkit/hooks/scripts/` to `.claude/hooks/`, through ruff
+  format; all fifteen rendered files equal the formatted generator output. The scan reads
+  `src/gzkit` only, so each grammar is counted once, at its generator.
+- Tests and features parse ids by regex at five sites, all assertions or test filters
+  (`tests/governance/test_kind_invariance_docs.py` twice, three `assertRegex` calls). None feeds a
+  reader, so none is a tranche's row.
 
-Tranche 1 reads each of these before it seeds the baseline.
+**Seeded baseline (2026-10-19).** 187 rows, 221 sites: ADR 47 sites in 41 rows, OBPI 40 in 37,
+REQ 20 in 16, TASK 7 in 5, `parent` 22 in 19, `compose` 85 in 69. The hand counts above
+(about 118 grammar copies) agree with the scan's 114 grammar sites; `compose` is the population
+the hand count did not measure.
 
 ## Before-figures
 

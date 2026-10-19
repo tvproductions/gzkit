@@ -926,6 +926,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="MX hangar guards: exit 3 on a dangling or over-max session (GHI #1257).",
     )
     p_validate.add_argument(
+        "--id-seam",
+        dest="check_id_seam",
+        action="store_true",
+        help="Id grammar outside the seam beyond its baseline, or an unresolved id: exit 3.",
+    )
+    p_validate.add_argument(
         "--distribution",
         dest="check_distribution",
         action="store_true",
@@ -1194,6 +1200,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_brief_structure=a.check_brief_structure,
             check_brief_size=a.check_brief_size,
             check_mx_hardening=a.check_mx_hardening,
+            check_id_seam=a.check_id_seam,
             check_router_tables=a.check_router_tables,
             check_req_kind_discipline=a.check_req_kind_discipline,
             check_status_writer_coverage=a.check_status_writer_coverage,

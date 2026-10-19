@@ -460,6 +460,7 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
     ),
     _ScopeEntry("brief_size", "explicit", True, lambda r, _f: _ta().audit_brief_size(r)),
     _ScopeEntry("mx_hardening", "explicit", True, lambda r, _f: _ta().audit_mx_hardening(r)),
+    _ScopeEntry("id_seam", "explicit", True, lambda r, _f: _ta().audit_id_seam(r)),
     _ScopeEntry("router_tables", "explicit", True, lambda r, _f: _ta().audit_router_tables(r)),
     _ScopeEntry(
         "req_kind_discipline", "explicit", True, lambda r, _f: _validate_req_kind_discipline(r)
@@ -1156,6 +1157,7 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "brief_structure",
         "brief_size",
         "mx_hardening",
+        "id_seam",
         "router_tables",
         "req_kind_discipline",
         "status_writer_coverage",
@@ -1547,6 +1549,7 @@ def validate(
     check_brief_structure: bool = False,
     check_brief_size: bool = False,
     check_mx_hardening: bool = False,
+    check_id_seam: bool = False,
     check_router_tables: bool = False,
     check_req_kind_discipline: bool = False,
     check_status_writer_coverage: bool = False,
@@ -1692,6 +1695,7 @@ def validate(
         "brief_structure": check_brief_structure,
         "brief_size": check_brief_size,
         "mx_hardening": check_mx_hardening,
+        "id_seam": check_id_seam,
         "router_tables": check_router_tables,
         "req_kind_discipline": check_req_kind_discipline,
         "status_writer_coverage": check_status_writer_coverage,

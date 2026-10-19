@@ -13,6 +13,8 @@ import re
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from gzkit.core.models import REQ_ID_BODY as REQ_ID_BODY
+from gzkit.core.models import REQ_ID_BODY_PLAIN as REQ_ID_BODY_PLAIN
 from gzkit.req_kind import NON_COVERS_KINDS, ReqKind, ReqKindValue
 
 logger = logging.getLogger(__name__)
@@ -27,11 +29,9 @@ logger = logging.getLogger(__name__)
 # parsed into a REQ entity owing coverage while being invisible to
 # `--brief-structure` and `adr_coverage`. Two digits is the corpus's actual
 # grammar: 0 of 4396 occurrences under `docs/design/adr` use another width
-# (measured 2026-08-03). Readers anchor this body rather than restating it.
-REQ_ID_BODY = r"REQ-(?P<semver>\d+\.\d+\.\d+)-(?P<obpi_item>\d{2})-(?P<criterion>\d{2})"
-
-#: The same grammar with no capture groups, for readers that embed it.
-REQ_ID_BODY_PLAIN = r"REQ-\d+\.\d+\.\d+-\d{2}-\d{2}"
+# (measured 2026-08-03). Readers anchor this body rather than restating it; since
+# drydock RO-2 it lives in the identity seam and is re-exported here, so existing
+# imports keep working.
 
 _REQ_PATTERN = re.compile(rf"^{REQ_ID_BODY}$")
 

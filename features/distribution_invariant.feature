@@ -31,7 +31,6 @@ Feature: Distribution invariant T0 smoke test
   @REQ-0.0.32-06-07
   @REQ-0.0.32-06-08
   @REQ-0.0.32-06-09
-  @REQ-0.0.32-06-10
   Scenario: Build, install, init, assert byte-equivalence vs baseline
     Given an empty distribution-test project directory
     And the gzkit baseline manifest at "data/distribution_baseline_manifest.json"

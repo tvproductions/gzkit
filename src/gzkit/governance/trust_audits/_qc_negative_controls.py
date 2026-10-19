@@ -1340,6 +1340,42 @@ def _build_brief_size_grandfathered() -> Path:
     return root
 
 
+def _id_seam_root(slug: str, *, fresh: bool) -> Path:
+    """Build a tree with one baselined id-grammar site and, when *fresh*, one new site."""
+    root = _mkroot(slug)
+    _write(root / ".gzkit" / "ledger.jsonl", "")
+    _write(
+        root / "src" / "gzkit" / "held.py",
+        'import re\n\n\ndef held():\n    return re.compile(r"OBPI-\\d+")\n',
+    )
+    if fresh:
+        _write(
+            root / "src" / "gzkit" / "fresh.py",
+            'import re\n\n\ndef fresh():\n    return re.compile(r"REQ-\\d+")\n',
+        )
+    baseline = {
+        "_doc": "Negative-control fixture (docs/governance/harbor-ro2-identity-seam.md).",
+        "sites": [{"file": "src/gzkit/held.py", "symbol": "held", "kind": "OBPI", "sites": 1}],
+    }
+    _write(root / "data" / "id_seam_baseline.json", json.dumps(baseline))
+    return root
+
+
+def _build_id_seam() -> Path:
+    """Build a new id-grammar site beside a baselined one — the gate MUST fire (RO-2).
+
+    Decoy: the baselined site, which must stay silent; the entrypoint reports no
+    catch when anything but the new site fires, so a gate that refuses the
+    baseline itself fails the control.
+    """
+    return _id_seam_root("id-seam", fresh=True)
+
+
+def _build_id_seam_baselined() -> Path:
+    """Build only the baselined site — the gate MUST admit it (the admit half, RO-2)."""
+    return _id_seam_root("identity-seam-baselined", fresh=False)
+
+
 def _build_mx_hardening() -> Path:
     """Build a ledger-open MX session with no marker — the gate MUST fire (GHI #1257).
 
@@ -1954,6 +1990,14 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
     ("corpus-retirement-witness", _cr.build_retirement_witness, _ep._ep_corpus_retirement_witness),
     ("brief-structure", _build_brief_structure, _ep._ep_brief_structure),
     ("mx-hardening", _build_mx_hardening, _ep._ep_mx_hardening, "mx-dangling-state"),
+    (
+        "identity-seam",
+        _build_id_seam,
+        _ep._ep_id_seam,
+        "id-grammar site(s) outside the identity seam",
+    ),
+    # Admit half: a baselined site, which the shrink-ratchet holds (drydock RO-2).
+    ("identity-seam-baselined", _build_id_seam_baselined, _ep._ep_id_seam_admits_baselined),
     ("brief-size", _build_brief_size, _ep._ep_brief_size, "OBPI-0.0.99-01-over measures"),
     # Admit half: a recorded ceiling, exercised at a brief past the bound (GHI #1196).
     (

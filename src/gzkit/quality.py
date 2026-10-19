@@ -1260,6 +1260,18 @@ def run_mx_hardening_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --mx-hardening", cwd=project_root)
 
 
+def run_id_seam_audit(project_root: Path) -> QualityResult:
+    """Run the identity seam's ratchet and resolution check (drydock RO-2).
+
+    Fails closed when an id grammar or spelling-derived parent outside the seam is
+    not in `data/id_seam_baseline.json`, when a baseline row is dead, or when a
+    cited id does not resolve. Recovery: import the grammar body from
+    `gzkit.core.models` or call `gzkit.core.id_resolver`, then
+    `uv run gz validate --id-seam`.
+    """
+    return run_command("uv run gz validate --id-seam", cwd=project_root)
+
+
 def run_invariant_coherence_audit(project_root: Path) -> QualityResult:
     """Run the composition-drift gate: AGENTS.md vs committed rendition playback.
 

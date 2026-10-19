@@ -635,6 +635,23 @@ def _ep_brief_size_admits_grandfathered(root: Path) -> int:
     return 0 if audit_brief_size(root) else 1
 
 
+def _ep_id_seam(root: Path) -> list[ValidationError]:
+    """Return the finding against the new site, and nothing when the baselined one fired."""
+    from gzkit.governance.trust_audits.id_seam import audit_id_seam  # noqa: PLC0415
+
+    errors = audit_id_seam(root)
+    if any("src/gzkit/fresh.py" not in error.artifact for error in errors):
+        return []
+    return errors
+
+
+def _ep_id_seam_admits_baselined(root: Path) -> int:
+    """Truthy only when the gate ADMITS a site the baseline holds."""
+    from gzkit.governance.trust_audits.id_seam import audit_id_seam  # noqa: PLC0415
+
+    return 0 if audit_id_seam(root) else 1
+
+
 def _ep_mx_hardening(root: Path) -> list[ValidationError]:
     """Return the dangling-state finding, and nothing when any other finding fired.
 

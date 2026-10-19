@@ -123,6 +123,7 @@ from gzkit.governance.trust_audits.gate_callers import audit_gate_callers
 from gzkit.governance.trust_audits.gate_enrollment import audit_gate_enrollment
 from gzkit.governance.trust_audits.gate_population import audit_gate_population_enrollment
 from gzkit.governance.trust_audits.how_coverage import audit_how_coverage
+from gzkit.governance.trust_audits.id_seam import audit_id_seam
 from gzkit.governance.trust_audits.insights import audit_insights_shape
 from gzkit.governance.trust_audits.instructions_files_budget import (
     audit_instructions_files_budget,
@@ -239,6 +240,7 @@ __all__ = [
     "audit_brief_headings",
     "audit_brief_size",
     "audit_mx_hardening",
+    "audit_id_seam",
     "audit_agents_md_map_conformance",
     "audit_chore_metadata_authority",
     "audit_chore_rung_conformance",

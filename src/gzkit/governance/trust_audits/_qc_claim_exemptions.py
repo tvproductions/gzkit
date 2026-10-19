@@ -109,6 +109,13 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     # from the shared checkpoint every guard passes through, not from this gate,
     # and a session past its lease announces by its guard's level. GHI #1257.
     "mx-hardening": EXEMPTS_NONE,
+    # The baseline `data/id_seam_baseline.json` admits each site it holds: a
+    # project-controlled data file, so an exemption exercised by a registered
+    # admit-half control rather than declared away. It is a shrink-ratchet in the
+    # waiver-ratchet registry. Drydock RO-2.
+    "identity-seam": "identity-seam-baselined",
+    # The admit half reads the same gate and admits nothing of its own.
+    "identity-seam-baselined": EXEMPTS_NONE,
     # AST scan of tests/** for a literal `git` argv spawned without the boundary
     # env. No waiver table, allowlist, escape marker or opt-in flag admits an
     # offender; the literal-argv scope is a scope predicate, disclosed in the

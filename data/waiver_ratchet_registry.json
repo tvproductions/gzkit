@@ -354,6 +354,21 @@
       "identity": {
         "kind": "keys"
       }
+    },
+    {
+      "data_file": "data/id_seam_baseline.json",
+      "gates_step": "Identity seam (gz validate --id-seam)",
+      "mechanism": "shrink-ratchet",
+      "entries_path": "sites",
+      "baseline_count": 187,
+      "identity": {
+        "kind": "fields",
+        "fields": [
+          "file",
+          "symbol",
+          "kind"
+        ]
+      }
     }
   ],
   "excluded": [
