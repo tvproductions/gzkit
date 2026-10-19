@@ -376,7 +376,8 @@
       },
       "binding_sha256": "aeaffdbeb93c5d5796a51976f1ccdb1024d6b234437012015066f85918a5cbc9",
       "authority": "docs/governance/harbor-ro2-identity-seam.md (drydock RO-2 tranche 1); GHI #1154 item 5 (every registered claim binds a reviewed canary)",
-      "proposed_by": "claude-code session 2026-10-19"
+      "proposed_by": "claude-code session 2026-10-19",
+      "reviewed_by": "g0"
     },
     {
       "claim_id": "identity-seam-baselined",
@@ -389,7 +390,8 @@
       },
       "binding_sha256": "31fbf885f06defa930a0dad8dfef1399511fb08709e2f4950157269a598eeafd",
       "authority": "docs/governance/harbor-ro2-identity-seam.md (drydock RO-2 tranche 1); GHI #1154 item 5 (every registered claim binds a reviewed canary)",
-      "proposed_by": "claude-code session 2026-10-19"
+      "proposed_by": "claude-code session 2026-10-19",
+      "reviewed_by": "g0"
     }
   ]
 }
