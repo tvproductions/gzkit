@@ -126,6 +126,54 @@ class TestCommitWitness(_CommitRepo):
         self.assertEqual(result.verdict, "no-tests", result)
         self.assertEqual(result.hunks, [])
 
+    def _add_module(self, name: str, body: str) -> None:
+        (self.root / "tests" / f"{name}.py").write_text(
+            f"import unittest\n\n\nclass U(unittest.TestCase):\n{body}", encoding="utf-8"
+        )
+
+    def test_a_hunk_is_graded_only_by_the_modules_that_reach_it(self):
+        """GHI #1260: a touched module that never runs the hunk cannot kill it, so it is not run."""
+        (self.root / "pkg" / "mod.py").write_text(_GUARDED, encoding="utf-8")
+        self._add_test("\n    def test_negative(self):\n        self.assertEqual(clamp(-1), 0)\n")
+        self._add_module("test_other", "    def test_true(self):\n        self.assertTrue(True)\n")
+        result = run_commit_witness(self.root, self._commit("guard + two modules"), runner=_RUNNER)
+        self.assertEqual(result.verdict, "driven", result)
+        self.assertEqual({tuple(h.test_modules) for h in result.hunks}, {("tests.test_mod",)})
+
+    def test_a_hunk_reached_only_through_a_subprocess_is_still_graded(self):
+        """A test that drives the guard in a child interpreter reaches it too (hooks, `gz`)."""
+        (self.root / "pkg" / "mod.py").write_text(_GUARDED, encoding="utf-8")
+        self._add_module(
+            "test_child",
+            "    def test_child_clamps(self):\n"
+            "        import subprocess, sys\n"
+            "        code = 'from pkg.mod import clamp; raise SystemExit(clamp(-1))'\n"
+            "        done = subprocess.run([sys.executable, '-c', code], check=False)\n"
+            "        self.assertEqual(done.returncode, 0)\n",
+        )
+        result = run_commit_witness(self.root, self._commit("guard + child test"), runner=_RUNNER)
+        self.assertEqual(result.verdict, "driven", result)
+        self.assertEqual({tuple(h.test_modules) for h in result.hunks}, {("tests.test_child",)})
+
+    def test_a_hunk_no_module_reaches_is_graded_by_all_of_them(self):
+        """No traced run executes the lines: grade against every touched module, as before."""
+        (self.root / "pkg" / "mod.py").write_text(
+            _BASE + "\n\ndef other(x):\n    return x\n", encoding="utf-8"
+        )
+        self._commit("other")
+        (self.root / "pkg" / "mod.py").write_text(
+            _BASE + "\n\ndef other(x):\n    if x < 0:\n        return 0\n    return x\n",
+            encoding="utf-8",
+        )
+        self._add_test("\n    def test_two(self):\n        self.assertEqual(clamp(2), 2)\n")
+        self._add_module("test_other", "    def test_true(self):\n        self.assertTrue(True)\n")
+        result = run_commit_witness(self.root, self._commit("unreached guard"), runner=_RUNNER)
+        self.assertEqual(result.verdict, "undriven", result)
+        self.assertEqual(
+            {tuple(h.test_modules) for h in result.hunks},
+            {("tests.test_mod", "tests.test_other")},
+        )
+
     def test_a_comment_only_hunk_is_not_a_guard(self):
         """Reverting a comment changes no behavior, so it must not read as undriven."""
         (self.root / "pkg" / "mod.py").write_text("# note\n" + _BASE, encoding="utf-8")

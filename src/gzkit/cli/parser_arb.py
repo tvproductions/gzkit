@@ -131,8 +131,9 @@ def _register_red(arb_commands: argparse._SubParsersAction) -> None:
             "witnessed; exit 1 when the test passes without its implementation and "
             "therefore cannot fail (GHI #642). --commit: for a commit with no REQ (the "
             "direct-fix route), revert each production hunk it added, one at a time, and "
-            "run the test modules the same commit touched. Exit 0 when every hunk is "
-            "driven; exit 1 when a hunk survives (a guard no test in its commit drives) "
+            "run the test modules the same commit touched that execute it (GHI #1260). "
+            "Exit 0 when every hunk is driven; exit 1 when a hunk survives (a guard no "
+            "test in its commit drives) "
             "or the commit touches no test module (GHI #927)."
         ),
         epilog=build_epilog(

@@ -78,6 +78,15 @@ graded on a green baseline, each guard statement starting in it (`if`, `for`,
 such as a signature line or a constant, makes no guard claim: it is listed with
 `unit: declaration` and stays outside the verdict.
 
+Each mutant runs only those of the commit's test modules that execute its lines
+(GHI #1260). Before the sweep, every touched module runs once on the commit's tree
+under a line tracer loaded through `PYTHONPATH`, so code a test drives in a child
+Python process (a hook, a `python -m gzkit` run) counts as reached. A row's
+`test_modules` names the modules that graded it. When no module reached the lines,
+every touched module runs, as before. A module that reads a function's source
+without running it, or a child started with `-I` or without `PYTHONPATH`, is not
+seen; that can turn a kill into `survived`, never the reverse.
+
 | Verdict | Meaning | Exit |
 |---------|---------|------|
 | `driven` | Every hunk or guard statement was `killed`: a test in the commit fails without it | 0 |

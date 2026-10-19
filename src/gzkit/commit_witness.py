@@ -12,6 +12,11 @@ test modules the same commit touched, through :mod:`gzkit.mutation_witness` (so
 baseline, activation, bytecode isolation and failure cause are all verified, and
 ``invalid``/``inconclusive`` stay apart from ``killed``/``survived``).
 
+Each mutant runs only the touched modules whose traced run executed its lines
+(:mod:`gzkit.reach_trace`, GHI #1260): a module that never runs a hunk cannot
+fail because of it, and running every module for every mutant made a wide commit
+ungradable within the hang bound. When no module reaches a hunk, all of them run.
+
 The commit's own test modules are the declared test set. That is what closes the
 hole #927's direction 1 named — "the affected-test set has no declared source" —
 and it is the right bar for a commit: a fix that adds a guard owes a test, in the
@@ -38,7 +43,6 @@ from __future__ import annotations
 import ast
 import re
 import subprocess
-import tempfile
 from pathlib import Path
 from typing import Literal
 
@@ -51,8 +55,8 @@ from gzkit.mutation_witness import (
     hang_reason,
     run_mutation_sweep,
 )
+from gzkit.reach_trace import ModuleReach, reaching_modules, trace_reach
 from gzkit.red_witness import _git, base_tree_worktree
-from gzkit.unit_run_provenance import read_test_observations
 
 CommitVerdict = Literal["driven", "undriven", "no-tests", "no-production-hunks", "inconclusive"]
 WitnessUnit = Literal["hunk", "statement", "declaration"]
@@ -75,6 +79,11 @@ class HunkWitness(BaseModel):
         default="hunk",
         description="hunk | statement (one guard of an ungradable hunk) | declaration "
         "(an ungradable hunk with no guard statement; outside the aggregate)",
+    )
+    test_modules: list[str] = Field(
+        default_factory=list,
+        description="The commit's test modules that graded this row: those whose traced run "
+        "executed its lines, or all of them when none did (GHI #1260)",
     )
 
 
@@ -301,23 +310,50 @@ def _hunk_units(project_root: Path, commit: str, path: str) -> list[tuple[Mutati
     return units
 
 
+def _sweep_reached(
+    worktree: Path,
+    path: str,
+    units: list[tuple[Mutation, int, int]],
+    reach: dict[str, ModuleReach],
+    runner: tuple[str, ...],
+) -> list[tuple[MutationWitness, list[str], bool]]:
+    """Sweep each unit against the modules that reach its lines (GHI #1260).
+
+    Units that share a module set share one sweep, so each set pays one baseline.
+    Returns, in unit order, the witness, the modules that graded it, and whether
+    that sweep's baseline was green.
+    """
+    groups: dict[tuple[str, ...], list[int]] = {}
+    for index, (_, first, last) in enumerate(units):
+        modules = tuple(reaching_modules(reach, path, first, last))
+        groups.setdefault(modules, []).append(index)
+    graded: dict[int, tuple[MutationWitness, list[str], bool]] = {}
+    for modules, indexes in groups.items():
+        expected = sorted(set().union(*(reach[m].tests for m in modules)))
+        mutations = [units[i][0].model_copy(update={"expected_tests": expected}) for i in indexes]
+        sweep = run_mutation_sweep(worktree, worktree / path, mutations, [*runner, *modules])
+        for index, witness in zip(indexes, sweep.witnesses, strict=True):
+            graded[index] = (witness, list(modules), sweep.baseline_green)
+    return [graded[i] for i in range(len(units))]
+
+
 def _regrade(
-    worktree: Path, path: str, hunk: MutationWitness, span: tuple[int, int], command: list[str]
+    worktree: Path,
+    path: str,
+    hunk: HunkWitness,
+    span: tuple[int, int],
+    reach: dict[str, ModuleReach],
+    runner: tuple[str, ...],
 ) -> list[HunkWitness]:
     """Re-mutate an ungradable hunk one guard statement at a time (GHI #1153)."""
     source = worktree / path
     statements = [
-        m.model_copy(update={"expected_tests": hunk.executed_tests or []})
+        (m, *_label_span(m.label))
         for m in statement_mutations(source.read_text(encoding="utf-8"), path, *span)
     ]
     if not statements:
         reason = f"no guard statement to grade; the hunk's revert: {hunk.reason}"
-        return [
-            HunkWitness(
-                path=path, label=hunk.label, outcome=hunk.outcome, reason=reason, unit="declaration"
-            )
-        ]
-    sweep = run_mutation_sweep(worktree, source, statements, command)
+        return [hunk.model_copy(update={"reason": reason, "unit": "declaration"})]
     return [
         HunkWitness(
             path=path,
@@ -325,21 +361,25 @@ def _regrade(
             outcome=w.outcome,
             reason=f"guard in {hunk.label}" + (f": {w.reason}" if w.reason else ""),
             unit="statement",
+            test_modules=modules,
         )
-        for w in sweep.witnesses
+        for w, modules, _ in _sweep_reached(worktree, path, statements, reach, runner)
     ]
 
 
+def _label_span(label: str) -> tuple[int, int]:
+    """Return the ``first, last`` line pair a ``path:first-last`` mutation label names."""
+    first, _, last = label.rsplit(":", 1)[1].partition("-")
+    return int(first), int(last)
+
+
 def _sweep_hunks(
-    project_root: Path, sha: str, production: list[str], command: list[str]
+    project_root: Path, sha: str, production: list[str], runner: tuple[str, ...], modules: list[str]
 ) -> list[HunkWitness]:
     """Sweep each production file's added hunks in a worktree at ``sha``."""
     hunks: list[HunkWitness] = []
     with base_tree_worktree(project_root, sha) as worktree:
-        with tempfile.TemporaryDirectory() as cache:
-            baseline = _run(command, worktree, Path(cache))
-        executed, _, _ = read_test_observations((baseline.stdout or "") + (baseline.stderr or ""))
-        expected = sorted(executed)
+        reach = trace_reach(worktree, modules, runner, _run)
         for path in production:
             units = _hunk_units(project_root, sha, path)
             if not units:
@@ -348,16 +388,20 @@ def _sweep_hunks(
             # checkout (Windows, no `eol=lf`) never contains it, so sweep that text instead.
             blob = _git(["show", f"{sha}:{path}"], project_root)
             (worktree / path).write_bytes(blob.stdout.encode("utf-8"))
-            mutations = [m.model_copy(update={"expected_tests": expected}) for m, _, _ in units]
-            sweep = run_mutation_sweep(worktree, worktree / path, mutations, command)
-            for (_, first, last), w in zip(units, sweep.witnesses, strict=True):
-                if sweep.baseline_green and w.outcome in ("invalid", "inconclusive"):
-                    graded = w.model_copy(update={"executed_tests": expected})
-                    hunks.extend(_regrade(worktree, path, graded, (first, last), command))
+            for (_, first, last), (w, graded_by, green) in zip(
+                units, _sweep_reached(worktree, path, units, reach, runner), strict=True
+            ):
+                row = HunkWitness(
+                    path=path,
+                    label=w.label,
+                    outcome=w.outcome,
+                    reason=w.reason,
+                    test_modules=graded_by,
+                )
+                if green and w.outcome in ("invalid", "inconclusive"):
+                    hunks.extend(_regrade(worktree, path, row, (first, last), reach, runner))
                 else:
-                    hunks.append(
-                        HunkWitness(path=path, label=w.label, outcome=w.outcome, reason=w.reason)
-                    )
+                    hunks.append(row)
     return hunks
 
 
@@ -414,10 +458,11 @@ def run_commit_witness(
             "module, so nothing in it can fail when its guards are removed",
         )
     try:
-        hunks = _sweep_hunks(project_root, sha, production, [*runner, *modules])
+        hunks = _sweep_hunks(project_root, sha, production, runner, modules)
     except subprocess.TimeoutExpired:
-        # Only the commit-tree baseline can still raise here: each mutant's run is
-        # graded inside the sweep. Without a baseline no hunk can be graded (GHI #1179).
+        # Only a module's traced run on the commit's tree can still raise here: each
+        # mutant's run is graded inside the sweep. Without that baseline no hunk can
+        # be graded (GHI #1179).
         return CommitWitness(
             commit=sha,
             test_modules=modules,

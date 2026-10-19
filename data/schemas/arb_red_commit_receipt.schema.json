@@ -75,6 +75,11 @@
                         "type": "string",
                         "enum": ["hunk", "statement", "declaration"],
                         "description": "What was reverted: the whole hunk; one guard statement of a hunk whose whole revert could not be graded; or such a hunk holding no guard statement, which stays outside the aggregate verdict (GHI #1153). Absent in receipts written before it existed."
+                    },
+                    "test_modules": {
+                        "type": "array",
+                        "items": {"type": "string", "minLength": 1},
+                        "description": "The commit's test modules that graded this row: those whose traced run executed its lines, or all of them when none did (GHI #1260). Absent in receipts written before it existed."
                     }
                 }
             }

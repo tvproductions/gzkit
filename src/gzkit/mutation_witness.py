@@ -156,11 +156,16 @@ def _resolve_tests(selectors: list[str], executed: set[str]) -> set[str] | None:
     return resolved
 
 
-def _run(command: list[str], cwd: Path, pycache_prefix: Path) -> subprocess.CompletedProcess[str]:
+def _run(
+    command: list[str],
+    cwd: Path,
+    pycache_prefix: Path,
+    extra_env: dict[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
     """Run the test command with an isolated bytecode cache (GHI #963)."""
     import os  # noqa: PLC0415 — only needed to copy the ambient environment
 
-    env = dict(os.environ)
+    env = {**os.environ, **(extra_env or {})}
     env["PYTHONPYCACHEPREFIX"] = str(pycache_prefix)
     return subprocess.run(  # noqa: S603 — the command is supplied by the sweep's author
         command,
