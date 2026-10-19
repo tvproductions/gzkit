@@ -316,7 +316,9 @@ def check_seam_baseline(sites: Iterable[SeamSite], rows: list[dict]) -> list[Val
     return errors
 
 
-def _bindable_definitions(body: list[ast.stmt]) -> Iterable[ast.stmt]:
+def _bindable_definitions(
+    body: list[ast.stmt],
+) -> Iterable[ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef]:
     """Yield module- and class-level definitions; a def nested in a function binds nothing.
 
     A ``@covers`` inside a test body is that test's fixture (``covers()``'s own
@@ -333,8 +335,6 @@ def _bindable_definitions(body: list[ast.stmt]) -> Iterable[ast.stmt]:
 def _covers_decorations(path: Path, rel: str) -> list[tuple[str, str]]:
     found: list[tuple[str, str]] = []
     for node in _bindable_definitions(ast.parse(path.read_text(encoding="utf-8")).body):
-        if not isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef):
-            continue
         for decorator in node.decorator_list:
             if not isinstance(decorator, ast.Call) or not decorator.args:
                 continue

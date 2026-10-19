@@ -247,7 +247,6 @@ def parent_of(identifier: str, context: IdentityContext) -> ParentLink | None:
             return ParentLink(parent_id=briefed, source="brief")
         if resolution.kind is IdKind.ADR:
             return None
-        return _parent_by_spelling(canonical, resolution.kind)
     if resolution.kind is IdKind.REQ:
         return _req_owner(canonical, context)[1]
     return _parent_by_spelling(canonical, resolution.kind)

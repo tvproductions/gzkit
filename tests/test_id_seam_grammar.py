@@ -179,6 +179,17 @@ class TestJsonSchemasTakeTheirPatternsFromTheSeam(unittest.TestCase):
         }
         self.assertEqual(found, expected)
 
+    def test_identity_surfaces_use_the_seam_bodies(self) -> None:
+        for model, body in (
+            (AdrId, ADR_SHORT_ID_BODY),
+            (ObpiId, OBPI_SHORT_ID_BODY),
+            (ReqId, REQ_ID_BODY_PLAIN),
+            (TaskId, TASK_ID_BODY_PLAIN),
+        ):
+            with self.subTest(model=model.__name__):
+                metadata = model.model_fields["raw"].metadata
+                self.assertIn(f"^{body}$", [getattr(m, "pattern", None) for m in metadata])
+
     def test_frontmatter_models_use_the_schema_patterns(self) -> None:
         adr = models.AdrFrontmatter.model_fields["id"].metadata
         obpi = models.ObpiFrontmatter.model_fields["id"].metadata

@@ -144,6 +144,15 @@ class TestResolveReqAndTask(unittest.TestCase):
             resolve("REQ-0.2.0-01-01", context)
         self.assertEqual(caught.exception.candidates, ("OBPI-0.2.0-01-left", "OBPI-0.2.0-01-right"))
 
+    def test_a_brief_whose_own_id_names_nothing_is_skipped_as_an_owner(self) -> None:
+        context = _context(req_owners={"REQ-0.28.0-01-01": ("OBPI-9.9.9-01-ghost", _LIVE)})
+        self.assertEqual(resolve("REQ-0.28.0-01-01", context).state, "active")
+
+    def test_an_unstarted_task_is_refused_as_not_started(self) -> None:
+        with self.assertRaises(IdResolutionError) as caught:
+            resolve("TASK-0.28.0-01-01-02", _context())
+        self.assertIn("started TASK", str(caught.exception))
+
     def test_a_started_task_resolves(self) -> None:
         self.assertIs(resolve("TASK-0.28.0-01-01-01", _context()).kind, IdKind.TASK)
 
@@ -173,6 +182,9 @@ class TestParentOf(unittest.TestCase):
     def test_a_task_parent_req_is_spelled_and_says_so(self) -> None:
         link = parent_of("TASK-0.28.0-01-01-01", _context())
         self.assertEqual((link.parent_id, link.source), ("REQ-0.28.0-01-01", "spelling"))
+
+    def test_an_adr_with_no_stored_parent_has_none(self) -> None:
+        self.assertIsNone(parent_of("ADR-0.1.0-x", _context()))
 
     def test_an_adr_parent_is_its_stored_field(self) -> None:
         link = parent_of(_LIVE_ADR, _context())
@@ -204,6 +216,11 @@ class TestLoadIdentityContext(unittest.TestCase):
             (obpis / "OBPI-0.6.0-01-b.md").write_text(
                 "---\nid: OBPI-0.6.0-01-b\nparent: ADR-0.6.0-v\n---\n\n"
                 "## Acceptance Criteria\n\n- [x] REQ-0.6.0-01-01 [BEHAVIOR]: works\n",
+                encoding="utf-8",
+            )
+            (obpis / "notes.md").write_text(
+                "---\nid: ADR-0.6.0-v\n---\n\n## Acceptance Criteria\n\n"
+                "- [x] REQ-0.6.0-09-01 [BEHAVIOR]: not a brief\n",
                 encoding="utf-8",
             )
             context = load_identity_context(ledger, root, "docs/design")

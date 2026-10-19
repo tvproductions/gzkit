@@ -256,5 +256,149 @@ class TestTheRealTree(unittest.TestCase):
         self.assertEqual(entry["baseline_count"], len(rows))
 
 
+class TestTheScanReadsEveryLiteralForm(unittest.TestCase):
+    def test_an_annotated_constant_and_a_concatenation_are_read(self) -> None:
+        found = _kinds(
+            r"""
+            import re
+            X: str = r"ADR-\d+"
+
+            def f(text):
+                return re.match(X, text) or re.match(r"OBPI-" + r"\d+", text)
+            """
+        )
+        self.assertEqual(found, [("f", "ADR"), ("f", "OBPI")])
+
+    def test_an_embedded_string_that_is_not_python_is_one_hook_site(self) -> None:
+        found = _kinds(
+            """
+            from textwrap import dedent
+
+            def _doc():
+                return dedent("OBPI-[0-9]+ ((")
+
+            def _bytes():
+                return dedent(b"OBPI-[0-9]+")
+            """
+        )
+        self.assertEqual(found, [("_doc", "hook")])
+
+    def test_a_split_on_a_non_separator_or_a_rewrite_of_prose_is_no_site(self) -> None:
+        found = _kinds(
+            """
+            def g(obpi_id, text):
+                return obpi_id.split(","), text.replace("old", "new")
+            """
+        )
+        self.assertEqual(found, [])
+
+
+class TestTheBaselineIsExact(unittest.TestCase):
+    def test_a_row_held_twice_fails(self) -> None:
+        row = {"file": "a.py", "symbol": "f", "kind": "OBPI", "sites": 1}
+        errors = check_seam_baseline([_site("a.py", "f", "OBPI")], [row, dict(row)])
+        self.assertEqual(len(errors), 1)
+        self.assertIn("twice", errors[0].message)
+
+    def test_a_missing_baseline_fails_closed_naming_it(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            errors = audit_id_seam(Path(tmp))
+        self.assertEqual([error.artifact for error in errors], [BASELINE_RELPATH])
+
+
+class TestDispatch(unittest.TestCase):
+    """The flag reaches the scope, and gz check runs it as its own bound step."""
+
+    def _invoke(self, rows: list[dict]):
+        from gzkit.cli import main
+        from tests.commands.common import CliRunner, _quick_init
+
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            Path("data").mkdir(exist_ok=True)
+            Path(BASELINE_RELPATH).write_text(
+                json.dumps({"_doc": "fixture", "sites": rows}), encoding="utf-8"
+            )
+            return runner.invoke(main, ["validate", "--id-seam"])
+
+    def test_a_dead_baseline_row_is_a_policy_breach_through_the_flag(self) -> None:
+        result = self._invoke(
+            [{"file": "src/gzkit/gone.py", "symbol": "f", "kind": "ADR", "sites": 1}]
+        )
+        self.assertEqual(result.exit_code, 3, result.output)
+        self.assertIn("src/gzkit/gone.py", result.output)
+
+    def test_an_exact_baseline_passes_through_the_flag(self) -> None:
+        result = self._invoke([])
+        self.assertEqual(result.exit_code, 0, result.output)
+
+    def test_the_audit_is_part_of_the_packages_declared_surface(self) -> None:
+        from gzkit.governance import trust_audits
+
+        self.assertIn("audit_id_seam", trust_audits.__all__)
+        self.assertIs(trust_audits.audit_id_seam, audit_id_seam)
+
+    def test_gz_check_shells_the_scope_as_its_own_bound_step(self) -> None:
+        from unittest.mock import patch
+
+        from gzkit import quality
+        from gzkit.commands.quality import _STEP_GUARD_META, _build_check_steps
+        from gzkit.qc_binding import build_qc_registry
+
+        runner = dict(_build_check_steps())["Identity seam"]
+        with patch.object(quality, "run_command", return_value="ran") as shelled:
+            self.assertEqual(runner(_REPO), "ran")
+        self.assertEqual(shelled.call_args.args[0], "uv run gz validate --id-seam")
+        self.assertEqual(_STEP_GUARD_META["Identity seam"][0], "id-seam")
+        step = {s.name: s for s in build_qc_registry()}["Identity seam"]
+        self.assertEqual((step.binding, step.subject), ("bound", "src/"))
+
+
+class TestNegativeControls(unittest.TestCase):
+    def _record(self, claim: str):
+        from gzkit.enforcement import production_enforcement_registry
+
+        return {r.claim_id: r for r in production_enforcement_registry()}[claim]
+
+    def test_the_catch_control_catches_the_new_site_and_names_its_exemption(self) -> None:
+        from gzkit.enforcement import _run_single_claim
+
+        record = self._record("identity-seam")
+        result = _run_single_claim(record)
+        self.assertEqual(result.outcome, "PASS", result.message)
+        self.assertEqual(record.exempts, "identity-seam-baselined")
+        self.assertIsNotNone(record.population)
+
+    def test_the_admit_control_admits_the_baselined_site(self) -> None:
+        from gzkit.enforcement import EXEMPTS_NONE, _run_single_claim
+
+        record = self._record("identity-seam-baselined")
+        result = _run_single_claim(record)
+        self.assertEqual(result.outcome, "PASS", result.message)
+        self.assertEqual(record.exempts, EXEMPTS_NONE)
+        self.assertIsNotNone(record.population)
+
+    def test_the_entrypoints_report_nothing_when_the_decoy_fires(self) -> None:
+        """With the baseline emptied, the held site fires too: no catch, and no admit."""
+        from gzkit.governance.trust_audits import _qc_nc_entrypoints as ep
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / ".gzkit").mkdir()
+            (root / ".gzkit" / "ledger.jsonl").write_text("", encoding="utf-8")
+            src = root / "src" / "gzkit"
+            src.mkdir(parents=True)
+            for name, kind in (("held", "OBPI"), ("fresh", "REQ")):
+                (src / f"{name}.py").write_text(
+                    f'import re\n\n\ndef {name}():\n    return re.compile(r"{kind}-\\d+")\n',
+                    encoding="utf-8",
+                )
+            (root / "data").mkdir()
+            (root / BASELINE_RELPATH).write_text(json.dumps({"sites": []}), encoding="utf-8")
+            self.assertEqual(ep._ep_id_seam(root), [])
+            self.assertEqual(ep._ep_id_seam_admits_baselined(root), 0)
+
+
 if __name__ == "__main__":
     unittest.main()
