@@ -51,6 +51,7 @@ from gzkit.commands.status_render import (
 )
 from gzkit.commands.task import _load_tasks_for_obpi
 from gzkit.config import GzkitConfig
+from gzkit.core.models import TASK_ID_BODY
 from gzkit.core.validation_rules import parse_frontmatter as _parse_md_frontmatter
 from gzkit.ledger import (
     Ledger,
@@ -161,7 +162,7 @@ def _task_summary_for_adr(
     return result
 
 
-_TASK_REQ_PREFIX_RE = re.compile(r"^TASK-([\d.]+)-(\d+)-(\d+)-\d+$")
+_TASK_REQ_PREFIX_RE = re.compile(rf"^{TASK_ID_BODY}$")
 
 
 def _req_prefix_from_task_id(task_id: str) -> str | None:

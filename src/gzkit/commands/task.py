@@ -13,6 +13,7 @@ from rich.markup import escape
 from gzkit.artifact_prefix import active_prefix_matches
 from gzkit.commands.closeout_form import _append_frontmatter_list_value
 from gzkit.commands.common import GzCliError, console, ensure_initialized, get_project_root
+from gzkit.core.models import REQ_ID_BODY, TASK_ID_BODY
 from gzkit.events import (
     TaskBlockedEvent,
     TaskCompletedEvent,
@@ -25,7 +26,7 @@ from gzkit.pipeline_position import RunCrossing, record_position
 from gzkit.tasks import TaskId, TaskStatus, derive_req_task_id, get_task_registry, next_seq_for_req
 from gzkit.triangle import extract_reqs_from_brief
 
-_REQ_PARTS_RE = re.compile(r"^REQ-(\d+\.\d+\.\d+)-(\d+)-(\d+)$")
+_REQ_PARTS_RE = re.compile(rf"^{REQ_ID_BODY}$")
 _OBPI_LINEAGE_RE = re.compile(r"^(OBPI-\d+\.\d+\.\d+-\d+)")
 
 
@@ -635,8 +636,8 @@ def _collect_ledger_task_ids_for_obpi_prefix(ledger_path: Path, obpi_prefix: str
             continue
         tid = ev.get("task_id")
         if tid and isinstance(tid, str):
-            tm = re.match(r"^TASK-([\d.]+?-\d{2})-\d{2}-\d{2}$", tid)
-            if tm and tm.group(1) == obpi_prefix:
+            tm = re.match(rf"^{TASK_ID_BODY}$", tid)
+            if tm and f"{tm['semver']}-{tm['obpi_item']}" == obpi_prefix:
                 result.add(tid)
     return result
 

@@ -14,7 +14,7 @@ from datetime import datetime
 from pathlib import Path
 
 from gzkit.commands.validate_briefs import _find_obpi_briefs
-from gzkit.core.models import TASK_ID_BODY
+from gzkit.core.models import REQ_ID_BODY, TASK_ID_BODY
 from gzkit.doc_coverage.manifest import MANPAGE_DIR
 from gzkit.ledger import extract_bare_obpi_id
 from gzkit.validate import ValidationError
@@ -277,7 +277,7 @@ def _is_req_attributed_uncovered_accept_event(
     active_tasks = active_tasks_by_obpi.get(obpi_id, set())
     if not active_tasks:
         return False
-    m = re.match(r"^REQ-(\d+\.\d+\.\d+)-(\d+)-(\d+)$", req_id)
+    m = re.match(rf"^{REQ_ID_BODY}$", req_id)
     if not m:
         return False
     task_prefix = f"TASK-{m.group(1)}-{m.group(2)}-{m.group(3)}-"
@@ -646,7 +646,7 @@ def pending_obpi_task_envelope_errors(
 
 
 def _task_matches_obpi(task_id: str, obpi_id: str) -> bool:
-    m = re.match(r"^TASK-(\d+\.\d+\.\d+)-(\d+)-", task_id)
+    m = re.match(rf"^{TASK_ID_BODY}$", task_id)
     return bool(m and f"OBPI-{m.group(1)}-{m.group(2)}" == obpi_id)
 
 
@@ -759,7 +759,7 @@ def _obpi_id_for_task(task_id: str) -> str | None:
     iff ``_obpi_id_for_task(tid) == obpi``. Slug-form direct-fix ids
     (``TASK-<slug>``, optionally ``-#<ghi>``) have no OBPI parent and return ``None``.
     """
-    m = re.match(r"^TASK-(\d+\.\d+\.\d+)-(\d+)-", task_id)
+    m = re.match(rf"^{TASK_ID_BODY}$", task_id)
     if not m:
         return None
     return f"OBPI-{m.group(1)}-{m.group(2)}"

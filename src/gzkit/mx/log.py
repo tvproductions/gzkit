@@ -22,6 +22,8 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.core.models import REQ_ID_BODY_PLAIN, REQ_SHORT_ID_BODY
+
 _LEDGER_RELPATH = (".gzkit", "ledger.jsonl")
 
 # Artifact-naming patterns (REQ-06-02). Numeric foundation/feature IDs only —
@@ -31,7 +33,7 @@ _ADR_RE = re.compile(r"ADR-\d+\.\d+\.\d+")
 # author's wildcard into an artifact name, which is the inverse of this
 # module's contract that nothing in the window is "narrated away".
 _OBPI_RE = re.compile(r"OBPI-\d+\.\d+\.\d+-\d{2}")
-_REQ_RE = re.compile(r"REQ-(?:\d+\.\d+\.\d+-)?\d+-\d+")
+_REQ_RE = re.compile(rf"{REQ_ID_BODY_PLAIN}|{REQ_SHORT_ID_BODY}")
 
 # git log record/field separators (ASCII unit/record separators — never appear
 # in commit text, so parsing is unambiguous).

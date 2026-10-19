@@ -31,6 +31,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict
 
 from gzkit.config import GzkitConfig
+from gzkit.core.models import REQ_ID_BODY
 from gzkit.foundation.triage import _extract_h1_title, _parse_simple_frontmatter
 from gzkit.ledger import Ledger
 
@@ -477,7 +478,7 @@ def graph_probe(ledger: Ledger, source_root: Path | None = None) -> dict[str, An
     }
 
 
-_REQ_ID_RE = re.compile(r"^REQ-(\d+\.\d+\.\d+)-")
+_REQ_ID_RE = re.compile(rf"^{REQ_ID_BODY}$")
 
 
 def _fidelity_blockers(probe: dict[str, Any], when: str) -> list[str]:

@@ -38,6 +38,7 @@ from typing import Any, Protocol
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.config import load_config
+from gzkit.core.models import REQ_ID_BODY_PLAIN
 from gzkit.ontology.model import LinkType, OntologyEdge, Provenance
 from gzkit.triangle import EdgeType, LinkageRecord, ReqId, scan_briefs
 
@@ -187,7 +188,7 @@ _ANCHOR_DECORATORS: dict[str, AnchorKind] = {
     "covers": AnchorKind.COVERS,
     "surface": AnchorKind.SURFACE,
 }
-_REQ_ID_RE = re.compile(r"REQ-\d+\.\d+\.\d+-\d+-\d+")
+_REQ_ID_RE = re.compile(rf"{REQ_ID_BODY_PLAIN}")
 
 
 # ---------------------------------------------------------------------------

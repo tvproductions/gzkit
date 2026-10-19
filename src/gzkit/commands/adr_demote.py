@@ -30,6 +30,7 @@ from gzkit.commands.common import (
     get_project_root,
     resolve_adr_file,
 )
+from gzkit.core.models import REQ_ID_BODY
 from gzkit.ledger import Ledger, parse_frontmatter_value
 from gzkit.ledger_events import artifact_renamed_event, obpi_parked_event
 from gzkit.obpi_lifecycle import parkable_children
@@ -239,11 +240,12 @@ def _live_covers_into_deleted_briefs(project_root: Path, source_id: str) -> list
     tests_root = project_root / "tests"
     if not tests_root.is_dir():
         return []
-    pattern = re.compile(rf'@covers\(\s*["\'](REQ-{re.escape(prefix)}-[^"\']*)["\']')
+    pattern = re.compile(rf'@covers\(\s*["\']({REQ_ID_BODY})["\']')
     found: dict[str, None] = {}
     for path in tests_root.rglob("*.py"):
         for match in pattern.finditer(path.read_text(encoding="utf-8", errors="replace")):
-            found.setdefault(match.group(1), None)
+            if match.group("semver") == prefix:
+                found.setdefault(match.group(1), None)
     return sorted(found)
 
 

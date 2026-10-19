@@ -20,6 +20,7 @@ from typing import TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.core.models import REQ_ID_BODY_PLAIN
 from gzkit.triangle import (
     DiscoveredReq,
     EdgeType,
@@ -44,7 +45,7 @@ _TESTABLE_KIND = ReqTestability.CODE
 #   @covers REQ-X.Y.Z-NN-MM       docstring or comment
 # The optional group ``(?:\(\s*['"])?`` handles the decorator-call wrapper;
 # the leading ``\s*`` handles the whitespace-separated docstring form.
-_COVERS_REF_PATTERN = re.compile(r"@covers\s*(?:\(\s*['\"])?(REQ-\d+\.\d+\.\d+-\d+-\d+)")
+_COVERS_REF_PATTERN = re.compile(rf"@covers\s*(?:\(\s*['\"])?({REQ_ID_BODY_PLAIN})")
 
 
 def find_covers_in_source(content: str) -> list[tuple[str, int]]:
@@ -390,7 +391,7 @@ def scan_test_tree(test_dir: pathlib.Path) -> list[LinkageRecord]:
     return records
 
 
-_REQ_TAG_PATTERN = re.compile(r"@(REQ-\d+\.\d+\.\d+-\d+-\d+)")
+_REQ_TAG_PATTERN = re.compile(rf"@({REQ_ID_BODY_PLAIN})")
 _SCENARIO_HEADER_PATTERN = re.compile(r"^\s*(?:Scenario(?: Outline)?|Example):\s*(?P<name>.+?)\s*$")
 _FEATURE_HEADER_PATTERN = re.compile(r"^\s*Feature:\s*(?P<name>.+?)\s*$")
 

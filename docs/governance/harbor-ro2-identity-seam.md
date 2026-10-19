@@ -2,7 +2,7 @@
 
 # RO-2 specification — one identity seam for every reader
 
-**2026-10-18. Status: tranche 1 landed (2026-10-19, the seam, its witness and a seeded baseline of 187 rows); tranches 2 to 5 open.** Operator: **g0**. Repair order RO-2 of the
+**2026-10-18. Status: tranche 1 landed (2026-10-19, the seam, its witness and a seeded baseline of 187 rows); tranche 2 landed (2026-10-19, the 21 REQ and TASK rows retired, 166 remain); tranches 3 to 5 open.** Operator: **g0**. Repair order RO-2 of the
 [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders), mandate item 2:
 give REQ, TASK and release identity independent of the ADR, by alias and resolver, renaming nothing
 before 1.0. This is phase 1 of [`ADR-pool.identifier-ladder-migration`](../design/adr/pool/ADR-pool.identifier-ladder-migration.md),
@@ -161,7 +161,7 @@ moved in the same commit.
 | # | Scope | Done when |
 |---|---|---|
 | 1 | The seam (grammar bodies, `resolve`, `parent_of`), the JSON schemas tied to it, `gz validate --id-seam` with its baseline and registry entry, and the resolution check | The baseline is seeded and committed. The resolution check passes. The `OBPI-0.28.0-01` fixture resolves both ways, and an ambiguous short id fails closed. |
-| 2 | REQ and TASK readers: the 23 REQ and 10 TASK copies, and the slug TASK form | No REQ or TASK row remains in the baseline |
+| 2 | REQ and TASK readers: the 23 REQ and 10 TASK copies, and the slug TASK form | No REQ or TASK row remains in the baseline. *Landed 2026-10-19:* every reader embeds `REQ_ID_BODY`, `REQ_ID_BODY_PLAIN`, `TASK_ID_BODY`, `TASK_ID_BODY_PLAIN` or `TASK_SLUG_ID_BODY`; the commit-message reader in `mx/log.py` cites the item-criterion form (`REQ-NN-MM`), so the seam gained `REQ_SHORT_ID_BODY` for it. |
 | 3 | OBPI readers and brief finders, the separator-less globs included | No OBPI row remains |
 | 4 | ADR readers and package finders | No ADR row remains |
 | 5 | The 28 parent-recovery sites and the reverse prefix scans, through `parent_of`: the `parent` and `compose` rows | No spelling-derived parent remains outside the seam. The baseline is empty, and RO-2 closes. |

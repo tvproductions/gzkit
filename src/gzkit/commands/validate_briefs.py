@@ -10,6 +10,7 @@ import json
 import re
 from pathlib import Path
 
+from gzkit.core.models import REQ_ID_BODY_PLAIN
 from gzkit.models.persona import discover_persona_files, validate_persona_structure
 from gzkit.validate import ValidationError
 
@@ -162,7 +163,7 @@ def _validate_personas(project_root: Path) -> list[ValidationError]:
 
 
 _REQUIREMENTS_HEADING_RE = re.compile(r"^##\s+REQUIREMENTS\b", re.IGNORECASE | re.MULTILINE)
-_REQ_ID_RE = re.compile(r"REQ-\d+\.\d+\.\d+-\d+-\d+")
+_REQ_ID_RE = re.compile(rf"{REQ_ID_BODY_PLAIN}")
 
 
 def _validate_requirements(project_root: Path) -> list[ValidationError]:

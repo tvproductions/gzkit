@@ -37,6 +37,7 @@ from typing import Literal, cast
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from gzkit.commands.common import GzCliError
+from gzkit.core.models import REQ_ID_BODY
 
 # --------------------------------------------------------------------------- #
 # Mock boundary type                                                           #
@@ -259,7 +260,7 @@ def find_covers_decorator_introductions(
 # REQ → closing receipt resolution (REQ-0.0.23-05-01)                          #
 # --------------------------------------------------------------------------- #
 
-_REQ_ID_RE = re.compile(r"^REQ-(\d+\.\d+\.\d+)-(\d+)-\d+$")
+_REQ_ID_RE = re.compile(rf"^{REQ_ID_BODY}$")
 _RECEIPT_EVENTS = {"completed", "attested_completed"}
 
 

@@ -16,12 +16,11 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-# Regex to parse the ADR semver from a REQ id (e.g. "REQ-0.0.69-02-04" → "0.0.69").
-_REQ_SEMVER_RE: re.Pattern[str] = re.compile(r"REQ-(\d+\.\d+\.\d+)-")
+from gzkit.core.models import REQ_ID_BODY
 
-# Regex to parse semver + OBPI index from a REQ id
-# (e.g. "REQ-0.0.69-02-04" → ("0.0.69", "02")).
-_REQ_SEMVER_OBPI_RE: re.Pattern[str] = re.compile(r"REQ-(\d+\.\d+\.\d+)-(\d+)-\d+")
+# Parses a REQ id into semver, OBPI item and criterion:
+# "REQ-0.0.69-02-04" → ("0.0.69", "02", "04").
+_REQ_ID_RE: re.Pattern[str] = re.compile(rf"^{REQ_ID_BODY}$")
 
 # Heading that marks the STRUCTURAL-FENCE proof anchor in a parent ADR.
 _BOUNDARY_INVARIANTS_HEADING: str = "## Boundary Invariants"
@@ -51,7 +50,7 @@ def _fence_obpi_anchored(section: str, req_id: str) -> bool:
     is NOT proof — an invariant list naming no OBPI cannot say which invariant
     proves which fence.
     """
-    m = _REQ_SEMVER_OBPI_RE.match(req_id)
+    m = _REQ_ID_RE.match(req_id)
     if m is None:
         return False
     semver, obpi = m.group(1), m.group(2)
@@ -187,7 +186,7 @@ def resolve_fence_proof(req_id: str, project_root: Path, req_text: str = "") -> 
       unnamed for an enforcement fence, anchor absent for a state-property fence,
       or req_id unparseable).
     """
-    m = _REQ_SEMVER_RE.match(req_id)
+    m = _REQ_ID_RE.match(req_id)
     if m is None:
         return "unproven-fence"
     semver = m.group(1)

@@ -40,6 +40,8 @@ REQ_ID_BODY = (
 )
 #: The REQ grammar with no capture groups, for readers that embed it.
 REQ_ID_BODY_PLAIN = rf"REQ-{SEMVER_BODY}-{ITEM_BODY}-{ITEM_BODY}"
+#: The item-criterion form (``REQ-NN-MM``) a commit message cites, relative to its ADR.
+REQ_SHORT_ID_BODY = rf"REQ-{ITEM_BODY}-{ITEM_BODY}"
 TASK_ID_BODY = (
     rf"TASK-(?P<semver>{SEMVER_BODY})-(?P<obpi_item>{ITEM_BODY})"
     rf"-(?P<req_index>{ITEM_BODY})-(?P<seq>{ITEM_BODY})"

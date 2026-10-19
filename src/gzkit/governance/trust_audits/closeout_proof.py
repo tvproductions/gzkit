@@ -21,13 +21,14 @@ from typing import TYPE_CHECKING
 
 from pydantic import ValidationError as PydanticValidationError
 
+from gzkit.core.models import REQ_ID_BODY_PLAIN
 from gzkit.core.validation_rules import ValidationError
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
 _REQ_LINE_RE = re.compile(
-    r"^\s*-\s*\[[ xX]\]\s*(REQ-[\d]+\.[\d]+\.[\d]+-[\d]+-[\d]+)",
+    rf"^\s*-\s*\[[ xX]\]\s*({REQ_ID_BODY_PLAIN})",
     re.IGNORECASE,
 )
 _KIND_TAG_RE = re.compile(r"\[(BEHAVIOR|SUPPORT|STRUCTURAL[_-]FENCE)\]", re.IGNORECASE)

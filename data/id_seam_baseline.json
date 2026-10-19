@@ -81,12 +81,6 @@
     },
     {
       "file": "src/gzkit/commands/adr_audit_covers_backfill.py",
-      "symbol": "<module>",
-      "kind": "REQ",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/commands/adr_audit_covers_backfill.py",
       "symbol": "_parent_obpi_id",
       "kind": "compose",
       "sites": 1
@@ -125,12 +119,6 @@
       "file": "src/gzkit/commands/adr_demote.py",
       "symbol": "_build_demote_plan",
       "kind": "compose",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/commands/adr_demote.py",
-      "symbol": "_live_covers_into_deleted_briefs",
-      "kind": "REQ",
       "sites": 1
     },
     {
@@ -363,12 +351,6 @@
     },
     {
       "file": "src/gzkit/commands/specify_cmd.py",
-      "symbol": "<module>",
-      "kind": "REQ",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/commands/specify_cmd.py",
       "symbol": "_build_obpi_plan",
       "kind": "compose",
       "sites": 1
@@ -417,12 +399,6 @@
     },
     {
       "file": "src/gzkit/commands/status.py",
-      "symbol": "<module>",
-      "kind": "TASK",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/commands/status.py",
       "symbol": "_build_adr_status_result",
       "kind": "compose",
       "sites": 1
@@ -465,21 +441,9 @@
     },
     {
       "file": "src/gzkit/commands/task.py",
-      "symbol": "<module>",
-      "kind": "REQ",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/commands/task.py",
       "symbol": "_build_fanout_rows",
       "kind": "compose",
       "sites": 2
-    },
-    {
-      "file": "src/gzkit/commands/task.py",
-      "symbol": "_collect_ledger_task_ids_for_obpi_prefix",
-      "kind": "TASK",
-      "sites": 1
     },
     {
       "file": "src/gzkit/commands/task.py",
@@ -498,12 +462,6 @@
       "symbol": "task_start_by_req_cmd",
       "kind": "compose",
       "sites": 2
-    },
-    {
-      "file": "src/gzkit/commands/validate_briefs.py",
-      "symbol": "<module>",
-      "kind": "REQ",
-      "sites": 1
     },
     {
       "file": "src/gzkit/commands/validate_briefs.py",
@@ -536,12 +494,6 @@
       "sites": 1
     },
     {
-      "file": "src/gzkit/commands/validate_req_kind.py",
-      "symbol": "<module>",
-      "kind": "REQ",
-      "sites": 2
-    },
-    {
       "file": "src/gzkit/commands/validate_task_envelope.py",
       "symbol": "<module>",
       "kind": "ADR",
@@ -562,19 +514,7 @@
     {
       "file": "src/gzkit/commands/validate_task_envelope.py",
       "symbol": "_is_req_attributed_uncovered_accept_event",
-      "kind": "REQ",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/commands/validate_task_envelope.py",
-      "symbol": "_is_req_attributed_uncovered_accept_event",
       "kind": "compose",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/commands/validate_task_envelope.py",
-      "symbol": "_obpi_id_for_task",
-      "kind": "TASK",
       "sites": 1
     },
     {
@@ -587,12 +527,6 @@
       "file": "src/gzkit/commands/validate_task_envelope.py",
       "symbol": "_sig_e_unresolvable_task_declaration",
       "kind": "compose",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/commands/validate_task_envelope.py",
-      "symbol": "_task_matches_obpi",
-      "kind": "TASK",
       "sites": 1
     },
     {
@@ -641,12 +575,6 @@
       "file": "src/gzkit/foundation/sunset_migrate.py",
       "symbol": "<module>",
       "kind": "ADR",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/foundation/sunset_migrate.py",
-      "symbol": "<module>",
-      "kind": "REQ",
       "sites": 1
     },
     {
@@ -716,12 +644,6 @@
       "sites": 1
     },
     {
-      "file": "src/gzkit/governance/req_coverage.py",
-      "symbol": "<module>",
-      "kind": "REQ",
-      "sites": 1
-    },
-    {
       "file": "src/gzkit/governance/trust_audits/absorption_duplicates.py",
       "symbol": "<module>",
       "kind": "ADR",
@@ -744,18 +666,6 @@
       "symbol": "<module>",
       "kind": "OBPI",
       "sites": 3
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/briefs.py",
-      "symbol": "<module>",
-      "kind": "REQ",
-      "sites": 2
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/closeout_proof.py",
-      "symbol": "<module>",
-      "kind": "REQ",
-      "sites": 1
     },
     {
       "file": "src/gzkit/governance/trust_audits/config_derivation.py",
@@ -938,21 +848,9 @@
       "sites": 1
     },
     {
-      "file": "src/gzkit/mx/log.py",
-      "symbol": "<module>",
-      "kind": "REQ",
-      "sites": 1
-    },
-    {
       "file": "src/gzkit/obpi_completion_fence.py",
       "symbol": "obpi_id_from_path",
       "kind": "OBPI",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/ontology/source.py",
-      "symbol": "<module>",
-      "kind": "REQ",
       "sites": 1
     },
     {
@@ -990,12 +888,6 @@
       "symbol": "compute_three_channel_coverage",
       "kind": "parent",
       "sites": 1
-    },
-    {
-      "file": "src/gzkit/req_kind_fence.py",
-      "symbol": "<module>",
-      "kind": "REQ",
-      "sites": 2
     },
     {
       "file": "src/gzkit/req_kind_fence.py",
@@ -1041,18 +933,6 @@
     },
     {
       "file": "src/gzkit/tasks.py",
-      "symbol": "<module>",
-      "kind": "REQ",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/tasks.py",
-      "symbol": "<module>",
-      "kind": "TASK",
-      "sites": 3
-    },
-    {
-      "file": "src/gzkit/tasks.py",
       "symbol": "TaskId.__str__",
       "kind": "compose",
       "sites": 1
@@ -1080,12 +960,6 @@
       "symbol": "resolve_task_chain",
       "kind": "compose",
       "sites": 3
-    },
-    {
-      "file": "src/gzkit/traceability.py",
-      "symbol": "<module>",
-      "kind": "REQ",
-      "sites": 2
     },
     {
       "file": "src/gzkit/traceability.py",

@@ -19,7 +19,7 @@ from typing import TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from gzkit.core.models import TASK_ID_BODY
+from gzkit.core.models import REQ_ID_BODY, TASK_ID_BODY, TASK_ID_BODY_PLAIN, TASK_SLUG_ID_BODY
 from gzkit.ledger_corrections import live_events
 
 # ---------------------------------------------------------------------------
@@ -119,7 +119,7 @@ class TaskEntity(BaseModel):
         return self.model_copy(update={"status": target})
 
 
-_REQ_TO_TASK_RE = re.compile(r"^REQ-(\d+\.\d+\.\d+)-(\d+)-(\d+)$")
+_REQ_TO_TASK_RE = re.compile(rf"^{REQ_ID_BODY}$")
 
 
 def next_seq_for_req(req_id: str, *, existing_task_ids: list[str]) -> int:
@@ -205,7 +205,7 @@ def create_task_from_plan_step(
 # Git commit linkage (OBPI-0.22.0-03)
 # ---------------------------------------------------------------------------
 
-_TRAILER_LINE_RE = re.compile(r"^Task:\s+(TASK-\d+\.\d+\.\d+-\d+-\d+-\d+)\s*$")
+_TRAILER_LINE_RE = re.compile(rf"^Task:\s+({TASK_ID_BODY_PLAIN})\s*$")
 
 # Accepts the formal four-tier TASK ID `TASK-X.Y.Z-NN-MM-PP` (under an OBPI/REQ)
 # OR the kebab slug-form `TASK-<kebab-slug>` with an OPTIONAL `-#<ghi>` anchor.
@@ -218,9 +218,7 @@ _TRAILER_LINE_RE = re.compile(r"^Task:\s+(TASK-\d+\.\d+\.\d+-\d+-\d+-\d+)\s*$")
 # `-#<ghi>` anchor remains accepted when present. The slug form cannot be
 # parsed by `TaskId.parse`, so this regex is used only for trailer-presence
 # detection (`has_task_trailer`); `parse_task_trailers` keeps the strict form.
-_ANY_TASK_TRAILER_RE = re.compile(
-    r"^Task:\s+TASK-(?:\d+\.\d+\.\d+-\d+-\d+-\d+|[a-z][a-z0-9-]*(?:-#\d+)?)\s*$"
-)
+_ANY_TASK_TRAILER_RE = re.compile(rf"^Task:\s+(?:{TASK_ID_BODY_PLAIN}|{TASK_SLUG_ID_BODY})\s*$")
 
 
 def format_commit_trailer(task: TaskEntity | TaskId) -> str:
@@ -266,7 +264,7 @@ def active_task_trailers(ledger_path: pathlib.Path, staged_paths: Iterable[str])
 # Scope keys: an artifact id's semver and optional OBPI number, and the same two
 # parts of an OBPI-scoped TASK id. A slug TASK (direct fix) has neither.
 _SCOPE_ID_RE = re.compile(r"^(?:ADR|OBPI)-(\d+\.\d+\.\d+)(?:-(\d+)(?=-|$))?")
-_SCOPED_TASK_RE = re.compile(r"^TASK-(\d+\.\d+\.\d+)-(\d+)-\d+-\d+$")
+_SCOPED_TASK_RE = re.compile(rf"^{TASK_ID_BODY}$")
 
 
 def in_scope_task_id(ledger_path: pathlib.Path, scope_id: str | None) -> str | None:

@@ -20,19 +20,20 @@ from pathlib import Path
 from typing import Any
 
 from gzkit.brief_commands import extract_fenced_commands, is_shell_less_executable
+from gzkit.core.models import REQ_ID_BODY_PLAIN
 from gzkit.decomposition import extract_markdown_section
 from gzkit.governance.brief_structure import is_terminal_brief_status
 from gzkit.validate import ValidationError
 
 _REQ_ID_IN_BRIEF = re.compile(r"\bREQ-\d+\.\d+\.\d+-\d+-\d+\b")
-_SCENARIO_REQ_TAG = re.compile(r"^\s*@(REQ-\d+\.\d+\.\d+-\d+-\d+)\b", re.MULTILINE)
+_SCENARIO_REQ_TAG = re.compile(rf"^\s*@({REQ_ID_BODY_PLAIN})\b", re.MULTILINE)
 
 # ADR-0.0.59 three-kind taxonomy tag on a REQ line, e.g. `REQ-... [behavior]:`.
 # Absent tag defaults to BEHAVIOR (fail-closed) per the proof-channel matrix.
 _REQ_KIND_TAG = re.compile(r"\[(behavior|support|structural-fence)\]", re.IGNORECASE)
 
 # `@covers("REQ-...")` decorator (single or double quotes) under tests/**.
-_COVERS_REQ_TAG = re.compile(r"""@covers\(\s*["'](REQ-\d+\.\d+\.\d+-\d+-\d+)["']""")
+_COVERS_REQ_TAG = re.compile(rf"""@covers\(\s*["']({REQ_ID_BODY_PLAIN})["']""")
 
 _OBPI_ID_IN_FRONTMATTER = re.compile(
     r"^id:\s*(OBPI-[0-9]+\.[0-9]+\.[0-9]+-[0-9]+[A-Za-z0-9\-.]*)\s*$",

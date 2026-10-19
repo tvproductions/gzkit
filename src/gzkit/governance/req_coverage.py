@@ -33,6 +33,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.core.models import REQ_ID_BODY_PLAIN
 from gzkit.traceability import scan_feature_tree, scan_test_tree
 from gzkit.triangle import extract_reqs_from_brief
 
@@ -44,7 +45,7 @@ from gzkit.triangle import extract_reqs_from_brief
 # resolved to an empty kind map, so its REQs lost their declared kind and fell
 # back to the BEHAVIOR default (GHI #809, sibling of GHI #700).
 _REQ_KIND_TAG_RE = re.compile(
-    r"(REQ-[\d.]+(?:-\d+)+)\s+\*{0,2}\[(BEHAVIOR|SUPPORT|STRUCTURAL-FENCE)\]\*{0,2}:",
+    rf"({REQ_ID_BODY_PLAIN})\s+\*{{0,2}}\[(BEHAVIOR|SUPPORT|STRUCTURAL-FENCE)\]\*{{0,2}}:",
     re.IGNORECASE,
 )
 

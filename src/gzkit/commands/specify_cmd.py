@@ -16,6 +16,7 @@ from gzkit.commands.common import (
     resolve_adr_file,
     resolve_adr_ledger_id,
 )
+from gzkit.core.models import REQ_ID_BODY_PLAIN
 from gzkit.decomposition import (
     WbsRow,
     active_checklist_items,
@@ -509,7 +510,7 @@ def _build_verification_specific(
 # Harvests the REQ IDs the acceptance seed just rendered rather than rebuilding
 # them from (version, item) -- the frontmatter must agree with the body, and a
 # parallel construction is free to drift from it.
-_REQ_ID_IN_SEED_RE = re.compile(r"REQ-\d+\.\d+\.\d+-\d{2}-\d{2}")
+_REQ_ID_IN_SEED_RE = re.compile(rf"{REQ_ID_BODY_PLAIN}")
 
 
 def _yaml_block_sequence(values: list[str]) -> str:

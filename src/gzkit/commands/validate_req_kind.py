@@ -10,6 +10,7 @@ import re
 from pathlib import Path
 
 from gzkit.commands.validate_briefs import _find_obpi_briefs
+from gzkit.core.models import REQ_ID_BODY_PLAIN
 from gzkit.req_kind_fence import (
     _boundary_invariants_section,
     _fence_obpi_anchored,
@@ -26,11 +27,11 @@ from gzkit.validate import ValidationError
 # path below — so a ``**[BEHAVIOR]**`` brief did not fail, it passed WITHOUT
 # being checked (GHI #809).
 _REQ_KIND_TAG_RE = re.compile(
-    r"-\s+\[[ xX]\]\s+\*{0,2}(REQ-[\d.]+[-\d]+)\s+"
+    rf"-\s+\[[ xX]\]\s+\*{{0,2}}({REQ_ID_BODY_PLAIN})\s+"
     r"\*{0,2}\[(BEHAVIOR|SUPPORT|STRUCTURAL-FENCE)\]\*{0,2}:",
     re.IGNORECASE,
 )
-_REQ_ANY_ID_RE = re.compile(r"(REQ-[\d.]+[-\d]+)")
+_REQ_ANY_ID_RE = re.compile(rf"({REQ_ID_BODY_PLAIN})")
 _ALLOWED_PATHS_HEADING_RE = re.compile(r"^##\s+Allowed Paths", re.MULTILINE)
 _ACCEPTANCE_CRITERIA_HEADING_RE = re.compile(r"^##\s+Acceptance Criteria", re.MULTILINE)
 _BOUNDARY_INVARIANTS_HEADING_RE = re.compile(r"^##\s+Boundary Invariants", re.MULTILINE)
