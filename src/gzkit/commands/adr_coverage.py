@@ -8,7 +8,7 @@ from typing import Any, cast
 from rich.markup import escape
 
 from gzkit.commands.common import console
-from gzkit.core.models import OBPI_ID_PARTS_BODY, SLUG_BODY
+from gzkit.core.models import OBPI_ID_PARTS_BODY, SLUG_BODY, adr_semver
 from gzkit.quality import check_product_proof
 from gzkit.traceability import (
     CoverageEntry,
@@ -32,8 +32,7 @@ from gzkit.triangle import (
 
 def _extract_adr_semver(adr_id: str) -> str | None:
     """Extract X.Y.Z semantic version from an ADR identifier."""
-    match = re.match(r"^ADR-(\d+\.\d+\.\d+)", adr_id)
-    return match.group(1) if match else None
+    return adr_semver(adr_id)
 
 
 def _synthesize_doc_proof_linkage(

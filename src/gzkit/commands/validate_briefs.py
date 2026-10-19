@@ -10,7 +10,7 @@ import json
 import re
 from pathlib import Path
 
-from gzkit.core.models import REQ_ID_BODY_PLAIN
+from gzkit.core.models import ADR_PREFIX_BODY, REQ_ID_BODY_PLAIN
 from gzkit.models.persona import discover_persona_files, validate_persona_structure
 from gzkit.validate import ValidationError
 
@@ -112,7 +112,7 @@ def _validate_interviews(project_root: Path) -> list[ValidationError]:
             continue
         adr_dir = obpis_dir.parent
         # Extract ADR ID from directory name (e.g. ADR-0.0.1-canonical-govzero-parity → ADR-0.0.1)
-        match = re.match(r"(ADR-[\d.]+)", adr_dir.name)
+        match = re.match(rf"({ADR_PREFIX_BODY}[\d.]+)", adr_dir.name)
         if not match:
             continue
         adr_id = match.group(1)

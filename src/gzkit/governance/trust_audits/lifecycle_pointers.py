@@ -27,6 +27,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from gzkit.core.models import ADR_PREFIX_BODY, SEMVER_BODY
 from gzkit.validate import ValidationError
 
 #: Statuses from which nothing can still be pending. A ``Pool`` or ``Draft``
@@ -43,7 +44,9 @@ _SCANNED_GLOBS: tuple[str, ...] = (
     ".gzkit/rules/*.md",
 )
 
-_ADR_REF = re.compile(r"`?(ADR-(?:pool\.[a-z0-9][a-z0-9._-]*|\d+\.\d+\.\d+[a-zA-Z0-9._-]*))`?")
+_ADR_REF = re.compile(
+    rf"`?({ADR_PREFIX_BODY}(?:pool\.[a-z0-9][a-z0-9._-]*|{SEMVER_BODY}[a-zA-Z0-9._-]*))`?"
+)
 
 #: Claims that the target has a lifecycle step still to come.
 _PENDING_CLAIM = re.compile(

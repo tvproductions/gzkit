@@ -16,9 +16,11 @@ import re
 import sys
 from pathlib import Path
 
+from gzkit.core.models import ADR_SHORT_ID_BODY
+
 _IN_FLIGHT_STATUSES: frozenset[str] = frozenset({"Draft", "Proposed"})
-_FOUNDATION_ID_PATTERN = re.compile(r"^ADR-\d+\.\d+\.\d+$")
-_FOUNDATION_SHORT_ID_PREFIX = re.compile(r"^(ADR-\d+\.\d+\.\d+)")
+_FOUNDATION_ID_PATTERN = re.compile(rf"^{ADR_SHORT_ID_BODY}$")
+_FOUNDATION_SHORT_ID_PREFIX = re.compile(rf"^({ADR_SHORT_ID_BODY})")
 _GHI_PATTERN = re.compile(r"GHI\s*#\d+|GHI-\d+", re.IGNORECASE)
 
 

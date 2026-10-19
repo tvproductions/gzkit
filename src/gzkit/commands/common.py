@@ -12,6 +12,7 @@ from gzkit.artifact_prefix import active_prefix_matches
 from gzkit.color_env import should_disable_color, should_force_terminal
 from gzkit.config import GzkitConfig
 from gzkit.core.exceptions import GzkitError
+from gzkit.core.models import ADR_POOL_PREFIX_BODY, ADR_SHORT_ID_BODY
 from gzkit.ledger import (
     Ledger,
     resolve_adr_lane,
@@ -52,8 +53,8 @@ err_console = Console(
 )
 
 
-ADR_SEMVER_ID_RE = re.compile(r"^ADR-\d+\.\d+\.\d+(?:[.-][A-Za-z0-9][A-Za-z0-9.-]*)?$")
-ADR_POOL_ID_RE = re.compile(r"^ADR-pool\.[A-Za-z0-9][A-Za-z0-9.-]*$")
+ADR_SEMVER_ID_RE = re.compile(rf"^{ADR_SHORT_ID_BODY}(?:[.-][A-Za-z0-9][A-Za-z0-9.-]*)?$")
+ADR_POOL_ID_RE = re.compile(rf"^{ADR_POOL_PREFIX_BODY}[A-Za-z0-9][A-Za-z0-9.-]*$")
 SEMVER_ONLY_RE = re.compile(r"^\d+\.\d+\.\d+$")
 ADR_SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 

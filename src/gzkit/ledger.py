@@ -14,7 +14,7 @@ from typing import Any, ClassVar, Literal, NamedTuple
 
 from pydantic import BaseModel, ConfigDict, Field, model_serializer, model_validator
 
-from gzkit.core.models import OBPI_SHORT_ID_BODY
+from gzkit.core.models import ADR_ID_PARTS_BODY, OBPI_SHORT_ID_BODY
 from gzkit.durability import commit_directory_entry
 from gzkit.file_lock import exclusive_file_lock
 from gzkit.ledger_corrections import LEDGER_SCHEMA, evidence_events, live_events
@@ -71,7 +71,7 @@ def _stored_record(text: str) -> dict[str, Any] | None:
     return parsed if isinstance(parsed, dict) else None
 
 
-_ADR_SEMVER_RE = re.compile(r"^ADR-(\d+\.\d+\.\d+)(?:-.*)?$")
+_ADR_SEMVER_RE = re.compile(rf"^{ADR_ID_PARTS_BODY}(?:-.*)?$")
 _OBPI_BARE_RE = re.compile(rf"^({OBPI_SHORT_ID_BODY})(?:-.*)?$")
 
 

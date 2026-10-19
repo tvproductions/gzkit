@@ -27,12 +27,6 @@
     },
     {
       "file": "src/gzkit/commands/adr_audit.py",
-      "symbol": "_is_foundation_adr",
-      "kind": "ADR",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/commands/adr_audit.py",
       "symbol": "adr_audit_begin_cmd",
       "kind": "compose",
       "sites": 1
@@ -75,21 +69,9 @@
     },
     {
       "file": "src/gzkit/commands/adr_coverage.py",
-      "symbol": "_extract_adr_semver",
-      "kind": "ADR",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/commands/adr_coverage.py",
       "symbol": "_req_prefix_for_obpi",
       "kind": "compose",
       "sites": 1
-    },
-    {
-      "file": "src/gzkit/commands/adr_demote.py",
-      "symbol": "<module>",
-      "kind": "ADR",
-      "sites": 2
     },
     {
       "file": "src/gzkit/commands/adr_demote.py",
@@ -140,12 +122,6 @@
       "sites": 1
     },
     {
-      "file": "src/gzkit/commands/ceremony_state.py",
-      "symbol": "_is_foundation_adr",
-      "kind": "ADR",
-      "sites": 1
-    },
-    {
       "file": "src/gzkit/commands/closeout.py",
       "symbol": "closeout_cmd",
       "kind": "compose",
@@ -165,12 +141,6 @@
     },
     {
       "file": "src/gzkit/commands/common.py",
-      "symbol": "<module>",
-      "kind": "ADR",
-      "sites": 2
-    },
-    {
-      "file": "src/gzkit/commands/common.py",
       "symbol": "resolve_adr_file",
       "kind": "compose",
       "sites": 1
@@ -185,12 +155,6 @@
       "file": "src/gzkit/commands/common.py",
       "symbol": "resolve_target_adr",
       "kind": "compose",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/commands/context_cmd.py",
-      "symbol": "<module>",
-      "kind": "ADR",
       "sites": 1
     },
     {
@@ -243,12 +207,6 @@
     },
     {
       "file": "src/gzkit/commands/plan.py",
-      "symbol": "<module>",
-      "kind": "ADR",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/commands/plan.py",
       "symbol": "_compose_canonical_adr_id",
       "kind": "compose",
       "sites": 1
@@ -263,12 +221,6 @@
       "file": "src/gzkit/commands/plan.py",
       "symbol": "plan_cmd",
       "kind": "compose",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/commands/plan_audit_cmd.py",
-      "symbol": "<module>",
-      "kind": "ADR",
       "sites": 1
     },
     {
@@ -309,12 +261,6 @@
     },
     {
       "file": "src/gzkit/commands/specify_cmd.py",
-      "symbol": "_extract_semver",
-      "kind": "ADR",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/commands/specify_cmd.py",
       "symbol": "_prepare_specify_plan",
       "kind": "compose",
       "sites": 1
@@ -323,12 +269,6 @@
       "file": "src/gzkit/commands/specify_cmd.py",
       "symbol": "_render_obpi_acceptance_seed",
       "kind": "compose",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/commands/status.py",
-      "symbol": "<module>",
-      "kind": "ADR",
       "sites": 1
     },
     {
@@ -353,12 +293,6 @@
       "file": "src/gzkit/commands/status_obpi.py",
       "symbol": "_print_status_obpi_section",
       "kind": "parent",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/commands/status_render.py",
-      "symbol": "_is_foundation_adr",
-      "kind": "ADR",
       "sites": 1
     },
     {
@@ -392,34 +326,10 @@
       "sites": 2
     },
     {
-      "file": "src/gzkit/commands/validate_briefs.py",
-      "symbol": "_validate_interviews",
-      "kind": "ADR",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/commands/validate_decomposition.py",
-      "symbol": "validate_decomposition",
-      "kind": "ADR",
-      "sites": 1
-    },
-    {
       "file": "src/gzkit/commands/validate_decomposition.py",
       "symbol": "validate_decomposition",
       "kind": "compose",
       "sites": 2
-    },
-    {
-      "file": "src/gzkit/commands/validate_frontmatter.py",
-      "symbol": "<module>",
-      "kind": "ADR",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/commands/validate_task_envelope.py",
-      "symbol": "<module>",
-      "kind": "ADR",
-      "sites": 1
     },
     {
       "file": "src/gzkit/commands/validate_task_envelope.py",
@@ -452,39 +362,9 @@
       "sites": 1
     },
     {
-      "file": "src/gzkit/commands/version_sync.py",
-      "symbol": "_extract_adr_version",
-      "kind": "ADR",
-      "sites": 1
-    },
-    {
       "file": "src/gzkit/exchange_records.py",
       "symbol": "write_completion_exchange",
       "kind": "compose",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/foundation/rubric.py",
-      "symbol": "<module>",
-      "kind": "ADR",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/foundation/rubric.py",
-      "symbol": "_gather_foundation_ids",
-      "kind": "ADR",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/foundation/rubric.py",
-      "symbol": "main",
-      "kind": "ADR",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/foundation/sunset_migrate.py",
-      "symbol": "<module>",
-      "kind": "ADR",
       "sites": 1
     },
     {
@@ -518,88 +398,10 @@
       "sites": 1
     },
     {
-      "file": "src/gzkit/foundation/triage.py",
-      "symbol": "<module>",
-      "kind": "ADR",
-      "sites": 2
-    },
-    {
-      "file": "src/gzkit/governance/adr_status_index.py",
-      "symbol": "<module>",
-      "kind": "ADR",
-      "sites": 2
-    },
-    {
-      "file": "src/gzkit/governance/brief_structure.py",
-      "symbol": "<module>",
-      "kind": "ADR",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/governance/frontmatter_coherence.py",
-      "symbol": "_resolve_artifact_id",
-      "kind": "ADR",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/absorption_duplicates.py",
-      "symbol": "<module>",
-      "kind": "ADR",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/briefs.py",
-      "symbol": "<module>",
-      "kind": "ADR",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/config_derivation.py",
-      "symbol": "<module>",
-      "kind": "ADR",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/evaluation_justify_binding.py",
-      "symbol": "<module>",
-      "kind": "ADR",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/lifecycle_pointers.py",
-      "symbol": "<module>",
-      "kind": "ADR",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/taxonomy.py",
-      "symbol": "<module>",
-      "kind": "ADR",
-      "sites": 1
-    },
-    {
       "file": "src/gzkit/governance/trust_audits/taxonomy.py",
       "symbol": "_pool_identity_problems",
       "kind": "parent",
       "sites": 2
-    },
-    {
-      "file": "src/gzkit/handoff_validation.py",
-      "symbol": "<module>",
-      "kind": "ADR",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/hooks/core.py",
-      "symbol": "_record_obpi_completion_if_ready",
-      "kind": "ADR",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/hooks/obpi.py",
-      "symbol": "ObpiValidator._is_foundation_series",
-      "kind": "ADR",
-      "sites": 1
     },
     {
       "file": "src/gzkit/hooks/scripts/pipeline.py",
@@ -620,24 +422,6 @@
       "sites": 1
     },
     {
-      "file": "src/gzkit/hooks/scripts/validation.py",
-      "symbol": "_obpi_completion_validator_script:find_parent_adr_file",
-      "kind": "ADR",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/justify/cli.py",
-      "symbol": "<module>",
-      "kind": "ADR",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/ledger.py",
-      "symbol": "<module>",
-      "kind": "ADR",
-      "sites": 1
-    },
-    {
       "file": "src/gzkit/ledger.py",
       "symbol": "_extract_bare_adr_semver",
       "kind": "compose",
@@ -647,12 +431,6 @@
       "file": "src/gzkit/lock_manager.py",
       "symbol": "adr_id_from_obpi",
       "kind": "compose",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/mx/log.py",
-      "symbol": "<module>",
-      "kind": "ADR",
       "sites": 1
     },
     {
@@ -689,12 +467,6 @@
       "file": "src/gzkit/req_kind_support.py",
       "symbol": "_witness_clause",
       "kind": "parent",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/sync.py",
-      "symbol": "<module>",
-      "kind": "ADR",
       "sites": 1
     },
     {
@@ -749,12 +521,6 @@
       "file": "src/gzkit/triangle.py",
       "symbol": "ReqId.__str__",
       "kind": "compose",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/validators/unscoped_rules.py",
-      "symbol": "UnscopedAllowlistEntry",
-      "kind": "ADR",
       "sites": 1
     }
   ]

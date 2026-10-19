@@ -31,11 +31,11 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict
 
 from gzkit.config import GzkitConfig
-from gzkit.core.models import REQ_ID_BODY
+from gzkit.core.models import ADR_SHORT_ID_BODY, REQ_ID_BODY
 from gzkit.foundation.triage import _extract_h1_title, _parse_simple_frontmatter
 from gzkit.ledger import Ledger
 
-_ADR_SHORT_ID_RE = re.compile(r"^(ADR-\d+\.\d+\.\d+)")
+_ADR_SHORT_ID_RE = re.compile(rf"^({ADR_SHORT_ID_BODY})")
 
 _DEMOTE_GHI = 520
 _DEMOTE_OPERATOR = "g0"

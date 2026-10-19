@@ -16,7 +16,7 @@ from gzkit.commands.common import (
     resolve_adr_file,
     resolve_adr_ledger_id,
 )
-from gzkit.core.models import OBPI_SHORT_ID_BODY, REQ_ID_BODY_PLAIN
+from gzkit.core.models import OBPI_SHORT_ID_BODY, REQ_ID_BODY_PLAIN, adr_semver
 from gzkit.decomposition import (
     WbsRow,
     active_checklist_items,
@@ -47,8 +47,7 @@ def _extract_semver(adr_id: str) -> str | None:
     Handles both bare (``ADR-0.14.0``) and slugged
     (``ADR-0.14.0-multi-agent-...``) forms.
     """
-    m = re.match(r"ADR-(\d+\.\d+\.\d+)", adr_id)
-    return m.group(1) if m else None
+    return adr_semver(adr_id)
 
 
 _BOLD_PREFIX_SLUG_RE = re.compile(r"^\s*\*\*(?P<slug>[a-z0-9][a-z0-9-]*)\*\*", re.IGNORECASE)

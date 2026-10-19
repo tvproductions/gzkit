@@ -2,7 +2,7 @@
 
 # RO-2 specification — one identity seam for every reader
 
-**2026-10-18. Status: tranche 1 landed (2026-10-19, the seam, its witness and a seeded baseline of 187 rows); tranche 2 landed (2026-10-19, the 21 REQ and TASK rows retired, 166 remain); tranche 3 landed (2026-10-19, the 37 OBPI rows retired, 126 remain, and the separator-less brief finders closed); tranches 4 and 5 open.** Operator: **g0**. Repair order RO-2 of the
+**2026-10-18. Status: tranche 1 landed (2026-10-19, the seam, its witness and a seeded baseline of 187 rows); tranche 2 landed (2026-10-19, the 21 REQ and TASK rows retired, 166 remain); tranche 3 landed (2026-10-19, the 37 OBPI rows retired, 126 remain, and the separator-less brief finders closed); tranche 4 landed (2026-10-19, the 39 ADR rows retired, 87 remain); tranche 5 open.** Operator: **g0**. Repair order RO-2 of the
 [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders), mandate item 2:
 give REQ, TASK and release identity independent of the ADR, by alias and resolver, renaming nothing
 before 1.0. This is phase 1 of [`ADR-pool.identifier-ladder-migration`](../design/adr/pool/ADR-pool.identifier-ladder-migration.md),

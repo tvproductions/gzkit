@@ -21,6 +21,7 @@ from typing import Any
 
 from gzkit.brief_commands import extract_fenced_commands, is_shell_less_executable
 from gzkit.core.models import (
+    ADR_ID_PARTS_BODY,
     ARTIFACT_REF_BODY,
     OBPI_ID_PARTS_BODY,
     OBPI_SHORT_ID_BODY,
@@ -276,7 +277,7 @@ _BRIEF_CROSS_REF_SKIP_MARKER = "<!-- gz-validate-skip: brief-cross-references --
 
 _BRIEF_CROSS_REF_PATTERN = re.compile(rf"\b{ARTIFACT_REF_BODY}\b")
 
-_ADR_DIR_PATTERN = re.compile(r"^ADR-(\d+\.\d+\.\d+)(?:-[a-z0-9][a-z0-9-]*)?$")
+_ADR_DIR_PATTERN = re.compile(rf"^{ADR_ID_PARTS_BODY}(?:-[a-z0-9][a-z0-9-]*)?$")
 _OBPI_FILE_PATTERN = re.compile(rf"^{OBPI_ID_PARTS_BODY}(?:-{SLUG_BODY})?\.md$")
 _ADR_NAMESPACES: tuple[str, ...] = ("foundation", "pre-release")
 

@@ -13,6 +13,7 @@ from gzkit.commands.register import (
     is_ungrandfathered_foundation,
     warn_foundation_refused,
 )
+from gzkit.core.models import ADR_ID_BODY
 from gzkit.decomposition import build_checklist_seed, compute_scorecard, default_dimension_scores
 from gzkit.ledger import Ledger, adr_created_event
 from gzkit.models.foundation_grandfather import foundation_kind_is_closed
@@ -25,7 +26,7 @@ _SEMVER_LITERAL_RE = re.compile(r"^\d+\.\d+\.\d+$")
 # of the schema `id` pattern in src/gzkit/schemas/adr.json (GHI #346). A bare
 # `ADR-X.Y.Z` (no slug suffix) does NOT match — emitting it produced the
 # GHI #494 bare-id `adr_created` regression.
-CANONICAL_ADR_ID_RE = re.compile(r"^ADR-[0-9]+\.[0-9]+\.[0-9]+-[a-z0-9-]+$")
+CANONICAL_ADR_ID_RE = re.compile(rf"^{ADR_ID_BODY}$")
 
 # ADR-0.0.35 § Decision item #6 — every foundation-kind ADR scaffolds with a
 # `## Why foundation tier?` section between `## Persona` and `## Intent`,

@@ -30,7 +30,7 @@ from gzkit.commands.common import (
     get_project_root,
     resolve_adr_file,
 )
-from gzkit.core.models import REQ_ID_BODY
+from gzkit.core.models import ADR_PREFIX_BODY, ADR_SHORT_ID_BODY, REQ_ID_BODY
 from gzkit.ledger import Ledger, parse_frontmatter_value
 from gzkit.ledger_events import artifact_renamed_event, obpi_parked_event
 from gzkit.obpi_lifecycle import parkable_children
@@ -51,11 +51,11 @@ _FRONTMATTER_STRIP_KEYS = ("kind", "semver", "date", "promoted_from")
 #: exact heading. Closed list — a section is stripped because it is
 #: kind-invalid, never because it merely looks stale (GHI #777).
 _POOL_INVALID_SECTIONS = ("## OBPI Acceptance Note (Human Acknowledgment)",)
-_CANONICAL_ID_RE = re.compile(r"^ADR-\d+\.\d+\.\d+-(?P<slug>.+)$")
+_CANONICAL_ID_RE = re.compile(rf"^{ADR_SHORT_ID_BODY}-(?P<slug>.+)$")
 #: First-H1 identity claim. The id token stops at whitespace or ``:`` so both
 #: ``# ADR-0.27.0: Title`` and the bare ``# ADR-0.27.0`` are matched, and the
 #: separator (``:``, em dash, or nothing) rides along in ``rest`` untouched.
-_H1_ID_RE = re.compile(r"^(?P<prefix>#[ \t]+)(?P<id>ADR-[^\s:]+)(?P<rest>.*)$")
+_H1_ID_RE = re.compile(rf"^(?P<prefix>#[ \t]+)(?P<id>{ADR_PREFIX_BODY}[^\s:]+)(?P<rest>.*)$")
 #: Pool-slug collision policies. ``take-demoted`` was added under GHI #775: a
 #: promote/demote round trip ALWAYS collides, because ``gz adr promote`` retains
 #: the pool file as historical intake by design — and neither original policy

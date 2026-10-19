@@ -22,13 +22,18 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from gzkit.core.models import OBPI_SHORT_ID_BODY, REQ_ID_BODY_PLAIN, REQ_SHORT_ID_BODY
+from gzkit.core.models import (
+    ADR_SHORT_ID_BODY,
+    OBPI_SHORT_ID_BODY,
+    REQ_ID_BODY_PLAIN,
+    REQ_SHORT_ID_BODY,
+)
 
 _LEDGER_RELPATH = (".gzkit", "ledger.jsonl")
 
 # Artifact-naming patterns (REQ-06-02). Numeric foundation/feature IDs only —
 # the pool-slug forms (ADR-pool.<slug>) do not appear in fix commit subjects.
-_ADR_RE = re.compile(r"ADR-\d+\.\d+\.\d+")
+_ADR_RE = re.compile(ADR_SHORT_ID_BODY)
 # Two digits exactly: the canonical index width. A looser ``\d+`` truncated an
 # author's wildcard into an artifact name, which is the inverse of this
 # module's contract that nothing in the window is "narrated away".

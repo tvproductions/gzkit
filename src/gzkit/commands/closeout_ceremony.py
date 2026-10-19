@@ -20,7 +20,6 @@ from gzkit.commands.ceremony_state import (
     _classify_attestation_verdict,
     _cleanup_hook_files,
     _has_more_demos,
-    _is_foundation_adr,
     _next_step,
     _now_iso,
     _output,
@@ -55,6 +54,7 @@ from gzkit.commands.status import (
     _adr_closeout_readiness,
     _collect_obpi_files_for_adr,
 )
+from gzkit.core.models import is_foundation_adr
 from gzkit.ledger import Ledger, resolve_adr_lane
 from gzkit.tasks import in_scope_task_id
 
@@ -194,7 +194,7 @@ def _initialize_ceremony(
     state = CeremonyState(
         adr_id=adr_id,
         current_step=CeremonyStep.INITIALIZE,
-        is_foundation=_is_foundation_adr(adr_id),
+        is_foundation=is_foundation_adr(adr_id),
         started_at=now,
         updated_at=now,
         step_history=[

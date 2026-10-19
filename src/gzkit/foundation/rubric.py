@@ -29,9 +29,11 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from gzkit.core.models import ADR_SHORT_ID_BODY
+
 _GHI_PATTERN = re.compile(r"GHI\s*#(\d+)", re.IGNORECASE)
 _IN_FLIGHT_STATUSES: frozenset[str] = frozenset({"Draft", "Proposed"})
-_FOUNDATION_SHORT_ID_PREFIX = re.compile(r"^(ADR-\d+\.\d+\.\d+)")
+_FOUNDATION_SHORT_ID_PREFIX = re.compile(rf"^({ADR_SHORT_ID_BODY})")
 
 # Score weights — kept as module-level constants so downstream callers can read them.
 _WEIGHT_INSIGHTS = 3
@@ -276,7 +278,7 @@ def _gather_foundation_ids(project_root: Path) -> list[str]:
     foundation_root = project_root / "docs" / "design" / "adr" / "foundation"
     if not foundation_root.is_dir():
         return []
-    _foundation_pattern = re.compile(r"^ADR-\d+\.\d+\.\d+$")
+    _foundation_pattern = re.compile(rf"^{ADR_SHORT_ID_BODY}$")
     ids: list[str] = []
     for adr_path in sorted(foundation_root.glob("*/ADR-*.md")):
         text = adr_path.read_text(encoding="utf-8")
@@ -308,7 +310,7 @@ def main(argv: list[str] | None = None) -> None:
 
     if args.foundation_root is not None:
         foundation_ids = []
-        _foundation_pattern = re.compile(r"^ADR-\d+\.\d+\.\d+$")
+        _foundation_pattern = re.compile(rf"^{ADR_SHORT_ID_BODY}$")
         for adr_path in sorted(args.foundation_root.glob("ADR-*.md")):
             text = adr_path.read_text(encoding="utf-8")
             frontmatter = _parse_frontmatter(text)

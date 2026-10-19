@@ -17,6 +17,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import NamedTuple
 
+from gzkit.core.models import ADR_PREFIX_BODY, ADR_SEMVER_COMPONENTS_BODY
+
 ADR_SUBDIRS: tuple[str, ...] = ("foundation", "pre-release")
 TABLE_HEADER = "| ID | Title | Kind | Lane | Status | Date | Path |"
 TABLE_DIVIDER = "|---|---|---|---|---|---|---|"
@@ -34,9 +36,9 @@ SOURCE_OF_TRUTH_NOTE = (
 # stem fallback, so 11 of 86 rendered their own id in the Title column while the
 # file carried a real authored title. The fallback itself stays correct: an H1
 # with no separator genuinely has no title to extract.
-_HEADER_TITLE_RE = re.compile(r"^#\s+(ADR-\S+)\s*[:—–]\s*(.+?)\s*$")
+_HEADER_TITLE_RE = re.compile(rf"^#\s+({ADR_PREFIX_BODY}\S+)\s*[:—–]\s*(.+?)\s*$")
 _TABLE_ROW_LINK_RE = re.compile(r"\[([^\]]+)\]")
-_SEMVER_RE = re.compile(r"^ADR-(\d+)\.(\d+)\.(\d+)")
+_SEMVER_RE = re.compile(rf"^{ADR_SEMVER_COMPONENTS_BODY}")
 
 
 class AdrRow(NamedTuple):

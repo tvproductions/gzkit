@@ -15,12 +15,12 @@ from typing import Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from gzkit.core.models import OBPI_FRONTMATTER_ID_PATTERN
+from gzkit.core.models import ADR_ID_BODY, OBPI_FRONTMATTER_ID_PATTERN
 from gzkit.tasks import TaskId
 from gzkit.triangle import REQ_ID_BODY_PLAIN
 
 _OBPI_ID_RE = re.compile(OBPI_FRONTMATTER_ID_PATTERN)
-_ADR_ID_RE = re.compile(r"^ADR-\d+\.\d+\.\d+-[a-z0-9-]+$")
+_ADR_ID_RE = re.compile(rf"^{ADR_ID_BODY}$")
 # Derived from the one grammar (GHI #615); never re-spelled here.
 _REQ_ID_RE = re.compile(rf"^{REQ_ID_BODY_PLAIN}$")
 

@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from gzkit.config import GzkitConfig
+from gzkit.core.models import is_foundation_adr
 from gzkit.event_evidence import EventAnchor
 from gzkit.git_sync import assess_git_sync_readiness
 from gzkit.hooks.obpi import (
@@ -228,7 +229,7 @@ def _record_obpi_completion_if_ready(
         parent_info = graph.get(ledger.canonicalize_id(parent_adr), {})
         parent_lane = resolve_adr_lane(parent_info, config.mode)
     requires_human_attestation = parent_lane == "heavy" or (
-        isinstance(parent_adr, str) and bool(re.match(r"^ADR-0\.0\.\d+", parent_adr))
+        isinstance(parent_adr, str) and is_foundation_adr(parent_adr)
     )
 
     # Block attested_completed if the brief's Human Attestation section is

@@ -21,6 +21,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
+from gzkit.core.models import ADR_PREFIX_BODY
 from gzkit.rules import NESTED_SURFACE_NAMES
 
 _NULL_TOKENS = {"", "null", "~"}
@@ -242,7 +243,7 @@ class UnscopedAllowlistEntry(BaseModel):
 
     file: str
     rationale: str = Field(..., min_length=20)
-    tracking_ref: str = Field(..., pattern=r"^(GHI-\d+|ADR-[\d.]+[-\w]*)$")
+    tracking_ref: str = Field(..., pattern=rf"^(GHI-\d+|{ADR_PREFIX_BODY}[\d.]+[-\w]*)$")
     added_date: date
 
 

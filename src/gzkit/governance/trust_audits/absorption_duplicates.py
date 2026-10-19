@@ -20,7 +20,7 @@ import re
 from collections import defaultdict
 from pathlib import Path
 
-from gzkit.core.models import OBPI_SHORT_ID_BODY
+from gzkit.core.models import ADR_PREFIX_BODY, OBPI_SHORT_ID_BODY
 from gzkit.validate import ValidationError
 
 _OPSDEV_SOURCE_PATH = re.compile(
@@ -30,7 +30,7 @@ _OBPI_ID_LINE = re.compile(
     rf"^id:\s*({OBPI_SHORT_ID_BODY}[A-Za-z0-9\-.]*)\s*$",
     re.MULTILINE,
 )
-_PARENT_LINE = re.compile(r"^parent:\s*(ADR-[A-Za-z0-9\-.]+)\s*$", re.MULTILINE)
+_PARENT_LINE = re.compile(rf"^parent:\s*({ADR_PREFIX_BODY}[A-Za-z0-9\-.]+)\s*$", re.MULTILINE)
 _PAIRED_WITH_LINE = re.compile(
     rf"^paired_with:\s*({OBPI_SHORT_ID_BODY}[A-Za-z0-9\-.]*)\s*$", re.MULTILINE
 )

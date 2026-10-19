@@ -2,7 +2,7 @@
 
 from textwrap import dedent
 
-from gzkit.core.models import OBPI_ID_PARTS_BODY, OBPI_SHORT_ID_BODY
+from gzkit.core.models import ADR_PREFIX_BODY, OBPI_ID_PARTS_BODY, OBPI_SHORT_ID_BODY
 
 
 def _obpi_completion_validator_script() -> str:
@@ -68,7 +68,7 @@ def _obpi_completion_validator_script() -> str:
                     if (
                         f.name.startswith("ADR-")
                         and f.name.endswith(".md")
-                        and re.match(r"ADR-[\\d.]+-", f.name)
+                        and re.match(r"__adr_dir_prefix__", f.name)
                     ):
                         return f
                 return None
@@ -404,6 +404,7 @@ def _obpi_completion_validator_script() -> str:
         )
         .replace("__obpi_short__", OBPI_SHORT_ID_BODY)
         .replace("__obpi_parts__", OBPI_ID_PARTS_BODY)
+        .replace("__adr_dir_prefix__", rf"{ADR_PREFIX_BODY}[\d.]+-")
     )
 
 

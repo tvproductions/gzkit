@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, cast
 
 from gzkit.config import GzkitConfig
+from gzkit.core.models import is_foundation_adr
 from gzkit.git_sync import assess_git_sync_readiness
 from gzkit.ledger import Ledger
 from gzkit.utils import git_cmd
@@ -547,7 +548,7 @@ class ObpiValidator:
 
     def _is_foundation_series(self, adr_id: str) -> bool:
         """Return True if the ADR belongs to the 0.0.x foundation series."""
-        return bool(re.match(r"^ADR-0\.0\.\d+", adr_id))
+        return is_foundation_adr(adr_id)
 
     def _section_body(self, content: str, heading: str) -> str | None:
         """Return the body of an H2/H3 section when present."""

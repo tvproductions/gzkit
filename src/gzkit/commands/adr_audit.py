@@ -39,6 +39,7 @@ from gzkit.commands.common import (
     resolve_adr_ledger_id,
 )
 from gzkit.commands.status import _collect_obpi_files_for_adr, _inspect_obpi_brief
+from gzkit.core.models import is_foundation_adr
 from gzkit.event_evidence import EventAnchor
 from gzkit.governance.req_coverage import parse_brief_req_kinds
 from gzkit.hooks.core import enrich_completed_receipt_evidence
@@ -330,7 +331,7 @@ def adr_audit_check(adr: str, as_json: bool, strict: bool = False) -> None:
     adr_lane = parse_frontmatter_value(adr_content, "lane") or "lite"
     if adr_lane not in {"lite", "heavy"}:
         adr_lane = "lite"
-    adr_kind = "foundation" if _is_foundation_adr(adr_id) else "feature"
+    adr_kind = "foundation" if is_foundation_adr(adr_id) else "feature"
 
     # Collect covers locations and OBPI completion events for the heuristic.
     covers_locations = _collect_covers_locations_for_adr(project_root, adr_id, obpi_files.keys())
@@ -443,7 +444,7 @@ def _is_foundation_adr(adr_id: str) -> bool:
     ADR-0.0.36 and OBPI-0.0.36-02. Do not re-introduce attestation routing
     logic that calls this function.
     """
-    return re.match(r"^ADR-0\.0\.\d+(?:[.-].*)?$", adr_id) is not None
+    return is_foundation_adr(adr_id)
 
 
 def _requires_security_review_attestation(

@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from gzkit.core.validation_rules import ValidationError
 
+from gzkit.core.models import adr_semver
 from gzkit.ledger import Ledger
 
 _VERSION_BADGE_RE = re.compile(r"(badge/version-)\d+\.\d+\.\d+(-blue\.svg)")
@@ -16,8 +17,7 @@ _VERSION_BADGE_RE = re.compile(r"(badge/version-)\d+\.\d+\.\d+(-blue\.svg)")
 
 def _extract_adr_version(adr_id: str) -> str | None:
     """Extract the semver portion from an ADR ID like ``ADR-0.18.0-slug``."""
-    m = re.match(r"^ADR-(\d+\.\d+\.\d+)", adr_id)
-    return m.group(1) if m else None
+    return adr_semver(adr_id)
 
 
 def _parse_semver_tuple(version: str) -> tuple[int, ...]:

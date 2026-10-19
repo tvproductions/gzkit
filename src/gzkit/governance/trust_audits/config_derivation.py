@@ -19,6 +19,7 @@ import json
 import re
 from pathlib import Path
 
+from gzkit.core.models import ADR_PREFIX_BODY
 from gzkit.core.validation_rules import ValidationError
 from gzkit.registries import RegistryError, load_registry
 
@@ -28,7 +29,9 @@ PROVENANCE_KEYS = ("$comment", "_comment", "_doc", "doc", "citation", "note", "_
 
 #: Provenance counts only when it points somewhere a reader can GO. Prose that
 #: explains what a field means is documentation; this fence is about derivation.
-AUTHORITY_RE = re.compile(r"(docs/[\w/.-]+\.md|ADR-[\w.]+|GHI #\d+|operator ruling)", re.I)
+AUTHORITY_RE = re.compile(
+    rf"(docs/[\w/.-]+\.md|{ADR_PREFIX_BODY}[\w.]+|GHI #\d+|operator ruling)", re.I
+)
 
 #: Names marking a module-level constant as a policy knob. Deliberately broad --
 #: the roster's job is to make GROWTH visible, and a reader judges each row.

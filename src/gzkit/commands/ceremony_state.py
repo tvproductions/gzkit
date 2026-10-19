@@ -11,7 +11,6 @@ API is preserved by re-import in ``closeout_ceremony.py`` — existing
 from __future__ import annotations
 
 import json
-import re
 from datetime import UTC, datetime
 from enum import IntEnum
 from pathlib import Path
@@ -180,10 +179,6 @@ def _cleanup_hook_files(project_root: Path, adr_id: str) -> None:
     for path in (_turn_lock_path(project_root, adr_id), _hook_state_path(project_root, adr_id)):
         if path.exists():
             path.unlink()
-
-
-def _is_foundation_adr(adr_id: str) -> bool:
-    return re.match(r"^ADR-0\.0\.\d+(?:[.-].*)?$", adr_id) is not None
 
 
 # ---------------------------------------------------------------------------

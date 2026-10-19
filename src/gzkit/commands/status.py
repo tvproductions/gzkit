@@ -51,7 +51,7 @@ from gzkit.commands.status_render import (
 )
 from gzkit.commands.task import _load_tasks_for_obpi
 from gzkit.config import GzkitConfig
-from gzkit.core.models import TASK_ID_BODY
+from gzkit.core.models import ADR_SEMVER_COMPONENTS_BODY, TASK_ID_BODY
 from gzkit.core.validation_rules import parse_frontmatter as _parse_md_frontmatter
 from gzkit.ledger import (
     Ledger,
@@ -177,7 +177,7 @@ def _req_prefix_from_task_id(task_id: str) -> str | None:
 
 
 ADR_SEMVER_STATUS_ID_RE = re.compile(
-    r"^ADR-(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)(?P<suffix>(?:[.-][A-Za-z0-9][A-Za-z0-9.-]*)?)$"
+    rf"^{ADR_SEMVER_COMPONENTS_BODY}(?P<suffix>(?:[.-][A-Za-z0-9][A-Za-z0-9.-]*)?)$"
 )
 
 

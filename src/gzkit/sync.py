@@ -12,7 +12,7 @@ import re
 from collections.abc import Mapping
 from pathlib import Path
 
-from gzkit.core.models import ARTIFACT_PREFIX_BODY
+from gzkit.core.models import ADR_PRD_PREFIX_BODY, ARTIFACT_PREFIX_BODY
 from gzkit.frontmatter import read_frontmatter_bytes
 
 # Re-export rules-based functions (originally imported and re-exported here)
@@ -142,7 +142,7 @@ from gzkit.sync_surfaces import (
 # Local constants for artifact parsing
 # ---------------------------------------------------------------------------
 
-HEADER_ID_RE = re.compile(r"^#\s+((?:ADR|PRD)-[^\s:]+)")
+HEADER_ID_RE = re.compile(rf"^#\s+({ADR_PRD_PREFIX_BODY}[^\s:]+)")
 PARENT_LINK_RE = re.compile(rf"\[({ARTIFACT_PREFIX_BODY}[^\]]+)\]")
 ALLOWED_ID_PREFIXES = ("ADR-", "PRD-", "OBPI-")
 ALLOWED_LANES = {"lite", "heavy"}

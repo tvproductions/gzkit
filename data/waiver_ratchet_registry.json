@@ -360,7 +360,7 @@
       "gates_step": "Identity seam (gz validate --id-seam)",
       "mechanism": "shrink-ratchet",
       "entries_path": "sites",
-      "baseline_count": 126,
+      "baseline_count": 87,
       "identity": {
         "kind": "fields",
         "fields": [

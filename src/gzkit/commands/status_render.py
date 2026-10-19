@@ -13,6 +13,7 @@ from gzkit.commands.common import (
 from gzkit.commands.status_obpi import (
     _print_status_obpi_section,
 )
+from gzkit.core.models import is_foundation_adr
 
 # ---------------------------------------------------------------------------
 # Table category labels (importable for test assertions)
@@ -223,14 +224,6 @@ def _render_status_row(
     console.print()
 
 
-def _is_foundation_adr(adr_id: str) -> bool:
-    """Return True for foundation ADRs (ADR-0.0.x pattern)."""
-    import re  # noqa: PLC0415
-
-    m = re.match(r"^ADR-(\d+)\.(\d+)\.\d+", adr_id)
-    return m is not None and m.group(1) == "0" and m.group(2) == "0"
-
-
 def _render_status_table(
     adrs: dict[str, dict[str, Any]],
     default_mode: str,
@@ -251,7 +244,7 @@ def _render_status_table(
     for adr_id, info in sorted(adrs.items(), key=lambda item: _adr_status_sort_key(item[0])):
         if _is_pool_adr_id(adr_id):
             pool.append((adr_id, info))
-        elif _is_foundation_adr(adr_id):
+        elif is_foundation_adr(adr_id):
             foundation.append((adr_id, info))
         else:
             features.append((adr_id, info))

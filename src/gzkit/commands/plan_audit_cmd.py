@@ -8,7 +8,7 @@ from datetime import UTC, datetime
 from pathlib import Path, PurePosixPath
 
 from gzkit.commands.common import console
-from gzkit.core.models import OBPI_ID_PARTS_BODY
+from gzkit.core.models import ADR_SHORT_ID_BODY, OBPI_ID_PARTS_BODY
 from gzkit.governance.brief_path_validity import (
     allowed_path_resolves as _allowed_path_resolves,  # noqa: F401  (test import)
 )
@@ -265,7 +265,7 @@ def _is_specific_path(path: str) -> bool:
     return len(parts) >= 3
 
 
-_ADR_ID_RE = re.compile(r"^(ADR-\d+\.\d+\.\d+)")
+_ADR_ID_RE = re.compile(rf"^({ADR_SHORT_ID_BODY})")
 
 
 def _adr_id_from_dir(name: str) -> str | None:

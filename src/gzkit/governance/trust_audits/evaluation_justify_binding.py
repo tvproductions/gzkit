@@ -26,13 +26,13 @@ import re
 from datetime import UTC, datetime
 from pathlib import Path
 
-from gzkit.core.models import OBPI_ID_PARTS_BODY, SLUG_BODY
+from gzkit.core.models import ADR_ID_PARTS_BODY, OBPI_ID_PARTS_BODY, SLUG_BODY
 from gzkit.core.validation_rules import ValidationError
 from gzkit.justify.models import AnchorRef
 from gzkit.justify.parser import WalkthroughParseError, parse_walkthrough
 from gzkit.obpi_lifecycle import fold_renames
 
-_ADR_ID_RE = re.compile(r"^ADR-(\d+\.\d+\.\d+)(?:-([a-z0-9][a-z0-9-]*))?$", re.IGNORECASE)
+_ADR_ID_RE = re.compile(rf"^{ADR_ID_PARTS_BODY}(?:-([a-z0-9][a-z0-9-]*))?$", re.IGNORECASE)
 _OBPI_ID_RE = re.compile(rf"^{OBPI_ID_PARTS_BODY}(?:-(?P<slug>{SLUG_BODY}))?$", re.IGNORECASE)
 _ADR_SLUG_RE = re.compile(r"^adr-(\d+)-(\d+)-(\d+)(?:-([a-z0-9][a-z0-9-]*))?$")
 

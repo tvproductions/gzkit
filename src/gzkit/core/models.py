@@ -7,6 +7,7 @@ JSON schema. Pure domain logic — no I/O operations.
 from __future__ import annotations
 
 import enum
+import re
 from typing import Any, Literal, get_args, get_origin
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -52,6 +53,14 @@ OBPI_ANY_WIDTH_SHORT_ID_BODY = rf"OBPI-{SEMVER_BODY}-\d+"
 ARTIFACT_PREFIX_BODY = r"(?:PRD|ADR|OBPI)-"
 #: The ADR short form with its semver captured.
 ADR_ID_PARTS_BODY = rf"ADR-(?P<semver>{SEMVER_BODY})"
+#: The ADR short form with its semver split into numeric parts, for ordering readers.
+ADR_SEMVER_COMPONENTS_BODY = r"ADR-(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)"
+#: The ``ADR-`` and ``ADR-pool.`` openers, for readers that scan a loose token after them
+#: (a directory name, an H1, a parent line) and so cannot demand a whole id.
+ADR_PREFIX_BODY = r"ADR-"
+ADR_POOL_PREFIX_BODY = r"ADR-pool\."
+#: The ADR or PRD opener a document header may start with.
+ADR_PRD_PREFIX_BODY = r"(?:ADR|PRD)-"
 REQ_ID_BODY = (
     rf"REQ-(?P<semver>{SEMVER_BODY})-(?P<obpi_item>{ITEM_BODY})-(?P<criterion>{ITEM_BODY})"
 )
@@ -101,6 +110,21 @@ def is_foundation_semver(semver: str) -> bool:
     major, _, rest = semver.partition(".")
     minor = rest.partition(".")[0]
     return major == "0" and minor == "0"
+
+
+_ADR_SEMVER_PREFIX = re.compile(rf"^{ADR_ID_PARTS_BODY}")
+
+
+def adr_semver(identifier: str) -> str | None:
+    """Return the semver an ADR identifier opens with, or None when it carries none."""
+    match = _ADR_SEMVER_PREFIX.match(identifier)
+    return match["semver"] if match else None
+
+
+def is_foundation_adr(identifier: str) -> bool:
+    """Return True when an ADR identifier belongs to the foundation series, ``0.0.x``."""
+    semver = adr_semver(identifier)
+    return semver is not None and is_foundation_semver(semver)
 
 
 # ---------------------------------------------------------------------------

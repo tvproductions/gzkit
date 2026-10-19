@@ -17,11 +17,11 @@ from gzkit.commands.closeout_ceremony import (
     CeremonyState,
     CeremonyStep,
     CeremonyStepRecord,
-    _is_foundation_adr,
     _next_step,
     load_ceremony_state,
     save_ceremony_state,
 )
+from gzkit.core.models import is_foundation_adr
 from gzkit.traceability import covers
 from tests.commands.common import CliRunner, _init_git_repo, _quick_init, _record_adr_work_start
 
@@ -160,13 +160,13 @@ class TestNextStep(unittest.TestCase):
 class TestIsFoundationAdr(unittest.TestCase):
     @covers("REQ-0.23.0-04-15")
     def test_foundation(self):
-        self.assertTrue(_is_foundation_adr("ADR-0.0.8-f"))
-        self.assertTrue(_is_foundation_adr("ADR-0.0.8-feature-toggle-system"))
+        self.assertTrue(is_foundation_adr("ADR-0.0.8-f"))
+        self.assertTrue(is_foundation_adr("ADR-0.0.8-feature-toggle-system"))
 
     @covers("REQ-0.23.0-04-15")
     def test_non_foundation(self):
-        self.assertFalse(_is_foundation_adr("ADR-0.1.0-f"))
-        self.assertFalse(_is_foundation_adr("ADR-0.10.0-f"))
+        self.assertFalse(is_foundation_adr("ADR-0.1.0-f"))
+        self.assertFalse(is_foundation_adr("ADR-0.10.0-f"))
 
 
 # ---------------------------------------------------------------------------

@@ -26,10 +26,11 @@ from gzkit.commands.common import (
     resolve_adr_file,
 )
 from gzkit.config import GzkitConfig
+from gzkit.core.models import ADR_ID_PARTS_BODY
 from gzkit.ledger import Ledger
 from gzkit.traceability import scan_test_tree
 
-_ADR_SEMVER_RE = re.compile(r"^ADR-(\d+\.\d+\.\d+)")
+_ADR_SEMVER_RE = re.compile(rf"^{ADR_ID_PARTS_BODY}")
 
 
 def _adr_semver(adr_stem: str) -> str | None:

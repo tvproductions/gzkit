@@ -22,6 +22,7 @@ import json
 import re
 from pathlib import Path
 
+from gzkit.core.models import ADR_SHORT_ID_BODY
 from gzkit.frontmatter import FrontmatterRead, read_frontmatter_bytes
 from gzkit.validate import ValidationError
 
@@ -605,7 +606,7 @@ def _parse_adr_frontmatter(path: Path) -> dict[str, str] | None:
     return dict(read.fields) if read.state == "valid" else None
 
 
-_BARE_ADR_ID_RE = re.compile(r"^(ADR-\d+\.\d+\.\d+)-.+$")
+_BARE_ADR_ID_RE = re.compile(rf"^({ADR_SHORT_ID_BODY})-.+$")
 
 
 def _live_adr_ids(project_root: Path) -> set[str]:

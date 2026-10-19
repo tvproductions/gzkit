@@ -20,6 +20,7 @@ from gzkit.cli.helpers.exit_codes import (
     EXIT_SYSTEM_ERROR,
     EXIT_USER_ERROR,
 )
+from gzkit.core.models import ADR_SHORT_ID_BODY
 from gzkit.justify.anchors import resolve_anchor
 from gzkit.justify.complexity_hints import gather_hints_markdown
 from gzkit.justify.evidence import gather_evidence
@@ -40,7 +41,7 @@ DRAFT_SLUG_REQUIRED_MESSAGE = "--draft-slug is required when --save is combined 
 
 ANCHOR_OR_DRAFT_REQUIRED_MESSAGE = "justify: anchor or --draft is required"
 
-_ADR_PATTERN = re.compile(r"^ADR-\d+\.\d+\.\d+$", re.IGNORECASE)
+_ADR_PATTERN = re.compile(rf"^{ADR_SHORT_ID_BODY}$", re.IGNORECASE)
 
 
 def handle_justify(

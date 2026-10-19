@@ -34,7 +34,12 @@ from typing import Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, ValidationError, field_validator
 
-from gzkit.core.models import OBPI_FRONTMATTER_ID_PATTERN
+from gzkit.core.models import (
+    ADR_POOL_ID_BODY,
+    ADR_SHORT_ID_BODY,
+    OBPI_FRONTMATTER_ID_PATTERN,
+    SLUG_BODY,
+)
 
 __all__ = [
     "CHECKPOINT_MODE",
@@ -111,7 +116,7 @@ PROSPECTIVE_SECTIONS = (
 # actually mandates — and `ADR-pool.<slug>` entirely. Exactly the defect already
 # fixed on the sibling field below under OBPI-0.0.72-02, left unfixed here
 # (GHI #709).
-_ADR_ID_RE = re.compile(r"^(?:ADR-pool\.[a-z0-9-]+|ADR-\d+\.\d+\.\d+(?:-[a-z0-9-]+)?)$")
+_ADR_ID_RE = re.compile(rf"^(?:{ADR_POOL_ID_BODY}|{ADR_SHORT_ID_BODY}(?:-{SLUG_BODY})?)$")
 # Widened to the canonical obpi.json slug-optional pattern (additive: the
 # short OBPI-X.Y.Z-NN form still matches). The strict NN-only form rejected
 # every slug-bearing id its own writers emit (OBPI-0.0.72-02).

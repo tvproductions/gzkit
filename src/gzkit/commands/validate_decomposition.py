@@ -18,6 +18,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from gzkit.core.models import ADR_PREFIX_BODY
 from gzkit.validate import ValidationError, parse_frontmatter
 from gzkit.validate_pkg.document import is_adr_shape_grandfathered, is_pool_adr_path
 
@@ -90,7 +91,7 @@ def validate_decomposition(project_root: Path) -> list[ValidationError]:
         obpis_dir = adr_dir / "obpis"
         briefs_dir = adr_dir / "briefs"
         # Extract ADR version from filename
-        match = re.match(r"ADR-([\d.]+)", adr_md.stem)
+        match = re.match(rf"{ADR_PREFIX_BODY}([\d.]+)", adr_md.stem)
         if match:
             version = match.group(1)
             existing_briefs = list(obpis_dir.glob(f"OBPI-{version}-*.md"))

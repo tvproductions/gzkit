@@ -14,7 +14,13 @@ from datetime import datetime
 from pathlib import Path
 
 from gzkit.commands.validate_briefs import _find_obpi_briefs
-from gzkit.core.models import OBPI_SHORT_ID_BODY, REQ_ID_BODY, TASK_ID_BODY
+from gzkit.core.models import (
+    ADR_POOL_PREFIX_BODY,
+    ADR_SHORT_ID_BODY,
+    OBPI_SHORT_ID_BODY,
+    REQ_ID_BODY,
+    TASK_ID_BODY,
+)
 from gzkit.doc_coverage.manifest import MANPAGE_DIR
 from gzkit.ledger import extract_bare_obpi_id
 from gzkit.validate import ValidationError
@@ -211,7 +217,9 @@ def _is_active_obpi_brief_reflection_event(
 # (``ADR-pool.*.md``). Pool ADRs are backlog governance artifacts — the same
 # SUPPORT-channel carve-out reasoning applies, and GHI #563 designed this carve-out
 # precisely for a backlog edit emitted while a *different* OBPI's TASKs are active.
-_ADR_DECISION_DOC_RE = re.compile(r"/adr/.+/ADR-(?:\d+\.\d+\.\d+-|pool\.)[^/]+\.md$")
+_ADR_DECISION_DOC_RE = re.compile(
+    rf"/adr/.+/(?:{ADR_SHORT_ID_BODY}-|{ADR_POOL_PREFIX_BODY})[^/]+\.md$"
+)
 
 
 def _is_adr_decision_doc_reflection_event(

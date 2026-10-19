@@ -22,7 +22,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.commands.common import _is_pool_adr_id
 from gzkit.commands.validate_frontmatter import validate_frontmatter_coherence
-from gzkit.core.models import OBPI_SHORT_ID_BODY
+from gzkit.core.models import ADR_POOL_PREFIX_BODY, ADR_PREFIX_BODY, OBPI_SHORT_ID_BODY
 from gzkit.core.obpi_state_machine import OBPI_STATES, OBPIState
 from gzkit.governance.obpi_transition_monitor import TransitionMonitor
 from gzkit.governance.status_vocab import STATUS_VOCAB_MAPPING
@@ -364,7 +364,9 @@ def _resolve_artifact_id(abs_path: Path) -> str:
     stem looks like ``ADR-0.1.0-slug`` or ``OBPI-0.0.16-03-slug``.
     """
     stem = abs_path.stem
-    adr_match = re.match(r"^(ADR-[\d.]+(?:-pool\.[\w.]+)?|ADR-pool\.[\w.]+)", stem)
+    adr_match = re.match(
+        rf"^({ADR_PREFIX_BODY}[\d.]+(?:-pool\.[\w.]+)?|{ADR_POOL_PREFIX_BODY}[\w.]+)", stem
+    )
     if adr_match:
         return adr_match.group(0)
     obpi_match = re.match(rf"^({OBPI_SHORT_ID_BODY})", stem)
