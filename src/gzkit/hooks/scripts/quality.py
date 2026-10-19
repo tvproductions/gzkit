@@ -2,6 +2,8 @@
 
 from textwrap import dedent
 
+from gzkit.core.models import ADR_SHORT_ID_BODY, OBPI_SHORT_ID_BODY
+
 
 def _verifier_pipe_gate_script() -> str:
     """Return the PreToolUse verification exit-code integrity hook script (GHI #589).
@@ -156,8 +158,9 @@ def _post_edit_ruff_script() -> str:
 
 def _stop_turn_feedback_script() -> str:
     """Return the blocking stop-turn-feedback Stop hook script (ADR-0.0.70, GHI #620)."""
-    return dedent(
-        """\
+    return (
+        dedent(
+            """\
             #!/usr/bin/env python3
             \"\"\"Stop-Turn-Feedback Hook (ADR-0.0.70 OBPI-0.0.70-01; claim-grounding GHI #620).
 
@@ -216,7 +219,7 @@ def _stop_turn_feedback_script() -> str:
 
             CLAIM_PATTERNS = [
                 re.compile(
-                    r"\\b(?:OBPI|ADR)-[\\w.-]+\\s+is\\s+"
+                    r"\\b(?:__obpi_short__|__adr_short__)[\\w.-]*\\s+is\\s+"
                     r"(?:attested[- _]?completed?|complete\\b|completed\\b)",
                     re.IGNORECASE,
                 ),
@@ -462,4 +465,7 @@ def _stop_turn_feedback_script() -> str:
             if __name__ == "__main__":
                 sys.exit(main(sys.argv[1:]))
         """
+        )
+        .replace("__obpi_short__", OBPI_SHORT_ID_BODY)
+        .replace("__adr_short__", ADR_SHORT_ID_BODY)
     )

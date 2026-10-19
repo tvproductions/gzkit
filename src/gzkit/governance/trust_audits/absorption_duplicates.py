@@ -20,17 +20,20 @@ import re
 from collections import defaultdict
 from pathlib import Path
 
+from gzkit.core.models import OBPI_SHORT_ID_BODY
 from gzkit.validate import ValidationError
 
 _OPSDEV_SOURCE_PATH = re.compile(
     r"`(?:\.\./)?airlineops/src/opsdev/lib/([A-Za-z_][A-Za-z0-9_]*)\.py`",
 )
 _OBPI_ID_LINE = re.compile(
-    r"^id:\s*(OBPI-[0-9]+\.[0-9]+\.[0-9]+-[0-9]+[A-Za-z0-9\-.]*)\s*$",
+    rf"^id:\s*({OBPI_SHORT_ID_BODY}[A-Za-z0-9\-.]*)\s*$",
     re.MULTILINE,
 )
 _PARENT_LINE = re.compile(r"^parent:\s*(ADR-[A-Za-z0-9\-.]+)\s*$", re.MULTILINE)
-_PAIRED_WITH_LINE = re.compile(r"^paired_with:\s*(OBPI-[A-Za-z0-9\-.]+)\s*$", re.MULTILINE)
+_PAIRED_WITH_LINE = re.compile(
+    rf"^paired_with:\s*({OBPI_SHORT_ID_BODY}[A-Za-z0-9\-.]*)\s*$", re.MULTILINE
+)
 
 
 def _split_frontmatter(text: str) -> tuple[str, str] | None:

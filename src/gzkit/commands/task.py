@@ -10,10 +10,10 @@ from typing import TypedDict
 
 from rich.markup import escape
 
-from gzkit.artifact_prefix import active_prefix_matches
 from gzkit.commands.closeout_form import _append_frontmatter_list_value
 from gzkit.commands.common import GzCliError, console, ensure_initialized, get_project_root
-from gzkit.core.models import REQ_ID_BODY, TASK_ID_BODY
+from gzkit.core.id_resolver import IdentityContext, IdResolutionError, resolve_full
+from gzkit.core.models import OBPI_SHORT_ID_BODY, REQ_ID_BODY, TASK_ID_BODY
 from gzkit.events import (
     TaskBlockedEvent,
     TaskCompletedEvent,
@@ -27,7 +27,7 @@ from gzkit.tasks import TaskId, TaskStatus, derive_req_task_id, get_task_registr
 from gzkit.triangle import extract_reqs_from_brief
 
 _REQ_PARTS_RE = re.compile(rf"^{REQ_ID_BODY}$")
-_OBPI_LINEAGE_RE = re.compile(r"^(OBPI-\d+\.\d+\.\d+-\d+)")
+_OBPI_LINEAGE_RE = re.compile(rf"^({OBPI_SHORT_ID_BODY})")
 
 
 def _obpi_lineage_id(obpi_id: str) -> str:
@@ -96,21 +96,20 @@ def _resolve_obpi_id(ledger: Ledger, short_obpi: str, *, project_root: Path | No
     to the pipeline's instead of writing a divergent short form (GHI #653).
     """
     graph = ledger.get_artifact_graph()
-    # Parked and withdrawn siblings of a reused short prefix drop here, with or
-    # without a project root: the shared rule of GHI #1162.
-    matches = active_prefix_matches(graph, short_obpi)
-    if len(matches) == 1:
-        return matches[0]
-    if len(matches) > 1 and project_root is not None:
+    context = IdentityContext(graph={key: dict(info) for key, info in graph.items()})
+    try:
+        return resolve_full(short_obpi, context).canonical_id
+    except IdResolutionError as exc:
         # Layer-2 may name OBPIs Layer-1 cannot show — orphaned `obpi_created`
         # records accumulate (that is why `audit_obpi_lifecycle_coherence`
         # exists), and one phantom sharing the short prefix is enough to make a
         # genuinely-unambiguous id look ambiguous and force the divergent short
         # form. Disambiguate by on-disk brief: canon decides. Two REAL briefs
         # stay ambiguous — guessing would write a confidently wrong obpi_id.
-        on_disk = [key for key in matches if _find_brief_path(project_root, key) is not None]
-        if len(on_disk) == 1:
-            return on_disk[0]
+        if project_root is not None:
+            on_disk = [key for key in exc.candidates if _find_brief_path(project_root, key)]
+            if len(on_disk) == 1:
+                return on_disk[0]
     return short_obpi
 
 
@@ -131,7 +130,9 @@ def _all_started_task_ids(ledger: Ledger) -> set[str]:
     return started
 
 
-def _resolve_task_context(ledger: Ledger, task_id_str: str) -> tuple[TaskId, str, str]:
+def _resolve_task_context(
+    ledger: Ledger, task_id_str: str, *, project_root: Path | None = None
+) -> tuple[TaskId, str, str]:
     """Parse a TASK ID and derive parent OBPI and ADR identifiers.
 
     The OBPI id is taken from the task's ``task_started`` ledger event when
@@ -146,7 +147,9 @@ def _resolve_task_context(ledger: Ledger, task_id_str: str) -> tuple[TaskId, str
     task_id = TaskId.parse(task_id_str)
     adr_id = f"ADR-{task_id.semver}"
     derived = f"OBPI-{task_id.semver}-{task_id.obpi_item}"
-    obpi_id = _ledger_obpi_for_task(ledger, task_id_str) or _resolve_obpi_id(ledger, derived)
+    obpi_id = _ledger_obpi_for_task(ledger, task_id_str) or _resolve_obpi_id(
+        ledger, derived, project_root=project_root
+    )
     return task_id, obpi_id, adr_id
 
 
@@ -326,7 +329,7 @@ def task_start_cmd(task_id_str: str, *, as_json: bool = False) -> None:
     project_root = get_project_root()
     ledger = Ledger(project_root / config.paths.ledger)
 
-    task_id, obpi_id, adr_id = _resolve_task_context(ledger, task_id_str)
+    task_id, obpi_id, adr_id = _resolve_task_context(ledger, task_id_str, project_root=project_root)
     current = _current_task_status(ledger, str(task_id), obpi_id)
 
     if current not in (TaskStatus.PENDING, TaskStatus.BLOCKED):
@@ -369,7 +372,7 @@ def task_complete_cmd(task_id_str: str, *, as_json: bool = False) -> None:
     project_root = get_project_root()
     ledger = Ledger(project_root / config.paths.ledger)
 
-    task_id, obpi_id, adr_id = _resolve_task_context(ledger, task_id_str)
+    task_id, obpi_id, adr_id = _resolve_task_context(ledger, task_id_str, project_root=project_root)
     current = _current_task_status(ledger, str(task_id), obpi_id)
 
     if current != TaskStatus.IN_PROGRESS:
@@ -410,7 +413,7 @@ def task_block_cmd(task_id_str: str, reason: str, *, as_json: bool = False) -> N
     project_root = get_project_root()
     ledger = Ledger(project_root / config.paths.ledger)
 
-    task_id, obpi_id, adr_id = _resolve_task_context(ledger, task_id_str)
+    task_id, obpi_id, adr_id = _resolve_task_context(ledger, task_id_str, project_root=project_root)
     current = _current_task_status(ledger, str(task_id), obpi_id)
 
     if current != TaskStatus.IN_PROGRESS:
@@ -453,7 +456,7 @@ def task_escalate_cmd(task_id_str: str, reason: str, *, as_json: bool = False) -
     project_root = get_project_root()
     ledger = Ledger(project_root / config.paths.ledger)
 
-    task_id, obpi_id, adr_id = _resolve_task_context(ledger, task_id_str)
+    task_id, obpi_id, adr_id = _resolve_task_context(ledger, task_id_str, project_root=project_root)
     current = _current_task_status(ledger, str(task_id), obpi_id)
 
     if current != TaskStatus.IN_PROGRESS:

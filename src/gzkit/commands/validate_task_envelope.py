@@ -14,7 +14,7 @@ from datetime import datetime
 from pathlib import Path
 
 from gzkit.commands.validate_briefs import _find_obpi_briefs
-from gzkit.core.models import REQ_ID_BODY, TASK_ID_BODY
+from gzkit.core.models import OBPI_SHORT_ID_BODY, REQ_ID_BODY, TASK_ID_BODY
 from gzkit.doc_coverage.manifest import MANPAGE_DIR
 from gzkit.ledger import extract_bare_obpi_id
 from gzkit.validate import ValidationError
@@ -86,7 +86,7 @@ _TASK_ENVELOPE_ENFORCEMENT_EPOCH = datetime.fromisoformat("2026-05-30T14:44:00+0
 # the unrepaired producer wrote and masks nothing else. The shrink-only
 # grandfather set below is untouched.
 _OBPI_ID_CANONICAL_CUTOVER = datetime.fromisoformat("2026-07-29T09:45:00+00:00")
-_OBPI_LINEAGE_RE = re.compile(r"^(OBPI-\d+\.\d+\.\d+-\d+)")
+_OBPI_LINEAGE_RE = re.compile(rf"^({OBPI_SHORT_ID_BODY})")
 
 
 # Signature (d) — obpi_id divergence — grandfathers the divergent task_ids that

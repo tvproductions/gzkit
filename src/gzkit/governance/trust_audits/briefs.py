@@ -20,7 +20,13 @@ from pathlib import Path
 from typing import Any
 
 from gzkit.brief_commands import extract_fenced_commands, is_shell_less_executable
-from gzkit.core.models import REQ_ID_BODY_PLAIN
+from gzkit.core.models import (
+    ARTIFACT_REF_BODY,
+    OBPI_ID_PARTS_BODY,
+    OBPI_SHORT_ID_BODY,
+    REQ_ID_BODY_PLAIN,
+    SLUG_BODY,
+)
 from gzkit.decomposition import extract_markdown_section
 from gzkit.governance.brief_structure import is_terminal_brief_status
 from gzkit.validate import ValidationError
@@ -36,7 +42,7 @@ _REQ_KIND_TAG = re.compile(r"\[(behavior|support|structural-fence)\]", re.IGNORE
 _COVERS_REQ_TAG = re.compile(rf"""@covers\(\s*["']({REQ_ID_BODY_PLAIN})["']""")
 
 _OBPI_ID_IN_FRONTMATTER = re.compile(
-    r"^id:\s*(OBPI-[0-9]+\.[0-9]+\.[0-9]+-[0-9]+[A-Za-z0-9\-.]*)\s*$",
+    rf"^id:\s*({OBPI_SHORT_ID_BODY}[A-Za-z0-9\-.]*)\s*$",
     re.MULTILINE,
 )
 _LANE_IN_FRONTMATTER = re.compile(r"^lane:\s*([A-Za-z]+)\s*$", re.MULTILINE)
@@ -268,12 +274,10 @@ def _collect_covers_req_ids(project_root: Path) -> set[str]:
 
 _BRIEF_CROSS_REF_SKIP_MARKER = "<!-- gz-validate-skip: brief-cross-references -->"
 
-_BRIEF_CROSS_REF_PATTERN = re.compile(
-    r"\b(?P<kind>OBPI|ADR)-(?P<ver>\d+\.\d+\.\d+)(?:-(?P<seq>\d+)(?:-(?P<slug>[a-z0-9][a-z0-9-]*))?)?\b"
-)
+_BRIEF_CROSS_REF_PATTERN = re.compile(rf"\b{ARTIFACT_REF_BODY}\b")
 
 _ADR_DIR_PATTERN = re.compile(r"^ADR-(\d+\.\d+\.\d+)(?:-[a-z0-9][a-z0-9-]*)?$")
-_OBPI_FILE_PATTERN = re.compile(r"^OBPI-(\d+\.\d+\.\d+)-(\d+)(?:-[a-z0-9][a-z0-9-]*)?\.md$")
+_OBPI_FILE_PATTERN = re.compile(rf"^{OBPI_ID_PARTS_BODY}(?:-{SLUG_BODY})?\.md$")
 _ADR_NAMESPACES: tuple[str, ...] = ("foundation", "pre-release")
 
 
@@ -298,7 +302,7 @@ def _build_cross_reference_index(adr_root: Path) -> tuple[set[str], set[str]]:
             for brief in obpi_dir.glob("OBPI-*.md"):
                 fm = _OBPI_FILE_PATTERN.match(brief.name)
                 if fm is not None:
-                    obpi_keys.add(f"{fm.group(1)}-{fm.group(2)}")
+                    obpi_keys.add(f"{fm['semver']}-{fm['item']}")
     return adr_versions, obpi_keys
 
 
@@ -332,7 +336,7 @@ def _scan_brief_cross_references(
     errors: list[ValidationError] = []
     self_id = brief.stem  # e.g. "OBPI-0.0.31-02-register-t0-scorecard"
     self_match = _OBPI_FILE_PATTERN.match(brief.name)
-    self_obpi_key = f"{self_match.group(1)}-{self_match.group(2)}" if self_match else None
+    self_obpi_key = f"{self_match['semver']}-{self_match['item']}" if self_match else None
     seen_on_line: set[tuple[int, str]] = set()
     in_fenced_block = False
     for idx, line in enumerate(lines):

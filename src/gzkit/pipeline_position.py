@@ -36,6 +36,7 @@ from typing import Any, Protocol
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
+from gzkit.core.models import OBPI_ANY_WIDTH_SHORT_ID_BODY
 from gzkit.ledger import LedgerEvent, pipeline_stage_transition_event
 from gzkit.ledger_semantics import _uncompleted_attestation_requirement
 from gzkit.obpi_lifecycle import fold_renames
@@ -116,7 +117,7 @@ _PIPELINE = "gz obpi pipeline"
 #: whole run of digits, whatever its width: the match ends at the ``-`` that
 #: begins the slug or at the end of the id, so item 10 is never the short form
 #: of item 100 and a one-digit item has one.
-_SHORT_OBPI_ID = re.compile(r"OBPI-\d+\.\d+\.\d+-\d+(?=-|\Z)")
+_SHORT_OBPI_ID = re.compile(rf"{OBPI_ANY_WIDTH_SHORT_ID_BODY}(?=-|\Z)")
 
 #: The cut length, in characters, of the diagnostic summary of one blocker that
 #: a transition event carries. The ledger is append-only and every reader pays

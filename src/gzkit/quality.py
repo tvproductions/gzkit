@@ -23,6 +23,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.canonical_steps import CANONICAL_STEP_COMMANDS
+from gzkit.core.models import OBPI_SHORT_ID_BODY
 from gzkit.doc_coverage.manifest import MANPAGE_DIR
 from gzkit.exchange_records import exchange_dir
 from gzkit.handoff_validation import (
@@ -1718,7 +1719,7 @@ def _is_non_obpi_register_entry(content: str) -> bool:
     lock rides the same lock rail but is a session mutex, not a token, so its
     release record has no OBPI id and no parent ADR to carry (GHI #848).
     """
-    return bool(re.search(r"^obpi_id:\s*(?!OBPI-)\S+", content, re.MULTILINE))
+    return bool(re.search(rf"^obpi_id:\s*(?!{OBPI_SHORT_ID_BODY})\S+", content, re.MULTILINE))
 
 
 def _handoff_predates_cutover(content: str, cutover: datetime) -> bool:

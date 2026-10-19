@@ -40,6 +40,8 @@ import json
 import re
 from pathlib import Path
 
+from gzkit.core.models import OBPI_SHORT_ID_BODY
+
 #: Non-substantive section bodies. Lifted verbatim from the two prior copies so
 #: the merge changes no verdict — a fence that quietly tightened while being
 #: de-duplicated would be a second change wearing the first one's commit.
@@ -175,7 +177,7 @@ def completion_blockers(content: str, *, requires_human: bool = True) -> list[st
 
 def obpi_id_from_path(rel_path: str) -> str | None:
     """Return the short OBPI id embedded in a brief path (``OBPI-0.14.0-04``)."""
-    match = re.search(r"(OBPI-[\d.]+-\d+)", rel_path.replace("\\", "/"))
+    match = re.search(rf"({OBPI_SHORT_ID_BODY})", rel_path.replace("\\", "/"))
     return match.group(1) if match else None
 
 

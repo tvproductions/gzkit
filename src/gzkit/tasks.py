@@ -19,7 +19,14 @@ from typing import TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from gzkit.core.models import REQ_ID_BODY, TASK_ID_BODY, TASK_ID_BODY_PLAIN, TASK_SLUG_ID_BODY
+from gzkit.core.models import (
+    ADR_ID_PARTS_BODY,
+    OBPI_ID_PARTS_BODY,
+    REQ_ID_BODY,
+    TASK_ID_BODY,
+    TASK_ID_BODY_PLAIN,
+    TASK_SLUG_ID_BODY,
+)
 from gzkit.ledger_corrections import live_events
 
 # ---------------------------------------------------------------------------
@@ -263,7 +270,8 @@ def active_task_trailers(ledger_path: pathlib.Path, staged_paths: Iterable[str])
 
 # Scope keys: an artifact id's semver and optional OBPI number, and the same two
 # parts of an OBPI-scoped TASK id. A slug TASK (direct fix) has neither.
-_SCOPE_ID_RE = re.compile(r"^(?:ADR|OBPI)-(\d+\.\d+\.\d+)(?:-(\d+)(?=-|$))?")
+_ADR_SCOPE_RE = re.compile(rf"^{ADR_ID_PARTS_BODY}")
+_OBPI_SCOPE_RE = re.compile(rf"^{OBPI_ID_PARTS_BODY}(?=-|$)")
 _SCOPED_TASK_RE = re.compile(rf"^{TASK_ID_BODY}$")
 
 
@@ -276,10 +284,12 @@ def in_scope_task_id(ledger_path: pathlib.Path, scope_id: str | None) -> str | N
     of ``gz validate --task-envelope-coherence`` to report (operator ruling
     2026-09-28, "Infer in scope; unset if ambiguous").
     """
-    scope = _SCOPE_ID_RE.match(scope_id) if scope_id else None
+    scope = None
+    if scope_id:
+        scope = _OBPI_SCOPE_RE.match(scope_id) or _ADR_SCOPE_RE.match(scope_id)
     if scope is None:
         return None
-    semver, obpi_number = scope.groups()
+    semver, obpi_number = scope["semver"], scope.groupdict().get("item")
     matches: list[str] = []
     for task_id in in_progress_task_ids(ledger_path):
         task = _SCOPED_TASK_RE.match(task_id)

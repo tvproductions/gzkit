@@ -2,7 +2,7 @@
 
 # RO-2 specification — one identity seam for every reader
 
-**2026-10-18. Status: tranche 1 landed (2026-10-19, the seam, its witness and a seeded baseline of 187 rows); tranche 2 landed (2026-10-19, the 21 REQ and TASK rows retired, 166 remain); tranches 3 to 5 open.** Operator: **g0**. Repair order RO-2 of the
+**2026-10-18. Status: tranche 1 landed (2026-10-19, the seam, its witness and a seeded baseline of 187 rows); tranche 2 landed (2026-10-19, the 21 REQ and TASK rows retired, 166 remain); tranche 3 landed (2026-10-19, the 37 OBPI rows retired, 126 remain, and the separator-less brief finders closed); tranches 4 and 5 open.** Operator: **g0**. Repair order RO-2 of the
 [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders), mandate item 2:
 give REQ, TASK and release identity independent of the ADR, by alias and resolver, renaming nothing
 before 1.0. This is phase 1 of [`ADR-pool.identifier-ladder-migration`](../design/adr/pool/ADR-pool.identifier-ladder-migration.md),
@@ -64,11 +64,14 @@ routing, independent of the tranches):
 - `obpi_audit_cmd._derive_adr_id` used `rsplit("-", 1)`, so `OBPI-0.28.0-01-context-core` gave
   `ADR-0.28.0-01-context`. Fixed in `d111c1259` (2026-10-18): it reads the semver through
   `lock_manager.adr_id_from_obpi`, a site the baseline now holds.
-- `commands/task.py:146` resolves a short OBPI id without `project_root`, ignoring the parked flag,
-  so `OBPI-0.28.0-01` can be booked in short form (the GHI #653 divergence).
+- `commands/task.py:146` resolved a short OBPI id without `project_root`, so a phantom sibling kept
+  it in short form (the GHI #653 divergence). Closed at tranche 3: `_resolve_obpi_id` follows the
+  seam's `resolve_full`, and `_resolve_task_context` hands it the project root. The parked flag was
+  already honoured through `active_prefix_matches`.
 - `pipeline_markers.find_obpi_brief` and `obpi_precomplete.resolve_brief_path` glob `{id}*.md` with
-  no `-` separator and take the first match, so `OBPI-0.28.0-1` matches items -10 to -19. This is
-  tranche 3's to close.
+  no `-` separator and take the first match, so `OBPI-0.28.0-1` matches items -10 to -19. Closed at
+  tranche 3: both go through `pipeline_markers.select_obpi_brief`, which takes a stem equal to the id,
+  else expands only across a `-`, and names no brief when the id stays ambiguous.
 
 ## The seam
 
@@ -162,7 +165,7 @@ moved in the same commit.
 |---|---|---|
 | 1 | The seam (grammar bodies, `resolve`, `parent_of`), the JSON schemas tied to it, `gz validate --id-seam` with its baseline and registry entry, and the resolution check | The baseline is seeded and committed. The resolution check passes. The `OBPI-0.28.0-01` fixture resolves both ways, and an ambiguous short id fails closed. |
 | 2 | REQ and TASK readers: the 23 REQ and 10 TASK copies, and the slug TASK form | No REQ or TASK row remains in the baseline. *Landed 2026-10-19:* every reader embeds `REQ_ID_BODY`, `REQ_ID_BODY_PLAIN`, `TASK_ID_BODY`, `TASK_ID_BODY_PLAIN` or `TASK_SLUG_ID_BODY`; the commit-message reader in `mx/log.py` cites the item-criterion form (`REQ-NN-MM`), so the seam gained `REQ_SHORT_ID_BODY` for it. |
-| 3 | OBPI readers and brief finders, the separator-less globs included | No OBPI row remains |
+| 3 | OBPI readers and brief finders, the separator-less globs included | No OBPI row remains. *Landed 2026-10-19:* every reader embeds `OBPI_SHORT_ID_BODY`, `OBPI_ID_PARTS_BODY`, `OBPI_FRONTMATTER_ID_PATTERN` or `OBPI_ID_BODY`. Three tolerant readers keep their breadth as seam bodies of their own: `ARTIFACT_REF_BODY` (the brief cross-reference audit reads a malformed item as drift), `OBPI_ANY_WIDTH_SHORT_ID_BODY` (attested REQ-0.35.0-15-02, the whole item number whatever its width) and `ARTIFACT_PREFIX_BODY` (a parent link may name any PRD, ADR or OBPI). The hook generators substitute the seam bodies into their scripts at render time. |
 | 4 | ADR readers and package finders | No ADR row remains |
 | 5 | The 28 parent-recovery sites and the reverse prefix scans, through `parent_of`: the `parent` and `compose` rows | No spelling-derived parent remains outside the seam. The baseline is empty, and RO-2 closes. |
 

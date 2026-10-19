@@ -76,7 +76,7 @@ def check_status_change_to_completed(new_string: str) -> bool:
 
 def extract_obpi_id(file_path: str) -> str | None:
     """Extract OBPI short ID (e.g. OBPI-0.14.0-04) from file path."""
-    match = re.search(r"(OBPI-[\d.]+-\d+)", file_path)
+    match = re.search(r"(OBPI-\d+\.\d+\.\d+-\d{2})", file_path)
     return match.group(1) if match else None
 
 
@@ -85,8 +85,8 @@ def extract_adr_id(obpi_id: str) -> str | None:
 
     e.g. OBPI-0.14.0-04 -> ADR-0.14.0
     """
-    match = re.match(r"OBPI-([\d.]+)-\d+", obpi_id)
-    return f"ADR-{match.group(1)}" if match else None
+    match = re.match(r"OBPI-(?P<semver>\d+\.\d+\.\d+)-(?P<item>\d{2})", obpi_id)
+    return f"ADR-{match.group('semver')}" if match else None
 
 
 def is_foundation_adr(adr_id: str) -> bool:

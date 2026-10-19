@@ -12,6 +12,7 @@ from gzkit.adr_eval import (
     _passes_to_score,
     _word_count,
 )
+from gzkit.core.models import OBPI_ID_PARTS_BODY, OBPI_SHORT_ID_BODY
 from gzkit.hooks.obpi import TEMPLATE_SCAFFOLD_MARKERS, section_body
 from gzkit.qc_binding import register_advisory_qc_step
 
@@ -157,7 +158,7 @@ def _score_feature_checklist(content: str, obpi_count: int) -> tuple[int, list[s
         checks += 1
     else:
         findings.append("Missing or empty ## Checklist section")
-    if items and all(re.match(r"OBPI-", item) for item in items):
+    if items and all(re.match(OBPI_SHORT_ID_BODY, item) for item in items):
         checks += 1
     else:
         findings.append("Checklist items not prefixed with OBPI-")
@@ -192,9 +193,9 @@ def _score_obpi_decomposition(
     # Numbering gaps
     numbers = []
     for p in obpi_paths:
-        m = re.search(r"OBPI-[\d.]+-(\d+)", p.stem)
+        m = re.search(OBPI_ID_PARTS_BODY, p.stem)
         if m:
-            numbers.append(int(m.group(1)))
+            numbers.append(int(m.group("item")))
     if numbers and numbers == list(range(1, len(numbers) + 1)):
         checks += 1
     else:
@@ -443,7 +444,9 @@ def score_adr_deterministic(
 
 
 def _score_obpi_independence(content: str) -> int:
-    deps = re.findall(r"depends on OBPI-|requires OBPI-|after OBPI-", content, re.IGNORECASE)
+    deps = re.findall(
+        rf"(?:depends on|requires|after) ({OBPI_SHORT_ID_BODY})", content, re.IGNORECASE
+    )
     declared = section_body(content, "Dependencies") or ""
     undeclared = [d for d in deps if d.lower() not in declared.lower()]
     if not deps:

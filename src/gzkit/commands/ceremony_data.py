@@ -20,6 +20,7 @@ from rich.console import Console
 
 from gzkit.brief_commands import extract_fenced_commands
 from gzkit.commands.ceremony_state import WalkthroughDemo
+from gzkit.core.models import OBPI_ID_PARTS_BODY, OBPI_SHORT_ID_BODY
 from gzkit.doc_coverage.manifest import MANPAGE_DIR
 from gzkit.fidelity import is_self_referential_command, parse_fidelity_assertions
 from gzkit.reporter.presets import ColumnDef, status_table
@@ -68,7 +69,7 @@ def extract_brief_metadata(obpi_file: Path) -> dict[str, Any]:
     for line in lines:
         if line.startswith("# "):
             raw = line[2:].strip()
-            m = re.match(r"OBPI-[\d.]+-\d+:\s*(.+)", raw)
+            m = re.match(rf"{OBPI_SHORT_ID_BODY}:\s*(.+)", raw)
             meta["title"] = m.group(1) if m else raw
             break
 
@@ -578,8 +579,8 @@ def format_readiness_table(
 
 def _short_obpi_id(obpi_id: str) -> str:
     """Shorten ``OBPI-0.0.14-01-slug`` to ``01-slug``."""
-    m = re.match(r"OBPI-[\d.]+-(\d+-.*)", obpi_id)
-    return m.group(1) if m else obpi_id
+    m = re.match(rf"{OBPI_ID_PARTS_BODY}-(?P<rest>.*)", obpi_id)
+    return f"{m['item']}-{m['rest']}" if m else obpi_id
 
 
 def format_summary_table(briefs: list[dict[str, Any]], title: str) -> str:

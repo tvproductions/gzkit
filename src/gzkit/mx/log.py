@@ -22,7 +22,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from gzkit.core.models import REQ_ID_BODY_PLAIN, REQ_SHORT_ID_BODY
+from gzkit.core.models import OBPI_SHORT_ID_BODY, REQ_ID_BODY_PLAIN, REQ_SHORT_ID_BODY
 
 _LEDGER_RELPATH = (".gzkit", "ledger.jsonl")
 
@@ -32,7 +32,7 @@ _ADR_RE = re.compile(r"ADR-\d+\.\d+\.\d+")
 # Two digits exactly: the canonical index width. A looser ``\d+`` truncated an
 # author's wildcard into an artifact name, which is the inverse of this
 # module's contract that nothing in the window is "narrated away".
-_OBPI_RE = re.compile(r"OBPI-\d+\.\d+\.\d+-\d{2}")
+_OBPI_RE = re.compile(OBPI_SHORT_ID_BODY)
 _REQ_RE = re.compile(rf"{REQ_ID_BODY_PLAIN}|{REQ_SHORT_ID_BODY}")
 
 # git log record/field separators (ASCII unit/record separators — never appear

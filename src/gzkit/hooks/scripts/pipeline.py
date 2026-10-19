@@ -2,6 +2,8 @@
 
 from textwrap import dedent
 
+from gzkit.core.models import OBPI_SHORT_ID_BODY
+
 
 def _pipeline_completion_reminder_script() -> str:
     """Return the pipeline completion reminder hook script."""
@@ -277,7 +279,7 @@ def _plan_audit_gate_script() -> str:
             from pathlib import Path
 
             LEGACY_RECEIPT_FILE = ".plan-audit-receipt.json"
-            OBPI_PATTERN = re.compile(r"OBPI-[\\d.]+-\\d+")
+            OBPI_PATTERN = re.compile(r"__obpi_short__")
             NEW_FILE_PATTERNS = re.compile(
                 r"\\(new\\)|\\bcreate\\s+`?(?:src|tests)/|new\\s+file|new\\s+module",
                 re.IGNORECASE,
@@ -562,4 +564,4 @@ def _plan_audit_gate_script() -> str:
             if __name__ == "__main__":
                 main()
             """
-    )
+    ).replace("__obpi_short__", OBPI_SHORT_ID_BODY)

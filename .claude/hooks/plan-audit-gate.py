@@ -43,7 +43,7 @@ import sys
 from pathlib import Path
 
 LEGACY_RECEIPT_FILE = ".plan-audit-receipt.json"
-OBPI_PATTERN = re.compile(r"OBPI-[\d.]+-\d+")
+OBPI_PATTERN = re.compile(r"OBPI-\d+\.\d+\.\d+-\d{2}")
 NEW_FILE_PATTERNS = re.compile(
     r"\(new\)|\bcreate\s+`?(?:src|tests)/|new\s+file|new\s+module",
     re.IGNORECASE,

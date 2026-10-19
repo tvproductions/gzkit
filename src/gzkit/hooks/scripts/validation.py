@@ -2,11 +2,14 @@
 
 from textwrap import dedent
 
+from gzkit.core.models import OBPI_ID_PARTS_BODY, OBPI_SHORT_ID_BODY
+
 
 def _obpi_completion_validator_script() -> str:
     """Return the OBPI completion validator hook script."""
-    return dedent(
-        """\
+    return (
+        dedent(
+            """\
             #!/usr/bin/env python3
             \"\"\"OBPI Completion Validator Hook.
 
@@ -86,7 +89,7 @@ def _obpi_completion_validator_script() -> str:
 
             def extract_obpi_id(file_path: str) -> str | None:
                 \"\"\"Extract OBPI short ID (e.g. OBPI-0.14.0-04) from file path.\"\"\"
-                match = re.search(r"(OBPI-[\\d.]+-\\d+)", file_path)
+                match = re.search(r"(__obpi_short__)", file_path)
                 return match.group(1) if match else None
 
 
@@ -95,8 +98,8 @@ def _obpi_completion_validator_script() -> str:
 
                 e.g. OBPI-0.14.0-04 -> ADR-0.14.0
                 \"\"\"
-                match = re.match(r"OBPI-([\\d.]+)-\\d+", obpi_id)
-                return f"ADR-{match.group(1)}" if match else None
+                match = re.match(r"__obpi_parts__", obpi_id)
+                return f"ADR-{match.group('semver')}" if match else None
 
 
             def is_foundation_adr(adr_id: str) -> bool:
@@ -398,6 +401,9 @@ def _obpi_completion_validator_script() -> str:
             if __name__ == "__main__":
                 main()
             """
+        )
+        .replace("__obpi_short__", OBPI_SHORT_ID_BODY)
+        .replace("__obpi_parts__", OBPI_ID_PARTS_BODY)
     )
 
 

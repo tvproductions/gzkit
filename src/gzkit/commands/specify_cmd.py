@@ -16,7 +16,7 @@ from gzkit.commands.common import (
     resolve_adr_file,
     resolve_adr_ledger_id,
 )
-from gzkit.core.models import REQ_ID_BODY_PLAIN
+from gzkit.core.models import OBPI_SHORT_ID_BODY, REQ_ID_BODY_PLAIN
 from gzkit.decomposition import (
     WbsRow,
     active_checklist_items,
@@ -33,7 +33,7 @@ from gzkit.templates import render_template
 
 def _normalized_objective_from_checklist_item(checklist_item_text: str) -> str:
     """Render a one-sentence objective from ADR checklist text."""
-    objective = re.sub(r"^OBPI-\d+\.\d+\.\d+-\d+:\s*", "", checklist_item_text).strip()
+    objective = re.sub(rf"^{OBPI_SHORT_ID_BODY}:\s*", "", checklist_item_text).strip()
     if not objective:
         return "TBD"
     if objective.endswith((".", "!", "?")):

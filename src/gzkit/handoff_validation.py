@@ -34,6 +34,8 @@ from typing import Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, ValidationError, field_validator
 
+from gzkit.core.models import OBPI_FRONTMATTER_ID_PATTERN
+
 __all__ = [
     "CHECKPOINT_MODE",
     "HANDOFF_SCHEMA_VERSION",
@@ -113,7 +115,7 @@ _ADR_ID_RE = re.compile(r"^(?:ADR-pool\.[a-z0-9-]+|ADR-\d+\.\d+\.\d+(?:-[a-z0-9-
 # Widened to the canonical obpi.json slug-optional pattern (additive: the
 # short OBPI-X.Y.Z-NN form still matches). The strict NN-only form rejected
 # every slug-bearing id its own writers emit (OBPI-0.0.72-02).
-_OBPI_ID_RE = re.compile(r"^OBPI-\d+\.\d+\.\d+-\d{2}(?:-[a-z0-9-]+)?$")
+_OBPI_ID_RE = re.compile(OBPI_FRONTMATTER_ID_PATTERN)
 
 _PLACEHOLDER_RE = re.compile(
     r"\b(TBD|TODO|FIXME|PLACEHOLDER|XXX|CHANGEME)\b"

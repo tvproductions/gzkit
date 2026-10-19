@@ -47,6 +47,7 @@ __all__ = [
     "load_identity_context",
     "parent_of",
     "resolve",
+    "resolve_full",
 ]
 
 State = Literal["active", "parked", "withdrawn"]
@@ -203,6 +204,30 @@ def resolve(identifier: str, context: IdentityContext) -> Resolution:
         msg = f"{identifier} names no started TASK in the ledger"
         raise IdResolutionError(identifier, msg)
     return _resolve_artifact(identifier, kind, context)
+
+
+def resolve_full(identifier: str, context: IdentityContext) -> Resolution:
+    """Return :func:`resolve`'s artifact under the full slug the pipeline records.
+
+    A short-form record can sit in the graph beside the slug-form record of the
+    same OBPI, so :func:`resolve` stops at the short key. A producer that books
+    events (``gz task start``, GHI #653) must write the slug, so when exactly one
+    active key extends the resolved id across a ``-`` that key is the answer.
+    """
+    resolution = resolve(identifier, context)
+    if resolution.kind not in (IdKind.ADR, IdKind.OBPI):
+        return resolution
+    hits = active_prefix_matches(
+        context.graph, resolution.canonical_id, artifact_type=resolution.kind.value.lower()
+    )
+    if len(hits) != 1:
+        return resolution
+    return Resolution(
+        identifier=identifier,
+        canonical_id=hits[0],
+        kind=resolution.kind,
+        state=_state(context.graph[hits[0]]),
+    )
 
 
 def _parent_by_spelling(identifier: str, kind: IdKind) -> ParentLink:

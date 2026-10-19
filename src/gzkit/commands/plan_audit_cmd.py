@@ -8,6 +8,7 @@ from datetime import UTC, datetime
 from pathlib import Path, PurePosixPath
 
 from gzkit.commands.common import console
+from gzkit.core.models import OBPI_ID_PARTS_BODY
 from gzkit.governance.brief_path_validity import (
     allowed_path_resolves as _allowed_path_resolves,  # noqa: F401  (test import)
 )
@@ -173,7 +174,7 @@ def _emit_result(
         sys.exit(1)
 
 
-_OBPI_SEMVER_RE = re.compile(r"^OBPI-(\d+\.\d+\.\d+)-")
+_OBPI_SEMVER_RE = re.compile(rf"^{OBPI_ID_PARTS_BODY}")
 
 
 def _derive_adr_id(obpi_id: str) -> str | None:
@@ -187,7 +188,7 @@ def _derive_adr_id(obpi_id: str) -> str | None:
     match = _OBPI_SEMVER_RE.match(obpi_id)
     if match is None:
         return None
-    return f"ADR-{match.group(1)}"
+    return f"ADR-{match.group('semver')}"
 
 
 def _find_adr_dir(project_root: Path, adr_id: str) -> Path | None:

@@ -8,24 +8,6 @@
       "sites": 1
     },
     {
-      "file": "src/gzkit/adr_eval_scoring.py",
-      "symbol": "_score_feature_checklist",
-      "kind": "OBPI",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/adr_eval_scoring.py",
-      "symbol": "_score_obpi_decomposition",
-      "kind": "OBPI",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/adr_eval_scoring.py",
-      "symbol": "_score_obpi_independence",
-      "kind": "OBPI",
-      "sites": 1
-    },
-    {
       "file": "src/gzkit/airlock/enter.py",
       "symbol": "_ep_airlock_unaccounted_seam",
       "kind": "compose",
@@ -87,12 +69,6 @@
     },
     {
       "file": "src/gzkit/commands/adr_coverage.py",
-      "symbol": "<module>",
-      "kind": "OBPI",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/commands/adr_coverage.py",
       "symbol": "_compute_adr_coverage",
       "kind": "compose",
       "sites": 2
@@ -119,12 +95,6 @@
       "file": "src/gzkit/commands/adr_demote.py",
       "symbol": "_build_demote_plan",
       "kind": "compose",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/commands/adr_promote.py",
-      "symbol": "_build_adr_promotion_plan",
-      "kind": "OBPI",
       "sites": 1
     },
     {
@@ -167,18 +137,6 @@
       "file": "src/gzkit/commands/audit_cmd.py",
       "symbol": "audit_cmd",
       "kind": "compose",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/commands/ceremony_data.py",
-      "symbol": "_short_obpi_id",
-      "kind": "OBPI",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/commands/ceremony_data.py",
-      "symbol": "extract_brief_metadata",
-      "kind": "OBPI",
       "sites": 1
     },
     {
@@ -266,12 +224,6 @@
       "sites": 1
     },
     {
-      "file": "src/gzkit/commands/obpi_audit_cmd.py",
-      "symbol": "_extract_obpi_id",
-      "kind": "OBPI",
-      "sites": 1
-    },
-    {
       "file": "src/gzkit/commands/obpi_cmd.py",
       "symbol": "_obpi_validate_batch",
       "kind": "compose",
@@ -321,12 +273,6 @@
     },
     {
       "file": "src/gzkit/commands/plan_audit_cmd.py",
-      "symbol": "<module>",
-      "kind": "OBPI",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/commands/plan_audit_cmd.py",
       "symbol": "_derive_adr_id",
       "kind": "compose",
       "sites": 1
@@ -369,12 +315,6 @@
     },
     {
       "file": "src/gzkit/commands/specify_cmd.py",
-      "symbol": "_normalized_objective_from_checklist_item",
-      "kind": "OBPI",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/commands/specify_cmd.py",
       "symbol": "_prepare_specify_plan",
       "kind": "compose",
       "sites": 1
@@ -383,12 +323,6 @@
       "file": "src/gzkit/commands/specify_cmd.py",
       "symbol": "_render_obpi_acceptance_seed",
       "kind": "compose",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/commands/state.py",
-      "symbol": "<module>",
-      "kind": "OBPI",
       "sites": 1
     },
     {
@@ -431,12 +365,6 @@
       "file": "src/gzkit/commands/status_render.py",
       "symbol": "_render_adr_report",
       "kind": "compose",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/commands/task.py",
-      "symbol": "<module>",
-      "kind": "OBPI",
       "sites": 1
     },
     {
@@ -488,21 +416,9 @@
       "sites": 1
     },
     {
-      "file": "src/gzkit/commands/validate_frontmatter.py",
-      "symbol": "<module>",
-      "kind": "OBPI",
-      "sites": 1
-    },
-    {
       "file": "src/gzkit/commands/validate_task_envelope.py",
       "symbol": "<module>",
       "kind": "ADR",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/commands/validate_task_envelope.py",
-      "symbol": "<module>",
-      "kind": "OBPI",
       "sites": 1
     },
     {
@@ -539,12 +455,6 @@
       "file": "src/gzkit/commands/version_sync.py",
       "symbol": "_extract_adr_version",
       "kind": "ADR",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/exchange_records.py",
-      "symbol": "write_completion_exchange",
-      "kind": "OBPI",
       "sites": 1
     },
     {
@@ -626,21 +536,9 @@
       "sites": 1
     },
     {
-      "file": "src/gzkit/governance/brief_structure.py",
-      "symbol": "<module>",
-      "kind": "OBPI",
-      "sites": 1
-    },
-    {
       "file": "src/gzkit/governance/frontmatter_coherence.py",
       "symbol": "_resolve_artifact_id",
       "kind": "ADR",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/governance/frontmatter_coherence.py",
-      "symbol": "_resolve_artifact_id",
-      "kind": "OBPI",
       "sites": 1
     },
     {
@@ -650,22 +548,10 @@
       "sites": 1
     },
     {
-      "file": "src/gzkit/governance/trust_audits/absorption_duplicates.py",
-      "symbol": "<module>",
-      "kind": "OBPI",
-      "sites": 2
-    },
-    {
       "file": "src/gzkit/governance/trust_audits/briefs.py",
       "symbol": "<module>",
       "kind": "ADR",
-      "sites": 2
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/briefs.py",
-      "symbol": "<module>",
-      "kind": "OBPI",
-      "sites": 3
+      "sites": 1
     },
     {
       "file": "src/gzkit/governance/trust_audits/config_derivation.py",
@@ -677,12 +563,6 @@
       "file": "src/gzkit/governance/trust_audits/evaluation_justify_binding.py",
       "symbol": "<module>",
       "kind": "ADR",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/evaluation_justify_binding.py",
-      "symbol": "<module>",
-      "kind": "OBPI",
       "sites": 1
     },
     {
@@ -710,12 +590,6 @@
       "sites": 1
     },
     {
-      "file": "src/gzkit/handoff_validation.py",
-      "symbol": "<module>",
-      "kind": "OBPI",
-      "sites": 1
-    },
-    {
       "file": "src/gzkit/hooks/core.py",
       "symbol": "_record_obpi_completion_if_ready",
       "kind": "ADR",
@@ -729,12 +603,6 @@
     },
     {
       "file": "src/gzkit/hooks/scripts/pipeline.py",
-      "symbol": "_plan_audit_gate_script:<module>",
-      "kind": "OBPI",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/hooks/scripts/pipeline.py",
       "symbol": "_session_staleness_check_script:_brief_is_completed",
       "kind": "compose",
       "sites": 1
@@ -746,33 +614,9 @@
       "sites": 1
     },
     {
-      "file": "src/gzkit/hooks/scripts/quality.py",
-      "symbol": "_stop_turn_feedback_script:<module>",
-      "kind": "ADR",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/hooks/scripts/quality.py",
-      "symbol": "_stop_turn_feedback_script:<module>",
-      "kind": "OBPI",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/hooks/scripts/validation.py",
-      "symbol": "_obpi_completion_validator_script:extract_adr_id",
-      "kind": "OBPI",
-      "sites": 1
-    },
-    {
       "file": "src/gzkit/hooks/scripts/validation.py",
       "symbol": "_obpi_completion_validator_script:extract_adr_id",
       "kind": "compose",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/hooks/scripts/validation.py",
-      "symbol": "_obpi_completion_validator_script:extract_obpi_id",
-      "kind": "OBPI",
       "sites": 1
     },
     {
@@ -782,33 +626,15 @@
       "sites": 1
     },
     {
-      "file": "src/gzkit/justify/anchors.py",
-      "symbol": "<module>",
-      "kind": "OBPI",
-      "sites": 1
-    },
-    {
       "file": "src/gzkit/justify/cli.py",
       "symbol": "<module>",
       "kind": "ADR",
       "sites": 1
     },
     {
-      "file": "src/gzkit/justify/evidence.py",
-      "symbol": "<module>",
-      "kind": "OBPI",
-      "sites": 1
-    },
-    {
       "file": "src/gzkit/ledger.py",
       "symbol": "<module>",
       "kind": "ADR",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/ledger.py",
-      "symbol": "<module>",
-      "kind": "OBPI",
       "sites": 1
     },
     {
@@ -818,18 +644,6 @@
       "sites": 1
     },
     {
-      "file": "src/gzkit/ledger.py",
-      "symbol": "extract_bare_obpi_id",
-      "kind": "compose",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/lock_manager.py",
-      "symbol": "adr_id_from_obpi",
-      "kind": "OBPI",
-      "sites": 1
-    },
-    {
       "file": "src/gzkit/lock_manager.py",
       "symbol": "adr_id_from_obpi",
       "kind": "compose",
@@ -842,39 +656,9 @@
       "sites": 1
     },
     {
-      "file": "src/gzkit/mx/log.py",
-      "symbol": "<module>",
-      "kind": "OBPI",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/obpi_completion_fence.py",
-      "symbol": "obpi_id_from_path",
-      "kind": "OBPI",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/pipeline_markers.py",
-      "symbol": "<module>",
-      "kind": "OBPI",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/pipeline_position.py",
-      "symbol": "<module>",
-      "kind": "OBPI",
-      "sites": 1
-    },
-    {
       "file": "src/gzkit/quality.py",
       "symbol": "_extract_obpi_slug",
       "kind": "parent",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/quality.py",
-      "symbol": "_is_non_obpi_register_entry",
-      "kind": "OBPI",
       "sites": 1
     },
     {
@@ -911,24 +695,6 @@
       "file": "src/gzkit/sync.py",
       "symbol": "<module>",
       "kind": "ADR",
-      "sites": 2
-    },
-    {
-      "file": "src/gzkit/sync.py",
-      "symbol": "<module>",
-      "kind": "OBPI",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/tasks.py",
-      "symbol": "<module>",
-      "kind": "ADR",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/tasks.py",
-      "symbol": "<module>",
-      "kind": "OBPI",
       "sites": 1
     },
     {
@@ -983,12 +749,6 @@
       "file": "src/gzkit/triangle.py",
       "symbol": "ReqId.__str__",
       "kind": "compose",
-      "sites": 1
-    },
-    {
-      "file": "src/gzkit/triangle.py",
-      "symbol": "_extract_obpi_short_id",
-      "kind": "OBPI",
       "sites": 1
     },
     {

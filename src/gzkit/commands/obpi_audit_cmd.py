@@ -8,6 +8,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from gzkit.commands.common import console
+from gzkit.core.models import OBPI_SHORT_ID_BODY
 from gzkit.governance.brief_path_validity import extract_allowed_paths
 from gzkit.lock_manager import adr_id_from_obpi
 
@@ -226,7 +227,7 @@ def _find_brief(adr_dir: Path, obpi_id: str) -> Path | None:
 
 def _extract_obpi_id(brief_path: Path) -> str | None:
     """Extract OBPI ID from brief filename."""
-    m = re.search(r"(OBPI-\d+\.\d+\.\d+-\d+)", brief_path.name)
+    m = re.search(rf"({OBPI_SHORT_ID_BODY})", brief_path.name)
     return m.group(1) if m else None
 
 

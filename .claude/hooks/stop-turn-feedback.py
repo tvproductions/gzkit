@@ -56,7 +56,7 @@ CLAIM_PROXIMITY_CHARS = 300
 
 CLAIM_PATTERNS = [
     re.compile(
-        r"\b(?:OBPI|ADR)-[\w.-]+\s+is\s+"
+        r"\b(?:OBPI-\d+\.\d+\.\d+-\d{2}|ADR-\d+\.\d+\.\d+)[\w.-]*\s+is\s+"
         r"(?:attested[- _]?completed?|complete\b|completed\b)",
         re.IGNORECASE,
     ),

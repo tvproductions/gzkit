@@ -18,11 +18,12 @@ import re
 from pathlib import Path
 from typing import Any
 
+from gzkit.core.models import OBPI_SHORT_ID_BODY
 from gzkit.justify.models import AnchorRef, AnchorResolutionError
 from gzkit.utils import run_exec
 
 _GHI_PATTERN = re.compile(r"^(?:GHI-|#)(\d+)$")
-_OBPI_PATTERN = re.compile(r"^OBPI-\d+\.\d+\.\d+-\d+$")
+_OBPI_PATTERN = re.compile(rf"^{OBPI_SHORT_ID_BODY}$")
 _SLUG_PATTERN = re.compile(r"^[a-z][a-z0-9-]*$")
 
 _ACCEPTED_SHAPES = (

@@ -14,11 +14,12 @@ import json
 import os
 import re
 import secrets
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, cast
 
+from gzkit.core.models import OBPI_SHORT_ID_BODY
 from gzkit.pipeline_stage_fence import CANONICAL_STAGES
 
 
@@ -51,7 +52,7 @@ STALE_MARKER_HOURS = 24
 # Truncating the SLUG is this pattern's purpose (GHI #187, #313) -- but the
 # index itself is exactly two digits, so the floor preserves every real short
 # form while refusing a wildcard stem that would truncate to a shorter string.
-_OBPI_SHORT_FORM_RE = re.compile(r"OBPI-\d+\.\d+\.\d+-\d{2}")
+_OBPI_SHORT_FORM_RE = re.compile(OBPI_SHORT_ID_BODY)
 
 
 # A plan's declaration block names its subject structurally — an H1, or the
@@ -692,12 +693,25 @@ def find_active_pipeline_marker(plans_dir: Path) -> dict[str, Any] | None:
     return None
 
 
+def select_obpi_brief(candidates: Iterable[Path], obpi_id: str) -> Path | None:
+    """Return the one brief *obpi_id* names among *candidates*, or None.
+
+    A file stem equal to the id is that brief. Otherwise the id expands only
+    across a ``-`` separator, so ``OBPI-0.28.0-1`` never reaches items 10 to 19.
+    An id that stays ambiguous names none of the briefs (RO-2 tranche 3, the
+    seam's rule): a first sorted match would hand back a sibling's controls.
+    """
+    paths = sorted(set(candidates))
+    exact = [path for path in paths if path.stem == obpi_id]
+    matches = exact or [path for path in paths if path.stem.startswith(f"{obpi_id}-")]
+    return matches[0] if len(matches) == 1 else None
+
+
 def find_obpi_brief(docs_root: Path, obpi_id: str) -> Path | None:
     """Find the OBPI brief that corresponds to the active marker."""
     if not docs_root.is_dir():
         return None
-    matches = sorted(docs_root.rglob(f"{obpi_id}*.md"))
-    return matches[0] if matches else None
+    return select_obpi_brief(docs_root.rglob(f"{obpi_id}*.md"), obpi_id)
 
 
 def validate_brief_for_pipeline(project_root: Path, brief_path: Path) -> list[str]:

@@ -40,6 +40,7 @@ from gzkit.commands.common import (
 )
 from gzkit.commands.validate_task_envelope import pending_obpi_task_envelope_errors
 from gzkit.governance.req_coverage import discover_covers, parse_brief_req_kinds
+from gzkit.pipeline_markers import select_obpi_brief
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -146,9 +147,9 @@ def resolve_brief_path(project_root: Path, obpi_id: str) -> Path | None:
     candidates: list[Path] = []
     for layout in ("obpis", "briefs"):
         candidates.extend(project_root.glob(f"{design_root}/adr/**/{layout}/{obpi_id}*.md"))
-    # Sorted, not glob order: `Path.glob` is filesystem-ordered, so an unsorted
-    # pick makes the answer vary by machine (the GHI #721 family).
-    return sorted(candidates)[0] if candidates else None
+    # The id expands only across a `-`, and an id that stays ambiguous names no
+    # brief: the seam's rule (RO-2 tranche 3), shared with `find_obpi_brief`.
+    return select_obpi_brief(candidates, obpi_id)
 
 
 _resolve_brief_path = resolve_brief_path  # Compatibility for existing command callers.

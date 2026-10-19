@@ -8,6 +8,7 @@ from typing import Any, cast
 from rich.markup import escape
 
 from gzkit.commands.common import console
+from gzkit.core.models import OBPI_ID_PARTS_BODY, SLUG_BODY
 from gzkit.quality import check_product_proof
 from gzkit.traceability import (
     CoverageEntry,
@@ -261,7 +262,7 @@ def _collect_covers_annotations(project_root: Path) -> dict[str, list[str]]:
     return covers
 
 
-OBPI_SEMVER_ITEM_RE = re.compile(r"^OBPI-([0-9]+\.[0-9]+\.[0-9]+)-([0-9]{2})(?:-[a-z0-9-]+)?$")
+OBPI_SEMVER_ITEM_RE = re.compile(rf"^{OBPI_ID_PARTS_BODY}(?:-{SLUG_BODY})?$")
 # Derived from the one grammar (GHI #615); never re-spelled here.
 REQ_ID_RE = re.compile(rf"\b{REQ_ID_BODY_PLAIN}\b")
 

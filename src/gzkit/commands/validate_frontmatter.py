@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from gzkit.commands.common import console
+from gzkit.core.models import OBPI_SHORT_ID_BODY
 from gzkit.governance.status_vocab import (
     canonicalize_ledger_status,
     canonicalize_status,
@@ -53,7 +54,7 @@ def _status_matches(fm_status: str, ledger_status: str) -> bool:
 
 
 _ADR_ID_PATTERN = re.compile(r"^(ADR-[\d.]+)")
-_OBPI_ID_PATTERN = re.compile(r"^(OBPI-\d+\.\d+\.\d+-\d+)")
+_OBPI_ID_PATTERN = re.compile(rf"^({OBPI_SHORT_ID_BODY})")
 
 _RECOVERY_COMMANDS: dict[str, str] = {
     "id": "gz register-adrs --all",

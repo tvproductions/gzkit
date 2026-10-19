@@ -30,6 +30,7 @@ from gzkit.commands.specify_cmd import (
     _normalized_objective_from_checklist_item,
     _slugify_obpi_name,
 )
+from gzkit.core.models import OBPI_SHORT_ID_BODY
 from gzkit.decomposition import (
     parse_checklist_items,
 )
@@ -193,7 +194,7 @@ def _build_adr_promotion_plan(
         raise GzCliError(msg)
     obpi_plans = []
     for item_number, checklist_item_text in enumerate(checklist_items, start=1):
-        core_text = re.sub(r"^OBPI-\d+\.\d+\.\d+-\d+:\s*", "", checklist_item_text).strip()
+        core_text = re.sub(rf"^{OBPI_SHORT_ID_BODY}:\s*", "", checklist_item_text).strip()
         obpi_slug = _slugify_obpi_name(core_text)
         obpi_plans.append(
             _build_obpi_plan(

@@ -26,13 +26,14 @@ import re
 from datetime import UTC, datetime
 from pathlib import Path
 
+from gzkit.core.models import OBPI_ID_PARTS_BODY, SLUG_BODY
 from gzkit.core.validation_rules import ValidationError
 from gzkit.justify.models import AnchorRef
 from gzkit.justify.parser import WalkthroughParseError, parse_walkthrough
 from gzkit.obpi_lifecycle import fold_renames
 
 _ADR_ID_RE = re.compile(r"^ADR-(\d+\.\d+\.\d+)(?:-([a-z0-9][a-z0-9-]*))?$", re.IGNORECASE)
-_OBPI_ID_RE = re.compile(r"^OBPI-(\d+\.\d+\.\d+-\d+)(?:-([a-z0-9][a-z0-9-]*))?$", re.IGNORECASE)
+_OBPI_ID_RE = re.compile(rf"^{OBPI_ID_PARTS_BODY}(?:-(?P<slug>{SLUG_BODY}))?$", re.IGNORECASE)
 _ADR_SLUG_RE = re.compile(r"^adr-(\d+)-(\d+)-(\d+)(?:-([a-z0-9][a-z0-9-]*))?$")
 
 
@@ -227,11 +228,14 @@ def _subject_key(identifier: str) -> tuple[str, str, str | None]:
 
     An id of neither shape is keyed by its dashed lowercase form and binds only exactly.
     """
-    for kind, pattern in (("adr", _ADR_ID_RE), ("obpi", _OBPI_ID_RE)):
-        match = pattern.match(identifier)
-        if match:
-            slug = match.group(2)
-            return (kind, match.group(1), slug.lower() if slug else None)
+    adr = _ADR_ID_RE.match(identifier)
+    if adr:
+        slug = adr.group(2)
+        return ("adr", adr.group(1), slug.lower() if slug else None)
+    obpi = _OBPI_ID_RE.match(identifier)
+    if obpi:
+        slug = obpi["slug"]
+        return ("obpi", f"{obpi['semver']}-{obpi['item']}", slug.lower() if slug else None)
     return ("id", identifier.replace(".", "-").lower(), None)
 
 

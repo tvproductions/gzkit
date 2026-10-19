@@ -18,6 +18,7 @@ from gzkit.commands.common import (
     get_project_root,
 )
 from gzkit.commands.task import _load_tasks_for_obpi
+from gzkit.core.models import OBPI_SHORT_ID_BODY
 from gzkit.ledger import Ledger, parse_frontmatter_value, resolve_adr_lane
 from gzkit.pipeline_markers import (
     pipeline_plans_dir,
@@ -27,7 +28,7 @@ from gzkit.pipeline_markers import (
 from gzkit.pipeline_position import rebuild_marker, runs_in_flight
 from gzkit.sync import parse_artifact_metadata, scan_existing_artifacts
 
-_OBPI_SHORT_ID_RE = re.compile(r"(OBPI-\d+\.\d+\.\d+-\d+)")
+_OBPI_SHORT_ID_RE = re.compile(rf"({OBPI_SHORT_ID_BODY})")
 
 
 def _enrich_obpi_with_tasks(

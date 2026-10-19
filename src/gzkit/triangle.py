@@ -13,6 +13,7 @@ import re
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from gzkit.core.models import OBPI_SHORT_ID_BODY
 from gzkit.core.models import REQ_ID_BODY as REQ_ID_BODY
 from gzkit.core.models import REQ_ID_BODY_PLAIN as REQ_ID_BODY_PLAIN
 from gzkit.req_kind import NON_COVERS_KINDS, ReqKind, ReqKindValue
@@ -314,7 +315,7 @@ def _parse_frontmatter_id(content: str) -> str | None:
 
 def _extract_obpi_short_id(frontmatter_id: str) -> str | None:
     """Extract short OBPI ID (e.g. ``OBPI-0.20.0-02``) from a full frontmatter id."""
-    m = re.match(r"(OBPI-\d+\.\d+\.\d+-\d+)", frontmatter_id)
+    m = re.match(rf"({OBPI_SHORT_ID_BODY})", frontmatter_id)
     return m.group(1) if m else None
 
 

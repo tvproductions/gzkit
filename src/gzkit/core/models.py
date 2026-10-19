@@ -35,6 +35,23 @@ ADR_ID_BODY = rf"{ADR_SHORT_ID_BODY}-{SLUG_BODY}"
 ADR_POOL_ID_BODY = rf"ADR-pool\.{SLUG_BODY}"
 OBPI_SHORT_ID_BODY = rf"OBPI-{SEMVER_BODY}-{ITEM_BODY}"
 OBPI_ID_BODY = rf"{OBPI_SHORT_ID_BODY}-{SLUG_BODY}"
+#: The OBPI short form with its semver and item captured, for readers that need the parts.
+OBPI_ID_PARTS_BODY = rf"OBPI-(?P<semver>{SEMVER_BODY})-(?P<item>{ITEM_BODY})"
+#: An OBPI or ADR reference read loosely on purpose: a malformed item index (``-2``) is
+#: still a reference, so the brief cross-reference audit can report it as drift.
+ARTIFACT_REF_BODY = (
+    rf"(?P<kind>OBPI|ADR)-(?P<ver>{SEMVER_BODY})"
+    r"(?:-(?P<seq>\d+)(?:-(?P<slug>[a-z0-9][a-z0-9-]*))?)?"
+)
+#: The whole item number whatever its width, for the one reader that attested REQ-0.35.0-15-02
+#: binds to it: a run's short form ends where the item number does, so item 7 and item 100
+#: each have one.
+OBPI_ANY_WIDTH_SHORT_ID_BODY = rf"OBPI-{SEMVER_BODY}-\d+"
+#: The kind prefixes a link or header may open with, read loosely: a parent link may name
+#: any PRD, ADR or OBPI, well-formed or not.
+ARTIFACT_PREFIX_BODY = r"(?:PRD|ADR|OBPI)-"
+#: The ADR short form with its semver captured.
+ADR_ID_PARTS_BODY = rf"ADR-(?P<semver>{SEMVER_BODY})"
 REQ_ID_BODY = (
     rf"REQ-(?P<semver>{SEMVER_BODY})-(?P<obpi_item>{ITEM_BODY})-(?P<criterion>{ITEM_BODY})"
 )

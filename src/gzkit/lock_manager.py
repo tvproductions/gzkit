@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING, Protocol
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, computed_field
 
+from gzkit.core.models import OBPI_ID_PARTS_BODY
 from gzkit.exchange_records import exchange_dir
 from gzkit.mx import marker as mx_marker
 
@@ -207,8 +208,8 @@ def adr_id_from_obpi(obpi_id: str) -> str | None:
     slug-bearing ids by stripping only the final slug segment (GHI #622). Returns
     ``None`` when *obpi_id* is not a recognizable OBPI id.
     """
-    match = re.match(r"OBPI-(\d+\.\d+\.\d+)-", obpi_id)
-    return f"ADR-{match.group(1)}" if match else None
+    match = re.match(OBPI_ID_PARTS_BODY, obpi_id)
+    return f"ADR-{match['semver']}" if match else None
 
 
 def list_locks(project_root: Path, adr_filter: str | None = None) -> list[LockData]:

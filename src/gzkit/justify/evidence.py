@@ -22,7 +22,6 @@ from __future__ import annotations
 import concurrent.futures
 import fnmatch
 import json
-import re
 from pathlib import Path
 from typing import Any
 
@@ -41,7 +40,6 @@ TAXONOMY_REFERENCE_PATH = "docs/governance/model-regression-taxonomy.md"
 
 _DEFAULT_TIMEOUT_SECONDS = 3.0
 _PER_SOURCE_SUBPROCESS_TIMEOUT = 10
-_OBPI_SEMVER_PATTERN = re.compile(r"^OBPI-(\d+\.\d+\.\d+)-\d+$")
 
 
 def gather_evidence(

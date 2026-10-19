@@ -14,6 +14,7 @@ from typing import Any, ClassVar, Literal, NamedTuple
 
 from pydantic import BaseModel, ConfigDict, Field, model_serializer, model_validator
 
+from gzkit.core.models import OBPI_SHORT_ID_BODY
 from gzkit.durability import commit_directory_entry
 from gzkit.file_lock import exclusive_file_lock
 from gzkit.ledger_corrections import LEDGER_SCHEMA, evidence_events, live_events
@@ -71,7 +72,7 @@ def _stored_record(text: str) -> dict[str, Any] | None:
 
 
 _ADR_SEMVER_RE = re.compile(r"^ADR-(\d+\.\d+\.\d+)(?:-.*)?$")
-_OBPI_BARE_RE = re.compile(r"^OBPI-(\d+\.\d+\.\d+-\d+)(?:-.*)?$")
+_OBPI_BARE_RE = re.compile(rf"^({OBPI_SHORT_ID_BODY})(?:-.*)?$")
 
 
 def _extract_bare_adr_semver(adr_id: str) -> str | None:
@@ -103,7 +104,7 @@ def extract_bare_obpi_id(obpi_id: str) -> str | None:
     match = _OBPI_BARE_RE.match(obpi_id)
     if match is None:
         return None
-    return f"OBPI-{match.group(1)}"
+    return match.group(1)
 
 
 def slug_id_for(artifact_id: str, resolved_stem: str) -> str:
