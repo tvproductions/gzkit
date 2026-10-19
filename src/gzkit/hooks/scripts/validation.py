@@ -2,7 +2,12 @@
 
 from textwrap import dedent
 
-from gzkit.core.models import ADR_PREFIX_BODY, OBPI_ID_PARTS_BODY, OBPI_SHORT_ID_BODY
+from gzkit.core.models import (
+    ADR_ID_TEMPLATE,
+    ADR_PREFIX_BODY,
+    OBPI_ID_PARTS_BODY,
+    OBPI_SHORT_ID_BODY,
+)
 
 
 def _obpi_completion_validator_script() -> str:
@@ -99,7 +104,7 @@ def _obpi_completion_validator_script() -> str:
                 e.g. OBPI-0.14.0-04 -> ADR-0.14.0
                 \"\"\"
                 match = re.match(r"__obpi_parts__", obpi_id)
-                return f"ADR-{match.group('semver')}" if match else None
+                return "__adr_template__".format(semver=match.group("semver")) if match else None
 
 
             def is_foundation_adr(adr_id: str) -> bool:
@@ -404,6 +409,7 @@ def _obpi_completion_validator_script() -> str:
         )
         .replace("__obpi_short__", OBPI_SHORT_ID_BODY)
         .replace("__obpi_parts__", OBPI_ID_PARTS_BODY)
+        .replace("__adr_template__", ADR_ID_TEMPLATE)
         .replace("__adr_dir_prefix__", rf"{ADR_PREFIX_BODY}[\d.]+-")
     )
 

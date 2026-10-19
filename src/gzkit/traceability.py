@@ -20,7 +20,7 @@ from typing import TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from gzkit.core.models import REQ_ID_BODY_PLAIN
+from gzkit.core.models import REQ_ID_BODY_PLAIN, adr_semver, obpi_parts
 from gzkit.triangle import (
     DiscoveredReq,
     EdgeType,
@@ -676,7 +676,7 @@ def compute_coverage(
     obpi_groups: dict[str, list[CoverageEntry]] = {}
     for entry in entries:
         parsed = ReqId.parse(entry.req_id)
-        obpi_key = f"OBPI-{parsed.semver}-{parsed.obpi_item}"
+        obpi_key = parsed.obpi_id
         obpi_groups.setdefault(obpi_key, []).append(entry)
 
     by_obpi = [
@@ -688,14 +688,12 @@ def compute_coverage(
     adr_groups: dict[str, list[CoverageEntry]] = {}
     for entry in entries:
         parsed = ReqId.parse(entry.req_id)
-        adr_key = f"ADR-{parsed.semver}"
+        adr_key = parsed.adr_id
         adr_groups.setdefault(adr_key, []).append(entry)
 
     by_adr = [
         _rollup(key, group)
-        for key, group in sorted(
-            adr_groups.items(), key=lambda kv: _semver_sort_key(kv[0].removeprefix("ADR-"))
-        )
+        for key, group in sorted(adr_groups.items(), key=lambda kv: adr_sort_key(kv[0]))
     ]
 
     # Summary
@@ -726,10 +724,14 @@ def _req_sort_tuple(req_id_str: str) -> tuple[tuple[int, ...], int, int]:
         return ((999, 999, 999), 999, 999)
 
 
+def adr_sort_key(adr_key: str) -> tuple[int, ...]:
+    """Sort key for ADR identifiers like 'ADR-0.15.0'."""
+    return _semver_sort_key(adr_semver(adr_key) or "")
+
+
 def _obpi_sort_key(obpi_key: str) -> tuple[tuple[int, ...], int]:
     """Sort key for OBPI identifiers like 'OBPI-0.15.0-03'."""
-    parts = obpi_key.removeprefix("OBPI-")
-    segments = parts.rsplit("-", 1)
-    if len(segments) == 2:
-        return (_semver_sort_key(segments[0]), int(segments[1]))
+    parts = obpi_parts(obpi_key)
+    if parts is not None:
+        return (_semver_sort_key(parts[0]), int(parts[1]))
     return ((999, 999, 999), 999)

@@ -18,11 +18,13 @@ from gzkit.core.models import (
     ADR_POOL_PREFIX_BODY,
     ADR_SHORT_ID_BODY,
     OBPI_SHORT_ID_BODY,
-    REQ_ID_BODY,
     TASK_ID_BODY,
+    task_obpi_id,
+    task_req_id,
 )
 from gzkit.doc_coverage.manifest import MANPAGE_DIR
 from gzkit.ledger import extract_bare_obpi_id
+from gzkit.triangle import ReqId
 from gzkit.validate import ValidationError
 
 # ---------------------------------------------------------------------------
@@ -285,10 +287,10 @@ def _is_req_attributed_uncovered_accept_event(
     active_tasks = active_tasks_by_obpi.get(obpi_id, set())
     if not active_tasks:
         return False
-    m = re.match(rf"^{REQ_ID_BODY}$", req_id)
-    if not m:
+    try:
+        task_prefix = ReqId.parse(req_id).task_prefix
+    except ValueError:
         return False
-    task_prefix = f"TASK-{m.group(1)}-{m.group(2)}-{m.group(3)}-"
     return any(task.startswith(task_prefix) for task in active_tasks)
 
 
@@ -533,7 +535,9 @@ def _group_tasks_by_req(tasks: set[str]) -> dict[str, set[str]]:
         m = _SIG_B_TASK_ID_RE.match(tid)
         if not m:
             continue
-        req_id = f"REQ-{m['semver']}-{m['obpi_item']}-{m['req_index']}"
+        req_id = task_req_id(tid)
+        if req_id is None:
+            continue
         seqs_by_req.setdefault(req_id, set()).add(m["seq"])
     return seqs_by_req
 
@@ -654,8 +658,8 @@ def pending_obpi_task_envelope_errors(
 
 
 def _task_matches_obpi(task_id: str, obpi_id: str) -> bool:
-    m = re.match(rf"^{TASK_ID_BODY}$", task_id)
-    return bool(m and f"OBPI-{m.group(1)}-{m.group(2)}" == obpi_id)
+    owner = task_obpi_id(task_id)
+    return owner is not None and owner == obpi_id
 
 
 def _advances_channel_for_obpi(obpi_id: str) -> set[str]:
@@ -767,10 +771,7 @@ def _obpi_id_for_task(task_id: str) -> str | None:
     iff ``_obpi_id_for_task(tid) == obpi``. Slug-form direct-fix ids
     (``TASK-<slug>``, optionally ``-#<ghi>``) have no OBPI parent and return ``None``.
     """
-    m = re.match(rf"^{TASK_ID_BODY}$", task_id)
-    if not m:
-        return None
-    return f"OBPI-{m.group(1)}-{m.group(2)}"
+    return task_obpi_id(task_id)
 
 
 def _advances_channel_map() -> dict[str, set[str]]:
@@ -1103,7 +1104,7 @@ def _sig_e_unresolvable_task_declaration(project_root: Path) -> list[ValidationE
                 # not that every declaration is unknown. Flagging here would
                 # fail the whole corpus on a parse failure elsewhere.
                 continue
-            parent_req = f"REQ-{parsed.semver}-{parsed.obpi_item}-{parsed.req_index}"
+            parent_req = parsed.req_id
             if parent_req not in known_reqs:
                 errors.append(
                     ValidationError(

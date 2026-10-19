@@ -18,7 +18,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from gzkit.core.models import ADR_PREFIX_BODY
+from gzkit.core.models import ADR_PREFIX_BODY, obpi_prefix
 from gzkit.validate import ValidationError, parse_frontmatter
 from gzkit.validate_pkg.document import is_adr_shape_grandfathered, is_pool_adr_path
 
@@ -94,8 +94,8 @@ def validate_decomposition(project_root: Path) -> list[ValidationError]:
         match = re.match(rf"{ADR_PREFIX_BODY}([\d.]+)", adr_md.stem)
         if match:
             version = match.group(1)
-            existing_briefs = list(obpis_dir.glob(f"OBPI-{version}-*.md"))
-            existing_briefs.extend(briefs_dir.glob(f"OBPI-{version}-*.md"))
+            existing_briefs = list(obpis_dir.glob(f"{obpi_prefix(version)}*.md"))
+            existing_briefs.extend(briefs_dir.glob(f"{obpi_prefix(version)}*.md"))
             if checklist_items and not existing_briefs:
                 errors.append(
                     ValidationError(

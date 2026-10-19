@@ -12,7 +12,12 @@ from gzkit.artifact_prefix import active_prefix_matches
 from gzkit.color_env import should_disable_color, should_force_terminal
 from gzkit.config import GzkitConfig
 from gzkit.core.exceptions import GzkitError
-from gzkit.core.models import ADR_POOL_PREFIX_BODY, ADR_SHORT_ID_BODY
+from gzkit.core.models import (
+    ADR_POOL_PREFIX_BODY,
+    ADR_SHORT_ID_BODY,
+    normalize_adr_input,
+    normalize_obpi_input,
+)
 from gzkit.ledger import (
     Ledger,
     resolve_adr_lane,
@@ -281,7 +286,7 @@ def resolve_adr_file(project_root: Path, config: GzkitConfig, adr: str) -> tuple
             raise GzCliError(msg)  # noqa: TRY003
         return None
 
-    adr_id = adr if adr.startswith("ADR-") else f"ADR-{adr}"
+    adr_id = normalize_adr_input(adr)
     adr_dir = project_root / config.paths.adrs
 
     candidates = [adr_dir / f"{adr}.md"]
@@ -362,7 +367,7 @@ def resolve_target_adr(
             msg = "Multiple pending ADRs found. Use --adr to specify one."
             raise GzCliError(msg)  # noqa: TRY003
 
-    adr_id = adr if adr.startswith("ADR-") else f"ADR-{adr}"
+    adr_id = normalize_adr_input(adr)
     canonical_adr_id = ledger.canonicalize_id(adr_id)
 
     adr_file, resolved_adr_id = resolve_adr_file(project_root, config, canonical_adr_id)
@@ -421,7 +426,7 @@ def resolve_obpi(
     short-form IDs (``OBPI-0.0.12-02``).  When the exact ID is not found, a
     unique prefix match against the ledger graph is attempted.
     """
-    obpi_input = obpi if obpi.startswith("OBPI-") else f"OBPI-{obpi}"
+    obpi_input = normalize_obpi_input(obpi)
     canonical_obpi = ledger.canonicalize_id(obpi_input)
     graph = ledger.get_artifact_graph()
     info = graph.get(canonical_obpi)

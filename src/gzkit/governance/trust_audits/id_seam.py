@@ -76,6 +76,8 @@ _KINDS = tuple(kind.value for kind in IdKind)
 # Built from the kind names, never spelled: a literal here would be a site itself.
 _KIND_TOKEN = re.compile("(?<![A-Za-z])(" + "|".join(_KINDS) + ")(?![A-Za-z])")
 _ID_NAME = re.compile(r"(?i)(?:^|_)(adr|obpi|req|task)(?:_|$|id$|s$)")
+# A name ending in one of these holds prose about an artifact (a REQ's statement), never its id.
+_PROSE_NAME = re.compile(r"(?i)_(text|body|summary|title)$")
 _MODULE = "<module>"
 
 
@@ -133,7 +135,11 @@ def _grammar_kinds(text: str) -> list[str]:
 
 def _names_an_id(node: ast.expr) -> bool:
     name = node.id if isinstance(node, ast.Name) else getattr(node, "attr", None)
-    return isinstance(name, str) and _ID_NAME.search(name) is not None
+    return (
+        isinstance(name, str)
+        and _ID_NAME.search(name) is not None
+        and _PROSE_NAME.search(name) is None
+    )
 
 
 def _is_re_call(func: ast.expr) -> bool:

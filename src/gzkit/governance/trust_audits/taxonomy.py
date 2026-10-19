@@ -22,7 +22,7 @@ import json
 import re
 from pathlib import Path
 
-from gzkit.core.models import ADR_SHORT_ID_BODY
+from gzkit.core.models import ADR_SHORT_ID_BODY, pool_slug
 from gzkit.frontmatter import FrontmatterRead, read_frontmatter_bytes
 from gzkit.validate import ValidationError
 
@@ -123,9 +123,9 @@ def _pool_identity_problems(
             f"`{_POOL_ID_PREFIX}<slug>` id (ADR-0.0.17 derives the pool kind "
             "from that prefix)."
         )
-    elif adr_id[len(_POOL_ID_PREFIX) :] != file_slug:
+    elif (id_slug := pool_slug(adr_id) or "") != file_slug:
         problems.append(
-            f"`id` slug {adr_id[len(_POOL_ID_PREFIX) :]!r} disagrees with the "
+            f"`id` slug {id_slug!r} disagrees with the "
             f"filename slug {file_slug!r}. The record is addressed by filename, "
             "so a disagreement means one of the two names a record that is not this one."
         )

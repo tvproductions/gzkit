@@ -16,7 +16,13 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from gzkit.core.models import REQ_ID_BODY
+from gzkit.core.models import (
+    REQ_ID_BODY,
+    adr_prefix,
+    compose_obpi_id,
+    obpi_item_reference_pattern,
+    req_stem,
+)
 
 # Parses a REQ id into semver, OBPI item and criterion:
 # "REQ-0.0.69-02-04" → ("0.0.69", "02", "04").
@@ -55,15 +61,15 @@ def _fence_obpi_anchored(section: str, req_id: str) -> bool:
         return False
     semver, obpi = m.group(1), m.group(2)
     obpi_int = int(obpi)
-    obpi_prefix = f"REQ-{semver}-{obpi}"
+    obpi_stem = req_stem(semver, obpi)
     patterns = (
-        rf"OBPI-0*{obpi_int}\b",  # short form: (OBPI-04) / (OBPI-4)
-        rf"OBPI-{re.escape(semver)}-{obpi}\b",  # full form: (OBPI-0.32.0-04)
+        obpi_item_reference_pattern(obpi_int),  # short form: (OBPI-04) / (OBPI-4)
+        rf"{compose_obpi_id(re.escape(semver), obpi)}\b",  # full form: (OBPI-0.32.0-04)
     )
     if any(re.search(p, section) for p in patterns):
         return True
     # Stricter per-REQ token (ADR-0.0.71 form): the exact REQ id or its OBPI prefix.
-    return req_id in section or obpi_prefix in section
+    return req_id in section or obpi_stem in section
 
 
 # Keywords that mark a [structural-fence] REQ as enforcement-asserting.
@@ -161,9 +167,9 @@ def is_meta_property_enforcement_fence(req_text: str) -> bool:
 def _find_parent_adr_file(semver: str, project_root: Path) -> Path | None:
     """Find the parent ADR file for a given semver under project_root."""
     adr_root = project_root / "docs" / "design" / "adr"
-    for adr_file in adr_root.rglob(f"ADR-{semver}-*.md"):
+    for adr_file in adr_root.rglob(f"{adr_prefix(semver)}*.md"):
         # The ADR file lives directly inside a package dir named ADR-{semver}-*.
-        if adr_file.parent.name.startswith(f"ADR-{semver}-"):
+        if adr_file.parent.name.startswith(adr_prefix(semver)):
             return adr_file
     return None
 

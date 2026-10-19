@@ -41,6 +41,7 @@ from gzkit.commands.status import (
     _collect_obpi_files_for_adr,
     _summarize_obpi_rows,
 )
+from gzkit.core.models import normalize_adr_input
 from gzkit.flags import FlagError, get_decisions
 from gzkit.ledger import (
     Ledger,
@@ -683,7 +684,7 @@ def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
     manifest = load_manifest(project_root)
     ledger = Ledger(project_root / config.paths.ledger)
 
-    adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
+    adr_input = normalize_adr_input(adr)
     canonical_adr = ledger.canonicalize_id(adr_input)
     adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
     adr_id = resolve_adr_ledger_id(adr_file, adr_id, ledger)

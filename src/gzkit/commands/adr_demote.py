@@ -30,7 +30,7 @@ from gzkit.commands.common import (
     get_project_root,
     resolve_adr_file,
 )
-from gzkit.core.models import ADR_PREFIX_BODY, ADR_SHORT_ID_BODY, REQ_ID_BODY
+from gzkit.core.models import ADR_PREFIX_BODY, ADR_SHORT_ID_BODY, REQ_ID_BODY, compose_pool_adr_id
 from gzkit.ledger import Ledger, parse_frontmatter_value
 from gzkit.ledger_events import artifact_renamed_event, obpi_parked_event
 from gzkit.obpi_lifecycle import parkable_children
@@ -323,7 +323,7 @@ def _build_demote_plan(
         project_root, config, adr_id
     )
     source_slug = _derive_pool_slug_from_adr_id(source_id)
-    new_id = f"ADR-pool.{source_slug}"
+    new_id = compose_pool_adr_id(source_slug)
     pool_dir = project_root / config.paths.adrs / "pool"
     target_file = pool_dir / f"{new_id}.md"
     collision_keep_pool = False

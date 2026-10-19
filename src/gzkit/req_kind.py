@@ -286,7 +286,7 @@ def compute_three_channel_coverage(
         )
 
     # Recompute rollups from enriched entries
-    from gzkit.traceability import _obpi_sort_key, _semver_sort_key
+    from gzkit.traceability import _obpi_sort_key, adr_sort_key
     from gzkit.triangle import ReqId as _ReqId
 
     obpi_groups: dict[str, list[CoverageEntry]] = {}
@@ -294,8 +294,8 @@ def compute_three_channel_coverage(
     for entry in enriched_entries:
         try:
             parsed = _ReqId.parse(entry.req_id)
-            obpi_key = f"OBPI-{parsed.semver}-{parsed.obpi_item}"
-            adr_key = f"ADR-{parsed.semver}"
+            obpi_key = parsed.obpi_id
+            adr_key = parsed.adr_id
         except ValueError:
             continue
         obpi_groups.setdefault(obpi_key, []).append(entry)
@@ -307,9 +307,7 @@ def compute_three_channel_coverage(
     ]
     by_adr = [
         _recompute_rollup(k, g)
-        for k, g in sorted(
-            adr_groups.items(), key=lambda kv: _semver_sort_key(kv[0].removeprefix("ADR-"))
-        )
+        for k, g in sorted(adr_groups.items(), key=lambda kv: adr_sort_key(kv[0]))
     ]
     summary = _recompute_rollup(report.summary.identifier, enriched_entries)
 

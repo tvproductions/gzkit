@@ -35,6 +35,7 @@ from gzkit.airlock.model import (
     SeamKind,
     SeamMap,
 )
+from gzkit.core.models import IdKind, compose_probe_id
 from gzkit.enforcement import (
     create_fixture_tempdir,
     enforces,
@@ -256,7 +257,7 @@ def _ep_airlock_unaccounted_seam(root: Path) -> int:
     ``_decide`` with no forcing kwarg pre-bound.
     """
     dep = f"DEP-UNACCOUNTED-{root.name}"
-    target = f"OBPI-airlock-nc-{root.name}"
+    target = compose_probe_id(IdKind.OBPI, f"airlock-nc-{root.name}")
     blocked = airlock_enter(target, root / "brief.md", reach_fn=lambda _node: [dep])
     permitted = airlock_enter(target, root / "accounted.md", reach_fn=lambda _node: [dep])
     bit_on_unaccounted = blocked.decision is not Decision.PROCEED

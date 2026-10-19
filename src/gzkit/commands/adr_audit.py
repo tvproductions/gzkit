@@ -39,7 +39,14 @@ from gzkit.commands.common import (
     resolve_adr_ledger_id,
 )
 from gzkit.commands.status import _collect_obpi_files_for_adr, _inspect_obpi_brief
-from gzkit.core.models import is_foundation_adr
+from gzkit.core.models import (
+    is_foundation_adr,
+    normalize_adr_input,
+    obpi_item,
+    obpi_prefix,
+    req_obpi_item,
+    req_prefix,
+)
 from gzkit.event_evidence import EventAnchor
 from gzkit.governance.req_coverage import parse_brief_req_kinds
 from gzkit.hooks.core import enrich_completed_receipt_evidence
@@ -259,12 +266,11 @@ def _collect_covers_locations_for_adr(
     semver = _extract_adr_semver(adr_id)
     if semver is None:
         return []
-    req_prefix = f"REQ-{semver}-"
-    obpi_prefix = f"OBPI-{semver}-"
+    covers_prefix = req_prefix(semver)
     active_obpi_numbers = {
-        oid[len(obpi_prefix) :].split("-", 1)[0]
+        item
         for oid in active_obpi_ids
-        if oid.startswith(obpi_prefix)
+        if oid.startswith(obpi_prefix(semver)) and (item := obpi_item(oid)) is not None
     }
     tests_dir = project_root / "tests"
     if not tests_dir.exists():
@@ -274,12 +280,10 @@ def _collect_covers_locations_for_adr(
         content = test_file.read_text(encoding="utf-8")
         rel_path = test_file.relative_to(project_root).as_posix()
         for req_id, line_no in find_covers_in_source(content):
-            if not req_id.startswith(req_prefix):
+            if not req_id.startswith(covers_prefix):
                 continue
-            if active_obpi_numbers:
-                obpi_number = req_id[len(req_prefix) :].split("-", 1)[0]
-                if obpi_number not in active_obpi_numbers:
-                    continue
+            if active_obpi_numbers and req_obpi_item(req_id) not in active_obpi_numbers:
+                continue
             locations.append((req_id, rel_path, line_no))
     return locations
 
@@ -305,7 +309,7 @@ def adr_audit_check(adr: str, as_json: bool, strict: bool = False) -> None:
     project_root = get_project_root()
     ledger = Ledger(project_root / config.paths.ledger)
 
-    adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
+    adr_input = normalize_adr_input(adr)
     canonical_adr = ledger.canonicalize_id(adr_input)
     adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
     adr_id = resolve_adr_ledger_id(adr_file, adr_id, ledger)
@@ -391,7 +395,7 @@ def adr_covers_check(adr: str, as_json: bool) -> None:
     project_root = get_project_root()
     ledger = Ledger(project_root / config.paths.ledger)
 
-    adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
+    adr_input = normalize_adr_input(adr)
     canonical_adr = ledger.canonicalize_id(adr_input)
     adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
     adr_id = resolve_adr_ledger_id(adr_file, adr_id, ledger)
@@ -1242,7 +1246,7 @@ def adr_emit_receipt_cmd(
     project_root = get_project_root()
     ledger = Ledger(project_root / config.paths.ledger)
 
-    adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
+    adr_input = normalize_adr_input(adr)
     canonical_adr = ledger.canonicalize_id(adr_input)
     adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
     adr_id = resolve_adr_ledger_id(adr_file, adr_id, ledger)
@@ -1349,7 +1353,7 @@ def adr_audit_begin_cmd(adr: str) -> None:
     project_root = get_project_root()
     ledger = Ledger(project_root / config.paths.ledger)
 
-    adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
+    adr_input = normalize_adr_input(adr)
     canonical_adr = ledger.canonicalize_id(adr_input)
     adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
     adr_id = resolve_adr_ledger_id(adr_file, adr_id, ledger)
@@ -1410,7 +1414,7 @@ def adr_audit_end_cmd(adr: str) -> None:
     project_root = get_project_root()
     ledger = Ledger(project_root / config.paths.ledger)
 
-    adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
+    adr_input = normalize_adr_input(adr)
     canonical_adr = ledger.canonicalize_id(adr_input)
     adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
     adr_id = resolve_adr_ledger_id(adr_file, adr_id, ledger)

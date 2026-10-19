@@ -283,6 +283,15 @@ class TestTheScanReadsEveryLiteralForm(unittest.TestCase):
         )
         self.assertEqual(found, [("_doc", "hook")])
 
+    def test_slicing_prose_named_for_an_artifact_is_no_site_and_slicing_its_id_is(self) -> None:
+        found = _kinds(
+            """
+            def statement_tail(req_text, req_id):
+                return req_text[3:], req_id[3:]
+            """
+        )
+        self.assertEqual(found, [("statement_tail", "parent")])
+
     def test_a_split_on_a_non_separator_or_a_rewrite_of_prose_is_no_site(self) -> None:
         found = _kinds(
             """

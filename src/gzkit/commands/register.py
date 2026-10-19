@@ -12,6 +12,7 @@ from gzkit.commands.common import (
     ensure_initialized,
     get_project_root,
 )
+from gzkit.core.models import normalize_adr_input
 from gzkit.frontmatter import read_frontmatter_bytes
 from gzkit.governance.adr_status_index import regenerate_adr_status_md
 from gzkit.ledger import (
@@ -344,9 +345,7 @@ def migrate_semver(dry_run: bool) -> None:
 
 def _normalize_register_targets(ledger: Ledger, targets: list[str] | None) -> set[str]:
     """Expand target ADR ids to canonical and prefixed forms."""
-    normalized_targets = {
-        target if target.startswith("ADR-") else f"ADR-{target}" for target in (targets or [])
-    }
+    normalized_targets = {normalize_adr_input(target) for target in (targets or [])}
     return normalized_targets | {ledger.canonicalize_id(target) for target in normalized_targets}
 
 
@@ -495,7 +494,7 @@ def _collect_obpis_to_register(
         parent = metadata.get("parent", "")
         if not parent:
             continue
-        parent_id = parent if parent.startswith("ADR-") else f"ADR-{parent}"
+        parent_id = normalize_adr_input(parent)
         canonical_parent = ledger.canonicalize_id(parent_id)
         if canonical_parent not in eligible_parent_ids:
             resolved = _resolve_short_form_parent(canonical_parent, eligible_parent_ids)

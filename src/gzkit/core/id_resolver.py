@@ -24,7 +24,6 @@ either (`hexagonal-architecture.md` rule 4).
 
 from __future__ import annotations
 
-import re
 from collections.abc import Iterable, Mapping
 from pathlib import Path
 from typing import Any, Literal, Protocol
@@ -32,7 +31,7 @@ from typing import Any, Literal, Protocol
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.artifact_prefix import active_prefix_matches
-from gzkit.core.models import REQ_ID_BODY, SEMVER_BODY, TASK_ID_BODY, IdKind, id_kind
+from gzkit.core.models import IdKind, id_kind, spelled_parent
 from gzkit.frontmatter import read_frontmatter
 from gzkit.obpi_lifecycle import fold_renames
 from gzkit.triangle import extract_reqs_from_brief
@@ -238,17 +237,7 @@ def _parent_by_spelling(identifier: str, kind: IdKind) -> ParentLink:
     ``REQ-<semver>-<NN>-<MM>`` → ``OBPI-<semver>-<NN>``;
     ``TASK-<semver>-<NN>-<MM>-<PP>`` → ``REQ-<semver>-<NN>-<MM>``.
     """
-    if kind is IdKind.OBPI:
-        match = re.match(rf"OBPI-(?P<semver>{SEMVER_BODY})-", identifier)
-        parent = f"ADR-{match['semver']}" if match else None
-    elif kind is IdKind.REQ:
-        match = re.fullmatch(REQ_ID_BODY, identifier)
-        parent = f"OBPI-{match['semver']}-{match['obpi_item']}" if match else None
-    else:
-        match = re.fullmatch(TASK_ID_BODY, identifier)
-        parent = (
-            f"REQ-{match['semver']}-{match['obpi_item']}-{match['req_index']}" if match else None
-        )
+    parent = spelled_parent(identifier) if id_kind(identifier) is kind else None
     if parent is None:
         msg = f"{identifier} is not a well-formed {kind.value} id, so no parent can be read from it"
         raise IdResolutionError(identifier, msg)

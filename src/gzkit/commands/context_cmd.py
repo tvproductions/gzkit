@@ -26,7 +26,7 @@ from gzkit.commands.common import (
     resolve_adr_file,
 )
 from gzkit.config import GzkitConfig
-from gzkit.core.models import ADR_ID_PARTS_BODY
+from gzkit.core.models import ADR_ID_PARTS_BODY, req_prefix
 from gzkit.ledger import Ledger
 from gzkit.traceability import scan_test_tree
 
@@ -61,11 +61,11 @@ def _render_covering_tests(adr_stem: str, project_root: Path) -> str:
     if not test_dir.exists():
         return ""
     records = scan_test_tree(test_dir)
-    req_prefix = f"REQ-{semver}-"
+    covers_prefix = req_prefix(semver)
     matches: dict[str, list[str]] = {}
     for record in records:
         req_id = str(record.target.identifier)
-        if not req_id.startswith(req_prefix):
+        if not req_id.startswith(covers_prefix):
             continue
         evidence = record.evidence_path
         if not evidence:

@@ -26,6 +26,11 @@ from gzkit.core.models import (
     TASK_ID_BODY,
     TASK_ID_BODY_PLAIN,
     TASK_SLUG_ID_BODY,
+    compose_adr_id,
+    compose_obpi_id,
+    compose_req_id,
+    compose_task_id,
+    task_prefix,
 )
 from gzkit.ledger_corrections import live_events
 
@@ -69,7 +74,22 @@ class TaskId(BaseModel):
 
     def __str__(self) -> str:
         """Return the canonical TASK identifier string."""
-        return f"TASK-{self.semver}-{self.obpi_item}-{self.req_index}-{self.seq}"
+        return compose_task_id(self.semver, self.obpi_item, self.req_index, self.seq)
+
+    @property
+    def req_id(self) -> str:
+        """Return the REQ this TASK's spelling names."""
+        return compose_req_id(self.semver, self.obpi_item, self.req_index)
+
+    @property
+    def obpi_id(self) -> str:
+        """Return the OBPI short form this TASK's spelling names."""
+        return compose_obpi_id(self.semver, self.obpi_item)
+
+    @property
+    def adr_id(self) -> str:
+        """Return the ADR short form this TASK's spelling names."""
+        return compose_adr_id(self.semver)
 
 
 # ---------------------------------------------------------------------------
@@ -145,7 +165,7 @@ def next_seq_for_req(req_id: str, *, existing_task_ids: list[str]) -> int:
         msg = f"Invalid REQ ID format: {req_id!r} (expected REQ-X.Y.Z-NN-MM)"
         raise ValueError(msg)
     semver, obpi_item, req_index = m.groups()
-    prefix = f"TASK-{semver}-{obpi_item}-{req_index}-"
+    prefix = task_prefix(semver, obpi_item, req_index)
     max_seq = 0
     for task_id_str in existing_task_ids:
         if task_id_str.startswith(prefix):
@@ -171,7 +191,7 @@ def derive_req_task_id(req_id: str, *, seq: int = 1) -> str:
         msg = f"Invalid REQ ID format: {req_id!r} (expected REQ-X.Y.Z-NN-MM)"
         raise ValueError(msg)
     semver, obpi_item, req_index = match.groups()
-    return f"TASK-{semver}-{obpi_item}-{req_index}-{seq:02d}"
+    return compose_task_id(semver, obpi_item, req_index, seq)
 
 
 # ---------------------------------------------------------------------------
@@ -464,9 +484,9 @@ def resolve_task_chain(task_id: TaskId) -> dict[str, str]:
     """
     return {
         "task": str(task_id),
-        "req": f"REQ-{task_id.semver}-{task_id.obpi_item}-{task_id.req_index}",
-        "obpi": f"OBPI-{task_id.semver}-{task_id.obpi_item}",
-        "adr": f"ADR-{task_id.semver}",
+        "req": task_id.req_id,
+        "obpi": task_id.obpi_id,
+        "adr": task_id.adr_id,
     }
 
 
@@ -561,7 +581,7 @@ def advances(task_id_str: str) -> Callable[[_AF], _AF]:
 
     """
     task_id = TaskId.parse(task_id_str)
-    parent_req = f"REQ-{task_id.semver}-{task_id.obpi_item}-{task_id.req_index}"
+    parent_req = task_id.req_id
 
     known = _load_known_task_reqs()
     if parent_req not in known:

@@ -24,7 +24,7 @@ from gzkit.ledger import LEDGER_SCHEMA, Ledger, ledger_row
 from gzkit.pipeline_markers import pipeline_plans_dir
 from gzkit.pipeline_position import RunCrossing, record_position
 from gzkit.tasks import TaskId, TaskStatus, derive_req_task_id, get_task_registry, next_seq_for_req
-from gzkit.triangle import extract_reqs_from_brief
+from gzkit.triangle import ReqId, extract_reqs_from_brief
 
 _REQ_PARTS_RE = re.compile(rf"^{REQ_ID_BODY}$")
 _OBPI_LINEAGE_RE = re.compile(rf"^({OBPI_SHORT_ID_BODY})")
@@ -145,8 +145,8 @@ def _resolve_task_context(
     (GHI #653).
     """
     task_id = TaskId.parse(task_id_str)
-    adr_id = f"ADR-{task_id.semver}"
-    derived = f"OBPI-{task_id.semver}-{task_id.obpi_item}"
+    adr_id = task_id.adr_id
+    derived = task_id.obpi_id
     obpi_id = _ledger_obpi_for_task(ledger, task_id_str) or _resolve_obpi_id(
         ledger, derived, project_root=project_root
     )
@@ -203,7 +203,7 @@ def _record_task_position(
     record_position(
         ledger,
         pipeline_plans_dir(project_root),
-        f"OBPI-{task_id.semver}-{task_id.obpi_item}",
+        task_id.obpi_id,
         RunCrossing(boundary=f"task-{verb}", task=str(task_id)),
     )
 
@@ -502,13 +502,13 @@ def task_start_by_req_cmd(req_id: str, seq_arg: str, *, as_json: bool = False) -
     m = _REQ_PARTS_RE.match(req_id)
     if not m:
         raise GzCliError(f"Invalid REQ identifier: {req_id!r}")  # noqa: TRY003
-    semver, obpi_item, _ = m.groups()
-    short_obpi_id = f"OBPI-{semver}-{obpi_item}"
+    parsed_req = ReqId.parse(req_id)
+    short_obpi_id = parsed_req.obpi_id
     obpi_id = _resolve_obpi_id(ledger, short_obpi_id, project_root=project_root)
     # Same canonicalization for the ADR: `gz obpi complete` records the full
     # slug, so emitting the bare `ADR-<semver>` here writes the same class of
     # spelling divergence this producer was repaired for (GHI #653).
-    adr_id = ledger.resolve_artifact_id(f"ADR-{semver}")
+    adr_id = ledger.resolve_artifact_id(parsed_req.adr_id)
 
     existing_ids = _all_started_task_ids(ledger)
 
@@ -740,9 +740,9 @@ def _build_fanout_rows(ledger: Ledger, req_id: str) -> list[FanoutRow]:
     m = _REQ_PARTS_RE.match(req_id)
     if not m:
         raise GzCliError(f"Invalid REQ identifier: {req_id!r}")  # noqa: TRY003
-    semver, obpi_item, req_index = m.groups()
-    obpi_id = f"OBPI-{semver}-{obpi_item}"
-    task_prefix = f"TASK-{semver}-{obpi_item}-{req_index}-"
+    parsed_req = ReqId.parse(req_id)
+    obpi_id = parsed_req.obpi_id
+    task_prefix = parsed_req.task_prefix
 
     # Scan ledger events once and accumulate per-task data.
     task_status: dict[str, str] = {}

@@ -31,7 +31,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict
 
 from gzkit.config import GzkitConfig
-from gzkit.core.models import ADR_SHORT_ID_BODY, REQ_ID_BODY
+from gzkit.core.models import ADR_SHORT_ID_BODY, REQ_ID_BODY, adr_prefix, compose_pool_adr_id
 from gzkit.foundation.triage import _extract_h1_title, _parse_simple_frontmatter
 from gzkit.ledger import Ledger
 
@@ -184,7 +184,7 @@ def foundation_rows(project_root: Path, ledger: Ledger) -> tuple[FoundationRow, 
                 f"`{adr_files[0].name}`"
             )
             continue
-        if not adr_id.startswith(f"ADR-{semver}-"):
+        if not adr_id.startswith(adr_prefix(semver)):
             problems.append(
                 f"{rel}: frontmatter id `{adr_id}` is inconsistent with semver `{semver}`"
             )
@@ -325,6 +325,8 @@ def interrupted_demotions(project_root: Path, ledger: Ledger) -> list[str]:
     reports a clean, seam-neutral success. The journal is what makes the gap
     visible; without it the failure is silent by construction.
     """
+    from gzkit.commands.adr_demote import _derive_pool_slug_from_adr_id
+
     journal = _journal_path(project_root)
     if not journal.is_file():
         return []
@@ -356,7 +358,7 @@ def interrupted_demotions(project_root: Path, ledger: Ledger) -> list[str]:
                 )
                 continue
             recovery = f"git checkout -- {config.paths.adrs}/foundation/{adr_id}"
-            leftover = pool_dir / f"ADR-pool.{adr_id.split('-', 2)[2]}.md"
+            leftover = pool_dir / f"{compose_pool_adr_id(_derive_pool_slug_from_adr_id(adr_id))}.md"
             if leftover.exists():
                 # The pool file is written BEFORE the rmtree, so a torn write
                 # leaves it behind and a naive re-run dies on a slug collision.
@@ -607,7 +609,10 @@ def rename_map(partition: Partition) -> dict[str, str]:
     """
     from gzkit.commands.adr_demote import _derive_pool_slug_from_adr_id
 
-    return {row.id: f"ADR-pool.{_derive_pool_slug_from_adr_id(row.id)}" for row in partition.demote}
+    return {
+        row.id: compose_pool_adr_id(_derive_pool_slug_from_adr_id(row.id))
+        for row in partition.demote
+    }
 
 
 def build_manifest_entries(partition: Partition, frozen_at: str) -> list[dict[str, str]]:
@@ -651,7 +656,7 @@ def _collision_disposition(pool_dir: Path, row: FoundationRow) -> tuple[str, str
     """
     from gzkit.commands.adr_demote import _derive_pool_slug_from_adr_id
 
-    target = pool_dir / f"ADR-pool.{_derive_pool_slug_from_adr_id(row.id)}.md"
+    target = pool_dir / f"{compose_pool_adr_id(_derive_pool_slug_from_adr_id(row.id))}.md"
     if not target.exists():
         return "fail", None
     frontmatter = _parse_simple_frontmatter(target.read_text(encoding="utf-8"))

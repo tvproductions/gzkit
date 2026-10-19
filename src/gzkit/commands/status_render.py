@@ -13,7 +13,7 @@ from gzkit.commands.common import (
 from gzkit.commands.status_obpi import (
     _print_status_obpi_section,
 )
-from gzkit.core.models import is_foundation_adr
+from gzkit.core.models import adr_semver, compose_adr_id, is_foundation_adr
 
 # ---------------------------------------------------------------------------
 # Table category labels (importable for test assertions)
@@ -342,8 +342,6 @@ def _brief_cell(row: dict[str, Any]) -> str:
 
 def _render_adr_report(result: dict[str, Any]) -> None:
     """Render deterministic ASCII table report for a single ADR."""
-    from gzkit.commands.status import ADR_SEMVER_STATUS_ID_RE  # noqa: PLC0415
-
     obpi_summary = cast(dict[str, Any], result.get("obpi_summary", {}))
     obpi_total = cast(int, obpi_summary.get("total", 0))
     obpi_completed = cast(int, obpi_summary.get("completed", 0))
@@ -360,8 +358,8 @@ def _render_adr_report(result: dict[str, Any]) -> None:
 
     # --- ADR Overview ---
     adr_full = cast(str, result["adr"])
-    m = ADR_SEMVER_STATUS_ID_RE.match(adr_full)
-    adr_short = f"ADR-{m['major']}.{m['minor']}.{m['patch']}" if m else adr_full
+    full_semver = adr_semver(adr_full)
+    adr_short = compose_adr_id(full_semver) if full_semver else adr_full
 
     overview = Table(title="ADR Overview", box=box.ROUNDED, padding=(0, 1))
     overview.add_column("ADR", no_wrap=True)

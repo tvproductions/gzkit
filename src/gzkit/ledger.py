@@ -14,7 +14,7 @@ from typing import Any, ClassVar, Literal, NamedTuple
 
 from pydantic import BaseModel, ConfigDict, Field, model_serializer, model_validator
 
-from gzkit.core.models import ADR_ID_PARTS_BODY, OBPI_SHORT_ID_BODY
+from gzkit.core.models import ADR_ID_PARTS_BODY, OBPI_SHORT_ID_BODY, compose_adr_id
 from gzkit.durability import commit_directory_entry
 from gzkit.file_lock import exclusive_file_lock
 from gzkit.ledger_corrections import LEDGER_SCHEMA, evidence_events, live_events
@@ -88,7 +88,7 @@ def _extract_bare_adr_semver(adr_id: str) -> str | None:
     match = _ADR_SEMVER_RE.match(adr_id)
     if match is None:
         return None
-    return f"ADR-{match.group(1)}"
+    return compose_adr_id(match.group(1))
 
 
 def extract_bare_obpi_id(obpi_id: str) -> str | None:

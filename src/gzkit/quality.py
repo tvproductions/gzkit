@@ -23,7 +23,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.canonical_steps import CANONICAL_STEP_COMMANDS
-from gzkit.core.models import OBPI_SHORT_ID_BODY
+from gzkit.core.models import OBPI_SHORT_ID_BODY, obpi_slug
 from gzkit.doc_coverage.manifest import MANPAGE_DIR
 from gzkit.exchange_records import exchange_dir
 from gzkit.handoff_validation import (
@@ -2362,8 +2362,7 @@ def _extract_allowed_paths(brief_text: str) -> list[str]:
 def _extract_obpi_slug(obpi_id: str) -> str:
     """Extract the slug portion after the version-item prefix."""
     # OBPI-0.23.0-02-product-proof-gate → product-proof-gate
-    parts = obpi_id.split("-", 3)
-    return parts[3] if len(parts) > 3 else obpi_id
+    return obpi_slug(obpi_id) or obpi_id
 
 
 def _check_runbook_proof(

@@ -16,7 +16,15 @@ from gzkit.commands.common import (
     resolve_adr_file,
     resolve_adr_ledger_id,
 )
-from gzkit.core.models import OBPI_SHORT_ID_BODY, REQ_ID_BODY_PLAIN, adr_semver
+from gzkit.core.models import (
+    OBPI_SHORT_ID_BODY,
+    REQ_ID_BODY_PLAIN,
+    adr_semver,
+    adr_version_term,
+    compose_obpi_id,
+    normalize_adr_input,
+    req_stem,
+)
 from gzkit.decomposition import (
     WbsRow,
     active_checklist_items,
@@ -72,7 +80,7 @@ def _slugify_obpi_name(value: str) -> str:
 
 def _render_obpi_acceptance_seed(version: str, item: int, spec_summary: str) -> str:
     """Create acceptance criteria seed from WBS spec summary."""
-    req_prefix = f"REQ-{version}-{item:02d}"
+    req_prefix = req_stem(version, item)
     scoped_summary = spec_summary.strip().rstrip(".")
     if scoped_summary and scoped_summary.lower() not in ("tbd", "pending", ""):
         return "\n".join(
@@ -544,8 +552,8 @@ def _build_obpi_plan(
     wbs_spec_summary: str,
 ) -> dict[str, Any]:
     """Build deterministic OBPI artifact plan."""
-    version = _extract_semver(parent_adr_id) or parent_adr_id.replace("ADR-", "").split("-")[0]
-    obpi_id = f"OBPI-{version}-{item:02d}-{name}"
+    version = adr_version_term(parent_adr_id)
+    obpi_id = compose_obpi_id(version, item, name)
     lane_cap = lane.capitalize()
     lane_requirements = (
         "All 5 gates required: ADR, TDD, Docs, BDD, Human attestation"
@@ -714,7 +722,7 @@ def _prepare_specify_plan(
     name: str,
 ) -> tuple[Path, str, dict[str, Any], str, str, str, list[WbsRow]]:
     """Resolve ADR context and build the OBPI generation plan."""
-    parent_input = parent if parent.startswith("ADR-") else f"ADR-{parent}"
+    parent_input = normalize_adr_input(parent)
     canonical_parent = ledger.canonicalize_id(parent_input)
     if _is_pool_adr_id(canonical_parent):
         msg = f"Pool ADRs cannot receive OBPIs until promoted: {canonical_parent}."

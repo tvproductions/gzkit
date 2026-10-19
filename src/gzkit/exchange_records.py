@@ -48,7 +48,7 @@ from pathlib import Path
 import yaml
 from pydantic import BaseModel, ConfigDict, ValidationError, field_validator
 
-from gzkit.core.models import OBPI_ID_PARTS_BODY
+from gzkit.core.models import obpi_adr_id
 from gzkit.handoff_validation import HandoffValidationError, parse_frontmatter
 
 __all__ = [
@@ -344,8 +344,7 @@ def write_completion_exchange(
     # id is not semver-shaped the parent is genuinely unknown — record that as
     # absent rather than synthesizing `ADR-0.0.0`, an id naming no real artifact
     # (GHI #709).
-    semver_match = re.match(OBPI_ID_PARTS_BODY, obpi_id)
-    adr_id = f"ADR-{semver_match['semver']}" if semver_match else None
+    adr_id = obpi_adr_id(obpi_id)
     parent_phrase = f" under {adr_id}" if adr_id else ""
     next_step = (
         f"1. Continue the parent {adr_id} checklist, or open the next OBPI.\n\n"

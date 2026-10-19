@@ -128,6 +128,182 @@ def is_foundation_adr(identifier: str) -> bool:
 
 
 # ---------------------------------------------------------------------------
+# Identity composition and spelling fallback (drydock RO-2 tranche 5)
+# ---------------------------------------------------------------------------
+#
+# Nothing outside the seam composes an id from parts, scans a child prefix,
+# normalizes input to an id, or recovers a parent from spelling. A reader that
+# holds a ledger calls `gzkit.core.id_resolver.parent_of`; one that holds none
+# calls `spelled_parent`, the seam's marked fallback (every use is a spelling-derived
+# link, counted until RO-3's `member_of` lands).
+
+_OBPI_PARTS = re.compile(rf"^{OBPI_ID_PARTS_BODY}(?:-(?P<slug>(?i:{SLUG_BODY})))?$")
+_REQ_PARTS = re.compile(rf"^{REQ_ID_BODY}$")
+_TASK_PARTS = re.compile(rf"^{TASK_ID_BODY}$")
+_ADR_SLUG = re.compile(rf"^{ADR_ID_PARTS_BODY}-(?P<slug>{SLUG_BODY})$")
+_POOL_SLUG = re.compile(rf"^{ADR_POOL_PREFIX_BODY}(?P<slug>.+)$")
+
+
+#: The ADR short form as a template, for the embedded hook scripts that compose one.
+ADR_ID_TEMPLATE = "ADR-{semver}"
+
+
+def _width(part: str | int) -> str:
+    """Return an id part at the grammar's two-digit width when it is a number."""
+    return f"{part:02d}" if isinstance(part, int) else part
+
+
+def compose_adr_id(semver: str) -> str:
+    """Return the ADR short form, ``ADR-<semver>``."""
+    return ADR_ID_TEMPLATE.format(semver=semver)
+
+
+def compose_adr_full_id(semver: str, slug: str) -> str:
+    """Return the ADR full form, ``ADR-<semver>-<slug>``."""
+    return f"ADR-{semver}-{slug}"
+
+
+def compose_pool_adr_id(slug: str) -> str:
+    """Return the pool ADR form, ``ADR-pool.<slug>``."""
+    return f"ADR-pool.{slug}"
+
+
+def compose_obpi_id(semver: str, item: str | int, slug: str | None = None) -> str:
+    """Return the OBPI short form, or the full form when a slug is given."""
+    short = f"OBPI-{semver}-{_width(item)}"
+    return short if slug is None else f"{short}-{slug}"
+
+
+def compose_req_id(semver: str, item: str | int, criterion: str | int) -> str:
+    """Return ``REQ-<semver>-<item>-<criterion>``."""
+    return f"REQ-{semver}-{_width(item)}-{_width(criterion)}"
+
+
+def compose_task_id(semver: str, item: str | int, req_index: str | int, seq: str | int) -> str:
+    """Return ``TASK-<semver>-<item>-<req index>-<seq>``."""
+    return f"TASK-{semver}-{_width(item)}-{_width(req_index)}-{_width(seq)}"
+
+
+def adr_prefix(semver: str) -> str:
+    """Return the prefix every full ADR id of *semver* opens with."""
+    return f"ADR-{semver}-"
+
+
+def obpi_prefix(semver: str) -> str:
+    """Return the prefix every OBPI id of *semver* opens with."""
+    return f"OBPI-{semver}-"
+
+
+def req_prefix(semver: str, item: str | int | None = None) -> str:
+    """Return the prefix the REQs of an ADR (or of one of its OBPIs) open with."""
+    return f"REQ-{semver}-" if item is None else f"REQ-{semver}-{_width(item)}-"
+
+
+def task_prefix(semver: str, item: str | int, req_index: str | int) -> str:
+    """Return the prefix the TASKs of one REQ open with."""
+    return f"TASK-{semver}-{_width(item)}-{_width(req_index)}-"
+
+
+def normalize_adr_input(text: str) -> str:
+    """Return operator input as an ADR id: a bare ``<semver>[-slug]`` gains ``ADR-``."""
+    return text if text.startswith("ADR-") else f"ADR-{text}"
+
+
+def normalize_obpi_input(text: str) -> str:
+    """Return operator input as an OBPI id: a bare ``<semver>-<item>`` gains ``OBPI-``."""
+    return text if text.startswith("OBPI-") else f"OBPI-{text}"
+
+
+def normalize_pool_adr_input(text: str) -> str:
+    """Return operator input as a pool ADR id: a bare slug gains ``ADR-pool.``."""
+    return text if text.startswith("ADR-pool.") else f"ADR-pool.{text}"
+
+
+def obpi_adr_id(identifier: str) -> str | None:
+    """Return the ADR an OBPI id's spelling names, or None when it is not an OBPI id."""
+    match = _OBPI_PARTS.match(identifier)
+    return compose_adr_id(match["semver"]) if match else None
+
+
+def req_obpi_id(identifier: str) -> str | None:
+    """Return the OBPI short form a REQ id's spelling names, or None for any other id."""
+    match = _REQ_PARTS.match(identifier)
+    return compose_obpi_id(match["semver"], match["obpi_item"]) if match else None
+
+
+def task_req_id(identifier: str) -> str | None:
+    """Return the REQ a numeric TASK id's spelling names, or None for any other id."""
+    match = _TASK_PARTS.match(identifier)
+    if match is None:
+        return None
+    return compose_req_id(match["semver"], match["obpi_item"], match["req_index"])
+
+
+def task_obpi_id(identifier: str) -> str | None:
+    """Return the OBPI short form a numeric TASK id's spelling names, or None."""
+    match = _TASK_PARTS.match(identifier)
+    return compose_obpi_id(match["semver"], match["obpi_item"]) if match else None
+
+
+def spelled_parent(identifier: str) -> str | None:
+    """Return the parent an id's spelling names: the seam's one marked fallback.
+
+    ``OBPI-<semver>-…`` → ``ADR-<semver>``; ``REQ-<semver>-<NN>-<MM>`` →
+    ``OBPI-<semver>-<NN>``; ``TASK-<semver>-<NN>-<MM>-<PP>`` →
+    ``REQ-<semver>-<NN>-<MM>``. ``None`` for an id that carries no parent (an
+    ADR, a slug TASK) or is not well formed. A reader with a ledger uses
+    ``parent_of``, which reads stored fields first.
+    """
+    return obpi_adr_id(identifier) or req_obpi_id(identifier) or task_req_id(identifier)
+
+
+def spelled_chain(identifier: str) -> tuple[str, ...]:
+    """Return the spelled parents of an id, nearest first, ending at the ADR."""
+    chain: list[str] = []
+    parent = spelled_parent(identifier)
+    while parent is not None:
+        chain.append(parent)
+        parent = spelled_parent(parent)
+    return tuple(chain)
+
+
+def obpi_slug(identifier: str) -> str | None:
+    """Return the slug of a full OBPI id, or None for the short form."""
+    match = _OBPI_PARTS.match(identifier)
+    return match["slug"] if match else None
+
+
+def obpi_item(identifier: str) -> str | None:
+    """Return the item number of an OBPI id, or None when it is not one."""
+    match = _OBPI_PARTS.match(identifier)
+    return match["item"] if match else None
+
+
+def obpi_short_id(identifier: str) -> str | None:
+    """Return the short form of an OBPI id, or None when it is not one."""
+    match = _OBPI_PARTS.match(identifier)
+    return compose_obpi_id(match["semver"], match["item"]) if match else None
+
+
+def req_obpi_item(identifier: str) -> str | None:
+    """Return the OBPI item number a REQ id names, or None when it is not one."""
+    match = _REQ_PARTS.match(identifier)
+    return match["obpi_item"] if match else None
+
+
+def adr_slug(identifier: str) -> str | None:
+    """Return the slug of a full ADR id, or None for the short and pool forms."""
+    match = _ADR_SLUG.match(identifier)
+    return match["slug"] if match else None
+
+
+def pool_slug(identifier: str) -> str | None:
+    """Return the slug of a pool ADR id, or None for any other id."""
+    match = _POOL_SLUG.match(identifier)
+    return match["slug"] if match else None
+
+
+# ---------------------------------------------------------------------------
 # Frontmatter models
 # ---------------------------------------------------------------------------
 
@@ -487,3 +663,43 @@ def validate_frontmatter_model(
         return _translate_pydantic_errors(exc, frontmatter, artifact_path, model_cls)
 
     return []
+
+
+def compose_probe_id(kind: IdKind, label: str) -> str:
+    """Return an id of *kind* that deliberately names no artifact (a negative control)."""
+    return f"{kind.value}-{label}"
+
+
+def req_stem(semver: str, item: str | int) -> str:
+    """Return ``REQ-<semver>-<item>``, the stem a criterion index extends."""
+    return f"REQ-{semver}-{_width(item)}"
+
+
+def obpi_parts(identifier: str) -> tuple[str, str] | None:
+    """Return the ``(semver, item)`` of an OBPI id, or None when it is not one."""
+    match = _OBPI_PARTS.match(identifier)
+    return (match["semver"], match["item"]) if match else None
+
+
+def obpi_display_name(identifier: str) -> str:
+    """Return an OBPI's slug, else its item number, else the id as given."""
+    return obpi_slug(identifier) or obpi_item(identifier) or identifier
+
+
+def obpi_item_reference_pattern(item: int) -> str:
+    """Return a regex for the item-only reference ``OBPI-NN`` or ``OBPI-N``.
+
+    An invariant list may name an OBPI by item alone (``(OBPI-04)``), a form
+    outside the id grammar.
+    """
+    return rf"OBPI-0*{item}\b"
+
+
+def adr_remainder(identifier: str) -> str:
+    """Return the text after the ``ADR-`` kind token, or the text unchanged."""
+    return identifier.removeprefix("ADR-")
+
+
+def adr_version_term(identifier: str) -> str:
+    """Return the first hyphen-delimited token after ``ADR-``: the semver of a feature ADR."""
+    return adr_remainder(identifier).split("-", 1)[0]

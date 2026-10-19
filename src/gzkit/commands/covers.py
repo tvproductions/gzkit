@@ -12,11 +12,11 @@ plain output modes.
 from __future__ import annotations
 
 import json
-import re
 import sys
 from pathlib import Path
 
 from gzkit.commands.common import GzCliError, console, get_project_root
+from gzkit.core.models import adr_semver, obpi_short_id, req_obpi_id, req_prefix
 from gzkit.traceability import (
     CoverageReport,
     compute_coverage,
@@ -33,16 +33,19 @@ def _filter_report(report: CoverageReport, target: str) -> CoverageReport:
     if target_upper.startswith("OBPI-"):
         # Filter entries whose REQ belongs to this OBPI
         # OBPI-X.Y.Z-NN → match REQ-X.Y.Z-NN-*
-        obpi_prefix = target_upper.removeprefix("OBPI-")
-        filtered = [e for e in report.entries if _req_belongs_to_obpi(e.req_id, obpi_prefix)]
+        filtered = [e for e in report.entries if _req_belongs_to_obpi(e.req_id, target_upper)]
     elif target_upper.startswith("ADR-"):
         # Filter entries whose REQ belongs to this ADR
         # ADR-X.Y.Z → match REQ-X.Y.Z-*
-        adr_semver = target_upper.removeprefix("ADR-")
-        filtered = [e for e in report.entries if e.req_id.startswith(f"REQ-{adr_semver}-")]
+        target_semver = adr_semver(target_upper)
+        filtered = (
+            [e for e in report.entries if e.req_id.startswith(req_prefix(target_semver))]
+            if target_semver
+            else []
+        )
     else:
         # Try as bare semver → ADR
-        filtered = [e for e in report.entries if e.req_id.startswith(f"REQ-{target}-")]
+        filtered = [e for e in report.entries if e.req_id.startswith(req_prefix(target))]
 
     if not filtered:
         return CoverageReport(
@@ -61,15 +64,15 @@ def _filter_report(report: CoverageReport, target: str) -> CoverageReport:
         )
 
     # Recompute rollups from filtered entries
-    from gzkit.traceability import _obpi_sort_key, _rollup, _semver_sort_key
+    from gzkit.traceability import _obpi_sort_key, _rollup, adr_sort_key
     from gzkit.triangle import ReqId
 
     obpi_groups: dict[str, list] = {}
     adr_groups: dict[str, list] = {}
     for entry in filtered:
         parsed = ReqId.parse(entry.req_id)
-        obpi_key = f"OBPI-{parsed.semver}-{parsed.obpi_item}"
-        adr_key = f"ADR-{parsed.semver}"
+        obpi_key = parsed.obpi_id
+        adr_key = parsed.adr_id
         obpi_groups.setdefault(obpi_key, []).append(entry)
         adr_groups.setdefault(adr_key, []).append(entry)
 
@@ -77,26 +80,17 @@ def _filter_report(report: CoverageReport, target: str) -> CoverageReport:
         _rollup(k, g) for k, g in sorted(obpi_groups.items(), key=lambda kv: _obpi_sort_key(kv[0]))
     ]
     by_adr = [
-        _rollup(k, g)
-        for k, g in sorted(
-            adr_groups.items(), key=lambda kv: _semver_sort_key(kv[0].removeprefix("ADR-"))
-        )
+        _rollup(k, g) for k, g in sorted(adr_groups.items(), key=lambda kv: adr_sort_key(kv[0]))
     ]
     summary = _rollup(target, filtered)
 
     return CoverageReport(by_adr=by_adr, by_obpi=by_obpi, entries=filtered, summary=summary)
 
 
-_OBPI_NUMERIC_PREFIX_RE = re.compile(r"^(\d+\.\d+\.\d+-\d+)")
-
-
-def _req_belongs_to_obpi(req_id: str, obpi_prefix: str) -> bool:
-    """Check if REQ-X.Y.Z-NN-MM belongs to OBPI prefix X.Y.Z-NN[-slug]."""
-    stripped = req_id.removeprefix("REQ-")
-    # Strip any slug from prefix: "0.0.26-03-CLUSTERING-CHORE" → "0.0.26-03"
-    m = _OBPI_NUMERIC_PREFIX_RE.match(obpi_prefix)
-    numeric_prefix = m.group(1) if m else obpi_prefix
-    return stripped.startswith(f"{numeric_prefix}-")
+def _req_belongs_to_obpi(req_id: str, obpi_id: str) -> bool:
+    """Check if REQ-X.Y.Z-NN-MM belongs to the OBPI X.Y.Z-NN[-slug] names."""
+    owner = obpi_short_id(obpi_id)
+    return owner is not None and req_obpi_id(req_id) == owner
 
 
 def _format_human(report: CoverageReport) -> str:

@@ -442,7 +442,6 @@ PRIVATE_CROSS_PACKAGE_IMPORT_BASELINE: dict[str, tuple[str, ...]] = {
     "commands/covers.py": (
         "traceability._obpi_sort_key",
         "traceability._rollup",
-        "traceability._semver_sort_key",
     ),
     "commands/init_cmd.py": (
         "chores._iter_canonical_chore_slugs",

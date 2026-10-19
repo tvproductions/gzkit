@@ -54,7 +54,7 @@ from gzkit.commands.status import (
     _adr_closeout_readiness,
     _collect_obpi_files_for_adr,
 )
-from gzkit.core.models import is_foundation_adr
+from gzkit.core.models import is_foundation_adr, normalize_adr_input
 from gzkit.ledger import Ledger, resolve_adr_lane
 from gzkit.tasks import in_scope_task_id
 
@@ -90,7 +90,7 @@ def _resolve_adr_context(
     project_root = get_project_root()
     manifest = load_manifest(project_root)
     ledger = Ledger(project_root / config.paths.ledger)
-    adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
+    adr_input = normalize_adr_input(adr)
     canonical_adr = ledger.canonicalize_id(adr_input)
     adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
     adr_id = resolve_adr_ledger_id(adr_file, adr_id, ledger)

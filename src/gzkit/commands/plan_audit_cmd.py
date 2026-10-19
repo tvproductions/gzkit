@@ -8,7 +8,7 @@ from datetime import UTC, datetime
 from pathlib import Path, PurePosixPath
 
 from gzkit.commands.common import console
-from gzkit.core.models import ADR_SHORT_ID_BODY, OBPI_ID_PARTS_BODY
+from gzkit.core.models import ADR_SHORT_ID_BODY, obpi_adr_id
 from gzkit.governance.brief_path_validity import (
     allowed_path_resolves as _allowed_path_resolves,  # noqa: F401  (test import)
 )
@@ -174,9 +174,6 @@ def _emit_result(
         sys.exit(1)
 
 
-_OBPI_SEMVER_RE = re.compile(rf"^{OBPI_ID_PARTS_BODY}")
-
-
 def _derive_adr_id(obpi_id: str) -> str | None:
     """Derive ADR-X.Y.Z from OBPI-X.Y.Z-NN or OBPI-X.Y.Z-NN-<slug> (GHI #187).
 
@@ -185,10 +182,7 @@ def _derive_adr_id(obpi_id: str) -> str | None:
     broke on full slugs like ``OBPI-0.0.16-05-status-vocab-mapping`` because
     the last segment was the slug tail, not the item number.
     """
-    match = _OBPI_SEMVER_RE.match(obpi_id)
-    if match is None:
-        return None
-    return f"ADR-{match.group('semver')}"
+    return obpi_adr_id(obpi_id)
 
 
 def _find_adr_dir(project_root: Path, adr_id: str) -> Path | None:

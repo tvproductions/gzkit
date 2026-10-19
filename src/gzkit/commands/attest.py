@@ -26,6 +26,7 @@ from gzkit.commands.common import (
 )
 from gzkit.commands.status import _adr_obpi_status_rows
 from gzkit.config import GzkitConfig
+from gzkit.core.models import normalize_adr_input
 from gzkit.ledger import Ledger, attested_event
 from gzkit.tasks import in_scope_task_id
 
@@ -143,7 +144,7 @@ def attest(
         raise GzCliError(msg)  # noqa: TRY003
 
     ledger = Ledger(project_root / config.paths.ledger)
-    adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
+    adr_input = normalize_adr_input(adr)
     canonical_adr = ledger.canonicalize_id(adr_input)
 
     # Verify ADR exists (support nested ADR layout)

@@ -8,7 +8,7 @@ from typing import Any, cast
 from rich.markup import escape
 
 from gzkit.commands.common import console
-from gzkit.core.models import OBPI_ID_PARTS_BODY, SLUG_BODY, adr_semver
+from gzkit.core.models import OBPI_ID_PARTS_BODY, SLUG_BODY, adr_semver, req_prefix
 from gzkit.quality import check_product_proof
 from gzkit.traceability import (
     CoverageEntry,
@@ -131,7 +131,7 @@ def _compute_adr_coverage(
     linkage_records.extend(_synthesize_doc_proof_linkage(discovered, project_root))
     report = compute_coverage(discovered, linkage_records, include_doc=True)
 
-    prefix = f"REQ-{semver}-"
+    prefix = req_prefix(semver)
     adr_entries = [e for e in report.entries if e.req_id.startswith(prefix)]
     if not adr_entries:
         return empty
@@ -142,7 +142,7 @@ def _compute_adr_coverage(
     obpi_groups: dict[str, list[CoverageEntry]] = {}
     for entry in adr_entries:
         parsed = ReqId.parse(entry.req_id)
-        obpi_key = f"OBPI-{parsed.semver}-{parsed.obpi_item}"
+        obpi_key = parsed.obpi_id
         obpi_groups.setdefault(obpi_key, []).append(entry)
 
     by_obpi = []
@@ -293,7 +293,7 @@ def _req_prefix_for_obpi(obpi_id: str) -> str | None:
     if not match:
         return None
     semver, item = match.groups()
-    return f"REQ-{semver}-{item}-"
+    return req_prefix(semver, item)
 
 
 def _extract_obpi_requirement_targets(

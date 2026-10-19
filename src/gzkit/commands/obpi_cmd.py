@@ -34,6 +34,7 @@ from gzkit.commands.obpi_stages import (  # noqa: F401
     _run_pipeline_verify_stage,
 )
 from gzkit.commands.status import _inspect_obpi_brief
+from gzkit.core.models import normalize_adr_input
 from gzkit.core.obpi_state_machine import CANONICAL_TRANSITIONS, OBPIState
 from gzkit.event_evidence import EventAnchor
 from gzkit.hooks.obpi import ObpiValidator
@@ -1078,7 +1079,7 @@ def _obpi_validate_batch(
     from gzkit.ledger import Ledger  # noqa: PLC0415
 
     ledger = Ledger(project_root / config.paths.ledger)
-    adr_input = adr_id if adr_id.startswith("ADR-") else f"ADR-{adr_id}"
+    adr_input = normalize_adr_input(adr_id)
     canonical = ledger.canonicalize_id(adr_input)
     adr_file, resolved = resolve_adr_file(project_root, config, canonical)
 

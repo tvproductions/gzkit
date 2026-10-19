@@ -19,6 +19,7 @@ from typing import Any
 from rich.markup import escape
 
 from gzkit.commands.common import console, get_project_root
+from gzkit.core.models import obpi_parts
 from gzkit.quality import (
     DriftAdvisoryResult,
     QualityResult,
@@ -216,11 +217,10 @@ def _resolve_obpi_req_ids(project_root, obpi: str) -> set[str]:
     """Return the set of REQ IDs belonging to the given OBPI."""
     from gzkit.triangle import scan_briefs  # noqa: PLC0415
 
-    short = obpi.upper().removeprefix("OBPI-")
-    if "-" not in short:
+    parts = obpi_parts(obpi.upper())
+    if parts is None:
         raise ValueError(f"Expected OBPI-<semver>-<item> form, got {obpi!r}")
-    semver, item = short.split("-", 1)
-    item = item.split("-", 1)[0]
+    semver, item = parts
 
     briefs = scan_briefs(project_root / "docs" / "design" / "adr")
     return {

@@ -13,7 +13,13 @@ import re
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from gzkit.core.models import OBPI_SHORT_ID_BODY
+from gzkit.core.models import (
+    OBPI_SHORT_ID_BODY,
+    compose_adr_id,
+    compose_obpi_id,
+    compose_req_id,
+    task_prefix,
+)
 from gzkit.core.models import REQ_ID_BODY as REQ_ID_BODY
 from gzkit.core.models import REQ_ID_BODY_PLAIN as REQ_ID_BODY_PLAIN
 from gzkit.req_kind import NON_COVERS_KINDS, ReqKind, ReqKindValue
@@ -68,7 +74,22 @@ class ReqId(BaseModel):
 
     def __str__(self) -> str:
         """Return the canonical REQ identifier string."""
-        return f"REQ-{self.semver}-{self.obpi_item}-{self.criterion_index}"
+        return compose_req_id(self.semver, self.obpi_item, self.criterion_index)
+
+    @property
+    def obpi_id(self) -> str:
+        """Return the OBPI short form this REQ's spelling names."""
+        return compose_obpi_id(self.semver, self.obpi_item)
+
+    @property
+    def adr_id(self) -> str:
+        """Return the ADR short form this REQ's spelling names."""
+        return compose_adr_id(self.semver)
+
+    @property
+    def task_prefix(self) -> str:
+        """Return the prefix the TASKs of this REQ open with."""
+        return task_prefix(self.semver, self.obpi_item, self.criterion_index)
 
 
 # ---------------------------------------------------------------------------

@@ -13,7 +13,7 @@ from gzkit.commands.register import (
     is_ungrandfathered_foundation,
     warn_foundation_refused,
 )
-from gzkit.core.models import ADR_ID_BODY
+from gzkit.core.models import ADR_ID_BODY, compose_adr_full_id, normalize_pool_adr_input
 from gzkit.decomposition import build_checklist_seed, compute_scorecard, default_dimension_scores
 from gzkit.ledger import Ledger, adr_created_event
 from gzkit.models.foundation_grandfather import foundation_kind_is_closed
@@ -83,7 +83,7 @@ def _compose_canonical_adr_id(name: str, semver: str) -> str:
             f"(GHI #279 / GHI #344). Pass a slug instead, e.g. "
             f"`gz plan create my-doctrine-name --semver {semver}`."
         )
-    return f"ADR-{semver}-{name}"
+    return compose_adr_full_id(semver, name)
 
 
 def _reject_noncanonical_name(name: str, kind: str) -> None:
@@ -122,7 +122,7 @@ def _reject_noncanonical_name(name: str, kind: str) -> None:
 
 def _render_pool_adr(*, name: str, title: str, parent: str, lane: str) -> tuple[str, str, str]:
     """Render a pool ADR. Returns (adr_id, relative_dir, content)."""
-    slug = name if name.startswith("ADR-pool.") else f"ADR-pool.{name}"
+    slug = normalize_pool_adr_input(name)
     content = render_template(
         "adr_pool",
         id=slug,
@@ -425,7 +425,7 @@ def plan_cmd(
         else:
             sub = "pre-release"
         adr_id_preview = (
-            (name if name.startswith("ADR-pool.") else f"ADR-pool.{name}")
+            normalize_pool_adr_input(name)
             if kind == "pool"
             else _compose_canonical_adr_id(name, semver)
         )

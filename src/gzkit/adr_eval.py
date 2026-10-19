@@ -23,6 +23,7 @@ from gzkit.adr_eval_dispatch import (
 )
 from gzkit.adr_eval_substance import SubstanceVerdict, substance_channel_for_adr
 from gzkit.config import GzkitConfig
+from gzkit.core.models import obpi_display_name
 
 # ---------------------------------------------------------------------------
 # Pydantic models
@@ -401,7 +402,7 @@ def render_scorecard_markdown(result: AdrEvalResult) -> str:
         ]
     )
     for obpi in result.obpi_scores:
-        short_id = obpi.obpi_id.split("-", 3)[-1] if "-" in obpi.obpi_id else obpi.obpi_id
+        short_id = obpi_display_name(obpi.obpi_id)
         lines.append(
             f"| {short_id} | {obpi.independence} | {obpi.testability} "
             f"| {obpi.value} | {obpi.size} | {obpi.clarity} | {obpi.average:.1f} |"

@@ -7,6 +7,7 @@ from typing import Any, cast
 
 import yaml
 
+from gzkit.core.models import adr_version_term
 from gzkit.ledger import parse_frontmatter_value
 
 _COMPLETED_RUNTIME_STATES = {"completed", "attested_completed", "validated"}
@@ -170,7 +171,7 @@ def _append_frontmatter_list_value(content: str, key: str, value: str) -> str:
 
 def _adr_semver_term(adr_id: str) -> str:
     """Extract the semver term from an ADR identifier."""
-    return adr_id.removeprefix("ADR-").split("-", 1)[0]
+    return adr_version_term(adr_id)
 
 
 def _markdown_table_cell(value: str) -> str:

@@ -510,7 +510,7 @@ def _print_status_obpi_section(
     obpi_total = cast(int, obpi_summary.get("total", 0))
     obpi_completed = cast(int, obpi_summary.get("completed", 0))
     obpi_unit_status = cast(str, obpi_summary.get("unit_status", "unscoped"))
-    obpi_open_rows = [row for row in obpi_rows if not _obpi_row_complete(row)]
+    open_rows = [row for row in obpi_rows if not _obpi_row_complete(row)]
 
     console.print(f"  OBPI Unit:       {_render_obpi_unit_status(obpi_unit_status)}")
     console.print(f"  OBPI Completion: {obpi_completed}/{obpi_total} complete")
@@ -519,19 +519,19 @@ def _print_status_obpi_section(
         return
 
     if full:
-        console.print(f"  OBPI Open:       {len(obpi_open_rows)} remaining")
+        console.print(f"  OBPI Open:       {len(open_rows)} remaining")
         _render_obpi_detail_table(obpi_rows)
         return
 
-    if not obpi_open_rows:
+    if not open_rows:
         console.print("  OBPIs:           all linked OBPIs completed with evidence")
         return
 
-    console.print(f"  OBPI Open:       {len(obpi_open_rows)} remaining")
-    preview_rows = obpi_open_rows[:3]
+    console.print(f"  OBPI Open:       {len(open_rows)} remaining")
+    preview_rows = open_rows[:3]
     for row in preview_rows:
         console.print(f"    - {_render_obpi_row_status(row)}")
-    hidden_count = len(obpi_open_rows) - len(preview_rows)
+    hidden_count = len(open_rows) - len(preview_rows)
     if hidden_count > 0:
         console.print(f"    - ... and {hidden_count} more")
 

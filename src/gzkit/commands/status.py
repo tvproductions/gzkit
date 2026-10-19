@@ -51,7 +51,12 @@ from gzkit.commands.status_render import (
 )
 from gzkit.commands.task import _load_tasks_for_obpi
 from gzkit.config import GzkitConfig
-from gzkit.core.models import ADR_SEMVER_COMPONENTS_BODY, TASK_ID_BODY
+from gzkit.core.models import (
+    ADR_SEMVER_COMPONENTS_BODY,
+    normalize_adr_input,
+    pool_slug,
+    task_req_id,
+)
 from gzkit.core.validation_rules import parse_frontmatter as _parse_md_frontmatter
 from gzkit.ledger import (
     Ledger,
@@ -162,18 +167,12 @@ def _task_summary_for_adr(
     return result
 
 
-_TASK_REQ_PREFIX_RE = re.compile(rf"^{TASK_ID_BODY}$")
-
-
 def _req_prefix_from_task_id(task_id: str) -> str | None:
     """Extract the REQ prefix from a TASK ID string.
 
     TASK-semver-obpi_item-req_index-seq → REQ-semver-obpi_item-req_index
     """
-    m = _TASK_REQ_PREFIX_RE.match(task_id)
-    if m:
-        return f"REQ-{m.group(1)}-{m.group(2)}-{m.group(3)}"
-    return None
+    return task_req_id(task_id)
 
 
 ADR_SEMVER_STATUS_ID_RE = re.compile(
@@ -268,13 +267,8 @@ def _collect_adr_statuses(
 
 def _filename_derived_epic(adr_id: str) -> str | None:
     """Return the first hyphen-delimited token after ``ADR-pool.``, or None."""
-    prefix = "ADR-pool."
-    if not adr_id.startswith(prefix):
-        return None
-    remainder = adr_id[len(prefix) :]
-    if not remainder:
-        return None
-    return remainder.split("-", 1)[0]
+    slug = pool_slug(adr_id)
+    return slug.split("-", 1)[0] if slug else None
 
 
 def _filter_adrs_by_epic(
@@ -514,7 +508,7 @@ def _build_adr_status_result(adr: str) -> dict[str, Any]:
     project_root = get_project_root()
     ledger = Ledger(project_root / config.paths.ledger)
 
-    adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
+    adr_input = normalize_adr_input(adr)
     try:
         adr_file, adr_id = resolve_adr_file(project_root, config, adr_input)
     except GzCliError:

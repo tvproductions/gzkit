@@ -30,7 +30,7 @@ from gzkit.commands.specify_cmd import (
     _normalized_objective_from_checklist_item,
     _slugify_obpi_name,
 )
-from gzkit.core.models import OBPI_SHORT_ID_BODY
+from gzkit.core.models import OBPI_SHORT_ID_BODY, compose_adr_full_id, normalize_adr_input
 from gzkit.decomposition import (
     parse_checklist_items,
 )
@@ -154,7 +154,7 @@ def _build_adr_promotion_plan(
         raise GzCliError(msg)  # noqa: TRY003
     _parse_semver_triplet(semver)
     target_slug = _resolve_promotion_slug(pool_adr_id, slug)
-    target_adr_id = f"ADR-{semver}-{target_slug}"
+    target_adr_id = compose_adr_full_id(semver, target_slug)
     if target_adr_id in ledger.get_artifact_graph():
         msg = f"Target ADR already exists in ledger: {target_adr_id}"
         raise GzCliError(msg)
@@ -483,7 +483,7 @@ def adr_eval_cmd(adr_id: str, as_json: bool, write_scorecard: bool) -> None:
 
     config = ensure_initialized()
     project_root = get_project_root()
-    adr_input = adr_id if adr_id.startswith("ADR-") else f"ADR-{adr_id}"
+    adr_input = normalize_adr_input(adr_id)
 
     result = evaluate_adr(project_root, adr_input)
     # Record the ADR's slug id, never the bare id typed (GHI #1118). evaluate_adr

@@ -20,6 +20,7 @@ from gzkit.commands.common import (
     _upsert_frontmatter_value,
     console,
 )
+from gzkit.core.models import adr_remainder, normalize_adr_input
 from gzkit.decomposition import (
     DecompositionScorecard,
     compute_scorecard,
@@ -59,7 +60,7 @@ def _derive_slug_from_pool_id(pool_id: str) -> str:
     elif "-pool." in pool_id:
         raw_slug = pool_id.split("-pool.", 1)[1]
     else:
-        raw_slug = pool_id.removeprefix("ADR-")
+        raw_slug = adr_remainder(pool_id)
     candidate = raw_slug.replace(".", "-").lower()
     if not ADR_SLUG_RE.match(candidate):
         msg = (
@@ -470,7 +471,7 @@ def _render_promoted_adr_content(
 
 def _normalize_pool_adr_input(pool_adr: str) -> str:
     """Normalize user ADR argument into an explicit pool ADR identifier."""
-    pool_input = pool_adr if pool_adr.startswith("ADR-") else f"ADR-{pool_adr}"
+    pool_input = normalize_adr_input(pool_adr)
     if not _is_pool_adr_id(pool_input):
         msg = f"Source ADR is not a pool entry: {pool_input}"
         raise GzCliError(msg)  # noqa: TRY003
@@ -518,7 +519,7 @@ def _resolve_promotion_parent(parent: str | None, pool_metadata: dict[str, str])
     """Resolve ADR parent link for promoted ADR scaffold."""
     promoted_parent = parent or pool_metadata.get("parent", "")
     if promoted_parent and not promoted_parent.startswith(("ADR-", "PRD-", "OBPI-")):
-        promoted_parent = f"ADR-{promoted_parent}"
+        promoted_parent = normalize_adr_input(promoted_parent)
     return promoted_parent
 
 

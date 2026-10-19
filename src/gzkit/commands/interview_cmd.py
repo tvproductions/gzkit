@@ -19,6 +19,7 @@ from gzkit.commands.plan import (
     WHY_FOUNDATION_TIER_SECTION,
     register_adr_in_ledger,
 )
+from gzkit.core.models import normalize_adr_input
 from gzkit.interview import (
     answer_payload_problems,
     check_interview_complete,
@@ -246,7 +247,7 @@ def interview(document_type: str, from_file: str | None = None) -> None:
         if not parent_input:
             msg = "OBPI interview requires a parent ADR ID."
             raise GzCliError(msg)  # noqa: TRY003
-        parent_adr = parent_input if parent_input.startswith("ADR-") else f"ADR-{parent_input}"
+        parent_adr = normalize_adr_input(parent_input)
         canonical_parent = ledger.canonicalize_id(parent_adr)
         adr_file, resolved_parent = resolve_adr_file(project_root, config, canonical_parent)
         template_vars["parent"] = resolved_parent

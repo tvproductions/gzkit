@@ -37,7 +37,7 @@ from typing import Literal, cast
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from gzkit.commands.common import GzCliError
-from gzkit.core.models import REQ_ID_BODY
+from gzkit.core.models import REQ_ID_BODY, req_obpi_id
 
 # --------------------------------------------------------------------------- #
 # Mock boundary type                                                           #
@@ -268,7 +268,7 @@ def _parent_obpi_id(req_id: str) -> str | None:
     match = _REQ_ID_RE.match(req_id)
     if match is None:
         return None
-    return f"OBPI-{match.group(1)}-{match.group(2)}"
+    return req_obpi_id(req_id)
 
 
 def _iso_to_utc_date(ts: str) -> date | None:

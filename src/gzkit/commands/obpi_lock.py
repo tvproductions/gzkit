@@ -14,6 +14,7 @@ from pathlib import Path
 from rich.markup import escape
 
 from gzkit.commands.common import console, ensure_initialized, get_project_root
+from gzkit.core.models import obpi_adr_id
 from gzkit.exchange_records import (
     ABANDON_CATEGORIES,
     AbandonSpec,
@@ -400,12 +401,7 @@ def _adr_id_from_obpi(obpi_id: str) -> str:
     Used by the degenerate-handoff writer so the handoff frontmatter carries the
     parent ADR ID without the caller needing to thread it through.
     """
-    if not obpi_id.startswith("OBPI-"):
-        return "ADR-unknown"
-    parts = obpi_id[5:].split("-")
-    if len(parts) < 1:
-        return "ADR-unknown"
-    return f"ADR-{parts[0]}"
+    return obpi_adr_id(obpi_id) or "ADR-unknown"
 
 
 def _current_commit_sha() -> str:
