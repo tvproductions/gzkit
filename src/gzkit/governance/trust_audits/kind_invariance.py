@@ -40,7 +40,7 @@ def _check_foundation_adr(adr_file: Path, project_root: Path) -> ValidationError
     """
     try:
         raw = adr_file.read_text(encoding="utf-8")
-    except (UnicodeDecodeError, OSError):
+    except UnicodeDecodeError, OSError:
         return None
 
     body = _strip_frontmatter(raw)

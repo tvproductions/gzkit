@@ -62,7 +62,7 @@ def _find_offenders(pattern: str) -> list[str]:
                 continue
             try:
                 text = path.read_text(encoding="utf-8")
-            except (OSError, UnicodeDecodeError):
+            except OSError, UnicodeDecodeError:
                 continue
             if compiled.search(text):
                 offenders.append(path.relative_to(REPO_ROOT).as_posix())
@@ -129,7 +129,7 @@ class TestSkillSelfCloseDrift(unittest.TestCase):
                 continue
             try:
                 text = path.read_text(encoding="utf-8")
-            except (OSError, UnicodeDecodeError):
+            except OSError, UnicodeDecodeError:
                 continue
             scanned += 1
             for pat in patterns:
@@ -167,7 +167,7 @@ class TestSkillSelfCloseDrift(unittest.TestCase):
                 continue
             try:
                 text = path.read_text(encoding="utf-8")
-            except (OSError, UnicodeDecodeError):
+            except OSError, UnicodeDecodeError:
                 continue
             scanned += 1
             for pat in patterns:

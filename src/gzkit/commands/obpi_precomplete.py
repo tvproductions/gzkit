@@ -142,7 +142,7 @@ def resolve_brief_path(project_root: Path, obpi_id: str) -> Path | None:
     try:
         config = GzkitConfig.load(project_root / ".gzkit.json")
         design_root = config.paths.design_root
-    except (OSError, ValueError):
+    except OSError, ValueError:
         design_root = "docs/design"
     candidates: list[Path] = []
     for layout in ("obpis", "briefs"):
@@ -457,7 +457,7 @@ def _lock_claimed_at(project_root: Path, obpi_id: str) -> datetime | None:
     for path in _held_lock_files(project_root, obpi_id):
         try:
             payload = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        except OSError, UnicodeDecodeError, json.JSONDecodeError:
             continue
         if isinstance(payload, dict) and (claimed := _utc(payload.get("claimed_at"))):
             return claimed
@@ -478,7 +478,7 @@ def _newest_receipts_since(receipts_dir: Path, claimed: datetime) -> dict[str, d
     for path in receipts_dir.glob("arb-*.json") if receipts_dir.is_dir() else []:
         try:
             payload = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        except OSError, UnicodeDecodeError, json.JSONDecodeError:
             continue
         if not isinstance(payload, dict):
             continue

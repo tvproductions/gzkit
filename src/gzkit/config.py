@@ -179,7 +179,7 @@ class GzkitConfig(BaseModel):
     project_name: str = ""
 
     @classmethod
-    def load(cls, path: Path | None = None) -> "GzkitConfig":
+    def load(cls, path: Path | None = None) -> GzkitConfig:
         """Load configuration from .gzkit.json.
 
         Args:

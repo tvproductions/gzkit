@@ -53,7 +53,7 @@ TRIAGE_INVOCATION_RE = re.compile(r"triage\.py(?:\\\n|[^\n])*--format\s+rank", r
 def _load_input() -> dict | None:
     try:
         return json.load(sys.stdin)
-    except (json.JSONDecodeError, OSError, ValueError):
+    except json.JSONDecodeError, OSError, ValueError:
         return None
 
 

@@ -63,7 +63,7 @@ def _resolve_project_root() -> Path | None:
     """Return the project root via ``get_project_root`` or None when outside a project."""
     try:
         root = get_project_root()
-    except (OSError, ValueError):
+    except OSError, ValueError:
         return None
     if not (root / ".gzkit.json").is_file():
         return None

@@ -41,7 +41,7 @@ def _banner_stdlib(cwd: str | None) -> str:
             return ""
         try:
             raw = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, ValueError):
+        except OSError, ValueError:
             return _BANNER
         if isinstance(raw, dict) and raw.get("mode") == "safe":
             contract = str(raw.get("contract") or "<no contract recorded>")

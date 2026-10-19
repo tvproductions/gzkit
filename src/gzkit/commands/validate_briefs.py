@@ -75,7 +75,7 @@ def _load_interview_transcript_waivers(project_root: Path) -> set[str]:
         return set()
     try:
         payload = json.loads(waiver_path.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, UnicodeDecodeError, OSError):
+    except json.JSONDecodeError, UnicodeDecodeError, OSError:
         return set()
     waivers = payload.get("waivers", {}) or {}
     return {adr_id for adr_id in waivers if isinstance(adr_id, str) and adr_id.startswith("ADR-")}

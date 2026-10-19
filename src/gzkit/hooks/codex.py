@@ -143,7 +143,7 @@ def main() -> None:
     """Read one native hook payload and emit supported JSON only."""
     try:
         payload = json.load(sys.stdin)
-    except (json.JSONDecodeError, OSError):
+    except json.JSONDecodeError, OSError:
         return
     if isinstance(payload, dict):
         output = hook_output(payload)

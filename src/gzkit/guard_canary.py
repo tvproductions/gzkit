@@ -138,7 +138,7 @@ def _module_file(name: str) -> str | None:
     """Return the ``.py`` file module *name* lives in, or ``None`` when it is not a module."""
     try:
         spec = importlib.util.find_spec(name)
-    except (ImportError, ValueError):  # a prefix that is a class or function is not a module
+    except ImportError, ValueError:  # a prefix that is a class or function is not a module
         spec = None
     origin = None if spec is None else spec.origin
     return origin if origin and origin.endswith(".py") else None

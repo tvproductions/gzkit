@@ -40,7 +40,7 @@ def _build_env() -> jinja2.Environment:
         # both editable-install (src layout) and wheel (installed) modes.
         pkg_root = importlib.resources.files("gzkit.content")
         templates_path = Path(str(pkg_root)) / "templates"
-    except (ModuleNotFoundError, TypeError):
+    except ModuleNotFoundError, TypeError:
         # Fallback: resolve relative to this file's location.
         templates_path = Path(__file__).parent.parent / "templates"
 

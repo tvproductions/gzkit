@@ -18,6 +18,7 @@ So `killed` and `survived` are claims about the guard, while `invalid` and
 
 from __future__ import annotations
 
+import os
 import subprocess
 import unittest
 from pathlib import Path
@@ -642,3 +643,26 @@ class TestHungRun(unittest.TestCase):
         self.assertFalse(sweep.baseline_green)
         self.assertIn("600", sweep.baseline_output_tail)
         self.assertEqual({w.outcome for w in sweep.witnesses}, {"inconclusive"})
+
+
+class TestTheCompileCheckUsesTheRunningInterpreter(unittest.TestCase):
+    """The syntax check compiles with the interpreter running the sweep, never PATH's.
+
+    Drydock RO-9 moved the floor to Python 3.14, whose syntax (PEP 758's
+    unparenthesized ``except A, B:``) an older ``python3`` on PATH cannot parse;
+    a check run there called every mutant uncompilable and voided the sweep.
+    """
+
+    def test_it_compiles_with_no_python_on_path(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "m.py"
+            source.write_text(
+                "try:\n    pass\nexcept ValueError, TypeError:\n    pass\n", encoding="utf-8"
+            )
+            empty = root / "empty-path"
+            empty.mkdir()
+            with mock.patch.dict(os.environ, {"PATH": str(empty)}):
+                self.assertTrue(mutation_witness._compiles(source, root, root / "cache"))
+            source.write_text("def broken(:\n", encoding="utf-8")
+            self.assertFalse(mutation_witness._compiles(source, root, root / "cache"))

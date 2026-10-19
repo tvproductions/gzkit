@@ -1,8 +1,5 @@
 # Ty configuration for gzkit
 
-[environment]
-python-version = "3.13"
-
 # ty cannot narrow types after unittest assertIsNotNone(), and does not
 # understand Pydantic alias/populate_by_name semantics.  Suppress the
 # resulting false-positives in test code rather than littering every test

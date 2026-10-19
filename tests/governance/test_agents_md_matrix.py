@@ -41,7 +41,7 @@ class TestAgentsMdMatrixCollapse(unittest.TestCase):
                 continue
             try:
                 text = path.read_text(encoding="utf-8")
-            except (OSError, UnicodeDecodeError):
+            except OSError, UnicodeDecodeError:
                 continue
             if any(phrase in text for phrase in deprecated_phrases):
                 offenders.append(rel)
@@ -183,7 +183,7 @@ class TestAgentsMdMatrixCollapse(unittest.TestCase):
             rel = path.relative_to(REPO_ROOT).as_posix()
             try:
                 text = path.read_text(encoding="utf-8")
-            except (OSError, UnicodeDecodeError):
+            except OSError, UnicodeDecodeError:
                 continue
             # Skip files that are not mirrors of the main AGENTS.md
             # (e.g. template with placeholders that hasn't had sync-time substitution)

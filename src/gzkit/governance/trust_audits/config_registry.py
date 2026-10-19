@@ -56,7 +56,7 @@ def _err(artifact: str, message: str) -> ValidationError:
 def _load_json(path: Path) -> object | None:
     try:
         return json.loads(path.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
+    except json.JSONDecodeError, OSError:
         return None
 
 

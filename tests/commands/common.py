@@ -4,7 +4,7 @@ import os
 import subprocess
 import tempfile
 import unittest
-from collections.abc import Iterator, Mapping
+from collections.abc import Generator, Mapping
 from contextlib import contextmanager, redirect_stderr, redirect_stdout
 from dataclasses import dataclass
 from datetime import date
@@ -85,7 +85,7 @@ class CliRunner:
 
 
 @contextmanager
-def hostile_console() -> Iterator[None]:
+def hostile_console() -> Generator[None]:
     """Make the shared CLI console a narrow colour terminal (GHI #1010).
 
     A `--json` document must reach stdout byte-exact whatever the console is
@@ -125,7 +125,7 @@ def _git_subprocess_patcher(
     remote: str = "origin",
     clean: bool = True,
     responses: dict[tuple[str, ...], tuple[int, str, str]] | None = None,
-) -> Iterator[None]:
+) -> Generator[None]:
     """Patch ``gzkit.utils.git_cmd`` with a fake that simulates a healthy repo.
 
     This is the ``git`` counterpart to ``_uv_sync_patcher`` — unit tests that

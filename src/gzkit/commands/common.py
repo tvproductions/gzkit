@@ -69,7 +69,7 @@ def _prompt_text(prompt: str, default: str = "") -> str:
     suffix = f" [{default}]" if default else ""
     try:
         answer = input(f"{prompt}{suffix}: ")
-    except (EOFError, KeyboardInterrupt):
+    except EOFError, KeyboardInterrupt:
         raise KeyboardInterrupt from None
     return answer if answer else default
 
@@ -79,7 +79,7 @@ def _confirm(prompt: str, default: bool = True) -> bool:
     suffix = " [Y/n] " if default else " [y/N] "
     try:
         answer = input(f"{prompt}{suffix}").strip().lower()
-    except (EOFError, KeyboardInterrupt):
+    except EOFError, KeyboardInterrupt:
         raise KeyboardInterrupt from None
     if not answer:
         return default
@@ -179,7 +179,7 @@ def get_git_user() -> str:
             check=True,
         )
         return result.stdout.strip()
-    except (subprocess.CalledProcessError, FileNotFoundError):
+    except subprocess.CalledProcessError, FileNotFoundError:
         return "unknown"
 
 

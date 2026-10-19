@@ -145,7 +145,7 @@ def _find_fresh_security_receipt(
     for path in receipts_dir.glob(_SECURITY_RECEIPT_GLOB):
         try:
             payload = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
+        except OSError, json.JSONDecodeError:
             continue
         ts = payload.get("timestamp_utc")
         if not isinstance(ts, str):
@@ -257,7 +257,7 @@ def _enforce_security_review_gate(
         try:
             stale_payload = json.loads(stale_path.read_text(encoding="utf-8"))
             stale_ts = stale_payload.get("timestamp_utc", "<unknown>")
-        except (OSError, json.JSONDecodeError):
+        except OSError, json.JSONDecodeError:
             stale_ts = "<unknown>"
         _fail(
             f"receipt-stale: newest arb-step-security-* receipt {stale_path.name} "
@@ -432,7 +432,7 @@ def _qualified_to_unittest_target(ref: TestRef, project_root: Path) -> str | Non
     """
     try:
         rel = Path(ref.file_path).resolve().relative_to(project_root.resolve())
-    except (ValueError, OSError):
+    except ValueError, OSError:
         return None
     parts = list(rel.with_suffix("").parts)
     if not parts:
@@ -468,7 +468,7 @@ def _behave_ref_passes(ref: TestRef, project_root: Path, req_id: str) -> bool:
             ["uv", "run", "-m", "behave", ref.file_path, "--tags", f"@{req_id}"],
             cwd=str(project_root),
         )
-    except (OSError, subprocess.SubprocessError):
+    except OSError, subprocess.SubprocessError:
         return False
     # Exit 0 also covers a tag that selects no scenario (GHI #1154); the summary
     # must show one scenario passed.
@@ -495,7 +495,7 @@ def _any_covering_test_passes(refs: list[TestRef], project_root: Path, *, req_id
                 ["uv", "run", "-m", "unittest", target],
                 cwd=str(project_root),
             )
-        except (OSError, subprocess.SubprocessError):
+        except OSError, subprocess.SubprocessError:
             continue
         # Exit 0 also covers a skipped or empty run (GHI #1154); one test must have run.
         if (
@@ -1629,7 +1629,7 @@ def _emit_security_floor_override_best_effort(
         return
     try:
         _append_stamped(ledger, event)
-    except (OSError, ValueError):
+    except OSError, ValueError:
         # The warning path must itself be non-throwing (a console backed by a
         # closed stream raises ValueError) — Step-4b round 4, Codex.
         with contextlib.suppress(OSError, ValueError):

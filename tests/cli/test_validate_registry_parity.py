@@ -172,12 +172,6 @@ _POST_SNAPSHOT_EXPLICIT_ADDITIONS: frozenset[str] = frozenset(
         "exemption_controls",
         "population_controls",
         "gate_enrollment",
-        # Interpreter-pin coherence. Explicit tier because its subject is a
-        # named population (`.github/workflows/**` declarations) rather than a
-        # whole-tree sweep. `in_check` from the outset: the drift it catches is
-        # invisible on a clean tree, so a gate that runs only when an operator
-        # remembers the flag would never fire on the commit that introduced it.
-        "python_version_pins",
         "rendition_lineage",
         # Per-brief size bounds (GHI #1196). Explicit tier beside `brief_structure`,
         # whose subject it shares: the live briefs under `docs/design/adr`.
@@ -192,6 +186,9 @@ _POST_SNAPSHOT_EXPLICIT_ADDITIONS: frozenset[str] = frozenset(
         # tier: its subject is the id grammar outside the seam and every cited id.
         # `in_check` from the outset, as RO-2's witness binds on every change.
         "id_seam",
+        # The RO-9 witness (Astral discipline). Explicit tier: its subject is the
+        # project facts uv, Ruff and ty read. `in_check` from the outset.
+        "astral_discipline",
     }
 )
 

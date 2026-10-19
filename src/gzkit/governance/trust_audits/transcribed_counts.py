@@ -111,7 +111,7 @@ def _registry_payload(project_root: Path) -> dict[str, object]:
         return {}
     try:
         payload = json.loads(registry.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except OSError, json.JSONDecodeError:
         return {}
     return payload if isinstance(payload, dict) else {}
 

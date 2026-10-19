@@ -119,7 +119,7 @@ def _parse_ts(raw: object) -> datetime | None:
 def _receipt_timestamp(path: Path) -> datetime | None:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+    except OSError, UnicodeDecodeError, json.JSONDecodeError:
         return None
     if not isinstance(payload, dict):
         return None

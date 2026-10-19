@@ -48,7 +48,7 @@ def _load_accepted(project_root: Path) -> tuple[list[str], ValidationError | Non
         entries = payload[_ENTRIES_KEY]
         if not isinstance(entries, list):
             raise TypeError(_ENTRIES_KEY)
-    except (RegistryError, KeyError, TypeError):
+    except RegistryError, KeyError, TypeError:
         return [], _err(
             ACCEPTED_DISPLAY,
             f"{ACCEPTED_DISPLAY} is missing, unparseable, or carries no "

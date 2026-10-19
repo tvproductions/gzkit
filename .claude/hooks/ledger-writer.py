@@ -59,7 +59,7 @@ def main() -> int:
     project_root = find_project_root()
     try:
         rel_path = Path(file_path).resolve().relative_to(project_root)
-    except (ValueError, OSError):
+    except ValueError, OSError:
         return 0
 
     # Import gzkit and record edit/validate

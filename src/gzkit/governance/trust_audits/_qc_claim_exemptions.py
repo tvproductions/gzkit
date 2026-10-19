@@ -116,6 +116,13 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     "identity-seam": "identity-seam-baselined",
     # The admit half reads the same gate and admits nothing of its own.
     "identity-seam-baselined": EXEMPTS_NONE,
+    # The baseline `data/astral_discipline_baseline.json` admits each violation it
+    # holds, and the exception register `data/astral_exceptions.json` admits each
+    # non-Astral tool it names with a reason: project-controlled data files, so the
+    # baseline is exercised by a registered admit-half control. Drydock RO-9.
+    "astral-discipline": "astral-discipline-baselined",
+    # The admit half reads the same gate and admits nothing of its own.
+    "astral-discipline-baselined": EXEMPTS_NONE,
     # AST scan of tests/** for a literal `git` argv spawned without the boundary
     # env. No waiver table, allowlist, escape marker or opt-in flag admits an
     # offender; the literal-argv scope is a scope predicate, disclosed in the
@@ -136,13 +143,6 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     # Asserts the SessionStart orientation hook stays wired in both harnesses.
     # Every arm yields a finding; a missing script is an error, not a pass.
     "orientation-freshness": EXEMPTS_NONE,
-    # Compares every interpreter declaration under `.github/workflows/**`
-    # against `.python-version`. Read end-to-end: there is no allowlist, no
-    # waiver file, and no per-site suppression. The only empty returns are
-    # "everything agrees" and "nothing is declared anywhere" — neither admits
-    # a mismatch it has found. The `requires-python` floor is read but never
-    # compared for equality, which is a scope decision, not an admit path.
-    "python-version-pins": EXEMPTS_NONE,
     # Per-surface mechanism arms of the ratchet. The umbrella `waiver-ratchet`
     # claim and its silent-bypass arm DO carry an exemption (the registry's
     # `excluded` list), which is why only these two appear here — `excluded` is

@@ -82,7 +82,7 @@ def _declared_staleness(slug: str) -> dict | None:
     registry = _PROJECT_ROOT / ".gzkit" / "chores" / "registry.json"
     try:
         entries = json.loads(registry.read_text(encoding="utf-8")).get("chores", [])
-    except (OSError, json.JSONDecodeError, AttributeError):
+    except OSError, json.JSONDecodeError, AttributeError:
         return None
     for entry in entries:
         if isinstance(entry, dict) and entry.get("slug") == slug:

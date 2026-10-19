@@ -166,7 +166,7 @@ def _stage(project_root: Path, path: Path) -> bool:
         rel = str(path)
     try:
         rc, _, _ = git_cmd(project_root, "add", "--", rel)
-    except (OSError, ValueError):
+    except OSError, ValueError:
         return False
     return rc == 0
 
@@ -210,7 +210,7 @@ def _covering_handoff(project_root: Path) -> str | None:
 
     try:
         candidates = list_handoffs(base_path=project_root)
-    except (OSError, ValueError):
+    except OSError, ValueError:
         return None
 
     authored: str | None = None
@@ -253,7 +253,7 @@ def _covering_handoff(project_root: Path) -> str | None:
         )
         if dirty_rc != 0 or dirty.strip():
             return None
-    except (OSError, ValueError):
+    except OSError, ValueError:
         return None
     return authored
 
@@ -379,7 +379,7 @@ def _current_branch(project_root: Path) -> str:
 
     try:
         rc, out, _ = git_cmd(project_root, "rev-parse", "--abbrev-ref", "HEAD")
-    except (OSError, ValueError):
+    except OSError, ValueError:
         return "unknown"
     branch = out.strip()
     return branch if rc == 0 and branch else "unknown"

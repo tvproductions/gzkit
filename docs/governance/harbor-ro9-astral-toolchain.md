@@ -2,7 +2,7 @@
 
 # RO-9 specification — the toolchain realigned to Astral's project discipline
 
-**2026-10-19. Status: specified; tranche 1 not started.** Operator: **g0**. Repair order RO-9 of the
+**2026-10-19. Status: tranche 1 landed (the witness, uv and the Astral tools current, Python declared once at 3.14); tranches 2 to 7 open.** Operator: **g0**. Repair order RO-9 of the
 [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders), mandate item 7: gzkit
 and every project `gz init` scaffolds follow [uv's project model](https://docs.astral.sh/uv/concepts/projects/)
 strictly and use Astral's tools to the maximum, on Python 3.14, with stdlib first and curated
@@ -22,6 +22,15 @@ Operator, verbatim, 2026-10-19, each recorded as an insight (scopes `toolchain-a
   that we need the astral project discipline"*.
 - **Floor:** *"1. 3.14"*. **Preview features:** *"2. yes, MAXX astral... MAXX"*. **Build backend,
   hatchling to `uv_build`:** *"3. yes, MAXX astral... MAXX"*. **Route:** *"4. A we are in dry dock"*.
+- **Currency:** *"also, keep all astral tools up to date"*; *"all ruff rules up to date (ty too)"*. uv,
+  Ruff, ty and setup-uv move to their current releases in tranche 1 and at each release after; tranche 4
+  selects every current Ruff rule (`ALL`, preview included) and every ty rule, with curated per-rule
+  exceptions only.
+- **Scaffold:** *"even `gz init` should look carefully at `uv init`"*. Tranche 7 reads `uv init`'s whole
+  contract (application, packaged application, library, `--bare`, the files each writes) and builds
+  `gz init` on it, writing only what `uv init` does not.
+
+uv's own rules, read end to end, are recorded in [`harbor-ro9-uv-project-norms.md`](harbor-ro9-uv-project-norms.md).
 
 **What the rulings supersede.** Newer statements replace older rules (the operator's ruling above), so:
 
@@ -141,10 +150,25 @@ in the same commit. Tranche 1 lands first; 2 to 7 follow in order, because they 
 subject repairs it at the surface and records the amendment. The witness checks the tree and the
 scaffold, never the operator's machine.
 
-**Known uncertainties.** Tranche 1 reads each before it seeds the baseline:
+**Read at tranche 1 (2026-10-19).**
 
-- Whether every runtime and dev dependency installs on 3.14 on all three CI platforms (tree-sitter and
-  the other compiled wheels first).
+- Every runtime and dev dependency locks and installs on Python 3.14.8, and every compiled dependency
+  (tree-sitter, pydantic-core, pyyaml, rpds-py, markupsafe, coverage, charset-normalizer) ships 3.14
+  wheels for Windows, Linux and macOS.
+- At the 3.14 target Ruff's formatter writes PEP 758 (`except A, B:` without parentheses), reformatting
+  158 files; Ruff 0.17 at the old 3.13 target changes nothing, so the reformat is the floor's idiom, not
+  the upgrade's. ty 0.0.89 deprecates `-> Iterator[T]` on `@contextmanager`; 21 sites move to
+  `Generator[T]`.
+- Every current Ruff rule (`ALL`, preview, the 3.14 target) reports 52,043 findings across 161 rules;
+  PT009 (22,528) and COM812 (5,504) conflict with the unittest-only doctrine and the formatter and are
+  curated exceptions for tranche 4.
+- `--python-version-pins` retires: the witness's `version-restated` rule replaces it, and two checks of one
+  fact are the duplication RO-9 removes.
+- A tree with no `data/astral_discipline_baseline.json` (an adopter before tranche 7) has its violations
+  announced as advisories, not failed; tranche 7 gives adopters their baseline and makes it fail closed.
+
+**Known uncertainties.** Each is read by the tranche that owns it:
+
 - Whether `uv_build` ships the wheel's non-Python data (the `.md` and `.json` under `src/gzkit`) with
   `data` or the module root alone, and what the distribution baseline manifest then reads.
 - Whether Read the Docs can build through uv with a locked group, or the docs build moves to the

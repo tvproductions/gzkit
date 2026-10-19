@@ -456,7 +456,7 @@ def scan_test_tree(tests_path: Path) -> list[TautologicalTestOperation]:
         try:
             source = py_file.read_text(encoding="utf-8")
             tree = ast.parse(source, filename=str(py_file))
-        except (SyntaxError, OSError):
+        except SyntaxError, OSError:
             continue
 
         gzkit_names = _gzkit_imported_names(tree)

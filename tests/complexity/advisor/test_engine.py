@@ -33,7 +33,7 @@ import json
 import os
 import tempfile
 import unittest
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -127,7 +127,7 @@ def _synthetic_environment(
     omit_doctrinal_frame: bool = False,
     omit_practitioner_eye: bool = False,
     distilled_filename: str = "distilled-characteristics-synthetic.md",
-) -> Iterator[tuple[Path, Path]]:
+) -> Generator[tuple[Path, Path]]:
     """Yield (distilled_path, threshold_table_path) under a temp project root.
 
     The distilled document is written under ``docs/governance/complexity/``

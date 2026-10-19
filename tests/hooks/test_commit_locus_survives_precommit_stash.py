@@ -89,7 +89,7 @@ def _pre_commit_command() -> list[str] | None:
                 check=False,
                 timeout=60,
             )
-        except (OSError, subprocess.SubprocessError):
+        except OSError, subprocess.SubprocessError:
             continue
         if probe.returncode == 0:
             return command

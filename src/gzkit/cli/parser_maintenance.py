@@ -547,12 +547,6 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Fail closed when git user.email violates the declared authorship policy",
     )
     p_validate.add_argument(
-        "--python-version-pins",
-        dest="check_python_version_pins",
-        action="store_true",
-        help="Fail closed when a CI interpreter declaration disagrees with .python-version",
-    )
-    p_validate.add_argument(
         "--utf8-prefix",
         dest="check_utf8_prefix",
         action="store_true",
@@ -932,6 +926,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Id grammar outside the seam beyond its baseline, or an unresolved id: exit 3.",
     )
     p_validate.add_argument(
+        "--astral-discipline",
+        dest="check_astral_discipline",
+        action="store_true",
+        help="Restated facts or tools outside uv beyond the RO-9 baseline: exit 3.",
+    )
+    p_validate.add_argument(
         "--distribution",
         dest="check_distribution",
         action="store_true",
@@ -1144,7 +1144,6 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_producer_fields=a.check_producer_fields,
             check_validator_fields=a.check_validator_fields,
             check_authorship=a.check_authorship,
-            check_python_version_pins=a.check_python_version_pins,
             check_utf8_prefix=a.check_utf8_prefix,
             check_line_endings=a.check_line_endings,
             check_test_tiers=a.check_test_tiers,
@@ -1201,6 +1200,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_brief_size=a.check_brief_size,
             check_mx_hardening=a.check_mx_hardening,
             check_id_seam=a.check_id_seam,
+            check_astral_discipline=a.check_astral_discipline,
             check_router_tables=a.check_router_tables,
             check_req_kind_discipline=a.check_req_kind_discipline,
             check_status_writer_coverage=a.check_status_writer_coverage,

@@ -323,7 +323,7 @@ def _normalize_package_name(project_name: str) -> str:
     return name or "app"
 
 
-def _scaffold_project_skeleton(
+def scaffold_project_skeleton(
     project_root: Path,
     project_name: str,
     source_root: str,
@@ -379,7 +379,6 @@ def _scaffold_project_skeleton(
                 f'packages = ["{source_root}/{package_name}"]\n'
                 "\n"
                 "[tool.ruff]\n"
-                'target-version = "py313"\n'
                 "line-length = 100\n"
                 f'src = ["{source_root}", "{tests_root}"]\n'
                 "\n"
@@ -590,7 +589,7 @@ def _install_pre_commit_hooks(project_root: Path, *, dry_run: bool = False) -> s
                 errors="replace",
                 encoding="utf-8",
             )
-        except (OSError, subprocess.SubprocessError):
+        except OSError, subprocess.SubprocessError:
             continue
         if result.returncode == 0:
             return (
@@ -966,7 +965,7 @@ def _repair_missing_artifacts(
 
     # Repair project skeleton
     if not no_skeleton:
-        skeleton = _scaffold_project_skeleton(
+        skeleton = scaffold_project_skeleton(
             project_root,
             project_name,
             config.paths.source_root,
@@ -1199,7 +1198,7 @@ def init(
         console.print("  Would generate .gzkit/manifest.json")
         console.print("  Would create governance directories (prd, constitutions, adr)")
         if not no_skeleton:
-            skeleton = _scaffold_project_skeleton(
+            skeleton = scaffold_project_skeleton(
                 project_root, project_name, source_root, tests_root, dry_run=True
             )
             for item in skeleton:
@@ -1256,7 +1255,7 @@ def init(
 
     # Scaffold project skeleton (pyproject.toml, src/, tests/)
     if not no_skeleton:
-        skeleton = _scaffold_project_skeleton(project_root, project_name, source_root, tests_root)
+        skeleton = scaffold_project_skeleton(project_root, project_name, source_root, tests_root)
         for item in skeleton:
             console.print(f"  {item}")
         uv_status = _run_uv_sync(project_root)

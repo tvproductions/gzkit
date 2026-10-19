@@ -511,7 +511,7 @@ def _read_source(project_root: Path, source: str) -> str:
     """Return an attributed source file's text, or empty text when it cannot be read."""
     try:
         return (project_root / source).read_text(encoding="utf-8")
-    except (OSError, UnicodeDecodeError):
+    except OSError, UnicodeDecodeError:
         return ""
 
 
@@ -916,6 +916,6 @@ def _receipt_exit_status_ok(project_root: Path, receipt_id: str) -> bool:
         return False
     try:
         receipt = json.loads(receipt_file.read_text(encoding="utf-8"))
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+    except OSError, UnicodeDecodeError, json.JSONDecodeError:
         return False
     return receipt.get("exit_status") == 0

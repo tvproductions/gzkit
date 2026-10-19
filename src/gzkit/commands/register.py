@@ -40,7 +40,7 @@ def grandfathered_foundation_ids(project_root: Path) -> frozenset[str]:
         return frozenset()
     try:
         return frozenset(entry.id for entry in load_manifest(manifest_path))
-    except (OSError, ValueError):
+    except OSError, ValueError:
         return frozenset()
 
 

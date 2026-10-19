@@ -35,7 +35,7 @@ def _find_project_root(start: Path) -> Path:
 def main() -> None:
     try:
         payload = json.load(sys.stdin)
-    except (json.JSONDecodeError, OSError):
+    except json.JSONDecodeError, OSError:
         sys.exit(0)
 
     cwd = payload.get("cwd") or ""

@@ -31,7 +31,7 @@ import contextlib
 import errno
 import sys
 import time
-from collections.abc import Iterator
+from collections.abc import Generator
 from pathlib import Path
 from typing import IO
 
@@ -99,7 +99,7 @@ else:
 
 
 @contextlib.contextmanager
-def exclusive_file_lock(path: Path) -> Iterator[None]:
+def exclusive_file_lock(path: Path) -> Generator[None]:
     """Serialize a read-modify-write sequence for *path* across writers.
 
     The lock is an OS lock on a sidecar file, never a marker file whose

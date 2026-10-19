@@ -159,7 +159,7 @@ def dead_pointer_offenders(
             continue
         try:
             text = (repo_root / rel).read_text(encoding="utf-8")
-        except (OSError, UnicodeDecodeError):
+        except OSError, UnicodeDecodeError:
             continue
         cited = next((p for p in legacy_paths if p in text), None)
         if cited is None:
@@ -199,7 +199,7 @@ def stale_narration_grants(
         for path in files:
             try:
                 text = path.read_text(encoding="utf-8")
-            except (OSError, UnicodeDecodeError):
+            except OSError, UnicodeDecodeError:
                 continue
             if any(p in text for p in legacy_paths) or any(p.search(text) for p in bare):
                 break

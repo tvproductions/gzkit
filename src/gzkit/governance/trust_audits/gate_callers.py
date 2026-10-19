@@ -151,7 +151,7 @@ def _gz_check_uncalled_scopes(project_root: Path) -> list[str] | None:
     """
     try:
         payload = json.loads((project_root / _MEMBERSHIP_REL).read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
+    except json.JSONDecodeError, OSError:
         return None
     entries = payload.get("out_of_check") if isinstance(payload, dict) else None
     if not isinstance(entries, list):
@@ -203,7 +203,7 @@ def _load_accepted(project_root: Path) -> tuple[list[dict[str, object]], Validat
     path = project_root / ACCEPTED_REL
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
+    except json.JSONDecodeError, OSError:
         return [], _err(
             ACCEPTED_REL.as_posix(),
             f"The uncalled-gate accepted-list {ACCEPTED_REL.name} is missing or unparseable, so "

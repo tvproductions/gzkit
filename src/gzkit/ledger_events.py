@@ -460,7 +460,7 @@ def audit_receipt_emitted_event(
     receipt_event: str,
     attestor: str,
     evidence: dict[str, Any] | None = None,
-    anchor: "EventAnchor | None" = None,
+    anchor: EventAnchor | None = None,
     task_id: str | None = None,
 ) -> LedgerEvent:
     """Create an audit receipt event; ``task_id`` attributes it to a TASK (GHI #950)."""
@@ -485,7 +485,7 @@ def obpi_receipt_emitted_event(
     evidence: dict[str, Any] | None = None,
     parent_adr: str | None = None,
     obpi_completion: str | None = None,
-    anchor: "EventAnchor | None" = None,
+    anchor: EventAnchor | None = None,
 ) -> LedgerEvent:
     """Create an OBPI receipt event."""
     extra: dict[str, Any] = {"receipt_event": receipt_event, "attestor": attestor}
@@ -655,7 +655,7 @@ def brief_reconcile_drift_overridden_event(
     reason: str,
     original_receipt_id: str | None = None,
     original_drift_dimensions: list[str] | None = None,
-) -> "LedgerEvent":
+) -> LedgerEvent:
     """Create an event recording an accepted stale/drifted reconciliation (OBPI-0.0.37-08)."""
     return LedgerEvent(
         event="brief_reconcile_drift_overridden",

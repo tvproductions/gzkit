@@ -95,7 +95,7 @@ def _non_docstring_string_ranges(content: str) -> list[tuple[int, int]]:
     """
     try:
         tree = ast.parse(content)
-    except (SyntaxError, ValueError):
+    except SyntaxError, ValueError:
         return []
 
     docstring_lines: set[int] = set()
@@ -131,7 +131,7 @@ def _non_docstring_string_ranges(content: str) -> list[tuple[int, int]]:
             start_off = line_offsets[start_line - 1] + start_col
             end_off = line_offsets[end_line - 1] + end_col
             excluded.append((start_off, end_off))
-    except (tokenize.TokenError, IndentationError, SyntaxError, ValueError):
+    except tokenize.TokenError, IndentationError, SyntaxError, ValueError:
         return []
     return excluded
 
@@ -313,7 +313,7 @@ def scan_test_tree(test_dir: pathlib.Path) -> list[LinkageRecord]:
         try:
             source = py_file.read_text(encoding="utf-8")
             tree = ast.parse(source, filename=str(py_file))
-        except (SyntaxError, UnicodeDecodeError):
+        except SyntaxError, UnicodeDecodeError:
             logger.warning("Skipping unparseable file: %s", py_file)
             continue
 
@@ -413,7 +413,7 @@ def scan_feature_tree(features_dir: pathlib.Path) -> list[LinkageRecord]:
     for feature_file in sorted(features_dir.rglob("*.feature")):
         try:
             source = feature_file.read_text(encoding="utf-8")
-        except (OSError, UnicodeDecodeError):
+        except OSError, UnicodeDecodeError:
             logger.warning("Skipping unreadable feature file: %s", feature_file)
             continue
         records.extend(_scan_feature_source(feature_file, source))

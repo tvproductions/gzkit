@@ -61,7 +61,7 @@ def added_lines(path: str) -> set[int]:
 def unparse(node: ast.AST) -> str:
     try:
         return ast.unparse(node)
-    except (ValueError, TypeError, AttributeError, RecursionError):
+    except ValueError, TypeError, AttributeError, RecursionError:
         return "<unparseable>"
 
 
@@ -136,7 +136,7 @@ def main() -> None:
                             for x in ast.walk(ast.parse(expr, mode="eval"))
                             if isinstance(x, ast.Name)
                         }
-                    except (SyntaxError, ValueError):
+                    except SyntaxError, ValueError:
                         names = set()
                     return bool(names & tainted)
 

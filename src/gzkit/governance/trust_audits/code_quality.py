@@ -112,7 +112,7 @@ def audit_type_ignores(project_root: Path) -> list[ValidationError]:
             try:
                 with py_file.open("rb") as fp:
                     tokens = list(tokenize.tokenize(fp.readline))
-            except (SyntaxError, tokenize.TokenError):
+            except SyntaxError, tokenize.TokenError:
                 continue
             errors.extend(
                 ValidationError(
@@ -261,7 +261,7 @@ def _forbidden_feature_tag_errors(project_root: Path) -> list[ValidationError]:
     for feature in sorted(features_root.rglob("*.feature")):
         try:
             text = feature.read_text(encoding="utf-8")
-        except (OSError, UnicodeDecodeError):
+        except OSError, UnicodeDecodeError:
             continue
         for lineno, line in enumerate(text.splitlines(), start=1):
             tags = {token for token in line.split() if token.startswith("@")}

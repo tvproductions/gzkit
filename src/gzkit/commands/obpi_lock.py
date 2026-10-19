@@ -418,5 +418,5 @@ def _current_commit_sha() -> str:
             timeout=5,
         )
         return result.stdout.strip() if result.returncode == 0 else "unknown"
-    except (subprocess.SubprocessError, FileNotFoundError):
+    except subprocess.SubprocessError, FileNotFoundError:
         return "unknown"

@@ -318,7 +318,7 @@ def parse_handoff_result(agent_output: str) -> HandoffResult | None:
     try:
         data = json.loads(match.group(1))
         return HandoffResult(**data)
-    except (json.JSONDecodeError, ValueError, KeyError):
+    except json.JSONDecodeError, ValueError, KeyError:
         return None
 
 
@@ -749,7 +749,7 @@ def parse_review_result(reviewer_output: str) -> ReviewResult | None:
     try:
         data = json.loads(match.group(1))
         return ReviewResult(**data)
-    except (json.JSONDecodeError, ValueError, KeyError):
+    except json.JSONDecodeError, ValueError, KeyError:
         return None
 
 

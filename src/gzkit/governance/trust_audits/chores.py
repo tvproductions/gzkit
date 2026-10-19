@@ -250,7 +250,7 @@ def audit_chore_metadata_authority(project_root: Path) -> list[ValidationError]:
     registry_path = chores_root / "registry.json"
     try:
         entries = json.loads(registry_path.read_text(encoding="utf-8")).get("chores", [])
-    except (OSError, json.JSONDecodeError, AttributeError):
+    except OSError, json.JSONDecodeError, AttributeError:
         return []
     errors: list[ValidationError] = []
     for entry in entries:
@@ -261,7 +261,7 @@ def audit_chore_metadata_authority(project_root: Path) -> list[ValidationError]:
         try:
             chore_md = chore_md_path.read_text(encoding="utf-8")
             criteria = json.loads((slug_dir / "acceptance.json").read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
+        except OSError, json.JSONDecodeError:
             continue
         artifact = chore_md_path.relative_to(project_root).as_posix()
         messages: list[str] = []
@@ -374,7 +374,7 @@ def audit_chore_rung_conformance(project_root: Path) -> list[ValidationError]:
     registry_path = project_root / config.paths.chores / "registry.json"
     try:
         entries = json.loads(registry_path.read_text(encoding="utf-8")).get("chores", [])
-    except (OSError, json.JSONDecodeError, AttributeError):
+    except OSError, json.JSONDecodeError, AttributeError:
         return []
     errors: list[ValidationError] = []
     for entry in entries:
@@ -493,7 +493,7 @@ def audit_chore_suppression(project_root: Path) -> list[ValidationError]:
     registry_path = project_root / config.paths.chores / "registry.json"
     try:
         entries = json.loads(registry_path.read_text(encoding="utf-8")).get("chores", [])
-    except (OSError, json.JSONDecodeError, AttributeError):
+    except OSError, json.JSONDecodeError, AttributeError:
         return []
     errors: list[ValidationError] = []
     for entry in entries:
@@ -503,7 +503,7 @@ def audit_chore_suppression(project_root: Path) -> list[ValidationError]:
         acceptance = slug_dir / "acceptance.json"
         try:
             criteria = json.loads(acceptance.read_text(encoding="utf-8")).get("criteria", [])
-        except (OSError, json.JSONDecodeError, AttributeError):
+        except OSError, json.JSONDecodeError, AttributeError:
             criteria = []
         for criterion in criteria:
             command = " ".join(str(criterion.get("command", "")).split())
@@ -536,7 +536,7 @@ def _load_chores_layout_waivers(project_root: Path) -> frozenset[str]:
         return frozenset()
     try:
         payload = json.loads(waiver_file.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, UnicodeDecodeError, OSError):
+    except json.JSONDecodeError, UnicodeDecodeError, OSError:
         return frozenset()
     if not isinstance(payload, list):
         return frozenset()

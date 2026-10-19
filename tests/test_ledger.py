@@ -57,7 +57,7 @@ class _PartialWriteHandle:
     def flush(self) -> None:
         self._real.flush()
 
-    def __enter__(self) -> "_PartialWriteHandle":
+    def __enter__(self) -> _PartialWriteHandle:
         self._real.__enter__()
         return self
 

@@ -126,7 +126,7 @@ def _git_stdout(project_root: Path, *args: str) -> str | None:
             errors="replace",
             encoding="utf-8",
         )
-    except (subprocess.CalledProcessError, FileNotFoundError):
+    except subprocess.CalledProcessError, FileNotFoundError:
         return None
     return result.stdout
 
@@ -554,7 +554,7 @@ def _ruff_selection(project_root: Path) -> tuple[list[str], list[str]] | None:
         return None
     try:
         payload = tomllib.loads(path.read_text(encoding="utf-8"))
-    except (tomllib.TOMLDecodeError, OSError, UnicodeDecodeError):
+    except tomllib.TOMLDecodeError, OSError, UnicodeDecodeError:
         return None
     lint = payload.get("tool", {}).get("ruff", {}).get("lint", {})
     select = lint.get("select")
@@ -773,7 +773,7 @@ def _frozen_mechanical_keys(project_root: Path) -> set[str]:
         return set()
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
+    except json.JSONDecodeError, OSError:
         return set()
     entries = payload.get("unwitnessed_mechanical_rows", [])
     return {e["key"] for e in entries if isinstance(e, dict) and "key" in e}
@@ -1030,7 +1030,7 @@ def _grandfathered_rules(project_root: Path) -> dict[str, str]:
         return {}
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
+    except json.JSONDecodeError, OSError:
         return {}
     entries = payload.get("grandfathered_rules", [])
     return {e["file"]: e["version"] for e in entries if "file" in e and "version" in e}

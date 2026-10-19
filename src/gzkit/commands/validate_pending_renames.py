@@ -22,7 +22,7 @@ def _validate_pending_renames(project_root: Path) -> list[ValidationError]:
     ledger = Ledger(project_root / config.paths.ledger)
     try:
         pending = pending_semver_renames(project_root, config.paths.design_root, ledger)
-    except (OSError, ValueError):
+    except OSError, ValueError:
         # An unreadable ledger is the `ledger` scope's finding to report; raising
         # here would replace its diagnosis with a crash in the same run.
         return []

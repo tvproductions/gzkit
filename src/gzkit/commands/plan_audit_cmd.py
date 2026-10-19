@@ -60,7 +60,7 @@ def _canonicalize_obpi_id(project_root: Path, obpi_id: str) -> str:
         canonical, _ = resolve_obpi(project_root, config, ledger, obpi_id)
     except ObpiAmbiguityError:
         raise
-    except (GzCliError, OSError, ValueError):
+    except GzCliError, OSError, ValueError:
         return obpi_id
     return canonical
 

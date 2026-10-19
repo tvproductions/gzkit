@@ -131,7 +131,7 @@ def collect_campaign(repo_root: Path) -> dict | None:
             return None
         path = (repo_root / declared).resolve()
         path.relative_to(repo_root.resolve())
-    except (OSError, ValueError, KeyError, TypeError):
+    except OSError, ValueError, KeyError, TypeError:
         return None
     if path.is_file():
         try:
@@ -201,7 +201,7 @@ def collect_live_adr_counts(adr_ids: list[str]) -> list[dict]:
                 timeout=ADR_STATUS_TIMEOUT_SEC,
                 check=False,
             )
-        except (FileNotFoundError, subprocess.SubprocessError):
+        except FileNotFoundError, subprocess.SubprocessError:
             continue
         if proc.returncode != 0:
             continue
@@ -828,7 +828,7 @@ def _run_gh_json(args: list[str], timeout: int = 30) -> object | None:
             timeout=timeout,
             check=False,
         )
-    except (FileNotFoundError, subprocess.SubprocessError):
+    except FileNotFoundError, subprocess.SubprocessError:
         return None
     if completed.returncode != 0 or not completed.stdout.strip():
         return None
@@ -903,7 +903,7 @@ def _git_run(args: list[str], timeout: int) -> subprocess.CompletedProcess[str] 
             timeout=timeout,
             check=False,
         )
-    except (FileNotFoundError, subprocess.SubprocessError):
+    except FileNotFoundError, subprocess.SubprocessError:
         return None
 
 
@@ -1059,7 +1059,7 @@ def collect_chore_staleness() -> dict | None:
             timeout=CHORE_STATUS_TIMEOUT_SEC,
             check=False,
         )
-    except (FileNotFoundError, subprocess.SubprocessError):
+    except FileNotFoundError, subprocess.SubprocessError:
         return None
     if proc.returncode != 0:
         return None
@@ -1431,7 +1431,7 @@ def load_session_start_budget(repo_root: Path) -> int:
     try:
         config = json.loads((repo_root / BUDGET_FILE).read_text(encoding="utf-8"))
         return int(config["injected_hook_text"]["max_bytes"])
-    except (OSError, ValueError, KeyError, TypeError):
+    except OSError, ValueError, KeyError, TypeError:
         return SESSION_START_BUDGET_FALLBACK
 
 

@@ -4,7 +4,7 @@ version = "0.34.9"
 description = "GovZero Kit: A Development Covenant for Human-AI Collaboration"
 readme = "README.md"
 license = { file = "LICENSE" }
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 authors = [
     { name = "g0" }
 ]
@@ -14,7 +14,7 @@ classifiers = [
     "Environment :: Console",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Software Development :: Documentation",
     "Topic :: Software Development :: Quality Assurance",
 ]
@@ -101,10 +101,9 @@ exclude = [
 # run on any other version, and `astral-sh/setup-uv` installs exactly this one in
 # every workflow, so the two cannot drift. Move it with the binary in the same
 # pass (`gz-deps-upgrade` step 1): `uv self update`, then this line.
-required-version = "==0.12.23"
+required-version = "==0.13.1"
 
 [tool.ruff]
-target-version = "py313"
 line-length = 100
 src = ["src", "tests"]
 
@@ -241,13 +240,13 @@ dev = [
     "pygount>=3.2.0",
     "pyinstaller>=6.22.0",
     "radon>=6.0.1",
-    "ruff>=0.16.2",
+    "ruff>=0.17.1",
     # Tracks ty forward, never pinned backward. Operator ruling 2026-08-09: "we
     # progress as Ty progresses, if it has become more strict, then we tighten
     # up, do not avoid hard work by clinging to older version of Ty." The 88
     # diagnostics 0.0.69 surfaced were latent defects the older release could not
     # see, so the checker moving is the signal to fix the code (GHI #789).
-    "ty>=0.0.84",
+    "ty>=0.0.89",
     # Pinned here rather than fetched via `uv run --with` (operator ruling
     # 2026-08-27, GHI #856). It backs the canonical "Tests pass" attestation
     # (`CANONICAL_STEP_COMMANDS["unittest"]`), and an ARB receipt is durable

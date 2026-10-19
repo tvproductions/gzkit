@@ -282,7 +282,7 @@ def _run_tests(project_root: Path, test_files: list[Path]) -> tuple[bool, int]:
                 with contextlib.suppress(ValueError, IndexError):
                     count = int(line.split("Ran ")[1].split(" test")[0])
         return result.returncode == 0, count
-    except (subprocess.SubprocessError, FileNotFoundError):
+    except subprocess.SubprocessError, FileNotFoundError:
         return False, 0
 
 
@@ -353,7 +353,7 @@ def _measure_coverage(
                 return float(result.stdout.strip())
             except ValueError:
                 return None
-    except (subprocess.SubprocessError, FileNotFoundError):
+    except subprocess.SubprocessError, FileNotFoundError:
         pass
     return None
 
@@ -420,7 +420,7 @@ def _is_stale(project_root: Path, timestamp: str) -> bool:
             timeout=10,
         )
         return bool(result.stdout.strip())
-    except (subprocess.SubprocessError, FileNotFoundError):
+    except subprocess.SubprocessError, FileNotFoundError:
         return True
 
 

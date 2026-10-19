@@ -161,5 +161,5 @@ def _git(
             check=False,
             cwd=cwd,
         )
-    except (FileNotFoundError, subprocess.SubprocessError):
+    except FileNotFoundError, subprocess.SubprocessError:
         return None

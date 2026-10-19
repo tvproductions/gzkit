@@ -19,7 +19,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--rendition-floor-coherence] [--rendition-lineage]
             [--corpus-retirement-witness]
             [--invariant-coherence] [--invariant-witness] [--brief-reconcile] [--brief-structure]
-            [--brief-size] [--mx-hardening] [--id-seam]
+            [--brief-size] [--mx-hardening] [--id-seam] [--astral-discipline]
             [--router-tables]
             [--kind-invariance] [--persona-witness] [--req-kind-discipline] [--brief-command-shape]
             [--status-writer-coverage]
@@ -2379,6 +2379,57 @@ Runs in the default `gz check` pipeline as **MX hardening**.
 **Related:** GHI #1257, ADR-0.0.74 (MX hangar), `gz mx` (the lease and the exit),
 `.gzkit/rules/mx-mode.md`.
 
+### `--astral-discipline`
+
+The witness of RO-9 ([`harbor-ro9-astral-toolchain.md`](../../governance/harbor-ro9-astral-toolchain.md),
+with uv's rules in [`harbor-ro9-uv-project-norms.md`](../../governance/harbor-ro9-uv-project-norms.md)):
+each fact is declared once, in the place uv, Ruff and ty read it, and every restatement is removed rather
+than validated against its copies. The rules:
+
+| Rule | Finding |
+|------|---------|
+| `version-home-missing`, `version-below-floor` | No `requires-python` floor or `.python-version` pin, or a pin below the floor |
+| `version-restated`, `version-disagrees` | A Python version stated anywhere else (Ruff or ty targets, workflow `python-version:`, `uv python install <version>`, a skill), unless `data/astral_exceptions.json` registers it, and then it must agree |
+| `lock-unchecked` | Automation runs `uv sync` without `--locked` |
+| `pip-in-project` | `pip`, `uv pip` or a `requirements*.txt` beside the lock |
+| `setup-python` | A workflow installs Python with `actions/setup-python` instead of uv |
+| `dev-tool-in-extra` | Development tooling in `[project.optional-dependencies]` instead of `[dependency-groups]` |
+| `tool-outside-lock` | A locked tool run through `uvx` or by bare name from `PATH` |
+| `unused-dependency` | A development dependency nothing invokes |
+| `non-astral-unregistered`, `exception-without-reason`, `exception-stale` | A non-Astral tool missing from the exception register, registered without a reason, or registered after it left |
+| `build-backend-not-uv`, `publish-not-uv` | A build backend other than `uv_build`; publishing through anything but `uv publish` |
+
+Today's violations are held by `data/astral_discipline_baseline.json`, a shrink-only ratchet in
+`data/waiver_ratchet_registry.json` keyed by rule, file and subject; RO-9 closes when it is empty. In
+gzkit's own tree the same rules also run against the project `gz init` scaffolds. A tree with no baseline
+(an adopter before RO-9 tranche 7) has its violations announced as `[advisory]` lines, not failed.
+
+**Usage:**
+
+```bash
+gz validate --astral-discipline
+```
+
+**Observed output:**
+
+```console
+$ uv run gz validate --astral-discipline
+Validated: astral_discipline
+
+✓ All validations passed (1 scopes).
+```
+
+**Exit codes:**
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Every violation is baselined exactly | — |
+| 3 | A violation the baseline does not hold, or a dead, shrunk or duplicated row | Remove the restatement or route the tool through uv as the rule names; lower or delete a shrunk row |
+
+Runs in the default `gz check` pipeline as **Astral discipline**.
+
+**Related:** [`harbor-ro9-astral-toolchain.md`](../../governance/harbor-ro9-astral-toolchain.md), `data/astral_exceptions.json`.
+
 ### `--id-seam`
 
 The witness of the identity seam (drydock RO-2,
@@ -2916,7 +2967,6 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--producer-fields` | opt-in | Every field a ledger producer writes must be declared by BOTH `schemas/ledger.json` and the typed union. Complements the committed-row parity fence, which is green while a producer that has never fired writes undeclared keys — the shape that let `_book_aborted_exit` write `aborted`/`error` undeclared (GHI #877) |
 | `--validator-fields` | opt-in | Every validator `info.get(field)` lookup must have a matching graph writer |
 | `--authorship` | opt-in | Fail closed when the effective `git user.email` violates `authorship.required_email_suffix` in `.gzkit.json`. No-op when no policy is declared, so adopters inherit no identity rule (GHI #725). The same block's `attestor_handle` is the handle an omitted `--attestor` records (GHI #1036); this scope does not read it |
-| `--python-version-pins` | opt-in | Fail closed when a CI interpreter declaration in `.github/workflows/**` disagrees with `.python-version`, which is what uv resolves the project interpreter from. Also rejects a pin below the `requires-python` floor. The floor itself is never compared for equality — it is a floor, not a pin |
 | `--utf8-prefix` | opt-in | Forbid the `PYTHONUTF8=1`-as-`uv-run-gz`-prefix anti-pattern in docs / skills / features (GHI #275) |
 | `--line-endings` | opt-in | Fail closed on CRLF line endings in tracked text surfaces, or a `.gitattributes` missing the `* text=auto eol=lf` LF-normalization rule (GHI #570) |
 | `--test-tiers` | opt-in | Forbid a third test tier under `tests/` (`integration`, `e2e`, `slow`, `bdd`) — runner boundary is the gate |
@@ -2967,6 +3017,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--brief-size` | opt-in | Every live OBPI brief is inside its declared size bounds on REQs, requirements, allowed paths, contract bytes and total bytes (GHI #1196) |
 | `--mx-hardening` | opt-in | No MX session is dangling or over max-open; a session past its lease and its advisory debt are announced (GHI #1257) |
 | `--id-seam` | opt-in | No id grammar or spelling-derived parent outside the identity seam beyond its shrink-only baseline, and every cited id resolves (drydock RO-2) |
+| `--astral-discipline` | opt-in | Each fact declared once where uv, Ruff and ty read it: no restated Python version, unchecked lock, tool outside the lock or unregistered non-Astral tool beyond the shrink-only baseline (drydock RO-9) |
 | `--brief-structure` | opt-in | Every live OBPI brief carries valid structured frontmatter (`allowlist`, `reqs`, `verification`) instead of falling back to `LegacyBriefShape` |
 | `--changelog` | opt-in | Hermetic structural audit of `CHANGELOG.md` against `.gzkit/templates/changelog.md`: version headers and section headings (GHI #685) |
 | `--config-registry` | opt-in | Every top-level registry under `data/` is declared, with an owner and a loader (GHI #929) |

@@ -57,7 +57,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from gzkit.unit_run_provenance import judge_executed, read_test_observations
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Generator
 
 FailureClass = Literal["assertion", "error", "none", "not-applicable"]
 
@@ -279,7 +279,7 @@ def withheld_production_files(
 
 
 @contextmanager
-def base_tree_worktree(project_root: Path, base_commit: str) -> Iterator[Path]:
+def base_tree_worktree(project_root: Path, base_commit: str) -> Generator[Path]:
     """Check out ``base_commit`` into a throwaway detached worktree, then remove it.
 
     The worktree is removed with ``--force`` because the test run leaves artifacts

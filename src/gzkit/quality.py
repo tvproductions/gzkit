@@ -652,7 +652,7 @@ def _behave_shard_count(project_root: Path) -> int:
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
         count = int(data["steps"]["Behave"]["shards"])
-    except (json.JSONDecodeError, OSError, KeyError, TypeError, ValueError):
+    except json.JSONDecodeError, OSError, KeyError, TypeError, ValueError:
         return 1
     return max(count, 1)
 
@@ -1054,16 +1054,6 @@ def run_unscoped_rules_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --unscoped-rules", cwd=project_root)
 
 
-def run_python_version_pins_audit(project_root: Path) -> QualityResult:
-    """Run the interpreter-pin coherence audit.
-
-    Fails closed when a CI workflow declares a Python version that disagrees
-    with `.python-version`, which is what uv resolves the project interpreter
-    from. Without it the two drift silently and both sides stay green.
-    """
-    return run_command("uv run gz validate --python-version-pins", cwd=project_root)
-
-
 def run_validate_default_scopes(project_root: Path) -> QualityResult:
     """Run every default-tier `gz validate` scope in one pass (GHI #744).
 
@@ -1271,6 +1261,17 @@ def run_id_seam_audit(project_root: Path) -> QualityResult:
     `uv run gz validate --id-seam`.
     """
     return run_command("uv run gz validate --id-seam", cwd=project_root)
+
+
+def run_astral_discipline_audit(project_root: Path) -> QualityResult:
+    """Run the RO-9 witness: each fact declared once, where Astral's tools read it.
+
+    Fails closed when a violation `data/astral_discipline_baseline.json` does not
+    hold appears (a restated Python version, an unchecked lock, a tool run outside
+    the lock, an unregistered non-Astral tool) or a baseline row is dead. Recovery:
+    the rule the message names, then `uv run gz validate --astral-discipline`.
+    """
+    return run_command("uv run gz validate --astral-discipline", cwd=project_root)
 
 
 def run_invariant_coherence_audit(project_root: Path) -> QualityResult:
@@ -1702,7 +1703,7 @@ def _handoff_section_grandfather(project_root: Path) -> frozenset[str]:
     path = project_root / _HANDOFF_SECTION_GRANDFATHER_REL
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except OSError, json.JSONDecodeError:
         return frozenset()
     if not isinstance(payload, dict):
         return frozenset()
@@ -2303,7 +2304,7 @@ def _expand_allowed_paths(allowed_paths: list[str], project_root: Path) -> list[
                 for matched in project_root.glob(path_str):
                     if matched.is_file():
                         expanded.append(matched.relative_to(project_root).as_posix())
-            except (ValueError, OSError):
+            except ValueError, OSError:
                 continue
             continue
         candidate = project_root / path_str
@@ -2312,7 +2313,7 @@ def _expand_allowed_paths(allowed_paths: list[str], project_root: Path) -> list[
                 for matched in candidate.glob("**/*"):
                     if matched.is_file():
                         expanded.append(matched.relative_to(project_root).as_posix())
-            except (ValueError, OSError):
+            except ValueError, OSError:
                 continue
             continue
         expanded.append(path_str)

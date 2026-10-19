@@ -296,7 +296,7 @@ def _gate_closeout_proof(project_root: Path, state: CeremonyState) -> None:
     config = ensure_initialized()
     try:
         adr_file, _ = resolve_adr_file(project_root, config, state.adr_id)
-    except (GzCliError, FileNotFoundError):
+    except GzCliError, FileNotFoundError:
         return
     assert_fidelity_for_ceremony(adr_file, state.adr_id, project_root)
 

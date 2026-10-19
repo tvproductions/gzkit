@@ -718,7 +718,7 @@ def _pending_deliverable_paths(brief_path: Path, own_allowlist: list[str]) -> se
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", DeprecationWarning)
                 parsed = parse_brief(sibling)
-        except (OSError, UnicodeDecodeError, ValueError, PydanticValidationError):
+        except OSError, UnicodeDecodeError, ValueError, PydanticValidationError:
             continue
         if _is_terminal_status(parsed):
             continue

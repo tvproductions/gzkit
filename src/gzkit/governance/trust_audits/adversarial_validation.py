@@ -135,7 +135,7 @@ def _load_grandfathered(project_root: Path) -> set[str]:
     path = project_root / _GRANDFATHER_REL
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except OSError, json.JSONDecodeError:
         return set()
     entries = payload.get(_ENTRIES_KEY) if isinstance(payload, dict) else None
     if not isinstance(entries, list):

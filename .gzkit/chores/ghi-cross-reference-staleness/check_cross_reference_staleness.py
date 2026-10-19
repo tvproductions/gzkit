@@ -95,7 +95,7 @@ def load_baseline():
     try:
         data = json.loads(BASELINE_PATH.read_text(encoding="utf-8"))
         return {(e["issue"], e["cites"]) for e in data.get("disclosed", [])}
-    except (json.JSONDecodeError, KeyError, TypeError):
+    except json.JSONDecodeError, KeyError, TypeError:
         return set()
 
 

@@ -213,7 +213,7 @@ def _run_in(assertion: FidelityAssertion, worktree: Path, project_root: Path) ->
             capture_output=True,
             check=False,
         )
-    except (OSError, ValueError):
+    except OSError, ValueError:
         return -1
     return proc.returncode
 
@@ -270,7 +270,7 @@ def run_fidelity_gate(
                     observed.append(WORKTREE_UNAVAILABLE)
                     continue
                 observed.append(_run_in(assertion, worktree, project_root))
-    except (RuntimeError, OSError, subprocess.SubprocessError):
+    except RuntimeError, OSError, subprocess.SubprocessError:
         pass
     observed += [WORKTREE_UNAVAILABLE] * (len(assertions) - len(observed))
     return [

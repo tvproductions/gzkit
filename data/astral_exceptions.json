@@ -1,0 +1,77 @@
+{
+  "_doc": "RO-9's curated exceptions (docs/governance/harbor-ro9-astral-toolchain.md § Population, curated exceptions): every non-Astral tool gzkit keeps, with the reason Astral ships no replacement, and every registered restatement of a fact, with the home it must agree with. Read by `gz validate --astral-discipline`. Re-read at each new uv, Ruff, ty or Python release (operator ruling 2026-10-19: \"keep all astral tools up to date\").",
+  "tools": [
+    {
+      "name": "pydantic",
+      "reason": "AGENTS.md § STDLIB-FIRST names Pydantic the one ratified departure, for validation; Astral ships no validation library."
+    },
+    {
+      "name": "networkx",
+      "reason": "The ontology's graph substrate (ADR-0.32.0); `ruff analyze graph` reads Python import edges only and is no graph library."
+    },
+    {
+      "name": "tree-sitter",
+      "reason": "The ontology's polyglot source anchors (ADR-0.32.0); Astral ships no parser library."
+    },
+    {
+      "name": "tree-sitter-python",
+      "reason": "The Python grammar tree-sitter loads (ADR-0.32.0)."
+    },
+    {
+      "name": "lizard",
+      "reason": "Cyclomatic scores and module means for the C/C/C gate (GHI #1183's selection, operator 2026-10-09); Ruff C901 is per-function pass/fail with no metrics."
+    },
+    {
+      "name": "cohesion",
+      "reason": "LCOM4 class cohesion for the complexity thresholds (ADR-0.0.27); Astral ships no cohesion metric."
+    },
+    {
+      "name": "behave",
+      "reason": "The Gate 4 BDD runner (AGENTS.md § Gate Covenant); Astral ships no test runner."
+    },
+    {
+      "name": "unittest-parallel",
+      "reason": "Runs the unittest-only suite in parallel (GHI #856); Astral ships no test runner."
+    },
+    {
+      "name": "coverage",
+      "reason": "Measures the coverage floor (.gzkit/rules/tests.md § Coverage Floor); Astral ships no coverage tool."
+    },
+    {
+      "name": "mkdocs",
+      "reason": "Builds the documentation site (Gate 3); Astral ships no documentation tool."
+    },
+    {
+      "name": "mkdocs-material",
+      "reason": "The documentation site's theme, loaded by mkdocs.yml."
+    },
+    {
+      "name": "pyinstaller",
+      "reason": "Builds the release binaries (release.yml); Astral ships no freezer."
+    },
+    {
+      "name": "pre-commit",
+      "external": true,
+      "reason": "The hook framework; Astral ships hooks for it (ruff-pre-commit, uv-pre-commit), not a runner."
+    },
+    {
+      "name": "gitleaks",
+      "external": true,
+      "reason": "Scans commits for secrets; Ruff S105 to S107 catch hard-coded passwords only."
+    }
+  ],
+  "restatements": [
+    {
+      "file": "pyproject.toml",
+      "key": "project.classifiers",
+      "agrees_with": "requires-python",
+      "reason": "PyPI trove metadata, read by no Astral tool; its lowest Python classifier must equal the floor."
+    },
+    {
+      "file": ".readthedocs.yaml",
+      "key": "build.tools.python",
+      "agrees_with": ".python-version",
+      "reason": "Read the Docs' build image requires an interpreter key; it must match the pin until RO-9 tranche 2 builds the docs through uv."
+    }
+  ]
+}

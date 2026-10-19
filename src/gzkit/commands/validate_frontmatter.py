@@ -217,7 +217,7 @@ def _derive_status_from_graph(info: dict) -> str | None:
                 req_proof_present=0,
                 pipeline_launched=bool(info.get("pipeline_launched")),
             )
-    except (KeyError, ValueError, AttributeError, TypeError):
+    except KeyError, ValueError, AttributeError, TypeError:
         return None
     return None
 
@@ -256,7 +256,7 @@ def validate_frontmatter_coherence(
         ledger = Ledger(ledger_path)
     try:
         graph = ledger.get_artifact_graph()
-    except (json.JSONDecodeError, KeyError, ValueError):
+    except json.JSONDecodeError, KeyError, ValueError:
         return []
 
     # GHI #192: lazy import — frontmatter_coherence imports from this module,

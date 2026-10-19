@@ -512,7 +512,7 @@ def _is_human_attestation_tty_available() -> bool:
     """
     try:
         return bool(sys.stdin.isatty()) and bool(sys.stdout.isatty())
-    except (ValueError, OSError):
+    except ValueError, OSError:
         return False
 
 
@@ -628,7 +628,7 @@ def _active_pipeline_marker_exists(project_root: Path, obpi_id: str) -> bool:
         return False
     try:
         payload = json.loads(marker.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except OSError, json.JSONDecodeError:
         return False
     if not isinstance(payload, dict):
         return False
@@ -1039,7 +1039,7 @@ def _select_adr_package_dir(matches: list[Path]) -> Path | None:
 def _check_adr_obpi_coverage_gaps(
     adr_id: str,
     project_root: Path,
-    ledger: "Ledger",
+    ledger: Ledger,
 ) -> list[tuple[str, list[str]]]:
     """Return (obpi_id, unwaived_gap_req_ids) pairs for the closing ADR (ADR-0.0.25-02).
 
@@ -1074,7 +1074,7 @@ def _check_adr_obpi_coverage_gaps(
                     continue
                 try:
                     evt = _json.loads(line)
-                except (ValueError, KeyError):
+                except ValueError, KeyError:
                     continue
                 if evt.get("event") == "obpi_completion_uncovered_accept":
                     extra = evt.get("extra", {})
@@ -1113,7 +1113,7 @@ def _apply_human_attestation_gates(
     attestor: str,
     attestor_present: bool,
     evidence: dict[str, Any] | None,
-    ledger: "Ledger",
+    ledger: Ledger,
     project_root: Path,
     dry_run: bool,
 ) -> None:
@@ -1198,7 +1198,7 @@ def _emit_adr_closeout_receipt(
     *,
     adr_id: str,
     project_root: Path,
-    ledger: "Ledger",
+    ledger: Ledger,
     attestor: str,
     dry_run: bool,
 ) -> None:

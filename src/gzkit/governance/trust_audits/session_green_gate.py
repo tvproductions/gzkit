@@ -63,7 +63,7 @@ def declared_hook_types(project_root: Path) -> list[str]:
     """
     try:
         config = yaml.safe_load((project_root / ".pre-commit-config.yaml").read_text("utf-8"))
-    except (OSError, UnicodeDecodeError, yaml.YAMLError):
+    except OSError, UnicodeDecodeError, yaml.YAMLError:
         config = None
     return _declared_hook_types(config if isinstance(config, dict) else {})
 
@@ -217,7 +217,7 @@ def audit_session_green_gate(
         ]
     try:
         config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeDecodeError, yaml.YAMLError):
+    except OSError, UnicodeDecodeError, yaml.YAMLError:
         return [
             ValidationError(
                 type="session_green_gate",

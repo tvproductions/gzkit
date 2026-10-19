@@ -43,7 +43,7 @@ def main():
         if not target.is_absolute() and cwd:
             target = Path(cwd) / target
         target = target.resolve()
-    except (ValueError, TypeError, OSError):
+    except ValueError, TypeError, OSError:
         sys.exit(0)
 
     if not target.is_file():

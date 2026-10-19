@@ -132,7 +132,7 @@ def _git(args: list[str], root: Path) -> str:
             encoding="utf-8",
             errors="replace",
         )
-    except (FileNotFoundError, OSError):
+    except FileNotFoundError, OSError:
         return ""
     return result.stdout or ""
 

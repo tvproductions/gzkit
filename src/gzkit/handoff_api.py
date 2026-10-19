@@ -507,14 +507,14 @@ def _carried_settled(predecessor: str | list[str] | None, base_path: Path) -> li
     for ref in refs:
         try:
             resolved = resolve_continues_from(ref, referrer, base_path)
-        except (OSError, UnicodeDecodeError, ValueError):
+        except OSError, UnicodeDecodeError, ValueError:
             continue
         source = _ruling_source(resolved, base_path)
         if source is None:
             continue
         try:
             previous = source.read_text(encoding="utf-8")
-        except (OSError, UnicodeDecodeError):
+        except OSError, UnicodeDecodeError:
             continue
         entries.extend(settled_rulings(previous))
         entries.extend(
@@ -555,7 +555,7 @@ def _ruling_source(previous: Path, base_path: Path) -> Path | None:
 
     try:
         frontmatter = parse_frontmatter(previous.read_text(encoding="utf-8"))
-    except (OSError, UnicodeDecodeError, HandoffValidationError):
+    except OSError, UnicodeDecodeError, HandoffValidationError:
         return previous
     if not isinstance(frontmatter, dict) or not is_floor_bookmark(frontmatter.get("agent")):
         return previous
@@ -564,7 +564,7 @@ def _ruling_source(previous: Path, base_path: Path) -> Path | None:
     for ref in refs:
         try:
             return resolve_continues_from(ref, previous, base_path)
-        except (OSError, UnicodeDecodeError, ValueError):
+        except OSError, UnicodeDecodeError, ValueError:
             continue
     return _newest_authored_before(str(frontmatter.get("timestamp", "")), base_path)
 
@@ -1107,7 +1107,7 @@ def list_handoffs(*, adr_id: str | None = None, base_path: Path = Path()) -> lis
     for path in handoff_dir.glob("*.md"):
         try:
             fm = parse_frontmatter(path.read_text(encoding="utf-8"))
-        except (OSError, UnicodeDecodeError, HandoffValidationError):
+        except OSError, UnicodeDecodeError, HandoffValidationError:
             # UnicodeDecodeError (a ValueError, not an OSError) is caught so a
             # single non-UTF-8 file cannot abort the whole scan (GHI #582 class,
             # file-read side).
@@ -1181,7 +1181,7 @@ def _walk_handoff_chain(handoff_path: Path, base_path: Path) -> tuple[list[Path]
         paths[resolved] = current
         try:
             fm = parse_frontmatter(current.read_text(encoding="utf-8"))
-        except (OSError, UnicodeDecodeError, HandoffValidationError):
+        except OSError, UnicodeDecodeError, HandoffValidationError:
             continue
         refs = continues_from_refs(fm.get("continues_from") if isinstance(fm, dict) else None)
         ancestors = [resolve_continues_from(ref, current, base_path) for ref in refs]

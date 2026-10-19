@@ -428,7 +428,7 @@ def _collect_receipts(project_root: Path) -> list[ReceiptResult]:
         try:
             data = json.loads(newest.read_text(encoding="utf-8"))
             exit_status = int(data.get("exit_status", -1))
-        except (json.JSONDecodeError, ValueError, OSError):
+        except json.JSONDecodeError, ValueError, OSError:
             exit_status = -1
         results.append(
             ReceiptResult(step=step, found=True, receipt_id=newest.name, exit_status=exit_status)
@@ -461,7 +461,7 @@ def _covers_counts(project_root: Path, obpi_id: str) -> tuple[int, int]:
     )
     try:
         return _counts_from_covers_summary(json.loads(proc.stdout))
-    except (json.JSONDecodeError, ValueError):
+    except json.JSONDecodeError, ValueError:
         return 0, -1  # -1 uncovered signals a covers failure → blocker
 
 
@@ -541,5 +541,5 @@ def load_packet(project_root: Path, obpi_id: str) -> EvidencePacket | None:
         return None
     try:
         return EvidencePacket.model_validate_json(path.read_text(encoding="utf-8"))
-    except (ValueError, OSError):
+    except ValueError, OSError:
         return None

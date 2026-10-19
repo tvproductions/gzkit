@@ -136,7 +136,7 @@ def current_branch() -> str:
             timeout=5,
         )
         return result.stdout.strip() if result.returncode == 0 else "unknown"
-    except (subprocess.SubprocessError, FileNotFoundError):
+    except subprocess.SubprocessError, FileNotFoundError:
         return "unknown"
 
 
@@ -164,7 +164,7 @@ def read_lock(project_root: Path, obpi_id: str) -> LockData | None:
         raw = path.read_text(encoding="utf-8")
         data = json.loads(raw)
         return LockData(**data)
-    except (json.JSONDecodeError, OSError, TypeError, ValueError):
+    except json.JSONDecodeError, OSError, TypeError, ValueError:
         return None
 
 
@@ -223,7 +223,7 @@ def list_locks(project_root: Path, adr_filter: str | None = None) -> list[LockDa
             raw = lock_file.read_text(encoding="utf-8")
             data = json.loads(raw)
             lock = LockData(**data)
-        except (json.JSONDecodeError, OSError, TypeError, ValueError):
+        except json.JSONDecodeError, OSError, TypeError, ValueError:
             continue
 
         if adr_filter is not None and adr_id_from_obpi(lock.obpi_id) != adr_filter:
@@ -245,7 +245,7 @@ def _head_commit_sha() -> str:
             timeout=5,
         )
         return result.stdout.strip() if result.returncode == 0 else "unknown"
-    except (subprocess.SubprocessError, FileNotFoundError):
+    except subprocess.SubprocessError, FileNotFoundError:
         return "unknown"
 
 

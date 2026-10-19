@@ -5,10 +5,10 @@ description: Use when the operator asks to upgrade deps, Python, uv, pyproject o
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-10-19
 model: haiku
 metadata:
-  skill-version: "1.3.2"
+  skill-version: "1.4.0"
 ---
 
 # gz deps-upgrade
@@ -16,7 +16,7 @@ metadata:
 ## Overview
 
 A disciplined upgrade pass for the project's Python toolchain and dependency
-surface: the `uv` binary itself, global uv tools, Python 3.13.x runtime,
+surface: the `uv` binary itself, global uv tools, the Python runtime at the `requires-python` floor's minor,
 `pyproject.toml` pins (`==`), `>=` floors, and `uv.lock`. Verifies with
 `gz check --full` and emits a canonical ARB unittest receipt as evidence.
 
@@ -59,22 +59,21 @@ order, not skipping the floor-bump or the verification step.
    uv tool upgrade --all
    ```
 
-3. **Refresh Python 3.13.x runtime and move the pin with it.** uv installs
-   the latest patch release of 3.13 — idempotent. `.python-version` pins the
-   full patch (e.g. `3.13.15`), not `3.13`: it is the authority
-   `gz validate --python-version-pins` holds every CI declaration to
-   (`python-version:` and `uv python install` in `.github/workflows/`).
+3. **Refresh the Python runtime and move the pin with it.** The version is
+   declared once (drydock RO-9): the floor in `requires-python`, the
+   interpreter in `.python-version`, written by `uv python pin`. Nothing else
+   states it: CI, Read the Docs and the release take Python from uv, and Ruff
+   and ty infer their target from the floor.
 
    ```bash
-   uv python install 3.13
-   uv python list --only-installed | grep '^cpython-3.13'
    cat .python-version
+   uv python list --only-downloads
    ```
 
-   When the newest installed patch is above the pin, run
-   `uv python pin 3.13.<N>` and change every workflow declaration to the same
-   patch in this pass; the pin and the workflows move together or not at all.
-   Confirm with `uv run gz validate --python-version-pins`.
+   When a newer patch of the pinned minor is available, run
+   `uv python pin <newest patch>`; that one line moves every consumer.
+   Confirm with `uv run gz validate --astral-discipline`, which fails on any
+   restatement of the version.
 
 4. **Bump pinned (`==`) deps in `pyproject.toml` to current PyPI latest.**
    Inspect the pinned entries under `[project.optional-dependencies]` and
@@ -183,8 +182,8 @@ skip the upgrade for the rest of the surface.
 
 - `uv run gz check --full` exits 0
 - `uv.lock` resolves cleanly with no churn on the second `uv lock` run
-- `.python-version` names the newest installed 3.13 patch, and
-  `uv run gz validate --python-version-pins` exits 0
+- `.python-version` names the newest patch of the floor's minor, and
+  `uv run gz validate --astral-discipline` exits 0
 - `uv --version` equals the `[tool.uv] required-version` pin in `pyproject.toml`
 - ARB unittest receipt at `exit_status=0` exists in
   `artifacts/receipts/`
@@ -199,7 +198,7 @@ These thoughts mean STOP — you are about to ship a half-upgrade:
 | "I'll skip the ARB receipt — `gz check --full` already passed" | `gz check --full` runs the whole unit tier but does not emit the canonical receipt AGENTS.md § Attestation requires for the commit message. Run the ARB step. |
 | "The pin bump is just a patch — leave it" | If the pin is `==` the operator has stated intent to pin. Move the pin to current latest; do not let pinned packages silently lag. |
 | "I'll bump the floor to whatever — `>=4.0` covers 4.26 anyway" | The floor is a tested baseline, not a wish. Set it to what `uv lock` actually resolved, so future installs match the tested resolution. |
-| "Python is fine, no need to refresh 3.13" | Patch releases ship CPython security fixes. `uv python install 3.13` is idempotent and cheap; running it costs nothing. |
+| "Python is fine, no need to refresh the patch" | Patch releases ship CPython security fixes. `uv python pin <newest patch>` is one line and moves every consumer. |
 | "The skill is about deps, not uv itself" | uv IS the toolchain that resolves every dep. A pass that upgrades tools/lock on a stale uv is a half-upgrade running on an old resolver. `uv self update` is Step 1; skipping it is the bug this row exists to prevent. |
 | "If `gz check --full` fails, I'll just lower the floor" | Lowering a floor to mask a failure ships a known-broken upgrade. Pin the offender at last-known-good and file a GHI. |
 

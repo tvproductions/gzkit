@@ -279,7 +279,7 @@ def _status_is_valid_obpi_transition(
         # made Draft -> Active unreachable by construction and left any launched
         # OBPI that did not complete permanently unreconcilable.
         return monitor.is_reachable(current_obpi_state, target_obpi_state)
-    except (AttributeError, TypeError):
+    except AttributeError, TypeError:
         # A malformed status (None / non-str) fails .lower() during vocab
         # mapping; refuse the transition to be safe. Narrowed from a blanket
         # `except Exception` per .claude/rules/pythonic.md § Error Handling (no
@@ -489,7 +489,7 @@ def reconcile_frontmatter(project_root: Path, *, dry_run: bool) -> Reconciliatio
     if pinned_ledger is not None:
         try:
             pinned_ledger.get_artifact_graph()
-        except (json.JSONDecodeError, KeyError, ValueError):
+        except json.JSONDecodeError, KeyError, ValueError:
             pinned_ledger = None
 
     errors = validate_frontmatter_coherence(project_root, ledger=pinned_ledger)
@@ -539,7 +539,7 @@ def reconcile_frontmatter(project_root: Path, *, dry_run: bool) -> Reconciliatio
                 dry_run=dry_run,
             )
             _write_receipt(project_root, receipt, completed_at_dt)
-        except (OSError, ValueError):
+        except OSError, ValueError:
             receipt = None
 
     # The finally block above always assigns receipt. On normal completion

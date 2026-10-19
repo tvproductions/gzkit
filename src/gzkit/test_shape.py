@@ -144,7 +144,7 @@ def _scan_one_file(path: Path, project_root: Path) -> list[OutputAssertion]:
     try:
         source = path.read_text(encoding="utf-8", errors="replace")
         tree = ast.parse(source)
-    except (OSError, SyntaxError):
+    except OSError, SyntaxError:
         return []
 
     lines = source.splitlines()

@@ -30,7 +30,7 @@ import json
 import os
 import shlex
 import tempfile
-from collections.abc import Iterator, Mapping
+from collections.abc import Generator, Mapping
 from pathlib import Path
 from typing import Any, Literal, NamedTuple, NoReturn
 
@@ -1810,7 +1810,7 @@ def write_bytes_atomically(path: Path, data: bytes) -> None:
 
 
 @contextlib.contextmanager
-def exclusive_declaration_lock(path: Path) -> Iterator[None]:
+def exclusive_declaration_lock(path: Path) -> Generator[None]:
     """Serialize the whole read-modify-write of the declaration at *path*.
 
     Loading a declaration, deciding a transition from it, and writing the

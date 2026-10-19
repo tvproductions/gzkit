@@ -506,7 +506,7 @@ def _classify_doctor_slug(slug: str, *, in_canonical: bool, project_dir: Path) -
     acceptance_path = project_dir / "acceptance.json"
     try:
         json.loads(acceptance_path.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
+    except json.JSONDecodeError, OSError:
         return _DOCTOR_STATUS_DAMAGED
     return _DOCTOR_STATUS_HEALTHY
 

@@ -241,7 +241,7 @@ def run_demo() -> int:
         sample.write_text("import os\n", encoding="utf-8")
         try:
             _, findings = run_ruff([sample.name], Path(tmp))
-        except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
+        except FileNotFoundError, subprocess.TimeoutExpired, OSError:
             findings = "demo_violation.py:1:8: F401 [*] `os` imported but unused"
     sys.stdout.write(build_block_message(findings, 1) + "\n")
     return 0
@@ -257,7 +257,7 @@ def main(argv: list[str]) -> int:
 
     try:
         payload = json.load(sys.stdin)
-    except (json.JSONDecodeError, TypeError, ValueError, OSError):
+    except json.JSONDecodeError, TypeError, ValueError, OSError:
         return 0
 
     if payload.get("stop_hook_active"):
@@ -265,18 +265,18 @@ def main(argv: list[str]) -> int:
 
     try:
         cwd = Path(payload.get("cwd") or os.getcwd()).resolve()
-    except (OSError, ValueError):
+    except OSError, ValueError:
         return 0
 
     try:
         files = collect_dirty_python_files(cwd)
-    except (FileNotFoundError, subprocess.TimeoutExpired, OSError, ValueError):
+    except FileNotFoundError, subprocess.TimeoutExpired, OSError, ValueError:
         files = []
 
     if files:
         try:
             returncode, findings = run_ruff(files, cwd)
-        except (FileNotFoundError, subprocess.TimeoutExpired, OSError, ValueError):
+        except FileNotFoundError, subprocess.TimeoutExpired, OSError, ValueError:
             returncode, findings = 0, ""
         if returncode != 0:
             with suppress(OSError):

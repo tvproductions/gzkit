@@ -392,6 +392,34 @@
       "authority": "docs/governance/harbor-ro2-identity-seam.md (drydock RO-2 tranche 1); GHI #1154 item 5 (every registered claim binds a reviewed canary)",
       "proposed_by": "claude-code session 2026-10-19",
       "reviewed_by": "g0"
+    },
+    {
+      "claim_id": "astral-discipline",
+      "guard": "gzkit.governance.trust_audits.astral_discipline:check_discipline_baseline",
+      "failing_test": "tests.governance.test_astral_discipline.TestTheBaselineOnlyShrinks.test_a_new_violation_fails_naming_the_spec",
+      "mutation": {
+        "find": "        if count > allowed:\n",
+        "replace": "        if False:\n",
+        "label": "a violation the baseline does not hold is never refused"
+      },
+      "binding_sha256": "3b0c98596db2f13d484e7b713b3d1290ffc08921ddeb51b6abec094c1c218c51",
+      "authority": "docs/governance/harbor-ro9-astral-toolchain.md (drydock RO-9 tranche 1); GHI #1154 item 5 (every registered claim binds a reviewed canary)",
+      "proposed_by": "claude-code session 2026-10-19",
+      "reviewed_by": "g0"
+    },
+    {
+      "claim_id": "astral-discipline-baselined",
+      "guard": "gzkit.governance.trust_audits.astral_discipline:check_discipline_baseline",
+      "failing_test": "tests.governance.test_astral_discipline.TestTheBaselineOnlyShrinks.test_the_seeded_violations_pass",
+      "mutation": {
+        "find": "        allowed = seeded.get(key, 0)\n",
+        "replace": "        allowed = 0\n",
+        "label": "a baselined violation is refused as new"
+      },
+      "binding_sha256": "1adc4c4c8645624ea9f2c5dff00acdc8fbd5e60fdb8e795a38f990b1a026f46d",
+      "authority": "docs/governance/harbor-ro9-astral-toolchain.md (drydock RO-9 tranche 1); GHI #1154 item 5 (every registered claim binds a reviewed canary)",
+      "proposed_by": "claude-code session 2026-10-19",
+      "reviewed_by": "g0"
     }
   ]
 }

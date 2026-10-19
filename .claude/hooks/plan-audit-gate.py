@@ -76,7 +76,7 @@ def plan_search_dirs(cwd: str) -> list[Path]:
     for candidate in (project_local, global_local):
         try:
             resolved = candidate.resolve()
-        except (OSError, RuntimeError):
+        except OSError, RuntimeError:
             continue
         if resolved in seen or not candidate.is_dir():
             continue
@@ -150,7 +150,7 @@ def _validate_receipt(
     """Validate a single receipt file against the plan's OBPI ids."""
     try:
         receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except OSError, json.JSONDecodeError:
         return False, "Audit receipt is corrupted"
 
     receipt_obpi = receipt.get("obpi_id", "")

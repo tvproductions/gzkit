@@ -212,12 +212,6 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
     _ScopeEntry(  # CRITICAL: `operator-pii` floor, pinned by LEVEL not NAME (GHI #852)
         "authorship", "explicit", True, lambda r, _f: _ta().audit_authorship(r), _mx_levels.CRITICAL
     ),
-    _ScopeEntry(
-        "python_version_pins",
-        "explicit",
-        True,
-        lambda r, _f: _ta().audit_python_version_pins(r),
-    ),
     _ScopeEntry("utf8_prefix", "explicit", True, lambda r, _f: _ta().audit_utf8_prefix(r)),
     _ScopeEntry("line_endings", "explicit", True, lambda r, _f: _ta().audit_line_endings(r)),
     _ScopeEntry("test_tiers", "explicit", True, lambda r, _f: _ta().audit_test_tiers(r)),
@@ -461,6 +455,9 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
     _ScopeEntry("brief_size", "explicit", True, lambda r, _f: _ta().audit_brief_size(r)),
     _ScopeEntry("mx_hardening", "explicit", True, lambda r, _f: _ta().audit_mx_hardening(r)),
     _ScopeEntry("id_seam", "explicit", True, lambda r, _f: _ta().audit_id_seam(r)),
+    _ScopeEntry(
+        "astral_discipline", "explicit", True, lambda r, _f: _ta().audit_astral_discipline(r)
+    ),
     _ScopeEntry("router_tables", "explicit", True, lambda r, _f: _ta().audit_router_tables(r)),
     _ScopeEntry(
         "req_kind_discipline", "explicit", True, lambda r, _f: _validate_req_kind_discipline(r)
@@ -1158,6 +1155,7 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "brief_size",
         "mx_hardening",
         "id_seam",
+        "astral_discipline",
         "router_tables",
         "req_kind_discipline",
         "status_writer_coverage",
@@ -1488,7 +1486,6 @@ def validate(
     check_producer_fields: bool = False,
     check_validator_fields: bool = False,
     check_authorship: bool = False,
-    check_python_version_pins: bool = False,
     check_utf8_prefix: bool = False,
     check_test_tiers: bool = False,
     check_pydantic_models: bool = False,
@@ -1550,6 +1547,7 @@ def validate(
     check_brief_size: bool = False,
     check_mx_hardening: bool = False,
     check_id_seam: bool = False,
+    check_astral_discipline: bool = False,
     check_router_tables: bool = False,
     check_req_kind_discipline: bool = False,
     check_status_writer_coverage: bool = False,
@@ -1636,7 +1634,6 @@ def validate(
         "producer_fields": check_producer_fields,
         "validator_fields": check_validator_fields,
         "authorship": check_authorship,
-        "python_version_pins": check_python_version_pins,
         "utf8_prefix": check_utf8_prefix,
         "test_tiers": check_test_tiers,
         "pydantic_models": check_pydantic_models,
@@ -1696,6 +1693,7 @@ def validate(
         "brief_size": check_brief_size,
         "mx_hardening": check_mx_hardening,
         "id_seam": check_id_seam,
+        "astral_discipline": check_astral_discipline,
         "router_tables": check_router_tables,
         "req_kind_discipline": check_req_kind_discipline,
         "status_writer_coverage": check_status_writer_coverage,

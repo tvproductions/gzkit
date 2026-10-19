@@ -27,7 +27,7 @@ import json
 import os
 import tempfile
 import unittest
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager, redirect_stderr, redirect_stdout
 from pathlib import Path
 from typing import Any
@@ -95,7 +95,7 @@ def _rule_data(metric: str, distilled_path: Path, anchor: str) -> str:
 
 
 @contextmanager
-def _synthetic_environment(metric: str = "radon_cc") -> Iterator[Path]:
+def _synthetic_environment(metric: str = "radon_cc") -> Generator[Path]:
     """Yield path to a synthetic threshold rule under a temp project root.
 
     The distilled doc is written under ``docs/governance/complexity/``

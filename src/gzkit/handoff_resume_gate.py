@@ -115,7 +115,7 @@ def newest_handoff(project_root: Path) -> Path | None:
         candidate = path if path.is_absolute() else project_root / path
         try:
             frontmatter = parse_frontmatter(candidate.read_text(encoding="utf-8"))
-        except (OSError, UnicodeDecodeError, HandoffValidationError):
+        except OSError, UnicodeDecodeError, HandoffValidationError:
             continue
         if not isinstance(frontmatter, dict):
             # Unreadable shape → treat as resumable, deliberately. Skipping here

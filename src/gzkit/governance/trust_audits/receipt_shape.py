@@ -232,7 +232,7 @@ def _process_receipt_event(
     try:
         ts = event.get("ts", "")
         event_date = datetime.datetime.fromisoformat(ts).date()
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return []
 
     is_post_cutoff = event_date >= cutoff_date

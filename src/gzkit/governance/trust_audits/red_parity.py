@@ -133,7 +133,7 @@ def _proof_witnesses_falsifiability(event: dict) -> str | None:
     try:
         proof = Proof.model_validate(event.get("payload"))
         controls = json.loads(proof.evidence).get("mutations") or []
-    except (PydanticValidationError, ValueError, AttributeError):
+    except PydanticValidationError, ValueError, AttributeError:
         return None
     return proof.obligation_id if proof.valid and controls else None
 

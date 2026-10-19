@@ -54,7 +54,7 @@ def _marker_mode(project_root: Path) -> tuple[str, str]:
     """Return ``(mode, contract)`` from the marker JSON; an unreadable marker is the hangar."""
     try:
         raw = json.loads(project_root.joinpath(*_MARKER_RELPATH).read_text(encoding="utf-8"))
-    except (OSError, ValueError):
+    except OSError, ValueError:
         return "mx", ""
     if not isinstance(raw, dict):
         return "mx", ""
@@ -116,7 +116,7 @@ def check_hook_liveness(project_root: Path | None = None) -> LivenessResult:
 
     try:
         data = json.loads(settings_path.read_text(encoding="utf-8"))
-    except (OSError, ValueError):
+    except OSError, ValueError:
         return LivenessResult(ok=False, defect="cannot read .claude/settings.json")
 
     hooks = data.get("hooks", {})

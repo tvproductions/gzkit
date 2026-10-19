@@ -38,7 +38,7 @@ def _read_json(path: Path) -> dict | None:
         return None
     try:
         return json.loads(path.read_bytes())
-    except (json.JSONDecodeError, OSError):
+    except json.JSONDecodeError, OSError:
         return None
 
 
@@ -47,10 +47,7 @@ def _brief_is_completed(cwd: Path, obpi_id: str) -> bool:
 
     gzkit stores briefs under design/adr/pre-release/ADR-X.Y.Z-.../obpis/OBPI-*.md
     """
-    # Extract numeric prefix (e.g., OBPI-0.14.0-02-... -> 0.14.0)
-    stripped = obpi_id.replace("OBPI-", "")
-    parts = stripped.rsplit("-", 1)
-    if len(parts) < 2:
+    if "-" not in obpi_id:
         return False
 
     # Search design/adr for matching OBPI files
@@ -58,8 +55,11 @@ def _brief_is_completed(cwd: Path, obpi_id: str) -> bool:
     if not adr_root.exists():
         return False
 
-    # gzkit uses pre-release/ADR-X.Y.Z-.../obpis/ structure
-    for brief_path in adr_root.rglob(f"OBPI-{stripped}*.md"):
+    # gzkit uses pre-release/ADR-X.Y.Z-.../obpis/ structure. A stem matches
+    # the id itself or extends it across a "-", never across a digit.
+    for brief_path in adr_root.rglob(f"{obpi_id}*.md"):
+        if brief_path.stem != obpi_id and not brief_path.stem.startswith(obpi_id + "-"):
+            continue
         try:
             text = brief_path.read_text(encoding="utf-8")
             for line in text.splitlines()[:15]:

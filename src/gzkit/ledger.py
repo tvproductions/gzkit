@@ -231,7 +231,7 @@ class LedgerEvent(BaseModel):
         return result
 
     @classmethod
-    def parse_stored_row(cls, data: dict[str, Any]) -> "LedgerEvent":
+    def parse_stored_row(cls, data: dict[str, Any]) -> LedgerEvent:
         """Parse a row that ALREADY EXISTS on disk, inventing no envelope field.
 
         ``schema_`` and ``ts`` carry constructor defaults, and those defaults are

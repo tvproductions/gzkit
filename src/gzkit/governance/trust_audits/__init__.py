@@ -36,6 +36,7 @@ from gzkit.governance.trust_audits.advisor_proof_binding import (
 from gzkit.governance.trust_audits.agents_md_map_conformance import (
     audit_agents_md_map_conformance,
 )
+from gzkit.governance.trust_audits.astral_discipline import audit_astral_discipline
 from gzkit.governance.trust_audits.attestation_receipts import (
     AttestationReceiptEntry,
     AttestationReceiptValidationResult,
@@ -155,10 +156,6 @@ from gzkit.governance.trust_audits.pointer_integrity import (
     validate_pointer_integrity,
 )
 from gzkit.governance.trust_audits.population_controls import audit_population_controls
-from gzkit.governance.trust_audits.python_version_pins import (
-    audit_python_version_pins,
-    evaluate_python_version_pins,
-)
 from gzkit.governance.trust_audits.qc_binding import audit_qc_binding
 from gzkit.governance.trust_audits.receipt_shape import audit_receipt_shape
 from gzkit.governance.trust_audits.reconcile import audit_reconcile_freshness
@@ -233,14 +230,13 @@ __all__ = [
     "audit_brief_command_shape",
     "audit_brief_cross_references",
     "audit_authorship",
-    "audit_python_version_pins",
     "evaluate_authorship",
-    "evaluate_python_version_pins",
     "audit_brief_demo_section",
     "audit_brief_headings",
     "audit_brief_size",
     "audit_mx_hardening",
     "audit_id_seam",
+    "audit_astral_discipline",
     "audit_agents_md_map_conformance",
     "audit_chore_metadata_authority",
     "audit_chore_rung_conformance",

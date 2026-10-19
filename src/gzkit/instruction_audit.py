@@ -362,7 +362,7 @@ def audit_code_contract_mismatches(project_root: Path) -> list[ValidationError]:
     for py_file in sorted(src_dir.rglob("*.py")):
         try:
             py_content = py_file.read_text(encoding="utf-8")
-        except (OSError, UnicodeDecodeError):
+        except OSError, UnicodeDecodeError:
             continue
         if dataclass_pattern.search(py_content):
             rel_path = py_file.relative_to(project_root)

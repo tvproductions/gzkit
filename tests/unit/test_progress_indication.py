@@ -21,7 +21,7 @@ class _ProgressSpy:
         self.label = label
         self.advanced: list[str] = []
 
-    def __enter__(self) -> "_ProgressSpy":
+    def __enter__(self) -> _ProgressSpy:
         return self
 
     def __exit__(self, *_exc: object) -> None:
@@ -32,7 +32,7 @@ class _ProgressSpy:
 
 
 class _FormatterSpy:
-    instances: list["_FormatterSpy"] = []
+    instances: list[_FormatterSpy] = []
 
     def __init__(self) -> None:
         self.progress: _ProgressSpy | None = None

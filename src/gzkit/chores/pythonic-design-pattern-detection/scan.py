@@ -584,7 +584,7 @@ def scan_root(root: Path, exclude: Iterable[str]) -> list[Candidate]:
             continue
         try:
             source = path.read_text(encoding="utf-8")
-        except (OSError, UnicodeDecodeError):
+        except OSError, UnicodeDecodeError:
             continue
         candidates.extend(scan_file(path, source))
     return candidates

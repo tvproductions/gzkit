@@ -424,15 +424,6 @@ def _ep_unscoped_rules(root: Path) -> int:
     return 1 if run_unscoped_rules(root).exit_code == 3 else 0
 
 
-def _ep_python_version_pins(root: Path) -> list[ValidationError]:
-    """Run the production interpreter-pin audit against the planted tree."""
-    from gzkit.governance.trust_audits.python_version_pins import (  # noqa: PLC0415
-        audit_python_version_pins,
-    )
-
-    return audit_python_version_pins(root)
-
-
 def _ep_doc_code_citations(root: Path) -> list[ValidationError]:
     """Return findings for the two citations that MUST fire, and no others.
 
@@ -633,6 +624,27 @@ def _ep_brief_size_admits_grandfathered(root: Path) -> int:
     from gzkit.governance.trust_audits.brief_size import audit_brief_size  # noqa: PLC0415
 
     return 0 if audit_brief_size(root) else 1
+
+
+def _ep_astral_discipline(root: Path) -> list[ValidationError]:
+    """Return the finding against the new setup-python step, and nothing when the decoy fired."""
+    from gzkit.governance.trust_audits.astral_discipline import (  # noqa: PLC0415
+        audit_astral_discipline,
+    )
+
+    errors = audit_astral_discipline(root)
+    if any("setup-python" not in error.artifact for error in errors):
+        return []
+    return errors
+
+
+def _ep_astral_discipline_admits_baselined(root: Path) -> int:
+    """Truthy only when the gate ADMITS a violation the baseline holds."""
+    from gzkit.governance.trust_audits.astral_discipline import (  # noqa: PLC0415
+        audit_astral_discipline,
+    )
+
+    return 0 if audit_astral_discipline(root) else 1
 
 
 def _ep_id_seam(root: Path) -> list[ValidationError]:

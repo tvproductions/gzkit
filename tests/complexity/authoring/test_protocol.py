@@ -56,7 +56,7 @@ def _run_with_messages(messages: list[bytes]) -> list[dict]:
         while True:
             msg = read_message(stdout)
             responses.append(msg)
-    except (EOFError, ValueError):
+    except EOFError, ValueError:
         pass
     return responses
 
@@ -201,7 +201,7 @@ class TestMalformedRequest(unittest.TestCase):
             while True:
                 msg = read_message(stdout)
                 responses.append(msg)
-        except (EOFError, ValueError):
+        except EOFError, ValueError:
             pass
         self.assertGreaterEqual(len(responses), 1)
         resp = responses[0]

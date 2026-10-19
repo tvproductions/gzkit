@@ -46,7 +46,7 @@ def _load_floor_grandfather(project_root: Path) -> frozenset[str]:
         return frozenset()
     try:
         payload = json.loads(gf_path.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
+    except json.JSONDecodeError, OSError:
         return frozenset()
     briefs = payload.get("grandfathered_briefs", []) if isinstance(payload, dict) else []
     return frozenset(p for p in briefs if isinstance(p, str))
@@ -160,7 +160,7 @@ def _classify_brief_sensitivity(
     allowed_paths = _extract_sensitivity_allowed_paths(brief_text)
     try:
         matching_categories = match_globs(allowed_paths, registry)
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return ValidationError(
             type="sensitivity-malformed-allowlist",
             artifact=rel,
@@ -242,7 +242,7 @@ def audit_sensitivity_binding(project_root: Path) -> list[ValidationError]:
     for brief_path in briefs:
         try:
             brief_text = brief_path.read_text(encoding="utf-8")
-        except (UnicodeDecodeError, OSError):
+        except UnicodeDecodeError, OSError:
             continue
         finding = _classify_brief_sensitivity(
             brief_path, brief_text, project_root, registry, grandfather
@@ -278,7 +278,7 @@ def detect_brief_security_floor(
 
     try:
         matching = match_globs(allowed_paths, registry)
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return None
 
     return "security" if matching else None
@@ -311,7 +311,7 @@ def detect_brief_security_surfaces(
 
     try:
         return tuple(match_globs(allowed_paths, registry))
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return ()
 
 

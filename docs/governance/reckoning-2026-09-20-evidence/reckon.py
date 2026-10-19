@@ -60,7 +60,7 @@ def ledger_events():
             if '"airlock_in"' in line or '"airlock_out"' in line:
                 try:
                     transits[json.loads(line)["event"]] += 1
-                except (json.JSONDecodeError, KeyError):
+                except json.JSONDecodeError, KeyError:
                     continue
     return total, transits
 

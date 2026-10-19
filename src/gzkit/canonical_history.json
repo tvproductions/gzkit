@@ -414,6 +414,7 @@
       "53f4cc6831bc70c4532ca614dc22c3dc3ac72f60468a62ae19f5a89474dafe6d",
       "64218fac0fe485069f32b5839df3dd14b241cbe608256d4644b4ef1a3edd3583",
       "7cb2b23263b43913eccbe9cfa1883ec03a966a806403f3ace20c5619a5e51cbd",
+      "8649896dcd1ab85bfe727a0788791c69f91165b074f9b30ddd977282b70608ec",
       "da8c4b9731ab8945e8a759bf796a1d8c4756c4f5866b73648baff2af5e70698c"
     ],
     "chores/eval_feedback_cluster_run.py": [
@@ -600,6 +601,7 @@
     ],
     "chores/memory-hygiene/check_memory_drift.py": [
       "5d3d111a56cd2c572ab4f372b3b0c0db57384a51eb15f956cfec973e76f2fc64",
+      "970b3f3ac39c135cad28685463483158f07fa4ccb6b9369a9cf89dca26928d77",
       "ea7c37fe25d2a43327cf74b666054e16212e4a93d953d1928cec14b7cf4338d7"
     ],
     "chores/memory-hygiene/proofs/.gitkeep": [
@@ -728,6 +730,7 @@
       "053bc230cf920c2f169e41225778873b48eee282101a79758e46990ae5dea7fd",
       "19fd06103031a8378b8d45424b06cec0ce5ab4e0d4c115f7be40a47805ebf6a7",
       "3b452e514050b4d375bc48b5a90fb88920d9b013b9e0771fd4412befe7bc8335",
+      "cecb6d1d3aaeabeb9dc6231fd54c87e1b94f6f65fcf453e32aa8aeb9ae62bed5",
       "fae2fdf3868c6af011be79815c9548dc8c51406fdc386cc81636ba9032de14b1"
     ],
     "chores/pythonic-refactoring/CHORE.md": [
@@ -1791,6 +1794,7 @@
       "f9ebb10ab979b8b5bd9255841d9e2047bfc813484b02d12667671ba059b5fe81"
     ],
     "skills/gz-deps-upgrade/SKILL.md": [
+      "0077a137d5ff1546f0d73764ca50dddeac84765be73df74da4d18a9e0923920d",
       "2298d12a5ce8e6305ca238781e8f4044c43c188548c1b7859f16c7bdf8537487",
       "245f695df4d5b527ee543b7c5a4976b71d15920f37e26475537606a4cd88e7db",
       "6dc58e0a4e68afaed8119acbb30d2eaa1888e9e43624aa43a1fd4c1612142977",

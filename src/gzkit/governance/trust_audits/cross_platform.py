@@ -381,7 +381,7 @@ def _scan_crlf_surfaces(project_root: Path) -> list[ValidationError]:
             check=True,
             timeout=30,
         )
-    except (OSError, subprocess.SubprocessError):
+    except OSError, subprocess.SubprocessError:
         # Outside a git work tree (fixture temp dirs): no index to inspect; the
         # .gitattributes-presence check still gates the contract.
         return []
@@ -523,7 +523,7 @@ def audit_subprocess_errors(project_root: Path) -> list[ValidationError]:
         for py_path in sorted(root.rglob("*.py")):
             try:
                 tree = ast.parse(py_path.read_text(encoding="utf-8"))
-            except (OSError, SyntaxError):
+            except OSError, SyntaxError:
                 continue
             for node in ast.walk(tree):
                 if not isinstance(node, ast.Call):
@@ -619,7 +619,7 @@ def audit_generated_surface_newlines(project_root: Path) -> list[ValidationError
         py_path = project_root / "src" / "gzkit" / rel
         try:
             tree = ast.parse(py_path.read_text(encoding="utf-8"))
-        except (OSError, SyntaxError):
+        except OSError, SyntaxError:
             # A renamed module must not silently pass by scanning nothing.
             errors.append(
                 ValidationError(
@@ -710,7 +710,7 @@ def _scan_test_byte_fixture_writes(project_root: Path) -> list[ValidationError]:
     for path in sorted(tests_root.rglob("*.py")):
         try:
             tree = ast.parse(path.read_text(encoding="utf-8"))
-        except (OSError, SyntaxError):
+        except OSError, SyntaxError:
             continue
         rel = path.relative_to(project_root).as_posix()
         for func in ast.walk(tree):

@@ -16,7 +16,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Generator
 from contextlib import ExitStack, contextmanager
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -215,7 +215,7 @@ def _read(path: Path) -> dict[str, Any]:
 
 
 @contextmanager
-def _all_of(*patches: Any) -> Iterator[None]:
+def _all_of(*patches: Any) -> Generator[None]:
     """Hold every given patch for the length of one ``with`` block."""
     with ExitStack() as stack:
         for each in patches:
@@ -238,7 +238,7 @@ def verification_replaced(
     failing: bool = False,
     detail: str = "exit 1",
     at_dispatch: Callable[[], None] | None = None,
-) -> Iterator[list[str]]:
+) -> Generator[list[str]]:
     """Let ``gz obpi pipeline --from=verify`` or ``--from=ceremony`` run in a seeded project.
 
     The stage runners are real. Their Stage 2 acceptance check and the dispatch
@@ -2211,7 +2211,7 @@ class TestABoundaryIsRecordedUnderTheIdTheLaunchCarries(_LaunchableThroughTheCli
         )
 
     @contextmanager
-    def _review_imports_replaced(self) -> Iterator[tuple[Mock, Mock]]:
+    def _review_imports_replaced(self) -> Generator[tuple[Mock, Mock]]:
         """Replace the store's two review imports; yield them, review then human review."""
         review = Mock(stage="adversarial")
         review.model_dump.return_value = {}
@@ -2777,7 +2777,7 @@ class TestAPositionThatCannotBeRecordedNeverFailsItsHost(_LaunchableThroughTheCl
     """
 
     @contextmanager
-    def _position_writes_fail(self) -> Iterator[None]:
+    def _position_writes_fail(self) -> Generator[None]:
         """Make the ledger refuse a ``pipeline_stage_transition`` row, and only that."""
         append = Ledger.append
 

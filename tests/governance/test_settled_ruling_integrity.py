@@ -102,7 +102,7 @@ def _corpus_bullets() -> list[tuple[str, str]]:
     for path in sorted(HANDOFFS.rglob("*.md")):
         try:
             content = path.read_text(encoding="utf-8")
-        except (OSError, UnicodeDecodeError):
+        except OSError, UnicodeDecodeError:
             continue
         origin = path.relative_to(REPO_ROOT).as_posix()
         bullets.extend((entry, origin) for entry in settled_rulings(content))

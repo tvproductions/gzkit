@@ -252,7 +252,7 @@ def scan_source_for_signatures(source_path: Path, *, rel: str) -> list[TheaterSi
     """
     try:
         tree = ast.parse(source_path.read_text(encoding="utf-8"), filename=str(source_path))
-    except (SyntaxError, OSError):
+    except SyntaxError, OSError:
         return []
     out: list[TheaterSignatureFinding] = []
     for node in ast.walk(tree):

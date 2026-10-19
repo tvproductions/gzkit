@@ -153,7 +153,7 @@ def _load_behave_coverage_waivers(project_root: Path) -> dict[str, str]:
         return {}
     try:
         payload = json.loads(waiver_path.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, UnicodeDecodeError, OSError):
+    except json.JSONDecodeError, UnicodeDecodeError, OSError:
         return {}
     default_rationale = payload.get("default_rationale", {}) or {}
     waivers = payload.get("waivers", {}) or {}
@@ -192,7 +192,7 @@ def _extract_one_heavy_brief(brief: Path) -> tuple[Path, str, dict[str, str]] | 
     """
     try:
         text = brief.read_text(encoding="utf-8")
-    except (UnicodeDecodeError, OSError):
+    except UnicodeDecodeError, OSError:
         return None
     lane_match = _LANE_IN_FRONTMATTER.search(text)
     if not lane_match or lane_match.group(1).lower() != "heavy":
@@ -246,7 +246,7 @@ def _collect_scenario_req_tags(project_root: Path) -> set[str]:
     for feat in features_root.rglob("*.feature"):
         try:
             text = feat.read_text(encoding="utf-8")
-        except (UnicodeDecodeError, OSError):
+        except UnicodeDecodeError, OSError:
             continue
         tagged.update(m.group(1) for m in _SCENARIO_REQ_TAG.finditer(text))
     return tagged
@@ -267,7 +267,7 @@ def _collect_covers_req_ids(project_root: Path) -> set[str]:
     for py in tests_root.rglob("*.py"):
         try:
             text = py.read_text(encoding="utf-8")
-        except (UnicodeDecodeError, OSError):
+        except UnicodeDecodeError, OSError:
             continue
         covered.update(m.group(1) for m in _COVERS_REQ_TAG.finditer(text))
     return covered
@@ -331,7 +331,7 @@ def _scan_brief_cross_references(
     """Extract identifiers from one brief and emit one error per unresolvable hit."""
     try:
         lines = brief.read_text(encoding="utf-8").splitlines()
-    except (UnicodeDecodeError, OSError):
+    except UnicodeDecodeError, OSError:
         return []
     rel = brief.relative_to(project_root).as_posix()
     errors: list[ValidationError] = []
@@ -526,7 +526,7 @@ def audit_brief_demo_section(project_root: Path) -> list[ValidationError]:
     for brief in sorted(brief_paths):
         try:
             text = brief.read_text(encoding="utf-8")
-        except (UnicodeDecodeError, OSError):
+        except UnicodeDecodeError, OSError:
             continue
         if _BRIEF_DEMO_SKIP_MARKER in text:
             continue

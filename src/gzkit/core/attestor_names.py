@@ -24,14 +24,17 @@ import unicodedata
 #
 # Only two of the four are ever tested at the `is_named` call site below: NFKC
 # normalization runs BEFORE the membership check, and U+3164 -> U+1160 and
-# U+FFA0 -> U+1160 under NFKC (measured against UCD 15.1.0), so `ch` is never
+# U+FFA0 -> U+1160 under NFKC (measured against UCD 15.1.0 and again 16.0.0), so `ch` is never
 # U+3164 or U+FFA0 by the time this set is consulted there. All four stay --
 # as a complete, readable statement of the class, and as defense-in-depth for a
 # future caller that tests a pre-normalization string.
 #
 # This is the complete Lo-category subset of Default_Ignorable_Code_Point for UCD
-# 15.1.0 -- the Unicode version bundled with CPython's `unicodedata` at the time
-# this set was derived -- not the three code points the adversary happened to
+# 16.0.0 -- the Unicode version bundled with CPython 3.14's `unicodedata`. It was
+# first derived against UCD 15.1.0 and re-derived 2026-10-19, when drydock RO-9
+# moved the floor to Python 3.14, from DerivedCoreProperties-16.0.0.txt: the same
+# four code points (4,174 Default_Ignorable_Code_Point members, four of them Lo).
+# It is not the three code points the adversary happened to
 # probe. stdlib `unicodedata` has no accessor for Default_Ignorable_Code_Point
 # (the `regex` module's `\p{Default_Ignorable_Code_Point}` would need an
 # ADR-level STDLIB-FIRST departure), so this literal set IS the compliant shape;
@@ -40,7 +43,7 @@ import unicodedata
 # in use. It WARNS on the retire path and asserts hard only in the test suite
 # (operator ruling 2026-08-25): a maintainer in CI can re-derive the set, an
 # operator mid-retirement cannot.
-DEFAULT_IGNORABLE_LETTERS_UCD_VERSION = "15.1.0"
+DEFAULT_IGNORABLE_LETTERS_UCD_VERSION = "16.0.0"
 
 DEFAULT_IGNORABLE_LETTERS = frozenset(
     {
@@ -109,7 +112,7 @@ def is_named(value: str) -> bool:
     """
     try:
         normalized = unicodedata.normalize("NFKC", value)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         return False
     for ch in normalized:
         category = unicodedata.category(ch)

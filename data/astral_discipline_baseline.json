@@ -1,0 +1,281 @@
+{
+  "_doc": "Drydock RO-9 witness (docs/governance/harbor-ro9-astral-toolchain.md \u00a7 The witness): every departure from Astral's project discipline in gzkit and in the project `gz init` scaffolds, seeded 2026-10-19 by `gz validate --astral-discipline` at tranche 1. Keyed by rule, file and subject, never line. A shrink-ratchet: rows only leave or lower, and RO-9 closes when 'violations' is empty.",
+  "violations": [
+    {
+      "rule": "build-backend-not-uv",
+      "file": "gz init scaffold:pyproject.toml",
+      "subject": "hatchling.build",
+      "count": 1
+    },
+    {
+      "rule": "build-backend-not-uv",
+      "file": "pyproject.toml",
+      "subject": "hatchling.build",
+      "count": 1
+    },
+    {
+      "rule": "dev-tool-in-extra",
+      "file": "gz init scaffold:pyproject.toml",
+      "subject": "dev",
+      "count": 1
+    },
+    {
+      "rule": "dev-tool-in-extra",
+      "file": "pyproject.toml",
+      "subject": "docs",
+      "count": 1
+    },
+    {
+      "rule": "lock-unchecked",
+      "file": ".github/workflows/ci.yml",
+      "subject": "uv sync",
+      "count": 1
+    },
+    {
+      "rule": "lock-unchecked",
+      "file": ".github/workflows/docs.yml",
+      "subject": "uv sync",
+      "count": 1
+    },
+    {
+      "rule": "lock-unchecked",
+      "file": ".github/workflows/queue-hygiene.yml",
+      "subject": "uv sync",
+      "count": 1
+    },
+    {
+      "rule": "lock-unchecked",
+      "file": ".github/workflows/release.yml",
+      "subject": "uv sync",
+      "count": 1
+    },
+    {
+      "rule": "lock-unchecked",
+      "file": ".github/workflows/unit-tier-profile.yml",
+      "subject": "uv sync",
+      "count": 1
+    },
+    {
+      "rule": "non-astral-unregistered",
+      "file": "pyproject.toml",
+      "subject": "bandit",
+      "count": 1
+    },
+    {
+      "rule": "non-astral-unregistered",
+      "file": "pyproject.toml",
+      "subject": "detect-secrets",
+      "count": 1
+    },
+    {
+      "rule": "non-astral-unregistered",
+      "file": "pyproject.toml",
+      "subject": "interrogate",
+      "count": 1
+    },
+    {
+      "rule": "non-astral-unregistered",
+      "file": "pyproject.toml",
+      "subject": "jinja2",
+      "count": 1
+    },
+    {
+      "rule": "non-astral-unregistered",
+      "file": "pyproject.toml",
+      "subject": "jsonschema",
+      "count": 1
+    },
+    {
+      "rule": "non-astral-unregistered",
+      "file": "pyproject.toml",
+      "subject": "pygount",
+      "count": 1
+    },
+    {
+      "rule": "non-astral-unregistered",
+      "file": "pyproject.toml",
+      "subject": "pyyaml",
+      "count": 1
+    },
+    {
+      "rule": "non-astral-unregistered",
+      "file": "pyproject.toml",
+      "subject": "radon",
+      "count": 1
+    },
+    {
+      "rule": "non-astral-unregistered",
+      "file": "pyproject.toml",
+      "subject": "rich",
+      "count": 1
+    },
+    {
+      "rule": "non-astral-unregistered",
+      "file": "pyproject.toml",
+      "subject": "structlog",
+      "count": 1
+    },
+    {
+      "rule": "non-astral-unregistered",
+      "file": "pyproject.toml",
+      "subject": "vulture",
+      "count": 1
+    },
+    {
+      "rule": "non-astral-unregistered",
+      "file": "pyproject.toml",
+      "subject": "xenon",
+      "count": 1
+    },
+    {
+      "rule": "pip-in-project",
+      "file": ".github/workflows/docs.yml",
+      "subject": "pip",
+      "count": 1
+    },
+    {
+      "rule": "pip-in-project",
+      "file": ".readthedocs.yaml",
+      "subject": "pip",
+      "count": 1
+    },
+    {
+      "rule": "pip-in-project",
+      "file": "requirements-docs.txt",
+      "subject": "requirements-docs.txt",
+      "count": 1
+    },
+    {
+      "rule": "publish-not-uv",
+      "file": ".github/workflows/release.yml",
+      "subject": "pypa/gh-action-pypi-publish",
+      "count": 1
+    },
+    {
+      "rule": "publish-not-uv",
+      "file": ".github/workflows/release.yml",
+      "subject": "twine",
+      "count": 1
+    },
+    {
+      "rule": "tool-outside-lock",
+      "file": "src/gzkit/arb/ruff_reporter.py",
+      "subject": "ruff",
+      "count": 2
+    },
+    {
+      "rule": "tool-outside-lock",
+      "file": "src/gzkit/arb/validator.py",
+      "subject": "coverage",
+      "count": 1
+    },
+    {
+      "rule": "tool-outside-lock",
+      "file": "src/gzkit/chores/complexity-reduction-xenon/acceptance.json",
+      "subject": "xenon",
+      "count": 1
+    },
+    {
+      "rule": "tool-outside-lock",
+      "file": "src/gzkit/chores/exceptions-and-logging-rationalization/acceptance.json",
+      "subject": "ruff",
+      "count": 1
+    },
+    {
+      "rule": "tool-outside-lock",
+      "file": "src/gzkit/chores/module-sloc-cap-radon/check_module_size.py",
+      "subject": "radon",
+      "count": 1
+    },
+    {
+      "rule": "tool-outside-lock",
+      "file": "src/gzkit/chores/pep257-docstring-compliance/acceptance.json",
+      "subject": "interrogate",
+      "count": 1
+    },
+    {
+      "rule": "tool-outside-lock",
+      "file": "src/gzkit/chores/pep257-docstring-compliance/acceptance.json",
+      "subject": "ruff",
+      "count": 1
+    },
+    {
+      "rule": "tool-outside-lock",
+      "file": "src/gzkit/chores/pythonic-design-pattern-application/acceptance.json",
+      "subject": "xenon",
+      "count": 1
+    },
+    {
+      "rule": "tool-outside-lock",
+      "file": "src/gzkit/chores/pythonic-refactoring/acceptance.json",
+      "subject": "ruff",
+      "count": 1
+    },
+    {
+      "rule": "tool-outside-lock",
+      "file": "src/gzkit/chores/pythonic-refactoring/acceptance.json",
+      "subject": "ty",
+      "count": 1
+    },
+    {
+      "rule": "tool-outside-lock",
+      "file": "src/gzkit/commands/arb.py",
+      "subject": "ty",
+      "count": 1
+    },
+    {
+      "rule": "tool-outside-lock",
+      "file": "src/gzkit/complexity/measurement.py",
+      "subject": "cohesion",
+      "count": 1
+    },
+    {
+      "rule": "tool-outside-lock",
+      "file": "src/gzkit/complexity/measurement.py",
+      "subject": "lizard",
+      "count": 1
+    },
+    {
+      "rule": "tool-outside-lock",
+      "file": "src/gzkit/complexity/measurement.py",
+      "subject": "radon",
+      "count": 4
+    },
+    {
+      "rule": "tool-outside-lock",
+      "file": "src/gzkit/governance/stage4_evidence.py",
+      "subject": "ruff",
+      "count": 1
+    },
+    {
+      "rule": "unused-dependency",
+      "file": "pyproject.toml",
+      "subject": "bandit",
+      "count": 1
+    },
+    {
+      "rule": "unused-dependency",
+      "file": "pyproject.toml",
+      "subject": "detect-secrets",
+      "count": 1
+    },
+    {
+      "rule": "unused-dependency",
+      "file": "pyproject.toml",
+      "subject": "pygount",
+      "count": 1
+    },
+    {
+      "rule": "unused-dependency",
+      "file": "pyproject.toml",
+      "subject": "vulture",
+      "count": 1
+    },
+    {
+      "rule": "version-home-missing",
+      "file": "gz init scaffold:.python-version",
+      "subject": ".python-version",
+      "count": 1
+    }
+  ]
+}

@@ -24,7 +24,7 @@ def configured_attestor_handle(project_root: Path | None = None) -> str | None:
         return None
     try:
         return GzkitConfig.load(path).authorship.attestor_handle
-    except (OSError, ValueError):
+    except OSError, ValueError:
         return None
 
 

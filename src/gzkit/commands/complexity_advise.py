@@ -60,7 +60,7 @@ def _is_attest_tty_available() -> bool:
     """Return True when stdin and stdout are both attached to a real TTY."""
     try:
         return bool(sys.stdin.isatty()) and bool(sys.stdout.isatty())
-    except (ValueError, OSError):
+    except ValueError, OSError:
         return False
 
 

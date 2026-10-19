@@ -23,7 +23,7 @@ import inspect
 import io
 import sys
 import tempfile
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Generator
 from pathlib import Path
 from types import ModuleType
 
@@ -63,7 +63,7 @@ def _plant(root: Path, finding_class: str | None) -> str:
 
 
 @contextlib.contextmanager
-def _project_root_is(module: ModuleType, root: Path) -> Iterator[None]:
+def _project_root_is(module: ModuleType, root: Path) -> Generator[None]:
     """Point *module*'s ``get_project_root`` at *root* for the block, then restore it.
 
     The handler reads the project root from the process cwd. Binding it here, instead of

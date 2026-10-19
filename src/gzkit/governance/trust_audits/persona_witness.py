@@ -49,7 +49,7 @@ def grandfathered_persona_ids(project_root: Path) -> frozenset[str]:
         return frozenset()
     try:
         payload = json.loads(manifest_path.read_text(encoding="utf-8"))
-    except (OSError, ValueError):
+    except OSError, ValueError:
         return frozenset()
     entries = payload.get("grandfathered_adrs", []) if isinstance(payload, dict) else []
     return frozenset(str(e) for e in entries if isinstance(e, str))
@@ -59,7 +59,7 @@ def _check_adr(adr_file: Path, project_root: Path) -> ValidationError | None:
     """Return a ValidationError if *adr_file* has no authored Persona, else None."""
     try:
         raw = adr_file.read_text(encoding="utf-8")
-    except (UnicodeDecodeError, OSError):
+    except UnicodeDecodeError, OSError:
         return None
 
     rel = adr_file.relative_to(project_root).as_posix()

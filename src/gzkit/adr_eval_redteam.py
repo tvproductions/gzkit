@@ -129,7 +129,7 @@ def parse_redteam_result(
                     notes=str(item.get("notes", "")),
                 )
             )
-        except (KeyError, TypeError, ValueError):
+        except KeyError, TypeError, ValueError:
             return None
 
     return results if len(results) == 10 else None

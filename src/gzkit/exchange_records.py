@@ -494,7 +494,7 @@ def find_exchange_for_release(
         try:
             text = path.read_text(encoding="utf-8")
             fm = parse_frontmatter(text)
-        except (OSError, yaml.YAMLError, HandoffValidationError):
+        except OSError, yaml.YAMLError, HandoffValidationError:
             continue
         if not isinstance(fm, dict):
             continue

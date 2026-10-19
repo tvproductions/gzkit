@@ -58,7 +58,7 @@ def _result(success: bool, returncode: int = 0) -> QualityResult:
 
 
 class _SilentProgress:
-    def __enter__(self) -> "_SilentProgress":
+    def __enter__(self) -> _SilentProgress:
         return self
 
     def __exit__(self, *_exc: object) -> None:

@@ -18,7 +18,7 @@ import os
 import tempfile
 import textwrap
 import unittest
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -97,7 +97,7 @@ def _threshold_payload(
 
 
 @contextmanager
-def _synthetic_root(metric: str = "radon_cc") -> Iterator[Path]:
+def _synthetic_root(metric: str = "radon_cc") -> Generator[Path]:
     """Yield the threshold-rule path under a temp project root with cwd switched."""
     with tempfile.TemporaryDirectory() as raw_root:
         root = Path(raw_root)

@@ -319,7 +319,7 @@ def _compute_brief_authored(
     brief_status: str,
     file_completed: bool,
     project_root: Path,
-    validator: "ObpiValidator | None" = None,
+    validator: ObpiValidator | None = None,
 ) -> bool | None:
     """Whether a non-terminal brief passes ``gz obpi validate --authored``.
 
@@ -354,7 +354,7 @@ def _inspect_obpi_brief(
     obpi_file: Path,
     obpi_id: str | None = None,
     graph: dict[str, Any] | None = None,
-    validator: "ObpiValidator | None" = None,
+    validator: ObpiValidator | None = None,
     reference_checker: ReferenceChecker | None = None,
 ) -> dict[str, Any]:
     content = obpi_file.read_text(encoding="utf-8")

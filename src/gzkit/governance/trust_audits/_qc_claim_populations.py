@@ -56,6 +56,10 @@ QC_CLAIM_POPULATIONS: dict[str, Callable[[], Sequence[str]] | str] = {
     # whatever files exist, never a set another surface declares (drydock RO-2).
     "identity-seam": POPULATION_NONE,
     "identity-seam-baselined": POPULATION_NONE,
+    # Reads the project's own manifest, workflows and sources; the members are
+    # whatever the tree declares, never a set another surface declares (RO-9).
+    "astral-discipline": POPULATION_NONE,
+    "astral-discipline-baselined": POPULATION_NONE,
     # Walks tests/** in code; the members are whatever test files exist, never a set
     # another surface declares (GHI #808).
     "tautological-debt": POPULATION_NONE,

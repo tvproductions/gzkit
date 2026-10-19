@@ -61,7 +61,7 @@ def main() -> None:
     try:
         lock_data = json.loads(lock_path.read_text(encoding="utf-8"))
         presented_step = lock_data.get("presented_step")
-    except (json.JSONDecodeError, OSError):
+    except json.JSONDecodeError, OSError:
         sys.exit(0)
 
     last_allowed = None
@@ -69,7 +69,7 @@ def main() -> None:
         try:
             hook_data = json.loads(hook_state_path.read_text(encoding="utf-8"))
             last_allowed = hook_data.get("last_allowed_step")
-        except (json.JSONDecodeError, OSError):
+        except json.JSONDecodeError, OSError:
             pass
 
     if presented_step == last_allowed:

@@ -49,7 +49,7 @@ def main():
                 break
             current = current.parent
         rel_path = target.relative_to(project_root).as_posix()
-    except (ValueError, TypeError, OSError):
+    except ValueError, TypeError, OSError:
         sys.exit(0)
 
     matches = any(

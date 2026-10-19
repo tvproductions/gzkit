@@ -25,5 +25,5 @@ def get_advisor_timeout_seconds(*, config_path: Path | None = None) -> float:
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
         return float(data.get("advisor_timeout_seconds", _DEFAULT_TIMEOUT_SECONDS))
-    except (json.JSONDecodeError, ValueError, OSError):
+    except json.JSONDecodeError, ValueError, OSError:
         return _DEFAULT_TIMEOUT_SECONDS

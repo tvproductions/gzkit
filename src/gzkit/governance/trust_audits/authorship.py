@@ -93,7 +93,7 @@ def _effective_email(project_root: Path) -> str | None:
             errors="replace",
             check=False,
         )
-    except (OSError, subprocess.SubprocessError):
+    except OSError, subprocess.SubprocessError:
         return None
     return result.stdout.strip() or None
 

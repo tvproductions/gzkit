@@ -121,7 +121,7 @@ def pipeline_plan_search_dirs(project_root: Path) -> list[Path]:
     for candidate in (project_local, global_local):
         try:
             resolved = candidate.resolve()
-        except (OSError, RuntimeError):
+        except OSError, RuntimeError:
             continue
         if resolved in seen:
             continue
@@ -212,7 +212,7 @@ def find_plan_for_obpi(project_root: Path, obpi_id: str) -> Path | None:
     try:
         source_resolved = source_path.resolve()
         project_resolved = project_local.resolve() if project_local.exists() else project_local
-    except (OSError, RuntimeError):
+    except OSError, RuntimeError:
         return source_path
 
     if project_local in source_path.parents or source_resolved.parent == project_resolved:
@@ -236,7 +236,7 @@ def load_pipeline_json(path: Path) -> dict[str, Any] | None:
     """
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+    except OSError, UnicodeDecodeError, json.JSONDecodeError:
         return None
     return cast(dict[str, Any], payload) if isinstance(payload, dict) else None
 

@@ -24,7 +24,7 @@ from __future__ import annotations
 import contextlib
 import io
 import sys
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Generator
 from pathlib import Path
 from types import ModuleType, SimpleNamespace
 from typing import Any
@@ -66,7 +66,7 @@ def breach_population() -> list[str]:
 
 
 @contextlib.contextmanager
-def _bound(module: ModuleType, **names: Any) -> Iterator[None]:
+def _bound(module: ModuleType, **names: Any) -> Generator[None]:
     """Bind *names* on *module* for the block, then restore every one of them."""
     saved = {name: getattr(module, name) for name in names}
     for name, value in names.items():

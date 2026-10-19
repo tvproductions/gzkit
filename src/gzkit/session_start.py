@@ -143,7 +143,7 @@ def _project_relative(project_root: Path, path: str) -> str:
     """
     try:
         return Path(path).resolve().relative_to(project_root.resolve()).as_posix()
-    except (OSError, ValueError):
+    except OSError, ValueError:
         return path
 
 

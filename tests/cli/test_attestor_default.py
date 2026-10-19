@@ -13,7 +13,7 @@ import json
 import os
 import tempfile
 import unittest
-from collections.abc import Iterator
+from collections.abc import Generator, Iterator
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -58,7 +58,7 @@ _HUMAN_ACT = frozenset(
 
 
 @contextmanager
-def _project(handle: str | None) -> Iterator[Path]:
+def _project(handle: str | None) -> Generator[Path]:
     """A working directory holding a `.gzkit.json` with the given handle."""
     previous = Path.cwd()
     with tempfile.TemporaryDirectory() as tmp:

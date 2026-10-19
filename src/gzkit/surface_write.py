@@ -41,7 +41,7 @@ The sink is a :class:`~contextvars.ContextVar`, not a module global, so a
 concurrent ``gz check`` step cannot silently inherit another's capture.
 """
 
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from contextvars import ContextVar
 from pathlib import Path
@@ -128,7 +128,7 @@ _ACTIVE_SINK: ContextVar[SurfaceSink | None] = ContextVar("gzkit_surface_sink", 
 
 
 @contextmanager
-def capture_surface_writes() -> Iterator[SurfaceSink]:
+def capture_surface_writes() -> Generator[SurfaceSink]:
     """Run a block with every surface mutation recorded instead of performed.
 
     Reads still happen -- the helpers below compare against on-disk bytes so

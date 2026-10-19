@@ -523,11 +523,16 @@ class TestScaffoldCoreTemplates(unittest.TestCase):
     @covers("REQ-0.0.32-12-03")
     def test_scaffold_signature_matches_sibling_scaffolders(self) -> None:
         """scaffold_core_templates has exact sibling-scaffolder surface shape."""
+        import annotationlib  # noqa: PLC0415
         import inspect  # noqa: PLC0415
 
         from gzkit.templates import scaffold_core_templates  # noqa: PLC0415
 
-        sig = inspect.signature(scaffold_core_templates)
+        # Python 3.14 defers annotations (PEP 649); the shape under test is the
+        # parameters, so the TYPE_CHECKING-only names stay unevaluated forward refs.
+        sig = inspect.signature(
+            scaffold_core_templates, annotation_format=annotationlib.Format.FORWARDREF
+        )
         params = list(sig.parameters.keys())
         self.assertIn("project_root", params)
         self.assertIn("config", params)

@@ -229,7 +229,7 @@ def _load_floor(floor_path: Path) -> dict | None:
     """Load and return the floor snapshot dict, or None on parse error."""
     try:
         return json.loads(floor_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except OSError, json.JSONDecodeError:
         return None
 
 
@@ -240,7 +240,7 @@ def _load_waivers(waivers_path: Path) -> list[dict]:
     try:
         data = json.loads(waivers_path.read_text(encoding="utf-8"))
         return data if isinstance(data, list) else []
-    except (OSError, json.JSONDecodeError):
+    except OSError, json.JSONDecodeError:
         return []
 
 
@@ -252,7 +252,7 @@ def _has_active_waiver(waivers: list[dict], delta: int) -> bool:
             expires_str = waiver.get("expires", "")
             expires = datetime.strptime(expires_str, "%Y-%m-%d").date()
             delta_covered = int(waiver.get("delta_lines", 0))
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             continue
         if expires >= today and delta_covered >= delta:
             return True
@@ -284,13 +284,13 @@ def _newest_recalibration(project_root: Path) -> tuple[datetime, dict] | None:
                 continue
             try:
                 ts = datetime.fromisoformat(event.get("ts", ""))
-            except (ValueError, TypeError):
+            except ValueError, TypeError:
                 continue
             if ts.tzinfo is None:
                 ts = ts.replace(tzinfo=UTC)
             if newest is None or ts > newest[0]:
                 newest = (ts, event)
-    except (OSError, json.JSONDecodeError):
+    except OSError, json.JSONDecodeError:
         return None
     return newest
 
@@ -367,7 +367,7 @@ def _check_floor_drift(floor: dict, project_root: Path) -> list[ValidationError]
         floor_ts = datetime.fromisoformat(floor_ts_str)
         if floor_ts.tzinfo is None:
             floor_ts = floor_ts.replace(tzinfo=UTC)
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return []
 
     if last_recalibration_ts > floor_ts + timedelta(hours=_DRIFT_THRESHOLD_HOURS):

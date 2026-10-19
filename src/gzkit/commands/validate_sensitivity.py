@@ -59,7 +59,7 @@ def _sensitivity_records(
     for brief_path in _iter_sensitivity_briefs(project_root):
         try:
             brief_text = brief_path.read_text(encoding="utf-8")
-        except (UnicodeDecodeError, OSError):
+        except UnicodeDecodeError, OSError:
             continue
         rel = brief_path.relative_to(project_root).as_posix()
         frontmatter = _parse_adr_frontmatter(brief_path) or {}
@@ -79,7 +79,7 @@ def _sensitivity_records(
         allowed_paths = _extract_sensitivity_allowed_paths(brief_text)
         try:
             matching_categories = match_globs(allowed_paths, registry)
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             findings.append(
                 ValidationError(
                     type="sensitivity-malformed-allowlist",

@@ -202,7 +202,7 @@ def scan_command_flag_specs(project_root: Path | None = None) -> dict[str, list[
         project_root = get_project_root()
     try:
         source = _read_cli_sources(project_root)
-    except (FileNotFoundError, OSError):
+    except FileNotFoundError, OSError:
         return {}
     return discover_command_flag_specs(source)
 

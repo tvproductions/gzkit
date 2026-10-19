@@ -96,7 +96,7 @@ class TestHandlerManifestResolves(unittest.TestCase):
         for name, module_path in sorted(manifest.items()):
             try:
                 impl = getattr(import_module(module_path), name)
-            except (ImportError, AttributeError):
+            except ImportError, AttributeError:
                 unresolved.append(f"{name} -> {module_path}")
                 continue
             if not callable(impl):

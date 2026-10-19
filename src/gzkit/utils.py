@@ -73,7 +73,7 @@ def list_changed_files_between(
 def capture_validation_anchor_with_warnings(
     project_root: Path,
     adr_id: str | None = None,
-) -> "tuple[EventAnchor | None, list[str]]":
+) -> tuple[EventAnchor | None, list[str]]:
     """Capture git anchor data and report degradations as warnings.
 
     Returns a typed ``EventAnchor`` when both commit and semver can be
@@ -111,7 +111,7 @@ def capture_validation_anchor_with_warnings(
     return EventAnchor(commit=head_commit, tag=tag_value, semver=semver_value), warnings
 
 
-def capture_validation_anchor(project_root: Path, adr_id: str | None = None) -> "EventAnchor":
+def capture_validation_anchor(project_root: Path, adr_id: str | None = None) -> EventAnchor:
     """Capture git commit and tag info for temporal anchoring.
 
     Degraded fallback returns a sentinel ``EventAnchor`` with zeroed commit

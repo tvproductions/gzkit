@@ -158,7 +158,7 @@ def _git_index_paths(project_root: Path) -> frozenset[str] | None:
 
     try:
         rc, out, _ = git_cmd(project_root, "ls-files")
-    except (OSError, ValueError):
+    except OSError, ValueError:
         return None
     if rc != 0:
         return None

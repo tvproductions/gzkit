@@ -32,7 +32,7 @@ def _schema_of(path: Path) -> str:
     """Return a receipt's declared schema, or a marker for an unreadable one."""
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+    except OSError, UnicodeDecodeError, json.JSONDecodeError:
         return "<unparseable>"
     if not isinstance(payload, dict):
         return "<not-an-object>"

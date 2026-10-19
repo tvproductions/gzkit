@@ -108,7 +108,7 @@ def validate_all(project_root: Path) -> ValidationResult:
                     )
                     for doc in doc_iter:
                         errors.extend(validate_document(doc, schema_name))
-        except (json.JSONDecodeError, KeyError):
+        except json.JSONDecodeError, KeyError:
             pass  # Manifest errors already captured
 
     # Validate control surfaces

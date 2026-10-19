@@ -139,7 +139,7 @@ def _collect_responses(messages: list[bytes]) -> list[dict]:
         while True:
             msg = read_message(stdout)
             responses.append(msg)
-    except (EOFError, ValueError):
+    except EOFError, ValueError:
         pass
     return responses
 
@@ -197,7 +197,7 @@ def step_send_shutdown(context) -> None:
         while True:
             msg = read_message(stdout)
             context.protocol_responses.append(msg)
-    except (EOFError, ValueError):
+    except EOFError, ValueError:
         pass
 
 
@@ -281,7 +281,7 @@ def step_send_malformed(context) -> None:
         while True:
             msg = read_message(stdout)
             context.protocol_responses.append(msg)
-    except (EOFError, ValueError):
+    except EOFError, ValueError:
         pass
 
 

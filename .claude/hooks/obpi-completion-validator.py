@@ -86,7 +86,7 @@ def extract_adr_id(obpi_id: str) -> str | None:
     e.g. OBPI-0.14.0-04 -> ADR-0.14.0
     """
     match = re.match(r"OBPI-(?P<semver>\d+\.\d+\.\d+)-(?P<item>\d{2})", obpi_id)
-    return f"ADR-{match.group('semver')}" if match else None
+    return "ADR-{semver}".format(semver=match.group("semver")) if match else None
 
 
 def is_foundation_adr(adr_id: str) -> bool:
@@ -241,7 +241,7 @@ def main():
     # Normalize path
     try:
         abs_path = Path(file_path).resolve()
-    except (ValueError, TypeError, OSError):
+    except ValueError, TypeError, OSError:
         sys.exit(0)
 
     # Brief-shape is read from the absolute path so it survives a
@@ -255,7 +255,7 @@ def main():
     try:
         project_root = find_project_root()
         rel_str = abs_path.relative_to(project_root).as_posix()
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         if looks_like_brief:
             print(
                 "BLOCKED: OBPI brief edit refused — cannot place "

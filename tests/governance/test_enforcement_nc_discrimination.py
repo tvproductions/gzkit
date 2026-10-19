@@ -17,7 +17,7 @@ from __future__ import annotations
 import contextlib
 import tempfile
 import unittest
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Generator
 from pathlib import Path
 
 
@@ -539,7 +539,7 @@ class TestFixturesAreInvariantUnderHostNewlines(unittest.TestCase):
 
     @staticmethod
     @contextlib.contextmanager
-    def _windows_text_mode() -> Iterator[None]:
+    def _windows_text_mode() -> Generator[None]:
         from unittest.mock import patch
 
         native = Path.write_text

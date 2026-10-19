@@ -191,7 +191,7 @@ def _closeout_gate_number(label: str) -> int:
     if label.startswith("Gate "):
         try:
             return int(label.split("(")[0].strip().split()[-1])
-        except (ValueError, IndexError):
+        except ValueError, IndexError:
             pass
     return 2  # Quality checks (lint, typecheck) default to gate 2
 

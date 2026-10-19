@@ -201,7 +201,7 @@ def generate_manifest(
     if existing_path.exists():
         try:
             existing = json.loads(existing_path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
+        except OSError, json.JSONDecodeError:
             existing = {}
         if isinstance(existing, dict):
             rules_block = existing.get("rules")

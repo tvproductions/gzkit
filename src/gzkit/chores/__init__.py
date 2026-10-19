@@ -64,7 +64,7 @@ def _project_local_slugs(project_root: Path | None) -> frozenset[str]:
     registry = Path(project_root) / ".gzkit" / "chores" / _REGISTRY_FILE
     try:
         data = json.loads(registry.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError, ValueError):
+    except OSError, json.JSONDecodeError, ValueError:
         return frozenset()
     entries = data.get("chores") if isinstance(data, dict) else None
     if not isinstance(entries, list):

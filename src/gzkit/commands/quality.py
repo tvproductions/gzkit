@@ -74,7 +74,6 @@ _STEP_GUARD_META: dict[str, tuple[str, int]] = {
     "Readiness audit": ("readiness-audit", _mx_levels.ERROR),
     "CLI audit": ("cli-audit", _mx_levels.ERROR),
     "Unscoped rules": ("unscoped-rules", _mx_levels.ERROR),
-    "Python version pins": ("python-version-pins", _mx_levels.ERROR),
     "ADR status freshness": ("adr-status-fresh", _mx_levels.ERROR),
     "Advisory scorecard coverage": ("advisory-scorecard", _mx_levels.ERROR),
     "Adversarial validation": ("adversarial-validation", _mx_levels.ERROR),
@@ -91,6 +90,7 @@ _STEP_GUARD_META: dict[str, tuple[str, int]] = {
     "Brief size": ("brief-size", _mx_levels.ERROR),
     "MX hardening": ("mx-hardening", _mx_levels.ERROR),
     "Identity seam": ("id-seam", _mx_levels.ERROR),
+    "Astral discipline": ("astral-discipline", _mx_levels.ERROR),
     "OBPI lifecycle coherence": ("obpi-lifecycle-coherence", _mx_levels.ERROR),
     "Session green gate": ("session-green-gate", _mx_levels.ERROR),
     "Closeout proof": ("closeout-proof", _mx_levels.ERROR),
@@ -545,6 +545,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         run_adversarial_validation_audit,
         run_advisory_scorecard_audit,
         run_agents_md_map_conformance_audit,
+        run_astral_discipline_audit,
         run_authorship_audit,
         run_brief_size_audit,
         run_brief_structure_audit,
@@ -584,7 +585,6 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         run_population_controls_audit,
         run_preflight,
         run_producer_fields_audit,
-        run_python_version_pins_audit,
         run_qc_binding_audit,
         run_readiness_audit,
         run_receipt_shape_audit,
@@ -627,7 +627,6 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         ("Readiness audit", run_readiness_audit),
         ("CLI audit", run_cli_audit),
         ("Unscoped rules", run_unscoped_rules_audit),
-        ("Python version pins", run_python_version_pins_audit),
         ("ADR status freshness", run_adr_status_fresh_audit),
         ("Advisory scorecard coverage", run_advisory_scorecard_audit),
         ("OBPI lifecycle coherence", run_obpi_lifecycle_coherence_audit),
@@ -645,6 +644,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         ("Brief size", run_brief_size_audit),
         ("MX hardening", run_mx_hardening_audit),
         ("Identity seam", run_id_seam_audit),
+        ("Astral discipline", run_astral_discipline_audit),
         ("Session green gate", run_session_green_gate_audit),
         ("Closeout proof", run_closeout_proof_audit),
         ("Kind invariance", run_kind_invariance_audit),
@@ -721,7 +721,7 @@ def _load_check_step_scopes() -> dict[str, dict[str, Any]]:
         return {}
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except OSError, json.JSONDecodeError:
         return {}
     scopes = data.get("scopes")
     return scopes if isinstance(scopes, dict) else {}
@@ -1183,7 +1183,7 @@ def _changed_paths(project_root: pathlib.Path) -> list[str]:
                 errors="replace",
                 timeout=60,
             )
-        except (OSError, subprocess.SubprocessError):
+        except OSError, subprocess.SubprocessError:
             continue
         if out.returncode == 0:
             paths.update(line.strip() for line in out.stdout.splitlines() if line.strip())

@@ -31,7 +31,7 @@ def resolve_repo_path(cwd: str, file_path: str) -> str | None:
         if not target.is_absolute():
             target = cwd_path / target
         rel_path = target.resolve().relative_to(cwd_path)
-    except (OSError, TypeError, ValueError):
+    except OSError, TypeError, ValueError:
         return None
 
     return rel_path.as_posix()

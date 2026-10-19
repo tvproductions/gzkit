@@ -19,7 +19,7 @@ import json
 import os
 import tempfile
 import unittest
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager, redirect_stderr, redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
@@ -52,7 +52,7 @@ def _make_hint(
 
 
 @contextmanager
-def _rule_path_env() -> Iterator[Path]:
+def _rule_path_env() -> Generator[Path]:
     """Yield a temp dir with CWD changed to it and rule path file present."""
     with tempfile.TemporaryDirectory() as raw_root:
         root = Path(raw_root)

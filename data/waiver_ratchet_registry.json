@@ -217,7 +217,7 @@
       "gates_step": "Population controls (gz validate --population-controls)",
       "mechanism": "shrink-ratchet",
       "entries_path": "accepted_claims",
-      "baseline_count": 83,
+      "baseline_count": 82,
       "identity": {
         "kind": "fields",
         "fields": [
@@ -340,7 +340,7 @@
       "gates_step": "Unit tests (tests/governance/test_guard_canaries.py)",
       "mechanism": "shrink-ratchet",
       "entries_path": "claims",
-      "baseline_count": 98,
+      "baseline_count": 97,
       "identity": {
         "kind": "strings"
       }
@@ -367,6 +367,21 @@
           "file",
           "symbol",
           "kind"
+        ]
+      }
+    },
+    {
+      "data_file": "data/astral_discipline_baseline.json",
+      "gates_step": "Astral discipline (gz validate --astral-discipline)",
+      "mechanism": "shrink-ratchet",
+      "entries_path": "violations",
+      "baseline_count": 46,
+      "identity": {
+        "kind": "fields",
+        "fields": [
+          "rule",
+          "file",
+          "subject"
         ]
       }
     }

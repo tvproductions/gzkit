@@ -113,7 +113,7 @@ def _read_ledger_lines(root: Path) -> list[dict]:
             continue
         try:
             ev = json.loads(line)
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             continue
         if isinstance(ev, dict):
             out.append(ev)

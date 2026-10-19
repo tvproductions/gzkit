@@ -131,7 +131,7 @@ def _iter_corrections(path: Path) -> list[str]:
     assistant_seen = False
     try:
         lines = path.read_text(encoding="utf-8").splitlines()
-    except (OSError, UnicodeDecodeError):
+    except OSError, UnicodeDecodeError:
         # UnicodeDecodeError subclasses ValueError, not OSError; a non-UTF-8
         # transcript must fail soft (zero corrections), never escape the miner
         # (REQ-0.0.70-02-03).

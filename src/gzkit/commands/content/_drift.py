@@ -139,7 +139,7 @@ def warn_on_rendition_drift(
     # unreadable corpus makes `load_corpus` raise. Capture must stay unblockable.
     try:
         drifted = drifted_consumers(root, surface)
-    except (OSError, ValueError):
+    except OSError, ValueError:
         return
     if not drifted:
         return
@@ -152,5 +152,5 @@ def warn_on_rendition_drift(
         # lands ABOVE the success line it is annotating (observed 2026-07-22).
         sys.stdout.flush()
         print("\n".join(lines), file=sys.stderr)
-    except (OSError, ValueError):
+    except OSError, ValueError:
         return

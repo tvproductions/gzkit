@@ -53,8 +53,10 @@ def _mkroot(slug: str) -> Path:
 #: Audit SUBJECT, not a resource path (GHI #938). `.github/skills` appears in
 #: this module only as a member of the mirror roster a negative control writes
 #: fixtures across, inside a temporary tree — never a location in this
-#: repository. The literal names the population under test.
-_AUDIT_SUBJECT_LITERALS: tuple[str, ...] = (".github/skills",)
+#: repository. The literal names the population under test. `.github/workflows/ci.yml`
+#: is likewise only the `file` key of the RO-9 control's baselined violation, a
+#: subject the fixture's baseline names, never a path this module opens.
+_AUDIT_SUBJECT_LITERALS: tuple[str, ...] = (".github/skills", ".github/workflows/ci.yml")
 
 
 def _write(path: Path, content: str) -> None:
@@ -653,27 +655,6 @@ def _build_unscoped_rules() -> Path:
     root = _mkroot("unscoped-rules")
     _write(root / ".gzkit" / "manifest.json", '{"rules": {"unscoped_allowlist": []}}\n')
     _write(root / ".gzkit" / "rules" / "bad.md", '---\npaths: "**"\n---\n# Bad\n')
-    return root
-
-
-def _build_python_version_pins() -> Path:
-    """Plant a CI interpreter declaration that contradicts ``.python-version``.
-
-    The drift this audit exists to catch is invisible on a clean tree by
-    construction: both sides stay green while CI tests a different interpreter
-    than ``uv run`` uses. An audit for that class which only ever runs against
-    an agreeing tree would reproduce the defect it was built to close, so it
-    ships with a tree it must go red on.
-    """
-    root = _mkroot("python-version-pins")
-    _write(root / ".python-version", "3.13.15\n")
-    _write(root / "pyproject.toml", 'requires-python = ">=3.13"\n')
-    _write(
-        root / ".github" / "workflows" / "ci.yml",
-        "jobs:\n  build:\n    steps:\n"
-        "      - uses: actions/setup-python@v6\n"
-        '        with:\n          python-version: "3.13.14"\n',
-    )
     return root
 
 
@@ -1361,6 +1342,48 @@ def _id_seam_root(slug: str, *, fresh: bool) -> Path:
     return root
 
 
+def _astral_root(slug: str, *, fresh: bool) -> Path:
+    """Build a uv project with one baselined violation and, when *fresh*, one new one."""
+    root = _mkroot(slug)
+    _write(
+        root / "pyproject.toml",
+        '[project]\nname = "nc"\nversion = "0.1.0"\nrequires-python = ">=3.14"\n'
+        'dependencies = []\n\n[build-system]\nrequires = ["uv_build>=0.13.1,<0.14"]\n'
+        'build-backend = "uv_build"\n',
+    )
+    _write(root / ".python-version", "3.14.8\n")
+    steps = "      - run: uv sync --frozen\n"
+    if fresh:
+        steps += "      - uses: actions/setup-python@v6\n"
+    _write(root / ".github" / "workflows" / "ci.yml", "jobs:\n  c:\n    steps:\n" + steps)
+    held = {
+        "rule": "lock-unchecked",
+        "file": ".github/workflows/ci.yml",
+        "subject": "uv sync",
+        "count": 1,
+    }
+    baseline = {
+        "_doc": "Negative-control fixture (docs/governance/harbor-ro9-astral-toolchain.md).",
+        "violations": [held],
+    }
+    _write(root / "data" / "astral_discipline_baseline.json", json.dumps(baseline))
+    return root
+
+
+def _build_astral_discipline() -> Path:
+    """Build a new violation beside a baselined one — the gate MUST fire (RO-9).
+
+    Decoy: the baselined unchecked lock, which must stay silent; the entrypoint
+    reports no catch when anything but the new setup-python step fires.
+    """
+    return _astral_root("astral-discipline", fresh=True)
+
+
+def _build_astral_discipline_baselined() -> Path:
+    """Build only the baselined violation — the gate MUST admit it (the admit half, RO-9)."""
+    return _astral_root("astral-discipline-baselined", fresh=False)
+
+
 def _build_id_seam() -> Path:
     """Build a new id-grammar site beside a baselined one — the gate MUST fire (RO-2).
 
@@ -1909,7 +1932,6 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
     ("readiness-audit", _build_readiness_audit, _ep._ep_readiness_audit),
     ("cli-audit", _build_cli_audit, _ep._ep_cli_audit),
     ("unscoped-rules", _build_unscoped_rules, _ep._ep_unscoped_rules),
-    ("python-version-pins", _build_python_version_pins, _ep._ep_python_version_pins),
     ("adr-status-freshness", _build_adr_status_freshness, _ep._ep_adr_status_freshness),
     (
         "pool-interview-schema",
@@ -1998,6 +2020,18 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
     ),
     # Admit half: a baselined site, which the shrink-ratchet holds (drydock RO-2).
     ("identity-seam-baselined", _build_id_seam_baselined, _ep._ep_id_seam_admits_baselined),
+    (
+        "astral-discipline",
+        _build_astral_discipline,
+        _ep._ep_astral_discipline,
+        "new setup-python violation",
+    ),
+    # Admit half: a baselined violation, which the shrink-ratchet holds (drydock RO-9).
+    (
+        "astral-discipline-baselined",
+        _build_astral_discipline_baselined,
+        _ep._ep_astral_discipline_admits_baselined,
+    ),
     ("brief-size", _build_brief_size, _ep._ep_brief_size, "OBPI-0.0.99-01-over measures"),
     # Admit half: a recorded ceiling, exercised at a brief past the bound (GHI #1196).
     (

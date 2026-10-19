@@ -1054,7 +1054,7 @@ def _refuse_incoherent_landed_state(
     # map here for the same reason it could not witness one in the loader.
     try:
         journalled_sections = json.loads(record["declaration_json"])["sections"]
-    except (ValueError, KeyError, TypeError):
+    except ValueError, KeyError, TypeError:
         journalled_sections = None
     landed_sections = landed.get("sections")
     if journalled_sections is not None and journalled_sections != landed_sections:
@@ -1302,7 +1302,7 @@ def _ledger_witness_present(root: Path, event_id: str) -> bool:
     """
     try:
         return Ledger(root / ".gzkit" / "ledger.jsonl").latest_event(event_id) is not None
-    except (OSError, ValueError):
+    except OSError, ValueError:
         return False
 
 
@@ -1823,7 +1823,7 @@ def _remove_if_present(path: Path) -> OSError | None:
     """
     try:
         path.unlink()
-    except (FileNotFoundError, NotADirectoryError):
+    except FileNotFoundError, NotADirectoryError:
         return None
     except OSError as exc:
         return exc

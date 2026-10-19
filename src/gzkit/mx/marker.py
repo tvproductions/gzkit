@@ -166,7 +166,7 @@ def _open_session_ids(ledger: Path) -> set[str]:
             continue
         try:
             event = json.loads(line)
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             continue
         if not isinstance(event, dict):
             continue

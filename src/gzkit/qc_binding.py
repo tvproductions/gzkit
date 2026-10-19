@@ -63,12 +63,12 @@ class QCStep(BaseModel):
 # One entry per step name in _build_check_steps(); KeyError = unclassified step.
 _StepMeta = tuple[str, str, str, str]
 
-#: Audit SUBJECTS, not resource paths (GHI #938). `.github/workflows/` appears
-#: below as the POPULATION the "Python version pins" control audits — the set of
-#: interpreter declarations it reads. It is never joined to a root and opened
-#: here, so no `PathConfig` field could govern it: a field would say where
-#: workflows live, which is the thing this table is asserting ABOUT.
-_AUDIT_SUBJECT_LITERALS: tuple[str, ...] = (".github/workflows/",)
+#: Audit SUBJECTS, not resource paths (GHI #938). `pyproject.toml` appears below
+#: as the SUBJECT the "Astral discipline" control audits — the project facts
+#: uv, Ruff and ty read. It is never joined to a root and opened here, so no
+#: `PathConfig` field could govern it: a field would say where the manifest
+#: lives, which is the thing this table is asserting ABOUT.
+_AUDIT_SUBJECT_LITERALS: tuple[str, ...] = ("pyproject.toml",)
 
 
 _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
@@ -106,7 +106,6 @@ _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
     # interpreter declarations. `.python-version` is the authority it reads
     # them against, not the audited set, the same distinction the Advisory
     # scorecard entry below draws.
-    "Python version pins": ("audit", ".github/workflows/", "bound", "python_function"),
     "ADR status freshness": ("audit", "docs/", "bound", "python_function"),
     # GHI #754: enrolled here the same commit it joined `gz check`. Its subject is
     # `.gzkit/rules/` because the population it audits is the canonical rule set,
@@ -144,6 +143,7 @@ _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
     "Brief size": ("audit", "docs/", "bound", "python_function"),
     "MX hardening": ("audit", ".gzkit/", "bound", "python_function"),
     "Identity seam": ("audit", "src/", "bound", "python_function"),
+    "Astral discipline": ("audit", "pyproject.toml", "bound", "python_function"),
     "Session green gate": ("audit", ".gzkit/", "bound", "python_function"),
     "Closeout proof": ("audit", "docs/", "bound", "python_function"),
     "Kind invariance": ("audit", "docs/", "bound", "python_function"),

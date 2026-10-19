@@ -53,7 +53,7 @@ def _resolve_canonical_rule_table_path() -> Path:
         candidate = package_dir.parent.parent / "data" / _CANONICAL_DATA_FILE
         if candidate.exists():
             return candidate
-    except (ModuleNotFoundError, TypeError):
+    except ModuleNotFoundError, TypeError:
         pass
     return Path("data") / _CANONICAL_DATA_FILE
 

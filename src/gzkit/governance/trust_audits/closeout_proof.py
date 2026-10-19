@@ -200,7 +200,7 @@ def _waived_req_ids(project_root: Path) -> set[str]:
         return set()
     try:
         payload = json.loads(waiver_path.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
+    except json.JSONDecodeError, OSError:
         return set()
     waived: set[str] = set()
     waivers = payload.get("waivers", {})

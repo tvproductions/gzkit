@@ -190,7 +190,7 @@ def git_spawns_outside_boundary(tests_root: Path) -> list[str]:
         rel = path.relative_to(base).as_posix()
         try:
             tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-        except (SyntaxError, UnicodeDecodeError):
+        except SyntaxError, UnicodeDecodeError:
             offenders.append(f"{rel}:0 (unparseable)")
             continue
         for node in ast.walk(tree):

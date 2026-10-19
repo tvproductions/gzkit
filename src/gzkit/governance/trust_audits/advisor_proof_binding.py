@@ -168,7 +168,7 @@ def _has_non_empty_proof(payload: dict[str, object]) -> bool:
 def _read_json(path: Path) -> object:
     try:
         return json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except OSError, json.JSONDecodeError:
         return None
 
 

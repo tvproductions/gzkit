@@ -230,7 +230,7 @@ def gh_issue_created_at(number: str, project_root: Path) -> datetime | None:
     try:
         created = json.loads(out).get("createdAt")
         return datetime.fromisoformat(created) if isinstance(created, str) else None
-    except (json.JSONDecodeError, AttributeError, ValueError):
+    except json.JSONDecodeError, AttributeError, ValueError:
         return None
 
 

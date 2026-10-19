@@ -52,7 +52,7 @@ def _load_grandfather(project_root: Path) -> frozenset[str]:
         return frozenset()
     try:
         payload = json.loads(gf_path.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
+    except json.JSONDecodeError, OSError:
         return frozenset()
     adrs = payload.get("grandfathered_adrs", []) if isinstance(payload, dict) else []
     return frozenset(a for a in adrs if isinstance(a, str))

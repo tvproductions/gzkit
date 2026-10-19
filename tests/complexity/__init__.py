@@ -26,7 +26,7 @@ import json
 import shutil
 import subprocess
 import tempfile
-from collections.abc import Iterator
+from collections.abc import Generator
 from pathlib import Path
 from unittest import mock
 
@@ -140,7 +140,7 @@ class _SubprocessSpy:
 
 
 @contextlib.contextmanager
-def stubbed_pipeline_environment() -> Iterator[tuple[Path, _SubprocessSpy]]:
+def stubbed_pipeline_environment() -> Generator[tuple[Path, _SubprocessSpy]]:
     """Yield a (tree, subprocess-spy) pair with all external surfaces stubbed.
 
     The yielded tree contains an ``alpha.py`` file matching the fixture
@@ -186,7 +186,7 @@ def run_pipeline_with_stubs(corpus: ExemplarCorpus) -> str:
 
 
 @contextlib.contextmanager
-def run_pipeline_into_dir(corpus: ExemplarCorpus) -> Iterator[Path]:
+def run_pipeline_into_dir(corpus: ExemplarCorpus) -> Generator[Path]:
     """Run :func:`measure_corpus` and yield the output directory for assertions."""
     with stubbed_pipeline_environment() as (_tree, _spy), tempfile.TemporaryDirectory() as out:
         out_dir = Path(out)

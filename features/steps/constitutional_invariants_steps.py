@@ -291,7 +291,7 @@ def step_construct_brief_structure(context) -> None:
 def step_brief_is_frozen(context) -> None:
     try:
         context.brief.id = "MUTATED"
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return
     raise AssertionError("BriefStructure mutation did not raise — model is not frozen")
 

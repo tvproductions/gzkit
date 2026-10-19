@@ -32,7 +32,7 @@ def _git_out(project_root: Path, args: list[str]) -> str | None:
             errors="replace",
             encoding="utf-8",
         ).stdout
-    except (subprocess.CalledProcessError, FileNotFoundError):
+    except subprocess.CalledProcessError, FileNotFoundError:
         return None
 
 
@@ -127,7 +127,7 @@ def _issue_labels(project_root: Path, number: str) -> list[str]:
     try:
         data = json.loads(result.stdout)
         return [lbl.get("name", "") for lbl in data.get("labels", [])]
-    except (json.JSONDecodeError, AttributeError):
+    except json.JSONDecodeError, AttributeError:
         return []
 
 

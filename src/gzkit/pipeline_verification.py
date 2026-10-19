@@ -266,7 +266,7 @@ def parse_verification_results(agent_output: str) -> list[VerificationResult]:
         if not isinstance(data, list):
             return []
         return [VerificationResult(**item) for item in data]
-    except (json.JSONDecodeError, ValueError, KeyError):
+    except json.JSONDecodeError, ValueError, KeyError:
         return []
 
 

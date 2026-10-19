@@ -158,7 +158,7 @@ def _receipt_field(source_bytes: bytes, key: str) -> str:
     """Read one field from the receipt for provenance; never fail the archive on it."""
     try:
         return str(json.loads(source_bytes.decode("utf-8")).get(key, "unknown"))
-    except (json.JSONDecodeError, UnicodeDecodeError, AttributeError):
+    except json.JSONDecodeError, UnicodeDecodeError, AttributeError:
         return "unreadable"
 
 

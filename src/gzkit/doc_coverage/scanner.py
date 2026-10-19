@@ -310,7 +310,7 @@ def _resolve_handler_docstring(handler_name: str, main_source: str) -> str | Non
     try:
         mod = importlib.import_module(module_path)
         fn = getattr(mod, handler_name, None)
-    except (ImportError, AttributeError):
+    except ImportError, AttributeError:
         return None
     else:
         if fn is None:
@@ -521,7 +521,7 @@ def _apply_manifest_exemptions(
 
     try:
         manifest = load_manifest(project_root)
-    except (FileNotFoundError, ValueError):
+    except FileNotFoundError, ValueError:
         return coverage_list
 
     patched: list[CommandCoverage] = []

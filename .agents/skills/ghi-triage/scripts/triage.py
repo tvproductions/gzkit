@@ -437,7 +437,7 @@ def gh_reference_resolver(open_numbers: set[int]):
             )
             state = json.loads(raw.stdout).get("state", "")
             cache[number] = "settled" if state == "CLOSED" else "live"
-        except (OSError, ValueError, subprocess.SubprocessError):
+        except OSError, ValueError, subprocess.SubprocessError:
             # Unreachable state is `unknown`, never `settled`: a network failure
             # must not be readable as "the precondition cleared".
             cache[number] = "unknown"
@@ -463,7 +463,7 @@ def _git_head_sha() -> str | None:
             encoding="utf-8",
         )
         return out.stdout.strip() or None
-    except (subprocess.CalledProcessError, FileNotFoundError):
+    except subprocess.CalledProcessError, FileNotFoundError:
         return None
 
 
@@ -471,7 +471,7 @@ def _load_precedent_cache(head: str) -> int | None:
     path = _precedent_cache_path()
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except (FileNotFoundError, json.JSONDecodeError, OSError):
+    except FileNotFoundError, json.JSONDecodeError, OSError:
         return None
     entry = payload.get(head)
     if isinstance(entry, int):
@@ -487,7 +487,7 @@ def _store_precedent_cache(head: str, count: int) -> None:
             payload = json.loads(path.read_text(encoding="utf-8"))
             if not isinstance(payload, dict):
                 payload = {}
-        except (FileNotFoundError, json.JSONDecodeError, OSError):
+        except FileNotFoundError, json.JSONDecodeError, OSError:
             payload = {}
         payload[head] = count
         path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")

@@ -66,7 +66,7 @@ def marker_stage(marker_path: Path) -> str | None:
     """
     try:
         payload = json.loads(marker_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except OSError, json.JSONDecodeError:
         return None
     if not isinstance(payload, dict):
         return None

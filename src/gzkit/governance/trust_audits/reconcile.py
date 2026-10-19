@@ -61,7 +61,7 @@ def _head_commit_ts(project_root: Path) -> datetime | None:
             errors="replace",
             encoding="utf-8",
         ).stdout.strip()
-    except (subprocess.CalledProcessError, FileNotFoundError):
+    except subprocess.CalledProcessError, FileNotFoundError:
         return None
     return _parse_ts(out)
 

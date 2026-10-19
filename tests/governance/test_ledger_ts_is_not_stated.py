@@ -85,7 +85,7 @@ def _scan(root: Path) -> dict[str, list[int]]:
     for path in sorted(root.rglob("*.py")):
         try:
             tree = ast.parse(path.read_text(encoding="utf-8"))
-        except (OSError, SyntaxError):
+        except OSError, SyntaxError:
             continue
         lines = [
             node.lineno

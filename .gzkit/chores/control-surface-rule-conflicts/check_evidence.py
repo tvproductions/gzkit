@@ -189,7 +189,7 @@ def _git_log_resolves(sha: str) -> bool:
             timeout=10,
             check=False,
         )
-    except (OSError, subprocess.TimeoutExpired):
+    except OSError, subprocess.TimeoutExpired:
         return False
     return result.returncode == 0
 
@@ -204,7 +204,7 @@ def _gh_issue_resolves(number: str) -> bool:
             timeout=15,
             check=False,
         )
-    except (OSError, subprocess.TimeoutExpired):
+    except OSError, subprocess.TimeoutExpired:
         return False
     return result.returncode == 0
 
@@ -214,7 +214,7 @@ def _insight_grep_resolves(token: str) -> bool:
         return False
     try:
         text = INSIGHTS_PATH.read_text(encoding="utf-8")
-    except (OSError, UnicodeDecodeError):
+    except OSError, UnicodeDecodeError:
         return False
     return token in text
 
@@ -246,7 +246,7 @@ def _gh_authenticated() -> bool:
             timeout=10,
             check=False,
         )
-    except (OSError, subprocess.TimeoutExpired):
+    except OSError, subprocess.TimeoutExpired:
         return False
     return result.returncode == 0
 

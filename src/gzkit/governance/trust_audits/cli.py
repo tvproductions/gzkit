@@ -226,7 +226,7 @@ def _collect_verb_references(
     for source in sources:
         try:
             content = source.read_text(encoding="utf-8")
-        except (UnicodeDecodeError, OSError):
+        except UnicodeDecodeError, OSError:
             continue
         if _is_exempt_source(source, content):
             continue
@@ -311,7 +311,7 @@ def audit_manpage_alignment(project_root: Path) -> list[ValidationError]:
     for source in _manpage_alignment_sources(project_root):
         try:
             text = source.read_text(encoding="utf-8")
-        except (UnicodeDecodeError, OSError):
+        except UnicodeDecodeError, OSError:
             continue
         if _ADR_PACKAGE_MARKER in source.as_posix():
             status_match = _BRIEF_STATUS_RE.search(text)
@@ -370,7 +370,7 @@ def audit_skill_code_citations(project_root: Path) -> list[ValidationError]:
     for skill_md in surfaces:
         try:
             text = skill_md.read_text(encoding="utf-8")
-        except (UnicodeDecodeError, OSError):
+        except UnicodeDecodeError, OSError:
             continue
         for lineno, line in enumerate(text.splitlines(), 1):
             for match in _SRC_MODULE_REF.finditer(line):
@@ -442,7 +442,7 @@ def audit_doc_code_citations(project_root: Path) -> list[ValidationError]:
     for doc in sorted(docs_root.rglob("*.md")):
         try:
             text = doc.read_text(encoding="utf-8")
-        except (UnicodeDecodeError, OSError):
+        except UnicodeDecodeError, OSError:
             continue
         lines = text.splitlines()
         in_fence = False

@@ -83,7 +83,7 @@ def _extract_citations(file: Path) -> list[tuple[int, str]]:
     """
     try:
         lines = file.read_text(encoding="utf-8").splitlines()
-    except (OSError, UnicodeDecodeError):
+    except OSError, UnicodeDecodeError:
         return []
     results: list[tuple[int, str]] = []
     for idx, line in enumerate(lines):
@@ -132,7 +132,7 @@ def _resolve_section_anchor(file: Path, anchor: str) -> bool:
     """Walk H1/H2/H3 headings; return True if any candidate slug == anchor."""
     try:
         content = file.read_text(encoding="utf-8")
-    except (OSError, UnicodeDecodeError):
+    except OSError, UnicodeDecodeError:
         return False
     for match in _HEADING_PATTERN.finditer(content):
         heading_text = match.group(2)
@@ -163,7 +163,7 @@ def _read_current_corpus_revision(project_root: Path) -> int | None:
         return None
     try:
         return int(value)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         return None
 
 

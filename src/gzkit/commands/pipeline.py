@@ -186,7 +186,7 @@ def parse_reviewer_assessment(agent_output: str, obpi_id: str) -> ReviewerAssess
         data = json.loads(match.group(1))
         data["obpi_id"] = obpi_id
         return ReviewerAssessment(**data)
-    except (json.JSONDecodeError, ValueError, KeyError):
+    except json.JSONDecodeError, ValueError, KeyError:
         return None
 
 

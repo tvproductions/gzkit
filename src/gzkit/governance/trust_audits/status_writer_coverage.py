@@ -239,7 +239,7 @@ def audit_status_writer_coverage(project_root: Path) -> list[ValidationError]:
         rel = py_file.relative_to(project_root).as_posix()
         try:
             tree = ast.parse(py_file.read_text(encoding="utf-8"))
-        except (OSError, SyntaxError):
+        except OSError, SyntaxError:
             continue
         module_findings, module_justified = _audit_module(rel, tree)
         findings.extend(module_findings)

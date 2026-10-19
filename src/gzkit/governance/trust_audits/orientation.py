@@ -42,7 +42,7 @@ def _read_session_start_blocks(path: Path) -> list[Any]:
     """Load the ``hooks.SessionStart`` list from a JSON config, or return ``[]``."""
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except OSError, json.JSONDecodeError:
         return []
     hooks = payload.get("hooks") if isinstance(payload, dict) else None
     sessions = hooks.get("SessionStart") if isinstance(hooks, dict) else None
@@ -122,7 +122,7 @@ def _script_section_headings(script_path: Path) -> list[str] | None:
     """Extract literal strings from the module-level ``SECTION_HEADINGS`` tuple."""
     try:
         tree = ast.parse(script_path.read_text(encoding="utf-8"))
-    except (OSError, SyntaxError):
+    except OSError, SyntaxError:
         return None
     for node in tree.body:
         assignment = _section_headings_assignment(node)
@@ -146,7 +146,7 @@ def _collect_state_references_collector(script_path: Path) -> bool | None:
     """Return True if ``collect_state`` body references ``collect_remote_state``."""
     try:
         tree = ast.parse(script_path.read_text(encoding="utf-8"))
-    except (OSError, SyntaxError):
+    except OSError, SyntaxError:
         return None
     for node in ast.walk(tree):
         if not isinstance(node, ast.FunctionDef) or node.name != _ORIENTATION_AGGREGATOR:

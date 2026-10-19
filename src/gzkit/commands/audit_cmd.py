@@ -136,7 +136,7 @@ def _write_audit_artifacts(
     proofs_dir: Path,
     result_rows: list[dict[str, Any]],
     project_root: Path,
-    ledger: "Ledger | None" = None,
+    ledger: Ledger | None = None,
 ) -> tuple[Path, Path, dict[str, Any]]:
     """Write AUDIT_PLAN.md and AUDIT.md from templates, return paths and enrichment data."""
     adr_path = adr_file.relative_to(project_root).as_posix()

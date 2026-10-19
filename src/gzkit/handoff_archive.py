@@ -150,7 +150,7 @@ def _archived_handoffs(base_path: Path) -> list[Path]:
 def _frontmatter(path: Path) -> dict | None:
     try:
         parsed = parse_frontmatter(path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeDecodeError, HandoffValidationError):
+    except OSError, UnicodeDecodeError, HandoffValidationError:
         return None
     return parsed if isinstance(parsed, dict) else None
 

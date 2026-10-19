@@ -45,7 +45,7 @@ def auto_memory_enabled(home: Path) -> bool | None:
     settings = home / ".claude" / "settings.json"
     try:
         value = json.loads(settings.read_text(encoding="utf-8")).get("autoMemoryEnabled")
-    except (OSError, ValueError):
+    except OSError, ValueError:
         return None
     return value if isinstance(value, bool) else None
 

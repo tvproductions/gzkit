@@ -146,6 +146,12 @@
       "owner": "gzkit/governance/pipeline_control_inventory.py",
       "kind": "code",
       "purpose": "The control inventory of the gz-obpi-pipeline skill body: the partition the checker verifies before any text leaves the skill (OBPI-0.35.0-17)."
+    },
+    "astral_exceptions.json": {
+      "owner": "gzkit/governance/trust_audits/astral_discipline.py",
+      "kind": "code",
+      "purpose": "RO-9's curated non-Astral tools and registered restatements, each with its reason.",
+      "derivation": "docs/governance/harbor-ro9-astral-toolchain.md (operator rulings of 2026-10-19)"
     }
   }
 }

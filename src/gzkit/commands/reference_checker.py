@@ -113,7 +113,7 @@ def _artifact_info(identifier: str, project_root: Path) -> dict[str, Any] | None
         ledger = Ledger(ledger_path)
         graph = ledger.get_artifact_graph()
         resolved = ledger.resolve_artifact_id(identifier)
-    except (OSError, ValueError):
+    except OSError, ValueError:
         return None
     info = graph.get(resolved)
     if info is None:

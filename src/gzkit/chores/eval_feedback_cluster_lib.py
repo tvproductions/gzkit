@@ -287,7 +287,7 @@ def _load_existing_hashes(proofs_dir: Path) -> set[str]:
             ch = data.get("content_hash")
             if ch:
                 hashes.add(ch)
-        except (json.JSONDecodeError, OSError):
+        except json.JSONDecodeError, OSError:
             logger.warning("Skipping unreadable proposal file: %s", json_file)
     return hashes
 

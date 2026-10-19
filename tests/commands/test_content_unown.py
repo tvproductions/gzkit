@@ -128,7 +128,7 @@ def _same_file_alias(surface: str) -> str | None:
     try:
         alias_path.symlink_to(surface)
         declaration.with_name(f"{alias}.json").symlink_to(declaration.name)
-    except (OSError, NotImplementedError):
+    except OSError, NotImplementedError:
         return None
     return alias
 
@@ -5015,7 +5015,8 @@ def _failing_directory_listing(directory: Path):
 
     with (
         patch.object(os, "scandir", scandir),
-        patch("pathlib.Path._globber.scandir", staticmethod(scandir)),
+        # Python 3.14: Path.glob enumerates through glob._StringGlobber.
+        patch("glob._StringGlobber.scandir", staticmethod(scandir)),
     ):
         yield attempts
 

@@ -48,7 +48,7 @@ def _declared_status(brief_path: Path) -> str:
     """
     try:
         text = brief_path.read_text(encoding="utf-8")
-    except (OSError, UnicodeDecodeError):
+    except OSError, UnicodeDecodeError:
         return ""
     if not text.startswith("---\n"):
         return ""

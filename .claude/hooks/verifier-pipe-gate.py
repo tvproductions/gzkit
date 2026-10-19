@@ -26,7 +26,7 @@ import sys
 def main() -> None:
     try:
         payload = json.load(sys.stdin)
-    except (json.JSONDecodeError, OSError):
+    except json.JSONDecodeError, OSError:
         sys.exit(0)
 
     try:

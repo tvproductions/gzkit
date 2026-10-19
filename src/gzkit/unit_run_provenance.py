@@ -90,7 +90,7 @@ def _read_floor(project_root: Path) -> tuple[int | None, str | None]:
     name = UNIT_COLLECTION_FLOOR_REGISTRY
     try:
         floor = load_registry(project_root, name).get("min_tests")
-    except (RegistryError, AttributeError):
+    except RegistryError, AttributeError:
         return None, f"collection floor data/{name} is unreadable or not a JSON object"
     if isinstance(floor, bool) or not isinstance(floor, int) or floor < 1:
         return None, f"collection floor data/{name} lacks a positive integer `min_tests`"

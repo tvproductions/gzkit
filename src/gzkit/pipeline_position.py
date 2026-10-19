@@ -721,7 +721,7 @@ def _stale_on_arrival(updated_at: str, now: datetime) -> bool:
     try:
         crossed = datetime.fromisoformat(updated_at.replace("Z", "+00:00"))
         return (now - crossed).total_seconds() / 3600 > STALE_MARKER_HOURS
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return True
 
 

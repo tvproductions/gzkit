@@ -122,7 +122,7 @@ def read_rulings(base_path: Path) -> list[str]:
     store = rulings_store_path(base_path)
     try:
         raw = store.read_text(encoding="utf-8")
-    except (OSError, UnicodeDecodeError):
+    except OSError, UnicodeDecodeError:
         return []
     entries: list[str] = []
     for line in raw.splitlines():

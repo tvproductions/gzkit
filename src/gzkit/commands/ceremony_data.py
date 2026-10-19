@@ -303,7 +303,7 @@ def _fidelity_demos(adr_file: Path | None) -> list[WalkthroughDemo]:
         return []
     try:
         assertions = parse_fidelity_assertions(adr_file)
-    except (OSError, ValueError):
+    except OSError, ValueError:
         # A missing or unparseable block is `--fidelity-presence`'s finding to
         # report, never a reason to abort ceremony bootstrap.
         return []

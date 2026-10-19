@@ -62,7 +62,7 @@ def _git_raw(args: list[str], cwd: Path, env: dict[str, str] | None = None) -> s
             timeout=_GIT_TIMEOUT_S,
             env=env,
         )
-    except (OSError, subprocess.SubprocessError):
+    except OSError, subprocess.SubprocessError:
         return None
     return result.stdout if result.returncode == 0 else None
 
@@ -81,7 +81,7 @@ def _git(args: list[str], cwd: Path, env: dict[str, str] | None = None) -> str |
             timeout=_GIT_TIMEOUT_S,
             env=env,
         )
-    except (OSError, subprocess.SubprocessError):
+    except OSError, subprocess.SubprocessError:
         return None
     if result.returncode != 0:
         return None

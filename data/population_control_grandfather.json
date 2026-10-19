@@ -149,9 +149,6 @@
       "claim": "producer-field-parity"
     },
     {
-      "claim": "python-version-pins"
-    },
-    {
       "claim": "qc-binding"
     },
     {

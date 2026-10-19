@@ -235,7 +235,7 @@ def _anchor_resolver(project_root: Path) -> Callable[[str], bool]:
     try:
         ledger = Ledger(project_root / ".gzkit" / "ledger.jsonl")
         graph = ledger.get_artifact_graph()
-    except (OSError, ValueError, json.JSONDecodeError):
+    except OSError, ValueError, json.JSONDecodeError:
         return lambda _anchor: False
 
     def resolves(anchor: str) -> bool:
@@ -297,7 +297,7 @@ def _recent_unsynced_ledger_events(
     ledger_path = project_root / ".gzkit" / "ledger.jsonl"
     try:
         raw = ledger_path.read_text(encoding="utf-8")
-    except (OSError, UnicodeDecodeError):
+    except OSError, UnicodeDecodeError:
         return []
 
     events: list[dict[str, Any]] = []
@@ -446,7 +446,7 @@ def _detect_stranded_commit_message(project_root: Path) -> str | None:
     editmsg_path = project_root / ".git" / "COMMIT_EDITMSG"
     try:
         raw = editmsg_path.read_text(encoding="utf-8")
-    except (OSError, UnicodeDecodeError):
+    except OSError, UnicodeDecodeError:
         return None
 
     subject: str | None = None

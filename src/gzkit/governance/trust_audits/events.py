@@ -802,7 +802,7 @@ def audit_producer_fields(project_root: Path) -> list[ValidationError]:
     for source in sorted((project_root / _PRODUCER_ROOT).rglob("*.py")):
         try:
             tree = ast.parse(source.read_text(encoding="utf-8", errors="replace"))
-        except (OSError, SyntaxError):
+        except OSError, SyntaxError:
             continue
         for scope in [
             node

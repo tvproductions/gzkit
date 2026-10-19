@@ -244,7 +244,7 @@ CORE_TEMPLATES: list[str] = sorted(entry.name[:-3] for entry in _iter_canonical_
 
 def scaffold_core_templates(
     project_root: Path,
-    config: "GzkitConfig | None" = None,
+    config: GzkitConfig | None = None,
     *,
     skip_existing: bool = False,
 ) -> list[Path]:

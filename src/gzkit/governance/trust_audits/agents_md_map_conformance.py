@@ -339,7 +339,7 @@ def _resolve_one_link(
             if candidate.is_file():
                 resolved = candidate
                 break
-        except (OSError, ValueError):
+        except OSError, ValueError:
             continue
     if resolved is None:
         return ValidationError(
@@ -371,7 +371,7 @@ def _anchor_resolves(target: Path, anchor: str) -> bool:
     """
     try:
         text = target.read_text(encoding="utf-8")
-    except (OSError, UnicodeDecodeError):
+    except OSError, UnicodeDecodeError:
         return False
     expected = anchor.lower().strip()
     heading_pattern = re.compile(r"^(#{1,6})\s+(.+?)\s*$")

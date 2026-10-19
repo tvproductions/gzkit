@@ -113,7 +113,7 @@ def project_ledger(project_root: Path) -> Ledger:
         from gzkit.config import GzkitConfig
 
         rel = GzkitConfig.load(project_root / ".gzkit.json").paths.ledger
-    except (OSError, ValueError):
+    except OSError, ValueError:
         pass
     return Ledger(project_root / rel)
 

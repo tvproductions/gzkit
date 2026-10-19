@@ -505,7 +505,7 @@ def _read_source_lines(file_path: Path) -> list[str] | None:
     """
     try:
         return file_path.read_text(encoding="utf-8").splitlines()
-    except (OSError, UnicodeDecodeError):
+    except OSError, UnicodeDecodeError:
         return None
 
 

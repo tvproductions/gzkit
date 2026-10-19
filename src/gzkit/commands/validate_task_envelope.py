@@ -739,7 +739,7 @@ def _commit_trailer_channel_for_obpi(project_root: Path, obpi_id: str) -> set[st
             check=False,
             timeout=30,
         )
-    except (subprocess.SubprocessError, OSError, FileNotFoundError):
+    except subprocess.SubprocessError, OSError, FileNotFoundError:
         return set()
     if result.returncode != 0:
         return set()
@@ -826,7 +826,7 @@ def _commit_trailer_channel_map(project_root: Path) -> dict[str, set[str]]:
             check=False,
             timeout=30,
         )
-    except (subprocess.SubprocessError, OSError, FileNotFoundError):
+    except subprocess.SubprocessError, OSError, FileNotFoundError:
         return {}
     if result.returncode != 0:
         return {}

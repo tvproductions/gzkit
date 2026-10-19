@@ -38,6 +38,7 @@ from __future__ import annotations
 import hashlib
 import re
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 from typing import Literal
@@ -182,10 +183,15 @@ def hang_reason(subject: str) -> str:
 
 
 def _compiles(source: Path, cwd: Path, pycache_prefix: Path) -> bool:
-    """Check syntax only; the test execution must separately establish usable behavior."""
+    """Check syntax only; the test execution must separately establish usable behavior.
+
+    Compiles with the interpreter running the sweep, never a ``python3`` found on
+    PATH: an older one cannot parse the project's syntax (PEP 758 at the 3.14
+    floor, drydock RO-9) and would call every mutant uncompilable.
+    """
     result = _run(
         [
-            "python3",
+            sys.executable,
             "-c",
             f"import py_compile; py_compile.compile({str(source)!r}, doraise=True)",
         ],

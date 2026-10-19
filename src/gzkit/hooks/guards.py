@@ -192,7 +192,7 @@ def _run_git(args: list[str], cwd: Path) -> str:
             errors="replace",
             encoding="utf-8",
         )
-    except (FileNotFoundError, OSError):
+    except FileNotFoundError, OSError:
         return ""
     return result.stdout or ""
 
@@ -280,7 +280,7 @@ def _vendor_mirror_roots(root: Path) -> tuple[tuple[str, ...], tuple[str, ...]]:
 
     try:
         config = GzkitConfig.load(root / ".gzkit.json")
-    except (TypeError, OSError, ValueError):
+    except TypeError, OSError, ValueError:
         config = GzkitConfig()
     vendor_aware = has_vendor_declaration(config)
     skills = tuple(
@@ -485,7 +485,7 @@ def _marker_obpi_id(marker_path: Path) -> str:
 
     try:
         payload = json.loads(marker_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except OSError, json.JSONDecodeError:
         return marker_path.stem
     if isinstance(payload, dict):
         obpi_id = str(payload.get("obpi_id") or "").strip()
