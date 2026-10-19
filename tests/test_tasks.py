@@ -1752,6 +1752,18 @@ class TestTaskFanoutCmd(_TaskCliBase):
         for key in ("task_id", "seq", "status", "files_touched", "edits", "attribution_check"):
             self.assertIn(key, item, f"Missing key: {key}")
 
+    @covers("REQ-0.0.64-05-03")
+    def test_fanout_reads_a_task_started_under_the_full_obpi_slug(self) -> None:
+        """`gz task start` records the OBPI's full slug (GHI #653); fanout must still list it."""
+        ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+        task_id = "TASK-0.1.0-01-01-01"
+        extra = {"task_id": task_id, "obpi_id": "OBPI-0.1.0-01-thing", "adr_id": "ADR-0.1.0-f"}
+        ledger.append(LedgerEvent(event="task_started", id=task_id, extra=extra))
+        code, out = _invoke(["task", "fanout", "REQ-0.1.0-01-01", "--json"])
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("No tasks found", out)
+        self.assertEqual([row["task_id"] for row in json.loads(out)], [task_id])
+
     @covers("REQ-0.0.64-05-01")
     def test_fanout_empty_req(self) -> None:
         """REQ-0.0.64-05-01: gz task fanout with no tasks emits graceful empty message."""

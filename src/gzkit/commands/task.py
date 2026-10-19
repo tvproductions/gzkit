@@ -755,8 +755,9 @@ def _build_fanout_rows(ledger: Ledger, req_id: str) -> list[FanoutRow]:
         ev_obpi = extra.get("obpi_id", "")
         tid = extra.get("task_id", "")
 
-        # Lifecycle events — must match obpi_id and task_prefix.
-        if ev_obpi == obpi_id and tid and tid.startswith(task_prefix):
+        # Lifecycle events — must match obpi_id and task_prefix. `gz task start`
+        # records the OBPI's full slug (GHI #653), so compare short forms.
+        if _obpi_lineage_id(ev_obpi) == obpi_id and tid and tid.startswith(task_prefix):
             task_edits[tid] = task_edits.get(tid, 0) + 1
             if ev_type == "task_started":
                 task_status[tid] = TaskStatus.IN_PROGRESS.value
