@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 import tempfile
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Literal
 
@@ -16,7 +17,12 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit import acceptance_store, reports
 from gzkit.config import GzkitConfig, PathConfig
-from gzkit.events import AcceptanceRecordedEvent, ReportPublishedEvent, parse_typed_event
+from gzkit.events import (
+    AcceptanceRecordedEvent,
+    ObpiLockLeaseExpiredEvent,
+    ReportPublishedEvent,
+    parse_typed_event,
+)
 
 _OBPI = "OBPI-0.1.0-01-producer-probe"
 _AUTHOR = "isolated-producer-probe"
@@ -147,26 +153,76 @@ def _probe_report(root: Path) -> ProducerObservation:
     )
 
 
+def _probe_lock_lease_expiry(root: Path) -> ProducerObservation:
+    """Seat one expired work lock and reap; the expiry must be booked and the lock kept.
+
+    Operator ruling 2026-10-18: an expired work lock is booked, never evicted. A reaper
+    that books nothing, or books and evicts, has not met that contract.
+    """
+    from gzkit import lock_manager  # noqa: PLC0415 - the data layer; import only when probed
+    from gzkit.ledger import Ledger  # noqa: PLC0415
+
+    claimed_at = (datetime.now(UTC) - timedelta(minutes=10)).isoformat()
+    lock_manager.write_lock(
+        root,
+        lock_manager.LockData(
+            obpi_id=_OBPI,
+            agent=_AUTHOR,
+            pid=0,
+            session_id=_AUTHOR,
+            claimed_at=claimed_at,
+            branch="main",
+            ttl_minutes=1,
+        ),
+    )
+    ledger_path = root / ".gzkit/ledger.jsonl"
+    lock_manager.reap_expired_locks(root, ledger=Ledger(ledger_path), reaper_agent=_AUTHOR)
+    if lock_manager.read_lock(root, _OBPI) is None:
+        raise ValueError("Reaper evicted an expired work lock instead of keeping it held")
+    persisted = ledger_path.read_bytes() if ledger_path.is_file() else b""
+    rows = [json.loads(line) for line in persisted.decode("utf-8").splitlines() if line.strip()]
+    if len(rows) != 1:
+        raise ValueError("Reaper must persist exactly one lease-expiry record")
+    event = parse_typed_event(rows[0])
+    if not isinstance(event, ObpiLockLeaseExpiredEvent):
+        raise ValueError("Reaper persisted the wrong event type")
+    if (event.id, event.claimed_at, event.ttl_minutes) != (_OBPI, claimed_at, 1):
+        raise ValueError("Lease-expiry record disagrees with the expired lock")
+    return ProducerObservation(
+        event_type="obpi_lock_lease_expired",
+        producer="gzkit.lock_manager.reap_expired_locks",
+        status="verified",
+        ledger_sha256=hashlib.sha256(persisted).hexdigest(),
+        record_count=1,
+        subject=event.id,
+    )
+
+
+_PRODUCERS = {
+    "acceptance_recorded": "gzkit.acceptance_store.initialize",
+    "report_published": "gzkit.reports.publish_report",
+    "obpi_lock_lease_expired": "gzkit.lock_manager.reap_expired_locks",
+}
+
+
 def probe_producer(event_type: str) -> ProducerObservation:
     """Run the registered producer now; unsupported and failed probes grant no credit."""
-    if event_type not in {"acceptance_recorded", "report_published"}:
+    if event_type not in _PRODUCERS:
         return ProducerObservation(event_type=event_type, status="unsupported")
     try:
         with tempfile.TemporaryDirectory(prefix="gzkit-ledger-producer-") as directory:
             root = Path(directory)
             if event_type == "report_published":
                 return _probe_report(root)
+            if event_type == "obpi_lock_lease_expired":
+                return _probe_lock_lease_expiry(root)
             _prepare_acceptance_project(root)
             acceptance_store.initialize(root, _OBPI, _AUTHOR)
             return _observe_acceptance_contract(root)
     except Exception as exc:  # noqa: BLE001 - a broken producer must fail this observation closed
         return ProducerObservation(
             event_type=event_type,
-            producer=(
-                "gzkit.reports.publish_report"
-                if event_type == "report_published"
-                else "gzkit.acceptance_store.initialize"
-            ),
+            producer=_PRODUCERS[event_type],
             status="failed",
             error=f"{type(exc).__name__}: {exc}",
         )

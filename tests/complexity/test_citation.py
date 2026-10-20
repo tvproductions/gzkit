@@ -18,6 +18,7 @@ from pydantic import ValidationError
 
 from gzkit.complexity.citation import Citation, is_portable, parse_citation
 from gzkit.traceability import covers
+from gzkit.validators.rule_version_markers import rule_version_of
 from tests.vendor_surfaces import rule_mirror_paths
 
 CANONICAL_FORM = (
@@ -194,10 +195,10 @@ class TestVendorMirrorIdempotence(unittest.TestCase):
         canonical = (repo_root / ".gzkit/rules/complexity-doctrine.md").read_text(encoding="utf-8")
         # The rule-version marker is the load-bearing canonical signal —
         # every mirror MUST reflect the canonical's current version (read here,
-        # not pinned: the 0.4.0 pin went stale on a banner bump, 2026-10-18).
-        version_match = re.search(r"<!--\s*rule-version:\s*([0-9.]+)\s*-->", canonical)
-        self.assertIsNotNone(version_match, "canonical rule-version marker missing")
-        canonical_version_marker = f"<!-- rule-version: {version_match.group(1)} -->"
+        # not pinned: the 0.4.0 pin went stale on a banner bump, 2026-10-18),
+        # through the marker grammar's one reader. A missing marker reads None,
+        # which no mirror carries, so the mirror assertions below still fail.
+        canonical_version_marker = f"<!-- rule-version: {rule_version_of(canonical)} -->"
         # The formalized tuple definition is the substantive payload of this OBPI;
         # every mirror MUST carry it in body form (not just the marker).
         canonical_marker = "(distilled_characteristics_path, section_anchor, corpus_revision)"

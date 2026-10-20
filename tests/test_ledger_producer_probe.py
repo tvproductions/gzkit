@@ -179,3 +179,35 @@ class ReportProducerProbeTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class LockLeaseExpiryProducerProbeTests(unittest.TestCase):
+    """The lock reaper books an expired work lock's lease and keeps the lock held."""
+
+    def test_the_real_reaper_books_the_expiry_in_a_disposable_project(self):
+        observation = probe_producer("obpi_lock_lease_expired")
+        self.assertEqual(observation.status, "verified", observation.error)
+        self.assertEqual(observation.producer, "gzkit.lock_manager.reap_expired_locks")
+        self.assertEqual(observation.record_count, 1)
+        self.assertEqual(len(observation.ledger_sha256), 64)
+
+    def test_a_reaper_that_books_nothing_gets_no_credit(self):
+        with patch("gzkit.lock_manager.reap_expired_locks", return_value=[]):
+            observation = probe_producer("obpi_lock_lease_expired")
+        self.assertEqual(observation.status, "failed")
+        self.assertEqual(observation.record_count, 0)
+
+    def test_a_reaper_that_evicts_the_lock_gets_no_credit(self):
+        from gzkit import lock_manager  # noqa: PLC0415
+
+        real = lock_manager.reap_expired_locks
+
+        def evict(root, **kwargs):
+            reaped = real(root, **kwargs)
+            for lock in lock_manager.list_locks(root):
+                lock_manager.delete_lock(root, lock.obpi_id)
+            return reaped
+
+        with patch("gzkit.lock_manager.reap_expired_locks", side_effect=evict):
+            observation = probe_producer("obpi_lock_lease_expired")
+        self.assertEqual(observation.status, "failed")

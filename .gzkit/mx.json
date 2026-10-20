@@ -1,7 +1,7 @@
 {
-  "session_id": "e6800367-eb28-4b68-9624-65d94f7cdf17",
-  "opened_at": "2026-10-18T16:50:05.739994+00:00",
-  "reason": "harbor pilotage drydock, session cycle (operator: close and open drydock)",
+  "session_id": "57346836-b4d2-414f-b5b1-04898f13456f",
+  "opened_at": "2026-10-20T22:59:11.360881+00:00",
+  "reason": "drydock session cycle: lease renewed (operator, verbatim \"reopen lease\")",
   "attestor": "g0",
   "inspection_scope": [],
   "mode": "safe",
