@@ -114,6 +114,15 @@ class TestRenewRefreshesTheLease(SilencedConsoleTestCase):
             self.assertGreater(after, hardening.lease_hours())
 
 
+class TestRenewIsReachableFromTheCli(SilencedConsoleTestCase):
+    def test_gz_mx_renew_routes_to_the_handler_with_the_attestor(self) -> None:
+        from gzkit.cli.main import main
+
+        with patch("gzkit.commands.mx_cmd.mx_renew_cmd") as handler:
+            main(["mx", "renew", "--attestor", "g0"])
+        handler.assert_called_once_with(attestor="g0")
+
+
 class TestRenewRefusals(SilencedConsoleTestCase):
     def test_renew_refuses_without_an_open_session(self) -> None:
         from gzkit.commands.mx_cmd import mx_renew_cmd

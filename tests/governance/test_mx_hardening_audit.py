@@ -83,6 +83,15 @@ class TestMxHardeningScope(unittest.TestCase):
                 self.assertEqual(len(debt), 1, advisories)
                 self.assertIn("s1", lease[0])
 
+    def test_the_lease_announcement_names_the_renewal_as_its_recovery(self) -> None:
+        # output-contract: the recovery step in guardrail prose is the contract (GHI #1261)
+        with TemporaryDirectory() as tmp:
+            held = Marker(session_id="s1", mode="safe")
+            _, advisories = _run(_root(tmp, [_opened("s1", _NOW - timedelta(hours=30))], held))
+        lease = [ln for ln in advisories if "past its lease" in ln]
+        self.assertEqual(len(lease), 1, advisories)
+        self.assertIn("gz mx renew", lease[0])
+
     def test_a_session_inside_its_lease_and_fresh_reports_nothing(self) -> None:
         with TemporaryDirectory() as tmp:
             root = _root(tmp, [_opened("s1", _NOW - timedelta(hours=1))], Marker(session_id="s1"))
