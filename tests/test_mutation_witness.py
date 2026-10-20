@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import os
 import subprocess
+import sys
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -666,3 +667,24 @@ class TestTheCompileCheckUsesTheRunningInterpreter(unittest.TestCase):
                 self.assertTrue(mutation_witness._compiles(source, root, root / "cache"))
             source.write_text("def broken(:\n", encoding="utf-8")
             self.assertFalse(mutation_witness._compiles(source, root, root / "cache"))
+
+
+class TestTheRunnerPrependsToPythonpath(unittest.TestCase):
+    """GHI #1260: the reach tracer's directory goes first without dropping an inherited path."""
+
+    def _child_path(self, prefix: str | None) -> list[str]:
+        code = "import os; print(os.environ.get('PYTHONPATH', ''))"
+        with (
+            TemporaryDirectory() as cache,
+            mock.patch.dict(os.environ, {"PYTHONPATH": "/inherited"}),
+        ):
+            result = mutation_witness._run(
+                [sys.executable, "-c", code], Path.cwd(), Path(cache), pythonpath_prefix=prefix
+            )
+        return result.stdout.strip().split(os.pathsep)
+
+    def test_the_prefix_goes_first_and_the_inherited_path_stays(self) -> None:
+        self.assertEqual(self._child_path("/tracer"), ["/tracer", "/inherited"])
+
+    def test_no_prefix_leaves_the_inherited_path(self) -> None:
+        self.assertEqual(self._child_path(None), ["/inherited"])

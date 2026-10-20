@@ -23,6 +23,7 @@ from gzkit.commit_witness import (
     CommitWitness,
     HunkWitness,
     _behavior,
+    _defers_annotations,
     run_commit_witness,
     statement_mutations,
 )
@@ -179,13 +180,32 @@ class TestCommitWitness(_CommitRepo):
         (self.root / "pyproject.toml").write_text(
             '[project]\nname = "p"\nrequires-python = ">=3.14"\n', encoding="utf-8"
         )
+        # The old side is annotated too, so the comparison only holds when BOTH
+        # sides are read with the floor's deferral.
+        (self.root / "pkg" / "mod.py").write_text(
+            "def clamp(x) -> int:\n    return x\n", encoding="utf-8"
+        )
         self._commit("floor")
         (self.root / "pkg" / "mod.py").write_text(
-            'def clamp(x) -> "int":\n    return x\n', encoding="utf-8"
+            'def clamp(x) -> "Later":\n    return x\n', encoding="utf-8"
         )
         self._add_test("\n    def test_two(self):\n        self.assertEqual(clamp(2), 2)\n")
         result = run_commit_witness(self.root, self._commit("annotate"), runner=_RUNNER)
         self.assertEqual(result.verdict, "no-production-hunks", result)
+
+    def test_an_unreadable_project_file_is_read_as_no_deferral(self):
+        """A malformed `pyproject.toml` is not a floor: annotations stay behavior, no crash."""
+        (self.root / "pyproject.toml").write_text("[project\nname =", encoding="utf-8")
+        sha = self._commit("broken pyproject")
+        try:
+            deferred = _defers_annotations(self.root, sha)
+        except Exception as exc:  # noqa: BLE001 — the contract is "does not raise"
+            self.fail(f"a malformed pyproject.toml crashed the witness: {exc!r}")
+        self.assertFalse(deferred)
+        (self.root / "pyproject.toml").write_text(
+            '[project]\nname = "p"\nrequires-python = ">=3.14"\n', encoding="utf-8"
+        )
+        self.assertTrue(_defers_annotations(self.root, self._commit("floor")))
 
     def test_a_comment_only_hunk_is_not_a_guard(self):
         """Reverting a comment changes no behavior, so it must not read as undriven."""
@@ -411,6 +431,17 @@ class TestAnnotationOnlyHunks(unittest.TestCase):
         before = self._FUTURE + "def f() -> int:\n    return 1\n"
         after = self._FUTURE + "from pkg import registered\n\n\ndef f() -> int:\n    return 1\n"
         self.assertFalse(self._neutral(before, after))
+
+    def test_a_name_used_only_inside_a_quoted_annotation_is_not_behavior(self):
+        """A quoted annotation names its imports too; swapping one it alone reads is inert."""
+        before = self._FUTURE + 'from pkg import Old\n\n\ndef f() -> "Old":\n    return 1\n'
+        after = self._FUTURE + 'from pkg import New\n\n\ndef f() -> "New":\n    return 1\n'
+        self.assertTrue(self._neutral(before, after))
+
+    def test_a_plain_import_only_annotations_read_is_not_behavior(self):
+        before = self._FUTURE + "import alpha\n\n\ndef f() -> alpha.X:\n    return 1\n"
+        after = self._FUTURE + "import beta\n\n\ndef f() -> beta.X:\n    return 1\n"
+        self.assertTrue(self._neutral(before, after))
 
     def test_an_import_also_used_at_runtime_is_behavior(self):
         """A name the body reads is bound for the run, not only for the annotation."""
