@@ -63,10 +63,15 @@ and failure cause all verified). A `.py` file under `tests/` is a test module; o
 under `features/` is a behave step module, test code the unit runner never imports,
 so it is neither a production hunk nor a test module here. Hunks that change only comments, docstrings or
 blank lines are skipped, and pure deletions are not mutated. So are hunks that only
-change a function's argument or return annotations in a module with
-`from __future__ import annotations`, unless the function carries a decorator that
-may read its signature. Class-field annotations (which Pydantic reads) and
-annotations in modules that evaluate them at definition time are still mutated.
+change a function's argument or return annotations where they are not evaluated at
+definition time: in a module with `from __future__ import annotations`, or in any
+module of a project whose `requires-python` floor is 3.14 or later (PEP 649),
+unless the function carries a decorator that may read its signature
+(`contextmanager` does not). An import only such annotations read, or a name from
+`typing`, `typing_extensions` or `collections.abc` that no runtime code reads, is
+skipped with them. Class-field annotations (which Pydantic reads), annotations in
+modules that evaluate them at definition time, and any other unread import (a
+re-export, or one made for its side effect) are still mutated.
 
 A hunk is text, not a unit of behavior, so a fix whose hunks depend on each other
 (a helper and its call site, a signature and its callers) has hunks whose lone

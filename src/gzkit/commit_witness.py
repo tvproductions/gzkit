@@ -43,6 +43,7 @@ from __future__ import annotations
 import ast
 import re
 import subprocess
+import tomllib
 from pathlib import Path
 from typing import Literal
 
@@ -146,6 +147,8 @@ _ANNOTATION_BLIND_DECORATORS = frozenset(
         "lru_cache",
         "cached_property",
         "wraps",
+        "contextmanager",
+        "asynccontextmanager",
     }
 )
 
@@ -168,43 +171,94 @@ def _postponed_annotations(tree: ast.Module) -> bool:
     )
 
 
-def _drop_signature_annotations(tree: ast.Module) -> None:
-    """Blank argument and return annotations no runtime reads.
+def _annotation_names(annotation: ast.expr) -> set[str]:
+    """Return the names an annotation refers to, reading quoted annotations too."""
+    names = {n.id for n in ast.walk(annotation) if isinstance(n, ast.Name)}
+    for node in ast.walk(annotation):
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            try:
+                names |= _annotation_names(ast.parse(node.value, mode="eval").body)
+            except SyntaxError:
+                continue
+    return names
 
-    Under PEP 563 a signature annotation is a string stored in ``__annotations__``;
-    it changes behavior only when something introspects it. Class-field annotations
-    are kept (Pydantic builds fields from them), as are signatures under a decorator
-    outside :data:`_ANNOTATION_BLIND_DECORATORS`, and every annotation in a module
-    that evaluates them at definition time.
+
+def _drop_signature_annotations(tree: ast.Module, *, deferred: bool) -> set[str]:
+    """Blank argument and return annotations no runtime reads; return the names they used.
+
+    A signature annotation changes behavior only when something introspects it,
+    once it is no longer evaluated at definition time: under PEP 563 (``from
+    __future__ import annotations``) or, from Python 3.14, under PEP 649 for every
+    module (``deferred``). Class-field annotations are kept (Pydantic builds fields
+    from them), as are signatures under a decorator outside
+    :data:`_ANNOTATION_BLIND_DECORATORS`.
     """
-    if not _postponed_annotations(tree):
-        return
+    if not (deferred or _postponed_annotations(tree)):
+        return set()
+    dropped: set[str] = set()
     for node in ast.walk(tree):
         if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             continue
         if any(_decorator_name(d) not in _ANNOTATION_BLIND_DECORATORS for d in node.decorator_list):
             continue
-        node.returns = None
         arguments = node.args
-        for arg in [*arguments.posonlyargs, *arguments.args, *arguments.kwonlyargs]:
+        args = [*arguments.posonlyargs, *arguments.args, *arguments.kwonlyargs]
+        args += [a for a in (arguments.vararg, arguments.kwarg) if a is not None]
+        for annotation in [node.returns, *(a.annotation for a in args)]:
+            if annotation is not None:
+                dropped |= _annotation_names(annotation)
+        node.returns = None
+        for arg in args:
             arg.annotation = None
-        for arg in (arguments.vararg, arguments.kwarg):
-            if arg is not None:
-                arg.annotation = None
+    return dropped
 
 
-def _behavior(source: str) -> str | None:
+#: Modules imported only for their type names: binding one has no side effect, and
+#: nothing re-exports them, so a name from one that no runtime code reads is inert.
+_TYPING_MODULES = frozenset({"typing", "typing_extensions", "collections.abc"})
+
+
+def _drop_annotation_only_imports(tree: ast.Module, names: set[str]) -> None:
+    """Remove imported names that no runtime code reads, where that is provably inert.
+
+    Swapping ``Iterator`` for ``Generator`` in an import only annotations read
+    changes nothing a run can observe. A name is dropped when nothing left in the
+    module reads it and either a dropped annotation named it or it comes from one
+    of :data:`_TYPING_MODULES`; the second case keeps a revert of the signature
+    hunk alone inert. Any other unread import may be a re-export or run for its
+    side effect, so it stays.
+    """
+    used = {n.id for n in ast.walk(tree) if isinstance(n, ast.Name)}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ImportFrom):
+            typing_only = node.module in _TYPING_MODULES
+            node.names = [
+                alias
+                for alias in node.names
+                if (bound := alias.asname or alias.name) in used
+                or not (typing_only or bound in names)
+            ]
+        elif isinstance(node, ast.Import):
+            node.names = [
+                alias
+                for alias in node.names
+                if (bound := alias.asname or alias.name.split(".")[0]) in used or bound not in names
+            ]
+
+
+def _behavior(source: str, *, deferred: bool = False) -> str | None:
     """Return an AST fingerprint with docstrings and inert annotations dropped.
 
     ``None`` when the source does not parse. Signature annotations no runtime reads
-    are dropped too (:func:`_drop_signature_annotations`), so a hunk that only
-    re-types a function is not swept as a guard.
+    are dropped (:func:`_drop_signature_annotations`), with any import only they
+    used, so a hunk that only re-types a function is not swept as a guard.
+    ``deferred`` says the project runs on Python 3.14 or later (PEP 649).
     """
     try:
         tree = ast.parse(source)
     except SyntaxError:
         return None
-    _drop_signature_annotations(tree)
+    _drop_annotation_only_imports(tree, _drop_signature_annotations(tree, deferred=deferred))
     for node in ast.walk(tree):
         body = getattr(node, "body", None)
         if (
@@ -216,6 +270,19 @@ def _behavior(source: str) -> str | None:
         ):
             body[0] = ast.Pass()
     return ast.dump(tree)
+
+
+def _defers_annotations(project_root: Path, commit: str) -> bool:
+    """Return whether ``commit``'s ``requires-python`` floor is 3.14 or later (PEP 649)."""
+    shown = _git(["show", f"{commit}:pyproject.toml"], project_root)
+    if shown.returncode != 0:
+        return False
+    try:
+        floor = tomllib.loads(shown.stdout).get("project", {}).get("requires-python", "")
+    except tomllib.TOMLDecodeError:
+        return False
+    match = re.search(r">=\s*(\d+)\.(\d+)", str(floor))
+    return bool(match) and (int(match.group(1)), int(match.group(2))) >= (3, 14)
 
 
 def _splice(lines: list[str], start: int, end: int, replacement: str, label: str) -> Mutation:
@@ -289,6 +356,7 @@ def _hunk_units(project_root: Path, commit: str, path: str) -> list[tuple[Mutati
     new_lines = new_src.stdout.splitlines(keepends=True)
     old_lines = old_src.stdout.splitlines(keepends=True) if old_src.returncode == 0 else []
     diff = _git(["diff", "-U0", "--no-renames", f"{commit}^", commit, "--", path], project_root)
+    deferred = _defers_annotations(project_root, commit)
     units: list[tuple[Mutation, int, int]] = []
     for line in diff.stdout.splitlines():
         match = _HUNK_HEADER.match(line)
@@ -302,9 +370,9 @@ def _hunk_units(project_root: Path, commit: str, path: str) -> list[tuple[Mutati
         old_block = old_lines[o_start - 1 : o_start - 1 + o_len] if o_len else []
         mutation = _splice(new_lines, n0, n_end, "".join(old_block), f"{path}:{n_start}-{n_end}")
         original = "".join(new_lines)
-        fingerprint = _behavior(original)
+        fingerprint = _behavior(original, deferred=deferred)
         reverted = original.replace(mutation.find, mutation.replace, 1)
-        if fingerprint is not None and _behavior(reverted) == fingerprint:
+        if fingerprint is not None and _behavior(reverted, deferred=deferred) == fingerprint:
             continue  # comment/docstring/blank-only hunk: reverting it changes no behavior
         units.append((mutation, n_start, n_end))
     return units

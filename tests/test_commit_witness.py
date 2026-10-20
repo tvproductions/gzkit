@@ -174,6 +174,19 @@ class TestCommitWitness(_CommitRepo):
             {("tests.test_mod", "tests.test_other")},
         )
 
+    def test_a_return_annotation_is_not_a_hunk_when_the_floor_defers_annotations(self):
+        """`requires-python >= 3.14` means PEP 649 runs the module: a re-typed return is inert."""
+        (self.root / "pyproject.toml").write_text(
+            '[project]\nname = "p"\nrequires-python = ">=3.14"\n', encoding="utf-8"
+        )
+        self._commit("floor")
+        (self.root / "pkg" / "mod.py").write_text(
+            'def clamp(x) -> "int":\n    return x\n', encoding="utf-8"
+        )
+        self._add_test("\n    def test_two(self):\n        self.assertEqual(clamp(2), 2)\n")
+        result = run_commit_witness(self.root, self._commit("annotate"), runner=_RUNNER)
+        self.assertEqual(result.verdict, "no-production-hunks", result)
+
     def test_a_comment_only_hunk_is_not_a_guard(self):
         """Reverting a comment changes no behavior, so it must not read as undriven."""
         (self.root / "pkg" / "mod.py").write_text("# note\n" + _BASE, encoding="utf-8")
@@ -356,9 +369,53 @@ class TestAnnotationOnlyHunks(unittest.TestCase):
         self.assertTrue(self._neutral(before, after))
 
     def test_a_signature_annotation_without_the_future_import_is_behavior(self):
-        """Evaluated at definition time: a changed annotation can fail the import."""
+        """Below Python 3.14 it is evaluated at definition time and can fail the import."""
         before = "def f(x):\n    return x\n"
         after = "def f(x: int) -> int:\n    return x\n"
+        self.assertFalse(self._neutral(before, after))
+
+    def test_a_signature_annotation_is_not_behavior_when_annotations_are_deferred(self):
+        """From Python 3.14 every annotation is deferred (PEP 649), future import or not."""
+        before = "def f(x):\n    return x\n"
+        after = 'def f(x: int) -> "Later":\n    return x\n'
+        self.assertEqual(_behavior(after, deferred=True), _behavior(before, deferred=True))
+
+    def test_a_contextmanager_signature_annotation_is_not_behavior(self):
+        """``contextmanager`` wraps a generator; it never reads the return annotation."""
+        before = self._FUTURE + "@contextmanager\ndef f() -> Iterator[None]:\n    yield\n"
+        after = self._FUTURE + "@contextmanager\ndef f() -> Generator[None]:\n    yield\n"
+        self.assertTrue(self._neutral(before, after))
+
+    def test_an_import_bound_only_for_annotations_is_not_behavior(self):
+        """Swapping a name that only annotations use changes nothing a run can observe."""
+        before = (
+            self._FUTURE
+            + "from typing import Iterator\n\n\ndef f() -> Iterator[int]:\n    yield 1\n"
+        )
+        after = (
+            self._FUTURE
+            + "from typing import Generator\n\n\ndef f() -> Generator[int]:\n    yield 1\n"
+        )
+        self.assertTrue(self._neutral(before, after))
+
+    def test_reverting_only_the_annotation_leaves_an_unread_typing_import_inert(self):
+        """The import hunk and the signature hunk revert apart; each alone stays inert."""
+        after = self._FUTURE + (
+            "from collections.abc import Generator\n\n\ndef f() -> Generator[int]:\n    yield 1\n"
+        )
+        signature_reverted = after.replace("-> Generator[int]", "-> Iterator[int]")
+        self.assertTrue(self._neutral(signature_reverted, after))
+
+    def test_an_unread_import_from_a_runtime_module_is_behavior(self):
+        """An import outside the typing modules may be a re-export or run for its effect."""
+        before = self._FUTURE + "def f() -> int:\n    return 1\n"
+        after = self._FUTURE + "from pkg import registered\n\n\ndef f() -> int:\n    return 1\n"
+        self.assertFalse(self._neutral(before, after))
+
+    def test_an_import_also_used_at_runtime_is_behavior(self):
+        """A name the body reads is bound for the run, not only for the annotation."""
+        before = self._FUTURE + "from a import X\n\n\ndef f() -> X:\n    return X()\n"
+        after = self._FUTURE + "from b import X\n\n\ndef f() -> X:\n    return X()\n"
         self.assertFalse(self._neutral(before, after))
 
     def test_a_class_field_annotation_is_behavior(self):
