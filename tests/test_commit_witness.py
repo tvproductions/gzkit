@@ -226,6 +226,8 @@ class TestBehaveStepsAreTestCode(_CommitRepo):
         result = run_commit_witness(self.root, self._commit("steps only"), runner=_RUNNER)
         self.assertEqual(result.verdict, "no-production-hunks", result)
 
+
+class TestDependentHunks(_CommitRepo):
     """GHI #1153: a fix whose hunks depend on each other still gets its guards graded.
 
     Reverting a new helper's definition alone, or a signature without its callers,
@@ -247,6 +249,20 @@ class TestBehaveStepsAreTestCode(_CommitRepo):
         result = run_commit_witness(self.root, self._commit("helper + call"), runner=_RUNNER)
         self.assertEqual(result.verdict, "driven", result)
         self.assertIn("statement", {h.unit for h in result.hunks})
+
+    def test_a_regraded_guard_is_graded_only_by_the_modules_that_reach_it(self):
+        """GHI #1260: statement rows select their modules by their own lines too."""
+        (self.root / "pkg" / "mod.py").write_text(_HELPER, encoding="utf-8")
+        self._add_test("\n    def test_negative(self):\n        self.assertEqual(clamp(-1), 0)\n")
+        (self.root / "tests" / "test_other.py").write_text(
+            "import unittest\n\n\nclass U(unittest.TestCase):\n"
+            "    def test_true(self):\n        self.assertTrue(True)\n",
+            encoding="utf-8",
+        )
+        result = run_commit_witness(self.root, self._commit("helper + two modules"), runner=_RUNNER)
+        statements = [h for h in result.hunks if h.unit == "statement"]
+        self.assertTrue(statements, result)
+        self.assertEqual({tuple(h.test_modules) for h in statements}, {("tests.test_mod",)})
 
     def test_a_helper_guard_no_test_drives_is_undriven(self):
         (self.root / "pkg" / "mod.py").write_text(_HELPER, encoding="utf-8")
@@ -558,6 +574,10 @@ class TestArbRedHelpOutputForm(unittest.TestCase):
         self.assertIn("--req: reconstruct the base tree", text)
         self.assertIn("direct-fix route", text)
         self.assertIn("gz arb red --commit HEAD", text)
+
+    def test_red_help_says_a_hunk_runs_only_the_modules_that_execute_it(self):
+        text = " ".join(self._help("arb", "red").split())
+        self.assertIn("run the test modules the same commit touched that execute it", text)
 
     def test_arb_listing_summarizes_red_as_req_or_commit(self):
         self.assertIn("by REQ or by commit", " ".join(self._help("arb").split()))
