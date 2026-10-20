@@ -2093,6 +2093,36 @@
         "age_minutes": {
           "type": "number",
           "min": 0
+        },
+        "lease_started_at": {
+          "type": "string",
+          "min_length": 1
+        }
+      }
+    },
+    "mx_session_lease_renewed": {
+      "required": [
+        "session_id",
+        "attestor",
+        "renewed_at",
+        "lease_minutes"
+      ],
+      "properties": {
+        "session_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "attestor": {
+          "type": "string",
+          "min_length": 1
+        },
+        "renewed_at": {
+          "type": "string",
+          "min_length": 1
+        },
+        "lease_minutes": {
+          "type": "integer",
+          "min": 0
         }
       }
     },

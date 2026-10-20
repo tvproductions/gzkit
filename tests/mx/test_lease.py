@@ -46,6 +46,19 @@ def _closed(session_id: str) -> dict:
     }
 
 
+def _renewed(session_id: str, at: datetime) -> dict:
+    return {
+        "schema": "gzkit.ledger.v1",
+        "event": "mx_session_lease_renewed",
+        "id": session_id,
+        "ts": at.isoformat(),
+        "session_id": session_id,
+        "attestor": "g0",
+        "renewed_at": at.isoformat(),
+        "lease_minutes": lock_manager.DEFAULT_LOCK_TTL_MINUTES,
+    }
+
+
 def _root_with(tmp: str, events: list[dict]) -> Path:
     root = Path(tmp)
     (root / ".gzkit").mkdir(parents=True, exist_ok=True)
@@ -80,6 +93,22 @@ class TestLeaseExpiryBooking(unittest.TestCase):
         self.assertEqual(rows[0]["session_id"], "s1")
         self.assertEqual(rows[0]["lease_minutes"], lock_manager.DEFAULT_LOCK_TTL_MINUTES)
         self.assertEqual(rows[0]["opened_at"], _BASE.isoformat())
+
+    def test_a_renewed_lease_is_booked_again_only_when_it_expires_again(self) -> None:
+        """A renewal starts a new lease: expiry is booked once per lease (GHI #1261)."""
+        from gzkit.mx import lease
+
+        renewal = _BASE + _LEASE + timedelta(hours=3)
+        with TemporaryDirectory() as tmp:
+            root = _root_with(tmp, [_opened("s1")])
+            first = lease.book_lease_expiries(root, now=_BASE + _LEASE + timedelta(hours=2))
+            with (root / ".gzkit" / "ledger.jsonl").open("a", encoding="utf-8") as fh:
+                fh.write(json.dumps(_renewed("s1", renewal)) + "\n")
+            inside = lease.book_lease_expiries(root, now=renewal + _LEASE - timedelta(minutes=1))
+            past = lease.book_lease_expiries(root, now=renewal + _LEASE + timedelta(minutes=1))
+            again = lease.book_lease_expiries(root, now=renewal + _LEASE + timedelta(hours=4))
+
+        self.assertEqual((first, inside, past, again), (["s1"], [], ["s1"], []))
 
     def test_the_booked_status_is_a_typed_ledger_event(self) -> None:
         from gzkit.mx import lease

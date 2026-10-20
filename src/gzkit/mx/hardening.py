@@ -122,6 +122,23 @@ def open_sessions(root: Path) -> dict[str, str]:
     return out
 
 
+def lease_starts(root: Path) -> dict[str, str]:
+    """Map each open session to the ts its current lease began (GHI #1261).
+
+    A lease begins at the session's open and again at each ``mx_session_lease_renewed``
+    (its ``renewed_at``). Only the lease restarts: debt keeps aging from the contract's
+    first open (:func:`_debt_since`, GHI #1258).
+    """
+    starts = open_sessions(root)
+    renewals = Ledger(root.joinpath(*_LEDGER_RELPATH)).query(event_type="mx_session_lease_renewed")
+    for event in renewals:
+        sid = event.extra.get("session_id")
+        renewed_at = event.extra.get("renewed_at")
+        if sid in starts and isinstance(renewed_at, str) and renewed_at > starts[sid]:
+            starts[sid] = renewed_at
+    return starts
+
+
 def lease_hours() -> float:
     """Return the hangar's lease in hours: the session lock's TTL on the token rail."""
     return lock_manager.DEFAULT_LOCK_TTL_MINUTES / 60
@@ -161,7 +178,7 @@ def ttl_max_open_status(
     root = root or Path.cwd()
     now = now or datetime.now(UTC)
     ttl = lease_hours() if ttl_hours is None else ttl_hours
-    sessions = open_sessions(root)
+    sessions = lease_starts(root)
 
     flagged = sorted(sid for sid, ts in sessions.items() if age_hours(ts, now) > ttl)
     over_max = len(sessions) > max_open

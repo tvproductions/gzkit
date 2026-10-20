@@ -656,7 +656,7 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `mx-mode.md`
 
-Lifted 2026-08-29 at version `1.3.0`; `1.4.0`, `1.5.0` and `1.5.1` lifted 2026-10-16; later versions are recorded below as they land (rule now at `1.9.0`).
+Lifted 2026-08-29 at version `1.3.0`; `1.4.0`, `1.5.0` and `1.5.1` lifted 2026-10-16; later versions are recorded below as they land (rule now at `1.10.0`).
 
 > **Rule version:** `1.5.1` — § Safe mode points at its doctrine and its contract template, entrenched on the operator's ruling of 2026-10-16 (*"keep these metaphor entrenched in canon"*). Prior `1.5.0` and earlier lifted to [Rule Version History](#mx-modemd). Binding rules unchanged.
 

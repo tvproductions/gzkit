@@ -1081,6 +1081,26 @@ class MxSessionLeaseExpiredEvent(_EventBase):
     opened_at: str = Field(..., description="ISO-8601 ts of the matching mx_session_opened")
     lease_minutes: int = Field(..., description="The lease the session outlived")
     age_minutes: float = Field(..., description="Session age when the expiry was booked")
+    lease_started_at: str | None = Field(
+        None,
+        description="ISO-8601 start of the lease that ran out: the open or the last renewal "
+        "(GHI #1261); absent on expiries booked before renewals existed",
+    )
+
+
+class MxSessionLeaseRenewedEvent(_EventBase):
+    """mx_session_lease_renewed event — the operator renewed an open session's lease (GHI #1261).
+
+    Lease-only (operator ruling 2026-10-20, "Make renewal lease-only, as the 10-18
+    ruling already implies."): no guard runs, the marker stays, and advisory debt
+    keeps aging from the contract's first open. ``renewed_at`` starts the new lease.
+    """
+
+    event: Literal["mx_session_lease_renewed"]
+    session_id: str = Field(..., description="The open session whose lease was renewed")
+    attestor: str = Field(..., description="Operator who renewed the lease")
+    renewed_at: str = Field(..., description="ISO-8601 start of the renewed lease")
+    lease_minutes: int = Field(..., description="Length of the renewed lease")
 
 
 class MxContractAmendedEvent(_EventBase):
@@ -1733,6 +1753,7 @@ TypedLedgerEvent = Annotated[
     | MxSessionOpenedEvent
     | MxSessionClosedEvent
     | MxSessionLeaseExpiredEvent
+    | MxSessionLeaseRenewedEvent
     | InsightRecordedEvent
     | MxContractAmendedEvent
     | BlocksEvent

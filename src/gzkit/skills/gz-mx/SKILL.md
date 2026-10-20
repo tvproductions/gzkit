@@ -5,11 +5,11 @@ description: Use to open or exit the MX hangar or safe mode, or to check which m
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-18
+last_reviewed: 2026-10-20
 model: haiku
 gz_command: mx
 metadata:
-  skill-version: "1.6.0"
+  skill-version: "1.7.0"
 ---
 
 # gz mx
@@ -39,6 +39,8 @@ operator a raw `gz mx` command is a defect in the surface that gave it.
   need to go advisory so you can fix the surfaces they protect
 - **Checking hangar status** — confirming whether the hangar is currently
   open mid-session
+- **Renewing the lease** — resuming a session whose lease ran out, with the work
+  not done; the session stays open and no guard runs
 - **Clean exit** — repair is complete; re-enforce all guards at full strength
 - **Entering safe mode** — the operator has written a contract that says what the
   mode suspends, what still binds, what each act records and how the mode exits
@@ -94,6 +96,14 @@ operator a raw `gz mx` command is a defect in the surface that gave it.
    `Task:` trailer naming its repair order, its commit-grain witness, and a passage-log
    row with the measurement before and after. The ledger is written only through `gz`
    verbs; no control is removed.
+
+   **Renew the lease when a session resumes past it** (GHI #1261). The orientation
+   announces an expired lease; renewal is the operator's call and one command:
+   ```bash
+   uv run gz mx renew --attestor g0
+   ```
+   Lease-only: no guard runs, the marker stays, debt keeps aging. Never exit and re-enter
+   to renew; the exit is for the drydock's end.
 
 4. **Read the exit before leaving.** The skill reads the contract's § Exit conditions
    and § Repair orders (the orientation's drydock block once GHI #1245 lands; until

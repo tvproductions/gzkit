@@ -211,3 +211,33 @@ class LockLeaseExpiryProducerProbeTests(unittest.TestCase):
         with patch("gzkit.lock_manager.reap_expired_locks", side_effect=evict):
             observation = probe_producer("obpi_lock_lease_expired")
         self.assertEqual(observation.status, "failed")
+
+
+class MxLeaseRenewalProducerProbeTests(unittest.TestCase):
+    """The real `gz mx renew` books one renewal and keeps the session open (GHI #1261)."""
+
+    def test_the_real_renewal_books_the_lease_in_a_disposable_project(self):
+        observation = probe_producer("mx_session_lease_renewed")
+        self.assertEqual(observation.status, "verified", observation.error)
+        self.assertEqual(observation.producer, "gzkit.commands.mx_cmd.mx_renew_cmd")
+        self.assertEqual(observation.record_count, 1)
+        self.assertEqual(len(observation.ledger_sha256), 64)
+
+    def test_a_renewal_that_books_nothing_gets_no_credit(self):
+        with patch("gzkit.commands.mx_cmd.Ledger.append", return_value=None):
+            observation = probe_producer("mx_session_lease_renewed")
+        self.assertEqual(observation.status, "failed")
+        self.assertEqual(observation.record_count, 0)
+
+    def test_a_renewal_that_ends_the_session_gets_no_credit(self):
+        from gzkit.commands import mx_cmd  # noqa: PLC0415
+
+        real = mx_cmd.mx_renew_cmd
+
+        def renew_then_drop_marker(attestor: str, project_root: Path) -> None:
+            real(attestor, project_root=project_root)
+            (project_root / ".gzkit" / "mx.json").unlink()
+
+        with patch.object(mx_cmd, "mx_renew_cmd", renew_then_drop_marker):
+            observation = probe_producer("mx_session_lease_renewed")
+        self.assertEqual(observation.status, "failed")

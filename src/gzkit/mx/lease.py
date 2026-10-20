@@ -27,21 +27,29 @@ LEASE_EXPIRED_EVENT = "mx_session_lease_expired"
 
 
 def book_lease_expiries(root: Path, *, now: datetime | None = None) -> list[str]:
-    """Book each open session past its lease once; return the session ids booked now.
+    """Book each lease past its end once; return the session ids booked now.
 
-    A session already booked is skipped, so a session that stays open for days
-    carries one expiry status, not one per boot.
+    A lease already booked is skipped, so a session that stays open for days
+    carries one expiry status per lease, not one per boot. A renewal starts a new
+    lease, which is booked again only if it too runs out (GHI #1261).
     """
     now = now or datetime.now(UTC)
     expired = hardening.ttl_max_open_status(root, now=now).flagged_sessions
     ledger = Ledger(root.joinpath(*_LEDGER_RELPATH))
-    already = {
-        event.extra.get("session_id") for event in ledger.query(event_type=LEASE_EXPIRED_EVENT)
-    }
     opened = hardening.open_sessions(root)
+    starts = hardening.lease_starts(root)
+    # An expiry booked before renewals existed carries no lease_started_at; its
+    # lease began at the session's open.
+    already = {
+        (
+            event.extra.get("session_id"),
+            event.extra.get("lease_started_at") or event.extra.get("opened_at"),
+        )
+        for event in ledger.query(event_type=LEASE_EXPIRED_EVENT)
+    }
     booked: list[str] = []
     for session_id in expired:
-        if session_id in already:
+        if (session_id, starts[session_id]) in already:
             continue
         opened_at = opened[session_id]
         ledger.append(
@@ -51,6 +59,7 @@ def book_lease_expiries(root: Path, *, now: datetime | None = None) -> list[str]
                 extra={
                     "session_id": session_id,
                     "opened_at": opened_at,
+                    "lease_started_at": starts[session_id],
                     "lease_minutes": lock_manager.DEFAULT_LOCK_TTL_MINUTES,
                     "age_minutes": round(hardening.age_hours(opened_at, now) * 60, 1),
                 },

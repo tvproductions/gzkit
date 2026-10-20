@@ -19,6 +19,7 @@ from gzkit import acceptance_store, reports
 from gzkit.config import GzkitConfig, PathConfig
 from gzkit.events import (
     AcceptanceRecordedEvent,
+    MxSessionLeaseRenewedEvent,
     ObpiLockLeaseExpiredEvent,
     ReportPublishedEvent,
     parse_typed_event,
@@ -198,10 +199,54 @@ def _probe_lock_lease_expiry(root: Path) -> ProducerObservation:
     )
 
 
+def _probe_mx_lease_renewal(root: Path) -> ProducerObservation:
+    """Open a disposable hangar and renew it; one renewal booked, the session kept open.
+
+    Operator ruling 2026-10-20: renewal is lease-only. A renewal that books nothing, or
+    that ends the session or drops the marker, has not met that contract (GHI #1261).
+    """
+    from gzkit import lock_manager  # noqa: PLC0415 - the data layer; import only when probed
+    from gzkit.commands import mx_cmd  # noqa: PLC0415 - a command handler; import only when probed
+    from gzkit.mx import marker  # noqa: PLC0415
+
+    (root / ".gzkit").mkdir()
+    try:
+        with mx_cmd.console.capture():
+            mx_cmd.mx_enter_cmd(
+                reason="probe", attestor=_AUTHOR, inspection_scope=[], project_root=root
+            )
+            mx_cmd.mx_renew_cmd(_AUTHOR, project_root=root)
+    except SystemExit as exc:
+        raise ValueError(f"Renewal refused with exit {exc.code}") from exc
+    if not marker.is_valid(root):
+        raise ValueError("Renewal ended the session or dropped its marker")
+    ledger_path = root / ".gzkit/ledger.jsonl"
+    persisted = ledger_path.read_bytes() if ledger_path.is_file() else b""
+    rows = [json.loads(line) for line in persisted.decode("utf-8").splitlines() if line.strip()]
+    renewals = [row for row in rows if row.get("event") == "mx_session_lease_renewed"]
+    if len(renewals) != 1 or any(row.get("event") == "mx_session_closed" for row in rows):
+        raise ValueError("Renewal must persist exactly one renewal record and no close")
+    event = parse_typed_event(renewals[0])
+    if not isinstance(event, MxSessionLeaseRenewedEvent):
+        raise ValueError("Renewal persisted the wrong event type")
+    lock = lock_manager.read_lock(root, marker.SESSION_LOCK_KEY)
+    if lock is None or lock.claimed_at != event.renewed_at or lock.session_id != event.session_id:
+        raise ValueError("The session lock does not carry the renewed lease")
+    return ProducerObservation(
+        event_type="mx_session_lease_renewed",
+        producer="gzkit.commands.mx_cmd.mx_renew_cmd",
+        status="verified",
+        ledger_sha256=hashlib.sha256(persisted).hexdigest(),
+        record_count=1,
+        subject=event.session_id,
+    )
+
+
 _PRODUCERS = {
     "acceptance_recorded": "gzkit.acceptance_store.initialize",
     "report_published": "gzkit.reports.publish_report",
     "obpi_lock_lease_expired": "gzkit.lock_manager.reap_expired_locks",
+    "mx_session_lease_renewed": "gzkit.commands.mx_cmd.mx_renew_cmd",
 }
 
 
@@ -216,6 +261,8 @@ def probe_producer(event_type: str) -> ProducerObservation:
                 return _probe_report(root)
             if event_type == "obpi_lock_lease_expired":
                 return _probe_lock_lease_expiry(root)
+            if event_type == "mx_session_lease_renewed":
+                return _probe_mx_lease_renewal(root)
             _prepare_acceptance_project(root)
             acceptance_store.initialize(root, _OBPI, _AUTHOR)
             return _observe_acceptance_contract(root)

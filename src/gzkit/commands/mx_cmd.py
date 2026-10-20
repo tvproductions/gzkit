@@ -457,3 +457,66 @@ def mx_exit_cmd(
 
     label = "Safe mode closed" if m.mode == "safe" else "MX session closed"
     console.print(f"[green]{label}.[/green] session_id={m.session_id}, attestor={attestor.strip()}")
+
+
+def _now() -> datetime:
+    """Return the current UTC time (a seam the renewal tests move forward)."""
+    return datetime.now(UTC)
+
+
+def mx_renew_cmd(attestor: str, project_root: Path | None = None) -> None:
+    """Renew the open MX session's lease without leaving the hangar (GHI #1261).
+
+    Lease-only, by operator ruling (2026-10-20, "Make renewal lease-only, as the
+    10-18 ruling already implies."): the ``mx-session`` lock is claimed afresh for
+    the same session and one ``mx_session_lease_renewed`` event is booked. No guard
+    runs, the marker is untouched, and advisory debt keeps aging from the contract's
+    first open (GHI #1258). ``gz mx exit`` stays the only full-strength gate.
+    Refuses with exit 1 on an empty attestor or when no ledger-bound session is open.
+    """
+    if not attestor.strip():
+        console.print(
+            "[red]ERROR:[/red] --attestor cannot be empty. Only the operator renews the lease."
+        )
+        sys.exit(1)
+
+    root = project_root if project_root is not None else get_project_root()
+    held = marker.read(root)
+    if held is None or not marker.is_valid(root):
+        console.print(
+            "[red]ERROR:[/red] no open MX session to renew. "
+            "Open one with `gz mx enter` through the gz-mx skill."
+        )
+        sys.exit(1)
+
+    renewed_at = _now()
+    lock_manager.delete_lock(root, marker.SESSION_LOCK_KEY)
+    lock_manager.write_lock(
+        root,
+        LockData(
+            obpi_id=marker.SESSION_LOCK_KEY,
+            agent=lock_manager.resolve_agent(),
+            pid=os.getpid(),
+            session_id=held.session_id,
+            claimed_at=renewed_at.isoformat(),
+            branch=lock_manager.current_branch(),
+            ttl_minutes=_DEFAULT_TTL_MINUTES,
+        ),
+    )
+    Ledger(root.joinpath(*_LEDGER_RELPATH)).append(
+        LedgerEvent(
+            event="mx_session_lease_renewed",
+            id=held.session_id,
+            extra={
+                "session_id": held.session_id,
+                "attestor": attestor.strip(),
+                "renewed_at": renewed_at.isoformat(),
+                "lease_minutes": _DEFAULT_TTL_MINUTES,
+            },
+        )
+    )
+    console.print(
+        f"[green]Lease renewed.[/green] session_id={held.session_id}, "
+        f"lease={_DEFAULT_TTL_MINUTES // 60}h, attestor={attestor.strip()}. "
+        "No guards were run; `gz mx exit` remains the full-strength gate."
+    )

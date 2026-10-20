@@ -816,6 +816,10 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
             from gzkit.commands.mx_cmd import mx_exit_cmd  # noqa: PLC0415
 
             mx_exit_cmd(attestor=a.attestor)
+        elif a.mx_command == "renew":
+            from gzkit.commands.mx_cmd import mx_renew_cmd  # noqa: PLC0415
+
+            mx_renew_cmd(attestor=a.attestor)
 
     p_mx = commands.add_parser(
         "mx",
@@ -901,6 +905,24 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
         help="Operator identity who signs airworthiness (required; never an agent)",
     )
     p_mx_exit.set_defaults(func=_mx_dispatch)
+
+    p_mx_renew = mx_commands.add_parser(
+        "renew",
+        help="Renew the open session's lease; runs no guard (operator only)",
+        description=(
+            "Renew the lease of the open MX or safe-mode session: claims the "
+            "mx-session lock afresh and books mx_session_lease_renewed. Lease-only: "
+            "no guard runs, the marker stays, and advisory debt keeps aging from the "
+            "contract's first open. gz mx exit remains the full-strength gate."
+        ),
+        epilog=build_epilog(["gz mx renew --attestor g0"]),
+    )
+    p_mx_renew.add_argument(
+        "--attestor",
+        required=True,
+        help="Operator identity renewing the lease (required; never an agent)",
+    )
+    p_mx_renew.set_defaults(func=_mx_dispatch)
 
     # gz permitted-entry — the airlock's third door (ADR-0.33.0, OBPI-05) ---------
     def _permitted_entry_dispatch(a: argparse.Namespace) -> None:

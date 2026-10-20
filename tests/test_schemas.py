@@ -55,6 +55,7 @@ from gzkit.events import (
     MxContractAmendedEvent,
     MxSessionClosedEvent,
     MxSessionLeaseExpiredEvent,
+    MxSessionLeaseRenewedEvent,
     MxSessionOpenedEvent,
     ObpiBlockedOnOperatorEvent,
     ObpiCompletionRepudiatedEvent,
@@ -347,6 +348,7 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "mx_session_opened": MxSessionOpenedEvent,
     "mx_session_closed": MxSessionClosedEvent,
     "mx_session_lease_expired": MxSessionLeaseExpiredEvent,
+    "mx_session_lease_renewed": MxSessionLeaseRenewedEvent,
     "insight_recorded": InsightRecordedEvent,
     "mx_contract_amended": MxContractAmendedEvent,
     # Work-domain L2 edge events (ADR-0.32.0, OBPI-06)

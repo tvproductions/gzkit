@@ -87,7 +87,9 @@ def _ttl_findings(root: Path, now: datetime) -> list[MxHardeningFinding]:
                     f"MX session {', '.join(lease.flagged_sessions)} is past its lease "
                     f"({hardening.lease_hours():g}h, the session lock's TTL). Expiry is booked as "
                     f"`mx_session_lease_expired` and announced, never evicted (GHI #1257, "
-                    f"operator ruling 2026-10-18). When the work is done, {_RECOVER}."
+                    f"operator ruling 2026-10-18). To keep working, renew the lease with "
+                    f"`gz mx renew` through the gz-mx skill, which runs no guard (GHI #1261); "
+                    f"when the work is done, {_RECOVER}."
                 ),
             )
         )

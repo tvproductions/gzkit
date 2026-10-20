@@ -67,12 +67,26 @@ marker. **There is no `--force` flag.** You cannot narrow your way out of a red 
 Empty or whitespace-only `--attestor` fails closed with exit 1 — no marker is cleared,
 no ledger event is emitted.
 
+### renew
+
+Renew the open session's lease without leaving the hangar.
+
+<!-- gz-validate-skip: command-shape -->
+```bash
+gz mx renew --attestor ATTESTOR
+```
+
+Claims the `mx-session` lock afresh for the open session and books one
+`mx_session_lease_renewed` event. Lease-only (operator ruling 2026-10-20, GHI #1261): no guard
+runs, the marker stays, and advisory debt keeps aging. Empty `--attestor`, or no ledger-bound
+open session, fails closed with exit 1. See [`gz mx renew`](mx-renew.md).
+
 ## Options
 
 | Flag | Applies To | Description |
 |------|-----------|-------------|
 | `--reason REASON` | enter | Reason for entering MX mode (required; must be non-empty) |
-| `--attestor ATTESTOR` | enter, exit | Operator identity; never an agent (required) |
+| `--attestor ATTESTOR` | enter, exit, renew | Operator identity; never an agent (required) |
 | `--scope ADR_OR_OBPI ...` | enter | ADRs/OBPIs under inspection (optional; 0 or more) |
 
 ## Examples
@@ -84,6 +98,9 @@ gz mx enter --reason "re-true ledger-proof locks under ADR-0.0.74" --attestor g0
 
 # Open with explicit inspection scope
 gz mx enter --reason "repair marker binding" --attestor g0 --scope ADR-0.0.74 OBPI-0.0.74-04
+
+# Renew an expired lease when resuming (no guard runs)
+gz mx renew --attestor g0
 
 # Close the hangar (re-run every guard at full strength; operator signs on all-green)
 gz mx exit --attestor g0
@@ -124,14 +141,16 @@ the session orientation announces it under `## MX hangar`; the lock reaper leave
 open hangar in place. `gz validate --mx-hardening`, a `gz check` step, announces the same finding
 and the advisory debt the session carries, and never blocks `gz mx exit` on either. Debt ages
 from the first safe-mode open under the session's contract, so closing and reopening under one
-contract renews the lease without resetting the debt (GHI #1258). It grounds
+contract renews the lease without resetting the debt (GHI #1258). `gz mx renew` renews the lease
+in place, with no exit and no guard run; the lease guard then measures from the renewal
+(GHI #1261). It grounds
 only a dangling session (ledger open, marker missing) and more than one open session (GHI #1257).
 
 ## Exit Codes
 
 | Code | Meaning |
 |------|---------|
-| 0 | Hangar opened (enter) or closed (exit) successfully |
+| 0 | Hangar opened (enter), closed (exit) or its lease renewed (renew) successfully |
 | 1 | Validation failure: empty input, hangar already active/inactive, or concurrent entry |
 | 2 | System/IO error |
 | 3 | Policy breach: guards reported red on exit re-run |
