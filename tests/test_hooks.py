@@ -1499,12 +1499,23 @@ class TestCommittedHooksMatchTheirTemplates(unittest.TestCase):
     witness reported each generated hook and its template as separate hunks).
     """
 
-    def test_pipeline_gate_and_mx_awareness_are_current(self) -> None:
+    def test_every_generated_hook_is_current(self) -> None:
         # Compared as syntax trees: the sync formats the committed file with the
         # repository's formatter settings and a temp render is formatted with the
-        # defaults, so byte equality would fail on line wrapping alone.
+        # defaults, so byte equality would fail on line wrapping alone. Every hook
+        # the templates render and the repository commits, not two named ones:
+        # RO-9 tranche 1's red witness found reverts of obpi-completion-validator
+        # and session-staleness-check that nothing noticed (receipt
+        # arb-red-commit-fea4697ac6fb-d3a87cbd5aa0401ea2139de2c254a8f9). Hand-written
+        # hooks have no template and are not compared.
         repo = Path(__file__).resolve().parents[1]
-        for name in ("pipeline-gate.py", "mx-awareness.py"):
+        generated = sorted(
+            name
+            for name in (p.name for p in _HOOK_TEMPLATE_HOOKS.glob("*.py"))
+            if (repo / ".claude" / "hooks" / name).is_file()
+        )
+        self.assertIn("session-staleness-check.py", generated)
+        for name in generated:
             with self.subTest(hook=name):
                 rendered = (_HOOK_TEMPLATE_HOOKS / name).read_text(encoding="utf-8")
                 committed = (repo / ".claude" / "hooks" / name).read_text(encoding="utf-8")

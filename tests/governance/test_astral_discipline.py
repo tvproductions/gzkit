@@ -8,12 +8,17 @@ recorded reason is a violation. Today's violations seed a shrink-only baseline.
 
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 import tempfile
 import textwrap
 import unittest
 from pathlib import Path
+from unittest import mock
 
+from gzkit.cli.main import main
+from gzkit.core.validation_rules import ValidationError
 from gzkit.governance.trust_audits.astral_discipline import (
     BASELINE_RELPATH,
     EXCEPTIONS_RELPATH,
@@ -322,11 +327,262 @@ class TestTheRealTree(unittest.TestCase):
             (entry["mechanism"], entry["baseline_count"]), ("shrink-ratchet", len(rows))
         )
 
+    def test_the_package_exports_the_audit(self) -> None:
+        import gzkit.governance.trust_audits as trust_audits  # noqa: PLC0415
+
+        self.assertIn("audit_astral_discipline", trust_audits.__all__)
+        self.assertIs(trust_audits.audit_astral_discipline, audit_astral_discipline)
+
     def test_the_exception_register_is_declared(self) -> None:
         registries = json.loads(
             (_REPO / "data" / "config_registry.json").read_text(encoding="utf-8")
         )["registries"]
         self.assertIn(Path(EXCEPTIONS_RELPATH).name, registries)
+
+
+_RTD = 'version: 2\nbuild:\n  os: ubuntu-24.04\n  tools:\n    python: "3.13"\n'
+
+
+class TestEveryVersionHomeIsRead(unittest.TestCase):
+    """Branches RO-9 tranche 1's red witness left undriven (receipt arb-red-commit-fea4697ac6fb)."""
+
+    def test_a_missing_floor_is_a_missing_home(self) -> None:
+        pyproject = _PYPROJECT.replace('requires-python = ">=3.14"\n', "")
+        self.assertIn(
+            ("version-home-missing", "pyproject.toml", "requires-python"),
+            _Tree(**{"pyproject.toml": pyproject}).violations(),
+        )
+
+    def test_a_ty_environment_version_is_a_restatement(self) -> None:
+        pyproject = _PYPROJECT + '\n[tool.ty.environment]\npython-version = "3.14"\n'
+        self.assertIn(
+            ("version-restated", "pyproject.toml", "tool.ty.environment.python-version"),
+            _Tree(**{"pyproject.toml": pyproject}).violations(),
+        )
+
+    def test_read_the_docs_python_is_a_restatement_unless_registered_and_agreeing(self) -> None:
+        key = (".readthedocs.yaml", "build.tools.python")
+        unregistered = _Tree(**{".readthedocs.yaml": _RTD}).violations()
+        self.assertIn(("version-restated", *key), unregistered)
+        exceptions = json.loads(json.dumps(_EXCEPTIONS))
+        exceptions["restatements"].append(
+            {"file": key[0], "key": key[1], "agrees_with": ".python-version", "reason": "RTD."}
+        )
+        registered = _Tree(
+            **{".readthedocs.yaml": _RTD, "data/astral_exceptions.json": json.dumps(exceptions)}
+        ).violations()
+        self.assertIn(("version-disagrees", *key), registered)
+        self.assertNotIn(("version-restated", *key), registered)
+
+
+class TestToolsRunFromTheLockEverywhere(unittest.TestCase):
+    def test_a_pre_commit_entry_through_uvx_is_a_violation(self) -> None:
+        config = (
+            "repos:\n  - repo: local\n    hooks:\n      - id: lint\n        entry: uvx ruff check\n"
+        )
+        self.assertIn(
+            ("tool-outside-lock", ".pre-commit-config.yaml", "ruff"),
+            _Tree(**{".pre-commit-config.yaml": config}).violations(),
+        )
+
+    def test_bytecode_caches_are_not_sources(self) -> None:
+        argv = 'import subprocess\nsubprocess.run(["uvx", "ruff", "check"])\n'
+        found = _Tree(**{"src/demo/__pycache__/cached.py": argv}).violations()
+        self.assertEqual([v for v in found if v[0] == "tool-outside-lock"], [])
+        found = _Tree(**{"src/demo/live.py": argv}).violations()
+        self.assertIn(("tool-outside-lock", "src/demo/live.py", "ruff"), found)
+
+    def test_unreadable_distribution_metadata_maps_no_modules(self) -> None:
+        from gzkit.governance.trust_audits import astral_discipline as ad  # noqa: PLC0415
+
+        ad._distribution_modules.cache_clear()
+        self.addCleanup(ad._distribution_modules.cache_clear)
+        with mock.patch.object(
+            ad.importlib.metadata, "packages_distributions", side_effect=OSError
+        ):
+            self.assertEqual(ad._distribution_modules(), {})
+
+
+class TestTheAuditReadsItsBaseline(unittest.TestCase):
+    def _audit(self, baseline: str | None) -> list:
+        files = {".github/workflows/ci.yml": _CI.replace("--locked ", "")}
+        if baseline is not None:
+            files[BASELINE_RELPATH] = baseline
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for name, text in {**_Tree(**files).files}.items():
+                (root / name).parent.mkdir(parents=True, exist_ok=True)
+                (root / name).write_text(textwrap.dedent(text), encoding="utf-8")
+            return audit_astral_discipline(root)
+
+    def test_no_baseline_announces_and_does_not_fail(self) -> None:
+        with mock.patch(
+            "gzkit.governance.trust_audits.astral_discipline.emit_advisory"
+        ) as advisory:
+            self.assertEqual(self._audit(None), [])
+        self.assertTrue(advisory.called)
+
+    def test_a_malformed_baseline_is_an_error(self) -> None:
+        (error,) = self._audit(json.dumps({"_doc": "x", "rows": []}))
+        self.assertIn("malformed", error.message)
+
+    def test_a_baseline_holding_the_violation_admits_it(self) -> None:
+        row = {"rule": "lock-unchecked", "file": ".github/workflows/ci.yml", "subject": "uv sync"}
+        self.assertEqual(
+            self._audit(json.dumps({"_doc": "x", "violations": [{**row, "count": 1}]})), []
+        )
+
+
+class TestTheNegativeControlsDiscriminate(unittest.TestCase):
+    """RO-9's two canaries' controls: each reports only the violation it planted."""
+
+    def setUp(self) -> None:
+        from gzkit.governance.trust_audits import _qc_negative_controls as nc  # noqa: PLC0415
+
+        def mkroot(slug: str) -> Path:
+            tmp = tempfile.TemporaryDirectory(prefix=f"gzkit-qc-nc-{slug}-")
+            self.addCleanup(tmp.cleanup)
+            return Path(tmp.name)
+
+        # The builders take their directory from the enforcement runner; a unit test
+        # owns its own, so the fixture is the same tree in a directory it cleans up.
+        patcher = mock.patch.object(nc, "_mkroot", side_effect=mkroot)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test_the_new_violation_control_catches_only_the_setup_python_step(self) -> None:
+        from gzkit.governance.trust_audits import _qc_nc_entrypoints as ep  # noqa: PLC0415
+        from gzkit.governance.trust_audits import _qc_negative_controls as nc  # noqa: PLC0415
+
+        caught = ep._ep_astral_discipline(nc._build_astral_discipline())
+        self.assertTrue(caught)
+        self.assertTrue(all("setup-python" in e.artifact for e in caught), caught)
+        decoy = nc._build_astral_discipline()
+        (decoy / BASELINE_RELPATH).write_text(
+            json.dumps({"_doc": "x", "violations": []}), encoding="utf-8"
+        )
+        self.assertEqual(ep._ep_astral_discipline(decoy), [])
+
+    def test_the_admit_control_is_truthy_only_when_the_baseline_admits(self) -> None:
+        from gzkit.governance.trust_audits import _qc_nc_entrypoints as ep  # noqa: PLC0415
+        from gzkit.governance.trust_audits import _qc_negative_controls as nc  # noqa: PLC0415
+
+        self.assertEqual(
+            ep._ep_astral_discipline_admits_baselined(nc._build_astral_discipline_baselined()), 1
+        )
+        self.assertEqual(
+            ep._ep_astral_discipline_admits_baselined(nc._build_astral_discipline()), 0
+        )
+
+
+class TestTheClaimsDeclareTheirPopulation(unittest.TestCase):
+    def test_neither_astral_claim_is_an_undeclared_population(self) -> None:
+        from gzkit.governance.trust_audits.population_controls import (  # noqa: PLC0415
+            audit_population_controls,
+        )
+
+        flagged = [e.message for e in audit_population_controls(_REPO)]
+        self.assertFalse([m for m in flagged if "'astral-discipline" in m], flagged)
+
+
+class TestTheRo9LiteralsAreDeclaredAuditSubjects(unittest.TestCase):
+    """The RO-9 controls name paths they audit, which `gz check-config-paths` must not flag."""
+
+    def test_neither_literal_reads_as_an_ungoverned_path(self) -> None:
+        from gzkit.commands.config_paths import (  # noqa: PLC0415
+            _collect_source_path_literal_issues,
+        )
+        from gzkit.config import GzkitConfig  # noqa: PLC0415
+
+        manifest = json.loads((_REPO / ".gzkit" / "manifest.json").read_text(encoding="utf-8"))
+        config = GzkitConfig.load(_REPO / ".gzkit.json")
+        issues = [
+            " ".join(str(v) for v in issue.values())
+            for issue in _collect_source_path_literal_issues(_REPO, manifest, config)
+        ]
+        for module, literal in (
+            ("_qc_negative_controls.py", ".github/workflows/ci.yml"),
+            ("qc_binding.py", "pyproject.toml"),
+        ):
+            with self.subTest(module=module):
+                self.assertFalse([i for i in issues if module in i and literal in i], issues)
+
+
+class TestTheGzCheckStepIsQcBound(unittest.TestCase):
+    def test_the_qc_binding_audit_accepts_the_astral_step(self) -> None:
+        from gzkit.governance.trust_audits.qc_binding import audit_qc_binding  # noqa: PLC0415
+
+        # The audit prints advisories; captured so the verbose run reads this test's result.
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            errors = audit_qc_binding(_REPO)
+        findings = [f"{e.artifact} {e.message}" for e in errors]
+        self.assertFalse([f for f in findings if "Astral discipline" in f], findings)
+
+
+class TestTheScopeIsWiredIntoGzCheck(unittest.TestCase):
+    def test_gz_check_runs_the_astral_discipline_audit(self) -> None:
+        from gzkit.commands.quality import _build_check_steps  # noqa: PLC0415
+        from gzkit.quality import run_astral_discipline_audit  # noqa: PLC0415
+
+        self.assertIn(("Astral discipline", run_astral_discipline_audit), _build_check_steps())
+
+    def test_the_step_runs_the_validate_scope(self) -> None:
+        from gzkit import quality  # noqa: PLC0415
+
+        sentinel = object()
+        with mock.patch.object(quality, "run_command", return_value=sentinel) as run:
+            result = quality.run_astral_discipline_audit(_REPO)
+        self.assertIs(result, sentinel)
+        self.assertEqual(run.call_args.args[0], "uv run gz validate --astral-discipline")
+
+
+class TestTheScaffoldIsPlannedOnADryRun(unittest.TestCase):
+    """`gz init --dry-run` lists the project skeleton the witness checks (RO-9 tranche 1)."""
+
+    def test_the_dry_run_lists_the_skeleton(self) -> None:
+        from tests.commands.common import CliRunner  # noqa: PLC0415
+
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(main, ["init", "--dry-run"])
+            name = Path.cwd().name
+        self.assertEqual(result.exit_code, 0, result.output)
+        self.assertIn("Would create pyproject.toml", result.output)
+        self.assertIn(f"Would create src/{name}/__init__.py", result.output)
+
+
+class TestGzValidateRunsTheScope(unittest.TestCase):
+    """`gz validate --astral-discipline` reaches the audit and treats a finding as a breach."""
+
+    def _validate(self, findings: list) -> tuple[int, str]:
+        out = io.StringIO()
+        with (
+            mock.patch(
+                "gzkit.governance.trust_audits.audit_astral_discipline", return_value=findings
+            ) as audit,
+            # An open MX hangar demotes ERROR-level scopes to advisory; grade the
+            # scope as it stands outside one, where its findings block.
+            mock.patch("gzkit.mx.checkpoint.blocks", return_value=True),
+            contextlib.redirect_stdout(out),
+            contextlib.redirect_stderr(out),
+        ):
+            try:
+                code = main(["validate", "--astral-discipline"])
+            except SystemExit as exc:
+                code = exc.code if isinstance(exc.code, int) else 1
+        self.assertEqual(audit.call_count, 1, out.getvalue())
+        return code, out.getvalue()
+
+    def test_a_clean_tree_passes_the_scope(self) -> None:
+        code, output = self._validate([])
+        self.assertEqual(code, 0, output)
+        self.assertIn("astral_discipline", output)
+
+    def test_a_finding_is_a_policy_breach(self) -> None:
+        """Exit 3, the CLI doctrine's policy-breach code (`.gzkit/rules/cli.md`)."""
+        finding = ValidationError(type="astral_discipline", artifact="pyproject.toml", message="m")
+        code, output = self._validate([finding])
+        self.assertEqual(code, 3, output)
 
 
 if __name__ == "__main__":
