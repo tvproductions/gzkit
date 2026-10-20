@@ -161,11 +161,18 @@ def _run(
     cwd: Path,
     pycache_prefix: Path,
     extra_env: dict[str, str] | None = None,
+    pythonpath_prefix: str | None = None,
 ) -> subprocess.CompletedProcess[str]:
-    """Run the test command with an isolated bytecode cache (GHI #963)."""
+    """Run the test command with an isolated bytecode cache (GHI #963).
+
+    ``pythonpath_prefix`` goes first on any inherited ``PYTHONPATH`` (GHI #1260).
+    """
     import os  # noqa: PLC0415 — only needed to copy the ambient environment
 
     env = {**os.environ, **(extra_env or {})}
+    if pythonpath_prefix:
+        inherited = env.get("PYTHONPATH")
+        env["PYTHONPATH"] = os.pathsep.join(p for p in (pythonpath_prefix, inherited) if p)
     env["PYTHONPYCACHEPREFIX"] = str(pycache_prefix)
     return subprocess.run(  # noqa: S603 — the command is supplied by the sweep's author
         command,

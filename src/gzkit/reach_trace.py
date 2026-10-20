@@ -21,7 +21,6 @@ never as a false kill.
 from __future__ import annotations
 
 import json
-import os
 import subprocess
 import tempfile
 from collections.abc import Callable, Sequence
@@ -99,13 +98,14 @@ def trace_reach(
         for module in modules:
             out = Path(tmp) / "out" / module
             out.mkdir(parents=True)
-            pythonpath = os.pathsep.join(p for p in (str(hook), os.environ.get("PYTHONPATH")) if p)
-            env = {
-                "PYTHONPATH": pythonpath,
-                "GZKIT_REACH_ROOT": str(worktree),
-                "GZKIT_REACH_OUT": str(out),
-            }
-            result = run([*runner, module], worktree, Path(tmp) / "pyc", extra_env=env)
+            env = {"GZKIT_REACH_ROOT": str(worktree), "GZKIT_REACH_OUT": str(out)}
+            result = run(
+                [*runner, module],
+                worktree,
+                Path(tmp) / "pyc",
+                extra_env=env,
+                pythonpath_prefix=str(hook),
+            )
             executed, _, _ = read_test_observations((result.stdout or "") + (result.stderr or ""))
             lines = {
                 (str(rel), int(number))
