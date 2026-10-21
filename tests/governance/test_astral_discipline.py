@@ -167,6 +167,18 @@ class TestDependenciesLiveInTheProject(unittest.TestCase):
         rtd = "build:\n  jobs:\n    install:\n      - pip install -r requirements-docs.txt\n"
         self.assertEqual(_rules(**{".readthedocs.yaml": rtd}), {"pip-in-project"})
 
+    def test_a_requirements_file_anywhere_in_the_tree_is_a_violation(self) -> None:
+        """Strict uv project discipline admits no requirements file at any depth (operator)."""
+        for name in ("docs/requirements.txt", "tools/ci/requirements-dev.txt"):
+            with self.subTest(file=name):
+                found = _Tree(**{name: "mkdocs==1.6.1\n"}).violations()
+                self.assertIn(("pip-in-project", name, Path(name).name), found)
+
+    def test_an_environment_or_build_output_is_not_the_tree(self) -> None:
+        for name in (".venv/lib/pkg/requirements.txt", "site/requirements.txt"):
+            with self.subTest(file=name):
+                self.assertNotIn("pip-in-project", _rules(**{name: "x==1\n"}))
+
     def test_dev_tooling_in_an_extra_is_a_violation(self) -> None:
         extra = _PYPROJECT.replace(
             "dependencies = []\n",

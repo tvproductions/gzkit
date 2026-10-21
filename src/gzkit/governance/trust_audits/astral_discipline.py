@@ -10,7 +10,7 @@ per row of the measured population:
   version is a restatement, unless the exception register names it, and then it
   must agree with its home.
 - ``lock-unchecked``: automation syncs with ``uv sync --locked``.
-- ``pip-in-project``: no ``pip``, ``uv pip`` or ``requirements*.txt`` beside the lock.
+- ``pip-in-project``: no ``pip``, ``uv pip`` or ``requirements*.txt`` anywhere in the tree.
 - ``setup-python``: uv provides the interpreter.
 - ``dev-tool-in-extra``: development tooling lives in ``[dependency-groups]``.
 - ``tool-outside-lock``: a locked tool runs through ``uv run``, never ``uvx`` or ``PATH``.
@@ -34,6 +34,7 @@ Registered as ``gz validate --astral-discipline``; runs in ``gz check`` as the
 from __future__ import annotations
 
 import ast
+import fnmatch
 import functools
 import importlib.metadata
 import json
@@ -277,8 +278,21 @@ def _automation_rules(root: Path) -> Iterator[Violation]:
     for name in (".readthedocs.yaml", ".pre-commit-config.yaml"):
         for _ in _PIP_RE.finditer(_read(root / name)):
             yield Violation(rule="pip-in-project", file=name, subject="pip")
-    for path in sorted(root.glob("requirements*.txt")):
+    for path in _requirements_files(root):
         yield Violation(rule="pip-in-project", file=_rel(root, path), subject=path.name)
+
+
+#: Directories that are an environment, a build output or a cache, never the project's own tree.
+_NOT_THE_TREE = frozenset({".git", ".venv", "venv", "site", "node_modules", "__pycache__"})
+
+
+def _requirements_files(root: Path) -> list[Path]:
+    """Every ``requirements*.txt`` at any depth: uv's project model admits none beside the lock."""
+    found: list[Path] = []
+    for directory, dirnames, filenames in root.walk():
+        dirnames[:] = [d for d in dirnames if d not in _NOT_THE_TREE]
+        found.extend(directory / n for n in filenames if fnmatch.fnmatch(n, "requirements*.txt"))
+    return sorted(found)
 
 
 def _dependency_rules(root: Path, project: _Project) -> Iterator[Violation]:
