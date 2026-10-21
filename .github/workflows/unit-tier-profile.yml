@@ -53,7 +53,7 @@ jobs:
           enable-cache: true
 
       - name: Sync dependencies
-        run: uv sync --frozen --all-extras
+        run: uv sync --locked
 
       - name: Profile the unit tier in one process
         run: uv run python scripts/profile_unittest_modules.py --json unit-tier-profile-${{ matrix.os }}.json --top 40

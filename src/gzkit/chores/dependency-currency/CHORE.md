@@ -42,7 +42,7 @@ runs to trust the scanner.
 ```bash
 uv self version
 uv run ruff --version
-uvx ty --version
+uv run ty --version
 uv run python -c "from importlib.metadata import version; \
     print('pydantic', version('pydantic')); \
     print('rich', version('rich')); \
@@ -103,7 +103,7 @@ gzkit-wrapped commands honor configured exclusions).
 ```bash
 uv self version > .gzkit/chores/dependency-currency/proofs/uv-version.txt
 uv run ruff --version > .gzkit/chores/dependency-currency/proofs/ruff-version.txt
-uvx ty --version > .gzkit/chores/dependency-currency/proofs/ty-version.txt
+uv run ty --version > .gzkit/chores/dependency-currency/proofs/ty-version.txt
 gh api repos/astral-sh/uv/releases/latest --jq .tag_name > .gzkit/chores/dependency-currency/proofs/uv-latest.txt
 gh api repos/astral-sh/ruff/releases/latest --jq .tag_name > .gzkit/chores/dependency-currency/proofs/ruff-latest.txt
 ```

@@ -30,7 +30,7 @@ jobs:
           enable-cache: true
 
       - name: Sync dependencies
-        run: uv sync --frozen --all-extras
+        run: uv sync --locked
 
       # Exit 1 when a decayed sibling-state annotation is not disclosed in the
       # shrink-only baseline. The body is never rewritten — the annotation was

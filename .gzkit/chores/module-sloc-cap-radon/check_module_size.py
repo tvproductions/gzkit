@@ -125,7 +125,7 @@ def _band_label() -> str:
 def _measure() -> dict[str, int]:
     """Return {project-relative posix path: sloc} for every module under src/."""
     completed = subprocess.run(
-        ["uvx", "radon", "raw", "--json", str(_MEASURE_ROOT)],
+        ["uv", "run", "radon", "raw", "--json", str(_MEASURE_ROOT)],
         capture_output=True,
         text=True,
         encoding="utf-8",

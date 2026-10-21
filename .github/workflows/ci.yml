@@ -90,7 +90,7 @@ jobs:
           enable-cache: true
 
       - name: Sync dependencies
-        run: uv sync --frozen --all-extras
+        run: uv sync --locked
 
       - name: Run gz check --full (lint, format, typecheck, test, behave, validators, canary sweep)
         if: runner.os != 'Windows'

@@ -270,8 +270,8 @@ def arb_step_cmd(
 
 
 def arb_ty_cmd(*, argv: list[str], quiet: bool = False) -> int:
-    """Run `uvx ty` via ARB step wrapper."""
-    return arb_step_cmd(name="ty", argv=["uvx", "ty", *argv], quiet=quiet)
+    """Run the locked ty (`uv run ty`) via ARB step wrapper (RO-9 tranche 2)."""
+    return arb_step_cmd(name="ty", argv=["uv", "run", "ty", *argv], quiet=quiet)
 
 
 def arb_typecheck_cmd(*, quiet: bool = False) -> int:
@@ -305,7 +305,7 @@ def arb_coverage_cmd(*, argv: list[str], quiet: bool = False) -> int:
         return arb_step_cmd(
             name="coverage", argv=list(CANONICAL_STEP_COMMANDS["coverage"]), quiet=quiet
         )
-    return arb_step_cmd(name="coverage", argv=["coverage", *argv], quiet=quiet)
+    return arb_step_cmd(name="coverage", argv=["uv", "run", "coverage", *argv], quiet=quiet)
 
 
 def arb_validate_cmd(*, limit: int = 50, as_json: bool = False) -> int:

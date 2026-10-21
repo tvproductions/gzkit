@@ -20,8 +20,8 @@ Enforce PEP 257 docstring compliance across `src/gzkit/` using interrogate (>=85
 ### 1. Baseline — observe
 
 ```bash
-uvx interrogate -v -c pyproject.toml src/gzkit
-uvx ruff check src/gzkit --select D
+uv run interrogate -v -c pyproject.toml src/gzkit
+uv run ruff check src/gzkit --select D
 ```
 
 ### 2. Plan — propose
@@ -35,8 +35,8 @@ Add missing docstrings, fix style violations.
 ### 4. Validate — observe
 
 ```bash
-uvx interrogate -v -f 85 -c pyproject.toml src/gzkit
-uvx ruff check src/gzkit --select D
+uv run interrogate -v -f 85 -c pyproject.toml src/gzkit
+uv run ruff check src/gzkit --select D
 ```
 
 ## Checklist
@@ -52,8 +52,8 @@ Criteria live in `acceptance.json`, which `gz chores run` executes; render them 
 ## Evidence Commands
 
 ```bash
-uvx interrogate -v -c pyproject.toml src/gzkit > .gzkit/chores/pep257-docstring-compliance/proofs/interrogate-report.txt
-uvx ruff check src/gzkit --select D > .gzkit/chores/pep257-docstring-compliance/proofs/ruff-d-report.txt
+uv run interrogate -v -c pyproject.toml src/gzkit > .gzkit/chores/pep257-docstring-compliance/proofs/interrogate-report.txt
+uv run ruff check src/gzkit --select D > .gzkit/chores/pep257-docstring-compliance/proofs/ruff-d-report.txt
 ```
 
 ---

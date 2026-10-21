@@ -1,6 +1,6 @@
 # gz arb ty
 
-Run `uvx ty` via ARB and emit a step receipt.
+Run the locked ty (`uv run ty`) via ARB and emit a step receipt.
 
 ---
 

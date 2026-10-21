@@ -61,7 +61,8 @@ CANONICAL_METRICS: tuple[str, ...] = (
 )
 
 # Required external binaries.  Order is alphabetical for deterministic
-# error messages when more than one is missing.
+# error messages when more than one is missing.  Each is a locked dev tool and
+# runs from the lock through ``uv run``, never from PATH (RO-9 tranche 2).
 _REQUIRED_TOOLS: tuple[str, ...] = ("cohesion", "lizard", "radon")
 
 
@@ -295,7 +296,7 @@ def _run_radon_cc(path: Path) -> list[float]:
     must not abort the whole pipeline.
     """
     completed = subprocess.run(
-        ["radon", "cc", "--json", "--no-assert", str(path)],
+        ["uv", "run", "radon", "cc", "--json", "--no-assert", str(path)],
         capture_output=True,
         text=True,
         errors="replace",
@@ -321,7 +322,7 @@ def _run_radon_mi(path: Path) -> list[float]:
     with no measurable MI returns an empty list.
     """
     completed = subprocess.run(
-        ["radon", "mi", "--json", str(path)],
+        ["uv", "run", "radon", "mi", "--json", str(path)],
         capture_output=True,
         text=True,
         errors="replace",
@@ -345,7 +346,7 @@ def _run_radon_hal(path: Path) -> dict[str, list[float]]:
     ``{filepath: {"total": {"volume": ..., "difficulty": ..., "effort": ...}}}``.
     """
     completed = subprocess.run(
-        ["radon", "hal", "--json", str(path)],
+        ["uv", "run", "radon", "hal", "--json", str(path)],
         capture_output=True,
         text=True,
         errors="replace",
@@ -372,7 +373,7 @@ def _run_radon_raw(path: Path) -> dict[str, list[float]]:
     LLOC since they are the doctrine-cited size signals.
     """
     completed = subprocess.run(
-        ["radon", "raw", "--json", str(path)],
+        ["uv", "run", "radon", "raw", "--json", str(path)],
         capture_output=True,
         text=True,
         errors="replace",
@@ -402,7 +403,7 @@ def _run_lizard(path: Path) -> dict[str, list[float]]:
     signature, start_line, end_line, ND.
     """
     completed = subprocess.run(
-        ["lizard", "-End", "--csv", str(path)],
+        ["uv", "run", "lizard", "-End", "--csv", str(path)],
         capture_output=True,
         text=True,
         errors="replace",
@@ -443,7 +444,7 @@ def _run_cohesion(path: Path) -> list[float]:
     JSON mode; output is text of shape ``Class: <name> ... Total: <pct>%``.
     """
     completed = subprocess.run(
-        ["cohesion", "-f", str(path)],
+        ["uv", "run", "cohesion", "-f", str(path)],
         capture_output=True,
         text=True,
         errors="replace",

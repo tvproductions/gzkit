@@ -21,7 +21,7 @@ Rationalize exceptions and logging. Replace bare `except:` with specific excepti
 ### 1. Baseline — observe
 
 ```bash
-uvx ruff check src/gzkit --select E722 --output-format text
+uv run ruff check src/gzkit --select E722 --output-format text
 ```
 
 ### 2. Plan — propose
@@ -35,7 +35,7 @@ Replace bare excepts with specific types. Add structured logging.
 ### 4. Validate — observe
 
 ```bash
-uvx ruff check src/gzkit --select E722 --output-format text
+uv run ruff check src/gzkit --select E722 --output-format text
 uv run gz test
 ```
 
@@ -52,7 +52,7 @@ Criteria live in `acceptance.json`, which `gz chores run` executes; render them 
 ## Evidence Commands
 
 ```bash
-uvx ruff check src/gzkit --select E722 --output-format text > .gzkit/chores/exceptions-and-logging-rationalization/proofs/e722-report.txt
+uv run ruff check src/gzkit --select E722 --output-format text > .gzkit/chores/exceptions-and-logging-rationalization/proofs/e722-report.txt
 ```
 
 ---

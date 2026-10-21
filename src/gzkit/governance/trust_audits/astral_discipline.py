@@ -16,7 +16,10 @@ per row of the measured population:
 - ``tool-outside-lock``: a locked tool runs through ``uv run``, never ``uvx`` or ``PATH``.
 - ``unused-dependency``: a declared development dependency something invokes.
 - ``non-astral-unregistered`` / ``exception-without-reason`` / ``exception-stale``:
-  every non-Astral tool is a curated exception with a recorded reason.
+  every non-Astral tool is a curated exception with a recorded reason. A registered
+  ``records`` entry names a module-level table whose strings are data, not an
+  invocation (a dated history of argv that ran, a tuple of step names); it is not
+  read for argv, and it too needs a reason and a symbol that exists.
 - ``build-backend-not-uv`` / ``publish-not-uv``: ``uv_build``, ``uv publish``.
 
 Today's violations seed ``data/astral_discipline_baseline.json``, a shrink-only
@@ -363,9 +366,39 @@ def _invoked(name: str, index: frozenset[str]) -> bool:
     return any(c in index for c in candidates - _NOT_MODULES if not c.startswith("_"))
 
 
+def _records(project: _Project) -> list[dict[str, Any]]:
+    return [r for r in project.exceptions.get("records", []) if isinstance(r, dict)]
+
+
+def _record_nodes(tree: ast.Module, symbols: set[str]) -> dict[str, set[int]]:
+    """Map each named module-level assignment to the ids of every node inside it."""
+    found: dict[str, set[int]] = {}
+    for stmt in tree.body:
+        targets = stmt.targets if isinstance(stmt, ast.Assign) else []
+        if isinstance(stmt, ast.AnnAssign):
+            targets = [stmt.target]
+        for target in targets:
+            if isinstance(target, ast.Name) and target.id in symbols:
+                found[target.id] = {id(node) for node in ast.walk(stmt)}
+    return found
+
+
+def _record_rules(root: Path, project: _Project) -> Iterator[Violation]:
+    for record in _records(project):
+        subject = f"{record.get('file', '')}:{record.get('symbol', '')}"
+        if not str(record.get("reason", "")).strip():
+            yield Violation(
+                rule="exception-without-reason", file=EXCEPTIONS_RELPATH, subject=subject
+            )
+        text = _read(root / str(record.get("file", "")))
+        symbol = str(record.get("symbol", ""))
+        if not text or symbol not in _record_nodes(ast.parse(text), {symbol}):
+            yield Violation(rule="exception-stale", file=EXCEPTIONS_RELPATH, subject=subject)
+
+
 def _provenance_rules(root: Path, project: _Project) -> Iterator[Violation]:
     tools = project.dev_tools
-    yield from _argv_provenance(root, tools)
+    yield from _argv_provenance(root, tools, _records(project))
     for path in sorted((root / "src").glob("**/chores/**/acceptance.json")):
         for command in _strings(json.loads(_read(path) or "null")):
             if subject := _uvx_locked_tool(command.split(), tools):
@@ -385,14 +418,22 @@ def _uvx_locked_tool(parts: list[str], tools: set[str]) -> str | None:
     return None
 
 
-def _argv_provenance(root: Path, tools: set[str]) -> Iterator[Violation]:
-    """Flag argv literals under ``src`` that run a locked dev tool outside ``uv run``."""
+def _argv_provenance(
+    root: Path, tools: set[str], records: list[dict[str, Any]]
+) -> Iterator[Violation]:
+    """Flag argv literals under ``src`` that run a locked dev tool outside ``uv run``.
+
+    A registered record's own table is skipped: it holds argv that ran, kept as history.
+    """
     for path in sorted((root / "src").rglob("*.py")):
         if "__pycache__" in path.parts:
             continue
         rel = _rel(root, path)
-        for node in ast.walk(ast.parse(_read(path))):
-            if not isinstance(node, ast.List | ast.Tuple):
+        tree = ast.parse(_read(path))
+        symbols = {str(r.get("symbol", "")) for r in records if r.get("file") == rel}
+        skipped = set().union(*_record_nodes(tree, symbols).values())
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.List | ast.Tuple) or id(node) in skipped:
                 continue
             words = _leading_words(node.elts)
             if subject := _uvx_locked_tool(words, tools):
@@ -430,6 +471,7 @@ def find_violations(root: Path) -> list[Violation]:
         *_automation_rules(root),
         *_dependency_rules(root, project),
         *_provenance_rules(root, project),
+        *_record_rules(root, project),
     ]
 
 

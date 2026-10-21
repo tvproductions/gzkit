@@ -373,7 +373,7 @@ The `acceptance.json` file uses this schema:
     },
     {
       "type": "outputNotContains",
-      "command": "uvx ruff check src/gzkit --select E722",
+      "command": "uv run ruff check src/gzkit --select E722",
       "notContains": "E722",
       "description": "No bare except clauses"
     }

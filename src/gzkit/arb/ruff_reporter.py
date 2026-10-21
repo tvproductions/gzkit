@@ -35,7 +35,7 @@ def _run_command(cmd: list[str]) -> subprocess.CompletedProcess[str]:
 
 
 def _ruff_version() -> str:
-    result = _run_command(["ruff", "--version"])
+    result = _run_command(["uv", "run", "ruff", "--version"])
     if result.returncode != 0:
         return "unknown"
     return result.stdout.strip() or "unknown"
@@ -168,7 +168,7 @@ def run_ruff_via_arb(
 
     """
     targets = paths or ["."]
-    cmd = ["ruff", "check", *targets, "--output-format", "json"]
+    cmd = ["uv", "run", "ruff", "check", *targets, "--output-format", "json"]
     if fix:
         cmd.append("--fix")
 

@@ -371,7 +371,7 @@ class TestLizardCohesionParserArgvRegression(unittest.TestCase):
             tempfile.TemporaryDirectory() as out,
         ):
             measure_corpus(stub_corpus(), Path(out), cache_root=Path(out) / "cache")
-        lizard_calls = [c for c in spy.calls if c["argv"] and c["argv"][0] == "lizard"]
+        lizard_calls = [c for c in spy.calls if c["argv"][:3] == ["uv", "run", "lizard"]]
         self.assertGreater(len(lizard_calls), 0, msg="no lizard subprocess calls captured")
         for call in lizard_calls:
             self.assertIn(
@@ -388,7 +388,7 @@ class TestLizardCohesionParserArgvRegression(unittest.TestCase):
             tempfile.TemporaryDirectory() as out,
         ):
             measure_corpus(stub_corpus(), Path(out), cache_root=Path(out) / "cache")
-        cohesion_calls = [c for c in spy.calls if c["argv"] and c["argv"][0] == "cohesion"]
+        cohesion_calls = [c for c in spy.calls if c["argv"][:3] == ["uv", "run", "cohesion"]]
         self.assertGreater(len(cohesion_calls), 0, msg="no cohesion subprocess calls captured")
         for call in cohesion_calls:
             self.assertIn(

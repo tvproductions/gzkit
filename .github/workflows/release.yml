@@ -66,10 +66,10 @@ jobs:
       - name: Set up Python
         run: uv python install
 
-      - name: Install dependencies + PyInstaller
-        run: |
-          uv sync
-          uv add --dev pyinstaller
+      # PyInstaller is already in the locked `dev` group; `uv add` here rewrote
+      # pyproject.toml inside CI (RO-9 tranche 2).
+      - name: Install dependencies
+        run: uv sync --locked
 
       - name: Build binary
         run: uv run pyinstaller gz.spec

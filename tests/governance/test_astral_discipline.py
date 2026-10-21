@@ -203,6 +203,42 @@ class TestToolsRunFromTheLock(unittest.TestCase):
             ],
         )
 
+    def test_a_registered_dated_record_is_not_an_invocation(self) -> None:
+        """A history table of argv that ran is a record; only its own symbol is exempt."""
+        source = textwrap.dedent(
+            """
+            RETIRED = {"coverage": [("2026-09-18T10:57:40Z", ["ruff", "check", "."])]}
+
+            def f():
+                return ["ruff", "--version"]
+            """
+        )
+        record = {"file": "src/gzkit/m.py", "symbol": "RETIRED", "reason": "dated receipts"}
+        registered = json.dumps({**_EXCEPTIONS, "records": [record]})
+        found = _Tree(
+            **{"src/gzkit/m.py": source, "data/astral_exceptions.json": registered}
+        ).violations()
+        self.assertEqual(
+            [v for v in found if v[0].startswith(("tool-outside-lock", "exception"))],
+            [("tool-outside-lock", "src/gzkit/m.py", "ruff")],
+        )
+
+    def test_a_reasonless_or_dead_record_is_a_violation(self) -> None:
+        source = 'RETIRED = [["ruff", "check"]]\n'
+        for record, rule in (
+            (
+                {"file": "src/gzkit/m.py", "symbol": "RETIRED", "reason": ""},
+                "exception-without-reason",
+            ),
+            ({"file": "src/gzkit/m.py", "symbol": "GONE", "reason": "r"}, "exception-stale"),
+        ):
+            registered = json.dumps({**_EXCEPTIONS, "records": [record]})
+            with self.subTest(rule=rule):
+                self.assertIn(
+                    rule,
+                    _rules(**{"src/gzkit/m.py": source, "data/astral_exceptions.json": registered}),
+                )
+
     def test_a_chore_command_through_uvx_is_a_violation(self) -> None:
         acceptance = json.dumps({"criteria": [{"command": "uvx ty check ."}]})
         self.assertIn(

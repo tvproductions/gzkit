@@ -71,7 +71,19 @@
       "file": ".readthedocs.yaml",
       "key": "build.tools.python",
       "agrees_with": ".python-version",
-      "reason": "Read the Docs' build image requires an interpreter key; it must match the pin until RO-9 tranche 2 builds the docs through uv."
+      "reason": "Read the Docs' build image requires an interpreter key even though the docs build through uv (RO-9 tranche 2); it must match the pin."
+    }
+  ],
+  "records": [
+    {
+      "file": "src/gzkit/arb/validator.py",
+      "symbol": "RETIRED_STEP_COMMANDS",
+      "reason": "Dated history of canonical step argv that already ran; each row keeps older ARB receipts valid and the table forbids editing a row, so it records an invocation and makes none."
+    },
+    {
+      "file": "src/gzkit/governance/stage4_evidence.py",
+      "symbol": "_REQUIRED_RECEIPT_STEPS",
+      "reason": "A tuple of ARB receipt step names (ruff, typecheck, unittest), read as data to find receipts; it runs nothing."
     }
   ]
 }

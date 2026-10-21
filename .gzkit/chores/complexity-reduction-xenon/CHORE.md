@@ -24,7 +24,7 @@ Reduce cyclomatic complexity across `src/` to meet the canonical complexity-doct
 
 - **Lane:** Lite — internal refactoring, no external contract changes
 - **Threshold (post-cluster):** Derived from ADR-0.0.28's `ThresholdTable` `block` band for `radon_cc` and `lizard_ccn` metrics
-- **Threshold (pre-cluster bootstrap):** `uvx xenon --max-absolute C --max-modules C --max-average C src/`
+- **Threshold (pre-cluster bootstrap):** `uv run xenon --max-absolute C --max-modules C --max-average C src/`
 - Tidy-first: extract helpers, remove nesting, keep behavior unchanged
 - Tests must stay green
 - **Diagnosis-aware (post-cluster):** When xenon fails, run `gz complexity advise --json <failing-paths>` and use the structured `AdvisorDiagnosis` to inform refactor decisions; do NOT pattern-match refactor archetypes from training memory
@@ -43,7 +43,7 @@ uv run gz complexity advise --json src/ > .gzkit/chores/complexity-reduction-xen
 **Pre-cluster bootstrap mode (until cluster lands):**
 
 ```bash
-uvx xenon --max-absolute C --max-modules C --max-average C src/ > .gzkit/chores/complexity-reduction-xenon/proofs/xenon-baseline.txt
+uv run xenon --max-absolute C --max-modules C --max-average C src/ > .gzkit/chores/complexity-reduction-xenon/proofs/xenon-baseline.txt
 ```
 
 ### 2. Plan — propose
@@ -72,7 +72,7 @@ uv run gz test
 **Pre-cluster bootstrap mode:**
 
 ```bash
-uvx xenon --max-absolute C --max-modules C --max-average C src/
+uv run xenon --max-absolute C --max-modules C --max-average C src/
 uv run gz test
 ```
 
@@ -109,7 +109,7 @@ uv run gz validate --complexity-thresholds > .gzkit/chores/complexity-reduction-
 **Pre-cluster bootstrap:**
 
 ```bash
-uvx xenon --max-absolute C --max-modules C --max-average C src/ > .gzkit/chores/complexity-reduction-xenon/proofs/xenon-report.txt
+uv run xenon --max-absolute C --max-modules C --max-average C src/ > .gzkit/chores/complexity-reduction-xenon/proofs/xenon-report.txt
 ```
 
 ## Cluster Linkage

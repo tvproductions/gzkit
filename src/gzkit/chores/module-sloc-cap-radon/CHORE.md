@@ -74,7 +74,7 @@ Invariant #8 forbids.
 ### 1. Baseline — observe
 
 ```bash
-uvx radon raw src/ -s -j > .gzkit/chores/module-sloc-cap-radon/proofs/radon-baseline.json
+uv run radon raw src/ -s -j > .gzkit/chores/module-sloc-cap-radon/proofs/radon-baseline.json
 ```
 
 ### 2. Plan — propose
@@ -92,7 +92,7 @@ Split modules by responsibility. Maintain backwards-compatible imports.
 
 ```bash
 uv run gz test
-uvx radon raw src/ -s -j
+uv run radon raw src/ -s -j
 ```
 
 ## Checklist
@@ -108,7 +108,7 @@ Criteria live in `acceptance.json`, which `gz chores run` executes; render them 
 ## Evidence Commands
 
 ```bash
-uvx radon raw src/ -s -j > .gzkit/chores/module-sloc-cap-radon/proofs/radon-report.json
+uv run radon raw src/ -s -j > .gzkit/chores/module-sloc-cap-radon/proofs/radon-report.json
 ```
 
 ---

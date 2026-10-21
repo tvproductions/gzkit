@@ -69,6 +69,16 @@ build:
   tools:
     python: "3.14"
   jobs:
+    # The docs build from the lock through uv (RO-9 tranche 2), as Read the Docs
+    # documents for uv: uv itself at the one version `[tool.uv] required-version`
+    # names, read from pyproject.toml so the version is stated once, then the
+    # locked `docs` group alone into Read the Docs' environment.
+    pre_create_environment:
+      - asdf plugin add uv
+      - asdf install uv "$(sed -n 's/^required-version = "==\(.*\)"$/\1/p' pyproject.toml)"
+      - asdf global uv "$(sed -n 's/^required-version = "==\(.*\)"$/\1/p' pyproject.toml)"
+    create_environment:
+      - uv venv "${READTHEDOCS_VIRTUALENV_PATH}"
     # Skip non-tag builds (branch pushes) so RTD only rebuilds on releases.
     # Exit code 183 is RTD's documented "cancel build" signal.
     # See https://docs.readthedocs.io/en/stable/build-customization.html#cancel-build-based-on-a-condition
@@ -79,10 +89,10 @@ build:
           exit 183
         fi
     install:
-      - pip install -r requirements-docs.txt
+      - UV_PROJECT_ENVIRONMENT="${READTHEDOCS_VIRTUALENV_PATH}" uv sync --locked --only-group docs
     build:
       html:
-        - mkdocs build --strict --site-dir $READTHEDOCS_OUTPUT/html
+        - UV_PROJECT_ENVIRONMENT="${READTHEDOCS_VIRTUALENV_PATH}" uv run --no-sync mkdocs build --strict --site-dir $READTHEDOCS_OUTPUT/html
 
 mkdocs:
   configuration: mkdocs.yml

@@ -2,7 +2,7 @@
 
 # RO-9 specification — the toolchain realigned to Astral's project discipline
 
-**2026-10-19. Status: tranche 1 landed (the witness, uv and the Astral tools current, Python declared once at 3.14); tranches 2 to 7 open.** Operator: **g0**. Repair order RO-9 of the
+**2026-10-19. Status: tranche 1 landed (the witness, uv and the Astral tools current, Python declared once at 3.14); tranche 2 landed 2026-10-21 (lock discipline: `--locked` everywhere, docs from a locked group, every project tool through `uv run`); tranches 3 to 7 open.** Operator: **g0**. Repair order RO-9 of the
 [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders), mandate item 7: gzkit
 and every project `gz init` scaffolds follow [uv's project model](https://docs.astral.sh/uv/concepts/projects/)
 strictly and use Astral's tools to the maximum, on Python 3.14, with stdlib first and curated

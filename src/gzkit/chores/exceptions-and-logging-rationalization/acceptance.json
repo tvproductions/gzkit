@@ -7,7 +7,7 @@
     },
     {
       "type": "exitCodeEquals",
-      "command": "uvx ruff check src/gzkit --select E722",
+      "command": "uv run ruff check src/gzkit --select E722",
       "expected": 0
     }
   ]

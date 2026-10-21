@@ -36,7 +36,7 @@ uv run mkdocs build --strict
 
 ```zsh
 uv lock
-uv sync --frozen --all-extras
+uv sync --locked
 ```
 
 4. Build artifacts

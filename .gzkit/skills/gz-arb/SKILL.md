@@ -5,11 +5,11 @@ description: Use to wrap QA commands in ARB receipts for attestation evidence or
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-10-21
 model: haiku
 gz_command: arb advise
 metadata:
-  skill-version: "1.4.1"
+  skill-version: "1.4.2"
 revived_on: "2026-04-14"
 revived_under: OBPI-0.25.0-33
 revival_note: "ARB surface absorbed from airlineops/opsdev/arb under OBPI-0.25.0-33. The earlier retirement (2026-04-03, 'consolidated into gz-check') was itself drift — gz check never implemented ARB receipt emission, so the rule contract in .gzkit/rules/arb.md was referencing a nonexistent surface. Revival restores parity with the rule."
@@ -55,7 +55,7 @@ Agent Self-Reporting middleware: wrap QA commands (ruff, ty, unittest, coverage)
    - `uv run gz arb step --name <name> -- <command>` — any step not named
      in the canonical table (diagnostic or bespoke QA only; not valid
      attestation provenance)
-   - `uv run gz arb ty` — raw `uvx ty check` passthrough; **not** an alias
+   - `uv run gz arb ty` — raw `uv run ty check` passthrough; **not** an alias
      of `gz arb typecheck` (which wraps the canonical scope with the ARB
      schema).
      Use `gz arb ty` when you need the raw `ty` output without ARB receipt

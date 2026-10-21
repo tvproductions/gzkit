@@ -214,7 +214,7 @@ def _register_step(arb_commands: argparse._SubParsersAction) -> None:
 def _register_ty(arb_commands: argparse._SubParsersAction) -> None:
     p = arb_commands.add_parser(
         "ty",
-        help="Run `uvx ty` via ARB and emit a step receipt",
+        help="Run the locked ty (`uv run ty`) via ARB and emit a step receipt",
         description="Run the ty type checker via ARB step wrapper.",
         epilog=build_epilog(["gz arb ty check ."]),
     )

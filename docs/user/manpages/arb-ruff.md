@@ -10,7 +10,7 @@ Run ruff check via ARB and emit a schema-validated lint receipt.
 gz arb ruff [PATHS...] [--fix] [--soft-fail]
 ```
 
-Runs `uvx ruff check` against the given paths (defaults to `.`), captures the
+Runs the locked Ruff (`uv run ruff check`) against the given paths (defaults to `.`), captures the
 findings, and writes a lint receipt to `artifacts/receipts/`. The receipt is
 the canonical attestation evidence for any Heavy-lane claim of lint cleanliness.
 

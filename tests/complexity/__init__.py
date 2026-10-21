@@ -117,6 +117,11 @@ def _route_subprocess(args: list[str]) -> mock.Mock:
     canned = _canned_outputs()
     if not args:
         return _stub_completed("", returncode=2)
+    if args[:2] != ["uv", "run"]:
+        # A measurement tool is a locked dev tool: it runs from the lock through
+        # `uv run`, never from PATH (RO-9 tranche 2). Anything else finds no tool.
+        return _stub_completed("", returncode=127)
+    args = args[2:]
     head = args[0]
     if head == "radon" and len(args) >= 2:
         return _stub_completed(canned.get(("radon", args[1]), ""))

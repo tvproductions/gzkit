@@ -5,8 +5,8 @@ Enforce Pythonic idioms and type safety using ruff + ty.
 ## Quick Start
 
 ```bash
-uvx ruff check . --fix
-uvx ty check . --exclude 'features/**'
+uv run ruff check . --fix
+uv run ty check . --exclude 'features/**'
 ```
 
 ## Lane

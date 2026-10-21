@@ -49,8 +49,8 @@ All ~120 ty rules at default severity, including:
 ### 1. Baseline — observe
 
 ```bash
-uvx ruff check . > .gzkit/chores/pythonic-refactoring/proofs/ruff-baseline.txt
-uvx ty check . --exclude 'features/**' > .gzkit/chores/pythonic-refactoring/proofs/ty-baseline.txt
+uv run ruff check . > .gzkit/chores/pythonic-refactoring/proofs/ruff-baseline.txt
+uv run ty check . --exclude 'features/**' > .gzkit/chores/pythonic-refactoring/proofs/ty-baseline.txt
 ```
 
 ### 2. Plan — propose
@@ -82,15 +82,15 @@ return y
 ### 4. Validate — observe
 
 ```bash
-uvx ruff check .
-uvx ty check . --exclude 'features/**'
+uv run ruff check .
+uv run ty check . --exclude 'features/**'
 uv run gz test
 ```
 
 ## Quick Fix Commands
 
 ```bash
-uvx ruff check . --fix
+uv run ruff check . --fix
 ```
 
 > Do NOT use `--unsafe-fixes` — TC003 moves imports into TYPE_CHECKING blocks, breaking Pydantic models.
@@ -102,8 +102,8 @@ Criteria live in `acceptance.json`, which `gz chores run` executes; render them 
 ## Evidence Commands
 
 ```bash
-uvx ruff check . > .gzkit/chores/pythonic-refactoring/proofs/ruff-report.txt
-uvx ty check . --exclude 'features/**' > .gzkit/chores/pythonic-refactoring/proofs/ty-report.txt
+uv run ruff check . > .gzkit/chores/pythonic-refactoring/proofs/ruff-report.txt
+uv run ty check . --exclude 'features/**' > .gzkit/chores/pythonic-refactoring/proofs/ty-report.txt
 ```
 
 ## Run Log
