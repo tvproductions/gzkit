@@ -2095,7 +2095,7 @@
           "min": 0
         },
         "lease_started_at": {
-          "type": "string",
+          "type": ["string", "null"],
           "min_length": 1
         }
       }

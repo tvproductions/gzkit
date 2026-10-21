@@ -5,7 +5,8 @@ A marked verb's `--attestor` defaults to `.gzkit.json`
 the 7 human-act (Recommended)". Only verbs whose attestor is an identity are
 marked; the seven whose own contract declares the attester's act (repudiate,
 withdraw, supersede, mx enter and exit, ledger correct, obpi acceptance) keep
-a typed attestor.
+a typed attestor, and so do the human-act verbs added since (mx renew, GHI #1261;
+canary review, GHI #1161).
 
 The marker swaps the argument's default for a sentinel, so after parsing an
 omission is told apart from any explicit value, whitespace included, which is

@@ -27,6 +27,7 @@ from __future__ import annotations
 import importlib.util
 import unittest
 from types import ModuleType
+from unittest import mock
 
 from gzkit.commands.common import get_project_root
 
@@ -46,6 +47,17 @@ def _load_gate() -> ModuleType:
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+class TestRadonRunsFromTheLock(unittest.TestCase):
+    """The gate measures with the locked radon, through `uv run` (RO-9 tranche 2)."""
+
+    def test_measure_invokes_radon_through_uv_run(self) -> None:
+        gate = _load_gate()
+        completed = mock.Mock(returncode=0, stdout="{}", stderr="")
+        with mock.patch.object(gate.subprocess, "run", return_value=completed) as run:
+            gate._measure()  # noqa: SLF001
+        self.assertEqual(run.call_args.args[0][:4], ["uv", "run", "radon", "raw"])
 
 
 class TestSlackDirection(unittest.TestCase):

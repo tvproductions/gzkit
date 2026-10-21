@@ -211,6 +211,23 @@ class TestSubprocessInvocationDiscipline(unittest.TestCase):
             self.assertEqual(kwargs.get("encoding"), "utf-8")
 
 
+class TestMeasurementToolsRunFromTheLock(unittest.TestCase):
+    """Every measurement tool runs through ``uv run``, never from PATH (RO-9 tranche 2)."""
+
+    def test_every_radon_lizard_and_cohesion_call_goes_through_uv_run(self) -> None:
+        with (
+            stubbed_pipeline_environment() as (_tree, spy),
+            tempfile.TemporaryDirectory() as out,
+        ):
+            measure_corpus(stub_corpus(), Path(out), cache_root=Path(out) / "cache")
+        tools = [c["argv"] for c in spy.calls if c["argv"] and c["argv"][0] != "git"]
+        self.assertTrue(tools, "no measurement subprocess calls captured")
+        bare = [argv for argv in tools if argv[:2] != ["uv", "run"]]
+        self.assertEqual(bare, [])
+        radon = {argv[3] for argv in tools if argv[2] == "radon"}
+        self.assertEqual(radon, {"cc", "mi", "hal", "raw"})
+
+
 class TestUnitTierIsolation(unittest.TestCase):
     """Brief Requirement 9: unit tier never clones a real repo.
 

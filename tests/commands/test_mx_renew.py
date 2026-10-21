@@ -55,7 +55,9 @@ class TestRenewRefreshesTheLease(SilencedConsoleTestCase):
         with TemporaryDirectory() as tmp:
             root = _open_session(tmp)
             _age_lock(root, 2 * _LEASE)
-            session_id = marker.read(root).session_id  # type: ignore[union-attr]
+            held = marker.read(root)
+            assert held is not None
+            session_id = held.session_id
 
             mx_renew_cmd(attestor="g0", project_root=root)
 
