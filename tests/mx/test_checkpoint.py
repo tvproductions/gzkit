@@ -236,7 +236,7 @@ class TestValidateAnnouncesDemotion(unittest.TestCase):
     validations passed" over a real violation under safe mode (drydock RO-3, 2026-10-21).
     """
 
-    def _run(self, root: Path) -> tuple[list, str]:
+    def _run(self, root: Path, tier: str = "explicit") -> tuple[list, str]:
         import contextlib
         import io
         from unittest.mock import patch
@@ -245,16 +245,25 @@ class TestValidateAnnouncesDemotion(unittest.TestCase):
         from gzkit.core.validation_rules import ValidationError
 
         finding = ValidationError(type="t", artifact="a.py", message="the finding itself")
+        runners = {"id_seam": lambda: [finding]}
+        default, explicit = (runners, {}) if tier == "default" else ({}, runners)
         stderr = io.StringIO()
         with (
-            patch.object(validate_cmd, "_default_scope_runners", return_value={}),
-            patch.object(
-                validate_cmd, "_explicit_scope_runners", return_value={"id_seam": lambda: [finding]}
-            ),
+            patch.object(validate_cmd, "_default_scope_runners", return_value=default),
+            patch.object(validate_cmd, "_explicit_scope_runners", return_value=explicit),
             contextlib.redirect_stderr(stderr),
         ):
-            errors = validate_cmd._run_scope_checks(root, {}, {"id_seam": True}, run_all=False)
+            requested = {"id_seam": True}
+            errors = validate_cmd._run_scope_checks(root, requested, requested, run_all=False)
         return errors, stderr.getvalue()
+
+    def test_a_demoted_default_tier_scope_is_announced_too(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            marker.write(Marker(session_id="safe-session", mode="safe"), root)
+            errors, stderr = self._run(root, tier="default")
+        self.assertEqual(errors, [])
+        self.assertIn("a.py: the finding itself", stderr)
 
     def test_a_demoted_scope_names_itself_and_its_findings_on_stderr(self) -> None:
         with TemporaryDirectory() as tmp:
