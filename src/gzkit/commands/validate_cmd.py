@@ -2,6 +2,7 @@
 
 import json
 import os
+import sys
 from collections.abc import Callable
 from functools import partial
 from pathlib import Path
@@ -928,24 +929,29 @@ def _run_scope_checks(
 
     scope_levels = {e.stem: e.level for e in VALIDATOR_REGISTRY}
 
-    def _grounds(scope: str) -> bool:
-        # Unregistered scope -> CRITICAL: a name nothing declares, nothing vouched for.
-        return checkpoint.blocks(scope, scope_levels.get(scope, _mx_levels.CRITICAL), project_root)
-
     errors: list[ValidationError] = []
+
+    def _route(scope: str, scope_errors: list[ValidationError]) -> None:
+        # Unregistered scope -> CRITICAL: a name nothing declares, nothing vouched for.
+        level = scope_levels.get(scope, _mx_levels.CRITICAL)
+        if checkpoint.blocks(scope, level, project_root):
+            errors.extend(scope_errors)
+            return
+        # Demoted, never discarded (GHI #843): stderr, so --json stdout stays parseable.
+        if scope_errors:
+            print(checkpoint.demote_notice(scope), file=sys.stderr)  # noqa: T201
+        for error in scope_errors:
+            print(f"  {error.artifact}: {error.message}", file=sys.stderr)  # noqa: T201
+
     default_runners = _default_scope_runners(project_root, frontmatter_adr)
     explicit_runners = _explicit_scope_runners(project_root)
 
     for scope, runner in default_runners.items():
         if run_all and scope in default_scopes or default_scopes.get(scope, False):
-            scope_errors = runner()
-            if _grounds(scope):
-                errors.extend(scope_errors)
+            _route(scope, runner())
     for scope, runner in explicit_runners.items():
         if explicit_scopes.get(scope):
-            scope_errors = runner()
-            if _grounds(scope):
-                errors.extend(scope_errors)
+            _route(scope, runner())
     return errors
 
 

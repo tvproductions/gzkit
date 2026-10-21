@@ -3115,3 +3115,16 @@ Follows the CLI doctrine 4-code map:
 | 1 | User/config error or non-frontmatter validation error | Fix invocation or address reported errors |
 | 2 | System/IO error | Check filesystem and retry |
 | 3 | Frontmatter-ledger policy breach (drift) | Run `gz validate --frontmatter --explain <ADR>` then the suggested recovery command |
+
+**Inside the MX hangar or safe mode** (`.gzkit/mx.json` present), a scope below the
+`gate5_invariants` floor is advisory: its findings do not set the exit code. They are
+announced, never dropped. Each demoted scope that found something prints the
+`[MX advisory]` notice and its findings to stderr, so `--json` output on stdout stays
+parseable:
+
+```console
+[MX advisory] guard 'id_seam' reported a violation and was demoted to advisory by the open Maintenance Hangar marker (.gzkit/mx.json). It is NOT waived -- `gz mx exit` re-runs every guard at full strength.
+  src/gzkit/models/catalog.py::Req::REQ: 1 REQ id-grammar site(s) outside the identity seam that data/id_seam_baseline.json does not hold. ...
+```
+
+`gz mx exit` re-runs every guard at full strength.

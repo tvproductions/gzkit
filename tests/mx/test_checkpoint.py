@@ -225,3 +225,48 @@ class TestExitingMarker(unittest.TestCase):
             root = _mk_root(tmp)
             marker.marker_path(root).write_text("{not json", encoding="utf-8")
             self.assertTrue(checkpoint.hangar_demotes(root))
+
+
+class TestValidateAnnouncesDemotion(unittest.TestCase):
+    """`gz validate` announces a demoted scope's findings rather than dropping them.
+
+    `checkpoint.demote_notice`: "Demotion is announced, never silent: advisory means
+    non-grounding, not discarded" (GHI #843). `_run_scope_checks` dropped a demoted
+    scope's findings with nothing said, so `gz validate --id-seam` read "All
+    validations passed" over a real violation under safe mode (drydock RO-3, 2026-10-21).
+    """
+
+    def _run(self, root: Path) -> tuple[list, str]:
+        import contextlib
+        import io
+        from unittest.mock import patch
+
+        from gzkit.commands import validate_cmd
+        from gzkit.core.validation_rules import ValidationError
+
+        finding = ValidationError(type="t", artifact="a.py", message="the finding itself")
+        stderr = io.StringIO()
+        with (
+            patch.object(validate_cmd, "_default_scope_runners", return_value={}),
+            patch.object(
+                validate_cmd, "_explicit_scope_runners", return_value={"id_seam": lambda: [finding]}
+            ),
+            contextlib.redirect_stderr(stderr),
+        ):
+            errors = validate_cmd._run_scope_checks(root, {}, {"id_seam": True}, run_all=False)
+        return errors, stderr.getvalue()
+
+    def test_a_demoted_scope_names_itself_and_its_findings_on_stderr(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            marker.write(Marker(session_id="safe-session", mode="safe"), root)
+            errors, stderr = self._run(root)
+        self.assertEqual(errors, [])
+        self.assertIn("[MX advisory] guard 'id_seam'", stderr)
+        self.assertIn("a.py: the finding itself", stderr)
+
+    def test_a_grounding_scope_returns_its_findings_and_announces_nothing(self) -> None:
+        with TemporaryDirectory() as tmp:
+            errors, stderr = self._run(_mk_root(tmp))
+        self.assertEqual([e.message for e in errors], ["the finding itself"])
+        self.assertEqual(stderr, "")
