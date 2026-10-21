@@ -2,7 +2,7 @@
 
 # RO-3 specification — the requirements store, empty
 
-**2026-10-21. Status: specified; tranches 1 to 4 open.** Operator: **g0**. Repair order RO-3 of the
+**2026-10-21. Status: specified; tranche 1 landed (`96e7ed62f`, `cd1afd70f`); tranches 2 to 4 open.** Operator: **g0**. Repair order RO-3 of the
 [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders): the store that
 [the requirements model](ieee/requirements-model.md) rules, landed as empty structure under
 `data/catalog/`. It populates nothing beyond the ruled family legend, changes no identifier, and
