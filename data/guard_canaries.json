@@ -420,6 +420,20 @@
       "authority": "docs/governance/harbor-ro9-astral-toolchain.md (drydock RO-9 tranche 1); GHI #1154 item 5 (every registered claim binds a reviewed canary)",
       "proposed_by": "claude-code session 2026-10-19",
       "reviewed_by": "g0"
+    },
+    {
+      "claim_id": "requirements-catalog",
+      "guard": "gzkit.governance.trust_audits.catalog:_duplicates",
+      "failing_test": "tests.governance.test_catalog.TestStructure.test_a_duplicate_family_code_fails",
+      "mutation": {
+        "find": "    repeated = sorted(value for value, count in Counter(values).items() if count > 1)\n",
+        "replace": "    repeated: list[str] = []\n",
+        "label": "a repeated code or id is never reported"
+      },
+      "binding_sha256": "34103ba0a8a28a983513ca0def4818abf7a28b46a2530718ec807f7b28eb469c",
+      "authority": "docs/governance/harbor-ro3-requirements-store.md (drydock RO-3 tranche 1)",
+      "proposed_by": "claude-code session 2026-10-21",
+      "reviewed_by": null
     }
   ]
 }

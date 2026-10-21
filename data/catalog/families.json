@@ -1,0 +1,71 @@
+{
+  "_doc": "The family legend of the requirements catalog: decision 8.3 of docs/governance/ieee/requirements-model.md (operator ruling 2026-10-18), Scheme A's families banded as MIL-STD-881's product and common elements; each scope is Scheme A's. Seeded by drydock RO-3 (docs/governance/harbor-ro3-requirements-store.md, operator ruling 2026-10-21: \"Seed the legend (Rec.)\"). Shape: src/gzkit/schemas/catalog_families.json; read by gzkit/models/catalog.py; witnessed by `gz validate --catalog`.",
+  "families": [
+    {
+      "code": "X",
+      "band": "product",
+      "name": "Airlock and entry",
+      "scope": "The airlock, permitted entry, ontology imaging and the focused context loader, which govern how work enters the project; session memory is H's."
+    },
+    {
+      "code": "H",
+      "band": "product",
+      "name": "Session continuity",
+      "scope": "Handoffs, the ruling store, session orientation and insights, which carry one session's model to the next; ecosystem transit is X's."
+    },
+    {
+      "code": "C",
+      "band": "product",
+      "name": "Control surfaces and corpus",
+      "scope": "AGENTS.md composition, the content corpus, vendor sync, skills, rules, personas, roles, readiness and the knowledge bundle; product verification is G's."
+    },
+    {
+      "code": "M",
+      "band": "product",
+      "name": "Maintenance",
+      "scope": "The MX hangar, safe mode, chores, tidy, preflight, GHI repair routing and cross-repo issue filing; feature and requirements work are not M's, since GHIs carry repair only."
+    },
+    {
+      "code": "P",
+      "band": "product",
+      "name": "Packaging and release",
+      "scope": "Init, upgrade, patch release, git-sync, parity, distribution and feature flags; release planning is R's."
+    },
+    {
+      "code": "D",
+      "band": "product",
+      "name": "Decision records",
+      "scope": "ADR authoring, decision status, supersession, pool and promotion, and evaluation; delivery state of any kind is not D's."
+    },
+    {
+      "code": "R",
+      "band": "common",
+      "name": "Requirements and work",
+      "scope": "Intent, the catalog and the labor that delivers it: the PRD, constitution, catalog, work packages, task cards and Release Packages; decision records are D's."
+    },
+    {
+      "code": "G",
+      "band": "common",
+      "name": "Gates and verification",
+      "scope": "Every verification gzkit has: check, tests, smoke, behave, covers, drift, test shape, every validator that spans families, ARB receipts and canaries; human attestation is A's, and a unit's own tests stay with its outcome."
+    },
+    {
+      "code": "A",
+      "band": "common",
+      "name": "Attestation and closeout",
+      "scope": "Gate 5, attestation, closeout, audit and completion reversal; automated verification is G's."
+    },
+    {
+      "code": "L",
+      "band": "common",
+      "name": "Ledger and state",
+      "scope": "The append-only ledger and its schema, state and status views, frontmatter coherence, the alias layer, the backlog board and bulletins; the evidence producers themselves are not L's."
+    },
+    {
+      "code": "Q",
+      "band": "common",
+      "name": "Quality attributes",
+      "scope": "The PRD section 7 attributes and every cross-cutting NFR (decision 8.1); functional behaviour is not Q's."
+    }
+  ]
+}

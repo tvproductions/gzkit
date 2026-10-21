@@ -41,6 +41,10 @@
       "class": "read_only",
       "measured_seconds": 0.69
     },
+    "Requirements catalog": {
+      "class": "read_only",
+      "measured_seconds": 1.28
+    },
     "Brief structure": {
       "class": "read_only",
       "measured_seconds": 0.24

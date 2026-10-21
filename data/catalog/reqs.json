@@ -1,0 +1,4 @@
+{
+  "_doc": "The requirements of the requirements catalog, `REQ-<n>`, each a member of one outcome in data/catalog/outcomes.json (docs/governance/ieee/requirements-model.md). Empty by drydock RO-3's ruling (docs/governance/harbor-ro3-requirements-store.md, operator ruling 2026-10-21); no legacy REQ is migrated. No proof is held here: proof lives only in the ledger (decision 4). Shape: src/gzkit/schemas/catalog_reqs.json; read by gzkit/models/catalog.py; witnessed by `gz validate --catalog`.",
+  "reqs": []
+}

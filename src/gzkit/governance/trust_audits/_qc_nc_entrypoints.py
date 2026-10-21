@@ -626,6 +626,20 @@ def _ep_brief_size_admits_grandfathered(root: Path) -> int:
     return 0 if audit_brief_size(root) else 1
 
 
+def _ep_catalog(root: Path) -> list[ValidationError]:
+    """Return the finding against the repeated family, and nothing when a decoy fired.
+
+    The runner passes a control on any truthy result carrying the expected text, so
+    a gate that also refused the valid outcome or REQ file would pass unfiltered.
+    """
+    from gzkit.governance.trust_audits.catalog import audit_catalog  # noqa: PLC0415
+
+    errors = audit_catalog(root)
+    if any(error.field != "families" for error in errors):
+        return []
+    return errors
+
+
 def _ep_astral_discipline(root: Path) -> list[ValidationError]:
     """Return the finding against the new setup-python step, and nothing when the decoy fired."""
     from gzkit.governance.trust_audits.astral_discipline import (  # noqa: PLC0415

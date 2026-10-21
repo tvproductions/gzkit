@@ -189,6 +189,9 @@ _POST_SNAPSHOT_EXPLICIT_ADDITIONS: frozenset[str] = frozenset(
         # The RO-9 witness (Astral discipline). Explicit tier: its subject is the
         # project facts uv, Ruff and ty read. `in_check` from the outset.
         "astral_discipline",
+        # The requirements catalog (drydock RO-3). Explicit tier: its subject is
+        # data/catalog/. `in_check` from the outset, as the catalog is canon.
+        "catalog",
     }
 )
 

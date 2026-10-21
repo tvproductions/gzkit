@@ -68,6 +68,9 @@ REQ_ID_BODY = (
 REQ_ID_BODY_PLAIN = rf"REQ-{SEMVER_BODY}-{ITEM_BODY}-{ITEM_BODY}"
 #: The item-criterion form (``REQ-NN-MM``) a commit message cites, relative to its ADR.
 REQ_SHORT_ID_BODY = rf"REQ-{ITEM_BODY}-{ITEM_BODY}"
+#: The catalog REQ form (``REQ-<n>``): sequential, area-free, never reused. It carries
+#: no dots, so it never reads as the legacy form (drydock RO-3).
+CATALOG_REQ_ID_BODY = r"REQ-[1-9][0-9]*"
 TASK_ID_BODY = (
     rf"TASK-(?P<semver>{SEMVER_BODY})-(?P<obpi_item>{ITEM_BODY})"
     rf"-(?P<req_index>{ITEM_BODY})-(?P<seq>{ITEM_BODY})"

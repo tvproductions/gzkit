@@ -141,6 +141,7 @@ _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
     "Doc code citations": ("audit", "docs/", "bound", "python_function"),
     "Brief structure": ("audit", "docs/", "bound", "python_function"),
     "Brief size": ("audit", "docs/", "bound", "python_function"),
+    "Requirements catalog": ("audit", "data/", "bound", "python_function"),
     "MX hardening": ("audit", ".gzkit/", "bound", "python_function"),
     "Identity seam": ("audit", "src/", "bound", "python_function"),
     "Astral discipline": ("audit", "pyproject.toml", "bound", "python_function"),

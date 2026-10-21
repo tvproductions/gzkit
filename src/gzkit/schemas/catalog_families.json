@@ -1,0 +1,69 @@
+{
+  "$defs": {
+    "Family": {
+      "additionalProperties": false,
+      "description": "One family in the legend (decision 8.3).",
+      "properties": {
+        "code": {
+          "description": "The family's one letter.",
+          "pattern": "^[A-Z]$",
+          "title": "Code",
+          "type": "string"
+        },
+        "band": {
+          "description": "Product element or common element (MIL-STD-881's compromise).",
+          "enum": [
+            "product",
+            "common"
+          ],
+          "title": "Band",
+          "type": "string"
+        },
+        "name": {
+          "description": "The family's name.",
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "scope": {
+          "description": "The family's scope, one sentence.",
+          "minLength": 1,
+          "title": "Scope",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "band",
+        "name",
+        "scope"
+      ],
+      "title": "Family",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "`data/catalog/families.json`.",
+  "properties": {
+    "_doc": {
+      "description": "What the file is.",
+      "minLength": 1,
+      "title": "Doc",
+      "type": "string"
+    },
+    "families": {
+      "description": "The family legend.",
+      "items": {
+        "$ref": "#/$defs/Family"
+      },
+      "title": "Families",
+      "type": "array"
+    }
+  },
+  "required": [
+    "_doc",
+    "families"
+  ],
+  "title": "FamiliesFile",
+  "type": "object"
+}

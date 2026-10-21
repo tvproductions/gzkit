@@ -25,6 +25,11 @@ from typing import Any
 
 _DATA_DIR = "data"
 
+#: The subdirectories of `data/` the seam resolves into, one level deep. The
+#: requirements catalog is a store of three files rather than one registry
+#: (docs/governance/harbor-ro3-requirements-store.md); every other name stays bare.
+_DECLARED_SUBDIRS = frozenset({"catalog"})
+
 
 class RegistryError(RuntimeError):
     """A config registry is missing, unreadable, or not valid JSON.
@@ -41,14 +46,20 @@ def registry_path(project_root: Path, name: str) -> Path:
 
     Exposed because several callers need the path for an error message or a
     freshness check; resolving it here keeps `data/` named in one place.
+
+    A name is a bare filename, or `<subdir>/<filename>` for a subdirectory in
+    `_DECLARED_SUBDIRS`, always spelled with `/` so it compares equal everywhere.
     """
-    if Path(name).name != name:
+    parts = name.split("/")
+    bare = all(part and part not in {".", ".."} and "\\" not in part for part in parts)
+    declared = len(parts) == 1 or (len(parts) == 2 and parts[0] in _DECLARED_SUBDIRS)
+    if not (bare and declared):
         raise RegistryError(
-            f"Registry name {name!r} is not a bare filename. The seam resolves "
-            f"names under {_DATA_DIR}/, so a caller passing a path is reaching "
-            f"around it (GHI #1067)."
+            f"Registry name {name!r} is not a bare filename or a file directly under "
+            f"one of {sorted(_DECLARED_SUBDIRS)}. The seam resolves names under "
+            f"{_DATA_DIR}/, so a caller passing a path is reaching around it (GHI #1067)."
         )
-    return project_root / _DATA_DIR / name
+    return project_root.joinpath(_DATA_DIR, *parts)
 
 
 def load_registry(project_root: Path, name: str) -> Any:

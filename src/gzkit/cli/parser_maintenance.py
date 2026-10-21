@@ -914,6 +914,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Every live OBPI brief is inside its declared size bounds, exit 3 (GHI #1196).",
     )
     p_validate.add_argument(
+        "--catalog",
+        dest="check_catalog",
+        action="store_true",
+        help="data/catalog/ matches its schemas and structure checks, exit 3 (drydock RO-3).",
+    )
+    p_validate.add_argument(
         "--mx-hardening",
         dest="check_mx_hardening",
         action="store_true",
@@ -1198,6 +1204,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_brief_reconcile=a.check_brief_reconcile,
             check_brief_structure=a.check_brief_structure,
             check_brief_size=a.check_brief_size,
+            check_catalog=a.check_catalog,
             check_mx_hardening=a.check_mx_hardening,
             check_id_seam=a.check_id_seam,
             check_astral_discipline=a.check_astral_discipline,

@@ -20,6 +20,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--corpus-retirement-witness]
             [--invariant-coherence] [--invariant-witness] [--brief-reconcile] [--brief-structure]
             [--brief-size] [--mx-hardening] [--id-seam] [--astral-discipline]
+            [--catalog]
             [--router-tables]
             [--kind-invariance] [--persona-witness] [--req-kind-discipline] [--brief-command-shape]
             [--status-writer-coverage]
@@ -2475,6 +2476,57 @@ Runs in the default `gz check` pipeline as **Identity seam**.
 **Related:** [`harbor-ro2-identity-seam.md`](../../governance/harbor-ro2-identity-seam.md),
 ADR-0.0.10 (the identity layer the seam extends).
 
+### `--catalog`
+
+Validates the requirements catalog under `data/catalog/`, the store
+`docs/governance/ieee/requirements-model.md` rules and
+`docs/governance/harbor-ro3-requirements-store.md` specifies, and fails closed
+(exit 3) on any finding:
+
+| File | Holds |
+|------|-------|
+| `families.json` | The family legend, decision 8.3's eleven families in their product and common bands |
+| `outcomes.json` | Outcomes, each a member of one family (empty until RO-5's verbs author them) |
+| `reqs.json` | `REQ-<n>` requirements, each a member of one outcome (empty until RO-5's verbs author them) |
+
+The structure checks:
+
+- each file is read through the registry seam and validated against its committed
+  schema, `src/gzkit/schemas/catalog_<kind>.json`, which is the projection of its
+  model in `gzkit.models.catalog`;
+- family codes, outcome codes and REQ ids are unique within their file, a retired
+  outcome included, since a retired code is kept so it is never reused;
+- an outcome's family letter is in the legend.
+
+The edge checks, the coverage report, BDD alignment, the freeze lock and the
+forward rule are the later RO-3 tranches and do not run yet.
+
+**Usage:**
+
+```bash
+gz validate --catalog
+```
+
+**Observed output:**
+
+```console
+$ uv run gz validate --catalog
+Validated: catalog
+
+✓ All validations passed (1 scopes).
+```
+
+**Exit codes:**
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | The catalog matches its schemas and structure checks | — |
+| 3 | A catalog file is missing, unparseable or off its schema, repeats a code or id, or holds an outcome in a family the legend lacks | Correct the file the finding names, then re-run `gz validate --catalog` |
+
+Runs in the default `gz check` pipeline as **Requirements catalog**.
+
+**Related:** drydock RO-3 (`docs/governance/harbor-ro3-requirements-store.md`).
+
 ### `--router-tables`
 
 Audits the six namespace-router skills authored under ADR-0.27.0 (`gz-workflow`,
@@ -3018,6 +3070,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--mx-hardening` | opt-in | No MX session is dangling or over max-open; a session past its lease and its advisory debt are announced (GHI #1257) |
 | `--id-seam` | opt-in | No id grammar or spelling-derived parent outside the identity seam beyond its shrink-only baseline, and every cited id resolves (drydock RO-2) |
 | `--astral-discipline` | opt-in | Each fact declared once where uv, Ruff and ty read it: no restated Python version, unchecked lock, tool outside the lock or unregistered non-Astral tool beyond the shrink-only baseline (drydock RO-9) |
+| `--catalog` | opt-in | The requirements catalog under `data/catalog/` matches its schemas and structure checks (drydock RO-3) |
 | `--brief-structure` | opt-in | Every live OBPI brief carries valid structured frontmatter (`allowlist`, `reqs`, `verification`) instead of falling back to `LegacyBriefShape` |
 | `--changelog` | opt-in | Hermetic structural audit of `CHANGELOG.md` against `.gzkit/templates/changelog.md`: version headers and section headings (GHI #685) |
 | `--config-registry` | opt-in | Every top-level registry under `data/` is declared, with an owner and a loader (GHI #929) |

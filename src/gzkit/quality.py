@@ -1274,6 +1274,17 @@ def run_astral_discipline_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --astral-discipline", cwd=project_root)
 
 
+def run_catalog_audit(project_root: Path) -> QualityResult:
+    """Run the requirements catalog gate (drydock RO-3).
+
+    Fails closed when a file under `data/catalog/` is missing, does not match its
+    committed schema, repeats a code or id, or holds an outcome whose family the
+    legend lacks. Recovery: correct the file the finding names, then
+    `uv run gz validate --catalog`.
+    """
+    return run_command("uv run gz validate --catalog", cwd=project_root)
+
+
 def run_invariant_coherence_audit(project_root: Path) -> QualityResult:
     """Run the composition-drift gate: AGENTS.md vs committed rendition playback.
 

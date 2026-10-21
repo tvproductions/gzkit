@@ -29,6 +29,24 @@
       "kind": "code",
       "purpose": "ADR audit scoring thresholds."
     },
+    "catalog/families.json": {
+      "owner": "gzkit/models/catalog.py",
+      "kind": "code",
+      "purpose": "The requirements catalog's family legend (decision 8.3); `gz validate --catalog`.",
+      "derivation": "docs/governance/ieee/requirements-model.md (decision 8.3, operator ruling 2026-10-18); docs/governance/harbor-ro3-requirements-store.md (operator ruling 2026-10-21)"
+    },
+    "catalog/outcomes.json": {
+      "owner": "gzkit/models/catalog.py",
+      "kind": "code",
+      "purpose": "The requirements catalog's outcomes, empty until RO-5's verbs author them; `gz validate --catalog`.",
+      "derivation": "docs/governance/harbor-ro3-requirements-store.md (operator ruling 2026-10-21)"
+    },
+    "catalog/reqs.json": {
+      "owner": "gzkit/models/catalog.py",
+      "kind": "code",
+      "purpose": "The requirements catalog's REQs (`REQ-<n>`), empty until RO-5's verbs author them; `gz validate --catalog`.",
+      "derivation": "docs/governance/harbor-ro3-requirements-store.md (operator ruling 2026-10-21)"
+    },
     "check_scope_membership.json": {
       "owner": "gzkit/governance/trust_audits/gate_callers.py",
       "kind": "code",

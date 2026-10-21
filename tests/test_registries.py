@@ -72,6 +72,44 @@ class SeamReads(unittest.TestCase):
         self.assertEqual(registry_path(self.root, "t.json"), self.root / "data" / "t.json")
 
 
+class SeamSubdirectories(unittest.TestCase):
+    """The seam admits its one declared subdirectory, `catalog/`, and no other path (RO-3)."""
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+        (self.root / "data" / "catalog").mkdir(parents=True)
+        self.addCleanup(self._tmp.cleanup)
+
+    def test_a_catalog_file_resolves_under_data_catalog(self) -> None:
+        self.assertEqual(
+            registry_path(self.root, "catalog/families.json"),
+            self.root / "data" / "catalog" / "families.json",
+        )
+
+    def test_a_catalog_file_is_read_through_the_seam(self) -> None:
+        (self.root / "data" / "catalog" / "f.json").write_text('{"a": 1}', encoding="utf-8")
+        self.assertEqual(load_registry(self.root, "catalog/f.json"), {"a": 1})
+
+    def test_an_undeclared_subdirectory_is_refused(self) -> None:
+        with self.assertRaises(RegistryError):
+            registry_path(self.root, "other/f.json")
+
+    def test_a_nested_path_under_the_catalog_is_refused(self) -> None:
+        with self.assertRaises(RegistryError):
+            registry_path(self.root, "catalog/deeper/f.json")
+
+    def test_a_traversal_through_the_catalog_is_refused(self) -> None:
+        for name in ("catalog/../t.json", "catalog/..", "../catalog/t.json", "catalog/"):
+            with self.subTest(name=name), self.assertRaises(RegistryError):
+                registry_path(self.root, name)
+
+    def test_a_backslash_spelling_is_refused(self) -> None:
+        """One spelling, so a name compares equal on every platform."""
+        with self.assertRaises(RegistryError):
+            registry_path(self.root, "catalog\\f.json")
+
+
 class SeamFieldReads(unittest.TestCase):
     """`load_registry_field` defaults for an absent field, never for a broken file."""
 

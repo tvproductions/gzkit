@@ -104,6 +104,10 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     "brief-size": "brief-size-grandfathered",
     # The admit half reads the same gate and admits nothing of its own.
     "brief-size-grandfathered": EXEMPTS_NONE,
+    # Validates data/catalog/ against its schemas and structure. No waiver table,
+    # allowlist, baseline or flag admits a finding; the three files are the whole
+    # subject, a scope predicate. Drydock RO-3.
+    "requirements-catalog": EXEMPTS_NONE,
     # Runs the MX hangar's hardening guards over the ledger's open sessions. No
     # waiver table, allowlist or flag admits a finding; in-hangar advisory comes
     # from the shared checkpoint every guard passes through, not from this gate,

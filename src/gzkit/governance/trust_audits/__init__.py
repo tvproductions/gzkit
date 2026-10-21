@@ -64,6 +64,9 @@ from gzkit.governance.trust_audits.briefs import (
     audit_brief_headings,
 )
 from gzkit.governance.trust_audits.bullet_retention import validate_bullet_retention
+from gzkit.governance.trust_audits.catalog import (
+    audit_catalog,
+)
 from gzkit.governance.trust_audits.chores import (
     audit_chore_metadata_authority,
     audit_chore_rung_conformance,
@@ -234,6 +237,7 @@ __all__ = [
     "audit_brief_demo_section",
     "audit_brief_headings",
     "audit_brief_size",
+    "audit_catalog",
     "audit_mx_hardening",
     "audit_id_seam",
     "audit_astral_discipline",

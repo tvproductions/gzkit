@@ -1,0 +1,102 @@
+{
+  "$defs": {
+    "Outcome": {
+      "additionalProperties": false,
+      "description": "One outcome: a stable capability a family delivers.",
+      "properties": {
+        "code": {
+          "description": "Family letter and number.",
+          "pattern": "^[A-Z][1-9][0-9]*(\\.[1-9][0-9]*)*$",
+          "title": "Code",
+          "type": "string"
+        },
+        "statement": {
+          "description": "What the outcome delivers.",
+          "minLength": 1,
+          "title": "Statement",
+          "type": "string"
+        },
+        "owner": {
+          "description": "Who owns the outcome.",
+          "minLength": 1,
+          "title": "Owner",
+          "type": "string"
+        },
+        "user_facing": {
+          "description": "Decision 10's test: a user observes it.",
+          "title": "User Facing",
+          "type": "boolean"
+        },
+        "governed_by": {
+          "description": "ADR ids whose decisions govern it.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Governed By",
+          "type": "array"
+        },
+        "depends_on": {
+          "description": "Outcome codes, gates or named external boundaries it relies on.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Depends On",
+          "type": "array"
+        },
+        "feature": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Feature file carrying the outcome's code as a tag, when user-facing.",
+          "title": "Feature"
+        },
+        "retired": {
+          "description": "A retired code stays, so it is never reused.",
+          "title": "Retired",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "code",
+        "statement",
+        "owner",
+        "user_facing",
+        "governed_by",
+        "depends_on",
+        "feature",
+        "retired"
+      ],
+      "title": "Outcome",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "`data/catalog/outcomes.json`.",
+  "properties": {
+    "_doc": {
+      "description": "What the file is.",
+      "minLength": 1,
+      "title": "Doc",
+      "type": "string"
+    },
+    "outcomes": {
+      "description": "The outcomes.",
+      "items": {
+        "$ref": "#/$defs/Outcome"
+      },
+      "title": "Outcomes",
+      "type": "array"
+    }
+  },
+  "required": [
+    "_doc",
+    "outcomes"
+  ],
+  "title": "OutcomesFile",
+  "type": "object"
+}

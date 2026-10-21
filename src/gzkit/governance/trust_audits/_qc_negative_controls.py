@@ -1442,6 +1442,20 @@ def _build_mx_hardening() -> Path:
     return root
 
 
+def _build_catalog() -> Path:
+    """Build a catalog whose legend repeats a family code — the gate MUST fire (RO-3).
+
+    The outcome and REQ files are valid and present, so a finding against either
+    is a decoy firing, and the entrypoint reports no catch when one does: a gate
+    that refused a well-formed file would otherwise pass on the duplicate.
+    """
+    catalog = _mkroot("catalog") / "data" / "catalog"
+    family = {"code": "H", "band": "product", "name": "Session continuity", "scope": "One."}
+    for kind, entries in (("families", [family, family]), ("outcomes", []), ("reqs", [])):
+        _write(catalog / f"{kind}.json", json.dumps({"_doc": "Negative control.", kind: entries}))
+    return catalog.parents[1]
+
+
 def _build_brief_structure() -> Path:
     """Build a LIVE brief with no structured frontmatter — the gate MUST fire (GHI #615).
 
@@ -2033,6 +2047,12 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         _ep._ep_astral_discipline_admits_baselined,
     ),
     ("brief-size", _build_brief_size, _ep._ep_brief_size, "OBPI-0.0.99-01-over measures"),
+    (
+        "requirements-catalog",
+        _build_catalog,
+        _ep._ep_catalog,
+        "Family codes H appear more than once",
+    ),
     # Admit half: a recorded ceiling, exercised at a brief past the bound (GHI #1196).
     (
         "brief-size-grandfathered",

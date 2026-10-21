@@ -453,6 +453,7 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
         "brief_structure", "explicit", True, lambda r, _f: _ta().validate_brief_structure(r)
     ),
     _ScopeEntry("brief_size", "explicit", True, lambda r, _f: _ta().audit_brief_size(r)),
+    _ScopeEntry("catalog", "explicit", True, lambda r, _f: _ta().audit_catalog(r)),
     _ScopeEntry("mx_hardening", "explicit", True, lambda r, _f: _ta().audit_mx_hardening(r)),
     _ScopeEntry("id_seam", "explicit", True, lambda r, _f: _ta().audit_id_seam(r)),
     _ScopeEntry(
@@ -1153,6 +1154,7 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "brief_reconcile",
         "brief_structure",
         "brief_size",
+        "catalog",
         "mx_hardening",
         "id_seam",
         "astral_discipline",
@@ -1545,6 +1547,7 @@ def validate(
     check_brief_reconcile: bool = False,
     check_brief_structure: bool = False,
     check_brief_size: bool = False,
+    check_catalog: bool = False,
     check_mx_hardening: bool = False,
     check_id_seam: bool = False,
     check_astral_discipline: bool = False,
@@ -1691,6 +1694,7 @@ def validate(
         "brief_reconcile": check_brief_reconcile,
         "brief_structure": check_brief_structure,
         "brief_size": check_brief_size,
+        "catalog": check_catalog,
         "mx_hardening": check_mx_hardening,
         "id_seam": check_id_seam,
         "astral_discipline": check_astral_discipline,

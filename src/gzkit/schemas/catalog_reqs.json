@@ -1,0 +1,136 @@
+{
+  "$defs": {
+    "Criterion": {
+      "additionalProperties": false,
+      "description": "One acceptance criterion, on the `ghi-close` closure-contract precedent.",
+      "properties": {
+        "state_or_input": {
+          "description": "The state or input.",
+          "minLength": 1,
+          "title": "State Or Input",
+          "type": "string"
+        },
+        "required_outcome": {
+          "description": "What must then hold.",
+          "minLength": 1,
+          "title": "Required Outcome",
+          "type": "string"
+        },
+        "evidence": {
+          "description": "The semantic evidence that shows it.",
+          "minLength": 1,
+          "title": "Evidence",
+          "type": "string"
+        }
+      },
+      "required": [
+        "state_or_input",
+        "required_outcome",
+        "evidence"
+      ],
+      "title": "Criterion",
+      "type": "object"
+    },
+    "Req": {
+      "additionalProperties": false,
+      "description": "One requirement, a member of exactly one outcome.",
+      "properties": {
+        "id": {
+          "description": "`REQ-<n>`, never reused.",
+          "pattern": "^REQ-[1-9][0-9]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "member_of": {
+          "description": "Its outcome's code.",
+          "pattern": "^[A-Z][1-9][0-9]*(\\.[1-9][0-9]*)*$",
+          "title": "Member Of",
+          "type": "string"
+        },
+        "statement": {
+          "description": "Effect and rationale.",
+          "minLength": 1,
+          "title": "Statement",
+          "type": "string"
+        },
+        "criteria": {
+          "description": "Acceptance criteria.",
+          "items": {
+            "$ref": "#/$defs/Criterion"
+          },
+          "minItems": 1,
+          "title": "Criteria",
+          "type": "array"
+        },
+        "kind": {
+          "description": "Which proof channel binds it (ADR-0.0.59).",
+          "enum": [
+            "BEHAVIOR",
+            "SUPPORT",
+            "STRUCTURAL-FENCE"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "revision": {
+          "description": "Only rises.",
+          "minimum": 1,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "derives_from": {
+          "description": "PRD FR ids or section 7 attributes.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Derives From",
+          "type": "array"
+        },
+        "applies_to": {
+          "description": "Targets, for a Q-family NFR only.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Applies To",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "member_of",
+        "statement",
+        "criteria",
+        "kind",
+        "revision",
+        "derives_from",
+        "applies_to"
+      ],
+      "title": "Req",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "`data/catalog/reqs.json`.",
+  "properties": {
+    "_doc": {
+      "description": "What the file is.",
+      "minLength": 1,
+      "title": "Doc",
+      "type": "string"
+    },
+    "reqs": {
+      "description": "The requirements.",
+      "items": {
+        "$ref": "#/$defs/Req"
+      },
+      "title": "Reqs",
+      "type": "array"
+    }
+  },
+  "required": [
+    "_doc",
+    "reqs"
+  ],
+  "title": "ReqsFile",
+  "type": "object"
+}
