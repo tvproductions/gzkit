@@ -104,6 +104,15 @@ class SeamSubdirectories(unittest.TestCase):
             with self.subTest(name=name), self.assertRaises(RegistryError):
                 registry_path(self.root, name)
 
+    def test_a_refusal_names_the_admitted_forms_and_the_seam_rule(self) -> None:
+        """Three-part recovery prose (.gzkit/rules/guardrail-feedback-prose.md)."""
+        with self.assertRaises(RegistryError) as raised:
+            registry_path(self.root, "other/f.json")
+        message = str(raised.exception)
+        self.assertIn("'other/f.json'", message)
+        self.assertIn("['catalog']", message)
+        self.assertIn("GHI #1067", message)
+
     def test_a_backslash_spelling_is_refused(self) -> None:
         """One spelling, so a name compares equal on every platform."""
         with self.assertRaises(RegistryError):

@@ -59,7 +59,7 @@ def registry_path(project_root: Path, name: str) -> Path:
             f"one of {sorted(_DECLARED_SUBDIRS)}. The seam resolves names under "
             f"{_DATA_DIR}/, so a caller passing a path is reaching around it (GHI #1067)."
         )
-    return project_root.joinpath(_DATA_DIR, *parts)
+    return project_root / _DATA_DIR / name
 
 
 def load_registry(project_root: Path, name: str) -> Any:
