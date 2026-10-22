@@ -311,6 +311,13 @@ class TestBuildAndPublishThroughUv(unittest.TestCase):
         )
         self.assertEqual(_rules(**{".github/workflows/ci.yml": _CI + comments}), set())
 
+    def test_a_commented_pip_in_the_other_project_yaml_is_not_a_use(self) -> None:
+        """The Read the Docs and pre-commit configs are read the same way."""
+        for name in (".readthedocs.yaml", ".pre-commit-config.yaml"):
+            with self.subTest(name=name):
+                self.assertEqual(_rules(**{name: "# was: pip install -r docs.txt\n"}), set())
+                self.assertIn("pip-in-project", _rules(**{name: "    - pip install -r docs.txt\n"}))
+
 
 class TestTheScaffoldIsWitnessed(unittest.TestCase):
     def test_gz_inits_project_is_checked_by_the_same_rules(self) -> None:
