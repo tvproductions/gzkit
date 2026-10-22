@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 import tempfile
+from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Literal
@@ -21,13 +22,18 @@ from gzkit.events import (
     AcceptanceRecordedEvent,
     MxSessionLeaseRenewedEvent,
     ObpiLockLeaseExpiredEvent,
+    OutcomeTransitionedEvent,
     ReportPublishedEvent,
+    ReqProofRecordedEvent,
     parse_typed_event,
 )
+from gzkit.models.catalog import CATALOG_FILES, Catalog, load_catalog
 
 _OBPI = "OBPI-0.1.0-01-producer-probe"
 _AUTHOR = "isolated-producer-probe"
 _REQ = "REQ-0.1.0-01-01"
+_OUTCOME = "H1"
+_CATALOG_REQ = "REQ-1"
 _BRIEF_PATH = f"design/adr/obpis/{_OBPI}.md"
 _STATEMENT = "Retain the canonical acceptance obligation."
 
@@ -242,11 +248,137 @@ def _probe_mx_lease_renewal(root: Path) -> ProducerObservation:
     )
 
 
+def _seat_catalog(root: Path) -> Catalog:
+    """Seat a one-outcome, one-REQ catalog and read it through the real seam."""
+    files = {
+        "families": [{"code": "H", "band": "product", "name": "probe", "scope": "Probe."}],
+        "outcomes": [
+            {
+                "code": _OUTCOME,
+                "statement": _STATEMENT,
+                "owner": _AUTHOR,
+                "user_facing": False,
+                "governed_by": [],
+                "depends_on": [],
+                "feature": None,
+                "retired": False,
+            }
+        ],
+        "reqs": [
+            {
+                "id": _CATALOG_REQ,
+                "member_of": _OUTCOME,
+                "statement": _STATEMENT,
+                "criteria": [
+                    {"state_or_input": "probe", "required_outcome": "probe", "evidence": "probe"}
+                ],
+                "kind": "BEHAVIOR",
+                "revision": 1,
+                "derives_from": [],
+                "applies_to": [],
+            }
+        ],
+    }
+    for kind, entries in files.items():
+        path = root / "data" / CATALOG_FILES[kind]
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps({"_doc": "isolated probe", kind: entries}), encoding="utf-8")
+    (root / ".gzkit").mkdir()
+    return load_catalog(root)
+
+
+def _expect_refusal(write: Callable[[], object], case: str) -> None:
+    """Require a refusal; a writer that books what the grammar refuses fails its contract."""
+    from gzkit.catalog_ledger import CatalogLedgerError  # noqa: PLC0415 - import only when probed
+
+    try:
+        write()
+    except CatalogLedgerError:
+        return
+    raise ValueError(f"Writer accepted {case}")
+
+
+def _single_row(ledger_path: Path) -> tuple[bytes, dict[str, object]]:
+    persisted = ledger_path.read_bytes() if ledger_path.is_file() else b""
+    rows = [json.loads(line) for line in persisted.decode("utf-8").splitlines() if line.strip()]
+    if len(rows) != 1:
+        raise ValueError("Writer must persist exactly one record and nothing for a refusal")
+    return persisted, rows[0]
+
+
+def _probe_outcome_transition(root: Path) -> ProducerObservation:
+    """Move a seated outcome one step, then try a skip; one move booked, the skip refused."""
+    from gzkit import catalog_ledger  # noqa: PLC0415 - the writer; import only when probed
+    from gzkit.ledger import Ledger  # noqa: PLC0415
+
+    catalog = _seat_catalog(root)
+    ledger_path = root / ".gzkit/ledger.jsonl"
+    ledger = Ledger(ledger_path)
+    catalog_ledger.record_outcome_transition(
+        catalog, ledger, _OUTCOME, "designing", evidence=_AUTHOR
+    )
+    _expect_refusal(
+        lambda: catalog_ledger.record_outcome_transition(
+            catalog, ledger, _OUTCOME, "verified", evidence=_AUTHOR
+        ),
+        "a transition that skips the lifecycle",
+    )
+    persisted, row = _single_row(ledger_path)
+    event = parse_typed_event(row)
+    if not isinstance(event, OutcomeTransitionedEvent):
+        raise ValueError("Writer persisted the wrong event type")
+    if (event.id, event.from_state, event.to_state) != (_OUTCOME, "queued", "designing"):
+        raise ValueError("Transition record disagrees with the one-step move")
+    return ProducerObservation(
+        event_type="outcome_transitioned",
+        producer="gzkit.catalog_ledger.record_outcome_transition",
+        status="verified",
+        ledger_sha256=hashlib.sha256(persisted).hexdigest(),
+        record_count=1,
+        subject=event.id,
+    )
+
+
+def _probe_req_proof(root: Path) -> ProducerObservation:
+    """Prove a seated REQ, then try a fourth verdict; one proof booked, the verdict refused."""
+    from gzkit import catalog_ledger  # noqa: PLC0415 - the writer; import only when probed
+    from gzkit.ledger import Ledger  # noqa: PLC0415
+
+    catalog = _seat_catalog(root)
+    ledger_path = root / ".gzkit/ledger.jsonl"
+    ledger = Ledger(ledger_path)
+    catalog_ledger.record_req_proof(
+        catalog, ledger, _CATALOG_REQ, 1, commit="0" * 7, verdict="SATISFIED", evidence=_AUTHOR
+    )
+    _expect_refusal(
+        lambda: catalog_ledger.record_req_proof(
+            catalog, ledger, _CATALOG_REQ, 1, commit="0" * 7, verdict="PASS", evidence=_AUTHOR
+        ),
+        "a fourth verdict",
+    )
+    persisted, row = _single_row(ledger_path)
+    event = parse_typed_event(row)
+    if not isinstance(event, ReqProofRecordedEvent):
+        raise ValueError("Writer persisted the wrong event type")
+    if (event.id, event.revision, event.verdict) != (_CATALOG_REQ, 1, "SATISFIED"):
+        raise ValueError("Proof record disagrees with the REQ the catalog holds")
+    return ProducerObservation(
+        event_type="req_proof_recorded",
+        producer="gzkit.catalog_ledger.record_req_proof",
+        status="verified",
+        ledger_sha256=hashlib.sha256(persisted).hexdigest(),
+        record_count=1,
+        subject=event.id,
+    )
+
+
 _PRODUCERS = {
     "acceptance_recorded": "gzkit.acceptance_store.initialize",
     "report_published": "gzkit.reports.publish_report",
     "obpi_lock_lease_expired": "gzkit.lock_manager.reap_expired_locks",
     "mx_session_lease_renewed": "gzkit.commands.mx_cmd.mx_renew_cmd",
+    "outcome_transitioned": "gzkit.catalog_ledger.record_outcome_transition",
+    "req_proof_recorded": "gzkit.catalog_ledger.record_req_proof",
 }
 
 
@@ -263,6 +395,10 @@ def probe_producer(event_type: str) -> ProducerObservation:
                 return _probe_lock_lease_expiry(root)
             if event_type == "mx_session_lease_renewed":
                 return _probe_mx_lease_renewal(root)
+            if event_type == "outcome_transitioned":
+                return _probe_outcome_transition(root)
+            if event_type == "req_proof_recorded":
+                return _probe_req_proof(root)
             _prepare_acceptance_project(root)
             acceptance_store.initialize(root, _OBPI, _AUTHOR)
             return _observe_acceptance_contract(root)

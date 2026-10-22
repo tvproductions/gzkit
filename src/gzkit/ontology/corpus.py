@@ -158,6 +158,10 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         "obpi_lock_lease_expired",
         "obpi_lock_released",
         "obpi_lock_ttl_warning",
+        # The requirements catalog's delivery status and proof (drydock RO-3). An
+        # outcome or a catalog REQ is not a node of this projection, so a move or a
+        # verdict about one is no lineage between artifacts here.
+        "outcome_transitioned",
         "patch-release",
         "pipeline_marker_purged",
         # One boundary a pipeline run crossed (OBPI-0.35.0-15, GHI #1172). It
@@ -168,6 +172,7 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         "pipeline_stage_transition",
         "project_init",
         "red_receipt_emitted",
+        "req_proof_recorded",  # Catalog REQ proof; dispositioned with outcome_transitioned.
         # `red_commit_receipt_emitted` (GHI #1152) is its commit-keyed sibling:
         # evidence about a commit's tests, never a governance artifact, so no edge.
         "red_commit_receipt_emitted",

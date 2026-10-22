@@ -2126,6 +2126,105 @@
         }
       }
     },
+    "outcome_transitioned": {
+      "required": [
+        "outcome",
+        "from_state",
+        "to_state",
+        "evidence"
+      ],
+      "properties": {
+        "outcome": {
+          "type": "string",
+          "min_length": 1
+        },
+        "from_state": {
+          "type": "string",
+          "enum": [
+            "queued",
+            "designing",
+            "specified",
+            "planned",
+            "in_progress",
+            "implemented",
+            "reviewed",
+            "verified",
+            "validated",
+            "released",
+            "blocked",
+            "deferred"
+          ]
+        },
+        "to_state": {
+          "type": "string",
+          "enum": [
+            "queued",
+            "designing",
+            "specified",
+            "planned",
+            "in_progress",
+            "implemented",
+            "reviewed",
+            "verified",
+            "validated",
+            "released",
+            "blocked",
+            "deferred"
+          ]
+        },
+        "evidence": {
+          "type": "string",
+          "min_length": 1
+        },
+        "attestor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "req_proof_recorded": {
+      "required": [
+        "req",
+        "revision",
+        "commit",
+        "verdict",
+        "evidence"
+      ],
+      "properties": {
+        "req": {
+          "type": "string",
+          "min_length": 1
+        },
+        "revision": {
+          "type": "integer",
+          "min": 1
+        },
+        "commit": {
+          "type": "string",
+          "min_length": 1
+        },
+        "verdict": {
+          "type": "string",
+          "enum": [
+            "SATISFIED",
+            "UNSATISFIED",
+            "UNKNOWN"
+          ]
+        },
+        "evidence": {
+          "type": "string",
+          "min_length": 1
+        },
+        "target": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
     "blocks": {
       "required": [
         "blocker",

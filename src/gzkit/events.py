@@ -1690,6 +1690,58 @@ class ReportPublishedEvent(_EventBase):
     predecessor: str | None
 
 
+#: Decision 4's outcome lifecycle, in order (docs/governance/ieee/requirements-model.md).
+LifecycleState = Literal[
+    "queued",
+    "designing",
+    "specified",
+    "planned",
+    "in_progress",
+    "implemented",
+    "reviewed",
+    "verified",
+    "validated",
+    "released",
+]
+#: Decision 4's side states.
+SideState = Literal["blocked", "deferred"]
+OutcomeState = Literal[LifecycleState, SideState]
+#: Decision 4's three proof verdicts; missing evidence is UNKNOWN, never a pass.
+ReqVerdict = Literal["SATISFIED", "UNSATISFIED", "UNKNOWN"]
+
+
+class OutcomeTransitionedEvent(_EventBase):
+    """outcome_transitioned event — a catalog outcome moved in its lifecycle (drydock RO-3).
+
+    Written only by ``gzkit.catalog_ledger.record_outcome_transition``, which derives
+    ``from_state`` from the ledger and refuses a move the ruled grammar does not allow.
+    ``id`` is the outcome code.
+    """
+
+    event: Literal["outcome_transitioned"]
+    outcome: str = Field(..., min_length=1, description="The catalog outcome's code")
+    from_state: OutcomeState = Field(..., description="The state the ledger held before the move")
+    to_state: OutcomeState = Field(..., description="The state the outcome moved to")
+    evidence: str = Field(..., min_length=1, description="The ledger event that justifies the move")
+    attestor: str | None = Field(None, description="The Gate 5 attestor; required into validated")
+
+
+class ReqProofRecordedEvent(_EventBase):
+    """req_proof_recorded event — proof for one catalog REQ at one revision (drydock RO-3).
+
+    Written only by ``gzkit.catalog_ledger.record_req_proof``, which refuses a verdict
+    outside the three and a revision the catalog does not hold. ``id`` is the REQ id.
+    """
+
+    event: Literal["req_proof_recorded"]
+    req: str = Field(..., min_length=1, description="The catalog REQ's id")
+    revision: int = Field(..., ge=1, description="The REQ revision the proof is bound to")
+    commit: str = Field(..., min_length=1, description="The commit the proof was taken at")
+    verdict: ReqVerdict = Field(..., description="SATISFIED, UNSATISFIED or UNKNOWN")
+    evidence: str = Field(..., min_length=1, description="The receipt or test id")
+    target: str | None = Field(None, description="The applies_to member, for an NFR")
+
+
 TypedLedgerEvent = Annotated[
     ProjectInitEvent
     | PrdCreatedEvent
@@ -1776,7 +1828,9 @@ TypedLedgerEvent = Annotated[
     | SectionOwnershipReanchoredEvent
     | SessionExitBookmarkSkippedEvent
     | SurfaceWeightRecalibratedEvent
-    | ReportPublishedEvent,
+    | ReportPublishedEvent
+    | OutcomeTransitionedEvent
+    | ReqProofRecordedEvent,
     Field(discriminator="event"),
 ]
 

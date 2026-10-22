@@ -71,6 +71,7 @@ from gzkit.events import (
     ObpiUnblockedEvent,
     ObpiUnparkedEvent,
     ObpiWithdrawnEvent,
+    OutcomeTransitionedEvent,
     PatchReleaseEvent,
     PipelineLaunchedEvent,
     PipelineMarkerPurgedEvent,
@@ -83,6 +84,7 @@ from gzkit.events import (
     RenditionCommittedEvent,
     RenditionLandedEvent,
     ReportPublishedEvent,
+    ReqProofRecordedEvent,
     SectionOwnershipGenesisEvent,
     SectionOwnershipReanchoredEvent,
     SectionOwnershipUnownedEvent,
@@ -374,6 +376,9 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     # Surface-weight band/floor recalibration witness (ADR-0.0.33 AP#3, GHI #791)
     "surface_weight_recalibrated": SurfaceWeightRecalibratedEvent,
     "report_published": ReportPublishedEvent,
+    # The requirements catalog's Layer-2 records (drydock RO-3 tranche 2)
+    "outcome_transitioned": OutcomeTransitionedEvent,
+    "req_proof_recorded": ReqProofRecordedEvent,
     # Reversible retirement of OBPIs whose parent ADR demoted to pool (GHI #584)
     "obpi_parked": ObpiParkedEvent,
     "obpi_blocked_on_operator": ObpiBlockedOnOperatorEvent,

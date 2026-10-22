@@ -241,3 +241,42 @@ class MxLeaseRenewalProducerProbeTests(unittest.TestCase):
         with patch.object(mx_cmd, "mx_renew_cmd", renew_then_drop_marker):
             observation = probe_producer("mx_session_lease_renewed")
         self.assertEqual(observation.status, "failed")
+
+
+class CatalogProducerProbeTests(unittest.TestCase):
+    """The catalog writers book their events and refuse what the grammar refuses (RO-3)."""
+
+    def test_the_real_writers_book_one_event_each_in_a_disposable_project(self):
+        for event_type, producer in (
+            ("outcome_transitioned", "gzkit.catalog_ledger.record_outcome_transition"),
+            ("req_proof_recorded", "gzkit.catalog_ledger.record_req_proof"),
+        ):
+            with self.subTest(event_type=event_type):
+                observation = probe_producer(event_type)
+                self.assertEqual(observation.status, "verified", observation.error)
+                self.assertEqual(observation.producer, producer)
+                self.assertEqual(observation.record_count, 1)
+                self.assertEqual(len(observation.ledger_sha256), 64)
+
+    def test_a_writer_that_books_nothing_gets_no_credit(self):
+        for event_type, writer in (
+            ("outcome_transitioned", "record_outcome_transition"),
+            ("req_proof_recorded", "record_req_proof"),
+        ):
+            with (
+                self.subTest(event_type=event_type),
+                patch(f"gzkit.catalog_ledger.{writer}", return_value=None),
+            ):
+                observation = probe_producer(event_type)
+                self.assertEqual(observation.status, "failed")
+                self.assertEqual(observation.record_count, 0)
+
+    def test_a_writer_that_refuses_nothing_gets_no_credit(self):
+        from gzkit import catalog_ledger  # noqa: PLC0415
+
+        with patch.object(catalog_ledger, "_allowed_moves", return_value=catalog_ledger.LIFECYCLE):
+            observation = probe_producer("outcome_transitioned")
+        self.assertEqual(observation.status, "failed")
+        with patch.object(catalog_ledger, "VERDICTS", ("SATISFIED", "PASS")):
+            observation = probe_producer("req_proof_recorded")
+        self.assertEqual(observation.status, "failed")
