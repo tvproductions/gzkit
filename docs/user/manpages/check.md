@@ -139,9 +139,39 @@ When drift exists, `gz check` appends an advisory section after the blocking che
   Total: 1 finding(s) (advisory — does not affect exit code)
 ```
 
+## Demoted Steps
+
+While a Maintenance Hangar is open (`.gzkit/mx.json`), a step outside `gate5_invariants` that
+reports a policy breach (exit 3) is demoted to advisory: the gate passes, and the step is not
+waived. Demotion is announced, never silent (GHI #843): after the blocking results, `gz check`
+prints each demoted step with the `[MX advisory]` notice and every line the step reported.
+Observed 2026-10-22 on a planted seam bypass:
+
+```text
+⚠ Demoted by the open MX hangar (does not affect exit code):
+  Config registry [MX advisory] guard 'config-registry' reported a violation and
+was demoted to advisory by the open Maintenance Hangar marker (.gzkit/mx.json).
+It is NOT waived -- `gz mx exit` re-runs every guard at full strength.
+    Validated: config-registry
+    ❌ 1 unowned/incoherent config registry surface(s):
+       → src/gzkit/ledger_producer_probe.py: Module
+    src/gzkit/ledger_producer_probe.py resolves a data/ registry path itself
+instead
+    of calling gzkit.registries.load_registry. A single read seam is single only
+    while nothing routes around it (GHI #1067), and hexagonal rule 4 requires
+taking
+    the location as a parameter rather than naming it. Call the seam. The roster
+may
+    only shrink. Re-run `uv run gz validate --config-registry`.
+```
+
+`gz check --json` names each demoted step and its guard under `demoted`; `checks` still reads
+`true` for it, because a demoted step does not fail the gate.
+
 ## JSON Output
 
-`gz check --json` includes a `drift` object with `advisory: true`:
+`gz check --json` includes a `drift` object with `advisory: true`, and a `demoted` object
+mapping each step the hangar demoted to its guard (empty when none was):
 
 ```json
 {
@@ -153,6 +183,7 @@ When drift exists, `gz check` appends an advisory section after the blocking che
     "Typecheck": true,
     "Test (changed)": true
   },
+  "demoted": {},
   "drift": {
     "advisory": true,
     "has_drift": true,

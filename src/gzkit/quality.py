@@ -45,6 +45,9 @@ class QualityResult(BaseModel):
     stdout: str
     stderr: str
     returncode: int
+    demoted_guard: str | None = Field(
+        None, description="The MX guard that demoted this breach to advisory, if one did"
+    )
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""

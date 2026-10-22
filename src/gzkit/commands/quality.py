@@ -158,7 +158,8 @@ def _apply_mx_seam(
     grounding route regardless of marker state (checkpoint.resolve pins them to
     CRITICAL), so they are never demoted.
 
-    Steps that passed (returncode != 3) pass through unchanged.
+    Steps that passed (returncode != 3) pass through unchanged. A demoted result
+    keeps its output and names its guard, so the report announces it (GHI #843).
     """
     if getattr(result, "returncode", 0) != 3:
         return result
@@ -173,6 +174,7 @@ def _apply_mx_seam(
         stdout=result.stdout,
         stderr=result.stderr,
         returncode=0,
+        demoted_guard=guard_name,
     )
 
 
@@ -1333,6 +1335,7 @@ def check(
             "success": all(r.success for _, r in results),
             "scope": scope,
             "checks": {name: r.success for name, r in results},
+            "demoted": {name: r.demoted_guard for name, r in results if r.demoted_guard},
             "drift": drift.to_dict(),
         }
         # Only a scope that drops nothing the per-change gate runs may mint the
@@ -1349,6 +1352,7 @@ def check(
     _render_step_results(results, durations, wall)
 
     _render_step_advisories(results)
+    _render_demoted_steps(results)
 
     all_passed = all(r.success for _, r in results)
     if all_passed:
@@ -1404,6 +1408,25 @@ def _render_step_advisories(results: list[tuple[str, QualityResult]]) -> None:
         # content inside a finding — rendering it as markup would drop or
         # corrupt the prose the operator is meant to read.
         console.print(f"  [dim]{name}[/dim] {escape(prose)}")
+
+
+def _render_demoted_steps(results: list[tuple[str, QualityResult]]) -> None:
+    """Announce each step the hangar demoted, with the findings it reported (GHI #843).
+
+    A demoted breach passes the gate but is not waived: `checkpoint.demote_notice`
+    rules that demotion is "announced, never silent", and `gz validate` honours it.
+    """
+    from gzkit.mx.checkpoint import demote_notice  # noqa: PLC0415 — lazy: avoids circular risk
+
+    demoted = [(name, result) for name, result in results if result.demoted_guard]
+    if not demoted:
+        return
+    console.print("\n[yellow]⚠ Demoted by the open MX hangar (does not affect exit code):[/yellow]")
+    for name, result in demoted:
+        console.print(f"  [dim]{name}[/dim] {escape(demote_notice(result.demoted_guard or name))}")
+        for line in f"{result.stdout}\n{result.stderr}".splitlines():
+            if line.strip():
+                console.print(f"    {escape(line)}")
 
 
 def _render_drift_advisory(drift: DriftAdvisoryResult) -> None:

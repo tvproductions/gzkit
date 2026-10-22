@@ -226,3 +226,71 @@ class TestExcludedPaths(unittest.TestCase):
             step_guard_names,
             "The --sensitivity handler must not be wired through the checkpoint seam",
         )
+
+
+class TestDemotionIsAnnounced(unittest.TestCase):
+    """A demoted step is announced with its findings, never shown as a bare pass (GHI #843).
+
+    Under the hangar the Config registry step read green over a real seam bypass
+    that `gz validate --config-registry` reported with exit 3: the seam turned the
+    breach into a pass and nothing rendered the step's output.
+    """
+
+    def _demoted(self):
+        from gzkit.commands.quality import _apply_mx_seam
+        from gzkit.mx import levels
+
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            _write_marker(root)
+            return _apply_mx_seam(_failing_result(), "test-guard", levels.ERROR, root)
+
+    def test_a_demoted_result_names_its_guard_and_keeps_its_findings(self) -> None:
+        result = self._demoted()
+        self.assertEqual(result.demoted_guard, "test-guard")
+        self.assertEqual(result.stdout, "violation found")
+
+    def test_a_full_strength_or_passing_result_is_not_marked_demoted(self) -> None:
+        from gzkit.commands.quality import _apply_mx_seam
+        from gzkit.mx import levels
+        from gzkit.quality import QualityResult
+
+        passing = QualityResult(success=True, command="t", stdout="", stderr="", returncode=0)
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            fatal = _apply_mx_seam(_failing_result(), "test-guard", levels.ERROR, root)
+            _write_marker(root)
+            passed = _apply_mx_seam(passing, "test-guard", levels.ERROR, root)
+        self.assertIsNone(fatal.demoted_guard)
+        self.assertIsNone(passed.demoted_guard)
+
+    def test_the_check_report_announces_the_demotion_and_its_findings(self) -> None:
+        import io
+        from contextlib import redirect_stdout
+
+        from gzkit.commands.quality import _render_demoted_steps
+        from gzkit.mx.checkpoint import demote_notice
+        from gzkit.quality import QualityResult
+
+        quiet = QualityResult(success=True, command="t", stdout="ok", stderr="", returncode=0)
+        buffer = io.StringIO()
+        with redirect_stdout(buffer):
+            _render_demoted_steps([("Config registry", self._demoted()), ("Lint", quiet)])
+        output = " ".join(buffer.getvalue().split())
+        self.assertIn(" ".join(demote_notice("test-guard").split()), output)
+        self.assertIn("violation found", output)
+        self.assertIn("Config registry", output)
+        self.assertNotIn("Lint", output)
+
+    def test_nothing_is_rendered_when_no_step_was_demoted(self) -> None:
+        import io
+        from contextlib import redirect_stdout
+
+        from gzkit.commands.quality import _render_demoted_steps
+        from gzkit.quality import QualityResult
+
+        quiet = QualityResult(success=True, command="t", stdout="ok", stderr="", returncode=0)
+        buffer = io.StringIO()
+        with redirect_stdout(buffer):
+            _render_demoted_steps([("Lint", quiet)])
+        self.assertEqual(buffer.getvalue(), "")
