@@ -294,3 +294,55 @@ class TestDemotionIsAnnounced(unittest.TestCase):
         with redirect_stdout(buffer):
             _render_demoted_steps([("Lint", quiet)])
         self.assertEqual(buffer.getvalue(), "")
+
+
+class TestCheckReportsDemotion(unittest.TestCase):
+    """`gz check` itself announces a step the hangar demoted, in both output forms."""
+
+    def _run_check(self, *, as_json: bool) -> tuple[list[str], str]:
+        import io
+        from contextlib import redirect_stdout
+        from types import SimpleNamespace
+        from unittest.mock import patch
+
+        from gzkit.commands import quality
+
+        printed: list[str] = []
+        stdout = io.StringIO()
+        steps = [("Config registry", lambda _root: _failing_result())]
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            _write_marker(root)
+            with (
+                redirect_stdout(stdout),
+                patch.object(
+                    quality,
+                    "console",
+                    SimpleNamespace(print=lambda *args, **_kw: printed.append(str(args[0]))),
+                ),
+                patch.object(quality, "get_project_root", return_value=root),
+                patch.object(quality, "_build_check_steps", return_value=steps),
+                patch(
+                    "gzkit.quality.run_drift_advisory",
+                    return_value=SimpleNamespace(has_drift=False, to_dict=dict),
+                ),
+                patch("gzkit.flags.registry.load_registry", side_effect=RuntimeError("skip")),
+            ):
+                quality.check(as_json=as_json)
+        return printed, stdout.getvalue()
+
+    def test_the_human_report_carries_the_notice_and_the_finding(self) -> None:
+        from gzkit.mx.checkpoint import demote_notice
+
+        printed, _ = self._run_check(as_json=False)
+        report = "\n".join(printed)
+        self.assertIn(demote_notice("config-registry"), report)
+        self.assertIn("violation found", report)
+
+    def test_the_json_report_names_the_demoted_step_and_its_guard(self) -> None:
+        import json
+
+        _, stdout = self._run_check(as_json=True)
+        payload = json.loads(stdout)
+        self.assertTrue(payload["success"])
+        self.assertEqual(payload.get("demoted"), {"Config registry": "config-registry"})
