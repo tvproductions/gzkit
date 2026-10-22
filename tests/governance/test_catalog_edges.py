@@ -119,6 +119,11 @@ class TestPrdNeeds(unittest.TestCase):
             ("FR-001", "FR-005a", "NFR-performance", "NFR-explainability"),
         )
 
+    def test_an_fr_with_no_prose_before_the_next_heading_is_live(self):
+        """Only a `**Retired` line retires an FR; an empty body is not one."""
+        text = "## 6. FRs\n\n### FR-001: A\n### FR-002: B\n\n## 7. NFRs\n\n### FR-003: C\n"
+        self.assertEqual(prd_needs(text), ("FR-001", "FR-002", "FR-003"))
+
     def test_a_retired_fr_and_a_heading_outside_section_seven_are_not_needs(self):
         needs = prd_needs(_PRD)
         self.assertNotIn("FR-004", needs)

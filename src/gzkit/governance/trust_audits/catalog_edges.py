@@ -62,11 +62,15 @@ def prd_needs(text: str) -> tuple[str, ...]:
     section = ""
     pending: str | None = None
     for line in text.splitlines():
-        if (match := _SECTION.match(line)) is not None:
-            section = match["title"]
+        section_match, heading_match = _SECTION.match(line), _HEADING.match(line)
+        if pending is not None and (section_match or heading_match):
+            # The next heading arrived before any prose, so no `**Retired` line did.
+            needs.append(pending)
             pending = None
+        if (match := section_match) is not None:
+            section = match["title"]
             continue
-        if (match := _HEADING.match(line)) is not None:
+        if (match := heading_match) is not None:
             fr = _FR.match(match["title"])
             pending = fr["id"] if fr is not None else None
             if pending is None and section.startswith("7."):
