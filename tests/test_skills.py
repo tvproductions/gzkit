@@ -405,13 +405,17 @@ class TestPyprojectTomlSkillsInclude(unittest.TestCase):
     """pyproject.toml includes src/gzkit/skills wheel-include (landed by OBPI-0.0.32-06)."""
 
     @covers("REQ-0.0.32-01-06")
-    def test_pyproject_includes_skills_package_data(self) -> None:
-        pyproject = (_PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8")
-        self.assertIn(
-            "src/gzkit/skills/**",
-            pyproject,
-            "pyproject.toml must include src/gzkit/skills/** for wheel-shipping (OBPI-06)",
-        )
+    def test_skills_ship_in_the_wheel(self) -> None:
+        """The skills surface ships in the wheel (landed by OBPI-0.0.32-06).
+
+        The REQ records that OBPI-01 left `pyproject.toml` untouched; this test
+        guards the later state, reading the hatchling include glob until uv_build
+        replaced it on 2026-10-22 (RO-9 tranche 3).
+        """
+        from gzkit.governance.trust_audits.distribution import wheel_shipped_files
+
+        shipped = wheel_shipped_files(_PROJECT_ROOT)
+        self.assertIn("src/gzkit/skills/gz-patch-release/SKILL.md", shipped)
 
 
 class TestScaffoldSkillTemplateRemoved(unittest.TestCase):

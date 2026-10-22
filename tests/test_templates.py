@@ -438,15 +438,21 @@ class TestTemplatesLayoutDualSurface(unittest.TestCase):
         )
 
     @covers("REQ-0.0.32-06-02")
-    def test_pyproject_includes_template_markdown(self) -> None:
-        """pyproject.toml must include src/gzkit/templates/**/*.md (OBPI-06 scope)."""
-        pyproject = _PROJECT_ROOT / "pyproject.toml"
-        content = pyproject.read_text(encoding="utf-8")
-        self.assertIn(
-            "src/gzkit/templates/**/*.md",
-            content,
-            "templates wheel-include extension is part of OBPI-06 canonical surfaces",
-        )
+    def test_the_wheel_ships_every_canonical_surface(self) -> None:
+        """The wheel ships skills, rules, templates, hooks and personas.
+
+        Amended 2026-10-22 (operator, verbatim "Amend in place (Rec.)"). The REQ's
+        attested Given is `[tool.hatch.build.targets.wheel] include:`; uv_build
+        replaced hatchling (RO-9 ruling 3) and has no wheel includes, so the Given
+        is `[tool.uv.build-backend]` and the outcome is that the predicted wheel
+        ships every canonical surface.
+        """
+        from gzkit.governance.trust_audits.distribution import wheel_shipped_files
+
+        shipped = wheel_shipped_files(_PROJECT_ROOT)
+        for surface in ("skills", "rules", "templates", "hooks/scripts", "personas"):
+            with self.subTest(surface=surface):
+                self.assertTrue(any(p.startswith(f"src/gzkit/{surface}/") for p in shipped))
 
     @covers("REQ-0.0.32-11-09")
     def test_sync_surfaces_has_templates_pkg_sync(self) -> None:

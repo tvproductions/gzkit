@@ -166,7 +166,7 @@ python -c "import json; m=json.load(open('data/distribution_baseline_manifest.js
 ## Acceptance Criteria
 
 - [ ] REQ-0.0.32-06-01: `features/distribution_invariant.feature` exists with the build-install-init smoke scenario tagged `@REQ-0.0.32-06-01`; the scenario passes
-- [ ] REQ-0.0.32-06-02: `pyproject.toml [tool.hatch.build.targets.wheel] include:` covers every canonical surface (skills, rules, templates, hooks, personas)
+- [ ] REQ-0.0.32-06-02: `pyproject.toml [tool.hatch.build.targets.wheel] include:` covers every canonical surface (skills, rules, templates, hooks, personas) *Amended 2026-10-22 (operator ruling, verbatim "Amend in place (Rec.)"; RO-9 ruling 3, "hatchling to `uv_build`"):* uv_build has no wheel includes, so the Given is `pyproject.toml [tool.uv.build-backend]` and the outcome is that the predicted wheel (`gzkit.governance.trust_audits.distribution.wheel_shipped_files`) ships every canonical surface. Covering test: `tests/test_templates.py::TestTemplatesLayoutDualSurface::test_the_wheel_ships_every_canonical_surface`.
 - [ ] REQ-0.0.32-06-03: `data/distribution_baseline_manifest.json` exists, validates against a frozen schema, lists every canonical artifact organized by surface
 - [ ] REQ-0.0.32-06-04: The smoke scenario detects DRIFT in both directions — missing baseline entries in install AND extra installed artifacts not in baseline
 - [ ] REQ-0.0.32-06-05: `tests/distribution/test_baseline_manifest.py` covers schema parse, file-resolution, and duplicate detection

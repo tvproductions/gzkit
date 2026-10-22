@@ -2,7 +2,7 @@
 
 # RO-9 specification — the toolchain realigned to Astral's project discipline
 
-**2026-10-19. Status: tranche 1 landed (the witness, uv and the Astral tools current, Python declared once at 3.14); tranche 2 landed 2026-10-21 (lock discipline: `--locked` everywhere, docs from a locked group, every project tool through `uv run`); tranches 3 to 7 open.** Operator: **g0**. Repair order RO-9 of the
+**2026-10-19. Status: tranche 1 landed (the witness, uv and the Astral tools current, Python declared once at 3.14); tranche 2 landed 2026-10-21 (lock discipline: `--locked` everywhere, docs from a locked group, every project tool through `uv run`); tranche 3 landed 2026-10-22 (`uv_build`, `uv publish` with attestations from a credential-only job, `uv version` writing the version); tranches 4 to 7 open.** Operator: **g0**. Repair order RO-9 of the
 [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders), mandate item 7: gzkit
 and every project `gz init` scaffolds follow [uv's project model](https://docs.astral.sh/uv/concepts/projects/)
 strictly and use Astral's tools to the maximum, on Python 3.14, with stdlib first and curated
@@ -170,12 +170,19 @@ scaffold, never the operator's machine.
 **Known uncertainties.** Each is read by the tranche that owns it:
 
 - Whether `uv_build` ships the wheel's non-Python data (the `.md` and `.json` under `src/gzkit`) with
-  `data` or the module root alone, and what the distribution baseline manifest then reads.
+  `data` or the module root alone, and what the distribution baseline manifest then reads. *Read by
+  tranche 3:* the module root alone. uv_build has no wheel includes and ships the module tree whole,
+  less its excludes; the wheel matched hatchling's payload file for file (880), and
+  `wheel_shipped_files` predicts it from `[tool.uv.build-backend]` (877 files against a real build of a
+  tree with `__pycache__` present). The baseline manifest is unchanged. An anchored `wheel-exclude`
+  removed nothing on uv 0.13.1, so the predictor refuses one.
 - Whether Read the Docs can build through uv with a locked group, or the docs build moves to the
   `docs.yml` workflow alone.
 - Whether `uv init` produces the scaffold `gz init` needs, or `gz init` writes the same files through
   `uv add` and `uv python pin` after a `uv init --bare`.
-- What replaces `twine check --strict`; uv documents no metadata check.
+- What replaces `twine check --strict`; uv documents no metadata check. *Read by tranche 3:* the
+  smoke test uv's GitHub guide recommends, each built distribution installed into a throwaway
+  environment with `uv run --isolated --no-project --with` and its CLI run.
 - Which of `uv check`, `uv format` and `uv audit` are preview on the pinned uv, and what each changes in
   the `CANONICAL_STEP_COMMANDS` receipts the lockstep tests pin.
 

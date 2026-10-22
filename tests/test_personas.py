@@ -87,15 +87,17 @@ class TestPersonasScopeNegative(unittest.TestCase):
     """OBPI-09 must NOT add OBPI-06/08 surface changes."""
 
     @covers("REQ-0.0.32-09-05")
-    def test_pyproject_has_personas_wheel_include(self) -> None:
-        """pyproject.toml carries src/gzkit/personas wheel-include (landed by OBPI-0.0.32-06)."""
-        pyproject = _PROJECT_ROOT / "pyproject.toml"
-        content = pyproject.read_text(encoding="utf-8")
-        self.assertIn(
-            "src/gzkit/personas/**/*.md",
-            content,
-            "personas wheel-include expected; OBPI-06 landed wheel manifest extension",
-        )
+    def test_personas_ship_in_the_wheel(self) -> None:
+        """The personas surface ships in the wheel (landed by OBPI-0.0.32-06).
+
+        The REQ records that OBPI-09 left `pyproject.toml` untouched, a fact about
+        that OBPI's diff; this test guards the later state. It read the hatchling
+        include glob until uv_build replaced it on 2026-10-22 (RO-9 tranche 3).
+        """
+        from gzkit.governance.trust_audits.distribution import wheel_shipped_files
+
+        shipped = wheel_shipped_files(_PROJECT_ROOT)
+        self.assertTrue(any(p.startswith("src/gzkit/personas/") for p in shipped))
 
     @covers("REQ-0.0.32-09-06")
     def test_sync_surfaces_has_personas_pkg_sync(self) -> None:
