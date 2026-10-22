@@ -172,6 +172,14 @@ class TestAuditAnnounces(unittest.TestCase):
             stderr.getvalue(),
         )
 
+    def test_a_project_without_the_registry_reads_no_delivery_events(self):
+        (self.root / "data" / "catalog" / "delivery_events.json").unlink()
+        stderr = io.StringIO()
+        with redirect_stderr(stderr):
+            errors = audit_catalog(self.root)
+        self.assertEqual(errors, [])
+        self.assertNotIn("catalog-forward-rule", stderr.getvalue())
+
     def test_nothing_is_announced_when_every_event_is_named(self):
         ledger = self.root / ".gzkit" / "ledger.jsonl"
         row = _row("task_started", _AFTER, req_id="REQ-0.1.0-01-01")
@@ -195,6 +203,7 @@ class TestNegativeControl(unittest.TestCase):
         result = _run_single_claim(record)
         self.assertEqual(result.outcome, "PASS", result.message)
         self.assertEqual(record.exempts, EXEMPTS_NONE)
+        self.assertIsNotNone(record.population)
 
     def test_reading_the_legacy_event_changes_the_count(self):
         """Moving the cutover before the legacy event changes the count the control expects."""
