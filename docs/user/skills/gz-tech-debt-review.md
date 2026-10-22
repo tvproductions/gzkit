@@ -1,6 +1,6 @@
 # /gz-tech-debt-review
 
-Survey the codebase for technical debt and recommend resolutions. Synthesizes signals from existing gzkit chores, audits, and complexity tools (xenon, radon, ruff, ty, gz cli audit, gz validate, gz-pythonic-pattern-detect, doc-coverage, dependency-currency) into a single prioritized debt report with file:line evidence and recommended fixes.
+Survey the codebase for technical debt and recommend resolutions. Synthesizes signals from existing gzkit chores, audits, and complexity tools (ruff, complexipy, ty, gz cli audit, gz validate, gz-pythonic-pattern-detect, doc-coverage, dependency-currency) into a single prioritized debt report with file:line evidence and recommended fixes.
 
 ---
 

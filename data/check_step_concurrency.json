@@ -166,6 +166,10 @@
       "class": "read_only",
       "measured_seconds": 2.0
     },
+    "Complexity ceiling": {
+      "class": "read_only",
+      "measured_seconds": 1.6
+    },
     "Identity seam": {
       "class": "read_only",
       "measured_seconds": 1.7

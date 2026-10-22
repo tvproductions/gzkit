@@ -67,6 +67,9 @@ QC_CLAIM_POPULATIONS: dict[str, Callable[[], Sequence[str]] | str] = {
     # whatever the tree declares, never a set another surface declares (RO-9).
     "astral-discipline": POPULATION_NONE,
     "astral-discipline-baselined": POPULATION_NONE,
+    # Walks the module tree the wheel ships in code; the members are whatever Python
+    # files exist there, never a set another surface lists (RO-9 tranche 4).
+    "complexity-ceiling": POPULATION_NONE,
     # Walks tests/** in code; the members are whatever test files exist, never a set
     # another surface declares (GHI #808).
     "tautological-debt": POPULATION_NONE,

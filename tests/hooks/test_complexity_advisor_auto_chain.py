@@ -170,7 +170,7 @@ class TestRunAutoChain(unittest.TestCase):
     @covers("REQ-0.0.29-05-02")
     @patch("gzkit.hooks.install_complexity_advisor.run_with_timeout")
     @patch("sys.stderr", new_callable=io.StringIO)
-    def test_xenon_fail_triggers_advisor(
+    def test_gate_fail_triggers_advisor(
         self, mock_stderr: io.StringIO, mock_timeout: MagicMock
     ) -> None:
         """When called, the advisor runs and returns diagnoses (REQ-2)."""
@@ -242,8 +242,8 @@ class TestInstaller(unittest.TestCase):
     """Tests for the install() function."""
 
     @covers("REQ-0.0.29-05-01")
-    def test_installer_replaces_xenon_entry(self) -> None:
-        """install() replaces xenon-complexity with composite hook (REQ-1)."""
+    def test_installer_replaces_the_ceiling_gate_entry(self) -> None:
+        """install() replaces the complexity-ceiling entry with the composite hook (REQ-1)."""
         with tempfile.TemporaryDirectory() as tmp:
             config_path = Path(tmp) / ".pre-commit-config.yaml"
             config_path.write_text(
@@ -255,9 +255,9 @@ class TestInstaller(unittest.TestCase):
                             name: ruff check
                             entry: uvx ruff check --fix
                             language: system
-                          - id: xenon-complexity
-                            name: xenon
-                            entry: uvx xenon --max-absolute C --max-modules C --max-average C src/
+                          - id: complexity-ceiling
+                            name: complexity ceiling
+                            entry: uv run gz validate --complexity-ceiling
                             language: system
                             pass_filenames: false
                             types: [python]
@@ -283,7 +283,7 @@ class TestInstaller(unittest.TestCase):
             self.assertEqual(code, 0)
             result = config_path.read_text(encoding="utf-8")
             self.assertIn(_HOOK_ID, result)
-            self.assertNotIn("xenon-complexity", result)
+            self.assertNotIn("- id: complexity-ceiling", result)
             self.assertIn("ruff-check", result)
             self.assertIn("unittest", result)
 
@@ -413,10 +413,10 @@ class TestShellHookContract(unittest.TestCase):
     executables (GHI #730).
     """
 
-    def test_hook_runs_the_xenon_gate_it_replaces(self) -> None:
-        """The hook's xenon command is the xenon-complexity entry it replaces (GHI #1105)."""
+    def test_hook_runs_the_ceiling_gate_it_replaces(self) -> None:
+        """The hook's gate command is the complexity-ceiling entry it replaces (GHI #1105)."""
         config_lines = Path(".pre-commit-config.yaml").read_text(encoding="utf-8").splitlines()
-        gate_index = config_lines.index("      - id: xenon-complexity")
+        gate_index = config_lines.index("      - id: complexity-ceiling")
         gate_entry = next(
             line.split("entry:", 1)[1].strip()
             for line in config_lines[gate_index:]
@@ -427,8 +427,8 @@ class TestShellHookContract(unittest.TestCase):
             .read_text(encoding="utf-8")
             .splitlines()
         )
-        hook_xenon = [line.strip() for line in hook_lines if "xenon --max" in line]
-        self.assertEqual(hook_xenon, [gate_entry])
+        hook_gate = [line.strip() for line in hook_lines if line.startswith("uv run gz validate")]
+        self.assertEqual(hook_gate, [gate_entry])
 
     def test_hook_is_posix_shell(self) -> None:
         """Hook script starts with #!/bin/sh."""
@@ -503,7 +503,7 @@ class TestSkipBehavior(unittest.TestCase):
 
         The composite hook id ``complexity-advisor-auto-chain`` means
         ``SKIP=complexity-advisor-auto-chain git commit`` skips the entire
-        hook (both xenon and advisor) via the pre-commit framework's native
+        hook (both the ceiling gate and the advisor) via the pre-commit framework's native
         SKIP mechanism. This test verifies the hook script does not redefine
         SKIP semantics (REQ-3 says 'honored as-is from the chore').
         """

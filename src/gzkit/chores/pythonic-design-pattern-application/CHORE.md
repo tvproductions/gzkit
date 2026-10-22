@@ -20,13 +20,13 @@ Every applied candidate writes an evidence file under `.gzkit/chores/pythonic-de
 3. **Python example witness** — the local archive path read, e.g. `Python/src/Strategy/Conceptual/main.py`
 4. **Example-derived role map** — the pattern roles observed in that Python example and which roles the rewrite collapses
 5. **Before / After** — both forms shown with at least the function/class signature; full body if <=20 lines
-6. **Cyclomatic complexity delta** — xenon ranks before/after for the affected module
+6. **Complexity delta** — the C/C/C ceiling result and the touched functions' cognitive scores (complexipy) before/after
 7. **SLOC delta** — radon raw before/after; positive deltas require explicit rationale
 8. **Tests cited** — list of tests that pinned semantics across the rewrite (Red-Green-Refactor evidence)
 9. **TDD receipt** — `arb-step-unittest-*` receipt ID from the GREEN run (per AGENTS.md § Attestation)
 10. **Disposition link** — back-reference to the entry in the detection chore's candidates report
 
-The mechanical-delta requirement is the binding part: the rewrite must not regress xenon's complexity grade for the affected module, and SLOC must non-positive (or be justified inline).
+The mechanical-delta requirement is the binding part: the rewrite must keep the C/C/C ceiling passing and must not raise a touched function's cognitive score, and SLOC must non-positive (or be justified inline).
 
 ## Python example corpus requirement
 
@@ -57,7 +57,7 @@ shape with a concrete reason.
 - **Lane:** Lite — internal refactor, no external contract change
 - **One file per applied candidate** — never bundle multiple refactors into one evidence file
 - **TDD discipline binding** — Red-Green-Refactor per `.gzkit/rules/tests.md`; cite the GREEN receipt
-- **Complexity non-regression** — xenon C/C/C must hold post-rewrite (matches `complexity-reduction-xenon`)
+- **Complexity non-regression** — `gz validate --complexity-ceiling` and `complexipy -q` pass post-rewrite (matches `complexity-reduction-xenon`)
 - **Detection back-link required** — the evidence file references the detection report row that flagged the candidate; orphan applications (no detection trail) are a defect
 - **Pythonic-target faithfulness** — if the detection row says "first-class function", the after-form must actually be a first-class function (or a documented deviation explaining why that target was wrong for this case)
 
@@ -82,7 +82,8 @@ before continuing.
 ### 3. Capture before-state metrics — observe
 
 ```bash
-uv run xenon --max-absolute C --max-modules C --max-average C src/ > /tmp/xenon-before.txt 2>&1 || true
+uv run gz validate --complexity-ceiling > /tmp/ceiling-before.txt 2>&1 || true
+uv run complexipy --output-format json --output /tmp/cognitive-before.json || true
 uv run radon raw src/ -s > /tmp/radon-before.txt 2>&1 || true
 ```
 
@@ -101,7 +102,8 @@ The semantics test is the load-bearing artifact. A pattern rewrite that is seman
 ### 5. Capture after-state metrics + GREEN receipt — observe
 
 ```bash
-uv run xenon --max-absolute C --max-modules C --max-average C src/ > /tmp/xenon-after.txt 2>&1
+uv run gz validate --complexity-ceiling > /tmp/ceiling-after.txt 2>&1
+uv run complexipy --output-format json --output /tmp/cognitive-after.json
 uv run radon raw src/ -s > /tmp/radon-after.txt 2>&1
 uv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer
 ```
@@ -146,7 +148,7 @@ Template (copy and fill):
 
 | Metric | Before | After | Delta | Note |
 |--------|--------|-------|-------|------|
-| xenon (module rank) | <C/B/A> | <C/B/A> | <equal or improved> | |
+| cognitive score (touched functions, complexipy) | <N> | <M> | <equal or lower> | |
 | radon raw SLOC (module) | <N> | <M> | <M - N> | |
 
 ## Semantics tests cited
@@ -171,7 +173,8 @@ Mark the candidate's `Disposition:` from `_[applied | deferred | not-pythonic-re
 
 ```bash
 uv run gz test
-uv run xenon --max-absolute C --max-modules C --max-average C src/
+uv run gz validate --complexity-ceiling
+uv run complexipy -q
 ```
 
 ## Acceptance Criteria
@@ -187,13 +190,13 @@ The chore intentionally does **not** mechanically gate on "evidence file exists 
 - Bundling multiple refactors into one evidence file (one application = one file)
 - Writing a string-shape semantics test instead of a behavior-pinning test (per `.gzkit/rules/tests.md` § Tests assert semantics, not strings — invariant 6f)
 - Citing a fabricated receipt ID — same fabrication failure as ARB receipt fabrication, applies here
-- Marking the rewrite "applied" when xenon regressed (the post-form is heavier than the pre-form by complexity)
+- Marking the rewrite "applied" when complexity regressed (the post-form is heavier than the pre-form by complexity)
 - Letting the detection row's recommended target slip into a *"close enough"* shape — the rewrite is faithful to the named Pythonic answer, or it documents why that target is wrong for this case
 - Applying from memory without reading the local Python example witness — this turns the pattern examples back into training-corpus recall instead of observed evidence
 
 ## Run Log
 
-| Date | Pattern | Source | Evidence file | xenon delta | SLOC delta |
+| Date | Pattern | Source | Evidence file | cognitive delta | SLOC delta |
 |------|---------|--------|---------------|-------------|------------|
 | _YYYY-MM-DD_ | _Strategy -> function_ | _src/foo.py:42_ | _proofs/application-..._ | _equal_ | _-12_ |
 

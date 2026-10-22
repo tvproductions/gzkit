@@ -32,7 +32,7 @@ ruled the retirement ahead of the door; the REQ and the campaign's Movement B
 item 3 were amended in the same commit rather than silently contradicted.
 
 **What still binds.** Gate 5 human attestation, the pre-commit hook (ruff, ty,
-unittest, xenon), and the pre-push `gz check` are untouched. Only the
+the complexity gates), and the pre-push `gz check` are untouched. Only the
 unruled-handoff precondition is gone.
 
 **What survives here.** :func:`newest_handoff` (the selection projection, three

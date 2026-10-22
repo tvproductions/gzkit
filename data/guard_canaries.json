@@ -422,6 +422,19 @@
       "reviewed_by": "g0"
     },
     {
+      "claim_id": "complexity-ceiling",
+      "guard": "gzkit.governance.trust_audits.complexity_ceiling:_measure_module",
+      "failing_test": "tests.governance.test_complexity_ceiling.MeasureCeilingTest.test_function_over_the_ceiling_fails_with_its_score",
+      "mutation": {
+        "find": "        if score.cyclomatic > ceiling\n",
+        "replace": "        if False\n",
+        "label": "a function over the ceiling is never refused"
+      },
+      "binding_sha256": "d5206bd0c8ef8942572d18ccadfd1033d08b81131c761244999c95939f6d653c",
+      "authority": "docs/governance/harbor-ro9-astral-toolchain.md (drydock RO-9 tranche 4, GHI #1183); GHI #1154 item 5 (every registered claim binds a reviewed canary)",
+      "proposed_by": "claude-code session 2026-10-22"
+    },
+    {
       "claim_id": "requirements-catalog",
       "guard": "gzkit.governance.trust_audits.catalog:_duplicates",
       "failing_test": "tests.governance.test_catalog.TestStructure.test_a_duplicate_family_code_fails",

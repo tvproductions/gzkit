@@ -468,7 +468,7 @@ PRIVATE_CROSS_PACKAGE_IMPORT_BASELINE: dict[str, tuple[str, ...]] = {
         "git_sync._compute_git_sync_state",
         "git_sync._git_status_lines",
         "git_sync._head_is_merge_commit",
-        "git_sync._skip_disables_xenon",
+        "git_sync._skip_disables_complexity",
         "git_sync._skip_tokens",
     ),
     "commands/upgrade.py": (

@@ -10,7 +10,7 @@ Preview complexity advisor diagnosis, understand auto-chain context, or check in
 four-ADR complexity-doctrine cluster (ADR-0.0.27 through ADR-0.0.30). It
 gives operators a single entry point for previewing per-function complexity
 diagnosis before commit, understanding what the auto-chain hook produced when
-xenon-as-gate tripped, and choosing the right intrinsic-complexity attestation
+the C/C/C ceiling gate tripped, and choosing the right intrinsic-complexity attestation
 path for irreducibly complex functions.
 
 ## When to Use
@@ -18,8 +18,8 @@ path for irreducibly complex functions.
 Three operator moments trigger this skill:
 
 1. **Ad-hoc preview-before-fail** -- preview advisor diagnosis on a file
-   before xenon-as-gate would fail it at commit time.
-2. **Auto-chain context** -- understand what happened when xenon-as-gate
+   before the ceiling gate would fail it at commit time.
+2. **Auto-chain context** -- understand what happened when the ceiling gate
    failed and the advisor auto-fired via `--auto-chain`.
 3. **Intrinsic-complexity attestation guidance** -- decide between the
    `@intrinsic_complexity` decorator (pre-attest, skips at diagnosis time)

@@ -5,9 +5,9 @@ description: Use after gz-pythonic-pattern-detect marks a candidate applied, to 
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-10-22
 metadata:
-  skill-version: "1.1.1"
+  skill-version: "1.1.2"
 gz_command: chores run pythonic-design-pattern-application
 model: sonnet
 ---
@@ -40,7 +40,8 @@ Apply a Pythonic-pattern rewrite to a single candidate flagged by `gz-pythonic-p
 3. Capture before-state metrics:
 
    ```bash
-   uv run xenon --max-absolute C --max-modules C --max-average C src/ > /tmp/xenon-before.txt 2>&1 || true
+   uv run gz validate --complexity-ceiling > /tmp/ceiling-before.txt 2>&1 || true
+   uv run complexipy --output-format json --output /tmp/cognitive-before.json || true
    uv run radon raw src/ -s > /tmp/radon-before.txt 2>&1 || true
    ```
 
@@ -59,11 +60,12 @@ Apply a Pythonic-pattern rewrite to a single candidate flagged by `gz-pythonic-p
 7. Capture after-state metrics:
 
    ```bash
-   uv run xenon --max-absolute C --max-modules C --max-average C src/ > /tmp/xenon-after.txt 2>&1
+   uv run gz validate --complexity-ceiling > /tmp/ceiling-after.txt 2>&1
+   uv run complexipy --output-format json --output /tmp/cognitive-after.json
    uv run radon raw src/ -s > /tmp/radon-after.txt 2>&1
    ```
 
-   Confirm xenon did not regress (still C/C/C). If it did, the rewrite has compounded complexity rather than reduced it — revert and re-design.
+   Confirm the C/C/C ceiling still passes and no touched function's cognitive score rose. If either regressed, the rewrite has compounded complexity rather than reduced it — revert and re-design.
 
 8. Author the evidence file at `.gzkit/chores/pythonic-design-pattern-application/proofs/application-YYYY-MM-DD-HHMMSS-<short-slug>.md` per the template in `.gzkit/chores/pythonic-design-pattern-application/CHORE.md`. Include:
 
@@ -73,7 +75,7 @@ Apply a Pythonic-pattern rewrite to a single candidate flagged by `gz-pythonic-p
    - Local Python example witness and `Output.txt` path
    - Example-derived role map
    - Before / After code blocks
-   - xenon + radon deltas with notes
+   - ceiling, cognitive and radon deltas with notes
    - Tests cited (file:Test::test_method)
    - GREEN receipt ID
    - Pythonic-target faithfulness note (yes / no with rationale)
@@ -88,7 +90,7 @@ Apply a Pythonic-pattern rewrite to a single candidate flagged by `gz-pythonic-p
 
 ## Failure Modes
 
-- **xenon regresses post-rewrite:** the Pythonic form is heavier than the class form by complexity. Revert and pick a different target — or accept the candidate is `not-pythonic-rewrite` after all and update the detection row accordingly.
+- **Complexity regresses post-rewrite:** the Pythonic form is heavier than the class form by complexity. Revert and pick a different target — or accept the candidate is `not-pythonic-rewrite` after all and update the detection row accordingly.
 - **Semantics test rewrites the assertion to match new output:** that is a string-shape assertion, not a semantics test. The whole point of the test is that it pins purpose across the rewrite — if it has to change, the rewrite changed behavior.
 - **GREEN receipt missing:** ran `unittest` directly instead of through `gz arb step`. The corpus needs the receipt ID, not a narrative claim. Re-run under ARB.
 - **Detection report row not updated:** orphan evidence file. Run an audit grep for the evidence-file path inside `candidates-*.md` files and back-link manually.
@@ -99,7 +101,7 @@ Apply a Pythonic-pattern rewrite to a single candidate flagged by `gz-pythonic-p
 
 - One evidence file per applied candidate; never bundled
 - Semantics test is behavior-pinning (per invariant 6f), not string-shape
-- xenon C/C/C non-regression confirmed before authoring evidence
+- C/C/C ceiling and cognitive non-regression confirmed before authoring evidence
 - GREEN receipt ID is real (not fabricated) and corresponds to a passing run
 - Python example witness and role map are present, or the archive's absence is recorded and the role map is marked unwitnessed
 - Detection report row back-linked to the evidence file path
@@ -112,7 +114,7 @@ These thoughts mean STOP — you are about to ship an evidence file that broke i
 | Thought | Reality |
 |---------|---------|
 | "I'll skip the semantics test — the rewrite is obviously equivalent" | Without a behavior-pinning test, the rewrite is unverified. The corpus is the product; un-evidence-able rewrites add noise, not signal. |
-| "xenon regressed by one rank, but the after-form is cleaner" | Cleaner-by-eye + heavier-by-metric is the precise failure mode this chore catches. Revert; pick a different target. |
+| "the cognitive score rose by a point, but the after-form is cleaner" | Cleaner-by-eye + heavier-by-metric is the precise failure mode this chore catches. Revert; pick a different target. |
 | "I'll bundle three Strategy-class rewrites into one file to save time" | One file per applied candidate is the canon. Bundles lose per-candidate signal. |
 | "I'll cite `unittest -q` exit-zero in lieu of an ARB receipt" | Same fabrication failure as ARB receipt fabrication elsewhere — the receipt ID is the proof, not the claim. |
 | "The detection row says 'first-class function' but I made it a `@cache`d method" | Faithfulness to the named target is the rule. If the target is wrong for this case, name *why* in the rationale; do not silently deviate. |
@@ -122,7 +124,7 @@ These thoughts mean STOP — you are about to ship an evidence file that broke i
 ## Red Flags
 
 - Evidence file path outside `.gzkit/chores/pythonic-design-pattern-application/proofs/`
-- xenon delta showing rank regression
+- ceiling or cognitive delta showing a regression
 - Test cited that has no `assert` body matching operator-facing purpose
 - GREEN receipt ID with `exit_status=1` (an authored RED receipt is itself a defect — see `AGENTS.md` § Attestation: "A fabricated receipt ID is a fabricated claim")
 - Candidate row in detection report not updated

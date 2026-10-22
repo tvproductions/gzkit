@@ -25,7 +25,7 @@ The four phases partition work along two questions, plus one tiebreaker:
 | **Design** | **changes** | none yet | coherence & traceability — the new intent decomposes down and traces up; no orphan intent | "everyone uses X" architecture; training-corpus-driven choices |
 | **Build** | consumes (unchanged) | **new** | intent → behavior — every REQ covered by a passing test | plausible-looking code written without reading the surface |
 | **Fix** | unchanged | **corrected** | behavior → intent — a red test proving the defect, now green; fix the *class* | fixing the instance, not the family |
-| **Refactor** | unchanged | **preserved** | invariance — behavior unchanged + non-regressing complexity (semantics-pin; xenon/radon) | "cleanup" that silently changes behavior; taste-driven churn |
+| **Refactor** | unchanged | **preserved** | invariance — behavior unchanged + non-regressing complexity (semantics-pin; the C/C/C ceiling and complexipy) | "cleanup" that silently changes behavior; taste-driven churn |
 
 ## Build vs Fix — the correction-vs-enhancement tiebreaker
 

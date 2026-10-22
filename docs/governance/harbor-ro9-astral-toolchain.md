@@ -182,9 +182,17 @@ then ruled by the operator by selection:
   mean 4.49 over 5,212 functions. complexipy's cognitive ceiling of 15 is new, and 307 functions exceed it
   (58 over 25, maximum 50). They enter a keyed baseline registered as a shrink-ratchet, and new or changed
   code is held to 15.
-- *"Map or retire each (Rec.)"*: Radon's `raw_nloc` maps to Lizard's `nloc`; `raw_lloc`, the maintainability
-  index and the three Halstead metrics retire. Each retirement is recorded at the surface against the
-  ADR-0.0.27/0.0.28/0.0.29 REQs it touches, and no dependency is added.
+- *"Map or retire each (Rec.)"*: `raw_lloc`, the maintainability index and the three Halstead metrics
+  retire, and `radon_cc` gives way to Lizard's `lizard_ccn`. Each retirement is recorded at the surface
+  against the ADR-0.0.27/0.0.28/0.0.29 REQs it touches, and no dependency is added. Module size was
+  drafted as "maps to Lizard's `nloc`", which is per function where `raw_nloc` is per file; re-ruled
+  *"Lizard file NLOC, re-distilled (Rec.)"*: a per-file `lizard_file_nloc`, its bands re-derived by
+  `gz complexity distill` over the cached exemplar corpus.
+- The gate's home, *"gz validate scope (Rec.)"*: `gz validate --complexity-ceiling` in the default
+  `gz check`, its ceiling read from `[tool.ruff.lint.mccabe] max-complexity` and its population the Python
+  the wheel ships. REQ-0.0.29-05-01, -02 and -03 (the auto-chain hook chains on xenon),
+  REQ-0.0.28-01-10 (three bootstrap metrics, `radon_mi` among them) and REQ-0.0.27-03-05 (a missing
+  `radon` binary) are each *"Amend in place (Rec.)"*.
 
 The rules tranche 4 still reads site by site: S506 (`quality.py`, the YAML loader), S608
 (`trust_audits/cli.py`), two S701 (jinja2 autoescape off on non-HTML renders), and about 260

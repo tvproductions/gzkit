@@ -22,6 +22,10 @@
       "reason": "Cyclomatic scores and module means for the C/C/C gate (GHI #1183's selection, operator 2026-10-09); Ruff C901 is per-function pass/fail with no metrics."
     },
     {
+      "name": "complexipy",
+      "reason": "Cognitive complexity with a shrink-only snapshot (GHI #1183's selection, operator 2026-10-09; ceiling 15 ruled 2026-10-22); Ruff ships no cognitive-complexity rule."
+    },
+    {
       "name": "cohesion",
       "reason": "LCOM4 class cohesion for the complexity thresholds (ADR-0.0.27); Astral ships no cohesion metric."
     },

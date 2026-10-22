@@ -7,7 +7,12 @@
     },
     {
       "type": "exitCodeEquals",
-      "command": "uv run xenon --max-absolute C --max-modules C --max-average C src/",
+      "command": "uv run gz validate --complexity-ceiling",
+      "expected": 0
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run complexipy -q",
       "expected": 0
     }
   ]

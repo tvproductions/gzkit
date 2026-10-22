@@ -1389,6 +1389,30 @@ def _build_astral_discipline_baselined() -> Path:
     return _astral_root("astral-discipline-baselined", fresh=False)
 
 
+def _build_complexity_ceiling() -> Path:
+    """Build a shipped function over the declared ceiling — the gate MUST fire (RO-9 tranche 4).
+
+    Decoy: a function exactly AT the ceiling in its own module, among simple ones, which
+    must stay silent (a value equal to the ceiling passes); the entrypoint reports no
+    catch when anything in the decoy module fires.
+    """
+    root = _mkroot("complexity-ceiling")
+    _write(
+        root / "pyproject.toml",
+        '[project]\nname = "nc"\nversion = "0.1.0"\n\n[build-system]\n'
+        'requires = ["uv_build>=0.13.1,<0.14"]\nbuild-backend = "uv_build"\n\n'
+        '[tool.uv.build-backend]\nmodule-name = "nc"\nmodule-root = "src"\n\n'
+        "[tool.ruff.lint.mccabe]\nmax-complexity = 3\n",
+    )
+    branches = "".join(f"    if x == {i}:\n        return {i}\n" for i in range(3))
+    _write(root / "src" / "nc" / "__init__.py", "")
+    _write(root / "src" / "nc" / "over.py", f"def over(x):\n{branches}    return -1\n")
+    simple = "".join(f"def simple_{i}():\n    return {i}\n" for i in range(3))
+    at = "".join(f"    if x == {i}:\n        return {i}\n" for i in range(2))
+    _write(root / "src" / "nc" / "decoy.py", f"def at_ceiling(x):\n{at}    return -1\n{simple}")
+    return root
+
+
 def _build_id_seam() -> Path:
     """Build a new id-grammar site beside a baselined one — the gate MUST fire (RO-2).
 
@@ -2160,6 +2184,12 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
     ),
     # Admit half: a baselined site, which the shrink-ratchet holds (drydock RO-2).
     ("identity-seam-baselined", _build_id_seam_baselined, _ep._ep_id_seam_admits_baselined),
+    (
+        "complexity-ceiling",
+        _build_complexity_ceiling,
+        _ep._ep_complexity_ceiling,
+        "over: cyclomatic 4 > 3",
+    ),
     (
         "astral-discipline",
         _build_astral_discipline,

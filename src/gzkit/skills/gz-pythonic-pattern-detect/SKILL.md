@@ -5,9 +5,9 @@ description: Use when gates are green but code still looks Java-flavored, to sur
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-10-22
 metadata:
-  skill-version: "1.2.1"
+  skill-version: "1.2.2"
 gz_command: chores run pythonic-design-pattern-detection
 model: sonnet
 ---
@@ -22,7 +22,7 @@ Run the `pythonic-design-pattern-detection` chore to surface structural refactor
 
 - `root`: source tree to scan (default `src`)
 - `out`: markdown candidates report path. The scanner requires `--out` and has no default; the convention is `.gzkit/chores/pythonic-design-pattern-detection/proofs/candidates-YYYY-MM-DD.md`
-- `xenon_band` (optional): xenon hot-spot band to cross-reference, default `B`
+- `hotspot_ceiling` (optional): cyclomatic complexity above which a function is a hotspot to cross-reference, default `10`
 - `DESIGN_PATTERNS_ARCHIVE` (optional): path to your own copy of the local Refactoring
   Guru archive. **No default** — it is a third-party asset gzkit does not ship, and a
   hardcoded default resolves only on the machine that authored it (GHI #900). Unset,
@@ -31,7 +31,7 @@ Run the `pythonic-design-pattern-detection` chore to surface structural refactor
 ## Outputs
 
 - Candidates report at the `out` path enumerating every match with file:line, class name, AST signal, Pythonic refactor target, local Python example path, output path, role map, and Pythonic collapse
-- Optional `xenon-hotspots-YYYY-MM-DD.txt` cross-reference under the same `proofs/`
+- Optional `complexity-hotspots-YYYY-MM-DD.txt` cross-reference under the same `proofs/`
 - `CHORE-LOG.md` entry recording the chore execution
 
 ## Procedure
@@ -59,8 +59,8 @@ Run the `pythonic-design-pattern-detection` chore to surface structural refactor
 4. Cross-reference complexity hotspots:
 
    ```bash
-   uv run xenon --max-absolute B src/ \
-       > .gzkit/chores/pythonic-design-pattern-detection/proofs/xenon-hotspots-$(date +%Y-%m-%d).txt 2>&1 || true
+   uv run ruff check src --select C901 --config 'lint.mccabe.max-complexity = 10' --output-format concise \
+       > .gzkit/chores/pythonic-design-pattern-detection/proofs/complexity-hotspots-$(date +%Y-%m-%d).txt 2>&1 || true
    ```
 
 5. Open the candidates report. For each candidate:
@@ -72,7 +72,7 @@ Run the `pythonic-design-pattern-detection` chore to surface structural refactor
    - For `deferred`: file or cite a tracking GHI, paste the issue number into the row
    - For `not-pythonic-rewrite`: name the concrete reason inline (the class shape genuinely fits — e.g. State machine with many transitions)
 
-6. For reference-mode patterns (Bridge, Flyweight, Factory Method) — open the matching archive example side-by-side with any module ranked B-or-worse by xenon. Add an inline `## Reference-mode candidates` section to the report.
+6. For reference-mode patterns (Bridge, Flyweight, Factory Method) — open the matching archive example side-by-side with any module holding a hotspot. Add an inline `## Reference-mode candidates` section to the report.
 
 7. Run the chore's acceptance criteria. `gz chores run` executes `acceptance.json` — the full `uv run gz test` suite and the scanner self-test — and appends the result to `proofs/CHORE-LOG.md`:
 
@@ -86,7 +86,7 @@ Run the `pythonic-design-pattern-detection` chore to surface structural refactor
 - **`--out` omitted:** the scanner exits 2 with a usage error; pass the report path. It creates the parent directory itself.
 - **`gz chores show` cannot find the chore:** the project copy is missing or damaged. Run `uv run gz chores doctor --dry-run` first and sync any unsynced `.gzkit/chores/` edits, because repairing a damaged slug rewrites its surviving definition files (`.gzkit/rules/chores.md` § Two-Surface Layout); then `uv run gz chores doctor` restores it and keeps `proofs/`.
 - **Empty report (`NO_CANDIDATES_DETECTED`):** AST signals returned zero hits. Switch to reference-mode review against local Python examples; do not assume the codebase is Pythonic everywhere — Bridge, Flyweight, Factory Method are not detected mechanically.
-- **Many candidates without xenon overlap:** the structural drift exists but is metric-invisible. Do not skip those — that is exactly the post-post-implementation gap this skill is designed to catch.
+- **Many candidates without hotspot overlap:** the structural drift exists but is metric-invisible. Do not skip those — that is exactly the post-post-implementation gap this skill is designed to catch.
 
 ## Acceptance Rules
 

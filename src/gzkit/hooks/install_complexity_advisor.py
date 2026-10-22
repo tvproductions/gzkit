@@ -1,9 +1,10 @@
 """Auto-chain hook installer and runtime (OBPI-0.0.29-05).
 
-Install mode replaces the ``xenon-complexity`` pre-commit entry with a
-composite hook that runs xenon first and chains to the complexity advisor
-on failure. Run mode wraps the advisor in OBPI-09's timeout primitive and
-returns the appropriate exit code per REQ-0.0.29-05-06.
+Install mode replaces the ``complexity-ceiling`` pre-commit entry with a
+composite hook that runs the C/C/C ceiling gate first and chains to the
+complexity advisor on failure (xenon held the gate until RO-9 tranche 4).
+Run mode wraps the advisor in OBPI-09's timeout primitive and returns the
+appropriate exit code per REQ-0.0.29-05-06.
 
 Install (``--install`` is the default mode)::
 
@@ -36,7 +37,8 @@ _LEDGER_PATH = Path(".gzkit/ledger.jsonl")
 _METRIC_KEY = "radon_cc"
 
 _HOOK_ID = "complexity-advisor-auto-chain"
-_HOOK_NAME = "complexity advisor (xenon + advisor auto-chain)"
+_HOOK_NAME = "complexity advisor (C/C/C ceiling + advisor auto-chain)"
+_GATE_HOOK_ID = "complexity-ceiling"
 _HOOK_ENTRY = ".gzkit/hooks/pre-commit-complexity-advisor"
 
 _NEW_HOOK_YAML = f"""\
@@ -180,7 +182,7 @@ def _render_to_stderr(diagnoses: list[AdvisorDiagnosis]) -> None:
 
 
 def install() -> int:
-    """Replace xenon-complexity with the composite auto-chain hook in .pre-commit-config.yaml."""
+    """Replace the ceiling gate entry in .pre-commit-config.yaml with the auto-chain hook."""
     config_path = Path(".pre-commit-config.yaml")
     if not config_path.exists():
         print("error: .pre-commit-config.yaml not found", file=sys.stderr)
@@ -191,30 +193,30 @@ def install() -> int:
         print(f"Hook '{_HOOK_ID}' already present in .pre-commit-config.yaml")
         return 0
 
-    marker = "      - id: xenon-complexity"
+    marker = f"      - id: {_GATE_HOOK_ID}"
     if marker not in content:
         print(
-            "warning: xenon-complexity entry not found; appending hook to first local repo",
+            f"warning: {_GATE_HOOK_ID} entry not found; appending hook to first local repo",
             file=sys.stderr,
         )
         content = _append_hook_to_first_repo(content)
     else:
-        content = _replace_xenon_entry(content)
+        content = _replace_gate_entry(content)
 
     config_path.write_text(content, encoding="utf-8")
     print(f"Installed hook '{_HOOK_ID}' in .pre-commit-config.yaml")
-    print(f"  Replaced: xenon-complexity -> {_HOOK_ID}")
+    print(f"  Replaced: {_GATE_HOOK_ID} -> {_HOOK_ID}")
     print(f"  Skip:     SKIP={_HOOK_ID} git commit")
     return 0
 
 
-def _replace_xenon_entry(content: str) -> str:
-    """Replace the xenon-complexity entry with the composite hook."""
+def _replace_gate_entry(content: str) -> str:
+    """Replace the ceiling gate entry with the composite hook."""
     lines = content.splitlines(keepends=True)
     result: list[str] = []
     skip = False
     for line in lines:
-        if "- id: xenon-complexity" in line:
+        if f"- id: {_GATE_HOOK_ID}" in line:
             skip = True
             result.append(_NEW_HOOK_YAML)
             continue

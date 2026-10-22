@@ -143,7 +143,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
     commands.add_parser(
         "lint",
         help="Run lint checks",
-        description="Run Ruff linter on the codebase.",
+        description="Run Ruff, complexipy and the two path lints over the repository.",
         epilog=build_epilog(["gz lint"]),
     ).set_defaults(func=lambda a: _lazy("lint")())
     commands.add_parser(
@@ -938,6 +938,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Restated facts or tools outside uv beyond the RO-9 baseline: exit 3.",
     )
     p_validate.add_argument(
+        "--complexity-ceiling",
+        dest="check_complexity_ceiling",
+        action="store_true",
+        help="Shipped code over the Lizard C/C/C ceiling Ruff reads (RO-9): exit 3.",
+    )
+    p_validate.add_argument(
         "--distribution",
         dest="check_distribution",
         action="store_true",
@@ -1208,6 +1214,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_mx_hardening=a.check_mx_hardening,
             check_id_seam=a.check_id_seam,
             check_astral_discipline=a.check_astral_discipline,
+            check_complexity_ceiling=a.check_complexity_ceiling,
             check_router_tables=a.check_router_tables,
             check_req_kind_discipline=a.check_req_kind_discipline,
             check_status_writer_coverage=a.check_status_writer_coverage,

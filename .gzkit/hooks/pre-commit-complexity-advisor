@@ -1,17 +1,18 @@
 #!/bin/sh
-# Auto-chain hook: xenon-as-gate -> complexity advisor on failure (OBPI-0.0.29-05).
+# Auto-chain hook: the C/C/C ceiling as gate -> complexity advisor on failure (OBPI-0.0.29-05).
 # Install: python -m gzkit.hooks.install_complexity_advisor
 # Skip:    SKIP=complexity-advisor-auto-chain git commit
 
-# Step 1: Run xenon-as-gate (same invocation as complexity-reduction-xenon chore)
-uv run xenon --max-absolute C --max-modules C --max-average C src/
-XENON_EXIT=$?
+# Step 1: Run the ceiling gate (the complexity-ceiling entry this hook replaces;
+# xenon held this step until RO-9 tranche 4 retired it, GHI #1183)
+uv run gz validate --complexity-ceiling
+GATE_EXIT=$?
 
-if [ "$XENON_EXIT" -eq 0 ]; then
+if [ "$GATE_EXIT" -eq 0 ]; then
     exit 0
 fi
 
-# Step 2: Xenon failed — collect staged Python files only (REQ-5)
+# Step 2: The gate failed — collect staged Python files only (REQ-5)
 STAGED=$(git diff --cached --name-only --diff-filter=d -- '*.py')
 if [ -z "$STAGED" ]; then
     exit 0

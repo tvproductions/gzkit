@@ -328,7 +328,7 @@ status: {status}
         errors = self.validator.validate_file(path)
         self.assertIn("Not a git repository.", errors)
 
-    def test_validate_blocks_skip_values_that_bypass_xenon(self):
+    def test_validate_blocks_skip_values_that_bypass_the_complexity_gates(self):
         path = self._create_obpi(
             "ADR-0.1.0",
             status="Completed",
@@ -336,7 +336,7 @@ status: {status}
             proof="Works as expected",
         )
         original_skip = os.environ.get("SKIP")
-        os.environ["SKIP"] = "xenon-complexity"
+        os.environ["SKIP"] = "complexipy"
         try:
             errors = self.validator.validate_file(path)
         finally:
@@ -346,7 +346,7 @@ status: {status}
                 os.environ["SKIP"] = original_skip
 
         self.assertIn(
-            "Refusing completion validation with SKIP that can bypass xenon complexity checks.",
+            "Refusing completion validation with SKIP that can bypass the complexity gates.",
             errors,
         )
 

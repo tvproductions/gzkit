@@ -61,7 +61,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `brief-heading-conventions.md` | `0.2.1` |
 | `changelog-release-notes.md` | `1.2.2` |
 | `complexity-doctrine.md` | `0.4.1` |
-| `complexity-thresholds.md` | `0.5.1` |
+| `complexity-thresholds.md` | `0.5.2` |
 | `gh-cli.md` | `0.7.1` |
 | `hexagonal-architecture.md` | `0.3.1` |
 | `models.md` | `0.2.1` |
@@ -76,7 +76,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `gate5-runbook-code-covenant.md` | `0.3.2` |
 | `guardrail-feedback-prose.md` | `0.3.1` |
 | `mx-mode.md` | `1.10.0` |
-| `pythonic.md` | `0.5.4` |
+| `pythonic.md` | `0.5.5` |
 | `tool-skill-runbook-alignment.md` | `0.5.3` |
 | `tests.md` | `0.27.2` |
 | `task-discovery.md` | `0.10.1` |
@@ -400,6 +400,7 @@ The Claude-specific invariant 10a is scored as a row rather than in prose:
 | 51 | `(metric, percentile-band, absolute-number, trigger-semantic)` tuple | **Mechanical** | Enforced by `gz validate --complexity-thresholds` (OBPI-0.0.28-03, `src/gzkit/governance/trust_audits/complexity_thresholds.py`) — fails closed (exit 3) on missing `block` band per metric, missing percentile + absolute pairing, trigger-semantic outside the three-value enum, unparseable citation tuple, or canonical-metric coverage gap. Bootstrap-mode carve-out emits an informational stdout notice (non-policy-breach). The `ThresholdTable` Pydantic loader at `src/gzkit/complexity/thresholds.py` (OBPI-0.0.28-02) is the runtime contract that ADR-0.0.29 advisor and ADR-0.0.30 authoring-guidance bind against; the loader's Pydantic field validators close the loader-layer half of the invariant. Selection-methodology and citation-tuple form inherited from `.gzkit/rules/complexity-doctrine.md` (rule 50) — the threshold table cites that doctrine's distilled-characteristics document at corpus revision 1. Wired into `gz check` via the "Complexity-thresholds" runner; behave scenarios under `features/complexity_thresholds.feature` cover the four canonical failure paths (missing block band, off-enum percentile, malformed citation, bootstrap-mode notice). Rule body validated by `tests/governance/test_complexity_thresholds_rule.py`; validator validated by `tests/governance/test_complexity_thresholds_validator.py`. Scorecard citation: ADR-0.0.28 (parent), OBPI-0.0.28-02 (loader), OBPI-0.0.28-03 (validator-as-enforcement). `source=.gzkit/rules/complexity-thresholds.md` |
 | 51c | The runtime threshold data lives in [`complexity-thresholds.json`](https://github.com/tvproductions/gzkit/blob/main/.gzkit/rules/complexity-thresholds.json) | **Promotable** | **Scored 2026-08-30 (rule `0.5.0`), GHI #921.** The specific instance of row 17h's general clause, and the one with a *measured* breach on record: `pythonic.md` carried `Modules <=600` while `check_module_size.py:56` reads the JSON, and a census against the prose figure counted 51 modules no gate rejects. Promotable on the narrow allowlist arm 17h names — declare this file as an authority and scan for its values restated in prose — not on the general form. `source=.gzkit/rules/complexity-thresholds.md` |
 | 51d | **Operator-amendable mapping protocol** — threshold amendments follow the declared protocol | **Judgment** | **Scored 2026-08-30 (rule `0.5.0`), GHI #921 — never scored.** The protocol governs *how an operator amends*, and the amendment's legitimacy rests on the operator having ruled, which is Gate-5-class authority rather than a checkable property of the file. `--complexity-thresholds` validates the resulting table's shape, never the provenance of a change to it. `source=.gzkit/rules/complexity-thresholds.md` |
+| 51e | `block`: the metric crossing the band fails the gate — `gz complexity advise` exits 3 and the auto-chain hook refuses the commit | **Promotable** | **Scored 2026-10-22 (rule `0.5.2`), RO-9 tranche 4 (GHI #1183).** The clause named *"Xenon-as-gate exits 3"* until xenon retired, and xenon never read the table, so the old wording named a consumer that did not consume. Promotable, not Mechanical: both consumers are witnessed by unit tests, and a unit test is not a registered negative control (the row 45b-45d precedent): `tests/commands/test_complexity_advise.py::TestComplexityAdviseBehavior::test_block_band_exit_three` (exit 3) and `tests/hooks/test_complexity_advisor_auto_chain.py::TestRunAutoChain::test_block_band_exits_1` (the hook refuses). The hook is opt-in and not installed in this repository, which the `gz-complexity-advisor` skill discloses. `source=.gzkit/rules/complexity-thresholds.md` |
 
 ### Editor/IDE Protocol Surface (`.gzkit/schemas/authoring_guide_protocol.json`)
 
@@ -538,7 +539,7 @@ decays in whichever direction the next reader's grep happens to point.
 | Score | Rows | % of scored rows |
 |-------|-------|---|
 | **Mechanical** | 70 | 37% |
-| **Promotable** | 42 | 22% |
+| **Promotable** | 43 | 23% |
 | **Judgment** | 78 | 41% |
 | **Ambiguous** | 0 | 0% |
 
@@ -556,7 +557,7 @@ decays in whichever direction the next reader's grep happens to point.
      158 as of row 58c (GHI #962, 2026-09-05), and 159 as of row 88 (the CLI
      lane-is-not-route carve-out, 2026-09-06), and 160 as of row 89 (mutation-sweep
      integrity, GHI #963), and 161 as of row 51c (census-query completeness,
-     GHI #972), and 163 as of rows 91-92 (the exit-code-2 relabel, GHI #1001), and 167 as of rows 56a-56b (suppression is not a repair, GHI #999), and 168 as of row 93 (verbosity flags realigned to the specification, 2026-09-14), and 180 as of row 53c (skill selection routes through gz-how, GHI #1106, 2026-09-27), and 181 as of row 51d (gh issue reopen for ghi-author's regression case, 2026-09-27), and 190 as of row 62g (the MX lease is booked and announced, GHI #1257, 2026-10-18); the entries between 131 and 158 were
+     GHI #972), and 163 as of rows 91-92 (the exit-code-2 relabel, GHI #1001), and 167 as of rows 56a-56b (suppression is not a repair, GHI #999), and 168 as of row 93 (verbosity flags realigned to the specification, 2026-09-14), and 180 as of row 53c (skill selection routes through gz-how, GHI #1106, 2026-09-27), and 181 as of row 51d (gh issue reopen for ghi-author's regression case, 2026-09-27), and 190 as of row 62g (the MX lease is booked and announced, GHI #1257, 2026-10-18), and 191 as of row 51e (the `block` band's consumers after xenon, RO-9 tranche 4, 2026-10-22); the entries between 131 and 158 were
      not recorded here as they landed, so this list names the endpoints it can
      evidence rather than reconstructing a history it cannot. -->
 

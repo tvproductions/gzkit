@@ -460,6 +460,9 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
     _ScopeEntry(
         "astral_discipline", "explicit", True, lambda r, _f: _ta().audit_astral_discipline(r)
     ),
+    _ScopeEntry(
+        "complexity_ceiling", "explicit", True, lambda r, _f: _ta().audit_complexity_ceiling(r)
+    ),
     _ScopeEntry("router_tables", "explicit", True, lambda r, _f: _ta().audit_router_tables(r)),
     _ScopeEntry(
         "req_kind_discipline", "explicit", True, lambda r, _f: _validate_req_kind_discipline(r)
@@ -1164,6 +1167,7 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "mx_hardening",
         "id_seam",
         "astral_discipline",
+        "complexity_ceiling",
         "router_tables",
         "req_kind_discipline",
         "status_writer_coverage",
@@ -1557,6 +1561,7 @@ def validate(
     check_mx_hardening: bool = False,
     check_id_seam: bool = False,
     check_astral_discipline: bool = False,
+    check_complexity_ceiling: bool = False,
     check_router_tables: bool = False,
     check_req_kind_discipline: bool = False,
     check_status_writer_coverage: bool = False,
@@ -1704,6 +1709,7 @@ def validate(
         "mx_hardening": check_mx_hardening,
         "id_seam": check_id_seam,
         "astral_discipline": check_astral_discipline,
+        "complexity_ceiling": check_complexity_ceiling,
         "router_tables": check_router_tables,
         "req_kind_discipline": check_req_kind_discipline,
         "status_writer_coverage": check_status_writer_coverage,

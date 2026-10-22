@@ -1,11 +1,11 @@
-Feature: Complexity advisor auto-chain from xenon-as-gate failure (ADR-0.0.29 / OBPI-0.0.29-05)
+Feature: Complexity advisor auto-chain from a C/C/C ceiling failure (ADR-0.0.29 / OBPI-0.0.29-05)
   As a developer committing complexity-sensitive code,
-  I want the pre-commit hook to run the advisor when xenon fails,
+  I want the pre-commit hook to run the advisor when the ceiling gate fails,
   so that warn-band crossings surface a diagnosis and block-band
   crossings prevent the commit.
 
   @REQ-0.0.29-05-01
-  Scenario: clean commit — xenon passes, advisor not invoked
+  Scenario: clean commit — the gate passes, advisor not invoked
     Given a git repo with the auto-chain hook installed
     And a staged Python file with no complexity crossings
     When the pre-commit hook runs
@@ -15,7 +15,7 @@ Feature: Complexity advisor auto-chain from xenon-as-gate failure (ADR-0.0.29 / 
   @REQ-0.0.29-05-02
   @REQ-0.0.29-05-05
   @REQ-0.0.29-05-06
-  Scenario: warn-band commit — xenon fails, advisor diagnoses warn crossing
+  Scenario: warn-band commit — the gate fails, advisor diagnoses warn crossing
     Given a git repo with the auto-chain hook installed
     And a staged Python file with a warn-band complexity crossing
     When the pre-commit hook runs
@@ -25,7 +25,7 @@ Feature: Complexity advisor auto-chain from xenon-as-gate failure (ADR-0.0.29 / 
   @REQ-0.0.29-05-04
   @REQ-0.0.29-05-05
   @REQ-0.0.29-05-06
-  Scenario: block-band commit — xenon fails, advisor diagnoses block crossing
+  Scenario: block-band commit — the gate fails, advisor diagnoses block crossing
     Given a git repo with the auto-chain hook installed
     And a staged Python file with a block-band complexity crossing
     When the pre-commit hook runs
@@ -33,7 +33,7 @@ Feature: Complexity advisor auto-chain from xenon-as-gate failure (ADR-0.0.29 / 
     And stderr contains a diagnosis with "Archetype"
 
   @REQ-0.0.29-05-03
-  Scenario: SKIP-bypassed commit — neither xenon nor advisor runs
+  Scenario: SKIP-bypassed commit — neither the gate nor the advisor runs
     Given a git repo with the auto-chain hook installed
     And a staged Python file with a block-band complexity crossing
     And the SKIP environment variable includes the hook id

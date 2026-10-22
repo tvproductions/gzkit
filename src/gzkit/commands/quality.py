@@ -92,6 +92,7 @@ _STEP_GUARD_META: dict[str, tuple[str, int]] = {
     "MX hardening": ("mx-hardening", _mx_levels.ERROR),
     "Identity seam": ("id-seam", _mx_levels.ERROR),
     "Astral discipline": ("astral-discipline", _mx_levels.ERROR),
+    "Complexity ceiling": ("complexity-ceiling", _mx_levels.ERROR),
     "OBPI lifecycle coherence": ("obpi-lifecycle-coherence", _mx_levels.ERROR),
     "Session green gate": ("session-green-gate", _mx_levels.ERROR),
     "Closeout proof": ("closeout-proof", _mx_levels.ERROR),
@@ -179,7 +180,7 @@ def _apply_mx_seam(
 
 
 def lint() -> None:
-    """Run code linting: ruff, the ADR path-contract lint and the parents-pattern lint."""
+    """Run code linting: ruff, complexipy, the ADR path-contract and parents-pattern lints."""
     project_root = get_project_root()
 
     console.print("Running linters...")
@@ -555,6 +556,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         run_catalog_audit,
         run_cli_audit,
         run_closeout_proof_audit,
+        run_complexity_ceiling_audit,
         run_complexity_doctrine_links_audit,
         run_complexity_thresholds_audit,
         run_config_registry_audit,
@@ -650,6 +652,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         ("MX hardening", run_mx_hardening_audit),
         ("Identity seam", run_id_seam_audit),
         ("Astral discipline", run_astral_discipline_audit),
+        ("Complexity ceiling", run_complexity_ceiling_audit),
         ("Session green gate", run_session_green_gate_audit),
         ("Closeout proof", run_closeout_proof_audit),
         ("Kind invariance", run_kind_invariance_audit),

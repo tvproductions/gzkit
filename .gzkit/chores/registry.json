@@ -73,8 +73,8 @@
     },
     {
       "slug": "complexity-reduction-xenon",
-      "title": "Complexity Reduction (Xenon C/C/C)",
-      "version": "2.1.0",
+      "title": "Complexity Reduction (C/C/C ceiling)",
+      "version": "3.0.0",
       "path": ".gzkit/chores/complexity-reduction-xenon",
       "lane": "lite",
       "timeoutSeconds": 180,
@@ -729,7 +729,7 @@
     {
       "slug": "pythonic-design-pattern-application",
       "title": "Pythonic Design Pattern Application (Before/After Evidence Capture)",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "path": ".gzkit/chores/pythonic-design-pattern-application",
       "lane": "lite",
       "timeoutSeconds": 180,
@@ -753,7 +753,7 @@
     {
       "slug": "pythonic-design-pattern-detection",
       "title": "Pythonic Design Pattern Detection (AST Scanner + refactoring.guru Catalogue)",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "path": ".gzkit/chores/pythonic-design-pattern-detection",
       "lane": "lite",
       "timeoutSeconds": 180,

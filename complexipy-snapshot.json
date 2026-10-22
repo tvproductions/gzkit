@@ -1,0 +1,2232 @@
+[
+  {
+    "path": "src/gzkit/acceptance.py",
+    "file_name": "acceptance.py",
+    "functions": [
+      {
+        "name": "_record_findings",
+        "complexity": 19
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/acceptance_execution.py",
+    "file_name": "acceptance_execution.py",
+    "functions": [
+      {
+        "name": "prove",
+        "complexity": 16
+      },
+      {
+        "name": "_file_roster",
+        "complexity": 19
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/acceptance_store.py",
+    "file_name": "acceptance_store.py",
+    "functions": [
+      {
+        "name": "_live_proof_blockers",
+        "complexity": 17
+      },
+      {
+        "name": "completion_review",
+        "complexity": 19
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/adr_eval.py",
+    "file_name": "adr_eval.py",
+    "functions": [
+      {
+        "name": "compute_verdict",
+        "complexity": 20
+      },
+      {
+        "name": "render_scorecard_markdown",
+        "complexity": 23
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/adr_eval_scoring.py",
+    "file_name": "adr_eval_scoring.py",
+    "functions": [
+      {
+        "name": "_score_feature_checklist",
+        "complexity": 16
+      },
+      {
+        "name": "_score_lane_assignment",
+        "complexity": 16
+      },
+      {
+        "name": "_score_evidence_requirements",
+        "complexity": 21
+      },
+      {
+        "name": "_score_obpi_decomposition",
+        "complexity": 25
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/adversary_workspace.py",
+    "file_name": "adversary_workspace.py",
+    "functions": [
+      {
+        "name": "validate_replay_records",
+        "complexity": 27
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/arb/advisor.py",
+    "file_name": "advisor.py",
+    "functions": [
+      {
+        "name": "collect_arb_advice",
+        "complexity": 33
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/arb/patterns.py",
+    "file_name": "patterns.py",
+    "functions": [
+      {
+        "name": "collect_patterns",
+        "complexity": 33
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/arb/validator.py",
+    "file_name": "validator.py",
+    "functions": [
+      {
+        "name": "validate_receipts",
+        "complexity": 17
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/brief_commands.py",
+    "file_name": "brief_commands.py",
+    "functions": [
+      {
+        "name": "extract_fenced_commands",
+        "complexity": 18
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/chores/__init__.py",
+    "file_name": "__init__.py",
+    "functions": [
+      {
+        "name": "merge_chores_registry",
+        "complexity": 16
+      },
+      {
+        "name": "_classify_chore_file",
+        "complexity": 20
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/chores/eval_feedback_cluster_lib.py",
+    "file_name": "eval_feedback_cluster_lib.py",
+    "functions": [
+      {
+        "name": "run_cluster",
+        "complexity": 17
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/chores/pythonic-design-pattern-detection/scan.py",
+    "file_name": "scan.py",
+    "functions": [
+      {
+        "name": "_detect_adapter_or_proxy",
+        "complexity": 16
+      },
+      {
+        "name": "scan_file",
+        "complexity": 16
+      },
+      {
+        "name": "_detect_state",
+        "complexity": 18
+      },
+      {
+        "name": "_detect_composite",
+        "complexity": 19
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/codex_roles.py",
+    "file_name": "codex_roles.py",
+    "functions": [
+      {
+        "name": "render_codex_role",
+        "complexity": 16
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/adr_audit.py",
+    "file_name": "adr_audit.py",
+    "functions": [
+      {
+        "name": "_render_audit_check_result",
+        "complexity": 22
+      },
+      {
+        "name": "_check_adr_obpi_coverage_gaps",
+        "complexity": 34
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/adr_coverage.py",
+    "file_name": "adr_coverage.py",
+    "functions": [
+      {
+        "name": "_compute_adr_coverage",
+        "complexity": 19
+      },
+      {
+        "name": "_collect_covers_annotations",
+        "complexity": 46
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/adr_demote.py",
+    "file_name": "adr_demote.py",
+    "functions": [
+      {
+        "name": "_build_demote_plan",
+        "complexity": 16
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/adr_fidelity.py",
+    "file_name": "adr_fidelity.py",
+    "functions": [
+      {
+        "name": "adr_fidelity_cmd",
+        "complexity": 16
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/adr_promote.py",
+    "file_name": "adr_promote.py",
+    "functions": [
+      {
+        "name": "adr_eval_cmd",
+        "complexity": 16
+      },
+      {
+        "name": "adr_promote_cmd",
+        "complexity": 17
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/adr_promote_utils.py",
+    "file_name": "adr_promote_utils.py",
+    "functions": [
+      {
+        "name": "_promoted_checklist_from_pool",
+        "complexity": 21
+      },
+      {
+        "name": "_parse_decomposition_table",
+        "complexity": 27
+      },
+      {
+        "name": "_parse_top_level_markdown_bullets",
+        "complexity": 27
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/audit_cmd.py",
+    "file_name": "audit_cmd.py",
+    "functions": [
+      {
+        "name": "audit_cmd",
+        "complexity": 33
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/brief_reconcile.py",
+    "file_name": "brief_reconcile.py",
+    "functions": [
+      {
+        "name": "brief_reconcile_cmd",
+        "complexity": 16
+      },
+      {
+        "name": "_render_report",
+        "complexity": 18
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/ceremony_data.py",
+    "file_name": "ceremony_data.py",
+    "functions": [
+      {
+        "name": "_commands_from_demo_sections",
+        "complexity": 18
+      },
+      {
+        "name": "_commands_from_command_doc_links",
+        "complexity": 19
+      },
+      {
+        "name": "extract_brief_metadata",
+        "complexity": 21
+      },
+      {
+        "name": "check_doc_alignment",
+        "complexity": 29
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/ceremony_intent.py",
+    "file_name": "ceremony_intent.py",
+    "functions": [
+      {
+        "name": "pair_intent_with_obpis",
+        "complexity": 16
+      },
+      {
+        "name": "parse_intent_items",
+        "complexity": 16
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/chores.py",
+    "file_name": "chores.py",
+    "functions": [
+      {
+        "name": "chores_doctor",
+        "complexity": 19
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/chores_exec.py",
+    "file_name": "chores_exec.py",
+    "functions": [
+      {
+        "name": "_parse_chore_pointer",
+        "complexity": 16
+      },
+      {
+        "name": "_evaluate_criterion",
+        "complexity": 22
+      },
+      {
+        "name": "_parse_criterion",
+        "complexity": 22
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/chores_staleness.py",
+    "file_name": "chores_staleness.py",
+    "functions": [
+      {
+        "name": "git_artifact_changed",
+        "complexity": 18
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/cli_audit.py",
+    "file_name": "cli_audit.py",
+    "functions": [
+      {
+        "name": "cli_audit_cmd",
+        "complexity": 34
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/closeout.py",
+    "file_name": "closeout.py",
+    "functions": [
+      {
+        "name": "_complete_closeout_pipeline",
+        "complexity": 16
+      },
+      {
+        "name": "_run_closeout_quality_gates",
+        "complexity": 20
+      },
+      {
+        "name": "_render_closeout_output",
+        "complexity": 22
+      },
+      {
+        "name": "closeout_cmd",
+        "complexity": 25
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/closeout_form.py",
+    "file_name": "closeout_form.py",
+    "functions": [
+      {
+        "name": "_render_adr_closeout_form",
+        "complexity": 17
+      },
+      {
+        "name": "_append_frontmatter_list_value",
+        "complexity": 20
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/common.py",
+    "file_name": "common.py",
+    "functions": [
+      {
+        "name": "render_defense_brief_section",
+        "complexity": 16
+      },
+      {
+        "name": "resolve_obpi",
+        "complexity": 23
+      },
+      {
+        "name": "resolve_adr_file",
+        "complexity": 34
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/complexity_advise.py",
+    "file_name": "complexity_advise.py",
+    "functions": [
+      {
+        "name": "_run_attest_intrinsic",
+        "complexity": 16
+      },
+      {
+        "name": "complexity_advise_cmd",
+        "complexity": 18
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/config_paths.py",
+    "file_name": "config_paths.py",
+    "functions": [
+      {
+        "name": "_flatten_manifest_paths",
+        "complexity": 20
+      },
+      {
+        "name": "_collect_source_path_literal_issues",
+        "complexity": 33
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/content/commit.py",
+    "file_name": "commit.py",
+    "functions": [
+      {
+        "name": "content_commit_cmd",
+        "complexity": 17
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/content/compose.py",
+    "file_name": "compose.py",
+    "functions": [
+      {
+        "name": "content_compose_cmd",
+        "complexity": 18
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/covers.py",
+    "file_name": "covers.py",
+    "functions": [
+      {
+        "name": "covers_cmd",
+        "complexity": 17
+      },
+      {
+        "name": "_filter_report",
+        "complexity": 19
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/flags.py",
+    "file_name": "flags.py",
+    "functions": [
+      {
+        "name": "flag_explain_cmd",
+        "complexity": 19
+      },
+      {
+        "name": "flags_list_cmd",
+        "complexity": 29
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/init_cmd.py",
+    "file_name": "init_cmd.py",
+    "functions": [
+      {
+        "name": "scaffold_project_skeleton",
+        "complexity": 16
+      },
+      {
+        "name": "_print_refresh_summary",
+        "complexity": 17
+      },
+      {
+        "name": "_repair_chores",
+        "complexity": 19
+      },
+      {
+        "name": "_register_existing_artifacts",
+        "complexity": 22
+      },
+      {
+        "name": "init",
+        "complexity": 27
+      },
+      {
+        "name": "_repair_missing_artifacts",
+        "complexity": 30
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/interview_cmd.py",
+    "file_name": "interview_cmd.py",
+    "functions": [
+      {
+        "name": "interview",
+        "complexity": 31
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/obpi_audit_cmd.py",
+    "file_name": "obpi_audit_cmd.py",
+    "functions": [
+      {
+        "name": "_print_prior_state",
+        "complexity": 17
+      },
+      {
+        "name": "obpi_audit_cmd",
+        "complexity": 17
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/obpi_cmd.py",
+    "file_name": "obpi_cmd.py",
+    "functions": [
+      {
+        "name": "obpi_emit_receipt_cmd",
+        "complexity": 20
+      },
+      {
+        "name": "obpi_pipeline_cmd",
+        "complexity": 28
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/obpi_complete.py",
+    "file_name": "obpi_complete.py",
+    "functions": [
+      {
+        "name": "_apply_uncovered_waivers",
+        "complexity": 18
+      },
+      {
+        "name": "obpi_complete_cmd",
+        "complexity": 21
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/obpi_lock.py",
+    "file_name": "obpi_lock.py",
+    "functions": [
+      {
+        "name": "obpi_lock_list_cmd",
+        "complexity": 18
+      },
+      {
+        "name": "obpi_lock_claim_cmd",
+        "complexity": 20
+      },
+      {
+        "name": "obpi_lock_release_cmd",
+        "complexity": 30
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/obpi_stages.py",
+    "file_name": "obpi_stages.py",
+    "functions": [
+      {
+        "name": "_run_pipeline_ceremony_stage",
+        "complexity": 16
+      },
+      {
+        "name": "_evidence_json_to_complete_flags",
+        "complexity": 17
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/parity.py",
+    "file_name": "parity.py",
+    "functions": [
+      {
+        "name": "parity_check_cmd",
+        "complexity": 28
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/patch_release.py",
+    "file_name": "patch_release.py",
+    "functions": [
+      {
+        "name": "_render_dry_run_rich",
+        "complexity": 17
+      },
+      {
+        "name": "patch_release_cmd",
+        "complexity": 21
+      },
+      {
+        "name": "_author_release_notes",
+        "complexity": 23
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/personas.py",
+    "file_name": "personas.py",
+    "functions": [
+      {
+        "name": "_format_drift_table",
+        "complexity": 17
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/plan_audit_cmd.py",
+    "file_name": "plan_audit_cmd.py",
+    "functions": [
+      {
+        "name": "_contested_paths_between",
+        "complexity": 17
+      },
+      {
+        "name": "_emit_result",
+        "complexity": 22
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/quality.py",
+    "file_name": "quality.py",
+    "functions": [
+      {
+        "name": "_select_changed_tests",
+        "complexity": 21
+      },
+      {
+        "name": "check",
+        "complexity": 25
+      },
+      {
+        "name": "_run_check_steps",
+        "complexity": 27
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/readiness.py",
+    "file_name": "readiness.py",
+    "functions": [
+      {
+        "name": "readiness_audit_cmd",
+        "complexity": 28
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/register.py",
+    "file_name": "register.py",
+    "functions": [
+      {
+        "name": "pending_semver_renames",
+        "complexity": 17
+      },
+      {
+        "name": "register_adrs",
+        "complexity": 23
+      },
+      {
+        "name": "_collect_adrs_to_register",
+        "complexity": 28
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/state.py",
+    "file_name": "state.py",
+    "functions": [
+      {
+        "name": "_resolve_expected_statuses",
+        "complexity": 19
+      },
+      {
+        "name": "state",
+        "complexity": 24
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/status.py",
+    "file_name": "status.py",
+    "functions": [
+      {
+        "name": "obpi_reconcile_cmd",
+        "complexity": 17
+      },
+      {
+        "name": "_filter_adrs_by_epic",
+        "complexity": 19
+      },
+      {
+        "name": "_task_summary_for_adr",
+        "complexity": 23
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/status_render.py",
+    "file_name": "status_render.py",
+    "functions": [
+      {
+        "name": "_render_adr_report",
+        "complexity": 21
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/sync.py",
+    "file_name": "sync.py",
+    "functions": [
+      {
+        "name": "_plan_git_sync",
+        "complexity": 22
+      },
+      {
+        "name": "_classify_staged_areas",
+        "complexity": 23
+      },
+      {
+        "name": "git_sync",
+        "complexity": 25
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/task.py",
+    "file_name": "task.py",
+    "functions": [
+      {
+        "name": "_build_fanout_rows",
+        "complexity": 20
+      },
+      {
+        "name": "task_fanout_cmd",
+        "complexity": 26
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/test_shape.py",
+    "file_name": "test_shape.py",
+    "functions": [
+      {
+        "name": "test_shape_cmd",
+        "complexity": 16
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/tidy.py",
+    "file_name": "tidy.py",
+    "functions": [
+      {
+        "name": "tidy",
+        "complexity": 23
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/upgrade.py",
+    "file_name": "upgrade.py",
+    "functions": [
+      {
+        "name": "upgrade_cmd",
+        "complexity": 38
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/validate_cmd.py",
+    "file_name": "validate_cmd.py",
+    "functions": [
+      {
+        "name": "_run_unscoped_rules_scope",
+        "complexity": 18
+      },
+      {
+        "name": "validate",
+        "complexity": 19
+      },
+      {
+        "name": "_dispatch_early_return_scopes",
+        "complexity": 20
+      },
+      {
+        "name": "_run_sensitivity_scope",
+        "complexity": 29
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/validate_decomposition.py",
+    "file_name": "validate_decomposition.py",
+    "functions": [
+      {
+        "name": "validate_decomposition",
+        "complexity": 28
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/validate_frontmatter.py",
+    "file_name": "validate_frontmatter.py",
+    "functions": [
+      {
+        "name": "validate_frontmatter_coherence",
+        "complexity": 18
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/validate_sensitivity.py",
+    "file_name": "validate_sensitivity.py",
+    "functions": [
+      {
+        "name": "_sensitivity_records",
+        "complexity": 22
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commands/validate_task_envelope.py",
+    "file_name": "validate_task_envelope.py",
+    "functions": [
+      {
+        "name": "_sig_a_is_not_labor_event",
+        "complexity": 17
+      },
+      {
+        "name": "_scan_ledger_for_obpi_completions_and_tasks",
+        "complexity": 18
+      },
+      {
+        "name": "_sig_a_attribution_drift",
+        "complexity": 18
+      },
+      {
+        "name": "_sig_e_unresolvable_task_declaration",
+        "complexity": 20
+      },
+      {
+        "name": "_sig_d_obpi_id_divergence",
+        "complexity": 28
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/commit_witness.py",
+    "file_name": "commit_witness.py",
+    "functions": [
+      {
+        "name": "_drop_annotation_only_imports",
+        "complexity": 17
+      },
+      {
+        "name": "_drop_signature_annotations",
+        "complexity": 19
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/content/landing.py",
+    "file_name": "landing.py",
+    "functions": [
+      {
+        "name": "_resolve_attestation",
+        "complexity": 17
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/content/models/corpus.py",
+    "file_name": "corpus.py",
+    "functions": [
+      {
+        "name": "validate_tombstone_algebra",
+        "complexity": 24
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/content/ownership.py",
+    "file_name": "ownership.py",
+    "functions": [
+      {
+        "name": "section_coverage",
+        "complexity": 18
+      },
+      {
+        "name": "load_declaration",
+        "complexity": 20
+      },
+      {
+        "name": "iter_section_boundaries",
+        "complexity": 22
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/content/retention.py",
+    "file_name": "retention.py",
+    "functions": [
+      {
+        "name": "split_blocks",
+        "complexity": 30
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/core/scoring.py",
+    "file_name": "scoring.py",
+    "functions": [
+      {
+        "name": "parse_checklist_items",
+        "complexity": 19
+      },
+      {
+        "name": "parse_scorecard",
+        "complexity": 20
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/doc_coverage/flag_scanner.py",
+    "file_name": "flag_scanner.py",
+    "functions": [
+      {
+        "name": "check_flag_doc_truth",
+        "complexity": 20
+      },
+      {
+        "name": "discover_command_flag_specs",
+        "complexity": 33
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/doc_coverage/scanner.py",
+    "file_name": "scanner.py",
+    "functions": [
+      {
+        "name": "_extract_handler_name",
+        "complexity": 16
+      },
+      {
+        "name": "discover_commands",
+        "complexity": 18
+      },
+      {
+        "name": "check_surfaces",
+        "complexity": 25
+      },
+      {
+        "name": "_build_import_map",
+        "complexity": 31
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/eval/datasets.py",
+    "file_name": "datasets.py",
+    "functions": [
+      {
+        "name": "validate_dataset_json",
+        "complexity": 21
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/fidelity.py",
+    "file_name": "fidelity.py",
+    "functions": [
+      {
+        "name": "parse_fidelity_assertions",
+        "complexity": 20
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/flags/diagnostics.py",
+    "file_name": "diagnostics.py",
+    "functions": [
+      {
+        "name": "get_flag_health",
+        "complexity": 22
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/foundation/rubric.py",
+    "file_name": "rubric.py",
+    "functions": [
+      {
+        "name": "_count_feature_unblocking",
+        "complexity": 17
+      },
+      {
+        "name": "_parse_frontmatter",
+        "complexity": 24
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/foundation/sunset_migrate.py",
+    "file_name": "sunset_migrate.py",
+    "functions": [
+      {
+        "name": "run_migration",
+        "complexity": 18
+      },
+      {
+        "name": "foundation_rows",
+        "complexity": 26
+      },
+      {
+        "name": "interrupted_demotions",
+        "complexity": 26
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/brief_path_validity.py",
+    "file_name": "brief_path_validity.py",
+    "functions": [
+      {
+        "name": "extract_allowed_paths",
+        "complexity": 16
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/brief_reconcile.py",
+    "file_name": "brief_reconcile.py",
+    "functions": [
+      {
+        "name": "_extract_gzkit_imports",
+        "complexity": 17
+      },
+      {
+        "name": "_compute_missing_in_brief",
+        "complexity": 27
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/frontmatter_coherence.py",
+    "file_name": "frontmatter_coherence.py",
+    "functions": [
+      {
+        "name": "rewrite_governed_keys_in_place",
+        "complexity": 16
+      },
+      {
+        "name": "reconcile_frontmatter",
+        "complexity": 18
+      },
+      {
+        "name": "_process_file_rewrites",
+        "complexity": 19
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/obpi_park_backfill.py",
+    "file_name": "obpi_park_backfill.py",
+    "functions": [
+      {
+        "name": "plan_backfill",
+        "complexity": 16
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/pipeline_control_inventory.py",
+    "file_name": "pipeline_control_inventory.py",
+    "functions": [
+      {
+        "name": "_row_violations",
+        "complexity": 18
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/pipeline_procedure_render.py",
+    "file_name": "pipeline_procedure_render.py",
+    "functions": [
+      {
+        "name": "check_stage_placement",
+        "complexity": 17
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/stage4_evidence.py",
+    "file_name": "stage4_evidence.py",
+    "functions": [
+      {
+        "name": "_join_demo_commands",
+        "complexity": 21
+      },
+      {
+        "name": "_scan_shell",
+        "complexity": 23
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/stage4_packet.py",
+    "file_name": "stage4_packet.py",
+    "functions": [
+      {
+        "name": "_blockers",
+        "complexity": 19
+      },
+      {
+        "name": "_last_top_level_segment",
+        "complexity": 21
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/absorption_duplicates.py",
+    "file_name": "absorption_duplicates.py",
+    "functions": [
+      {
+        "name": "audit_absorption_duplicates",
+        "complexity": 20
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/agents_md_map_conformance.py",
+    "file_name": "agents_md_map_conformance.py",
+    "functions": [
+      {
+        "name": "_check_per_bullet_advisory",
+        "complexity": 22
+      },
+      {
+        "name": "_parse_paragraphs",
+        "complexity": 22
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/astral_discipline.py",
+    "file_name": "astral_discipline.py",
+    "functions": [
+      {
+        "name": "_version_rules",
+        "complexity": 16
+      },
+      {
+        "name": "_argv_provenance",
+        "complexity": 17
+      },
+      {
+        "name": "_automation_rules",
+        "complexity": 18
+      },
+      {
+        "name": "_dependency_rules",
+        "complexity": 18
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/brief_reconcile.py",
+    "file_name": "brief_reconcile.py",
+    "functions": [
+      {
+        "name": "validate_brief_reconcile",
+        "complexity": 20
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/brief_size.py",
+    "file_name": "brief_size.py",
+    "functions": [
+      {
+        "name": "audit_brief_size",
+        "complexity": 17
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/briefs.py",
+    "file_name": "briefs.py",
+    "functions": [
+      {
+        "name": "audit_brief_demo_section",
+        "complexity": 18
+      },
+      {
+        "name": "_build_cross_reference_index",
+        "complexity": 21
+      },
+      {
+        "name": "_scan_brief_cross_references",
+        "complexity": 30
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/bullet_retention.py",
+    "file_name": "bullet_retention.py",
+    "functions": [
+      {
+        "name": "_read_rule_rows",
+        "complexity": 28
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/catalog_edges.py",
+    "file_name": "catalog_edges.py",
+    "functions": [
+      {
+        "name": "_depends_on_findings",
+        "complexity": 17
+      },
+      {
+        "name": "prd_needs",
+        "complexity": 23
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/chores.py",
+    "file_name": "chores.py",
+    "functions": [
+      {
+        "name": "audit_chore_suppression",
+        "complexity": 19
+      },
+      {
+        "name": "audit_chores_layout",
+        "complexity": 19
+      },
+      {
+        "name": "audit_chore_metadata_authority",
+        "complexity": 25
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/cli.py",
+    "file_name": "cli.py",
+    "functions": [
+      {
+        "name": "audit_skill_code_citations",
+        "complexity": 17
+      },
+      {
+        "name": "audit_doc_code_citations",
+        "complexity": 41
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/closeout_proof.py",
+    "file_name": "closeout_proof.py",
+    "functions": [
+      {
+        "name": "validate_closeout_proof",
+        "complexity": 18
+      },
+      {
+        "name": "_check_req",
+        "complexity": 26
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/code_quality.py",
+    "file_name": "code_quality.py",
+    "functions": [
+      {
+        "name": "audit_class_size",
+        "complexity": 16
+      },
+      {
+        "name": "audit_test_tiers",
+        "complexity": 19
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/codex_delivery_witness.py",
+    "file_name": "codex_delivery_witness.py",
+    "functions": [
+      {
+        "name": "delivered_contract_bytes",
+        "complexity": 18
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/complexity_doctrine_links.py",
+    "file_name": "complexity_doctrine_links.py",
+    "functions": [
+      {
+        "name": "validate_complexity_doctrine_links",
+        "complexity": 16
+      },
+      {
+        "name": "_enumerate_in_scope_artifacts",
+        "complexity": 19
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/config_derivation.py",
+    "file_name": "config_derivation.py",
+    "functions": [
+      {
+        "name": "policy_constants",
+        "complexity": 28
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/cross_platform.py",
+    "file_name": "cross_platform.py",
+    "functions": [
+      {
+        "name": "_asserts_read_bytes_against_literal",
+        "complexity": 16
+      },
+      {
+        "name": "_scan_test_byte_fixture_writes",
+        "complexity": 17
+      },
+      {
+        "name": "_writes_text_without_newline",
+        "complexity": 18
+      },
+      {
+        "name": "audit_subprocess_errors",
+        "complexity": 24
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/distribution.py",
+    "file_name": "distribution.py",
+    "functions": [
+      {
+        "name": "regenerate_distribution_baseline",
+        "complexity": 26
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/events.py",
+    "file_name": "events.py",
+    "functions": [
+      {
+        "name": "_collect_ledger_written_fields",
+        "complexity": 19
+      },
+      {
+        "name": "_collect_typed_model_event_types",
+        "complexity": 20
+      },
+      {
+        "name": "audit_producer_fields",
+        "complexity": 48
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/exemption_controls.py",
+    "file_name": "exemption_controls.py",
+    "functions": [
+      {
+        "name": "audit_exemption_controls",
+        "complexity": 25
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/gate_callers.py",
+    "file_name": "gate_callers.py",
+    "functions": [
+      {
+        "name": "audit_gate_callers",
+        "complexity": 16
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/gate_enrollment.py",
+    "file_name": "gate_enrollment.py",
+    "functions": [
+      {
+        "name": "delegated_functions",
+        "complexity": 16
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/how_coverage.py",
+    "file_name": "how_coverage.py",
+    "functions": [
+      {
+        "name": "_parse_catalog",
+        "complexity": 16
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/id_seam.py",
+    "file_name": "id_seam.py",
+    "functions": [
+      {
+        "name": "_literal_text",
+        "complexity": 16
+      },
+      {
+        "name": "collect_cited_ids",
+        "complexity": 18
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/instructions_files_budget.py",
+    "file_name": "instructions_files_budget.py",
+    "functions": [
+      {
+        "name": "_matching_files",
+        "complexity": 20
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/intrinsic_attestation.py",
+    "file_name": "intrinsic_attestation.py",
+    "functions": [
+      {
+        "name": "validate_intrinsic_attestation",
+        "complexity": 19
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/lock_exchange_coupling.py",
+    "file_name": "lock_exchange_coupling.py",
+    "functions": [
+      {
+        "name": "validate_lock_exchange_coupling",
+        "complexity": 17
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/orientation.py",
+    "file_name": "orientation.py",
+    "functions": [
+      {
+        "name": "_codex_session_start_command_strings",
+        "complexity": 19
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/orphaned_implementation.py",
+    "file_name": "orphaned_implementation.py",
+    "functions": [
+      {
+        "name": "_partition_events",
+        "complexity": 16
+      },
+      {
+        "name": "_path_covered_by_allowed",
+        "complexity": 16
+      },
+      {
+        "name": "audit_orphaned_implementation",
+        "complexity": 19
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/red_parity.py",
+    "file_name": "red_parity.py",
+    "functions": [
+      {
+        "name": "audit_red_parity",
+        "complexity": 17
+      },
+      {
+        "name": "_collect",
+        "complexity": 22
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/rendition_floor_coherence.py",
+    "file_name": "rendition_floor_coherence.py",
+    "functions": [
+      {
+        "name": "validate_rendition_floor_coherence",
+        "complexity": 27
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/rendition_freshness.py",
+    "file_name": "rendition_freshness.py",
+    "functions": [
+      {
+        "name": "validate_rendition_freshness",
+        "complexity": 32
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/rendition_lineage.py",
+    "file_name": "rendition_lineage.py",
+    "functions": [
+      {
+        "name": "verify_candidate_against_declaration",
+        "complexity": 22
+      },
+      {
+        "name": "validate_rendition_lineage",
+        "complexity": 24
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/setpoint_coherence.py",
+    "file_name": "setpoint_coherence.py",
+    "functions": [
+      {
+        "name": "validate_setpoint_coherence",
+        "complexity": 16
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/surface_delivery_witness.py",
+    "file_name": "surface_delivery_witness.py",
+    "functions": [
+      {
+        "name": "_observe_delivery",
+        "complexity": 19
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/taxonomy.py",
+    "file_name": "taxonomy.py",
+    "functions": [
+      {
+        "name": "_grandfathered_event_ids",
+        "complexity": 17
+      },
+      {
+        "name": "audit_pool_interview_schema",
+        "complexity": 19
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/transcribed_counts.py",
+    "file_name": "transcribed_counts.py",
+    "functions": [
+      {
+        "name": "_scan",
+        "complexity": 20
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/governance/trust_audits/waiver_ratchet.py",
+    "file_name": "waiver_ratchet.py",
+    "functions": [
+      {
+        "name": "audit_waiver_ratchet",
+        "complexity": 26
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/handoff_validation.py",
+    "file_name": "handoff_validation.py",
+    "functions": [
+      {
+        "name": "validate_referenced_files",
+        "complexity": 21
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/hooks/claude.py",
+    "file_name": "claude.py",
+    "functions": [
+      {
+        "name": "merge_settings",
+        "complexity": 16
+      },
+      {
+        "name": "_merge_hook_phase",
+        "complexity": 23
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/hooks/commit_ledger.py",
+    "file_name": "commit_ledger.py",
+    "functions": [
+      {
+        "name": "paths_recorded_since",
+        "complexity": 18
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/hooks/guards.py",
+    "file_name": "guards.py",
+    "functions": [
+      {
+        "name": "iter_files",
+        "complexity": 16
+      },
+      {
+        "name": "forbid_unattested_obpi_completion_commits",
+        "complexity": 17
+      },
+      {
+        "name": "_parse_staged_name_status",
+        "complexity": 18
+      },
+      {
+        "name": "forbid_skill_sync_drift",
+        "complexity": 22
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/hooks/install_complexity_advisor.py",
+    "file_name": "install_complexity_advisor.py",
+    "functions": [
+      {
+        "name": "_diagnose_files",
+        "complexity": 31
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/hooks/obpi.py",
+    "file_name": "obpi.py",
+    "functions": [
+      {
+        "name": "ObpiValidator::_validate_authored_readiness",
+        "complexity": 16
+      },
+      {
+        "name": "ObpiValidator::validate_content",
+        "complexity": 23
+      },
+      {
+        "name": "normalize_git_sync_state",
+        "complexity": 23
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/insights/correction_mining.py",
+    "file_name": "correction_mining.py",
+    "functions": [
+      {
+        "name": "_iter_corrections",
+        "complexity": 17
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/instruction_audit.py",
+    "file_name": "instruction_audit.py",
+    "functions": [
+      {
+        "name": "audit_foreign_references",
+        "complexity": 19
+      },
+      {
+        "name": "audit_instruction_reachability",
+        "complexity": 22
+      },
+      {
+        "name": "audit_generated_surface_drift",
+        "complexity": 42
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/instruction_eval.py",
+    "file_name": "instruction_eval.py",
+    "functions": [
+      {
+        "name": "_check_codex_load_negative",
+        "complexity": 19
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/interview.py",
+    "file_name": "interview.py",
+    "functions": [
+      {
+        "name": "format_answers_for_template",
+        "complexity": 25
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/justify/cli.py",
+    "file_name": "cli.py",
+    "functions": [
+      {
+        "name": "handle_justify",
+        "complexity": 17
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/justify/evidence.py",
+    "file_name": "evidence.py",
+    "functions": [
+      {
+        "name": "_parse_rule_frontmatter",
+        "complexity": 20
+      },
+      {
+        "name": "_matched_globs",
+        "complexity": 24
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/justify/parser.py",
+    "file_name": "parser.py",
+    "functions": [
+      {
+        "name": "_parse_section_body",
+        "complexity": 20
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/ledger.py",
+    "file_name": "ledger.py",
+    "functions": [
+      {
+        "name": "Ledger::get_effective_gate_statuses",
+        "complexity": 24
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/lock_manager.py",
+    "file_name": "lock_manager.py",
+    "functions": [
+      {
+        "name": "reap_expired_locks",
+        "complexity": 18
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/mx/log.py",
+    "file_name": "log.py",
+    "functions": [
+      {
+        "name": "assemble_window",
+        "complexity": 22
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/ontology/source.py",
+    "file_name": "source.py",
+    "functions": [
+      {
+        "name": "_assemble_coupling_edges",
+        "complexity": 16
+      },
+      {
+        "name": "_walk_imports",
+        "complexity": 19
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/personas/__init__.py",
+    "file_name": "__init__.py",
+    "functions": [
+      {
+        "name": "evaluate_persona_drift",
+        "complexity": 16
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/pipeline_markers.py",
+    "file_name": "pipeline_markers.py",
+    "functions": [
+      {
+        "name": "find_plan_for_obpi",
+        "complexity": 22
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/pipeline_runtime.py",
+    "file_name": "pipeline_runtime.py",
+    "functions": [
+      {
+        "name": "validate_agent_files",
+        "complexity": 16
+      },
+      {
+        "name": "_extract_brief_allowlist",
+        "complexity": 26
+      },
+      {
+        "name": "check_reconcile_receipt_gate",
+        "complexity": 29
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/quality.py",
+    "file_name": "quality.py",
+    "functions": [
+      {
+        "name": "_find_parents_access_lines",
+        "complexity": 16
+      },
+      {
+        "name": "_check_docstring_proof",
+        "complexity": 20
+      },
+      {
+        "name": "run_adr_path_contract_lint",
+        "complexity": 23
+      },
+      {
+        "name": "run_handoff_document_audit",
+        "complexity": 25
+      },
+      {
+        "name": "_expand_allowed_paths",
+        "complexity": 26
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/reports.py",
+    "file_name": "reports.py",
+    "functions": [
+      {
+        "name": "publish_report",
+        "complexity": 18
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/req_kind.py",
+    "file_name": "req_kind.py",
+    "functions": [
+      {
+        "name": "compute_three_channel_coverage",
+        "complexity": 50
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/rules/__init__.py",
+    "file_name": "__init__.py",
+    "functions": [
+      {
+        "name": "_cleanup_stale_nested_agents",
+        "complexity": 16
+      },
+      {
+        "name": "validate_rule_placement",
+        "complexity": 16
+      },
+      {
+        "name": "render_rules_to_dir",
+        "complexity": 17
+      },
+      {
+        "name": "_classify_canonical_rules",
+        "complexity": 18
+      },
+      {
+        "name": "_classify_rule_file",
+        "complexity": 23
+      },
+      {
+        "name": "classify_instruction_rules",
+        "complexity": 24
+      },
+      {
+        "name": "sync_claude_rules",
+        "complexity": 28
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/session_exit.py",
+    "file_name": "session_exit.py",
+    "functions": [
+      {
+        "name": "_covering_handoff",
+        "complexity": 19
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/skill_contract.py",
+    "file_name": "skill_contract.py",
+    "functions": [
+      {
+        "name": "parse_frontmatter",
+        "complexity": 20
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/skills_audit.py",
+    "file_name": "skills_audit.py",
+    "functions": [
+      {
+        "name": "_unfinished_body_lines",
+        "complexity": 19
+      },
+      {
+        "name": "audit_skills",
+        "complexity": 19
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/skills_mirror.py",
+    "file_name": "skills_mirror.py",
+    "functions": [
+      {
+        "name": "_validate_mirror_skill",
+        "complexity": 19
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/sync.py",
+    "file_name": "sync.py",
+    "functions": [
+      {
+        "name": "_parse_frontmatter",
+        "complexity": 19
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/sync_skills.py",
+    "file_name": "sync_skills.py",
+    "functions": [
+      {
+        "name": "_parse_skill_frontmatter",
+        "complexity": 20
+      },
+      {
+        "name": "find_stale_mirror_paths",
+        "complexity": 26
+      },
+      {
+        "name": "_extract_skill_description",
+        "complexity": 30
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/sync_surfaces.py",
+    "file_name": "sync_surfaces.py",
+    "functions": [
+      {
+        "name": "detect_claude_settings_drift",
+        "complexity": 22
+      },
+      {
+        "name": "sync_pkg_surfaces",
+        "complexity": 33
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/tasks.py",
+    "file_name": "tasks.py",
+    "functions": [
+      {
+        "name": "in_progress_task_ids",
+        "complexity": 17
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/tautological_tests.py",
+    "file_name": "tautological_tests.py",
+    "functions": [
+      {
+        "name": "_has_filesystem_op",
+        "complexity": 19
+      },
+      {
+        "name": "_module_backed_self_attrs",
+        "complexity": 21
+      },
+      {
+        "name": "scan_test_tree",
+        "complexity": 34
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/test_shape.py",
+    "file_name": "test_shape.py",
+    "functions": [
+      {
+        "name": "_scan_one_file",
+        "complexity": 24
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/traceability.py",
+    "file_name": "traceability.py",
+    "functions": [
+      {
+        "name": "_catalog_feature_tags",
+        "complexity": 16
+      },
+      {
+        "name": "scan_catalog_bindings",
+        "complexity": 16
+      },
+      {
+        "name": "_scan_feature_source",
+        "complexity": 18
+      },
+      {
+        "name": "_non_docstring_string_ranges",
+        "complexity": 24
+      },
+      {
+        "name": "scan_test_tree",
+        "complexity": 25
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/triangle.py",
+    "file_name": "triangle.py",
+    "functions": [
+      {
+        "name": "extract_reqs_from_brief",
+        "complexity": 22
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/validate.py",
+    "file_name": "validate.py",
+    "functions": [
+      {
+        "name": "validate_all",
+        "complexity": 17
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/validate_pkg/document.py",
+    "file_name": "document.py",
+    "functions": [
+      {
+        "name": "validate_frontmatter",
+        "complexity": 19
+      },
+      {
+        "name": "validate_document",
+        "complexity": 20
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/validate_pkg/ledger_check.py",
+    "file_name": "ledger_check.py",
+    "functions": [
+      {
+        "name": "_validate_ledger_corrections",
+        "complexity": 16
+      },
+      {
+        "name": "_validate_ledger_field",
+        "complexity": 21
+      },
+      {
+        "name": "_validate_ledger_conditionals",
+        "complexity": 30
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/validate_pkg/manifest.py",
+    "file_name": "manifest.py",
+    "functions": [
+      {
+        "name": "validate_manifest",
+        "complexity": 21
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/validate_pkg/surface.py",
+    "file_name": "surface.py",
+    "functions": [
+      {
+        "name": "_validate_skill_frontmatter",
+        "complexity": 18
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/validate_pkg/sync_parity.py",
+    "file_name": "sync_parity.py",
+    "functions": [
+      {
+        "name": "_collect_files",
+        "complexity": 19
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/validators/unscoped_rules.py",
+    "file_name": "unscoped_rules.py",
+    "functions": [
+      {
+        "name": "classify_paths_field",
+        "complexity": 29
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/verb_references.py",
+    "file_name": "verb_references.py",
+    "functions": [
+      {
+        "name": "extract_verb_references",
+        "complexity": 48
+      }
+    ]
+  },
+  {
+    "path": "src/gzkit/verifier_pipe_gate.py",
+    "file_name": "verifier_pipe_gate.py",
+    "functions": [
+      {
+        "name": "_replacement_arm",
+        "complexity": 17
+      },
+      {
+        "name": "_split_paren_runs",
+        "complexity": 18
+      },
+      {
+        "name": "_read_groups",
+        "complexity": 26
+      }
+    ]
+  }
+]

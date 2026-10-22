@@ -4,9 +4,9 @@ description: Use when the operator says "preview complexity advisor", "complexit
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-10-22
 metadata:
-  skill-version: "0.2.4"
+  skill-version: "0.2.5"
   govzero-framework-version: "v6"
   govzero_layer: "Layer 3 - File Sync"
 gz_command: complexity advise
@@ -23,8 +23,8 @@ band of `.gzkit/rules/complexity-thresholds.json` it emits a diagnosis:
 archetype, doctrinal frame, proof ranges and recommended move. It exits 3 when
 any crossing is in the `block` band and 0 otherwise.
 
-The table's `radon_cc` bands are stricter than the xenon ceiling the
-pre-commit hook enforces (`.gzkit/rules/pythonic.md` § Size Limits & Refactoring), so a tree
+The table's `radon_cc` bands are stricter than the C/C/C ceiling the
+pre-commit hook enforces (`gz validate --complexity-ceiling`) (`.gzkit/rules/pythonic.md` § Size Limits & Refactoring), so a tree
 that commits cleanly can still exit 3 here.
 
 This skill ends at the diagnosis. It does not refactor, and it does not
@@ -32,10 +32,10 @@ attest on the operator's behalf.
 
 ## When to Use
 
-1. **Ad-hoc preview-before-fail** — see the diagnosis for a file before xenon
-   refuses a commit.
-2. **After a xenon failure** — the auto-chain hook is not installed in this
-   repository, so run the advisor by hand on the files xenon named.
+1. **Ad-hoc preview-before-fail** — see the diagnosis for a file before the
+   ceiling gate refuses a commit.
+2. **After a ceiling failure** — the auto-chain hook is not installed in this
+   repository, so run the advisor by hand on the files the gate named.
 3. **Irreducible complexity** — the operator wants to record that a
    function's complexity is intrinsic.
 
@@ -65,10 +65,10 @@ every advise-band crossing is `unclassified`.
 
 ## Auto-chain hook
 
-`.pre-commit-config.yaml` runs plain xenon. The composite hook
+`.pre-commit-config.yaml` runs the plain ceiling gate (`complexity-ceiling`). The composite hook
 `complexity-advisor-auto-chain` (OBPI-0.0.29-05) is installed only by
 `uv run python -m gzkit.hooks.install_complexity_advisor`. Once installed, it
-runs xenon and, on failure, diagnoses the staged Python files in its own
+runs the ceiling gate and, on failure, diagnoses the staged Python files in its own
 process, printing to stderr and failing the commit on a `block` crossing. It
 wraps the advisor in a timeout, `.gzkit.json` § `advisor_timeout_seconds`
 (30 seconds when unset) unless the hook is run with `--timeout`; on timeout

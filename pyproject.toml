@@ -134,6 +134,10 @@ select = [
     # (operator ruling) on that observed drift, which is the evidence the
     # § Recommended promotion order freeze requires.
     "PTH",
+    # mccabe: the cyclomatic ceiling xenon held as rank C (RO-9 tranche 4,
+    # GHI #1183). `gz validate --complexity-ceiling` reads the same
+    # max-complexity below for its Lizard C/C/C gate, so the number lives once.
+    "C901",
 ]
 ignore = [
     # D203/D211 and D212/D213 are mutually exclusive pairs; ruff warns on every
@@ -143,6 +147,9 @@ ignore = [
     "D203",
     "D213",
 ]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 20
 
 [tool.ruff.lint.per-file-ignores]
 # Hook-script generators hold hook bodies as indented string literals that are
@@ -190,6 +197,11 @@ ignore = [
 ".claude/**/*.py" = ["D"]
 ".github/**/*.py" = ["D"]
 ".agents/**/*.py" = ["D"]
+# Dated evidence scripts are sealed records of what a past audit ran; refactoring
+# one to satisfy a ceiling adopted later would rewrite the evidence it is (RO-9
+# tranche 4, the C901 ceiling at 20).
+".gzkit/evidence/*.py" = ["C901"]
+"docs/governance/*-evidence/*.py" = ["C901"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -204,10 +216,20 @@ indent-style = "space"
 # owns Python files and the surface budget owns Markdown.
 exclude = ["*.md"]
 
+# Cognitive complexity, independent of the cyclomatic ceiling above (RO-9
+# tranche 4, GHI #1183). The operator ruled 15 with a shrink-ratchet: the
+# functions over it on 2026-10-22 sit in complexipy's own snapshot,
+# `complexipy-snapshot.json`, which fails a new or worsened function and
+# tightens itself when one improves.
+[tool.complexipy]
+paths = ["src/gzkit"]
+max-complexity-allowed = 15
+
 [dependency-groups]
 dev = [
     "behave>=1.3.3",
     "cohesion>=1.2.0",
+    "complexipy>=8.1.0",
     "coverage>=7.16.2",
     "interrogate>=1.7.0",
     "lizard>=1.24.0",
@@ -227,12 +249,11 @@ dev = [
     # time, whose version is whatever `uv` picked that day. Pinning is what
     # discharges that objection; it is also plain conformance, not a departure:
     # every other Python verifier in this toolchain (ruff, ty, behave, coverage,
-    # radon, xenon) is pinned here and invoked as `uv run <tool>`. The
+    # complexipy) is pinned here and invoked as `uv run <tool>`. The
     # "un-pinned xenon/gitleaks precedent" cited when the accelerator was adopted
-    # (GHI #512) does not exist -- xenon is two lines below, and gitleaks is a
-    # native binary rather than a Python package.
+    # (GHI #512) never existed -- xenon was pinned here until RO-9 tranche 4
+    # retired it, and gitleaks is a native binary rather than a Python package.
     "unittest-parallel>=1.8.6",
-    "xenon>=0.9.3",
 ]
 # The docs build's own tooling, local-only like `dev` (RO-9 tranche 2). Read the
 # Docs syncs this group alone; every other sync gets it through `default-groups`.

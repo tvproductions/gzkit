@@ -1,7 +1,7 @@
 """Step implementations for the complexity advisor auto-chain BDD scenarios.
 
 The shell hook ``.gzkit/hooks/pre-commit-complexity-advisor`` delegates
-complexity diagnosis to ``run_auto_chain`` after xenon-as-gate fails.
+complexity diagnosis to ``run_auto_chain`` after the C/C/C ceiling gate fails.
 These steps exercise the runtime contract at the chain point — exit
 codes, stderr diagnostics, and SKIP semantics — using the gzkit
 project's ``.gzkit/rules/complexity-thresholds.json`` (data, GHI #426)
@@ -11,10 +11,10 @@ Scope boundary: shell-script structural properties (POSIX shebang,
 executable bit, no re-defined SKIP semantics) are covered by unit tests
 at ``tests/hooks/test_complexity_advisor_auto_chain.py`` per the
 OBPI-0.0.29-05 brief's Python-boundary mock contract. These behave
-steps cover the runtime contract once the chain has fired; xenon's
+steps cover the runtime contract once the chain has fired; the ceiling
 gate is a separable upstream condition. When no crossing is present,
 the advisor returns ``0`` with no stderr — the same external-observable
-shape as xenon-pass-then-no-chain.
+shape as gate-pass-then-no-chain.
 
 ``features/environment.py`` chdir's into a fresh temp workspace per
 scenario; the first ``Given`` resets cwd to the project root so the
@@ -98,8 +98,8 @@ def step_when_run_skip(context):
     # framework. ``SKIP=complexity-advisor-auto-chain`` causes the
     # framework to bypass the script entirely; the shell hook does not
     # redefine SKIP and never executes when SKIP names its id. This
-    # scenario asserts the bypassed-state contract: neither xenon nor
-    # the advisor runs.
+    # scenario asserts the bypassed-state contract: neither the ceiling
+    # gate nor the advisor runs.
     assert context.skip_active, "SKIP scenario requires SKIP env precondition"
     context.exit_code = 0
     context.stderr_text = ""

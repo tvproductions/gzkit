@@ -20,7 +20,7 @@ from gzkit.git_sync import (
     _compute_git_sync_state,
     _git_status_lines,
     _head_is_merge_commit,
-    _skip_disables_xenon,
+    _skip_disables_complexity,
     _skip_tokens,
 )
 from gzkit.governance.trust_audits.session_green_gate import audit_session_green_gate
@@ -161,14 +161,12 @@ def _plan_git_sync(
 
 
 def _enforce_git_sync_skip_policy() -> None:
-    """Block git-sync when SKIP can bypass xenon complexity enforcement."""
+    """Block git-sync when SKIP can bypass the complexity gates."""
     skip_raw = os.environ.get("SKIP", "")
     tokens = _skip_tokens(skip_raw)
-    if not _skip_disables_xenon(tokens):
+    if not _skip_disables_complexity(tokens):
         return
-    msg = (
-        "Refusing git-sync with SKIP that can bypass xenon complexity checks. Unset SKIP and rerun."
-    )
+    msg = "Refusing git-sync with SKIP that can bypass the complexity gates. Unset SKIP and rerun."
     raise GzCliError(msg)  # noqa: TRY003
 
 

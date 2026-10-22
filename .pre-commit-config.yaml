@@ -54,9 +54,22 @@ repos:
         pass_filenames: false
         stages: [pre-commit]
 
-      - id: xenon-complexity
-        name: xenon (enforce C/C/C complexity ceiling)
-        entry: uv run xenon --max-absolute C --max-modules C --max-average C src/
+      # The C/C/C ceiling xenon held, re-derived over Lizard and read from Ruff's
+      # max-complexity (RO-9 tranche 4, GHI #1183). The auto-chain installer
+      # (`python -m gzkit.hooks.install_complexity_advisor`) replaces this entry.
+      - id: complexity-ceiling
+        name: complexity ceiling (Lizard C/C/C at Ruff's max-complexity)
+        entry: uv run gz validate --complexity-ceiling
+        language: system
+        pass_filenames: false
+        types: [python]
+        stages: [pre-commit]
+
+      # Cognitive complexity at [tool.complexipy]'s ceiling, held to its own
+      # shrink-only snapshot, complexipy-snapshot.json.
+      - id: complexipy
+        name: complexipy (cognitive complexity ratchet)
+        entry: uv run complexipy -q
         language: system
         pass_filenames: false
         types: [python]
@@ -115,8 +128,10 @@ repos:
       # verdicts, operator exhibits). A formatter that rewrites them makes the
       # archived copy differ from the original it exists to preserve, which is
       # the one property it must have. Exempt, not exempted-later.
+      # complexipy-snapshot.json is written by complexipy, which tightens it on
+      # every improvement and writes no trailing newline (RO-9 tranche 4).
       - id: end-of-file-fixer
-        exclude: ^(site/|docs/design/adr/.*/appendices/)
+        exclude: ^(site/|docs/design/adr/.*/appendices/|complexipy-snapshot\.json$)
       - id: trailing-whitespace
         exclude: ^(site/|docs/design/adr/.*/appendices/)
       - id: check-merge-conflict
@@ -166,7 +181,7 @@ repos:
         stages: [pre-push]
 
       # Listed LAST on purpose. With fail_fast: true (top of file), a failure
-      # in any cheap gate above — ruff, ty, xenon, interrogate,
+      # in any cheap gate above — ruff, ty, the complexity gates, interrogate,
       # surface-fidelity, gitleaks — aborts the run before this ~15s parallel
       # suite executes. Do not reorder this hook earlier: a cheap-gate failure
       # downstream of it cannot stop a run it has already started.
@@ -185,8 +200,9 @@ repos:
         # runs — so it is pinned by equality instead, in
         # `tests/arb/test_unittest_runner_lockstep.py`. The prior comment here
         # justified `--with` as "matching the un-pinned xenon/gitleaks
-        # precedent"; that precedent never existed (xenon is pinned above and
-        # invoked as `uv run xenon`; gitleaks is a native binary), and the gap
+        # precedent"; that precedent never existed (xenon was pinned and invoked
+        # as `uv run xenon` until RO-9 tranche 4 retired it; gitleaks is a native
+        # binary), and the gap
         # between this hook and the attestation surface was GHI #856.
         # `--buffer` replays a test's output only when it fails or errors, so a
         # PASSING negative-path test no longer prints convincing fail-closed

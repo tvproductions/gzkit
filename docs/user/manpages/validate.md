@@ -20,6 +20,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--corpus-retirement-witness]
             [--invariant-coherence] [--invariant-witness] [--brief-reconcile] [--brief-structure]
             [--brief-size] [--mx-hardening] [--id-seam] [--astral-discipline]
+            [--complexity-ceiling]
             [--catalog]
             [--router-tables]
             [--kind-invariance] [--persona-witness] [--req-kind-discipline] [--brief-command-shape]
@@ -2438,6 +2439,50 @@ Validated: astral_discipline
 
 Runs in the default `gz check` pipeline as **Astral discipline**.
 
+### `--complexity-ceiling`
+
+Xenon's C/C/C contract, re-derived over Lizard's native function scores when RO-9 tranche 4 retired
+xenon and Radon ([`harbor-ro9-astral-toolchain.md`](../../governance/harbor-ro9-astral-toolchain.md),
+GHI #1183). Three parts, each held at the cyclomatic ceiling Ruff enforces as `C901`,
+`[tool.ruff.lint.mccabe] max-complexity`:
+
+| Finding | Meaning |
+|---------|---------|
+| `function` | A function's cyclomatic complexity exceeds the ceiling |
+| `module-mean` | A module's arithmetic mean over its functions exceeds the ceiling (a module with no functions has no mean) |
+| `overall-mean` | The function-weighted mean over every shipped function exceeds the ceiling |
+| `unmeasured` | A function the parser finds that Lizard does not measure (an inline suite, which can also hide the functions after it); a body of `...` alone is exempt |
+| `unparseable` | A shipped module that does not parse |
+
+The population is the Python the uv_build wheel ships, read from the predictor `--distribution` reads; a
+project not built by uv_build is clean. A project that ships code and declares no `max-complexity` is
+refused. Values compare unrounded, and a value equal to the ceiling passes. Cognitive complexity is
+complexipy's, run by `gz lint` (see [`lint`](lint.md)).
+
+**Usage:**
+
+```bash
+gz validate --complexity-ceiling
+```
+
+**Observed output:**
+
+```console
+$ uv run gz validate --complexity-ceiling
+Validated: complexity_ceiling
+
+✓ All validations passed (1 scopes).
+```
+
+**Exit codes:**
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Every shipped function, module mean and the overall mean are at or under the ceiling | — |
+| 3 | A finding above | Split the function or module the message names (`gz complexity advise` diagnoses it), or declare `max-complexity` |
+
+Runs in the default `gz check` pipeline as **Complexity ceiling**.
+
 **Related:** [`harbor-ro9-astral-toolchain.md`](../../governance/harbor-ro9-astral-toolchain.md), `data/astral_exceptions.json`.
 
 ### `--id-seam`
@@ -3112,6 +3157,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--mx-hardening` | opt-in | No MX session is dangling or over max-open; a session past its lease and its advisory debt are announced (GHI #1257) |
 | `--id-seam` | opt-in | No id grammar or spelling-derived parent outside the identity seam beyond its shrink-only baseline, and every cited id resolves (drydock RO-2) |
 | `--astral-discipline` | opt-in | Each fact declared once where uv, Ruff and ty read it: no restated Python version, unchecked lock, tool outside the lock or unregistered non-Astral tool beyond the shrink-only baseline (drydock RO-9) |
+| `--complexity-ceiling` | opt-in | The shipped code's largest function, each module mean and the weighted overall mean are at or under Ruff's `max-complexity`, measured by Lizard with no function unmeasured (RO-9 tranche 4, GHI #1183) |
 | `--catalog` | opt-in | The requirements catalog under `data/catalog/` matches its schemas, structure, edge and BDD alignment checks (drydock RO-3) |
 | `--brief-structure` | opt-in | Every live OBPI brief carries valid structured frontmatter (`allowlist`, `reqs`, `verification`) instead of falling back to `LegacyBriefShape` |
 | `--changelog` | opt-in | Hermetic structural audit of `CHANGELOG.md` against `.gzkit/templates/changelog.md`: version headers and section headings (GHI #685) |

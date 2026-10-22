@@ -28,13 +28,17 @@ def _skip_tokens(skip_value: str) -> set[str]:
     return tokens
 
 
-def _skip_disables_xenon(skip_tokens: set[str]) -> bool:
-    """Return True when SKIP tokens can disable xenon complexity hooks."""
-    if not skip_tokens:
-        return False
-    if "all" in skip_tokens or "xenon-complexity" in skip_tokens:
-        return True
-    return any(token.startswith("xenon") for token in skip_tokens)
+#: The pre-commit ids that enforce complexity (RO-9 tranche 4, GHI #1183): the
+#: Lizard C/C/C ceiling, complexipy's cognitive ratchet, and the auto-chain hook
+#: the advisor installer puts in the ceiling's place.
+COMPLEXITY_HOOK_IDS = frozenset(
+    {"complexity-ceiling", "complexipy", "complexity-advisor-auto-chain"}
+)
+
+
+def _skip_disables_complexity(skip_tokens: set[str]) -> bool:
+    """Return True when SKIP tokens can disable a complexity hook."""
+    return "all" in skip_tokens or not skip_tokens.isdisjoint(COMPLEXITY_HOOK_IDS)
 
 
 def _compute_git_sync_state(project_root: Path, branch: str, remote: str) -> dict[str, Any]:
@@ -122,9 +126,9 @@ def assess_git_sync_readiness(
     warnings: list[str] = []
 
     skip_tokens = _skip_tokens(os.environ.get("SKIP", ""))
-    if _skip_disables_xenon(skip_tokens):
+    if _skip_disables_complexity(skip_tokens):
         blockers.append(
-            "Refusing completion validation with SKIP that can bypass xenon complexity checks."
+            "Refusing completion validation with SKIP that can bypass the complexity gates."
         )
 
     rc_repo, inside, err_repo = git_cmd(project_root, "rev-parse", "--is-inside-work-tree")

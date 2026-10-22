@@ -129,14 +129,14 @@ uv run python .gzkit/chores/pythonic-design-pattern-detection/scan.py \
 ### 2. Cross-reference complexity hotspots — observe
 
 ```bash
-uv run xenon --max-absolute B src/ > .gzkit/chores/pythonic-design-pattern-detection/proofs/xenon-hotspots-$(date +%Y-%m-%d).txt 2>&1 || true
+uv run ruff check src --select C901 --config 'lint.mccabe.max-complexity = 10' --output-format concise > .gzkit/chores/pythonic-design-pattern-detection/proofs/complexity-hotspots-$(date +%Y-%m-%d).txt 2>&1 || true
 ```
 
-A scanner candidate that *also* shows up in xenon's B-band hotspot list jumps to the top of the apply queue: structural rewrite has both a structural and a metric reason to land.
+A scanner candidate that *also* shows up in the hotspot list (cyclomatic complexity above 10, xenon's former B band) jumps to the top of the apply queue: structural rewrite has both a structural and a metric reason to land.
 
 ### 3. Reference-mode eye-review — observe
 
-For Bridge, Flyweight, and Factory Method (example-only patterns), open the matching `Python/src/<Pattern>/Conceptual/main.py` from the archive side-by-side with any module ranked B-or-worse by xenon. Note candidates inline in the same report under a `## Reference-mode candidates` section.
+For Bridge, Flyweight, and Factory Method (example-only patterns), open the matching `Python/src/<Pattern>/Conceptual/main.py` from the archive side-by-side with any module holding a hotspot. Note candidates inline in the same report under a `## Reference-mode candidates` section.
 
 ### 4. Triage and disposition — propose
 

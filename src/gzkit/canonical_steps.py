@@ -88,10 +88,11 @@ CANONICAL_STEP_COMMANDS: dict[str, list[str]] = {
     # it faster -- 41.34s pinned against 52.02s via `--with`, which was paying a
     # network resolve on every run.
     #
-    # The precedent that argued against pinning does not exist. GHI #512 and
+    # The precedent that argued against pinning never existed. GHI #512 and
     # `.pre-commit-config.yaml` both cited "the un-pinned xenon/gitleaks
-    # precedent"; `xenon` is a pinned `dev` entry invoked as `uv run xenon`, and
-    # `gitleaks` is a native binary, not a Python package. `unittest-parallel` was
+    # precedent"; `xenon` was a pinned `dev` entry invoked as `uv run xenon` until
+    # RO-9 tranche 4 retired it, and `gitleaks` is a native binary, not a Python
+    # package. `unittest-parallel` was
     # the ONLY Python verifier here wielded via `--with`, so pinning it is
     # conformance with the convention rather than a stdlib-first departure.
     # Pinned by `tests/arb/test_unittest_runner_lockstep.py`.

@@ -10,7 +10,7 @@ Preview authoring-time complexity hints before committing.
 four-ADR complexity-doctrine cluster (ADR-0.0.27 through ADR-0.0.30). It
 gives operators a first-stop authoring-time preview of functions approaching
 the warn threshold — use it while editing to catch growing complexity before
-xenon-as-gate would trip at commit time.
+the ceiling gate would trip at commit time.
 
 ## When to Use
 

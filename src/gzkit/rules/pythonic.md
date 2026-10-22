@@ -7,9 +7,9 @@ description: Pythonic standards and idiomatic code contract
 
 # Pythonic Standards (Idiomatic Code Contract)
 
-<!-- rule-version: 0.5.4 -->
+<!-- rule-version: 0.5.5 -->
 
-> **Rule version:** `0.5.4` — version narrative lifted to [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd); binding rules unchanged.
+> **Rule version:** `0.5.5` — the cyclomatic row names the gates that replaced xenon in RO-9 tranche 4 (GHI #1183); prior banners in [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd). Binding rules unchanged.
 
 ## Core Principles
 
@@ -43,12 +43,12 @@ description: Pythonic standards and idiomatic code contract
 > | Classes <=300 | `gz validate --class-size` (`code_quality.py`, `limit = 300` hardcoded, waivers in `_CLASS_SIZE_WAIVERS`) | **live gate** — the table carries no class-size metric, so this rule is the only authority |
 > | Functions <=50 | nothing | authoring-time guidance only |
 > | Modules <=600 | nothing | authoring-time guidance only |
-> | *(cyclomatic)* | `.pre-commit-config.yaml` `uv run xenon --max-absolute C` (CC 11–20) | **live gate** — a *third* ceiling, matching neither authority: the table's `radon_cc` blocks at 11.0, so a CC-15 function passes xenon while `block` per the table |
+> | *(cyclomatic)* | `gz validate --complexity-ceiling` and Ruff `C901`, both at `[tool.ruff.lint.mccabe] max-complexity` (each function, module mean and overall mean CC <=20); cognitive complexity by complexipy at `[tool.complexipy]` (15, snapshot-ratcheted) | **live gate** — a *third* ceiling, matching neither authority: the table's `radon_cc` blocks at 11.0, so a CC-15 function passes the ceiling while `block` per the table |
 >
 > The table's function/module bands have **no consumer**: `complexity_advise.py` is
 > `METRIC_KEY = "radon_cc"` with `metrics_checked = 1  # currently only radon_cc`.
-> `docs/governance/advisory-rules-audit.md` miscodes this as *"Mechanical | xenon complexity"* —
-> xenon measures cyclomatic rank, never line count; that Mechanical claim is unbacked.
+> `docs/governance/advisory-rules-audit.md` once miscoded this as *"Mechanical | xenon complexity"* —
+> xenon measured cyclomatic rank, never line count; that Mechanical claim was unbacked.
 >
 > Resolving this requires a class-size band the corpus does not yet carry (a distillation pass,
 > per `gz-complexity-distill`), so it is **not** a prose fix. Surfaced as Pass A conflict-matrix

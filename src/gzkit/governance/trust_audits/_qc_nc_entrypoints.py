@@ -677,6 +677,18 @@ def _ep_catalog_forward_rule(root: Path) -> list[str]:
     return [line for line in _ep_catalog_coverage(root) if "catalog-forward-rule" in line]
 
 
+def _ep_complexity_ceiling(root: Path) -> list[ValidationError]:
+    """Return the findings against ``over``, and nothing when the at-ceiling decoy fired."""
+    from gzkit.governance.trust_audits.complexity_ceiling import (  # noqa: PLC0415
+        audit_complexity_ceiling,
+    )
+
+    errors = audit_complexity_ceiling(root)
+    if any("decoy.py" in error.artifact for error in errors):
+        return []
+    return errors
+
+
 def _ep_astral_discipline(root: Path) -> list[ValidationError]:
     """Return the finding against the new setup-python step, and nothing when the decoy fired."""
     from gzkit.governance.trust_audits.astral_discipline import (  # noqa: PLC0415

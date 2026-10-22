@@ -1941,7 +1941,6 @@
       "non-astral-unregistered::pyproject.toml::radon",
       "non-astral-unregistered::pyproject.toml::rich",
       "non-astral-unregistered::pyproject.toml::structlog",
-      "non-astral-unregistered::pyproject.toml::xenon",
       "publish-not-uv::.github/workflows/release.yml::pypa/gh-action-pypi-publish",
       "publish-not-uv::.github/workflows/release.yml::twine",
       "version-home-missing::gz init scaffold:.python-version::.python-version"

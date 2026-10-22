@@ -1,6 +1,6 @@
 # /gz-pythonic-pattern-apply
 
-Capture before/after evidence with mechanical-delta proof when a Pythonic-pattern rewrite is applied. Use after `/gz-pythonic-pattern-detect` flagged a candidate marked `applied` — the rewrite must be backed by a semantics-pinning test, a TDD GREEN receipt, and non-regressing xenon/radon deltas.
+Capture before/after evidence with mechanical-delta proof when a Pythonic-pattern rewrite is applied. Use after `/gz-pythonic-pattern-detect` flagged a candidate marked `applied` — the rewrite must be backed by a semantics-pinning test, a TDD GREEN receipt, and non-regressing complexity and size deltas.
 
 ---
 
@@ -8,7 +8,7 @@ Capture before/after evidence with mechanical-delta proof when a Pythonic-patter
 
 `/gz-pythonic-pattern-apply` exposes the evidence-capture pair to `/gz-pythonic-pattern-detect`. When a candidate from the detection report is applied as a Pythonic rewrite, this skill drives the operator/agent through:
 
-- Before/after metric capture (xenon, radon)
+- Before/after metric capture (the C/C/C ceiling, complexipy, module size)
 - Red-Green-Refactor TDD discipline with a semantics-pinning test
 - ARB GREEN receipt emission
 - Authoring a structured evidence file per applied candidate
@@ -21,7 +21,7 @@ Capture before/after evidence with mechanical-delta proof when a Pythonic-patter
 
 ## What to Expect
 
-The skill reads its canonical execution contract from `.gzkit/skills/gz-pythonic-pattern-apply/SKILL.md` (mirrored into `.claude/skills/`, `.agents/skills/`, and `.github/skills/`). One evidence file per applied candidate lands at `.gzkit/chores/pythonic-design-pattern-application/proofs/application-YYYY-MM-DD-HHMMSS-<short-slug>.md`, citing pattern named, source candidate, local Python example witness, example-derived role map, before/after code, xenon + radon deltas, semantics tests, and the ARB GREEN receipt ID. The detection-report row is updated from `_[applied | deferred | not-pythonic-rewrite]_` to `applied: <evidence-file-path>`.
+The skill reads its canonical execution contract from `.gzkit/skills/gz-pythonic-pattern-apply/SKILL.md` (mirrored into `.claude/skills/`, `.agents/skills/`, and `.github/skills/`). One evidence file per applied candidate lands at `.gzkit/chores/pythonic-design-pattern-application/proofs/application-YYYY-MM-DD-HHMMSS-<short-slug>.md`, citing pattern named, source candidate, local Python example witness, example-derived role map, before/after code, complexity and size deltas, semantics tests, and the ARB GREEN receipt ID. The detection-report row is updated from `_[applied | deferred | not-pythonic-rewrite]_` to `applied: <evidence-file-path>`.
 
 ## Invocation
 

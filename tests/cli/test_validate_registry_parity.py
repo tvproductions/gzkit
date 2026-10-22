@@ -189,6 +189,10 @@ _POST_SNAPSHOT_EXPLICIT_ADDITIONS: frozenset[str] = frozenset(
         # The RO-9 witness (Astral discipline). Explicit tier: its subject is the
         # project facts uv, Ruff and ty read. `in_check` from the outset.
         "astral_discipline",
+        # The Lizard C/C/C ceiling (RO-9 tranche 4, GHI #1183). Explicit tier: its
+        # subject is the Python the wheel ships. `in_check` from the outset, as it
+        # holds the ceiling xenon held on every commit.
+        "complexity_ceiling",
         # The requirements catalog (drydock RO-3). Explicit tier: its subject is
         # data/catalog/. `in_check` from the outset, as the catalog is canon.
         "catalog",

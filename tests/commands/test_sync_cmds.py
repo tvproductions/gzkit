@@ -160,12 +160,12 @@ class TestGitSyncCommand(unittest.TestCase):
                 f"divergence read {c} occurred before fetch — staleness window open (GHI #343)",
             )
 
-    def test_git_sync_rejects_skip_that_disables_xenon(self) -> None:
-        """git-sync blocks SKIP values that can bypass xenon complexity checks."""
+    def test_git_sync_rejects_skip_that_disables_the_complexity_gates(self) -> None:
+        """git-sync blocks SKIP values that can bypass the complexity gates."""
         runner = CliRunner()
         with _InitFromTemplate():
             original_skip = os.environ.get("SKIP")
-            os.environ["SKIP"] = "xenon-complexity"
+            os.environ["SKIP"] = "complexity-ceiling"
             try:
                 result = runner.invoke(main, ["git-sync"])
             finally:
@@ -176,6 +176,23 @@ class TestGitSyncCommand(unittest.TestCase):
 
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("Refusing git-sync with SKIP", result.output)
+
+
+class TestSkipGuardCoversEveryComplexityHook(unittest.TestCase):
+    """A SKIP naming any complexity hook, or `all`, is refused (RO-9 tranche 4)."""
+
+    def test_each_hook_id_and_all_disable_complexity(self) -> None:
+        from gzkit.git_sync import _skip_disables_complexity
+
+        for token in ("complexity-ceiling", "complexipy", "complexity-advisor-auto-chain", "all"):
+            with self.subTest(token=token):
+                self.assertTrue(_skip_disables_complexity({token}))
+
+    def test_unrelated_or_empty_skip_does_not(self) -> None:
+        from gzkit.git_sync import _skip_disables_complexity
+
+        self.assertFalse(_skip_disables_complexity(set()))
+        self.assertFalse(_skip_disables_complexity({"ruff-format", "unittest"}))
 
 
 class TestSyncCommand(unittest.TestCase):

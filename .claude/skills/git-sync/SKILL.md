@@ -6,9 +6,9 @@ category: agent-operations
 lifecycle_state: active
 disable-model-invocation: true
 owner: gzkit-governance
-last_reviewed: 2026-10-11
+last_reviewed: 2026-10-22
 metadata:
-  skill-version: "1.4.2"
+  skill-version: "1.4.3"
 model: haiku
 ---
 
@@ -51,7 +51,7 @@ Use the `gz git-sync` command flow (dry-run first, then apply as requested).
 > blocker.
 
 > The pre-commit hook runs the CHEAP gates on every commit — ruff, ty,
-> xenon, interrogate, gitleaks, authorship. It does NOT run the unit
+> the complexity ceiling, complexipy, interrogate, gitleaks, authorship. It does NOT run the unit
 > suite: `unittest` is declared `stages: [manual]` in
 > `.pre-commit-config.yaml` and fires only on demand
 > (`pre-commit run unittest --hook-stage manual`). The tests a change
@@ -119,7 +119,7 @@ These thoughts mean STOP — you are about to push without the guards:
 - Sync run on a tree with uncommitted control-surface drift
 
 > Two hooks are the mandatory gate: the commit-time cheap gates
-> (ruff + ty + xenon + guards) and the pre-push `gz check`, which runs every
+> (ruff + ty + the complexity gates + guards) and the pre-push `gz check`, which runs every
 > validator and the tests the change touches. The whole unit suite runs in
 > CI on every code push. Explicit `--lint --test` flags are
 > redundant for the normal ritual (see Steps § 3). Omitting them is not a

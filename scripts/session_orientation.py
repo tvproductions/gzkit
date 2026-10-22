@@ -1240,14 +1240,9 @@ def collect_state(repo_root: Path, now: datetime) -> dict:
     }
 
 
-def render(state: dict, now: datetime) -> str:
-    lines: list[str] = [
-        f"# gzkit session orientation — generated {now.isoformat(timespec='seconds')}",
-        "",
-    ]
-
-    lines.append("## Active campaign — Magna Carta")
-    campaign = state.get("campaign")
+def _render_campaign(campaign: object) -> list[str]:
+    """Render the campaign block: the plan, its topmost item, open checkboxes and fronts."""
+    lines: list[str] = []
     if isinstance(campaign, dict):
         done = campaign.get("done", 0)
         total = campaign.get("total", 0)
@@ -1305,6 +1300,17 @@ def render(state: dict, now: datetime) -> str:
             "- (no ACTIVE campaign found — flag this to the operator; "
             "the Magna Carta must always resolve)"
         )
+    return lines
+
+
+def render(state: dict, now: datetime) -> str:
+    lines: list[str] = [
+        f"# gzkit session orientation — generated {now.isoformat(timespec='seconds')}",
+        "",
+    ]
+
+    lines.append("## Active campaign — Magna Carta")
+    lines.extend(_render_campaign(state.get("campaign")))
     lines.append("")
 
     lines.append("## Git remote state")

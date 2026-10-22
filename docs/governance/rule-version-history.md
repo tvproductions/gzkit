@@ -414,6 +414,10 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 > **Rule version:** `0.5.3` — `ty` and `xenon` are spelled as the gates run them, `uv run`, not `uvx` (GHI #921). Prior `0.5.2` and earlier lifted to [Rule Version History](rule-version-history.md#pythonicmd). Binding rules unchanged.
 
+### Lifted 2026-10-22 at version `0.5.4` (rule now at `0.5.5`)
+
+> **Rule version:** `0.5.4` — version narrative lifted to [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd); binding rules unchanged.
+
 ## `hexagonal-architecture.md`
 
 Lifted at version `0.2.0` (rule now at `0.2.1`).
@@ -1026,6 +1030,10 @@ Lifted 2026-08-30 at version `0.4.0` (rule now at `0.5.0`).
 The version banner as it stood, lifted verbatim to keep the per-turn banner to its one-sentence rationale (drydock RO-1 act d):
 
 > **Rule version:** `0.5.0` — scored for real under GHI #921 (2026-08-30). This rule sat in `data/advisory_scorecard_grandfather.json`, pinned at `0.4.0` against a version nobody recorded; the pin is stripped by any edit, so its clauses were re-read and its Coverage Ledger rows added or corrected in the same commit. Prior version history lifted to [Rule Version History](rule-version-history.md#complexity-thresholdsmd). Binding rules unchanged.
+
+### Lifted 2026-10-22 at version `0.5.1` (rule now at `0.5.2`)
+
+> **Rule version:** `0.5.1` — version narrative lifted to [Rule Version History](../../docs/governance/rule-version-history.md#complexity-thresholdsmd); binding rules unchanged.
 
 ## `models.md`
 

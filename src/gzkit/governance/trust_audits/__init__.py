@@ -89,6 +89,7 @@ from gzkit.governance.trust_audits.code_quality import (
 from gzkit.governance.trust_audits.codex_delivery_witness import (
     audit_codex_delivery_witness,
 )
+from gzkit.governance.trust_audits.complexity_ceiling import audit_complexity_ceiling
 from gzkit.governance.trust_audits.complexity_doctrine_links import (
     validate_complexity_doctrine_links,
 )
@@ -241,6 +242,7 @@ __all__ = [
     "audit_mx_hardening",
     "audit_id_seam",
     "audit_astral_discipline",
+    "audit_complexity_ceiling",
     "audit_agents_md_map_conformance",
     "audit_chore_metadata_authority",
     "audit_chore_rung_conformance",
