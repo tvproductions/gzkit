@@ -17,7 +17,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
 from gzkit.core.models import CATALOG_REQ_ID_BODY
 from gzkit.registries import load_registry
@@ -29,6 +29,9 @@ CATALOG_FILES: dict[str, str] = {
     "reqs": "catalog/reqs.json",
     "externals": "catalog/externals.json",
 }
+
+#: The forward rule's registry, read beside the catalog but not part of it (RO-3 tranche 4).
+DELIVERY_EVENTS_FILE = "catalog/delivery_events.json"
 
 #: An outcome code: its family letter and a dotted number, `H1.4`.
 OUTCOME_CODE_PATTERN = r"^[A-Z][1-9][0-9]*(\.[1-9][0-9]*)*$"
@@ -188,3 +191,30 @@ def load_catalog(project_root: Path) -> Catalog:
         reqs=reqs.reqs,
         externals=externals.externals,
     )
+
+
+class DeliveryEventsFile(BaseModel):
+    """`data/catalog/delivery_events.json`: the forward rule's event types and cutover.
+
+    Rulings of 2026-10-22: the nine measured types ("All nine (Rec.)") and the
+    cutover as a timestamp held here ("Timestamp in registry (Rec.)"); events
+    before it are legacy and never read.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid", populate_by_name=True)
+
+    doc: str = Field(..., alias="_doc", min_length=1, description="What the file is.")
+    cutover: AwareDatetime = Field(..., description="Events with a later `ts` are read.")
+    event_types: tuple[str, ...] = Field(
+        ..., min_length=1, description="The delivery event types the forward rule reads."
+    )
+
+
+def delivery_events_json_schema() -> dict[str, Any]:
+    """Project the registry model to its committed `catalog_delivery_events.json` schema."""
+    return DeliveryEventsFile.model_json_schema()
+
+
+def load_delivery_events(project_root: Path) -> DeliveryEventsFile:
+    """Read and parse the forward rule's registry through the registry seam."""
+    return DeliveryEventsFile.model_validate(load_registry(project_root, DELIVERY_EVENTS_FILE))

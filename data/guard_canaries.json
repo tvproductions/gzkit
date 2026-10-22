@@ -476,6 +476,20 @@
       "authority": "docs/governance/harbor-ro3-requirements-store.md (drydock RO-3 tranche 3)",
       "proposed_by": "claude-code session 2026-10-22",
       "reviewed_by": "g0"
+    },
+    {
+      "claim_id": "requirements-catalog-forward-rule",
+      "guard": "gzkit.governance.trust_audits.catalog_forward:names_req_or_outcome",
+      "failing_test": "tests.governance.test_catalog_forward_rule.TestReading.test_an_unnamed_listed_event_after_the_cutover_is_counted",
+      "mutation": {
+        "find": "    return any(_REQ_NAME.search(text) for value in values for text in _strings(value))\n",
+        "replace": "    return True\n",
+        "label": "every delivery event reads as naming a REQ, so none is announced"
+      },
+      "binding_sha256": "9da03e62a222c8a1eaf6edad10872b1590df7f52db94ef6515dd4d99c189b07b",
+      "authority": "docs/governance/harbor-ro3-requirements-store.md (drydock RO-3 tranche 4)",
+      "proposed_by": "claude-code session 2026-10-22",
+      "reviewed_by": null
     }
   ]
 }

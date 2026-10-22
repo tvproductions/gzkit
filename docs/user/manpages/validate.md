@@ -2489,6 +2489,7 @@ Validates the requirements catalog under `data/catalog/`, the store
 | `outcomes.json` | Outcomes, each a member of one family (empty until RO-5's verbs author them) |
 | `reqs.json` | `REQ-<n>` requirements, each a member of one outcome (empty until RO-5's verbs author them) |
 | `externals.json` | The roster of external boundaries an outcome may depend on as `external:<slug>` (empty until one is needed) |
+| `delivery_events.json` | The forward rule's delivery event types and its cutover timestamp |
 
 The structure checks:
 
@@ -2515,8 +2516,22 @@ feature tag, and each BEHAVIOR REQ under it has a scenario tagged with its id in
 that file and an `@covers` test.
 
 The coverage report lists the PRD needs no REQ derives from. It is advisory and
-never changes the exit code. The freeze lock is RO-5's; the forward rule is RO-3
-tranche 4.
+never changes the exit code.
+
+The forward rule (RO-3 tranche 4) reads the ledger's events of the types
+`delivery_events.json` lists, appended after its cutover, and announces those that
+name no REQ or outcome as one advisory line, counted by type. Observed on the
+`requirements-catalog-forward-rule` negative control's fixture:
+
+```text
+[advisory] catalog-forward-rule: 1 of 2 delivery events since 2026-01-01T00:00:00+00:00 name no REQ or outcome (task_started 1)
+```
+
+An event names a REQ when any of its values carries a REQ id in either grammar,
+and an outcome when its `outcome` field holds a code `outcomes.json` holds; a TASK
+id never names its REQ by spelling. Events before the cutover are legacy and are
+never read. The rule is advisory until RO-5's verbs can supply an outcome id. The
+freeze lock is RO-5's.
 
 **Usage:**
 

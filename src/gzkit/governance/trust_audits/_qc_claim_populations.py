@@ -55,6 +55,7 @@ QC_CLAIM_POPULATIONS: dict[str, Callable[[], Sequence[str]] | str] = {
     "requirements-catalog-edges": POPULATION_NONE,
     "requirements-catalog-coverage": POPULATION_NONE,
     "requirements-catalog-bdd": POPULATION_NONE,
+    "requirements-catalog-forward-rule": POPULATION_NONE,
     # Reads the ledger's open MX sessions; the members are whatever sessions are
     # open, never a set another surface declares (GHI #1257).
     "mx-hardening": POPULATION_NONE,

@@ -41,6 +41,12 @@
       "purpose": "The requirements catalog's outcomes, empty until RO-5's verbs author them; `gz validate --catalog`.",
       "derivation": "docs/governance/harbor-ro3-requirements-store.md (operator ruling 2026-10-21)"
     },
+    "catalog/delivery_events.json": {
+      "owner": "gzkit/models/catalog.py",
+      "kind": "code",
+      "purpose": "The forward rule's delivery event types and cutover; `gz validate --catalog` announces post-cutover delivery events naming no REQ or outcome.",
+      "derivation": "docs/governance/harbor-ro3-requirements-store.md (operator rulings 2026-10-22, All nine (Rec.), Timestamp in registry (Rec.))"
+    },
     "catalog/externals.json": {
       "owner": "gzkit/models/catalog.py",
       "kind": "code",

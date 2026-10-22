@@ -1,0 +1,15 @@
+{
+  "_doc": "The forward rule's registry (docs/governance/harbor-ro3-requirements-store.md, drydock RO-3 tranche 4). A delivery event of a listed type appended after the cutover that names no REQ or outcome is announced by `gz validate --catalog`, advisory until RO-5's verbs can supply an outcome id (ruling 4). Events before the cutover are legacy and never read or backfilled. Operator rulings of 2026-10-22: \"All nine (Rec.)\" for the types, \"Timestamp in registry (Rec.)\" for the cutover, set when tranche 4 landed. Shape: src/gzkit/schemas/catalog_delivery_events.json; read by gzkit/models/catalog.py.",
+  "cutover": "2026-10-22T08:14:40+00:00",
+  "event_types": [
+    "task_started",
+    "task_completed",
+    "obpi_receipt_emitted",
+    "gate_checked",
+    "attested",
+    "acceptance_recorded",
+    "red_receipt_emitted",
+    "stage2_dispatch_recorded",
+    "closeout_initiated"
+  ]
+}

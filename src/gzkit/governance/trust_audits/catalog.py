@@ -11,7 +11,10 @@
 Once the structure holds, tranche 3's edge checks, coverage report and BDD
 alignment run from `gzkit.governance.trust_audits.catalog_edges`, over the PRD,
 the manifest's gates, the ledger, the features and the tests this module reads.
-The forward rule is tranche 4's; the freeze lock is RO-5's.
+Tranche 4's forward rule then reads the delivery events since the cutover in
+`data/catalog/delivery_events.json` and announces the ones naming no REQ or
+outcome (`gzkit.governance.trust_audits.catalog_forward`). The freeze lock is
+RO-5's.
 """
 
 from __future__ import annotations
@@ -34,9 +37,16 @@ from gzkit.governance.trust_audits.catalog_edges import (
     edge_findings,
     prd_needs,
 )
+from gzkit.governance.trust_audits.catalog_forward import forward_rule_reading
 from gzkit.ledger import Ledger
-from gzkit.models.catalog import CATALOG_FILES, Catalog, load_catalog
-from gzkit.registries import RegistryError, load_registry
+from gzkit.models.catalog import (
+    CATALOG_FILES,
+    DELIVERY_EVENTS_FILE,
+    Catalog,
+    load_catalog,
+    load_delivery_events,
+)
+from gzkit.registries import RegistryError, load_registry, registry_path
 from gzkit.schemas import load_schema
 from gzkit.traceability import scan_catalog_bindings
 
@@ -168,4 +178,21 @@ def audit_catalog(project_root: Path) -> list[ValidationError]:
             f"catalog-coverage: {len(gaps)} of {len(needs)} PRD needs have no deriving "
             f"REQ: {', '.join(gaps)}"
         )
+    _announce_forward_rule(project_root, config, catalog)
     return errors
+
+
+def _announce_forward_rule(project_root: Path, config: GzkitConfig, catalog: Catalog) -> None:
+    """Announce post-cutover delivery events naming no REQ or outcome; advisory until RO-5."""
+    if not registry_path(project_root, DELIVERY_EVENTS_FILE).is_file():
+        return
+    registry = load_delivery_events(project_root)
+    rows = [event.model_dump() for event in Ledger(project_root / config.paths.ledger).read_all()]
+    outcomes = frozenset(outcome.code for outcome in catalog.outcomes)
+    reading = forward_rule_reading(rows, registry, outcomes)
+    if reading.unnamed:
+        counts = ", ".join(f"{kind} {count}" for kind, count in reading.unnamed.items())
+        emit_advisory(
+            f"catalog-forward-rule: {sum(reading.unnamed.values())} of {reading.read} delivery "
+            f"events since {registry.cutover.isoformat()} name no REQ or outcome ({counts})"
+        )

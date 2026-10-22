@@ -1546,6 +1546,37 @@ def _build_catalog_bdd() -> Path:
     return root
 
 
+def _build_catalog_forward_rule() -> Path:
+    """Plant one unnamed delivery event after the cutover — it MUST be announced (RO-3 t4).
+
+    Decoys the rule must not count: an unnamed event before the cutover (legacy,
+    never read), a named event after it, and an unlisted type after it.
+    """
+    root = _catalog_project("catalog-forward-rule", [], [])
+    registry = {
+        "_doc": "Negative control.",
+        "cutover": "2026-01-01T00:00:00+00:00",
+        "event_types": ["task_started", "acceptance_recorded"],
+    }
+    _write(root / "data" / "catalog" / "delivery_events.json", json.dumps(registry))
+    base = {"schema": "gzkit.ledger.v1", "id": "TASK-0.1.0-01-01-01"}
+    _write_jsonl(
+        root / ".gzkit" / "ledger.jsonl",
+        [
+            base | {"event": "task_started", "ts": "2025-12-31T00:00:00+00:00"},
+            base | {"event": "task_started", "ts": "2026-01-02T00:00:00+00:00"},
+            base
+            | {
+                "event": "acceptance_recorded",
+                "ts": "2026-01-02T00:00:00+00:00",
+                "req_id": "REQ-0.1.0-01-01",
+            },
+            base | {"event": "insight_recorded", "ts": "2026-01-02T00:00:00+00:00"},
+        ],
+    )
+    return root
+
+
 def _build_brief_structure() -> Path:
     """Build a LIVE brief with no structured frontmatter — the gate MUST fire (GHI #615).
 
@@ -2154,6 +2185,13 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         _build_catalog_coverage,
         _ep._ep_catalog_coverage,
         "1 of 2 PRD needs have no deriving REQ: FR-002",
+    ),
+    (
+        "requirements-catalog-forward-rule",
+        _build_catalog_forward_rule,
+        _ep._ep_catalog_forward_rule,
+        "1 of 2 delivery events since 2026-01-01T00:00:00+00:00 name no REQ or outcome "
+        "(task_started 1)",
     ),
     (
         "requirements-catalog-bdd",

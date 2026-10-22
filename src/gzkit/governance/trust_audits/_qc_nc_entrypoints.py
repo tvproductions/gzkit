@@ -672,6 +672,11 @@ def _ep_catalog_coverage(root: Path) -> list[str]:
     return [] if errors else advisory_lines(stream.getvalue())
 
 
+def _ep_catalog_forward_rule(root: Path) -> list[str]:
+    """Return the forward rule's advisory, and nothing when the audit also found something."""
+    return [line for line in _ep_catalog_coverage(root) if "catalog-forward-rule" in line]
+
+
 def _ep_astral_discipline(root: Path) -> list[ValidationError]:
     """Return the finding against the new setup-python step, and nothing when the decoy fired."""
     from gzkit.governance.trust_audits.astral_discipline import (  # noqa: PLC0415
