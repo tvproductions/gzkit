@@ -447,7 +447,7 @@
       "binding_sha256": "2108a050f0b2e2f4cecd45fd54bd4317cd7e70a8e4614fda205a0fee7e514073",
       "authority": "docs/governance/harbor-ro3-requirements-store.md (drydock RO-3 tranche 3)",
       "proposed_by": "claude-code session 2026-10-22",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     },
     {
       "claim_id": "requirements-catalog-coverage",
@@ -461,7 +461,7 @@
       "binding_sha256": "60b50805e7bd97f14203d41ee9e3c6868c12ffa6d7fee4621a064a919894c492",
       "authority": "docs/governance/harbor-ro3-requirements-store.md (drydock RO-3 tranche 3)",
       "proposed_by": "claude-code session 2026-10-22",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     },
     {
       "claim_id": "requirements-catalog-bdd",
@@ -475,7 +475,7 @@
       "binding_sha256": "07666d20a243fd76c1fc5a936ca36f60eb7de222b2a7f28cef616c6990da1b87",
       "authority": "docs/governance/harbor-ro3-requirements-store.md (drydock RO-3 tranche 3)",
       "proposed_by": "claude-code session 2026-10-22",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     }
   ]
 }
