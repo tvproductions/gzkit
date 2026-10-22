@@ -10,14 +10,18 @@
 # no release present still works and falls back to generated notes.
 #
 # Re-pushing a tag that is already fully released is a no-op: the release body
-# is never rewritten, binaries already attached are left alone, and PyPI
-# re-uploads are skipped as already-present (GHI #834).
+# is never rewritten, binaries already attached are left alone, and a version
+# PyPI already holds is not published again (GHI #834).
+#
+# PyPI: `dist` builds the sdist and wheel with `uv build --no-sources` and
+# smoke-tests them; `pypi` alone holds the publishing credential, generates
+# PEP 740 attestations and runs `uv publish` (RO-9 tranche 3).
 #
 # Publishing an existing tag to PyPI after its tag-push run failed:
 #   gh workflow run release.yml --ref main -f tag=vX.Y.Z
 # A tag push runs the workflow file AT the tag, so a fix landed on main never
 # reaches a re-run of that push. A dispatch runs this file from main, checks out
-# the named tag, and runs only the PyPI job: the binaries and the release body
+# the named tag, and runs only the PyPI jobs: the binaries and the release body
 # belong to the tag-push run and are left alone.
 
 name: Release
@@ -33,9 +37,11 @@ on:
         required: true
         type: string
 
+# Read-only by default; each job that writes asks for exactly what it writes.
+# The publishing credential (`id-token: write`) is held by the `pypi` job alone,
+# never by a job that builds (uv's GitHub guide; RO-9 tranche 3).
 permissions:
-  contents: write  # needed to create releases
-  id-token: write  # needed for PyPI trusted publishing
+  contents: read
 
 jobs:
   build:
@@ -90,6 +96,8 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # creates the release and attaches its binaries
 
     steps:
       - uses: actions/checkout@v6
@@ -188,14 +196,15 @@ jobs:
             artifacts/gz-linux/gz-linux \
             artifacts/gz-macos/gz-macos
 
-  pypi:
+  # The distributions are built here and published by `pypi` below, so the
+  # job holding the publishing credential runs no build (RO-9 tranche 3).
+  dist:
     needs: build
     # A dispatch skips `build`; publish then rests on the tag alone.
     if: >-
       !cancelled() &&
       (github.event_name == 'workflow_dispatch' || needs.build.result == 'success')
     runs-on: ubuntu-latest
-    environment: pypi
     env:
       RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
 
@@ -215,7 +224,7 @@ jobs:
         shell: bash
         run: |
           TAG="${RELEASE_TAG#v}"
-          PKG_VERSION="$(grep -m1 '^version' pyproject.toml | sed 's/version = "\(.*\)"/\1/')"
+          PKG_VERSION="$(uv version --short)"
           echo "Tag version: $TAG"
           echo "Package version: $PKG_VERSION"
           if [ "$TAG" != "$PKG_VERSION" ]; then
@@ -230,19 +239,80 @@ jobs:
       - name: Drop Codex runtime scratch the tag may carry
         run: rm -rf .codex/tmp
 
-      - name: Build wheel
-        run: uv build
+      # --no-sources: the package must build as an index would build it, with
+      # `tool.uv.sources` disabled (uv's packaging guide).
+      - name: Build the sdist and wheel
+        run: uv build --no-sources
 
-      - name: Validate distributions
-        run: uv tool run twine check --strict dist/*
+      # In place of `twine check`, which uv has no counterpart for: install each
+      # distribution into a throwaway environment and run the CLI it declares.
+      - name: Smoke-test the built distributions
+        shell: bash
+        run: |
+          set -euo pipefail
+          uv run --isolated --no-project --with dist/*.whl gz --help > /dev/null
+          uv run --isolated --no-project --with dist/*.tar.gz gz --help > /dev/null
+
+      - name: Upload the distributions
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+  pypi:
+    needs: dist
+    if: ${{ !cancelled() && needs.dist.result == 'success' }}
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      contents: read   # checkout, so setup-uv reads `required-version`
+      id-token: write  # trusted publishing and the attestations
+    env:
+      RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: refs/tags/${{ env.RELEASE_TAG }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+
+      - name: Download the distributions
+        uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist
+
+      # PyPI files are immutable and a rebuilt distribution is not byte-identical,
+      # so `uv publish` refuses a version PyPI already holds where the retired
+      # action's `skip-existing` passed it (observed 2026-10-22: 0.34.9 rebuilt,
+      # "Local file and index file do not match"). Re-pushing a released tag
+      # (tag repair, a re-run) must stay a no-op (GHI #834), so a published
+      # version is skipped here, before anything is attested or uploaded.
+      - name: Skip a version PyPI already holds
+        id: published
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="${RELEASE_TAG#v}"
+          status="$(curl -s -o /dev/null -w '%{http_code}' "https://pypi.org/pypi/py-gzkit/${version}/json")"
+          if [ "$status" = "200" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::py-gzkit ${version} is already on PyPI. Nothing to publish."
+          elif [ "$status" = "404" ]; then
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::PyPI answered HTTP ${status} for py-gzkit ${version}; cannot tell whether it is published. Re-run the job."
+            exit 1
+          fi
+
+      # uv uploads attestations but does not generate them; this action writes
+      # the PEP 740 `.publish.attestation` files uv picks up beside each file.
+      - name: Generate PEP 740 attestations
+        if: steps.published.outputs.skip == 'false'
+        uses: astral-sh/attest-action@f589a42a7efb6fe400b4f400de60b4bc90390027 # v0.0.6
 
       - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          verbose: true
-          # PyPI files are immutable, so re-uploading an already-published
-          # version is a no-op rather than an error condition. Without this,
-          # re-pushing an old tag (tag repair, a re-run) fails the job with
-          # "400 File already exists" — observed on v0.18.1 and v0.24.1,
-          # runs 32205324813 and 32205324956.
-          skip-existing: true
+        if: steps.published.outputs.skip == 'false'
+        run: uv publish --trusted-publishing always

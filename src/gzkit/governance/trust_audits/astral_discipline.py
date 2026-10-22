@@ -258,9 +258,20 @@ def _registered_version_rules(root: Path, project: _Project) -> Iterator[Violati
         )
 
 
+def _yaml_code(text: str) -> str:
+    """Drop full-line YAML (and shell) comments: a comment naming a tool documents, never runs it.
+
+    Inline ``#`` stays, because it also opens a pin comment after a SHA and
+    appears inside shell strings; only a line that is nothing but a comment
+    is dropped (RO-9 tranche 3: the release workflow's note on what replaced
+    `twine check` read as a use of twine).
+    """
+    return "\n".join(line for line in text.splitlines() if not line.lstrip().startswith("#"))
+
+
 def _automation_rules(root: Path) -> Iterator[Violation]:
     for path in _workflows(root):
-        text = _read(path)
+        text = _yaml_code(_read(path))
         rel = _rel(root, path)
         if "actions/setup-python" in text:
             yield Violation(rule="setup-python", file=rel, subject="actions/setup-python")
@@ -276,7 +287,7 @@ def _automation_rules(root: Path) -> Iterator[Violation]:
         if re.search(r"\btwine\b", text):
             yield Violation(rule="publish-not-uv", file=rel, subject="twine")
     for name in (".readthedocs.yaml", ".pre-commit-config.yaml"):
-        for _ in _PIP_RE.finditer(_read(root / name)):
+        for _ in _PIP_RE.finditer(_yaml_code(_read(root / name))):
             yield Violation(rule="pip-in-project", file=name, subject="pip")
     for path in _requirements_files(root):
         yield Violation(rule="pip-in-project", file=_rel(root, path), subject=path.name)

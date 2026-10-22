@@ -1,7 +1,7 @@
 # Release Process (SemVer)
 
 Status: Active
-Last reviewed: 2026-02-14
+Last reviewed: 2026-10-22
 
 Audience: contributors (developer docs; not published via MkDocs)
 
@@ -10,9 +10,9 @@ Use this checklist to cut a gzkit release with AirlineOps-style release discipli
 ## Preconditions
 
 - Target ADR/OBPI scope is complete and attested.
-- `pyproject.toml` `[project].version` is set to `X.Y.Z`.
-- `src/gzkit/__init__.py` `__version__` matches `X.Y.Z`.
-- `uv.lock` is refreshed after the version bump.
+- The version is `X.Y.Z`, set by `uv version X.Y.Z --no-sync` (what `gz patch release`
+  and `gz closeout` run), which writes `pyproject.toml` and `uv.lock` together;
+  `src/gzkit/__init__.py` `__version__` and the README badge are written from it.
 - `RELEASE_NOTES.md` has a `vX.Y.Z - ... (YYYY-MM-DD)` section.
 
 ## Quick checklist
@@ -42,17 +42,15 @@ uv sync --locked
 4. Build artifacts
 
 ```zsh
-uv build
+uv build --no-sources
 ls -1 dist
 ```
 
-5. Optional smoke check
+5. Optional smoke check (the same check `release.yml` runs before publishing)
 
 ```zsh
-uv venv .venv-smoke
-uv pip install --python .venv-smoke dist/gzkit-*.whl
-uv run --python .venv-smoke -m gzkit --version
-rm -rf .venv-smoke
+uv run --isolated --no-project --with dist/*.whl gz --help
+uv run --isolated --no-project --with dist/*.tar.gz gz --help
 ```
 
 6. Mandatory final git sync (must be immediately before publish/tag commands)
@@ -81,8 +79,9 @@ gh release create vX.Y.Z --target main --latest --title "vX.Y.Z" --notes-file "$
 
 A tag push runs `release.yml` as it stands at the tag, so a fix landed on `main`
 never reaches a re-run of that push. Dispatch the workflow from `main` against
-the tag instead; it runs only the PyPI job, builds the named tag, and leaves the
-binaries and release body alone:
+the tag instead; it runs only the PyPI jobs (`dist` builds the named tag,
+`pypi` attests and runs `uv publish`, skipping a version PyPI already holds), and
+leaves the binaries and release body alone:
 
 ```zsh
 gh workflow run release.yml --ref main -f tag=vX.Y.Z

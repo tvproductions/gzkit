@@ -1,8 +1,10 @@
 """Tests for version sync helpers used during ADR closeout."""
 
+import re
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from gzkit.commands.common import (
     _extract_adr_version,
@@ -58,11 +60,33 @@ class TestReadCurrentProjectVersion(unittest.TestCase):
             self.assertIsNone(_read_current_project_version(root))
 
 
+def _fake_uv_version(calls: list[tuple[Path, str]]):
+    """A stand-in for `uv version <v> --no-sync`: rewrites pyproject.toml and uv.lock."""
+
+    def write(project_root: Path, version: str) -> None:
+        calls.append((project_root, version))
+        for name in ("pyproject.toml", "uv.lock"):
+            path = project_root / name
+            if path.is_file():
+                text = path.read_text(encoding="utf-8")
+                path.write_text(
+                    re.sub(r'^version = "[^"]+"', f'version = "{version}"', text, flags=re.M),
+                    encoding="utf-8",
+                )
+
+    return write
+
+
 class TestSyncProjectVersion(unittest.TestCase):
+    """RO-9 tranche 3: uv owns the project version; the other surfaces derive from it."""
+
     def _make_project(self, root: Path, version: str = "0.12.0") -> None:
         (root / "pyproject.toml").write_text(
             f'[project]\nname = "gzkit"\nversion = "{version}"\n',
             encoding="utf-8",
+        )
+        (root / "uv.lock").write_text(
+            f'[[package]]\nname = "gzkit"\nversion = "{version}"\n', encoding="utf-8"
         )
         src = root / "src" / "gzkit"
         src.mkdir(parents=True)
@@ -72,15 +96,20 @@ class TestSyncProjectVersion(unittest.TestCase):
             encoding="utf-8",
         )
 
-    def test_bumps_all_three_files(self) -> None:
+    def test_uv_writes_the_project_version_and_the_rest_follow(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             self._make_project(root, "0.12.0")
-            updated = sync_project_version(root, "0.18.0")
-            self.assertEqual(
-                sorted(updated), ["README.md", "pyproject.toml", "src/gzkit/__init__.py"]
+            calls: list[tuple[Path, str]] = []
+            updated = sync_project_version(
+                root, "0.18.0", set_project_version=_fake_uv_version(calls)
             )
-            self.assertIn('"0.18.0"', (root / "pyproject.toml").read_text(encoding="utf-8"))
+            self.assertEqual(calls, [(root, "0.18.0")])
+            self.assertEqual(
+                sorted(updated),
+                ["README.md", "pyproject.toml", "src/gzkit/__init__.py", "uv.lock"],
+            )
+            self.assertIn('"0.18.0"', (root / "uv.lock").read_text(encoding="utf-8"))
             self.assertIn(
                 '"0.18.0"', (root / "src" / "gzkit" / "__init__.py").read_text(encoding="utf-8")
             )
@@ -90,8 +119,11 @@ class TestSyncProjectVersion(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             self._make_project(root, "0.18.0")
-            updated = sync_project_version(root, "0.18.0")
-            self.assertEqual(updated, [])
+            calls: list[tuple[Path, str]] = []
+            updated = sync_project_version(
+                root, "0.18.0", set_project_version=_fake_uv_version(calls)
+            )
+            self.assertEqual((updated, calls), ([], []))
 
     def test_missing_files_skipped(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -100,8 +132,28 @@ class TestSyncProjectVersion(unittest.TestCase):
                 '[project]\nname = "gzkit"\nversion = "0.12.0"\n',
                 encoding="utf-8",
             )
-            updated = sync_project_version(root, "0.18.0")
+            updated = sync_project_version(root, "0.18.0", set_project_version=_fake_uv_version([]))
             self.assertEqual(updated, ["pyproject.toml"])
+
+    def test_the_default_writer_is_uv_version_without_a_sync(self) -> None:
+        from gzkit.commands import version_sync
+
+        with mock.patch.object(version_sync, "run_exec", return_value=(0, "", "")) as run:
+            version_sync.uv_set_project_version(Path("/proj"), "0.18.0")
+        run.assert_called_once_with(["uv", "version", "0.18.0", "--no-sync"], cwd=Path("/proj"))
+
+    def test_a_failed_uv_version_refuses_with_its_recovery(self) -> None:
+        from gzkit.commands import version_sync
+        from gzkit.commands.common import GzCliError
+
+        with (
+            mock.patch.object(version_sync, "run_exec", return_value=(2, "", "no network")),
+            self.assertRaises(GzCliError) as ctx,
+        ):
+            version_sync.uv_set_project_version(Path("/proj"), "0.18.0")
+        message = str(ctx.exception)
+        self.assertIn("no network", message)
+        self.assertIn("uv version 0.18.0 --no-sync", message)
 
 
 class TestCheckVersionSync(unittest.TestCase):

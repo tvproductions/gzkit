@@ -303,6 +303,14 @@ class TestBuildAndPublishThroughUv(unittest.TestCase):
                     _rules(**{".github/workflows/ci.yml": _CI + step}), {"publish-not-uv"}
                 )
 
+    def test_a_comment_naming_a_retired_tool_is_not_a_use(self) -> None:
+        """A full-line comment documents; only workflow code runs a tool (RO-9 tranche 3)."""
+        comments = (
+            "      # In place of `twine check` and pypa/gh-action-pypi-publish,\n"
+            "      # never actions/setup-python, and no `pip install` here.\n"
+        )
+        self.assertEqual(_rules(**{".github/workflows/ci.yml": _CI + comments}), set())
+
 
 class TestTheScaffoldIsWitnessed(unittest.TestCase):
     def test_gz_inits_project_is_checked_by_the_same_rules(self) -> None:

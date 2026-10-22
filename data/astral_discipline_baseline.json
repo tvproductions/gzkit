@@ -62,18 +62,6 @@
       "count": 1
     },
     {
-      "rule": "publish-not-uv",
-      "file": ".github/workflows/release.yml",
-      "subject": "pypa/gh-action-pypi-publish",
-      "count": 1
-    },
-    {
-      "rule": "publish-not-uv",
-      "file": ".github/workflows/release.yml",
-      "subject": "twine",
-      "count": 1
-    },
-    {
       "rule": "version-home-missing",
       "file": "gz init scaffold:.python-version",
       "subject": ".python-version",

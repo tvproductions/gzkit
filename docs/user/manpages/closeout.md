@@ -53,7 +53,9 @@ required human-attestation evidence, `gz closeout` prints `BLOCKERS:` and exits
 ### Version bump and in-flight release manifest
 
 When the ADR's semver exceeds the declared project version, `gz closeout` bumps
-`pyproject.toml`, `src/gzkit/__init__.py`, and the README badge, and writes an
+it with `uv version <semver> --no-sync` (which writes `pyproject.toml` and
+`uv.lock` together), writes `src/gzkit/__init__.py` and the README badge from it,
+and writes an
 in-flight release manifest at `docs/releases/RELEASE-v{version}.md`.
 
 The manifest is not bookkeeping — it is the evidence `audit_version_release`

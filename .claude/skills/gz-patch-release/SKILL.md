@@ -5,7 +5,7 @@ description: Use to run a GHI-driven patch release, or to publish a minor releas
 category: adr-audit
 compatibility: GovZero v6 framework; provides ceremony walkthrough for GHI-driven patch releases
 metadata:
-  skill-version: "1.14.1"
+  skill-version: "1.14.2"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/releases/patch-release.md, docs/design/adr/foundation/ADR-0.0.15-ghi-driven-patch-release-ceremony/ADR-0.0.15-ghi-driven-patch-release-ceremony.md"
@@ -13,7 +13,7 @@ metadata:
   govzero_layer: "Layer 2 - Ledger Consumption"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-10-22
 model: sonnet
 ---
 
@@ -341,8 +341,8 @@ uv run gz patch release
 
 This atomically:
 
-- Bumps the patch version via `sync_project_version` (pyproject.toml,
-  `__init__.py`, README badge), unless the version is already ahead of its tag
+- Bumps the patch version via `sync_project_version` (`uv version --no-sync` writes
+  pyproject.toml and uv.lock; `__init__.py` and badge follow), unless already ahead of its tag
 - Writes the markdown manifest to `docs/releases/PATCH-vX.Y.Z.md`
 - Appends the JSONL ledger entry
 
@@ -413,7 +413,7 @@ Present the final status to the operator:
 
 ```
 Patch release vX.Y.Z complete.
-  Version synced: pyproject.toml, __init__.py, README badge
+  Version synced: pyproject.toml, uv.lock, __init__.py, README badge
   Manifest: docs/releases/PATCH-vX.Y.Z.md
   RELEASE_NOTES.md: updated
   CHANGELOG.md: [Unreleased] stamped vX.Y.Z

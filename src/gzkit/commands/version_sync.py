@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Callable
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -11,6 +12,7 @@ if TYPE_CHECKING:
 
 from gzkit.core.models import adr_semver
 from gzkit.ledger import Ledger
+from gzkit.utils import run_exec
 
 _VERSION_BADGE_RE = re.compile(r"(badge/version-)\d+\.\d+\.\d+(-blue\.svg)")
 
@@ -43,27 +45,50 @@ def compute_patch_increment(current_version: str) -> str:
     return f"{parts[0]}.{parts[1]}.{parts[2] + 1}"
 
 
-def sync_project_version(project_root: Path, new_version: str) -> list[str]:
-    """Bump version in pyproject.toml, __init__.py, and README badge.
+def uv_set_project_version(project_root: Path, version: str) -> None:
+    """Set the project version with ``uv version <version> --no-sync``.
+
+    uv writes ``pyproject.toml`` and ``uv.lock`` together. Editing the
+    ``version`` line alone left the lock naming the old version, so the next
+    ``uv sync --locked`` in CI refused the release commit (RO-9 tranche 3).
+    ``--no-sync`` leaves the environment for the caller's own sync.
+    """
+    command = ["uv", "version", version, "--no-sync"]
+    returncode, _stdout, stderr = run_exec(command, cwd=project_root)
+    if returncode != 0:
+        from gzkit.commands.common import GzCliError  # noqa: PLC0415 -- common imports this module
+
+        msg = (
+            f"BLOCKERS:\n- `{' '.join(command)}` exited {returncode}: {stderr or 'no output'}\n"
+            "uv owns the project version, so the bump cannot proceed without it "
+            "(docs/governance/harbor-ro9-astral-toolchain.md, tranche 3). Fix what uv "
+            f"reported, then re-run `{' '.join(command)}` and the release step."
+        )
+        raise GzCliError(msg)
+
+
+def sync_project_version(
+    project_root: Path,
+    new_version: str,
+    *,
+    set_project_version: Callable[[Path, str], None] = uv_set_project_version,
+) -> list[str]:
+    """Bump the project version through uv, then derive __init__.py and the README badge.
+
+    ``set_project_version`` writes ``pyproject.toml`` (and ``uv.lock`` when the
+    project has one); it is ``uv version`` by default and a parameter so a test
+    runs without uv.
 
     Returns a list of files that were updated (relative to *project_root*).
     """
     updated: list[str] = []
 
-    # pyproject.toml
     pyproject = project_root / "pyproject.toml"
-    if pyproject.is_file():
-        old = pyproject.read_text(encoding="utf-8")
-        new = re.sub(
-            r'^(version\s*=\s*")\d+\.\d+\.\d+(")',
-            rf"\g<1>{new_version}\2",
-            old,
-            count=1,
-            flags=re.MULTILINE,
-        )
-        if new != old:
-            pyproject.write_text(new, encoding="utf-8")
-            updated.append("pyproject.toml")
+    if pyproject.is_file() and _read_current_project_version(project_root) != new_version:
+        set_project_version(project_root, new_version)
+        updated.append("pyproject.toml")
+        if (project_root / "uv.lock").is_file():
+            updated.append("uv.lock")
 
     # src/gzkit/__init__.py
     init_py = project_root / "src" / "gzkit" / "__init__.py"
