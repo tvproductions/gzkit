@@ -19,7 +19,8 @@ from gzkit.commands.plan import (
     WHY_FOUNDATION_TIER_SECTION,
     register_adr_in_ledger,
 )
-from gzkit.core.models import normalize_adr_input
+from gzkit.commands.specify_cmd import _validate_parent_adr, obpi_template_vars
+from gzkit.core.models import adr_version_term, normalize_adr_input, req_stem
 from gzkit.interview import (
     answer_payload_problems,
     check_interview_complete,
@@ -181,6 +182,62 @@ def _resolve_adr_doc(
     return adrs_root / sub / doc_id, doc_id
 
 
+def _answer_lines(answer: str) -> list[str]:
+    """Split a multiline answer into items, dropping each leading number or bullet."""
+    items = []
+    for line in answer.splitlines():
+        item = line.strip()
+        if item[:1].isdigit():
+            item = item.lstrip("0123456789.)-: ")
+        elif item[:1] in "-*":
+            item = item[1:].strip()
+        if item:
+            items.append(item)
+    return items
+
+
+def _obpi_vars_from_answers(
+    answers: dict[str, str], adr_file: Path, parent_adr_id: str, project_root: Path
+) -> dict[str, str]:
+    """Build the ``obpi`` template variables through ``gz specify``'s builder (GHI #1259).
+
+    The parent ADR supplies the checklist item, validated as ``gz specify``
+    validates it; an answered section replaces the one ``gz specify`` infers.
+    """
+    item_answer = answers.get("item", "").strip()
+    if not item_answer.isdigit():
+        msg = f"BLOCKERS:\n- OBPI checklist item must be a number, got {item_answer!r}."
+        raise GzCliError(msg)  # noqa: TRY003
+    item = int(item_answer)
+    adr_content = adr_file.read_text(encoding="utf-8")
+    checklist_items = _validate_parent_adr(adr_content, parent_adr_id, item)
+
+    def _bullets(answer_id: str) -> str | None:
+        items = _answer_lines(answers.get(answer_id, ""))
+        return "\n".join(f"- {entry}" for entry in items) if items else None
+
+    criteria = _answer_lines(answers.get("acceptance_criteria", ""))
+    stem = req_stem(adr_version_term(parent_adr_id), item)
+    acceptance = (
+        "\n".join(f"- [ ] {stem}-{n:02d}: {entry}" for n, entry in enumerate(criteria, 1))
+        if criteria
+        else None
+    )
+    return obpi_template_vars(
+        project_root=project_root,
+        adr_file=adr_file,
+        adr_content=adr_content,
+        parent_adr_id=parent_adr_id,
+        item=item,
+        checklist_item_text=checklist_items[item - 1],
+        lane=answers.get("lane", "lite").strip().lower() or "lite",
+        objective=answers.get("objective", ""),
+        allowed_paths_md=_bullets("allowed_paths"),
+        denied_paths_md=_bullets("denied_paths"),
+        acceptance_criteria_seed=acceptance,
+    )
+
+
 def interview(document_type: str, from_file: str | None = None) -> None:
     """Q&A mode for document creation.
 
@@ -251,8 +308,9 @@ def interview(document_type: str, from_file: str | None = None) -> None:
         canonical_parent = ledger.canonicalize_id(parent_adr)
         adr_file, resolved_parent = resolve_adr_file(project_root, config, canonical_parent)
         template_vars["parent"] = resolved_parent
-        template_vars["parent_adr"] = resolved_parent
-        template_vars["parent_adr_path"] = adr_file.relative_to(project_root).as_posix()
+        template_vars.update(
+            _obpi_vars_from_answers(answers, adr_file, resolved_parent, project_root)
+        )
         resolved_obpi_parent = resolved_parent
         doc_dir = adr_file.parent / "obpis"
         doc_id = answers.get("id", "OBPI-DRAFT")

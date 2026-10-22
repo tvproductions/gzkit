@@ -537,7 +537,7 @@ def _yaml_block_sequence(values: list[str]) -> str:
     return "\n".join(f"  {line}" for line in dumped.strip().splitlines())
 
 
-def _build_obpi_plan(
+def obpi_template_vars(
     *,
     project_root: Path,
     adr_file: Path,
@@ -546,14 +546,22 @@ def _build_obpi_plan(
     item: int,
     checklist_item_text: str,
     lane: str,
-    name: str,
-    title: str,
     objective: str,
-    wbs_spec_summary: str,
-) -> dict[str, Any]:
-    """Build deterministic OBPI artifact plan."""
+    wbs_spec_summary: str = "",
+    allowed_paths_md: str | None = None,
+    denied_paths_md: str | None = None,
+    acceptance_criteria_seed: str | None = None,
+) -> dict[str, str]:
+    """Return every ``obpi`` template variable except ``id`` and ``title``.
+
+    The one builder for both authoring doors, ``gz specify`` and
+    ``gz interview obpi`` (GHI #1259): a variable added to the template is added
+    here once, so neither door renders without it. An authored section passed
+    as ``allowed_paths_md``, ``denied_paths_md`` or ``acceptance_criteria_seed``
+    replaces the inferred one, and the frontmatter lists derive from whichever
+    value the body renders.
+    """
     version = adr_version_term(parent_adr_id)
-    obpi_id = compose_obpi_id(version, item, name)
     lane_cap = lane.capitalize()
     lane_requirements = (
         "All 5 gates required: ADR, TDD, Docs, BDD, Human attestation"
@@ -565,11 +573,14 @@ def _build_obpi_plan(
         if lane == "heavy"
         else "This OBPI remains internal to the promoted ADR implementation scope."
     )
-    acceptance_criteria_seed = _render_obpi_acceptance_seed(version, item, wbs_spec_summary)
-    allowed_paths_md = _infer_allowed_paths(
-        project_root, adr_file, adr_content, checklist_item_text
-    )
-    denied_paths_md = _extract_denied_paths(adr_content)
+    if acceptance_criteria_seed is None:
+        acceptance_criteria_seed = _render_obpi_acceptance_seed(version, item, wbs_spec_summary)
+    if allowed_paths_md is None:
+        allowed_paths_md = _infer_allowed_paths(
+            project_root, adr_file, adr_content, checklist_item_text
+        )
+    if denied_paths_md is None:
+        denied_paths_md = _extract_denied_paths(adr_content)
     requirements_md = _build_item_requirements(checklist_item_text, wbs_spec_summary, adr_content)
     prerequisites_md = _build_discovery_prerequisites(allowed_paths_md)
     existing_code_md = _build_existing_code_checklist(allowed_paths_md, adr_content)
@@ -587,29 +598,60 @@ def _build_obpi_plan(
         [line.strip() for line in verification_specific_md.splitlines() if line.strip()]
     )
 
+    return {
+        "parent_adr": parent_adr_id,
+        "allowlist_yaml": allowlist_yaml,
+        "reqs_yaml": reqs_yaml,
+        "verification_yaml": verification_yaml,
+        "parent_adr_path": adr_file.relative_to(project_root).as_posix(),
+        "item_number": str(item),
+        "checklist_item_text": checklist_item_text,
+        "lane": lane_cap,
+        "lane_rationale": lane_rationale,
+        "objective": objective,
+        "lane_requirements": lane_requirements,
+        "acceptance_criteria_seed": acceptance_criteria_seed,
+        "allowed_paths_md": allowed_paths_md,
+        "denied_paths_md": denied_paths_md,
+        "requirements_md": requirements_md,
+        "prerequisites_md": prerequisites_md,
+        "existing_code_md": existing_code_md,
+        "verification_specific_md": verification_specific_md,
+        "work_breakdown_md": "",
+    }
+
+
+def _build_obpi_plan(
+    *,
+    project_root: Path,
+    adr_file: Path,
+    adr_content: str,
+    parent_adr_id: str,
+    item: int,
+    checklist_item_text: str,
+    lane: str,
+    name: str,
+    title: str,
+    objective: str,
+    wbs_spec_summary: str,
+) -> dict[str, Any]:
+    """Build deterministic OBPI artifact plan."""
+    obpi_id = compose_obpi_id(adr_version_term(parent_adr_id), item, name)
     content = render_template(
         "obpi",
         id=obpi_id,
         title=title,
-        parent_adr=parent_adr_id,
-        allowlist_yaml=allowlist_yaml,
-        reqs_yaml=reqs_yaml,
-        verification_yaml=verification_yaml,
-        parent_adr_path=adr_file.relative_to(project_root).as_posix(),
-        item_number=str(item),
-        checklist_item_text=checklist_item_text,
-        lane=lane_cap,
-        lane_rationale=lane_rationale,
-        objective=objective,
-        lane_requirements=lane_requirements,
-        acceptance_criteria_seed=acceptance_criteria_seed,
-        allowed_paths_md=allowed_paths_md,
-        denied_paths_md=denied_paths_md,
-        requirements_md=requirements_md,
-        prerequisites_md=prerequisites_md,
-        existing_code_md=existing_code_md,
-        verification_specific_md=verification_specific_md,
-        work_breakdown_md="",
+        **obpi_template_vars(
+            project_root=project_root,
+            adr_file=adr_file,
+            adr_content=adr_content,
+            parent_adr_id=parent_adr_id,
+            item=item,
+            checklist_item_text=checklist_item_text,
+            lane=lane,
+            objective=objective,
+            wbs_spec_summary=wbs_spec_summary,
+        ),
     )
     obpi_dir = adr_file.parent / "obpis"
     obpi_file = obpi_dir / f"{obpi_id}.md"
