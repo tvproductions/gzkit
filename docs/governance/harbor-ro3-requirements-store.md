@@ -2,7 +2,7 @@
 
 # RO-3 specification — the requirements store, empty
 
-**2026-10-21. Status: specified; tranche 1 landed (`96e7ed62f`, `cd1afd70f`); tranches 2 to 4 open.** Operator: **g0**. Repair order RO-3 of the
+**2026-10-21. Status: specified; tranche 1 landed (`96e7ed62f`, `cd1afd70f`); tranche 2 landed (`2fa677a76`, `d39752974`, `a43f0220e`); tranches 3 and 4 open.** Operator: **g0**. Repair order RO-3 of the
 [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders): the store that
 [the requirements model](ieee/requirements-model.md) rules, landed as empty structure under
 `data/catalog/`. It populates nothing beyond the ruled family legend, changes no identifier, and
@@ -27,6 +27,11 @@ questions they left open were ruled on 2026-10-21, verbatim selections, booked a
 4. **The forward rule** — *"Advisory until RO-5 (Rec.)"*: a delivery event appended after RO-3 lands
    that names no REQ or outcome is an advisory, and becomes a failure when RO-5's verbs can supply an
    outcome id. Legacy events are never backfilled.
+5. **The lifecycle grammar** — ruled 2026-10-22 when tranche 2 began, *"Return-to-origin (Rec.)"*:
+   the lifecycle moves forward one step, with no skip and no step back; `blocked` or `deferred` is
+   entered from any state `queued` through `verified`, and leaving one returns only to the state it
+   was entered from; reopening and withdrawal wait for RO-5's verbs. The writer reads `from_state`
+   from the ledger, and an outcome with no event is `queued`.
 
 ## The population, measured 2026-10-21
 
