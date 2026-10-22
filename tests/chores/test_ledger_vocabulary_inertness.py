@@ -31,7 +31,7 @@ import importlib.util
 import json
 import tempfile
 import unittest
-from contextlib import redirect_stdout
+from contextlib import redirect_stderr, redirect_stdout
 from io import StringIO
 from pathlib import Path
 from typing import Any
@@ -139,6 +139,16 @@ class TheBaselineOnlyEverDecreases(unittest.TestCase):
     def test_an_undisclosed_type_fails_the_gate_closed(self) -> None:
         root = self._root(declared=["a", "b", "c"], fired=[], baseline=["a", "b"])
         self.assertEqual(self.chore.enforce(root), 3)
+
+    def test_the_breach_names_when_the_re_baseline_refuses(self) -> None:
+        # output-contract: guardrail feedback must state the recovery's own condition,
+        # or an operator reads --write as refusing beside every covered type.
+        root = self._root(declared=["a", "b", "c"], fired=[], baseline=["a", "b"])
+        stderr = StringIO()
+        with redirect_stderr(stderr):
+            self.assertEqual(self.chore.enforce(root), 3)
+        message = " ".join(stderr.getvalue().split())
+        self.assertIn("grown by a type no verified isolated producer covers", message)
 
     def test_a_fully_disclosed_set_passes(self) -> None:
         """Guard: the gate must be satisfiable, or the refusals prove nothing."""
