@@ -113,6 +113,38 @@ class TestInterviewObpiRendersFromCompleteAnswers(unittest.TestCase):
                 and any(Path("design/adr/pre-release/ADR-0.1.0-f/obpis").iterdir())
             )
 
+    def test_both_doors_render_the_same_brief_for_an_unanswered_item(self) -> None:
+        """With no section answered, the interview brief equals `gz specify`'s
+        for the same item, so a template variable cannot reach one door only."""
+        answers = {
+            **self.ANSWERS,
+            "allowed_paths": "",
+            "denied_paths": "",
+            "acceptance_criteria": "",
+        }
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            exit_code, output = self._author(runner, answers, confirm=True)
+            self.assertEqual(exit_code, 0, msg=output)
+            obpis = Path("design/adr/pre-release/ADR-0.1.0-f/obpis")
+            interviewed = (obpis / "OBPI-0.1.0-01-f.md").read_text(encoding="utf-8")
+            (obpis / "OBPI-0.1.0-01-f.md").unlink()
+
+            specified = runner.invoke(
+                main, ["specify", "f", "--parent", "ADR-0.1.0-f", "--item", "1", "--title", "F"]
+            )
+            self.assertEqual(specified.exit_code, 0, msg=specified.output)
+            from_specify = (obpis / "OBPI-0.1.0-01-f.md").read_text(encoding="utf-8")
+
+            # The objective is answered in the interview and read from the ADR by
+            # specify; every other byte comes from the one builder.
+            def _without_objective(text: str) -> str:
+                head, rest = text.split("## Objective", 1)
+                return head + rest.split("## Lane", 1)[1]
+
+            self.assertEqual(_without_objective(interviewed), _without_objective(from_specify))
+
 
 class TestInterviewPrdAndAdrRenderFromCompleteAnswers(unittest.TestCase):
     """The sibling doors render their scaffolding templates from complete answers."""
