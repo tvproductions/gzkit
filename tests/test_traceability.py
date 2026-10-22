@@ -5,18 +5,22 @@ LinkageRecord registration, metadata-only behavior, AST scanning,
 and multi-level coverage rollup computation.
 """
 
+import json
 import tempfile
 import textwrap
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from gzkit.traceability import (
     CoverageReport,
+    _load_known_reqs,
     compute_coverage,
     covers,
     find_covers_in_source,
     get_registry,
     reset_registry,
+    scan_catalog_bindings,
     scan_feature_tree,
     scan_test_tree,
     set_known_reqs,
@@ -1495,6 +1499,126 @@ class TestScanFeatureTree(unittest.TestCase):
             entry = report.entries[0]
             self.assertIn("test_unit_case", entry.covering_tests)
             self.assertIn("Behave cover::behave path", entry.covering_tests)
+
+
+# ---------------------------------------------------------------------------
+# Drydock RO-3 tranche 3: the catalog's REQ-<n> on both bindings
+# ---------------------------------------------------------------------------
+
+
+class TestCoversAcceptsACatalogReq(unittest.TestCase):
+    """``@covers`` takes a catalog ``REQ-<n>`` the catalog holds ("Widen both bindings")."""
+
+    def setUp(self):
+        reset_registry()
+        set_known_reqs(frozenset({"REQ-7", *_TEST_REQS}))
+
+    def tearDown(self):
+        reset_registry()
+
+    def test_a_held_catalog_req_registers_its_linkage(self):
+        @covers("REQ-7")
+        def test_fn():
+            pass
+
+        self.assertEqual([r.target.identifier for r in get_registry()], ["REQ-7"])
+
+    def test_a_catalog_req_the_catalog_does_not_hold_is_refused(self):
+        with self.assertRaises(ValueError):
+
+            @covers("REQ-8")
+            def test_fn():
+                pass
+
+        self.assertEqual(get_registry(), [])
+
+    def test_the_known_set_includes_the_catalogs_reqs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / ".gzkit").mkdir()
+            catalog = root / "data" / "catalog"
+            catalog.mkdir(parents=True)
+            req = {
+                "id": "REQ-3",
+                "member_of": "H1",
+                "statement": "Effect.",
+                "criteria": [{"state_or_input": "s", "required_outcome": "o", "evidence": "e"}],
+                "kind": "BEHAVIOR",
+                "revision": 1,
+                "derives_from": [],
+                "applies_to": [],
+            }
+            for kind, entries in (
+                ("families", []),
+                ("outcomes", []),
+                ("externals", []),
+                ("reqs", [req]),
+            ):
+                payload = {"_doc": "Fixture.", kind: entries}
+                (catalog / f"{kind}.json").write_text(json.dumps(payload), encoding="utf-8")
+            reset_registry()
+            with patch("gzkit.traceability._find_project_root", return_value=root):
+                known = _load_known_reqs()
+        self.assertIn("REQ-3", known)
+
+
+class TestCatalogBindingScanner(unittest.TestCase):
+    """The catalog's own scanner reads ``@covers`` and feature tags for ``REQ-<n>``."""
+
+    def _tree(self, root: Path) -> None:
+        (root / "tests").mkdir()
+        (root / "tests" / "test_x.py").write_text(
+            textwrap.dedent(
+                """
+                class TestX:
+                    @covers("REQ-3")
+                    def test_held(self):
+                        pass
+
+                    @covers("REQ-0.15.0-03-01")
+                    def test_legacy(self):
+                        pass
+                """
+            ),
+            encoding="utf-8",
+        )
+        (root / "features").mkdir()
+        (root / "features" / "x.feature").write_text(
+            textwrap.dedent(
+                """
+                @H1 @smoke
+                Feature: Resume
+
+                  @REQ-3
+                  Scenario: a resume names its predecessor
+                    Given a handoff
+
+                  @REQ-0.15.0-03-01
+                  Scenario: legacy
+                    Given a brief
+                """
+            ),
+            encoding="utf-8",
+        )
+
+    def test_it_reads_covers_feature_tags_and_scenario_tags_for_catalog_reqs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._tree(root)
+            bindings = scan_catalog_bindings(root)
+        self.assertEqual(bindings.covered_reqs, frozenset({"REQ-3"}))
+        self.assertEqual(bindings.feature_tags, {"features/x.feature": frozenset({"H1", "smoke"})})
+        self.assertEqual(bindings.scenario_reqs, {"features/x.feature": frozenset({"REQ-3"})})
+
+    def test_the_legacy_scanners_pass_a_catalog_req_over_silently(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._tree(root)
+            with self.assertNoLogs("gzkit.traceability", level="WARNING"):
+                tests = scan_test_tree(root / "tests")
+                features = scan_feature_tree(root / "features")
+        targets = {r.target.identifier for r in tests + features}
+        self.assertEqual(targets, {"REQ-0.15.0-03-01"})
 
 
 if __name__ == "__main__":

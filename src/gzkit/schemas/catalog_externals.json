@@ -1,0 +1,59 @@
+{
+  "$defs": {
+    "External": {
+      "additionalProperties": false,
+      "description": "One external boundary an outcome may depend on, as `external:<slug>`.\n\nThe roster is the operator's \"Declared prefixes (Rec.)\" ruling of 2026-10-22:\na boundary is named only if the catalog declares it.",
+      "properties": {
+        "slug": {
+          "description": "The name after `external:`.",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "title": "Slug",
+          "type": "string"
+        },
+        "name": {
+          "description": "The boundary's name.",
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "scope": {
+          "description": "What crosses it, one sentence.",
+          "minLength": 1,
+          "title": "Scope",
+          "type": "string"
+        }
+      },
+      "required": [
+        "slug",
+        "name",
+        "scope"
+      ],
+      "title": "External",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "`data/catalog/externals.json`.",
+  "properties": {
+    "_doc": {
+      "description": "What the file is.",
+      "minLength": 1,
+      "title": "Doc",
+      "type": "string"
+    },
+    "externals": {
+      "description": "The external boundaries.",
+      "items": {
+        "$ref": "#/$defs/External"
+      },
+      "title": "Externals",
+      "type": "array"
+    }
+  },
+  "required": [
+    "_doc",
+    "externals"
+  ],
+  "title": "ExternalsFile",
+  "type": "object"
+}

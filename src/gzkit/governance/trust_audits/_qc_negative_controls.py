@@ -1451,9 +1451,99 @@ def _build_catalog() -> Path:
     """
     catalog = _mkroot("catalog") / "data" / "catalog"
     family = {"code": "H", "band": "product", "name": "Session continuity", "scope": "One."}
-    for kind, entries in (("families", [family, family]), ("outcomes", []), ("reqs", [])):
+    for kind, entries in (
+        ("families", [family, family]),
+        ("outcomes", []),
+        ("reqs", []),
+        ("externals", []),
+    ):
         _write(catalog / f"{kind}.json", json.dumps({"_doc": "Negative control.", kind: entries}))
     return catalog.parents[1]
+
+
+def _catalog_project(slug: str, outcomes: list[dict], reqs: list[dict]) -> Path:
+    """Write a catalog project: one family H, the files, a two-FR PRD and the gate lanes."""
+    root = _mkroot(slug)
+    family = {"code": "H", "band": "product", "name": "Session continuity", "scope": "One."}
+    for kind, entries in (
+        ("families", [family]),
+        ("outcomes", outcomes),
+        ("reqs", reqs),
+        ("externals", []),
+    ):
+        payload = json.dumps({"_doc": "Negative control.", kind: entries})
+        _write(root / "data" / "catalog" / f"{kind}.json", payload)
+    _write(
+        root / "design" / "prd" / "PRD-NC-1.0.0.md",
+        "## 6. Functional Requirements\n\n### FR-001: One\n\nOne.\n\n### FR-002: Two\n\nTwo.\n",
+    )
+    _write(root / ".gzkit" / "manifest.json", json.dumps({"gates": {"heavy": [1, 2, 3, 4, 5]}}))
+    return root
+
+
+def _nc_outcome(code: str, **fields: object) -> dict[str, object]:
+    base: dict[str, object] = {
+        "code": code,
+        "statement": "Negative control.",
+        "owner": "g0",
+        "user_facing": False,
+        "governed_by": [],
+        "depends_on": [],
+        "feature": None,
+        "retired": False,
+    }
+    return base | fields
+
+
+def _nc_req(req_id: str, member_of: str, **fields: object) -> dict[str, object]:
+    base: dict[str, object] = {
+        "id": req_id,
+        "member_of": member_of,
+        "statement": "Negative control.",
+        "criteria": [{"state_or_input": "s", "required_outcome": "o", "evidence": "e"}],
+        "kind": "SUPPORT",
+        "revision": 1,
+        "derives_from": ["FR-001"],
+        "applies_to": [],
+    }
+    return base | fields
+
+
+def _build_catalog_edges() -> Path:
+    """Plant one break per edge check — each MUST fire (RO-3 tranche 3).
+
+    H1 depends on an outcome the catalog lacks and is governed by an ADR nothing
+    records; REQ-1 is a member of a missing outcome; REQ-2 derives from no live FR.
+    H2's dependency on H1 and its gate are valid decoys.
+    """
+    outcomes = [
+        _nc_outcome("H1", depends_on=["H9"], governed_by=["ADR-9.9.9"]),
+        _nc_outcome("H2", depends_on=["H1", "gate:5"]),
+    ]
+    reqs = [_nc_req("REQ-1", "H7"), _nc_req("REQ-2", "H1", derives_from=["FR-099"])]
+    return _catalog_project("catalog-edges", outcomes, reqs)
+
+
+def _build_catalog_coverage() -> Path:
+    """Leave FR-002 with no deriving REQ — the coverage report MUST name it (RO-3)."""
+    return _catalog_project("catalog-coverage", [_nc_outcome("H1")], [_nc_req("REQ-1", "H1")])
+
+
+def _build_catalog_bdd() -> Path:
+    """Plant each BDD alignment break — each MUST fire (RO-3 tranche 3).
+
+    User-facing H1 names no feature; user-facing H2's feature carries @H2, and its
+    BEHAVIOR REQ-1 has neither a tagged scenario nor an `@covers` test. REQ-2 is a
+    SUPPORT REQ under H2, a decoy that needs neither binding.
+    """
+    outcomes = [
+        _nc_outcome("H1", user_facing=True),
+        _nc_outcome("H2", user_facing=True, feature="features/h2.feature"),
+    ]
+    reqs = [_nc_req("REQ-1", "H2", kind="BEHAVIOR"), _nc_req("REQ-2", "H2")]
+    root = _catalog_project("catalog-bdd", outcomes, reqs)
+    _write(root / "features" / "h2.feature", "@H2\nFeature: H2\n\n  Scenario: s\n    Given g\n")
+    return root
 
 
 def _build_brief_structure() -> Path:
@@ -2052,6 +2142,24 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         _build_catalog,
         _ep._ep_catalog,
         "Family codes H appear more than once",
+    ),
+    (
+        "requirements-catalog-edges",
+        _build_catalog_edges,
+        _ep._ep_catalog_edges,
+        "depends_on names nothing it may: H1 -> H9",
+    ),
+    (
+        "requirements-catalog-coverage",
+        _build_catalog_coverage,
+        _ep._ep_catalog_coverage,
+        "1 of 2 PRD needs have no deriving REQ: FR-002",
+    ),
+    (
+        "requirements-catalog-bdd",
+        _build_catalog_bdd,
+        _ep._ep_catalog_bdd,
+        "BEHAVIOR REQs REQ-1 of H2 have no @covers test",
     ),
     # Admit half: a recorded ceiling, exercised at a brief past the bound (GHI #1196).
     (

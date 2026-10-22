@@ -2488,6 +2488,7 @@ Validates the requirements catalog under `data/catalog/`, the store
 | `families.json` | The family legend, decision 8.3's eleven families in their product and common bands |
 | `outcomes.json` | Outcomes, each a member of one family (empty until RO-5's verbs author them) |
 | `reqs.json` | `REQ-<n>` requirements, each a member of one outcome (empty until RO-5's verbs author them) |
+| `externals.json` | The roster of external boundaries an outcome may depend on as `external:<slug>` (empty until one is needed) |
 
 The structure checks:
 
@@ -2498,8 +2499,24 @@ The structure checks:
   outcome included, since a retired code is kept so it is never reused;
 - an outcome's family letter is in the legend.
 
-The edge checks, the coverage report, BDD alignment, the freeze lock and the
-forward rule are the later RO-3 tranches and do not run yet.
+Once the structure holds, the edge checks (RO-3 tranche 3):
+
+- `depends_on`: each entry is an outcome code, `gate:<n>` for a gate
+  `.gzkit/manifest.json` declares, or `external:<slug>` from `externals.json`,
+  and the dependencies between outcomes are acyclic;
+- `governed_by`: each id resolves to an ADR through the identity seam;
+- `member_of`: each REQ names an outcome `outcomes.json` holds;
+- `derives_from`: each entry is a live FR of the PRD under the configured PRD
+  directory (an FR whose heading is followed by `**Retired` is not live) or a
+  section 7 attribute, named `NFR-<slug>` from its heading.
+
+BDD alignment: a user-facing outcome names a feature file carrying its code as a
+feature tag, and each BEHAVIOR REQ under it has a scenario tagged with its id in
+that file and an `@covers` test.
+
+The coverage report lists the PRD needs no REQ derives from. It is advisory and
+never changes the exit code. The freeze lock is RO-5's; the forward rule is RO-3
+tranche 4.
 
 **Usage:**
 
@@ -2511,6 +2528,7 @@ gz validate --catalog
 
 ```console
 $ uv run gz validate --catalog
+[advisory] catalog-coverage: 36 of 36 PRD needs have no deriving REQ: FR-001, FR-002, FR-003, FR-005, FR-005a, FR-005b, FR-006, FR-007, FR-008, FR-009, FR-010, FR-011, FR-012, FR-013, FR-014, FR-015, FR-016, FR-017, FR-018, FR-019, FR-020, FR-021, FR-022, FR-023, FR-024, FR-025, FR-026, FR-027, FR-028, FR-029, FR-030, FR-031, NFR-performance, NFR-determinism, NFR-explainability, NFR-accessibility
 Validated: catalog
 
 ✓ All validations passed (1 scopes).
@@ -2520,8 +2538,8 @@ Validated: catalog
 
 | Code | Meaning | Recovery |
 |------|---------|----------|
-| 0 | The catalog matches its schemas and structure checks | — |
-| 3 | A catalog file is missing, unparseable or off its schema, repeats a code or id, or holds an outcome in a family the legend lacks | Correct the file the finding names, then re-run `gz validate --catalog` |
+| 0 | The catalog matches its schemas, structure, edge and BDD alignment checks | — |
+| 3 | A catalog file is missing, unparseable or off its schema, repeats a code or id, holds an outcome in a family the legend lacks, has an edge that does not resolve or a dependency cycle, or a user-facing outcome out of BDD alignment | Correct the file the finding names, then re-run `gz validate --catalog` |
 
 Runs in the default `gz check` pipeline as **Requirements catalog**.
 
@@ -3070,7 +3088,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--mx-hardening` | opt-in | No MX session is dangling or over max-open; a session past its lease and its advisory debt are announced (GHI #1257) |
 | `--id-seam` | opt-in | No id grammar or spelling-derived parent outside the identity seam beyond its shrink-only baseline, and every cited id resolves (drydock RO-2) |
 | `--astral-discipline` | opt-in | Each fact declared once where uv, Ruff and ty read it: no restated Python version, unchecked lock, tool outside the lock or unregistered non-Astral tool beyond the shrink-only baseline (drydock RO-9) |
-| `--catalog` | opt-in | The requirements catalog under `data/catalog/` matches its schemas and structure checks (drydock RO-3) |
+| `--catalog` | opt-in | The requirements catalog under `data/catalog/` matches its schemas, structure, edge and BDD alignment checks (drydock RO-3) |
 | `--brief-structure` | opt-in | Every live OBPI brief carries valid structured frontmatter (`allowlist`, `reqs`, `verification`) instead of falling back to `LegacyBriefShape` |
 | `--changelog` | opt-in | Hermetic structural audit of `CHANGELOG.md` against `.gzkit/templates/changelog.md`: version headers and section headings (GHI #685) |
 | `--config-registry` | opt-in | Every top-level registry under `data/` is declared, with an owner and a loader (GHI #929) |

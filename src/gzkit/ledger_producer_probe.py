@@ -279,6 +279,7 @@ def _seat_catalog(root: Path) -> Catalog:
                 "applies_to": [],
             }
         ],
+        "externals": [],
     }
     for kind, entries in files.items():
         path = registry_path(root, CATALOG_FILES[kind])

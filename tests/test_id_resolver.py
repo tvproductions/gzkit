@@ -9,6 +9,7 @@ an id's spelling. The fixture is the reused ``OBPI-0.28.0-01`` slot: parked
 
 from __future__ import annotations
 
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -18,6 +19,7 @@ from typing import Any
 from gzkit.core.id_resolver import (
     IdentityContext,
     IdResolutionError,
+    ParentLink,
     load_identity_context,
     parent_of,
     resolve,
@@ -230,6 +232,64 @@ class TestLoadIdentityContext(unittest.TestCase):
         self.assertEqual(context.req_owners, {"REQ-0.6.0-01-01": ("OBPI-0.6.0-01-b",)})
         self.assertEqual(context.task_obpis, {"TASK-0.6.0-01-01-01": "OBPI-0.6.0-01"})
         self.assertEqual(resolve("OBPI-0.6.0-01-a", context).canonical_id, "OBPI-0.6.0-01-b")
+
+
+def _write_catalog(root: Path, reqs: list[dict[str, Any]]) -> None:
+    catalog = root / "data" / "catalog"
+    catalog.mkdir(parents=True)
+    for kind, entries in (("families", []), ("outcomes", []), ("externals", []), ("reqs", reqs)):
+        payload = {"_doc": "Fixture.", kind: entries}
+        (catalog / f"{kind}.json").write_text(json.dumps(payload), encoding="utf-8")
+
+
+class TestCatalogReqs(unittest.TestCase):
+    """RO-3 tranche 3: a ``REQ-<n>`` resolves from the catalog; its parent is its outcome."""
+
+    def test_a_catalog_req_names_its_outcome_from_member_of(self) -> None:
+        context = _context(catalog_members={"REQ-7": "H1.4"})
+        resolution = resolve("REQ-7", context)
+        self.assertEqual((resolution.canonical_id, resolution.kind), ("REQ-7", IdKind.REQ))
+        self.assertEqual(resolution.state, "active")
+        self.assertEqual(
+            parent_of("REQ-7", context), ParentLink(parent_id="H1.4", source="catalog")
+        )
+
+    def test_a_catalog_req_the_catalog_does_not_hold_names_nothing(self) -> None:
+        context = _context(catalog_members={"REQ-7": "H1.4"})
+        with self.assertRaises(IdResolutionError):
+            resolve("REQ-8", context)
+        with self.assertRaises(IdResolutionError):
+            parent_of("REQ-8", context)
+
+    def test_the_owner_is_never_read_from_a_brief_or_the_spelling(self) -> None:
+        """A brief listing the id does not make it a catalog REQ's owner."""
+        context = _context(req_owners={"REQ-7": (_LIVE,)})
+        with self.assertRaises(IdResolutionError):
+            resolve("REQ-7", context)
+
+    def test_the_loader_reads_member_of_from_the_catalog(self) -> None:
+        ledger = SimpleNamespace(get_artifact_graph=dict, read_all=list)
+        req = {
+            "id": "REQ-3",
+            "member_of": "H1",
+            "statement": "Effect.",
+            "criteria": [{"state_or_input": "s", "required_outcome": "o", "evidence": "e"}],
+            "kind": "BEHAVIOR",
+            "revision": 1,
+            "derives_from": [],
+            "applies_to": [],
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_catalog(root, [req])
+            context = load_identity_context(ledger, root, "docs/design")
+        self.assertEqual(context.catalog_members, {"REQ-3": "H1"})
+
+    def test_a_project_without_a_catalog_has_no_catalog_reqs(self) -> None:
+        ledger = SimpleNamespace(get_artifact_graph=dict, read_all=list)
+        with tempfile.TemporaryDirectory() as tmp:
+            context = load_identity_context(ledger, Path(tmp), "docs/design")
+        self.assertEqual(context.catalog_members, {})
 
 
 if __name__ == "__main__":

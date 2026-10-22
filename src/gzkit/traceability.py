@@ -4,6 +4,12 @@ Provides the ``@covers("REQ-X.Y.Z-NN-MM")`` decorator (OBPI-01) and the
 canonical scanner used by every coverage-aware command (gz drift, gz covers,
 gz adr audit-check). Both decorator-call and docstring/comment forms of
 ``@covers`` are detected by a single regex utility (see #120).
+
+A catalog ``REQ-<n>`` (drydock RO-3 tranche 3, operator "Widen both bindings
+(Rec.)") is accepted by ``@covers`` when ``data/catalog/reqs.json`` holds it, and
+read by :func:`scan_catalog_bindings` with its feature tags. The legacy scanners
+pass it over silently, so every reader of their ``REQ-<semver>-NN-MM`` records
+is unchanged.
 """
 
 from __future__ import annotations
@@ -20,7 +26,9 @@ from typing import TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from gzkit.core.models import REQ_ID_BODY_PLAIN, adr_semver, obpi_parts
+from gzkit.core.models import CATALOG_REQ_ID_BODY, REQ_ID_BODY_PLAIN, adr_semver, obpi_parts
+from gzkit.models.catalog import CATALOG_FILES, load_catalog
+from gzkit.registries import registry_path
 from gzkit.triangle import (
     DiscoveredReq,
     EdgeType,
@@ -46,6 +54,9 @@ _TESTABLE_KIND = ReqTestability.CODE
 # The optional group ``(?:\(\s*['"])?`` handles the decorator-call wrapper;
 # the leading ``\s*`` handles the whitespace-separated docstring form.
 _COVERS_REF_PATTERN = re.compile(rf"@covers\s*(?:\(\s*['\"])?({REQ_ID_BODY_PLAIN})")
+
+#: A catalog REQ id, the whole string (RO-3 tranche 3).
+_CATALOG_REQ = re.compile(rf"^{CATALOG_REQ_ID_BODY}$")
 
 
 def find_covers_in_source(content: str) -> list[tuple[str, int]]:
@@ -177,14 +188,22 @@ def _load_known_reqs() -> frozenset[str]:
         _KNOWN_REQS = frozenset()
         return _KNOWN_REQS
 
+    catalog_reqs = _catalog_req_ids(root)
     adr_dir = root / "docs" / "design" / "adr"
     if not adr_dir.is_dir():
-        _KNOWN_REQS = frozenset()
+        _KNOWN_REQS = catalog_reqs
         return _KNOWN_REQS
 
     discovered = scan_briefs(adr_dir)
-    _KNOWN_REQS = frozenset(str(d.entity.id) for d in discovered)
+    _KNOWN_REQS = frozenset(str(d.entity.id) for d in discovered) | catalog_reqs
     return _KNOWN_REQS
+
+
+def _catalog_req_ids(root: pathlib.Path) -> frozenset[str]:
+    """Return the REQ ids the catalog holds; a project that keeps no catalog has none."""
+    if not registry_path(root, CATALOG_FILES["reqs"]).is_file():
+        return frozenset()
+    return frozenset(req.id for req in load_catalog(root).reqs)
 
 
 # ---------------------------------------------------------------------------
@@ -207,15 +226,17 @@ def covers(req_id_str: str) -> Callable[[_F], _F]:
 
     The decorated function's behavior is unchanged -- @covers is metadata-only.
 
+    A catalog ``REQ-<n>`` is accepted when ``data/catalog/reqs.json`` holds it.
+
     Raises:
         ValueError: If *req_id_str* has an invalid format or does not exist
-            in the extracted brief-defined REQ set.
+            in the extracted brief-defined REQ set or the catalog.
 
     """
-    req_id = ReqId.parse(req_id_str)
+    req_id = req_id_str if _CATALOG_REQ.match(req_id_str) else str(ReqId.parse(req_id_str))
 
     known = _load_known_reqs()
-    if str(req_id) not in known:
+    if req_id not in known:
         msg = f"Unknown REQ identifier: {req_id_str!r} not found in extracted briefs"
         raise ValueError(msg)
 
@@ -236,7 +257,7 @@ def covers(req_id_str: str) -> Callable[[_F], _F]:
             ),
             target=VertexRef(
                 vertex_type=VertexType.SPEC,
-                identifier=str(req_id),
+                identifier=req_id,
             ),
             edge_type=EdgeType.COVERS,
         )
@@ -321,7 +342,7 @@ def scan_test_tree(test_dir: pathlib.Path) -> list[LinkageRecord]:
         for node in _iter_test_functions(tree):
             for deco in node.decorator_list:
                 req_str = _extract_covers_arg(deco)
-                if req_str is None:
+                if req_str is None or _CATALOG_REQ.match(req_str):
                     continue
 
                 try:
@@ -519,6 +540,69 @@ def _append_feature_record(
             evidence_line=line_num,
         )
     )
+
+
+class CatalogBindings(BaseModel):
+    """The two BDD bindings of catalog REQs, and the tags on each feature file."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    feature_tags: dict[str, frozenset[str]] = Field(
+        ..., description="Feature file (root-relative, posix) -> its feature-level tags, no `@`"
+    )
+    scenario_reqs: dict[str, frozenset[str]] = Field(
+        ..., description="Feature file -> the catalog REQ ids tagged on its scenarios"
+    )
+    covered_reqs: frozenset[str] = Field(
+        ..., description="Catalog REQ ids an `@covers` decorator names in the tests"
+    )
+
+
+def scan_catalog_bindings(project_root: pathlib.Path) -> CatalogBindings:
+    """Read the catalog REQs' ``@covers`` tests and the tags of every feature file."""
+    covered: set[str] = set()
+    tests_dir = project_root / "tests"
+    for py_file in sorted(tests_dir.rglob("*.py")) if tests_dir.is_dir() else []:
+        try:
+            tree = ast.parse(py_file.read_text(encoding="utf-8"), filename=str(py_file))
+        except SyntaxError, UnicodeDecodeError:
+            continue
+        for node in _iter_test_functions(tree):
+            for deco in node.decorator_list:
+                arg = _extract_covers_arg(deco)
+                if arg is not None and _CATALOG_REQ.match(arg):
+                    covered.add(arg)
+    feature_tags: dict[str, frozenset[str]] = {}
+    scenario_reqs: dict[str, frozenset[str]] = {}
+    features_dir = project_root / "features"
+    for path in sorted(features_dir.rglob("*.feature")) if features_dir.is_dir() else []:
+        key = path.relative_to(project_root).as_posix()
+        feature_tags[key], scenario_reqs[key] = _catalog_feature_tags(
+            path.read_text(encoding="utf-8")
+        )
+    return CatalogBindings(
+        feature_tags=feature_tags, scenario_reqs=scenario_reqs, covered_reqs=frozenset(covered)
+    )
+
+
+def _catalog_feature_tags(source: str) -> tuple[frozenset[str], frozenset[str]]:
+    """Return a feature file's feature-level tags and the catalog REQs on its scenarios."""
+    feature: set[str] = set()
+    scenarios: set[str] = set()
+    pending: list[str] = []
+    for line in source.splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        if _is_tag_only_line(stripped):
+            pending.extend(token.removeprefix("@") for token in stripped.split())
+            continue
+        if _FEATURE_HEADER_PATTERN.match(line):
+            feature.update(pending)
+        elif _SCENARIO_HEADER_PATTERN.match(line):
+            scenarios.update(tag for tag in pending if _CATALOG_REQ.match(tag))
+        pending = []
+    return frozenset(feature), frozenset(scenarios)
 
 
 def _extract_covers_arg(node: ast.expr) -> str | None:

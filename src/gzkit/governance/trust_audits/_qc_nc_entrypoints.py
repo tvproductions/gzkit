@@ -640,6 +640,38 @@ def _ep_catalog(root: Path) -> list[ValidationError]:
     return errors
 
 
+def _ep_catalog_fields(root: Path, planted: set[str]) -> list[ValidationError]:
+    """Return the findings only when they are exactly the planted cases, one per check."""
+    from gzkit.governance.trust_audits.catalog import audit_catalog  # noqa: PLC0415
+
+    errors = audit_catalog(root)
+    return errors if {str(error.field) for error in errors} == planted else []
+
+
+def _ep_catalog_edges(root: Path) -> list[ValidationError]:
+    """Each edge check must fire on its planted break; a missing or extra one is no catch."""
+    return _ep_catalog_fields(root, {"depends_on", "governed_by", "member_of", "derives_from"})
+
+
+def _ep_catalog_bdd(root: Path) -> list[ValidationError]:
+    """Each BDD alignment check must fire on its planted break, and nothing else."""
+    return _ep_catalog_fields(root, {"feature", "scenario", "covers"})
+
+
+def _ep_catalog_coverage(root: Path) -> list[str]:
+    """Return the coverage advisory, and nothing when the audit also found something."""
+    import io  # noqa: PLC0415
+    from contextlib import redirect_stderr  # noqa: PLC0415
+
+    from gzkit.advisory import advisory_lines  # noqa: PLC0415
+    from gzkit.governance.trust_audits.catalog import audit_catalog  # noqa: PLC0415
+
+    stream = io.StringIO()
+    with redirect_stderr(stream):
+        errors = audit_catalog(root)
+    return [] if errors else advisory_lines(stream.getvalue())
+
+
 def _ep_astral_discipline(root: Path) -> list[ValidationError]:
     """Return the finding against the new setup-python step, and nothing when the decoy fired."""
     from gzkit.governance.trust_audits.astral_discipline import (  # noqa: PLC0415

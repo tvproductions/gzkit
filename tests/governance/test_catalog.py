@@ -84,6 +84,12 @@ class _Tree(unittest.TestCase):
         self.write("families", [_family("H"), _family("G", "common")])
         self.write("outcomes", [_outcome("H1")])
         self.write("reqs", [_req("REQ-1")])
+        self.write("externals", [])
+        # The REQ derives from FR-001, which tranche 3's derives_from check reads
+        # from the live PRD under the configured PRD directory.
+        prd = self.root / "design" / "prd" / "PRD-FIXTURE-1.0.0.md"
+        prd.parent.mkdir(parents=True)
+        prd.write_text("## 6. Requirements\n\n### FR-001: Init\n\nInit.\n", encoding="utf-8")
 
     def write(self, kind: str, entries: list[object]) -> None:
         payload = {"_doc": "Fixture catalog.", kind: entries}
@@ -153,12 +159,12 @@ class TestSchemas(unittest.TestCase):
             with self.subTest(kind=kind):
                 self.assertEqual(load_schema(f"catalog_{kind}"), schema)
 
-    def test_the_three_kinds_are_the_three_files(self):
+    def test_each_kind_is_one_file(self):
         self.assertEqual(set(catalog_json_schemas()), set(CATALOG_FILES))
 
 
 class TestStructure(_Tree):
-    """`audit_catalog` runs the tranche-1 structure checks and nothing else."""
+    """`audit_catalog`'s tranche-1 structure checks; the edges are tranche 3's tests."""
 
     def test_a_valid_catalog_passes(self):
         self.assertEqual(audit_catalog(self.root), [])
@@ -264,6 +270,7 @@ class TestDispatch(unittest.TestCase):
                 ("families", [_family("H", band)]),
                 ("outcomes", []),
                 ("reqs", []),
+                ("externals", []),
             ):
                 text = json.dumps({"_doc": "Fixture catalog.", kind: entries})
                 (catalog / f"{kind}.json").write_text(text, encoding="utf-8")
@@ -325,6 +332,7 @@ class TestNegativeControl(unittest.TestCase):
                 ("families", [_family("H"), _family("H")]),
                 ("outcomes", []),
                 ("reqs", []),
+                ("externals", []),
             ):
                 text = json.dumps({"_doc": "Fixture catalog.", kind: entries})
                 (catalog / f"{kind}.json").write_text(text, encoding="utf-8")

@@ -1,0 +1,4 @@
+{
+  "_doc": "The external boundaries an outcome in data/catalog/outcomes.json may depend on, named there as `external:<slug>` (docs/governance/harbor-ro3-requirements-store.md, operator ruling 2026-10-22, \"Declared prefixes (Rec.)\"). A boundary is named only if this roster declares it. Empty until an outcome needs one. Shape: src/gzkit/schemas/catalog_externals.json; read by gzkit/models/catalog.py; witnessed by `gz validate --catalog`.",
+  "externals": []
+}

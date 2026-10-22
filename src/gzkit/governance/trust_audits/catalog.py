@@ -8,22 +8,37 @@
   retired code is kept precisely so it is never reused;
 * an outcome's family letter present in the legend.
 
-The edge checks (`depends_on`, `governed_by`, `member_of`, `derives_from`), the
-coverage report, BDD alignment, the freeze lock and the forward rule belong to
-tranches 3 and 4 and are not run here.
+Once the structure holds, tranche 3's edge checks, coverage report and BDD
+alignment run from `gzkit.governance.trust_audits.catalog_edges`, over the PRD,
+the manifest's gates, the ledger, the features and the tests this module reads.
+The forward rule is tranche 4's; the freeze lock is RO-5's.
 """
 
 from __future__ import annotations
 
+import json
 from collections import Counter
+from collections.abc import Callable
 from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
+from gzkit.advisory import emit_advisory
+from gzkit.config import GzkitConfig
+from gzkit.core.id_resolver import IdResolutionError, load_identity_context, resolve
+from gzkit.core.models import IdKind
 from gzkit.core.validation_rules import ValidationError
+from gzkit.governance.trust_audits.catalog_edges import (
+    bdd_findings,
+    coverage_gaps,
+    edge_findings,
+    prd_needs,
+)
+from gzkit.ledger import Ledger
 from gzkit.models.catalog import CATALOG_FILES, Catalog, load_catalog
 from gzkit.registries import RegistryError, load_registry
 from gzkit.schemas import load_schema
+from gzkit.traceability import scan_catalog_bindings
 
 _TYPE = "catalog"
 _RECOVER = (
@@ -93,9 +108,64 @@ def _structure_findings(catalog: Catalog) -> list[ValidationError]:
     return errors
 
 
+def _needs(project_root: Path, config: GzkitConfig) -> tuple[str, ...]:
+    """Read the live needs from every PRD under the configured PRD directory."""
+    prd_dir = project_root / config.paths.prd
+    paths = sorted(prd_dir.glob("PRD-*.md")) if prd_dir.is_dir() else []
+    return tuple(need for path in paths for need in prd_needs(path.read_text(encoding="utf-8")))
+
+
+def _gates(project_root: Path, config: GzkitConfig) -> frozenset[int]:
+    """Read the gates the manifest declares across its lanes."""
+    manifest = project_root / config.paths.manifest
+    if not manifest.is_file():
+        return frozenset()
+    lanes = json.loads(manifest.read_text(encoding="utf-8")).get("gates", {})
+    return frozenset(gate for gates in lanes.values() for gate in gates)
+
+
+def _governs(project_root: Path, config: GzkitConfig) -> Callable[[str], bool]:
+    """Return a check that an id resolves to an ADR through the RO-2 seam, read once."""
+    context = None
+
+    def governs(identifier: str) -> bool:
+        nonlocal context
+        if context is None:
+            ledger = Ledger(project_root / config.paths.ledger)
+            context = load_identity_context(ledger, project_root, config.paths.design_root)
+        try:
+            return resolve(identifier, context).kind is IdKind.ADR
+        except IdResolutionError:
+            return False
+
+    return governs
+
+
 def audit_catalog(project_root: Path) -> list[ValidationError]:
-    """Run the catalog structure checks; any finding makes the caller exit 3."""
+    """Run the catalog checks; any finding makes the caller exit 3.
+
+    The coverage report is advisory: it is announced and never a finding.
+    """
     errors = _schema_findings(project_root)
     if errors:
         return errors
-    return _structure_findings(load_catalog(project_root))
+    catalog = load_catalog(project_root)
+    errors = _structure_findings(catalog)
+    if errors:
+        return errors
+    config = GzkitConfig.load(project_root / ".gzkit.json")
+    needs = _needs(project_root, config)
+    errors = edge_findings(
+        catalog,
+        needs=frozenset(needs),
+        gates=_gates(project_root, config),
+        governs=_governs(project_root, config),
+    )
+    if any(outcome.user_facing for outcome in catalog.outcomes):
+        errors += bdd_findings(catalog, scan_catalog_bindings(project_root))
+    if gaps := coverage_gaps(catalog, needs):
+        emit_advisory(
+            f"catalog-coverage: {len(gaps)} of {len(needs)} PRD needs have no deriving "
+            f"REQ: {', '.join(gaps)}"
+        )
+    return errors

@@ -52,6 +52,9 @@ QC_CLAIM_POPULATIONS: dict[str, Callable[[], Sequence[str]] | str] = {
     # Reads the three catalog files the store names; the entries are whatever the
     # files hold, never a set another surface declares (drydock RO-3).
     "requirements-catalog": POPULATION_NONE,
+    "requirements-catalog-edges": POPULATION_NONE,
+    "requirements-catalog-coverage": POPULATION_NONE,
+    "requirements-catalog-bdd": POPULATION_NONE,
     # Reads the ledger's open MX sessions; the members are whatever sessions are
     # open, never a set another surface declares (GHI #1257).
     "mx-hardening": POPULATION_NONE,

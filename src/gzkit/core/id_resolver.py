@@ -16,6 +16,9 @@ to answer for itself from an id's spelling:
   Deriving a parent from an id's spelling survives only in
   :func:`_parent_by_spelling`, the one marked fallback, and every link it makes
   says ``source="spelling"`` so it can be counted while RO-3's ``member_of`` lands.
+- A catalog ``REQ-<n>`` (drydock RO-3 tranche 3) resolves only from the catalog,
+  and its parent is the outcome its ``member_of`` names (``source="catalog"``).
+  Its owner is never read from a brief or from its spelling.
 
 The resolver is pure over an :class:`IdentityContext`; :func:`load_identity_context`
 takes the ledger and the project root as parameters and is the only reader of
@@ -24,6 +27,7 @@ either (`hexagonal-architecture.md` rule 4).
 
 from __future__ import annotations
 
+import re
 from collections.abc import Iterable, Mapping
 from pathlib import Path
 from typing import Any, Literal, Protocol
@@ -31,9 +35,11 @@ from typing import Any, Literal, Protocol
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.artifact_prefix import active_prefix_matches
-from gzkit.core.models import IdKind, id_kind, spelled_parent
+from gzkit.core.models import CATALOG_REQ_ID_BODY, IdKind, id_kind, spelled_parent
 from gzkit.frontmatter import read_frontmatter
+from gzkit.models.catalog import CATALOG_FILES, load_catalog
 from gzkit.obpi_lifecycle import fold_renames
+from gzkit.registries import registry_path
 from gzkit.triangle import extract_reqs_from_brief
 
 __all__ = [
@@ -50,6 +56,8 @@ __all__ = [
 ]
 
 State = Literal["active", "parked", "withdrawn"]
+
+_CATALOG_REQ = re.compile(rf"^{CATALOG_REQ_ID_BODY}$")
 
 
 class IdResolutionError(ValueError):
@@ -79,8 +87,8 @@ class ParentLink(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     parent_id: str = Field(..., description="The parent's id")
-    source: Literal["ledger", "brief", "spelling"] = Field(
-        ..., description="A stored field (ledger, brief) or the marked spelling fallback"
+    source: Literal["ledger", "brief", "catalog", "spelling"] = Field(
+        ..., description="A stored field (ledger, brief, catalog) or the marked spelling fallback"
     )
 
 
@@ -99,6 +107,9 @@ class IdentityContext(BaseModel):
     )
     task_obpis: dict[str, str] = Field(
         default_factory=dict, description="Started TASK id -> its task_started obpi_id"
+    )
+    catalog_members: dict[str, str] = Field(
+        default_factory=dict, description="Catalog REQ-<n> -> the outcome its member_of names"
     )
 
 
@@ -180,7 +191,21 @@ def _req_owner(identifier: str, context: IdentityContext) -> tuple[Resolution, P
     raise IdResolutionError(identifier, msg)
 
 
+def _catalog_outcome(identifier: str, context: IdentityContext) -> str:
+    """Return the outcome a catalog REQ is a member of; the catalog is its only store."""
+    outcome = context.catalog_members.get(identifier)
+    if outcome is None:
+        msg = f"{identifier} names no REQ in data/catalog/reqs.json"
+        raise IdResolutionError(identifier, msg)
+    return outcome
+
+
 def _resolve_req(identifier: str, context: IdentityContext) -> Resolution:
+    if _CATALOG_REQ.match(identifier):
+        _catalog_outcome(identifier, context)
+        return Resolution(
+            identifier=identifier, canonical_id=identifier, kind=IdKind.REQ, state="active"
+        )
     owner, _ = _req_owner(identifier, context)
     return Resolution(
         identifier=identifier, canonical_id=identifier, kind=IdKind.REQ, state=owner.state
@@ -261,6 +286,8 @@ def parent_of(identifier: str, context: IdentityContext) -> ParentLink | None:
             return ParentLink(parent_id=briefed, source="brief")
         if resolution.kind is IdKind.ADR:
             return None
+    if resolution.kind is IdKind.REQ and _CATALOG_REQ.match(canonical):
+        return ParentLink(parent_id=_catalog_outcome(canonical, context), source="catalog")
     if resolution.kind is IdKind.REQ:
         return _req_owner(canonical, context)[1]
     return _parent_by_spelling(canonical, resolution.kind)
@@ -275,7 +302,7 @@ def brief_files(project_root: Path, design_root: str) -> list[Path]:
 def load_identity_context(
     ledger: LedgerReader, project_root: Path, design_root: str
 ) -> IdentityContext:
-    """Gather the graph, renames, brief index and started TASKs the resolver reads."""
+    """Gather the graph, renames, brief index, started TASKs and catalog REQs it reads."""
     events = ledger.read_all()
     renames = fold_renames(
         (event.id, new_id)
@@ -306,4 +333,12 @@ def load_identity_context(
         brief_parents=brief_parents,
         req_owners={req: tuple(owners) for req, owners in req_owners.items()},
         task_obpis=task_obpis,
+        catalog_members=_catalog_members(project_root),
     )
+
+
+def _catalog_members(project_root: Path) -> dict[str, str]:
+    """Index the catalog's REQs by id; a project that keeps no catalog has none."""
+    if not registry_path(project_root, CATALOG_FILES["reqs"]).is_file():
+        return {}
+    return {req.id: req.member_of for req in load_catalog(project_root).reqs}

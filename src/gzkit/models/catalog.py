@@ -3,7 +3,8 @@
 The store `docs/governance/ieee/requirements-model.md` rules, laid out as
 `docs/governance/harbor-ro3-requirements-store.md` § The store specifies: three
 files under `data/catalog/`, each a list under a `_doc` header, one model and one
-committed schema each.
+committed schema each. Tranche 3 adds a fourth, the roster of external boundaries
+`depends_on` may name (operator, "Declared prefixes (Rec.)", 2026-10-22).
 
 What a catalog entry does NOT carry is as ruled as what it does: an outcome has
 no lifecycle state (delivery status lives only in the ledger, decision 3) and a
@@ -21,11 +22,12 @@ from pydantic import BaseModel, ConfigDict, Field
 from gzkit.core.models import CATALOG_REQ_ID_BODY
 from gzkit.registries import load_registry
 
-#: The three catalog files, by kind, and the seam name each is read under.
+#: The catalog files, by kind, and the seam name each is read under.
 CATALOG_FILES: dict[str, str] = {
     "families": "catalog/families.json",
     "outcomes": "catalog/outcomes.json",
     "reqs": "catalog/reqs.json",
+    "externals": "catalog/externals.json",
 }
 
 #: An outcome code: its family letter and a dotted number, `H1.4`.
@@ -94,6 +96,20 @@ class Req(BaseModel):
     applies_to: tuple[str, ...] = Field(..., description="Targets, for a Q-family NFR only.")
 
 
+class External(BaseModel):
+    """One external boundary an outcome may depend on, as `external:<slug>`.
+
+    The roster is the operator's "Declared prefixes (Rec.)" ruling of 2026-10-22:
+    a boundary is named only if the catalog declares it.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    slug: str = Field(..., pattern=r"^[a-z][a-z0-9-]*$", description="The name after `external:`.")
+    name: str = Field(..., min_length=1, description="The boundary's name.")
+    scope: str = Field(..., min_length=1, description="What crosses it, one sentence.")
+
+
 class FamiliesFile(BaseModel):
     """`data/catalog/families.json`."""
 
@@ -121,21 +137,32 @@ class ReqsFile(BaseModel):
     reqs: tuple[Req, ...] = Field(..., description="The requirements.")
 
 
+class ExternalsFile(BaseModel):
+    """`data/catalog/externals.json`."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid", populate_by_name=True)
+
+    doc: str = Field(..., alias="_doc", min_length=1, description="What the file is.")
+    externals: tuple[External, ...] = Field(..., description="The external boundaries.")
+
+
 FILE_MODELS: dict[str, type[BaseModel]] = {
     "families": FamiliesFile,
     "outcomes": OutcomesFile,
     "reqs": ReqsFile,
+    "externals": ExternalsFile,
 }
 
 
 class Catalog(BaseModel):
-    """The three files, parsed."""
+    """The catalog files, parsed."""
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     families: tuple[Family, ...]
     outcomes: tuple[Outcome, ...]
     reqs: tuple[Req, ...]
+    externals: tuple[External, ...] = ()
 
 
 def catalog_json_schemas() -> dict[str, dict[str, Any]]:
@@ -144,7 +171,7 @@ def catalog_json_schemas() -> dict[str, dict[str, Any]]:
 
 
 def load_catalog(project_root: Path) -> Catalog:
-    """Read and parse the three catalog files through the registry seam.
+    """Read and parse the catalog files through the registry seam.
 
     Raises `RegistryError` for a file that is missing or not JSON, and Pydantic's
     `ValidationError` for one that does not match its model.
@@ -152,4 +179,12 @@ def load_catalog(project_root: Path) -> Catalog:
     families = FamiliesFile.model_validate(load_registry(project_root, CATALOG_FILES["families"]))
     outcomes = OutcomesFile.model_validate(load_registry(project_root, CATALOG_FILES["outcomes"]))
     reqs = ReqsFile.model_validate(load_registry(project_root, CATALOG_FILES["reqs"]))
-    return Catalog(families=families.families, outcomes=outcomes.outcomes, reqs=reqs.reqs)
+    externals = ExternalsFile.model_validate(
+        load_registry(project_root, CATALOG_FILES["externals"])
+    )
+    return Catalog(
+        families=families.families,
+        outcomes=outcomes.outcomes,
+        reqs=reqs.reqs,
+        externals=externals.externals,
+    )

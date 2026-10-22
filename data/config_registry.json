@@ -41,6 +41,12 @@
       "purpose": "The requirements catalog's outcomes, empty until RO-5's verbs author them; `gz validate --catalog`.",
       "derivation": "docs/governance/harbor-ro3-requirements-store.md (operator ruling 2026-10-21)"
     },
+    "catalog/externals.json": {
+      "owner": "gzkit/models/catalog.py",
+      "kind": "code",
+      "purpose": "The roster of external boundaries an outcome's depends_on may name as external:<slug>; `gz validate --catalog`.",
+      "derivation": "docs/governance/harbor-ro3-requirements-store.md (operator ruling 2026-10-22, Declared prefixes (Rec.))"
+    },
     "catalog/reqs.json": {
       "owner": "gzkit/models/catalog.py",
       "kind": "code",

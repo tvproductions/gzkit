@@ -108,6 +108,11 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     # allowlist, baseline or flag admits a finding; the three files are the whole
     # subject, a scope predicate. Drydock RO-3.
     "requirements-catalog": EXEMPTS_NONE,
+    # Tranche 3's edge, coverage and BDD checks read the same files with the PRD,
+    # the manifest's gates, the ledger, features and tests; none admits a finding.
+    "requirements-catalog-edges": EXEMPTS_NONE,
+    "requirements-catalog-coverage": EXEMPTS_NONE,
+    "requirements-catalog-bdd": EXEMPTS_NONE,
     # Runs the MX hangar's hardening guards over the ledger's open sessions. No
     # waiver table, allowlist or flag admits a finding; in-hangar advisory comes
     # from the shared checkpoint every guard passes through, not from this gate,
