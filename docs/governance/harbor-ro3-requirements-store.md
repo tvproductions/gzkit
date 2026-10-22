@@ -2,7 +2,7 @@
 
 # RO-3 specification — the requirements store, empty
 
-**2026-10-21. Status: specified; tranche 1 landed (`96e7ed62f`, `cd1afd70f`); tranche 2 landed (`2fa677a76`, `d39752974`, `a43f0220e`); tranches 3 and 4 open.** Operator: **g0**. Repair order RO-3 of the
+**2026-10-21. Status: specified; tranche 1 landed (`96e7ed62f`, `cd1afd70f`); tranche 2 landed (`2fa677a76`, `d39752974`, `a43f0220e`); tranche 3 landed (`a627dbc2d`, `021db4c62`, `67227d524`); tranche 4 open.** Operator: **g0**. Repair order RO-3 of the
 [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders): the store that
 [the requirements model](ieee/requirements-model.md) rules, landed as empty structure under
 `data/catalog/`. It populates nothing beyond the ruled family legend, changes no identifier, and
@@ -32,6 +32,18 @@ questions they left open were ruled on 2026-10-21, verbatim selections, booked a
    entered from any state `queued` through `verified`, and leaving one returns only to the state it
    was entered from; reopening and withdrawal wait for RO-5's verbs. The writer reads `from_state`
    from the ledger, and an outcome with no event is `queued`.
+
+Ruled 2026-10-22 when tranche 3 began, on the operator's *"do next step"*, by selection:
+
+6. **The freeze lock** — *"Leave to RO-5 (Rec.)"*: RO-5 had declared no baseline event, so tranche 3
+   lands no freeze check; RO-5 declares the event and its check together.
+7. **The § 7 attributes** — *"Derive from heading (Rec.)"*: an attribute is `NFR-<slug>` derived from
+   its `###` heading under PRD § 7, read from the live PRD; no PRD text changes.
+8. **`depends_on`** — *"Declared prefixes (Rec.)"*: an entry is an outcome code, `gate:<n>` for a gate
+   `.gzkit/manifest.json` declares, or `external:<slug>` from a declared roster,
+   `data/catalog/externals.json`; acyclicity is checked over outcome codes.
+9. **The BDD bindings** — *"Widen both bindings (Rec.)"*: `@covers` and the feature-tag scanner accept
+   a catalog `REQ-<n>` the catalog holds, beside the legacy grammar.
 
 ## The population, measured 2026-10-21
 
@@ -65,6 +77,9 @@ SUPPORT, STRUCTURAL-FENCE), `revision` (an integer that only rises), `derives_fr
 attributes), and `applies_to` (targets, for a Q-family NFR only). No proof: proof lives only in the
 ledger (decision 4).
 
+**`externals.json`** — empty (ruling 8). Each entry: `slug` (the name after `external:`), `name` and
+`scope` (what crosses the boundary, one sentence).
+
 Each file has a JSON schema under `src/gzkit/schemas/` and a frozen Pydantic model, and each is
 declared in `data/config_registry.json` with its reader as owner.
 
@@ -93,8 +108,8 @@ One scope, `gz validate --catalog`, in the default `gz check`:
   empty that is every one of them, so the report is advisory until the catalog is populated.
 - **BDD alignment:** a user-facing outcome names a feature file carrying its code as a tag, and each
   BEHAVIOR REQ under it has a scenario tagged with its id there, alongside its `@covers` test.
-- **Freeze lock:** a REQ in a frozen baseline is not edited except by a recorded reopening. The
-  baseline event is RO-5's; see § Known uncertainties.
+- **Freeze lock:** a REQ in a frozen baseline is not edited except by a recorded reopening. Moved
+  to RO-5 with its baseline event (ruling 6).
 - **Forward rule:** a delivery event (the declared list, held in a registry, not in code) appended
   after the RO-3 landing commit that names no REQ or outcome is an advisory (ruling 4).
 
@@ -123,12 +138,8 @@ is repaired at the surface and recorded.
 
 **Known uncertainties.** Each is read by the tranche that owns it:
 
-- The freeze lock needs a frozen-baseline event, which RO-5's work package declares. Tranche 3 either
-  lands the check against that event's declared shape, vacuous until RO-5 fires it, or leaves the check
-  to RO-5; that choice is the operator's when tranche 3 begins.
-- Whether `depends_on` names gates and external boundaries by a code of their own or by a free string
-  with a declared prefix.
-- Whether the § 7 attributes need ids (`NFR-performance`) for `derives_from` to resolve them.
+- Read by tranche 3 and ruled (rulings 6 to 8): the freeze lock, `depends_on`'s gates and boundaries,
+  and the § 7 attribute ids.
 - Which delivery event types the forward rule lists; the table above is the measured candidate set.
 
 ## Before-figures
