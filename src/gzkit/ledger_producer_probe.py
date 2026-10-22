@@ -28,6 +28,7 @@ from gzkit.events import (
     parse_typed_event,
 )
 from gzkit.models.catalog import CATALOG_FILES, Catalog, load_catalog
+from gzkit.registries import registry_path
 
 _OBPI = "OBPI-0.1.0-01-producer-probe"
 _AUTHOR = "isolated-producer-probe"
@@ -280,7 +281,7 @@ def _seat_catalog(root: Path) -> Catalog:
         ],
     }
     for kind, entries in files.items():
-        path = root / "data" / CATALOG_FILES[kind]
+        path = registry_path(root, CATALOG_FILES[kind])
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps({"_doc": "isolated probe", kind: entries}), encoding="utf-8")
     (root / ".gzkit").mkdir()
