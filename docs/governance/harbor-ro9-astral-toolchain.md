@@ -167,6 +167,32 @@ scaffold, never the operator's machine.
 - A tree with no `data/astral_discipline_baseline.json` (an adopter before tranche 7) has its violations
   announced as advisories, not failed; tranche 7 gives adopters their baseline and makes it fail closed.
 
+**Ruled for tranche 4 (2026-10-22).** Measured on Ruff 0.17.1, ty 0.0.89, Lizard and complexipy 8.1.0,
+then ruled by the operator by selection:
+
+- *"PT + COM812 + CPY001 (Rec.)"*: the `PT` family (24,354 findings, pytest idioms; unittest is doctrine),
+  `COM812` (5,814, conflicts with Ruff's formatter) and `CPY001` (1,484, no copyright-header doctrine
+  exists) are standing exceptions, each recorded with its reason. A copyright header is a separate ruling.
+- *"Package-strict, tests curated (Rec.)"*: `ALL` runs on the whole tree. Tests, features and scripts
+  carry a recorded per-directory exception list (docstrings, annotations, private access, `assert`,
+  no-self-use, unused arguments). This extends the 2026-08 package-only rulings for `D`, `BLE` and `PTH`.
+- *"15 with shrink-ratchet (Rec.)"*: cyclomatic C/C/C moves to Ruff `C901` and Lizard at 20/20/20
+  (maximum, each module's mean, function-weighted overall mean), with no changed verdict on `src/gzkit`:
+  xenon, C901 at 20 and Lizard all pass. Lizard's maximum is 20, its worst module mean 18.0 and its overall
+  mean 4.49 over 5,212 functions. complexipy's cognitive ceiling of 15 is new, and 307 functions exceed it
+  (58 over 25, maximum 50). They enter a keyed baseline registered as a shrink-ratchet, and new or changed
+  code is held to 15.
+- *"Map or retire each (Rec.)"*: Radon's `raw_nloc` maps to Lizard's `nloc`; `raw_lloc`, the maintainability
+  index and the three Halstead metrics retire. Each retirement is recorded at the surface against the
+  ADR-0.0.27/0.0.28/0.0.29 REQs it touches, and no dependency is added.
+
+The rules tranche 4 still reads site by site: S506 (`quality.py`, the YAML loader), S608
+(`trust_audits/cli.py`), two S701 (jinja2 autoescape off on non-HTML renders), and about 260
+S603/S607/S404 subprocess sites. Each gets a fix or a reasoned `# noqa`. Three preview findings read as
+false positives: F822 against `cli/__init__.py`'s lazy `__getattr__`, PLE1141 on a list of tuples, and
+RUF027 on a `.format` template. Under "every ty rule", the 2026-08-08 exclusion of `features/` from
+`ty check` (behave's `context` annotations) gets a ruling when the tranche lands.
+
 **Known uncertainties.** Each is read by the tranche that owns it:
 
 - Whether `uv_build` ships the wheel's non-Python data (the `.md` and `.json` under `src/gzkit`) with
