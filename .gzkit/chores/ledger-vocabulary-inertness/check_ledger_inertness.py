@@ -109,6 +109,19 @@ def _load_baseline(root: Path) -> dict[str, object]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _unverified(added: list[str]) -> list[str]:
+    """Run each new type's isolated producer now; return the types it did not verify."""
+    from gzkit.ledger_producer_probe import probe_producer
+
+    unverified: list[str] = []
+    for event_type in added:
+        observation = probe_producer(event_type)
+        print(json.dumps({"isolated_producer_execution": observation.model_dump(mode="json")}))
+        if observation.status != "verified":
+            unverified.append(event_type)
+    return unverified
+
+
 def enforce(root: Path) -> int:
     """Fail closed when an undisclosed never-fired type appears."""
     current = set(never_fired(root))
@@ -123,14 +136,7 @@ def enforce(root: Path) -> int:
         print(f"never-fired: {len(current)} (baseline {len(baseline)}) — disclosure holds")
         return 0
 
-    from gzkit.ledger_producer_probe import probe_producer
-
-    unverified: list[str] = []
-    for event_type in added:
-        observation = probe_producer(event_type)
-        print(json.dumps({"isolated_producer_execution": observation.model_dump(mode="json")}))
-        if observation.status != "verified":
-            unverified.append(event_type)
+    unverified = _unverified(added)
     if not unverified:
         print(
             f"never-fired in live ledger: {len(current)}; isolated producers verified: {len(added)}"
@@ -152,7 +158,8 @@ def enforce(root: Path) -> int:
         f"Draining a type that now fires updates {_BASELINE_REL.as_posix()} and "
         "'baseline_count' in data/waiver_ratchet_registry.json DOWNWARD together; "
         "run this script with --report --write to compute the drained set, which "
-        "refuses to write when the never-fired set has grown. If a newly declared "
+        "refuses to write when the never-fired set has grown by a type no verified "
+        "isolated producer covers. If a newly declared "
         "type genuinely cannot be wired yet, that is an operator ruling on the "
         "ratchet, not a line an agent edits to clear its own gate "
         "(GHI #611 review, 2026-09-06).",
@@ -191,14 +198,18 @@ def report(root: Path, *, write: bool) -> int:
         return 0
 
     path = root / _BASELINE_REL
-    prior = _baseline_types(_load_baseline(root)) if path.is_file() else set(missing)
-    if set(missing) - prior:
+    prior_payload = _load_baseline(root) if path.is_file() else {}
+    prior = _baseline_types(prior_payload) if path.is_file() else set(missing)
+    # Growth a verified isolated producer covers is not undisclosed growth, as in
+    # enforce(); it is never written into the baseline, which only shrinks.
+    if _unverified(sorted(set(missing) - prior)):
         print(
             "Refusing to re-baseline: the never-fired set grew. Disclose the new "
             "type deliberately rather than letting a re-run absorb it.",
             file=sys.stderr,
         )
         return 3
+    missing = sorted(set(missing) & prior)
     payload = {
         "schema_version": 1,
         "rationale": (
@@ -210,6 +221,10 @@ def report(root: Path, *, write: bool) -> int:
         ),
         "never_fired": missing,
     }
+    # A note explains why a type is still disclosed; a drained type's note goes with it.
+    notes = prior_payload.get("notes")
+    if isinstance(notes, dict) and (kept := {k: v for k, v in notes.items() if k in missing}):
+        payload["notes"] = kept
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     print(f"\nre-baselined: {len(missing)} never-fired type(s)")
     return 0

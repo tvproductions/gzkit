@@ -107,6 +107,10 @@ uv run python .gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.p
 Exit 3 when an undisclosed never-fired type lacks verified isolated execution.
 Live counts and `--report --write` retain their original meaning; an isolated
 execution does not drain the live never-fired baseline or change paired ratios.
+`--report --write` refuses a newly never-fired type that no verified isolated
+producer covers. A covered type does not block a drain, and it is never written
+into the baseline, which only shrinks (operator, "Fix the writer (Rec.)",
+2026-10-22).
 
 ## Acceptance Criteria
 

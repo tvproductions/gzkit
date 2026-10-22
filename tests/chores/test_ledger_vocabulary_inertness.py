@@ -62,7 +62,14 @@ class TheBaselineOnlyEverDecreases(unittest.TestCase):
         # (test-isolation-compliance, maintenance visit D 2026-10-10).
         self.enterContext(redirect_stdout(StringIO()))
 
-    def _root(self, *, declared: list[str], fired: list[str], baseline: list[str]) -> Path:
+    def _root(
+        self,
+        *,
+        declared: list[str],
+        fired: list[str],
+        baseline: list[str],
+        notes: dict[str, str] | None = None,
+    ) -> Path:
         root = Path(self.enterContext(tempfile.TemporaryDirectory()))
         (root / "pyproject.toml").write_text("", encoding="utf-8")
         schema = root / "src" / "gzkit" / "schemas" / "ledger.json"
@@ -91,7 +98,11 @@ class TheBaselineOnlyEverDecreases(unittest.TestCase):
         target = root / self.chore._BASELINE_REL
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(
-            json.dumps({"schema_version": 1, "rationale": "test", "never_fired": baseline}) + "\n",
+            json.dumps(
+                {"schema_version": 1, "rationale": "test", "never_fired": baseline}
+                | ({"notes": notes} if notes is not None else {})
+            )
+            + "\n",
             encoding="utf-8",
         )
         return root
@@ -105,6 +116,14 @@ class TheBaselineOnlyEverDecreases(unittest.TestCase):
         root = self._root(declared=["a", "b"], fired=["a"], baseline=["a", "b"])
         self.assertEqual(self.chore.report(root, write=True), 0)
         self.assertEqual(self._baseline(root), ["b"])
+
+    def test_draining_keeps_the_notes_of_the_types_still_listed(self) -> None:
+        """A note explains a disclosed absence; the drain drops only a drained type's note."""
+        notes = {"a": "wired; drains on first use", "b": "producer has no caller yet"}
+        root = self._root(declared=["a", "b"], fired=["a"], baseline=["a", "b"], notes=notes)
+        self.assertEqual(self.chore.report(root, write=True), 0)
+        payload = json.loads((root / self.chore._BASELINE_REL).read_text(encoding="utf-8"))
+        self.assertEqual(payload.get("notes"), {"b": "producer has no caller yet"})
 
     def test_a_grown_never_fired_set_refuses_to_re_baseline(self) -> None:
         """A re-run must never absorb a newly undisclosed type into the baseline."""
@@ -137,8 +156,21 @@ class TheBaselineOnlyEverDecreases(unittest.TestCase):
         self.assertEqual(ledger.read_bytes(), before)
         self.assertEqual(self.chore.never_fired(root), ["acceptance_recorded"])
         self.assertEqual(self._baseline(root), [])
-        self.assertEqual(self.chore.report(root, write=True), 3)
+        # Probe-verified growth is not undisclosed growth, so the re-baseline runs,
+        # and it never absorbs the verified type (operator, "Fix the writer (Rec.)").
+        self.assertEqual(self.chore.report(root, write=True), 0)
         self.assertEqual(self._baseline(root), [])
+
+    def test_a_drain_beside_probe_verified_growth_still_shrinks_the_baseline(self) -> None:
+        """A type covered by its isolated producer must not block draining another."""
+        self.chore = _load(
+            _REPO_ROOT / ".gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py"
+        )
+        root = self._root(
+            declared=["acceptance_recorded", "a", "b"], fired=["a"], baseline=["a", "b"]
+        )
+        self.assertEqual(self.chore.report(root, write=True), 0)
+        self.assertEqual(self._baseline(root), ["b"])
 
     def test_current_failed_execution_blocks_despite_previous_report(self) -> None:
         self.chore = _load(
