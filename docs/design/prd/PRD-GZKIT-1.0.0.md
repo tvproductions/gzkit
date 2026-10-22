@@ -792,14 +792,27 @@ move to JSON when the catalog lands.
 
 ## 8. Dependencies
 
+The authority is `pyproject.toml`: `requires-python` and `[project] dependencies` for runtime,
+`[dependency-groups]` for development. This section names what each dependency is for; versions are
+read there, never here. Stdlib is the default, and each third-party runtime dependency is a named
+departure (`AGENTS.md` § STDLIB-FIRST DOCTRINE).
+
 ### Runtime
 
 | Dependency | Purpose |
 |------------|---------|
-| Python 3.13.x | Runtime |
-| Click | CLI framework |
-| Pydantic | Configuration validation |
-| json (stdlib) | JSON parsing |
+| Python (`requires-python`) | Runtime |
+| argparse (stdlib) | CLI framework (ADR-0.0.2) |
+| json, pathlib, tomllib (stdlib) | Data formats and paths |
+| Pydantic | Model and configuration validation, the one named departure for validation |
+| jsonschema | Validation against the committed JSON schemas |
+| Jinja2 | Template rendering |
+| PyYAML | Frontmatter and YAML parsing |
+| Rich | Terminal output |
+| structlog | Structured logging |
+| networkx | The ontology's graph traversal (ADR-0.32.0) |
+| tree-sitter, tree-sitter-python | The ontology's polyglot source sensor (ADR-0.32.0) |
+| radon, lizard, cohesion | Complexity measurement for the exemplar corpus (ADR-0.0.27) |
 
 ### Development
 
@@ -808,7 +821,10 @@ move to JSON when the catalog lands.
 | uv | Package management |
 | ruff | Linting and formatting |
 | ty | Type checking |
-| unittest | Testing |
+| unittest (stdlib), unittest-parallel | Testing |
+| behave | BDD scenarios (Gate 4) |
+| coverage | Coverage measurement |
+| xenon | Cyclomatic complexity gate |
 
 ### External
 
@@ -1238,3 +1254,19 @@ lock (FR-015); and the `insight_recorded` ledger event as a target of FR-020.
 Not changed by this pass: the PRD's status (Draft), its attestation block, the lane language of
 FR-006 and FR-008 (it moves to the outcome's `user_facing` flag only when the catalog lands), and § 7's
 budgets.
+
+### 2026-10-22 — § 8 Dependencies reconciled with `pyproject.toml` (operator-directed)
+
+Found while reading § 7 for drydock RO-3 tranche 3 and recorded as an insight (scope `prd`); the
+operator then directed, verbatim: *"address these"*.
+
+1. **§ 8 Runtime.** The table named Click as the CLI framework and Python 3.13.x as the runtime. The
+   CLI is argparse (ADR-0.0.2), `requires-python` is 3.14 or later, and the table omitted most of the
+   declared runtime dependencies. It now names each one with its purpose and the ruling that admits
+   it.
+2. **§ 8 Development.** The development tools the gates run (behave, coverage, unittest-parallel,
+   xenon) are named beside uv, ruff, ty and unittest.
+3. **§ 8 authority.** The section now cites `pyproject.toml` as the authority and states no versions,
+   so the table cannot drift from the declared values again.
+
+Not changed by this pass: the PRD's status (Draft), its attestation block, and its requirements.
