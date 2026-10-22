@@ -489,7 +489,7 @@
       "binding_sha256": "9da03e62a222c8a1eaf6edad10872b1590df7f52db94ef6515dd4d99c189b07b",
       "authority": "docs/governance/harbor-ro3-requirements-store.md (drydock RO-3 tranche 4)",
       "proposed_by": "claude-code session 2026-10-22",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     }
   ]
 }

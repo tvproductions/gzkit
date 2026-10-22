@@ -2,7 +2,7 @@
 
 # RO-3 specification — the requirements store, empty
 
-**2026-10-21. Status: specified; tranche 1 landed (`96e7ed62f`, `cd1afd70f`); tranche 2 landed (`2fa677a76`, `d39752974`, `a43f0220e`); tranche 3 landed (`a627dbc2d`, `021db4c62`, `67227d524`); tranche 4 landed (`ed9ca3e74`, `b4f7c92b0`); all four tranches landed and the witness reads true, closure on the operator's word.** Operator: **g0**. Repair order RO-3 of the
+**2026-10-21. Status: specified; tranche 1 landed (`96e7ed62f`, `cd1afd70f`); tranche 2 landed (`2fa677a76`, `d39752974`, `a43f0220e`); tranche 3 landed (`a627dbc2d`, `021db4c62`, `67227d524`); tranche 4 landed (`ed9ca3e74`, `b4f7c92b0`); all four tranches landed and the witness reads true; RO-3 closed 2026-10-22 on the operator's word.** Operator: **g0**. Repair order RO-3 of the
 [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders): the store that
 [the requirements model](ieee/requirements-model.md) rules, landed as empty structure under
 `data/catalog/`. It populates nothing beyond the ruled family legend, changes no identifier, and
@@ -160,3 +160,10 @@ is repaired at the surface and recorded.
 Read when RO-3 closes, as the 2026-10-18 baseline row asks: catalog files 0, families 0, outcomes 0,
 REQs in the catalog 0; event types 75; delivery events naming a REQ or outcome after the cutover: none
 yet measured.
+
+**After-figures (2026-10-22, read when RO-3 closed).** Catalog files 5 under `data/catalog/`
+(`families`, `outcomes`, `reqs`, `externals`, `delivery_events`): families 11 (the legend), outcomes 0, REQs in the catalog 0, externals 0, delivery event types 9;
+ledger event types 76 of 19,432 events; events naming a REQ 1,340 (`grep -c 'REQ-' .gzkit/ledger.jsonl`),
+unchanged, since RO-3 authors no entry; delivery events after the cutover `2026-10-22T08:14:40+00:00`
+0, so none yet names a REQ or outcome. RO-3 landed structure only, so the trace-key figures move when
+the catalog is populated, not here.
