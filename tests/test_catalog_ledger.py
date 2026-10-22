@@ -22,6 +22,7 @@ from gzkit.catalog_ledger import (
 from gzkit.events import OutcomeTransitionedEvent, ReqProofRecordedEvent, parse_typed_event
 from gzkit.ledger import Ledger
 from gzkit.models.catalog import Catalog, Criterion, Outcome, Req
+from gzkit.ontology.corpus import project_corpus
 
 _LIFECYCLE = (
     "queued",
@@ -190,6 +191,16 @@ class OutcomeTransitionTests(_LedgerCase):
         catalog = Catalog(families=(), outcomes=(_outcome(), _outcome("H2")), reqs=())
         record_outcome_transition(catalog, self.ledger, "H2", "designing", evidence="e")
         self.assertEqual(outcome_state(self.ledger, "H1"), ("queued", None))
+
+
+class CorpusAccountingTests(_LedgerCase):
+    def test_a_ledger_carrying_both_catalog_events_replays_as_a_complete_corpus(self) -> None:
+        self.move("designing")
+        record_req_proof(
+            _catalog(), self.ledger, "REQ-1", 2, commit="abc1234", verdict="UNKNOWN", evidence="e"
+        )
+        fidelity = project_corpus(self.ledger).fidelity
+        self.assertTrue(fidelity.complete, fidelity)
 
 
 class ReqProofTests(_LedgerCase):
