@@ -1532,6 +1532,59 @@ class TestCoversAcceptsACatalogReq(unittest.TestCase):
 
         self.assertEqual(get_registry(), [])
 
+    def test_a_project_without_a_catalog_knows_only_its_briefs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / ".gzkit").mkdir()
+            reset_registry()
+            with patch("gzkit.traceability._find_project_root", return_value=root):
+                self.assertEqual(_load_known_reqs(), frozenset())
+
+    def test_the_known_set_unions_the_briefs_and_the_catalog(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / ".gzkit").mkdir()
+            (root / "docs" / "design" / "adr").mkdir(parents=True)
+            self._write_catalog(root)
+            reset_registry()
+            brief_req = DiscoveredReq(
+                entity=ReqEntity(
+                    id=ReqId.parse("REQ-0.15.0-03-01"),
+                    description="d",
+                    status=ReqStatus.UNCHECKED,
+                    parent_obpi="OBPI-0.15.0-03",
+                ),
+                source_path="brief.md",
+            )
+            with (
+                patch("gzkit.traceability._find_project_root", return_value=root),
+                patch("gzkit.traceability.scan_briefs", return_value=[brief_req]),
+            ):
+                known = _load_known_reqs()
+        self.assertEqual(known, frozenset({"REQ-3", "REQ-0.15.0-03-01"}))
+
+    def _write_catalog(self, root: Path) -> None:
+        catalog = root / "data" / "catalog"
+        catalog.mkdir(parents=True)
+        req = {
+            "id": "REQ-3",
+            "member_of": "H1",
+            "statement": "Effect.",
+            "criteria": [{"state_or_input": "s", "required_outcome": "o", "evidence": "e"}],
+            "kind": "BEHAVIOR",
+            "revision": 1,
+            "derives_from": [],
+            "applies_to": [],
+        }
+        for kind, entries in (
+            ("families", []),
+            ("outcomes", []),
+            ("externals", []),
+            ("reqs", [req]),
+        ):
+            payload = {"_doc": "Fixture.", kind: entries}
+            (catalog / f"{kind}.json").write_text(json.dumps(payload), encoding="utf-8")
+
     def test_the_known_set_includes_the_catalogs_reqs(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -1609,6 +1662,26 @@ class TestCatalogBindingScanner(unittest.TestCase):
         self.assertEqual(bindings.covered_reqs, frozenset({"REQ-3"}))
         self.assertEqual(bindings.feature_tags, {"features/x.feature": frozenset({"H1", "smoke"})})
         self.assertEqual(bindings.scenario_reqs, {"features/x.feature": frozenset({"REQ-3"})})
+
+    def test_an_unparseable_test_file_is_skipped(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._tree(root)
+            (root / "tests" / "test_broken.py").write_text("def (:\n", encoding="utf-8")
+            bindings = scan_catalog_bindings(root)
+        self.assertEqual(bindings.covered_reqs, frozenset({"REQ-3"}))
+
+    def test_a_blank_or_comment_line_between_a_tag_and_its_scenario_keeps_the_tag(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "features").mkdir()
+            (root / "features" / "y.feature").write_text(
+                "@H1\n# owner: g0\nFeature: Y\n\n  @REQ-4\n\n  # why\n  Scenario: s\n",
+                encoding="utf-8",
+            )
+            bindings = scan_catalog_bindings(root)
+        self.assertEqual(bindings.feature_tags, {"features/y.feature": frozenset({"H1"})})
+        self.assertEqual(bindings.scenario_reqs, {"features/y.feature": frozenset({"REQ-4"})})
 
     def test_the_legacy_scanners_pass_a_catalog_req_over_silently(self):
         with tempfile.TemporaryDirectory() as tmp:

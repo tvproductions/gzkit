@@ -284,6 +284,26 @@ class TestAuditOverAProject(unittest.TestCase):
         self.write("outcomes", [outcome])
         self.assertEqual([e.field for e in audit_catalog(self.root)], ["governed_by"])
 
+    def test_governed_by_resolves_an_adr_the_ledger_records_and_refuses_an_obpi(self):
+        from gzkit.ledger import Ledger
+        from gzkit.ledger_events import adr_created_event, obpi_created_event
+
+        ledger = Ledger(self.root / ".gzkit" / "ledger.jsonl")
+        ledger.append(adr_created_event("ADR-0.1.0-probe", "PRD-TEST-1.0.0", "lite"))
+        ledger.append(obpi_created_event("OBPI-0.1.0-01-probe", "ADR-0.1.0-probe"))
+        for adr, expected in (("ADR-0.1.0-probe", []), ("OBPI-0.1.0-01-probe", ["governed_by"])):
+            with self.subTest(adr=adr):
+                outcome = _outcome("H1", governed_by=[adr]).model_dump(mode="json")
+                self.write("outcomes", [outcome])
+                self.assertEqual([e.field for e in audit_catalog(self.root)], expected)
+
+    def test_depends_on_reads_the_roster_from_the_externals_file(self):
+        outcome = _outcome("H1", depends_on=["external:github"]).model_dump(mode="json")
+        self.write("outcomes", [outcome])
+        self.assertEqual([e.field for e in audit_catalog(self.root)], ["depends_on"])
+        self.write("externals", [{"slug": "github", "name": "GitHub", "scope": "Issues."}])
+        self.assertEqual(audit_catalog(self.root), [])
+
     def test_bdd_alignment_reads_the_projects_features_and_tests(self):
         outcome = _outcome("H1", user_facing=True, feature="features/resume.feature")
         self.write("outcomes", [outcome.model_dump(mode="json")])
