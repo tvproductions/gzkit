@@ -2,7 +2,7 @@
 
 # RO-3 specification — the requirements store, empty
 
-**2026-10-21. Status: specified; tranche 1 landed (`96e7ed62f`, `cd1afd70f`); tranche 2 landed (`2fa677a76`, `d39752974`, `a43f0220e`); tranche 3 landed (`a627dbc2d`, `021db4c62`, `67227d524`); tranche 4 open.** Operator: **g0**. Repair order RO-3 of the
+**2026-10-21. Status: specified; tranche 1 landed (`96e7ed62f`, `cd1afd70f`); tranche 2 landed (`2fa677a76`, `d39752974`, `a43f0220e`); tranche 3 landed (`a627dbc2d`, `021db4c62`, `67227d524`); tranche 4 landed (`ed9ca3e74`, `b4f7c92b0`); all four tranches landed and the witness reads true, closure on the operator's word.** Operator: **g0**. Repair order RO-3 of the
 [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders): the store that
 [the requirements model](ieee/requirements-model.md) rules, landed as empty structure under
 `data/catalog/`. It populates nothing beyond the ruled family legend, changes no identifier, and
@@ -44,6 +44,16 @@ Ruled 2026-10-22 when tranche 3 began, on the operator's *"do next step"*, by se
    `data/catalog/externals.json`; acyclicity is checked over outcome codes.
 9. **The BDD bindings** — *"Widen both bindings (Rec.)"*: `@covers` and the feature-tag scanner accept
    a catalog `REQ-<n>` the catalog holds, beside the legacy grammar.
+
+Ruled 2026-10-22 when tranche 4 began, on the operator's *"fix the docs link, then do next step"*, by
+selection:
+
+10. **The delivery event types** — *"All nine (Rec.)"*: the measured candidate set in § The population.
+11. **Naming** — *"Grammar over fields (Rec.)"*: an event names a REQ when any of its values carries a
+    REQ id in either grammar as a whole token, by the identity seam's patterns, or an outcome when its
+    `outcome` field holds a catalog code; a TASK id never names its REQ by spelling.
+12. **The cutover** — *"Timestamp in registry (Rec.)"*: `data/catalog/delivery_events.json` holds the
+    types and the cutover, set as tranche 4 landed; only events with a later `ts` are read.
 
 ## The population, measured 2026-10-21
 
@@ -110,8 +120,8 @@ One scope, `gz validate --catalog`, in the default `gz check`:
   BEHAVIOR REQ under it has a scenario tagged with its id there, alongside its `@covers` test.
 - **Freeze lock:** a REQ in a frozen baseline is not edited except by a recorded reopening. Moved
   to RO-5 with its baseline event (ruling 6).
-- **Forward rule:** a delivery event (the declared list, held in a registry, not in code) appended
-  after the RO-3 landing commit that names no REQ or outcome is an advisory (ruling 4).
+- **Forward rule:** a delivery event of a type `data/catalog/delivery_events.json` lists, appended
+  after its cutover, that names no REQ or outcome is an advisory (rulings 4, 10 to 12).
 
 Every check carries a negative control, as every `gz validate` scope does.
 
@@ -130,7 +140,10 @@ registry or the tree, insight scope `gz-check-changed-tests`), and a passage-log
 | 4 | The forward rule, its delivery-event registry and cutover | an undeclared delivery event after the cutover is announced; legacy events are not read |
 
 RO-3 closes when the four tranches have landed: its row's witness reads "schemas validate; `gz test`
-green; the validators registered".
+green; the validators registered". Read 2026-10-22 after tranche 4: `gz validate --catalog` exit 0
+over the five files' committed schemas; full unit tier 12510 OK; the scope runs in the default
+`gz check` as **Requirements catalog** with five negative controls registered
+(`requirements-catalog`, `-edges`, `-coverage`, `-bdd`, `-forward-rule`).
 
 **Boundaries.** RO-3 authors no outcome or REQ, edits no PRD text, adds no CLI verb, retires no
 legacy identifier and regroups no feature file. A change that would alter an attested REQ's subject
@@ -140,7 +153,7 @@ is repaired at the surface and recorded.
 
 - Read by tranche 3 and ruled (rulings 6 to 8): the freeze lock, `depends_on`'s gates and boundaries,
   and the § 7 attribute ids.
-- Which delivery event types the forward rule lists; the table above is the measured candidate set.
+- Read by tranche 4 and ruled (rulings 10 to 12): the delivery event types, naming and the cutover.
 
 ## Before-figures
 
