@@ -6,11 +6,11 @@ bytes carry can **resolve** for the party it was delivered to.  Four shipped
 files told a reader to open a path that existed on one laptop; the delivery
 gate read green throughout, because the bytes were intact.
 
-Scope: every ``.md`` covered by ``[tool.hatch.build.targets.wheel] include``,
-read from :func:`gzkit.governance.trust_audits.distribution.wheel_build_config`
-— the same declaration the delivery gate reads.  A transcribed glob list would
-cover the trees that existed the day it was written and miss the next one
-added to the wheel.
+Scope: every ``.md`` the uv_build wheel ships, read from
+:func:`gzkit.governance.trust_audits.distribution.wheel_shipped_files` — the
+same prediction the delivery gate reads.  A transcribed glob list would cover
+the trees that existed the day it was written and miss the next one added to
+the wheel.
 
 Executable modules under ``hooks/scripts/**`` are deliberately out of scope.
 They are code, not steps a reader resolves, and one of them names
@@ -46,7 +46,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from gzkit.governance.trust_audits.distribution import wheel_build_config
+from gzkit.governance.trust_audits.distribution import wheel_shipped_files
 from gzkit.validate import ValidationError
 
 _TYPE = "wheel_path_literals"
@@ -79,16 +79,11 @@ _REMEDIATION = (
 
 
 def wheel_instruction_files(project_root: Path) -> list[Path]:
-    """Return every Markdown file the wheel delivers, per its own include block."""
+    """Return every Markdown file the wheel delivers, per the shared wheel prediction."""
     # missing_ok: this audit is default-tier, so it runs against project roots
     # that ship no wheel. No build config means no delivered instruction text.
-    include_globs, _packages = wheel_build_config(project_root, missing_ok=True)
-    found: set[Path] = set()
-    for pattern in include_globs:
-        for match in project_root.glob(pattern):
-            if match.is_file() and match.suffix == ".md" and "__pycache__" not in match.parts:
-                found.add(match)
-    return sorted(found)
+    shipped = wheel_shipped_files(project_root, missing_ok=True)
+    return sorted(project_root / rel for rel in shipped if rel.endswith(".md"))
 
 
 def _scan(path: Path, project_root: Path) -> list[ValidationError]:

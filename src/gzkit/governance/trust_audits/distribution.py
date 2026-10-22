@@ -1,9 +1,9 @@
 """Distribution invariant T0 static audit (ADR-0.0.32-07).
 
-Detects three drift classes between pyproject.toml wheel includes,
+Detects three drift classes between the uv_build wheel pyproject.toml declares,
 data/distribution_baseline_manifest.json, and on-disk canonical surface trees:
 
-  ON_DISK_NOT_INCLUDED   — surface file exists on disk but not covered by any include glob
+  ON_DISK_NOT_INCLUDED   — surface file exists on disk but the wheel does not ship it
   BASELINE_NOT_ON_DISK   — baseline manifest entry does not exist on disk
   ON_DISK_NOT_BASELINE   — surface file on disk + included but absent from baseline
 
@@ -16,10 +16,12 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import sys
 import tempfile
 import tomllib
 from collections.abc import Callable
+from fnmatch import fnmatchcase
 from importlib import import_module
 from pathlib import Path
 from typing import Any
@@ -103,29 +105,73 @@ def _is_package_only(rel_posix: str, project_root: Path | None = None) -> bool:
 def audit_distribution(project_root: Path) -> list[ValidationError]:
     """Run the static T0 distribution audit — no wheel build required.
 
-    Loads ``pyproject.toml`` include globs and ``data/distribution_baseline_manifest.json``,
-    walks every root in ``_CANONICAL_SURFACES``, and detects drift.
+    Predicts the wheel from ``pyproject.toml``, loads
+    ``data/distribution_baseline_manifest.json``, walks every root in
+    ``_CANONICAL_SURFACES``, and detects drift.
     Raises ``SystemExit(2)`` on IO/parse failures so callers can distinguish system
     errors (exit 2) from policy breaches (exit 3).
     """
-    include_globs, baseline_entries, surface_roots, package_roots = _load_inputs(project_root)
+    shipped_files, baseline_entries, surface_roots = _load_inputs(project_root)
 
     on_disk_files = _walk_surface_files(project_root, surface_roots)
 
-    included_files = _expand_includes(project_root, include_globs, package_roots)
-
-    return _collect_errors(on_disk_files, included_files, baseline_entries, project_root)
+    return _collect_errors(on_disk_files, shipped_files, baseline_entries, project_root)
 
 
-def wheel_build_config(
-    project_root: Path, *, missing_ok: bool = False
-) -> tuple[list[str], list[str]]:
-    """Return the wheel's ``(include globs, package roots)`` from pyproject.toml.
+#: uv_build's built-in excludes, applied to every wheel whatever the config says
+#: ("By default, uv excludes `__pycache__`, `*.pyc`, and `*.pyo`").
+_UV_BUILD_DEFAULT_EXCLUDES: tuple[str, ...] = ("__pycache__", "*.pyc", "*.pyo")
 
-    Shared with :mod:`gzkit.governance.trust_audits.wheel_path_literals` so the
-    resolvability witness reads the *same* declaration the delivery gate reads.
-    A second transcribed copy of this list would cover the trees that existed
-    the day it was written and silently miss the next one added (GHI #900).
+
+def _glob_matches(pattern: list[str], parts: list[str]) -> bool:
+    """Match path components against PEP 639 glob components, ``**`` spanning any depth."""
+    if not pattern:
+        return not parts
+    head, rest = pattern[0], pattern[1:]
+    if head == "**":
+        return any(_glob_matches(rest, parts[i:]) for i in range(len(parts) + 1))
+    return bool(parts) and fnmatchcase(parts[0], head) and _glob_matches(rest, parts[1:])
+
+
+def _excluding_pattern(rel_parts: list[str], patterns: list[str]) -> str | None:
+    """Return the unanchored uv_build exclude that removes this path, or None.
+
+    uv's rule: "Excludes are not anchored", and "All children of an exclusion
+    are excluded as well", so a pattern removes a path when it matches any run
+    of the path's components (project-relative) starting at any depth.
+    """
+    for pattern in patterns:
+        components = pattern.split("/")
+        for start in range(len(rel_parts)):
+            for stop in range(start + 1, len(rel_parts) + 1):
+                if _glob_matches(components, rel_parts[start:stop]):
+                    return pattern
+    return None
+
+
+def _build_backend_table(data: dict[str, Any]) -> dict[str, Any] | None:
+    """Return ``[tool.uv.build-backend]`` when the project builds with uv_build, else None."""
+    if data.get("build-system", {}).get("build-backend") != "uv_build":
+        return None
+    return data.get("tool", {}).get("uv", {}).get("build-backend", {})
+
+
+def wheel_shipped_files(project_root: Path, *, missing_ok: bool = False) -> set[str]:
+    """Return every project-relative path, as posix, that the uv_build wheel ships.
+
+    The one predictor of the wheel, shared with
+    :mod:`gzkit.governance.trust_audits.wheel_path_literals` so the resolvability
+    witness reads the *same* declaration the delivery gate reads (GHI #900).
+    uv_build has no wheel includes: the wheel is the module under
+    ``module-root`` minus ``source-exclude``, ``wheel-exclude`` and uv's own
+    defaults, so the prediction walks that tree rather than any glob list
+    (RO-9 tranche 3, `docs/governance/harbor-ro9-astral-toolchain.md`).
+    Static by contract: no build runs (REQ-0.0.32-07-07).
+
+    A project not built by uv_build ships nothing this predictor can model, so it
+    returns the empty set. An anchored exclude (leading ``/``) is refused: probed
+    on uv 0.13.1, an anchored ``wheel-exclude`` removed nothing, so no reading of
+    it is verified.
 
     ``missing_ok`` is the difference between an explicit-tier and a
     default-tier caller. ``--distribution`` runs only where an operator points
@@ -136,8 +182,44 @@ def wheel_build_config(
     is a clean result rather than a failure. An *unparseable* pyproject.toml
     stays fatal for both: that is real breakage, not absence.
 
-    Raises ``SystemExit(2)`` when pyproject.toml is unparseable, or when it is
-    missing and ``missing_ok`` is false.
+    Raises ``SystemExit(2)`` when pyproject.toml is unparseable, when it is
+    missing and ``missing_ok`` is false, or when an exclude is anchored.
+    """
+    layout = _wheel_layout(project_root, missing_ok=missing_ok)
+    shipped: set[str] = set()
+    if layout is None:
+        return shipped
+    module_dir, excludes = layout
+    if not module_dir.is_dir():
+        return shipped
+    for path in module_dir.rglob("*"):
+        if not path.is_file():
+            continue
+        rel_parts = list(path.relative_to(project_root).parts)
+        if _excluding_pattern(rel_parts, excludes) is None:
+            shipped.add("/".join(rel_parts))
+    return shipped
+
+
+def unshipped_reason(project_root: Path, rel_posix: str) -> str:
+    """Name why the predicted wheel leaves out ``rel_posix``: its exclude, or its location."""
+    layout = _wheel_layout(project_root, missing_ok=True)
+    if layout is None:
+        return "pyproject.toml declares no uv_build wheel ([build-system] build-backend)"
+    module_dir, excludes = layout
+    module_rel = module_dir.relative_to(project_root).as_posix()
+    if not rel_posix.startswith(f"{module_rel}/"):
+        return f"it sits outside the module root '{module_rel}'"
+    pattern = _excluding_pattern(rel_posix.split("/"), excludes)
+    if pattern in _UV_BUILD_DEFAULT_EXCLUDES:
+        return f"uv_build's default exclude '{pattern}' removes it"
+    return f"the [tool.uv.build-backend] exclude '{pattern}' removes it"
+
+
+def _wheel_layout(project_root: Path, *, missing_ok: bool) -> tuple[Path, list[str]] | None:
+    """Return the uv_build module directory and every exclude in force, or None.
+
+    Raises ``SystemExit(2)`` per :func:`wheel_shipped_files`.
     """
     pyproject = project_root / "pyproject.toml"
     try:
@@ -145,24 +227,39 @@ def wheel_build_config(
             data = tomllib.load(f)
     except FileNotFoundError as exc:
         if missing_ok:
-            return [], []
+            return None
         print(f"distribution-audit: pyproject.toml not found: {exc}", file=sys.stderr)
         raise SystemExit(2) from exc
     except tomllib.TOMLDecodeError as exc:
         print(f"distribution-audit: cannot parse pyproject.toml: {exc}", file=sys.stderr)
         raise SystemExit(2) from exc
 
-    wheel_target: dict[str, Any] = (
-        data.get("tool", {}).get("hatch", {}).get("build", {}).get("targets", {}).get("wheel", {})
-    )
-    return wheel_target.get("include", []), wheel_target.get("packages", [])
+    backend = _build_backend_table(data)
+    if backend is None:
+        return None
+    default_name = str(data.get("project", {}).get("name", "")).lower()
+    module_name = str(backend.get("module-name", re.sub(r"[-.]", "_", default_name)))
+    module_root = str(backend.get("module-root", "src"))
+    excludes = [
+        *backend.get("source-exclude", []),
+        *backend.get("wheel-exclude", []),
+        *_UV_BUILD_DEFAULT_EXCLUDES,
+    ]
+    anchored = [pattern for pattern in excludes if pattern.startswith("/")]
+    if anchored:
+        print(
+            f"distribution-audit: anchored exclude {anchored!r} in [tool.uv.build-backend] "
+            "has no verified reading (uv 0.13.1 removed nothing for an anchored "
+            "wheel-exclude). Write it unanchored, e.g. 'gzkit/chores/*/proofs'.",
+            file=sys.stderr,
+        )
+        raise SystemExit(2)
+    return project_root / module_root / module_name, excludes
 
 
-def _load_inputs(
-    project_root: Path,
-) -> tuple[list[str], set[str], list[str], list[str]]:
-    """Load pyproject.toml include globs and baseline manifest.  Raises SystemExit(2) on failure."""
-    include_globs, package_roots = wheel_build_config(project_root)
+def _load_inputs(project_root: Path) -> tuple[set[str], set[str], list[str]]:
+    """Load the predicted wheel contents and baseline manifest.  Raises SystemExit(2) on failure."""
+    shipped = wheel_shipped_files(project_root)
 
     manifest_path = project_root / "data" / "distribution_baseline_manifest.json"
     try:
@@ -182,7 +279,7 @@ def _load_inputs(
             baseline_entries.add(f"src/gzkit/{surface}/{entry}")
 
     surface_roots = [f"src/gzkit/{surface}" for surface in _CANONICAL_SURFACES]
-    return include_globs, baseline_entries, surface_roots, package_roots
+    return shipped, baseline_entries, surface_roots
 
 
 def _walk_surface_files(project_root: Path, surface_roots: list[str]) -> set[str]:
@@ -206,29 +303,6 @@ def _is_excluded(parts: tuple[str, ...]) -> bool:
     return any(seg in _EXCLUDED_SEGMENTS or seg.startswith("__") for seg in parts)
 
 
-def _expand_includes(
-    project_root: Path, include_globs: list[str], package_roots: list[str]
-) -> set[str]:
-    """Return every file the wheel ships, from BOTH build mechanisms.
-
-    ``include`` globs carry data files; ``packages`` ships ``.py`` modules under
-    each root independently of any glob.  Modelling the globs alone reported
-    seven shipped modules as not-shipped when measured against a real 0.34.2
-    wheel — a predictor blind to half its own build config.
-    """
-    included: set[str] = set()
-    for glob_pattern in include_globs:
-        for matched in project_root.glob(glob_pattern):
-            if matched.is_file():
-                included.add(matched.relative_to(project_root).as_posix())
-    for package_root in package_roots:
-        for module in (project_root / package_root).rglob("*.py"):
-            rel = module.relative_to(project_root)
-            if not _is_excluded(rel.parts):
-                included.add(rel.as_posix())
-    return included
-
-
 def _collect_errors(
     on_disk: set[str],
     included: set[str],
@@ -241,15 +315,21 @@ def _collect_errors(
     for rel_posix in sorted(on_disk - included):
         if _is_package_only(rel_posix, project_root):
             continue
+        reason = (
+            unshipped_reason(project_root, rel_posix)
+            if project_root is not None
+            else "the wheel does not ship it"
+        )
         errors.append(
             ValidationError(
                 type="distribution",
                 artifact=rel_posix,
                 message=(
                     f"ON_DISK_NOT_INCLUDED: '{rel_posix}' exists under a canonical surface "
-                    f"tree but is not covered by any include glob in "
-                    f"[tool.hatch.build.targets.wheel] include. "
-                    f"Resolution: extend the include block in pyproject.toml."
+                    f"tree but the uv_build wheel does not ship it: {reason}. Every "
+                    f"canonical surface must ship (ADR-0.0.31). Resolution: narrow that "
+                    f"exclude, or move the file under the module root, in pyproject.toml, "
+                    f"then re-run `uv run gz validate --distribution`."
                 ),
             )
         )
@@ -277,7 +357,7 @@ def _collect_errors(
                 artifact=rel_posix,
                 message=(
                     f"ON_DISK_NOT_BASELINE: '{rel_posix}' exists on disk and is covered "
-                    f"by a wheel include glob but is NOT in the baseline manifest. "
+                    f"by the wheel but is NOT in the baseline manifest. "
                     f"Resolution: add to data/distribution_baseline_manifest.json."
                 ),
             )
@@ -304,7 +384,7 @@ def regenerate_distribution_baseline(project_root: Path) -> dict[str, Any]:
     Returns a dict with keys ``surfaces_walked``, ``file_count``,
     ``manifest_hash_before``, ``manifest_hash_after``.
     """
-    include_globs, _baseline, surface_roots, _package_roots = _load_inputs(project_root)
+    _shipped, _baseline, surface_roots = _load_inputs(project_root)
     manifest_path = project_root / "data" / "distribution_baseline_manifest.json"
 
     hash_before = _manifest_hash(manifest_path)

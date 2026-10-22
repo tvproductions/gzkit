@@ -15,10 +15,18 @@ from pathlib import Path
 
 from behave import given
 
+#: A uv_build project whose wheel is ``src/gzkit`` minus the given excludes.
+_UV_BUILD = (
+    '[project]\nname = "py-gzkit"\n\n'
+    '[build-system]\nbuild-backend = "uv_build"\n\n'
+    '[tool.uv.build-backend]\nmodule-name = "gzkit"\nmodule-root = "src"\n'
+    "wheel-exclude = [{wheel_exclude}]\n"
+)
 
-@given("a minimal project with a skills surface file not covered by any include glob")
+
+@given("a minimal project with a skills surface file the wheel excludes")
 def step_minimal_project_on_disk_not_included(context) -> None:
-    """Set up a temp project where a skill file exists but no include glob covers it."""
+    """Set up a temp project where a skill file exists but a wheel-exclude removes it."""
     root: Path = context._tmpdir
 
     skill = root / "src" / "gzkit" / "skills" / "test-skill" / "SKILL.md"
@@ -26,7 +34,7 @@ def step_minimal_project_on_disk_not_included(context) -> None:
     skill.write_text("# Test\n", encoding="utf-8")
 
     (root / "pyproject.toml").write_text(
-        '[tool.hatch.build.targets.wheel]\ninclude = [\n    "src/gzkit/rules/**/*.md",\n]\n',
+        _UV_BUILD.format(wheel_exclude='"skills/test-skill"'),
         encoding="utf-8",
     )
 
@@ -51,7 +59,7 @@ def step_minimal_clean_distribution_project(context) -> None:
     skill.write_text("# Test\n", encoding="utf-8")
 
     (root / "pyproject.toml").write_text(
-        '[tool.hatch.build.targets.wheel]\ninclude = [\n    "src/gzkit/skills/**/*.md",\n]\n',
+        _UV_BUILD.format(wheel_exclude=""),
         encoding="utf-8",
     )
 

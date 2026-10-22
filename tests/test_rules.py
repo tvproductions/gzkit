@@ -799,15 +799,17 @@ class TestRulesLayoutScopeGuards(unittest.TestCase):
         return Path(__file__).resolve().parent.parent
 
     @covers("REQ-0.0.32-03-06")
-    def test_req06_pyproject_has_rules_wheel_include(self) -> None:
-        """REQ-06: pyproject.toml carries rules wheel-include (landed by OBPI-0.0.32-06)."""
-        pyproject = self._repo_root() / "pyproject.toml"
-        body = pyproject.read_text(encoding="utf-8")
-        self.assertIn(
-            "src/gzkit/rules/**/*.md",
-            body,
-            "REQ-06: wheel-include glob expected; OBPI-06 landed wheel manifest",
-        )
+    def test_req06_rules_ship_in_the_wheel(self) -> None:
+        """REQ-06: the rules surface ships in the wheel (landed by OBPI-0.0.32-06).
+
+        The REQ records that OBPI-03 left `pyproject.toml` untouched, a fact about
+        that OBPI's diff; this test has always guarded the later state it led to.
+        It read the hatchling include glob until uv_build replaced it on
+        2026-10-22 (RO-9 tranche 3), and now reads the predicted wheel.
+        """
+        from gzkit.governance.trust_audits.distribution import wheel_shipped_files  # noqa: PLC0415
+
+        self.assertIn("src/gzkit/rules/tests.md", wheel_shipped_files(self._repo_root()))
 
     @covers("REQ-0.0.32-03-07")
     def test_req07_agent_sync_propagates_rules_to_pkg(self) -> None:
@@ -1076,27 +1078,32 @@ class TestClassifyRuleFile(unittest.TestCase):
         self.assertEqual(result, "canonical")
 
     @covers("REQ-0.0.32-15-09")
-    def test_pyproject_includes_rules_json(self) -> None:
-        """pyproject.toml must include src/gzkit/rules/**/*.json for canonical json files."""
-        import tomllib
+    def test_every_canonical_surface_file_ships_in_the_wheel(self) -> None:
+        """Every file classified `canonical` under every surface ships in the wheel.
+
+        Amended 2026-10-22 (operator, verbatim "Amend in place (Rec.)"). The REQ's
+        attested Given is `[tool.hatch.build.targets.wheel] include:` and its
+        outcome "matched by at least one glob"; uv_build replaced hatchling (RO-9
+        ruling 3) and has no wheel includes, so the Given is
+        `[tool.uv.build-backend]` and the outcome is "shipped by the predicted
+        wheel" (`wheel_shipped_files`, which a real uv build matched file for
+        file on 2026-10-22).
+        """
+        from gzkit.governance.trust_audits.distribution import (  # noqa: PLC0415
+            _CANONICAL_SURFACES,
+            _is_package_only,
+            _walk_surface_files,
+            wheel_shipped_files,
+        )
 
         project_root = Path(__file__).resolve().parents[1]
-        pyproject = project_root / "pyproject.toml"
-        with open(pyproject, "rb") as f:
-            data = tomllib.load(f)
-        include_globs = (
-            data.get("tool", {})
-            .get("hatch", {})
-            .get("build", {})
-            .get("targets", {})
-            .get("wheel", {})
-            .get("include", [])
+        shipped = wheel_shipped_files(project_root)
+        on_disk = _walk_surface_files(
+            project_root, [f"src/gzkit/{surface}" for surface in _CANONICAL_SURFACES]
         )
-        self.assertIn(
-            "src/gzkit/rules/**/*.json",
-            include_globs,
-            "pyproject.toml must include src/gzkit/rules/**/*.json for canonical json files",
-        )
+        canonical = {path for path in on_disk if not _is_package_only(path, project_root)}
+        self.assertTrue(any(path.endswith(".json") for path in canonical & shipped))
+        self.assertEqual(sorted(canonical - shipped), [])
 
 
 class TestSyncClassifierIntegration(unittest.TestCase):

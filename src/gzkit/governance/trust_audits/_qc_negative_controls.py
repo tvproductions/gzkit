@@ -1196,23 +1196,28 @@ def _build_doc_code_citations_exempted() -> Path:
 def _build_wheel_path_literals() -> Path:
     """Plant a wheel-shipped skill doc naming a path rooted in one user's home.
 
-    The pyproject declares the include block itself rather than reusing a
+    The pyproject declares its uv_build wheel itself rather than reusing a
     canned one, because the property under control is that the audit reads
-    THAT block: a witness scoped by a transcribed glob would pass here while
-    missing the next tree added to a real wheel (GHI #900).
+    THAT declaration: a witness scoped by a transcribed glob would pass here
+    while missing the next tree added to a real wheel (GHI #900).
 
-    The same literal is also planted OUTSIDE the include block, so the control
-    cannot pass on a scan that simply walks every Markdown file it can find.
+    The same literal is also planted OUTSIDE the wheel (under ``docs/`` and in
+    an excluded chore's ``proofs/``), so the control cannot pass on a scan that
+    simply walks every Markdown file it can find.
     """
     root = _mkroot("wheel-path-literals")
     _write(
         root / "pyproject.toml",
         "[project]\nname = 'gzkit-qc-nc'\nversion = '0.0.0'\n\n"
-        "[tool.hatch.build.targets.wheel]\n"
-        'packages = ["src/gzkit"]\n'
-        "include = [\n"
-        '    "src/gzkit/skills/**/*.md",\n'
-        "]\n",
+        "[build-system]\nbuild-backend = 'uv_build'\n\n"
+        "[tool.uv.build-backend]\n"
+        "module-name = 'gzkit'\n"
+        "module-root = 'src'\n"
+        "wheel-exclude = ['gzkit/chores/*/proofs']\n",
+    )
+    _write(
+        root / "src" / "gzkit" / "chores" / "nc-demo" / "proofs" / "LOG.md",
+        "Ran from `/Users/someone/Archive`.\n",
     )
     _write(
         root / "src" / "gzkit" / "skills" / "nc-demo" / "SKILL.md",

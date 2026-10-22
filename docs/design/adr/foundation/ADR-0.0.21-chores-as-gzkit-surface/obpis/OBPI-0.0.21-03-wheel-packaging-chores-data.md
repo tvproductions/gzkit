@@ -129,7 +129,7 @@ ls -lh dist/*.whl
 - [ ] REQ-0.0.21-03-03: The built wheel does NOT contain any `__pycache__/` or `proofs/` paths under `gzkit/chores/`.
 - [ ] REQ-0.0.21-03-04: After `pip install -e .` in a scratch venv, `importlib.resources.files("gzkit.chores").iterdir()` lists the chore slugs.
 - [ ] REQ-0.0.21-03-05: The pyinstaller binary build either bundles chore data or documents the resolution path at runtime, and a binary run of the chores-listing command succeeds (evidence pasted in attestation).
-- [ ] REQ-0.0.21-03-06: `pyproject.toml` uses Hatchling-native include/force-include syntax; no `MANIFEST.in` added; no `[tool.setuptools.*]` block added.
+- [ ] REQ-0.0.21-03-06: `pyproject.toml` uses Hatchling-native include/force-include syntax; no `MANIFEST.in` added; no `[tool.setuptools.*]` block added. *Amended 2026-10-22 (operator ruling, verbatim "Amend in place (Rec.)"; RO-9 ruling 3, "hatchling to `uv_build`"):* the backend is `uv_build` and its native data-shipping form is `[tool.uv.build-backend]` (`module-root`, `module-name`, the excludes); the no-`MANIFEST.in` and no-setuptools clauses stand as attested. Covering tests: `tests/test_packaging.py::TestPyprojectBuildBackendNative`.
 
 ## Completion Checklist
 

@@ -2,8 +2,8 @@
 
 Verifies that ``uv build`` ships canonical chore data files in the wheel,
 excludes runtime evidence (``proofs/``, ``__pycache__``), and that
-``pyproject.toml`` uses Hatchling-native syntax (no MANIFEST.in, no
-``[tool.setuptools.*]``).
+``pyproject.toml`` uses the build backend's native configuration, `uv_build`
+since 2026-10-22 (no MANIFEST.in, no ``[tool.setuptools.*]``).
 
 @covers OBPI-0.0.21-03
 """
@@ -125,59 +125,56 @@ class TestWheelChoresShipping(unittest.TestCase):
         )
 
 
-class TestPyprojectHatchlingNative(unittest.TestCase):
-    """REQ-0.0.21-03-06: Hatchling-native syntax; no setuptools/MANIFEST.in."""
+class TestPyprojectBuildBackendNative(unittest.TestCase):
+    """REQ-0.0.21-03-06: backend-native data shipping; no setuptools/MANIFEST.in.
+
+    Amended 2026-10-22 (operator, verbatim "Amend in place (Rec.)"; RO-9 ruling 3,
+    "hatchling to `uv_build`"). The REQ's attested text names Hatchling-native
+    include/force-include syntax; the backend is now `uv_build`, whose native
+    form is `[tool.uv.build-backend]`. The no-MANIFEST.in and no-setuptools
+    clauses are doctrine-neutral and assert as attested.
+    """
 
     @covers("REQ-0.0.21-03-06")
-    def test_pyproject_uses_hatchling_native_syntax(self) -> None:
-        """REQ-06: include/force-include declared; no MANIFEST.in; no [tool.setuptools]."""
+    def test_pyproject_uses_uv_build_native_config(self) -> None:
+        """REQ-06 (amended): uv_build backend-native; no MANIFEST.in; no [tool.setuptools]."""
         pyproject_path = REPO_ROOT / "pyproject.toml"
         with pyproject_path.open("rb") as fh:
             data = tomllib.load(fh)
 
-        wheel_target = (
-            data.get("tool", {})
-            .get("hatch", {})
-            .get("build", {})
-            .get("targets", {})
-            .get("wheel", {})
-        )
-        has_force_include = "force-include" in wheel_target
-        has_include = bool(wheel_target.get("include"))
-        self.assertTrue(
-            has_force_include or has_include,
-            msg=(
-                "pyproject.toml must declare a Hatchling-native data-shipping "
-                "mechanism: [tool.hatch.build.targets.wheel.force-include] OR "
-                "[tool.hatch.build.targets.wheel].include"
-            ),
-        )
+        self.assertEqual(data["build-system"]["build-backend"], "uv_build")
+        backend = data["tool"]["uv"]["build-backend"]
+        self.assertEqual((backend["module-root"], backend["module-name"]), ("src", "gzkit"))
 
         self.assertNotIn(
             "setuptools",
             data.get("tool", {}),
             msg="pyproject.toml must not contain a [tool.setuptools.*] block",
         )
+        self.assertNotIn("hatch", data.get("tool", {}), msg="the hatch tables are retired")
 
         manifest_in = REPO_ROOT / "MANIFEST.in"
         self.assertFalse(
             manifest_in.exists(),
-            msg=(
-                f"{manifest_in} must not exist (setuptools vestige; Hatchling is the build backend)"
-            ),
+            msg=f"{manifest_in} must not exist (setuptools vestige; uv_build is the backend)",
         )
 
     @covers("REQ-0.0.21-03-06")
-    def test_pyproject_preserves_packages_declaration(self) -> None:
-        """REQ-03 (preserve): packages = ['src/gzkit'] declaration MUST remain intact."""
-        pyproject_path = REPO_ROOT / "pyproject.toml"
-        with pyproject_path.open("rb") as fh:
-            data = tomllib.load(fh)
-        wheel_target = data["tool"]["hatch"]["build"]["targets"]["wheel"]
-        self.assertEqual(
-            wheel_target.get("packages"),
-            ["src/gzkit"],
-            msg="packages = ['src/gzkit'] must remain (data shipping ADDS to it)",
+    def test_the_package_and_its_chore_data_ship_from_the_module_root(self) -> None:
+        """REQ-03 (preserve): the gzkit package ships, and its chore data with it.
+
+        Under hatchling this read `packages = ['src/gzkit']`; under uv_build the
+        module root is what ships the package (amended 2026-10-22, as above), so
+        the assertion reads the predicted wheel rather than a declaration.
+        """
+        from gzkit.governance.trust_audits.distribution import wheel_shipped_files
+
+        shipped = wheel_shipped_files(REPO_ROOT)
+        self.assertIn("src/gzkit/__init__.py", shipped)
+        self.assertIn("src/gzkit/chores/registry.json", shipped)
+        self.assertFalse(
+            [path for path in shipped if "/proofs/" in path or "__pycache__" in path],
+            msg="runtime proofs and bytecode are excluded from the wheel",
         )
 
 

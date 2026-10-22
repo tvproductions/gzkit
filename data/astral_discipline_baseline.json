@@ -8,12 +8,6 @@
       "count": 1
     },
     {
-      "rule": "build-backend-not-uv",
-      "file": "pyproject.toml",
-      "subject": "hatchling.build",
-      "count": 1
-    },
-    {
       "rule": "dev-tool-in-extra",
       "file": "gz init scaffold:pyproject.toml",
       "subject": "dev",

@@ -1,9 +1,9 @@
 """Regression fence for machine-local path literals in wheel-shipped instructions (GHI #900).
 
-``pip install py-gzkit`` hands an adopter the ``.md`` trees named in
-``[tool.hatch.build.targets.wheel] include``.  ``gz validate --distribution``
-proves those bytes *arrive*; nothing proved the instruction they carry can
-**resolve** for the party it was delivered to.  Four wheel-shipped files
+``pip install py-gzkit`` hands an adopter every ``.md`` the uv_build wheel
+ships (the module tree under ``[tool.uv.build-backend]`` minus its excludes).
+``gz validate --distribution`` proves those bytes *arrive*; nothing proved the
+instruction they carry can **resolve** for the party it was delivered to.  Four wheel-shipped files
 instructed a reader to open a path that existed on one laptop, and the
 delivery gate read green the whole time because the bytes were intact.
 
@@ -18,7 +18,7 @@ measured in wheel ``.md`` at authoring).
 
 ``ScopeFollowsWheelTests`` is the load-bearing one.  A transcribed glob list
 would cover the trees that existed the day it was written and silently miss
-the next tree added to the wheel; the audit reads the same ``include`` block
+the next tree added to the wheel; the audit reads the same wheel prediction
 the delivery gate reads, so scope and delivery cannot drift apart.
 """
 
@@ -37,11 +37,16 @@ from gzkit.governance.trust_audits.wheel_path_literals import (
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 _PYPROJECT = """\
-[tool.hatch.build.targets.wheel]
-packages = ["src/gzkit"]
-include = [
-    "src/gzkit/skills/**/*.md",
-]
+[project]
+name = "py-gzkit"
+
+[build-system]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "gzkit"
+module-root = "src"
+wheel-exclude = ["gzkit/chores/*/proofs"]
 """
 
 
@@ -128,9 +133,9 @@ class RemedyShapesAreNotDefectsTests(unittest.TestCase):
 
 
 class ScopeFollowsWheelTests(unittest.TestCase):
-    """Scope is derived from the wheel's own include block, never transcribed."""
+    """Scope is derived from the wheel the build declares, never transcribed."""
 
-    def test_markdown_outside_the_include_block_is_not_scanned(self) -> None:
+    def test_markdown_outside_the_module_root_is_not_scanned(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = _fake_project(tmp, "clean\n")
             stray = root / "docs" / "notes.md"
@@ -138,17 +143,24 @@ class ScopeFollowsWheelTests(unittest.TestCase):
             stray.write_text("Open `/Users/someone/x.zip`.\n", encoding="utf-8")
             self.assertEqual([], audit_wheel_path_literals(root))
 
-    def test_a_tree_added_to_the_include_block_becomes_covered(self) -> None:
-        widened = _PYPROJECT.replace(
-            '    "src/gzkit/skills/**/*.md",\n',
-            '    "src/gzkit/skills/**/*.md",\n    "src/gzkit/newtree/**/*.md",\n',
-        )
+    def test_a_new_tree_under_the_module_root_is_covered_undeclared(self) -> None:
+        """uv_build ships the module tree whole, so a new tree needs no declaration."""
         with tempfile.TemporaryDirectory() as tmp:
-            root = _fake_project(tmp, "clean\n", pyproject=widened)
+            root = _fake_project(tmp, "clean\n")
             fresh = root / "src" / "gzkit" / "newtree" / "GUIDE.md"
             fresh.parent.mkdir(parents=True, exist_ok=True)
             fresh.write_text("Open `/Users/someone/x.zip`.\n", encoding="utf-8")
             self.assertEqual(1, len(audit_wheel_path_literals(root)))
+
+    def test_a_tree_the_wheel_excludes_is_not_scanned(self) -> None:
+        """A chore's runtime proofs never ship, so their literals reach no adopter."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _fake_project(tmp, "clean\n")
+            proof = root / "src" / "gzkit" / "chores" / "demo" / "proofs" / "LOG.md"
+            proof.parent.mkdir(parents=True, exist_ok=True)
+            proof.write_text("Ran in `/Users/someone/x`.\n", encoding="utf-8")
+            self.assertEqual([], audit_wheel_path_literals(root))
+            self.assertNotIn(proof, wheel_instruction_files(root))
 
     def test_shipped_python_is_out_of_scope(self) -> None:
         """Executable modules are code, not instruction text a reader resolves.

@@ -17,11 +17,19 @@ from pathlib import Path
 from gzkit.traceability import covers
 
 
-def _write_pyproject(root: Path, include_globs: list[str]) -> None:
-    """Write a minimal pyproject.toml with wheel include globs."""
-    globs_toml = "\n".join(f'    "{g}",' for g in include_globs)
+def _write_pyproject(root: Path, wheel_exclude: list[str] | None = None) -> None:
+    """Write a minimal uv_build pyproject.toml; the wheel ships ``src/gzkit`` minus excludes.
+
+    The fixtures modelled hatchling's include globs until RO-9 tranche 3 moved
+    the build to uv_build (2026-10-22), which has no wheel includes: a file is
+    left out of the wheel only by an exclude or by sitting outside the module.
+    """
+    excludes = ", ".join(f'"{pattern}"' for pattern in wheel_exclude or [])
     (root / "pyproject.toml").write_text(
-        f"[tool.hatch.build.targets.wheel]\ninclude = [\n{globs_toml}\n]\n",
+        '[project]\nname = "py-gzkit"\n\n'
+        '[build-system]\nbuild-backend = "uv_build"\n\n'
+        '[tool.uv.build-backend]\nmodule-name = "gzkit"\nmodule-root = "src"\n'
+        f"wheel-exclude = [{excludes}]\n",
         encoding="utf-8",
     )
 
@@ -50,7 +58,7 @@ class TestCleanStateExitsZero(unittest.TestCase):
             skill.parent.mkdir(parents=True)
             skill.write_text("# Test skill\n", encoding="utf-8")
 
-            _write_pyproject(root, ["src/gzkit/skills/**/*.md"])
+            _write_pyproject(root)
             _write_manifest(root, {"skills": ["test-skill/SKILL.md"]})
 
             errors = audit_distribution(root)
@@ -73,8 +81,8 @@ class TestOnDiskNotIncluded(unittest.TestCase):
             skill.parent.mkdir(parents=True)
             skill.write_text("# Orphan\n", encoding="utf-8")
 
-            # Include globs that do NOT cover this file
-            _write_pyproject(root, ["src/gzkit/rules/**/*.md"])
+            # An exclude that removes this file from the wheel
+            _write_pyproject(root, ["orphan-skill"])
             # Baseline matches what's included (nothing for skills)
             _write_manifest(root, {"skills": []})
 
@@ -98,7 +106,7 @@ class TestOnDiskNotIncluded(unittest.TestCase):
             skill.parent.mkdir(parents=True)
             skill.write_text("# unincluded\n", encoding="utf-8")
 
-            _write_pyproject(root, [])
+            _write_pyproject(root, ["unincluded"])
             _write_manifest(root, {"skills": []})
 
             errors = audit_distribution(root)
@@ -118,7 +126,7 @@ class TestOnDiskNotIncluded(unittest.TestCase):
             skill.parent.mkdir(parents=True)
             skill.write_text("# hint\n", encoding="utf-8")
 
-            _write_pyproject(root, [])
+            _write_pyproject(root, ["hint-check"])
             _write_manifest(root, {"skills": []})
 
             errors = audit_distribution(root)
@@ -140,7 +148,7 @@ class TestBaselineNotOnDisk(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             # No on-disk file
-            _write_pyproject(root, ["src/gzkit/skills/**/*.md"])
+            _write_pyproject(root)
             # Baseline claims a file that doesn't exist
             _write_manifest(root, {"skills": ["phantom-skill/SKILL.md"]})
 
@@ -160,7 +168,7 @@ class TestBaselineNotOnDisk(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            _write_pyproject(root, ["src/gzkit/skills/**/*.md"])
+            _write_pyproject(root)
             _write_manifest(root, {"skills": ["missing/SKILL.md"]})
 
             errors = audit_distribution(root)
@@ -187,7 +195,7 @@ class TestOnDiskNotBaseline(unittest.TestCase):
             new_skill.parent.mkdir(parents=True)
             new_skill.write_text("# new\n", encoding="utf-8")
 
-            _write_pyproject(root, ["src/gzkit/skills/**/*.md"])
+            _write_pyproject(root)
             # Baseline is empty — file exists on disk and is covered but not in baseline
             _write_manifest(root, {"skills": []})
 
@@ -211,7 +219,7 @@ class TestOnDiskNotBaseline(unittest.TestCase):
             skill.parent.mkdir(parents=True)
             skill.write_text("# hint\n", encoding="utf-8")
 
-            _write_pyproject(root, ["src/gzkit/skills/**/*.md"])
+            _write_pyproject(root)
             _write_manifest(root, {"skills": []})
 
             errors = audit_distribution(root)
@@ -267,7 +275,7 @@ class TestMalformedToml(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            _write_pyproject(root, [])
+            _write_pyproject(root)
             # No data/distribution_baseline_manifest.json
 
             with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as ctx:
@@ -295,7 +303,7 @@ class TestWalkFilter(unittest.TestCase):
             pycache.parent.mkdir(parents=True)
             pycache.write_bytes(b"fake pyc")
 
-            _write_pyproject(root, ["src/gzkit/skills/**/*.md"])
+            _write_pyproject(root)
             _write_manifest(root, {"skills": ["cache-test/SKILL.md"]})
 
             errors = audit_distribution(root)
@@ -330,7 +338,7 @@ class TestWalkFilter(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            _write_pyproject(root, [])
+            _write_pyproject(root)
             _write_manifest(root, {})
 
             import unittest.mock as mock
@@ -353,7 +361,7 @@ class TestStaticOnlyInvariant(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            _write_pyproject(root, ["src/gzkit/skills/**/*.md"])
+            _write_pyproject(root)
             _write_manifest(root, {"skills": []})
 
             import unittest.mock as mock
@@ -406,7 +414,7 @@ class TestRegenerateDistributionBaseline(unittest.TestCase):
         skill = root / "src" / "gzkit" / "skills" / "test-skill" / "SKILL.md"
         skill.parent.mkdir(parents=True)
         skill.write_text("# Test skill\n", encoding="utf-8")
-        _write_pyproject(root, ["src/gzkit/skills/**/*.md"])
+        _write_pyproject(root)
         _write_manifest(root, {"skills": []})
 
     @covers("REQ-0.0.32-15-03")
@@ -538,7 +546,7 @@ class TestSurfaceDomainIsNotSelfSupplied(unittest.TestCase):
             chore.parent.mkdir(parents=True)
             chore.write_text("# Demo chore\n", encoding="utf-8")
 
-            _write_pyproject(root, ["src/gzkit/**/*.md"])
+            _write_pyproject(root)
             # The manifest declares only `skills`.  The chores surface is real,
             # on disk, and shipped by the include glob — but unlisted.
             _write_manifest(root, {"skills": ["test-skill/SKILL.md"]})
@@ -574,13 +582,12 @@ class TestSurfaceDomainIsNotSelfSupplied(unittest.TestCase):
             "would hide its absence from the wheel.",
         )
 
-    def test_package_root_py_file_is_modelled_as_shipped(self) -> None:
-        """A .py file under a `packages` root ships even with no include glob.
+    def test_module_root_py_file_is_modelled_as_shipped(self) -> None:
+        """A .py file under the module root ships with no include declared.
 
-        hatchling ships ``packages`` as package modules independently of
-        ``include``; modelling only the include globs makes the audit report a
-        shipped file as not-shipped.  Verified against a real wheel build of
-        0.34.2, where 7 .py files shipped that the include globs did not cover.
+        uv_build ships the module tree whole; modelling a glob list instead
+        reported shipped files as not-shipped, the defect this replaced the
+        hatchling `packages` test for (RO-9 tranche 3).
         """
         from gzkit.governance.trust_audits import audit_distribution
 
@@ -594,17 +601,12 @@ class TestSurfaceDomainIsNotSelfSupplied(unittest.TestCase):
 
             # The authored counterpart is what makes the script `canonical` rather
             # than `package_only` — without it the exemption fires first and the
-            # include-modelling this test targets is never reached.
+            # shipping model this test targets is never reached.
             canonical_dir = root / ".gzkit" / "chores" / "demo-slug"
             canonical_dir.mkdir(parents=True)
             (canonical_dir / "check_thing.py").write_text("x = 1\n", encoding="utf-8")
 
-            (root / "pyproject.toml").write_text(
-                "[tool.hatch.build.targets.wheel]\n"
-                'packages = ["src/gzkit"]\n'
-                'include = [\n    "src/gzkit/chores/**/*.md",\n]\n',
-                encoding="utf-8",
-            )
+            _write_pyproject(root)
             _write_manifest(
                 root,
                 {"chores": ["demo-slug/CHORE.md", "demo-slug/check_thing.py"]},
@@ -612,13 +614,7 @@ class TestSurfaceDomainIsNotSelfSupplied(unittest.TestCase):
 
             errors = audit_distribution(root)
 
-            flagged = [e.artifact for e in errors]
-            self.assertNotIn(
-                "src/gzkit/chores/demo-slug/check_thing.py",
-                flagged,
-                "A .py file under a `packages` root ships as a package module; "
-                "reporting it as not-included models only half the build config.",
-            )
+            self.assertEqual([e.artifact for e in errors], [])
 
     def test_regenerator_recovers_a_surface_the_manifest_omits(self) -> None:
         """Regeneration is from on-disk truth, so it adds a surface the manifest lacks."""
@@ -633,7 +629,7 @@ class TestSurfaceDomainIsNotSelfSupplied(unittest.TestCase):
             chore.parent.mkdir(parents=True)
             chore.write_text("# Demo chore\n", encoding="utf-8")
 
-            _write_pyproject(root, ["src/gzkit/**/*.md"])
+            _write_pyproject(root)
             _write_manifest(root, {})
 
             regenerate_distribution_baseline(root)
@@ -647,6 +643,111 @@ class TestSurfaceDomainIsNotSelfSupplied(unittest.TestCase):
                 "regenerate_distribution_baseline documents on-disk truth as its sole "
                 "input; a surface it cannot discover makes that claim false.",
             )
+
+
+class TestUvBuildWheelPrediction(unittest.TestCase):
+    """`wheel_shipped_files` predicts a uv_build wheel without building one.
+
+    Each case is a uv_build rule read from its documentation and probed on uv
+    0.13.1 on 2026-10-22, where the prediction matched a real wheel's 877 files.
+    """
+
+    def _tree(self, root: Path, *rel_paths: str) -> None:
+        for rel in rel_paths:
+            path = root / rel
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("x\n", encoding="utf-8")
+
+    def test_the_module_tree_ships_whole(self) -> None:
+        from gzkit.governance.trust_audits.distribution import wheel_shipped_files
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._tree(root, "src/gzkit/__init__.py", "src/gzkit/data/x.json", "docs/a.md")
+            _write_pyproject(root)
+            self.assertEqual(
+                wheel_shipped_files(root), {"src/gzkit/__init__.py", "src/gzkit/data/x.json"}
+            )
+
+    def test_an_unanchored_exclude_removes_a_directory_and_its_children_at_depth(self) -> None:
+        from gzkit.governance.trust_audits.distribution import wheel_shipped_files
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._tree(
+                root,
+                "src/gzkit/chores/a/CHORE.md",
+                "src/gzkit/chores/a/proofs/log.md",
+                "src/gzkit/chores/a/proofs/deep/run.json",
+            )
+            _write_pyproject(root, ["gzkit/chores/*/proofs"])
+            self.assertEqual(wheel_shipped_files(root), {"src/gzkit/chores/a/CHORE.md"})
+
+    def test_uv_default_excludes_apply_with_none_declared(self) -> None:
+        from gzkit.governance.trust_audits.distribution import wheel_shipped_files
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._tree(
+                root,
+                "src/gzkit/a.py",
+                "src/gzkit/__pycache__/a.cpython-314.pyc",
+                "src/gzkit/b.pyo",
+            )
+            _write_pyproject(root)
+            self.assertEqual(wheel_shipped_files(root), {"src/gzkit/a.py"})
+
+    def test_the_module_name_defaults_to_the_normalized_project_name(self) -> None:
+        from gzkit.governance.trust_audits.distribution import wheel_shipped_files
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._tree(root, "src/my_tool/__init__.py", "src/gzkit/__init__.py")
+            (root / "pyproject.toml").write_text(
+                '[project]\nname = "My-Tool"\n[build-system]\nbuild-backend = "uv_build"\n',
+                encoding="utf-8",
+            )
+            self.assertEqual(wheel_shipped_files(root), {"src/my_tool/__init__.py"})
+
+    def test_a_project_not_built_by_uv_build_predicts_no_wheel(self) -> None:
+        from gzkit.governance.trust_audits.distribution import wheel_shipped_files
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._tree(root, "src/gzkit/__init__.py")
+            (root / "pyproject.toml").write_text(
+                '[build-system]\nbuild-backend = "hatchling.build"\n', encoding="utf-8"
+            )
+            self.assertEqual(wheel_shipped_files(root), set())
+
+    def test_an_anchored_exclude_is_refused_as_a_system_error(self) -> None:
+        from gzkit.governance.trust_audits.distribution import wheel_shipped_files
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._tree(root, "src/gzkit/__init__.py")
+            _write_pyproject(root, ["/gzkit/chores/*/proofs"])
+            stderr = io.StringIO()
+            with contextlib.redirect_stderr(stderr), self.assertRaises(SystemExit) as ctx:
+                wheel_shipped_files(root)
+            self.assertEqual(ctx.exception.code, 2)
+            self.assertIn("unanchored", stderr.getvalue())
+
+    @covers("REQ-0.0.32-07-02")
+    def test_a_not_included_finding_names_the_exclude_that_removed_it(self) -> None:
+        """REQ-02's glob context: under uv_build it is the exclude pattern."""
+        from gzkit.governance.trust_audits import audit_distribution
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._tree(root, "src/gzkit/skills/kept/SKILL.md", "src/gzkit/skills/gone/SKILL.md")
+            _write_pyproject(root, ["skills/gone"])
+            _write_manifest(root, {"skills": ["kept/SKILL.md"]})
+
+            errors = audit_distribution(root)
+
+            self.assertEqual([e.artifact for e in errors], ["src/gzkit/skills/gone/SKILL.md"])
+            self.assertIn("'skills/gone'", errors[0].message)
 
 
 if __name__ == "__main__":

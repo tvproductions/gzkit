@@ -958,28 +958,37 @@ Static T0 distribution invariant audit (ADR-0.0.32-07). Verifies that every
 file in a canonical surface tree (`src/gzkit/skills/`, `src/gzkit/rules/`,
 `src/gzkit/personas/`, `src/gzkit/templates/`, and any surface tracked by
 `data/distribution_baseline_manifest.json`) is wheel-deliverable — i.e.,
-covered by a `[tool.hatch.build.targets.wheel] include:` glob in
-`pyproject.toml` AND present in the baseline manifest.
+shipped by the uv_build wheel `pyproject.toml` declares AND present in the
+baseline manifest.
 
-The check is **purely static**: no wheel build, no `uv build` or `hatch build`
-subprocess. Inputs are `pyproject.toml` (parsed via stdlib `tomllib`),
+uv_build has no wheel includes: the wheel is the module under
+`[tool.uv.build-backend]` `module-root` / `module-name` minus its
+`source-exclude` and `wheel-exclude` patterns and uv's own (`__pycache__`,
+`*.pyc`, `*.pyo`). Excludes are unanchored, matching at any depth with their
+children; an anchored exclude (leading `/`) exits 2, because uv 0.13.1 removed
+nothing for one and no reading of it is verified. A project not built by
+uv_build ships nothing the audit can model. The prediction matched a real
+`uv build` file for file (877 files) when it landed on 2026-10-22.
+
+The check is **purely static**: no wheel build, no `uv build` subprocess.
+Inputs are `pyproject.toml` (parsed via stdlib `tomllib`),
 `data/distribution_baseline_manifest.json`, and on-disk file walks.
 
 #### Drift classes
 
 | Class | Meaning |
 |-------|---------|
-| `ON_DISK_NOT_INCLUDED` | File exists under a canonical surface tree but is not covered by any include glob in `pyproject.toml`. Resolution: extend the `include:` block. |
+| `ON_DISK_NOT_INCLUDED` | File exists under a canonical surface tree but the wheel does not ship it; the report names the exclude that removed it, or that it sits outside the module root. Resolution: narrow that exclude, or move the file under the module root. |
 | `BASELINE_NOT_ON_DISK` | Baseline manifest names a file that does not exist on disk. Resolution: restore the missing file or remove the entry from `data/distribution_baseline_manifest.json`. |
-| `ON_DISK_NOT_BASELINE` | File exists on disk and is covered by an include glob but is absent from the baseline manifest. Resolution: add the entry to `data/distribution_baseline_manifest.json`. |
+| `ON_DISK_NOT_BASELINE` | File exists on disk and the wheel ships it but it is absent from the baseline manifest. Resolution: add the entry to `data/distribution_baseline_manifest.json`. |
 
 #### Exit codes
 
 | Code | Meaning | Recovery |
 |------|---------|----------|
 | 0 | No drift — all three inputs agree | — |
-| 2 | System/IO error — `pyproject.toml` is malformed or missing, or baseline manifest is missing or unparseable | Fix the TOML/JSON syntax or restore the missing file |
-| 3 | Policy breach — one or more drift violations detected | See per-violation report; extend include globs or update the baseline manifest |
+| 2 | System/IO error — `pyproject.toml` is malformed or missing, an exclude is anchored, or baseline manifest is missing or unparseable | Fix the TOML/JSON syntax, unanchor the exclude, or restore the missing file |
+| 3 | Policy breach — one or more drift violations detected | See per-violation report; narrow the named exclude or update the baseline manifest |
 
 #### Examples
 
@@ -1002,9 +1011,9 @@ nothing about whether the instruction those bytes carry can **resolve** for the
 adopter they were delivered to: four shipped files told a reader to open a path
 that existed on one laptop while the delivery gate read green throughout.
 
-**Scope** — every `.md` covered by `[tool.hatch.build.targets.wheel] include`,
-read from the same declaration `--distribution` reads, so witness scope cannot
-drift from delivery scope. Shipped `.py` and `.json` are out of scope: they are
+**Scope** — every `.md` the uv_build wheel ships, read from the same
+prediction `--distribution` reads, so witness scope cannot drift from delivery
+scope. Shipped `.py` and `.json` are out of scope: they are
 code and data, not steps a reader resolves.
 
 #### What fails closed

@@ -3,7 +3,8 @@ name = "py-gzkit"
 version = "0.34.9"
 description = "GovZero Kit: A Development Covenant for Human-AI Collaboration"
 readme = "README.md"
-license = { file = "LICENSE" }
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.14"
 authors = [
     { name = "g0" }
@@ -13,7 +14,6 @@ classifiers = [
     "Development Status :: 3 - Alpha",
     "Environment :: Console",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3.14",
     "Topic :: Software Development :: Documentation",
     "Topic :: Software Development :: Quality Assurance",
@@ -57,38 +57,19 @@ Documentation = "https://gzkit.org"
 Repository = "https://github.com/tvproductions/gzkit"
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["uv_build>=0.13.1,<0.14"]
+build-backend = "uv_build"
 
-[tool.hatch.build.targets.sdist]
-exclude = [
-    ".antigravitycli",
-    ".antigravitycli/**",
-]
-
-[tool.hatch.build.targets.wheel]
-packages = ["src/gzkit"]
-include = [
-    "src/gzkit/chores/**/*.md",
-    "src/gzkit/chores/**/*.json",
-    "src/gzkit/chores/README.md",
-    "src/gzkit/chores/registry.json",
-    "src/gzkit/skills/**/*.md",
-    "src/gzkit/rules/**/*.md",
-    "src/gzkit/rules/**/*.json",
-    "src/gzkit/personas/**/*.md",
-    "src/gzkit/templates/**/*.md",
-    "src/gzkit/hooks/scripts/**",
-]
-exclude = [
-    ".antigravitycli",
-    ".antigravitycli/**",
-    "**/__pycache__",
-    "**/__pycache__/**",
-    "**/*.pyc",
-    "src/gzkit/chores/*/proofs",
-    "src/gzkit/chores/*/proofs/**",
-]
+[tool.uv.build-backend]
+# The distribution is py-gzkit; the one root module is gzkit. uv_build ships the
+# whole module tree (it has no wheel includes), so the wheel's contents are this
+# tree minus the excludes below and uv's own (`__pycache__`, `*.pyc`, `*.pyo`).
+# Excludes are unanchored: an anchored `wheel-exclude` removed nothing on uv
+# 0.13.1. `gz validate --distribution` predicts the wheel from this table.
+module-name = "gzkit"
+module-root = "src"
+source-exclude = [".antigravitycli"]
+wheel-exclude = ["gzkit/chores/*/proofs"]
 
 [tool.uv]
 # The one uv version this repository runs on, locally and in CI. uv refuses to

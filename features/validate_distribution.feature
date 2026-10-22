@@ -16,7 +16,7 @@ Feature: gz validate --distribution T0 static audit
   @REQ-0.0.32-07-05
   @REQ-0.0.32-07-11
   Scenario: ON_DISK_NOT_INCLUDED drift detected exits 3
-    Given a minimal project with a skills surface file not covered by any include glob
+    Given a minimal project with a skills surface file the wheel excludes
     When I run "gz validate --distribution"
     Then it exits with code 3
     And the output contains "ON_DISK_NOT_INCLUDED"
