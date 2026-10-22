@@ -749,6 +749,85 @@ class TestUvBuildWheelPrediction(unittest.TestCase):
             self.assertEqual([e.artifact for e in errors], ["src/gzkit/skills/gone/SKILL.md"])
             self.assertIn("'skills/gone'", errors[0].message)
 
+    def test_a_double_star_exclude_spans_any_depth(self) -> None:
+        from gzkit.governance.trust_audits.distribution import wheel_shipped_files
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._tree(
+                root,
+                "src/gzkit/skills/a/SKILL.md",
+                "src/gzkit/skills/a/drafts/x.md",
+                "src/gzkit/skills/a/b/c/drafts/y.md",
+            )
+            _write_pyproject(root, ["gzkit/**/drafts"])
+            self.assertEqual(wheel_shipped_files(root), {"src/gzkit/skills/a/SKILL.md"})
+
+
+class TestUnshippedReason(unittest.TestCase):
+    """Each not-included finding says why the wheel leaves the file out (REQ-0.0.32-07-02)."""
+
+    def test_a_default_exclude_is_named_as_uv_builds_own(self) -> None:
+        from gzkit.governance.trust_audits.distribution import unshipped_reason
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_pyproject(root)
+            self.assertEqual(
+                unshipped_reason(root, "src/gzkit/skills/a/x.pyc"),
+                "uv_build's default exclude '*.pyc' removes it",
+            )
+
+    def test_a_file_outside_the_module_root_is_named_by_location(self) -> None:
+        from gzkit.governance.trust_audits.distribution import unshipped_reason
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "pyproject.toml").write_text(
+                '[build-system]\nbuild-backend = "uv_build"\n'
+                '[tool.uv.build-backend]\nmodule-name = "other"\n',
+                encoding="utf-8",
+            )
+            self.assertEqual(
+                unshipped_reason(root, "src/gzkit/skills/a/SKILL.md"),
+                "it sits outside the module root 'src/other'",
+            )
+
+    def test_a_project_without_a_uv_build_wheel_is_named_as_such(self) -> None:
+        from gzkit.governance.trust_audits import audit_distribution
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            skill = root / "src" / "gzkit" / "skills" / "a" / "SKILL.md"
+            skill.parent.mkdir(parents=True)
+            skill.write_text("# a\n", encoding="utf-8")
+            (root / "pyproject.toml").write_text(
+                '[build-system]\nbuild-backend = "hatchling.build"\n', encoding="utf-8"
+            )
+            _write_manifest(root, {"skills": ["a/SKILL.md"]})
+
+            errors = audit_distribution(root)
+
+            self.assertEqual([e.artifact for e in errors], ["src/gzkit/skills/a/SKILL.md"])
+            self.assertIn("declares no uv_build wheel", errors[0].message)
+
+    def test_a_shipped_file_missing_from_the_baseline_is_named_as_shipped(self) -> None:
+        from gzkit.governance.trust_audits import audit_distribution
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            skill = root / "src" / "gzkit" / "skills" / "a" / "SKILL.md"
+            skill.parent.mkdir(parents=True)
+            skill.write_text("# a\n", encoding="utf-8")
+            _write_pyproject(root)
+            _write_manifest(root, {"skills": []})
+
+            errors = audit_distribution(root)
+
+            self.assertEqual(len(errors), 1)
+            self.assertIn("ON_DISK_NOT_BASELINE", errors[0].message)
+            self.assertIn("covered by the wheel", errors[0].message)
+
 
 if __name__ == "__main__":
     unittest.main()

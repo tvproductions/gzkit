@@ -214,5 +214,28 @@ class DispatchTests(unittest.TestCase):
         self.assertEqual("default", entries["wheel_path_literals"].tier)
 
 
+class NegativeControlTests(unittest.TestCase):
+    """The control's fixture declares a uv_build wheel, and the witness reads THAT wheel."""
+
+    def test_the_control_catches_its_fixture(self) -> None:
+        from gzkit.enforcement import _run_single_claim, production_enforcement_registry
+
+        records = {r.claim_id: r for r in production_enforcement_registry()}
+        result = _run_single_claim(records["wheel-path-literals"])
+        self.assertEqual(result.outcome, "PASS", result.message)
+
+    def test_only_the_shipped_literal_is_found(self) -> None:
+        """The literals planted outside the wheel (docs, an excluded proofs tree) stay silent."""
+        from unittest.mock import patch
+
+        from gzkit.governance.trust_audits import _qc_negative_controls as nc
+
+        with tempfile.TemporaryDirectory() as tmp:
+            with patch.object(nc, "_mkroot", lambda slug: Path(tmp) / slug):
+                root = nc._build_wheel_path_literals()
+            artifacts = [e.artifact for e in audit_wheel_path_literals(root)]
+            self.assertEqual(artifacts, ["src/gzkit/skills/nc-demo/SKILL.md"])
+
+
 if __name__ == "__main__":
     unittest.main()

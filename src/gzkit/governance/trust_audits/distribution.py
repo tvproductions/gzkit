@@ -190,8 +190,6 @@ def wheel_shipped_files(project_root: Path, *, missing_ok: bool = False) -> set[
     if layout is None:
         return shipped
     module_dir, excludes = layout
-    if not module_dir.is_dir():
-        return shipped
     for path in module_dir.rglob("*"):
         if not path.is_file():
             continue
