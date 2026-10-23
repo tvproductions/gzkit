@@ -1,7 +1,7 @@
 """Unit tests for the stop-turn-feedback hook (OBPI-0.0.70-01).
 
-The hook is the turn-end deterministic sensor (ADR-0.0.70): it runs ruff
-over git-dirty Python files when an agent turn ends and blocks the stop
+The hook is the turn-end deterministic sensor (ADR-0.0.70): it runs `gz lint`
+(Ruff against its baseline) over git-dirty Python files when an agent turn ends and blocks the stop
 with agent-actionable prose so the agent self-corrects before declaring
 done. Tests pin the REQ semantics — block shape, single-block-per-turn,
 off-switch, fail-open, telemetry bounding, settings wiring, and demo mode
@@ -41,6 +41,20 @@ _HOOK = _load_hook_module()
 _RUFF_FINDINGS = "x.py:1:1: F401 [*] `os` imported but unused\nFound 1 error.\n"
 
 
+class RunLintArgvTest(unittest.TestCase):
+    def test_dirty_files_are_linted_by_gz_lint_against_the_baseline(self):
+        """Ruff selects ALL under data/ruff_baseline.json (RO-9 tranche 4).
+
+        Bare `ruff check` would block every turn that touched a file the
+        baseline holds findings in, so the hook asks `gz lint` instead.
+        """
+        done = subprocess.CompletedProcess(args=[], returncode=1, stdout="out", stderr="")
+        with patch.object(_HOOK.subprocess, "run", return_value=done) as run:
+            returncode, output = _HOOK.run_lint(["a.py", "b.py"], Path.cwd())
+        self.assertEqual(run.call_args.args[0], ["uv", "run", "gz", "lint", "a.py", "b.py"])
+        self.assertEqual((returncode, output), (1, "out"))
+
+
 def _payload(
     stop_hook_active: bool = False,
     cwd: str | None = None,
@@ -75,7 +89,7 @@ class TestBlockOnFindings(unittest.TestCase):
         stderr = io.StringIO()
         with (
             patch.object(_HOOK, "collect_dirty_python_files", return_value=["src/x.py"]),
-            patch.object(_HOOK, "run_ruff", return_value=(1, _RUFF_FINDINGS)),
+            patch.object(_HOOK, "run_lint", return_value=(1, _RUFF_FINDINGS)),
             patch.object(_HOOK, "append_telemetry"),
             patch.object(sys, "stdin", io.StringIO(_payload(stop_hook_active=False))),
             patch.object(sys, "stderr", stderr),
@@ -91,7 +105,7 @@ class TestBlockOnFindings(unittest.TestCase):
         self.assertIn("Why this is forbidden", prose)
         self.assertIn("ADR-0.0.70", prose)
         self.assertIn("Governed next step", prose)
-        self.assertIn("uv run ruff check", prose)
+        self.assertIn("uv run gz lint", prose)
 
 
 class TestSingleBlockPerTurn(unittest.TestCase):
@@ -102,7 +116,7 @@ class TestSingleBlockPerTurn(unittest.TestCase):
         stderr = io.StringIO()
         with (
             patch.object(_HOOK, "collect_dirty_python_files", return_value=["src/x.py"]),
-            patch.object(_HOOK, "run_ruff", return_value=(1, _RUFF_FINDINGS)),
+            patch.object(_HOOK, "run_lint", return_value=(1, _RUFF_FINDINGS)),
             patch.object(sys, "stdin", io.StringIO(_payload(stop_hook_active=True))),
             patch.object(sys, "stderr", stderr),
         ):
@@ -117,7 +131,7 @@ class TestOffSwitch(unittest.TestCase):
     @covers("REQ-0.0.70-01-03")
     def test_off_switch_exits_zero_without_invoking_ruff(self):
         with (
-            patch.object(_HOOK, "run_ruff") as ruff,
+            patch.object(_HOOK, "run_lint") as ruff,
             patch.object(sys, "stdin", io.StringIO(_payload())),
             patch.dict(_HOOK.os.environ, {_HOOK.OFF_SWITCH_ENV: "off"}),
         ):
@@ -173,7 +187,7 @@ class TestTelemetry(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             with (
                 patch.object(_HOOK, "collect_dirty_python_files", return_value=["src/x.py"]),
-                patch.object(_HOOK, "run_ruff", return_value=(1, _RUFF_FINDINGS)),
+                patch.object(_HOOK, "run_lint", return_value=(1, _RUFF_FINDINGS)),
                 patch.object(sys, "stdin", io.StringIO(_payload(cwd=tmp))),
                 patch.object(sys, "stderr", io.StringIO()),
             ):
@@ -290,7 +304,7 @@ class TestClaimGrounding(unittest.TestCase):
             stderr = io.StringIO()
             with (
                 patch.object(_HOOK, "collect_dirty_python_files", return_value=["src/x.py"]),
-                patch.object(_HOOK, "run_ruff", return_value=(1, _RUFF_FINDINGS)),
+                patch.object(_HOOK, "run_lint", return_value=(1, _RUFF_FINDINGS)),
                 patch.object(_HOOK, "find_unbacked_claims") as claims,
                 patch.object(_HOOK, "append_telemetry"),
                 patch.object(

@@ -140,12 +140,20 @@ def _register_frontmatter_parsers(commands: argparse._SubParsersAction) -> None:
 
 def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
     """Register quality and validation subcommands."""
-    commands.add_parser(
+    p_lint = commands.add_parser(
         "lint",
         help="Run lint checks",
-        description="Run Ruff and the two path lints over the repository.",
-        epilog=build_epilog(["gz lint"]),
-    ).set_defaults(func=lambda a: _lazy("lint")())
+        description="Run every Ruff rule against data/ruff_baseline.json, and the path lints.",
+        epilog=build_epilog(["gz lint", "gz lint --fix src/gzkit/quality.py", "gz lint --ratchet"]),
+    )
+    p_lint.add_argument("paths", nargs="*", help="Files or directories to lint (default: all)")
+    p_lint.add_argument("--fix", action="store_true", help="Apply Ruff's safe fixes first")
+    p_lint.add_argument(
+        "--ratchet",
+        action="store_true",
+        help="Lower data/ruff_baseline.json to the tree's findings (never raises a row)",
+    )
+    p_lint.set_defaults(func=lambda a: _lazy("lint")(a.paths, fix=a.fix, ratchet=a.ratchet))
     commands.add_parser(
         "format",
         help="Run formatter",

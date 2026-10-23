@@ -48,7 +48,7 @@ RULE_GUIDANCE: dict[str, tuple[str, str]] = {
     ),
     "I001": (
         "Import order incorrect",
-        "Run `ruff check --fix` or use isort; stdlib -> third-party -> local",
+        "Run `uv run gz lint --fix` or use isort; stdlib -> third-party -> local",
     ),
     "UP": (
         "Using outdated Python syntax",
@@ -250,9 +250,9 @@ def render_patterns_compact(report: PatternReport) -> str:
 
 
 __all__ = [
+    "RULE_GUIDANCE",
     "PatternCandidate",
     "PatternReport",
-    "RULE_GUIDANCE",
     "collect_patterns",
     "render_patterns_compact",
     "render_patterns_markdown",

@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-10-23
 metadata:
-  skill-version: "1.4.4"
+  skill-version: "1.4.5"
 model: sonnet
 ---
 
@@ -86,7 +86,7 @@ read.
 |-------|----------------|-----------------|
 | `size-cap` | Lizard NLOC / `module-sloc-cap-radon` chore | Functions >50 LOC, modules >600 LOC, classes >300 LOC |
 | `complexity` | Ruff `C901`, `gz validate --complexity-ceiling` / `complexity-reduction-xenon` chore | Cyclomatic and cognitive complexity hot-spots above the configured ceilings |
-| `lint` | `uv run ruff check .` | Unfixed ruff diagnostics (excluding cosmetic) |
+| `lint` | `uv run gz lint` | Ruff findings outside `data/ruff_baseline.json`, and the rows that baseline still holds (the debt itself) |
 | `types` | `uv run ty check .` | Unresolved type errors, suppressed-but-still-firing `# type: ignore[code]` (the GHI #197 class) |
 | `pythonic` | `gz-pythonic-pattern-detect` candidates report | Java-shaped Python (Strategy classes, Singletons, Visitor ladders) |
 | `tests` | coverage report + `gz validate --requirements` + `gz validate --behave-req-tags` | <40% coverage, **BEHAVIOR** REQs without `@covers`, heavy OBPIs without `@REQ-*` BDD tags. SUPPORT and STRUCTURAL-FENCE REQs carry no `@covers` test by proof channel (ADR-0.0.59) — never report their absence as debt |
@@ -149,7 +149,7 @@ For each class, the canonical probe:
 |-------|-------------------|-------|
 | `size-cap` | `uv run lizard <files>` | Filter to functions >50, modules >600, classes >300. |
 | `complexity` | `uv run ruff check <subtree> --select C901` and `uv run python -m gzkit.complexity.cognitive <subtree> --top 20` | The ceilings the pre-commit gates and the `complexity-reduction-xenon` chore enforce (`max-complexity`, `.gzkit.json`'s `complexity.cognitive_ceiling`); a stricter ceiling reports code the gates pass. For C901 a non-zero exit IS the signal; for the cognitive list, the scores above the ceiling are. |
-| `lint` | `uv run ruff check <files> --output-format=json` | JSON for grouping. |
+| `lint` | `uv run gz lint <files>` for the gate's verdict; `uv run ruff check <files> --output-format=json` for every finding, held ones included | JSON for grouping; the baseline rows for `<files>` are the held debt. |
 | `types` | `uv run ty check <files>` | Capture stdout; cross-reference `tests/governance/test_type_ignore_syntax.py` for the suppression class. |
 | `pythonic` | `uv run gz chores run pythonic-design-pattern-detection` (only on `--scope all` or paths overlap; expensive) | Skip if scope is small and last run is <7 days old. |
 | `tests` | `uv run unittest-parallel -t . -s tests --buffer --coverage --coverage-source src/gzkit` then `uv run coverage report --include=<scope-glob>` plus `uv run gz validate --requirements` and `uv run gz validate --behave-req-tags` | Coverage delta + REQ gaps. **Do not wrap with `gz arb step`** — debt review is diagnostic, not attestation. ARB receipts with `exit_status=1` (the default coverage-report exit when no target met) pollute the receipt corpus. ARB wrapping is reserved for the `--draft-ghis` path, where receipt IDs go into the GHI body. |

@@ -1532,7 +1532,7 @@ done | sort -k2 -r
 # suppression inventory
 grep -rn 'noqa' src/gzkit --include='*.py' | wc -l
 grep -rn 'noqa: PLC0415' src/gzkit --include='*.py' | wc -l
-uvx ruff check --select PLC0415 src/gzkit    # the rule is NOT in [tool.ruff.lint] select
+uvx ruff check --select PLC0415 src/gzkit    # selected under ALL since 2026-10-23 (RO-9 tranche 4)
 ```
 
 ## Sources

@@ -398,6 +398,20 @@
           "function"
         ]
       }
+    },
+    {
+      "data_file": "data/ruff_baseline.json",
+      "gates_step": "Lint (gz lint)",
+      "mechanism": "shrink-ratchet",
+      "entries_path": "rows",
+      "baseline_count": 4613,
+      "identity": {
+        "kind": "fields",
+        "fields": [
+          "file",
+          "rule"
+        ]
+      }
     }
   ],
   "excluded": [

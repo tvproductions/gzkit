@@ -101,7 +101,7 @@ def _register_ruff(arb_commands: argparse._SubParsersAction) -> None:
     p = arb_commands.add_parser(
         "ruff",
         help="Run ruff via ARB and emit a lint receipt",
-        description="Run ruff check on the given paths and emit a validated lint receipt.",
+        description="Run ruff, judged against data/ruff_baseline.json, and emit a lint receipt.",
         epilog=build_epilog(["gz arb ruff src/gzkit", "gz arb ruff --fix src"]),
     )
     p.add_argument("paths", nargs="*", help="Paths to check (defaults to '.').")

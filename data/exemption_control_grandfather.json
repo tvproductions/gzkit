@@ -103,7 +103,7 @@
     },
     {
       "claim": "lint",
-      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+      "reason": "UNDECLARED, ruling owed; the surface is now read (RO-9 tranche 4, 2026-10-23). `gz lint` admits a finding that data/ruff_baseline.json holds, counted per file and rule, and one a Ruff `# noqa` suppresses. tests/test_ruff_baseline.py drives the baseline admission both ways (a held finding passes, one more fails), but no registered control exercises it, so exempts cannot yet name one. Resolve by registering that control, then declare its id."
     },
     {
       "claim": "lock-exchange-coupling",

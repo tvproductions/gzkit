@@ -18,6 +18,7 @@ from typing import Any
 
 from rich.markup import escape
 
+from gzkit import ruff_baseline
 from gzkit.commands.common import console, get_project_root
 from gzkit.core.models import obpi_parts
 from gzkit.quality import (
@@ -26,6 +27,7 @@ from gzkit.quality import (
     run_behave,
     run_format,
     run_lint,
+    run_ruff_against_baseline,
     run_tests,
     run_typecheck,
 )
@@ -201,17 +203,42 @@ def _apply_mx_seam(
     )
 
 
-def lint() -> None:
-    """Run code linting: ruff, the ADR path-contract and parents-pattern lints."""
+def lint(paths: list[str] | None = None, *, fix: bool = False, ratchet: bool = False) -> None:
+    """Run code linting: Ruff against its baseline, then the two path lints.
+
+    Named *paths* lint those files alone with Ruff (the pre-commit and hook
+    route); ``--ratchet`` lowers the baseline to the tree's findings instead.
+
+    Raises:
+        SystemExit: A check failed (its exit status), or the ratchet could not run (2).
+
+    """
     project_root = get_project_root()
 
-    console.print("Running linters...")
-    result = run_lint(project_root)
+    if ratchet:
+        try:
+            removed = ruff_baseline.ratchet_baseline(project_root)
+        except (ruff_baseline.RuffRunError, ruff_baseline.BaselineError) as exc:
+            console.print(f"{escape(str(exc))}. Repair it, then re-run `uv run gz lint --ratchet`.")
+            raise SystemExit(2) from exc
+        console.print(
+            f"Lowered {ruff_baseline.BASELINE_RELPATH}; removed {removed} row(s).", markup=False
+        )
+        return
 
+    console.print("Running linters...")
+    if paths:
+        result = run_ruff_against_baseline(project_root, paths, fix=fix)
+    elif fix:
+        result = run_ruff_against_baseline(project_root, fix=True)
+    else:
+        result = run_lint(project_root)
+
+    # soft_wrap keeps each finding on one line, so `path:line:col RULE` stays greppable.
     if result.stdout:
-        console.print(result.stdout, markup=False)
+        console.print(result.stdout, markup=False, soft_wrap=True)
     if result.stderr:
-        console.print(result.stderr, markup=False)
+        console.print(result.stderr, markup=False, soft_wrap=True)
 
     if result.success:
         console.print("[green]Lint passed.[/green]")

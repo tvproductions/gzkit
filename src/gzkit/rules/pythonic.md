@@ -7,9 +7,9 @@ description: Pythonic standards and idiomatic code contract
 
 # Pythonic Standards (Idiomatic Code Contract)
 
-<!-- rule-version: 0.5.8 -->
+<!-- rule-version: 0.5.9 -->
 
-> **Rule version:** `0.5.8` — the banner is one sentence, as `gz validate --rule-version-markers` requires, and binding rules are unchanged; prior banners in [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd).
+> **Rule version:** `0.5.9` — PLC0415 runs under Ruff `ALL` with the lazy imports that predate it held in `data/ruff_baseline.json`, and the toolchain row names `gz lint` (RO-9 tranche 4); prior banners in [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd).
 
 ## Core Principles
 
@@ -58,7 +58,7 @@ description: Pythonic standards and idiomatic code contract
 ## Imports (PEP 8)
 
 - **Top-level imports only.** Standard library, third-party, then local.
-- **No lazy imports** unless required for optional dependencies or cycle avoidance. **(Advisory — PLC0415 is not enabled.)** The ordering half above is enforced by ruff `I`; this half is not. The advisory scorecard claimed it was "partially enforced by ruff PLC0415" — `PL` has never been in `[tool.ruff.lint] select`, so the rule ran nowhere and **138 live violations** stand in `src/gzkit` (measured 2026-08-08). **This posture is ACCEPTED, not deferred (operator ruling 2026-08-08).** The carve-outs named in this very bullet are what most of those sites claim, so separating a legitimate deferred import from a lazy one is a per-site reading, not a switch — and enabling PLC0415 without that pass would either fail the build or bury 138 blanket `noqa`s, a blanket suppression reproducing exactly the blindness the disabled rule already produced. Calling it "deferred" implied a queue that nothing was advancing; the honest state is a measured, disclosed advisory. Re-measured 2026-08-08 at the acceptance: **still 138** (`uv run ruff check src/gzkit --select PLC0415 --statistics`). Reclassify on either a completed per-site pass or an observed instance of a lazy import causing a defect — not on the count moving.
+- **No lazy imports** unless required for optional dependencies or cycle avoidance. **(PLC0415 runs under Ruff `ALL` since 2026-10-23; scorecard row 23 is Promotable until a control plants a lazy import.)** The ordering half above is enforced by ruff `I`, and this half by PLC0415, which RO-9 tranche 4 selected with every other Ruff rule (operator rulings 2026-10-23: a keyed shrink-ratchet baseline, *"b"*, counted and run by gzkit). The sites that predate it are held per file in `data/ruff_baseline.json`, so a new lazy import fails `uv run gz lint` while the held ones await the per-site reading the 2026-08-08 acceptance described: the carve-outs named in this bullet are what most of them claim, and a legitimate deferred import carries a `# noqa: PLC0415` naming its carve-out rather than a blanket suppression. The acceptance of 2026-08-08 (138 sites, then unselected) is recorded in [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd).
 
 ## Error Handling
 
@@ -74,7 +74,7 @@ Scope is the shipped package. The `per-file-ignores` exclusions are boundary sur
 | Tool         | Role                  | Command                 |
 | ------------ | --------------------- | ----------------------- |
 | **uv**       | Environment/execution | `uv run` / `uvx`        |
-| **ruff**     | Linting/formatting    | `uv run ruff check .`   |
+| **ruff**     | Linting (every rule, against `data/ruff_baseline.json`)/formatting | `uv run gz lint` |
 | **ty**       | Static typing         | `uv run ty check .`     |
 | **unittest** | Testing               | `uv run gz test` |
 

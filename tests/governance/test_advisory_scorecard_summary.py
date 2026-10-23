@@ -265,6 +265,32 @@ class MechanicalRowsCitingRuffCodes(unittest.TestCase):
         messages = self._run("| 1 | Docstring shape | **Mechanical** | ruff D203 enforces |")
         self.assertTrue(any("D203" in m for m in messages), messages)
 
+    def test_an_ignored_linter_does_not_switch_off_a_longer_linter_it_prefixes(self) -> None:
+        """`ignore = ["PT"]` leaves PTH running, as Ruff resolves it (RO-9 tranche 4).
+
+        PT is flake8-pytest-style and PTH flake8-use-pathlib, distinct linters that
+        share two letters; measured on Ruff 0.17.1, PTH123 fires under ``select =
+        ["ALL"]`` with ``ignore = ["PT"]``. A bare prefix test reported row 41 blind.
+        """
+        config = '[tool.ruff.lint]\nselect = ["ALL"]\nignore = ["PT"]\n'
+        row = "| 1 | Use pathlib.Path | **Mechanical** | ruff PTH123 enforces |"
+        self.assertEqual(self._run(row, pyproject=config), [])
+        # Control: the ignored linter's own codes are switched off.
+        ignored = "| 1 | Unittest asserts | **Mechanical** | ruff PT009 enforces |"
+        self.assertTrue(any("PT009" in m for m in self._run(ignored, pyproject=config)))
+
+    def test_a_selected_linter_does_not_reach_a_longer_linter_it_prefixes(self) -> None:
+        """`select = ["PT"]` runs flake8-pytest-style, not PTH123."""
+        row = "| 1 | Use pathlib.Path | **Mechanical** | ruff PTH123 enforces |"
+        messages = self._run(row, pyproject='[tool.ruff.lint]\nselect = ["PT"]\n')
+        self.assertTrue(any("PTH123" in m for m in messages), messages)
+
+    def test_ignoring_pylint_switches_off_its_lettered_sub_linters(self) -> None:
+        """`PL` is the one prefix that reaches lettered sub-linters: PLC, PLE, PLR, PLW."""
+        config = '[tool.ruff.lint]\nselect = ["ALL"]\nignore = ["PL"]\n'
+        row = "| 1 | No lazy imports | **Mechanical** | ruff PLC0415 enforces |"
+        self.assertTrue(any("PLC0415" in m for m in self._run(row, pyproject=config)))
+
     def test_a_judgment_row_may_name_a_disabled_code(self) -> None:
         """Naming a code you are NOT claiming to enforce is the honest posture.
 
@@ -369,6 +395,24 @@ class MechanicalRowsCitingRuffFamilies(unittest.TestCase):
             self._run(
                 "| 1 | No shell=True | **Mechanical** | ruff S rules enforce |",
                 pyproject='[tool.ruff.lint]\nselect = ["S602"]\n',
+            ),
+            [],
+        )
+
+    def test_a_family_is_not_reached_through_a_longer_linter_it_prefixes(self) -> None:
+        """`PT` (flake8-pytest-style) is not selected by `select = ["PTH"]`."""
+        messages = self._run(
+            "| 1 | Unittest asserts | **Mechanical** | ruff PT rules enforce |",
+            pyproject='[tool.ruff.lint]\nselect = ["PTH"]\n',
+        )
+        self.assertTrue(any("PT" in m for m in messages), messages)
+
+    def test_a_family_a_shorter_ignored_linter_prefixes_stays_reachable(self) -> None:
+        """Row 41 under Ruff ALL: `PTH` is not switched off by `ignore = ["PT"]`."""
+        self.assertEqual(
+            self._run(
+                "| 1 | Use pathlib.Path | **Mechanical** | ruff PTH rules enforce |",
+                pyproject='[tool.ruff.lint]\nselect = ["ALL"]\nignore = ["PT"]\n',
             ),
             [],
         )

@@ -1,4 +1,10 @@
-"""ARB Ruff reporter — wraps ruff and emits a lint receipt."""
+"""ARB Ruff reporter — wraps ruff and emits a lint receipt.
+
+Ruff selects ALL under ``data/ruff_baseline.json`` (RO-9 tranche 4), so the
+receipt carries the baseline's verdict, the same one `gz lint` returns: only the
+findings no row holds, and a row its findings no longer fill, are recorded and
+fail the run. A tree with no baseline records every finding, as plain Ruff does.
+"""
 
 from __future__ import annotations
 
@@ -8,8 +14,9 @@ import sys
 import uuid
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
+from gzkit import ruff_baseline
 from gzkit.arb.paths import receipts_root
 
 SCHEMA_ID = "gzkit.arb.lint_receipt.v1"
@@ -78,61 +85,48 @@ def _fallback_findings(message: str) -> list[dict[str, object]]:
     ]
 
 
-def _int_ge1(value: object, *, default: int = 1) -> int:
-    if isinstance(value, int) and value >= 1:
-        return value
-    return default
+def _breach_findings(breach: ruff_baseline.Breach) -> list[dict[str, object]]:
+    """Render one baseline breach as receipt findings.
+
+    Returns:
+        Each unheld finding, or one entry naming the row to lower.
+
+    """
+    if breach.kind == "unheld":
+        return [
+            {"rule": f.rule, "path": f.file, "line": max(f.line, 1), "message": f.message}
+            for f in breach.findings
+        ]
+    return [
+        {
+            "rule": breach.rule,
+            "path": breach.file,
+            "line": 1,
+            "message": (
+                f"{ruff_baseline.BASELINE_RELPATH} holds {breach.held} {breach.rule} for this "
+                f"file and {breach.found} remain; run `uv run gz lint --ratchet`"
+            ),
+        }
+    ]
 
 
-def _location_dict(item: dict[str, Any]) -> dict[str, Any]:
-    location = item.get("location")
-    if isinstance(location, dict):
-        return location
-    return {}
+def _judge_against_baseline(
+    stdout: str, project_root: Path, targets: list[str]
+) -> tuple[int, list[dict[str, object]]]:
+    """Judge Ruff's JSON report against ``data/ruff_baseline.json``.
 
+    Returns:
+        The exit status (0 clean, 1 a breach, 2 unreadable) and the breach findings.
 
-def _finding_from_item(item: object) -> dict[str, object] | None:
-    if not isinstance(item, dict):
-        return None
-
-    item_dict = cast("dict[str, Any]", item)
-
-    rule = item_dict.get("code") or item_dict.get("rule") or "UNKNOWN"
-    path = item_dict.get("filename") or item_dict.get("path") or "<unknown>"
-    location = _location_dict(item_dict)
-    line = _int_ge1(location.get("row") or item_dict.get("line"), default=1)
-    message = item_dict.get("message") or ""
-
-    entry: dict[str, object] = {
-        "rule": str(rule),
-        "path": str(path),
-        "line": line,
-        "message": str(message),
-    }
-
-    column_raw = location.get("column") or item_dict.get("column")
-    if isinstance(column_raw, int) and column_raw >= 1:
-        entry["column"] = column_raw
-
-    return entry
-
-
-def _parse_findings(raw: str, stderr: str) -> list[dict[str, object]]:
-    if not raw.strip():
-        return []
+    """
     try:
-        data = json.loads(raw)
-    except json.JSONDecodeError:
-        return _fallback_findings(stderr or raw)
-    if not isinstance(data, list):
-        return _fallback_findings("ruff JSON output was not a list")
-
-    findings: list[dict[str, object]] = []
-    for item in data:
-        finding = _finding_from_item(item)
-        if finding is not None:
-            findings.append(finding)
-    return findings
+        findings = ruff_baseline.parse_ruff_json(stdout, project_root)
+        baseline = ruff_baseline.load_baseline(project_root) or {}
+    except (ruff_baseline.RuffRunError, ruff_baseline.BaselineError) as exc:
+        return 2, _fallback_findings(str(exc))
+    scope = None if targets == ["."] else [Path(t).as_posix().rstrip("/") for t in targets]
+    breaches = ruff_baseline.compare(findings, baseline, scope)
+    return (1 if breaches else 0), [f for b in breaches for f in _breach_findings(b)]
 
 
 def _write_receipt(receipt: dict[str, object]) -> Path:
@@ -145,13 +139,14 @@ def _write_receipt(receipt: dict[str, object]) -> Path:
     return path
 
 
-def run_ruff_via_arb(
+def run_ruff_via_arb(  # noqa: PLR0913 — one keyword-only option per `gz arb ruff` flag
     *,
     paths: list[str] | None = None,
     fix: bool = False,
     quiet: bool = False,
     max_findings: int = DEFAULT_MAX_FINDINGS,
     soft_fail: bool = False,
+    project_root: Path | None = None,
 ) -> tuple[int, Path]:
     """Run ruff and emit an ARB lint receipt.
 
@@ -162,6 +157,8 @@ def run_ruff_via_arb(
         max_findings: Maximum number of findings stored in the receipt.
         soft_fail: When true, emit a receipt but return exit status 0 to avoid
             blocking caller workflows (measurement-only mode).
+        project_root: Root whose ``data/ruff_baseline.json`` judges the findings.
+            Defaults to the working directory.
 
     Returns:
         Tuple of (exit_status, receipt_path).
@@ -175,10 +172,12 @@ def run_ruff_via_arb(
     ruff_result = _run_command(cmd)
     exit_status = int(ruff_result.returncode)
 
-    if exit_status == 2:
+    if exit_status not in {0, 1}:
         findings = _fallback_findings(ruff_result.stderr or ruff_result.stdout)
     else:
-        findings = _parse_findings(ruff_result.stdout, ruff_result.stderr)
+        exit_status, findings = _judge_against_baseline(
+            ruff_result.stdout, project_root or Path.cwd(), targets
+        )
 
     findings_total = len(findings)
     findings_truncated = False

@@ -205,7 +205,7 @@ def extract_plan_tasks(plan_content: str) -> list[dict[str, str]]:
             )
             continue
         numbered_match = _NUMBERED_ITEM_RE.match(stripped)
-        if numbered_match and not tasks or numbered_match and tasks:
+        if (numbered_match and not tasks) or (numbered_match and tasks):
             tasks.append(
                 {"id": str(len(tasks) + 1), "description": numbered_match.group(1).strip()}
             )
@@ -294,7 +294,7 @@ def compose_implementer_prompt(
             "   byte-indistinguishable from a Red-first test without this receipt.",
             "   Report the assertion-level failure message you observed, not merely",
             "   that you wrote tests.",
-            "4. Run `uv run ruff check . --fix && uv run ruff format .` after code changes.",
+            "4. Run `uv run gz lint --fix && uv run ruff format .` after code changes.",
             "5. Run `uv run gz test` to verify tests pass.",
             "6. Return a JSON result block with status, files_changed, tests_added, concerns.",
             "",

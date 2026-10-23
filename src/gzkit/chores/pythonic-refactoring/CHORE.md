@@ -57,7 +57,7 @@ uv run ty check . --exclude 'features/**' > .gzkit/chores/pythonic-refactoring/p
 
 Prioritize fixes by:
 
-1. **Auto-fixable** — `ruff check --fix` handles most issues automatically
+1. **Auto-fixable** — `uv run gz lint --fix` applies Ruff's safe fixes; then `uv run gz lint --ratchet` lowers `data/ruff_baseline.json`
 2. **High-value** — `PTH` (pathlib), `RET` (early returns) improve readability
 3. **Type safety** — ty's `possibly-missing-attribute` prevents runtime errors
 
@@ -82,7 +82,7 @@ return y
 ### 4. Validate — observe
 
 ```bash
-uv run ruff check .
+uv run gz lint
 uv run ty check . --exclude 'features/**'
 uv run gz test
 ```
@@ -90,7 +90,8 @@ uv run gz test
 ## Quick Fix Commands
 
 ```bash
-uv run ruff check . --fix
+uv run gz lint --fix
+uv run gz lint --ratchet
 ```
 
 > Do NOT use `--unsafe-fixes` — TC003 moves imports into TYPE_CHECKING blocks, breaking Pydantic models.

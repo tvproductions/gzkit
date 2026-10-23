@@ -5,9 +5,9 @@ description: Use after an OBPI's implementation, before reconcile, to review its
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-10-23
 metadata:
-  skill-version: "6.1.2"
+  skill-version: "6.1.3"
 model: sonnet
 ---
 
@@ -166,7 +166,7 @@ After all reviews complete:
 
 1. Run quality checks on changed files:
    ```bash
-   uv run ruff check . --fix && uv run ruff format .
+   uv run gz lint --fix && uv run ruff format .
    uv run gz test
    ```
 2. Report a concise summary:

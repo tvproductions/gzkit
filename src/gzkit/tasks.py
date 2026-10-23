@@ -78,17 +78,17 @@ class TaskId(BaseModel):
 
     @property
     def req_id(self) -> str:
-        """Return the REQ this TASK's spelling names."""
+        """The REQ this TASK's spelling names."""
         return compose_req_id(self.semver, self.obpi_item, self.req_index)
 
     @property
     def obpi_id(self) -> str:
-        """Return the OBPI short form this TASK's spelling names."""
+        """The OBPI short form this TASK's spelling names."""
         return compose_obpi_id(self.semver, self.obpi_item)
 
     @property
     def adr_id(self) -> str:
-        """Return the ADR short form this TASK's spelling names."""
+        """The ADR short form this TASK's spelling names."""
         return compose_adr_id(self.semver)
 
 

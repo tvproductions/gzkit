@@ -86,7 +86,7 @@ def _recommendations_for_counts(rule_counts: Counter[str]) -> list[str]:
     if style / total >= 0.6:
         recs.append(
             "Style-dominant failures: tighten the agent loop to run "
-            "`uv run ruff check . --fix && uv run ruff format .` early and often."
+            "`uv run gz lint --fix && uv run ruff format .` early and often."
         )
     if correctness > 0:
         recs.append(

@@ -3,7 +3,8 @@
 
 Stop hook with two independent turn-end checks:
 
-1. Ruff (lint-only) over git-dirty Python files.
+1. `gz lint` (Ruff against data/ruff_baseline.json, lint-only) over
+   git-dirty Python files.
 2. Claim-grounding: the assistant's last turn is scanned for governance
    state-claims ("OBPI-X is attested-complete", "the lock is held",
    "tests pass", "the tree is clean") with no citation token (a `gz`
@@ -98,10 +99,10 @@ def collect_dirty_python_files(cwd: Path) -> list[str]:
     return files
 
 
-def run_ruff(files: list[str], cwd: Path) -> tuple[int, str]:
-    """Run ruff check over the files; return (returncode, combined output)."""
+def run_lint(files: list[str], cwd: Path) -> tuple[int, str]:
+    """Run `gz lint` over the files; return (returncode, combined output)."""
     result = subprocess.run(
-        ["uv", "run", "ruff", "check", *files],
+        ["uv", "run", "gz", "lint", *files],
         capture_output=True,
         text=True,
         encoding="utf-8",
@@ -123,7 +124,7 @@ def build_block_message(findings: str, file_count: int) -> str:
         "deterministic tier is red (ADR-0.0.70 turn-end feedback; "
         ".gzkit/rules/guardrail-feedback-prose.md).\n\n"
         "Governed next step: fix the findings above, verify with "
-        "`uv run ruff check <files>`, then end the turn. One block per turn — "
+        "`uv run gz lint <files>`, then end the turn. One block per turn — "
         "the next stop proceeds even if findings remain (fail-open)."
     )
 
@@ -240,7 +241,7 @@ def run_demo() -> int:
         sample = Path(tmp) / "demo_violation.py"
         sample.write_text("import os\n", encoding="utf-8")
         try:
-            _, findings = run_ruff([sample.name], Path(tmp))
+            _, findings = run_lint([sample.name], Path(tmp))
         except FileNotFoundError, subprocess.TimeoutExpired, OSError:
             findings = "demo_violation.py:1:8: F401 [*] `os` imported but unused"
     sys.stdout.write(build_block_message(findings, 1) + "\n")
@@ -275,7 +276,7 @@ def main(argv: list[str]) -> int:
 
     if files:
         try:
-            returncode, findings = run_ruff(files, cwd)
+            returncode, findings = run_lint(files, cwd)
         except FileNotFoundError, subprocess.TimeoutExpired, OSError, ValueError:
             returncode, findings = 0, ""
         if returncode != 0:

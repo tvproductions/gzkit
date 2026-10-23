@@ -10,8 +10,11 @@ Run ruff check via ARB and emit a schema-validated lint receipt.
 gz arb ruff [PATHS...] [--fix] [--soft-fail]
 ```
 
-Runs the locked Ruff (`uv run ruff check`) against the given paths (defaults to `.`), captures the
-findings, and writes a lint receipt to `artifacts/receipts/`. The receipt is
+Runs the locked Ruff (`uv run ruff check`) against the given paths (defaults to `.`), judges the
+findings against `data/ruff_baseline.json` as `gz lint` does, and writes a lint receipt to
+`artifacts/receipts/`. Ruff selects every rule (RO-9 tranche 4), so the receipt records only the
+findings the baseline does not hold, and each row their findings no longer fill; a tree with no
+baseline records every finding. The receipt is
 the canonical attestation evidence for any Heavy-lane claim of lint cleanliness.
 
 ---
@@ -40,8 +43,8 @@ gz arb ruff --soft-fail src
 
 | Code | Meaning |
 |------|---------|
-| 0 | Ruff clean; receipt created |
-| 1 | Ruff reported findings; receipt created with findings |
+| 0 | No finding outside the baseline; receipt created |
+| 1 | A finding the baseline does not hold, or a row to lower; receipt created with them |
 | 2 | ARB internal error |
 
 ---

@@ -127,7 +127,9 @@ def _command_fails_argv(
 
 
 def _ep_lint(root: Path) -> int:
-    return _command_fails("uv run ruff check .", root, expected_exit=1)
+    # The Lint step's Ruff verdict is `gz lint`'s, judged against data/ruff_baseline.json
+    # (RO-9 tranche 4); the fixture has no baseline, so its planted finding is unheld.
+    return _gz_command_fails(("lint",), root, expected_exit=1, expect_output="bad.py:1:8 F401")
 
 
 def _ep_format(root: Path) -> int:

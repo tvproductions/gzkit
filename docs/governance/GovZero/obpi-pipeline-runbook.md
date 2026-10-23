@@ -127,7 +127,7 @@ not met.
 2. Create task list from plan steps
 3. Implement each step within brief allowlist
 4. Write tests (unittest, coverage ≥ 40%)
-5. Run `uv run ruff check . --fix && uv run ruff format .` after code changes
+5. Run `uv run gz lint --fix && uv run ruff format .` after code changes
 6. Run `uv run gz test` to verify
 
 **Exit contract:**

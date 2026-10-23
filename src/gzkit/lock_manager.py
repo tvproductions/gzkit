@@ -87,13 +87,13 @@ class LockData(BaseModel):
     @computed_field
     @property
     def is_expired(self) -> bool:
-        """Return True if the lock TTL has elapsed, measured against the wall clock."""
+        """Whether the lock TTL has elapsed, measured against the wall clock."""
         return self.is_expired_at(datetime.now(UTC))
 
     @computed_field
     @property
     def elapsed_minutes(self) -> float:
-        """Return minutes elapsed since claimed_at, measured against the wall clock."""
+        """Minutes elapsed since claimed_at, measured against the wall clock."""
         return self.elapsed_minutes_at(datetime.now(UTC))
 
 

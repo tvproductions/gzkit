@@ -79,7 +79,7 @@ class PersonaDispatchRecord(BaseModel):
 
     @property
     def is_dispatched(self) -> bool:
-        """Return True when a receipted dispatch is recorded."""
+        """Whether a receipted dispatch is recorded."""
         return self.state is DispatchState.DISPATCHED
 
 

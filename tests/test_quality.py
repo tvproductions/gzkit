@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from gzkit import quality
+from gzkit import quality, ruff_baseline
 from gzkit.commands.quality import _test_name_from_record
 from gzkit.quality import (
     QualityResult,
@@ -301,15 +301,17 @@ class TestLintNamesOnlyWhatRuns(unittest.TestCase):
         with (
             tempfile.TemporaryDirectory() as tmpdir,
             patch("gzkit.quality.run_command", return_value=ok) as run_command,
+            patch("gzkit.quality.run_ruff_against_baseline", return_value=ok) as ruff,
             patch("gzkit.quality.run_adr_path_contract_lint", return_value=ok),
             patch("gzkit.quality.run_parents_pattern_lint", return_value=ok),
         ):
             result = run_lint(Path(tmpdir))
 
-        ran = [call.args[0] for call in run_command.call_args_list]
-        self.assertEqual(ran, ["uv run ruff check ."])
+        run_command.assert_not_called()
+        ruff.assert_called_once_with(Path(tmpdir))
         self.assertEqual(
-            result.command, "uv run ruff check . + ADR path contract lint + parents-pattern lint"
+            result.command,
+            "gz lint (Ruff, baselined) + ADR path contract lint + parents-pattern lint",
         )
         self.assertNotIn("pymarkdown", result.command.lower())
         self.assertFalse(hasattr(quality, "run_pymarkdown"))
@@ -327,17 +329,12 @@ class TestLintNamesOnlyWhatRuns(unittest.TestCase):
             with self.subTest(failing=failing):
                 bad = QualityResult(success=False, command="x", stdout="", stderr="", returncode=7)
 
-                def run_command(
-                    command: str,
-                    _f: str = failing,
-                    _bad: QualityResult = bad,
-                    **_kw: object,
-                ) -> QualityResult:
-                    return _bad if _f in command else ok
-
                 with (
                     tempfile.TemporaryDirectory() as tmpdir,
-                    patch("gzkit.quality.run_command", side_effect=run_command),
+                    patch(
+                        "gzkit.quality.run_ruff_against_baseline",
+                        return_value=bad if failing == "ruff" else ok,
+                    ),
                     patch(
                         "gzkit.quality.run_adr_path_contract_lint",
                         return_value=bad if failing == "path-contract" else ok,
@@ -356,7 +353,7 @@ class TestLintNamesOnlyWhatRuns(unittest.TestCase):
         # each lint's own verdict and not a step that always fails.
         with (
             tempfile.TemporaryDirectory() as tmpdir,
-            patch("gzkit.quality.run_command", return_value=ok),
+            patch("gzkit.quality.run_ruff_against_baseline", return_value=ok),
             patch("gzkit.quality.run_adr_path_contract_lint", return_value=ok),
             patch("gzkit.quality.run_parents_pattern_lint", return_value=ok),
         ):
@@ -689,25 +686,68 @@ class TestLintScopeMatchesPreCommit(unittest.TestCase):
 
     def test_run_lint_targets_whole_repo_not_src_tests(self) -> None:
         ok = QualityResult(success=True, command="ruff", stdout="", stderr="", returncode=0)
+        report = ruff_baseline.LintReport(findings=(), breaches=(), has_baseline=True)
         with (
-            patch.object(quality, "run_command", return_value=ok) as run_cmd,
+            patch.object(ruff_baseline, "lint_against_baseline", return_value=report) as lint,
             patch.object(quality, "run_adr_path_contract_lint", return_value=ok),
             patch.object(quality, "run_parents_pattern_lint", return_value=ok),
         ):
             quality.run_lint(Path("/repo"))
 
-        invoked = [call.args[0] for call in run_cmd.call_args_list]
-        self.assertIn("uv run ruff check .", invoked)
-        self.assertNotIn("uv run ruff check src tests", invoked)
+        lint.assert_called_once_with(Path("/repo"), (), fix=False)
 
     def test_run_format_autofix_targets_whole_repo(self) -> None:
         ok = QualityResult(success=True, command="ruff", stdout="", stderr="", returncode=0)
-        with patch.object(quality, "run_command", return_value=ok) as run_cmd:
-            quality.run_format(Path("/repo"))
+        report = ruff_baseline.LintReport(findings=(), breaches=(), has_baseline=True)
+        with (
+            patch.object(quality, "run_command", return_value=ok) as run_cmd,
+            patch.object(ruff_baseline, "lint_against_baseline", return_value=report) as lint,
+        ):
+            result = quality.run_format(Path("/repo"))
 
-        invoked = [call.args[0] for call in run_cmd.call_args_list]
-        self.assertIn("uv run ruff check --fix .", invoked)
-        self.assertNotIn("uv run ruff check --fix src tests", invoked)
+        self.assertEqual([c.args[0] for c in run_cmd.call_args_list], ["uv run ruff format ."])
+        lint.assert_called_once_with(Path("/repo"), (), fix=True)
+        self.assertTrue(result.success)
+        self.assertEqual(result.command, "uv run ruff format . && gz lint --fix")
+
+
+class TestRuffAgainstBaseline(unittest.TestCase):
+    """The Lint step's Ruff verdict is the baseline's (RO-9 tranche 4)."""
+
+    def _run(self, report: object = None, error: Exception | None = None) -> QualityResult:
+        with patch.object(
+            ruff_baseline, "lint_against_baseline", return_value=report, side_effect=error
+        ):
+            return quality.run_ruff_against_baseline(Path("/repo"), ["a.py"], fix=True)
+
+    def test_every_finding_held_passes(self) -> None:
+        finding = ruff_baseline.RuffFinding(file="a.py", rule="F401", line=1, column=1, message="m")
+        report = ruff_baseline.LintReport(findings=(finding,), breaches=(), has_baseline=True)
+        result = self._run(report)
+        self.assertTrue(result.success)
+        self.assertEqual(result.returncode, 0)
+
+    def test_a_breach_fails_with_exit_1_and_names_the_finding(self) -> None:
+        finding = ruff_baseline.RuffFinding(file="a.py", rule="F401", line=3, column=1, message="m")
+        breach = ruff_baseline.Breach(
+            kind="unheld", file="a.py", rule="F401", found=1, held=0, findings=(finding,)
+        )
+        report = ruff_baseline.LintReport(
+            findings=(finding,), breaches=(breach,), has_baseline=True
+        )
+        result = self._run(report)
+        self.assertFalse(result.success)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("a.py:3:1 F401", result.stdout)
+
+    def test_ruff_failing_to_run_is_a_system_error(self) -> None:
+        result = self._run(error=ruff_baseline.RuffRunError("Ruff exited 2"))
+        self.assertFalse(result.success)
+        self.assertEqual(result.returncode, 2)
+
+    def test_a_malformed_baseline_is_a_system_error(self) -> None:
+        result = self._run(error=ruff_baseline.BaselineError("bad baseline"))
+        self.assertEqual(result.returncode, 2)
 
 
 if __name__ == "__main__":

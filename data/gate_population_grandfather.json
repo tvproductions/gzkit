@@ -25,7 +25,7 @@
     {
       "population": "check-step",
       "member": "Lint",
-      "reason": "verdict combined from `uv run ruff check .` and the in-process run_adr_path_contract_lint and run_parents_pattern_lint arms; qc claim lint drives ruff alone, so no registered claim names the step. The combined verdict is witnessed at the step by a unit test, tests/test_quality.py::TestLintNamesOnlyWhatRuns::test_any_failing_sub_lint_fails_the_step_with_its_own_exit (GHI #1233), which is not a claim"
+      "reason": "verdict combined from Ruff judged against data/ruff_baseline.json (`run_ruff_against_baseline`, RO-9 tranche 4) and the in-process run_adr_path_contract_lint and run_parents_pattern_lint arms; qc claim lint drives `gz lint` in a subprocess, so no registered claim names the step's in-process runner. The combined verdict is witnessed at the step by a unit test, tests/test_quality.py::TestLintNamesOnlyWhatRuns::test_any_failing_sub_lint_fails_the_step_with_its_own_exit (GHI #1233), which is not a claim"
     },
     {
       "population": "check-step",

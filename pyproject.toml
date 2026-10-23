@@ -87,59 +87,17 @@ line-length = 100
 src = ["src", "tests"]
 
 [tool.ruff.lint]
-select = [
-    "E",      # pycodestyle errors
-    "W",      # pycodestyle warnings
-    "F",      # Pyflakes
-    "I",      # isort
-    "B",      # flake8-bugbear
-    "C4",     # flake8-comprehensions
-    "UP",     # pyupgrade
-    "SIM",    # flake8-simplify
-    "D",      # pydocstyle — adopted 2026-08-01 (operator ruling); see ignore below
-    # flake8-blind-except — enables BLE001, which `.gzkit/rules/pythonic.md`
-    # § Error Handling has named since it was written ("no bare `except:` /
-    # `except Exception:`") and which advisory-scorecard row 18 recorded as
-    # **Mechanical**, "ruff BLE001 enforces". It was never in this list, so the
-    # rule ran nowhere: six live violations sat unreported in `src/gzkit`,
-    # including a `# noqa: BLE0001` typo that suppressed nothing and could not
-    # be noticed while the rule was off. Adopted 2026-08-08 (operator ruling) on
-    # that observed drift, which is the evidence the promotion freeze requires.
-    "BLE",
-    # flake8-bandit, ONE code: S602 (subprocess-popen-with-shell-equals-true) —
-    # the witness advisory-scorecard row 44 has claimed since it was written
-    # ("No `shell=True` in subprocess", **Mechanical**, "ruff S602/S603"). `S`
-    # was never in this list, so the row was the fifth false-Mechanical of the
-    # class row 18 named, and the single `shell=True` site in the package
-    # (`governance/stage4_evidence.py`) already carried a justified
-    # `# noqa: S602` that suppressed nothing because the rule never ran — the
-    # `# noqa: BLE0001` failure one rule over. Enabling it costs zero fixes.
-    #
-    # The code is named individually rather than selecting `S`, and row 44's
-    # other citation is dropped: S603 is `subprocess-without-shell-equals-true`,
-    # which fires on subprocess calls that do NOT use a shell — the near-inverse
-    # of the clause it was cited for, with 35 live hits. `S` wholesale adds 80
-    # findings from rules no gzkit rule declares. Adopted 2026-08-08 on that
-    # observed drift, which is the evidence the promotion freeze requires.
-    "S602",
-    # flake8-use-pathlib — the witness advisory-scorecard row 41 has claimed
-    # since it was written ("All file operations use `pathlib.Path`",
-    # **Mechanical**, "ruff PTH rules enforce"), and `.gzkit/rules/cross-platform.md`
-    # § Quick Reference has declared since `0.1.0`. `PTH` was never in this list,
-    # so the rule ran nowhere and 17 live violations stood in `src/gzkit`.
-    #
-    # This is the SIXTH false-Mechanical row of the class row 18 named, and the
-    # first found by machine rather than by hand — it cites its witness by
-    # FAMILY rather than by code, which the reachability check could not see
-    # until the family arm landed alongside this line. Adopted 2026-08-08
-    # (operator ruling) on that observed drift, which is the evidence the
-    # § Recommended promotion order freeze requires.
-    "PTH",
-    # mccabe: the cyclomatic ceiling xenon held as rank C (RO-9 tranche 4,
-    # GHI #1183). `gz validate --complexity-ceiling` reads the same
-    # max-complexity below for its Lizard C/C/C gate, so the number lives once.
-    "C901",
-]
+# Every current Ruff rule, preview included (RO-9 tranche 4, ruled 2026-10-19:
+# "all ruff rules up to date", "MAXX astral"), less the standing exceptions below.
+# The findings the tree carried when the selection widened are held in
+# data/ruff_baseline.json, a counted shrink-ratchet `gz lint` judges (ruled
+# 2026-10-23, "b"; "Counted, gz-run (Rec.)"; "Own file (Rec.)"), so run
+# `uv run gz lint`, not bare `ruff check`, for the gate's verdict. The families
+# selected one by one before ALL, and why each was adopted, are recorded in
+# docs/governance/advisory-rules-audit.md (rows 18, 41 and 44 for BLE, PTH and
+# S602; D by the 2026-08-01 ruling; C901 by GHI #1183).
+select = ["ALL"]
+preview = true
 ignore = [
     # D203/D211 and D212/D213 are mutually exclusive pairs; ruff warns on every
     # run until one of each is disabled. Keep D211 (no blank line before class)
@@ -147,6 +105,17 @@ ignore = [
     # already in the tree.
     "D203",
     "D213",
+    # Standing exceptions ruled for tranche 4 (2026-10-22, "PT + COM812 + CPY001
+    # (Rec.)"): pytest idioms, where unittest is doctrine (AGENTS.md § STDLIB-FIRST);
+    # a trailing-comma rule that conflicts with Ruff's formatter; and copyright
+    # headers, for which no doctrine exists.
+    "PT",
+    "COM812",
+    "CPY001",
+    # Flags every `# noqa`, where .gzkit/rules/pythonic.md § Error Handling requires
+    # a justified one at a genuine boundary; RUF100 already refuses a stale one
+    # (ruled 2026-10-23, "RUF105 exception (Rec.)").
+    "RUF105",
 ]
 
 [tool.ruff.lint.mccabe]
@@ -185,9 +154,14 @@ max-complexity = 20
 # and adopting them in one step is a separate decision, not a side effect of
 # making row 41 true. The 17 inside `src/gzkit` were FIXED, not excluded
 # (2026-08-08 operator ruling: enable PTH, package-scoped).
-"tests/**/*.py" = ["D", "BLE", "PTH"]
-"features/**/*.py" = ["D", "BLE", "PTH"]
-"scripts/**/*.py" = ["D", "BLE", "PTH"]
+#
+# Under ALL, tests, features and scripts also carry the curation list ruled for
+# tranche 4 (2026-10-22, "Package-strict, tests curated (Rec.)"): annotations,
+# private access (attribute and import), `assert`, no-self-use and unused arguments, the idioms of test
+# scaffolding and behave steps rather than defects in them.
+"tests/**/*.py" = ["D", "BLE", "PTH", "ANN", "SLF001", "import-private-name", "S101", "PLR6301", "ARG"]
+"features/**/*.py" = ["D", "BLE", "PTH", "ANN", "SLF001", "import-private-name", "S101", "PLR6301", "ARG"]
+"scripts/**/*.py" = ["D", "BLE", "PTH", "ANN", "SLF001", "import-private-name", "S101", "PLR6301", "ARG"]
 ".claude/hooks/*.py" = ["BLE", "PTH"]
 ".github/copilot/hooks/*.py" = ["BLE", "PTH"]
 # Canonical skill helper scripts and their generated vendor mirrors, plus the

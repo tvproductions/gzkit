@@ -11,11 +11,13 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from gzkit.arb.ruff_reporter import run_ruff_via_arb
+
 
 def _fake_run_factory(ruff_returncode: int, ruff_stdout: str = "", ruff_stderr: str = ""):
     """Route ruff check calls to fake output; leave version + git calls stubbed."""
 
-    def fake_run(cmd, **kwargs):  # noqa: ARG001
+    def fake_run(cmd, **kwargs):
         if "ruff" in cmd and "check" in cmd:
             return subprocess.CompletedProcess(cmd, ruff_returncode, ruff_stdout, ruff_stderr)
         if "ruff" in cmd and "--version" in cmd:
@@ -37,6 +39,8 @@ class TestRunRuffViaArb(unittest.TestCase):
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self._receipts_dir = Path(self._tempdir.name) / "receipts"
+        # A root with no data/ruff_baseline.json, so every finding counts, as plain Ruff.
+        self._root = Path(self._tempdir.name)
         self._prior_env = os.environ.get("GZKIT_ARB_RECEIPTS_ROOT")
         os.environ["GZKIT_ARB_RECEIPTS_ROOT"] = str(self._receipts_dir)
 
@@ -64,7 +68,7 @@ class TestRunRuffViaArb(unittest.TestCase):
 
         fake = _fake_run_factory(ruff_returncode=0, ruff_stdout="[]", ruff_stderr="")
         with patch("gzkit.arb.ruff_reporter._run_command", side_effect=fake):
-            exit_status, path = run_ruff_via_arb(paths=["src"], quiet=True)
+            exit_status, path = run_ruff_via_arb(paths=["src"], quiet=True, project_root=self._root)
 
         self.assertEqual(exit_status, 0)
         self.assertIsNotNone(path)
@@ -80,7 +84,7 @@ class TestRunRuffViaArb(unittest.TestCase):
 
         fake = _fake_run_factory(ruff_returncode=0, ruff_stdout="[]", ruff_stderr="")
         with patch("gzkit.arb.ruff_reporter._run_command", side_effect=fake):
-            _, path = run_ruff_via_arb(paths=["src"], quiet=True)
+            _, path = run_ruff_via_arb(paths=["src"], quiet=True, project_root=self._root)
         self.assertIsNotNone(path)
         text = path.read_text(encoding="utf-8")
         self.assertTrue(
@@ -103,7 +107,7 @@ class TestRunRuffViaArb(unittest.TestCase):
         )
         fake = _fake_run_factory(ruff_returncode=1, ruff_stdout=ruff_json, ruff_stderr="")
         with patch("gzkit.arb.ruff_reporter._run_command", side_effect=fake):
-            exit_status, path = run_ruff_via_arb(paths=["src"], quiet=True)
+            exit_status, path = run_ruff_via_arb(paths=["src"], quiet=True, project_root=self._root)
 
         self.assertEqual(exit_status, 1)
         payload = self._assert_valid_receipt(path, expected_exit=1)
@@ -112,6 +116,81 @@ class TestRunRuffViaArb(unittest.TestCase):
         self.assertEqual(finding["rule"], "E501")
         self.assertEqual(finding["path"], "src/example.py")
         self.assertEqual(finding["line"], 10)
+
+    def test_a_finding_the_baseline_holds_is_not_recorded_and_the_run_passes(self) -> None:
+        """Ruff selects ALL under data/ruff_baseline.json (RO-9 tranche 4)."""
+        (self._root / "data").mkdir()
+        rows = [{"file": "src/example.py", "rule": "E501", "count": 1}]
+        (self._root / "data" / "ruff_baseline.json").write_text(
+            json.dumps({"rows": rows}), encoding="utf-8"
+        )
+        item = {
+            "code": "E501",
+            "filename": str(self._root / "src" / "example.py"),
+            "location": {"row": 10, "column": 81},
+            "message": "line too long",
+        }
+        fake = _fake_run_factory(ruff_returncode=1, ruff_stdout=json.dumps([item]))
+        with patch("gzkit.arb.ruff_reporter._run_command", side_effect=fake):
+            held_status, held_path = run_ruff_via_arb(
+                paths=["src"], quiet=True, project_root=self._root
+            )
+        self.assertEqual(held_status, 0)
+        self.assertEqual(self._assert_valid_receipt(held_path, expected_exit=0)["findings"], [])
+
+        # Control: one more of the same finding than the row holds fails, naming it.
+        fake = _fake_run_factory(ruff_returncode=1, ruff_stdout=json.dumps([item, item]))
+        held_path.unlink()
+        with patch("gzkit.arb.ruff_reporter._run_command", side_effect=fake):
+            status, path = run_ruff_via_arb(paths=["src"], quiet=True, project_root=self._root)
+        self.assertEqual(status, 1)
+        payload = self._assert_valid_receipt(path, expected_exit=1)
+        self.assertEqual([f["path"] for f in payload["findings"]], ["src/example.py"] * 2)
+
+    def test_a_row_its_findings_no_longer_fill_is_recorded_naming_the_ratchet(self) -> None:
+        (self._root / "data").mkdir()
+        rows = [{"file": "src/example.py", "rule": "E501", "count": 2}]
+        (self._root / "data" / "ruff_baseline.json").write_text(
+            json.dumps({"rows": rows}), encoding="utf-8"
+        )
+        fake = _fake_run_factory(ruff_returncode=0, ruff_stdout="[]")
+        with patch("gzkit.arb.ruff_reporter._run_command", side_effect=fake):
+            status, path = run_ruff_via_arb(paths=["src"], quiet=True, project_root=self._root)
+        self.assertEqual(status, 1)
+        [finding] = self._assert_valid_receipt(path, expected_exit=1)["findings"]
+        self.assertEqual((finding["rule"], finding["path"]), ("E501", "src/example.py"))
+        self.assertIn("gz lint --ratchet", finding["message"])
+
+    def test_a_partial_run_leaves_the_rows_of_files_it_did_not_read(self) -> None:
+        (self._root / "data").mkdir()
+        rows = [{"file": "scripts/other.py", "rule": "E501", "count": 1}]
+        (self._root / "data" / "ruff_baseline.json").write_text(
+            json.dumps({"rows": rows}), encoding="utf-8"
+        )
+        fake = _fake_run_factory(ruff_returncode=0, ruff_stdout="[]")
+        with patch("gzkit.arb.ruff_reporter._run_command", side_effect=fake):
+            status, _ = run_ruff_via_arb(paths=["src/"], quiet=True, project_root=self._root)
+        self.assertEqual(status, 0)
+
+    def test_a_malformed_baseline_is_an_arb_error_not_a_verdict(self) -> None:
+        (self._root / "data").mkdir()
+        (self._root / "data" / "ruff_baseline.json").write_text("{}", encoding="utf-8")
+        fake = _fake_run_factory(ruff_returncode=0, ruff_stdout="[]")
+        with patch("gzkit.arb.ruff_reporter._run_command", side_effect=fake):
+            status, path = run_ruff_via_arb(paths=["src"], quiet=True, project_root=self._root)
+        self.assertEqual(status, 2)
+        [finding] = json.loads(path.read_text(encoding="utf-8"))["findings"]
+        self.assertEqual(finding["rule"], "ARB000")
+        self.assertIn("malformed", finding["message"])
+
+    def test_ruff_that_could_not_start_is_not_read_as_a_clean_run(self) -> None:
+        fake = _fake_run_factory(ruff_returncode=127, ruff_stdout="", ruff_stderr="no uv")
+        with patch("gzkit.arb.ruff_reporter._run_command", side_effect=fake):
+            status, path = run_ruff_via_arb(paths=["src"], quiet=True, project_root=self._root)
+        self.assertEqual(status, 127)
+        self.assertEqual(
+            json.loads(path.read_text(encoding="utf-8"))["findings"][0]["rule"], "ARB000"
+        )
 
     def test_broken_ruff_falls_back_to_arb000(self) -> None:
         from gzkit.arb.ruff_reporter import run_ruff_via_arb
@@ -122,7 +201,7 @@ class TestRunRuffViaArb(unittest.TestCase):
             ruff_stderr="ruff crashed",
         )
         with patch("gzkit.arb.ruff_reporter._run_command", side_effect=fake):
-            exit_status, path = run_ruff_via_arb(paths=["src"], quiet=True)
+            exit_status, path = run_ruff_via_arb(paths=["src"], quiet=True, project_root=self._root)
 
         self.assertEqual(exit_status, 2)
         payload = self._assert_valid_receipt(path, expected_exit=2)
@@ -135,7 +214,7 @@ class TestRunRuffViaArb(unittest.TestCase):
 
         fake = _fake_run_factory(ruff_returncode=0, ruff_stdout="", ruff_stderr="")
         with patch("gzkit.arb.ruff_reporter._run_command", side_effect=fake):
-            exit_status, path = run_ruff_via_arb(paths=["src"], quiet=True)
+            exit_status, path = run_ruff_via_arb(paths=["src"], quiet=True, project_root=self._root)
 
         self.assertEqual(exit_status, 0)
         self.assertIsNotNone(path)

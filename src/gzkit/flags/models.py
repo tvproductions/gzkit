@@ -25,7 +25,7 @@ class FlagError(GzkitError):
 
     @property
     def exit_code(self) -> int:
-        """Return exit code 1 for flag errors."""
+        """Exit code 1 for flag errors."""
         return 1
 
 

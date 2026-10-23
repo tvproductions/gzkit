@@ -161,7 +161,7 @@ def _derive_gate_targets(entrypoint: object) -> tuple[str, ...]:
 
     An empty result is honest silence, never a failure: an entrypoint co-located with
     its gate is already named by ``source_fn``, and a subprocess-backed one delegates
-    to a command (``uv run ruff check .``) with no gzkit callable to name.
+    to a command (``uv run ruff format --check .``) with no gzkit callable to name.
     """
     code = getattr(entrypoint, "__code__", None)
     if not isinstance(code, types.CodeType):

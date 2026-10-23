@@ -31,7 +31,8 @@ _PRECOMMIT = _ROOT / ".pre-commit-config.yaml"
 # the reason it is out of the checkpoint's reach. A new gzkit-authored guard must
 # either consult the checkpoint or be excused HERE, in the open, with a reason.
 _NOT_A_GZKIT_GUARD = {
-    "ruff-check": "third-party linter invoked directly; not a governance guard",
+    "ruff-check": "`gz lint` over Ruff's findings; lint, not a governance guard, and "
+    "its `gz check` step is checkpointed at quality.py `_apply_mx_seam`",
     "ruff-format": "third-party formatter invoked directly",
     "ty-check": "third-party type checker invoked directly",
     "complexity-ceiling": "`gz validate` scope -- already checkpointed at "

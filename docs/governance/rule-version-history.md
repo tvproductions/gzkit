@@ -169,6 +169,10 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `chores.md`
 
+### Changed 2026-10-23 at version `0.6.3`
+
+§ Apply Advice's lint step is `uv run gz lint --fix` in place of `uv run ruff check . --fix`, for the reason `tests.md` `0.27.3` records. Binding rules unchanged.
+
 Lifted 2026-10-11 at version `0.6.0` (rule now at `0.6.1`).
 
 > **Rule version:** `0.6.0` — `.gzkit/chores/` is the authoring source for canonical chores and `src/gzkit/chores/` the generated distribution copy, matching `skill-surface-sync.md` rule 1; damaged-slug recovery is described separately (operator ruling 2026-09-28, GHI #1044). Prior history: [Rule Version History](#choresmd).
@@ -429,6 +433,14 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 ### Lifted 2026-10-23 at version `0.5.7` (rule now at `0.5.8`)
 
 > **Rule version:** `0.5.7` — the cyclomatic row names gzkit's own cognitive score in the complexity-ceiling gate, which replaced complexipy in RO-9 tranche 4; prior banners in [Rule Version History](rule-version-history.md#pythonicmd). Binding rules unchanged.
+
+### Lifted 2026-10-23 at version `0.5.8` (rule now at `0.5.9`)
+
+> **Rule version:** `0.5.8` — the banner is one sentence, as `gz validate --rule-version-markers` requires, and binding rules are unchanged; prior banners in [Rule Version History](rule-version-history.md#pythonicmd).
+
+`0.5.9` moves § Imports' lazy-import clause from an accepted advisory to Mechanical. RO-9 tranche 4 selected Ruff `ALL` with preview (operator, 2026-10-19: *"all ruff rules up to date"*), and the operator ruled on 2026-10-23 how its existing findings are held: a keyed shrink-ratchet baseline (*"b"*), counted and run by gzkit (*"Counted, gz-run (Rec.)"*), in its own file (*"Own file (Rec.)"*). PLC0415 therefore runs, and the sites that predate it are rows of `data/ruff_baseline.json` rather than blanket `noqa`s, which was the 2026-08-08 acceptance's objection to switching it on. The bullet as it stood at `0.5.8`, lifted verbatim:
+
+> **No lazy imports** unless required for optional dependencies or cycle avoidance. **(Advisory — PLC0415 is not enabled.)** The ordering half above is enforced by ruff `I`; this half is not. The advisory scorecard claimed it was "partially enforced by ruff PLC0415" — `PL` has never been in `[tool.ruff.lint] select`, so the rule ran nowhere and **138 live violations** stand in `src/gzkit` (measured 2026-08-08). **This posture is ACCEPTED, not deferred (operator ruling 2026-08-08).** The carve-outs named in this very bullet are what most of those sites claim, so separating a legitimate deferred import from a lazy one is a per-site reading, not a switch — and enabling PLC0415 without that pass would either fail the build or bury 138 blanket `noqa`s, a blanket suppression reproducing exactly the blindness the disabled rule already produced. Calling it "deferred" implied a queue that nothing was advancing; the honest state is a measured, disclosed advisory. Re-measured 2026-08-08 at the acceptance: **still 138** (`uv run ruff check src/gzkit --select PLC0415 --statistics`). Reclassify on either a completed per-site pass or an observed instance of a lazy import causing a defect — not on the count moving.
 
 ## `hexagonal-architecture.md`
 
@@ -864,6 +876,10 @@ Lifted 2026-08-29 at version `0.11.0` (rule now at `0.12.0`).
 > **Rule version:** `0.11.0` — GHI #728: adds the chores-only `project_local` content class and the declaration protocol. `.gzkit/chores/AGENTS.md` declared project-local-only slugs as a real category (REQ-0.0.21-09-06) but nothing implemented it, so a chore authored only under `.gzkit/chores/` was copied into the wheel by sync and scaffolded into every adopter by `gz init`. The property is now DECLARED in `registry.json` rather than inferred from absence — the inference `gz chores doctor` used is the exact state sync overwrites. Prior `0.10.1` — diet pass (operator ruling 2026-08-02): lifted bootstrap-semantics narrative, retirement-policy rationale, and the class-classifier reference tables to `docs/governance/skill-surface-sync-rationale.md`; every non-negotiable rule and binding core retained verbatim. Prior `0.10.0` — names `metadata.skill-version` as the canonical spelling and records that presence is now enforced. Rule #2 said only "`skill-version:` in YAML frontmatter (validated by the skill schema)", which was true of neither half: no skill schema exists, the audit checked *format when present* and never presence, and the unstated nesting let two spellings coexist — 57 skills nested under `metadata:`, 11 at top level, where both validators were blind to them. The rule's own conflict-resolution procedure names the version as "the primary signal", so the drift disarmed the procedure the same rule prescribes. Prior `0.9.0` — renamed prohibited headings; lifted Rationale to expansion doc (OBPI-0.0.54-04 shape conformance pass).
 
 ## `tests.md`
+
+### Changed 2026-10-23 at version `0.27.3`
+
+§ Run / Verify's lint step is `uv run gz lint --fix` in place of `uv run ruff check . --fix`. Ruff selects `ALL` under RO-9 tranche 4, and its verdict is `gz lint`'s against the counted baseline `data/ruff_baseline.json` (operator rulings 2026-10-23); bare `ruff check` now reports every held finding and exits 1 on a tree the gate passes. Binding rules unchanged.
 
 ### Changed 2026-09-25 at version `0.26.6`
 

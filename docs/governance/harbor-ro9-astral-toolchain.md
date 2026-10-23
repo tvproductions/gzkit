@@ -218,6 +218,8 @@ ruling "15 with shrink-ratchet" carries over unchanged: `gz validate --complexit
 holds the 263. complexipy leaves the dependencies, the lockfile, the pre-commit hooks, the Lint step and
 the chores; `python -m gzkit.complexity.cognitive` prints the scores the chores read.
 
+**Ruled for tranche 4 (2026-10-23): Ruff `ALL` held by a counted baseline.** Measured on Ruff 0.17.1 with preview, less the standing exceptions: 9,324 findings over 117 rules in `src/gzkit`, and 6,559 over 97 in tests, features and scripts under the curation list (a dated record). The operator ruled the package findings into *a keyed shrink-ratchet baseline* (verbatim *"b"*) over fixing all of them, and by selection how it is held: counted per (file, rule) and judged by gzkit, *"Counted, gz-run (Rec.)"*, over Ruff's own `per-file-ignores`, which would admit a new finding of a rule a file already carries; in its own file, *"Own file (Rec.)"*, over rows in the astral-discipline baseline, so this tranche's done condition reads the witness and not the lint debt; and `RUF105` (every `# noqa` flagged) a standing exception, *"RUF105 exception (Rec.)"*, with `DOC201` and `DOC501` baselined. `data/ruff_baseline.json` holds the rest, `gz lint` judges it, and `gz lint --ratchet` lowers it.
+
 The rules tranche 4 still reads site by site: S506 (`quality.py`, the YAML loader), S608
 (`trust_audits/cli.py`), two S701 (jinja2 autoescape off on non-HTML renders), and about 260
 S603/S607/S404 subprocess sites. Each gets a fix or a reasoned `# noqa`. Three preview findings read as

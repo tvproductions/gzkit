@@ -4,6 +4,7 @@
 @covers REQ-0.25.0-33-05
 """
 
+import contextlib
 import io
 import json
 import os
@@ -20,19 +21,22 @@ class TestArbCommands(unittest.TestCase):
 
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tempdir.cleanup)
         self._receipts_dir = Path(self._tempdir.name) / "receipts"
         self._prior_env = os.environ.get("GZKIT_ARB_RECEIPTS_ROOT")
         os.environ["GZKIT_ARB_RECEIPTS_ROOT"] = str(self._receipts_dir)
+        # The receipt is judged against the working tree's data/ruff_baseline.json
+        # (RO-9 tranche 4); a root with none judges every finding, as plain Ruff.
+        self.enterContext(contextlib.chdir(self._tempdir.name))
 
     def tearDown(self) -> None:
         if self._prior_env is None:
             os.environ.pop("GZKIT_ARB_RECEIPTS_ROOT", None)
         else:
             os.environ["GZKIT_ARB_RECEIPTS_ROOT"] = self._prior_env
-        self._tempdir.cleanup()
 
     def _fake_ruff_runner(self, returncode: int, stdout: str = "[]"):
-        def fake_run(cmd, **kwargs):  # noqa: ARG001
+        def fake_run(cmd, **kwargs):
             if "ruff" in cmd and "check" in cmd:
                 return subprocess.CompletedProcess(cmd, returncode, stdout, "")
             if "ruff" in cmd and "--version" in cmd:

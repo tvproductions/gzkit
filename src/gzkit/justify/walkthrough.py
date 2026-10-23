@@ -82,7 +82,7 @@ class WalkthroughSection(BaseModel):
 
     @property
     def is_filled(self) -> bool:
-        """Return ``True`` when the section's reasoning has been authored past the placeholder."""
+        """Whether the section's reasoning has been authored past the placeholder."""
         body = self.reasoning.strip()
         if not body:
             return False

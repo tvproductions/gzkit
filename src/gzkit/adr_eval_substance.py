@@ -79,7 +79,7 @@ class SubstanceVerdict(BaseModel):
 
     @property
     def is_graded(self) -> bool:
-        """Return True when a real judge grade (not UNGRADED) is recorded."""
+        """Whether a real judge grade (not UNGRADED) is recorded."""
         return self.grade is not SubstanceGrade.UNGRADED
 
 

@@ -78,17 +78,17 @@ class ReqId(BaseModel):
 
     @property
     def obpi_id(self) -> str:
-        """Return the OBPI short form this REQ's spelling names."""
+        """The OBPI short form this REQ's spelling names."""
         return compose_obpi_id(self.semver, self.obpi_item)
 
     @property
     def adr_id(self) -> str:
-        """Return the ADR short form this REQ's spelling names."""
+        """The ADR short form this REQ's spelling names."""
         return compose_adr_id(self.semver)
 
     @property
     def task_prefix(self) -> str:
-        """Return the prefix the TASKs of this REQ open with."""
+        """The prefix the TASKs of this REQ open with."""
         return task_prefix(self.semver, self.obpi_item, self.criterion_index)
 
 

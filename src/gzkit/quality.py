@@ -17,11 +17,13 @@ import sys
 from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from functools import cache
+from itertools import starmap
 from pathlib import Path
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit import ruff_baseline
 from gzkit.canonical_steps import CANONICAL_STEP_COMMANDS
 from gzkit.core.models import OBPI_SHORT_ID_BODY, obpi_slug
 from gzkit.doc_coverage.manifest import MANPAGE_DIR
@@ -370,8 +372,45 @@ def run_parents_pattern_lint(project_root: Path) -> QualityResult:
     )
 
 
+def run_ruff_against_baseline(
+    project_root: Path, targets: Sequence[str] = (), *, fix: bool = False
+) -> QualityResult:
+    """Run every Ruff rule over *targets* and judge it against ``data/ruff_baseline.json``.
+
+    Ruff selects ``ALL`` (RO-9 tranche 4) and ships no baseline, so the verdict is
+    gzkit's: a finding no row holds fails, and so does a row its findings no longer
+    fill. A tree with no baseline file fails every finding, which is plain Ruff.
+
+    Returns:
+        QualityResult carrying the recovery prose for every breach.
+
+    """
+    command = "gz lint" + "".join(f" {t}" for t in targets) + (" --fix" if fix else "")
+    try:
+        report = ruff_baseline.lint_against_baseline(project_root, targets, fix=fix)
+    except (ruff_baseline.RuffRunError, ruff_baseline.BaselineError) as exc:
+        return QualityResult(
+            success=False,
+            command=command,
+            stdout="",
+            stderr=f"{exc}. Repair it, then re-run `uv run gz lint`.",
+            returncode=2,
+        )
+    if report.ok:
+        held = len(report.findings)
+        stdout = f"Ruff: no finding outside {ruff_baseline.BASELINE_RELPATH} ({held} held)."
+        return QualityResult(success=True, command=command, stdout=stdout, stderr="", returncode=0)
+    return QualityResult(
+        success=False,
+        command=command,
+        stdout=ruff_baseline.render_report(report),
+        stderr="",
+        returncode=1,
+    )
+
+
 def run_lint(project_root: Path) -> QualityResult:
-    """Run linting (ruff check).
+    """Run linting: Ruff against its baseline, and the two path lints.
 
     Args:
         project_root: Project root directory.
@@ -385,7 +424,7 @@ def run_lint(project_root: Path) -> QualityResult:
     # in ``gz check`` while the pre-commit hook blocked the same file at commit
     # time (the "green here, red at commit" gate divergence). ruff honors its
     # own excludes + .gitignore, so generated/vendored trees are skipped.
-    ruff_result = run_command("uv run ruff check .", cwd=project_root)
+    ruff_result = run_ruff_against_baseline(project_root)
     # Cognitive complexity is not a lint here: since complexipy's retirement
     # (RO-9 tranche 4, 2026-10-22) gzkit scores it in `gz validate
     # --complexity-ceiling`, the "Complexity ceiling" step.
@@ -400,7 +439,7 @@ def run_lint(project_root: Path) -> QualityResult:
 
     return QualityResult(
         success=success,
-        command="uv run ruff check . + ADR path contract lint + parents-pattern lint",
+        command="gz lint (Ruff, baselined) + ADR path contract lint + parents-pattern lint",
         stdout=stdout,
         stderr=stderr,
         returncode=returncode,
@@ -492,7 +531,7 @@ def run_format_check(project_root: Path) -> QualityResult:
 
 
 def run_format(project_root: Path) -> QualityResult:
-    """Run auto-formatting (ruff format + ruff check --fix).
+    """Run auto-formatting: ``ruff format``, then Ruff's safe fixes judged against the baseline.
 
     Args:
         project_root: Project root directory.
@@ -506,15 +545,15 @@ def run_format(project_root: Path) -> QualityResult:
     if not format_result.success:
         return format_result
 
-    # Then run ruff check --fix over the whole repo (same scope as run_lint and
-    # the pre-commit ruff-check hook), so the auto-fixer covers everything the
-    # lint gate checks.
-    fix_result = run_command("uv run ruff check --fix .", cwd=project_root)
+    # Then fix over the whole repo (same scope as run_lint and the pre-commit
+    # ruff-check hook), so the auto-fixer covers everything the lint gate checks,
+    # and judge what remains against the baseline as the gate does.
+    fix_result = run_ruff_against_baseline(project_root, fix=True)
 
     # Combine results
     return QualityResult(
         success=fix_result.success,
-        command="uv run ruff format . && uv run ruff check --fix .",
+        command="uv run ruff format . && gz lint --fix",
         stdout=format_result.stdout + "\n" + fix_result.stdout,
         stderr=format_result.stderr + "\n" + fix_result.stderr,
         returncode=fix_result.returncode,
@@ -2006,7 +2045,7 @@ def project_local_ratchets_installed() -> bool:
     negative controls, so a wheel install never lists a bound step it cannot prove
     (QC binding's green-by-emptiness refusal) and a checkout never drops one.
     """
-    return all(source_checkout_chore_script(slug, name) for slug, name in PROJECT_LOCAL_RATCHETS)
+    return all(starmap(source_checkout_chore_script, PROJECT_LOCAL_RATCHETS))
 
 
 def _run_project_local_ratchet(project_root: Path, slug: str, script_name: str) -> QualityResult:
@@ -2255,7 +2294,7 @@ class ObpiProofStatus(BaseModel):
 
     @property
     def has_proof(self) -> bool:
-        """Return True if any documentation proof source was found."""
+        """Whether any documentation proof source was found."""
         return (
             self.runbook_found
             or self.command_doc_found
@@ -2272,7 +2311,7 @@ class ObpiProofStatus(BaseModel):
 
     @property
     def proof_type(self) -> str:
-        """Return the type of documentation proof found."""
+        """The type of documentation proof found."""
         if self.runbook_found:
             return "runbook"
         if self.command_doc_found:

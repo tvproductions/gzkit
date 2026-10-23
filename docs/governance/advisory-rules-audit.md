@@ -70,15 +70,15 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `security-sensitivity.md` | `0.6.1` |
 | `skill-surface-sync.md` | `0.13.1` |
 | `skill-authoring.md` | `0.2.1` |
-| `chores.md` | `0.6.2` |
+| `chores.md` | `0.6.3` |
 | `cli.md` | `0.9.2` |
 | `cross-platform.md` | `0.7.2` |
 | `gate5-runbook-code-covenant.md` | `0.3.2` |
 | `guardrail-feedback-prose.md` | `0.3.1` |
 | `mx-mode.md` | `1.10.0` |
-| `pythonic.md` | `0.5.8` |
+| `pythonic.md` | `0.5.9` |
 | `tool-skill-runbook-alignment.md` | `0.5.3` |
-| `tests.md` | `0.27.2` |
+| `tests.md` | `0.27.3` |
 | `task-discovery.md` | `0.10.1` |
 | `token-block-discipline.md` | `0.10.0` |
 
@@ -145,7 +145,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | 20 | Modules <=600 lines | **Judgment** | **Corrected 2026-08-08 — same class as row 19.** It cited a "pre-commit check under `.pre-commit-config.yaml`"; no such hook exists. The rule's own table lists the enforcer as "nothing / authoring-time guidance only", and the canonical threshold table's `radon_raw_nloc` block band is 1031.9 with a *warn* band at 733.2 — so a 700-line module is `advise` there and a violation here. Two authorities disagreeing in both directions, neither of them running. `source=.gzkit/rules/pythonic.md` |
 | 21 | Classes <=300 lines | **Mechanical** | Enforced by `gz validate --class-size` (GHI #204) — AST scan over `src/gzkit/**`, with explicit `_CLASS_SIZE_WAIVERS` for documented exceptions `source=.gzkit/rules/pythonic.md` |
 | 22 | `Optional`/`List` instead of `\| None` and `list[]` | **Mechanical** | ruff UP007, UP006 `source=.gzkit/rules/models.md` |
-| 23 | **No lazy imports** unless required for optional dependencies or cycle avoidance | **Judgment** | **Re-scored 2026-08-08 (rule `0.3.0`), Movement C rules arm — and the old note was false, not merely optimistic.** "Partially enforced by ruff PLC0415" was untrue: `PL` is absent from `[tool.ruff.lint] select`, so PLC0415 ran nowhere and **138 live violations** stand in `src/gzkit`. Deferred by operator ruling 2026-08-08 (enable BLE001, defer PLC0415) because the rule's own carve-outs — optional dependencies and cycle avoidance — are exactly what most of those 138 sites claim, and each needs a per-site reading to separate a legitimate deferred import from a lazy one. Enabling PLC0415 without that pass would either fail the build or bury 138 blanket `noqa`s, and a blanket suppression is the same blindness the disabled rule already produced. Reclassify by working the 138, not by flipping the switch. **Posture ACCEPTED 2026-08-08 (rule `0.4.0`, operator ruling "record deferred postures as accepted").** "Deferred" named a queue nothing was advancing, and the clause rode five handoffs as an open loop on that word alone; the state is a measured, disclosed advisory. Re-measured at the acceptance: still 138. `source=.gzkit/rules/pythonic.md` |
+| 23 | **No lazy imports** unless required for optional dependencies or cycle avoidance | **Promotable** | **Re-scored 2026-10-23 (rule `0.5.9`), RO-9 tranche 4, from Judgment.** Ruff now selects `ALL`, so PLC0415 runs, and the operator ruled how the findings that predate it are held: a keyed shrink-ratchet baseline (*"b"*), counted and run by gzkit (*"Counted, gz-run (Rec.)"*). Its sites are rows of `data/ruff_baseline.json` (172 in `src/gzkit` and 2,401 outside it at the seeding), so a new lazy import fails `gz lint` while the held ones await the per-site reading below; a legitimate deferred import carries a `# noqa: PLC0415` naming its carve-out. That answers the objection the acceptance recorded, which was blanket suppression, not the rule. **Promotable, not Mechanical:** the only control is `NC:lint`, which plants an unused import, and a scope-level control proves the gate alive, never this property. The tractable check is a property-level control that plants a lazy import outside the carve-outs and requires `gz lint` to refuse it with PLC0415. The history below is the record that stood until then. **Re-scored 2026-08-08 (rule `0.3.0`), Movement C rules arm — and the old note was false, not merely optimistic.** "Partially enforced by ruff PLC0415" was untrue: `PL` is absent from `[tool.ruff.lint] select`, so PLC0415 ran nowhere and **138 live violations** stand in `src/gzkit`. Deferred by operator ruling 2026-08-08 (enable BLE001, defer PLC0415) because the rule's own carve-outs — optional dependencies and cycle avoidance — are exactly what most of those 138 sites claim, and each needs a per-site reading to separate a legitimate deferred import from a lazy one. Enabling PLC0415 without that pass would either fail the build or bury 138 blanket `noqa`s, and a blanket suppression is the same blindness the disabled rule already produced. Reclassify by working the 138, not by flipping the switch. **Posture ACCEPTED 2026-08-08 (rule `0.4.0`, operator ruling "record deferred postures as accepted").** "Deferred" named a queue nothing was advancing, and the clause rode five handoffs as an open loop on that word alone; the state is a measured, disclosed advisory. Re-measured at the acceptance: still 138. `source=.gzkit/rules/pythonic.md` |
 | 23a | **Top-level imports only.** Standard library, third-party, then local. | **Mechanical** | The ordering half is enforced by ruff `I` (isort), which **is** selected. Only the top-level-only half (row 23) is unenforced — worth separating, because the row's single-line form let a genuinely-enforced clause and an unenforced one share one score. `source=.gzkit/rules/pythonic.md` |
 | 24 | **Type-check suppression syntax** — a bracketed `# type: ignore[...]` must name a `ty:`-prefixed code | **Mechanical** | Enforced by `gz validate --type-ignores` (this audit's direct outcome, GHI #197). **Predicate corrected and scope widened 2026-08-09 (rule `0.5.0`) — the row was Mechanical and the gate did run, but it was checking the wrong thing.** It matched *any* bracketed `type: ignore[`, so it flagged `# type: ignore[ty:invalid-assignment]` and `# type: ignore[arg-type, ty:invalid-argument-type]` as violations although ty honors both: ty skips codes lacking a `ty:` prefix precisely so one comment can serve several checkers. A reader obeying the gate would have deleted a working suppression to go green — a false **Mechanical** in the same family as rows 18 and 23, differing only in that this one fired rather than stayed silent. Verified against ty 0.0.69 instead of inferred from the rule file: `# type: ignore[misc]` left an `invalid-assignment` error standing while both `ty:`-bearing forms suppressed it ([ty suppression docs](https://docs.astral.sh/ty/suppression/)). Scope was `src` alone while **512 inert markers** accumulated — 188 across 73 files under `tests`, 324 across 42 under `features` — making the forbidden form the repo's most common suppression shape; `_TYPE_IGNORE_AUDIT_ROOTS` now covers `src`, `tests`, `scripts`, `.claude/hooks`, `features`, each proven walked by a table-driven scope test. `source=.gzkit/rules/pythonic.md` |
 
@@ -539,8 +539,8 @@ decays in whichever direction the next reader's grep happens to point.
 | Score | Rows | % of scored rows |
 |-------|-------|---|
 | **Mechanical** | 70 | 37% |
-| **Promotable** | 43 | 23% |
-| **Judgment** | 78 | 41% |
+| **Promotable** | 44 | 23% |
+| **Judgment** | 77 | 40% |
 | **Ambiguous** | 0 | 0% |
 
 <!-- The Rows column is machine-checked by `gz validate --advisory-scorecard`;

@@ -567,6 +567,33 @@ def _ruff_selection(project_root: Path) -> tuple[list[str], list[str]] | None:
     )
 
 
+#: Ruff's one linter whose prefix selects lettered sub-linters: ``PL`` reaches
+#: ``PLC``, ``PLE``, ``PLR`` and ``PLW``. Every other linter's codes continue its
+#: prefix with digits, which is how ``PT`` (flake8-pytest-style) and ``PTH``
+#: (flake8-use-pathlib), or ``D`` and ``DOC``, stay distinct linters.
+_RUFF_LETTERED_SUBLINTERS = {"PL": frozenset("CERW")}
+
+
+def _ruff_selector_covers(selector: str, target: str) -> bool:
+    """Report whether a ``select``/``ignore`` *selector* reaches *target*, as Ruff resolves it.
+
+    A bare prefix test reads ``ignore = ["PT"]`` as switching off every ``PTH``
+    rule; Ruff does not (measured on Ruff 0.17.1: PTH123 fires under it), so the
+    remainder after the selector must start a code's digits, or name one of the
+    selector's lettered sub-linters.
+
+    Returns:
+        True when Ruff would apply *selector* to *target*.
+
+    """
+    if selector == "ALL":
+        return True
+    if not target.startswith(selector):
+        return False
+    rest = target[len(selector) :]
+    return not rest or rest[0].isdigit() or rest[0] in _RUFF_LETTERED_SUBLINTERS.get(selector, "")
+
+
 def _ruff_code_is_reachable(code: str, select: list[str], ignore: list[str]) -> bool:
     """Report whether ruff runs *code*: some ``select`` prefixes it, no ``ignore`` does.
 
@@ -575,9 +602,9 @@ def _ruff_code_is_reachable(code: str, select: list[str], ignore: list[str]) -> 
     down — the same report-green-while-blind state row 18 was in, reached from
     the other direction.
     """
-    if any(code.startswith(entry) for entry in ignore):
+    if any(_ruff_selector_covers(entry, code) for entry in ignore):
         return False
-    return any(entry == "ALL" or code.startswith(entry) for entry in select)
+    return any(_ruff_selector_covers(entry, code) for entry in select)
 
 
 def _ruff_family_is_reachable(family: str, select: list[str], ignore: list[str]) -> bool:
@@ -594,10 +621,11 @@ def _ruff_family_is_reachable(family: str, select: list[str], ignore: list[str])
     family (``ignore = ["D"]`` kills ``D``); ``ignore = ["D203"]`` switches off
     one member and leaves the family running, which is this repository's state.
     """
-    if any(family.startswith(entry) for entry in ignore):
+    if any(_ruff_selector_covers(entry, family) for entry in ignore):
         return False
     return any(
-        entry == "ALL" or family.startswith(entry) or entry.startswith(family) for entry in select
+        _ruff_selector_covers(entry, family) or _ruff_selector_covers(family, entry)
+        for entry in select
     )
 
 

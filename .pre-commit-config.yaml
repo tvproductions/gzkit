@@ -21,8 +21,10 @@ repos:
         stages: [prepare-commit-msg]
         always_run: true
       - id: ruff-check
-        name: ruff check (lint)
-        entry: uv run ruff check --fix
+        name: ruff check (lint, against data/ruff_baseline.json)
+        # Ruff selects ALL (RO-9 tranche 4); `gz lint` judges the staged files'
+        # findings against the counted baseline, after Ruff's safe fixes.
+        entry: uv run gz lint --fix
         language: system
         pass_filenames: true
         types: [python]

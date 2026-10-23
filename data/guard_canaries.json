@@ -504,6 +504,19 @@
       "authority": "docs/governance/harbor-ro3-requirements-store.md (drydock RO-3 tranche 4)",
       "proposed_by": "claude-code session 2026-10-22",
       "reviewed_by": "g0"
+    },
+    {
+      "claim_id": "lint",
+      "guard": "gzkit.ruff_baseline:compare",
+      "failing_test": "tests.test_ruff_baseline.CompareTest.test_a_finding_no_row_holds_is_unheld_and_carries_its_location",
+      "mutation": {
+        "find": "        if found > held:\n",
+        "replace": "        if False:\n",
+        "label": "a finding no baseline row holds is never refused"
+      },
+      "binding_sha256": "11329d354a2f286df126b3a850939f5f6be069f73f836d266ec8511ac5d5fcd8",
+      "authority": "docs/governance/harbor-ro9-astral-toolchain.md (drydock RO-9 tranche 4, Ruff ALL under data/ruff_baseline.json); GHI #1154 item 5 (every registered claim binds a reviewed canary)",
+      "proposed_by": "claude-code session 2026-10-23"
     }
   ]
 }

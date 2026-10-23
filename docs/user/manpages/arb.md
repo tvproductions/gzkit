@@ -27,7 +27,7 @@ ARB's purpose is to reduce the rate of agent-authored defects (first-pass failur
 
 ### ruff
 
-Run `ruff check` via ARB and emit a lint receipt.
+Run `ruff check` via ARB, judged against `data/ruff_baseline.json`, and emit a lint receipt.
 
 ```text
 gz arb ruff [--fix] [--soft-fail] [PATHS...]

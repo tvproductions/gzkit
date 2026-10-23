@@ -2,6 +2,7 @@
 
 import ast
 import contextlib
+import importlib.util
 import io
 import json
 import os
@@ -51,7 +52,7 @@ def _install_hooks(project_root: Path) -> None:
 class _HookResult:
     """Subset of ``subprocess.CompletedProcess`` used by hook tests."""
 
-    __slots__ = ("returncode", "stdout", "stderr")
+    __slots__ = ("returncode", "stderr", "stdout")
 
     def __init__(self, returncode: int, stdout: str, stderr: str) -> None:
         self.returncode = returncode
@@ -720,7 +721,7 @@ class TestSetupClaudeHooks(unittest.TestCase):
             self.assertIn("Registration Order", readme_text)
             self.assertNotIn("not yet active in", readme_text)
             self.assertNotIn("historical", readme_text)
-            self.assertIn("hook that runs `ruff check`", readme_text)
+            self.assertIn("hook that runs `gz lint`", readme_text)
             self.assertIn("hook that records governance", readme_text)
 
 
@@ -944,6 +945,32 @@ class TestPostEditRuffHook(unittest.TestCase):
             # Contract: output is capped so stderr floods don't blow up the
             # tool-call feedback channel.
             self.assertIn("MAX_OUTPUT_LINES", script)
+
+    def test_hook_lints_the_edited_file_through_gz_lint_not_bare_ruff(self) -> None:
+        """Ruff selects ALL under data/ruff_baseline.json (RO-9 tranche 4).
+
+        Bare `ruff check` would report every finding the baseline holds on each
+        edit, so the hook asks `gz lint`, which shows only what is not held.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir).resolve()
+            setup_claude_hooks(project_root, GzkitConfig(project_name="gzkit-test"))
+            hook_path = project_root / ".claude" / "hooks" / "post-edit-ruff.py"
+            spec = importlib.util.spec_from_file_location("post_edit_ruff_hook", hook_path)
+            assert spec is not None and spec.loader is not None
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            edited = project_root / "edited.py"
+            edited.write_text("x = 1\n", encoding="utf-8")
+            payload = json.dumps({"tool_input": {"file_path": str(edited)}})
+            done = mock.Mock(returncode=0, stdout="", stderr="")
+            with (
+                mock.patch.object(module.subprocess, "run", return_value=done) as run,
+                mock.patch("sys.stdin", io.StringIO(payload)),
+                self.assertRaises(SystemExit),
+            ):
+                module.main()
+            self.assertEqual(run.call_args.args[0], ["uv", "run", "gz", "lint", edited.as_posix()])
 
 
 class TestPlanAuditGateHook(unittest.TestCase):

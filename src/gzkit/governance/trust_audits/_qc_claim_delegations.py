@@ -20,7 +20,7 @@ from __future__ import annotations
 _CHORE_SCRIPT = "chore script {}"
 
 QC_CLAIM_DELEGATIONS: dict[str, str] = {
-    "lint": "uv run ruff check .",
+    "lint": "python -m gzkit lint",
     "format": "uv run ruff format --check .",
     "typecheck": "uv run ty check .",
     "test": "uv run -m unittest discover tests",
