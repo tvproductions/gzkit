@@ -7,9 +7,9 @@ description: Pythonic standards and idiomatic code contract
 
 # Pythonic Standards (Idiomatic Code Contract)
 
-<!-- rule-version: 0.5.7 -->
+<!-- rule-version: 0.5.8 -->
 
-> **Rule version:** `0.5.7` — the cyclomatic row names gzkit's own cognitive score in the complexity-ceiling gate, which replaced complexipy in RO-9 tranche 4; prior banners in [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd). Binding rules unchanged.
+> **Rule version:** `0.5.8` — the banner is one sentence, as `gz validate --rule-version-markers` requires, and binding rules are unchanged; prior banners in [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd).
 
 ## Core Principles
 
