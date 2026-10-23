@@ -375,6 +375,18 @@ class TestLintNamesOnlyWhatRuns(unittest.TestCase):
                 self.assertFalse(result.success)
                 self.assertEqual(result.returncode, 7)
 
+        # Control: with every lint clean the step passes, so the refusals above are
+        # each lint's own verdict and not a step that always fails.
+        with (
+            tempfile.TemporaryDirectory() as tmpdir,
+            patch("gzkit.quality.run_command", return_value=ok),
+            patch("gzkit.quality.run_adr_path_contract_lint", return_value=ok),
+            patch("gzkit.quality.run_parents_pattern_lint", return_value=ok),
+        ):
+            clean = run_lint(Path(tmpdir))
+        self.assertTrue(clean.success)
+        self.assertEqual(clean.returncode, 0)
+
     def test_lint_command_docstring_names_no_markdown_linter(self) -> None:
         """The CLI docstring is operator-facing and must not promise a linter that never runs."""
         from gzkit.commands.quality import lint
