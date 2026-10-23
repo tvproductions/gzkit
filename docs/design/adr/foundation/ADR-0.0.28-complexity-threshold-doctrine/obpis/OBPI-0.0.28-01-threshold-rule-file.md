@@ -118,14 +118,14 @@ uv run gz arb step --name unittest -- uv run -m unittest tests/governance/test_c
 
 - [ ] REQ-0.0.28-01-01: Given the rule schema, when `.gzkit/rules/complexity-thresholds.md` is loaded, then frontmatter validates and the body-level rule-version marker matches the visible block quote.
 - [ ] REQ-0.0.28-01-02: Given the trigger-semantic vocabulary section, when parsed, then exactly three values are declared: `block`, `warn`, `advise`.
-- [ ] REQ-0.0.28-01-03: Given the twelve canonical metrics, when each per-metric table is parsed, then a `block` band row exists for every metric.
+- [ ] REQ-0.0.28-01-03: Given the twelve canonical metrics, when each per-metric table is parsed, then a `block` band row exists for every metric. *Amended 2026-10-22 (operator ruling, verbatim "Amend both in place (Rec.)"; RO-9 tranche 4, GHI #1183):* Radon's seven metrics retired and `lizard_file_nloc` joined, so the canonical metrics are six (`gzkit.complexity.measurement.CANONICAL_METRICS`), and each still has a `block` band row.
 - [ ] REQ-0.0.28-01-04: Given any band row, when parsed, then the row carries both `corpus_percentile` and `absolute_number_at_that_percentile`.
 - [ ] REQ-0.0.28-01-05: Given the "Citation" section at the top of the rule body, when parsed, then the canonical citation tuple `(distilled_characteristics_path, section_anchor, corpus_revision)` is present.
 - [ ] REQ-0.0.28-01-06: Given the scorecard at `docs/governance/advisory-rules-audit.md`, when `uv run gz validate --advisory-scorecard` runs, then exit 0 and the `complexity-thresholds` entry is classified Mechanical.
 - [ ] REQ-0.0.28-01-07: Given a clean working tree, when `uv run gz agent sync control-surfaces` runs, then all vendor mirrors carry identical rule content and the post-sync diff is empty.
 - [ ] REQ-0.0.28-01-08: Given the rule body, when the Operator-amendable mapping protocol section is parsed, then it references the doctrine-amendment-protocol stub and declares silent edits forbidden.
 - [ ] REQ-0.0.28-01-09: Given the vendor mirrors, when each is loaded, then it carries the body-level `<!-- rule-version: 0.1.0 -->` marker.
-- [ ] REQ-0.0.28-01-10: Given the Bootstrap absolutes section, when parsed, then it names exactly the three known-bootstrap metrics (`radon_mi`, `lizard_nesting_depth`, `cohesion_lcom4`) and cites GHI #404 (parser defect) and/or GHI #405 (polarity model).
+- [ ] REQ-0.0.28-01-10: Given the Bootstrap absolutes section, when parsed, then it names exactly the three known-bootstrap metrics (`radon_mi`, `lizard_nesting_depth`, `cohesion_lcom4`) and cites GHI #404 (parser defect) and/or GHI #405 (polarity model). *Amended 2026-10-22 (operator ruling, verbatim "Amend in place (Rec.)"; RO-9 tranche 4, GHI #1183):* `radon_mi` retired with Radon (operator, "Map or retire each (Rec.)"), and `lizard_nesting_depth` took corpus bands from the 2026-10-22 distillation (operator, "Corpus bands (Rec.)"), so the section names one bootstrap metric, `cohesion_lcom4`, and cites why it stays (a cohesion percentage on another scale and polarity). The citation of GHI #404 and #405 stands as the history of the two that left.
 
 ## Completion Checklist
 

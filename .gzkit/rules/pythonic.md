@@ -7,9 +7,9 @@ description: Pythonic standards and idiomatic code contract
 
 # Pythonic Standards (Idiomatic Code Contract)
 
-<!-- rule-version: 0.5.5 -->
+<!-- rule-version: 0.5.6 -->
 
-> **Rule version:** `0.5.5` — the cyclomatic row names the gates that replaced xenon in RO-9 tranche 4 (GHI #1183); prior banners in [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd). Binding rules unchanged.
+> **Rule version:** `0.5.6` — the size note reads the table as it stands after Radon's retirement (`lizard_file_nloc`, `lizard_ccn`), and its p95 module-size figure, stale since the 2026-08-26 move to p99, is corrected; prior banners in [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd). Binding rules unchanged.
 
 ## Core Principles
 
@@ -33,8 +33,8 @@ description: Pythonic standards and idiomatic code contract
 > *"a new threshold authority appearing anywhere else is doctrine drift by another name."*
 > These three numbers are such an authority, and they **disagree with the table in both
 > directions**: `lizard_nloc` blocks at **37.0** (p95) where this rule permits 50;
-> `radon_raw_nloc` blocks at **1031.9** (p95) where this rule flags 600 (the table's *warn*
-> band is 733.2, so a 700-line module is merely `advise` there and a violation here).
+> `lizard_file_nloc` blocks at **3130.24** (p99) where this rule flags 600 (the table's *warn*
+> band is 716.5, so a 700-line module is merely `advise` there and a violation here).
 >
 > What is actually enforced today:
 >
@@ -43,10 +43,10 @@ description: Pythonic standards and idiomatic code contract
 > | Classes <=300 | `gz validate --class-size` (`code_quality.py`, `limit = 300` hardcoded, waivers in `_CLASS_SIZE_WAIVERS`) | **live gate** — the table carries no class-size metric, so this rule is the only authority |
 > | Functions <=50 | nothing | authoring-time guidance only |
 > | Modules <=600 | nothing | authoring-time guidance only |
-> | *(cyclomatic)* | `gz validate --complexity-ceiling` and Ruff `C901`, both at `[tool.ruff.lint.mccabe] max-complexity` (each function, module mean and overall mean CC <=20); cognitive complexity by complexipy at `[tool.complexipy]` (15, snapshot-ratcheted) | **live gate** — a *third* ceiling, matching neither authority: the table's `radon_cc` blocks at 11.0, so a CC-15 function passes the ceiling while `block` per the table |
+> | *(cyclomatic)* | `gz validate --complexity-ceiling` and Ruff `C901`, both at `[tool.ruff.lint.mccabe] max-complexity` (each function, module mean and overall mean CC <=20); cognitive complexity by complexipy at `[tool.complexipy]` (15, snapshot-ratcheted) | **live gate** — a *third* ceiling, matching neither authority: the table's `lizard_ccn` blocks at 11.0, so a CC-15 function passes the ceiling while `block` per the table |
 >
 > The table's function/module bands have **no consumer**: `complexity_advise.py` is
-> `METRIC_KEY = "radon_cc"` with `metrics_checked = 1  # currently only radon_cc`.
+> reads `lizard_ccn` alone (`gzkit.complexity.functions.METRIC_KEY`, `metrics_checked = 1`).
 > `docs/governance/advisory-rules-audit.md` once miscoded this as *"Mechanical | xenon complexity"* —
 > xenon measured cyclomatic rank, never line count; that Mechanical claim was unbacked.
 >

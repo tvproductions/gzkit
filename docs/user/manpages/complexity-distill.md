@@ -43,7 +43,7 @@ Default flow:
 `--baseline-json PATH` short-circuits steps 1–2: the file is parsed as
 a `BaselineArtifact` and used directly. This is the test-injection path
 that lets the Output Contract conformance tests run without invoking
-radon/lizard/cohesion against real Git checkouts.
+lizard/cohesion against real Git checkouts.
 
 The verb does **not** author the practitioner-eye observation block per
 metric — every per-metric section emits an operator-attested placeholder

@@ -388,7 +388,7 @@ def _build_module_size() -> Path:
             {
                 "bands": [
                     {
-                        "metric": "radon_raw_nloc",
+                        "metric": "lizard_file_nloc",
                         "trigger_semantic": "block",
                         "absolute_number": 3,
                     }

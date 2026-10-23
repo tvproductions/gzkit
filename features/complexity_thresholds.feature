@@ -27,14 +27,14 @@ Feature: gz validate --complexity-thresholds rule body shape (OBPI-0.0.28-03)
 
   @REQ-0.0.28-03-02
   Scenario: Rule body where any metric lacks a block band fails closed
-    Given a complexity-thresholds fixture with radon_cc missing its block band
+    Given a complexity-thresholds fixture with lizard_ccn missing its block band
     When I run the gz command "validate --complexity-thresholds"
     Then the command exits with code 3
-    And the output contains "radon_cc"
+    And the output contains "lizard_ccn"
 
   @REQ-0.0.28-03-03
   Scenario: Off-enum corpus percentile fails closed
-    Given a complexity-thresholds fixture with radon_cc carrying an off-enum percentile
+    Given a complexity-thresholds fixture with lizard_ccn carrying an off-enum percentile
     When I run the gz command "validate --complexity-thresholds"
     Then the command exits with code 3
 

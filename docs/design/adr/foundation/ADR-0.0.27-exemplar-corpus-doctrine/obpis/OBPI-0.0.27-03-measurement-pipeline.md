@@ -119,9 +119,9 @@ uv run python -c "import sys; sys.stdout.reconfigure(encoding='utf-8'); from gzk
 - [ ] REQ-0.0.27-03-02: Given a project's `excluded_paths`, when measurement runs, then no metric for any path matching the exclusion glob appears in the baseline.
 - [ ] REQ-0.0.27-03-03: Given the same corpus + same tool major versions, when the pipeline runs twice into two output dirs, then `diff baseline-1/baseline.json baseline-2/baseline.json` is empty.
 - [ ] REQ-0.0.27-03-04: Given each canonical metric, when the aggregator runs, then `p50, p75, p90, p95, p99` and inter-project variance are present per metric per project and aggregated across projects.
-- [ ] REQ-0.0.27-03-05: Given a missing `radon`/`lizard`/`cohesion` binary, when the pipeline runs, then it exits with code 3 and a named error; no baseline file is written.
+- [ ] REQ-0.0.27-03-05: Given a missing `radon`/`lizard`/`cohesion` binary, when the pipeline runs, then it exits with code 3 and a named error; no baseline file is written. *Amended 2026-10-22 (operator ruling, verbatim "Amend in place (Rec.)"; RO-9 tranche 4, GHI #1183):* Radon retired, so the required tools are `lizard` and `cohesion`; a missing one still exits 3 with a named error and writes no baseline.
 - [ ] REQ-0.0.27-03-06: Given a baseline JSON containing an unknown field, when validation runs, then the schema rejects it.
-- [ ] REQ-0.0.27-03-07: Given `pyproject.toml`, when parsed, then the three pinned dependencies appear with major-version pins and rationale citing Stdlib-First.
+- [ ] REQ-0.0.27-03-07: Given `pyproject.toml`, when parsed, then the three pinned dependencies appear with major-version pins and rationale citing Stdlib-First. *Amended 2026-10-22 (operator ruling, verbatim "Amend both in place (Rec.)"; RO-9 tranche 4, GHI #1183):* Radon retired, so the pinned measurement dependencies are two, `lizard` and `cohesion`, each with a major-version pin and the Stdlib-First rationale.
 
 ## Completion Checklist
 

@@ -9,11 +9,11 @@ paths:
 description: Per-metric threshold table mapping percentile + absolute boundaries to fixed three-value trigger semantics (block / warn / advise) for the gzkit complexity-doctrine cluster
 ---
 
-<!-- rule-version: 0.5.2 -->
+<!-- rule-version: 0.6.0 -->
 
 # Complexity Thresholds (gzkit)
 
-> **Rule version:** `0.5.2` — xenon is no longer named as a consumer of the table: it never read the table, and RO-9 tranche 4 retired it (GHI #1183); prior banners in [Rule Version History](../../docs/governance/rule-version-history.md#complexity-thresholdsmd). Binding rules unchanged.
+> **Rule version:** `0.6.0` — the table binds to the 2026-10-22 distillation: Radon's seven metrics retire, module size is `lizard_file_nloc`, and nesting depth leaves the bootstrap carve-out for corpus bands (RO-9 tranche 4, GHI #1183); prior banners in [Rule Version History](../../docs/governance/rule-version-history.md#complexity-thresholdsmd).
 
 ## Data source-of-truth
 
@@ -22,11 +22,11 @@ The runtime threshold data lives in [`complexity-thresholds.json`](complexity-th
 ## Citation
 
 The data file binds to the corpus-measured boundaries in
-[`docs/governance/complexity/distilled-characteristics-2026-05-04.md`](../../docs/governance/complexity/distilled-characteristics-2026-05-04.md)
+[`docs/governance/complexity/distilled-characteristics-2026-10-22.md`](../../docs/governance/complexity/distilled-characteristics-2026-10-22.md)
 at `corpus_revision: 1`. Canonical-string form:
 
 ```
-docs/governance/complexity/distilled-characteristics-2026-05-04.md § radon-cc (corpus revision 1)
+docs/governance/complexity/distilled-characteristics-2026-10-22.md § lizard-ccn (corpus revision 1)
 ```
 
 > See [`docs/governance/complexity/complexity-thresholds-rationale.md`](../../docs/governance/complexity/complexity-thresholds-rationale.md) for citation contract details, bootstrap carve-out rationale, amendment protocol, refresh portability, and anti-patterns.
@@ -68,27 +68,32 @@ code (ADR-0.0.28 § Alternative #5).
 The per-metric `(corpus_percentile, absolute_number, trigger_semantic)`
 rows previously rendered as markdown tables in this file now live in
 [`complexity-thresholds.json`](complexity-thresholds.json) as the
-runtime source of truth. The data file declares twelve canonical
-metrics covered by the gzkit complexity-doctrine cluster:
+runtime source of truth. The data file declares six canonical metrics
+covered by the gzkit complexity-doctrine cluster:
 
-- `radon_cc`, `radon_mi`, `radon_hal_volume`, `radon_hal_difficulty`,
-  `radon_hal_effort`, `radon_raw_nloc`, `radon_raw_lloc`
-- `lizard_nloc`, `lizard_param_count`, `lizard_nesting_depth`,
-  `lizard_ccn`
+- `lizard_file_nloc` (module size), `lizard_nloc`, `lizard_param_count`,
+  `lizard_nesting_depth`, `lizard_ccn`
 - `cohesion_lcom4`
 
-Each metric must declare at least a `block` band; the loader fails
-closed when a canonical metric is missing a block-band row. Three
-metrics carry bootstrap absolutes per the carve-out below.
+Radon's seven (`radon_cc`, `radon_mi`, the three Halstead metrics,
+`radon_raw_nloc`, `radon_raw_lloc`) retired with Radon in RO-9 tranche 4
+(GHI #1183). Each metric must declare at least a `block` band; the
+loader fails closed when a canonical metric is missing a block-band
+row. One metric carries bootstrap absolutes per the carve-out below.
 
 ## Bootstrap absolutes (REQ-11 carve-out -- one-shot)
 
-Three metrics in the data file carry bootstrap absolutes not derived
+One metric in the data file carries bootstrap absolutes not derived
 from the cited corpus distillation:
 
-- `radon_mi` -- inverted polarity (GHI #405)
-- `lizard_nesting_depth` -- parser defect, all-zero corpus (GHI #404)
-- `cohesion_lcom4` -- parser defect, all-zero corpus (GHI #404)
+- `cohesion_lcom4` -- the `cohesion` tool reports a per-class cohesion
+  percentage (higher is more cohesive), not an LCOM4 count, so the
+  2026-10-22 corpus figures are on another scale and polarity than the
+  bands (operator, "Keep bootstrap, file GHI (Rec.)"; GHI #1265)
+
+`radon_mi` (inverted polarity, GHI #405) retired with Radon, and
+`lizard_nesting_depth` (all-zero corpus, GHI #404) took corpus bands
+from the 2026-10-22 pass (operator, "Corpus bands (Rec.)").
 
 > See [rationale doc](../../docs/governance/complexity/complexity-thresholds-rationale.md#bootstrap-absolutes-req-11-carve-out----one-shot) for the full carve-out contract and one-shot semantics.
 

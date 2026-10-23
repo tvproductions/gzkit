@@ -1,0 +1,867 @@
+{
+  "corpus_revision": 1,
+  "corpus_schema_version": "1.0.0",
+  "cross_project": {
+    "metrics": [
+      {
+        "inter_project_variance": 1085300.657197,
+        "metric_key": "lizard_file_nloc",
+        "p50": 105.0,
+        "p75": 307.25,
+        "p90": 716.5,
+        "p95": 1031.9,
+        "p99": 3130.24,
+        "project_count": 13
+      },
+      {
+        "inter_project_variance": 2.424242,
+        "metric_key": "lizard_nloc",
+        "p50": 6.0,
+        "p75": 13.0,
+        "p90": 25.0,
+        "p95": 37.0,
+        "p99": 77.0,
+        "project_count": 13
+      },
+      {
+        "inter_project_variance": 0.083333,
+        "metric_key": "lizard_param_count",
+        "p50": 2.0,
+        "p75": 3.0,
+        "p90": 4.0,
+        "p95": 5.0,
+        "p99": 11.0,
+        "project_count": 13
+      },
+      {
+        "inter_project_variance": 0.181818,
+        "metric_key": "lizard_nesting_depth",
+        "p50": 1.0,
+        "p75": 2.0,
+        "p90": 5.0,
+        "p95": 7.0,
+        "p99": 14.0,
+        "project_count": 13
+      },
+      {
+        "inter_project_variance": 0.083333,
+        "metric_key": "lizard_ccn",
+        "p50": 2.0,
+        "p75": 4.0,
+        "p90": 8.0,
+        "p95": 11.0,
+        "p99": 25.0,
+        "project_count": 13
+      },
+      {
+        "inter_project_variance": 242.446209,
+        "metric_key": "cohesion_lcom4",
+        "p50": 25.0,
+        "p75": 55.14,
+        "p90": 100.0,
+        "p95": 100.0,
+        "p99": 100.0,
+        "project_count": 13
+      }
+    ]
+  },
+  "projects": [
+    {
+      "archetypal_cell": 1,
+      "commit_sha": "50bbf71bbd51616e2ce48785336ca3746fbe5f24",
+      "metrics": [
+        {
+          "metric_key": "lizard_file_nloc",
+          "p50": 85.0,
+          "p75": 208.0,
+          "p90": 361.6,
+          "p95": 568.7,
+          "p99": 1007.22,
+          "sample_count": 99
+        },
+        {
+          "metric_key": "lizard_nloc",
+          "p50": 5.0,
+          "p75": 10.0,
+          "p90": 19.0,
+          "p95": 28.0,
+          "p99": 49.66,
+          "sample_count": 1668
+        },
+        {
+          "metric_key": "lizard_param_count",
+          "p50": 2.0,
+          "p75": 2.0,
+          "p90": 4.0,
+          "p95": 4.0,
+          "p99": 8.0,
+          "sample_count": 1668
+        },
+        {
+          "metric_key": "lizard_nesting_depth",
+          "p50": 1.0,
+          "p75": 2.0,
+          "p90": 4.0,
+          "p95": 5.0,
+          "p99": 10.0,
+          "sample_count": 1668
+        },
+        {
+          "metric_key": "lizard_ccn",
+          "p50": 2.0,
+          "p75": 3.0,
+          "p90": 6.0,
+          "p95": 8.65,
+          "p99": 16.0,
+          "sample_count": 1668
+        },
+        {
+          "metric_key": "cohesion_lcom4",
+          "p50": 20.83,
+          "p75": 50.0,
+          "p90": 100.0,
+          "p95": 100.0,
+          "p99": 100.0,
+          "sample_count": 316
+        }
+      ],
+      "name": "django"
+    },
+    {
+      "archetypal_cell": 2,
+      "commit_sha": "7793b925a88ed98f3482325b0eca00b433123030",
+      "metrics": [
+        {
+          "metric_key": "lizard_file_nloc",
+          "p50": 103.0,
+          "p75": 169.25,
+          "p90": 394.1,
+          "p95": 524.2,
+          "p99": 614.28,
+          "sample_count": 34
+        },
+        {
+          "metric_key": "lizard_nloc",
+          "p50": 4.0,
+          "p75": 10.0,
+          "p90": 22.0,
+          "p95": 29.7,
+          "p99": 39.0,
+          "sample_count": 487
+        },
+        {
+          "metric_key": "lizard_param_count",
+          "p50": 2.0,
+          "p75": 3.0,
+          "p90": 4.0,
+          "p95": 6.0,
+          "p99": 11.14,
+          "sample_count": 487
+        },
+        {
+          "metric_key": "lizard_nesting_depth",
+          "p50": 0.0,
+          "p75": 2.0,
+          "p90": 3.0,
+          "p95": 4.0,
+          "p99": 7.14,
+          "sample_count": 487
+        },
+        {
+          "metric_key": "lizard_ccn",
+          "p50": 2.0,
+          "p75": 3.0,
+          "p90": 5.0,
+          "p95": 8.0,
+          "p99": 13.14,
+          "sample_count": 487
+        },
+        {
+          "metric_key": "cohesion_lcom4",
+          "p50": 40.0,
+          "p75": 78.335,
+          "p90": 100.0,
+          "p95": 108.5,
+          "p99": 149.4999,
+          "sample_count": 104
+        }
+      ],
+      "name": "starlette"
+    },
+    {
+      "archetypal_cell": 3,
+      "commit_sha": "e90af45bb006c3a452a3a21644a2681523f5c7fc",
+      "metrics": [
+        {
+          "metric_key": "lizard_file_nloc",
+          "p50": 142.0,
+          "p75": 288.0,
+          "p90": 686.0,
+          "p95": 800.4,
+          "p99": 945.68,
+          "sample_count": 17
+        },
+        {
+          "metric_key": "lizard_nloc",
+          "p50": 7.0,
+          "p75": 16.0,
+          "p90": 34.0,
+          "p95": 51.2,
+          "p99": 87.08,
+          "sample_count": 257
+        },
+        {
+          "metric_key": "lizard_param_count",
+          "p50": 2.0,
+          "p75": 3.0,
+          "p90": 5.0,
+          "p95": 7.2,
+          "p99": 16.88,
+          "sample_count": 257
+        },
+        {
+          "metric_key": "lizard_nesting_depth",
+          "p50": 1.0,
+          "p75": 3.0,
+          "p90": 6.0,
+          "p95": 9.0,
+          "p99": 12.0,
+          "sample_count": 257
+        },
+        {
+          "metric_key": "lizard_ccn",
+          "p50": 2.0,
+          "p75": 5.0,
+          "p90": 9.0,
+          "p95": 15.0,
+          "p99": 24.0,
+          "sample_count": 257
+        },
+        {
+          "metric_key": "cohesion_lcom4",
+          "p50": 15.48,
+          "p75": 40.0,
+          "p90": 62.5,
+          "p95": 70.835,
+          "p99": 85.5,
+          "sample_count": 31
+        }
+      ],
+      "name": "urllib3"
+    },
+    {
+      "archetypal_cell": 4,
+      "commit_sha": "fed9049f7a07550d560a91b30c5b0b3e17d54981",
+      "metrics": [
+        {
+          "metric_key": "lizard_file_nloc",
+          "p50": 326.0,
+          "p75": 721.0,
+          "p90": 1318.6,
+          "p95": 1517.8,
+          "p99": 1677.16,
+          "sample_count": 5
+        },
+        {
+          "metric_key": "lizard_nloc",
+          "p50": 7.0,
+          "p75": 13.0,
+          "p90": 26.0,
+          "p95": 31.9,
+          "p99": 64.0,
+          "sample_count": 262
+        },
+        {
+          "metric_key": "lizard_param_count",
+          "p50": 2.0,
+          "p75": 3.0,
+          "p90": 4.0,
+          "p95": 5.95,
+          "p99": 14.56,
+          "sample_count": 262
+        },
+        {
+          "metric_key": "lizard_nesting_depth",
+          "p50": 1.0,
+          "p75": 2.0,
+          "p90": 5.0,
+          "p95": 7.0,
+          "p99": 10.78,
+          "sample_count": 262
+        },
+        {
+          "metric_key": "lizard_ccn",
+          "p50": 2.0,
+          "p75": 4.75,
+          "p90": 8.0,
+          "p95": 11.0,
+          "p99": 23.73,
+          "sample_count": 262
+        },
+        {
+          "metric_key": "cohesion_lcom4",
+          "p50": 14.7,
+          "p75": 58.5425,
+          "p90": 100.0,
+          "p95": 100.0,
+          "p99": 100.0,
+          "sample_count": 54
+        }
+      ],
+      "name": "click"
+    },
+    {
+      "archetypal_cell": 5,
+      "commit_sha": "69a9729a6879b37cee4930c85017da5dbc5fb6dd",
+      "metrics": [
+        {
+          "metric_key": "lizard_file_nloc",
+          "p50": 137.0,
+          "p75": 323.0,
+          "p90": 1375.4,
+          "p95": 1726.2,
+          "p99": 2006.84,
+          "sample_count": 5
+        },
+        {
+          "metric_key": "lizard_nloc",
+          "p50": 6.0,
+          "p75": 13.0,
+          "p90": 28.4,
+          "p95": 44.8,
+          "p99": 97.4,
+          "sample_count": 173
+        },
+        {
+          "metric_key": "lizard_param_count",
+          "p50": 2.0,
+          "p75": 3.0,
+          "p90": 4.0,
+          "p95": 8.4,
+          "p99": 20.56,
+          "sample_count": 173
+        },
+        {
+          "metric_key": "lizard_nesting_depth",
+          "p50": 1.0,
+          "p75": 2.0,
+          "p90": 5.0,
+          "p95": 6.0,
+          "p99": 20.12,
+          "sample_count": 173
+        },
+        {
+          "metric_key": "lizard_ccn",
+          "p50": 2.0,
+          "p75": 3.0,
+          "p90": 7.8,
+          "p95": 9.4,
+          "p99": 35.56,
+          "sample_count": 173
+        },
+        {
+          "metric_key": "cohesion_lcom4",
+          "p50": 50.0,
+          "p75": 75.0,
+          "p90": 100.0,
+          "p95": 100.0,
+          "p99": 100.0,
+          "sample_count": 25
+        }
+      ],
+      "name": "attrs"
+    },
+    {
+      "archetypal_cell": 6,
+      "commit_sha": "246fe14e7ccfdea62c7d92b49a272abd55acc850",
+      "metrics": [
+        {
+          "metric_key": "lizard_file_nloc",
+          "p50": 0.0,
+          "p75": 0.0,
+          "p90": 0.0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "sample_count": 0
+        },
+        {
+          "metric_key": "lizard_nloc",
+          "p50": 0.0,
+          "p75": 0.0,
+          "p90": 0.0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "sample_count": 0
+        },
+        {
+          "metric_key": "lizard_param_count",
+          "p50": 0.0,
+          "p75": 0.0,
+          "p90": 0.0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "sample_count": 0
+        },
+        {
+          "metric_key": "lizard_nesting_depth",
+          "p50": 0.0,
+          "p75": 0.0,
+          "p90": 0.0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "sample_count": 0
+        },
+        {
+          "metric_key": "lizard_ccn",
+          "p50": 0.0,
+          "p75": 0.0,
+          "p90": 0.0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "sample_count": 0
+        },
+        {
+          "metric_key": "cohesion_lcom4",
+          "p50": 0.0,
+          "p75": 0.0,
+          "p90": 0.0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "sample_count": 0
+        }
+      ],
+      "name": "cpython-stdlib-subset"
+    },
+    {
+      "archetypal_cell": 7,
+      "commit_sha": "84f92dcf29229e37f822ba3ba5eea4212d2abf35",
+      "metrics": [
+        {
+          "metric_key": "lizard_file_nloc",
+          "p50": 130.5,
+          "p75": 402.5,
+          "p90": 873.5,
+          "p95": 1094.25,
+          "p99": 1609.45,
+          "sample_count": 46
+        },
+        {
+          "metric_key": "lizard_nloc",
+          "p50": 5.0,
+          "p75": 13.0,
+          "p90": 26.0,
+          "p95": 44.0,
+          "p99": 109.2,
+          "sample_count": 1041
+        },
+        {
+          "metric_key": "lizard_param_count",
+          "p50": 2.0,
+          "p75": 2.0,
+          "p90": 4.0,
+          "p95": 5.0,
+          "p99": 6.0,
+          "sample_count": 1041
+        },
+        {
+          "metric_key": "lizard_nesting_depth",
+          "p50": 1.0,
+          "p75": 2.0,
+          "p90": 5.0,
+          "p95": 8.0,
+          "p99": 18.2,
+          "sample_count": 1041
+        },
+        {
+          "metric_key": "lizard_ccn",
+          "p50": 2.0,
+          "p75": 4.0,
+          "p90": 8.0,
+          "p95": 13.0,
+          "p99": 31.0,
+          "sample_count": 1041
+        },
+        {
+          "metric_key": "cohesion_lcom4",
+          "p50": 40.74,
+          "p75": 70.835,
+          "p90": 100.0,
+          "p95": 100.0,
+          "p99": 100.0,
+          "sample_count": 143
+        }
+      ],
+      "name": "hypothesis"
+    },
+    {
+      "archetypal_cell": 8,
+      "commit_sha": "46cebbb032f920eb096efbaf23cdc6fe9dd541f7",
+      "metrics": [
+        {
+          "metric_key": "lizard_file_nloc",
+          "p50": 820.5,
+          "p75": 1074.5,
+          "p90": 1425.0,
+          "p95": 1570.0,
+          "p99": 1686.0,
+          "sample_count": 6
+        },
+        {
+          "metric_key": "lizard_nloc",
+          "p50": 7.0,
+          "p75": 17.0,
+          "p90": 31.0,
+          "p95": 42.9,
+          "p99": 101.62,
+          "sample_count": 352
+        },
+        {
+          "metric_key": "lizard_param_count",
+          "p50": 2.0,
+          "p75": 3.0,
+          "p90": 6.9,
+          "p95": 10.0,
+          "p99": 17.98,
+          "sample_count": 352
+        },
+        {
+          "metric_key": "lizard_nesting_depth",
+          "p50": 1.0,
+          "p75": 2.0,
+          "p90": 5.0,
+          "p95": 7.0,
+          "p99": 14.49,
+          "sample_count": 352
+        },
+        {
+          "metric_key": "lizard_ccn",
+          "p50": 2.0,
+          "p75": 4.0,
+          "p90": 8.0,
+          "p95": 12.0,
+          "p99": 22.43,
+          "sample_count": 352
+        },
+        {
+          "metric_key": "cohesion_lcom4",
+          "p50": 28.34,
+          "p75": 75.0,
+          "p90": 100.0,
+          "p95": 100.0,
+          "p99": 100.0,
+          "sample_count": 49
+        }
+      ],
+      "name": "rich"
+    },
+    {
+      "archetypal_cell": 9,
+      "commit_sha": "0ea16df0c86243e095b4aab1b45e0179dd4c3f14",
+      "metrics": [
+        {
+          "metric_key": "lizard_file_nloc",
+          "p50": 3709.0,
+          "p75": 6214.0,
+          "p90": 6598.6,
+          "p95": 6726.8,
+          "p99": 6829.36,
+          "sample_count": 5
+        },
+        {
+          "metric_key": "lizard_nloc",
+          "p50": 7.0,
+          "p75": 14.0,
+          "p90": 29.0,
+          "p95": 45.0,
+          "p99": 93.39,
+          "sample_count": 1588
+        },
+        {
+          "metric_key": "lizard_param_count",
+          "p50": 2.0,
+          "p75": 3.0,
+          "p90": 4.0,
+          "p95": 6.0,
+          "p99": 9.0,
+          "sample_count": 1588
+        },
+        {
+          "metric_key": "lizard_nesting_depth",
+          "p50": 1.0,
+          "p75": 2.25,
+          "p90": 5.0,
+          "p95": 9.0,
+          "p99": 18.13,
+          "sample_count": 1588
+        },
+        {
+          "metric_key": "lizard_ccn",
+          "p50": 2.0,
+          "p75": 5.0,
+          "p90": 10.0,
+          "p95": 16.0,
+          "p99": 36.26,
+          "sample_count": 1588
+        },
+        {
+          "metric_key": "cohesion_lcom4",
+          "p50": 25.0,
+          "p75": 35.71,
+          "p90": 69.26,
+          "p95": 100.0,
+          "p99": 100.0,
+          "sample_count": 164
+        }
+      ],
+      "name": "mypy"
+    },
+    {
+      "archetypal_cell": 10,
+      "commit_sha": "ef7f31925305a50bd097f06b913717192490ad44",
+      "metrics": [
+        {
+          "metric_key": "lizard_file_nloc",
+          "p50": 52.5,
+          "p75": 170.0,
+          "p90": 326.0,
+          "p95": 550.75,
+          "p99": 650.95,
+          "sample_count": 36
+        },
+        {
+          "metric_key": "lizard_nloc",
+          "p50": 10.0,
+          "p75": 17.0,
+          "p90": 28.0,
+          "p95": 40.0,
+          "p99": 80.56,
+          "sample_count": 217
+        },
+        {
+          "metric_key": "lizard_param_count",
+          "p50": 1.0,
+          "p75": 2.0,
+          "p90": 3.0,
+          "p95": 4.0,
+          "p99": 7.0,
+          "sample_count": 217
+        },
+        {
+          "metric_key": "lizard_nesting_depth",
+          "p50": 2.0,
+          "p75": 3.0,
+          "p90": 6.0,
+          "p95": 8.0,
+          "p99": 17.68,
+          "sample_count": 217
+        },
+        {
+          "metric_key": "lizard_ccn",
+          "p50": 3.0,
+          "p75": 6.0,
+          "p90": 9.0,
+          "p95": 13.0,
+          "p99": 22.84,
+          "sample_count": 217
+        },
+        {
+          "metric_key": "cohesion_lcom4",
+          "p50": 5.73,
+          "p75": 43.75,
+          "p90": 70.836,
+          "p95": 95.0,
+          "p99": 100.0,
+          "sample_count": 29
+        }
+      ],
+      "name": "flit"
+    },
+    {
+      "archetypal_cell": 8,
+      "commit_sha": "5fdea0dd0538451399762dcb75efefde7f6ddcdc",
+      "metrics": [
+        {
+          "metric_key": "lizard_file_nloc",
+          "p50": 1037.0,
+          "p75": 2714.0,
+          "p90": 2852.0,
+          "p95": 2898.0,
+          "p99": 2934.8,
+          "sample_count": 5
+        },
+        {
+          "metric_key": "lizard_nloc",
+          "p50": 5.0,
+          "p75": 12.0,
+          "p90": 23.0,
+          "p95": 31.4,
+          "p99": 57.34,
+          "sample_count": 667
+        },
+        {
+          "metric_key": "lizard_param_count",
+          "p50": 2.0,
+          "p75": 2.0,
+          "p90": 4.0,
+          "p95": 7.0,
+          "p99": 11.0,
+          "sample_count": 667
+        },
+        {
+          "metric_key": "lizard_nesting_depth",
+          "p50": 1.0,
+          "p75": 2.0,
+          "p90": 4.0,
+          "p95": 5.0,
+          "p99": 10.34,
+          "sample_count": 667
+        },
+        {
+          "metric_key": "lizard_ccn",
+          "p50": 2.0,
+          "p75": 4.0,
+          "p90": 6.0,
+          "p95": 8.0,
+          "p99": 18.0,
+          "sample_count": 667
+        },
+        {
+          "metric_key": "cohesion_lcom4",
+          "p50": 0.0,
+          "p75": 0.74,
+          "p90": 63.556,
+          "p95": 90.001,
+          "p99": 100.0,
+          "sample_count": 39
+        }
+      ],
+      "name": "textual"
+    },
+    {
+      "archetypal_cell": 1,
+      "commit_sha": "7374c85ddefc3f4b177a698ab9f0cbb6a5c0b392",
+      "metrics": [
+        {
+          "metric_key": "lizard_file_nloc",
+          "p50": 92.0,
+          "p75": 158.0,
+          "p90": 473.6,
+          "p95": 578.8,
+          "p99": 662.96,
+          "sample_count": 5
+        },
+        {
+          "metric_key": "lizard_nloc",
+          "p50": 6.0,
+          "p75": 12.0,
+          "p90": 20.7,
+          "p95": 40.55,
+          "p99": 56.7,
+          "sample_count": 84
+        },
+        {
+          "metric_key": "lizard_param_count",
+          "p50": 2.0,
+          "p75": 3.0,
+          "p90": 4.0,
+          "p95": 4.0,
+          "p99": 11.0,
+          "sample_count": 84
+        },
+        {
+          "metric_key": "lizard_nesting_depth",
+          "p50": 1.0,
+          "p75": 2.0,
+          "p90": 4.0,
+          "p95": 5.85,
+          "p99": 7.34,
+          "sample_count": 84
+        },
+        {
+          "metric_key": "lizard_ccn",
+          "p50": 2.0,
+          "p75": 4.0,
+          "p90": 6.7,
+          "p95": 8.0,
+          "p99": 13.51,
+          "sample_count": 84
+        },
+        {
+          "metric_key": "cohesion_lcom4",
+          "p50": 4.48,
+          "p75": 25.835,
+          "p90": 50.0,
+          "p95": 75.0,
+          "p99": 95.0,
+          "sample_count": 11
+        }
+      ],
+      "name": "flask"
+    },
+    {
+      "archetypal_cell": 10,
+      "commit_sha": "4943e17e7dd079b3f58e88009d10308f2c55a3ed",
+      "metrics": [
+        {
+          "metric_key": "lizard_file_nloc",
+          "p50": 88.0,
+          "p75": 339.0,
+          "p90": 487.0,
+          "p95": 523.0,
+          "p99": 661.2,
+          "sample_count": 41
+        },
+        {
+          "metric_key": "lizard_nloc",
+          "p50": 7.0,
+          "p75": 15.0,
+          "p90": 27.0,
+          "p95": 39.9,
+          "p99": 78.34,
+          "sample_count": 512
+        },
+        {
+          "metric_key": "lizard_param_count",
+          "p50": 2.0,
+          "p75": 3.0,
+          "p90": 4.0,
+          "p95": 5.0,
+          "p99": 8.0,
+          "sample_count": 512
+        },
+        {
+          "metric_key": "lizard_nesting_depth",
+          "p50": 1.0,
+          "p75": 2.0,
+          "p90": 5.0,
+          "p95": 6.45,
+          "p99": 12.0,
+          "sample_count": 512
+        },
+        {
+          "metric_key": "lizard_ccn",
+          "p50": 2.0,
+          "p75": 4.0,
+          "p90": 7.0,
+          "p95": 11.0,
+          "p99": 18.0,
+          "sample_count": 512
+        },
+        {
+          "metric_key": "cohesion_lcom4",
+          "p50": 25.0,
+          "p75": 55.0,
+          "p90": 78.332,
+          "p95": 100.0,
+          "p99": 100.0,
+          "sample_count": 67
+        }
+      ],
+      "name": "pip"
+    }
+  ],
+  "tool_versions": {
+    "cohesion": "1.2.0",
+    "lizard": "1.24.1"
+  }
+}

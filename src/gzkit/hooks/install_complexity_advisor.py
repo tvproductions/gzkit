@@ -22,19 +22,21 @@ import ast
 import sys
 from pathlib import Path
 
-from radon.complexity import cc_visit
-from radon.visitors import Function
-
 from gzkit.complexity.advisor.diagnosis import AdvisorDiagnosis
 from gzkit.complexity.advisor.engine import AstContext, DiagnosisEngine, EngineError
 from gzkit.complexity.advisor.intrinsic import find_attestation, ledger_attestations
 from gzkit.complexity.advisor.timeout import TimeoutOk, run_with_timeout
+from gzkit.complexity.functions import (
+    METRIC_KEY,
+    scored_functions,
+    unmeasured_functions,
+    unmeasured_note,
+)
 from gzkit.complexity.thresholds import load_threshold_table
 
 _DEFAULT_RULE_PATH = Path(".gzkit/rules/complexity-thresholds.json")
 _FAILURE_LOG_PATH = Path(".gzkit/insights/advisor-failures.jsonl")
 _LEDGER_PATH = Path(".gzkit/ledger.jsonl")
-_METRIC_KEY = "radon_cc"
 
 _HOOK_ID = "complexity-advisor-auto-chain"
 _HOOK_NAME = "complexity advisor (C/C/C ceiling + advisor auto-chain)"
@@ -114,16 +116,11 @@ def _diagnose_files(file_paths: list[str]) -> list[AdvisorDiagnosis]:
             print(f"warning: skipping {file_path_str}: {exc}", file=sys.stderr)
             continue
 
-        radon_blocks = [b for b in cc_visit(source) if isinstance(b, Function)]
-        func_nodes_by_line = _index_function_nodes(tree)
-
-        for block in radon_blocks:
-            if table.band_for(_METRIC_KEY, float(block.complexity)) is None:
+        for qualname, node in unmeasured_functions(source, file_path_str, tree):
+            print(unmeasured_note(file_path.as_posix(), node, qualname), file=sys.stderr)
+        for qualname, target_node, cyclomatic in scored_functions(source, file_path_str, tree):
+            if table.band_for(METRIC_KEY, float(cyclomatic)) is None:
                 continue
-            target_node = func_nodes_by_line.get(block.lineno)
-            if target_node is None:
-                continue
-            qualname = f"{block.classname}.{block.name}" if block.classname else block.name
             attestation = find_attestation(target_node, file_path, qualname, ledger_index)
             if attestation is not None:
                 reason, attestor, attested_on = attestation
@@ -139,9 +136,7 @@ def _diagnose_files(file_paths: list[str]) -> list[AdvisorDiagnosis]:
                 target_node=target_node,
             )
             try:
-                diagnosis = engine.diagnose(
-                    ast_context, _METRIC_KEY, float(block.complexity), table
-                )
+                diagnosis = engine.diagnose(ast_context, METRIC_KEY, float(cyclomatic), table)
             except EngineError as exc:
                 print(f"warning: engine error on {file_path_str}: {exc}", file=sys.stderr)
                 continue
@@ -149,15 +144,6 @@ def _diagnose_files(file_paths: list[str]) -> list[AdvisorDiagnosis]:
                 all_diagnoses.append(diagnosis)
 
     return all_diagnoses
-
-
-def _index_function_nodes(tree: ast.Module) -> dict[int, ast.AST]:
-    """Map lineno to the corresponding FunctionDef/AsyncFunctionDef node."""
-    indexed: dict[int, ast.AST] = {}
-    for node in ast.walk(tree):
-        if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
-            indexed[node.lineno] = node
-    return indexed
 
 
 def _render_to_stderr(diagnoses: list[AdvisorDiagnosis]) -> None:

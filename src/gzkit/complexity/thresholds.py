@@ -11,8 +11,9 @@ deterministic config is structured data, not regex-parsed prose). The companion
 (invariant, vocabulary, bootstrap carve-out, amendment protocol) and links to
 this JSON file as the runtime source of truth.
 
-Polarity-aware ``band_for`` semantics for inverted metrics (``radon_mi``) are
-tracked under GHI #405; this module ships the high-is-worse default.
+This module ships the high-is-worse default. Radon's inverted ``radon_mi`` (GHI #405)
+retired in RO-9 tranche 4; ``cohesion_lcom4``, a cohesion percentage where higher
+is better, keeps bootstrap bands until its polarity is reconciled (GHI #1265).
 """
 
 from __future__ import annotations

@@ -66,10 +66,14 @@ class TestMeasureCorpusSmoke(unittest.TestCase):
         project = payload["projects"][0]
         self.assertEqual(project["name"], "fixture-alpha")
         metric_keys = [metric["metric_key"] for metric in project["metrics"]]
-        self.assertIn("radon_cc", metric_keys)
-        # The fixture canned radon_cc output -> 2 raw values per measured file.
-        radon_cc = next(m for m in project["metrics"] if m["metric_key"] == "radon_cc")
-        self.assertGreaterEqual(radon_cc["sample_count"], 1)
+        self.assertIn("lizard_ccn", metric_keys)
+        # The fixture canned one lizard row -> one ccn value per measured file.
+        lizard_ccn = next(m for m in project["metrics"] if m["metric_key"] == "lizard_ccn")
+        self.assertGreaterEqual(lizard_ccn["sample_count"], 1)
+        # Module size is the fixture file's own Lizard NLOC, one value per file.
+        file_nloc = next(m for m in project["metrics"] if m["metric_key"] == "lizard_file_nloc")
+        self.assertEqual(file_nloc["sample_count"], 1)
+        self.assertNotIn("radon_cc", metric_keys)
         # Cross-project block must list every canonical metric.
         cross_keys = [metric["metric_key"] for metric in payload["cross_project"]["metrics"]]
         self.assertIn("cohesion_lcom4", cross_keys)
@@ -130,7 +134,7 @@ class TestFailClosedExitPaths(unittest.TestCase):
                     measure_corpus(corpus, Path(out))
                 # Tool name is preserved on the exception so the CLI can
                 # surface a recovery hint without re-parsing the message.
-                self.assertIn(ctx.exception.tool, {"radon", "lizard", "cohesion"})
+                self.assertIn(ctx.exception.tool, {"lizard", "cohesion"})
 
     @covers("REQ-0.0.27-03-05")
     def test_corpus_loader_error_wraps_missing_path(self) -> None:
@@ -214,7 +218,7 @@ class TestSubprocessInvocationDiscipline(unittest.TestCase):
 class TestMeasurementToolsRunFromTheLock(unittest.TestCase):
     """Every measurement tool runs through ``uv run``, never from PATH (RO-9 tranche 2)."""
 
-    def test_every_radon_lizard_and_cohesion_call_goes_through_uv_run(self) -> None:
+    def test_every_lizard_and_cohesion_call_goes_through_uv_run(self) -> None:
         with (
             stubbed_pipeline_environment() as (_tree, spy),
             tempfile.TemporaryDirectory() as out,
@@ -224,8 +228,7 @@ class TestMeasurementToolsRunFromTheLock(unittest.TestCase):
         self.assertTrue(tools, "no measurement subprocess calls captured")
         bare = [argv for argv in tools if argv[:2] != ["uv", "run"]]
         self.assertEqual(bare, [])
-        radon = {argv[3] for argv in tools if argv[2] == "radon"}
-        self.assertEqual(radon, {"cc", "mi", "hal", "raw"})
+        self.assertEqual({argv[2] for argv in tools}, {"lizard", "cohesion"})
 
 
 class TestUnitTierIsolation(unittest.TestCase):
@@ -256,13 +259,14 @@ class TestUnitTierIsolation(unittest.TestCase):
 
 
 class TestPyprojectDeclaresDeps(unittest.TestCase):
-    """REQ-0.0.27-03-07: ``pyproject.toml`` declares the three pinned deps."""
+    """REQ-0.0.27-03-07 (amended 2026-10-22): ``pyproject.toml`` declares the two pinned deps."""
 
     @covers("REQ-0.0.27-03-07")
-    def test_pyproject_declares_three_deps_with_pins(self) -> None:
-        """``radon``, ``lizard``, ``cohesion`` each appear with a major-version pin."""
+    def test_pyproject_declares_the_measurement_deps_with_pins(self) -> None:
+        """``lizard`` and ``cohesion`` each appear with a major-version pin; Radon is gone."""
         text = _PYPROJECT_PATH.read_text(encoding="utf-8")
-        for dep in ("radon", "lizard", "cohesion"):
+        self.assertNotIn('"radon', text)
+        for dep in ("lizard", "cohesion"):
             pattern = rf'"{dep}>=\d+\.\d+,<\d+\.\d+"'
             self.assertRegex(
                 text,

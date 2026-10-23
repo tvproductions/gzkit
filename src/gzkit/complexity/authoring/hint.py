@@ -37,7 +37,7 @@ class AuthoringHint(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    metric: str = Field(..., description="Complexity metric key (e.g. 'radon_cc').")
+    metric: str = Field(..., description="Complexity metric key (e.g. 'lizard_ccn').")
     precedence_band: Literal["approaching", "approaching_warn"] = Field(
         ...,
         description=(

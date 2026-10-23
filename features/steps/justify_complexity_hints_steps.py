@@ -52,7 +52,7 @@ corpus_revision: 1
 
 # Distilled complexity characteristics — fixture
 
-## Metric: `radon_cc`
+## Metric: `lizard_ccn`
 
 Across the corpus, synthetic distribution applies.
 
@@ -71,24 +71,24 @@ def _write_threshold_table(cwd: Path, distilled_path: Path) -> None:
         "corpus_revision": 1,
         "citation": {
             "distilled_characteristics_path": distilled_path.relative_to(cwd).as_posix(),
-            "section_anchor": "radon-cc",
+            "section_anchor": "lizard-ccn",
             "corpus_revision": 1,
         },
         "bands": [
             {
-                "metric": "radon_cc",
+                "metric": "lizard_ccn",
                 "corpus_percentile": 75,
                 "absolute_number": 4.0,
                 "trigger_semantic": "advise",
             },
             {
-                "metric": "radon_cc",
+                "metric": "lizard_ccn",
                 "corpus_percentile": 90,
                 "absolute_number": 7.0,
                 "trigger_semantic": "warn",
             },
             {
-                "metric": "radon_cc",
+                "metric": "lizard_ccn",
                 "corpus_percentile": 95,
                 "absolute_number": 11.0,
                 "trigger_semantic": "block",

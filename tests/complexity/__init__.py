@@ -10,8 +10,9 @@ The fixture surface is deliberately small:
   pinned SHA, included paths, and excluded paths are wired to the canned
   tool outputs in :func:`stubbed_subprocess`.
 - :func:`stubbed_subprocess` -> a :class:`unittest.mock.MagicMock` that
-  returns deterministic canned ``radon`` / ``lizard`` / ``cohesion``
-  output keyed off the first two argv tokens.
+  returns deterministic canned ``lizard`` / ``cohesion`` output keyed off
+  the first two argv tokens. Module size (``lizard_file_nloc``) is read
+  in-process from the fixture tree's real files, not from a subprocess.
 - :func:`run_pipeline_with_stubs` -> serialized ``baseline.json`` text
   produced by :func:`gzkit.complexity.measurement.measure_corpus` under
   the stub harness.
@@ -22,7 +23,6 @@ The fixture surface is deliberately small:
 from __future__ import annotations
 
 import contextlib
-import json
 import shutil
 import subprocess
 import tempfile
@@ -82,16 +82,6 @@ def stub_corpus() -> ExemplarCorpus:
 def _canned_outputs() -> dict[tuple[str, str], str]:
     """Return the canned stdout for each (tool, subcommand) pair."""
     return {
-        ("radon", "cc"): json.dumps({"alpha.py": [{"complexity": 4}, {"complexity": 9}]}),
-        ("radon", "mi"): json.dumps({"alpha.py": {"mi": 71.5}}),
-        ("radon", "hal"): json.dumps(
-            {
-                "alpha.py": {
-                    "total": {"volume": 100.0, "difficulty": 5.0, "effort": 500.0},
-                }
-            }
-        ),
-        ("radon", "raw"): json.dumps({"alpha.py": {"sloc": 80, "lloc": 60}}),
         # Lizard ``-End --csv`` layout (12 cols): NLOC,CCN,token,PARAM,length,
         # location,file,name,signature,start,end,ND.  ND must be the trailing
         # column for ``_absorb_lizard_row`` to populate ``lizard_nesting_depth``
@@ -123,8 +113,6 @@ def _route_subprocess(args: list[str]) -> mock.Mock:
         return _stub_completed("", returncode=127)
     args = args[2:]
     head = args[0]
-    if head == "radon" and len(args) >= 2:
-        return _stub_completed(canned.get(("radon", args[1]), ""))
     if head == "lizard":
         return _stub_completed(canned.get(("lizard", "alpha.py"), ""))
     if head == "cohesion":

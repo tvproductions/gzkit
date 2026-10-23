@@ -209,7 +209,7 @@ def _register_complexity_parsers(commands: argparse._SubParsersAction) -> None:
             "Runs the OBPI-0.0.29-02 diagnosis engine against the file or "
             "directory at PATH. Loads the canonical threshold table from "
             ".gzkit/rules/complexity-thresholds.json (ADR-0.0.28), measures "
-            "per-function radon_cc via radon's Python API, and emits an "
+            "per-function lizard_ccn (Lizard's cyclomatic score), and emits an "
             "AdvisorDiagnosis for every band crossing. Default output is "
             "structured prose; --json emits the canonical Pydantic "
             "serialization. Exit codes: 0 success or warn-band crossings, "

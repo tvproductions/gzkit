@@ -375,7 +375,7 @@
       "gates_step": "Astral discipline (gz validate --astral-discipline)",
       "mechanism": "shrink-ratchet",
       "entries_path": "violations",
-      "baseline_count": 10,
+      "baseline_count": 9,
       "identity": {
         "kind": "fields",
         "fields": [

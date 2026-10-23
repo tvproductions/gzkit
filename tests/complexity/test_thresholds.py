@@ -55,18 +55,12 @@ _SCHEMA_PATH = _PROJECT_ROOT / "src" / "gzkit" / "schemas" / "complexity_thresho
 
 
 def _well_formed_data() -> dict[str, Any]:
-    """Synthetic well-formed data payload covering all 12 canonical metrics."""
+    """Synthetic well-formed data payload covering all six canonical metrics."""
     metrics_with_bands = [
-        ("radon_cc", 4.0, 7.0, 11.0, 95),
-        ("radon_mi", 85.0, 70.0, 50.0, 95),
-        ("radon_hal_volume", 946.89, 2740.93, 5549.80, 95),
-        ("radon_hal_difficulty", 8.13, 11.54, 12.46, 95),
-        ("radon_hal_effort", 7975.79, 30805.01, 74805.40, 95),
-        ("radon_raw_nloc", 311.75, 733.20, 1031.90, 95),
-        ("radon_raw_lloc", 238.25, 518.00, 811.70, 95),
+        ("lizard_file_nloc", 307.25, 716.50, 3130.24, 99),
         ("lizard_nloc", 13.0, 25.0, 37.0, 95),
         ("lizard_param_count", 3.0, 4.0, 5.0, 95),
-        ("lizard_nesting_depth", 2.0, 3.0, 4.0, 99),
+        ("lizard_nesting_depth", 2.0, 5.0, 7.0, 95),
         ("lizard_ccn", 4.0, 8.0, 11.0, 95),
         ("cohesion_lcom4", 2.0, 4.0, 8.0, 99),
     ]
@@ -289,13 +283,13 @@ class LoaderParser(unittest.TestCase):
         payload["bands"] = [
             band
             for band in payload["bands"]
-            if not (band["metric"] == "radon_cc" and band["trigger_semantic"] == "block")
+            if not (band["metric"] == "lizard_ccn" and band["trigger_semantic"] == "block")
         ]
         data_path = _write_data_fixture(payload)
         try:
             with self.assertRaises(ValidationError) as ctx:
                 load_threshold_table(data_path)
-            self.assertIn("radon_cc", str(ctx.exception))
+            self.assertIn("lizard_ccn", str(ctx.exception))
         finally:
             data_path.unlink(missing_ok=True)
 

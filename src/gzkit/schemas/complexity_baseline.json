@@ -29,7 +29,7 @@
         "type": "string",
         "minLength": 1
       },
-      "description": "Mapping of tool name -> installed version string (radon / lizard / cohesion)."
+      "description": "Mapping of tool name -> installed version string (lizard / cohesion)."
     },
     "projects": {
       "type": "array",

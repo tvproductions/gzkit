@@ -18,9 +18,9 @@ gz complexity guide [<path>] [--json] [--quiet] [--verbose] [--server] [--help]
 `gz complexity guide` is the operator-facing authoring-time preview surface
 introduced by ADR-0.0.30 (OBPI-0.0.30-01). The verb loads the canonical
 threshold table at `.gzkit/rules/complexity-thresholds.json` (ADR-0.0.28),
-measures per-function `radon_cc` for every Python file under `<path>` via
+measures per-function `lizard_ccn` for every Python file under `<path>` via
 the OBPI-0.0.30-03 authoring engine, and emits an `AuthoringHint` for each
-`advise`-band crossing.
+`advise`-band crossing. A function whose body sits on its `def` line is not measured: Lizard skips it, and the verb prints `not measured: <file>:<line> <name> ...` on stderr for it rather than inventing a score. Stdout and `--json` are unchanged.
 
 The authoring surface is **design-time only** — it never blocks. It is
 intended for use while editing a file to preview which functions are

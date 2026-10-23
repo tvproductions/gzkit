@@ -25,7 +25,9 @@ enforcement consumer. The direction's teeth are proven by the four
 from __future__ import annotations
 
 import importlib.util
+import tempfile
 import unittest
+from pathlib import Path
 from types import ModuleType
 from unittest import mock
 
@@ -49,15 +51,25 @@ def _load_gate() -> ModuleType:
     return module
 
 
-class TestRadonRunsFromTheLock(unittest.TestCase):
-    """The gate measures with the locked radon, through `uv run` (RO-9 tranche 2)."""
+class TestTheGateMeasuresLizardFileNloc(unittest.TestCase):
+    """The gate measures module size as Lizard's file NLOC, the corpus's reader (RO-9 tranche 4)."""
 
-    def test_measure_invokes_radon_through_uv_run(self) -> None:
+    def test_measure_reads_each_module_nloc_keyed_by_project_path(self) -> None:
         gate = _load_gate()
-        completed = mock.Mock(returncode=0, stdout="{}", stderr="")
-        with mock.patch.object(gate.subprocess, "run", return_value=completed) as run:
-            gate._measure()  # noqa: SLF001
-        self.assertEqual(run.call_args.args[0][:4], ["uv", "run", "radon", "raw"])
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            package = root / "src" / "pkg"
+            package.mkdir(parents=True)
+            # Three code lines; the comment and the blank line are not NLOC.
+            (package / "mod.py").write_text(
+                "# comment\n\nX = 1\n\n\ndef f():\n    return X\n", encoding="utf-8"
+            )
+            with (
+                mock.patch.object(gate, "_PROJECT_ROOT", root),
+                mock.patch.object(gate, "_MEASURE_ROOT", root / "src"),
+            ):
+                sizes = gate._measure()  # noqa: SLF001
+        self.assertEqual(sizes, {"src/pkg/mod.py": 3})
 
 
 class TestSlackDirection(unittest.TestCase):

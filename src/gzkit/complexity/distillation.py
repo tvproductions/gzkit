@@ -39,7 +39,7 @@ QUALITATIVE_BAND_LABELS: tuple[str, ...] = (
 
 # The "investigate / refactor" boundary on the corpus distribution.  Anchored
 # to p90 because (a) the literature places single-responsibility cyclomatic
-# ceilings near McCabe's CC > 10, which lands near corpus p90 for radon_cc
+# ceilings near McCabe's CC > 10, which lands near corpus p90 for lizard_ccn
 # in observed practice; (b) a single canonical percentile across all metrics
 # keeps the boundary line consistent and operator-readable.  Operators may
 # narrate per-metric exceptions in the practitioner-eye section.
@@ -52,40 +52,14 @@ _DIFF_MOVEMENT_THRESHOLD_PCT = 10.0
 # Doctrinal-frame attribution per canonical metric.  Each frame names the
 # practitioner authority whose canon speaks to a violation at the boundary.
 _DOCTRINAL_FRAMES: dict[str, str] = {
-    "radon_cc": (
-        "Martin (Clean Code) — cyclomatic complexity above the corpus p90 "
-        "violates the single-responsibility ceiling Martin names for "
-        "function decomposition."
-    ),
-    "radon_mi": (
-        "Fowler (Refactoring 2e) — maintainability index is the aggregate "
-        "smell signal across long-method, large-class, and divergent-change "
-        "smells; corpus p90 demarcates the smell-attention threshold."
-    ),
-    "radon_hal_volume": (
-        "Fowler (Refactoring 2e) — Halstead volume past the corpus p90 "
-        "presents the long-method smell from a token-count vantage."
-    ),
-    "radon_hal_difficulty": (
-        "Fowler (Refactoring 2e) — Halstead difficulty above the corpus "
-        "p90 indicates comprehensibility loss; the operand/operator ratio "
-        "exceeds the audience the function can carry."
-    ),
-    "radon_hal_effort": (
-        "Fowler (Refactoring 2e) — Halstead effort = volume * difficulty "
-        "composite; corpus p90 names the practitioner-readable ceiling."
-    ),
-    "radon_raw_nloc": (
-        "Fowler (Refactoring 2e) — non-comment LOC above corpus p90 "
-        "names the long-method / large-class smell directly."
-    ),
-    "radon_raw_lloc": (
-        "Fowler (Refactoring 2e) — logical LOC above corpus p90 strips "
-        "comment-padding from the long-method smell."
+    "lizard_file_nloc": (
+        "Fowler (Refactoring 2e) — module non-comment LOC above corpus p90 "
+        "names the large-module smell: a file carrying more responsibilities "
+        "than one reader can hold."
     ),
     "lizard_nloc": (
-        "Fowler (Refactoring 2e) — lizard non-comment LOC corroborates "
-        "radon's long-method signal across the corpus."
+        "Fowler (Refactoring 2e) — function non-comment LOC above corpus p90 "
+        "names the long-method smell directly."
     ),
     "lizard_param_count": (
         "Martin (Clean Code) — long parameter list above corpus p90 is the "
@@ -98,8 +72,9 @@ _DOCTRINAL_FRAMES: dict[str, str] = {
         "shape that resists testability."
     ),
     "lizard_ccn": (
-        "Martin (Clean Code) — lizard cyclomatic complexity number "
-        "corroborates radon_cc's single-responsibility-ceiling signal."
+        "Martin (Clean Code) — cyclomatic complexity above the corpus p90 "
+        "violates the single-responsibility ceiling Martin names for "
+        "function decomposition."
     ),
     "cohesion_lcom4": (
         "Constantine (cohesion / coupling foundations) and Page-Jones "
@@ -319,8 +294,13 @@ def _render_frontmatter(
     )
 
 
-def _render_citation_form_section(baseline: BaselineArtifact) -> str:
-    """REQ-06: name the canonical citation tuple."""
+def _render_citation_form_section(baseline: BaselineArtifact, document_name: str) -> str:
+    """REQ-06: name the canonical citation tuple, citing this document itself.
+
+    The example once named the 2026-05-04 document in every later document and
+    spelled the revision ``corpus_revision``, which ``parse_citation`` does not
+    read; it now cites the document being written, in the canonical string form.
+    """
     return (
         "## Citation form\n\n"
         "Downstream foundation ADRs (per ADR-0.0.27 § Citation contract and "
@@ -328,8 +308,8 @@ def _render_citation_form_section(baseline: BaselineArtifact) -> str:
         "canonical tuple `(file path, section anchor, corpus_revision)`.  "
         "Example:\n\n"
         "```\n"
-        "docs/governance/complexity/distilled-characteristics-2026-05-04.md "
-        f"§ Cyclomatic Complexity (corpus_revision {baseline.corpus_revision})\n"
+        f"docs/governance/complexity/{document_name} "
+        f"§ lizard-ccn (corpus revision {baseline.corpus_revision})\n"
         "```\n\n"
         "Citing the raw distributions or the corpus registry directly is a "
         "policy breach: the distilled document is the operator-witnessed, "
@@ -406,7 +386,7 @@ def render_document(
         )
     )
     parts.append("\n")
-    parts.append(_render_citation_form_section(baseline))
+    parts.append(_render_citation_form_section(baseline, output_path.name))
     output_path.write_text("".join(parts), encoding="utf-8")
     return output_path
 

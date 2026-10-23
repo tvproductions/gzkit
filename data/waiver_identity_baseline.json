@@ -1938,7 +1938,6 @@
       "non-astral-unregistered::pyproject.toml::jinja2",
       "non-astral-unregistered::pyproject.toml::jsonschema",
       "non-astral-unregistered::pyproject.toml::pyyaml",
-      "non-astral-unregistered::pyproject.toml::radon",
       "non-astral-unregistered::pyproject.toml::rich",
       "non-astral-unregistered::pyproject.toml::structlog",
       "publish-not-uv::.github/workflows/release.yml::pypa/gh-action-pypi-publish",

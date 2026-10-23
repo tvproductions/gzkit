@@ -6,7 +6,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-10-22
 metadata:
-  skill-version: "0.2.5"
+  skill-version: "0.2.6"
   govzero-framework-version: "v6"
   govzero_layer: "Layer 3 - File Sync"
 gz_command: complexity advise
@@ -17,13 +17,13 @@ model: opus
 
 Run `gz complexity advise`, the trigger-time surface of the complexity-doctrine
 cluster (ADR-0.0.27 corpus, 0.0.28 thresholds, 0.0.29 advisor, 0.0.30
-authoring guidance). It measures per-function `radon_cc` in a file or
-directory, and for every function that crosses an `advise`, `warn` or `block`
+authoring guidance). It measures per-function `lizard_ccn` (Lizard's
+cyclomatic score) in a file or directory, and for every function that crosses an `advise`, `warn` or `block`
 band of `.gzkit/rules/complexity-thresholds.json` it emits a diagnosis:
 archetype, doctrinal frame, proof ranges and recommended move. It exits 3 when
-any crossing is in the `block` band and 0 otherwise.
+any crossing is in the `block` band and 0 otherwise. A function whose body sits on its `def` line is not measured (Lizard skips it); the verb names it on stderr as `not measured:` rather than inventing a score.
 
-The table's `radon_cc` bands are stricter than the C/C/C ceiling the
+The table's `lizard_ccn` bands are stricter than the C/C/C ceiling the
 pre-commit hook enforces (`gz validate --complexity-ceiling`) (`.gzkit/rules/pythonic.md` § Size Limits & Refactoring), so a tree
 that commits cleanly can still exit 3 here.
 

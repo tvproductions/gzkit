@@ -38,6 +38,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict
 
+from gzkit.complexity.functions import is_ellipsis_stub
 from gzkit.complexity.lizard_adapter import FunctionScore, score_functions
 from gzkit.core.validation_rules import ValidationError
 from gzkit.governance.trust_audits.distribution import wheel_shipped_files
@@ -70,19 +71,6 @@ def cyclomatic_ceiling(pyproject: Mapping[str, Any]) -> float | None:
     return None if ceiling is None else float(ceiling)
 
 
-def _is_ellipsis_stub(node: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
-    """Return True when the body is ``...`` alone, after an optional docstring."""
-    body = node.body
-    if len(body) == 2 and isinstance(body[0], ast.Expr) and isinstance(body[0].value, ast.Constant):
-        body = body[1:]
-    return (
-        len(body) == 1
-        and isinstance(body[0], ast.Expr)
-        and isinstance(body[0].value, ast.Constant)
-        and body[0].value.value is Ellipsis
-    )
-
-
 def _measure_module(
     file: str, source: str, ceiling: float, scorer: Scorer
 ) -> tuple[list[CeilingFinding], list[int]]:
@@ -105,7 +93,7 @@ def _measure_module(
         for node in ast.walk(tree)
         if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef)
         and node.lineno not in measured
-        and not _is_ellipsis_stub(node)
+        and not is_ellipsis_stub(node)
     ]
     findings.extend(
         CeilingFinding(

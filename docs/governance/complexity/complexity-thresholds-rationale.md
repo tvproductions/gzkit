@@ -5,8 +5,8 @@ Lifted from [`.gzkit/rules/complexity-thresholds.md`](https://github.com/tvprodu
 ## Citation contract details
 
 The rule binds to the corpus-measured boundaries in
-[`docs/governance/complexity/distilled-characteristics-2026-05-04.md`](distilled-characteristics-2026-05-04.md)
-at `corpus_revision: 1`. Each per-metric table in the rule file carries the canonical
+[`docs/governance/complexity/distilled-characteristics-2026-10-22.md`](distilled-characteristics-2026-10-22.md)
+at `corpus_revision: 1` (the 2026-05-04 distillation it replaced is kept, never overwritten). Each per-metric table in the rule file carries the canonical
 citation tuple `(distilled_characteristics_path, section_anchor, corpus_revision)`
 parsed by `gzkit.complexity.citation.parse_citation` (`src/gzkit/complexity/citation.py`).
 
@@ -14,7 +14,7 @@ Canonical-string form (per `parse_citation` contract, sibling rule
 `.gzkit/rules/complexity-doctrine.md` section Citation contract):
 
 ```
-docs/governance/complexity/distilled-characteristics-2026-05-04.md § radon-cc (corpus revision 1)
+docs/governance/complexity/distilled-characteristics-2026-10-22.md § lizard-ccn (corpus revision 1)
 ```
 
 Refresh portability: a citation written against `corpus_revision = 1`
@@ -27,14 +27,18 @@ citations for amendment but does not auto-rewrite.
 
 <!-- lifted-from: .claude/rules/complexity-thresholds.md#bootstrap-absolutes-req-11-carve-out----one-shot -->
 
-The bootstrap-absolutes carve-out names exactly three metrics whose
-threshold rows do not derive from the cited corpus distillation:
+The bootstrap-absolutes carve-out names one metric whose threshold rows
+do not derive from the cited corpus distillation, `cohesion_lcom4`
+(2026-10-22: the `cohesion` tool reports a per-class cohesion percentage,
+higher is better, so the corpus figures are on another scale and polarity
+than the bands; GHI #1265 owns the reconciliation). It named three
+when it was written; the record of the other two follows.
 
-- `radon_mi` -- inverted polarity not modellable by the current
+- *(retired 2026-10-22 with Radon)* `radon_mi` -- inverted polarity not modellable by the current
   `band_for(metric, value)` contract (which assumes high-is-worse).
   Bootstrap absolutes chosen conservatively below corpus p50 = 59.53.
   Tracked under **GHI #405** (polarity-aware threshold model).
-- `lizard_nesting_depth` -- measurement-pipeline parser defect produces
+- *(left the carve-out 2026-10-22 for corpus bands)* `lizard_nesting_depth` -- measurement-pipeline parser defect produces
   all-zero distributions across the corpus. Bootstrap absolutes drawn
   from Martin (Clean Code) -- depth > 3 is the guard-clause signal.
   Tracked under **GHI #404** (measurement-pipeline parser defect).
@@ -84,6 +88,13 @@ block band signal that a class has fractured into independent
 responsibilities. Once the parser is fixed and a fresh distillation
 lands, these rows graduate from bootstrap to cited.
 
+*2026-10-22:* the parser is fixed (GHI #398, #404) and the 2026-10-22
+distillation measures it (p50 25, p75 55.14, p90 100), but what it measures
+is the `cohesion` tool's cohesion percentage, not an LCOM4 count: higher is
+more cohesive, the opposite polarity to these bands. The rows stay bootstrap
+(operator, *"Keep bootstrap, file GHI (Rec.)"*; GHI #1265) until the metric is renamed
+and lower-is-worse bands are cited.
+
 ## Operator-amendable mapping protocol
 
 <!-- lifted-from: .claude/rules/complexity-thresholds.md#operator-amendable-mapping-protocol -->
@@ -105,6 +116,35 @@ record is a policy breach (exit 3).
 The scope of amendment is per-metric mapping only. The trigger-semantic
 vocabulary itself (`block` / `warn` / `advise`) is foundation doctrine
 and amendable only via ADR-0.0.28 ceremony.
+
+### Amendment record — Radon retired, 2026-10-22 (RO-9 tranche 4, GHI #1183)
+
+| Field | Value |
+|---|---|
+| Metrics retired | `radon_cc`, `radon_mi`, `radon_hal_volume`, `radon_hal_difficulty`, `radon_hal_effort`, `radon_raw_nloc`, `radon_raw_lloc` |
+| Metric added | `lizard_file_nloc` (module size, Lizard's whole-file NLOC) |
+| `lizard_file_nloc` mapping | `advise=p75 (307.25)`, `warn=p90 (716.5)`, `warn=p95 (1031.9)`, `block=p99 (3130.24)`, the shape `radon_raw_nloc` carried |
+| `lizard_nesting_depth` prior | bootstrap `advise=p75 (2.0)`, `warn=p90 (3.0)`, `block=p99 (4.0)` |
+| `lizard_nesting_depth` new | corpus `advise=p75 (2.0)`, `warn=p90 (5.0)`, `block=p95 (7.0)` |
+| Unchanged | `lizard_nloc`, `lizard_param_count`, `lizard_ccn` (each within 10% of 2026-05-04), `cohesion_lcom4` (bootstrap) |
+| Authorization | Operator, by selection: *"Map or retire each (Rec.)"*, *"Lizard file NLOC, re-distilled (Rec.)"*, *"RO-9 act, you observe (Rec.)"*, *"Same mapping (Rec.)"*, *"Corpus bands (Rec.)"*, *"Keep bootstrap, file GHI (Rec.)"* (2026-10-22) |
+| Citation | `distilled-characteristics-2026-10-22.md § lizard-ccn (corpus revision 1)` |
+
+**Rationale.** Radon retired for Ruff, complexipy and Lizard (GHI #1183, operator
+2026-10-09). `radon_cc` gives way to `lizard_ccn`, which the advisor, the guide and
+the auto-chain hook now read; its bands were already in the table and did not move,
+except that the warn band is Lizard's p90 of 8 where `radon_cc`'s was 7. Module size
+measured with Lizard lands within 2.3% of `radon_raw_nloc` at every percentile over
+the same thirteen projects, so the module-size mapping carries over unchanged in
+shape. `lizard_nesting_depth` was bootstrapped only because the parser read zeros;
+the 2026-10-22 pass is its first real measurement, and corpus bands replace the
+bootstrap (looser: depths 4 to 7 no longer block). The maintainability index,
+Halstead metrics and logical lines retire without a successor: no Astral or selected
+tool measures them, and nothing outside the table read them.
+
+The two disclosed departures of the 2026-08-26 record below apply here too: the
+record lives here, not in the unbuilt doctrine-amendment-protocol home, and the
+operator's verbatim selections are the authorization, not a Gate 5 receipt.
 
 ### Amendment record — `radon_raw_nloc`, 2026-08-26
 

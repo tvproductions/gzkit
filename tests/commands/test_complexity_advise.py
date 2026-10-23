@@ -1,8 +1,8 @@
 """CLI tests for ``gz complexity advise`` (OBPI-0.0.29-03).
 
 Pins REQ-0.0.29-03-01 through REQ-0.0.29-03-07 (acceptance criteria).
-Subprocess boundaries are absent: radon is invoked via its Python API
-(``radon.complexity.cc_visit``) so REQ-0.0.29-03-10 is honored vacuously.
+Subprocess boundaries are absent: Lizard is invoked in-process through
+``gzkit.complexity.lizard_adapter`` so REQ-0.0.29-03-10 is honored vacuously.
 
 Test-class split per ``.gzkit/rules/tool-skill-runbook-alignment.md`` Invariant 3
 and ``.claude/rules/tests.md`` § Output-form fixture carve-out:
@@ -38,7 +38,7 @@ from gzkit.traceability import covers
 _PRACTITIONER_EYE_SENTINEL = "Refactor signal: extract the responsibility seam and re-test."
 
 
-def _distilled_characteristics(metric: str = "radon_cc") -> str:
+def _distilled_characteristics(metric: str = "lizard_ccn") -> str:
     return "\n".join(
         [
             "---",
@@ -95,7 +95,7 @@ def _rule_data(metric: str, distilled_path: Path, anchor: str) -> str:
 
 
 @contextmanager
-def _synthetic_environment(metric: str = "radon_cc") -> Generator[Path]:
+def _synthetic_environment(metric: str = "lizard_ccn") -> Generator[Path]:
     """Yield path to a synthetic threshold rule under a temp project root.
 
     The distilled doc is written under ``docs/governance/complexity/``
@@ -136,6 +136,20 @@ def _invoke(**kwargs: object) -> tuple[int, str, str]:
         raw = exc.code
         code = raw if isinstance(raw, int) else 1
     return int(code), out.getvalue(), err.getvalue()
+
+
+class TestUnmeasuredFunctionIsNamed(unittest.TestCase):
+    """A function Lizard skips is named on stderr, never scored by guess (operator, 2026-10-22)."""
+
+    def test_an_inline_body_is_named_on_stderr_not_diagnosed(self) -> None:
+        source = "def one(x):  return 1 if x == 1 else 2 if x == 2 else 3 if x == 3 else 4\n"
+        with _synthetic_environment() as rule_path, tempfile.TemporaryDirectory() as src_tmp:
+            target = _write_source(Path(src_tmp), source)
+            code, out, err = _invoke(path=str(target), rule_path=str(rule_path))
+        self.assertEqual(code, 0)
+        self.assertIn("not measured:", err)
+        self.assertIn(" one ", err)
+        self.assertNotIn("not measured", out)
 
 
 CLEAN_SOURCE = """\
@@ -278,7 +292,7 @@ class TestComplexityAdviseBehavior(unittest.TestCase):
             "recommended_move",
         ):
             self.assertIn(required, first)
-        self.assertEqual(first["metric"], "radon_cc")
+        self.assertEqual(first["metric"], "lizard_ccn")
         self.assertGreaterEqual(len(first["proof"]), 1)
 
     @covers("REQ-0.0.29-03-04")

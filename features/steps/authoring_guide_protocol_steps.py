@@ -47,7 +47,7 @@ _SYNTHETIC_SHUTDOWN = (
 )
 
 
-def _distilled_characteristics(metric: str = "radon_cc") -> str:
+def _distilled_characteristics(metric: str = "lizard_ccn") -> str:
     return "\n".join(
         [
             "---",
@@ -120,9 +120,9 @@ def _build_synthetic_environment() -> None:
     rule_dir = cwd / ".gzkit" / "rules"
     rule_dir.mkdir(parents=True, exist_ok=True)
     rule_path = rule_dir / "complexity-thresholds.json"
-    anchor = "radon-cc"
+    anchor = "lizard-ccn"
     rule_path.write_text(
-        _rule_data("radon_cc", distilled_path.relative_to(cwd), anchor),
+        _rule_data("lizard_ccn", distilled_path.relative_to(cwd), anchor),
         encoding="utf-8",
     )
 

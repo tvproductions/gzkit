@@ -177,7 +177,7 @@ Each `AuthoringHint` object carries:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `metric` | `string` | Complexity metric key (e.g. `"radon_cc"`) |
+| `metric` | `string` | Complexity metric key (e.g. `"lizard_ccn"`) |
 | `precedence_band` | `"approaching" \| "approaching_warn"` | Position within the advise band |
 | `crossing_value` | `number` | Observed metric value that triggered the hint |
 | `archetype` | `string` | Canonical refactor archetype (see schema enum) |
@@ -287,7 +287,7 @@ Content-Length: 76\r\n
 ```
 Content-Length: 333\r\n
 \r\n
-{"id":2,"result":{"hints":[{"metric":"radon_cc","precedence_band":"approaching","crossing_value":9.0,"archetype":"arrowhead","doctrinal_frame_headline":"Nesting depth approaching warn threshold","recommended_move":"Flatten nested conditions using early returns","file_path":"/src/mymodule/parser.py","start_line":42,"end_line":78}]}}
+{"id":2,"result":{"hints":[{"metric":"lizard_ccn","precedence_band":"approaching","crossing_value":9.0,"archetype":"arrowhead","doctrinal_frame_headline":"Nesting depth approaching warn threshold","recommended_move":"Flatten nested conditions using early returns","file_path":"/src/mymodule/parser.py","start_line":42,"end_line":78}]}}
 ```
 
 The editor plugin should render each hint at the corresponding `start_line`

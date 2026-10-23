@@ -26,6 +26,9 @@ from gzkit.complexity.authoring.engine import (
 from gzkit.complexity.authoring.engine import (
     analyze as _engine_analyze,
 )
+from gzkit.complexity.authoring.engine import (
+    unmeasured_notes as _unmeasured_notes,
+)
 from gzkit.complexity.authoring.hint import AuthoringHint
 
 __all__ = [
@@ -64,6 +67,9 @@ def complexity_guide_cmd(
 
     try:
         hints = _engine_analyze(target)
+        # Named on stderr, never scored by guess (operator ruling 2026-10-22).
+        for note in _unmeasured_notes(target):
+            print(note, file=sys.stderr)
     except FileNotFoundError as exc:
         print(f"error: {exc}", file=sys.stderr)
         raise SystemExit(2) from exc

@@ -81,7 +81,7 @@ def _make_artifact() -> BaselineArtifact:
     return BaselineArtifact(
         corpus_revision=1,
         corpus_schema_version="1.0.0",
-        tool_versions={"cohesion": "1.0.0", "lizard": "1.17.0", "radon": "6.0.0"},
+        tool_versions={"cohesion": "1.0.0", "lizard": "1.17.0"},
         projects=(project,),
         cross_project=cross,
     )
@@ -107,6 +107,12 @@ class TestBaselineArtifactContract(unittest.TestCase):
         with self.assertRaises(ValidationError):
             BaselineArtifact.model_validate(payload)
 
+    def test_summary_ends_with_exactly_one_newline(self) -> None:
+        """The written summary passes the end-of-file fixer as generated (RO-9 tranche 4)."""
+        text = render_summary(_make_artifact())
+        self.assertTrue(text.endswith("\n"))
+        self.assertFalse(text.endswith("\n\n"))
+
     def test_baseline_summary_markdown_renders(self) -> None:
         """Summary names the project, the SHA, and at least one metric row."""
         artifact = _make_artifact()
@@ -114,7 +120,7 @@ class TestBaselineArtifactContract(unittest.TestCase):
         self.assertIn("# Complexity Baseline Summary", text)
         self.assertIn("## alpha", text)
         self.assertIn("0" * 40, text)
-        self.assertIn("radon_cc", text)
+        self.assertIn("lizard_ccn", text)
         self.assertIn("## Cross-Project Aggregate", text)
 
 

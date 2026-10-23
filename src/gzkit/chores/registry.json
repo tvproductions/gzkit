@@ -521,7 +521,7 @@
     {
       "slug": "pythonic-design-pattern-application",
       "title": "Pythonic Design Pattern Application (Before/After Evidence Capture)",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "path": ".gzkit/chores/pythonic-design-pattern-application",
       "lane": "lite",
       "timeoutSeconds": 180,

@@ -426,10 +426,6 @@
     "file_name": "complexity_advise.py",
     "functions": [
       {
-        "name": "_run_attest_intrinsic",
-        "complexity": 16
-      },
-      {
         "name": "complexity_advise_cmd",
         "complexity": 18
       }
@@ -1693,7 +1689,7 @@
     "functions": [
       {
         "name": "_diagnose_files",
-        "complexity": 31
+        "complexity": 24
       }
     ]
   },

@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-10-22
 metadata:
-  skill-version: "1.4.2"
+  skill-version: "1.4.3"
 model: sonnet
 ---
 
@@ -18,7 +18,7 @@ synthesize the findings into one prioritized report, and recommend a
 resolution path for each finding.
 
 This skill is a **synthesizer**, not a new analyzer. The gzkit surface
-already runs the analyses (chores, validators, ruff, ty, complexipy, radon).
+already runs the analyses (chores, validators, ruff, ty, complexipy, lizard).
 The skill's job is to wield those tools, normalize their outputs, rank
 by impact, and produce one operator-facing report — so debt findings
 end up in chore runs, in-flight fixes, or at most one GHI instead of dying
@@ -84,7 +84,7 @@ read.
 
 | Class | Signal sources | What it catches |
 |-------|----------------|-----------------|
-| `size-cap` | radon raw / `module-sloc-cap-radon` chore | Functions >50 LOC, modules >600 LOC, classes >300 LOC |
+| `size-cap` | Lizard NLOC / `module-sloc-cap-radon` chore | Functions >50 LOC, modules >600 LOC, classes >300 LOC |
 | `complexity` | Ruff `C901`, complexipy / `complexity-reduction-xenon` chore | Cyclomatic and cognitive complexity hot-spots above the configured ceilings |
 | `lint` | `uv run ruff check .` | Unfixed ruff diagnostics (excluding cosmetic) |
 | `types` | `uv run ty check .` | Unresolved type errors, suppressed-but-still-firing `# type: ignore[code]` (the GHI #197 class) |
@@ -147,7 +147,7 @@ For each class, the canonical probe:
 
 | Class | Canonical command | Notes |
 |-------|-------------------|-------|
-| `size-cap` | `uv run radon raw -s <files>` | Filter to functions >50, modules >600, classes >300. |
+| `size-cap` | `uv run lizard <files>` | Filter to functions >50, modules >600, classes >300. |
 | `complexity` | `uv run ruff check <subtree> --select C901` and `uv run complexipy <subtree> -q` | The ceilings the pre-commit gates and the `complexity-reduction-xenon` chore enforce (`max-complexity`, `[tool.complexipy]`); a stricter ceiling reports code the gates pass. Non-zero exit IS the signal. |
 | `lint` | `uv run ruff check <files> --output-format=json` | JSON for grouping. |
 | `types` | `uv run ty check <files>` | Capture stdout; cross-reference `tests/governance/test_type_ignore_syntax.py` for the suppression class. |

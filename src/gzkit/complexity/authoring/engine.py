@@ -1,7 +1,8 @@
 """Authoring-time hint engine wrapping the ADR-0.0.29-02 advisor (OBPI-0.0.30-03).
 
-The engine reads a Python source file, runs ``radon.complexity.cc_visit`` for
-per-function cyclomatic-complexity blocks, invokes the ADR-0.0.29-02
+The engine reads a Python source file, scores each function's cyclomatic
+complexity with Lizard (:func:`gzkit.complexity.functions.scored_functions`;
+Radon's ``cc_visit`` until RO-9 tranche 4), invokes the ADR-0.0.29-02
 :class:`gzkit.complexity.advisor.engine.DiagnosisEngine` for each crossing,
 and then projects only ``advise``-band diagnoses into
 :class:`gzkit.complexity.authoring.hint.AuthoringHint` instances. ``warn`` and
@@ -20,20 +21,24 @@ import ast
 from pathlib import Path
 from typing import Literal
 
-from radon.complexity import cc_visit
-from radon.visitors import Function
-
 from gzkit.complexity.advisor.engine import AstContext, DiagnosisEngine
 from gzkit.complexity.authoring.hint import AuthoringHint, project_diagnosis_to_hint
+from gzkit.complexity.functions import (
+    METRIC_KEY,
+    FunctionNode,
+    scored_functions,
+    unmeasured_functions,
+    unmeasured_note,
+)
 from gzkit.complexity.thresholds import ThresholdTable, load_threshold_table
 
 __all__ = [
     "DEFAULT_RULE_PATH",
     "METRIC_KEY",
     "analyze",
+    "unmeasured_notes",
 ]
 
-METRIC_KEY = "radon_cc"
 DEFAULT_RULE_PATH = Path(".gzkit/rules/complexity-thresholds.json")
 
 _PrecedenceBand = Literal["approaching", "approaching_warn"]
@@ -60,6 +65,23 @@ def analyze(
     return tuple(hints)
 
 
+def unmeasured_notes(path: Path) -> tuple[str, ...]:
+    """Return one note per function under ``path`` that Lizard did not measure.
+
+    Kept apart from :func:`analyze`, whose hints also feed the editor protocol
+    over stdio, so a caller chooses where the notes go.
+    """
+    notes: list[str] = []
+    for source_file in _iter_python_files(path):
+        source = source_file.read_text(encoding="utf-8")
+        tree = ast.parse(source, filename=str(source_file))
+        notes.extend(
+            unmeasured_note(source_file.as_posix(), node, qualname)
+            for qualname, node in unmeasured_functions(source, str(source_file), tree)
+        )
+    return tuple(notes)
+
+
 def _iter_python_files(target: Path) -> list[Path]:
     """Return ``.py`` files under ``target`` (file or directory)."""
     if target.is_file():
@@ -72,35 +94,30 @@ def _analyze_file(
     table: ThresholdTable,
     engine: DiagnosisEngine,
 ) -> list[AuthoringHint]:
-    """Run radon + diagnosis-engine for each ``radon_cc`` crossing in one file."""
+    """Run the scorer + diagnosis-engine for each ``lizard_ccn`` crossing in one file."""
     source = source_file.read_text(encoding="utf-8")
     tree = ast.parse(source, filename=str(source_file))
-    radon_blocks = [b for b in cc_visit(source) if isinstance(b, Function)]
-    func_nodes = _index_function_nodes(tree)
     hints: list[AuthoringHint] = []
-    for block in radon_blocks:
-        hint = _process_block(block, source_file, source, tree, func_nodes, table, engine)
+    for _qualname, node, cyclomatic in scored_functions(source, str(source_file), tree):
+        hint = _process_function(node, cyclomatic, source_file, source, tree, table, engine)
         if hint is not None:
             hints.append(hint)
     return hints
 
 
-def _process_block(
-    block: Function,
+def _process_function(
+    target_node: FunctionNode,
+    cyclomatic: int,
     source_file: Path,
     source: str,
     tree: ast.Module,
-    func_nodes: dict[int, ast.AST],
     table: ThresholdTable,
     engine: DiagnosisEngine,
 ) -> AuthoringHint | None:
-    """Run the diagnosis engine for one radon block; project to hint when advise."""
-    value = float(block.complexity)
+    """Run the diagnosis engine for one scored function; project to hint when advise."""
+    value = float(cyclomatic)
     band = table.band_for(METRIC_KEY, value)
     if band is None or band.trigger_semantic != "advise":
-        return None
-    target_node = func_nodes.get(block.lineno)
-    if target_node is None:
         return None
     ast_context = AstContext(
         file_path=str(source_file),
@@ -147,12 +164,3 @@ def _band_absolute(
         if band.trigger_semantic == trigger:
             return band.absolute_number
     return None
-
-
-def _index_function_nodes(tree: ast.Module) -> dict[int, ast.AST]:
-    """Map ``lineno`` to the corresponding FunctionDef/AsyncFunctionDef node."""
-    indexed: dict[int, ast.AST] = {}
-    for node in ast.walk(tree):
-        if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
-            indexed[node.lineno] = node
-    return indexed

@@ -61,7 +61,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `brief-heading-conventions.md` | `0.2.1` |
 | `changelog-release-notes.md` | `1.2.2` |
 | `complexity-doctrine.md` | `0.4.1` |
-| `complexity-thresholds.md` | `0.5.2` |
+| `complexity-thresholds.md` | `0.6.0` |
 | `gh-cli.md` | `0.7.1` |
 | `hexagonal-architecture.md` | `0.3.1` |
 | `models.md` | `0.2.1` |
@@ -76,7 +76,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `gate5-runbook-code-covenant.md` | `0.3.2` |
 | `guardrail-feedback-prose.md` | `0.3.1` |
 | `mx-mode.md` | `1.10.0` |
-| `pythonic.md` | `0.5.5` |
+| `pythonic.md` | `0.5.6` |
 | `tool-skill-runbook-alignment.md` | `0.5.3` |
 | `tests.md` | `0.27.2` |
 | `task-discovery.md` | `0.10.1` |

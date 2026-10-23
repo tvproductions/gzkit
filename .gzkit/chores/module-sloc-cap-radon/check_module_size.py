@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Module-size gate for the ``module-sloc-cap-radon`` chore.
 
-Reads the ``radon_raw_nloc`` ``block`` band from the ONE canonical threshold
+Reads the ``lizard_file_nloc`` ``block`` band from the ONE canonical threshold
 table (``.gzkit/rules/complexity-thresholds.json``) and enforces it over
 ``src/``. The chore previously declared its own ``<=1000 SLOC`` hard cap and
 ``<=600`` soft cap, which is the drift ``.gzkit/rules/complexity-thresholds.md``
@@ -16,10 +16,12 @@ the p90 ``warn`` band is 733.2. The chore's 1000 sat between them, so it failed
 one module the corpus does not block (``cli/parser_governance.py`` at 1010) while
 presenting itself as the authority.
 
-``radon_raw_nloc`` is radon's ``sloc`` field — see
-``gzkit.complexity.measurement._run_radon_raw``, which records
-``entry.get("sloc")`` under that metric key. This gate measures the same field
-the corpus was measured with, or it would be comparing different quantities.
+``lizard_file_nloc`` is Lizard's whole-file NLOC, read through
+``gzkit.complexity.lizard_adapter.file_nloc``, the same reader
+``gzkit.complexity.measurement`` measures the corpus with. This gate measures the
+same quantity the corpus was measured with, or it would be comparing different
+quantities. Until RO-9 tranche 4 (GHI #1183) both read radon's ``sloc`` as
+``radon_raw_nloc``; the slug keeps the historical name.
 
 Shrink-only ratchet
 -------------------
@@ -59,13 +61,12 @@ from __future__ import annotations
 
 import contextlib
 import json
-import subprocess
 import sys
-from pathlib import Path
 
 from gzkit.commands.common import get_project_root
+from gzkit.complexity.lizard_adapter import file_nloc
 
-_METRIC = "radon_raw_nloc"
+_METRIC = "lizard_file_nloc"
 # Manifest-based resolution, never `Path(__file__).parents[N]`: this file is
 # mirrored to `src/gzkit/chores/` by `gz agent sync control-surfaces`, so its
 # depth below the project root differs between the two copies and a positional
@@ -87,7 +88,7 @@ with contextlib.suppress(AttributeError):
 
 
 def _block_row() -> dict:
-    """Return the canonical ``radon_raw_nloc`` block band row."""
+    """Return the canonical ``lizard_file_nloc`` block band row."""
     table = json.loads(_THRESHOLDS.read_text(encoding="utf-8"))
     for band in table["bands"]:
         if band["metric"] == _METRIC and band["trigger_semantic"] == "block":
@@ -96,7 +97,7 @@ def _block_row() -> dict:
 
 
 def _block_band() -> float:
-    """Return the canonical ``radon_raw_nloc`` block threshold."""
+    """Return the canonical ``lizard_file_nloc`` block threshold."""
     return float(_block_row()["absolute_number"])
 
 
@@ -123,25 +124,11 @@ def _band_label() -> str:
 
 
 def _measure() -> dict[str, int]:
-    """Return {project-relative posix path: sloc} for every module under src/."""
-    completed = subprocess.run(
-        ["uv", "run", "radon", "raw", "--json", str(_MEASURE_ROOT)],
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        check=False,
-    )
-    if completed.returncode != 0:
-        raise SystemExit(f"radon failed (exit {completed.returncode}): {completed.stderr[:400]}")
-    payload = json.loads(completed.stdout)
+    """Return {project-relative posix path: Lizard file NLOC} for every module under src/."""
     sizes: dict[str, int] = {}
-    for raw_path, entry in payload.items():
-        if not isinstance(entry, dict) or "sloc" not in entry:
-            continue
-        path = Path(raw_path)
-        rel = path.relative_to(_PROJECT_ROOT) if path.is_absolute() else path
-        sizes[rel.as_posix()] = int(entry["sloc"])
+    for path in sorted(_MEASURE_ROOT.rglob("*.py")):
+        source = path.read_text(encoding="utf-8")
+        sizes[path.relative_to(_PROJECT_ROOT).as_posix()] = file_nloc(source, str(path))
     return sizes
 
 
@@ -162,7 +149,7 @@ def _grandfathered() -> dict[str, int]:
 def compute_breaches(block: float, sizes: dict[str, int], listed: dict[str, int]) -> list[str]:
     """Return one prose breach per ratchet violation; empty when clean.
 
-    Pure over its three inputs — no radon, no filesystem — so ``--self-test`` can
+    Pure over its three inputs — no measurement, no filesystem — so ``--self-test`` can
     drive every failure direction with synthetic data. A gate whose teeth are only
     ever verified by hand is the shape this whole chore repair exists to remove.
 

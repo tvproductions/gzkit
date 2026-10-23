@@ -25,5 +25,5 @@ Feature: gz complexity advise — ad-hoc vs auto-chain presenter dispatch (ADR-0
     Given a synthetic complexity-advise environment with a warn-band Python source
     When I run the gz command "complexity advise subject.py --rule-path complexity-thresholds.json --auto-chain"
     Then the command exits with code 0
-    And the output contains "radon_cc"
+    And the output contains "lizard_ccn"
     And the output does not contain "Doctrinal frame"

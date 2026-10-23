@@ -20,7 +20,7 @@
     "metric": {
       "type": "string",
       "minLength": 1,
-      "description": "Complexity metric key (e.g. 'radon_cc')."
+      "description": "Complexity metric key (e.g. 'lizard_ccn')."
     },
     "precedence_band": {
       "type": "string",

@@ -25,7 +25,7 @@ Coverage:
     REQ-0.0.28-01-01 — frontmatter validity, body version marker, block quote.
     REQ-0.0.28-01-02 — trigger-semantic vocabulary declares exactly three
         values: ``block``, ``warn``, ``advise``.
-    REQ-0.0.28-01-03 — for each canonical metric (12-tuple from
+    REQ-0.0.28-01-03 — for each canonical metric (the tuple from
         ``gzkit.complexity.measurement.CANONICAL_METRICS``), the loaded
         ``ThresholdTable`` carries at least one ``block`` band.
     REQ-0.0.28-01-04 — every loaded band has both ``corpus_percentile``
@@ -39,9 +39,9 @@ Coverage:
         carries a ``complexity-thresholds`` entry classified Mechanical.
     REQ-0.0.28-01-08 — ``gz validate --advisory-scorecard`` exits 0.
     REQ-0.0.28-01-09 — vendor mirrors carry the body-level rule-version marker.
-    REQ-0.0.28-01-10 — bootstrap carve-out section names exactly the three
-        known-bootstrap metrics: ``radon_mi``, ``lizard_nesting_depth``,
-        ``cohesion_lcom4``.
+    REQ-0.0.28-01-10 (amended 2026-10-22) — the bootstrap carve-out section
+        lists exactly one bootstrap metric, ``cohesion_lcom4``: ``radon_mi``
+        retired with Radon and ``lizard_nesting_depth`` took corpus bands.
 """
 
 from __future__ import annotations
@@ -64,7 +64,7 @@ _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 _RULE_PATH = _PROJECT_ROOT / ".gzkit" / "rules" / "complexity-thresholds.md"
 _DATA_PATH = _PROJECT_ROOT / ".gzkit" / "rules" / "complexity-thresholds.json"
 _TRIGGER_VOCABULARY = ("block", "warn", "advise")
-_BOOTSTRAP_METRICS = ("radon_mi", "lizard_nesting_depth", "cohesion_lcom4")
+_BOOTSTRAP_METRICS = ("cohesion_lcom4",)
 
 
 def _canonical_rule_version() -> str:
@@ -185,8 +185,9 @@ class ComplexityThresholdsRuleAuthorship(unittest.TestCase):
         """
         self.assertEqual(
             len(CANONICAL_METRICS),
-            12,
-            "expected exactly 12 canonical metrics from gzkit.complexity.measurement",
+            6,
+            "expected exactly six canonical metrics from gzkit.complexity.measurement "
+            "(REQ-0.0.28-01-03, amended 2026-10-22)",
         )
         table = load_threshold_table(_DATA_PATH)
         for metric in CANONICAL_METRICS:
@@ -214,7 +215,7 @@ class ComplexityThresholdsRuleAuthorship(unittest.TestCase):
         table = load_threshold_table(_DATA_PATH)
         self.assertGreaterEqual(
             len(table.bands),
-            12,
+            len(CANONICAL_METRICS),
             "data file must declare at least one band per canonical metric",
         )
         for band in table.bands:
@@ -293,7 +294,7 @@ class ComplexityThresholdsRuleAuthorship(unittest.TestCase):
         )
 
     @covers("REQ-0.0.28-01-10")
-    def test_bootstrap_carve_out_names_exactly_three_metrics(self) -> None:
+    def test_bootstrap_carve_out_lists_exactly_the_bootstrap_metrics(self) -> None:
         _, body = _parse_canonical_frontmatter(_RULE_PATH)
         bootstrap_section_match = re.search(
             r"##\s+Bootstrap.*?(?=^##\s|\Z)",
@@ -305,13 +306,12 @@ class ComplexityThresholdsRuleAuthorship(unittest.TestCase):
             "rule body must carry a Bootstrap absolutes section per REQ-11 carve-out",
         )
         section = bootstrap_section_match.group(0) if bootstrap_section_match else ""
-        for metric in _BOOTSTRAP_METRICS:
-            with self.subTest(metric=metric):
-                self.assertIn(
-                    metric,
-                    section,
-                    f"bootstrap section must name known-bootstrap metric: {metric!r}",
-                )
+        listed = tuple(re.findall(r"^- `([a-z0-9_]+)`", section, re.MULTILINE))
+        self.assertEqual(
+            listed,
+            _BOOTSTRAP_METRICS,
+            "the bootstrap section's list must name exactly the bootstrap metrics",
+        )
         # Cite the GHIs that track the upstream defects.
         self.assertRegex(
             section,

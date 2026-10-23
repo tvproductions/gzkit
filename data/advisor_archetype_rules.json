@@ -18,7 +18,7 @@
   {
     "archetype": "arrowhead",
     "metric_predicate": {
-      "metrics": ["lizard_nesting_depth", "radon_cc"],
+      "metrics": ["lizard_nesting_depth", "lizard_ccn"],
       "bands": ["warn", "block"]
     },
     "ast_predicate": {
@@ -34,7 +34,7 @@
   {
     "archetype": "switch_on_type",
     "metric_predicate": {
-      "metrics": ["radon_cc", "lizard_ccn"],
+      "metrics": ["lizard_ccn"],
       "bands": ["warn", "block"]
     },
     "ast_predicate": {
@@ -50,7 +50,7 @@
   {
     "archetype": "large_class",
     "metric_predicate": {
-      "metrics": ["radon_raw_nloc", "radon_raw_lloc"],
+      "metrics": ["lizard_file_nloc"],
       "bands": ["warn", "block"]
     },
     "ast_predicate": {
@@ -66,7 +66,7 @@
   {
     "archetype": "feature_envy",
     "metric_predicate": {
-      "metrics": ["radon_cc", "lizard_ccn"],
+      "metrics": ["lizard_ccn"],
       "bands": ["warn", "block"]
     },
     "ast_predicate": {
@@ -82,7 +82,7 @@
   {
     "archetype": "primitive_obsession",
     "metric_predicate": {
-      "metrics": ["lizard_param_count", "radon_cc"],
+      "metrics": ["lizard_param_count", "lizard_ccn"],
       "bands": ["warn", "block"]
     },
     "ast_predicate": {

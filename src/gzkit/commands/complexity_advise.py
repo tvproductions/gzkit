@@ -3,9 +3,10 @@
 Wraps the ADR-0.0.29 trigger-time response surface. Reads the canonical
 threshold table at ``.gzkit/rules/complexity-thresholds.json`` (ADR-0.0.28,
 GHI #426 — JSON is data; the sibling ``.md`` carries doctrine narrative),
-measures the target file or directory via ``radon.complexity.cc_visit``,
-and runs the OBPI-0.0.29-02 :class:`DiagnosisEngine` for each per-function
-``radon_cc`` crossing.
+measures the target file or directory with Lizard's per-function cyclomatic
+score (:func:`gzkit.complexity.functions.scored_functions`; Radon's ``cc_visit``
+until RO-9 tranche 4), and runs the OBPI-0.0.29-02 :class:`DiagnosisEngine` for
+each ``lizard_ccn`` crossing.
 
 Output Contract: default human prose names archetype, doctrinal authority,
 proof line range, and recommended-move excerpt for each diagnosis.
@@ -28,9 +29,6 @@ from collections.abc import Iterator
 from datetime import date
 from pathlib import Path
 
-from radon.complexity import cc_visit
-from radon.visitors import Function
-
 from gzkit.complexity.advisor.diagnosis import AdvisorDiagnosis
 from gzkit.complexity.advisor.engine import (
     AstContext,
@@ -43,12 +41,17 @@ from gzkit.complexity.advisor.intrinsic import (
     ledger_attestations,
 )
 from gzkit.complexity.advisor.presentation import AdHocPresenter, AutoChainPresenter
+from gzkit.complexity.functions import (
+    METRIC_KEY,
+    scored_functions,
+    unmeasured_functions,
+    unmeasured_note,
+)
 from gzkit.complexity.thresholds import ThresholdTable, load_threshold_table
 from gzkit.ledger import Ledger
 from gzkit.ledger_events import intrinsic_complexity_attestation_event
 
 DEFAULT_RULE_PATH = Path(".gzkit/rules/complexity-thresholds.json")
-METRIC_KEY = "radon_cc"
 
 _ATTEST_CONFIRMATION = "ATTEST"
 
@@ -128,7 +131,7 @@ def complexity_advise_cmd(
     else:
         for _qualname, reason_val, attestor_val, date_val in attested_all:
             print(f"intrinsic complexity attested by {attestor_val!r} on {date_val}: {reason_val}")
-        metrics_checked = 1  # currently only radon_cc
+        metrics_checked = 1  # currently only lizard_ccn
         presenter = AutoChainPresenter() if auto_chain else AdHocPresenter()
         output = presenter.render(
             diagnoses, metrics_checked=metrics_checked, functions_checked=functions_checked
@@ -180,7 +183,7 @@ def _analyze_file(
     engine: DiagnosisEngine,
     ledger_index: dict[tuple[str, str], Attestation],
 ) -> tuple[list[AdvisorDiagnosis], list[_AttestedInfo], int]:
-    """Run attestation check and engine for each ``radon_cc`` crossing.
+    """Run attestation check and engine for each ``lizard_ccn`` crossing.
 
     A function attested by a literal ``@intrinsic_complexity`` in source or by
     an ``intrinsic-complexity-attestation`` ledger event is short-circuited
@@ -193,21 +196,18 @@ def _analyze_file(
     """
     source = source_file.read_text(encoding="utf-8")
     tree = ast.parse(source, filename=str(source_file))
-    radon_blocks = [b for b in cc_visit(source) if isinstance(b, Function)]
-    func_nodes_by_line = _index_function_nodes(tree)
+    functions = scored_functions(source, str(source_file), tree)
+    # A function Lizard skips is named on stderr, never scored by guess (operator
+    # ruling 2026-10-22, "Name it, don't guess (Rec.)"); stdout and --json stay
+    # the diagnosis contract.
+    for qualname, node in unmeasured_functions(source, str(source_file), tree):
+        print(unmeasured_note(source_file.as_posix(), node, qualname), file=sys.stderr)
     diagnoses: list[AdvisorDiagnosis] = []
     attested: list[_AttestedInfo] = []
 
-    for block in radon_blocks:
-        if table.band_for(METRIC_KEY, float(block.complexity)) is None:
+    for qualname, target_node, cyclomatic in functions:
+        if table.band_for(METRIC_KEY, float(cyclomatic)) is None:
             continue
-        target_node = func_nodes_by_line.get(block.lineno)
-        if target_node is None:
-            continue
-
-        qualname = (
-            f"{block.classname}.{block.name}" if getattr(block, "classname", None) else block.name
-        )
         attestation = find_attestation(target_node, source_file, qualname, ledger_index)
         if attestation is not None:
             reason_val, attestor_val, date_val = attestation
@@ -220,20 +220,11 @@ def _analyze_file(
             tree=tree,
             target_node=target_node,
         )
-        diagnosis = engine.diagnose(ast_context, METRIC_KEY, float(block.complexity), table)
+        diagnosis = engine.diagnose(ast_context, METRIC_KEY, float(cyclomatic), table)
         if diagnosis is not None:
             diagnoses.append(diagnosis)
 
-    return diagnoses, attested, len(radon_blocks)
-
-
-def _index_function_nodes(tree: ast.Module) -> dict[int, ast.AST]:
-    """Map ``lineno`` to the corresponding FunctionDef/AsyncFunctionDef node."""
-    indexed: dict[int, ast.AST] = {}
-    for node in ast.walk(tree):
-        if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
-            indexed[node.lineno] = node
-    return indexed
+    return diagnoses, attested, len(functions)
 
 
 def _render_json(diagnoses: list[AdvisorDiagnosis]) -> str:
@@ -286,32 +277,32 @@ def _run_attest_intrinsic(
 
     try:
         source = source_file.read_text(encoding="utf-8")
-    except OSError as exc:
+        tree = ast.parse(source, filename=file_path_str)
+    except (OSError, SyntaxError) as exc:
         print(f"error: cannot read {file_path_str}: {exc}", file=sys.stderr)
         return 2
 
-    radon_blocks = [b for b in cc_visit(source) if isinstance(b, Function)]
-    target_block = None
-    for block in radon_blocks:
-        block_qualname = (
-            f"{block.classname}.{block.name}" if getattr(block, "classname", None) else block.name
-        )
-        if block_qualname == qualname:
-            target_block = block
-            break
+    target_score = next(
+        (
+            score
+            for name, _node, score in scored_functions(source, file_path_str, tree)
+            if name == qualname
+        ),
+        None,
+    )
 
-    if target_block is None:
+    if target_score is None:
         print(
             f"error: function {qualname!r} not found in {file_path_str}",
             file=sys.stderr,
         )
         return 1
 
-    band = table.band_for(METRIC_KEY, float(target_block.complexity))
+    band = table.band_for(METRIC_KEY, float(target_score))
     if band is None:
         print(
             f"error: {qualname!r} does not cross any threshold band"
-            f" (cc={target_block.complexity}); attestation refused",
+            f" (cc={target_score}); attestation refused",
             file=sys.stderr,
         )
         return 1
@@ -326,7 +317,7 @@ def _run_attest_intrinsic(
     print("\n=== Intrinsic Complexity Attestation ===")
     print(f"  Function: {qualname}")
     print(f"  File:     {file_path_str}")
-    print(f"  Metric:   {METRIC_KEY} = {target_block.complexity}")
+    print(f"  Metric:   {METRIC_KEY} = {target_score}")
     print(f"  Band:     {band.trigger_semantic}")
     print(f"  Reason:   {reason}")
     print(f"  Attestor: {attestor}")
@@ -351,7 +342,7 @@ def _run_attest_intrinsic(
         attestation_date=attestation_date,
         metric=METRIC_KEY,
         crossing_band=band.trigger_semantic,
-        crossing_value=float(target_block.complexity),
+        crossing_value=float(target_score),
     )
     ledger.append(event)
 

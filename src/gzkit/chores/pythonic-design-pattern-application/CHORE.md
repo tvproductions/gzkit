@@ -21,7 +21,7 @@ Every applied candidate writes an evidence file under `.gzkit/chores/pythonic-de
 4. **Example-derived role map** — the pattern roles observed in that Python example and which roles the rewrite collapses
 5. **Before / After** — both forms shown with at least the function/class signature; full body if <=20 lines
 6. **Complexity delta** — the C/C/C ceiling result and the touched functions' cognitive scores (complexipy) before/after
-7. **SLOC delta** — radon raw before/after; positive deltas require explicit rationale
+7. **NLOC delta** — the module's Lizard NLOC before/after (the `lizard_file_nloc` the module-size gate reads); positive deltas require explicit rationale
 8. **Tests cited** — list of tests that pinned semantics across the rewrite (Red-Green-Refactor evidence)
 9. **TDD receipt** — `arb-step-unittest-*` receipt ID from the GREEN run (per AGENTS.md § Attestation)
 10. **Disposition link** — back-reference to the entry in the detection chore's candidates report
@@ -84,7 +84,7 @@ before continuing.
 ```bash
 uv run gz validate --complexity-ceiling > /tmp/ceiling-before.txt 2>&1 || true
 uv run complexipy --output-format json --output /tmp/cognitive-before.json || true
-uv run radon raw src/ -s > /tmp/radon-before.txt 2>&1 || true
+uv run lizard <module> > /tmp/lizard-before.txt 2>&1 || true
 ```
 
 ### 4. Apply the rewrite under TDD — repair
@@ -104,7 +104,7 @@ The semantics test is the load-bearing artifact. A pattern rewrite that is seman
 ```bash
 uv run gz validate --complexity-ceiling > /tmp/ceiling-after.txt 2>&1
 uv run complexipy --output-format json --output /tmp/cognitive-after.json
-uv run radon raw src/ -s > /tmp/radon-after.txt 2>&1
+uv run lizard <module> > /tmp/lizard-after.txt 2>&1
 uv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer
 ```
 
@@ -149,7 +149,7 @@ Template (copy and fill):
 | Metric | Before | After | Delta | Note |
 |--------|--------|-------|-------|------|
 | cognitive score (touched functions, complexipy) | <N> | <M> | <equal or lower> | |
-| radon raw SLOC (module) | <N> | <M> | <M - N> | |
+| Lizard NLOC (module) | <N> | <M> | <M - N> | |
 
 ## Semantics tests cited
 

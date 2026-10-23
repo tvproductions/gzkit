@@ -17,7 +17,7 @@
   "properties": {
     "metric": {
       "type": "string",
-      "description": "Complexity metric key (e.g. 'radon_cc', 'radon_mi')."
+      "description": "Complexity metric key (e.g. 'lizard_ccn', 'lizard_nloc')."
     },
     "crossing_band": {
       "type": "string",

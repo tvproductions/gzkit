@@ -2,141 +2,33 @@
   "$schema": "../../src/gzkit/schemas/complexity_thresholds.json",
   "corpus_revision": 1,
   "citation": {
-    "distilled_characteristics_path": "docs/governance/complexity/distilled-characteristics-2026-05-04.md",
-    "section_anchor": "radon-cc",
+    "distilled_characteristics_path": "docs/governance/complexity/distilled-characteristics-2026-10-22.md",
+    "section_anchor": "lizard-ccn",
     "corpus_revision": 1
   },
   "bands": [
     {
-      "metric": "radon_cc",
+      "metric": "lizard_file_nloc",
       "corpus_percentile": 75,
-      "absolute_number": 4.0,
+      "absolute_number": 307.25,
       "trigger_semantic": "advise"
     },
     {
-      "metric": "radon_cc",
+      "metric": "lizard_file_nloc",
       "corpus_percentile": 90,
-      "absolute_number": 7.0,
+      "absolute_number": 716.5,
       "trigger_semantic": "warn"
     },
     {
-      "metric": "radon_cc",
-      "corpus_percentile": 95,
-      "absolute_number": 11.0,
-      "trigger_semantic": "block"
-    },
-    {
-      "metric": "radon_mi",
-      "corpus_percentile": 75,
-      "absolute_number": 85.0,
-      "trigger_semantic": "advise"
-    },
-    {
-      "metric": "radon_mi",
-      "corpus_percentile": 90,
-      "absolute_number": 70.0,
-      "trigger_semantic": "warn"
-    },
-    {
-      "metric": "radon_mi",
-      "corpus_percentile": 95,
-      "absolute_number": 50.0,
-      "trigger_semantic": "block"
-    },
-    {
-      "metric": "radon_hal_volume",
-      "corpus_percentile": 75,
-      "absolute_number": 946.89,
-      "trigger_semantic": "advise"
-    },
-    {
-      "metric": "radon_hal_volume",
-      "corpus_percentile": 90,
-      "absolute_number": 2740.93,
-      "trigger_semantic": "warn"
-    },
-    {
-      "metric": "radon_hal_volume",
-      "corpus_percentile": 95,
-      "absolute_number": 5549.8,
-      "trigger_semantic": "block"
-    },
-    {
-      "metric": "radon_hal_difficulty",
-      "corpus_percentile": 75,
-      "absolute_number": 8.13,
-      "trigger_semantic": "advise"
-    },
-    {
-      "metric": "radon_hal_difficulty",
-      "corpus_percentile": 90,
-      "absolute_number": 11.54,
-      "trigger_semantic": "warn"
-    },
-    {
-      "metric": "radon_hal_difficulty",
-      "corpus_percentile": 95,
-      "absolute_number": 12.46,
-      "trigger_semantic": "block"
-    },
-    {
-      "metric": "radon_hal_effort",
-      "corpus_percentile": 75,
-      "absolute_number": 7975.79,
-      "trigger_semantic": "advise"
-    },
-    {
-      "metric": "radon_hal_effort",
-      "corpus_percentile": 90,
-      "absolute_number": 30805.01,
-      "trigger_semantic": "warn"
-    },
-    {
-      "metric": "radon_hal_effort",
-      "corpus_percentile": 95,
-      "absolute_number": 74805.4,
-      "trigger_semantic": "block"
-    },
-    {
-      "metric": "radon_raw_nloc",
-      "corpus_percentile": 75,
-      "absolute_number": 311.75,
-      "trigger_semantic": "advise"
-    },
-    {
-      "metric": "radon_raw_nloc",
-      "corpus_percentile": 90,
-      "absolute_number": 733.2,
-      "trigger_semantic": "warn"
-    },
-    {
-      "metric": "radon_raw_nloc",
+      "metric": "lizard_file_nloc",
       "corpus_percentile": 95,
       "absolute_number": 1031.9,
       "trigger_semantic": "warn"
     },
     {
-      "metric": "radon_raw_nloc",
+      "metric": "lizard_file_nloc",
       "corpus_percentile": 99,
-      "absolute_number": 3143.82,
-      "trigger_semantic": "block"
-    },
-    {
-      "metric": "radon_raw_lloc",
-      "corpus_percentile": 75,
-      "absolute_number": 238.25,
-      "trigger_semantic": "advise"
-    },
-    {
-      "metric": "radon_raw_lloc",
-      "corpus_percentile": 90,
-      "absolute_number": 518.0,
-      "trigger_semantic": "warn"
-    },
-    {
-      "metric": "radon_raw_lloc",
-      "corpus_percentile": 95,
-      "absolute_number": 811.7,
+      "absolute_number": 3130.24,
       "trigger_semantic": "block"
     },
     {
@@ -184,13 +76,13 @@
     {
       "metric": "lizard_nesting_depth",
       "corpus_percentile": 90,
-      "absolute_number": 3.0,
+      "absolute_number": 5.0,
       "trigger_semantic": "warn"
     },
     {
       "metric": "lizard_nesting_depth",
-      "corpus_percentile": 99,
-      "absolute_number": 4.0,
+      "corpus_percentile": 95,
+      "absolute_number": 7.0,
       "trigger_semantic": "block"
     },
     {

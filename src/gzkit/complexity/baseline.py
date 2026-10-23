@@ -21,8 +21,8 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field
 
 # Number of decimal places to which every float in a serialized baseline is
-# rounded.  Six places preserves practitioner-relevant precision (radon CC
-# rarely exceeds three significant digits) while neutralizing platform float
+# rounded.  Six places preserves practitioner-relevant precision (cyclomatic
+# complexity rarely exceeds three significant digits) while neutralizing platform float
 # formatting drift.
 _FLOAT_PRECISION = 6
 
@@ -40,7 +40,7 @@ class MetricDistribution(BaseModel):
     metric_key: str = Field(
         ...,
         min_length=1,
-        description="Canonical metric key (one of the 12 from CANONICAL_METRICS).",
+        description="Canonical metric key (one of CANONICAL_METRICS).",
     )
     p50: float = Field(..., description="Median (50th percentile).")
     p75: float = Field(..., description="75th percentile.")
@@ -120,7 +120,7 @@ class BaselineArtifact(BaseModel):
 
     ``corpus_revision`` and ``corpus_schema_version`` echo the corpus inputs
     so a baseline that drifts from the corpus is mechanically detectable.
-    ``tool_versions`` records the radon / lizard / cohesion versions the
+    ``tool_versions`` records the lizard / cohesion versions the
     measurement pipeline ran under; pinned-major-version determinism is the
     contract per ADR-0.0.27.
     """
@@ -139,7 +139,7 @@ class BaselineArtifact(BaseModel):
     )
     tool_versions: dict[str, str] = Field(
         ...,
-        description="Mapping of tool name -> installed version string (radon / lizard / cohesion).",
+        description="Mapping of tool name -> installed version string (lizard / cohesion).",
     )
     projects: tuple[ProjectBaseline, ...] = Field(
         ...,
@@ -206,7 +206,7 @@ def render_summary(artifact: BaselineArtifact) -> str:
     for project in artifact.projects:
         lines.extend(_render_project_section(project))
     lines.extend(_render_cross_project_section(artifact.cross_project))
-    return "\n".join(lines) + "\n"
+    return "\n".join(lines).rstrip("\n") + "\n"
 
 
 def _render_project_section(project: ProjectBaseline) -> list[str]:

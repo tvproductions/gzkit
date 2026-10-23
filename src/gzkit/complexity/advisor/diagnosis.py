@@ -151,7 +151,7 @@ class AdvisorDiagnosis(BaseModel):
 
     metric: str = Field(
         ...,
-        description="Complexity metric key (e.g. 'radon_cc', 'radon_mi').",
+        description="Complexity metric key (e.g. 'lizard_ccn', 'lizard_nloc').",
     )
     crossing_band: Literal["block", "warn", "advise"] = Field(
         ...,

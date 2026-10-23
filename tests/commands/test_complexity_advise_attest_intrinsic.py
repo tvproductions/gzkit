@@ -30,7 +30,7 @@ from gzkit.traceability import covers
 _PRACTITIONER_EYE = "Refactor signal: extract the responsibility seam and re-test."
 
 
-def _distilled_characteristics(metric: str = "radon_cc") -> str:
+def _distilled_characteristics(metric: str = "lizard_ccn") -> str:
     return "\n".join(
         [
             "---",
@@ -88,7 +88,7 @@ def _rule_data(metric: str, distilled_path: Path, anchor: str) -> str:
 
 
 @contextmanager
-def _synthetic_environment(metric: str = "radon_cc") -> Generator[Path]:
+def _synthetic_environment(metric: str = "lizard_ccn") -> Generator[Path]:
     """Yield path to a synthetic threshold rule under a temp project root.
 
     Changes CWD to the temp dir so the engine resolves the citation path.
@@ -409,7 +409,7 @@ class TestComplexityAdviseAttestIntrinsic(unittest.TestCase):
         )
         self.assertEqual(event["file_path"], str(source_file))
         self.assertEqual(event["qualname"], "complex_fn")
-        self.assertEqual(event["metric"], "radon_cc")
+        self.assertEqual(event["metric"], "lizard_ccn")
         self.assertEqual(event["crossing_band"], "block")
         # Receipt id should appear in stdout.
         self.assertIn(expected_id, buf_out.getvalue())

@@ -27,7 +27,6 @@ from __future__ import annotations
 import csv
 import importlib.metadata
 import io
-import json
 import shutil
 import subprocess
 from collections.abc import Mapping, Sequence
@@ -40,19 +39,18 @@ from gzkit.complexity.baseline import (
     render_summary,
     serialize_baseline,
 )
+from gzkit.complexity.lizard_adapter import file_nloc
 from gzkit.models.exemplar import ExemplarCorpus, ExemplarProject, load_corpus
 
-# Canonical 12-metric keys.  Order is load-bearing — every per-project and
+# Canonical metric keys.  Order is load-bearing — every per-project and
 # cross-project block iterates this tuple, so a baseline.json's metric order
-# is byte-deterministic across runs.
+# is byte-deterministic across runs.  Radon's seven retired in RO-9 tranche 4
+# (GHI #1183, operator "Map or retire each (Rec.)"): ``radon_cc`` gives way to
+# ``lizard_ccn``, module size is ``lizard_file_nloc`` (operator "Lizard file
+# NLOC, re-distilled (Rec.)"), and the maintainability index, Halstead and
+# logical-line metrics retire.
 CANONICAL_METRICS: tuple[str, ...] = (
-    "radon_cc",
-    "radon_mi",
-    "radon_hal_volume",
-    "radon_hal_difficulty",
-    "radon_hal_effort",
-    "radon_raw_nloc",
-    "radon_raw_lloc",
+    "lizard_file_nloc",
     "lizard_nloc",
     "lizard_param_count",
     "lizard_nesting_depth",
@@ -63,7 +61,7 @@ CANONICAL_METRICS: tuple[str, ...] = (
 # Required external binaries.  Order is alphabetical for deterministic
 # error messages when more than one is missing.  Each is a locked dev tool and
 # runs from the lock through ``uv run``, never from PATH (RO-9 tranche 2).
-_REQUIRED_TOOLS: tuple[str, ...] = ("cohesion", "lizard", "radon")
+_REQUIRED_TOOLS: tuple[str, ...] = ("cohesion", "lizard")
 
 
 class MissingMeasurementToolError(RuntimeError):
@@ -269,15 +267,7 @@ def _measure_project(tree: Path, paths: Sequence[Path]) -> Mapping[str, list[flo
         return {key: [] for key in CANONICAL_METRICS}
     results: dict[str, list[float]] = {key: [] for key in CANONICAL_METRICS}
     for path in paths:
-        results["radon_cc"].extend(_run_radon_cc(path))
-        results["radon_mi"].extend(_run_radon_mi(path))
-        hal = _run_radon_hal(path)
-        results["radon_hal_volume"].extend(hal["volume"])
-        results["radon_hal_difficulty"].extend(hal["difficulty"])
-        results["radon_hal_effort"].extend(hal["effort"])
-        raw = _run_radon_raw(path)
-        results["radon_raw_nloc"].extend(raw["nloc"])
-        results["radon_raw_lloc"].extend(raw["lloc"])
+        results["lizard_file_nloc"].extend(_run_lizard_file_nloc(path))
         liz = _run_lizard(path)
         results["lizard_nloc"].extend(liz["nloc"])
         results["lizard_param_count"].extend(liz["param_count"])
@@ -287,108 +277,18 @@ def _measure_project(tree: Path, paths: Sequence[Path]) -> Mapping[str, list[flo
     return results
 
 
-def _run_radon_cc(path: Path) -> list[float]:
-    """Run ``radon cc --json`` and return per-function complexity values.
+def _run_lizard_file_nloc(path: Path) -> list[float]:
+    """Return the module's Lizard NLOC as a one-value list; nothing when unreadable.
 
-    ``radon cc --json`` emits ``{filepath: [{"complexity": int, ...}, ...]}``.
-    Empty arrays (file with no functions) are valid; non-zero exit is
-    treated as "no values" rather than raising — measurement of one file
-    must not abort the whole pipeline.
+    The per-file size signal (module size) that ``radon raw``'s ``sloc`` was until
+    RO-9 tranche 4. A file that cannot be read or decoded yields no value rather
+    than raising: measurement of one file must not abort the whole pipeline.
     """
-    completed = subprocess.run(
-        ["uv", "run", "radon", "cc", "--json", "--no-assert", str(path)],
-        capture_output=True,
-        text=True,
-        errors="replace",
-        encoding="utf-8",
-        check=False,
-    )
-    if completed.returncode != 0 or not completed.stdout.strip():
+    try:
+        source = path.read_text(encoding="utf-8")
+    except OSError, UnicodeDecodeError:
         return []
-    payload = json.loads(completed.stdout)
-    values: list[float] = []
-    for entries in payload.values():
-        if isinstance(entries, list):
-            for entry in entries:
-                if isinstance(entry, dict) and "complexity" in entry:
-                    values.append(float(entry["complexity"]))
-    return values
-
-
-def _run_radon_mi(path: Path) -> list[float]:
-    """Run ``radon mi --json`` and return the per-file MI values.
-
-    ``radon mi --json`` emits ``{filepath: {"mi": float, ...}}``.  A file
-    with no measurable MI returns an empty list.
-    """
-    completed = subprocess.run(
-        ["uv", "run", "radon", "mi", "--json", str(path)],
-        capture_output=True,
-        text=True,
-        errors="replace",
-        encoding="utf-8",
-        check=False,
-    )
-    if completed.returncode != 0 or not completed.stdout.strip():
-        return []
-    payload = json.loads(completed.stdout)
-    values: list[float] = []
-    for entry in payload.values():
-        if isinstance(entry, dict) and "mi" in entry:
-            values.append(float(entry["mi"]))
-    return values
-
-
-def _run_radon_hal(path: Path) -> dict[str, list[float]]:
-    """Run ``radon hal --json`` and split into volume/difficulty/effort lists.
-
-    ``radon hal --json`` emits per-file aggregate Halstead metrics
-    ``{filepath: {"total": {"volume": ..., "difficulty": ..., "effort": ...}}}``.
-    """
-    completed = subprocess.run(
-        ["uv", "run", "radon", "hal", "--json", str(path)],
-        capture_output=True,
-        text=True,
-        errors="replace",
-        encoding="utf-8",
-        check=False,
-    )
-    out: dict[str, list[float]] = {"volume": [], "difficulty": [], "effort": []}
-    if completed.returncode != 0 or not completed.stdout.strip():
-        return out
-    payload = json.loads(completed.stdout)
-    for entry in payload.values():
-        block = entry.get("total") if isinstance(entry, dict) else None
-        if isinstance(block, dict):
-            _append_if_number(out["volume"], block.get("volume"))
-            _append_if_number(out["difficulty"], block.get("difficulty"))
-            _append_if_number(out["effort"], block.get("effort"))
-    return out
-
-
-def _run_radon_raw(path: Path) -> dict[str, list[float]]:
-    """Run ``radon raw --json`` and split into nloc/lloc lists.
-
-    ``radon raw --json`` emits per-file SLOC counts; we record NLOC and
-    LLOC since they are the doctrine-cited size signals.
-    """
-    completed = subprocess.run(
-        ["uv", "run", "radon", "raw", "--json", str(path)],
-        capture_output=True,
-        text=True,
-        errors="replace",
-        encoding="utf-8",
-        check=False,
-    )
-    out: dict[str, list[float]] = {"nloc": [], "lloc": []}
-    if completed.returncode != 0 or not completed.stdout.strip():
-        return out
-    payload = json.loads(completed.stdout)
-    for entry in payload.values():
-        if isinstance(entry, dict):
-            _append_if_number(out["nloc"], entry.get("sloc"))
-            _append_if_number(out["lloc"], entry.get("lloc"))
-    return out
+    return [float(file_nloc(source, str(path)))]
 
 
 def _run_lizard(path: Path) -> dict[str, list[float]]:
@@ -464,14 +364,6 @@ def _run_cohesion(path: Path) -> list[float]:
         except ValueError:
             continue
     return values
-
-
-def _append_if_number(target: list[float], value: object) -> None:
-    """Append *value* to *target* if it is a real ``int``/``float``."""
-    if isinstance(value, bool):
-        return
-    if isinstance(value, (int, float)):
-        target.append(float(value))
 
 
 def _append_if_numeric_str(target: list[float], value: str) -> None:

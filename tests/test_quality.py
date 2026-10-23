@@ -337,6 +337,44 @@ class TestLintNamesOnlyWhatRuns(unittest.TestCase):
         self.assertFalse(result.success)
         self.assertEqual(result.returncode, 1)
 
+    def test_any_failing_sub_lint_fails_the_step_with_its_own_exit(self) -> None:
+        """Each of the four lints carries its verdict through the step (GHI #1233).
+
+        A step that ran its tools and reported a pass regardless survived a mutation
+        sweep, because the only test fed three successes and read the command string.
+        """
+        from gzkit.quality import run_lint
+
+        ok = QualityResult(success=True, command="x", stdout="", stderr="", returncode=0)
+        for failing in ("ruff", "complexipy", "path-contract", "parents"):
+            with self.subTest(failing=failing):
+                bad = QualityResult(success=False, command="x", stdout="", stderr="", returncode=7)
+
+                def run_command(
+                    command: str,
+                    _f: str = failing,
+                    _bad: QualityResult = bad,
+                    **_kw: object,
+                ) -> QualityResult:
+                    return _bad if _f in command else ok
+
+                with (
+                    tempfile.TemporaryDirectory() as tmpdir,
+                    patch("gzkit.quality.run_command", side_effect=run_command),
+                    patch(
+                        "gzkit.quality.run_adr_path_contract_lint",
+                        return_value=bad if failing == "path-contract" else ok,
+                    ),
+                    patch(
+                        "gzkit.quality.run_parents_pattern_lint",
+                        return_value=bad if failing == "parents" else ok,
+                    ),
+                ):
+                    result = run_lint(Path(tmpdir))
+
+                self.assertFalse(result.success)
+                self.assertEqual(result.returncode, 7)
+
     def test_lint_command_docstring_names_no_markdown_linter(self) -> None:
         """The CLI docstring is operator-facing and must not promise a linter that never runs."""
         from gzkit.commands.quality import lint

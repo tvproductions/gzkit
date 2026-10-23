@@ -430,7 +430,7 @@
         "replace": "        if False\n",
         "label": "a function over the ceiling is never refused"
       },
-      "binding_sha256": "d5206bd0c8ef8942572d18ccadfd1033d08b81131c761244999c95939f6d653c",
+      "binding_sha256": "bb78ec0cd5beeb1cac20df60917afeb447ca6119acc1f5207a53f053c9a027e7",
       "authority": "docs/governance/harbor-ro9-astral-toolchain.md (drydock RO-9 tranche 4, GHI #1183); GHI #1154 item 5 (every registered claim binds a reviewed canary)",
       "proposed_by": "claude-code session 2026-10-22"
     },

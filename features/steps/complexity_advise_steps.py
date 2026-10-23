@@ -76,7 +76,7 @@ def block_band(x):
 """
 
 
-def _distilled_characteristics(metric: str = "radon_cc") -> str:
+def _distilled_characteristics(metric: str = "lizard_ccn") -> str:
     return "\n".join(
         [
             "---",
@@ -141,9 +141,9 @@ def _build_synthetic_environment(source: str) -> None:
     distilled_path = complexity_dir / "distilled-characteristics-synthetic.md"
     distilled_path.write_text(_distilled_characteristics(), encoding="utf-8")
     rule_path = cwd / "complexity-thresholds.json"
-    anchor = "radon-cc"
+    anchor = "lizard-ccn"
     rule_path.write_text(
-        _rule_data("radon_cc", distilled_path.relative_to(cwd), anchor),
+        _rule_data("lizard_ccn", distilled_path.relative_to(cwd), anchor),
         encoding="utf-8",
     )
     subject = cwd / "subject.py"

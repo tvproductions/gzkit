@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-10-22
 metadata:
-  skill-version: "1.1.2"
+  skill-version: "1.1.3"
 gz_command: chores run pythonic-design-pattern-application
 model: sonnet
 ---
@@ -42,7 +42,7 @@ Apply a Pythonic-pattern rewrite to a single candidate flagged by `gz-pythonic-p
    ```bash
    uv run gz validate --complexity-ceiling > /tmp/ceiling-before.txt 2>&1 || true
    uv run complexipy --output-format json --output /tmp/cognitive-before.json || true
-   uv run radon raw src/ -s > /tmp/radon-before.txt 2>&1 || true
+   uv run lizard <module> > /tmp/lizard-before.txt 2>&1 || true
    ```
 
 4. Write a **semantics-pinning test** for the candidate's behavior — *not* its shape. The test must derive from the operator-facing purpose the code serves, per `.gzkit/rules/tests.md` § Red-Green-Refactor (tests assert semantics, not strings — invariant 6f). Run it before the rewrite: it must pass against the class form. A RED here means the test does not describe current behavior (fix the test) or it found a defect (stop and route it per `AGENTS.md` § Defect-fix routing). The same test, unchanged, must pass after the rewrite.
@@ -62,7 +62,7 @@ Apply a Pythonic-pattern rewrite to a single candidate flagged by `gz-pythonic-p
    ```bash
    uv run gz validate --complexity-ceiling > /tmp/ceiling-after.txt 2>&1
    uv run complexipy --output-format json --output /tmp/cognitive-after.json
-   uv run radon raw src/ -s > /tmp/radon-after.txt 2>&1
+   uv run lizard <module> > /tmp/lizard-after.txt 2>&1
    ```
 
    Confirm the C/C/C ceiling still passes and no touched function's cognitive score rose. If either regressed, the rewrite has compounded complexity rather than reduced it — revert and re-design.
@@ -75,7 +75,7 @@ Apply a Pythonic-pattern rewrite to a single candidate flagged by `gz-pythonic-p
    - Local Python example witness and `Output.txt` path
    - Example-derived role map
    - Before / After code blocks
-   - ceiling, cognitive and radon deltas with notes
+   - ceiling, cognitive and module-NLOC deltas with notes
    - Tests cited (file:Test::test_method)
    - GREEN receipt ID
    - Pythonic-target faithfulness note (yes / no with rationale)

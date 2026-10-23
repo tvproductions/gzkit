@@ -67,13 +67,13 @@ def step_given_clean(context):
 
 @given("a staged Python file with a warn-band complexity crossing")
 def step_given_warn(context):
-    # CC == 9 lands in [7, 11) per radon-cc warn band absolute = 7.
+    # CC == 9 lands in [8, 11) per the lizard-ccn warn band absolute = 8.
     _stage(context, "src/warn.py", _gen_branchy(8))
 
 
 @given("a staged Python file with a block-band complexity crossing")
 def step_given_block(context):
-    # CC == 13 crosses radon-cc block band absolute = 11.
+    # CC == 13 crosses the lizard-ccn block band absolute = 11.
     _stage(context, "src/block.py", _gen_branchy(12))
 
 

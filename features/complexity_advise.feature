@@ -32,7 +32,7 @@ Feature: gz complexity advise — trigger-time advisor diagnosis (ADR-0.0.29 / O
     When I run the gz command "complexity advise subject.py --rule-path complexity-thresholds.json --json"
     Then the command exits with code 0
     And the output contains "metric"
-    And the output contains "radon_cc"
+    And the output contains "lizard_ccn"
     And the output contains "crossing_band"
 
   @REQ-0.0.29-03-05

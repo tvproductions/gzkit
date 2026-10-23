@@ -4,9 +4,9 @@ description: Use when the operator asks for an authoring-time complexity hint or
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-10-22
 metadata:
-  skill-version: "0.2.3"
+  skill-version: "0.2.4"
   govzero-framework-version: "v6"
   govzero_layer: "Layer 3 - File Sync"
 gz_command: complexity guide
@@ -17,11 +17,12 @@ model: sonnet
 
 Run `gz complexity guide`, the authoring-time hint surface of the
 complexity-doctrine cluster (ADR-0.0.27 corpus, 0.0.28 thresholds, 0.0.29
-advisor, 0.0.30 authoring guidance). It measures per-function `radon_cc` and
+advisor, 0.0.30 authoring guidance). It measures per-function `lizard_ccn` and
 reports only the functions in the `advise` band of
 `.gzkit/rules/complexity-thresholds.json`, the band below `warn`, so a refactor
 decision lands while the code is being written. It never blocks: it exits 0
 whatever it finds, and exits 1 only on a user error such as a missing path.
+A function whose body sits on its `def` line is not measured (Lizard skips it); the verb names it on stderr as `not measured:` rather than inventing a score.
 
 This skill ends at the hints. It does not refactor.
 

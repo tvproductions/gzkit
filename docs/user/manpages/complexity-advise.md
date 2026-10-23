@@ -22,9 +22,11 @@ gz complexity advise <path> [--json] [--quiet] [--verbose] [--dry-run]
 surface introduced by ADR-0.0.29 (the third foundation in the four-ADR
 complexity-doctrine cluster). The verb loads the canonical threshold
 table at `.gzkit/rules/complexity-thresholds.json` (ADR-0.0.28), measures
-per-function `radon_cc` for every Python file under `<path>` via
-radon's Python API (`radon.complexity.cc_visit`), and runs the
-OBPI-0.0.29-02 :class:`DiagnosisEngine` against each band crossing.
+per-function `lizard_ccn` (Lizard's cyclomatic score, read in-process
+through `gzkit.complexity.lizard_adapter`) for every Python file under
+`<path>`, and runs the OBPI-0.0.29-02 :class:`DiagnosisEngine` against each
+band crossing. Radon's `cc_visit` and `radon_cc` were retired in RO-9
+tranche 4 (GHI #1183). A function whose body sits on its `def` line is not measured: Lizard skips it, and the verb prints `not measured: <file>:<line> <name> ...` on stderr for it rather than inventing a score. Stdout and `--json` are unchanged.
 
 For every crossing, the engine emits an `AdvisorDiagnosis` carrying:
 

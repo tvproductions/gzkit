@@ -40,10 +40,11 @@ dependencies = [
     "tree-sitter-python>=0.25",
     # Stdlib-First named departures (ADR-0.0.27 § Decision; AGENTS.md
     # § STDLIB-FIRST DOCTRINE § "Existing dependencies inherit this rule").
-    # Stdlib does not expose cyclomatic complexity, nesting depth, or LCOM4;
-    # these deps are corpus-measurement-only and consumed exclusively by
-    # src/gzkit/complexity/measurement.py.
-    "radon>=6.0,<7.0",
+    # Stdlib does not expose cyclomatic complexity, nesting depth, or class
+    # cohesion. lizard is imported in-process only by
+    # src/gzkit/complexity/lizard_adapter.py (the C/C/C ceiling, the advisor and
+    # module size); cohesion runs as a measurement subprocess. Radon retired in
+    # RO-9 tranche 4 (GHI #1183).
     "lizard>=1.24,<2.0",
     "cohesion>=1.2,<2.0",
 ]
@@ -234,7 +235,6 @@ dev = [
     "interrogate>=1.7.0",
     "lizard>=1.24.0",
     "pyinstaller>=6.22.0",
-    "radon>=6.0.1",
     "ruff>=0.17.1",
     # Tracks ty forward, never pinned backward. Operator ruling 2026-08-09: "we
     # progress as Ty progresses, if it has become more strict, then we tighten

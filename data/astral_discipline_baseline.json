@@ -40,12 +40,6 @@
     {
       "rule": "non-astral-unregistered",
       "file": "pyproject.toml",
-      "subject": "radon",
-      "count": 1
-    },
-    {
-      "rule": "non-astral-unregistered",
-      "file": "pyproject.toml",
       "subject": "rich",
       "count": 1
     },

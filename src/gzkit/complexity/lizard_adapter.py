@@ -15,7 +15,7 @@ from __future__ import annotations
 import lizard
 from pydantic import BaseModel, ConfigDict
 
-__all__ = ["FunctionScore", "score_functions"]
+__all__ = ["FunctionScore", "file_nloc", "score_functions"]
 
 
 class FunctionScore(BaseModel):
@@ -41,3 +41,8 @@ def score_functions(source: str, filename: str) -> list[FunctionScore]:
         )
         for function in info.function_list
     ]
+
+
+def file_nloc(source: str, filename: str) -> int:
+    """Return Lizard's non-comment line count for the whole of *source* (module size)."""
+    return lizard.analyze_file.analyze_source_code(filename, source).nloc

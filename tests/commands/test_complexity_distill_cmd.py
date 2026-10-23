@@ -3,7 +3,7 @@
 Pins the Output Contract declared by
 ``.gzkit/skills/gz-complexity-distill/SKILL.md`` (REQ-0.0.27-06-04) and
 the no-overwrite policy declared by ``OBPI-0.0.27-04`` (REQ-0.0.27-04-05).
-Subprocess boundaries (radon / lizard / cohesion) are short-circuited via
+Subprocess boundaries (lizard / cohesion) are short-circuited via
 ``--baseline-json``; no real measurement runs in unit tests.
 
 Test classes are split per ``.gzkit/rules/tool-skill-runbook-alignment.md``
@@ -36,10 +36,10 @@ FIXTURE_BASELINE = (
     / "governance"
     / "complexity"
     / "baselines"
-    / "2026-05-04"
+    / "2026-10-22"
     / "baseline.json"
 )
-FIXTURE_TODAY = "2026-05-05"
+FIXTURE_TODAY = "2026-10-23"
 
 
 def _invoke(**kwargs: object) -> tuple[int, str, str]:

@@ -26,6 +26,7 @@ from gzkit.complexity.advisor.diagnosis import RefactorArchetype
 from gzkit.complexity.authoring.engine import (
     _classify_precedence_band,
     analyze,
+    unmeasured_notes,
 )
 from gzkit.complexity.thresholds import load_threshold_table
 from gzkit.traceability import covers
@@ -33,7 +34,7 @@ from gzkit.traceability import covers
 _PRACTITIONER_EYE_SENTINEL = "Refactor signal: extract the responsibility seam and re-test."
 
 
-def _distilled_doc(metric: str = "radon_cc") -> str:
+def _distilled_doc(metric: str = "lizard_ccn") -> str:
     return textwrap.dedent(
         f"""\
         ---
@@ -97,7 +98,7 @@ def _threshold_payload(
 
 
 @contextmanager
-def _synthetic_root(metric: str = "radon_cc") -> Generator[Path]:
+def _synthetic_root(metric: str = "lizard_ccn") -> Generator[Path]:
     """Yield the threshold-rule path under a temp project root with cwd switched."""
     with tempfile.TemporaryDirectory() as raw_root:
         root = Path(raw_root)
@@ -200,7 +201,7 @@ class TestEngineAdviseCrossings(unittest.TestCase):
             hints = analyze(src, table=table)
             self.assertEqual(len(hints), 1)
             hint = hints[0]
-            self.assertEqual(hint.metric, "radon_cc")
+            self.assertEqual(hint.metric, "lizard_ccn")
             self.assertEqual(hint.file_path, str(src))
             self.assertGreaterEqual(hint.start_line, 1)
             self.assertGreaterEqual(hint.end_line, hint.start_line)
@@ -234,13 +235,41 @@ class TestHintRangeSpansFunction(unittest.TestCase):
             self.assertEqual((hint.start_line, hint.end_line), (1, 10))
 
     @covers("REQ-0.0.30-03-04")
-    def test_one_line_function_hint_is_one_line(self) -> None:
-        source = "def one(x):  return 1 if x == 1 else 2 if x == 2 else 3 if x == 3 else 4\n"
+    def test_two_line_function_hint_spans_both_lines(self) -> None:
+        # The function a hint ranges over is the whole function, def to last line.
+        # A body on the def line is no longer the fixture: Lizard does not measure
+        # it, and the guide names it instead (operator ruling 2026-10-22).
+        source = "def one(x):\n    return 1 if x == 1 else 2 if x == 2 else 3 if x == 3 else 4\n"
         with _synthetic_root() as rule_path:
             src = _write_py_source(rule_path.parent, "one.py", source)
             table = load_threshold_table(rule_path)
             (hint,) = analyze(src, table=table)
-            self.assertEqual((hint.start_line, hint.end_line), (1, 1))
+            self.assertEqual((hint.start_line, hint.end_line), (1, 2))
+
+
+class TestUnmeasuredFunctionsAreNamed(unittest.TestCase):
+    """A function Lizard skips is named, never scored by guess (operator, 2026-10-22)."""
+
+    def test_an_inline_body_is_named_and_gets_no_hint(self) -> None:
+        source = "def one(x):  return 1 if x == 1 else 2 if x == 2 else 3 if x == 3 else 4\n"
+        with _synthetic_root() as rule_path:
+            src = _write_py_source(rule_path.parent, "one.py", source)
+            table = load_threshold_table(rule_path)
+            self.assertEqual(analyze(src, table=table), ())
+            (note,) = unmeasured_notes(src)
+        self.assertIn("not measured:", note)
+        self.assertIn(":1 one", note)
+
+    def test_an_ellipsis_stub_is_not_named(self) -> None:
+        source = "class P:\n    def f(self) -> None: ...\n"
+        with _synthetic_root() as rule_path:
+            src = _write_py_source(rule_path.parent, "stub.py", source)
+            self.assertEqual(unmeasured_notes(src), ())
+
+    def test_a_measured_function_is_not_named(self) -> None:
+        with _synthetic_root() as rule_path:
+            src = _write_py_source(rule_path.parent, "lower.py", _ADVISE_LOWER_SOURCE)
+            self.assertEqual(unmeasured_notes(src), ())
 
 
 class TestPrecedenceBandClassification(unittest.TestCase):
@@ -249,7 +278,7 @@ class TestPrecedenceBandClassification(unittest.TestCase):
         with _synthetic_root() as rule_path:
             table = load_threshold_table(rule_path)
             # advise = 4.0, warn = 7.0, midpoint = 5.5; value 5.0 < 5.5 -> lower
-            band = _classify_precedence_band(table, "radon_cc", 5.0)
+            band = _classify_precedence_band(table, "lizard_ccn", 5.0)
             self.assertEqual(band, "approaching")
 
     @covers("REQ-0.0.30-03-07")
@@ -257,7 +286,7 @@ class TestPrecedenceBandClassification(unittest.TestCase):
         with _synthetic_root() as rule_path:
             table = load_threshold_table(rule_path)
             # value 6.0 >= 5.5 -> upper portion
-            band = _classify_precedence_band(table, "radon_cc", 6.0)
+            band = _classify_precedence_band(table, "lizard_ccn", 6.0)
             self.assertEqual(band, "approaching_warn")
 
     @covers("REQ-0.0.30-03-07")
@@ -265,7 +294,7 @@ class TestPrecedenceBandClassification(unittest.TestCase):
         with _synthetic_root() as rule_path:
             table = load_threshold_table(rule_path)
             # boundary case: value == midpoint -> upper (>=)
-            band = _classify_precedence_band(table, "radon_cc", 5.5)
+            band = _classify_precedence_band(table, "lizard_ccn", 5.5)
             self.assertEqual(band, "approaching_warn")
 
     @covers("REQ-0.0.30-03-07")
