@@ -34,5 +34,8 @@
       "surface_root": ".opencode",
       "instruction_format": "generic"
     }
+  },
+  "complexity": {
+    "cognitive_ceiling": 15
   }
 }

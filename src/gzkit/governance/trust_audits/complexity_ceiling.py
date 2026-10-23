@@ -24,6 +24,16 @@ Lizard score (``unmeasured`` otherwise: an inline suite, which can also hide the
 functions after it), and a module that does not parse is ``unparseable``. A body
 that is nothing but ``...`` carries no decision and is the one exemption.
 
+Cognitive complexity is the second leg, scored by gzkit's own
+:mod:`gzkit.complexity.cognitive` over CPython's ``ast`` (the operator ruled
+complexipy a poor replacement, 2026-10-22). A project opts in by declaring
+``complexity.cognitive_ceiling`` in ``.gzkit.json``. No shipped function may score
+above it unless ``data/cognitive_complexity_baseline.json`` holds it, keyed by
+POSIX path and qualified name, at no less than its score. The baseline is a
+shrink-ratchet that must stay exact: a row above its function's score, a row whose
+function is gone, and a row at or under the ceiling are each findings, so the
+baseline can only shrink, by hand, with the refactor that earns it.
+
 Registered as ``gz validate --complexity-ceiling``; runs in ``gz check`` as the
 "Complexity ceiling" step.
 """
@@ -38,10 +48,13 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict
 
+from gzkit.complexity.cognitive import score_cognitive
 from gzkit.complexity.functions import is_ellipsis_stub
 from gzkit.complexity.lizard_adapter import FunctionScore, score_functions
+from gzkit.config import GzkitConfig
 from gzkit.core.validation_rules import ValidationError
 from gzkit.governance.trust_audits.distribution import wheel_shipped_files
+from gzkit.registries import RegistryError, load_registry
 
 __all__ = [
     "CeilingFinding",
@@ -50,8 +63,21 @@ __all__ = [
     "measure_ceiling",
 ]
 
+_COGNITIVE_BASELINE_NAME = "cognitive_complexity_baseline.json"
+_COGNITIVE_BASELINE = f"data/{_COGNITIVE_BASELINE_NAME}"
+
 Scorer = Callable[[str, str], list[FunctionScore]]
-FindingKind = Literal["function", "module-mean", "overall-mean", "unmeasured", "unparseable"]
+FindingKind = Literal[
+    "function",
+    "module-mean",
+    "overall-mean",
+    "unmeasured",
+    "unparseable",
+    "cognitive",
+    "cognitive-held",
+    "cognitive-baseline",
+]
+Baseline = Mapping[tuple[str, str], int]
 
 
 class CeilingFinding(BaseModel):
@@ -141,6 +167,93 @@ def measure_ceiling(
     return findings
 
 
+def _cognitive_scores(files: Mapping[str, str]) -> dict[tuple[str, str], tuple[int, int]]:
+    """Score each parseable module; a qualified name defined twice keeps its higher score."""
+    scores: dict[tuple[str, str], tuple[int, int]] = {}
+    for file in sorted(files):
+        try:
+            module_scores = score_cognitive(files[file], file)
+        except SyntaxError:
+            continue  # the cyclomatic leg reports the module as unparseable
+        for score in module_scores:
+            key = (file, score.name)
+            if key not in scores or score.score > scores[key][0]:
+                scores[key] = (score.score, score.line)
+    return scores
+
+
+def _over_ceiling(
+    scores: Mapping[tuple[str, str], tuple[int, int]], ceiling: int, baseline: Baseline
+) -> list[CeilingFinding]:
+    """Each function above the ceiling that no row holds, or above the row that holds it."""
+    findings: list[CeilingFinding] = []
+    for (file, name), (score, line) in sorted(scores.items()):
+        held = baseline.get((file, name))
+        limit = ceiling if held is None else max(held, ceiling)
+        if score <= limit:
+            continue
+        source = "the ceiling" if held is None else f"its baseline row ({_COGNITIVE_BASELINE})"
+        message = f"{file}:{line} {name}: cognitive {score} > {limit}, {source}"
+        findings.append(CeilingFinding(kind="cognitive", file=file, message=message))
+    return findings
+
+
+def _inexact_rows(
+    scores: Mapping[tuple[str, str], tuple[int, int]], ceiling: int, baseline: Baseline
+) -> list[CeilingFinding]:
+    """Each row that holds more than its function scores, a gone function, or nothing."""
+    findings: list[CeilingFinding] = []
+    for (file, name), held in sorted(baseline.items()):
+        current = scores.get((file, name))
+        if current is not None and current[0] >= held > ceiling:
+            continue
+        now = "is gone" if current is None else f"now scores {current[0]}"
+        message = (
+            f"{_COGNITIVE_BASELINE} holds {file} {name} at {held} and it {now} (ceiling {ceiling})"
+        )
+        findings.append(CeilingFinding(kind="cognitive-held", file=file, message=message))
+    return findings
+
+
+def measure_cognitive(
+    files: Mapping[str, str], ceiling: int, baseline: Baseline
+) -> list[CeilingFinding]:
+    """Hold *files* to the cognitive *ceiling*, less the functions *baseline* holds."""
+    scores = _cognitive_scores(files)
+    return _over_ceiling(scores, ceiling, baseline) + _inexact_rows(scores, ceiling, baseline)
+
+
+def _load_cognitive_baseline(project_root: Path) -> tuple[dict[tuple[str, str], int], list[str]]:
+    """Return the baseline rows by (file, function), and any defects in the file itself."""
+    try:
+        rows = load_registry(project_root, _COGNITIVE_BASELINE_NAME)["functions"]
+    except RegistryError:
+        return {}, []
+    except (KeyError, TypeError) as exc:
+        return {}, [f"{_COGNITIVE_BASELINE} is malformed ({exc})"]
+    baseline: dict[tuple[str, str], int] = {}
+    defects: list[str] = []
+    for row in rows:
+        key = (str(row["file"]), str(row["function"]))
+        if key in baseline:
+            defects.append(f"{_COGNITIVE_BASELINE} holds {key[0]} {key[1]} twice")
+        baseline[key] = int(row["score"])
+    return baseline, defects
+
+
+def _cognitive_findings(project_root: Path, files: Mapping[str, str]) -> list[CeilingFinding]:
+    """Run the cognitive leg when `.gzkit.json` declares its ceiling."""
+    ceiling = GzkitConfig.load(project_root / ".gzkit.json").complexity.cognitive_ceiling
+    if ceiling is None:
+        return []
+    baseline, defects = _load_cognitive_baseline(project_root)
+    findings = [
+        CeilingFinding(kind="cognitive-baseline", file=_COGNITIVE_BASELINE, message=defect)
+        for defect in defects
+    ]
+    return findings + measure_cognitive(files, ceiling, baseline)
+
+
 def audit_complexity_ceiling(project_root: Path) -> list[ValidationError]:
     """Hold the Python the wheel ships to the C/C/C ceiling Ruff reads."""
     shipped = sorted(
@@ -164,13 +277,14 @@ def audit_complexity_ceiling(project_root: Path) -> list[ValidationError]:
             )
         ]
     files = {rel: (project_root / rel).read_text(encoding="utf-8") for rel in shipped}
+    findings = measure_ceiling(files, ceiling) + _cognitive_findings(project_root, files)
     return [
         ValidationError(
             type="complexity_ceiling",
             artifact=finding.file or "pyproject.toml",
             message=f"{finding.message}. {_RECOVERY[finding.kind]}",
         )
-        for finding in measure_ceiling(files, ceiling)
+        for finding in findings
     ]
 
 
@@ -185,4 +299,19 @@ _RECOVERY: dict[FindingKind, str] = {
         f"below its `def` line, {_RERUN}"
     ),
     "unparseable": f"a module that does not parse cannot be measured: fix the syntax, {_RERUN}",
+    "cognitive": (
+        "gzkit holds shipped code to the cognitive ceiling `.gzkit.json` declares, and a "
+        "baseline row only shrinks (RO-9 tranche 4): flatten the nesting or split the "
+        f"function into named helpers, {_RERUN}"
+    ),
+    "cognitive-held": (
+        f"{_COGNITIVE_BASELINE} is a shrink-ratchet that stays exact (RO-9 tranche 4): lower "
+        "the row to the function's score, or delete it when the function is gone or at the "
+        "ceiling, set baseline_count in data/waiver_ratchet_registry.json to the row count, "
+        f"{_RERUN}"
+    ),
+    "cognitive-baseline": (
+        f"{_COGNITIVE_BASELINE} is keyed by file and function, one row each (RO-9 tranche "
+        f"4): restore it from git or merge the rows, {_RERUN}"
+    ),
 }

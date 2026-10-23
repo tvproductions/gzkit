@@ -24,6 +24,7 @@ from gzkit.governance.trust_audits.complexity_ceiling import (
     audit_complexity_ceiling,
     cyclomatic_ceiling,
     measure_ceiling,
+    measure_cognitive,
 )
 
 
@@ -273,6 +274,118 @@ class TheNegativeControlDiscriminatesTest(unittest.TestCase):
         self.assertEqual(QC_CLAIM_EXEMPTS["complexity-ceiling"], EXEMPTS_NONE)
         self.assertEqual(QC_CLAIM_POPULATIONS["complexity-ceiling"], POPULATION_NONE)
         self.assertTrue(callable(_build_complexity_ceiling))
+
+
+def _flat_ifs(name: str, count: int, indent: str = "") -> str:
+    """Return a function whose cognitive complexity is ``count`` (one flat ``if`` each)."""
+    body = "".join(f"{indent}    if x == {i}:\n{indent}        x += 1\n" for i in range(count))
+    return f"{indent}def {name}(x):\n{body}{indent}    return x\n"
+
+
+class MeasureCognitiveTest(unittest.TestCase):
+    """The cognitive leg: a ceiling, less an exact shrink-only baseline (RO-9 tranche 4)."""
+
+    def _kinds(self, files: dict[str, str], baseline: dict[tuple[str, str], int]) -> list[str]:
+        return [f.kind for f in measure_cognitive(files, 2, baseline)]
+
+    def test_a_function_at_the_ceiling_passes(self) -> None:
+        self.assertEqual(self._kinds({"m.py": _flat_ifs("f", 2)}, {}), [])
+
+    def test_a_function_over_the_ceiling_fails_with_its_score(self) -> None:
+        findings = measure_cognitive({"m.py": _flat_ifs("f", 3)}, 2, {})
+        self.assertEqual([f.kind for f in findings], ["cognitive"])
+        self.assertIn("m.py:1 f: cognitive 3 > 2", findings[0].message)
+
+    def test_a_held_function_at_its_baseline_score_passes(self) -> None:
+        self.assertEqual(self._kinds({"m.py": _flat_ifs("f", 3)}, {("m.py", "f"): 3}), [])
+
+    def test_a_held_function_that_worsens_fails_against_its_row(self) -> None:
+        findings = measure_cognitive({"m.py": _flat_ifs("f", 4)}, 2, {("m.py", "f"): 3})
+        self.assertEqual([f.kind for f in findings], ["cognitive"])
+        self.assertIn("cognitive 4 > 3, its baseline row", findings[0].message)
+
+    def test_a_row_above_its_function_must_be_lowered(self) -> None:
+        findings = measure_cognitive({"m.py": _flat_ifs("f", 3)}, 2, {("m.py", "f"): 5})
+        self.assertEqual([f.kind for f in findings], ["cognitive-held"])
+        self.assertIn("at 5 and it now scores 3", findings[0].message)
+
+    def test_a_row_whose_function_is_gone_is_dead(self) -> None:
+        findings = measure_cognitive({"m.py": _flat_ifs("f", 1)}, 2, {("m.py", "g"): 3})
+        self.assertEqual([f.kind for f in findings], ["cognitive-held"])
+        self.assertIn("m.py g at 3 and it is gone", findings[0].message)
+
+    def test_a_row_at_the_ceiling_holds_nothing_and_is_dead(self) -> None:
+        self.assertEqual(
+            self._kinds({"m.py": _flat_ifs("f", 2)}, {("m.py", "f"): 2}), ["cognitive-held"]
+        )
+
+    def test_a_method_is_keyed_by_its_qualified_name(self) -> None:
+        source = "class C:\n" + _flat_ifs("m", 3, indent="    ")
+        self.assertEqual(self._kinds({"m.py": source}, {("m.py", "C.m"): 3}), [])
+
+    def test_a_name_defined_twice_is_held_at_its_higher_score(self) -> None:
+        source = f"if X:\n{_flat_ifs('f', 3, '    ')}else:\n{_flat_ifs('f', 4, '    ')}"
+        self.assertEqual(self._kinds({"m.py": source}, {("m.py", "f"): 4}), [])
+
+    def test_a_module_that_does_not_parse_is_left_to_the_cyclomatic_leg(self) -> None:
+        self.assertEqual(self._kinds({"m.py": "def f(:\n"}, {}), [])
+
+
+class AuditCognitiveLegTest(unittest.TestCase):
+    """The audit runs the cognitive leg only when `.gzkit.json` declares its ceiling."""
+
+    def _project(self, module_source: str, gzkit_json: str | None) -> Path:
+        handle = tempfile.TemporaryDirectory()
+        self.addCleanup(handle.cleanup)
+        root = Path(handle.name)
+        (root / "pyproject.toml").write_text(_PYPROJECT, encoding="utf-8")
+        package = root / "src" / "demo"
+        package.mkdir(parents=True)
+        (package / "__init__.py").write_text("", encoding="utf-8")
+        (package / "core.py").write_text(module_source, encoding="utf-8")
+        if gzkit_json is not None:
+            (root / ".gzkit.json").write_text(gzkit_json, encoding="utf-8")
+        return root
+
+    def _baseline(self, root: Path, rows: str) -> None:
+        (root / "data").mkdir()
+        (root / "data" / "cognitive_complexity_baseline.json").write_text(
+            f'{{"functions": [{rows}]}}', encoding="utf-8"
+        )
+
+    _DECLARED = '{"complexity": {"cognitive_ceiling": 2}}'
+    _ROW = '{"file": "src/demo/core.py", "function": "f", "score": 3}'
+
+    def test_an_undeclared_ceiling_leaves_cognitive_complexity_unchecked(self) -> None:
+        self.assertEqual(audit_complexity_ceiling(self._project(_flat_ifs("f", 3), None)), [])
+
+    def test_a_declared_ceiling_fails_a_function_over_it_with_recovery_prose(self) -> None:
+        errors = audit_complexity_ceiling(self._project(_flat_ifs("f", 3), self._DECLARED))
+        self.assertEqual([e.artifact for e in errors], ["src/demo/core.py"])
+        # .gzkit/rules/guardrail-feedback-prose.md: what failed, why, what to run.
+        self.assertIn("cognitive 3 > 2", errors[0].message)
+        self.assertIn("RO-9 tranche 4", errors[0].message)
+        self.assertIn("uv run gz validate --complexity-ceiling", errors[0].message)
+
+    def test_the_baseline_file_holds_a_grandfathered_function(self) -> None:
+        root = self._project(_flat_ifs("f", 3), self._DECLARED)
+        self._baseline(root, self._ROW)
+        self.assertEqual(audit_complexity_ceiling(root), [])
+
+    def test_a_baseline_without_its_functions_list_is_malformed(self) -> None:
+        root = self._project(_flat_ifs("f", 1), self._DECLARED)
+        (root / "data").mkdir()
+        (root / "data" / "cognitive_complexity_baseline.json").write_text("{}", encoding="utf-8")
+        errors = audit_complexity_ceiling(root)
+        self.assertEqual([e.artifact for e in errors], ["data/cognitive_complexity_baseline.json"])
+        self.assertIn("malformed", errors[0].message)
+
+    def test_a_row_held_twice_is_a_defect_in_the_baseline(self) -> None:
+        root = self._project(_flat_ifs("f", 3), self._DECLARED)
+        self._baseline(root, f"{self._ROW}, {self._ROW}")
+        errors = audit_complexity_ceiling(root)
+        self.assertEqual([e.artifact for e in errors], ["data/cognitive_complexity_baseline.json"])
+        self.assertIn("twice", errors[0].message)
 
 
 if __name__ == "__main__":

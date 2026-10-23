@@ -165,6 +165,27 @@ class SmokeConfig(BaseModel):
     )
 
 
+class ComplexityConfig(BaseModel):
+    """Cognitive-complexity ceiling for `gz validate --complexity-ceiling` (RO-9 tranche 4).
+
+    Opt-in for the reason :class:`SmokeConfig` gives: the cyclomatic ceiling is read
+    from Ruff's own table, but cognitive complexity is a gzkit measurement, and failing
+    an adopter's `gz check` on a number it never declared is the GHI #607 leak.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    cognitive_ceiling: int | None = Field(
+        default=None,
+        ge=1,
+        description=(
+            "Highest cognitive complexity a shipped function may score. Functions over "
+            "it are held at their score by data/cognitive_complexity_baseline.json, a "
+            "shrink-only ratchet. Unset, cognitive complexity is not checked."
+        ),
+    )
+
+
 class GzkitConfig(BaseModel):
     """Root configuration for a gzkit-enabled project."""
 
@@ -176,6 +197,7 @@ class GzkitConfig(BaseModel):
     arb: ArbConfig = Field(default_factory=ArbConfig)
     authorship: AuthorshipConfig = Field(default_factory=AuthorshipConfig)
     smoke: SmokeConfig = Field(default_factory=SmokeConfig)
+    complexity: ComplexityConfig = Field(default_factory=ComplexityConfig)
     project_name: str = ""
 
     @classmethod

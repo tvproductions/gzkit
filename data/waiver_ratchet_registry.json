@@ -384,6 +384,20 @@
           "subject"
         ]
       }
+    },
+    {
+      "data_file": "data/cognitive_complexity_baseline.json",
+      "gates_step": "Complexity ceiling (gz validate --complexity-ceiling)",
+      "mechanism": "shrink-ratchet",
+      "entries_path": "functions",
+      "baseline_count": 263,
+      "identity": {
+        "kind": "fields",
+        "fields": [
+          "file",
+          "function"
+        ]
+      }
     }
   ],
   "excluded": [
