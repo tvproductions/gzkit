@@ -603,12 +603,13 @@ class TestTheScaffoldIsPlannedOnADryRun(unittest.TestCase):
     """`gz init --dry-run` lists the project skeleton the witness checks (RO-9 tranche 1)."""
 
     def test_the_dry_run_lists_the_skeleton(self) -> None:
+        from gzkit.commands.init_cmd import _normalize_package_name  # noqa: PLC0415
         from tests.commands.common import CliRunner  # noqa: PLC0415
 
         runner = CliRunner()
         with runner.isolated_filesystem():
             result = runner.invoke(main, ["init", "--dry-run"])
-            name = Path.cwd().name
+            name = _normalize_package_name(Path.cwd().name)
         self.assertEqual(result.exit_code, 0, result.output)
         self.assertIn("Would create pyproject.toml", result.output)
         self.assertIn(f"Would create src/{name}/__init__.py", result.output)
