@@ -194,6 +194,13 @@ then ruled by the operator by selection:
   REQ-0.0.28-01-10 (three bootstrap metrics, `radon_mi` among them) and REQ-0.0.27-03-05 (a missing
   `radon` binary) are each *"Amend in place (Rec.)"*.
 
+**Read at tranche 4, Radon against Lizard per function (2026-10-22, scratch `uvx radon@6.0.1`).**
+Over `src/gzkit`, 5,221 functions pair by `def` line; 5,183 (99.3%) score identically and 38 differ
+by one or two. No verdict changes at the ceiling of 20 (both tools' maximum is 20). One verdict changes at
+the advisor's block band (`commands/adr_demote.py:106`, Radon 11, Lizard 10: block becomes warn), and two near
+its warn band (`obpi_complete.py:966` and `specify_cmd.py:692`, Radon 9 and 8, Lizard 7). The two functions
+only Radon scores are the inline `...` stubs the ceiling exempts.
+
 The rules tranche 4 still reads site by site: S506 (`quality.py`, the YAML loader), S608
 (`trust_audits/cli.py`), two S701 (jinja2 autoescape off on non-HTML renders), and about 260
 S603/S607/S404 subprocess sites. Each gets a fix or a reasoned `# noqa`. Three preview findings read as
