@@ -145,7 +145,7 @@ module.py :: function_name() — One-liner from docstring
 | Hook | Purpose | Threshold |
 |------|---------|-----------|
 | `sync-manpage-docstrings --check` | One-liners match between code and manpage | Exact match |
-| `interrogate -f 85` | Docstring coverage | ≥85% |
+| `ruff check src/gzkit --select D` | Docstring presence (D100-D107, every public module, class, function and method) and PEP 257 style | Clean (interrogate retired, RO-9 tranche 4) |
 | `test-manpage-examples` | Extract bash from EXAMPLES, execute, verify exit codes | All pass |
 
 ---
@@ -173,7 +173,7 @@ Every Heavy brief must satisfy:
 - [ ] Examples are concrete, accurate, executable
 - [ ] Links/anchors validated (mkdocs build clean)
 - [ ] Markdown lint clean
-- [ ] Validation chores pass (test-manpage-examples, sync-manpage-docstrings --check, interrogate)
+- [ ] Validation chores pass (test-manpage-examples, sync-manpage-docstrings --check, pep257-docstring-compliance)
 
 ---
 

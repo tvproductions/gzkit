@@ -2,11 +2,6 @@
   "criteria": [
     {
       "type": "exitCodeEquals",
-      "command": "uv run interrogate -v -f 85 -c pyproject.toml src/gzkit",
-      "expected": 0
-    },
-    {
-      "type": "exitCodeEquals",
       "command": "uv run ruff check src/gzkit --select D",
       "expected": 0
     }

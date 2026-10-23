@@ -1,27 +1,33 @@
-# CHORE: PEP 257 Docstring Compliance (Style + Coverage)
+# CHORE: PEP 257 Docstring Compliance
 
 **Lane:** Lite
 **Slug:** `pep257-docstring-compliance`
+
+> **Version 2.0.0 (2026-10-22, RO-9 tranche 4, GHI #1183):** interrogate is
+> retired. Ruff's D-series is the one docstring gate: D100-D107 require a
+> docstring on every public module, class, function and method in
+> `src/gzkit/`, and the rest of the series checks PEP 257 style. The coverage
+> percentage interrogate reported over private functions as well (89% on
+> 2026-10-22) is no longer measured.
 
 ---
 
 ## Overview
 
-Enforce PEP 257 docstring compliance across `src/gzkit/` using interrogate (>=85% coverage) and ruff D-series rules.
+Enforce PEP 257 docstring compliance across `src/gzkit/` with ruff's D-series rules.
 
 ## Policy and Guardrails
 
 - **Lane:** Lite — documentation quality, no external contract changes
-- **Coverage target:** 85% via interrogate
-- **Style:** ruff D-series (D100-D418) for PEP 257 compliance
+- **Presence:** D100-D107, every public module, class, function and method
+- **Style:** the rest of the D-series (D200-D418) for PEP 257 compliance
 
 ## Workflow
 
 ### 1. Baseline — observe
 
 ```bash
-uv run interrogate -v -c pyproject.toml src/gzkit
-uv run ruff check src/gzkit --select D
+uv run ruff check src/gzkit --select D --statistics
 ```
 
 ### 2. Plan — propose
@@ -35,13 +41,11 @@ Add missing docstrings, fix style violations.
 ### 4. Validate — observe
 
 ```bash
-uv run interrogate -v -f 85 -c pyproject.toml src/gzkit
 uv run ruff check src/gzkit --select D
 ```
 
 ## Checklist
 
-- [ ] interrogate coverage >=85%
 - [ ] ruff D-series clean
 - [ ] Tests pass unchanged
 
@@ -52,7 +56,6 @@ Criteria live in `acceptance.json`, which `gz chores run` executes; render them 
 ## Evidence Commands
 
 ```bash
-uv run interrogate -v -c pyproject.toml src/gzkit > .gzkit/chores/pep257-docstring-compliance/proofs/interrogate-report.txt
 uv run ruff check src/gzkit --select D > .gzkit/chores/pep257-docstring-compliance/proofs/ruff-d-report.txt
 ```
 

@@ -1934,7 +1934,6 @@
       "build-backend-not-uv::gz init scaffold:pyproject.toml::hatchling.build",
       "build-backend-not-uv::pyproject.toml::hatchling.build",
       "dev-tool-in-extra::gz init scaffold:pyproject.toml::dev",
-      "non-astral-unregistered::pyproject.toml::interrogate",
       "non-astral-unregistered::pyproject.toml::jinja2",
       "non-astral-unregistered::pyproject.toml::jsonschema",
       "non-astral-unregistered::pyproject.toml::pyyaml",

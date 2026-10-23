@@ -75,14 +75,6 @@ repos:
         types: [python]
         stages: [pre-commit]
 
-      - id: interrogate
-        name: interrogate (docstring coverage)
-        entry: uv run interrogate -v -f 50 src/
-        language: system
-        pass_filenames: false
-        types: [python]
-        stages: [pre-commit]
-
       - id: surface-fidelity-cheap
         name: surface-fidelity cheap subset (invariants 1, 2, 3)
         entry: uv run gz validate --bullet-retention --surface-weight --pointer-anchors
@@ -181,7 +173,7 @@ repos:
         stages: [pre-push]
 
       # Listed LAST on purpose. With fail_fast: true (top of file), a failure
-      # in any cheap gate above — ruff, ty, the complexity gates, interrogate,
+      # in any cheap gate above — ruff, ty, the complexity gates,
       # surface-fidelity, gitleaks — aborts the run before this ~15s parallel
       # suite executes. Do not reorder this hook earlier: a cheap-gate failure
       # downstream of it cannot stop a run it has already started.

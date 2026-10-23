@@ -16,12 +16,6 @@
     {
       "rule": "non-astral-unregistered",
       "file": "pyproject.toml",
-      "subject": "interrogate",
-      "count": 1
-    },
-    {
-      "rule": "non-astral-unregistered",
-      "file": "pyproject.toml",
       "subject": "jinja2",
       "count": 1
     },

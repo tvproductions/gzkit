@@ -232,7 +232,6 @@ dev = [
     "cohesion>=1.2.0",
     "complexipy>=8.1.0",
     "coverage>=7.16.2",
-    "interrogate>=1.7.0",
     "lizard>=1.24.0",
     "pyinstaller>=6.22.0",
     "ruff>=0.17.1",
