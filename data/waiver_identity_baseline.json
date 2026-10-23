@@ -2216,6 +2216,20 @@
       "reason": "Scored Mechanical before the 2026-08-10 witness ruling and missed by its census, which could not read a rule cell carrying escaped pipes. Requoting the row under OBPI-0.35.0-10 made it visible. No registered negative control plants a missing model: field, so the row is recorded as unwitnessed debt.",
       "authorized_by": "g0",
       "ruling": "A: Freeze as missed debt (Recommended)"
+    },
+    {
+      "data_file": "data/tautological_test_baseline.json",
+      "identity": "tests/complexity/test_measurement.py::test_pyproject_declares_the_measurement_deps_with_pins::read_text::assertNotIn",
+      "reason": "A rename, not new debt: the RO-9 tranche 3 and 4 amendments in place of REQ-0.0.27-03-07 renamed this covering test, and its baseline row was re-keyed to the new name (2026-10-23). The same test proves the same amended REQ.",
+      "authorized_by": "g0",
+      "ruling": "Authorize re-key (Rec.)"
+    },
+    {
+      "data_file": "data/tautological_test_baseline.json",
+      "identity": "tests/test_packaging.py::test_pyproject_uses_uv_build_native_config::open::assertEqual",
+      "reason": "A rename, not new debt: the RO-9 tranche 3 and 4 amendments in place of REQ-0.0.21-03-06 renamed this covering test, and its baseline row was re-keyed to the new name (2026-10-23). The same test proves the same amended REQ.",
+      "authorized_by": "g0",
+      "ruling": "Authorize re-key (Rec.)"
     }
   ]
 }

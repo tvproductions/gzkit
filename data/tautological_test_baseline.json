@@ -163,10 +163,10 @@
     },
     {
       "file_path": "tests/complexity/test_measurement.py",
-      "line_number": 247,
+      "line_number": 286,
       "operation_kind": "read_text",
-      "function_name": "test_pyproject_declares_three_deps_with_pins",
-      "assertion_kind": "assertRegex"
+      "function_name": "test_pyproject_declares_the_measurement_deps_with_pins",
+      "assertion_kind": "assertNotIn"
     },
     {
       "file_path": "tests/complexity/test_measurement.py",
@@ -1220,10 +1220,10 @@
     },
     {
       "file_path": "tests/test_packaging.py",
-      "line_number": 135,
+      "line_number": 142,
       "operation_kind": "open",
-      "function_name": "test_pyproject_uses_hatchling_native_syntax",
-      "assertion_kind": "assertTrue"
+      "function_name": "test_pyproject_uses_uv_build_native_config",
+      "assertion_kind": "assertEqual"
     },
     {
       "file_path": "tests/test_packaging.py",
