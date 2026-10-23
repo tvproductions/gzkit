@@ -145,6 +145,23 @@ _STEP_GUARD_META: dict[str, tuple[str, int]] = {
 }
 
 
+def _guard_demoted_in_subprocess(
+    result: QualityResult, demote_notice: Callable[[str], str]
+) -> str | None:
+    """Return the guard a step's own subprocess demoted, read from the notice it printed.
+
+    The notice's wording has one authority, ``checkpoint.demote_notice``; its text
+    before the guard name is the prefix searched for here.
+    """
+    prefix = demote_notice("\0").split("\0", 1)[0]
+    tails = (
+        line[start + len(prefix) :].partition("'")
+        for line in f"{result.stdout}\n{result.stderr}".splitlines()
+        if (start := line.find(prefix)) != -1
+    )
+    return next((name for name, quote, _ in tails if quote and name), None)
+
+
 def _apply_mx_seam(
     result: QualityResult,
     guard_name: str,
@@ -159,12 +176,17 @@ def _apply_mx_seam(
     grounding route regardless of marker state (checkpoint.resolve pins them to
     CRITICAL), so they are never demoted.
 
-    Steps that passed (returncode != 3) pass through unchanged. A demoted result
-    keeps its output and names its guard, so the report announces it (GHI #843).
+    Steps that passed (returncode != 3) pass through unchanged, except one that a
+    `gz validate` subprocess already demoted: it exits 0 with the demotion notice
+    in its output, and is marked with the guard that notice names. A demoted
+    result keeps its output and names its guard, so the report announces it
+    (GHI #843).
     """
-    if getattr(result, "returncode", 0) != 3:
-        return result
     from gzkit.mx import checkpoint, disposition  # noqa: PLC0415 — lazy: avoids circular risk
+
+    if getattr(result, "returncode", 0) != 3:
+        guard = _guard_demoted_in_subprocess(result, checkpoint.demote_notice)
+        return result if guard is None else result.model_copy(update={"demoted_guard": guard})
 
     route = checkpoint.resolve(guard_name, emitted_level, project_root)
     if disposition.grounds(route):

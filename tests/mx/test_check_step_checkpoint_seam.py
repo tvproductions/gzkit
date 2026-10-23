@@ -264,6 +264,28 @@ class TestDemotionIsAnnounced(unittest.TestCase):
         self.assertIsNone(fatal.demoted_guard)
         self.assertIsNone(passed.demoted_guard)
 
+    def test_a_step_demoted_inside_its_own_subprocess_is_marked_demoted(self) -> None:
+        """`gz validate` honors the marker itself and exits 0 with the notice.
+
+        Measured 2026-10-23: `--advisory-scorecard` reported a stale ledger row that
+        way, and `gz check` showed the step as a bare pass, so the finding first
+        surfaced as two red tests in CI (run 39917274627).
+        """
+        from gzkit.commands.quality import _apply_mx_seam
+        from gzkit.mx import levels
+        from gzkit.mx.checkpoint import demote_notice
+        from gzkit.quality import QualityResult
+
+        stdout = f"  - rule is stale\n{demote_notice('advisory_scorecard')}\nValidated\n"
+        passing = QualityResult(success=True, command="t", stdout=stdout, stderr="", returncode=0)
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            _write_marker(root)
+            result = _apply_mx_seam(passing, "Advisory scorecard", levels.ERROR, root)
+        self.assertEqual(result.demoted_guard, "advisory_scorecard")
+        self.assertTrue(result.success)
+        self.assertEqual(result.stdout, stdout)
+
     def test_the_check_report_announces_the_demotion_and_its_findings(self) -> None:
         import io
         from contextlib import redirect_stdout
