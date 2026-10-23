@@ -6,9 +6,9 @@ category: agent-operations
 lifecycle_state: active
 disable-model-invocation: true
 owner: gzkit-governance
-last_reviewed: 2026-10-22
+last_reviewed: 2026-10-23
 metadata:
-  skill-version: "1.4.4"
+  skill-version: "1.4.5"
 model: haiku
 ---
 
@@ -51,7 +51,7 @@ Use the `gz git-sync` command flow (dry-run first, then apply as requested).
 > blocker.
 
 > The pre-commit hook runs the CHEAP gates on every commit — ruff, ty,
-> the complexity ceiling, complexipy, gitleaks, authorship. It does NOT run the unit
+> the complexity ceiling (cyclomatic and cognitive), gitleaks, authorship. It does NOT run the unit
 > suite: `unittest` is declared `stages: [manual]` in
 > `.pre-commit-config.yaml` and fires only on demand
 > (`pre-commit run unittest --hook-stage manual`). The tests a change

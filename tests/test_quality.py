@@ -292,7 +292,7 @@ class TestTestRunnerBuffersPassingOutput(unittest.TestCase):
 class TestLintNamesOnlyWhatRuns(unittest.TestCase):
     """The lint surface declares exactly the lints it runs (renewing-vows row 2 (c))."""
 
-    def test_run_lint_command_names_the_four_lints_and_no_markdown_linter(self) -> None:
+    def test_run_lint_command_names_the_three_lints_and_no_markdown_linter(self) -> None:
         """A declared lint with no mechanism is drift; the command string is the declaration."""
         from gzkit import quality
         from gzkit.quality import run_lint
@@ -307,38 +307,15 @@ class TestLintNamesOnlyWhatRuns(unittest.TestCase):
             result = run_lint(Path(tmpdir))
 
         ran = [call.args[0] for call in run_command.call_args_list]
-        self.assertEqual(ran, ["uv run ruff check .", "uv run complexipy --failed --plain"])
+        self.assertEqual(ran, ["uv run ruff check ."])
         self.assertEqual(
-            result.command,
-            "uv run ruff check . + uv run complexipy --failed --plain + ADR path contract lint"
-            " + parents-pattern lint",
+            result.command, "uv run ruff check . + ADR path contract lint + parents-pattern lint"
         )
         self.assertNotIn("pymarkdown", result.command.lower())
         self.assertFalse(hasattr(quality, "run_pymarkdown"))
 
-    def test_a_cognitive_complexity_failure_fails_lint(self) -> None:
-        """complexipy's own exit decides; a clean ruff run cannot carry it (RO-9 tranche 4)."""
-        from gzkit.quality import run_lint
-
-        ok = QualityResult(success=True, command="x", stdout="", stderr="", returncode=0)
-        bad = QualityResult(success=False, command="x", stdout="", stderr="", returncode=1)
-
-        def run_command(command: str, **_kwargs: object) -> QualityResult:
-            return bad if "complexipy" in command else ok
-
-        with (
-            tempfile.TemporaryDirectory() as tmpdir,
-            patch("gzkit.quality.run_command", side_effect=run_command),
-            patch("gzkit.quality.run_adr_path_contract_lint", return_value=ok),
-            patch("gzkit.quality.run_parents_pattern_lint", return_value=ok),
-        ):
-            result = run_lint(Path(tmpdir))
-
-        self.assertFalse(result.success)
-        self.assertEqual(result.returncode, 1)
-
     def test_any_failing_sub_lint_fails_the_step_with_its_own_exit(self) -> None:
-        """Each of the four lints carries its verdict through the step (GHI #1233).
+        """Each of the three lints carries its verdict through the step (GHI #1233).
 
         A step that ran its tools and reported a pass regardless survived a mutation
         sweep, because the only test fed three successes and read the command string.
@@ -346,7 +323,7 @@ class TestLintNamesOnlyWhatRuns(unittest.TestCase):
         from gzkit.quality import run_lint
 
         ok = QualityResult(success=True, command="x", stdout="", stderr="", returncode=0)
-        for failing in ("ruff", "complexipy", "path-contract", "parents"):
+        for failing in ("ruff", "path-contract", "parents"):
             with self.subTest(failing=failing):
                 bad = QualityResult(success=False, command="x", stdout="", stderr="", returncode=7)
 
@@ -392,6 +369,19 @@ class TestLintNamesOnlyWhatRuns(unittest.TestCase):
         from gzkit.commands.quality import lint
 
         self.assertNotIn("pymarkdown", (lint.__doc__ or "").lower())
+
+    def test_gz_lint_help_names_no_retired_lint(self) -> None:
+        """`gz lint --help` must not promise complexipy, retired from the step in RO-9 tranche 4."""
+        from gzkit.cli.main import _build_parser
+        from gzkit.commands.quality import lint
+
+        parser = _build_parser()
+        subparsers = next(a for a in parser._actions if a.choices and "lint" in a.choices)
+        description = subparsers.choices["lint"].description or ""
+        for retired in ("complexipy", "pymarkdown"):
+            with self.subTest(retired=retired):
+                self.assertNotIn(retired, description.lower())
+                self.assertNotIn(retired, (lint.__doc__ or "").lower())
 
 
 class TestCanonicalQualityPath(unittest.TestCase):

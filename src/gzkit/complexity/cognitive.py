@@ -24,11 +24,20 @@ ignores a structure that shorthands several statements readably into one.
 Parsing is CPython's, so every syntax the running interpreter accepts is scored by
 the grammar that defines it. The scored unit is a function with no enclosing
 function: a module-level ``def`` or a method, named by its qualified name.
+
+``python -m gzkit.complexity.cognitive PATH...`` prints each function's score,
+highest first, for a chore's worklist or its before-and-after evidence; the gate
+that holds the ceiling is ``gz validate --complexity-ceiling``.
 """
 
 from __future__ import annotations
 
+import argparse
 import ast
+import json
+import sys
+from collections.abc import Sequence
+from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -213,3 +222,49 @@ def score_cognitive(source: str, filename: str = "<source>") -> list[CognitiveSc
         CognitiveScore(name=name, line=node.lineno, score=_Scorer(lines, node).total())
         for name, node in _scored_functions(tree)
     ]
+
+
+def _python_files(paths: Sequence[str]) -> list[Path]:
+    files: list[Path] = []
+    for raw in paths:
+        path = Path(raw)
+        files.extend(sorted(path.rglob("*.py")) if path.is_dir() else [path])
+    return files
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    """Print the cognitive score of every function under *argv*'s paths, highest first."""
+    parser = argparse.ArgumentParser(
+        prog="python -m gzkit.complexity.cognitive",
+        description="Print cognitive complexity per function, highest first.",
+    )
+    parser.add_argument("paths", nargs="+", help="Python files or directories to score")
+    parser.add_argument("--top", type=int, default=None, help="Print only the N highest")
+    parser.add_argument("--json", action="store_true", help="Print one JSON array")
+    args = parser.parse_args(argv)
+    rows: list[tuple[str, CognitiveScore]] = []
+    for path in _python_files(args.paths):
+        file = path.as_posix()
+        try:
+            scores = score_cognitive(path.read_text(encoding="utf-8"), file)
+        except SyntaxError as exc:
+            print(f"{file}: does not parse: {exc.msg}", file=sys.stderr)
+            return 1
+        rows.extend((file, score) for score in scores)
+    rows.sort(key=lambda row: (-row[1].score, row[0], row[1].line))
+    rows = rows[: args.top] if args.top is not None else rows
+    if args.json:
+        # The keys of data/cognitive_complexity_baseline.json, plus the line.
+        payload = [
+            {"file": file, "function": score.name, "line": score.line, "score": score.score}
+            for file, score in rows
+        ]
+        print(json.dumps(payload, indent=2))
+    else:
+        for file, score in rows:
+            print(f"{score.score:>4}  {file}:{score.line}  {score.name}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

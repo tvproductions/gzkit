@@ -422,6 +422,10 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 > **Rule version:** `0.5.5` — the cyclomatic row names the gates that replaced xenon in RO-9 tranche 4 (GHI #1183); prior banners in [Rule Version History](rule-version-history.md#pythonicmd). Binding rules unchanged.
 
+### Lifted 2026-10-23 at version `0.5.6` (rule now at `0.5.7`)
+
+> **Rule version:** `0.5.6` — the size note reads the table as it stands after Radon's retirement (`lizard_file_nloc`, `lizard_ccn`), and its p95 module-size figure, stale since the 2026-08-26 move to p99, is corrected; prior banners in [Rule Version History](rule-version-history.md#pythonicmd). Binding rules unchanged.
+
 ## `hexagonal-architecture.md`
 
 Lifted at version `0.2.0` (rule now at `0.2.1`).

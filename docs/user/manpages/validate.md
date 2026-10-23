@@ -2456,8 +2456,19 @@ GHI #1183). Three parts, each held at the cyclomatic ceiling Ruff enforces as `C
 
 The population is the Python the uv_build wheel ships, read from the predictor `--distribution` reads; a
 project not built by uv_build is clean. A project that ships code and declares no `max-complexity` is
-refused. Values compare unrounded, and a value equal to the ceiling passes. Cognitive complexity is
-complexipy's, run by `gz lint` (see [`lint`](lint.md)).
+refused. Values compare unrounded, and a value equal to the ceiling passes.
+
+Cognitive complexity is the second leg, scored by gzkit over CPython's `ast` to the SonarSource
+specification (complexipy was retired for it on 2026-10-22). A project opts in with
+`complexity.cognitive_ceiling` in `.gzkit.json`; unset, the leg does not run. Functions over the
+ceiling are held at their score by `data/cognitive_complexity_baseline.json`, keyed by POSIX path and
+qualified name, a shrink-ratchet that stays exact:
+
+| Finding | Meaning |
+|---------|---------|
+| `cognitive` | A function scores above the ceiling and no row holds it, or above the row that holds it |
+| `cognitive-held` | A row holds more than its function now scores, holds a function that is gone, or holds one at or under the ceiling: lower or delete it |
+| `cognitive-baseline` | The baseline file is malformed or holds one function twice |
 
 **Usage:**
 

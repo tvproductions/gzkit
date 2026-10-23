@@ -9,11 +9,6 @@
       "type": "exitCodeEquals",
       "command": "uv run gz validate --complexity-ceiling",
       "expected": 0
-    },
-    {
-      "type": "exitCodeEquals",
-      "command": "uv run complexipy --failed --plain",
-      "expected": 0
     }
   ]
 }

@@ -143,7 +143,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
     commands.add_parser(
         "lint",
         help="Run lint checks",
-        description="Run Ruff, complexipy and the two path lints over the repository.",
+        description="Run Ruff and the two path lints over the repository.",
         epilog=build_epilog(["gz lint"]),
     ).set_defaults(func=lambda a: _lazy("lint")())
     commands.add_parser(

@@ -5,9 +5,9 @@ description: Use after gz-pythonic-pattern-detect marks a candidate applied, to 
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-22
+last_reviewed: 2026-10-23
 metadata:
-  skill-version: "1.1.3"
+  skill-version: "1.1.4"
 gz_command: chores run pythonic-design-pattern-application
 model: sonnet
 ---
@@ -41,7 +41,7 @@ Apply a Pythonic-pattern rewrite to a single candidate flagged by `gz-pythonic-p
 
    ```bash
    uv run gz validate --complexity-ceiling > /tmp/ceiling-before.txt 2>&1 || true
-   uv run complexipy --output-format json --output /tmp/cognitive-before.json || true
+   uv run python -m gzkit.complexity.cognitive <module> --json > /tmp/cognitive-before.json 2>&1 || true
    uv run lizard <module> > /tmp/lizard-before.txt 2>&1 || true
    ```
 
@@ -61,7 +61,7 @@ Apply a Pythonic-pattern rewrite to a single candidate flagged by `gz-pythonic-p
 
    ```bash
    uv run gz validate --complexity-ceiling > /tmp/ceiling-after.txt 2>&1
-   uv run complexipy --output-format json --output /tmp/cognitive-after.json
+   uv run python -m gzkit.complexity.cognitive <module> --json > /tmp/cognitive-after.json 2>&1
    uv run lizard <module> > /tmp/lizard-after.txt 2>&1
    ```
 

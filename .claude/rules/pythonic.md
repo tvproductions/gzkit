@@ -6,9 +6,9 @@ paths:
 
 # Pythonic Standards (Idiomatic Code Contract)
 
-<!-- rule-version: 0.5.6 -->
+<!-- rule-version: 0.5.7 -->
 
-> **Rule version:** `0.5.6` — the size note reads the table as it stands after Radon's retirement (`lizard_file_nloc`, `lizard_ccn`), and its p95 module-size figure, stale since the 2026-08-26 move to p99, is corrected; prior banners in [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd). Binding rules unchanged.
+> **Rule version:** `0.5.7` — the cyclomatic row names gzkit's own cognitive score in the complexity-ceiling gate, which replaced complexipy in RO-9 tranche 4; prior banners in [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd). Binding rules unchanged.
 
 ## Core Principles
 
@@ -42,7 +42,7 @@ paths:
 > | Classes <=300 | `gz validate --class-size` (`code_quality.py`, `limit = 300` hardcoded, waivers in `_CLASS_SIZE_WAIVERS`) | **live gate** — the table carries no class-size metric, so this rule is the only authority |
 > | Functions <=50 | nothing | authoring-time guidance only |
 > | Modules <=600 | nothing | authoring-time guidance only |
-> | *(cyclomatic)* | `gz validate --complexity-ceiling` and Ruff `C901`, both at `[tool.ruff.lint.mccabe] max-complexity` (each function, module mean and overall mean CC <=20); cognitive complexity by complexipy at `[tool.complexipy]` (15, snapshot-ratcheted) | **live gate** — a *third* ceiling, matching neither authority: the table's `lizard_ccn` blocks at 11.0, so a CC-15 function passes the ceiling while `block` per the table |
+> | *(cyclomatic)* | `gz validate --complexity-ceiling` and Ruff `C901`, both at `[tool.ruff.lint.mccabe] max-complexity` (each function, module mean and overall mean CC <=20); cognitive complexity by the same gate, scored by gzkit over CPython's `ast` at `.gzkit.json`'s `complexity.cognitive_ceiling` (15, held by the shrink-only `data/cognitive_complexity_baseline.json`) | **live gate** — a *third* ceiling, matching neither authority: the table's `lizard_ccn` blocks at 11.0, so a CC-15 function passes the ceiling while `block` per the table |
 >
 > The table's function/module bands have **no consumer**: `complexity_advise.py` is
 > reads `lizard_ccn` alone (`gzkit.complexity.functions.METRIC_KEY`, `metrics_checked = 1`).

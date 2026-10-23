@@ -8,10 +8,19 @@ scores 6 where the spec's Java scores 7 with its ``continue OUT`` (+1).
 
 from __future__ import annotations
 
+import contextlib
+import io
+import json
+import runpy
+import sys
+import tempfile
 import textwrap
 import unittest
+import warnings
+from pathlib import Path
+from unittest import mock
 
-from gzkit.complexity.cognitive import score_cognitive
+from gzkit.complexity.cognitive import main, score_cognitive
 
 
 def _score(source: str) -> dict[str, int]:
@@ -253,6 +262,59 @@ class TestTheScoredUnits(unittest.TestCase):
     def test_a_module_that_does_not_parse_raises(self) -> None:
         with self.assertRaises(SyntaxError):
             score_cognitive("def f(:\n")
+
+
+class TestTheEntryPoint(unittest.TestCase):
+    """`python -m gzkit.complexity.cognitive`: the chores' worklist and evidence."""
+
+    def _run(self, files: dict[str, str], *args: str) -> tuple[int, str, str]:
+        handle = tempfile.TemporaryDirectory()
+        self.addCleanup(handle.cleanup)
+        root = Path(handle.name)
+        for name, source in files.items():
+            (root / name).write_text(textwrap.dedent(source), encoding="utf-8")
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            code = main([root.as_posix(), *args])
+        return code, out.getvalue(), err.getvalue()
+
+    _FILES = {
+        "a.py": "def low(x):\n    if x:\n        pass\n",
+        "b.py": "def high(x, y):\n    if x:\n        if y:\n            pass\n",
+    }
+
+    def test_scores_print_highest_first_and_top_truncates(self) -> None:
+        code, out, _ = self._run(self._FILES, "--json", "--top", "1")
+        self.assertEqual(code, 0)
+        rows = json.loads(out)
+        self.assertEqual([(r["function"], r["score"]) for r in rows], [("high", 3)])
+        self.assertEqual(set(rows[0]), {"file", "function", "line", "score"})
+
+    def test_plain_output_is_one_function_per_line_in_score_order(self) -> None:
+        code, out, _ = self._run(self._FILES)
+        self.assertEqual(code, 0)
+        self.assertEqual([line.split()[-1] for line in out.splitlines()], ["high", "low"])
+
+    def test_running_the_module_exits_with_mains_code(self) -> None:
+        handle = tempfile.TemporaryDirectory()
+        self.addCleanup(handle.cleanup)
+        bad = Path(handle.name) / "bad.py"
+        bad.write_text("def f(:\n", encoding="utf-8")
+        argv = ["gzkit.complexity.cognitive", bad.as_posix()]
+        with (
+            mock.patch.object(sys, "argv", argv),
+            contextlib.redirect_stderr(io.StringIO()),
+            warnings.catch_warnings(),
+            self.assertRaises(SystemExit) as raised,
+        ):
+            warnings.simplefilter("ignore", RuntimeWarning)  # already imported by this test
+            runpy.run_module("gzkit.complexity.cognitive", run_name="__main__")
+        self.assertEqual(raised.exception.code, 1)
+
+    def test_a_file_that_does_not_parse_fails_naming_it(self) -> None:
+        code, out, err = self._run({"bad.py": "def f(:\n"})
+        self.assertEqual((code, out), (1, ""))
+        self.assertIn("bad.py: does not parse", err)
 
 
 if __name__ == "__main__":

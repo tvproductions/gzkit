@@ -34,7 +34,6 @@ _NOT_A_GZKIT_GUARD = {
     "ruff-check": "third-party linter invoked directly; not a governance guard",
     "ruff-format": "third-party formatter invoked directly",
     "ty-check": "third-party type checker invoked directly",
-    "complexipy": "third-party cognitive-complexity gate invoked directly",
     "complexity-ceiling": "`gz validate` scope -- already checkpointed at "
     "validate_cmd.py `_run_scope_checks`",
     "gitleaks": "third-party secrets scanner; `secrets` is a gate5 floor member and "

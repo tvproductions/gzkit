@@ -185,7 +185,7 @@ class TestSkipGuardCoversEveryComplexityHook(unittest.TestCase):
     def test_each_hook_id_and_all_disable_complexity(self) -> None:
         from gzkit.git_sync import _skip_disables_complexity
 
-        for token in ("complexity-ceiling", "complexipy", "complexity-advisor-auto-chain", "all"):
+        for token in ("complexity-ceiling", "complexity-advisor-auto-chain", "all"):
             with self.subTest(token=token):
                 self.assertTrue(_skip_disables_complexity({token}))
 
@@ -194,6 +194,27 @@ class TestSkipGuardCoversEveryComplexityHook(unittest.TestCase):
 
         self.assertFalse(_skip_disables_complexity(set()))
         self.assertFalse(_skip_disables_complexity({"ruff-format", "unittest"}))
+
+    def test_the_guarded_ids_are_the_complexity_hooks_that_exist(self) -> None:
+        """Each guarded id is a declared complexity hook or the advisor's replacement.
+
+        A retired hook left in the set guards nothing, and a complexity hook missing
+        from it can be skipped unrefused (complexipy's retirement, RO-9 tranche 4).
+        """
+        import yaml
+
+        from gzkit.git_sync import COMPLEXITY_HOOK_IDS
+        from gzkit.hooks.install_complexity_advisor import _HOOK_ID
+
+        root = Path(__file__).resolve().parents[2]
+        config = yaml.safe_load((root / ".pre-commit-config.yaml").read_text(encoding="utf-8"))
+        declared = {
+            hook["id"]
+            for repo in config["repos"]
+            for hook in repo.get("hooks", [])
+            if "complexity" in hook.get("entry", "")
+        }
+        self.assertEqual(COMPLEXITY_HOOK_IDS, declared | {_HOOK_ID})
 
 
 class TestSyncCommand(unittest.TestCase):

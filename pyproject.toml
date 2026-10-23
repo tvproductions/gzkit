@@ -217,20 +217,10 @@ indent-style = "space"
 # owns Python files and the surface budget owns Markdown.
 exclude = ["*.md"]
 
-# Cognitive complexity, independent of the cyclomatic ceiling above (RO-9
-# tranche 4, GHI #1183). The operator ruled 15 with a shrink-ratchet: the
-# functions over it on 2026-10-22 sit in complexipy's own snapshot,
-# `complexipy-snapshot.json`, which fails a new or worsened function and
-# tightens itself when one improves.
-[tool.complexipy]
-paths = ["src/gzkit"]
-max-complexity-allowed = 15
-
 [dependency-groups]
 dev = [
     "behave>=1.3.3",
     "cohesion>=1.2.0",
-    "complexipy>=8.1.0",
     "coverage>=7.16.2",
     "lizard>=1.24.0",
     "pyinstaller>=6.22.0",
@@ -248,7 +238,7 @@ dev = [
     # time, whose version is whatever `uv` picked that day. Pinning is what
     # discharges that objection; it is also plain conformance, not a departure:
     # every other Python verifier in this toolchain (ruff, ty, behave, coverage,
-    # complexipy) is pinned here and invoked as `uv run <tool>`. The
+    # lizard) is pinned here and invoked as `uv run <tool>`. The
     # "un-pinned xenon/gitleaks precedent" cited when the accelerator was adopted
     # (GHI #512) never existed -- xenon was pinned here until RO-9 tranche 4
     # retired it, and gitleaks is a native binary rather than a Python package.

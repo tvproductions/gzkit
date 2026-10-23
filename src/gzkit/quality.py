@@ -386,16 +386,13 @@ def run_lint(project_root: Path) -> QualityResult:
     # time (the "green here, red at commit" gate divergence). ruff honors its
     # own excludes + .gitignore, so generated/vendored trees are skipped.
     ruff_result = run_command("uv run ruff check .", cwd=project_root)
-    # Cognitive complexity (RO-9 tranche 4, GHI #1183): complexipy reads its
-    # paths and ceiling from `[tool.complexipy]` and holds the functions over it
-    # to `complexipy-snapshot.json`, a shrink-ratchet it maintains itself.
-    # `--failed --plain`, never `-q`: a quiet run that fails prints nothing on
-    # either stream, so the step went red with no diagnosis (CI 39877077173).
-    cognitive_result = run_command("uv run complexipy --failed --plain", cwd=project_root)
+    # Cognitive complexity is not a lint here: since complexipy's retirement
+    # (RO-9 tranche 4, 2026-10-22) gzkit scores it in `gz validate
+    # --complexity-ceiling`, the "Complexity ceiling" step.
     path_contract_result = run_adr_path_contract_lint(project_root)
     parents_result = run_parents_pattern_lint(project_root)
 
-    sub_results = [ruff_result, cognitive_result, path_contract_result, parents_result]
+    sub_results = [ruff_result, path_contract_result, parents_result]
     success = all(r.success for r in sub_results)
     returncode = 0 if success else next((r.returncode for r in sub_results if not r.success), 1)
     stdout = "\n".join(output for output in [r.stdout for r in sub_results] if output.strip())
@@ -403,10 +400,7 @@ def run_lint(project_root: Path) -> QualityResult:
 
     return QualityResult(
         success=success,
-        command=(
-            "uv run ruff check . + uv run complexipy --failed --plain + ADR path contract lint"
-            " + parents-pattern lint"
-        ),
+        command="uv run ruff check . + ADR path contract lint + parents-pattern lint",
         stdout=stdout,
         stderr=stderr,
         returncode=returncode,

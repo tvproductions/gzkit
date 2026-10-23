@@ -20,7 +20,7 @@ Every applied candidate writes an evidence file under `.gzkit/chores/pythonic-de
 3. **Python example witness** — the local archive path read, e.g. `Python/src/Strategy/Conceptual/main.py`
 4. **Example-derived role map** — the pattern roles observed in that Python example and which roles the rewrite collapses
 5. **Before / After** — both forms shown with at least the function/class signature; full body if <=20 lines
-6. **Complexity delta** — the C/C/C ceiling result and the touched functions' cognitive scores (complexipy) before/after
+6. **Complexity delta** — the C/C/C ceiling result and the touched functions' cognitive scores (`python -m gzkit.complexity.cognitive`) before/after
 7. **NLOC delta** — the module's Lizard NLOC before/after (the `lizard_file_nloc` the module-size gate reads); positive deltas require explicit rationale
 8. **Tests cited** — list of tests that pinned semantics across the rewrite (Red-Green-Refactor evidence)
 9. **TDD receipt** — `arb-step-unittest-*` receipt ID from the GREEN run (per AGENTS.md § Attestation)
@@ -57,7 +57,7 @@ shape with a concrete reason.
 - **Lane:** Lite — internal refactor, no external contract change
 - **One file per applied candidate** — never bundle multiple refactors into one evidence file
 - **TDD discipline binding** — Red-Green-Refactor per `.gzkit/rules/tests.md`; cite the GREEN receipt
-- **Complexity non-regression** — `gz validate --complexity-ceiling` and `complexipy --failed --plain` pass post-rewrite (matches `complexity-reduction-xenon`)
+- **Complexity non-regression** — `gz validate --complexity-ceiling` passes post-rewrite, both its cyclomatic and cognitive legs (matches `complexity-reduction-xenon`)
 - **Detection back-link required** — the evidence file references the detection report row that flagged the candidate; orphan applications (no detection trail) are a defect
 - **Pythonic-target faithfulness** — if the detection row says "first-class function", the after-form must actually be a first-class function (or a documented deviation explaining why that target was wrong for this case)
 
@@ -83,7 +83,7 @@ before continuing.
 
 ```bash
 uv run gz validate --complexity-ceiling > /tmp/ceiling-before.txt 2>&1 || true
-uv run complexipy --output-format json --output /tmp/cognitive-before.json || true
+uv run python -m gzkit.complexity.cognitive <module> --json > /tmp/cognitive-before.json 2>&1 || true
 uv run lizard <module> > /tmp/lizard-before.txt 2>&1 || true
 ```
 
@@ -103,7 +103,7 @@ The semantics test is the load-bearing artifact. A pattern rewrite that is seman
 
 ```bash
 uv run gz validate --complexity-ceiling > /tmp/ceiling-after.txt 2>&1
-uv run complexipy --output-format json --output /tmp/cognitive-after.json
+uv run python -m gzkit.complexity.cognitive <module> --json > /tmp/cognitive-after.json 2>&1
 uv run lizard <module> > /tmp/lizard-after.txt 2>&1
 uv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer
 ```
@@ -148,7 +148,7 @@ Template (copy and fill):
 
 | Metric | Before | After | Delta | Note |
 |--------|--------|-------|-------|------|
-| cognitive score (touched functions, complexipy) | <N> | <M> | <equal or lower> | |
+| cognitive score (touched functions, `gzkit.complexity.cognitive`) | <N> | <M> | <equal or lower> | |
 | Lizard NLOC (module) | <N> | <M> | <M - N> | |
 
 ## Semantics tests cited
@@ -174,7 +174,6 @@ Mark the candidate's `Disposition:` from `_[applied | deferred | not-pythonic-re
 ```bash
 uv run gz test
 uv run gz validate --complexity-ceiling
-uv run complexipy --failed --plain
 ```
 
 ## Acceptance Criteria

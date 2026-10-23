@@ -336,7 +336,7 @@ status: {status}
             proof="Works as expected",
         )
         original_skip = os.environ.get("SKIP")
-        os.environ["SKIP"] = "complexipy"
+        os.environ["SKIP"] = "complexity-ceiling"
         try:
             errors = self.validator.validate_file(path)
         finally:

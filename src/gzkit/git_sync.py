@@ -29,11 +29,9 @@ def _skip_tokens(skip_value: str) -> set[str]:
 
 
 #: The pre-commit ids that enforce complexity (RO-9 tranche 4, GHI #1183): the
-#: Lizard C/C/C ceiling, complexipy's cognitive ratchet, and the auto-chain hook
-#: the advisor installer puts in the ceiling's place.
-COMPLEXITY_HOOK_IDS = frozenset(
-    {"complexity-ceiling", "complexipy", "complexity-advisor-auto-chain"}
-)
+#: ceiling (Lizard C/C/C and gzkit's cognitive score) and the auto-chain hook the
+#: advisor installer puts in its place.
+COMPLEXITY_HOOK_IDS = frozenset({"complexity-ceiling", "complexity-advisor-auto-chain"})
 
 
 def _skip_disables_complexity(skip_tokens: set[str]) -> bool:

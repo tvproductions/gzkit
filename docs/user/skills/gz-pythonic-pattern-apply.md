@@ -8,7 +8,7 @@ Capture before/after evidence with mechanical-delta proof when a Pythonic-patter
 
 `/gz-pythonic-pattern-apply` exposes the evidence-capture pair to `/gz-pythonic-pattern-detect`. When a candidate from the detection report is applied as a Pythonic rewrite, this skill drives the operator/agent through:
 
-- Before/after metric capture (the C/C/C ceiling, complexipy, module size)
+- Before/after metric capture (the C/C/C ceiling, gzkit's cognitive score, module size)
 - Red-Green-Refactor TDD discipline with a semantics-pinning test
 - ARB GREEN receipt emission
 - Authoring a structured evidence file per applied candidate

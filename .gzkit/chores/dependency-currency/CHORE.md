@@ -3,6 +3,10 @@
 **Lane:** Lite
 **Slug:** `dependency-currency`
 
+> **Version 1.3.0 (2026-10-23, RO-9 tranche 4):** complexipy is retired; cognitive
+> complexity is gzkit's own score over CPython's `ast`, so the analyzers read are
+> Lizard and cohesion, and the parser-support signal is the ceiling gate alone.
+>
 > **Version 1.2.0 (2026-10-22, RO-9 tranche 4, GHI #1183):** the inventory is
 > every declared dependency through `uv tree --outdated --depth 1`, not six
 > hand-picked tools (the Overview promised all of `pyproject.toml`; the workflow
@@ -71,8 +75,9 @@ gh api repos/astral-sh/uv/releases/latest --jq .tag_name
 
 ### 2a. Read the complexity analyzers' health — observe
 
-The C/C/C ceiling, the cognitive ratchet and the corpus measurement rest on
-Lizard, complexipy and cohesion (GHI #1183). For each:
+The C/C/C ceiling and the corpus measurement rest on Lizard and cohesion
+(GHI #1183); cognitive complexity is gzkit's own, over CPython's `ast`, and has no
+analyzer to read. For each:
 
 ```bash
 curl -s https://pypi.org/pypi/<name>/json | uv run python -c "import json,sys; d=json.load(sys.stdin); r=d['releases'][d['info']['version']]; print(d['info']['version'], r[-1]['upload_time'] if r else 'no files', d['info'].get('requires_python'))"
@@ -83,8 +88,8 @@ curl -s https://pypi.org/pypi/<name>/json | uv run python -c "import json,sys; d
   notice), never on age alone. Record which, with the evidence.
 - **Parser support.** The tool must parse the `requires-python` floor's
   syntax. `uv run gz validate --complexity-ceiling` refusing a function as
-  unmeasured, or complexipy failing to parse, is the observed signal; record
-  any, and never lower a ceiling to compensate.
+  unmeasured is the observed signal; record any, and never lower a ceiling to
+  compensate.
 
 ### 3. Build drift report — observe
 
@@ -95,7 +100,7 @@ Markdown table written to
 |---------|---------|--------|-------|-------|
 | uv | … | … | major/minor/patch | … |
 | (one row per `uv tree --outdated` dependency, hook, action) | | | | |
-| lizard / complexipy / cohesion | … | … | … | stale or abandoned, with evidence; parser support for the floor |
+| lizard / cohesion | … | … | … | stale or abandoned, with evidence; parser support for the floor |
 
 ### 4. Recommend per surface — propose
 

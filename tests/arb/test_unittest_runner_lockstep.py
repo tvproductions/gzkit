@@ -149,9 +149,10 @@ class TestRunnerIsPinnedLikeEveryOtherVerifier(unittest.TestCase):
     `.pre-commit-config.yaml` justified `--with` as "matching the un-pinned
     xenon/gitleaks precedent". That precedent never existed: `xenon` was a
     pinned `dev` entry invoked as `uv run xenon` until RO-9 tranche 4 retired it
-    for complexipy, which follows the same convention, and `gitleaks` is a native
-    binary rather than a Python package. This test pins the convention the
-    codebase actually follows, so the claim cannot be re-derived from memory.
+    for `gz validate --complexity-ceiling` over the pinned Lizard, which follows
+    the same convention, and `gitleaks` is a native binary rather than a Python
+    package. This test pins the convention the codebase actually follows, so the
+    claim cannot be re-derived from memory.
     """
 
     def _dev_group(self) -> list[str]:
@@ -175,11 +176,11 @@ class TestRunnerIsPinnedLikeEveryOtherVerifier(unittest.TestCase):
     def test_the_complexity_verifier_is_pinned_too(self) -> None:
         """Negative control on the rationale, not on the value: the verifier in
         the slot the cited precedent held is locked and runs through ``uv run``."""
-        self.assertIn("complexipy", self._names())
+        self.assertIn("lizard", self._names())
         self.assertEqual(
-            shlex.split(_pre_commit_entry(_REPO_ROOT, "complexipy"))[:3],
-            ["uv", "run", "complexipy"],
-            msg="complexipy holds xenon's former slot; it does not use `--with`.",
+            shlex.split(_pre_commit_entry(_REPO_ROOT, "complexity-ceiling"))[:3],
+            ["uv", "run", "gz"],
+            msg="the complexity ceiling holds xenon's former slot; it does not use `--with`.",
         )
 
 
