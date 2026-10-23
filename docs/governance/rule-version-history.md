@@ -416,11 +416,11 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ### Lifted 2026-10-22 at version `0.5.4` (rule now at `0.5.5`)
 
-> **Rule version:** `0.5.4` — version narrative lifted to [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd); binding rules unchanged.
+> **Rule version:** `0.5.4` — version narrative lifted to [Rule Version History](rule-version-history.md#pythonicmd); binding rules unchanged.
 
 ### Lifted 2026-10-22 at version `0.5.5` (rule now at `0.5.6`)
 
-> **Rule version:** `0.5.5` — the cyclomatic row names the gates that replaced xenon in RO-9 tranche 4 (GHI #1183); prior banners in [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd). Binding rules unchanged.
+> **Rule version:** `0.5.5` — the cyclomatic row names the gates that replaced xenon in RO-9 tranche 4 (GHI #1183); prior banners in [Rule Version History](rule-version-history.md#pythonicmd). Binding rules unchanged.
 
 ## `hexagonal-architecture.md`
 
@@ -594,7 +594,7 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 The version banner as it stood, lifted verbatim when RO-9 tranche 3 moved the build to uv_build and § Delivered path literals stopped naming the hatchling `[tool.hatch.build.targets.wheel] include` block:
 
-> **Rule version:** `0.7.1` — version narrative lifted to [Rule Version History](../../docs/governance/rule-version-history.md#cross-platformmd); binding rules unchanged.
+> **Rule version:** `0.7.1` — version narrative lifted to [Rule Version History](rule-version-history.md#cross-platformmd); binding rules unchanged.
 
 ## `guardrail-feedback-prose.md`
 
@@ -1037,11 +1037,11 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ### Lifted 2026-10-22 at version `0.5.1` (rule now at `0.5.2`)
 
-> **Rule version:** `0.5.1` — version narrative lifted to [Rule Version History](../../docs/governance/rule-version-history.md#complexity-thresholdsmd); binding rules unchanged.
+> **Rule version:** `0.5.1` — version narrative lifted to [Rule Version History](rule-version-history.md#complexity-thresholdsmd); binding rules unchanged.
 
 ### Lifted 2026-10-22 at version `0.5.2` (rule now at `0.6.0`)
 
-> **Rule version:** `0.5.2` — xenon is no longer named as a consumer of the table: it never read the table, and RO-9 tranche 4 retired it (GHI #1183); prior banners in [Rule Version History](../../docs/governance/rule-version-history.md#complexity-thresholdsmd). Binding rules unchanged.
+> **Rule version:** `0.5.2` — xenon is no longer named as a consumer of the table: it never read the table, and RO-9 tranche 4 retired it (GHI #1183); prior banners in [Rule Version History](rule-version-history.md#complexity-thresholdsmd). Binding rules unchanged.
 
 ## `models.md`
 
