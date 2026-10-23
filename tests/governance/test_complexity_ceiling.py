@@ -10,11 +10,16 @@ measurement, never a silent pass.
 
 from __future__ import annotations
 
+import contextlib
+import io
 import tempfile
 import textwrap
 import unittest
 from pathlib import Path
+from unittest import mock
 
+from gzkit.cli.main import main
+from gzkit.core.validation_rules import ValidationError
 from gzkit.governance.trust_audits.complexity_ceiling import (
     audit_complexity_ceiling,
     cyclomatic_ceiling,
@@ -82,6 +87,14 @@ class MeasureCeilingTest(unittest.TestCase):
         source = "class P:\n    def f(self) -> None: ...\n"
         self.assertEqual(measure_ceiling({"m.py": source}, 5.0), [])
 
+    def test_a_documented_ellipsis_stub_is_not_refused(self) -> None:
+        source = 'class P:\n    def f(self) -> None: """Say what f does."""; ...\n'
+        self.assertEqual(measure_ceiling({"m.py": source}, 5.0), [])
+
+    def test_an_inline_body_that_is_not_a_stub_is_refused(self) -> None:
+        source = 'class P:\n    def f(self) -> int: """Doc."""; return 1\n'
+        self.assertEqual([f.kind for f in measure_ceiling({"m.py": source}, 5.0)], ["unmeasured"])
+
     def test_unparseable_source_is_refused(self) -> None:
         findings = measure_ceiling({"m.py": "def f(:\n"}, 5.0)
         self.assertEqual([f.kind for f in findings], ["unparseable"])
@@ -141,6 +154,125 @@ class AuditComplexityCeilingTest(unittest.TestCase):
 
     def test_a_project_that_ships_no_wheel_is_clean(self) -> None:
         self.assertEqual(audit_complexity_ceiling(self._tmp()), [])
+
+
+class GzValidateRunsTheScopeTest(unittest.TestCase):
+    """`gz validate --complexity-ceiling` reaches the audit and treats a finding as a breach."""
+
+    def _validate(self, findings: list[ValidationError]) -> tuple[int, str]:
+        out = io.StringIO()
+        with (
+            mock.patch(
+                "gzkit.governance.trust_audits.audit_complexity_ceiling", return_value=findings
+            ) as audit,
+            # An open MX hangar demotes ERROR-level scopes to advisory; grade the
+            # scope as it stands outside one, where its findings block.
+            mock.patch("gzkit.mx.checkpoint.blocks", return_value=True),
+            contextlib.redirect_stdout(out),
+            contextlib.redirect_stderr(out),
+        ):
+            try:
+                code = main(["validate", "--complexity-ceiling"])
+            except SystemExit as exc:
+                code = exc.code if isinstance(exc.code, int) else 1
+        self.assertEqual(audit.call_count, 1, out.getvalue())
+        return code, out.getvalue()
+
+    def test_a_clean_tree_passes_the_scope(self) -> None:
+        code, output = self._validate([])
+        self.assertEqual(code, 0, output)
+        self.assertIn("complexity_ceiling", output)
+
+    def test_a_finding_is_a_policy_breach(self) -> None:
+        """Exit 3, the CLI doctrine's policy-breach code (`.gzkit/rules/cli.md`)."""
+        finding = ValidationError(type="complexity_ceiling", artifact="m.py", message="m")
+        code, output = self._validate([finding])
+        self.assertEqual(code, 3, output)
+
+
+class TheScopeIsWiredIntoGzCheckTest(unittest.TestCase):
+    def test_gz_check_runs_the_complexity_ceiling_audit(self) -> None:
+        from gzkit.commands.quality import _build_check_steps  # noqa: PLC0415
+        from gzkit.quality import run_complexity_ceiling_audit  # noqa: PLC0415
+
+        self.assertIn(("Complexity ceiling", run_complexity_ceiling_audit), _build_check_steps())
+
+    def test_the_step_runs_the_validate_scope(self) -> None:
+        from gzkit import quality  # noqa: PLC0415
+
+        sentinel = object()
+        with mock.patch.object(quality, "run_command", return_value=sentinel) as run:
+            result = quality.run_complexity_ceiling_audit(Path("."))
+        self.assertIs(result, sentinel)
+        self.assertEqual(run.call_args.args[0], "uv run gz validate --complexity-ceiling")
+
+    def test_the_step_is_bound_at_error_severity(self) -> None:
+        from gzkit.commands.quality import _STEP_GUARD_META  # noqa: PLC0415
+        from gzkit.mx import levels  # noqa: PLC0415
+
+        self.assertEqual(
+            _STEP_GUARD_META["Complexity ceiling"], ("complexity-ceiling", levels.ERROR)
+        )
+
+    def test_the_qc_binding_audit_accepts_the_step(self) -> None:
+        from gzkit.governance.trust_audits.qc_binding import audit_qc_binding  # noqa: PLC0415
+
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            errors = audit_qc_binding(Path("."))
+        findings = [f"{e.artifact} {e.message}" for e in errors]
+        self.assertFalse([f for f in findings if "Complexity ceiling" in f], findings)
+
+
+class TheNegativeControlDiscriminatesTest(unittest.TestCase):
+    """The registered control reports the planted breach and stays silent on the decoy."""
+
+    def setUp(self) -> None:
+        from gzkit.governance.trust_audits import _qc_negative_controls as nc  # noqa: PLC0415
+
+        def mkroot(slug: str) -> Path:
+            tmp = tempfile.TemporaryDirectory(prefix=f"gzkit-qc-nc-{slug}-")
+            self.addCleanup(tmp.cleanup)
+            return Path(tmp.name)
+
+        patcher = mock.patch.object(nc, "_mkroot", side_effect=mkroot)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test_the_control_catches_only_the_function_over_the_ceiling(self) -> None:
+        from gzkit.governance.trust_audits import _qc_nc_entrypoints as ep  # noqa: PLC0415
+        from gzkit.governance.trust_audits import _qc_negative_controls as nc  # noqa: PLC0415
+
+        caught = ep._ep_complexity_ceiling(nc._build_complexity_ceiling())
+        self.assertTrue(caught)
+        self.assertTrue(all(e.artifact == "src/nc/over.py" for e in caught), caught)
+        self.assertTrue(any("over: cyclomatic 4 > 3" in e.message for e in caught), caught)
+
+    def test_the_control_reports_nothing_when_the_decoy_fires(self) -> None:
+        from gzkit.governance.trust_audits import _qc_nc_entrypoints as ep  # noqa: PLC0415
+        from gzkit.governance.trust_audits import _qc_negative_controls as nc  # noqa: PLC0415
+
+        root = nc._build_complexity_ceiling()
+        pyproject = root / "pyproject.toml"
+        text = pyproject.read_text(encoding="utf-8")
+        pyproject.write_text(text.replace("max-complexity = 3", "max-complexity = 2"), "utf-8")
+        self.assertEqual(ep._ep_complexity_ceiling(root), [])
+
+    def test_the_claim_is_registered_with_its_judgments(self) -> None:
+        from gzkit.enforcement import POPULATION_NONE  # noqa: PLC0415
+        from gzkit.governance.trust_audits._qc_claim_exemptions import (  # noqa: PLC0415
+            EXEMPTS_NONE,
+            QC_CLAIM_EXEMPTS,
+        )
+        from gzkit.governance.trust_audits._qc_claim_populations import (  # noqa: PLC0415
+            QC_CLAIM_POPULATIONS,
+        )
+        from gzkit.governance.trust_audits._qc_negative_controls import (  # noqa: PLC0415
+            _build_complexity_ceiling,
+        )
+
+        self.assertEqual(QC_CLAIM_EXEMPTS["complexity-ceiling"], EXEMPTS_NONE)
+        self.assertEqual(QC_CLAIM_POPULATIONS["complexity-ceiling"], POPULATION_NONE)
+        self.assertTrue(callable(_build_complexity_ceiling))
 
 
 if __name__ == "__main__":

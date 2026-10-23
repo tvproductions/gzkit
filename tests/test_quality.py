@@ -316,6 +316,27 @@ class TestLintNamesOnlyWhatRuns(unittest.TestCase):
         self.assertNotIn("pymarkdown", result.command.lower())
         self.assertFalse(hasattr(quality, "run_pymarkdown"))
 
+    def test_a_cognitive_complexity_failure_fails_lint(self) -> None:
+        """complexipy's own exit decides; a clean ruff run cannot carry it (RO-9 tranche 4)."""
+        from gzkit.quality import run_lint
+
+        ok = QualityResult(success=True, command="x", stdout="", stderr="", returncode=0)
+        bad = QualityResult(success=False, command="x", stdout="", stderr="", returncode=1)
+
+        def run_command(command: str, **_kwargs: object) -> QualityResult:
+            return bad if "complexipy" in command else ok
+
+        with (
+            tempfile.TemporaryDirectory() as tmpdir,
+            patch("gzkit.quality.run_command", side_effect=run_command),
+            patch("gzkit.quality.run_adr_path_contract_lint", return_value=ok),
+            patch("gzkit.quality.run_parents_pattern_lint", return_value=ok),
+        ):
+            result = run_lint(Path(tmpdir))
+
+        self.assertFalse(result.success)
+        self.assertEqual(result.returncode, 1)
+
     def test_lint_command_docstring_names_no_markdown_linter(self) -> None:
         """The CLI docstring is operator-facing and must not promise a linter that never runs."""
         from gzkit.commands.quality import lint

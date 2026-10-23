@@ -176,6 +176,7 @@ class TestGitSyncCommand(unittest.TestCase):
 
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("Refusing git-sync with SKIP", result.output)
+            self.assertIn("complexity gates", result.output)
 
 
 class TestSkipGuardCoversEveryComplexityHook(unittest.TestCase):
