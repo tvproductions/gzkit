@@ -6,8 +6,6 @@ with a count, and the verdict is exact. A new finding fails, a row above its
 findings must be lowered, and a row whose findings are gone must be removed.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

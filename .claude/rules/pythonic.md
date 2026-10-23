@@ -6,9 +6,9 @@ paths:
 
 # Pythonic Standards (Idiomatic Code Contract)
 
-<!-- rule-version: 0.5.9 -->
+<!-- rule-version: 0.5.10 -->
 
-> **Rule version:** `0.5.9` — PLC0415 runs under Ruff `ALL` with the lazy imports that predate it held in `data/ruff_baseline.json`, and the toolchain row names `gz lint` (RO-9 tranche 4); prior banners in [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd).
+> **Rule version:** `0.5.10` — § Imports states the Python 3.14 import idiom (deferred annotations, PEP 649 and 749) in place of the PEP 563 future import, and records that `lazy import` is 3.15; prior banners in [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd).
 
 ## Core Principles
 
@@ -58,6 +58,7 @@ paths:
 
 - **Top-level imports only.** Standard library, third-party, then local.
 - **No lazy imports** unless required for optional dependencies or cycle avoidance. **(PLC0415 runs under Ruff `ALL` since 2026-10-23; scorecard row 23 is Promotable until a control plants a lazy import.)** The ordering half above is enforced by ruff `I`, and this half by PLC0415, which RO-9 tranche 4 selected with every other Ruff rule (operator rulings 2026-10-23: a keyed shrink-ratchet baseline, *"b"*, counted and run by gzkit). The sites that predate it are held per file in `data/ruff_baseline.json`, so a new lazy import fails `uv run gz lint` while the held ones await the per-site reading the 2026-08-08 acceptance described: the carve-outs named in this bullet are what most of them claim, and a legitimate deferred import carries a `# noqa: PLC0415` naming its carve-out rather than a blanket suppression. The acceptance of 2026-08-08 (138 sites, then unselected) is recorded in [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd).
+- **Annotations are deferred (Python 3.14, PEP 649 and 749).** New code writes annotations unquoted and without `from __future__ import annotations`, PEP 563's stringizing form, which 3.14's deferred evaluation supersedes and PEP 749 plans to deprecate. An import that only an annotation needs sits at the top level under `if TYPE_CHECKING:`, never in a function body, so the cycle-avoidance carve-out above covers runtime cycles only. A Pydantic model's field types are evaluated when the class is built, so they stay runtime imports. Annotations are read with `annotationlib.get_annotations`, never from a class `__dict__` (RUF063). `lazy import` (PEP 810) is Python 3.15, not 3.14, so a carve-out above is still a function-local import. **(Advisory — nothing yet refuses a new PEP 563 import; the modules that still carry one are RO-9 tranche 6's subject, and scorecard row 23b names the check.)**
 
 ## Error Handling
 

@@ -22,8 +22,6 @@ Ruff is reached through one runner, injected so the comparison is testable
 without it (hexagonal § Operative rule 6).
 """
 
-from __future__ import annotations
-
 import json
 import subprocess  # noqa: S404 — Ruff is an external tool, reached only by argv
 from collections import Counter

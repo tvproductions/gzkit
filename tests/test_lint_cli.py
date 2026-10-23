@@ -6,8 +6,6 @@ mode to the baseline's verdict, and every surface that prescribes a lint command
 to an agent names ``gz lint``.
 """
 
-from __future__ import annotations
-
 import io
 import tempfile
 import unittest
