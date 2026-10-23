@@ -3,6 +3,15 @@
 **Lane:** Lite
 **Slug:** `dependency-currency`
 
+> **Version 1.2.0 (2026-10-22, RO-9 tranche 4, GHI #1183):** the inventory is
+> every declared dependency through `uv tree --outdated --depth 1`, not six
+> hand-picked tools (the Overview promised all of `pyproject.toml`; the workflow
+> queried six). A new step reads the health of the complexity analyzers the
+> gates rest on (Lizard, complexipy, cohesion): a stale release is told apart
+> from an abandoned project, and parser support for the `requires-python`
+> floor is read, never assumed. Run monthly, and after any change to
+> `pyproject.toml` or `uv.lock`.
+
 ---
 
 ## Overview
@@ -37,33 +46,45 @@ runs to trust the scanner.
 
 ## Workflow
 
-### 1. Inventory installed versions — observe
+### 1. Inventory every declared dependency — observe
 
 ```bash
 uv self version
-uv run ruff --version
-uv run ty --version
-uv run python -c "from importlib.metadata import version; \
-    print('pydantic', version('pydantic')); \
-    print('rich', version('rich')); \
-    print('behave', version('behave'))"
+uv tree --outdated --depth 1
 grep -E '^\s*-\s*repo:|^\s*rev:' .pre-commit-config.yaml
-grep -rE 'runs-on:' .github/workflows/
+grep -rE 'runs-on:|uses: ' .github/workflows/
 grep '^requires-python' pyproject.toml
 ```
 
-### 2. Query upstream latest — observe
+`uv tree --outdated --depth 1` lists every runtime, `dev` and `docs`
+dependency once, from the same declaration the lock reads, with
+`(latest: …)` beside each one that has moved. No list in this chore restates
+them.
+
+### 2. Query the rest of upstream — observe
 
 ```bash
 gh api repos/astral-sh/uv/releases/latest --jq .tag_name
-gh api repos/astral-sh/ruff/releases/latest --jq .tag_name
-gh api repos/astral-sh/ty/releases/latest --jq .tag_name 2>/dev/null || echo "no-releases"
-gh api repos/pydantic/pydantic/releases/latest --jq .tag_name
-gh api repos/Textualize/rich/releases/latest --jq .tag_name
-gh api repos/behave/behave/releases/latest --jq .tag_name
 # Pre-commit hooks: for each `repo:` URL in .pre-commit-config.yaml, query that repo's latest release
-# GHA runners: compare `runs-on: ubuntu-XX.YY` against GitHub Actions documented current default
+# GHA actions and runners: compare each `uses:` pin and `runs-on:` image against its latest release
 ```
+
+### 2a. Read the complexity analyzers' health — observe
+
+The C/C/C ceiling, the cognitive ratchet and the corpus measurement rest on
+Lizard, complexipy and cohesion (GHI #1183). For each:
+
+```bash
+curl -s https://pypi.org/pypi/<name>/json | uv run python -c "import json,sys; d=json.load(sys.stdin); r=d['releases'][d['info']['version']]; print(d['info']['version'], r[-1]['upload_time'] if r else 'no files', d['info'].get('requires_python'))"
+```
+
+- **Stale or abandoned.** A release older than a year is *stale*; it is
+  *abandoned* only on evidence (an archived repository, a maintainer's
+  notice), never on age alone. Record which, with the evidence.
+- **Parser support.** The tool must parse the `requires-python` floor's
+  syntax. `uv run gz validate --complexity-ceiling` refusing a function as
+  unmeasured, or complexipy failing to parse, is the observed signal; record
+  any, and never lower a ceiling to compensate.
 
 ### 3. Build drift report — observe
 
@@ -73,8 +94,8 @@ Markdown table written to
 | Surface | Current | Latest | Delta | Notes |
 |---------|---------|--------|-------|-------|
 | uv | … | … | major/minor/patch | … |
-| ruff | … | … | … | … |
-| (etc.) | | | | |
+| (one row per `uv tree --outdated` dependency, hook, action) | | | | |
+| lizard / complexipy / cohesion | … | … | … | stale or abandoned, with evidence; parser support for the floor |
 
 ### 4. Recommend per surface — propose
 
@@ -102,16 +123,15 @@ gzkit-wrapped commands honor configured exclusions).
 
 ```bash
 uv self version > .gzkit/chores/dependency-currency/proofs/uv-version.txt
-uv run ruff --version > .gzkit/chores/dependency-currency/proofs/ruff-version.txt
-uv run ty --version > .gzkit/chores/dependency-currency/proofs/ty-version.txt
+uv tree --outdated --depth 1 > .gzkit/chores/dependency-currency/proofs/outdated-YYYY-MM-DD.txt
 gh api repos/astral-sh/uv/releases/latest --jq .tag_name > .gzkit/chores/dependency-currency/proofs/uv-latest.txt
-gh api repos/astral-sh/ruff/releases/latest --jq .tag_name > .gzkit/chores/dependency-currency/proofs/ruff-latest.txt
 ```
 
-## Known Gaps (Baseline 2026-04-24)
+## Known Gaps
 
-None — chore is freshly registered. First run will establish the
-baseline drift snapshot.
+- The registry's staleness declaration takes one signal, so the chore is
+  scheduled on elapsed time (30 days). The dependency-change trigger is the
+  instruction above, not a scheduled signal.
 
 ---
 

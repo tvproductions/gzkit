@@ -203,7 +203,7 @@
     {
       "slug": "dependency-currency",
       "title": "Dependency Currency (Tooling Stack Drift Scan)",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "path": ".gzkit/chores/dependency-currency",
       "lane": "lite",
       "timeoutSeconds": 120,
