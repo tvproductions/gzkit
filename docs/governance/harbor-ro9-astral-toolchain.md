@@ -38,7 +38,7 @@ uv's own rules, read end to end, are recorded in [`harbor-ro9-uv-project-norms.m
   3.13 import and parse behaviour are superseded: the floor is 3.14, and adopting a version means
   adopting its idioms, with each exception recorded.
 - ADR-0.0.27's radon dependency is superseded by GHI #1183's 2026-10-09 selection (Ruff, complexipy and
-  Lizard). The attested ADR-0.0.27/0.0.28/0.0.29 REQs are repaired at the surface, never deleted
+  Lizard; its complexipy leg reversed 2026-10-23, § Amended for tranche 4). The attested ADR-0.0.27/0.0.28/0.0.29 REQs are repaired at the surface, never deleted
   (`docs/governance/attested-req-subject-retirement.md`).
 - `AGENTS.md` § STDLIB-FIRST stands and tightens: a third-party runtime dependency is a curated
   exception with a recorded reason, re-read against each new stdlib.
@@ -91,7 +91,7 @@ hatchling, Ruff's `py313` restated, no `[dependency-groups]`, no ty, no `[tool.u
 
 | Replace | With |
 |---|---|
-| xenon, radon | Ruff C901, with complexipy and Lizard (GHI #1183) |
+| xenon, radon | Ruff C901 and Lizard, with cognitive complexity scored by gzkit over `ast` (GHI #1183; complexipy, selected for it, retired 2026-10-23) |
 | interrogate | Ruff `D1xx` (already selected) and the preview `DOC` rules; the coverage percentage is retired, and its two thresholds (50 in pre-commit, 85 in the chore) disagree today |
 | bandit | Ruff `S` |
 | the `grep` TODO hook | Ruff `FIX` and `TD` |
@@ -140,7 +140,7 @@ in the same commit. Tranche 1 lands first; 2 to 7 follow in order, because they 
 | 1 | The witness and its baseline; the exception register; uv to current (`required-version`, setup-uv, a regenerated lock); the Python version declared once at 3.14 (`uv python pin 3.14`, `requires-python = ">=3.14"`, the classifier; Ruff's and ty's restatements deleted; CI, Read the Docs and release taking Python from uv); `--python-version-pins` folded into the witness | The baseline is seeded; no version restatement row remains; `gz check --full` passes on 3.14 locally and in CI |
 | 2 | Lock discipline: `--locked` everywhere; a `docs` group replacing `requirements-docs.txt`, `uv pip` and Read the Docs' `pip`; the `docs` extra retired; `release.yml` repaired; every project tool through `uv run`; unused dev dependencies removed; the uv-pre-commit `uv-lock` hook | No lock or tool-provenance row remains |
 | 3 | Build and publish: `uv_build` with `--distribution` and `--wheel-path-literals` ported to its configuration in the same commit; `uv build --no-sources`; `uv publish` with trusted publishing and attestations in separate jobs; `uv version --bump` driving the version surfaces | `gz validate --distribution` passes on a `uv_build` wheel; a dry-run publish succeeds |
-| 4 | Lint and type to the maximum: the Ruff selection widened (`S`, `C901`, `FIX`, `TD`, `W`, `TID251`, preview `DOC`, the `PLR09xx` family), xenon and radon retired for Ruff, complexipy and Lizard (GHI #1183, with the C/C/C contract re-derived and changed verdicts reviewed), interrogate retired, `[tool.ty]` landed with the warn rules raised, `ruff analyze graph` behind the import-boundary checks | No lint or type row remains; GHI #1183 closes |
+| 4 | Lint and type to the maximum: the Ruff selection widened (`S`, `C901`, `FIX`, `TD`, `W`, `TID251`, preview `DOC`, the `PLR09xx` family), xenon and radon retired for Ruff, complexipy and Lizard (GHI #1183, with the C/C/C contract re-derived and changed verdicts reviewed; complexipy then retired for gzkit's own cognitive score, 2026-10-23), interrogate retired, `[tool.ty]` landed with the warn rules raised, `ruff analyze graph` behind the import-boundary checks | No lint or type row remains; GHI #1183 closes |
 | 5 | Supply chain: `uv audit` in `gz check`, the malware check, `exclude-newer`, `required-environments` for the CI matrix, build constraints, a CycloneDX export at release | The security slot is filled; the release carries an SBOM |
 | 6 | Python 3.14 idioms and stdlib first: Ruff's `UP` rules at the 3.14 target, deferred annotations and `annotationlib` where they apply, the 3.14 stdlib APIs over third-party or hand-rolled code (GHI #1184's candidates, adopted unless an exception is recorded), and every runtime dependency re-read against the stdlib | GHI #1184 closes with an adopt or exception record per candidate; every runtime dependency is in the register |
 | 7 | Adopters: `gz init` builds the project through `uv init` and `uv add` (a `dev` group with Ruff and ty, `.python-version`, `uv.lock`, the 3.14 floor, `uv_build`), ships a CI workflow template on setup-uv with `--locked`, and runs the witness on the result; adopter docs give `uv tool install` and `uvx` only | A fresh `gz init` project passes `gz validate --astral-discipline` and `uv lock --check`; the baseline is empty, and RO-9 closes |
@@ -200,6 +200,23 @@ by one or two. No verdict changes at the ceiling of 20 (both tools' maximum is 2
 the advisor's block band (`commands/adr_demote.py:106`, Radon 11, Lizard 10: block becomes warn), and two near
 its warn band (`obpi_complete.py:966` and `specify_cmd.py:692`, Radon 9 and 8, Lizard 7). The two functions
 only Radon scores are the inline `...` stubs the ceiling exempts.
+
+**Amended for tranche 4 (2026-10-23): complexipy retired for a gzkit-owned score.** The operator ruled
+it a poor replacement (verbatim: *"so, this is a poor replacement: \"complexipy\""*) and selected
+*"gzkit-owned, stdlib ast (Rec.)"* over Lizard's `-Ecognitive`, Ruff's `PLR09xx` counts alone, and keeping
+complexipy with upstream reports. Measured on complexipy 8.1.0 before the ruling (a dated record): with
+`-q` a failing run printed nothing on either stream, so the Lint step went red undiagnosed; its snapshot
+keyed files by `strip_prefix(...).to_str()` with no separator normalization (`runner.rs`
+`analyze_file_shared`), so on Windows no committed row matched and windows-latest Lint was red from
+`25287b8e0`; it scored nine conditional expressions 0 (`plan.py:_build_scorecard_and_checklist`); and it
+agreed with Lizard's `-Ecognitive` on 73.5% of 5,112 paired functions. `gzkit.complexity.cognitive`
+implements Campbell's Cognitive Complexity (SonarSource) over CPython's `ast`, with the paper's worked
+examples as fixtures; over `src/gzkit` it finds 263 of 5,185 shipped functions over 15, maximum 46. The
+ruling "15 with shrink-ratchet" carries over unchanged: `gz validate --complexity-ceiling` holds the ceiling
+`.gzkit.json` declares (`complexity.cognitive_ceiling`, opt-in for adopters), and
+`data/cognitive_complexity_baseline.json`, an exact shrink-ratchet keyed by POSIX path and qualified name,
+holds the 263. complexipy leaves the dependencies, the lockfile, the pre-commit hooks, the Lint step and
+the chores; `python -m gzkit.complexity.cognitive` prints the scores the chores read.
 
 The rules tranche 4 still reads site by site: S506 (`quality.py`, the YAML loader), S608
 (`trust_audits/cli.py`), two S701 (jinja2 autoescape off on non-HTML renders), and about 260
