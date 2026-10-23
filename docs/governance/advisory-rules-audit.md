@@ -76,7 +76,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `gate5-runbook-code-covenant.md` | `0.3.2` |
 | `guardrail-feedback-prose.md` | `0.3.1` |
 | `mx-mode.md` | `1.10.0` |
-| `pythonic.md` | `0.5.6` |
+| `pythonic.md` | `0.5.7` |
 | `tool-skill-runbook-alignment.md` | `0.5.3` |
 | `tests.md` | `0.27.2` |
 | `task-discovery.md` | `0.10.1` |
