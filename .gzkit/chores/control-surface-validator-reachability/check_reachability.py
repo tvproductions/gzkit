@@ -34,6 +34,7 @@ Exit codes follow the CLI doctrine 4-code map: 0 clean, 1 user/config error,
 from __future__ import annotations
 
 import argparse
+import ast
 import json
 import re
 import subprocess
@@ -73,6 +74,8 @@ _DEFAULT_TIER_RE = re.compile(r'_ScopeEntry\(\s*(?:#[^\n]*\n\s*)*"([a-z][a-z0-9_
 #: run of flags, then split.
 _INVOCATION_RE = re.compile(r"gz validate((?:\s+--[a-z0-9-]+)+)")
 _FLAG_RE = re.compile(r"--[a-z0-9-]+")
+#: One entry of `_build_check_steps`' list: `("Display name", runner),`.
+_STEP_ENTRY_RE = re.compile(r'^\s+\("[^"\n]+",\s*([a-z_][a-z0-9_]*)\),\s*$', re.MULTILINE)
 
 _SKIP_DIRS = frozenset({".git", "__pycache__", ".venv", "node_modules", "dist", "build"})
 
@@ -147,13 +150,40 @@ def runnable_scopes() -> list[str]:
     return sorted(set(scopes))
 
 
+def _step_runner_flags(root: Path, registry_text: str) -> set[str]:
+    """Scope stems the runners in the `gz check` step list pass to `gz validate`.
+
+    A step's guard name and display name are their own namespaces, so neither
+    names the scope it runs: the "Requirements catalog" step, guard
+    `requirements-catalog`, runs `gz validate --catalog` (2026-10-23). The
+    command the runner builds is the evidence.
+    """
+    runners = set(_STEP_ENTRY_RE.findall(registry_text))
+    stems: set[str] = set()
+    for path in (
+        root / "src" / "gzkit" / "quality.py",
+        root / "src" / "gzkit" / "commands" / "quality.py",
+    ):
+        if not path.is_file():
+            continue
+        tree = ast.parse(path.read_text(encoding="utf-8", errors="replace"))
+        for node in tree.body:
+            if not (isinstance(node, ast.FunctionDef) and node.name in runners):
+                continue
+            for const in ast.walk(node):
+                if isinstance(const, ast.Constant) and isinstance(const.value, str):
+                    for run in _INVOCATION_RE.findall(const.value):
+                        stems.update(flag.lstrip("-") for flag in _FLAG_RE.findall(run))
+    return stems
+
+
 def check_registry_members(root: Path) -> set[str]:
     """Scope stems wired into the `gz check` step registry."""
     quality = root / "src" / "gzkit" / "commands" / "quality.py"
     if not quality.is_file():
         return set()
     text = quality.read_text(encoding="utf-8", errors="replace")
-    members = set(_CHECK_REGISTRY_RE.findall(text))
+    members = set(_CHECK_REGISTRY_RE.findall(text)) | _step_runner_flags(root, text)
     registry = root / "src" / "gzkit" / "commands" / "validate_cmd.py"
     if _DEFAULT_STEP_MARKER in text and registry.is_file():
         tier_source = registry.read_text(encoding="utf-8", errors="replace")

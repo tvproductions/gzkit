@@ -88,6 +88,56 @@ class TestRatchetSeesEveryGatedStep(unittest.TestCase):
         )
 
 
+class TestRatchetSeesWhatEachStepRuns(unittest.TestCase):
+    """A step gates the scopes its runner passes to `gz validate`, whatever its names.
+
+    The guard name and the step name are their own namespaces: the "Requirements
+    catalog" step, guard `requirements-catalog`, runs `gz validate --catalog`, and
+    the ratchet read `--catalog` as ungated (2026-10-23), the class GHI #787 and
+    GHI #1106 each closed one instance of.
+    """
+
+    def test_every_flag_a_live_step_runner_passes_reads_as_gated(self) -> None:
+        import inspect
+
+        ratchet = _load_ratchet()
+        from gzkit.commands.quality import _build_check_steps
+
+        run_flags = set()
+        for _name, runner in _build_check_steps():
+            source = inspect.getsource(runner)
+            for run in ratchet._INVOCATION_RE.findall(source):
+                run_flags.update(flag.lstrip("-") for flag in ratchet._FLAG_RE.findall(run))
+        self.assertIn("catalog", run_flags)
+        unseen = sorted(run_flags - ratchet.check_registry_members(get_project_root()))
+        self.assertEqual(
+            unseen, [], f"gz check runs these scopes but the ratchet reads them ungated: {unseen}"
+        )
+
+
+class TestRunnerFlagsAreTheListedRunnersOnly(unittest.TestCase):
+    """Only a runner the step list names gates a scope; an absent module adds none."""
+
+    def test_an_unlisted_function_gates_nothing_and_a_missing_module_is_skipped(self) -> None:
+        import tempfile
+        from pathlib import Path
+
+        ratchet = _load_ratchet()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src" / "gzkit").mkdir(parents=True)
+            (root / "src" / "gzkit" / "quality.py").write_text(
+                "def run_listed(root):\n"
+                '    return run_command("uv run gz validate --listed-scope")\n'
+                "def run_unlisted(root):\n"
+                '    return run_command("uv run gz validate --unlisted-scope")\n',
+                encoding="utf-8",
+            )
+            registry = '    steps = [\n        ("Listed", run_listed),\n    ]\n'
+            stems = ratchet._step_runner_flags(root, registry)
+        self.assertEqual(stems, {"listed-scope"})
+
+
 class TestRatchetSeesTheDefaultTier(unittest.TestCase):
     """`gz check` runs bare `gz validate`, so every default-tier scope is gated.
 
