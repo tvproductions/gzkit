@@ -311,6 +311,31 @@ class TestComplexityAdviseAttestIntrinsic(unittest.TestCase):
         self.assertEqual(exit_code, 1)
         self.assertEqual(self._ledger_events(), [])
 
+    def test_attest_intrinsic_refuses_a_function_the_file_does_not_define(self) -> None:
+        """An unknown qualname is named and refused; no ledger event is written."""
+        from gzkit.commands.complexity_advise import _run_attest_intrinsic
+
+        source_file = self.tmp / "complex.py"
+        _write_complex_function(source_file)
+
+        buf_err = io.StringIO()
+        with (
+            contextlib.redirect_stderr(buf_err),
+            patch(
+                "gzkit.commands.complexity_advise._resolve_ledger_path",
+                return_value=self.ledger_path,
+            ),
+        ):
+            exit_code = _run_attest_intrinsic(
+                path=f"{source_file}:no_such_function",
+                reason="r",
+                attestor="Test Attestor",
+                rule_path=None,
+            )
+        self.assertEqual(exit_code, 1)
+        self.assertIn("'no_such_function' not found", buf_err.getvalue())
+        self.assertEqual(self._ledger_events(), [])
+
     @covers("REQ-0.0.29-07-05")
     def test_attest_intrinsic_refuses_headless_invocation(self) -> None:
         """--attest-intrinsic exits 1 if not attached to a TTY."""

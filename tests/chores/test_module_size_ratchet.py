@@ -51,6 +51,24 @@ def _load_gate() -> ModuleType:
     return module
 
 
+class TestTheGateReadsTheLizardFileNlocBand(unittest.TestCase):
+    """The block band comes from the ``lizard_file_nloc`` row of the one table."""
+
+    def test_block_band_is_the_lizard_file_nloc_row(self) -> None:
+        gate = _load_gate()
+        with tempfile.TemporaryDirectory() as tmp:
+            table = Path(tmp) / "complexity-thresholds.json"
+            table.write_text(
+                '{"bands": ['
+                '{"metric": "radon_raw_nloc", "trigger_semantic": "block", "absolute_number": 1},'
+                '{"metric": "lizard_file_nloc", "trigger_semantic": "block", "absolute_number": 42}'
+                "]}",
+                encoding="utf-8",
+            )
+            with mock.patch.object(gate, "_THRESHOLDS", table):
+                self.assertEqual(gate._block_band(), 42.0)  # noqa: SLF001
+
+
 class TestTheGateMeasuresLizardFileNloc(unittest.TestCase):
     """The gate measures module size as Lizard's file NLOC, the corpus's reader (RO-9 tranche 4)."""
 

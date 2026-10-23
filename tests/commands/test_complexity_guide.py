@@ -202,6 +202,22 @@ class TestComplexityGuideBehavior(unittest.TestCase):
         self.assertEqual(code, 0)
 
 
+class TestComplexityGuideNamesUnmeasuredFunctions(unittest.TestCase):
+    """A function Lizard skips is named on stderr, never scored (operator, 2026-10-22)."""
+
+    def test_an_inline_body_is_named_on_stderr_and_stdout_is_unchanged(self) -> None:
+        with _rule_path_env() as root:
+            target = root / "inline.py"
+            target.write_text("def one(x): return x\n", encoding="utf-8")
+            with patch("gzkit.commands.complexity_guide._engine_analyze") as mock_analyze:
+                mock_analyze.return_value = ()
+                code, out, err = _invoke(path=str(target))
+        self.assertEqual(code, 0)
+        self.assertIn("not measured:", err)
+        self.assertIn(" one ", err)
+        self.assertNotIn("not measured", out)
+
+
 class TestComplexityGuideOutputForm(unittest.TestCase):
     """Invariant-3 fixture: prose output contains expected header labels."""
 

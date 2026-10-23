@@ -193,6 +193,29 @@ class TestRunAutoChain(unittest.TestCase):
 class TestDiagnoseFiles(unittest.TestCase):
     """Tests for _diagnose_files — the file-level analysis logic."""
 
+    @patch("gzkit.hooks.install_complexity_advisor.DiagnosisEngine")
+    @patch("gzkit.hooks.install_complexity_advisor.load_threshold_table")
+    def test_an_unmeasured_function_is_named_on_stderr(
+        self, mock_load: MagicMock, mock_engine_cls: MagicMock
+    ) -> None:
+        """A body on the def line is named, never scored (operator ruling 2026-10-22)."""
+        from gzkit.hooks.install_complexity_advisor import _diagnose_files
+
+        with tempfile.TemporaryDirectory() as tmp:
+            staged = Path(tmp) / "staged.py"
+            staged.write_text("def f(): return 1\n", encoding="utf-8")
+            mock_load.return_value = MagicMock()
+            mock_engine_cls.return_value = MagicMock()
+            err = io.StringIO()
+            with (
+                patch("gzkit.hooks.install_complexity_advisor._DEFAULT_RULE_PATH", staged),
+                patch("sys.stderr", err),
+            ):
+                diagnoses = _diagnose_files([str(staged)])
+        self.assertEqual(diagnoses, [])
+        self.assertIn("not measured:", err.getvalue())
+        self.assertIn(" f ", err.getvalue())
+
     @covers("REQ-0.0.29-05-05")
     @patch("gzkit.hooks.install_complexity_advisor.DiagnosisEngine")
     @patch("gzkit.hooks.install_complexity_advisor.load_threshold_table")

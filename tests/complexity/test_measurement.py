@@ -137,6 +137,25 @@ class TestFailClosedExitPaths(unittest.TestCase):
                 self.assertIn(ctx.exception.tool, {"lizard", "cohesion"})
 
     @covers("REQ-0.0.27-03-05")
+    def test_radon_is_no_longer_a_required_tool(self) -> None:
+        """Only lizard and cohesion are required (amended 2026-10-22); a missing radon is fine."""
+        with stubbed_pipeline_environment() as (_tree, _spy), tempfile.TemporaryDirectory() as out:
+            with mock.patch(
+                "gzkit.complexity.measurement.shutil.which",
+                side_effect=lambda tool: None if tool == "radon" else f"/bin/{tool}",
+            ):
+                measure_corpus(stub_corpus(), Path(out), cache_root=Path(out) / "cache")
+            with (
+                mock.patch(
+                    "gzkit.complexity.measurement.shutil.which",
+                    side_effect=lambda tool: None if tool == "lizard" else f"/bin/{tool}",
+                ),
+                self.assertRaises(MissingMeasurementToolError) as ctx,
+            ):
+                measure_corpus(stub_corpus(), Path(out), cache_root=Path(out) / "cache")
+        self.assertEqual(ctx.exception.tool, "lizard")
+
+    @covers("REQ-0.0.27-03-05")
     def test_corpus_loader_error_wraps_missing_path(self) -> None:
         """A non-existent corpus path surfaces as ``CorpusLoaderError``."""
         # The doctrine wraps OS / decode / Pydantic errors at the

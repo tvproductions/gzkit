@@ -283,6 +283,27 @@ class CitationFormTests(unittest.TestCase):
             self.assertIn("section anchor", body)
             self.assertIn("corpus_revision", body)
 
+    def test_citation_example_cites_this_document_in_the_parsed_form(self) -> None:
+        """The example names the document being written and parses (RO-9 tranche 4)."""
+        from gzkit.complexity.citation import parse_citation
+
+        with tempfile.TemporaryDirectory() as tmp:
+            output = render_document(
+                baseline=_build_baseline(),
+                baseline_artifact_path=Path(tmp) / "baseline.json",
+                prior_distillation_path=None,
+                output_dir=Path(tmp),
+                today=date(2026, 10, 22),
+            )
+            body = output.read_text(encoding="utf-8")
+        example = body.split("## Citation form", 1)[1].split("```\n", 2)[1].strip()
+        citation = parse_citation(example)
+        self.assertEqual(
+            citation.distilled_characteristics_path,
+            f"docs/governance/complexity/{output.name}",
+        )
+        self.assertEqual(citation.section_anchor, "lizard-ccn")
+
 
 class PractitionerEyeBlockTests(unittest.TestCase):
     """REQ-10: every metric carries an operator-attested practitioner-eye block.
