@@ -14,7 +14,7 @@ Runs four checks over the repository and fails when any of them fails:
 
 - `uv run ruff check .`: the rules `[tool.ruff.lint]` selects, including the
   cyclomatic ceiling (`C901`, `[tool.ruff.lint.mccabe] max-complexity`).
-- `uv run complexipy -q`: cognitive complexity over the paths and ceiling in
+- `uv run complexipy --failed --plain`: cognitive complexity over the paths and ceiling in
   `[tool.complexipy]`. A function already over the ceiling is held to its score
   in `complexipy-snapshot.json`; a new or worsened one fails.
 - The ADR path-contract lint: no links to legacy ADR series folders.

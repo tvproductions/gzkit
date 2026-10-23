@@ -69,7 +69,7 @@ repos:
       # shrink-only snapshot, complexipy-snapshot.json.
       - id: complexipy
         name: complexipy (cognitive complexity ratchet)
-        entry: uv run complexipy -q
+        entry: uv run complexipy --failed --plain
         language: system
         pass_filenames: false
         types: [python]

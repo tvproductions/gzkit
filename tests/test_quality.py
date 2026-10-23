@@ -307,10 +307,10 @@ class TestLintNamesOnlyWhatRuns(unittest.TestCase):
             result = run_lint(Path(tmpdir))
 
         ran = [call.args[0] for call in run_command.call_args_list]
-        self.assertEqual(ran, ["uv run ruff check .", "uv run complexipy -q"])
+        self.assertEqual(ran, ["uv run ruff check .", "uv run complexipy --failed --plain"])
         self.assertEqual(
             result.command,
-            "uv run ruff check . + uv run complexipy -q + ADR path contract lint"
+            "uv run ruff check . + uv run complexipy --failed --plain + ADR path contract lint"
             " + parents-pattern lint",
         )
         self.assertNotIn("pymarkdown", result.command.lower())

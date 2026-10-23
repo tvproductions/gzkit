@@ -12,7 +12,7 @@
     },
     {
       "type": "exitCodeEquals",
-      "command": "uv run complexipy -q",
+      "command": "uv run complexipy --failed --plain",
       "expected": 0
     }
   ]

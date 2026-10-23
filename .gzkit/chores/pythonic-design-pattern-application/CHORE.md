@@ -57,7 +57,7 @@ shape with a concrete reason.
 - **Lane:** Lite — internal refactor, no external contract change
 - **One file per applied candidate** — never bundle multiple refactors into one evidence file
 - **TDD discipline binding** — Red-Green-Refactor per `.gzkit/rules/tests.md`; cite the GREEN receipt
-- **Complexity non-regression** — `gz validate --complexity-ceiling` and `complexipy -q` pass post-rewrite (matches `complexity-reduction-xenon`)
+- **Complexity non-regression** — `gz validate --complexity-ceiling` and `complexipy --failed --plain` pass post-rewrite (matches `complexity-reduction-xenon`)
 - **Detection back-link required** — the evidence file references the detection report row that flagged the candidate; orphan applications (no detection trail) are a defect
 - **Pythonic-target faithfulness** — if the detection row says "first-class function", the after-form must actually be a first-class function (or a documented deviation explaining why that target was wrong for this case)
 
@@ -174,7 +174,7 @@ Mark the candidate's `Disposition:` from `_[applied | deferred | not-pythonic-re
 ```bash
 uv run gz test
 uv run gz validate --complexity-ceiling
-uv run complexipy -q
+uv run complexipy --failed --plain
 ```
 
 ## Acceptance Criteria

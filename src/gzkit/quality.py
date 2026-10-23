@@ -389,7 +389,9 @@ def run_lint(project_root: Path) -> QualityResult:
     # Cognitive complexity (RO-9 tranche 4, GHI #1183): complexipy reads its
     # paths and ceiling from `[tool.complexipy]` and holds the functions over it
     # to `complexipy-snapshot.json`, a shrink-ratchet it maintains itself.
-    cognitive_result = run_command("uv run complexipy -q", cwd=project_root)
+    # `--failed --plain`, never `-q`: a quiet run that fails prints nothing on
+    # either stream, so the step went red with no diagnosis (CI 39877077173).
+    cognitive_result = run_command("uv run complexipy --failed --plain", cwd=project_root)
     path_contract_result = run_adr_path_contract_lint(project_root)
     parents_result = run_parents_pattern_lint(project_root)
 
@@ -402,7 +404,7 @@ def run_lint(project_root: Path) -> QualityResult:
     return QualityResult(
         success=success,
         command=(
-            "uv run ruff check . + uv run complexipy -q + ADR path contract lint"
+            "uv run ruff check . + uv run complexipy --failed --plain + ADR path contract lint"
             " + parents-pattern lint"
         ),
         stdout=stdout,

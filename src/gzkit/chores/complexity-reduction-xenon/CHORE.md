@@ -25,7 +25,7 @@ Reduce complexity in the shipped package. Two gates hold it:
 - **Cyclomatic C/C/C** (`gz validate --complexity-ceiling`): the largest function,
   each module's mean and the function-weighted overall mean, each at most the
   `[tool.ruff.lint.mccabe] max-complexity` Ruff enforces as C901.
-- **Cognitive** (`uv run complexipy -q`): no new or worsened function over
+- **Cognitive** (`uv run complexipy --failed --plain`): no new or worsened function over
   `[tool.complexipy] max-complexity-allowed`; the functions over it on
   2026-10-22 are held to their scores in `complexipy-snapshot.json`, which
   tightens itself as they improve.
@@ -60,13 +60,13 @@ uv run gz complexity advise --json src/ > .gzkit/chores/complexity-reduction-xen
 
 - Extract helpers per the advisor-recommended refactor archetype (`Long Parameter List → Parameter Object`, `Arrowhead → Guard Clauses`, etc.)
 - Pre-attest functions whose complexity is irreducibly algorithmic via the `@intrinsic_complexity` decorator (ADR-0.0.29 OBPI-07) rather than refactoring them artificially
-- Run `uv run complexipy -q` after each batch; an improved function lowers its snapshot row, and the lowered snapshot is committed with the refactor
+- Run `uv run complexipy --failed --plain` after each batch; an improved function lowers its snapshot row, and the lowered snapshot is committed with the refactor
 
 ### 4. Validate — observe
 
 ```bash
 uv run gz validate --complexity-ceiling
-uv run complexipy -q
+uv run complexipy --failed --plain
 uv run gz test
 ```
 

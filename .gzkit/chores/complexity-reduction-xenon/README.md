@@ -8,7 +8,7 @@ The slug keeps its historical `xenon` name; xenon was retired in RO-9 tranche 4.
 
 ```bash
 uv run gz validate --complexity-ceiling
-uv run complexipy -q
+uv run complexipy --failed --plain
 ```
 
 ## Lane
