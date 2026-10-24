@@ -68,11 +68,6 @@
     },
     {
       "file": ".agents/skills/ghi-triage/scripts/triage.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": ".agents/skills/ghi-triage/scripts/triage.py",
       "rule": "S603",
       "count": 2
     },
@@ -204,11 +199,6 @@
     {
       "file": ".claude/hooks/control-surface-sync.py",
       "rule": "PLW1510",
-      "count": 1
-    },
-    {
-      "file": ".claude/hooks/control-surface-sync.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -423,11 +413,6 @@
     },
     {
       "file": ".claude/hooks/plan-audit-gate.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": ".claude/hooks/plan-audit-gate.py",
       "rule": "T201",
       "count": 4
     },
@@ -439,11 +424,6 @@
     {
       "file": ".claude/hooks/post-edit-ruff.py",
       "rule": "PLW1510",
-      "count": 1
-    },
-    {
-      "file": ".claude/hooks/post-edit-ruff.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -495,11 +475,6 @@
       "file": ".claude/hooks/stop-turn-feedback.py",
       "rule": "PLW1510",
       "count": 2
-    },
-    {
-      "file": ".claude/hooks/stop-turn-feedback.py",
-      "rule": "S404",
-      "count": 1
     },
     {
       "file": ".claude/hooks/stop-turn-feedback.py",
@@ -584,11 +559,6 @@
     {
       "file": ".claude/skills/ghi-triage/scripts/triage.py",
       "rule": "PLW0717",
-      "count": 1
-    },
-    {
-      "file": ".claude/skills/ghi-triage/scripts/triage.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -743,11 +713,6 @@
     },
     {
       "file": ".gzkit/chores/control-surface-rule-conflicts/check_evidence.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": ".gzkit/chores/control-surface-rule-conflicts/check_evidence.py",
       "rule": "S603",
       "count": 2
     },
@@ -794,11 +759,6 @@
     {
       "file": ".gzkit/chores/control-surface-validator-reachability/check_reachability.py",
       "rule": "PLR0911",
-      "count": 1
-    },
-    {
-      "file": ".gzkit/chores/control-surface-validator-reachability/check_reachability.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -925,11 +885,6 @@
       "file": ".gzkit/chores/ghi-cross-reference-staleness/check_cross_reference_staleness.py",
       "rule": "S101",
       "count": 4
-    },
-    {
-      "file": ".gzkit/chores/ghi-cross-reference-staleness/check_cross_reference_staleness.py",
-      "rule": "S404",
-      "count": 1
     },
     {
       "file": ".gzkit/chores/ghi-cross-reference-staleness/check_cross_reference_staleness.py",
@@ -1093,11 +1048,6 @@
     },
     {
       "file": ".gzkit/evidence/OBPI-0.35.0-05-assertion-audit.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": ".gzkit/evidence/OBPI-0.35.0-05-assertion-audit.py",
       "rule": "S603",
       "count": 1
     },
@@ -1199,11 +1149,6 @@
     {
       "file": ".gzkit/skills/ghi-triage/scripts/triage.py",
       "rule": "PLW0717",
-      "count": 1
-    },
-    {
-      "file": ".gzkit/skills/ghi-triage/scripts/triage.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -1628,11 +1573,6 @@
     },
     {
       "file": "docs/governance/ieee/02-requirements-vs-release-evidence/measure.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "docs/governance/ieee/02-requirements-vs-release-evidence/measure.py",
       "rule": "S603",
       "count": 1
     },
@@ -1670,11 +1610,6 @@
       "file": "docs/governance/ieee/03-gate4-gate2-duplication-evidence/measure.py",
       "rule": "PLW1510",
       "count": 4
-    },
-    {
-      "file": "docs/governance/ieee/03-gate4-gate2-duplication-evidence/measure.py",
-      "rule": "S404",
-      "count": 1
     },
     {
       "file": "docs/governance/ieee/03-gate4-gate2-duplication-evidence/measure.py",
@@ -1733,11 +1668,6 @@
     },
     {
       "file": "docs/governance/obpi-run-cost-2026-10-03-evidence/trial_eval_probes.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "docs/governance/obpi-run-cost-2026-10-03-evidence/trial_eval_probes.py",
       "rule": "S603",
       "count": 1
     },
@@ -1785,11 +1715,6 @@
       "file": "docs/governance/reckoning-2026-09-20-evidence/reckon.py",
       "rule": "S101",
       "count": 3
-    },
-    {
-      "file": "docs/governance/reckoning-2026-09-20-evidence/reckon.py",
-      "rule": "S404",
-      "count": 1
     },
     {
       "file": "docs/governance/reckoning-2026-09-20-evidence/reckon.py",
@@ -1853,11 +1778,6 @@
     },
     {
       "file": "features/steps/acceptance_recovery_steps.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "features/steps/acceptance_recovery_steps.py",
       "rule": "S603",
       "count": 1
     },
@@ -1874,11 +1794,6 @@
     {
       "file": "features/steps/adr_audit_covers_backfill_steps.py",
       "rule": "INP001",
-      "count": 1
-    },
-    {
-      "file": "features/steps/adr_audit_covers_backfill_steps.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -1968,11 +1883,6 @@
     },
     {
       "file": "features/steps/chores_distribution_steps.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "features/steps/chores_distribution_steps.py",
       "rule": "S603",
       "count": 1
     },
@@ -2009,11 +1919,6 @@
     {
       "file": "features/steps/closeout_product_proof_steps.py",
       "rule": "INP001",
-      "count": 1
-    },
-    {
-      "file": "features/steps/closeout_product_proof_steps.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -2263,11 +2168,6 @@
     },
     {
       "file": "features/steps/distribution_invariant_steps.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "features/steps/distribution_invariant_steps.py",
       "rule": "S603",
       "count": 1
     },
@@ -2304,11 +2204,6 @@
     {
       "file": "features/steps/evaluation_feedback_loop_steps.py",
       "rule": "PLW2901",
-      "count": 1
-    },
-    {
-      "file": "features/steps/evaluation_feedback_loop_steps.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -2353,11 +2248,6 @@
     },
     {
       "file": "features/steps/foundation_triage_steps.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "features/steps/foundation_triage_steps.py",
       "rule": "S603",
       "count": 1
     },
@@ -2393,11 +2283,6 @@
     },
     {
       "file": "features/steps/gz_steps.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "features/steps/gz_steps.py",
       "rule": "S607",
       "count": 9
     },
@@ -2414,11 +2299,6 @@
     {
       "file": "features/steps/issue_file_steps.py",
       "rule": "INP001",
-      "count": 1
-    },
-    {
-      "file": "features/steps/issue_file_steps.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -2703,11 +2583,6 @@
     },
     {
       "file": "scripts/adherence_probe.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "scripts/adherence_probe.py",
       "rule": "S603",
       "count": 1
     },
@@ -2798,11 +2673,6 @@
     },
     {
       "file": "scripts/check_proof_freshness.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "scripts/check_proof_freshness.py",
       "rule": "S603",
       "count": 1
     },
@@ -2859,11 +2729,6 @@
     {
       "file": "scripts/migrate_handoffs.py",
       "rule": "PLR0912",
-      "count": 1
-    },
-    {
-      "file": "scripts/migrate_handoffs.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -2984,11 +2849,6 @@
     {
       "file": "scripts/session_orientation.py",
       "rule": "PLW2901",
-      "count": 1
-    },
-    {
-      "file": "scripts/session_orientation.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -3124,11 +2984,6 @@
     {
       "file": "src/gzkit/acceptance_execution.py",
       "rule": "PLR0913",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/acceptance_execution.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -3338,11 +3193,6 @@
     },
     {
       "file": "src/gzkit/adversary_workspace.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/adversary_workspace.py",
       "rule": "S603",
       "count": 1
     },
@@ -3518,11 +3368,6 @@
     },
     {
       "file": "src/gzkit/arb/ruff_reporter.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/arb/ruff_reporter.py",
       "rule": "S603",
       "count": 1
     },
@@ -3544,11 +3389,6 @@
     {
       "file": "src/gzkit/arb/step_reporter.py",
       "rule": "EM102",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/arb/step_reporter.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -3675,11 +3515,6 @@
       "file": "src/gzkit/check_fingerprint.py",
       "rule": "DOC201",
       "count": 7
-    },
-    {
-      "file": "src/gzkit/check_fingerprint.py",
-      "rule": "S404",
-      "count": 1
     },
     {
       "file": "src/gzkit/check_fingerprint.py",
@@ -4473,11 +4308,6 @@
     },
     {
       "file": "src/gzkit/commands/adr_audit_covers_backfill.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/adr_audit_covers_backfill.py",
       "rule": "S607",
       "count": 1
     },
@@ -5043,11 +4873,6 @@
     },
     {
       "file": "src/gzkit/commands/chores_exec.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/chores_exec.py",
       "rule": "S603",
       "count": 1
     },
@@ -5064,11 +4889,6 @@
     {
       "file": "src/gzkit/commands/chores_propose_ghi_cmd.py",
       "rule": "PLC0415",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/chores_propose_ghi_cmd.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -5104,11 +4924,6 @@
     {
       "file": "src/gzkit/commands/chores_staleness.py",
       "rule": "PLR0917",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/chores_staleness.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -5409,11 +5224,6 @@
     {
       "file": "src/gzkit/commands/common.py",
       "rule": "PLC0415",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/common.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -5973,11 +5783,6 @@
     },
     {
       "file": "src/gzkit/commands/drift.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/drift.py",
       "rule": "S607",
       "count": 2
     },
@@ -6173,11 +5978,6 @@
     },
     {
       "file": "src/gzkit/commands/init_cmd.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/init_cmd.py",
       "rule": "S603",
       "count": 1
     },
@@ -6288,11 +6088,6 @@
     },
     {
       "file": "src/gzkit/commands/issue_cmd.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/issue_cmd.py",
       "rule": "S603",
       "count": 1
     },
@@ -6379,11 +6174,6 @@
     {
       "file": "src/gzkit/commands/mx_cmd.py",
       "rule": "PLW1510",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/mx_cmd.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -6494,11 +6284,6 @@
     {
       "file": "src/gzkit/commands/obpi_audit_cmd.py",
       "rule": "PLW2901",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/obpi_audit_cmd.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -6688,11 +6473,6 @@
     },
     {
       "file": "src/gzkit/commands/obpi_complete.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/obpi_complete.py",
       "rule": "S603",
       "count": 1
     },
@@ -6759,11 +6539,6 @@
     {
       "file": "src/gzkit/commands/obpi_lock.py",
       "rule": "PLW1510",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/obpi_lock.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -7289,11 +7064,6 @@
     {
       "file": "src/gzkit/commands/quality.py",
       "rule": "S110",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/quality.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -8058,11 +7828,6 @@
     },
     {
       "file": "src/gzkit/commands/validate_commit_trailers.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/validate_commit_trailers.py",
       "rule": "S603",
       "count": 2
     },
@@ -8238,11 +8003,6 @@
     },
     {
       "file": "src/gzkit/commands/validate_task_envelope.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/validate_task_envelope.py",
       "rule": "S607",
       "count": 2
     },
@@ -8304,11 +8064,6 @@
     {
       "file": "src/gzkit/commit_witness.py",
       "rule": "PLR6201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commit_witness.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -8634,11 +8389,6 @@
     {
       "file": "src/gzkit/complexity/measurement.py",
       "rule": "PLR2004",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/complexity/measurement.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -9548,11 +9298,6 @@
     },
     {
       "file": "src/gzkit/eval/regression.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/eval/regression.py",
       "rule": "S607",
       "count": 1
     },
@@ -9719,11 +9464,6 @@
     {
       "file": "src/gzkit/fidelity.py",
       "rule": "PLW0717",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/fidelity.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -10238,11 +9978,6 @@
     },
     {
       "file": "src/gzkit/governance/stage4_evidence.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/stage4_evidence.py",
       "rule": "S603",
       "count": 1
     },
@@ -10264,11 +9999,6 @@
     {
       "file": "src/gzkit/governance/stage4_packet.py",
       "rule": "ISC004",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/stage4_packet.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -10515,11 +10245,6 @@
       "file": "src/gzkit/governance/trust_audits/authorship.py",
       "rule": "DOC201",
       "count": 2
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/authorship.py",
-      "rule": "S404",
-      "count": 1
     },
     {
       "file": "src/gzkit/governance/trust_audits/authorship.py",
@@ -10773,11 +10498,6 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/codex_delivery_witness.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/codex_delivery_witness.py",
       "rule": "TC001",
       "count": 1
     },
@@ -10879,11 +10599,6 @@
     {
       "file": "src/gzkit/governance/trust_audits/cross_platform.py",
       "rule": "PLR6201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/cross_platform.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -11413,11 +11128,6 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/reconcile.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/reconcile.py",
       "rule": "S607",
       "count": 1
     },
@@ -11460,11 +11170,6 @@
       "file": "src/gzkit/governance/trust_audits/release.py",
       "rule": "RUF002",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/release.py",
-      "rule": "S404",
-      "count": 2
     },
     {
       "file": "src/gzkit/governance/trust_audits/release.py",
@@ -11933,11 +11638,6 @@
     },
     {
       "file": "src/gzkit/handoff_validation.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/handoff_validation.py",
       "rule": "S603",
       "count": 3
     },
@@ -12023,11 +11723,6 @@
     },
     {
       "file": "src/gzkit/hooks/commit_ledger.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/hooks/commit_ledger.py",
       "rule": "S603",
       "count": 1
     },
@@ -12068,11 +11763,6 @@
     },
     {
       "file": "src/gzkit/hooks/core.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/hooks/core.py",
       "rule": "S603",
       "count": 1
     },
@@ -12105,11 +11795,6 @@
       "file": "src/gzkit/hooks/guards.py",
       "rule": "PLR6201",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/hooks/guards.py",
-      "rule": "S404",
-      "count": 2
     },
     {
       "file": "src/gzkit/hooks/guards.py",
@@ -12868,11 +12553,6 @@
     },
     {
       "file": "src/gzkit/lock_manager.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/lock_manager.py",
       "rule": "S607",
       "count": 2
     },
@@ -12967,11 +12647,6 @@
       "count": 1
     },
     {
-      "file": "src/gzkit/mutation_witness.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
       "file": "src/gzkit/mx/awareness.py",
       "rule": "DOC201",
       "count": 6
@@ -12999,11 +12674,6 @@
     {
       "file": "src/gzkit/mx/contract.py",
       "rule": "PLR6201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/mx/contract.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -13075,11 +12745,6 @@
       "file": "src/gzkit/mx/log.py",
       "rule": "PLW2901",
       "count": 2
-    },
-    {
-      "file": "src/gzkit/mx/log.py",
-      "rule": "S404",
-      "count": 1
     },
     {
       "file": "src/gzkit/mx/log.py",
@@ -13608,11 +13273,6 @@
     },
     {
       "file": "src/gzkit/quality.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/quality.py",
       "rule": "S603",
       "count": 2
     },
@@ -13640,11 +13300,6 @@
       "file": "src/gzkit/reach_trace.py",
       "rule": "DOC201",
       "count": 2
-    },
-    {
-      "file": "src/gzkit/reach_trace.py",
-      "rule": "S404",
-      "count": 1
     },
     {
       "file": "src/gzkit/red_witness.py",
@@ -13679,11 +13334,6 @@
     {
       "file": "src/gzkit/red_witness.py",
       "rule": "PLR6201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/red_witness.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -13764,11 +13414,6 @@
     {
       "file": "src/gzkit/remote_divergence.py",
       "rule": "PLR2004",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/remote_divergence.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -14518,11 +14163,6 @@
     },
     {
       "file": "src/gzkit/utils.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/utils.py",
       "rule": "S603",
       "count": 1
     },
@@ -14823,11 +14463,6 @@
     },
     {
       "file": "tests/adr/test_patch_release_abort_hint.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "tests/adr/test_patch_release_abort_hint.py",
       "rule": "S603",
       "count": 1
     },
@@ -14878,11 +14513,6 @@
     },
     {
       "file": "tests/adr/test_storage_tiers.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "tests/adr/test_storage_tiers.py",
       "rule": "S603",
       "count": 1
     },
@@ -14913,11 +14543,6 @@
     },
     {
       "file": "tests/arb/test_canonical_steps_leaf_import.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "tests/arb/test_canonical_steps_leaf_import.py",
       "rule": "S603",
       "count": 1
     },
@@ -14934,11 +14559,6 @@
     {
       "file": "tests/arb/test_red_witness_void_experiment.py",
       "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "tests/arb/test_red_witness_void_experiment.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -14962,19 +14582,9 @@
       "count": 6
     },
     {
-      "file": "tests/arb/test_ruff_reporter.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
       "file": "tests/arb/test_step_output_cli.py",
       "rule": "PLC0415",
       "count": 3
-    },
-    {
-      "file": "tests/arb/test_step_output_cli.py",
-      "rule": "S404",
-      "count": 1
     },
     {
       "file": "tests/arb/test_step_output_cli.py",
@@ -14990,11 +14600,6 @@
       "file": "tests/arb/test_step_reporter.py",
       "rule": "PLC0415",
       "count": 9
-    },
-    {
-      "file": "tests/arb/test_step_reporter.py",
-      "rule": "S404",
-      "count": 1
     },
     {
       "file": "tests/arb/test_typecheck_scope_lockstep.py",
@@ -15015,11 +14620,6 @@
       "file": "tests/arb/test_validator.py",
       "rule": "PLC0415",
       "count": 10
-    },
-    {
-      "file": "tests/arb/test_writer_validator_lockstep.py",
-      "rule": "S404",
-      "count": 1
     },
     {
       "file": "tests/arb/test_writer_validator_lockstep.py",
@@ -15094,11 +14694,6 @@
     {
       "file": "tests/chores/test_repo_content_walks.py",
       "rule": "EM102",
-      "count": 1
-    },
-    {
-      "file": "tests/chores/test_repo_content_walks.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -15303,11 +14898,6 @@
     },
     {
       "file": "tests/commands/common.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "tests/commands/common.py",
       "rule": "S603",
       "count": 1
     },
@@ -15372,11 +14962,6 @@
       "count": 11
     },
     {
-      "file": "tests/commands/test_arb_cmd.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
       "file": "tests/commands/test_audit.py",
       "rule": "FLY002",
       "count": 8
@@ -15405,11 +14990,6 @@
       "file": "tests/commands/test_check_advisory_rendering.py",
       "rule": "PLC0415",
       "count": 2
-    },
-    {
-      "file": "tests/commands/test_check_changed_tests.py",
-      "rule": "S404",
-      "count": 1
     },
     {
       "file": "tests/commands/test_check_changed_tests.py",
@@ -15493,11 +15073,6 @@
     },
     {
       "file": "tests/commands/test_chores_status.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "tests/commands/test_chores_status.py",
       "rule": "S603",
       "count": 4
     },
@@ -15515,11 +15090,6 @@
       "file": "tests/commands/test_common_fixtures.py",
       "rule": "PLW1510",
       "count": 5
-    },
-    {
-      "file": "tests/commands/test_common_fixtures.py",
-      "rule": "S404",
-      "count": 1
     },
     {
       "file": "tests/commands/test_common_fixtures.py",
@@ -15607,11 +15177,6 @@
       "count": 1
     },
     {
-      "file": "tests/commands/test_content_cli.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
       "file": "tests/commands/test_content_commit.py",
       "rule": "DOC201",
       "count": 1
@@ -15669,11 +15234,6 @@
     {
       "file": "tests/commands/test_content_own.py",
       "rule": "RUF012",
-      "count": 1
-    },
-    {
-      "file": "tests/commands/test_content_own.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -15759,11 +15319,6 @@
     {
       "file": "tests/commands/test_content_unown.py",
       "rule": "RUF059",
-      "count": 1
-    },
-    {
-      "file": "tests/commands/test_content_unown.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -15867,11 +15422,6 @@
       "count": 10
     },
     {
-      "file": "tests/commands/test_init_hook_delivery.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
       "file": "tests/commands/test_init_repair_announces_writes.py",
       "rule": "DOC201",
       "count": 3
@@ -15963,11 +15513,6 @@
     },
     {
       "file": "tests/commands/test_justify_validate.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "tests/commands/test_justify_validate.py",
       "rule": "S603",
       "count": 2
     },
@@ -16010,11 +15555,6 @@
       "file": "tests/commands/test_obpi_acceptance_cli.py",
       "rule": "DOC201",
       "count": 2
-    },
-    {
-      "file": "tests/commands/test_obpi_acceptance_cli.py",
-      "rule": "S404",
-      "count": 1
     },
     {
       "file": "tests/commands/test_obpi_acceptance_cli.py",
@@ -16183,11 +15723,6 @@
     },
     {
       "file": "tests/commands/test_obpi_validate_cmd.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "tests/commands/test_obpi_validate_cmd.py",
       "rule": "S603",
       "count": 1
     },
@@ -16305,11 +15840,6 @@
       "file": "tests/commands/test_status.py",
       "rule": "PLR0904",
       "count": 2
-    },
-    {
-      "file": "tests/commands/test_status.py",
-      "rule": "S404",
-      "count": 1
     },
     {
       "file": "tests/commands/test_status.py",
@@ -16473,11 +16003,6 @@
     },
     {
       "file": "tests/commands/test_validate_cmds.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "tests/commands/test_validate_cmds.py",
       "rule": "S607",
       "count": 10
     },
@@ -16512,11 +16037,6 @@
       "count": 7
     },
     {
-      "file": "tests/commands/test_validate_task_envelope_encoding.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
       "file": "tests/complexity/__init__.py",
       "rule": "DOC201",
       "count": 5
@@ -16530,11 +16050,6 @@
       "file": "tests/complexity/__init__.py",
       "rule": "RUF067",
       "count": 10
-    },
-    {
-      "file": "tests/complexity/__init__.py",
-      "rule": "S404",
-      "count": 1
     },
     {
       "file": "tests/complexity/__init__.py",
@@ -16858,11 +16373,6 @@
     },
     {
       "file": "tests/content/test_tui_affordances.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "tests/content/test_tui_affordances.py",
       "rule": "S607",
       "count": 1
     },
@@ -16875,11 +16385,6 @@
       "file": "tests/content/test_validation_hooks.py",
       "rule": "PLC0415",
       "count": 4
-    },
-    {
-      "file": "tests/content/test_validation_hooks.py",
-      "rule": "S404",
-      "count": 1
     },
     {
       "file": "tests/eval/test_datasets.py",
@@ -16923,11 +16428,6 @@
     },
     {
       "file": "tests/governance/_fold_guard.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/_fold_guard.py",
       "rule": "S603",
       "count": 1
     },
@@ -16944,11 +16444,6 @@
     {
       "file": "tests/governance/common.py",
       "rule": "PLC2801",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/common.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -17000,11 +16495,6 @@
       "file": "tests/governance/test_advances_decorator.py",
       "rule": "PLC0415",
       "count": 2
-    },
-    {
-      "file": "tests/governance/test_adversary_workspace.py",
-      "rule": "S404",
-      "count": 1
     },
     {
       "file": "tests/governance/test_adversary_workspace.py",
@@ -17078,11 +16568,6 @@
     },
     {
       "file": "tests/governance/test_attestation_receipt_validator.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/test_attestation_receipt_validator.py",
       "rule": "S603",
       "count": 1
     },
@@ -17127,11 +16612,6 @@
       "count": 1
     },
     {
-      "file": "tests/governance/test_audit_chores_layout.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
       "file": "tests/governance/test_audit_insights_shape.py",
       "rule": "PLC0415",
       "count": 1
@@ -17139,11 +16619,6 @@
     {
       "file": "tests/governance/test_audit_instructions_files_budget.py",
       "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/test_audit_line_endings.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -17227,11 +16702,6 @@
       "count": 1
     },
     {
-      "file": "tests/governance/test_behave_scenario_isolation.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
       "file": "tests/governance/test_behave_sharding.py",
       "rule": "DOC201",
       "count": 1
@@ -17275,11 +16745,6 @@
       "file": "tests/governance/test_brief_size.py",
       "rule": "PLC0415",
       "count": 11
-    },
-    {
-      "file": "tests/governance/test_brief_size.py",
-      "rule": "S404",
-      "count": 1
     },
     {
       "file": "tests/governance/test_brief_size.py",
@@ -17503,11 +16968,6 @@
     },
     {
       "file": "tests/governance/test_commit_trailers_pushed_range.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/test_commit_trailers_pushed_range.py",
       "rule": "S603",
       "count": 1
     },
@@ -17615,11 +17075,6 @@
       "file": "tests/governance/test_distribution_audit.py",
       "rule": "PLC0415",
       "count": 42
-    },
-    {
-      "file": "tests/governance/test_distribution_audit.py",
-      "rule": "S404",
-      "count": 1
     },
     {
       "file": "tests/governance/test_doc_surface_parity.py",
@@ -17743,11 +17198,6 @@
     },
     {
       "file": "tests/governance/test_eval_feedback_trailer.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/test_eval_feedback_trailer.py",
       "rule": "S607",
       "count": 4
     },
@@ -17769,11 +17219,6 @@
     {
       "file": "tests/governance/test_fidelity_committed_state.py",
       "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/test_fidelity_committed_state.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -17883,11 +17328,6 @@
     },
     {
       "file": "tests/governance/test_guard_canaries.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/test_guard_canaries.py",
       "rule": "S603",
       "count": 1
     },
@@ -17993,11 +17433,6 @@
     },
     {
       "file": "tests/governance/test_handoff_selection.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/test_handoff_selection.py",
       "rule": "S603",
       "count": 1
     },
@@ -18010,11 +17445,6 @@
       "file": "tests/governance/test_handoff_validation.py",
       "rule": "DOC201",
       "count": 3
-    },
-    {
-      "file": "tests/governance/test_handoff_validation.py",
-      "rule": "S404",
-      "count": 1
     },
     {
       "file": "tests/governance/test_handoff_validation.py",
@@ -18153,11 +17583,6 @@
     },
     {
       "file": "tests/governance/test_lock_exchange_coupling_validator.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/test_lock_exchange_coupling_validator.py",
       "rule": "S603",
       "count": 2
     },
@@ -18243,11 +17668,6 @@
     },
     {
       "file": "tests/governance/test_pipeline_control_inventory.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/test_pipeline_control_inventory.py",
       "rule": "S603",
       "count": 1
     },
@@ -18328,11 +17748,6 @@
     },
     {
       "file": "tests/governance/test_promoted_advisory_audits.py",
-      "rule": "S404",
-      "count": 4
-    },
-    {
-      "file": "tests/governance/test_promoted_advisory_audits.py",
       "rule": "S603",
       "count": 3
     },
@@ -18375,16 +17790,6 @@
       "file": "tests/governance/test_qc_binding_scope.py",
       "rule": "RUF059",
       "count": 2
-    },
-    {
-      "file": "tests/governance/test_qc_binding_scope.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/test_qc_binding_self_check.py",
-      "rule": "S404",
-      "count": 1
     },
     {
       "file": "tests/governance/test_reconcile_freshness.py",
@@ -18502,11 +17907,6 @@
       "count": 1
     },
     {
-      "file": "tests/governance/test_retire_ln_surface.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
       "file": "tests/governance/test_rule_delivery_scoping.py",
       "rule": "DOC201",
       "count": 1
@@ -18560,11 +17960,6 @@
       "file": "tests/governance/test_session_exit.py",
       "rule": "PLC0415",
       "count": 4
-    },
-    {
-      "file": "tests/governance/test_session_exit.py",
-      "rule": "S404",
-      "count": 1
     },
     {
       "file": "tests/governance/test_session_exit.py",
@@ -18658,11 +18053,6 @@
     },
     {
       "file": "tests/governance/test_stage4_evidence.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/test_stage4_evidence.py",
       "rule": "S603",
       "count": 1
     },
@@ -18674,11 +18064,6 @@
     {
       "file": "tests/governance/test_stage4_packet.py",
       "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/test_stage4_packet.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -18823,11 +18208,6 @@
     },
     {
       "file": "tests/governance/test_tracked_symlinks.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/test_tracked_symlinks.py",
       "rule": "S603",
       "count": 2
     },
@@ -18873,11 +18253,6 @@
     },
     {
       "file": "tests/hooks/test_commit_locus_ledger_recorder.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "tests/hooks/test_commit_locus_ledger_recorder.py",
       "rule": "S603",
       "count": 1
     },
@@ -18898,11 +18273,6 @@
     },
     {
       "file": "tests/hooks/test_commit_locus_survives_precommit_stash.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "tests/hooks/test_commit_locus_survives_precommit_stash.py",
       "rule": "S603",
       "count": 3
     },
@@ -18915,11 +18285,6 @@
       "file": "tests/hooks/test_complexity_advisor_auto_chain.py",
       "rule": "PLC0415",
       "count": 3
-    },
-    {
-      "file": "tests/hooks/test_complexity_advisor_auto_chain.py",
-      "rule": "S404",
-      "count": 1
     },
     {
       "file": "tests/hooks/test_complexity_advisor_auto_chain.py",
@@ -18937,11 +18302,6 @@
       "count": 1
     },
     {
-      "file": "tests/hooks/test_hook_emitter_root_binding.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
       "file": "tests/hooks/test_mx_awareness.py",
       "rule": "DOC201",
       "count": 1
@@ -18950,11 +18310,6 @@
       "file": "tests/hooks/test_mx_awareness.py",
       "rule": "PLC0415",
       "count": 11
-    },
-    {
-      "file": "tests/hooks/test_obpi_completion_commit_guard.py",
-      "rule": "S404",
-      "count": 1
     },
     {
       "file": "tests/hooks/test_obpi_completion_commit_guard.py",
@@ -18974,11 +18329,6 @@
     {
       "file": "tests/hooks/test_stop_turn_feedback.py",
       "rule": "FBT002",
-      "count": 1
-    },
-    {
-      "file": "tests/hooks/test_stop_turn_feedback.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -19053,11 +18403,6 @@
     },
     {
       "file": "tests/knowledge/test_progressive_disclosure_path.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "tests/knowledge/test_progressive_disclosure_path.py",
       "rule": "S607",
       "count": 1
     },
@@ -19118,11 +18463,6 @@
     },
     {
       "file": "tests/mx/test_contract_pin.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "tests/mx/test_contract_pin.py",
       "rule": "S603",
       "count": 1
     },
@@ -19179,11 +18519,6 @@
     {
       "file": "tests/mx/test_mx_log.py",
       "rule": "PLW2901",
-      "count": 1
-    },
-    {
-      "file": "tests/mx/test_mx_log.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -19254,11 +18589,6 @@
     {
       "file": "tests/policy/test_cli_consistency.py",
       "rule": "RUF005",
-      "count": 1
-    },
-    {
-      "file": "tests/policy/test_cli_consistency.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -19350,11 +18680,6 @@
       "file": "tests/scripts/test_session_orientation.py",
       "rule": "PLC0415",
       "count": 7
-    },
-    {
-      "file": "tests/scripts/test_session_orientation.py",
-      "rule": "S404",
-      "count": 4
     },
     {
       "file": "tests/scripts/test_session_orientation.py",
@@ -19718,11 +19043,6 @@
     },
     {
       "file": "tests/test_check_fingerprint.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "tests/test_check_fingerprint.py",
       "rule": "S603",
       "count": 1
     },
@@ -19849,11 +19169,6 @@
     {
       "file": "tests/test_commit_witness.py",
       "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "tests/test_commit_witness.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -20178,11 +19493,6 @@
     },
     {
       "file": "tests/test_foundation_triage_e2e.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "tests/test_foundation_triage_e2e.py",
       "rule": "S603",
       "count": 1
     },
@@ -20215,11 +19525,6 @@
       "file": "tests/test_foundation_triage_skill.py",
       "rule": "PLC0415",
       "count": 3
-    },
-    {
-      "file": "tests/test_foundation_triage_skill.py",
-      "rule": "S404",
-      "count": 1
     },
     {
       "file": "tests/test_foundation_triage_skill.py",
@@ -20433,11 +19738,6 @@
     },
     {
       "file": "tests/test_ledger.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "tests/test_ledger.py",
       "rule": "S607",
       "count": 5
     },
@@ -20513,11 +19813,6 @@
     },
     {
       "file": "tests/test_ledger_merge_driver.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "tests/test_ledger_merge_driver.py",
       "rule": "S603",
       "count": 1
     },
@@ -20549,11 +19844,6 @@
     {
       "file": "tests/test_ledger_transaction_boundary.py",
       "rule": "PLC0415",
-      "count": 1
-    },
-    {
-      "file": "tests/test_ledger_transaction_boundary.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -20624,11 +19914,6 @@
     {
       "file": "tests/test_mutation_witness.py",
       "rule": "PLC0415",
-      "count": 1
-    },
-    {
-      "file": "tests/test_mutation_witness.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -20783,11 +20068,6 @@
     },
     {
       "file": "tests/test_obpi_validator.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "tests/test_obpi_validator.py",
       "rule": "S603",
       "count": 1
     },
@@ -20860,11 +20140,6 @@
       "file": "tests/test_packaging.py",
       "rule": "PLC0415",
       "count": 4
-    },
-    {
-      "file": "tests/test_packaging.py",
-      "rule": "S404",
-      "count": 1
     },
     {
       "file": "tests/test_packaging.py",
@@ -21008,11 +20283,6 @@
     },
     {
       "file": "tests/test_pipeline_position.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "tests/test_pipeline_position.py",
       "rule": "S603",
       "count": 1
     },
@@ -21109,11 +20379,6 @@
     {
       "file": "tests/test_red_witness.py",
       "rule": "FBT001",
-      "count": 1
-    },
-    {
-      "file": "tests/test_red_witness.py",
-      "rule": "S404",
       "count": 1
     },
     {
@@ -21283,11 +20548,6 @@
     },
     {
       "file": "tests/test_skill_body_audit.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "tests/test_skill_body_audit.py",
       "rule": "S603",
       "count": 1
     },
@@ -21315,11 +20575,6 @@
       "file": "tests/test_skills.py",
       "rule": "PLC0415",
       "count": 43
-    },
-    {
-      "file": "tests/test_skills.py",
-      "rule": "S404",
-      "count": 1
     },
     {
       "file": "tests/test_skills_audit.py",
@@ -21483,11 +20738,6 @@
     },
     {
       "file": "tests/test_temporal_drift.py",
-      "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "tests/test_temporal_drift.py",
       "rule": "S603",
       "count": 1
     },
@@ -21534,11 +20784,6 @@
     {
       "file": "tests/test_triangle.py",
       "rule": "PLW1510",
-      "count": 2
-    },
-    {
-      "file": "tests/test_triangle.py",
-      "rule": "S404",
       "count": 2
     },
     {
@@ -21639,11 +20884,6 @@
     {
       "file": "tests/tools/test_health_profiler.py",
       "rule": "PLW1510",
-      "count": 1
-    },
-    {
-      "file": "tests/tools/test_health_profiler.py",
-      "rule": "S404",
       "count": 1
     },
     {

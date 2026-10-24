@@ -2,7 +2,7 @@
 
 import contextlib
 import os
-import subprocess  # noqa: S404 — invoking $EDITOR is intentional
+import subprocess
 import sys
 import tempfile
 from pathlib import Path

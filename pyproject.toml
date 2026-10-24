@@ -116,6 +116,10 @@ ignore = [
     # a justified one at a genuine boundary; RUF100 already refuses a stale one
     # (ruled 2026-10-23, "RUF105 exception (Rec.)").
     "noqa-comments",
+    # Flags `import subprocess` itself, which no rewrite clears: gzkit drives git,
+    # uv, Ruff and gh by design. The calls stay judged, S607 by a resolved path and
+    # S603 by a reasoned noqa (ruled 2026-10-24, "Split by rule (Rec.)").
+    "suspicious-subprocess-import",
 ]
 
 [tool.ruff.lint.mccabe]

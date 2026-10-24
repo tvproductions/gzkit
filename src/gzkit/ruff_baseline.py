@@ -24,7 +24,7 @@ without it (hexagonal § Operative rule 6).
 
 import functools
 import json
-import subprocess  # noqa: S404 — Ruff is an external tool, reached only by argv
+import subprocess
 import sys
 from collections import Counter
 from pathlib import Path
