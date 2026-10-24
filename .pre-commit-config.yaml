@@ -23,8 +23,11 @@ repos:
       - id: ruff-check
         name: ruff check (lint, against data/ruff_baseline.json)
         # Ruff selects ALL (RO-9 tranche 4); `gz lint` judges the staged files'
-        # findings against the counted baseline, after Ruff's safe fixes.
-        entry: uv run gz lint --fix
+        # findings against the counted baseline. Check-only: a fixing hook
+        # rewrote every held finding in any file a commit touched, dated
+        # evidence included (operator, 2026-10-24: "do 1"). Fixes run when
+        # asked for, through `gz lint --fix` or `gz format`.
+        entry: uv run gz lint
         language: system
         pass_filenames: true
         types: [python]
