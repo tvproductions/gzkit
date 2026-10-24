@@ -280,17 +280,20 @@ class RuffRuleCodesTest(unittest.TestCase):
         self.assertEqual(codes["blind-except"], "BLE001")
         self.assertEqual(codes["line-too-long"], "E501")
 
-    def test_ruff_failing_or_printing_no_table_is_a_run_error(self) -> None:
-        for done in (
-            mock.Mock(returncode=2, stdout="", stderr="no ruff"),
-            mock.Mock(returncode=0, stdout="not json", stderr=""),
-        ):
+    def test_each_way_ruff_fails_is_a_run_error_naming_its_cause(self) -> None:
+        cases = (
+            (mock.Mock(return_value=mock.Mock(returncode=2, stdout="[]", stderr="")), "exited 2"),
+            (mock.Mock(return_value=mock.Mock(returncode=0, stdout="no", stderr="")), "no JSON"),
+            (mock.Mock(side_effect=FileNotFoundError("python")), "could not start"),
+        )
+        for run, cause in cases:
             with (
-                self.subTest(done=done),
-                mock.patch.object(ruff_baseline.subprocess, "run", return_value=done),
-                self.assertRaises(RuffRunError),
+                self.subTest(cause=cause),
+                mock.patch.object(ruff_baseline.subprocess, "run", run),
+                self.assertRaises(RuffRunError) as caught,
             ):
                 ruff_baseline.ruff_rule_codes()
+            self.assertIn(cause, str(caught.exception))
 
 
 class RenderReportRendering(unittest.TestCase):
