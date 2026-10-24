@@ -225,7 +225,10 @@ The rules tranche 4 still reads site by site: S506 (`quality.py`, the YAML loade
 (`trust_audits/cli.py`), two S701 (jinja2 autoescape off on non-HTML renders), and about 260
 S603/S607/S404 subprocess sites. Each gets a fix or a reasoned `# noqa`. Three preview findings read as
 false positives: F822 against `cli/__init__.py`'s lazy `__getattr__`, PLE1141 on a list of tuples, and
-RUF027 on a `.format` template. Under "every ty rule", the 2026-08-08 exclusion of `features/` from
+RUF027 on a `.format` template. **Read 2026-10-24 (operator, verbatim *"c"*):** F822 and S608 fixed, S701, S506,
+PLE1141 and RUF027 carry reasoned `# noqa` (`f1e84660c`); the subprocess sites (552 findings over 153
+files, measured that day) and the `[tool.ty]` rule overrides that hide 2,262 diagnostics in tests and
+features are read before the tranche closes. Under "every ty rule", the 2026-08-08 exclusion of `features/` from
 `ty check` (behave's `context` annotations) gets a ruling when the tranche lands.
 
 **Amended for tranche 4 (2026-10-24): the import-boundary row and the PEP 563 ban.** Measured on Ruff 0.17.1, `ruff analyze graph` reports first-party files only: `core/models.py` imports Pydantic and its entry lists `src/gzkit/skill_contract.py` alone, so the graph cannot carry the core's stdlib-and-Pydantic allowlist, and `TID251` banned-api is a ban list, which cannot state an allowlist either. The hand-written AST test in `tests/policy/test_import_boundaries.py` therefore stays. What the graph does that the test cannot is follow imports transitively, and that reading found `core/id_resolver.py` reaching 76 `cli`/`commands` files through a function-local import at `req_kind_support.py:320`. The operator ruled that work out of this tranche (verbatim *"okay - do 1-3"*, accepting the recommendation to file it), so the graph lands as the direction check under GHI #1267. The `TID251` ban on `__future__.annotations` is ordered after the import's removal (selection *"Remove first, then ban (Rec.)"*): 1,058 files carried it, and holding them would raise `data/ruff_baseline.json` above its `baseline_count` of 4,613 in `data/waiver_ratchet_registry.json`, which a shrink-ratchet forbids. With every copy removed the ban enters with no row.
