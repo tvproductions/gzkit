@@ -13,6 +13,7 @@ import re
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 
 from gzkit.eval.datasets import (
     KNOWN_SURFACES,
@@ -35,7 +36,7 @@ _TIMESTAMP_PATTERN = re.compile(
 )
 
 
-def _minimal_dataset() -> dict[str, object]:
+def _minimal_dataset() -> dict[str, Any]:
     return {
         "surface": "example",
         "version": "1.0.0",

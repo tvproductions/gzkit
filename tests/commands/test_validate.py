@@ -7,6 +7,7 @@ from unittest.mock import patch
 from gzkit.cli.main import _build_parser
 from gzkit.traceability import covers
 from gzkit.validate import ValidationError
+from tests.commands.common import subcommand_parser
 
 
 class TestKindInvarianceFlag(unittest.TestCase):
@@ -28,9 +29,7 @@ class TestKindInvarianceFlag(unittest.TestCase):
     def test_kind_invariance_help_lists_flag(self) -> None:
         """validate --help includes --kind-invariance and a 'Why foundation tier?' reference."""
         parser = _build_parser()
-        # Find the validate subparser
-        subparsers_action = next(a for a in parser._actions if hasattr(a, "_parser_class"))
-        validate_parser = subparsers_action.choices["validate"]
+        validate_parser = subcommand_parser(parser, "validate")
         help_text = validate_parser.format_help()
 
         self.assertIn("--kind-invariance", help_text)
@@ -84,8 +83,7 @@ class TestReceiptShapeFlag(unittest.TestCase):
     def test_receipt_shape_help_lists_flag(self) -> None:
         """validate --help includes --receipt-shape."""
         parser = _build_parser()
-        subparsers_action = next(a for a in parser._actions if hasattr(a, "_parser_class"))
-        validate_parser = subparsers_action.choices["validate"]
+        validate_parser = subcommand_parser(parser, "validate")
         help_text = validate_parser.format_help()
         self.assertIn("--receipt-shape", help_text)
 

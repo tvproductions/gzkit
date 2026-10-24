@@ -67,6 +67,8 @@ class TestIntrinsicComplexityDecorator(unittest.TestCase):
         # Both must be present and carry distinct reasons.
         self.assertIsNotNone(outer_result)
         self.assertIsNotNone(inner_result)
+        assert outer_result is not None
+        assert inner_result is not None
         self.assertNotEqual(outer_qualname, inner_qualname)
         self.assertEqual(outer_result[0], "outer reason")
         self.assertEqual(inner_result[0], "inner reason")

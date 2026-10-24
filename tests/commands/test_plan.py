@@ -237,6 +237,7 @@ class TestPlanCommand(unittest.TestCase):
             graph = fresh_ledger.get_artifact_graph()
             child = graph.get("ADR-0.4.0-child-feature")
             self.assertIsNotNone(child)
+            assert child is not None
             self.assertEqual(child["parent"], "ADR-0.3.0-parent-feature")
 
             adr_path = Path(

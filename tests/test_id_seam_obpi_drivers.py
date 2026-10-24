@@ -201,6 +201,8 @@ class TestTrustAuditReaders(unittest.TestCase):
 
     def test_brief_file_names_split_into_semver_and_item(self) -> None:
         match = briefs._OBPI_FILE_PATTERN.match(f"{_FULL}.md")
+        self.assertIsNotNone(match)
+        assert match is not None
         self.assertEqual((match["semver"], match["item"]), ("0.28.0", "01"))
         self.assertIsNone(briefs._OBPI_FILE_PATTERN.match("OBPI-0.28.0-1-x.md"))
 

@@ -28,6 +28,7 @@ from gzkit.commands.quality import (
     _select_check_steps,
 )
 from gzkit.traceability import covers
+from tests.commands.common import subcommand_parser
 
 _CONFIG = _check_step_scopes_file()
 
@@ -320,7 +321,7 @@ class TestTheCrossPlatformScope(unittest.TestCase):
         from gzkit.cli.main import _build_parser  # noqa: PLC0415
 
         parser = _build_parser()
-        check = parser._subparsers._group_actions[0].choices["check"]
+        check = subcommand_parser(parser, "check")
         examples = [
             line.strip()
             for line in (check.epilog or "").split("Exit codes")[0].splitlines()

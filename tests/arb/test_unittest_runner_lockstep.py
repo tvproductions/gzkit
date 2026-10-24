@@ -39,6 +39,7 @@ from gzkit.commands.obpi_stages import BASELINE_VERIFICATION
 from gzkit.pipeline_dispatch import DispatchTask, TaskComplexity, compose_implementer_prompt
 from gzkit.pipeline_verification import compose_verification_prompt
 from gzkit.quality import run_tests
+from tests.commands.common import subcommand_parser
 
 _SENTINEL_COMMAND = ["uv", "run", "sentinel-runner", "-s", "sentinel-tests"]
 
@@ -283,8 +284,8 @@ class TestArbHelpShowsTheCanonicalStep(unittest.TestCase):
 
     def _epilogs(self) -> list[str]:
         parser = _build_parser()
-        arb = parser._subparsers._group_actions[0].choices["arb"]
-        step = arb._subparsers._group_actions[0].choices["step"]
+        arb = subcommand_parser(parser, "arb")
+        step = subcommand_parser(arb, "step")
         return [arb.epilog or "", step.epilog or ""]
 
     def test_unittest_examples_carry_the_canonical_argv(self) -> None:

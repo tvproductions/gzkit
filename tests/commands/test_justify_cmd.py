@@ -23,6 +23,7 @@ from gzkit.justify.cli import (
 )
 from gzkit.justify.models import AnchorRef, AnchorResolutionError, EvidenceBundle
 from gzkit.traceability import covers
+from tests.commands.common import subcommand_parser
 
 
 def _invoke_justify(**kwargs: object) -> int:
@@ -295,15 +296,7 @@ class TestHelpSurface(unittest.TestCase):
 
         parser = _get_parser()
         help_io = io.StringIO()
-        try:
-            subparsers_action = next(
-                action
-                for action in parser._actions
-                if "justify" in (getattr(action, "choices", None) or ())
-            )
-        except StopIteration:  # pragma: no cover — registration missing
-            self.fail("justify subcommand not registered under top-level parser")
-        justify_parser = subparsers_action.choices["justify"]
+        justify_parser = subcommand_parser(parser, "justify")
         justify_parser.print_help(file=help_io)
         text = help_io.getvalue()
         self.assertIn("anchor", text)

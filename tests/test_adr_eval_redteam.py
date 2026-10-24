@@ -62,6 +62,7 @@ class TestParseRedTeamResult(unittest.TestCase):
         ]
         result = parse_redteam_result(self._make_output(challenges))
         self.assertIsNotNone(result)
+        assert result is not None
         self.assertEqual(len(result), 10)
         self.assertTrue(result[0].passed)
         self.assertFalse(result[8].passed)

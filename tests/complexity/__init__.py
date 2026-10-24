@@ -26,6 +26,7 @@ import subprocess
 import tempfile
 from collections.abc import Generator
 from pathlib import Path
+from typing import Any
 from unittest import mock
 
 from gzkit.complexity.measurement import measure_corpus
@@ -122,10 +123,10 @@ class _SubprocessSpy:
     """Capture every call to ``subprocess.run`` for shape assertions."""
 
     def __init__(self) -> None:
-        self.calls: list[dict[str, object]] = []
+        self.calls: list[dict[str, Any]] = []
 
     def __call__(self, *args: object, **kwargs: object) -> mock.Mock:
-        argv = list(args[0]) if args and isinstance(args[0], (list, tuple)) else []
+        argv = [str(a) for a in args[0]] if args and isinstance(args[0], (list, tuple)) else []
         self.calls.append({"argv": argv, "kwargs": dict(kwargs)})
         return _route_subprocess(argv)
 

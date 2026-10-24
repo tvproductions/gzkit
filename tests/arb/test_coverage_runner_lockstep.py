@@ -18,6 +18,7 @@ mutation-tested; the one that cannot (a chore's JSON criterion, read by the chor
 runner) is pinned by equality.
 """
 
+import argparse
 import json
 import shlex
 import tempfile
@@ -32,6 +33,7 @@ from gzkit.arb.validator import (
 )
 from gzkit.cli.main import _build_parser
 from gzkit.commands.arb import arb_coverage_cmd
+from tests.commands.common import subcommand_parser
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _SENTINEL_COMMAND = ["uv", "run", "sentinel-runner", "--coverage"]
@@ -111,16 +113,15 @@ class TestArbCoverageVerbFollowsCanon(unittest.TestCase):
     def test_arb_ty_help_names_the_locked_tool(self) -> None:
         # output-contract: the help says which ty runs, the locked one (RO-9 tranche 2)
         parser = _build_parser()
-        arb = parser._subparsers._group_actions[0].choices["arb"]
-        choices = arb._subparsers._group_actions[0]
-        ty_help = next(a.help for a in choices._choices_actions if a.dest == "ty")
+        arb = subcommand_parser(parser, "arb")
+        choices = next(a for a in arb._actions if isinstance(a, argparse._SubParsersAction))
+        ty_help = next(a.help or "" for a in choices._choices_actions if a.dest == "ty")
         self.assertIn("uv run ty", ty_help)
         self.assertNotIn("uvx", ty_help)
 
     def test_help_does_not_teach_the_retired_invocation(self) -> None:
         parser = _build_parser()
-        arb = parser._subparsers._group_actions[0].choices["arb"]
-        coverage = arb._subparsers._group_actions[0].choices["coverage"]
+        coverage = subcommand_parser(parser, "arb", "coverage")
         self.assertNotIn("-m unittest discover", coverage.epilog or "")
 
 

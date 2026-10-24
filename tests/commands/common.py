@@ -1,3 +1,4 @@
+import argparse
 import io
 import json
 import os
@@ -186,6 +187,21 @@ def _git_subprocess_patcher(
     finally:
         for p in reversed(patchers):
             p.stop()
+
+
+def subcommand_parser(parser: argparse.ArgumentParser, *path: str) -> argparse.ArgumentParser:
+    """Return the parser registered at ``path`` below ``parser`` (``"arb", "step"``).
+
+    Narrows through ``argparse._SubParsersAction`` the way ``gzkit.cli.main`` walks the
+    tree, so a checker sees a parser rather than an optional, untyped action.
+
+    Returns:
+        The subcommand's parser; a missing name raises ``KeyError``.
+    """
+    for name in path:
+        action = next(a for a in parser._actions if isinstance(a, argparse._SubParsersAction))
+        parser = action.choices[name]
+    return parser
 
 
 def argv_by_tool_name(argv: Sequence[str]) -> list[str]:

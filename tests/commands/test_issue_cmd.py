@@ -219,6 +219,7 @@ class TestIssueFileCli(unittest.TestCase):
         self.assertEqual(self.mock_run.call_count, 2)
         gh_call = self.mock_run.call_args_list[1]
         argv = gh_call.args[0] if gh_call.args else gh_call.kwargs.get("args")
+        assert argv is not None
         self.assertIn("--repo", argv)
         repo_index = argv.index("--repo")
         self.assertEqual(argv[repo_index + 1], "tvproductions/gzkit")

@@ -1052,6 +1052,7 @@ class TestCreditOutlivesTheMarker(unittest.TestCase):
         self._clear_stale(root, obpi_id)
         declaration = chan.single_driver_declaration(root, obpi_id)
         self.assertIsNotNone(declaration)
+        assert declaration is not None
         self.assertEqual(declaration["reason"], "harness forbids subagents")
 
     def test_a_hand_written_marker_key_grants_no_dispatch_credit(self) -> None:

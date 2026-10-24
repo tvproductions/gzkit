@@ -18,6 +18,7 @@ from gzkit.quality import (
     run_tests,
 )
 from gzkit.triangle import EdgeType, LinkageRecord, VertexRef, VertexType
+from tests.commands.common import subcommand_parser
 
 
 class TestObpiTestNameResolution(unittest.TestCase):
@@ -373,8 +374,7 @@ class TestLintNamesOnlyWhatRuns(unittest.TestCase):
         from gzkit.commands.quality import lint
 
         parser = _build_parser()
-        subparsers = next(a for a in parser._actions if a.choices and "lint" in a.choices)
-        description = subparsers.choices["lint"].description or ""
+        description = subcommand_parser(parser, "lint").description or ""
         for retired in ("complexipy", "pymarkdown"):
             with self.subTest(retired=retired):
                 self.assertNotIn(retired, description.lower())
