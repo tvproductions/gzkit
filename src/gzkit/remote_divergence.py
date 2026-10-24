@@ -39,6 +39,8 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.executables import resolve_executable
+
 __all__ = [
     "FETCH_TIMEOUT_SEC",
     "NO_FETCH_ENV",
@@ -149,8 +151,8 @@ def _git(
     (the lesson GHI #688 already taught the file-read side).
     """
     try:
-        return subprocess.run(
-            ["git", *args],
+        return subprocess.run(  # noqa: S603 — git argv this module builds, never user text; executable resolved
+            [resolve_executable("git"), *args],
             capture_output=True,
             text=True,
             encoding="utf-8",

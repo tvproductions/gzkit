@@ -565,7 +565,7 @@ class TestLockSidecarIsNotCommittable(unittest.TestCase):
 
         self.assertEqual(opened, ["ledger.jsonl.lock"])
         result = subprocess.run(  # noqa: S603
-            ["git", "check-ignore", "-q", f".gzkit/{opened[0]}"],  # noqa: S607
+            ["git", "check-ignore", "-q", f".gzkit/{opened[0]}"],
             cwd=repo_root,
             check=False,
             env=_isolated_git_env(),

@@ -35,6 +35,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.acceptance_store import acceptance_blockers
 from gzkit.adversary_workspace import materialize_adversary_workspace
+from gzkit.executables import find_executable, resolve_argv, resolve_executable
 from gzkit.git_spawn_boundary import isolated_git_env
 
 # Canonical ARB steps whose receipts back a Heavy-lane completion.
@@ -268,7 +269,7 @@ def replay_shell() -> str | None:
     """
     if os.name == "nt":
         return _windows_posix_shell()
-    return shutil.which("bash")
+    return find_executable("bash")
 
 
 def _windows_posix_shell() -> str | None:
@@ -281,12 +282,12 @@ def _windows_posix_shell() -> str | None:
     and this lookup has a better answer than widening it). Git for Windows lays
     out ``<root>\cmd\git.exe`` beside ``<root>\bin\bash.exe``.
     """
-    git = shutil.which("git")
+    git = find_executable("git")
     if git is not None:
         candidate = Path(git).resolve().parent.parent / "bin" / "bash.exe"
         if candidate.is_file():
             return str(candidate)
-    found = shutil.which("bash")
+    found = find_executable("bash")
     if found is None:
         return None
     # ``System32\bash.exe`` is the WSL LAUNCHER. It runs in a different
@@ -318,8 +319,8 @@ def _materialize_demo_checkout(project_root: Path, destination: Path) -> None:
     work under review is routinely not yet added.
     """
     materialize_adversary_workspace(project_root, destination)
-    listed = subprocess.run(
-        ["git", "ls-files", "--others", "--exclude-standard", "-z"],
+    listed = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
+        [resolve_executable("git"), "ls-files", "--others", "--exclude-standard", "-z"],
         cwd=project_root,
         env=isolated_git_env(os.environ),
         capture_output=True,
@@ -366,8 +367,8 @@ def demo_env(project_root: Path, checkout: Path) -> dict[str, str]:
 def _run_demo(command: str, checkout: Path, env: dict[str, str]) -> DemoResult:
     """Execute one demo command in *checkout*, capturing exit status and an output tail."""
     args, use_shell = replay_invocation(command)
-    proc = subprocess.run(
-        args,
+    proc = subprocess.run(  # noqa: S603 — replays a packet's transcript command; the replay is the witness
+        resolve_argv(args) if isinstance(args, list) else args,
         shell=use_shell,
         cwd=checkout,
         env=env,
@@ -450,7 +451,7 @@ def _counts_from_covers_summary(data: dict) -> tuple[int, int]:
 def _covers_counts(project_root: Path, obpi_id: str) -> tuple[int, int]:
     """Return (total_reqs, uncovered_count) from ``gz covers <obpi> --json``."""
     proc = subprocess.run(  # noqa: S603
-        ["uv", "run", "gz", "covers", obpi_id, "--json"],
+        [resolve_executable("uv"), "run", "gz", "covers", obpi_id, "--json"],
         cwd=project_root,
         capture_output=True,
         text=True,

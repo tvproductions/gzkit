@@ -19,6 +19,7 @@ from rich.markup import escape
 
 from gzkit import __version__
 from gzkit.commands.common import console
+from gzkit.executables import resolve_executable
 
 GZKIT_REPO = "tvproductions/gzkit"
 
@@ -46,8 +47,8 @@ def derive_consumer_slug() -> str:
     Strips a trailing ``.git`` suffix. Handles SSH (``git@github.com:owner/repo``)
     and HTTPS (``https://github.com/owner/repo``) URL forms.
     """
-    result = subprocess.run(
-        ["git", "remote", "-v"],
+    result = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
+        [resolve_executable("git"), "remote", "-v"],
         capture_output=True,
         text=True,
         errors="replace",
@@ -147,9 +148,9 @@ def issue_file_cmd(
         console.print(composed)
         return
 
-    result = subprocess.run(
+    result = subprocess.run(  # noqa: S603 — gh issue create, the operator's issue fields as arguments
         [
-            "gh",
+            resolve_executable("gh"),
             "issue",
             "create",
             "--repo",

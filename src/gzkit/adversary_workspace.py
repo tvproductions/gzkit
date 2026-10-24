@@ -32,6 +32,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.executables import resolve_argv
 from gzkit.red_witness import classify_failure
 
 _SUBPROCESS_TIMEOUT_S = 300
@@ -90,8 +91,8 @@ class ReplayRecord(BaseModel):
 def _run(
     args: list[str], cwd: Path, stdin: bytes | None = None
 ) -> subprocess.CompletedProcess[bytes]:
-    return subprocess.run(
-        args,
+    return subprocess.run(  # noqa: S603 — git and tar argv this module builds; executable resolved
+        resolve_argv(args),
         cwd=cwd,
         input=stdin,
         capture_output=True,

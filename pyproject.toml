@@ -169,10 +169,12 @@ max-complexity = 20
 # Under ALL, tests, features and scripts also carry the curation list ruled for
 # tranche 4 (2026-10-22, "Package-strict, tests curated (Rec.)"): annotations,
 # private access (attribute and import), `assert`, no-self-use and unused arguments, the idioms of test
-# scaffolding and behave steps rather than defects in them.
-"tests/**/*.py" = ["D", "BLE", "PTH", "ANN", "private-member-access", "import-private-name", "assert", "no-self-use", "ARG"]
-"features/**/*.py" = ["D", "BLE", "PTH", "ANN", "private-member-access", "import-private-name", "assert", "no-self-use", "ARG"]
-"scripts/**/*.py" = ["D", "BLE", "PTH", "ANN", "private-member-access", "import-private-name", "assert", "no-self-use", "ARG"]
+# scaffolding and behave steps rather than defects in them. S607 joined the list on 2026-10-24
+# ("Package fixed, tests curated (Rec.)"): these spawn into their own temporary repositories,
+# while the package resolves every executable (.gzkit/rules/cross-platform.md § Executable resolution).
+"tests/**/*.py" = ["D", "BLE", "PTH", "ANN", "private-member-access", "import-private-name", "assert", "no-self-use", "ARG", "start-process-with-partial-path"]
+"features/**/*.py" = ["D", "BLE", "PTH", "ANN", "private-member-access", "import-private-name", "assert", "no-self-use", "ARG", "start-process-with-partial-path"]
+"scripts/**/*.py" = ["D", "BLE", "PTH", "ANN", "private-member-access", "import-private-name", "assert", "no-self-use", "ARG", "start-process-with-partial-path"]
 ".claude/hooks/*.py" = ["BLE", "PTH"]
 ".github/copilot/hooks/*.py" = ["BLE", "PTH"]
 # Canonical skill helper scripts and their generated vendor mirrors, plus the

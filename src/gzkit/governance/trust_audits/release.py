@@ -16,6 +16,7 @@ import tomllib
 from collections import Counter
 from pathlib import Path
 
+from gzkit.executables import resolve_executable
 from gzkit.ruff_baseline import RuffRunError, ruff_rule_codes
 from gzkit.validate import ValidationError
 from gzkit.validators.rule_version_markers import canonical_rule_files, rule_version_of
@@ -116,8 +117,8 @@ def _git_stdout(project_root: Path, *args: str) -> str | None:
     import subprocess  # noqa: PLC0415
 
     try:
-        result = subprocess.run(
-            ["git", *args],
+        result = subprocess.run(  # noqa: S603 — git argv this module builds, never user text; executable resolved
+            [resolve_executable("git"), *args],
             cwd=project_root,
             check=True,
             capture_output=True,
@@ -158,8 +159,14 @@ def _unreachable_tag_errors(
     if _git_stdout(project_root, "rev-parse", "--verify", "--quiet", ORIGIN_MAIN_REF) is None:
         return []
     try:
-        reachable = subprocess.run(
-            ["git", "merge-base", "--is-ancestor", f"{expected}^{{commit}}", ORIGIN_MAIN_REF],
+        reachable = subprocess.run(  # noqa: S603 — git merge-base against a release ref; executable resolved
+            [
+                resolve_executable("git"),
+                "merge-base",
+                "--is-ancestor",
+                f"{expected}^{{commit}}",
+                ORIGIN_MAIN_REF,
+            ],
             cwd=project_root,
             check=False,
             capture_output=True,

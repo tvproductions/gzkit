@@ -19,6 +19,7 @@ from rich.markup import escape
 from gzkit import ruff_baseline
 from gzkit.commands.common import console, get_project_root
 from gzkit.core.models import obpi_parts
+from gzkit.executables import resolve_executable
 from gzkit.quality import (
     DriftAdvisoryResult,
     QualityResult,
@@ -378,8 +379,8 @@ def _run_obpi_scoped_unit(project_root, obpi: str) -> None:
         console.print(f"[yellow]No @covers unit tests found for {obpi}.[/yellow]")
         return
     console.print(f"Running {len(names)} unit test(s) scoped to {obpi}...")
-    result = subprocess.run(
-        ["uv", "run", "-m", "unittest", "-v", *names],
+    result = subprocess.run(  # noqa: S603 — unittest over named test modules; executable resolved
+        [resolve_executable("uv"), "run", "-m", "unittest", "-v", *names],
         cwd=project_root,
         check=False,
         encoding="utf-8",
@@ -1228,8 +1229,8 @@ def _changed_paths(project_root: pathlib.Path) -> list[str]:
         ["diff", "--name-only", "@{upstream}"],
     ):
         try:
-            out = subprocess.run(
-                ["git", *args],
+            out = subprocess.run(  # noqa: S603 — git argv this module builds, never user text; executable resolved
+                [resolve_executable("git"), *args],
                 cwd=project_root,
                 capture_output=True,
                 text=True,

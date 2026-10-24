@@ -28,6 +28,7 @@ from pathlib import Path
 
 from gzkit.config import GzkitConfig
 from gzkit.core.validation_rules import ValidationError
+from gzkit.executables import resolve_executable
 
 _AUDIT_TYPE = "authorship_policy"
 _ARTIFACT = "git config user.email"
@@ -82,8 +83,8 @@ def evaluate_authorship(
 def _effective_email(project_root: Path) -> str | None:
     """Return the address git would stamp here, honoring local > global > system."""
     try:
-        result = subprocess.run(
-            ["git", "config", "--get", "user.email"],
+        result = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
+            [resolve_executable("git"), "config", "--get", "user.email"],
             cwd=project_root,
             capture_output=True,
             text=True,

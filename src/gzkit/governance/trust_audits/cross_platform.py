@@ -14,6 +14,7 @@ import re
 import subprocess
 from pathlib import Path
 
+from gzkit.executables import resolve_executable
 from gzkit.validate import ValidationError
 
 _CLOSED_OBPI_WAIVER_RATIONALE = (
@@ -373,8 +374,8 @@ def _scan_crlf_surfaces(project_root: Path) -> list[ValidationError]:
     the work instead of the gate re-deriving it at every write site.
     """
     try:
-        result = subprocess.run(
-            ["git", "-C", str(project_root), "ls-files", "--eol"],
+        result = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
+            [resolve_executable("git"), "-C", str(project_root), "ls-files", "--eol"],
             capture_output=True,
             check=True,
             timeout=30,

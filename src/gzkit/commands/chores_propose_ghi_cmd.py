@@ -13,6 +13,7 @@ from rich.markup import escape
 
 from gzkit.chores.eval_feedback_cluster_lib import ProposalRecord
 from gzkit.commands.common import console, get_project_root
+from gzkit.executables import resolve_executable
 
 
 def _project_chores_root_path(project_root: Path) -> Path:
@@ -87,9 +88,9 @@ def _process_tty(path: Path, record: ProposalRecord) -> None:
     if response == "PROPOSE":
         title = f"eval-feedback: {record.summary} (recurrence >= {record.recurrence_count})"
         body = _build_ghi_body(record)
-        result = subprocess.run(
+        result = subprocess.run(  # noqa: S603 — gh issue create, the proposal's fields as arguments
             [
-                "gh",
+                resolve_executable("gh"),
                 "issue",
                 "create",
                 "--title",

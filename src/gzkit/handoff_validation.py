@@ -38,6 +38,7 @@ from gzkit.core.models import (
     OBPI_FRONTMATTER_ID_PATTERN,
     SLUG_BODY,
 )
+from gzkit.executables import resolve_executable
 
 __all__ = [
     "CHECKPOINT_MODE",
@@ -553,8 +554,8 @@ def _existed_in_git_history(base_path: Path, rel_path: str) -> bool:
     subprocess-read class (GHI #582), matching ``_is_git_tracked``.
     """
     try:
-        result = subprocess.run(
-            ["git", "log", "--all", "--max-count=1", "--", rel_path],
+        result = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
+            [resolve_executable("git"), "log", "--all", "--max-count=1", "--", rel_path],
             cwd=base_path,
             capture_output=True,
             check=False,
@@ -662,8 +663,8 @@ def _is_git_ignored(base_path: Path, rel_path: str) -> bool:
     failure or a non-git base path.
     """
     try:
-        result = subprocess.run(
-            ["git", "check-ignore", "-q", rel_path],
+        result = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
+            [resolve_executable("git"), "check-ignore", "-q", rel_path],
             cwd=base_path,
             capture_output=True,
             check=False,
@@ -704,8 +705,8 @@ def build_tracked_path_index(base_path: Path) -> frozenset[str] | None:
     rather than raising, so one odd filename cannot blind the whole index.
     """
     try:
-        result = subprocess.run(
-            ["git", "ls-files", "-z"],
+        result = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
+            [resolve_executable("git"), "ls-files", "-z"],
             cwd=base_path,
             capture_output=True,
             check=False,
@@ -756,8 +757,8 @@ def _is_git_tracked(
     if _PATHSPEC_GLOB_CHARS.isdisjoint(normalized):
         return False
     try:
-        result = subprocess.run(
-            ["git", "ls-files", "--", rel_path],
+        result = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
+            [resolve_executable("git"), "ls-files", "--", rel_path],
             cwd=base_path,
             capture_output=True,
             check=False,

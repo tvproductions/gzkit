@@ -37,6 +37,8 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+from gzkit.executables import resolve_executable
+
 #: Gitignored per `.gitignore` (`.gzkit/cache/`), so the receipt never ships.
 _RECEIPT_REL = Path(".gzkit") / "cache" / "check-verified.json"
 
@@ -49,8 +51,8 @@ def _git_raw(args: list[str], cwd: Path, env: dict[str, str] | None = None) -> s
     Column-significant output (``status --porcelain``) must not be stripped.
     """
     try:
-        result = subprocess.run(
-            ["git", *args],
+        result = subprocess.run(  # noqa: S603 — git argv this module builds, never user text; executable resolved
+            [resolve_executable("git"), *args],
             cwd=cwd,
             capture_output=True,
             text=True,
@@ -68,8 +70,8 @@ def _git_raw(args: list[str], cwd: Path, env: dict[str, str] | None = None) -> s
 def _git(args: list[str], cwd: Path, env: dict[str, str] | None = None) -> str | None:
     """Return stripped stdout of ``git <args>``, or None when git fails or is absent."""
     try:
-        result = subprocess.run(
-            ["git", *args],
+        result = subprocess.run(  # noqa: S603 — git argv this module builds, never user text; executable resolved
+            [resolve_executable("git"), *args],
             cwd=cwd,
             capture_output=True,
             text=True,

@@ -13,6 +13,7 @@ from typing import Any
 
 from gzkit.arb.paths import receipts_root
 from gzkit.arb.ruff_reporter import _git_context
+from gzkit.executables import resolve_argv
 
 SCHEMA_ID = "gzkit.arb.step_receipt.v1"
 DEFAULT_MAX_OUTPUT_CHARS = 8000
@@ -87,8 +88,8 @@ def run_step_via_arb(
 
     started = time.perf_counter()
     try:
-        result = subprocess.run(
-            cmd,
+        result = subprocess.run(  # noqa: S603 — the step command the operator names to gz arb step, run by design
+            resolve_argv(cmd),
             capture_output=True,
             text=True,
             check=False,

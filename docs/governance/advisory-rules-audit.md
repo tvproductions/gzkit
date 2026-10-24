@@ -72,7 +72,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `skill-authoring.md` | `0.2.1` |
 | `chores.md` | `0.6.4` |
 | `cli.md` | `0.9.2` |
-| `cross-platform.md` | `0.7.2` |
+| `cross-platform.md` | `0.8.0` |
 | `gate5-runbook-code-covenant.md` | `0.3.2` |
 | `guardrail-feedback-prose.md` | `0.3.1` |
 | `mx-mode.md` | `1.10.0` |
@@ -250,6 +250,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | 45b | Render relative paths via `.as_posix()` | **Promotable** | **Scored 2026-08-28 (rule `0.6.0`, GHI #900) — the clause had never been scored.** It was carried by the pre-ledger grandfather, which the version bump retired; the grandfather is shrink-only, so a newly written row cannot re-enter it and had to be scored for real. Enforced by `tests/governance/test_path_separator_portability.py` (GHI #383) — a unit test, which this scorecard does not accept as Mechanical (see 62c/62d): a unit test proves the property holds today, a registered `NC:<claim-id>` proves the *gate* refuses a violation. Promotion path: author an `@enforces` control planting a `str(Path.relative_to(...))` rendering and cite its claim id here. `source=.gzkit/rules/cross-platform.md` |
 | 45c | Text-mode subprocess captures pass `errors="replace"` | **Promotable** | **Scored 2026-08-28 (rule `0.6.0`, GHI #900) — the clause landed at rule `0.5.0` and no row ever named it.** Same grandfather retirement as 45b. `audit_subprocess_errors` is a real audit function with teeth, but it is reached only from `tests/governance/test_subprocess_errors_replace.py`, not from a registered negative control, so it is scored on the same terms as 45b rather than on the strength of the function existing. Promotion path: enroll the audit as an `@enforces` claim and cite it here. `source=.gzkit/rules/cross-platform.md` |
 | 45d | Wheel-delivered instruction text names no path only its authoring environment can resolve | **Mechanical** | Enforced by `gz validate --wheel-path-literals` (GHI #900), in the default `gz check` scope, witnessed by `NC:wheel-path-literals` — whose fixture plants the same literal both inside and outside the wheel (under `docs/` and in an excluded `proofs/` tree) and whose entrypoint filters to the shipped file, so the control cannot pass on a scan that ignored the wheel. The audit reads the same uv_build wheel prediction `--distribution` reads (`wheel_shipped_files`, re-scored at rule `0.7.2` when RO-9 tranche 3 retired the hatchling `include` block on 2026-10-22), so witness scope cannot drift from delivery scope. **Its boundary is stated, not implied:** `~/`, `$HOME/`, `/tmp`, `/usr`, `/var` and `/private` are deliberately not flagged — the first two expand per reader and are the remedy this clause steers toward, the rest resolve on every POSIX machine (23 legitimate `/tmp` uses measured in wheel `.md` at authoring). A machine-specific path under one of those roots is therefore uncaught, which is why this row claims delivered-root resolvability and not portability in general. `source=.gzkit/rules/cross-platform.md` |
+| 45e | Package spawns resolve their executable through `gzkit.executables` | **Promotable** | **Scored 2026-10-24 (rule `0.8.0`) at landing, RO-9 tranche 4** (operator, by selection *"Package fixed, tests curated (Rec.)"*). On Windows `CreateProcess`, and `shutil.which` with it, try the current directory first, so a bare `git` in a repository gzkit runs inside could spawn a planted `git.exe`; `gzkit.executables` reads absolute `PATH` entries only, and `tests/test_executables.py` holds that order. Ruff S607 refuses a literal bare executable in `src/gzkit` under `gz lint`. **Promotable, not Mechanical:** S607 sees only a literal argv, so a variable argv reaching a spawn without `resolve_argv` passes it, and no registered `NC:<claim-id>` plants either shape (the 45b / 62c precedent). Promotion path: an AST audit that every `subprocess` spawn in the package takes its executable from `gzkit.executables`, with an `@enforces` control planting a bare one. `source=.gzkit/rules/cross-platform.md` |
 
 ### Defect Fix Routing (`AGENTS.md` § Defect-fix routing; catalog in `docs/governance/defect-fix-routing.md`)
 
@@ -540,7 +541,7 @@ decays in whichever direction the next reader's grep happens to point.
 | Score | Rows | % of scored rows |
 |-------|-------|---|
 | **Mechanical** | 71 | 37% |
-| **Promotable** | 44 | 23% |
+| **Promotable** | 45 | 23% |
 | **Judgment** | 77 | 40% |
 | **Ambiguous** | 0 | 0% |
 
@@ -558,7 +559,7 @@ decays in whichever direction the next reader's grep happens to point.
      158 as of row 58c (GHI #962, 2026-09-05), and 159 as of row 88 (the CLI
      lane-is-not-route carve-out, 2026-09-06), and 160 as of row 89 (mutation-sweep
      integrity, GHI #963), and 161 as of row 51c (census-query completeness,
-     GHI #972), and 163 as of rows 91-92 (the exit-code-2 relabel, GHI #1001), and 167 as of rows 56a-56b (suppression is not a repair, GHI #999), and 168 as of row 93 (verbosity flags realigned to the specification, 2026-09-14), and 180 as of row 53c (skill selection routes through gz-how, GHI #1106, 2026-09-27), and 181 as of row 51d (gh issue reopen for ghi-author's regression case, 2026-09-27), and 190 as of row 62g (the MX lease is booked and announced, GHI #1257, 2026-10-18), and 191 as of row 51e (the `block` band's consumers after xenon, RO-9 tranche 4, 2026-10-22), and 192 as of row 23b (deferred annotations at the 3.14 floor, RO-9 tranche 4, 2026-10-23); the entries between 131 and 158 were
+     GHI #972), and 163 as of rows 91-92 (the exit-code-2 relabel, GHI #1001), and 167 as of rows 56a-56b (suppression is not a repair, GHI #999), and 168 as of row 93 (verbosity flags realigned to the specification, 2026-09-14), and 180 as of row 53c (skill selection routes through gz-how, GHI #1106, 2026-09-27), and 181 as of row 51d (gh issue reopen for ghi-author's regression case, 2026-09-27), and 190 as of row 62g (the MX lease is booked and announced, GHI #1257, 2026-10-18), and 191 as of row 51e (the `block` band's consumers after xenon, RO-9 tranche 4, 2026-10-22), and 192 as of row 23b (deferred annotations at the 3.14 floor, RO-9 tranche 4, 2026-10-23), and 193 as of row 45e (executables resolved off absolute PATH entries, RO-9 tranche 4, 2026-10-24); the entries between 131 and 158 were
      not recorded here as they landed, so this list names the endpoints it can
      evidence rather than reconstructing a history it cannot. -->
 

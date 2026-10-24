@@ -8,6 +8,8 @@ import subprocess
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from gzkit.executables import resolve_argv
+
 if TYPE_CHECKING:
     from gzkit.event_evidence import EventAnchor
 
@@ -15,8 +17,8 @@ if TYPE_CHECKING:
 def run_exec(cmd: list[str], cwd: Path, timeout: int | None = None) -> tuple[int, str, str]:
     """Run a subprocess command and return (rc, stdout, stderr)."""
     try:
-        result = subprocess.run(
-            cmd,
+        result = subprocess.run(  # noqa: S603 — argv from gzkit's callers, list form
+            resolve_argv(cmd),
             cwd=cwd,
             capture_output=True,
             text=True,

@@ -28,6 +28,7 @@ from gzkit.canonical_steps import CANONICAL_STEP_COMMANDS
 from gzkit.core.models import OBPI_SHORT_ID_BODY, obpi_slug
 from gzkit.doc_coverage.manifest import MANPAGE_DIR
 from gzkit.exchange_records import exchange_dir
+from gzkit.executables import resolve_argv, resolve_executable
 from gzkit.handoff_validation import (
     HandoffValidationError,
     build_tracked_path_index,
@@ -110,8 +111,8 @@ def _load_quality_command_timeout(path: Path) -> float:
 def _kill_process_tree(proc: subprocess.Popen[str]) -> None:
     """Kill ``proc`` and every descendant; it was started as its own group/session."""
     if sys.platform == "win32":
-        subprocess.run(
-            ["taskkill", "/T", "/F", "/PID", str(proc.pid)],
+        subprocess.run(  # noqa: S603 — taskkill of the child process gzkit started
+            [resolve_executable("taskkill"), "/T", "/F", "/PID", str(proc.pid)],
             capture_output=True,
             check=False,
         )
@@ -231,8 +232,8 @@ def run_command(
         creationflags = 0
         start_new_session = True
     try:
-        proc = subprocess.Popen(
-            argv,
+        proc = subprocess.Popen(  # noqa: S603 — a canonical step or manifest command, run by design
+            resolve_argv(argv),
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,

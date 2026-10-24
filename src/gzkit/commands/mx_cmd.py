@@ -26,6 +26,7 @@ from gzkit.airlock.enter import airlock_enter, build_refusal
 from gzkit.airlock.exit import airlock_exit
 from gzkit.airlock.model import Decision
 from gzkit.commands.common import console, get_project_root
+from gzkit.executables import resolve_executable
 from gzkit.ledger import Ledger, LedgerEvent
 from gzkit.lock_manager import LockData
 from gzkit.mx import log, marker
@@ -376,7 +377,7 @@ def _mx_session_closed_event(session_id: str, attestor: str) -> LedgerEvent:
 
 def _default_run_guards(project_root: Path) -> int:
     """Run gz check at full strength (the held marker is ``exiting`` — nothing demotes)."""
-    result = subprocess.run(["uv", "run", "gz", "check"], cwd=project_root)
+    result = subprocess.run([resolve_executable("uv"), "run", "gz", "check"], cwd=project_root)  # noqa: S603 — uv run gz check, a fixed argv; executable resolved
     return result.returncode
 
 

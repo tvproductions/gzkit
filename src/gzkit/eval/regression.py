@@ -16,6 +16,7 @@ from pathlib import Path
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.eval.runner import EvalSuiteScore, SurfaceScore
+from gzkit.executables import resolve_executable
 
 # ---------------------------------------------------------------------------
 # Baseline model (REQ-01, REQ-02)
@@ -117,8 +118,8 @@ class RegressionReceiptPayload(BaseModel):
 def _get_commit_hash() -> str:
     """Get current git HEAD commit hash."""
     try:
-        result = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
+        result = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
+            [resolve_executable("git"), "rev-parse", "HEAD"],
             capture_output=True,
             text=True,
             errors="replace",

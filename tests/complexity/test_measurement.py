@@ -18,7 +18,6 @@ Pins:
 
 import ast
 import json
-import re
 import tempfile
 import unittest
 from pathlib import Path
@@ -121,9 +120,9 @@ class TestFailClosedExitPaths(unittest.TestCase):
 
     @covers("REQ-0.0.27-03-05")
     def test_missing_binary_raises_named_error(self) -> None:
-        """``shutil.which`` returning ``None`` raises ``MissingMeasurementToolError``."""
+        """``find_executable`` returning ``None`` raises ``MissingMeasurementToolError``."""
         with mock.patch(
-            "gzkit.complexity.measurement.shutil.which",
+            "gzkit.complexity.measurement.find_executable",
             return_value=None,
         ):
             corpus = stub_corpus()
@@ -139,13 +138,13 @@ class TestFailClosedExitPaths(unittest.TestCase):
         """Only lizard and cohesion are required (amended 2026-10-22); a missing radon is fine."""
         with stubbed_pipeline_environment() as (_tree, _spy), tempfile.TemporaryDirectory() as out:
             with mock.patch(
-                "gzkit.complexity.measurement.shutil.which",
+                "gzkit.complexity.measurement.find_executable",
                 side_effect=lambda tool: None if tool == "radon" else f"/bin/{tool}",
             ):
                 measure_corpus(stub_corpus(), Path(out), cache_root=Path(out) / "cache")
             with (
                 mock.patch(
-                    "gzkit.complexity.measurement.shutil.which",
+                    "gzkit.complexity.measurement.find_executable",
                     side_effect=lambda tool: None if tool == "lizard" else f"/bin/{tool}",
                 ),
                 self.assertRaises(MissingMeasurementToolError) as ctx,
@@ -377,15 +376,20 @@ class TestSubprocessHasNoShellTrue(unittest.TestCase):
 
     def test_subprocess_calls_use_list_form_in_source(self) -> None:
         """Every ``subprocess.run`` call passes a list literal as its first arg."""
-        source = _MEASUREMENT_PATH.read_text(encoding="utf-8")
-        # All subprocess.run invocations should open with `[` for list form.
-        # The regex tolerates whitespace + newline between `(` and `[`.
-        for match in re.finditer(r"subprocess\.run\s*\(", source):
-            tail = source[match.end() : match.end() + 80]
-            self.assertTrue(
-                tail.lstrip().startswith("["),
-                msg=f"subprocess.run not list-form near: {tail!r}",
-            )
+        tree = ast.parse(_MEASUREMENT_PATH.read_text(encoding="utf-8"))
+        calls = [
+            node
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr == "run"
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id == "subprocess"
+        ]
+        self.assertTrue(calls, "measurement.py spawns nothing to check")
+        for call in calls:
+            with self.subTest(line=call.lineno):
+                self.assertIsInstance(call.args[0], ast.List)
 
 
 class TestLizardCohesionParserArgvRegression(unittest.TestCase):

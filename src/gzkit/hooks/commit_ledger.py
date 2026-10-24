@@ -54,6 +54,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from gzkit.config import GzkitConfig
+from gzkit.executables import resolve_executable
 from gzkit.hooks.core import is_governance_artifact
 from gzkit.ledger import Ledger, artifact_edited_event
 
@@ -121,8 +122,8 @@ def recorder_undelivered_reason(hooks_dir: Path) -> str | None:
 def _git(args: list[str], root: Path) -> str:
     """Return stdout of ``git <args>`` run from ``root``; empty on any failure."""
     try:
-        result = subprocess.run(
-            ["git", *args],
+        result = subprocess.run(  # noqa: S603 — git argv this module builds, never user text; executable resolved
+            [resolve_executable("git"), *args],
             cwd=root,
             check=False,
             capture_output=True,

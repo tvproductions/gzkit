@@ -39,6 +39,7 @@ from gzkit.commands.obpi_complete_adversarial import (
     _build_adversarial_event,
 )
 from gzkit.commands.validate_task_envelope import pending_obpi_task_envelope_errors
+from gzkit.executables import resolve_argv
 from gzkit.governance.req_coverage import (
     TestRef,
     discover_covers,
@@ -448,8 +449,8 @@ def _run_captured(cmd: list[str], *, cwd: str) -> subprocess.CompletedProcess[st
     completion. ``UnicodeDecodeError`` is a ``ValueError``, so the callers'
     ``(OSError, SubprocessError)`` guards would not otherwise catch it.
     """
-    return subprocess.run(
-        cmd,
+    return subprocess.run(  # noqa: S603 — argv from this module's callers, list form
+        resolve_argv(cmd),
         cwd=cwd,
         capture_output=True,
         text=True,

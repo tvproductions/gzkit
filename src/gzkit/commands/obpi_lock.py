@@ -21,6 +21,7 @@ from gzkit.exchange_records import (
     parse_abandon_spec,
     write_degenerate_exchange,
 )
+from gzkit.executables import resolve_executable
 from gzkit.ledger import Ledger, slug_id_for
 from gzkit.ledger_events import obpi_lock_claimed_event, obpi_lock_released_event
 from gzkit.lock_manager import (
@@ -407,8 +408,8 @@ def _current_commit_sha() -> str:
     import subprocess  # noqa: PLC0415
 
     try:
-        result = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
+        result = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
+            [resolve_executable("git"), "rev-parse", "HEAD"],
             capture_output=True,
             text=True,
             encoding="utf-8",

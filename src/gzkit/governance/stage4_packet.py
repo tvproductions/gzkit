@@ -72,6 +72,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.executables import resolve_argv
 from gzkit.governance import stage4_evidence
 from gzkit.governance.stage4_evidence import _join_demo_commands, demo_env, replay_invocation
 from gzkit.verifier_pipe_gate import masked_verifier
@@ -264,8 +265,8 @@ def _run(command: str, cwd: Path, env: dict[str, str] | None = None) -> tuple[in
     """
     args, use_shell = replay_invocation(command)
     try:
-        proc = subprocess.run(
-            args,
+        proc = subprocess.run(  # noqa: S603 — replays a packet's transcript command; the replay is the witness
+            resolve_argv(args) if isinstance(args, list) else args,
             shell=use_shell,
             cwd=cwd,
             env=env,

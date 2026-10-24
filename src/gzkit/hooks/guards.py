@@ -9,6 +9,7 @@ import sys
 from collections.abc import Iterable, Iterator
 from pathlib import Path
 
+from gzkit.executables import resolve_executable
 from gzkit.mx import levels as _mx_levels
 from gzkit.rules import NESTED_SURFACE_NAMES
 
@@ -71,8 +72,8 @@ def _repo_files(root: Path) -> Iterator[Path]:
     rather than to scanning nothing -- a pytest-import guard that silently
     inspects zero files is exactly the false-green it exists to prevent.
     """
-    proc = subprocess.run(
-        ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
+    proc = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
+        [resolve_executable("git"), "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
         cwd=root,
         capture_output=True,
         text=True,
@@ -181,8 +182,8 @@ def _run_git(args: list[str], cwd: Path) -> str:
     import subprocess  # noqa: PLC0415
 
     try:
-        result = subprocess.run(
-            ["git", *args],
+        result = subprocess.run(  # noqa: S603 — git argv this module builds, never user text; executable resolved
+            [resolve_executable("git"), *args],
             cwd=cwd,
             check=False,
             capture_output=True,

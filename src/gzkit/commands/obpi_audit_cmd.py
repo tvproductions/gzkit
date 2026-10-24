@@ -9,6 +9,7 @@ from pathlib import Path
 
 from gzkit.commands.common import console
 from gzkit.core.models import OBPI_SHORT_ID_BODY
+from gzkit.executables import resolve_argv, resolve_executable
 from gzkit.governance.brief_path_validity import extract_allowed_paths
 from gzkit.lock_manager import adr_id_from_obpi
 
@@ -265,8 +266,8 @@ def _run_tests(project_root: Path, test_files: list[Path]) -> tuple[bool, int]:
     if not test_files:
         return False, 0
     try:
-        result = subprocess.run(
-            ["uv", "run", "-m", "unittest", "-q"] + [str(f) for f in test_files],
+        result = subprocess.run(  # noqa: S603 — unittest over the brief's test files; executable resolved
+            resolve_argv(["uv", "run", "-m", "unittest", "-q", *(str(f) for f in test_files)]),
             capture_output=True,
             text=True,
             errors="replace",
@@ -326,9 +327,20 @@ def _measure_coverage(
     if not test_files:
         return None
     try:
-        subprocess.run(
-            ["uv", "run", "coverage", "run", "--source=src", "-m", "unittest", "-q"]
-            + [str(f) for f in test_files],
+        subprocess.run(  # noqa: S603 — coverage over the brief's test files; executable resolved
+            resolve_argv(
+                [
+                    "uv",
+                    "run",
+                    "coverage",
+                    "run",
+                    "--source=src",
+                    "-m",
+                    "unittest",
+                    "-q",
+                    *(str(f) for f in test_files),
+                ]
+            ),
             capture_output=True,
             text=True,
             errors="replace",
@@ -339,8 +351,8 @@ def _measure_coverage(
         report_cmd = ["uv", "run", "coverage", "report", "--format=total"]
         if include_paths:
             report_cmd.append("--include=" + ",".join(include_paths))
-        result = subprocess.run(
-            report_cmd,
+        result = subprocess.run(  # noqa: S603 — the coverage report argv this module builds
+            resolve_argv(report_cmd),
             capture_output=True,
             text=True,
             errors="replace",
@@ -410,8 +422,16 @@ def _read_prior_audits(adr_dir: Path) -> dict[str, dict]:
 def _is_stale(project_root: Path, timestamp: str) -> bool:
     """Check if commits exist after the audit timestamp on src/ and tests/."""
     try:
-        result = subprocess.run(
-            ["git", "log", "--oneline", f"--since={timestamp}", "--", "src/", "tests/"],
+        result = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
+            [
+                resolve_executable("git"),
+                "log",
+                "--oneline",
+                f"--since={timestamp}",
+                "--",
+                "src/",
+                "tests/",
+            ],
             capture_output=True,
             text=True,
             errors="replace",

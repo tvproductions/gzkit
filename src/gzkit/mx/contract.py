@@ -17,6 +17,7 @@ import hashlib
 import subprocess
 from pathlib import Path
 
+from gzkit.executables import resolve_executable
 from gzkit.ledger import Ledger, LedgerEvent
 from gzkit.mx import marker
 
@@ -94,8 +95,8 @@ def book_contract_amendment(root: Path, text: str, *, commit: str | None = None)
 
 def _git(root: Path, *args: str) -> str | None:
     try:
-        result = subprocess.run(
-            ["git", *args],
+        result = subprocess.run(  # noqa: S603 — git argv this module builds, never user text; executable resolved
+            [resolve_executable("git"), *args],
             cwd=root,
             capture_output=True,
             text=True,

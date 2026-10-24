@@ -23,6 +23,7 @@ from gzkit.core.models import (
     task_req_id,
 )
 from gzkit.doc_coverage.manifest import MANPAGE_DIR
+from gzkit.executables import resolve_executable
 from gzkit.ledger import extract_bare_obpi_id
 from gzkit.triangle import ReqId
 from gzkit.validate import ValidationError
@@ -729,8 +730,8 @@ def _ledger_channel_for_obpi(ledger_path: Path, obpi_id: str) -> set[str]:
 
 def _commit_trailer_channel_for_obpi(project_root: Path, obpi_id: str) -> set[str]:
     try:
-        result = subprocess.run(
-            ["git", "log", "--all", "--format=%B%n--EOC--"],
+        result = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
+            [resolve_executable("git"), "log", "--all", "--format=%B%n--EOC--"],
             cwd=project_root,
             capture_output=True,
             text=True,
@@ -816,8 +817,8 @@ def _commit_trailer_channel_map(project_root: Path) -> dict[str, set[str]]:
     brief.
     """
     try:
-        result = subprocess.run(
-            ["git", "log", "--all", "--format=%B%n--EOC--"],
+        result = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
+            [resolve_executable("git"), "log", "--all", "--format=%B%n--EOC--"],
             cwd=project_root,
             capture_output=True,
             text=True,

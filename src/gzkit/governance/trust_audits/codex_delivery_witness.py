@@ -42,7 +42,6 @@ to close, re-created one layer up.
 
 import json
 import re
-import shutil
 import subprocess
 from collections.abc import Callable
 from pathlib import Path
@@ -52,6 +51,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.advisory import emit_advisory
 from gzkit.content.vendors import delivery_cap_for
+from gzkit.executables import find_executable
 from gzkit.validate import ValidationError
 
 _PREFIX = "[codex-delivery-witness]"
@@ -198,7 +198,7 @@ def diagnose_delivery(
 
 def _default_probe(project_root: Path) -> DeliveryProbe:
     """Ask the installed Codex CLI what it would send, from *project_root*."""
-    executable = shutil.which("codex")
+    executable = find_executable("codex")
     if executable is None:
         return DeliveryProbe(unavailable_reason="codex CLI is not on PATH")
     try:

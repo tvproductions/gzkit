@@ -9,13 +9,16 @@ from contextlib import contextmanager, redirect_stderr, redirect_stdout
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from unittest.mock import patch
 
 from rich.color import ColorSystem
 
 from gzkit.commands.common import console as _cli_console
 from gzkit.git_spawn_boundary import isolated_git_env
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 class SilencedConsoleTestCase(unittest.TestCase):
@@ -183,6 +186,19 @@ def _git_subprocess_patcher(
     finally:
         for p in reversed(patchers):
             p.stop()
+
+
+def argv_by_tool_name(argv: Sequence[str]) -> list[str]:
+    """Return ``argv`` with its executable reduced to the tool's name.
+
+    Production code resolves the executable to an absolute path before it spawns
+    (``gzkit.executables``), so a mock that dispatches on ``"git"`` compares this.
+
+    Returns:
+        ``argv`` with ``argv[0]`` as a bare tool name (``git``, never ``git.exe``).
+    """
+    head, *rest = argv
+    return [Path(head).stem, *rest]
 
 
 def _isolated_git_env(base: Mapping[str, str] | None = None) -> dict[str, str]:

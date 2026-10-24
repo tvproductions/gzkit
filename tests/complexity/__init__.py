@@ -137,7 +137,7 @@ def stubbed_pipeline_environment() -> Generator[tuple[Path, _SubprocessSpy]]:
     The yielded tree contains an ``alpha.py`` file matching the fixture
     project's include glob.  ``subprocess.run`` inside
     :mod:`gzkit.complexity.measurement` is replaced with a capturing spy
-    that returns canned tool output.  ``shutil.which`` returns a synthetic
+    that returns canned tool output.  ``find_executable`` returns a synthetic
     binary path for every required tool so the binary-presence assertion
     passes.
     """
@@ -154,9 +154,11 @@ def stubbed_pipeline_environment() -> Generator[tuple[Path, _SubprocessSpy]]:
                 side_effect=spy,
             ),
             mock.patch(
-                "gzkit.complexity.measurement.shutil.which",
+                "gzkit.complexity.measurement.find_executable",
                 lambda name: f"/usr/local/bin/{name}",
             ),
+            # The spy asserts argv shape; resolution is tests/test_executables.py's.
+            mock.patch("gzkit.complexity.measurement.resolve_executable", lambda name: name),
             mock.patch(
                 "gzkit.complexity.measurement._resolve_tree",
                 lambda project, cache_root: tree,

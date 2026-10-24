@@ -25,7 +25,6 @@ rejected with :class:`WholeProjectMeasurementRejectedError`
 import csv
 import importlib.metadata
 import io
-import shutil
 import subprocess
 from collections.abc import Mapping, Sequence
 from pathlib import Path
@@ -38,6 +37,7 @@ from gzkit.complexity.baseline import (
     serialize_baseline,
 )
 from gzkit.complexity.lizard_adapter import file_nloc
+from gzkit.executables import find_executable, resolve_executable
 from gzkit.models.exemplar import ExemplarCorpus, ExemplarProject, load_corpus
 
 # Canonical metric keys.  Order is load-bearing — every per-project and
@@ -173,7 +173,7 @@ def _measure_all_projects(
 def _assert_tool_binaries_present() -> None:
     """Raise :class:`MissingMeasurementToolError` if any tool is missing."""
     for tool in _REQUIRED_TOOLS:
-        if shutil.which(tool) is None:
+        if find_executable(tool) is None:
             raise MissingMeasurementToolError(tool)
 
 
@@ -217,16 +217,16 @@ def _resolve_tree(project: ExemplarProject, cache_root: Path) -> Path:
     if target.is_dir():
         return target
     target.parent.mkdir(parents=True, exist_ok=True)
-    subprocess.run(
-        ["git", "clone", str(project.canonical_url), str(target)],
+    subprocess.run(  # noqa: S603 — git clone of the corpus's pinned URL
+        [resolve_executable("git"), "clone", str(project.canonical_url), str(target)],
         capture_output=True,
         text=True,
         errors="replace",
         encoding="utf-8",
         check=True,
     )
-    subprocess.run(
-        ["git", "-C", str(target), "checkout", project.commit_sha],
+    subprocess.run(  # noqa: S603 — git checkout of the corpus's pinned SHA
+        [resolve_executable("git"), "-C", str(target), "checkout", project.commit_sha],
         capture_output=True,
         text=True,
         errors="replace",
@@ -300,8 +300,8 @@ def _run_lizard(path: Path) -> dict[str, list[float]]:
     NLOC, CCN, token_count, PARAM, length, location, file, name,
     signature, start_line, end_line, ND.
     """
-    completed = subprocess.run(
-        ["uv", "run", "lizard", "-End", "--csv", str(path)],
+    completed = subprocess.run(  # noqa: S603 — lizard over a corpus file; executable resolved
+        [resolve_executable("uv"), "run", "lizard", "-End", "--csv", str(path)],
         capture_output=True,
         text=True,
         errors="replace",
@@ -341,8 +341,8 @@ def _run_cohesion(path: Path) -> list[float]:
     yielding zero samples for every project (GHI #398).  Cohesion has no
     JSON mode; output is text of shape ``Class: <name> ... Total: <pct>%``.
     """
-    completed = subprocess.run(
-        ["uv", "run", "cohesion", "-f", str(path)],
+    completed = subprocess.run(  # noqa: S603 — cohesion over a corpus file; executable resolved
+        [resolve_executable("uv"), "run", "cohesion", "-f", str(path)],
         capture_output=True,
         text=True,
         errors="replace",

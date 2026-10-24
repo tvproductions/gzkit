@@ -5,6 +5,7 @@ import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
 
+from gzkit.executables import resolve_executable
 from gzkit.validate import ValidationError
 
 _RECONCILE_EVENT_TYPES: frozenset[str] = frozenset(
@@ -50,8 +51,8 @@ def _latest_reconcile_ts(ledger: Path) -> datetime | None:
 def _head_commit_ts(project_root: Path) -> datetime | None:
     """Return HEAD's committer timestamp, or ``None`` on git unavailability."""
     try:
-        out = subprocess.run(
-            ["git", "log", "-1", "--format=%cI", "HEAD"],
+        out = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
+            [resolve_executable("git"), "log", "-1", "--format=%cI", "HEAD"],
             cwd=project_root,
             check=True,
             capture_output=True,

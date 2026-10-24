@@ -18,6 +18,7 @@ from gzkit.core.models import (
     normalize_adr_input,
     normalize_obpi_input,
 )
+from gzkit.executables import resolve_executable
 from gzkit.ledger import (
     Ledger,
     resolve_adr_lane,
@@ -171,8 +172,8 @@ def manifest_path(manifest: dict[str, Any], section: str, key: str) -> Path:
 def get_git_user() -> str:
     """Get the current git user for attestations."""
     try:
-        result = subprocess.run(
-            ["git", "config", "user.name"],
+        result = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
+            [resolve_executable("git"), "config", "user.name"],
             capture_output=True,
             text=True,
             errors="replace",

@@ -16,6 +16,7 @@ from typing import Any
 
 from gzkit import ruff_baseline
 from gzkit.arb.paths import receipts_root
+from gzkit.executables import resolve_argv
 
 SCHEMA_ID = "gzkit.arb.lint_receipt.v1"
 DEFAULT_MAX_FINDINGS = 200
@@ -27,8 +28,8 @@ def _canonical(obj: Any) -> str:
 
 def _run_command(cmd: list[str]) -> subprocess.CompletedProcess[str]:
     try:
-        return subprocess.run(
-            cmd,
+        return subprocess.run(  # noqa: S603 — the Ruff argv this module builds; executable resolved
+            resolve_argv(cmd),
             capture_output=True,
             text=True,
             errors="replace",

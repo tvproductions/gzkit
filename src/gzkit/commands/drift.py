@@ -13,6 +13,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from gzkit.commands.common import console, get_project_root
+from gzkit.executables import resolve_executable
 from gzkit.traceability import find_covers_in_source
 from gzkit.triangle import (
     DriftReport,
@@ -72,16 +73,16 @@ def get_changed_files(project_root: Path) -> list[VertexRef]:
     Only considers ``src/`` Python files as code vertices.
     """
     try:
-        result = subprocess.run(
-            ["git", "diff", "--name-only", "HEAD"],
+        result = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
+            [resolve_executable("git"), "diff", "--name-only", "HEAD"],
             capture_output=True,
             text=True,
             errors="replace",
             encoding="utf-8",
             cwd=project_root,
         )
-        staged = subprocess.run(
-            ["git", "diff", "--name-only", "--cached"],
+        staged = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
+            [resolve_executable("git"), "diff", "--name-only", "--cached"],
             capture_output=True,
             text=True,
             errors="replace",

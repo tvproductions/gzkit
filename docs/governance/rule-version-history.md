@@ -638,6 +638,12 @@ The version banner as it stood, lifted verbatim when RO-9 tranche 3 moved the bu
 
 > **Rule version:** `0.7.1` — version narrative lifted to [Rule Version History](rule-version-history.md#cross-platformmd); binding rules unchanged.
 
+### Lifted 2026-10-24 at version `0.7.2` (rule now at `0.8.0`)
+
+The version banner as it stood, lifted verbatim when RO-9 tranche 4 added § Executable resolution:
+
+> **Rule version:** `0.7.2` — § Delivered path literals names the uv_build wheel instead of the retired hatchling `include` block (RO-9 tranche 3); version narrative in [Rule Version History](rule-version-history.md#cross-platformmd).
+
 ## `guardrail-feedback-prose.md`
 
 Lifted 2026-08-29 at version `0.2.0` (rule now at `0.3.0`).

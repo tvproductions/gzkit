@@ -36,6 +36,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from gzkit.commands.common import GzCliError
 from gzkit.core.models import REQ_ID_BODY, req_obpi_id
+from gzkit.executables import resolve_executable
 
 # --------------------------------------------------------------------------- #
 # Mock boundary type                                                           #
@@ -53,7 +54,7 @@ def _run_git(args: list[str], cwd: Path) -> tuple[int, str, str]:
     """
     try:
         completed = subprocess.run(  # noqa: S603 — list-form, no shell
-            ["git", *args],
+            [resolve_executable("git"), *args],
             cwd=str(cwd),
             capture_output=True,
             text=True,

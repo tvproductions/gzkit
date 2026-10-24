@@ -92,7 +92,7 @@ class TestChoreProposeGhiTtyConfirm(unittest.TestCase):
 
             mock_run.assert_called_once()
             call_args = mock_run.call_args[0][0]
-            self.assertIn("gh", call_args)
+            self.assertEqual(Path(call_args[0]).stem, "gh")
             self.assertIn("issue", call_args)
             self.assertIn("create", call_args)
 

@@ -16,6 +16,7 @@ from pydantic import BaseModel, ConfigDict, Field, computed_field
 
 from gzkit.core.models import obpi_adr_id
 from gzkit.exchange_records import exchange_dir
+from gzkit.executables import resolve_executable
 from gzkit.mx import marker as mx_marker
 
 if TYPE_CHECKING:
@@ -125,8 +126,8 @@ def resolve_session_id() -> str:
 def current_branch() -> str:
     """Return the current git branch name, or ``"unknown"`` on error."""
     try:
-        result = subprocess.run(
-            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+        result = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
+            [resolve_executable("git"), "rev-parse", "--abbrev-ref", "HEAD"],
             capture_output=True,
             text=True,
             encoding="utf-8",
@@ -234,8 +235,8 @@ def list_locks(project_root: Path, adr_filter: str | None = None) -> list[LockDa
 def _head_commit_sha() -> str:
     """Return the current HEAD commit SHA, or ``"unknown"`` on failure."""
     try:
-        result = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
+        result = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
+            [resolve_executable("git"), "rev-parse", "HEAD"],
             capture_output=True,
             text=True,
             encoding="utf-8",

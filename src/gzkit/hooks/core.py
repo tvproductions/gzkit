@@ -12,6 +12,7 @@ from typing import Any
 from gzkit.config import GzkitConfig
 from gzkit.core.models import is_foundation_adr
 from gzkit.event_evidence import EventAnchor
+from gzkit.executables import resolve_argv
 from gzkit.git_sync import assess_git_sync_readiness
 from gzkit.hooks.obpi import (
     ObpiValidator,
@@ -576,8 +577,8 @@ def _ruff_format_dir(directory: Path, project_root: Path | None = None) -> str |
         # would make every hook differ forever instead of once.
         command += ["--config", str(config_path)]
     try:
-        completed = subprocess.run(
-            [*command, str(directory)],
+        completed = subprocess.run(  # noqa: S603 — uv run ruff format over a staging directory
+            resolve_argv([*command, str(directory)]),
             capture_output=True,
             text=True,
             errors="replace",

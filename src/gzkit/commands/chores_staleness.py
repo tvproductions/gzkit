@@ -27,6 +27,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.commands.chores_declaration import ChoreDeclaration, StalenessSignal
+from gzkit.executables import resolve_executable
 
 StalenessBand = Literal["current", "due", "overdue", "paused", "unmeasured"]
 
@@ -164,8 +165,8 @@ def read_chore_staleness(
 
 
 def _git_commit_times(project_root: Path, args: list[str]) -> list[datetime]:
-    completed = subprocess.run(
-        ["git", "log", "--format=%ct", *args],
+    completed = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
+        [resolve_executable("git"), "log", "--format=%ct", *args],
         cwd=project_root,
         capture_output=True,
         text=True,
@@ -213,8 +214,8 @@ def git_artifact_changed(
             return None
         present = [f":(literal){path}" for path in files if (project_root / path).is_file()]
         if present:
-            status = subprocess.run(
-                ["git", "status", "--porcelain", "--", *present],
+            status = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
+                [resolve_executable("git"), "status", "--porcelain", "--", *present],
                 cwd=project_root,
                 capture_output=True,
                 text=True,

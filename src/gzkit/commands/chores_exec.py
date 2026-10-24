@@ -23,6 +23,7 @@ from gzkit.commands.chores import (
 )
 from gzkit.commands.chores_declaration import parse_chore_declaration
 from gzkit.commands.common import GzCliError
+from gzkit.executables import resolve_argv
 
 
 def _parse_command_to_argv(
@@ -282,8 +283,8 @@ def _evaluate_criterion(
 
     started = perf_counter()
     try:
-        completed = subprocess.run(
-            list(criterion.argv),
+        completed = subprocess.run(  # noqa: S603 — a chore's declared criterion argv, run by design
+            resolve_argv(criterion.argv),
             cwd=project_root,
             capture_output=True,
             text=True,

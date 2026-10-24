@@ -1797,11 +1797,6 @@
       "count": 1
     },
     {
-      "file": "features/steps/adr_audit_covers_backfill_steps.py",
-      "rule": "S607",
-      "count": 6
-    },
-    {
       "file": "features/steps/advisor_proof_binding_steps.py",
       "rule": "INP001",
       "count": 1
@@ -1920,11 +1915,6 @@
       "file": "features/steps/closeout_product_proof_steps.py",
       "rule": "INP001",
       "count": 1
-    },
-    {
-      "file": "features/steps/closeout_product_proof_steps.py",
-      "rule": "S607",
-      "count": 8
     },
     {
       "file": "features/steps/codex_config_steps.py",
@@ -2212,11 +2202,6 @@
       "count": 1
     },
     {
-      "file": "features/steps/evaluation_feedback_loop_steps.py",
-      "rule": "S607",
-      "count": 1
-    },
-    {
       "file": "features/steps/fidelity_presence_steps.py",
       "rule": "INP001",
       "count": 1
@@ -2282,11 +2267,6 @@
       "count": 3
     },
     {
-      "file": "features/steps/gz_steps.py",
-      "rule": "S607",
-      "count": 9
-    },
-    {
       "file": "features/steps/handoff_steps.py",
       "rule": "INP001",
       "count": 1
@@ -2305,11 +2285,6 @@
       "file": "features/steps/issue_file_steps.py",
       "rule": "S603",
       "count": 1
-    },
-    {
-      "file": "features/steps/issue_file_steps.py",
-      "rule": "S607",
-      "count": 2
     },
     {
       "file": "features/steps/justify_complexity_hints_steps.py",
@@ -2588,11 +2563,6 @@
     },
     {
       "file": "scripts/adherence_probe.py",
-      "rule": "S607",
-      "count": 1
-    },
-    {
-      "file": "scripts/adherence_probe.py",
       "rule": "T201",
       "count": 9
     },
@@ -2678,11 +2648,6 @@
     },
     {
       "file": "scripts/check_proof_freshness.py",
-      "rule": "S607",
-      "count": 1
-    },
-    {
-      "file": "scripts/check_proof_freshness.py",
       "rule": "T201",
       "count": 19
     },
@@ -2734,11 +2699,6 @@
     {
       "file": "scripts/migrate_handoffs.py",
       "rule": "S603",
-      "count": 1
-    },
-    {
-      "file": "scripts/migrate_handoffs.py",
-      "rule": "S607",
       "count": 1
     },
     {
@@ -2855,11 +2815,6 @@
       "file": "scripts/session_orientation.py",
       "rule": "S603",
       "count": 3
-    },
-    {
-      "file": "scripts/session_orientation.py",
-      "rule": "S607",
-      "count": 2
     },
     {
       "file": "scripts/session_orientation.py",
@@ -2984,11 +2939,6 @@
     {
       "file": "src/gzkit/acceptance_execution.py",
       "rule": "PLR0913",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/acceptance_execution.py",
-      "rule": "S603",
       "count": 1
     },
     {
@@ -3193,11 +3143,6 @@
     },
     {
       "file": "src/gzkit/adversary_workspace.py",
-      "rule": "S603",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/adversary_workspace.py",
       "rule": "TC003",
       "count": 2
     },
@@ -3368,11 +3313,6 @@
     },
     {
       "file": "src/gzkit/arb/ruff_reporter.py",
-      "rule": "S603",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/arb/ruff_reporter.py",
       "rule": "T201",
       "count": 2
     },
@@ -3389,11 +3329,6 @@
     {
       "file": "src/gzkit/arb/step_reporter.py",
       "rule": "EM102",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/arb/step_reporter.py",
-      "rule": "S603",
       "count": 1
     },
     {
@@ -3515,16 +3450,6 @@
       "file": "src/gzkit/check_fingerprint.py",
       "rule": "DOC201",
       "count": 7
-    },
-    {
-      "file": "src/gzkit/check_fingerprint.py",
-      "rule": "S603",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/check_fingerprint.py",
-      "rule": "S607",
-      "count": 2
     },
     {
       "file": "src/gzkit/chores/__init__.py",
@@ -4307,11 +4232,6 @@
       "count": 2
     },
     {
-      "file": "src/gzkit/commands/adr_audit_covers_backfill.py",
-      "rule": "S607",
-      "count": 1
-    },
-    {
       "file": "src/gzkit/commands/adr_coverage.py",
       "rule": "ARG001",
       "count": 1
@@ -4873,11 +4793,6 @@
     },
     {
       "file": "src/gzkit/commands/chores_exec.py",
-      "rule": "S603",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/chores_exec.py",
       "rule": "TC003",
       "count": 1
     },
@@ -4889,16 +4804,6 @@
     {
       "file": "src/gzkit/commands/chores_propose_ghi_cmd.py",
       "rule": "PLC0415",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/chores_propose_ghi_cmd.py",
-      "rule": "S603",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/chores_propose_ghi_cmd.py",
-      "rule": "S607",
       "count": 1
     },
     {
@@ -4925,16 +4830,6 @@
       "file": "src/gzkit/commands/chores_staleness.py",
       "rule": "PLR0917",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/chores_staleness.py",
-      "rule": "S603",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/commands/chores_staleness.py",
-      "rule": "S607",
-      "count": 2
     },
     {
       "file": "src/gzkit/commands/chores_staleness.py",
@@ -5224,11 +5119,6 @@
     {
       "file": "src/gzkit/commands/common.py",
       "rule": "PLC0415",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/common.py",
-      "rule": "S607",
       "count": 1
     },
     {
@@ -5782,11 +5672,6 @@
       "count": 2
     },
     {
-      "file": "src/gzkit/commands/drift.py",
-      "rule": "S607",
-      "count": 2
-    },
-    {
       "file": "src/gzkit/commands/flags.py",
       "rule": "DOC201",
       "count": 2
@@ -5978,16 +5863,6 @@
     },
     {
       "file": "src/gzkit/commands/init_cmd.py",
-      "rule": "S603",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/init_cmd.py",
-      "rule": "S607",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/init_cmd.py",
       "rule": "TC003",
       "count": 2
     },
@@ -6088,16 +5963,6 @@
     },
     {
       "file": "src/gzkit/commands/issue_cmd.py",
-      "rule": "S603",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/issue_cmd.py",
-      "rule": "S607",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/commands/issue_cmd.py",
       "rule": "TRY003",
       "count": 4
     },
@@ -6174,11 +6039,6 @@
     {
       "file": "src/gzkit/commands/mx_cmd.py",
       "rule": "PLW1510",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/mx_cmd.py",
-      "rule": "S607",
       "count": 1
     },
     {
@@ -6284,16 +6144,6 @@
     {
       "file": "src/gzkit/commands/obpi_audit_cmd.py",
       "rule": "PLW2901",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/obpi_audit_cmd.py",
-      "rule": "S603",
-      "count": 4
-    },
-    {
-      "file": "src/gzkit/commands/obpi_audit_cmd.py",
-      "rule": "S607",
       "count": 1
     },
     {
@@ -6473,11 +6323,6 @@
     },
     {
       "file": "src/gzkit/commands/obpi_complete.py",
-      "rule": "S603",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/obpi_complete.py",
       "rule": "T201",
       "count": 3
     },
@@ -6539,11 +6384,6 @@
     {
       "file": "src/gzkit/commands/obpi_lock.py",
       "rule": "PLW1510",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/obpi_lock.py",
-      "rule": "S607",
       "count": 1
     },
     {
@@ -7065,16 +6905,6 @@
       "file": "src/gzkit/commands/quality.py",
       "rule": "S110",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/quality.py",
-      "rule": "S603",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/commands/quality.py",
-      "rule": "S607",
-      "count": 2
     },
     {
       "file": "src/gzkit/commands/quality.py",
@@ -7828,16 +7658,6 @@
     },
     {
       "file": "src/gzkit/commands/validate_commit_trailers.py",
-      "rule": "S603",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/commands/validate_commit_trailers.py",
-      "rule": "S607",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/commands/validate_commit_trailers.py",
       "rule": "TC003",
       "count": 1
     },
@@ -8000,11 +7820,6 @@
       "file": "src/gzkit/commands/validate_task_envelope.py",
       "rule": "PLW2901",
       "count": 5
-    },
-    {
-      "file": "src/gzkit/commands/validate_task_envelope.py",
-      "rule": "S607",
-      "count": 2
     },
     {
       "file": "src/gzkit/commands/validate_task_envelope.py",
@@ -8390,16 +8205,6 @@
       "file": "src/gzkit/complexity/measurement.py",
       "rule": "PLR2004",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/complexity/measurement.py",
-      "rule": "S603",
-      "count": 4
-    },
-    {
-      "file": "src/gzkit/complexity/measurement.py",
-      "rule": "S607",
-      "count": 4
     },
     {
       "file": "src/gzkit/complexity/measurement.py",
@@ -9298,11 +9103,6 @@
     },
     {
       "file": "src/gzkit/eval/regression.py",
-      "rule": "S607",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/eval/regression.py",
       "rule": "TC001",
       "count": 2
     },
@@ -9978,16 +9778,6 @@
     },
     {
       "file": "src/gzkit/governance/stage4_evidence.py",
-      "rule": "S603",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/stage4_evidence.py",
-      "rule": "S607",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/governance/stage4_evidence.py",
       "rule": "TRY003",
       "count": 1
     },
@@ -9999,11 +9789,6 @@
     {
       "file": "src/gzkit/governance/stage4_packet.py",
       "rule": "ISC004",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/stage4_packet.py",
-      "rule": "S603",
       "count": 1
     },
     {
@@ -10245,11 +10030,6 @@
       "file": "src/gzkit/governance/trust_audits/authorship.py",
       "rule": "DOC201",
       "count": 2
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/authorship.py",
-      "rule": "S607",
-      "count": 1
     },
     {
       "file": "src/gzkit/governance/trust_audits/authorship.py",
@@ -10599,16 +10379,6 @@
     {
       "file": "src/gzkit/governance/trust_audits/cross_platform.py",
       "rule": "PLR6201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/cross_platform.py",
-      "rule": "S603",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/cross_platform.py",
-      "rule": "S607",
       "count": 1
     },
     {
@@ -11128,11 +10898,6 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/reconcile.py",
-      "rule": "S607",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/reconcile.py",
       "rule": "TC003",
       "count": 1
     },
@@ -11170,16 +10935,6 @@
       "file": "src/gzkit/governance/trust_audits/release.py",
       "rule": "RUF002",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/release.py",
-      "rule": "S603",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/release.py",
-      "rule": "S607",
-      "count": 2
     },
     {
       "file": "src/gzkit/governance/trust_audits/rendition_floor_coherence.py",
@@ -11638,16 +11393,6 @@
     },
     {
       "file": "src/gzkit/handoff_validation.py",
-      "rule": "S603",
-      "count": 3
-    },
-    {
-      "file": "src/gzkit/handoff_validation.py",
-      "rule": "S607",
-      "count": 4
-    },
-    {
-      "file": "src/gzkit/handoff_validation.py",
       "rule": "TC003",
       "count": 1
     },
@@ -11722,16 +11467,6 @@
       "count": 1
     },
     {
-      "file": "src/gzkit/hooks/commit_ledger.py",
-      "rule": "S603",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/hooks/commit_ledger.py",
-      "rule": "S607",
-      "count": 1
-    },
-    {
       "file": "src/gzkit/hooks/core.py",
       "rule": "ARG001",
       "count": 1
@@ -11763,11 +11498,6 @@
     },
     {
       "file": "src/gzkit/hooks/core.py",
-      "rule": "S603",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/hooks/core.py",
       "rule": "TC001",
       "count": 1
     },
@@ -11795,16 +11525,6 @@
       "file": "src/gzkit/hooks/guards.py",
       "rule": "PLR6201",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/hooks/guards.py",
-      "rule": "S603",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/hooks/guards.py",
-      "rule": "S607",
-      "count": 2
     },
     {
       "file": "src/gzkit/hooks/guards.py",
@@ -12553,11 +12273,6 @@
     },
     {
       "file": "src/gzkit/lock_manager.py",
-      "rule": "S607",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/lock_manager.py",
       "rule": "TC003",
       "count": 1
     },
@@ -12678,16 +12393,6 @@
     },
     {
       "file": "src/gzkit/mx/contract.py",
-      "rule": "S603",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/mx/contract.py",
-      "rule": "S607",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/mx/contract.py",
       "rule": "TC003",
       "count": 1
     },
@@ -12745,11 +12450,6 @@
       "file": "src/gzkit/mx/log.py",
       "rule": "PLW2901",
       "count": 2
-    },
-    {
-      "file": "src/gzkit/mx/log.py",
-      "rule": "S603",
-      "count": 1
     },
     {
       "file": "src/gzkit/mx/log.py",
@@ -13273,16 +12973,6 @@
     },
     {
       "file": "src/gzkit/quality.py",
-      "rule": "S603",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/quality.py",
-      "rule": "S607",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/quality.py",
       "rule": "TC003",
       "count": 2
     },
@@ -13334,16 +13024,6 @@
     {
       "file": "src/gzkit/red_witness.py",
       "rule": "PLR6201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/red_witness.py",
-      "rule": "S603",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/red_witness.py",
-      "rule": "S607",
       "count": 1
     },
     {
@@ -13414,16 +13094,6 @@
     {
       "file": "src/gzkit/remote_divergence.py",
       "rule": "PLR2004",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/remote_divergence.py",
-      "rule": "S603",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/remote_divergence.py",
-      "rule": "S607",
       "count": 1
     },
     {
@@ -14163,11 +13833,6 @@
     },
     {
       "file": "src/gzkit/utils.py",
-      "rule": "S603",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/utils.py",
       "rule": "TC003",
       "count": 1
     },
@@ -14467,11 +14132,6 @@
       "count": 1
     },
     {
-      "file": "tests/adr/test_patch_release_abort_hint.py",
-      "rule": "S607",
-      "count": 1
-    },
-    {
       "file": "tests/adr/test_patch_release_full_sweep.py",
       "rule": "FBT001",
       "count": 2
@@ -14567,11 +14227,6 @@
       "count": 1
     },
     {
-      "file": "tests/arb/test_red_witness_void_experiment.py",
-      "rule": "S607",
-      "count": 1
-    },
-    {
       "file": "tests/arb/test_ruff_reporter.py",
       "rule": "DOC201",
       "count": 2
@@ -14590,11 +14245,6 @@
       "file": "tests/arb/test_step_output_cli.py",
       "rule": "S603",
       "count": 3
-    },
-    {
-      "file": "tests/arb/test_step_output_cli.py",
-      "rule": "S607",
-      "count": 1
     },
     {
       "file": "tests/arb/test_step_reporter.py",
@@ -14699,11 +14349,6 @@
     {
       "file": "tests/chores/test_repo_content_walks.py",
       "rule": "S603",
-      "count": 1
-    },
-    {
-      "file": "tests/chores/test_repo_content_walks.py",
-      "rule": "S607",
       "count": 1
     },
     {
@@ -14903,11 +14548,6 @@
     },
     {
       "file": "tests/commands/common.py",
-      "rule": "S607",
-      "count": 1
-    },
-    {
-      "file": "tests/commands/common.py",
       "rule": "TC003",
       "count": 2
     },
@@ -14997,11 +14637,6 @@
       "count": 1
     },
     {
-      "file": "tests/commands/test_check_changed_tests.py",
-      "rule": "S607",
-      "count": 1
-    },
-    {
       "file": "tests/commands/test_chores.py",
       "rule": "DOC201",
       "count": 4
@@ -15077,11 +14712,6 @@
       "count": 4
     },
     {
-      "file": "tests/commands/test_chores_status.py",
-      "rule": "S607",
-      "count": 7
-    },
-    {
       "file": "tests/commands/test_common_fixtures.py",
       "rule": "DOC201",
       "count": 4
@@ -15095,11 +14725,6 @@
       "file": "tests/commands/test_common_fixtures.py",
       "rule": "S603",
       "count": 4
-    },
-    {
-      "file": "tests/commands/test_common_fixtures.py",
-      "rule": "S607",
-      "count": 8
     },
     {
       "file": "tests/commands/test_complexity_advise.py",
@@ -15243,11 +14868,6 @@
     },
     {
       "file": "tests/commands/test_content_own.py",
-      "rule": "S607",
-      "count": 2
-    },
-    {
-      "file": "tests/commands/test_content_own.py",
       "rule": "TRY003",
       "count": 2
     },
@@ -15324,11 +14944,6 @@
     {
       "file": "tests/commands/test_content_unown.py",
       "rule": "S603",
-      "count": 1
-    },
-    {
-      "file": "tests/commands/test_content_unown.py",
-      "rule": "S607",
       "count": 1
     },
     {
@@ -15562,11 +15177,6 @@
       "count": 1
     },
     {
-      "file": "tests/commands/test_obpi_acceptance_cli.py",
-      "rule": "S607",
-      "count": 1
-    },
-    {
       "file": "tests/commands/test_obpi_audit_cmd.py",
       "rule": "PLC0415",
       "count": 5
@@ -15727,11 +15337,6 @@
       "count": 1
     },
     {
-      "file": "tests/commands/test_obpi_validate_cmd.py",
-      "rule": "S607",
-      "count": 2
-    },
-    {
       "file": "tests/commands/test_obpi_withdraw_cmd.py",
       "rule": "DOC201",
       "count": 1
@@ -15840,11 +15445,6 @@
       "file": "tests/commands/test_status.py",
       "rule": "PLR0904",
       "count": 2
-    },
-    {
-      "file": "tests/commands/test_status.py",
-      "rule": "S607",
-      "count": 9
     },
     {
       "file": "tests/commands/test_status_obpi.py",
@@ -16000,11 +15600,6 @@
       "file": "tests/commands/test_validate_cmds.py",
       "rule": "PLR0904",
       "count": 1
-    },
-    {
-      "file": "tests/commands/test_validate_cmds.py",
-      "rule": "S607",
-      "count": 10
     },
     {
       "file": "tests/commands/test_validate_frontmatter.py",
@@ -16372,11 +15967,6 @@
       "count": 1
     },
     {
-      "file": "tests/content/test_tui_affordances.py",
-      "rule": "S607",
-      "count": 1
-    },
-    {
       "file": "tests/content/test_validation_hooks.py",
       "rule": "DOC201",
       "count": 4
@@ -16432,11 +16022,6 @@
       "count": 1
     },
     {
-      "file": "tests/governance/_fold_guard.py",
-      "rule": "S607",
-      "count": 1
-    },
-    {
       "file": "tests/governance/common.py",
       "rule": "DOC201",
       "count": 1
@@ -16449,11 +16034,6 @@
     {
       "file": "tests/governance/common.py",
       "rule": "S603",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/common.py",
-      "rule": "S607",
       "count": 1
     },
     {
@@ -16500,11 +16080,6 @@
       "file": "tests/governance/test_adversary_workspace.py",
       "rule": "S603",
       "count": 1
-    },
-    {
-      "file": "tests/governance/test_adversary_workspace.py",
-      "rule": "S607",
-      "count": 3
     },
     {
       "file": "tests/governance/test_advisor_proof_binding_validator.py",
@@ -16627,11 +16202,6 @@
       "count": 1
     },
     {
-      "file": "tests/governance/test_audit_line_endings.py",
-      "rule": "S607",
-      "count": 1
-    },
-    {
       "file": "tests/governance/test_audit_sensitivity_binding.py",
       "rule": "DOC201",
       "count": 1
@@ -16749,11 +16319,6 @@
     {
       "file": "tests/governance/test_brief_size.py",
       "rule": "S603",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/test_brief_size.py",
-      "rule": "S607",
       "count": 1
     },
     {
@@ -16969,11 +16534,6 @@
     {
       "file": "tests/governance/test_commit_trailers_pushed_range.py",
       "rule": "S603",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/test_commit_trailers_pushed_range.py",
-      "rule": "S607",
       "count": 1
     },
     {
@@ -17197,11 +16757,6 @@
       "count": 1
     },
     {
-      "file": "tests/governance/test_eval_feedback_trailer.py",
-      "rule": "S607",
-      "count": 4
-    },
-    {
       "file": "tests/governance/test_facade_regression_corpus.py",
       "rule": "PLC0415",
       "count": 1
@@ -17224,11 +16779,6 @@
     {
       "file": "tests/governance/test_fidelity_committed_state.py",
       "rule": "S603",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/test_fidelity_committed_state.py",
-      "rule": "S607",
       "count": 1
     },
     {
@@ -17437,11 +16987,6 @@
       "count": 1
     },
     {
-      "file": "tests/governance/test_handoff_selection.py",
-      "rule": "S607",
-      "count": 1
-    },
-    {
       "file": "tests/governance/test_handoff_validation.py",
       "rule": "DOC201",
       "count": 3
@@ -17449,11 +16994,6 @@
     {
       "file": "tests/governance/test_handoff_validation.py",
       "rule": "S603",
-      "count": 2
-    },
-    {
-      "file": "tests/governance/test_handoff_validation.py",
-      "rule": "S607",
       "count": 2
     },
     {
@@ -17587,11 +17127,6 @@
       "count": 2
     },
     {
-      "file": "tests/governance/test_lock_exchange_coupling_validator.py",
-      "rule": "S607",
-      "count": 2
-    },
-    {
       "file": "tests/governance/test_lock_ttl_canon.py",
       "rule": "PLC0415",
       "count": 1
@@ -17672,11 +17207,6 @@
       "count": 1
     },
     {
-      "file": "tests/governance/test_pipeline_control_inventory.py",
-      "rule": "S607",
-      "count": 1
-    },
-    {
       "file": "tests/governance/test_pointer_integrity.py",
       "rule": "DOC201",
       "count": 1
@@ -17750,11 +17280,6 @@
       "file": "tests/governance/test_promoted_advisory_audits.py",
       "rule": "S603",
       "count": 3
-    },
-    {
-      "file": "tests/governance/test_promoted_advisory_audits.py",
-      "rule": "S607",
-      "count": 4
     },
     {
       "file": "tests/governance/test_qc_binding.py",
@@ -17967,11 +17492,6 @@
       "count": 10
     },
     {
-      "file": "tests/governance/test_session_exit.py",
-      "rule": "S607",
-      "count": 10
-    },
-    {
       "file": "tests/governance/test_session_start.py",
       "rule": "PLC0415",
       "count": 3
@@ -18057,11 +17577,6 @@
       "count": 1
     },
     {
-      "file": "tests/governance/test_stage4_evidence.py",
-      "rule": "S607",
-      "count": 1
-    },
-    {
       "file": "tests/governance/test_stage4_packet.py",
       "rule": "DOC201",
       "count": 1
@@ -18069,11 +17584,6 @@
     {
       "file": "tests/governance/test_stage4_packet.py",
       "rule": "S603",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/test_stage4_packet.py",
-      "rule": "S607",
       "count": 1
     },
     {
@@ -18212,11 +17722,6 @@
       "count": 2
     },
     {
-      "file": "tests/governance/test_tracked_symlinks.py",
-      "rule": "S607",
-      "count": 2
-    },
-    {
       "file": "tests/governance/test_type_ignore_syntax.py",
       "rule": "DOC201",
       "count": 3
@@ -18257,11 +17762,6 @@
       "count": 1
     },
     {
-      "file": "tests/hooks/test_commit_locus_ledger_recorder.py",
-      "rule": "S607",
-      "count": 1
-    },
-    {
       "file": "tests/hooks/test_commit_locus_survives_precommit_stash.py",
       "rule": "DOC201",
       "count": 2
@@ -18277,11 +17777,6 @@
       "count": 3
     },
     {
-      "file": "tests/hooks/test_commit_locus_survives_precommit_stash.py",
-      "rule": "S607",
-      "count": 2
-    },
-    {
       "file": "tests/hooks/test_complexity_advisor_auto_chain.py",
       "rule": "PLC0415",
       "count": 3
@@ -18289,11 +17784,6 @@
     {
       "file": "tests/hooks/test_complexity_advisor_auto_chain.py",
       "rule": "S603",
-      "count": 1
-    },
-    {
-      "file": "tests/hooks/test_complexity_advisor_auto_chain.py",
-      "rule": "S607",
       "count": 1
     },
     {
@@ -18314,11 +17804,6 @@
     {
       "file": "tests/hooks/test_obpi_completion_commit_guard.py",
       "rule": "S603",
-      "count": 1
-    },
-    {
-      "file": "tests/hooks/test_obpi_completion_commit_guard.py",
-      "rule": "S607",
       "count": 1
     },
     {
@@ -18402,11 +17887,6 @@
       "count": 1
     },
     {
-      "file": "tests/knowledge/test_progressive_disclosure_path.py",
-      "rule": "S607",
-      "count": 1
-    },
-    {
       "file": "tests/models/test_exemplar.py",
       "rule": "PLC0415",
       "count": 45
@@ -18467,11 +17947,6 @@
       "count": 1
     },
     {
-      "file": "tests/mx/test_contract_pin.py",
-      "rule": "S607",
-      "count": 1
-    },
-    {
       "file": "tests/mx/test_disposition.py",
       "rule": "PLC0415",
       "count": 9
@@ -18525,11 +18000,6 @@
       "file": "tests/mx/test_mx_log.py",
       "rule": "S603",
       "count": 1
-    },
-    {
-      "file": "tests/mx/test_mx_log.py",
-      "rule": "S607",
-      "count": 5
     },
     {
       "file": "tests/mx/test_precommit_checkpoint_surface.py",
@@ -18589,11 +18059,6 @@
     {
       "file": "tests/policy/test_cli_consistency.py",
       "rule": "RUF005",
-      "count": 1
-    },
-    {
-      "file": "tests/policy/test_cli_consistency.py",
-      "rule": "S607",
       "count": 1
     },
     {
@@ -18684,11 +18149,6 @@
     {
       "file": "tests/scripts/test_session_orientation.py",
       "rule": "S603",
-      "count": 4
-    },
-    {
-      "file": "tests/scripts/test_session_orientation.py",
-      "rule": "S607",
       "count": 4
     },
     {
@@ -19047,11 +18507,6 @@
       "count": 1
     },
     {
-      "file": "tests/test_check_fingerprint.py",
-      "rule": "S607",
-      "count": 2
-    },
-    {
       "file": "tests/test_chores.py",
       "rule": "PLC0415",
       "count": 2
@@ -19174,11 +18629,6 @@
     {
       "file": "tests/test_commit_witness.py",
       "rule": "S603",
-      "count": 1
-    },
-    {
-      "file": "tests/test_commit_witness.py",
-      "rule": "S607",
       "count": 1
     },
     {
@@ -19532,11 +18982,6 @@
       "count": 3
     },
     {
-      "file": "tests/test_foundation_triage_skill.py",
-      "rule": "S607",
-      "count": 2
-    },
-    {
       "file": "tests/test_frontmatter.py",
       "rule": "DOC201",
       "count": 1
@@ -19738,11 +19183,6 @@
     },
     {
       "file": "tests/test_ledger.py",
-      "rule": "S607",
-      "count": 5
-    },
-    {
-      "file": "tests/test_ledger.py",
       "rule": "TRY003",
       "count": 1
     },
@@ -19815,11 +19255,6 @@
       "file": "tests/test_ledger_merge_driver.py",
       "rule": "S603",
       "count": 1
-    },
-    {
-      "file": "tests/test_ledger_merge_driver.py",
-      "rule": "S607",
-      "count": 2
     },
     {
       "file": "tests/test_ledger_producer_probe.py",
@@ -20072,11 +19507,6 @@
       "count": 1
     },
     {
-      "file": "tests/test_obpi_validator.py",
-      "rule": "S607",
-      "count": 4
-    },
-    {
       "file": "tests/test_ontology_corpus.py",
       "rule": "DOC201",
       "count": 2
@@ -20144,11 +19574,6 @@
     {
       "file": "tests/test_packaging.py",
       "rule": "S603",
-      "count": 1
-    },
-    {
-      "file": "tests/test_packaging.py",
-      "rule": "S607",
       "count": 1
     },
     {
@@ -20387,11 +19812,6 @@
       "count": 3
     },
     {
-      "file": "tests/test_red_witness.py",
-      "rule": "S607",
-      "count": 4
-    },
-    {
       "file": "tests/test_registry.py",
       "rule": "PLC0415",
       "count": 1
@@ -20549,11 +19969,6 @@
     {
       "file": "tests/test_skill_body_audit.py",
       "rule": "S603",
-      "count": 1
-    },
-    {
-      "file": "tests/test_skill_body_audit.py",
-      "rule": "S607",
       "count": 1
     },
     {
@@ -20742,11 +20157,6 @@
       "count": 1
     },
     {
-      "file": "tests/test_temporal_drift.py",
-      "rule": "S607",
-      "count": 1
-    },
-    {
       "file": "tests/test_test_shape.py",
       "rule": "PLC0415",
       "count": 2
@@ -20784,11 +20194,6 @@
     {
       "file": "tests/test_triangle.py",
       "rule": "PLW1510",
-      "count": 2
-    },
-    {
-      "file": "tests/test_triangle.py",
-      "rule": "S607",
       "count": 2
     },
     {

@@ -11,6 +11,7 @@ import re
 import subprocess
 from pathlib import Path
 
+from gzkit.executables import resolve_executable
 from gzkit.tasks import (
     has_task_trailer,
     parse_eval_feedback_source_trailers,
@@ -23,8 +24,8 @@ _CODE_PATH_PREFIXES = ("src/", "tests/")
 def _git_out(project_root: Path, args: list[str]) -> str | None:
     """Return stdout of ``git <args>``, or None when git fails or is missing."""
     try:
-        return subprocess.run(
-            ["git", *args],
+        return subprocess.run(  # noqa: S603 — git argv this module builds, never user text; executable resolved
+            [resolve_executable("git"), *args],
             cwd=project_root,
             check=True,
             capture_output=True,
@@ -113,8 +114,8 @@ _EVAL_FEEDBACK_LABEL = "eval-feedback"
 
 def _issue_labels(project_root: Path, number: str) -> list[str]:
     """Return GHI ``number``'s label names, or [] when gh cannot answer."""
-    result = subprocess.run(
-        ["gh", "issue", "view", number, "--json", "labels"],
+    result = subprocess.run(  # noqa: S603 — gh issue view of an issue number a commit cites
+        [resolve_executable("gh"), "issue", "view", number, "--json", "labels"],
         capture_output=True,
         text=True,
         errors="replace",

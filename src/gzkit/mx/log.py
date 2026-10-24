@@ -26,6 +26,7 @@ from gzkit.core.models import (
     REQ_ID_BODY_PLAIN,
     REQ_SHORT_ID_BODY,
 )
+from gzkit.executables import resolve_argv
 
 _LEDGER_RELPATH = (".gzkit", "ledger.jsonl")
 
@@ -128,8 +129,13 @@ def _git_commits_since(root: Path, since_ts: str, until_ts: str | None) -> list[
     if until_ts:
         cmd[2:2] = ["--until", until_ts]
     try:
-        result = subprocess.run(
-            cmd, cwd=root, capture_output=True, text=True, errors="replace", check=False
+        result = subprocess.run(  # noqa: S603 — the git log argv this module builds
+            resolve_argv(cmd),
+            cwd=root,
+            capture_output=True,
+            text=True,
+            errors="replace",
+            check=False,
         )
     except OSError:
         return []

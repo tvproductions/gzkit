@@ -19,6 +19,7 @@ import yaml
 
 from gzkit.acceptance import Obligation, Proof
 from gzkit.config import GzkitConfig
+from gzkit.executables import resolve_argv
 from gzkit.frontmatter import read_frontmatter
 from gzkit.governance.req_coverage import discover_covers
 from gzkit.mutation_witness import Mutation, run_mutation_sweep
@@ -296,8 +297,8 @@ def _covering_selectors(root: Path, req_id: str, tests: Path) -> set[str]:
 def _restored_run(root: Path, command: list[str], selectors: list[str]) -> dict:
     with tempfile.TemporaryDirectory() as cache:
         env = dict(os.environ, PYTHONPYCACHEPREFIX=cache)
-        run = subprocess.run(
-            command,
+        run = subprocess.run(  # noqa: S603 — the unittest argv this module builds; executable resolved
+            resolve_argv(command),
             cwd=root,
             env=env,
             capture_output=True,

@@ -38,6 +38,7 @@ from gzkit.commands.register import (
 )
 from gzkit.commands.sync_guard import refuse_on_sync_blockers, report_sync_blockers
 from gzkit.config import AuthorshipConfig, GzkitConfig, PathConfig
+from gzkit.executables import resolve_argv, resolve_executable
 from gzkit.governance.trust_audits.session_green_gate import (
     configured_hooks_path,
     declared_hook_types,
@@ -581,8 +582,8 @@ def _install_pre_commit_hooks(project_root: Path, *, dry_run: bool = False) -> s
     ]
     for installer in _INSTALLERS:
         try:
-            result = subprocess.run(
-                [*installer, "install", *hook_args],
+            result = subprocess.run(  # noqa: S603 — the pre-commit installer argv this module builds
+                resolve_argv([*installer, "install", *hook_args]),
                 cwd=project_root,
                 capture_output=True,
                 text=True,
@@ -702,8 +703,8 @@ def _run_uv_sync(project_root: Path, *, dry_run: bool = False) -> str | None:
     if dry_run:
         return "Would run uv sync"
 
-    result = subprocess.run(
-        ["uv", "sync"],
+    result = subprocess.run(  # noqa: S603 — uv sync, a fixed argv; executable resolved
+        [resolve_executable("uv"), "sync"],
         cwd=project_root,
         capture_output=True,
         text=True,

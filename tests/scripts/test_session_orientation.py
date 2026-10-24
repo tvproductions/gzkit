@@ -29,7 +29,7 @@ from unittest import mock
 
 from gzkit.guard_canary import load_canaries
 from gzkit.traceability import covers
-from tests.commands.common import _isolated_git_env
+from tests.commands.common import _isolated_git_env, argv_by_tool_name
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPT_PATH = REPO_ROOT / "scripts" / "session_orientation.py"
@@ -328,7 +328,7 @@ class TestCollectRemoteState(unittest.TestCase):
 
         def side_effect(args, **_kwargs):
             for prefix, result in mapping.items():
-                if list(args[: len(prefix)]) == list(prefix):
+                if argv_by_tool_name(args)[: len(prefix)] == list(prefix):
                     return result
             raise AssertionError(f"unexpected git invocation: {args}")
 
@@ -381,6 +381,7 @@ class TestCollectRemoteState(unittest.TestCase):
         called: list[tuple] = []
 
         def record_run(args, **_kwargs):
+            args = argv_by_tool_name(args)
             called.append(tuple(args[:2]))
             if args[:2] == ["git", "fetch"]:
                 raise AssertionError("fetch must be skipped when GZKIT_ORIENTATION_NO_FETCH=1")

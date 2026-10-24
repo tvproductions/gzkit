@@ -52,6 +52,7 @@ from typing import TYPE_CHECKING, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.executables import resolve_argv, resolve_executable
 from gzkit.unit_run_provenance import judge_executed, read_test_observations
 
 if TYPE_CHECKING:
@@ -163,8 +164,8 @@ def classify_failure(exit_status: int, output: str) -> FailureClass:
 
 def _git(args: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
     """Run a git command, capturing text output with a decode fallback."""
-    return subprocess.run(
-        ["git", *args],
+    return subprocess.run(  # noqa: S603 — git argv this module builds, never user text; executable resolved
+        [resolve_executable("git"), *args],
         cwd=cwd,
         capture_output=True,
         text=True,
@@ -365,8 +366,8 @@ def _run_tests(runner: list[str], test_names: list[str], cwd: Path) -> tuple[int
     Verbose so every executed and failing test is printed by id; the aggregate
     summary alone cannot say WHICH test failed (GHI #1154).
     """
-    result = subprocess.run(
-        [*runner, "-v", *test_names],
+    result = subprocess.run(  # noqa: S603 — the test runner argv over the commit's tests
+        resolve_argv([*runner, "-v", *test_names]),
         cwd=cwd,
         capture_output=True,
         text=True,

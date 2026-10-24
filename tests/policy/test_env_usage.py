@@ -32,6 +32,7 @@ ENV_VAR_ALLOWLIST: frozenset[str] = frozenset(
         "GZKIT_CLAUDE_HOME",  # Plan-discovery test isolation (#128)
         "EDITOR",  # Operator editor invocation (gz content edit, OBPI-0.0.34-04)
         "VISUAL",  # Operator editor invocation (gz content edit, OBPI-0.0.34-04)
+        "PATH",  # Executables resolved off absolute entries only (gzkit.executables, RO-9)
     }
 )
 
@@ -183,13 +184,13 @@ class TestEnvVarUsage(unittest.TestCase):
 
     def test_unapproved_environ_subscript_is_detected(self) -> None:
         """Scanner must flag os.environ[...] with a non-allowlisted var."""
-        source = 'import os\nvalue = os.environ["PATH"]\n'
+        source = 'import os\nvalue = os.environ["HOME"]\n'
         tree = ast.parse(source, filename="<synthetic>")
         violations = _collect_env_violations(tree)
         self.assertEqual(len(violations), 1)
         _lineno, form, var_name = violations[0]
         self.assertEqual(form, "os.environ[...]")
-        self.assertEqual(var_name, "PATH")
+        self.assertEqual(var_name, "HOME")
 
 
 class TestPolicyTestIsolation(unittest.TestCase):
