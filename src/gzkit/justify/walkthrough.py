@@ -230,6 +230,6 @@ def _get_template() -> Template:
         trim_blocks=True,
         lstrip_blocks=True,
         keep_trailing_newline=True,
-        autoescape=False,
+        autoescape=False,  # noqa: S701 — renders a Markdown walkthrough, never HTML
     )
     return env.get_template("walkthrough.md.j2")

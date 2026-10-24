@@ -966,7 +966,11 @@ def _raw_mkdocs_validation(config_path: Path, seen: frozenset[Path]) -> dict[str
 
     _TagTolerantLoader.add_multi_constructor("", lambda _loader, _suffix, _node: None)
     try:
-        raw = yaml.load(config_path.read_text(encoding="utf-8"), Loader=_TagTolerantLoader)
+        # _TagTolerantLoader is a SafeLoader subclass that drops unknown tags.
+        raw = yaml.load(
+            config_path.read_text(encoding="utf-8"),
+            Loader=_TagTolerantLoader,  # noqa: S506 — a SafeLoader subclass
+        )
     except yaml.YAMLError as exc:
         raise ValueError(f"not valid YAML: {exc}") from exc
     if not isinstance(raw, dict):

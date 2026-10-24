@@ -621,7 +621,7 @@ def audit_skill_alignment(project_root: Path) -> list[ValidationError]:
                             f"skill under .gzkit/skills/**. A skill wrapping a retired verb "
                             f"routes agents onto it (GHI {deprecated.ghi}). Retire the skill "
                             f"per .gzkit/rules/skill-surface-sync.md § Retirement policy "
-                            f"(delete from every surface root) and point callers at "
+                            f"(remove it from every surface root) and point callers at "
                             f"`{deprecated.successor}`."
                         ),
                     )

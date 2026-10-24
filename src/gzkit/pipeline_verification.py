@@ -142,7 +142,7 @@ def partition_independent_groups(
         if ra != rb:
             parent[ra] = rb
 
-    for req_a, req_b in overlaps:
+    for req_a, req_b in overlaps:  # noqa: PLE1141 — the keys are (req_a, req_b) tuples
         union(req_a, req_b)
 
     groups: dict[int, list[int]] = {}

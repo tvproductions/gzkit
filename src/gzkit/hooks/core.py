@@ -487,7 +487,7 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-'''
+'''  # noqa: RUF027 — a template filled by the .format() below
 
     return script.format(hook_type=hook_type)
 

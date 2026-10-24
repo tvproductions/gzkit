@@ -45,7 +45,7 @@ def _build_env() -> jinja2.Environment:
     return jinja2.Environment(
         loader=jinja2.FileSystemLoader(str(templates_path), encoding="utf-8"),
         keep_trailing_newline=True,
-        autoescape=False,
+        autoescape=False,  # noqa: S701 — renders Markdown and agent surfaces, never HTML
         # StrictUndefined: any undefined variable in a template raises at render time.
         undefined=jinja2.StrictUndefined,
     )

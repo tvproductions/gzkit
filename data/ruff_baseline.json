@@ -3898,11 +3898,6 @@
     },
     {
       "file": "src/gzkit/cli/__init__.py",
-      "rule": "F822",
-      "count": 6
-    },
-    {
-      "file": "src/gzkit/cli/__init__.py",
       "rule": "PLC0415",
       "count": 1
     },
@@ -9118,11 +9113,6 @@
     },
     {
       "file": "src/gzkit/content/render/pipeline.py",
-      "rule": "S701",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/content/render/pipeline.py",
       "rule": "TC001",
       "count": 1
     },
@@ -10688,11 +10678,6 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/cli.py",
-      "rule": "S608",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/cli.py",
       "rule": "SLF001",
       "count": 2
     },
@@ -12083,11 +12068,6 @@
     },
     {
       "file": "src/gzkit/hooks/core.py",
-      "rule": "RUF027",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/hooks/core.py",
       "rule": "S404",
       "count": 1
     },
@@ -12599,11 +12579,6 @@
     {
       "file": "src/gzkit/justify/walkthrough.py",
       "rule": "PLR2004",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/justify/walkthrough.py",
-      "rule": "S701",
       "count": 1
     },
     {
@@ -13543,11 +13518,6 @@
     },
     {
       "file": "src/gzkit/pipeline_verification.py",
-      "rule": "PLE1141",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/pipeline_verification.py",
       "rule": "S105",
       "count": 1
     },
@@ -13639,11 +13609,6 @@
     {
       "file": "src/gzkit/quality.py",
       "rule": "S404",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/quality.py",
-      "rule": "S506",
       "count": 1
     },
     {

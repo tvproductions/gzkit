@@ -10,9 +10,14 @@ not pay the cost of importing formatters, logging, progress, gates,
 or audit internals until something actually uses them.
 """
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from gzkit.cli.main import main
+
+if TYPE_CHECKING:
+    from gzkit.cli.formatters import OutputFormatter
+    from gzkit.cli.logging import bind_correlation_id, configure_logging
+    from gzkit.cli.progress import progress_bar, progress_phase, progress_spinner
 
 __all__ = [
     "OutputFormatter",
