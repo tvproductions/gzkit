@@ -518,6 +518,20 @@
       "authority": "docs/governance/harbor-ro9-astral-toolchain.md (drydock RO-9 tranche 4, Ruff ALL under data/ruff_baseline.json); GHI #1154 item 5 (every registered claim binds a reviewed canary)",
       "proposed_by": "claude-code session 2026-10-23",
       "reviewed_by": "g0"
+    },
+    {
+      "claim_id": "astral-discipline-deferred-annotations",
+      "guard": "gzkit.governance.trust_audits.astral_discipline:_deferred_annotations_rules",
+      "failing_test": "tests.governance.test_astral_discipline.TestTheFloorsAnnotationIdiomIsLinted.test_a_314_floor_whose_ruff_config_does_not_ban_the_import_is_a_violation",
+      "mutation": {
+        "find": "    if \"__future__.annotations\" not in banned:\n",
+        "replace": "    if False:\n",
+        "label": "a 3.14 floor whose Ruff config does not ban the PEP 563 import is never refused"
+      },
+      "binding_sha256": "7c479c8bdb7d83ce17ada3495926c1cf0c30e0f16aa4c5c63b9d63c50765418e",
+      "authority": "docs/governance/harbor-ro9-astral-toolchain.md (drydock RO-9 tranche 4, the PEP 563 ban; operator 2026-10-24: \"Remove first, then ban (Rec.)\"); scorecard row 23b; GHI #1154 item 5 (every registered claim binds a reviewed canary)",
+      "proposed_by": "claude-code session 2026-10-24",
+      "reviewed_by": "g0"
     }
   ]
 }

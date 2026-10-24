@@ -701,6 +701,23 @@ def _ep_astral_discipline(root: Path) -> list[ValidationError]:
     return errors
 
 
+def _ep_astral_discipline_deferred_annotations(root: Path) -> list[ValidationError]:
+    """Run the astral gate against the deferred-annotations fixture.
+
+    Returns:
+        The finding against the unbanned import, or nothing when the decoy fired.
+
+    """
+    from gzkit.governance.trust_audits.astral_discipline import (  # noqa: PLC0415
+        audit_astral_discipline,
+    )
+
+    errors = audit_astral_discipline(root)
+    if any("deferred-annotations-unbanned" not in error.artifact for error in errors):
+        return []
+    return errors
+
+
 def _ep_astral_discipline_admits_baselined(root: Path) -> int:
     """Truthy only when the gate ADMITS a violation the baseline holds."""
     from gzkit.governance.trust_audits.astral_discipline import (  # noqa: PLC0415

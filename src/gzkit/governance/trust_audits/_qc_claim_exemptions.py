@@ -133,6 +133,9 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     "astral-discipline": "astral-discipline-baselined",
     # The admit half reads the same gate and admits nothing of its own.
     "astral-discipline-baselined": EXEMPTS_NONE,
+    # The deferred-annotations rule is one rule of the same gate, admitted by the same
+    # baseline (scorecard row 23b).
+    "astral-discipline-deferred-annotations": "astral-discipline-baselined",
     # The ceiling is a threshold parameter read from `[tool.ruff.lint.mccabe]`, and an
     # undeclared one is refused rather than admitted. A body of `...` alone is a scope
     # predicate fixed in code (it carries no decision), never a project-set input.

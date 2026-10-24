@@ -37,6 +37,7 @@ from . import _qc_nc_population as _pc
 from ._qc_claim_delegations import QC_CLAIM_DELEGATIONS
 from ._qc_claim_exemptions import QC_CLAIM_EXEMPTS
 from ._qc_claim_populations import QC_CLAIM_POPULATIONS
+from ._qc_nc_entrypoints import _ep_astral_discipline_deferred_annotations
 
 # ---------------------------------------------------------------------------
 # Fixture helpers
@@ -1345,14 +1346,23 @@ def _id_seam_root(slug: str, *, fresh: bool) -> Path:
     return root
 
 
-def _astral_root(slug: str, *, fresh: bool) -> Path:
-    """Build a uv project with one baselined violation and, when *fresh*, one new one."""
+def _astral_root(slug: str, *, fresh: bool, ban: bool = True) -> Path:
+    """Build a uv project with one baselined violation and, when *fresh*, one new one.
+
+    Its 3.14 floor bans PEP 563's import unless *ban* is false, the deferred-annotations
+    control's new violation.
+    """
     root = _mkroot(slug)
+    banned = (
+        '\n[tool.ruff.lint.flake8-tidy-imports.banned-api]\n"__future__.annotations".msg = "3.14"\n'
+        if ban
+        else ""
+    )
     _write(
         root / "pyproject.toml",
         '[project]\nname = "nc"\nversion = "0.1.0"\nrequires-python = ">=3.14"\n'
         'dependencies = []\n\n[build-system]\nrequires = ["uv_build>=0.13.1,<0.14"]\n'
-        'build-backend = "uv_build"\n',
+        'build-backend = "uv_build"\n' + banned,
     )
     _write(root / ".python-version", "3.14.8\n")
     steps = "      - run: uv sync --frozen\n"
@@ -1385,6 +1395,18 @@ def _build_astral_discipline() -> Path:
 def _build_astral_discipline_baselined() -> Path:
     """Build only the baselined violation — the gate MUST admit it (the admit half, RO-9)."""
     return _astral_root("astral-discipline-baselined", fresh=False)
+
+
+def _build_astral_discipline_deferred_annotations() -> Path:
+    """Build a 3.14 floor whose Ruff config does not ban PEP 563's import — the gate MUST fire.
+
+    Decoy: the baselined unchecked lock, which must stay silent (scorecard row 23b).
+
+    Returns:
+        The fixture project's root.
+
+    """
+    return _astral_root("astral-discipline-deferred-annotations", fresh=False, ban=False)
 
 
 def _build_complexity_ceiling() -> Path:
@@ -2199,6 +2221,13 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         "astral-discipline-baselined",
         _build_astral_discipline_baselined,
         _ep._ep_astral_discipline_admits_baselined,
+    ),
+    # A 3.14 floor's Ruff config must ban PEP 563's import (scorecard row 23b).
+    (
+        "astral-discipline-deferred-annotations",
+        _build_astral_discipline_deferred_annotations,
+        _ep_astral_discipline_deferred_annotations,
+        "new deferred-annotations-unbanned violation",
     ),
     ("brief-size", _build_brief_size, _ep._ep_brief_size, "OBPI-0.0.99-01-over measures"),
     (

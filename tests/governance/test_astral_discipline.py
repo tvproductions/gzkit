@@ -29,7 +29,7 @@ from gzkit.governance.trust_audits.astral_discipline import (
 
 _REPO = Path(__file__).resolve().parents[2]
 
-_PYPROJECT = """\
+_UNBANNED = """\
 [project]
 name = "demo"
 version = "0.1.0"
@@ -44,6 +44,13 @@ dev = ["ruff>=0.17", "ty>=0.0.89", "behave>=1.3"]
 requires = ["uv_build>=0.13.1,<0.14"]
 build-backend = "uv_build"
 """
+
+_BAN = """
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"__future__.annotations".msg = "annotations are deferred in Python 3.14"
+"""
+
+_PYPROJECT = _UNBANNED + _BAN
 
 _EXCEPTIONS = {
     "_doc": "fixture (docs/governance/harbor-ro9-astral-toolchain.md)",
@@ -103,6 +110,26 @@ def _rules(**files: str) -> set[str]:
 class TestACompliantProjectIsClean(unittest.TestCase):
     def test_the_fixture_has_no_violation(self) -> None:
         self.assertEqual(_Tree().violations(), [])
+
+
+class TestTheFloorsAnnotationIdiomIsLinted(unittest.TestCase):
+    """At a 3.14 floor, Ruff refuses PEP 563's import (`.gzkit/rules/pythonic.md` § Imports)."""
+
+    _KEY = ("deferred-annotations-unbanned", "pyproject.toml", "__future__.annotations")
+
+    def test_a_314_floor_whose_ruff_config_does_not_ban_the_import_is_a_violation(self) -> None:
+        self.assertIn(self._KEY, _Tree(**{"pyproject.toml": _UNBANNED}).violations())
+
+    def test_a_ban_in_ruff_toml_satisfies_it(self) -> None:
+        for name in ("ruff.toml", ".ruff.toml"):
+            with self.subTest(config=name):
+                tree = _Tree(**{"pyproject.toml": _UNBANNED, name: _BAN.replace("tool.ruff.", "")})
+                self.assertNotIn(self._KEY, tree.violations())
+
+    def test_a_313_floor_needs_no_ban_because_313_has_no_deferred_annotations(self) -> None:
+        floor = _UNBANNED.replace('">=3.14"', '">=3.13"').replace("3 :: 3.14", "3 :: 3.13")
+        tree = _Tree(**{"pyproject.toml": floor, ".python-version": "3.13.9\n"})
+        self.assertNotIn("deferred-annotations-unbanned", {r for r, _, _ in tree.violations()})
 
 
 class TestThePythonVersionIsDeclaredOnce(unittest.TestCase):
@@ -524,6 +551,21 @@ class TestTheNegativeControlsDiscriminate(unittest.TestCase):
         )
         self.assertEqual(ep._ep_astral_discipline(decoy), [])
 
+    def test_the_deferred_annotations_control_catches_only_the_unbanned_import(self) -> None:
+        from gzkit.governance.trust_audits import _qc_nc_entrypoints as ep  # noqa: PLC0415
+        from gzkit.governance.trust_audits import _qc_negative_controls as nc  # noqa: PLC0415
+
+        caught = ep._ep_astral_discipline_deferred_annotations(
+            nc._build_astral_discipline_deferred_annotations()
+        )
+        self.assertTrue(caught)
+        self.assertTrue(all("deferred-annotations-unbanned" in e.artifact for e in caught), caught)
+        decoy = nc._build_astral_discipline_deferred_annotations()
+        (decoy / BASELINE_RELPATH).write_text(
+            json.dumps({"_doc": "x", "violations": []}), encoding="utf-8"
+        )
+        self.assertEqual(ep._ep_astral_discipline_deferred_annotations(decoy), [])
+
     def test_the_admit_control_is_truthy_only_when_the_baseline_admits(self) -> None:
         from gzkit.governance.trust_audits import _qc_nc_entrypoints as ep  # noqa: PLC0415
         from gzkit.governance.trust_audits import _qc_negative_controls as nc  # noqa: PLC0415
@@ -544,6 +586,29 @@ class TestTheClaimsDeclareTheirPopulation(unittest.TestCase):
 
         flagged = [e.message for e in audit_population_controls(_REPO)]
         self.assertFalse([m for m in flagged if "'astral-discipline" in m], flagged)
+
+
+class TestTheDeferredAnnotationsControlIsRegistered(unittest.TestCase):
+    """Scorecard row 23b cites `NC:astral-discipline-deferred-annotations`; it must resolve."""
+
+    _CLAIM = "astral-discipline-deferred-annotations"
+
+    def test_the_control_is_a_registered_claim(self) -> None:
+        from gzkit.enforcement import (  # noqa: PLC0415
+            _ensure_production_claims_registered,
+            registered_claims,
+        )
+
+        _ensure_production_claims_registered()
+        self.assertIn(self._CLAIM, registered_claims())
+
+    def test_the_claim_declares_the_baseline_that_admits_its_violations(self) -> None:
+        from gzkit.governance.trust_audits.exemption_controls import (  # noqa: PLC0415
+            audit_exemption_controls,
+        )
+
+        flagged = [e.message for e in audit_exemption_controls(_REPO)]
+        self.assertFalse([m for m in flagged if self._CLAIM in m], flagged)
 
 
 class TestTheRo9LiteralsAreDeclaredAuditSubjects(unittest.TestCase):

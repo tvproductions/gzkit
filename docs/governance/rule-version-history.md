@@ -458,6 +458,12 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 `0.5.11` records the PEP 563 import as refused rather than advised. The operator ordered the removal before the ban (selection *"Remove first, then ban (Rec.)"*), because holding the 1,058 files that carried it would have raised `data/ruff_baseline.json` above its shrink-ratchet high-water mark. Removed from every module but the seven dated evidence scripts, which keep it under a per-file exception, the tree passed ty, the full unit tier and behave unchanged; Ruff `TID251` with a `banned-api` entry for `__future__.annotations` then entered with no baseline row. Scorecard row 23b stays Promotable until a registered control plants the import.
 
+### Lifted 2026-10-24 at version `0.5.11` (rule now at `0.5.12`)
+
+> **Rule version:** `0.5.11` — Ruff's `TID251` refuses the PEP 563 future import, which no module carries any more (RO-9 tranche 4); prior banners in [Rule Version History](rule-version-history.md#pythonicmd).
+
+`0.5.12` names the ban's witness. Ruff supplies the refusal and gzkit owns only the configuration, which a Python canary cannot mutate, so the guard is a rule of the astral-discipline witness: `deferred-annotations-unbanned` fires when the `requires-python` floor is 3.14 or above and no Ruff config bans `__future__.annotations`. The 3.13 floor `gz init` scaffolds is exempt, since 3.13 has no deferred annotations, so the astral baseline did not grow. `NC:astral-discipline-deferred-annotations` plants the unbanned floor beside the baselined decoy, and its canary was reviewed by the operator.
+
 ## `hexagonal-architecture.md`
 
 Lifted at version `0.2.0` (rule now at `0.2.1`).

@@ -115,7 +115,8 @@ Tranche 1 lands `gz validate --astral-discipline`, one scope in the default `gz 
 RO-2's `--id-seam`:
 
 - **The rules.** One machine-checked rule per row of the population tables: a Python version stated
-  outside its two homes; `--frozen` or a bare `uv sync` in automation; `pip`, `uv pip` or a
+  outside its two homes; a 3.14 floor whose Ruff config does not ban PEP 563's import (added at
+  tranche 4, 2026-10-24, the control scorecard row 23b cites); `--frozen` or a bare `uv sync` in automation; `pip`, `uv pip` or a
   `requirements*.txt` in the project; `setup-python`; dev tooling in `optional-dependencies`; a project
   tool run by `uvx` or from `PATH`; a dependency declared and never invoked; a non-Astral tool not in
   the exception register; and the scaffold's output failing any of these.

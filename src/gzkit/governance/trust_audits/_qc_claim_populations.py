@@ -65,6 +65,7 @@ QC_CLAIM_POPULATIONS: dict[str, Callable[[], Sequence[str]] | str] = {
     # whatever the tree declares, never a set another surface declares (RO-9).
     "astral-discipline": POPULATION_NONE,
     "astral-discipline-baselined": POPULATION_NONE,
+    "astral-discipline-deferred-annotations": POPULATION_NONE,
     # Walks the module tree the wheel ships in code; the members are whatever Python
     # files exist there, never a set another surface lists (RO-9 tranche 4).
     "complexity-ceiling": POPULATION_NONE,

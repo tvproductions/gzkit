@@ -226,6 +226,41 @@ def _version_rules(root: Path, project: _Project) -> Iterator[Violation]:
             )
 
 
+def _ruff_lint_config(root: Path, project: _Project) -> dict[str, Any]:
+    """Find the Ruff lint table in force: ``ruff.toml``, then ``.ruff.toml``, then pyproject.
+
+    Returns:
+        The ``lint`` table of the first config present, or an empty one.
+
+    """
+    for name in ("ruff.toml", ".ruff.toml"):
+        text = _read(root / name)
+        if text:
+            return tomllib.loads(text).get("lint", {})
+    return project.pyproject.get("tool", {}).get("ruff", {}).get("lint", {})
+
+
+def _deferred_annotations_rules(root: Path, project: _Project) -> Iterator[Violation]:
+    """At a 3.14 floor, Ruff's config must ban PEP 563's import (TID251 ``banned-api``).
+
+    Python 3.14 defers every annotation (PEP 649 and 749), so the import does nothing; a
+    3.13 floor has no deferred annotations and may still need it.
+
+    Yields:
+        The violation, when the floor is 3.14 or above and no Ruff config bans the import.
+
+    """
+    if not project.floor or _version(project.floor) < (3, 14):
+        return
+    banned = _ruff_lint_config(root, project).get("flake8-tidy-imports", {}).get("banned-api", {})
+    if "__future__.annotations" not in banned:
+        yield Violation(
+            rule="deferred-annotations-unbanned",
+            file="pyproject.toml",
+            subject="__future__.annotations",
+        )
+
+
 def _registered_version_rules(root: Path, project: _Project) -> Iterator[Violation]:
     """Classifiers and Read the Docs' interpreter: restatements unless registered, and agreeing."""
     registered = _registered_restatements(project)
@@ -491,6 +526,7 @@ def find_violations(root: Path) -> list[Violation]:
     project = _project(root)
     return [
         *_version_rules(root, project),
+        *_deferred_annotations_rules(root, project),
         *_automation_rules(root),
         *_dependency_rules(root, project),
         *_provenance_rules(root, project),
