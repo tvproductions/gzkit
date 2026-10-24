@@ -341,6 +341,11 @@ class TestCommittedServedSet(unittest.TestCase):
         served["invocation"] = body
         self.assertEqual(check_delivery(inventory, served), [])
 
+    def test_committed_body_states_the_served_statement_the_renderer_states(self):
+        """The body's account of delivery is the renderer's, so it cannot claim no rewording."""
+        inventory = load_inventory(ROOT)
+        self.assertIn(SERVED_STATEMENT, read_skill_body(ROOT, inventory))
+
     def test_committed_record_holds_every_rationale_passage(self):
         inventory = load_inventory(ROOT)
         violations = check_rationale_record(inventory, read_rationale_record(ROOT))
