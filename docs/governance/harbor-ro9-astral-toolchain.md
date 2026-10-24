@@ -228,7 +228,16 @@ false positives: F822 against `cli/__init__.py`'s lazy `__getattr__`, PLE1141 on
 RUF027 on a `.format` template. **Read 2026-10-24 (operator, verbatim *"c"*):** F822 and S608 fixed, S701, S506,
 PLE1141 and RUF027 carry reasoned `# noqa` (`f1e84660c`); the subprocess sites (552 findings over 153
 files, measured that day) and the `[tool.ty]` rule overrides that hide 2,262 diagnostics in tests and
-features are read before the tranche closes. Under "every ty rule", the 2026-08-08 exclusion of `features/` from
+features are read before the tranche closes. **The subprocess sites, read 2026-10-24** (by selection
+*"Split by rule (Rec.)"*, then *"Package fixed, tests curated (Rec.)"*): S404 is a standing exception;
+every package spawn resolves its executable through `gzkit.executables`, never the current directory,
+held by `tests/policy/test_executable_resolution.py` over the package, the rendered hooks and the
+canonical scripts; S603 carries a reasoned noqa per site; no S603 or S607 row remains
+(`b93edbddf`, `04b3641e6`, `7b7ea83cd`). **The ty overrides, in progress** (by selection *"Fix by root
+cause (Rec.)"*): the `features/**` override is gone behind a behave stub (`45c622173`), and the
+`tests/**` override has lost `unknown-argument`, `not-subscriptable` and `possibly-missing-attribute`;
+1,602 diagnostics fell to 498, all `invalid-argument-type` and `unresolved-attribute` across 132 files
+(`a85b67ef0`, `e7d79d689`, `b7551ab05`, `2eec848d9`). The tranche closes when that block is empty. Under "every ty rule", the 2026-08-08 exclusion of `features/` from
 `ty check` (behave's `context` annotations) gets a ruling when the tranche lands.
 
 **Amended for tranche 4 (2026-10-24): the import-boundary row and the PEP 563 ban.** Measured on Ruff 0.17.1, `ruff analyze graph` reports first-party files only: `core/models.py` imports Pydantic and its entry lists `src/gzkit/skill_contract.py` alone, so the graph cannot carry the core's stdlib-and-Pydantic allowlist, and `TID251` banned-api is a ban list, which cannot state an allowlist either. The hand-written AST test in `tests/policy/test_import_boundaries.py` therefore stays. What the graph does that the test cannot is follow imports transitively, and that reading found `core/id_resolver.py` reaching 76 `cli`/`commands` files through a function-local import at `req_kind_support.py:320`. The operator ruled that work out of this tranche (verbatim *"okay - do 1-3"*, accepting the recommendation to file it), so the graph lands as the direction check under GHI #1267. The `TID251` ban on `__future__.annotations` is ordered after the import's removal (selection *"Remove first, then ban (Rec.)"*): 1,058 files carried it, and holding them would raise `data/ruff_baseline.json` above its `baseline_count` of 4,613 in `data/waiver_ratchet_registry.json`, which a shrink-ratchet forbids. With every copy removed the ban enters with no row.
