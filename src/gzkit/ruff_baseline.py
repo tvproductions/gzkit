@@ -241,14 +241,24 @@ def _finding(item: dict[str, object], project_root: Path) -> RuffFinding:
     )
 
 
-def load_baseline(project_root: Path) -> dict[Key, int] | None:
+#: Rules Ruff evaluates from the executable bit, which only Unix-like systems
+#: carry (`ruff rule EXE001`). A row for one cannot be exact on Windows, where
+#: Ruff does not run it and the row reads as dead.
+PLATFORM_DEPENDENT_RULES = frozenset({"EXE001", "EXE002"})
+
+
+def load_baseline(project_root: Path, *, platform_rows: bool = False) -> dict[Key, int] | None:
     """Read ``data/ruff_baseline.json``.
+
+    *platform_rows* admits a row for a rule in :data:`PLATFORM_DEPENDENT_RULES`,
+    for the ratchet alone, which deletes it.
 
     Returns:
         The rows' counts by (file, rule), or None when the tree has no baseline.
 
     Raises:
-        BaselineError: The file is malformed, holds a key twice, or a count below 1.
+        BaselineError: The file is malformed, holds a key twice, a count below 1,
+            or a rule Ruff runs on some platforms only.
 
     """
     if not registry_path(project_root, BASELINE_NAME).is_file():
@@ -264,6 +274,13 @@ def load_baseline(project_root: Path) -> dict[Key, int] | None:
         count = row["count"]
         if key in baseline:
             msg = f"{BASELINE_RELPATH} holds {key[0]} {key[1]} twice"
+            raise BaselineError(msg)
+        if key[1] in PLATFORM_DEPENDENT_RULES and not platform_rows:
+            msg = (
+                f"{BASELINE_RELPATH} holds {key[0]} {key[1]}, a rule Ruff runs only where "
+                "files carry an executable bit, so the row cannot be exact on Windows: "
+                "fix the finding (drop the shebang, or set the bit) and delete the row"
+            )
             raise BaselineError(msg)
         if not isinstance(count, int) or isinstance(count, bool) or count < 1:
             msg = f"{BASELINE_RELPATH} holds {key[0]} {key[1]} at {count!r}, not a count"
@@ -359,7 +376,9 @@ def ratchet_baseline(project_root: Path, *, runner: Runner = run_ruff_json) -> i
     """Lower every row of the baseline to the tree's findings; return the rows removed.
 
     Shrink-only by construction: a row is never raised and no row is added, so an
-    unheld finding still fails the next `gz lint`.
+    unheld finding still fails the next `gz lint`. A row for a rule Ruff runs on
+    some platforms only is deleted whatever the tree holds, since no baseline may
+    keep one.
 
     Returns:
         The number of rows removed.
@@ -368,12 +387,16 @@ def ratchet_baseline(project_root: Path, *, runner: Runner = run_ruff_json) -> i
         BaselineError: The tree has no baseline to lower.
 
     """
-    baseline = load_baseline(project_root)
+    baseline = load_baseline(project_root, platform_rows=True)
     if baseline is None:
         msg = f"no {BASELINE_RELPATH} to ratchet"
         raise BaselineError(msg)
     findings = parse_ruff_json(runner(project_root, ["."], fix=False), project_root)
-    rows = lowered_rows(findings, baseline)
+    rows = {
+        key: count
+        for key, count in lowered_rows(findings, baseline).items()
+        if key[1] not in PLATFORM_DEPENDENT_RULES
+    }
     path = registry_path(project_root, BASELINE_NAME)
     payload = json.loads(path.read_text(encoding="utf-8"))
     payload[_ROWS] = [

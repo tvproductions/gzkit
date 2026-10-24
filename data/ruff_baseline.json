@@ -38,11 +38,6 @@
     },
     {
       "file": ".agents/skills/ghi-triage/scripts/triage.py",
-      "rule": "EXE001",
-      "count": 1
-    },
-    {
-      "file": ".agents/skills/ghi-triage/scripts/triage.py",
       "rule": "FBT001",
       "count": 1
     },
@@ -97,11 +92,6 @@
       "count": 14
     },
     {
-      "file": ".agents/skills/gz-competitor-radar/scripts/new_scan.py",
-      "rule": "EXE001",
-      "count": 1
-    },
-    {
       "file": ".agents/skills/gz-competitor-radar/scripts/radar.py",
       "rule": "ANN401",
       "count": 1
@@ -130,11 +120,6 @@
       "file": ".agents/skills/gz-competitor-radar/scripts/radar.py",
       "rule": "EM102",
       "count": 23
-    },
-    {
-      "file": ".agents/skills/gz-competitor-radar/scripts/radar.py",
-      "rule": "EXE001",
-      "count": 1
     },
     {
       "file": ".agents/skills/gz-competitor-radar/scripts/radar.py",
@@ -167,21 +152,6 @@
       "count": 24
     },
     {
-      "file": ".agents/skills/gz-competitor-radar/scripts/render_report.py",
-      "rule": "EXE001",
-      "count": 1
-    },
-    {
-      "file": ".agents/skills/gz-competitor-radar/scripts/validate_registry.py",
-      "rule": "EXE001",
-      "count": 1
-    },
-    {
-      "file": ".agents/skills/gz-competitor-radar/scripts/validate_report.py",
-      "rule": "EXE001",
-      "count": 1
-    },
-    {
       "file": ".agents/skills/gz-foundation-triage/scripts/triage.py",
       "rule": "DOC201",
       "count": 8
@@ -203,11 +173,6 @@
     },
     {
       "file": ".agents/skills/gz-foundation-triage/scripts/triage.py",
-      "rule": "EXE001",
-      "count": 1
-    },
-    {
-      "file": ".agents/skills/gz-foundation-triage/scripts/triage.py",
       "rule": "PERF401",
       "count": 1
     },
@@ -220,11 +185,6 @@
       "file": ".agents/skills/gz-foundation-triage/scripts/triage.py",
       "rule": "TRY003",
       "count": 12
-    },
-    {
-      "file": ".claude/hooks/ceremony-step-gate.py",
-      "rule": "EXE001",
-      "count": 1
     },
     {
       "file": ".claude/hooks/ceremony-step-gate.py",
@@ -598,11 +558,6 @@
     },
     {
       "file": ".claude/skills/ghi-triage/scripts/triage.py",
-      "rule": "EXE001",
-      "count": 1
-    },
-    {
-      "file": ".claude/skills/ghi-triage/scripts/triage.py",
       "rule": "FBT001",
       "count": 1
     },
@@ -657,11 +612,6 @@
       "count": 14
     },
     {
-      "file": ".claude/skills/gz-competitor-radar/scripts/new_scan.py",
-      "rule": "EXE001",
-      "count": 1
-    },
-    {
       "file": ".claude/skills/gz-competitor-radar/scripts/radar.py",
       "rule": "ANN401",
       "count": 1
@@ -690,11 +640,6 @@
       "file": ".claude/skills/gz-competitor-radar/scripts/radar.py",
       "rule": "EM102",
       "count": 23
-    },
-    {
-      "file": ".claude/skills/gz-competitor-radar/scripts/radar.py",
-      "rule": "EXE001",
-      "count": 1
     },
     {
       "file": ".claude/skills/gz-competitor-radar/scripts/radar.py",
@@ -727,21 +672,6 @@
       "count": 24
     },
     {
-      "file": ".claude/skills/gz-competitor-radar/scripts/render_report.py",
-      "rule": "EXE001",
-      "count": 1
-    },
-    {
-      "file": ".claude/skills/gz-competitor-radar/scripts/validate_registry.py",
-      "rule": "EXE001",
-      "count": 1
-    },
-    {
-      "file": ".claude/skills/gz-competitor-radar/scripts/validate_report.py",
-      "rule": "EXE001",
-      "count": 1
-    },
-    {
       "file": ".claude/skills/gz-foundation-triage/scripts/triage.py",
       "rule": "DOC201",
       "count": 8
@@ -760,11 +690,6 @@
       "file": ".claude/skills/gz-foundation-triage/scripts/triage.py",
       "rule": "EM102",
       "count": 8
-    },
-    {
-      "file": ".claude/skills/gz-foundation-triage/scripts/triage.py",
-      "rule": "EXE001",
-      "count": 1
     },
     {
       "file": ".claude/skills/gz-foundation-triage/scripts/triage.py",
@@ -858,11 +783,6 @@
     },
     {
       "file": ".gzkit/chores/control-surface-validator-reachability/check_reachability.py",
-      "rule": "EXE001",
-      "count": 1
-    },
-    {
-      "file": ".gzkit/chores/control-surface-validator-reachability/check_reachability.py",
       "rule": "PLC0415",
       "count": 2
     },
@@ -915,11 +835,6 @@
       "file": ".gzkit/chores/decommission-tautological-tests/check_debt_target.py",
       "rule": "EM102",
       "count": 2
-    },
-    {
-      "file": ".gzkit/chores/decommission-tautological-tests/check_debt_target.py",
-      "rule": "EXE001",
-      "count": 1
     },
     {
       "file": ".gzkit/chores/decommission-tautological-tests/check_debt_target.py",
@@ -1043,11 +958,6 @@
     },
     {
       "file": ".gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py",
-      "rule": "EXE001",
-      "count": 1
-    },
-    {
-      "file": ".gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py",
       "rule": "PLC0415",
       "count": 3
     },
@@ -1084,11 +994,6 @@
     {
       "file": ".gzkit/chores/module-sloc-cap-radon/check_module_size.py",
       "rule": "EM102",
-      "count": 1
-    },
-    {
-      "file": ".gzkit/chores/module-sloc-cap-radon/check_module_size.py",
-      "rule": "EXE001",
       "count": 1
     },
     {
@@ -1268,11 +1173,6 @@
     },
     {
       "file": ".gzkit/skills/ghi-triage/scripts/triage.py",
-      "rule": "EXE001",
-      "count": 1
-    },
-    {
-      "file": ".gzkit/skills/ghi-triage/scripts/triage.py",
       "rule": "FBT001",
       "count": 1
     },
@@ -1327,11 +1227,6 @@
       "count": 14
     },
     {
-      "file": ".gzkit/skills/gz-competitor-radar/scripts/new_scan.py",
-      "rule": "EXE001",
-      "count": 1
-    },
-    {
       "file": ".gzkit/skills/gz-competitor-radar/scripts/radar.py",
       "rule": "ANN401",
       "count": 1
@@ -1360,11 +1255,6 @@
       "file": ".gzkit/skills/gz-competitor-radar/scripts/radar.py",
       "rule": "EM102",
       "count": 23
-    },
-    {
-      "file": ".gzkit/skills/gz-competitor-radar/scripts/radar.py",
-      "rule": "EXE001",
-      "count": 1
     },
     {
       "file": ".gzkit/skills/gz-competitor-radar/scripts/radar.py",
@@ -1397,21 +1287,6 @@
       "count": 24
     },
     {
-      "file": ".gzkit/skills/gz-competitor-radar/scripts/render_report.py",
-      "rule": "EXE001",
-      "count": 1
-    },
-    {
-      "file": ".gzkit/skills/gz-competitor-radar/scripts/validate_registry.py",
-      "rule": "EXE001",
-      "count": 1
-    },
-    {
-      "file": ".gzkit/skills/gz-competitor-radar/scripts/validate_report.py",
-      "rule": "EXE001",
-      "count": 1
-    },
-    {
       "file": ".gzkit/skills/gz-foundation-triage/scripts/triage.py",
       "rule": "DOC201",
       "count": 8
@@ -1430,11 +1305,6 @@
       "file": ".gzkit/skills/gz-foundation-triage/scripts/triage.py",
       "rule": "EM102",
       "count": 8
-    },
-    {
-      "file": ".gzkit/skills/gz-foundation-triage/scripts/triage.py",
-      "rule": "EXE001",
-      "count": 1
     },
     {
       "file": ".gzkit/skills/gz-foundation-triage/scripts/triage.py",
@@ -1753,11 +1623,6 @@
     },
     {
       "file": "docs/governance/ieee/02-requirements-vs-release-evidence/measure.py",
-      "rule": "EXE001",
-      "count": 1
-    },
-    {
-      "file": "docs/governance/ieee/02-requirements-vs-release-evidence/measure.py",
       "rule": "FURB167",
       "count": 1
     },
@@ -1785,11 +1650,6 @@
       "file": "docs/governance/ieee/03-gate4-gate2-duplication-evidence/measure.py",
       "rule": "DOC201",
       "count": 6
-    },
-    {
-      "file": "docs/governance/ieee/03-gate4-gate2-duplication-evidence/measure.py",
-      "rule": "EXE001",
-      "count": 1
     },
     {
       "file": "docs/governance/ieee/03-gate4-gate2-duplication-evidence/measure.py",
@@ -2823,11 +2683,6 @@
     },
     {
       "file": "scripts/adherence_probe.py",
-      "rule": "EXE001",
-      "count": 1
-    },
-    {
-      "file": "scripts/adherence_probe.py",
       "rule": "FURB113",
       "count": 2
     },
@@ -2943,11 +2798,6 @@
     },
     {
       "file": "scripts/check_proof_freshness.py",
-      "rule": "EXE001",
-      "count": 1
-    },
-    {
-      "file": "scripts/check_proof_freshness.py",
       "rule": "S404",
       "count": 1
     },
@@ -2999,11 +2849,6 @@
     {
       "file": "scripts/migrate_handoffs.py",
       "rule": "EM102",
-      "count": 1
-    },
-    {
-      "file": "scripts/migrate_handoffs.py",
-      "rule": "EXE001",
       "count": 1
     },
     {
@@ -3095,11 +2940,6 @@
       "file": "scripts/session_orientation.py",
       "rule": "DOC201",
       "count": 30
-    },
-    {
-      "file": "scripts/session_orientation.py",
-      "rule": "EXE001",
-      "count": 1
     },
     {
       "file": "scripts/session_orientation.py",
@@ -3913,11 +3753,6 @@
     },
     {
       "file": "src/gzkit/chores/decommission-tautological-tests/check_debt_target.py",
-      "rule": "EXE001",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/chores/decommission-tautological-tests/check_debt_target.py",
       "rule": "T201",
       "count": 5
     },
@@ -3994,11 +3829,6 @@
     {
       "file": "src/gzkit/chores/module-sloc-cap-radon/check_module_size.py",
       "rule": "EM102",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/chores/module-sloc-cap-radon/check_module_size.py",
-      "rule": "EXE001",
       "count": 1
     },
     {

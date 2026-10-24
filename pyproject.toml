@@ -177,6 +177,9 @@ max-complexity = 20
 # tranche 4, the C901 ceiling at 20).
 ".gzkit/evidence/*.py" = ["complex-structure"]
 "docs/governance/*-evidence/*.py" = ["complex-structure"]
+# The same records keep the file mode they ran with: EXE001 reads the executable
+# bit, so the one way to clear it would change the record (RO-9 tranche 4).
+"docs/governance/ieee/*-evidence/*.py" = ["shebang-not-executable"]
 
 [tool.ruff.format]
 quote-style = "double"

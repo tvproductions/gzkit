@@ -172,6 +172,20 @@ class BaselineFileTest(unittest.TestCase):
         with self.assertRaises(BaselineError):
             load_baseline(self.tree.root)
 
+    def test_a_rule_ruff_runs_on_some_platforms_only_cannot_be_held(self) -> None:
+        """EXE001 reads the executable bit, so on Windows its row reads as dead."""
+        for rule in ("EXE001", "EXE002"):
+            with self.subTest(rule=rule):
+                self.tree.baseline([{"file": "a.py", "rule": rule, "count": 1}])
+                with self.assertRaises(BaselineError) as caught:
+                    load_baseline(self.tree.root)
+                self.assertIn("cannot be exact on Windows", str(caught.exception))
+                self.assertIn("delete the row", str(caught.exception))
+
+    def test_the_committed_baseline_holds_no_platform_dependent_rule(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        self.assertIsNotNone(load_baseline(root))
+
     def test_a_baseline_without_rows_is_malformed(self) -> None:
         (self.tree.root / "data" / "ruff_baseline.json").write_text("{}", "utf-8")
         with self.assertRaises(BaselineError):
@@ -208,6 +222,18 @@ class RatchetTest(unittest.TestCase):
         ratchet_baseline(self.root, runner=ruff)
         self.assertEqual(self.tree.rows(), [{"file": "a.py", "rule": "F401", "count": 1}])
         self.assertFalse(lint_against_baseline(self.root, runner=ruff).ok)
+
+    def test_ratchet_deletes_a_per_platform_row_the_baseline_may_not_hold(self) -> None:
+        """The fence refuses an EXE001 row; the ratchet is how one already held leaves."""
+        self.tree.baseline(
+            [
+                {"file": "a.py", "rule": "F401", "count": 1},
+                {"file": "s.py", "rule": "EXE001", "count": 1},
+            ]
+        )
+        ruff = _FakeRuff([_item(self.root, "a.py", "F401"), _item(self.root, "s.py", "EXE001")])
+        self.assertEqual(ratchet_baseline(self.root, runner=ruff), 1)
+        self.assertEqual(self.tree.rows(), [{"file": "a.py", "rule": "F401", "count": 1}])
 
     def test_ratchet_without_a_baseline_is_refused(self) -> None:
         with self.assertRaises(BaselineError):
