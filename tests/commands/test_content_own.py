@@ -124,7 +124,7 @@ def _entry(
         "ts": "2026-09-07T00:00:00Z",
     }
     base.update(overrides)
-    return CorpusEntry(**base)
+    return CorpusEntry.model_validate(base)
 
 
 def _seed_corpus(*entries: CorpusEntry) -> None:

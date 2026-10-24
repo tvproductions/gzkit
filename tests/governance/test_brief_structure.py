@@ -58,39 +58,39 @@ class TestBriefStructureModel(unittest.TestCase):
 
     @covers("REQ-0.0.37-04-01")
     def test_model_is_frozen(self) -> None:
-        b = BriefStructure(**_VALID_FIELDS)
+        b = BriefStructure.model_validate(_VALID_FIELDS)
         with self.assertRaises((ValueError, TypeError)):
             b.id = "MUTATED"  # type: ignore
 
     @covers("REQ-0.0.37-04-01")
     def test_model_rejects_empty_allowlist(self) -> None:
         with self.assertRaises(ValidationError):
-            BriefStructure(**{**_VALID_FIELDS, "allowlist": []})
+            BriefStructure.model_validate({**_VALID_FIELDS, "allowlist": []})
 
     @covers("REQ-0.0.37-04-01")
     def test_model_rejects_empty_reqs(self) -> None:
         with self.assertRaises(ValidationError):
-            BriefStructure(**{**_VALID_FIELDS, "reqs": []})
+            BriefStructure.model_validate({**_VALID_FIELDS, "reqs": []})
 
     @covers("REQ-0.0.37-04-01")
     def test_model_rejects_empty_verification(self) -> None:
         with self.assertRaises(ValidationError):
-            BriefStructure(**{**_VALID_FIELDS, "verification": []})
+            BriefStructure.model_validate({**_VALID_FIELDS, "verification": []})
 
     @covers("REQ-0.0.37-04-01")
     def test_model_rejects_extra_fields(self) -> None:
         with self.assertRaises(ValidationError):
-            BriefStructure(**_VALID_FIELDS, unexpected_field="bad")
+            BriefStructure.model_validate({**_VALID_FIELDS, "unexpected_field": "bad"})
 
     @covers("REQ-0.0.37-04-01")
     def test_model_rejects_invalid_id(self) -> None:
         with self.assertRaises(ValidationError):
-            BriefStructure(**{**_VALID_FIELDS, "id": "not-a-valid-obpi-id"})
+            BriefStructure.model_validate({**_VALID_FIELDS, "id": "not-a-valid-obpi-id"})
 
     @covers("REQ-0.0.37-04-01")
     def test_model_rejects_invalid_req_format(self) -> None:
         with self.assertRaises(ValidationError):
-            BriefStructure(**{**_VALID_FIELDS, "reqs": ["bad-format"]})
+            BriefStructure.model_validate({**_VALID_FIELDS, "reqs": ["bad-format"]})
 
     @covers("REQ-0.0.37-04-01")
     def test_model_accepts_active_in_flight_status(self) -> None:
@@ -103,32 +103,32 @@ class TestBriefStructureModel(unittest.TestCase):
         ``LegacyBriefShape`` and silently disables reconcile drift-escalation during
         the exact window it is most valuable.
         """
-        b = BriefStructure(**{**_VALID_FIELDS, "status": "Active"})
+        b = BriefStructure.model_validate({**_VALID_FIELDS, "status": "Active"})
         self.assertEqual(b.status, "Active")
 
     @covers("REQ-0.0.37-04-01")
     def test_model_accepts_citations_list(self) -> None:
-        b = BriefStructure(**{**_VALID_FIELDS, "citations": [("src/x.py", "#anchor")]})
+        b = BriefStructure.model_validate({**_VALID_FIELDS, "citations": [("src/x.py", "#anchor")]})
         self.assertEqual(b.citations, [("src/x.py", "#anchor")])
 
     def test_tasks_optional_defaults_empty(self) -> None:
         """tasks field is optional and defaults to empty list (OBPI-0.0.64-04)."""
-        b = BriefStructure(**_VALID_FIELDS)
+        b = BriefStructure.model_validate(_VALID_FIELDS)
         self.assertEqual(b.tasks, [])
 
     def test_tasks_accepts_list_of_strings(self) -> None:
         """tasks field accepts a list of TASK ID strings (OBPI-0.0.64-04)."""
-        b = BriefStructure(**{**_VALID_FIELDS, "tasks": ["TASK-0.0.64-04-01-01"]})
+        b = BriefStructure.model_validate({**_VALID_FIELDS, "tasks": ["TASK-0.0.64-04-01-01"]})
         self.assertEqual(b.tasks, ["TASK-0.0.64-04-01-01"])
 
     def test_req_atomic_optional_defaults_empty(self) -> None:
         """req_atomic field is optional and defaults to empty list (OBPI-0.0.64-04)."""
-        b = BriefStructure(**_VALID_FIELDS)
+        b = BriefStructure.model_validate(_VALID_FIELDS)
         self.assertEqual(b.req_atomic, [])
 
     def test_req_atomic_accepts_list_of_strings(self) -> None:
         """req_atomic accepts a list of REQ ID strings (OBPI-0.0.64-04)."""
-        b = BriefStructure(**{**_VALID_FIELDS, "req_atomic": ["REQ-0.0.64-04-01"]})
+        b = BriefStructure.model_validate({**_VALID_FIELDS, "req_atomic": ["REQ-0.0.64-04-01"]})
         self.assertEqual(b.req_atomic, ["REQ-0.0.64-04-01"])
 
 
@@ -144,36 +144,38 @@ class TestTasksSchemaEnforcement(unittest.TestCase):
 
     def test_rejects_malformed_task_id(self) -> None:
         with self.assertRaises(ValidationError):
-            BriefStructure(**{**_VALID_FIELDS, "tasks": ["not-a-task-id"]})
+            BriefStructure.model_validate({**_VALID_FIELDS, "tasks": ["not-a-task-id"]})
 
     def test_rejects_req_id_in_tasks(self) -> None:
         """A REQ ID is the near-miss an author actually types; it is not a TASK ID."""
         with self.assertRaises(ValidationError):
-            BriefStructure(**{**_VALID_FIELDS, "tasks": ["REQ-0.0.64-04-01"]})
+            BriefStructure.model_validate({**_VALID_FIELDS, "tasks": ["REQ-0.0.64-04-01"]})
 
     def test_rejects_truncated_task_id(self) -> None:
         """TASK IDs are four-tier; a three-tier id names no labor unit."""
         with self.assertRaises(ValidationError):
-            BriefStructure(**{**_VALID_FIELDS, "tasks": ["TASK-0.0.64-04-01"]})
+            BriefStructure.model_validate({**_VALID_FIELDS, "tasks": ["TASK-0.0.64-04-01"]})
 
     def test_rejects_malformed_entry_among_valid_ones(self) -> None:
         """Validation is per-entry -- one bad id in a good list still fails."""
         with self.assertRaises(ValidationError):
-            BriefStructure(**{**_VALID_FIELDS, "tasks": ["TASK-0.0.64-04-01-01", "TASK-bogus"]})
+            BriefStructure.model_validate(
+                {**_VALID_FIELDS, "tasks": ["TASK-0.0.64-04-01-01", "TASK-bogus"]}
+            )
 
     def test_accepts_well_formed_formal_task_id(self) -> None:
-        b = BriefStructure(**{**_VALID_FIELDS, "tasks": ["TASK-0.0.64-04-01-01"]})
+        b = BriefStructure.model_validate({**_VALID_FIELDS, "tasks": ["TASK-0.0.64-04-01-01"]})
         self.assertEqual(b.tasks, ["TASK-0.0.64-04-01-01"])
 
     def test_accepts_producer_stamped_multi_req_accumulation(self) -> None:
         """``gz task start`` accumulates one TASK per REQ into the same brief (GHI #752)."""
         stamped = ["TASK-0.0.64-04-01-01", "TASK-0.0.64-04-02-01"]
-        b = BriefStructure(**{**_VALID_FIELDS, "tasks": stamped})
+        b = BriefStructure.model_validate({**_VALID_FIELDS, "tasks": stamped})
         self.assertEqual(b.tasks, stamped)
 
     def test_empty_tasks_still_valid(self) -> None:
         """The overwhelming majority of briefs predate the producer stamp."""
-        b = BriefStructure(**{**_VALID_FIELDS, "tasks": []})
+        b = BriefStructure.model_validate({**_VALID_FIELDS, "tasks": []})
         self.assertEqual(b.tasks, [])
 
     def test_pydantic_and_json_schema_readers_agree(self) -> None:
@@ -200,7 +202,7 @@ class TestTasksSchemaEnforcement(unittest.TestCase):
             with self.subTest(task_id=raw):
                 json_ok = pattern.match(raw) is not None
                 try:
-                    BriefStructure(**{**_VALID_FIELDS, "tasks": [raw]})
+                    BriefStructure.model_validate({**_VALID_FIELDS, "tasks": [raw]})
                 except ValidationError:
                     model_ok = False
                 else:

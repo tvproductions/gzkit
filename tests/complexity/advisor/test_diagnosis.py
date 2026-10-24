@@ -273,7 +273,7 @@ class TestAdvisorDiagnosisSchema(unittest.TestCase):
             "unknown_extra": "value",
         }
         with self.assertRaises(ValidationError):
-            AdvisorDiagnosis(**diagnosis_data)
+            AdvisorDiagnosis.model_validate(diagnosis_data)
 
 
 if __name__ == "__main__":

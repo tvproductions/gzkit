@@ -65,7 +65,7 @@ def _entry(**overrides: object) -> CorpusEntry:
         "ts": "2026-06-05T00:00:00Z",
     }
     base.update(overrides)
-    return CorpusEntry(**base)
+    return CorpusEntry.model_validate(base)
 
 
 def _jsonl(*entries: CorpusEntry) -> str:

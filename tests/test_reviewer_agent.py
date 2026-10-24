@@ -369,7 +369,7 @@ class TestFormatReviewerForCeremony(unittest.TestCase):
             "verdict": ReviewVerdict.CONCERNS,
         }
         defaults.update(overrides)
-        return ReviewerAssessment(**defaults)
+        return ReviewerAssessment.model_validate(defaults)
 
     @covers("REQ-0.23.0-03-10")
     def test_contains_verdict(self) -> None:

@@ -407,7 +407,7 @@ class TestProposalRecordFiledFields(unittest.TestCase):
             "proposed_rule_target": ".gzkit/rules/clarity-improvement.md",
             "content_hash": "abcdef1234567890",
         }
-        record = ProposalRecord(**data)
+        record = ProposalRecord.model_validate(data)
         self.assertFalse(record.filed)
         self.assertIsNone(record.ghi_url)
         self.assertFalse(record.advisory)

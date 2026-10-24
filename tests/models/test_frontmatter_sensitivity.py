@@ -44,38 +44,38 @@ def _obpi_kwargs(**overrides: object) -> dict[str, object]:
 
 class TestAdrFrontmatterSensitivity(unittest.TestCase):
     def test_accepts_sensitivity_security(self) -> None:
-        model = AdrFrontmatter(**_adr_kwargs(sensitivity="security"))
+        model = AdrFrontmatter.model_validate(_adr_kwargs(sensitivity="security"))
         self.assertEqual(model.sensitivity, "security")
 
     def test_defaults_to_none_when_absent(self) -> None:
-        model = AdrFrontmatter(**_adr_kwargs())
+        model = AdrFrontmatter.model_validate(_adr_kwargs())
         self.assertIsNone(model.sensitivity)
 
     def test_rejects_unknown_value(self) -> None:
         with self.assertRaises(ValidationError):
-            AdrFrontmatter(**_adr_kwargs(sensitivity="confidential"))
+            AdrFrontmatter.model_validate(_adr_kwargs(sensitivity="confidential"))
 
     def test_field_is_immutable(self) -> None:
-        model = AdrFrontmatter(**_adr_kwargs(sensitivity="security"))
+        model = AdrFrontmatter.model_validate(_adr_kwargs(sensitivity="security"))
         with self.assertRaises(ValidationError):
             model.sensitivity = None  # ty: ignore[invalid-assignment]
 
 
 class TestObpiFrontmatterSensitivity(unittest.TestCase):
     def test_accepts_sensitivity_security(self) -> None:
-        model = ObpiFrontmatter(**_obpi_kwargs(sensitivity="security"))
+        model = ObpiFrontmatter.model_validate(_obpi_kwargs(sensitivity="security"))
         self.assertEqual(model.sensitivity, "security")
 
     def test_defaults_to_none_when_absent(self) -> None:
-        model = ObpiFrontmatter(**_obpi_kwargs())
+        model = ObpiFrontmatter.model_validate(_obpi_kwargs())
         self.assertIsNone(model.sensitivity)
 
     def test_rejects_unknown_value(self) -> None:
         with self.assertRaises(ValidationError):
-            ObpiFrontmatter(**_obpi_kwargs(sensitivity="confidential"))
+            ObpiFrontmatter.model_validate(_obpi_kwargs(sensitivity="confidential"))
 
     def test_field_is_immutable(self) -> None:
-        model = ObpiFrontmatter(**_obpi_kwargs(sensitivity="security"))
+        model = ObpiFrontmatter.model_validate(_obpi_kwargs(sensitivity="security"))
         with self.assertRaises(ValidationError):
             model.sensitivity = None  # ty: ignore[invalid-assignment]
 

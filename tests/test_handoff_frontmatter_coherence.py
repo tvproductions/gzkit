@@ -85,10 +85,10 @@ class TestHandoffFrontmatterCoherence(unittest.TestCase):
     @covers("REQ-0.0.72-02-01")
     def test_slug_bearing_obpi_id_validates_and_matches_consumer(self) -> None:
         # Full slug-bearing id (canonical obpi.json pattern) must validate.
-        full = HandoffFrontmatter(**_base_kwargs(), obpi_id=_SLUG_OBPI_ID)
+        full = HandoffFrontmatter.model_validate({**_base_kwargs(), "obpi_id": _SLUG_OBPI_ID})
         self.assertEqual(full.obpi_id, _SLUG_OBPI_ID)
         # Short form must STILL validate — widening is additive, not a swap.
-        short = HandoffFrontmatter(**_base_kwargs(), obpi_id="OBPI-0.0.72-02")
+        short = HandoffFrontmatter.model_validate({**_base_kwargs(), "obpi_id": "OBPI-0.0.72-02"})
         self.assertEqual(short.obpi_id, "OBPI-0.0.72-02")
         # The slug-bearing consumer (find_exchange_for_release) exact-matches it.
         with tempfile.TemporaryDirectory() as tmp:
@@ -103,24 +103,28 @@ class TestHandoffFrontmatterCoherence(unittest.TestCase):
 
     @covers("REQ-0.0.72-02-02")
     def test_min_info_fields_accepted(self) -> None:
-        model = HandoffFrontmatter(
-            **_base_kwargs(),
-            last_lock_event_timestamp="2026-06-13T00:00:00Z",
-            last_commit_sha="abc123",
+        model = HandoffFrontmatter.model_validate(
+            {
+                **_base_kwargs(),
+                "last_lock_event_timestamp": "2026-06-13T00:00:00Z",
+                "last_commit_sha": "abc123",
+            }
         )
         self.assertEqual(model.last_lock_event_timestamp, "2026-06-13T00:00:00Z")
         self.assertEqual(model.last_commit_sha, "abc123")
 
     @covers("REQ-0.0.72-02-03")
     def test_degenerate_and_reaping_fields_accepted(self) -> None:
-        model = HandoffFrontmatter(
-            **_base_kwargs(),
-            abandoned=True,
-            category="reaping",
-            abandoned_by="agent:reaper",
-            abandoned_at="2026-06-13T00:00:00Z",
-            previous_agent="agent:holder",
-            reason="ttl",
+        model = HandoffFrontmatter.model_validate(
+            {
+                **_base_kwargs(),
+                "abandoned": True,
+                "category": "reaping",
+                "abandoned_by": "agent:reaper",
+                "abandoned_at": "2026-06-13T00:00:00Z",
+                "previous_agent": "agent:holder",
+                "reason": "ttl",
+            }
         )
         self.assertTrue(model.abandoned)
         self.assertEqual(model.category, "reaping")
@@ -132,7 +136,7 @@ class TestHandoffFrontmatterCoherence(unittest.TestCase):
         # Typo-defense is preserved: the explicit superset keeps extra="forbid",
         # so a misspelled key (triple-m) still raises rather than silently passing.
         with self.assertRaises(ValidationError):
-            HandoffFrontmatter(**_base_kwargs(), last_commmit_sha="x")
+            HandoffFrontmatter.model_validate({**_base_kwargs(), "last_commmit_sha": "x"})
 
     @covers("REQ-0.0.72-02-05")
     def test_real_writer_documents_roundtrip_clean(self) -> None:

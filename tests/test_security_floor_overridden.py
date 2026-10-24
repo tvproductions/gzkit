@@ -53,7 +53,7 @@ class TestSecurityFloorOverriddenModel(unittest.TestCase):
 
     @covers("REQ-0.0.72-04-01")
     def test_model_carries_audit_fields(self) -> None:
-        event = SecurityFloorOverriddenEvent(**self._valid_kwargs())
+        event = SecurityFloorOverriddenEvent.model_validate(self._valid_kwargs())
         self.assertEqual(event.obpi_id, "OBPI-0.0.72-04-security-floor-overridden-event")
         self.assertEqual(event.surfaces, "auth_boundaries")
         self.assertEqual(event.attestor, "g0")
@@ -68,7 +68,7 @@ class TestSecurityFloorOverriddenModel(unittest.TestCase):
                 kwargs = self._valid_kwargs()
                 kwargs[field] = ""
                 with self.assertRaises(ValidationError):
-                    SecurityFloorOverriddenEvent(**kwargs)
+                    SecurityFloorOverriddenEvent.model_validate(kwargs)
 
 
 # ---------------------------------------------------------------------------

@@ -318,7 +318,7 @@ def _corpus_ledger(root: Path) -> Ledger:
 
 
 def _work_edge_event(event: str, **fields: str) -> LedgerEvent:
-    return LedgerEvent(event=event, id=f"{event}-{fields}", **fields)
+    return LedgerEvent.model_validate({"event": event, "id": f"{event}-{fields}", **fields})
 
 
 def _full_fixture(root: Path) -> tuple[Ledger, Path, Path]:

@@ -62,7 +62,7 @@ def _canary(**overrides) -> Canary:
         "binding_sha256",
         gc.binding_hash(source, str(fields["claim_id"]), str(fields["failing_test"])),
     )
-    return Canary(**fields)
+    return Canary.model_validate(fields)
 
 
 class _Project:

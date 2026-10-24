@@ -39,7 +39,7 @@ class TestSecuritySurfaceEntryConfig(unittest.TestCase):
         self.assertEqual(SecuritySurfaceEntry.model_config.get("extra"), "forbid")
 
     def test_assignment_after_construction_raises(self) -> None:
-        entry = SecuritySurfaceEntry(**_valid_kwargs())
+        entry = SecuritySurfaceEntry.model_validate(_valid_kwargs())
         with self.assertRaises(ValidationError):
             entry.rationale = "altered"  # ty: ignore[invalid-assignment]
 
@@ -49,29 +49,29 @@ class TestSecuritySurfaceEntryRejection(unittest.TestCase):
 
     def test_unknown_category_rejected(self) -> None:
         with self.assertRaises(ValidationError):
-            SecuritySurfaceEntry(**_valid_kwargs(category="cosmic_radiation"))
+            SecuritySurfaceEntry.model_validate(_valid_kwargs(category="cosmic_radiation"))
 
     def test_extra_key_rejected(self) -> None:
         with self.assertRaises(ValidationError):
-            SecuritySurfaceEntry(**_valid_kwargs(severity="critical"))
+            SecuritySurfaceEntry.model_validate(_valid_kwargs(severity="critical"))
 
     def test_empty_globs_rejected(self) -> None:
         with self.assertRaises(ValidationError):
-            SecuritySurfaceEntry(**_valid_kwargs(globs=()))
+            SecuritySurfaceEntry.model_validate(_valid_kwargs(globs=()))
 
     def test_empty_glob_string_rejected(self) -> None:
         with self.assertRaises(ValidationError):
-            SecuritySurfaceEntry(**_valid_kwargs(globs=("",)))
+            SecuritySurfaceEntry.model_validate(_valid_kwargs(globs=("",)))
 
     def test_empty_rationale_rejected(self) -> None:
         with self.assertRaises(ValidationError):
-            SecuritySurfaceEntry(**_valid_kwargs(rationale=""))
+            SecuritySurfaceEntry.model_validate(_valid_kwargs(rationale=""))
 
     def test_missing_category_rejected(self) -> None:
         kwargs = _valid_kwargs()
         del kwargs["category"]
         with self.assertRaises(ValidationError):
-            SecuritySurfaceEntry(**kwargs)
+            SecuritySurfaceEntry.model_validate(kwargs)
 
 
 class TestCanonicalCategories(unittest.TestCase):

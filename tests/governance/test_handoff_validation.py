@@ -83,54 +83,56 @@ class TestHandoffFrontmatter(unittest.TestCase):
 
     @covers("REQ-0.25.0-32-03")
     def test_valid_create_frontmatter_parses(self) -> None:
-        fm = HandoffFrontmatter(**_valid_frontmatter_dict())
+        fm = HandoffFrontmatter.model_validate(_valid_frontmatter_dict())
         self.assertEqual(fm.mode, "CREATE")
         self.assertEqual(fm.adr_id, "ADR-0.25.0")
         self.assertEqual(fm.obpi_id, "OBPI-0.25.0-32")
 
     @covers("REQ-0.25.0-32-03")
     def test_valid_resume_frontmatter_parses(self) -> None:
-        fm = HandoffFrontmatter(**_valid_frontmatter_dict(mode="RESUME"))
+        fm = HandoffFrontmatter.model_validate(_valid_frontmatter_dict(mode="RESUME"))
         self.assertEqual(fm.mode, "RESUME")
 
     @covers("REQ-0.25.0-32-03")
     def test_invalid_mode_raises(self) -> None:
         with self.assertRaises(ValidationError):
-            HandoffFrontmatter(**_valid_frontmatter_dict(mode="INVALID"))
+            HandoffFrontmatter.model_validate(_valid_frontmatter_dict(mode="INVALID"))
 
     @covers("REQ-0.25.0-32-03")
     def test_invalid_adr_id_format_raises(self) -> None:
         with self.assertRaisesRegex(ValidationError, "Invalid ADR ID format"):
-            HandoffFrontmatter(**_valid_frontmatter_dict(adr_id="not-an-adr"))
+            HandoffFrontmatter.model_validate(_valid_frontmatter_dict(adr_id="not-an-adr"))
 
     @covers("REQ-0.25.0-32-03")
     def test_valid_adr_id_passes(self) -> None:
-        fm = HandoffFrontmatter(**_valid_frontmatter_dict(adr_id="ADR-1.2.3"))
+        fm = HandoffFrontmatter.model_validate(_valid_frontmatter_dict(adr_id="ADR-1.2.3"))
         self.assertEqual(fm.adr_id, "ADR-1.2.3")
 
     @covers("REQ-0.25.0-32-03")
     def test_invalid_obpi_id_format_raises(self) -> None:
         with self.assertRaisesRegex(ValidationError, "Invalid OBPI ID format"):
-            HandoffFrontmatter(**_valid_frontmatter_dict(obpi_id="OBPI-1.2.3"))
+            HandoffFrontmatter.model_validate(_valid_frontmatter_dict(obpi_id="OBPI-1.2.3"))
 
     @covers("REQ-0.25.0-32-03")
     def test_valid_obpi_id_passes(self) -> None:
-        fm = HandoffFrontmatter(**_valid_frontmatter_dict(obpi_id="OBPI-0.25.0-32"))
+        fm = HandoffFrontmatter.model_validate(_valid_frontmatter_dict(obpi_id="OBPI-0.25.0-32"))
         self.assertEqual(fm.obpi_id, "OBPI-0.25.0-32")
 
     @covers("REQ-0.25.0-32-03")
     def test_none_obpi_id_passes(self) -> None:
-        fm = HandoffFrontmatter(**_valid_frontmatter_dict(obpi_id=None))
+        fm = HandoffFrontmatter.model_validate(_valid_frontmatter_dict(obpi_id=None))
         self.assertIsNone(fm.obpi_id)
 
     @covers("REQ-0.25.0-32-03")
     def test_invalid_timestamp_raises(self) -> None:
         with self.assertRaisesRegex(ValidationError, "Invalid ISO 8601"):
-            HandoffFrontmatter(**_valid_frontmatter_dict(timestamp="not-a-date"))
+            HandoffFrontmatter.model_validate(_valid_frontmatter_dict(timestamp="not-a-date"))
 
     @covers("REQ-0.25.0-32-03")
     def test_valid_timestamp_passes(self) -> None:
-        fm = HandoffFrontmatter(**_valid_frontmatter_dict(timestamp="2026-04-14T12:00:00"))
+        fm = HandoffFrontmatter.model_validate(
+            _valid_frontmatter_dict(timestamp="2026-04-14T12:00:00")
+        )
         self.assertEqual(fm.timestamp, "2026-04-14T12:00:00")
 
     @covers("REQ-0.25.0-32-03")
@@ -138,18 +140,18 @@ class TestHandoffFrontmatter(unittest.TestCase):
         payload = _valid_frontmatter_dict()
         payload["unknown_field"] = "should not be allowed"
         with self.assertRaises(ValidationError):
-            HandoffFrontmatter(**payload)
+            HandoffFrontmatter.model_validate(payload)
 
     @covers("REQ-0.25.0-32-03")
     def test_missing_required_field_rejected(self) -> None:
         payload = _valid_frontmatter_dict()
         del payload["branch"]
         with self.assertRaises(ValidationError):
-            HandoffFrontmatter(**payload)
+            HandoffFrontmatter.model_validate(payload)
 
     @covers("REQ-0.25.0-32-03")
     def test_model_is_frozen(self) -> None:
-        fm = HandoffFrontmatter(**_valid_frontmatter_dict())
+        fm = HandoffFrontmatter.model_validate(_valid_frontmatter_dict())
         with self.assertRaises(ValidationError):
             fm.mode = "RESUME"  # ty: ignore[invalid-assignment]
 
@@ -177,18 +179,18 @@ class HandoffWorkContinuityScopeTests(unittest.TestCase):
         """A design/triage/burndown session has no parent ADR to name."""
         payload = _valid_frontmatter_dict()
         del payload["adr_id"]
-        fm = HandoffFrontmatter(**payload)
+        fm = HandoffFrontmatter.model_validate(payload)
         self.assertIsNone(fm.adr_id)
 
     def test_adr_id_may_be_explicitly_none(self) -> None:
         """Hand-authored frontmatter renders an empty key as ``None``."""
-        fm = HandoffFrontmatter(**_valid_frontmatter_dict(adr_id=None))
+        fm = HandoffFrontmatter.model_validate(_valid_frontmatter_dict(adr_id=None))
         self.assertIsNone(fm.adr_id)
 
     def test_malformed_adr_id_still_raises_when_supplied(self) -> None:
         """Relaxing to optional must not weaken the format gate when present."""
         with self.assertRaisesRegex(ValidationError, "Invalid ADR ID format"):
-            HandoffFrontmatter(**_valid_frontmatter_dict(adr_id="not-an-adr"))
+            HandoffFrontmatter.model_validate(_valid_frontmatter_dict(adr_id="not-an-adr"))
 
     def test_slug_bearing_adr_id_is_accepted(self) -> None:
         """The canonical `adr.json` id form carries a slug; handoffs use it.
@@ -199,19 +201,21 @@ class HandoffWorkContinuityScopeTests(unittest.TestCase):
         fixed on the sibling field: ``_OBPI_ID_RE`` was widened to the
         slug-optional form under OBPI-0.0.72-02 and the ADR one was not.
         """
-        fm = HandoffFrontmatter(
-            **_valid_frontmatter_dict(adr_id="ADR-0.0.41-token-block-lock-discipline")
+        fm = HandoffFrontmatter.model_validate(
+            _valid_frontmatter_dict(adr_id="ADR-0.0.41-token-block-lock-discipline")
         )
         self.assertEqual(fm.adr_id, "ADR-0.0.41-token-block-lock-discipline")
 
     def test_bare_semver_adr_id_still_accepted(self) -> None:
         """Widening is additive — the bare form 168 handoffs use must survive."""
-        fm = HandoffFrontmatter(**_valid_frontmatter_dict(adr_id="ADR-0.0.65"))
+        fm = HandoffFrontmatter.model_validate(_valid_frontmatter_dict(adr_id="ADR-0.0.65"))
         self.assertEqual(fm.adr_id, "ADR-0.0.65")
 
     def test_pool_adr_id_is_accepted(self) -> None:
         """`ADR-pool.<slug>` is a registered id form in `adr.json`."""
-        fm = HandoffFrontmatter(**_valid_frontmatter_dict(adr_id="ADR-pool.some-backlog-item"))
+        fm = HandoffFrontmatter.model_validate(
+            _valid_frontmatter_dict(adr_id="ADR-pool.some-backlog-item")
+        )
         self.assertEqual(fm.adr_id, "ADR-pool.some-backlog-item")
 
     def test_every_committed_handoff_parses(self) -> None:
@@ -1050,21 +1054,22 @@ class TestCompletionHandoffFidelity(unittest.TestCase):
     construction rather than by oversight.
     """
 
-    def _write(self, tmp: str, **overrides: object) -> str:
-        kwargs: dict[str, object] = {
+    def _write(self, tmp: str, **overrides: str) -> str:
+        kwargs: dict[str, str] = {
             "obpi_id": "OBPI-0.34.0-03-terminal-partition-gate",
             "agent": "claude-code",
             "attestor": "g0",
             "attestation_text": "attest completed",
             "implementation_summary": "Summary.",
             "key_proof": "Proof.",
-            "last_lock_event_timestamp": None,
             "commit_sha": "abc1234",
             "branch": "main",
             "brief_rel_path": "docs/design/adr/x/obpis/y.md",
         }
         kwargs.update(overrides)
-        return write_completion_exchange(Path(tmp), **kwargs).read_text(encoding="utf-8")
+        return write_completion_exchange(
+            Path(tmp), last_lock_event_timestamp=None, **kwargs
+        ).read_text(encoding="utf-8")
 
     def test_gate5_attestation_is_recorded_as_an_operator_ruling(self) -> None:
         """The attestation is operator canon and must carry `[operator-ruled]`.
@@ -1175,13 +1180,13 @@ class CheckpointModeTests(unittest.TestCase):
         return path
 
     def test_checkpoint_is_an_admitted_mode(self) -> None:
-        fm = HandoffFrontmatter(**_valid_frontmatter_dict(mode="CHECKPOINT"))
+        fm = HandoffFrontmatter.model_validate(_valid_frontmatter_dict(mode="CHECKPOINT"))
         self.assertEqual(fm.mode, "CHECKPOINT")
 
     def test_unknown_mode_is_still_refused(self) -> None:
         """The negative pole: widening the enum must not disarm typo-defense."""
         with self.assertRaises(ValidationError):
-            HandoffFrontmatter(**_valid_frontmatter_dict(mode="BOOKMARK"))
+            HandoffFrontmatter.model_validate(_valid_frontmatter_dict(mode="BOOKMARK"))
 
     def test_checkpoint_does_not_satisfy_token_surrender(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

@@ -3109,7 +3109,7 @@ def _own_entry(
         "ts": "2026-09-07T00:00:00Z",
     }
     base.update(overrides)
-    return CorpusEntry(**base)
+    return CorpusEntry.model_validate(base)
 
 
 _GROWN_ALPHA_SURFACE = (

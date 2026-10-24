@@ -109,31 +109,31 @@ class TestCorrectionEventFailsClosed(unittest.TestCase):
         """Attribution is the whole point: an unattributed correction is refused."""
         kwargs = self._kwargs() | {"attestor": ""}
         with self.assertRaises(ValidationError):
-            LedgerEventCorrectedEvent(**kwargs)
+            LedgerEventCorrectedEvent.model_validate(kwargs)
 
     def test_empty_reason_fails_closed(self) -> None:
         """A correction with no stated reason records that state changed, never why."""
         kwargs = self._kwargs() | {"reason": ""}
         with self.assertRaises(ValidationError):
-            LedgerEventCorrectedEvent(**kwargs)
+            LedgerEventCorrectedEvent.model_validate(kwargs)
 
     def test_unknown_disposition_is_refused(self) -> None:
         """The disposition vocabulary is closed; a free-form verb is a new point-solution."""
         kwargs = self._kwargs() | {"disposition": "cancelled"}
         with self.assertRaises(ValidationError):
-            LedgerEventCorrectedEvent(**kwargs)
+            LedgerEventCorrectedEvent.model_validate(kwargs)
 
     def test_unknown_cause_is_refused(self) -> None:
         """``cause`` is closed so the corrections can be censused, not merely read."""
         kwargs = self._kwargs() | {"cause": "because"}
         with self.assertRaises(ValidationError):
-            LedgerEventCorrectedEvent(**kwargs)
+            LedgerEventCorrectedEvent.model_validate(kwargs)
 
     def test_empty_subject_reference_is_refused(self) -> None:
         """A correction that does not name its subject cannot be applied by any reader."""
         for field in ("subject_event", "subject_id", "subject_ts"):
             with self.subTest(field=field), self.assertRaises(ValidationError):
-                LedgerEventCorrectedEvent(**(self._kwargs() | {field: ""}))
+                LedgerEventCorrectedEvent.model_validate(self._kwargs() | {field: ""})
 
     def test_parses_through_the_typed_union(self) -> None:
         """Wired into ``TypedLedgerEvent`` — an authored-but-unwired model is GHI #877."""

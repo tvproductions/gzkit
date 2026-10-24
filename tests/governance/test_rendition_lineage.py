@@ -143,16 +143,18 @@ class _LineageFixtureMixin:
         append_entry(
             self._root,
             _SURFACE,
-            CorpusEntry(
-                id=entry_id,
-                surface=_SURFACE,
-                section="owned-section",
-                tier=tier,
-                classification=classification,
-                text=text,
-                origin="test",
-                ts=ts,
-                **kwargs,
+            CorpusEntry.model_validate(
+                {
+                    "id": entry_id,
+                    "surface": _SURFACE,
+                    "section": "owned-section",
+                    "tier": tier,
+                    "classification": classification,
+                    "text": text,
+                    "origin": "test",
+                    "ts": ts,
+                    **kwargs,
+                }
             ),
         )
 

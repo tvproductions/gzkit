@@ -40,7 +40,7 @@ from gzkit.traceability import covers
 
 def _edge(event: str, **fields: str) -> LedgerEvent:
     """Build a raw work-edge LedgerEvent for a fixture ledger."""
-    return LedgerEvent(event=event, id=f"{event}-{fields}", **fields)
+    return LedgerEvent.model_validate({"event": event, "id": f"{event}-{fields}", **fields})
 
 
 def _queue_ledger(tmp: str, *edges: LedgerEvent) -> Ledger:
