@@ -516,7 +516,8 @@
       },
       "binding_sha256": "11329d354a2f286df126b3a850939f5f6be069f73f836d266ec8511ac5d5fcd8",
       "authority": "docs/governance/harbor-ro9-astral-toolchain.md (drydock RO-9 tranche 4, Ruff ALL under data/ruff_baseline.json); GHI #1154 item 5 (every registered claim binds a reviewed canary)",
-      "proposed_by": "claude-code session 2026-10-23"
+      "proposed_by": "claude-code session 2026-10-23",
+      "reviewed_by": "g0"
     }
   ]
 }
