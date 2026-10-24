@@ -214,6 +214,13 @@ exclude = ["*.md"]
 [tool.ty.terminal]
 error-on-warning = true
 
+# behave ships no types and binds @given/@when/@then to placeholder objects a
+# checker cannot call; typings/behave-stubs types those three names, so the
+# step glue is checked like any other code (RO-9 tranche 4, replacing a
+# features/** override that silenced 660 call-non-callable diagnostics).
+[tool.ty.environment]
+extra-paths = ["typings"]
+
 # ty cannot narrow types after unittest assertIsNotNone(), and does not
 # understand Pydantic alias/populate_by_name semantics.  Suppress the
 # resulting false-positives in test code rather than littering every test
@@ -254,15 +261,6 @@ unknown-argument = "ignore"
 invalid-argument-type = "ignore"
 not-subscriptable = "ignore"
 possibly-missing-attribute = "ignore"
-
-# behave's @given/@when/@then resolve to _StepDecorator instances that ty
-# cannot see as callable; suppress the decorator false-positive in step glue
-# rather than littering every step definition with inline ignore comments.
-[[tool.ty.overrides]]
-include = ["features/**"]
-
-[tool.ty.overrides.rules]
-call-non-callable = "ignore"
 
 # timeout.py guards POSIX-only signal attributes (SIGALRM, setitimer,
 # ITIMER_REAL) behind an `os.name == "nt"` call-site router and suppresses
