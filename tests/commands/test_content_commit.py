@@ -238,7 +238,7 @@ class TestCommitAttestationGranularity(unittest.TestCase):
     def setUp(self) -> None:
         self._runner = CliRunner()
 
-    def _commit_unattested(self) -> object:
+    def _commit_unattested(self):
         return self._runner.invoke(main, ["content", "commit", "AGENTS.md", "--consumer", "codex"])
 
     def test_first_commit_still_requires_attestation(self) -> None:

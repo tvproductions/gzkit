@@ -52,7 +52,7 @@ def _brief(root: Path, obpi_id: str = _OBPI_ID, *, tasks_line: str = "") -> Path
     return path
 
 
-def _parsed_tasks(content: str) -> object:
+def _parsed_tasks(content: str):
     """Return the `tasks:` value as the envelope reader would parse it."""
     end = content.find("\n---\n", 4)
     return (yaml.safe_load(content[4:end]) or {}).get("tasks")

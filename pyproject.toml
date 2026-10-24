@@ -263,6 +263,8 @@ extra-paths = ["typings"]
 # value read after assertIsNotNone is narrowed by an assert beside it, argparse
 # subcommands are reached through tests.commands.common.subcommand_parser, and
 # the subprocess spy records typed calls.
+# 498 remain once patched mocks are annotated MagicMock and test helpers drop
+# the `-> object` that erased what ty would infer.
 [[tool.ty.overrides]]
 include = ["tests/**"]
 

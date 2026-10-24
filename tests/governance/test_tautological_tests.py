@@ -349,9 +349,7 @@ class TestAstScanner(unittest.TestCase):
 class TestDispositionEngine(unittest.TestCase):
     """REQ-0.0.59-04-02: disposition engine proposes exactly one ProposedDisposition."""
 
-    def _make_op(
-        self, function_name: str = "test_something", file_path: str = "tests/foo.py"
-    ) -> object:
+    def _make_op(self, function_name: str = "test_something", file_path: str = "tests/foo.py"):
         from gzkit.models.tautological_tests import TautologicalTestOperation
 
         return TautologicalTestOperation(

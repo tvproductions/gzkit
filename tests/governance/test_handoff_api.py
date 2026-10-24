@@ -599,7 +599,7 @@ class TestResumeVerifiesStepReferences(unittest.TestCase):
         steps: tuple[str, ...],
         checker: object = None,
         tmp: str | None = None,
-    ) -> object:
+    ):
         with tempfile.TemporaryDirectory() as made:
             base = Path(tmp or made)
             handoff_dir = base / ".gzkit" / "handoffs"
@@ -1412,7 +1412,7 @@ class TestAuthoringAnnotatesSettledCitations(unittest.TestCase):
         return path.read_text(encoding="utf-8")
 
     @staticmethod
-    def _settled(*numbers: str) -> object:
+    def _settled(*numbers: str):
         settled = set(numbers)
 
         def check(reference: StepReference) -> ReferenceState:
@@ -1530,7 +1530,7 @@ class TestSectionNumbersAreNotIssueCitations(unittest.TestCase):
     "Always #13 [settled]" — resolving issue 13, which is closed and unrelated.
     """
 
-    def _steps_with(self, step: str) -> object:
+    def _steps_with(self, step: str):
         def settle_everything(reference: StepReference) -> ReferenceState:
             return ReferenceState.SETTLED
 

@@ -212,7 +212,7 @@ def _write_source(temp_dir: Path, source: str, name: str = "subject.py") -> Path
     return target
 
 
-def _resolve_advise_subparser(parser: object) -> object:
+def _resolve_advise_subparser(parser: object):
     """Walk the argparse tree to the ``complexity advise`` subparser."""
     import argparse  # noqa: PLC0415
 

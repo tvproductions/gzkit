@@ -42,7 +42,7 @@ def _load_triage_module():
 _TRIAGE = _load_triage_module()
 
 
-def _issue(number: int, title: str, body: str = "", labels: tuple[str, ...] = ()) -> object:
+def _issue(number: int, title: str, body: str = "", labels: tuple[str, ...] = ()):
     return _TRIAGE.Issue(
         number=number,
         title=title,

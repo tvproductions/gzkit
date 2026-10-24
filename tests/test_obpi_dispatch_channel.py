@@ -161,7 +161,7 @@ class TestDegradedModeKeepsTheGateCompliable(unittest.TestCase):
 class TestPrecompleteSurfacesTheChannel(unittest.TestCase):
     """Stage 5 is the operator's decision point, so the channel must appear there."""
 
-    def _check(self, root: Path, obpi_id: str) -> object:
+    def _check(self, root: Path, obpi_id: str):
         from gzkit.commands.obpi_precomplete import _check_stage2_dispatch
 
         return _check_stage2_dispatch(root, obpi_id)

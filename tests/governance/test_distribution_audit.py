@@ -327,7 +327,7 @@ class TestWalkFilter(unittest.TestCase):
         original_run = _subprocess.run
         build_calls: list[str] = []
 
-        def _spy_run(args: object, **kwargs: object) -> object:
+        def _spy_run(args: object, **kwargs: object):
             if isinstance(args, (list, tuple)) and any(
                 "uv" in str(a) or "hatch" in str(a) for a in args
             ):

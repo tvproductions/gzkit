@@ -388,7 +388,7 @@ class TestSecurityFloorOverrideBestEffort(unittest.TestCase):
     so it can never gate the completion or revert the committed receipt."""
 
     @staticmethod
-    def _event() -> object:
+    def _event():
         return security_floor_overridden_event(
             obpi_id="OBPI-0.0.72-04-security-floor-overridden-event",
             surfaces="auth_boundaries",

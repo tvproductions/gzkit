@@ -218,7 +218,7 @@ class TestContentRememberDriftWarning(unittest.TestCase):
     def setUp(self) -> None:
         self._runner = CliRunner()
 
-    def _remember(self, *extra: str) -> object:
+    def _remember(self, *extra: str):
         return self._runner.invoke(
             main,
             [
@@ -745,7 +745,7 @@ class TestRememberWitnessProvenance(unittest.TestCase):
     def setUp(self) -> None:
         self._runner = CliRunner()
 
-    def _remember(self, *extra: str) -> object:
+    def _remember(self, *extra: str):
         return self._runner.invoke(
             main,
             [
@@ -760,7 +760,7 @@ class TestRememberWitnessProvenance(unittest.TestCase):
             ],
         )
 
-    def _only_entry(self) -> object:
+    def _only_entry(self):
         corpus = Corpus.loads(
             (Path(".gzkit") / "corpus" / "AGENTS.md.jsonl").read_text(encoding="utf-8")
         )

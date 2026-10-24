@@ -50,7 +50,7 @@ class TestIntrinsicComplexityDecorator(unittest.TestCase):
 
         # Decorate a second function with the same local name in a nested scope
         # to produce a different __qualname__.
-        def make_inner() -> object:
+        def make_inner():
             @intrinsic_complexity(reason="inner reason", attestor="Test Attestor")
             def shared_name() -> str:
                 return "inner"

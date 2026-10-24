@@ -85,7 +85,7 @@ class TestReqReaders(unittest.TestCase):
         self.assertIsNone(_REQ_LINE_RE.match(f"- [x] {LOOSE_REQ} [BEHAVIOR]: claim"))
 
     def test_ontology_anchor_reads_only_the_seam_req_id(self) -> None:
-        def anchor(req_id: str) -> object:
+        def anchor(req_id: str):
             tree = ast.parse(f'@covers("{req_id}")\ndef f(): pass\n')
             return _ast_anchor_from_decorator(tree.body[0].decorator_list[0], "x.py")
 

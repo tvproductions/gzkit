@@ -211,7 +211,7 @@ class TestEnforcesMetadataOnly(unittest.TestCase):
         sentinel = object()
 
         @enforces("lint", _fixture, _entrypoint)
-        def _marker() -> object:
+        def _marker():
             return sentinel
 
         self.assertIs(_marker(), sentinel)

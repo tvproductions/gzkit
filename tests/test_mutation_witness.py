@@ -599,7 +599,7 @@ class TestDocumentedTestsAreObservable(unittest.TestCase):
 class TestHungRun(unittest.TestCase):
     """A test run that exceeds the hang bound is an outcome about the run (GHI #1179)."""
 
-    def _sweep_with_hang(self, hangs_when) -> object:
+    def _sweep_with_hang(self, hangs_when):
         """Sweep the fixture, expiring the bound whenever ``hangs_when(source_text)``."""
         real_run = mutation_witness._run
 

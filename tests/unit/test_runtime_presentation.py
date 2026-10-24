@@ -162,7 +162,7 @@ class TestCheckSymbols(unittest.TestCase):
         self.assertIn("\u274c", console.text)
 
 
-def _quiet_vault() -> object:
+def _quiet_vault():
     """A non-actionable vault, so the host machine's real vault never leaks in."""
     return SimpleNamespace(is_actionable=False, message="")
 

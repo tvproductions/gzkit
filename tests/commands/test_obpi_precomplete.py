@@ -271,7 +271,7 @@ class TestPrecompleteReconcileCheck(unittest.TestCase):
 class TestPrecompleteScopeCheck(unittest.TestCase):
     """A changed file outside Allowed Paths is reported before attestation (GHI #1181)."""
 
-    def _check(self, changed_files: list[str]) -> object:
+    def _check(self, changed_files: list[str]):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
@@ -388,7 +388,7 @@ class TestPrecompleteArbReceiptsCheck(unittest.TestCase):
 
     OBPI = "OBPI-0.1.0-01"
 
-    def _check(self, seed) -> object:
+    def _check(self, seed):
         with CliRunner().isolated_filesystem():
             _quick_init()
             root = Path.cwd()

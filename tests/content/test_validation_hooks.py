@@ -330,7 +330,7 @@ class TestEditSaveHookWired(unittest.TestCase):
         p.write_bytes(render(contract, "root"))
         return p
 
-    def _make_fake_editor(self, file_path: Path) -> object:
+    def _make_fake_editor(self, file_path: Path):
         """Return a fake subprocess.run that writes valid AgentContract to the temp file."""
         from gzkit.content.render import render  # noqa: PLC0415
 

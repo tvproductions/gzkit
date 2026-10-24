@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from io import StringIO
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from rich.console import Console
 
@@ -22,7 +22,7 @@ class TestRolesDefaultOutput(unittest.TestCase):
     """Test gz roles default table output."""
 
     @patch("gzkit.commands.roles.get_project_root")
-    def test_output_contains_all_four_roles(self, mock_root: object) -> None:
+    def test_output_contains_all_four_roles(self, mock_root: MagicMock) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             _create_agent_files(root)
@@ -44,7 +44,7 @@ class TestRolesJsonOutput(unittest.TestCase):
     """Test gz roles --json produces valid JSON."""
 
     @patch("gzkit.commands.roles.get_project_root")
-    def test_json_is_valid(self, mock_root: object) -> None:
+    def test_json_is_valid(self, mock_root: MagicMock) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             _create_agent_files(root)
@@ -67,7 +67,7 @@ class TestRolesPipelineOutput(unittest.TestCase):
     """Test gz roles --pipeline with dispatch summary."""
 
     @patch("gzkit.commands.roles.get_project_root")
-    def test_pipeline_with_summary(self, mock_root: object) -> None:
+    def test_pipeline_with_summary(self, mock_root: MagicMock) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             plans_dir = root / ".claude" / "plans"
@@ -94,7 +94,7 @@ class TestRolesPipelineOutput(unittest.TestCase):
             self.assertEqual(len(data["records"]), 1)
 
     @patch("gzkit.commands.roles.get_project_root")
-    def test_pipeline_not_found_exits(self, mock_root: object) -> None:
+    def test_pipeline_not_found_exits(self, mock_root: MagicMock) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             plans_dir = root / ".claude" / "plans"

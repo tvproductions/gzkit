@@ -12,7 +12,7 @@ import unittest
 import unittest.mock
 from io import StringIO
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from rich.console import Console
 
@@ -31,13 +31,13 @@ class TestEnsureGhAvailable(unittest.TestCase):
     """Verify gh auth check raises on failure."""
 
     @patch("gzkit.commands.patch_release.run_exec", return_value=(0, "Logged in", ""))
-    def test_authenticated_no_error(self, _mock: object) -> None:
+    def test_authenticated_no_error(self, _mock: MagicMock) -> None:
         from gzkit.commands.patch_release import _ensure_gh_available
 
         _ensure_gh_available(_PROJECT_ROOT)  # should not raise
 
     @patch("gzkit.commands.patch_release.run_exec", return_value=(1, "", "not logged in"))
-    def test_not_authenticated_raises(self, _mock: object) -> None:
+    def test_not_authenticated_raises(self, _mock: MagicMock) -> None:
         from gzkit.commands.common import GzCliError
         from gzkit.commands.patch_release import _ensure_gh_available
 
@@ -45,7 +45,7 @@ class TestEnsureGhAvailable(unittest.TestCase):
             _ensure_gh_available(_PROJECT_ROOT)
 
     @patch("gzkit.commands.patch_release.run_exec", return_value=(127, "", "Command not found: gh"))
-    def test_gh_not_installed_raises(self, _mock: object) -> None:
+    def test_gh_not_installed_raises(self, _mock: MagicMock) -> None:
         from gzkit.commands.common import GzCliError
         from gzkit.commands.patch_release import _ensure_gh_available
 
@@ -62,7 +62,7 @@ class TestGetLatestTag(unittest.TestCase):
     """Verify tag discovery and date extraction."""
 
     @patch("gzkit.commands.patch_release.git_cmd")
-    def test_normal_repo_with_tags(self, mock_git: object) -> None:
+    def test_normal_repo_with_tags(self, mock_git: MagicMock) -> None:
         from gzkit.commands.patch_release import _get_latest_tag
 
         mock_git.side_effect = [
@@ -74,7 +74,7 @@ class TestGetLatestTag(unittest.TestCase):
         self.assertEqual(date, "2026-04-01T12:00:00+00:00")
 
     @patch("gzkit.commands.patch_release.git_cmd", return_value=(0, "", ""))
-    def test_no_tags_returns_none(self, _mock: object) -> None:
+    def test_no_tags_returns_none(self, _mock: MagicMock) -> None:
         from gzkit.commands.patch_release import _get_latest_tag
 
         tag, date = _get_latest_tag(_PROJECT_ROOT)
@@ -82,7 +82,7 @@ class TestGetLatestTag(unittest.TestCase):
         self.assertIsNone(date)
 
     @patch("gzkit.commands.patch_release.git_cmd", return_value=(128, "", "fatal"))
-    def test_git_error_returns_none(self, _mock: object) -> None:
+    def test_git_error_returns_none(self, _mock: MagicMock) -> None:
         from gzkit.commands.patch_release import _get_latest_tag
 
         tag, date = _get_latest_tag(_PROJECT_ROOT)
@@ -276,7 +276,7 @@ class TestCollectGhiRefsInRange(unittest.TestCase):
     )
 
     @patch("gzkit.commands.patch_release.git_cmd")
-    def test_parses_closure_keywords_only(self, mock_git: object) -> None:
+    def test_parses_closure_keywords_only(self, mock_git: MagicMock) -> None:
         """Only GitHub closure keywords count; paren-form ``(GHI #N)`` alone
         is a citation convention (design commits cite GHIs without closing)."""
         from gzkit.commands.patch_release import _collect_ghi_refs_in_range
@@ -294,21 +294,21 @@ class TestCollectGhiRefsInRange(unittest.TestCase):
         self.assertEqual(range_arg, "v0.25.10..HEAD")
 
     @patch("gzkit.commands.patch_release.git_cmd", return_value=(0, "", ""))
-    def test_empty_range_returns_empty_set(self, _mock: object) -> None:
+    def test_empty_range_returns_empty_set(self, _mock: MagicMock) -> None:
         from gzkit.commands.patch_release import _collect_ghi_refs_in_range
 
         refs = _collect_ghi_refs_in_range(_PROJECT_ROOT, "v0.25.10")
         self.assertEqual(refs, set())
 
     @patch("gzkit.commands.patch_release.git_cmd", return_value=(1, "", "fatal"))
-    def test_git_error_returns_empty_set(self, _mock: object) -> None:
+    def test_git_error_returns_empty_set(self, _mock: MagicMock) -> None:
         from gzkit.commands.patch_release import _collect_ghi_refs_in_range
 
         refs = _collect_ghi_refs_in_range(_PROJECT_ROOT, "v0.25.10")
         self.assertEqual(refs, set())
 
     @patch("gzkit.commands.patch_release.git_cmd")
-    def test_none_base_ref_walks_all_history(self, mock_git: object) -> None:
+    def test_none_base_ref_walks_all_history(self, mock_git: MagicMock) -> None:
         from gzkit.commands.patch_release import _collect_ghi_refs_in_range
 
         mock_git.return_value = (0, "abc1234\nfix: one (GHI #10)\n\nCloses #10\n\x00", "")
@@ -319,7 +319,7 @@ class TestCollectGhiRefsInRange(unittest.TestCase):
         self.assertNotIn("v0.25.10..HEAD", call_args)
 
     @patch("gzkit.commands.patch_release.git_cmd")
-    def test_ignores_prose_references_counts_only_closure_refs(self, mock_git: object) -> None:
+    def test_ignores_prose_references_counts_only_closure_refs(self, mock_git: MagicMock) -> None:
         """Prose citations like 'similar to #186' must not inflate the release ledger.
 
         Only closure markers count: ``(GHI #N)`` parenthesized subject/body
@@ -345,7 +345,7 @@ class TestCollectGhiRefsInRange(unittest.TestCase):
             self.assertNotIn(not_closed, refs)
 
     @patch("gzkit.commands.patch_release.git_cmd")
-    def test_accepts_fixes_and_resolves_closure_keywords(self, mock_git: object) -> None:
+    def test_accepts_fixes_and_resolves_closure_keywords(self, mock_git: MagicMock) -> None:
         from gzkit.commands.patch_release import _collect_ghi_refs_in_range
 
         mock_git.return_value = (
@@ -360,7 +360,7 @@ class TestCollectGhiRefsInRange(unittest.TestCase):
         self.assertEqual(refs, {10, 11, 12, 13})
 
     @patch("gzkit.commands.patch_release.git_cmd")
-    def test_dedupes_repeated_refs(self, mock_git: object) -> None:
+    def test_dedupes_repeated_refs(self, mock_git: MagicMock) -> None:
         from gzkit.commands.patch_release import _collect_ghi_refs_in_range
 
         mock_git.return_value = (
@@ -372,7 +372,7 @@ class TestCollectGhiRefsInRange(unittest.TestCase):
         self.assertEqual(refs, {42})
 
     @patch("gzkit.commands.patch_release.git_cmd")
-    def test_paren_form_alone_is_not_a_closure(self, mock_git: object) -> None:
+    def test_paren_form_alone_is_not_a_closure(self, mock_git: MagicMock) -> None:
         """`(GHI #N)` is a project citation convention when the subject is not
         a fix-family Conventional-Commits type.
 
@@ -399,7 +399,7 @@ class TestCollectGhiRefsInRange(unittest.TestCase):
     # GitHub-canonical Closes/Fixes/Resolves body trailers.
 
     @patch("gzkit.commands.patch_release.git_cmd")
-    def test_fix_cc_prefix_with_ghi_subject_tail_is_closure(self, mock_git: object) -> None:
+    def test_fix_cc_prefix_with_ghi_subject_tail_is_closure(self, mock_git: MagicMock) -> None:
         """`fix(<scope>): <summary> (GHI #N)` subject is a closure (GHI #280)."""
         from gzkit.commands.patch_release import _collect_ghi_refs_in_range
 
@@ -412,7 +412,7 @@ class TestCollectGhiRefsInRange(unittest.TestCase):
         self.assertEqual(refs, {276})
 
     @patch("gzkit.commands.patch_release.git_cmd")
-    def test_feat_cc_prefix_with_ghi_subject_tail_is_closure(self, mock_git: object) -> None:
+    def test_feat_cc_prefix_with_ghi_subject_tail_is_closure(self, mock_git: MagicMock) -> None:
         """`feat(<scope>): <summary> (GHI #N)` subject is a closure (GHI #280)."""
         from gzkit.commands.patch_release import _collect_ghi_refs_in_range
 
@@ -425,7 +425,7 @@ class TestCollectGhiRefsInRange(unittest.TestCase):
         self.assertEqual(refs, {275})
 
     @patch("gzkit.commands.patch_release.git_cmd")
-    def test_subject_form_multi_ghi_tail_counts_all(self, mock_git: object) -> None:
+    def test_subject_form_multi_ghi_tail_counts_all(self, mock_git: MagicMock) -> None:
         """`fix(...): ... (GHI #N, #M)` closes both GHIs (GHI #280)."""
         from gzkit.commands.patch_release import _collect_ghi_refs_in_range
 
@@ -438,7 +438,7 @@ class TestCollectGhiRefsInRange(unittest.TestCase):
         self.assertEqual(refs, {261, 263})
 
     @patch("gzkit.commands.patch_release.git_cmd")
-    def test_subject_form_multi_ghi_tail_repeats_the_ghi_token(self, mock_git: object) -> None:
+    def test_subject_form_multi_ghi_tail_repeats_the_ghi_token(self, mock_git: MagicMock) -> None:
         """`(GHI #N, GHI #M)` closes both, like the bare-`#M` spelling.
 
         Both spellings are live in this repo's history and neither is
@@ -457,7 +457,7 @@ class TestCollectGhiRefsInRange(unittest.TestCase):
         self.assertEqual(refs, {785, 787})
 
     @patch("gzkit.commands.patch_release.git_cmd")
-    def test_docs_cc_prefix_with_ghi_tail_is_not_a_closure(self, mock_git: object) -> None:
+    def test_docs_cc_prefix_with_ghi_tail_is_not_a_closure(self, mock_git: MagicMock) -> None:
         """`docs(<scope>): ... (GHI #N)` is a design citation, not closure (GHI #280)."""
         from gzkit.commands.patch_release import _collect_ghi_refs_in_range
 
@@ -470,7 +470,7 @@ class TestCollectGhiRefsInRange(unittest.TestCase):
         self.assertEqual(refs, set())
 
     @patch("gzkit.commands.patch_release.git_cmd")
-    def test_chore_cc_prefix_with_ghi_tail_is_not_a_closure(self, mock_git: object) -> None:
+    def test_chore_cc_prefix_with_ghi_tail_is_not_a_closure(self, mock_git: MagicMock) -> None:
         """`chore(<scope>): ... (GHI #N)` is not a closure (GHI #280)."""
         from gzkit.commands.patch_release import _collect_ghi_refs_in_range
 
@@ -484,7 +484,7 @@ class TestCollectGhiRefsInRange(unittest.TestCase):
 
     @patch("gzkit.commands.patch_release.git_cmd")
     def test_body_paren_ghi_citation_without_subject_cc_is_not_closure(
-        self, mock_git: object
+        self, mock_git: MagicMock
     ) -> None:
         """Body-prose `(GHI #N): ...` list items remain citations (GHI #280)."""
         from gzkit.commands.patch_release import _collect_ghi_refs_in_range
@@ -519,7 +519,9 @@ class TestCollectUnclassifiedGhiRefsInRange(unittest.TestCase):
     """
 
     @patch("gzkit.commands.patch_release.git_cmd")
-    def test_chore_cited_ghi_with_no_closure_commit_is_unclassified(self, mock_git: object) -> None:
+    def test_chore_cited_ghi_with_no_closure_commit_is_unclassified(
+        self, mock_git: MagicMock
+    ) -> None:
         """The observed instance: a dependency upgrade IS its own remedy.
 
         `chore` is excluded from the closure types on the premise that such
@@ -538,7 +540,7 @@ class TestCollectUnclassifiedGhiRefsInRange(unittest.TestCase):
 
     @patch("gzkit.commands.patch_release.git_cmd")
     def test_ghi_already_claimed_by_a_closure_commit_is_not_reported(
-        self, mock_git: object
+        self, mock_git: MagicMock
     ) -> None:
         """Dedup against the closure set is what keeps the bucket quiet.
 
@@ -557,7 +559,9 @@ class TestCollectUnclassifiedGhiRefsInRange(unittest.TestCase):
         self.assertEqual(refs, set())
 
     @patch("gzkit.commands.patch_release.git_cmd")
-    def test_body_prose_citation_is_not_an_unclassified_reference(self, mock_git: object) -> None:
+    def test_body_prose_citation_is_not_an_unclassified_reference(
+        self, mock_git: MagicMock
+    ) -> None:
         """The bucket reads the subject tail only, never body prose.
 
         Commit bodies on this project routinely cite prior GHIs for
@@ -576,7 +580,9 @@ class TestCollectUnclassifiedGhiRefsInRange(unittest.TestCase):
         self.assertEqual(refs, set())
 
     @patch("gzkit.commands.patch_release.git_cmd")
-    def test_closure_type_subject_is_not_an_unclassified_reference(self, mock_git: object) -> None:
+    def test_closure_type_subject_is_not_an_unclassified_reference(
+        self, mock_git: MagicMock
+    ) -> None:
         """A `fix(...)` tail is a closure; the closure collector owns it."""
         from gzkit.commands.patch_release import _collect_unclassified_ghi_refs_in_range
 
@@ -590,7 +596,7 @@ class TestCollectUnclassifiedGhiRefsInRange(unittest.TestCase):
 
     @patch("gzkit.commands.patch_release.git_cmd")
     def test_multi_ghi_tail_on_a_non_closure_type_reports_every_number(
-        self, mock_git: object
+        self, mock_git: MagicMock
     ) -> None:
         """Both multi-issue spellings apply on the disclosure side too."""
         from gzkit.commands.patch_release import _collect_unclassified_ghi_refs_in_range
@@ -617,25 +623,25 @@ class TestGhiHasSrcCommits(unittest.TestCase):
     """
 
     @patch("gzkit.commands.patch_release.git_cmd", return_value=(0, "abc1234", ""))
-    def test_commits_touching_src(self, _mock: object) -> None:
+    def test_commits_touching_src(self, _mock: MagicMock) -> None:
         from gzkit.commands.patch_release import _ghi_has_src_commits
 
         self.assertTrue(_ghi_has_src_commits(_PROJECT_ROOT, 42, "v0.25.10"))
 
     @patch("gzkit.commands.patch_release.git_cmd", return_value=(0, "", ""))
-    def test_no_commits(self, _mock: object) -> None:
+    def test_no_commits(self, _mock: MagicMock) -> None:
         from gzkit.commands.patch_release import _ghi_has_src_commits
 
         self.assertFalse(_ghi_has_src_commits(_PROJECT_ROOT, 42, "v0.25.10"))
 
     @patch("gzkit.commands.patch_release.git_cmd", return_value=(1, "", "error"))
-    def test_git_error(self, _mock: object) -> None:
+    def test_git_error(self, _mock: MagicMock) -> None:
         from gzkit.commands.patch_release import _ghi_has_src_commits
 
         self.assertFalse(_ghi_has_src_commits(_PROJECT_ROOT, 42, "v0.25.10"))
 
     @patch("gzkit.commands.patch_release.git_cmd", return_value=(0, "abc", ""))
-    def test_range_scoped_not_all(self, mock_git: object) -> None:
+    def test_range_scoped_not_all(self, mock_git: MagicMock) -> None:
         """Scope query to <base_ref>..HEAD; never --all. (GHI #233 root cause)"""
         from gzkit.commands.patch_release import _ghi_has_src_commits
 
@@ -646,7 +652,7 @@ class TestGhiHasSrcCommits(unittest.TestCase):
         self.assertNotIn("--all", call_args)
 
     @patch("gzkit.commands.patch_release.git_cmd", return_value=(0, "abc", ""))
-    def test_none_base_ref_walks_all_history(self, mock_git: object) -> None:
+    def test_none_base_ref_walks_all_history(self, mock_git: MagicMock) -> None:
         """When no prior tag exists, fall back to --all."""
         from gzkit.commands.patch_release import _ghi_has_src_commits
 
@@ -692,6 +698,7 @@ class TestClassifyGhi(unittest.TestCase):
                 self.assertEqual(result.has_src_diff, has_diff)
                 if has_warning:
                     self.assertIsNotNone(result.warning)
+                    assert result.warning is not None
                     self.assertIn(str(ghi.number), result.warning)
                 else:
                     self.assertIsNone(result.warning)
@@ -703,6 +710,7 @@ class TestClassifyGhi(unittest.TestCase):
         ghi = GhiRecord(number=55, title="Labeled", closed_at="2026-04-01", labels=["runtime"])
         with patch("gzkit.commands.patch_release._ghi_has_src_commits", return_value=False):
             result = _classify_ghi(_PROJECT_ROOT, ghi, "v0.25.10")
+        assert result.warning is not None
         self.assertIn("no commits touching src/gzkit/", result.warning)
 
     def test_diff_only_warning_text(self) -> None:
@@ -712,6 +720,7 @@ class TestClassifyGhi(unittest.TestCase):
         ghi = GhiRecord(number=56, title="Diffed", closed_at="2026-04-01", labels=[])
         with patch("gzkit.commands.patch_release._ghi_has_src_commits", return_value=True):
             result = _classify_ghi(_PROJECT_ROOT, ghi, "v0.25.10")
+        assert result.warning is not None
         self.assertIn("no 'runtime' label", result.warning)
 
 
@@ -742,6 +751,7 @@ class TestClassifyGhiOpenUpstream(unittest.TestCase):
 
         self.assertEqual(result.status, "open_upstream")
         self.assertIsNotNone(result.warning)
+        assert result.warning is not None
         self.assertIn("615", result.warning)
         # The cross-validation facts survive the downgrade — only the verdict moves.
         self.assertTrue(result.has_runtime_label)
@@ -788,6 +798,7 @@ class TestClassifyGhiOpenUpstream(unittest.TestCase):
             result = _classify_ghi(_PROJECT_ROOT, ghi, "v0.33.1")
 
         self.assertEqual(result.status, "diff_only")
+        assert result.warning is not None
         self.assertIn("no 'runtime' label", result.warning)
 
     def test_open_upstream_is_excluded_from_release_notes(self) -> None:
@@ -928,7 +939,7 @@ class TestPatchReleaseDryRun(unittest.TestCase):
     @patch("gzkit.commands.patch_release.git_cmd")
     @patch("gzkit.commands.patch_release.console", _quiet_console)
     def test_dry_run_shows_all_statuses(
-        self, mock_git: object, mock_exec: object, _root: object
+        self, mock_git: MagicMock, mock_exec: MagicMock, _root: MagicMock
     ) -> None:
         from gzkit.commands.patch_release import patch_release_cmd
 
@@ -965,11 +976,11 @@ class TestPatchReleaseJson(unittest.TestCase):
     @patch("gzkit.commands.patch_release.sync_project_version", return_value=["pyproject.toml"])
     def test_json_structure(
         self,
-        _mock_sync: object,
-        _mock_ver: object,
-        mock_git: object,
-        mock_exec: object,
-        _root: object,
+        _mock_sync: MagicMock,
+        _mock_ver: MagicMock,
+        mock_git: MagicMock,
+        mock_exec: MagicMock,
+        _root: MagicMock,
     ) -> None:
         from gzkit.commands.patch_release import patch_release_cmd
 
@@ -1003,11 +1014,11 @@ class TestPatchReleaseJson(unittest.TestCase):
     @patch("gzkit.commands.patch_release.sync_project_version", return_value=["pyproject.toml"])
     def test_json_warnings_surfaced(
         self,
-        _mock_sync: object,
-        _mock_ver: object,
-        mock_git: object,
-        mock_exec: object,
-        _root: object,
+        _mock_sync: MagicMock,
+        _mock_ver: MagicMock,
+        mock_git: MagicMock,
+        mock_exec: MagicMock,
+        _root: MagicMock,
     ) -> None:
         from gzkit.commands.patch_release import patch_release_cmd
 
@@ -1042,11 +1053,11 @@ class TestPatchReleaseNoTags(unittest.TestCase):
     @patch("gzkit.commands.patch_release.console", _quiet_console)
     def test_no_tags_still_discovers(
         self,
-        _mock_sync: object,
-        _mock_ver: object,
-        mock_git: object,
-        mock_exec: object,
-        _root: object,
+        _mock_sync: MagicMock,
+        _mock_ver: MagicMock,
+        mock_git: MagicMock,
+        mock_exec: MagicMock,
+        _root: MagicMock,
     ) -> None:
         from gzkit.commands.patch_release import patch_release_cmd
 
@@ -1159,11 +1170,11 @@ class TestPatchReleaseDryRunVersion(unittest.TestCase):
     @patch("gzkit.commands.patch_release.console", _quiet_console)
     def test_dry_run_shows_version_no_sync(
         self,
-        mock_sync: object,
-        _mock_ver: object,
-        mock_git: object,
-        mock_exec: object,
-        _root: object,
+        mock_sync: MagicMock,
+        _mock_ver: MagicMock,
+        mock_git: MagicMock,
+        mock_exec: MagicMock,
+        _root: MagicMock,
     ) -> None:
         from gzkit.commands.patch_release import patch_release_cmd
 
@@ -1194,11 +1205,11 @@ class TestPatchReleaseDryRunVersion(unittest.TestCase):
     @patch("gzkit.commands.patch_release.sync_project_version")
     def test_dry_run_json_includes_version(
         self,
-        mock_sync: object,
-        _mock_ver: object,
-        mock_git: object,
-        mock_exec: object,
-        _root: object,
+        mock_sync: MagicMock,
+        _mock_ver: MagicMock,
+        mock_git: MagicMock,
+        mock_exec: MagicMock,
+        _root: MagicMock,
     ) -> None:
         from gzkit.commands.patch_release import patch_release_cmd
 
@@ -1243,11 +1254,11 @@ class TestPatchReleaseExecutesVersionSync(unittest.TestCase):
     @patch("gzkit.commands.patch_release.console", _quiet_console)
     def test_execute_calls_sync(
         self,
-        mock_sync: object,
-        _mock_ver: object,
-        mock_git: object,
-        mock_exec: object,
-        _root: object,
+        mock_sync: MagicMock,
+        _mock_ver: MagicMock,
+        mock_git: MagicMock,
+        mock_exec: MagicMock,
+        _root: MagicMock,
     ) -> None:
         from gzkit.commands.patch_release import patch_release_cmd
 
@@ -1273,11 +1284,11 @@ class TestPatchReleaseExecutesVersionSync(unittest.TestCase):
     )
     def test_execute_json_includes_sync_results(
         self,
-        mock_sync: object,
-        _mock_ver: object,
-        mock_git: object,
-        mock_exec: object,
-        _root: object,
+        mock_sync: MagicMock,
+        _mock_ver: MagicMock,
+        mock_git: MagicMock,
+        mock_exec: MagicMock,
+        _root: MagicMock,
     ) -> None:
         from gzkit.commands.patch_release import patch_release_cmd
 
@@ -1320,10 +1331,10 @@ class TestPatchReleaseNoVersion(unittest.TestCase):
     @patch("gzkit.commands.patch_release.console", _quiet_console)
     def test_no_version_exits_nonzero(
         self,
-        _mock_ver: object,
-        mock_git: object,
-        mock_exec: object,
-        _root: object,
+        _mock_ver: MagicMock,
+        mock_git: MagicMock,
+        mock_exec: MagicMock,
+        _root: MagicMock,
     ) -> None:
         from gzkit.commands.patch_release import patch_release_cmd
 
@@ -1347,10 +1358,10 @@ class TestPatchReleaseNoVersion(unittest.TestCase):
     @patch("gzkit.commands.patch_release.console", _quiet_console)
     def test_no_version_dry_run_still_works(
         self,
-        _mock_ver: object,
-        mock_git: object,
-        mock_exec: object,
-        _root: object,
+        _mock_ver: MagicMock,
+        mock_git: MagicMock,
+        mock_exec: MagicMock,
+        _root: MagicMock,
     ) -> None:
         from gzkit.commands.patch_release import patch_release_cmd
 
@@ -1377,10 +1388,10 @@ class TestPatchReleaseNoVersion(unittest.TestCase):
     )
     def test_no_version_warning_in_json(
         self,
-        _mock_ver: object,
-        mock_git: object,
-        mock_exec: object,
-        _root: object,
+        _mock_ver: MagicMock,
+        mock_git: MagicMock,
+        mock_exec: MagicMock,
+        _root: MagicMock,
     ) -> None:
         from gzkit.commands.patch_release import patch_release_cmd
 
@@ -1680,13 +1691,13 @@ class TestPatchReleaseCmdManifest(unittest.TestCase):
     @patch("gzkit.commands.patch_release.Ledger")
     def test_manifest_and_ledger_written(
         self,
-        mock_ledger_cls: object,
-        mock_init: object,
-        _mock_sync: object,
-        _mock_ver: object,
-        mock_git: object,
-        mock_exec: object,
-        mock_root: object,
+        mock_ledger_cls: MagicMock,
+        mock_init: MagicMock,
+        _mock_sync: MagicMock,
+        _mock_ver: MagicMock,
+        mock_git: MagicMock,
+        mock_exec: MagicMock,
+        mock_root: MagicMock,
     ) -> None:
         import tempfile
 
@@ -1738,13 +1749,13 @@ class TestPatchReleaseCmdManifest(unittest.TestCase):
     @patch("gzkit.commands.patch_release.Ledger")
     def test_json_output_includes_manifest_path(
         self,
-        mock_ledger_cls: object,
-        mock_init: object,
-        _mock_sync: object,
-        _mock_ver: object,
-        mock_git: object,
-        mock_exec: object,
-        mock_root: object,
+        mock_ledger_cls: MagicMock,
+        mock_init: MagicMock,
+        _mock_sync: MagicMock,
+        _mock_ver: MagicMock,
+        mock_git: MagicMock,
+        mock_exec: MagicMock,
+        mock_root: MagicMock,
     ) -> None:
         import tempfile
 
@@ -1790,10 +1801,10 @@ class TestDryRunNoManifest(SilencedConsoleTestCase):
     @patch("gzkit.commands.patch_release.console", _quiet_console)
     def test_dry_run_no_manifest_no_ledger(
         self,
-        _mock_ver: object,
-        mock_git: object,
-        mock_exec: object,
-        mock_root: object,
+        _mock_ver: MagicMock,
+        mock_git: MagicMock,
+        mock_exec: MagicMock,
+        mock_root: MagicMock,
     ) -> None:
         import tempfile
 
@@ -1993,7 +2004,7 @@ class TestPatchReleaseFoundationCloseoutsDryRun(unittest.TestCase):
     @patch("gzkit.commands.patch_release.run_exec")
     @patch("gzkit.commands.patch_release.git_cmd")
     def test_dry_run_json_lists_foundation_closeouts(
-        self, mock_git: object, mock_exec: object, _root: object
+        self, mock_git: MagicMock, mock_exec: MagicMock, _root: MagicMock
     ) -> None:
         from gzkit.commands.patch_release import patch_release_cmd
 
@@ -2021,7 +2032,7 @@ class TestPatchReleaseFoundationCloseoutsDryRun(unittest.TestCase):
     @patch("gzkit.commands.patch_release.run_exec")
     @patch("gzkit.commands.patch_release.git_cmd")
     def test_dry_run_rich_renders_foundation_section(
-        self, mock_git: object, mock_exec: object, _root: object
+        self, mock_git: MagicMock, mock_exec: MagicMock, _root: MagicMock
     ) -> None:
         from gzkit.commands.patch_release import patch_release_cmd
 

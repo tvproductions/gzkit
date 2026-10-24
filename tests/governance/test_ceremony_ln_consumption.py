@@ -40,7 +40,7 @@ from gzkit.traceability import covers
 _EXECUTE_STEP = 5  # CeremonyStep.EXECUTE value
 
 
-def _make_execute_state() -> object:
+def _make_execute_state():
     """Build a CeremonyState at the EXECUTE step (step 5).
 
     Done lazily to avoid failing at module level when CeremonyState
@@ -273,7 +273,7 @@ class TestClosureReadinessGate(unittest.TestCase):
     draft/pending — the readiness gate that produces ``BLOCKED`` and the
     ceremony-advancement gate were not wired to each other."""
 
-    def _make_execute_state(self) -> object:
+    def _make_execute_state(self):
         from gzkit.commands.closeout_ceremony import CeremonyState, CeremonyStep
 
         return CeremonyState(
