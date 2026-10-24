@@ -45,6 +45,8 @@ __all__ = [
     "LintReport",
     "RuffFinding",
     "RuffRunError",
+    "Runner",
+    "Walker",
     "compare",
     "lint_against_baseline",
     "load_baseline",
@@ -53,6 +55,7 @@ __all__ = [
     "ratchet_baseline",
     "render_report",
     "run_ruff_json",
+    "run_ruff_walk",
 ]
 
 BASELINE_NAME = "ruff_baseline.json"
@@ -121,25 +124,19 @@ class Runner(Protocol):
         ...
 
 
-def run_ruff_json(project_root: Path, targets: Sequence[str], *, fix: bool) -> str:
-    """Run Ruff over *targets* and return its JSON report.
-
-    ``--exit-zero`` makes findings exit 0, so any other status is Ruff itself
-    failing (a bad configuration, an unreadable path) and raises.
+def _run_ruff(argv: list[str], project_root: Path, stage: str) -> str:
+    """Run Ruff with *argv* in *project_root*.
 
     Returns:
-        Ruff's JSON report on stdout.
+        Ruff's stdout.
 
     Raises:
-        RuffRunError: Ruff could not start, or exited non-zero.
+        RuffRunError: Ruff could not start, or exited non-zero (*stage* names when).
 
     """
-    argv = ["uv", "run", "ruff", "check", "--output-format", "json", "--exit-zero"]
-    if fix:
-        argv.append("--fix")
     try:
         result = subprocess.run(  # noqa: S603 — fixed argv; targets are paths, never a shell
-            [*argv, *targets],
+            argv,
             cwd=project_root,
             capture_output=True,
             text=True,
@@ -152,9 +149,50 @@ def run_ruff_json(project_root: Path, targets: Sequence[str], *, fix: bool) -> s
         raise RuffRunError(msg) from exc
     if result.returncode != 0:
         detail = "\n".join((result.stderr or result.stdout).strip().splitlines()[:20])
-        msg = f"Ruff exited {result.returncode} before reporting:\n{detail}"
+        msg = f"Ruff exited {result.returncode} {stage}:\n{detail}"
         raise RuffRunError(msg)
     return result.stdout
+
+
+def run_ruff_json(project_root: Path, targets: Sequence[str], *, fix: bool) -> str:
+    """Run Ruff over *targets* and return its JSON report.
+
+    ``--exit-zero`` makes findings exit 0, so any other status is Ruff itself
+    failing (a bad configuration, an unreadable path), which raises
+    :class:`RuffRunError`.
+
+    Returns:
+        Ruff's JSON report on stdout.
+
+    """
+    argv = ["uv", "run", "ruff", "check", "--output-format", "json", "--exit-zero"]
+    if fix:
+        argv.append("--fix")
+    return _run_ruff([*argv, *targets], project_root, "before reporting")
+
+
+class Walker(Protocol):
+    """Lists the files Ruff reads when it walks the whole tree."""
+
+    def __call__(self, project_root: Path) -> list[str]:
+        """Return the POSIX paths, relative to *project_root*, Ruff's walk of ``.`` reads."""
+        ...
+
+
+def run_ruff_walk(project_root: Path) -> list[str]:
+    """List the files Ruff reads when it walks the whole tree.
+
+    Ruff lints any path it is named, a gitignored or extensionless one included,
+    so a named-file run must be held to this list to judge what the whole-tree
+    run judges. Ruff failing to start or to list raises :class:`RuffRunError`.
+
+    Returns:
+        The walked files as POSIX paths relative to *project_root*.
+
+    """
+    argv = ["uv", "run", "ruff", "check", "--show-files", "."]
+    stdout = _run_ruff(argv, project_root, "listing its files")
+    return [_relative(line, project_root) for line in stdout.splitlines() if line.strip()]
 
 
 @functools.cache
@@ -346,13 +384,30 @@ def lint_against_baseline(
     *,
     fix: bool = False,
     runner: Runner = run_ruff_json,
+    walker: Walker = run_ruff_walk,
 ) -> LintReport:
     """Run Ruff over *targets* (the whole tree when empty) and judge it against the baseline.
+
+    A named file outside Ruff's walk of the whole tree is not judged: the gate is
+    the whole-tree run, and a named-file run (the pre-commit hook) judges no file
+    that run never reads. A named directory is walked by Ruff itself.
 
     Returns:
         The findings and the breaches of the baseline.
 
     """
+    if _scope(targets, project_root) is not None:
+        walked = set(walker(project_root))
+        targets = [
+            target
+            for target in targets
+            if (project_root / target).is_dir()
+            or _relative(str(project_root / target), project_root) in walked
+        ]
+        if not targets:
+            return LintReport(
+                findings=(), breaches=(), has_baseline=load_baseline(project_root) is not None
+            )
     findings = parse_ruff_json(runner(project_root, list(targets) or ["."], fix=fix), project_root)
     baseline = load_baseline(project_root)
     breaches = compare(findings, baseline or {}, _scope(targets, project_root))

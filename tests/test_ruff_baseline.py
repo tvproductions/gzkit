@@ -25,10 +25,11 @@ from gzkit.ruff_baseline import (
     ratchet_baseline,
     render_report,
     run_ruff_json,
+    run_ruff_walk,
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Callable, Sequence
 
 
 def _item(root: Path, file: str, code: str | None, row: int = 1) -> dict[str, object]:
@@ -50,6 +51,16 @@ class _FakeRuff:
     def __call__(self, _root: Path, targets: Sequence[str], *, fix: bool) -> str:
         self.calls.append((list(targets), fix))
         return json.dumps(self.items)
+
+
+def _walk(*files: str) -> Callable[[Path], list[str]]:
+    """Stand in for Ruff's walk of the whole tree.
+
+    Returns:
+        A walker answering *files*, the POSIX paths Ruff would read.
+
+    """
+    return lambda _root: list(files)
 
 
 class _Tree:
@@ -140,12 +151,41 @@ class LintAgainstBaselineTest(unittest.TestCase):
 
     def test_fix_is_passed_through_to_ruff(self) -> None:
         ruff = _FakeRuff([])
-        lint_against_baseline(self.root, ["a.py"], fix=True, runner=ruff)
+        lint_against_baseline(self.root, ["a.py"], fix=True, runner=ruff, walker=_walk("a.py"))
         self.assertEqual(ruff.calls, [(["a.py"], True)])
 
     def test_named_files_leave_other_files_rows_unjudged(self) -> None:
         self.tree.baseline([{"file": "other.py", "rule": "F401", "count": 1}])
-        self.assertTrue(lint_against_baseline(self.root, ["a.py"], runner=_FakeRuff([])).ok)
+        report = lint_against_baseline(
+            self.root, ["a.py"], runner=_FakeRuff([]), walker=_walk("a.py", "other.py")
+        )
+        self.assertTrue(report.ok)
+
+    def test_a_named_file_outside_ruffs_walk_is_not_judged(self) -> None:
+        """A file the whole-tree run never reads is outside the gate (GHI #199 class).
+
+        Ruff lints any path it is handed, a gitignored or extensionless one
+        included, so the pre-commit hook naming staged files would judge files
+        `gz lint` with no targets never sees.
+        """
+        ruff = _FakeRuff([])
+        lint_against_baseline(
+            self.root, ["a.py", "ignored/b.py", "hook"], runner=ruff, walker=_walk("a.py")
+        )
+        self.assertEqual(ruff.calls, [(["a.py"], False)])
+
+    def test_when_every_named_file_is_outside_the_walk_ruff_is_not_run(self) -> None:
+        """Ruff handed no target lints the whole tree, which is not what was asked."""
+        ruff = _FakeRuff([_item(self.root, "a.py", "F401")])
+        report = lint_against_baseline(self.root, ["ignored/b.py"], runner=ruff, walker=_walk())
+        self.assertEqual(ruff.calls, [])
+        self.assertTrue(report.ok)
+
+    def test_a_named_directory_is_walked_by_ruff_itself(self) -> None:
+        (self.root / "pkg").mkdir()
+        ruff = _FakeRuff([])
+        lint_against_baseline(self.root, ["pkg"], runner=ruff, walker=_walk())
+        self.assertEqual(ruff.calls, [(["pkg"], False)])
 
     def test_the_whole_tree_judges_every_row(self) -> None:
         self.tree.baseline([{"file": "other.py", "rule": "F401", "count": 1}])
@@ -288,10 +328,40 @@ class RunRuffJsonTest(unittest.TestCase):
         with self.assertRaises(RuffRunError) as caught:
             self._run(returncode=2)
         self.assertIn("bad config", str(caught.exception))
+        self.assertIn("before reporting", str(caught.exception))
 
     def test_ruff_that_cannot_start_is_a_run_error(self) -> None:
         with self.assertRaises(RuffRunError):
             self._run(error=FileNotFoundError("uv"))
+
+
+class RunRuffWalkTest(unittest.TestCase):
+    """The walker: the files Ruff reads when it walks the whole tree, as POSIX paths."""
+
+    def test_the_walk_is_ruffs_own_file_list_relative_to_the_root(self) -> None:
+        root = Path("/repo").resolve()
+        listed = f"{root / 'a.py'}\n{root / 'pkg' / 'b.py'}\n"
+        done = mock.Mock(returncode=0, stdout=listed, stderr="")
+        with mock.patch.object(ruff_baseline.subprocess, "run", return_value=done) as run:
+            walked = run_ruff_walk(root)
+        self.assertEqual(walked, ["a.py", "pkg/b.py"])
+        self.assertEqual(run.call_args.args[0][-2:], ["--show-files", "."])
+
+    def test_ruff_failing_to_walk_is_a_run_error(self) -> None:
+        done = mock.Mock(returncode=2, stdout="", stderr="bad config")
+        with (
+            mock.patch.object(ruff_baseline.subprocess, "run", return_value=done),
+            self.assertRaises(RuffRunError) as caught,
+        ):
+            run_ruff_walk(Path("/repo"))
+        self.assertIn("bad config", str(caught.exception))
+        self.assertIn("listing its files", str(caught.exception))
+
+    def test_the_walker_is_public_beside_the_runner(self) -> None:
+        """A consumer configuring `gz lint` injects both seams by their exported names."""
+        for name in ("Runner", "run_ruff_json", "Walker", "run_ruff_walk"):
+            with self.subTest(name=name):
+                self.assertIn(name, ruff_baseline.__all__)
 
 
 class RuffRuleCodesTest(unittest.TestCase):
