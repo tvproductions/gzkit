@@ -147,7 +147,7 @@ def pair_intent_with_obpis(
             if score > 0:
                 scored.append((score, obpi_id))
         top_score = max((s for s, _ in scored), default=0)
-        threshold = 2 if top_score >= 2 else top_score
+        threshold = min(2, top_score)
         delivered = [obpi_id for s, obpi_id in scored if s >= threshold] if top_score else []
         result.append({**item, "delivered_by": delivered})
     return result

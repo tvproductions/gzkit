@@ -169,9 +169,9 @@ def _write_audit_artifacts(
         }
 
     # --- Extract typed values from aggregated evidence ---
-    obpi_completions = cast(list[dict[str, Any]], aggregated["obpi_completions"])
-    gate_results = cast(list[dict[str, Any]], aggregated["gate_results"])
-    attestation_data = cast(dict[str, Any] | None, aggregated["attestation"])
+    obpi_completions = cast("list[dict[str, Any]]", aggregated["obpi_completions"])
+    gate_results = cast("list[dict[str, Any]]", aggregated["gate_results"])
+    attestation_data = cast("dict[str, Any] | None", aggregated["attestation"])
 
     # --- Format sections for template ---
     attestation_section = _format_attestation_content(attestation_data)
@@ -237,7 +237,7 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
     adr_info = graph.get(adr_id)
     if not adr_info or adr_info.get("type") != "adr":
         msg = f"ADR not found in ledger: {adr_id}"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
     if not adr_info.get("attested"):
         blocker = {
             "adr": adr_id,

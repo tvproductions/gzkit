@@ -610,7 +610,7 @@ def get_skill(
 
 
 # Re-export audit API so existing `from gzkit.skills import X` continues to work.
-from gzkit.skills_audit import DEFAULT_MAX_REVIEW_AGE_DAYS, audit_skills  # noqa: E402, F401
+from gzkit.skills_audit import DEFAULT_MAX_REVIEW_AGE_DAYS, audit_skills  # noqa: E402
 
 __all__ = [
     "CORE_SKILLS",

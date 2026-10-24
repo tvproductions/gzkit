@@ -1833,7 +1833,7 @@ class TestWriteDeclarationAtomically(unittest.TestCase):
         with mock.patch("os.replace", side_effect=OSError("disk full")):
             try:
                 write_declaration_atomically(self._path, '{"unowned_byte_floor": 999}\n')
-            except OSError as exc:  # noqa: PERF203 - one call, not a loop body
+            except OSError as exc:
                 raised.append(exc)
 
         self.assertEqual(

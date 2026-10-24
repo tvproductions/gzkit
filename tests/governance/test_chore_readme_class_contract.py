@@ -25,7 +25,9 @@ _ROW_KEY_RE = re.compile(r"^\|\s*`(?P<key>[a-z-]+)`\s*\|")
 
 def _table_keys(text: str, heading: str) -> list[str]:
     """Return the backticked first-column keys of the table under ``## <heading>``."""
-    match = re.search(rf"^## {re.escape(heading)}\n(?P<body>.*?)(?=^## |\Z)", text, re.M | re.S)
+    match = re.search(
+        rf"^## {re.escape(heading)}\n(?P<body>.*?)(?=^## |\Z)", text, re.MULTILINE | re.DOTALL
+    )
     if match is None:
         return []
     rows = (_ROW_KEY_RE.match(line) for line in match.group("body").splitlines())

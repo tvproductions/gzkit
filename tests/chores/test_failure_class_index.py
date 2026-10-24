@@ -341,7 +341,7 @@ class TestMinDepthReadsTheRecurrenceRegistry(unittest.TestCase):
             try:
                 with contextlib.redirect_stderr(err):
                     code = main(["--snapshot", str(snapshot), "--dry-run"])
-            except Exception as exc:  # noqa: BLE001 — the chore must report, never raise
+            except Exception as exc:
                 self.fail(f"a missing registry raised {exc!r} instead of returning 1")
             finally:
                 os.chdir(cwd)

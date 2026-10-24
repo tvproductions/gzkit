@@ -61,11 +61,11 @@ def _read_ledger_events(root: Path, event_type: str) -> list[dict]:
     return events
 
 
-def _green_guard(root: Path) -> int:  # noqa: ARG001
+def _green_guard(root: Path) -> int:
     return 0
 
 
-def _red_guard(root: Path) -> int:  # noqa: ARG001
+def _red_guard(root: Path) -> int:
     return 1
 
 
@@ -239,7 +239,7 @@ class TestMxExitLiveNegativeControl(SilencedConsoleTestCase):
             # The "known violation": a guard that represents a failing check.
             violation_caught: list[bool] = []
 
-            def violation_guard(r: Path) -> int:  # noqa: ARG001
+            def violation_guard(r: Path) -> int:
                 violation_caught.append(True)
                 return 1  # violation: non-zero = red
 

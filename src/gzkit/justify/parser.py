@@ -166,7 +166,7 @@ def _reconstruct_anchor(anchor_kind: str, anchor_id: str) -> AnchorRef:
             f"frontmatter anchor_kind must be one of 'ghi', 'obpi', 'draft'; got {anchor_kind!r}"
         )
     if kind == "draft":
-        slug = anchor_id[len("draft-") :] if anchor_id.startswith("draft-") else anchor_id
+        slug = anchor_id.removeprefix("draft-")
         return AnchorRef(
             kind=kind,
             identifier=None,

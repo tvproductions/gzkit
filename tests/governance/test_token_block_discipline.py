@@ -39,7 +39,7 @@ from tests.commands.common import SilencedConsoleTestCase
 from tests.test_obpi_lock_cmd import _make_lock, _mock_config, _setup_project
 
 
-def covers(target: str):  # noqa: D401
+def covers(target: str):
     """Identity decorator linking test to ADR/OBPI target for traceability."""
 
     def _identity(obj):

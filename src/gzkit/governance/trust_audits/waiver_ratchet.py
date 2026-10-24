@@ -345,8 +345,7 @@ def _unregistered_waiver_files(
         return []
     found: set[str] = set()
     for glob in _WAIVER_GLOBS:
-        for f in data_root.glob(glob):
-            found.add(f.relative_to(project_root).as_posix())
+        found.update(f.relative_to(project_root).as_posix() for f in data_root.glob(glob))
     return sorted(found - registered - excluded)
 
 

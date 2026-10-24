@@ -54,7 +54,7 @@ class TestIntrinsicComplexityDecorator(unittest.TestCase):
         # to produce a different __qualname__.
         def make_inner() -> object:
             @intrinsic_complexity(reason="inner reason", attestor="Test Attestor")
-            def shared_name() -> str:  # noqa: F841
+            def shared_name() -> str:
                 return "inner"
 
             return shared_name

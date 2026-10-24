@@ -494,7 +494,7 @@ def _check_duplicate_condition_ids(retention_map: RetentionMap) -> list[Retentio
 
 def first_line(text: str) -> str:
     """Return *text*'s first line, or a placeholder for an empty block."""
-    return text.split("\n")[0] if text else "(empty)"
+    return text.split("\n", maxsplit=1)[0] if text else "(empty)"
 
 
 def _check_unmapped_removed_blocks(

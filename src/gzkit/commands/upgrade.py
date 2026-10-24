@@ -34,7 +34,7 @@ from gzkit.rules import _classify_rule_file
 # Imported so test-isolation patches of this name succeed (REQ-0.0.32-14-08).
 # This function is NEVER called by upgrade_cmd — see the invariant block below.
 from gzkit.skills import _classify_skill_file
-from gzkit.skills import scaffold_core_skills as scaffold_core_skills  # noqa: F401
+from gzkit.skills import scaffold_core_skills as scaffold_core_skills
 from gzkit.templates import _classify_template_file
 
 KNOWN_SURFACES = ("skills", "rules", "templates", "personas")

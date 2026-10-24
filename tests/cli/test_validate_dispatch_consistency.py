@@ -59,7 +59,7 @@ def _parser_lambda_block() -> str:
     filesystem ops co-occurring with assertions *inside test bodies*.
     """
     pm = Path("src/gzkit/cli/parser_maintenance.py").read_text(encoding="utf-8")
-    block = re.search(r"p_validate\.set_defaults\((.*?)\n    \)", pm, re.S)
+    block = re.search(r"p_validate\.set_defaults\((.*?)\n    \)", pm, re.DOTALL)
     return block.group(1) if block else ""
 
 

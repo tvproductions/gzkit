@@ -23,7 +23,7 @@ import unittest
 from pathlib import Path
 
 from gzkit.models.exemplar import ExemplarCorpus, load_corpus
-from gzkit.traceability import covers  # noqa: F401
+from gzkit.traceability import covers
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _CORPUS_PATH = _REPO_ROOT / "data" / "exemplar_corpus.json"

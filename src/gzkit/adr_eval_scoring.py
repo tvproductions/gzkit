@@ -227,8 +227,7 @@ def _score_obpi_decomposition(
             for b in all_paths[i + 1 :]
             if a and b
         )
-        or len(all_paths) <= 1
-    ):
+    ) or len(all_paths) <= 1:
         checks += 1
     else:
         findings.append("OBPI allowed paths overlap significantly")
@@ -286,11 +285,8 @@ def _score_scope_discipline(content: str) -> tuple[int, list[str]]:
     else:
         findings.append("Missing Consequences and Non-Goals sections")
 
-    if (
-        non_goals
-        and _word_count(non_goals) > 20
-        or consequences
-        and _has_keywords(consequences, ["not", "exclude", "out of scope"])
+    if (non_goals and _word_count(non_goals) > 20) or (
+        consequences and _has_keywords(consequences, ["not", "exclude", "out of scope"])
     ):
         checks += 1
     else:
@@ -478,7 +474,7 @@ def _score_obpi_testability(content: str) -> int:
 
 def _score_obpi_value(content: str) -> int:
     objective = section_body(content, "Objective") or ""
-    if not objective or objective.endswith(".") and _word_count(objective) < 5:
+    if not objective or (objective.endswith(".") and _word_count(objective) < 5):
         return 1
     for markers in TEMPLATE_SCAFFOLD_MARKERS.values():
         if any(m in objective for m in markers):

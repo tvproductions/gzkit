@@ -26,7 +26,7 @@ from gzkit.pipeline_runtime import (
     partition_independent_groups,
     should_fallback_to_sequential,
 )
-from gzkit.traceability import covers  # noqa: F401 — used by @covers decorators below
+from gzkit.traceability import covers
 
 # ---------------------------------------------------------------------------
 # Helper factories

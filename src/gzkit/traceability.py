@@ -22,6 +22,7 @@ import re
 import tokenize
 import types
 from collections.abc import Callable
+from itertools import starmap
 from typing import TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -123,8 +124,7 @@ def _non_docstring_string_ranges(content: str) -> list[tuple[int, int]]:
         if not (isinstance(value, ast.Constant) and isinstance(value.value, str)):
             continue
         end_lineno = first.end_lineno or first.lineno
-        for ln in range(first.lineno, end_lineno + 1):
-            docstring_lines.add(ln)
+        docstring_lines.update(range(first.lineno, end_lineno + 1))
 
     line_offsets = _build_line_offsets(content)
     excluded: list[tuple[int, int]] = []
@@ -612,11 +612,8 @@ def _extract_covers_arg(node: ast.expr) -> str | None:
 
     func = node.func
     is_covers = False
-    if (
-        isinstance(func, ast.Name)
-        and func.id == "covers"
-        or isinstance(func, ast.Attribute)
-        and func.attr == "covers"
+    if (isinstance(func, ast.Name) and func.id == "covers") or (
+        isinstance(func, ast.Attribute) and func.attr == "covers"
     ):
         is_covers = True
 
@@ -763,10 +760,7 @@ def compute_coverage(
         obpi_key = parsed.obpi_id
         obpi_groups.setdefault(obpi_key, []).append(entry)
 
-    by_obpi = [
-        _rollup(key, group)
-        for key, group in sorted(obpi_groups.items(), key=lambda kv: _obpi_sort_key(kv[0]))
-    ]
+    by_obpi = list(starmap(_rollup, sorted(obpi_groups.items(), key=_obpi_group_key)))
 
     # Group by ADR
     adr_groups: dict[str, list[CoverageEntry]] = {}
@@ -775,10 +769,7 @@ def compute_coverage(
         adr_key = parsed.adr_id
         adr_groups.setdefault(adr_key, []).append(entry)
 
-    by_adr = [
-        _rollup(key, group)
-        for key, group in sorted(adr_groups.items(), key=lambda kv: adr_sort_key(kv[0]))
-    ]
+    by_adr = list(starmap(_rollup, sorted(adr_groups.items(), key=_adr_group_key)))
 
     # Summary
     summary = _rollup("all", entries)
@@ -806,6 +797,14 @@ def _req_sort_tuple(req_id_str: str) -> tuple[tuple[int, ...], int, int]:
         return (_semver_sort_key(parsed.semver), int(parsed.obpi_item), int(parsed.criterion_index))
     except ValueError:
         return ((999, 999, 999), 999, 999)
+
+
+def _adr_group_key(group: tuple[str, list[CoverageEntry]]) -> tuple[int, ...]:
+    return adr_sort_key(group[0])
+
+
+def _obpi_group_key(group: tuple[str, list[CoverageEntry]]) -> tuple[tuple[int, ...], int]:
+    return _obpi_sort_key(group[0])
 
 
 def adr_sort_key(adr_key: str) -> tuple[int, ...]:

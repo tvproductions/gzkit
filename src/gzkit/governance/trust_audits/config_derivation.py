@@ -30,7 +30,7 @@ PROVENANCE_KEYS = ("$comment", "_comment", "_doc", "doc", "citation", "note", "_
 #: Provenance counts only when it points somewhere a reader can GO. Prose that
 #: explains what a field means is documentation; this fence is about derivation.
 AUTHORITY_RE = re.compile(
-    rf"(docs/[\w/.-]+\.md|{ADR_PREFIX_BODY}[\w.]+|GHI #\d+|operator ruling)", re.I
+    rf"(docs/[\w/.-]+\.md|{ADR_PREFIX_BODY}[\w.]+|GHI #\d+|operator ruling)", re.IGNORECASE
 )
 
 #: Names marking a module-level constant as a policy knob. Deliberately broad --
@@ -38,7 +38,7 @@ AUTHORITY_RE = re.compile(
 THRESHOLD_NAME_RE = re.compile(
     r"(MAX|MIN|THRESHOLD|LIMIT|CEILING|FLOOR|BUDGET|CAP|DAYS|COUNT|SIZE|LEN|PCT"
     r"|PERCENT|RATIO|TIMEOUT|DEPTH)",
-    re.I,
+    re.IGNORECASE,
 )
 
 _DERIVATION_BASELINE = "config_derivation_grandfather.json"

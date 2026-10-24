@@ -11,8 +11,8 @@ from gzkit.hooks.core import (
 from gzkit.hooks.guards import forbid_pytest
 
 __all__ = [
+    "forbid_pytest",
     "is_governance_artifact",
     "record_artifact_edit",
     "run_light_validation",
-    "forbid_pytest",
 ]

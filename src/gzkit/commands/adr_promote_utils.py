@@ -474,7 +474,7 @@ def _normalize_pool_adr_input(pool_adr: str) -> str:
     pool_input = normalize_adr_input(pool_adr)
     if not _is_pool_adr_id(pool_input):
         msg = f"Source ADR is not a pool entry: {pool_input}"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
     return pool_input
 
 
@@ -493,16 +493,16 @@ def _resolve_pool_adr_source(
     pool_adr_id = pool_metadata.get("id", pool_file.stem)
     if not _is_pool_adr_id(pool_adr_id):
         msg = f"Resolved ADR is not a pool entry: {pool_adr_id}"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
     if ledger.canonicalize_id(pool_adr_id) != pool_adr_id:
         msg = f"Pool ADR already promoted or renamed in ledger state: {pool_adr_id}"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
 
     pool_content = pool_file.read_text(encoding="utf-8")
     existing_promoted_to = parse_frontmatter_value(pool_content, "promoted_to")
     if existing_promoted_to:
         msg = f"Pool ADR already records promotion target '{existing_promoted_to}': {pool_adr_id}"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
     return pool_file, pool_adr_id, pool_metadata, pool_content
 
 
@@ -511,7 +511,7 @@ def _resolve_promotion_slug(pool_adr_id: str, slug: str | None) -> str:
     target_slug = slug or _derive_slug_from_pool_id(pool_adr_id)
     if not ADR_SLUG_RE.match(target_slug):
         msg = f"Invalid --slug '{target_slug}'. Expected kebab-case like 'gz-chores-system'."
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
     return target_slug
 
 

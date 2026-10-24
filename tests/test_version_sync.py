@@ -70,7 +70,9 @@ def _fake_uv_version(calls: list[tuple[Path, str]]):
             if path.is_file():
                 text = path.read_text(encoding="utf-8")
                 path.write_text(
-                    re.sub(r'^version = "[^"]+"', f'version = "{version}"', text, flags=re.M),
+                    re.sub(
+                        r'^version = "[^"]+"', f'version = "{version}"', text, flags=re.MULTILINE
+                    ),
                     encoding="utf-8",
                 )
 

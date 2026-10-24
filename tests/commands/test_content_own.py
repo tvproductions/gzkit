@@ -20,6 +20,7 @@ import json
 import subprocess
 import threading
 import unittest
+from itertools import starmap
 from pathlib import Path
 from unittest.mock import patch
 
@@ -144,7 +145,7 @@ def _seed_overgrown_alpha(*, corpus_texts: tuple[str, ...] = _ALPHA_COVERAGE) ->
         {"doc-title": "corpus-owned", "alpha-section": "unowned", "beta-section": "unowned"}
     )
     _write_surface(_GROWN_SURFACE_TEXT)
-    _seed_corpus(*(_entry(i, text) for i, text in enumerate(corpus_texts)))
+    _seed_corpus(*starmap(_entry, enumerate(corpus_texts)))
     return floor
 
 
@@ -382,7 +383,7 @@ class TestContentOwnFailsClosed(unittest.TestCase):
                 {"doc-title": "corpus-owned", "alpha-section": "unowned", "beta-section": "unowned"}
             )
             _write_surface(_GROWN_SURFACE_TEXT)
-            entries = [_entry(i, text) for i, text in enumerate(_ALPHA_COVERAGE)]
+            entries = list(starmap(_entry, enumerate(_ALPHA_COVERAGE)))
             tombstone = _entry(99, "", retires=entries[-1].id, id="corpus-alpha-section-tombstone")
             _seed_corpus(*entries, tombstone)
             self._assert_nothing_written()
@@ -399,7 +400,7 @@ class TestContentOwnFailsClosed(unittest.TestCase):
             )
             grown = _GROWN_SURFACE_TEXT.replace("beta body\n", "beta body " + ("x" * 400) + "\n")
             _write_surface(grown)
-            _seed_corpus(*(_entry(i, text) for i, text in enumerate(_ALPHA_COVERAGE)))
+            _seed_corpus(*starmap(_entry, enumerate(_ALPHA_COVERAGE)))
             result = self._assert_nothing_written()
             self.assertIn("beta-section", result.output)
 
@@ -500,7 +501,7 @@ class TestContentOwnIsRecoverable(unittest.TestCase):
             with patch.object(unown_module, "write_declaration_atomically", fail_declaration_only):
                 self.assertEqual(_own(self._runner).exit_code, 2)
 
-            entries = [_entry(i, text) for i, text in enumerate(_ALPHA_COVERAGE)]
+            entries = list(starmap(_entry, enumerate(_ALPHA_COVERAGE)))
             _seed_corpus(*entries, _entry(99, "", retires=entries[-1].id, id="tomb-1"))
             refused = _own(self._runner)
             self.assertEqual(refused.exit_code, 2, msg=refused.output)
@@ -748,7 +749,7 @@ class TestContentOwnIsSerialized(unittest.TestCase):
                     content_own_cmd(
                         surface="Doc.md", section="alpha-section", attestor="g0", reason="own"
                     )
-                except BaseException as exc:  # noqa: BLE001 - recorded, then asserted on
+                except BaseException as exc:
                     failures["own"] = exc
 
             def unown_worker() -> None:
@@ -756,7 +757,7 @@ class TestContentOwnIsSerialized(unittest.TestCase):
                     content_unown_cmd(
                         surface="Doc.md", section="doc-title", attestor="g0", reason="unown"
                     )
-                except BaseException as exc:  # noqa: BLE001 - recorded, then asserted on
+                except BaseException as exc:
                     failures["unown"] = exc
 
             with patch.object(unown_module, "load_declaration", load_then_rendezvous):
@@ -848,7 +849,7 @@ class TestContentOwnReplayJournalValidation(unittest.TestCase):
                 },
                 surface_text=_GROWN_SURFACE_TEXT,
             )
-            _seed_corpus(*(_entry(i, text) for i, text in enumerate(_ALPHA_COVERAGE)))
+            _seed_corpus(*starmap(_entry, enumerate(_ALPHA_COVERAGE)))
             remaining = measure_section_spans(_GROWN_SURFACE_TEXT)["beta-section"]
             self._forge(section="alpha-section", new_floor=remaining)
             self._assert_refused_by("only an unowned section may be owned")
@@ -913,7 +914,7 @@ class TestGrowthRefusalPrescribesAUsableRecovery(unittest.TestCase):
                 message,
                 "the loader's next step must state the coverage prerequisite `own` enforces",
             )
-            _seed_corpus(*(_entry(i, text) for i, text in enumerate(_ALPHA_COVERAGE)))
+            _seed_corpus(*starmap(_entry, enumerate(_ALPHA_COVERAGE)))
 
             owned = _own(self._runner)
             self.assertEqual(owned.exit_code, 0, msg=owned.output)

@@ -18,7 +18,7 @@ from gzkit.governance.trust_audits.taxonomy import (
 )
 
 __all__ = [
-    "audit_adr_taxonomy",
     "audit_adr_status_fresh",
+    "audit_adr_taxonomy",
     "audit_pool_adr_isolation",
 ]

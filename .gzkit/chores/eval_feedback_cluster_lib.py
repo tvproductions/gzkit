@@ -65,7 +65,7 @@ class ProposalRecord(BaseModel):
     source_artifact_ids: list[str] = Field(..., description="Artifact IDs contributing to cluster")
     source_artifact_paths: list[str] = Field(
         ..., description="Artifact paths contributing to cluster"
-    )  # noqa: E501
+    )
     summary: str = Field(..., description="Human-readable summary of the cluster")
     proposed_rule_target: str = Field(..., description="Suggested rule or doctrine target")
     content_hash: str = Field(..., description="SHA-256 content dedup fingerprint (first 16 chars)")

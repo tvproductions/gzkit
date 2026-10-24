@@ -35,7 +35,7 @@ from gzkit.qc_binding import QCStep
 
 # Import the qc negative-control fixtures for their @enforces registration side effect
 # (the 36 claims register at import time). noqa: F401 — imported for effect, not name.
-from . import _qc_negative_controls  # noqa: F401
+from . import _qc_negative_controls
 
 # ---------------------------------------------------------------------------
 # Seven theater signatures calibrated on the ADR-0.0.37 facade

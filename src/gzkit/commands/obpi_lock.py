@@ -381,10 +381,10 @@ def obpi_lock_list_cmd(adr_id: str | None, as_json: bool) -> None:
 
 # Keep lock_dir accessible for tests that need to set up lock directories.
 __all__ = [
-    "obpi_lock_claim_cmd",
-    "obpi_lock_release_cmd",
     "obpi_lock_check_cmd",
+    "obpi_lock_claim_cmd",
     "obpi_lock_list_cmd",
+    "obpi_lock_release_cmd",
 ]
 
 

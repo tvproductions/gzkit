@@ -401,10 +401,12 @@ def _print_adr_covers_check_result(result: dict[str, Any]) -> None:
     """Render human-readable output for adr covers-check."""
     adr_id = str(result["adr"])
     passed = bool(result["passed"])
-    missing = cast(list[str], result["missing_targets"])
-    criteria_without_req_ids = cast(list[dict[str, Any]], result["criteria_without_req_ids"])
-    invalid_requirement_targets = cast(list[dict[str, Any]], result["invalid_requirement_targets"])
-    unmatched_targets = cast(list[str], result["unmatched_targets"])
+    missing = cast("list[str]", result["missing_targets"])
+    criteria_without_req_ids = cast("list[dict[str, Any]]", result["criteria_without_req_ids"])
+    invalid_requirement_targets = cast(
+        "list[dict[str, Any]]", result["invalid_requirement_targets"]
+    )
+    unmatched_targets = cast("list[str]", result["unmatched_targets"])
 
     console.print(f"[bold]ADR covers-check:[/bold] {adr_id}")
     if passed:

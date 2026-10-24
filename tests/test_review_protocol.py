@@ -36,7 +36,7 @@ from gzkit.roles import (
     ReviewResult,
     ReviewVerdict,
 )
-from gzkit.traceability import covers  # noqa: F401
+from gzkit.traceability import covers
 from tests.acceptance_fixtures import ACCEPTANCE_CONTEXT
 
 # Dispatch mechanics consume readiness derived and tested by the acceptance store.

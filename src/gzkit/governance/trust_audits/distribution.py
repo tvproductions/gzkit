@@ -273,8 +273,7 @@ def _load_inputs(project_root: Path) -> tuple[set[str], set[str], list[str]]:
     surfaces: dict[str, list[str]] = manifest.get("surfaces", {})
     baseline_entries: set[str] = set()
     for surface, entries in surfaces.items():
-        for entry in entries:
-            baseline_entries.add(f"src/gzkit/{surface}/{entry}")
+        baseline_entries.update(f"src/gzkit/{surface}/{entry}" for entry in entries)
 
     surface_roots = [f"src/gzkit/{surface}" for surface in _CANONICAL_SURFACES]
     return shipped, baseline_entries, surface_roots

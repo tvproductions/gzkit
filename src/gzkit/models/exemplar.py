@@ -198,8 +198,8 @@ def load_corpus(path: Path) -> ExemplarCorpus:
 
 __all__ = [
     "ExcludedPath",
+    "ExemplarCorpus",
     "ExemplarProject",
     "VacantCell",
-    "ExemplarCorpus",
     "load_corpus",
 ]

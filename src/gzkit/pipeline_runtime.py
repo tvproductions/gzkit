@@ -407,7 +407,7 @@ def load_dispatch_summary(plans_dir: Path, obpi_id: str) -> dict[str, Any] | Non
         return None
     from typing import cast  # noqa: PLC0415
 
-    return cast(dict[str, Any], json.loads(summary_path.read_text(encoding="utf-8")))
+    return cast("dict[str, Any]", json.loads(summary_path.read_text(encoding="utf-8")))
 
 
 def _extract_brief_allowlist(brief_path: Path) -> list[str]:

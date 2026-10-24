@@ -66,7 +66,7 @@ def _readiness_check_ok(project_root: Path, check: dict[str, Any]) -> bool:
     kind = str(check["kind"])
     if kind == "any_of":
         return _readiness_check_any_of(
-            project_root, cast(list[dict[str, str]], check["candidates"])
+            project_root, cast("list[dict[str, str]]", check["candidates"])
         )
     rel_path = str(check["path"])
     if kind == "dir":
@@ -74,7 +74,7 @@ def _readiness_check_ok(project_root: Path, check: dict[str, Any]) -> bool:
     if kind == "file":
         return _readiness_check_exists(project_root, rel_path, expect_dir=False)
     if kind == "markers":
-        markers = cast(tuple[str, ...], check["markers"])
+        markers = cast("tuple[str, ...]", check["markers"])
         return _readiness_check_markers(project_root, rel_path, markers)
     return False
 

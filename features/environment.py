@@ -16,11 +16,11 @@ import os
 # ``tests/__init__.py`` popping FORCE_COLOR before ``unittest`` imports gzkit.
 os.environ.pop("FORCE_COLOR", None)
 
-import logging  # noqa: E402
-import shutil  # noqa: E402
-import tempfile  # noqa: E402
-from pathlib import Path  # noqa: E402
-from unittest import mock  # noqa: E402
+import logging
+import shutil
+import tempfile
+from pathlib import Path
+from unittest import mock
 
 # Scenarios whose observable IS a warning — the `--receipt-shape` warn-only path,
 # where emitting the record is the behavior under test. Their logs must not reach

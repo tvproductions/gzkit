@@ -426,8 +426,7 @@ def _validate_obpi_receipt_evidence(
             field_path = pydantic_loc_to_field_path("evidence", err["loc"])
             msg = err.get("msg", "")
             # Strip Pydantic's "Value error, " prefix for clean messages
-            if msg.startswith("Value error, "):
-                msg = msg[len("Value error, ") :]
+            msg = msg.removeprefix("Value error, ")
             _append_ledger_error(
                 errors,
                 ledger_path,

@@ -344,11 +344,12 @@ def _collect_ghi_refs_in_range(project_root: Path, base_ref: str | None) -> set[
 
         subject_match = _GHI_SUBJECT_CLOSURE_PATTERN.match(subject)
         if subject_match is not None:
-            for num_match in _GHI_NUMBER_PATTERN.finditer(subject_match.group(1)):
-                refs.add(int(num_match.group(1)))
+            refs.update(
+                int(num_match.group(1))
+                for num_match in _GHI_NUMBER_PATTERN.finditer(subject_match.group(1))
+            )
 
-        for match in _GHI_CLOSURE_PATTERN.finditer(body):
-            refs.add(int(match.group(1)))
+        refs.update(int(match.group(1)) for match in _GHI_CLOSURE_PATTERN.finditer(body))
     return refs
 
 
@@ -397,8 +398,9 @@ def _collect_unclassified_ghi_refs_in_range(
         match = _GHI_SUBJECT_ANY_TYPE_PATTERN.match(subject)
         if match is None or match.group(1) in _GHI_SUBJECT_CLOSURE_TYPES:
             continue
-        for num_match in _GHI_NUMBER_PATTERN.finditer(match.group(2)):
-            cited.add(int(num_match.group(1)))
+        cited.update(
+            int(num_match.group(1)) for num_match in _GHI_NUMBER_PATTERN.finditer(match.group(2))
+        )
     return cited - closure_refs
 
 

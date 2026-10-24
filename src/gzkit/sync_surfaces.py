@@ -31,8 +31,8 @@ from gzkit.hooks.codex import sync_codex_hooks
 from gzkit.ledger import Ledger
 from gzkit.ledger_events import agent_sync_completed_event
 from gzkit.rules import load_rules, render_rules_to_dir
-from gzkit.rules import sync_claude_rules as sync_claude_rules  # noqa: F401
-from gzkit.rules import sync_nested_agents_md as sync_nested_agents_md  # noqa: F401
+from gzkit.rules import sync_claude_rules as sync_claude_rules
+from gzkit.rules import sync_nested_agents_md as sync_nested_agents_md
 from gzkit.surface_write import (
     ensure_dir,
     remove_dir_if_empty,

@@ -28,7 +28,7 @@ from gzkit.lock_manager import (
 from gzkit.mx.marker import SESSION_LOCK_KEY
 
 
-def covers(target: str):  # noqa: D401
+def covers(target: str):
     """Identity decorator linking test to ADR/OBPI target for traceability."""
 
     def _identity(obj):

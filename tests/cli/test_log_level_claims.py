@@ -68,7 +68,7 @@ class TestLogLevelsFollowSpecControl(unittest.TestCase):
     def test_control_fails_when_the_entrypoint_ignores_the_flags(self) -> None:
         real = cli_logging.configure_logging
 
-        def always_normal(verbosity="normal", log_file=None, *, console_stream=None):  # noqa: ARG001
+        def always_normal(verbosity="normal", log_file=None, *, console_stream=None):
             real("normal", log_file, console_stream=console_stream)
 
         with mock.patch.object(cli_logging, "configure_logging", always_normal):
@@ -78,7 +78,7 @@ class TestLogLevelsFollowSpecControl(unittest.TestCase):
     def test_control_fails_when_logs_reach_stdout(self) -> None:
         real = cli_logging.configure_logging
 
-        def to_stdout(verbosity="normal", log_file=None, *, console_stream=None):  # noqa: ARG001
+        def to_stdout(verbosity="normal", log_file=None, *, console_stream=None):
             real(verbosity, log_file, console_stream=sys.stdout)
 
         with mock.patch.object(cli_logging, "configure_logging", to_stdout):

@@ -823,7 +823,7 @@ class TestAgentContractPlaybackConsumer(unittest.TestCase):
 
             try:
                 sync_agents_md(root, config, consumer="never-committed")
-            except Exception as exc:  # noqa: BLE001 — the REQ forbids ANY raise
+            except Exception as exc:
                 self.fail(
                     "the surface sync must not raise for a consumer with no "
                     f"committed rendition; got {type(exc).__name__}: {exc}"

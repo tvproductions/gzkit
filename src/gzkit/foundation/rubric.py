@@ -200,8 +200,7 @@ def _count_ghi_occurrence(
         for raw_line in insights_path.read_text(encoding="utf-8").splitlines():
             if foundation_id not in raw_line:
                 continue
-            for match in _GHI_PATTERN.finditer(raw_line):
-                ghi_numbers.add(match.group(1))
+            ghi_numbers.update(match.group(1) for match in _GHI_PATTERN.finditer(raw_line))
     count = len(ghi_numbers)
     return EvidenceRef(
         dimension="ghi_occurrence",

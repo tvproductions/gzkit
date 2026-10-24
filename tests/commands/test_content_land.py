@@ -467,7 +467,7 @@ def _interrupt_after_alpha_cli(runner: CliRunner, root: Path) -> str:
 
     real_replace = landing_mod._replace_artifact
 
-    def replace(root_: Path, staging: Path, artifact) -> None:  # noqa: ANN001
+    def replace(root_: Path, staging: Path, artifact) -> None:
         if Path(artifact.path).name.startswith("beta."):
             raise OSError("injected: interrupted after the first consumer")
         real_replace(root_, staging, artifact)

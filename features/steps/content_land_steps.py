@@ -163,7 +163,7 @@ def step_land_replace_fails(context) -> None:
     real_replace = landing_mod._replace_artifact
     done: list[str] = []
 
-    def replace(root: Path, staging: Path, artifact) -> None:  # noqa: ANN001
+    def replace(root: Path, staging: Path, artifact) -> None:
         if done:
             raise OSError("injected: replace failed between a rendition and its sidecars")
         real_replace(root, staging, artifact)
@@ -180,7 +180,7 @@ def step_land_interrupted(context, consumer: str) -> None:
     stop_at = order[order.index(consumer) + 1]
     real_replace = landing_mod._replace_artifact
 
-    def replace(root: Path, staging: Path, artifact) -> None:  # noqa: ANN001
+    def replace(root: Path, staging: Path, artifact) -> None:
         if _consumer_of(artifact.path) == stop_at:
             raise OSError(f"injected: interrupted after consumer {consumer}")
         real_replace(root, staging, artifact)
@@ -225,7 +225,7 @@ def step_resume_recording(context) -> None:
     real_replace = landing_mod._replace_artifact
     context.replaced = []
 
-    def replace(root: Path, staging: Path, artifact) -> None:  # noqa: ANN001
+    def replace(root: Path, staging: Path, artifact) -> None:
         context.replaced.append(artifact.path)
         real_replace(root, staging, artifact)
 

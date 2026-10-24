@@ -15,7 +15,7 @@ from gzkit.traceability import covers
 from tests.commands.common import SilencedConsoleTestCase
 
 
-def _obpi_scope(target: str):  # noqa: D401
+def _obpi_scope(target: str):
     """Identity decorator for class-level OBPI scope annotation."""
 
     def _identity(obj):

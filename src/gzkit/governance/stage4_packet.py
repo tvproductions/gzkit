@@ -266,7 +266,7 @@ def _run(command: str, cwd: Path, env: dict[str, str] | None = None) -> tuple[in
     """
     args, use_shell = replay_invocation(command)
     try:
-        proc = subprocess.run(  # noqa: S602 — runs in a disposable copy, never the live checkout
+        proc = subprocess.run(
             args,
             shell=use_shell,
             cwd=cwd,

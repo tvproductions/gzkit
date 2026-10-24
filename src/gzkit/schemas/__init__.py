@@ -46,4 +46,4 @@ def get_schema_path(name: str) -> Path:
     return Path(str(schema_dir.joinpath(f"{name}.json")))
 
 
-__all__ = ["load_schema", "get_schema_path"]
+__all__ = ["get_schema_path", "load_schema"]

@@ -268,6 +268,31 @@ class RunRuffJsonTest(unittest.TestCase):
             self._run(error=FileNotFoundError("uv"))
 
 
+class RuffRuleCodesTest(unittest.TestCase):
+    """Rule names (RUF201's form) translate to codes through Ruff's own table."""
+
+    def setUp(self) -> None:
+        ruff_baseline.ruff_rule_codes.cache_clear()
+        self.addCleanup(ruff_baseline.ruff_rule_codes.cache_clear)
+
+    def test_the_installed_ruff_maps_a_name_to_its_code(self) -> None:
+        codes = ruff_baseline.ruff_rule_codes()
+        self.assertEqual(codes["blind-except"], "BLE001")
+        self.assertEqual(codes["line-too-long"], "E501")
+
+    def test_ruff_failing_or_printing_no_table_is_a_run_error(self) -> None:
+        for done in (
+            mock.Mock(returncode=2, stdout="", stderr="no ruff"),
+            mock.Mock(returncode=0, stdout="not json", stderr=""),
+        ):
+            with (
+                self.subTest(done=done),
+                mock.patch.object(ruff_baseline.subprocess, "run", return_value=done),
+                self.assertRaises(RuffRunError),
+            ):
+                ruff_baseline.ruff_rule_codes()
+
+
 class RenderReportRendering(unittest.TestCase):
     # output-contract: the recovery prose is the named contract of a fail-closed
     # surface (.gzkit/rules/guardrail-feedback-prose.md).

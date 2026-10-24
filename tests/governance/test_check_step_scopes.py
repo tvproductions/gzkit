@@ -322,7 +322,7 @@ class TestTheCrossPlatformScope(unittest.TestCase):
         from gzkit.cli.main import _build_parser  # noqa: PLC0415
 
         parser = _build_parser()
-        check = parser._subparsers._group_actions[0].choices["check"]  # noqa: SLF001
+        check = parser._subparsers._group_actions[0].choices["check"]
         examples = [
             line.strip()
             for line in (check.epilog or "").split("Exit codes")[0].splitlines()

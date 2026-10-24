@@ -129,9 +129,9 @@ def _render_closeout_output(result: dict[str, Any], dry_run: bool) -> None:
     gate_1_path = result["gate_1_path"]
     gate4_na_reason = result.get("gate4_na_reason")
     attestation_choices = result.get("attestation_choices", [])
-    blockers = cast(list[str], result.get("blockers", []))
-    next_steps = cast(list[str], result.get("next_steps", []))
-    obpi_summary = cast(dict[str, Any], result.get("obpi_summary", {}))
+    blockers = cast("list[str]", result.get("blockers", []))
+    next_steps = cast("list[str]", result.get("next_steps", []))
+    obpi_summary = cast("dict[str, Any]", result.get("obpi_summary", {}))
     steps = result.get("verification_steps", [])
     obpi_total = int(obpi_summary.get("total", 0))
     obpi_completed = int(obpi_summary.get("completed", 0))
@@ -190,7 +190,7 @@ def _closeout_gate_number(label: str) -> int:
     """Extract gate number from a verification step label."""
     if label.startswith("Gate "):
         try:
-            return int(label.split("(")[0].strip().split()[-1])
+            return int(label.split("(", maxsplit=1)[0].strip().split()[-1])
         except ValueError, IndexError:
             pass
     return 2  # Quality checks (lint, typecheck) default to gate 2
@@ -237,16 +237,16 @@ def _prompt_closeout_attestation(*, quiet: bool = False) -> tuple[str, str | Non
         reason = input("" if quiet else "Reason: ").strip()
         if not reason:
             msg = "Reason required for partial attestation"
-            raise GzCliError(msg)  # noqa: TRY003
+            raise GzCliError(msg)
         return "partial", reason
     if selection == "3":
         reason = input("" if quiet else "Reason: ").strip()
         if not reason:
             msg = "Reason required for dropped attestation"
-            raise GzCliError(msg)  # noqa: TRY003
+            raise GzCliError(msg)
         return "dropped", reason
     msg = f"Invalid selection: {selection}. Expected 1, 2, or 3."
-    raise GzCliError(msg)  # noqa: TRY003
+    raise GzCliError(msg)
 
 
 def _abort_closeout_with_blockers(
@@ -700,7 +700,7 @@ def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
     closeout_readiness = _adr_closeout_readiness(obpi_rows)
     blockers = list(closeout_readiness["blockers"])
     next_steps = _closeout_next_steps(
-        adr_id, cast(list[str], closeout_readiness.get("blocking_ids", []))
+        adr_id, cast("list[str]", closeout_readiness.get("blocking_ids", []))
     )
 
     gate_1_path = adr_file.relative_to(project_root).as_posix()
@@ -740,7 +740,7 @@ def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
                         {"product_proof": proof_rows, "success": False, "blockers": missing},
                         indent=2,
                     )
-                )  # noqa: T201
+                )
             else:
                 _render_product_proof_human(proof_result)
                 console.print(

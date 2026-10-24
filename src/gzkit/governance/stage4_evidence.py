@@ -368,7 +368,7 @@ def demo_env(project_root: Path, checkout: Path) -> dict[str, str]:
 def _run_demo(command: str, checkout: Path, env: dict[str, str]) -> DemoResult:
     """Execute one demo command in *checkout*, capturing exit status and an output tail."""
     args, use_shell = replay_invocation(command)
-    proc = subprocess.run(  # noqa: S602 — runs in a disposable copy, never the live checkout
+    proc = subprocess.run(
         args,
         shell=use_shell,
         cwd=checkout,

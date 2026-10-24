@@ -414,7 +414,7 @@ class TestContentUnownIsSerialized(unittest.TestCase):
                         attestor="g0",
                         reason=f"concurrent probe for {section}",
                     )
-                except BaseException as exc:  # noqa: BLE001 - recorded, then asserted on
+                except BaseException as exc:
                     failures[section] = exc
 
             with patch.object(unown_module, "load_declaration", load_then_rendezvous):
@@ -554,7 +554,7 @@ class TestContentUnownIsRecoverable(unittest.TestCase):
             self._seed()
             real_append = Ledger.append
 
-            def refuse_append(self_ledger, event):  # noqa: ANN001, ANN202
+            def refuse_append(self_ledger, event):
                 msg = "ledger unavailable"
                 raise OSError(msg)
 
@@ -6891,7 +6891,7 @@ class TestJournalIsClearedOnlyAfterADurableWitness(unittest.TestCase):
                         order.append("ledger-durable")
                 real_fsync(fd)
 
-            def spy_unlink(self, *args, **kwargs):  # noqa: ANN001, ANN002, ANN003, ANN202
+            def spy_unlink(self, *args, **kwargs):
                 if self.name == TestJournalIsClearedOnlyAfterADurableWitness._JOURNAL_NAME:
                     order.append("journal-removed")
                 return real_unlink(self, *args, **kwargs)

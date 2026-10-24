@@ -1281,7 +1281,7 @@ class TestReferencedFilesGitCostTests(unittest.TestCase):
             real_run = subprocess.run
             calls: list[list[str]] = []
 
-            def counting_run(args, **kwargs):  # noqa: ANN001, ANN003 — test spy
+            def counting_run(args, **kwargs):
                 calls.append(list(args))
                 return real_run(args, **kwargs)
 

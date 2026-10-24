@@ -341,7 +341,7 @@ class TestWalkFilter(unittest.TestCase):
             _write_pyproject(root)
             _write_manifest(root, {})
 
-            import unittest.mock as mock
+            from unittest import mock
 
             with (
                 mock.patch("subprocess.run", side_effect=_spy_run),
@@ -364,7 +364,7 @@ class TestStaticOnlyInvariant(unittest.TestCase):
             _write_pyproject(root)
             _write_manifest(root, {"skills": []})
 
-            import unittest.mock as mock
+            from unittest import mock
 
             with mock.patch("subprocess.run") as mock_run:
                 audit_distribution(root)

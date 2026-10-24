@@ -16,7 +16,6 @@ Covers:
 
 from __future__ import annotations
 
-import importlib
 import importlib.util
 import subprocess
 import sys

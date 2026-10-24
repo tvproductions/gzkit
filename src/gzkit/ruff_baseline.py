@@ -22,8 +22,10 @@ Ruff is reached through one runner, injected so the comparison is testable
 without it (hexagonal § Operative rule 6).
 """
 
+import functools
 import json
 import subprocess  # noqa: S404 — Ruff is an external tool, reached only by argv
+import sys
 from collections import Counter
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, Protocol
@@ -153,6 +155,44 @@ def run_ruff_json(project_root: Path, targets: Sequence[str], *, fix: bool) -> s
         msg = f"Ruff exited {result.returncode} before reporting:\n{detail}"
         raise RuffRunError(msg)
     return result.stdout
+
+
+@functools.cache
+def ruff_rule_codes() -> dict[str, str]:
+    """Map each Ruff rule name to its code, from the installed Ruff's own table.
+
+    RUF201 writes configuration entries as rule names, so a reader comparing
+    them with codes translates through Ruff rather than a copied table.
+
+    Returns:
+        Every rule's code, keyed by its name.
+
+    Raises:
+        RuffRunError: Ruff could not start, exited non-zero, or printed no table.
+
+    """
+    argv = [sys.executable, "-m", "ruff", "rule", "--all", "--output-format", "json"]
+    try:
+        result = subprocess.run(  # noqa: S603 — fixed argv, never a shell
+            argv,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            check=False,
+        )
+    except OSError as exc:
+        msg = f"Ruff could not start ({exc}); install the dev group with `uv sync --locked`"
+        raise RuffRunError(msg) from exc
+    if result.returncode != 0:
+        msg = f"`ruff rule --all` exited {result.returncode}: {result.stderr.strip()[:200]}"
+        raise RuffRunError(msg)
+    try:
+        table = json.loads(result.stdout)
+    except json.JSONDecodeError as exc:
+        msg = f"`ruff rule --all` printed no JSON rule table: {exc}"
+        raise RuffRunError(msg) from exc
+    return {rule["name"]: rule["code"] for rule in table}
 
 
 def _relative(filename: str, project_root: Path) -> str:

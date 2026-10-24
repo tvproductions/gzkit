@@ -94,29 +94,29 @@ def render_markdown(
 # --- Heuristic signals --------------------------------------------------------
 
 _OBPI_SIGNALS = (
-    re.compile(r"\bADR amendment\b", re.I),
-    re.compile(r"\bcrosses\s+(brief|ADR)\b", re.I),
-    re.compile(r"\bscope\s+expansion\b", re.I),
-    re.compile(r"\bschema\s+change\b", re.I),
-    re.compile(r"\bcontract\s+change\b", re.I),
-    re.compile(r"\bnew\s+CLI\s+(verb|subcommand|flag)\b", re.I),
-    re.compile(r"\bre[-\s]?open(s|ed)?\s+an?\s+attested\b", re.I),
-    re.compile(r"\bpartial\s+Absorb\b", re.I),
-    re.compile(r"\bbrief\s+boundary\b", re.I),
-    re.compile(r"\bplan[-\s]?mode\s+gate\b", re.I),
+    re.compile(r"\bADR amendment\b", re.IGNORECASE),
+    re.compile(r"\bcrosses\s+(brief|ADR)\b", re.IGNORECASE),
+    re.compile(r"\bscope\s+expansion\b", re.IGNORECASE),
+    re.compile(r"\bschema\s+change\b", re.IGNORECASE),
+    re.compile(r"\bcontract\s+change\b", re.IGNORECASE),
+    re.compile(r"\bnew\s+CLI\s+(verb|subcommand|flag)\b", re.IGNORECASE),
+    re.compile(r"\bre[-\s]?open(s|ed)?\s+an?\s+attested\b", re.IGNORECASE),
+    re.compile(r"\bpartial\s+Absorb\b", re.IGNORECASE),
+    re.compile(r"\bbrief\s+boundary\b", re.IGNORECASE),
+    re.compile(r"\bplan[-\s]?mode\s+gate\b", re.IGNORECASE),
 )
 
 _NOW_SIGNALS = (
-    re.compile(r"\bblocks?\b", re.I),
-    re.compile(r"\bdeadlocks?\b", re.I),
-    re.compile(r"\bbroken\b", re.I),
-    re.compile(r"\bcurrently\s+(fails|failing)\b", re.I),
-    re.compile(r"\bfails?\s+for\b", re.I),
-    re.compile(r"\bfalse[-\s]?positive\b", re.I),
+    re.compile(r"\bblocks?\b", re.IGNORECASE),
+    re.compile(r"\bdeadlocks?\b", re.IGNORECASE),
+    re.compile(r"\bbroken\b", re.IGNORECASE),
+    re.compile(r"\bcurrently\s+(fails|failing)\b", re.IGNORECASE),
+    re.compile(r"\bfails?\s+for\b", re.IGNORECASE),
+    re.compile(r"\bfalse[-\s]?positive\b", re.IGNORECASE),
 )
 
 _PATH_RE = re.compile(r"`([\w./\-]+\.(?:py|md|json|yml|yaml|feature|toml))`")
-_FENCE_RE = re.compile(r"```.*?```", re.S)
+_FENCE_RE = re.compile(r"```.*?```", re.DOTALL)
 
 
 @dataclass
@@ -156,10 +156,10 @@ class Issue:
 # someone checked by hand. These functions supply the instrument.
 
 _BLOCKER_MARKERS = (
-    re.compile(r"\bblocker\b", re.I),
-    re.compile(r"\bblocked\s+on\b", re.I),
-    re.compile(r"\bsequence\s+(?:this\s+)?after\b", re.I),
-    re.compile(r"\bwaiting\s+on\b", re.I),
+    re.compile(r"\bblocker\b", re.IGNORECASE),
+    re.compile(r"\bblocked\s+on\b", re.IGNORECASE),
+    re.compile(r"\bsequence\s+(?:this\s+)?after\b", re.IGNORECASE),
+    re.compile(r"\bwaiting\s+on\b", re.IGNORECASE),
 )
 
 # OBPI before ADR: an OBPI id embeds its parent's semver, so matching ADR first
@@ -178,7 +178,7 @@ _REFERENCE_PATTERNS = (
 _ORDINAL_CONTEXT = re.compile(
     r"(?:rules?|items?|steps?|sections?|invariants?|criteri(?:on|a)|questions?|rows?"
     r"|points?|lines?|phases?|notes?|tables?|clauses?|defects?|\.md`?|§)\s*$",
-    re.I,
+    re.IGNORECASE,
 )
 
 
@@ -308,23 +308,27 @@ _FAMILY_SIGNALS = (
     re.compile(
         r"\bno\s+(?:\w+\s+){0,2}(?:mechanism|witness|enforcement|validator|check|gate"
         r"|counter|caller|detection|coverage|owner|scope|path)\b",
-        re.I,
+        re.IGNORECASE,
     ),
     re.compile(
         r"\bnever\s+(?:\w+\s+){0,2}(?:invoked|called|enforced|checked|run|read"
         r"|validated|measured|passed|formed|fires?)\b",
-        re.I,
+        re.IGNORECASE,
     ),
-    re.compile(r"\bunwitnessed\b|\bunmeasured\b|\buncorpused\b|\bunenforced\b", re.I),
+    re.compile(r"\bunwitnessed\b|\bunmeasured\b|\buncorpused\b|\bunenforced\b", re.IGNORECASE),
     re.compile(
         r"\bnothing\s+(?:\w+\s+){0,2}(?:enforces|checks|validates|observes|refuses"
         r"|reads|asserts|detects)\b",
-        re.I,
+        re.IGNORECASE,
     ),
-    re.compile(r"\bonly\s+in\s+prose\b|\bprose\s+only\b|\badvisory\s+only\b", re.I),
-    re.compile(r"\bdeclares?\b[^.\n]{0,80}\bno\b|\bdeclared\b[^.\n]{0,40}\bwithout\b", re.I),
-    re.compile(r"\bnot\s+(?:enforced|witnessed|validated|checked|detected|measured)\b", re.I),
-    re.compile(r"\bexits?\s+0\s+(?:while|despite)\b|\breports?\s+success\s+over\b", re.I),
+    re.compile(r"\bonly\s+in\s+prose\b|\bprose\s+only\b|\badvisory\s+only\b", re.IGNORECASE),
+    re.compile(
+        r"\bdeclares?\b[^.\n]{0,80}\bno\b|\bdeclared\b[^.\n]{0,40}\bwithout\b", re.IGNORECASE
+    ),
+    re.compile(
+        r"\bnot\s+(?:enforced|witnessed|validated|checked|detected|measured)\b", re.IGNORECASE
+    ),
+    re.compile(r"\bexits?\s+0\s+(?:while|despite)\b|\breports?\s+success\s+over\b", re.IGNORECASE),
 )
 
 

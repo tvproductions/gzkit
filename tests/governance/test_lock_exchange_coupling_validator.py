@@ -20,7 +20,7 @@ from gzkit.governance.trust_audits.lock_exchange_coupling import (
 from tests.commands.common import _isolated_git_env
 
 
-def covers(target: str):  # noqa: D401
+def covers(target: str):
     """Identity decorator linking test to ADR/OBPI target for @covers parity.
 
     Local (not imported from gzkit.traceability) so the brief-reconcile

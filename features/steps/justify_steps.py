@@ -33,7 +33,7 @@ def step_mock_gh_issue_view(_context, anchor: str) -> None:
     }
     stdout = json.dumps(payload)
 
-    def fake_run_exec(cmd, cwd, timeout=None):  # noqa: ARG001
+    def fake_run_exec(cmd, cwd, timeout=None):
         if len(cmd) >= 2 and cmd[0] == "gh" and cmd[1] == "issue":
             return (0, stdout, "")
         return (1, "", "fake_run_exec: unexpected command")

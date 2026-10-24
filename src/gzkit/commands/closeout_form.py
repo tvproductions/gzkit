@@ -200,7 +200,7 @@ def _extract_obpi_description(project_root: Path, row: dict[str, Any]) -> str:
     """Best-effort OBPI description for closeout tables."""
     file_value = row.get("file")
     if not isinstance(file_value, str):
-        return cast(str, row.get("id", ""))
+        return cast("str", row.get("id", ""))
 
     obpi_path = project_root / file_value
     if not obpi_path.is_file():
@@ -297,7 +297,7 @@ def _render_adr_closeout_form(
         ]
     )
     for row in obpi_rows:
-        obpi_id = cast(str, row.get("id", ""))
+        obpi_id = cast("str", row.get("id", ""))
         file_value = row.get("file")
         label = obpi_id
         if isinstance(file_value, str):

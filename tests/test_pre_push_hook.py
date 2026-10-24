@@ -9,7 +9,7 @@ from pathlib import Path
 import yaml
 
 
-def covers(target: str):  # noqa: D401
+def covers(target: str):
     """Identity decorator linking test to ADR/OBPI target for traceability."""
 
     def _identity(obj):

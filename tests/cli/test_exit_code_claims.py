@@ -36,7 +36,7 @@ class TestUsageErrorExitTwoControl(unittest.TestCase):
         self.assertEqual(result.outcome, "PASS", result.message)
 
     def test_control_fails_when_a_parse_error_stops_exiting_two(self) -> None:
-        def exit_one(self, message: str) -> None:  # noqa: ARG001
+        def exit_one(self, message: str) -> None:
             raise SystemExit(1)
 
         with mock.patch("gzkit.cli.parser.StableArgumentParser.error", exit_one):
@@ -50,7 +50,7 @@ class TestUsageErrorExitTwoControl(unittest.TestCase):
         self.assertEqual(result.outcome, "FACADE", result.message)
 
     def test_control_fails_for_a_parser_that_rejects_everything(self) -> None:
-        def always_exit_two(self, args=None, namespace=None):  # noqa: ARG001
+        def always_exit_two(self, args=None, namespace=None):
             raise SystemExit(2)
 
         with mock.patch("gzkit.cli.parser.StableArgumentParser.parse_args", always_exit_two):

@@ -983,7 +983,7 @@ def _validate_obpi_completion_evidence(
         }
     normalized["req_proof_inputs"] = explicit_req_proof_inputs or normalize_req_proof_inputs(
         None,
-        fallback_key_proof=cast(str, normalized.get("key_proof")),
+        fallback_key_proof=cast("str", normalized.get("key_proof")),
         human_attestation=human_attestation,
     )
     normalized["obpi_completion"] = completion_term

@@ -1463,8 +1463,8 @@ class TestBuildSyncCommitMessageEnrichment(unittest.TestCase):
 
     def test_ledger_events_capped_with_overflow_note(self) -> None:
         from gzkit.commands.sync import (
-            _MAX_LEDGER_EVENTS_IN_COMMIT,  # noqa: PLC0415
-            _build_sync_commit_message,  # noqa: PLC0415
+            _MAX_LEDGER_EVENTS_IN_COMMIT,
+            _build_sync_commit_message,
         )
 
         events = [

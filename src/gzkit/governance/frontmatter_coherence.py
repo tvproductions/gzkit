@@ -149,6 +149,23 @@ def _is_obpi_artifact(artifact_id: str) -> bool:
     return artifact_id.startswith("OBPI-")
 
 
+#: Ledger status terms that name an OBPIState other than their own spelling.
+_LEDGER_TERM_STATES: dict[str, OBPIState] = {
+    "pending": OBPIState.DRAFTED,
+    "draft": OBPIState.DRAFTED,
+    "pool": OBPIState.DRAFTED,
+    "proposed": OBPIState.DRAFTED,
+    "in_progress": OBPIState.IMPLEMENTING,
+    "active": OBPIState.IMPLEMENTING,
+    "completed": OBPIState.ATTESTED,
+    "validated": OBPIState.ATTESTED,
+    "attested_completed": OBPIState.ATTESTED,
+    "abandoned": OBPIState.WITHDRAWN,
+    "withdrawn": OBPIState.WITHDRAWN,
+    "superseded": OBPIState.SUPERSEDED,
+}
+
+
 def _map_vocab_to_obpi_state(vocab_term: str) -> OBPIState | None:
     """Map a vocabulary term (frontmatter or ledger) to an OBPIState value.
 
@@ -174,18 +191,9 @@ def _map_vocab_to_obpi_state(vocab_term: str) -> OBPIState | None:
     for frontend_term, ledger_term in STATUS_VOCAB_MAPPING.items():
         if frontend_term.lower() == vocab_lower:
             # We have a ledger term, try to map it to OBPIState
-            ledger_lower = ledger_term.lower()
-            # Try common mappings
-            if ledger_lower in {"pending", "draft", "pool", "proposed"}:
-                return OBPIState.DRAFTED
-            elif ledger_lower in {"in_progress", "active"}:
-                return OBPIState.IMPLEMENTING
-            elif ledger_lower in {"completed", "validated"} or ledger_lower == "attested_completed":
-                return OBPIState.ATTESTED
-            elif ledger_lower == "abandoned" or ledger_lower == "withdrawn":
-                return OBPIState.WITHDRAWN
-            elif ledger_lower == "superseded":
-                return OBPIState.SUPERSEDED
+            state = _LEDGER_TERM_STATES.get(ledger_term.lower())
+            if state is not None:
+                return state
     return None
 
 

@@ -86,8 +86,8 @@ def _seed_generated_fixture(root: Path, *, manifest: dict | None = None) -> None
     than a hand-rolled approximation.
     """
     fixture = _GeneratedFixtureBuilder()
-    fixture._root = root  # noqa: SLF001 -- bare fixture instantiation, see class docstring
-    fixture._seed(manifest=manifest)  # noqa: SLF001
+    fixture._root = root
+    fixture._seed(manifest=manifest)
     append_entry(
         root,
         _GEN_SURFACE,
@@ -622,10 +622,8 @@ class TestContentComposeCmd(unittest.TestCase):
 
         with self._runner.isolated_filesystem():
             fixture = _GeneratedFixtureBuilder()
-            fixture._root = Path(".")  # noqa: SLF001 -- see class docstring
-            fixture._seed(  # noqa: SLF001
-                prior_text=surface_text, sections={"a": "unowned", "b": "unowned"}
-            )
+            fixture._root = Path(".")
+            fixture._seed(prior_text=surface_text, sections={"a": "unowned", "b": "unowned"})
             append_entry(
                 Path("."),
                 _GEN_SURFACE,

@@ -73,7 +73,7 @@ class TestGzJustifyFrontmatter(unittest.TestCase):
         metadata = fm.get("metadata")
         self.assertIsInstance(metadata, dict)
         assert isinstance(metadata, dict)
-        meta = cast(dict[str, object], metadata)
+        meta = cast("dict[str, object]", metadata)
         self.assertRegex(str(meta.get("skill-version", "")), r"^6\.")
         self.assertEqual(meta.get("govzero-framework-version"), "v6")
 

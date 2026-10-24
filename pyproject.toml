@@ -103,19 +103,19 @@ ignore = [
     # run until one of each is disabled. Keep D211 (no blank line before class)
     # and D212 (multi-line summary on the first line) — both match the docstrings
     # already in the tree.
-    "D203",
-    "D213",
+    "incorrect-blank-line-before-class",
+    "multi-line-summary-second-line",
     # Standing exceptions ruled for tranche 4 (2026-10-22, "PT + COM812 + CPY001
     # (Rec.)"): pytest idioms, where unittest is doctrine (AGENTS.md § STDLIB-FIRST);
     # a trailing-comma rule that conflicts with Ruff's formatter; and copyright
     # headers, for which no doctrine exists.
     "PT",
-    "COM812",
-    "CPY001",
+    "missing-trailing-comma",
+    "missing-copyright-notice",
     # Flags every `# noqa`, where .gzkit/rules/pythonic.md § Error Handling requires
     # a justified one at a genuine boundary; RUF100 already refuses a stale one
     # (ruled 2026-10-23, "RUF105 exception (Rec.)").
-    "RUF105",
+    "noqa-comments",
 ]
 
 [tool.ruff.lint.mccabe]
@@ -130,7 +130,7 @@ max-complexity = 20
 # `gz validate --surfaces` then fails closed on. The emitted width is the one
 # that must hold. Inline `# noqa` is unavailable: these lines are string
 # content, so the comment would land in the generated hook. (GHI #582 follow-on.)
-"src/gzkit/hooks/scripts/*.py" = ["E501"]
+"src/gzkit/hooks/scripts/*.py" = ["line-too-long"]
 # pydocstyle is adopted for the shipped package only — that is the surface the
 # `pep257-docstring-compliance` chore gates (`ruff check src/gzkit --select D`).
 # Extending it to tests/features/scripts would surface 6321 pre-existing findings
@@ -159,9 +159,9 @@ max-complexity = 20
 # tranche 4 (2026-10-22, "Package-strict, tests curated (Rec.)"): annotations,
 # private access (attribute and import), `assert`, no-self-use and unused arguments, the idioms of test
 # scaffolding and behave steps rather than defects in them.
-"tests/**/*.py" = ["D", "BLE", "PTH", "ANN", "SLF001", "import-private-name", "S101", "PLR6301", "ARG"]
-"features/**/*.py" = ["D", "BLE", "PTH", "ANN", "SLF001", "import-private-name", "S101", "PLR6301", "ARG"]
-"scripts/**/*.py" = ["D", "BLE", "PTH", "ANN", "SLF001", "import-private-name", "S101", "PLR6301", "ARG"]
+"tests/**/*.py" = ["D", "BLE", "PTH", "ANN", "private-member-access", "import-private-name", "assert", "no-self-use", "ARG"]
+"features/**/*.py" = ["D", "BLE", "PTH", "ANN", "private-member-access", "import-private-name", "assert", "no-self-use", "ARG"]
+"scripts/**/*.py" = ["D", "BLE", "PTH", "ANN", "private-member-access", "import-private-name", "assert", "no-self-use", "ARG"]
 ".claude/hooks/*.py" = ["BLE", "PTH"]
 ".github/copilot/hooks/*.py" = ["BLE", "PTH"]
 # Canonical skill helper scripts and their generated vendor mirrors, plus the
@@ -175,8 +175,8 @@ max-complexity = 20
 # Dated evidence scripts are sealed records of what a past audit ran; refactoring
 # one to satisfy a ceiling adopted later would rewrite the evidence it is (RO-9
 # tranche 4, the C901 ceiling at 20).
-".gzkit/evidence/*.py" = ["C901"]
-"docs/governance/*-evidence/*.py" = ["C901"]
+".gzkit/evidence/*.py" = ["complex-structure"]
+"docs/governance/*-evidence/*.py" = ["complex-structure"]
 
 [tool.ruff.format]
 quote-style = "double"

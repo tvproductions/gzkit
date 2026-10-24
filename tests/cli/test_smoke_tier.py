@@ -50,7 +50,7 @@ class CliAnswers(unittest.TestCase):
                 if exc.code not in (0, None):
                     broken.append((verb, exc.code))
                 continue
-            except Exception as exc:  # noqa: BLE001 - a verb must not explode on --help
+            except Exception as exc:
                 broken.append((verb, repr(exc)))
                 continue
             broken.append((verb, "--help did not exit"))

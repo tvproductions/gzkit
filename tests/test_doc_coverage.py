@@ -38,7 +38,7 @@ from gzkit.traceability import covers as _req_covers
 _T = TypeVar("_T")
 
 
-def covers(target: str):  # noqa: D401 — identity decorator for ADR/OBPI-level tracing
+def covers(target: str):
     """Link test to ADR/OBPI/REQ target. REQ-level targets use the real traceability decorator."""
     if target.startswith("REQ-"):
         return _req_covers(target)

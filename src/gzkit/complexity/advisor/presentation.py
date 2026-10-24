@@ -18,9 +18,9 @@ from typing import Protocol, runtime_checkable
 from gzkit.complexity.advisor.diagnosis import AdvisorDiagnosis
 
 __all__ = [
-    "Presenter",
     "AdHocPresenter",
     "AutoChainPresenter",
+    "Presenter",
 ]
 
 

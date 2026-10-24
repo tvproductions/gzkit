@@ -6,4 +6,4 @@ from gzkit.content.tui.panels import render_content_panel
 from gzkit.content.tui.status import render_status_line
 from gzkit.content.tui.tables import render_content_table
 
-__all__ = ["render_content_panel", "render_status_line", "render_content_table"]
+__all__ = ["render_content_panel", "render_content_table", "render_status_line"]

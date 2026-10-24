@@ -18,7 +18,7 @@ from tempfile import TemporaryDirectory
 from pydantic import ValidationError
 
 from gzkit.models.foundation_grandfather import FoundationGrandfatherManifest
-from gzkit.traceability import covers  # noqa: F401
+from gzkit.traceability import covers
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 MANIFEST_PATH = REPO_ROOT / "data" / "foundation_grandfather.json"

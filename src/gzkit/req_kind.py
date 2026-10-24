@@ -14,6 +14,7 @@ bypassing this schema.
 from __future__ import annotations
 
 import enum
+from itertools import starmap
 from pathlib import Path
 from typing import TYPE_CHECKING, Annotated
 
@@ -238,12 +239,11 @@ def compute_three_channel_coverage(
                 proof_status = resolve_support_proof(req_text, project_root, req_id=entry.req_id)
             else:
                 proof_status = "advisory-support"
-        else:  # STRUCTURAL_FENCE
-            if project_root is not None:
-                req_text = dreq.entity.description if dreq else ""
-                proof_status = resolve_fence_proof(entry.req_id, project_root, req_text)
-            else:
-                proof_status = "unproven-fence"
+        elif project_root is not None:
+            req_text = dreq.entity.description if dreq else ""
+            proof_status = resolve_fence_proof(entry.req_id, project_root, req_text)
+        else:
+            proof_status = "unproven-fence"
 
         return entry.model_copy(
             update={
@@ -301,14 +301,10 @@ def compute_three_channel_coverage(
         obpi_groups.setdefault(obpi_key, []).append(entry)
         adr_groups.setdefault(adr_key, []).append(entry)
 
-    by_obpi = [
-        _recompute_rollup(k, g)
-        for k, g in sorted(obpi_groups.items(), key=lambda kv: _obpi_sort_key(kv[0]))
-    ]
-    by_adr = [
-        _recompute_rollup(k, g)
-        for k, g in sorted(adr_groups.items(), key=lambda kv: adr_sort_key(kv[0]))
-    ]
+    obpi_items = sorted(obpi_groups.items(), key=lambda kv: _obpi_sort_key(kv[0]))
+    adr_items = sorted(adr_groups.items(), key=lambda kv: adr_sort_key(kv[0]))
+    by_obpi = list(starmap(_recompute_rollup, obpi_items))
+    by_adr = list(starmap(_recompute_rollup, adr_items))
     summary = _recompute_rollup(report.summary.identifier, enriched_entries)
 
     return _CoverageReport(

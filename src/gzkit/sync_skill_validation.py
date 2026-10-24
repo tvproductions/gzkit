@@ -42,7 +42,7 @@ def _validate_required_frontmatter_fields(frontmatter: dict[str, str], rel_file:
     """Validate required identity/lifecycle fields."""
     errors: list[str] = []
     for field in SKILL_REQUIRED_FRONTMATTER_FIELDS:
-        if frontmatter.get(field, ""):
+        if frontmatter.get(field):
             continue
         errors.append(f"{rel_file}: missing frontmatter field '{field}'.")
     return errors
@@ -142,7 +142,7 @@ def _append_transition_issues(
         return
 
     missing_transition_fields = [
-        field for field in SKILL_TRANSITION_FIELDS if not frontmatter.get(field, "")
+        field for field in SKILL_TRANSITION_FIELDS if not frontmatter.get(field)
     ]
     if missing_transition_fields:
         errors.append(
@@ -198,7 +198,7 @@ def _append_deprecation_field_issues(
                 )
 
     for field in SKILL_DEPRECATION_REQUIRED_BY_STATE.get(lifecycle_state, ()):
-        if frontmatter.get(field, ""):
+        if frontmatter.get(field):
             continue
         errors.append(
             f"{rel_file}: missing frontmatter field '{field}' for "

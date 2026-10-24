@@ -128,7 +128,7 @@ def obpi_withdraw_cmd(obpi: str, reason: str, attestor: str, dry_run: bool) -> N
     info = graph.get(canonical_id, {})
     if info.get("type") != "obpi":
         msg = f"OBPI not found in ledger: {canonical_id}"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
 
     # Gate the emit on a genuine CANONICAL_TRANSITIONS consultation: a terminal
     # OBPI has no declared withdraw transition, so the model refuses it. The
@@ -139,7 +139,7 @@ def obpi_withdraw_cmd(obpi: str, reason: str, attestor: str, dry_run: bool) -> N
             msg = f"OBPI is already withdrawn: {canonical_id}"
         else:
             msg = f"OBPI is superseded and cannot be withdrawn: {canonical_id}"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
 
     parent = info.get("parent", "")
     event = obpi_withdrawn_event(
@@ -172,7 +172,7 @@ def _resolve_obpi_for_block(obpi: str) -> tuple[Ledger, str, str]:
     info = ledger.get_artifact_graph().get(canonical_id, {})
     if info.get("type") != "obpi":
         msg = f"OBPI not found in ledger: {canonical_id}"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
     parent = info.get("parent", "")
     return ledger, canonical_id, parent if isinstance(parent, str) else ""
 
@@ -264,12 +264,12 @@ def obpi_supersede_cmd(obpi: str, by: str, rationale: str, attestor: str, dry_ru
     info = graph.get(canonical_id, {})
     if info.get("type") != "obpi":
         msg = f"OBPI not found in ledger: {canonical_id}"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
 
     by_info = graph.get(by_canonical_id, {})
     if by_info.get("type") != "obpi":
         msg = f"Superseding OBPI not found in ledger: {by_canonical_id}"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
 
     # Gate the emit on a genuine CANONICAL_TRANSITIONS consultation: a terminal
     # OBPI has no declared supersede transition, so the model refuses it.
@@ -279,7 +279,7 @@ def obpi_supersede_cmd(obpi: str, by: str, rationale: str, attestor: str, dry_ru
             msg = f"OBPI is already withdrawn and cannot be superseded: {canonical_id}"
         else:
             msg = f"OBPI is already superseded: {canonical_id}"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
 
     parent = info.get("parent", "")
     event = obpi_superseded_event(
@@ -354,15 +354,15 @@ def obpi_repudiate_cmd(obpi: str, cause: str, reason: str, attestor: str, dry_ru
 
     if info.get("type") != "obpi":
         msg = f"OBPI not found in ledger: {canonical_id}"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
 
     if info.get("withdrawn"):
         msg = f"OBPI is withdrawn and cannot be repudiated: {canonical_id}"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
 
     if not info.get("ledger_completed"):
         msg = f"OBPI has no completion to repudiate: {canonical_id}"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
 
     # Find the most recent completion receipt to reference
     receipt_events = ledger.query("obpi_receipt_emitted", canonical_id)
@@ -373,7 +373,7 @@ def obpi_repudiate_cmd(obpi: str, cause: str, reason: str, attestor: str, dry_ru
     ]
     if not completion_receipts:
         msg = f"No completion receipt found to repudiate for: {canonical_id}"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
     repudiated_receipt = completion_receipts[-1].ts
 
     parent = info.get("parent", "")
@@ -499,13 +499,13 @@ def _gate_completed_receipt_authenticity(
         return
     if evidence.get("attestation_requirement") != "required":
         return
-    attestation_text = cast(str, evidence.get("attestation_text", ""))
+    attestation_text = cast("str", evidence.get("attestation_text", ""))
     if not attestation_text.strip():
         msg = (
             f"Completed receipt for {obpi_id} requires the operator's verbatim "
             "attestation text in --evidence-json (the 'attestation_text' field)."
         )
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
     evidence["attestation_type"] = ATTESTATION_TYPE_OPERATOR_VERBATIM
 
 
@@ -541,14 +541,14 @@ def obpi_emit_receipt_cmd(
     obpi_info = graph.get(obpi_id, {})
     if obpi_info.get("type") != "obpi":
         msg = f"OBPI not found in ledger: {obpi_id}"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
     parent_adr = obpi_info.get("parent")
     if isinstance(parent_adr, str) and _is_pool_adr_id(parent_adr):
         msg = (
             "Pool-linked OBPIs cannot be issued receipts: "
             f"{obpi_id} (parent: {parent_adr}). Promote parent ADR first."
         )
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
 
     evidence: dict[str, Any] | None = None
     if evidence_json:
@@ -556,10 +556,10 @@ def obpi_emit_receipt_cmd(
             parsed = json.loads(evidence_json)
         except json.JSONDecodeError as exc:
             msg = f"Invalid --evidence-json: {exc}"
-            raise GzCliError(msg) from exc  # noqa: TRY003
+            raise GzCliError(msg) from exc
         if not isinstance(parsed, dict):
             msg = "--evidence-json must decode to a JSON object"
-            raise GzCliError(msg)  # noqa: TRY003
+            raise GzCliError(msg)
         evidence = parsed
 
     parent_lane = config.mode
@@ -620,7 +620,7 @@ def obpi_emit_receipt_cmd(
         )
         evidence["req_proof_inputs"] = explicit_req_proof_inputs or normalize_req_proof_inputs(
             None,
-            fallback_key_proof=cast(str | None, evidence.get("key_proof")),
+            fallback_key_proof=cast("str | None", evidence.get("key_proof")),
         )
         evidence.setdefault("parent_lane", parent_lane)
         if isinstance(parent_adr, str) and parent_adr:
@@ -828,15 +828,15 @@ def obpi_pipeline_cmd(
     info = graph.get(obpi_id, {})
     if info.get("type") != "obpi":
         msg = f"OBPI not found in ledger: {obpi_id}"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
 
-    parent_adr = cast(str | None, info.get("parent"))
+    parent_adr = cast("str | None", info.get("parent"))
     if not parent_adr:
         msg = f"OBPI is missing a parent ADR link in the ledger: {obpi_id}"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
     if _is_pool_adr_id(parent_adr):
         msg = f"Pool-linked OBPI cannot enter the pipeline: {obpi_id}"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
 
     _adr_file, resolved_parent = resolve_adr_file(project_root, config, parent_adr)
     obpi_content = obpi_file.read_text(encoding="utf-8")
@@ -971,13 +971,13 @@ def obpi_pipeline_cmd(
                 "Use --attestor <name> for attested OBPIs "
                 "or --attestor agent:<name> for agent-closed OBPIs."
             )
-            raise GzCliError(msg)  # noqa: TRY003
+            raise GzCliError(msg)
         if not evidence_json:
             msg = (
                 "--evidence-json is required for --from=sync. "
                 "Must include value_narrative and key_proof fields."
             )
-            raise GzCliError(msg)  # noqa: TRY003
+            raise GzCliError(msg)
         _run_pipeline_sync_stage(
             project_root=project_root,
             plans_dir=plans_dir,

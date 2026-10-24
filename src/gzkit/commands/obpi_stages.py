@@ -431,11 +431,11 @@ def _evidence_json_to_complete_flags(evidence_json: str) -> list[str]:
         payload = json.loads(evidence_json)
     except json.JSONDecodeError as exc:
         msg = f"--evidence-json is not valid JSON: {exc}"
-        raise GzCliError(msg) from exc  # noqa: TRY003
+        raise GzCliError(msg) from exc
 
     if not isinstance(payload, dict):
         msg = "--evidence-json must decode to a JSON object"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
 
     attestation_text = payload.get("attestation_text")
     if not isinstance(attestation_text, str) or not attestation_text.strip():
@@ -443,7 +443,7 @@ def _evidence_json_to_complete_flags(evidence_json: str) -> list[str]:
             "--evidence-json must include a non-empty 'attestation_text' field "
             "(required by gz obpi complete --attestation-text)."
         )
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
 
     flags: list[str] = ["--attestation-text", shlex.quote(attestation_text)]
 
@@ -461,20 +461,20 @@ def _evidence_json_to_complete_flags(evidence_json: str) -> list[str]:
         msg = (
             "--evidence-json 'accept_uncovered' and 'accept_uncovered_reason' must be JSON arrays."
         )
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
     if len(accept_uncovered) != len(accept_reasons):
         msg = (
             "--evidence-json 'accept_uncovered' and 'accept_uncovered_reason' "
             f"counts must match ({len(accept_uncovered)} vs {len(accept_reasons)})."
         )
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
     for req_id, reason in zip(accept_uncovered, accept_reasons, strict=True):
         if not isinstance(req_id, str) or not isinstance(reason, str):
             msg = (
                 "--evidence-json 'accept_uncovered' and 'accept_uncovered_reason' "
                 "entries must be strings."
             )
-            raise GzCliError(msg)  # noqa: TRY003
+            raise GzCliError(msg)
         flags.extend(
             [
                 "--accept-uncovered",

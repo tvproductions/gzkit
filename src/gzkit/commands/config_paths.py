@@ -180,8 +180,7 @@ def _flatten_manifest_paths(manifest: dict[str, Any]) -> set[str]:
     derived: set[str] = set()
     for p in paths:
         parts = p.split("/")
-        for i in range(1, len(parts)):
-            derived.add("/".join(parts[:i]))
+        derived.update("/".join(parts[:i]) for i in range(1, len(parts)))
     paths.update(derived)
 
     return paths

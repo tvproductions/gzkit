@@ -113,16 +113,16 @@ class TestArbCoverageVerbFollowsCanon(unittest.TestCase):
     def test_arb_ty_help_names_the_locked_tool(self) -> None:
         # output-contract: the help says which ty runs, the locked one (RO-9 tranche 2)
         parser = _build_parser()
-        arb = parser._subparsers._group_actions[0].choices["arb"]  # noqa: SLF001
-        choices = arb._subparsers._group_actions[0]  # noqa: SLF001
-        ty_help = next(a.help for a in choices._choices_actions if a.dest == "ty")  # noqa: SLF001
+        arb = parser._subparsers._group_actions[0].choices["arb"]
+        choices = arb._subparsers._group_actions[0]
+        ty_help = next(a.help for a in choices._choices_actions if a.dest == "ty")
         self.assertIn("uv run ty", ty_help)
         self.assertNotIn("uvx", ty_help)
 
     def test_help_does_not_teach_the_retired_invocation(self) -> None:
         parser = _build_parser()
-        arb = parser._subparsers._group_actions[0].choices["arb"]  # noqa: SLF001
-        coverage = arb._subparsers._group_actions[0].choices["coverage"]  # noqa: SLF001
+        arb = parser._subparsers._group_actions[0].choices["arb"]
+        coverage = arb._subparsers._group_actions[0].choices["coverage"]
         self.assertNotIn("-m unittest discover", coverage.epilog or "")
 
 

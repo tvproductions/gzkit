@@ -16,7 +16,7 @@ from contextlib import redirect_stdout
 from pathlib import Path
 from unittest import mock
 
-import gzkit.commands.ontology as ontology
+from gzkit.commands import ontology
 from gzkit.commands.ontology import (
     compute_reach,
     compute_seams,

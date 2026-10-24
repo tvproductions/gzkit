@@ -118,7 +118,7 @@ class InstallPreCommitHooks(unittest.TestCase):
     def _fake_installer(self, root: Path):
         """Return a ``subprocess.run`` double that behaves like ``pre-commit install``."""
 
-        def run(cmd, **kwargs):  # noqa: ANN001, ANN003
+        def run(cmd, **kwargs):
             if "install" in cmd:
                 # Real `pre-commit install` writes one shim per `--hook-type` it is
                 # given, so the double does too — an installer handed the wrong

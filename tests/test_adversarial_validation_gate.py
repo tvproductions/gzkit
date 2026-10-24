@@ -192,7 +192,7 @@ class TestGateIsWiredIntoCompletion(unittest.TestCase):
         execute.assert_not_called()
 
     @contextlib.contextmanager
-    def _completion_harness(self, mod: object, obpi_id: str, *, gate_raises: bool = True):  # noqa: ANN202
+    def _completion_harness(self, mod: object, obpi_id: str, *, gate_raises: bool = True):
         """Mock every gate BETWEEN resolve and Step 4b, leaving 4b as the spy.
 
         The gate deliberately sits last, after the structural gates, so an operator

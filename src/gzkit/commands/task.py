@@ -334,7 +334,7 @@ def task_start_cmd(task_id_str: str, *, as_json: bool = False) -> None:
 
     if current not in (TaskStatus.PENDING, TaskStatus.BLOCKED):
         msg = f"Invalid TASK transition: {current.value} -> in_progress"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
 
     event = TaskStartedEvent(
         event="task_started",
@@ -377,7 +377,7 @@ def task_complete_cmd(task_id_str: str, *, as_json: bool = False) -> None:
 
     if current != TaskStatus.IN_PROGRESS:
         msg = f"Invalid TASK transition: {current.value} -> completed"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
 
     event = TaskCompletedEvent(
         event="task_completed",
@@ -418,7 +418,7 @@ def task_block_cmd(task_id_str: str, reason: str, *, as_json: bool = False) -> N
 
     if current != TaskStatus.IN_PROGRESS:
         msg = f"Invalid TASK transition: {current.value} -> blocked"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
 
     event = TaskBlockedEvent(
         event="task_blocked",
@@ -461,7 +461,7 @@ def task_escalate_cmd(task_id_str: str, reason: str, *, as_json: bool = False) -
 
     if current != TaskStatus.IN_PROGRESS:
         msg = f"Invalid TASK transition: {current.value} -> escalated"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
 
     event = TaskEscalatedEvent(
         event="task_escalated",
@@ -838,7 +838,7 @@ def task_fanout_cmd(req_id: str, *, detail: bool = False, as_json: bool = False)
     console.print("-" * len(header))
     for row in rows:
         console.print(
-            f"{str(row['task_id']):<35} {row['seq']:>4}  "
-            f"{str(row['status']):<12} {row['files_touched']:>6}  "
-            f"{row['edits']:>6}  {str(row['attribution_check']):<8}"
+            f"{row['task_id']!s:<35} {row['seq']:>4}  "
+            f"{row['status']!s:<12} {row['files_touched']:>6}  "
+            f"{row['edits']:>6}  {row['attribution_check']!s:<8}"
         )

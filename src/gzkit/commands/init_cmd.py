@@ -1223,7 +1223,7 @@ def init(
     ledger_path.touch()
 
     # Create config with detected paths
-    mode_literal = cast(Literal["lite", "heavy"], mode)
+    mode_literal = cast("Literal['lite', 'heavy']", mode)
     paths = PathConfig(
         design_root=design_root,
         prd=f"{design_root}/prd",
@@ -1366,7 +1366,7 @@ def _canonicalize_prd_id(name: str) -> tuple[str, str]:
 
     Returns ``(prd_id, semver)``.
     """
-    stem = name[4:] if name.startswith("PRD-") else name
+    stem = name.removeprefix("PRD-")
     semver = "1.0.0"
     trailing = stem.rsplit("-", 1)
     if len(trailing) == 2 and re.fullmatch(r"\d+\.\d+\.\d+", trailing[1]):
@@ -1425,7 +1425,7 @@ def _canonicalize_constitution_id(name: str) -> tuple[str, str]:
 
     Returns ``(constitution_id, semver)``.
     """
-    stem = name[len("CONSTITUTION-") :] if name.startswith("CONSTITUTION-") else name
+    stem = name.removeprefix("CONSTITUTION-")
     semver = "1.0.0"
     trailing = stem.rsplit("-", 1)
     if len(trailing) == 2 and re.fullmatch(r"\d+\.\d+\.\d+", trailing[1]):

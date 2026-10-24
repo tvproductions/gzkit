@@ -96,7 +96,7 @@ def compose_reviewer_prompt(
         "",
         "## Closing Argument",
         "",
-        closing_argument if closing_argument else "*No closing argument provided.*",
+        closing_argument or "*No closing argument provided.*",
         "",
         "## Files Changed",
         "",

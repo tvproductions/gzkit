@@ -1,8 +1,7 @@
 """Specify command implementation (OBPI creation)."""
 
 import re
-from pathlib import Path
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import yaml
 from rich.markup import escape
@@ -37,6 +36,9 @@ from gzkit.decomposition import (
 from gzkit.hooks.obpi import ObpiValidator
 from gzkit.ledger import Ledger, obpi_created_event
 from gzkit.templates import render_template
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def _normalized_objective_from_checklist_item(checklist_item_text: str) -> str:
@@ -701,25 +703,25 @@ def _validate_parent_adr(
             f"Parent ADR has no checklist items to map: {resolved_parent}. "
             "Define checklist entries before creating OBPIs."
         )
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
     if item <= 0 or item > len(checklist_items):
         msg = (
             f"Checklist item #{item} is out of range for {resolved_parent} "
             f"(available: 1-{len(checklist_items)})."
         )
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
     if is_withdrawn_checklist_item(checklist_items[item - 1]):
         msg = (
             f"Checklist item #{item} is withdrawn for {resolved_parent}; "
             "withdrawn historical rows cannot receive new OBPI briefs."
         )
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
 
     scorecard, scorecard_errors = parse_scorecard(adr_content)
     if scorecard_errors:
         summary = "; ".join(scorecard_errors)
         msg = f"Parent ADR decomposition scorecard is invalid for {resolved_parent}: {summary}"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
     assert scorecard is not None
     live_items = active_checklist_items(checklist_items)
     if len(live_items) != scorecard.final_target_obpi_count:
@@ -729,7 +731,7 @@ def _validate_parent_adr(
             f"total={len(checklist_items)} "
             f"target={scorecard.final_target_obpi_count}."
         )
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
     return checklist_items
 
 
@@ -768,7 +770,7 @@ def _prepare_specify_plan(
     canonical_parent = ledger.canonicalize_id(parent_input)
     if _is_pool_adr_id(canonical_parent):
         msg = f"Pool ADRs cannot receive OBPIs until promoted: {canonical_parent}."
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
 
     adr_file, resolved_parent = resolve_adr_file(project_root, config, canonical_parent)
     adr_content = adr_file.read_text(encoding="utf-8")
@@ -921,10 +923,10 @@ def specify(
             name=name,
         )
     )
-    obpi_id = cast(str, obpi_plan["obpi_id"])
-    obpi_file = cast(Path, obpi_plan["obpi_file"])
+    obpi_id = cast("str", obpi_plan["obpi_id"])
+    obpi_file = cast("Path", obpi_plan["obpi_file"])
     obpi_dir = obpi_file.parent
-    content = cast(str, obpi_plan["content"])
+    content = cast("str", obpi_plan["content"])
     content, authored_errors = _authored_validation_errors(
         project_root,
         content,

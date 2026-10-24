@@ -38,7 +38,7 @@ def intrinsic_complexity(*, reason: str, attestor: str) -> Callable[[_F], _F]:
         qualname = getattr(fn, "__qualname__", None) or getattr(
             fn, "__name__", type(fn).__qualname__
         )
-        _REGISTRY[(file_path, qualname)] = (reason, attestor, decoration_date)
+        _REGISTRY[file_path, qualname] = (reason, attestor, decoration_date)
         return fn
 
     return decorator

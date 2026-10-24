@@ -18,7 +18,7 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
-from gzkit.traceability import covers  # noqa: F401
+from gzkit.traceability import covers
 
 
 def _minimal_excluded_path() -> dict[str, object]:

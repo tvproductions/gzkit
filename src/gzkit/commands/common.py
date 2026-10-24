@@ -71,7 +71,7 @@ def _prompt_text(prompt: str, default: str = "") -> str:
         answer = input(f"{prompt}{suffix}: ")
     except EOFError, KeyboardInterrupt:
         raise KeyboardInterrupt from None
-    return answer if answer else default
+    return answer or default
 
 
 def _confirm(prompt: str, default: bool = True) -> bool:
@@ -103,7 +103,7 @@ def _apply_pool_adr_status_overrides(adr_id: str, payload: dict[str, Any]) -> No
     payload["lifecycle_status"] = "Pending"
     payload["closeout_phase"] = "pre_closeout"
 
-    gates = cast(dict[str, str], payload.get("gates", {}))
+    gates = cast("dict[str, str]", payload.get("gates", {}))
     if gates:
         gates["5"] = "pending"
 
@@ -113,7 +113,7 @@ def _reject_pool_adr_for_lifecycle(adr_id: str, action: str) -> None:
     if not _is_pool_adr_id(adr_id):
         return
     msg = f"Pool ADRs cannot be {action}: {adr_id}. Promote this ADR from pool first."
-    raise GzCliError(msg)  # noqa: TRY003
+    raise GzCliError(msg)
 
 
 def get_project_root() -> Path:
@@ -126,7 +126,7 @@ def ensure_initialized() -> GzkitConfig:
     config_path = get_project_root() / ".gzkit.json"
     if not config_path.exists():
         msg = "gzkit not initialized. Run 'gz init' first."
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
     return GzkitConfig.load(config_path)
 
 
@@ -136,7 +136,7 @@ def load_manifest(project_root: Path) -> dict[str, Any]:
     manifest_file = project_root / config.paths.manifest
     if not manifest_file.is_file():
         msg = f"Missing {Path(config.paths.manifest).as_posix()}"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
     return json.loads(manifest_file.read_text(encoding="utf-8"))
 
 
@@ -278,12 +278,12 @@ def resolve_adr_file(project_root: Path, config: GzkitConfig, adr: str) -> tuple
                     path.relative_to(project_root).as_posix() for path, _resolved in non_pool
                 )
                 msg = f"Multiple ADR files found for {requested_id}: {rels}"
-                raise GzCliError(msg)  # noqa: TRY003
+                raise GzCliError(msg)
             rels = ", ".join(
                 path.relative_to(project_root).as_posix() for path, _resolved in candidates
             )
             msg = f"Multiple ADR files found for {requested_id}: {rels}"
-            raise GzCliError(msg)  # noqa: TRY003
+            raise GzCliError(msg)
         return None
 
     adr_id = normalize_adr_input(adr)
@@ -323,7 +323,7 @@ def resolve_adr_file(project_root: Path, config: GzkitConfig, adr: str) -> tuple
         return unique
 
     msg = f"ADR not found: {adr}"
-    raise GzCliError(msg)  # noqa: TRY003
+    raise GzCliError(msg)
 
 
 def resolve_adr_ledger_id(
@@ -362,10 +362,10 @@ def resolve_target_adr(
             adr = pending[0]
         elif not pending:
             msg = "No pending ADRs found. Use --adr to specify one."
-            raise GzCliError(msg)  # noqa: TRY003
+            raise GzCliError(msg)
         else:
             msg = "Multiple pending ADRs found. Use --adr to specify one."
-            raise GzCliError(msg)  # noqa: TRY003
+            raise GzCliError(msg)
 
     adr_id = normalize_adr_input(adr)
     canonical_adr_id = ledger.canonicalize_id(adr_id)
@@ -441,14 +441,14 @@ def resolve_obpi(
                 f"Ambiguous OBPI id {canonical_obpi}: {len(candidates)} candidates "
                 f"have a brief on disk ({named}). Re-run with the full slug."
             )
-            raise ObpiAmbiguityError(msg)  # noqa: TRY003
+            raise ObpiAmbiguityError(msg)
         if candidates:
             canonical_obpi = candidates[0]
             info = graph.get(canonical_obpi)
 
     if info and info.get("type") != "obpi":
         msg = f"OBPI not found in ledger: {canonical_obpi}"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
 
     artifacts = scan_existing_artifacts(project_root, config.paths.design_root)
     matches: list[Path] = []
@@ -470,14 +470,14 @@ def resolve_obpi(
     if len(matches) > 1:
         rels = ", ".join(path.relative_to(project_root).as_posix() for path in matches)
         msg = f"Multiple OBPI files found for {canonical_obpi}: {rels}"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
 
     if info and info.get("type") == "obpi":
         return canonical_obpi, matches[0] if matches else None
     if matches:
         return canonical_obpi, matches[0]
     msg = f"OBPI not found in ledger or briefs: {canonical_obpi}"
-    raise GzCliError(msg)  # noqa: TRY003
+    raise GzCliError(msg)
 
 
 def resolve_obpi_file(
@@ -490,7 +490,7 @@ def resolve_obpi_file(
     canonical_obpi, obpi_file = resolve_obpi(project_root, config, ledger, obpi)
     if obpi_file is None:
         msg = f"OBPI file not found for {canonical_obpi}"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
     return obpi_file, canonical_obpi
 
 

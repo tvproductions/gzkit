@@ -259,7 +259,7 @@ def _build_import_map(source: str) -> Mapping[str, str]:
     for node in ast.walk(tree):
         if isinstance(node, ast.ImportFrom) and node.module:
             for alias in node.names:
-                func_name = alias.asname if alias.asname else alias.name
+                func_name = alias.asname or alias.name
                 import_map[func_name] = node.module
         elif isinstance(node, ast.AnnAssign | ast.Assign):
             targets = [node.target] if isinstance(node, ast.AnnAssign) else node.targets

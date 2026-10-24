@@ -110,7 +110,7 @@ from gzkit.models.frontmatter import (
 )
 from gzkit.pipeline_stage_fence import CANONICAL_STAGES
 from gzkit.schemas import get_schema_path, load_schema
-from gzkit.traceability import covers  # noqa: F401
+from gzkit.traceability import covers
 
 # ---------------------------------------------------------------------------
 # Helper: extract Pydantic model's required field names (no defaults)

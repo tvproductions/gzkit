@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import sys
+from itertools import starmap
 from pathlib import Path
 
 from gzkit.commands.common import GzCliError, console, get_project_root
@@ -76,12 +77,10 @@ def _filter_report(report: CoverageReport, target: str) -> CoverageReport:
         obpi_groups.setdefault(obpi_key, []).append(entry)
         adr_groups.setdefault(adr_key, []).append(entry)
 
-    by_obpi = [
-        _rollup(k, g) for k, g in sorted(obpi_groups.items(), key=lambda kv: _obpi_sort_key(kv[0]))
-    ]
-    by_adr = [
-        _rollup(k, g) for k, g in sorted(adr_groups.items(), key=lambda kv: adr_sort_key(kv[0]))
-    ]
+    obpi_items = sorted(obpi_groups.items(), key=lambda kv: _obpi_sort_key(kv[0]))
+    adr_items = sorted(adr_groups.items(), key=lambda kv: adr_sort_key(kv[0]))
+    by_obpi = list(starmap(_rollup, obpi_items))
+    by_adr = list(starmap(_rollup, adr_items))
     summary = _rollup(target, filtered)
 
     return CoverageReport(by_adr=by_adr, by_obpi=by_obpi, entries=filtered, summary=summary)

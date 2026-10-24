@@ -3,8 +3,7 @@
 import json
 import re
 from datetime import date
-from pathlib import Path
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from rich.markup import escape
 
@@ -42,6 +41,9 @@ from gzkit.ledger import (
 from gzkit.ledger_events import obpi_unparked_event
 from gzkit.models.foundation_grandfather import foundation_kind_is_closed
 from gzkit.obpi_lifecycle import parked_at
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 # REQ-0.0.17-03-02 / -03 — kind/semver binding regex.
 # Duplicated from gzkit.commands.plan (denied path); follow-up GHI to extract
@@ -151,7 +153,7 @@ def _build_adr_promotion_plan(
             "valid schema value only for the existing grandfathered kind: "
             "foundation ADRs already on disk. Promote with kind='feature'."
         )
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
     _parse_semver_triplet(semver)
     target_slug = _resolve_promotion_slug(pool_adr_id, slug)
     target_adr_id = compose_adr_full_id(semver, target_slug)
@@ -236,8 +238,8 @@ def _adr_promotion_result(
     project_root: Path, promotion_plan: dict[str, Any], dry_run: bool
 ) -> dict[str, Any]:
     """Build command result payload for text or JSON output."""
-    pool_file = cast(Path, promotion_plan["pool_file"])
-    target_file = cast(Path, promotion_plan["target_file"])
+    pool_file = cast("Path", promotion_plan["pool_file"])
+    target_file = cast("Path", promotion_plan["target_file"])
     return {
         "pool_adr": promotion_plan["pool_adr_id"],
         "target_adr": promotion_plan["target_adr_id"],
@@ -254,11 +256,11 @@ def _adr_promotion_result(
 
 def _print_adr_promotion_dry_run(project_root: Path, promotion_plan: dict[str, Any]) -> None:
     """Render dry-run summary for ADR promotion."""
-    pool_file = cast(Path, promotion_plan["pool_file"])
-    target_file = cast(Path, promotion_plan["target_file"])
-    pool_adr_id = cast(str, promotion_plan["pool_adr_id"])
-    target_adr_id = cast(str, promotion_plan["target_adr_id"])
-    obpi_plans = cast(list[dict[str, Any]], promotion_plan["obpi_plans"])
+    pool_file = cast("Path", promotion_plan["pool_file"])
+    target_file = cast("Path", promotion_plan["target_file"])
+    pool_adr_id = cast("str", promotion_plan["pool_adr_id"])
+    target_adr_id = cast("str", promotion_plan["target_adr_id"])
+    obpi_plans = cast("list[dict[str, Any]]", promotion_plan["obpi_plans"])
 
     console.print("[yellow]Dry run:[/yellow] no files or ledger events will be written.")
     console.print(f"  Pool ADR: {pool_adr_id}")
@@ -266,7 +268,9 @@ def _print_adr_promotion_dry_run(project_root: Path, promotion_plan: dict[str, A
     console.print(f"  Target file: {target_file.relative_to(project_root).as_posix()}")
     console.print(f"  Would create OBPIs: {len(obpi_plans)}")
     for plan in obpi_plans:
-        console.print(f"    - {cast(Path, plan['obpi_file']).relative_to(project_root).as_posix()}")
+        console.print(
+            f"    - {cast('Path', plan['obpi_file']).relative_to(project_root).as_posix()}"
+        )
     console.print(f"  Would update pool file: {pool_file.relative_to(project_root).as_posix()}")
     console.print(
         "  Would append artifact_renamed: "
@@ -278,34 +282,34 @@ def _print_adr_promotion_dry_run(project_root: Path, promotion_plan: dict[str, A
 
 def _apply_adr_promotion(ledger: Ledger, promotion_plan: dict[str, Any]) -> None:
     """Write promoted ADR files and append ledger rename event."""
-    target_dir = cast(Path, promotion_plan["target_dir"])
-    target_file = cast(Path, promotion_plan["target_file"])
-    pool_file = cast(Path, promotion_plan["pool_file"])
+    target_dir = cast("Path", promotion_plan["target_dir"])
+    target_file = cast("Path", promotion_plan["target_file"])
+    pool_file = cast("Path", promotion_plan["pool_file"])
     target_dir.mkdir(parents=True, exist_ok=True)
     (target_dir / "obpis").mkdir(parents=True, exist_ok=True)
-    target_file.write_text(cast(str, promotion_plan["promoted_content"]), encoding="utf-8")
-    for plan in cast(list[dict[str, Any]], promotion_plan["obpi_plans"]):
-        cast(Path, plan["obpi_file"]).write_text(cast(str, plan["content"]), encoding="utf-8")
-    pool_file.write_text(cast(str, promotion_plan["updated_pool_content"]), encoding="utf-8")
+    target_file.write_text(cast("str", promotion_plan["promoted_content"]), encoding="utf-8")
+    for plan in cast("list[dict[str, Any]]", promotion_plan["obpi_plans"]):
+        cast("Path", plan["obpi_file"]).write_text(cast("str", plan["content"]), encoding="utf-8")
+    pool_file.write_text(cast("str", promotion_plan["updated_pool_content"]), encoding="utf-8")
     rename_event = artifact_renamed_event(
-        old_id=cast(str, promotion_plan["pool_adr_id"]),
-        new_id=cast(str, promotion_plan["target_adr_id"]),
+        old_id=cast("str", promotion_plan["pool_adr_id"]),
+        new_id=cast("str", promotion_plan["target_adr_id"]),
         reason="pool_promotion",
     )
     # REQ-0.0.17-03-07: kind + semver in extras (additive, backward-compatible).
-    rename_event.extra["kind"] = cast(str, promotion_plan["target_kind"])
-    rename_event.extra["semver"] = cast(str, promotion_plan["target_semver"])
+    rename_event.extra["kind"] = cast("str", promotion_plan["target_kind"])
+    rename_event.extra["semver"] = cast("str", promotion_plan["target_semver"])
     ledger.append(rename_event)
-    for plan in cast(list[dict[str, Any]], promotion_plan["obpi_plans"]):
+    for plan in cast("list[dict[str, Any]]", promotion_plan["obpi_plans"]):
         ledger.append(
             obpi_created_event(
-                cast(str, plan["obpi_id"]),
-                cast(str, promotion_plan["target_adr_id"]),
+                cast("str", plan["obpi_id"]),
+                cast("str", promotion_plan["target_adr_id"]),
             )
         )
     # Re-promotion releases whatever the inverse demotion parked (GHI #584):
     # park is reversible by construction, which is why it is not withdraw.
-    pool_adr_id = cast(str, promotion_plan["pool_adr_id"])
+    pool_adr_id = cast("str", promotion_plan["pool_adr_id"])
     for obpi_id, origin_parent in parked_at(
         [event.model_dump() for event in ledger.read_all()], pool_adr_id
     ):
@@ -321,16 +325,18 @@ def _apply_adr_promotion(ledger: Ledger, promotion_plan: dict[str, Any]) -> None
 
 def _print_adr_promotion_applied(project_root: Path, promotion_plan: dict[str, Any]) -> None:
     """Render post-apply summary for ADR promotion."""
-    pool_adr_id = cast(str, promotion_plan["pool_adr_id"])
-    target_adr_id = cast(str, promotion_plan["target_adr_id"])
-    target_file = cast(Path, promotion_plan["target_file"])
-    pool_file = cast(Path, promotion_plan["pool_file"])
-    obpi_plans = cast(list[dict[str, Any]], promotion_plan["obpi_plans"])
+    pool_adr_id = cast("str", promotion_plan["pool_adr_id"])
+    target_adr_id = cast("str", promotion_plan["target_adr_id"])
+    target_file = cast("Path", promotion_plan["target_file"])
+    pool_file = cast("Path", promotion_plan["pool_file"])
+    obpi_plans = cast("list[dict[str, Any]]", promotion_plan["obpi_plans"])
     console.print(f"[green]Promoted pool ADR:[/green] {pool_adr_id} -> {target_adr_id}")
     console.print(f"  Created: {target_file.relative_to(project_root).as_posix()}")
     console.print(f"  Created OBPIs: {len(obpi_plans)}")
     for plan in obpi_plans:
-        console.print(f"    - {cast(Path, plan['obpi_file']).relative_to(project_root).as_posix()}")
+        console.print(
+            f"    - {cast('Path', plan['obpi_file']).relative_to(project_root).as_posix()}"
+        )
     console.print(f"  Updated: {pool_file.relative_to(project_root).as_posix()}")
 
 
@@ -351,11 +357,11 @@ def _check_scaffold_obpis(
     from gzkit.hooks.obpi import ObpiValidator  # noqa: PLC0415
 
     validator = ObpiValidator(project_root)
-    obpi_plans = cast(list[dict[str, Any]], promotion_plan["obpi_plans"])
+    obpi_plans = cast("list[dict[str, Any]]", promotion_plan["obpi_plans"])
     scaffold_count = 0
     structure_errors: list[str] = []
     for plan in obpi_plans:
-        obpi_path = cast(Path, plan["obpi_file"])
+        obpi_path = cast("Path", plan["obpi_file"])
         warnings = validator.validate_file(obpi_path)
         if warnings:
             scaffold_count += 1
@@ -423,8 +429,8 @@ def adr_promote_cmd(
     _apply_adr_promotion(ledger, promotion_plan)
     _print_adr_promotion_applied(project_root, promotion_plan)
 
-    obpi_plans = cast(list[dict[str, Any]], promotion_plan["obpi_plans"])
-    target_adr_id = cast(str, promotion_plan["target_adr_id"])
+    obpi_plans = cast("list[dict[str, Any]]", promotion_plan["obpi_plans"])
+    target_adr_id = cast("str", promotion_plan["target_adr_id"])
     scaffold_count, structure_errors = _check_scaffold_obpis(project_root, promotion_plan)
     if structure_errors and not force:
         console.print(

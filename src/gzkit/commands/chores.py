@@ -188,7 +188,7 @@ def _resolve_chore_dir(slug: str) -> ResolvedPath:
         return ResolvedPath(path=package_candidate, source="package")
 
     cfg = load_config()
-    raise GzCliError(  # noqa: TRY003
+    raise GzCliError(
         _format_resolution_miss(slug, project_candidate, package_candidate, cfg.paths.chores)
     )
 
@@ -213,7 +213,7 @@ def _resolve_registry() -> ResolvedPath:
         return ResolvedPath(path=package_candidate, source="package")
 
     cfg = load_config()
-    raise GzCliError(  # noqa: TRY003
+    raise GzCliError(
         _format_resolution_miss(
             "registry.json", project_candidate, package_candidate, cfg.paths.chores
         )
@@ -276,14 +276,14 @@ def _resolve_chore(slug: str) -> tuple[Path, ChoreDefinition]:
     chore = registry.get(slug)
     if chore is None:
         msg = f"BLOCKERS:\n- Unknown chore slug: {slug}"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
     harness = _detect_active_harness()
     if not _chore_matches_harness(chore, harness):
         msg = (
             f"BLOCKERS:\n- Chore '{slug}' is vendor-scoped to '{chore.vendor}' "
             f"but active harness is '{harness or 'none'}'"
         )
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
     return registry_path, chore
 
 
@@ -378,7 +378,7 @@ def chores_show(slug: str) -> None:
     chore_md = project_root / chore.path / "CHORE.md"
     if not chore_md.is_file():
         msg = f"BLOCKERS:\n- Missing CHORE.md: {chore.path}/CHORE.md"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
     console.print(chore_md.read_text(encoding="utf-8"))
 
 
@@ -466,7 +466,7 @@ def chores_run(slug: str) -> None:
                 f"- log: "
                 f"{log_path.relative_to(project_root).as_posix()}"
             )
-            raise GzCliError(msg)  # noqa: TRY003
+            raise GzCliError(msg)
 
     log_path = _write_chore_log(project_root, chore, "PASS", results)
     console.print(
@@ -628,11 +628,11 @@ def chores_audit(*, all_chores: bool, slug: str | None) -> None:
     else:
         if not slug:
             msg = "BLOCKERS:\n- Provide --all or --slug <slug>."
-            raise GzCliError(msg)  # noqa: TRY003
+            raise GzCliError(msg)
         chore = registry.get(slug)
         if chore is None:
             msg = f"BLOCKERS:\n- Unknown chore slug: {slug}"
-            raise GzCliError(msg)  # noqa: TRY003
+            raise GzCliError(msg)
         chores = [chore]
 
     table = Table(title="Chores Audit")

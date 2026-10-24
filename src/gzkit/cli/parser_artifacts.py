@@ -1121,7 +1121,7 @@ def _register_task_parsers(commands: argparse._SubParsersAction) -> None:
         "--detail",
         action="store_true",
         default=False,
-        help="Render ASCII tree with file:line spans",  # noqa: E501
+        help="Render ASCII tree with file:line spans",
     )
     add_json_flag(p_task_fanout)
     p_task_fanout.set_defaults(

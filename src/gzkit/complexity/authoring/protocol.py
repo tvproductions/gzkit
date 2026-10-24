@@ -21,17 +21,17 @@ from typing import BinaryIO
 from gzkit.complexity.authoring import engine
 
 __all__ = [
-    "PARSE_ERROR",
-    "METHOD_NOT_FOUND",
     "INVALID_PARAMS",
-    "VERSION_MISMATCH",
+    "METHOD_NOT_FOUND",
+    "PARSE_ERROR",
     "PROTOCOL_VERSION",
     "SUPPORTED_METHODS",
-    "read_message",
-    "write_message",
-    "make_response",
+    "VERSION_MISMATCH",
     "make_error",
+    "make_response",
+    "read_message",
     "run_server",
+    "write_message",
 ]
 
 PROTOCOL_VERSION = "1.0"
@@ -115,7 +115,7 @@ def handle_initialize(params: dict) -> dict:
     """
     client_version = params.get("clientVersion", PROTOCOL_VERSION)
     client_major = client_version.split(".")[0]
-    server_major = PROTOCOL_VERSION.split(".")[0]
+    server_major = PROTOCOL_VERSION.split(".", maxsplit=1)[0]
     if client_major != server_major:
         raise ProtocolError(
             VERSION_MISMATCH,

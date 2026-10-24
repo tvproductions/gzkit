@@ -430,7 +430,7 @@ class TestRecordingAReview(unittest.TestCase):
                 outcome = "recorded"
             except gz_errors.PolicyBreachError:
                 outcome = "policy breach"
-            except Exception as exc:  # noqa: BLE001 — a crash is the outcome under test
+            except Exception as exc:
                 outcome = f"crash: {type(exc).__name__}"
             self.assertEqual(outcome, "policy breach")
             self.assertEqual(_ledger_rows(root), [])

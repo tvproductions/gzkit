@@ -19,8 +19,7 @@ import json
 import re
 import shutil
 from datetime import UTC, datetime
-from pathlib import Path
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from gzkit.commands.common import (
     GzCliError,
@@ -35,6 +34,9 @@ from gzkit.ledger import Ledger, parse_frontmatter_value
 from gzkit.ledger_events import artifact_renamed_event, obpi_parked_event
 from gzkit.obpi_lifecycle import parkable_children
 from gzkit.sync import parse_artifact_metadata
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 _DEMOTABLE_KINDS = {"feature", "foundation"}
 #: Frontmatter keys a pool ADR must not carry. ``promoted_from`` joined the set
@@ -399,8 +401,8 @@ def _demote_result_payload(
     project_root: Path, plan: dict[str, Any], dry_run: bool
 ) -> dict[str, Any]:
     """Build a JSON-safe result payload for ``--json`` output."""
-    source_file = cast(Path, plan["source_file"])
-    target_file = cast(Path, plan["target_file"])
+    source_file = cast("Path", plan["source_file"])
+    target_file = cast("Path", plan["target_file"])
     return {
         "source_id": plan["source_id"],
         "new_id": plan["new_id"],
@@ -415,10 +417,10 @@ def _demote_result_payload(
 
 def _print_demote_dry_run(project_root: Path, plan: dict[str, Any]) -> None:
     """Print the dry-run summary for a demote plan."""
-    source_file = cast(Path, plan["source_file"])
-    target_file = cast(Path, plan["target_file"])
-    source_dir = cast(Path, plan["source_dir"])
-    collision_keep_pool = cast(bool, plan.get("collision_keep_pool", False))
+    source_file = cast("Path", plan["source_file"])
+    target_file = cast("Path", plan["target_file"])
+    source_dir = cast("Path", plan["source_dir"])
+    collision_keep_pool = cast("bool", plan.get("collision_keep_pool", False))
     console.print("[yellow]Dry run:[/yellow] no files or ledger events will be written.")
     console.print(f"  Source ADR: {plan['source_id']}")
     console.print(f"  Target pool ID: {plan['new_id']}")
@@ -438,17 +440,17 @@ def _print_demote_dry_run(project_root: Path, plan: dict[str, Any]) -> None:
         console.print(f"  Would remove dir: {source_dir.relative_to(project_root).as_posix()}")
     else:
         console.print(f"  Would remove file: {source_file.relative_to(project_root).as_posix()}")
-    extras = cast(dict[str, Any], plan["extras"])
+    extras = cast("dict[str, Any]", plan["extras"])
     console.print(
         "  Would append artifact_renamed: "
         f"{plan['source_id']} -> {plan['new_id']} "
         f"(reason: pool_demotion, ghi: {extras['ghi']})"
     )
-    parked_obpis = cast(list[str], plan.get("parked_obpis", []))
+    parked_obpis = cast("list[str]", plan.get("parked_obpis", []))
     if parked_obpis:
         noun = "OBPI" if len(parked_obpis) == 1 else "OBPIs"
         console.print(f"  Would park {len(parked_obpis)} child {noun}: {', '.join(parked_obpis)}")
-    children = cast(list[str], plan["children"])
+    children = cast("list[str]", plan["children"])
     if children:
         console.print(f"  [red]Dependent children:[/red] {', '.join(children)}")
 
@@ -462,36 +464,36 @@ def _apply_demote(ledger: Ledger, plan: dict[str, Any], task_id: str | None = No
     ``gz validate --task-envelope-coherence`` (ADR-0.34.0 OBPI-04). Optional: the
     CLI path demotes outside any TASK envelope.
     """
-    target_file = cast(Path, plan["target_file"])
-    source_file = cast(Path, plan["source_file"])
-    source_dir = cast(Path, plan["source_dir"])
-    collision_keep_pool = cast(bool, plan.get("collision_keep_pool", False))
+    target_file = cast("Path", plan["target_file"])
+    source_file = cast("Path", plan["source_file"])
+    source_dir = cast("Path", plan["source_dir"])
+    collision_keep_pool = cast("bool", plan.get("collision_keep_pool", False))
     if collision_keep_pool:
-        reversed_pool_content = cast(str | None, plan.get("reversed_pool_content"))
+        reversed_pool_content = cast("str | None", plan.get("reversed_pool_content"))
         if reversed_pool_content is not None:
             target_file.write_text(reversed_pool_content, encoding="utf-8")
     else:
         target_file.parent.mkdir(parents=True, exist_ok=True)
-        target_file.write_text(cast(str, plan["pool_content"]), encoding="utf-8")
+        target_file.write_text(cast("str", plan["pool_content"]), encoding="utf-8")
     if source_dir.is_dir() and source_dir != source_file:
         shutil.rmtree(source_dir)
     elif source_file.exists():
         source_file.unlink()
     event = artifact_renamed_event(
-        old_id=cast(str, plan["source_id"]),
-        new_id=cast(str, plan["new_id"]),
+        old_id=cast("str", plan["source_id"]),
+        new_id=cast("str", plan["new_id"]),
         reason="pool_demotion",
         task_id=task_id,
     )
-    for key, value in cast(dict[str, Any], plan["extras"]).items():
+    for key, value in cast("dict[str, Any]", plan["extras"]).items():
         event.extra[key] = value
     ledger.append(event)
-    new_id = cast(str, plan["new_id"])
-    for obpi_id in cast(list[str], plan.get("parked_obpis", [])):
+    new_id = cast("str", plan["new_id"])
+    for obpi_id in cast("list[str]", plan.get("parked_obpis", [])):
         ledger.append(
             obpi_parked_event(
                 obpi_id,
-                parent=cast(str, plan["source_id"]),
+                parent=cast("str", plan["source_id"]),
                 parked_to=new_id,
                 reason="pool_demotion",
             )
@@ -500,9 +502,9 @@ def _apply_demote(ledger: Ledger, plan: dict[str, Any], task_id: str | None = No
 
 def _print_demote_applied(project_root: Path, plan: dict[str, Any]) -> None:
     """Print the post-apply summary."""
-    target_file = cast(Path, plan["target_file"])
-    source_dir = cast(Path, plan["source_dir"])
-    collision_keep_pool = cast(bool, plan.get("collision_keep_pool", False))
+    target_file = cast("Path", plan["target_file"])
+    source_dir = cast("Path", plan["source_dir"])
+    collision_keep_pool = cast("bool", plan.get("collision_keep_pool", False))
     console.print(f"[green]Demoted ADR:[/green] {plan['source_id']} -> {plan['new_id']}")
     if collision_keep_pool:
         console.print(f"  Kept existing pool: {target_file.relative_to(project_root).as_posix()}")
@@ -512,9 +514,9 @@ def _print_demote_applied(project_root: Path, plan: dict[str, Any]) -> None:
         console.print(f"  Created: {target_file.relative_to(project_root).as_posix()}")
     if source_dir.is_dir():
         console.print(f"  Removed dir: {source_dir.relative_to(project_root).as_posix()}")
-    extras = cast(dict[str, Any], plan["extras"])
+    extras = cast("dict[str, Any]", plan["extras"])
     console.print(f"  Ledger event: artifact_renamed (reason=pool_demotion, ghi={extras['ghi']})")
-    parked_obpis = cast(list[str], plan.get("parked_obpis", []))
+    parked_obpis = cast("list[str]", plan.get("parked_obpis", []))
     if parked_obpis:
         noun = "OBPI" if len(parked_obpis) == 1 else "OBPIs"
         console.print(f"  Parked {len(parked_obpis)} child {noun} (reversible on re-promotion)")
@@ -544,7 +546,7 @@ def adr_demote_cmd(
         on_collision=on_collision,
         ledger=ledger,
     )
-    children = cast(list[str], plan["children"])
+    children = cast("list[str]", plan["children"])
     if children and not force:
         rel = ", ".join(children)
         console.print(
@@ -552,7 +554,7 @@ def adr_demote_cmd(
         )
         console.print("  Pass --force to override (orphans the children).")
         raise SystemExit(3)
-    covered = _live_covers_into_deleted_briefs(project_root, cast(str, plan["source_id"]))
+    covered = _live_covers_into_deleted_briefs(project_root, cast("str", plan["source_id"]))
     if covered and not force:
         shown = ", ".join(covered[:5]) + ("…" if len(covered) > 5 else "")
         console.print(

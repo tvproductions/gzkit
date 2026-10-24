@@ -37,7 +37,7 @@ def _attest_verification_steps(
     """Render the closeout verification steps needed by the closeout form."""
     raw_verification = manifest.get("verification", {})
     verification = cast(
-        dict[str, str],
+        "dict[str, str]",
         raw_verification if isinstance(raw_verification, dict) else {},
     )
 
@@ -73,7 +73,7 @@ def _check_obpi_completion(
             f"{blocker_list}\n"
             "Complete all OBPIs first, or use --force with --reason."
         )
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
     if incomplete and force:
         console.print(
             f"[yellow]Warning:[/yellow] {len(incomplete)} OBPI(s) still incomplete, "
@@ -100,32 +100,32 @@ def _validate_attest_inputs(
     """Validate attestation inputs and gate prerequisites. Raises GzCliError on failure."""
     if attest_status in ("partial", "dropped") and not reason:
         msg = f"--reason required for {attest_status} status"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
 
     if force and not snapshot["ready"] and not reason:
         msg = "--reason required when --force bypasses failing gate prerequisites"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
 
     if force and reason:
         stripped = reason.strip()
         if len(stripped) < 20:
             msg = f"--force reason must be at least 20 characters (got {len(stripped)})"
-            raise GzCliError(msg)  # noqa: TRY003
+            raise GzCliError(msg)
         if " " not in stripped:
             msg = (
                 "--force reason must contain multiple words (single-word reasons are not accepted)"
             )
-            raise GzCliError(msg)  # noqa: TRY003
+            raise GzCliError(msg)
 
     if not force and not snapshot["ready"]:
-        blocker_list = cast(list[str], snapshot["blockers"])
+        blocker_list = cast("list[str]", snapshot["blockers"])
         blockers = "\\n".join(f"- {blocker}" for blocker in blocker_list)
         msg = (
             "Attestation blocked by prerequisite gates:\\n"
             f"{blockers}\\n"
             "Run required gate commands first, or use --force with --reason."
         )
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
 
 
 def attest(
@@ -141,7 +141,7 @@ def attest(
 
     if attest_status in ("partial", "dropped") and not reason:
         msg = f"--reason required for {attest_status} status"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
 
     ledger = Ledger(project_root / config.paths.ledger)
     adr_input = normalize_adr_input(adr)
@@ -152,7 +152,7 @@ def attest(
     adr_id = resolve_adr_ledger_id(adr_file, adr_id, ledger)
     if _is_pool_adr_id(adr_id):
         msg = f"Pool ADRs cannot be attested: {adr_id}. Promote this ADR from pool first."
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
 
     # Warn when closeout pipeline is active (OBPI-0.19.0-09)
     _warn_if_closeout_active(ledger, adr_id)

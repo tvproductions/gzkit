@@ -238,7 +238,7 @@ def load_pipeline_json(path: Path) -> dict[str, Any] | None:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except OSError, UnicodeDecodeError, json.JSONDecodeError:
         return None
-    return cast(dict[str, Any], payload) if isinstance(payload, dict) else None
+    return cast("dict[str, Any]", payload) if isinstance(payload, dict) else None
 
 
 def pipeline_marker_paths(plans_dir: Path, obpi_id: str) -> tuple[Path, Path]:
@@ -867,7 +867,7 @@ def pipeline_completion_reminder_message(
     next_command = pipeline_resume_command(marker)
     blockers = [
         str(item).strip()
-        for item in cast(list[Any], marker.get("blockers") or [])
+        for item in cast("list[Any]", marker.get("blockers") or [])
         if str(item).strip()
     ]
     required_human_action = str(marker.get("required_human_action") or "").strip()

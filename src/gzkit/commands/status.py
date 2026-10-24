@@ -66,35 +66,35 @@ from gzkit.ledger import (
 # Re-export OBPI and render symbols so that ``from gzkit.commands.status import X`` keeps
 # working for every consumer that relied on the old single-module layout.
 __all__ = [
+    "ADR_SEMVER_STATUS_ID_RE",
     "_adr_closeout_readiness",
     "_adr_obpi_status_rows",
+    "_adr_status_sort_key",
     "_apply_obpi_lifecycle_overrides",
+    "_build_adr_status_entry",
+    "_build_adr_status_result",
     "_build_obpi_index",
     "_build_obpi_status_entry",
+    "_collect_adr_statuses",
     "_collect_obpi_files_for_adr",
     "_inspect_obpi_brief",
     "_obpi_row_complete",
-    "_print_status_obpi_section",
-    "_render_obpi_row_status",
-    "_render_obpi_runtime_state",
-    "_render_obpi_status_details",
-    "_render_obpi_unit_status",
-    "_summarize_obpi_rows",
     "_print_status_gate_section",
+    "_print_status_obpi_section",
     "_print_status_task_section",
     "_qc_readiness",
     "_render_adr_report",
     "_render_adr_table",
     "_render_gate_status",
+    "_render_obpi_row_status",
+    "_render_obpi_runtime_state",
+    "_render_obpi_status_details",
+    "_render_obpi_unit_status",
     "_render_pending_checks_cell",
     "_render_qc_readiness",
     "_render_status_row",
     "_render_status_table",
-    "ADR_SEMVER_STATUS_ID_RE",
-    "_adr_status_sort_key",
-    "_build_adr_status_entry",
-    "_build_adr_status_result",
-    "_collect_adr_statuses",
+    "_summarize_obpi_rows",
     "_task_summary_for_adr",
     "adr_report_cmd",
     "adr_status_cmd",
@@ -220,7 +220,7 @@ def _build_adr_status_entry(
     _apply_obpi_lifecycle_overrides(adr_id, entry, obpi_summary)
 
     # Task summary -- only present when tasks exist (REQ-0.22.0-05-05)
-    obpi_ids = [cast(str, row.get("id", "")) for row in obpi_rows if row.get("id")]
+    obpi_ids = [cast("str", row.get("id", "")) for row in obpi_rows if row.get("id")]
     task_summary = _task_summary_for_adr(ledger, obpi_ids)
     if task_summary is not None:
         task_summary["tracing_policy"] = "required" if lane == "heavy" else "advisory"
@@ -348,7 +348,7 @@ def _read_workflow_fronts(project_root: Path) -> dict[str, str] | None:
         section = re.search(
             r"^## Workflow fronts[ \t]*\r?\n(.*?)(?=^ {0,3}#{1,2}(?:[ \t]|\r?$)|\Z)",
             content,
-            re.M | re.S,
+            re.MULTILINE | re.DOTALL,
         )
         if section is None or not section.group(1).strip():
             raise ValueError("campaign has no nonempty Workflow fronts section")
@@ -461,7 +461,7 @@ def obpi_reconcile_cmd(obpi: str, as_json: bool) -> None:
 
         auto_fix_obpi_brief_frontmatter(obpi_file, runtime_state)
 
-    blockers = cast(list[str], result.get("issues", []))
+    blockers = cast("list[str]", result.get("issues", []))
     payload = {
         "passed": not blockers,
         "blockers": blockers,
@@ -519,7 +519,7 @@ def _build_adr_status_result(adr: str) -> dict[str, Any]:
     info = graph.get(adr_id)
     if not info or info.get("type") != "adr":
         msg = f"ADR not found in ledger: {adr_id}"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
 
     lane = resolve_adr_lane(info, config.mode)
     gate_statuses = ledger.get_effective_gate_statuses(adr_id)
@@ -592,8 +592,8 @@ def adr_status_cmd(adr: str, as_json: bool, show_gates: bool) -> None:
     _render_adr_report(result)
 
     if show_gates:
-        lane = cast(str, result["lane"])
-        observed = cast(list[int], result.get("observed_post_validation_gate_failures") or [])
+        lane = cast("str", result["lane"])
+        observed = cast("list[int]", result.get("observed_post_validation_gate_failures") or [])
         observed_set = set(observed)
 
         def _annotate(gate_num: int, rendered: str) -> str:

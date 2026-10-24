@@ -218,8 +218,10 @@ def _chain_target_keys(handoffs: list[Path], base_path: Path) -> set[str]:
         frontmatter = _frontmatter(path)
         if frontmatter is None:
             continue
-        for pointer in continues_from_refs(frontmatter.get("continues_from")):
-            keys.add(_resolve_pointer_key(pointer, path, base_path))
+        keys.update(
+            _resolve_pointer_key(pointer, path, base_path)
+            for pointer in continues_from_refs(frontmatter.get("continues_from"))
+        )
     return keys
 
 

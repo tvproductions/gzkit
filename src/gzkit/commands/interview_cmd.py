@@ -97,13 +97,13 @@ def _load_answers_from_file(from_file: str, document_type: str) -> dict[str, str
     path = Path(from_file)
     if not path.exists():
         msg = f"BLOCKERS:\n- Answers file not found: {from_file}"
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
 
     try:
         raw = json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         msg = f"BLOCKERS:\n- Invalid JSON in {from_file}: {exc.msg}"
-        raise GzCliError(msg) from exc  # noqa: TRY003
+        raise GzCliError(msg) from exc
 
     # The grammar lives in `gzkit.interview` so this loader and the pool
     # interview audit answer to one authority (GHI #719). Before the split the
@@ -112,7 +112,7 @@ def _load_answers_from_file(from_file: str, document_type: str) -> dict[str, str
     problems = answer_payload_problems(document_type, raw)
     if problems:
         msg = "BLOCKERS:\n" + "\n".join(f"- {problem}" for problem in problems)
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
 
     answers: dict[str, str] = {}
     for q in get_interview_questions(document_type):
@@ -151,7 +151,7 @@ def _resolve_adr_doc(
             "layout (GHI #279 / #344 / #494 / #505). For a pool ADR use "
             "`gz plan create <slug> --kind pool`."
         )
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
     # The canonical id embeds the semver; it is the single source of truth
     # for kind and directory routing. foundation <=> 0.0.x is the ADR-0.0.17
     # taxonomy binding enforced by `gz validate --taxonomy`.
@@ -169,7 +169,7 @@ def _resolve_adr_doc(
             "author via `gz plan create <slug> --kind feature` (release-carrying "
             "work) or `gz plan create <slug> --kind pool` (backlog)."
         )
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
     # Reached only when the kind is OPEN for this project, so foundation routing
     # is restored here rather than collapsed into the feature branch. Forcing
     # kind="feature" for a 0.0.x id would file an adopter's foundation ADR under
@@ -207,7 +207,7 @@ def _obpi_vars_from_answers(
     item_answer = answers.get("item", "").strip()
     if not item_answer.isdigit():
         msg = f"BLOCKERS:\n- OBPI checklist item must be a number, got {item_answer!r}."
-        raise GzCliError(msg)  # noqa: TRY003
+        raise GzCliError(msg)
     item = int(item_answer)
     adr_content = adr_file.read_text(encoding="utf-8")
     checklist_items = _validate_parent_adr(adr_content, parent_adr_id, item)
@@ -303,7 +303,7 @@ def interview(document_type: str, from_file: str | None = None) -> None:
         parent_input = answers.get("parent", "").strip()
         if not parent_input:
             msg = "OBPI interview requires a parent ADR ID."
-            raise GzCliError(msg)  # noqa: TRY003
+            raise GzCliError(msg)
         parent_adr = normalize_adr_input(parent_input)
         canonical_parent = ledger.canonicalize_id(parent_adr)
         adr_file, resolved_parent = resolve_adr_file(project_root, config, canonical_parent)

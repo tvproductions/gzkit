@@ -78,7 +78,7 @@ def _canonical_h3_heading(line: str, canonical_forms: dict[str, str]) -> str | N
     """Return the canonical H3 form if ``line`` is a drifted ``## Heading`` match."""
     if not line.startswith("## "):
         return None
-    folded = line[3:].split("(")[0].strip().casefold()
+    folded = line[3:].split("(", maxsplit=1)[0].strip().casefold()
     return canonical_forms.get(folded)
 
 

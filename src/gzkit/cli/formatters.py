@@ -403,11 +403,11 @@ class ProgressContext:
             return
 
         if self._is_tty and self._progress is not None:
-            desc = label if label else self._description
+            desc = label or self._description
             self._progress.update(self._task_id, advance=1, description=desc)
         else:
             # Non-TTY: periodic status lines to stderr
-            step_label = label if label else self._description
+            step_label = label or self._description
             print(  # noqa: T201
                 f"[{self._current}/{self._total}] {step_label}",
                 file=sys.stderr,

@@ -16,8 +16,8 @@ from gzkit.core.models import ADR_PRD_PREFIX_BODY, ARTIFACT_PREFIX_BODY
 from gzkit.frontmatter import read_frontmatter_bytes
 
 # Re-export rules-based functions (originally imported and re-exported here)
-from gzkit.rules import sync_claude_rules as sync_claude_rules  # noqa: F401
-from gzkit.rules import sync_nested_agents_md as sync_nested_agents_md  # noqa: F401
+from gzkit.rules import sync_claude_rules as sync_claude_rules
+from gzkit.rules import sync_nested_agents_md as sync_nested_agents_md
 from gzkit.skill_contract import (
     SKILL_DESCRIPTION_MAX_CHARS as SKILL_DESCRIPTION_MAX_CHARS,
 )

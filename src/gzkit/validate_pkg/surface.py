@@ -117,7 +117,7 @@ def validate_surfaces(
 
     if check_sync_parity:
         from gzkit.validate_pkg.sync_parity import (
-            check_sync_parity as _check_parity,  # noqa: PLC0415
+            check_sync_parity as _check_parity,
         )
 
         errors.extend(_check_parity(project_root))

@@ -93,7 +93,7 @@ def validate_frontmatter(
 
     """
     from gzkit.models.frontmatter import (
-        validate_frontmatter_model,  # noqa: PLC0415 -- avoid circular import at module level
+        validate_frontmatter_model,
     )
 
     model_result = validate_frontmatter_model(frontmatter, schema, artifact_path)

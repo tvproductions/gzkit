@@ -336,7 +336,7 @@ class TestTheGeneratedCompletionHookDerivesTheAdr(unittest.TestCase):
         namespace: dict[str, object] = {"__name__": "generated_hook"}
         exec(
             compile(hook_validation._obpi_completion_validator_script(), "hook", "exec"), namespace
-        )  # noqa: S102
+        )
         extract = namespace["extract_adr_id"]
         self.assertEqual(extract("OBPI-0.14.0-04"), "ADR-0.14.0")  # ty: ignore[call-non-callable]
 

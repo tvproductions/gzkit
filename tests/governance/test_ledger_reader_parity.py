@@ -126,7 +126,7 @@ def _ledger_verdict(row: dict[str, Any]) -> str:
 def _typed_verdict(row: dict[str, Any]) -> str:
     try:
         parse_typed_event(row)
-    except Exception:  # noqa: BLE001 — any parse failure is one verdict: reject
+    except Exception:
         return "rejects"
     return "accepts"
 

@@ -391,7 +391,7 @@ class TestTheRealTree(unittest.TestCase):
         )
 
     def test_the_package_exports_the_audit(self) -> None:
-        import gzkit.governance.trust_audits as trust_audits  # noqa: PLC0415
+        from gzkit.governance import trust_audits  # noqa: PLC0415
 
         self.assertIn("audit_astral_discipline", trust_audits.__all__)
         self.assertIs(trust_audits.audit_astral_discipline, audit_astral_discipline)

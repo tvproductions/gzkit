@@ -154,7 +154,7 @@ def collect_campaign(repo_root: Path) -> dict | None:
         fronts = re.search(
             r"^## Workflow fronts[ \t]*\r?\n(.*?)(?=^ {0,3}#{1,2}(?:[ \t]|\r?$)|\Z)",
             text,
-            re.M | re.S,
+            re.MULTILINE | re.DOTALL,
         )
         return {
             "path": str(path.relative_to(repo_root.resolve())).replace(os.sep, "/"),
@@ -325,7 +325,7 @@ def floor_bookmark_agent() -> str | None:
     """
     try:
         from gzkit.handoff_selection import FLOOR_BOOKMARK_AGENT
-    except Exception:  # noqa: BLE001  (any import failure degrades, never raises)
+    except Exception:
         return None
     return FLOOR_BOOKMARK_AGENT
 
@@ -345,7 +345,7 @@ def handoff_delta_rule() -> tuple[str, Callable[[str | None], str]] | None:
     """
     try:
         from gzkit.handoff_selection import HANDOFF_PATHSPEC_EXCLUDE, commits_since_range
-    except Exception:  # noqa: BLE001  (any import failure degrades, never raises)
+    except Exception:
         return None
     return HANDOFF_PATHSPEC_EXCLUDE, commits_since_range
 
@@ -1119,7 +1119,7 @@ def collect_unreviewed_canaries(repo_root: Path) -> list[str] | None:
         from gzkit.guard_canary import unreviewed
 
         return unreviewed(repo_root)
-    except Exception:  # noqa: BLE001 — boot hook boundary: degrade, never crash
+    except Exception:
         return None
 
 
@@ -1161,7 +1161,7 @@ def collect_mx_hangar(repo_root: Path, now: datetime) -> dict | None:
             for f in mx_hardening_findings(repo_root, now=now)
         ]
         return {"booked": booked, "findings": findings}
-    except Exception:  # noqa: BLE001 — boot hook boundary: degrade, never crash
+    except Exception:
         return None
 
 

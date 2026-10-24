@@ -16,12 +16,12 @@ from gzkit.core.models import (
 )
 
 __all__ = [
+    "SCHEMA_TO_MODEL",
     "AdrFrontmatter",
     "ConstitutionFrontmatter",
     "InstructionFrontmatter",
     "ObpiFrontmatter",
     "PrdFrontmatter",
-    "SCHEMA_TO_MODEL",
     "SkillFrontmatter",
     "validate_frontmatter_model",
 ]

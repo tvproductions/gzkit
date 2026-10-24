@@ -73,7 +73,7 @@ def _repo_files(root: Path) -> Iterator[Path]:
     rather than to scanning nothing -- a pytest-import guard that silently
     inspects zero files is exactly the false-green it exists to prevent.
     """
-    proc = subprocess.run(  # noqa: S603
+    proc = subprocess.run(
         ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
         cwd=root,
         capture_output=True,

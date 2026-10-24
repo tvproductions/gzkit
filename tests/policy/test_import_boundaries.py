@@ -113,7 +113,7 @@ def _collect_imports(tree: ast.Module) -> list[tuple[str, str]]:
 
 def _top_level_module(dotted_name: str) -> str:
     """Return the first component of a dotted module name."""
-    return dotted_name.split(".")[0]
+    return dotted_name.split(".", maxsplit=1)[0]
 
 
 def _is_os_attr(node: ast.expr, attr: str) -> bool:

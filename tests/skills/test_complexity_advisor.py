@@ -38,7 +38,7 @@ def _parse_frontmatter(text: str) -> dict[str, object]:
     end = text.find("\n---\n", 4)
     if end == -1:
         raise AssertionError("skill file frontmatter block is not closed")
-    return cast(dict[str, object], yaml.safe_load(text[4:end]))
+    return cast("dict[str, object]", yaml.safe_load(text[4:end]))
 
 
 def _section_body(text: str, heading: str) -> str:
@@ -74,7 +74,7 @@ class TestSkillFrontmatter(unittest.TestCase):
         fm = _parse_frontmatter(_read_skill_text())
         metadata = fm.get("metadata")
         self.assertIsInstance(metadata, dict)
-        meta = cast(dict[str, object], metadata)
+        meta = cast("dict[str, object]", metadata)
         # Monotonic floor, not an equality pin: review stamps mandated by
         # `.gzkit/rules/skill-surface-sync.md` #6 bump this on every sweep.
         actual = str(meta.get("skill-version", ""))

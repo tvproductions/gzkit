@@ -1026,7 +1026,7 @@ class TestResumeAfterKillMidStaging(_TempRoot):
         self._killed_while_staging(after_files=1)
         real_generate = landing_mod._generate_and_verify
 
-        def generate(root: Path, surface: str, consumer: str):  # noqa: ANN202
+        def generate(root: Path, surface: str, consumer: str):
             generated = real_generate(root, surface, consumer)
             return generated.model_copy(
                 update={"candidate_text": generated.candidate_text + "drifted\n"}

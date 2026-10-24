@@ -297,7 +297,7 @@ def _should_use_sealed_scope(obpi_info: dict[str, Any]) -> bool:
     audit false-fails, and the re-completion the repudiate contract promises is
     blocked.
     """
-    if obpi_info.get("ledger_completed", False):
+    if obpi_info.get("ledger_completed"):
         return True
     return bool(obpi_info.get("repudiated")) and bool(obpi_info.get("latest_completion_evidence"))
 
@@ -385,7 +385,7 @@ class ObpiValidator:
 
         if not use_sealed:
             readiness = assess_git_sync_readiness(self.project_root)
-            errors.extend(cast(list[str], readiness["blockers"]))
+            errors.extend(cast("list[str]", readiness["blockers"]))
 
         # 2. Check for Substantive Implementation Summary
         if not self._has_substantive_summary(content):

@@ -950,7 +950,7 @@ def _run_scope_checks(
     explicit_runners = _explicit_scope_runners(project_root)
 
     for scope, runner in default_runners.items():
-        if run_all and scope in default_scopes or default_scopes.get(scope, False):
+        if (run_all and scope in default_scopes) or default_scopes.get(scope):
             _route(scope, runner())
     for scope, runner in explicit_runners.items():
         if explicit_scopes.get(scope):
@@ -1122,8 +1122,8 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
     opt_in_scopes = [e.stem for e in VALIDATOR_REGISTRY if e.tier == "explicit"]
 
     run_all = not any(checks.get(s, False) for s in run_all_scopes + opt_in_scopes)
-    scopes = [s for s in run_all_scopes if run_all or checks.get(s, False)]
-    scopes += [s for s in opt_in_scopes if checks.get(s, False)]
+    scopes = [s for s in run_all_scopes if run_all or checks.get(s)]
+    scopes += [s for s in opt_in_scopes if checks.get(s)]
     return scopes
 
 
@@ -1381,7 +1381,7 @@ def _dispatch_early_return_scopes(
             )
             return True
         from gzkit.governance.trust_audits.distribution import (
-            regenerate_distribution_baseline,  # noqa: PLC0415
+            regenerate_distribution_baseline,
         )
 
         result = regenerate_distribution_baseline(project_root)

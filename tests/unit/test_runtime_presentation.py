@@ -193,8 +193,8 @@ class TestTidySymbols(unittest.TestCase):
                 tidy,
                 "Ledger",
                 return_value=SimpleNamespace(
-                    get_artifact_graph=lambda: {},
-                    get_pending_attestations=lambda: [],
+                    get_artifact_graph=dict,
+                    get_pending_attestations=list,
                 ),
             ),
             patch.object(tidy, "vault_status", return_value=_quiet_vault()),
@@ -214,8 +214,8 @@ class TestTidySymbols(unittest.TestCase):
                 tidy,
                 "Ledger",
                 return_value=SimpleNamespace(
-                    get_artifact_graph=lambda: {},
-                    get_pending_attestations=lambda: [],
+                    get_artifact_graph=dict,
+                    get_pending_attestations=list,
                 ),
             ),
             patch.object(tidy, "vault_status", return_value=_quiet_vault()),

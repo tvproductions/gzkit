@@ -587,7 +587,7 @@ class TestFloorDiscoversProductionClaims(unittest.TestCase):
     def test_default_run_registers_production_claims(self) -> None:
         from unittest.mock import patch
 
-        import gzkit.enforcement as enforcement
+        from gzkit import enforcement
 
         with patch.object(enforcement, "_ensure_production_claims_registered") as ensure:
             enforcement.run_meta_validator(registry=[], root=None)

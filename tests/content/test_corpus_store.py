@@ -187,7 +187,7 @@ def _racing_writer(
         try:
             gate.wait()
             append_entry(root, surface, _entry(name))
-        except BaseException as exc:  # noqa: BLE001 - carried to the main thread to assert on
+        except BaseException as exc:
             failures.append(exc)
 
     return writer
@@ -261,7 +261,7 @@ def _racing_retirer(
             gate.wait()
             append_entry(root, surface, tombstone)
             outcomes.append(None)
-        except BaseException as exc:  # noqa: BLE001 - carried to the main thread to assert on
+        except BaseException as exc:
             outcomes.append(exc)
 
     return retirer

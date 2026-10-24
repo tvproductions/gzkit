@@ -264,7 +264,7 @@ class TestFrontmatterGuard(unittest.TestCase):
         """
         from gzkit.commands.common import get_project_root  # noqa: PLC0415
         from gzkit.commands.validate_frontmatter import (
-            validate_frontmatter_coherence,  # noqa: PLC0415
+            validate_frontmatter_coherence,
         )
 
         project_root = get_project_root()
@@ -424,7 +424,7 @@ class TestRecoveryCommandsResolveToCli(unittest.TestCase):
     def test_every_recovery_hint_resolves_to_a_registered_cli_verb(self) -> None:
         """Every ``_RECOVERY_COMMANDS`` value invokes a registered subcommand."""
         from gzkit.commands.validate_frontmatter import (
-            _RECOVERY_COMMANDS,  # noqa: PLC0415
+            _RECOVERY_COMMANDS,
         )
 
         runner = CliRunner()

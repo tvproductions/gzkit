@@ -599,16 +599,16 @@ def resolve_covering_test_names(project_root: Path, req_id: str) -> list[str]:
 
 
 __all__ = [
+    "DEFAULT_TEST_RUNNER",
     "BaseProvenance",
     "FailureClass",
     "RedWitness",
     "base_tree_worktree",
     "changed_test_files",
-    "DEFAULT_TEST_RUNNER",
     "classify_failure",
     "resolve_base_commit",
-    "resolve_introducing_base",
     "resolve_covering_test_names",
+    "resolve_introducing_base",
     "run_red_witness",
     "withheld_production_files",
 ]

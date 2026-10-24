@@ -14,7 +14,7 @@ from __future__ import annotations
 import re
 from collections.abc import Callable
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal
+from typing import Literal
 
 from gzkit.content.migration.registry import apply_migrations
 from gzkit.content.models import CONTENT_MODELS
@@ -27,10 +27,6 @@ from gzkit.content.models.persona import Persona
 from gzkit.content.models.rule import Rule
 from gzkit.content.models.scenario import Scenario
 from gzkit.content.models.skill import Skill
-
-if TYPE_CHECKING:
-    pass
-
 
 _SCHEMA_VERSION_PREFIX = "Schema-version: "
 

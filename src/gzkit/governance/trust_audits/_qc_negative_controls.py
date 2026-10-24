@@ -2026,7 +2026,7 @@ def _nc_facade_ep(_v: object) -> int:
 
 def _nc_probe_fixture() -> None:
     """Inert fixture for the enforcement-floor NC probe."""
-    return None
+    return
 
 
 def _build_enforcement_floor() -> list:

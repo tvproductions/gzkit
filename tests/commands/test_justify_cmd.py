@@ -300,7 +300,7 @@ class TestHelpSurface(unittest.TestCase):
         try:
             subparsers_action = next(
                 action
-                for action in parser._actions  # noqa: SLF001
+                for action in parser._actions
                 if "justify" in (getattr(action, "choices", None) or ())
             )
         except StopIteration:  # pragma: no cover — registration missing

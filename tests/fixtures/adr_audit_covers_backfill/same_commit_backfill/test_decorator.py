@@ -10,4 +10,4 @@ a real test target.
 # @covers REQ-0.99.0-01-01
 def synthetic_test_for_fixture() -> None:
     """Marker function — never executed; pinned to line 7 by the fixture."""
-    return None
+    return

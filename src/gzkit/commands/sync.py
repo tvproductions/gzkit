@@ -167,7 +167,7 @@ def _enforce_git_sync_skip_policy() -> None:
     if not _skip_disables_complexity(tokens):
         return
     msg = "Refusing git-sync with SKIP that can bypass the complexity gates. Unset SKIP and rerun."
-    raise GzCliError(msg)  # noqa: TRY003
+    raise GzCliError(msg)
 
 
 def _run_sync_prechecks(
@@ -357,7 +357,7 @@ def _classify_staged_areas(staged_files: list[str]) -> str:
     areas: dict[str, list[str]] = {}
     for path in staged_files:
         parts = Path(path).parts
-        if len(parts) >= 2 and parts[0] == "src" or len(parts) >= 2 and parts[0] == "docs":
+        if (len(parts) >= 2 and parts[0] == "src") or (len(parts) >= 2 and parts[0] == "docs"):
             area = "/".join(parts[:3])
         elif len(parts) >= 2 and parts[0] == "tests":
             area = "tests"
@@ -789,13 +789,13 @@ def git_sync(
         auto_add=auto_add,
         allow_push=allow_push,
     )
-    dirty = cast(bool, plan["dirty"])
-    ahead = cast(int, plan["ahead"])
-    behind = cast(int, plan["behind"])
-    diverged = cast(bool, plan["diverged"])
-    actions = cast(list[str], plan["actions"])
-    blockers = cast(list[str], plan["blockers"])
-    warnings = cast(list[str], plan["warnings"])
+    dirty = cast("bool", plan["dirty"])
+    ahead = cast("int", plan["ahead"])
+    behind = cast("int", plan["behind"])
+    diverged = cast("bool", plan["diverged"])
+    actions = cast("list[str]", plan["actions"])
+    blockers = cast("list[str]", plan["blockers"])
+    warnings = cast("list[str]", plan["warnings"])
 
     executed: list[str] = []
     if apply:

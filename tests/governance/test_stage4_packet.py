@@ -619,7 +619,7 @@ class TestReplayShellCanRunWhatTheGateSanctions(unittest.TestCase):
         captured: dict = {}
         real_run = subprocess.run
 
-        def spy(*args, **kwargs):  # noqa: ANN002, ANN003, ANN202
+        def spy(*args, **kwargs):
             captured["args"] = args[0]
             captured["shell"] = kwargs.get("shell")
             return real_run(*args, **kwargs)

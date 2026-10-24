@@ -124,7 +124,7 @@ class TestParseRejectsSelfReferential(unittest.TestCase):
         from gzkit.fidelity import parse_fidelity_assertions
 
         adr_path = self._write(_ADR_SELF_REF)
-        with self.assertRaises(Exception) as ctx:  # noqa: B017 — asserting the type below
+        with self.assertRaises(Exception) as ctx:
             parse_fidelity_assertions(adr_path)
         self.assertNotIsInstance(ctx.exception, ValueError)
 

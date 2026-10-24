@@ -285,8 +285,8 @@ class TestArbHelpShowsTheCanonicalStep(unittest.TestCase):
 
     def _epilogs(self) -> list[str]:
         parser = _build_parser()
-        arb = parser._subparsers._group_actions[0].choices["arb"]  # noqa: SLF001
-        step = arb._subparsers._group_actions[0].choices["step"]  # noqa: SLF001
+        arb = parser._subparsers._group_actions[0].choices["arb"]
+        step = arb._subparsers._group_actions[0].choices["step"]
         return [arb.epilog or "", step.epilog or ""]
 
     def test_unittest_examples_carry_the_canonical_argv(self) -> None:

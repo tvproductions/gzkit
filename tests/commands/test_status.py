@@ -6,7 +6,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from gzkit.cli import main
-from gzkit.commands.status_render import TABLE_TITLE_FEATURE  # noqa: F401
+from gzkit.commands.status_render import TABLE_TITLE_FEATURE
 from gzkit.config import GzkitConfig
 from gzkit.event_evidence import EventAnchor
 from gzkit.handoff_api import ReferenceState
@@ -21,7 +21,7 @@ from gzkit.ledger import (
     obpi_receipt_emitted_event,
     obpi_withdrawn_event,
 )
-from gzkit.traceability import covers  # noqa: F401
+from gzkit.traceability import covers
 from tests.commands.common import (
     CliRunner,
     _init_git_repo,

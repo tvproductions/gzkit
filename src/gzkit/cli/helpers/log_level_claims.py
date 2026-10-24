@@ -55,9 +55,9 @@ def _pole_holds(flags: dict[str, bool], shown: int, hidden: int | None, token: s
     with redirect_stdout(stdout), redirect_stderr(stderr):
         configure_logging_from_flags(args)
         log = structlog.get_logger()
-        log.log(shown, f"{token}-shown")
+        log.log(shown, f"{token}-shown")  # noqa: G004 — structlog renders the event as given; it does not %-format
         if hidden is not None:
-            log.log(hidden, f"{token}-hidden")
+            log.log(hidden, f"{token}-hidden")  # noqa: G004 — as above
     visible = f"{token}-shown" in stderr.getvalue()
     suppressed = hidden is None or f"{token}-hidden" not in stderr.getvalue()
     return visible and suppressed and token not in stdout.getvalue()

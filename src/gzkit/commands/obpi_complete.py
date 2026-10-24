@@ -728,7 +728,7 @@ _RECONCILE_DRIFT_DIMENSIONS = (
 
 def _reconcile_drift_dimensions(event: dict[str, Any]) -> list[str]:
     """Return the names of drifted dimensions carried by a ``brief_reconciled`` event."""
-    return [name for key, name in _RECONCILE_DRIFT_DIMENSIONS if event.get(key, 0)]
+    return [name for key, name in _RECONCILE_DRIFT_DIMENSIONS if event.get(key)]
 
 
 def _latest_reconcile_receipt(
@@ -921,7 +921,7 @@ def _resolve_and_validate(
             obpi_id=obpi_id,
         )
 
-    parent_adr = cast(str | None, obpi_info.get("parent"))
+    parent_adr = cast("str | None", obpi_info.get("parent"))
     if not parent_adr:
         _fail(
             "OBPI is missing parent ADR in ledger.",
@@ -1721,7 +1721,7 @@ def _extract_h3_body(content: str, heading: str) -> str | None:
     if not match:
         return None
     body = match.group(1).strip()
-    return body if body else None
+    return body or None
 
 
 def _read_existing_summary(content: str) -> str | None:

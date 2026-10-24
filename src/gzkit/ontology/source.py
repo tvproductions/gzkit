@@ -219,9 +219,8 @@ def _module_name_for(rel_path: str) -> str:
 
     ``b.py → b`` · ``d/e.py → d.e`` · ``pkg/__init__.py → pkg``.
     """
-    stem = rel_path[:-3] if rel_path.endswith(".py") else rel_path
-    if stem.endswith("/__init__"):
-        stem = stem[: -len("/__init__")]
+    stem = rel_path.removesuffix(".py")
+    stem = stem.removesuffix("/__init__")
     return stem.replace("/", ".")
 
 

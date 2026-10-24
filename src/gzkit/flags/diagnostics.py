@@ -82,11 +82,8 @@ def get_stale_flags(
     ref = as_of or date.today()
     stale: list[FlagSpec] = []
     for spec in sorted(registry.values(), key=lambda s: s.key):
-        if (
-            spec.remove_by is not None
-            and spec.remove_by < ref
-            or spec.review_by is not None
-            and spec.review_by < ref
+        if (spec.remove_by is not None and spec.remove_by < ref) or (
+            spec.review_by is not None and spec.review_by < ref
         ):
             stale.append(spec)
     return stale
@@ -123,11 +120,8 @@ def get_flag_health(
         category_counts[cat] = category_counts.get(cat, 0) + 1
 
         is_stale = False
-        if (
-            spec.remove_by is not None
-            and spec.remove_by < ref
-            or spec.review_by is not None
-            and spec.review_by < ref
+        if (spec.remove_by is not None and spec.remove_by < ref) or (
+            spec.review_by is not None and spec.review_by < ref
         ):
             is_stale = True
 
@@ -191,11 +185,8 @@ def explain_flag(key: str, service: FlagService) -> FlagExplanation:
         days_removal = (spec.remove_by - today).days
 
     is_stale = False
-    if (
-        spec.remove_by is not None
-        and spec.remove_by < today
-        or spec.review_by is not None
-        and spec.review_by < today
+    if (spec.remove_by is not None and spec.remove_by < today) or (
+        spec.review_by is not None and spec.review_by < today
     ):
         is_stale = True
 

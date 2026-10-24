@@ -728,7 +728,7 @@ class TestSchemaModelAlignment(unittest.TestCase):
         model_fields = set()
         for field_name, field_info in PersonaFrontmatter.model_fields.items():
             alias = field_info.alias
-            model_fields.add(alias if alias else field_name)
+            model_fields.add(alias or field_name)
 
         self.assertEqual(
             schema_required,

@@ -417,6 +417,27 @@ class MechanicalRowsCitingRuffFamilies(unittest.TestCase):
             [],
         )
 
+    def test_a_code_ignored_by_its_rule_name_is_unreachable(self) -> None:
+        """RUF201 writes `ignore` entries as rule names; a name switches its code off.
+
+        Reading `ignore = ["blind-except"]` as text that prefixes no code would
+        call BLE001 reachable while Ruff runs it nowhere.
+        """
+        messages = self._run(
+            "| 1 | No bare except | **Mechanical** | ruff BLE001 enforces |",
+            pyproject='[tool.ruff.lint]\nselect = ["ALL"]\nignore = ["blind-except"]\n',
+        )
+        self.assertTrue(any("BLE001" in m for m in messages), messages)
+
+    def test_a_rule_name_ignored_leaves_other_codes_reachable(self) -> None:
+        self.assertEqual(
+            self._run(
+                "| 1 | No bare except | **Mechanical** | ruff BLE001 enforces |",
+                pyproject='[tool.ruff.lint]\nselect = ["ALL"]\nignore = ["line-too-long"]\n',
+            ),
+            [],
+        )
+
     def test_a_judgment_row_may_name_an_unselected_family(self) -> None:
         """Naming a family you are not claiming to enforce is disclosure.
 

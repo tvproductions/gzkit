@@ -397,7 +397,7 @@ def _reduce_reviews(
             continue
         _record_closures(review, proofs, state)
         for proof_id in review.accepted_proof_ids:
-            state.judgments[(review.stage, proof_id)] = "accepted"
+            state.judgments[review.stage, proof_id] = "accepted"
     return state
 
 

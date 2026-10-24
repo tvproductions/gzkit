@@ -57,7 +57,7 @@ class TestStepZeroSeesWorkOwningBriefs(unittest.TestCase):
         """
         self.assertIn("status", self.step0.lower())
         self.assertTrue(
-            re.search(r"requirement|disposition", self.step0, re.I),
+            re.search(r"requirement|disposition", self.step0, re.IGNORECASE),
             "a brief hit must surface its disposition, not merely its existence",
         )
 

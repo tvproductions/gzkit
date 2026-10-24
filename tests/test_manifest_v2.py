@@ -14,7 +14,7 @@ from gzkit.sync_surfaces import generate_manifest
 from gzkit.validate_pkg.manifest import validate_manifest
 
 
-def covers(target: str):  # noqa: D401
+def covers(target: str):
     """Identity decorator linking test to ADR/OBPI target for traceability."""
 
     def _identity(obj):

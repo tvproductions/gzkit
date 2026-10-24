@@ -121,7 +121,7 @@ def _print_status_gate_section(
     smoothed `pass` cell is annotated with the underlying observation so the
     operator sees both lifecycle authority and live evidence (GHI #411).
     """
-    observed = cast(list[int], info.get("observed_post_validation_gate_failures") or [])
+    observed = cast("list[int]", info.get("observed_post_validation_gate_failures") or [])
     observed_set = set(observed)
 
     def _annotate(gate_num: int, rendered: str) -> str:
@@ -200,20 +200,20 @@ def _render_status_row(
     full: bool = False,
 ) -> None:
     """Render one ADR row for text status output."""
-    attested = bool(info.get("attested", False))
+    attested = bool(info.get("attested"))
     lifecycle_status = info.get("lifecycle_status", "Pending")
-    lane = cast(str, info.get("lane", default_mode))
-    gates = cast(dict[str, str], info.get("gates", {}))
+    lane = cast("str", info.get("lane", default_mode))
+    gates = cast("dict[str, str]", info.get("gates", {}))
     attestation_term = info.get("attestation_term")
-    obpi_rows = cast(list[dict[str, Any]], info.get("obpis", []))
-    obpi_summary = cast(dict[str, Any], info.get("obpi_summary", {}))
+    obpi_rows = cast("list[dict[str, Any]]", info.get("obpis", []))
+    obpi_summary = cast("dict[str, Any]", info.get("obpi_summary", {}))
 
     console.print(f"[bold]{adr_id}[/bold] ({lifecycle_status})")
     _print_status_obpi_section(obpi_rows, obpi_summary, full=full)
     _print_status_task_section(info.get("task_summary"))
 
     observed_post_validation_failures = cast(
-        list[int], info.get("observed_post_validation_gate_failures") or []
+        "list[int]", info.get("observed_post_validation_gate_failures") or []
     )
     qc_readiness, qc_blockers = _qc_readiness(
         gates, lane, obpi_summary, observed_post_validation_failures
@@ -293,16 +293,16 @@ def _render_adr_table(
     table.row_styles = ["none", "dim"]
 
     for adr_id, info in rows:
-        lane = cast(str, info.get("lane", default_mode))
-        gates = cast(dict[str, str], info.get("gates", {}))
-        obpi_summary = cast(dict[str, Any], info.get("obpi_summary", {}))
-        lifecycle_status = cast(str, info.get("lifecycle_status", "Pending"))
+        lane = cast("str", info.get("lane", default_mode))
+        gates = cast("dict[str, str]", info.get("gates", {}))
+        obpi_summary = cast("dict[str, Any]", info.get("obpi_summary", {}))
+        lifecycle_status = cast("str", info.get("lifecycle_status", "Pending"))
 
-        obpi_total = cast(int, obpi_summary.get("total", 0))
-        obpi_completed = cast(int, obpi_summary.get("completed", 0))
-        obpi_unit_status = cast(str, obpi_summary.get("unit_status", "unscoped"))
+        obpi_total = cast("int", obpi_summary.get("total", 0))
+        obpi_completed = cast("int", obpi_summary.get("completed", 0))
+        obpi_unit_status = cast("str", obpi_summary.get("unit_status", "unscoped"))
         observed_post_validation_failures = cast(
-            list[int], info.get("observed_post_validation_gate_failures") or []
+            "list[int]", info.get("observed_post_validation_gate_failures") or []
         )
         qc_readiness, qc_blockers = _qc_readiness(
             gates, lane, obpi_summary, observed_post_validation_failures
@@ -335,20 +335,20 @@ def _brief_cell(row: dict[str, Any]) -> str:
     ``brief_authored`` verdict so the two are distinguishable at a glance.
     """
     if row.get("brief_authored") is False:
-        label = cast(str, row.get("brief_status") or "draft")
+        label = cast("str", row.get("brief_status") or "draft")
         return f"{label} (scaffold)"
-    return cast(str, row.get("brief_status", "draft"))
+    return cast("str", row.get("brief_status", "draft"))
 
 
 def _render_adr_report(result: dict[str, Any]) -> None:
     """Render deterministic ASCII table report for a single ADR."""
-    obpi_summary = cast(dict[str, Any], result.get("obpi_summary", {}))
-    obpi_total = cast(int, obpi_summary.get("total", 0))
-    obpi_completed = cast(int, obpi_summary.get("completed", 0))
-    gates = cast(dict[str, str], result.get("gates", {}))
-    lane = cast(str, result.get("lane", "lite"))
+    obpi_summary = cast("dict[str, Any]", result.get("obpi_summary", {}))
+    obpi_total = cast("int", obpi_summary.get("total", 0))
+    obpi_completed = cast("int", obpi_summary.get("completed", 0))
+    gates = cast("dict[str, str]", result.get("gates", {}))
+    lane = cast("str", result.get("lane", "lite"))
     observed_post_validation_failures = cast(
-        list[int], result.get("observed_post_validation_gate_failures") or []
+        "list[int]", result.get("observed_post_validation_gate_failures") or []
     )
     qc_readiness, _qc_blockers = _qc_readiness(
         gates, lane, obpi_summary, observed_post_validation_failures
@@ -357,7 +357,7 @@ def _render_adr_report(result: dict[str, Any]) -> None:
     qc_label = "READY" if qc_readiness == "ready" else "PENDING"
 
     # --- ADR Overview ---
-    adr_full = cast(str, result["adr"])
+    adr_full = cast("str", result["adr"])
     full_semver = adr_semver(adr_full)
     adr_short = compose_adr_id(full_semver) if full_semver else adr_full
 
@@ -372,8 +372,8 @@ def _render_adr_report(result: dict[str, Any]) -> None:
     overview.add_row(
         adr_short,
         lane,
-        cast(str, result.get("lifecycle_status", "Pending")),
-        cast(str, result.get("closeout_phase", "pre_closeout")),
+        cast("str", result.get("lifecycle_status", "Pending")),
+        cast("str", result.get("closeout_phase", "pre_closeout")),
         f"{obpi_completed}/{obpi_total}",
         closeout_label,
         qc_label,
@@ -381,7 +381,7 @@ def _render_adr_report(result: dict[str, Any]) -> None:
     console.print(overview)
 
     # --- OBPIs ---
-    obpi_rows = cast(list[dict[str, Any]], result.get("obpis", []))
+    obpi_rows = cast("list[dict[str, Any]]", result.get("obpis", []))
     obpi_table = Table(title="OBPIs", box=box.ROUNDED, padding=(0, 1))
     obpi_table.add_column("#", no_wrap=True)
     obpi_table.add_column("OBPI ID", overflow="fold")
@@ -391,8 +391,8 @@ def _render_adr_report(result: dict[str, Any]) -> None:
     for idx, row in enumerate(obpi_rows, 1):
         obpi_table.add_row(
             f"{idx:02d}",
-            cast(str, row.get("id", "")),
-            cast(str, row.get("runtime_state", "pending")),
+            cast("str", row.get("id", "")),
+            cast("str", row.get("runtime_state", "pending")),
             _brief_cell(row),
             "yes" if row.get("completed") else "no",
         )
@@ -402,7 +402,7 @@ def _render_adr_report(result: dict[str, Any]) -> None:
     # Withdrawn OBPIs are intentionally excluded from the active table above, but
     # silent omission makes the resulting id gaps read as dropped data. Disclose
     # their existence (ledger history preserved) and point to the disposition.
-    withdrawn_obpis = cast(list[str], result.get("withdrawn_obpis", []))
+    withdrawn_obpis = cast("list[str]", result.get("withdrawn_obpis", []))
     if withdrawn_obpis:
         console.print(
             f"Withdrawn (hidden): {len(withdrawn_obpis)} OBPI(s) excluded above; "
@@ -413,9 +413,9 @@ def _render_adr_report(result: dict[str, Any]) -> None:
     issues: list[str] = []
     for idx, row in enumerate(obpi_rows, 1):
         prefix = f"{idx:02d}"
-        for issue in cast(list[str], row.get("issues", [])):
+        for issue in cast("list[str]", row.get("issues", [])):
             issues.append(f"{prefix} {issue}")
-        for issue in cast(list[str], row.get("reflection_issues", [])):
+        for issue in cast("list[str]", row.get("reflection_issues", [])):
             issues.append(f"{prefix} {issue}")
     if issues:
         console.print("Issues")
@@ -423,7 +423,7 @@ def _render_adr_report(result: dict[str, Any]) -> None:
             console.print(line, markup=False)
 
     # --- Closeout Blockers (specific reasons beyond the per-OBPI Issues list) ---
-    closeout_blockers = cast(list[str], result.get("closeout_blockers", []))
+    closeout_blockers = cast("list[str]", result.get("closeout_blockers", []))
     if closeout_blockers:
         console.print(f"Closeout Readiness: {closeout_label}")
         console.print("Closeout Blockers:")

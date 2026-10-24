@@ -217,7 +217,7 @@ def _repo_files(root: Path) -> Iterator[Path]:
     slow rather than to empty. Silently scanning nothing is the false-green this
     ratchet exists to prevent.
     """
-    proc = subprocess.run(  # noqa: S603
+    proc = subprocess.run(
         ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
         cwd=root,
         capture_output=True,

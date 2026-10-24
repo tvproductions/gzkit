@@ -29,9 +29,9 @@ ADR_ROOT = ROOT / "docs" / "design" / "adr"
 
 REQ_ID_PATTERN = re.compile(r"REQ-\d+\.\d+\.\d+-\d+-\d+")
 FRONTMATTER_PATTERN = re.compile(r"^---\s*\n(.*?)\n---\s*\n", re.DOTALL)
-HEADING_PATTERN = re.compile(r"^##\s+(.+?)\s*$", re.M)
-REQUIREMENTS_HEADING = re.compile(r"^##\s+REQUIREMENTS\b", re.M | re.I)
-ACCEPTANCE_HEADING = re.compile(r"^##\s+Acceptance Criteria\b", re.M)
+HEADING_PATTERN = re.compile(r"^##\s+(.+?)\s*$", re.MULTILINE)
+REQUIREMENTS_HEADING = re.compile(r"^##\s+REQUIREMENTS\b", re.MULTILINE | re.IGNORECASE)
+ACCEPTANCE_HEADING = re.compile(r"^##\s+Acceptance Criteria\b", re.MULTILINE)
 NUMBERED_ITEM_PATTERN = re.compile(r"^\s*(\d+)\.\s+(.+)$")
 
 

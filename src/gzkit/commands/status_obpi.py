@@ -238,7 +238,7 @@ def _adr_obpi_status_rows(
             }
         )
 
-    return sorted(rows, key=lambda row: cast(str, row.get("id", "")))
+    return sorted(rows, key=lambda row: cast("str", row.get("id", "")))
 
 
 def _obpi_row_complete(row: dict[str, Any]) -> bool:
@@ -259,7 +259,9 @@ def _summarize_obpi_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
     total = len(rows)
     completed = sum(1 for row in rows if _obpi_row_complete(row))
     missing_files = sum(1 for row in rows if not row.get("found_file"))
-    outstanding_ids = [cast(str, row.get("id", "")) for row in rows if not _obpi_row_complete(row)]
+    outstanding_ids = [
+        cast("str", row.get("id", "")) for row in rows if not _obpi_row_complete(row)
+    ]
 
     if total == 0:
         unit_status = "unscoped"
@@ -282,10 +284,10 @@ def _summarize_obpi_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
 
 def _obpi_closeout_blockers(row: dict[str, Any]) -> list[str]:
     """Return closeout-blocking messages for one OBPI row."""
-    obpi_id = cast(str, row.get("id", "(unknown)"))
+    obpi_id = cast("str", row.get("id", "(unknown)"))
     issues = [
         str(issue)
-        for issue in cast(list[str], row.get("issue_details", row.get("issues", [])))
+        for issue in cast("list[str]", row.get("issue_details", row.get("issues", [])))
         if str(issue).strip()
     ]
     if issues:
@@ -307,7 +309,7 @@ def _adr_closeout_readiness(obpi_rows: list[dict[str, Any]]) -> dict[str, Any]:
         if not row_blockers:
             continue
         blockers.extend(row_blockers)
-        blocking_ids.append(cast(str, row.get("id", "")))
+        blocking_ids.append(cast("str", row.get("id", "")))
 
     return {
         "ready": not blockers,
@@ -484,9 +486,9 @@ def _render_obpi_runtime_state(runtime_state: str, found_file: bool) -> str:
 
 
 def _render_obpi_row_status(row: dict[str, Any]) -> str:
-    obpi_id = cast(str, row.get("id", "(unknown)"))
+    obpi_id = cast("str", row.get("id", "(unknown)"))
     runtime_state = str(row.get("runtime_state", "pending"))
-    issues = cast(list[str], row.get("issue_details", row.get("issues", [])))
+    issues = cast("list[str]", row.get("issue_details", row.get("issues", [])))
     status_label = _render_obpi_runtime_state(runtime_state, bool(row.get("found_file")))
 
     if issues:
@@ -507,9 +509,9 @@ def _print_status_obpi_section(
     ``... and N more`` truncation, full identity-bearing IDs, and the
     columns operators need for attestation review (GHI #319).
     """
-    obpi_total = cast(int, obpi_summary.get("total", 0))
-    obpi_completed = cast(int, obpi_summary.get("completed", 0))
-    obpi_unit_status = cast(str, obpi_summary.get("unit_status", "unscoped"))
+    obpi_total = cast("int", obpi_summary.get("total", 0))
+    obpi_completed = cast("int", obpi_summary.get("completed", 0))
+    obpi_unit_status = cast("str", obpi_summary.get("unit_status", "unscoped"))
     open_rows = [row for row in obpi_rows if not _obpi_row_complete(row)]
 
     console.print(f"  OBPI Unit:       {_render_obpi_unit_status(obpi_unit_status)}")
@@ -553,12 +555,12 @@ def _render_obpi_detail_table(obpi_rows: list[dict[str, Any]]) -> None:
     table.add_column("Issue", overflow="fold")
 
     for row in obpi_rows:
-        obpi_id = cast(str, row.get("id", ""))
+        obpi_id = cast("str", row.get("id", ""))
         runtime_state = str(row.get("runtime_state", "pending"))
         proof_state = str(row.get("proof_state", "missing"))
         attestation_state = str(row.get("attestation_state", "not_required"))
         anchor_state = str(row.get("anchor_state", "not_applicable"))
-        issues = cast(list[str], row.get("issue_details", row.get("issues", [])))
+        issues = cast("list[str]", row.get("issue_details", row.get("issues", [])))
         issue_cell = "; ".join(str(issue) for issue in issues) if issues else "-"
         done_cell = "yes" if _obpi_row_complete(row) else "no"
         table.add_row(
@@ -576,7 +578,7 @@ def _render_obpi_detail_table(obpi_rows: list[dict[str, Any]]) -> None:
 
 def _render_obpi_status_details(result: dict[str, Any]) -> None:
     """Render the focused OBPI runtime status view."""
-    obpi_id = cast(str, result["obpi"])
+    obpi_id = cast("str", result["obpi"])
     parent_adr = result.get("parent_adr")
     file_path = result.get("file") or "(missing)"
     runtime_state = str(result.get("runtime_state", "pending"))
@@ -585,7 +587,7 @@ def _render_obpi_status_details(result: dict[str, Any]) -> None:
     anchor_state = str(result.get("anchor_state", "not_applicable"))
     anchor_commit = result.get("anchor_commit") or "(none)"
     current_head = result.get("current_head") or "(unknown)"
-    issues = cast(list[str], result.get("issue_details", result.get("issues", [])))
+    issues = cast("list[str]", result.get("issue_details", result.get("issues", [])))
 
     console.print(f"[bold]{obpi_id}[/bold]")
     if isinstance(parent_adr, str) and parent_adr:

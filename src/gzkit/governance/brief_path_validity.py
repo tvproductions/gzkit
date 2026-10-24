@@ -140,7 +140,7 @@ def extract_allowed_paths(brief_path: Path) -> list[str] | None:
                 path = match.group(1).strip()
                 if path:
                     paths.append(path)
-    return paths if paths else None
+    return paths or None
 
 
 # `gz specify` scaffolds every Discovery Checklist row as "Required path exists

@@ -110,7 +110,7 @@ def compute_path_overlap(scopes: list[VerificationScope]) -> dict[tuple[int, int
         for scope_b in scopes[i + 1 :]:
             shared = sorted(set_a & set(scope_b.test_paths))
             if shared:
-                overlaps[(scope_a.req_index, scope_b.req_index)] = shared
+                overlaps[scope_a.req_index, scope_b.req_index] = shared
     return overlaps
 
 

@@ -199,7 +199,7 @@ class TestCommitWitness(_CommitRepo):
         sha = self._commit("broken pyproject")
         try:
             deferred = _defers_annotations(self.root, sha)
-        except Exception as exc:  # noqa: BLE001 — the contract is "does not raise"
+        except Exception as exc:
             self.fail(f"a malformed pyproject.toml crashed the witness: {exc!r}")
         self.assertFalse(deferred)
         (self.root / "pyproject.toml").write_text(

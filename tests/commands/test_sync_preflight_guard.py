@@ -64,7 +64,7 @@ def _add_corrupt_local_skill() -> None:
 class CorruptCanonNeverPropagates(unittest.TestCase):
     """Each propagating command refuses, and leaves every mirror byte-identical."""
 
-    def _assert_refused(self, args: list[str], corrupt) -> None:  # noqa: ANN001
+    def _assert_refused(self, args: list[str], corrupt) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
             self.assertEqual(runner.invoke(main, ["init", "--no-skeleton"]).exit_code, 0)

@@ -18,7 +18,7 @@ from gzkit.ledger_events import (
     obpi_created_event,
     obpi_receipt_emitted_event,
 )
-from gzkit.traceability import covers  # noqa: F401
+from gzkit.traceability import covers
 
 _SCHEMA_PATH = Path(__file__).parent.parent / "src" / "gzkit" / "schemas" / "ledger.json"
 

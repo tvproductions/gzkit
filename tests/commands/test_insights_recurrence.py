@@ -191,7 +191,7 @@ class TestGhIssueCreatedAt(unittest.TestCase):
         with patch("gzkit.utils.run_exec", return_value=(rc, out, "")) as run:
             try:
                 value = gh_issue_created_at("1257", Path("."))
-            except Exception as exc:  # noqa: BLE001 — the adapter's contract is never to raise
+            except Exception as exc:
                 self.fail(f"gh_issue_created_at raised {exc!r} on {out!r}")
         self.assertEqual(run.call_args.args[0][:4], ["gh", "issue", "view", "1257"])
         return value

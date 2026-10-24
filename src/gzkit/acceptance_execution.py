@@ -212,16 +212,18 @@ def _input_paths(root: Path) -> tuple[set[Path], Path, Path]:
     source = _inside(root, Path(config.paths.source_root))
     tests = _inside(root, Path(config.paths.tests_root))
     paths = {source, tests}
-    for name in (
-        "features",
-        "data",
-        "scripts",
-        config.paths.canonical_rules,
-        config.paths.canonical_schemas,
-        ".github/workflows",
-        *_CONFIG_FILES,
-    ):
-        paths.add(_inside(root, Path(name)))
+    paths.update(
+        _inside(root, Path(name))
+        for name in (
+            "features",
+            "data",
+            "scripts",
+            config.paths.canonical_rules,
+            config.paths.canonical_schemas,
+            ".github/workflows",
+            *_CONFIG_FILES,
+        )
+    )
     return paths, source, tests
 
 
@@ -305,7 +307,7 @@ def _restored_run(root: Path, command: list[str], selectors: list[str]) -> dict:
             errors="replace",
             check=False,
             timeout=600,
-        )  # noqa: S603
+        )
     output = (run.stdout or "") + (run.stderr or "")
     executed, failures, count = read_test_observations(output)
     return {

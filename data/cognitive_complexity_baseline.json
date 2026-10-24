@@ -244,7 +244,7 @@
     {
       "file": "src/gzkit/commands/config_paths.py",
       "function": "_flatten_manifest_paths",
-      "score": 20
+      "score": 18
     },
     {
       "file": "src/gzkit/commands/content/commit.py",
@@ -584,7 +584,7 @@
     {
       "file": "src/gzkit/doc_coverage/scanner.py",
       "function": "_build_import_map",
-      "score": 28
+      "score": 25
     },
     {
       "file": "src/gzkit/doc_coverage/scanner.py",
@@ -1114,7 +1114,7 @@
     {
       "file": "src/gzkit/req_kind.py",
       "function": "compute_three_channel_coverage",
-      "score": 42
+      "score": 38
     },
     {
       "file": "src/gzkit/rules/__init__.py",
@@ -1224,7 +1224,7 @@
     {
       "file": "src/gzkit/traceability.py",
       "function": "_non_docstring_string_ranges",
-      "score": 24
+      "score": 22
     },
     {
       "file": "src/gzkit/traceability.py",

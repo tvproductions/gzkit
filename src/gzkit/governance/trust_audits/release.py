@@ -18,6 +18,7 @@ import tomllib
 from collections import Counter
 from pathlib import Path
 
+from gzkit.ruff_baseline import RuffRunError, ruff_rule_codes
 from gzkit.validate import ValidationError
 from gzkit.validators.rule_version_markers import canonical_rule_files, rule_version_of
 
@@ -561,10 +562,35 @@ def _ruff_selection(project_root: Path) -> tuple[list[str], list[str]] | None:
     if not isinstance(select, list):
         return None
     ignore = lint.get("ignore", [])
-    return (
-        [s for s in select if isinstance(s, str)],
-        [i for i in ignore if isinstance(i, str)] if isinstance(ignore, list) else [],
+    select_codes = _as_ruff_codes([s for s in select if isinstance(s, str)])
+    ignore_codes = _as_ruff_codes(
+        [i for i in ignore if isinstance(i, str)] if isinstance(ignore, list) else []
     )
+    if select_codes is None or ignore_codes is None:
+        return None
+    return select_codes, ignore_codes
+
+
+#: A selector written as a code or a linter prefix; anything else is a rule name.
+_RUFF_CODE_SHAPE = re.compile(r"ALL|[A-Z]+[0-9]*")
+
+
+def _as_ruff_codes(entries: list[str]) -> list[str] | None:
+    """Return *entries* with each rule name (RUF201's form) replaced by its code.
+
+    Returns:
+        The entries as codes, or None when a name is present and Ruff cannot
+        supply its table: a name read as text prefixes no code, so guessing
+        would call an ignored code reachable.
+
+    """
+    if all(_RUFF_CODE_SHAPE.fullmatch(entry) for entry in entries):
+        return entries
+    try:
+        codes = ruff_rule_codes()
+    except RuffRunError:
+        return None
+    return [codes.get(entry, entry) for entry in entries]
 
 
 #: Ruff's one linter whose prefix selects lettered sub-linters: ``PL`` reaches

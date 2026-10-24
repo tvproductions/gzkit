@@ -467,7 +467,7 @@ def _shared_subtree_rules(project_root: Path) -> dict[str, list[ClassifiedRule]]
     directly -- where those files ARE the source rather than a rendering of one.
     """
     canonical = _classify_canonical_rules(project_root)
-    rules = canonical if canonical else classify_instruction_rules(project_root)
+    rules = canonical or classify_instruction_rules(project_root)
     subtree_rules: dict[str, list[ClassifiedRule]] = {}
     for rule in rules:
         if rule.audience != "shared" or rule.is_global:
@@ -1015,6 +1015,7 @@ from gzkit.rules._scaffolder import (  # noqa: E402
 
 __all__ = [
     "CORE_RULES",
+    "NESTED_SURFACE_NAMES",
     "CanonicalRule",
     "ClassifiedRule",
     "RuleFrontmatter",
@@ -1024,13 +1025,12 @@ __all__ = [
     "classify_instruction_rules",
     "load_rule",
     "load_rules",
+    "nested_agents_md_paths",
     "render_rule_for_claude",
     "render_rule_for_copilot",
     "render_rules_to_dir",
     "scaffold_core_rules",
     "sync_claude_rules",
-    "NESTED_SURFACE_NAMES",
-    "nested_agents_md_paths",
     "sync_nested_agents_md",
     "validate_rule_placement",
 ]

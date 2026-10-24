@@ -66,7 +66,7 @@ class TestTheGateReadsTheLizardFileNlocBand(unittest.TestCase):
                 encoding="utf-8",
             )
             with mock.patch.object(gate, "_THRESHOLDS", table):
-                self.assertEqual(gate._block_band(), 42.0)  # noqa: SLF001
+                self.assertEqual(gate._block_band(), 42.0)
 
 
 class TestTheGateMeasuresLizardFileNloc(unittest.TestCase):
@@ -86,7 +86,7 @@ class TestTheGateMeasuresLizardFileNloc(unittest.TestCase):
                 mock.patch.object(gate, "_PROJECT_ROOT", root),
                 mock.patch.object(gate, "_MEASURE_ROOT", root / "src"),
             ):
-                sizes = gate._measure()  # noqa: SLF001
+                sizes = gate._measure()
         self.assertEqual(sizes, {"src/pkg/mod.py": 3})
 
 

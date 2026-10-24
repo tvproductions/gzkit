@@ -145,7 +145,7 @@ class TestSkillsAuditSiblingImports(unittest.TestCase):
     @covers("REQ-0.0.32-01-04")
     def test_skills_mirror_imports(self) -> None:
         """skills_mirror.py imports from gzkit.skills must survive the conversion."""
-        from gzkit.skills_mirror import validate_mirror_root  # noqa: F401
+        from gzkit.skills_mirror import validate_mirror_root
 
         self.assertTrue(callable(validate_mirror_root))
 

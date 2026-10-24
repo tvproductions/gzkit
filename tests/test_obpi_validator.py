@@ -18,7 +18,7 @@ from gzkit.ledger import (
     obpi_receipt_emitted_event,
     project_init_event,
 )
-from gzkit.traceability import covers  # noqa: F401
+from gzkit.traceability import covers
 from tests.commands.common import _ignore_transient_git, _isolated_git_env
 
 
@@ -319,7 +319,7 @@ status: {status}
         import shutil
         import stat
 
-        def _force_remove_readonly(func, path, exc_info):  # noqa: ARG001
+        def _force_remove_readonly(func, path, exc_info):
             os.chmod(path, stat.S_IWRITE)
             func(path)
 

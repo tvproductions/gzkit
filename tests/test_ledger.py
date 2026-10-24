@@ -28,7 +28,7 @@ from gzkit.ledger import (
     prd_created_event,
     project_init_event,
 )
-from gzkit.traceability import covers  # noqa: F401
+from gzkit.traceability import covers
 from tests.commands.common import _isolated_git_env
 
 
@@ -61,7 +61,7 @@ class _PartialWriteHandle:
         self._real.__enter__()
         return self
 
-    def __exit__(self, *exc: Any) -> Any:
+    def __exit__(self, *exc: object) -> Any:
         return self._real.__exit__(*exc)
 
 

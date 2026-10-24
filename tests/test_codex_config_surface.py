@@ -439,7 +439,9 @@ class CodexDocCapCoherenceTest(unittest.TestCase):
         )
         recorded = manifest["content_type_delivery_caps"]["AgentContract"]["codex"]
 
-        match = _re.search(r"^project_doc_max_bytes\s*=\s*(\d+)$", render_codex_config(), _re.M)
+        match = _re.search(
+            r"^project_doc_max_bytes\s*=\s*(\d+)$", render_codex_config(), _re.MULTILINE
+        )
         self.assertIsNotNone(match, "generated Codex config declares no project_doc_max_bytes")
         self.assertEqual(
             int(match.group(1)),
