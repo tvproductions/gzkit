@@ -147,9 +147,9 @@ def _collect_responses(messages: list[bytes]) -> list[dict]:
 @given("a complexity guide protocol server is started")
 def step_server_started(context) -> None:
     _build_synthetic_environment()
-    context.protocol_messages: list[bytes] = []
-    context.protocol_fixture: Path | None = None
-    context.protocol_exit_code: int | None = None
+    context.protocol_messages = []
+    context.protocol_fixture = None
+    context.protocol_exit_code = None
 
 
 @when('a client sends an initialize request with version "{version}"')
@@ -192,7 +192,7 @@ def step_send_shutdown(context) -> None:
     exit_code = run_server(stdin=stdin, stdout=stdout)
     context.protocol_exit_code = exit_code
     stdout.seek(0)
-    context.protocol_responses: list[dict] = []
+    context.protocol_responses = []
     try:
         while True:
             msg = read_message(stdout)

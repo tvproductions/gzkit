@@ -195,9 +195,9 @@ against `ty check .` while the governance gate (`gz typecheck`, then scoped to
 different target tree, different flags) drift from the gate.
 
 **The defect was the divergence, never the particular scope.** Both sides now
-run `uv run ty check . --exclude features/**` — widened from `src` on
-2026-08-08 so the SessionStart orientation hook under `scripts/` stops being
-structurally unchecked. What makes that safe is that neither side spells the
+run `uv run ty check .` — widened from `src` on 2026-08-08 so the SessionStart
+orientation hook under `scripts/` stops being structurally unchecked, and from
+the tree less `features/` to the whole tree at RO-9 tranche 4 (2026-10-24). What makes that safe is that neither side spells the
 command any more: `gz arb typecheck` and `quality.run_typecheck` both READ
 `CANONICAL_STEP_COMMANDS["typecheck"]`, so they cannot disagree by
 construction, and `tests/arb/test_typecheck_scope_lockstep.py` proves the

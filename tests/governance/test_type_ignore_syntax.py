@@ -46,7 +46,7 @@ def _failure_message(findings: list[str]) -> str:
         "(.claude/rules/pythonic.md § Type-check suppression syntax).\n"
         "Rewrite each as `# ty: ignore[<ty-code>]`, or keep the foreign code and add "
         "ty's beside it — `# type: ignore[<mypy-code>, ty:<ty-code>]`. Verify with "
-        "`uv run ty check . --exclude features`.\n" + "\n".join(f"  {f}" for f in findings)
+        "`uv run ty check .`.\n" + "\n".join(f"  {f}" for f in findings)
     )
 
 

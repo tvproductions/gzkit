@@ -44,9 +44,9 @@ repos:
       - id: ty-check
         name: ty (static type check)
         # Scope must match CANONICAL_STEP_COMMANDS["typecheck"] in
-        # src/gzkit/arb/validator.py — pinned by
+        # src/gzkit/canonical_steps.py — pinned by
         # tests/arb/test_typecheck_scope_lockstep.py, which reads this file.
-        entry: uv run ty check . --exclude features
+        entry: uv run ty check .
         language: system
         pass_filenames: false
         types: [python]

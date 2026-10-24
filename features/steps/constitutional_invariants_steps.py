@@ -284,7 +284,7 @@ def step_valid_brief_field_set(context) -> None:
 
 @when("I construct a BriefStructure instance")
 def step_construct_brief_structure(context) -> None:
-    context.brief = BriefStructure(**context.brief_fields)
+    context.brief = BriefStructure.model_validate(context.brief_fields)
 
 
 @then("the model is frozen and mutation raises an error")
@@ -299,7 +299,7 @@ def step_brief_is_frozen(context) -> None:
 @then("constructing with an empty allowlist raises ValidationError")
 def step_empty_allowlist_rejected(context) -> None:
     try:
-        BriefStructure(**{**_VALID_BRIEF_FIELDS, "allowlist": []})
+        BriefStructure.model_validate({**_VALID_BRIEF_FIELDS, "allowlist": []})
     except ValidationError:
         return
     raise AssertionError("empty allowlist did not raise ValidationError")
@@ -308,7 +308,7 @@ def step_empty_allowlist_rejected(context) -> None:
 @then("constructing with an empty reqs list raises ValidationError")
 def step_empty_reqs_rejected(context) -> None:
     try:
-        BriefStructure(**{**_VALID_BRIEF_FIELDS, "reqs": []})
+        BriefStructure.model_validate({**_VALID_BRIEF_FIELDS, "reqs": []})
     except ValidationError:
         return
     raise AssertionError("empty reqs list did not raise ValidationError")

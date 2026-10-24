@@ -92,15 +92,17 @@ def step_owned_entry(context, classification: str) -> None:
     append_entry(
         context.root,
         _SURFACE,
-        CorpusEntry(
-            id="e-owned",
-            surface=_SURFACE,
-            section="owned-section",
-            tier="invariant",
-            classification=classification,
-            text=_OWNED_RULE,
-            origin="bdd-test",
-            ts="2026-10-03T00:00:00+00:00",
+        CorpusEntry.model_validate(
+            {
+                "id": "e-owned",
+                "surface": _SURFACE,
+                "section": "owned-section",
+                "tier": "invariant",
+                "classification": classification,
+                "text": _OWNED_RULE,
+                "origin": "bdd-test",
+                "ts": "2026-10-03T00:00:00+00:00",
+            }
         ),
     )
 

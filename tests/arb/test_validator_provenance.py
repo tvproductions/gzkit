@@ -75,15 +75,14 @@ class ProvenanceChecking(unittest.TestCase):
             root = Path(tmp)
             # The GHI #199 failure shape: a receipt labelled `typecheck` whose
             # command measures a DIFFERENT scope than the gate. The divergence
-            # here is the dropped `--exclude features/**` — the canonical scope
-            # became tree-wide on 2026-08-08, so the old control (`ty check .`
-            # with the exclusion) is now canon minus the launcher and would
-            # have proved only that `uvx` != `uv run`.
+            # here is the `--exclude features` the canonical scope dropped at
+            # RO-9 tranche 4 (2026-10-24): a receipt that still skips the step
+            # glue measures less than the gate does.
             _write_step_receipt(
                 root,
                 "drifted",
                 "typecheck",
-                ["uv", "run", "ty", "check", "."],
+                ["uv", "run", "ty", "check", ".", "--exclude", "features"],
             )
             result = validate_receipts(limit=10, root=root)
             self.assertEqual(result.scanned, 1)

@@ -169,6 +169,10 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `chores.md`
 
+### Changed 2026-10-24 at version `0.6.4`
+
+§ Apply Advice's typecheck step is `uv run ty check .`, dropping `--exclude features`: the operator ruled `features/` into ty's scope at RO-9 tranche 4 (verbatim: *"features in ty scope"*). Binding rules unchanged.
+
 ### Changed 2026-10-23 at version `0.6.3`
 
 § Apply Advice's lint step is `uv run gz lint --fix` in place of `uv run ruff check . --fix`, for the reason `tests.md` `0.27.3` records. Binding rules unchanged.

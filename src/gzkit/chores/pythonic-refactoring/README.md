@@ -6,7 +6,7 @@ Enforce Pythonic idioms and type safety using ruff + ty.
 
 ```bash
 uv run gz lint --fix
-uv run ty check . --exclude 'features/**'
+uv run ty check .
 ```
 
 ## Lane

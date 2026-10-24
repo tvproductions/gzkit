@@ -5,9 +5,9 @@ description: Use to run a chore from the registry end to end (show, plan, advise
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-23
+last_reviewed: 2026-10-24
 metadata:
-  skill-version: "1.5.6"
+  skill-version: "1.5.7"
 model: sonnet
 ---
 
@@ -67,7 +67,7 @@ Execute a repository chore using the canonical `gz chores` workflow.
    ```bash
    # Lite lane (default)
    uv run gz lint --fix && uv run ruff format .
-   uv run ty check . --exclude features
+   uv run ty check .
    uv run gz test
 
    # Heavy lane (adds gates)

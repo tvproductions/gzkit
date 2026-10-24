@@ -7,7 +7,7 @@
     },
     {
       "type": "exitCodeEquals",
-      "command": "uv run ty check . --exclude features",
+      "command": "uv run ty check .",
       "expected": 0
     },
     {

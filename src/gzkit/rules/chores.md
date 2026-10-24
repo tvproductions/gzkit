@@ -6,11 +6,11 @@ paths:
 description: Chores workflow command sequences, two-surface layout, and evidence patterns
 ---
 
-<!-- rule-version: 0.6.3 -->
+<!-- rule-version: 0.6.4 -->
 
 # Chores Workflow (gzkit)
 
-> **Rule version:** `0.6.3` — § Apply Advice lints with `gz lint --fix`, Ruff's verdict against `data/ruff_baseline.json` (RO-9 tranche 4); version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#choresmd).
+> **Rule version:** `0.6.4` — § Apply Advice typechecks the whole tree, `features/` included (RO-9 tranche 4); version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#choresmd).
 
 > **Purpose:** Enable agents to run repository chores effectively with clear,
 > repeatable command sequences, aligned to gzkit guardrails and the two-surface
@@ -102,7 +102,7 @@ uv run gz chores advise <chore_slug>
 
 ```bash
 uv run gz lint --fix && uv run ruff format .
-uv run ty check . --exclude features
+uv run ty check .
 uv run gz test
 ```
 

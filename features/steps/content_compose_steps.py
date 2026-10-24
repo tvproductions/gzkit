@@ -19,6 +19,7 @@ import json
 import sys
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
+from typing import Literal
 
 from behave import given, then, when
 
@@ -72,7 +73,9 @@ def _invoke_generated(args: list[str]) -> tuple[int, str]:
     return 0 if code is None else int(code), output.getvalue()
 
 
-def _make_corpus_entry(entry_id: str, *, tier: str, text: str) -> CorpusEntry:
+def _make_corpus_entry(
+    entry_id: str, *, tier: Literal["invariant", "compressible"], text: str
+) -> CorpusEntry:
     return CorpusEntry(
         id=entry_id,
         surface="AGENTS.md",

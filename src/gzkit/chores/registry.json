@@ -591,8 +591,7 @@
           ".gzkit/chores/memory-hygiene/check_memory_drift.py",
           ".gzkit/chores/module-sloc-cap-radon/check_module_size.py",
           ".gzkit/chores/pythonic-design-pattern-detection/scan.py",
-          "pyproject.toml",
-          "ty.toml"
+          "pyproject.toml"
         ],
         "graceDays": 7
       },

@@ -5,11 +5,11 @@ description: Use to wrap QA commands in ARB receipts for attestation evidence or
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-21
+last_reviewed: 2026-10-24
 model: haiku
 gz_command: arb advise
 metadata:
-  skill-version: "1.4.2"
+  skill-version: "1.4.3"
 revived_on: "2026-04-14"
 revived_under: OBPI-0.25.0-33
 revival_note: "ARB surface absorbed from airlineops/opsdev/arb under OBPI-0.25.0-33. The earlier retirement (2026-04-03, 'consolidated into gz-check') was itself drift — gz check never implemented ARB receipt emission, so the rule contract in .gzkit/rules/arb.md was referencing a nonexistent surface. Revival restores parity with the rule."
@@ -36,7 +36,7 @@ Agent Self-Reporting middleware: wrap QA commands (ruff, ty, unittest, coverage)
    by `CANONICAL_STEP_COMMANDS` and divergence is flagged by
    `gz arb validate` as non-canonical provenance (GHI #199).
    - `uv run gz arb ruff <paths>` — ruff lint (canonical for lint claims)
-   - `uv run gz arb typecheck` — wraps `ty check . --exclude features/**`,
+   - `uv run gz arb typecheck` — wraps `ty check .`,
      the same target as `gz typecheck` and `gz closeout` (canonical for
      type-check claims). Do not restate the scope from memory: the verb
      and the gate both READ `CANONICAL_STEP_COMMANDS["typecheck"]`, so

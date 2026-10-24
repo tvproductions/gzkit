@@ -50,7 +50,7 @@ All ~120 ty rules at default severity, including:
 
 ```bash
 uv run ruff check . > .gzkit/chores/pythonic-refactoring/proofs/ruff-baseline.txt
-uv run ty check . --exclude 'features/**' > .gzkit/chores/pythonic-refactoring/proofs/ty-baseline.txt
+uv run ty check . > .gzkit/chores/pythonic-refactoring/proofs/ty-baseline.txt
 ```
 
 ### 2. Plan — propose
@@ -83,7 +83,7 @@ return y
 
 ```bash
 uv run gz lint
-uv run ty check . --exclude 'features/**'
+uv run ty check .
 uv run gz test
 ```
 
@@ -104,7 +104,7 @@ Criteria live in `acceptance.json`, which `gz chores run` executes; render them 
 
 ```bash
 uv run ruff check . > .gzkit/chores/pythonic-refactoring/proofs/ruff-report.txt
-uv run ty check . --exclude 'features/**' > .gzkit/chores/pythonic-refactoring/proofs/ty-report.txt
+uv run ty check . > .gzkit/chores/pythonic-refactoring/proofs/ty-report.txt
 ```
 
 ## Run Log

@@ -55,21 +55,16 @@ CANONICAL_STEP_COMMANDS: dict[str, list[str]] = {
     # which runs before every agent's first response — structurally unchecked,
     # carrying five live diagnostics including a ``call-non-callable``. GHI #199
     # is not regressed by this: its defect was the ARB and gate scopes
-    # DISAGREEING, not the particular scope they agreed on. ``features/`` stays
-    # excluded because ``behave`` step functions annotate ``context`` attributes,
-    # which ``ty`` rejects by design.
+    # DISAGREEING, not the particular scope they agreed on.
     #
-    # The exclude is spelled as the BARE DIRECTORY, not ``features/**``. The glob
-    # form does not match on Windows — ``ty`` reports paths with the platform
-    # separator (``features\steps\foo.py``) and the forward-slash pattern never
-    # fires, so all 25 in-``features`` diagnostics reached the gate and the
-    # pre-push ``gz check`` failed on a tree CI had just passed. Measured
-    # 2026-08-09: ``features`` exits 0 while ``features/**``, ``./features/**``,
-    # ``**/features/**`` and ``features/**/*.py`` all exit 1. Linux never saw it
-    # because the glob matches there, which is why six months of green CI did not
-    # catch a gate that is red on a co-equal supported platform
-    # (`.gzkit/rules/cross-platform.md`: "Windows, macOS, Linux — co-equal").
-    "typecheck": ["uv", "run", "ty", "check", ".", "--exclude", "features"],
+    # ``features/`` came into scope at RO-9 tranche 4 (operator ruling
+    # 2026-10-24, verbatim: "features in ty scope"). It had been excluded because
+    # behave step functions annotated ``context`` attributes, which ty rejects by
+    # design; the annotations went and its 14 diagnostics were fixed. The
+    # exclusion's own history: its ``features/**`` glob never matched on Windows
+    # (GHI #788), so a scope with no exclusion also retires a cross-platform trap.
+    # Rule levels live in ``[tool.ty]`` in ``pyproject.toml``, not on this line.
+    "typecheck": ["uv", "run", "ty", "check", "."],
     # PARALLEL, and the gate derives from it (operator re-ruling 2026-08-27,
     # GHI #856). This entry was SERIAL until that ruling while every gate ran the
     # accelerator, so the command an agent runs most often -- the one proving
