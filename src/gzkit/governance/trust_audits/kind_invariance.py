@@ -11,8 +11,6 @@ ADRs that predate ADR-0.0.17's mechanical ``kind:`` mandate and therefore
 carry no frontmatter at all.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 
 from gzkit.governance.trust_audits.adr_sections import (

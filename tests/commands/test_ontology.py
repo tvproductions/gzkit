@@ -6,8 +6,6 @@ without a ledger; the side-effecting command handlers are driven with
 test mutates the real repository (the read-only fence, REQ-08).
 """
 
-from __future__ import annotations
-
 import io
 import json
 import tempfile

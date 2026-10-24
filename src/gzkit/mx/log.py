@@ -13,8 +13,6 @@ matching ``mx_session_closed`` event's ``ts`` (exit anchor). At exit time the
 close is not yet written, so assembly runs against the still-open window.
 """
 
-from __future__ import annotations
-
 import json
 import re
 import subprocess

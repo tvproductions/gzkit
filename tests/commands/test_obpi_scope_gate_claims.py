@@ -5,8 +5,6 @@ takes. These tests weaken the decision the two ways it can go wrong, never refus
 refusing on records, and require the matching control to fail.
 """
 
-from __future__ import annotations
-
 import unittest
 from unittest import mock
 

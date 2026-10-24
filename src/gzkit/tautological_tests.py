@@ -3,8 +3,6 @@
 Implements the decommission-tautological-tests chore infrastructure (OBPI-0.0.59-04).
 """
 
-from __future__ import annotations
-
 import ast
 import json
 from collections import Counter

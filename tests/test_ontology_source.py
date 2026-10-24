@@ -7,8 +7,6 @@ satisfy the same contract, and the ``ast`` adapter proves the core runs without
 tree-sitter (hexagonal rule 6).
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

@@ -10,8 +10,6 @@ Covers:
 All tests use ``tempfile.TemporaryDirectory`` for sandbox isolation.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

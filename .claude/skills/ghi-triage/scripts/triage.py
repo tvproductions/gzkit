@@ -18,8 +18,6 @@ Output formats:
                 (this is the only path that requires `rich`)
 """
 
-from __future__ import annotations
-
 import argparse
 import json
 import os

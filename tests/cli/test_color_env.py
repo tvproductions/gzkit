@@ -16,8 +16,6 @@ per `.claude/rules/hexagonal-architecture.md` § operative rule 4 ("take a
 parameter for any external object you wish to access").
 """
 
-from __future__ import annotations
-
 import unittest
 
 from gzkit.color_env import should_disable_color, should_force_terminal

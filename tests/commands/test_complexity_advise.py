@@ -20,8 +20,6 @@ attestation deferred). The synthetic fixture mirrors the pattern in
 ``tests/complexity/advisor/test_engine.py``.
 """
 
-from __future__ import annotations
-
 import io
 import json
 import os

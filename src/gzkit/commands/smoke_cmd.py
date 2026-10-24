@@ -5,8 +5,6 @@ consumer, so a 4.5x breach was invisible to everything except whoever happened t
 time a run. This is the consumer.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 
 from gzkit.commands.common import console

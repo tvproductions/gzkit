@@ -15,8 +15,6 @@ Not a ``gz`` verb: a one-shot migration, invoked as
 ``uv run python -m gzkit.governance.obpi_park_backfill --dry-run``.
 """
 
-from __future__ import annotations
-
 import argparse
 import sys
 from pathlib import Path

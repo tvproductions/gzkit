@@ -1,7 +1,5 @@
 """Tests for gz chores propose-ghi — OBPI-0.0.26-04."""
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

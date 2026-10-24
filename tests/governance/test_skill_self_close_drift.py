@@ -10,8 +10,6 @@ are preserved as historical narrative and are NOT in the scanned dirs
 allow-list is needed.
 """
 
-from __future__ import annotations
-
 import re
 import unittest
 from pathlib import Path

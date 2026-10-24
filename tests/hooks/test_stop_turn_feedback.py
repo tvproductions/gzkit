@@ -9,8 +9,6 @@ off-switch, fail-open, telemetry bounding, settings wiring, and demo mode
 (Boundary Invariant 1: a turn can always end).
 """
 
-from __future__ import annotations
-
 import importlib.util
 import io
 import json

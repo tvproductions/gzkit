@@ -27,8 +27,6 @@ disk, UNGRADED on every scorecard) and populates without a renderer change once
 its producer exists. This one does too.
 """
 
-from __future__ import annotations
-
 import json
 from enum import StrEnum
 from pathlib import Path

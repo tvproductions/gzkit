@@ -25,8 +25,6 @@ tagged against those identifiers per the precedent set by
 | REQ-0.0.25-01-06 | duplicate @covers handled   | TestDiscoverCoversMultiple  |
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

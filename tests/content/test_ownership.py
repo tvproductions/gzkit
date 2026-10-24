@@ -7,8 +7,6 @@ no declaration at all, fails closed naming the offending section id
 the heading title (REQ-0.35.0-04-06).
 """
 
-from __future__ import annotations
-
 import ast
 import contextlib
 import ctypes

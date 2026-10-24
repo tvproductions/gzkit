@@ -18,8 +18,6 @@ mutation-tested; the one that cannot (a chore's JSON criterion, read by the chor
 runner) is pinned by equality.
 """
 
-from __future__ import annotations
-
 import json
 import shlex
 import tempfile

@@ -8,8 +8,6 @@ This test is RED before the waivers are removed and skills are wired,
 GREEN after.
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 

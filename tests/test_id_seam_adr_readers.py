@@ -5,8 +5,6 @@ and the foundation test (``0.0.x``) are spelled once, in ``gzkit.core.models``;
 no reader outside the seam carries its own copy.
 """
 
-from __future__ import annotations
-
 import re
 import unittest
 from pathlib import Path

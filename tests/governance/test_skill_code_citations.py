@@ -23,8 +23,6 @@ the code does is a reading, not a state; whether a cited path resolves is
 mechanical, and it was the half measuring 3-for-3 wrong.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

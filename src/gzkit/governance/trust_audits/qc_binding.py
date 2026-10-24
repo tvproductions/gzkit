@@ -19,8 +19,6 @@ Usage::
     # Non-empty → exit 3; empty → exit 0
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 
 from gzkit.core.validation_rules import ValidationError

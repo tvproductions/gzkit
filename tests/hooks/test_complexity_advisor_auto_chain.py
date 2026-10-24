@@ -5,8 +5,6 @@ threshold table, and timeout primitive are mocked; subprocess invocation of the
 shell hook is reserved for behave (REQ-0.0.29-05-08).
 """
 
-from __future__ import annotations
-
 import io
 import json
 import os

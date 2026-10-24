@@ -6,8 +6,6 @@ its ``def`` line) is named, never scored by guess (operator ruling 2026-10-22,
 "Name it, don't guess (Rec.)"); a body of ``...`` alone carries no decision.
 """
 
-from __future__ import annotations
-
 import ast
 import unittest
 

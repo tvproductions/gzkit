@@ -10,8 +10,6 @@ not pay the cost of importing formatters, logging, progress, gates,
 or audit internals until something actually uses them.
 """
 
-from __future__ import annotations
-
 from typing import Any
 
 from gzkit.cli.main import main

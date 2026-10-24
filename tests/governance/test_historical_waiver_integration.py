@@ -7,8 +7,6 @@ Uses gzkit.governance.trust_audits.receipt_shape.audit_receipt_shape and
 (will be written in GREEN phase) the HistoricalAttestationWaiver models.
 """
 
-from __future__ import annotations
-
 import json
 import logging
 import tempfile

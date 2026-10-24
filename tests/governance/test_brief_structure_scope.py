@@ -12,8 +12,6 @@ is a sealed historical record; demanding it migrate would either rewrite an
 attested artifact or hold the gate red over a tree nobody may repair.
 """
 
-from __future__ import annotations
-
 import textwrap
 import unittest
 from pathlib import Path

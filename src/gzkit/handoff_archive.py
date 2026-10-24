@@ -38,8 +38,6 @@ deliberately out of this verb's scope (it would overlap ``lock_manager``).
 @covers ADR-0.0.65 (OBPI-0.0.65-05)
 """
 
-from __future__ import annotations
-
 import os
 from datetime import UTC, datetime, timedelta
 from pathlib import Path

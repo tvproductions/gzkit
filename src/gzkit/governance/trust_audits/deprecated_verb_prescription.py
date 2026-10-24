@@ -33,8 +33,6 @@ Failures emit ``ValidationError(type="deprecated_verb_prescription", ...)``;
 a non-empty list maps to exit 3 in the orchestrator. A clean tree returns ``[]``.
 """
 
-from __future__ import annotations
-
 import re
 from pathlib import Path
 

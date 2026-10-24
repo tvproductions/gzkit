@@ -42,8 +42,6 @@ decrease-or-equal move that type witnesses; the loader holds a ratchet row
 that changes the map to that attestation (``_refuse_unattested_map_change``).
 """
 
-from __future__ import annotations
-
 import hashlib
 import json
 import sys

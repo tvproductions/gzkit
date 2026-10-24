@@ -5,8 +5,6 @@ artifact, credit must come only from a recorded dispatch, and the gate must stay
 compliable so it is obeyed rather than worked around.
 """
 
-from __future__ import annotations
-
 import json
 import shutil
 import tempfile

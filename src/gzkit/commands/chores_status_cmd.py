@@ -7,8 +7,6 @@ announces and never gates: every band exits 0 (operator ruling 2026-09-12,
 ``docs/governance/chore-class-system.md`` § Staleness — Indicator, not gate).
 """
 
-from __future__ import annotations
-
 from datetime import UTC, datetime
 
 from rich.markup import escape

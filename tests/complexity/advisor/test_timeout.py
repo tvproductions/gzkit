@@ -15,8 +15,6 @@ Coverage (mapped to brief Acceptance Criteria REQ-IDs):
     REQ-0.0.29-09-11 — TDD discipline; tempfile-backed fixtures.
 """
 
-from __future__ import annotations
-
 import ast
 import json
 import os

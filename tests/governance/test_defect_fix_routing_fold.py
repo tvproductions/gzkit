@@ -8,8 +8,6 @@ assertions from the OBPI brief's Acceptance Criteria, not from the post-fold
 observed state.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

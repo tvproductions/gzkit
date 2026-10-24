@@ -55,8 +55,6 @@ def _ghi_triage_chat_silence_script() -> str:
                 2 - block (chat-prose duplication detected)
             """
 
-            from __future__ import annotations
-
             import json
             import re
             import sys

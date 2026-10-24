@@ -22,8 +22,6 @@ controls. The other gate populations (``gz check`` steps that run no ``gz valida
 enumerated by ``gate_population``, which runs in the same scope.
 """
 
-from __future__ import annotations
-
 import dis
 import types
 from collections.abc import Callable, Iterable, Mapping

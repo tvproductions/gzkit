@@ -15,8 +15,6 @@ diff-baseline cache — a regenerable snapshot, not graph state (like
 never gates, Boundary Invariant #2); ``trace``/``reach`` exit 1 on an unknown id.
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

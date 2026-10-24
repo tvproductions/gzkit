@@ -11,8 +11,6 @@ Read enablement from here rather than restating a tuple. A future vendor change
 then moves one declaration, not a dozen literals (GHI #921).
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 
 from gzkit.config import GzkitConfig

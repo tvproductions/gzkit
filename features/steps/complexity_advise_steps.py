@@ -13,8 +13,6 @@ production distilled doc has an empty practitioner-eye section.
 @covers REQ-0.0.29-03-03
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

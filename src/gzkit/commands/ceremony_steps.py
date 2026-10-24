@@ -4,8 +4,6 @@ Each renderer returns a text block for exactly one ceremony step.
 Split from ``closeout_ceremony.py`` to keep both modules under 600 lines.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 

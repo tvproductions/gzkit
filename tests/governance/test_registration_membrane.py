@@ -10,8 +10,6 @@ refusal would reject all 74 grandfathered foundations and contradict the
 closure it enforces (brief Requirement 5).
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

@@ -14,8 +14,6 @@ Covers:
         the ln field is removed.
 """
 
-from __future__ import annotations
-
 import importlib.util
 import subprocess
 import sys

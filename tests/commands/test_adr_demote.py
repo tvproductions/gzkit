@@ -7,8 +7,6 @@ Derived from the 2026-05-23 get-out-of-jail prequel spec (GHI #521):
 - Q5=a: ``artifact_renamed`` event with ``reason='pool_demotion'`` (no new event type)
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

@@ -13,8 +13,6 @@ Built under the harbor pilotage of 2026-10-15 after the operator attested the
 control inventory ("attest the inventory, keep going with the load cuts").
 """
 
-from __future__ import annotations
-
 import hashlib
 import tempfile
 import unittest

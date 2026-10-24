@@ -9,8 +9,6 @@ repo keeps paying for (four copies of the REQ-kind taxonomy, ~20 REQ-identifier
 regexes). A third retention verb derives from here rather than re-spelling it.
 """
 
-from __future__ import annotations
-
 
 def parse_older_than_days(raw: str) -> int:
     """Parse an ``--older-than`` duration like ``30d`` or ``30`` into a day count.

@@ -4,8 +4,6 @@
 @covers OBPI-0.0.20-01-validator-and-allowlist
 """
 
-from __future__ import annotations
-
 import hashlib
 import inspect
 import json

@@ -3,8 +3,6 @@
 @covers OBPI-0.27.0-02-router-surface-sync
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 

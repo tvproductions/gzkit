@@ -23,8 +23,6 @@ module use the same mock-rig pattern as
 ``tests/commands/test_obpi_complete.py``.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from io import StringIO

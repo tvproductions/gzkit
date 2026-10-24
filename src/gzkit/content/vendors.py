@@ -8,8 +8,6 @@ the same routes at initial release so callers without a project root (for
 example, the render pipeline in isolation tests) still work.
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

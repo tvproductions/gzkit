@@ -23,8 +23,6 @@ enforced on every adopter is precisely the dogfooding-leak complaint open at
 GHI #607. Projects that want the guard declare it in ``.gzkit.json``.
 """
 
-from __future__ import annotations
-
 import subprocess
 from pathlib import Path
 

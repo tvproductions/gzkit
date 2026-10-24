@@ -8,8 +8,6 @@ and every refusal cost a whole dispatch. The reply is now the acceptance object
 alone; the orchestrator derives the legacy result from it.
 """
 
-from __future__ import annotations
-
 import json
 import re
 import unittest

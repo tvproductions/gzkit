@@ -8,8 +8,6 @@ or an explicit ``--output`` path — returning exit codes per the CLI 4-code
 doctrine (0 success, 1 user/config, 2 system/IO).
 """
 
-from __future__ import annotations
-
 import re
 import sys
 from datetime import UTC, datetime

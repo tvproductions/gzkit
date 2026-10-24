@@ -11,8 +11,6 @@ expected to PASS immediately (existing H2 sections are not changed yet).
 to FAIL (RED) because the SKILL.md has not been amended yet.
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 

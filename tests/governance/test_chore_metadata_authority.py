@@ -11,8 +11,6 @@ told a criterion the runner does not check, or a version, lane, slug, vendor or
 timeout the registry does not carry.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

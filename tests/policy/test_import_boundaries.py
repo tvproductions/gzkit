@@ -4,8 +4,6 @@ These tests NEVER import or execute application code. They parse source files
 with the `ast` module to verify hexagonal architecture boundaries are respected.
 """
 
-from __future__ import annotations
-
 import ast
 import sys
 import unittest

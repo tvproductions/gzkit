@@ -11,8 +11,6 @@ these tests follow the bound when the operator re-rules it and fail only when
 the scope stops enforcing it.
 """
 
-from __future__ import annotations
-
 import json
 import subprocess
 import unittest

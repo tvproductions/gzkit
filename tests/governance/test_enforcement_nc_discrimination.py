@@ -12,8 +12,6 @@ a negative control must run the real path in its **production** configuration
 and assert it fails **for the reason the claim names**.
 """
 
-from __future__ import annotations
-
 import contextlib
 import tempfile
 import unittest

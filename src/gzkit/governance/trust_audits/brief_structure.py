@@ -26,8 +26,6 @@ The enforcement is the point: from here a newly authored live brief cannot land
 without the structured frontmatter, so the schema stops being decorative.
 """
 
-from __future__ import annotations
-
 import warnings
 from pathlib import Path
 

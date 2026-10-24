@@ -14,8 +14,6 @@ reconciler silently picks a winner; the monitor would refuse to let them
 disagree in the first place."
 """
 
-from __future__ import annotations
-
 from gzkit.core.obpi_state_machine import CANONICAL_TRANSITIONS, OBPIState
 
 

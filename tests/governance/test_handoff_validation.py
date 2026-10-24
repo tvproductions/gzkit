@@ -5,8 +5,6 @@
 @covers OBPI-0.25.0-32-handoff-validation-pattern
 """
 
-from __future__ import annotations
-
 import subprocess
 import tempfile
 import unittest

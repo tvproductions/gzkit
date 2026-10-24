@@ -16,8 +16,6 @@ and is not invoked here; ranking falls back to raw signal totals when no
 rubric module is available.
 """
 
-from __future__ import annotations
-
 import argparse
 import json
 import re

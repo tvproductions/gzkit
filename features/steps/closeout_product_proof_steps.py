@@ -1,7 +1,5 @@
 """BDD steps for closeout product proof gate."""
 
-from __future__ import annotations
-
 import io
 import subprocess
 from contextlib import redirect_stderr, redirect_stdout

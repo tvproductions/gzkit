@@ -42,8 +42,6 @@ trunk is green and pre-commit runs unittest, so a RED can never be committed to
 ``main``. The witness must be an isolated base-tree run, not a RED commit.
 """
 
-from __future__ import annotations
-
 import re
 import shutil
 import subprocess

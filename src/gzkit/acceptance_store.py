@@ -6,8 +6,6 @@ Review meaning remains a reviewer judgment. Receipt binding records its actual
 producer/output; it is not a claim of cryptographic reviewer authentication.
 """
 
-from __future__ import annotations
-
 import hashlib
 import json
 from pathlib import Path

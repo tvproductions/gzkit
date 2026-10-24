@@ -12,8 +12,6 @@ MUST block with a clear error naming the unmapped term. They never silently
 skip.
 """
 
-from __future__ import annotations
-
 from types import MappingProxyType
 
 CANONICAL_LEDGER_TERMS: frozenset[str] = frozenset(

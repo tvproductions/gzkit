@@ -13,8 +13,6 @@ thing to move: 83 lines, one caller, and no dependency on any module-level name
 in ``validate_cmd``.
 """
 
-from __future__ import annotations
-
 import re
 from pathlib import Path
 

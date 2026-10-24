@@ -9,8 +9,6 @@ gate that once lived here was removed under GHI #1163 after it lost its last
 production caller.
 """
 
-from __future__ import annotations
-
 from datetime import UTC, datetime
 from typing import Any
 

@@ -6,8 +6,6 @@ could not tell an operator's review from an agent's. These tests drive the verb 
 the event it writes, and the refusals that must write nothing.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

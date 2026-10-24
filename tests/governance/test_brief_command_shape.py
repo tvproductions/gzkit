@@ -5,8 +5,6 @@ Covers:
     REQ-0.0.63-07-02 — all-shell-less Verification commands → passes (exit 0)
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

@@ -28,8 +28,6 @@ The issue names these populations as the starting set, not a claim of completene
 handlers outside them (``gz tidy``, ``gz validate --json``) carry claims of their own.
 """
 
-from __future__ import annotations
-
 import dis
 import importlib
 import re

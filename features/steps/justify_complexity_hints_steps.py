@@ -12,8 +12,6 @@ Reuses the canonical ``When I run the gz command "..."`` /
 @covers REQ-0.0.30-05-03
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

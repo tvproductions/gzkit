@@ -12,8 +12,6 @@ finding. A test that only checked the empty return would pass against an audit
 that had stopped looking, which is the failure mode the stay must not become.
 """
 
-from __future__ import annotations
-
 import contextlib
 import io
 import json

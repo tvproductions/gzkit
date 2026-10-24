@@ -7,8 +7,6 @@ Commands and workflows consume named decisions, never raw flag keys.
 Implements ADR-0.0.8 checklist item #5.
 """
 
-from __future__ import annotations
-
 from gzkit.flags.registry import load_registry
 from gzkit.flags.service import FlagService
 

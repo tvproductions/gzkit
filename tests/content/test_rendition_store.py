@@ -7,8 +7,6 @@ content-fingerprint provenance sidecar that the freshness gate compares
 against (REQ-0.0.37-22-03 substance — replaces the mtime tautology).
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

@@ -7,8 +7,6 @@ reclassification check. Each test class covers exactly one REQ from the
 brief's `## Requirements (FAIL-CLOSED)` list.
 """
 
-from __future__ import annotations
-
 import importlib.util
 import json
 import re

@@ -4,8 +4,6 @@ Assertions derive from the brief's Acceptance Criteria (semantics), not from a
 run of the implementation.
 """
 
-from __future__ import annotations
-
 import enum
 import json
 import unittest

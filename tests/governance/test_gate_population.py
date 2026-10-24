@@ -7,8 +7,6 @@ validate``) to the same contract: each member is named by a claim or disclosed, 
 disclosure only shrinks.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

@@ -13,8 +13,6 @@ defaulting to BEHAVIOR — the conservative channel that owes proof.
 Direct-fix work under GHI #701 — no covering REQ, so no `@covers`.
 """
 
-from __future__ import annotations
-
 import unittest
 from typing import Any
 

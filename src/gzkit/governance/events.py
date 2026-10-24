@@ -1,7 +1,5 @@
 """Governance-layer event emission helpers (ADR-0.0.37, OBPI-0.0.37-03)."""
 
-from __future__ import annotations
-
 from pathlib import Path
 
 from gzkit.events import RenditionLandedEvent

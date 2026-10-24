@@ -1,7 +1,5 @@
 """Tests for CLI progress indication utilities."""
 
-from __future__ import annotations
-
 import io
 import sys
 import unittest

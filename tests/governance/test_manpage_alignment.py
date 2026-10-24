@@ -9,8 +9,6 @@ The canonical logic lives in
 ``gz validate --cli-alignment``.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

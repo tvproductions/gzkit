@@ -20,8 +20,6 @@ Exit codes (`.claude/rules/cli.md`):
   3 = packet NOT-VERIFIED (one or more blockers) — fail-closed signal
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 
 from rich.markup import escape

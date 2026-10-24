@@ -24,8 +24,6 @@ fourth reader of the same syntax that does not tolerate emphasis turns one of
 these assertions red, instead of silently under-counting a REQ set.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

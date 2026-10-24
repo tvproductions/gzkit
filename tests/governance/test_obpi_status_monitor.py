@@ -12,8 +12,6 @@ refusal text would still pass if a writer re-implemented the rule locally,
 which is exactly the state this work closes.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

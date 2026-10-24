@@ -18,8 +18,6 @@ Priority score formula:
 ``priority_score = insights×3 + ghi_occurrence×2 + feature_unblocking×5``
 """
 
-from __future__ import annotations
-
 import argparse
 import json
 import re

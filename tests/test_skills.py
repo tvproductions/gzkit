@@ -12,8 +12,6 @@ OBPI-0.0.32-02-skills-scaffolder-refactor: verifies that
 package surface rather than rendering stubs.
 """
 
-from __future__ import annotations
-
 import inspect
 import subprocess
 import sys

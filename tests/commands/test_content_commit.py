@@ -8,8 +8,6 @@ corpus content-fingerprint in a provenance sidecar, under operator attestation
 missing REQ-22-01 substance — ``save_rendition`` previously had no governed caller.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

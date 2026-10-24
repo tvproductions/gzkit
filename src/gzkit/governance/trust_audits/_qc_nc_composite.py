@@ -28,8 +28,6 @@ Split into its own module for the same reason ``_qc_nc_entrypoints`` was
 (``.claude/rules/pythonic.md`` module-size discipline).
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

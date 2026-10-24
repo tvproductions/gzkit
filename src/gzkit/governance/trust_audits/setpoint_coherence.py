@@ -16,8 +16,6 @@ A coherent manifest yields no errors (REQ-0.0.37-20-03). A missing or malformed
 manifest fails closed rather than resolving silently.
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

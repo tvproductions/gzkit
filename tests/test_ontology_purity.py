@@ -4,8 +4,6 @@ Assertions derive from the brief's Acceptance Criteria REQ-0.32.0-01-03, not
 from a run of the implementation.
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 

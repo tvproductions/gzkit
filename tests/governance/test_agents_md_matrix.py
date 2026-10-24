@@ -4,8 +4,6 @@ Assertions derive from OBPI brief REQ-0.0.36-01-01..03, not from observed
 post-collapse string shape.
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 

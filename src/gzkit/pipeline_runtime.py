@@ -5,8 +5,6 @@ task dispatch models, and verification dispatch are in dedicated modules;
 all public symbols are re-exported below for backward compatibility.
 """
 
-from __future__ import annotations
-
 import json
 from collections.abc import Callable, Iterable, Mapping
 from datetime import UTC, datetime

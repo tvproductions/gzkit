@@ -16,8 +16,6 @@ cleanly with the umbrella ``gz validate`` dispatch — the scope is opt-in
 through ``--attestation-receipts <text|@file>``.
 """
 
-from __future__ import annotations
-
 import json
 import re
 from pathlib import Path

@@ -45,8 +45,6 @@ before it stashes, so ``gz init`` installs the recorder there
 (:func:`install_recorder_hook`), and the delivery audit checks it is on disk.
 """
 
-from __future__ import annotations
-
 import json
 import os
 import stat

@@ -16,8 +16,6 @@ Mocking follows the import-site pattern established in ``test_justify_cmd.py``
 (``_patch_substrate``): all mocks target ``gzkit.justify.cli.*``.
 """
 
-from __future__ import annotations
-
 import io
 import tempfile
 import unittest

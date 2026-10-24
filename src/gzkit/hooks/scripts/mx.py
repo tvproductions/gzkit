@@ -5,8 +5,6 @@ adapters. Keeping these out of ``validation.py`` holds that module under the
 600-line ceiling and keeps the MX surface a single discoverable concern.
 """
 
-from __future__ import annotations
-
 from textwrap import dedent
 
 
@@ -37,8 +35,6 @@ def _mx_awareness_script() -> str:
             Exit codes:
               0 - Always (fail-open; turn must always begin)
             \"\"\"
-
-            from __future__ import annotations
 
             import json
             import os

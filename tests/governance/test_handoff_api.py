@@ -5,8 +5,6 @@ run of the implementation. Fixtures are deterministic and hermetic: a
 ``tempfile.TemporaryDirectory`` is the ``base_path``, no network, no ledger read.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

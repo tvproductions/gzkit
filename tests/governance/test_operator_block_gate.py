@@ -11,8 +11,6 @@ is the operator's own act, and a human attesting a brief IS the ruling the block
 awaits — gating there would make one decision cost two commands.
 """
 
-from __future__ import annotations
-
 import unittest
 
 from gzkit.pipeline_runtime import operator_block_blockers

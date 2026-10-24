@@ -14,8 +14,6 @@ mandated tier-1 argv (`data/mandated_tier1_dispatch.json`), and its `task
 --write --cwd <disposable checkout>` form is what makes replay possible at all.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 

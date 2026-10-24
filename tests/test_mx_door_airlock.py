@@ -13,8 +13,6 @@ calibration frontier (parent ADR § Consequences), not this increment.
 REQ-0.33.0-04-01..04 are BEHAVIOR REQs proven by the ``@covers`` methods below.
 """
 
-from __future__ import annotations
-
 import inspect
 import json
 from pathlib import Path

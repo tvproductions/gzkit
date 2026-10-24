@@ -7,8 +7,6 @@ REQ-derived assertions for:
   REQ-0.0.37-01-04: load_invariants raises on schema-invalid JSON (no silent skip)
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

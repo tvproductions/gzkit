@@ -8,8 +8,6 @@ Red-Green-Refactor discipline. Each test is REQ-pinned via the ``covers``
 decorator and asserts behavior, not strings.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

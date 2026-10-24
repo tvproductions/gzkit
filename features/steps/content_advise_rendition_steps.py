@@ -10,8 +10,6 @@ module defines only the advise-rendition-specific steps.
 @covers REQ-0.0.37-24-03
 """
 
-from __future__ import annotations
-
 import io
 import json
 from contextlib import redirect_stderr, redirect_stdout

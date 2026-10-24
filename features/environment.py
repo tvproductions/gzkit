@@ -1,7 +1,5 @@
 """Behave environment hooks for isolated BDD scenarios."""
 
-from __future__ import annotations
-
 import os
 
 # Neutralize ambient color-forcing at environment-module import — which behave

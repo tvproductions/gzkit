@@ -27,8 +27,6 @@ names but supports no ``async``, so this runs synchronously and the caller's
 bookmark completes before exit.
 """
 
-from __future__ import annotations
-
 import re
 from datetime import UTC, datetime
 from pathlib import Path

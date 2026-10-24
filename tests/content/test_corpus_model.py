@@ -5,8 +5,6 @@ append-only source of truth; entries are addressed/provenanced; sections resolve
 against the AgentContract/Pillar substrate; a JSON Schema mirrors the entry.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

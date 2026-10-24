@@ -10,8 +10,6 @@ fragments (`_OWNED_CHUNK`, `_UNOWNED_CHUNK`), never transcribed from a run of
 the code and never a stored constant — REQ-0.35.0-06-03 forbids exactly that.
 """
 
-from __future__ import annotations
-
 import io
 import json
 import tempfile

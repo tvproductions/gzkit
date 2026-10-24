@@ -7,8 +7,6 @@ store. These tests pin the properties that make that state impossible to report
 as success.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

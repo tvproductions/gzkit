@@ -6,8 +6,6 @@ data/surface_weight_floor.json, and enforces band-based exit codes.
 Returns a list[ValidationError]; empty list means clean.
 """
 
-from __future__ import annotations
-
 import contextlib
 import json
 from datetime import UTC, datetime, timedelta

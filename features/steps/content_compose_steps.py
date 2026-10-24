@@ -12,8 +12,6 @@
 @covers REQ-0.35.0-05-08
 """
 
-from __future__ import annotations
-
 import io
 import json
 import sys

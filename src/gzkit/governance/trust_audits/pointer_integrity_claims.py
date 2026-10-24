@@ -33,8 +33,6 @@ bidirectional check and the module implemented one. Two more claims, same preced
   destination and anchor is not refused, nor is the doctrine's literal placeholder.
 """
 
-from __future__ import annotations
-
 import tempfile
 from pathlib import Path
 

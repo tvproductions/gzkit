@@ -26,8 +26,6 @@ This band is gzkit's purpose — *make stochastic LLM vibing structurally inert*
 — expressed as a severity ladder rather than a single block/allow flag.
 """
 
-from __future__ import annotations
-
 from enum import StrEnum
 
 from gzkit.mx import levels

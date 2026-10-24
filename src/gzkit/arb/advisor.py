@@ -6,8 +6,6 @@ receipt JSON files and produces a compact report suitable for a
 human-in-the-loop guardrail tuning loop.
 """
 
-from __future__ import annotations
-
 import json
 from collections import Counter
 from pathlib import Path

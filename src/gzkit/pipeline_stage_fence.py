@@ -28,8 +28,6 @@ ceremony's required step would be un-compliable, and an un-compliable gate gets
 worked around rather than obeyed.
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

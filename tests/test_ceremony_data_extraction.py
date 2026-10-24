@@ -12,8 +12,6 @@ captured. The failure mode is silent data loss in ceremony Step 2, so the
 test verifies the field is non-empty and contains the expected prose.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

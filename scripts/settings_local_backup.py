@@ -30,8 +30,6 @@ Exit codes:
   0 - always
 """
 
-from __future__ import annotations
-
 import hashlib
 import json
 import re

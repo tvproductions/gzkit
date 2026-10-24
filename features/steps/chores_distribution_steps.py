@@ -13,8 +13,6 @@ per-scenario tempdir set up by ``features/environment.py``.
 @covers REQ-0.0.21-07-07
 """
 
-from __future__ import annotations
-
 import json
 import os
 import re

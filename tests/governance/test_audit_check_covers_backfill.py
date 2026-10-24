@@ -15,8 +15,6 @@ REQ-0.0.23-05-08. No test reaches the live repository's git history.
 @covers REQ-0.0.23-05-08
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

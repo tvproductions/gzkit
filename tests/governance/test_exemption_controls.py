@@ -8,8 +8,6 @@ Every arm carries its opposite pole where one exists, so an always-flag or
 always-pass implementation cannot false-pass.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

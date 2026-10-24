@@ -19,8 +19,6 @@ remains importable from ``gzkit.governance.trust_audits`` via the re-exports
 below.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 
 from gzkit.core.validation_rules import ValidationError

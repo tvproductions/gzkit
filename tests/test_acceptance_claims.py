@@ -7,8 +7,6 @@ the reducer completion actually runs, and weaken it in each way a refutation cou
 without a repair, requiring the matching control to fail.
 """
 
-from __future__ import annotations
-
 import unittest
 from unittest import mock
 

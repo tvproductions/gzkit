@@ -7,8 +7,6 @@ REQ-0.0.74-18-02 (BEHAVIOR): a state-property fence resolution is unchanged —
 parent-ADR ## Boundary Invariants anchor, no regression.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

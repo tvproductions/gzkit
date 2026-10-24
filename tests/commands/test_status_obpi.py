@@ -6,8 +6,6 @@ status surface must reflect a REPUDIATED runtime state — not the stale
 pre-repudiation completion receipt the graph node still carries.
 """
 
-from __future__ import annotations
-
 import unittest
 from typing import Any
 

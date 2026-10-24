@@ -10,8 +10,6 @@ carrying matching ``@covers`` decorators, and a governance-rules section.
 @covers ADR-0.28.0-focused-context-loader
 """
 
-from __future__ import annotations
-
 import contextlib
 import re
 import sys

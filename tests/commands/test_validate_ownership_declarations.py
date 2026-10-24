@@ -13,8 +13,6 @@ and `_validate_manifest_documents` / the `gz validate --documents` CLI path
 merely a helper that nothing calls.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

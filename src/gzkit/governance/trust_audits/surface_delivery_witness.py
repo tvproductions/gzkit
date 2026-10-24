@@ -33,8 +33,6 @@ an agent can chase rank below canon that exists nowhere else in the per-turn
 surface.
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

@@ -8,8 +8,6 @@ Extracted from ``validate_cmd`` to keep both modules under the 600-line cap.
 Shares the canonical ledger semantics API used by ``gz adr report``.
 """
 
-from __future__ import annotations
-
 import json
 import re
 from collections.abc import Callable

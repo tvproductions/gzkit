@@ -5,8 +5,6 @@ that enforces the standard 4-code CLI doctrine exit policy and supports ``--json
 for machine-readable receipt output.
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

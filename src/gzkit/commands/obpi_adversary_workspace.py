@@ -7,8 +7,6 @@ sandbox argv will eventually assemble it pointing at the live repository, which
 is the outcome the disposable checkout exists to prevent.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 from pathlib import Path

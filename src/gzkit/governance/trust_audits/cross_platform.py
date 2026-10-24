@@ -9,8 +9,6 @@ the doc scan to ``\\``-continued shell pipelines, which the line-scoped
 regexes would otherwise silently miss.
 """
 
-from __future__ import annotations
-
 import ast
 import re
 import subprocess

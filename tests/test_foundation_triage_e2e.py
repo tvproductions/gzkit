@@ -1,7 +1,5 @@
 """E2E integration tests for OBPI-0.0.57-05 -- exercises OBPI-02, OBPI-03, OBPI-04 surfaces."""
 
-from __future__ import annotations
-
 import contextlib
 import json
 import subprocess

@@ -5,8 +5,6 @@ for speed; one subprocess smoke test at the bottom exercises the registered
 subverb wiring end-to-end.
 """
 
-from __future__ import annotations
-
 import io
 import json
 import subprocess

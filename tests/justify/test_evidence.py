@@ -1,7 +1,5 @@
 """Evidence-gather tests for gzkit.justify.evidence."""
 
-from __future__ import annotations
-
 import io
 import json
 import tempfile

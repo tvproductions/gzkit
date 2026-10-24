@@ -14,8 +14,6 @@ Usage:
     python scan.py --self-test
 """
 
-from __future__ import annotations
-
 import argparse
 import ast
 import datetime as dt

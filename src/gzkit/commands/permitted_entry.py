@@ -21,8 +21,6 @@ as a FRESH transit through the pipeline door (intentional change) or the mx door
 (defect repair) — parent ADR BI-5, never smuggle real work into a reconnaissance.
 """
 
-from __future__ import annotations
-
 import enum
 import glob
 import shutil

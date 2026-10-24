@@ -10,8 +10,6 @@ Framing follows the Language Server Protocol envelope:
 No third-party JSON-RPC library is used (stdlib-first doctrine).
 """
 
-from __future__ import annotations
-
 import json
 import os
 import sys

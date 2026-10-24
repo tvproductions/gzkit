@@ -6,8 +6,6 @@ intervening ``obpi_completion_*`` event — the silent broken state
 reproduced in the ADR-0.0.31 closeout (OBPI-0.0.31-02).
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

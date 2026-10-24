@@ -13,8 +13,6 @@ verdict value — only a structurally malformed (explanation-less) receipt fails
 closed (ADR-0.0.39 Evidentiary invariant).
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

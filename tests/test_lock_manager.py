@@ -1,7 +1,5 @@
 """Tests for gzkit.lock_manager — lock file I/O and TTL logic."""
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

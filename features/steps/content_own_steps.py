@@ -14,8 +14,6 @@ behave's global registry with `content_retire_steps.py` and
 `content_unown_steps.py`; only the steps this feature adds live here.
 """
 
-from __future__ import annotations
-
 import io
 import json
 import shlex

@@ -18,8 +18,6 @@ OBPI brief's `## Tracked Defects`).
 @covers REQ-0.35.0-04-05
 """
 
-from __future__ import annotations
-
 import io
 import json
 import shlex

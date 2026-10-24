@@ -6,8 +6,6 @@ Coverage:
         All tests use tempfile-backed ledger; never touch live ledger.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

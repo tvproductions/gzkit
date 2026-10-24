@@ -4,8 +4,6 @@ These assert properties the fixtures must hold for *other* tests to be sound,
 so a regression here is a regression in every suite that builds a repo fixture.
 """
 
-from __future__ import annotations
-
 import json
 import os
 import shutil

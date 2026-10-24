@@ -41,8 +41,6 @@ legacy head, and both remain corpus SOURCES — a clip's fuller form may still s
 only in a pre-cutover document.
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 

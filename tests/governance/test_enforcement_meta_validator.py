@@ -7,8 +7,6 @@ Tests derive from acceptance criteria in the OBPI brief:
   REQ-0.0.74-16-04  engine lifted; un-forced NCs pass; qc_binding behavior preserved
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

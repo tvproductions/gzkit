@@ -18,8 +18,6 @@ module is left out of a hunk it would have killed, which reads as ``survived``,
 never as a false kill.
 """
 
-from __future__ import annotations
-
 import json
 import subprocess
 import tempfile

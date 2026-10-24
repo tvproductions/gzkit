@@ -1,7 +1,5 @@
 """Tests for gz obpi complete — atomic OBPI completion transaction."""
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

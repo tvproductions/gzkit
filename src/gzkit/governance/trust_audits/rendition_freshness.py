@@ -32,8 +32,6 @@ inside the hangar (marker present), fail-closed at full strength outside.
 Registered as ``gz validate --rendition-freshness``; also runs in ``gz check``.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 
 from gzkit.advisory import emit_advisory

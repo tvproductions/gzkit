@@ -4,8 +4,6 @@ v2.0 uses a pointer-style registry where each chore has its own directory
 containing CHORE.md (human workflow) and acceptance.json (machine criteria).
 """
 
-from __future__ import annotations
-
 import importlib.resources
 import json
 import re

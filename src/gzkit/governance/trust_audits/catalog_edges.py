@@ -19,8 +19,6 @@ them from the project and runs these after the structure checks pass.
 The freeze lock is RO-5's (operator, "Leave to RO-5 (Rec.)").
 """
 
-from __future__ import annotations
-
 import re
 from collections.abc import Callable, Sequence
 

@@ -9,8 +9,6 @@ its lease is announced and never grounds, in or out of exit (operator ruling
 2026-10-18).
 """
 
-from __future__ import annotations
-
 import io
 import json
 import unittest

@@ -4,8 +4,6 @@ Each test derives its assertion from an OBPI brief acceptance criterion, not fro
 a run of the implementation.
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory

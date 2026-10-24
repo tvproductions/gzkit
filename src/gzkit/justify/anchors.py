@@ -11,8 +11,6 @@ the canonical :func:`gzkit.utils.run_exec` wrapper, but emits nothing to
 stdout/stderr and never mutates the filesystem.
 """
 
-from __future__ import annotations
-
 import json
 import re
 from pathlib import Path

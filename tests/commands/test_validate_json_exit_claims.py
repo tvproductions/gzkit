@@ -5,8 +5,6 @@ exited 0 whatever it found. These tests weaken the handler the way that defect d
 ways its repair could regress, and require the matching control to fail.
 """
 
-from __future__ import annotations
-
 import unittest
 from unittest import mock
 

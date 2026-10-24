@@ -1,7 +1,5 @@
 """ARB step reporter — wraps arbitrary commands and emits a step receipt."""
 
-from __future__ import annotations
-
 import json
 import os
 import re

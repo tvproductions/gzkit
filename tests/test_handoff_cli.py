@@ -10,8 +10,6 @@ domain-object fields), never as rendered substrings — the discriminator per
 ``.gzkit/rules/tests.md`` § The discriminator.
 """
 
-from __future__ import annotations
-
 import inspect
 import io
 import json

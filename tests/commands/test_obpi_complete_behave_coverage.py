@@ -14,8 +14,6 @@ Coverage map:
 | REQ-0.0.25-01-05 | TestBehaveRefPasses.test_failing_marks_failing_cover    |
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

@@ -8,8 +8,6 @@ into chat. Tests pin the detection rule and the no-op paths so a future
 edit cannot silently regress either side.
 """
 
-from __future__ import annotations
-
 import importlib.util
 import io
 import json

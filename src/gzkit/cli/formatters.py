@@ -11,8 +11,6 @@ Mode selection maps to CLI flags:
   default → human, --json → json, --quiet → quiet, --verbose → verbose
 """
 
-from __future__ import annotations
-
 import enum
 import json
 import sys

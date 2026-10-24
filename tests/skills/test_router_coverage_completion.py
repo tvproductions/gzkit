@@ -3,8 +3,6 @@
 @covers OBPI-0.27.0-04-router-coverage-completion
 """
 
-from __future__ import annotations
-
 import datetime as _dt
 import re
 import unittest

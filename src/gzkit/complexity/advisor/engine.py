@@ -26,8 +26,6 @@ is absent, the engine raises :class:`EngineError` naming OBPI-0.0.27-07 (the
 link-integrity validator) as the resolution path.
 """
 
-from __future__ import annotations
-
 import ast
 import re
 from pathlib import Path

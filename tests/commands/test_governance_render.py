@@ -8,8 +8,6 @@ REQ-derived assertions for:
   REQ-0.0.37-02-05: governance render verb resolves via gz governance render --help
 """
 
-from __future__ import annotations
-
 import io
 import tempfile
 import unittest

@@ -7,8 +7,6 @@ json only — pydantic is deliberately omitted here even though it is present in
 script and must remain importable when the wider gzkit package is broken.
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

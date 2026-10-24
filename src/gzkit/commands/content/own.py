@@ -41,8 +41,6 @@ A-E and the cleanup. A surface has ONE pending journal, and whichever verb runs
 next completes it; the journal's ``transition`` field selects the direction.
 """
 
-from __future__ import annotations
-
 import sys
 from datetime import UTC, datetime
 from typing import Any, NoReturn

@@ -1,7 +1,5 @@
 """Unit tests for gzkit.reporter presets and panels."""
 
-from __future__ import annotations
-
 import io
 import unittest
 

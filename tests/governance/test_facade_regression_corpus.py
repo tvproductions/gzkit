@@ -6,8 +6,6 @@ _check_theater_signatures detects it. This corpus ensures the six ADR-0.0.37
 facade signatures stay caught — none can silently pass a future refactor.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

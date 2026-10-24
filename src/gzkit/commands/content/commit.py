@@ -30,8 +30,6 @@ Exit 2: system/IO error (including an unreadable prior committed rendition).
 Exit 3: retention gate refusal — a removed block is unaccounted for. Writes NOTHING.
 """
 
-from __future__ import annotations
-
 import sys
 from datetime import UTC, datetime
 from pathlib import Path

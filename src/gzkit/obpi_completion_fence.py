@@ -34,8 +34,6 @@ attestation universal, and the ledger is what records it. A brief that *reads*
 attested is necessary, never sufficient.
 """
 
-from __future__ import annotations
-
 import json
 import re
 from pathlib import Path

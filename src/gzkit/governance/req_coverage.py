@@ -26,8 +26,6 @@ The implementation reuses existing primitives:
 @covers OBPI-0.0.25-01-implement-coverage-gate
 """
 
-from __future__ import annotations
-
 import re
 from pathlib import Path
 

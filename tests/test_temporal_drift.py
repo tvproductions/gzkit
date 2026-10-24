@@ -4,8 +4,6 @@
 @covers OBPI-0.25.0-26-drift-detection-pattern
 """
 
-from __future__ import annotations
-
 import json
 import subprocess
 import tempfile

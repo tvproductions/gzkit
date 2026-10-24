@@ -6,8 +6,6 @@ helper, and fails closed (non-zero exit, no line written) on an empty
 ``--summary`` or an out-of-enum ``--type``.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

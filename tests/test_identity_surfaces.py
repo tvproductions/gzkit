@@ -4,8 +4,6 @@ Covers: AdrId, ObpiId, ReqId, TaskId, EvidenceId parse/validate,
 ID portability, frozen model immutability, IDENTITY_MODELS mapping.
 """
 
-from __future__ import annotations
-
 import unittest
 
 from pydantic import ValidationError

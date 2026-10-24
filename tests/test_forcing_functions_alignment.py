@@ -12,8 +12,6 @@ These tests pin the chain the alignment restored: declared -> asked -> rendered
 attested design reasoning rather than failing loudly.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

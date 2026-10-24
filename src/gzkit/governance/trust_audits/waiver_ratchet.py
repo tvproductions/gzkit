@@ -34,8 +34,6 @@ The verb self-registers as a ``bound`` QC step subject to ``--qc-binding`` (no
 facade-of-the-facade): it ships a negative control it must fail on.
 """
 
-from __future__ import annotations
-
 import json
 from collections import Counter
 from datetime import date

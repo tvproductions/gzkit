@@ -8,8 +8,6 @@ are rejected.
 @covers REQ-0.0.22-01-04
 """
 
-from __future__ import annotations
-
 import unittest
 
 from pydantic import ValidationError

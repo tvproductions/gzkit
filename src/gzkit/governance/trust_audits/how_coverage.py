@@ -16,8 +16,6 @@ parse is itself a finding, so the format cannot drift out from under the check.
 A project whose catalog has no `gz-how` is skipped.
 """
 
-from __future__ import annotations
-
 import re
 from pathlib import Path
 

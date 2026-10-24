@@ -32,8 +32,6 @@ rather than parsing state out of it (`.gzkit/rules/governance-core.md` -- execut
 reads state from JSON, never from markdown).
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

@@ -14,8 +14,6 @@ passes on an alias; only exclusion proves the callers contend for the same
 kernel lock on the same sidecar.
 """
 
-from __future__ import annotations
-
 import errno
 import importlib.util
 import sys

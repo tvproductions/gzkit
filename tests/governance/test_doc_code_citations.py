@@ -22,8 +22,6 @@ Scope is the existence half only, as in the sibling arm. Whether a cited LINE
 still holds drifts on every edit to the cited file and is not claimed here.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

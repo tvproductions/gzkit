@@ -10,8 +10,6 @@ on any ``CHORE.md`` or ``acceptance.json`` outside the canonical roots
 (``src/gzkit/chores/`` and the project-scoped ``paths.chores``).
 """
 
-from __future__ import annotations
-
 import json
 import subprocess
 import sys

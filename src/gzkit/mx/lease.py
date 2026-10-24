@@ -13,8 +13,6 @@ writer, called by the session orientation at boot, as the token block's TTL warn
 is.
 """
 
-from __future__ import annotations
-
 from datetime import UTC, datetime
 from pathlib import Path
 

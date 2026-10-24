@@ -11,8 +11,6 @@ An I/O error reading a ceremony/brief never propagates: on the gate path
 on the ``gz check`` sweep path one unreadable sibling is tolerated (return []).
 """
 
-from __future__ import annotations
-
 import json
 import re
 from datetime import UTC, datetime

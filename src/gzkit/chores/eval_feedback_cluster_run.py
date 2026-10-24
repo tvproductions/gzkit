@@ -11,8 +11,6 @@ an empty input (the GHI #614 negative-signal shape). ``--dry-run`` reports the
 same counts and writes nothing.
 """
 
-from __future__ import annotations
-
 import argparse
 import sys
 from pathlib import Path

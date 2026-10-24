@@ -11,8 +11,6 @@ Each test builds its own isolated project root. None reads the real
 repository's foundation set, manifest, or ledger.
 """
 
-from __future__ import annotations
-
 import inspect
 import io
 import json

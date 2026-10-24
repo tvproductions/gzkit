@@ -1,7 +1,5 @@
 """Rich panel renderer for gz content show (OBPI-0.0.34-05)."""
 
-from __future__ import annotations
-
 from rich.console import Console
 from rich.panel import Panel
 

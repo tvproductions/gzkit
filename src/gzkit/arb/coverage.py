@@ -19,8 +19,6 @@ the contract, and a census that trusted the convention would misreport precisely
 when a producer drifted from it.
 """
 
-from __future__ import annotations
-
 import json
 from collections import Counter
 from pathlib import Path

@@ -12,8 +12,6 @@ timestamps, nested-object evidence, plural `adr_ids` keys, prose
 rewriting closed-evidence history (trust-doctrine T2).
 """
 
-from __future__ import annotations
-
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field

@@ -41,8 +41,6 @@ a single collapsed type could not.
 Registered as ``gz validate --corpus-retirement-witness``.
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

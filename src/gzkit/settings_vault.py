@@ -20,8 +20,6 @@ Windows for an unknown period (GHI #1071) with the external vault empty, and
 nothing reported it.
 """
 
-from __future__ import annotations
-
 import hashlib
 import re
 from enum import Enum

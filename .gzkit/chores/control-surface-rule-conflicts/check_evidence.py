@@ -30,8 +30,6 @@ Exit codes:
   3  configuration error (missing matrix file, bad arguments)
 """
 
-from __future__ import annotations
-
 import argparse
 import re
 import subprocess

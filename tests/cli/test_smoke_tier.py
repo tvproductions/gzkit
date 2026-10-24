@@ -11,8 +11,6 @@ REQ-derived tests elsewhere prove correctness; these prove the build is not
 fundamentally broken, fast enough that the answer is cheap to have.
 """
 
-from __future__ import annotations
-
 import argparse
 import io
 import unittest

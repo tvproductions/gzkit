@@ -1,7 +1,5 @@
 """BDD step definitions for reporter rendering feature."""
 
-from __future__ import annotations
-
 import io
 
 from behave import given, then, when

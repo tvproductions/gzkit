@@ -41,8 +41,6 @@ Usage:
     uv run python scripts/migrate_brief_frontmatter.py
 """
 
-from __future__ import annotations
-
 import argparse
 import sys
 import warnings

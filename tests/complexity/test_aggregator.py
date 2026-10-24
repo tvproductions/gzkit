@@ -10,8 +10,6 @@ Pins:
   computes inter-project variance against the per-project p50 medians.
 """
 
-from __future__ import annotations
-
 import statistics
 import unittest
 

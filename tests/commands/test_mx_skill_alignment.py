@@ -12,8 +12,6 @@ entries. RED before the waivers are removed (the verbs are still in
 ``_NO_SKILL_VERBS``); GREEN after.
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 

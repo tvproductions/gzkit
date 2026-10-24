@@ -12,8 +12,6 @@ Policy breaches return a list of ValidationError (caller exits 3).
 Clean state returns an empty list.
 """
 
-from __future__ import annotations
-
 import hashlib
 import json
 import re

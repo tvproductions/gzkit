@@ -3,8 +3,6 @@
 Covers REQ-0.0.34-03-01, REQ-0.0.34-03-04, REQ-0.0.34-03-05.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

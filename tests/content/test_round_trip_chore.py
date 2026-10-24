@@ -1,7 +1,5 @@
 """Round-trip fidelity tests for Chore — OBPI-0.0.34-03."""
 
-from __future__ import annotations
-
 import unittest
 
 from gzkit.content.models import Bullet, Chore

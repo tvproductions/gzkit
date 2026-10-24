@@ -5,8 +5,6 @@ Unit-test entry to the audit; the canonical logic lives in
 ``gz validate --validator-fields``.
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 

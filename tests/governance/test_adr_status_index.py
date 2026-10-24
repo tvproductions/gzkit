@@ -5,8 +5,6 @@ with on-disk truth* — not byte-level table shape. Per
 `.gzkit/rules/tests.md` § Tests assert semantics, not strings.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

@@ -18,8 +18,6 @@ enforcement claims are absent and the module exposes no enforcement surface, so
 re-adding one is a test failure rather than a silent re-arming.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

@@ -19,8 +19,6 @@ in a scope-owned file would have required exactly the fabricated `@covers`
 this repair exists to stop.
 """
 
-from __future__ import annotations
-
 import unittest
 
 from tests.governance.test_kind_invariance_docs import (

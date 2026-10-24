@@ -11,8 +11,6 @@ a new handler is the laundering ADR-0.0.73 Boundary Invariant #8 forbids;
 extracting a coherent family is the precedented answer (``c3d9a99a0``).
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

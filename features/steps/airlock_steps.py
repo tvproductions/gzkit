@@ -10,8 +10,6 @@ verbatim from ``chores_distribution_steps.py``.
 @covers REQ-0.33.0-02-06
 """
 
-from __future__ import annotations
-
 from behave import given
 
 

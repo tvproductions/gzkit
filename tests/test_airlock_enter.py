@@ -6,8 +6,6 @@ implementation. The primitive is exercised with an injected fake ``reach_fn``
 so the core runs with NO ontology projection built (hexagonal rule 6).
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

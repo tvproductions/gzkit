@@ -20,8 +20,6 @@ helper's return value. A helper agreeing while the file on disk has lost a
 committed row is the whole defect.
 """
 
-from __future__ import annotations
-
 import json
 import signal
 import subprocess

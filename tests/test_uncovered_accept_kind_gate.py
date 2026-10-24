@@ -14,8 +14,6 @@ that can ever reach the waiver path are BEHAVIOR ones. Refusing them is therefor
 refusal of every REQ the path can see.
 """
 
-from __future__ import annotations
-
 import io
 import unittest
 from contextlib import redirect_stderr, redirect_stdout

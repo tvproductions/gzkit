@@ -15,8 +15,6 @@ and OBPI-05 (justify integration); none of those surfaces is allowed to
 fabricate a diagnosis or hint outside this engine.
 """
 
-from __future__ import annotations
-
 import ast
 from pathlib import Path
 from typing import Literal

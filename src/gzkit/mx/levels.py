@@ -12,8 +12,6 @@ NOTICE, INFO, and DEBUG are visible-but-non-grounding. The shared checkpoint
 authority, not a per-guard ladder (parent ADR § Boundary Invariants #2).
 """
 
-from __future__ import annotations
-
 import logging
 
 # The GZ_<LEVEL> ladder — reuses Python logging's constants (STDLIB-FIRST), so

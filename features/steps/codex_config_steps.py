@@ -1,7 +1,5 @@
 """BDD fixtures for generated and operator-owned Codex configuration."""
 
-from __future__ import annotations
-
 import json
 import tomllib
 from pathlib import Path

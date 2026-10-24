@@ -65,8 +65,6 @@ built, every transcript is reported not run and the packet is not verified: repl
 refused, never run live.
 """
 
-from __future__ import annotations
-
 import re
 import subprocess
 import tempfile

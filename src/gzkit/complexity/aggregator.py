@@ -19,8 +19,6 @@ Edge cases:
   we handle this by returning that lone value for every percentile.
 """
 
-from __future__ import annotations
-
 import statistics
 from collections.abc import Mapping, Sequence
 

@@ -40,8 +40,6 @@ blanket exemption would be the first stale grant in a mechanism built to refuse
 them.
 """
 
-from __future__ import annotations
-
 import re
 import subprocess
 from pathlib import Path

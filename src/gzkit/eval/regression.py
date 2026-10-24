@@ -8,8 +8,6 @@ Baselines are stored in ``artifacts/baselines/`` as versioned JSON.
 Updates are explicit only (``--update-baseline``).
 """
 
-from __future__ import annotations
-
 import json
 import subprocess
 from datetime import UTC, datetime

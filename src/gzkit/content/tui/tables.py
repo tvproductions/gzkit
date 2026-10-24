@@ -1,7 +1,5 @@
 """Rich table renderer for gz content list (OBPI-0.0.34-05)."""
 
-from __future__ import annotations
-
 from rich.console import Console
 from rich.table import Table
 

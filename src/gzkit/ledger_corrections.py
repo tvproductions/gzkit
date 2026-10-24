@@ -37,8 +37,6 @@ reading only one shape is correct for whichever call site was written first and
 silently wrong for the other.
 """
 
-from __future__ import annotations
-
 from collections.abc import Iterable, Mapping
 from datetime import UTC, datetime
 from typing import Any

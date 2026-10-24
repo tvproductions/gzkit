@@ -6,8 +6,6 @@ only when a proposal cites at least the threshold of insight or GHI records, eac
 pair of them at least one session lease apart by full timestamp.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from datetime import UTC, datetime, timedelta

@@ -6,8 +6,6 @@ the total ``OBJECT_TYPE_REGISTRY`` seating every object type on the two-axis
 ownership × plane classification.
 """
 
-from __future__ import annotations
-
 import enum
 from typing import Any
 

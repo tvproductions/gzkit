@@ -27,8 +27,6 @@ where ``spawner`` is ``run``, ``check_output``, ``check_call``, ``call`` or ``Po
 A helper whose argv arrives as a parameter is outside the fence and must be read.
 """
 
-from __future__ import annotations
-
 import ast
 from collections.abc import Mapping, MutableMapping
 from pathlib import Path

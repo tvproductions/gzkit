@@ -6,8 +6,6 @@ when handoff timestamp predates the matching claim; fails when any of the four
 minimum-information fields is absent; and grandfathers pre-cutover events.
 """
 
-from __future__ import annotations
-
 import json
 import subprocess
 import tempfile

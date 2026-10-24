@@ -33,8 +33,6 @@ Isolation is unconditional: every mutant runs in a subprocess with its own
 size)`` heuristic to match and each run must compile from source.
 """
 
-from __future__ import annotations
-
 import hashlib
 import re
 import subprocess

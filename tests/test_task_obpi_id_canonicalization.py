@@ -13,8 +13,6 @@ only one of those candidates was real. A phantom Layer-2 graph key (an
 canonicalization and write a divergent short id.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from datetime import UTC, datetime

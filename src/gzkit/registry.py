@@ -8,8 +8,6 @@ shaped."
 Singleton: the global ``REGISTRY`` is populated at import time.
 """
 
-from __future__ import annotations
-
 from pathlib import PurePosixPath
 from typing import Any
 

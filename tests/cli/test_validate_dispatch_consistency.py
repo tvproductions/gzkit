@@ -21,8 +21,6 @@ have a param. That is the load-bearing invariant; the predicate and
 ``_collect_errors`` lists are optimizations over it.
 """
 
-from __future__ import annotations
-
 import inspect
 import re
 import unittest

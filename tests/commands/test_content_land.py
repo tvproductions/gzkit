@@ -12,8 +12,6 @@ fixture below is shared with ``tests/content/test_landing.py`` and builds the
 isolated project only from surfaces that predate the landing module.
 """
 
-from __future__ import annotations
-
 import contextlib
 import hashlib
 import json

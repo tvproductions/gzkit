@@ -17,8 +17,6 @@ Per ``.gzkit/rules/tests.md`` § Unit-tier contract, the subprocess boundary in
 ``reexecute_demo`` is mocked — real-subprocess execution is a behave concern.
 """
 
-from __future__ import annotations
-
 import hashlib
 import unittest
 from pathlib import Path

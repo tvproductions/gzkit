@@ -17,8 +17,6 @@ the cold-start branch is canon, not a temporary affordance, so the
 no-prior-distillation case has its own structural surface in the document.
 """
 
-from __future__ import annotations
-
 import re
 from datetime import date
 from pathlib import Path

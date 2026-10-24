@@ -6,8 +6,6 @@ and maintains consistent presentation across all commands.
 Run: uv run -m unittest tests.policy.test_cli_consistency -v
 """
 
-from __future__ import annotations
-
 import argparse
 import subprocess
 import unittest

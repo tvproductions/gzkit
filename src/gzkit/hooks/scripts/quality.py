@@ -39,8 +39,6 @@ def _verifier_pipe_gate_script() -> str:
               2 - Block operation (a verifier's exit status would be discarded)
             \"\"\"
 
-            from __future__ import annotations
-
             import json
             import sys
 

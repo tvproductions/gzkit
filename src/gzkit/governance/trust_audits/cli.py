@@ -6,8 +6,6 @@
   wielding skill, or a waiver in ``_NO_SKILL_VERBS`` with rationale (GHI #202).
 """
 
-from __future__ import annotations
-
 import re
 from pathlib import Path
 

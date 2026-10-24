@@ -18,8 +18,6 @@ which names it; scope discipline is a boundary property with no REQ here.
 @covers REQ-0.0.22-02-06
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

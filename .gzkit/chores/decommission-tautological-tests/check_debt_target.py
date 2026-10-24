@@ -29,8 +29,6 @@ being drained on schedule.
 Exit codes: 0 clean, 1 usage/IO error, 3 policy breach.
 """
 
-from __future__ import annotations
-
 import argparse
 import contextlib
 import math

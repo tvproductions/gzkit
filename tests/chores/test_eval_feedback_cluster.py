@@ -7,8 +7,6 @@ records when thresholds are met, and remains idempotent on re-run.
 All tests use tempfile-backed fixtures per .gzkit/rules/tests.md.
 """
 
-from __future__ import annotations
-
 import json
 import runpy
 import sys

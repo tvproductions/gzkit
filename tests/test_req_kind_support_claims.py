@@ -5,8 +5,6 @@ weaken it the way that defect did, and the ways its repair could regress, and re
 matching control to fail.
 """
 
-from __future__ import annotations
-
 import re
 import unittest
 from unittest import mock

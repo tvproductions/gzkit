@@ -5,8 +5,6 @@ tests pin the operator-facing surface: that the pair actually writes Layer-2
 events, that both refuse an empty payload, and that `--dry-run` writes nothing.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

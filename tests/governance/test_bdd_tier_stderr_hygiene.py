@@ -16,8 +16,6 @@ Two distinct causes produced the same symptom, and they need opposite fixes:
   ``ExpectedWarningCapture``.
 """
 
-from __future__ import annotations
-
 import importlib.util
 import logging
 import sys

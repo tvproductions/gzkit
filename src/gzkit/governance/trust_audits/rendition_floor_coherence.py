@@ -44,8 +44,6 @@ Registered as ``gz validate --rendition-floor-coherence``; also runs in
 ``gz check``.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 
 from gzkit.advisory import emit_advisory

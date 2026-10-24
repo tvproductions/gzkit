@@ -4,8 +4,6 @@ REQ-0.0.29-07-01: Decorator registers (file_path, qualname) -> (reason, attestor
 REQ-0.0.29-07-02: Decorator is a strict no-op at runtime — returns the function unchanged.
 """
 
-from __future__ import annotations
-
 import ast
 import inspect
 from collections.abc import Callable

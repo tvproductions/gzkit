@@ -7,8 +7,6 @@ parsing, formatting, and four-tier chain resolution).
 Follows the ReqId/ReqEntity pattern in ``triangle.py``.
 """
 
-from __future__ import annotations
-
 import enum
 import json
 import pathlib

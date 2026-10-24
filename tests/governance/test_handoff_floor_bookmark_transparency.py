@@ -30,8 +30,6 @@ Transparency, never substitution: the bookmark stays in ``continues_from`` and
 stays selectable. Only its contribution to the RULING chain is looked through.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

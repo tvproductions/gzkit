@@ -38,8 +38,6 @@ Module-level means import-time — imports inside a function body are deferred a
 are exactly the fix this guard protects, so function bodies are not traversed.
 """
 
-from __future__ import annotations
-
 import ast
 import unittest
 from collections import deque

@@ -20,8 +20,6 @@ Idempotent by construction: it emits only for tombstones the witness gate still
 reports, so a second run over a reconciled corpus writes nothing and exits 0.
 """
 
-from __future__ import annotations
-
 import sys
 
 from gzkit.commands.common import get_project_root

@@ -8,8 +8,6 @@ calls the runtime plan/execute functions, and renders human or ``--json`` output
 @covers ADR-0.0.65 (OBPI-0.0.65-05)
 """
 
-from __future__ import annotations
-
 import json
 from datetime import UTC, datetime
 from pathlib import Path

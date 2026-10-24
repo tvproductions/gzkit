@@ -13,8 +13,6 @@ The commit is the locus, as for ``gzkit.hooks.commit_ledger``: an edit never com
 has no state to observe and is not booked.
 """
 
-from __future__ import annotations
-
 import hashlib
 import subprocess
 from pathlib import Path

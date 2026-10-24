@@ -17,8 +17,6 @@ Wired into ``gz validate --complexity-thresholds`` (explicit scope) and the
 ``gz check`` aggregator under the "Complexity-thresholds" step.
 """
 
-from __future__ import annotations
-
 import re
 import sys
 from pathlib import Path

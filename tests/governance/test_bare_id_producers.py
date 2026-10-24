@@ -7,8 +7,6 @@ from ``gz adr evaluate``, the OBPI lock verbs and the airlock. A lock keyed by
 the bare id also let a second agent claim the same brief under its slug.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

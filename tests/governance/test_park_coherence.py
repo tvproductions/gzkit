@@ -11,8 +11,6 @@ dispositions `orphaned_obpi_ids` excludes from its census, so parking an orphan
 pin the missing verification.
 """
 
-from __future__ import annotations
-
 import unittest
 
 from gzkit.obpi_lifecycle import park_coherence_violations

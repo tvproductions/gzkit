@@ -12,8 +12,6 @@ future "let's add one nice touch" inline addition that v3 collapsed onto
 the agent.
 """
 
-from __future__ import annotations
-
 import importlib.util
 import json
 import os

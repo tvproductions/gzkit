@@ -41,8 +41,6 @@ Both renderers now carry the one qualifier from :mod:`gzkit.remote_divergence`,
 fenced by a differential rather than by a convention.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field

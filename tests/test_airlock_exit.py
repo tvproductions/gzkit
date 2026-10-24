@@ -13,8 +13,6 @@ menu, fresh-transit routing (never smuggled), one airlock_out L2 event, and
 never a write to L1 canon.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

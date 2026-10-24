@@ -17,8 +17,6 @@ complete contents, provenance, verify-before-remove, and fail closed with the
 original retained when preservation fails.
 """
 
-from __future__ import annotations
-
 import hashlib
 import json
 import unittest

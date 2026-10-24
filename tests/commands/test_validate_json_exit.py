@@ -15,8 +15,6 @@ The family has three dispatch shapes, and each is driven here on its own:
   fails this module until it is given a row.
 """
 
-from __future__ import annotations
-
 import inspect
 import json
 import unittest

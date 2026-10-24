@@ -29,8 +29,6 @@ never smuggled into the current sortie (BI #5); and the L3 projection INFORMS th
 drift-diff, it never gates (state-doctrine Rule 5, BI #6).
 """
 
-from __future__ import annotations
-
 import enum
 import sys
 from collections.abc import Callable, Sequence

@@ -11,8 +11,6 @@ evaluation cannot accidentally mutate a rule mid-evaluation, and so the rule
 shape is enforced twice (JSON Schema at load, Pydantic at construct).
 """
 
-from __future__ import annotations
-
 import ast
 import json
 from pathlib import Path

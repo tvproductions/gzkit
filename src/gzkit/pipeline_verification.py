@@ -4,8 +4,6 @@ Extracted from pipeline_runtime.py to keep module sizes under 600 lines.
 All public symbols are re-exported from pipeline_runtime for backward compatibility.
 """
 
-from __future__ import annotations
-
 import json
 import re
 from enum import StrEnum

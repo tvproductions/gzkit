@@ -3,8 +3,6 @@
 Extracted from gzkit.decomposition. All functions are pure domain logic.
 """
 
-from __future__ import annotations
-
 import re
 
 from pydantic import BaseModel, ConfigDict

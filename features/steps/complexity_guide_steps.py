@@ -11,8 +11,6 @@ and a distilled-characteristics document, which the authoring engine requires.
 @covers REQ-0.0.30-01-03
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

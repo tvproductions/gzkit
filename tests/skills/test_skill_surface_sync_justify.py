@@ -5,8 +5,6 @@ repository. `sync_skill_mirror` is invoked against tempfile-copied skill
 directories so the test run is hermetic.
 """
 
-from __future__ import annotations
-
 import ast
 import re
 import shutil

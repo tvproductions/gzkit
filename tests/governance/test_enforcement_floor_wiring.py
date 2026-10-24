@@ -7,8 +7,6 @@ REQ-0.0.74-19-03 [behavior]: new gz check step carries its OWN qc negative contr
 REQ-0.0.74-19-04 [structural-fence]: floor lands LAST — only after OBPI-17+18 (parent ADR BI#8).
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch

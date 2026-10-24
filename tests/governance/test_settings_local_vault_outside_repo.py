@@ -17,8 +17,6 @@ The shaping is pure string work, so both platform cases are asserted here
 without needing to run on either one.
 """
 
-from __future__ import annotations
-
 import importlib.util
 import unittest
 from pathlib import Path, PureWindowsPath

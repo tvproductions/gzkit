@@ -14,8 +14,6 @@ Coverage:
     REQ-0.0.33-05-06 — `validate_surface_fidelity` is importable and callable.
 """
 
-from __future__ import annotations
-
 import pathlib
 import unittest
 from unittest.mock import patch

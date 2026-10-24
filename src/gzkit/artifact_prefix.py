@@ -19,8 +19,6 @@ short OBPI ids with more than one graph key, this rule and the brief-on-disk rul
 select the same candidates for all 90.
 """
 
-from __future__ import annotations
-
 from collections.abc import Mapping
 from typing import Any
 

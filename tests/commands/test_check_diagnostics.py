@@ -6,8 +6,6 @@ cause of 28 consecutive undiagnosable red CI runs (only `uv run gz check` runs
 in CI, so the swallowed unittest output never reached the log).
 """
 
-from __future__ import annotations
-
 import io
 import tempfile
 import unittest

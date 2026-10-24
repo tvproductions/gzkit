@@ -9,8 +9,6 @@ resolves in both trees; a chore that only makes sense for gzkit is
 ``projectLocal`` and never delivered.
 """
 
-from __future__ import annotations
-
 import json
 import re
 import unittest

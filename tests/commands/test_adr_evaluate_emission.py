@@ -12,8 +12,6 @@ never touched (REQ-0.0.26-01-06). Emission goes through the production code
 path — not seeded directly (REQ-0.0.26-01-09).
 """
 
-from __future__ import annotations
-
 import contextlib
 import json
 import tempfile

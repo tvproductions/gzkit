@@ -38,8 +38,6 @@ Registered as ``gz validate --complexity-ceiling``; runs in ``gz check`` as the
 "Complexity ceiling" step.
 """
 
-from __future__ import annotations
-
 import ast
 import tomllib
 from collections.abc import Callable, Mapping

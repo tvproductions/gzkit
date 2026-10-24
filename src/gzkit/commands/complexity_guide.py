@@ -12,8 +12,6 @@ Exit codes (binding, REQ-0.0.30-01-02):
 * ``2`` — system/IO error (missing threshold table, AST parse error).
 """
 
-from __future__ import annotations
-
 import json
 import sys
 from pathlib import Path

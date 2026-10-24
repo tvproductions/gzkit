@@ -22,8 +22,6 @@ enforcement consumer. The direction's teeth are proven by the four
 `run_module_size_audit`, which runs `--self-test` and short-circuits on it.
 """
 
-from __future__ import annotations
-
 import importlib.util
 import tempfile
 import unittest

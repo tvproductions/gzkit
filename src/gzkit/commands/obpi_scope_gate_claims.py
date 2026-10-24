@@ -16,8 +16,6 @@ Two claims, on the exemption-half precedent (GHI #797).
   log yields no finding, so an always-refuse gate cannot discharge the first claim.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 
 REFUSE_CLAIM_ID = "completion-scope-outside-allowed-paths"

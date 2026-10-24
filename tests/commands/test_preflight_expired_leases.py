@@ -6,8 +6,6 @@ preflight must not count one as an issue it offers to clean; only the orphan
 ``mx-session`` lock, whose hangar is closed, is still cleaned.
 """
 
-from __future__ import annotations
-
 import io
 import json
 import tempfile

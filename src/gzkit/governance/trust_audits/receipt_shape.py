@@ -13,8 +13,6 @@ Pre-cutoff receipts with deprecated shapes:
   - If the waiver file is absent → warn-only (no policy-breach errors)
 """
 
-from __future__ import annotations
-
 import datetime
 import json
 import logging

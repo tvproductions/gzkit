@@ -7,8 +7,6 @@ exit, no receipt) only when the verdict is structurally malformed (empty
 explanation) — never on the verdict value itself (ADR-0.0.39).
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

@@ -8,8 +8,6 @@ after it reads as it always did (REQ-0.35.0-15-04), and a marker advanced past
 (REQ-0.35.0-15-07).
 """
 
-from __future__ import annotations
-
 import importlib.util
 import json
 import subprocess

@@ -6,8 +6,6 @@ exit-code discipline). Subprocess boundaries are mocked at the import site
 in ``gzkit.justify.cli`` per the OBPI-01 precedent.
 """
 
-from __future__ import annotations
-
 import io
 import re
 import tempfile

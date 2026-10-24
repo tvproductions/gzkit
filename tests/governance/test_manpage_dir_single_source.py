@@ -12,8 +12,6 @@ except where the substring appears in a module/function/class docstring
 (documentation prose is not a runtime construction site).
 """
 
-from __future__ import annotations
-
 import ast
 import unittest
 from pathlib import Path

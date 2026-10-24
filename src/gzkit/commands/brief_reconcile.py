@@ -8,8 +8,6 @@ into the brief. The engine is consumed read-only; this module owns the CLI
 surface, ledger emission, and the amendment-write path only.
 """
 
-from __future__ import annotations
-
 import difflib
 import json
 

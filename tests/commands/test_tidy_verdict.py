@@ -8,8 +8,6 @@ gate (Recommended)", and "Breaches gate; attestation informational
 but never gating. `--check` is report-only and refuses `--fix`.
 """
 
-from __future__ import annotations
-
 import io
 import unittest
 from contextlib import redirect_stderr

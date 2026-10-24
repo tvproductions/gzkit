@@ -25,8 +25,6 @@ takes the ledger and the project root as parameters and is the only reader of
 either (`hexagonal-architecture.md` rule 4).
 """
 
-from __future__ import annotations
-
 import re
 from collections.abc import Iterable, Mapping
 from pathlib import Path

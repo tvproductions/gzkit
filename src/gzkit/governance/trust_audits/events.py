@@ -9,8 +9,6 @@
   has a corresponding graph or creation-entry write.
 """
 
-from __future__ import annotations
-
 import ast
 import json
 import re

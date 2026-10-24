@@ -19,8 +19,6 @@ Both helpers take the environment as a parameter rather than reaching for
 state.
 """
 
-from __future__ import annotations
-
 import os
 from collections.abc import Mapping
 

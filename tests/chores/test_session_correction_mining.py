@@ -11,8 +11,6 @@ plain dicts by design: ADR-0.0.70 Boundary Invariant 3 pins the miner
 stdlib-only, which overrides the Pydantic default for this module.
 """
 
-from __future__ import annotations
-
 import io
 import json
 import sys

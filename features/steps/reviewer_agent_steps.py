@@ -1,7 +1,5 @@
 """BDD steps for OBPI reviewer agent dispatch (ADR-0.23.0 / OBPI-0.23.0-03)."""
 
-from __future__ import annotations
-
 import json
 import tempfile
 from pathlib import Path

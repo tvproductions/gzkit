@@ -7,8 +7,6 @@ helpers must decode tolerantly so an undecodable byte in a sub-process's
 stdout cannot escape the reader path.
 """
 
-from __future__ import annotations
-
 import sys
 import unittest
 from pathlib import Path

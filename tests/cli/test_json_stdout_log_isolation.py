@@ -13,8 +13,6 @@ because `tests.commands.common.CliRunner` merges them and so cannot see which
 stream a line reached.
 """
 
-from __future__ import annotations
-
 import io
 import logging
 import unittest

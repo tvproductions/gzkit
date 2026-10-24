@@ -19,8 +19,6 @@ a run of the code:
   them, or every issue discussion becomes a false gate.
 """
 
-from __future__ import annotations
-
 import importlib.util
 import sys
 import unittest

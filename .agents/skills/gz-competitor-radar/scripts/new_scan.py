@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 """Create a competitor-radar monthly scan skeleton."""
 
-from __future__ import annotations
-
 import sys
 
 from radar import main

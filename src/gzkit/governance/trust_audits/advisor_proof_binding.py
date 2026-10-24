@@ -17,8 +17,6 @@ rejection. Without the escape, the OBPI-0.0.29-01 model test (which asserts
 ``ValidationError`` on empty proof) would itself trigger the validator.
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

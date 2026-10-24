@@ -21,8 +21,6 @@ caller, and the caller is gzkit.
 Tests assert semantics, not strings (Invariant 6f).
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

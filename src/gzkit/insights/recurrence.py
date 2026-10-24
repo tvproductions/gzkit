@@ -13,8 +13,6 @@ The core takes resolved timestamps as a parameter and never reads the store or
 ``gz insights recurrence`` handler is the adapter.
 """
 
-from __future__ import annotations
-
 from collections.abc import Mapping
 from datetime import datetime
 from itertools import combinations

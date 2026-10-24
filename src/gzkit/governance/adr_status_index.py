@@ -10,8 +10,6 @@ GHI #322 — drift across ~5 ADRs went undetected because no maintained
 regenerator existed; this module closes the class.
 """
 
-from __future__ import annotations
-
 import re
 from datetime import UTC, datetime
 from pathlib import Path

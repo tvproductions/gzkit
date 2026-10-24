@@ -5,8 +5,6 @@ Holds OBPI-01's frozen ``OntologyNode``/``OntologyEdge`` in a
 same node pair are retained, and ``reachable_from`` walks transitive descendants.
 """
 
-from __future__ import annotations
-
 import networkx as nx
 
 from gzkit.ontology.model import OntologyEdge, OntologyNode

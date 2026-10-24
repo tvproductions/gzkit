@@ -5,8 +5,6 @@ That directory was decommissioned in favour of the canonical
 ``docs/user/manpages/`` surface (airlineops convention).
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 
 from gzkit.doc_coverage.manifest import MANPAGE_DIR

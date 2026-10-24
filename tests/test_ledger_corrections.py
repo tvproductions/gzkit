@@ -15,8 +15,6 @@ the two derived readings (*what is true* vs *what condition is live*) differ
 mechanically rather than only in prose.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

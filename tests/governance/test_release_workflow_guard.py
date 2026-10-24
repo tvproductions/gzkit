@@ -27,8 +27,6 @@ properties of the workflow rather than as the wording of any step, so the guard
 can be re-expressed without the witness going quiet.
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 from typing import Any

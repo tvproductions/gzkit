@@ -6,8 +6,6 @@ the pattern from ``gates_frontmatter_steps.py`` so the two step files stay
 shape-compatible.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 
 from behave import given, then

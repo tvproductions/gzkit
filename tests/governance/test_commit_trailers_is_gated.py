@@ -21,8 +21,6 @@ amendable, so that is the moment the obligation can actually bind. Which
 commits it reads is ``test_commit_trailers_pushed_range.py``'s subject.
 """
 
-from __future__ import annotations
-
 import unittest
 
 from gzkit.commands.validate_cmd import VALIDATOR_REGISTRY

@@ -7,8 +7,6 @@ REQ-0.0.57-01-05: src/gzkit/commands/plan.py unchanged (OBPI-02 boundary).
 REQ-0.0.57-01-06: No existing foundation ADR was renamed or moved.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

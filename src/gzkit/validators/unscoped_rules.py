@@ -11,8 +11,6 @@ never calls an LLM, never reads files outside `.gzkit/rules/*.md` and
 `.gzkit/manifest.json` (REQ-0.0.20-01-20).
 """
 
-from __future__ import annotations
-
 import json
 import re
 from datetime import date

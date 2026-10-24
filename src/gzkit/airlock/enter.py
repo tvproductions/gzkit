@@ -18,8 +18,6 @@ writes L1 canon and its verdict is NEVER a Gate-5 completion attestation (BI #1,
 #3).
 """
 
-from __future__ import annotations
-
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any

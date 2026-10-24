@@ -17,8 +17,6 @@ it, don't guess (Rec.)"); a body that is ``...`` alone carries no decision and
 is not named.
 """
 
-from __future__ import annotations
-
 import ast
 from collections.abc import Callable
 

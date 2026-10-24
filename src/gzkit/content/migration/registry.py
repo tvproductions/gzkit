@@ -6,8 +6,6 @@ applies registered migrations in sequence; gaps fail-closed with
 MigrationError. We NEVER guess a migration and NEVER silently drop fields.
 """
 
-from __future__ import annotations
-
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 

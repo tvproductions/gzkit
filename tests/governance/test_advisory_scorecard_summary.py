@@ -17,8 +17,6 @@ way the count can be wrong while still looking right. The figures themselves liv
 in the fenced table and are asserted by `gz validate --advisory-scorecard`.
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory

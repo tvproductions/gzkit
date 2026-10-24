@@ -4,8 +4,6 @@ Extracted from gzkit.lifecycle. Contains transition tables, validation
 functions, and the InvalidTransitionError exception. No I/O operations.
 """
 
-from __future__ import annotations
-
 from pydantic import BaseModel, ConfigDict, Field
 
 

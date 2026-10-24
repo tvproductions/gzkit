@@ -22,8 +22,6 @@ is recorded; tests use the same mock-rig pattern as
 spawning a real subprocess.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

@@ -5,8 +5,6 @@ gz-adr-create, gz-adr-promote) contain the invariance test, hexagonal-ports
 lens, and concept-page link as required by ADR-0.0.35.
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 

@@ -13,8 +13,6 @@ The validator is exposed as ``validate_attestation_receipts`` (worker) and
 ``gzkit.governance.trust_audits``.
 """
 
-from __future__ import annotations
-
 import json
 import os
 import subprocess

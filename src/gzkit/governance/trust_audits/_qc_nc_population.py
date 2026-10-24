@@ -9,8 +9,6 @@ the enforcement registry directly, never through the audit's own filtering, so a
 audit that stops inspecting some claims fails at the first one it skips.
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

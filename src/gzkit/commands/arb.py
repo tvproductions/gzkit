@@ -11,8 +11,6 @@ deep-dive, and `src/gzkit/arb/` for the implementation.
 @covers REQ-0.25.0-33-05
 """
 
-from __future__ import annotations
-
 import sys
 import time
 from pathlib import Path

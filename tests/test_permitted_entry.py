@@ -16,8 +16,6 @@ REQ-0.33.0-05-07 is STRUCTURAL-FENCE (parent-ADR ## Boundary Invariants #3,
 audited at ADR closeout) — no ``@covers`` test, by proof channel (ADR-0.0.59).
 """
 
-from __future__ import annotations
-
 import inspect
 import io
 import json

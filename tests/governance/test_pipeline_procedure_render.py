@@ -18,8 +18,6 @@ Built under the harbor pilotage of 2026-10-15 ("attest the inventory, keep
 going with the load cuts").
 """
 
-from __future__ import annotations
-
 import hashlib
 import unittest
 from pathlib import Path

@@ -23,8 +23,6 @@ stops objecting on its own -- which is the property that makes it a witness of
 the config rather than a second copy of it.
 """
 
-from __future__ import annotations
-
 import re
 import unittest
 from pathlib import Path

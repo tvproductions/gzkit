@@ -11,8 +11,6 @@ authorization does not expire; an undeclared chore was announced until the
 per-chore declarations landed, and is now refused.
 """
 
-from __future__ import annotations
-
 from typing import Literal
 
 from pydantic import (

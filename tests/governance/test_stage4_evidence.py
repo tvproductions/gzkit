@@ -6,8 +6,6 @@ exits non-zero on a bad state produces a blocker), receipt resolution, packet
 round-trip, and Demo isolation from the live checkout (GHI #1093).
 """
 
-from __future__ import annotations
-
 import subprocess
 import tempfile
 import unittest

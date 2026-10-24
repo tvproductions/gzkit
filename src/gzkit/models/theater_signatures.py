@@ -9,8 +9,6 @@ model with a derived one (GHI #657).
 All models use ConfigDict(frozen=True, extra="forbid") per .gzkit/rules/models.md.
 """
 
-from __future__ import annotations
-
 from pydantic import BaseModel, ConfigDict, Field
 
 

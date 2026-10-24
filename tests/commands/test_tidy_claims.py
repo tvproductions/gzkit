@@ -5,8 +5,6 @@ These tests weaken it the way that defect did, and the ways its repair could reg
 require the matching control to fail.
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 from types import SimpleNamespace

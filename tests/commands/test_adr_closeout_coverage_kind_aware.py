@@ -6,8 +6,6 @@ must not demand one for SUPPORT or STRUCTURAL-FENCE REQs, or an OBPI that
 completed cleanly leaves its ADR unclosable.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

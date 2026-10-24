@@ -3,8 +3,6 @@
 @covers OBPI-0.27.0-01-router-skill-files
 """
 
-from __future__ import annotations
-
 import re
 import unittest
 from pathlib import Path

@@ -10,8 +10,6 @@ can hide the functions that follow it, so a caller that needs a complete
 population compares these scores against the source's own function definitions.
 """
 
-from __future__ import annotations
-
 import lizard
 from pydantic import BaseModel, ConfigDict
 

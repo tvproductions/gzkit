@@ -8,8 +8,6 @@ not strings").
 @covers ADR-0.28.0-focused-context-loader
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 

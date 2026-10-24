@@ -24,8 +24,6 @@ Not a ``gz`` verb: a narrow governed repair, invoked as
 --reason <text> --attestor <name> --dry-run``.
 """
 
-from __future__ import annotations
-
 import argparse
 import sys
 from pathlib import Path

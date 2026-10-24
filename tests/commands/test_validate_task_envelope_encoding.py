@@ -17,8 +17,6 @@ code. The subprocess boundary is mocked per the Unit-tier contract in
 ``.gzkit/rules/tests.md``.
 """
 
-from __future__ import annotations
-
 import subprocess
 import unittest
 from pathlib import Path

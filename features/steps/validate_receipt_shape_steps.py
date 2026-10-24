@@ -6,8 +6,6 @@
 @covers REQ-0.0.36-03-05
 """
 
-from __future__ import annotations
-
 import json
 import os
 from pathlib import Path

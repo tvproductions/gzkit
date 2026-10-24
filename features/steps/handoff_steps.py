@@ -16,5 +16,3 @@ corpus. All ``When``/``Then`` subprocess steps are reused verbatim from
 @covers REQ-0.0.65-03-02
 @covers REQ-0.0.65-03-03
 """
-
-from __future__ import annotations

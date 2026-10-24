@@ -7,8 +7,6 @@ Exits non-zero when any assertion fails.  ``--check`` parses the block without
 running any commands.
 """
 
-from __future__ import annotations
-
 import sys
 
 from rich.markup import escape

@@ -4,8 +4,6 @@ Routed through the real parser so a dropped flag, dispatch entry or handler fail
 not only in the unit tests of the audit it calls.
 """
 
-from __future__ import annotations
-
 import contextlib
 import io
 import json

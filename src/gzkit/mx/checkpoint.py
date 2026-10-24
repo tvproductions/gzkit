@@ -6,8 +6,6 @@ checkpoint for free; nobody can forget to wire it, and the never-relax list live
 in exactly one place.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 
 from gzkit.mx import disposition as _disposition

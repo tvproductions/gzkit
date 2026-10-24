@@ -8,8 +8,6 @@ surface.
 @covers REQ-0.0.32-06-05
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

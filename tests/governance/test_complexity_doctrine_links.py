@@ -5,8 +5,6 @@ portability checking, speculative-marker skipping, and integration into
 gz validate --all and gz check.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

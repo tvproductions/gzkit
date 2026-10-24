@@ -4,8 +4,6 @@ Persona files live in ``.gzkit/personas/`` as markdown with YAML frontmatter
 defining composable behavioral identity traits (ADR-0.0.11).
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 
 import yaml

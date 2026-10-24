@@ -10,8 +10,6 @@ Each test builds its own temp project root; none depends on the real
 repository's foundation set, manifest, or ledger.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

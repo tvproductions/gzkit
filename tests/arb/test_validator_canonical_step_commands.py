@@ -8,8 +8,6 @@ checking against the placeholder until the slot is filled — that fail-closed
 posture is the whole point of REQ-3.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

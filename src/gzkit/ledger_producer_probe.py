@@ -4,8 +4,6 @@ These executions demonstrate wiring, never live project activity or acceptance.
 No report is loaded as evidence, and the caller's project is never a write target.
 """
 
-from __future__ import annotations
-
 import hashlib
 import json
 import tempfile

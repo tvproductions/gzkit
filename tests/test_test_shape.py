@@ -9,8 +9,6 @@ in this repo are undeclared, and most are legitimate render-contract tests permi
 trunk. `test_command_always_exits_zero` is what stops a later change from making it one.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

@@ -23,8 +23,6 @@ on-disk location are what do.
 @covers ADR-0.25.0 (OBPI-0.25.0-32)
 """
 
-from __future__ import annotations
-
 import re
 import subprocess
 from datetime import datetime

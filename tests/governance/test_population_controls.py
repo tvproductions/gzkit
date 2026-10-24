@@ -6,8 +6,6 @@ than a silence. Mirrors the exemption half (GHI #797). Each arm carries its
 opposite pole so an always-flag or always-pass implementation cannot false-pass.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

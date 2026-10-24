@@ -12,8 +12,6 @@ REQ has no proof (proof lives only in the ledger, decision 4). `extra="forbid"`
 is what keeps either from creeping back in as a field.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 from typing import Any, Literal
 

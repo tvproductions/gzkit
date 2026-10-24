@@ -38,8 +38,6 @@ is re-mutated one guard statement at a time; a hunk holding no guard statement
 declaration, outside the aggregate verdict.
 """
 
-from __future__ import annotations
-
 import ast
 import re
 import subprocess

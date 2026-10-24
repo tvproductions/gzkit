@@ -5,8 +5,6 @@ regressions beyond a configurable threshold. Thresholds are loaded from
 ``config/eval_thresholds.json``.
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

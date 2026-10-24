@@ -5,8 +5,6 @@ GitHub issues for unfiled proposals (TTY mode) or marks them advisory-only
 (headless mode).
 """
 
-from __future__ import annotations
-
 import subprocess
 import sys
 from pathlib import Path

@@ -19,8 +19,6 @@ Engine note: AST, deliberately. The regex enforcer in GHI #607 broke an
 adopter's build for two months because a substring match cannot see structure.
 """
 
-from __future__ import annotations
-
 import ast
 from pathlib import Path
 

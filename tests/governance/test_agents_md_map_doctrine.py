@@ -39,8 +39,6 @@ Coverage:
         obpi-attestation.md MUST NOT exist yet under docs/governance/).
 """
 
-from __future__ import annotations
-
 import contextlib
 import io
 import json

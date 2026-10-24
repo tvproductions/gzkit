@@ -12,8 +12,6 @@ patterns, or names an outcome when its `outcome` field holds a code the catalog
 holds ("Grammar over fields (Rec.)"). A TASK id never names its REQ by spelling.
 """
 
-from __future__ import annotations
-
 import re
 from collections import Counter
 from collections.abc import Iterable, Mapping

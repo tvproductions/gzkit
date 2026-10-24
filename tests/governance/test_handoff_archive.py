@@ -9,8 +9,6 @@ implementation cannot false-pass the guard.
 Reference: ADR-0.0.65-handoff-system-consolidation, OBPI-0.0.65-05.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from contextlib import redirect_stdout

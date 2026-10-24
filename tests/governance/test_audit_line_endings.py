@@ -12,8 +12,6 @@ semantics against synthetic temp git trees; ``gz check`` itself gates current
 repo state by running the scope on the real tree.
 """
 
-from __future__ import annotations
-
 import subprocess
 import tempfile
 import unittest

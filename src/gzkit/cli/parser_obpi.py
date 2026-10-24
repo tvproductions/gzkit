@@ -16,8 +16,6 @@ Command handlers are resolved on demand via ``_lazy`` so ``gz --help`` avoids
 pulling heavy handler dependencies.
 """
 
-from __future__ import annotations
-
 import argparse
 
 from gzkit.cli.helpers import (

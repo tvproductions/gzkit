@@ -1,7 +1,5 @@
 """gz content edit command handler — ADR-0.0.34 § Decision item #4 (OBPI-0.0.34-04)."""
 
-from __future__ import annotations
-
 import contextlib
 import os
 import subprocess  # noqa: S404 — invoking $EDITOR is intentional

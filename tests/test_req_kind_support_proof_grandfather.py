@@ -6,8 +6,6 @@ closed, not silently degrade to an empty tolerated-set (which would flip
 every pre-cutover REQ to enforced-fail-close with no operator signal).
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

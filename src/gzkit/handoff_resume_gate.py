@@ -42,8 +42,6 @@ SessionStart handoff advisement and `gz handoff decide`'s Layer-2 record of the
 operator's verbatim ruling — is unchanged and is now the whole mechanism.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 
 from gzkit.handoff_validation import HandoffValidationError, parse_frontmatter

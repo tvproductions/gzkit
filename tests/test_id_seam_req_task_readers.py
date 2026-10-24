@@ -5,8 +5,6 @@ once spelled its own width now embeds the seam body, so a width-loose id (one
 index digit, three digits) is no longer read as a REQ or TASK id by any of them.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

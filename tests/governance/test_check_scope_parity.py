@@ -22,8 +22,6 @@ covering the whole tier in a single ~2s subprocess rather than ten.
 the true membership from source and fails when the two disagree.
 """
 
-from __future__ import annotations
-
 import ast
 import json
 import re

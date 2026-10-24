@@ -50,8 +50,6 @@ Registered as ``gz validate --rendition-lineage`` and wired into ``gz check``
 be red indefinitely while every gate reports green (GHI #785).
 """
 
-from __future__ import annotations
-
 import json
 from collections.abc import Mapping
 from pathlib import Path

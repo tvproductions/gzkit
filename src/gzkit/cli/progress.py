@@ -5,8 +5,6 @@ with automatic suppression in quiet and json output modes.
 All progress output goes to stderr to keep stdout clean for data.
 """
 
-from __future__ import annotations
-
 import sys
 from contextlib import contextmanager
 from typing import TYPE_CHECKING

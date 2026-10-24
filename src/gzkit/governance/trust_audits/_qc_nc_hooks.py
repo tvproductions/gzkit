@@ -10,8 +10,6 @@ never through ``session_green_gate._declared_hook_types``. A population derived
 from the witness's reader narrows whenever the witness does, and proves nothing.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 
 import yaml

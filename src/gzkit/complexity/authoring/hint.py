@@ -12,8 +12,6 @@ Projection direction is fixed (full -> light) per ADR-0.0.30 § Decision
 rationale #1; there is no reverse projection.
 """
 
-from __future__ import annotations
-
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator

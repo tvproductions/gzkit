@@ -5,8 +5,6 @@ owns broader lifecycle parity; this restores the already prescribed sync path.
 Codex still requires review/trust of each generated hook before execution.
 """
 
-from __future__ import annotations
-
 import json
 import sys
 from pathlib import Path

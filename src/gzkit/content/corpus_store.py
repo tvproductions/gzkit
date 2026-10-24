@@ -33,8 +33,6 @@ entry both pass those caller-side guards, and Algebra 7 (at most one LIVE tombst
 target) is what then refuses the second one.
 """
 
-from __future__ import annotations
-
 import contextlib
 import os
 import tempfile

@@ -1,7 +1,5 @@
 """BDD steps for triangle drift detection scenarios."""
 
-from __future__ import annotations
-
 from pathlib import Path
 
 from behave import given

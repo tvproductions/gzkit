@@ -18,8 +18,6 @@ Bootstrap-safe: when no committed rendition exists, returns [] with no events.
 All tests use tempfile.TemporaryDirectory for sandbox isolation.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

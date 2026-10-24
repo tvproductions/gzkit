@@ -5,8 +5,6 @@ fires. Reuses the inline-filesystem-write pattern from
 ``state_repair_steps.py:14-26``.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 
 from behave import given

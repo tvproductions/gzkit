@@ -3,8 +3,6 @@
 Unittest-only policy enforcement: scan for pytest usage and reject it.
 """
 
-from __future__ import annotations
-
 import re
 import subprocess
 import sys

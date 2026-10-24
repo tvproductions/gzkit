@@ -15,8 +15,6 @@ discriminates rather than trivially returning ``[]``, and
 a guard scoped away from the surface it should cover reads as covered.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

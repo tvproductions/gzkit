@@ -23,8 +23,6 @@ A claim with no canary is a finding unless it is on the shrink-only roster
 (``guard_canary_grandfather.json``), the same disclosure posture as GHI #1155's enrollment.
 """
 
-from __future__ import annotations
-
 import ast
 import contextlib
 import hashlib

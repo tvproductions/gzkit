@@ -8,8 +8,6 @@ REQ-derived assertions for:
   REQ-0.0.37-04-05: round-trip parse of OBPI-0.0.37-04 brief itself returns BriefStructure
 """
 
-from __future__ import annotations
-
 import json
 import re
 import unittest

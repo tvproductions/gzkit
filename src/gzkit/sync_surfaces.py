@@ -6,8 +6,6 @@ manifest generation, and the main ``sync_all`` orchestration entry point.
 Extracted from sync.py to keep modules under 600 lines.
 """
 
-from __future__ import annotations
-
 import json
 from collections.abc import Callable
 from datetime import date

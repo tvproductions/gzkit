@@ -14,8 +14,6 @@ keyed by the opsdev source path appearing in the brief body's
 declare ``paired_with: <prior-brief-id>`` in frontmatter to opt out.
 """
 
-from __future__ import annotations
-
 import re
 from collections import defaultdict
 from pathlib import Path

@@ -32,8 +32,6 @@ Exit 3: retention gate refusal -- a removed block is unaccounted for, including 
     --retention-map bound to no routed consumer of the surface.
 """
 
-from __future__ import annotations
-
 import sys
 from collections.abc import Sequence
 from pathlib import Path

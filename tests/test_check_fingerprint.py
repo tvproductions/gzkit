@@ -13,8 +13,6 @@ tests pin that property directly, because it is the one an obvious
 implementation gets wrong.
 """
 
-from __future__ import annotations
-
 import subprocess
 import tempfile
 import unittest

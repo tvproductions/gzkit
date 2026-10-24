@@ -9,8 +9,6 @@ All tests use ``tempfile.TemporaryDirectory`` for sandbox isolation; never
 write to the live repo root.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

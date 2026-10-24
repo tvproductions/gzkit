@@ -24,8 +24,6 @@ Two separable jobs live here:
   record the reviewer merely read must never count as independent replay.
 """
 
-from __future__ import annotations
-
 import hashlib
 import shutil
 import subprocess

@@ -18,8 +18,6 @@ Both assertions below fail against the reflog implementation — the mapping
 because it clamped, and the no-subprocess check because it shelled out.
 """
 
-from __future__ import annotations
-
 import importlib.util
 import sys
 import unittest

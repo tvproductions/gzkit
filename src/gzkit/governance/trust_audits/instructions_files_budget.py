@@ -33,8 +33,6 @@ it lands. A gate whose satisfaction path does not exist does not force the work;
 it only blocks it, and then gets widened under pressure.
 """
 
-from __future__ import annotations
-
 import json
 import os
 import sys

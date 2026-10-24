@@ -1,7 +1,5 @@
 """Rich status line for gz content render/edit (OBPI-0.0.34-05)."""
 
-from __future__ import annotations
-
 from rich.console import Console
 
 

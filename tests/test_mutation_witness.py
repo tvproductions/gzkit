@@ -16,8 +16,6 @@ So `killed` and `survived` are claims about the guard, while `invalid` and
 `inconclusive` are claims about the RUN, and the four are reported separately.
 """
 
-from __future__ import annotations
-
 import os
 import subprocess
 import sys

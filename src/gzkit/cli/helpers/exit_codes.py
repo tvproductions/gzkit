@@ -3,8 +3,6 @@
 Implements the CLI Doctrine 4-code map.
 """
 
-from __future__ import annotations
-
 import textwrap
 
 from gzkit.core.exceptions import GzkitError

@@ -14,8 +14,6 @@ Fixing the producer is the same move GHI #653 needed twice — stamp the
 attribution the runtime already knows instead of asking a human to recall it.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

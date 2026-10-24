@@ -8,8 +8,6 @@ later hand edit shows as a mismatch), whose words it carries, and an optional
 ``supersedes`` reference to an earlier record. The store stays the store.
 """
 
-from __future__ import annotations
-
 import hashlib
 import json
 from pathlib import Path

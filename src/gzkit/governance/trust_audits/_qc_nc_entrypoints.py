@@ -17,8 +17,6 @@ Split out of ``_qc_negative_controls.py`` for module-size discipline (<=600 line
 `.claude/rules/pythonic.md`).
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 
 from gzkit.core.validation_rules import ValidationError

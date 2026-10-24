@@ -20,8 +20,6 @@ canonical manifest under that glob preserves docstring coverage with no scanner
 change. Resolution is fenced by ``tests/cli/test_handler_manifest_resolves.py``.
 """
 
-from __future__ import annotations
-
 from collections.abc import Callable
 from importlib import import_module
 from typing import Any

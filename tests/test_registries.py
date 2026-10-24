@@ -6,8 +6,6 @@ Thirty-plus modules each resolved their own registry path and ran their own
 and — the part that matters most — that it never defaults past a broken file.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

@@ -12,8 +12,6 @@ Eval-awareness corollary) so the audit-helper names do not telegraph audit
 intent.
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 

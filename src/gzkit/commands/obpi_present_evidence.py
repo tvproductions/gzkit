@@ -22,8 +22,6 @@ carry the id the ledger holds for it (operator ruling 2026-10-12, Open Design
 Question 19).
 """
 
-from __future__ import annotations
-
 from rich.markup import escape
 
 from gzkit.cli.helpers.exit_codes import EXIT_POLICY_BREACH, EXIT_SUCCESS, EXIT_USER_ERROR

@@ -16,8 +16,6 @@ structured frontmatter; the legacy-brief migration is tracked as a downstream
 ADR-0.0.37 OBPI dependency.
 """
 
-from __future__ import annotations
-
 import warnings
 from pathlib import Path
 

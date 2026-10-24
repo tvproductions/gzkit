@@ -7,8 +7,6 @@ human; these tests pin the machine-readable record a CI run uploads, so the two
 platforms' runs can be joined module by module.
 """
 
-from __future__ import annotations
-
 import importlib.util
 import json
 import sys

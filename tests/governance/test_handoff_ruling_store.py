@@ -21,8 +21,6 @@ document in the chain.
 @covers GHI #838
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

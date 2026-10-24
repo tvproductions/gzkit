@@ -6,8 +6,6 @@ whose every test was skipped, so a return code alone cannot witness the claim
 floor.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

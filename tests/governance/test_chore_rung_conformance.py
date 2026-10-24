@@ -13,8 +13,6 @@ misfiling four chores (`docs/governance/chore-class-system.md` § The measured
 state).
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

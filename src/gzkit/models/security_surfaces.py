@@ -12,8 +12,6 @@ This module exposes:
 - ``match_globs`` — return the categories whose globs intersect a glob list.
 """
 
-from __future__ import annotations
-
 import glob as _glob
 import json
 import re

@@ -10,8 +10,6 @@ justify consumes. The authoritative ledger model lives in
 library decoupled from ledger schema churn.
 """
 
-from __future__ import annotations
-
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator

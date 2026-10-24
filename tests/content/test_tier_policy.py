@@ -1,7 +1,5 @@
 """Invariant-tier policy tests — OBPI-0.0.37-23."""
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

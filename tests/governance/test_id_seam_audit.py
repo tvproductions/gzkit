@@ -7,8 +7,6 @@ may only shrink; the resolution check resolves every ``@covers`` REQ, scenario
 REQ tag, and brief frontmatter OBPI and ADR id through the seam's resolver.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import textwrap

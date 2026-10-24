@@ -6,8 +6,6 @@ briefs on disk names none of them: the separator-less ``{id}*.md`` glob took the
 first sorted match, so ``OBPI-0.28.0-1`` read items 10 to 19.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

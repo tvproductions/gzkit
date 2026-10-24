@@ -19,8 +19,6 @@ A pointer whose whole job is to save the reader from opening the store must not
 be the one thing in the document that disagrees with it.
 """
 
-from __future__ import annotations
-
 import re
 import tempfile
 import unittest

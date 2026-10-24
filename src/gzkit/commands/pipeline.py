@@ -7,8 +7,6 @@ substantive, (c) closing argument is earned from evidence.
 ADR-0.23.0 / OBPI-0.23.0-03
 """
 
-from __future__ import annotations
-
 import json
 import re
 from datetime import UTC, datetime

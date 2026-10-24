@@ -11,8 +11,6 @@ the taxonomy models and the three-channel enrichment orchestrator that calls
 both resolvers.
 """
 
-from __future__ import annotations
-
 import re
 from pathlib import Path
 

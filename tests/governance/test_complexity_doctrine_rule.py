@@ -23,8 +23,6 @@ Coverage:
     rule-version markers (``gz agent sync control-surfaces`` propagation).
 """
 
-from __future__ import annotations
-
 import re
 import unittest
 from pathlib import Path

@@ -21,8 +21,6 @@ Cutover detection: the timestamp of the `obpi_receipt_emitted` event whose `id`
 matches `OBPI-0.0.41-02-*`; derived from ledger at init, never hardcoded.
 """
 
-from __future__ import annotations
-
 import re
 from datetime import UTC, datetime
 from pathlib import Path

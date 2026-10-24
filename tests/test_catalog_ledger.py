@@ -6,8 +6,6 @@ against a revision the catalog holds. The transition grammar is the operator's
 'Return-to-origin (Rec.)' selection of 2026-10-22.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

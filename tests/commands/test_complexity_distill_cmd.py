@@ -16,8 +16,6 @@ Test classes are split per ``.gzkit/rules/tool-skill-runbook-alignment.md``
   (string-shape assertions live only here).
 """
 
-from __future__ import annotations
-
 import io
 import json
 import shutil

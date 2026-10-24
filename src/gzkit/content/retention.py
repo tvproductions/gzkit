@@ -17,8 +17,6 @@ This module owns:
 No LLM, network or subprocess calls (requirement 7).
 """
 
-from __future__ import annotations
-
 import re
 from pathlib import Path
 from typing import Literal

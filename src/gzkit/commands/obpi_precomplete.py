@@ -15,8 +15,6 @@ The intended invocation pattern is **before** ``gz obpi complete``:
 The ``gz-obpi-pipeline`` skill wires this in as Stage 5 Step 0.
 """
 
-from __future__ import annotations
-
 import json
 from datetime import UTC, datetime
 from pathlib import Path

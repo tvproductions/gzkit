@@ -5,8 +5,6 @@ Ships in permissive mode: briefs lacking structured frontmatter fields load
 as LegacyBriefShape with a DeprecationWarning rather than raising.
 """
 
-from __future__ import annotations
-
 import re
 import warnings
 from pathlib import Path

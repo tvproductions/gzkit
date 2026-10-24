@@ -9,8 +9,6 @@ Covers the six acceptance criteria in the OBPI brief:
 * REQ-0.0.54-04-06 — gz validate --agents-md-map-conformance green across named scope
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

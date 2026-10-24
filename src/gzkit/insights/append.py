@@ -11,8 +11,6 @@ Hexagonal: the target path is a parameter (the external resource), so the
 core write logic is exercised against a tempfile with no monkeypatching.
 """
 
-from __future__ import annotations
-
 from datetime import UTC, datetime
 from pathlib import Path
 

@@ -18,8 +18,6 @@ an undeclared edition fails ``tests/governance/test_active_campaign_registry.py`
 closed. These tests cover the resolution; that module covers the declaration.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

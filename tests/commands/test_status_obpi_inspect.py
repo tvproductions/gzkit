@@ -9,8 +9,6 @@ token as the defect's truth. It resolves live state through the
 ``unresolved`` is never rendered as live, and never rendered bare.
 """
 
-from __future__ import annotations
-
 import unittest
 from unittest import mock
 

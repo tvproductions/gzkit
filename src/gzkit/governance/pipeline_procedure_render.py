@@ -24,8 +24,6 @@ stage files are derived views of the inventory and are held to this render by
 held to the controls by the inventory checker.
 """
 
-from __future__ import annotations
-
 import itertools
 import re
 from pathlib import Path

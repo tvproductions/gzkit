@@ -16,8 +16,6 @@ The core takes records as a parameter and never reaches for ``gh`` itself
 step is the adapter. That keeps every function here testable with no network.
 """
 
-from __future__ import annotations
-
 import argparse
 import json
 import re

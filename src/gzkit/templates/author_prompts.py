@@ -23,8 +23,6 @@ Merge these under the command's computed values, never over them::
     render_template("prd", **AUTHOR_PROMPTS["prd"], id=prd_id, title=title)
 """
 
-from __future__ import annotations
-
 AUTHOR_PROMPTS: dict[str, dict[str, str]] = {
     "adr": {
         "intent": "_[Author: What problem forces this decision? State it against "

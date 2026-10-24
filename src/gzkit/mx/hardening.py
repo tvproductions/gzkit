@@ -25,8 +25,6 @@ module-level bool; the only level that grounds while the marker is up is
 bite inside the hangar.
 """
 
-from __future__ import annotations
-
 from datetime import UTC, datetime
 from pathlib import Path
 

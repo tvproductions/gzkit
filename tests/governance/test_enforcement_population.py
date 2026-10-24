@@ -10,8 +10,6 @@ Each arm carries its opposite pole, so an always-pass or always-fail runner
 cannot false-pass.
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 

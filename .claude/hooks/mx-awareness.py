@@ -16,8 +16,6 @@ Exit codes:
   0 - Always (fail-open; turn must always begin)
 """
 
-from __future__ import annotations
-
 import json
 import os
 import sys

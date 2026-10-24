@@ -8,8 +8,6 @@ Fail-closed: any ValidationError from the suite raises FidelityHookError.
 No warn-and-continue path exists.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 
 import gzkit.governance.trust_audits as _trust_audits

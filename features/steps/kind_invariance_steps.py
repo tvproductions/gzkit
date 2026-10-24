@@ -6,8 +6,6 @@
 @covers REQ-0.0.35-04-05
 """
 
-from __future__ import annotations
-
 import os
 from pathlib import Path
 

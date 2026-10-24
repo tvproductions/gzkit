@@ -7,8 +7,6 @@
 @covers REQ-0.25.0-27-05
 """
 
-from __future__ import annotations
-
 import contextlib
 import io
 import tempfile

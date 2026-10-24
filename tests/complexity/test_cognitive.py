@@ -6,8 +6,6 @@ rules applied by hand. Python has no labelled ``continue``, so ``sum_of_primes``
 scores 6 where the spec's Java scores 7 with its ``continue OUT`` (+1).
 """
 
-from __future__ import annotations
-
 import contextlib
 import io
 import json

@@ -9,8 +9,6 @@ The content invariant belongs to the validator (the SUPPORT channel's
 structural arm); the validator's logic is what a unit test can prove.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

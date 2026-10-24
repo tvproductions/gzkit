@@ -28,8 +28,6 @@ slow one."* A speedup that quietly reintroduces that is a regression wearing a
 benchmark.
 """
 
-from __future__ import annotations
-
 import json
 import threading
 import unittest

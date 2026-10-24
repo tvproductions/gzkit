@@ -5,8 +5,6 @@ Covers: verification command parsing, pipeline output helpers, and
 stage runners (verify, ceremony, sync).
 """
 
-from __future__ import annotations
-
 import json
 import shlex
 from collections.abc import Callable

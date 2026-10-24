@@ -9,8 +9,6 @@ The canonical advisory rules catalogue lives at
 ``docs/governance/advisory-rules-audit.md``.
 """
 
-from __future__ import annotations
-
 import hashlib
 import tempfile
 import unittest

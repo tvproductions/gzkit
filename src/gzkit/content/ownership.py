@@ -22,8 +22,6 @@ transaction that performs the transition lives in `commands/content/own.py`,
 sharing `commands/content/unown.py`'s journalled two-store machinery.
 """
 
-from __future__ import annotations
-
 import contextlib
 import hashlib
 import json

@@ -11,8 +11,6 @@ pinned `2026-08-22T01:00:00+00:00` against a 1440-minute TTL, passed for a day,
 then failed forever in a change that touched zero Python.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

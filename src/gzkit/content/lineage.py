@@ -12,8 +12,6 @@ the corpus candidate generator's job (a later task in this OBPI). It owns only
 the shape, the paths, and the staging I/O.
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

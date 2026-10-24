@@ -6,8 +6,6 @@ unratcheted or unregistered surface fails closed. These tests pin each mechanism
 the growth-fails-closed property, and the green-by-emptiness / silent-bypass guard.
 """
 
-from __future__ import annotations
-
 import contextlib
 import io
 import json

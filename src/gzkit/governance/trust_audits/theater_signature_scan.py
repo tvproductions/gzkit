@@ -26,8 +26,6 @@ Pattern reuse: ``ast.parse`` + ``ast.walk`` + ``isinstance`` per
 ``gzkit.tautological_tests`` (the established convention). Stdlib ``ast`` only.
 """
 
-from __future__ import annotations
-
 import ast
 from collections.abc import Iterable
 from pathlib import Path

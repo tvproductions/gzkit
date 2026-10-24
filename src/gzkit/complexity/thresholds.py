@@ -16,8 +16,6 @@ retired in RO-9 tranche 4; ``cohesion_lcom4``, a cohesion percentage where highe
 is better, keeps bootstrap bands until its polarity is reconciled (GHI #1265).
 """
 
-from __future__ import annotations
-
 import json
 from collections.abc import Iterable
 from pathlib import Path

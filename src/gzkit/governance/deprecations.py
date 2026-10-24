@@ -20,8 +20,6 @@ standalone; registering it would flag every legitimate reference, so it stays
 out until the deprecation is total.
 """
 
-from __future__ import annotations
-
 from pydantic import BaseModel, ConfigDict, Field
 
 __all__ = ["DEPRECATED_VERBS", "DeprecatedVerb", "deprecation_notice", "find_deprecated_verb"]

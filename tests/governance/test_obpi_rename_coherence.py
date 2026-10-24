@@ -18,8 +18,6 @@ These tests pin both directions: a rename that lands on a real brief clears the
 census, and a rename that lands nowhere does not.
 """
 
-from __future__ import annotations
-
 import unittest
 
 from gzkit.obpi_lifecycle import orphaned_obpi_ids

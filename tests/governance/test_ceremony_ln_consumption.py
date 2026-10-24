@@ -15,8 +15,6 @@ exercise is ``_gate_closeout_proof`` (the ADR-0.0.69 rename of the original
 ``_gate_proof_binding``).
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

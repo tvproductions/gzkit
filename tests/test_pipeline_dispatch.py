@@ -4,8 +4,6 @@ Tests cover: complexity classification, model routing, prompt composition,
 result parsing, dispatch state management, and edge cases.
 """
 
-from __future__ import annotations
-
 import json
 import shutil
 import tempfile

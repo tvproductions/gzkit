@@ -8,8 +8,6 @@ to run, the selection goes to the canonical runner one exact module at a time,
 and a selected test that runs the gate cannot start a second run.
 """
 
-from __future__ import annotations
-
 import os
 import subprocess
 import tempfile

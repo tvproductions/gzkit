@@ -121,6 +121,13 @@ ignore = [
 [tool.ruff.lint.mccabe]
 max-complexity = 20
 
+# Python 3.14 defers every annotation (PEP 649 and 749), so PEP 563's stringizing
+# import does nothing and PEP 749 plans to deprecate it (.gzkit/rules/pythonic.md
+# § Imports). Landed once the tree carried no copy, so no baseline row holds one
+# (RO-9 tranche 4, ruled 2026-10-24, "Remove first, then ban (Rec.)").
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"__future__.annotations".msg = "annotations are deferred in Python 3.14 (PEP 649); write them unquoted, with no PEP 563 import (.gzkit/rules/pythonic.md § Imports)"
+
 [tool.ruff.lint.per-file-ignores]
 # Hook-script generators hold hook bodies as indented string literals that are
 # dedented on emit, so a source line is `indent` chars wider than the line it
@@ -174,12 +181,12 @@ max-complexity = 20
 ".agents/**/*.py" = ["D"]
 # Dated evidence scripts are sealed records of what a past audit ran; refactoring
 # one to satisfy a ceiling adopted later would rewrite the evidence it is (RO-9
-# tranche 4, the C901 ceiling at 20).
-".gzkit/evidence/*.py" = ["complex-structure"]
-"docs/governance/*-evidence/*.py" = ["complex-structure"]
+# tranche 4, the C901 ceiling at 20, and the PEP 563 import they ran with).
+".gzkit/evidence/*.py" = ["complex-structure", "banned-api"]
+"docs/governance/*-evidence/*.py" = ["complex-structure", "banned-api"]
 # The same records keep the file mode they ran with: EXE001 reads the executable
 # bit, so the one way to clear it would change the record (RO-9 tranche 4).
-"docs/governance/ieee/*-evidence/*.py" = ["shebang-not-executable"]
+"docs/governance/ieee/*-evidence/*.py" = ["shebang-not-executable", "banned-api"]
 
 [tool.ruff.format]
 quote-style = "double"

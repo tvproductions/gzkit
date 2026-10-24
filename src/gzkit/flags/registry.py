@@ -5,8 +5,6 @@ Reads ``data/flags.json``, validates entries against the JSON Schema contract
 mapping of flag keys to FlagSpec instances.
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

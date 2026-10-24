@@ -13,8 +13,6 @@ Authored under GHI #521 as the Day-0 tooling prerequisite for the GHI #520
 prequel sweep (24-deep Pending feature queue → pool).
 """
 
-from __future__ import annotations
-
 import json
 import re
 import shutil

@@ -17,8 +17,6 @@ These read repository canon rather than a temp fixture: the artifacts under
 assertion ARE the deliverable, so a fixture copy would prove nothing.
 """
 
-from __future__ import annotations
-
 import re
 import unittest
 from pathlib import Path

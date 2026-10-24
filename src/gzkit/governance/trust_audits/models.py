@@ -5,8 +5,6 @@ Asserts that governance code uses Pydantic ``BaseModel`` (not stdlib
 ``model_config = ConfigDict(...)``.
 """
 
-from __future__ import annotations
-
 import ast
 from pathlib import Path
 

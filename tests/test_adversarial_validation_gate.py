@@ -7,8 +7,6 @@ the cross-vendor proof reads the argv that ran, and the `adversarial_validation`
 event carries the tier and receipt it is given.
 """
 
-from __future__ import annotations
-
 import contextlib
 import io
 import unittest

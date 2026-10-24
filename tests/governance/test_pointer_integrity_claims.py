@@ -6,8 +6,6 @@ weaken it the way those defects did, and the ways their repairs could regress, a
 the matching control to fail.
 """
 
-from __future__ import annotations
-
 import os
 import unittest
 from pathlib import Path

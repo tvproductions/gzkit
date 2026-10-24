@@ -18,8 +18,6 @@ alignment tests in ``tests/test_schemas.py`` + ``gz validate --documents``,
 not by a ``@covers`` test here (ADR-0.0.59 proof-channel discipline).
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

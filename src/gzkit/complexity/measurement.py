@@ -22,8 +22,6 @@ rejected with :class:`WholeProjectMeasurementRejectedError`
 (REQ-0.0.27-03-03).
 """
 
-from __future__ import annotations
-
 import csv
 import importlib.metadata
 import io

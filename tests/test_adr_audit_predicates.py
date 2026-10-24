@@ -5,8 +5,6 @@ OR composition into ``_requires_human_obpi_attestation`` that closes the
 ``lite + feature + sensitivity:security`` self-close vector.
 """
 
-from __future__ import annotations
-
 import unittest
 
 from gzkit.commands.adr_audit import (

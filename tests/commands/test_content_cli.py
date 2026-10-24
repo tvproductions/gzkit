@@ -1,7 +1,5 @@
 """CLI smoke tests for gz content list/show/render/edit — OBPI-0.0.34-04."""
 
-from __future__ import annotations
-
 import json
 import subprocess
 import tempfile

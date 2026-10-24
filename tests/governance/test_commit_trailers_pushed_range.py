@@ -8,8 +8,6 @@ and ``gz git-sync`` puts a ``.gzkit`` chore commit on top in most sessions.
 bare remote so ``@{upstream}`` exists, then build the unpushed range.
 """
 
-from __future__ import annotations
-
 import contextlib
 import io
 import subprocess

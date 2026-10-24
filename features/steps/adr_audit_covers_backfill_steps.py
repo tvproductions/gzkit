@@ -15,8 +15,6 @@ with code N` and `Then the output contains "..."` from gz_steps.py.
 @covers REQ-0.0.23-05-09
 """
 
-from __future__ import annotations
-
 import json
 import subprocess
 from pathlib import Path

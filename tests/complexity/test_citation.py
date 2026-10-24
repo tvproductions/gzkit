@@ -7,8 +7,6 @@ per the brief's TDD-hygiene REQ; no live filesystem mutation under
 ``.gzkit/`` or ``docs/`` is performed by the test surface.
 """
 
-from __future__ import annotations
-
 import json
 import re
 import unittest

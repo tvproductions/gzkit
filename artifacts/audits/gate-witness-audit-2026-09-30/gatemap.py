@@ -12,8 +12,6 @@ Usage: python gatemap.py <worktree> <shard_index> <shard_count> <out.json>
 Read-only with respect to the main checkout.
 """
 
-from __future__ import annotations
-
 import ast
 import json
 import os

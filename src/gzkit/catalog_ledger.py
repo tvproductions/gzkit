@@ -17,8 +17,6 @@ Both writers take the parsed catalog and the ledger as parameters, so the
 caller decides which project they act on.
 """
 
-from __future__ import annotations
-
 from typing import get_args
 
 from gzkit.events import (

@@ -9,8 +9,6 @@ Covers REQ-0.34.0-01-03 (``FoundationGrandfatherManifest`` rejects a
 @covers REQ-0.34.0-01-04
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory

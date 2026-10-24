@@ -5,8 +5,6 @@ StrEnums and the frozen ``SeamEdge``/``SeamMap``/``Preflight``/``DriftDiff``
 Pydantic models. Pure shapes: no behavior, no compute, no CLI.
 """
 
-from __future__ import annotations
-
 import enum
 from typing import Any
 

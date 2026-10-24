@@ -16,8 +16,6 @@ Public surface:
   :class:`WholeProjectMeasurementRejectedError`.
 """
 
-from __future__ import annotations
-
 from gzkit.complexity.baseline import (
     BaselineArtifact,
     CrossMetricAggregate,

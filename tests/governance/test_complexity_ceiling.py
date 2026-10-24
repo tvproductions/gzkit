@@ -8,8 +8,6 @@ max-complexity``). A function Lizard does not measure is a refused partial
 measurement, never a silent pass.
 """
 
-from __future__ import annotations
-
 import contextlib
 import io
 import tempfile

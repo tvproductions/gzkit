@@ -5,8 +5,6 @@ BEHAVIOR proof-channel fail-close. A malformed or mistyped cache file must
 surface as a fail-closed error, not silently fall back to an empty cache.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

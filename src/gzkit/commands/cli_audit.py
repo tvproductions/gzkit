@@ -1,7 +1,5 @@
 """CLI audit command implementation."""
 
-from __future__ import annotations
-
 import json
 import re
 import shlex

@@ -7,8 +7,6 @@ OBPI-0.0.27-04-distillation-pass.md``.  The fixture surface synthesizes a
 measurement pipeline (REQ-08).
 """
 
-from __future__ import annotations
-
 import re
 import tempfile
 import unittest

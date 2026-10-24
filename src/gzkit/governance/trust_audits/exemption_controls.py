@@ -43,8 +43,6 @@ refuses. The floor already fail-closes on an enrolled claim with no control, so
 naming one obliges its existence by construction.
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

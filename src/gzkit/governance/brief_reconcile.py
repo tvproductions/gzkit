@@ -7,8 +7,6 @@ ledger events or file writes (REQ-0.0.37-05-07, REQ-0.0.37-05-08). Ledger
 emission belongs to OBPI-0.0.37-06.
 """
 
-from __future__ import annotations
-
 import ast
 import re
 import warnings

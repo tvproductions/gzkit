@@ -9,8 +9,6 @@ what the adversary broke?". A change that silently collapses one into the other
 must redden here.
 """
 
-from __future__ import annotations
-
 import datetime as dt
 import json
 import tempfile

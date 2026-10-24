@@ -10,8 +10,6 @@ Imported lazily from ``gzkit.enforcement._ensure_production_claims_registered``,
 never from the parser tree, so ``gz --help`` pays nothing for it.
 """
 
-from __future__ import annotations
-
 import io
 from contextlib import redirect_stderr
 from pathlib import Path

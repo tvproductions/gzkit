@@ -15,8 +15,6 @@ its first close asserted a mechanism beyond what the observation supported, and
 only running the thing surfaced it.
 """
 
-from __future__ import annotations
-
 import subprocess
 import unittest
 from pathlib import Path

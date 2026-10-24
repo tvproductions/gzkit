@@ -6,8 +6,6 @@ base tree, and how. ``exit_status == 0`` here is not success — it is the findi
 that the test cannot fail, and the caller is expected to treat it as blocking.
 """
 
-from __future__ import annotations
-
 import json
 import time
 import uuid

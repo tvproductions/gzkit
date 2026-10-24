@@ -11,8 +11,6 @@ synthetic project root with a fixture distilled-characteristics doc and a
 threshold table the loader can read.
 """
 
-from __future__ import annotations
-
 import json
 import os
 import tempfile

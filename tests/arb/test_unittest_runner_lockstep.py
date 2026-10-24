@@ -24,8 +24,6 @@ The pre-commit hook is the one copy that cannot derive (YAML read by another
 tool before Python runs), so it is pinned by equality instead.
 """
 
-from __future__ import annotations
-
 import shlex
 import tempfile
 import tomllib

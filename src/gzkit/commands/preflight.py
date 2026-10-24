@@ -1,7 +1,5 @@
 """Preflight scan and cleanup for stale pipeline artifacts."""
 
-from __future__ import annotations
-
 import hashlib
 import json
 import shutil

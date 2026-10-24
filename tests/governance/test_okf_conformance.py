@@ -6,8 +6,6 @@ REQ-derived (brief § Requirements FAIL-CLOSED), not derived from a run of the
 implementation (`.gzkit/rules/tests.md` § "Tests assert semantics, not strings").
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

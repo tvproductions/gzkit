@@ -20,8 +20,6 @@ demo exits 0 even when the OBPI is broken, which is exactly how the GHI #643 fab
 survived. A brief with no demo, or a demo exiting non-zero, is a packet blocker.
 """
 
-from __future__ import annotations
-
 import json
 import os
 import re

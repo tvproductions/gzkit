@@ -4,8 +4,6 @@ Fail-closed: absent or unparseable .pre-commit-config.yaml is treated as a
 violation, never a pass.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 
 import yaml

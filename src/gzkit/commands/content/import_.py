@@ -1,7 +1,5 @@
 """gz content import command handler — ADR-0.0.34 § Decision item #3."""
 
-from __future__ import annotations
-
 import sys
 from pathlib import Path
 

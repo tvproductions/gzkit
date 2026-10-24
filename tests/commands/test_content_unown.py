@@ -8,8 +8,6 @@ attested exception: the same corpus-attestation shape as `gz content retire`
 (REQ-0.35.0-04-04), gating the one legitimate raise (REQ-0.35.0-04-05).
 """
 
-from __future__ import annotations
-
 import ast
 import contextlib
 import errno

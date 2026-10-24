@@ -13,8 +13,6 @@ cases that the original ``PYTHONUTF8=1`` prefix scan did not enforce:
 - ``tools/**/*.py`` entry points that print without reconfigure
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

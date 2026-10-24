@@ -7,8 +7,6 @@ constraints: advisement must be undismissable WITHOUT a gate, must work
 passively so Codex is not left behind, and must fit the harness output budget.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

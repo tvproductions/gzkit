@@ -1,7 +1,5 @@
 """gz content list command handler — ADR-0.0.34 § Decision item #4 (OBPI-0.0.34-04)."""
 
-from __future__ import annotations
-
 import json
 import sys
 

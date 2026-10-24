@@ -4,8 +4,6 @@ Provides the data layer for gz obpi lock commands. All functions take
 ``project_root: Path`` as input — no config or initialization required.
 """
 
-from __future__ import annotations
-
 import json
 import os
 import subprocess

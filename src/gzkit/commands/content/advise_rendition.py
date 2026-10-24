@@ -17,8 +17,6 @@ Exit 1: malformed verdict (empty explanation) — no receipt written.
 Exit 2: system/IO error writing the receipt.
 """
 
-from __future__ import annotations
-
 import sys
 
 from gzkit.commands.common import get_project_root

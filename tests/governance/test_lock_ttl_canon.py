@@ -8,8 +8,6 @@ that the CLI claim default, the preflight expiry fallback, and the MX session lo
 reference — so the value cannot drift between sites (the defect this fixes).
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

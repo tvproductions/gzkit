@@ -7,8 +7,6 @@ the emitted event is registered in the artifact-graph builder so a
 superseded OBPI is visible like a withdrawn one.
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch

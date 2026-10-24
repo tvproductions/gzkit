@@ -12,8 +12,6 @@ REQ-0.0.30-03-01 through REQ-0.0.30-03-08:
 REQ-05/06/07 land in test_engine.py.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

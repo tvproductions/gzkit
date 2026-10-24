@@ -6,8 +6,6 @@ back into the brief. Assertions derive from the brief's Acceptance Criteria,
 not from a run of the code.
 """
 
-from __future__ import annotations
-
 import difflib
 import json
 import unittest

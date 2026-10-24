@@ -16,8 +16,6 @@ Coverage map:
 - REQ-0.0.27-02-11 — operator personal email never appears in corpus content
 """
 
-from __future__ import annotations
-
 import re
 import unittest
 from pathlib import Path

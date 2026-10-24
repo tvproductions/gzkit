@@ -16,8 +16,6 @@ scenario:
 @covers REQ-0.35.0-02-07
 """
 
-from __future__ import annotations
-
 import io
 import json
 import re

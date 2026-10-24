@@ -20,8 +20,6 @@ attested ADR would be retroactive authorship of Layer-1 canon; booking the
 population is honest about the debt and keeps it counted.
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

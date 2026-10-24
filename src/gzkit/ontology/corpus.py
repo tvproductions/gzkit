@@ -7,8 +7,6 @@ edges, and emits a rebuild-fidelity self-report that confesses an incomplete or
 stale replay (parent ADR Boundary Invariant #1).
 """
 
-from __future__ import annotations
-
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import get_args

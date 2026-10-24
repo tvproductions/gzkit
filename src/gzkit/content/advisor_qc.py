@@ -23,8 +23,6 @@ step name — ``judge`` is the doctrine-aligned form (plan booked decision,
 2026-06-14).
 """
 
-from __future__ import annotations
-
 import json
 import uuid
 from datetime import UTC, datetime

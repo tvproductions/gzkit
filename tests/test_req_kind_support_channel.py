@@ -7,8 +7,6 @@ REQ-0.0.69-01-02 [behavior]: cited event absent OR citation unparseable → unpr
 REQ-0.0.69-01-03 [behavior]: cited validator scope non-zero → unproven/fail-close
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

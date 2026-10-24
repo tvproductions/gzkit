@@ -23,8 +23,6 @@ Per ``docs/governance/state-doctrine.md`` the ledger is Layer 2 and the brief is
 Layer 1; a gate decision must trace to one of them. A vendor cache is neither.
 """
 
-from __future__ import annotations
-
 import datetime as dt
 import json
 import re

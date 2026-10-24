@@ -10,8 +10,6 @@ the hangar the gate is fail-closed; inside the hangar it is advisory. Tests use
 explicit ``fail_closed=True/False`` to test each mode independently of MX state.
 """
 
-from __future__ import annotations
-
 import json
 import os
 import tempfile

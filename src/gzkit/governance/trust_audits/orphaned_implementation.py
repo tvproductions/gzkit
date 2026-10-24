@@ -22,8 +22,6 @@ the GHI #432 speculative-skip convention in
 ``src/gzkit/hooks/obpi.py``.
 """
 
-from __future__ import annotations
-
 import json
 import re
 from collections import defaultdict

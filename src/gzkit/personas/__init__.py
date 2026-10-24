@@ -10,8 +10,6 @@ See ADR-0.0.11 for the research basis and OBPI-0.0.11-03 for the composition
 specification.  See OBPI-0.0.13-04 for vendor adapter design.
 """
 
-from __future__ import annotations
-
 import importlib.resources as _importlib_resources
 import re
 from collections.abc import Callable

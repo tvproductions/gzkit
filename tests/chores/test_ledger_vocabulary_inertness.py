@@ -25,8 +25,6 @@ Two checks deliberately live elsewhere rather than here:
   wheel (GHI #783, #728).
 """
 
-from __future__ import annotations
-
 import importlib.util
 import json
 import tempfile

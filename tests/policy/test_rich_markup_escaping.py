@@ -26,8 +26,6 @@ would have re-created exactly that outcome. The ratchet is what makes the 15th
 site impossible rather than merely unobserved.
 """
 
-from __future__ import annotations
-
 import ast
 import unittest
 from pathlib import Path

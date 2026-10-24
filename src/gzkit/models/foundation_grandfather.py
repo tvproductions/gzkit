@@ -14,8 +14,6 @@ This module exposes:
 - ``load_manifest`` — read + parse the on-disk manifest into entry tuples.
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

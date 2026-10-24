@@ -5,8 +5,6 @@ These tests weaken the audit the ways it could go hollow and require the matchin
 to fail.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

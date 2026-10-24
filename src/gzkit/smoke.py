@@ -29,8 +29,6 @@ smoke-covered the moment it exists and there is no list anyone can forget to
 update — the rot the subset approach is otherwise prone to.
 """
 
-from __future__ import annotations
-
 import re
 import time
 import unittest

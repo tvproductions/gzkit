@@ -6,8 +6,6 @@ AGENTS.md "No YAML for gzkit data files" rule (2026-05-19).
 ``reconcile_invariant`` maps registry entries to density-aware Bullets (OBPI-0.0.37-11).
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 from typing import TYPE_CHECKING

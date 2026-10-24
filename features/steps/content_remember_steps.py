@@ -21,8 +21,6 @@ then run the land command it printed with its placeholders filled).
 @covers REQ-0.35.0-08-05
 """
 
-from __future__ import annotations
-
 import io
 import shlex
 from contextlib import redirect_stderr, redirect_stdout

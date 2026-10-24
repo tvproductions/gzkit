@@ -7,8 +7,6 @@ naming by the identity seam's grammars over the event's values, and the cutover
 as a timestamp in `data/catalog/delivery_events.json`.
 """
 
-from __future__ import annotations
-
 import io
 import json
 import unittest

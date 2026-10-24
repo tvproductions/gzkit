@@ -9,8 +9,6 @@ like the adr/obpi system"*, carried into step 2 of
 "Announces; never gates" — so an overdue chore still exits 0.
 """
 
-from __future__ import annotations
-
 import json
 import os
 import subprocess

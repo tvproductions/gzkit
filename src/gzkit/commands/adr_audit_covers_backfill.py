@@ -23,8 +23,6 @@ tests can mock the boundary cleanly (REQ-0.0.23-05-08).
 @covers REQ-0.0.23-05-07
 """
 
-from __future__ import annotations
-
 import json
 import math
 import re

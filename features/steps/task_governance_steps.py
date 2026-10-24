@@ -1,7 +1,5 @@
 """BDD steps for task lifecycle governance (ADR-0.22.0 / OBPI-0.22.0-04)."""
 
-from __future__ import annotations
-
 import io
 import json
 import shlex

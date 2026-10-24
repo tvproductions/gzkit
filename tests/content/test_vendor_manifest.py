@@ -11,8 +11,6 @@ Also covers:
   REQ-0.0.37-15-01..06 — per-vendor temperature routing (TestPerVendorTemperatureRouting)
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

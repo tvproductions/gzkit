@@ -5,8 +5,6 @@ obpi lock-release, obpi lock-status) are no longer registered; canonical
 space-form verbs remain active.
 """
 
-from __future__ import annotations
-
 import unittest
 
 from gzkit.governance.trust_audits.cli import _NO_SKILL_VERBS, _known_cli_verb_paths

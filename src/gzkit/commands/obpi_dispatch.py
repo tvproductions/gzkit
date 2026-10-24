@@ -11,8 +11,6 @@ subagent. Declaring is permitted and visible; running single-driver silently is
 what ``gz obpi precomplete`` refuses.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 
 

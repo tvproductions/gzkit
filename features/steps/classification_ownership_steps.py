@@ -14,8 +14,6 @@ source in the Notes column, and the pinned row identities of that scorecard.
 @covers REQ-0.35.0-10-09
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

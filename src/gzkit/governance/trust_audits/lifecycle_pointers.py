@@ -22,8 +22,6 @@ and necessary — history references must stay legal. Asserting that something i
 *pending* from it is what this refuses.
 """
 
-from __future__ import annotations
-
 import re
 from pathlib import Path
 

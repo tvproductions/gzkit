@@ -36,8 +36,6 @@ cannot break a committed row by construction, and all three repairs were measure
 at **zero** newly-failing live rows before landing.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import typing

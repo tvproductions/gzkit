@@ -7,8 +7,6 @@
 @covers REQ-0.0.37-22-07
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 from unittest.mock import patch

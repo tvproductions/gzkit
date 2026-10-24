@@ -7,8 +7,6 @@ annotation (GHI #966). A second resolver for either kind would be a second place
 for the "unknown is not live" contract to drift, so there is exactly one each.
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 from typing import Any

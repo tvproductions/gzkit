@@ -6,8 +6,6 @@ stays hand-written, and this test is its witness (Architectural Boundary 6). It
 had drifted to 28 missing scopes and 8 wrong tiers before anything checked it.
 """
 
-from __future__ import annotations
-
 import argparse
 import re
 import unittest

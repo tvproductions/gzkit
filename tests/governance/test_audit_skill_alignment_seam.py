@@ -19,8 +19,6 @@ Covers:
         surface; not swallowed by bare except returning [].
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 import unittest.mock

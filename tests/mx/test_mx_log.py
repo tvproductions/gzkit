@@ -8,8 +8,6 @@ discriminated-union parser; proven here AND by ``gz validate --ledger`` exit 0
 + an ``artifact_edited`` ledger event for ``src/gzkit/events.py`` at Stage 3.
 """
 
-from __future__ import annotations
-
 import json
 import subprocess
 import unittest

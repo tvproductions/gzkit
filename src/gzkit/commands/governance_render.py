@@ -1,7 +1,5 @@
 """gz governance render command implementation (ADR-0.0.37, OBPI-0.0.37-02)."""
 
-from __future__ import annotations
-
 import difflib
 import sys
 

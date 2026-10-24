@@ -20,8 +20,6 @@ itself (`gz validate --tautological-test-audit`,
 `.claude/rules/guardrail-feedback-prose.md` § Enforcement posture).
 """
 
-from __future__ import annotations
-
 import importlib.util
 import unittest
 from types import ModuleType

@@ -13,8 +13,6 @@ entering a stage on no text. The files are canon under
 ``gzkit.skills`` is what ``gz init`` and :func:`seed_stage_procedures` deliver.
 """
 
-from __future__ import annotations
-
 import hashlib
 from importlib.resources import files
 from pathlib import Path

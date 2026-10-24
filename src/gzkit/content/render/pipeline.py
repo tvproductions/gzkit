@@ -9,8 +9,6 @@ Design constraints:
     the ADR-0.0.33 fidelity validator suite fires before return.
 """
 
-from __future__ import annotations
-
 import importlib.resources
 from pathlib import Path
 

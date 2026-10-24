@@ -6,8 +6,6 @@ findings no row holds, and a row its findings no longer fill, are recorded and
 fail the run. A tree with no baseline records every finding, as plain Ruff does.
 """
 
-from __future__ import annotations
-
 import json
 import subprocess
 import sys

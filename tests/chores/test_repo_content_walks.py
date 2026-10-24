@@ -21,8 +21,6 @@ its own evidence, and the module's own ``_SELF_DIRS`` comment names the same haz
 for its own surfaces.
 """
 
-from __future__ import annotations
-
 import importlib.util
 import subprocess
 import tempfile

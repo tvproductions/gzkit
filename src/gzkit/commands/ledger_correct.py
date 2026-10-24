@@ -13,8 +13,6 @@ Invariant 1): a non-empty ``--attestor`` and ``--reason``, both fail-closed.
 Undoing a recorded fact is as human-gated as recording one.
 """
 
-from __future__ import annotations
-
 import json
 
 from gzkit.commands.common import console, ensure_initialized, get_project_root

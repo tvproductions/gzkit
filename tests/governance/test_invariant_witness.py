@@ -9,8 +9,6 @@ Caught live: ``foundation-adr-registers-invariant.json`` named
 ``gz validate --foundation-registers-invariant``, which has never existed.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

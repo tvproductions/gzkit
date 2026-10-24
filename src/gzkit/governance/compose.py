@@ -1,7 +1,5 @@
 """Deterministic playback of the committed AGENTS.md rendition (ADR-0.0.37, OBPI-0.0.37-22)."""
 
-from __future__ import annotations
-
 from pathlib import Path
 
 

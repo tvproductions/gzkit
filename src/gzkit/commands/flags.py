@@ -7,8 +7,6 @@ resolved values, filter to stale flags, and explain individual flag state.
 @covers OBPI-0.0.8-05-cli-surface
 """
 
-from __future__ import annotations
-
 import json
 import sys
 from datetime import date

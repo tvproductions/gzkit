@@ -33,8 +33,6 @@ serves the attestation, never gates it (canon-owner directive). The witness
 requirement is a property of the transition, not of one CLI command."
 """
 
-from __future__ import annotations
-
 import enum
 from typing import Any
 

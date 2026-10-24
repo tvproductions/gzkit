@@ -10,8 +10,6 @@ Core layer code uses structlog binding only (get_logger, bind, msg).
 All processor/formatter configuration lives here in the CLI layer.
 """
 
-from __future__ import annotations
-
 import logging
 import sys
 import uuid

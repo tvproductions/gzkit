@@ -10,8 +10,6 @@ The `gz task` verbs are covered in `tests/test_tasks.py::TestTaskJsonIsTheDocume
 and `gz preflight` in `tests/commands/test_preflight.py`.
 """
 
-from __future__ import annotations
-
 import io
 import json
 import unittest

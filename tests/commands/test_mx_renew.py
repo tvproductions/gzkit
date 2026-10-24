@@ -7,8 +7,6 @@ the open session and books it; it runs no guard, keeps the marker, and leaves th
 advisory debt aging from the contract's first open (GHI #1258).
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from datetime import UTC, datetime, timedelta

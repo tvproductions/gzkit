@@ -14,8 +14,6 @@ its entire summary there, and surfacing it would bury the signal it was meant to
 carry.
 """
 
-from __future__ import annotations
-
 import io
 import unittest
 from contextlib import redirect_stderr, redirect_stdout

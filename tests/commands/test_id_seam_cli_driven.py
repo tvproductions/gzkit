@@ -8,8 +8,6 @@ grammar names (`ADR-0.1.0-f`, `OBPI-0.1.0-01-thing`), so dropping the seam call
 fails here.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

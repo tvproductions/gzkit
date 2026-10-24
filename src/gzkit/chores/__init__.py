@@ -11,8 +11,6 @@ See ADR-0.0.21 § Decision #3 (scaffolder contract) and § Decision #6
 (registry-merge contract).
 """
 
-from __future__ import annotations
-
 import importlib.resources
 import json
 from collections.abc import Iterator

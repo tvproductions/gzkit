@@ -17,8 +17,6 @@ These tests pin both, against synthetic trees so they fail for behavioral
 reasons rather than repository content.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

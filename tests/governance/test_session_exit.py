@@ -7,8 +7,6 @@ must never block, and must never produce an artifact that could discharge a
 token surrender the session did not perform.
 """
 
-from __future__ import annotations
-
 import subprocess
 import tempfile
 import unittest

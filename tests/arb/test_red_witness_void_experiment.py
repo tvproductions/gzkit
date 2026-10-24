@@ -22,8 +22,6 @@ The premise fails in THREE ways, only one of which the filing issue named:
 3. A caller passing an explicit ``base_commit`` that already carries the code.
 """
 
-from __future__ import annotations
-
 import subprocess
 import tempfile
 import unittest

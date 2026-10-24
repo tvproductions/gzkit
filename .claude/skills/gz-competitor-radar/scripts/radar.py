@@ -6,8 +6,6 @@ travel with its execution assets. Repository-specific state lives under
 ``artifacts/reports/competitor-radar/``; this script remains inside the skill.
 """
 
-from __future__ import annotations
-
 import argparse
 import datetime as dt
 import hashlib

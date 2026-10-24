@@ -6,8 +6,6 @@ hid that would be green by construction (GHI #743's shape). Maintenance visit A,
 2026-10-10.
 """
 
-from __future__ import annotations
-
 import importlib.util
 import json
 import tempfile

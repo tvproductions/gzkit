@@ -18,8 +18,6 @@ defect it exists to report, so it carries two claims on the exemption-half prece
   so an always-refuse audit cannot discharge the first claim alone.
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

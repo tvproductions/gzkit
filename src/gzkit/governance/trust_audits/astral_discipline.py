@@ -31,8 +31,6 @@ Registered as ``gz validate --astral-discipline``; runs in ``gz check`` as the
 "Astral discipline" step.
 """
 
-from __future__ import annotations
-
 import ast
 import fnmatch
 import functools

@@ -10,8 +10,6 @@ Tests assert the binding sub-invariants of `.gzkit/rules/token-block-discipline.
 Authored progressively across OBPI-0.0.41-02, -03, -04 per parent ADR § Evidence.
 """
 
-from __future__ import annotations
-
 import json
 import re
 import tempfile

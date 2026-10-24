@@ -10,8 +10,6 @@ is replaced with the stand-ins the unit fixture uses; the command, the ledger
 and the marker files are real.
 """
 
-from __future__ import annotations
-
 import importlib.util
 import io
 import json

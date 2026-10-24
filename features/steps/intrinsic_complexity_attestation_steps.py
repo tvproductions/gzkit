@@ -17,8 +17,6 @@ steps live in ``gz_steps.py`` and are shared.
 @covers REQ-0.0.29-07-05
 """
 
-from __future__ import annotations
-
 import io
 import json
 import shlex

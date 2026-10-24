@@ -1,7 +1,5 @@
 """Tests for gz obpi repudiate CLI — OBPI-0.0.71-02."""
 
-from __future__ import annotations
-
 import io
 import sys
 import tempfile

@@ -7,8 +7,6 @@ an id's spelling. The fixture is the reused ``OBPI-0.28.0-01`` slot: parked
 ``chores-cli`` under a pool ADR, live ``context-core`` under ``ADR-0.28.0``.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

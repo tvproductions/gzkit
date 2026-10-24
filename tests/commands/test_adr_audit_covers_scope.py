@@ -6,8 +6,6 @@ already drops it), so its REQ ``@covers`` decorators must not enter the backfill
 heuristic and over-flag an otherwise-clean closeout.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

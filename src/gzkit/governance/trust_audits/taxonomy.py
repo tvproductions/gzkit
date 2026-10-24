@@ -16,8 +16,6 @@ Also exports ``_parse_adr_frontmatter`` — a stdlib YAML reader used here
 and re-imported by ``sensitivity.py``.
 """
 
-from __future__ import annotations
-
 import json
 import re
 from pathlib import Path

@@ -14,8 +14,6 @@ Covers:
   REQ-0.0.34-06-05 — Both pipeline.py and edit.py reference the hook module
 """
 
-from __future__ import annotations
-
 import logging
 import subprocess
 import tempfile

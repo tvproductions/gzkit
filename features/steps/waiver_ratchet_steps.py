@@ -10,8 +10,6 @@ registry-fixture Given steps are defined here.
 @covers REQ-0.0.73-09-06
 """
 
-from __future__ import annotations
-
 import json
 import os
 from pathlib import Path

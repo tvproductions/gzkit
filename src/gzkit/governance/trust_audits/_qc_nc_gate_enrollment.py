@@ -9,8 +9,6 @@ validate registry and the enforcement registry directly, never through the audit
 filtering, so an audit that stops inspecting some scope fails at the first one it skips.
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

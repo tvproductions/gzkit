@@ -18,8 +18,6 @@ Two properties are covered here.
    ``test_active_campaign_registry.py`` uses for the campaign pointer.
 """
 
-from __future__ import annotations
-
 import importlib.util
 import json
 import tempfile

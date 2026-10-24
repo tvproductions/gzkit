@@ -20,8 +20,6 @@ comment inside the test, or by a class named ``*OutputForm`` / ``*OutputContract
 ``*Rendering``. Undeclared is a prompt to classify, never a verdict.
 """
 
-from __future__ import annotations
-
 import ast
 import re
 from collections import Counter

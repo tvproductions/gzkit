@@ -7,8 +7,6 @@ of an unreadable lock file, an orphan session lock and an apply over held leases
 reaper's once-per-claim booking against a real ledger, and the corpus projection.
 """
 
-from __future__ import annotations
-
 import io
 import json
 import tempfile

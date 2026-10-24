@@ -21,8 +21,6 @@ Exit codes (binding):
   (REQ-0.0.27-04-05 no-overwrite guard) without ``--allow-dated-sibling``.
 """
 
-from __future__ import annotations
-
 import json
 import sys
 from datetime import date as DateClass

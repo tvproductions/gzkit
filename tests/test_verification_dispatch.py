@@ -6,8 +6,6 @@ composition, result parsing and aggregation, sequential fallback logic,
 and edge cases (zero reqs, single req, all overlap, timeout/error).
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 

@@ -20,8 +20,6 @@ event postdates the floor by >24h, so an appended-event-then-failed-floor-write
 leaves a red gate, while a written-floor-then-failed-append leaves a green one.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

@@ -6,8 +6,6 @@ rejection, and required-field validation for the Pydantic models.
 Uses gzkit.models.historical_waiver (will be written in the GREEN phase).
 """
 
-from __future__ import annotations
-
 import unittest
 
 from pydantic import ValidationError

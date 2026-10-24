@@ -25,8 +25,6 @@ Not to be confused with ``gzkit.lock_manager``, which owns OBPI *work* locks:
 TTL-bearing coordination records for agents, not kernel locks on a file.
 """
 
-from __future__ import annotations
-
 import contextlib
 import errno
 import sys

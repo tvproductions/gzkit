@@ -18,8 +18,6 @@ Shared steps reused, never redefined (behave's AmbiguousStep):
 event was written`` from ``content_commit_retention_steps.py``.
 """
 
-from __future__ import annotations
-
 import builtins
 import contextlib
 import hashlib

@@ -1,7 +1,5 @@
 """Tests for gz check pipeline composition (OBPI-0.0.35-04 wiring)."""
 
-from __future__ import annotations
-
 import unittest
 
 from gzkit.commands.quality import _build_check_steps

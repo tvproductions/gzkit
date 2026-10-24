@@ -11,8 +11,6 @@ precedent: an undeclared step raises rather than defaulting to read-only, and a
 declaration naming a step that no longer exists is stale rather than harmless.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 

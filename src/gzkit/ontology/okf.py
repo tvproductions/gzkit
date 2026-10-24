@@ -15,8 +15,6 @@ BI-1/BI-3), load-bearing:
     Tier-B ontology.
 """
 
-from __future__ import annotations
-
 import re
 from pathlib import Path
 from typing import Any

@@ -5,8 +5,6 @@ registry, auto-migration dispatch, fail-closed unknown versions, and
 purity invariant.
 """
 
-from __future__ import annotations
-
 import unittest
 
 from gzkit.content.migration import MIGRATIONS, MigrationError, apply_migrations

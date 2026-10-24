@@ -6,8 +6,6 @@ elevation: a required human ``attestor`` witness, a ``superseded`` terminal-stat
 rejection, and attestor recording on the emitted event.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

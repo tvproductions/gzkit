@@ -40,8 +40,6 @@ like a check that ran and found nothing — which is the defect this module exis
 to close, re-created one layer up.
 """
 
-from __future__ import annotations
-
 import json
 import re
 import shutil

@@ -5,8 +5,6 @@ named it. These tests weaken the gate the way its history did, and the ways its 
 regress, and require the matching control to fail.
 """
 
-from __future__ import annotations
-
 import unittest
 from unittest import mock
 

@@ -14,8 +14,6 @@ contract:
   a binding nudge when the local clone is behind origin.
 """
 
-from __future__ import annotations
-
 import contextlib
 import importlib.util
 import io

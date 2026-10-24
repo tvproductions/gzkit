@@ -5,8 +5,6 @@ Coverage:
     REQ-0.0.29-07-02 — decorator is a strict runtime no-op.
 """
 
-from __future__ import annotations
-
 import inspect
 import unittest
 

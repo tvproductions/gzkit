@@ -11,8 +11,6 @@ The kill sweep over the whole live registry is the `Guard canary sweep` step of
 unit tier's wall time. What stays here drives the sweep's own verdicts on a planted tree.
 """
 
-from __future__ import annotations
-
 import hashlib
 import json
 import os

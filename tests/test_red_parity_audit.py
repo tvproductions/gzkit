@@ -4,8 +4,6 @@ Assertions derive from the requirement — a completed heavy-lane BEHAVIOR REQ m
 carry a witness that its covering test can fail — not from a run of the audit.
 """
 
-from __future__ import annotations
-
 import datetime as dt
 import json
 import tempfile

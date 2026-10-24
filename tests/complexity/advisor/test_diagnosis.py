@@ -7,8 +7,6 @@ REQ-08/09/10 are procedural; satisfied by TDD rhythm, tempfile usage, and
 absence of operator email respectively.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

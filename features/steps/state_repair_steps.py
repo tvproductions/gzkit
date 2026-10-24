@@ -1,7 +1,5 @@
 """BDD steps for state repair feature (OBPI-0.0.9-03)."""
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

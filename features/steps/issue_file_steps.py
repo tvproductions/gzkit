@@ -11,8 +11,6 @@ Reuses the canonical ``When I run the gz command "..."`` /
 step pair from gz_steps.py.
 """
 
-from __future__ import annotations
-
 import subprocess
 
 from behave import given

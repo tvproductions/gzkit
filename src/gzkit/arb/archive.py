@@ -36,8 +36,6 @@ relocation is atomic no-clobber, but the plan→execute window is not defended
 against a second ``gz`` process emitting receipts mid-run.
 """
 
-from __future__ import annotations
-
 import json
 import os
 import re

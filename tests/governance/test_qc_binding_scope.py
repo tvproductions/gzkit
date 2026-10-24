@@ -4,8 +4,6 @@ Validates theater-signature detection, negative-control execution,
 exit-code behavior, gz check wiring, and CLI alignment.
 """
 
-from __future__ import annotations
-
 import subprocess
 import sys
 import unittest

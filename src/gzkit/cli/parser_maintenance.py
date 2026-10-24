@@ -10,8 +10,6 @@ avoids pulling heavy handler dependencies. Each handler's module lives in
 the resolved callable.
 """
 
-from __future__ import annotations
-
 import argparse
 
 from gzkit.cli.helpers import (

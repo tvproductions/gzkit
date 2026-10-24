@@ -7,8 +7,6 @@ Tests pin semantic contract derived from the OBPI brief acceptance criteria,
 not current implementation output shape.
 """
 
-from __future__ import annotations
-
 import unittest
 
 from pydantic import ValidationError

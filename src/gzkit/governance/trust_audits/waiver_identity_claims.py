@@ -17,8 +17,6 @@ Two claims, on the exemption-half precedent (GHI #797).
   refuses everything cannot discharge the first claim alone.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 from collections.abc import Callable

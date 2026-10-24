@@ -8,8 +8,6 @@ REQs covered: REQ-0.0.36-03-02, REQ-0.0.36-03-03, REQ-0.0.36-03-04,
               REQ-0.0.36-03-05.
 """
 
-from __future__ import annotations
-
 import json
 import logging
 import tempfile

@@ -24,8 +24,6 @@ files use subTest", and an adopter inheriting it inherits gzkit's numbers as
 their own baseline.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

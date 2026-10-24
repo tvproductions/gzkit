@@ -19,8 +19,6 @@ The router-detection rule is deliberately structural — *body contains
 new routers and ``gz-skill-router``-style lookup aids both qualify.
 """
 
-from __future__ import annotations
-
 import re
 from pathlib import Path
 

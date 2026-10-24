@@ -16,8 +16,6 @@ capability by READING the agent definition — so the disclosure cannot drift fr
 the tool grant, and corrects itself if the grant ever changes.
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory

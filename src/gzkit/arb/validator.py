@@ -4,8 +4,6 @@ ARB receipts are long-lived artifacts. This validator catches drift between
 code and schema, and surfaces unknown schema IDs early.
 """
 
-from __future__ import annotations
-
 import json
 import shlex
 from datetime import datetime

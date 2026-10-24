@@ -28,8 +28,6 @@ gzkit-specific changes documented in
 ``docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-26-drift-detection-pattern.md``.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 from typing import Literal
 

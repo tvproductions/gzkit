@@ -6,8 +6,6 @@ own OBPI width; each now embeds a seam body, so every one reads the seam's short
 substitute the bodies at render time, so a rendered script carries them and no placeholder.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

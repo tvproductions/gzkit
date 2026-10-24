@@ -11,8 +11,6 @@ handoff). No operator prompt, no manual ``gz obpi lock release`` chore — that 
 prompt was the defect this work corrects.
 """
 
-from __future__ import annotations
-
 import json
 import re
 import tempfile

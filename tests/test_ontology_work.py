@@ -9,8 +9,6 @@ append-only ledger (emitting the four permanent types in a test would slam the
 one-way door).
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

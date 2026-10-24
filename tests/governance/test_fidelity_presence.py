@@ -9,8 +9,6 @@ contract from the brief's Acceptance Criteria:
   REQ-0.0.73-08-03  grandfathered block-less passes; a NEW one fails closed
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

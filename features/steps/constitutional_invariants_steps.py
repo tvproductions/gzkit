@@ -23,8 +23,6 @@
 @covers REQ-0.0.37-15-04
 """
 
-from __future__ import annotations
-
 import io
 import json
 import warnings

@@ -10,8 +10,6 @@ frontmatter handoffs shipped.
 @covers ADR-0.0.72 (OBPI-0.0.72-02)
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from datetime import datetime, timedelta

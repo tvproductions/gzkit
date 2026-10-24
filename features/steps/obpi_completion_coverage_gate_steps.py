@@ -26,8 +26,6 @@ plain Python unittest modules with a local ``covers`` stub so they run via
 @covers REQ-0.0.25-03-04
 """
 
-from __future__ import annotations
-
 import io
 import json
 import os

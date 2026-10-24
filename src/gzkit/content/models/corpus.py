@@ -17,8 +17,6 @@ the authoring-time compressor (OBPI-21), committed-rendition playback (OBPI-22),
 the invariant-tier *designation* + presence enforcement (OBPI-23).
 """
 
-from __future__ import annotations
-
 from collections.abc import Sequence
 from typing import Literal, NamedTuple
 

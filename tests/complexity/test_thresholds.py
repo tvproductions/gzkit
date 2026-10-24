@@ -29,8 +29,6 @@ Coverage:
         dict and rejects an unknown trigger-semantic.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

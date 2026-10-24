@@ -24,8 +24,6 @@ never consumed as enforcement evidence by any ``gz validate`` / gates /
 closeout surface.
 """
 
-from __future__ import annotations
-
 import contextlib
 import json
 import os

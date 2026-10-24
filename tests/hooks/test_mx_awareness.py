@@ -7,8 +7,6 @@ Covers three behaviors:
 Tests are derived from brief acceptance criteria, not from the implementation.
 """
 
-from __future__ import annotations
-
 import importlib.util
 import io
 import json

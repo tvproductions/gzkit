@@ -17,8 +17,6 @@ Coverage:
         fence regression guard).
 """
 
-from __future__ import annotations
-
 import unittest
 
 from pydantic import ValidationError

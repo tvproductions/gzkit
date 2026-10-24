@@ -9,8 +9,6 @@ plain output modes.
 @covers OBPI-0.21.0-03-gz-covers-cli
 """
 
-from __future__ import annotations
-
 import json
 import sys
 from itertools import starmap

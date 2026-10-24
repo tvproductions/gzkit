@@ -22,8 +22,6 @@ signature this audit exists to catch (ADR-0.0.73; `theater_signature_scan`
 § "Deliberately NOT detected").
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

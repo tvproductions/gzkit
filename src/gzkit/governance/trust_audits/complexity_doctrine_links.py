@@ -11,8 +11,6 @@ Closes the 2am-Scenario-2 failure mode (operator follows advisor diagnosis
 to missing artifact).
 """
 
-from __future__ import annotations
-
 import re
 from pathlib import Path
 

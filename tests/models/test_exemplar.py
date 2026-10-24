@@ -9,8 +9,6 @@ Covers:
 - REQ-0.0.27-02-08 (JSON Schema parity + ExemplarCorpus shape)
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

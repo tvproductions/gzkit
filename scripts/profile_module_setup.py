@@ -6,8 +6,6 @@ module-level setup is expensive and is the highest-value optimization
 target.
 """
 
-from __future__ import annotations
-
 import os
 import sys
 import time

@@ -17,8 +17,6 @@ Usage:
 If no ADR ids are passed, every ADR under docs/design/adr is processed.
 """
 
-from __future__ import annotations
-
 import argparse
 import re
 import sys

@@ -11,8 +11,6 @@ that resolves to no template-defined Pillar of that surface aborts with a non-ze
 writes no entry — an unaddressable entry is never persisted.
 """
 
-from __future__ import annotations
-
 import sys
 from datetime import UTC, datetime
 from typing import Literal

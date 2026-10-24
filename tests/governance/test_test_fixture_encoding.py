@@ -14,8 +14,6 @@ covered only ``read_text`` / ``write_text`` under ``tests/**``, which let
 ``GzkitConfig.load``'s bare ``config_path.open()`` ship in ``src/``.
 """
 
-from __future__ import annotations
-
 import ast
 import unittest
 from pathlib import Path

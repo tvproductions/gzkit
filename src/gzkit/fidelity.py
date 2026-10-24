@@ -7,8 +7,6 @@ that block from an ADR file and the gate runs each command, filling in the
 in a detached worktree at HEAD, never the live checkout (GHI #1156).
 """
 
-from __future__ import annotations
-
 import re
 import shlex
 import subprocess

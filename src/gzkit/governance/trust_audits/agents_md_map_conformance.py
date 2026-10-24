@@ -49,8 +49,6 @@ case-insensitively so that authoring case does not provide an escape
 hatch from the doctrine.
 """
 
-from __future__ import annotations
-
 import json
 import re
 from pathlib import Path

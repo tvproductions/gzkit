@@ -13,8 +13,6 @@ same corpus + same SHAs + same tool major versions MUST produce byte-
 identical JSON output (REQ-0.0.27-03-03).
 """
 
-from __future__ import annotations
-
 import json
 from typing import Any
 

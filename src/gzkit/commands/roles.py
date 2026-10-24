@@ -1,7 +1,5 @@
 """Roles command — list pipeline agent roles and dispatch history."""
 
-from __future__ import annotations
-
 import json
 import sys
 

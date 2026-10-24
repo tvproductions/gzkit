@@ -30,8 +30,6 @@ highest first, for a chore's worklist or its before-and-after evidence; the gate
 that holds the ceiling is ``gz validate --complexity-ceiling``.
 """
 
-from __future__ import annotations
-
 import argparse
 import ast
 import json

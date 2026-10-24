@@ -18,8 +18,6 @@ foundations (7 of 8 sampled carry no terminal ledger event), so ``--apply``
 fail-closes without ``--attestor`` and ``--attestation``.
 """
 
-from __future__ import annotations
-
 import argparse
 import json
 import re

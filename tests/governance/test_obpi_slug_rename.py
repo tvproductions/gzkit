@@ -12,8 +12,6 @@ a prefix. GHI #584 put 237 bad records in this ledger and its backfill wrote 356
 more; a rename tool that guesses is how that recurs.
 """
 
-from __future__ import annotations
-
 import unittest
 
 from gzkit.governance.obpi_slug_rename import _refusals

@@ -3,8 +3,6 @@
 REQ-0.0.37-07-01 — pure function semantics; covered via @covers decorators below.
 """
 
-from __future__ import annotations
-
 import os
 import time
 import unittest

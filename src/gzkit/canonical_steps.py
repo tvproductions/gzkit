@@ -23,8 +23,6 @@ without first making that ``__init__`` lazy.
 on the hot path. Pinned by ``tests/arb/test_canonical_steps_leaf_import.py``.
 """
 
-from __future__ import annotations
-
 __all__ = ["CANONICAL_STEP_COMMANDS"]
 
 

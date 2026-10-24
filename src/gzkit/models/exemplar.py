@@ -8,8 +8,6 @@ All models use ``ConfigDict(frozen=True, extra="forbid")`` per
 ``.gzkit/rules/models.md``.
 """
 
-from __future__ import annotations
-
 import json
 import re
 from pathlib import Path

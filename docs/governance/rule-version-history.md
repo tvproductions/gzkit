@@ -452,6 +452,12 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 `0.5.10` writes § Imports to the 3.14 floor (operator, 2026-10-23: *"I want to make sure that we move our idiomatic python TO the 3.14 standard"*; RO-9's ruling that adopting a version means adopting its idioms). `0.5.9` described lazy imports in 3.13 terms, and the modules landed with it carried `from __future__ import annotations`. On 3.14 annotations are evaluated lazily by default (PEP 649 and 749), so an annotation-only import belongs under a top-level `if TYPE_CHECKING:` rather than in a function body, and the PEP 563 import is the superseded form. Ruff 0.17's own TID254 and TID255 confirm `lazy import` is Python 3.15 (PEP 810), so it is recorded as unavailable rather than adopted. The three modules from `0.5.9` (`src/gzkit/ruff_baseline.py`, `tests/test_ruff_baseline.py`, `tests/test_lint_cli.py`) dropped the future import and pass lint, ty and their tests.
 
+### Lifted 2026-10-24 at version `0.5.10` (rule now at `0.5.11`)
+
+> **Rule version:** `0.5.10` — § Imports states the Python 3.14 import idiom (deferred annotations, PEP 649 and 749) in place of the PEP 563 future import, and records that `lazy import` is 3.15; prior banners in [Rule Version History](rule-version-history.md#pythonicmd).
+
+`0.5.11` records the PEP 563 import as refused rather than advised. The operator ordered the removal before the ban (selection *"Remove first, then ban (Rec.)"*), because holding the 1,058 files that carried it would have raised `data/ruff_baseline.json` above its shrink-ratchet high-water mark. Removed from every module but the seven dated evidence scripts, which keep it under a per-file exception, the tree passed ty, the full unit tier and behave unchanged; Ruff `TID251` with a `banned-api` entry for `__future__.annotations` then entered with no baseline row. Scorecard row 23b stays Promotable until a registered control plants the import.
+
 ## `hexagonal-architecture.md`
 
 Lifted at version `0.2.0` (rule now at `0.2.1`).

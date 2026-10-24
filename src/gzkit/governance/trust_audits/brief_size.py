@@ -24,8 +24,6 @@ nothing else. Terminal briefs are sealed records and are not measured, for the
 reason `--brief-structure` gives.
 """
 
-from __future__ import annotations
-
 import json
 import re
 from importlib.resources import files

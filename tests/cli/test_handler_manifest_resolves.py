@@ -29,8 +29,6 @@ of these two assertions red. Sibling of the #618 validate-dispatch fences
 (``test_validate_dispatch_consistency`` / ``test_validate_registry_parity``).
 """
 
-from __future__ import annotations
-
 import ast
 import importlib
 import unittest

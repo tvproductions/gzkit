@@ -5,8 +5,6 @@ crashed before running a test, a run that executed nothing). The command must sa
 which, because the remedy differs: the old canned text named only the first.
 """
 
-from __future__ import annotations
-
 import contextlib
 import io
 import tempfile

@@ -8,8 +8,6 @@ defect GHI #642 forbids: an ImportError against a not-yet-existing symbol is a *
 RED and must never be recorded as an assertion RED.
 """
 
-from __future__ import annotations
-
 import subprocess
 import sys
 import tempfile

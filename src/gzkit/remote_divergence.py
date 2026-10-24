@@ -33,8 +33,6 @@ enumerating readers is not a fence. A renderer added here should be added to the
 differential in the same commit.
 """
 
-from __future__ import annotations
-
 import os
 import subprocess
 from pathlib import Path

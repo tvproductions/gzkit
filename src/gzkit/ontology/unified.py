@@ -26,8 +26,6 @@ Code-coupling edges are excluded: they live in ``source_anchors.json`` and carry
 no ``LinkType`` (``CodeCouplingEdge`` is outside the object/link model).
 """
 
-from __future__ import annotations
-
 import posixpath
 from collections.abc import Iterable
 from pathlib import Path

@@ -8,8 +8,6 @@ See `AGENTS.md` § Attestation for the binding rule contract
 `docs/governance/arb-middleware.md` for the middleware deep-dive.
 """
 
-from __future__ import annotations
-
 import argparse
 import shlex
 from typing import Any

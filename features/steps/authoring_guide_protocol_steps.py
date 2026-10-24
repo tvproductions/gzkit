@@ -10,8 +10,6 @@ synthetic shutdown to flush the server's response loop.
 @covers REQ-0.0.30-04-03
 """
 
-from __future__ import annotations
-
 import io
 import json
 import tempfile

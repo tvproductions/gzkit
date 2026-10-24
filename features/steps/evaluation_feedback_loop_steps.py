@@ -15,8 +15,6 @@ tempdir), the ledger is real, the chore runs through its public
 ``run_cluster`` entry point.
 """
 
-from __future__ import annotations
-
 import io
 import json
 import shutil

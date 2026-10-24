@@ -7,8 +7,6 @@ never split per physical line. The verify-stage extractor must reuse
 just the ``is_shell_less_executable`` classifier.
 """
 
-from __future__ import annotations
-
 import unittest
 
 from gzkit.commands.obpi_stages import _pipeline_verification_commands

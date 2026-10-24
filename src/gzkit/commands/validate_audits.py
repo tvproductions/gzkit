@@ -19,8 +19,6 @@ Split out of ``validate_cmd.py`` for module-size discipline
 (`.claude/rules/pythonic.md`).
 """
 
-from __future__ import annotations
-
 from typing import Any
 
 #: Members that own a solo early-return lifecycle — each needs its own pass.

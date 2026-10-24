@@ -24,8 +24,6 @@ the payload it builds from the ledger rows it is handed. The command carries
 out either through the marker module.
 """
 
-from __future__ import annotations
-
 import logging
 import re
 from collections.abc import Iterable, Mapping

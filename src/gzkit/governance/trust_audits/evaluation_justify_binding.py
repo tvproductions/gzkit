@@ -19,8 +19,6 @@ Thresholds are loaded from ``data/eval_feedback_thresholds.json`` — never
 hardcoded (REQ-0.0.26-02-05).
 """
 
-from __future__ import annotations
-
 import json
 import re
 from datetime import UTC, datetime

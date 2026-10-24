@@ -20,8 +20,6 @@ an arm of the enforcement floor: the pre-push guard runs the floor in every proj
 and this inventory reads a disclosed list only gzkit's repository carries.
 """
 
-from __future__ import annotations
-
 from collections.abc import Callable, Sequence
 from pathlib import Path
 

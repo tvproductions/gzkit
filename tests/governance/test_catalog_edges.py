@@ -10,8 +10,6 @@ REQ's BDD binding is its scenario tag and its `@covers` test. The freeze lock
 moved to RO-5.
 """
 
-from __future__ import annotations
-
 import json
 import textwrap
 import unittest

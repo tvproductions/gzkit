@@ -13,8 +13,6 @@ generate_bundle`` works), which would put the submodule in ``sys.modules`` befor
 demo command. The package-as-command form is warning-free by construction.
 """
 
-from __future__ import annotations
-
 from gzkit.knowledge.generate import BUNDLE_OUTPUT, TRACER_SLICE, generate_bundle
 
 generate_bundle(TRACER_SLICE, BUNDLE_OUTPUT)

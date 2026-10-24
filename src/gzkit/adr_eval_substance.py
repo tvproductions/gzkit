@@ -22,8 +22,6 @@ ADR-0.0.40's unbuilt scope. This module reuses the existing record-and-validate
 seam and the explanation-first discipline only.
 """
 
-from __future__ import annotations
-
 from enum import StrEnum
 from pathlib import Path
 

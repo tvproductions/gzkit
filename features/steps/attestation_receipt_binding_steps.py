@@ -28,8 +28,6 @@ discover them via the canonical scan.
 @covers REQ-0.0.24-04-03
 """
 
-from __future__ import annotations
-
 import io
 import json
 import os

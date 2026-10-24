@@ -20,8 +20,6 @@ Exit codes (binding, REQ-0.0.29-03-02):
 * ``3`` — policy breach (one or more block-band crossings).
 """
 
-from __future__ import annotations
-
 import ast
 import json
 import sys

@@ -5,8 +5,6 @@ which enumerates pre-doctrine receipts that would otherwise fail
 gz validate --receipt-shape (ADR-0.0.36 cutoff: 2026-04-26).
 """
 
-from __future__ import annotations
-
 from pydantic import BaseModel, ConfigDict, Field
 
 

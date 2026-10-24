@@ -20,8 +20,6 @@ SCOPE: console output only. A `duration` field on `QualityResult` (which feeds
 changes, deliberately out of this arm.
 """
 
-from __future__ import annotations
-
 import time
 import unittest
 from pathlib import Path

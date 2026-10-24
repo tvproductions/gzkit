@@ -23,8 +23,6 @@ window boundary is the semantic under test, and second-granularity commit dates
 would otherwise decide it by race.
 """
 
-from __future__ import annotations
-
 import json
 import subprocess
 import tempfile

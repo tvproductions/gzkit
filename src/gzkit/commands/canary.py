@@ -1,7 +1,5 @@
 """``gz canary`` commands over the reviewed guard mutation canaries (GHI #1161)."""
 
-from __future__ import annotations
-
 import json
 
 from gzkit.commands.common import console, ensure_initialized, get_project_root

@@ -9,8 +9,6 @@ into the state-mutating completion command (not only the bypassable
 any agent's path.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

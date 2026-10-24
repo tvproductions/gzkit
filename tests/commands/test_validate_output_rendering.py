@@ -17,8 +17,6 @@ every Rich-rendered call site; this file pins the operator-visible behavior at
 the site where the defect was observed.
 """
 
-from __future__ import annotations
-
 import contextlib
 import io
 import unittest

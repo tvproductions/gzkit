@@ -1,7 +1,5 @@
 """Tests for gzkit.foundation.rubric — derived from OBPI-0.0.57-04 REQs."""
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

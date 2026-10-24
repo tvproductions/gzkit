@@ -10,8 +10,6 @@
   ``tests/slow``, ``tests/bdd`` or matching CLI flags is forbidden (GHI #209).
 """
 
-from __future__ import annotations
-
 import ast
 import re
 import tokenize

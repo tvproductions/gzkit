@@ -11,8 +11,6 @@ Design:
 - Idempotent: deduplicates by content hash of ``(cluster_key, sorted artifact IDs)``.
 """
 
-from __future__ import annotations
-
 import hashlib
 import json
 import logging

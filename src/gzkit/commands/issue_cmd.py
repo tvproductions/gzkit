@@ -11,8 +11,6 @@ REQ-0.0.23-04-06 (hard-reject misrouted bodies),
 REQ-0.0.23-04-07 (subprocess boundary mocked in unit tests).
 """
 
-from __future__ import annotations
-
 import re
 import subprocess
 import sys

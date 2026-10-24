@@ -4,8 +4,6 @@ The report bytes are authored evidence; index/current are replaceable views.
 An interrupted publication is retried with the same identity and inputs.
 """
 
-from __future__ import annotations
-
 import hashlib
 import os
 import re

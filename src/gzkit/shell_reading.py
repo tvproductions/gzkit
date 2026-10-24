@@ -32,8 +32,6 @@ apart on the same input, so both import from here — the single-reader discipli
 ``rule_version_of()`` and ``TaskId.parse`` already follow.
 """
 
-from __future__ import annotations
-
 import shlex
 from collections.abc import Iterable
 

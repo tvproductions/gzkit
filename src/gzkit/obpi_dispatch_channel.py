@@ -39,8 +39,6 @@ rendering read it; it is a CACHE of what the ledger records, and no verdict here
 consults it.
 """
 
-from __future__ import annotations
-
 from datetime import UTC, datetime
 from enum import StrEnum
 from pathlib import Path

@@ -14,8 +14,6 @@ disagree about what "an ARB-wrapped verifier" is, which is the drift the
 locked table exists to prevent.
 """
 
-from __future__ import annotations
-
 import json
 import subprocess
 import sys

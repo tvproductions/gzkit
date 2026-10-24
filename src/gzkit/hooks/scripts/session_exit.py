@@ -7,8 +7,6 @@ stdin shim around it, so the beat stays unit-testable and ``@enforces``-able
 uses for the entry gate.
 """
 
-from __future__ import annotations
-
 from textwrap import dedent
 
 
@@ -42,8 +40,6 @@ def _session_exit_bookmark_script() -> str:
             Exit codes:
               0 - always (SessionEnd cannot block; there is no verdict to report)
             \"\"\"
-
-            from __future__ import annotations
 
             import json
             import sys
@@ -127,8 +123,6 @@ def _session_start_advisement_script() -> str:
             Exit codes:
               0 - always (advisement never blocks)
             \"\"\"
-
-            from __future__ import annotations
 
             import json
             import sys

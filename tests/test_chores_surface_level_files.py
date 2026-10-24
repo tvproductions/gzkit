@@ -11,8 +11,6 @@ different title lines by design. They were kept apart only by the same accident,
 so they now carry a declared class instead.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

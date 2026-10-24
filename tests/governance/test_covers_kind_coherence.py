@@ -15,8 +15,6 @@ that owes proof), matching `parse_brief_req_kinds`'s caller contract, so only an
 explicitly SUPPORT/STRUCTURAL-FENCE tag trips the guard.
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 

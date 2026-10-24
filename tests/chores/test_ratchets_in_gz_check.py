@@ -11,8 +11,6 @@ before it runs, a clean tree passes, and a project that does not carry the
 (projectLocal) chore is not failed for a surface it never had.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

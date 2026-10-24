@@ -20,8 +20,6 @@ Registered as ``gz validate --mx-hardening``; runs in ``gz check`` as the
 "MX hardening" step.
 """
 
-from __future__ import annotations
-
 import sys
 from datetime import UTC, datetime
 from pathlib import Path

@@ -6,8 +6,6 @@ tvproductions/gzkit, hard-reject of bodies that reference no gzkit-owned
 surface, and dry-run preview without contacting the live tracker.
 """
 
-from __future__ import annotations
-
 import unittest
 from unittest.mock import MagicMock, patch
 

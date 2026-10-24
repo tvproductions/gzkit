@@ -30,8 +30,6 @@ at a structured target rather than at a freshly-read file, which is both what
 `gz validate --tautological-test-audit` enforces.
 """
 
-from __future__ import annotations
-
 import json
 import re
 import unittest

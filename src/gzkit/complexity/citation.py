@@ -7,8 +7,6 @@ boundaries remain portable across corpus refresh.  This module exposes the
 parser surface OBPI-0.0.27-07's link-integrity validator consumes.
 """
 
-from __future__ import annotations
-
 import re
 
 from pydantic import BaseModel, ConfigDict, Field

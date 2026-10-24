@@ -22,8 +22,6 @@ successor increment"). The DECLARED end state blocks: § Boundary Invariant 4,
 logged and revocable override) so a NO-GO is never an undiagnosable 2am wall.
 """
 
-from __future__ import annotations
-
 import json
 
 from gzkit.airlock.enter import airlock_enter, build_refusal

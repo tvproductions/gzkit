@@ -24,8 +24,6 @@ contract only. It MUST NEVER be consumed as enforcement evidence by any
 ``gz validate`` / gates / closeout surface — OKF orients, it never proves.
 """
 
-from __future__ import annotations
-
 from pydantic import BaseModel, ConfigDict, Field
 
 __all__ = ["ConceptFrontmatter"]

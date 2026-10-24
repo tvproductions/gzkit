@@ -10,8 +10,6 @@ without the field present — backwards-compatibility floor).
 @covers REQ-0.0.22-01-05
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 

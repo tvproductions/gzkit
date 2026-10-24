@@ -30,8 +30,6 @@ it can sit in the default suite rather than behind a marker.
 @covers GHI #857
 """
 
-from __future__ import annotations
-
 import sys
 import unittest
 from unittest.mock import NonCallableMock

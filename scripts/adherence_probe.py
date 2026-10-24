@@ -47,8 +47,6 @@ Usage::
     uv run python scripts/adherence_probe.py --dry-run          # print probes, call nothing
 """
 
-from __future__ import annotations
-
 import argparse
 import json
 import re

@@ -18,8 +18,6 @@ governed files (165 lines) eighteen days later. The predicate now reads what
 `git add -A` *would* stage rather than what is already staged.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

@@ -9,8 +9,6 @@ Verifies the ADR-0.0.73 self-check end state:
   freeze was inverted when the final recovery row (waiver-ratchet) went green.
 """
 
-from __future__ import annotations
-
 import subprocess
 import sys
 import unittest

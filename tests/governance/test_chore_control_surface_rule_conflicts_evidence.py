@@ -13,8 +13,6 @@ mocked at the subprocess boundary; insight-id resolution is exercised
 against a tmpfile fixture.
 """
 
-from __future__ import annotations
-
 import importlib.util
 import io
 import re

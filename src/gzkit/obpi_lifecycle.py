@@ -10,8 +10,6 @@ Pure stdlib over already-parsed event dicts: no ledger IO, no adapters, so the
 predicate is testable without a project tree (hexagonal-architecture.md § 6).
 """
 
-from __future__ import annotations
-
 from collections.abc import Iterable, Mapping
 from typing import Any
 

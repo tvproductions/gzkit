@@ -18,8 +18,6 @@ Two claims, on the exemption-half precedent (GHI #797).
   always-refuse parser cannot discharge the first claim alone.
 """
 
-from __future__ import annotations
-
 REFUSE_CLAIM_ID = "support-citation-declared-only"
 ADMIT_CLAIM_ID = "support-citation-declared-admitted"
 SUPPORT_CITATION_CLAIM_IDS: frozenset[str] = frozenset({REFUSE_CLAIM_ID, ADMIT_CLAIM_ID})

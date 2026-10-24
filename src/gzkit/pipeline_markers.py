@@ -8,8 +8,6 @@ and its ledger replay live in pipeline_position, which imports this module;
 this module never imports it, and takes a position as a plain mapping.
 """
 
-from __future__ import annotations
-
 import json
 import os
 import re

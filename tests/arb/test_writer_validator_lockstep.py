@@ -16,8 +16,6 @@ family also keeps a negative control: a schema loosened until everything passes
 would satisfy the positive tests alone.
 """
 
-from __future__ import annotations
-
 import json
 import os
 import shlex

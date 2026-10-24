@@ -8,8 +8,6 @@ below. REQ-08 (TDD, no subprocess spawn) is structural. REQ-09 (no PII)
 is asserted by TestNoOperatorPersonalEmail without @covers.
 """
 
-from __future__ import annotations
-
 import re
 import unittest
 from pathlib import Path

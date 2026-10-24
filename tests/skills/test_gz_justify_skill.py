@@ -5,8 +5,6 @@ canonical skill path read-only — no test mutates `.gzkit/skills/` or
 `.claude/skills/` at the live repo (REQ-10).
 """
 
-from __future__ import annotations
-
 import re
 import unittest
 from datetime import UTC, datetime

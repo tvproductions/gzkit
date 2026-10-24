@@ -9,8 +9,6 @@ is asserted by TestNoOperatorPersonalEmail without @covers — it is a
 doctrine constraint not enumerated in Acceptance Criteria.
 """
 
-from __future__ import annotations
-
 import re
 import unittest
 from pathlib import Path

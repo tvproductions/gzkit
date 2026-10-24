@@ -11,8 +11,6 @@ REQ-0.34.0-05-03 [behavior]: no staging/fail-closed flag gates the taxonomy step
     it resolves through the real gz check runner dispatch (anti-staging-flag doctrine).
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 from unittest.mock import patch

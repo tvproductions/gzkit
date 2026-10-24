@@ -10,8 +10,6 @@
   so the transcribed counts cannot drift from the scorecard they describe.
 """
 
-from __future__ import annotations
-
 import json
 import re
 import tomllib

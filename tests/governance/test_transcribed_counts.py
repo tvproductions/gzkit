@@ -11,8 +11,6 @@ Every case runs against a synthetic tree. A suite that only asserted the live
 repo is clean would pass equally well if the audit had no teeth.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

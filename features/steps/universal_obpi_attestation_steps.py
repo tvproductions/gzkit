@@ -6,8 +6,6 @@ double-quoted step strings (the inner quotes break the parser).
 @covers REQ-0.0.36-02-01..05
 """
 
-from __future__ import annotations
-
 import io
 from contextlib import redirect_stderr, redirect_stdout
 

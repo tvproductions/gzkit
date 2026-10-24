@@ -8,8 +8,6 @@ specified log path.
 Cross-platform: ``signal.SIGALRM`` on POSIX, ``threading.Timer`` on Windows.
 """
 
-from __future__ import annotations
-
 import json
 import os
 import signal

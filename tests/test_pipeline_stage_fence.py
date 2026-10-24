@@ -6,8 +6,6 @@ compliable for the pipeline's own commit stage, and must be observable from a
 locus that no tool choice can evade.
 """
 
-from __future__ import annotations
-
 import io
 import json
 import tempfile

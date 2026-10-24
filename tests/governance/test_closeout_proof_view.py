@@ -15,8 +15,6 @@ Covers:
     REQ-0.0.69-03-07 — REQ with no [kind] tag is reported unproven.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

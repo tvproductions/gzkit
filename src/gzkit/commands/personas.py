@@ -1,7 +1,5 @@
 """Persona commands — list and drift check for persona identity frames."""
 
-from __future__ import annotations
-
 import json
 import sys
 

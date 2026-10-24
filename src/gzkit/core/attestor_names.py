@@ -9,8 +9,6 @@ Pure and stdlib-only, so ``validate_pkg`` can import it without reaching a
 command module.
 """
 
-from __future__ import annotations
-
 import unicodedata
 
 # Unicode's Default_Ignorable_Code_Point property (DerivedCoreProperties.txt) names

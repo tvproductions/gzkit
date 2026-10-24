@@ -16,8 +16,6 @@ Classification semantics:
   unenforced   — step exists but cannot currently fail for the right reason
 """
 
-from __future__ import annotations
-
 from pydantic import BaseModel, ConfigDict, Field
 
 # ---------------------------------------------------------------------------

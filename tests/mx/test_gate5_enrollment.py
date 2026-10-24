@@ -18,8 +18,6 @@ absence shapes:
       ``_ensure_production_claims_registered`` (the orphan GHI #648 *was*).
 """
 
-from __future__ import annotations
-
 import inspect
 import re
 import unittest

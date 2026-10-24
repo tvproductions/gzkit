@@ -24,8 +24,6 @@ context attribute.
 @covers REQ-0.35.0-14-06
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

@@ -1,7 +1,5 @@
 """Tests for the JSON-over-stdio protocol server (OBPI-0.0.30-04)."""
 
-from __future__ import annotations
-
 import io
 import json
 import tempfile

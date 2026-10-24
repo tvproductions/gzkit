@@ -17,8 +17,6 @@ outcome (`gzkit.governance.trust_audits.catalog_forward`). The freeze lock is
 RO-5's.
 """
 
-from __future__ import annotations
-
 import json
 from collections import Counter
 from collections.abc import Callable

@@ -27,8 +27,6 @@ two definitions of one concept is the precise defect family GHI #929 names, and
 this module must not open a second instance of it while closing the first.
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

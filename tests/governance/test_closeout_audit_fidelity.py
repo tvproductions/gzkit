@@ -17,8 +17,6 @@ Tests derive from the brief's Acceptance Criteria, not from implementation:
   (Boundary Invariant #4).
 """
 
-from __future__ import annotations
-
 import shlex
 import sys
 import tempfile

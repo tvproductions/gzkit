@@ -12,8 +12,6 @@ gzkit code per ``.gzkit/rules/cross-platform.md`` § File Paths.
 This test fail-closes both shapes of the regression under ``src/gzkit/``.
 """
 
-from __future__ import annotations
-
 import ast
 import unittest
 from pathlib import Path

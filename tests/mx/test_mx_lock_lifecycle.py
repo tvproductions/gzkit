@@ -7,8 +7,6 @@ invisible on the happy path: the FIRST enter/exit cycle in any repository
 succeeds completely, and only the SECOND enter fails.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from datetime import UTC, datetime, timedelta

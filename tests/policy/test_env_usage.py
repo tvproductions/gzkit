@@ -5,8 +5,6 @@ with the `ast` module to verify that `os.getenv()`, `os.environ.get()`, and
 `os.environ[...]` are only used with explicitly allowed environment variable names.
 """
 
-from __future__ import annotations
-
 import ast
 import unittest
 from pathlib import Path

@@ -12,8 +12,6 @@ REQ-0.0.32-05-06 (edit-detection mechanism documented and composing with
 existing markers), REQ-0.0.32-05-08 (manpage docs).
 """
 
-from __future__ import annotations
-
 import hashlib
 import importlib.resources
 import json

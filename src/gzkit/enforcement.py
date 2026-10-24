@@ -12,8 +12,6 @@ callable — never a ``functools.partial`` or ``lambda`` pre-binding a forcing
 kwarg (§ Boundary Invariants #7; the runner in OBPI-16 invokes it).
 """
 
-from __future__ import annotations
-
 import dis
 import re
 import tempfile

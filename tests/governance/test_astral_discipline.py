@@ -6,8 +6,6 @@ is never checked, a tool run outside the lock, or a non-Astral tool with no
 recorded reason is a violation. Today's violations seed a shrink-only baseline.
 """
 
-from __future__ import annotations
-
 import contextlib
 import io
 import json

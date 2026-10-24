@@ -8,8 +8,6 @@ interrupt, and printed each through the shared stdout console. So a failing
 human-mode failure could not be separated from the command's output.
 """
 
-from __future__ import annotations
-
 import io
 import logging
 import unittest

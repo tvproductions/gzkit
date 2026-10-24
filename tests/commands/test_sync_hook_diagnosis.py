@@ -20,8 +20,6 @@ Both call sites are exercised because both were blind; a fix applied only to the
 push arm leaves a pre-commit refusal equally undiagnosable.
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 from unittest import mock

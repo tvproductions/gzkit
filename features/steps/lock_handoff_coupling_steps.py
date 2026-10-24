@@ -4,8 +4,6 @@
 @covers REQ-0.0.41-04-02
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

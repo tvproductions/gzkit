@@ -11,8 +11,6 @@ Covers:
     REQ-0.0.59-04-08 — run_tautological_test_audit in _build_check_steps()
 """
 
-from __future__ import annotations
-
 import json
 import pathlib
 import tempfile

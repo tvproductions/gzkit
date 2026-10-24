@@ -44,8 +44,6 @@ Coverage:
         retired with Radon and ``lizard_nesting_depth`` took corpus bands.
 """
 
-from __future__ import annotations
-
 import re
 import unittest
 from pathlib import Path

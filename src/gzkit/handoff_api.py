@@ -14,8 +14,6 @@ observed state, with byte-identical output for identical inputs.
 @covers ADR-0.0.65 (OBPI-0.0.65-02)
 """
 
-from __future__ import annotations
-
 import re
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum

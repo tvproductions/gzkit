@@ -29,8 +29,6 @@ The constructor name set is DERIVED from `gzkit.events` and `gzkit.ledger_events
 at run time, not transcribed: a new event type joins the fence by existing.
 """
 
-from __future__ import annotations
-
 import ast
 import inspect
 import unittest

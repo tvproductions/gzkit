@@ -6,8 +6,6 @@ Implements ADR-0.0.8 Section 6.5 field requirements and category-specific
 validation rules.
 """
 
-from __future__ import annotations
-
 from datetime import date
 from enum import StrEnum
 

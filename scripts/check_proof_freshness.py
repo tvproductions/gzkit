@@ -49,8 +49,6 @@ with no scan (GHI #935, reopened). Operator ruling 2026-09-14, verbatim
 Exit codes: 0 fresh, 1 usage/IO error, 3 policy breach (stale evidence).
 """
 
-from __future__ import annotations
-
 import json
 import subprocess
 import sys

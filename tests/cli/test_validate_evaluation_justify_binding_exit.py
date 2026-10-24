@@ -19,8 +19,6 @@ These tests pin both code paths:
   registered in ``_POLICY_BREACH_ERROR_TYPES``.
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 from unittest import mock

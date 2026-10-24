@@ -13,8 +13,6 @@ Per docs/governance/state-doctrine.md: rendered AGENTS.md is Layer 3,
 never source-of-truth. Fixes must flow through the template.
 """
 
-from __future__ import annotations
-
 import contextlib
 import io
 import json

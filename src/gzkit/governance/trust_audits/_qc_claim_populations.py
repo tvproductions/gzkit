@@ -13,8 +13,6 @@ in step with the witness. A claim absent from this map registers with
 --population-controls`` until someone reads its gate and declares it.
 """
 
-from __future__ import annotations
-
 from collections.abc import Callable, Sequence
 
 from gzkit.enforcement import POPULATION_NONE

@@ -9,8 +9,6 @@ Covers:
     REQ-0.0.59-02-06 — docs/governance/req-scope-discipline.md has Brief-time validation section
 """
 
-from __future__ import annotations
-
 import pathlib
 import tempfile
 import unittest

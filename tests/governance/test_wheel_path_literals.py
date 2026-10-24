@@ -22,8 +22,6 @@ the next tree added to the wheel; the audit reads the same wheel prediction
 the delivery gate reads, so scope and delivery cannot drift apart.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

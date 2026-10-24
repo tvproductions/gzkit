@@ -4,8 +4,6 @@ Extracted from gzkit.models.frontmatter. Each model mirrors a corresponding
 JSON schema. Pure domain logic — no I/O operations.
 """
 
-from __future__ import annotations
-
 import enum
 import re
 from typing import Any, Literal, get_args, get_origin

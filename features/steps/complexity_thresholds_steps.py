@@ -11,8 +11,6 @@ writes the narrative .md so the validator can detect it.
 @covers REQ-0.0.28-03-05
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 from typing import Any

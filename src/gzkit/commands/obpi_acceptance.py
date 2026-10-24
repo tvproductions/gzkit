@@ -1,7 +1,5 @@
 """Execute and record requirement proof and independent acceptance reviews."""
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 from typing import Literal

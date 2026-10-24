@@ -10,8 +10,6 @@ call — never cached — so that test isolation works correctly when tests
 manipulate ``os.environ`` between assertions.
 """
 
-from __future__ import annotations
-
 import os
 
 from gzkit.flags.models import (

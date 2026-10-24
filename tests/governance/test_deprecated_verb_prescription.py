@@ -11,8 +11,6 @@ workflow order and an `lifecycle_state: active` skill still wrapped it. Any agen
 following the rule literally was routed onto a deprecated surface with no signal.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

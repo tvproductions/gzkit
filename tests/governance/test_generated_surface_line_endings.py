@@ -21,8 +21,6 @@ co-occurrence `gz validate --tautological-test-audit` flags and the shape
 `.gzkit/rules/tests.md` § The discriminator rejects.
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory

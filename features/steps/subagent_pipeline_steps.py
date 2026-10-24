@@ -1,7 +1,5 @@
 """BDD steps for subagent pipeline dispatch lifecycle."""
 
-from __future__ import annotations
-
 import json
 import tempfile
 from pathlib import Path

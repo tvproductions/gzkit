@@ -22,8 +22,6 @@ witness — which is why the remedy is to populate this channel rather than to
 narrow the envelope's declaration to the two that already pair.
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory

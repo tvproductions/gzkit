@@ -22,8 +22,6 @@ whether a measurement is trustworthy:
   source-of-truth (Architectural Boundary 6).
 """
 
-from __future__ import annotations
-
 import importlib.util
 import sys
 import unittest

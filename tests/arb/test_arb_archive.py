@@ -5,8 +5,6 @@ code: a cited receipt is evidence and must survive; nothing is ever deleted; a
 pre-existing destination is never overwritten.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

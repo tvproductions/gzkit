@@ -9,8 +9,6 @@ code N`` / ``Then the output contains`` steps live in ``gz_steps.py``.
 @covers REQ-0.0.29-08-03
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

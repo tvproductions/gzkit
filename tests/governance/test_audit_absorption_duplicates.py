@@ -7,8 +7,6 @@ appears in OBPI briefs across different parent ADRs without a structured
 ``paired_with:`` waiver — the duplicate-evaluation defect this GHI tracks.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

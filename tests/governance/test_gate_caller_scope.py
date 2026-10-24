@@ -9,8 +9,6 @@ pin the mechanism that asks it: an inventory over every gate, a scan over every
 automatic-caller surface, and an accepted-list that can only shrink.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

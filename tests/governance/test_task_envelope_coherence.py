@@ -8,8 +8,6 @@ REQ-derived assertions for:
   REQ-0.0.64-04-06: validator is registered in the gz check pipeline
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

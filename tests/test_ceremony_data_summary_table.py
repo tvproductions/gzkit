@@ -8,8 +8,6 @@ Lane, Status, and Objective columns, so a 100-column terminal rendered:
 Each OBPI must be fully readable.
 """
 
-from __future__ import annotations
-
 import unittest
 from io import StringIO
 

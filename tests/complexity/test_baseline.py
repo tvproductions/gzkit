@@ -10,8 +10,6 @@ Pins:
   determinism gate REQ-0.0.27-03-03).
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

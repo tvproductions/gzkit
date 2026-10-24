@@ -14,8 +14,6 @@ fail closed on heavy/foundation. Untagged (legacy) REQs keep the old behaviour.
 Task: TASK-loosen-req-coverage-kind-aware
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

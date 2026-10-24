@@ -17,8 +17,6 @@ two differences the tests below pin:
 Tests assert semantics, not strings (Invariant 6f).
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

@@ -10,8 +10,6 @@ one — emitting ``corpus_entry_retired`` here would be a fabricated receipt und
 nothing downstream would catch the substitution.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

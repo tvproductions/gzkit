@@ -6,8 +6,6 @@ The REQ-level BEHAVIOR proofs (REQ-0.0.37-19-01..04) live in
 assert the lower-level ``corpus_store`` contract the command relies on.
 """
 
-from __future__ import annotations
-
 import tempfile
 import threading
 import unittest

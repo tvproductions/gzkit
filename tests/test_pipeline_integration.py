@@ -1,7 +1,5 @@
 """Tests for OBPI-0.18.0-05 dispatch tracking, aggregation, and agent validation."""
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

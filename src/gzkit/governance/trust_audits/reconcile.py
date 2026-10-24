@@ -1,7 +1,5 @@
 """Reconcile-freshness trust audit (GHI #213 / Architectural Boundary 4)."""
 
-from __future__ import annotations
-
 import json
 import subprocess
 from datetime import UTC, datetime

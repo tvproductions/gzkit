@@ -10,8 +10,6 @@ Reuses the canonical ``When I run the gz command "..."`` /
 this module only adds justify-specific Given/Then steps.
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 from unittest import mock

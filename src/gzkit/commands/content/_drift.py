@@ -12,8 +12,6 @@ corpus-mutating verb inherits it by calling :func:`warn_on_rendition_drift`
 instead of re-deriving the reporting logic.
 """
 
-from __future__ import annotations
-
 import shlex
 import sys
 from pathlib import Path

@@ -4,8 +4,6 @@ Tests derive from the OBPI brief's REQ list. Each test carries a ``@covers``
 decoration so ``gz covers`` can rebuild the REQ → test coverage graph.
 """
 
-from __future__ import annotations
-
 import hashlib
 import json
 import unittest

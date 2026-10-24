@@ -16,8 +16,6 @@ Whether an excerpt SUPPORTS the approval stays the reviewer's judgment; this
 establishes only that the reviewer can point at bytes that exist.
 """
 
-from __future__ import annotations
-
 import re
 from collections.abc import Sequence
 from pathlib import Path

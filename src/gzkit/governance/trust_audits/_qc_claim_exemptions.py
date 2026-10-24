@@ -57,8 +57,6 @@ in ``docs/governance/exemption-control-triage.md`` so the next drain pass starts
 from a reading rather than re-deriving one.
 """
 
-from __future__ import annotations
-
 from gzkit.enforcement import EXEMPTS_NONE
 
 #: ``{claim_id: exempts}`` for every claim whose gate was read end-to-end and found

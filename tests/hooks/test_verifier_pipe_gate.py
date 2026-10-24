@@ -16,8 +16,6 @@ masked, so a gate that stopped tracking masking fails here rather than passing
 on shape.
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 

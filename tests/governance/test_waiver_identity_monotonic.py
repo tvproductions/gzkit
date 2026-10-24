@@ -6,8 +6,6 @@ unless a reviewed authorization record names it. These tests derive from that ru
 real audit over planted trees, and weaken it the ways the swap could return.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

@@ -8,8 +8,6 @@ dimension is UNGRADED — regardless of how rigorous or hollow the ADR prose is.
 No deterministic analysis of the prose can lift a dimension out of UNGRADED.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

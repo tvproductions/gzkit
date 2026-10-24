@@ -15,8 +15,6 @@ foundation-kind) ADR closeout citing missing or status-mismatched receipts
 exits 3 and refuses to write the audit-receipt-emitted ledger event.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

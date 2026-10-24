@@ -10,8 +10,6 @@ package-discovery symbols (CORE_PERSONAS, scaffold_core_personas,
 _iter_canonical_persona_slugs) — those belong to OBPI-10.
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 

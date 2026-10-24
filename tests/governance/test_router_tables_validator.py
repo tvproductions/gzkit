@@ -3,8 +3,6 @@
 @covers OBPI-0.27.0-03-router-tables-validator
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

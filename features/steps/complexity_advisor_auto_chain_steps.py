@@ -21,8 +21,6 @@ scenario; the first ``Given`` resets cwd to the project root so the
 runtime's relative-path reads resolve against real gzkit doctrine.
 """
 
-from __future__ import annotations
-
 import contextlib
 import io
 import os

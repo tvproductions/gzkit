@@ -12,8 +12,6 @@ Test-class split:
 * ``TestComplexityGuideCliAuditParity`` — REQ-06 CLI-audit coverage.
 """
 
-from __future__ import annotations
-
 import io
 import json
 import os

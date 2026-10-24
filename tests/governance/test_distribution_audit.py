@@ -5,8 +5,6 @@ confirming that the validator is static-only (no wheel build) and correctly
 exits 0 on clean state, exits 3 on policy drift, and exits 2 on system errors.
 """
 
-from __future__ import annotations
-
 import contextlib
 import io
 import json

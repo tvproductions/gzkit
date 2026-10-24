@@ -17,8 +17,6 @@ REQ-0.0.16-04-05: after a successful reconcile, the next dry-run produces
     an empty ``files_rewritten`` list (idempotence).
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 

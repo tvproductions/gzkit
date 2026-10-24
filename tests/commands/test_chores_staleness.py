@@ -10,8 +10,6 @@ Git is injected, never spawned: each case states the surface history it
 assumes, so the band follows from the declaration and the record alone.
 """
 
-from __future__ import annotations
-
 import unittest
 from datetime import UTC, datetime, timedelta
 

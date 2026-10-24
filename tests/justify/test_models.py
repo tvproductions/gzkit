@@ -1,7 +1,5 @@
 """Pydantic model tests for gzkit.justify.models (REQ-0.0.19-01-01, -02)."""
 
-from __future__ import annotations
-
 import unittest
 from typing import get_args
 

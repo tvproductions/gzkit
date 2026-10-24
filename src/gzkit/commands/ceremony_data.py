@@ -6,8 +6,6 @@ and demo-command discovery for ceremony step renderers.
 Split from ``ceremony_steps.py`` to keep all modules under 600 lines.
 """
 
-from __future__ import annotations
-
 import argparse
 import re
 import shlex

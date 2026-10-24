@@ -15,8 +15,6 @@ Coverage map (REQ-0.0.37-08-* acceptance criteria):
 | REQ-0.0.37-08-05 | TestReconcileGateEscapeHatchEmitsEvent                          |
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

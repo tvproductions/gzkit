@@ -13,8 +13,6 @@ witnesses nothing is a blocker. They also pin what the verifier must NOT do:
 re-run the bare ARB incantations that carry no output claim.
 """
 
-from __future__ import annotations
-
 import subprocess
 import tempfile
 import unittest

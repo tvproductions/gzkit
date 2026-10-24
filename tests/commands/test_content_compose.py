@@ -6,8 +6,6 @@ absent corpus / undeclared setpoint / invariant-floor violation, and NEVER
 modifies rendered surfaces.
 """
 
-from __future__ import annotations
-
 import io
 import json
 import unittest

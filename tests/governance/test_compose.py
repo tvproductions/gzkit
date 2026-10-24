@@ -19,8 +19,6 @@ which cannot fail whatever the production code does (.gzkit/rules/tests.md
 § The discriminator).
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

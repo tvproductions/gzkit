@@ -7,8 +7,6 @@ the scope runs in `gz check`, the legend's eleven families pass and a malformed
 entry fails.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

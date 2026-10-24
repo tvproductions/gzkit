@@ -21,8 +21,6 @@ Two severities, deliberately different mechanisms:
   (the rule stated at ``trust_audits/complexity_thresholds.py`` docstring).
 """
 
-from __future__ import annotations
-
 import contextlib
 import io
 import json

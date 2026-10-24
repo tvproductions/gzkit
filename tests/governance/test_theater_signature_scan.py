@@ -11,8 +11,6 @@ Each detect test cites the real facade the pattern is calibrated on; each guard
 test pins a legitimate-looking shape that must NOT be flagged.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

@@ -15,8 +15,6 @@ wall-clock gaps: the observed inversion was 0.74 ms, small enough that a
 timing-dependent test would pass by luck on a fast machine.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

@@ -7,8 +7,6 @@ the candidate, and emits a ledger event. The *committed* rendition (the
 durable store) and deterministic playback are OBPI-22 scope.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field

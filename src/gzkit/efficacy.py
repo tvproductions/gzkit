@@ -22,8 +22,6 @@ that let ARB look busy while skipping 96% of its store.
 Domain core: stdlib + Pydantic only. Nothing here knows what a receipt is.
 """
 
-from __future__ import annotations
-
 from pydantic import BaseModel, ConfigDict, Field
 
 

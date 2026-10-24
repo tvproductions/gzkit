@@ -12,8 +12,6 @@ touches in its place. Since GHI #1192 the declaration ships inside the gzkit
 package, so a project that installs gzkit gets the same gate gzkit runs.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

@@ -6,8 +6,6 @@ fails closed at construction), then serializes with ``exclude_none`` and appends
 exactly one round-trippable line to a caller-supplied path.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

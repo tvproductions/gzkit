@@ -10,8 +10,6 @@ at enter — green-or-grounded, hard refuse on any red (no --force; you cannot
 narrow your way out).
 """
 
-from __future__ import annotations
-
 import os
 import subprocess
 import sys

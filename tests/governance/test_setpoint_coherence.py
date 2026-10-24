@@ -6,8 +6,6 @@ setpoint in ``content_type_temperatures``. Legal tokens are {lite, medium,
 heavy} (mirrored from src/gzkit/schemas/vendor_manifest.json).
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

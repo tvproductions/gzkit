@@ -10,8 +10,6 @@ building, and leaves the binaries and release body to the tag-push run. Since
 RO-9 tranche 3 the `dist` job builds and the `pypi` job publishes.
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 from typing import Any

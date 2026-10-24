@@ -12,8 +12,6 @@ real ledger genesis event, and a committed lineage sidecar.
 @covers REQ-0.35.0-06-03
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

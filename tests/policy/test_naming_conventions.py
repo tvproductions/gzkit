@@ -5,8 +5,6 @@ inspect file and directory names under src/gzkit/ and verify all module
 and package names conform to snake_case conventions.
 """
 
-from __future__ import annotations
-
 import re
 import unittest
 from pathlib import Path

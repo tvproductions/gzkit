@@ -12,8 +12,6 @@ control plants a walkthrough built by the real producer, so a qualifier tightene
 past what `gz justify` can produce fails there.
 """
 
-from __future__ import annotations
-
 import json
 from datetime import UTC, datetime
 from pathlib import Path

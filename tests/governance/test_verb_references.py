@@ -11,8 +11,6 @@ These tests pin the shared module's contract so the next gap is fixed once
 rather than per copy.
 """
 
-from __future__ import annotations
-
 import unittest
 
 from gzkit.verb_references import (

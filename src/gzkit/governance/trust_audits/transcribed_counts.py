@@ -30,8 +30,6 @@ registry cannot sweep; a corpus-wide regex would have to be taught not to, and
 would be one missed exemption away from rewriting the record.
 """
 
-from __future__ import annotations
-
 import json
 import re
 from pathlib import Path

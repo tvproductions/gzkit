@@ -26,8 +26,6 @@ Coverage (mapped to brief Acceptance Criteria REQ-IDs):
         ``recommended_move`` from the distilled doc, never fabricates.
 """
 
-from __future__ import annotations
-
 import ast
 import json
 import os

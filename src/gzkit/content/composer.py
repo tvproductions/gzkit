@@ -11,8 +11,6 @@ Raises ``ValueError`` when the (content_type, consumer) setpoint is
 undeclared or when the candidate violates the invariant-floor constraint.
 """
 
-from __future__ import annotations
-
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import NamedTuple, NoReturn

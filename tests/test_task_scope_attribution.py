@@ -9,8 +9,6 @@ repaired. Operator rulings 2026-09-28, verbatim: "Wire task_id through
 (Recommended)" and "Infer in scope; unset if ambiguous (Recommended)".
 """
 
-from __future__ import annotations
-
 import ast
 import json
 import tempfile

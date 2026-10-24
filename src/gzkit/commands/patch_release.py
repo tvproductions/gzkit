@@ -9,8 +9,6 @@ With ``--full``, executes the complete release ceremony: bump, release-notes,
 commit, push (behind ``gz check --full``), and ``gh release create``.
 """
 
-from __future__ import annotations
-
 import json
 import re
 from datetime import UTC, datetime

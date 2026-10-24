@@ -18,8 +18,6 @@ Core stays stdlib + Pydantic (hexagonal): the queue replays the L2 event stream,
 not the networkx substrate — no third-party import reaches this module.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 from typing import Any
 

@@ -13,8 +13,6 @@ through any tool the hook can see -- because that is the bypass, and a test that
 went through the hook's own matcher would prove nothing about it.
 """
 
-from __future__ import annotations
-
 import json
 import subprocess
 import tempfile

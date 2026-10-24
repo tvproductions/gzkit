@@ -5,8 +5,6 @@ Verification commands before dispatch and fail on non-shell-less forms,
 reusing the BI-1 classifier from brief_commands (BI-1 shared spine invariant).
 """
 
-from __future__ import annotations
-
 import io
 import unittest
 from contextlib import redirect_stdout

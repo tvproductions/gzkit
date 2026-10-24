@@ -10,8 +10,6 @@ These tests pin the scoping rule, not the current numbers: a REQ enters the
 unlinked set only when a covering test is the thing that would prove it.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

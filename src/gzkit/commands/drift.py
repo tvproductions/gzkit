@@ -7,8 +7,6 @@ and the active repository change set to detect spec-test-code drift.
 @covers OBPI-0.20.0-04-gz-drift-cli-surface
 """
 
-from __future__ import annotations
-
 import subprocess
 import sys
 from datetime import UTC, datetime

@@ -4,8 +4,6 @@ Pure function: no gzkit imports, no ledger reads, no side effects.
 Used by ``check_reconcile_receipt_gate`` in ``pipeline_runtime.py``.
 """
 
-from __future__ import annotations
-
 from datetime import UTC, datetime
 from pathlib import Path
 

@@ -19,8 +19,6 @@ sibling were open -- GHI #969's argument rests on #889 being open without ever w
 those; this gate does not claim them.
 """
 
-from __future__ import annotations
-
 import argparse
 import json
 import re

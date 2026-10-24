@@ -52,8 +52,6 @@ they are the same kind of thing about the same corpus, with the same drift risk
 and the same structural fence.
 """
 
-from __future__ import annotations
-
 from typing import Any
 
 __all__ = [

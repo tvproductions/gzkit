@@ -17,8 +17,6 @@ The five sources:
 The library emits nothing to stdout/stderr (the caller owns I/O).
 """
 
-from __future__ import annotations
-
 import concurrent.futures
 import fnmatch
 import json

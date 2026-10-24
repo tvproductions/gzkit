@@ -9,8 +9,6 @@ the function returns ``("", [warning_message])`` and appends a structured
 record to ``.gzkit/insights/justify-failures.jsonl``.
 """
 
-from __future__ import annotations
-
 import json
 from datetime import UTC, datetime
 from pathlib import Path

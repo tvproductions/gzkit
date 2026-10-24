@@ -3,8 +3,6 @@
 Tests are derived from brief requirements, not from implementation.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

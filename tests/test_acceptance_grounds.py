@@ -19,8 +19,6 @@ dispatch the pipeline skill prescribes, and the persona's tool grant is read fro
 `.claude/agents/<persona>.md` by the same reader the review composer uses (GHI #941).
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

@@ -1,7 +1,5 @@
 """BDD steps for OBPI lock management commands."""
 
-from __future__ import annotations
-
 import io
 import json
 import shlex

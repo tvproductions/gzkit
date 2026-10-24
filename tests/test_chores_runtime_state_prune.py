@@ -17,8 +17,6 @@ tests pin the missing direction: a package-side file whose class must never ship
 is REMOVED, not merely not-added.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

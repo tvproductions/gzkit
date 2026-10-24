@@ -6,8 +6,6 @@ lifecycle moves, and nothing re-reads it. Identity references survive; status
 references do not.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

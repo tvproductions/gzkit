@@ -25,8 +25,6 @@ Two seams are deliberately parameters rather than constants:
   § Imports, not a style lapse.
 """
 
-from __future__ import annotations
-
 import re
 from collections.abc import Sequence
 

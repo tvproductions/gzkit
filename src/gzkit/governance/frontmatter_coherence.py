@@ -9,8 +9,6 @@ Pool ADRs are skipped. Unmapped frontmatter status terms STOP with a
 ``UnmappedStatusBlocker`` and mutate zero files.
 """
 
-from __future__ import annotations
-
 import hashlib
 import json
 import re

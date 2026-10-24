@@ -4,8 +4,6 @@ Tests the block splitter, removed-block delta, sentence splitter, RetentionMap m
 total validator, and sidecar path helper.
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 

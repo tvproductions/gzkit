@@ -6,8 +6,6 @@ generator that POPULATES lineage from a corpus + candidate pair is a later
 task and is NOT covered here.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

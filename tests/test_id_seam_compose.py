@@ -7,8 +7,6 @@ calls these helpers, which are the seam's marked fallback for the places that
 hold no ledger.
 """
 
-from __future__ import annotations
-
 import unittest
 
 from gzkit.core import models

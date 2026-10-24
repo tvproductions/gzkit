@@ -15,8 +15,6 @@ Helper unit tests sit alongside as ``TestLoadSecurityChecklist`` /
 in isolation before the integration tests assemble them.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

@@ -23,8 +23,6 @@ read it as prose. Five ADRs shipped with a literal ``{persona}`` body on that
 path and four of them passed Gate 5.
 """
 
-from __future__ import annotations
-
 import re
 
 from gzkit.hooks.obpi import STRICT_PLACEHOLDERS

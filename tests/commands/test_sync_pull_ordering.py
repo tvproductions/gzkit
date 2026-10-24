@@ -14,8 +14,6 @@ honors: a step whose predicate depends on ahead/behind must read that state
 after sync actions").
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 from unittest import mock

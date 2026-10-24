@@ -16,8 +16,6 @@ Two claims, on the exemption-half precedent (GHI #797).
   still returns, so an always-exit-nonzero handler cannot discharge the first alone.
 """
 
-from __future__ import annotations
-
 import contextlib
 import inspect
 import io

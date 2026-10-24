@@ -8,8 +8,6 @@ required field fails closed (non-zero exit, no line written) instead of
 drifting past the schema the way hand-authored appends did.
 """
 
-from __future__ import annotations
-
 import argparse
 import json
 import sys

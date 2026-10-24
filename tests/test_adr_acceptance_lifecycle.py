@@ -9,8 +9,6 @@ recorded `Accepted`. Operator rulings 2026-09-28, verbatim: "Fix forward only
 (Recommended)". The 62 historical rows stay as dated records.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

@@ -26,8 +26,6 @@ the gate tests inject a registry with a fixture period rather than transcribing
 the live one. Only the *semantics* are pinned.
 """
 
-from __future__ import annotations
-
 import importlib.util
 import io
 import json

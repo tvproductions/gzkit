@@ -3,8 +3,6 @@
 REQ-0.0.36-02-01..05: ADR-0.0.36 universal OBPI attestation.
 """
 
-from __future__ import annotations
-
 import ast
 import inspect
 import re

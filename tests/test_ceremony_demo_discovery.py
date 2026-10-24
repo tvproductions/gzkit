@@ -15,8 +15,6 @@ Two coupled contracts are pinned here:
   discovery layer rather than relying on brief authors to self-police.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

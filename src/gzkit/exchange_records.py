@@ -39,8 +39,6 @@ events carry it and the ledger is append-only, so the field name is part of the
 record (GHI #763 § Prescribed scope).
 """
 
-from __future__ import annotations
-
 import re
 from datetime import UTC, datetime
 from pathlib import Path

@@ -18,8 +18,6 @@ The pipeline asserts test-first discipline; this audit plus its paired NC is wha
 stops that claim from being one.
 """
 
-from __future__ import annotations
-
 import datetime as dt
 import json
 import re

@@ -33,8 +33,6 @@ Exit codes: 0 clean, 1 user/config error, 2 system/IO error, 3 policy breach
 (an undisclosed never-fired type appeared).
 """
 
-from __future__ import annotations
-
 import argparse
 import json
 import sys

@@ -17,8 +17,6 @@ corrective events over an append-only ledger — current state is the net of the
 sequence, never an edit (`AGENTS.md` § Behavior Rules), exactly as `park_state` composes.
 """
 
-from __future__ import annotations
-
 import unittest
 
 from gzkit.obpi_lifecycle import operator_block_state

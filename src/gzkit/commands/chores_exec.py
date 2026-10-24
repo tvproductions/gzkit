@@ -3,8 +3,6 @@
 Extracted from chores.py to stay under the 600-line module cap.
 """
 
-from __future__ import annotations
-
 # ---------------------------------------------------------------------------
 # Criterion parsing helpers
 # ---------------------------------------------------------------------------

@@ -17,8 +17,6 @@ subsystem (whose ``LedgerEvent`` validation would also reject the malformed
 lines we want to tolerate) is exactly what MX mode exists to survive.
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 from typing import Literal

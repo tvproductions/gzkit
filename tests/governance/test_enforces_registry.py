@@ -5,8 +5,6 @@ validation, EnforcementClaimRecord registration, metadata-only behavior on
 decorated callables, and the structural fence (single enforcement-claim surface).
 """
 
-from __future__ import annotations
-
 import functools
 import unittest
 from typing import Any

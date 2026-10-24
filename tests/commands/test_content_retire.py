@@ -6,8 +6,6 @@ JSONL. These tests pin the governed alternative: a retraction row that retires
 an id without removing it, shrinking the floor rather than growing it.
 """
 
-from __future__ import annotations
-
 import json
 import re
 import shlex

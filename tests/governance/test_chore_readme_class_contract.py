@@ -9,8 +9,6 @@ tables are held to the code: a class added to the model, or a rung reordered in
 the audit, fails here until the contract says so.
 """
 
-from __future__ import annotations
-
 import re
 import unittest
 from pathlib import Path

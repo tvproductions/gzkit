@@ -11,8 +11,6 @@ Pure domain logic (rules, models, validation) lives in ``gzkit.core.lifecycle``.
 This module re-exports those and adds the I/O-coupled LifecycleStateMachine.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 from typing import Any
 

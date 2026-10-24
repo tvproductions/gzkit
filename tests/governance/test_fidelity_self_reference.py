@@ -19,8 +19,6 @@ These tests pin the guard at every consumer of the parse chokepoint:
 Direct-fix work under GHI #702 — no covering REQ, so no ``@covers``.
 """
 
-from __future__ import annotations
-
 import tempfile
 import textwrap
 import unittest

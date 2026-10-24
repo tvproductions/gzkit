@@ -6,8 +6,6 @@ refuse every completion (GHI #1181). The brief being completed and its ADR
 package's audit log are records of the same kind.
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 

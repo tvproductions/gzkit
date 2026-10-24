@@ -15,8 +15,6 @@ removed", so this checker is what makes an extracted inventory verifiable
 before any prose leaves the skill body.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

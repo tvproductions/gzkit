@@ -7,8 +7,6 @@
 @covers OBPI-0.20.0-05-advisory-gate-integration
 """
 
-from __future__ import annotations
-
 import contextlib
 import io
 import json

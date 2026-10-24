@@ -11,8 +11,6 @@ that a stale baseline entry is itself a finding — never that the frozen rows a
 good.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

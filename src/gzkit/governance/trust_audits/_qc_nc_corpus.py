@@ -10,8 +10,6 @@ Genuineness is structural (Boundary Invariant #7): the fixture NEVER calls the
 validator; only the runner does, via ``entrypoint(fixture())``.
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

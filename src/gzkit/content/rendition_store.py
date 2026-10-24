@@ -18,8 +18,6 @@ returns ``None`` when the sidecar is absent — the gate treats a missing sideca
 drift (the rendition's derivation from the corpus is unproven).
 """
 
-from __future__ import annotations
-
 import hashlib
 from pathlib import Path
 

@@ -5,8 +5,6 @@ event emission.  Each command validates inputs, calls the data layer,
 appends a ledger event, and formats output.
 """
 
-from __future__ import annotations
-
 import json
 import sys
 from pathlib import Path

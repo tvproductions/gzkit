@@ -9,8 +9,6 @@ verbatim body lines (full fidelity) plus the rule-bearing lines extracted as
 classified Bullets, with classification joined from the advisory scorecard.
 """
 
-from __future__ import annotations
-
 import re
 from collections.abc import Callable
 from pathlib import Path

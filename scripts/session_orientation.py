@@ -19,8 +19,6 @@ is the drift class this script exists to surface, automated. One authority, read
 out-of-process, degrading to silence when unavailable.
 """
 
-from __future__ import annotations
-
 import json
 import os
 import re

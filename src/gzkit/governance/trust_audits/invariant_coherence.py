@@ -10,8 +10,6 @@ defined for historical-ledger compatibility.)
 Bootstrap-safe: returns [] when no committed rendition exists (fresh-init or pre-OBPI-22).
 """
 
-from __future__ import annotations
-
 import difflib
 from pathlib import Path
 

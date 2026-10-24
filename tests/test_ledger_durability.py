@@ -13,8 +13,6 @@ against the ledger's own inode. A test that asserted "the row is on disk"
 afterwards would pass on the broken tree too — the page cache serves the read.
 """
 
-from __future__ import annotations
-
 import contextlib
 import json
 import os

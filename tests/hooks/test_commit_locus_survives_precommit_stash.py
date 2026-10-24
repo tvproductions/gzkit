@@ -15,8 +15,6 @@ stash conflict, the acceptance assertions would pass vacuously, and the control
 fails instead.
 """
 
-from __future__ import annotations
-
 import json
 import os
 import shutil

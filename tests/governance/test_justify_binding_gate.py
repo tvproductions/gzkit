@@ -11,8 +11,6 @@ subject, and it was generated at or after the evaluation it answers.
 @covers OBPI-0.0.26-02-justify-binding-gate
 """
 
-from __future__ import annotations
-
 import json
 import re
 import tempfile

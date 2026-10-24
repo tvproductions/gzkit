@@ -9,8 +9,6 @@ module by module. One process, so no figure carries contention from a parallel
 runner or a concurrent gate step.
 """
 
-from __future__ import annotations
-
 import argparse
 import json
 import os

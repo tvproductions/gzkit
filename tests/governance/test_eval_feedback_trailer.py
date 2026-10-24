@@ -4,8 +4,6 @@
 @covers OBPI-0.0.26-04-commit-trailer-validator
 """
 
-from __future__ import annotations
-
 import subprocess
 import unittest
 from pathlib import Path

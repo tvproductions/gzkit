@@ -28,8 +28,6 @@ inheriting it silently is exactly the claim that deserves a test, so the
 invalidation is asserted here for each derived stream independently.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

@@ -11,8 +11,6 @@ the committed target and the live scan are enforced by the chore criterion
 itself, not re-measured here.
 """
 
-from __future__ import annotations
-
 import contextlib
 import importlib.util
 import io

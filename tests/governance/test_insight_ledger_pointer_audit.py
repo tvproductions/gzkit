@@ -6,8 +6,6 @@ or removed, is a finding. A record with no pointer predates the ruling and is no
 backfilled (the 2026-10-17 structure-not-population ruling).
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

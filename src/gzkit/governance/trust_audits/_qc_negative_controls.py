@@ -20,8 +20,6 @@ UN-FORCED — their entrypoints pass no ``fail_closed=True`` (D1 — genuineness
 absolute).
 """
 
-from __future__ import annotations
-
 import json
 from datetime import UTC, datetime
 from pathlib import Path

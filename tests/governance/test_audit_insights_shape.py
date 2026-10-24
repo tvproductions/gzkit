@@ -6,8 +6,6 @@ The repo-lock test in ``test_promoted_advisory_audits.py`` continues to gate
 current repo state; this module gates the scan semantics.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

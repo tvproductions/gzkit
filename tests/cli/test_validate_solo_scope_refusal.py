@@ -14,8 +14,6 @@ REQ, and ``.claude/rules/adr-audit.md`` § Rules reserves ``@covers`` for
 BEHAVIOR REQs' proof channel.
 """
 
-from __future__ import annotations
-
 import io
 import unittest
 from contextlib import redirect_stderr, redirect_stdout

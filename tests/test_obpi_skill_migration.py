@@ -5,8 +5,6 @@ to gz obpi CLI commands and contain zero direct Write/Edit tool references
 to governance paths.
 """
 
-from __future__ import annotations
-
 import re
 import unittest
 from pathlib import Path

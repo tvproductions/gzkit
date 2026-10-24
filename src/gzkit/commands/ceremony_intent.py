@@ -6,8 +6,6 @@ the pairing as a 2-column table. Split from ``ceremony_data.py`` to keep that
 module under the 600-line cap.
 """
 
-from __future__ import annotations
-
 import re
 from typing import Any
 

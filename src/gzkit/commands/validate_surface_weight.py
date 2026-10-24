@@ -13,8 +13,6 @@ verb supplied until this issue. ``OBPI-0.0.33-02`` REQ 4 named
 recalibration events and the bands moved once as an unwitnessed tweak.
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

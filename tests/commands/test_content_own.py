@@ -13,8 +13,6 @@ refuses and `gz content unown` refuses too. Everything here asserts through
 the REAL loader (`load_declaration`) and the public CLI.
 """
 
-from __future__ import annotations
-
 import contextlib
 import json
 import subprocess

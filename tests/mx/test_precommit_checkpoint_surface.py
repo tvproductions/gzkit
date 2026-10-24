@@ -11,8 +11,6 @@ fences the inventory *inside* ``gzkit.hooks.guards``; a chore checker added as i
 own pre-commit entrypoint would pass that one while consulting nothing.
 """
 
-from __future__ import annotations
-
 import ast
 import importlib.util
 import json

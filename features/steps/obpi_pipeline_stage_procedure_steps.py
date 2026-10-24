@@ -7,8 +7,6 @@ check), that work is replaced with the stand-ins the unit fixture uses; the
 launcher, the resolver and the files it serves are real.
 """
 
-from __future__ import annotations
-
 import hashlib
 import io
 from contextlib import redirect_stderr, redirect_stdout

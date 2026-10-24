@@ -12,8 +12,6 @@ in this docstring is read as coverage by the `gz covers` scanner, which would
 report a deleted allocator as proven.
 """
 
-from __future__ import annotations
-
 import re
 import unittest
 from datetime import date

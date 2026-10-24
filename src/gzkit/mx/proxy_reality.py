@@ -10,8 +10,6 @@ registration here is the structural proof that the floor claim is enforced
 and not merely named (ADR-0.0.74 Boundary Invariant #5).
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

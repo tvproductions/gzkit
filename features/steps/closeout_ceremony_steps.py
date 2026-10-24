@@ -1,7 +1,5 @@
 """BDD steps for closeout ceremony enforcement (ADR-0.23.0 / OBPI-0.23.0-04)."""
 
-from __future__ import annotations
-
 from pathlib import Path
 
 from behave import given

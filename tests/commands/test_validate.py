@@ -1,7 +1,5 @@
 """Tests for gz validate flag wiring (OBPI-0.0.35-04, OBPI-0.0.36-03)."""
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 from unittest.mock import patch

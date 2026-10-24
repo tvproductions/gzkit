@@ -25,8 +25,6 @@ operation. Failures propagate; they are never swallowed, because a swallowed
 barrier reports a durability claim the caller cannot check.
 """
 
-from __future__ import annotations
-
 import ctypes
 import errno
 import os

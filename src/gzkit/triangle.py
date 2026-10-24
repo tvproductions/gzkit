@@ -4,8 +4,6 @@ Defines the REQ entity, triangle vertex/edge types, and linkage records
 used by the drift detection engine (ADR-0.20.0).
 """
 
-from __future__ import annotations
-
 import enum
 import logging
 import pathlib

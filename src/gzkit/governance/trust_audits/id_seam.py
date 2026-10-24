@@ -23,8 +23,6 @@ Registered as ``gz validate --id-seam``; runs in ``gz check`` as the "Identity s
 step.
 """
 
-from __future__ import annotations
-
 import ast
 import re
 import textwrap

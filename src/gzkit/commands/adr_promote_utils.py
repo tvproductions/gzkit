@@ -6,8 +6,6 @@ pool-content marking, section extraction, checklist generation, and source
 resolution.
 """
 
-from __future__ import annotations
-
 import re
 from pathlib import Path
 from typing import Any

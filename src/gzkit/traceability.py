@@ -12,8 +12,6 @@ pass it over silently, so every reader of their ``REQ-<semver>-NN-MM`` records
 is unchanged.
 """
 
-from __future__ import annotations
-
 import ast
 import io
 import logging

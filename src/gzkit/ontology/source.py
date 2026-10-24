@@ -27,8 +27,6 @@ parsing that stdlib ``ast`` (Python-only) cannot — gzkit is a harness that run
 on adopter codebases.
 """
 
-from __future__ import annotations
-
 import ast
 import enum
 import re

@@ -1,7 +1,5 @@
 """CLI tests for `gz validate --sensitivity` (REQ-0.0.22-03-05/06/07)."""
 
-from __future__ import annotations
-
 import io
 import json
 import tempfile

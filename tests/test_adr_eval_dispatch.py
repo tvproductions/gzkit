@@ -18,8 +18,6 @@ reported NOT DISPATCHED absent one. It is never inferred from the presence of
 scores — the same reason substance is never inferred from shape.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

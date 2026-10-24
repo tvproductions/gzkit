@@ -4,8 +4,6 @@ Pure rendering layer: data in, Rich renderables out.
 No IO, no ledger reads, no business logic.
 """
 
-from __future__ import annotations
-
 from rich import box
 from rich.panel import Panel
 from rich.table import Table

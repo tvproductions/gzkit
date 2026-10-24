@@ -11,8 +11,6 @@ Block and coverage primitives are those OBPI-0.35.0-14 landed in
 inventory and a retention map agree on what a block is and which characters count.
 """
 
-from __future__ import annotations
-
 import hashlib
 from pathlib import Path
 from typing import Literal

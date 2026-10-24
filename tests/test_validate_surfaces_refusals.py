@@ -7,8 +7,6 @@ violation in a temporary project and asserts the finding the refusal owes, with
 a clean control beside it so a check that reports on every tree cannot pass.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

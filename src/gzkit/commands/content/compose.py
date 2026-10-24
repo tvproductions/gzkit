@@ -24,8 +24,6 @@ Exit 1: user/config error (missing corpus, undeclared setpoint, invariant
 Exit 2: system/IO error.
 """
 
-from __future__ import annotations
-
 import sys
 from pathlib import Path
 

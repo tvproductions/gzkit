@@ -9,8 +9,6 @@ spelled-out parse) fails here. Expected values come from the grammar in
 `gzkit.core.models`, never from a run of the code.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

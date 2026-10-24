@@ -20,8 +20,6 @@ distinction cannot be skipped: ``unittest`` writes its entire summary to stderr,
 so "render a passing step's stderr" would bury the signal it was meant to carry.
 """
 
-from __future__ import annotations
-
 import sys
 from typing import TextIO
 

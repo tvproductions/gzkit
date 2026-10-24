@@ -41,8 +41,6 @@ match, because a match requires a real path character after the separator.
 Doctrine can name the shape it forbids without tripping its own witness.
 """
 
-from __future__ import annotations
-
 import re
 from pathlib import Path
 

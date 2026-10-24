@@ -11,8 +11,6 @@ incompatible members forced ``ReqEntity.taxonomy_kind`` to be typed ``str``,
 bypassing this schema.
 """
 
-from __future__ import annotations
-
 import enum
 from itertools import starmap
 from pathlib import Path

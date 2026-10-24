@@ -38,8 +38,6 @@ Returns a ``ValidationError(type="pointer_anchors")`` for every finding. An
 empty list means the surface is clean in both directions.
 """
 
-from __future__ import annotations
-
 import contextlib
 import os
 import re

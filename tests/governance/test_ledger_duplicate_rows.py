@@ -23,8 +23,6 @@ rewriting closed-evidence history. Measured 2026-09-21: exactly ONE duplicate in
 17027 rows.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

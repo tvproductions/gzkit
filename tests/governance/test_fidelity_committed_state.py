@@ -14,8 +14,6 @@ is where the closeout ceremony's caller sits — a gate that inherits cwd would
 read and write the live tree, which is the defect.
 """
 
-from __future__ import annotations
-
 import os
 import shlex
 import subprocess

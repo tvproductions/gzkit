@@ -7,8 +7,6 @@ a rendition that drops an invariant entry is a fail-closed defect — not the
 string shape of any one message.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

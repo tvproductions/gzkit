@@ -4,8 +4,6 @@ Assertions derive from the brief's Acceptance Criteria (REQ-0.33.0-01-01
 through REQ-0.33.0-01-05), NOT from a run of the implementation.
 """
 
-from __future__ import annotations
-
 import unittest
 
 import pydantic

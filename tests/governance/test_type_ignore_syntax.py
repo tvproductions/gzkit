@@ -15,8 +15,6 @@ across four more trees, so ``TypeIgnoreDiscriminationTests`` pins both
 directions — what must fail, and what must not.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

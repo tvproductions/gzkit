@@ -5,8 +5,6 @@ REQ-0.0.69-02-01: FENCE REQ + NO Boundary Invariants anchor → unproven (fail-c
 REQ-0.0.69-02-02: FENCE REQ + Boundary Invariants anchor present → proven
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

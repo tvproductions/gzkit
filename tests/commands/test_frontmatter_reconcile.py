@@ -6,8 +6,6 @@ exercised here via ``gz chores list``; REQ-0.0.16-03-06 (schema) is
 exercised via the CLI emitting a schema-valid receipt end-to-end.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

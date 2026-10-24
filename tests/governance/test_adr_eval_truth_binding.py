@@ -19,8 +19,6 @@ Each ADR fixture isolates STRUCTURAL completeness:
   substance verdict.
 """
 
-from __future__ import annotations
-
 import unittest
 
 # Import the package entry point first: it resolves the adr_eval <-> adr_eval_scoring

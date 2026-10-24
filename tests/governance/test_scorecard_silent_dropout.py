@@ -23,8 +23,6 @@ dropout, so the proportionate answer is to witness dropout, leaving each verdict
 welded to the rationale that justifies it.
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 

@@ -28,8 +28,6 @@ observation is reported as *unobserved*, never as a pass: an absent witness that
 renders green is the exact defect this module exists to close.
 """
 
-from __future__ import annotations
-
 import contextlib
 import io
 import unittest

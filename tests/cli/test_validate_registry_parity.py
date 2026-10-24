@@ -16,8 +16,6 @@ the fence pins signature ↔ runner ↔ parser-lambda parity; this pins the regi
 as the single source those surfaces now derive from.
 """
 
-from __future__ import annotations
-
 import inspect
 import unittest
 from pathlib import Path

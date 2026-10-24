@@ -13,8 +13,6 @@ Coverage (mapped to brief Acceptance Criteria REQ-IDs):
         diagnosis.
 """
 
-from __future__ import annotations
-
 import ast
 import json
 import tempfile

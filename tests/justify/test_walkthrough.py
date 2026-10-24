@@ -5,8 +5,6 @@ tests/commands/test_justify_cmd.py). REQ assertions pin semantic contract
 derived from the OBPI brief, not current output shape.
 """
 
-from __future__ import annotations
-
 import re
 import unittest
 from datetime import UTC, datetime

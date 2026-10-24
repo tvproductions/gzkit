@@ -21,8 +21,6 @@ module-level helpers so no filesystem op co-occurs with an assertion inside a
 test body — the shape `gz validate --tautological-test-audit` flags.
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory

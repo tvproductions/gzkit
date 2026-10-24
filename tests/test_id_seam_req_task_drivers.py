@@ -6,8 +6,6 @@ spelled its own looser grammar before the move accepts the loose id, so each cas
 fails when the reader's pattern is put back.
 """
 
-from __future__ import annotations
-
 import ast
 import json
 import tempfile

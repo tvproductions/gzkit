@@ -6,8 +6,6 @@ corpus_entry_appended ledger event, NEVER edits a rendered surface, and fails
 closed on an unknown surface or an unaddressable section.
 """
 
-from __future__ import annotations
-
 import contextlib
 import errno
 import io

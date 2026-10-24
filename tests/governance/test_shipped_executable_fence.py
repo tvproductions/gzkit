@@ -11,8 +11,6 @@ laundered"*, and an exemption keyed on a path prefix is exactly the shape that
 goes broad by accident.
 """
 
-from __future__ import annotations
-
 import ast
 import unittest
 from pathlib import Path

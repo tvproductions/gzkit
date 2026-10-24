@@ -11,8 +11,6 @@ the last reconciling the docket with the 2026-06-14 ratified lifecycle
 Draft→Review→Ratified→Amended→Superseded.
 """
 
-from __future__ import annotations
-
 import json
 import typing
 import unittest

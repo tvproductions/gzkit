@@ -9,8 +9,6 @@ REQ-0.0.74-04-05 is a [support] REQ proven by ``gz validate --cli-alignment``
 exit 0 + artifact_edited ledger event — verified at Stage 3, not here.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

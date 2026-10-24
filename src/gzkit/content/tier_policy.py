@@ -4,8 +4,6 @@
 This is the single enforcement surface the composer consumes; no duplicated inline checks.
 """
 
-from __future__ import annotations
-
 from gzkit.content.models import Corpus, CorpusEntry
 from gzkit.content.models.corpus import effective_corpus
 

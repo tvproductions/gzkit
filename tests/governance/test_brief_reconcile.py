@@ -1,7 +1,5 @@
 """Tests for the brief reconciliation engine (OBPI-0.0.37-05)."""
 
-from __future__ import annotations
-
 import os
 import tempfile
 import textwrap

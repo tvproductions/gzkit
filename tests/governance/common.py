@@ -3,8 +3,6 @@
 Mirrors the per-package helper convention of ``tests/commands/common.py``.
 """
 
-from __future__ import annotations
-
 import io
 import subprocess
 import unittest

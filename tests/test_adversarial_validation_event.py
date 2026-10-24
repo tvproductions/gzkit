@@ -4,8 +4,6 @@ Assertions derive from the requirement — Step 4b's verdict must have a durable
 schema-validated home in the ledger — not from a run of the implementation.
 """
 
-from __future__ import annotations
-
 import typing
 import unittest
 

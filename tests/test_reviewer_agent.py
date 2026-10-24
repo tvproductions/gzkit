@@ -4,8 +4,6 @@ Tests cover: assessment models, prompt composition, result parsing,
 artifact storage, and ceremony formatting.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

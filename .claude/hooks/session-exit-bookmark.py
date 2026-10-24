@@ -16,8 +16,6 @@ Exit codes:
   0 - always (SessionEnd cannot block; there is no verdict to report)
 """
 
-from __future__ import annotations
-
 import json
 import sys
 from pathlib import Path

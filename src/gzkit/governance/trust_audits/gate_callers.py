@@ -32,8 +32,6 @@ Scanning one caller surface reproduces, one level up, the single-membership
 blindness the issue names; the real figure against all automatic surfaces is 38.
 """
 
-from __future__ import annotations
-
 import json
 import re
 from pathlib import Path

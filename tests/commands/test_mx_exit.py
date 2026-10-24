@@ -11,8 +11,6 @@ REQ-0.0.74-05-05 is a [structural-fence] REQ; proof channel is parent ADR
 Boundary Invariant #4 — no @covers test required.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

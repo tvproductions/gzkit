@@ -15,8 +15,6 @@ it: where the two differ, that divergence is a finding about the control, and wr
 step's command here would hide it.
 """
 
-from __future__ import annotations
-
 _CHORE_SCRIPT = "chore script {}"
 
 QC_CLAIM_DELEGATIONS: dict[str, str] = {

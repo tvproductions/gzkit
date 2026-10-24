@@ -31,8 +31,6 @@ Exit codes follow the CLI doctrine 4-code map: 0 clean, 1 user/config error,
 2 system/IO error, 3 policy breach (the ungated set grew).
 """
 
-from __future__ import annotations
-
 import argparse
 import ast
 import json

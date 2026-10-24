@@ -29,8 +29,6 @@ gives repudiation only at OBPI granularity (ADR-0.35.0 Consequences, Negative
 legible; nothing here may obscure it.
 """
 
-from __future__ import annotations
-
 import hashlib
 import json
 import os

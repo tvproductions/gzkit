@@ -15,8 +15,6 @@ data/distribution_baseline_manifest.json.
 @covers REQ-0.0.32-06-09
 """
 
-from __future__ import annotations
-
 import json
 import os
 import shutil

@@ -8,8 +8,6 @@ Note: the CLI scaffolding was implemented in a prior session. These tests are
 authored from the REQs and would catch regressions if implementation broke.
 """
 
-from __future__ import annotations
-
 import os
 import shutil
 import tempfile

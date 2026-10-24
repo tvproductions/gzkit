@@ -11,8 +11,6 @@ undetected. Its floor membership is made *live* (not merely named) by
 OBPI-0.0.74-13's proxy-reality detector per the §5 enforcement-claim rule.
 """
 
-from __future__ import annotations
-
 from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import Any

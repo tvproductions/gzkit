@@ -17,8 +17,6 @@ so reading it let an overdue chore never clear and a bare run extend the clock
 a repository.
 """
 
-from __future__ import annotations
-
 import re
 import subprocess
 from collections.abc import Callable

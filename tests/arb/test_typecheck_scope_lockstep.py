@@ -20,8 +20,6 @@ tool before Python runs), so it is pinned by equality instead. That asymmetry
 is deliberate and is the reason this module reads the config file at all.
 """
 
-from __future__ import annotations
-
 import shlex
 import unittest
 from pathlib import Path

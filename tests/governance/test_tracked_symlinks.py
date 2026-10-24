@@ -7,8 +7,6 @@ v0.34.8 never reached PyPI because three Codex runtime symlinks to
 checked, not the working tree: a clean checkout is what the release job builds.
 """
 
-from __future__ import annotations
-
 import posixpath
 import subprocess
 import tempfile

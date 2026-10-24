@@ -12,8 +12,6 @@
   single-program shell-less commands; compound forms exit 3 (GHI #550, OBPI-0.0.63-07).
 """
 
-from __future__ import annotations
-
 import json
 import re
 from pathlib import Path

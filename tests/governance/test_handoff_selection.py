@@ -22,8 +22,6 @@ any implementation — so a change to one reader that silently diverges from the
 others fails here rather than in a future session's orientation.
 """
 
-from __future__ import annotations
-
 import importlib.util
 import io
 import os

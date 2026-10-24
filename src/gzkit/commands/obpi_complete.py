@@ -5,8 +5,6 @@ attestation, and emits a completion receipt in a single all-or-nothing
 transaction.  If any step fails, no files or ledger entries are modified.
 """
 
-from __future__ import annotations
-
 import contextlib
 import json
 import re

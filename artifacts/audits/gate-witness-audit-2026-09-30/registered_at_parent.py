@@ -9,8 +9,6 @@ Runs each parent's registry in a detached worktree (never pushed), importing tha
 commit's own code, so the registry is the one that existed at the time.
 """
 
-from __future__ import annotations
-
 import ast
 import json
 import re

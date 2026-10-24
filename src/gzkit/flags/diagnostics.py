@@ -5,8 +5,6 @@ reporting) and #7 (time-bomb CI test support).  All functions are read-only;
 they never modify flag values or registry entries.
 """
 
-from __future__ import annotations
-
 from datetime import date
 
 from pydantic import BaseModel, ConfigDict, Field

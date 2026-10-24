@@ -9,8 +9,6 @@ foundation-triage-rubric OBPI's surface and lives at
 returning raw signal counts.
 """
 
-from __future__ import annotations
-
 import json
 import re
 import sys

@@ -13,8 +13,6 @@ pre-flight could see the brief. The operator ruled on a question a written
 brief had already answered the other way.
 """
 
-from __future__ import annotations
-
 import re
 import unittest
 from pathlib import Path

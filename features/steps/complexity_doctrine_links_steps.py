@@ -8,8 +8,6 @@ Covers ``features/complexity_doctrine_links.feature`` (OBPI-0.0.27-07).
 @covers REQ-0.0.27-07-04
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 
 from behave import given, then, when

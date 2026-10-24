@@ -14,8 +14,6 @@ went to machine-local memory instead of a governed artifact.
 Exit 0 when the surface is clean or absent; exit 1 when memories postdate the pass.
 """
 
-from __future__ import annotations
-
 import json
 import sys
 from pathlib import Path

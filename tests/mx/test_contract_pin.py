@@ -8,8 +8,6 @@ the contract's hash and its suspended list and exit conditions; a committed edit
 the session is open books ``mx_contract_amended``.
 """
 
-from __future__ import annotations
-
 import hashlib
 import json
 import subprocess

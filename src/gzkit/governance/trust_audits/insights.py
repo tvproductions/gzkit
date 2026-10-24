@@ -13,8 +13,6 @@ accidentally inherit the waiver. The waiver table is closed: new writes must
 conform.
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

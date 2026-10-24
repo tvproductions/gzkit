@@ -6,8 +6,6 @@ canonical surfaces. This audit asserts the wiring stays present so a future
 ``gz agent sync`` or script edit cannot silently regress the backstop.
 """
 
-from __future__ import annotations
-
 import ast
 import json
 import re

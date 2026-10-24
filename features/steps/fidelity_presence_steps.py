@@ -7,8 +7,6 @@ features/steps/gz_steps.py; only the ADR-fixture Given steps are defined here.
 @covers REQ-0.0.73-08-01
 """
 
-from __future__ import annotations
-
 import os
 from pathlib import Path
 

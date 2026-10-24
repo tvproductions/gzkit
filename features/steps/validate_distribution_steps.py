@@ -7,8 +7,6 @@
 @covers REQ-0.0.32-07-11
 """
 
-from __future__ import annotations
-
 import json
 import os
 from pathlib import Path

@@ -28,8 +28,6 @@ offending file and field; a non-empty list maps to exit 3 in the orchestrator.
 A clean bundle returns ``[]`` (exit 0).
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 
 import yaml

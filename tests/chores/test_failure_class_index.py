@@ -6,8 +6,6 @@ shapes exercised here are taken from real GHI class statements (#505, #554,
 #537) so a change in extraction semantics fails rather than merely differs.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

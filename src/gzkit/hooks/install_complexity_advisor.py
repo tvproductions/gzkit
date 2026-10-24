@@ -15,8 +15,6 @@ Run (called by the shell hook)::
     python -m gzkit.hooks.install_complexity_advisor --run src/foo.py src/bar.py
 """
 
-from __future__ import annotations
-
 import argparse
 import ast
 import sys

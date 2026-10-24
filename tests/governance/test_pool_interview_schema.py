@@ -11,8 +11,6 @@ subsumption is asserted directly (``TestGrammarIsSingleSourced``) so a future
 author cannot fork a parallel authority that drifts.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

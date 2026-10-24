@@ -13,8 +13,6 @@ refusal leaves open: a shell interpreter, whose script body `; exit 0` passes
 the operator check, and a flag that forces a passing exit.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

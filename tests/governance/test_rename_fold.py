@@ -18,8 +18,6 @@ consumer actually asks flip. The defect was latent, not active; these tests are
 what stop it going latent again.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

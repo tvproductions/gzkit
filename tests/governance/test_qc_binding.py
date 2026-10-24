@@ -3,8 +3,6 @@
 Tests are derived from brief requirements, not from implementation.
 """
 
-from __future__ import annotations
-
 import unittest
 
 from pydantic import ValidationError

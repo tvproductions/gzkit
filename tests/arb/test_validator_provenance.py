@@ -13,8 +13,6 @@ are hand-written on purpose — a derived negative control cannot diverge, which
 is the one property a negative control must have.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

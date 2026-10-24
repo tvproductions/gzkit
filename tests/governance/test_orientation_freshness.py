@@ -9,8 +9,6 @@ assertions check the semantic ("the audit caught the regression"), not
 exact error message text.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

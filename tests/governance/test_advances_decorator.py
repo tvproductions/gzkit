@@ -5,8 +5,6 @@ existence validation, TaskAttributionRecord registration, metadata-only
 behavior on decorated functions, and registry query API.
 """
 
-from __future__ import annotations
-
 import unittest
 
 from gzkit.tasks import (

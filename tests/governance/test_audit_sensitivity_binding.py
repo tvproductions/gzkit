@@ -8,8 +8,6 @@ REQ coverage:
 - REQ-0.0.22-03-04: Registry missing/malformed fails closed.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

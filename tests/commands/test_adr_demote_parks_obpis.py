@@ -15,8 +15,6 @@ OBPI is the pooled ADR's decomposition and becomes live again if the ADR is
 re-promoted, so parking must be reversible and must preserve re-promotability.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

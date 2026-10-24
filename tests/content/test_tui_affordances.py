@@ -8,8 +8,6 @@ Covers:
   REQ-0.0.34-05-05 — `gz content --help` shows no new subcommand added
 """
 
-from __future__ import annotations
-
 import re
 import subprocess
 import unittest

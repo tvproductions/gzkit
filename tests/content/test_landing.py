@@ -7,8 +7,6 @@ the provenance sidecar gains an optional ``landing_id`` without loosening
 ``extra="forbid"``.
 """
 
-from __future__ import annotations
-
 import contextlib
 import json
 import os

@@ -4,8 +4,6 @@
 @covers OBPI-0.0.16-05-status-vocab-mapping
 """
 
-from __future__ import annotations
-
 import importlib
 import unittest
 

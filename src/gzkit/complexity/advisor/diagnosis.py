@@ -12,8 +12,6 @@ All models use ``ConfigDict(frozen=True, extra="forbid")`` per
 require ADR-0.0.29 ceremony per § Decision rationale #2.
 """
 
-from __future__ import annotations
-
 from enum import StrEnum
 from typing import Literal
 

@@ -17,8 +17,6 @@ A trailing parenthetical is documentation, not part of the command, and is strip
 before resolution (``gz obpi complete (stage 5)`` → ``gz obpi complete``).
 """
 
-from __future__ import annotations
-
 import re
 from pathlib import Path
 

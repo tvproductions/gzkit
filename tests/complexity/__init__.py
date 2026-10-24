@@ -20,8 +20,6 @@ The fixture surface is deliberately small:
   output directory for end-to-end shape assertions.
 """
 
-from __future__ import annotations
-
 import contextlib
 import shutil
 import subprocess

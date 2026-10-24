@@ -20,8 +20,6 @@ every reader delegates to one shared normalizer rather than each re-deciding wha
 the field means.
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

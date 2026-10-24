@@ -19,8 +19,6 @@ Boundary Invariant **BI-1** in the parent ADR names this as the one shared
 classifier; the verify-stage gate (OBPI-07) imports from here, never a fork.
 """
 
-from __future__ import annotations
-
 import hashlib
 import shlex
 from pathlib import Path

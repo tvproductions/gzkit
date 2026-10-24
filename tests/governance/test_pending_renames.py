@@ -8,8 +8,6 @@ between manual runs: reconciliation as a maintenance chore (AGENTS.md
 detector in the default tier and fails while any rename is pending.
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 

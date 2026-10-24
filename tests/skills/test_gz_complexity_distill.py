@@ -13,8 +13,6 @@ All tests read canonical artifacts read-only — no test mutates
 in the live repo (REQ-10 inheritance from parent test discipline).
 """
 
-from __future__ import annotations
-
 import re
 import unittest
 from pathlib import Path

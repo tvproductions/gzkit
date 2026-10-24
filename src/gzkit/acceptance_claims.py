@@ -22,8 +22,6 @@ Two claims, on the exemption-half precedent (GHI #797).
   always-refuse reducer cannot discharge the first claim alone.
 """
 
-from __future__ import annotations
-
 from typing import Any, get_args
 
 REFUSE_CLAIM_ID = "adversarial-refutation-loops"

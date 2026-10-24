@@ -5,8 +5,6 @@ Registers the `gz content` subcommand group with the `import` verb.
 ADR-0.0.34 § Decision item #3 — reverse-parse migration tooling.
 """
 
-from __future__ import annotations
-
 import argparse
 from typing import Any
 

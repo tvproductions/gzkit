@@ -7,8 +7,6 @@ enumerates. Drift between the manifest and the render pipeline's vendor
 routing is fail-closed under ``gz validate --vendor-manifest``.
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

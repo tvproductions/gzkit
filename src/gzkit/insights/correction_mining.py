@@ -15,8 +15,6 @@ default for this module); candidates only — nothing here mutates ledger,
 rules, or validator scopes.
 """
 
-from __future__ import annotations
-
 import argparse
 import hashlib
 import json

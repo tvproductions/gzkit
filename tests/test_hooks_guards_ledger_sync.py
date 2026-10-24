@@ -1,7 +1,5 @@
 """Tests for ledger and skill-sync guards added under GHIs #207 / #210."""
 
-from __future__ import annotations
-
 import io
 import unittest
 from contextlib import redirect_stderr, redirect_stdout

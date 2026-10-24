@@ -13,8 +13,6 @@ default, because a gzkit-shaped identity policy imposed on every adopter is the
 dogfooding-leak complaint open at GHI #607.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

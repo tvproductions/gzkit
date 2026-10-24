@@ -4,8 +4,6 @@ Each test calls a moved reader on an ADR spelling and asserts the answer the
 reader gave before the move, so reverting the move to a wrong body fails here.
 """
 
-from __future__ import annotations
-
 import unittest
 from datetime import date
 from pathlib import Path

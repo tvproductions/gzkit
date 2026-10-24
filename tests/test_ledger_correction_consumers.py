@@ -22,8 +22,6 @@ completion — rather than through the helper's return value, because a helper c
 be right while its caller ignores it.
 """
 
-from __future__ import annotations
-
 import json
 import os
 import tempfile

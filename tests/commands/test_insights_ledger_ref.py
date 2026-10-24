@@ -7,8 +7,6 @@ it: the insight's ts, a content hash, whose words they are, and an optional supe
 reference (docs/governance/ieee/requirements-model.md § 11).
 """
 
-from __future__ import annotations
-
 import hashlib
 import json
 import unittest

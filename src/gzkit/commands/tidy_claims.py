@@ -19,8 +19,6 @@ The handler has no seam for its collaborators, so each run binds them on the han
 for the call and restores them after, the way the findings themselves would arrive.
 """
 
-from __future__ import annotations
-
 import contextlib
 import io
 import sys

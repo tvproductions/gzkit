@@ -17,8 +17,6 @@ invisible for four months.
 Each binding below now names the REQ whose subject the test actually asserts.
 """
 
-from __future__ import annotations
-
 import ast
 import re
 import unittest

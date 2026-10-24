@@ -7,8 +7,6 @@
 @covers REQ-0.0.32-14-08
 """
 
-from __future__ import annotations
-
 import hashlib
 import shutil
 from pathlib import Path

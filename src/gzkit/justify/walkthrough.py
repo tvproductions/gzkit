@@ -16,8 +16,6 @@ The module never invokes an LLM; all behavior is deterministic given
 ``(anchor, evidence, now)``.
 """
 
-from __future__ import annotations
-
 import re
 from datetime import UTC, datetime
 from functools import lru_cache

@@ -8,8 +8,6 @@ trailers or the scenario tags uses another width, so the tightening rejects no
 live id.
 """
 
-from __future__ import annotations
-
 import json
 import re
 import unittest

@@ -8,8 +8,6 @@ REQ-0.0.22-02-04 (model declares frozen=True + extra='forbid' per
 @covers REQ-0.0.22-02-04
 """
 
-from __future__ import annotations
-
 import unittest
 
 from pydantic import ValidationError

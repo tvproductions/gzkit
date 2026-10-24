@@ -3,8 +3,6 @@
 All models use ConfigDict(frozen=True, extra="forbid") per .gzkit/rules/models.md.
 """
 
-from __future__ import annotations
-
 from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field

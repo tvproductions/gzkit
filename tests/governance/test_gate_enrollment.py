@@ -4,8 +4,6 @@ The enforcement floor verifies the claims that are present; it cannot notice a g
 none. These tests plant each way the inventory could rot and require the audit to say so.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import types

@@ -8,8 +8,6 @@ byte-equivalent copies, and that the classifier helper
 canonical/package_only/runtime_state classes.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

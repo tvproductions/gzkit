@@ -5,8 +5,6 @@ result parsing, critical finding detection, advancement blocking logic,
 and the handle_review_cycle orchestration.
 """
 
-from __future__ import annotations
-
 import json
 import unittest
 from pathlib import Path

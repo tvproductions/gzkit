@@ -4,8 +4,6 @@ REQ-derived: composer is deterministic (no network/LLM), invariant-tier entries
 appear verbatim in the candidate, and violations are rejected.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

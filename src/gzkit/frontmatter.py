@@ -32,8 +32,6 @@ round 5, reverted). Normalization that CREATES frontmatter is a worse defect
 than the one it closes.
 """
 
-from __future__ import annotations
-
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field

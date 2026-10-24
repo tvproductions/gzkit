@@ -5,8 +5,6 @@ tautological *growth* is `gz validate --tautological-test-audit`; this command a
 the question that gate cannot — what debt remains, and in what shape.
 """
 
-from __future__ import annotations
-
 import json
 
 from gzkit.commands.common import console, get_project_root

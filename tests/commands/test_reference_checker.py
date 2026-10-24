@@ -11,8 +11,6 @@ a closed Gate-5 attestation from the project's first week. The adapter resolved
 the local one and the annotator stamped the step ``gz-skills#1 [settled]``.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

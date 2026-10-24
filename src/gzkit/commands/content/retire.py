@@ -40,8 +40,6 @@ reason, and both surfaces reject an empty one (operator ruling 2026-08-25).
 Whitespace-only values for either flag are refused as not-attestation.
 """
 
-from __future__ import annotations
-
 import sys
 from datetime import UTC, datetime
 

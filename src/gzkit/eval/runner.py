@@ -4,8 +4,6 @@ Orchestrates the eval pipeline: load dataset → score each case → aggregate
 dimension scores → return typed results compatible with QualityResult.
 """
 
-from __future__ import annotations
-
 import statistics
 from pathlib import Path
 

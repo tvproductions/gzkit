@@ -1,7 +1,5 @@
 """Chores-layout drift trust audit (ADR-0.0.21 Decision #9)."""
 
-from __future__ import annotations
-
 import json
 import os
 import re

@@ -28,8 +28,6 @@ Read-only by contract — never writes files, never invokes shell=True, never
 calls an LLM, never reads outside ``.gzkit/rules/*.md``.
 """
 
-from __future__ import annotations
-
 import re
 from itertools import takewhile
 from pathlib import Path

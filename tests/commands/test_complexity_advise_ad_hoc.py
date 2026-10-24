@@ -10,8 +10,6 @@ Test structure per ``.gzkit/rules/tests.md`` § Red-Green-Refactor:
   Refactor (improve structure without changing behavior)
 """
 
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path

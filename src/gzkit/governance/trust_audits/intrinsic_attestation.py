@@ -6,8 +6,6 @@ carries all required fields with correct types. Malformed events fail the
 :class:`~gzkit.core.validation_rules.ValidationError`.
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 

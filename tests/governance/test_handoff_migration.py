@@ -12,8 +12,6 @@ pointer, or regresses the skill-canon amendment.
 Reference: ADR-0.0.65-handoff-system-consolidation, OBPI-0.0.65-01.
 """
 
-from __future__ import annotations
-
 import unittest
 from pathlib import Path
 

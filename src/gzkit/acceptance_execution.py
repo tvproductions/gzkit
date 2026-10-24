@@ -6,8 +6,6 @@ These executions establish observations; independent review still judges whether
 an oracle and its negative control express the requirement.
 """
 
-from __future__ import annotations
-
 import hashlib
 import json
 import os

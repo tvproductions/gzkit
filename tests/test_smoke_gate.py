@@ -6,8 +6,6 @@ consumer's three outcomes — an EMPTY tier is a breach when the project opts in
 and advisory success otherwise. A required subset cannot pass by having no members.
 """
 
-from __future__ import annotations
-
 import json
 import tempfile
 import unittest

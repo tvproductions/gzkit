@@ -29,8 +29,6 @@ fingerprint never matches, so the gate runs. A fingerprint mechanism that fails
 CLOSED would refuse pushes on a repo it merely could not read.
 """
 
-from __future__ import annotations
-
 import json
 import os
 import shutil
