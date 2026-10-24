@@ -15,6 +15,7 @@ Ruff S607, ruled 2026-10-24 "Package fixed, tests curated (Rec.)").
 """
 
 import errno
+import inspect
 import os
 import shutil
 from pathlib import Path
@@ -81,3 +82,18 @@ def resolve_argv(argv: Sequence[str]) -> list[str]:
     if Path(head).name != head:
         return [head, *rest]
     return [resolve_executable(head), *rest]
+
+
+def standalone_source() -> str:
+    """Return :func:`find_executable` and :func:`resolve_executable` as source text.
+
+    A generated hook runs as ``uv run python <hook>``, where gzkit may not be
+    importable, so it carries these functions verbatim rather than a hand copy
+    that could drift. The receiving script imports ``errno``, ``os``, ``shutil``
+    and ``pathlib.Path``.
+
+    Returns:
+        Both functions' source, separated as top-level definitions.
+
+    """
+    return "\n\n".join(inspect.getsource(fn) for fn in (find_executable, resolve_executable))

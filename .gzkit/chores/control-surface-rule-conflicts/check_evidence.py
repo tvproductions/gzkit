@@ -37,6 +37,8 @@ import sys
 from pathlib import Path
 from typing import NamedTuple
 
+from gzkit.executables import resolve_executable
+
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")  # ty: ignore[call-non-callable]
 if hasattr(sys.stderr, "reconfigure"):
@@ -179,8 +181,8 @@ def extract_refs(cell: str) -> list[Ref]:
 
 def _git_log_resolves(sha: str) -> bool:
     try:
-        result = subprocess.run(
-            ["git", "log", "-1", "--format=%H", sha],
+        result = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
+            [resolve_executable("git"), "log", "-1", "--format=%H", sha],
             capture_output=True,
             text=True,
             errors="replace",
@@ -194,8 +196,8 @@ def _git_log_resolves(sha: str) -> bool:
 
 def _gh_issue_resolves(number: str) -> bool:
     try:
-        result = subprocess.run(
-            ["gh", "issue", "view", number, "--json", "number"],
+        result = subprocess.run(  # noqa: S603 — gh issue view of a cited number; executable resolved
+            [resolve_executable("gh"), "issue", "view", number, "--json", "number"],
             capture_output=True,
             text=True,
             errors="replace",
@@ -236,8 +238,8 @@ def resolve_ref(ref: Ref, *, gh_authenticated: bool) -> bool:
 
 def _gh_authenticated() -> bool:
     try:
-        result = subprocess.run(
-            ["gh", "auth", "status"],
+        result = subprocess.run(  # noqa: S603 — gh auth status, a fixed argv; executable resolved
+            [resolve_executable("gh"), "auth", "status"],
             capture_output=True,
             text=True,
             errors="replace",

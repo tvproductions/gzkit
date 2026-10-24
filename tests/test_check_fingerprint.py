@@ -29,7 +29,7 @@ from tests.commands.common import _isolated_git_env
 
 
 def _git(args: list[str], cwd: Path) -> None:
-    subprocess.run(
+    subprocess.run(  # noqa: S603 — git argv this test builds
         ["git", *args],
         cwd=cwd,
         check=True,

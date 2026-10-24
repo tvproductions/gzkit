@@ -32,6 +32,7 @@ from typing import TYPE_CHECKING, Literal, Protocol
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.executables import resolve_argv
 from gzkit.registries import RegistryError, load_registry, registry_path
 
 if TYPE_CHECKING:
@@ -136,7 +137,7 @@ def _run_ruff(argv: list[str], project_root: Path, stage: str) -> str:
     """
     try:
         result = subprocess.run(  # noqa: S603 — fixed argv; targets are paths, never a shell
-            argv,
+            resolve_argv(argv),
             cwd=project_root,
             capture_output=True,
             text=True,
@@ -212,7 +213,7 @@ def ruff_rule_codes() -> dict[str, str]:
     argv = [sys.executable, "-m", "ruff", "rule", "--all", "--output-format", "json"]
     try:
         result = subprocess.run(  # noqa: S603 — fixed argv, never a shell
-            argv,
+            resolve_argv(argv),
             capture_output=True,
             text=True,
             encoding="utf-8",

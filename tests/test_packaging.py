@@ -28,7 +28,7 @@ def _build_wheel_into(tmpdir: Path) -> Path:
     Uses ``uv build --wheel --out-dir`` to keep build hermetic and avoid
     polluting the repo's ``dist/``.
     """
-    result = subprocess.run(
+    result = subprocess.run(  # noqa: S603 — uv run of the CLI under test
         ["uv", "build", "--wheel", "--out-dir", str(tmpdir)],
         cwd=REPO_ROOT,
         capture_output=True,

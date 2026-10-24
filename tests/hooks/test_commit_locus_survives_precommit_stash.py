@@ -79,7 +79,7 @@ def _pre_commit_command() -> list[str] | None:
         candidates.append(["uvx", "--offline", "pre-commit"])
     for command in candidates:
         try:
-            probe = subprocess.run(
+            probe = subprocess.run(  # noqa: S603 — argv this test builds, list form
                 [*command, "--version"],
                 capture_output=True,
                 text=True,
@@ -116,7 +116,7 @@ class _Repo:
         self.git("add", "-A")
         self.git("commit", "-qm", "base")
         assert _PRE_COMMIT is not None
-        subprocess.run(
+        subprocess.run(  # noqa: S603 — argv this test builds, list form
             [*_PRE_COMMIT, "install", "--hook-type", "post-commit"],
             cwd=self.root,
             env=_isolated_git_env(self.base_env),
@@ -129,7 +129,7 @@ class _Repo:
         return self.root / ".git" / "hooks"
 
     def git(self, *args: str) -> str:
-        return subprocess.run(
+        return subprocess.run(  # noqa: S603 — git argv this test builds
             ["git", *args],
             cwd=self.root,
             env=_isolated_git_env(self.base_env),

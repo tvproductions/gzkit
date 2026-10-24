@@ -46,7 +46,7 @@ class TestCoversCountsSummary(unittest.TestCase):
 
 
 def _git(tmp: Path, *args: str) -> str:
-    return subprocess.run(
+    return subprocess.run(  # noqa: S603 — git argv this test builds
         ["git", *args],
         cwd=tmp,
         env=_isolated_git_env(),

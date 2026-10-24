@@ -49,7 +49,7 @@ def init_committed_repo(root: Path) -> Path:
     env = _isolated_git_env()
 
     def git(*args: str) -> None:
-        subprocess.run(["git", "-C", str(root), *args], check=True, capture_output=True, env=env)
+        subprocess.run(["git", "-C", str(root), *args], check=True, capture_output=True, env=env)  # noqa: S603 — git argv this test builds
 
     git("init", "-q")
     git("config", "user.email", "t@e.com")

@@ -139,7 +139,7 @@ def _sweep(root: Path) -> subprocess.CompletedProcess[str]:
     an isolated copy is the code the child runs.
     """
     package_parent = str(Path(gc.__file__).resolve().parents[1])
-    return subprocess.run(
+    return subprocess.run(  # noqa: S603 — this interpreter running what the test names
         [sys.executable, "-c", gc.SWEEP_COMMAND_SOURCE],
         cwd=root,
         env={**os.environ, "PYTHONPATH": package_parent},

@@ -213,7 +213,7 @@ class AttestationReceiptCliSmokeTest(unittest.TestCase):
                 "--kind",
                 "feature",
             ]
-            result = subprocess.run(
+            result = subprocess.run(  # noqa: S603 — argv this test builds, list form
                 cmd,
                 capture_output=True,
                 text=True,

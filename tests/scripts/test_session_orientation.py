@@ -1786,16 +1786,16 @@ class TestHandoffAccountSynthesis(unittest.TestCase):
     def _repo(self, tmp: str) -> Path:
         root = Path(tmp)
         (root / ".gzkit" / "handoffs").mkdir(parents=True)
-        subprocess.run(["git", "init", "-q", str(root)], check=True, env=_isolated_git_env())
+        subprocess.run(["git", "init", "-q", str(root)], check=True, env=_isolated_git_env())  # noqa: S603 — git argv this test builds
         for key, val in (("user.email", "t@e.com"), ("user.name", "t")):
-            subprocess.run(
+            subprocess.run(  # noqa: S603 — git argv this test builds
                 ["git", "-C", str(root), "config", key, val], check=True, env=_isolated_git_env()
             )
         return root
 
     def _commit(self, root: Path, message: str) -> None:
-        subprocess.run(["git", "-C", str(root), "add", "-A"], check=True, env=_isolated_git_env())
-        subprocess.run(
+        subprocess.run(["git", "-C", str(root), "add", "-A"], check=True, env=_isolated_git_env())  # noqa: S603 — git argv this test builds
+        subprocess.run(  # noqa: S603 — git argv this test builds
             ["git", "-C", str(root), "commit", "-qm", message], check=True, env=_isolated_git_env()
         )
 

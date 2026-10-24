@@ -115,7 +115,7 @@ def ready_process_exits(context):
     entrypoints = ([sys.executable, "-m", "gzkit"], [str(Path(sys.executable).with_name("gz"))])
     for entrypoint in entrypoints:
         for stage in ("stage2", "stage4"):
-            result = subprocess.run(
+            result = subprocess.run(  # noqa: S603 — argv this step builds, list form
                 [*entrypoint, "obpi", "acceptance", OBPI, "status", "--stage", stage, "--json"],
                 cwd=fixture.root,
                 capture_output=True,

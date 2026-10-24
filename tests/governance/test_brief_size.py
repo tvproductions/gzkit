@@ -220,7 +220,7 @@ class TestLiveTree(unittest.TestCase):
         """Pre-commit check: an edit cannot add a ceiling or raise one."""
         from tests.commands.common import _isolated_git_env
 
-        previous = subprocess.run(
+        previous = subprocess.run(  # noqa: S603 — git argv this test builds
             ["git", "show", f"HEAD:{_GRANDFATHER}"],
             cwd=_REPO,
             env=_isolated_git_env(),

@@ -8,7 +8,7 @@ from tests.commands.common import CliRunner, _isolated_git_env, _quick_init
 
 class TestObpiValidateCommand(unittest.TestCase):
     def _git(self, *args: str) -> None:
-        subprocess.run(
+        subprocess.run(  # noqa: S603 — git argv this test builds
             ["git", *args],
             check=True,
             capture_output=True,

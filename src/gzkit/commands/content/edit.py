@@ -13,6 +13,7 @@ from gzkit.content.models import CONTENT_MODELS
 from gzkit.content.parse import parse
 from gzkit.content.render import render
 from gzkit.content.validation import hooks as validation_hooks
+from gzkit.executables import resolve_argv
 
 
 def _resolve_project_root(file_path: Path) -> Path:
@@ -79,7 +80,9 @@ def content_edit_cmd(*, file: str, as_type: str, vendor: str) -> None:
     try:
         # Invoke the editor on the temp file
         try:
-            result = subprocess.run([editor, str(tmp_path)], check=False)  # noqa: S603
+            result = subprocess.run(  # noqa: S603 — the operator's $EDITOR over a temp copy
+                resolve_argv([editor, str(tmp_path)]), check=False
+            )
         except OSError as exc:
             print(f"Error launching editor {editor!r}: {exc}", file=sys.stderr)
             sys.exit(1)

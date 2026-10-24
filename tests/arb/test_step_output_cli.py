@@ -27,7 +27,7 @@ class TestStepOutputRetentionCli(unittest.TestCase):
             "import sys; sys.stdout.write(sys.argv[1]); sys.stderr.write(sys.argv[2]); "
             "sys.exit(int(sys.argv[3]))"
         )
-        completed = subprocess.run(
+        completed = subprocess.run(  # noqa: S603 — uv run of the CLI under test
             [
                 "uv",
                 "run",
@@ -171,7 +171,7 @@ class TestLongReviewReceiptImport(unittest.TestCase):
         prefix = ["uv", "run", "--project", str(project), "--no-sync", "gz"]
         receipts = fixture.root / "receipts"
         environment = {**os.environ, "GZKIT_ARB_RECEIPTS_ROOT": str(receipts)}
-        wrapped = subprocess.run(
+        wrapped = subprocess.run(  # noqa: S603 — argv this test builds, list form
             [
                 *prefix,
                 "arb",
@@ -205,7 +205,7 @@ class TestLongReviewReceiptImport(unittest.TestCase):
         self.assertFalse(receipt["stdout_truncated"])
         self.assertFalse(receipt["stderr_truncated"])
         self.assertGreater(len(receipt["stdout_tail"]), 8000)
-        imported = subprocess.run(
+        imported = subprocess.run(  # noqa: S603 — argv this test builds, list form
             [*prefix, "obpi", "acceptance", OBPI, "review", "--receipt", receipt["run_id"]],
             cwd=fixture.root,
             env=environment,

@@ -468,7 +468,7 @@ class TestShellHookContract(unittest.TestCase):
         """
         hook_path = Path(".gzkit/hooks/pre-commit-complexity-advisor")
         self.assertTrue(hook_path.exists())
-        result = subprocess.run(
+        result = subprocess.run(  # noqa: S603 — git argv this test builds
             ["git", "ls-files", "--stage", str(hook_path)],
             capture_output=True,
             text=True,

@@ -36,7 +36,7 @@ _PASSING_TEST = (
 
 
 def _git(args: list[str], cwd: Path) -> None:
-    subprocess.run(
+    subprocess.run(  # noqa: S603 — git argv this test builds
         ["git", *args],
         cwd=cwd,
         check=True,
@@ -369,7 +369,7 @@ class TestResolveIntroducingBase(_GitFixture):
     def test_it_resolves_the_parent_of_the_introducing_commit(self) -> None:
         req = "REQ-1.2.3-01-01"
         self._land_a_covering_test(req)
-        introducing = subprocess.run(
+        introducing = subprocess.run(  # noqa: S603 — argv this test builds, list form
             ["git", "log", "-S", f'@covers("{req}")', "--format=%H", "--reverse", "--", "tests"],
             cwd=self.root,
             capture_output=True,
@@ -379,7 +379,7 @@ class TestResolveIntroducingBase(_GitFixture):
             errors="replace",
             env=_isolated_git_env(),
         ).stdout.split()[0]
-        expected = subprocess.run(
+        expected = subprocess.run(  # noqa: S603 — argv this test builds, list form
             ["git", "rev-parse", f"{introducing}^"],
             cwd=self.root,
             capture_output=True,

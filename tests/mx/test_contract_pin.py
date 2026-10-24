@@ -155,7 +155,7 @@ class TestAnAmendmentIsBooked(SilencedConsoleTestCase):
 
 
 def _git(root: Path, *args: str) -> str:
-    result = subprocess.run(
+    result = subprocess.run(  # noqa: S603 — git argv this test builds
         ["git", *args],
         cwd=root,
         env=_isolated_git_env(),

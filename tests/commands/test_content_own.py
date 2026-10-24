@@ -865,7 +865,7 @@ class TestContentOwnReplayJournalValidation(unittest.TestCase):
 
 def _git(*args: str) -> None:
     """Run one ``git`` against the isolated fixture repository (GHI #977 boundary)."""
-    subprocess.run(["git", *args], check=True, capture_output=True, env=_isolated_git_env())
+    subprocess.run(["git", *args], check=True, capture_output=True, env=_isolated_git_env())  # noqa: S603 — git argv this test builds
 
 
 class TestGrowthRefusalPrescribesAUsableRecovery(unittest.TestCase):
@@ -1150,7 +1150,7 @@ class TestDeclarationDamageRefusalsPrescribeConditionalRecovery(unittest.TestCas
         env = _isolated_git_env()
 
         def run(args):
-            return subprocess.run(
+            return subprocess.run(  # noqa: S603 — git argv this test builds
                 ["git", *args],
                 check=True,
                 capture_output=True,

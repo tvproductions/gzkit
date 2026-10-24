@@ -527,7 +527,7 @@ class TestLockHandoffCouplingRequiresRepositoryDurability(unittest.TestCase):
 
     @staticmethod
     def _git(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
-        return subprocess.run(
+        return subprocess.run(  # noqa: S603 — git argv this test builds
             ["git", "-C", str(root), *args],
             capture_output=True,
             text=True,
@@ -539,7 +539,7 @@ class TestLockHandoffCouplingRequiresRepositoryDurability(unittest.TestCase):
 
     def _repo(self, tmp: str) -> Path:
         root = Path(tmp)
-        subprocess.run(["git", "init", "-q", str(root)], check=True, env=_isolated_git_env())
+        subprocess.run(["git", "init", "-q", str(root)], check=True, env=_isolated_git_env())  # noqa: S603 — git argv this test builds
         self._git(root, "config", "user.email", "t@e.com")
         self._git(root, "config", "user.name", "t")
         return root

@@ -20,6 +20,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from gzkit.traceability import covers
+from tests.commands.common import argv_by_tool_name
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _HOOK_PATH = _REPO_ROOT / ".claude" / "hooks" / "stop-turn-feedback.py"
@@ -49,7 +50,9 @@ class RunLintArgvTest(unittest.TestCase):
         done = subprocess.CompletedProcess(args=[], returncode=1, stdout="out", stderr="")
         with patch.object(_HOOK.subprocess, "run", return_value=done) as run:
             returncode, output = _HOOK.run_lint(["a.py", "b.py"], Path.cwd())
-        self.assertEqual(run.call_args.args[0], ["uv", "run", "gz", "lint", "a.py", "b.py"])
+        self.assertEqual(
+            argv_by_tool_name(run.call_args.args[0]), ["uv", "run", "gz", "lint", "a.py", "b.py"]
+        )
         self.assertEqual((returncode, output), (1, "out"))
 
 

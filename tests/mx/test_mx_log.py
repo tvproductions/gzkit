@@ -63,7 +63,7 @@ def _init_git_repo(root: Path) -> None:
 def _commit(root: Path, filename: str, message: str) -> None:
     (root / filename).write_text("x", encoding="utf-8")
     subprocess.run(["git", "add", "-A"], cwd=root, check=True, env=_isolated_git_env())
-    subprocess.run(
+    subprocess.run(  # noqa: S603 — git argv this test builds
         ["git", "commit", "-q", "-m", message], cwd=root, check=True, env=_isolated_git_env()
     )
 

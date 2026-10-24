@@ -26,6 +26,7 @@ from gzkit.hooks.core import (
 )
 from gzkit.lock_manager import LockData, write_lock
 from gzkit.traceability import covers
+from tests.commands.common import argv_by_tool_name
 
 
 def _expected_hook_command(script: str) -> str:
@@ -970,7 +971,10 @@ class TestPostEditRuffHook(unittest.TestCase):
                 self.assertRaises(SystemExit),
             ):
                 module.main()
-            self.assertEqual(run.call_args.args[0], ["uv", "run", "gz", "lint", edited.as_posix()])
+            self.assertEqual(
+                argv_by_tool_name(run.call_args.args[0]),
+                ["uv", "run", "gz", "lint", edited.as_posix()],
+            )
 
 
 class TestPlanAuditGateHook(unittest.TestCase):

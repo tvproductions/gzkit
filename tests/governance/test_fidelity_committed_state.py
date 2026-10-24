@@ -43,7 +43,7 @@ def _assertion(command: str, expected_exit: int = 0) -> FidelityAssertion:
 
 
 def _git(root: Path, *args: str) -> str:
-    return subprocess.run(
+    return subprocess.run(  # noqa: S603 — git argv this test builds
         ["git", "-C", str(root), *args],
         check=True,
         capture_output=True,

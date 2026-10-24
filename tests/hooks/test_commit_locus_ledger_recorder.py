@@ -46,7 +46,7 @@ def _git(args: list[str], cwd: Path, when: str | None = None) -> str:
     env = _isolated_git_env()
     if when is not None:
         env.update({"GIT_AUTHOR_DATE": when, "GIT_COMMITTER_DATE": when})
-    result = subprocess.run(
+    result = subprocess.run(  # noqa: S603 — git argv this test builds
         ["git", *args],
         cwd=cwd,
         check=True,

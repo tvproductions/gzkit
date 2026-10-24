@@ -40,6 +40,8 @@ import sys
 from collections.abc import Iterator
 from pathlib import Path
 
+from gzkit.executables import resolve_executable
+
 #: Flags that are presentation or mutation, never a check to be reached.
 #: Value-taking flags are derived from the parser rather than listed here, so a
 #: new `--scope VALUE` needs no edit to this file; these six cannot be derived
@@ -215,8 +217,8 @@ def _repo_files(root: Path) -> Iterator[Path]:
     slow rather than to empty. Silently scanning nothing is the false-green this
     ratchet exists to prevent.
     """
-    proc = subprocess.run(
-        ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
+    proc = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
+        [resolve_executable("git"), "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
         cwd=root,
         capture_output=True,
         text=True,
@@ -399,7 +401,7 @@ def sweep(root: Path) -> int:
     matrix = build_matrix(root)
     failures: list[tuple[int, str, str]] = []
     for flag in sorted(matrix):
-        proc = subprocess.run(  # noqa: S603
+        proc = subprocess.run(  # noqa: S603 — this interpreter running gz validate over a registered flag
             [sys.executable, "-m", "gzkit", "validate", flag],
             cwd=root,
             capture_output=True,

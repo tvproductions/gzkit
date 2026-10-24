@@ -38,7 +38,7 @@ class CanonicalStepsLeafImportTests(unittest.TestCase):
             "import gzkit.canonical_steps as m;"
             "print(json.dumps(sorted(k for k in sys.modules)))"
         )
-        result = subprocess.run(
+        result = subprocess.run(  # noqa: S603 — this interpreter running what the test names
             [sys.executable, "-c", probe],
             capture_output=True,
             text=True,

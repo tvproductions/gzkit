@@ -644,6 +644,12 @@ The version banner as it stood, lifted verbatim when RO-9 tranche 4 added § Exe
 
 > **Rule version:** `0.7.2` — § Delivered path literals names the uv_build wheel instead of the retired hatchling `include` block (RO-9 tranche 3); version narrative in [Rule Version History](rule-version-history.md#cross-platformmd).
 
+### Lifted 2026-10-24 at version `0.8.0` (rule now at `0.8.1`)
+
+The version banner as it stood, lifted verbatim when the red witness on `04b3641e6` showed the call-site resolutions guarded by no test and the AST fence landed:
+
+> **Rule version:** `0.8.0` — adds § Executable resolution: the package spawns a tool resolved off absolute `PATH` entries, never the current directory (RO-9 tranche 4, Ruff S607); version narrative in [Rule Version History](rule-version-history.md#cross-platformmd).
+
 ## `guardrail-feedback-prose.md`
 
 Lifted 2026-08-29 at version `0.2.0` (rule now at `0.3.0`).

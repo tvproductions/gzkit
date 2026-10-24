@@ -93,7 +93,7 @@ class TestREQ04_EphemeralDiagnosisOnly(unittest.TestCase):
             "docs/design/adr/foundation/",
             ".gzkit/ledger.jsonl",
         ]
-        before = subprocess.run(
+        before = subprocess.run(  # noqa: S603 — git argv this test builds
             ["git", "status", "--porcelain", *scope],
             cwd=_REPO_ROOT,
             capture_output=True,
@@ -103,7 +103,7 @@ class TestREQ04_EphemeralDiagnosisOnly(unittest.TestCase):
             check=False,
             env=_isolated_git_env(),
         ).stdout
-        completed = subprocess.run(
+        completed = subprocess.run(  # noqa: S603 — this interpreter running what the test names
             [sys.executable, str(_TRIAGE_SCRIPT), "--format", "json"],
             cwd=_REPO_ROOT,
             capture_output=True,
@@ -117,7 +117,7 @@ class TestREQ04_EphemeralDiagnosisOnly(unittest.TestCase):
             json.loads(completed.stdout)
         except json.JSONDecodeError as exc:  # pragma: no cover — diagnostic clarity
             self.fail(f"triage --format json did not emit valid JSON: {exc}")
-        after = subprocess.run(
+        after = subprocess.run(  # noqa: S603 — git argv this test builds
             ["git", "status", "--porcelain", *scope],
             cwd=_REPO_ROOT,
             capture_output=True,

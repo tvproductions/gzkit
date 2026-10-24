@@ -331,7 +331,7 @@ def _baseline_body(root: Path, inventory: ControlInventory) -> str | None:
     from tests.commands.common import _isolated_git_env
 
     baseline = inventory.baseline
-    shown = subprocess.run(
+    shown = subprocess.run(  # noqa: S603 — git argv this test builds
         ["git", "show", f"{baseline.commit}:{baseline.path}"],
         cwd=root,
         env=_isolated_git_env(),

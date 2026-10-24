@@ -3,6 +3,7 @@
 from textwrap import dedent
 
 from gzkit.core.models import ADR_SHORT_ID_BODY, OBPI_SHORT_ID_BODY
+from gzkit.executables import standalone_source
 
 
 def _verifier_pipe_gate_script() -> str:
@@ -93,7 +94,10 @@ def _post_edit_ruff_script() -> str:
               0 - Always (non-blocking; lint failures do not prevent edits)
             \"\"\"
 
+            import errno
             import json
+            import os
+            import shutil
             import subprocess
             import sys
             from contextlib import suppress
@@ -101,6 +105,9 @@ def _post_edit_ruff_script() -> str:
 
             TIMEOUT_SECONDS = 8
             MAX_OUTPUT_LINES = 20
+
+
+            __resolve_executable__
 
 
             def main():
@@ -131,8 +138,8 @@ def _post_edit_ruff_script() -> str:
                 posix_path = target.as_posix()
 
                 with suppress(FileNotFoundError, subprocess.TimeoutExpired, OSError):
-                    result = subprocess.run(
-                        ["uv", "run", "gz", "lint", posix_path],
+                    result = subprocess.run(  # noqa: S603 — gz lint over the edited file; executable resolved
+                        [resolve_executable("uv"), "run", "gz", "lint", posix_path],
                         capture_output=True,
                         text=True,
                         encoding="utf-8",
@@ -152,7 +159,7 @@ def _post_edit_ruff_script() -> str:
             if __name__ == "__main__":
                 main()
             """
-    )
+    ).replace("__resolve_executable__", standalone_source())
 
 
 def _stop_turn_feedback_script() -> str:
@@ -198,9 +205,11 @@ def _stop_turn_feedback_script() -> str:
               2 - Block the stop; stderr carries the feedback prose
             \"\"\"
 
+            import errno
             import json
             import os
             import re
+            import shutil
             import subprocess
             import sys
             import tempfile
@@ -236,10 +245,13 @@ def _stop_turn_feedback_script() -> str:
             )
 
 
+            __resolve_executable__
+
+
             def collect_dirty_python_files(cwd: Path) -> list[str]:
                 \"\"\"Return git working-tree dirty .py paths that exist on disk.\"\"\"
-                result = subprocess.run(
-                    ["git", "status", "--porcelain"],
+                result = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
+                    [resolve_executable("git"), "status", "--porcelain"],
                     capture_output=True,
                     text=True,
                     encoding="utf-8",
@@ -263,8 +275,8 @@ def _stop_turn_feedback_script() -> str:
 
             def run_lint(files: list[str], cwd: Path) -> tuple[int, str]:
                 \"\"\"Run `gz lint` over the files; return (returncode, combined output).\"\"\"
-                result = subprocess.run(
-                    ["uv", "run", "gz", "lint", *files],
+                result = subprocess.run(  # noqa: S603 — gz lint over the dirty files; executable resolved
+                    [resolve_executable("uv"), "run", "gz", "lint", *files],
                     capture_output=True,
                     text=True,
                     encoding="utf-8",
@@ -468,4 +480,5 @@ def _stop_turn_feedback_script() -> str:
         )
         .replace("__obpi_short__", OBPI_SHORT_ID_BODY)
         .replace("__adr_short__", ADR_SHORT_ID_BODY)
+        .replace("__resolve_executable__", standalone_source())
     )

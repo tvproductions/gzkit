@@ -45,7 +45,7 @@ def step_setup_triage_fixture(context: object, adr_ids: str, mention_id: str) ->
 @when('I run the foundation-triage script with format "{fmt}"')
 def step_run_triage_script(context: object, fmt: str) -> None:
     """Run the triage script against the fixture and store stdout in context."""
-    result = subprocess.run(
+    result = subprocess.run(  # noqa: S603 — this interpreter running what the step names
         [
             sys.executable,
             str(_TRIAGE_SCRIPT),

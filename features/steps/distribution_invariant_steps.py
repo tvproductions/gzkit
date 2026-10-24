@@ -57,7 +57,7 @@ def _venv_bin(venv_path: Path, name: str) -> Path:
 
 
 def _run(cmd: list[str], cwd: Path) -> tuple[int, str]:
-    result = subprocess.run(
+    result = subprocess.run(  # noqa: S603 — argv this step builds, list form
         cmd,
         cwd=str(cwd),
         capture_output=True,

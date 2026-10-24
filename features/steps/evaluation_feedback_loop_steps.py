@@ -197,7 +197,7 @@ def _make_gh_run_dispatcher(context):
     real_run = subprocess.run
 
     def fake_run(cmd, *args, **kwargs):
-        if isinstance(cmd, (list, tuple)) and cmd and cmd[0] == "gh":
+        if isinstance(cmd, (list, tuple)) and cmd and Path(cmd[0]).stem == "gh":
             sub = list(cmd[1:])
             if sub[:2] == ["issue", "create"]:
                 url = getattr(context, _GH_RESPONSE_KEY, "https://github.com/owner/repo/issues/1")
@@ -543,7 +543,7 @@ def step_minimal_proposal_field_none(context, field: str) -> None:
 
 
 def _git(*args: str) -> None:
-    subprocess.run(
+    subprocess.run(  # noqa: S603 — git argv this step builds
         ["git", *args],
         check=True,
         capture_output=True,

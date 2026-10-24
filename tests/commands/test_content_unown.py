@@ -4136,7 +4136,7 @@ class TestRecoveryArtifactsAreIgnored(unittest.TestCase):
         """
         unignored = []
         for label, path in self._artifacts().items():
-            completed = subprocess.run(
+            completed = subprocess.run(  # noqa: S603 — git argv this test builds
                 ["git", "check-ignore", "--quiet", path.as_posix()],
                 cwd=self._REPO_ROOT,
                 capture_output=True,

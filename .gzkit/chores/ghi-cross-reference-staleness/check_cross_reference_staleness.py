@@ -26,6 +26,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from gzkit.executables import resolve_executable
+
 #: Shrink-only disclosure of annotations already decayed when this chore landed.
 BASELINE_PATH = Path("data") / "ghi_cross_reference_baseline.json"
 
@@ -41,9 +43,9 @@ ANNOTATION_RE = re.compile(r"#(\d+)\*{0,2}\s*\((open|still open)\)", re.IGNORECA
 
 def fetch_issues():
     """Return every issue with number, state and body, refusing a truncated census."""
-    proc = subprocess.run(
+    proc = subprocess.run(  # noqa: S603 — gh issue list, a fixed argv; executable resolved
         [
-            "gh",
+            resolve_executable("gh"),
             "issue",
             "list",
             "--state",

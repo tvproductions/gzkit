@@ -201,16 +201,16 @@ class TestExitBeatIsIntentionalAboutBookmarks(unittest.TestCase):
     def _repo(self, tmp: str) -> Path:
         root = Path(tmp)
         (root / ".gzkit" / "handoffs").mkdir(parents=True)
-        subprocess.run(["git", "init", "-q", str(root)], check=True, env=_isolated_git_env())
+        subprocess.run(["git", "init", "-q", str(root)], check=True, env=_isolated_git_env())  # noqa: S603 — git argv this test builds
         for key, val in (("user.email", "t@e.com"), ("user.name", "t")):
-            subprocess.run(
+            subprocess.run(  # noqa: S603 — git argv this test builds
                 ["git", "-C", str(root), "config", key, val], check=True, env=_isolated_git_env()
             )
         return root
 
     def _commit(self, root: Path, message: str) -> None:
-        subprocess.run(["git", "-C", str(root), "add", "-A"], check=True, env=_isolated_git_env())
-        subprocess.run(
+        subprocess.run(["git", "-C", str(root), "add", "-A"], check=True, env=_isolated_git_env())  # noqa: S603 — git argv this test builds
+        subprocess.run(  # noqa: S603 — git argv this test builds
             ["git", "-C", str(root), "commit", "-qm", message], check=True, env=_isolated_git_env()
         )
 
@@ -307,7 +307,7 @@ class TestExitBeatIsIntentionalAboutBookmarks(unittest.TestCase):
                 "## Decisions Made\n\n- [agent-chose] floor\n",
                 encoding="utf-8",
             )
-            subprocess.run(
+            subprocess.run(  # noqa: S603 — git argv this test builds
                 ["git", "-C", str(root), "add", "--", str(stray)],
                 check=True,
                 env=_isolated_git_env(),
@@ -347,7 +347,7 @@ class TestExitBeatIsIntentionalAboutBookmarks(unittest.TestCase):
             (root / "seed.txt").write_text("x\n", encoding="utf-8")
             self._commit(root, "seed")
             authored = self._authored(root)
-            subprocess.run(
+            subprocess.run(  # noqa: S603 — git argv this test builds
                 ["git", "-C", str(root), "add", "--", str(authored)],
                 check=True,
                 env=_isolated_git_env(),
@@ -363,7 +363,7 @@ class TestExitBeatIsIntentionalAboutBookmarks(unittest.TestCase):
             result = book_exit_bookmark(root, session_id="s1", exit_reason="clear")
             self.assertTrue(result.written)
             self.assertTrue(result.staged)
-            staged = subprocess.run(
+            staged = subprocess.run(  # noqa: S603 — git argv this test builds
                 ["git", "-C", str(root), "diff", "--cached", "--name-only"],
                 capture_output=True,
                 text=True,
@@ -383,17 +383,17 @@ class TestExitBeatIsIntentionalAboutBookmarks(unittest.TestCase):
             self._commit(root, "seed")
             book_exit_bookmark(root, session_id="s1", exit_reason="clear")
             (root / "later.py").write_text("y = 2\n", encoding="utf-8")
-            subprocess.run(
+            subprocess.run(  # noqa: S603 — git argv this test builds
                 ["git", "-C", str(root), "add", "--", "later.py"],
                 check=True,
                 env=_isolated_git_env(),
             )
-            subprocess.run(
+            subprocess.run(  # noqa: S603 — git argv this test builds
                 ["git", "-C", str(root), "commit", "-qm", "unrelated"],
                 check=True,
                 env=_isolated_git_env(),
             )
-            tree = subprocess.run(
+            tree = subprocess.run(  # noqa: S603 — git argv this test builds
                 ["git", "-C", str(root), "ls-tree", "-r", "--name-only", "HEAD"],
                 capture_output=True,
                 text=True,

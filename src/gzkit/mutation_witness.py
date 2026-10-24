@@ -43,6 +43,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.executables import resolve_argv
 from gzkit.red_witness import classify_failure
 from gzkit.unit_run_provenance import read_test_observations
 
@@ -173,7 +174,7 @@ def _run(
         env["PYTHONPATH"] = os.pathsep.join(p for p in (pythonpath_prefix, inherited) if p)
     env["PYTHONPYCACHEPREFIX"] = str(pycache_prefix)
     return subprocess.run(  # noqa: S603 — the command is supplied by the sweep's author
-        command,
+        resolve_argv(command),
         cwd=cwd,
         env=env,
         capture_output=True,

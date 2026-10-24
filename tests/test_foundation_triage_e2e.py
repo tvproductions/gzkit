@@ -64,7 +64,7 @@ class TestTriageScriptE2E(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Run triage script once and parse output for all tests in this class."""
-        result = subprocess.run(
+        result = subprocess.run(  # noqa: S603 — this interpreter running what the test names
             [
                 sys.executable,
                 str(_TRIAGE_SCRIPT),

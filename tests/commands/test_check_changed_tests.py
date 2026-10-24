@@ -22,7 +22,7 @@ from tests.commands.common import _isolated_git_env
 
 
 def _git(args: list[str], cwd: Path) -> None:
-    subprocess.run(
+    subprocess.run(  # noqa: S603 — git argv this test builds
         ["git", "-c", "user.name=t", "-c", "user.email=t@users.noreply.github.com", *args],
         cwd=cwd,
         env=_isolated_git_env(),

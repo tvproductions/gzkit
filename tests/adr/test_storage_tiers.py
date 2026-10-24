@@ -24,7 +24,7 @@ def _repo_root() -> Path:
 
 
 def _run(args: list[str], cwd: Path, *, check: bool = True) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
+    return subprocess.run(  # noqa: S603 — argv this test builds, list form
         args,
         cwd=cwd,
         capture_output=True,

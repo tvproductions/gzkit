@@ -248,7 +248,7 @@ def _init_git_repo(path: Path, *, seed_file: str = "README.md") -> str:
     rebuild a repo per-test (GHI #253).
     """
     env = _isolated_git_env()
-    run = lambda args: subprocess.run(  # noqa: E731
+    run = lambda args: subprocess.run(  # noqa: E731, S603 — git argv this test builds
         ["git", *args],
         cwd=path,
         check=True,

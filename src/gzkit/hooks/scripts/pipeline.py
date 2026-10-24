@@ -3,6 +3,7 @@
 from textwrap import dedent
 
 from gzkit.core.models import OBPI_SHORT_ID_BODY
+from gzkit.executables import standalone_source
 
 
 def _pipeline_completion_reminder_script() -> str:
@@ -234,8 +235,9 @@ def _session_staleness_check_script() -> str:
 
 def _plan_audit_gate_script() -> str:
     """Return the plan-exit audit gate hook script."""
-    return dedent(
-        """\
+    return (
+        dedent(
+            """\
             #!/usr/bin/env python3
             \"\"\"Plan Audit Gate Hook.
 
@@ -272,10 +274,12 @@ def _plan_audit_gate_script() -> str:
               2 - Block operation (OBPI plan exists, self-audit failed or produced FAIL)
             \"\"\"
 
+            import errno
             import json
             import os
             import re
             import shlex
+            import shutil
             import subprocess
             import sys
             from pathlib import Path
@@ -436,6 +440,9 @@ def _plan_audit_gate_script() -> str:
             SELF_AUDIT_TIMEOUT_SECONDS = 60
 
 
+            __resolve_executable__
+
+
             def _resolve_plan_audit_cmd() -> list[str]:
                 \"\"\"Return argv for the plan-audit invocation, honoring the env override.\"\"\"
                 override = os.environ.get(PLAN_AUDIT_CMD_ENV)
@@ -456,7 +463,7 @@ def _plan_audit_gate_script() -> str:
                 cmd = _resolve_plan_audit_cmd() + [obpi_id]
                 try:
                     completed = subprocess.run(  # noqa: S603 — controlled argv via env override
-                        cmd,
+                        [resolve_executable(cmd[0]), *cmd[1:]],
                         cwd=cwd,
                         capture_output=True,
                         text=True,
@@ -566,4 +573,7 @@ def _plan_audit_gate_script() -> str:
             if __name__ == "__main__":
                 main()
             """
-    ).replace("__obpi_short__", OBPI_SHORT_ID_BODY)
+        )
+        .replace("__obpi_short__", OBPI_SHORT_ID_BODY)
+        .replace("__resolve_executable__", standalone_source())
+    )

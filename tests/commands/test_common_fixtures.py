@@ -34,7 +34,7 @@ class TestFixtureRepoQuiescence(unittest.TestCase):
     """
 
     def _config(self, root: Path, key: str) -> tuple[int, str]:
-        result = subprocess.run(
+        result = subprocess.run(  # noqa: S603 — git argv this test builds
             ["git", "config", "--get", key],
             cwd=root,
             capture_output=True,
@@ -105,7 +105,7 @@ class TestIgnoreTransientGit(unittest.TestCase):
         return root
 
     def _git(self, root: Path, *args: str) -> tuple[int, str]:
-        result = subprocess.run(
+        result = subprocess.run(  # noqa: S603 — git argv this test builds
             ["git", *args],
             cwd=root,
             capture_output=True,
@@ -217,7 +217,7 @@ class TestIgnoreTransientGit(unittest.TestCase):
 def _git_out(root: Path, *args: str, env: dict[str, str] | None = None) -> str:
     """Run ``git`` in *root* and return stdout, under the isolated env by default."""
     env = _isolated_git_env() if env is None else env
-    return subprocess.run(
+    return subprocess.run(  # noqa: S603 — argv this test builds, list form
         ["git", *args],
         cwd=root,
         capture_output=True,
@@ -504,7 +504,7 @@ class TestFixtureGitIsolation(unittest.TestCase):
             "GIT_SSH_COMMAND": "ssh -i key",
             "GIT_AUTHOR_NAME": "Hook Author",
         }
-        result = subprocess.run(
+        result = subprocess.run(  # noqa: S603 — this interpreter running what the test names
             [sys.executable, "-c", probe],
             cwd=_PROJECT_ROOT,
             capture_output=True,

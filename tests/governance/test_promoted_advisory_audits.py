@@ -1086,7 +1086,7 @@ class VersionReleaseAuditTagReachability(unittest.TestCase):
     def _git(self, root: Path, *args: str) -> str:
         import subprocess  # noqa: PLC0415
 
-        result = subprocess.run(
+        result = subprocess.run(  # noqa: S603 — git argv this test builds
             ["git", "-c", "user.email=t@example.com", "-c", "user.name=t", *args],
             cwd=root,
             check=True,
@@ -1193,7 +1193,7 @@ class VersionReleaseAuditDocumentedSweep(unittest.TestCase):
     def _git(self, root: Path, *args: str) -> str:
         import subprocess  # noqa: PLC0415
 
-        result = subprocess.run(
+        result = subprocess.run(  # noqa: S603 — git argv this test builds
             ["git", "-c", "user.email=t@example.com", "-c", "user.name=t", *args],
             cwd=root,
             check=True,
@@ -1346,7 +1346,7 @@ class VersionReleaseAuditUndocumentedTagSweep(unittest.TestCase):
     def _git(self, root: Path, *args: str) -> str:
         import subprocess  # noqa: PLC0415
 
-        result = subprocess.run(
+        result = subprocess.run(  # noqa: S603 — git argv this test builds
             ["git", "-c", "user.email=t@example.com", "-c", "user.name=t", *args],
             cwd=root,
             check=True,

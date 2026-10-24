@@ -98,7 +98,7 @@ def tracked_files(repo_root: Path) -> list[str]:
     state, and walking them produced the 261k-path ``rglob`` blow-up that pushed
     these guards past the test-health budget (test-isolation chore).
     """
-    completed = subprocess.run(
+    completed = subprocess.run(  # noqa: S603 — git argv this test builds
         ["git", "-C", str(repo_root), "ls-files", "-z"],
         capture_output=True,
         text=True,

@@ -67,7 +67,7 @@ _COMPLETED_WITH_EVIDENCE = """# OBPI-0.35.0-09
 
 
 def _git(args: list[str], cwd: Path) -> None:
-    subprocess.run(
+    subprocess.run(  # noqa: S603 — git argv this test builds
         ["git", *args],
         cwd=cwd,
         check=True,

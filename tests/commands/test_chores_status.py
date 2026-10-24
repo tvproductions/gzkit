@@ -154,7 +154,7 @@ class TestGitSurfaceHistory(unittest.TestCase):
             }
         )
         for args in (["add", rel], ["commit", "-q", "-m", rel]):
-            subprocess.run(["git", *args], cwd=root, env=env, check=True)
+            subprocess.run(["git", *args], cwd=root, env=env, check=True)  # noqa: S603 — git argv this test builds
 
     def test_oldest_commit_after_a_moment_on_the_declared_surface(self) -> None:
         base = datetime(2026, 8, 1, tzinfo=UTC)
@@ -163,7 +163,7 @@ class TestGitSurfaceHistory(unittest.TestCase):
             env = _isolated_git_env()
             subprocess.run(["git", "init", "-q"], cwd=root, env=env, check=True)
             for key, value in (("user.name", "fixture"), ("user.email", "fixture@example.invalid")):
-                subprocess.run(["git", "config", key, value], cwd=root, env=env, check=True)
+                subprocess.run(["git", "config", key, value], cwd=root, env=env, check=True)  # noqa: S603 — git argv this test builds
             self._commit(root, "watched/a.txt", base)
             self._commit(root, "other/b.txt", base + timedelta(days=2))
             self._commit(root, "watched/c.txt", base + timedelta(days=5))
@@ -192,7 +192,7 @@ class TestGitSurfaceHistory(unittest.TestCase):
             env = _isolated_git_env()
             subprocess.run(["git", "init", "-q"], cwd=root, env=env, check=True)
             for key, value in (("user.name", "fixture"), ("user.email", "fixture@example.invalid")):
-                subprocess.run(["git", "config", key, value], cwd=root, env=env, check=True)
+                subprocess.run(["git", "config", key, value], cwd=root, env=env, check=True)  # noqa: S603 — git argv this test builds
             self._commit(root, "proofs/scan-record.md", base)
             self._commit(root, "proofs/removed.md", base + timedelta(days=3))
             changed = git_artifact_changed(root, now)
@@ -222,7 +222,7 @@ class TestGitSurfaceHistory(unittest.TestCase):
             env = _isolated_git_env()
             subprocess.run(["git", "init", "-q"], cwd=root, env=env, check=True)
             for key, value in (("user.name", "fixture"), ("user.email", "fixture@example.invalid")):
-                subprocess.run(["git", "config", key, value], cwd=root, env=env, check=True)
+                subprocess.run(["git", "config", key, value], cwd=root, env=env, check=True)  # noqa: S603 — git argv this test builds
             self._commit(root, "proofs/CHORE-LOG.md", base)
             (root / "proofs" / "CHORE-LOG.md").write_text("FAIL run\n", encoding="utf-8")
             changed = git_artifact_changed(root, now)

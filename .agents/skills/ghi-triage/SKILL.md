@@ -5,9 +5,9 @@ description: Use to triage the open GHI queue before planning or choosing what t
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-10-24
 metadata:
-  skill-version: "5.4.1"
+  skill-version: "5.4.2"
 model: sonnet
 ---
 

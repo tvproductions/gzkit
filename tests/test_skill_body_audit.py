@@ -144,7 +144,7 @@ class TestSkillBodyBaseline(unittest.TestCase):
 
         root = Path(__file__).resolve().parents[1]
         relative = "src/gzkit/skill_body_grandfather.json"
-        previous = subprocess.run(
+        previous = subprocess.run(  # noqa: S603 — git argv this test builds
             ["git", "show", f"HEAD:{relative}"],
             cwd=root,
             env=_isolated_git_env(),

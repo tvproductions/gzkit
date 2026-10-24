@@ -34,10 +34,12 @@ Exit codes:
   2 - Block operation (OBPI plan exists, self-audit failed or produced FAIL)
 """
 
+import errno
 import json
 import os
 import re
 import shlex
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -198,6 +200,48 @@ DEFAULT_PLAN_AUDIT_CMD = ("uv", "run", "gz", "plan", "audit")
 SELF_AUDIT_TIMEOUT_SECONDS = 60
 
 
+def find_executable(name: str) -> str | None:
+    """Return the absolute path of ``name`` from the absolute ``PATH`` entries.
+
+    The ``shutil.which`` replacement for a presence probe: same answer on POSIX,
+    and on Windows never the current directory.
+
+    Returns:
+        The executable's absolute path, or None when no absolute entry holds it.
+
+    """
+    for entry in os.environ.get("PATH", "").split(os.pathsep):
+        directory = Path(entry)
+        if not entry or not directory.is_absolute():
+            continue
+        found = shutil.which(str(directory / name))
+        if found is not None:
+            return found
+    return None
+
+
+def resolve_executable(name: str) -> str:
+    """Return the absolute path of ``name``, as :func:`find_executable` finds it.
+
+    Returns:
+        The executable's absolute path.
+
+    Raises:
+        FileNotFoundError: no absolute ``PATH`` entry holds ``name``; the same
+            exception ``subprocess`` raises for a missing executable, so a
+            caller's existing handling still applies.
+
+    """
+    found = find_executable(name)
+    if found is None:
+        raise FileNotFoundError(
+            errno.ENOENT,
+            f"{name} is not on an absolute PATH entry; install it or add its directory to PATH",
+            name,
+        )
+    return found
+
+
 def _resolve_plan_audit_cmd() -> list[str]:
     """Return argv for the plan-audit invocation, honoring the env override."""
     override = os.environ.get(PLAN_AUDIT_CMD_ENV)
@@ -218,7 +262,7 @@ def attempt_self_audit(obpi_id: str, cwd: str) -> tuple[bool, str]:
     cmd = _resolve_plan_audit_cmd() + [obpi_id]
     try:
         completed = subprocess.run(  # noqa: S603 — controlled argv via env override
-            cmd,
+            [resolve_executable(cmd[0]), *cmd[1:]],
             cwd=cwd,
             capture_output=True,
             text=True,

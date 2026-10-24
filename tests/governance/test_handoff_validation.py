@@ -480,7 +480,7 @@ class TestValidateReferencedFiles(unittest.TestCase):
 
     @staticmethod
     def _git(root: Path, *args: str) -> None:
-        subprocess.run(
+        subprocess.run(  # noqa: S603 — git argv this test builds
             ["git", *args], cwd=root, capture_output=True, check=True, env=_isolated_git_env()
         )
 
@@ -1251,7 +1251,7 @@ class TestReferencedFilesGitCostTests(unittest.TestCase):
 
     @staticmethod
     def _git(root: Path, *args: str) -> None:
-        subprocess.run(
+        subprocess.run(  # noqa: S603 — git argv this test builds
             ["git", *args], cwd=root, capture_output=True, check=True, env=_isolated_git_env()
         )
 

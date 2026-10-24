@@ -36,9 +36,11 @@ Exit codes:
   2 - Block the stop; stderr carries the feedback prose
 """
 
+import errno
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -74,10 +76,52 @@ CITATION_RE = re.compile(
 )
 
 
+def find_executable(name: str) -> str | None:
+    """Return the absolute path of ``name`` from the absolute ``PATH`` entries.
+
+    The ``shutil.which`` replacement for a presence probe: same answer on POSIX,
+    and on Windows never the current directory.
+
+    Returns:
+        The executable's absolute path, or None when no absolute entry holds it.
+
+    """
+    for entry in os.environ.get("PATH", "").split(os.pathsep):
+        directory = Path(entry)
+        if not entry or not directory.is_absolute():
+            continue
+        found = shutil.which(str(directory / name))
+        if found is not None:
+            return found
+    return None
+
+
+def resolve_executable(name: str) -> str:
+    """Return the absolute path of ``name``, as :func:`find_executable` finds it.
+
+    Returns:
+        The executable's absolute path.
+
+    Raises:
+        FileNotFoundError: no absolute ``PATH`` entry holds ``name``; the same
+            exception ``subprocess`` raises for a missing executable, so a
+            caller's existing handling still applies.
+
+    """
+    found = find_executable(name)
+    if found is None:
+        raise FileNotFoundError(
+            errno.ENOENT,
+            f"{name} is not on an absolute PATH entry; install it or add its directory to PATH",
+            name,
+        )
+    return found
+
+
 def collect_dirty_python_files(cwd: Path) -> list[str]:
     """Return git working-tree dirty .py paths that exist on disk."""
-    result = subprocess.run(
-        ["git", "status", "--porcelain"],
+    result = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
+        [resolve_executable("git"), "status", "--porcelain"],
         capture_output=True,
         text=True,
         encoding="utf-8",
@@ -101,8 +145,8 @@ def collect_dirty_python_files(cwd: Path) -> list[str]:
 
 def run_lint(files: list[str], cwd: Path) -> tuple[int, str]:
     """Run `gz lint` over the files; return (returncode, combined output)."""
-    result = subprocess.run(
-        ["uv", "run", "gz", "lint", *files],
+    result = subprocess.run(  # noqa: S603 — gz lint over the dirty files; executable resolved
+        [resolve_executable("uv"), "run", "gz", "lint", *files],
         capture_output=True,
         text=True,
         encoding="utf-8",

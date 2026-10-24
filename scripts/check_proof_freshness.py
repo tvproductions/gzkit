@@ -109,7 +109,7 @@ def _declared_surfaces(slug: str) -> tuple[str, ...] | None:
 
 def _last_commit_epoch(path: str) -> int | None:
     """Return the unix time of the newest commit touching *path*, or None."""
-    completed = subprocess.run(
+    completed = subprocess.run(  # noqa: S603 — git argv this script builds
         ["git", "log", "-1", "--format=%ct", "--", path],
         cwd=_PROJECT_ROOT,
         capture_output=True,

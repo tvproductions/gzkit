@@ -64,7 +64,7 @@ def _seed_repository(root: Path) -> None:
         ["config", "user.email", "g0@users.noreply.github.com"],
         ["config", "user.name", "g0"],
     ):
-        subprocess.run(["git", *args], cwd=root, check=True, capture_output=True, env=env)
+        subprocess.run(["git", *args], cwd=root, check=True, capture_output=True, env=env)  # noqa: S603 — git argv this test builds
     (root / "src").mkdir()
     (root / "src" / "guard.py").write_text("LIMIT = 1\n", encoding="utf-8")
     (root / "committed.txt").write_text("committed\n", encoding="utf-8")

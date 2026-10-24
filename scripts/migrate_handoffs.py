@@ -57,7 +57,7 @@ def _sha256(path: Path) -> str:
 
 
 def _git(repo_root: Path, *args: str) -> None:
-    subprocess.run(["git", *args], cwd=repo_root, check=True)
+    subprocess.run(["git", *args], cwd=repo_root, check=True)  # noqa: S603 — git argv this script builds
 
 
 def find_source_handoffs(repo_root: Path) -> list[Path]:

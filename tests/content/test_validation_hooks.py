@@ -368,6 +368,8 @@ class TestEditSaveHookWired(unittest.TestCase):
 
         with (
             patch("subprocess.run", side_effect=fake_editor),
+            # The editor is a fake; resolution is tests/test_executables.py's subject.
+            patch("gzkit.commands.content.edit.resolve_argv", side_effect=list),
             patch(
                 "gzkit.content.validation.hooks.validate_save",
                 side_effect=tracking_validate_save,

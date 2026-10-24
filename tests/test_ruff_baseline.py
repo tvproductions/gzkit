@@ -27,6 +27,7 @@ from gzkit.ruff_baseline import (
     run_ruff_json,
     run_ruff_walk,
 )
+from tests.commands.common import argv_by_tool_name
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
@@ -314,7 +315,7 @@ class RunRuffJsonTest(unittest.TestCase):
         stdout, run = self._run()
         self.assertEqual(stdout, "[]")
         argv = run.call_args.args[0]
-        self.assertEqual(argv[:4], ["uv", "run", "ruff", "check"])
+        self.assertEqual(argv_by_tool_name(argv)[:4], ["uv", "run", "ruff", "check"])
         self.assertIn("--exit-zero", argv)
         self.assertEqual(argv[-1], "a.py")
         self.assertNotIn("--fix", argv)

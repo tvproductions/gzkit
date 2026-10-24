@@ -25,7 +25,7 @@ _GITATTRIBUTES = "* text=auto eol=lf\n"
 
 def _git(root: Path, *args: str) -> None:
     """Run a git command in ``root``, raising on failure."""
-    subprocess.run(
+    subprocess.run(  # noqa: S603 — git argv this test builds
         ["git", "-C", str(root), *args], check=True, capture_output=True, env=_isolated_git_env()
     )
 

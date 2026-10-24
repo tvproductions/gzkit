@@ -583,7 +583,7 @@ class TestTheProbeMeasuresTheRealTree(unittest.TestCase):
 
     @staticmethod
     def _git(*args: str, cwd: Path) -> None:
-        subprocess.run(
+        subprocess.run(  # noqa: S603 — git argv this test builds
             ["git", *args],
             cwd=cwd,
             check=True,

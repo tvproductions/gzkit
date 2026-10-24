@@ -19,7 +19,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _git(root: Path, *args: str) -> str:
-    return subprocess.run(
+    return subprocess.run(  # noqa: S603 — git argv this test builds
         ["git", "-C", str(root), *args],
         check=True,
         capture_output=True,
@@ -60,7 +60,7 @@ class TestExternalSymlinkScan(unittest.TestCase):
                 "sub/inside_via_parent": "../sub/real.txt",
             }
             for path, target in links.items():
-                sha = subprocess.run(
+                sha = subprocess.run(  # noqa: S603 — argv this test builds, list form
                     ["git", "-C", str(root), "hash-object", "-w", "--stdin"],
                     input=target,
                     check=True,

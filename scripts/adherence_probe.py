@@ -396,7 +396,7 @@ def build_report(results: list[Result], *, cap: int | None = None, control_ok: b
 
 def run_codex(question: str, cwd: Path) -> str:
     """Ask a FRESH Codex session, so the surface loads the way a session sees it."""
-    completed = subprocess.run(
+    completed = subprocess.run(  # noqa: S603 — argv this script builds, list form
         ["codex", "exec", "--skip-git-repo-check", question],
         cwd=cwd,
         capture_output=True,

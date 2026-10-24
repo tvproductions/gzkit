@@ -14,6 +14,8 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.executables import resolve_argv
+
 # ---------------------------------------------------------------------------
 # Model
 # ---------------------------------------------------------------------------
@@ -205,7 +207,7 @@ def _run_in(assertion: FidelityAssertion, worktree: Path, project_root: Path) ->
 
     try:
         proc = subprocess.run(  # noqa: S603 — runs in a disposable worktree
-            shlex.split(assertion.command),
+            resolve_argv(shlex.split(assertion.command)),
             cwd=worktree,
             env=demo_env(project_root, worktree),
             capture_output=True,

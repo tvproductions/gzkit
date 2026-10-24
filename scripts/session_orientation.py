@@ -190,7 +190,7 @@ def collect_live_adr_counts(adr_ids: list[str]) -> list[dict]:
     resolved: list[dict] = []
     for adr_id in adr_ids:
         try:
-            proc = subprocess.run(
+            proc = subprocess.run(  # noqa: S603 — uv argv this script builds
                 ["uv", "run", "gz", "adr", "status", adr_id, "--json"],
                 capture_output=True,
                 text=True,
@@ -817,7 +817,7 @@ def _render_exit_bookmarks(lines: list[str], payload: object) -> None:
 
 def _run_gh_json(args: list[str], timeout: int = 30) -> object | None:
     try:
-        completed = subprocess.run(
+        completed = subprocess.run(  # noqa: S603 — argv this script builds, list form
             args,
             capture_output=True,
             text=True,
@@ -892,7 +892,7 @@ def _git_run(args: list[str], timeout: int) -> subprocess.CompletedProcess[str] 
     Same class as the file-read side GHI #688 already patched in this module.
     """
     try:
-        return subprocess.run(
+        return subprocess.run(  # noqa: S603 — argv this script builds, list form
             args,
             capture_output=True,
             text=True,

@@ -44,7 +44,7 @@ def _gz_subprocess(command: str, cwd: Path) -> tuple[int, str]:
     args = [sys.executable, "-m", "gzkit", *parts[1:]]
     env = os.environ.copy()
     env.setdefault("NO_COLOR", "1")
-    result = subprocess.run(
+    result = subprocess.run(  # noqa: S603 — argv this step builds, list form
         args,
         cwd=str(cwd),
         capture_output=True,

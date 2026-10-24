@@ -183,7 +183,7 @@ class TestValidateSubprocessSmoke(unittest.TestCase):
 
     @covers("REQ-0.0.19-03-06")
     def test_subprocess_validate_on_complete_fixture(self) -> None:
-        result = subprocess.run(
+        result = subprocess.run(  # noqa: S603 — this interpreter running what the test names
             [sys.executable, "-m", "gzkit", "justify", "validate", str(COMPLETE_FIXTURE)],
             capture_output=True,
             text=True,
@@ -196,7 +196,7 @@ class TestValidateSubprocessSmoke(unittest.TestCase):
 
     @covers("REQ-0.0.19-03-08")
     def test_subprocess_validate_on_malformed_fixture(self) -> None:
-        result = subprocess.run(
+        result = subprocess.run(  # noqa: S603 — this interpreter running what the test names
             [sys.executable, "-m", "gzkit", "justify", "validate", str(MALFORMED_FIXTURE)],
             capture_output=True,
             text=True,

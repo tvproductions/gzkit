@@ -29,7 +29,7 @@ from tests.commands.common import _isolated_git_env
 
 def _git(cwd: Path, *args: str) -> str:
     """Run a git command for test setup; return stdout (UTF-8, stripped)."""
-    result = subprocess.run(
+    result = subprocess.run(  # noqa: S603 — git argv this test builds
         ["git", *args],
         cwd=cwd,
         capture_output=True,

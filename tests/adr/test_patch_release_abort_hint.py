@@ -52,7 +52,7 @@ class TestAbortHintPublishesNewestBlockOnly(unittest.TestCase):
             root = Path(tmp)
             (root / "RELEASE_NOTES.md").write_text(_CUMULATIVE_NOTES, encoding="utf-8")
             body = root / "body.md"
-            subprocess.run(
+            subprocess.run(  # noqa: S603 — argv this test builds, list form
                 ["sh", "-c", _slice_line()],
                 cwd=root,
                 env={**os.environ, "BODY": str(body)},

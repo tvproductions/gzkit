@@ -101,7 +101,7 @@ class TestEnsureMergeDriverRegistration(unittest.TestCase):
             self.assertTrue(ensure_jsonl_merge_driver(root), "first call should register")
             self.assertFalse(ensure_jsonl_merge_driver(root), "second call should be a no-op")
 
-            configured = subprocess.run(
+            configured = subprocess.run(  # noqa: S603 — argv this test builds, list form
                 ["git", "config", "--get", f"merge.{MERGE_DRIVER_NAME}.driver"],
                 cwd=root,
                 check=True,

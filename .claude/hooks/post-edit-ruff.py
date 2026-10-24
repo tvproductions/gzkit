@@ -15,7 +15,10 @@ Exit codes:
   0 - Always (non-blocking; lint failures do not prevent edits)
 """
 
+import errno
 import json
+import os
+import shutil
 import subprocess
 import sys
 from contextlib import suppress
@@ -23,6 +26,48 @@ from pathlib import Path
 
 TIMEOUT_SECONDS = 8
 MAX_OUTPUT_LINES = 20
+
+
+def find_executable(name: str) -> str | None:
+    """Return the absolute path of ``name`` from the absolute ``PATH`` entries.
+
+    The ``shutil.which`` replacement for a presence probe: same answer on POSIX,
+    and on Windows never the current directory.
+
+    Returns:
+        The executable's absolute path, or None when no absolute entry holds it.
+
+    """
+    for entry in os.environ.get("PATH", "").split(os.pathsep):
+        directory = Path(entry)
+        if not entry or not directory.is_absolute():
+            continue
+        found = shutil.which(str(directory / name))
+        if found is not None:
+            return found
+    return None
+
+
+def resolve_executable(name: str) -> str:
+    """Return the absolute path of ``name``, as :func:`find_executable` finds it.
+
+    Returns:
+        The executable's absolute path.
+
+    Raises:
+        FileNotFoundError: no absolute ``PATH`` entry holds ``name``; the same
+            exception ``subprocess`` raises for a missing executable, so a
+            caller's existing handling still applies.
+
+    """
+    found = find_executable(name)
+    if found is None:
+        raise FileNotFoundError(
+            errno.ENOENT,
+            f"{name} is not on an absolute PATH entry; install it or add its directory to PATH",
+            name,
+        )
+    return found
 
 
 def main():
@@ -53,8 +98,8 @@ def main():
     posix_path = target.as_posix()
 
     with suppress(FileNotFoundError, subprocess.TimeoutExpired, OSError):
-        result = subprocess.run(
-            ["uv", "run", "gz", "lint", posix_path],
+        result = subprocess.run(  # noqa: S603 — gz lint over the edited file; executable resolved
+            [resolve_executable("uv"), "run", "gz", "lint", posix_path],
             capture_output=True,
             text=True,
             encoding="utf-8",

@@ -8,6 +8,7 @@ from gzkit.core.models import (
     OBPI_ID_PARTS_BODY,
     OBPI_SHORT_ID_BODY,
 )
+from gzkit.executables import standalone_source
 
 
 def _obpi_completion_validator_script() -> str:
@@ -528,7 +529,10 @@ def _control_surface_sync_script() -> str:
               0 - Always (non-blocking; sync failures do not prevent edits)
             \"\"\"
 
+            import errno
             import json
+            import os
+            import shutil
             import subprocess
             import sys
             from contextlib import suppress
@@ -537,6 +541,9 @@ def _control_surface_sync_script() -> str:
             TIMEOUT_SECONDS = 30
 
             CONTROL_SURFACE_PATTERNS = (".gzkit/",)
+
+
+            __resolve_executable__
 
 
             def main():
@@ -577,8 +584,8 @@ def _control_surface_sync_script() -> str:
                 print("Running gz agent sync control-surfaces...", file=sys.stderr)
 
                 with suppress(FileNotFoundError, subprocess.TimeoutExpired, OSError):
-                    result = subprocess.run(
-                        ["uv", "run", "gz", "agent", "sync", "control-surfaces"],
+                    result = subprocess.run(  # noqa: S603 — gz agent sync, a fixed argv; executable resolved
+                        [resolve_executable("uv"), "run", "gz", "agent", "sync", "control-surfaces"],
                         capture_output=True,
                         text=True,
                         encoding="utf-8",
@@ -599,4 +606,4 @@ def _control_surface_sync_script() -> str:
             if __name__ == "__main__":
                 main()
             """
-    )
+    ).replace("__resolve_executable__", standalone_source())

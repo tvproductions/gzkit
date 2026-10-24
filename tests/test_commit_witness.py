@@ -59,7 +59,7 @@ class _CommitRepo(unittest.TestCase):
         self._tmp.cleanup()
 
     def _git(self, *args: str) -> str:
-        return subprocess.run(
+        return subprocess.run(  # noqa: S603 — argv this test builds, list form
             ["git", "-c", "user.email=t@example.com", "-c", "user.name=t", *args],
             cwd=self.root,
             check=True,

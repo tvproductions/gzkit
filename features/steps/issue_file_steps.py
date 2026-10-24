@@ -25,7 +25,7 @@ def step_fixture_git_remote(_context, remote_url: str) -> None:
         capture_output=True,
         text=True,
     )
-    subprocess.run(
+    subprocess.run(  # noqa: S603 — git argv this step builds
         ["git", "remote", "add", "origin", remote_url],
         check=True,
         capture_output=True,

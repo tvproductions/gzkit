@@ -105,7 +105,7 @@ class TestObpiValidator(unittest.TestCase):
         self._tmp_ctx.cleanup()
 
     def _git(self, *args: str) -> str:
-        result = subprocess.run(
+        result = subprocess.run(  # noqa: S603 — git argv this test builds
             ["git", *args],
             cwd=self.project_root,
             check=True,

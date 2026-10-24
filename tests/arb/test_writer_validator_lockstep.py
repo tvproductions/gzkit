@@ -89,7 +89,7 @@ with tempfile.TemporaryDirectory() as tmp:
     result = validate_receipts(root=path.parent)
     print(json.dumps([result.scanned, result.valid, result.invalid, result.unknown_schema]))
 """
-                result = subprocess.run(
+                result = subprocess.run(  # noqa: S603 — this interpreter running what the test names
                     [sys.executable, "-c", code],
                     capture_output=True,
                     text=True,

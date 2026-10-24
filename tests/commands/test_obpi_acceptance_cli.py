@@ -62,7 +62,7 @@ class TestAcceptanceProcessExit(ExecutionFixture):
             if executable is None:
                 self.fail("The installed gz console script is required")
             entrypoint = [executable]
-        return subprocess.run(
+        return subprocess.run(  # noqa: S603 — uv run of the CLI under test
             [
                 "uv",
                 "run",

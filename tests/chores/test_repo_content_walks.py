@@ -58,7 +58,7 @@ def _git_repo(root: Path) -> None:
         ["config", "user.email", "t@example.invalid"],
         ["config", "user.name", "t"],
     ):
-        subprocess.run(
+        subprocess.run(  # noqa: S603 — git argv this test builds
             ["git", *args], cwd=root, capture_output=True, check=True, env=_isolated_git_env()
         )
 

@@ -187,12 +187,13 @@ max-complexity = 20
 ".agents/**/*.py" = ["D"]
 # Dated evidence scripts are sealed records of what a past audit ran; refactoring
 # one to satisfy a ceiling adopted later would rewrite the evidence it is (RO-9
-# tranche 4, the C901 ceiling at 20, and the PEP 563 import they ran with).
-".gzkit/evidence/*.py" = ["complex-structure", "banned-api"]
-"docs/governance/*-evidence/*.py" = ["complex-structure", "banned-api"]
+# tranche 4, the C901 ceiling at 20, the PEP 563 import they ran with, and the bare
+# executables they spawned, read 2026-10-24 under .gzkit/rules/cross-platform.md).
+".gzkit/evidence/*.py" = ["complex-structure", "banned-api", "subprocess-without-shell-equals-true", "start-process-with-partial-path"]
+"docs/governance/*-evidence/*.py" = ["complex-structure", "banned-api", "subprocess-without-shell-equals-true", "start-process-with-partial-path"]
 # The same records keep the file mode they ran with: EXE001 reads the executable
 # bit, so the one way to clear it would change the record (RO-9 tranche 4).
-"docs/governance/ieee/*-evidence/*.py" = ["shebang-not-executable", "banned-api"]
+"docs/governance/ieee/*-evidence/*.py" = ["shebang-not-executable", "banned-api", "subprocess-without-shell-equals-true", "start-process-with-partial-path"]
 
 [tool.ruff.format]
 quote-style = "double"

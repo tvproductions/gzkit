@@ -27,7 +27,7 @@ from tests.commands.common import _init_git_repo, _isolated_git_env
 
 
 def _git(root: Path, *args: str) -> str:
-    return subprocess.run(
+    return subprocess.run(  # noqa: S603 — argv this test builds, list form
         ["git", *args],
         cwd=root,
         check=True,

@@ -1456,7 +1456,7 @@ class TestThePositionModuleImportsOnItsOwn(unittest.TestCase):
         """
         for module in ("gzkit.pipeline_position", "gzkit.pipeline_runtime"):
             with self.subTest(module=module):
-                result = subprocess.run(
+                result = subprocess.run(  # noqa: S603 — this interpreter running what the test names
                     [sys.executable, "-c", f"import {module}"],
                     capture_output=True,
                     text=True,

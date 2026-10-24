@@ -19,6 +19,7 @@ Output formats:
 """
 
 import argparse
+import errno
 import json
 import os
 import re
@@ -371,8 +372,52 @@ def stale_annotations(issue: Issue, resolver=None) -> list[dict]:
 ISSUE_JSON_FIELDS = "number,title,labels,createdAt,updatedAt,body,comments"
 
 
+# Carried verbatim from gzkit.executables (tests/test_executables.py fences the copy):
+# the current directory is never searched, so a planted gh.exe is never spawned.
+def find_executable(name: str) -> str | None:
+    """Return the absolute path of ``name`` from the absolute ``PATH`` entries.
+
+    The ``shutil.which`` replacement for a presence probe: same answer on POSIX,
+    and on Windows never the current directory.
+
+    Returns:
+        The executable's absolute path, or None when no absolute entry holds it.
+
+    """
+    for entry in os.environ.get("PATH", "").split(os.pathsep):
+        directory = Path(entry)
+        if not entry or not directory.is_absolute():
+            continue
+        found = shutil.which(str(directory / name))
+        if found is not None:
+            return found
+    return None
+
+
+def resolve_executable(name: str) -> str:
+    """Return the absolute path of ``name``, as :func:`find_executable` finds it.
+
+    Returns:
+        The executable's absolute path.
+
+    Raises:
+        FileNotFoundError: no absolute ``PATH`` entry holds ``name``; the same
+            exception ``subprocess`` raises for a missing executable, so a
+            caller's existing handling still applies.
+
+    """
+    found = find_executable(name)
+    if found is None:
+        raise FileNotFoundError(
+            errno.ENOENT,
+            f"{name} is not on an absolute PATH entry; install it or add its directory to PATH",
+            name,
+        )
+    return found
+
+
 def _require(binary: str) -> None:
-    if shutil.which(binary) is None:
+    if find_executable(binary) is None:
         sys.stderr.write(f"ghi-triage: required binary not found on PATH: {binary}\n")
         sys.exit(2)
 
@@ -392,8 +437,13 @@ def fetch(limit: int, label: str | None) -> list[Issue]:
     ]
     if label:
         cmd += ["--label", label]
-    raw = subprocess.run(
-        cmd, capture_output=True, text=True, check=True, encoding="utf-8", errors="replace"
+    raw = subprocess.run(  # noqa: S603 — gh issue list, a fixed argv; executable resolved
+        [resolve_executable(cmd[0]), *cmd[1:]],
+        capture_output=True,
+        text=True,
+        check=True,
+        encoding="utf-8",
+        errors="replace",
     )
     data = json.loads(raw.stdout)
     return [
@@ -429,8 +479,8 @@ def gh_reference_resolver(open_numbers: set[int]):
         if number in cache:
             return cache[number]
         try:
-            raw = subprocess.run(
-                ["gh", "issue", "view", str(number), "--json", "state"],
+            raw = subprocess.run(  # noqa: S603 — gh issue view of a cited number; executable resolved
+                [resolve_executable("gh"), "issue", "view", str(number), "--json", "state"],
                 capture_output=True,
                 text=True,
                 check=True,
@@ -457,8 +507,8 @@ def _precedent_cache_path() -> Path:
 
 def _git_head_sha() -> str | None:
     try:
-        out = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
+        out = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
+            [resolve_executable("git"), "rev-parse", "HEAD"],
             capture_output=True,
             text=True,
             check=True,
@@ -504,8 +554,8 @@ def fix_precedent_count() -> int:
         cached = _load_precedent_cache(head)
         if cached is not None:
             return cached
-    out = subprocess.run(
-        ["git", "log", "--since=60 days ago", "--oneline", "--grep=^fix("],
+    out = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
+        [resolve_executable("git"), "log", "--since=60 days ago", "--oneline", "--grep=^fix("],
         capture_output=True,
         text=True,
         check=True,
