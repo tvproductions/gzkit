@@ -54,8 +54,9 @@ SERVED_STATEMENT = (
     "<digest>)` for Stage 1 and again for every stage it enters; read that file before "
     "acting in the stage. The five files live in `references/` beside this skill, "
     "`stage-1-load-context.md` through `stage-5-sync-and-account.md`, rendered from the "
-    "attested control inventory (`data/obpi_pipeline_control_inventory.json`) with nothing "
-    "reworded; this body keeps the controls that apply at invocation or at every stage. A "
+    "attested control inventory (`data/obpi_pipeline_control_inventory.json`), verbatim "
+    "except where a row declares its rewording and reason; this body keeps the controls that "
+    "apply at invocation or at every stage. A "
     "stage file that is missing, empty or altered refuses the launch before any marker is "
     "written (OBPI-0.35.0-17, Requirement 7; cut over in OBPI-0.35.0-20)."
 )
@@ -343,6 +344,7 @@ def render_body(inventory: ControlInventory) -> str:
 
 def _stage_header(inventory: ControlInventory, procedure: StageProcedure) -> str:
     baseline = inventory.baseline
+    reworded = _reworded_statement(inventory, procedure.key)
     return (
         f"<!-- Stage {procedure.number} procedure, served by the runtime at stage entry "
         "(OBPI-0.35.0-17; cut over in OBPI-0.35.0-20). Rendered from "
@@ -351,9 +353,27 @@ def _stage_header(inventory: ControlInventory, procedure: StageProcedure) -> str
         f"whose applies_at names this stage. Every control is verbatim from the attested baseline "
         f"of {baseline.path} ({baseline.commit}, body sha256 {baseline.body_sha256}); passages the "
         f"inventory classes as rationale are in {RECORD_PATH} under the control they explain, and "
-        "a control that applies elsewhere is left out of its block here. Nothing is reworded. Do "
+        f"a control that applies elsewhere is left out of its block here. {reworded} Do "
         f"not edit by hand: {RENDER_TEST} holds this file to the render. -->"
     )
+
+
+def _reworded_statement(inventory: ControlInventory, position: str) -> str:
+    """Name the rows reworded at *position*, whose reasons the inventory carries.
+
+    Returns:
+        The header sentence: the reworded row ids, or that nothing is reworded.
+
+    """
+    ids = [
+        control.id
+        for block in inventory.blocks
+        for control in block.controls
+        if control.reworded is not None and position in control.applies_at
+    ]
+    if not ids:
+        return "Nothing is reworded."
+    return f"Reworded, each with its reason in the inventory: {', '.join(ids)}."
 
 
 def render_stage(inventory: ControlInventory, procedure: StageProcedure) -> str:

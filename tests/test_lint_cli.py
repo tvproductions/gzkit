@@ -26,6 +26,7 @@ from gzkit.governance.trust_audits import _qc_nc_entrypoints
 from gzkit.governance.trust_audits._qc_claim_delegations import QC_CLAIM_DELEGATIONS
 from gzkit.hooks.claude import _claude_hooks_readme
 from gzkit.pipeline_dispatch import DispatchTask, TaskComplexity, compose_implementer_prompt
+from gzkit.pipeline_procedure import served_texts
 from gzkit.quality import QualityResult
 
 _OK = QualityResult(success=True, command="x", stdout="", stderr="", returncode=0)
@@ -161,6 +162,12 @@ class LintPrescriptionsTest(unittest.TestCase):
             )
         self.assertIn("`uv run gz lint --fix && uv run ruff format .`", prompt)
         self.assertNotIn(_BARE, prompt)
+
+    def test_the_served_stage_2_procedure_lints_with_gz_lint(self) -> None:
+        """S2-080 is a declared rewording (operator 2026-10-24, "A land it")."""
+        stage2 = served_texts(Path(__file__).resolve().parents[1])["stage2"]
+        self.assertIn("`uv run gz lint --fix && uv run ruff format .`", stage2)
+        self.assertNotIn(_BARE, stage2)
 
     def test_the_arb_advice_for_style_failures_lints_with_gz_lint(self) -> None:
         advice = _recommendations_for_counts(Counter({"E501": 5}))

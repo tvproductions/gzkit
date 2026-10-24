@@ -3394,8 +3394,11 @@
       "stage2"
      ],
      "cause": null,
-     "delivered_span": "5. Run `uv run ruff check . --fix && uv run ruff format .` after code changes",
-     "reworded": null
+     "delivered_span": "5. Run `uv run gz lint --fix && uv run ruff format .` after code changes",
+     "reworded": {
+      "text": "5. Run `uv run gz lint --fix && uv run ruff format .` after code changes",
+      "reason": "A ruled correction, RO-9 tranche 4 (operator 2026-10-24, \"A land it\"): Ruff selects ALL under data/ruff_baseline.json (operator 2026-10-23, \"b\"), so bare `ruff check . --fix` reports every held finding and exits 1 on a tree the gate passes; `gz lint` judges Ruff's findings against the baseline."
+     }
     }
    ],
    "non_control": []

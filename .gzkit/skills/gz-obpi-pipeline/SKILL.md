@@ -5,9 +5,9 @@ description: Use after a plan is approved, or when the operator says "execute OB
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-22
+last_reviewed: 2026-10-24
 metadata:
-  skill-version: "6.69.2"
+  skill-version: "6.69.3"
 model: sonnet
 ---
 
@@ -28,7 +28,7 @@ the operator initiates this pipeline, and GHI corrective work retains its direct
 
 > Rationale: docs/governance/obpi-pipeline-control-rationale.md § I-002
 
-**Each stage's procedure is served by the runtime at stage entry.** `uv run gz obpi pipeline <OBPI-ID>` prints `Stage N procedure: <path> (sha256 <digest>)` for Stage 1 and again for every stage it enters; read that file before acting in the stage. The five files live in `references/` beside this skill, `stage-1-load-context.md` through `stage-5-sync-and-account.md`, rendered from the attested control inventory (`data/obpi_pipeline_control_inventory.json`) with nothing reworded; this body keeps the controls that apply at invocation or at every stage. A stage file that is missing, empty or altered refuses the launch before any marker is written (OBPI-0.35.0-17, Requirement 7; cut over in OBPI-0.35.0-20).
+**Each stage's procedure is served by the runtime at stage entry.** `uv run gz obpi pipeline <OBPI-ID>` prints `Stage N procedure: <path> (sha256 <digest>)` for Stage 1 and again for every stage it enters; read that file before acting in the stage. The five files live in `references/` beside this skill, `stage-1-load-context.md` through `stage-5-sync-and-account.md`, rendered from the attested control inventory (`data/obpi_pipeline_control_inventory.json`), verbatim except where a row declares its rewording and reason; this body keeps the controls that apply at invocation or at every stage. A stage file that is missing, empty or altered refuses the launch before any marker is written (OBPI-0.35.0-17, Requirement 7; cut over in OBPI-0.35.0-20).
 
 ## Persona
 

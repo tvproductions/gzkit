@@ -258,6 +258,19 @@ class TestRenderEdges(unittest.TestCase):
         served["invocation"] = rendered.body
         self.assertEqual(check_delivery(inv, served), [])
 
+    def test_a_stage_header_names_the_rows_reworded_there_and_no_other_stage_does(self):
+        data = _inventory().model_dump(by_alias=True)
+        row = data["blocks"][5]["controls"][0]
+        row["delivered_span"] = "Read the brief first."
+        row["reworded"] = {"text": "Read the brief first.", "reason": "ruled correction"}
+        stages = render_served_set(ControlInventory.model_validate(data)).stages
+        header = stages["stage1"].splitlines()[0]
+        self.assertIn(f"Reworded, each with its reason in the inventory: {row['id']}.", header)
+        self.assertNotIn("Nothing is reworded", header)
+        for key, text in stages.items():
+            if key != "stage1":
+                self.assertIn("Nothing is reworded.", text.splitlines()[0], key)
+
     def test_a_pointer_for_a_table_row_follows_the_whole_table(self):
         data = _inventory().model_dump(by_alias=True)
         data["blocks"][12]["non_control"] = [

@@ -1,4 +1,4 @@
-<!-- Stage 2 procedure, served by the runtime at stage entry (OBPI-0.35.0-17; cut over in OBPI-0.35.0-20). Rendered from data/obpi_pipeline_control_inventory.json by gzkit.governance.pipeline_procedure_render: the stage's own section first, then every block from another section holding a control whose applies_at names this stage. Every control is verbatim from the attested baseline of .gzkit/skills/gz-obpi-pipeline/SKILL.md (072317673, body sha256 fe97fe3139282b0ceec5b11866e97efad11761d8e35a5e4977c84f3d6b388367); passages the inventory classes as rationale are in docs/governance/obpi-pipeline-control-rationale.md under the control they explain, and a control that applies elsewhere is left out of its block here. Nothing is reworded. Do not edit by hand: tests/governance/test_pipeline_procedure_render.py holds this file to the render. -->
+<!-- Stage 2 procedure, served by the runtime at stage entry (OBPI-0.35.0-17; cut over in OBPI-0.35.0-20). Rendered from data/obpi_pipeline_control_inventory.json by gzkit.governance.pipeline_procedure_render: the stage's own section first, then every block from another section holding a control whose applies_at names this stage. Every control is verbatim from the attested baseline of .gzkit/skills/gz-obpi-pipeline/SKILL.md (072317673, body sha256 fe97fe3139282b0ceec5b11866e97efad11761d8e35a5e4977c84f3d6b388367); passages the inventory classes as rationale are in docs/governance/obpi-pipeline-control-rationale.md under the control they explain, and a control that applies elsewhere is left out of its block here. Reworded, each with its reason in the inventory: S2-080. Do not edit by hand: tests/governance/test_pipeline_procedure_render.py holds this file to the render. -->
 
 # Stage 2: Implement — served procedure
 
@@ -253,7 +253,7 @@ When the run is declared single-driver, Stage 2 runs entirely in the main sessio
    import error) → simplest code to pass → refactor green. Use `unittest`,
    `TempDBMixin` for DB, coverage >= 40%. Do not batch all tests then implement.
 
-5. Run `uv run ruff check . --fix && uv run ruff format .` after code changes
+5. Run `uv run gz lint --fix && uv run ruff format .` after code changes
 6. Run `uv run gz test` after implementation
 
 The declaration is the only route to this mode: `uv run gz obpi dispatch {OBPI-SLUG} --single-driver --reason "<why>"`
