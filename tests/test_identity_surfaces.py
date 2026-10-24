@@ -43,7 +43,7 @@ class TestAdrId(unittest.TestCase):
 
     def test_extra_forbid(self) -> None:
         with self.assertRaises(ValidationError):
-            AdrId(raw="ADR-0.0.1", extra="nope")
+            AdrId.model_validate({"raw": "ADR-0.0.1", "extra": "nope"})
 
 
 class TestObpiId(unittest.TestCase):
@@ -70,7 +70,7 @@ class TestObpiId(unittest.TestCase):
 
     def test_extra_forbid(self) -> None:
         with self.assertRaises(ValidationError):
-            ObpiId(raw="OBPI-0.0.1-01", extra="x")
+            ObpiId.model_validate({"raw": "OBPI-0.0.1-01", "extra": "x"})
 
 
 class TestReqIdSurface(unittest.TestCase):
@@ -94,7 +94,7 @@ class TestReqIdSurface(unittest.TestCase):
 
     def test_extra_forbid(self) -> None:
         with self.assertRaises(ValidationError):
-            ReqId(raw="REQ-0.0.1-01-01", extra="x")
+            ReqId.model_validate({"raw": "REQ-0.0.1-01-01", "extra": "x"})
 
 
 class TestTaskIdSurface(unittest.TestCase):
@@ -123,7 +123,7 @@ class TestTaskIdSurface(unittest.TestCase):
 
     def test_extra_forbid(self) -> None:
         with self.assertRaises(ValidationError):
-            TaskId(raw="TASK-0.0.1-01-01-01", extra="x")
+            TaskId.model_validate({"raw": "TASK-0.0.1-01-01-01", "extra": "x"})
 
 
 class TestEvidenceId(unittest.TestCase):
@@ -145,7 +145,7 @@ class TestEvidenceId(unittest.TestCase):
 
     def test_extra_forbid(self) -> None:
         with self.assertRaises(ValidationError):
-            EvidenceId(raw="EV-0.0.1-01-001", extra="x")
+            EvidenceId.model_validate({"raw": "EV-0.0.1-01-001", "extra": "x"})
 
 
 class TestIdentityModelsMapping(unittest.TestCase):

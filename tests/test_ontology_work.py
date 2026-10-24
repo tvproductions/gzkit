@@ -293,7 +293,9 @@ class TestWorkEdgeProjector(unittest.TestCase):
     def test_non_edge_events_are_ignored(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             ledger = Ledger(Path(tmp) / "ledger.jsonl")
-            ledger.append(LedgerEvent(event="project_init", id="x", mode="lite"))
+            ledger.append(
+                LedgerEvent.model_validate({"event": "project_init", "id": "x", "mode": "lite"})
+            )
             nodes, edges = project_work_edges(ledger)
             self.assertEqual((nodes, edges), ([], []))
 

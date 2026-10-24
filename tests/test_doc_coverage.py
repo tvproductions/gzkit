@@ -393,14 +393,16 @@ class TestModels(unittest.TestCase):
 
     def test_coverage_report_extra_forbid(self) -> None:
         with self.assertRaises(ValidationError):
-            CoverageReport(
-                commands_discovered=1,
-                commands_fully_covered=1,
-                commands_with_gaps=0,
-                coverage=[],
-                orphaned=[],
-                passed=True,
-                unknown_field="forbidden",
+            CoverageReport.model_validate(
+                {
+                    "commands_discovered": 1,
+                    "commands_fully_covered": 1,
+                    "commands_with_gaps": 0,
+                    "coverage": [],
+                    "orphaned": [],
+                    "passed": True,
+                    "unknown_field": "forbidden",
+                }
             )
 
     def test_report_passed_when_fully_covered(self) -> None:
@@ -534,13 +536,15 @@ class TestManifestModels(unittest.TestCase):
 
     def test_surface_requirements_extra_forbid(self) -> None:
         with self.assertRaises(ValidationError):
-            SurfaceRequirements(
-                manpage=True,
-                index_entry=True,
-                operator_runbook=True,
-                governance_runbook=False,
-                docstring=True,
-                extra_field=True,
+            SurfaceRequirements.model_validate(
+                {
+                    "manpage": True,
+                    "index_entry": True,
+                    "operator_runbook": True,
+                    "governance_runbook": False,
+                    "docstring": True,
+                    "extra_field": True,
+                }
             )
 
     @covers("REQ-0.0.6-02-02")
@@ -551,10 +555,8 @@ class TestManifestModels(unittest.TestCase):
 
     def test_command_entry_extra_forbid(self) -> None:
         with self.assertRaises(ValidationError):
-            CommandEntry(
-                surfaces=self._make_surfaces(),
-                governance_relevant=False,
-                unknown=True,
+            CommandEntry.model_validate(
+                {"surfaces": self._make_surfaces(), "governance_relevant": False, "unknown": True}
             )
 
     def test_manifest_frozen(self) -> None:
@@ -568,11 +570,13 @@ class TestManifestModels(unittest.TestCase):
 
     def test_manifest_extra_forbid(self) -> None:
         with self.assertRaises(ValidationError):
-            DocCoverageManifest(
-                version="1.0.0",
-                description="Test",
-                commands={"init": self._make_entry()},
-                extra_field="forbidden",
+            DocCoverageManifest.model_validate(
+                {
+                    "version": "1.0.0",
+                    "description": "Test",
+                    "commands": {"init": self._make_entry()},
+                    "extra_field": "forbidden",
+                }
             )
 
     @covers("REQ-0.0.6-02-04")
@@ -803,11 +807,8 @@ class TestGapReportModels(unittest.TestCase):
         from gzkit.doc_coverage.models import GapItem
 
         with self.assertRaises(ValidationError):
-            GapItem(
-                command="lint",
-                surface="manpage",
-                detail="Missing",
-                extra="forbidden",
+            GapItem.model_validate(
+                {"command": "lint", "surface": "manpage", "detail": "Missing", "extra": "forbidden"}
             )
 
     def test_orphaned_doc_item_frozen(self) -> None:
@@ -836,15 +837,17 @@ class TestGapReportModels(unittest.TestCase):
         from gzkit.doc_coverage.models import DocCoverageGapReport
 
         with self.assertRaises(ValidationError):
-            DocCoverageGapReport(
-                passed=True,
-                commands_discovered=1,
-                commands_checked=1,
-                commands_with_gaps=0,
-                gaps=[],
-                undeclared_commands=[],
-                orphaned_docs=[],
-                extra="forbidden",
+            DocCoverageGapReport.model_validate(
+                {
+                    "passed": True,
+                    "commands_discovered": 1,
+                    "commands_checked": 1,
+                    "commands_with_gaps": 0,
+                    "gaps": [],
+                    "undeclared_commands": [],
+                    "orphaned_docs": [],
+                    "extra": "forbidden",
+                }
             )
 
     @covers("REQ-0.0.6-03-02")

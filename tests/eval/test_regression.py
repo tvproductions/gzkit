@@ -115,13 +115,15 @@ class TestBaselineStore(unittest.TestCase):
     def test_baseline_model_forbids_extra(self) -> None:
         """EvalBaseline rejects extra fields."""
         with self.assertRaises((TypeError, ValidationError)):
-            EvalBaseline(
-                surface="test",
-                commit_hash="abc",
-                timestamp="2026-01-01T00:00:00Z",
-                dimension_scores={"x": 1.0},
-                dataset_version="1.0.0",
-                extra_field="should fail",
+            EvalBaseline.model_validate(
+                {
+                    "surface": "test",
+                    "commit_hash": "abc",
+                    "timestamp": "2026-01-01T00:00:00Z",
+                    "dimension_scores": {"x": 1.0},
+                    "dataset_version": "1.0.0",
+                    "extra_field": "should fail",
+                }
             )
 
 
@@ -237,11 +239,13 @@ class TestComparisonEngine(unittest.TestCase):
     def test_report_model_forbids_extra(self) -> None:
         """RegressionReport rejects extra fields (extra='forbid')."""
         with self.assertRaises((TypeError, ValidationError)):
-            RegressionReport(
-                timestamp="2026-01-01T00:00:00Z",
-                commit_hash="abc",
-                passed=True,
-                extra_field="bad",
+            RegressionReport.model_validate(
+                {
+                    "timestamp": "2026-01-01T00:00:00Z",
+                    "commit_hash": "abc",
+                    "passed": True,
+                    "extra_field": "bad",
+                }
             )
 
     def test_deltas_include_all_dimensions(self) -> None:

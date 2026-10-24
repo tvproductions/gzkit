@@ -233,13 +233,15 @@ class TestRenditionProvenanceSidecar(unittest.TestCase):
         from pydantic import ValidationError
 
         with self.assertRaises(ValidationError):
-            RenditionProvenance(
-                corpus_fingerprint="x",
-                corpus_entry_count=0,
-                committed_ts="t",
-                attestor="a",
-                attestation_text="b",
-                bogus="nope",
+            RenditionProvenance.model_validate(
+                {
+                    "corpus_fingerprint": "x",
+                    "corpus_entry_count": 0,
+                    "committed_ts": "t",
+                    "attestor": "a",
+                    "attestation_text": "b",
+                    "bogus": "nope",
+                }
             )
 
 

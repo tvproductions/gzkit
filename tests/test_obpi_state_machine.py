@@ -69,12 +69,14 @@ class TestTransitionModel(unittest.TestCase):
     @covers("REQ-0.31.0-01-02")
     def test_transition_rejects_unknown_field(self) -> None:
         with self.assertRaises(pydantic.ValidationError):
-            Transition(
-                from_state=OBPIState.DRAFTED,
-                to_state=OBPIState.PLANNED,
-                required_evidence=[],
-                witness=WitnessRequirement.SELF_CLOSE,
-                bogus_field="nope",
+            Transition.model_validate(
+                {
+                    "from_state": OBPIState.DRAFTED,
+                    "to_state": OBPIState.PLANNED,
+                    "required_evidence": [],
+                    "witness": WitnessRequirement.SELF_CLOSE,
+                    "bogus_field": "nope",
+                }
             )
 
     @covers("REQ-0.31.0-01-02")

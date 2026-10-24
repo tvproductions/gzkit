@@ -352,13 +352,15 @@ class TestValidateResultContract(unittest.TestCase):
     @covers("REQ-0.0.19-03-09")
     def test_validate_result_forbids_extra_fields(self) -> None:
         with self.assertRaises(ValidationError):
-            ValidateResult(
-                file_path="x.md",
-                is_parseable=True,
-                is_complete=True,
-                unfilled_ordinals=[],
-                parse_error=None,
-                extra_field="nope",
+            ValidateResult.model_validate(
+                {
+                    "file_path": "x.md",
+                    "is_parseable": True,
+                    "is_complete": True,
+                    "unfilled_ordinals": [],
+                    "parse_error": None,
+                    "extra_field": "nope",
+                }
             )
 
     @covers("REQ-0.0.19-03-09")

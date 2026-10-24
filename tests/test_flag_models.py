@@ -194,7 +194,9 @@ class TestFlagEvaluation(unittest.TestCase):
 
     def test_extra_forbidden(self) -> None:
         with self.assertRaises(ValidationError):
-            FlagEvaluation(key="ops.test", value=True, source="env", extra="bad")
+            FlagEvaluation.model_validate(
+                {"key": "ops.test", "value": True, "source": "env", "extra": "bad"}
+            )
 
     def test_roundtrip_json(self) -> None:
         ev = FlagEvaluation(key="ops.test", value=True, source="config")

@@ -76,7 +76,9 @@ class TestReqIdParsing(unittest.TestCase):
 
     def test_extra_fields_forbidden(self) -> None:
         with self.assertRaises(ValidationError):
-            ReqId(semver="0.1.0", obpi_item="01", criterion_index="01", extra="bad")
+            ReqId.model_validate(
+                {"semver": "0.1.0", "obpi_item": "01", "criterion_index": "01", "extra": "bad"}
+            )
 
 
 class TestReqIdParsingInvalid(unittest.TestCase):
@@ -938,12 +940,14 @@ class TestDriftSummaryModel(unittest.TestCase):
 
     def test_summary_extra_forbidden(self) -> None:
         with self.assertRaises(ValidationError):
-            DriftSummary(
-                unlinked_spec_count=0,
-                orphan_test_count=0,
-                unjustified_code_change_count=0,
-                total_drift_count=0,
-                extra=1,
+            DriftSummary.model_validate(
+                {
+                    "unlinked_spec_count": 0,
+                    "orphan_test_count": 0,
+                    "unjustified_code_change_count": 0,
+                    "total_drift_count": 0,
+                    "extra": 1,
+                }
             )
 
 

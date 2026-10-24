@@ -209,7 +209,7 @@ class TestArbConfig(unittest.TestCase):
         from gzkit.config import VendorConfig
 
         with self.assertRaises(ValidationError):
-            VendorConfig(enabled=True, unknown_field="x")
+            VendorConfig.model_validate({"enabled": True, "unknown_field": "x"})
 
 
 class TestVendorsConfig(unittest.TestCase):
@@ -337,7 +337,7 @@ class TestGatesRemoved(unittest.TestCase):
         from pydantic import ValidationError
 
         with self.assertRaises(ValidationError):
-            GzkitConfig(gates={"product_proof": "advisory"})
+            GzkitConfig.model_validate({"gates": {"product_proof": "advisory"}})
 
     def test_load__without_gates__clean(self) -> None:
         """Config without gates key loads cleanly."""

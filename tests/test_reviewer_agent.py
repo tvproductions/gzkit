@@ -49,7 +49,9 @@ class TestPromiseAssessment(unittest.TestCase):
     @covers("REQ-0.23.0-03-06")
     def test_extra_forbid(self) -> None:
         with self.assertRaises(ValidationError):
-            PromiseAssessment(requirement="R", met=True, extra_field="bad")
+            PromiseAssessment.model_validate(
+                {"requirement": "R", "met": True, "extra_field": "bad"}
+            )
 
 
 class TestReviewerAssessment(unittest.TestCase):

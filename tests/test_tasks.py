@@ -114,7 +114,15 @@ class TestTaskId(unittest.TestCase):
         from pydantic import ValidationError
 
         with self.assertRaises(ValidationError):
-            TaskId(semver="0.1.0", obpi_item="01", req_index="01", seq="01", extra="bad")
+            TaskId.model_validate(
+                {
+                    "semver": "0.1.0",
+                    "obpi_item": "01",
+                    "req_index": "01",
+                    "seq": "01",
+                    "extra": "bad",
+                }
+            )
 
 
 class TestTaskStatus(unittest.TestCase):
@@ -245,13 +253,15 @@ class TestTaskEntity(unittest.TestCase):
         from pydantic import ValidationError
 
         with self.assertRaises(ValidationError):
-            TaskEntity(
-                id=TaskId.parse("TASK-0.20.0-01-01-01"),
-                description="test",
-                status=TaskStatus.PENDING,
-                parent_req="REQ-0.20.0-01-01",
-                parent_obpi="OBPI-0.20.0-01",
-                extra_field="bad",
+            TaskEntity.model_validate(
+                {
+                    "id": TaskId.parse("TASK-0.20.0-01-01-01"),
+                    "description": "test",
+                    "status": TaskStatus.PENDING,
+                    "parent_req": "REQ-0.20.0-01-01",
+                    "parent_obpi": "OBPI-0.20.0-01",
+                    "extra_field": "bad",
+                }
             )
 
 

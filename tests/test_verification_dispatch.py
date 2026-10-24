@@ -555,10 +555,8 @@ class TestVerificationModels(unittest.TestCase):
         from pydantic import ValidationError
 
         with self.assertRaises(ValidationError):
-            VerificationScope(
-                req_index=1,
-                requirement_text="test",
-                extra_field="bad",
+            VerificationScope.model_validate(
+                {"req_index": 1, "requirement_text": "test", "extra_field": "bad"}
             )
 
     def test_result_is_frozen(self) -> None:

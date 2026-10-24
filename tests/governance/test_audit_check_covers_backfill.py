@@ -122,10 +122,8 @@ class TestAuditThresholds(unittest.TestCase):
     @covers("REQ-0.0.23-05-06")
     def test_extra_keys_rejected(self) -> None:
         with self.assertRaises(ValidationError):
-            AuditThresholds(
-                max_covers_backfill_commits=3,
-                max_covers_backfill_days=7,
-                bonus_field=42,
+            AuditThresholds.model_validate(
+                {"max_covers_backfill_commits": 3, "max_covers_backfill_days": 7, "bonus_field": 42}
             )
 
     @covers("REQ-0.0.23-05-06")

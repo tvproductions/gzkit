@@ -153,9 +153,8 @@ class TestHandoffProtocol(unittest.TestCase):
 
     def test_handoff_result_rejects_extra_fields(self) -> None:
         with self.assertRaises(ValidationError):
-            HandoffResult(
-                status=HandoffStatus.DONE,
-                extra_field="not allowed",
+            HandoffResult.model_validate(
+                {"status": HandoffStatus.DONE, "extra_field": "not allowed"}
             )
 
     def test_all_handoff_statuses_exist(self) -> None:

@@ -44,23 +44,27 @@ class TestOntologyModelImmutability(unittest.TestCase):
     @covers("REQ-0.32.0-01-01")
     def test_node_rejects_unknown_field(self) -> None:
         with self.assertRaises(pydantic.ValidationError):
-            OntologyNode(
-                node_id="n1",
-                object_type=ObjectType.ADR,
-                ownership=Ownership.HARNESS,
-                plane=Plane.PRODUCT,
-                bogus=1,
+            OntologyNode.model_validate(
+                {
+                    "node_id": "n1",
+                    "object_type": ObjectType.ADR,
+                    "ownership": Ownership.HARNESS,
+                    "plane": Plane.PRODUCT,
+                    "bogus": 1,
+                }
             )
 
     @covers("REQ-0.32.0-01-01")
     def test_edge_rejects_unknown_field(self) -> None:
         with self.assertRaises(pydantic.ValidationError):
-            OntologyEdge(
-                source_id="a",
-                target_id="b",
-                link_type=LinkType.PARENT,
-                provenance=Provenance.INTENT,
-                bogus=1,
+            OntologyEdge.model_validate(
+                {
+                    "source_id": "a",
+                    "target_id": "b",
+                    "link_type": LinkType.PARENT,
+                    "provenance": Provenance.INTENT,
+                    "bogus": 1,
+                }
             )
 
     @covers("REQ-0.32.0-01-01")

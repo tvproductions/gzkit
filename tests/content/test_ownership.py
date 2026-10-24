@@ -1129,13 +1129,15 @@ class TestOwnershipDeclarationModel(unittest.TestCase):
 
     def test_extra_field_is_rejected(self) -> None:
         with self.assertRaises(ValidationError):
-            OwnershipDeclaration(
-                surface="Doc.md",
-                sections={"doc-title": "corpus-owned"},
-                unowned_byte_floor=0,
-                measured_at="2026-09-02T00:00:00Z",
-                floor_event_id=None,
-                bogus_extra="nope",
+            OwnershipDeclaration.model_validate(
+                {
+                    "surface": "Doc.md",
+                    "sections": {"doc-title": "corpus-owned"},
+                    "unowned_byte_floor": 0,
+                    "measured_at": "2026-09-02T00:00:00Z",
+                    "floor_event_id": None,
+                    "bogus_extra": "nope",
+                }
             )
 
     def test_negative_floor_is_rejected(self) -> None:

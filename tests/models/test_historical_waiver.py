@@ -37,13 +37,15 @@ class TestHistoricalAttestationWaiverFrozen(unittest.TestCase):
     def test_waiver_extra_field_forbidden(self) -> None:
         """Extra fields in HistoricalAttestationWaiver construction raise ValidationError."""
         with self.assertRaises(ValidationError):
-            HistoricalAttestationWaiver(
-                receipt_id="arb-ruff-12345",
-                obpi_id="OBPI-0.0.36-04",
-                deprecated_shape="attestation_requirement: optional",
-                rationale="Pre-cutoff self-close receipt.",
-                added_under="OBPI-0.0.36-04-historical-self-close-waivers",
-                extra_field="should fail",
+            HistoricalAttestationWaiver.model_validate(
+                {
+                    "receipt_id": "arb-ruff-12345",
+                    "obpi_id": "OBPI-0.0.36-04",
+                    "deprecated_shape": "attestation_requirement: optional",
+                    "rationale": "Pre-cutoff self-close receipt.",
+                    "added_under": "OBPI-0.0.36-04-historical-self-close-waivers",
+                    "extra_field": "should fail",
+                }
             )
 
     @covers("REQ-0.0.36-04-06")
@@ -83,9 +85,8 @@ class TestHistoricalAttestationWaiverFile(unittest.TestCase):
     def test_waiver_file_extra_field_forbidden(self) -> None:
         """Extra fields in HistoricalAttestationWaiverFile raise ValidationError."""
         with self.assertRaises(ValidationError):
-            HistoricalAttestationWaiverFile(
-                waivers=[],
-                extra_field="should fail",
+            HistoricalAttestationWaiverFile.model_validate(
+                {"waivers": [], "extra_field": "should fail"}
             )
 
     @covers("REQ-0.0.36-04-06")

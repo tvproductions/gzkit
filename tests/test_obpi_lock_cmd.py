@@ -130,15 +130,17 @@ class TestLockDataModel(unittest.TestCase):
 
     def test_rejects_extra_fields(self):
         with self.assertRaises(ValidationError):
-            LockData(
-                obpi_id="OBPI-0.0.14-01",
-                agent="claude-code",
-                pid=1,
-                session_id="s",
-                claimed_at=datetime.now(UTC).isoformat(),
-                branch="main",
-                ttl_minutes=120,
-                unknown_extra_field="bad",
+            LockData.model_validate(
+                {
+                    "obpi_id": "OBPI-0.0.14-01",
+                    "agent": "claude-code",
+                    "pid": 1,
+                    "session_id": "s",
+                    "claimed_at": datetime.now(UTC).isoformat(),
+                    "branch": "main",
+                    "ttl_minutes": 120,
+                    "unknown_extra_field": "bad",
+                }
             )
 
     @covers("REQ-0.0.14-01-08")

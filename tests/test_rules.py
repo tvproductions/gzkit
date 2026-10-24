@@ -432,11 +432,8 @@ class TestRuleFrontmatter(unittest.TestCase):
         from gzkit.rules import RuleFrontmatter
 
         with self.assertRaises(ValidationError):
-            RuleFrontmatter(
-                id="x",
-                paths=["*"],
-                description="d",
-                bogus="y",
+            RuleFrontmatter.model_validate(
+                {"id": "x", "paths": ["*"], "description": "d", "bogus": "y"}
             )
 
     @covers("REQ-0.17.0-02-01")

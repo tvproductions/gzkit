@@ -252,12 +252,18 @@ extra-paths = ["typings"]
 # when ty calls it unused), and the diagnostic set was byte-identical under
 # --python-platform win32 and linux, so none was platform-load-bearing in the
 # way the timeout.py block below documents.
+#
+# RO-9 tranche 4 (operator, by selection "Fix by root cause (Rec.)") retires this
+# block rule by rule as each reaches zero, measured at ty 0.0.89 with the block
+# lifted: 1,602 diagnostics on 2026-10-24, 744 after the model_validate rewrite.
+# unknown-argument left first: a test that hands a model an unexpected field
+# now does it through model_validate, and the one call testing a retired
+# keyword carries its own ty: ignore.
 [[tool.ty.overrides]]
 include = ["tests/**"]
 
 [tool.ty.overrides.rules]
 unresolved-attribute = "ignore"
-unknown-argument = "ignore"
 invalid-argument-type = "ignore"
 not-subscriptable = "ignore"
 possibly-missing-attribute = "ignore"

@@ -74,12 +74,14 @@ class TestUnscopedAllowlistEntryModel(unittest.TestCase):
     @covers("REQ-0.0.20-01-01")
     def test_extra_fields_forbidden(self) -> None:
         with self.assertRaises(PydanticValidationError):
-            UnscopedAllowlistEntry(
-                file="x.md",
-                rationale="Long enough rationale string.",
-                tracking_ref="ADR-0.0.20",
-                added_date=date(2026, 4, 21),
-                extra_key="nope",
+            UnscopedAllowlistEntry.model_validate(
+                {
+                    "file": "x.md",
+                    "rationale": "Long enough rationale string.",
+                    "tracking_ref": "ADR-0.0.20",
+                    "added_date": date(2026, 4, 21),
+                    "extra_key": "nope",
+                }
             )
 
     @covers("REQ-0.0.20-01-02")

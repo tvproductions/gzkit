@@ -74,12 +74,14 @@ class InsightRecordModelTests(unittest.TestCase):
 
     def test_extra_field_rejected(self) -> None:
         with self.assertRaises(ValidationError):
-            InsightRecord(
-                ts="2026-04-29T11:00:00Z",
-                type="defect",
-                scope="example",
-                summary="example",
-                resolution="legacy field",
+            InsightRecord.model_validate(
+                {
+                    "ts": "2026-04-29T11:00:00Z",
+                    "type": "defect",
+                    "scope": "example",
+                    "summary": "example",
+                    "resolution": "legacy field",
+                }
             )
 
     def test_evidence_must_be_list_of_str(self) -> None:

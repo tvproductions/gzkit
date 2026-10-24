@@ -189,7 +189,7 @@ class TestDensityBulletFields(unittest.TestCase):
 
         self.assertNotIn("density_min", Bullet.model_fields)
         with self.assertRaises(ValidationError):
-            Bullet(text="x", density_min="lite")
+            Bullet.model_validate({"text": "x", "density_min": "lite"})
 
 
 class TestPillarFields(unittest.TestCase):
@@ -261,7 +261,9 @@ class TestPillarFields(unittest.TestCase):
         self.assertTrue(Pillar.model_config.get("frozen") is True)
         self.assertEqual(Pillar.model_config.get("extra"), "forbid")
         with self.assertRaises(ValidationError):
-            Pillar(id="x", title="X", order=1, _undeclared_field_xyz="boom")
+            Pillar.model_validate(
+                {"id": "x", "title": "X", "order": 1, "_undeclared_field_xyz": "boom"}
+            )
 
     @covers("REQ-0.0.37-11-02")
     def test_pillar_no_untyped_fields(self) -> None:

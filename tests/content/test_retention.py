@@ -67,13 +67,15 @@ class TestRetentionMapModelsImmutability(unittest.TestCase):
     def test_retention_map_forbids_extra_fields(self) -> None:
         """RetentionMap forbids extra fields not in the schema."""
         with self.assertRaises(ValidationError):
-            RetentionMap(
-                surface="AGENTS.md",
-                consumer="root",
-                extracted_by="ReviewerAgent",
-                mapped_by="AuthorAgent",
-                blocks=[],
-                extra_field="should_fail",
+            RetentionMap.model_validate(
+                {
+                    "surface": "AGENTS.md",
+                    "consumer": "root",
+                    "extracted_by": "ReviewerAgent",
+                    "mapped_by": "AuthorAgent",
+                    "blocks": [],
+                    "extra_field": "should_fail",
+                }
             )
 
     def test_condition_frozen(self) -> None:

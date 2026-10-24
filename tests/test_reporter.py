@@ -57,7 +57,7 @@ class TestColumnDef(unittest.TestCase):
         from pydantic import ValidationError
 
         with self.assertRaises(ValidationError):
-            ColumnDef(header="Name", bogus="value")
+            ColumnDef.model_validate({"header": "Name", "bogus": "value"})
 
 
 class TestStatusTable(unittest.TestCase):

@@ -118,15 +118,17 @@ class TestLockData(unittest.TestCase):
 
     def test_extra_fields_forbidden(self):
         with self.assertRaises(ValidationError):
-            LockData(
-                obpi_id="OBPI-0.0.14-01",
-                agent="x",
-                pid=1,
-                session_id="s",
-                claimed_at=datetime.now(UTC).isoformat(),
-                branch="main",
-                ttl_minutes=60,
-                unexpected_field="boom",
+            LockData.model_validate(
+                {
+                    "obpi_id": "OBPI-0.0.14-01",
+                    "agent": "x",
+                    "pid": 1,
+                    "session_id": "s",
+                    "claimed_at": datetime.now(UTC).isoformat(),
+                    "branch": "main",
+                    "ttl_minutes": 60,
+                    "unexpected_field": "boom",
+                }
             )
 
     def test_frozen_immutability(self):

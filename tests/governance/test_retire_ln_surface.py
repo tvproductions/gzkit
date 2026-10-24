@@ -96,15 +96,17 @@ class TestRetireLnSurface(unittest.TestCase):
             "the ln field still exists and extra='forbid' is not blocking it "
             "(OBPI-0.0.69-04 REQ-04)",
         ):
-            BriefStructure(
-                id="OBPI-0.0.99-01-test",
-                parent="ADR-0.0.99-test",
-                lane="Lite",
-                status="Draft",
-                allowlist=["tests/"],
-                reqs=["REQ-0.0.99-01-01"],
-                verification=["uv run gz lint"],
-                ln=[],
+            BriefStructure.model_validate(
+                {
+                    "id": "OBPI-0.0.99-01-test",
+                    "parent": "ADR-0.0.99-test",
+                    "lane": "Lite",
+                    "status": "Draft",
+                    "allowlist": ["tests/"],
+                    "reqs": ["REQ-0.0.99-01-01"],
+                    "verification": ["uv run gz lint"],
+                    "ln": [],
+                }
             )
 
 
@@ -162,7 +164,8 @@ class TestRetireLnConsumerChain(unittest.TestCase):
             TypeError,
             msg="render_step_6_attestation still accepts ln_entries — not retired (GHI #601)",
         ):
-            render_step_6_attestation("ADR-0.0.99-test", ln_entries=[])
+            # The retired keyword is the contract under test; the checker refusing it is the point.
+            render_step_6_attestation("ADR-0.0.99-test", ln_entries=[])  # ty: ignore[unknown-argument]
 
 
 if __name__ == "__main__":

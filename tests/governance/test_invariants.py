@@ -46,12 +46,14 @@ class TestConstitutionalInvariantModel(unittest.TestCase):
     @covers("REQ-0.0.37-01-01")
     def test_extra_fields_rejected(self) -> None:
         with self.assertRaises(ValidationError):
-            ConstitutionalInvariant(
-                id="TEST-3",
-                claim="A test claim.",
-                structural_witness=["gz validate --test"],
-                composition_targets=[],
-                unknown_field="should fail",
+            ConstitutionalInvariant.model_validate(
+                {
+                    "id": "TEST-3",
+                    "claim": "A test claim.",
+                    "structural_witness": ["gz validate --test"],
+                    "composition_targets": [],
+                    "unknown_field": "should fail",
+                }
             )
 
     @covers("REQ-0.0.37-01-01")

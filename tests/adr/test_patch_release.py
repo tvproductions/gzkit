@@ -1424,7 +1424,9 @@ class TestManifestGhiModel(unittest.TestCase):
         from gzkit.commands.patch_release import ManifestGhi
 
         with self.assertRaises(ValidationError):
-            ManifestGhi(number=42, title="Fix", status="qualified", bogus="x")
+            ManifestGhi.model_validate(
+                {"number": 42, "title": "Fix", "status": "qualified", "bogus": "x"}
+            )
 
 
 # ---------------------------------------------------------------------------
@@ -1470,12 +1472,14 @@ class TestPatchManifestModel(unittest.TestCase):
         from gzkit.commands.patch_release import PatchManifest
 
         with self.assertRaises(ValidationError):
-            PatchManifest(
-                version="0.0.15",
-                previous_version="0.0.14",
-                date="2026-04-08",
-                ghis=[],
-                bogus="x",
+            PatchManifest.model_validate(
+                {
+                    "version": "0.0.15",
+                    "previous_version": "0.0.14",
+                    "date": "2026-04-08",
+                    "ghis": [],
+                    "bogus": "x",
+                }
             )
 
 

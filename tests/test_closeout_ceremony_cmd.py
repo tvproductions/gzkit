@@ -70,7 +70,7 @@ class TestCeremonyStepRecord(unittest.TestCase):
     @covers("REQ-0.23.0-04-15")
     def test_extra_forbid(self):
         with self.assertRaises(ValidationError):
-            CeremonyStepRecord(step=2, presented_at="t", bogus="x")
+            CeremonyStepRecord.model_validate({"step": 2, "presented_at": "t", "bogus": "x"})
 
 
 class TestCeremonyState(unittest.TestCase):

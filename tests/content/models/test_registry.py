@@ -65,4 +65,4 @@ class TestContentModelsRegistry(unittest.TestCase):
                     msg=f"{name}: expected ValidationError for undeclared field",
                 ),
             ):
-                model_cls(_undeclared_sentinel_field_xyz="boom")
+                model_cls.model_validate({"_undeclared_sentinel_field_xyz": "boom"})

@@ -51,13 +51,15 @@ class TestTautologicalTestModels(unittest.TestCase):
         from gzkit.models.tautological_tests import TautologicalTestOperation
 
         with self.assertRaises(ValidationError):
-            TautologicalTestOperation(
-                file_path="tests/foo.py",
-                line_number=10,
-                operation_kind="open",
-                function_name="test_something",
-                assertion_kind="assertEqual",
-                extra_field="bad",
+            TautologicalTestOperation.model_validate(
+                {
+                    "file_path": "tests/foo.py",
+                    "line_number": 10,
+                    "operation_kind": "open",
+                    "function_name": "test_something",
+                    "assertion_kind": "assertEqual",
+                    "extra_field": "bad",
+                }
             )
 
     @covers("REQ-0.0.59-04-06")
@@ -81,11 +83,13 @@ class TestTautologicalTestModels(unittest.TestCase):
         from gzkit.models.tautological_tests import Waiver
 
         with self.assertRaises(ValidationError):
-            Waiver(
-                file_path="tests/foo.py",
-                rationale_key="key1",
-                waived_count=1,
-                unknown="bad",
+            Waiver.model_validate(
+                {
+                    "file_path": "tests/foo.py",
+                    "rationale_key": "key1",
+                    "waived_count": 1,
+                    "unknown": "bad",
+                }
             )
 
     @covers("REQ-0.0.59-04-06")
@@ -105,10 +109,12 @@ class TestTautologicalTestModels(unittest.TestCase):
         from gzkit.models.tautological_tests import Baseline
 
         with self.assertRaises(ValidationError):
-            Baseline(
-                operations=[],
-                generated_at="2026-01-01T00:00:00+00:00",
-                extra_field="bad",
+            Baseline.model_validate(
+                {
+                    "operations": [],
+                    "generated_at": "2026-01-01T00:00:00+00:00",
+                    "extra_field": "bad",
+                }
             )
 
     @covers("REQ-0.0.59-04-06")

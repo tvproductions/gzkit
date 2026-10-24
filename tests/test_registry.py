@@ -40,10 +40,8 @@ class TestContentTypeModel(unittest.TestCase):
 
     def test_extra_forbid(self) -> None:
         with self.assertRaises(ValidationError):
-            ContentType(
-                name="Test",
-                canonical_path_pattern="test/**/*.md",
-                bogus_field="x",
+            ContentType.model_validate(
+                {"name": "Test", "canonical_path_pattern": "test/**/*.md", "bogus_field": "x"}
             )
 
     def test_optional_fields_default_none(self) -> None:

@@ -60,7 +60,9 @@ def _stored_line(artifact_id: str, ts: str) -> str:
     it, which is what lets the coherence test below assert that
     ``validate_ledger`` reports NOTHING against the row the reader was dropping.
     """
-    event = LedgerEvent(event="adr_created", id=artifact_id, ts=ts, lane="lite")
+    event = LedgerEvent.model_validate(
+        {"event": "adr_created", "id": artifact_id, "ts": ts, "lane": "lite"}
+    )
     return json.dumps(event.model_dump(), separators=(",", ":"))
 
 

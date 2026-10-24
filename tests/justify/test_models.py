@@ -31,7 +31,7 @@ class TestAnchorRefModel(unittest.TestCase):
     @covers("REQ-0.0.19-01-01")
     def test_anchor_ref_forbids_extra_fields(self) -> None:
         with self.assertRaises(ValidationError):
-            AnchorRef(kind="ghi", identifier="GHI-1", mystery="value")
+            AnchorRef.model_validate({"kind": "ghi", "identifier": "GHI-1", "mystery": "value"})
 
     @covers("REQ-0.0.19-01-02")
     def test_anchor_rejects_adr_kind(self) -> None:
@@ -60,15 +60,17 @@ class TestEvidenceBundleModel(unittest.TestCase):
         with self.assertRaises(ValidationError):
             bundle.taxonomy_reference = "other.md"  # ty: ignore[invalid-assignment]
         with self.assertRaises(ValidationError):
-            EvidenceBundle(
-                anchor=anchor,
-                matching_rules=(),
-                ledger_events=(),
-                recent_commits=(),
-                related_anchors=(),
-                taxonomy_reference="docs/governance/model-regression-taxonomy.md",
-                warnings=(),
-                surprise="field",
+            EvidenceBundle.model_validate(
+                {
+                    "anchor": anchor,
+                    "matching_rules": (),
+                    "ledger_events": (),
+                    "recent_commits": (),
+                    "related_anchors": (),
+                    "taxonomy_reference": "docs/governance/model-regression-taxonomy.md",
+                    "warnings": (),
+                    "surprise": "field",
+                }
             )
 
 

@@ -58,12 +58,14 @@ class TestReqKindModels(unittest.TestCase):
         from gzkit.req_kind import ProofChannel, ReqClassification, ReqKind
 
         with self.assertRaises(ValidationError):
-            ReqClassification(
-                req_id="REQ-0.0.59-02-01",
-                kind=ReqKind.BEHAVIOR,
-                proof_channel=ProofChannel.TEST_COVERS,
-                proof_status="pass",
-                unknown_field="forbidden",
+            ReqClassification.model_validate(
+                {
+                    "req_id": "REQ-0.0.59-02-01",
+                    "kind": ReqKind.BEHAVIOR,
+                    "proof_channel": ProofChannel.TEST_COVERS,
+                    "proof_status": "pass",
+                    "unknown_field": "forbidden",
+                }
             )
 
     @covers("REQ-0.0.59-02-03")

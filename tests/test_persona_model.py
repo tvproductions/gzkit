@@ -67,12 +67,14 @@ class TestPersonaFrontmatter(unittest.TestCase):
         from pydantic import ValidationError
 
         with self.assertRaises(ValidationError):
-            PersonaFrontmatter(
-                name="x",
-                traits=["a"],
-                anti_traits=["b"],
-                grounding="g",
-                unknown="bad",
+            PersonaFrontmatter.model_validate(
+                {
+                    "name": "x",
+                    "traits": ["a"],
+                    "anti_traits": ["b"],
+                    "grounding": "g",
+                    "unknown": "bad",
+                }
             )
 
 

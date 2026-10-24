@@ -54,26 +54,34 @@ class TestAirlockModel(unittest.TestCase):
 
         # Unknown kwarg is rejected (extra="forbid").
         with self.assertRaises(pydantic.ValidationError):
-            SeamEdge(
-                kind=SeamKind.PUSH,
-                provenance=Provenance.LAW,
-                source="a",
-                target="b",
-                accounted=True,
-                bogus=1,
+            SeamEdge.model_validate(
+                {
+                    "kind": SeamKind.PUSH,
+                    "provenance": Provenance.LAW,
+                    "source": "a",
+                    "target": "b",
+                    "accounted": True,
+                    "bogus": 1,
+                }
             )
         with self.assertRaises(pydantic.ValidationError):
-            SeamMap(bodies=(), push_edges=(), pull_edges=(), unaccounted=(), bogus=1)
-        with self.assertRaises(pydantic.ValidationError):
-            Preflight(
-                seam_map=seam_map,
-                blast_radius=1,
-                authority=Authority.CAPTAIN,
-                decision=None,
-                bogus=1,
+            SeamMap.model_validate(
+                {"bodies": (), "push_edges": (), "pull_edges": (), "unaccounted": (), "bogus": 1}
             )
         with self.assertRaises(pydantic.ValidationError):
-            DriftDiff(drift=(), verdict=Verdict.CLEAN, resolutions=(), bogus=1)
+            Preflight.model_validate(
+                {
+                    "seam_map": seam_map,
+                    "blast_radius": 1,
+                    "authority": Authority.CAPTAIN,
+                    "decision": None,
+                    "bogus": 1,
+                }
+            )
+        with self.assertRaises(pydantic.ValidationError):
+            DriftDiff.model_validate(
+                {"drift": (), "verdict": Verdict.CLEAN, "resolutions": (), "bogus": 1}
+            )
 
         # Mutation post-construction is rejected (frozen=True).
         with self.assertRaises(pydantic.ValidationError):

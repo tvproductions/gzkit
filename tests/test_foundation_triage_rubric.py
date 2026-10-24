@@ -56,19 +56,28 @@ class TestFoundationTriageRankEntry(unittest.TestCase):
             source="x", dimension="insights_signal", weight=3, weighted=3, count=1
         )
         with self.assertRaises(ValidationError):
-            self.FoundationTriageRankEntry(
-                id="ADR-0.0.90",
-                priority_score=1,
-                evidence=(ref,),
-                rationale="this should be rejected",
+            self.FoundationTriageRankEntry.model_validate(
+                {
+                    "id": "ADR-0.0.90",
+                    "priority_score": 1,
+                    "evidence": (ref,),
+                    "rationale": "this should be rejected",
+                }
             )
 
     @covers("REQ-0.0.57-04-03")
     def test_evidence_ref_extra_field_raises(self) -> None:
         # @covers REQ-0.0.57-04-03
         with self.assertRaises(ValidationError):
-            self.EvidenceRef(
-                source="x", dimension="insights_signal", weight=3, weighted=3, count=1, why="bad"
+            self.EvidenceRef.model_validate(
+                {
+                    "source": "x",
+                    "dimension": "insights_signal",
+                    "weight": 3,
+                    "weighted": 3,
+                    "count": 1,
+                    "why": "bad",
+                }
             )
 
     @covers("REQ-0.0.57-04-03")

@@ -85,7 +85,7 @@ class TestConfigGatesFieldRejected(unittest.TestCase):
         from pydantic import ValidationError
 
         with self.assertRaises(ValidationError):
-            GzkitConfig(gates={"product_proof": "advisory"})
+            GzkitConfig.model_validate({"gates": {"product_proof": "advisory"}})
 
 
 if __name__ == "__main__":

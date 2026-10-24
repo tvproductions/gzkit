@@ -124,12 +124,14 @@ class TestAdvancesRegistry(unittest.TestCase):
         from pydantic import ValidationError
 
         with self.assertRaises(ValidationError):
-            TaskAttributionRecord(
-                task_id="TASK-0.0.64-02-01-01",
-                source_fn="fn",
-                source_file="x.py",
-                source_line=1,
-                bogus_field="x",
+            TaskAttributionRecord.model_validate(
+                {
+                    "task_id": "TASK-0.0.64-02-01-01",
+                    "source_fn": "fn",
+                    "source_file": "x.py",
+                    "source_line": 1,
+                    "bogus_field": "x",
+                }
             )
 
     @covers("REQ-0.0.64-02-02")
