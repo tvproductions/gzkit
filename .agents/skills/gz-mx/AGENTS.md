@@ -64,12 +64,14 @@ say which mode is open; the awareness banner names it every turn.
 - **What safe mode suspends:** the operator-only initiation of OBPI work and the brief
   ceremony, as the named contract declares. The operator's word at entry is the initiation.
 - **What still binds:** `gate5_invariants`, the ledger written only through `gz` verbs,
-  operator PII, no removal of a control, and the PRIME DIRECTIVE. Every other guard drops
-  to advisory while the marker is open, as in the hangar: `gzkit.mx.checkpoint.hangar_demotes`
+  operator PII, the secret scan, no removal of a control, and the PRIME DIRECTIVE's
+  trackability (below). Every other guard drops to advisory, and every alarm hook is off,
+  while the marker is open, as in the hangar: `gzkit.mx.checkpoint.hangar_demotes`
   is true under either mode, and the pipeline gate honors the marker (R6, 2026-10-17);
   `gz mx exit` re-runs every guard at full strength.
-- **What it records:** every act is one commit with its `Task:` trailer and its
-  `gz arb red --commit` witness, and the contract's passage log carries bytes or counts before
+- **What it records:** every act is one commit with its `Task:` trailer, no long check per
+  act (the alarms are off, `gzkit.mx.alarms`; ruling 2026-10-25), what it leaves broken on the
+  contract's punch list, and the contract's passage log carries bytes or counts before
   and after.
 - **The contract is pinned** (operator ruling 2026-10-18, *"Hash at entry + amend event"*):
   `mx_session_opened` carries the contract's SHA-256 and the bodies of its § What is
@@ -108,6 +110,10 @@ Witness: `gz validate --mx-hardening` (a `gz check` step, `NC:mx-hardening`),
 `tests/mx/test_lease.py`, `tests/governance/test_mx_hardening_audit.py`.
 
 ### PRIME DIRECTIVE binds the entire session
+
+**Safe mode differs (ruling 2026-10-25):** a remodel leaves things partially broken, so *fix
+immediately* waits for the exit and *every defect trackable* binds through the contract's punch
+list. The hangar below is unchanged.
 
 Guards dropping to advisory means the operator can repair the surfaces the
 guards protect — it does NOT mean ownership relaxes. In the hangar:

@@ -124,13 +124,19 @@ Suspended while `.gzkit/mx.json` carries `mode: safe`, by the ruling of 2026-10-
   paradigm the drydock replaces (R4; operator, verbatim: *"I don't know why you would do an OBPI,
   which is actually completed work in the old paradigm, when I'm still actually discussing what the
   new paradigm might look like"*).
+- Every alarm, by the ruling of 2026-10-25 (operator, verbatim: *"i don't want any long check at all - this is a remodel, things are going to be broken, disarray, and messy. it is time to leave things partially broken until the reconfiguration is complete, then we adjust tests and turn the "security alarms" back on. this is all backwards."*): no long check
+  runs during the drydock. The pre-commit and pre-push alarm hooks and the pipe gate are off
+  while the marker carries `mode: safe` (`gzkit.mx.alarms`); no commit witness, no `gz check`,
+  no failing test first. Things may be left partially broken; each goes on § Punch list, and
+  the Prime Directive's *fix immediately* waits for the exit while its *every defect
+  trackable* binds through that list.
 
 Not suspended, under any reading:
 
 - Gate 5. A completion is attested by the operator's own words or it is not complete.
 - The ledger as system of record, written only through `gz` commands; never hand-edited.
-- The operator-PII rule. The Prime Directive.
-- No control is removed. Lowered to advisory is not removed; the exit restores it.
+- The operator-PII rule and the secret scan (the authorship and gitleaks hooks stay on).
+- No control is removed. Lowered to advisory or switched off is not removed; the exit restores it.
 - Rulings. Structure is decided by the operator on the session's draft.
 
 ## Division of labor
@@ -163,9 +169,8 @@ Not suspended, under any reading:
 ## Records
 
 - Every change is one commit, `fix(<scope>): … (GHI #N)` or `feat(<scope>): …`, with a `Task:`
-  trailer naming its repair order (`TASK-ro<n>-<slug>` until the repair tagging scheme lands), a
-  failing test observed before a code change, and `gz arb red --commit <sha>` run after it with its
-  verdict recorded; an `undriven` verdict is repaired in the same commit before it counts.
+  trailer naming its repair order (`TASK-ro<n>-<slug>` until the repair tagging scheme lands). No
+  check runs per act (ruling 2026-10-25); what the act leaves broken goes on § Punch list.
 - Every operator ruling is an insight record when given and an `[operator-ruled]` handoff entry.
 - Every session ends with a handoff citing this file and listing the commits since the last.
 - § Passage log is appended per act with bytes or counts before and after.
@@ -203,7 +208,9 @@ witness, or earlier at the operator's word:
 6. The in-flight work is disposed.
 7. The toolchain follows Astral's project discipline: the RO-9 witness reads zero for gzkit and for a
    freshly scaffolded project (added 2026-10-19 with RO-9).
-8. The handback amendment is ratified: every drydock commit listed, kept or reverted; this
+8. § Punch list is empty: the tests are adjusted to the new structure and every alarm is back on at
+   full strength, read from `gz mx exit`'s re-run and a green `gz check --full` (added 2026-10-25).
+9. The handback amendment is ratified: every drydock commit listed, kept or reverted; this
    passage log carried; the suspended rules restored. Civil rule resumes on the ratification.
 
 The sea trial (a fresh project on the released wheel runs one work package end to end) is civil
@@ -644,6 +651,16 @@ Passed once and recorded here, the ship is seaworthy and the handback follows.
 - **WP-16 (GHI #1252, pilot writes the protocol).** The effectiveness measure of each cut stage:
   retention maps and a compression-sweep read, `gz readiness evaluate` before and after, one work
   package flown by a fresh session on the cut surfaces; a report per stage under `docs/evals/`.
+
+## Punch list
+
+What the drydock leaves broken, one line each, cleared before the exit (ruling 2026-10-25).
+
+- Three tests pin pre-commit entries the alarm switch now wraps:
+  `tests.arb.test_typecheck_scope_lockstep` (ty entry) and `tests.arb.test_unittest_runner_lockstep`
+  (unittest entry; complexity verifier pinned).
+- GHI #1268: `gz arb red --commit` grades generated vendor mirrors as production hunks.
+- GHI #1269's acceptance rerun on `7b7ea83cd` was stopped unrecorded; the fix stands on its unit tests.
 
 ## Passage log
 

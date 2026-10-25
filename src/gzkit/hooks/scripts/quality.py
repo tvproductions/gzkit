@@ -51,11 +51,15 @@ def _verifier_pipe_gate_script() -> str:
                     sys.exit(0)
 
                 try:
+                    from gzkit.mx.alarms import alarms_off
                     from gzkit.verifier_pipe_gate import decide
                 except ImportError:
                     # Fail-open: gzkit unavailable is a plumbing failure, not a
                     # governance signal.
                     sys.exit(0)
+
+                if alarms_off():
+                    sys.exit(0)  # safe mode: alarms are off until gz mx exit
 
                 verdict = decide(
                     str(payload.get("tool_name") or ""),

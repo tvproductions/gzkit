@@ -11,6 +11,9 @@ default_stages: [pre-commit]
 default_install_hook_types: [pre-commit, pre-push, prepare-commit-msg, post-commit]
 fail_fast: true
 
+# Safe mode (operator ruling 2026-10-25): every alarm hook runs through
+# `gzkit.mx.alarms`, which skips it while .gzkit/mx.json carries `mode: safe`.
+# gitleaks, authorship, the trailer stamp, uv-lock and the formatters are not alarms.
 repos:
   - repo: local
     hooks:
@@ -27,7 +30,7 @@ repos:
         # rewrote every held finding in any file a commit touched, dated
         # evidence included (operator, 2026-10-24: "do 1"). Fixes run when
         # asked for, through `gz lint --fix` or `gz format`.
-        entry: uv run gz lint
+        entry: uv run python -m gzkit.mx.alarms ruff-check -- gz lint
         language: system
         pass_filenames: true
         types: [python]
@@ -46,7 +49,7 @@ repos:
         # Scope must match CANONICAL_STEP_COMMANDS["typecheck"] in
         # src/gzkit/canonical_steps.py — pinned by
         # tests/arb/test_typecheck_scope_lockstep.py, which reads this file.
-        entry: uv run ty check .
+        entry: uv run python -m gzkit.mx.alarms ty-check -- ty check .
         language: system
         pass_filenames: false
         types: [python]
@@ -54,7 +57,7 @@ repos:
 
       - id: forbid-pytest
         name: forbid pytest (unittest-only policy)
-        entry: uv run -m gzkit.hooks.guards
+        entry: uv run python -m gzkit.mx.alarms forbid-pytest -- python -m gzkit.hooks.guards
         language: system
         pass_filenames: false
         stages: [pre-commit]
@@ -64,7 +67,7 @@ repos:
       # (`python -m gzkit.hooks.install_complexity_advisor`) replaces this entry.
       - id: complexity-ceiling
         name: complexity ceiling (Lizard C/C/C at Ruff's max-complexity, cognitive at .gzkit.json's)
-        entry: uv run gz validate --complexity-ceiling
+        entry: uv run python -m gzkit.mx.alarms complexity-ceiling -- gz validate --complexity-ceiling
         language: system
         pass_filenames: false
         types: [python]
@@ -72,21 +75,21 @@ repos:
 
       - id: surface-fidelity-cheap
         name: surface-fidelity cheap subset (invariants 1, 2, 3)
-        entry: uv run gz validate --bullet-retention --surface-weight --pointer-anchors
+        entry: uv run python -m gzkit.mx.alarms surface-fidelity-cheap -- gz validate --bullet-retention --surface-weight --pointer-anchors
         language: system
         pass_filenames: false
         stages: [pre-commit]
 
       - id: validator-reachability-ratchet
         name: validator reachability (ungated scopes may only shrink)
-        entry: uv run python .gzkit/chores/control-surface-validator-reachability/check_reachability.py
+        entry: uv run python -m gzkit.mx.alarms validator-reachability-ratchet -- python .gzkit/chores/control-surface-validator-reachability/check_reachability.py
         language: system
         pass_filenames: false
         stages: [pre-commit]
 
       - id: ledger-vocabulary-inertness
         name: ledger vocabulary (never-fired types must stay disclosed)
-        entry: uv run python .gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py
+        entry: uv run python -m gzkit.mx.alarms ledger-vocabulary-inertness -- python .gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py
         language: system
         pass_filenames: false
         stages: [pre-commit]
@@ -160,7 +163,7 @@ repos:
         # they have findings (GHI #1017). Content-addressed,
         # so the intervening commit does not defeat it and any edit does; and
         # fail-open, so an unreadable repo runs the gate rather than skipping.
-        entry: uv run gz check --reuse-verified
+        entry: uv run python -m gzkit.mx.alarms gz-check-pre-push -- gz check --reuse-verified
         language: system
         pass_filenames: false
         stages: [pre-push]
@@ -192,7 +195,7 @@ repos:
         # `--buffer` replays a test's output only when it fails or errors, so a
         # PASSING negative-path test no longer prints convincing fail-closed
         # prose into the log (GHI #723). Failures still show their own stderr.
-        entry: uv run unittest-parallel -t . -s tests --buffer
+        entry: uv run python -m gzkit.mx.alarms unittest -- unittest-parallel -t . -s tests --buffer
         language: system
         pass_filenames: false
         types: [python]

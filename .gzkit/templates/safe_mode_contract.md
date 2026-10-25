@@ -43,9 +43,9 @@ arrangement.
 
 ## Records
 
-- Every change is one commit with a `Task:` trailer naming its repair order, a failing test
-  observed before a code change, and `gz arb red --commit <sha>` run after it with its verdict
-  recorded; an `undriven` verdict is repaired in the same commit before it counts.
+- Every change is one commit with a `Task:` trailer naming its repair order. No long check runs
+  per act: the alarms are off in safe mode (`gzkit.mx.alarms`), and what an act leaves broken goes
+  on § Punch list, which the exit empties before the alarms come back on.
 - Every operator ruling is an insight record when given and an `[operator-ruled]` handoff entry.
 - Every session ends with a handoff citing this file and listing the commits since the last.
 - § Passage log is appended per act with bytes or counts before and after.
