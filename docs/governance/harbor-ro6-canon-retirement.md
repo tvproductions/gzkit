@@ -23,9 +23,10 @@ INV-017 (*"Each ADR checklist item MUST map to exactly one OBPI"*, PRD:1122) aga
 2. **Undated live documents, dated archives** (operator, verbatim: *"yes, the link never going stale seems to be a strong argument - anything dated implies archival status"*): a live document keeps its undated path, so every link to it stays good, and carries a last-updated line; its superseded text is saved as a dated snapshot beside it (`<name>-<YYYY-MM-DD>.md`), and any dated document is archival. No branch (the standing no-branch directive). A wholly obsolete document becomes a dated snapshot with nothing live in its place. This replaces striking text in place.
 3. **Docs consolidation is a separate tidy chore** (operator: *"we probably need some docs consolidation, which is another chore I think we need"*): it moves dated snapshots to the archive location, checks that no live document cites a snapshot as authority, and merges documents on one subject. Migrating the campaign editions, dated today and steered by `data/active_campaign.json`, is its first job, not RO-6's. Tracked as an insight until the chore is authored.
 
+4. **The PRD is Approved** (operator, verbatim: *"B, it should have never stayed in draft for that long. Also, PRDs are always next-version targets: PRD-1.0, PRD-2.0, etc."*): `PRD-GZKIT-1.0.0` moves from `Draft` to `Approved` (the schema's enum is Draft, Review, Approved, Superseded), with its date and version repaired (Q-02). A PRD names the next major version it targets, as INV-013 and RO-4's semver rule already hold.
+
 ## Open questions, in the order they are being ruled
 
-2. The PRD's status field.
 3. FR-006's timing.
 4. Which glossary.
 5. Which Astra rejection in DISAGREEMENTS.

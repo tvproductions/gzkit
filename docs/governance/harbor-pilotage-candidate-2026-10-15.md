@@ -226,7 +226,7 @@ witness, or earlier at the operator's word:
 
 The sea trial (a fresh project on the released wheel runs one work package end to end) is civil
 rule's first act, in Movement E of the campaign where it already lives; it is not an exit
-condition of the drydock.
+condition of the drydock. Updating the build-to-1.0 campaign plan to the drydock's results is civil rule's work too (operator, 2026-10-25: *"We are current on the campaign to 1.0 (which we should update after dry dock is completed)"*).
 
 ## Rulings of 2026-10-17
 
