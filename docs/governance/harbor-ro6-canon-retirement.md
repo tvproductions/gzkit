@@ -11,7 +11,8 @@
 - **FR-006's wording** is ruled by the requirements model (line 271): *"'(Heavy only)' becomes 'for user-facing outcomes'"*.
 - **Retirement keeps the text visible, struck**, on the FR-004 precedent (PRD:351-354).
 - **INV-013 stays and leaves RO-6:** *"PRDs MUST be bound to Major versions"* is restated by today's semver ruling (RO-4: *"prd drives major"*), so nothing contradicts it.
-- **Items other orders now own leave RO-6:** `GovZero/releases/*` and `adr-lifecycle.md` (RO-4 tranche 4); `obpi-decomposition-matrix.md` (RO-5 ruling 9); `ADR-pool.identifier-ladder-migration.md` (RO-11, a pool entry). The safe-mode doctrine's § The Release Package and `doctrine-merge.md` Part 0's Release Package term, which RO-4 ruling 1 contradicts, go to RO-4 tranche 4.
+- **Pool entries are intentions, not ADRs** (operator, 2026-10-25: *"they just aren't ADRs any longer … they live just fine as intentions, we can bring one down, and then parse it into the new forms as-needed"*): the requirements model's family D (*"pool and promotion"*, line 220) and its worked example (line 304) are corrected to say so. The pool's files and ids are not renamed; the ruling delays that work.
+- **Items other orders now own leave RO-6:** `GovZero/releases/*` and `adr-lifecycle.md` (RO-4 tranche 4); `obpi-decomposition-matrix.md` (RO-5 ruling 9); `ADR-pool.identifier-ladder-migration.md` (a pool entry: an intention, left as is). The safe-mode doctrine's § The Release Package and `doctrine-merge.md` Part 0's Release Package term, which RO-4 ruling 1 contradicts, go to RO-4 tranche 4.
 
 ## Items RO-6 retires or corrects
 
