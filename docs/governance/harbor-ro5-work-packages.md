@@ -2,7 +2,7 @@
 
 # RO-5 specification — work packages, task cards and repair orders
 
-**2026-10-25. Status: DRAFT, being ruled one question at a time.** Operator: **g0**. Repair order RO-5 of the [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders), serving labor and maintenance. Sequenced before RO-4 (operator, 2026-10-25: *"yes"*), because the Release Package ships work packages.
+**2026-10-25. Status: specified; every open question ruled the same day.** Operator: **g0**. Repair order RO-5 of the [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders), serving labor and maintenance. Sequenced before RO-4 (operator, 2026-10-25: *"yes"*), because the Release Package ships work packages.
 
 ## Already ruled in the record
 
@@ -21,13 +21,32 @@
 
 5. **One `work_package_transitioned` event** (selection *"A"*), on RO-3's `outcome_transitioned` pattern: `initiated` carries the operator's words; `frozen` carries the baselined REQ ids and revisions, the risk note and the reviewer's nine-criteria receipt; `closed` carries the Gate 5 decision and the residual risk. Closing a delivery package also moves its outcome, each subject with its own event.
 
-## Open questions, in the order they are being ruled
+6. **One id series** (selection *"A"*): every work package, repair or delivery, is `WP-<NN>-<slug>`; kind lives in the `kind` field, never the id's spelling; the drydock's `RO-n` names stay as aliases resolved through RO-2's identity seam.
 
-6. The repair order's id: `WP-<NN>-<slug>` like every work package, or its own `RO-<n>` series.
-7. The repair tagging scheme on GitHub.
-8. The legacy checklist link: frozen as is, or a stored id added to live legacy ADRs.
-9. The decomposition matrix: retired under RO-6, or rekeyed to size work packages and task cards.
-10. The meaning of "`ghi-close` carrying the PR-closeout distinctions".
+7. **The repair tagging scheme** (selection *"A"*): one `repair` label on every issue attached to a repair package; the `gz` verb that attaches an issue also comments the package id on it (`WP-07-astral-toolchain (RO-9)`). The `runtime` label, patch eligibility, is unchanged.
+8. **The legacy checklist link is not built; it is settled by the record, not asked.** The row's "checklist to brief link by stored id, not position" (2026-10-17) is superseded by the requirements model of 2026-10-18: an ADR carries *"no checklist, no work packages, no release"*, *"Legacy ADR checklists and OBPIs stay as frozen history behind the aliases"*, and *"nothing legacy is backfilled"*. New work links a work package to its outcome by stored id; the positional link survives only in frozen legacy.
+
+9. **The decomposition matrix is rekeyed, settled by the row:** *"the decomposition matrix detached from lane and kind"*. Its five dimensions and the single-narrative rule size an outcome and a task card instead of an ADR checklist; the Lite, Heavy and Foundation columns and the checklist-count step (`specify_cmd.py:731-738`) go.
+
+10. **`ghi-close` and the repair package** (operator: *"yes"*): the register row's "`ghi-close` carrying the PR-closeout distinctions" is dropped; it entered in the agent rewrite `6a77de411` with no ruling behind it, and gzkit works on main with no pull requests. In its place: `ghi-close` records an issue's close against the issue's repair package, and the close of a package's last issue never closes the package, which closes only through Gate 5 (`work_package_transitioned` to `closed`) once its punch-list lines are cleared and its safeguards restored.
+
+## Tranches (for the contractor)
+
+The contractor stops and waits on every structural question (operator, 2026-10-25: *"A"*); the names of new `gz` verbs are one, asked at the start of tranche 2.
+
+1. **Store and event.** `data/catalog/work_packages.json` and its schema: `id` (`WP-<NN>-<slug>`), `kind`, `outcome` (delivery) or `issues` (repair, one or more, each in one package only), `lane` (repair only), aliases (`RO-n`). `work_package_transitioned` with its state grammar and payloads, registered with the forward rule; `gz validate --catalog` reads both.
+2. **Verbs.** Initiate (the operator's words), freeze (the baseline, the risk note, the reviewer's receipt; refuses an edit to a baselined REQ except a reopening), close (the Gate 5 decision and the residual; a delivery close also moves its outcome), attach an issue. The forward rule turns fail-closed once these supply an outcome id (RO-3 ruling 4).
+3. **GitHub.** The `repair` label; the attach verb's comment naming the package; `ghi-close` recording an issue's close against its package (ruling 10).
+4. **Realignment.** The decomposition matrix rekeyed (ruling 9); lane read from the outcome or the repair package for new work, with ADR and OBPI lane left as frozen legacy; the `release_package.md` template's `lane` field removed (its outcome entries are RO-4's).
+5. **Witness.** One repair order of this drydock run through the new structure end to end, as the row requires: RO-9 as a repair package carrying #1183 and #1184, aliased `RO-9`.
+
+## Restoration (RO-5's punch-list lines)
+
+Each tranche adds a § Punch list line for every safeguard it disconnects, reroutes or changes: at least the brief-lane validators (`hooks/obpi.py:507`, `validate_briefs.py:48`) and `specify_cmd.py`'s checklist-count check, which tranche 4 changes. RO-5 closes when those lines are cleared.
+
+## Witness
+
+Schema validation of `work_packages.json`; the tranche-5 repair order flown end to end; the register row's witness.
 
 ## Current state (research of 2026-10-25)
 
