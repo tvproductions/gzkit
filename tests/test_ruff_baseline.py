@@ -30,7 +30,7 @@ from gzkit.ruff_baseline import (
 from tests.commands.common import argv_by_tool_name
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Sequence
+    from collections.abc import Callable, Mapping, Sequence
 
 
 def _item(root: Path, file: str, code: str | None, row: int = 1) -> dict[str, object]:
@@ -70,7 +70,7 @@ class _Tree:
         self.root = Path(self._tmp.name).resolve()
         (self.root / "data").mkdir()
 
-    def baseline(self, rows: list[dict[str, object]]) -> None:
+    def baseline(self, rows: Sequence[Mapping[str, object]]) -> None:
         payload = {"_doc": "test baseline", "rows": rows}
         (self.root / "data" / "ruff_baseline.json").write_text(json.dumps(payload), "utf-8")
 

@@ -12,14 +12,18 @@ assumes, so the band follows from the declaration and the record alone.
 
 import unittest
 from datetime import UTC, datetime, timedelta
+from typing import TYPE_CHECKING
 
 from gzkit.commands.chores_declaration import ChoreDeclaration
 from gzkit.commands.chores_staleness import newest_pass_stamp, read_chore_staleness
 
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
 _NOW = datetime(2026, 9, 14, 12, 0, tzinfo=UTC)
 
 
-def _declaration(staleness: dict[str, object]) -> ChoreDeclaration:
+def _declaration(staleness: Mapping[str, object]) -> ChoreDeclaration:
     return ChoreDeclaration.model_validate(
         {
             "class": "conformance",

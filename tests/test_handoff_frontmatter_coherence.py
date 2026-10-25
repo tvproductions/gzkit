@@ -14,6 +14,7 @@ import tempfile
 import unittest
 from datetime import datetime, timedelta
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import yaml
 from pydantic import ValidationError
@@ -33,6 +34,9 @@ from gzkit.handoff_validation import (
 from gzkit.lock_manager import LockData, _write_reaping_exchange
 from gzkit.quality import _HANDOFF_ENFORCEMENT_CUTOVER, run_handoff_document_audit
 from gzkit.traceability import covers
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 _SLUG_OBPI_ID = "OBPI-0.0.72-02-handoff-frontmatter-reconcile"
 
@@ -60,7 +64,7 @@ def _base_kwargs() -> dict[str, str]:
     }
 
 
-def _full_document(frontmatter: dict[str, object]) -> str:
+def _full_document(frontmatter: Mapping[str, object]) -> str:
     """Build a complete handoff doc: frontmatter + all seven required sections."""
     parts = ["---", yaml.safe_dump(frontmatter, sort_keys=False).rstrip("\n"), "---", ""]
     for name in REQUIRED_SECTIONS:
@@ -68,7 +72,7 @@ def _full_document(frontmatter: dict[str, object]) -> str:
     return "\n".join(parts)
 
 
-def _document_missing_section(frontmatter: dict[str, object]) -> str:
+def _document_missing_section(frontmatter: Mapping[str, object]) -> str:
     """Build a handoff doc that is malformed by omitting one required section."""
     omit = "Evidence / Artifacts"
     parts = ["---", yaml.safe_dump(frontmatter, sort_keys=False).rstrip("\n"), "---", ""]

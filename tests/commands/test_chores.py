@@ -2,6 +2,7 @@ import json
 import sys
 import unittest
 from pathlib import Path
+from typing import TYPE_CHECKING
 from unittest.mock import patch
 
 import structlog.testing
@@ -9,6 +10,9 @@ import structlog.testing
 from gzkit.cli import main
 from gzkit.traceability import covers
 from tests.commands.common import CliRunner, _quick_init
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping, Sequence
 
 # Forward-slash executable path for shlex.split compatibility on Windows.
 _PYTHON = '"' + sys.executable.replace("\\", "/") + '"'
@@ -53,7 +57,7 @@ def _write_v2_registry(chores: list[dict[str, object]]) -> None:
     registry_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
 
-def _write_acceptance(chore_path: str, criteria: list[dict[str, object]]) -> None:
+def _write_acceptance(chore_path: str, criteria: Sequence[Mapping[str, object]]) -> None:
     """Write an acceptance.json inside the given chore directory."""
     acceptance_dir = Path(chore_path)
     acceptance_dir.mkdir(parents=True, exist_ok=True)

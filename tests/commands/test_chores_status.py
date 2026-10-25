@@ -16,6 +16,7 @@ import unittest
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import TYPE_CHECKING
 from unittest.mock import patch
 
 from gzkit.cli import main
@@ -28,6 +29,9 @@ from gzkit.commands.chores_staleness import (
 from tests.commands.common import CliRunner, _isolated_git_env, _quick_init
 from tests.commands.test_chores import _project_chores_root, _write_acceptance, _write_v2_registry
 
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
 _BASE = {
     "rung": "observe",
     "idempotent": True,
@@ -37,7 +41,7 @@ _BASE = {
 }
 
 
-def _pointer(slug: str, chore_class: str, staleness: dict[str, object]) -> dict[str, object]:
+def _pointer(slug: str, chore_class: str, staleness: Mapping[str, object]) -> dict[str, object]:
     return {
         "slug": slug,
         "title": slug,

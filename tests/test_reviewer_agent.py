@@ -8,6 +8,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from pydantic import ValidationError
 
@@ -23,6 +24,9 @@ from gzkit.commands.pipeline import (
 )
 from gzkit.roles import ReviewVerdict
 from gzkit.traceability import covers
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 
 class TestPromiseAssessment(unittest.TestCase):
@@ -185,7 +189,7 @@ class TestComposeReviewerPrompt(unittest.TestCase):
 class TestParseReviewerAssessment(unittest.TestCase):
     """parse_reviewer_assessment() extraction logic."""
 
-    def _wrap_json(self, data: dict[str, object]) -> str:
+    def _wrap_json(self, data: Mapping[str, object]) -> str:
         return f"Some text before\n```json\n{json.dumps(data)}\n```\nSome text after"
 
     @covers("REQ-0.23.0-03-06")

@@ -27,6 +27,7 @@ Not a ``gz`` verb: a narrow governed repair, invoked as
 import argparse
 import sys
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from gzkit.ledger import Ledger, extract_bare_obpi_id
 from gzkit.ledger_events import artifact_renamed_event
@@ -37,6 +38,9 @@ from gzkit.obpi_lifecycle import (
     rename_chain_target,
 )
 
+if TYPE_CHECKING:
+    from collections.abc import Mapping, Sequence
+
 _ADR_ROOT = Path("docs") / "design" / "adr"
 
 
@@ -45,7 +49,7 @@ def _brief_stems(project_root: Path) -> set[str]:
     return {path.stem for path in (project_root / _ADR_ROOT).rglob("OBPI-*.md")}
 
 
-def _disposition_of(events: list[dict[str, object]], obpi_id: str) -> str | None:
+def _disposition_of(events: Sequence[Mapping[str, object]], obpi_id: str) -> str | None:
     """Return the disposition retiring *obpi_id*, or ``None`` if it is live.
 
     A disposed OBPI must not be renamed: the census already excludes it, so the
@@ -64,7 +68,7 @@ def _disposition_of(events: list[dict[str, object]], obpi_id: str) -> str | None
 
 
 def _refusals(
-    events: list[dict[str, object]], stems: set[str], old_id: str, new_id: str
+    events: Sequence[Mapping[str, object]], stems: set[str], old_id: str, new_id: str
 ) -> list[str]:
     """Return every precondition *old_id* → *new_id* fails, or an empty list.
 

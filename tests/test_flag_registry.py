@@ -4,6 +4,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from pydantic import ValidationError
 
@@ -11,12 +12,15 @@ from gzkit.flags.models import FlagSpec, InvalidFlagValueError
 from gzkit.flags.registry import load_registry
 from gzkit.traceability import covers
 
+if TYPE_CHECKING:
+    from collections.abc import Mapping, Sequence
+
 # Minimal valid schema file content (contract artifact).
 _SCHEMA_STUB = json.dumps({"$schema": "https://json-schema.org/draft/2020-12/schema"})
 
 
 def _write_registry(
-    tmp: Path, flags: list[dict[str, object]], *, extra_keys: dict[str, object] | None = None
+    tmp: Path, flags: Sequence[Mapping[str, object]], *, extra_keys: dict[str, object] | None = None
 ) -> tuple[Path, Path]:
     """Write a flags.json and schema stub into a temp directory. Return paths."""
     registry_path = tmp / "flags.json"

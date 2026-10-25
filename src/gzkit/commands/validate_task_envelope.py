@@ -11,7 +11,7 @@ module's namespace. Shares ``_find_obpi_briefs`` with the briefs validator modul
 import re
 import subprocess
 from datetime import datetime
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from gzkit.commands.validate_briefs import _find_obpi_briefs
 from gzkit.core.models import (
@@ -27,6 +27,10 @@ from gzkit.executables import resolve_executable
 from gzkit.ledger import extract_bare_obpi_id
 from gzkit.triangle import ReqId
 from gzkit.validate import ValidationError
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+    from pathlib import Path
 
 # ---------------------------------------------------------------------------
 # Task-envelope-coherence validator (OBPI-0.0.64-04)
@@ -275,7 +279,7 @@ def _is_support_manpage_reflection_event(
 
 
 def _is_req_attributed_uncovered_accept_event(
-    ev: dict[str, object],
+    ev: Mapping[str, object],
     active_tasks_by_obpi: dict[str, set[str]],
 ) -> bool:
     """Return True when an uncovered-accept event carries REQ-level attribution."""

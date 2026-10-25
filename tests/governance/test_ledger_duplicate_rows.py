@@ -27,6 +27,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from gzkit.commands.common import get_project_root
 from gzkit.validate_pkg.ledger_check import (
@@ -34,6 +35,9 @@ from gzkit.validate_pkg.ledger_check import (
     _row_fingerprint,
     validate_ledger,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping, Sequence
 
 _LIVE_LEDGER = get_project_root() / ".gzkit" / "ledger.jsonl"
 
@@ -47,7 +51,7 @@ _ROW = {
 _LATER = {**_ROW, "id": "OBPI-0.1.0-02-example", "ts": "2026-01-02T00:00:00+00:00"}
 
 
-def _errors_for(rows: list[dict[str, object]]) -> list[str]:
+def _errors_for(rows: Sequence[Mapping[str, object]]) -> list[str]:
     """Write *rows* to a throwaway ledger and return the validator's messages."""
     path = Path(tempfile.mkdtemp()) / "ledger.jsonl"
     path.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8", newline="\n")

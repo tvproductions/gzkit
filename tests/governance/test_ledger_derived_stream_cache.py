@@ -32,10 +32,14 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import TYPE_CHECKING
 from unittest import mock
 
 from gzkit.ledger import Ledger, LedgerEvent
 from gzkit.ledger_corrections import evidence_events, live_events
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 _SUBJECT_TS = "2026-01-02T00:00:00+00:00"
 
@@ -65,7 +69,7 @@ _CORRECTION = {
 }
 
 
-def _ledger_with(*rows: dict[str, object]) -> Ledger:
+def _ledger_with(*rows: Mapping[str, object]) -> Ledger:
     """Write *rows* to a throwaway ledger and return a Ledger over it."""
     path = Path(tempfile.mkdtemp()) / "ledger.jsonl"
     path.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8", newline="\n")

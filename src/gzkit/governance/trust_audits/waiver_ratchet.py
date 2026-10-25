@@ -38,9 +38,12 @@ import json
 from collections import Counter
 from datetime import date
 from pathlib import Path
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 from gzkit.core.validation_rules import ValidationError
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 _REGISTRY_REL = Path("data") / "waiver_ratchet_registry.json"
 _DATA_REL = Path("data")
@@ -195,16 +198,16 @@ def _check_shrink_ratchet(
     return []
 
 
-def _keys_of(collection: object, _spec: dict[str, object]) -> Counter[str] | None:
+def _keys_of(collection: object, _spec: Mapping[str, object]) -> Counter[str] | None:
     return Counter(str(k) for k in collection) if isinstance(collection, dict) else None
 
 
-def _strings_of(collection: object, _spec: dict[str, object]) -> Counter[str] | None:
+def _strings_of(collection: object, _spec: Mapping[str, object]) -> Counter[str] | None:
     readable = isinstance(collection, list) and all(isinstance(e, str) for e in collection)
     return Counter(collection) if readable else None
 
 
-def _fields_of(collection: object, spec: dict[str, object]) -> Counter[str] | None:
+def _fields_of(collection: object, spec: Mapping[str, object]) -> Counter[str] | None:
     fields = spec.get("fields")
     if not isinstance(collection, list) or not isinstance(fields, list) or not fields:
         return None
@@ -219,7 +222,7 @@ def _fields_of(collection: object, spec: dict[str, object]) -> Counter[str] | No
 _IDENTITY_READERS = {"keys": _keys_of, "strings": _strings_of, "fields": _fields_of}
 
 
-def _identities(collection: object, spec: dict[str, object]) -> Counter[str] | None:
+def _identities(collection: object, spec: Mapping[str, object]) -> Counter[str] | None:
     """Return the identities *collection* holds under *spec*, or ``None`` when unreadable.
 
     A multiset: two entries may legitimately share an identity, and a second copy of one is

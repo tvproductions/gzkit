@@ -7642,11 +7642,6 @@
       "count": 5
     },
     {
-      "file": "src/gzkit/commands/validate_task_envelope.py",
-      "rule": "TC003",
-      "count": 1
-    },
-    {
       "file": "src/gzkit/commands/version_sync.py",
       "rule": "DOC201",
       "count": 8
@@ -10934,11 +10929,6 @@
     {
       "file": "src/gzkit/governance/trust_audits/taxonomy.py",
       "rule": "RUF002",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/taxonomy.py",
-      "rule": "TC003",
       "count": 1
     },
     {

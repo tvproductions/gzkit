@@ -18,11 +18,15 @@ and re-imported by ``sensitivity.py``.
 
 import json
 import re
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from gzkit.core.models import ADR_SHORT_ID_BODY, pool_slug
 from gzkit.frontmatter import FrontmatterRead, read_frontmatter_bytes
 from gzkit.validate import ValidationError
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+    from pathlib import Path
 
 _FOUNDATION_SEMVER_RE = re.compile(r"^0\.0\.\d+$")
 _POOL_ID_PREFIX = "ADR-pool."
@@ -102,7 +106,7 @@ def _interview_error(rel: str, message: str) -> ValidationError:
 
 
 def _pool_identity_problems(
-    payload: dict[str, object], file_slug: str, known_keys: frozenset[str]
+    payload: Mapping[str, object], file_slug: str, known_keys: frozenset[str]
 ) -> list[str]:
     """Return the pool-artifact obligations *payload* fails, beyond answers grammar.
 

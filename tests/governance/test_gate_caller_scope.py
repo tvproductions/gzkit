@@ -13,12 +13,16 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from gzkit.governance.trust_audits.gate_callers import (
     ACCEPTED_REL,
     audit_gate_callers,
     uncalled_gates,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 
 def _project(
@@ -28,7 +32,7 @@ def _project(
     precommit: str = "",
     workflows: dict[str, str] | None = None,
     chores: dict[str, str] | None = None,
-    membership: dict[str, object] | None = None,
+    membership: Mapping[str, object] | None = None,
 ) -> tempfile.TemporaryDirectory:
     """Build a fixture root carrying the caller surfaces the audit scans."""
     tmp = tempfile.TemporaryDirectory()
