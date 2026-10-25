@@ -174,6 +174,7 @@ class TestReadExistingSummary(unittest.TestCase):
         )
         result = _read_existing_summary(brief)
         self.assertIsNotNone(result)
+        assert result is not None
         self.assertIn("obpi_complete.py", result)
 
 

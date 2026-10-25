@@ -191,7 +191,7 @@ class ReferenceChecker(Protocol):
     ``.claude/rules/hexagonal-architecture.md`` § Operative rules 3 and 4.
     """
 
-    def __call__(self, reference: StepReference) -> ReferenceState:
+    def __call__(self, reference: StepReference, /) -> ReferenceState:
         """Resolve one step reference to its observed state."""
         ...
 

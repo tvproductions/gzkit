@@ -463,7 +463,7 @@ def _quick_init(mode: str = "lite") -> None:
 
     seed_stage_procedures(project_root)
 
-    config = GzkitConfig(mode=mode, project_name="test-project")
+    config = GzkitConfig.model_validate({"mode": mode, "project_name": "test-project"})
     config.save(project_root / ".gzkit.json")
 
     manifest = {

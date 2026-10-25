@@ -520,7 +520,9 @@ class TestArbRedCommitCli(unittest.TestCase):
 
     def _exit_for(self, verdict: str, outcome: str = "killed") -> tuple[int, str]:
         hunks = [HunkWitness(path="p.py", label="p.py:1-2", outcome=outcome)]
-        witness = CommitWitness(commit="a" * 40, verdict=verdict, hunks=hunks, detail="d")
+        witness = CommitWitness.model_validate(
+            {"commit": "a" * 40, "verdict": verdict, "hunks": hunks, "detail": "d"}
+        )
         err = io.StringIO()
         with (
             tempfile.TemporaryDirectory() as tmp,
@@ -583,8 +585,14 @@ class TestCommitModeRecordsItsVerdict(unittest.TestCase):
             HunkWitness(path="p.py", label="p.py:1-2", outcome=outcome, reason="r"),
             HunkWitness(path="p.py", label="p.py:9-9", outcome="killed"),
         ]
-        witness = CommitWitness(
-            commit="b" * 40, verdict=verdict, hunks=hunks, test_modules=["tests.t"], detail="d"
+        witness = CommitWitness.model_validate(
+            {
+                "commit": "b" * 40,
+                "verdict": verdict,
+                "hunks": hunks,
+                "test_modules": ["tests.t"],
+                "detail": "d",
+            }
         )
         root = Path(self._tmp.name)
         self.stdout = io.StringIO()

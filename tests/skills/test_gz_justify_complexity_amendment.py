@@ -68,6 +68,7 @@ class TestGzJustifyComplexityAmendment(unittest.TestCase):
         def parse(value: str) -> tuple[int, ...]:
             return tuple(int(part) for part in str(value).split("."))
 
+        assert skill_version is not None
         self.assertGreaterEqual(
             parse(skill_version),
             parse("6.1.0"),

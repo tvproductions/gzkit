@@ -334,9 +334,12 @@ class TestPrecompleteNamesTheObpiOnceAtEntry(unittest.TestCase):
 
         module = "gzkit.commands.obpi_precomplete"
         patches = [
-            patch(f"{module}.{name}", new=_replaced(name)) for name in _REPLACED_PRECOMPLETE_CHECKS
+            *(
+                patch(f"{module}.{name}", new=_replaced(name))
+                for name in _REPLACED_PRECOMPLETE_CHECKS
+            ),
+            patch(f"{module}.get_project_root", return_value=self.root),
         ]
-        patches.append(patch(f"{module}.get_project_root", return_value=self.root))
         for each in patches:
             each.start()
             self.addCleanup(each.stop)

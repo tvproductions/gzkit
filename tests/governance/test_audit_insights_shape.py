@@ -65,11 +65,13 @@ class InsightRecordModelTests(unittest.TestCase):
 
     def test_unknown_type_rejected(self) -> None:
         with self.assertRaises(ValidationError):
-            InsightRecord(
-                ts="2026-04-29T11:00:00Z",
-                type="advisory",
-                scope="example",
-                summary="example",
+            InsightRecord.model_validate(
+                {
+                    "ts": "2026-04-29T11:00:00Z",
+                    "type": "advisory",
+                    "scope": "example",
+                    "summary": "example",
+                }
             )
 
     def test_extra_field_rejected(self) -> None:

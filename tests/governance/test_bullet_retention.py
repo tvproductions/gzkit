@@ -436,15 +436,17 @@ _SCORECARD_TIER = """\
 
 def _seed_corpus(root: Path, *, tier: str, text: str, surface: str = _TIER_SURFACE) -> None:
     """Write a one-entry per-surface corpus store carrying *tier* for *text*."""
-    entry = CorpusEntry(
-        id=f"corpus-tier-test-{tier}",
-        surface=surface,
-        section="execution-rules",
-        tier=tier,
-        classification="Mechanical",
-        text=text,
-        origin="tier-scoped-test",
-        ts="2026-06-15T00:00:00+00:00",
+    entry = CorpusEntry.model_validate(
+        {
+            "id": f"corpus-tier-test-{tier}",
+            "surface": surface,
+            "section": "execution-rules",
+            "tier": tier,
+            "classification": "Mechanical",
+            "text": text,
+            "origin": "tier-scoped-test",
+            "ts": "2026-06-15T00:00:00+00:00",
+        }
     )
     store = root / ".gzkit" / "corpus" / f"{surface}.jsonl"
     store.parent.mkdir(parents=True, exist_ok=True)

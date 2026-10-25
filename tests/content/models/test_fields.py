@@ -161,7 +161,7 @@ class TestDensityBulletFields(unittest.TestCase):
         from gzkit.content.models import Bullet
 
         with self.assertRaises(ValidationError):
-            Bullet(text="x", classification="Invalid")
+            Bullet.model_validate({"text": "x", "classification": "Invalid"})
 
     @covers("REQ-0.0.37-11-01")
     def test_bullet_accepts_witness_and_rationale_ref(self) -> None:
@@ -223,7 +223,7 @@ class TestPillarFields(unittest.TestCase):
         from gzkit.content.models.agent_contract import Pillar
 
         with self.assertRaises(ValidationError):
-            Pillar(id="x", title="X", order=1, tier="ultra")
+            Pillar.model_validate({"id": "x", "title": "X", "order": 1, "tier": "ultra"})
 
     @covers("REQ-0.0.37-11-02")
     def test_pillar_carries_bullets(self) -> None:

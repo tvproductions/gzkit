@@ -21,6 +21,7 @@ from gzkit.handoff_api import (
     SETTLED_MARKER,
     DecisionAttribution,
     ObservedState,
+    ReferenceChecker,
     ReferenceKind,
     ReferenceState,
     StalenessLevel,
@@ -598,7 +599,7 @@ class TestResumeVerifiesStepReferences(unittest.TestCase):
     def _resume(
         self,
         steps: tuple[str, ...],
-        checker: object = None,
+        checker: ReferenceChecker | None = None,
         tmp: str | None = None,
     ):
         with tempfile.TemporaryDirectory() as made:
@@ -1399,7 +1400,9 @@ class TestAuthoringAnnotatesSettledCitations(unittest.TestCase):
     def _sections(self, **overrides: str) -> dict[str, str]:
         return {**_SEVEN_SECTIONS, **overrides}
 
-    def _write(self, base: Path, sections: dict[str, str], checker: object = None) -> str:
+    def _write(
+        self, base: Path, sections: dict[str, str], checker: ReferenceChecker | None = None
+    ) -> str:
         path = create_handoff(
             adr_id="ADR-0.0.65",
             branch="main",

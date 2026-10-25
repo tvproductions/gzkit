@@ -164,7 +164,9 @@ class TestAdrManagementConfirmDecision(unittest.TestCase):
             1,
             "REQ-05: gz adr parser must expose exactly one subcommand group",
         )
-        registered_verbs = set(adr_subparser_actions[0].choices)
+        choices = adr_subparser_actions[0].choices
+        assert choices is not None
+        registered_verbs = set(choices)
         expected_adr_verbs = {
             "status",
             "report",

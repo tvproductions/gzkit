@@ -139,7 +139,7 @@ class TestExpectedFindingDiscriminatesTheReason(unittest.TestCase):
     """
 
     @staticmethod
-    def _record(expect: str | None, findings: list[object]):
+    def _record(expect: str | None, findings: object):
         from gzkit.enforcement import EnforcementClaimRecord
 
         return EnforcementClaimRecord(

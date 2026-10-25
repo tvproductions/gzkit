@@ -245,6 +245,7 @@ class TestLivenessCheck(unittest.TestCase):
 
         self.assertFalse(result.ok)
         self.assertIsNotNone(result.defect)
+        assert result.defect is not None
         self.assertIn("mx-awareness.py", result.defect)
 
     @covers("REQ-0.0.74-07-02")
@@ -264,6 +265,7 @@ class TestLivenessCheck(unittest.TestCase):
 
         self.assertFalse(result.ok)
         self.assertIsNotNone(result.defect)
+        assert result.defect is not None
         self.assertIn("settings.json", result.defect)
 
     @covers("REQ-0.0.74-07-02")

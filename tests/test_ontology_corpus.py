@@ -209,7 +209,11 @@ class TestCorpusRebuildFidelity(unittest.TestCase):
         self.assertEqual(typed.id, "OBPI-0.1.0-01")
         self.assertEqual(event.extra, {"record_type": "review", "payload": payload})
         with self.assertRaises(ValidationError):
-            acceptance_recorded_event("OBPI-0.1.0-01", "invented", payload)
+            acceptance_recorded_event(
+                "OBPI-0.1.0-01",
+                "invented",  # ty: ignore[invalid-argument-type] — the refused record type
+                payload,
+            )
 
     @covers("REQ-0.32.0-02-05")
     def test_all_live_discriminators_are_dispositioned(self) -> None:

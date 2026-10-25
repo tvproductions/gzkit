@@ -40,17 +40,19 @@ def _entry(
     retires: str | None = None,
     supersedes: str | None = None,
 ) -> CorpusEntry:
-    return CorpusEntry(
-        id=entry_id,
-        surface="AGENTS.md",
-        section="attestation",
-        tier=tier,
-        classification="Judgment",
-        text=text,
-        origin="test",
-        ts="2026-01-01T00:00:00+00:00",
-        retires=retires,
-        supersedes=supersedes,
+    return CorpusEntry.model_validate(
+        {
+            "id": entry_id,
+            "surface": "AGENTS.md",
+            "section": "attestation",
+            "tier": tier,
+            "classification": "Judgment",
+            "text": text,
+            "origin": "test",
+            "ts": "2026-01-01T00:00:00+00:00",
+            "retires": retires,
+            "supersedes": supersedes,
+        }
     )
 
 

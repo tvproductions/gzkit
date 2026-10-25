@@ -20,7 +20,7 @@ an arm of the enforcement floor: the pre-push guard runs the floor in every proj
 and this inventory reads a disclosed list only gzkit's repository carries.
 """
 
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
 
 from gzkit.core.validation_rules import ValidationError
@@ -67,7 +67,7 @@ def registry_declarations() -> dict[str, Declaration]:
 
 
 def audit_population_controls(
-    project_root: Path, *, declarations: dict[str, Declaration] | None = None
+    project_root: Path, *, declarations: Mapping[str, Declaration] | None = None
 ) -> list[ValidationError]:
     """Flag every undeclared claim not on the accepted list, and every stale acceptance.
 

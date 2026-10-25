@@ -114,6 +114,7 @@ class TestSkillsPublicSymbols(unittest.TestCase):
             "scaffold_core_skills",
             "scaffold_skill",
         }
+        assert all_exports is not None
         missing = expected - set(all_exports)
         self.assertEqual(missing, set(), f"Missing from __all__: {missing}")
 

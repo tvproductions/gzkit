@@ -124,7 +124,12 @@ class PopulationDeclarationIsValidatedAtDecorationTests(unittest.TestCase):
 
     def test_a_non_callable_object_is_refused(self) -> None:
         with self.assertRaises(ValueError):
-            enforces("population-test", _plant, _witness_seeing(frozenset()), population=_MEMBERS)
+            enforces(
+                "population-test",
+                _plant,
+                _witness_seeing(frozenset()),
+                population=_MEMBERS,  # ty: ignore[invalid-argument-type] — the refused shape
+            )
 
     def test_none_the_token_and_a_callable_are_accepted(self) -> None:
         for population in (None, POPULATION_NONE, lambda: _MEMBERS):

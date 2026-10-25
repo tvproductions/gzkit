@@ -1112,6 +1112,7 @@ class TestSkillSchemaAlignment(unittest.TestCase):
                 continue
             model_field = _resolve_field(self.model, schema_field)
             self.assertIsNotNone(model_field)
+            assert model_field is not None
             model_max_length = _pydantic_field_max_length(self.model, model_field)
             with self.subTest(field=schema_field):
                 self.assertEqual(
@@ -1392,11 +1393,13 @@ class TestMxSessionOpenedCarriesItsMode(unittest.TestCase):
         )
         self.assertEqual((hangar.mode, hangar.contract), ("mx", ""))
         with self.assertRaises(ValidationError):
-            MxSessionOpenedEvent(
-                event="mx_session_opened",
-                id="s-3",
-                session_id="s-3",
-                reason="x",
-                attestor="g0",
-                mode="lenient",
+            MxSessionOpenedEvent.model_validate(
+                {
+                    "event": "mx_session_opened",
+                    "id": "s-3",
+                    "session_id": "s-3",
+                    "reason": "x",
+                    "attestor": "g0",
+                    "mode": "lenient",
+                }
             )

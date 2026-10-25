@@ -929,6 +929,7 @@ class TestPersonaPipelineIntegration(unittest.TestCase):
             (pdir / "implementer.md").write_text(_VALID_PERSONA, encoding="utf-8")
             body = load_persona(root, "implementer")
             self.assertIsNotNone(body)
+            assert body is not None
             self.assertIn("Implementer Persona", body)
 
     # --- OBPI-0.0.12-06: dispatch integration tests ---
@@ -946,6 +947,7 @@ class TestPersonaPipelineIntegration(unittest.TestCase):
             body = load_persona_for_dispatch(root, "Implementer")
 
             self.assertIsNotNone(body)
+            assert body is not None
             self.assertIn("Implementer Persona", body)
 
     @covers("REQ-0.0.12-06-01")

@@ -1,6 +1,7 @@
 """Acceptance preserves contract obligations through independent repair review."""
 
 import unittest
+from typing import Any
 
 from gzkit.acceptance import (
     Closure,
@@ -434,7 +435,11 @@ class TestAcceptance(unittest.TestCase):
                 ),
             ),
         )
-        arguments = {"input_digest": "bytes-a", "author_id": "implementer", "stage": "stage2"}
+        arguments: dict[str, Any] = {
+            "input_digest": "bytes-a",
+            "author_id": "implementer",
+            "stage": "stage2",
+        }
         scoped = assess_readiness(
             (self.obligation, future),
             (self.proof,),

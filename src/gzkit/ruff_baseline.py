@@ -120,7 +120,7 @@ class BaselineError(RuntimeError):
 class Runner(Protocol):
     """Runs Ruff over targets and returns its JSON report."""
 
-    def __call__(self, project_root: Path, targets: Sequence[str], *, fix: bool) -> str:
+    def __call__(self, project_root: Path, /, targets: Sequence[str], *, fix: bool) -> str:
         """Return Ruff's ``--output-format json`` report for *targets*."""
         ...
 
@@ -175,7 +175,7 @@ def run_ruff_json(project_root: Path, targets: Sequence[str], *, fix: bool) -> s
 class Walker(Protocol):
     """Lists the files Ruff reads when it walks the whole tree."""
 
-    def __call__(self, project_root: Path) -> list[str]:
+    def __call__(self, project_root: Path, /) -> list[str]:
         """Return the POSIX paths, relative to *project_root*, Ruff's walk of ``.`` reads."""
         ...
 

@@ -235,7 +235,7 @@ def verification_replaced(
     *,
     failing: bool = False,
     detail: str = "exit 1",
-    at_dispatch: Callable[[], None] | None = None,
+    at_dispatch: Callable[[], object] | None = None,
 ) -> Generator[list[str]]:
     """Let ``gz obpi pipeline --from=verify`` or ``--from=ceremony`` run in a seeded project.
 
@@ -1517,7 +1517,7 @@ class _LaunchableThroughTheCli(unittest.TestCase):
         self,
         *,
         failing: bool = False,
-        at_dispatch: Callable[[], None] | None = None,
+        at_dispatch: Callable[[], object] | None = None,
         detail: str = "exit 1",
     ) -> list[str]:
         """Enter Stage 3 through ``gz obpi pipeline --from=verify``.

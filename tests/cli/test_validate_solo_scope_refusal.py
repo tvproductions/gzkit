@@ -100,6 +100,7 @@ class TestSoloScopeCombinationRefused(unittest.TestCase):
         governed next step, not a bare exit code.
         """
         buf = io.StringIO()
+        kwargs: dict[str, Any] = {**_DISPATCH_DEFAULTS, "check_fidelity_presence": True}
         with (
             redirect_stdout(buf),
             redirect_stderr(buf),
@@ -108,7 +109,7 @@ class TestSoloScopeCombinationRefused(unittest.TestCase):
             validate_cmd._dispatch_early_return_scopes(
                 Path("."),
                 other_scopes_active=True,
-                **{**_DISPATCH_DEFAULTS, "check_fidelity_presence": True},
+                **kwargs,
             )
         output = buf.getvalue()
         self.assertIn("--fidelity-presence", output)

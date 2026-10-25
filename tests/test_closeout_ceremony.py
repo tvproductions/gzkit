@@ -35,8 +35,11 @@ class TestExtractClosingArgument(unittest.TestCase):
         )
         result = extract_closing_argument(brief)
         self.assertIsNotNone(result)
+        assert result is not None
         self.assertIn("What was built", result)
+        assert result is not None
         self.assertIn("What it enables", result)
+        assert result is not None
         self.assertNotIn("Implementation Summary", result)
 
     @covers("REQ-0.23.0-04-04")

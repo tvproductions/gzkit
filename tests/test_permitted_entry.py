@@ -21,6 +21,7 @@ import io
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Any
 from unittest.mock import patch
 
 from gzkit.airlock.exit import Door
@@ -82,7 +83,7 @@ class TestGateAlwaysFires(SilencedConsoleTestCase):
     def test_no_entry_variant_reaches_exit_without_firing_the_gate(self) -> None:
         # BI-2: the reason/door selects ceremony weight, never WHETHER the gate fires.
         # Every entry variant (recon, light repair, beyond-ceiling) must call airlock_enter.
-        variants = (
+        variants: tuple[dict[str, Any], ...] = (
             {"recon": True},
             {"repair": "fix a typo"},
             {"repair": "refactor the schema"},

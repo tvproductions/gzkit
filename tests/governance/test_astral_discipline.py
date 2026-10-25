@@ -81,8 +81,8 @@ jobs:
 class _Tree:
     """A compliant project, with each test changing one file."""
 
-    def __init__(self, **files: str) -> None:
-        self.files = {
+    def __init__(self, **files: str | None) -> None:
+        self.files: dict[str, str | None] = {
             "pyproject.toml": _PYPROJECT,
             ".python-version": "3.14.8\n",
             ".github/workflows/ci.yml": _CI,
@@ -103,7 +103,7 @@ class _Tree:
         return sorted((v.rule, v.file, v.subject) for v in found)
 
 
-def _rules(**files: str) -> set[str]:
+def _rules(**files: str | None) -> set[str]:
     return {rule for rule, _, _ in _Tree(**files).violations()}
 
 
@@ -499,6 +499,8 @@ class TestTheAuditReadsItsBaseline(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             for name, text in {**_Tree(**files).files}.items():
+                if text is None:
+                    continue
                 (root / name).parent.mkdir(parents=True, exist_ok=True)
                 (root / name).write_text(textwrap.dedent(text), encoding="utf-8")
             return audit_astral_discipline(root)

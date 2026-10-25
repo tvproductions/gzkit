@@ -132,10 +132,8 @@ class TestAdvisorDiagnosisSchema(unittest.TestCase):
     def test_doctrinal_frame_rejects_unknown_authority(self) -> None:
         """Given authority outside the four-value enum, ValidationError is raised."""
         with self.assertRaises(ValidationError):
-            DoctrinalFrame(
-                authority="beck",
-                citation="Test citation",
-                excerpt="Test excerpt",
+            DoctrinalFrame.model_validate(
+                {"authority": "beck", "citation": "Test citation", "excerpt": "Test excerpt"}
             )
 
     @covers("REQ-0.0.29-01-04")
@@ -144,14 +142,16 @@ class TestAdvisorDiagnosisSchema(unittest.TestCase):
         frame = _valid_doctrinal_frame()
         proof_range = _valid_proof_range()
         with self.assertRaises(ValidationError):
-            AdvisorDiagnosis(
-                metric="radon_cc",
-                crossing_band="critical",
-                crossing_value=8.5,
-                archetype=RefactorArchetype.LONG_PARAMETER_LIST,
-                doctrinal_frame=frame,
-                proof=(proof_range,),
-                recommended_move="Introduce Parameter Object",
+            AdvisorDiagnosis.model_validate(
+                {
+                    "metric": "radon_cc",
+                    "crossing_band": "critical",
+                    "crossing_value": 8.5,
+                    "archetype": RefactorArchetype.LONG_PARAMETER_LIST,
+                    "doctrinal_frame": frame,
+                    "proof": (proof_range,),
+                    "recommended_move": "Introduce Parameter Object",
+                }
             )
 
     @covers("REQ-0.0.29-01-04")

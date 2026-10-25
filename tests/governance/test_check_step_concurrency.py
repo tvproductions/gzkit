@@ -13,10 +13,18 @@ declaration naming a step that no longer exists is stale rather than harmless.
 
 import json
 import unittest
+from typing import TYPE_CHECKING
 
 from gzkit.commands.common import get_project_root
 
+if TYPE_CHECKING:
+    from pathlib import Path
+
 _DECLARATION = get_project_root() / "data" / "check_step_concurrency.json"
+
+
+def _no_op(_root: Path) -> None:
+    """A step runner the partition never calls; it orders steps by name alone."""
 
 
 def _declared() -> dict[str, dict]:
@@ -94,7 +102,7 @@ class TestWritersRunBeforeReadOnlySteps(unittest.TestCase):
     def test_partition_places_every_writer_ahead_of_every_reader(self) -> None:
         from gzkit.commands.quality import _partition_steps_by_concurrency
 
-        steps = [("Behave", object()), ("Lint", object()), ("Docs build", object())]
+        steps = [("Behave", _no_op), ("Lint", _no_op), ("Docs build", _no_op)]
         serial, concurrent = _partition_steps_by_concurrency(steps)
 
         self.assertEqual([n for n, _ in serial], ["Behave", "Docs build"])
@@ -148,7 +156,7 @@ class TestWritersRunBeforeReadOnlySteps(unittest.TestCase):
         """
         from gzkit.commands.quality import _partition_steps_by_concurrency
 
-        serial, concurrent = _partition_steps_by_concurrency([("Totally New Step", object())])
+        serial, concurrent = _partition_steps_by_concurrency([("Totally New Step", _no_op)])
 
         self.assertEqual([n for n, _ in serial], ["Totally New Step"])
         self.assertEqual(concurrent, [], "An unmeasured step must never run concurrently")

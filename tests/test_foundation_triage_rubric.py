@@ -84,7 +84,15 @@ class TestFoundationTriageRankEntry(unittest.TestCase):
     def test_evidence_ref_dimension_is_literal(self) -> None:
         # @covers REQ-0.0.57-04-03 — dimension is a Literal enum, not free-form
         with self.assertRaises(ValidationError):
-            self.EvidenceRef(source="x", dimension="freeform_string", weight=3, weighted=0, count=0)
+            self.EvidenceRef.model_validate(
+                {
+                    "source": "x",
+                    "dimension": "freeform_string",
+                    "weight": 3,
+                    "weighted": 0,
+                    "count": 0,
+                }
+            )
 
     @covers("REQ-0.0.57-04-02")
     def test_evidence_ref_weighted_consistency(self) -> None:

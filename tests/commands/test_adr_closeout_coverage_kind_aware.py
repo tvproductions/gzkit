@@ -9,9 +9,9 @@ completed cleanly leaves its ADR unclosable.
 import tempfile
 import unittest
 from pathlib import Path
-from types import SimpleNamespace
 
 from gzkit.commands.adr_audit import _check_adr_obpi_coverage_gaps
+from gzkit.ledger import Ledger
 
 _ADR = "ADR-9.9.9-fixture"
 _OBPI = "OBPI-9.9.9-01-fixture"
@@ -26,7 +26,8 @@ def _gaps(criteria: str) -> list[tuple[str, list[str]]]:
             f"# {_OBPI}\n\n## Acceptance Criteria\n\n{criteria}\n", encoding="utf-8"
         )
         (root / "tests").mkdir()
-        return _check_adr_obpi_coverage_gaps(_ADR, root, SimpleNamespace(path=None))
+        # A ledger whose file does not exist: no waivers are on record.
+        return _check_adr_obpi_coverage_gaps(_ADR, root, Ledger(root / "ledger.jsonl"))
 
 
 class TestAdrCloseoutCoverageIsKindAware(unittest.TestCase):

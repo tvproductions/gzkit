@@ -130,11 +130,13 @@ class ThresholdBandModel(unittest.TestCase):
     @covers("REQ-0.0.28-02-03")
     def test_unknown_trigger_semantic_rejected(self) -> None:
         with self.assertRaises(ValidationError):
-            ThresholdBand(
-                metric="radon_cc",
-                corpus_percentile=90,
-                absolute_number=7.0,
-                trigger_semantic="info",
+            ThresholdBand.model_validate(
+                {
+                    "metric": "radon_cc",
+                    "corpus_percentile": 90,
+                    "absolute_number": 7.0,
+                    "trigger_semantic": "info",
+                }
             )
 
     @covers("REQ-0.0.28-02-04")

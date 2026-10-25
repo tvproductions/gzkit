@@ -15,6 +15,7 @@ import inspect
 import json
 import os
 import stat
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -1152,12 +1153,14 @@ class TestOwnershipDeclarationModel(unittest.TestCase):
 
     def test_section_value_outside_enum_is_rejected_at_construction(self) -> None:
         with self.assertRaises(ValidationError):
-            OwnershipDeclaration(
-                surface="Doc.md",
-                sections={"doc-title": "bogus-value"},
-                unowned_byte_floor=0,
-                measured_at="2026-09-02T00:00:00Z",
-                floor_event_id=None,
+            OwnershipDeclaration.model_validate(
+                {
+                    "surface": "Doc.md",
+                    "sections": {"doc-title": "bogus-value"},
+                    "unowned_byte_floor": 0,
+                    "measured_at": "2026-09-02T00:00:00Z",
+                    "floor_event_id": None,
+                }
             )
 
 
@@ -1879,6 +1882,8 @@ class TestWriteDeclarationAtomically(unittest.TestCase):
         # (GHI #955; CI run 33749751622, `ModuleNotFoundError: No module named
         # 'fcntl'`). A platform-conditional import belongs in the scope of the
         # thing that needs it, never above the guard that fences it.
+        if sys.platform == "win32":  # the skip guard above, in a form ty evaluates
+            self.skipTest("F_GETFL access-mode probe is POSIX-only")
         import fcntl  # noqa: PLC0415 - platform-conditional, unimportable elsewhere
 
         real_fsync = os.fsync
@@ -3214,6 +3219,7 @@ class TestSectionCoverage(unittest.TestCase):
         for sid in spans:
             body = ownership.section_body_lines(_GROWN_ALPHA_SURFACE, sid)
             self.assertIsNotNone(body)
+            assert body is not None
             total_body += len(body)
         self.assertEqual(total_body + len(rebuilt), len(_GROWN_ALPHA_SURFACE.splitlines()))
 

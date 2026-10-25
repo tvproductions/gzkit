@@ -17,6 +17,7 @@ prevent.
 import ast
 import json
 import re
+from collections.abc import Mapping
 from pathlib import Path
 
 from gzkit.core.models import ADR_PREFIX_BODY
@@ -82,14 +83,14 @@ def _baseline(project_root: Path, name: str, key: str) -> set[str] | None:
     return set(entries) if isinstance(entries, list) else None
 
 
-def records_derivation(payload: object, entry: dict[str, object] | None) -> bool:
+def records_derivation(payload: object, entry: Mapping[str, object] | None) -> bool:
     """Report whether a registry's authority is recorded in the file or its declaration.
 
     Either side satisfies it. A bare array cannot carry a provenance field at all,
     so the declaration in `config_registry.json` is the only place its derivation
     can live -- refusing that would make five registries permanently unfixable.
     """
-    if isinstance(entry, dict) and AUTHORITY_RE.search(str(entry.get("derivation", ""))):
+    if isinstance(entry, Mapping) and AUTHORITY_RE.search(str(entry.get("derivation", ""))):
         return True
     if not isinstance(payload, dict):
         return False
@@ -127,7 +128,7 @@ def policy_constants(project_root: Path) -> list[str]:
 
 
 def audit_derivation(
-    project_root: Path, entries: dict[str, dict[str, object]], data_root: Path
+    project_root: Path, entries: Mapping[str, Mapping[str, object]], data_root: Path
 ) -> list[ValidationError]:
     """Refuse a registry that records no authority and is not grandfathered."""
     baseline = _baseline(project_root, _DERIVATION_BASELINE, "grandfathered")

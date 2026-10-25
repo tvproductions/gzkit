@@ -84,7 +84,7 @@ class TestMarkerPresence(unittest.TestCase):
             assert old is not None
             self.assertEqual((old.mode, old.contract), ("mx", ""))
             with self.assertRaises(ValueError):
-                Marker(session_id="s-45", mode="lenient")
+                Marker.model_validate({"session_id": "s-45", "mode": "lenient"})
 
     @covers("REQ-0.0.74-01-01")
     def test_malformed_marker_reads_as_none_but_is_present(self) -> None:

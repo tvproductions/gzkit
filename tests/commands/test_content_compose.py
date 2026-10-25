@@ -35,15 +35,17 @@ _COMPRESSIBLE_TEXT = "Prefer stdlib JSONL for append-only stores."
 def _make_entry(
     entry_id: str, *, tier: str = "compressible", text: str = _COMPRESSIBLE_TEXT
 ) -> CorpusEntry:
-    return CorpusEntry(
-        id=entry_id,
-        surface="AGENTS.md",
-        section="behavior-rules",
-        tier=tier,
-        classification="Ambiguous",
-        text=text,
-        origin="test",
-        ts="2026-06-14T00:00:00Z",
+    return CorpusEntry.model_validate(
+        {
+            "id": entry_id,
+            "surface": "AGENTS.md",
+            "section": "behavior-rules",
+            "tier": tier,
+            "classification": "Ambiguous",
+            "text": text,
+            "origin": "test",
+            "ts": "2026-06-14T00:00:00Z",
+        }
     )
 
 

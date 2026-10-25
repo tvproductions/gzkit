@@ -21,10 +21,13 @@ import json
 import tempfile
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from gzkit.core.validation_rules import ValidationError
 from gzkit.registries import registry_path
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping, Sequence
 
 REFUSE_CLAIM_ID = "waiver-identity-new-entry-refused"
 ADMIT_CLAIM_ID = "waiver-identity-reviewed-admitted"
@@ -109,7 +112,7 @@ def new_identity_shape_population() -> list[str]:
 def _audit(
     audit: Callable[[Path], list[ValidationError]],
     project_root: Path,
-    shape: tuple[dict[str, Any], Any, list[str], list[dict[str, str]]],
+    shape: tuple[dict[str, Any] | None, Any, Sequence[str], Sequence[Mapping[str, str]]],
     baseline_count: int | None = None,
 ) -> list[ValidationError]:
     """Plant *shape* under *project_root* and run the real *audit* on it.

@@ -221,60 +221,15 @@ error-on-warning = true
 [tool.ty.environment]
 extra-paths = ["typings"]
 
-# ty cannot narrow types after unittest assertIsNotNone(), and does not
-# understand Pydantic alias/populate_by_name semantics.  Suppress the
-# resulting false-positives in test code rather than littering every test
-# with inline ignore comments.
-#
-# Measured 2026-08-10 at ty 0.0.69, `ty check --python-platform linux tests`.
-# Record the count AND the ty version with any change here: without both, this
-# block is a posture nobody can re-check. (The figures a predecessor carried in
-# prose -- 1185 total / 915 invalid-argument-type / 7 unused-type-ignore-comment
-# -- reproduce under none of these runs and are superseded by measurement.)
-#
-#   every rule below re-enabled       1231 diagnostics
-#     invalid-argument-type            958  the Pydantic false-positive class
-#     unresolved-attribute             192  the assertIsNotNone narrowing class
-#     unknown-argument                  65
-#     not-subscriptable                 16
-#     possibly-missing-attribute         0  (measured at "warn")
-#   => blanket strictness is not worth it at ty 0.0.x; the two named
-#      false-positive classes are 93% of the total.
-#
-#   unused-type-ignore-comment          36  ALL genuinely dead, so ENABLED
-#
-# unused-type-ignore-comment is deliberately absent below. It is the detector
-# for the dead-suppression class, and switching it off in the tree where those
-# accumulate is what let 188 pile up. The 36 it found were cleared rather than
-# re-suppressed; each was a bare blanket `# type: ignore` (no bracketed form,
-# so no second checker could be relying on it -- ty skips codes lacking a
-# `ty:` prefix, which is why a bracketed directive may be load-bearing even
-# when ty calls it unused), and the diagnostic set was byte-identical under
-# --python-platform win32 and linux, so none was platform-load-bearing in the
-# way the timeout.py block below documents.
-#
-# RO-9 tranche 4 (operator, by selection "Fix by root cause (Rec.)") retires this
-# block rule by rule as each reaches zero, measured at ty 0.0.89 with the block
-# lifted: 1,602 diagnostics on 2026-10-24, 744 after the model_validate rewrite.
-# unknown-argument left first: a test that hands a model an unexpected field
-# now does it through model_validate, and the one call testing a retired
-# keyword carries its own ty: ignore.
-# not-subscriptable and possibly-missing-attribute left next (695 remaining): a
-# value read after assertIsNotNone is narrowed by an assert beside it, argparse
-# subcommands are reached through tests.commands.common.subcommand_parser, and
-# the subprocess spy records typed calls.
-# 498 remain once patched mocks are annotated MagicMock and test helpers drop
-# the `-> object` that erased what ty would infer.
-# unresolved-attribute left next (129 remaining, all invalid-argument-type):
-# forwarded kwargs bags are Any, read-only parameters take Mapping, an
-# Optional or union read is narrowed by an assert beside its unittest check,
-# TestCase mixins inherit TestCase, and gz check's steps are read from
-# _build_check_steps() rather than an attribute patched onto a function.
-[[tool.ty.overrides]]
-include = ["tests/**"]
-
-[tool.ty.overrides.rules]
-invalid-argument-type = "ignore"
+# Record, 2026-10-25 (ty 0.0.89): tests/** carries no ty override. The block
+# that silenced invalid-argument-type, unresolved-attribute, unknown-argument,
+# not-subscriptable and possibly-missing-attribute in tests (1,602 diagnostics
+# when lifted on 2026-10-24) was retired rule by rule as each reached zero, by
+# repairing the cause rather than the report (RO-9 tranche 4, operator, by
+# selection "Fix by root cause (Rec.)"); the acts and their counts are in the
+# passage log of docs/governance/harbor-pilotage-candidate-2026-10-15.md. A
+# test that hands a value ty refuses on purpose carries its own reasoned
+# `ty: ignore[<rule>]`.
 
 # timeout.py guards POSIX-only signal attributes (SIGALRM, setitimer,
 # ITIMER_REAL) behind an `os.name == "nt"` call-site router and suppresses

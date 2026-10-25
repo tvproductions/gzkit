@@ -113,10 +113,8 @@ class TestViolationModel(unittest.TestCase):
     @covers("REQ-0.0.20-01-02")
     def test_reason_literal_enforced(self) -> None:
         with self.assertRaises(PydanticValidationError):
-            Violation(
-                file="x.md",
-                reason="invalid-reason",
-                allowlisted=False,
+            Violation.model_validate(
+                {"file": "x.md", "reason": "invalid-reason", "allowlisted": False}
             )
 
     @covers("REQ-0.0.20-01-02")
@@ -145,13 +143,15 @@ class TestUnscopedRulesResultModel(unittest.TestCase):
     @covers("REQ-0.0.20-01-02")
     def test_result_literal_enforced(self) -> None:
         with self.assertRaises(PydanticValidationError):
-            UnscopedRulesResult(
-                result="bogus",
-                violations=[],
-                allowlist_entries=[],
-                canonical_root=".gzkit/rules",
-                files_checked=0,
-                exit_code=0,
+            UnscopedRulesResult.model_validate(
+                {
+                    "result": "bogus",
+                    "violations": [],
+                    "allowlist_entries": [],
+                    "canonical_root": ".gzkit/rules",
+                    "files_checked": 0,
+                    "exit_code": 0,
+                }
             )
 
 

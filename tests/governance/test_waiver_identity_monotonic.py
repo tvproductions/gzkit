@@ -11,6 +11,7 @@ import tempfile
 import unittest
 from collections import Counter
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
 from unittest import mock
 
 from gzkit.enforcement import production_enforcement_registry, run_meta_validator
@@ -24,6 +25,9 @@ from gzkit.governance.trust_audits.waiver_identity_claims import (
 )
 from gzkit.governance.trust_audits.waiver_ratchet import audit_waiver_ratchet
 from gzkit.registries import load_registry, registry_path
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 _GATE = "gzkit.governance.trust_audits.waiver_ratchet:audit_waiver_ratchet"
 _ROOT = Path(__file__).resolve().parents[2]
@@ -120,7 +124,13 @@ class TestIdentityIsReadPerKind(unittest.TestCase):
 class TestIdentityDeclarationIsHeldToAccount(unittest.TestCase):
     """A registry that opts in cannot be satisfied by an absent or unreadable declaration."""
 
-    def _errors(self, spec, collection=("a",), baseline=None, authorizations=()):
+    def _errors(
+        self,
+        spec: dict[str, Any] | None,
+        collection: Sequence[str] = ("a",),
+        baseline: list[str] | None = None,
+        authorizations: Sequence[dict[str, str]] = (),
+    ):
         shape = (
             spec,
             list(collection),

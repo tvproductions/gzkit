@@ -94,10 +94,8 @@ class TestCanonicalCategories(unittest.TestCase):
 
     def test_each_canonical_category_constructs(self) -> None:
         for category in CANONICAL_CATEGORIES:
-            entry = SecuritySurfaceEntry(
-                category=category,
-                globs=("src/example.py",),
-                rationale="test rationale",
+            entry = SecuritySurfaceEntry.model_validate(
+                {"category": category, "globs": ("src/example.py",), "rationale": "test rationale"}
             )
             self.assertEqual(entry.category, category)
 

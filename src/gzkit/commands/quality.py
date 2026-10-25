@@ -10,7 +10,7 @@ import os
 import pathlib
 import subprocess
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
 from typing import Any
 
@@ -899,7 +899,7 @@ def _steps_overlapping_writers() -> set[str]:
 
 
 def _partition_steps_by_concurrency(
-    steps: list[tuple[str, CheckStepRunner]],
+    steps: Sequence[tuple[str, CheckStepRunner]],
 ) -> tuple[list[tuple[str, CheckStepRunner]], list[tuple[str, CheckStepRunner]]]:
     """Split steps into (serial writers, concurrent read-only), preserving order.
 

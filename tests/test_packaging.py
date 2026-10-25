@@ -10,7 +10,6 @@ since 2026-10-22 (no MANIFEST.in, no ``[tool.setuptools.*]``).
 
 import re
 import subprocess
-import sys
 import tempfile
 import tomllib
 import unittest
@@ -261,4 +260,4 @@ class TestPyInstallerBinaryDataBundling(unittest.TestCase):
 
 
 if __name__ == "__main__":  # pragma: no cover
-    sys.exit(unittest.main())
+    unittest.main()

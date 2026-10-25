@@ -22,6 +22,8 @@ from gzkit.req_kind_fence import resolve_fence_proof
 from gzkit.req_kind_support import resolve_support_proof
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from gzkit.traceability import CoverageReport
     from gzkit.triangle import DiscoveredReq
 
@@ -170,7 +172,7 @@ def load_req_kind_grandfathering_cache(project_root: Path) -> dict[str, ReqKind]
 def compute_three_channel_coverage(
     report: CoverageReport,
     known_reqs: list[DiscoveredReq],
-    grandfathering_cache: dict[str, ReqKind] | None = None,
+    grandfathering_cache: Mapping[str, ReqKind | str] | None = None,
     project_root: Path | None = None,
 ) -> CoverageReport:
     """Enrich a CoverageReport with per-REQ taxonomy kind and proof-channel status.

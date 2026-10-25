@@ -19,7 +19,7 @@ import yaml
 _WORKFLOW = Path(__file__).resolve().parents[2] / ".github" / "workflows" / "release.yml"
 
 
-def _load() -> dict[str, Any]:
+def _load() -> dict[Any, Any]:
     with _WORKFLOW.open(encoding="utf-8") as handle:
         return yaml.safe_load(handle)
 

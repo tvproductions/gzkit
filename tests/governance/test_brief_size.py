@@ -16,6 +16,7 @@ import subprocess
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Any
 from unittest.mock import patch
 
 from gzkit.governance.trust_audits.brief_size import (
@@ -115,7 +116,8 @@ class TestBriefSizeScope(_Tree):
         ):
             with self.subTest(dimension=dimension), TemporaryDirectory() as tmp:
                 root = self._root(tmp)
-                self._write(root, _brief(**{keyword: bounds[dimension] + 1}))
+                over: dict[str, Any] = {keyword: bounds[dimension] + 1}
+                self._write(root, _brief(**over))
                 errors = audit_brief_size(root)
                 self.assertEqual([e.field for e in errors], [dimension])
                 self.assertEqual(errors[0].type, "brief_size")

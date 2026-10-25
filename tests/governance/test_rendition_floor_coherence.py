@@ -27,15 +27,17 @@ _INV2 = "There is no such thing as a headless OBPI: every OBPI traces to a paren
 
 
 def _entry(text: str, *, tier: str = "invariant", entry_id: str = "corpus-x") -> CorpusEntry:
-    return CorpusEntry(
-        id=entry_id,
-        surface="AGENTS.md",
-        section="attestation",
-        tier=tier,
-        classification="Judgment",
-        text=text,
-        origin="test",
-        ts="2026-01-01T00:00:00+00:00",
+    return CorpusEntry.model_validate(
+        {
+            "id": entry_id,
+            "surface": "AGENTS.md",
+            "section": "attestation",
+            "tier": tier,
+            "classification": "Judgment",
+            "text": text,
+            "origin": "test",
+            "ts": "2026-01-01T00:00:00+00:00",
+        }
     )
 
 

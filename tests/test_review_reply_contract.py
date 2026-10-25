@@ -144,7 +144,9 @@ class TestLegacyResultDerivesFromTheEnvelope(unittest.TestCase):
             '```json\n{"verdict": "PASS", "findings": [], "summary": "legacy"}\n```\n'
             "```json\n" + json.dumps(_envelope(verdict="refuted")) + "\n```\n"
         )
-        self.assertTrue(review_blocks_advancement(parse_review_result(output)))
+        result = parse_review_result(output)
+        assert result is not None
+        self.assertTrue(review_blocks_advancement(result))
 
 
 class TestVerificationGapsAreNonGoverning(unittest.TestCase):

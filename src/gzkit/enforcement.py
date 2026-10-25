@@ -217,7 +217,7 @@ def extend_known_claims(claims: frozenset[str]) -> None:
 
 def enforces(
     claim: str,
-    fixture: Callable[[], Any],
+    fixture: Callable[..., Any],
     entrypoint: Callable[..., Any],
     expect: str | None = None,
     exempts: str | None = None,

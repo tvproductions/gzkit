@@ -72,27 +72,31 @@ class TestAdrFrontmatter(unittest.TestCase):
 
     def test_invalid_status_enum(self) -> None:
         with self.assertRaises(PydanticValidationError) as ctx:
-            AdrFrontmatter(
-                id="ADR-0.1.0",
-                status="Invalid",
-                semver="0.1.0",
-                lane="lite",
-                kind="foundation",
-                parent="OBPI-core",
-                date="2026-01-01",
+            AdrFrontmatter.model_validate(
+                {
+                    "id": "ADR-0.1.0",
+                    "status": "Invalid",
+                    "semver": "0.1.0",
+                    "lane": "lite",
+                    "kind": "foundation",
+                    "parent": "OBPI-core",
+                    "date": "2026-01-01",
+                }
             )
         self.assertTrue(any(e["type"] == "literal_error" for e in ctx.exception.errors()))
 
     def test_invalid_lane(self) -> None:
         with self.assertRaises(PydanticValidationError):
-            AdrFrontmatter(
-                id="ADR-0.1.0",
-                status="Draft",
-                semver="0.1.0",
-                lane="Lite",
-                kind="foundation",
-                parent="OBPI-core",
-                date="2026-01-01",
+            AdrFrontmatter.model_validate(
+                {
+                    "id": "ADR-0.1.0",
+                    "status": "Draft",
+                    "semver": "0.1.0",
+                    "lane": "Lite",
+                    "kind": "foundation",
+                    "parent": "OBPI-core",
+                    "date": "2026-01-01",
+                }
             )
 
     def test_invalid_date_pattern(self) -> None:
@@ -140,14 +144,16 @@ class TestAdrFrontmatter(unittest.TestCase):
     def test_invalid_kind_enum(self) -> None:
         for bad_value in ("pool", "", "Foundation", "unknown"):
             with self.assertRaises(PydanticValidationError) as ctx:
-                AdrFrontmatter(
-                    id="ADR-0.1.0",
-                    status="Draft",
-                    semver="0.1.0",
-                    lane="lite",
-                    kind=bad_value,
-                    parent="OBPI-core",
-                    date="2026-01-01",
+                AdrFrontmatter.model_validate(
+                    {
+                        "id": "ADR-0.1.0",
+                        "status": "Draft",
+                        "semver": "0.1.0",
+                        "lane": "lite",
+                        "kind": bad_value,
+                        "parent": "OBPI-core",
+                        "date": "2026-01-01",
+                    }
                 )
             errors = ctx.exception.errors()
             self.assertTrue(
@@ -218,12 +224,14 @@ class TestObpiFrontmatter(unittest.TestCase):
 
     def test_invalid_status(self) -> None:
         with self.assertRaises(PydanticValidationError):
-            ObpiFrontmatter(
-                id="OBPI-0.1.0-01",
-                parent="ADR-0.1.0",
-                item="1",
-                lane="lite",
-                status="Closed",
+            ObpiFrontmatter.model_validate(
+                {
+                    "id": "OBPI-0.1.0-01",
+                    "parent": "ADR-0.1.0",
+                    "item": "1",
+                    "lane": "lite",
+                    "status": "Closed",
+                }
             )
 
     def test_all_status_values(self) -> None:
@@ -261,11 +269,13 @@ class TestPrdFrontmatter(unittest.TestCase):
 
     def test_invalid_status(self) -> None:
         with self.assertRaises(PydanticValidationError):
-            PrdFrontmatter(
-                id="PRD-GZKIT-1.0.0",
-                status="Active",
-                semver="1.0.0",
-                date="2026-01-01",
+            PrdFrontmatter.model_validate(
+                {
+                    "id": "PRD-GZKIT-1.0.0",
+                    "status": "Active",
+                    "semver": "1.0.0",
+                    "date": "2026-01-01",
+                }
             )
 
     def test_missing_required_field(self) -> None:

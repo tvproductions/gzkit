@@ -3154,7 +3154,7 @@ class TestWitnessSourceIsTheFixedDestination(unittest.TestCase):
     def setUp(self) -> None:
         self._runner = CliRunner()
 
-    def _target_and_record(self) -> tuple[object, dict]:
+    def _target_and_record(self) -> tuple[unown_module._TransactionTarget, dict]:
         _seed_surface()
         _seed_declaration(alpha="corpus-owned", floor=_SEED_FLOOR)
         target = unown_module._resolve_target_or_exit(Path("."), "Doc.md", "alpha-section")

@@ -511,13 +511,15 @@ class TestErrorMeansDifferentThingsByProvenance(unittest.TestCase):
     """
 
     def _witness(self, failure_class: str, provenance: str) -> RedWitness:
-        return RedWitness(
-            req_id="REQ-1.2.3-01-01",
-            base_commit="a" * 40,
-            test_names=["t"],
-            exit_status=1 if failure_class != "none" else 0,
-            failure_class=failure_class,
-            base_provenance=provenance,
+        return RedWitness.model_validate(
+            {
+                "req_id": "REQ-1.2.3-01-01",
+                "base_commit": "a" * 40,
+                "test_names": ["t"],
+                "exit_status": 1 if failure_class != "none" else 0,
+                "failure_class": failure_class,
+                "base_provenance": provenance,
+            }
         )
 
     def test_an_error_in_flight_is_a_weak_red(self) -> None:

@@ -270,7 +270,7 @@ class UnownedSectionNeverFailsTheGateTest(_LineageFixtureMixin, unittest.TestCas
         a "not live in the effective corpus" finding; with it, the surface is clean.
         """
         owned_chunk, unowned_chunk = _CLEAN_TEXT.split("## Unowned Section", 1)
-        lineage_chunks = [
+        lineage_chunks: list[tuple[str, bool, tuple[str, ...], str]] = [
             ("owned-section", True, ("e-canon",), owned_chunk),
             ("unowned-section", False, ("e-nonexistent",), "## Unowned Section" + unowned_chunk),
         ]

@@ -225,7 +225,7 @@ class TestClaimGrounding(unittest.TestCase):
 
     def test_unbacked_claim_blocks_with_three_part_prose(self):
         with tempfile.TemporaryDirectory() as tmp:
-            transcript = _write_transcript(tmp, "OBPI-0.0.37-22 is attested-complete.")
+            transcript = _write_transcript(Path(tmp), "OBPI-0.0.37-22 is attested-complete.")
             stderr = io.StringIO()
             with (
                 patch.object(_HOOK, "collect_dirty_python_files", return_value=[]),
@@ -247,7 +247,7 @@ class TestClaimGrounding(unittest.TestCase):
     def test_claim_with_nearby_citation_allows(self):
         with tempfile.TemporaryDirectory() as tmp:
             transcript = _write_transcript(
-                tmp,
+                Path(tmp),
                 "OBPI-0.0.37-22 is attested-complete, confirmed via "
                 "`uv run gz obpi status OBPI-0.0.37-22` -> ATTESTED COMPLETED.",
             )
@@ -264,7 +264,7 @@ class TestClaimGrounding(unittest.TestCase):
 
     def test_no_claim_in_transcript_allows(self):
         with tempfile.TemporaryDirectory() as tmp:
-            transcript = _write_transcript(tmp, "the weather is nice today")
+            transcript = _write_transcript(Path(tmp), "the weather is nice today")
             with (
                 patch.object(_HOOK, "collect_dirty_python_files", return_value=[]),
                 patch.object(
@@ -301,7 +301,7 @@ class TestClaimGrounding(unittest.TestCase):
 
     def test_ruff_findings_block_before_claim_check_runs(self):
         with tempfile.TemporaryDirectory() as tmp:
-            transcript = _write_transcript(tmp, "OBPI-0.0.37-22 is attested-complete.")
+            transcript = _write_transcript(Path(tmp), "OBPI-0.0.37-22 is attested-complete.")
             stderr = io.StringIO()
             with (
                 patch.object(_HOOK, "collect_dirty_python_files", return_value=["src/x.py"]),
@@ -322,7 +322,7 @@ class TestClaimGrounding(unittest.TestCase):
 
     def test_claim_block_appends_telemetry_with_claim_count(self):
         with tempfile.TemporaryDirectory() as tmp:
-            transcript = _write_transcript(tmp, "the working tree is clean.")
+            transcript = _write_transcript(Path(tmp), "the working tree is clean.")
             with (
                 patch.object(_HOOK, "collect_dirty_python_files", return_value=[]),
                 patch.object(_HOOK, "append_claim_telemetry") as telemetry,

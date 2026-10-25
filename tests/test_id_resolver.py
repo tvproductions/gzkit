@@ -30,6 +30,22 @@ _PARKED = "OBPI-0.28.0-01-chores-cli"
 _LIVE = "OBPI-0.28.0-01-context-core"
 
 
+class _MemoryLedger:
+    """The two reads LedgerReader names, answered from memory."""
+
+    def __init__(
+        self, graph: dict[str, dict[str, Any]] | None = None, events: list[Any] | None = None
+    ):
+        self._graph = graph or {}
+        self._events = events or []
+
+    def get_artifact_graph(self) -> dict[str, dict[str, Any]]:
+        return self._graph
+
+    def read_all(self) -> list[Any]:
+        return list(self._events)
+
+
 def _graph() -> dict[str, dict[str, Any]]:
     return {
         _POOL: {"type": "adr", "parent": "PRD-GZKIT-1.0.0"},
@@ -212,11 +228,9 @@ class TestLoadIdentityContext(unittest.TestCase):
                 event="task_started", id="TASK-0.6.0-01-01-01", extra={"obpi_id": "OBPI-0.6.0-01"}
             ),
         ]
-        ledger = SimpleNamespace(
-            get_artifact_graph=lambda: {
-                "OBPI-0.6.0-01-b": {"type": "obpi", "parent": "ADR-0.6.0-v"}
-            },
-            read_all=lambda: events,
+        ledger = _MemoryLedger(
+            graph={"OBPI-0.6.0-01-b": {"type": "obpi", "parent": "ADR-0.6.0-v"}},
+            events=events,
         )
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -275,7 +289,7 @@ class TestCatalogReqs(unittest.TestCase):
             resolve("REQ-7", context)
 
     def test_the_loader_reads_member_of_from_the_catalog(self) -> None:
-        ledger = SimpleNamespace(get_artifact_graph=dict, read_all=list)
+        ledger = _MemoryLedger()
         req = {
             "id": "REQ-3",
             "member_of": "H1",
@@ -293,7 +307,7 @@ class TestCatalogReqs(unittest.TestCase):
         self.assertEqual(context.catalog_members, {"REQ-3": "H1"})
 
     def test_a_project_without_a_catalog_has_no_catalog_reqs(self) -> None:
-        ledger = SimpleNamespace(get_artifact_graph=dict, read_all=list)
+        ledger = _MemoryLedger()
         with tempfile.TemporaryDirectory() as tmp:
             context = load_identity_context(ledger, Path(tmp), "docs/design")
         self.assertEqual(context.catalog_members, {})

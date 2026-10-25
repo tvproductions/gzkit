@@ -23,7 +23,7 @@ from gzkit.color_env import should_disable_color, should_force_terminal
 Verbosity = Literal["quiet", "normal", "verbose", "debug"]
 
 # docs/design/cli-standards-v3.md § Verbosity Levels (canonical per ADR-0.0.4).
-VERBOSITY_TO_LEVEL: dict[str, int] = {
+VERBOSITY_TO_LEVEL: dict[Verbosity, int] = {
     "quiet": logging.ERROR,
     "normal": logging.WARNING,
     "verbose": logging.INFO,

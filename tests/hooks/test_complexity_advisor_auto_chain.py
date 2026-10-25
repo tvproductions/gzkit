@@ -38,25 +38,27 @@ from tests.commands.common import _isolated_git_env
 
 
 def _make_diagnosis(*, band: str = "warn") -> AdvisorDiagnosis:
-    return AdvisorDiagnosis(
-        metric="radon_cc",
-        crossing_band=band,
-        crossing_value=12.0,
-        archetype=RefactorArchetype.LONG_PARAMETER_LIST,
-        doctrinal_frame=DoctrinalFrame(
-            authority="fowler",
-            citation="Fowler Refactoring 2e ch.3",
-            excerpt="Long Parameter List refactoring",
-        ),
-        proof=(
-            ProofRange(
-                file_path="src/foo.py",
-                start_line=10,
-                end_line=30,
-                ast_node_kind="FunctionDef",
+    return AdvisorDiagnosis.model_validate(
+        {
+            "metric": "radon_cc",
+            "crossing_band": band,
+            "crossing_value": 12.0,
+            "archetype": RefactorArchetype.LONG_PARAMETER_LIST,
+            "doctrinal_frame": DoctrinalFrame(
+                authority="fowler",
+                citation="Fowler Refactoring 2e ch.3",
+                excerpt="Long Parameter List refactoring",
             ),
-        ),
-        recommended_move="Extract Parameter Object",
+            "proof": (
+                ProofRange(
+                    file_path="src/foo.py",
+                    start_line=10,
+                    end_line=30,
+                    ast_node_kind="FunctionDef",
+                ),
+            ),
+            "recommended_move": "Extract Parameter Object",
+        }
     )
 
 

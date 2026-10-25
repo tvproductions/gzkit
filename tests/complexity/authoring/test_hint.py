@@ -67,15 +67,17 @@ def _diagnosis(
     excerpt: str | None = None,
     intrinsic: IntrinsicAttestationRef | None = None,
 ) -> AdvisorDiagnosis:
-    return AdvisorDiagnosis(
-        metric="radon_cc",
-        crossing_band=crossing_band,
-        crossing_value=crossing_value,
-        archetype=RefactorArchetype.LONG_PARAMETER_LIST,
-        doctrinal_frame=_frame(excerpt) if excerpt is not None else _frame(),
-        proof=proof if proof is not None else (_proof(),),
-        recommended_move="Introduce Parameter Object",
-        intrinsic_attestation=intrinsic,
+    return AdvisorDiagnosis.model_validate(
+        {
+            "metric": "radon_cc",
+            "crossing_band": crossing_band,
+            "crossing_value": crossing_value,
+            "archetype": RefactorArchetype.LONG_PARAMETER_LIST,
+            "doctrinal_frame": _frame(excerpt) if excerpt is not None else _frame(),
+            "proof": proof if proof is not None else (_proof(),),
+            "recommended_move": "Introduce Parameter Object",
+            "intrinsic_attestation": intrinsic,
+        }
     )
 
 

@@ -34,15 +34,17 @@ _CANDIDATE_TEXT = "# AGENTS.md\n\nYOU OWN THE WORK COMPLETELY.\n\ncompressed bod
 
 
 def _entry(entry_id: str, *, tier: str = "compressible", text: str = "body") -> CorpusEntry:
-    return CorpusEntry(
-        id=entry_id,
-        surface="AGENTS.md",
-        section="behavior-rules",
-        tier=tier,
-        classification="Mechanical",
-        text=text,
-        origin="test",
-        ts="2026-06-19T00:00:00+00:00",
+    return CorpusEntry.model_validate(
+        {
+            "id": entry_id,
+            "surface": "AGENTS.md",
+            "section": "behavior-rules",
+            "tier": tier,
+            "classification": "Mechanical",
+            "text": text,
+            "origin": "test",
+            "ts": "2026-06-19T00:00:00+00:00",
+        }
     )
 
 

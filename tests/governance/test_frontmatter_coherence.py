@@ -640,8 +640,13 @@ class TestStatusTransitionFailSafe(unittest.TestCase):
         monitor = TransitionMonitor()
         # None.lower() raises AttributeError inside vocab mapping -> caught ->
         # refuse (False), never propagates.
-        self.assertFalse(_status_is_valid_obpi_transition(monitor, None, "planned"))
-        self.assertFalse(_status_is_valid_obpi_transition(monitor, "completed", None))
+        # FieldDiff types both sides `str`, so only a deliberately ill-typed call reaches it.
+        self.assertFalse(
+            _status_is_valid_obpi_transition(monitor, None, "planned")  # ty: ignore[invalid-argument-type]
+        )
+        self.assertFalse(
+            _status_is_valid_obpi_transition(monitor, "completed", None)  # ty: ignore[invalid-argument-type]
+        )
         # A genuinely unrecognized (but well-typed) status is also refused, via
         # the None-state guard rather than the exception path.
         self.assertFalse(_status_is_valid_obpi_transition(monitor, "not-a-real-status", "planned"))

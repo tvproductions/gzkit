@@ -97,6 +97,7 @@ class TestParseRedTeamResult(unittest.TestCase):
         output = f"```json\n{json.dumps(challenges)}\n```"
         result = parse_redteam_result(output)
         self.assertIsNotNone(result)
+        assert result is not None
         self.assertEqual(len(result), 10)
 
 

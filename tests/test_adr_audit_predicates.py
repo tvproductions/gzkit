@@ -53,8 +53,12 @@ class TestRequiresSecurityReviewAttestation(unittest.TestCase):
     def test_non_mapping_input_returns_false(self):
         # The predicate must tolerate odd inputs without crashing — the call
         # site reads frontmatter from arbitrary brief content.
-        self.assertFalse(_requires_security_review_attestation("sensitivity: security"))
-        self.assertFalse(_requires_security_review_attestation(["sensitivity"]))
+        self.assertFalse(
+            _requires_security_review_attestation("sensitivity: security")  # ty: ignore[invalid-argument-type]
+        )
+        self.assertFalse(
+            _requires_security_review_attestation(["sensitivity"])  # ty: ignore[invalid-argument-type]
+        )
 
 
 @covers("OBPI-0.0.22-04")

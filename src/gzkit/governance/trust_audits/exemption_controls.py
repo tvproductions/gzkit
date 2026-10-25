@@ -45,9 +45,13 @@ naming one obliges its existence by construction.
 
 import json
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from gzkit.core.validation_rules import ValidationError
 from gzkit.enforcement import EXEMPTS_NONE
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 ACCEPTED_REL = Path("data") / "exemption_control_grandfather.json"
 _ENTRIES_KEY = "accepted_claims"
@@ -125,7 +129,7 @@ def _registry_gate_hints() -> dict[str, str]:
 def audit_exemption_controls(
     project_root: Path,
     *,
-    declarations: dict[str, str | None] | None = None,
+    declarations: Mapping[str, str | None] | None = None,
     gate_hints: dict[str, str] | None = None,
 ) -> list[ValidationError]:
     """Flag every undeclared claim not on the accepted-list, and every stale acceptance.

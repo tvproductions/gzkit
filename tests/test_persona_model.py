@@ -147,6 +147,7 @@ class TestLoadPersona(unittest.TestCase):
             (pdir / "tester.md").write_text(_VALID_PERSONA, encoding="utf-8")
             body = load_persona(root, "tester")
             self.assertIsNotNone(body)
+            assert body is not None
             self.assertIn("Tester Persona", body)
 
     @covers("REQ-0.0.11-02-03")

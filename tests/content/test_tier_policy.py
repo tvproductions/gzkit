@@ -54,15 +54,17 @@ def _seed_composer_project(root: Path) -> None:
 
 
 def _entry(entry_id: str, text: str, *, tier: str = "compressible") -> CorpusEntry:
-    return CorpusEntry(
-        id=entry_id,
-        surface="AGENTS.md",
-        section="prime-directive",
-        tier=tier,
-        classification="Mechanical",
-        text=text,
-        origin="test",
-        ts="2026-06-14T00:00:00Z",
+    return CorpusEntry.model_validate(
+        {
+            "id": entry_id,
+            "surface": "AGENTS.md",
+            "section": "prime-directive",
+            "tier": tier,
+            "classification": "Mechanical",
+            "text": text,
+            "origin": "test",
+            "ts": "2026-06-14T00:00:00Z",
+        }
     )
 
 

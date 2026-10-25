@@ -30,15 +30,17 @@ def _entry(
     entry_id: str = "e1", text: str = "body text", tier: str = "compressible"
 ) -> CorpusEntry:
     """Build a minimal valid CorpusEntry for fingerprint tests."""
-    return CorpusEntry(
-        id=entry_id,
-        surface="AGENTS.md",
-        section="behavior-rules",
-        tier=tier,
-        classification="Mechanical",
-        text=text,
-        origin="test",
-        ts="2026-06-19T00:00:00+00:00",
+    return CorpusEntry.model_validate(
+        {
+            "id": entry_id,
+            "surface": "AGENTS.md",
+            "section": "behavior-rules",
+            "tier": tier,
+            "classification": "Mechanical",
+            "text": text,
+            "origin": "test",
+            "ts": "2026-06-19T00:00:00+00:00",
+        }
     )
 
 

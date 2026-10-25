@@ -13,6 +13,7 @@ from unittest.mock import patch
 from rich import box
 from rich.table import Table
 
+from gzkit.ledger import Ledger
 from gzkit.quality import QualityResult
 from gzkit.traceability import covers
 
@@ -29,11 +30,11 @@ class _CaptureConsole:
         return "\n".join(self.messages)
 
 
-class _FakeLedger:
+class _FakeLedger(Ledger):
     def __init__(self) -> None:
+        # An absent file, so no TASK is ever in scope.
+        super().__init__(Path("nonexistent-ledger.jsonl"))
         self.events: list[object] = []
-        # Ledger's own attribute; absent file, so no TASK is ever in scope.
-        self.path = Path("nonexistent-ledger.jsonl")
 
     def append(self, event: object) -> None:
         self.events.append(event)
