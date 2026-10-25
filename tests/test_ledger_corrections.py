@@ -22,7 +22,12 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
-from gzkit.events import LedgerEventCorrectedEvent, parse_typed_event
+from gzkit.events import (
+    AirlockInEvent,
+    AirlockOutEvent,
+    LedgerEventCorrectedEvent,
+    parse_typed_event,
+)
 from gzkit.ledger import Ledger, LedgerEvent, read_corrected_rows
 from gzkit.ledger_corrections import (
     CORRECTION_EVENT,
@@ -554,6 +559,8 @@ class TestFactoryProducesAValidRow(unittest.TestCase):
             reason="started without operator initiation",
         )
         parsed = parse_typed_event(event.model_dump())
+        self.assertIsInstance(parsed, LedgerEventCorrectedEvent)
+        assert isinstance(parsed, LedgerEventCorrectedEvent)
         self.assertEqual(parsed.subject_id, "OBPI-0.35.0-08")
         self.assertEqual(parsed.id, "OBPI-0.35.0-08")
 
@@ -595,6 +602,8 @@ class TestProducerContractParity(unittest.TestCase):
                 "error": "RuntimeError",
             }
         )
+        self.assertIsInstance(parsed, AirlockOutEvent)
+        assert isinstance(parsed, AirlockOutEvent)
         self.assertTrue(parsed.aborted)
         self.assertEqual(parsed.error, "RuntimeError")
 
@@ -860,6 +869,8 @@ class TestTheAirlockOverrideProducerIsDeclared(unittest.TestCase):
     def test_the_payload_survives_the_round_trip_intact(self) -> None:
         """Declaring a field is worthless if replay drops its value."""
         parsed = parse_typed_event(self._emit_override_row().model_dump(exclude_none=True))
+        self.assertIsInstance(parsed, AirlockInEvent)
+        assert isinstance(parsed, AirlockInEvent)
         self.assertEqual(parsed.override_seam, "src/gzkit/unaccounted.py")
         self.assertEqual(parsed.override_attestor, "g0")
         self.assertIs(parsed.override_revoked, False)
@@ -880,7 +891,10 @@ class TestTheAirlockOverrideProducerIsDeclared(unittest.TestCase):
             ledger=ledger,
         )
         row = next(e for e in ledger.read_history() if e.event == "airlock_in")
-        self.assertIs(parse_typed_event(row.model_dump(exclude_none=True)).override_revoked, True)
+        parsed = parse_typed_event(row.model_dump(exclude_none=True))
+        self.assertIsInstance(parsed, AirlockInEvent)
+        assert isinstance(parsed, AirlockInEvent)
+        self.assertIs(parsed.override_revoked, True)
 
 
 class TestProducerAuditReadsHelperBuiltPayloads(unittest.TestCase):

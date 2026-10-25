@@ -465,7 +465,7 @@ _GEN_PRIOR_TEXT = (
 _GEN_DECL_SECTIONS = {"owned-section": "corpus-owned", "unowned-section": "unowned"}
 
 
-class _GenerateCandidateFixtureMixin:
+class _GenerateCandidateFixtureMixin(unittest.TestCase):
     """Shared temp-dir + fixture-writer setup for `generate_candidate` tests."""
 
     def setUp(self) -> None:

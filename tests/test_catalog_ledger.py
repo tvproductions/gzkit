@@ -108,6 +108,7 @@ class OutcomeTransitionTests(_LedgerCase):
         self.assertEqual(len(rows), 1)
         persisted = parse_typed_event(rows[0])
         self.assertIsInstance(persisted, OutcomeTransitionedEvent)
+        assert isinstance(persisted, OutcomeTransitionedEvent)
         self.assertEqual(
             (persisted.id, persisted.outcome, persisted.from_state, persisted.to_state),
             ("H1", "H1", "queued", "designing"),
@@ -228,6 +229,7 @@ class ReqProofTests(_LedgerCase):
         self.assertEqual(len(rows), 3)
         persisted = parse_typed_event(rows[0])
         self.assertIsInstance(persisted, ReqProofRecordedEvent)
+        assert isinstance(persisted, ReqProofRecordedEvent)
         self.assertEqual(
             (persisted.id, persisted.req, persisted.revision, persisted.commit, persisted.verdict),
             ("REQ-1", "REQ-1", 2, "abc1234", "SATISFIED"),

@@ -45,7 +45,7 @@ from gzkit.content.ownership import (
     write_declaration_atomically,
 )
 from gzkit.content.parse import section_id
-from gzkit.events import parse_typed_event
+from gzkit.events import SectionOwnershipReanchoredEvent, parse_typed_event
 from gzkit.governance.events import (
     emit_section_ownership_genesis,
     emit_section_ownership_reanchored,
@@ -73,7 +73,7 @@ _SIMPLE_SURFACE = (
 )
 
 
-class _DeclarationFixtureMixin:
+class _DeclarationFixtureMixin(unittest.TestCase):
     """Shared temp-dir + declaration-writer setup for load_declaration tests."""
 
     def setUp(self) -> None:
@@ -2609,6 +2609,8 @@ class TestSectionOwnershipReanchoredEmitter(unittest.TestCase):
             "migration was legitimate rather than an attacker re-flooring",
         )
         parsed = parse_typed_event(row)
+        self.assertIsInstance(parsed, SectionOwnershipReanchoredEvent)
+        assert isinstance(parsed, SectionOwnershipReanchoredEvent)
         self.assertEqual(parsed.surface, self._SURFACE)
         self.assertEqual(parsed.sections_digest, self._DIGEST)
         self.assertEqual(parsed.new_unowned_byte_floor, 8637)

@@ -357,6 +357,7 @@ class TestTaskStartedEvent(unittest.TestCase):
         data = json.loads(evt.model_dump_json())
         parsed = parse_typed_event(data)
         self.assertIsInstance(parsed, TaskStartedEvent)
+        assert isinstance(parsed, TaskStartedEvent)
         self.assertEqual(parsed.task_id, "TASK-0.22.0-02-01-01")
 
     @covers("REQ-0.22.0-02-01")
@@ -443,6 +444,7 @@ class TestTaskBlockedEvent(unittest.TestCase):
         evt = _blocked(reason="Waiting on OBPI-01")
         parsed = parse_typed_event(json.loads(evt.model_dump_json()))
         self.assertIsInstance(parsed, TaskBlockedEvent)
+        assert isinstance(parsed, TaskBlockedEvent)
         self.assertEqual(parsed.reason, "Waiting on OBPI-01")
 
 
@@ -487,6 +489,7 @@ class TestTaskEscalatedEvent(unittest.TestCase):
         evt = _escalated(reason="Over complexity budget")
         parsed = parse_typed_event(json.loads(evt.model_dump_json()))
         self.assertIsInstance(parsed, TaskEscalatedEvent)
+        assert isinstance(parsed, TaskEscalatedEvent)
         self.assertEqual(parsed.reason, "Over complexity budget")
 
 

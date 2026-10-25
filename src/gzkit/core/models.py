@@ -543,7 +543,7 @@ class EvidenceId(BaseModel):
         return self.raw
 
 
-IDENTITY_MODELS: dict[str, type[BaseModel]] = {
+IDENTITY_MODELS: dict[str, type[AdrId | ObpiId | ReqId | TaskId | EvidenceId]] = {
     "ADR": AdrId,
     "OBPI": ObpiId,
     "REQ": ReqId,

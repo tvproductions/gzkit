@@ -59,7 +59,7 @@ def _span_of(chunk: str) -> int:
     return len(chunk.encode("utf-8"))
 
 
-class _LineageFixtureMixin:
+class _LineageFixtureMixin(unittest.TestCase):
     """Isolated tmp root plus the four fixture writers this gate's inputs need."""
 
     def setUp(self) -> None:

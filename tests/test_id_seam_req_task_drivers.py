@@ -89,8 +89,9 @@ class TestReqReaders(unittest.TestCase):
 
     def test_ontology_anchor_reads_only_the_seam_req_id(self) -> None:
         def anchor(req_id: str):
-            tree = ast.parse(f'@covers("{req_id}")\ndef f(): pass\n')
-            return _ast_anchor_from_decorator(tree.body[0].decorator_list[0], "x.py")
+            func = ast.parse(f'@covers("{req_id}")\ndef f(): pass\n').body[0]
+            assert isinstance(func, ast.FunctionDef)
+            return _ast_anchor_from_decorator(func.decorator_list[0], "x.py")
 
         self.assertIsNotNone(anchor(STRICT_REQ))
         self.assertIsNone(anchor(LOOSE_REQ))

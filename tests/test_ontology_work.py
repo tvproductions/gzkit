@@ -75,6 +75,7 @@ class TestWorkEdgeEventTypes(unittest.TestCase):
             }
         )
         self.assertIsInstance(event, BlocksEvent)
+        assert isinstance(event, BlocksEvent)
         self.assertEqual(event.event, "blocks")
         self.assertEqual(event.blocker, "TASK-A")
         self.assertEqual(event.blocked, "TASK-B")

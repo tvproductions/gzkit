@@ -6,6 +6,7 @@ import unittest
 from contextlib import ExitStack
 from datetime import timedelta
 from pathlib import Path
+from types import FunctionType
 from unittest.mock import patch
 
 from gzkit.cli import main
@@ -72,6 +73,7 @@ def _check_step_patch_targets(exclude: frozenset[str] | set[str] = frozenset()) 
 
     targets = []
     for _label, runner in _cq._build_check_steps():
+        assert isinstance(runner, FunctionType)
         name = runner.__name__
         if name in exclude:
             continue

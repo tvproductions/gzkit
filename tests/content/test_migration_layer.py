@@ -8,7 +8,7 @@ purity invariant.
 import unittest
 
 from gzkit.content.migration import MIGRATIONS, MigrationError, apply_migrations
-from gzkit.content.models import CONTENT_MODELS, Bullet, Rule
+from gzkit.content.models import CONTENT_MODELS, AgentContract, Bullet, Rule
 from gzkit.content.models.base import BaseContentModel
 from gzkit.content.parse import parse
 from gzkit.content.render import render
@@ -212,6 +212,7 @@ class TestReverseParseFullContract(unittest.TestCase):
             "## Custom Section\n\n- zzz unmatchable qpwoeiruty rule\n"
         )
         model = parse(text, "AgentContract")
+        assert isinstance(model, AgentContract)
         custom = next(p for p in model.pillars if p.title == "Custom Section")
         self.assertEqual(len(custom.bullets), 1)
         self.assertEqual(custom.bullets[0].classification, "Ambiguous")

@@ -79,6 +79,7 @@ class TestRunWithTimeout(unittest.TestCase):
 
         result = run_with_timeout(fast, timeout_s=5.0, log_path=self.log_path)
         self.assertIsInstance(result, TimeoutOk)
+        assert isinstance(result, TimeoutOk)
         self.assertEqual(result.value, "done")
 
     @covers("REQ-0.0.29-09-01")
@@ -89,6 +90,7 @@ class TestRunWithTimeout(unittest.TestCase):
 
         result = run_with_timeout(slow, timeout_s=0.2, log_path=self.log_path)
         self.assertIsInstance(result, TimeoutTimedOut)
+        assert isinstance(result, TimeoutTimedOut)
         self.assertEqual(result.callable_name, "slow")
         self.assertGreater(result.elapsed_s, 0.0)
 

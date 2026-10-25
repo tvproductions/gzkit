@@ -41,6 +41,7 @@ class TestAirlockEventParsing(unittest.TestCase):
             }
         )
         self.assertIsInstance(event, AirlockOutEvent)
+        assert isinstance(event, AirlockOutEvent)
         self.assertEqual(event.observed_files, 3)
 
     def test_airlock_in_round_trip_preserves_event_name(self) -> None:

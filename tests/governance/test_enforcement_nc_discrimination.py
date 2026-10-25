@@ -257,7 +257,9 @@ class TestRewrittenFixturesPlantExactlyOneViolation(unittest.TestCase):
                     f"{[getattr(f, 'message', f) for f in findings]}. More than one "
                     "means the fixture is degenerate rather than minimal-valid.",
                 )
-                self.assertIn(expect, findings[0].message)
+                message = getattr(findings[0], "message", None)
+                assert isinstance(message, str), f"{claim}: finding carries no message"
+                self.assertIn(expect, message)
 
     def test_no_claim_uses_the_deprecated_empty_fixture_for_a_repaired_claim(self) -> None:
         """The four repaired claims must no longer route through ``_build_empty``."""

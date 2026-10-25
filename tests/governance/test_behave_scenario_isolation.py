@@ -53,6 +53,9 @@ class _Scenario:
 class _Context:
     """Minimal stand-in for behave's context object."""
 
+    _original_cwd: Path
+    _tmpdir: Path
+
 
 def _context_in_a_temp_workspace(cwd: Path) -> _Context:
     context = _Context()

@@ -192,7 +192,7 @@ class DiscoveryFailures(SilencedConsoleTestCase):
         def broken_hook(*args: object) -> None:
             raise RuntimeError("broken load_tests hook")
 
-        module.load_tests = broken_hook
+        module.__dict__["load_tests"] = broken_hook
         loader = unittest.TestLoader()
         failed_suite = loader.loadTestsFromModule(module)
         self.assertTrue(loader.errors)

@@ -481,7 +481,7 @@ class LiveRegistryResolvesTheKnownTruePairsTests(unittest.TestCase):
                 continue
             names = {
                 str(i.argval)
-                for i in dis.get_instructions(record.entrypoint.__code__)
+                for i in dis.get_instructions(record.entrypoint)
                 if i.opname in ("LOAD_GLOBAL", "IMPORT_FROM")
             }
             if names & launchers and record.delegates_to is None:

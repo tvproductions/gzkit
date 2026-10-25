@@ -258,10 +258,10 @@ class TestComplexityDoctrineLinks(unittest.TestCase):
     def test_gz_check_steps_includes_runner(self):
         """gz check steps list includes complexity-doctrine-links runner."""
         # Import here to avoid circular dependencies at module load
-        from gzkit.commands.quality import gz_check_cmd
+        from gzkit.commands.quality import _build_check_steps
 
         # Introspect the steps list to verify the runner is included
-        steps = gz_check_cmd.steps
+        steps = _build_check_steps()
         step_names = [name for name, _ in steps]
 
         # Should include "Complexity-doctrine links" step

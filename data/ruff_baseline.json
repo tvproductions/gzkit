@@ -6703,11 +6703,6 @@
     },
     {
       "file": "src/gzkit/commands/quality.py",
-      "rule": "PGH003",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/quality.py",
       "rule": "PLC0415",
       "count": 8
     },

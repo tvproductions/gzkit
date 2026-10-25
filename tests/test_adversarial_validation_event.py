@@ -44,6 +44,8 @@ class TestAdversarialValidationEvent(unittest.TestCase):
         for verdict in _VERDICTS:
             with self.subTest(verdict=verdict):
                 parsed = parse_typed_event(_event(verdict=verdict))
+                self.assertIsInstance(parsed, AdversarialValidationEvent)
+                assert isinstance(parsed, AdversarialValidationEvent)
                 self.assertEqual(parsed.verdict, verdict)
 
     def test_out_of_vocabulary_verdict_is_refused(self) -> None:

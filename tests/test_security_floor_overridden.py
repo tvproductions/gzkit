@@ -93,6 +93,7 @@ class TestSecurityFloorOverriddenRoundTrip(unittest.TestCase):
         raw = emitted.model_dump()
         parsed = parse_typed_event(raw)
         self.assertIsInstance(parsed, SecurityFloorOverriddenEvent)
+        assert isinstance(parsed, SecurityFloorOverriddenEvent)
         self.assertEqual(parsed.obpi_id, "OBPI-0.0.72-04-security-floor-overridden-event")
         self.assertEqual(parsed.surfaces, "auth_boundaries")
         self.assertEqual(parsed.reason, "operator reviewed overlap")

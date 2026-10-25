@@ -2,7 +2,7 @@
 
 import unittest
 
-from gzkit.content.models import AgentContract, Bullet
+from gzkit.content.models import AgentContract, Bullet, Pillar
 from gzkit.content.parse import parse
 from gzkit.content.render import render
 from gzkit.governance.invariants import ConstitutionalInvariant, reconcile_invariant
@@ -140,6 +140,7 @@ class TestReverseParseRoundTrip(unittest.TestCase):
         and blank-line normalization is permitted."""
         model = self._import_agents_md()
         reparsed = parse(render(model, "root").decode("utf-8"), "AgentContract")
+        assert isinstance(reparsed, AgentContract)
         # Sections and order recovered.
         self.assertEqual([p.title for p in reparsed.pillars], [p.title for p in model.pillars])
         # Bullet text recovered, in order.
@@ -149,7 +150,7 @@ class TestReverseParseRoundTrip(unittest.TestCase):
         )
 
         # Section content (non-blank body lines) recovered, in order.
-        def nonblank(pillar: object) -> list[str]:
+        def nonblank(pillar: Pillar) -> list[str]:
             return [line for line in pillar.lines if line.strip()]
 
         self.assertEqual(

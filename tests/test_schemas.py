@@ -404,7 +404,7 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
 _BASE_FIELDS = {"schema_", "event", "id", "ts", "parent"}
 
 
-def _union_members() -> tuple[type, ...]:
+def _union_members() -> tuple[type[BaseModel], ...]:
     """Return the concrete model classes inside the `TypedLedgerEvent` union."""
     import typing
 
@@ -629,6 +629,8 @@ class TestSectionOwnershipReanchoredRegistration(unittest.TestCase):
             "before the field existed — the enforcement point is the loader",
         )
         parsed = parse_typed_event(dict(self._CHAINED_PAYLOAD) | {"sections_digest": "abc123"})
+        self.assertIsInstance(parsed, SectionOwnershipReanchoredEvent)
+        assert isinstance(parsed, SectionOwnershipReanchoredEvent)
         self.assertEqual(
             parsed.sections_digest,
             "abc123",

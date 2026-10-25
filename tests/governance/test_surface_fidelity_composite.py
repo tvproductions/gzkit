@@ -134,9 +134,9 @@ class TestSurfaceFidelityComposite(QuietAdvisoriesMixin):
         `gz check` must invoke `run_surface_fidelity_audit` as part of its
         default pipeline. Assert via introspection of _build_check_steps().
         """
-        from gzkit.commands.quality import gz_check_cmd
+        from gzkit.commands.quality import _build_check_steps
 
-        steps = gz_check_cmd.steps
+        steps = _build_check_steps()
         step_names = [name for name, _ in steps]
 
         # The step name should be something like "Surface fidelity"

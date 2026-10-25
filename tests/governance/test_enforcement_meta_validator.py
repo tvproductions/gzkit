@@ -377,6 +377,7 @@ class TestEnforcementClaimVerifiedEvent(unittest.TestCase):
         from gzkit.events import EnforcementClaimVerifiedEvent
 
         self.assertIsInstance(parsed, EnforcementClaimVerifiedEvent)
+        assert isinstance(parsed, EnforcementClaimVerifiedEvent)
         self.assertEqual(parsed.claim_id, "lint")
         self.assertEqual(parsed.outcome, "PASS")
 

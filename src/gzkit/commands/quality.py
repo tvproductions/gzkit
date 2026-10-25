@@ -1536,21 +1536,3 @@ def _render_flag_health(health: object | None) -> None:
         f"{health.approaching_count} approaching "
         f"[dim](advisory — does not affect exit code)[/dim]"
     )
-
-
-# Module-scope alias exposing `gz check` aggregator for test introspection.
-# Tests assert that `gz_check_cmd.steps` includes specific runner tuples
-# (e.g. REQ-0.0.27-07-06 — complexity-doctrine-links must fire as part of
-# the `gz check` aggregate). The function attribute is populated lazily on
-# first access via property-like getter to avoid circular imports at module
-# load.
-gz_check_cmd = check
-
-
-def _gz_check_cmd_steps() -> list[tuple[str, CheckStepRunner]]:
-    return _build_check_steps()
-
-
-# Attach steps as a function attribute so tests can introspect the aggregator
-# without invoking it. Computed once at module import time.
-gz_check_cmd.steps = _build_check_steps()  # type: ignore

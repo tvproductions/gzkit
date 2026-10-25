@@ -265,11 +265,15 @@ extra-paths = ["typings"]
 # the subprocess spy records typed calls.
 # 498 remain once patched mocks are annotated MagicMock and test helpers drop
 # the `-> object` that erased what ty would infer.
+# unresolved-attribute left next (129 remaining, all invalid-argument-type):
+# forwarded kwargs bags are Any, read-only parameters take Mapping, an
+# Optional or union read is narrowed by an assert beside its unittest check,
+# TestCase mixins inherit TestCase, and gz check's steps are read from
+# _build_check_steps() rather than an attribute patched onto a function.
 [[tool.ty.overrides]]
 include = ["tests/**"]
 
 [tool.ty.overrides.rules]
-unresolved-attribute = "ignore"
 invalid-argument-type = "ignore"
 
 # timeout.py guards POSIX-only signal attributes (SIGALRM, setitimer,

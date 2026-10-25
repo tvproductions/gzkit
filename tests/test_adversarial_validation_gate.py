@@ -22,7 +22,7 @@ from gzkit.commands.obpi_complete_adversarial import (
     _is_cross_vendor_adversary,
     _receipt_proves_cross_vendor,
 )
-from gzkit.events import parse_typed_event
+from gzkit.events import AdversarialValidationEvent, parse_typed_event
 
 
 class TestVerdictVocabulary(unittest.TestCase):
@@ -144,6 +144,8 @@ class TestDeclaredTierReachesTheLedger(unittest.TestCase):
         # req_kind_support, ontology/corpus). A field the writer emits but the
         # typed model rejects would fail closed on replay.
         parsed = parse_typed_event(self._dump(tier=2))
+        self.assertIsInstance(parsed, AdversarialValidationEvent)
+        assert isinstance(parsed, AdversarialValidationEvent)
         self.assertEqual(parsed.adversary_tier, 2)
 
 

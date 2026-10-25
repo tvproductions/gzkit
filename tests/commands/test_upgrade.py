@@ -55,7 +55,7 @@ class TestUpgradeRegistration(unittest.TestCase):
         assert subparsers is not None
         choices: set[str] = set()
         for action_group in subparsers._group_actions:
-            if hasattr(action_group, "choices") and action_group.choices:
+            if isinstance(action_group.choices, dict) and action_group.choices:
                 choices.update(action_group.choices.keys())
         self.assertIn(
             "upgrade",

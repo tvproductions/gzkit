@@ -85,6 +85,7 @@ class TestMxSessionEventTypes(unittest.TestCase):
         )
         parsed = parse_typed_event(json.loads(ev.model_dump_json()))
         self.assertIsInstance(parsed, MxSessionOpenedEvent)
+        assert isinstance(parsed, MxSessionOpenedEvent)
         # The window anchor (ts) and the binding key survive the round-trip.
         self.assertEqual(parsed.session_id, "sid-1")
         self.assertEqual(parsed.inspection_scope, ["ADR-0.0.74"])
@@ -98,6 +99,7 @@ class TestMxSessionEventTypes(unittest.TestCase):
         )
         parsed = parse_typed_event(json.loads(ev.model_dump_json()))
         self.assertIsInstance(parsed, MxSessionClosedEvent)
+        assert isinstance(parsed, MxSessionClosedEvent)
         self.assertEqual(parsed.session_id, "sid-1")
         self.assertTrue(parsed.ts)  # exit anchor present
 

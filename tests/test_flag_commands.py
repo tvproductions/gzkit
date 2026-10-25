@@ -80,7 +80,7 @@ _REGISTRY = {
 _MOCK_REGISTRY_PATH = "gzkit.commands.flags.load_registry"
 
 
-class _RegistryMixin:
+class _RegistryMixin(unittest.TestCase):
     """Mixin that patches load_registry and suppresses stdout for all flag command tests."""
 
     def setUp(self) -> None:

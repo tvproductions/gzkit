@@ -773,7 +773,7 @@ def _entry(entry_id: str, classification: str, **fields: str | None) -> CorpusEn
     return CorpusEntry.model_validate({"id": entry_id, "classification": classification, **values})
 
 
-class _OwnershipFixtureMixin:
+class _OwnershipFixtureMixin(unittest.TestCase):
     """Isolated root with an enrolled surface: one corpus-owned and one unowned section."""
 
     def setUp(self) -> None:

@@ -86,6 +86,8 @@ def _scan_file(path: Path) -> list[tuple[int, str]]:
     hits: dict[int, str] = {}
 
     for node in ast.walk(tree):
+        if not isinstance(node, ast.expr):
+            continue
         if isinstance(node, ast.Constant) and isinstance(node.value, str):
             if id(node) in docstring_ids:
                 continue

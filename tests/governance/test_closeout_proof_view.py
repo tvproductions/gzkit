@@ -306,9 +306,9 @@ class TestCloseoutProofInCheckScope(unittest.TestCase):
     @covers("REQ-0.0.69-03-03")
     def test_gz_check_steps_includes_closeout_proof_runner(self) -> None:
         """gz check step list must include a closeout-proof runner."""
-        from gzkit.commands.quality import gz_check_cmd
+        from gzkit.commands.quality import _build_check_steps
 
-        step_names = [name for name, _ in gz_check_cmd.steps]
+        step_names = [name for name, _ in _build_check_steps()]
         closeout_names = [n for n in step_names if "closeout" in n.lower() or "proof" in n.lower()]
         self.assertGreater(
             len(closeout_names),
@@ -319,9 +319,9 @@ class TestCloseoutProofInCheckScope(unittest.TestCase):
     @covers("REQ-0.0.69-03-03")
     def test_closeout_proof_step_appears_at_most_once(self) -> None:
         """Dispatched at most once per run — the step must not be duplicated."""
-        from gzkit.commands.quality import gz_check_cmd
+        from gzkit.commands.quality import _build_check_steps
 
-        step_names = [name for name, _ in gz_check_cmd.steps]
+        step_names = [name for name, _ in _build_check_steps()]
         closeout_names = [n for n in step_names if "closeout" in n.lower() or "proof" in n.lower()]
         self.assertLessEqual(
             len(closeout_names),

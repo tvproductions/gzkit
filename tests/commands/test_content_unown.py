@@ -2069,7 +2069,7 @@ def _text_mode_surface_writes(tree: ast.AST, label: str) -> list[str]:
         if isinstance(func, ast.Attribute) and func.attr == "write_text":
             target, shape = func.value, "write_text"
         elif _is_text_mode_open(node):
-            target = node.args[0] if isinstance(func, ast.Name) else func.value
+            target = func.value if isinstance(func, ast.Attribute) else node.args[0]
             shape = "open(...)"
         else:
             continue
@@ -6112,7 +6112,7 @@ if __name__ == "__main__":
     unittest.main()
 
 
-class _RolledBackUnderAPendingJournal:
+class _RolledBackUnderAPendingJournal(unittest.TestCase):
     """The one fixture both consumers of a rolled-back declaration are tested on.
 
     Extracted so the loader matrix below and the write-side matrix that follows

@@ -64,6 +64,8 @@ def _scan_file(path: Path) -> list[tuple[int, str, str]]:
     lines = source.splitlines()
     hits: list[tuple[int, str, str]] = []
     for node in ast.walk(tree):
+        if not isinstance(node, ast.expr):
+            continue
         kind = ""
         if _is_str_of_relative_to(node):
             kind = "str()"

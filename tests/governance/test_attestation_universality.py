@@ -66,6 +66,7 @@ class TestGateBodyShape(unittest.TestCase):
         tree = ast.parse(source)
         func = tree.body[0]
         self.assertIsInstance(func, ast.FunctionDef)
+        assert isinstance(func, ast.FunctionDef)
         body = func.body
         if (
             body
@@ -77,8 +78,11 @@ class TestGateBodyShape(unittest.TestCase):
         self.assertEqual(len(body), 1, "function body must contain a single statement")
         stmt = body[0]
         self.assertIsInstance(stmt, ast.Return)
-        self.assertIsInstance(stmt.value, ast.Constant)
-        self.assertIs(stmt.value.value, True)
+        assert isinstance(stmt, ast.Return)
+        value = stmt.value
+        self.assertIsInstance(value, ast.Constant)
+        assert isinstance(value, ast.Constant)
+        self.assertIs(value.value, True)
 
     @covers("REQ-0.0.36-02-02")
     def test_function_signature_preserved(self):
