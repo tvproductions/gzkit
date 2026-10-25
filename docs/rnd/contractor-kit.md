@@ -1159,7 +1159,10 @@ Part 0, the doctrine, the contract). The NAMP (COMNAVAIRFORINST 4790.2E) is stil
 placed is its release letter, an image without text; the operator is asked for Appendix A and
 Chapters 5 and 7. The PDFs the operator placed are kept out of git by
 `docs/rnd/contractor-kit/sources/.gitignore` (12 MB of binaries); their verbatim extracts are
-committed. Session handoff written at this point for a fresh context window (operator: *"set this to a
+committed. Operator, while the tracks ran: *"if you only extracted text from limited aspects,
+consider a wider read."* The JFMM track was widened to all of Volume V, Parts I to III; the TUM track
+already reads the whole manual; the next session checks each inventory's read/skipped header against
+this instruction and widens any track that read narrowly. Session handoff written at this point for a fresh context window (operator: *"set this to a
 handoff, so we can get a fresh ctx window"*; *"handoff + git sync"*).
 
 ---
