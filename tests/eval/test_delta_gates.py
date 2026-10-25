@@ -95,6 +95,7 @@ class TestBaselineStorage(unittest.TestCase):
             save_baseline(surface_score, baselines_dir)
             loaded = load_baseline("test_surface", baselines_dir)
             self.assertIsNotNone(loaded)
+            assert loaded is not None
             self.assertEqual(loaded.surface, "test_surface")
             self.assertEqual(loaded.dimension_scores["clarity"], 3.5)
             self.assertEqual(loaded.dimension_scores["depth"], 2.0)

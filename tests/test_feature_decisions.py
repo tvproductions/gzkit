@@ -57,8 +57,10 @@ class TestProductProofEnforced(unittest.TestCase):
 
     def test_has_docstring(self):
         decisions = FeatureDecisions(_service(_make_spec()))
-        self.assertIsNotNone(decisions.product_proof_enforced.__doc__)
-        self.assertIn("closeout", decisions.product_proof_enforced.__doc__.lower())
+        doc = decisions.product_proof_enforced.__doc__
+        self.assertIsNotNone(doc)
+        assert doc is not None
+        self.assertIn("closeout", doc.lower())
 
 
 class TestGetDecisionsSingleton(unittest.TestCase):

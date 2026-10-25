@@ -71,6 +71,7 @@ class TestBaselineStore(unittest.TestCase):
 
             loaded = load_baseline("instruction_eval", baselines_dir)
             self.assertIsNotNone(loaded)
+            assert loaded is not None
             self.assertEqual(loaded.surface, "instruction_eval")
             self.assertEqual(loaded.commit_hash, "abc123")
             self.assertEqual(loaded.dataset_version, "1.0.0")
@@ -328,6 +329,7 @@ class TestFirstRunHandling(unittest.TestCase):
             self.assertEqual(paths[0].name, "new.baseline.json")
             # Existing baseline unchanged
             loaded = load_baseline("existing", baselines_dir)
+            assert loaded is not None
             self.assertEqual(loaded.commit_hash, "old")
 
 
@@ -418,6 +420,7 @@ class TestExplicitUpdateControl(unittest.TestCase):
                 commit_hash="v2",
             )
             loaded = load_baseline("test", baselines_dir)
+            assert loaded is not None
             self.assertEqual(loaded.commit_hash, "v2")
             self.assertEqual(loaded.dataset_version, "2.0.0")
             self.assertEqual(loaded.dimension_scores["x"], 4.0)
@@ -438,6 +441,7 @@ class TestExplicitUpdateControl(unittest.TestCase):
 
             # Baseline unchanged
             loaded = load_baseline("test", baselines_dir)
+            assert loaded is not None
             self.assertEqual(loaded.commit_hash, "original")
             self.assertEqual(loaded.dimension_scores["x"], 3.0)
 

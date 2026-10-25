@@ -404,7 +404,9 @@ class TestLockClaim(unittest.TestCase):
             self.assertEqual(ctx.exception.code, 1)
             output = json.loads(mock_print.call_args[0][0])
             self.assertEqual((output["status"], output["expired"]), ("conflict", True))
-            self.assertEqual(read_lock(root, "OBPI-0.0.14-01").agent, "agent-a")
+            lock = read_lock(root, "OBPI-0.0.14-01")
+            assert lock is not None
+            self.assertEqual(lock.agent, "agent-a")
 
     @patch("gzkit.commands.obpi_lock.get_project_root")
     @patch("gzkit.commands.obpi_lock.ensure_initialized")
@@ -422,7 +424,9 @@ class TestLockClaim(unittest.TestCase):
             obpi_lock_claim_cmd(
                 obpi_id="OBPI-0.0.14-01", ttl_minutes=120, as_json=False, agent="agent-a"
             )
-            self.assertFalse(read_lock(root, "OBPI-0.0.14-01").is_expired)
+            lock = read_lock(root, "OBPI-0.0.14-01")
+            assert lock is not None
+            self.assertFalse(lock.is_expired)
 
     @patch("gzkit.commands.obpi_lock.get_project_root")
     @patch("gzkit.commands.obpi_lock.ensure_initialized")

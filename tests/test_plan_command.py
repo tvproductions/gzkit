@@ -33,6 +33,7 @@ class TestGzAdrCreateSkillEnrichment(unittest.TestCase):
         content = _SKILL_CANONICAL.read_text(encoding="utf-8")
         m = re.search(r'skill-version:\s*"(\d+)\.(\d+)\.(\d+)"', content)
         self.assertIsNotNone(m, "skill-version frontmatter field must exist")
+        assert m is not None
         major, minor, _patch = (int(g) for g in m.groups())
         self.assertGreaterEqual(
             (major, minor),
@@ -46,6 +47,7 @@ class TestGzAdrCreateSkillEnrichment(unittest.TestCase):
         content = _SKILL_CANONICAL.read_text(encoding="utf-8")
         m = re.search(r"last_reviewed:\s*(\d{4}-\d{2}-\d{2})", content)
         self.assertIsNotNone(m, "last_reviewed frontmatter field must exist")
+        assert m is not None
         reviewed = date.fromisoformat(m.group(1))
         self.assertGreaterEqual(
             reviewed,

@@ -70,9 +70,14 @@ class TestShortFormExtractors(unittest.TestCase):
         path = f"docs/design/adr/ADR-0.28.0-x/obpis/{_FULL}.md"
         self.assertEqual(obpi_id_from_path(path), _SHORT)
         self.assertEqual(_extract_obpi_id(Path(path)), _SHORT)
-        self.assertEqual(state_cmd._OBPI_SHORT_ID_RE.match(_FULL).group(1), _SHORT)
-        self.assertEqual(task_cmd._OBPI_LINEAGE_RE.match(_FULL).group(1), _SHORT)
-        self.assertEqual(vfm._OBPI_ID_PATTERN.match(_FULL).group(1), _SHORT)
+        for pattern in (
+            state_cmd._OBPI_SHORT_ID_RE,
+            task_cmd._OBPI_LINEAGE_RE,
+            vfm._OBPI_ID_PATTERN,
+        ):
+            match = pattern.match(_FULL)
+            assert match is not None
+            self.assertEqual(match.group(1), _SHORT)
 
     def test_a_one_digit_item_is_no_short_form(self) -> None:
         self.assertIsNone(obpi_id_from_path("obpis/OBPI-0.28.0-1-x.md"))
@@ -165,7 +170,9 @@ class TestTextReaders(unittest.TestCase):
     def test_parent_link_reads_any_prd_adr_or_obpi_reference(self) -> None:
         for ref in ("PRD-gzkit", "ADR-0.1.0-x", _FULL):
             with self.subTest(ref=ref):
-                self.assertEqual(PARENT_LINK_RE.search(f"**Parent:** [{ref}](x.md)").group(1), ref)
+                match = PARENT_LINK_RE.search(f"**Parent:** [{ref}](x.md)")
+                assert match is not None
+                self.assertEqual(match.group(1), ref)
 
     def test_checklist_scoring_reads_the_seam_short_form(self) -> None:
         good = f"## Checklist\n- [ ] {_SHORT}: a\n"
@@ -194,9 +201,14 @@ class TestTrustAuditReaders(unittest.TestCase):
 
     def test_frontmatter_id_lines_carry_the_short_form_and_its_slug(self) -> None:
         fm = f"id: {_FULL}\nparent: ADR-0.28.0-x\npaired_with: {_SHORT}\n"
-        self.assertEqual(absorption_duplicates._OBPI_ID_LINE.search(fm).group(1), _FULL)
-        self.assertEqual(absorption_duplicates._PAIRED_WITH_LINE.search(fm).group(1), _SHORT)
-        self.assertEqual(briefs._OBPI_ID_IN_FRONTMATTER.search(fm).group(1), _FULL)
+        for pattern, expected in (
+            (absorption_duplicates._OBPI_ID_LINE, _FULL),
+            (absorption_duplicates._PAIRED_WITH_LINE, _SHORT),
+            (briefs._OBPI_ID_IN_FRONTMATTER, _FULL),
+        ):
+            match = pattern.search(fm)
+            assert match is not None
+            self.assertEqual(match.group(1), expected)
         self.assertIsNone(briefs._OBPI_ID_IN_FRONTMATTER.search("id: OBPI-0.28.0-1\n"))
 
     def test_brief_file_names_split_into_semver_and_item(self) -> None:

@@ -421,6 +421,7 @@ class TestComplexityAdviseCliAuditParity(unittest.TestCase):
             complexity_advise,
             msg="`complexity advise` not present in cross-coverage scan",
         )
+        assert complexity_advise is not None
         self.assertTrue(
             complexity_advise.all_passed,
             msg=(

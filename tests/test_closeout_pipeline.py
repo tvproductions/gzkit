@@ -243,6 +243,7 @@ class TestCloseoutPipelineCompletion(unittest.TestCase):
             adr_file = matches[0]
             fm_status = re.search(r"(?m)^status:\s*(.+)$", adr_file.read_text(encoding="utf-8"))
             self.assertIsNotNone(fm_status, "ADR frontmatter has no status: field")
+            assert fm_status is not None
             self.assertEqual(
                 "Completed",
                 fm_status.group(1).strip(),

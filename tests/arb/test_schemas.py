@@ -117,6 +117,7 @@ class TestArbSchemas(unittest.TestCase):
             with self.subTest(schema=schema_id):
                 path = _schema_path_for_id(schema_id)
                 self.assertIsNotNone(path, f"validator resolves no schema for {schema_id}")
+                assert path is not None
                 schema = json.loads(path.read_text(encoding="utf-8"))
                 Draft202012Validator.check_schema(schema)
                 self.assertEqual(schema["$id"], schema_file_id)

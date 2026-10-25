@@ -441,6 +441,7 @@ class CodexDocCapCoherenceTest(unittest.TestCase):
             r"^project_doc_max_bytes\s*=\s*(\d+)$", render_codex_config(), _re.MULTILINE
         )
         self.assertIsNotNone(match, "generated Codex config declares no project_doc_max_bytes")
+        assert match is not None
         self.assertEqual(
             int(match.group(1)),
             recorded,

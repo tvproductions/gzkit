@@ -230,6 +230,7 @@ class TestLedgerSchemaAdmitsTaskId(unittest.TestCase):
             with self.subTest(event_key=event_key):
                 rule = self._event_rules.get(event_key)
                 self.assertIsNotNone(rule, f"Event key {event_key!r} missing from ledger.json")
+                assert rule is not None
                 required = rule.get("required", [])
                 self.assertNotIn(
                     "task_id",
@@ -248,6 +249,7 @@ class TestLedgerSchemaAdmitsTaskId(unittest.TestCase):
             with self.subTest(event_key=event_key):
                 rule = self._event_rules.get(event_key)
                 self.assertIsNotNone(rule, f"Event key {event_key!r} missing from ledger.json")
+                assert rule is not None
                 properties: dict = rule.get("properties", {})
                 self.assertIn(
                     "task_id",

@@ -193,6 +193,7 @@ class TestStateIO(unittest.TestCase):
             save_ceremony_state(root, state)
             loaded = load_ceremony_state(root, "ADR-0.1.0-f")
             self.assertIsNotNone(loaded)
+            assert loaded is not None
             self.assertEqual(loaded.current_step, 3)
 
     @covers("REQ-0.23.0-04-15")
@@ -226,6 +227,7 @@ class TestCeremonyInit(unittest.TestCase):
             self.assertIn("Readiness", result.output)
             state = load_ceremony_state(Path.cwd(), "ADR-0.1.0-f")
             self.assertIsNotNone(state)
+            assert state is not None
             self.assertEqual(state.current_step, CeremonyStep.INITIALIZE)
             self.assertEqual(state.attempt, 1)
 
@@ -279,6 +281,7 @@ class TestCeremonyAdvance(unittest.TestCase):
             self.assertEqual(result.exit_code, 0, result.output)
             self.assertIn("Bill of Materials", result.output)
             state = load_ceremony_state(Path.cwd(), "ADR-0.1.0-f")
+            assert state is not None
             self.assertEqual(state.current_step, CeremonyStep.SUMMARY)
 
     @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
@@ -302,16 +305,19 @@ class TestCeremonyAdvance(unittest.TestCase):
             # count, not a constant.
             _advance_to_attestation(runner)
             state = load_ceremony_state(Path.cwd(), "ADR-0.1.0-f")
+            assert state is not None
             self.assertEqual(state.current_step, CeremonyStep.ATTESTATION)
             # Attest
             runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony", "--attest", "Completed"])
             state = load_ceremony_state(Path.cwd(), "ADR-0.1.0-f")
+            assert state is not None
             self.assertEqual(state.current_step, CeremonyStep.CLOSEOUT)
             self.assertEqual(state.attestation, "Completed")
             # Step 7->8->9->10->11
             for _ in range(4):
                 runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony", "--next"])
             state = load_ceremony_state(Path.cwd(), "ADR-0.1.0-f")
+            assert state is not None
             self.assertEqual(state.current_step, CeremonyStep.COMPLETE)
             self.assertIsNotNone(state.completed_at)
 
@@ -367,6 +373,7 @@ class TestCeremonyGate5Enforcement(unittest.TestCase):
         runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony"])
         _advance_to_attestation(runner)
         state = load_ceremony_state(Path.cwd(), "ADR-0.1.0-f")
+        assert state is not None
         assert state.current_step == CeremonyStep.ATTESTATION, state.current_step
 
     @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
@@ -389,6 +396,7 @@ class TestCeremonyGate5Enforcement(unittest.TestCase):
             self.assertIn("human-attestation boundary", result.output)
             # The ceremony must NOT have advanced past the attestation gate.
             state = load_ceremony_state(Path.cwd(), "ADR-0.1.0-f")
+            assert state is not None
             self.assertEqual(state.current_step, CeremonyStep.ATTESTATION)
             config = ensure_initialized()
             ledger = Ledger(get_project_root() / config.paths.ledger)
@@ -414,6 +422,7 @@ class TestCeremonyGate5Enforcement(unittest.TestCase):
             )
             self.assertEqual(result.exit_code, 0, result.output)
             state = load_ceremony_state(Path.cwd(), "ADR-0.1.0-f")
+            assert state is not None
             self.assertEqual(state.current_step, CeremonyStep.CLOSEOUT)
             self.assertEqual(state.attestation, "Completed")
             config = ensure_initialized()
@@ -452,6 +461,7 @@ class TestCeremonyGate5Enforcement(unittest.TestCase):
             self.assertEqual(result.exit_code, 3, result.output)
             self.assertIn("no `attested` ledger receipt was recorded", result.output)
             state = load_ceremony_state(Path.cwd(), "ADR-0.1.0-f")
+            assert state is not None
             self.assertEqual(state.current_step, CeremonyStep.ATTESTATION)
 
 
@@ -505,6 +515,7 @@ class TestCeremonyResume(unittest.TestCase):
             # Advance to step 2
             runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony", "--next"])
             state = load_ceremony_state(Path.cwd(), "ADR-0.1.0-f")
+            assert state is not None
             self.assertEqual(state.current_step, CeremonyStep.SUMMARY)
             # Resume
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony"])
@@ -559,6 +570,7 @@ class TestCeremonyCompleted(unittest.TestCase):
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony", "--restart"])
             self.assertEqual(result.exit_code, 0, result.output)
             new_state = load_ceremony_state(Path.cwd(), "ADR-0.1.0-f")
+            assert new_state is not None
             self.assertEqual(new_state.attempt, 2)
             self.assertEqual(new_state.current_step, CeremonyStep.INITIALIZE)
 
@@ -581,6 +593,7 @@ class TestCeremonyPause(unittest.TestCase):
             self.assertEqual(result.exit_code, 0, result.output)
             self.assertIn("paused", result.output)
             state = load_ceremony_state(Path.cwd(), "ADR-0.1.0-f")
+            assert state is not None
             self.assertIsNotNone(state.paused_at)
 
     @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
@@ -720,6 +733,7 @@ class TestStep5PerDemoCadence(unittest.TestCase):
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony", "--next"])
             self.assertEqual(result.exit_code, 0, result.output)
             state = load_ceremony_state(Path.cwd(), "ADR-0.1.0-f")
+            assert state is not None
             self.assertEqual(state.current_step, CeremonyStep.EXECUTE)
             self.assertEqual(state.walkthrough_index, 1)
             self.assertIn("uv run gz beta", result.output)
@@ -742,6 +756,7 @@ class TestStep5PerDemoCadence(unittest.TestCase):
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony", "--next"])
             self.assertEqual(result.exit_code, 0, result.output)
             state = load_ceremony_state(Path.cwd(), "ADR-0.1.0-f")
+            assert state is not None
             self.assertEqual(state.current_step, CeremonyStep.ATTESTATION)
 
     @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
@@ -759,6 +774,7 @@ class TestStep5PerDemoCadence(unittest.TestCase):
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony", "--next"])
             self.assertEqual(result.exit_code, 0, result.output)
             state = load_ceremony_state(Path.cwd(), "ADR-0.1.0-f")
+            assert state is not None
             self.assertEqual(state.current_step, CeremonyStep.ATTESTATION)
 
     @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
@@ -775,6 +791,7 @@ class TestStep5PerDemoCadence(unittest.TestCase):
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony", "--next"])
             self.assertEqual(result.exit_code, 0, result.output)
             state = load_ceremony_state(Path.cwd(), "ADR-0.1.0-f")
+            assert state is not None
             self.assertEqual(state.current_step, CeremonyStep.ATTESTATION)
 
     @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")

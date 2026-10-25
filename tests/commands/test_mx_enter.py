@@ -249,6 +249,7 @@ class TestMxEnterSafeMode(SilencedConsoleTestCase):
             )
             m = marker.read(root)
             self.assertIsNotNone(m)
+            assert m is not None
             self.assertEqual((m.mode, m.contract), ("safe", contract))
             events = _read_ledger_events(root, "mx_session_opened")
             self.assertEqual(len(events), 1)
@@ -262,6 +263,7 @@ class TestMxEnterSafeMode(SilencedConsoleTestCase):
             root = _mk_root(tmp)
             mx_enter_cmd(reason="repair", attestor="g0", inspection_scope=[], project_root=root)
             m = marker.read(root)
+            assert m is not None
             self.assertEqual((m.mode, m.contract), ("mx", ""))
             self.assertEqual(_read_ledger_events(root, "mx_session_opened")[0].get("mode"), "mx")
 
@@ -399,6 +401,7 @@ class TestMxEnterCliOutputForm(unittest.TestCase):
             self.assertEqual(result.exit_code, 0, result.output)
             opened = marker.read(root)
             self.assertIsNotNone(opened)
+            assert opened is not None
             self.assertEqual(
                 (opened.mode, opened.contract), ("safe", "docs/governance/pilotage.md")
             )

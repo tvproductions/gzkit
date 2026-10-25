@@ -81,6 +81,7 @@ class TestMarkerPresence(unittest.TestCase):
             marker.marker_path(root).write_text('{"session_id": "s-44"}', encoding="utf-8")
             old = marker.read(root)
             self.assertIsNotNone(old)
+            assert old is not None
             self.assertEqual((old.mode, old.contract), ("mx", ""))
             with self.assertRaises(ValueError):
                 Marker(session_id="s-45", mode="lenient")

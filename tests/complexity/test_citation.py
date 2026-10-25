@@ -124,11 +124,13 @@ class TestRuleVersionConsistency(unittest.TestCase):
         rule_body = rule_path.read_text(encoding="utf-8")
         body_match = re.search(r"<!--\s*rule-version:\s*([0-9.]+)\s*-->", rule_body)
         self.assertIsNotNone(body_match, "body-level rule-version marker missing")
+        assert body_match is not None
         block_quote_match = re.search(
             r">\s*\*\*Rule version:\*\*\s*`([0-9.]+)`",
             rule_body,
         )
         self.assertIsNotNone(block_quote_match, "visible rule-version block quote missing")
+        assert block_quote_match is not None
         body_version = body_match.group(1)
         quote_version = block_quote_match.group(1)
         self.assertEqual(body_version, quote_version)

@@ -198,10 +198,12 @@ class TestCheckIntegration(unittest.TestCase):
             quality.check(full=True)
 
         formatter = _FormatterSpy.instances[-1]
-        self.assertIsNotNone(formatter.progress)
-        self.assertEqual(formatter.progress.total, 2)
-        self.assertEqual(formatter.progress.label, "Running quality checks")
-        self.assertEqual(formatter.progress.advanced, ["Lint", "Test"])
+        progress = formatter.progress
+        self.assertIsNotNone(progress)
+        assert progress is not None
+        self.assertEqual(progress.total, 2)
+        self.assertEqual(progress.label, "Running quality checks")
+        self.assertEqual(progress.advanced, ["Lint", "Test"])
 
 
 if __name__ == "__main__":

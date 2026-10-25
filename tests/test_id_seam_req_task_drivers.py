@@ -57,7 +57,9 @@ class TestReqReaders(unittest.TestCase):
         )
 
     def test_task_command_splits_only_the_seam_req_id(self) -> None:
-        self.assertEqual(task_cmd._REQ_PARTS_RE.match(STRICT_REQ).groups(), ("0.1.0", "01", "02"))
+        match = task_cmd._REQ_PARTS_RE.match(STRICT_REQ)
+        assert match is not None
+        self.assertEqual(match.groups(), ("0.1.0", "01", "02"))
         self.assertIsNone(task_cmd._REQ_PARTS_RE.match(LOOSE_REQ))
 
     def test_brief_requirement_scan_takes_the_seam_width_only(self) -> None:
@@ -70,6 +72,7 @@ class TestReqReaders(unittest.TestCase):
 
     def test_sunset_migration_reads_the_semver_of_a_whole_req_id(self) -> None:
         match = SUNSET_REQ_RE.match(STRICT_REQ)
+        assert match is not None
         self.assertEqual(match.group("semver"), "0.1.0")
         self.assertIsNone(SUNSET_REQ_RE.match("REQ-0.1.0-"))
         self.assertIsNone(SUNSET_REQ_RE.match(LOOSE_REQ))

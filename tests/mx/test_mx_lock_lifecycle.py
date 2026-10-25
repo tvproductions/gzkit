@@ -94,7 +94,9 @@ class TestEnterReapsAnExpiredOrphan(unittest.TestCase):
     def test_expired_orphan_is_cleared_before_claiming(self) -> None:
         root = _root()
         lock_manager.write_lock(root, _lock(_ANCIENT_CLAIM))
-        self.assertTrue(lock_manager.read_lock(root, MX_KEY).is_expired)
+        orphan = lock_manager.read_lock(root, MX_KEY)
+        assert orphan is not None
+        self.assertTrue(orphan.is_expired)
         self.assertTrue(mx_cmd._clear_expired_session_lock(root))
         self.assertIsNone(lock_manager.read_lock(root, MX_KEY))
 
@@ -106,7 +108,9 @@ class TestEnterReapsAnExpiredOrphan(unittest.TestCase):
         """
         root = _root()
         lock_manager.write_lock(root, _lock(_live_claim(), ttl=1440))
-        self.assertFalse(lock_manager.read_lock(root, MX_KEY).is_expired)
+        live = lock_manager.read_lock(root, MX_KEY)
+        assert live is not None
+        self.assertFalse(live.is_expired)
         self.assertFalse(mx_cmd._clear_expired_session_lock(root))
         self.assertIsNotNone(lock_manager.read_lock(root, MX_KEY))
 

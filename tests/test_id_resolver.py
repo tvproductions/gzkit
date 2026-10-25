@@ -131,6 +131,7 @@ class TestResolveReqAndTask(unittest.TestCase):
         )
         self.assertEqual(resolve("REQ-0.7.0-01-01", context).state, "parked")
         link = parent_of("REQ-0.7.0-01-01", context)
+        assert link is not None
         self.assertEqual((link.parent_id, link.source), ("OBPI-0.7.0-01-demoted", "spelling"))
         live = _context(graph={**_graph(), "OBPI-0.7.0-01-live": {"type": "obpi"}})
         with self.assertRaises(IdResolutionError):
@@ -160,27 +161,34 @@ class TestResolveReqAndTask(unittest.TestCase):
 class TestParentOf(unittest.TestCase):
     def test_an_obpi_parent_is_its_stored_field_not_its_spelling(self) -> None:
         link = parent_of(_PARKED, _context())
+        assert link is not None
         self.assertEqual((link.parent_id, link.source), (_POOL, "ledger"))
-        self.assertEqual(parent_of("OBPI-0.28.0-01", _context()).parent_id, _LIVE_ADR)
+        live = parent_of("OBPI-0.28.0-01", _context())
+        assert live is not None
+        self.assertEqual(live.parent_id, _LIVE_ADR)
 
     def test_an_obpi_outside_the_ledger_reads_its_brief(self) -> None:
         context = _context(brief_parents={"OBPI-0.4.0-01-new": "ADR-0.4.0-w"})
         context.graph["OBPI-0.4.0-01-new"] = {"type": "obpi"}
         link = parent_of("OBPI-0.4.0-01-new", context)
+        assert link is not None
         self.assertEqual((link.parent_id, link.source), ("ADR-0.4.0-w", "brief"))
 
     def test_an_obpi_with_no_stored_parent_falls_back_to_spelling_marked(self) -> None:
         context = _context(brief_parents={})
         context.graph["OBPI-0.5.0-01-bare"] = {"type": "obpi"}
         link = parent_of("OBPI-0.5.0-01-bare", context)
+        assert link is not None
         self.assertEqual((link.parent_id, link.source), ("ADR-0.5.0", "spelling"))
 
     def test_a_req_parent_is_its_owning_brief(self) -> None:
         link = parent_of("REQ-0.28.0-01-01", _context())
+        assert link is not None
         self.assertEqual((link.parent_id, link.source), (_LIVE, "brief"))
 
     def test_a_task_parent_req_is_spelled_and_says_so(self) -> None:
         link = parent_of("TASK-0.28.0-01-01-01", _context())
+        assert link is not None
         self.assertEqual((link.parent_id, link.source), ("REQ-0.28.0-01-01", "spelling"))
 
     def test_an_adr_with_no_stored_parent_has_none(self) -> None:
@@ -188,6 +196,7 @@ class TestParentOf(unittest.TestCase):
 
     def test_an_adr_parent_is_its_stored_field(self) -> None:
         link = parent_of(_LIVE_ADR, _context())
+        assert link is not None
         self.assertEqual((link.parent_id, link.source), ("PRD-GZKIT-1.0.0", "ledger"))
 
 

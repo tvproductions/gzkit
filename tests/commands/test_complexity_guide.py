@@ -265,6 +265,7 @@ class TestComplexityGuideCliAuditParity(unittest.TestCase):
             complexity_guide,
             msg="`complexity guide` not present in cross-coverage scan",
         )
+        assert complexity_guide is not None
         self.assertTrue(
             complexity_guide.all_passed,
             msg=(
