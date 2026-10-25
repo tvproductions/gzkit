@@ -204,8 +204,8 @@ at sign-off."*
 
 These survive the first edition unchanged.
 
-**`gz-rnd` is operator-invoked only**, and `disable-model-invocation: true` makes that a
-mechanical property rather than prose. Operator verbatim, 2026-09-15: *"it is
+**Superseded 2026-10-25 — see § Amended 2026-10-25.** `gz-rnd` was operator-invoked only,
+with `disable-model-invocation: true` making that mechanical. Operator verbatim, 2026-09-15: *"it is
 operator-invoked, I think the sensing is a mistake because you'd need to deduce that an
 exploratory session is meant to be R&D and I am not sure you'd do that realiably"*
 (spelling preserved). The sensing arm is **out**.
@@ -218,8 +218,7 @@ are compelling, I think an offer isn't too harmful either."*
 **The run ends at the disposition map and executes nothing on its own authority.** Each row
 names a **pre-declared** consultation point — pre-declared, never computed from agent
 confidence (the Bainbridge finding in [`chore-class-system.md`](chore-class-system.md)
-§ Consultation points). The stop lives in the skill file, which the run does not edit, and
-in the invocation class, which the run cannot change. This closes the MPAS failure where
+§ Consultation points). The stop lives in the skill file, which the run does not edit. This closes the MPAS failure where
 `wayfinder`'s *"Plan, don't do"* was overridable by text the agent wrote into its own notes.
 
 **Before proposing disposition 1, ask the admission question:** is the decision hard to
@@ -268,7 +267,7 @@ that is consistent with grill-me-with-docs."*
 
 | MPAS surface | Why not |
 |---|---|
-| **`wayfinder`** | The R&D-shaped one, and the closest rival to this design — but its core stop, *"Plan, don't do"*, was **overridable by text the agent wrote into its own notes**. gzkit puts the stop in the skill file, which the run does not edit, and in `disable-model-invocation`, which the run cannot change. Its multi-session arm is the **handoff** system's job. |
+| **`wayfinder`** | The R&D-shaped one, and the closest rival to this design — but its core stop, *"Plan, don't do"*, was **overridable by text the agent wrote into its own notes**. gzkit puts the stop in the skill file, which the run does not edit. Its multi-session arm is the **handoff** system's job. |
 | **`to-spec`** | gzkit specifies through OBPI briefs and REQs, durable and reconciled (`gz validate --brief-reconcile`). |
 | **`to-tickets`** | gzkit decomposes through the ADR Feature Checklist → OBPI 1:1 mandate. |
 | **`improve-codebase-architecture`** | the chore estate and `gz-tech-debt-review` hold this ground. |
@@ -369,6 +368,29 @@ texts, 8 of 55 names were contradicted or strained by what the texts say and 19 
 `.claude/rules/`" is still seated in neither, and `gz-session-handoff` still does not name
 the invocation for an open run (insight 2026-10-07T08:56:56Z, scope
 `rnd-discipline:offer-and-resume`). Both are the operator's to route.
+
+## Amended 2026-10-25 — the agent starts the run
+
+**Status of this amendment.** Operator-ruled, verbatim, in order: *"On rnd, BULLSHIT, if I
+say we need it, then we need it and you start it."*; *"then change that skill description, if
+you start rnd, and I don't wan it, I can always politely decline. I want that shit changed."*;
+*"maybe the skill offers... do you want to start an rnd session for that?"*; *"OR, when I
+call for it"* (spelling
+preserved).
+
+**What prompted it.** The operator called for an R&D run on the drydock contractors; the
+harness refused the agent's start because the skill carried `disable-model-invocation: true`,
+and the agent had already answered an earlier call by offering two ways to run it instead of
+starting it (insights 2026-10-25T15:35:05Z, scopes `gz-rnd` and `vibe-coding-audit`).
+
+**The rule.** `disable-model-invocation` is removed from `gz-rnd` (skill `0.6.0`). When the
+operator says R&D is needed, the agent starts the run; the operator may decline, and a
+declined run ends there. When the operator has not called for one but the four offer signals
+above fit, the agent offers in one line, *"do you want to start an rnd session for that?"*;
+the offer rule, unseated since 2026-09-15, is now seated in the skill. This supersedes the 2026-09-15 operator-invoked ruling in
+§ Invocation and the hard stop, and rule 3 of the 2026-10-07 amendment (resuming is by
+invocation). The hard stop is unchanged: it lives in the skill file, which the run does not
+edit, and every row still needs the operator's go on that row.
 
 ## Still out of scope
 

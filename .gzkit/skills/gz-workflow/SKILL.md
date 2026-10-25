@@ -15,7 +15,7 @@ model: haiku
 
 | Intent | Skill |
 |---|---|
-| R&D run — "consider this for gzkit" (operator-invoked) | `gz-rnd` |
+| R&D run — "consider this for gzkit" (agent starts it when the operator calls for R&D) | `gz-rnd` |
 | design | `gz-design` |
 | plan | `gz-plan` |
 | implement | `gz-obpi-pipeline` |

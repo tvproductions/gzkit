@@ -85,7 +85,7 @@ skill is missing here, so this list cannot fall behind the catalog.
 | Intent | Skill |
 |---|---|
 | shape an idea through design dialogue | `gz-design` |
-| frame an open problem whose outcome is unknown (operator-invoked) | `gz-rnd` |
+| frame an open problem whose outcome is unknown (agent starts it when the operator calls for R&D) | `gz-rnd` |
 | book an ADR with its OBPI briefs | `gz-adr-create` |
 | scaffold an ADR from the CLI | `gz-plan` |
 | score an ADR and its OBPIs | `gz-adr-evaluate` |

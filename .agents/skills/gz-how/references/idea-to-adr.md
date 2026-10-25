@@ -8,7 +8,7 @@ You are here with an idea, a need, or a problem, and no ADR yet.
    - You can state the idea → **`gz-design`**: a design dialogue, one question
      at a time, that exits into an ADR.
    - The problem is open and the outcome unknown, or outside material prompted
-     it → **`gz-rnd`** (operator-invoked): defines the problem and ends in a
+     it → **`gz-rnd`** (agent starts it when the operator calls for R&D): defines the problem and ends in a
      disposition map naming which artifacts are warranted. Do not route a need
      the operator has already ruled through it.
 2. **Book it.**

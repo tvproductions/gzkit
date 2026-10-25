@@ -5,7 +5,7 @@ repository, a pasted idea — might hold a lesson.
 
 ## Steps
 
-- **An open problem, outcome unknown** → **`gz-rnd`** (operator-invoked): a
+- **An open problem, outcome unknown** → **`gz-rnd`** (agent starts it when the operator calls for R&D): a
   governed R&D session that defines the problem and ends in a disposition map.
   A need the operator has already ruled is design work instead; see
   [Idea to ADR](idea-to-adr.md).

@@ -1965,6 +1965,8 @@
       "f0234334578467829bc70fcc518eed9e3d0542c39449da1db1c42abecbcebb98"
     ],
     "skills/gz-how/SKILL.md": [
+      "3faf4610a46d3947aecf8249af2a3c62896b6bf4f10e3e4f949ddb01edf5e2e7",
+      "662597181eba040eadefaf502b41be76eb800ce27dcba6be79b8aeb85b3d47d3",
       "77f1a6fffb2693e9d9de2bda54e7abb4027773afefea8e0a3e9fe76cc8831679",
       "92cd1b54c26183a559e73c9c241fdb9d707ac676bddbdbbecc1782b9d781f9c9",
       "a8c35cf70a1ecd7570daea4ce5bc41eae019830dca7e848d7e499a76093c576c",
@@ -1994,9 +1996,11 @@
       "c6abe0a08f5c590d9ce6f64c179d69acd3708cd0fbde713674c0f8b272c29ae1"
     ],
     "skills/gz-how/references/idea-to-adr.md": [
-      "927e35a82b76194ce66d2dac6328d23fefdef081047adb3b92708095e654a63b"
+      "927e35a82b76194ce66d2dac6328d23fefdef081047adb3b92708095e654a63b",
+      "f975ddfe4a305cfafcde4250c6a25e8f5eda3c914f7166415903e5f3e43ff51a"
     ],
     "skills/gz-how/references/looking-outward.md": [
+      "9a92645df13d0e1a6ddb63e877d28b817260a6f83a2a93aaec57207b1d9ab391",
       "c37926b906937b8e20afbcb2896c55836cdc9377e71fe87d6d1b391732214d59"
     ],
     "skills/gz-how/references/obpi-delivery.md": [
@@ -2452,6 +2456,7 @@
       "0801da601de5176f194f53c1b8469db0e2dfce983e58daf36462c58668ca0904",
       "699980dadcfd5b340d95d197de2d59e3f2676e86696e473a3ad6304f09e78575",
       "95963721fcb583f6fa866e6bead65c77cba037f8ccc90345d95c5fe9d12bf14e",
+      "afeb71375d7fa75a3ce9c5ce2e97f3f97d5ac1c270dcaf3faaa0776b353c7905",
       "b76cd63444e9cf91d678085a446dbb6ea7919f4d105fb764ee8650e33bc492ac",
       "fa6c5d52724c77285328d90c936756d274d72789b4b1f998455bace73e90c0b9"
     ],
@@ -2593,7 +2598,8 @@
       "aef26522d36830713bbe452011f0ba9aba7fa17ace71cab3021bd71297f0641e",
       "c90a0aa7d29da7ed2c8a26ecba51b9a4377d345e0a0ca4bd649b2fe9cc9441e8",
       "d03c83300f20bf9676fbbf6e7dd3880b5650beec7bdf811388f683accab50b21",
-      "de3991c4fc100b04c586c3533cf41c5d8d37b62a08156ef54aec2ee848726a0b"
+      "de3991c4fc100b04c586c3533cf41c5d8d37b62a08156ef54aec2ee848726a0b",
+      "ee2eb0a9e6b99a9f18216c12920bf28ecd651404eea8db8a6ecac40e45ab8529"
     ],
     "skills/lint/SKILL.md": [
       "dbd85e95595c2bdba70ac9d8b059a987642419a2aa80246e1e8c7fe5de94a3e5"

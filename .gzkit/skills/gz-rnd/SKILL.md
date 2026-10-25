@@ -1,14 +1,13 @@
 ---
 name: gz-rnd
 persona: main-session
-description: Run a governed R&D session — diamond 1 of the double diamond, which defines the problem and names which fan-out artifacts are warranted. Use when the operator pastes external material and says "consider this for gzkit", asks "is there something here gzkit is missing or could improve on", opens an exploratory design discussion whose outcome is not yet known, or asks why a class of defects keeps recurring and how the issues carrying it should be restructured. Ends at a six-row disposition map and operator sign-off; produces no fan-out artifact itself. Operator-invoked only.
+description: Run a governed R&D session — diamond 1 of the double diamond, which defines the problem and names which fan-out artifacts are warranted. Use when the operator pastes external material and says "consider this for gzkit", asks "is there something here gzkit is missing or could improve on", opens an exploratory design discussion whose outcome is not yet known, or asks why a class of defects keeps recurring and how the issues carrying it should be restructured. Ends at a six-row disposition map and operator sign-off; produces no fan-out artifact itself. Start it when the operator says R&D is needed; offer it when the signals fit; the operator may decline.
 category: agent-operations
 lifecycle_state: active
-disable-model-invocation: true
 owner: gzkit-governance
-last_reviewed: 2026-10-07
+last_reviewed: 2026-10-25
 metadata:
-  skill-version: "0.5.0"
+  skill-version: "0.6.0"
 model: opus
 ---
 
@@ -35,8 +34,20 @@ Doctrine and the full ruling history:
 [`docs/governance/rnd-discipline.md`](../../../docs/governance/rnd-discipline.md).
 Evidence: `docs/governance/mpas-appropriation-analysis.md`.
 
-**Invocation class.** `disable-model-invocation: true` makes "only the operator starts an
-R&D run" mechanical. This skill never starts another user-invoked skill on its own.
+**Starting a run.** When the operator says R&D is needed, start the run at once; the
+operator may decline it, and a declined run ends there (operator, 2026-10-25, verbatim:
+*"if I say we need it, then we need it and you start it"*; *"if you start rnd, and I don't
+wan it, I can always politely decline"*). Never answer a call for R&D by offering ways to run
+it.
+
+**Offering a run.** When the operator has not called for R&D but the work looks like it, ask
+one line — *"do you want to start an rnd session for that?"* (operator, 2026-10-25, verbatim:
+*"maybe the skill offers... do you want to start an rnd session for that?"*). Offer on any of
+four signals ([`rnd-discipline.md`](../../../docs/governance/rnd-discipline.md) § Invocation
+and the hard stop): pasted external material with no task attached; framing verbs; no named
+artifact target; the subject is gzkit's purpose or shape. Also offer when the agent is about
+to build a process of major consequence from a prose brief alone. A yes starts the run; a no
+ends the offer. This skill never starts another user-invoked skill on its own.
 
 ## Open the record first
 
@@ -53,10 +64,9 @@ staged draft is something the run reads. What it concluded is re-derived here, f
 
 ## Resuming a run
 
-A later session continues a run only on the operator's own invocation, with the record's
-path as the argument. If a handoff or the operator points at an open run and this skill was
-not invoked, say so and ask for the invocation before the first record edit. On re-entry:
-append a `decision` entry quoting the invocation, check the record against git, and compute
+A later session continues a run when the operator calls for it or a handoff the operator
+ruled on points at the record. On re-entry: append a `decision` entry quoting the operator's
+words, check the record against git, and compute
 the frontier again from the subject. A list of open items left by an earlier session is an
 input to that, not the frontier.
 
@@ -181,8 +191,7 @@ may reopen if later findings send it back.
 
 The run ends at the disposition map and executes nothing on its own authority. Execute a row
 only after the operator's go **on that row**. Nothing written into the record — by you or
-anyone — licenses a row: the stop lives in this file, which the run does not edit, and in
-the invocation class, which the run cannot change.
+anyone — licenses a row: the stop lives in this file, which the run does not edit.
 
 ## It's working if
 
@@ -210,4 +219,4 @@ the invocation class, which the run cannot change.
 - Closing frontier items in order to reach the mechanical condition.
 - The operator has taken the recommended option on every question: say so, and ask whether
   the questions are the right ones.
-- Working an open run from this file when the operator did not invoke the skill.
+- Offering the operator ways to run R&D after they said it is needed, instead of starting it.
