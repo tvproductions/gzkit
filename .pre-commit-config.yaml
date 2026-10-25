@@ -13,7 +13,8 @@ fail_fast: true
 
 # Safe mode (operator ruling 2026-10-25): every alarm hook runs through
 # `gzkit.mx.alarms`, which skips it while .gzkit/mx.json carries `mode: safe`.
-# gitleaks, authorship, the trailer stamp, uv-lock and the formatters are not alarms.
+# ruff, ty, forbid-pytest (the guards sweep), gitleaks, authorship, the trailer stamp,
+# uv-lock and the formatters stay on (operator, 2026-10-25) and never route through it.
 repos:
   - repo: local
     hooks:
@@ -30,7 +31,7 @@ repos:
         # rewrote every held finding in any file a commit touched, dated
         # evidence included (operator, 2026-10-24: "do 1"). Fixes run when
         # asked for, through `gz lint --fix` or `gz format`.
-        entry: uv run python -m gzkit.mx.alarms ruff-check -- gz lint
+        entry: uv run gz lint
         language: system
         pass_filenames: true
         types: [python]
@@ -49,7 +50,7 @@ repos:
         # Scope must match CANONICAL_STEP_COMMANDS["typecheck"] in
         # src/gzkit/canonical_steps.py — pinned by
         # tests/arb/test_typecheck_scope_lockstep.py, which reads this file.
-        entry: uv run python -m gzkit.mx.alarms ty-check -- ty check .
+        entry: uv run ty check .
         language: system
         pass_filenames: false
         types: [python]
@@ -57,7 +58,9 @@ repos:
 
       - id: forbid-pytest
         name: forbid pytest (unittest-only policy)
-        entry: uv run python -m gzkit.mx.alarms forbid-pytest -- python -m gzkit.hooks.guards
+        # Never switched off (operator, 2026-10-25): it carries the pytest ban and the
+        # ledger and Gate-5 guards, and resolves each through the MX checkpoint itself.
+        entry: uv run -m gzkit.hooks.guards
         language: system
         pass_filenames: false
         stages: [pre-commit]

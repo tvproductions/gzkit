@@ -347,8 +347,14 @@ class TestMxCheckpointSeam(unittest.TestCase):
     def test_non_floor_guard_demotes_inside_the_hangar(self) -> None:
         """A non-floor guard's violation stops blocking once the hangar is open."""
         with tempfile.TemporaryDirectory() as td:
-            code, _ = self._sweep(self._hangar(td), "forbid_pytest")
+            code, _ = self._sweep(self._hangar(td), "forbid_skill_sync_drift")
         self.assertEqual(code, 0, "a non-floor pre-commit guard must demote under the marker")
+
+    def test_the_pytest_ban_blocks_inside_the_hangar(self) -> None:
+        """Operator ruling 2026-10-25: the pytest ban is never turned off, marker or not."""
+        with tempfile.TemporaryDirectory() as td:
+            code, _ = self._sweep(self._hangar(td), "forbid_pytest")
+        self.assertEqual(code, 1, "the pytest ban must keep blocking in the hangar")
 
     def test_demotion_is_announced_rather_than_silent(self) -> None:
         """A demoted guard stays visible — advisory means non-grounding, never discarded.
@@ -358,8 +364,8 @@ class TestMxCheckpointSeam(unittest.TestCase):
         clean run from a demoted one.
         """
         with tempfile.TemporaryDirectory() as td:
-            _, out = self._sweep(self._hangar(td), "forbid_pytest")
-        self.assertIn("forbid-pytest", out)
+            _, out = self._sweep(self._hangar(td), "forbid_skill_sync_drift")
+        self.assertIn("skill-sync-drift", out)
         self.assertIn("advisory", out.lower())
 
     def test_ledger_guard_pins_inside_the_hangar(self) -> None:

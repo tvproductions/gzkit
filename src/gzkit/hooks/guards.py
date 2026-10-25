@@ -534,13 +534,15 @@ def _run_enforcement_floor(root: Path) -> int:
 #     `post-authoring-src-commits` is pinned here to PRESERVE today's behaviour
 #     rather than to rule on it; whether the hangar should be able to demote the
 #     Stage-2 production-code fence is an operator call, disclosed on GHI #843.
+#     `forbid-pytest` is pinned the same way by operator ruling 2026-10-25,
+#     verbatim: "never, ever, ever turn this off: "the pytest ban"".
 #
 # Entries are (mx guard name, module attribute, emitted level). The attribute
 # indirection keeps this tuple the single source of truth: `run_guards` never
 # names a guard, so one added without an entry is unreachable rather than
 # silently unchecked -- the inventory gap that produced this defect.
 _GUARD_META: tuple[tuple[str, str, int], ...] = (
-    ("forbid-pytest", "forbid_pytest", _mx_levels.ERROR),
+    ("forbid-pytest", "forbid_pytest", _mx_levels.CRITICAL),
     ("ledger", "forbid_manual_ledger_edits", _mx_levels.ERROR),
     ("skill-sync-drift", "forbid_skill_sync_drift", _mx_levels.ERROR),
     ("post-authoring-src-commits", "forbid_post_authoring_src_commits", _mx_levels.CRITICAL),

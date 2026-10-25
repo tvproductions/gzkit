@@ -136,6 +136,8 @@ Not suspended, under any reading:
 - Gate 5. A completion is attested by the operator's own words or it is not complete.
 - The ledger as system of record, written only through `gz` commands; never hand-edited.
 - The operator-PII rule and the secret scan (the authorship and gitleaks hooks stay on).
+- The pytest ban, pinned at `CRITICAL` in and out of the marker (operator, verbatim, 2026-10-25:
+  *"never, ever, ever turn this off: "the pytest ban""*), with the ledger and Gate-5 guards its pre-commit sweep carries.
 - No control is removed. Lowered to advisory or switched off is not removed; the exit restores it.
 - Rulings. Structure is decided by the operator on the session's draft.
 
@@ -664,11 +666,11 @@ Passed once and recorded here, the ship is seaworthy and the handback follows.
 What the drydock leaves broken or disconnected, one line each with the order that owns putting it
 back; that order does not close until its lines are cleared (rulings of 2026-10-25).
 
-- **RO-0** — the alarm switch (`gzkit.mx.alarms`, `757ddea7e`) reroutes nine pre-commit and pre-push
-  hooks and the verifier pipe gate; at exit they run at full strength, and the three tests that pin
-  the old entries (`tests.arb.test_typecheck_scope_lockstep` for ty,
-  `tests.arb.test_unittest_runner_lockstep` for unittest and the complexity verifier) are
-  reconfigured to the new stable state.
+- **RO-0** — the alarm switch (`gzkit.mx.alarms`, `757ddea7e`) reroutes six pre-commit and pre-push
+  hooks and the verifier pipe gate (ruff and ty stay on, operator 2026-10-25: *"ruff and ty are
+  reasonable too"*); at exit they run at full strength, and the two tests that pin
+  the old entries (`tests.arb.test_unittest_runner_lockstep`, for unittest and the complexity
+  verifier) are reconfigured to the new stable state.
 - **RO-0** — the commit witness (`gz arb red --commit`), switched off as a per-act record: GHI #1268
   (generated vendor mirrors graded as production hunks) is fixed, and GHI #1269's acceptance rerun
   on `7b7ea83cd`, stopped unrecorded, is run and booked, before the witness is relied on again.

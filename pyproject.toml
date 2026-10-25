@@ -106,7 +106,7 @@ ignore = [
     "incorrect-blank-line-before-class",
     "multi-line-summary-second-line",
     # Standing exceptions ruled for tranche 4 (2026-10-22, "PT + COM812 + CPY001
-    # (Rec.)"): pytest idioms, where unittest is doctrine (AGENTS.md § STDLIB-FIRST);
+    # (Rec.)"): PT, a foreign test framework's idioms, where unittest is doctrine (AGENTS.md § STDLIB-FIRST);
     # a trailing-comma rule that conflicts with Ruff's formatter; and copyright
     # headers, for which no doctrine exists.
     "PT",
