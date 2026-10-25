@@ -27,9 +27,14 @@
 
 ## Rulings of 2026-10-25
 
-(none yet)
+1. **Nested `AGENTS.md` files are no longer generated** (operator, verbatim: *"A (also, let's at least see if both have rules files, those are more precise)"*). Documented reading (code.claude.com/docs/en/memory; the Codex AGENTS.md guide): Claude reads `AGENTS.md` only through the root `CLAUDE.md` import when a `CLAUDE.md` exists, and gets scoped rules from `.claude/rules` `paths:`; Codex reads only the chain from the project root to its starting directory, at startup. In normal use the 33 nested files (210,505 B) are read by neither. The generator stops writing them and `gz validate --instructions-files-budget` drops the surface; the lost case is scoped rule text for a Codex session started in a subdirectory. Codex has no path-scoped instruction facility (its `.rules` files are command-execution policy; skills load by description; the `AGENTS.md` chain is directory-scoped; the configuration reference has no conditional instructions).
+2. **Codex gets the root `AGENTS.md` only; no injection hook** (operator, verbatim: *"I don't think a hook that constantly interrupts and churns is the way. Hooks should enforce important process/loop actions in main workflows. … For now, C is the best answer other than removing those 33 nested AGENTS.md throughout the filesystem."*). Path-scoped rule text stays Claude-only. Hooks enforce process and loop actions in main workflows; they do not inject context per edit.
+
+## Leads, after the drydock
+
+- Prior art on Claude and Codex instruction parity (operator: *"we can't be alone here, this is not the first project to seek parity"*).
+- A mature progressive-disclosure system (operator: *"if we had a mature progressive disclosure system, most of these rules would not be needed"*).
 
 ## Open questions, in the order they are being ruled
 
-1. Nested `AGENTS.md`: narrow `paths:`, stop generating subtree copies, or re-rule the 60 KB number.
 2. Demotions to `disable-model-invocation`: designated per stage or as one list.
