@@ -10,11 +10,11 @@ paths:
   - "src/gzkit/mx/awareness.py"
   - "src/gzkit/hooks/guards.py"
 ---
-<!-- rule-version: 1.10.0 -->
+<!-- rule-version: 1.11.0 -->
 
 # MX Mode (Maintenance Hangar) (gzkit)
 
-> **Rule version:** `1.10.0` — `gz mx renew` renews the lease in place, lease-only, with no exit and no guard run (operator ruling 2026-10-20, GHI #1261); version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#mx-modemd).
+> **Rule version:** `1.11.0` — safe mode switches every alarm hook off (`gzkit.mx.alarms`) and trades the per-act witness for a punch list the exit empties (operator ruling 2026-10-25); version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#mx-modemd).
 
 ## Non-negotiable rules
 
