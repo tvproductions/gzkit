@@ -2688,11 +2688,6 @@
     },
     {
       "file": "src/gzkit/acceptance.py",
-      "rule": "TC001",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/acceptance.py",
       "rule": "TC003",
       "count": 1
     },
@@ -3038,11 +3033,6 @@
     },
     {
       "file": "src/gzkit/arb/advisor.py",
-      "rule": "TC001",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/arb/advisor.py",
       "rule": "TC003",
       "count": 1
     },
@@ -3095,11 +3085,6 @@
       "file": "src/gzkit/arb/patterns.py",
       "rule": "PLR2004",
       "count": 2
-    },
-    {
-      "file": "src/gzkit/arb/patterns.py",
-      "rule": "TC001",
-      "count": 1
     },
     {
       "file": "src/gzkit/arb/patterns.py",
@@ -4562,11 +4547,6 @@
       "count": 2
     },
     {
-      "file": "src/gzkit/commands/chores.py",
-      "rule": "TC001",
-      "count": 1
-    },
-    {
       "file": "src/gzkit/commands/chores_declaration.py",
       "rule": "DOC201",
       "count": 1
@@ -4650,11 +4630,6 @@
       "file": "src/gzkit/commands/chores_staleness.py",
       "rule": "PLR0917",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/chores_staleness.py",
-      "rule": "TC001",
-      "count": 2
     },
     {
       "file": "src/gzkit/commands/chores_staleness.py",
@@ -5379,7 +5354,7 @@
     {
       "file": "src/gzkit/commands/content/unown.py",
       "rule": "TC003",
-      "count": 2
+      "count": 1
     },
     {
       "file": "src/gzkit/commands/context_cmd.py",
@@ -5895,11 +5870,6 @@
       "file": "src/gzkit/commands/obpi_acceptance.py",
       "rule": "PLR6201",
       "count": 2
-    },
-    {
-      "file": "src/gzkit/commands/obpi_acceptance.py",
-      "rule": "TC001",
-      "count": 1
     },
     {
       "file": "src/gzkit/commands/obpi_acceptance.py",
@@ -6510,11 +6480,6 @@
       "file": "src/gzkit/commands/pipeline.py",
       "rule": "PERF401",
       "count": 2
-    },
-    {
-      "file": "src/gzkit/commands/pipeline.py",
-      "rule": "TC001",
-      "count": 1
     },
     {
       "file": "src/gzkit/commands/pipeline.py",
@@ -7712,11 +7677,6 @@
       "count": 1
     },
     {
-      "file": "src/gzkit/complexity/advisor/archetype_rules.py",
-      "rule": "TC001",
-      "count": 2
-    },
-    {
       "file": "src/gzkit/complexity/advisor/config.py",
       "rule": "DOC201",
       "count": 1
@@ -7850,11 +7810,6 @@
       "file": "src/gzkit/complexity/authoring/hint.py",
       "rule": "DOC201",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/complexity/authoring/hint.py",
-      "rule": "TC001",
-      "count": 2
     },
     {
       "file": "src/gzkit/complexity/authoring/protocol.py",
@@ -8038,11 +7993,6 @@
     },
     {
       "file": "src/gzkit/complexity/thresholds.py",
-      "rule": "TC001",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/complexity/thresholds.py",
       "rule": "TC003",
       "count": 2
     },
@@ -8213,11 +8163,6 @@
     },
     {
       "file": "src/gzkit/content/landing.py",
-      "rule": "TC003",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/content/landing.py",
       "rule": "TRY301",
       "count": 3
     },
@@ -8257,18 +8202,8 @@
       "count": 1
     },
     {
-      "file": "src/gzkit/content/models/agent_contract.py",
-      "rule": "TC001",
-      "count": 1
-    },
-    {
       "file": "src/gzkit/content/models/chore.py",
       "rule": "EM102",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/content/models/chore.py",
-      "rule": "TC001",
       "count": 1
     },
     {
@@ -8313,11 +8248,6 @@
     },
     {
       "file": "src/gzkit/content/models/handoff.py",
-      "rule": "TC001",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/content/models/handoff.py",
       "rule": "TRY003",
       "count": 1
     },
@@ -8343,22 +8273,12 @@
     },
     {
       "file": "src/gzkit/content/models/rule.py",
-      "rule": "TC001",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/content/models/rule.py",
       "rule": "TRY003",
       "count": 4
     },
     {
       "file": "src/gzkit/content/models/skill.py",
       "rule": "EM102",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/content/models/skill.py",
-      "rule": "TC001",
       "count": 1
     },
     {
@@ -8847,11 +8767,6 @@
       "count": 1
     },
     {
-      "file": "src/gzkit/enforcement.py",
-      "rule": "TC003",
-      "count": 2
-    },
-    {
       "file": "src/gzkit/eval/datasets.py",
       "rule": "DOC201",
       "count": 3
@@ -8992,11 +8907,6 @@
       "count": 2
     },
     {
-      "file": "src/gzkit/events.py",
-      "rule": "TC001",
-      "count": 1
-    },
-    {
       "file": "src/gzkit/exchange_records.py",
       "rule": "DOC201",
       "count": 8
@@ -9134,11 +9044,6 @@
     {
       "file": "src/gzkit/flags/models.py",
       "rule": "DOC501",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/flags/models.py",
-      "rule": "TC003",
       "count": 1
     },
     {
@@ -9380,11 +9285,6 @@
       "file": "src/gzkit/governance/brief_structure.py",
       "rule": "EM102",
       "count": 5
-    },
-    {
-      "file": "src/gzkit/governance/brief_structure.py",
-      "rule": "TC003",
-      "count": 1
     },
     {
       "file": "src/gzkit/governance/brief_structure.py",
@@ -11602,11 +11502,6 @@
       "count": 7
     },
     {
-      "file": "src/gzkit/interview.py",
-      "rule": "TC003",
-      "count": 1
-    },
-    {
       "file": "src/gzkit/justify/anchors.py",
       "rule": "DOC201",
       "count": 1
@@ -11790,11 +11685,6 @@
       "file": "src/gzkit/justify/walkthrough.py",
       "rule": "PLR2004",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/justify/walkthrough.py",
-      "rule": "TC001",
-      "count": 2
     },
     {
       "file": "src/gzkit/justify/walkthrough.py",
@@ -12390,11 +12280,6 @@
       "file": "src/gzkit/ontology/unified.py",
       "rule": "DOC201",
       "count": 9
-    },
-    {
-      "file": "src/gzkit/ontology/unified.py",
-      "rule": "TC001",
-      "count": 1
     },
     {
       "file": "src/gzkit/ontology/unified.py",
@@ -13274,7 +13159,7 @@
     {
       "file": "src/gzkit/surface_write.py",
       "rule": "TC003",
-      "count": 2
+      "count": 1
     },
     {
       "file": "src/gzkit/sync.py",
@@ -13824,7 +13709,7 @@
     {
       "file": "src/gzkit/validators/unscoped_rules.py",
       "rule": "TC003",
-      "count": 2
+      "count": 1
     },
     {
       "file": "src/gzkit/verb_references.py",

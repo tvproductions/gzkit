@@ -122,6 +122,23 @@ ignore = [
     "suspicious-subprocess-import",
 ]
 
+# Pydantic evaluates a model's field annotations when the class is built, so an
+# import those annotations use is a runtime import. Ruff matches a base by its
+# qualified name, never through a subclass chain, so each project class a model
+# inherits from is named; tests/policy/test_ruff_runtime_annotations.py fails
+# when a new one is missing (GHI #1270).
+[tool.ruff.lint.flake8-type-checking]
+runtime-evaluated-base-classes = [
+    "pydantic.BaseModel",
+    "pydantic.RootModel",
+    "gzkit.acceptance.AcceptanceModel",
+    "gzkit.acceptance.Review",
+    "gzkit.acceptance.ReviewJudgment",
+    "gzkit.content.models.base.BaseContentModel",
+    "gzkit.events._EventBase",
+    "gzkit.events._TaskEventBase",
+]
+
 [tool.ruff.lint.mccabe]
 max-complexity = 20
 
