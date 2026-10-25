@@ -2,7 +2,7 @@
 
 # RO-8 specification — the in-flight work disposed
 
-**2026-10-25. Status: DRAFT; research recorded, questions not yet put.** Operator: **g0**. Repair order RO-8 of the [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders). The operator rules; the session drafts.
+**2026-10-25. Status: DRAFT, being ruled one question at a time.** Operator: **g0**. Repair order RO-8 of the [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders). The operator rules; the session drafts.
 
 ## Already ruled in the record
 
@@ -25,11 +25,14 @@
 
 On 2026-10-01 the operator repudiated OBPI-0.34.0-02 (its REQ-02-05 had no red receipt before completion, GHI #849), leaving ADR-0.34.0 at 4 of 5 although it shipped as v0.34.0 and reads `Validated`. The campaign's rule "honor the lowest feature ADR with unlanded work" then puts 0.34.0 ahead of TOPMOST 0.35.0, while the same amendment holds *"A Validated ADR is never reopened"*. Every handoff since 2026-10-02 carries the re-completion of OBPI-0.34.0-02 as unruled.
 
+## Rulings of 2026-10-25
+
+1. **ADR-0.35.0's unfinished work is absorbed, not jettisoned** (operator, verbatim: *"well, when we leave drydock, the new system will be in place, so it won't be possible to do them the old way, they need to be absorbed into the new system, but not jettisoned. in fact they will form that next 0.35.0 release package (the sum of that adr's obpis). When we get to the requirements and release packages, and everything related, we need to review it VERY CAREFULLY. For now, this is me agreeing with "A" above."*). Each unlanded brief's REQs become catalog REQs under the outcome the requirements model maps them to (items 1–14 to C, 6 and 11 to G, 15–20 to R3); the brief is withdrawn as superseded through `gz obpi withdraw`, naming where its REQs went; the work is finished as work packages, and together they form the 0.35.0 Release Package. Consequences, settled by this ruling: briefs 17 and 20, whose work landed in pilot acts, are not attested as OBPIs; their obligations, S2-080 included for 20, are carried to the outcome's Gate 5. The carry lives in the catalog.
+
+**For the careful review the operator called for:** RO-4 ruling 6 holds that *"legacy ADR work is not a member and is not backfilled"*, while this ruling makes the 0.35.0 Release Package *"the sum of that adr's obpis"*, which includes the eleven OBPIs already attested. The two are reconciled in that review, not here.
+
 ## Open questions, in the order they will be put
 
-1. What "frozen" means for ADR-0.35.0's nine unlanded briefs and one repudiated brief.
-2. Whether briefs 17 and 20 are ever attested.
-3. Where "carried into the catalog" lives.
 4. The ADR-0.34.0 conflict, with the repudiated OBPI-0.0.24-04, OBPI-0.0.26-02 and OBPI-0.35.0-09.
 5. Brief 19's Requirement 8.
 6. What the handback says about the Movement boxes.
