@@ -6,6 +6,7 @@ import tempfile
 import unittest
 from contextlib import ExitStack, redirect_stdout
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
 
 from gzkit.commands.common import GzCliError, load_manifest
@@ -164,7 +165,7 @@ class TestSourceScanFailures(unittest.TestCase):
             )
             original_read = Path.read_text
 
-            def read_source(path: Path, *args: object, **kwargs: object) -> str:
+            def read_source(path: Path, *args: Any, **kwargs: Any) -> str:
                 if path == unreadable:
                     raise PermissionError("source read denied")
                 return original_read(path, *args, **kwargs)

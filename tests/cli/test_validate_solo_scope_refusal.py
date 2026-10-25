@@ -18,12 +18,13 @@ import io
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
+from typing import Any
 
 from gzkit.commands import validate_cmd
 
 # The scopes that own their full 0/2/3 lifecycle and early-return. Six at
 # GHI #704; `check_gate_callers` joined under GHI #785.
-SOLO_ONLY_KWARGS: dict[str, object] = {
+SOLO_ONLY_KWARGS: dict[str, Any] = {
     "check_evaluation_justify_binding": "some-adr",
     "check_unscoped_rules": True,
     "check_sensitivity": True,
@@ -36,7 +37,7 @@ SOLO_ONLY_KWARGS: dict[str, object] = {
     "check_gate_enrollment": True,
 }
 
-_DISPATCH_DEFAULTS: dict[str, object] = {
+_DISPATCH_DEFAULTS: dict[str, Any] = {
     "check_distribution_regenerate": False,
     "check_distribution": False,
     "attestation_receipts": None,
@@ -60,7 +61,7 @@ _DISPATCH_DEFAULTS: dict[str, object] = {
 }
 
 
-def _dispatch(*, other_scopes_active: bool, **overrides: object) -> tuple[bool, str]:
+def _dispatch(*, other_scopes_active: bool, **overrides: Any) -> tuple[bool, str]:
     """Run the dispatcher, returning its verdict and everything it printed."""
     kwargs = {**_DISPATCH_DEFAULTS, **overrides}
     buf = io.StringIO()

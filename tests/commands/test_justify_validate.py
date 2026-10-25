@@ -12,6 +12,7 @@ import sys
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
+from typing import Any
 
 from gzkit.commands.justify_cmd import justify_cmd
 from gzkit.justify.cli import handle_validate
@@ -23,7 +24,7 @@ INCOMPLETE_FIXTURE = FIXTURES / "walkthrough_incomplete.md"
 MALFORMED_FIXTURE = FIXTURES / "walkthrough_malformed.md"
 
 
-def _invoke_via_cmd(**kwargs: object) -> int:
+def _invoke_via_cmd(**kwargs: Any) -> int:
     """Invoke justify_cmd; collapse the SystemExit to an int return."""
     try:
         return justify_cmd(**kwargs)

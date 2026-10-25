@@ -10,6 +10,7 @@ import tempfile
 import unittest
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Any
 from unittest import mock
 
 from gzkit.exchange_records import (
@@ -1217,7 +1218,7 @@ class TestChainLinkIsCorrectByConstruction(unittest.TestCase):
     link correct by construction rather than to fail closed on the author.
     """
 
-    def _create(self, base: Path, slug: str, ts: str, **kwargs: object) -> Path:
+    def _create(self, base: Path, slug: str, ts: str, **kwargs: Any) -> Path:
         return create_handoff(
             adr_id="ADR-0.0.65",
             branch="main",

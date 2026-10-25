@@ -23,6 +23,7 @@ import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
+from typing import Any
 
 from gzkit.commands.complexity_distill_cmd import complexity_distill_cmd
 from gzkit.traceability import covers
@@ -40,7 +41,7 @@ FIXTURE_BASELINE = (
 FIXTURE_TODAY = "2026-10-23"
 
 
-def _invoke(**kwargs: object) -> tuple[int, str, str]:
+def _invoke(**kwargs: Any) -> tuple[int, str, str]:
     """Call ``complexity_distill_cmd``; return ``(exit_code, stdout, stderr)``."""
     out = io.StringIO()
     err = io.StringIO()

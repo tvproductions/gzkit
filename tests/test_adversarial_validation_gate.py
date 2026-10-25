@@ -12,6 +12,7 @@ import io
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Any
 from unittest import mock
 
 from gzkit.cli.main import _build_parser
@@ -114,8 +115,8 @@ class TestDeclaredTierReachesTheLedger(unittest.TestCase):
     corroborating artifact at all when this was reopened.
     """
 
-    def _dump(self, **overrides: object) -> dict[str, object]:
-        kwargs: dict[str, object] = {
+    def _dump(self, **overrides: Any) -> dict[str, object]:
+        kwargs: dict[str, Any] = {
             "obpi_id": "OBPI-0.33.0-01-airlock-data-model-and-events",
             "verdict": "not-refuted",
             "adversary": "codex/gpt-5.4",

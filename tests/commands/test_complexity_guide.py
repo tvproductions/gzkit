@@ -20,6 +20,7 @@ import unittest
 from collections.abc import Generator
 from contextlib import contextmanager, redirect_stderr, redirect_stdout
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
 
 from gzkit.commands.complexity_guide import complexity_guide_cmd
@@ -66,7 +67,7 @@ def _rule_path_env() -> Generator[Path]:
             os.chdir(prior_cwd)
 
 
-def _invoke(**kwargs: object) -> tuple[int, str, str]:
+def _invoke(**kwargs: Any) -> tuple[int, str, str]:
     """Call ``complexity_guide_cmd`` collapsing SystemExit into an exit code."""
     out = io.StringIO()
     err = io.StringIO()

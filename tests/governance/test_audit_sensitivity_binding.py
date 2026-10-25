@@ -415,7 +415,9 @@ class TestSensitivityExplain(unittest.TestCase):
             payload = ta.explain_sensitivity_for_paths(["src/gzkit/ledger.py", "tests/**"], root)
 
         self.assertEqual(payload["detected_sensitivity"], "security")
-        self.assertIn("ledger_integrity", payload["matching_categories"])
+        categories = payload["matching_categories"]
+        assert isinstance(categories, tuple)
+        self.assertIn("ledger_integrity", categories)
 
     @covers("REQ-0.0.22-03-05")
     def test_explain_returns_none_when_no_intersection(self):

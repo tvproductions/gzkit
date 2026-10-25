@@ -18,13 +18,14 @@ import io
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
+from typing import Any
 from unittest import mock
 
 from gzkit.commands.obpi_complete import _apply_uncovered_waivers
 
 
-def _waive(**overrides: object):
-    kwargs: dict[str, object] = {
+def _waive(**overrides: Any):
+    kwargs: dict[str, Any] = {
         "gaps": ["REQ-1.2.3-01-01"],
         "accept_uncovered": ["REQ-1.2.3-01-01"],
         "accept_uncovered_reason": ["documentation-only; no test surface"],

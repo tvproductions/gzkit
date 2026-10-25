@@ -122,7 +122,7 @@ def _synthetic_environment(metric: str = "lizard_ccn") -> Generator[Path]:
             os.chdir(prior_cwd)
 
 
-def _invoke(**kwargs: object) -> tuple[int, str, str]:
+def _invoke(**kwargs: Any) -> tuple[int, str, str]:
     """Call ``complexity_advise_cmd`` collapsing SystemExit into an exit code."""
     out = io.StringIO()
     err = io.StringIO()

@@ -13,6 +13,7 @@ import os
 import tempfile
 import unittest
 from pathlib import Path, PurePosixPath
+from typing import Any
 from unittest import mock
 
 from pydantic import ValidationError
@@ -67,7 +68,7 @@ _SHA = "a" * 64
 _LANDING_ID = "landing-20260927T120000Z-0123abcd"
 
 
-def _journal(**overrides: object) -> dict:
+def _journal(**overrides: Any) -> dict:
     document: dict = {
         "landing_id": _LANDING_ID,
         "surface": LAND_SURFACE,
@@ -220,7 +221,7 @@ class TestJournalPathSafety(unittest.TestCase):
 class TestPrepareLanding(_TempRoot):
     """prepare_landing plans every consumer under one landing_id and writes nothing."""
 
-    def _prepare(self, **kwargs: object):
+    def _prepare(self, **kwargs: Any):
         arguments: dict = {"attestor": "g0", "attestation_text": "delta attested"}
         arguments.update(kwargs)
         return prepare_landing(self.root, LAND_SURFACE, **arguments)
@@ -335,7 +336,7 @@ def _consumer_of(path: str) -> str:
 class TestPublishLanding(_TempRoot):
     """Durable publication: journal first, per-file replace, one event, journal cleared LAST."""
 
-    def _plan(self, **project: object) -> LandingPlan:
+    def _plan(self, **project: Any) -> LandingPlan:
         build_land_project(self.root, **project)
         return prepare_landing(
             self.root, LAND_SURFACE, attestor="g0", attestation_text="delta attested"

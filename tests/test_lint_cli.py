@@ -12,6 +12,7 @@ import unittest
 from collections import Counter
 from contextlib import redirect_stdout
 from pathlib import Path
+from typing import Any
 from unittest import mock
 
 from rich.console import Console
@@ -43,7 +44,7 @@ class LintVerbRoutingTest(unittest.TestCase):
         patcher.start()
         self.addCleanup(patcher.stop)
 
-    def _lint(self, *args: object, width: int = 200, **kwargs: object) -> str:
+    def _lint(self, *args: Any, width: int = 200, **kwargs: Any) -> str:
         out = io.StringIO()
         with mock.patch.object(quality_cmd, "console", Console(file=out, width=width)):
             quality_cmd.lint(*args, **kwargs)

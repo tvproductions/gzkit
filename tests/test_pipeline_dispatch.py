@@ -147,13 +147,16 @@ class TestComposeImplementerPrompt(unittest.TestCase):
     """Verify implementer prompt structure."""
 
     def _make_task(self, **overrides: object) -> DispatchTask:
-        return DispatchTask(
-            task_id=overrides.get("task_id", 1),
-            description=overrides.get("description", "Add feature X"),
-            allowed_paths=overrides.get("allowed_paths", ["src/gzkit/example.py"]),
-            test_expectations=overrides.get("test_expectations", ["test_feature_x passes"]),
-            complexity=overrides.get("complexity", TaskComplexity.SIMPLE),
-            model=overrides.get("model", "haiku"),
+        return DispatchTask.model_validate(
+            {
+                "task_id": 1,
+                "description": "Add feature X",
+                "allowed_paths": ["src/gzkit/example.py"],
+                "test_expectations": ["test_feature_x passes"],
+                "complexity": TaskComplexity.SIMPLE,
+                "model": "haiku",
+                **overrides,
+            }
         )
 
     @covers("REQ-0.14.0-06-04")

@@ -13,6 +13,7 @@ import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 from unittest import mock
 
 from gzkit.commands.justify_cmd import justify_cmd
@@ -26,7 +27,7 @@ from gzkit.traceability import covers
 from tests.commands.common import subcommand_parser
 
 
-def _invoke_justify(**kwargs: object) -> int:
+def _invoke_justify(**kwargs: Any) -> int:
     """Call ``justify_cmd``; capture the ``SystemExit`` it raises on non-zero.
 
     ``justify_cmd`` raises ``SystemExit(code)`` for non-zero exits because

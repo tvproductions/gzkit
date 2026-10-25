@@ -13,6 +13,7 @@ import unittest
 import unittest.mock
 from io import StringIO
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
 
 from rich.console import Console
@@ -180,7 +181,7 @@ class TestFullCeremonyOnAVersionInFlight(unittest.TestCase):
         self.assertEqual(notes.count("## v0.35.0"), 1)
 
 
-def _run_cmd(root: Path, *, current: str, tag: str, out: StringIO, **kwargs: object) -> dict:
+def _run_cmd(root: Path, *, current: str, tag: str, out: StringIO, **kwargs: Any) -> dict:
     """Run the command over mocked git and gh; return the mocks the caller asserts on."""
     config = unittest.mock.MagicMock()
     config.paths.ledger = ".gzkit/ledger.jsonl"

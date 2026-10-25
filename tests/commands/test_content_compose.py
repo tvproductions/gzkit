@@ -10,6 +10,7 @@ import io
 import json
 import unittest
 from pathlib import Path
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 from gzkit.cli.main import main
@@ -474,7 +475,7 @@ class TestContentComposeCmd(unittest.TestCase):
             candidate_out = candidate_path(Path("."), "AGENTS.md", "root")
             original_write_text = Path.write_text
 
-            def _guarded_write_text(self_path: Path, *args: object, **kwargs: object) -> int:
+            def _guarded_write_text(self_path: Path, *args: Any, **kwargs: Any) -> int:
                 if self_path.name == candidate_out.name and self_path.parent.name == "AGENTS.md":
                     raise AssertionError(
                         f"{self_path} (the candidate output) must be persisted via "

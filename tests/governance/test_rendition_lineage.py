@@ -16,6 +16,7 @@ import tempfile
 import unittest
 from contextlib import redirect_stderr
 from pathlib import Path
+from typing import Any
 
 from gzkit.content.corpus_store import append_entry, load_corpus
 from gzkit.content.lineage import lineage_path
@@ -66,7 +67,7 @@ class _LineageFixtureMixin:
         self.addCleanup(self._tempdir.cleanup)
         self._root = Path(self._tempdir.name)
 
-    def _validate(self, **kwargs: object) -> list:
+    def _validate(self, **kwargs: Any) -> list:
         """Run the gate with its advisory captured, and return the findings.
 
         The gate emits one `emit_advisory` line to stderr on EVERY run. Left
@@ -138,7 +139,7 @@ class _LineageFixtureMixin:
         tier: str = "compressible",
         classification: str = "Ambiguous",
         ts: str = "2026-09-11T00:00:00Z",
-        **kwargs: object,
+        **kwargs: Any,
     ) -> None:
         append_entry(
             self._root,

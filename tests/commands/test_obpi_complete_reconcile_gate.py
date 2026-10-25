@@ -21,6 +21,7 @@ import unittest
 from datetime import UTC, datetime, timedelta
 from io import StringIO
 from pathlib import Path
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 from rich.console import Console
@@ -177,7 +178,7 @@ class _ReconcileGateFixture(unittest.TestCase):
         rec_console = Console(file=StringIO(), record=True)
         original_print = rec_console.print
 
-        def _capture(*args: object, **kwargs: object) -> None:
+        def _capture(*args: Any, **kwargs: Any) -> None:
             recorded.append(" ".join(str(a) for a in args))
             return original_print(*args, **kwargs)
 
