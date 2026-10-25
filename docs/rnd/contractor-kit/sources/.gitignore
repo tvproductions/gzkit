@@ -1,0 +1,4 @@
+# The operator-placed source PDFs stay local (12 MB of binaries); their verbatim extracts are
+# committed beside them. Decision recorded in docs/rnd/contractor-kit.md, 2026-10-25.
+*.pdf
+*.PDF

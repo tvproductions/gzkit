@@ -775,18 +775,405 @@ multiple workers if the work can't be subdivided. Don"*, completed in the next m
 multiples for the sake of it"*. The coordinator dispatches more than one repairer only when the work
 subdivides into disjoint surfaces; parallelism is never a goal.
 
+## source · what the contract's punch list holds, and what the texts' records hold
+
+Put to the operator: rename the compliance register the lockout log (A) or keep it (B). Operator,
+before choosing: *"are we sure that punchlist, compliance register, and lockout log are the same
+thing? it seems that the log is for the inspector <-> worker compliance alignment whereas the
+punchlist might match to that but would be for work rather than inspection. Elaborate."*
+
+`docs/governance/harbor-pilotage-candidate-2026-10-15.md` § Punch list — the compliance register,
+read 2026-10-25 in full: dispositions *restored* (*"returned to its prior state"*), *reconnected*
+(*"returned in a new form"*), *retired* (*"removed for good"*), *replaced* (*"removed, with its named
+successor"*); each line `open` until the restorer clears it. Its lines: RO-0 the alarm hooks and
+verifier pipe gate switched off, the commit witness off; RO-1 GHI #1252's effectiveness flight not
+yet run; RO-5 the brief-lane validators to be reconnected, OBPI briefs replaced; RO-4 `version_sync`
+and `closeout` reconnected, `patch_release_event` and `gz-patch-release` replaced, a template
+retired; RO-6 replaced text retired; RO-7 nested `AGENTS.md` retired, skills replaced; RO-8 briefs
+retired, obligations replaced. The contractor brief adds: *"Tests may stay red; what is left broken
+goes on the register."*
+
+`docs/rnd/contractor-kit/sources/14cfr43.md`, 14 CFR § 43.9(a), read 2026-10-25: *"each person who
+maintains, performs preventive maintenance, rebuilds, or alters [...] shall make an entry in the
+maintenance record [...] (1) A description [...] of work performed. (2) The date of completion of the
+work performed. (3) The name of the person performing the work [...] (4) [...] the signature [...] of
+the person approving the work."*
+
+"Punch list" occurs in no source this run or `renewing-vows` holds; it is the operator's term, from
+construction practice, unsourced.
+
+**Finding: the register is three records in one.** Against the texts:
+
+- **Lockout log** (29 CFR 1915.89(c)(7)(iv)) — a *temporary* isolation, applied and removed, kept
+  by the coordinator for coordinating concurrent servicing. Not an inspector-worker record: the
+  inspector's acceptance or rejection is the RII's own record. Register lines of this kind: the
+  alarms and pipe gate off, the commit witness off, the brief-lane validators disconnected until
+  reconnected. Every line must be removed before return to service.
+- **Maintenance record** (14 CFR § 43.9(a)) — *permanent* work: what was done, when, by whom,
+  approved by whom. Register lines of this kind: every *retired* and *replaced* line, and the new
+  form of a *reconnected* one. The contract's passage log (*"what changed, the measurement before
+  and after, the commit"*) already carries part of it.
+- **Punch list** (the operator's term) — *outstanding work*: deficiencies and work not yet done,
+  worked before acceptance. Register lines of this kind: GHI #1252's flight not yet run; the brief's
+  *"what is left broken"*; and, by this run's design, the inspector's rejections.
+
+A *reconnected* line spans two: a lockout while the old connection is off, a maintenance-record entry
+for the new form. The agent's earlier mapping, register = lockout log, was wrong.
+
+## decision · three records: the lockout log, the maintenance record, the punch list
+
+Ruled. Question: A three records — the lockout log (temporary isolations with their removal
+procedures; kept by the runtime, approved by the coordinator; empty at return to service), the
+maintenance record (permanent work under § 43.9(a), absorbing the passage log's per-act role, closed
+by the operator's Gate 5 signature per order), the punch list (outstanding deficiencies, what is left
+broken and the inspector's rejections; cleared before return to service); B two, outstanding work as
+lockout lines; C one register with a kind column. Recommended A. Operator:
+
+> A. and that matters because mx/drydock (with the alarms and tripwire concepts) DOES require that
+> lockout concept. It seems that if I don't push back, I am liable for accepting summarized (partially
+> vibed) reads from you of the foundational documents.
+
+Corrects two earlier entries: *the compliance register takes the lockout/tags-plus log as its model*
+(the register is three records, of which the lockout log is one) and the inspector's findings in
+*the coordinator is the operator-facing session* (a rejection is a punch-list item, an acceptance the
+inspection record's, not the lockout log's). The contract's § Punch list is renamed and split on the
+operator's word, carried in the review.
+
+**commissions:** 4 — the contract, the contractor brief and the doctrine's § Handback carry the three
+records in place of the single compliance register.
+
+## decision · every mapping put to the operator reads both sides in full first
+
+From the operator's words above. The agent put *"register = lockout log"* to the operator after
+reading the OSHA log in full and the contract's register not at all; the operator ruled on it
+(*"this is PERFECT"*), and only the operator's push-back caught it. That is this skill's own rule
+broken — *"Read the source before anything drawn from it becomes a decision"* — on the gzkit side of
+a mapping rather than the text side. From here, a question that maps a text onto gzkit canon cites
+both sides, each read in full, and says so. Before the review, the agent re-reads every source a
+decision in this record rests on that was read only in part, and marks what moves. Insight
+2026-10-25T21:14:15Z, scope `gz-rnd:both-sides-read`.
+
+**commissions:** 4 — `gz-rnd` § Sources before decisions gains the both-sides rule.
+
+## source · the re-read of every source read only in part
+
+Read in full 2026-10-25, under the decision above: the pipeline regressions report (all 201 lines);
+`.gzkit/skills/gz-obpi-pipeline/SKILL.md` (all 251 lines); `docs/governance/safe-mode-doctrine.md`
+(all 80 lines); the contract's § Exit — seaworthiness; the ratified glossary,
+`docs/rnd/renewing-vows/doctrine-merge.md` Part 0 § Terms (*"Ratified 2026-10-10 (operator, verbatim:
+'ratify Part 0')"*), which the doctrine names as the carrier of its terms; and
+`.claude/rules/model-selection.md` (loaded this session). What moves:
+
+1. **Question 8's repair set was drawn from the report's summary table.** The full report names more
+   open defects in the parts the kit reuses: #1198 (dispatch refusals exit 0), #1203 (a recorded
+   position has no reader without a marker), #1205 (stale-marker crash, in a registered security
+   surface), #1194, #1209, #1204; implementer containment #1185 (open until one real completion) and
+   B10 (*"No mechanical guard against a cwd escape was found"*, inferred); Part C's latent defects
+   #1207, #1199, #1202, #1225, #1145, #1193, #993. Of the four booked, #1028's root (*"currency is
+   whole-tree, not per-obligation"*) stands by ruling (#1029, won't-fix). Two constraints bear on the
+   kit: *"writes made through Bash are invisible to every Write/Edit-matched hook"* — only the
+   commit-side fence sees them; and #968, *"real read-only enforcement for reviewer subagents is not
+   possible in Claude Code"*.
+2. **Question 13's terms meet a ratified glossary.** Part 0 § Terms: *"Commander. The one human, as
+   the shaper of intent and the decider of what the force is tasked to do. Captain. The same human, as
+   the holder of the signature and the override."*; *"Order. How command reaches the work: a standing
+   order binds every position; a tasking order binds one work package and carries the role's
+   auspices."*; *"Position. An obligation and a role to fulfil it. [...] Every agent is crew, the
+   orchestrating session included."*; *"Release. The captain's signature on what ships; in gzkit, Gate
+   5 attestation, which is return to service."* The run's *Contracting Officer* duplicates
+   *commander*, and *job order* duplicates *tasking order*: ratified canon held the terms first.
+3. **Question 16 amends ratified text in three places.** Part 0: *"Sea trial. One work package run on
+   a fresh install of the released wheel."*; the contract's exit: *"The sea trial [...] is civil rule's
+   first act, in Movement E of the campaign where it already lives; it is not an exit condition"*; and
+   the doctrine. The campaign plan's Movement E is a fourth surface; campaign amendments need the
+   operator's ratification.
+4. **Question 18 rested on the pipeline's maps; a binding rule allocates further.**
+   `model-selection.md` § Subagent effort levels, operator ruling 2026-10-05 (*"A (so model +
+   effort)"*): execution sorties mid-tier at `low` effort; assessment strong at `high`; *"Cross-vendor
+   IV&V; security-sensitive assessment"* strongest at `max`; headquarters synthesis strongest at
+   `high`; effort set on the agent definition, never the dispatch.
+5. **Question 20 is consistent with the doctrine**, which already says *"What an act leaves broken
+   goes on the contract's punch list, which the exit empties"*; its passage log (*"One row per act:
+   what changed, the measurement before and after, the commit, the witness"*) is the doctrine's, so the
+   maintenance record absorbing it amends the doctrine too.
+
+The pipeline skill's full body adds nothing against question 1; its *"Use one writer per governed
+checkout"* and *"Never stash, pop, reset, revert, or sync another active run's work"* agree with
+question 19.
+
+## decision · every open defect in a part the kit reuses is repaired before reuse
+
+Ruled; widens question 8's repair set. Question: A every open defect in the parts the kit reuses —
+dispatch, markers and position, persona frames and implementer containment, procedure pinning, the
+reviewer protocol: #1200, #1206, #1208, #1198, #1203, #1205, #1194, #1209, #1185, a cwd-escape guard,
+and #1028's stop-and-ask boundary (its cause stands by #1029); latent defects outside those parts
+(#1207, #1199, #1202, #1225, #1145, #1193, #993) stay pipeline GHIs on their own schedule; B only the
+original four; C everything the report names. Recommended A. Operator: *"A for sure."*
+
+States checked with `gh` 2026-10-25: #1198, #1203, #1205, #1194, #1209, #1185 OPEN (and #1200,
+#1206, #1208, #1028 earlier). #1204 is OPEN but concerns a brief's scope, RO-8's ground, not a reused
+part.
+
+**commissions:** 2 — direct repair of the eleven under their own GHIs before the kit is built,
+replacing question 8's four; a GHI filed for the cwd-escape guard, which has none.
+
+## source · the operator on vocabulary for maintenance work
+
+Put: A ratified Part 0 wins and the texts fill gaps (Commander, Captain, tasking order, positions and
+crew; *Contracting Officer* and *job order* rejected); B amend Part 0 to the regulatory terms; C keep
+both as synonyms. Recommended A. Operator, before choosing:
+
+> for mx work, I think the regulatory language is stronger, give me a new rundown - hopefully we span
+> naval and aviation terms well. I am leaning B (or even C), but show me
+
+The sources held span civil aviation (14 CFR), the Coast Guard (46 CFR), Navy ship-repair contracts
+(DFARS 252.217) and shipyard safety (29 CFR 1915.89), not the Navy's own maintenance manuals, where
+naval and aviation maintenance meet. Commissioned 2026-10-25, verbatim into
+`docs/rnd/contractor-kit/sources/`: COMNAVAIRFORINST 4790.2 (NAMP), COMUSFLTFORCOMINST 4790.3 (JFMM),
+NAVSEA S0400-AD-URM-010 (Tag-Out User's Manual). Until they land, any Navy term is unread.
+
+## source · the Navy manuals: refused by every host
+
+Research subagent, 2026-10-25; files `navy-namp.md`, `navy-jfmm.md`, `navy-tagout.md` under
+`docs/rnd/contractor-kit/sources/`, read 2026-10-25. Every navy.mil host refused automated retrieval
+(403 challenges, a TLS reset); the refusals are recorded and were not worked around. Editions
+identified: COMNAVAIRFORINST 4790.2E (28 Oct 2024; definitions in Appendix A, QA in Chapter 7,
+Maintenance Control in Chapter 5, *"Impromptu CDI evaluations"* named in its highlights); JFMM Rev D
+Change 5 (13 Jun 2025, from search snippets); Tag-Out User's Manual Rev 08 (28 Oct 2020). None of the
+requested definitions was read from current text.
+
+Secondary and superseded, cited as such: an FAS-hosted extract of the original JFMM (c. 2000–2002),
+`navy-jfmm.md`: *"Dock Trials are those ship trials conducted at the Industrial Activity to determine
+the ability of the ship, from a material standpoint, to conduct Sea Trials safely."*; *"Restoration
+Level Maintenance [...] The minimum planned inspection, maintenance and testing criteria to be applied
+to ensure a component will function satisfactorily until the next planned accomplishment of the
+maintenance requirement."*; *"Supervising Authority The officer designated by NAVSEA to represent the
+Navy Department at an industrial activity"*. It verifies nothing about the current manuals.
+
+Per the skill: *"When a host refuses automated retrieval, ask the operator for the file; do not work
+around the refusal."* Asked.
+
+## source · the Navy manuals, placed by the operator
+
+Operator: *"all placed"*. Read 2026-10-25 from the operator's PDFs, text extracted with `pdftotext`,
+verbatim extracts saved as `docs/rnd/contractor-kit/sources/navy-tum-rev08.md` (the Tag-Out User's
+Manual's Appendix B glossary in full, §§ 1.6.1 g–h, 1.6.2, 1.6.3) and `navy-jfmm-vol5-glossary.md`
+(JFMM Rev D Chg 5 Volume V Part I Appendix A, 13 JUN 2025, in full). The NAMP file placed, `CNAF
+4790.2E release LTR.PDF`, is the eight-page release letter, an image with no extractable text; the
+NAMP's Appendix A, Chapter 5 and Chapter 7 remain unread.
+
+Tag-Out User's Manual, Rev 08:
+
+> **Authorizing Officer** The person with the authority to sign for issuing or clearing tags and
+> labels. Department Heads shall designate Authorizing Officers by billet or watchstation.
+
+> **Tag-out** a. A process of hanging danger or caution tags to isolate a system or equipment to
+> protect personnel or equipment.
+
+> **Tag-out Log** [...] this control document is used for administering tag-out procedures and a
+> record of authorization for each active tag-out action.
+
+> **Line Item** An individual entry in a tag-out that details the isolation, hazards, and work
+> required for completion of a specific job.
+
+> **Cleared** This is an Authorizing Officer function. When the line item is "cleared", the hanging
+> tags are no longer referenced by that line item.
+
+> **Repair Activity** A RA is any activity other than Ship's Force involved in the construction,
+> testing, repair, overhaul, refueling, or maintenance of the ship. **Ship's Force** Personnel
+> assigned to the ship who are responsible for maintenance and operation of ship's systems and
+> equipment.
+
+> **Lead Maintenance Activity (LMA)** The single activity responsible for integrating all
+> maintenance and modernization on U.S. Naval ships during any type of availability.
+
+> 1.6.2 [...] A second qualified person shall independently determine the adequacy and accuracy of
+> the line item and isolation.
+
+> **Danger Tag** A red tag prohibiting operation or removal of equipment that could jeopardize safety
+> of personnel or endanger equipment, systems, or components. **Caution Tag** A yellow tag used as a
+> precautionary measure to provide temporary special instruction or to indicate that unusual action
+> must be exercised to operate equipment.
+
+JFMM Volume V, Appendix A:
+
+> **Quality Assurance Inspector** The designated individual(s) in FMA and ship work centers who
+> inspect the work of other individuals, not their own work.
+
+> **Inspection** A certification conducted by a separate individual qualified as an inspector [...]
+> **Verification** Certification required to be performed by the craftsman.
+
+> **Craftsman** A mechanic or other individual trained in QA methods and procedures [...] to perform
+> maintenance on ship's systems or components.
+
+> **Formal Work Package** Written instructions [...] delineating all the essential elements and
+> guidance necessary to produce acceptable and reliable products. **Controlled Work Package** The
+> records that provide the Objective Quality Evidence (OQE) necessary to certify that the completed
+> maintenance was authorized, required tests were completed and work was certified. This consists of
+> the Formal Work Package (FWP) and OQE.
+
+> **Objective Quality Evidence** Any statement of fact, either quantitative or qualitative, pertaining
+> to the quality of a product or service based on observations, measurements, or tests which can be
+> verified.
+
+> **Departure From Specification** A lack of compliance with any authoritative document, plan,
+> procedure, instruction, etc.
+
+> **Dock Trial** Dock Trials are those ship trials conducted at the Industrial Activity to determine
+> the ability of the ship, from a material standpoint, to conduct Sea Trials safely.
+
+> **Re-Entry** Includes any and all work and testing in a SUBSAFE certified system [...] from the
+> first breaching through final grooming, testing and return to final operation [...] **Re-Entry
+> Control** The controls used to document the re-entry and re-certification of SUBSAFE systems
+
+> **Valve Repair, Restoration, Overhaul** a. Repair. Any work done to improve the material condition
+> or operation of the valve correcting deficient conditions such that the component may be returned
+> to service, but which, in total does not meet the full intent of the applicable restoration or
+> overhaul technical standard [...] b. Restoration or Overhaul. All valve parts replaced or restored to
+> the requirements of the applicable technical standard
+
+> **In-Process Surveillance** The review of work in progress by personnel not directly involved with
+> the work [...] **Rework** The unplanned repetition of a step or a series of steps in a Formal Work
+> Package. **Defect** An imperfection that impairs completeness or quality or does not meet required
+> specification.
+
+> **Naval Supervisory Authority** The officer designated to represent the Navy Department at an
+> industrial activity [...] **Maintenance Manager** Those persons, such as Port Engineers, Ship
+> Superintendents, Ship's Coordinators [...] assigned to assist Ship's Force in the tracking of work
+> candidates, development of work packages
+
+## decision · a scoped register: maintenance vocabulary inside the hangar, Part 0 for the force
+
+Ruled. Four-column crosswalk put (Part 0, aviation, Navy, maritime). Question: B amend Part 0
+force-wide; C synonyms everywhere; D inside the hangar and drydock the maintenance vocabulary governs,
+Part 0 governs the force, one recorded crosswalk binds them row by row and is canon. Recommended D.
+Operator: *"D, yes."* Rows where the four columns disagree are ruled one at a time.
+
+**commissions:** 4 — the crosswalk as canon beside Part 0 (its home is the glossary's, unsettled until
+the DDD-discipline run names it; held in this record until then).
+
+## source · the Navy's tag-out clearing rule
+
+`docs/rnd/contractor-kit/sources/TUM_REV_8_28Oct20.pdf` § 1.8 Clearing Tag-outs, read in full
+2026-10-25:
+
+> 1.8.1 General. Remove danger and caution tags immediately when the operation/work line item(s)
+> requiring the tag(s) has been corrected and clearing of tags has been authorized by the Authorizing
+> Officer and RA Representative (when applicable).
+
+> 1.8.4 a. [...] In situations where the RA Representative is no longer available (i.e., RA has
+> completed work and left the geographical area or the ship has departed) the Authorizing Officer may
+> authorize clearing the tag by marking the Clearance Authorized Repair Activity block on the TRS as
+> "RA Not Available".
+
+> 1.8.5 b. The person assigned shall remove the tag. [...] (2) If upon removal of a tag the item is
+> found out of its expected position, all tag removal/restoration efforts for the items shall be
+> stopped. The discrepancy shall be reported immediately to the Authorizing Officer and RA
+> Representative.
+
+> 1.8.3 [...] Repositioning of a component with multiple danger tags is never authorized until all
+> danger tags have been cleared.
+
+Against OSHA's § 1915.89(i)(2) default (removal *"by the authorized employee who applied it"*), the
+Navy's default is removal by *"The person assigned"* under the Authorizing Officer's clearance, with
+the departed repair activity marked *"RA Not Available"* — the ruled design (question 6) as the norm,
+not the exception.
+
+## decision · the isolation is the Navy's tag-out
+
+Ruled. Question: A the Navy's tag-out — **Danger** and **Caution** tags (an alarm off and locked; a
+tripwire that records), the **tag-out log** of **line items** replacing question 20's "lockout log",
+the coordinator holding the **Authorizing Officer** duty to issue and clear, the restorer *"the person
+assigned"* with the departed repairer marked *not available*, question 6's removal procedure carried
+in each line item, OSHA kept as a cited source; B OSHA's lockout as recorded. Recommended A. Operator:
+*"A"*.
+
+Amends the names in questions 6, 19 and 20 (lockout → tag-out; lockout log → tag-out log); their
+substance stands. Adds the restorer's stop rule (§ 1.8.5 b(2): found out of its expected position →
+stop and report) and the multiple-danger-tag rule (§ 1.8.3). The Danger/Caution pair names the
+alarm/tripwire classification RO-10 parked; RO-10's rubric is not decided here.
+
+## source · the operator on the work package, and the JFMM's formal and controlled work packages
+
+Put: A job order, change order, departure from specification, maintenance record with OQE, avoiding
+the Navy's "work package" as colliding with RO-5's; B the Navy's FWP/CWP pair; C tasking order.
+Recommended A. Operator, before choosing:
+
+> I am not sure they are misaligned and we have an odd exception with agents/llms. The Formal Work
+> Package IS good terminology, it is the strict shape and guidance. In fact, the instructions and
+> criteria are a formal work package (sort of plan and spec) and the work package is the entire
+> bundle; which is an affordance for our llm context. therefor, we can retain gzkit's work package
+> and they can bundle repair orders, work orders, release package. etc. Let's expand here. The matrix
+> of all of this language is VERY useful. I LIKE that a work package contains formal work package and
+> controlled work. It is strong. I also think change order from dfars is worth mixing in. mx record
+> and change order could be synonyms too. lots to untangle
+
+JFMM Rev D Chg 5 Volume V Part I Chapter 2, read 2026-10-25 (§§ 2.2, 2.2.3, 2.2.4, 2.3.7 in full):
+
+> 2.2 TECHNICAL WORK DOCUMENTS. Technical Work Documents (TWD) consist of three general types:
+> Maintenance Procedures (MP), Formal Work Packages (FWP) and Controlled Work Packages (CWP).
+
+> 2.2.3 Formal Work Package. An FWP coordinates in a single document materials required, initial
+> conditions, MP, test and inspections, and system restoration for the selected maintenance task.
+> [...] FWPs should be only as detailed as required by the complexity of the work, craftsman
+> knowledge, technical requirements, extent of tests, and level of worker supervision required
+
+> 2.2.4 Controlled Work Package. A CWP is required when higher authority requires a record (Objective
+> Quality Evidence (OQE)) of repairs [...] In its simplest form a CWP will consist of, as a minimum, a
+> MP and the required QA forms.
+
+§ 2.3.7, the graded changes: *"Pen and ink changes [...] for minor administrative changes that do not
+change the scope or intent of the FWP"*; a *"Rework addendum [...] may be used in lieu of a revision
+when rework is required and the scope of the original work will not be changed"*; *"Revisions are
+any change to a CWP, FWP or TWD that meets the criteria"* — *"(1) Scope of the work changes [...] (2)
+Boundary of the work changes [...] (3) Change in test requirements unless authorized by a Departure
+from Specification"* — where *"Work must stop immediately"* and *"A revision, as a minimum, must be
+approved by the same level of personnel who approved the original FWP"*; an *attachment* for
+unexpected added work within the boundary; a *supplement*, *"another stand-alone FWP"*; *voiding*
+with *"traceability to the replacement"*. Closeout verifies, among seven attributes, *"Equipment and
+systems were restored to normal conditions and configurations."* Revisions *"will be entered into the
+body of the original FWP"* and pages with signatures or recorded data are never removed.
+
+Against gzkit canon, read: RO-5 ruling 1, *"A repair order is a work package (selection "A"): one
+work-package record with `kind: delivery | repair`"*; Part 0, *"the term "work order" was retired on
+2026-10-16 (verbatim: 'retire it, work package everywhere')"*; the doctrine, *"the Release Package
+is the set of work packages"*.
+
+## decision · the vocabulary matrix is rebuilt from a deep read before any further term is ruled
+
+Ruled. After question 24 was put (work package = formal work package + controlled record), the
+operator stopped the run: *"hold on, if you are not carefully reading this stuff, then we are flying
+in circles. I think you need to take some time, do a deep dive, and come up with a matrix that favors
+the more formal naval/aviation terms - the literature on them, even if we are taking liberties here,
+would be richer than our vibing."* Question 24 is withdrawn, not answered; it is put again from the
+matrix.
+
+Four research tracks commissioned 2026-10-25, each a verbatim inventory (every role, document,
+record, state and act, with its defining sentence quoted and its section cited), landing under
+`docs/rnd/contractor-kit/sources/`: `inventory-navy-tum.md` (the Tag-Out User's Manual, whole),
+`inventory-navy-jfmm-v5.md` (JFMM Volume V Part I chapters 1–3, 8–10), `inventory-aviation-civil.md`
+(14 CFR 43, 121; AC 120-16G; AC 43-9D; the problem-report circulars), `inventory-maritime.md`
+(46 CFR 71; DFARS 252.217; 29 CFR 1915.89 and § 1915.80). The agent verifies every quote against its
+source before it enters the matrix, and reads the gzkit side in full (the requirements model, RO-5,
+Part 0, the doctrine, the contract). The NAMP (COMNAVAIRFORINST 4790.2E) is still missing: the file
+placed is its release letter, an image without text; the operator is asked for Appendix A and
+Chapters 5 and 7. The PDFs the operator placed are kept out of git by
+`docs/rnd/contractor-kit/sources/.gitignore` (12 MB of binaries); their verbatim extracts are
+committed. Session handoff written at this point for a fresh context window (operator: *"set this to a
+handoff, so we can get a fresh ctx window"*; *"handoff + git sync"*).
+
 ---
 
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
 |---|---|---|---|---|
-| 1 | ADR / OBPI | | | |
-| 2 | GHI / direct fix | | | |
-| 3 | chore | commissioned | the vibe-coded and underbaked audit chore | operator directed it, 2026-10-25 |
-| 4 | control surface, rule, doc, skill, hook | commissioned | the contractor kit, shape open | operator ruled "A" |
-| 5 | one-shot refactoring | | | |
-| 6 | no action | | | |
+| 1 | ADR / OBPI | | | open: the admission question has not been put; the kit's governed home (an RO of the drydock) may make it unnecessary |
+| 2 | GHI / direct fix | commissioned | direct repair of the eleven defects in the pipeline parts the kit reuses (#1200, #1206, #1208, #1198, #1203, #1205, #1194, #1209, #1185, a cwd-escape guard to be filed, #1028's stop-and-ask boundary); a GHI on the persona witness measuring a total; each lesson crossing kit and pipeline as a GHI | operator, questions 8, 14, 17, 21 |
+| 3 | chore | commissioned | the vibe-coded and underbaked audit chore; `frontier-model-card-currency` widened to model-level assignments (landed `9649d0eb0`) | operator directed both, 2026-10-25 |
+| 4 | control surface, rule, doc, skill, hook | commissioned | the contractor kit (four positions, runtime, tag-out log, maintenance record, punch list, job order and change order); the contract's division of labor, cheaper-sessions clause, exit conditions and § Punch list; the doctrine's § Seaworthy and § Handback; Part 0's sea-trial term and the campaign's Movement E (operator ratification); RO-7's persona exit number; `gz-rnd`'s both-sides rule; the vocabulary crosswalk | operator, questions 1–24 |
+| 5 | one-shot refactoring | | | open |
+| 6 | no action | | | open |
 
 ## Close
 
