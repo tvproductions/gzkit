@@ -21,6 +21,13 @@ that lands as a GHI-tracked direct doc fix, exactly like the Opus 5 pass
 (commit `1ddbfaaa1`) and the GPT-5.6 pass (GHI #750, commits `7f0b8bdf4`,
 `79ce8b25b`).
 
+**Model-level assignments are in scope (operator, 2026-10-25, verbatim):** *"these models, and
+their model cards, which I think I have a chore for, must be periodically examined. A is good, but
+only if the model system card chore keeps these up. ALSO, the chore should look at these model
+level assignments as a part of that chore's task."*; *"that chore must be udpated with this
+expanded scope."* Every place gzkit assigns a model tier to a role is re-read against the current
+cards each scan (step 3b). Ruled in the R&D run `docs/rnd/contractor-kit.md`.
+
 **Why this chore exists:** doctrine surfaces sourced to system cards stale
 silently on every vendor release. `docs/governance/opus-tuning.md`
 § Recalibration names the failure — that page sat pinned to Opus 4.7 for
@@ -126,6 +133,23 @@ Skill wording tuned to a model is in reach: `.gzkit/rules/skill-authoring.md`
 § Model alignment requires it to cite a tuning doc, so a rotation that changes
 that doc puts the citing skills up for review.
 
+### 3b. Review model-level assignments — observe
+
+List every place a model tier is assigned to a role:
+
+```bash
+grep -n "MODEL_MAP" src/gzkit/pipeline_dispatch.py
+grep -rn "^model:" .gzkit/skills/*/SKILL.md .claude/agents/*.md
+```
+
+That is the pipeline's performer and reviewer routing (`DISPATCH_MODEL_MAP`, `REVIEW_MODEL_MAP`),
+each skill's `model:` frontmatter, each agent definition's `model:`, and the routing of any role
+the drydock contractor kit adds once it lands. For each assignment, read the current card for that
+tier and judge whether the assignment still holds: a tier retired or renamed, a cheaper tier now
+able to carry the role, or a role whose card evidence moved (for example a reviewer that the card
+says needs more than its tier). Keep the reviewer never below the performer it checks. A changed
+assignment is drift for step 4; never change one inside the run.
+
 ### 4. Route drift — operator-only-repair
 
 For each drifted item: file one GHI via `/ghi-author` (class ancestor:
@@ -140,7 +164,8 @@ pre-authorization — check surface-weight headroom first
 ### 5. Record — observe
 
 Rewrite `proofs/scan-record.md` for this scan: the scan date, each vendor hub
-checked, the registry state read in step 1, and the findings with their routing,
+checked, the registry state read in step 1, each model-level assignment step 3b
+listed with its verdict, and the findings with their routing,
 or a clean no-drift line. Always write the date, because an unchanged record
 does not move the gate's clock. This file is the scan's witness, and the
 freshness gate reads nothing else. Append the same findings line to
@@ -156,6 +181,8 @@ Criteria live in `acceptance.json`, which `gz chores run` executes; render them 
 in `proofs/CHORE-LOG.md`.
 
 - Every drifted item is routed (GHI or registry note), never left untracked.
+- Every model-level assignment step 3b lists was read against its tier's current card, and the
+  scan record names each one with its verdict (holds, or drift routed).
 
 ## Anti-patterns
 
