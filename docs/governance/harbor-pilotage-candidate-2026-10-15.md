@@ -202,7 +202,7 @@ its last order owns it.
 | RO-6 | every band | contradicted canon retired with retention maps: PRD INV-013, INV-017, INV-023, FR-005a, FR-006 and its stale frontmatter; the GovZero docs stale as a class (GHI #1188); the IEEE README's bars and Q-18's "names chosen later"; the engineering-order rung in the ladder records; Astra's rejection reconciled in DISAGREEMENTS; the glossary; specified 2026-10-25 in [the RO-6 specification](harbor-ro6-canon-retirement.md) (nothing deleted: undated live documents, dated snapshots) | `mkdocs build --strict`; `gz validate --adr-status-fresh`; the retention maps | cheaper sessions |
 | RO-7 | control plane | the rest of the cut, staged, one WP-16 report per stage: skill bodies' rationalizations and doctrine restatements to `references/`, the catalogue merged toward 40 with the merge plan put to the operator first (GHI #1250); rules narrative lifted (GHI #1246); personas, agents and nested `AGENTS.md` to budget after confirming what Claude loads (GHI #1251); AGENTS.md only by operator retire or re-tier of invariant entries; every stage chooses its cuts by cause, as RO-1 does from 2026-10-18, and a clause kept as common cause cites records that pass `gz insights recurrence`; specified 2026-10-25 in [the RO-7 specification](harbor-ro7-context-cut.md) (nested `AGENTS.md` no longer generated) | `gz validate --instructions-files-budget`; the stage reports under `docs/evals/` | cheaper sessions |
 | RO-9 | every band | the toolchain realigned to Astral's project discipline, specified 2026-10-19 in [the RO-9 specification](harbor-ro9-astral-toolchain.md) (operator rulings: *"1. 3.14"*, *"2. yes, MAXX astral... MAXX"*, *"3. yes, MAXX astral... MAXX"*, *"4. A we are in dry dock"*): each fact declared once where Astral's tools read it (the Python version is stated in 11 places today); `uv sync --locked`; docs tooling into a locked group; every project tool through `uv run`; `uv_build`, `uv build --no-sources` and `uv publish`; Ruff, ty and uv used to the maximum, preview included, with a register of curated non-Astral exceptions; Python 3.14 and its idioms, stdlib first (absorbs GHI #1184 and #1183); `gz init` scaffolding a uv-compliant project; seven tranches | `gz validate --astral-discipline`: a shrink-only baseline of violations, closed at zero, run against the tree and a freshly scaffolded project | the session specifies; cheaper sessions land the tranches after tranche 1 |
-| RO-8 | the in-flight work | ADR-0.35.0 frozen (R4): no further OBPI completions; briefs 17 and 20 stand on the passage log and their receipts; the unlanded items and the obligations of 11 to 20 carried into the catalog at civil rule; OBPI-0.35.0-19's Requirement 8 and REQ-0.35.0-19-08 ("a TTL reap by `reap_expired_locks` … behave as they do now") are carried as superseded by the 2026-10-18 never-evict ruling, landed under RO-5; the Movement A to F boxes and the handback's kept-or-reverted list | the handback amendment | the operator rules; the session drafts |
+| RO-8 | the in-flight work | ADR-0.35.0 frozen (R4): no further OBPI completions; briefs 17 and 20 stand on the passage log and their receipts; the unlanded items and the obligations of 11 to 20 carried into the catalog at civil rule; OBPI-0.35.0-19's Requirement 8 and REQ-0.35.0-19-08 ("a TTL reap by `reap_expired_locks` … behave as they do now") are carried as superseded by the 2026-10-18 never-evict ruling, landed under RO-5; the Movement A to F boxes and the handback's kept-or-reverted list ; specified 2026-10-25 in [the RO-8 specification](harbor-ro8-in-flight-work.md): the unfinished and repudiated work absorbed into the catalog, the 0.35.0 Release Package | the handback amendment | the operator rules; the session drafts |
 | RO-10 | the drydock itself, maintenance | safe-mode guard classification: three kinds of protection, alarm versus tripwire, the rubric that decides between them, classification review over time, and the timed trigger the A/B/C/D checks lack (ADR-0.0.74 deferred their intervals to a "Phase 2" nothing carries); specified 2026-10-25 in [the RO-10 specification](harbor-ro10-safe-mode-classification.md) from that day's design session; the lean version is in force and frozen | the specification's open questions ruled; then the mechanism's own witnesses | **PARKED** (operator: *"yes, draft RO-10 and park it"*): designed in the new requirements system once RO-3 to RO-5 carry it |
 
 ## Exit — seaworthiness
@@ -221,8 +221,10 @@ witness, or earlier at the operator's word:
 8. § Punch list is empty, each line cleared by its owning order: the tests are adjusted to the new
    structure and every alarm is back on at full strength, read from `gz mx exit`'s re-run and a green
    `gz check --full` (added 2026-10-25).
-9. The handback amendment is ratified: every drydock commit listed, kept or reverted; this
-   passage log carried; the suspended rules restored. Civil rule resumes on the ratification.
+9. The handback amendment is ratified: § Punch list, the compliance register, with every line cleared
+   and each repair order closed through the operator's Gate 5 (replacing the per-commit kept-or-reverted
+   list, operator 2026-10-25); this passage log carried; the suspended rules restored. Civil rule
+   resumes on the ratification.
 
 The sea trial (a fresh project on the released wheel runs one work package end to end) is civil
 rule's first act, in Movement E of the campaign where it already lives; it is not an exit
@@ -663,23 +665,57 @@ Passed once and recorded here, the ship is seaworthy and the handback follows.
   retention maps and a compression-sweep read, `gz readiness evaluate` before and after, one work
   package flown by a fresh session on the cut surfaces; a report per stage under `docs/evals/`.
 
-## Punch list
+## Punch list — the compliance register
 
-What the drydock leaves broken or disconnected, one line each with the order that owns putting it
-back; that order does not close until its lines are cleared (rulings of 2026-10-25).
+Each repair order is a directive for the system's health, consistent with the ADRs (decision records) and the PRD. This register is its compliance record (operator, 2026-10-25: *"what is unplugged, dismantled, or modified. And, what will be restored or reconnected after modification. what is permanently retired, and, in some cases, replaced"*; ratified *"yes, that is fine, it works well"*). Every item an order touches is one line with one disposition and its authority:
 
-- **RO-0** — the alarm switch (`gzkit.mx.alarms`, `757ddea7e`) reroutes six pre-commit and pre-push
-  hooks and the verifier pipe gate (ruff and ty stay on, operator 2026-10-25: *"ruff and ty are
-  reasonable too"*); at exit they run at full strength, and the two tests that pin
-  the old entries (`tests.arb.test_unittest_runner_lockstep`, for unittest and the complexity
-  verifier) are reconfigured to the new stable state.
-- **RO-0** — the commit witness (`gz arb red --commit`), switched off as a per-act record: GHI #1268
-  (generated vendor mirrors graded as production hunks) is fixed, and GHI #1269's acceptance rerun
-  on `7b7ea83cd`, stopped unrecorded, is run and booked, before the witness is relied on again.
-- **RO-1** — the effectiveness flight of GHI #1252, moved to restoration (operator, 2026-10-25,
-  *"B"*): a fresh session flies one work package on the cut surfaces once the alarms are back on.
-- **Every open order** — inventories what it has disconnected, rerouted or changed so far and adds
-  a line here for each.
+- **restored** — returned to its prior state;
+- **reconnected** — returned in a new form;
+- **retired** — removed for good (a document becomes a dated snapshot; a brief is withdrawn);
+- **replaced** — removed, with its named successor.
+
+Each line is `open` until the restoration contractor clears it with the alarms on; an order closes through the operator's Gate 5 only when all its lines are cleared. Orders add lines as they land work; the lines below are those the specifications already name.
+
+### RO-0 — the drydock itself
+
+- `open` **reconnected** — the six pre-commit and pre-push alarm hooks and the verifier pipe gate, switched off through `gzkit.mx.alarms` (`757ddea7e`), run at full strength at exit; `tests.arb.test_unittest_runner_lockstep`'s two pinned-entry tests reconfigured to the wrapped entries. Authority: operator, 2026-10-25 (*"i don't want any long check at all"*).
+- `open` **restored** — the commit witness (`gz arb red --commit`) as a per-act record, after GHI #1268 is fixed and GHI #1269's acceptance rerun on `7b7ea83cd` is booked. Authority: same ruling.
+
+### RO-1 — measuring the cut
+
+- `open` **restored** — GHI #1252's effectiveness flight, run once the alarms are on. Authority: operator, 2026-10-25, *"B"*.
+
+### RO-5 — work packages
+
+- `open` **reconnected** — the brief-lane validators (`hooks/obpi.py:507`, `validate_briefs.py:48`) and `specify_cmd.py`'s checklist-count check, to lane read from the outcome or the repair package. Authority: RO-5 rulings 4 and 9.
+- `open` **replaced** — new work's OBPI briefs, by work packages (`data/catalog/work_packages.json`). Authority: RO-5 ruling 1; the requirements model § 9.
+
+### RO-4 — release
+
+- `open` **reconnected** — `version_sync` and `closeout` and their tests, to the Release Package (`gz closeout <version>`). Authority: RO-4 rulings 3 and 4; Q-08.
+- `open` **replaced** — `patch_release_event`, by `release_recorded` for new releases. Authority: RO-4 ruling 2.
+- `open` **replaced** — `gz-patch-release`, by `gz-release`. Authority: R3.
+- `open` **retired** — the `release_package.md` template. Authority: RO-4 ruling 7.
+
+### RO-6 — superseded canon
+
+- `open` **retired** — each corrected document's replaced text, kept as a dated snapshot. Authority: RO-6 ruling 2.
+- `open` **retired** — the engineering-order rung. Authority: operator, 2026-10-17.
+
+### RO-7 — the context cut
+
+- `open` **retired** — the 33 generated nested `AGENTS.md` files and their budget-validator surface. Authority: RO-7 rulings 1 and 2.
+- `open` **reconnected** — `skill_body_grandfather.json` and `gz skill audit`, to the cut bodies. Authority: the RO-7 row.
+- `open` **replaced** — each merged skill, by its named successor. Authority: GHI #1250.
+
+### RO-8 — the in-flight work
+
+- `open` **retired** — ADR-0.35.0's nine unlanded briefs and the four repudiated OBPIs (0.34.0-02, 0.0.24-04, 0.0.26-02, 0.35.0-09), withdrawn as superseded, each naming where its REQs went. Authority: RO-8 rulings 1 and 2.
+- `open` **replaced** — their obligations, by catalog REQs finished as work packages in the 0.35.0 Release Package. Authority: RO-8 ruling 1.
+
+### Every open order
+
+Each order adds a line for whatever else it unplugs, dismantles or modifies as it lands work.
 
 ## Passage log
 

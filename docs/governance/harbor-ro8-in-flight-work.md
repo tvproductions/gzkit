@@ -2,7 +2,7 @@
 
 # RO-8 specification — the in-flight work disposed
 
-**2026-10-25. Status: DRAFT, being ruled one question at a time.** Operator: **g0**. Repair order RO-8 of the [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders). The operator rules; the session drafts.
+**2026-10-25. Status: specified; every open question ruled the same day.** Operator: **g0**. Repair order RO-8 of the [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders). The operator rules; the session drafts.
 
 ## Already ruled in the record
 
@@ -31,9 +31,20 @@ On 2026-10-01 the operator repudiated OBPI-0.34.0-02 (its REQ-02-05 had no red r
 
 **For the careful review the operator called for:** RO-4 ruling 6 holds that *"legacy ADR work is not a member and is not backfilled"*, while this ruling makes the 0.35.0 Release Package *"the sum of that adr's obpis"*, which includes the eleven OBPIs already attested. The two are reconciled in that review, not here.
 
-## Open questions, in the order they will be put
+2. **The repudiated OBPIs are absorbed the same way** (selection *"A"*): OBPI-0.34.0-02, OBPI-0.0.24-04, OBPI-0.0.26-02 and OBPI-0.35.0-09 have their REQs carried to catalog REQs, their proof recorded fresh under the new system (0.34.0-02's missing red receipt for REQ-02-05 becomes a REQ proof, not an OBPI re-completion), and each is withdrawn as superseded. The ADR-0.34.0 ordering conflict dissolves: work selection no longer runs by ADR order, and no Validated ADR is reopened.
+3. **Brief 19's Requirement 8 is not carried, settled by ruling 1:** REQ-0.35.0-19-08 is superseded by the 2026-10-18 never-evict ruling (landed under RO-5), and brief 19's withdrawal names that supersession; the frozen brief is not hand-edited.
+4. **The handback does not rewrite the Movement boxes, settled by the operator's ruling** that updating the campaign plan is civil rule's work: the handback names TOPMOST ADR-0.35.0 as disposed by rulings 1 and 2, and points civil rule at the re-sequencing.
+5. **The kept-or-reverted list becomes the compliance register** (operator: *"yes, that is fine, it works well; you've captured the scope well"*): the contract's § Punch list, one section per repair order, each item with its disposition and authority, closed through Gate 5 after restoration; exit condition 9 amended to match.
 
-4. The ADR-0.34.0 conflict, with the repudiated OBPI-0.0.24-04, OBPI-0.0.26-02 and OBPI-0.35.0-09.
-5. Brief 19's Requirement 8.
-6. What the handback says about the Movement boxes.
-7. The kept-or-reverted list's form and drafter.
+## Acts (for the contractor)
+
+The contractor stops and waits on every structural question.
+
+1. **Carry.** For each of ADR-0.35.0's nine unlanded briefs and the four repudiated OBPIs, the REQs written as catalog REQs under the outcome the requirements model maps them to, with fresh proof where the work already landed (briefs 17 and 20; 0.34.0-02's red receipt).
+2. **Withdraw.** Each brief withdrawn as superseded through `gz obpi withdraw`, naming where its REQs went (brief 19 also naming the never-evict supersession).
+3. **Release Package.** The 0.35.0 Release Package drafted with those work packages as members, after the operator's careful review of the tension with RO-4 ruling 6.
+4. **Handback.** The compliance register closed (ruling 5), TOPMOST named as disposed (ruling 4).
+
+## Witness
+
+The handback amendment: the compliance register with every RO-8 line cleared, and `gz adr status ADR-0.35.0` showing no pending brief.
