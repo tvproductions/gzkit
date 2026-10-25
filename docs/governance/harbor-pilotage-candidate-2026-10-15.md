@@ -182,6 +182,12 @@ Not suspended, under any reading:
 In dependency order. RO-1 and RO-7 run in parallel with the rest on cheaper sessions. Each names
 the band of the general arrangement it serves.
 
+**Restoration is the order's own work** (operator ruling 2026-10-25, verbatim: *"the renovation contractor must reattach all safeguards and reconfigurethem if they've been altered/rerouted/changed, etc. that is part of the repair order. It is the RO's obligation to restore the system either to prior operations or the repaired/renovated new operational status, which why it is important to disconnect all guards and alarms. The RO (or a sequence of ROs) are obligated to return the system to a prior, or new, stable system state."*).
+An order disconnects whatever guards and alarms its work needs, and closes only when every safeguard
+it disconnected, rerouted or changed is reattached and reconfigured, to the prior state or to the new
+stable state, with its § Punch list lines cleared. A sequence of orders may share one restoration;
+its last order owns it.
+
 | Order | Serves | What it lands | Witness | Owner |
 |---|---|---|---|---|
 | RO-0 | the drydock itself | this contract rewritten to the ratified plan with the drawing saved beside it; the doctrine page and the contract template to match; safe mode lowering every guard but the four to advisory while the marker is open (R6); the uncommitted 2026-10-17 drift disposed; amended 2026-10-18 (requirements model § 11): operator rulings reach the ledger as `insight_recorded` pointers (`d7e332190`), and the contract is pinned at safe-mode entry and on each committed amendment (`e621a4d2c`) | `mkdocs build --strict`; `gz validate --distribution`; the guard tests; `gz validate --insights-shape`; `tests/mx/test_contract_pin.py` | the session |
@@ -208,8 +214,9 @@ witness, or earlier at the operator's word:
 6. The in-flight work is disposed.
 7. The toolchain follows Astral's project discipline: the RO-9 witness reads zero for gzkit and for a
    freshly scaffolded project (added 2026-10-19 with RO-9).
-8. § Punch list is empty: the tests are adjusted to the new structure and every alarm is back on at
-   full strength, read from `gz mx exit`'s re-run and a green `gz check --full` (added 2026-10-25).
+8. § Punch list is empty, each line cleared by its owning order: the tests are adjusted to the new
+   structure and every alarm is back on at full strength, read from `gz mx exit`'s re-run and a green
+   `gz check --full` (added 2026-10-25).
 9. The handback amendment is ratified: every drydock commit listed, kept or reverted; this
    passage log carried; the suspended rules restored. Civil rule resumes on the ratification.
 
@@ -654,13 +661,19 @@ Passed once and recorded here, the ship is seaworthy and the handback follows.
 
 ## Punch list
 
-What the drydock leaves broken, one line each, cleared before the exit (ruling 2026-10-25).
+What the drydock leaves broken or disconnected, one line each with the order that owns putting it
+back; that order does not close until its lines are cleared (rulings of 2026-10-25).
 
-- Three tests pin pre-commit entries the alarm switch now wraps:
-  `tests.arb.test_typecheck_scope_lockstep` (ty entry) and `tests.arb.test_unittest_runner_lockstep`
-  (unittest entry; complexity verifier pinned).
-- GHI #1268: `gz arb red --commit` grades generated vendor mirrors as production hunks.
-- GHI #1269's acceptance rerun on `7b7ea83cd` was stopped unrecorded; the fix stands on its unit tests.
+- **RO-0** — the alarm switch (`gzkit.mx.alarms`, `757ddea7e`) reroutes nine pre-commit and pre-push
+  hooks and the verifier pipe gate; at exit they run at full strength, and the three tests that pin
+  the old entries (`tests.arb.test_typecheck_scope_lockstep` for ty,
+  `tests.arb.test_unittest_runner_lockstep` for unittest and the complexity verifier) are
+  reconfigured to the new stable state.
+- **RO-0** — the commit witness (`gz arb red --commit`), switched off as a per-act record: GHI #1268
+  (generated vendor mirrors graded as production hunks) is fixed, and GHI #1269's acceptance rerun
+  on `7b7ea83cd`, stopped unrecorded, is run and booked, before the witness is relied on again.
+- **Every open order** — inventories what it has disconnected, rerouted or changed so far and adds
+  a line here for each.
 
 ## Passage log
 

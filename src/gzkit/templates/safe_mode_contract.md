@@ -54,7 +54,9 @@ arrangement.
 ## Repair orders
 
 In dependency order (the standard shape; keep the numbers, mark an order not applicable with its
-reason, add orders as the appraisal finds them).
+reason, add orders as the appraisal finds them). Each order owns restoring what it disconnects,
+reroutes or changes, to the prior or to the new stable state, and closes only when its § Punch list
+lines are cleared.
 
 | Order | Serves | What it lands | Witness | Owner |
 |---|---|---|---|---|
