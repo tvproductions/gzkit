@@ -12,10 +12,11 @@ test modules the same commit touched, through :mod:`gzkit.mutation_witness` (so
 baseline, activation, bytecode isolation and failure cause are all verified, and
 ``invalid``/``inconclusive`` stay apart from ``killed``/``survived``).
 
-Each mutant runs only the touched modules whose traced run executed its lines
-(:mod:`gzkit.reach_trace`, GHI #1260): a module that never runs a hunk cannot
-fail because of it, and running every module for every mutant made a wide commit
-ungradable within the hang bound. When no module reaches a hunk, all of them run.
+Each mutant runs only the touched modules whose traced run executed its lines or
+read its file as text (:mod:`gzkit.reach_trace`, GHI #1260, #1269): a module that
+neither runs nor reads a hunk cannot fail because of it, and running every module
+for every mutant made a wide commit ungradable within the hang bound. When no
+module reaches a hunk, all of them run.
 
 The commit's own test modules are the declared test set. That is what closes the
 hole #927's direction 1 named — "the affected-test set has no declared source" —

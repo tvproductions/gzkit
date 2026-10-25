@@ -4,18 +4,24 @@
 touched. A module that never executes a hunk's lines cannot fail because of them,
 so running it grades nothing and only costs time; RO-9 tranche 1's 57 hunks took
 a 992 s serial run each and could not finish. This module records, once per
-module, the lines that module executes, so each mutant runs against only the
-modules that reach it.
+module, the lines that module executes and the files it reads, so each mutant runs
+against only the modules that reach it.
 
 Reach is read with :mod:`sys.monitoring` from a ``sitecustomize`` placed first on
 ``PYTHONPATH``, so a test that drives the code in a child interpreter (a hook, a
 ``python -m gzkit`` run) is counted too. Each location reports once and is then
 disabled, which keeps the traced run close to an untraced one.
 
-What it cannot see: a test that reads a function's source without running it, and a
-child started with ``-I``, ``-S`` or an environment that drops ``PYTHONPATH``. Such a
-module is left out of a hunk it would have killed, which reads as ``survived``,
-never as a false kill.
+A test that reads source as text (an AST fence, an ``inspect.getsource``
+comparison, a regex scan of ``src/``) never executes the lines it can fail on, so
+an ``open`` audit event on a file reaches every line of it (GHI #1269). The import
+system's own reads are left out: importing a module runs it, and the lines it runs
+are already counted.
+
+What it cannot see: a file read by a process that is not Python (``git show``), and
+a child started with ``-I``, ``-S`` or an environment that drops ``PYTHONPATH``.
+Such a module is left out of a hunk it would have killed, which reads as
+``survived``, never as a false kill.
 """
 
 import json
@@ -42,26 +48,38 @@ def _install():
         return
     mon.use_tool_id(tool, "gzkit-reach")
     prefix = os.path.realpath(root) + os.sep
-    files, seen = {}, set()
+    files, seen, reads = {}, set(), set()
+
+    def relative(name):
+        real = os.path.realpath(name)
+        return real[len(prefix):].replace(os.sep, "/") if real.startswith(prefix) else None
 
     def line(code, number):
         name = code.co_filename
         rel = files.get(name, False)
         if rel is False:
-            real = os.path.realpath(name)
-            rel = real[len(prefix):].replace(os.sep, "/") if real.startswith(prefix) else None
-            files[name] = rel
+            rel = files[name] = relative(name)
         if rel is not None:
             seen.add((rel, number))
         return mon.DISABLE
 
+    def audit(event, args):
+        if event != "open" or not isinstance(args[0], (str, bytes, os.PathLike)):
+            return
+        if sys._getframe(1).f_code.co_filename.startswith("<frozen importlib"):
+            return
+        rel = relative(os.fsdecode(args[0]))
+        if rel is not None:
+            reads.add(rel)
+
     def dump():
         path = os.path.join(out, f"{os.getpid()}-{id(seen)}.json")
         with open(path, "w", encoding="utf-8") as handle:
-            json.dump(sorted(seen), handle)
+            json.dump({"lines": sorted(seen), "reads": sorted(reads)}, handle)
 
     mon.register_callback(tool, mon.events.LINE, line)
     mon.set_events(tool, mon.events.LINE)
+    sys.addaudithook(audit)
     atexit.register(dump)
 
 
@@ -77,6 +95,7 @@ class ModuleReach(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     lines: frozenset[tuple[str, int]] = Field(..., description="(repo-relative path, line) run")
+    reads: frozenset[str] = Field(..., description="Repo-relative paths read as text")
     tests: frozenset[str] = Field(..., description="Executed test IDs")
 
 
@@ -105,20 +124,21 @@ def trace_reach(
                 pythonpath_prefix=str(hook),
             )
             executed, _, _ = read_test_observations((result.stdout or "") + (result.stderr or ""))
-            lines = {
-                (str(rel), int(number))
-                for dump in out.glob("*.json")
-                for rel, number in json.loads(dump.read_text(encoding="utf-8"))
-            }
-            reach[module] = ModuleReach(lines=frozenset(lines), tests=frozenset(executed))
+            dumps = [json.loads(dump.read_text(encoding="utf-8")) for dump in out.glob("*.json")]
+            lines = {(str(rel), int(number)) for d in dumps for rel, number in d["lines"]}
+            reads = {str(rel) for d in dumps for rel in d["reads"]}
+            reach[module] = ModuleReach(
+                lines=frozenset(lines), reads=frozenset(reads), tests=frozenset(executed)
+            )
     return reach
 
 
 def reaching_modules(reach: dict[str, ModuleReach], path: str, first: int, last: int) -> list[str]:
-    """Return the modules that executed any of ``path``'s lines ``first..last``.
+    """Return the modules that executed any of ``path``'s lines ``first..last`` or read it.
 
     When none did, every module is returned: the trace may have missed a child it
     could not see, and grading against all of them is the witness's prior behavior.
     """
     span = {(path, n) for n in range(first, last + 1)}
-    return sorted(m for m, r in reach.items() if r.lines & span) or sorted(reach)
+    reached = (m for m, r in reach.items() if r.lines & span or path in r.reads)
+    return sorted(reached) or sorted(reach)

@@ -156,6 +156,41 @@ class TestCommitWitness(_CommitRepo):
         self.assertEqual(result.verdict, "driven", result)
         self.assertEqual({tuple(h.test_modules) for h in result.hunks}, {("tests.test_child",)})
 
+    def test_a_hunk_a_fence_reads_as_text_is_graded_by_the_fence(self):
+        """GHI #1269: a module that reads the file's source reaches every hunk in it."""
+        (self.root / "pkg" / "mod.py").write_text(_GUARDED, encoding="utf-8")
+        self._add_test("\n    def test_two(self):\n        self.assertEqual(clamp(2), 2)\n")
+        self._add_module(
+            "test_fence",
+            "    def test_source_guards_negatives(self):\n"
+            "        from pathlib import Path\n"
+            "        source = Path(__file__).resolve().parents[1] / 'pkg' / 'mod.py'\n"
+            "        self.assertIn('if x < 0:', source.read_text(encoding='utf-8'))\n",
+        )
+        self._add_module("test_other", "    def test_true(self):\n        self.assertTrue(True)\n")
+        result = run_commit_witness(self.root, self._commit("guard + fence"), runner=_RUNNER)
+        self.assertEqual(result.verdict, "driven", result)
+        self.assertEqual(
+            {tuple(h.test_modules) for h in result.hunks}, {("tests.test_fence", "tests.test_mod")}
+        )
+
+    def test_a_hunk_a_getsource_comparison_reads_is_graded_by_it(self):
+        """GHI #1269: ``inspect.getsource`` reads through linecache, not the caller's ``open``."""
+        (self.root / "pkg" / "mod.py").write_text(_GUARDED, encoding="utf-8")
+        self._add_test("\n    def test_two(self):\n        self.assertEqual(clamp(2), 2)\n")
+        self._add_module(
+            "test_fence",
+            "    def test_source_guards_negatives(self):\n"
+            "        import inspect\n"
+            "        from pkg.mod import clamp\n"
+            "        self.assertIn('if x < 0:', inspect.getsource(clamp))\n",
+        )
+        result = run_commit_witness(self.root, self._commit("guard + getsource"), runner=_RUNNER)
+        self.assertEqual(result.verdict, "driven", result)
+        self.assertEqual(
+            {tuple(h.test_modules) for h in result.hunks}, {("tests.test_fence", "tests.test_mod")}
+        )
+
     def test_a_hunk_no_module_reaches_is_graded_by_all_of_them(self):
         """No traced run executes the lines: grade against every touched module, as before."""
         (self.root / "pkg" / "mod.py").write_text(
