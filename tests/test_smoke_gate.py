@@ -6,9 +6,11 @@ consumer's three outcomes — an EMPTY tier is a breach when the project opts in
 and advisory success otherwise. A required subset cannot pass by having no members.
 """
 
+import io
 import json
 import tempfile
 import unittest
+from contextlib import redirect_stderr
 from pathlib import Path
 from types import ModuleType
 from unittest import mock
@@ -227,9 +229,17 @@ class DiscoveredMarkerSelection(SilencedConsoleTestCase):
             suite = unittest.TestSuite(
                 [unittest.TestSuite([Members("test_marked")]), Members("test_unmarked")]
             )
-            with mock.patch("gzkit.smoke.unittest.TestLoader.discover", return_value=suite):
+            report = io.StringIO()
+            with (
+                mock.patch("gzkit.smoke.unittest.TestLoader.discover", return_value=suite),
+                redirect_stderr(report),
+            ):
                 self.assertEqual(smoke_gate(root), 0)
             self.assertEqual(observed, ["marked"])
+            # The smoke runner reports on stderr; captured, its summary counts one
+            # member, and it never reaches the outer run's stream as a second
+            # "Ran N tests" line that a reader of that stream would have to discard.
+            self.assertRegex(report.getvalue(), r"(?m)^Ran 1 test in ")
 
     def test_discovery_error_cannot_hide_behind_a_passing_marked_member(self) -> None:
         class Members(unittest.TestCase):
