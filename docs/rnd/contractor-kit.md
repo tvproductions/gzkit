@@ -2095,6 +2095,49 @@ hazard"* (§ 91.213(d)(4)); and the census of places of call.
 port that reads it. 4 — the placard as the port's notice to the affected parties, and the (M)
 procedure in the craftsman's obligations.
 
+## source · the operator: each surface onboards the contract; only the signal is central
+
+The agent put the next question: where an MEL entry is declared. The options were one JSON list
+in `data/`, a decorator at the control, or the JSON list bound by the control. The operator stopped
+it to clarify, 2026-10-26, verbatim:
+
+> one json file isn't each surface or actor onboarding the contract - the contract becomes a
+> compliance obligation for the surface/actor. these are external signal that require internal
+> management - reading a single file for guidance is too brittle or would create a single failure
+> point. now, a central file could be the signal itself, but at that stage this could be handled in
+> config (which already is a known single point limitation that accepted). config files themselves
+> are design by contract. or, a flag at invocation, but that still requires retraining everywhere.
+> still, this overarching 'standby' mode seems to be the best comprehensive solution.
+
+**The gzkit side, read 2026-10-26.** The signal is already central. `src/gzkit/mx/marker.py`: *"the
+single filesystem truth-source for Maintenance Hangar mode"*, at `.gzkit/mx.json`. It is *"valid only
+when bound to a real `mx_session_opened` ledger event"* and imports no gzkit subsystem, so that
+*"it opens even when gz's own subsystems are the patient"*. The marker says: *"Every surface — code
+guards and agents — reads MX state from here and nowhere else."* Config is `.gzkit.json` and
+`.gzkit/manifest.json`.
+
+## decision · the contract is each surface's compliance obligation; the signal alone is central
+
+Ruled in principle from the operator's words above. This **amends** the MEL decision's *"gzkit
+keeps one list of controls"*. The entry's contents stand: levels per signal, (M), (O), placard,
+restore and deadline. The single authoritative list does not.
+
+- **The contract is onboarded by each surface or actor** as its own compliance obligation. The
+  surface manages the external signal internally. No surface reads its guidance from one shared
+  file, because that file would be *"too brittle"* and *"a single failure point"*.
+- **Only the signal is central.** It lives in config, an already-accepted single point (*"config
+  files themselves are design by contract"*). The MX marker is that pattern today, bound to the
+  ledger so a hand-made signal is void.
+- **A flag at invocation was considered and not taken**: it *"still requires retraining
+  everywhere"*.
+- **Any list of controls is a derived view** (Layer 3), assembled from what the surfaces declare. By
+  the state doctrine's Rule 5, it can never block a gate.
+
+This fits the place-of-call ruling: the place of call is the surface's own entry point, where it
+reads the signal and applies its own contract. The operator names an **overarching *standby*
+mode** as *"the best comprehensive solution"*. What *standby* is, relative to safe mode and
+lockout, is the next question.
+
 ---
 
 ## Disposition map
