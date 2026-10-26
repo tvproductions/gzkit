@@ -1918,6 +1918,24 @@ are demoted. What stays open until the sources above are read: the contract's sh
 and whether it maps to the MEL's deactivate-and-operate pair), what each signal means, the
 threshold for *profound modification*, and what classes 1, 2 and 4 are owed.
 
+Two background research tracks were dispatched on 2026-10-26 to land the sources verbatim under
+`docs/rnd/contractor-kit/sources/`: the aviation gap texts with the MEL (the carried widening
+check), and Meyer's primary text on Design by Contract. Their reports are inputs, read by the
+agent before any mapping.
+
+## decision · the mode contract is a massive refactor, and the operator judges it the best way
+
+Operator, 2026-10-26, verbatim, on the principle above:
+
+> yes, that will be a MASSIVE refactor, but it is the best way that I can see.
+
+This places the mode contract in **disposition 5, one-shot refactoring**. Every control, monitor,
+alarm and safeguard gzkit carries would gain its own contract, and the external demotion checkpoint
+would give way to controls that read the signal themselves. That is the one entry row 5 has had.
+Row 5 is still open: this skill lets the agent propose a program and leaves the route to the
+operator. The program can be proposed only after the contract's shape is decided from the sources.
+The operator's words settle that the refactor is wanted. They do not settle its route.
+
 ---
 
 ## Disposition map
@@ -1928,7 +1946,7 @@ threshold for *profound modification*, and what classes 1, 2 and 4 are owed.
 | 2 | GHI / direct fix | commissioned | direct repair of the eleven defects in the pipeline parts the kit reuses (#1200, #1206, #1208, #1198, #1203, #1205, #1194, #1209, #1185, a cwd-escape guard to be filed, #1028's stop-and-ask boundary); a GHI on the persona witness measuring a total; each lesson crossing kit and pipeline as a GHI | operator, questions 8, 14, 17, 21 |
 | 3 | chore | commissioned | the vibe-coded and underbaked audit chore; `frontier-model-card-currency` widened to model-level assignments (landed `9649d0eb0`) | operator directed both, 2026-10-25 |
 | 4 | control surface, rule, doc, skill, hook | commissioned | the contractor kit (four positions and the surveillant, runtime, tag-out log, maintenance record, punch list, job order and change order); the contract's division of labor, cheaper-sessions clause, exit conditions and § Punch list; the doctrine's § Seaworthy and § Handback; Part 0's sea-trial term and the campaign's Movement E (operator ratification); RO-7's persona exit number; `gz-rnd`'s both-sides rule; the vocabulary crosswalk | operator, questions 1–24 |
-| 5 | one-shot refactoring | | | open |
+| 5 | one-shot refactoring | | the mode contract across every control, monitor, alarm and safeguard (operator: *"a MASSIVE refactor, but it is the best way that I can see"*) | open: the program is proposed once the contract's shape is decided from the MEL and Design by Contract sources; the operator selects the route |
 | 6 | no action | | | open |
 
 ## Close
