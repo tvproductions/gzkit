@@ -693,6 +693,36 @@
       "decision": "Capture adrkit's useful mechanisms and put it on the radar.",
       "source": "operator, verbatim: \"let's capture what's useful and put on the radar.\"",
       "recorded_at": "2026-10-26"
+    },
+    {
+      "id": "MOVE-112",
+      "decision": "Operator selected 'Evidence for ADR-0.37.0 (Recommended)': adrkit's two-sided bounding (narrow declared scope plus opt-in code markers, kept apart in the output) is recorded as evidence on ADR-0.37.0, to be measured before adoption.",
+      "source": "operator grill answer",
+      "recorded_at": "2026-10-26"
+    },
+    {
+      "id": "MOVE-113",
+      "decision": "Operator selected 'Corroborate D2 (Recommended)': adrkit's ADR-0022 (author-written claims carry no exit-code authority) is recorded as independent corroboration of ADR-0.37.0 D2.",
+      "source": "operator grill answer",
+      "recorded_at": "2026-10-26"
+    },
+    {
+      "id": "MOVE-114",
+      "decision": "Operator selected 'Discussion only (Recommended)': the as-of governance query stays on the radar until a concrete audit need appears.",
+      "source": "operator grill answer",
+      "recorded_at": "2026-10-26"
+    },
+    {
+      "id": "MOVE-115",
+      "decision": "Operator selected 'Re-route to rulings pool (Recommended)': one gz query returning settled and rejected decisions on a topic with sources, as an amendment to ADR-pool.rulings-as-first-class-events (re-routed from ADR-pool.solved-problem-pattern-corpus).",
+      "source": "operator grill answer",
+      "recorded_at": "2026-10-26"
+    },
+    {
+      "id": "MOVE-116",
+      "decision": "Operator selected 'Discussion with RO-4 (Recommended)': one-decision ADRs separate from work packages stay a discussion, attached to RO-4 as evidence; not routed before RO-4 settles the release split.",
+      "source": "operator grill answer",
+      "recorded_at": "2026-10-26"
     }
   ],
   "routed_follow_up": [
@@ -1102,14 +1132,14 @@
       ],
       "recommendation": "Extend the ADR-0.37.0 evidence: adrkit bounds 'which decisions govern this change' by keeping each record's declared scope narrow and letting code opt in one line at a time with a marker, and its output keeps the record's own match ('via path') apart from the code's claim ('declared by'). That maps onto SeamEdge's LAW and OBSERVED provenance, and is the code-to-ADR mirror of @covers.",
       "mechanical_witness": "A measurement, before adoption, of whether authored scopes stay narrow in gzkit (alternative 2a found a median of 86 co-claimants from brief Allowed Paths).",
-      "decision_status": "pending-grill",
+      "decision_status": "approved",
       "rationale": "It is a concrete answer to the boundedness question ADR-0.37.0 left with an owner.",
       "grill_questions": [
         {
           "question": "What route do you recommend?",
           "recommended_answer": "open-feature-adr: further evidence on ADR-0.37.0, measured before adoption.",
-          "answer": "",
-          "status": "pending"
+          "answer": "Evidence for ADR-0.37.0, measured before adoption: authored scopes must be shown to stay narrow (alternative 2a measured a median of 86 co-claimants from brief Allowed Paths).",
+          "status": "answered"
         }
       ]
     },
@@ -1123,14 +1153,14 @@
       ],
       "recommendation": "adrkit's ADR-0022 gives marker claims written by a change's author no exit-code authority. ADR-0.37.0's D2 found the same defect from the other side (a brief accounts for a seam by naming it, and the entering agent writes the brief). Record adrkit's rule as corroboration of D2's direction.",
       "mechanical_witness": "Any claim the entering agent authors is evidence only; a test that such a claim cannot flip a gate.",
-      "decision_status": "pending-grill",
+      "decision_status": "approved",
       "rationale": "Independent convergence on the same trust rule strengthens D2.",
       "grill_questions": [
         {
           "question": "Which gzkit invariant must not weaken?",
           "recommended_answer": "The ledger and the operator decide; an agent's own claim never does.",
-          "answer": "",
-          "status": "pending"
+          "answer": "The ledger and the operator decide; an agent's own claim never does. Recorded as independent corroboration of ADR-0.37.0 D2.",
+          "status": "answered"
         }
       ]
     },
@@ -1144,14 +1174,14 @@
       ],
       "recommendation": "adrkit's `adr explain --as-of <date|ref>` reports the decisions that governed a file at a past date, from record dates and supersession. gzkit's ledger carries the timestamps to answer it; no gz verb asks.",
       "mechanical_witness": "A gz query over the ledger and ADR lifecycle events with an as-of argument, with a test.",
-      "decision_status": "pending-grill",
+      "decision_status": "discussion-only",
       "rationale": "Useful for audits and for re-litigation: what was ruled at the time.",
       "grill_questions": [
         {
           "question": "Is this feature capability, pool backlog, GHI, or reject?",
           "recommended_answer": "Pool backlog or discussion until a concrete need appears.",
-          "answer": "",
-          "status": "pending"
+          "answer": "Discussion only, until a concrete audit need appears; an as-of answer is trustworthy only once rulings are ledger events (ADR-pool.rulings-as-first-class-events).",
+          "status": "answered"
         }
       ]
     },
@@ -1159,20 +1189,20 @@
       "id": "MOVE-115",
       "title": "One retrievable place for rejected and superseded decisions",
       "route": "existing-pool-adr",
-      "destination": "ADR-pool.solved-problem-pattern-corpus",
+      "destination": "ADR-pool.rulings-as-first-class-events",
       "source_competitors": [
         "adrkit"
       ],
       "recommendation": "adrkit's MCP server surfaces rejected, superseded and deprecated records so agents stop re-proposing them. gzkit holds the same knowledge in several places (handoff rulings, R&D not-pursued rows, ghi-author prior art, superseded ADRs). Consider one retrieval surface over them.",
       "mechanical_witness": "A single gz query that returns settled and rejected decisions on a topic, with sources.",
-      "decision_status": "pending-grill",
+      "decision_status": "approved",
       "rationale": "Re-litigating settled matters is a recurring cost the handoff rulings store already exists to cut.",
       "grill_questions": [
         {
           "question": "Are we copying a product or absorbing a mechanism?",
           "recommended_answer": "A mechanism: one retrieval surface over decisions already recorded.",
-          "answer": "",
-          "status": "pending"
+          "answer": "A mechanism: one retrieval surface over decisions already recorded. Re-routed from ADR-pool.solved-problem-pattern-corpus to ADR-pool.rulings-as-first-class-events, whose intent is that nothing in gzkit represents the state 'settled'.",
+          "status": "answered"
         }
       ]
     },
@@ -1186,14 +1216,14 @@
       ],
       "recommendation": "adrkit keeps an ADR to one decision (59 small records in three months), separate from any work package. A gzkit ADR is a feature container with OBPIs, gates and a release. The drydock's RO-4 began detaching release from the ADR; adrkit shows the end state where the decision record stands alone.",
       "mechanical_witness": "None yet; a design discussion.",
-      "decision_status": "pending-grill",
+      "decision_status": "discussion-only",
       "rationale": "Bears on RO-4 and on how decision memory is retrieved.",
       "grill_questions": [
         {
           "question": "What route do you recommend?",
           "recommended_answer": "discussion-only, alongside the drydock's RO-4.",
-          "answer": "",
-          "status": "pending"
+          "answer": "discussion-only, attached to the drydock's RO-4 as evidence of the end state where the decision record stands alone.",
+          "status": "answered"
         }
       ]
     }
