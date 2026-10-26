@@ -150,3 +150,28 @@ deliberately not taken here.
 Pool ADRs are backlog items — they carry no `semver:` or `kind:` frontmatter.
 Promotion into the active tree (foundation or feature) is performed via
 `gz adr promote`, which rewrites the frontmatter with the chosen taxonomy.
+
+## Amendment 2026-10-26: one retrieval surface for settled and rejected decisions
+
+Routed from the October 2026 competitor radar (MOVE-115), on the operator's
+grill ruling *"Re-route to rulings pool (Recommended)"*. The scan first named
+`ADR-pool.solved-problem-pattern-corpus`. This ADR is the better home: the
+state a re-proposal ignores is "settled", and this ADR exists because nothing
+in gzkit represents it.
+
+adrkit (github.com/mbeacom/adrkit; source in
+`artifacts/reports/competitor-radar/scans/2026-10.json`) serves rejected,
+superseded and deprecated decision records through its MCP server, so an agent
+finds the rejection before it proposes the same idea again. gzkit holds the
+same knowledge in several places that no one query reads together: the handoff
+rulings store (`gz handoff rulings`), the not-pursued rows of R&D disposition
+maps, `ghi-author`'s prior-art lookup and superseded ADRs.
+
+Candidate scope for Decision 2's query side: one `ruling` query that returns
+the settled, rejected and superseded decisions on a topic, each with its
+source. Witness: a test showing that the query returns a rejection recorded in
+any of those sources, with its citation.
+
+Not taken: an as-of query ("which decisions governed this when it was
+written?", MOVE-114). It stays on the radar as discussion only until an audit
+needs it; once rulings are events, the ledger timestamps can answer it.

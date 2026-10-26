@@ -785,6 +785,21 @@
       "target": "ADR-0.37.0-airlock-calibration-and-compulsion; GHI #1185",
       "action": "MOVE-111: Amendment 2026-10-26 (evidence only): adrkit's decision-declared scope as a candidate answer to the boundedness question of alternatives 2 and 2a; comment on #1185",
       "status": "implemented"
+    },
+    {
+      "target": "ADR-0.37.0-airlock-calibration-and-compulsion",
+      "action": "MOVE-112 and MOVE-113: Amendment 2026-10-26 (second), evidence only: two-sided bounding with markers kept apart from declared scope, and author claims carry no exit-code authority (corroborates D2)",
+      "status": "implemented"
+    },
+    {
+      "target": "docs/design/adr/pool/ADR-pool.rulings-as-first-class-events.md",
+      "action": "MOVE-115: Amendment 2026-10-26: one retrieval surface for settled and rejected decisions (re-routed from ADR-pool.solved-problem-pattern-corpus)",
+      "status": "implemented"
+    },
+    {
+      "target": "docs/governance/harbor-ro4-release.md",
+      "action": "MOVE-116: External evidence (discussion only): one-decision ADRs apart from work packages",
+      "status": "implemented"
     }
   ],
   "scan_mode": "monthly",

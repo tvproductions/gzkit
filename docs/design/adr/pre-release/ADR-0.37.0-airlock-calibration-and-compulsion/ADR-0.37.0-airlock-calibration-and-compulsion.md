@@ -591,6 +591,35 @@ WITH HALF THE TIME: cut OBPI-03 (accounting predicate) and file it as a GHI with
 3. WIDENING TO MOVEMENT B'S REMAINING DOORS -- the GHI/MX door and the ad-hoc/permitted door -- which becomes safe only once this ADR's calibration has a measured track record.
 4. Possibly a brief-authoring-quality check, since D2 raises the stakes on declarative sections without adding any check on them (surfaced in assumption_surfacing).
 
+## Amendment 2026-10-26 (second) — adrkit evidence on two-sided bounding and on D2
+
+**Evidence only. No decision, checklist item or OBPI changes.** Routed from the October
+2026 competitor radar (`artifacts/reports/competitor-radar/scans/2026-10.json`, MOVE-112
+and MOVE-113), on the operator's grill rulings *"Evidence for ADR-0.37.0 (Recommended)"*
+and *"Corroborate D2 (Recommended)"*. The operator routed both knowing this ADR will be
+re-cast: *"0.37.0 will be converted to the new structures eventually"*. The evidence
+travels with the content, whatever structure carries it.
+
+**MOVE-112: the map is bounded from two sides, and the two are kept apart.** The amendment
+below records adrkit's narrow, decision-declared `affects` scope. adrkit adds a second
+side: code opts in one line at a time with a marker that names the decision it serves.
+Its output keeps the two provenances apart, a record's own match (*via path*) and the
+code's claim (*declared by*). That is the shape of `SeamEdge`'s LAW and OBSERVED
+provenance, and it is the code-to-decision mirror of `@covers`. The measurement the
+amendment below requires still stands. Before adoption, show that authored scopes stay
+narrow here (alternative 2a measured a median of 86 co-claimants from brief Allowed
+Paths). Markers do not answer that question; they add a second claimant source to
+measure.
+
+**MOVE-113: an author's claim carries no exit-code authority.** adrkit's ADR-0022
+(*"scan inbound markers in check and CI without giving them exit-code authority"*) reaches
+D2's rule from the other side. D2 found that a brief accounts for a seam by naming it, and
+the entering agent writes the brief. adrkit refuses to let a marker written by a change's
+author decide its exit code. The two projects reached the same trust rule independently:
+the ledger and the operator decide, and an agent's own claim never does. Witness when
+this lands: a test showing that a claim authored by the entering agent is evidence only
+and cannot flip a gate.
+
 ## Amendment 2026-10-26 — external evidence on the boundedness question (adrkit)
 
 **Evidence only. No decision, checklist item or OBPI changes.** Routed from the October

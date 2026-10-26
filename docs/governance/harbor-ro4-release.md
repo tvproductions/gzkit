@@ -45,3 +45,7 @@ Each tranche adds a § Punch list line for what it disconnects, reroutes or chan
 ## Current state (research of 2026-10-25)
 
 Nothing of RO-4 has landed. `version_sync.py:18` derives the version from the ADR id and `closeout.py:557-563` bumps it; `patch_release_event` (`ledger_events.py:919`) is the only release event; `gz closeout` is keyed to the ADR (`closeout.py:665`); `gz validate --version-release` reads pyproject, tags and manifests; GHI #1248 is open; the ADR-as-carrier text stands in `GovZero/releases/README.md:39-43` and `GovZero/adr-lifecycle.md:227-277`.
+
+## External evidence (discussion only)
+
+From the October 2026 competitor radar (MOVE-116; operator grill ruling, 2026-10-26: *"Discussion with RO-4 (Recommended)"*). adrkit keeps each ADR to one decision, apart from any work package (59 records in its first three months; `artifacts/reports/competitor-radar/scans/2026-10.json`). RO-4 detaches release from the ADR; adrkit shows the end state, where the decision record also stands apart from the work. This is discussion only: it changes no RO-4 ruling or tranche, and nothing is routed until RO-4 has settled the release split.
