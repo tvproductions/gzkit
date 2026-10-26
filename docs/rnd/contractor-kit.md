@@ -1165,6 +1165,403 @@ already reads the whole manual; the next session checks each inventory's read/sk
 this instruction and widens any track that read narrowly. Session handoff written at this point for a fresh context window (operator: *"set this to a
 handoff, so we can get a fresh ctx window"*; *"handoff + git sync"*).
 
+## decision · the run resumes: verify the inventories, then build the matrix
+
+Ruled, on resuming `.gzkit/handoffs/20261025T220051Z-rnd-contractor-kit-deep-dive.md`. Facts put:
+all four inventories landed and are committed (`cec73faf8` to `affa8fb25`), and none of their quotes
+had been checked. Question: proceed with the handoff's steps 2 (verify every inventory quote against
+its source, then read the gzkit side in full) and 3 (build the matrix)? Operator: *"proceed with 2,
+then 3"*. Booked with `gz handoff decide` (session `7e48b285`). The first step, re-run any track that
+did not land, was set aside because there was nothing left to do. Four independent verifiers, one per
+inventory, check every quote against the PDF extractions (`pdftotext -layout`) and the repository
+sources. Their reports are inputs, and the agent checks their failure tables itself before any row
+enters the matrix.
+
+## source · the operator on the pipeline and the GHI system, while the verifiers ran
+
+Operator, 2026-10-25, verbatim:
+
+> btw, with that matrix, and all you've read, we should be able to put together a modified pipeline
+> process WITH EASE. I think the GHI system could benefit more from this mx-oriented too.
+
+Two subjects, neither ruled yet. The first is a modified pipeline process built from the matrix. It
+bears on question 8, which ruled *"repair first, then reuse unchanged"*, and on the decision that
+*lessons cross between the kit and the pipeline in both directions*, each as a GHI on the receiving
+side. The second is the GHI system made maintenance-oriented. Part 0's candidate glossary already
+maps GHI → *problem report* (sourced: AC 00-71, AC 20-189, four states and four classes) and keeps
+*squawk* as the operator's own word. The doctrine already couples GitHub issues to maintenance mode
+(*"I'd like maintenance mode and GitHub issues to be very tightly coupled"*). Both subjects join the
+frontier after the matrix. Neither is put as a question before the matrix is presented.
+
+## source · the four inventories, verified
+
+Four independent verifier subagents each checked every quoted string in one inventory against its
+source: `pdftotext -layout` extractions of the TUM and JFMM PDFs, and the repository files for the
+aviation and maritime texts. The maritime verifier also re-fetched the six eCFR files from the
+versioner API. The reports are saved verbatim, with host paths made relative:
+`docs/rnd/contractor-kit/sources/verify-inventory-tum.md`, `verify-inventory-jfmm5.md`,
+`verify-inventory-aviation.md` and `verify-inventory-maritime.md`. Read 2026-10-25.
+
+| Inventory | Quotes | Verbatim | Misquote | Cut that changes meaning | Misstated `[reading]` |
+|---|---|---|---|---|---|
+| TUM | 419 | 419 | 0 | 10 (6 material) | 0 |
+| JFMM Vol V | 626 | 623 | 3 | 36 (14 high) | 3 |
+| Civil aviation | 205 | 205 (41 second-hand) | 0 | 6 | 4 |
+| Maritime | 179 | 179 | 0 | 3 | 2 |
+
+No quote sits in the wrong section, and the six eCFR files match a fresh fetch word for word. Against
+the source text, the agent checked § 43.9(a), § 121.378(a), § 91.407(b), § 121.369(b)(8),
+§ 1915.80(b)(15), TUM 1.5.1.c, 1.8.4.a and LIRS block 7, and JFMM I-FWD 1.2.a and I-2.3.7.4. Each
+finding held. **What moves:** the cuts are condition and scope. An inventory row is not quoted into
+the matrix as-is: each matrix cell is checked again against the source by the agent, and the
+condition is restored where a cut dropped it. Two readings bear on the design. § 121.369(b)(8) lets
+two classes, not one, countermand an inspector. JFMM I-5.4.3 uses *verification* for the inspector's
+act as well, so the (V)/(I) split is a margin convention, not a definition.
+
+## source · the vocabulary matrix
+
+`docs/rnd/contractor-kit/vocabulary-matrix.md` · drafted by the agent 2026-10-25 from the four
+verified inventories and the gzkit side read in full. The gzkit side is the requirements model,
+the RO-5 specification, Part 0's statement of command, terms and candidate glossary, the
+safe-mode doctrine, and the contract's binding sections and punch list. The contract's passage log
+was read in preview only, and its superseded record was not read. The matrix is a view and holds no
+authority. It has 34 rows in three bands: positions, documents and records, states and acts. Every
+cell quote was checked by the agent: 172 strings, 166 matched by script and 6 confirmed by hand.
+Rows marked *contested* are put to the operator one at a time under the scoped-register ruling.
+Four findings move earlier entries, each as a proposal until ruled:
+
+1. The Navy text has a term for the repairer, *Repair Activity* (TUM App B), which corrects the
+   run's *"no text term"*.
+2. The Navy gives restoration to Ship's Force (TUM 1.3.1.d), not to a repair activity. JFMM I-13.2.c
+   grounds the restorer's separation: reconnection by *"a worker who was not involved in the
+   disconnection"*.
+3. JFMM's Formal Work Package carries an initial-conditions section (tag-outs), a test and
+   inspection section, and a system restoration section. *Job order* (DFARS) is a priced contract.
+4. JFMM's change ladder keeps a revision, which changes the work, apart from a Departure from
+   Specification, which accepts a result. Both are apart from the record of the work.
+
+## decision · a work package bundles its formal work package and its objective quality evidence
+
+Ruled; question 24, put again from the matrix (rows B2 to B5). Both sides were read in full:
+
+- gzkit: RO-5 ruling 1, *"A repair order is a work package"*; the requirements model, *"the frozen
+  REQ baseline, the closing test, the task cards"*.
+- JFMM I-2.2.3: an FWP *"coordinates in a single document materials required, initial conditions,
+  MP, test and inspections, and system restoration"*. JFMM I-2.2.4: a CWP is required *"when higher
+  authority requires a record (Objective Quality Evidence (OQE))"*.
+
+The options put:
+
+- **A.** The work package is the bundle, for both kinds. It holds its formal work package (initial
+  conditions as tag-out line items, the procedure as task cards, test and inspection holding the
+  baseline, the closing test and the dock trial, and system restoration) and its objective quality
+  evidence. Sections that do not apply are marked NA.
+- **B.** RO-5's record as specified, with the JFMM terms as crosswalk notes.
+- **C.** Job order plus maintenance record.
+
+Recommended A. Operator: *"okay, A. Looking at the matrix, that appears to be the strongest?"*
+
+**Variance found after the ruling, put to the operator.** Option A said that a package closed with
+its OQE *"is a controlled work package"*. That misreads JFMM. There the CWP is one of three TWD
+types, chosen at planning (I-2 App. B: *"Is a CWP Required per PARA 2.2.4"*), not a state a package
+reaches at close. Because gzkit requires the record for every package, the faithful reading is that
+every gzkit work package is a controlled work package from the moment it is opened. That is the
+liberty already marked at B4. The ruling stands on the bundle. The CWP clause waits for the
+operator's word on the correction.
+
+**commissions:** 4 — the RO-5 specification amended so the work-package record carries initial
+conditions, procedure (task cards), test and inspection, system restoration and its OQE, on the
+operator's go for that row.
+
+## decision · every work package is a controlled work package from opening
+
+Ruled; corrects the clause held in the decision above. Operator: *"yes to your correction"*. Every
+gzkit work package is planned and opened as a controlled work package (*"CWP = FWP + OQE"*, JFMM
+I-2 App. B), because gzkit requires the record for every package. It does not become one at close.
+This is the liberty marked at matrix row B4: JFMM requires a CWP only *"when higher authority
+requires a record"*.
+
+The operator corrected the agent's red flag in the same message: *"I have provided commentary and
+even extension in times where I took your suggestions."* The record bears it out. The coordinator
+began as the operator's extension (*"an 'orchestrator' that we haven't spoken of yet"*). The two
+forms of the sea trial are the operator's (*"Make the two an OR"*). The model-card chore proviso
+is the operator's. The flag described the answers as bare acceptances when they were amended
+acceptances.
+
+## decision · the change ladder: pen and ink, change order, attachment, supplement
+
+Ruled; matrix row B10. Both sides were read in full:
+
+- gzkit: question 10 (*"changed only by the operator's change order"*; the tranches reordered
+  within scope, each revision recorded). The operator: *"change order from dfars is worth mixing
+  in"*. The requirements model already uses *revision* for a REQ.
+- JFMM I-2.3.7.1 to .6.
+- FAR 2.101 and DFARS 252.217-7003(a).
+
+The options put:
+
+- **A.** JFMM's ladder as written.
+- **B.** JFMM's ladder, with the rung needing the operator's approval named **change order**:
+  - **pen and ink** — administrative changes and resequencing, approved by the coordinator and
+    recorded in the package;
+  - **change order** — a scope, boundary or test change; work stops; issued only by the operator,
+    who approved the original;
+  - **attachment** — added work inside the boundary with no new tag-outs, approved by the operator;
+  - **supplement** — a new formal work package within the package.
+
+  Under B, work outside the *"general scope"* is a new work package; a change order never changes
+  the contract (DFARS 217.7103-6(b)); superseded pages are kept (JFMM I-2.3.7.3.c(2)).
+- **C.** Every change a change order.
+
+Recommended B. Operator: *"B avoids collision and fits"*.
+
+Consequences:
+
+- The ladder is the Navy's and one rung's name is DFARS's, a marked liberty. *Revision* stays the
+  REQ's word.
+- It amends question 10 in name only: the repairer's in-scope reordering is a pen-and-ink change
+  recorded in the package.
+- It settles matrix row B3 by construction. Question 24 (A) names the package's instructions its
+  formal work package, so *job order*, held since question 10, is superseded as gzkit's name and
+  stays only as DFARS's term in the crosswalk.
+
+**commissions:** 4 — the ladder in the contractor kit's runtime and in the RO-5 amendment, each rung
+a recorded event on the package.
+
+## source · the operator on departure from specification, and JFMM on approved and unapproved change
+
+Matrix row B9 was put (A: adopt the DFS; B: an open problem report; C: no new record). Operator,
+before choosing, verbatim:
+
+> in drydock and mx, we are there to modify/remodel as much as return to spec, does dfs feel like
+> it fits? is it a repair spec? I suppose these could work in either repair or design/feature work.
+> discuss
+
+JFMM Rev D Chg 5 Volume V, read 2026-10-25 in `jfmm5.txt`:
+
+> 8.1.1 Background. Specifications are engineered requirements such as type of materials,
+> dimensional clearances, vibration levels, flow rates, and physical arrangement to which ship
+> components are purchased, installed, tested, and maintained. [...] There are occasions when the
+> applicable specifications cannot be met. In these cases, the nonconformance to specifications is
+> controlled with a DFS. (I-8.1.1)
+
+> System Restoration (required element). This section contains those steps necessary to restore the
+> system to normal operating status. If the FWP resulted in an approved change to the equipment or
+> component configuration (such as the performance of an approved Alteration and Improvement), this
+> section must direct the ship to submit a Ship's Configuration Change Report (OPNAV 4790/CK) [...]
+> Ensure the requirements contained within Part I Chapter 8 of this volume are followed if the FWP
+> resulted in an unapproved change to the equipment or component configuration. (I-2.3.3.1.l)
+
+> Those DFSs for a change in configuration, which NAVSEA accepts as a permanent repair, will be
+> maintained in an auditable file by the ship and the ISIC until reflected in ship's selected record
+> drawings, data or technical variance documentation. (I-8.3.4.a)
+
+The text answers the question. JFMM separates an **approved change** to the configuration (an
+alteration, accounted for by a configuration change report) from an **unapproved change** (a DFS).
+A DFS is always measured against the specification the work was approved to meet. It is never
+measured against the configuration the work set out to change. 14 CFR draws the same line between
+repair and alteration (§ 1.1, *major alteration* and *major repair*). 46 CFR 71.55-1(b) puts the
+approval first: *"Drawings of alterations shall be approved before work is started"*.
+
+## decision · alteration and departure from specification, both against the package's own spec
+
+Ruled; matrix row B9, re-put from the source entry above. The options put:
+
+- **A.** Two records, both measured against the package's own approved specification, for repair
+  and delivery packages alike:
+  - the **alteration** — the planned remodel, approved in the formal work package before work and
+    accounted for at close as a **configuration change**: the maintenance record's *reconnected*,
+    *replaced* and *retired* lines, with canon and docs updated;
+  - the **departure from specification (DFS)** — only where the work cannot meet its own approved
+    specification. It is a deviation (before) or a waiver (after), temporary (with a clear-by
+    condition) or permanent, approved by the operator alone, and it never changes the work.
+- **B.** A DFS for every difference from the prior shape.
+- **C.** No DFS.
+
+Recommended A. Operator: *"okay, A is it - make sure the agents/personas/skills are well-versed in
+these details"*.
+
+The operator's rider binds the kit's shape: every position and its procedure must carry this
+vocabulary. Persona files are capped one by one (question 14). So the vocabulary lives once, in the
+crosswalk the scoped-register ruling made canon. Each persona carries only its own position's terms
+and stop rules, and the kit's skill points to the crosswalk. Copying the whole matrix into every
+persona would breach the cap and create five copies to drift.
+
+**commissions:** 4 — the alteration and DFS records in the contractor kit and the RO-5 amendment;
+the crosswalk as the single home of the vocabulary; each kit persona and the kit skill carrying
+their position's terms by reference to it, with a witness that each term a persona or skill uses
+resolves to a crosswalk row (the operator's rider, verbatim above). Executed in diamond 2, on the
+row's go, once the kit is specified.
+
+## source · the operator on persona obligations, the two sides, and the aviation separation
+
+Matrix row A4 was put (A: repair activity for the position, craftsman per session; B: craftsman;
+C: keep repairer). Operator, verbatim:
+
+> no, the persona/agent doesn't need the whole matrix, but they need to be clear on their
+> expectations and obligations.
+
+> On navy... I guess craftsman could also be the persona? repair activity and restoration/resolution
+> activity? it seems like the aviation part doesn't want the person who did the fix to evaluate the
+> fix, but that is the inspector. I am not sure.
+
+The first refines the rider. A persona carries its position's expectations and obligations, which
+is Part 0's *"Position. An obligation and a role to fulfil it."* It does not carry the vocabulary at
+large.
+
+On the second, the sources separate three pairs, each from a different text:
+
+1. **Doer and inspector:** § 121.371(c), *"No person may perform a required inspection if he
+   performed the item of work required to be inspected."*; JFMM gl., the QAI inspects *"the work of
+   other individuals, not their own work"*. This is the aviation rule, and it binds the inspector,
+   as the operator says.
+2. **Repair side and restoring side.** No aviation text requires it; the operator ruled it,
+   extending the independence principle. The Navy builds it into the organization: the repair
+   activity works under tags that Ship's Force issues and clears (TUM 1.3.2.b, *"Is Ship's Force
+   except for RA tag-outs per Appendix C"*). *"Ship's Force is responsible for system restoration
+   (e.g., valve/switch lineups) after tags are cleared."* (TUM 1.3.1.d). The repair activity may
+   be gone by then (*"RA Not Available"*, TUM 1.8.4.a). JFMM I-13.2.c requires a disconnection
+   identifiable enough that *"a worker who was not involved in the disconnection will be able to
+   reconnect the wires without the need for further information sources"*.
+3. **Inspection line and coordinating line:** § 121.365(c), separation *"below the level of
+   administrative control"*.
+
+*Restoration activity* and *resolution activity* occur in no source read. The Navy's restoring side
+is Ship's Force: *"Ship's Force is ultimately responsible for all work accomplished on board their
+ship."* (JFMM I-1.8.a).
+
+## source · the operator: repair and restore as two activities of one craftsman
+
+Rows A4 and A6 were put together (A: repair activity and Ship's Force, two craftsman personas;
+B: repair activity and restoration activity; C: keep repairer and restorer). Operator, verbatim,
+quoting the agent's line on JFMM I-13.2.c:
+
+> this holds promise - repair and restore are just two activities the craftsman can do (or crew):
+> "- JFMM I-13.2.c requires every disconnection to be clear enough that "a worker who was not
+> involved in the disconnection" can reconnect it."
+
+This reading conflicts with two booked rulings, quoted here verbatim:
+
+- *"I think these two contractors in repair/restore mode in the hangar/drydock are distinct new
+  personas."* (decision · the two contractors are distinct new personas)
+- *"that's why I don't want the same agent/persona for the two sides of the work"* (decision · the
+  performer of the repair never performs the restoration)
+
+A third ruling rests on them: *each persona is anchored on the failure it resists*, under which the
+repairer resists bias toward the present shape and the restorer resists green by the wrong route.
+Part 0 carries the shape the operator now reaches for. Crew fill positions (*"Crew. The actor
+implementing within the role's bounds and under its auspices."*), and the position carries the
+obligation. JFMM I-13.2.c is a legibility requirement whose test case is a worker who did not
+disconnect (*"e.g."*). It does not on its own forbid the same worker reconnecting. Separation would
+then need a mechanism of its own. Put to the operator.
+
+## decision · one craftsman persona fills two positions: repair and restoration
+
+Ruled; matrix rows A4 and A6. Both rulings in conflict were quoted verbatim before the question was
+put (source entry above). The options put:
+
+- **A.** One **craftsman** persona carrying the trade: work to the formal work package, document
+  before changing, stop when guidance is *"incorrect, incomplete or unclear"*, mark its own steps
+  (V). Two **positions**, **repair** and **restoration**, each with a procedure the runtime serves at
+  act entry carrying its obligations and the failure it resists. Repair resists bias toward the
+  present shape; restoration resists green by the wrong route. Separation by mechanism: the
+  runtime refuses a session that applied a tag-out line item from clearing it, and every line item
+  meets the JFMM I-13.2.c standard. The sides keep the Navy's names, **repair activity** and
+  **Ship's Force**.
+- **B.** Two craftsman personas.
+- **C.** One persona and no mechanism.
+
+Recommended A. Operator: *"A"*.
+
+This amends three booked decisions, with the operator's word:
+
+- *the two contractors are distinct new personas* and *three personas* now read three positions
+  (repair, restoration, inspection) plus the coordinator, filled by two personas (craftsman,
+  inspector) and the coordinator's own.
+- *each persona is anchored on the failure it resists* now reads *each position*.
+- *the performer of the repair never performs the restoration* stands. It is held at instance
+  level by the runtime, as § 121.371(c) holds the inspector at person level.
+
+*Repairer* and *restorer* are retired as role names. *Restoration activity* is not adopted, and
+*Ship's Force* is the restoring side.
+
+**commissions:** 4 — the craftsman persona and the two position procedures in the kit; the
+runtime's refusal of same-session clearance; the I-13.2.c legibility standard as a line-item check
+at application.
+
+## decision · the inspector is the Quality Assurance Inspector
+
+Ruled; matrix row A5. Both sides were read in full:
+
+- gzkit: questions 9 and 13.
+- JFMM gl., the QAI inspects *"the work of other individuals, not their own work"*; I-1.6.15 places
+  QAIs *"within their respective work centers"*; I-12.4.9 makes coating inspectors *"independent of
+  the group, shop or code"*.
+- §§ 121.371(c), 121.369(b)(8) and 121.365(c).
+
+The options put:
+
+- **A.** *Quality Assurance Inspector (QAI)*, with the liberty marked: gzkit's QAI is separated from
+  the coordinator line under § 121.365(c), not placed in the work center.
+- **B.** Plain *inspector*.
+- **C.** *Required inspection inspector*.
+
+Recommended A. Operator: *"A"*.
+
+The independence rule is cited from aviation, and the title is the Navy's. With the craftsman and
+the Authorizing Officer, the positions now read in one naval register.
+
+## decision · the human is the operator, and always the commander
+
+Ruled; matrix row A1. The options put:
+
+- **A.** *Commanding Officer* inside the hangar.
+- **B.** Part 0's captain and commander inside the hangar, with *Commanding Officer* in the
+  crosswalk.
+- **C.** *Contracting Officer*.
+
+The agent recommended B, having withdrawn its own earlier proposal of A. Operator, verbatim:
+
+> actually, everywhere else, I am the operator and I am assumed to be gov zero (the human). The
+> human, in gzkit, is always the commander
+
+Inside the hangar and drydock the human is **the operator**, `g0`, and is always the
+**commander**. No maintenance title is adopted for the human. *Commanding Officer* (JFMM, TUM),
+*operational commander* (JFMM I-FWD 1.2.c) and *Contracting Officer* (FAR 2.101) are recorded in
+the crosswalk as other texts' names for that standing. *Contracting Officer*, held since question
+13, is withdrawn. Part 0's *captain* (the signature and the override, *"It is one standing and
+does not divide"*) is untouched by this ruling. Matrix row A2's approval for return to service is
+the operator's signature.
+
+## decision · the punch list becomes the list of discrepancies
+
+Ruled; matrix row B8. Both sides were read in full:
+
+- gzkit: the contract's § Punch list and question 20; the DFS ruling now takes accepted shortfalls
+  off the list.
+- § 43.11(b); JFMM QA form 14 and Part III survey-card categories; DFARS 252.217-7013(c).
+
+The options put were A (keep *punch list*), B (*list of discrepancies*) and C (JFMM's discrepancy
+record). Operator: *"B and C seem pretty identical"*. The agent named the one difference — whether
+every item carries a causal analysis — and the JFMM text that grades it (I-9.3.1.a: minor
+deficiencies *"corrected without causal analysis or long-term corrective action unless recurring
+in nature"*; I-9.4.1.b(1): certification-affecting deficiencies *"IMMEDIATE CORRECTIVE ACTION"*).
+It then put:
+
+- **B′.** A **list of discrepancies**: one line per discrepancy, graded *blocks return to service*
+  or *due by a named event*, cleared with its evidence. A line takes the fuller record (root cause
+  and corrective action) only when it blocks return to service or recurs, by the threshold in
+  `data/recurrence_threshold.json` checked by `gz insights recurrence`. The contract's § Punch list
+  is renamed on the operator's word.
+- **A.** *Punch list* with the same grading.
+
+Operator: *"B′"*.
+
+**commissions:** 4 — the contract's § Punch list, the contractor brief and the doctrine's references
+renamed to the list of discrepancies, with the grading and the causal-analysis rule; the three
+records of question 20 now read the tag-out log, the maintenance record and the list of
+discrepancies.
+
 ---
 
 ## Disposition map
