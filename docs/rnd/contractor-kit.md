@@ -1562,6 +1562,52 @@ renamed to the list of discrepancies, with the grading and the causal-analysis r
 records of question 20 now read the tag-out log, the maintenance record and the list of
 discrepancies.
 
+## decision · the run resumes a second time: the record checked, the frontier recomputed
+
+Ruled, on resuming `.gzkit/handoffs/20261026T001040Z-rnd-contractor-kit-matrix-ruled.md`. The
+handoff advised five steps. Operator: *"step 1"*. Booked with `gz handoff decide` (session
+`15ccb03e`), and steps 2 to 5 were set aside for now. Step 1 is three acts: this entry, the check
+against git, and a fresh frontier.
+
+**Record against git, 2026-10-26.** The record and `docs/rnd/contractor-kit/` have no uncommitted
+changes, and HEAD (`69fb6e879`) is the handoff's own landing. `git cat-file` resolves every
+nine-character commit hash this record cites, among them `cec73faf8` to `affa8fb25`, `5661474e3` and
+`9649d0eb0`. Every source file named in the record exists. The matrix's § Rows the operator rules
+singly shows all eight rows struck through, and each matches a `decision` entry above.
+
+**One carried order is still open.** The deep-dive handoff entry ordered: *"the next session checks
+each inventory's read/skipped header against this instruction and widens any track that read
+narrowly."* No entry records that check. The TUM inventory names Appendices E, G and L as skipped,
+with reasons. The JFMM inventory names Part I Ch. 4 as skipped, with a reason. The maritime
+inventory has no skipped header. The aviation inventory's § Not read lists texts that no
+repository file holds, and the rows that depend on them are marked as gaps: Part 65, Part 145
+(U.S.), § 119.65, § 121.628, § 91.213, § 121.363, § 121.368, § 121.375, § 121.377, § 121.380a,
+§ 91.405, § 91.409, § 91.417, and Part 43 Appendices A, B and D. This is fact work, so the
+operator is not asked to rule on it. It goes on the frontier because no matrix row may lean on a
+gap row until the gap is read or the row says it is a gap.
+
+**Frontier, recomputed from the subject** (the core model first; placement waits):
+
+1. **The coordinator's authority** (A3, held provisional) together with **A8, a stop requested
+   from outside the work chain**. Every position is now ruled, so every prerequisite is settled.
+   The rest of C4 (stop work) and the scope of C6 depend on this ruling.
+2. **A7, the affected party.** Held and sourced, but not yet ruled.
+3. **The rows still proposed:** B1 (the contract as the rule), B11 (the register as a Layer 3
+   view), C1 (commencement), C3 (self-check and independent check: a margin convention, per the
+   JFMM I-5.4.3 reading), C5 (rework and buy-back), C10 (package closeout, which collides with
+   `gz closeout`), C11 (handing a position to the next session), C12 (the form of the handback),
+   and C13 (the drydock session has no definition).
+4. **The two subjects the operator opened.** B12 (GHI → *problem report*) carries the GHI system.
+   The modified pipeline process is bounded by question 8 and by the both-directions lessons
+   decision. Each comes after the rows it builds on.
+5. **The widening check** above, done as fact work before any gap row is cited.
+6. **Placement and close:** the kit's RO number and its place in the register, the shape of the
+   vibe-coded audit chore, disposition rows 1, 5 and 6, the restated challenge, `review.md`, and
+   sign-off.
+
+The earlier handoff's list of open items was an input to this, not the frontier. The new items it
+missed are A7, the still-proposed rows (3) and the widening check (5).
+
 ---
 
 ## Disposition map
@@ -1579,7 +1625,7 @@ discrepancies.
 
 **Challenge restated.** Open.
 
-**Frontier.** Open.
+**Frontier.** Open; recomputed 2026-10-26 (see the second resume entry).
 
 **Review.** Not yet written.
 
