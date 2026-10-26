@@ -75,6 +75,32 @@ This pool ADR can be promoted when all are true:
 
 ---
 
+## Amendment 2026-10-26: Bounded autonomy grants, and canon override rejected
+
+Routed from the October 2026 competitor radar (MOVE-108), on the operator's
+grill ruling *"Approve, pool ADR (Recommended)"*.
+
+**The pattern.** An unattended agent may hold a bounded autonomy grant: a
+scoped, recorded, revocable permission with a written gate it must pass, and a
+safe default when no human answers. The grant itself is an authorisation on the
+record.
+
+**The explicit rejection.** No request, trigger phrase or session instruction
+replaces a project-canon rule, and no grant lets an agent approve its own work
+for return to service. Gate 5 stays human.
+
+October source (in `artifacts/reports/competitor-radar/scans/2026-10.json`): tstack's `full-send` and `takeover` skills
+(github.com/t3dotgg/tstack) grant scoped autonomy with a written merge gate. But
+`full-send` also says that when a request conflicts with project instructions,
+*"this request replaces that rule for this task"* (skills/full-send/SKILL.md,
+line 26), and it merges on the agent's confidence.
+
+Witness at promotion: grants recorded as ledger events with scope and
+revocation, and a test that canon precedence holds against a conflicting
+request.
+
+---
+
 ## Inspired By
 
 [Anthropic 2026 Agentic Coding Trends Report](https://resources.anthropic.com/hubfs/2026%20Agentic%20Coding%20Trends%20Report.pdf) — Trend 4: Intelligent Oversight.

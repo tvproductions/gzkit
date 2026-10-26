@@ -70,6 +70,28 @@ constraint is that compounding cannot become a free-form memory dump. Pattern
 entries are useful only when they are searchable, evidenced, and subject to
 human-reviewed promotion or archival.
 
+## Amendment 2026-10-26: An admission bar and a contradiction audit
+
+Routed from the October 2026 competitor radar (MOVE-106), on the operator's
+grill ruling *"Approve, pool ADR (Recommended)"*.
+
+Captured insights (`gz insights remember`) and pattern entries pass a written
+**admission bar** before they enter the store. The store gets a periodic
+**contradiction audit** for staleness, overlap and contradiction between entries.
+
+October sources (in `artifacts/reports/competitor-radar/scans/2026-10.json`):
+
+- Compound Engineering's `ce-compound` saves a learning only if it passes a
+  written "durable bar" test, at most one per run, and `ce-compound-refresh`
+  audits saved learnings for staleness, overlap and contradiction.
+- BMAD added an append-only memlog.
+
+This extends the 2026-05-07 amendment: compounding still cannot become a
+free-form memory dump, and the admission bar is the mechanism that holds it.
+
+Witness at promotion: a typed admission check at capture, and a
+contradiction-audit chore over the insight store.
+
 ## Alternatives Considered
 
 1. **Free-form learnings dump (compound-engineering shape).** Rejected

@@ -125,6 +125,24 @@ The purpose is better front-door routing and safer reuse. It is not a license
 for skills to become autonomous plugins; every mutating package still inherits
 Gate 5, Allowed Paths, and mirror-sync discipline.
 
+## Amendment 2026-10-26: Export vocabulary from the OpenTelemetry GenAI conventions
+
+Routed from the October 2026 competitor radar (MOVE-102), on the operator's
+grill ruling *"Approve, pool ADR (Recommended)"*.
+
+gzkit's skill-load and subagent-dispatch ledger events are mapped onto the
+OpenTelemetry GenAI semantic conventions: agent, plan and workflow spans,
+`gen_ai.skill.*` attributes and the skill-load span
+(github.com/open-telemetry/semantic-conventions-genai, split out of semconv in
+v1.42, 2026-06-12; the conventions cite agentskills.io). The ledger stays the
+system of record. OpenTelemetry is an export vocabulary only, so gzkit's evidence
+reads in the names the ecosystem is standardising on.
+
+Source: `artifacts/reports/competitor-radar/scans/2026-10.json`, OpenTelemetry snapshot.
+
+Witness at promotion: a mapping table from ledger event types to span names and
+attributes, checked by a test.
+
 ## Alternatives Considered
 
 1. Fold this into `ADR-pool.skill-behavioral-hardening` - rejected. Behavioral

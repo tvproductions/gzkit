@@ -78,6 +78,31 @@ This pool ADR can be promoted when all are true:
 
 ---
 
+## Amendment 2026-10-26: A scan is evidence, not the trust decision
+
+Routed from the October 2026 competitor radar (MOVE-103), on the operator's
+grill ruling *"Approve, pool ADR (Recommended)"*.
+
+The trust decision for an external skill, hook or agent definition is a
+**pinned version plus a human-reviewed sync receipt**. A scanner's output is
+advisory evidence for that review, never the decision. A workspace's external
+hooks, agents and workflows are not loaded until they are trusted.
+
+October sources (in `artifacts/reports/competitor-radar/scans/2026-10.json`):
+
+- Trail of Bits, "The sorry state of skill distribution" (2026-06-03), bypassed
+  the ClawHub, Cisco and all three skills.sh scanners.
+- Kiro shipped a workspace trust prompt before it loads a folder's hooks, agents
+  and workflows (October 2026).
+
+This narrows the pool's original scanner-centred scope. Detection stays useful as
+evidence, and it is not the control.
+
+Witness at promotion: a sync receipt naming the pinned version and the human
+reviewer, and a load-time refusal of an unreviewed external surface.
+
+---
+
 ## Inspired By
 
 [NousResearch/hermes-agent](https://github.com/nousresearch/hermes-agent) —

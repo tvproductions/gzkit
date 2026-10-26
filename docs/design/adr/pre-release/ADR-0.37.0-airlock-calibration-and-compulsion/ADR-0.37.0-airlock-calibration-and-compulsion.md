@@ -591,6 +591,33 @@ WITH HALF THE TIME: cut OBPI-03 (accounting predicate) and file it as a GHI with
 3. WIDENING TO MOVEMENT B'S REMAINING DOORS -- the GHI/MX door and the ad-hoc/permitted door -- which becomes safe only once this ADR's calibration has a measured track record.
 4. Possibly a brief-authoring-quality check, since D2 raises the stakes on declarative sections without adding any check on them (surfaced in assumption_surfacing).
 
+## Amendment 2026-10-26 — external evidence on the boundedness question (adrkit)
+
+**Evidence only. No decision, checklist item or OBPI changes.** Routed from the October
+2026 competitor radar (`artifacts/reports/competitor-radar/scans/2026-10.json`, MOVE-111
+part 1), on the operator's grill ruling *"Evidence for ADR-0.37.0 (Recommended)"*. The
+operator asked first: *"don't we have that with the airlock?"*. The airlock is the home of
+"which decisions govern this change". It runs forward from an OBPI and is diagnostic-only
+until this ADR calibrates it.
+
+**What the external tool does.** adrkit (github.com/mbeacom/adrkit, created 2026-07-18; listed
+in GitHub Spec Kit's community extension catalog) treats each ADR as typed data with one
+added field, `affects`, *"so a tool can answer 'which decisions govern this pull
+request?'"*. A CI Action posts the governing decisions on each pull request.
+
+**Why it bears on this ADR.** Alternative 2a, seams from brief territory overlap, was
+rejected on measurement: a median of 86 co-claimants per brief, because a brief's Allowed
+Paths are too broad to discriminate. Alternative 2, file-level coupling, is deferred with
+an owner on the boundedness question. adrkit bounds its map by a different route: each
+decision **declares its own narrow scope**, authored on the decision, not inferred from
+the briefs that work under it. That is a candidate answer to the owner question. Whether it
+holds here depends on whether authored `affects` scopes stay narrow when written by the
+same agents whose briefs produced the 86-claimant median. It must be measured before it is
+adopted, not assumed.
+
+**Coupled defect.** `gz airlock out` never compares changed files with a brief's Allowed
+Paths (#1185). That is the existing forward check nearest this question.
+
 ## Amendment 2026-08-16 — OBPI-01's slug corrected to match its repurposed content
 
 **Rename debt from the 2026-08-15 amendment, discharged.** That amendment repurposed

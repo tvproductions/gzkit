@@ -58,6 +58,34 @@ The taxonomy should plug into ARB receipts and OBPI pipeline dispatch without
 requiring every review to be human. The human boundary remains explicit when
 lane/kind/sensitivity requires it.
 
+## Amendment 2026-10-26: Reviewer provenance and non-response semantics
+
+Routed from the October 2026 competitor radar (MOVE-101), on the operator's
+grill ruling *"Approve, pool ADR (Recommended)"*.
+
+A review receipt records the reviewer's vendor and model, the round number and
+the round budget. A timeout, an error or an exhausted budget is recorded as a
+**non-response, which never satisfies a review gate**. A receipt also carries an
+independent verdict tier, `confirmed`, `needs_validation` or `rejected`, from a
+reviewer that tries to disprove each finding.
+
+October sources (in `artifacts/reports/competitor-radar/scans/2026-10.json`, checked at source):
+
+- tstack's `sol-loop` (github.com/t3dotgg/tstack) runs a reviewer on another
+  vendor's model in a bounded loop, keeps a findings ledger with stable ids and
+  severities, and treats a timeout or exhausted budget as not approval.
+- Cloudflare's `security-audit-skill` writes schema-validated findings and has a
+  fresh agent try to disprove each one, ending as confirmed, needs_validation or
+  rejected.
+- Superpowers, Compound Engineering and BMAD each now record a verdict with
+  evidence for every review finding.
+
+Rejected from the same sources: model-assigned scores out of 10 as evidence, and
+merging on the agent's own confidence (Gate 5 stays human).
+
+Witness at promotion: a typed receipt field set checked by a validator, and a
+test that a non-response receipt cannot satisfy a review gate.
+
 ## Alternatives Considered
 
 - **Keep review output as prose comments.** Rejected. Prose can explain the
