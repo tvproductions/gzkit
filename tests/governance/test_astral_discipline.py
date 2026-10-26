@@ -176,6 +176,39 @@ class TestThePythonVersionIsDeclaredOnce(unittest.TestCase):
         self.assertIn("version-restated", _rules(**{".gzkit/skills/x/SKILL.md": skill}))
 
 
+class TestTheUvVersionIsAFloor(unittest.TestCase):
+    """uv exits 2 on a version `required-version` refuses, and every hook runs through
+    `uv run`, so a bound above the floor locks the session out on local drift (GHI #1283)."""
+
+    _KEY = ("uv-version-capped", "pyproject.toml", "tool.uv.required-version")
+
+    def _tree(self, spec: str) -> list[tuple[str, str, str]]:
+        pyproject = _PYPROJECT + f'\n[tool.uv]\nrequired-version = "{spec}"\n'
+        return _Tree(**{"pyproject.toml": pyproject}).violations()
+
+    def test_a_spec_that_refuses_some_newer_uv_is_a_violation(self) -> None:
+        for spec in ("==0.13.5", "0.13.5", "~=0.13.5", ">=0.13.1,<0.14", "===0.13.5", "<=0.14"):
+            with self.subTest(spec=spec):
+                self.assertIn(self._KEY, self._tree(spec))
+
+    def test_a_floor_admits_every_newer_uv(self) -> None:
+        for spec in (">=0.13.1", ">0.13.0", ">=0.13.1,!=0.13.3"):
+            with self.subTest(spec=spec):
+                self.assertNotIn(self._KEY, self._tree(spec))
+
+    def test_no_required_version_is_no_violation(self) -> None:
+        self.assertNotIn(self._KEY, _Tree().violations())
+
+    def test_the_recovery_names_the_floor_not_a_restatement(self) -> None:
+        # guardrail-feedback-prose: the governed next step fits this rule's fix.
+        rule, file, subject = self._KEY
+        violation = Violation(rule=rule, file=file, subject=subject, detail="==0.13.5")
+        [error] = check_discipline_baseline([violation], [])
+        self.assertIn('required-version = ">=', error.message)
+        self.assertIn("GHI #1283", error.message)
+        self.assertNotIn("Remove the restatement", error.message)
+
+
 class TestTheLockIsChecked(unittest.TestCase):
     def test_a_frozen_or_bare_sync_in_automation_is_a_violation(self) -> None:
         for flags in ("--frozen --all-extras", ""):
