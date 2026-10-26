@@ -77,7 +77,7 @@ wheel-exclude = ["gzkit/chores/*/proofs"]
 # run on any other version, and `astral-sh/setup-uv` installs exactly this one in
 # every workflow, so the two cannot drift. Move it with the binary in the same
 # pass (`gz-deps-upgrade` step 1): `uv self update`, then this line.
-required-version = "==0.13.1"
+required-version = "==0.13.5"
 # `uv sync` installs both groups by default, so the per-change gate, CI and the
 # release all build the docs from the lock (RO-9 tranche 2).
 default-groups = ["dev", "docs"]
