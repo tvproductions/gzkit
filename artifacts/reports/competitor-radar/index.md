@@ -24,6 +24,7 @@
 | OpenAPI | durable specification ecosystem | reference | [docs](https://spec.openapis.org/oas/) | ADR-pool.contract-surface-mechanical-defenses, ADR-pool.design-references-bibliography |
 | OpenTelemetry | durable specification ecosystem | reference | [repository](https://github.com/open-telemetry/opentelemetry-specification), [docs](https://opentelemetry.io/docs/specs/) | ADR-pool.design-references-bibliography, ADR-pool.contract-surface-mechanical-defenses |
 | tstack | personal agent-skill pack (PR-lifecycle automation) | reference | [repository](https://github.com/t3dotgg/tstack) | ADR-pool.review-receipt-taxonomy, ADR-pool.cross-vendor-confirmation-policy, ADR-pool.graduated-oversight-model |
+| adrkit | decision-record governance toolkit | secondary | [homepage](https://adrkit.dev/), [repository](https://github.com/mbeacom/adrkit) | ADR-0.37.0-airlock-calibration-and-compulsion, ADR-pool.solved-problem-pattern-corpus |
 
 ## Reports
 

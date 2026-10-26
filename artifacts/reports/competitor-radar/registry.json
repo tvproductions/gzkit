@@ -403,6 +403,35 @@
         "ADR-pool.cross-vendor-confirmation-policy",
         "ADR-pool.graduated-oversight-model"
       ]
+    },
+    {
+      "id": "adrkit",
+      "name": "adrkit",
+      "category": "decision-record governance toolkit",
+      "watch_level": "secondary",
+      "status": "active, pre-1.0 (v0.20.0, 2026-10-11)",
+      "trajectory": "rising",
+      "links": {
+        "homepage": "https://adrkit.dev/",
+        "repository": "https://github.com/mbeacom/adrkit"
+      },
+      "known_strengths": [
+        "ADRs as typed data (a strict MADR superset) with an `affects` field, so a pure matcher answers 'which decisions govern this change?'",
+        "Two-sided bounding: `affects` stays narrow on the defining files, and code opts in with `@adr` markers; output keeps 'via path' apart from 'declared by'",
+        "Author-written marker claims never get exit-code authority (its ADR-0022)",
+        "Temporal query `adr explain --as-of`: which decisions governed a file when the code was written, from date and supersession",
+        "Rejected, superseded and deprecated records retrievable by agents so settled questions are not re-proposed",
+        "Provenance on the record: authoredBy agent-drafted, ratifiedBy a named human; `adr accept --by` never infers who ratified",
+        "One ADR records one decision: 59 small records in three months, separate from any work package"
+      ],
+      "explicit_rejections": [
+        "Advisory-only CI that never fails the job is not enough for gzkit's gates; the ledger and Gate 5 bind.",
+        "Distribution as a Spec Kit extension (its ADR-0003) is rejected for gzkit by operator ruling 2026-10-26 (MOVE-111b)."
+      ],
+      "gzkit_destinations": [
+        "ADR-0.37.0-airlock-calibration-and-compulsion",
+        "ADR-pool.solved-problem-pattern-corpus"
+      ]
     }
   ],
   "strength_patterns": [

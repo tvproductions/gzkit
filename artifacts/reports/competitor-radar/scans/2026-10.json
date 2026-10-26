@@ -528,6 +528,35 @@
         }
       ],
       "agent_analysis": "tstack is a personal PR-lifecycle skill pack, not a spec or governance framework. gzkit should take three mechanisms from it: the cross-vendor review round ledger with stable finding ids and severities, the rule that a timeout or exhausted budget is not approval, and an explicit merge-gate checklist. gzkit should reject two things outright: a user's trigger phrase overriding project-canon rules ('this request replaces that rule'), and agent self-confidence standing in for human review at merge. Both contradict Gate 5 and gzkit's rule that harness instructions cannot excuse a governed stage."
+    },
+    {
+      "competitor_id": "adrkit",
+      "status": "active, pre-1.0 (v0.20.0, 2026-10-11); 21 stars; pushed 2026-10-25",
+      "trajectory": "rising",
+      "status_delta": "Admitted 2026-10-26 on the operator's instruction ('capture what's useful and put on the radar'), after being read at source as part of the Spec Kit governance-extension layer.",
+      "evidence": [
+        {
+          "label": "adrkit README",
+          "url": "https://github.com/mbeacom/adrkit",
+          "summary": "Typed ADRs with `affects`; `adr explain`, `--as-of`, `adr check`, `adr queue`, `adr accept --by`; a governing-decisions GitHub Action that is advisory and never fails the job; an MCP server that surfaces rejected records."
+        },
+        {
+          "label": "adrkit ADR-0003",
+          "url": "https://github.com/mbeacom/adrkit/blob/main/docs/adr/0003-ship-as-spec-kit-extension.md",
+          "summary": "'Ship as a Spec Kit extension plus a standalone CLI, not a competing harness'; frontmatter records provenance (agent-drafted, ratified by a named human) and an ARB review tier with an SLA."
+        },
+        {
+          "label": "adrkit decision corpus",
+          "url": "https://github.com/mbeacom/adrkit/tree/main/docs/adr",
+          "summary": "59 records since 2026-07-18, each one decision; titles include 0016 'require every check to be observed failing before it counts as coverage' and 0022 'scan inbound markers in check and CI without giving them exit-code authority'."
+        },
+        {
+          "label": "adrkit Spec Kit extension (README section)",
+          "url": "https://github.com/mbeacom/adrkit#for-spec-driven-workflows-the-spec-kit-extension",
+          "summary": "context, check and draft commands; the one hook only offers the check, and draft is unreachable from any hook so a hook cannot 'manufacture decision memory'."
+        }
+      ],
+      "agent_analysis": "The closest external mechanism to gzkit's decision governance, and it converges independently on gzkit doctrine (witnessed red, git as source of truth, generated knowledge as a read model, named ratifier). It is ahead on decision-to-change routing, two-sided bounding, temporal queries and a retrievable rejection corpus; gzkit is ahead on binding gates, a ledger of events and receipts. Absorb the mechanisms (moves 112 to 115); do not import its advisory-only posture."
     }
   ],
   "created_at": "2026-10-26",
@@ -566,6 +595,11 @@
       "name": "gstack / fstack (personal skill packs)",
       "evidence": "Seen only in search results by the tstack track; not opened or verified.",
       "recommended_action": "Not admitted. Verify next scan before any admission."
+    },
+    {
+      "name": "adrkit",
+      "evidence": "Read at source 2026-10-26: README, ADR-0003, the 59-record corpus. Source: https://github.com/mbeacom/adrkit",
+      "recommended_action": "Admitted to secondary watch on the operator's instruction (pattern: decision-to-change governance, nearest existing pattern executable-contracts)."
     }
   ],
   "month": "2026-10",
@@ -652,6 +686,12 @@
       "id": "MOVE-111b",
       "decision": "Operator selected 'Reject': gzkit is not distributed through Spec Kit; gzkit stays standalone.",
       "source": "operator grill answer",
+      "recorded_at": "2026-10-26"
+    },
+    {
+      "id": "ADD-ADRKIT",
+      "decision": "Capture adrkit's useful mechanisms and put it on the radar.",
+      "source": "operator, verbatim: \"let's capture what's useful and put on the radar.\"",
       "recorded_at": "2026-10-26"
     }
   ],
@@ -1049,6 +1089,111 @@
           "recommended_answer": "(1) existing-pool-adr or GHI once the brief-path linkage is checked against gz state; (2) discussion-only, an operator strategy decision.",
           "answer": "Part 1: open-feature-adr, as evidence and a candidate requirement for the airlock's calibration (ADR-0.37.0), cross-linked to #1185; gzkit's airlock is the home of 'which decisions govern this change', not a new pool ADR. Part 2: rejected, gzkit stays standalone.",
           "status": "answered"
+        }
+      ]
+    },
+    {
+      "id": "MOVE-112",
+      "title": "Bound the airlock's map from two sides: narrow declared scope plus opt-in code markers, kept apart",
+      "route": "open-feature-adr",
+      "destination": "ADR-0.37.0-airlock-calibration-and-compulsion",
+      "source_competitors": [
+        "adrkit"
+      ],
+      "recommendation": "Extend the ADR-0.37.0 evidence: adrkit bounds 'which decisions govern this change' by keeping each record's declared scope narrow and letting code opt in one line at a time with a marker, and its output keeps the record's own match ('via path') apart from the code's claim ('declared by'). That maps onto SeamEdge's LAW and OBSERVED provenance, and is the code-to-ADR mirror of @covers.",
+      "mechanical_witness": "A measurement, before adoption, of whether authored scopes stay narrow in gzkit (alternative 2a found a median of 86 co-claimants from brief Allowed Paths).",
+      "decision_status": "pending-grill",
+      "rationale": "It is a concrete answer to the boundedness question ADR-0.37.0 left with an owner.",
+      "grill_questions": [
+        {
+          "question": "What route do you recommend?",
+          "recommended_answer": "open-feature-adr: further evidence on ADR-0.37.0, measured before adoption.",
+          "answer": "",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "MOVE-113",
+      "title": "Author-written claims never carry exit-code authority",
+      "route": "open-feature-adr",
+      "destination": "ADR-0.37.0-airlock-calibration-and-compulsion",
+      "source_competitors": [
+        "adrkit"
+      ],
+      "recommendation": "adrkit's ADR-0022 gives marker claims written by a change's author no exit-code authority. ADR-0.37.0's D2 found the same defect from the other side (a brief accounts for a seam by naming it, and the entering agent writes the brief). Record adrkit's rule as corroboration of D2's direction.",
+      "mechanical_witness": "Any claim the entering agent authors is evidence only; a test that such a claim cannot flip a gate.",
+      "decision_status": "pending-grill",
+      "rationale": "Independent convergence on the same trust rule strengthens D2.",
+      "grill_questions": [
+        {
+          "question": "Which gzkit invariant must not weaken?",
+          "recommended_answer": "The ledger and the operator decide; an agent's own claim never does.",
+          "answer": "",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "MOVE-114",
+      "title": "Answer 'which decisions governed this when it was written?' from the ledger",
+      "route": "discussion-only",
+      "destination": "",
+      "source_competitors": [
+        "adrkit"
+      ],
+      "recommendation": "adrkit's `adr explain --as-of <date|ref>` reports the decisions that governed a file at a past date, from record dates and supersession. gzkit's ledger carries the timestamps to answer it; no gz verb asks.",
+      "mechanical_witness": "A gz query over the ledger and ADR lifecycle events with an as-of argument, with a test.",
+      "decision_status": "pending-grill",
+      "rationale": "Useful for audits and for re-litigation: what was ruled at the time.",
+      "grill_questions": [
+        {
+          "question": "Is this feature capability, pool backlog, GHI, or reject?",
+          "recommended_answer": "Pool backlog or discussion until a concrete need appears.",
+          "answer": "",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "MOVE-115",
+      "title": "One retrievable place for rejected and superseded decisions",
+      "route": "existing-pool-adr",
+      "destination": "ADR-pool.solved-problem-pattern-corpus",
+      "source_competitors": [
+        "adrkit"
+      ],
+      "recommendation": "adrkit's MCP server surfaces rejected, superseded and deprecated records so agents stop re-proposing them. gzkit holds the same knowledge in several places (handoff rulings, R&D not-pursued rows, ghi-author prior art, superseded ADRs). Consider one retrieval surface over them.",
+      "mechanical_witness": "A single gz query that returns settled and rejected decisions on a topic, with sources.",
+      "decision_status": "pending-grill",
+      "rationale": "Re-litigating settled matters is a recurring cost the handoff rulings store already exists to cut.",
+      "grill_questions": [
+        {
+          "question": "Are we copying a product or absorbing a mechanism?",
+          "recommended_answer": "A mechanism: one retrieval surface over decisions already recorded.",
+          "answer": "",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "MOVE-116",
+      "title": "An ADR records one decision; the work package is separate",
+      "route": "discussion-only",
+      "destination": "",
+      "source_competitors": [
+        "adrkit"
+      ],
+      "recommendation": "adrkit keeps an ADR to one decision (59 small records in three months), separate from any work package. A gzkit ADR is a feature container with OBPIs, gates and a release. The drydock's RO-4 began detaching release from the ADR; adrkit shows the end state where the decision record stands alone.",
+      "mechanical_witness": "None yet; a design discussion.",
+      "decision_status": "pending-grill",
+      "rationale": "Bears on RO-4 and on how decision memory is retrieved.",
+      "grill_questions": [
+        {
+          "question": "What route do you recommend?",
+          "recommended_answer": "discussion-only, alongside the drydock's RO-4.",
+          "answer": "",
+          "status": "pending"
         }
       ]
     }
