@@ -2138,6 +2138,73 @@ reads the signal and applies its own contract. The operator names an **overarchi
 mode** as *"the best comprehensive solution"*. What *standby* is, relative to safe mode and
 lockout, is the next question.
 
+## source · the plant condition: the Navy's overarching mode, and each component's contract keyed to it
+
+Read on 2026-10-26 from the fresh TUM and JFMM extractions. Both were searched for *standby*,
+*stand by*, *inactivation*, *lay-up*, *cold iron*, *plant condition*, *inport* and *out of
+commission*, and every hit was read in context. Neither text uses *standby* as a mode.
+
+- TUM 1.3.2(3): *"The Authorizing Officer shall sign the Authorizing Officer Issued block of the line
+  item signifying agreement that any associated system status changes and installation of tags are
+  compatible with ship and plant conditions."* 1.3.3.a(3), the repair activity: *"The RA
+  Representative authorizing the line item remains responsible for ensuring the tag-out is
+  compatible with system status and ship/plant conditions."*
+- TUM App. D, Figure 6, the **Tag Guide List** (NAVSEA 4790/12): for each piece of equipment, the
+  *"NUMBER OF TAGS PER EQUIP"* under each of three conditions: *"COLD IRON"*, *"INPORT"* and
+  *"UNDERWAY STEAMING"*.
+- TUM App. (Master tag-out): *"Tag Roll. An isolation boundary change that occurs when plant
+  conditions or scope of work changes, etc. warrant a line item to have its isolation changed or
+  "rolled" from one set of boundaries to another."* *"Master tag-out. A concept used to provide for
+  the isolation of multiple work items within a common boundary"*.
+- TUM App. L: *"When an entire system is placed OOC, it is not necessary to put OOC labels on all
+  instruments associated with the system."* An instrument with a *"small and consistent"* error
+  takes a CAL label *"so instrument operations may continue"*. A large or inconsistent error takes
+  an OOC label, and the instrument *"shall not be used"*.
+- JFMM I-2 FWP initial conditions: *"this section should identify work boundaries and plant or system
+  conditions (e.g., Pressure or Temperature Band, cold iron). The duty officer or tagout authorizing
+  officer will determine and set the isolation boundaries."*
+
+**What the texts show.** There is one ship-wide **plant condition**, set centrally. Each component
+carries its own requirement for each condition: the Tag Guide List column. Every tag-out is checked
+for compatibility with the current condition. A change of condition rolls each item's isolation to
+the new boundary. A whole system can be marked out of commission at once, with no label on each part.
+CAL against OOC is a two-level per-instrument status: *degraded but usable*, or *not to be used*.
+This is the operator's model in the Navy's terms: a central signal, and a per-surface contract
+keyed to it. *Standby* has no text term. The nearest is the plant condition as a whole, of which
+the TUM names three values.
+
+## source · the operator: the out-of-service indication runs both ways
+
+The agent put the question of what *standby* is. Option A was standby as the overarching
+condition, safe mode one of its values, and lockout checked as compatible with it. The operator
+stopped it to clarify, 2026-10-26, verbatim (dictated):
+
+> So this is smart. This tells us that the labeling that you showed briefly, that's an internal
+> responsibility the module takes, right? So an out-of-service indication is a part of this design
+> by contract, but it actually happens externally and internally. It's able for an external signal
+> to let out-of-service notifications or service-level notifications happen. But it's also based on
+> perhaps a diagnostic, a way for a module itself to signal externally that it's also unavailable.
+> So this is actually a two-way street, and it's very smart. Of course, because we didn't design
+> this way, because I just didn't have the wherewithal to see this maintenance mode coming, this is a
+> pretty extensive refactor, unless you can help me see it differently.
+
+## decision · the mode contract runs both ways: the module labels itself, and reports itself out of service
+
+Ruled in principle from the operator's words above; this adds to the MEL and onboarding decisions.
+
+- **Inbound.** An external signal (the condition) reaches the module. The module adjusts its level
+  and **labels itself**, so the out-of-service or service-level indication is the module's own
+  internal responsibility. This is the placard, carried by the module (TUM App. L: the CAL or OOC
+  label).
+- **Outbound.** The module can **signal externally that it is unavailable**, from its own
+  diagnostic. This is the Navy's OOC label raised from inside: a CAL status for *degraded but
+  usable*, an OOC status for *not to be used*. The nearest existing mechanism is the guard canary
+  and enforcement-claim runner (`src/gzkit/guard_canary.py`). It detects from outside that a guard
+  no longer fires, *"the claim still reads green"*. It is not a module reporting on itself.
+
+The operator asked whether the refactor can be seen differently. The agent's answer is in the next
+entry, as a proposal, not yet ruled.
+
 ---
 
 ## Disposition map
