@@ -2205,6 +2205,69 @@ Ruled in principle from the operator's words above; this adds to the MEL and onb
 The operator asked whether the refactor can be seen differently. The agent's answer is in the next
 entry, as a proposal, not yet ruled.
 
+## decision · the agent's reframe of the refactor, recorded as considered and not adopted as the route
+
+The agent proposed, in conversation on 2026-10-26, that AC 91-67 ¶ 20f(3) (*"If the operator has not
+yet developed a procedure for an item, that item must be operative"*) makes the refactor a migration
+rather than a single rewrite:
+
+1. Today's MX checkpoint is declared as a group default (Meyer's *"defaults at the system and
+   cluster levels"*; TUM App. L, an entire system OOC). This keeps the 2026-10-17 ruling (*"Safe mode
+   lowers every guard outside GATE5_INVARIANTS to advisory while its marker is open"*).
+2. The craftsman peels controls out into their own contracts as repairs touch them.
+3. Ports go at the few places of call: the pre-commit config (18 hooks), the Claude hook events
+   (10 entries across 7 events), the `gz check` step list, and the CLI validators.
+4. The outbound self-report is the new build.
+
+The operator's answer is in the next two entries. It accepts that degrees of rewrite exist, and it
+rules that the route is not chosen to save effort. The reframe is kept as one input to row 5's
+program, not as the route.
+
+## source · the operator: built-in self-test, standby defined, and the design done the right way
+
+Operator, 2026-10-26, verbatim (dictated):
+
+> Sure, I get it, but even in the diagnostic built-in testing that a module really should have had
+> all along, there's two things going on here, but they are all still designed by contract. One thing
+> is that modules occasionally, perhaps as a part of maintenance or as a part of normal checks, maybe
+> through the chore system, need to be able to built-in tests, you know, built-in self-test. So they
+> can participate in this MEL process by indicating their suitability for function, which is not safe
+> mode at all, but still can actually interact with safe mode. And that safe mode, on the other hand,
+> could tell modules to reduce their level of operational compliance. You know, this is what I meant
+> by a standby mode. So really, we have this two-way street, and you're right, there's different
+> degrees of rewrite, but I also caution us to not be so parsimonious or urgent to get back underway
+> that we don't do this design the right way.
+
+## decision · built-in self-test reports suitability for function; standby is safe mode's command to reduce compliance
+
+Ruled in principle from the operator's words above. This settles the open question of what
+*standby* means, and names both channels of the two-way contract. Both are Design by Contract.
+
+- **Outbound: built-in self-test.** Each module carries a **built-in self-test**. It runs as part of
+  maintenance or of normal checks, possibly scheduled through the chore system. It reports the
+  module's **suitability for function** into the MEL. This is **not safe mode**: it runs in normal
+  operation as well. It can interact with safe mode, though: a module that reports itself unsuitable
+  enters the MEL as inoperative, and an (O) limitation then governs the system around it.
+- **Inbound: standby.** **Standby** is safe mode's command to modules to **reduce their level of
+  operational compliance**: the Meyer level, lowered on the signal. Safe mode is the condition.
+  Standby is what it tells each module to do. The question of what *standby* is, as put to the
+  operator, is answered by this, and option A (standby as the condition itself) is not taken.
+- **The design is done the right way, not the fast way.** Operator: *"I also caution us to not be so
+  parsimonious or urgent to get back underway that we don't do this design the right way."* This
+  binds row 5's program: its route is chosen for the design, and saving effort or returning to
+  service sooner are not reasons for a route. This is the operator applying `AGENTS.md` § DO IT
+  RIGHT #3 (*"'Smaller diff' / 'faster to land' are not concrete downsides"*) to this run.
+
+**Terms.** *Built-in self-test* is the operator's term. Avionics uses *built-in test equipment*
+(BITE), but no text the run holds defines it. That is unsourced, and the run does not rely on it.
+*Suitability for function* is the operator's phrase. AC 91-67's nearest is *inoperative* (¶ 6k:
+*"does not accomplish its intended purpose and/or is not consistently functioning normally within
+its approved operating limits or tolerances"*), and TUM's is the CAL/OOC split.
+
+**commissions:** 5 — each module's built-in self-test and its report into the MEL; standby as the
+inbound level command. 3 (advise only) — a chore that runs the self-tests, if the operator admits
+one.
+
 ---
 
 ## Disposition map
@@ -2215,7 +2278,7 @@ entry, as a proposal, not yet ruled.
 | 2 | GHI / direct fix | commissioned | direct repair of the eleven defects in the pipeline parts the kit reuses (#1200, #1206, #1208, #1198, #1203, #1205, #1194, #1209, #1185, a cwd-escape guard to be filed, #1028's stop-and-ask boundary); a GHI on the persona witness measuring a total; each lesson crossing kit and pipeline as a GHI | operator, questions 8, 14, 17, 21 |
 | 3 | chore | commissioned | the vibe-coded and underbaked audit chore; `frontier-model-card-currency` widened to model-level assignments (landed `9649d0eb0`) | operator directed both, 2026-10-25 |
 | 4 | control surface, rule, doc, skill, hook | commissioned | the contractor kit (four positions and the surveillant, runtime, tag-out log, maintenance record, punch list, job order and change order); the contract's division of labor, cheaper-sessions clause, exit conditions and § Punch list; the doctrine's § Seaworthy and § Handback; Part 0's sea-trial term and the campaign's Movement E (operator ratification); RO-7's persona exit number; `gz-rnd`'s both-sides rule; the vocabulary crosswalk | operator, questions 1–24 |
-| 5 | one-shot refactoring | | the mode contract across every control, monitor, alarm and safeguard (operator: *"a MASSIVE refactor, but it is the best way that I can see"*) | open: the program is proposed once the contract's shape is decided from the MEL and Design by Contract sources; the operator selects the route |
+| 5 | one-shot refactoring | | the two-way mode contract across every control, monitor, alarm and safeguard: each module onboards its MEL entry, takes the standby level command from the central condition signal at its place of call, and reports suitability for function through its built-in self-test (operator: *"a MASSIVE refactor, but it is the best way that I can see"*) | open: the program is proposed after the census of places of call; its route is chosen for the design, never to save effort (*"not be so parsimonious or urgent to get back underway"*); a self-test chore is an advise-only candidate for row 3 |
 | 6 | no action | | | open |
 
 ## Close
