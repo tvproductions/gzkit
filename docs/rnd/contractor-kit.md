@@ -1794,6 +1794,130 @@ the gzkit position the run has already ruled. The term is the text's own: **stop
 to land on a stopped package, and each trigger's resolver, in the kit's runtime and the persona
 obligations.
 
+## decision · the questions are the right ones
+
+The operator took the recommended option on every question this session (A8, A3, C4). As this
+skill's red flags require, the agent said so and asked whether the questions are the right ones.
+Operator: *"questions are fine"*.
+
+## source · the affected employee
+
+Read in full on 2026-10-26 for matrix row A7.
+
+29 CFR 1915.80(b)(2), `docs/rnd/contractor-kit/sources/osha-1915-80-definitions.md`:
+
+> Affected employee. An employee who normally operates or uses the machinery, equipment, or system
+> that is going to be serviced under lockout/tags-plus or who is working in the area where servicing
+> is being performed under lockout/tags-plus. An affected employee becomes an authorized employee
+> when the employer assigns the employee to service any machine, equipment, or system under a
+> lockout/tags-plus application.
+
+29 CFR 1915.89, `docs/rnd/contractor-kit/sources/ship-repair.md`:
+
+- before shutdown, *"(ii) Notify each affected employee that the machinery, equipment, or system
+  will be shut down and deenergized prior to servicing, and that a lockout/tags-plus system will be
+  implemented."*;
+- before removal, the authorized employee *"(i) Notifies all other authorized and affected employees
+  that the lockout/tags-plus system will be removed"* (§ 1915.89(i)(1));
+- training, (o)(3): *"(ii) That affected employees are not to apply or remove any lockout/tags-plus
+  system; and (iii) That affected employees are not to bypass, ignore, or otherwise defeat any
+  lockout/tags-plus system."*
+
+The Navy has the rule but no role name. TUM 1.7.3.a: *"Never remove or operate a danger-tagged
+component."* TUM 1.3.3.c(1)(f), to a contractor: *"does not remove existing tags or take any action
+that changes the position of tagged components"*.
+
+**A defect in the matrix, found on this read.** Row A7 calls *affected party* *"OSHA's term"*.
+OSHA's term is ***affected employee***. *Affected party* departs from the text, and the
+departure was never recorded. The *text's own term* decision requires that record. The role-terms
+source entry says *"The section's definitions (§ 1915.80) were not fetched; unread"*. They were
+fetched later (`osha-1915-80-definitions.md`), so that statement is out of date, and this entry
+supersedes it.
+
+**The gzkit side.** No position or rule covers a session that is not dispatched to a work package.
+The nearest mechanisms are OBPI locks and the session orientation's *Active OBPI claims*, which
+announce a claim but refuse nothing to another session. The coordinator is the single writer that
+lands work on main (A3).
+
+## decision · the affected parties, named by the operator
+
+Ruled; matrix row A7, the *who*. The agent drafted a question that defined the affected party as
+every session not dispatched to a line item, with the operator excluded. The operator stopped the
+question to clarify, and stated the definition:
+
+> affected parties aee: the operator, plus all gzkit (or adopting system's) agents, control surfaces
+> and rules designed to enforce system behavior, and, when applicable, all end users of an adopting
+> system.
+
+(*"aee"* is kept as typed; read as *are*.)
+
+This takes OSHA's own test, not the agent's. In 1915.80(b)(2) an affected employee is one who
+*"normally operates or uses"* the system under service. That is a party affected by the servicing,
+not a party shut out of the work. The agent's draft had confused the two. Four classes:
+
+1. **the operator**: affected as well as commander;
+2. **every agent** of gzkit or of an adopting system;
+3. **the control surfaces and rules designed to enforce system behavior**, which are exactly what a
+   drydock unplugs, dismantles or modifies;
+4. **when applicable, every end user of an adopting system**, reached through what gzkit ships.
+
+What each class is owed (notification, the bar on applying, removing or bypassing) is the next
+question. The term *affected party* is held; recording its departure from OSHA's *affected
+employee* is part of that question.
+
+## source · the operator: the controls carry their own contract for the mode signals
+
+The agent put the next question: what each class is owed. Option A was notice by channel (the
+tag-out log, the orientation, a demoted guard announcing itself, the handback's release notes)
+plus the bar on applying, removing or bypassing. Option B was notice to people only. The operator
+stopped it to clarify, 2026-10-26, verbatim:
+
+> this is reaaly design by contract - the controls, monitors, alarms, and safeguards each needs to
+> understsnd what a safemode, standby, lockout singal is and adjust internal behavior, knowing how to
+> bypass and how to restore. the reparing craftsman must adjust these in cases of profound
+> modification.
+
+(Spelling kept as typed.) This is the operator's earlier doctrine, now applied to the controls.
+`docs/rnd/renewing-vows.md` § *the constraints sortie is a Design act* quotes it: *"these are the
+prior contracts and understandings of the system (Design by Contract) - these are invariants and
+other constraints that the model must obey"*.
+
+**The gzkit side, read 2026-10-26.** Today no guard understands a mode signal. One external
+checkpoint (`gzkit.mx.checkpoint`, wired for the pre-commit guards in `src/gzkit/hooks/guards.py`)
+resolves each registered guard's level. While the hangar is open it demotes the guard to advisory
+and prints `demote_notice`. It cannot demote anything in the `GATE5_INVARIANTS` floor
+(`src/gzkit/mx/invariants.py`). The guard does not know it has been demoted. A guard the checkpoint
+does not wrap does not change at all. There is one signal (the hangar open, with safe mode as a
+mode of it), no *standby*, and no lockout scoped to a surface. The nearest declared fragment of a
+contract is `@enforces(..., exempts=...)` (`src/gzkit/enforcement.py`): each enforcement claim
+declares its exemption surface, *"DECLARED, not inferred"* (GHI #728, #797). That covers the
+exemption half and nothing about a mode.
+
+**Sources this principle calls for, not yet read.** Each is a hypothesis until read, and none
+commissions anything.
+
+- **The Minimum Equipment List**, 14 CFR § 91.213 and § 121.628. It is the aviation text's model
+  of a system operated with an item inoperative, with a maintenance procedure to deactivate the
+  item and an operations procedure to run without it. Both sections are on the aviation
+  inventory's § Not read list, so the widening check above now carries weight.
+- **Design by Contract's primary text** (Meyer). Gzkit holds only secondary citations
+  (`ADR-pool.agent-reliability-framework.md` links a Wikipedia article).
+- ***Standby*** is the operator's word. No source read so far uses it as a mode signal.
+
+## decision · every control carries a mode contract; the repairing craftsman amends it
+
+Ruled in principle by the operator's words above; matrix row A7 (the *what is owed*). This
+replaces the agent's notice-by-channel option: notice is not enough. Each control, monitor, alarm
+and safeguard (affected-party class 3) carries its own contract for the mode signals: **safe mode,
+standby, lockout**. On each signal it adjusts its own behavior. Its contract states how it is
+bypassed and how it is restored. Where a repair modifies a control profoundly, the **repairing
+craftsman** amends that control's contract as part of the repair.
+
+What this departs from in gzkit: the external checkpoint that demotes guards that do not know they
+are demoted. What stays open until the sources above are read: the contract's shape (its clauses,
+and whether it maps to the MEL's deactivate-and-operate pair), what each signal means, the
+threshold for *profound modification*, and what classes 1, 2 and 4 are owed.
+
 ---
 
 ## Disposition map
