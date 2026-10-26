@@ -2373,6 +2373,72 @@ invoked"*. The Navy's new-construction regime, building a ship whose systems are
 is the likely text counterpart of the factory floor. Only 1.7.6's single sentence has been read.
 *Factory floor* stays the operator's term until a construction-period source is read.
 
+## source · self-check, second person and inspection, in the texts and in the pipeline
+
+Read in full 2026-10-26 for matrix row C3, from fresh extractions and the repository.
+
+JFMM I-2.3.3.1.j(3), the margin symbols of an FWP: *"(V) = Steps requiring verification by a
+craftsman."*; *"(I) = Steps requiring inspection by a QAI or NDT Inspector."*; *"(Q) = Critical
+Quality Control Points (Q-Point)."*; *"(S) = Steps in an FMA procedure requiring verification by a
+member of Ship's Force."*; *"(G) = Government notification required."*. JFMM I-5.4.3: *"Critical
+Inspections. An inspection on any system or component, which by its nature is so critical to the
+successful completion of the task, that the inspection requires verification by a separate
+individual, other than the craftsman, qualified as an inspector. These inspections will be annotated
+in the written work procedure by the presence of an (I)"*.
+
+TUM 1.6.2: *"In addition to the Second Person verification, which is always mandatory, independent
+reviews may be required by cross checkers and/or the Assistant Authorizing Officer. [...] a. A second
+qualified person shall independently determine the adequacy and accuracy of the line item and
+isolation."* TUM 1.6.5.a: *"After tag posting is complete, a second person shall independently
+ensure that the correct component is tagged, and check (verify) proper component positioning and
+tag attachment. This checker shall not accompany the person(s) posting the tag."* TUM App. D,
+LIRS block 12: *"SECOND PERSON — An independent review is done to ensure the adequacy of tag-out
+isolation and to ensure the correctness of the line item and tags."*
+
+14 CFR § 121.369(b)(7): *"Instructions to prevent any person who performs any item of work from
+performing any required inspection of that work."*
+
+**The texts have three tiers.** The **craftsman's own verification** (V) is the performer's check.
+The **second person** is an independent check by someone who does not accompany the work, and the
+TUM makes it *"always mandatory"* for tag-outs. **Inspection** (I) is by a qualified inspector at the
+critical points the procedure marks. The performer never inspects its own work (§ 121.369(b)(7)).
+
+**The gzkit side.** The implementer (`.claude/agents/implementer.md`) checks its own work:
+Red-Green-Refactor, with the red witnessed by `gz arb red`, a `red_receipt_emitted` event. The
+spec-reviewer (`.claude/agents/spec-reviewer.md`) is *"Independent review by reading; cannot
+execute commands"*, and must *"Re-read all changed files independently — do NOT trust the
+implementer's summary"*. The quality reviewer is the same kind of check. The run's inspector, the
+QAI ruled at A5, is dispatched by the runtime at set points. The built-in self-test, just ruled, is
+a module checking itself.
+
+## decision · three tiers of check: craftsman verification, second person, inspection
+
+Ruled; matrix row C3. Both sides were read in full (the source entry above). Options put:
+
+- **A.** Three marks on each task card step:
+  - **(V) craftsman verification**: the performer's own check, which covers the implementer's
+    witnessed red and green and a module's built-in self-test;
+  - **second person**: an independent check by someone who neither did nor accompanied the work,
+    which covers the pipeline's spec and quality reviewers;
+  - **(I) inspection**: by the QAI at the critical points, dispatched by the runtime.
+
+  A lower tier never satisfies a higher mark. The runtime refuses a session that performed a step
+  from signing its second-person or (I) mark.
+- **B.** Two marks, (V) and (I), with the reviewers folded into (I).
+- **C.** Keep the pipeline's names, and put the Navy's marks in the crosswalk only.
+
+Recommended A. Operator selected **"A: three tiers (Recommended)"**.
+
+The terms are the texts' own: *verification by a craftsman* (V), *Second Person* (TUM 1.6.2), and
+*inspection* (I). This settles the matrix's recorded liberty: JFMM's use of *verification* for the
+inspector's act as well (I-5.4.3) is no longer a gap. In gzkit, *verification* is the (V) tier and
+*inspection* is the (I) tier. A built-in self-test is always (V), so it never stands in for an
+independent check.
+
+**commissions:** 4 — the three marks on task cards in the kit's runtime, the refusal of
+self-signing, and the pipeline's reviewers named as the second person. 2 — a GHI on the pipeline
+side for the second-person name, as a lesson crossing from the kit.
+
 ---
 
 ## Disposition map
