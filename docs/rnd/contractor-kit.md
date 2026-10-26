@@ -1990,6 +1990,70 @@ have affected parties and notification"*). The census of places of call is fact 
 the program is proposed. The airlock's seam map (`gz airlock in`) is a candidate instrument for it.
 That is a hypothesis, not yet checked against what the seam map holds.
 
+## source · the Minimum Equipment List, Meyer on assertion monitoring, and the aviation widening
+
+Landed on 2026-10-26 by two background research tracks. Each file is saved verbatim under
+`docs/rnd/contractor-kit/sources/` with its provenance header. The agent checked a sample of each
+against the source before reading it in full:
+
+- `14cfr91-213-121-628-mel.md`: §§ 91.213 and 121.628 in full. The agent re-fetched § 91.213 from the
+  eCFR versioner API, and three quotes matched.
+- `faa-mel-guidance-ac91-67-n8900-748.md`: AC 91-67 (6/28/91) ¶¶ 1–8, 13–14, 19–23, and N 8900.748
+  ¶¶ 1–7 with Appendices A and E. The research track typed AC 91-67 from page images, because its
+  OCR layer is unreliable. The agent re-downloaded the PDF (SHA-256 matches the header), rendered
+  page 10, and found ¶ 7b(1), 7b(2) and 7c word for word. **Not retrieved:** FAA Order 8900.1
+  Vol. 4 Ch. 4 and MMEL policy letters PL-25, PL-34 and PL-36 (`fsims.faa.gov` no longer resolves;
+  `drs.faa.gov` serves only a JavaScript shell). The repair categories A–D are therefore unread.
+- `meyer-design-by-contract.md`: about 35 quoted passages from eiffel.org and eiffel.com, excerpts
+  and not full text. Only I2E names Meyer as author. The others are attributed to Eiffel Software.
+  The agent re-fetched ET and I2E, and four quotes matched. An earlier attempt failed on a
+  content-filter error while transcribing the 1992 IEEE paper from page images, and it wrote
+  nothing.
+- **The widening check is discharged.** `14cfr91-119-121-maintenance-gaps.md`,
+  `14cfr-part65-145-gaps.md` and `14cfr43-appendices.md` land every text that the aviation
+  inventory's § Not read listed, except the Part 135 counterparts, § 119.67 and Part 43 Appendices C,
+  E and F. The matrix rows marked as gaps on these texts must be re-checked against them before the
+  review.
+
+The passages the mode contract rests on:
+
+- § 91.213(a)(3): the approved MEL must *"(ii) Provide for the operation of the aircraft with the
+  instruments and equipment in an inoperable condition."* § 91.213(b): items that *"may not be
+  included in a Minimum Equipment List"*, among them those *"essential for safe operations under
+  all operating conditions"*.
+- AC 91-67 ¶ 20f(2)(v): *"all items related to the airworthiness of the aircraft that are not
+  included on the MMEL must be operative."* ¶ 20f(3): *"If the operator has not yet developed a
+  procedure for an item, that item must be operative."*
+- AC 91-67 ¶ 6r: (O) and (M) procedures are *"the specific maintenance procedures the operator uses
+  to disable or render items of equipment inoperative and to specific operating conditions and
+  limitations"*. Under ¶ 6r(2), (M) is *"accomplished before beginning operation with the listed
+  item of equipment inoperative"*. Under ¶ 6r(1), (O) is *"accomplished before or during operation"*.
+- AC 91-67 ¶ 6g: *"Deactivation means to make a piece of equipment or an instrument unusable to the
+  pilot/crew by preventing its operation."* ¶ 6t, the placard: *"visible to the pilot or flightcrew
+  and alerts them to the inoperative equipment."* ¶ 7c: *"It also ensures that future flightcrews and
+  maintenance personnel are aware of the discrepancy."*
+- AC 91-67 ¶ 23d: *"The MEL permits operations with inoperative items of equipment for the minimum
+  period of time necessary until the equipment is repaired."* Under ¶ 23d(3), the item is
+  inspected or repaired *"at the next 100-hour, annual, progressive, or unscheduled inspection. However,
+  if FAR § 91.213 requires that an item be repaired, the item cannot be deferred."*
+- AC 91-67 ¶ 20f(2)(i): *"The operator's procedures document may not be less restrictive than the
+  MMEL."* ¶ 20f(2)(ix): the procedures document is *"a single procedural reference document"*.
+- Meyer (ET, § Run-time assertion monitoring): checking levels set *"separately for each class, with
+  defaults at the system and cluster levels"*: *no*, *require*, *ensure*, *invariant*, *all*.
+  Enabling or disabling is legitimate because *"for a correct system [...] the compilation option
+  makes no difference to the semantics of the system"*. And *"you should always assume -- to avoid
+  loosening your guard -- that in the end monitoring will be turned off."* Under SETLVL the level
+  takes effect on recompile, and once set it does not change during execution (BLOG reply,
+  community material).
+
+**What the two sources agree on, as the agent reads them (to be put, not decided).** The MEL is a
+mode contract for a whole aircraft. It is one list of the items that may be inoperative, each with
+a procedure to deactivate it (M), a limitation to operate under (O), a placard that tells everyone
+who comes after, and a deadline for repair. Anything off the list stays operative, and some items
+may never be listed at all. Meyer gives the switch itself: a declared checking level per component,
+with defaults at the system and group level, fixed for the length of a run. In gzkit, § 91.213(b)
+already has a counterpart: the `GATE5_INVARIANTS` floor.
+
 ---
 
 ## Disposition map
