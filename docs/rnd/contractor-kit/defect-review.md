@@ -52,22 +52,24 @@ The groups put one defect class in each issue (DO IT RIGHT #1, *"Fix the class o
 instance"*). `ghi-author`'s prior-art step runs on each before filing, and any group already
 carried by an open issue joins it.
 
-1. **`gz mx exit` does not re-run every guard at full strength** — C4. Fix ruled by the operator.
-2. **Safe-mode demotion acts only on exit code 3** — C3. Fix ruled by the operator.
-3. **The MX signal is read inconsistently** — C1, C2, C5 and C7: the tracked marker, the two
+1. **[#1271]** **`gz mx exit` does not re-run every guard at full strength** — C4. Fix ruled by the operator.
+2. **[#1272]** **Safe-mode demotion acts only on exit code 3** — C3. Fix ruled by the operator.
+3. **[#1273]** **The MX signal is read inconsistently** — C1, C2, C5 and C7: the tracked marker, the two
    readings of *open*, the missing ledger-binding check, the solo-scope bypass, and pre-push
    against canon. This is the operator's *"review the entire mx system"*. It is filed as the
    review's work order, and its fixes are decided there.
-4. **Twin controls disagree across harnesses and stages** — C6 and M3.
-5. **The mode does not reach the model** — M1, M2, M5, M6, M7 and S1: the banners differ, Codex
+4. **[#1274]** **Twin controls disagree across harnesses and stages** — C6 and M3.
+5. **[#1275]** **The mode does not reach the model** — M1, M2, M5, M6, M7 and S1: the banners differ, Codex
    gets no banner, the notice goes to stderr, the binding rule is scoped to code paths, the router
    ignores the marker, and subagents get no banner.
-6. **The GATE5 floor is partly unenforced** — C8 and C9.
-7. **Enforcement coverage gaps** — C10, C11 and C14: the floor's stage against its docstring,
+6. **[#1276]** **The GATE5 floor is partly unenforced** — C8 and C9.
+7. **[#1277]** **Enforcement coverage gaps** — C10, C11 and C14: the floor's stage against its docstring,
    claims without canaries or `exempts`, and validators without negative controls.
-8. **Hook inventory drift** — C12: two unregistered hooks on disk.
-9. **A control that cannot fail** — C15.
-10. **`AGENTS.md` misstates the post-edit ruff hook** — M4. The fix runs through the content skills,
+8. **[#1278]** **Hook inventory drift** — C12: two unregistered hooks on disk.
+9. **[#1279]** **A control that cannot fail** — C15.
+10. **[#1280]** **`AGENTS.md` misstates the post-edit ruff hook** — M4. The fix runs through the content skills,
     because `AGENTS.md` is a generated rendition.
 
 Not filed: C12b (not a defect), C13 (the seed of the built-in self-test).
+
+**Filed 2026-10-26** through `ghi-author`, on the operator's *"yes, let's go with those"*: #1271 to #1280, numbered against the groups above. Prior art: #1263 already carried finding C1's CI side, so #1273 names it as a sibling, and a cross-link comment was posted on #1263. The coverage group (#1277) names the per-step witness family #1230 to #1241 and #1155 once, rather than cross-linking each.

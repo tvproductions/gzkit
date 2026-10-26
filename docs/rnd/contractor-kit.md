@@ -2591,6 +2591,8 @@ any? Operator: *"yes, let's go with those"*.
 The ten are filed through `ghi-author`. Its prior-art step runs on each, and a group an open issue
 already carries joins that issue. Their numbers are recorded in the review as they land.
 
+**Filed 2026-10-26: #1271 to #1280.** #1271 is the `gz mx exit` scope; #1272 is the exit-code-3 demotion; #1273 is the MX-system review, filed as an investigation, with #1263 (the committed marker in CI, already filed with the operator's env-switch ruling) as its sibling and a cross-link comment posted there; #1274 is the twin controls; #1275 is the mode not reaching the model; #1276 is the GATE5 floor; #1277 is enforcement coverage, naming the per-step witness family #1230 to #1241 and #1155 once; #1278 is the unregistered hooks; #1279 is the TODO check that cannot fail; #1280 is `AGENTS.md:167`. This invocation was authoring only, so nothing was implemented.
+
 ---
 
 ## Disposition map
@@ -2598,7 +2600,7 @@ already carries joins that issue. Their numbers are recorded in the review as th
 | # | Disposition | State | What | Reason |
 |---|---|---|---|---|
 | 1 | ADR / OBPI | | | open: the admission question has not been put; the kit's governed home (an RO of the drydock) may make it unnecessary |
-| 2 | GHI / direct fix | commissioned | direct repair of the eleven defects in the pipeline parts the kit reuses (#1200, #1206, #1208, #1198, #1203, #1205, #1194, #1209, #1185, a cwd-escape guard to be filed, #1028's stop-and-ask boundary); a GHI on the persona witness measuring a total; each lesson crossing kit and pipeline as a GHI | operator, questions 8, 14, 17, 21 |
+| 2 | GHI / direct fix | commissioned | the ten census defects filed as #1271 to #1280 (2026-10-26); direct repair of the eleven defects in the pipeline parts the kit reuses (#1200, #1206, #1208, #1198, #1203, #1205, #1194, #1209, #1185, a cwd-escape guard to be filed, #1028's stop-and-ask boundary); a GHI on the persona witness measuring a total; each lesson crossing kit and pipeline as a GHI | operator, questions 8, 14, 17, 21 |
 | 3 | chore | commissioned | the vibe-coded and underbaked audit chore; `frontier-model-card-currency` widened to model-level assignments (landed `9649d0eb0`) | operator directed both, 2026-10-25 |
 | 4 | control surface, rule, doc, skill, hook | commissioned | the contractor kit (four positions and the surveillant, runtime, tag-out log, maintenance record, punch list, job order and change order); the contract's division of labor, cheaper-sessions clause, exit conditions and § Punch list; the doctrine's § Seaworthy and § Handback; Part 0's sea-trial term and the campaign's Movement E (operator ratification); RO-7's persona exit number; `gz-rnd`'s both-sides rule; the vocabulary crosswalk | operator, questions 1–24 |
 | 5 | one-shot refactoring | | the two-way mode contract across every control, monitor, alarm and safeguard: each module onboards its MEL entry, takes the standby level command from the central condition signal at its place of call, and reports suitability for function through its built-in self-test (operator: *"a MASSIVE refactor, but it is the best way that I can see"*) | open: the program is proposed after the census of places of call; its route is chosen for the design, never to save effort (*"not be so parsimonious or urgent to get back underway"*); a self-test chore is an advise-only candidate for row 3 |
