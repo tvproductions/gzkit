@@ -1936,6 +1936,60 @@ Row 5 is still open: this skill lets the agent propose a program and leaves the 
 operator. The program can be proposed only after the contract's shape is decided from the sources.
 The operator's words settle that the refactor is wanted. They do not settle its route.
 
+## source · the operator: the mode is honored at the place of call
+
+Operator, 2026-10-26, verbatim (dictated):
+
+> Here's the thing. If we are clever about it, we really just perhaps have an on-off switch for a
+> lot of these. So this really depends on how these are called. And this is an architectural
+> matter. If we really did have better hexagonal architecture, then how these things are called
+> would have been through ports and adapters. But nonetheless, this is probably a very significant
+> refactor, but I don't see how else we would have affected parties and notification. They're not
+> intelligent where they can stop what they're doing. So we have to bake in safe mode at the places
+> of call, right? Where the behaviors need to be suspended or modified.
+
+**The gzkit side, read in full 2026-10-26.**
+
+- `.gzkit/rules/hexagonal-architecture.md` (canon: `docs/governance/hexagonal-architecture.md`)
+  makes ports and adapters gzkit's *"primary code-architecture directive"*. Its operative rules
+  are about **external technology**: *"Every external dependency is confined to an adapter behind
+  a port"*. Rule 5: *"formalize the port when the SECOND adapter is real"*. Rule 7: *"do NOT add
+  `domain/`/`application/`/`adapters/`/`contexts/` folder partitions"*, because hexagonal *"governs
+  the boundary, not internal layout"*. No rule governs how a control (a guard, hook or validator) is
+  called.
+- `src/gzkit/mx/checkpoint.py` is already a switch at the place of call, for one signal: *"the
+  single place code reads the marker and resolves guard severity [...] A new guard inherits the
+  checkpoint for free; nobody can forget to wire it, and the never-relax list lives in exactly one
+  place"* (ADR-0.0.74 Decision item #2). `resolve(guard_name, emitted_level)` pins
+  `GATE5_INVARIANTS` to CRITICAL and otherwise demotes to ADVISORY while the marker is open. It is
+  imported from the pre-commit guards (`hooks/guards.py`), the routing hook, `validate_cmd`,
+  `quality` and three rendition trust audits. Not yet measured: how many of gzkit's controls are
+  called through it, against how many exist.
+
+## decision · the mode contract is honored at the place of call, not inside the control
+
+Ruled in principle; this **corrects** the entry *every control carries a mode contract; the
+repairing craftsman amends it*. That entry said each control *"adjusts its own behavior"*. The
+operator: *"They're not intelligent where they can stop what they're doing. So we have to bake in
+safe mode at the places of call"*. Restated:
+
+- Each control's **contract is declared**: what it does under safe mode, standby and lockout, how
+  it is bypassed and how it is restored. For many controls the contract is just an **on-off
+  switch**: *"we really just perhaps have an on-off switch for a lot of these"*.
+- The contract is **honored at the place of call**, where the behavior is suspended or modified.
+  The control itself does not read the signal.
+- In a strong hexagonal shape, that place of call is a **port**. Today the one such switch is the
+  MX checkpoint, which knows one signal (the marker open) and one adjustment (demote to advisory).
+- The repairing craftsman still amends a control's declared contract on profound modification.
+
+The refactor in disposition 5 is therefore the place-of-call work. It finds every place a control
+is called, routes each through a port that reads the mode signal, and widens the signal from one
+marker to safe mode, standby and a lockout scoped to a surface. This is the operator's reason
+it is the only route to the affected parties and their notification (*"I don't see how else we would
+have affected parties and notification"*). The census of places of call is fact work, owed before
+the program is proposed. The airlock's seam map (`gz airlock in`) is a candidate instrument for it.
+That is a hypothesis, not yet checked against what the seam map holds.
+
 ---
 
 ## Disposition map
