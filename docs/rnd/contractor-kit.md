@@ -2581,6 +2581,16 @@ Ruled from the operator's words above.
 
 **commissions:** 2 — every verified census defect as a GHI, after the overall review.
 
+## decision · the defect review approved; ten GHIs to be filed
+
+The agent wrote `docs/rnd/contractor-kit/defect-review.md`: 24 findings checked against the code
+(17 verified or counted, 5 carried from the census with evidence, 2 not defects), grouped into ten
+proposed GHIs, one defect class each. Question: approve this grouping for filing, or split or merge
+any? Operator: *"yes, let's go with those"*.
+
+The ten are filed through `ghi-author`. Its prior-art step runs on each, and a group an open issue
+already carries joins that issue. Their numbers are recorded in the review as they land.
+
 ---
 
 ## Disposition map
