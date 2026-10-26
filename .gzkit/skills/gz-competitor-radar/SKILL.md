@@ -8,13 +8,13 @@ compatibility: Project-local skill contract.
 project_local: true
 category: agent-operations
 metadata:
-  skill-version: "1.1.1"
+  skill-version: "1.1.2"
   govzero-framework-version: "v6"
   govzero-author: "gzkit-governance"
   govzero_layer: "Layer 1 - Evidence Gathering"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-10-26
 model: opus
 ---
 
@@ -38,9 +38,13 @@ spec ecosystems, and adjacent workflow tools.
   be hand-edited.
 - **Portability.** Deterministic scripts live with this skill under
   `scripts/`, per Agent Skills packaging guidance.
-- **Cadence.** Monthly is the intended cadence, but nothing schedules it: the
-  radar runs when the operator invokes it. The newest file under
-  `artifacts/reports/competitor-radar/scans/` shows when it last ran.
+- **Cadence.** The chore `competitor-radar-currency` puts the radar on a
+  staleness clock (operator, 2026-10-26: *"get it on a chore rotation
+  (staleness) - yes, chore it"*). Its maximum age is the chore's declared
+  `staleness.periodDays` in `.gzkit/chores/registry.json`, and
+  `uv run gz chores status` reports it overdue when the newest scan is older.
+  The newest file under `artifacts/reports/competitor-radar/scans/` shows when
+  it last ran.
 
 ## When To Use
 

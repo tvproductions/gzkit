@@ -1086,6 +1086,32 @@
       },
       "nonAuthority": "Never edits the CLI to match a stale example; a behavior change the example expected is an operator ruling.",
       "governingRule": ".gzkit/rules/gate5-runbook-code-covenant.md"
+    },
+    {
+      "slug": "competitor-radar-currency",
+      "projectLocal": true,
+      "title": "Competitor Radar Currency (Landscape Refresh)",
+      "version": "1.0.0",
+      "path": ".gzkit/chores/competitor-radar-currency",
+      "lane": "lite",
+      "timeoutSeconds": 120,
+      "class": "currency",
+      "rung": "propose",
+      "idempotent": true,
+      "staleness": {
+        "signal": "elapsed-time",
+        "periodDays": 30,
+        "artifacts": [
+          "artifacts/reports/competitor-radar/index.md"
+        ],
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "vendor_fix",
+        "details": "Run the gz-competitor-radar workflow: refresh sources, write the month's scan, render, validate, and grill each suggested move before any route."
+      },
+      "nonAuthority": "Never mutates governance artifacts; never routes a move the operator has not ruled; never refreshes a snapshot from memory or without a cited source.",
+      "governingRule": "none"
     }
   ]
 }
