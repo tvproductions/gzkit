@@ -1693,6 +1693,38 @@ performs it is the **surveillant**.
 operator-only dispatch, the stop request as a tag-out log line, the runtime hold and its two lifts
 (the coordinator's resolution with evidence, or the operator).
 
+## decision · the coordinator's authority, booked
+
+Ruled; matrix row A3. This closes the provisional entry *the coordinator's authority — provisional*
+(*"Provisionally, I accept A, but let's delve."*). The delve settled three things:
+
+- the mechanics (*the coordinator is the operator-facing session; the inspector routes around it
+  through the runtime*);
+- overlapping work (*one lockout per surface; the coordinator sequences overlaps*);
+- surveillance (the A8 decision above).
+
+The change ladder had already given the coordinator pen-and-ink approval. Question: book A as the
+rulings since have filled it in, or keep it provisional and name what still needs delving? The A
+put:
+
+- **The coordinator holds:** dispatching repairers (more than one only on disjoint surfaces) and
+  restorers; sequencing overlapping work packages; the Authorizing Officer duty on the tag-out log
+  (approving application, the isolation check and removal against the written procedure); approving
+  pen-and-ink changes; requesting an inspection, whose dispatch the runtime composes; and being the
+  single writer that lands work on main.
+- **The coordinator may not:** issue a change order (it may propose one); direct, override or
+  filter the inspector; dispatch surveillance, or dismiss a surveillance hold without a recorded
+  resolution; or approve return to service.
+- **The operator keeps the strategic level:** change orders, return to service (Gate 5),
+  countermanding the inspector, dispatching surveillance, and lifting a hold without a resolution.
+
+Recommended booking A. Operator selected **"Book A as stated (Recommended)"**. The liberty stays as
+matrix row A3 records it: the coordinator joins the Navy's two sides, Ship's Force issuing tags and
+the repair activity working under them.
+
+**commissions:** 4 — the coordinator's persona obligations and the runtime's refusals, as listed
+above.
+
 ---
 
 ## Disposition map
