@@ -665,6 +665,56 @@
       "target": "chore competitor-radar-currency",
       "action": "Registered a staleness chore that runs this skill monthly.",
       "status": "implemented"
+    },
+    {
+      "target": "docs/design/adr/pool/ADR-pool.review-receipt-taxonomy.md",
+      "action": "MOVE-101: Amendment 2026-10-26: reviewer provenance and non-response semantics",
+      "status": "implemented"
+    },
+    {
+      "target": "docs/design/adr/pool/ADR-pool.skill-control-surface-contract.md",
+      "action": "MOVE-102: Amendment 2026-10-26: OpenTelemetry GenAI export vocabulary",
+      "status": "implemented"
+    },
+    {
+      "target": "docs/design/adr/pool/ADR-pool.content-injection-scanning.md",
+      "action": "MOVE-103: Amendment 2026-10-26: a scan is evidence, not the trust decision",
+      "status": "implemented"
+    },
+    {
+      "target": "GHI #1252",
+      "action": "MOVE-105: Comment: before/after behaviour eval as acceptance evidence for a trim (Superpowers v6.2.0, checked at source)",
+      "status": "implemented"
+    },
+    {
+      "target": "docs/design/adr/pool/ADR-pool.solved-problem-pattern-corpus.md",
+      "action": "MOVE-106: Amendment 2026-10-26: admission bar and contradiction audit",
+      "status": "implemented"
+    },
+    {
+      "target": "GHI #1281",
+      "action": "MOVE-107: Filed through ghi-author: the operator-only mark has no consumer; cross-linked on #1250",
+      "status": "implemented"
+    },
+    {
+      "target": "docs/design/adr/pool/ADR-pool.graduated-oversight-model.md",
+      "action": "MOVE-108: Amendment 2026-10-26: bounded autonomy grants; canon override rejected",
+      "status": "implemented"
+    },
+    {
+      "target": "artifacts/reports/competitor-radar/registry.json",
+      "action": "MOVE-109: Better Spec to discovery, Specledger to reference",
+      "status": "implemented"
+    },
+    {
+      "target": "GHI #1282",
+      "action": "MOVE-110: Filed through ghi-author: no check that registry and evidence links resolve",
+      "status": "implemented"
+    },
+    {
+      "target": "ADR-0.37.0-airlock-calibration-and-compulsion; GHI #1185",
+      "action": "MOVE-111: Amendment 2026-10-26 (evidence only): adrkit's decision-declared scope as a candidate answer to the boundedness question of alternatives 2 and 2a; comment on #1185",
+      "status": "implemented"
     }
   ],
   "scan_mode": "monthly",
@@ -861,7 +911,7 @@
       "id": "MOVE-107",
       "title": "Validate that no skill calls an operator-only skill",
       "route": "ghi",
-      "destination": "",
+      "destination": "#1281",
       "source_competitors": [
         "mattpocock-skills"
       ],
@@ -944,7 +994,7 @@
       "id": "MOVE-110",
       "title": "The radar checks its own links and archived repositories",
       "route": "ghi",
-      "destination": "",
+      "destination": "#1282",
       "source_competitors": [
         "gsd",
         "compound-engineering",
