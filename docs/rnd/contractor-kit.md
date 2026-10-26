@@ -2268,6 +2268,46 @@ its approved operating limits or tolerances"*), and TUM's is the CAL/OOC split.
 inbound level command. 3 (advise only) — a chore that runs the self-tests, if the operator admits
 one.
 
+## source · the operator on the census: every control, by kind, with priorities ordered
+
+Operator, 2026-10-26, verbatim (dictated), approving the census:
+
+> Yeah, the syntax is going to matter quite a bit. And this is really widespread and pervasive, but
+> I don't see a way around it. This is also probably going to be a massive refactor, so you are
+> right, though. The priorities have to be ordered, right? We can't just redo everything at once.
+> So in your inventory and census, you know, not everything's going to be tripwire or alarm. So we
+> also have to look at the actual controls we have in place. But this design by contract means that
+> we really should have had this in there all along. And that's a different matter. And there are
+> different development strategies if it's code versus props more skills routing, if it's skills,
+> and obviously some conditional logic if it's different rules and other more model-oriented control
+> surfaces.
+
+(*"props more skills routing"* is kept as dictated; read as *prompts or skills routing*.)
+
+## decision · the census covers every control in place, by kind; the refactor's priorities are ordered
+
+Ruled from the operator's words above.
+
+- **The census inventories every control in place**, not only the places a tripwire or alarm is
+  called. It records each control's role, since *"not everything's going to be tripwire or
+  alarm"*.
+- **Controls are sorted by kind, because each kind has its own development strategy:**
+  - **code**: a port and the contract at the place of call;
+  - **skills**: the contract carried through prompts and skill routing;
+  - **rules and other model-oriented control surfaces**: conditional logic in the surface's text.
+- **The contract's syntax matters.** It must serve all three kinds. That is a design question owed
+  after the census.
+- **Priorities are ordered.** The refactor is not done all at once. This does not conflict with the
+  caution against parsimony: the order is chosen for the design, and the whole design is still
+  done.
+- **Not having designed this from the start is a separate matter.** Operator: *"we really should
+  have had this in there all along. And that's a different matter."* It is recorded here, and not
+  pursued inside this run.
+
+Two background research tracks were dispatched for the census on 2026-10-26, one for code controls
+and one for model-oriented surfaces. Each lands its inventory under
+`docs/rnd/contractor-kit/sources/`.
+
 ---
 
 ## Disposition map
