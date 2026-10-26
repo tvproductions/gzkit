@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "registry_updated": "2026-05-07",
+  "registry_updated": "2026-10-26",
   "discovery_posture": "B+ - seeded registry plus active discovery; admit new candidates when evidence names a gzkit-relevant strength, rejection, or route.",
   "execution_posture": "B- - reports may suggest moves, then open grill/design discussion before any governance mutation.",
   "report_structure": "C - product snapshots plus strength-pattern mapping.",
@@ -38,7 +38,7 @@
       "status": "active",
       "trajectory": "rising",
       "links": {
-        "homepage": "https://speckit.org/",
+        "homepage": "https://github.github.com/spec-kit/",
         "repository": "https://github.com/github/spec-kit"
       },
       "known_strengths": [
@@ -83,7 +83,7 @@
     {
       "id": "tessl",
       "name": "Tessl",
-      "category": "spec registry and framework",
+      "category": "agent enablement platform (formerly spec registry and framework)",
       "watch_level": "secondary",
       "status": "active",
       "trajectory": "steady",
@@ -163,7 +163,8 @@
       "status": "active",
       "trajectory": "rising",
       "links": {
-        "repository": "https://github.com/gsd-build/get-shit-done"
+        "repository": "https://github.com/open-gsd/gsd-core",
+        "archived_original": "https://github.com/gsd-build/get-shit-done"
       },
       "known_strengths": [
         "Multi-runtime install parity",
@@ -212,7 +213,7 @@
       "status": "active",
       "trajectory": "watch",
       "links": {
-        "repository": "https://github.com/EveryInc/compound-engineering-plugin/tree/main/plugins/compound-engineering/skills/ce-compound"
+        "repository": "https://github.com/EveryInc/compound-engineering-plugin/blob/main/skills/ce-compound/SKILL.md"
       },
       "known_strengths": [
         "Review and lesson compounding loop",
@@ -371,6 +372,36 @@
       "gzkit_destinations": [
         "ADR-pool.design-references-bibliography",
         "ADR-pool.contract-surface-mechanical-defenses"
+      ]
+    },
+    {
+      "id": "tstack",
+      "name": "tstack",
+      "category": "personal agent-skill pack (PR-lifecycle automation)",
+      "watch_level": "reference",
+      "status": "active (created 2026-10-24)",
+      "trajectory": "unknown",
+      "links": {
+        "repository": "https://github.com/t3dotgg/tstack"
+      },
+      "known_strengths": [
+        "Cross-vendor review loop with a round budget, stable finding ids, blocker/should/nit severity and a findings ledger",
+        "Explicit 'timeout, error, or budget end is not approval' rule",
+        "Written merge-gate checklist: proof covers the whole diff, required checks green, every bot finding fixed or dismissed with a reason, no --admin bypass",
+        "Review scores and rounds recorded on the PR itself, with 'no score' instead of an invented value",
+        "Anti-scope-creep discipline built into review loops (decline with a written reason, list as follow-up)",
+        "Event-driven PR watcher in place of polling loops"
+      ],
+      "explicit_rejections": [
+        "Do not let a trigger phrase or user request override project-canon rules (full-send: 'this request replaces that rule'); gzkit canon prevails over harness and session instructions.",
+        "Do not accept agent self-confidence as grounds to ignore 'needs human review' or to merge without a human; Gate 5 is universal.",
+        "Do not treat model-assigned review scores out of 10 as evidence; only typed receipts with findings and dispositions are evidence.",
+        "Do not import the branch/PR/merge workflow; gzkit works directly on main by operator doctrine."
+      ],
+      "gzkit_destinations": [
+        "ADR-pool.review-receipt-taxonomy",
+        "ADR-pool.cross-vendor-confirmation-policy",
+        "ADR-pool.graduated-oversight-model"
       ]
     }
   ],

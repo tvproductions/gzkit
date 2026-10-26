@@ -1,0 +1,881 @@
+{
+  "competitor_snapshots": [
+    {
+      "competitor_id": "openspec",
+      "status": "active, shipping roughly weekly (v1.15.0 on 2026-10-24), ~73k stars",
+      "trajectory": "rising",
+      "status_delta": "Went from v1.3.1 (2026-04-21) to v1.15.0 (2026-10-24) across 19 releases. Additions: Stores, which replaces the workspace/initiative model (beta, v1.5.0); /opsx:update for revising a plan in place (v1.6.0); a rule that every task states how done is known (v1.10.0); strict validation that fails on unrecognized change metadata, and archive that stops when spec sync is blocked (v1.14.0); standalone binaries with SHA256SUMS and update --dry-run (v1.15.0). Tool integrations grew to roughly 73.",
+      "evidence": [
+        {
+          "label": "OpenSpec repository metadata (GitHub API)",
+          "url": "https://github.com/Fission-AI/OpenSpec",
+          "summary": "72,998 stars and 4,990 forks, last push 2026-10-26."
+        },
+        {
+          "label": "OpenSpec v1.15.0 release",
+          "url": "https://github.com/Fission-AI/OpenSpec/releases/tag/v1.15.0",
+          "summary": "Adds standalone binaries for macOS, Linux and Windows with SHA256SUMS, plus 'openspec update --dry-run' to report file changes without writing them."
+        },
+        {
+          "label": "OpenSpec v1.14.0 release",
+          "url": "https://github.com/Fission-AI/OpenSpec/releases/tag/v1.14.0",
+          "summary": "Adds ten tool integrations and archived-change listing. 'validate --strict' now fails on ignored .openspec.yaml keys, apply checks the exact task checkbox by sourcePath and line, and archive stops on a blocked spec sync."
+        },
+        {
+          "label": "OpenSpec v1.10.0 release",
+          "url": "https://github.com/Fission-AI/OpenSpec/releases/tag/v1.10.0",
+          "summary": "Generated tasks must now say how you would know they are done (a test, command, observable result or artifact). Retiring a capability names what blocks the archive."
+        },
+        {
+          "label": "OpenSpec v1.6.0 release",
+          "url": "https://github.com/Fission-AI/OpenSpec/releases/tag/v1.6.0",
+          "summary": "Adds /opsx:update to revise a change's plan without starting implementation. Stale MODIFIED requirements now stop the archive instead of silently deleting scenarios, and blocked archives exit non-zero."
+        },
+        {
+          "label": "OpenSpec v1.5.0 release",
+          "url": "https://github.com/Fission-AI/OpenSpec/releases/tag/v1.5.0",
+          "summary": "Introduces Stores (very early beta), which replaces the workspace and initiative model for organizing specs and changes."
+        },
+        {
+          "label": "OpenSpec homepage",
+          "url": "https://openspec.dev/",
+          "summary": "Describes a lightweight, configurable spec framework with explore/propose/apply/verify/archive commands, about 73 supported tools and more than 265,000 monthly users. No paid offering is mentioned."
+        }
+      ],
+      "agent_analysis": "OpenSpec is hardening its delta model into a fail-closed one: unknown metadata fails strict validation, a blocked sync stops archive, and every task needs a done criterion. These match gzkit instincts, so they reinforce spec-delta-intent-review and are not new pressure. gzkit should take the 'dry-run shows exactly which files change' pattern for sync and init surfaces. It should reject Stores as a model, because it removes the ledger as the system of record."
+    },
+    {
+      "competitor_id": "github-spec-kit",
+      "status": "active, 1.x line (v1.2.3 on 2026-10-22), ~143k stars, extension/preset/workflow ecosystem",
+      "trajectory": "rising",
+      "status_delta": "Went from v0.8.0 (2026-04-23) to v1.0.0 (2026-08-21) and then v1.2.3 (2026-10-22), shipping releases almost daily. The official homepage moved to github.github.com/spec-kit. It now frames three processes (SDD, bug fixing, idea assessment) built from presets, extensions, workflows and bundles, with org-hosted catalogs and pinned releases. The site cites 38 integrations, 157 extensions and 33 presets. Community governance presets have appeared (Autonomous Run Governance, Security Governance, Architecture Governance, an adrkit extension). The core /speckit.taskstoissues command was deprecated in favor of a github extension.",
+      "evidence": [
+        {
+          "label": "Spec Kit repository metadata (GitHub API)",
+          "url": "https://github.com/github/spec-kit",
+          "summary": "142,934 stars and 12,806 forks. The homepage field is https://github.github.com/spec-kit/ and the last push was 2026-10-23."
+        },
+        {
+          "label": "Spec Kit official site",
+          "url": "https://github.github.com/spec-kit/",
+          "summary": "Describes SDD, bug fixing and idea assessment built from presets, extensions, workflows and bundles, with organization-hosted catalogs. It cites 38 agent integrations, 157 extensions and 33 presets."
+        },
+        {
+          "label": "Spec Kit v1.0.0 release",
+          "url": "https://github.com/github/spec-kit/releases/tag/v1.0.0",
+          "summary": "The 1.0.0 notes argue that semver stability matters less because agents absorb breaking changes. Included changes: workflow condition validation and updates to the Autonomous Run Governance and Intake Sequencing Governance presets."
+        },
+        {
+          "label": "Spec Kit v1.1.0 release",
+          "url": "https://github.com/github/spec-kit/releases/tag/v1.1.0",
+          "summary": "Deprecates the core /speckit.taskstoissues command. Adds selection of exact catalog releases, pin verification for bundles and custom workflow step types."
+        },
+        {
+          "label": "Spec Kit v1.2.0 release",
+          "url": "https://github.com/github/spec-kit/releases/tag/v1.2.0",
+          "summary": "Adds a built-in GitHub workflow step, a scoped FileHelper for filesystem policy and a Claude --no-model-invocation option. Updates the Architecture Governance, Security Governance and adrkit catalog entries."
+        },
+        {
+          "label": "speckit.org (registry homepage link)",
+          "url": "https://speckit.org/",
+          "summary": "Still names GitHub maintainers and links the repository, but its footer reads '(c) 2025 GitHub, Inc.' and it does not link the github.github.com/spec-kit site that the repository now lists as its homepage."
+        }
+      ],
+      "agent_analysis": "Spec Kit now makes the process itself a composable, versioned and pinned package (presets, workflows and bundles from org-hosted catalogs). Its community has started publishing governance presets in the space gzkit occupies. gzkit should take the pinned-catalog and bundle pin-verification mechanism for workflow-as-data and context packages. It should reject catalog popularity as authority, and reject the v1.0.0 claim that agents make interface stability cheap, since gzkit's ledger and receipts depend on stable contracts."
+    },
+    {
+      "competitor_id": "kiro",
+      "status": "active multi-surface product (IDE 1.4.x, CLI 2.34 / V3, Web, open-source Crew), FedRAMP Class C scope",
+      "trajectory": "rising",
+      "status_delta": "Since May, Kiro has grown from an IDE into IDE, CLI V3 (spec-driven development in the terminal, early access 2026-06-17), Web with autonomous/spec/default modes, and an open-source local Crew workspace. Spec work since then: a full-screen /spec run task view (CLI 2.20, 2026-08-26) and a Markdown Review panel on spec documents (IDE 1.3.11, 2026-10-15). October added saved workflows, a local command sandbox, cross-session Memory (default Off as of IDE 1.4.10) and a workspace trust prompt before loading a folder's hooks, agents, MCP servers, steering and workflows (CLI 2.33.0). Parallel task waves, Quick Plan and Analyze Requirements shipped in IDE 0.12 on 2026-05-06, a day before the May scan, and that scan did not record them.",
+      "evidence": [
+        {
+          "label": "Kiro homepage",
+          "url": "https://kiro.dev/",
+          "summary": "Positions Kiro as moving 'beyond AI coding to agentic engineering' across IDE, CLI, Web and an open-source Crew workspace. It still turns prompts into requirements, designs and sequenced tasks, and it promotes property-based tests."
+        },
+        {
+          "label": "Kiro IDE 0.12 changelog",
+          "url": "https://kiro.dev/changelog/ide/0-12/",
+          "summary": "On 2026-05-06, Run all Tasks began grouping independent spec tasks into parallel waves with isolated contexts. The release also added a Quick Plan mode with no approval gates between phases and an Analyze Requirements pass before design."
+        },
+        {
+          "label": "Kiro CLI 2.8.0 changelog",
+          "url": "https://kiro.dev/changelog/cli/2-8/",
+          "summary": "On 2026-06-17, CLI V3 early access brought spec-driven development to the terminal, with a capability-based permissions model and a standalone hooks file format."
+        },
+        {
+          "label": "Kiro changelog page 1",
+          "url": "https://kiro.dev/changelog/",
+          "summary": "From October 15 to 23, 2026: CLI 2.33.0 added a workspace trust prompt before loading a folder's hooks, agents, MCP servers, steering and workflows; IDE 1.4.x added Memory, defaulting to Off; workflows were made to run only when requested; Crew 0.9.0 added crewmate profiles and schedules."
+        },
+        {
+          "label": "Kiro changelog page 2",
+          "url": "https://kiro.dev/changelog/page/2/",
+          "summary": "From October 9 to 15, 2026: IDE 1.3.11 added a Markdown Review panel with a Review button on spec documents; IDE 1.3.0 and CLI 2.31.0 added a local command sandbox; Kiro entered FedRAMP Class C scope in US East."
+        }
+      ],
+      "agent_analysis": "Kiro's spec flow is now one mode among workflows, Memory and multi-agent Crew, and its newest governance-shaped mechanism is the workspace trust prompt before loading repository-supplied hooks and agents. gzkit should take the trust-before-load gate into injection-security for synced or adopted control surfaces. It should note Quick Plan (phases without approval gates) as a mechanism to reject, because gzkit's gates exist to stop exactly that collapse."
+    },
+    {
+      "competitor_id": "tessl",
+      "status": "active, repositioned as an 'agent enablement platform' (skills, loops, factory); spec-driven framework de-emphasized",
+      "trajectory": "stable",
+      "status_delta": "The homepage no longer describes a spec framework. It sells Context (a 'control plane for agent context'), Loops (recurring automated workflows) and Factory, on top of the Tessl Registry. The free tier is 1,000 credits a month, and org-wide policy gating and audit logs are 'rolling out for enterprise plans'. The tessl-labs spec-driven-development tile is still live at v2.0.1 with eval scores and a Snyk scan result. Secondary commentary dates the shift to skills to January 2026, which suggests the May registry category 'spec registry and framework' was already stale when it was recorded.",
+      "evidence": [
+        {
+          "label": "Tessl homepage",
+          "url": "https://tessl.io/",
+          "summary": "Calls Tessl 'the agent enablement platform' with Context, Loops, Factory and a Registry. It offers 1,000 free credits a month and says enterprise policy gating and audit logs are rolling out."
+        },
+        {
+          "label": "Tessl SDD registry tile",
+          "url": "https://tessl.io/registry/tessl-labs/spec-driven-development",
+          "summary": "Version 2.0.1, last updated about four months before 2026-10-26. It packages 4 skills, 3 rules, validation scripts and 9 eval scenarios, with an overall score of 96 and a passed Snyk security scan."
+        },
+        {
+          "label": "Tessl Review (2026), third-party commentary",
+          "url": "https://codemyspec.com/blog/tessl-review",
+          "summary": "Seen only as a search-result summary, not opened. It reports a January 2026 repositioning around a skills registry and says the spec framework had not clearly reached general availability. Treat it as unverified secondary commentary."
+        }
+      ],
+      "agent_analysis": "Tessl attaches evaluation scores and a third-party security scan to each published context package, which is the clearest public example of provenance-plus-scan metadata for the context-packages pattern. gzkit should take per-package eval and scan fields as manifest requirements for ADR-pool.context-package-registry. It should reject credit-metered hosted loops as a substitute for ledger-recorded runs."
+    },
+    {
+      "competitor_id": "specmatic",
+      "status": "active; executable-contract platform repositioned around AI coding agents (Genie agent harness, MCP server)",
+      "trajectory": "stable",
+      "status_delta": "Steady release cadence (2.53.0 on 2026-08-14 through 2.55.3 on 2026-10-05). The 2.55.0 release added a CLI command to validate Specmatic configuration, protocol-aware typed config validation, and an agentMode that quiets console output under agents. The homepage now leads with 'auto-fix integration drift' for AI agents and names a six-product line, including Genie, an agent harness of Guides and Sensors delivered through skills and MCP. No primary source dates Genie's launch, so it may predate May 2026. The registry docs link still resolves.",
+      "evidence": [
+        {
+          "label": "Specmatic homepage",
+          "url": "https://specmatic.io/",
+          "summary": "Positions Specmatic as turning API specs into executable contracts that keep changes by AI coding agents true to the spec, with a Genie agent harness of 'Guides that prevent mistakes and Sensors that detect drift' via skills and MCP."
+        },
+        {
+          "label": "Specmatic repository",
+          "url": "https://github.com/specmatic/specmatic",
+          "summary": "Repository description now reads 'Shift-left API Integration | Auto-fix integration drift before integration' and has releases through 2.55.3 (2026-10-05)."
+        },
+        {
+          "label": "Specmatic 2.55.0 release",
+          "url": "https://github.com/specmatic/specmatic/releases/tag/2.55.0",
+          "summary": "Release adds a config-validation CLI command, protocol-aware typed config validators, agentMode log suppression, and deterministic lifecycle shutdown."
+        },
+        {
+          "label": "Codex CLI + Specmatic MCP write-up (third party, 2026-04-23)",
+          "url": "https://codex.danielvaughan.com/2026/04/23/contract-driven-api-development-codex-cli-specmatic-mcp/",
+          "summary": "Practitioner write-up wires Specmatic contract tests into AGENTS.md so the agent cannot mark work done until the spec passes."
+        }
+      ],
+      "agent_analysis": "Absorb the guide/sensor split as vocabulary for gzkit's existing pairing of rules (feedforward) and validators and receipts (feedback), and absorb 'config validates itself' as a gz validate surface for manifest and config files. Reject API-only contract scope, and reject 'autonomous correction' claims that loop without a receipt or a human gate."
+    },
+    {
+      "competitor_id": "bmad-method",
+      "status": "active, monthly releases (v6.9.0 to v6.12.4), consolidating its catalog ahead of v7",
+      "trajectory": "stable",
+      "status_delta": "Major consolidation. v6.11.0 (2026-08-10) cut core from fourteen to eight skills, made 'Build' the one Phase-4 implementation path, and moved config to layered TOML with uv and Python 3.11+ required. v6.12.0 (2026-09-04) sizes ceremony after investigation and logs a verdict with evidence for every review finding. v6.10.0 added bmad-loop, an opt-in unattended dev-loop module. v6.9.0 added an append-only shared memlog and Socratic idea pressure-testing (bmad-forge-idea). The retrospective skill now requires a source reference on every finding.",
+      "evidence": [
+        {
+          "label": "BMAD v6.12.0 release",
+          "url": "https://github.com/bmad-code-org/BMAD-METHOD/releases/tag/v6.12.0",
+          "summary": "Build decides how much ceremony a change needs after investigating it, and review triage logs a verdict and evidence for every finding so nothing is dropped silently."
+        },
+        {
+          "label": "BMAD v6.11.0 release",
+          "url": "https://github.com/bmad-code-org/BMAD-METHOD/releases/tag/v6.11.0",
+          "summary": "Core is cut to eight skills, Build becomes the official Phase-4 loop, retrospectives must cite a source per finding, and a content-addressed snapshot renderer publishes an immutable copy of exactly what ran."
+        },
+        {
+          "label": "BMAD v6.10.0 release",
+          "url": "https://github.com/bmad-code-org/BMAD-METHOD/releases/tag/v6.10.0",
+          "summary": "bmad-loop ships as an opt-in module for unattended dev-loop orchestration, replacing bmad-automator."
+        },
+        {
+          "label": "BMAD v6.9.0 release",
+          "url": "https://github.com/bmad-code-org/BMAD-METHOD/releases/tag/v6.9.0",
+          "summary": "Adds a canonical append-only memlog as the shared working-memory primitive and bmad-forge-idea for one-question-at-a-time idea interrogation."
+        },
+        {
+          "label": "bmad-loop issue #393",
+          "url": "https://github.com/bmad-code-org/bmad-loop/issues/393",
+          "summary": "Reports that bmad-loop 0.9.0 fails validation on current bmm because a renamed dev skill broke its lookup, an example of rename churn breaking the unattended loop."
+        }
+      ],
+      "agent_analysis": "Absorb two mechanisms: a content-addressed snapshot of the exact skill or prompt that ran, which could become a receipt field, and a per-finding verdict-plus-evidence log for review triage, which maps onto typed review receipts. Reject unattended loops driven by frontmatter status without attestation; BMAD's own rename breakage shows why skill identity needs a validated registry rather than shims."
+    },
+    {
+      "competitor_id": "gsd",
+      "status": "original gsd-build/get-shit-done archived; development continues as community fork GSD Core (open-gsd/gsd-core) after a maintainer-trust incident",
+      "trajectory": "stable",
+      "status_delta": "Material change. The registry repository was archived (last commit 2026-05-31), and its README redirects to open-gsd/gsd-core. The fork's founding announcements (2026-05-22) report no contact with the original maintainer since 2026-04-01 and a publicly reported rug-pull of an associated $GSD token, and the fork ran a security audit. The npm package get-shit-done-cc is marked 'no longer supported'. GSD Core restarted versioning and has shipped roughly weekly, reaching v1.18.0 on 2026-10-19, with about 10.9k stars against 64k on the archive and 40,218 npm downloads in the month ending 2026-10-22. It keeps the Discuss/Plan/Execute/Verify/Ship phase loop, fresh-context executors in parallel waves, and broad multi-runtime install. Recent fixes harden fail-closed gates: artifact-frontmatter matching, TDD RED/GREEN evidence, and secret-read scanning. The registry link is stale.",
+      "evidence": [
+        {
+          "label": "Archived GSD repository README",
+          "url": "https://github.com/gsd-build/get-shit-done",
+          "summary": "Archived repository states GSD has moved and now continues as GSD Core at open-gsd/gsd-core."
+        },
+        {
+          "label": "GSD Core fork announcement (discussion #109)",
+          "url": "https://github.com/open-gsd/gsd-core/discussions/109",
+          "summary": "States the fork exists because upstream appeared compromised or abandoned: no maintainer contact since 2026-04-01, deleted social accounts, and a $GSD token publicly linked to a rug-pull."
+        },
+        {
+          "label": "GSD Core security audit transparency report (discussion #119)",
+          "url": "https://github.com/open-gsd/gsd-core/discussions/119",
+          "summary": "Reports a post-incident audit covering dependencies, secrets, prompt-injection and obfuscation scanning, which found no confirmed active exfiltration payload."
+        },
+        {
+          "label": "GSD Core repository README",
+          "url": "https://github.com/open-gsd/gsd-core",
+          "summary": "Describes a five-step phase loop with fresh 200k-context executors in parallel waves and installation for Claude Code, OpenCode, Codex, Copilot, Cursor and other runtimes."
+        },
+        {
+          "label": "GSD Core v1.18.0 release",
+          "url": "https://github.com/open-gsd/gsd-core/releases/tag/v1.18.0",
+          "summary": "Release makes artifact-frontmatter matching fail closed on ambiguity and tightens TDD evidence gates, phase-completion audits and secret-read scanning."
+        },
+        {
+          "label": "npm get-shit-done-cc",
+          "url": "https://www.npmjs.com/package/get-shit-done-cc",
+          "summary": "npm registry marks the original package (latest 1.42.3) as 'Package no longer supported'."
+        }
+      ],
+      "agent_analysis": "The main lesson is supply-chain and maintainer continuity: a 64k-star workflow tool lost its home overnight, and adopters had to judge a fork's trustworthiness. gzkit should absorb this as distribution provenance (signed or attested releases, a documented succession path) and as a radar rule that re-verifies each competitor's canonical home. GSD Core's fail-closed hardening of TDD-evidence and frontmatter gates is worth tracking as convergence toward receipt-like gates; keep rejecting autonomous wave chaining that has no attestation."
+    },
+    {
+      "competitor_id": "superpowers",
+      "status": "very active skills framework, about 305k stars, v7.0.1 (2026-10-21)",
+      "trajectory": "rising",
+      "status_delta": "Seven releases since June (v6.1.0 to v7.0.1). v7.0.0 rebuilt brainstorming: intent play-back, sizing after understanding, and a fresh-subagent 'builder check' in place of the spec-document reviewer. v6.4.1 added a diagnosing-superpowers transcript-forensics skill, a Native execution mode as a cheaper alternative to subagent-driven development, required human review of the saved plan, and a Review Focus section that pins failure modes the spec implies. v6.3.0 classifies ceremony by task size, records the pre-dispatch conflict scan in the ledger, batches small tasks, and forbids reviewers from spawning their own subagents. v6.2.0 scoped the SDD workspace and ledger to one plan and made the review-fix loop resume the implementer. Harness support widened to Antigravity, Devin, Hermes, OpenCode 2, Muse and Qwen.",
+      "evidence": [
+        {
+          "label": "Superpowers v7.0.0 release",
+          "url": "https://github.com/obra/superpowers/releases/tag/v7.0.0",
+          "summary": "Brainstorming is rebuilt to draw out intent and play it back, size the work afterward, and replace the spec reviewer with a fresh-subagent builder check."
+        },
+        {
+          "label": "Superpowers v6.4.1 release",
+          "url": "https://github.com/obra/superpowers/releases/tag/v6.4.1",
+          "summary": "Adds diagnosing-superpowers, Native inline execution, mandatory human review of the saved plan, a Review Focus section, and TDD guidance that the project's whole suite defines green."
+        },
+        {
+          "label": "Superpowers v6.3.0 release",
+          "url": "https://github.com/obra/superpowers/releases/tag/v6.3.0",
+          "summary": "Ceremony scales to spike/bounded/architectural tasks, the pre-dispatch conflict scan is recorded in the ledger, and implementers and reviewers may not spawn subagents."
+        },
+        {
+          "label": "Superpowers v6.2.0 release",
+          "url": "https://github.com/obra/superpowers/releases/tag/v6.2.0",
+          "summary": "The SDD workspace becomes plan-scoped after cross-plan ledger contamination, and skill prose compression is validated by micro-tests showing that deleting rationalization rebuttals degraded test-first behavior."
+        },
+        {
+          "label": "Superpowers repository",
+          "url": "https://github.com/obra/superpowers",
+          "summary": "Repository shows about 305k stars and was pushed 2026-10-23."
+        }
+      ],
+      "agent_analysis": "Superpowers is moving toward gzkit's own ground: plan-scoped ledgers, recorded rulings instead of asserted checks, and human approval of the actual plan. Absorb its eval-backed method for skill compression (A/B micro-tests before cutting prose), which gzkit's context-diet and compress-and-merge passes lack, and its transcript-forensics skill as a diagnostic for skill misfires. Reject its plan-scoped markdown ledger as a substitute for an append-only, schema-validated ledger with attestation."
+    },
+    {
+      "competitor_id": "compound-engineering",
+      "status": "very active plugin (36 skills, 14 hosts), near-daily releases, v3.32.2 (2026-10-25)",
+      "trajectory": "rising",
+      "status_delta": "Release cadence is now multiple times a week (v3.30.3 to v3.32.2 in October alone), and the repo has about 25.7k stars. The repo was restructured: skills now live under skills/ at the root, so the registry link (plugins/compound-engineering/skills/ce-compound) returns 404. ce-compound now enforces a written 'durable bar' (a counterfactual test that the lesson is not recoverable from code, tests or docs), one learning per run, and a validated artifact root. A companion ce-compound-refresh audits learnings for staleness, overlap, supersession and contradiction against the current tree. Recent features add cross-model peer review (Codex, Gemini via Antigravity) with peer outcomes recorded in agent JSON, plus a long-running optimization loop (ce-optimize).",
+      "evidence": [
+        {
+          "label": "ce-compound SKILL.md",
+          "url": "https://github.com/EveryInc/compound-engineering-plugin/blob/main/skills/ce-compound/SKILL.md",
+          "summary": "Writes one verified solved problem per run under <root>/solutions/, only when it passes a durability counterfactual; otherwise it writes nothing and reports why."
+        },
+        {
+          "label": "ce-compound-refresh SKILL.md",
+          "url": "https://github.com/EveryInc/compound-engineering-plugin/blob/main/skills/ce-compound-refresh/SKILL.md",
+          "summary": "Audits captured learnings against the current codebase for staleness, overlap, supersession and contradiction, with a consent-gated 'worth' cull that must quote the file that already states the reasoning."
+        },
+        {
+          "label": "Compound Engineering README",
+          "url": "https://github.com/EveryInc/compound-engineering-plugin",
+          "summary": "Describes a 36-skill plugin structured around brainstorm, plan, build, review, then capture-what-you-learned, running on 14 agent hosts."
+        },
+        {
+          "label": "Compound Engineering v3.31.0 release",
+          "url": "https://github.com/EveryInc/compound-engineering-plugin/releases/tag/compound-engineering-v3.31.0",
+          "summary": "Adds Antigravity as a Gemini cross-model peer and records the cross-model peer outcome in code-review and doc-review machine output."
+        },
+        {
+          "label": "Compound Engineering v3.32.0 release",
+          "url": "https://github.com/EveryInc/compound-engineering-plugin/releases/tag/compound-engineering-v3.32.0",
+          "summary": "Adds a long-running ce-optimize stack (tick loop, eval discipline, remote backend) and fixes to cross-model review fallback."
+        }
+      ],
+      "agent_analysis": "Absorb the admission test, a written counterfactual 'durable bar' that must pass before a learning is captured, and the refresh audit that checks the memory store for contradiction and supersession; both map onto gz insights and a reconcile-freshness witness. Absorb recording cross-model reviewer outcomes in structured output as a review-receipt field. Keep rejecting agent-written learnings as canon without human review and ledger provenance."
+    },
+    {
+      "competitor_id": "mattpocock-skills",
+      "status": "active, semver-released skills corpus (v1.0.0 2026-06-17 to v1.3.1 2026-10-04), about 304k stars",
+      "trajectory": "rising",
+      "status_delta": "The corpus began semver releases with changelogs in June, including breaking renames. v1.0.0 added an ask-matt router, the shared codebase-design and domain-modeling skills, writing-great-skills in place of write-a-skill, and a model-invoked 'grilling' primitive behind grill-me and grill-with-docs. It also formalized a user-invoked versus model-invoked taxonomy, with an invariant that no skill may call a user-invoked skill. A later change standardized cross-skill calls on an explicit 'Call the Skill tool with X' instruction because naming a skill in prose did not reliably load it. v1.3.0 graduated implement-spec (task-graph parallel implementers in worktrees landing on one integration branch), pr, and retro, which turns session findings into deterministic checks, and renamed CONTEXT.md to GLOSSARY.md. The grill-me link in the registry still resolves.",
+      "evidence": [
+        {
+          "label": "mattpocock/skills v1.0.0 release",
+          "url": "https://github.com/mattpocock/skills/releases/tag/v1.0.0",
+          "summary": "Adds the ask-matt router, the codebase-design and domain-modeling skills, writing-great-skills, and the grilling primitive, and renames the taxonomy to user-invoked and model-invoked skills."
+        },
+        {
+          "label": "mattpocock/skills v1.3.0 release",
+          "url": "https://github.com/mattpocock/skills/releases/tag/v1.3.0",
+          "summary": "Graduates implement-spec, pr and retro, renames CONTEXT.md to GLOSSARY.md, and replaces prose skill references with an explicit Skill-tool call because prose mentions did not reliably load skills."
+        },
+        {
+          "label": "mattpocock/skills repository",
+          "url": "https://github.com/mattpocock/skills",
+          "summary": "Repository 'Skills for Real Engineers' shows about 304k stars and was pushed 2026-10-22."
+        },
+        {
+          "label": "Skill-flow and deprecation map (third party)",
+          "url": "https://dev.to/skillselion/matt-pococks-skills-mapped-the-flow-he-teaches-every-deprecation-and-what-replaced-what-v11-2883",
+          "summary": "Commentary maps the teaching flow and notes that skills are frequently renamed, replaced or moved to a deprecated folder."
+        }
+      ],
+      "agent_analysis": "Absorb the invocation contract (user-invoked versus model-invoked, with a stated no-call invariant) as a field in gzkit's skill frontmatter that a validator can check, and absorb the finding that skills should call other skills through an explicit tool call rather than in prose; this matches gzkit's Invariant 10a. retro's rule of routing mechanical findings to deterministic checks rather than prose aligns with gzkit doctrine. Reject the unversioned rename churn pattern; gzkit skills need stable identifiers or migration records."
+    },
+    {
+      "competitor_id": "agent-skills",
+      "status": "active open skill packaging standard; spec text stable, client adoption widening",
+      "trajectory": "stable",
+      "status_delta": "No breaking spec change since 2026-05: edits were a name-field fix that allows digits (2026-05-16) and clarifications of `metadata` and the open directory structure (2026-08-03/04). New client listings include Tabnine, Pulumi Neo, Hermes Agent and OpenClaw. The OpenTelemetry GenAI semantic conventions now cite agentskills.io and define skill-load spans.",
+      "evidence": [
+        {
+          "label": "Agent Skills specification",
+          "url": "https://agentskills.io/specification",
+          "summary": "Frontmatter fields are still name, description, license, compatibility, metadata and the experimental allowed-tools; disclosure is still three-tier and validation goes through skills-ref."
+        },
+        {
+          "label": "agentskills repo commits since 2026-05",
+          "url": "https://github.com/agentskills/agentskills/commits/main",
+          "summary": "Commits since May are spec clarifications from 2026-05-16 and 2026-08-03/04 plus client-showcase additions; the last push was 2026-08-09 and the repo shows about 26.6k stars."
+        },
+        {
+          "label": "OTel GenAI agent spans: Agent skills section",
+          "url": "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-agent-spans.md",
+          "summary": "The OTel GenAI conventions define an Agent Skill by reference to agentskills.io and add development-status load-skill and read-skill-resource refinements of the execute_tool span."
+        }
+      ],
+      "agent_analysis": "Absorb: the format has stabilized and a second standards body now names it, so gzkit skill mirrors should stay byte-conformant to the spec through a skills-ref-equivalent validator. Reject again: the spec defines no provenance, signing or version pinning, so gzkit must not treat spec conformance as trust; see the Trail of Bits candidate."
+    },
+    {
+      "competitor_id": "better-spec",
+      "status": "stalled alpha; homepage live, source repository unreachable",
+      "trajectory": "declining",
+      "status_delta": "No release since 2026-05. The homepage still says v0.0.1 Alpha, Work in Progress, (c) 2025. The only npm version is 0.0.1, published 2025-09-08. The declared repository kriasoft/better-spec returns 404 from the GitHub API.",
+      "evidence": [
+        {
+          "label": "Better Spec homepage",
+          "url": "https://better-spec.com/",
+          "summary": "The homepage still shows v0.0.1 Alpha, Work in Progress, with init/generate/implement CLI framing and no release notes or dates."
+        },
+        {
+          "label": "npm registry: better-spec",
+          "url": "https://registry.npmjs.org/better-spec",
+          "summary": "The npm package lists only version 0.0.1, created and last modified on 2025-09-08, and points to github.com/kriasoft/better-spec."
+        },
+        {
+          "label": "GitHub repo (declared)",
+          "url": "https://github.com/kriasoft/better-spec",
+          "summary": "The GitHub API returned 404 Not Found for this repository on 2026-10-26, so the repository is private, renamed or deleted."
+        }
+      ],
+      "agent_analysis": "There is nothing new to absorb. The front-door signal it stood for is now carried by active tools (Spec Kit, OpenSpec, Google EGM). Recommend demoting it to watch-only or retiring it from the secondary watch."
+    },
+    {
+      "competitor_id": "specledger",
+      "status": "platform site live claiming 1.0; open-source CLI in maintenance only",
+      "trajectory": "declining",
+      "status_delta": "The CLI has had no tagged release since v1.2.2 on 2026-04-21, after a near-daily cadence in March and April. Default-branch commits since May are dependency bumps only. One PR, 'fix: match skills by registry slug', was opened 2026-09-14. The homepage still shows 'Introducing Specledger 1.0' and unsourced productivity claims. Caveat: the hosted platform may be moving without public CLI activity.",
+      "evidence": [
+        {
+          "label": "specledger/specledger releases",
+          "url": "https://github.com/specledger/specledger/releases",
+          "summary": "The latest release is v1.2.2 (2026-04-21), after v1.2.1, v1.2.0 and v1.1.0 in April 2026."
+        },
+        {
+          "label": "specledger commits since 2026-05",
+          "url": "https://github.com/specledger/specledger/commits/main",
+          "summary": "Every default-branch commit from 2026-05-02 to 2026-10-17 is a dependabot go-deps bump; the repo shows 16 stars."
+        },
+        {
+          "label": "Specledger homepage",
+          "url": "https://specledger.io/",
+          "summary": "The homepage advertises spec deltas, checkpoints, session indexing, multi-repo support and a GitHub App, with '10x faster' claims and no pricing or changelog content."
+        }
+      ],
+      "agent_analysis": "The rejection stands: gzkit keeps its local append-only ledger as the source of truth, not a hosted dashboard. Release activity has stopped, so it should move to reference watch. Its session-indexing idea stays routed to ADR-pool.cross-session-search."
+    },
+    {
+      "competitor_id": "openapi",
+      "status": "mature specification ecosystem; 3.2 line in patch maintenance",
+      "trajectory": "stable",
+      "status_delta": "OAS 3.2.1 shipped 2026-09-10 as a text-only patch with no significant changes. Schema iterations for 3.2 are dated 2026-08-30 and for 3.1 are dated 2026-08-03. The spec index lists no 4.0 or Moonwalk version.",
+      "evidence": [
+        {
+          "label": "OpenAPI 3.2.1 release",
+          "url": "https://github.com/OAI/OpenAPI-Specification/releases/tag/3.2.1",
+          "summary": "The 3.2.1 notes say it 'brings no significant changes'; the edits are parameter-encoding clarifications, RFC cross-references and an ABNF for encoding contentType."
+        },
+        {
+          "label": "OAS spec index",
+          "url": "https://spec.openapis.org/oas/",
+          "summary": "The index lists v3.2.1 as the newest version, with schema iteration dates separated from patch publication dates."
+        }
+      ],
+      "agent_analysis": "Absorb a governance mechanism, not API content: OAS ships text-only patch releases and versions its schemas separately from the spec, with dated iterations decoupled from releases. gzkit could reuse that for its JSON schemas (manifest, ledger events, authoring-guide protocol) under ADR-pool.contract-surface-mechanical-defenses."
+    },
+    {
+      "competitor_id": "opentelemetry",
+      "status": "mature, monthly spec releases; GenAI/agent conventions split into a dedicated repository",
+      "trajectory": "rising",
+      "status_delta": "The spec moved from v1.57.0 (2026-05-20) to v1.62.0 (2026-10-22). Semconv v1.42.0 (2026-06-12) deprecated every gen_ai.*, openai.* and mcp.* definition and moved them to the new open-telemetry/semantic-conventions-genai repository, created 2026-05-05 and showing 482 stars. That repository added gen_ai.skill.* attributes (2026-09-29), a gen_ai.main_agent entity (2026-09-30) and required provider tool-call IDs on execute_tool (2026-10-17).",
+      "evidence": [
+        {
+          "label": "opentelemetry-specification releases",
+          "url": "https://github.com/open-telemetry/opentelemetry-specification/releases",
+          "summary": "v1.58.0 through v1.62.0 shipped between 2026-06-22 and 2026-10-22, at a monthly cadence."
+        },
+        {
+          "label": "Semantic conventions v1.42.0",
+          "url": "https://github.com/open-telemetry/semantic-conventions/releases/tag/v1.42.0",
+          "summary": "This release deprecates all gen_ai.* attributes, metrics, events and spans and moves them to the dedicated GenAI semantic-conventions repository."
+        },
+        {
+          "label": "GenAI agent spans",
+          "url": "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-agent-spans.md",
+          "summary": "This development-status document defines create-agent, invoke-agent, invoke-workflow and plan spans and execute_tool refinements for load-skill, read-skill-resource and command execution."
+        },
+        {
+          "label": "Specification status summary",
+          "url": "https://opentelemetry.io/docs/specs/status/",
+          "summary": "Tracing and logging are stable and the Metrics SDK is mixed; the page carries no GenAI status."
+        }
+      ],
+      "agent_analysis": "This reference has become directly relevant: OTel now has a vendor-neutral vocabulary for agent, plan, tool and skill-load events, which overlaps gzkit's ledger and receipt events. Absorb by mapping gzkit skill-invocation and dispatch receipts onto gen_ai.* names where they match, routed to ADR-pool.skill-control-surface-contract and ADR-pool.design-references-bibliography. Reject adopting OTel as gzkit's source of truth: telemetry is sampled and lossy, while the ledger is append-only evidence."
+    },
+    {
+      "competitor_id": "tstack",
+      "status": "new public skill pack (created 2026-10-24), 9 skills, 3 commits, no releases",
+      "trajectory": "unknown",
+      "status_delta": "New entry, added at operator request. Not in the 2026-05 scan. The repository was created 2026-10-24 and had 305 stars and 13 forks on 2026-10-26.",
+      "evidence": [
+        {
+          "label": "tstack repository metadata (GitHub API)",
+          "url": "https://github.com/t3dotgg/tstack",
+          "summary": "Created 2026-10-24T05:00Z, last push 2026-10-25T02:25Z, 305 stars, 13 forks, MIT license, no releases. The description reads 'The agent skills I use every day. Works with Claude Code and Codex.'"
+        },
+        {
+          "label": "tstack README",
+          "url": "https://github.com/t3dotgg/tstack/blob/main/README.md",
+          "summary": "Lists 9 trigger-phrase skills (full-send, full-stop, council, sol-loop, file-pr, takeover, babysit-pr, modernize, leaving-pr-comments). It says they are installed by copying them into ~/.claude/skills or ~/.codex/skills and use T3 Code features when those are available."
+        },
+        {
+          "label": "tstack commit history",
+          "url": "https://github.com/t3dotgg/tstack/commits/main",
+          "summary": "Three commits: the initial publish (2026-10-24), 'full-send and full-stop grant testing permission' (2026-10-24) and 'council puts scores and rounds in PR descriptions' (2026-10-25)."
+        },
+        {
+          "label": "full-send SKILL.md",
+          "url": "https://github.com/t3dotgg/tstack/blob/main/skills/full-send/SKILL.md",
+          "summary": "Defines an unattended path from change to merged PR. It requires self-observed proof, sets a merge gate (proof covers the whole diff, required checks green, bot findings fixed or dismissed with a written reason, branch mergeable, no --admin bypass) and says the 'full send' request replaces project-file rules that would have the agent ask before testing."
+        },
+        {
+          "label": "sol-loop SKILL.md",
+          "url": "https://github.com/t3dotgg/tstack/blob/main/skills/sol-loop/SKILL.md",
+          "summary": "Runs a bounded loop with a reviewer on another vendor's model: 3 rounds by default, 5 for security, auth or data-loss changes. Findings carry stable ids and blocker/should/nit severity in a ledger. The skill states that a timeout, an error or the end of the budget is not approval, and it forbids substituting another model."
+        },
+        {
+          "label": "council SKILL.md",
+          "url": "https://github.com/t3dotgg/tstack/blob/main/skills/council/SKILL.md",
+          "summary": "Sends the work to three flagship models from different providers for read-only review, scores each round out of 10 and writes a rounds-by-delegate score table into the PR description. It says 'Do not invent' a missing score and tells the agent to resist scope creep."
+        },
+        {
+          "label": "babysit-pr SKILL.md",
+          "url": "https://github.com/t3dotgg/tstack/blob/main/skills/babysit-pr/SKILL.md",
+          "summary": "Uses one event-driven watcher per PR (the bundled pr-wait script or T3 Code's watch_pull_request) and forbids sleep loops. It verifies each bot finding against the source and declines scope-growing fixes with a written reason."
+        },
+        {
+          "label": "T3 Code repository metadata (GitHub API)",
+          "url": "https://github.com/pingdotgg/t3code",
+          "summary": "This is the author's companion harness that tstack optionally uses. It had 30,267 stars and was pushed 2026-10-26."
+        }
+      ],
+      "agent_analysis": "tstack is a personal PR-lifecycle skill pack, not a spec or governance framework. gzkit should take three mechanisms from it: the cross-vendor review round ledger with stable finding ids and severities, the rule that a timeout or exhausted budget is not approval, and an explicit merge-gate checklist. gzkit should reject two things outright: a user's trigger phrase overriding project-canon rules ('this request replaces that rule'), and agent self-confidence standing in for human review at merge. Both contradict Gate 5 and gzkit's rule that harness instructions cannot excuse a governed stage."
+    }
+  ],
+  "created_at": "2026-10-26",
+  "discovered_candidates": [
+    {
+      "name": "Cloudflare security-audit skill",
+      "evidence": "This MIT skill was created 2026-06-18 and shows about 47.5k stars. It runs six phases that write a deterministic coverage-ledger.json and findings.json validated against report-schema.json by zero-dependency validators; every candidate goes to a fresh verifier that 'tries to disprove it', and verdicts are confirmed, needs_validation or rejected. Per its README, it seeded Cloudflare's vulnerability-discovery harness (https://blog.cloudflare.com/build-your-own-vulnerability-harness). Source: https://github.com/cloudflare/security-audit-skill",
+      "recommended_action": "Admit to secondary watch. It is the strongest current example of schema-validated, independently verified review records with a coverage ledger, and maps directly onto ADR-pool.review-receipt-taxonomy and ADR-pool.agentic-security-review. Its needs_validation verdict, which carries no severity, is a pattern gzkit lacks. (pattern: review-receipts)"
+    },
+    {
+      "name": "Elephant-Goldfish Model (EGM), Google",
+      "evidence": "This Apache-2.0 plugin was created 2026-09-13 and shows about 1.2k stars (site https://egm.dev). Per the README, deep-context 'Elephant' sessions draft specs and 'isolated zero-context Goldfish subagents stress-test them', with skills for brainstorm, draft, a multi-stage review swarm, resolve and an AST-based drift report between specs and live code. It ships for Claude Code, Codex and Antigravity and is 'not an officially supported Google product'. Source: https://github.com/google/elephant-goldfish-model",
+      "recommended_action": "Admit to primary watch. It is a major vendor's spec-driven entrant with the same human-owns-outcomes stance as gzkit's Gate 5. Its zero-context reviewer isolation and spec-to-code drift report bear on gzkit's spec-reviewer/quality-reviewer stages and on ADR-pool.spec-delta-markers. Reject its prose-only review output: route findings to receipts. (pattern: proposed: zero-context-adversarial-review (adjacent to review-receipts and spec-delta-intent-review))"
+    },
+    {
+      "name": "Trail of Bits: 'The sorry state of skill distribution'",
+      "evidence": "Published 2026-06-03, the post reports bypassing ClawHub's detector, Cisco's skill-scanner and all three scanners integrated into skills.sh, through newline padding, poisoned .pyc bytecode and LLM-targeted prompt injection. It concludes 'No amount of scanning or LLM analysis can reliably detect malicious content in agent skills' and recommends curated marketplaces, version pinning and control over who can update. Source: https://blog.trailofbits.com/2026/06/03/the-sorry-state-of-skill-distribution/",
+      "recommended_action": "Admit to reference watch, as research rather than a product. It is primary evidence that ADR-pool.content-injection-scanning must not treat a scan as a trust gate; pinning, curated provenance and a human-reviewed sync receipt have to carry the trust decision. (pattern: injection-security)"
+    },
+    {
+      "name": "SpexCode",
+      "evidence": "This MIT project was created 2026-06-19 and shows about 323 stars, with frequent docs releases through 2026-10-20. It is 'a Git-backed spec tree and session manager for coding agents': each spec.md names the file or function it governs in a `code:` field, drift is computed from git on every read, and each agent session runs in its own branch and worktree. Source: https://github.com/shuxueshuxue/Spexcode",
+      "recommended_action": "Watch only. It is small, but the mechanism of binding each spec node to a code symbol and deriving drift from git without stored state is a concrete witness design for ADR-pool.spec-delta-markers and for gz validate --brief-reconcile. Reject its branch-per-session model, which conflicts with gzkit's work-on-main doctrine. (pattern: spec-delta-intent-review)"
+    },
+    {
+      "name": "Canny",
+      "evidence": "This MIT project was created 2026-09-11 and shows about 125 stars; v0.3.0 shipped 2026-09-22. It 'hooks into Claude Code and Codex CLI, keeps a ledger of what the agent actually did, and will not let it finish on a claim'. Its rule is 'Facts go to code. Judgments go to Jev. Only facts can block', and `canny replay` reproduces verdicts from the ledger. Source: https://github.com/qkal/Canny",
+      "recommended_action": "Watch only. It is too young to admit, but it is the closest small-scale analogue to gzkit's 'gate evidence must witness the action' rule (AGENTS.md DO IT RIGHT #12) and the anti-vibing mantra, implemented as a stop hook. Its facts-block, judgments-advise split and deterministic replay are worth citing in the gzkit hook design. (pattern: proposed: claim-requires-ledger-evidence (adjacent to executable-contracts))"
+    },
+    {
+      "name": "brain0",
+      "evidence": "This Apache-2.0 project was created 2026-07-02 and shows about 314 stars, with v0.1.0 through v0.1.3 released between 2026-07-02 and 2026-10-24. It 'passively builds a decision graph of your repository: every commit linked to the agent intents behind it, down to the single function', with drift detection, a DLP audit of what agents read and a risk score. It needs 'no hooks, no agent cooperation' and reads git plus on-disk agent transcripts. Source: https://github.com/Brain0-ai/brain0",
+      "recommended_action": "Watch only. It represents the verification-and-attestation-of-AI-code category, which emerged in this window. Reject passive transcript inference as attestation, because it is reconstruction, not witness. Its function-level intent linkage could inform ADR-pool.execution-memory-graph. Agent Trace has not moved past the 0.1.0 RFC of January 2026, so the category still has no settled standard. (pattern: proposed: ai-code-provenance (related: Agent Trace RFC https://agent-trace.dev/ and git-ai https://github.com/git-ai-project/git-ai))"
+    },
+    {
+      "name": "gstack / fstack (personal skill packs)",
+      "evidence": "Seen only in search results by the tstack track; not opened or verified.",
+      "recommended_action": "Not admitted. Verify next scan before any admission."
+    }
+  ],
+  "month": "2026-10",
+  "operator_decisions": [
+    {
+      "id": "ADD-TSTACK",
+      "decision": "Add tstack (github.com/t3dotgg/tstack) to the radar.",
+      "source": "operator, verbatim: 'add this to it: https://github.com/t3dotgg/tstack'",
+      "recorded_at": "2026-10-26"
+    },
+    {
+      "id": "CHORE-ROTATION",
+      "decision": "Put the radar on a chore rotation with a staleness clock (chore competitor-radar-currency).",
+      "source": "operator, verbatim: 'get it on a chore rotation (staleness) - yes, chore it.'",
+      "recorded_at": "2026-10-26"
+    }
+  ],
+  "routed_follow_up": [
+    {
+      "target": "artifacts/reports/competitor-radar/registry.json",
+      "action": "Added tstack (operator-directed); corrected the GSD repository (archived original, active fork), the Compound Engineering link (404), the Spec Kit homepage and Tessl's category.",
+      "status": "implemented"
+    },
+    {
+      "target": "chore competitor-radar-currency",
+      "action": "Registered a staleness chore that runs this skill monthly.",
+      "status": "implemented"
+    }
+  ],
+  "scan_mode": "monthly",
+  "schema_version": "1",
+  "suggested_moves": [
+    {
+      "id": "MOVE-101",
+      "title": "Review receipts record reviewer vendor, rounds, budget, non-response and an independent verdict",
+      "route": "existing-pool-adr",
+      "destination": "ADR-pool.review-receipt-taxonomy",
+      "source_competitors": [
+        "tstack",
+        "superpowers",
+        "compound-engineering",
+        "bmad-method"
+      ],
+      "recommendation": "Extend the review-receipt taxonomy: each receipt names the reviewer's vendor and model, the round and round budget, and records a timeout, error or exhausted budget as a non-response that never counts as a pass. Add the confirmed / needs_validation / rejected verdict tier from an independent disprover (Cloudflare's security-audit-skill, a discovered candidate).",
+      "mechanical_witness": "A typed receipt field set that a validator checks; a test that a non-response receipt cannot satisfy a review gate.",
+      "decision_status": "pending-grill",
+      "rationale": "Every source converges on the same mechanism: review is evidence only when its provenance and its non-response semantics are recorded. gzkit's Step 4b reviewer has neither field today.",
+      "grill_questions": [
+        {
+          "question": "Are we copying a product or absorbing a mechanism?",
+          "recommended_answer": "A mechanism: typed review provenance and non-response semantics. Not tstack's PR workflow or its 0-10 scores.",
+          "answer": "",
+          "status": "pending"
+        },
+        {
+          "question": "Which gzkit invariant must not weaken?",
+          "recommended_answer": "Gate 5 stays human; a review receipt is evidence for the operator, never a substitute.",
+          "answer": "",
+          "status": "pending"
+        },
+        {
+          "question": "What route do you recommend?",
+          "recommended_answer": "existing-pool-adr: ADR-pool.review-receipt-taxonomy.",
+          "answer": "",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "MOVE-102",
+      "title": "Map gzkit's skill and dispatch receipts onto the OpenTelemetry GenAI conventions",
+      "route": "existing-pool-adr",
+      "destination": "ADR-pool.skill-control-surface-contract",
+      "source_competitors": [
+        "opentelemetry",
+        "agent-skills"
+      ],
+      "recommendation": "Align gzkit's skill-load and subagent-dispatch ledger events with the OpenTelemetry GenAI semantic conventions (open-telemetry/semantic-conventions-genai: agent, plan and workflow spans, gen_ai.skill.* attributes, skill-load spans), so gzkit's evidence is exportable in the vocabulary the ecosystem is standardising on.",
+      "mechanical_witness": "A mapping table from ledger event types to GenAI span names and attributes, checked by a test.",
+      "decision_status": "pending-grill",
+      "rationale": "OpenTelemetry now cites agentskills.io and defines a skill-load span; gzkit already records the same events in its own names.",
+      "grill_questions": [
+        {
+          "question": "Are we chasing fashion?",
+          "recommended_answer": "No: it is a standards body defining names for events gzkit already records; mapping costs a table, not a redesign.",
+          "answer": "",
+          "status": "pending"
+        },
+        {
+          "question": "Which gzkit invariant must not weaken?",
+          "recommended_answer": "The ledger stays the system of record; OTel is an export vocabulary, never the source of truth.",
+          "answer": "",
+          "status": "pending"
+        },
+        {
+          "question": "What route do you recommend?",
+          "recommended_answer": "existing-pool-adr: ADR-pool.skill-control-surface-contract.",
+          "answer": "",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "MOVE-103",
+      "title": "Content-injection defence: trust before load, pinned versions, and a scan as evidence only",
+      "route": "existing-pool-adr",
+      "destination": "ADR-pool.content-injection-scanning",
+      "source_competitors": [
+        "kiro",
+        "agent-skills",
+        "gsd"
+      ],
+      "recommendation": "Re-scope the injection pool: the trust decision for an external skill or hook is a pinned version plus a human-reviewed sync receipt; a scanner's output is advisory evidence only (Trail of Bits bypassed every major skill scanner, 2026-06-03). Add Kiro's trust prompt before a workspace's hooks, agents and workflows load.",
+      "mechanical_witness": "A sync receipt naming the pinned version and the human reviewer; a load-time refusal for an unreviewed external surface.",
+      "decision_status": "pending-grill",
+      "rationale": "Scanner bypasses are now documented, and Kiro shipped trust-before-load in October.",
+      "grill_questions": [
+        {
+          "question": "What evidence proves the strength changed?",
+          "recommended_answer": "Trail of Bits' June 2026 post and Kiro's October release notes, both cited in this scan.",
+          "answer": "",
+          "status": "pending"
+        },
+        {
+          "question": "Which gzkit invariant must not weaken?",
+          "recommended_answer": "External content stays data, never instruction (AGENTS.md § Behavior Rules).",
+          "answer": "",
+          "status": "pending"
+        },
+        {
+          "question": "What route do you recommend?",
+          "recommended_answer": "existing-pool-adr: ADR-pool.content-injection-scanning.",
+          "answer": "",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "MOVE-104",
+      "title": "Distribution provenance and maintainer continuity for py-gzkit",
+      "route": "discussion-only",
+      "destination": "",
+      "source_competitors": [
+        "gsd"
+      ],
+      "recommendation": "GSD's original repository was archived after its maintainer went silent and a token tied to the project was linked to a rug-pull; a community fork now carries it. gzkit ships py-gzkit to adopters. Discuss signed or attested releases (provenance) and a written succession plan.",
+      "mechanical_witness": "Release provenance attestations on the published wheel; a documented continuity owner.",
+      "decision_status": "pending-grill",
+      "rationale": "A single-maintainer project with adopters is exposed the same way.",
+      "grill_questions": [
+        {
+          "question": "Is this feature capability, pool backlog, GHI, or reject?",
+          "recommended_answer": "Pool backlog: it is a real exposure but not urgent while adopters are few.",
+          "answer": "",
+          "status": "pending"
+        },
+        {
+          "question": "What route do you recommend?",
+          "recommended_answer": "discussion-only now; new-pool-adr if the operator wants it tracked.",
+          "answer": "",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "MOVE-105",
+      "title": "Prove a skill or control-surface trim with before/after behaviour tests",
+      "route": "discussion-only",
+      "destination": "",
+      "source_competitors": [
+        "superpowers"
+      ],
+      "recommendation": "Superpowers measured that cutting rebuttal text from a skill dropped test-first behaviour from 8/10 to 5/10. gzkit's control-plane cuts (WP-13 to WP-16) measure size, not behaviour. Discuss adding a behaviour check as evidence for any trim.",
+      "mechanical_witness": "A small behaviour eval run before and after a trim, its result recorded with the trim.",
+      "decision_status": "pending-grill",
+      "rationale": "Size budgets alone cannot show a cut removed nothing load-bearing.",
+      "grill_questions": [
+        {
+          "question": "Which gzkit invariant must not weaken?",
+          "recommended_answer": "Written constraints stay unless evidence shows they are unnecessary (opus-tuning § Recalibration).",
+          "answer": "",
+          "status": "pending"
+        },
+        {
+          "question": "What route do you recommend?",
+          "recommended_answer": "discussion-only; it bears on #1252 (control-plane cut).",
+          "answer": "",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "MOVE-106",
+      "title": "An admission bar and contradiction audit for captured insights",
+      "route": "existing-pool-adr",
+      "destination": "ADR-pool.solved-problem-pattern-corpus",
+      "source_competitors": [
+        "compound-engineering",
+        "bmad-method"
+      ],
+      "recommendation": "Compound Engineering only saves a learning that passes a written durable-bar test, and audits saved learnings for staleness, overlap and contradiction. gzkit's gz insights remember has no admission bar and no contradiction audit.",
+      "mechanical_witness": "A typed admission check on insight capture and a periodic contradiction audit chore.",
+      "decision_status": "pending-grill",
+      "rationale": "gzkit's insight store grows without curation.",
+      "grill_questions": [
+        {
+          "question": "Are we copying a product or absorbing a mechanism?",
+          "recommended_answer": "A mechanism: an admission test and an audit, not their file layout.",
+          "answer": "",
+          "status": "pending"
+        },
+        {
+          "question": "What route do you recommend?",
+          "recommended_answer": "existing-pool-adr: ADR-pool.solved-problem-pattern-corpus.",
+          "answer": "",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "MOVE-107",
+      "title": "Validate that no skill calls an operator-only skill",
+      "route": "ghi",
+      "destination": "",
+      "source_competitors": [
+        "mattpocock-skills"
+      ],
+      "recommendation": "Matt Pocock's skills split user-invoked from model-invoked and forbid a skill from calling a user-invoked one. gzkit already marks operator-only skills (disable-model-invocation: true) but nothing checks that no skill body routes to one.",
+      "mechanical_witness": "A validator over skill bodies that refuses a call into an operator-only skill.",
+      "decision_status": "pending-grill",
+      "rationale": "The mark exists without its consumer.",
+      "grill_questions": [
+        {
+          "question": "Is this feature capability, pool backlog, GHI, or reject?",
+          "recommended_answer": "GHI: a missing check on an existing mark is a small defect.",
+          "answer": "",
+          "status": "pending"
+        },
+        {
+          "question": "What route do you recommend?",
+          "recommended_answer": "ghi through ghi-author.",
+          "answer": "",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "MOVE-108",
+      "title": "Record bounded autonomy grants as a pattern, and reject canon override",
+      "route": "existing-pool-adr",
+      "destination": "ADR-pool.graduated-oversight-model",
+      "source_competitors": [
+        "tstack"
+      ],
+      "recommendation": "tstack's full-send and takeover skills grant an unattended agent a scoped permission with a written merge gate. Record the pattern under graduated oversight, and record the explicit rejection: a request may never replace a project-canon rule ('this request replaces that rule').",
+      "mechanical_witness": "Any autonomy grant is itself a recorded, scoped, revocable authorisation; canon precedence is tested.",
+      "decision_status": "pending-grill",
+      "rationale": "It is the clearest current example of both the useful pattern and the dangerous clause.",
+      "grill_questions": [
+        {
+          "question": "Which gzkit invariant must not weaken?",
+          "recommended_answer": "Canon prevails over session instructions, and Gate 5 stays human.",
+          "answer": "",
+          "status": "pending"
+        },
+        {
+          "question": "What route do you recommend?",
+          "recommended_answer": "existing-pool-adr: ADR-pool.graduated-oversight-model.",
+          "answer": "",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "MOVE-109",
+      "title": "Watch-level changes: Better Spec, Specledger and the Spec Kit governance presets",
+      "route": "discussion-only",
+      "destination": "",
+      "source_competitors": [
+        "better-spec",
+        "specledger",
+        "github-spec-kit"
+      ],
+      "recommendation": "Better Spec is still v0.0.1 alpha with its repository returning 404: demote to discovery or retire. Specledger has had no CLI release since April: demote to reference. Spec Kit now has community governance presets and an 'adrkit' extension in gzkit's territory: deep-read them next scan.",
+      "mechanical_witness": "The registry's watch levels match the evidence each month.",
+      "decision_status": "pending-grill",
+      "rationale": "Watch levels set in May no longer match what the sources show.",
+      "grill_questions": [
+        {
+          "question": "What evidence proves the trajectory changed?",
+          "recommended_answer": "Better Spec's 404 repository and stale npm release; Specledger's release history; Spec Kit release notes naming the presets.",
+          "answer": "",
+          "status": "pending"
+        },
+        {
+          "question": "What route do you recommend?",
+          "recommended_answer": "discussion-only; the operator rules each watch level.",
+          "answer": "",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "MOVE-110",
+      "title": "The radar checks its own links and archived repositories",
+      "route": "ghi",
+      "destination": "",
+      "source_competitors": [
+        "gsd",
+        "compound-engineering",
+        "github-spec-kit"
+      ],
+      "recommendation": "Three registry links were wrong this month (an archived repository, a 404 path, a superseded homepage), and nothing in radar.py validate checks links. Add a live link and archive check to each scan.",
+      "mechanical_witness": "radar.py validate (or a scan step) refuses a dead link or an archived repository not marked as such.",
+      "decision_status": "pending-grill",
+      "rationale": "This scan found the defects by hand.",
+      "grill_questions": [
+        {
+          "question": "Which gzkit invariant must not weaken?",
+          "recommended_answer": "Validation must stay runnable offline; the link check is a scan step, not part of the offline validate.",
+          "answer": "",
+          "status": "pending"
+        },
+        {
+          "question": "What route do you recommend?",
+          "recommended_answer": "ghi through ghi-author.",
+          "answer": "",
+          "status": "pending"
+        }
+      ]
+    }
+  ]
+}
