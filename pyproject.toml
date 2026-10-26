@@ -73,11 +73,12 @@ source-exclude = [".antigravitycli"]
 wheel-exclude = ["gzkit/chores/*/proofs"]
 
 [tool.uv]
-# The one uv version this repository runs on, locally and in CI. uv refuses to
-# run on any other version, and `astral-sh/setup-uv` installs exactly this one in
-# every workflow, so the two cannot drift. Move it with the binary in the same
-# pass (`gz-deps-upgrade` step 1): `uv self update`, then this line.
-required-version = "==0.13.5"
+# A floor, never an exact pin. uv exits 2 on a version it refuses, and every
+# Claude hook and the ledger merge driver run through `uv run`, so an exact pin
+# turned a stale or newer local uv into a session lockout (GHI #1283; operator:
+# "loosen uv, it will likely run python at any version"). The floor matches the
+# `uv_build` floor above; `astral-sh/setup-uv` installs the highest uv it allows.
+required-version = ">=0.13.1"
 # `uv sync` installs both groups by default, so the per-change gate, CI and the
 # release all build the docs from the lock (RO-9 tranche 2).
 default-groups = ["dev", "docs"]

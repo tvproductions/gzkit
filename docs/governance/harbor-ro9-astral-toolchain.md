@@ -59,6 +59,13 @@ every restatement is removed rather than validated against its copies.** The mea
 `gz validate --python-version-pins` exists to keep the interpreter copies in step. Under the
 discipline its subject is gone: it becomes "no restatement exists" inside the RO-9 witness, then retires.
 
+**Amended 2026-10-26: the uv version is a floor, not an exact pin.** `required-version` stays the one
+home, written `>=0.13.1` (the `uv_build` floor) instead of `==X`. uv exits 2 on a version it refuses, and
+the Claude hooks and the ledger merge driver run through `uv run`, so the exact pin turned any local uv
+drift into a session lockout and a ledger merge left as "ours" (GHI #1283). Operator, verbatim: *"no,
+loosen uv, it will likely run python at any version"*. setup-uv resolves the floor to the highest
+matching uv; Read the Docs installs the latest.
+
 ## The population, measured 2026-10-19
 
 Read from uv's documentation source end to end (uv 0.13.x), from every tracked file of the tree, and

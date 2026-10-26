@@ -5,10 +5,10 @@ description: Use when the operator asks to upgrade deps, Python, uv, pyproject o
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-19
+last_reviewed: 2026-10-26
 model: haiku
 metadata:
-  skill-version: "1.4.0"
+  skill-version: "1.5.0"
 ---
 
 # gz deps-upgrade
@@ -41,14 +41,14 @@ order, not skipping the floor-bump or the verification step.
    uv --version                      # after — confirm it moved (or already latest)
    ```
 
-   **Move the pin with the binary.** `pyproject.toml` `[tool.uv]
-   required-version` pins the exact uv version for this repository, and it is
-   the one authority: uv refuses to run here on any other version, and
-   `astral-sh/setup-uv` installs exactly that version in every workflow. Once
-   the binary has moved, every `uv` command in the repository fails until the
-   pin names the new version, so set `required-version = "==<new version>"`
-   before the next step. CI follows in the same commit; no workflow carries a
-   uv version of its own.
+   **The uv floor stays a floor.** `pyproject.toml` `[tool.uv]
+   required-version` is a lower bound (`>=`), never an exact pin: uv exits 2
+   on a version it refuses, and the Claude hooks and the ledger merge driver run
+   through `uv run`, so an exact pin locks the session out whenever the local
+   binary drifts (GHI #1283). `astral-sh/setup-uv` installs the highest uv the
+   floor admits in every workflow, and Read the Docs installs the latest; no
+   workflow carries a uv version of its own. Raise the floor only when the
+   repository starts using a uv feature older releases lack, and say which.
 
    Skipping uv itself is a half-upgrade: the rest of the pass runs on a stale
    resolver. Never skip this step.
@@ -184,7 +184,7 @@ skip the upgrade for the rest of the surface.
 - `uv.lock` resolves cleanly with no churn on the second `uv lock` run
 - `.python-version` names the newest patch of the floor's minor, and
   `uv run gz validate --astral-discipline` exits 0
-- `uv --version` equals the `[tool.uv] required-version` pin in `pyproject.toml`
+- `uv --version` satisfies the `[tool.uv] required-version` floor in `pyproject.toml`
 - ARB unittest receipt at `exit_status=0` exists in
   `artifacts/receipts/`
 
@@ -205,7 +205,7 @@ These thoughts mean STOP — you are about to ship a half-upgrade:
 ## Red Flags
 
 - `uv` binary left un-upgraded (Step 1 skipped) — the rest of the pass ran on a stale resolver
-- `uv` binary upgraded and the `required-version` pin left behind — every `uv` command now fails, and CI still installs the old version
+- `required-version` written as an exact `==` pin — the next local uv drift exits 2 in every hook and locks the session out (GHI #1283)
 - `uv.lock` and `pyproject.toml` floors disagree by more than a patch level after the upgrade
 - Pinned (`==`) deps left at versions older than current PyPI latest
 - `gz check --full` skipped, downgraded, or run only on a subset
