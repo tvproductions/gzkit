@@ -2536,6 +2536,51 @@ tracked here until routed:
 - subagents receive no safe-mode banner. The model census observed this of itself: it ran
   without a banner while the marker was open.
 
+## source · the operator on the census findings
+
+Operator, 2026-10-26, verbatim:
+
+> these might need decorators or something similar (maybe there are other Python affordances I may
+> be missing) ==> "218 safeguards, 116 tripwires, 52 gates, 13 monitors, 12 alarms"
+>
+> this seems promising ==> "--self-test"
+>
+> 1. on mx.json and its mode: safe, that likely pre-dates this drydock period. we need to review the
+> entire mx system to make sure we get this right. 2. this needs fixing/address. 3. that too needs
+> fixing
+>
+> on additonal defects... I KNEW IT, I knew we had hidden slop and misalignments. those all must be
+> fixed.
+>
+> q1: see above, we need to review mx mode structures and design.
+> q2: yes, but let's do one overall review before filing.
+
+## decision · the census's findings: all fixed; one review before filing; the MX system reviewed whole
+
+Ruled from the operator's words above.
+
+- **Syntax direction for code controls.** The 411 code controls with a role (218 safeguards, 116
+  tripwires, 52 gates, 13 monitors, 12 alarms) carry their mode contract by **decorators or a similar
+  Python affordance**. The operator asks for other affordances too, so the syntax question puts the
+  candidates: decorators (the `@enforces` precedent), `typing.Protocol` ports (the hexagonal rule's
+  shape), context managers, class registration, and entry points.
+- **The `--self-test` arms are the seed of the built-in self-test.** Seven chore scripts carry one
+  today. Their shape is read before the self-test's syntax is put.
+- **The MX system is reviewed whole.** That covers its structures and design: the marker, its
+  tracking in git, its two readings of *open*, the ledger binding, the checkpoint and the alarms
+  wrapper. The tracked `"mode": "safe"` marker likely predates this drydock period, and the review
+  settles it. This review is a frontier item of the run, ahead of the port design.
+- **Findings 2 and 3 are defects to fix:** the step demotion acting only on exit code 3, and
+  `gz mx exit` re-running the change scope instead of `--full`.
+- **Every defect the census found must be fixed.** Operator: *"I KNEW IT, I knew we had hidden slop
+  and misalignments. those all must be fixed."*
+- **One overall review before filing.** Row 2 has the operator's go to file GHIs (*"yes"*), but
+  only after the agent verifies every finding against the code and presents the whole set as one
+  review: real or not, its evidence, and how findings group. The GHIs are filed through
+  `ghi-author` after that review.
+
+**commissions:** 2 — every verified census defect as a GHI, after the overall review.
+
 ---
 
 ## Disposition map
