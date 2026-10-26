@@ -2308,6 +2308,34 @@ Two background research tracks were dispatched for the census on 2026-10-26, one
 and one for model-oriented surfaces. Each lands its inventory under
 `docs/rnd/contractor-kit/sources/`.
 
+## decision · the mode contract is a permanent design requirement for everything gzkit builds
+
+Operator, 2026-10-26, verbatim (dictated):
+
+> Don't forget though, moving forward, this design by contract is there when we design new things,
+> which means that this is an overarching design requirement permanently and always with everything
+> we build in terms of its built-in self-testing, but also in terms of its ability to comply with
+> these different modes of operation, right? Having a safer maintenance mode is something we'd
+> expect out of anything that's built moving forward.
+
+Ruled. The refactor in disposition 5 retrofits what exists. This ruling covers everything not yet
+built. **Every new control, module, skill, rule or surface gzkit builds carries the two-way mode
+contract from the start:**
+
+- a built-in self-test that reports its suitability for function;
+- compliance with each mode of operation (its level under safe mode and standby, its bypass, its
+  restore).
+
+A design that lacks either is incomplete. It is a standing requirement, the same kind as
+ports-and-adapters is today (`.gzkit/rules/hexagonal-architecture.md`: *"primary code-architecture
+directive"*).
+
+**commissions:** 4 — the requirement written into canon as a rule, and into the ADR, OBPI and skill
+templates as a required section, drafted for the operator's go on the row. 1 (proposal only) — the
+admission question is owed: is this hard to reverse, surprising without context, and the result
+of a real trade-off? If all three hold, it is an ADR the operator may initiate. If not, it stays at
+row 4.
+
 ---
 
 ## Disposition map
