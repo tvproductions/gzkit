@@ -79,9 +79,29 @@
           "label": "speckit.org (registry homepage link)",
           "url": "https://speckit.org/",
           "summary": "Still names GitHub maintainers and links the repository, but its footer reads '(c) 2025 GitHub, Inc.' and it does not link the github.github.com/spec-kit site that the repository now lists as its homepage."
+        },
+        {
+          "label": "Spec Kit community extension catalog",
+          "url": "https://github.com/github/spec-kit/blob/main/extensions/catalog.community.json",
+          "summary": "Lists community governance extensions including adrkit, arch-governance, gates (spec-gates), evaluator, aee, memorylint, red-team, retrospective, openup and agentstandards."
+        },
+        {
+          "label": "adrkit README",
+          "url": "https://github.com/mbeacom/adrkit",
+          "summary": "ADRs as typed data with an `affects` field so a tool answers 'which decisions govern this pull request?'; a CI Action posts governing ADRs on PRs; an ARB queue. Created 2026-07-18, 21 stars."
+        },
+        {
+          "label": "spec-gates README",
+          "url": "https://github.com/schwichtgit/spec-gates",
+          "summary": "'Spec Kit is a guidance layer ... spec-gates is the enforcement layer underneath it': one policy enforced at agent hooks, git hooks and CI. Created 2026-07-02, 3 stars."
+        },
+        {
+          "label": "spec-kit-arch-governance README",
+          "url": "https://github.com/ashbrener/spec-kit-arch-governance",
+          "summary": "Typed spec/code/ADR citations with a read-only, fail-closed validator, advisory by default and blocking per repo once proven. Created 2026-06-10, 1 star."
         }
       ],
-      "agent_analysis": "Spec Kit now makes the process itself a composable, versioned and pinned package (presets, workflows and bundles from org-hosted catalogs). Its community has started publishing governance presets in the space gzkit occupies. gzkit should take the pinned-catalog and bundle pin-verification mechanism for workflow-as-data and context packages. It should reject catalog popularity as authority, and reject the v1.0.0 claim that agents make interface stability cheap, since gzkit's ledger and receipts depend on stable contracts."
+      "agent_analysis": "Spec Kit's core is still specify/plan/tasks, but since 1.0 it is a platform of presets, extensions and org-hosted catalogs, and its community catalog now carries a governance layer in gzkit's territory: decision memory that answers which ADRs govern a PR (adrkit), one policy enforced at agent, git and CI boundaries (spec-gates), and a fail-closed spec/code/ADR citation validator (arch-governance), plus evidence, drift and red-team extensions. Each is small and none composes an append-only ledger, receipts and human attestation into one system of record, which remains gzkit's distinction; the risk is that a 143k-star distribution channel makes 'Spec Kit plus a governance bundle' the default answer piecemeal. Absorb: adrkit's `affects` field (which decisions govern this change) and arch-governance's advisory-then-blocking rollout per repo. Consider distributing gzkit through a Spec Kit catalog rather than competing with its reach."
     },
     {
       "competitor_id": "kiro",
@@ -872,6 +892,39 @@
         {
           "question": "What route do you recommend?",
           "recommended_answer": "ghi through ghi-author.",
+          "answer": "",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "MOVE-111",
+      "title": "Answer 'which decisions govern this change?' and consider a Spec Kit distribution route",
+      "route": "discussion-only",
+      "destination": "",
+      "source_competitors": [
+        "github-spec-kit"
+      ],
+      "recommendation": "Two parts. (1) Absorb adrkit's mechanism: every ADR and brief declares the paths it affects, so gzkit can answer which decisions govern a given diff, at commit time and in review. (2) Discuss packaging gzkit's governance (ledger, receipts, gates, attestation) as a Spec Kit extension or preset in an org-hosted catalog, so gzkit reaches Spec Kit's users instead of competing with its distribution.",
+      "mechanical_witness": "(1) a `gz` query that lists the ADRs and briefs governing a diff, with a test; (2) a working extension manifest validated by Spec Kit's catalog tooling.",
+      "decision_status": "pending-grill",
+      "rationale": "Spec Kit's community catalog is assembling gzkit's capabilities piecemeal on a 143k-star channel; gzkit's coherence is its edge, and its reach is its gap.",
+      "grill_questions": [
+        {
+          "question": "Are we copying a product or absorbing a mechanism?",
+          "recommended_answer": "A mechanism: decision-to-path governance (adrkit's affects field). Distribution through Spec Kit is a separate, strategic question.",
+          "answer": "",
+          "status": "pending"
+        },
+        {
+          "question": "Which gzkit invariant must not weaken?",
+          "recommended_answer": "The ledger stays the system of record; packaged as an extension, gzkit must not shrink into advisory templates.",
+          "answer": "",
+          "status": "pending"
+        },
+        {
+          "question": "What route do you recommend?",
+          "recommended_answer": "(1) existing-pool-adr or GHI once the brief-path linkage is checked against gz state; (2) discussion-only, an operator strategy decision.",
           "answer": "",
           "status": "pending"
         }
