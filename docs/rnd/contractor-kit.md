@@ -1608,6 +1608,91 @@ gap row until the gap is read or the row says it is a gap.
 The earlier handoff's list of open items was an input to this, not the frontier. The new items it
 missed are A7, the still-proposed rows (3) and the widening check (5).
 
+## source · surveillance: who watches work from outside the chain, and what a stop request binds
+
+Read in full on 2026-10-26 for matrix row A8. The JFMM and TUM text comes from fresh
+`pdftotext -layout` extractions of `Volume_V_D5.pdf` and `TUM_REV_8_28Oct20.pdf`.
+
+JFMM Vol V Part I, Chapter 9 and Appendix C:
+
+> 9.2.2 Surveillance. Surveillance involves observation of actual work in progress or specific
+> areas of concern. (I-9.2.2)
+
+> In-Process Surveillance — The review of work in progress by personnel not directly involved with
+> the work to assess such attributes as tagging and installation of controlled material, compliance
+> with technical procedures, and recording of required data. (I-FWD App. A)
+
+> Ship's Force personnel will conduct internal QA Audit and Surveillance as scheduled by the
+> Quality Assurance Officer (QAO) as part of the ship's overall monitoring program. (I-9.3.1.a)
+
+> (2) Position yourself so the job can be monitored but not to interfere with individual(s)
+> performing the work. (3) [...] In those instances, where a safety issue, incorrect assembly, or
+> violation of a technical requirement critical to the job is noted, identify this to the
+> individuals performing the job and request they stop until the problem can be resolved.
+> (I-9 App. C ¶ 2.d(2)–(3))
+
+> (5) Once the surveillance is completed, inform the individuals performing the job of any
+> violations or comments noted during the surveillance. Findings will also be discussed with
+> appropriate supervisor. (6) Write up surveillance findings and provide them to the QAO with copy
+> to the division officer in charge of the work surveyed. (I-9 App. C ¶ 2.d(5)–(6))
+
+TUM 1.7.6: *"The Shipyard/RMC will establish a process that reviews the tag-out log and ensures
+proper posted tag checks. The goal of the monitoring is to provide timely data on tag-out
+performance so emerging adverse trends can be quickly addressed. Any deficiencies found during the
+monitoring shall be recorded by date, description, and signature entry in a formal Shipyard/RMC
+document per local guidance."*
+
+29 CFR 1915.89(q)(2): the audit is performed by *"(i) An authorized employee other than the one(s)
+currently using the energy-control procedure being reviewed; or (ii) Individuals other than an
+authorized employee who are knowledgeable about the employer's lockout/tags-plus program"*.
+§ 121.373(a) (CASS) asks for *"a system for the continuing analysis and surveillance of the
+performance and effectiveness of its inspection program"*. That is program-level surveillance, not
+watching a job while it is under way.
+
+**What the texts agree on.** The surveillant is not part of the work, and is scheduled by the
+quality side (the QAO), not by the person running the work. It observes without interfering. It
+**requests** a stop, and only on three named triggers. Its findings go up the quality line, with a
+copy to the person in charge of the work. No text gives it the power to order a stop.
+
+**The gzkit side, read 2026-10-26.** No position watches work in progress from outside the chain.
+The inspector is dispatched by the runtime at set points (the decision above, *the coordinator is
+the operator-facing session*). Its job is acceptance, not watching the work as it happens. The
+nearest built design is the cross-family critic (`ADR-0.36.0`, `Proposed`, nothing landed; campaign
+§ Movement A item 2). It is a skill with three doors (operator, agent, gate), and its verdict
+reaches the operator unedited. It challenges decisions and scope, not work in progress. The
+contractor brief's stops are all self-stops: *"Stop and wait for the operator"*. Under the
+provisional A, the coordinator *"cannot direct, override or filter the inspector"*, and nothing is
+said about a surveillant.
+
+## decision · surveillance: a stop request from outside the chain becomes a runtime hold
+
+Ruled; matrix row A8. Both sides were read in full (the source entry above). Question: who may
+stop work from outside the work chain? Options put:
+
+- **A.** A surveillance position, filled by any session outside the work chain and dispatched by
+  the operator, never by the coordinator; the cross-family critic is a later candidate. On one of
+  JFMM's three triggers (a safety issue, incorrect assembly, a violation of a technical requirement
+  critical to the job), it writes a stop request to the tag-out log. The runtime then holds that
+  surface (no further application, landing or clearing) until the coordinator records a resolution
+  with evidence. The finding reaches the operator unedited. The coordinator cannot dismiss it
+  without a resolution; only the operator lifts it without one.
+- **B.** The same position, reporting only: no hold, and the operator decides.
+- **C.** No surveillance position, recorded as not pursued.
+
+Recommended A. Operator selected **"A: request becomes hold (Recommended)"**.
+
+**Liberty, recorded.** In JFMM the surveillant *requests* a stop (I-9 App. C ¶ 2.d(3)), and here
+the runtime makes it a hold. In gzkit, a request kept only by persona discipline would be honored,
+if at all, by the coordinator, and the coordinator is the session being watched. The three
+triggers are JFMM's own and keep the hold narrow. Dispatch by the operator, not the coordinator,
+follows I-9.3.1.a (*"as scheduled by the Quality Assurance Officer"*): the quality line, not the
+work line, schedules surveillance. The term is the text's own: **surveillance**, and the one who
+performs it is the **surveillant**.
+
+**commissions:** 4 — the kit gains the surveillance position: its persona obligations, the
+operator-only dispatch, the stop request as a tag-out log line, the runtime hold and its two lifts
+(the coordinator's resolution with evidence, or the operator).
+
 ---
 
 ## Disposition map
@@ -1617,7 +1702,7 @@ missed are A7, the still-proposed rows (3) and the widening check (5).
 | 1 | ADR / OBPI | | | open: the admission question has not been put; the kit's governed home (an RO of the drydock) may make it unnecessary |
 | 2 | GHI / direct fix | commissioned | direct repair of the eleven defects in the pipeline parts the kit reuses (#1200, #1206, #1208, #1198, #1203, #1205, #1194, #1209, #1185, a cwd-escape guard to be filed, #1028's stop-and-ask boundary); a GHI on the persona witness measuring a total; each lesson crossing kit and pipeline as a GHI | operator, questions 8, 14, 17, 21 |
 | 3 | chore | commissioned | the vibe-coded and underbaked audit chore; `frontier-model-card-currency` widened to model-level assignments (landed `9649d0eb0`) | operator directed both, 2026-10-25 |
-| 4 | control surface, rule, doc, skill, hook | commissioned | the contractor kit (four positions, runtime, tag-out log, maintenance record, punch list, job order and change order); the contract's division of labor, cheaper-sessions clause, exit conditions and § Punch list; the doctrine's § Seaworthy and § Handback; Part 0's sea-trial term and the campaign's Movement E (operator ratification); RO-7's persona exit number; `gz-rnd`'s both-sides rule; the vocabulary crosswalk | operator, questions 1–24 |
+| 4 | control surface, rule, doc, skill, hook | commissioned | the contractor kit (four positions and the surveillant, runtime, tag-out log, maintenance record, punch list, job order and change order); the contract's division of labor, cheaper-sessions clause, exit conditions and § Punch list; the doctrine's § Seaworthy and § Handback; Part 0's sea-trial term and the campaign's Movement E (operator ratification); RO-7's persona exit number; `gz-rnd`'s both-sides rule; the vocabulary crosswalk | operator, questions 1–24 |
 | 5 | one-shot refactoring | | | open |
 | 6 | no action | | | open |
 
