@@ -2439,6 +2439,103 @@ independent check.
 self-signing, and the pipeline's reviewers named as the second person. 2 — a GHI on the pipeline
 side for the second-person name, as a lesson crossing from the kit.
 
+## source · the operator: assembly mode, and whether the non-operational modes are one
+
+Operator, 2026-10-26, verbatim (dictated, sent while C3 was being put):
+
+> I guess you'd call that assembly mode, right? The idea is that, you know, we're not fully
+> operational, so it's just a non-operational mode where the logic and pathways are available, but I
+> don't know if that's important enough as a distinction from safe mode and factory floor mode and
+> maintenance mode ultimately become pretty indistinguishable. You're in non-assembled disrepair or
+> disintegration,
+
+**The agent's reading, for the question.** For the central signal, the operator's point holds:
+safe mode, maintenance and factory floor are all *not fully operational*, and a module told to
+stand by does the same thing in each. The difference lives in the **control's own state**, not in
+the signal. A control lowered by standby was accepted before, and its restore returns it to a level
+it has already held. A control never yet accepted, which is the assembly case, has nothing to return
+to. Its first enabling is an **acceptance**, with its own self-test passing for the first time. The
+Navy keeps the same split between a system restored after repair and one accepted out of
+construction. The construction-period text is unread, so that remains a hypothesis.
+
+## decision · one non-operational condition; each control carries accepted-and-lowered or not-yet-accepted
+
+Ruled. Options put:
+
+- **A.** One non-operational condition on the signal (today's safe mode and MX hangar). Factory
+  floor and assembly are not separate modes. Each control's contract carries a state: **accepted
+  and lowered**, which is restored at exit, or **not yet accepted**, which is enabled only by its
+  first acceptance (its self-test passing and its mark signed).
+- **B.** Assembly as its own value of the signal.
+- **C.** One condition, with no state on the controls.
+
+Recommended A. Operator selected **"A: one condition (Recommended)"**.
+
+This **amends** the factory floor decision. The factory floor is no longer a value of the signal.
+It survives as the *not yet accepted* state of a control under the one non-operational condition.
+The operator's *"pretty indistinguishable"* holds for the signal, and the distinction is kept where
+it matters: whether a control's restore returns it to a held level or is its first acceptance.
+
+**commissions:** 5 — each control's contract carries its accepted state, and first acceptance is
+recorded.
+
+## source · the census of controls, code and model-oriented
+
+Two background tracks landed on 2026-10-26: `docs/rnd/contractor-kit/sources/census-code-controls.md`
+(870 lines) and `docs/rnd/contractor-kit/sources/census-model-surfaces.md` (550 lines). Their method
+and gaps are in each header. The code census counted the registries by running the code. It took
+CLI refusals as a sample of 37 out of 301 refusal sites. The model census read frontmatter and
+headings in full, and read every hit for the mode terms in context. Its role labels are the
+census's reading, because the repository declares no role field.
+
+**Counts.**
+
+- **Code: 421 controls.**
+  - By kind: 25 git-hook, 23 Claude/Codex, 74 `gz check` steps, 108 validators, 134 `@enforces`
+    claims, 8 CI, 37 CLI refusals (sampled), 4 MX-internal, 8 chore scripts.
+  - By role: 116 tripwire, 12 alarm, 13 monitor, 218 safeguard, 52 gate, 7 other, 3 dispatcher.
+  - 204 read the MX signal and 217 do not.
+- **Model-oriented: 206 surfaces** (183 without the 23 generated nested `AGENTS.md`).
+  - By kind: 73 skills, 26 rules, 2 contract files, 7 personas, 6 agent definitions, 40 chores,
+    13 text-injecting hook entries, 14 templates, 2 loose prompts.
+  - 8 are mode-aware today. No surface reports its own suitability for function.
+- **Built-in self-test today:** only the `--self-test` arms of 7 chore scripts.
+
+**Checked by the agent against the code, 2026-10-26:**
+
+- `.gzkit/mx.json` is tracked in git (`git ls-files`). HEAD carries `"mode": "safe"` and
+  `"exiting": false`. `hangar_demotes` (`src/gzkit/mx/checkpoint.py`) returns True whenever the
+  marker is active and not exiting, so every clone, CI included, runs demoted.
+- The step demotion acts only on exit code 3 (`src/gzkit/commands/quality.py`: `if
+  getattr(result, "returncode", 0) != 3: ... return result`). Steps that fail any other way still
+  block.
+- `gz mx exit` re-runs `uv run gz check` (`src/gzkit/commands/mx_cmd.py:380`), the change scope, not
+  `--full`.
+
+**Correction to this record.** The entry *the agent's reframe of the refactor* says *"the Claude hook
+events (10 entries across 7 events)"*. That counted matcher groups. The census counts **17
+registered entries** across 7 events, running 15 scripts.
+
+**Findings the census reports, not yet checked by the agent.** Each is a defect candidate,
+tracked here until routed:
+
+- the Claude and Codex safe-mode banners differ (`.claude/hooks/mx-awareness.py:44-51` against
+  `src/gzkit/mx/awareness.py:20-24`), and Codex gets no per-turn banner;
+- twin controls disagree: the Codex verifier pipe ignores safe mode where its Claude twin honors
+  it, and the Claude pipeline gate demotes while its pre-commit twin is pinned CRITICAL;
+- the checkpoint (both modes, unreadable marker included) and the alarms wrapper (safe only) read
+  *open* differently, and neither checks the ledger binding `is_valid`;
+- in the GATE5 floor, two members are unenforced, gitleaks runs outside the checkpoint with no
+  claim, and `grader-gaming` has no production caller;
+- 96 of 134 claims have no canary, and 55 leave `exempts` undeclared;
+- hook drift: `ceremony-step-gate.py` and `control-surface-sync.py` are unwired, and the README
+  lists a missing `session-start-advisement.py`;
+- `AGENTS.md:167` says the post-edit ruff hook strips imports, while the hook says it only reports;
+- `pipeline-router.py` routes to the OBPI pipeline without reading the marker;
+- `mx-mode.md` loads only for MX code paths;
+- subagents receive no safe-mode banner. The model census observed this of itself: it ran
+  without a banner while the marker was open.
+
 ---
 
 ## Disposition map
