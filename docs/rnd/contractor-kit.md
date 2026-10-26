@@ -1725,6 +1725,75 @@ the repair activity working under them.
 **commissions:** 4 — the coordinator's persona obligations and the runtime's refusals, as listed
 above.
 
+## source · every stop-work trigger in the texts
+
+Read on 2026-10-26 for matrix row C4, from fresh extractions. JFMM Vol V was searched for
+*stop*, *cease* and *halt*, and every hit was read in context. TUM was searched the same way.
+
+- JFMM I-1.6.11.a, the craftsman: *"Perform all maintenance actions following the approved
+  procedure. If that guidance is either incorrect, incomplete or unclear, stop and seek
+  clarification from the work center or shift supervisor."*
+- JFMM I-2.3.7.2.a, rework: *"The craftsman doing the work must stop the work and notify the LPO or
+  Work Center Supervisor (WCS) that rework is required."* Under I-2.3.7.2.d a rework addendum is
+  *"approved by the Division Officer"*, and *"Any additional actions that were not included in
+  the originally approved CWP or FWP constitute a change in scope or work boundaries and must be
+  issued as a revision"*.
+- JFMM I-2.3.7.3.b(1), revision (a change of scope, boundary or test, I-2.3.7.3.a): *"Work must
+  stop immediately and the LPO or WCS must be notified when the need for a revision is
+  identified."*
+- JFMM Part I Ch. 2 QA form instructions, the electroplating block: *"IF THE APPLIED PLATING
+  THICKNESS IS BEYOND THE MAXIMUM ALLOWED OR NOT WITHIN THE SPECIFIED RANGE, STOP WORK AND OBTAIN
+  FURTHER TECHNICAL DIRECTION."* This is the one instance in the text of a measured result outside
+  its specification.
+- JFMM I-9 App. C ¶ 2.d(3), surveillance: quoted in the source entry above, and ruled as a hold.
+- JFMM I-1.6.15.k, the QAI: *"Ensure the deficiency is resolved before work continues."*
+- TUM 1.8.5.b(1) and (2): when clearing would reposition an item with more than one tag, or the item
+  is found out of its expected position, *"all efforts to remove the tag shall be stopped"* /
+  *"all tag removal/restoration efforts for the items shall be stopped. The discrepancy shall be
+  reported immediately to the Authorizing Officer and RA Representative."*
+
+**What the texts agree on.** The person doing the work stops. The stop goes to whoever holds the
+authority to resolve that kind of trigger: the supervisor for an unclear procedure or rework, the
+revision chain for scope, boundary or test, technical direction for a result outside its
+specification, and the Authorizing Officer for a tag discrepancy. The work stays stopped until
+that authority resolves it.
+
+**The gzkit side.** The contractor brief lists self-stops to the operator, *"one question at a
+time, with a recommendation"*: every structural question a specification does not answer, every
+binding loss, the named batch rulings, and *"anything that would delete data, rewrite history or
+force-push."* The run has already ruled: tag-out clearing (TUM 1.8.5.b(2), the restorer's rule);
+change orders as the operator's alone, with work stopping (the change ladder); departure from
+specification (B9); a surveillance hold (A8); and acceptance or rejection as the inspector's alone,
+countermanded only by the operator (C6).
+
+## decision · a stop is a recorded event, routed by its trigger to the one who can resolve it
+
+Ruled; matrix row C4. Both sides were read in full (the source entry above). Options put:
+
+- **A.** A stop is a recorded event on the work package, carrying a trigger from a closed list.
+  The runtime refuses to land anything on that package until the named resolver records a
+  resolution. Routing:
+  - to the **coordinator**: an incorrect, incomplete or unclear procedure (I-1.6.11.a), cleared as
+    a pen-and-ink change or escalated; rework inside scope (I-2.3.7.2); a tag discrepancy, as
+    Authorizing Officer (TUM 1.8.5.b);
+  - to the **operator**: a change of scope, boundary or test (I-2.3.7.3, a change order); a result
+    outside its specification (a departure from specification or a change order); and the
+    contractor brief's deletion, history-rewrite and force-push stops;
+  - a surveillance hold (A8) and an inspector's deficiency (I-1.6.15.k, C6) follow their own
+    rulings.
+- **B.** The same record and hold, with every trigger going to the operator.
+- **C.** Triggers and routing as persona obligations only.
+
+Recommended A. Operator selected **"A: routed by trigger (Recommended)"**.
+
+The routing follows the texts' own split: the supervisor clears clarification and rework, the
+revision chain handles scope, and the Authorizing Officer handles tags. Each text authority maps to
+the gzkit position the run has already ruled. The term is the text's own: **stop work**.
+
+**commissions:** 4 — the closed trigger list, the stop as a package event, the runtime's refusal
+to land on a stopped package, and each trigger's resolver, in the kit's runtime and the persona
+obligations.
+
 ---
 
 ## Disposition map
