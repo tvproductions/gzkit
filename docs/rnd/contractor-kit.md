@@ -2336,6 +2336,43 @@ admission question is owed: is this hard to reverse, surprising without context,
 of a real trade-off? If all three hold, it is an ADR the operator may initiate. If not, it stays at
 row 4.
 
+## source · the operator: why the drydock exists, and the factory floor mode gzkit never had
+
+Operator, 2026-10-26, verbatim (dictated):
+
+> Yeah, I get it with C3, and I like how the Navy, you know, has some distinction there. So I
+> obviously need to review and verify the majority of this with you. And we don't have to onboard
+> all the costs immediately, but this need for maintenance mode or dry dock really came about from
+> the reality that we couldn't keep on modifying gzkit while all features of gzkit were on. We were
+> causing tampering in places where dampening was happening, and vice versa. So we needed this mode,
+> and we needed it all along. We should have had a factory floor mode where we would build these
+> provisions, but then obviously keep them disabled while we were assembling and modifying parts.
+> So this was long overdue.
+
+## decision · a factory floor condition: provisions built in, held disabled during assembly
+
+Ruled in principle from the operator's words above.
+
+- **Why the drydock exists, in the operator's words.** gzkit could not be modified with all its
+  features on: *"We were causing tampering in places where dampening was happening, and vice
+  versa."* The controls and the work interfered with each other. That is the hazard the mode
+  contract removes.
+- **A factory floor condition.** It is a value of the central condition signal. A provision
+  (control, self-test, alarm) is **built in** as part of assembly, but **held disabled** while parts
+  are assembled and modified. It is enabled when the assembly is accepted. This is the build-time
+  counterpart of standby: standby lowers a working control, and factory floor holds a new one off
+  until it is accepted. With the permanent design requirement, it is how a new surface carries its
+  contract from the first commit without interfering with the work that builds it.
+- **Costs are not all paid at once.** *"we don't have to onboard all the costs immediately"* is
+  consistent with the ordered priorities and the caution against parsimony.
+- **The operator reviews and verifies most of this with the agent.** *"I obviously need to review
+  and verify the majority of this with you."* The review before sign-off is where this happens.
+
+**Hypothesis, unread as a mapping:** TUM 1.7.6 names *"ship's construction periods when the TUM is
+invoked"*. The Navy's new-construction regime, building a ship whose systems are not yet in service,
+is the likely text counterpart of the factory floor. Only 1.7.6's single sentence has been read.
+*Factory floor* stays the operator's term until a construction-period source is read.
+
 ---
 
 ## Disposition map
