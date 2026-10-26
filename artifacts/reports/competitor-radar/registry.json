@@ -283,7 +283,7 @@
       "id": "better-spec",
       "name": "Better Spec",
       "category": "spec-driven toolkit",
-      "watch_level": "secondary",
+      "watch_level": "discovery",
       "status": "active",
       "trajectory": "watch",
       "links": {
@@ -306,7 +306,7 @@
       "id": "specledger",
       "name": "Specledger",
       "category": "spec-driven platform",
-      "watch_level": "secondary",
+      "watch_level": "reference",
       "status": "active",
       "trajectory": "rising",
       "links": {

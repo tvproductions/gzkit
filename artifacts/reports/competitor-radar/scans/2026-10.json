@@ -581,6 +581,78 @@
       "decision": "Put the radar on a chore rotation with a staleness clock (chore competitor-radar-currency).",
       "source": "operator, verbatim: 'get it on a chore rotation (staleness) - yes, chore it.'",
       "recorded_at": "2026-10-26"
+    },
+    {
+      "id": "MOVE-101",
+      "decision": "Operator selected 'Approve, pool ADR (Recommended)': route to ADR-pool.review-receipt-taxonomy.",
+      "source": "operator grill answer",
+      "recorded_at": "2026-10-26"
+    },
+    {
+      "id": "MOVE-102",
+      "decision": "Operator selected 'Approve, pool ADR (Recommended)': route to ADR-pool.skill-control-surface-contract.",
+      "source": "operator grill answer",
+      "recorded_at": "2026-10-26"
+    },
+    {
+      "id": "MOVE-103",
+      "decision": "Operator selected 'Approve, pool ADR (Recommended)': route to ADR-pool.content-injection-scanning, re-scoped.",
+      "source": "operator grill answer",
+      "recorded_at": "2026-10-26"
+    },
+    {
+      "id": "MOVE-104",
+      "decision": "Operator selected 'Discussion only': keep on the radar, revisit when adopters grow.",
+      "source": "operator grill answer",
+      "recorded_at": "2026-10-26"
+    },
+    {
+      "id": "MOVE-105",
+      "decision": "Operator selected 'Comment on #1252 (Recommended)': add as evidence and a proposed acceptance check on the control-plane-cut GHI.",
+      "source": "operator grill answer",
+      "recorded_at": "2026-10-26"
+    },
+    {
+      "id": "MOVE-106",
+      "decision": "Operator selected 'Approve, pool ADR (Recommended)': route to ADR-pool.solved-problem-pattern-corpus.",
+      "source": "operator grill answer",
+      "recorded_at": "2026-10-26"
+    },
+    {
+      "id": "MOVE-107",
+      "decision": "Operator selected 'File a GHI (Recommended)': file through ghi-author.",
+      "source": "operator grill answer",
+      "recorded_at": "2026-10-26"
+    },
+    {
+      "id": "MOVE-108",
+      "decision": "Operator selected 'Approve, pool ADR (Recommended)': route to ADR-pool.graduated-oversight-model with the explicit rejection of canon override.",
+      "source": "operator grill answer",
+      "recorded_at": "2026-10-26"
+    },
+    {
+      "id": "MOVE-109",
+      "decision": "Operator selected 'Apply as recommended': Better Spec to discovery, Specledger to reference, Spec Kit governance extensions read in full every scan.",
+      "source": "operator grill answer",
+      "recorded_at": "2026-10-26"
+    },
+    {
+      "id": "MOVE-110",
+      "decision": "Operator selected 'File a GHI (Recommended)': a live link and archive check as a radar scan step.",
+      "source": "operator grill answer",
+      "recorded_at": "2026-10-26"
+    },
+    {
+      "id": "MOVE-111a",
+      "decision": "Operator selected 'Evidence for ADR-0.37.0 (Recommended)': adrkit's diff-to-decisions query is recorded as external evidence and a candidate requirement for the airlock's calibration, cross-linked to #1185. The operator first asked 'don't we have that with the airlock?'; the airlock is the home but runs forward from an OBPI and is diagnostic-only until calibrated.",
+      "source": "operator grill answer",
+      "recorded_at": "2026-10-26"
+    },
+    {
+      "id": "MOVE-111b",
+      "decision": "Operator selected 'Reject': gzkit is not distributed through Spec Kit; gzkit stays standalone.",
+      "source": "operator grill answer",
+      "recorded_at": "2026-10-26"
     }
   ],
   "routed_follow_up": [
@@ -611,26 +683,26 @@
       ],
       "recommendation": "Extend the review-receipt taxonomy: each receipt names the reviewer's vendor and model, the round and round budget, and records a timeout, error or exhausted budget as a non-response that never counts as a pass. Add the confirmed / needs_validation / rejected verdict tier from an independent disprover (Cloudflare's security-audit-skill, a discovered candidate).",
       "mechanical_witness": "A typed receipt field set that a validator checks; a test that a non-response receipt cannot satisfy a review gate.",
-      "decision_status": "pending-grill",
+      "decision_status": "approved",
       "rationale": "Every source converges on the same mechanism: review is evidence only when its provenance and its non-response semantics are recorded. gzkit's Step 4b reviewer has neither field today.",
       "grill_questions": [
         {
           "question": "Are we copying a product or absorbing a mechanism?",
           "recommended_answer": "A mechanism: typed review provenance and non-response semantics. Not tstack's PR workflow or its 0-10 scores.",
-          "answer": "",
-          "status": "pending"
+          "answer": "A mechanism: typed review provenance and non-response semantics. Not tstack's PR workflow or its 0-10 scores.",
+          "status": "answered"
         },
         {
           "question": "Which gzkit invariant must not weaken?",
           "recommended_answer": "Gate 5 stays human; a review receipt is evidence for the operator, never a substitute.",
-          "answer": "",
-          "status": "pending"
+          "answer": "Gate 5 stays human; a review receipt is evidence for the operator, never a substitute.",
+          "status": "answered"
         },
         {
           "question": "What route do you recommend?",
           "recommended_answer": "existing-pool-adr: ADR-pool.review-receipt-taxonomy.",
-          "answer": "",
-          "status": "pending"
+          "answer": "existing-pool-adr: ADR-pool.review-receipt-taxonomy.",
+          "status": "answered"
         }
       ]
     },
@@ -645,26 +717,26 @@
       ],
       "recommendation": "Align gzkit's skill-load and subagent-dispatch ledger events with the OpenTelemetry GenAI semantic conventions (open-telemetry/semantic-conventions-genai: agent, plan and workflow spans, gen_ai.skill.* attributes, skill-load spans), so gzkit's evidence is exportable in the vocabulary the ecosystem is standardising on.",
       "mechanical_witness": "A mapping table from ledger event types to GenAI span names and attributes, checked by a test.",
-      "decision_status": "pending-grill",
+      "decision_status": "approved",
       "rationale": "OpenTelemetry now cites agentskills.io and defines a skill-load span; gzkit already records the same events in its own names.",
       "grill_questions": [
         {
           "question": "Are we chasing fashion?",
           "recommended_answer": "No: it is a standards body defining names for events gzkit already records; mapping costs a table, not a redesign.",
-          "answer": "",
-          "status": "pending"
+          "answer": "No: it is a standards body defining names for events gzkit already records; mapping costs a table, not a redesign.",
+          "status": "answered"
         },
         {
           "question": "Which gzkit invariant must not weaken?",
           "recommended_answer": "The ledger stays the system of record; OTel is an export vocabulary, never the source of truth.",
-          "answer": "",
-          "status": "pending"
+          "answer": "The ledger stays the system of record; OTel is an export vocabulary, never the source of truth.",
+          "status": "answered"
         },
         {
           "question": "What route do you recommend?",
           "recommended_answer": "existing-pool-adr: ADR-pool.skill-control-surface-contract.",
-          "answer": "",
-          "status": "pending"
+          "answer": "existing-pool-adr: ADR-pool.skill-control-surface-contract.",
+          "status": "answered"
         }
       ]
     },
@@ -680,26 +752,26 @@
       ],
       "recommendation": "Re-scope the injection pool: the trust decision for an external skill or hook is a pinned version plus a human-reviewed sync receipt; a scanner's output is advisory evidence only (Trail of Bits bypassed every major skill scanner, 2026-06-03). Add Kiro's trust prompt before a workspace's hooks, agents and workflows load.",
       "mechanical_witness": "A sync receipt naming the pinned version and the human reviewer; a load-time refusal for an unreviewed external surface.",
-      "decision_status": "pending-grill",
+      "decision_status": "approved",
       "rationale": "Scanner bypasses are now documented, and Kiro shipped trust-before-load in October.",
       "grill_questions": [
         {
           "question": "What evidence proves the strength changed?",
           "recommended_answer": "Trail of Bits' June 2026 post and Kiro's October release notes, both cited in this scan.",
-          "answer": "",
-          "status": "pending"
+          "answer": "Trail of Bits' June 2026 post and Kiro's October release notes, both cited in this scan.",
+          "status": "answered"
         },
         {
           "question": "Which gzkit invariant must not weaken?",
           "recommended_answer": "External content stays data, never instruction (AGENTS.md § Behavior Rules).",
-          "answer": "",
-          "status": "pending"
+          "answer": "External content stays data, never instruction (AGENTS.md § Behavior Rules).",
+          "status": "answered"
         },
         {
           "question": "What route do you recommend?",
           "recommended_answer": "existing-pool-adr: ADR-pool.content-injection-scanning.",
-          "answer": "",
-          "status": "pending"
+          "answer": "existing-pool-adr: ADR-pool.content-injection-scanning.",
+          "status": "answered"
         }
       ]
     },
@@ -713,47 +785,47 @@
       ],
       "recommendation": "GSD's original repository was archived after its maintainer went silent and a token tied to the project was linked to a rug-pull; a community fork now carries it. gzkit ships py-gzkit to adopters. Discuss signed or attested releases (provenance) and a written succession plan.",
       "mechanical_witness": "Release provenance attestations on the published wheel; a documented continuity owner.",
-      "decision_status": "pending-grill",
+      "decision_status": "discussion-only",
       "rationale": "A single-maintainer project with adopters is exposed the same way.",
       "grill_questions": [
         {
           "question": "Is this feature capability, pool backlog, GHI, or reject?",
           "recommended_answer": "Pool backlog: it is a real exposure but not urgent while adopters are few.",
           "answer": "",
-          "status": "pending"
+          "status": "answered"
         },
         {
           "question": "What route do you recommend?",
           "recommended_answer": "discussion-only now; new-pool-adr if the operator wants it tracked.",
           "answer": "",
-          "status": "pending"
+          "status": "answered"
         }
       ]
     },
     {
       "id": "MOVE-105",
       "title": "Prove a skill or control-surface trim with before/after behaviour tests",
-      "route": "discussion-only",
-      "destination": "",
+      "route": "ghi",
+      "destination": "#1252",
       "source_competitors": [
         "superpowers"
       ],
       "recommendation": "Superpowers measured that cutting rebuttal text from a skill dropped test-first behaviour from 8/10 to 5/10. gzkit's control-plane cuts (WP-13 to WP-16) measure size, not behaviour. Discuss adding a behaviour check as evidence for any trim.",
       "mechanical_witness": "A small behaviour eval run before and after a trim, its result recorded with the trim.",
-      "decision_status": "pending-grill",
+      "decision_status": "approved",
       "rationale": "Size budgets alone cannot show a cut removed nothing load-bearing.",
       "grill_questions": [
         {
           "question": "Which gzkit invariant must not weaken?",
           "recommended_answer": "Written constraints stay unless evidence shows they are unnecessary (opus-tuning § Recalibration).",
-          "answer": "",
-          "status": "pending"
+          "answer": "Written constraints stay unless evidence shows they are unnecessary (opus-tuning § Recalibration).",
+          "status": "answered"
         },
         {
           "question": "What route do you recommend?",
           "recommended_answer": "discussion-only; it bears on #1252 (control-plane cut).",
-          "answer": "",
-          "status": "pending"
+          "answer": "discussion-only; it bears on #1252 (control-plane cut).",
+          "status": "answered"
         }
       ]
     },
@@ -768,20 +840,20 @@
       ],
       "recommendation": "Compound Engineering only saves a learning that passes a written durable-bar test, and audits saved learnings for staleness, overlap and contradiction. gzkit's gz insights remember has no admission bar and no contradiction audit.",
       "mechanical_witness": "A typed admission check on insight capture and a periodic contradiction audit chore.",
-      "decision_status": "pending-grill",
+      "decision_status": "approved",
       "rationale": "gzkit's insight store grows without curation.",
       "grill_questions": [
         {
           "question": "Are we copying a product or absorbing a mechanism?",
           "recommended_answer": "A mechanism: an admission test and an audit, not their file layout.",
-          "answer": "",
-          "status": "pending"
+          "answer": "A mechanism: an admission test and an audit, not their file layout.",
+          "status": "answered"
         },
         {
           "question": "What route do you recommend?",
           "recommended_answer": "existing-pool-adr: ADR-pool.solved-problem-pattern-corpus.",
-          "answer": "",
-          "status": "pending"
+          "answer": "existing-pool-adr: ADR-pool.solved-problem-pattern-corpus.",
+          "status": "answered"
         }
       ]
     },
@@ -795,20 +867,20 @@
       ],
       "recommendation": "Matt Pocock's skills split user-invoked from model-invoked and forbid a skill from calling a user-invoked one. gzkit already marks operator-only skills (disable-model-invocation: true) but nothing checks that no skill body routes to one.",
       "mechanical_witness": "A validator over skill bodies that refuses a call into an operator-only skill.",
-      "decision_status": "pending-grill",
+      "decision_status": "approved",
       "rationale": "The mark exists without its consumer.",
       "grill_questions": [
         {
           "question": "Is this feature capability, pool backlog, GHI, or reject?",
           "recommended_answer": "GHI: a missing check on an existing mark is a small defect.",
-          "answer": "",
-          "status": "pending"
+          "answer": "GHI: a missing check on an existing mark is a small defect.",
+          "status": "answered"
         },
         {
           "question": "What route do you recommend?",
           "recommended_answer": "ghi through ghi-author.",
-          "answer": "",
-          "status": "pending"
+          "answer": "ghi through ghi-author.",
+          "status": "answered"
         }
       ]
     },
@@ -822,20 +894,20 @@
       ],
       "recommendation": "tstack's full-send and takeover skills grant an unattended agent a scoped permission with a written merge gate. Record the pattern under graduated oversight, and record the explicit rejection: a request may never replace a project-canon rule ('this request replaces that rule').",
       "mechanical_witness": "Any autonomy grant is itself a recorded, scoped, revocable authorisation; canon precedence is tested.",
-      "decision_status": "pending-grill",
+      "decision_status": "approved",
       "rationale": "It is the clearest current example of both the useful pattern and the dangerous clause.",
       "grill_questions": [
         {
           "question": "Which gzkit invariant must not weaken?",
           "recommended_answer": "Canon prevails over session instructions, and Gate 5 stays human.",
-          "answer": "",
-          "status": "pending"
+          "answer": "Canon prevails over session instructions, and Gate 5 stays human.",
+          "status": "answered"
         },
         {
           "question": "What route do you recommend?",
           "recommended_answer": "existing-pool-adr: ADR-pool.graduated-oversight-model.",
-          "answer": "",
-          "status": "pending"
+          "answer": "existing-pool-adr: ADR-pool.graduated-oversight-model.",
+          "status": "answered"
         }
       ]
     },
@@ -851,20 +923,20 @@
       ],
       "recommendation": "Better Spec is still v0.0.1 alpha with its repository returning 404: demote to discovery or retire. Specledger has had no CLI release since April: demote to reference. Spec Kit now has community governance presets and an 'adrkit' extension in gzkit's territory: deep-read them next scan.",
       "mechanical_witness": "The registry's watch levels match the evidence each month.",
-      "decision_status": "pending-grill",
+      "decision_status": "approved",
       "rationale": "Watch levels set in May no longer match what the sources show.",
       "grill_questions": [
         {
           "question": "What evidence proves the trajectory changed?",
           "recommended_answer": "Better Spec's 404 repository and stale npm release; Specledger's release history; Spec Kit release notes naming the presets.",
-          "answer": "",
-          "status": "pending"
+          "answer": "Better Spec's 404 repository and stale npm release; Specledger's release history; Spec Kit release notes naming the presets.",
+          "status": "answered"
         },
         {
           "question": "What route do you recommend?",
           "recommended_answer": "discussion-only; the operator rules each watch level.",
-          "answer": "",
-          "status": "pending"
+          "answer": "discussion-only; the operator rules each watch level.",
+          "status": "answered"
         }
       ]
     },
@@ -880,53 +952,53 @@
       ],
       "recommendation": "Three registry links were wrong this month (an archived repository, a 404 path, a superseded homepage), and nothing in radar.py validate checks links. Add a live link and archive check to each scan.",
       "mechanical_witness": "radar.py validate (or a scan step) refuses a dead link or an archived repository not marked as such.",
-      "decision_status": "pending-grill",
+      "decision_status": "approved",
       "rationale": "This scan found the defects by hand.",
       "grill_questions": [
         {
           "question": "Which gzkit invariant must not weaken?",
           "recommended_answer": "Validation must stay runnable offline; the link check is a scan step, not part of the offline validate.",
-          "answer": "",
-          "status": "pending"
+          "answer": "Validation must stay runnable offline; the link check is a scan step, not part of the offline validate.",
+          "status": "answered"
         },
         {
           "question": "What route do you recommend?",
           "recommended_answer": "ghi through ghi-author.",
-          "answer": "",
-          "status": "pending"
+          "answer": "ghi through ghi-author.",
+          "status": "answered"
         }
       ]
     },
     {
       "id": "MOVE-111",
       "title": "Answer 'which decisions govern this change?' and consider a Spec Kit distribution route",
-      "route": "discussion-only",
-      "destination": "",
+      "route": "open-feature-adr",
+      "destination": "ADR-0.37.0-airlock-calibration-and-compulsion",
       "source_competitors": [
         "github-spec-kit"
       ],
       "recommendation": "Two parts. (1) Absorb adrkit's mechanism: every ADR and brief declares the paths it affects, so gzkit can answer which decisions govern a given diff, at commit time and in review. (2) Discuss packaging gzkit's governance (ledger, receipts, gates, attestation) as a Spec Kit extension or preset in an org-hosted catalog, so gzkit reaches Spec Kit's users instead of competing with its distribution.",
       "mechanical_witness": "(1) a `gz` query that lists the ADRs and briefs governing a diff, with a test; (2) a working extension manifest validated by Spec Kit's catalog tooling.",
-      "decision_status": "pending-grill",
+      "decision_status": "approved-part-1; part-2 rejected",
       "rationale": "Spec Kit's community catalog is assembling gzkit's capabilities piecemeal on a 143k-star channel; gzkit's coherence is its edge, and its reach is its gap.",
       "grill_questions": [
         {
           "question": "Are we copying a product or absorbing a mechanism?",
           "recommended_answer": "A mechanism: decision-to-path governance (adrkit's affects field). Distribution through Spec Kit is a separate, strategic question.",
-          "answer": "",
-          "status": "pending"
+          "answer": "A mechanism: decision-to-path governance (adrkit's affects field). Distribution through Spec Kit is a separate, strategic question.",
+          "status": "answered"
         },
         {
           "question": "Which gzkit invariant must not weaken?",
           "recommended_answer": "The ledger stays the system of record; packaged as an extension, gzkit must not shrink into advisory templates.",
-          "answer": "",
-          "status": "pending"
+          "answer": "Moot for part 2, which is rejected; for part 1 the ledger stays the system of record.",
+          "status": "answered"
         },
         {
           "question": "What route do you recommend?",
           "recommended_answer": "(1) existing-pool-adr or GHI once the brief-path linkage is checked against gz state; (2) discussion-only, an operator strategy decision.",
-          "answer": "",
-          "status": "pending"
+          "answer": "Part 1: open-feature-adr, as evidence and a candidate requirement for the airlock's calibration (ADR-0.37.0), cross-linked to #1185; gzkit's airlock is the home of 'which decisions govern this change', not a new pool ADR. Part 2: rejected, gzkit stays standalone.",
+          "status": "answered"
         }
       ]
     }
