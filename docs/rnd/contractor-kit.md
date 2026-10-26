@@ -2054,6 +2054,47 @@ may never be listed at all. Meyer gives the switch itself: a declared checking l
 with defaults at the system and group level, fixed for the length of a run. In gzkit, § 91.213(b)
 already has a counterpart: the `GATE5_INVARIANTS` floor.
 
+## decision · the mode contract is a Minimum Equipment List with Meyer's levels
+
+Ruled; matrix row A7 (the *what is owed*), and the shape of the disposition 5 refactor. Both sides
+were read in full (the source entry above and the place-of-call entry). Options put:
+
+- **A.** gzkit keeps **one list of controls, its Minimum Equipment List**. Each entry declares:
+  - its **level under each signal** (safe mode, standby, lockout), such as on, advisory or off,
+    with defaults by mode and by surface (Meyer: *"separately for each class, with defaults at the
+    system and cluster levels"*);
+  - its **(M) bypass procedure**, performed by the repairing craftsman and recorded on the tag-out
+    log;
+  - its **(O) limitation**, the condition the system runs under without it;
+  - its **placard**, the notice the port gives every affected party at the place of call
+    (AC 91-67 ¶ 7c);
+  - its **restore condition and deadline**, at the latest the exit re-run (¶ 23d).
+
+  A control not on the list cannot be relaxed (¶ 20f(2)(v), 20f(3)). The floor can never be listed
+  (§ 91.213(b), `GATE5_INVARIANTS`). A level is fixed for the length of an act (Meyer; the BLOG
+  reply).
+- **B.** Meyer's levels only: an on-off switch with defaults, and no procedures, placard or deadline.
+- **C.** B for every control, and A only where a repair modifies a control profoundly.
+
+Recommended A. Operator selected **"A: MEL with Meyer levels (Recommended)"**.
+
+**Terms.** *Minimum Equipment List* is the text's term, and gzkit's list takes it. *(M) procedure*,
+*(O) procedure*, *placard*, *deactivation* and *inoperative* are AC 91-67's (¶ 6g, 6k, 6r, 6t).
+*Level* is Meyer's word for the setting. **Liberties, recorded:** the MEL's items are equipment
+and gzkit's are controls. The MEL covers only the takeoff (¶ 23b, *"An MEL applies only to the
+takeoff"*), while gzkit's list holds for the length of an act. gzkit's signals are three, safe
+mode, standby and lockout, where the MEL has one condition, inoperative. *Standby* is still
+unsourced.
+
+**Still open:** where an entry is declared (in a central list, or at the control as `@enforces`
+declares `exempts`, with the list a derived view); what *standby* means; the threshold for
+*profound modification*; who determines that an inoperative control *"does not constitute a
+hazard"* (§ 91.213(d)(4)); and the census of places of call.
+
+**commissions:** 5 — the refactor gives every control an MEL entry and routes each call through a
+port that reads it. 4 — the placard as the port's notice to the affected parties, and the (M)
+procedure in the craftsman's obligations.
+
 ---
 
 ## Disposition map
