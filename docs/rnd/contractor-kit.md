@@ -2912,6 +2912,24 @@ operator's verbatim words on every amendment. **C** do not adopt it. Operator: *
 **commissions:** 4 — `safe-mode-doctrine.md` § The instruments item 1 and the contract template
 carry the rule.
 
+## decision · B11: the work package log, a Layer 3 view over the issues and the ledger
+
+Ruled; matrix row B11. Question: what is the register of open orders? JFMM I-2.3.7.8.b(2)(b): *"All
+open CWPs will be logged and tracked in the CWP REC log."* Options put: **A** name it the **work
+package log**, a Layer 3 view assembled from the repair-order issues and the ledger and never
+edited, with the contract's § Repair orders carrying the pointer (recommended); **B** keep
+*register* as the name, as a view; **C** keep a hand-maintained table in the contract. Operator:
+*"A"*.
+
+- **register** is retired inside the hangar for this record. Part 0 is unaffected, under the
+  scoped-register ruling.
+- By the state doctrine's Rule 5, the log never blocks a gate. The issues and the ledger are its
+  sources.
+
+**commissions:** 4 — `safe-mode-doctrine.md` § The instruments item 3, the contract template's
+§ Repair orders, and the crosswalk carry the term and the pointer. 5 — something renders the view;
+its producer is diamond-2 work.
+
 ---
 
 ## Disposition map
