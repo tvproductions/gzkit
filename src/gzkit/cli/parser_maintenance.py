@@ -962,6 +962,13 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Wheel-shipped instruction text carries no machine-local path, exit 3 (GHI #900).",
     )
     p_validate.add_argument(
+        "--model-class-only",
+        dest="check_model_class_only",
+        action="store_true",
+        help="Rule, skill and agent canon name models by class, never a versioned ID, "
+        "exit 3 (GHI #1284).",
+    )
+    p_validate.add_argument(
         "--changelog",
         dest="check_changelog",
         action="store_true",
@@ -1235,6 +1242,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_distribution=a.check_distribution,
             check_distribution_regenerate=a.check_distribution_regenerate,
             check_wheel_path_literals=a.check_wheel_path_literals,
+            check_model_class_only=a.check_model_class_only,
             check_changelog=a.check_changelog,
             check_bullet_retention=a.check_bullet_retention,
             check_surface_weight=a.check_surface_weight,

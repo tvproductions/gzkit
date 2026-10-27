@@ -65,7 +65,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `gh-cli.md` | `0.7.1` |
 | `hexagonal-architecture.md` | `0.3.1` |
 | `models.md` | `0.2.1` |
-| `model-selection.md` | `0.7.2` |
+| `model-selection.md` | `0.8.0` |
 | `weaponeering.md` | `0.1.1` |
 | `security-sensitivity.md` | `0.6.1` |
 | `skill-surface-sync.md` | `0.13.1` |
@@ -346,6 +346,7 @@ The Claude-specific invariant 10a is scored as a row rather than in prose:
 | 52 | Skill SKILL.md files carry explicit `model:` frontmatter. | **Mechanical** | Enforced by `gz validate --surfaces` via `SkillFrontmatter` Pydantic validation — missing or invalid `model:` fails closed (`src/gzkit/core/models.py:127`). All 70 canonical skills declare a tier (33 haiku, 24 sonnet, 13 opus; `fable` is reserved for Mythos-class judgment and currently claimed by none). **Row corrected 2026-08-29 (GHI #921):** it named a three-value `Literal` and a count of 67 while the model has carried four values since `fable` was added and the catalog has grown to 70 — the row was scored before the ledger existed and the drift rode the grandfather pin. `source=.gzkit/rules/model-selection.md` |
 | 52a | **A subagent's claim is not evidence.** Never relay a subagent's factual assertion into ceremony, attestation, or an operator-facing conclusion on the subagent's word — cite the ARB receipt, the file, or re-run the command. The orchestrator owns every claim it passes upward. | **Judgment** | No mechanical witness: attributing an orchestrator's assertion back to a subagent message requires modelling which claims in a turn came from where, which gzkit does not model (the unmodelled-caller ground of row 62b). The adjacent mechanical defenses are the ARB receipt requirement (`AGENTS.md` § Attestation) and `gz arb validate` drift detection — this clause is the shared name they point at. **Added 2026-08-29 (GHI #921):** operative claim 5 of `model-selection.md` carried no row; the rule sat grandfathered, so no version-attributed review had ever asked whether its clauses were all covered. `source=.gzkit/rules/model-selection.md` |
 | 52b | **Subagent effort is set on the agent definition, never on the dispatch call.** | **Promotable** | **Scored 2026-10-10 (rule `0.7.0`) at landing.** No witness today: nothing checks that a definition under `.claude/agents/` carries `effort:`, and no dispatch record names which definition flew. Naming the check is tractable (a validator over agent frontmatter, and an effort field on the dispatch record), and it is tied to the sortie layer of R&D run `renewing-vows` row 1. The prior claim 4 (*"The Agent tool maps effort to model"*) described a mechanism the tool does not have (insight 2026-10-06, scope `model-selection`). `source=.gzkit/rules/model-selection.md` |
+| 52c | **Canon names a Claude model by class, never by a versioned ID.** | **Mechanical** | **Scored 2026-10-27 (rule `0.8.0`) at landing (GHI #1284).** `gz validate --model-class-only` (default tier, `gz check` step *Model class only*) fails closed on a versioned Claude model ID under `.gzkit/rules/`, `.gzkit/skills/` or `.gzkit/agents/`. Registered negative control `NC:model-class-only` plants one in each root and a decoy in a handoff, and passes only when all three roots are caught and the record is not; guard canary `model-class-only` mutates the file walk. The claim replaced a class-to-ID mapping whose `haiku` entry went a release stale. `source=.gzkit/rules/model-selection.md` |
 
 ### Weaponeering (`.gzkit/rules/weaponeering.md`)
 
@@ -540,7 +541,7 @@ decays in whichever direction the next reader's grep happens to point.
 
 | Score | Rows | % of scored rows |
 |-------|-------|---|
-| **Mechanical** | 71 | 37% |
+| **Mechanical** | 72 | 37% |
 | **Promotable** | 45 | 23% |
 | **Judgment** | 77 | 40% |
 | **Ambiguous** | 0 | 0% |
@@ -559,7 +560,7 @@ decays in whichever direction the next reader's grep happens to point.
      158 as of row 58c (GHI #962, 2026-09-05), and 159 as of row 88 (the CLI
      lane-is-not-route carve-out, 2026-09-06), and 160 as of row 89 (mutation-sweep
      integrity, GHI #963), and 161 as of row 51c (census-query completeness,
-     GHI #972), and 163 as of rows 91-92 (the exit-code-2 relabel, GHI #1001), and 167 as of rows 56a-56b (suppression is not a repair, GHI #999), and 168 as of row 93 (verbosity flags realigned to the specification, 2026-09-14), and 180 as of row 53c (skill selection routes through gz-how, GHI #1106, 2026-09-27), and 181 as of row 51d (gh issue reopen for ghi-author's regression case, 2026-09-27), and 190 as of row 62g (the MX lease is booked and announced, GHI #1257, 2026-10-18), and 191 as of row 51e (the `block` band's consumers after xenon, RO-9 tranche 4, 2026-10-22), and 192 as of row 23b (deferred annotations at the 3.14 floor, RO-9 tranche 4, 2026-10-23), and 193 as of row 45e (executables resolved off absolute PATH entries, RO-9 tranche 4, 2026-10-24); the entries between 131 and 158 were
+     GHI #972), and 163 as of rows 91-92 (the exit-code-2 relabel, GHI #1001), and 167 as of rows 56a-56b (suppression is not a repair, GHI #999), and 168 as of row 93 (verbosity flags realigned to the specification, 2026-09-14), and 180 as of row 53c (skill selection routes through gz-how, GHI #1106, 2026-09-27), and 181 as of row 51d (gh issue reopen for ghi-author's regression case, 2026-09-27), and 190 as of row 62g (the MX lease is booked and announced, GHI #1257, 2026-10-18), and 191 as of row 51e (the `block` band's consumers after xenon, RO-9 tranche 4, 2026-10-22), and 192 as of row 23b (deferred annotations at the 3.14 floor, RO-9 tranche 4, 2026-10-23), and 193 as of row 45e (executables resolved off absolute PATH entries, RO-9 tranche 4, 2026-10-24), and 194 as of row 52c (models named by class, never a versioned ID, GHI #1284, 2026-10-27); the entries between 131 and 158 were
      not recorded here as they landed, so this list names the endpoints it can
      evidence rather than reconstructing a history it cannot. -->
 

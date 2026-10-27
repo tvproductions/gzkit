@@ -352,6 +352,19 @@
       "reviewed_by": "g0"
     },
     {
+      "claim_id": "model-class-only",
+      "guard": "gzkit.governance.trust_audits.model_class:audit_model_class_only",
+      "failing_test": "tests.governance.test_audit_model_class_only.ModelClassOnlyTests.test_versioned_id_in_each_canon_root_is_flagged",
+      "mutation": {
+        "find": "            if path.is_file():\n",
+        "replace": "            if False:\n",
+        "label": "no canon file is ever read"
+      },
+      "binding_sha256": "c96b81aad15a5a5f55ac3bc4cda8d322b56eef8618dd780050ecf1442abf5410",
+      "authority": "GHI #1284 (operator ruling 2026-10-26, verbatim: \"fix it now, with the validator\")",
+      "proposed_by": "claude-code session 2026-10-27"
+    },
+    {
       "claim_id": "mx-hardening",
       "guard": "gzkit.governance.trust_audits.mx_hardening:audit_mx_hardening",
       "failing_test": "tests.governance.test_mx_hardening_audit.TestMxHardeningScope.test_a_dangling_session_grounds_outside_the_hangar",

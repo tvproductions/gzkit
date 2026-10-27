@@ -392,6 +392,12 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
         True,
         lambda r, _f: _ta().audit_wheel_path_literals(r),
     ),
+    _ScopeEntry(  # default tier: a fence behind a remembered flag is inert (GHI #900)
+        "model_class_only",
+        "default",
+        in_other_scopes=True,
+        run=lambda r, _f: _ta().audit_model_class_only(r),
+    ),
     _ScopeEntry("changelog", "explicit", True, lambda r, _f: _changelog_runner(r)),
     _ScopeEntry(
         "bullet_retention", "explicit", True, lambda r, _f: _ta().validate_bullet_retention(r)
@@ -1594,6 +1600,8 @@ def validate(
     check_line_endings: bool = False,
     frontmatter_adr: str | None = None,
     frontmatter_explain: str | None = None,
+    *,
+    check_model_class_only: bool = False,
 ) -> None:
     """Validate governance artifacts against schemas.
 
@@ -1686,6 +1694,7 @@ def validate(
         "lock_exchange_coupling": check_lock_exchange_coupling,
         "distribution": check_distribution,
         "wheel_path_literals": check_wheel_path_literals,
+        "model_class_only": check_model_class_only,
         "changelog": check_changelog,
         "bullet_retention": check_bullet_retention,
         "surface_weight": check_surface_weight,

@@ -9,9 +9,9 @@ description: Token-efficient model routing across skills, subagents, and work su
 
 # Model Selection (gzkit)
 
-<!-- rule-version: 0.7.2 -->
+<!-- rule-version: 0.8.0 -->
 
-> **Rule version:** `0.7.2` — version narrative lifted to [Rule Version History](../../docs/governance/rule-version-history.md#model-selectionmd); binding rules unchanged.
+> **Rule version:** `0.8.0` — canon names models by class, never a versioned ID, witnessed by `gz validate --model-class-only` (GHI #1284); prior narrative in [Rule Version History](../../docs/governance/rule-version-history.md#model-selectionmd).
 
 ## Operative claims (binding)
 
@@ -52,7 +52,7 @@ model: haiku  # or: sonnet, opus
 
 **Valid values:** `haiku`, `sonnet`, `opus`, `fable`. No inference; no runtime detection; declared value is the contract. `fable` is reserved for Mythos-class judgment surfaces (operator-supervised); pipelines and mechanical work never default to it.
 
-**Mapping to Claude models** (re-sourced 2026-09-24; IDs move each release — verify against the current catalog rather than inheriting): `haiku` → `claude-haiku-4-5`; `sonnet` → `claude-sonnet-5`; `opus` → `claude-opus-5-5`; `fable` → `claude-fable-5-1`.
+**Canon names a Claude model by class, never by a versioned ID.** The harness resolves the class to that class's current model at dispatch. A versioned model ID goes stale at the next launch, so rule, skill and agent canon never carries one (operator ruling 2026-10-26, verbatim: "cleary we should use class of model, not specific version"; GHI #1284). Fail-closed by `gz validate --model-class-only` over `.gzkit/rules/`, `.gzkit/skills/` and `.gzkit/agents/`. Records that name the model which did a piece of work — the ledger, handoffs, `data/frontier_model_cards.json` — stay exact.
 
 ## Subagent effort levels
 

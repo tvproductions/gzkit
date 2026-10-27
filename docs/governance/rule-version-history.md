@@ -675,6 +675,15 @@ Lifted 2026-08-29 at version `0.2.0` (rule now at `0.3.0`).
 
 ## `model-selection.md`
 
+### Changed 2026-10-27 at version `0.8.0` (GHI #1284)
+
+§ Skill frontmatter carried a class-to-ID mapping, *"`haiku` → `claude-haiku-4-5`; `sonnet` → `claude-sonnet-5`;
+`opus` → `claude-opus-5-5`; `fable` → `claude-fable-5-1`"*, with the caveat that IDs move each release. The
+re-sourcing pass under GHI #1089 updated `opus` and left `haiku` a release behind, and § Do Not already forbade
+hardcoding a model ID. The operator ruled 2026-10-26, verbatim: *"cleary we should use class of model, not specific
+version."* The mapping is replaced by a binding that canon names models by class, witnessed by
+`gz validate --model-class-only` over rule, skill and agent canon (scorecard row 52c).
+
 ### Changed 2026-10-10 at version `0.7.1` (maintenance visit E, rule-conflict audit)
 
 The `0.7.0` edit changed claim 4 and § Subagent effort levels and left one line of § Do Not behind:

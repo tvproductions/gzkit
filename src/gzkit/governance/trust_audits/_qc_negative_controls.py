@@ -37,7 +37,10 @@ from . import _qc_nc_population as _pc
 from ._qc_claim_delegations import QC_CLAIM_DELEGATIONS
 from ._qc_claim_exemptions import QC_CLAIM_EXEMPTS
 from ._qc_claim_populations import QC_CLAIM_POPULATIONS
-from ._qc_nc_entrypoints import _ep_astral_discipline_deferred_annotations
+from ._qc_nc_entrypoints import (
+    _ep_astral_discipline_deferred_annotations,
+    _ep_model_class_only,
+)
 
 # ---------------------------------------------------------------------------
 # Fixture helpers
@@ -1192,6 +1195,26 @@ def _build_doc_code_citations_exempted() -> Path:
     return root
 
 
+def _build_model_class_only() -> Path:
+    """Plant a versioned model ID in each canon root, and the same ID in a record.
+
+    The three roots are written here literally rather than read from the audit's
+    own ``SCAN_ROOTS``, so a scope that quietly dropped one fails the control. The
+    handoff copy is a record of which model did a piece of work and must stay
+    unflagged (GHI #1284).
+
+    Returns:
+        The fixture project root.
+
+    """
+    root = _mkroot("model-class-only")
+    _write(root / ".gzkit" / "rules" / "r.md", "`haiku` maps to `claude-haiku-4-5`\n")
+    _write(root / ".gzkit" / "skills" / "s" / "SKILL.md", "dispatch claude-opus-5-5\n")
+    _write(root / ".gzkit" / "agents" / "a.md", "model: claude-sonnet-5\n")
+    _write(root / ".gzkit" / "handoffs" / "h.md", "flown by claude-haiku-4-5\n")
+    return root
+
+
 def _build_wheel_path_literals() -> Path:
     """Plant a wheel-shipped skill doc naming a path rooted in one user's home.
 
@@ -2141,6 +2164,12 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         _build_wheel_path_literals,
         _ep._ep_wheel_path_literals,
         "ships an instruction naming",
+    ),
+    (
+        "model-class-only",
+        _build_model_class_only,
+        _ep_model_class_only,
+        "Versioned model ID",
     ),
     (
         "doc-code-citations",

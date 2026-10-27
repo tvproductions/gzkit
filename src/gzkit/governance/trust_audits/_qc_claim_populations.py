@@ -42,6 +42,10 @@ QC_CLAIM_POPULATIONS: dict[str, Callable[[], Sequence[str]] | str] = {
     # Walks a glob over docs/governance/**; the members are whatever files exist,
     # never a set another surface declares (GHI #1083).
     "doc-code-citations": POPULATION_NONE,
+    # The three canon roots are the gate's own scope, and no other surface declares
+    # them; the control writes all three literally and passes only when each is
+    # caught, so a narrowed scope fails it (GHI #1284).
+    "model-class-only": POPULATION_NONE,
     "doc-code-citations-exempted": POPULATION_NONE,
     # Walks a glob over docs/design/adr/**; the members are whatever briefs exist,
     # never a set another surface declares (GHI #1196).

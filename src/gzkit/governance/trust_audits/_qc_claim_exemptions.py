@@ -95,6 +95,10 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     # defines what a violation IS -- the threshold case the bar above excludes --
     # and the .md-only walk is a scope predicate, also excluded. GHI #900.
     "wheel-path-literals": EXEMPTS_NONE,
+    # Scans rule, skill and agent canon for versioned Claude model IDs. No waiver
+    # table, allowlist or marker admits one; the roots it reads and the ID pattern
+    # are fixed code properties that define what a violation is. GHI #1284.
+    "model-class-only": EXEMPTS_NONE,
     # Measures live briefs against packaged bounds. A project may record a ceiling
     # for a brief already over a bound, which is an admit path a project controls,
     # so it is exercised by a registered control rather than declared away. The

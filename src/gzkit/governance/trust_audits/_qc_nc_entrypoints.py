@@ -465,6 +465,27 @@ def _ep_wheel_path_literals(root: Path) -> list[ValidationError]:
     return [e for e in audit_wheel_path_literals(root) if "SKILL.md" in e.artifact]
 
 
+def _ep_model_class_only(root: Path) -> list[ValidationError]:
+    """Return the findings only when every canon root is caught and the record is not.
+
+    A scope that dropped a root, or that also flagged the handoff record, reports
+    no catch, so the control fails on either narrowing or over-reach (GHI #1284).
+
+    Returns:
+        Every finding when exactly the three canon roots fired, otherwise nothing.
+
+    """
+    from gzkit.governance.trust_audits.model_class import (  # noqa: PLC0415
+        audit_model_class_only,
+    )
+
+    errors = audit_model_class_only(root)
+    caught = {e.artifact.split("/")[1] for e in errors}
+    if caught != {"rules", "skills", "agents"}:
+        return []
+    return errors
+
+
 def _ep_validate_default_scopes(root: Path) -> list[ValidationError]:
     """Run the whole default `gz validate` tier, as the bare invocation does."""
     from gzkit.commands.validate_cmd import _collect_errors  # noqa: PLC0415

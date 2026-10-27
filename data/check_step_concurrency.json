@@ -310,6 +310,10 @@
       "class": "read_only",
       "measured_seconds": 0.25
     },
+    "Model class only": {
+      "class": "read_only",
+      "measured_seconds": 0.29
+    },
     "tautological test audit": {
       "class": "read_only",
       "measured_seconds": 1.81

@@ -79,6 +79,11 @@ _POST_SNAPSHOT_DEFAULT_ADDITIONS: tuple[str, ...] = (
     # would be inert in exactly the situation that produced the defect — nobody
     # was running a check they had not yet thought to write.
     "wheel_path_literals",
+    # model_class_only — a versioned Claude model ID in rule, skill or agent
+    # canon (GHI #1284). DEFAULT tier on the wheel_path_literals reasoning: the
+    # mapping it replaces went stale a release before anyone looked, so a
+    # flag-gated check would be inert in exactly that situation.
+    "model_class_only",
     # corpus_retirement_witness — a Layer-1 tombstone with no Layer-2 witness
     # (GHI #885, GHI #878). DEFAULT tier deliberately: the class it catches
     # produced seven live instances on `main` while every gate read green, so a

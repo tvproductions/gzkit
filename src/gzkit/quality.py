@@ -1361,6 +1361,22 @@ def run_invariant_coherence_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --invariant-coherence", cwd=project_root)
 
 
+def run_model_class_only_audit(project_root: Path) -> QualityResult:
+    """Run the model-class gate over rule, skill and agent canon (GHI #1284).
+
+    Fails closed on a versioned Claude model ID, which goes stale at the next
+    model launch. Wired here explicitly although the scope is default-tier, for
+    the reason `run_wheel_path_literals_audit` records. Recovery: replace the ID
+    with its class (`haiku`, `sonnet`, `opus`, `fable`), then
+    `uv run gz validate --model-class-only`.
+
+    Returns:
+        The result of the scoped `gz validate` run.
+
+    """
+    return run_command("uv run gz validate --model-class-only", cwd=project_root)
+
+
 def run_wheel_path_literals_audit(project_root: Path) -> QualityResult:
     """Run the delivered-instruction resolvability gate over wheel-shipped Markdown.
 

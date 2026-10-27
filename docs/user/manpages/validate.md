@@ -10,7 +10,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--interviews] [--decomposition]
             [--requirements] [--commit-trailers]
             [--taxonomy] [--chores-layout] [--distribution] [--wheel-path-literals]
-            [--changelog]
+            [--model-class-only] [--changelog]
             [--bullet-retention] [--surface-weight] [--pointer-anchors]
             [--surface-fidelity]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
@@ -1053,6 +1053,56 @@ uv run gz validate --wheel-path-literals --json
 ```
 
 Rule home: `.gzkit/rules/cross-platform.md` § Delivered path literals.
+
+### `--model-class-only`
+
+Fails closed when rule, skill or agent canon names a Claude model by a
+versioned ID instead of its class (GHI #1284). Runs in the **default** `gz check`
+scope, so the flag is for scoping a single run.
+
+A versioned ID goes stale at the next model launch, and nothing notices: the
+model-selection rule's own class-to-ID mapping kept `claude-haiku-4-5` a release
+after Haiku moved on. Canon names the class (`haiku`, `sonnet`, `opus`, `fable`)
+and the harness resolves it to the current model at dispatch.
+
+**Scope** — every file under `.gzkit/rules/`, `.gzkit/skills/` and
+`.gzkit/agents/`. Records that name the model which did a piece of work
+(the ledger, handoffs, provenance fields in `data/`, the card registry in
+`data/frontier_model_cards.json`) are outside the scope and stay exact.
+
+#### What fails closed
+
+| Shape | Example |
+|-------|---------|
+| Family, then version | `claude-opus-5-5`, `claude-haiku-4-5-20251001` |
+| Version, then family | `claude-3-5-sonnet` |
+
+Not flagged: a class name, a placeholder with no version digit
+(`claude-<tier>-<n>`), and `claude-` names that carry no version
+(`claude-code`).
+
+#### Exit codes
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Canon names every model by class | — |
+| 1 | A canon file carries a versioned model ID | Replace the ID with its class, then re-run `uv run gz validate --model-class-only` |
+
+Measured, not transcribed: a planted `claude-haiku-4-5` in a temporary
+project's `.gzkit/rules/` exits **1** with `path:line` attribution. Under an
+open Maintenance Hangar the finding is reported advisory and the run exits 0.
+
+#### Examples
+
+```bash
+# Scope a run to this check alone
+uv run gz validate --model-class-only
+
+# Machine-readable output
+uv run gz validate --model-class-only --json
+```
+
+Rule home: `.gzkit/rules/model-selection.md` § Skill frontmatter.
 
 ### `--changelog`
 
@@ -3199,6 +3249,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--vendor-manifest` | opt-in | `data/vendor-manifest.json` validates against its schema and every routed content type maps to a vendor mirror |
 | `--waiver-ratchet` | opt-in | Every waiver, grandfather or baseline surface that gates a `gz check` step carries exactly one honesty mechanism (ADR-0.0.73 / OBPI-0.0.73-09) |
 | `--wheel-path-literals` | yes | Wheel-shipped instruction text names no path only its authoring environment can resolve (GHI #900) |
+| `--model-class-only` | yes | Rule, skill and agent canon name Claude models by class, never by a versioned ID (GHI #1284) |
 | `--audits` | opt-in | Run all four trust-doctrine pattern audits in one pass |
 
 The `--allowlist-only` flag is a sub-modifier for `--unscoped-rules` —
