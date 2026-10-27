@@ -2795,6 +2795,26 @@ signature and docstring of `enforces` in `src/gzkit/enforcement.py`.
   self-test declared at the control. The registry it fills is the derived list that the onboarding
   ruling asks for.
 
+## decision · a code control declares its mode contract by decorator, read at the place of call
+
+Ruled. Model question 4: which Python affordance does a code control use to declare its mode
+contract? Options put: **A** a decorator at the control, on the `@enforces` precedent. It records the
+MEL entry (level per standby level, (M) procedure, (O) limitation, placard, restore condition) and
+names the self-test. It is metadata-only at import, and the place of call reads declaration and
+signal through one function, as `checkpoint.resolve` does today (recommended). **B** a
+`typing.Protocol` port per control. **C** a context manager at the place of call. **D**
+`pyproject.toml` entry points. Operator: *"A"*.
+
+- The decorator declares and never changes behavior. Applying the level stays at the place of call
+  (*the mode contract is honored at the place of call*).
+- The list of controls is the decorator registry, a derived view (*the signal alone is central*).
+- **Still open, and next:** whether the decorator shares `@enforces`'s registry or becomes one with
+  it; how non-Python controls (git hooks, CI jobs, model-oriented surfaces) declare theirs; and how a
+  self-test result reaches the MEL as *suitability for function*.
+
+**commissions:** 5 — every code control carries the decorator, and the place-of-call function reads
+it.
+
 ---
 
 ## Disposition map
