@@ -3201,6 +3201,18 @@ per kind. Operator: *"A"*.
 the operator. 4 — the contract's register gains the RO-13 row, as a contract amendment (B1), on the
 operator's go on that row.
 
+## decision · correction: the C12 entry uses a retired term
+
+The C12 entry says *punch list* three times, and so did the question put. Matrix row B8 retired
+the term on 2026-10-25 (*"B′"*; *punch list* retired, unsourced) for **list of discrepancies**,
+each line a **discrepancy**. Read the C12 ruling with that term: the handback enumerates every
+open discrepancy on the list of discrepancies. The ruling's substance is unchanged, because the
+operator ruled on the enumeration and not on the word. The entry stands as written, because the
+record is never rewritten.
+
+The contract's section is still headed § Punch list, and the contractor brief calls it *"§ Punch
+list (the compliance register)"*. Renaming it is part of row 4's B8 commission and is not done here.
+
 ---
 
 ## Disposition map
