@@ -61,6 +61,16 @@ class ModelClassOnlyTests(unittest.TestCase):
         )
         self.assertEqual(artifacts, [])
 
+    def test_binary_file_is_skipped_without_hiding_its_siblings(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            skill = root / ".gzkit/skills/s"
+            skill.mkdir(parents=True)
+            (skill / "icon.png").write_bytes(b"\x89PNG\xff\xfe claude-opus-5-5")
+            (skill / "SKILL.md").write_text("claude-opus-5-5\n", encoding="utf-8")
+            artifacts = [e.artifact for e in audit_model_class_only(root)]
+        self.assertEqual(artifacts, [".gzkit/skills/s/SKILL.md:1"])
+
     def test_message_names_the_rule_and_the_recovery_command(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

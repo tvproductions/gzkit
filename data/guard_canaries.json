@@ -360,7 +360,7 @@
         "replace": "            if False:\n",
         "label": "no canon file is ever read"
       },
-      "binding_sha256": "c96b81aad15a5a5f55ac3bc4cda8d322b56eef8618dd780050ecf1442abf5410",
+      "binding_sha256": "d7096ee61ad0a45f55aacf3b2d12f11ff90fe50ec2dc05adc2f2e93dd9fab086",
       "authority": "GHI #1284 (operator ruling 2026-10-26, verbatim: \"fix it now, with the validator\")",
       "proposed_by": "claude-code session 2026-10-27"
     },

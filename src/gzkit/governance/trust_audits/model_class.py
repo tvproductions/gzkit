@@ -46,10 +46,7 @@ def audit_model_class_only(project_root: Path) -> list[ValidationError]:
     """
     errors: list[ValidationError] = []
     for root in SCAN_ROOTS:
-        base = project_root / root
-        if not base.is_dir():
-            continue
-        for path in sorted(base.rglob("*")):
+        for path in sorted((project_root / root).rglob("*")):
             if path.is_file():
                 errors.extend(_scan_file(path, project_root))
     return errors
