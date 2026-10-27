@@ -125,11 +125,13 @@ Suspended while `.gzkit/mx.json` carries `mode: safe`, by the ruling of 2026-10-
   which is actually completed work in the old paradigm, when I'm still actually discussing what the
   new paradigm might look like"*).
 - Every alarm, by the ruling of 2026-10-25 (operator, verbatim: *"i don't want any long check at all - this is a remodel, things are going to be broken, disarray, and messy. it is time to leave things partially broken until the reconfiguration is complete, then we adjust tests and turn the "security alarms" back on. this is all backwards."*): no long check
-  runs during the drydock. The pre-commit and pre-push alarm hooks and the pipe gate are off
-  while the marker carries `mode: safe` (`gzkit.mx.alarms`); no commit witness, no `gz check`,
+  runs during the drydock. The slow pre-commit and pre-push alarm hooks and the pipe gate are off
+  while the marker carries `mode: safe` (`gzkit.mx.alarms`); lint and the fast static checks stay
+  on, pinned `CRITICAL` (operator, 2026-10-27: *"somebody sweeps up the shop floor every night"*); no commit witness, no `gz check`,
   no failing test first. Things may be left partially broken; each goes on § Punch list, and
   the Prime Directive's *fix immediately* waits for the exit while its *every defect
-  trackable* binds through that list.
+  trackable* binds through that list. Lint and fast-static debt is the exception: each act
+  sweeps what it lints, and none goes on the list.
 
 Not suspended, under any reading:
 
@@ -678,7 +680,7 @@ Each line is `open` until the restoration contractor clears it with the alarms o
 
 ### RO-0 — the drydock itself
 
-- `open` **reconnected** — the six pre-commit and pre-push alarm hooks and the verifier pipe gate, switched off through `gzkit.mx.alarms` (`757ddea7e`), run at full strength at exit; `tests.arb.test_unittest_runner_lockstep`'s two pinned-entry tests reconfigured to the wrapped entries. Authority: operator, 2026-10-25 (*"i don't want any long check at all"*).
+- `open` **reconnected** — the four pre-commit and pre-push alarm hooks still switched off (validator reachability, ledger vocabulary, the `gz check` pre-push gate, unittest) and the verifier pipe gate, switched off through `gzkit.mx.alarms` (`757ddea7e`), run at full strength at exit; the complexity ceiling and the cheap surface-fidelity subset were reconnected 2026-10-27 by operator correction; `tests.arb.test_unittest_runner_lockstep`'s two pinned-entry tests reconfigured to the wrapped entries. Authority: operator, 2026-10-25 (*"i don't want any long check at all"*).
 - `open` **restored** — the commit witness (`gz arb red --commit`) as a per-act record, after GHI #1268 is fixed and GHI #1269's acceptance rerun on `7b7ea83cd` is booked. Authority: same ruling.
 - `cleared` **restored** — `gz lint` clean on the code `757ddea7e` landed while the alarms were off: `src/gzkit/mx/alarms.py` carries TC003 (two annotation-only imports outside `TYPE_CHECKING`), DOC201 (two docstrings without a return), PLR2004 (a magic `3`) and T201 (two `print` calls), and `.claude/hooks/verifier-pipe-gate.py` carries two new PLC0415 lazy imports, from its generator template in `src/gzkit/hooks/scripts/`, none held in `data/ruff_baseline.json`. Found 2026-10-26 by `gz check` in flight on the radar routing; the hook fails until it is fixed. Authority: operator, 2026-10-25, *"leave things partially broken until the reconfiguration is complete"*. Cleared 2026-10-27 in the act that swept it, under the operator's correction of that day, verbatim: *"i think, even during repairs or contruction, somebody sweeps up the shop floor every night. The point is, it is too strivt to disable linting during safemode drydock/mx hangar. We are writing/changing code and that deserves"*.
 

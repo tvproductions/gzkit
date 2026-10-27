@@ -46,9 +46,10 @@ def _banner_stdlib(cwd: str | None) -> str:
             return (
                 "SAFE MODE ACTIVE — OBPI initiation and brief "
                 f"ceremony are suspended under {contract}; most guards "
-                "advisory; gate5_invariants, the ledger through gz verbs, "
-                "operator PII and the PRIME DIRECTIVE still bind; every act is "
-                "one commit with its trailer and its witness"
+                "advisory; slow alarms off, lint and fast static checks on; "
+                "gate5_invariants, the ledger through gz verbs and operator PII "
+                "still bind; every act is one commit with its trailer; what it "
+                "breaks goes on the punch list"
             )
         return _BANNER
     return ""

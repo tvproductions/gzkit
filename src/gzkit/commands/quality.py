@@ -58,7 +58,8 @@ CheckStepRunner = Callable[[pathlib.Path], Any]
 from gzkit.mx import levels as _mx_levels  # noqa: E402 — after type alias
 
 _STEP_GUARD_META: dict[str, tuple[str, int]] = {
-    "Lint": ("lint", _mx_levels.ERROR),
+    # Fast static checks never demote, even in safe mode (operator 2026-10-27).
+    "Lint": ("lint", _mx_levels.CRITICAL),
     "Format": ("format", _mx_levels.ERROR),
     "Typecheck": ("typecheck", _mx_levels.ERROR),
     # The four entries below are the names `_seam`'s fallback already derived;
@@ -94,7 +95,7 @@ _STEP_GUARD_META: dict[str, tuple[str, int]] = {
     "MX hardening": ("mx-hardening", _mx_levels.ERROR),
     "Identity seam": ("id-seam", _mx_levels.ERROR),
     "Astral discipline": ("astral-discipline", _mx_levels.ERROR),
-    "Complexity ceiling": ("complexity-ceiling", _mx_levels.ERROR),
+    "Complexity ceiling": ("complexity-ceiling", _mx_levels.CRITICAL),
     "OBPI lifecycle coherence": ("obpi-lifecycle-coherence", _mx_levels.ERROR),
     "Session green gate": ("session-green-gate", _mx_levels.ERROR),
     "Closeout proof": ("closeout-proof", _mx_levels.ERROR),

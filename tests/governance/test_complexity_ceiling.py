@@ -205,12 +205,13 @@ class TheScopeIsWiredIntoGzCheckTest(unittest.TestCase):
         self.assertIs(result, sentinel)
         self.assertEqual(run.call_args.args[0], "uv run gz validate --complexity-ceiling")
 
-    def test_the_step_is_bound_at_error_severity(self) -> None:
+    def test_the_step_is_pinned_critical_so_the_hangar_never_demotes_it(self) -> None:
+        # Fast static checks stay armed in safe mode (operator, 2026-10-27).
         from gzkit.commands.quality import _STEP_GUARD_META  # noqa: PLC0415
         from gzkit.mx import levels  # noqa: PLC0415
 
         self.assertEqual(
-            _STEP_GUARD_META["Complexity ceiling"], ("complexity-ceiling", levels.ERROR)
+            _STEP_GUARD_META["Complexity ceiling"], ("complexity-ceiling", levels.CRITICAL)
         )
 
     def test_the_qc_binding_audit_accepts_the_step(self) -> None:

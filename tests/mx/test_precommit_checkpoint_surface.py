@@ -45,6 +45,8 @@ _NOT_A_GZKIT_GUARD = {
     "authorship": "`gz validate` scope -- checkpointed, and pinned CRITICAL so it "
     "never demotes (GHI #852)",
     "gz-check-pre-push": "`gz check` -- already checkpointed at quality.py `_apply_mx_seam`",
+    "lint-pre-push": "`gz lint` over the whole tree; lint, not a governance guard, and "
+    "its `gz check` step is pinned CRITICAL at quality.py `_STEP_GUARD_META`",
     "forbid-pytest": "the gzkit.hooks.guards seam itself; fenced by "
     "tests/test_hooks_guards.py::TestMxCheckpointSeam",
 }

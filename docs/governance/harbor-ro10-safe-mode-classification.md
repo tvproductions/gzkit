@@ -29,6 +29,8 @@ Landed 2026-10-25 and frozen for the rest of this drydock (`757ddea7e`, `62e4041
 - On throughout: the secret scan, the authorship check, the guards sweep (the pytest ban pinned `CRITICAL`, the ledger and Gate-5 guards), ruff and ty.
 - No per-act check; a § Punch list in the contract; each repair order restores what it disconnected, rerouted or changed before it closes.
 
+Amended 2026-10-27 (a record of that day's change; the freeze above is otherwise kept): two of the six hooks, the complexity ceiling and the cheap surface-fidelity subset, no longer route through `gzkit.mx.alarms`, and a whole-tree `gz lint` runs at every push; all are pinned `CRITICAL`. Operator, verbatim: *i think, even during repairs or contruction, somebody sweeps up the shop floor every night. The point is, it is too strivt to disable linting during safemode drydock/mx hangar. We are writing/changing code and that deserves*
+
 ## The heavy version, to design
 
 ### 1. Three kinds of protection

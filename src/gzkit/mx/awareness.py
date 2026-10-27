@@ -20,7 +20,8 @@ def safe_mode_banner(contract: str) -> str:
     return (
         f"SAFE MODE ACTIVE — OBPI initiation and brief ceremony are suspended "
         f"under {contract or '<no contract recorded>'}; most guards advisory; "
-        "alarms off; gate5_invariants, the ledger through gz verbs and operator PII still "
+        "slow alarms off, lint and fast static checks on; gate5_invariants, the ledger "
+        "through gz verbs and operator PII still "
         "bind; every act is one commit with its trailer; what it breaks goes on the punch list"
     )
 

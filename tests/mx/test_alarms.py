@@ -7,7 +7,11 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from gzkit.mx import alarms
+import yaml
+
+from gzkit.commands.quality import _STEP_GUARD_META
+from gzkit.commands.validate_cmd import VALIDATOR_REGISTRY
+from gzkit.mx import alarms, levels
 
 
 class TestAlarmsOff(unittest.TestCase):
@@ -47,6 +51,42 @@ class TestMain(unittest.TestCase):
         with mock.patch.object(alarms, "alarms_off", return_value=True):
             self.assertEqual(alarms.main(["hook", *self._FAIL]), 0)
 
+    def test_a_missing_separator_or_command_is_a_usage_error(self):
+        for argv in (["hook"], ["hook", "--"], ["hook", "x", "cmd"]):
+            with self.subTest(argv=argv), mock.patch("sys.stderr"):
+                self.assertEqual(alarms.main(argv), 2)
+
     def test_an_alarm_on_reports_its_command_status(self):
         with mock.patch.object(alarms, "alarms_off", return_value=False):
             self.assertEqual(alarms.main(["hook", *self._FAIL]), 3)
+
+
+class TestFastStaticStaysArmed(unittest.TestCase):
+    """Lint and the fast static checks stay armed in safe mode (operator, 2026-10-27)."""
+
+    _HOOKS = ("ruff-check", "complexity-ceiling", "surface-fidelity-cheap", "lint-pre-push")
+    _SCOPES = ("complexity_ceiling", "bullet_retention", "surface_weight", "pointer_anchors")
+    _STEPS = ("Lint", "Complexity ceiling")
+
+    def test_no_fast_static_hook_routes_through_the_alarm_switch(self):
+        config = yaml.safe_load(
+            (Path(__file__).resolve().parents[2] / ".pre-commit-config.yaml").read_text(
+                encoding="utf-8"
+            )
+        )
+        entries = {h["id"]: h.get("entry", "") for repo in config["repos"] for h in repo["hooks"]}
+        for hook in self._HOOKS:
+            with self.subTest(hook=hook):
+                self.assertIn(hook, entries)
+                self.assertNotIn("gzkit.mx.alarms", entries[hook])
+
+    def test_fast_static_scopes_are_pinned_critical(self):
+        levels_by_scope = {e.stem: e.level for e in VALIDATOR_REGISTRY}
+        for scope in self._SCOPES:
+            with self.subTest(scope=scope):
+                self.assertEqual(levels_by_scope[scope], levels.CRITICAL)
+
+    def test_fast_static_check_steps_are_pinned_critical(self):
+        for step in self._STEPS:
+            with self.subTest(step=step):
+                self.assertEqual(_STEP_GUARD_META[step][1], levels.CRITICAL)

@@ -23,9 +23,6 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from pathlib import Path
 
-# `<hook-id> -- <command>`: the separator and at least one command word.
-_MIN_ARGS = 3
-
 
 def alarms_off(project_root: Path | None = None) -> bool:
     """Return True while an open safe-mode marker holds the alarms off.
@@ -46,7 +43,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     """
     args = list(sys.argv[1:] if argv is None else argv)
-    if len(args) < _MIN_ARGS or args[1] != "--":
+    if args[1:2] != ["--"] or not args[2:]:
         sys.stderr.write("usage: python -m gzkit.mx.alarms <hook-id> -- <command...>\n")
         return 2
     if alarms_off():

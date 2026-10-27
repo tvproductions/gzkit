@@ -399,12 +399,26 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
         run=lambda r, _f: _ta().audit_model_class_only(r),
     ),
     _ScopeEntry("changelog", "explicit", True, lambda r, _f: _changelog_runner(r)),
-    _ScopeEntry(
-        "bullet_retention", "explicit", True, lambda r, _f: _ta().validate_bullet_retention(r)
+    _ScopeEntry(  # CRITICAL: fast static, never demoted in the hangar (operator 2026-10-27)
+        "bullet_retention",
+        "explicit",
+        True,
+        lambda r, _f: _ta().validate_bullet_retention(r),
+        _mx_levels.CRITICAL,
     ),
-    _ScopeEntry("surface_weight", "explicit", True, lambda r, _f: _ta().validate_surface_weight(r)),
-    _ScopeEntry(
-        "pointer_anchors", "explicit", True, lambda r, _f: _ta().validate_pointer_integrity(r)
+    _ScopeEntry(  # CRITICAL: fast static, never demoted in the hangar (operator 2026-10-27)
+        "surface_weight",
+        "explicit",
+        True,
+        lambda r, _f: _ta().validate_surface_weight(r),
+        _mx_levels.CRITICAL,
+    ),
+    _ScopeEntry(  # CRITICAL: fast static, never demoted in the hangar (operator 2026-10-27)
+        "pointer_anchors",
+        "explicit",
+        True,
+        lambda r, _f: _ta().validate_pointer_integrity(r),
+        _mx_levels.CRITICAL,
     ),
     _ScopeEntry(
         "surface_fidelity", "explicit", True, lambda r, _f: _ta().validate_surface_fidelity(r)
@@ -466,8 +480,12 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
     _ScopeEntry(
         "astral_discipline", "explicit", True, lambda r, _f: _ta().audit_astral_discipline(r)
     ),
-    _ScopeEntry(
-        "complexity_ceiling", "explicit", True, lambda r, _f: _ta().audit_complexity_ceiling(r)
+    _ScopeEntry(  # CRITICAL: fast static, never demoted in the hangar (operator 2026-10-27)
+        "complexity_ceiling",
+        "explicit",
+        True,
+        lambda r, _f: _ta().audit_complexity_ceiling(r),
+        _mx_levels.CRITICAL,
     ),
     _ScopeEntry("router_tables", "explicit", True, lambda r, _f: _ta().audit_router_tables(r)),
     _ScopeEntry(

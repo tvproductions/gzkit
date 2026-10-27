@@ -733,6 +733,16 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `mx-mode.md`
 
+### Changed 2026-10-27 at version `1.14.0` (operator correction)
+
+Safe mode had switched every alarm hook off (ruling 2026-10-25), and lint debt from `757ddea7e` waited on the RO-0
+punch list for the exit. The operator corrected that, verbatim: *"i think, even during repairs or contruction,
+somebody sweeps up the shop floor every night. The point is, it is too strivt to disable linting during safemode
+drydock/mx hangar. We are writing/changing code and that deserves"*, then chose *"Sweep + all fast static"*. Lint and
+the fast static checks (the `Lint` and `Complexity ceiling` steps; the `complexity_ceiling`, `bullet_retention`,
+`surface_weight` and `pointer_anchors` scopes) are floor-pinned by LEVEL; their hooks leave the alarm switch, and a
+whole-tree `gz lint` runs at every push. Witness: `tests/mx/test_alarms.py::TestFastStaticStaysArmed`.
+
 Lifted 2026-08-29 at version `1.3.0`; `1.4.0`, `1.5.0` and `1.5.1` lifted 2026-10-16; later versions are recorded below as they land (rule now at `1.10.0`).
 
 > **Rule version:** `1.5.1` — § Safe mode points at its doctrine and its contract template, entrenched on the operator's ruling of 2026-10-16 (*"keep these metaphor entrenched in canon"*). Prior `1.5.0` and earlier lifted to [Rule Version History](#mx-modemd). Binding rules unchanged.

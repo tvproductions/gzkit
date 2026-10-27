@@ -15,6 +15,10 @@ fail_fast: true
 # `gzkit.mx.alarms`, which skips it while .gzkit/mx.json carries `mode: safe`.
 # ruff, ty, forbid-pytest (the guards sweep), gitleaks, authorship, the trailer stamp,
 # uv-lock and the formatters stay on (operator, 2026-10-25) and never route through it.
+# The fast static checks stay on too (operator, 2026-10-27, "somebody sweeps up the shop
+# floor every night"): the complexity ceiling, the cheap surface-fidelity subset and a
+# whole-tree `gz lint` at pre-push never route through it, and pin CRITICAL so the
+# hangar never demotes them.
 repos:
   - repo: local
     hooks:
@@ -70,7 +74,7 @@ repos:
       # (`python -m gzkit.hooks.install_complexity_advisor`) replaces this entry.
       - id: complexity-ceiling
         name: complexity ceiling (Lizard C/C/C at Ruff's max-complexity, cognitive at .gzkit.json's)
-        entry: uv run python -m gzkit.mx.alarms complexity-ceiling -- gz validate --complexity-ceiling
+        entry: uv run gz validate --complexity-ceiling
         language: system
         pass_filenames: false
         types: [python]
@@ -78,7 +82,7 @@ repos:
 
       - id: surface-fidelity-cheap
         name: surface-fidelity cheap subset (invariants 1, 2, 3)
-        entry: uv run python -m gzkit.mx.alarms surface-fidelity-cheap -- gz validate --bullet-retention --surface-weight --pointer-anchors
+        entry: uv run gz validate --bullet-retention --surface-weight --pointer-anchors
         language: system
         pass_filenames: false
         stages: [pre-commit]
@@ -151,6 +155,16 @@ repos:
         language: system
         pass_filenames: false
         stages: [pre-commit]
+
+      - id: lint-pre-push
+        name: gz lint (whole tree, pre-push)
+        # Per-commit lint sees only staged files. This sweeps the whole tree at
+        # every push and never routes through the alarm switch, so a safe-mode
+        # push cannot carry lint debt (operator, 2026-10-27).
+        entry: uv run gz lint
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
 
       - id: gz-check-pre-push
         name: gz check (pre-push gate)
