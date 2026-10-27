@@ -402,7 +402,7 @@
         "replace": "        if False:\n",
         "label": "a violation the baseline does not hold is never refused"
       },
-      "binding_sha256": "ede3bf4b5f1294ed93550e07cef6e4c831e1457545102561874628f0a70ac2d4",
+      "binding_sha256": "3b0c98596db2f13d484e7b713b3d1290ffc08921ddeb51b6abec094c1c218c51",
       "authority": "docs/governance/harbor-ro9-astral-toolchain.md (drydock RO-9 tranche 1); GHI #1154 item 5 (every registered claim binds a reviewed canary)",
       "proposed_by": "claude-code session 2026-10-19",
       "reviewed_by": "g0"
@@ -416,7 +416,7 @@
         "replace": "        allowed = 0\n",
         "label": "a baselined violation is refused as new"
       },
-      "binding_sha256": "8ce56f8fc816096db677ffe863f7ce2e843c689f474814b5f41ff1df3cc58cd9",
+      "binding_sha256": "1adc4c4c8645624ea9f2c5dff00acdc8fbd5e60fdb8e795a38f990b1a026f46d",
       "authority": "docs/governance/harbor-ro9-astral-toolchain.md (drydock RO-9 tranche 1); GHI #1154 item 5 (every registered claim binds a reviewed canary)",
       "proposed_by": "claude-code session 2026-10-19",
       "reviewed_by": "g0"

@@ -9,9 +9,6 @@ per row of the measured population:
   target from the floor, and CI takes Python from uv. Any other statement of a
   version is a restatement, unless the exception register names it, and then it
   must agree with its home.
-- ``uv-version-capped``: ``[tool.uv] required-version`` is a floor that admits
-  every newer uv. uv exits 2 on a version it refuses, and the hooks run through
-  ``uv run``, so a cap locks the session out on local drift (GHI #1283).
 - ``lock-unchecked``: automation syncs with ``uv sync --locked``.
 - ``pip-in-project``: no ``pip``, ``uv pip`` or ``requirements*.txt`` anywhere in the tree.
 - ``setup-python``: uv provides the interpreter.
@@ -70,18 +67,6 @@ EXCEPTIONS_RELPATH = f"data/{EXCEPTIONS_NAME}"
 
 _SPEC = "docs/governance/harbor-ro9-astral-toolchain.md"
 _RECOVER = "uv run gz validate --astral-discipline"
-_DEFAULT_RECOVERY = (
-    f"Each fact is declared once, where Astral's tools read it, and the baseline only shrinks "
-    f"({_SPEC} § The discipline). Remove the restatement or route the tool through uv as the "
-    f"rule names"
-)
-_RULE_RECOVERY = {
-    "uv-version-capped": (
-        "uv exits 2 on a version required-version refuses, and the hooks run through `uv run`, "
-        f"so a cap locks the session out on local uv drift (GHI #1283; {_SPEC}, amended "
-        '2026-10-26). Write it as a floor, `required-version = ">=X.Y.Z"`'
-    ),
-}
 #: The tools Astral ships, by normalized distribution name.
 ASTRAL_TOOLS = frozenset({"ruff", "ty", "uv", "uv-build"})
 _SCAFFOLD_PREFIX = "gz init scaffold:"
@@ -192,23 +177,6 @@ def _registered_restatements(project: _Project) -> dict[tuple[str, str], dict[st
     }
 
 
-def _uv_version_rules(tools: dict[str, Any]) -> Iterator[Violation]:
-    """Refuse a ``required-version`` with any clause but ``>``, ``>=`` or ``!=``.
-
-    Yields:
-        One ``uv-version-capped`` violation when the spec refuses some newer uv.
-
-    """
-    spec = str(tools.get("uv", {}).get("required-version", ""))
-    if spec and not all(clause.strip().startswith((">", "!=")) for clause in spec.split(",")):
-        yield Violation(
-            rule="uv-version-capped",
-            file="pyproject.toml",
-            subject="tool.uv.required-version",
-            detail=spec,
-        )
-
-
 def _version_rules(root: Path, project: _Project) -> Iterator[Violation]:
     if project.floor is None:
         yield Violation(
@@ -221,7 +189,6 @@ def _version_rules(root: Path, project: _Project) -> Iterator[Violation]:
     if project.floor and project.pin and _version(project.pin) < _version(project.floor):
         yield Violation(rule="version-below-floor", file=".python-version", subject=project.pin)
     tools = project.pyproject.get("tool", {})
-    yield from _uv_version_rules(tools)
     if "target-version" in tools.get("ruff", {}):
         yield Violation(
             rule="version-restated", file="pyproject.toml", subject="tool.ruff.target-version"
@@ -608,8 +575,9 @@ def check_discipline_baseline(
                 _err(
                     "::".join(key),
                     f"{count - allowed} new {key[0]} violation(s) that {BASELINE_RELPATH} does "
-                    f"not hold. {_RULE_RECOVERY.get(key[0], _DEFAULT_RECOVERY)}, then re-run "
-                    f"`{_RECOVER}`.",
+                    f"not hold. Each fact is declared once, where Astral's tools read it, and the "
+                    f"baseline only shrinks ({_SPEC} § The discipline). Remove the restatement or "
+                    f"route the tool through uv as the rule names, then re-run `{_RECOVER}`.",
                 )
             )
     for key, count in sorted(seeded.items()):
