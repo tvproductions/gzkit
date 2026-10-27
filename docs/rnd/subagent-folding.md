@@ -441,28 +441,130 @@ Checklist item of a named ADR"*. Which ADR is put as Q7.
 subagent rule, and the shipped template's rule 5 point at `RoleDefinition.isolates`. The code
 half routes by Q7.
 
+## decision · the isolates field and its validator are a checklist item of the promoted ADR
+
+Ruled. Question 7: which ADR carries the `isolates` field and its validator? Options put:
+**A** a Feature Checklist item of the promoted skill-efficacy ADR (row 1), recommended; **B** a
+correction under ADR-0.18.0; **C** its own small feature ADR. Operator, verbatim: *"A — a
+Feature Checklist item of the promoted skill-efficacy ADR (row 1)."*
+
+Reasoning: the admission test and the measurement govern one population; each role's declared
+`isolates` is the hypothesis the paired-run experiment tests. B was set aside because
+`isolates` is a new admission rule, not an unfulfilled intent of ADR-0.18.0 — enhancement by
+the correction-vs-enhancement test — and the ADR is Validated.
+
+Coverage note for that item: `roles.py` models four pipeline roles; `git-sync-repo` has an
+agent file and no `RoleDefinition`. A validator reading `roles.py` alone would not see it.
+Whether every `.claude/agents/` file must map to a `RoleDefinition` belongs to the item's
+specification (diamond 2), and is named here so it is not lost.
+
+**commissions:** 1 — added to the row-1 proposal as a Feature Checklist item.
+
+## decision · the paper's findings split: one admission criterion, one hypothesis
+
+Ruled. Question 8: what standing do the paper's two skill-authoring findings get? Options
+put: **A** split — Finding 1's implication (*"separate mandatory task requirements from
+examples, defaults, reusable templates, and optional workflows"*) becomes an admission
+criterion for new skills (row 4); Finding 4's (*"condition verification scope and pipeline
+depth on task uncertainty, change size, and budget"*) goes to the promoted ADR's experiment as
+a hypothesis, not doctrine, recommended; **B** both to measurement, no doctrine change from the
+paper; **C** both adopted as authoring doctrine. Operator, verbatim: *"A — split: separating
+mandatory steps from examples becomes an admission criterion for new skills (row 4);
+verification depth goes to the promoted ADR's experiment, not doctrine."*
+
+Reasoning: Finding 1 follows Q2's pattern — admission for new, measurement for existing — and
+does not contest canon. Finding 4 contests canon directly (universal gates, Gate 5 on every
+lane, AGENTS.md § DO IT RIGHT *"The most thorough and comprehensive fix is always
+preferred"*); moving that on a preprint over generic coding benchmarks is the pattern-matching
+the anti-vibing mantra excludes. Existing skills are untouched by the criterion, as existing
+roles are by Q2.
+
+**commissions:** 4 — the skill-authoring admission criterion for new skills. 1 — Finding 4 as
+a named hypothesis for the promoted ADR's experimental arm.
+
+## decision · row 2 is not pursued; the unsourced "measured" claim is an insight
+
+Ruled. Question 9: what does row 2 (GHI / direct fix) carry? Options put: **not pursued** — no
+defect outside rows 1 and 4; record ADR-0.18.0's unsourced "measured" claim as an insight,
+recommended; **file a GHI** on that claim. Operator, verbatim: *"Not pursued — no defect
+outside rows 1 and 4; record the 'measured' claim as an insight."*
+
+The only defect-shaped finding, `git-sync-repo` lacking a `RoleDefinition`, already rides on
+row 1's checklist item. A GHI on the claim could close only by the measurement row 1 proposes,
+so it would duplicate that row. Insight recorded: `discovery`, scope `subagent-folding`,
+`ts` 2026-10-27T09:35:57.761156+00:00.
+
+## decision · row 3 is not pursued until the instrument exists
+
+Ruled. Question 10: what does row 3 (chore) carry? Options put: **not pursued**, revisit once
+the promoted ADR's instrument exists, recommended; **advise a chore now** that re-runs the
+paired-run measurement on each frontier model release. Operator, verbatim: *"Not pursued —
+revisit once the promoted ADR's instrument exists."*
+
+A chore with no instrument to run is doctrine without mechanism. The pool ADR's Alternative A
+already keeps a chore wrapper available once measurement lands; opus-tuning § Recalibration on
+model change already carries the per-release cadence in prose.
+
+## decision · row 5 is not pursued; each fold waits on the instrument's verdict
+
+Ruled. Question 11: what does row 5 (one-shot refactoring) carry? Options put: **not
+pursued**, folding existing roles waits on the instrument's verdict per role, recommended;
+**propose a fold-one-role-at-a-time program now**, gated on the instrument. Operator,
+verbatim: *"Not pursued — folding existing roles waits on the instrument's verdict per
+role."*
+
+A program ordered before any evidence exists would be diamond-2 planning without its input.
+The article's own rule governs the revisit: *"keep it as a subagent only if the folded version
+scores worse"*.
+
+## decision · row 6 records first-pass points 6 and 7 as no action
+
+Ruled. Question 12: does row 6 record first-pass points 6 and 7 as no action? Options put:
+**both no action**, with reasons, recommended; **point 6 no action, point 7 to row 1** as a
+hypothesis. Operator, verbatim: *"Yes — record points 6 and 7 as no action, with the reasons
+given."*
+
+- Point 6 (skill sprawl) rested on carrying the article's 30–50 **tool-definition** threshold
+  to skills, an analogy the article does not make. Whether 70 skills earn their place is the
+  promoted ADR's observational arm (row 1).
+- Point 7 (older-model prompting, e.g. the pipeline's *"DO NOT STOP HERE"*) is governed by
+  opus-tuning § Recalibration on model change, which re-derives guidance on each frontier
+  release.
+
 ---
 
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
 |---|---|---|---|---|
-| 1 | ADR / OBPI | commissioned | propose promoting ADR-pool.skill-efficacy-measurement to a feature ADR, widened to skills and subagent roles, observational and paired-run experimental, naming ADR-0.0.5 Decision 1 | decisions Q4, Q5; proposed only, the operator initiates |
-| 2 | GHI / direct fix | | | |
-| 3 | chore | | | |
-| 4 | control surface, rule, doc, skill, hook | commissioned | the "divide by context" admission test: prose in opus-tuning § Subagent fan-out, the AGENTS.md corpus subagent rule and the shipped template's rule 5, pointing at `RoleDefinition.isolates` | decisions Q2, Q6, Q6b; drafted on the operator's go on this row; the field and validator route by Q7 |
-| 5 | one-shot refactoring | | | |
-| 6 | no action | | | |
+| 1 | ADR / OBPI | commissioned | propose promoting ADR-pool.skill-efficacy-measurement to a feature ADR, widened to skills and subagent roles, observational and paired-run experimental, naming ADR-0.0.5 Decision 1; Feature Checklist item: `RoleDefinition.isolates` in `roles.py` and its validator; named hypothesis: the paper's Finding 4 (verification depth) | decisions Q4, Q5, Q7, Q8; proposed only, the operator initiates |
+| 2 | GHI / direct fix | not pursued | — | decision Q9: no defect outside rows 1 and 4; ADR-0.18.0's unsourced "measured" claim recorded as an insight (2026-10-27T09:35:57Z) and re-tested by row 1; revisit if row 1 is killed |
+| 3 | chore | not pursued | — | decision Q10: no instrument to run yet; revisit once the promoted ADR's paired-run instrument exists — a per-frontier-release re-measurement chore is the candidate |
+| 4 | control surface, rule, doc, skill, hook | commissioned | the "divide by context" admission test: prose in opus-tuning § Subagent fan-out, the AGENTS.md corpus subagent rule and the shipped template's rule 5, pointing at `RoleDefinition.isolates`; and in the skill-authoring rule, the admission criterion that new skills separate mandatory steps from examples, defaults, templates and optional workflows | decisions Q2, Q6, Q6b, Q8; drafted on the operator's go on this row; the field and validator are row 1 |
+| 5 | one-shot refactoring | not pursued | — | decision Q11: folding any existing role waits on the instrument's verdict for that role; revisit when the instrument shows a folded role scoring no worse than the kept one |
+| 6 | no action | not pursued | first-pass points 6 (skill sprawl) and 7 (older-model prompting) | decision Q12: point 6's threshold was an unsupported analogy and skill efficacy is row 1's observational arm; point 7 is governed by opus-tuning § Recalibration on model change |
 
 ## Close
 
-**Challenge restated.**
+**Challenge restated.** Opened as *"provide gzkit recommendations based on"* a vendor article
+on folding subagents into the main loop. Restated at the close, on purpose: gzkit's
+subagent roles and skills — its own and those it ships — shape agent behaviour on claims no
+instrument has tested. The run defines how new roles and skills are admitted (declared
+context isolation; mandatory steps separated from examples), and how existing ones are judged
+(a paired-run experiment, outside the test suite), so that fold-or-keep is decided by evidence
+rather than by the article, the paper, or the adoption counts behind ADR-0.18.0.
 
-**Frontier.**
+**Frontier.** Empty. Every decision whose prerequisites were settled has been put and ruled
+(Q1–Q12, with Q6b). Open matters remaining are diamond-2 specification, named where they
+arose: which `.claude/agents/` files the `isolates` validator covers (Q7 entry), and the
+instrument's probe set and grading rubric (row 1).
 
-**Review.**
+**Review.** `docs/rnd/subagent-folding/review.md`, written 2026-10-27. Operator, verbatim, 2026-10-27:
+*"I have read the review."*
 
-**Sign-off.**
+**Sign-off.** Operator, verbatim, 2026-10-27: *"Fund."* — fund. Diamond 1 is closed. Row 1
+waits on the operator's initiation of the promotion; row 4 waits on the operator's go on that
+row.
 
 ## What this record does not license
 
