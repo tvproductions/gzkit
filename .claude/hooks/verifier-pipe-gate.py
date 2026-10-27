@@ -28,8 +28,8 @@ def main() -> None:
         sys.exit(0)
 
     try:
-        from gzkit.mx.alarms import alarms_off
-        from gzkit.verifier_pipe_gate import decide
+        from gzkit.mx.alarms import alarms_off  # noqa: PLC0415 - optional: fail-open
+        from gzkit.verifier_pipe_gate import decide  # noqa: PLC0415 - optional: fail-open
     except ImportError:
         # Fail-open: gzkit unavailable is a plumbing failure, not a
         # governance signal.
