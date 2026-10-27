@@ -3015,6 +3015,30 @@ handoff's resume step; **C** adopt *position relief briefing* beside the handoff
 kit's coordinator position carries the review. 5 — the handoff's authoring gate refuses a hangar
 handoff whose turnover omits a tag the log shows hung.
 
+## decision · C12: the handback takes the form of a transfer of custody
+
+Ruled; matrix row C12. Question: what must the handback contain? The doctrine names the act, *"The
+amendment the operator ratifies at seaworthiness"*, and **handback** is the held term. JFMM III-5
+App. C: *"IF NO RECs ARE OPEN AT THE TIME OF CUSTODY TRANSFER, STATE THIS FACT."* JFMM
+I-2.3.7.8.b(2)(b)2: *"The CWP must include documented transfer of responsibility for accomplishment
+of deferred actions from the FMA to the tended ship"*. DFARS 252.217-7010(b): *"Upon completion of
+the work, the Government shall accept delivery of the vessel at the time and location specified in
+the job order."* Options put: **A** a **transfer of custody** enumerating every open line item (the
+punch list), every departure from specification the hangar accepted, and each deferred action with
+its new holder, an empty category stated as *none*, then the operator's ratification (recommended);
+**B** the ratified amendment alone, pointing at the punch list and the work package log; **C** open
+items only. Operator: *"A"*.
+
+- **handback** keeps its name. **transfer of custody** names its form.
+- Silence is not *none*. A category left out of the handback is a defect in it, not an empty
+  category.
+- The enumeration is checked against the punch list and the work package log, which are its
+  sources. The handback is not a third copy.
+
+**commissions:** 4 — `safe-mode-doctrine.md` and the gz-mx skill's exit carry the three categories
+and the *none* rule. 5 — `gz mx exit` refuses a handback whose enumeration disagrees with the punch
+list or the work package log.
+
 ---
 
 ## Disposition map
