@@ -2766,6 +2766,35 @@ hangar level. It is stale for the drydock level, and the fix is its own.
 `gz-session-handoff` § Trust Model names the drydock-level exception, all carried by #1273. 5 — each
 control's MEL entry declares its behavior at both levels.
 
+## source · the seven `--self-test` arms and the `@enforces` declaration, read for the syntax
+
+Read 2026-10-27: the self-test function and its dispatch in each of the seven chore scripts, the
+callers in `src/gzkit/quality.py` (`run_module_size_audit`, `_run_project_local_ratchet`), and the
+signature and docstring of `enforces` in `src/gzkit/enforcement.py`.
+
+- **The shared shape.** Each arm is an argparse flag (or a bare `argv[0]` check, in
+  `check_module_size.py`) that runs synthetic cases over the script's pure functions, *"no repo
+  state, no network"*. The cases include the failure directions, which `check_module_size.py` calls
+  *"TEETH"* (*"all five breach directions fire"*). The arm prints one line per case and returns an
+  exit status. Nothing records the result.
+- **Who calls them.** `gz check` runs four arms before their ratchet: module size, tautological
+  debt, validator reachability and ledger inertness. Its docstring gives the reason: *"a gate with
+  no automatic caller and a gate whose teeth are never verified are the same failure class"*. No
+  automatic caller was found for the rule-conflicts, cross-reference-staleness and pattern-scan arms.
+- **The exit statuses disagree.** `check_debt_target.py` and `check_module_size.py` return **3** on
+  a failed self-test. `check_reachability.py` and `check_ledger_inertness.py` return **1**.
+  `check_evidence.py` documents **2**. `check_cross_reference_staleness.py` uses `assert` and always
+  returns 0, so under `python -O` its checks do not run.
+- **Defect candidates, not yet put.** (a) A failed self-test that exits 3 meets the step seam's
+  demotion code: under an open marker, a self-test that has lost its teeth is reported as
+  advisory. (b) The `assert`-based arm can pass vacuously. Both are tracked here until routed.
+- **`@enforces`, the decorator precedent.** *"Declare that a production callable enforces an
+  enforcement claim. ... Returns the decorated callable unchanged — registration is metadata-only."*
+  It takes `claim`, `fixture`, `entrypoint`, `expect`, `exempts`, `population` and `delegates_to`.
+  It validates at decoration time and registers a record. A fixture with an entrypoint is already a
+  self-test declared at the control. The registry it fills is the derived list that the onboarding
+  ruling asks for.
+
 ---
 
 ## Disposition map
