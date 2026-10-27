@@ -3179,6 +3179,28 @@ and the mode contract's row 5, revisited at civil rule through RO-11's process (
 home that is not an ADR. Revisit if, at civil rule, the kit or the mode-contract program outgrows
 the drydock; it is then pulled as a work package under the catalog by RO-11's process.
 
+## decision · row 5: the two-way mode contract program is RO-13, ratcheted to zero
+
+Ruled. Question: by what route does the program run, which gives every control its MEL entry, its
+standby level at the place of call and its built-in self-test, across the census's 421 code
+controls and 206 model-oriented surfaces, kind by kind and with priorities ordered (ruled
+2026-10-26)? Precedents put: RO-2 (*"Ratchet to zero (Rec.)"*) and RO-9, each a whole-tree program
+in tranches with a shrink-only baseline. Options put: **A** its own repair order, **RO-13**, after
+RO-12, in tranches by kind (code controls first, by role: alarms, gates, then safeguards, monitors
+and tripwires; then skills; then rules and the other surfaces), witnessed by a shrink-only baseline
+of controls with no MEL entry, closed at zero, the priority order set when RO-13 is specified with
+the operator (recommended); **B** a tranche set inside RO-12; **C** at civil rule, as work packages
+per kind. Operator: *"A"*.
+
+- The witness turns the doctrine's standing exit measure, *"the count of controls with no named
+  contract, at zero"*, into a check.
+- The route was chosen for the design (*"not be so parsimonious or urgent to get back underway"*).
+  The kit's first flight does not wait for the program.
+
+**commissions:** 5 — the program, as RO-13 after RO-12; its specification and priority order with
+the operator. 4 — the contract's register gains the RO-13 row, as a contract amendment (B1), on the
+operator's go on that row.
+
 ---
 
 ## Disposition map
@@ -3189,7 +3211,7 @@ the drydock; it is then pulled as a work package under the catalog by RO-11's pr
 | 2 | GHI / direct fix | commissioned | the ten census defects filed as #1271 to #1280 (2026-10-26); direct repair of the eleven defects in the pipeline parts the kit reuses (#1200, #1206, #1208, #1198, #1203, #1205, #1194, #1209, #1185, a cwd-escape guard to be filed, #1028's stop-and-ask boundary); a GHI on the persona witness measuring a total; each lesson crossing kit and pipeline as a GHI, the four from the pipeline crosswalk among them (2026-10-27); #1273 before RO-12 | operator, questions 8, 14, 17, 21; crosswalk and RO-12 rulings |
 | 3 | chore | commissioned | the vibe-coded and underbaked audit chore, as a signature catalogue (ruled 2026-10-27); `frontier-model-card-currency` widened to model-level assignments (landed `9649d0eb0`) | operator directed both, 2026-10-25 |
 | 4 | control surface, rule, doc, skill, hook | commissioned | the contractor kit (four positions and the surveillant, runtime, tag-out log, maintenance record, punch list, job order and change order); the contract's division of labor, cheaper-sessions clause, exit conditions and § Punch list; the doctrine's § Seaworthy and § Handback; Part 0's sea-trial term and the campaign's Movement E (operator ratification); RO-7's persona exit number; `gz-rnd`'s both-sides rule; the vocabulary crosswalk; from 2026-10-27: the MX model and the two-way mode contract by decorator, the matrix rows ruled (B1, B11, B12, C1, C5, C10, C11, C12), the RO-12 row and the contractor brief's order | operator, questions 1–24; rulings of 2026-10-26/27 |
-| 5 | one-shot refactoring | | the two-way mode contract across every control, monitor, alarm and safeguard: each module onboards its MEL entry, takes the standby level command from the central condition signal at its place of call, and reports suitability for function through its built-in self-test (operator: *"a MASSIVE refactor, but it is the best way that I can see"*) | open: the program is proposed after the census of places of call; its route is chosen for the design, never to save effort (*"not be so parsimonious or urgent to get back underway"*); a self-test chore is an advise-only candidate for row 3 |
+| 5 | one-shot refactoring | commissioned | the two-way mode contract across every control, monitor, alarm and safeguard: each module onboards its MEL entry, takes the standby level command from the central condition signal at its place of call, and reports suitability for function through its built-in self-test (operator: *"a MASSIVE refactor, but it is the best way that I can see"*) | RO-13 after RO-12, in tranches by kind, a shrink-only baseline of controls with no MEL entry closed at zero (ruled 2026-10-27); route chosen for the design (*"not be so parsimonious or urgent to get back underway"*); a self-test chore remains an advise-only candidate for row 3 |
 | 6 | no action | | | open |
 
 ## Close
