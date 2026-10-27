@@ -2734,6 +2734,38 @@ on whenever the file is present (today's checkpoint), with a bad binding or pars
 **commissions:** 2 — `checkpoint.hangar_demotes`, `alarms.alarms_off` and every other reader conform
 to this one reading, carried by #1273.
 
+## decision · one condition with a standby level commanded at entry: hangar or drydock
+
+Ruled. Model question 3: what becomes of `mode: mx | safe` under the one non-operational
+condition? Options put: **A** one condition with a standby level commanded at entry, where the marker
+names the level (hangar or drydock) in place of `mode`, and each control's MEL entry declares what it
+does at each level (recommended); **B** one condition at one level, with `mode` retired and ceremony
+suspension keyed to whether a contract is present; **C** the safe-mode contract carries the command,
+and the marker holds only on/off plus the contract hash. Operator: *"A"*.
+
+- **The two levels.** *Hangar* is the standing-maintenance level, for a hangar visit that answers one
+  squawk. *Drydock* is the drastic level, taken under a contract. They are the doctrine's own words
+  (`safe-mode-doctrine.md` § What safe mode is). *Safe mode* remains the name of the
+  condition-at-drydock as the doctrine uses it. What it lowers is now a level default rather than a
+  second mode.
+- **What each level lowers is each control's own declaration**, with defaults by level (the MEL
+  ruling: *"defaults by mode and by surface"*). Today's behavior is the starting default: at the
+  hangar level guards demote and the slow alarms stay on. At the drydock level guards demote, the
+  slow alarms are off and ceremony is suspended under the contract. Lint and the fast static checks
+  are pinned at both levels.
+- **The floor is never on the list at any level** (`GATE5_INVARIANTS`).
+
+**A canon disagreement this settles, by canon.** #1273 observed that in safe mode no `gz check` runs
+at push, while `gz-session-handoff` § Trust Model says *"the pre-push `gz check` ... are untouched"*.
+`safe-mode-doctrine.md` item 5, the later and operator-ruled surface (2026-10-25: *"i don't want any
+long check at all"*), rules for the drydock level: the slow alarms are off, and a whole-tree
+`gz lint` runs at every push. The skill's sentence describes the operational condition and the
+hangar level. It is stale for the drydock level, and the fix is its own.
+
+**commissions:** 2 — the marker's `mode` becomes the commanded level, every reader keys to it, and
+`gz-session-handoff` § Trust Model names the drydock-level exception, all carried by #1273. 5 — each
+control's MEL entry declares its behavior at both levels.
+
 ---
 
 ## Disposition map
