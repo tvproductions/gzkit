@@ -2967,6 +2967,29 @@ ladder (recommended). **B** rework only, with reinspection an unnamed second pas
 the pipeline's fix-cycle wording is drafted to the two terms. 5 — the runtime records a buy-back
 per finding and refuses to close a finding without one.
 
+## decision · C10: final inspection and acceptance, then closed; closeout stays with the release
+
+Ruled; matrix row C10. Question: what closes a work package, given that `gz closeout` keys to the
+Release Package once RO-4 lands (`safe-mode-doctrine.md` § The Release Package)? DFARS
+252.217-7007(e): *"Upon completion of the work under a job order and final inspection and
+acceptance"*. 14 CFR § 121.709(b)(2)(ii): *"All items required to be inspected were inspected by an
+authorized person who determined that the work was satisfactorily completed"*. JFMM I-2.3.7.7.f, a
+closeout attribute: *"Equipment and systems were restored to normal conditions and
+configurations."* Options put: **A** *closeout review*, then *closed*, qualified as package or
+release closeout every time; **B** **final inspection and acceptance**, then *closed*: the
+inspector's final inspection checks the record complete and every tag cleared, the operator's
+acceptance is Gate 5 (recommended); **C** *closed* only, with no named review. Operator: *"b"*.
+
+- **closeout** names the release-level act alone. The matrix's *closeout review* is not taken, so
+  the package and the release share no word.
+- The JFMM's closeout attributes, restore-to-normal among them, become the content of the final
+  inspection. The source term departs from the JFMM's here, and this entry records that.
+- **closed** keeps its ruled sense (RO-5 ruling 5): it carries the Gate 5 decision.
+
+**commissions:** 4 — the kit's inspector position carries final inspection with the tag-clear
+check, and the doctrine keeps *closeout* for the Release Package. 5 — the runtime refuses
+acceptance on a package whose tag-out log has an entry still hung.
+
 ---
 
 ## Disposition map
