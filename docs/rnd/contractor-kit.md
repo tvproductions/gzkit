@@ -2896,6 +2896,22 @@ Operator: *"A"*.
 **commissions:** 5 — the shared MEL model; the frontmatter block and its validator; the wrapper's
 MEL arguments.
 
+## decision · B1: the contract changes only by its own amendment, never through a repair order
+
+Ruled; matrix row B1. Question: adopt the master-agreement rule for the safe-mode contract? DFARS
+217.7103-6(b): *"A master agreement shall be changed only by modifying the master agreement itself.
+It shall not be changed through a job order."* Options put: **A** adopt it, with amendment booking
+mechanical as today (`mx_contract_amended` per committing edit); a repair order needing a contract
+change stops for a contract amendment first (recommended). **B** adopt it, and require the
+operator's verbatim words on every amendment. **C** do not adopt it. Operator: *"A"*.
+
+- **contract** stays the term (ratified 2026-10-15). The rule is added, and nothing is renamed.
+- The pin (*"Hash at entry + amend event"*) is unchanged. The rule constrains what an amendment may
+  come from, not how it is booked.
+
+**commissions:** 4 — `safe-mode-doctrine.md` § The instruments item 1 and the contract template
+carry the rule.
+
 ---
 
 ## Disposition map
