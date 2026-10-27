@@ -3056,6 +3056,31 @@ hangar or drydock) agrees with it.
 **commissions:** 6 — no action: the definition exists, and the matrix standing cell is corrected
 in this commit.
 
+## decision · B12: the GitHub issue's role is a problem report, with AC 00-71's states
+
+Ruled; matrix row B12. Question: what is the GitHub issue, and when is it closed? Canon read:
+`safe-mode-doctrine.md` § Maintenance mode, *"the GitHub issue is the write-up"*; AGENTS.md
+§ Defect-fix routing, *"closed with the commit SHA"*. AC 00-71 § 3.1: *"Problem report (PR) – A
+means to identify and record the resolution of anomalous behavior, process non-compliance with
+development assurance plans and standards, and deficiencies in life cycle data (adapted from
+DO-178C/ED-12C)."* § 3.2: *"Resolved – A problem report that has been corrected or fully
+mitigated, for which resolution of the problem has been verified but not formally reviewed and
+confirmed."* *"Closed – A resolved problem report that underwent a formal review and confirmation of
+an effective resolution of the problem."* Options put: **A** **problem report** names the role, the
+GitHub issue stays the carrier (*GHI* in the tooling, *write-up* the squawk's word), and the states
+are **recorded, classified, resolved, closed**: the fix commit resolves, and only a review (the
+buy-back of C5, the final inspection of C10) closes (recommended); **B** the states only, with no
+name; **C** rename *GHI* to *problem report* everywhere; **D** keep open/closed. Operator: *"A"*.
+
+- **GHI** and **write-up** are kept. The carrier is not renamed, as in B1 and C11.
+- The fix commit's SHA now witnesses **resolved**, not closed. A problem report closed by its own
+  author's commit with no review on record has skipped a state.
+
+**commissions:** 4 — AGENTS.md § Defect-fix routing (the *closed with the commit SHA* clause),
+the ghi-close and ghi-author skills, and the doctrine carry the four states; a canon change through
+the content skills, on the operator's go. 5 — the review step before GitHub's close, and its
+record, are diamond-2 work.
+
 ---
 
 ## Disposition map
