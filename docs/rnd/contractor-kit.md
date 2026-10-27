@@ -2838,6 +2838,26 @@ Read 2026-10-27: `src/gzkit/enforcement.py` lines 1 to 134 (the module docstring
   both of its gate callers"*. It is part of the floor's own machinery, and the floor *"can never be
   listed"* (the MEL ruling).
 
+## decision · two decorators joined by reference: the MEL entry names its self-tests
+
+Ruled. Model question 5: does the mode-contract decorator share `@enforces`'s registry? Options put:
+**A** merge them into one decorator and one registry; **B** two decorators joined by reference, where
+a new decorator carries the control's one MEL entry and its self-test field names `@enforces` claim
+ids or a chore `--self-test` arm, `@enforces` is unchanged, and the MEL view is the join
+(recommended); **C** `@enforces` grows MEL fields on each claim. Operator: *"B"*.
+
+- **`@enforces` stays the floor's proof of teeth.** It is never demoted and holds no level. That
+  keeps the MEL ruling's *"The floor can never be listed"* true by construction.
+- **One MEL entry per control**, so a level is the control's own and is fixed for an act.
+- **A reference that names no registered claim or arm fails at import**, on `@enforces`'s
+  decoration-time precedent.
+- **The runner's `enforcement_claim_verified` receipt is a self-test result.** A chore arm today
+  prints and records nothing. How either result reads as *suitability for function* is the next
+  question.
+
+**commissions:** 5 — the MEL decorator with its self-test references and the decoration-time check;
+the MEL view as the join of the two registries.
+
 ---
 
 ## Disposition map
