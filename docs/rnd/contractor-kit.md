@@ -2875,6 +2875,27 @@ call before every use. Operator: *"A"*.
 a receipt writer for the chore `--self-test` arms. 3 (advise only) — the self-test chore already
 recorded as a candidate, now the scheduler that keeps receipts fresh.
 
+## decision · non-Python controls declare in their own slot, against one shared schema
+
+Ruled. Model question 7: how do controls that are not Python callables declare their mode
+contract? Options put: **A** each surface declares in its own slot against one shared schema
+(recommended). The MEL entry becomes one Pydantic model. Python scripts, hook scripts included,
+take the decorator. Markdown surfaces (skills, rules, personas, agent definitions, chores,
+templates) carry an MEL block in frontmatter, validated against the model, and their self-test
+reference may name an existing check such as `gz-skill-review`. Config-only controls (third-party
+pre-commit hooks, CI steps) carry it as arguments to the `gzkit.mx.alarms` wrapper on their own
+config line. **B** one sidecar file for every non-Python control. **C** Python only for now.
+Operator: *"A"*.
+
+- Three declaration shapes, one schema. The MEL view joins them with the two decorator registries.
+- A third-party hook enters the MEL through the wrapper. A hook not wrapped is not listed, and by
+  the MEL ruling an unlisted control cannot be relaxed.
+- This closes the syntax item on the frontier: the decorator (question 4), the registry join
+  (question 5), suitability (question 6) and the non-Python shapes (this one).
+
+**commissions:** 5 — the shared MEL model; the frontmatter block and its validator; the wrapper's
+MEL arguments.
+
 ---
 
 ## Disposition map
