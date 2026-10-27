@@ -421,6 +421,26 @@ Implementer, Reviewer with spec and quality sub-roles, Narrator) and `.gzkit/age
 (five Codex bodies, including `git-sync-repo`, which `roles.py` does not model). Placing the
 field in `roles.json` would make a second contract surface beside the first.
 
+## decision · the field lives in roles.py; produces is the return contract
+
+Ruled. Question 6b: which registry carries the declared field? Options put: **A** `roles.py`
+— add `isolates` beside the existing `ArtifactContract`, `produces` serving as the return
+contract, the validator reading `roles.py`, recommended; **B** `roles.json` as ruled at Q6;
+**C** both, with a coherence check. Operator, verbatim: *"A — roles.py: add isolates beside
+the existing ArtifactContract (produces is the returns); the validator reads roles.py."*
+
+This supersedes Q6's placement; Q6's substance (declared, validator-witnessed) stands.
+Adopters receive the field through the wheel. The ruled name `returns` is not coined: the
+source's own term `produces` is kept.
+
+Routing, from canon: a new `RoleDefinition` field plus a `gz validate` flag changes a schema
+and a CLI, which AGENTS.md § Defect-fix routing makes OBPI work, proposed *"only as a Feature
+Checklist item of a named ADR"*. Which ADR is put as Q7.
+
+**commissions:** 4 — the prose half: opus-tuning § Subagent fan-out, the AGENTS.md corpus
+subagent rule, and the shipped template's rule 5 point at `RoleDefinition.isolates`. The code
+half routes by Q7.
+
 ---
 
 ## Disposition map
@@ -430,7 +450,7 @@ field in `roles.json` would make a second contract surface beside the first.
 | 1 | ADR / OBPI | commissioned | propose promoting ADR-pool.skill-efficacy-measurement to a feature ADR, widened to skills and subagent roles, observational and paired-run experimental, naming ADR-0.0.5 Decision 1 | decisions Q4, Q5; proposed only, the operator initiates |
 | 2 | GHI / direct fix | | | |
 | 3 | chore | | | |
-| 4 | control surface, rule, doc, skill, hook | commissioned | the "divide by context" admission test for new subagent roles, in gzkit's and the shipped surfaces | decision Q2; placement and witness still open |
+| 4 | control surface, rule, doc, skill, hook | commissioned | the "divide by context" admission test: prose in opus-tuning § Subagent fan-out, the AGENTS.md corpus subagent rule and the shipped template's rule 5, pointing at `RoleDefinition.isolates` | decisions Q2, Q6, Q6b; drafted on the operator's go on this row; the field and validator route by Q7 |
 | 5 | one-shot refactoring | | | |
 | 6 | no action | | | |
 
