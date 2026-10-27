@@ -3081,6 +3081,41 @@ the ghi-close and ghi-author skills, and the doctrine carry the four states; a c
 the content skills, on the operator's go. 5 — the review step before GitHub's close, and its
 record, are diamond-2 work.
 
+## decision · the modified pipeline process: a crosswalk, each difference crossing as a GHI
+
+Ruled. Question: what shape does the modified pipeline process take (operator, 2026-10-25: *"we
+should be able to put together a modified pipeline process WITH EASE"*), given question 8, *"repair
+first, then reuse unchanged"*, and the both-directions ruling? Options put: **A** a crosswalk in
+this record from each pipeline stage to the kit act it carries, each difference from a ruled act
+crossing as one GHI on the pipeline side, sequenced after #1200, #1206, #1208 and #1028
+(recommended); **B** a pool ADR for the modified pipeline, proposed only; **C** no change until
+civil rule. Operator: *"A"*.
+
+B fails the admission question: the change is reversible, and its trade-off was already made at
+question 8. The canon routes it to rows 2 and 4.
+
+**The crosswalk.** Read 2026-10-27: `.gzkit/skills/gz-obpi-pipeline/SKILL.md` § Pipeline Stages,
+and `references/stage-1-load-context.md`, `stage-4-present-evidence.md` and
+`stage-5-sync-and-account.md`.
+
+| Kit act (ruling) | Pipeline today | Difference |
+|---|---|---|
+| initiation, the operator's (RO-5 ruling 5) | only the operator initiates (AGENTS.md § OBPI Acceptance Protocol) | none |
+| commencement once the tags hang (C1) | Stage 1 step 9, `gz obpi lock claim` | the lock claim stands for commencement, and nothing is isolated before it: the brief's allowed and denied paths are declared but not hung as tags |
+| self-check, independent check, inspection (three tiers, C3) | Stage 3 baseline checks; Stage 2 spec-reviewer and quality-reviewer; Step 4b adversarial validation | none in kind; Step 4b is the inspector's precedent |
+| rework and buy-back (C5) | Step 4b follow-up: *"The adversary must verify each claimed closure"*, under the ruling *"Step 4b closes on independent confirmation of the corrected state"* (2026-09-05) | the act exists in substance and has no name; a Stage 2 reviewer finding has no recorded reinspection of its own |
+| final inspection and acceptance, then closed (C10) | Step 4b's last verdict, the Stage 4 human gate, `gz obpi complete` | restore-to-normal comes after acceptance: Stage 5 cleans the markers after attestation, where the kit's final inspection checks every tag cleared before it |
+| shift turnover (C11) | the abort path: *"Leave the lock held, name it in the handoff"* | partial: a held lock is named, but no review of what the relieved session held is recorded on a non-abort relief |
+| problem report, resolved then closed (B12) | a finding returns as a GHI, closed with the commit SHA | the GHI closes on the fix with no review; row 4 of B12 already carries it |
+| transfer of custody (C12) | none | none: the pipeline is not a hangar, so there is no custody to transfer |
+
+Five rows differ. The B12 difference is commissioned already, so four cross as GHIs.
+
+**commissions:** 2 — one GHI per difference on the pipeline side (commencement with no isolation,
+the unnamed buy-back, restore-to-normal after acceptance, turnover on a non-abort relief), each
+filed through ghi-author on the operator's go on that row and sequenced after #1200, #1206, #1208
+and #1028.
+
 ---
 
 ## Disposition map
