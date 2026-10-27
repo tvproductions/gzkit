@@ -2990,6 +2990,31 @@ acceptance is Gate 5 (recommended); **C** *closed* only, with no named review. O
 check, and the doctrine keeps *closeout* for the Release Package. 5 — the runtime refuses
 acceptance on a package whose tag-out log has an entry still hung.
 
+## decision · C11: shift turnover, a named act the handoff carries
+
+Ruled; matrix row C11. Question: what act happens at session relief inside the hangar? The
+handoff's name is not in question: the three-subjects ruling names it session memory
+(ADR-0.0.65). TUM 1.3.1.c: *"Supervisory watchstanders shall review associated tag-out logs during
+watch relief and shift turnover."* 14 CFR § 121.369(b)(9): *"Procedures to ensure that required
+inspections, other maintenance, preventive maintenance, and alterations that are not completed as a
+result of shift changes or similar work interruptions are properly completed before the aircraft is
+released to service."* 29 CFR 1915.89(m)(2): *"The employer shall establish and implement
+provisions for the orderly transfer of lockout/tags-plus systems between authorized employees when
+they are starting and ending their workshifts"*. Options put: **A** **shift turnover** as a named
+act: at every session relief in the hangar the relieving session reviews the tag-out log, the
+findings awaiting buy-back and the commenced packages, the handoff records the review, and every
+hung tag transfers by name (recommended); **B** no new term, the review one more check in the
+handoff's resume step; **C** adopt *position relief briefing* beside the handoff. Operator: *"a"*.
+
+- **handoff** keeps its name and subject. The Part 0 candidate *position relief briefing* is not
+  taken.
+- A tag hung by a session that has been relieved, with no turnover naming it, has no holder.
+  1915.89(m)(2) makes the transfer itself the thing recorded.
+
+**commissions:** 4 — the handoff skill carries a turnover section for hangar sessions, and the
+kit's coordinator position carries the review. 5 — the handoff's authoring gate refuses a hangar
+handoff whose turnover omits a tag the log shows hung.
+
 ---
 
 ## Disposition map
