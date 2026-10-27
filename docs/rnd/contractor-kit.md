@@ -2716,6 +2716,24 @@ report-only second job (recommended); **B** one working copy, with the marker ig
 
 **commissions:** 2 — #1263's report-only full-strength CI job, carried by #1273.
 
+## decision · the condition is on only when the marker is present, readable, ledger-bound and not exiting
+
+Ruled. Model question 2: one reading of *on* for every reader. Options put: **A** on only when the
+marker is present, parses, is bound to a still-open `mx_session_opened`, and is not `exiting`, with
+anything else read as normal operation at full strength and announced loudly (recommended); **B**
+on whenever the file is present (today's checkpoint), with a bad binding or parse only reported;
+**C** A's reading for demotion and B's for the alarm switch. Operator: *"A"*.
+
+- `is_valid`'s anti-contrivance becomes the one reading. A hand-made or corrupted marker lowers
+  nothing.
+- This reverses `hangar_demotes`' *"An unreadable marker keeps the hangar's original presence-only
+  reading"*. An unreadable or unbound marker now means full strength.
+- The cost is accepted: a marker corrupted mid-drydock brings every guard back. The loud
+  announcement names the cause and its one-command recovery.
+
+**commissions:** 2 — `checkpoint.hangar_demotes`, `alarms.alarms_off` and every other reader conform
+to this one reading, carried by #1273.
+
 ---
 
 ## Disposition map
