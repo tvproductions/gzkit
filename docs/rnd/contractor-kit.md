@@ -3039,6 +3039,23 @@ items only. Operator: *"A"*.
 and the *none* rule. 5 — `gz mx exit` refuses a handback whose enumeration disagrees with the punch
 list or the work package log.
 
+## decision · C13: the drydock session is defined in canon; the matrix's gap is stale
+
+Not put to the operator: canon answers it (AGENTS.md § Operator Economy, consult canon before
+asking). Matrix row C13 recorded *"gap (no definition)"*. `safe-mode-doctrine.md` § Maintenance
+mode, read 2026-10-27, defines it: *"A drydock session is one `mx_session_opened` to
+`mx_session_closed` span with `mode: safe` and its contract; `gz mx exit` renders its enter-to-exit
+log at the hard gate; its repair orders are the units inside it."* The same paragraph carries the
+operator's verbatim ruling of 2026-10-17 that the drydock is *"an on-demand and drastic"* kind
+beside the scheduled checks and the squawk. The run's own standby-level ruling (one condition,
+hangar or drydock) agrees with it.
+
+- **drydock** is kept (Part 0, ratified). *Availability* is not taken: Volume V never defines it.
+- No source term is missing. The definition is gzkit's own, and the citation is to canon.
+
+**commissions:** 6 — no action: the definition exists, and the matrix standing cell is corrected
+in this commit.
+
 ---
 
 ## Disposition map
