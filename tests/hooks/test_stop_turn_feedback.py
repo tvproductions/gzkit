@@ -17,8 +17,11 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Literal
 from unittest.mock import patch
 
+from gzkit.mx import marker
+from gzkit.mx.marker import Marker
 from gzkit.traceability import covers
 from tests.commands.common import argv_by_tool_name
 
@@ -88,11 +91,13 @@ class TestBlockOnFindings(unittest.TestCase):
     @covers("REQ-0.0.70-03-02")
     def test_dirty_files_with_findings_block_with_three_part_prose(self):
         stderr = io.StringIO()
+        # A markerless cwd: the live repo may hold an open MX marker (GHI #1273).
+        tmp = self.enterContext(tempfile.TemporaryDirectory())
         with (
             patch.object(_HOOK, "collect_dirty_python_files", return_value=["src/x.py"]),
             patch.object(_HOOK, "run_lint", return_value=(1, _RUFF_FINDINGS)),
             patch.object(_HOOK, "append_telemetry"),
-            patch.object(sys, "stdin", io.StringIO(_payload(stop_hook_active=False))),
+            patch.object(sys, "stdin", io.StringIO(_payload(stop_hook_active=False, cwd=tmp))),
             patch.object(sys, "stderr", stderr),
             patch.dict(_HOOK.os.environ, {}, clear=False),
         ):
@@ -336,6 +341,50 @@ class TestClaimGrounding(unittest.TestCase):
                 exit_code = _HOOK.main([])
             self.assertEqual(exit_code, 2)
             telemetry.assert_called_once_with(Path(tmp).resolve(), claims=1)
+
+
+class TestOpenModeReports(unittest.TestCase):
+    """An open hangar or safe-mode marker demotes the hook: it reports, never blocks (GHI #1273).
+
+    The demotion authority is `gzkit.mx.checkpoint.hangar_demotes`; an `exiting`
+    marker demotes nothing, so `gz mx exit`'s re-run still blocks.
+    """
+
+    def _run(
+        self, tmp: str, mode: Literal["mx", "safe"] | None = None, *, exiting: bool = False
+    ) -> tuple[int, str]:
+        root = Path(tmp)
+        if mode is not None:
+            marker.write(Marker(session_id="stop-hook-test", mode=mode, exiting=exiting), root)
+        transcript = _write_transcript(root, "OBPI-0.0.37-22 is attested-complete.")
+        stderr = io.StringIO()
+        with (
+            patch.object(_HOOK, "collect_dirty_python_files", return_value=[]),
+            patch.object(
+                sys, "stdin", io.StringIO(_payload(cwd=tmp, transcript_path=str(transcript)))
+            ),
+            patch.object(sys, "stderr", stderr),
+        ):
+            return _HOOK.main([]), stderr.getvalue()
+
+    def test_an_open_mode_reports_the_finding_without_blocking(self):
+        for mode in ("safe", "mx"):
+            with self.subTest(mode=mode), tempfile.TemporaryDirectory() as tmp:
+                exit_code, prose = self._run(tmp, mode)
+                self.assertEqual(exit_code, 0)
+                self.assertIn("attested-complete", prose)
+                self.assertIn("[MX advisory]", prose)
+
+    def test_an_exiting_marker_still_blocks(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            exit_code, _ = self._run(tmp, "safe", exiting=True)
+            self.assertEqual(exit_code, 2)
+
+    def test_no_marker_still_blocks(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            exit_code, prose = self._run(tmp)
+            self.assertEqual(exit_code, 2)
+            self.assertNotIn("[MX advisory]", prose)
 
 
 class TestSettingsWiring(unittest.TestCase):

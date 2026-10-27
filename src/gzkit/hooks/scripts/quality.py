@@ -206,7 +206,9 @@ def _stop_turn_feedback_script() -> str:
 
             Exit codes:
               0 - Allow the stop (default; all failure modes)
-              2 - Block the stop; stderr carries the feedback prose
+              2 - Block the stop; stderr carries the feedback prose. Under an open
+                  hangar or safe-mode marker the same prose is reported with exit 0
+                  (`finish`, GHI #1273).
             \"\"\"
 
             import errno
@@ -220,6 +222,11 @@ def _stop_turn_feedback_script() -> str:
             from contextlib import suppress
             from datetime import UTC, datetime
             from pathlib import Path
+
+            try:
+                from gzkit.mx import checkpoint as _mx_checkpoint
+            except ImportError:  # gzkit not importable: no open mode can demote the hook
+                _mx_checkpoint = None
 
             TIMEOUT_SECONDS = 2
             MAX_OUTPUT_LINES = 20
@@ -426,6 +433,30 @@ def _stop_turn_feedback_script() -> str:
                 return 0
 
 
+            def finish(cwd: Path, message: str) -> int:
+                \"\"\"Block with *message*, or report it when an open MX mode demotes the hook.
+
+                `gzkit.mx.checkpoint.hangar_demotes` is the one demotion authority: an
+                open hangar or safe-mode marker demotes, an `exiting` one does not, and
+                an unreadable marker keeps the block (GHI #1273).
+
+                Returns:
+                    0 when the open mode demotes the hook, else 2.
+                \"\"\"
+                demoted = False
+                if _mx_checkpoint is not None:
+                    with suppress(OSError, ValueError):
+                        demoted = _mx_checkpoint.hangar_demotes(cwd)
+                if demoted:
+                    sys.stderr.write(
+                        "[MX advisory] an open MX mode demotes this hook: reported, not "
+                        "blocking.\\n" + message + "\\n"
+                    )
+                    return 0
+                sys.stderr.write(message + "\\n")
+                return 2
+
+
             def main(argv: list[str]) -> int:
                 \"\"\"Run the turn-end check; 0 allows the stop, 2 blocks with feedback.\"\"\"
                 if "--demo" in argv:
@@ -461,8 +492,7 @@ def _stop_turn_feedback_script() -> str:
                         with suppress(OSError):
                             findings_lines = len(findings.splitlines())
                             append_telemetry(cwd, files=len(files), findings_lines=findings_lines)
-                        sys.stderr.write(build_block_message(findings, len(files)) + "\\n")
-                        return 2
+                        return finish(cwd, build_block_message(findings, len(files)))
 
                 transcript_path = payload.get("transcript_path")
                 if isinstance(transcript_path, str):
@@ -472,8 +502,7 @@ def _stop_turn_feedback_script() -> str:
                         if unbacked:
                             with suppress(OSError):
                                 append_claim_telemetry(cwd, claims=len(unbacked))
-                            sys.stderr.write(build_claim_block_message(unbacked) + "\\n")
-                            return 2
+                            return finish(cwd, build_claim_block_message(unbacked))
 
                 return 0
 
