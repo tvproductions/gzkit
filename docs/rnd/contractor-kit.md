@@ -2815,6 +2815,29 @@ signal through one function, as `checkpoint.resolve` does today (recommended). *
 **commissions:** 5 — every code control carries the decorator, and the place-of-call function reads
 it.
 
+## decision · the questions are the right ones, a second time
+
+After five recommended options in a row this session, the agent asked whether the questions were
+the right ones (the red flag in `gz-rnd`). The three named as next were the decorator's registry,
+the non-Python declarations, and the self-test's path into the MEL. Operator: *"they are the right
+questions, continue"*.
+
+## source · the `@enforces` registry and its runner
+
+Read 2026-10-27: `src/gzkit/enforcement.py` lines 1 to 134 (the module docstring,
+`EnforcementClaimRecord`) and `run_meta_validator`.
+
+- **The unit is the claim, not the control.** Each record links one `claim_id` to a `fixture` (a
+  *"Violation-builder callable"*) and an `entrypoint` (a *"Production callable; runner calls
+  entrypoint(fixture())"*). So one callable can carry several claims.
+- **The runner is an outside check of teeth.** `run_meta_validator` runs every claim and classes the
+  result as PASS, FACADE (*"entrypoint did not catch the violation"*) or TEST_BUG. On a clean run with
+  a root it *"emits one `enforcement_claim_verified` receipt per claim"*. So a self-test result
+  already reaches the ledger as a receipt.
+- **The runner is never demoted.** The census entry above: *"The runner is reached at CRITICAL from
+  both of its gate callers"*. It is part of the floor's own machinery, and the floor *"can never be
+  listed"* (the MEL ruling).
+
 ---
 
 ## Disposition map
