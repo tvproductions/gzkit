@@ -2653,6 +2653,51 @@ The core model comes first, and placement waits.
 The handoff's list of open steps was an input to this frontier, not the frontier. It led with the
 syntax (2). That would put the syntax ahead of the review the operator ruled must come first.
 
+## decision · the MX model is defined in this run; #1273 carries the repair
+
+Ruled. Question: where is the MX model defined (the condition signal, its marker and its tracking,
+its readings of *open*, the ledger binding)? Options put: **A** in this run, with #1273 auditing
+the current code against it and owning the repairs, including the report-only CI shape already
+routed there, recommended; **B** in #1273, with this run consuming its result. Operator: *"A"*.
+
+#1273's repairs wait on the model questions below. The rulings already routed into #1273 stand as
+inputs to the model and are not re-put.
+
+## source · the MX system as built, read for the model
+
+Read 2026-10-27, in full: `src/gzkit/mx/marker.py`, `levels.py`, `checkpoint.py`, `alarms.py` and
+`lease.py`; `docs/governance/safe-mode-doctrine.md`; `.claude/rules/mx-mode.md` at `1.14.0`; GHI #1273's
+body and its three comments. Read in part: `src/gzkit/mx/hardening.py`, at the dangling-state
+detector only. Not read: `awareness.py`, `contract.py`, `disposition.py`, `invariants.py`, `log.py`
+and `proxy_reality.py`.
+
+- **The signal.** `marker.py`: *"a dumb filesystem truth-file whose *presence* means `MX==TRUE`"*,
+  *"*valid only* when bound to a real `mx_session_opened` ledger event the tool wrote"*. The marker
+  module imports no gzkit code, *"so it opens even when gz's own subsystems are the patient"*. It
+  offers three readings: `is_active` (presence), `read` (a parsed payload, or `None`), and
+  `is_valid` (present *and* bound to a still-open `mx_session_opened`).
+- **Two values of `mode`.** `Marker.mode` is `Literal["mx", "safe"]`. The field's description still
+  says *"safe: ... guards at full strength (GHI #1244)"*. `checkpoint.hangar_demotes` says the
+  reverse: *"Safe mode lowers every guard outside `GATE5_INVARIANTS` to advisory ... that
+  disposition was replaced by the ruling"*. So the description is stale.
+- **The readers.** `hangar_demotes` is true when the marker is present and not `exiting`, and also
+  when it is unreadable (*"An unreadable marker keeps the hangar's original presence-only
+  reading"*). `alarms.alarms_off` is true only for `mode == "safe" and not exiting`. Neither calls
+  `is_valid`.
+- **Severity.** `levels.py` reuses `logging`'s ladder and adds `NOTICE = 25`. A level at or above
+  `ERROR` grounds. `checkpoint.resolve` pins `GATE5_INVARIANTS` to `CRITICAL`, and under the marker it
+  demotes any other level below `CRITICAL` to `ADVISORY`. That makes emitting `CRITICAL` the
+  floor-pin *by LEVEL* that `mx-mode.md` describes.
+- **The dangling state.** `hardening.dangling_state_status` grounds at `ERROR` when the ledger holds
+  an open session and no marker is present (*"ledger open but marker missing"*).
+- **The marker in git, measured.** `git log --name-status -- .gzkit/mx.json` shows three entries.
+  `4a919af17` (2026-08-21) adds it while a hangar session is open, `00e3ef9b4` (2026-08-21, GHI
+  #848) deletes it at exit, and `548594f97` (2026-10-17) adds it at safe-mode entry. It is not in
+  `.gitignore`. **So the marker rides in git for the life of a session, and the one at HEAD is this
+  drydock's own.** It does not predate this period, which corrects the hypothesis in the census
+  ruling (*"likely pre-dates this drydock period"*). What has never been ruled is whether riding in
+  git is intended.
+
 ---
 
 ## Disposition map
