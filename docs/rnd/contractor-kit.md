@@ -2930,6 +2930,24 @@ edited, with the contract's § Repair orders carrying the pointer (recommended);
 § Repair orders, and the crosswalk carry the term and the pointer. 5 — something renders the view;
 its producer is diamond-2 work.
 
+## decision · C1: initiation is the operator's; commencement of work is the coordinator's, once the tags hang
+
+Ruled; matrix row C1. Question: is starting work an act separate from initiation? JFMM QA-9 Blk 15B:
+*"granting permission for work to be conducted. No work can start prior to this signature."* DFARS
+252.217-7010(a): *"The Contractor shall not start work until the job order has been awarded"*.
+Options put: **A** two acts: the operator initiates, and the coordinator records **commencement of
+work** once every surface the package works has its tag-out entry hung, with no work before both
+(recommended). **B** one act, where initiation is also permission to start. **C** two acts, both the
+operator's. Operator: *"A"*.
+
+- The two preconditions of commencement are initiation and the tags hung. The tag-out log is the
+  witness that isolation preceded the first change.
+- **initiated** keeps its ruled sense (RO-5 ruling 5). **commencement of work** is added as the
+  coordinator's term.
+
+**commissions:** 4 — the kit's coordinator position carries the commencement act and its two
+preconditions. 5 — the runtime refuses an act of work on a package with no commencement recorded.
+
 ---
 
 ## Disposition map
