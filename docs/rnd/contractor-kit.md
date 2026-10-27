@@ -3165,13 +3165,27 @@ pattern match as a reading.
 
 **commissions:** 3 — the chore, in this shape; admission directed 2026-10-25.
 
+## decision · row 1, ADR / OBPI: not pursued
+
+Ruled. The admission question put: is the decision hard to reverse, surprising without context,
+and the result of a real trade-off? Facts put: the kit's home is RO-12 (ruled 2026-10-27); the
+two-way mode contract is hard to reverse and a real trade-off, but it is a refactoring program, row
+5; no OBPI can run in safe mode (R4); the doctrine moves the ADR off the release rung, and pool
+entries *"aren't ADRs any longer"* (RO-11). Options put: **A** not pursued, the kit's home RO-12
+and the mode contract's row 5, revisited at civil rule through RO-11's process (recommended);
+**B** propose a pool ADR for the two-way mode contract. Operator: *"A"*.
+
+**commissions:** none. Row 1 is **not pursued**. Reason: every outcome of this run has a governed
+home that is not an ADR. Revisit if, at civil rule, the kit or the mode-contract program outgrows
+the drydock; it is then pulled as a work package under the catalog by RO-11's process.
+
 ---
 
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
 |---|---|---|---|---|
-| 1 | ADR / OBPI | | | open: the admission question has not been put; the kit's governed home (an RO of the drydock) may make it unnecessary |
+| 1 | ADR / OBPI | not pursued | — | the kit's home is RO-12 and the mode contract's is row 5; revisit at civil rule, pulled as a work package by RO-11's process (ruled 2026-10-27) |
 | 2 | GHI / direct fix | commissioned | the ten census defects filed as #1271 to #1280 (2026-10-26); direct repair of the eleven defects in the pipeline parts the kit reuses (#1200, #1206, #1208, #1198, #1203, #1205, #1194, #1209, #1185, a cwd-escape guard to be filed, #1028's stop-and-ask boundary); a GHI on the persona witness measuring a total; each lesson crossing kit and pipeline as a GHI, the four from the pipeline crosswalk among them (2026-10-27); #1273 before RO-12 | operator, questions 8, 14, 17, 21; crosswalk and RO-12 rulings |
 | 3 | chore | commissioned | the vibe-coded and underbaked audit chore, as a signature catalogue (ruled 2026-10-27); `frontier-model-card-currency` widened to model-level assignments (landed `9649d0eb0`) | operator directed both, 2026-10-25 |
 | 4 | control surface, rule, doc, skill, hook | commissioned | the contractor kit (four positions and the surveillant, runtime, tag-out log, maintenance record, punch list, job order and change order); the contract's division of labor, cheaper-sessions clause, exit conditions and § Punch list; the doctrine's § Seaworthy and § Handback; Part 0's sea-trial term and the campaign's Movement E (operator ratification); RO-7's persona exit number; `gz-rnd`'s both-sides rule; the vocabulary crosswalk; from 2026-10-27: the MX model and the two-way mode contract by decorator, the matrix rows ruled (B1, B11, B12, C1, C5, C10, C11, C12), the RO-12 row and the contractor brief's order | operator, questions 1–24; rulings of 2026-10-26/27 |
