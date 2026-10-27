@@ -3213,6 +3213,24 @@ record is never rewritten.
 The contract's section is still headed § Punch list, and the contractor brief calls it *"§ Punch
 list (the compliance register)"*. Renaming it is part of row 4's B8 commission and is not done here.
 
+## decision · row 6, no action: the outcomes ruled to need none
+
+Not a new question. Each item below was ruled earlier, and this entry collects them for row 6.
+
+- **C13.** The drydock session needs no definition from this run. `safe-mode-doctrine.md`
+  § Maintenance mode carries it.
+- **The handoff's name.** *Position relief briefing* is not taken (C11, option C put and not chosen).
+  The three-subjects ruling names the handoff.
+- **The GHI's name.** *Problem report* is not adopted as a rename (B12, option C put and not
+  chosen). Only the role and the states change.
+- **The modified pipeline as its own design.** No separate design and no pool ADR (crosswalk, option
+  B put and not chosen; row 1 not pursued). The pipeline changes only through the crosswalk's GHIs.
+- **That the two-way mode contract was not designed in from the start.** Recorded and not pursued
+  inside this run (operator, 2026-10-26: *"we really should have had this in there all along. And
+  that's a different matter."*).
+
+**commissions:** 6 — the five items above, each with its reason in place.
+
 ---
 
 ## Disposition map
@@ -3224,7 +3242,7 @@ list (the compliance register)"*. Renaming it is part of row 4's B8 commission a
 | 3 | chore | commissioned | the vibe-coded and underbaked audit chore, as a signature catalogue (ruled 2026-10-27); `frontier-model-card-currency` widened to model-level assignments (landed `9649d0eb0`) | operator directed both, 2026-10-25 |
 | 4 | control surface, rule, doc, skill, hook | commissioned | the contractor kit (four positions and the surveillant, runtime, tag-out log, maintenance record, punch list, job order and change order); the contract's division of labor, cheaper-sessions clause, exit conditions and § Punch list; the doctrine's § Seaworthy and § Handback; Part 0's sea-trial term and the campaign's Movement E (operator ratification); RO-7's persona exit number; `gz-rnd`'s both-sides rule; the vocabulary crosswalk; from 2026-10-27: the MX model and the two-way mode contract by decorator, the matrix rows ruled (B1, B11, B12, C1, C5, C10, C11, C12), the RO-12 row and the contractor brief's order | operator, questions 1–24; rulings of 2026-10-26/27 |
 | 5 | one-shot refactoring | commissioned | the two-way mode contract across every control, monitor, alarm and safeguard: each module onboards its MEL entry, takes the standby level command from the central condition signal at its place of call, and reports suitability for function through its built-in self-test (operator: *"a MASSIVE refactor, but it is the best way that I can see"*) | RO-13 after RO-12, in tranches by kind, a shrink-only baseline of controls with no MEL entry closed at zero (ruled 2026-10-27); route chosen for the design (*"not be so parsimonious or urgent to get back underway"*); a self-test chore remains an advise-only candidate for row 3 |
-| 6 | no action | | | open |
+| 6 | no action | commissioned | C13 (defined in canon); the handoff not renamed; the GHI not renamed; no separate pipeline design; the not-from-the-start question | each ruled in its own entry; collected 2026-10-27 |
 
 ## Close
 
