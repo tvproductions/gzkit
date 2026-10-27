@@ -2948,6 +2948,25 @@ operator's. Operator: *"A"*.
 **commissions:** 4 — the kit's coordinator position carries the commencement act and its two
 preconditions. 5 — the runtime refuses an act of work on a package with no commencement recorded.
 
+## decision · C5: rework is the repair activity's repeat; buy-back is the inspector's reinspection
+
+Ruled; matrix row C5. Question: does the fix cycle split into two recorded acts? JFMM I-2.3.7.2:
+*"Rework is the unplanned repetition of a step, or a series of steps in a CWP or FWP."* 14 CFR
+§ 121.369(b)(4): *"Procedures for the reinspection of work performed pursuant to previous required
+inspection findings (buy-back procedures)."* Options put: **A** two terms for two acts: after a
+QAI finding the craftsman does **rework**, and the inspector does a **buy-back** limited to that
+finding; rework that reaches past the finding is unplanned work and goes back through the change
+ladder (recommended). **B** rework only, with reinspection an unnamed second pass. **C** keep
+*fix cycle*. Operator: *"A"*.
+
+- **fix cycle** is retired for this record. The inspector, not the craftsman, closes a finding,
+  which keeps the three ruled tiers distinct.
+- A finding with no buy-back on record is open. Nothing else closes it.
+
+**commissions:** 4 — the kit's craftsman and inspector positions carry rework and buy-back, and
+the pipeline's fix-cycle wording is drafted to the two terms. 5 — the runtime records a buy-back
+per finding and refuses to close a finding without one.
+
 ---
 
 ## Disposition map
