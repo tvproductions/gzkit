@@ -2698,6 +2698,24 @@ and `proxy_reality.py`.
   ruling (*"likely pre-dates this drydock period"*). What has never been ruled is whether riding in
   git is intended.
 
+## decision · the condition belongs to the repository
+
+Ruled. Model question 1: does the non-operational condition belong to the repository or to one
+working copy? Options put: **A** the repository, so the marker stays committed and every clone,
+parallel session, worktree and CI is in the condition, with CI's full-strength run as #1263's
+report-only second job (recommended); **B** one working copy, with the marker ignored by git;
+**C** the ledger as the signal, with the marker as a cache. Operator: *"A"*.
+
+- Riding in git for the life of a session, as measured, is now intended. #1273's question *"whether
+  the marker belongs in git"* is answered **yes**.
+- By #1273's own comment, this means the `GZKIT_MX_FULL_STRENGTH` switch is needed. It is built
+  report-only, as a second CI job with `continue-on-error: true` beside the unchanged blocking job.
+  That is the repair #1273 and #1263 carry.
+- The dangling-state detector keeps its meaning: ledger open and marker absent is a defect in every
+  clone.
+
+**commissions:** 2 — #1263's report-only full-strength CI job, carried by #1273.
+
 ---
 
 ## Disposition map
