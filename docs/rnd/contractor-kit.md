@@ -3137,6 +3137,34 @@ built for the next drydock; **C** not a repair order, a work package at civil ru
 order, as contract amendments (B1), on the operator's go on that row. 2 — #1200, #1206, #1208,
 #1028 and #1273, repaired as direct fixes before RO-12 is landed.
 
+## decision · the vibe-coded audit chore is a signature catalogue
+
+Ruled. Question: what shape does the audit chore take (operator, 2026-10-25, admission directed)?
+Read 2026-10-27, the neighbouring chores: `session-correction-mining` mines the operator's
+corrections, `failure-class-index` the filed GHIs' declared classes, `evidence-integrity-audit` a
+brief's claims against state; none reads shipped processes for the class the operator named, which
+is defined by the corrections that were *not* made. Options put: **A** a signature catalogue: named
+signatures, each anchored to an observed instance in this repository and carrying its own detector
+or reading procedure; members read, never titles, with the count read against the count that
+exist; each finding to ghi-author on the operator's go on that row; a signature joins only from an
+observed instance (recommended); **B** widen `session-correction-mining`; **C** a one-shot
+population audit under row 5. Operator: *"A"*.
+
+The seed signatures, each from this run:
+
+1. a self-test that passes vacuously (`assert load_baseline() is not None`, the
+   `ghi-cross-reference-staleness` arm, read 2026-10-27);
+2. a budget totalling a surface loaded per item (the persona witness; its siblings a hypothesis,
+   unread);
+3. a control with no named contract (the doctrine's standing exit measure);
+4. a *deferred to X* claim that X does not carry (AGENTS.md § PRIME DIRECTIVE item 7);
+5. work handed back as options (the agent's reply the operator cited on 2026-10-25).
+
+Signatures 4 and 5 need a reader, not a pattern. The chore says so for each, and does not report a
+pattern match as a reading.
+
+**commissions:** 3 — the chore, in this shape; admission directed 2026-10-25.
+
 ---
 
 ## Disposition map
@@ -3144,9 +3172,9 @@ order, as contract amendments (B1), on the operator's go on that row. 2 — #120
 | # | Disposition | State | What | Reason |
 |---|---|---|---|---|
 | 1 | ADR / OBPI | | | open: the admission question has not been put; the kit's governed home (an RO of the drydock) may make it unnecessary |
-| 2 | GHI / direct fix | commissioned | the ten census defects filed as #1271 to #1280 (2026-10-26); direct repair of the eleven defects in the pipeline parts the kit reuses (#1200, #1206, #1208, #1198, #1203, #1205, #1194, #1209, #1185, a cwd-escape guard to be filed, #1028's stop-and-ask boundary); a GHI on the persona witness measuring a total; each lesson crossing kit and pipeline as a GHI | operator, questions 8, 14, 17, 21 |
-| 3 | chore | commissioned | the vibe-coded and underbaked audit chore; `frontier-model-card-currency` widened to model-level assignments (landed `9649d0eb0`) | operator directed both, 2026-10-25 |
-| 4 | control surface, rule, doc, skill, hook | commissioned | the contractor kit (four positions and the surveillant, runtime, tag-out log, maintenance record, punch list, job order and change order); the contract's division of labor, cheaper-sessions clause, exit conditions and § Punch list; the doctrine's § Seaworthy and § Handback; Part 0's sea-trial term and the campaign's Movement E (operator ratification); RO-7's persona exit number; `gz-rnd`'s both-sides rule; the vocabulary crosswalk | operator, questions 1–24 |
+| 2 | GHI / direct fix | commissioned | the ten census defects filed as #1271 to #1280 (2026-10-26); direct repair of the eleven defects in the pipeline parts the kit reuses (#1200, #1206, #1208, #1198, #1203, #1205, #1194, #1209, #1185, a cwd-escape guard to be filed, #1028's stop-and-ask boundary); a GHI on the persona witness measuring a total; each lesson crossing kit and pipeline as a GHI, the four from the pipeline crosswalk among them (2026-10-27); #1273 before RO-12 | operator, questions 8, 14, 17, 21; crosswalk and RO-12 rulings |
+| 3 | chore | commissioned | the vibe-coded and underbaked audit chore, as a signature catalogue (ruled 2026-10-27); `frontier-model-card-currency` widened to model-level assignments (landed `9649d0eb0`) | operator directed both, 2026-10-25 |
+| 4 | control surface, rule, doc, skill, hook | commissioned | the contractor kit (four positions and the surveillant, runtime, tag-out log, maintenance record, punch list, job order and change order); the contract's division of labor, cheaper-sessions clause, exit conditions and § Punch list; the doctrine's § Seaworthy and § Handback; Part 0's sea-trial term and the campaign's Movement E (operator ratification); RO-7's persona exit number; `gz-rnd`'s both-sides rule; the vocabulary crosswalk; from 2026-10-27: the MX model and the two-way mode contract by decorator, the matrix rows ruled (B1, B11, B12, C1, C5, C10, C11, C12), the RO-12 row and the contractor brief's order | operator, questions 1–24; rulings of 2026-10-26/27 |
 | 5 | one-shot refactoring | | the two-way mode contract across every control, monitor, alarm and safeguard: each module onboards its MEL entry, takes the standby level command from the central condition signal at its place of call, and reports suitability for function through its built-in self-test (operator: *"a MASSIVE refactor, but it is the best way that I can see"*) | open: the program is proposed after the census of places of call; its route is chosen for the design, never to save effort (*"not be so parsimonious or urgent to get back underway"*); a self-test chore is an advise-only candidate for row 3 |
 | 6 | no action | | | open |
 
