@@ -2858,6 +2858,23 @@ ids or a chore `--self-test` arm, `@enforces` is unchanged, and the MEL view is 
 **commissions:** 5 — the MEL decorator with its self-test references and the decoration-time check;
 the MEL view as the join of the two registries.
 
+## decision · suitable for function: the latest self-test passed within the entry's declared interval
+
+Ruled. Model question 6: when is a control *suitable for function*? Options put: **A** when its
+latest self-test result passed and is younger than the interval its MEL entry declares; a failed or
+stale result shows it inoperative in the MEL view, its (O) limitation then governs, and every
+affected party gets the placard; chore arms write a receipt as the runner does (recommended).
+**B** when its latest result passed, at any age. **C** when its self-test passes at the place of
+call before every use. Operator: *"A"*.
+
+- *Inoperative* takes AC 91-67 ¶ 6k's sense, and the CAL/OOC split stays available for *degraded but
+  usable* against *not to be used*.
+- An interval is declared in each entry. Choosing a value per control is diamond-2 work.
+
+**commissions:** 5 — the interval field in the MEL entry; the inoperative reading in the MEL view;
+a receipt writer for the chore `--self-test` arms. 3 (advise only) — the self-test chore already
+recorded as a candidate, now the scheduler that keeps receipts fresh.
+
 ---
 
 ## Disposition map
