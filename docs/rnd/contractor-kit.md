@@ -3116,6 +3116,27 @@ the unnamed buy-back, restore-to-normal after acceptance, turnover on a non-abor
 filed through ghi-author on the operator's go on that row and sequenced after #1200, #1206, #1208
 and #1028.
 
+## decision · the kit is RO-12, placed immediately after RO-5
+
+Ruled. Fact: the contract's register (`harbor-pilotage-candidate-2026-10-15.md` § the order table,
+read 2026-10-27) runs to RO-11, so the kit's order is RO-12. Question: where does RO-12 sit in the
+register's order, which is dependency order? Facts put: the kit's acts work on RO-5's structures;
+question 8 requires #1200, #1206, #1208 and #1028 repaired first, and with #1273 all five read
+OPEN on 2026-10-27; the contractor brief's order is RO-5, RO-4, RO-11 (stop), RO-6, RO-7, RO-9,
+RO-8. Options put: **A** immediately after RO-5, the five GHIs as its preconditions, every order
+from RO-4 on then running under the kit as its first flight (recommended); **B** last, after RO-8,
+built for the next drydock; **C** not a repair order, a work package at civil rule. Operator:
+*"A"*.
+
+- RO-4 waits on the five repairs and the kit. The contractor brief's *"launch the contractor once
+  on everything"* (2026-10-25) is amended by this ruling: the launch now runs RO-5, then RO-12,
+  then the rest under the kit.
+- The orders after RO-12 are the parts' first flight under the inspector, as question 8 put it.
+
+**commissions:** 4 — the contract's register gains the RO-12 row and the contractor brief its
+order, as contract amendments (B1), on the operator's go on that row. 2 — #1200, #1206, #1208,
+#1028 and #1273, repaired as direct fixes before RO-12 is landed.
+
 ---
 
 ## Disposition map
