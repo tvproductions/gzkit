@@ -2593,6 +2593,66 @@ already carries joins that issue. Their numbers are recorded in the review as th
 
 **Filed 2026-10-26: #1271 to #1280.** #1271 is the `gz mx exit` scope; #1272 is the exit-code-3 demotion; #1273 is the MX-system review, filed as an investigation, with #1263 (the committed marker in CI, already filed with the operator's env-switch ruling) as its sibling and a cross-link comment posted there; #1274 is the twin controls; #1275 is the mode not reaching the model; #1276 is the GATE5 floor; #1277 is enforcement coverage, naming the per-step witness family #1230 to #1241 and #1155 once; #1278 is the unregistered hooks; #1279 is the TODO check that cannot fail; #1280 is `AGENTS.md:167`. This invocation was authoring only, so nothing was implemented.
 
+## decision · the run resumes a third time: the record checked, the frontier recomputed
+
+Ruled, on resuming `.gzkit/handoffs/20261027T093232Z-bookmarks-folded-deps-lsp-rnd-committed.md`.
+That handoff put a choice between this run and the subagent-folding run. Operator: *"b"*, which
+picks this run. The other run had a writer active in another session.
+
+**Record against git, 2026-10-27.** The record and `docs/rnd/contractor-kit/` have no uncommitted
+changes. The last commit to touch the record is `0efea264d`. The one commit hash cited after the
+second resume entry, `9649d0eb0`, resolves. So does every source file cited after it. The ten census
+GHIs, #1271 to #1280, are all OPEN, and so is their sibling #1263. Of the rows the second resume
+listed as still proposed, only C3 has been ruled since (*three tiers of check*). The coordinator's
+authority (A3), the stop requested from outside the chain (A8) and the affected party (A7) are each
+ruled in the entries above. The widening check is discharged (*the Minimum Equipment List, Meyer on
+assertion monitoring, and the aviation widening*).
+
+## source · the operator on the MX system, 2026-10-26 to 2026-10-27, in sessions outside this run
+
+These rulings were given while repairs ran in safe mode, after the census entry above. They are
+taken from the settled-ruling store (`uv run gz handoff rulings`) and
+`.gzkit/insights/agent-insights.jsonl`, read 2026-10-27. Verbatim, in order:
+
+> we are supposed to be in mx, that is way too many alarms and traps
+
+> we are supposed to be freeing things up in mx, not hashing canaries
+
+> report only, decide within #1273
+
+> i think, even during repairs or contruction, somebody sweeps up the shop floor every night. The
+> point is, it is too strivt to disable linting during safemode drydock/mx hangar. We are
+> writing/changing code and that deserves
+
+The third phrase rules that CI's full-strength run of demoted guards reports and does not fail while
+a mode is open. The fourth keeps lint and the fast static checks armed in safe mode
+(`docs/governance/safe-mode-doctrine.md` item 5). Together they are the operator's first rulings,
+made in the field, on what the standby level command lowers and what it never lowers. They bear on
+this run's MX-system review and on the MEL entries the mode contract gives each control.
+
+## decision · the frontier, recomputed from the subject
+
+The core model comes first, and placement waits.
+
+1. **The MX system reviewed whole.** It was ruled ahead of the port design (*the census's findings*).
+   GHI #1273 carries it as an investigation, and the operator has twice routed MX shape decisions
+   into it (*"decide within #1273"*). The question still open: is the MX model (the condition
+   signal, its marker and tracking, its readings of *open*, the ledger binding) defined here, with
+   #1273 carrying the repair, or is the model itself defined in #1273? Nothing below can be ruled
+   until this is settled.
+2. **The syntax of the mode contract for code controls**: decorators, `typing.Protocol` ports,
+   context managers, class registration or entry points. Before this is put, the seven chore
+   `--self-test` arms are read as the seed of the built-in self-test. It depends on 1, because a
+   control declares its MEL entry against a signal whose shape 1 settles.
+3. **The rows still proposed:** B1, B11, C1, C5, C10, C11, C12 and C13.
+4. **The two subjects the operator opened:** B12, which carries the GHI system, and the modified
+   pipeline process.
+5. **Placement and close:** the kit's RO number, the shape of the audit chore, disposition rows 1,
+   5 and 6, the restated challenge, `review.md`, and sign-off.
+
+The handoff's list of open steps was an input to this frontier, not the frontier. It led with the
+syntax (2). That would put the syntax ahead of the review the operator ruled must come first.
+
 ---
 
 ## Disposition map
@@ -2610,7 +2670,7 @@ already carries joins that issue. Their numbers are recorded in the review as th
 
 **Challenge restated.** Open.
 
-**Frontier.** Open; recomputed 2026-10-26 (see the second resume entry).
+**Frontier.** Open; recomputed 2026-10-27 (see the third resume entry).
 
 **Review.** Not yet written.
 
