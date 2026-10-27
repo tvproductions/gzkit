@@ -513,15 +513,17 @@ class TestRepoClaudeSettingsAnchorScripts(unittest.TestCase):
         repo_root = Path(__file__).resolve().parents[1]
         settings = json.loads((repo_root / ".claude" / "settings.json").read_text(encoding="utf-8"))
 
+        # An exec-form hook (`command` is the executable, `args` its argv) carries
+        # its script path in `args`, unquoted because no shell splits it.
         commands = [
-            hook["command"]
+            " ".join([hook["command"], *hook["args"]]) if "args" in hook else hook["command"]
             for phase_groups in settings.get("hooks", {}).values()
             for group in phase_groups
             for hook in group.get("hooks", [])
         ]
         self.assertTrue(commands, "settings.json declares no hook commands")
         for command in commands:
-            self.assertIn('"$CLAUDE_PROJECT_DIR/', command, command)
+            self.assertRegex(command, r'"\$CLAUDE_PROJECT_DIR/| \$\{CLAUDE_PROJECT_DIR\}/', command)
             self.assertNotIn("python .claude/hooks/", command, command)
             self.assertNotIn("python scripts/", command, command)
 
