@@ -109,7 +109,9 @@ def _process_tty(path: Path, record: ProposalRecord) -> None:
             check=True,
         )
         url = result.stdout.strip()
-        updated_data = ProposalRecord(**record.model_dump() | {"filed": True, "ghi_url": url})
+        updated_data = ProposalRecord.model_validate(
+            record.model_dump() | {"filed": True, "ghi_url": url}
+        )
         path.write_text(updated_data.model_dump_json(indent=2), encoding="utf-8")
         console.print(f"Filed: {url}")
     else:
@@ -123,6 +125,6 @@ def _process_headless(path: Path, record: ProposalRecord) -> None:
     console.print(f"  Summary: {escape(record.summary)}")
     console.print(f"  Rule target: {record.proposed_rule_target}")
 
-    updated_data = ProposalRecord(**record.model_dump() | {"advisory": True})
+    updated_data = ProposalRecord.model_validate(record.model_dump() | {"advisory": True})
     path.write_text(updated_data.model_dump_json(indent=2), encoding="utf-8")
     console.print(f"Advisory: would file GHI for {record.cluster_key}")

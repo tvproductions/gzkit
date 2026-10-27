@@ -334,24 +334,24 @@
     },
     {
       "slug": "dependency-currency",
-      "title": "Dependency Currency (Tooling Stack Drift Scan)",
-      "version": "1.3.0",
+      "title": "Dependency Currency (Daily Check and Upgrade)",
+      "version": "2.0.0",
       "path": ".gzkit/chores/dependency-currency",
       "lane": "lite",
-      "timeoutSeconds": 120,
+      "timeoutSeconds": 180,
       "class": "currency",
-      "rung": "propose",
+      "rung": "repair",
       "idempotent": true,
       "staleness": {
         "signal": "elapsed-time",
-        "periodDays": 30,
-        "graceDays": 7
+        "periodDays": 1,
+        "graceDays": 1
       },
       "remediation": {
-        "category": "no_fix_planned",
-        "details": "A bump deserves case-by-case judgment, so the chore recommends bump or hold per surface and the operator applies bumps through the gz-deps-upgrade skill."
+        "category": "vendor_fix",
+        "details": "Each run applies the gz-deps-upgrade procedure: lock, pins and floors to latest, .python-version to the newest floor-minor patch, gated by gz check --full; a bump that turns the gate red is pinned at last-known-good and filed as a GHI (operator ruling 2026-10-27)."
       },
-      "nonAuthority": "Never bumps a dependency; never touches gzkit's own version surfaces or the requires-python floor.",
+      "nonAuthority": "Never touches gzkit's own version surfaces, the requires-python floor or the [tool.uv] required-version floor; never lowers a floor to pass the gate.",
       "governingRule": "none"
     },
     {

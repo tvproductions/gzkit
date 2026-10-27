@@ -2,15 +2,27 @@
     "criteria": [
         {
             "type": "exitCodeEquals",
+            "command": "uv lock --check",
+            "expected": 0,
+            "description": "uv.lock agrees with pyproject.toml after the upgrade"
+        },
+        {
+            "type": "exitCodeEquals",
+            "command": "uv run gz validate --astral-discipline",
+            "expected": 0,
+            "description": "The Python version is declared once and the Astral toolchain config holds"
+        },
+        {
+            "type": "exitCodeEquals",
             "command": "uv run gz lint",
             "expected": 0,
-            "description": "Project lint baseline holds (uses gzkit's configured exclusions)"
+            "description": "Project lint baseline holds on the upgraded toolchain (uses gzkit's configured exclusions)"
         },
         {
             "type": "exitCodeEquals",
             "command": "uv run gz typecheck",
             "expected": 0,
-            "description": "Project typecheck baseline holds (uses gzkit's configured exclusions)"
+            "description": "Project typecheck baseline holds on the upgraded toolchain (uses gzkit's configured exclusions)"
         }
     ]
 }

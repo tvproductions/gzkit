@@ -1,8 +1,14 @@
-# CHORE: Dependency Currency (Tooling Stack Drift Scan)
+# CHORE: Dependency Currency (Daily Check and Upgrade)
 
 **Lane:** Lite
 **Slug:** `dependency-currency`
 
+> **Version 2.0.0 (2026-10-27, operator ruling):** the chore runs daily and brings
+> dependencies up to date when it checks. The rung moves from propose to repair;
+> the apply step is the `gz-deps-upgrade` procedure. Operator, verbatim: *"the gobal
+> rule was wrong... in an environment where AI swarms are always active, a daily
+> check of deps is wise. we should bring deps up-to-date when we check."*
+>
 > **Version 1.3.0 (2026-10-23, RO-9 tranche 4):** complexipy is retired; cognitive
 > complexity is gzkit's own score over CPython's `ast`, so the analyzers read are
 > Lizard and cohesion, and the parser-support signal is the ceiling gate alone.
@@ -22,12 +28,16 @@
 
 Scan gzkit's external tooling stack — uv, ruff, ty, pre-commit hook pins,
 runtime/dev dependencies in `pyproject.toml`, GitHub Actions runner pins —
-against upstream latest releases and surface drift as a markdown report.
+against upstream latest releases, record the drift, and bring every
+dependency up to date in the same run.
 
-**Mode: scan and recommend.** This chore prints a drift report with a
-recommendation per surface; the operator applies bumps. Auto-bump is intentionally not in this chore's scope —
-dependency bumps deserve case-by-case judgment (changelogs, breaking
-changes, security advisories) before landing on `main`.
+**Mode: check and upgrade.** Each run writes the drift report, then applies
+the `gz-deps-upgrade` procedure: `uv lock --upgrade`, `==` pins moved to
+latest, `>=` floors raised to what locked, `.python-version` moved to the
+newest patch of the floor's minor, verified by `uv run gz check --full`. A
+bump that turns the gate red is pinned at its last-known-good version and
+filed as a GHI for the migration; the rest of the upgrade still lands. A floor
+is never lowered to make the gate pass.
 
 **Out of scope (hard rules):** Never touches gzkit's own `version` line in
 `pyproject.toml`, `src/gzkit/__init__.py`, or the README badge — those are
@@ -38,15 +48,25 @@ release artifacts under a different governance path. Never proposes a
 
 Operator request 2026-04-24: keep tooling current without rolling into the
 gzkit release cadence. Run between OBPI implementations as a hygiene
-checkpoint; defer auto-application until the operator sees enough no-drift
-runs to trust the scanner.
+checkpoint.
+
+Amended 2026-10-27 (operator ruling, recorded in
+`.gzkit/insights/agent-insights.jsonl`): the 2026-04-24 deferral of
+auto-application is retired. AI agents change the tree continuously, so a
+30-day scan let drift accumulate between reads; the chore now checks daily and
+applies what it finds.
 
 ## Policy and Guardrails
 
-- **Lane:** Lite — read-only scan, no source edits, no test gates triggered
+- **Lane:** Lite — edits `pyproject.toml` dependency entries, `uv.lock` and
+  `.python-version` only; `uv run gz check --full` gates the result
 - **Network:** Required (queries GitHub releases API and PyPI)
 - **Stays out of:** `src/gzkit/`, `tests/`, `docs/`, gzkit's own version
-  surfaces
+  surfaces, the `requires-python` floor, and the `[tool.uv] required-version`
+  floor (a floor by GHI #1283; raised only when the repo needs a newer uv
+  feature)
+- **One commit per run:** `chore(deps): daily upgrade YYYY-MM-DD`, carrying the
+  ARB unittest receipt the `gz-deps-upgrade` skill emits
 
 ## Workflow
 
@@ -102,26 +122,25 @@ Markdown table written to
 | (one row per `uv tree --outdated` dependency, hook, action) | | | | |
 | lizard / cohesion | … | … | … | stale or abandoned, with evidence; parser support for the floor |
 
-### 4. Recommend per surface — propose
+### 4. Upgrade — repair
 
-Add a recommendation to each drift row: **bump now** (patch or minor, no
-breaking note in the changelog), **read the changelog first** (major, or a
-breaking note), or **hold** (with the reason). The operator applies bumps
-through the `gz-deps-upgrade` skill, bump by bump:
+Apply `.gzkit/skills/gz-deps-upgrade/SKILL.md` steps 3–10 (the uv binary and
+global tools are kept current outside the repository). Note each major bump in
+the drift report's Notes column with its changelog link.
 
-- Read upstream changelog before bumping
-- Bump one tool per commit (`chore(deps): bump <tool> <old>→<new>`)
-- Run `uv sync && uv run gz check` after each bump
-- Do not bundle multiple bumps unless they're related and individually
-  green
+- **Gate red:** find the offending package, pin it at last-known-good with a
+  comment naming the GHI, file the GHI through `ghi-author`, and re-run the
+  gate. Never lower a floor to make it pass.
+- **Upstream not yet installable** (a release uv cannot resolve, a yanked
+  version): hold it, and say why in the Notes column.
 
 ## Acceptance Criteria
 
 Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan dependency-currency`. This section explains them and does not restate them (GHI #1002).
 
-The chore itself does not gate on the drift report's content — drift is
-informational. The acceptance criteria pin that the chore did not
-accidentally regress the project's lint/typecheck baseline (the
+The acceptance criteria witness the repaired state: the lock agrees with
+`pyproject.toml`, the Python version is declared once and passes the
+discipline check, and lint and typecheck hold on the upgraded toolchain (the
 gzkit-wrapped commands honor configured exclusions).
 
 ## Evidence Commands
@@ -135,8 +154,10 @@ gh api repos/astral-sh/uv/releases/latest --jq .tag_name > .gzkit/chores/depende
 ## Known Gaps
 
 - The registry's staleness declaration takes one signal, so the chore is
-  scheduled on elapsed time (30 days). The dependency-change trigger is the
+  scheduled on elapsed time (1 day). The dependency-change trigger is the
   instruction above, not a scheduled signal.
+- Chores announce, never gate: the daily cadence makes the chore due on the
+  chores board each day; something still has to run it.
 
 ---
 
