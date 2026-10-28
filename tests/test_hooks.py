@@ -19,6 +19,7 @@ from unittest import mock
 
 from gzkit.config import GzkitConfig
 from gzkit.hooks.claude import (
+    _RETIRED_HOOKS,
     _claude_hooks_readme,
     generate_claude_settings,
     merge_settings,
@@ -2833,3 +2834,15 @@ class TestHookSetsAgree(unittest.TestCase):
         for name in retired:
             with self.subTest(hook=name):
                 self.assertFalse((hooks_dir / name).exists())
+
+    def test_no_lint_baseline_names_a_retired_hook(self) -> None:
+        # The closure contract retires a hook "along with its generator entry and
+        # baseline rows"; a row left behind keeps the waiver open for the file's return.
+        repo = Path(__file__).resolve().parents[1]
+        for baseline in ("data/ruff_baseline.json", "data/waiver_identity_baseline.json"):
+            text = (repo / baseline).read_text(encoding="utf-8")
+            for name in _RETIRED_HOOKS:
+                with self.subTest(baseline=baseline, hook=name):
+                    self.assertFalse(
+                        f".claude/hooks/{name}" in text, f"{baseline} still names {name}"
+                    )
