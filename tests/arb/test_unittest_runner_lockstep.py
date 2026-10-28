@@ -229,15 +229,43 @@ class TestAgentContractMatchesCanon(unittest.TestCase):
         )
 
 
+#: The safe-mode alarm switch (`gzkit.mx.alarms`, ruling 2026-10-25) wraps a slow
+#: hook as `uv run python -m gzkit.mx.alarms <name> -- <command>` and runs the
+#: command inside that same `uv run` environment.
+_ALARM_PREFIX = ["uv", "run", "python", "-m", "gzkit.mx.alarms"]
+
+
+def _command_the_hook_runs(argv: list[str]) -> list[str]:
+    """Read a hook entry through the alarm switch.
+
+    Returns:
+        The command the hook runs: the wrapped command under `uv run`, or the entry.
+
+    """
+    if argv[: len(_ALARM_PREFIX)] == _ALARM_PREFIX and argv[len(_ALARM_PREFIX) + 1 :][:1] == ["--"]:
+        return ["uv", "run", *argv[len(_ALARM_PREFIX) + 2 :]]
+    return argv
+
+
 class TestPreCommitHookMatchesCanon(unittest.TestCase):
     """The one copy that cannot derive is pinned by equality instead."""
+
+    def test_the_alarm_switch_is_read_through_and_nothing_else_is(self) -> None:
+        wrapped = [*_ALARM_PREFIX, "unittest", "--", "unittest-parallel", "-s", "tests"]
+        self.assertEqual(
+            _command_the_hook_runs(wrapped), ["uv", "run", "unittest-parallel", "-s", "tests"]
+        )
+        bare = ["uv", "run", "unittest-parallel", "-s", "tests"]
+        self.assertEqual(_command_the_hook_runs(bare), bare)
+        no_separator = [*_ALARM_PREFIX, "unittest", "unittest-parallel"]
+        self.assertEqual(_command_the_hook_runs(no_separator), no_separator)
 
     def test_pre_commit_unittest_entry_equals_the_canonical_command(self) -> None:
         entry = _pre_commit_entry(_REPO_ROOT, "unittest")
 
         self.assertNotEqual(entry, "", msg="No `unittest` hook found in .pre-commit-config.yaml")
         self.assertEqual(
-            shlex.split(entry),
+            _command_the_hook_runs(shlex.split(entry)),
             CANONICAL_STEP_COMMANDS["unittest"],
             msg=(
                 "The pre-commit `unittest` hook runs a different suite invocation "
