@@ -220,14 +220,14 @@
   "defect-fix-routing": {
     "owned": true,
     "entry_ids": [
-      "corpus-defect-fix-routing-2026-09-17T11:39:36.477451+00:00",
-      "corpus-defect-fix-routing-2026-09-17T11:39:36.631438+00:00",
-      "corpus-defect-fix-routing-2026-09-24T10:04:51.766405+00:00",
-      "corpus-defect-fix-routing-2026-09-24T10:04:51.916661+00:00"
+      "corpus-defect-fix-routing-2026-10-28T06:00:57.171260+00:00",
+      "corpus-defect-fix-routing-2026-10-28T06:00:57.357351+00:00",
+      "corpus-defect-fix-routing-2026-10-28T06:00:57.544574+00:00",
+      "corpus-defect-fix-routing-2026-10-28T06:00:57.728064+00:00"
     ],
     "byte_span": [
       16066,
-      16928
+      17075
     ]
   },
   "control-surfaces": {
@@ -236,16 +236,16 @@
       "corpus-control-surfaces-2026-09-17T11:39:37.113322+00:00"
     ],
     "byte_span": [
-      16928,
-      17194
+      17075,
+      17341
     ]
   },
   "local-agent-rules": {
     "owned": false,
     "entry_ids": [],
     "byte_span": [
-      17194,
-      17214
+      17341,
+      17361
     ]
   },
   "operator-doctrine-verbatim-canon": {
@@ -260,8 +260,8 @@
       "corpus-operator-doctrine-verbatim-canon-2026-09-27T20:35:02.678914+00:00"
     ],
     "byte_span": [
-      17214,
-      19888
+      17361,
+      20035
     ]
   },
   "governance-doctrine-surfaces": {
@@ -286,8 +286,8 @@
       "corpus-governance-doctrine-surfaces-2026-10-18T07:45:29.432603+00:00"
     ],
     "byte_span": [
-      19888,
-      23875
+      20035,
+      24022
     ]
   },
   "architectural-boundaries": {
@@ -299,8 +299,8 @@
       "corpus-architectural-boundaries-2026-10-10T13:36:48.462663+00:00"
     ],
     "byte_span": [
-      23875,
-      24759
+      24022,
+      24906
     ]
   }
 }

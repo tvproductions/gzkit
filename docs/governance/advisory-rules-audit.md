@@ -256,8 +256,8 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 
 | # | Rule | Score | Notes |
 |---|------|-------|-------|
-| 46 | Direct fix vs OBPI ceremony thresholds (≤10 source lines, ≤2 files, single surface) | **Judgment** | Routing decision requires human scope assessment `source=AGENTS.md#defect-fix-routing entry=corpus-defect-fix-routing-2026-09-24T10:04:51.766405+00:00` |
-| 47 | Default against over-applying ceremony | **Judgment** | Meta-rule about agent reasoning `source=AGENTS.md#defect-fix-routing entry=corpus-defect-fix-routing-2026-09-24T10:04:51.916661+00:00` |
+| 46 | Direct fix vs OBPI ceremony thresholds (≤10 source lines, ≤2 files, single surface) | **Judgment** | Routing decision requires human scope assessment `source=AGENTS.md#defect-fix-routing entry=corpus-defect-fix-routing-2026-10-28T06:00:57.544574+00:00` |
+| 47 | Default against over-applying ceremony | **Judgment** | Meta-rule about agent reasoning `source=AGENTS.md#defect-fix-routing entry=corpus-defect-fix-routing-2026-10-28T06:00:57.728064+00:00` |
 
 ### Gate 5 Runbook-Code Covenant (`.gzkit/rules/gate5-runbook-code-covenant.md`)
 

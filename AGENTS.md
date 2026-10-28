@@ -176,7 +176,7 @@ At closeout, `uv run gz closeout <ADR-ID>` runs the gates the ADR's lane require
 Attestation text: pass user words verbatim, then append concrete evidence — receipt IDs, test counts, file paths. When producing attestation evidence, use the `gz-arb` skill: it lists the canonical receipt-producing invocations. Bare lint, test or docs commands produce no receipt. Missing receipts warn on Lite and fail closed on Heavy. A fabricated receipt ID is a fabricated claim.
 ## Defect-fix routing
 
-- A GHI authorizes direct defect repair: `fix(<scope>): <summary> (GHI #N)`, closed with the commit SHA. Do not create an ADR or OBPI to discharge one.
+- A GHI authorizes direct defect repair: `fix(<scope>): <summary> (GHI #N)`. The commit SHA marks it resolved; it is closed only after a reviewer that did not do the fix confirms it on the issue — until the review step is built, a reviewer subagent. Do not create an ADR or OBPI to discharge one.
 
 - First ask who owns the work: search live OBPI briefs for the surface and read the matching requirements and their disposition. If a live brief owns it, surface the brief, its status and its parent ADR, and wait for the operator's ruling.
 

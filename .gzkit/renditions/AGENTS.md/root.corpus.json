@@ -1,10 +1,10 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "1733c99d493514870a6882d795c980beb2c8393d6a1f11fcb3476865e1cd8894",
-  "corpus_entry_count": 526,
-  "rendition_fingerprint": "504a610e72bf5315ca15f8a7cb9c5b2c8aa5701e134b8299fb2d7d7879401782",
-  "committed_ts": "2026-10-28T05:33:10.441618+00:00",
+  "corpus_fingerprint": "3b348e42cd63205e74e4893c289dda3270e8e95bc9450541c62c30fbed164da2",
+  "corpus_entry_count": 534,
+  "rendition_fingerprint": "8a8c401a1a7467d167c9216006bf7826544c33ff597e49962a4c5103d66f34f5",
+  "committed_ts": "2026-10-28T06:02:07.285263+00:00",
   "attestor": "g0",
-  "attestation_text": "take care of all 4 items then i give my funding decision — handoff step 3: restore the AGENTS.md anti-vibing section order; drift bullet re-captured verbatim and its 2026-09-17 entry retired",
-  "landing_id": "landing-20261028T053310Z-4bac2f12"
+  "attestation_text": "Reviewer subagent (Recommended) — operator's ruling on the interim GHI close under B12 (contractor-kit row 4, \"fund, yes to 2 and 4\"). § Defect-fix routing entry 1 reworded: C1, C2, C4 kept; C3 (closed with the commit SHA) dropped, superseded by B12 (SHA witnesses resolved, a reviewer closes). Entries 2-4 recaptured verbatim in render order.",
+  "landing_id": "landing-20261028T060207Z-7fd4b84e"
 }
