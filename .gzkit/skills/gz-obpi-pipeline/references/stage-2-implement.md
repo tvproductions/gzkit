@@ -1,4 +1,4 @@
-<!-- Stage 2 procedure, served by the runtime at stage entry (OBPI-0.35.0-17; cut over in OBPI-0.35.0-20). Rendered from data/obpi_pipeline_control_inventory.json by gzkit.governance.pipeline_procedure_render: the stage's own section first, then every block from another section holding a control whose applies_at names this stage. Every control is verbatim from the attested baseline of .gzkit/skills/gz-obpi-pipeline/SKILL.md (072317673, body sha256 fe97fe3139282b0ceec5b11866e97efad11761d8e35a5e4977c84f3d6b388367); passages the inventory classes as rationale are in docs/governance/obpi-pipeline-control-rationale.md under the control they explain, and a control that applies elsewhere is left out of its block here. Reworded, each with its reason in the inventory: S2-080. Do not edit by hand: tests/governance/test_pipeline_procedure_render.py holds this file to the render. -->
+<!-- Stage 2 procedure, served by the runtime at stage entry (OBPI-0.35.0-17; cut over in OBPI-0.35.0-20). Rendered from data/obpi_pipeline_control_inventory.json by gzkit.governance.pipeline_procedure_render: the stage's own section first, then every block from another section holding a control whose applies_at names this stage. Every control is verbatim from the attested baseline of .gzkit/skills/gz-obpi-pipeline/SKILL.md (072317673, body sha256 fe97fe3139282b0ceec5b11866e97efad11761d8e35a5e4977c84f3d6b388367); passages the inventory classes as rationale are in docs/governance/obpi-pipeline-control-rationale.md under the control they explain, and a control that applies elsewhere is left out of its block here. Reworded, each with its reason in the inventory: S2-064, S2-080. Do not edit by hand: tests/governance/test_pipeline_procedure_render.py holds this file to the render. -->
 
 # Stage 2: Implement — served procedure
 
@@ -203,7 +203,7 @@ A check
          the Stage 4 ceremony.
 
       viii. **Read `verification_gaps` separately from `findings` (GHI #941).** Reviewers are
-         granted `Read, Glob, Grep` and **cannot execute anything**. Both composers now disclose
+         granted `Read, Glob, Grep, LSP` and **cannot execute anything**. Both composers now disclose
          that grant — read from the agent definition, so it tracks the file rather than a prose
          claim — and instruct the reviewer to put its tool limitations into
          `verification_gaps`, never into `findings`.

@@ -3125,8 +3125,11 @@
       "stage2"
      ],
      "cause": "GHI #941",
-     "delivered_span": "      viii. **Read `verification_gaps` separately from `findings` (GHI #941).** Reviewers are\n         granted `Read, Glob, Grep` and **cannot execute anything**. Both composers now disclose\n         that grant — read from the agent definition, so it tracks the file rather than a prose\n         claim — and instruct the reviewer to put its tool limitations into\n         `verification_gaps`, never into `findings`.",
-     "reworded": null
+     "delivered_span": "      viii. **Read `verification_gaps` separately from `findings` (GHI #941).** Reviewers are\n         granted `Read, Glob, Grep, LSP` and **cannot execute anything**. Both composers now disclose\n         that grant — read from the agent definition, so it tracks the file rather than a prose\n         claim — and instruct the reviewer to put its tool limitations into\n         `verification_gaps`, never into `findings`.",
+     "reworded": {
+      "text": "      viii. **Read `verification_gaps` separately from `findings` (GHI #941).** Reviewers are\n         granted `Read, Glob, Grep, LSP` and **cannot execute anything**. Both composers now disclose\n         that grant — read from the agent definition, so it tracks the file rather than a prose\n         claim — and instruct the reviewer to put its tool limitations into\n         `verification_gaps`, never into `findings`.",
+      "reason": "A ruled correction (operator 2026-10-28, \"fix\"; GHI #1287): every pipeline role is granted LSP (src/gzkit/roles.py, .claude/agents), which reads code and executes nothing, so the reviewers still cannot execute; the grant named here follows the agent definition the composers read."
+     }
     }
    ],
    "non_control": []
