@@ -151,6 +151,44 @@ class GithubTaggingTests(_WpCase):
         self.assertEqual([wp["issues"] for wp in _store()], [[1183]])
 
 
+class EvidenceTests(_WpCase):
+    """Amendment 1: OQE is recorded from initiation, append-only (RO-5 tranche 5 correction)."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.gz("new", "--kind", "delivery", "--slug", "resume", "--outcome", "H1")
+
+    def test_evidence_appends_to_the_record_in_order(self) -> None:
+        self.gz("initiate", "WP-01-resume", "--operator-text", "go")
+        self.gz("evidence", "WP-01-resume", "--oqe", "commit abc1234")
+        self.gz("evidence", "WP-01-resume", "--oqe", "arb-step-1", "--oqe", "docs/x.md")
+        self.assertEqual(_store()[0]["oqe"], ["commit abc1234", "arb-step-1", "docs/x.md"])
+
+    def test_evidence_before_initiation_or_after_close_is_refused(self) -> None:
+        self.gz("evidence", "WP-01-resume", "--oqe", "early", code=3)
+        self.gz("initiate", "WP-01-resume", "--operator-text", "go")
+        self.gz(
+            "freeze", "WP-01-resume", "--baseline", "REQ-1@2", "--risk-note", "R",
+            "--review-receipt", "RV", "--evidence", "E",
+        )  # fmt: skip
+        self.gz("commence", "WP-01-resume", "--evidence", "E")
+        self.gz("accept", "WP-01-resume", "--evidence", "E")
+        self.gz(
+            "close", "WP-01-resume", "--decision", "proceed", "--attestor", "g0",
+            "--residual-risk", "none", "--evidence", "E",
+        )  # fmt: skip
+        self.gz("evidence", "WP-01-resume", "--oqe", "late", code=3)
+        self.assertEqual(_store()[0]["oqe"], [])
+
+    def test_a_repeated_or_empty_entry_is_refused(self) -> None:
+        self.gz("initiate", "WP-01-resume", "--operator-text", "go")
+        self.gz("evidence", "WP-01-resume", "--oqe", "commit abc1234")
+        self.gz("evidence", "WP-01-resume", "--oqe", "commit abc1234", code=3)
+        self.gz("evidence", "WP-01-resume", "--oqe", " ", code=3)
+        self.assertEqual(_store()[0]["oqe"], ["commit abc1234"])
+        self.tag.assert_not_called()
+
+
 class ResolveTests(_WpCase):
     """Ruling 10: gz wp resolve books an issue's close; the package closes only through Gate 5."""
 

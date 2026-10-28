@@ -961,6 +961,7 @@ uv run gz wp new --kind repair --slug astral --issue 1183 --lane lite --alias RO
 uv run gz wp attach WP-01-astral --issue 1184
 uv run gz wp resolve WP-01-astral 1183 --commit <fix-sha> --reviewer <reviewer>
 uv run gz wp initiate WP-01-astral --operator-text "<your exact words>"
+uv run gz wp evidence WP-01-astral --oqe "<receipt, commit or path>"
 uv run gz wp freeze WP-01-astral --risk-note "<note>" --review-receipt <id> --evidence <id>
 uv run gz wp commence WP-01-astral --evidence <what was checked>
 uv run gz wp accept WP-01-astral --evidence <final inspection>

@@ -38,7 +38,7 @@ def register_wp_parsers(commands: argparse._SubParsersAction) -> None:
 
 
 def _register_wp_record(wp_commands: argparse._SubParsersAction) -> None:
-    """Register ``gz wp new``, ``attach``, ``resolve`` and ``show``."""
+    """Register ``gz wp new``, ``attach``, ``resolve``, ``evidence`` and ``show``."""
     p_new = wp_commands.add_parser(
         "new",
         help="Write a new work-package record with the next id",
@@ -122,6 +122,26 @@ def _register_wp_record(wp_commands: argparse._SubParsersAction) -> None:
             commit=a.commit,
             reviewer=a.reviewer,
             as_json=a.as_json,
+        )
+    )
+
+    p_evidence = wp_commands.add_parser(
+        "evidence",
+        help="Append objective quality evidence to a live work package",
+        description=(
+            "Append objective quality evidence (receipts, commits, paths) to a live\n"
+            "work package's record. Entries are never edited, removed or repeated."
+        ),
+        epilog=build_epilog(['gz wp evidence WP-01-astral --oqe "commit abc1234"']),
+    )
+    p_evidence.add_argument("work_package", help="The work package's id, WP-<NN>-<slug>")
+    p_evidence.add_argument(
+        "--oqe", dest="items", action="append", required=True, help="One entry; repeatable"
+    )
+    add_json_flag(p_evidence)
+    p_evidence.set_defaults(
+        func=lambda a: _lazy("wp_evidence_cmd")(
+            work_package=a.work_package, items=a.items, as_json=a.as_json
         )
     )
 

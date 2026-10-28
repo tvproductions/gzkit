@@ -26,3 +26,7 @@ Feature: Work packages run through the gz wp verbs
   Scenario: an issue close on a package the store does not hold is a user error
     When I run the gz command "wp resolve WP-99-nothing 1183 --commit abc1234 --reviewer r"
     Then the command exits with code 1
+
+  Scenario: recording evidence without an entry is a usage error
+    When I run the gz command "wp evidence WP-01-x"
+    Then the command exits with code 2

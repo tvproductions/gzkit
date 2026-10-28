@@ -327,3 +327,33 @@ def wp_resolve_cmd(
             f"  every issue is closed; {work_package} stays {state} and closes only "
             "through Gate 5 (gz wp close)."
         )
+
+
+def wp_evidence_cmd(*, work_package: str, items: list[str], as_json: bool) -> None:
+    """Append objective quality evidence to a live package (amendment 1).
+
+    The OQE is required from initiation, so a package not yet initiated or
+    already closed takes none; an entry is never edited, removed or repeated.
+
+    Raises:
+        PolicyBreachError: The package is not live, or an entry is empty or repeated.
+
+    """
+    root, catalog, ledger = _context()
+    held = _held(catalog, work_package)
+    state = work_package_state(ledger, work_package)
+    if state in {None, "closed"}:
+        msg = f"Work package {work_package} is {state or 'not initiated'}; it takes no evidence."
+        raise PolicyBreachError(msg)
+    added = [item.strip() for item in items]
+    if not all(added) or len(set(added)) != len(added) or set(added) & set(held.oqe):
+        msg = "Each evidence entry is non-empty and recorded once; nothing was written."
+        raise PolicyBreachError(msg)
+    package = held.model_copy(update={"oqe": (*held.oqe, *added)})
+    _store(root, catalog, package)
+    fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
+    fmt.emit(
+        package
+        if as_json
+        else f"Recorded {len(added)} OQE entr{'y' if len(added) == 1 else 'ies'} on {work_package}."
+    )

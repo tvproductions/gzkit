@@ -1,13 +1,13 @@
 ---
 name: gz-wp
 persona: main-session
-description: Use to create, attach issues to, move, change or record an issue close on a work package (WP-<NN>-<slug>) through gz wp.
+description: Use to create, attach issues to, move, change, add evidence to or record an issue close on a work package (WP-<NN>-<slug>) through gz wp.
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-10-28
 metadata:
-  skill-version: "0.2.0"
+  skill-version: "0.3.0"
 model: sonnet
 ---
 
@@ -37,6 +37,12 @@ Attaching an issue, by `new` or `attach`, also labels it `repair` and comments
 the package id on it, aliases in parentheses (ruling 7); the verb creates the
 label when the repository lacks it. If `gh` fails, the verb exits 2 and writes
 nothing; fix `gh` and re-run.
+
+## Objective quality evidence
+
+The OQE is required from initiation (amendment 1). Record each receipt, commit
+or path as the work produces it, so the record stands without explanation:
+`uv run gz wp evidence <WP-id> --oqe "<entry>"`. Entries are append-only.
 
 ## An issue's close
 

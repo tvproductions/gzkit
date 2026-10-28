@@ -60,6 +60,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     # --- wp group (parser_wp, drydock RO-5 tranche 2) ---
     "wp_attach_cmd": "gzkit.commands.wp",
     "wp_change_cmd": "gzkit.commands.wp",
+    "wp_evidence_cmd": "gzkit.commands.wp",
     "wp_new_cmd": "gzkit.commands.wp",
     "wp_resolve_cmd": "gzkit.commands.wp",
     "wp_show_cmd": "gzkit.commands.wp",
