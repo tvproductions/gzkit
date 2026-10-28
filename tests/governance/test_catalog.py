@@ -382,9 +382,12 @@ class TestLiveTree(unittest.TestCase):
             by_band[family.band].add(family.code)
         self.assertEqual(by_band, _RULED_BANDS)
 
-    def test_no_outcome_req_or_work_package_is_authored(self):
+    def test_no_outcome_or_req_is_authored(self):
+        """RO-3 ruling 2: outcomes and REQs land empty. Work packages are authored from
+        RO-5 tranche 5 on (the RO-9 witness), and the store's rules are read by the
+        scope test above."""
         catalog = load_catalog(_REPO)
-        self.assertEqual((catalog.outcomes, catalog.reqs, catalog.work_packages), ((), (), ()))
+        self.assertEqual((catalog.outcomes, catalog.reqs), ((), ()))
 
     def test_each_file_is_a_declared_config_registry(self):
         from gzkit.governance.trust_audits.config_registry import audit_config_registry

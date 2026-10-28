@@ -1,4 +1,41 @@
 {
   "_doc": "The work packages of the requirements catalog (docs/governance/harbor-ro5-work-packages.md, drydock RO-5): one record per package, kind delivery (names its outcome) or repair (names its GitHub issues and stores its lane), each holding its formal work package (initial conditions, procedure, test and inspection, system restoration, NA where a section does not apply) and its objective quality evidence. Edited only through gz verbs (ruling 3). No lifecycle state is held here: it lives only in the ledger, as work_package_transitioned and work_package_changed. Shape: src/gzkit/schemas/catalog_work_packages.json; read by gzkit/models/catalog.py; witnessed by `gz validate --catalog`.",
-  "work_packages": []
+  "work_packages": [
+    {
+      "id": "WP-01-astral-toolchain",
+      "kind": "repair",
+      "outcome": null,
+      "issues": [
+        1183,
+        1184
+      ],
+      "lane": "heavy",
+      "aliases": [
+        "RO-9"
+      ],
+      "initial_conditions": "NA: RO-9 hangs no tag-out line item; the tag-out log is RO-12's and does not exist yet, and the contract's § List of discrepancies held no RO-9 isolation (read 2026-10-28).",
+      "procedure": "Task cards: RO-9 tranches 1 to 7 (docs/governance/harbor-ro9-astral-toolchain.md § Tranches). Tranches 1 to 3 landed 2026-10-19 to 2026-10-22; tranche 4 closed against its specification at 559eb82d7; tranches 5 to 7 open.",
+      "test_and_inspection": "No REQ baseline (a repair package). Closing test: RO-9's close condition (§ The witness), gz validate --astral-discipline with data/astral_discipline_baseline.json empty, the exception register naming every non-Astral tool with its reason, and gz check --full passing on Python 3.14 on every CI platform. Dock trial: a fresh gz init project passing gz validate --astral-discipline and uv lock --check (tranche 7).",
+      "system_restoration": "The RO-9 lines of the contract's § List of discrepancies (docs/governance/harbor-pilotage-candidate-2026-10-15.md § RO-9): xenon, Radon, complexipy, interrogate and --python-version-pins retired, hatchling replaced by uv_build, each cleared by the restoration contractor with the alarms on.",
+      "oqe": [
+        "fea4697ac RO-9 tranche 1: Python declared once at 3.14, the witness",
+        "c9be1203e RO-9 tranche 3: uv_build, the wheel predicted once",
+        "41eed90bb RO-9 tranche 3: publish with uv, bump through uv version",
+        "25287b8e0 RO-9 tranche 4: the C/C/C ceiling over Lizard and Ruff, xenon retired",
+        "e1470956d RO-9 tranche 4: Radon retired, the corpus re-distilled",
+        "6732155fe RO-9 tranche 4: interrogate retired for Ruff's D-series",
+        "6f0f2a956 RO-9 tranche 4: complexipy retired",
+        "559eb82d7 RO-9 tranche 4 closed against its specification",
+        "5de0f9a5d GHI #1183: the module-size chore's guidance on Lizard",
+        "088fd76c3 RO-9's list-of-discrepancies lines",
+        "16aa7c5f8 RO-9 tranche 2: lock discipline",
+        "7109e6120 GHI #1183: chore registry, gz-session-handoff and ratchet registry stop naming xenon and Radon as current",
+        "989215394 GHI #1183: git-sync template and five docstrings on the C/C/C ceiling",
+        "GHI #1183 reviews 2026-10-28: three spec-reviewer subagents (NOT CONFIRMED, NOT CONFIRMED, CONFIRMED after 989215394); closed with evidence on GitHub",
+        "Formal work package reviews 2026-10-28: spec-reviewer FINDINGS (system restoration owed RO-9 lines; dock trial lacked uv lock --check; RO-9 status line stale), all addressed in 088fd76c3 and the record; second spec-reviewer PASS"
+      ],
+      "alterations": [],
+      "departures": []
+    }
+  ]
 }
