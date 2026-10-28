@@ -144,7 +144,7 @@ class TestAuditAnnounces(unittest.TestCase):
         self.root = Path(self._tmp.name)
         catalog = self.root / "data" / "catalog"
         catalog.mkdir(parents=True)
-        for kind in ("families", "outcomes", "reqs", "externals"):
+        for kind in ("families", "outcomes", "reqs", "externals", "work_packages"):
             (catalog / f"{kind}.json").write_text(
                 json.dumps({"_doc": "Fixture.", kind: []}), encoding="utf-8"
             )

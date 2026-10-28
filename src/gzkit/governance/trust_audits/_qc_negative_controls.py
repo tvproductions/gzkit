@@ -39,6 +39,7 @@ from ._qc_claim_exemptions import QC_CLAIM_EXEMPTS
 from ._qc_claim_populations import QC_CLAIM_POPULATIONS
 from ._qc_nc_entrypoints import (
     _ep_astral_discipline_deferred_annotations,
+    _ep_catalog_work_packages,
     _ep_model_class_only,
 )
 
@@ -1528,6 +1529,7 @@ def _build_catalog() -> Path:
         ("outcomes", []),
         ("reqs", []),
         ("externals", []),
+        ("work_packages", []),
     ):
         _write(catalog / f"{kind}.json", json.dumps({"_doc": "Negative control.", kind: entries}))
     return catalog.parents[1]
@@ -1542,6 +1544,7 @@ def _catalog_project(slug: str, outcomes: list[dict], reqs: list[dict]) -> Path:
         ("outcomes", outcomes),
         ("reqs", reqs),
         ("externals", []),
+        ("work_packages", []),
     ):
         payload = json.dumps({"_doc": "Negative control.", kind: entries})
         _write(root / "data" / "catalog" / f"{kind}.json", payload)
@@ -1594,6 +1597,53 @@ def _build_catalog_edges() -> Path:
     ]
     reqs = [_nc_req("REQ-1", "H7"), _nc_req("REQ-2", "H1", derives_from=["FR-099"])]
     return _catalog_project("catalog-edges", outcomes, reqs)
+
+
+def _nc_work_package(wp_id: str, issue: int) -> dict[str, object]:
+    return {
+        "id": wp_id,
+        "kind": "repair",
+        "outcome": None,
+        "issues": [issue],
+        "lane": "lite",
+        "aliases": [],
+        "initial_conditions": "NA",
+        "procedure": "Negative control.",
+        "test_and_inspection": "NA",
+        "system_restoration": "NA",
+        "oqe": [],
+        "alterations": [],
+        "departures": [],
+    }
+
+
+def _build_catalog_work_packages() -> Path:
+    """Plant a delivery package naming a missing outcome and an issue in two packages (RO-5).
+
+    WP-04-ok is a valid repair package and H1 a held outcome, so a finding naming
+    either is a decoy firing.
+
+    Returns:
+        The project root.
+
+    """
+    root = _catalog_project("catalog-work-packages", [_nc_outcome("H1")], [])
+    delivery = {
+        **_nc_work_package("WP-01-nc", 0),
+        "kind": "delivery",
+        "outcome": "H9",
+        "issues": [],
+        "lane": None,
+    }
+    packages = [
+        delivery,
+        _nc_work_package("WP-02-a", 7),
+        _nc_work_package("WP-03-b", 7),
+        _nc_work_package("WP-04-ok", 8),
+    ]
+    payload = json.dumps({"_doc": "Negative control.", "work_packages": packages})
+    _write(root / "data" / "catalog" / "work_packages.json", payload)
+    return root
 
 
 def _build_catalog_coverage() -> Path:
@@ -2283,6 +2333,12 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         _ep._ep_catalog_forward_rule,
         "1 of 2 delivery events since 2026-01-01T00:00:00+00:00 name no REQ or outcome "
         "(task_started 1)",
+    ),
+    (
+        "requirements-catalog-work-packages",
+        _build_catalog_work_packages,
+        _ep_catalog_work_packages,
+        "Work package WP-01-nc (delivery) names outcome H9, which the catalog does not hold",
     ),
     (
         "requirements-catalog-bdd",

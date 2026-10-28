@@ -674,6 +674,22 @@ def _ep_catalog_edges(root: Path) -> list[ValidationError]:
     return _ep_catalog_fields(root, {"depends_on", "governed_by", "member_of", "derives_from"})
 
 
+def _ep_catalog_work_packages(root: Path) -> list[ValidationError]:
+    """Both planted breaches must fire, and the valid package and outcome must not.
+
+    Returns:
+        The two findings, or nothing when one is missing or a decoy fired.
+
+    """
+    from gzkit.governance.trust_audits.catalog import audit_catalog  # noqa: PLC0415
+
+    errors = audit_catalog(root)
+    planted = ("Work package WP-01-nc ", "Issues #7 ")
+    caught = [sum(error.message.startswith(p) for error in errors) for p in planted]
+    on_store = all(error.field == "work_packages" for error in errors)
+    return errors if caught == [1, 1] and on_store and len(errors) == len(planted) else []
+
+
 def _ep_catalog_bdd(root: Path) -> list[ValidationError]:
     """Each BDD alignment check must fire on its planted break, and nothing else."""
     return _ep_catalog_fields(root, {"feature", "scenario", "covers"})

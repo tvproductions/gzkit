@@ -4,7 +4,8 @@ The store `docs/governance/ieee/requirements-model.md` rules, laid out as
 `docs/governance/harbor-ro3-requirements-store.md` § The store specifies: three
 files under `data/catalog/`, each a list under a `_doc` header, one model and one
 committed schema each. Tranche 3 adds a fourth, the roster of external boundaries
-`depends_on` may name (operator, "Declared prefixes (Rec.)", 2026-10-22).
+`depends_on` may name (operator, "Declared prefixes (Rec.)", 2026-10-22). RO-5
+tranche 1 adds a fifth, the work packages (`docs/governance/harbor-ro5-work-packages.md`).
 
 What a catalog entry does NOT carry is as ruled as what it does: an outcome has
 no lifecycle state (delivery status lives only in the ledger, decision 3) and a
@@ -26,6 +27,7 @@ CATALOG_FILES: dict[str, str] = {
     "outcomes": "catalog/outcomes.json",
     "reqs": "catalog/reqs.json",
     "externals": "catalog/externals.json",
+    "work_packages": "catalog/work_packages.json",
 }
 
 #: The forward rule's registry, read beside the catalog but not part of it (RO-3 tranche 4).
@@ -36,6 +38,9 @@ OUTCOME_CODE_PATTERN = r"^[A-Z][1-9][0-9]*(\.[1-9][0-9]*)*$"
 
 #: A catalog REQ id, its grammar held by the identity seam.
 REQ_ID_PATTERN = rf"^{CATALOG_REQ_ID_BODY}$"
+
+#: One id series for every work package, repair or delivery: `WP-<NN>-<slug>` (RO-5 ruling 6).
+WORK_PACKAGE_ID_PATTERN = r"^WP-[0-9]{2,}-[a-z0-9]+(-[a-z0-9]+)*$"
 
 
 class Family(BaseModel):
@@ -111,6 +116,72 @@ class External(BaseModel):
     scope: str = Field(..., min_length=1, description="What crosses it, one sentence.")
 
 
+class Alteration(BaseModel):
+    """A planned remodel, approved at freeze and accounted for at close (RO-5 amendment 4)."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    id: str = Field(..., min_length=1, description="Unique within its package.")
+    description: str = Field(..., min_length=1, description="What the remodel changes.")
+    configuration_change: Literal["reconnected", "replaced", "retired"] = Field(
+        ..., description="The maintenance-record line it is accounted as."
+    )
+
+
+class Departure(BaseModel):
+    """A departure from the package's own approved specification (RO-5 amendment 4)."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    id: str = Field(..., min_length=1, description="Unique within its package.")
+    description: str = Field(..., min_length=1, description="What the work cannot meet.")
+    form: Literal["deviation", "waiver"] = Field(
+        ..., description="Requested before the work, or after the nonconformance is found."
+    )
+    duration: Literal["temporary", "permanent"] = Field(..., description="How long it stands.")
+    clear_by: str | None = Field(
+        ..., description="The clear-by condition; required when temporary, absent when permanent."
+    )
+    req: str | None = Field(
+        ..., pattern=REQ_ID_PATTERN, description="The REQ it departs on, as its scope disposition."
+    )
+
+
+class WorkPackage(BaseModel):
+    """One work package: its formal work package and its objective quality evidence.
+
+    RO-5 rulings 1, 4 and 6 and the 2026-10-28 amendment, the shape ruled by the
+    operator at tranche 1 ("Accept as drafted (Recommended)"). A delivery package
+    names its outcome and holds no lane, which the outcome derives; a repair
+    package names its issues and holds its lane. Lifecycle state lives only in
+    the ledger, so no field carries it.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    id: str = Field(..., pattern=WORK_PACKAGE_ID_PATTERN, description="`WP-<NN>-<slug>`.")
+    kind: Literal["delivery", "repair"] = Field(..., description="Never the id's spelling.")
+    outcome: str | None = Field(
+        ..., pattern=OUTCOME_CODE_PATTERN, description="The outcome a delivery package delivers."
+    )
+    issues: tuple[int, ...] = Field(..., description="The GitHub issues a repair package carries.")
+    lane: Literal["lite", "heavy"] | None = Field(
+        ..., description="Stored on a repair package only."
+    )
+    aliases: tuple[str, ...] = Field(..., description="Drydock names such as `RO-9`.")
+    initial_conditions: str = Field(..., min_length=1, description="Tag-out line items, or NA.")
+    procedure: str = Field(..., min_length=1, description="The task cards, or NA.")
+    test_and_inspection: str = Field(
+        ..., min_length=1, description="The REQ baseline, closing test and dock trial, or NA."
+    )
+    system_restoration: str = Field(..., min_length=1, description="The restoration, or NA.")
+    oqe: tuple[str, ...] = Field(
+        ..., description="Objective quality evidence: receipts, commits, paths."
+    )
+    alterations: tuple[Alteration, ...] = Field(..., description="The planned remodels.")
+    departures: tuple[Departure, ...] = Field(..., description="Departures from specification.")
+
+
 class FamiliesFile(BaseModel):
     """`data/catalog/families.json`."""
 
@@ -147,11 +218,21 @@ class ExternalsFile(BaseModel):
     externals: tuple[External, ...] = Field(..., description="The external boundaries.")
 
 
+class WorkPackagesFile(BaseModel):
+    """`data/catalog/work_packages.json`, edited only through `gz` verbs (RO-5 ruling 3)."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid", populate_by_name=True)
+
+    doc: str = Field(..., alias="_doc", min_length=1, description="What the file is.")
+    work_packages: tuple[WorkPackage, ...] = Field(..., description="The work packages.")
+
+
 FILE_MODELS: dict[str, type[BaseModel]] = {
     "families": FamiliesFile,
     "outcomes": OutcomesFile,
     "reqs": ReqsFile,
     "externals": ExternalsFile,
+    "work_packages": WorkPackagesFile,
 }
 
 
@@ -164,6 +245,7 @@ class Catalog(BaseModel):
     outcomes: tuple[Outcome, ...]
     reqs: tuple[Req, ...]
     externals: tuple[External, ...] = ()
+    work_packages: tuple[WorkPackage, ...] = ()
 
 
 def catalog_json_schemas() -> dict[str, dict[str, Any]]:
@@ -183,11 +265,15 @@ def load_catalog(project_root: Path) -> Catalog:
     externals = ExternalsFile.model_validate(
         load_registry(project_root, CATALOG_FILES["externals"])
     )
+    work_packages = WorkPackagesFile.model_validate(
+        load_registry(project_root, CATALOG_FILES["work_packages"])
+    )
     return Catalog(
         families=families.families,
         outcomes=outcomes.outcomes,
         reqs=reqs.reqs,
         externals=externals.externals,
+        work_packages=work_packages.work_packages,
     )
 
 

@@ -13,8 +13,9 @@ alignment run from `gzkit.governance.trust_audits.catalog_edges`, over the PRD,
 the manifest's gates, the ledger, the features and the tests this module reads.
 Tranche 4's forward rule then reads the delivery events since the cutover in
 `data/catalog/delivery_events.json` and announces the ones naming no REQ or
-outcome (`gzkit.governance.trust_audits.catalog_forward`). The freeze lock is
-RO-5's.
+outcome (`gzkit.governance.trust_audits.catalog_forward`). RO-5 tranche 1 adds
+the work-package store's checks and reads its two events against it; the freeze
+lock is RO-5's verbs'.
 """
 
 import json
@@ -41,6 +42,7 @@ from gzkit.models.catalog import (
     CATALOG_FILES,
     DELIVERY_EVENTS_FILE,
     Catalog,
+    WorkPackage,
     load_catalog,
     load_delivery_events,
 )
@@ -86,7 +88,12 @@ def _schema_findings(project_root: Path) -> list[ValidationError]:
     return errors
 
 
-def _duplicates(kind: str, label: str, values: list[str]) -> list[ValidationError]:
+def _duplicates(
+    kind: str,
+    label: str,
+    values: list[str],
+    rule: str = "A code is never reused, a retired one included.",
+) -> list[ValidationError]:
     repeated = sorted(value for value, count in Counter(values).items() if count > 1)
     if not repeated:
         return []
@@ -94,7 +101,7 @@ def _duplicates(kind: str, label: str, values: list[str]) -> list[ValidationErro
         _err(
             kind,
             f"{label} {', '.join(repeated)} appear more than once in data/{CATALOG_FILES[kind]}. "
-            f"A code is never reused, a retired one included.",
+            f"{rule}",
         )
     ]
 
@@ -113,6 +120,112 @@ def _structure_findings(catalog: Catalog) -> list[ValidationError]:
                 f"data/{CATALOG_FILES['families']} does not hold.",
             )
         )
+    return errors + _work_package_findings(catalog)
+
+
+def _kind_breaches(package: WorkPackage, outcomes: frozenset[str]) -> list[str]:
+    """Rulings 1 and 4: a delivery package names its outcome, a repair its issues and lane.
+
+    Returns:
+        Each breach, as a clause completing "Work package <id> ...".
+
+    """
+    if package.kind == "delivery":
+        breaches = [] if package.outcome else ["names no outcome"]
+        if package.outcome and package.outcome not in outcomes:
+            breaches.append(f"names outcome {package.outcome}, which the catalog does not hold")
+        if package.issues or package.lane:
+            breaches.append("holds an issue or a lane, which a delivery package derives")
+        return breaches
+    breaches = [] if package.issues else ["names no issue"]
+    if package.lane is None:
+        breaches.append("stores no lane")
+    if package.outcome:
+        breaches.append("names an outcome, which a repair package has in place of none")
+    return breaches
+
+
+def _record_breaches(package: WorkPackage, reqs: frozenset[str]) -> list[str]:
+    """Amendment 4: alteration and departure ids unique, and each departure well formed.
+
+    Returns:
+        Each breach, as a clause completing "Work package <id> ...".
+
+    """
+    breaches = [
+        f"repeats {label} id {value}"
+        for label, ids in (
+            ("alteration", [a.id for a in package.alterations]),
+            ("departure", [d.id for d in package.departures]),
+        )
+        for value, count in Counter(ids).items()
+        if count > 1
+    ]
+    for departure in package.departures:
+        if (departure.duration == "temporary") != (departure.clear_by is not None):
+            breaches.append(
+                f"departure {departure.id} is {departure.duration} and "
+                f"{'lacks' if departure.clear_by is None else 'carries'} a clear-by condition"
+            )
+        if departure.req is not None and departure.req not in reqs:
+            breaches.append(
+                f"departure {departure.id} names {departure.req}, absent from the catalog"
+            )
+    return breaches
+
+
+def _series_findings(packages: tuple[WorkPackage, ...]) -> list[ValidationError]:
+    """Ruling 6 and ruling 2: one id series, each alias and each issue in one package only.
+
+    A number is the id series' key, so two packages sharing one share an id or reuse it.
+
+    Returns:
+        One finding per repeated number, issue or alias family.
+
+    """
+    numbers = [f"WP-{package.id.split('-')[1]}" for package in packages]
+    issues = [f"#{issue}" for package in packages for issue in package.issues]
+    aliases = [alias for package in packages for alias in package.aliases]
+    errors = _duplicates(
+        "work_packages",
+        "Work package numbers",
+        numbers,
+        "One id series: a number names one package, never reused (RO-5 ruling 6).",
+    )
+    errors += _duplicates(
+        "work_packages",
+        "Issues",
+        issues,
+        "Each issue belongs to exactly one repair package (RO-5 ruling 2).",
+    )
+    return errors + _duplicates(
+        "work_packages", "Aliases", aliases, "An alias resolves to one package (RO-5 ruling 6)."
+    )
+
+
+def _work_package_findings(catalog: Catalog) -> list[ValidationError]:
+    """Read the work-package store against RO-5's rulings.
+
+    The rulings are `docs/governance/harbor-ro5-work-packages.md`'s.
+
+    Returns:
+        The store's findings, empty when it holds.
+
+    """
+    outcomes = frozenset(outcome.code for outcome in catalog.outcomes)
+    reqs = frozenset(req.id for req in catalog.reqs)
+    errors = _series_findings(catalog.work_packages)
+    for package in catalog.work_packages:
+        breaches = _kind_breaches(package, outcomes) + _record_breaches(package, reqs)
+        if breaches:
+            errors.append(
+                _err(
+                    "work_packages",
+                    f"Work package {package.id} ({package.kind}) {'; '.join(breaches)}. "
+                    "RO-5 rulings 1, 2, 4 and 6 and the 2026-10-28 amendment rule its shape "
+                    "(docs/governance/harbor-ro5-work-packages.md).",
+                )
+            )
     return errors
 
 
@@ -149,6 +262,33 @@ def _governs(project_root: Path, config: GzkitConfig) -> Callable[[str], bool]:
     return governs
 
 
+def _booked_findings(ledger: Ledger, catalog: Catalog) -> list[ValidationError]:
+    """Read the work-package events against the store: a booked package is never dropped.
+
+    An id the ledger names is never reused (RO-5 ruling 6), so the store keeps its record.
+
+    Returns:
+        One finding naming every booked package the store no longer holds.
+
+    """
+    held = {package.id for package in catalog.work_packages}
+    booked = {
+        str(row.extra.get("work_package"))
+        for event_type in ("work_package_transitioned", "work_package_changed")
+        for row in ledger.query(event_type=event_type)
+    }
+    if missing := sorted(booked - held):
+        return [
+            _err(
+                "work_packages",
+                f"Work packages {', '.join(missing)} have ledger events but no record in "
+                f"data/{CATALOG_FILES['work_packages']}. An id is never reused (RO-5 ruling 6), "
+                "so restore the record.",
+            )
+        ]
+    return []
+
+
 def audit_catalog(project_root: Path) -> list[ValidationError]:
     """Run the catalog checks; any finding makes the caller exit 3.
 
@@ -169,6 +309,7 @@ def audit_catalog(project_root: Path) -> list[ValidationError]:
         gates=_gates(project_root, config),
         governs=_governs(project_root, config),
     )
+    errors += _booked_findings(Ledger(project_root / config.paths.ledger), catalog)
     if any(outcome.user_facing for outcome in catalog.outcomes):
         errors += bdd_findings(catalog, scan_catalog_bindings(project_root))
     if gaps := coverage_gaps(catalog, needs):

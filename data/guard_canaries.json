@@ -546,6 +546,20 @@
       "authority": "docs/governance/harbor-ro9-astral-toolchain.md (drydock RO-9 tranche 4, the PEP 563 ban; operator 2026-10-24: \"Remove first, then ban (Rec.)\"); scorecard row 23b; GHI #1154 item 5 (every registered claim binds a reviewed canary)",
       "proposed_by": "claude-code session 2026-10-24",
       "reviewed_by": "g0"
+    },
+    {
+      "claim_id": "requirements-catalog-work-packages",
+      "guard": "gzkit.governance.trust_audits.catalog:_kind_breaches",
+      "failing_test": "tests.governance.test_catalog.TestWorkPackages.test_a_delivery_package_names_an_outcome_the_catalog_holds",
+      "mutation": {
+        "find": "        if package.outcome and package.outcome not in outcomes:\n",
+        "replace": "        if False:\n",
+        "label": "a delivery package naming an outcome the catalog lacks is accepted"
+      },
+      "binding_sha256": "49651b34d5d3a0647483421c9a453e62d5171440fc798b2788bc3945731b73be",
+      "authority": "docs/governance/harbor-ro5-work-packages.md (drydock RO-5 tranche 1)",
+      "proposed_by": "claude-code session 2026-10-28",
+      "reviewed_by": null
     }
   ]
 }

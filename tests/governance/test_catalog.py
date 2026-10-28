@@ -15,12 +15,14 @@ from unittest.mock import patch
 
 from pydantic import ValidationError as PydanticValidationError
 
+from gzkit.enforcement import _run_single_claim, production_enforcement_registry
 from gzkit.governance.trust_audits.catalog import audit_catalog
 from gzkit.models.catalog import (
     CATALOG_FILES,
     Family,
     Outcome,
     Req,
+    WorkPackage,
     catalog_json_schemas,
     load_catalog,
 )
@@ -71,6 +73,37 @@ def _req(req_id: str, member_of: str = "H1") -> dict[str, object]:
     }
 
 
+def _wp(wp_id: str, kind: str = "repair", **fields: object) -> dict[str, object]:
+    base: dict[str, object] = {
+        "id": wp_id,
+        "kind": kind,
+        "outcome": "H1" if kind == "delivery" else None,
+        "issues": [] if kind == "delivery" else [1183],
+        "lane": None if kind == "delivery" else "lite",
+        "aliases": [],
+        "initial_conditions": "NA",
+        "procedure": "Task cards one and two.",
+        "test_and_inspection": "NA",
+        "system_restoration": "NA",
+        "oqe": [],
+        "alterations": [],
+        "departures": [],
+    }
+    return {**base, **fields}
+
+
+def _departure(dfs_id: str, duration: str = "temporary", **fields: object) -> dict[str, object]:
+    base: dict[str, object] = {
+        "id": dfs_id,
+        "description": "The closing test cannot run on Windows yet.",
+        "form": "waiver",
+        "duration": duration,
+        "clear_by": "the Windows runner lands" if duration == "temporary" else None,
+        "req": None,
+    }
+    return {**base, **fields}
+
+
 class _Tree(unittest.TestCase):
     """A temp project with a valid catalog; each test breaks one thing."""
 
@@ -83,6 +116,7 @@ class _Tree(unittest.TestCase):
         self.write("outcomes", [_outcome("H1")])
         self.write("reqs", [_req("REQ-1")])
         self.write("externals", [])
+        self.write("work_packages", [])
         # The REQ derives from FR-001, which tranche 3's derives_from check reads
         # from the live PRD under the configured PRD directory.
         prd = self.root / "design" / "prd" / "PRD-FIXTURE-1.0.0.md"
@@ -223,6 +257,117 @@ class TestStructure(_Tree):
         self.assertEqual(self.fields(), ["outcomes"])
 
 
+class TestWorkPackages(_Tree):
+    """RO-5 tranche 1: the work-package store's structure (rulings 1, 2, 4 and 6, amendment 4)."""
+
+    def test_a_repair_and_a_delivery_package_pass(self):
+        self.write(
+            "work_packages",
+            [_wp("WP-01-astral", aliases=["RO-9"]), _wp("WP-02-resume", "delivery")],
+        )
+        self.assertEqual(audit_catalog(self.root), [])
+        catalog = load_catalog(self.root)
+        self.assertEqual([wp.kind for wp in catalog.work_packages], ["repair", "delivery"])
+
+    def test_the_id_is_one_series_never_the_kinds_spelling(self):
+        for wp_id in ("RO-9", "WP-1-x", "WP-01", "WP-01-Astral", "wp-01-astral"):
+            with self.subTest(wp_id=wp_id), self.assertRaises(PydanticValidationError):
+                WorkPackage.model_validate(_wp(wp_id))
+
+    def test_a_package_carries_no_lifecycle_state(self):
+        """State lives only in the ledger (RO-5 ruling 5)."""
+        with self.assertRaises(PydanticValidationError):
+            WorkPackage.model_validate({**_wp("WP-01-x"), "state": "frozen"})
+
+    def test_an_id_or_its_number_is_never_reused(self):
+        for second in ("WP-01-astral", "WP-01-other"):
+            with self.subTest(second=second):
+                self.write("work_packages", [_wp("WP-01-astral"), _wp(second, issues=[7])])
+                self.assertEqual(self.fields(), ["work_packages"])
+
+    def test_a_delivery_package_names_its_outcome_and_holds_no_lane_or_issue(self):
+        for fields in ({"outcome": None}, {"lane": "heavy"}, {"issues": [12]}):
+            with self.subTest(fields=fields):
+                self.write("work_packages", [_wp("WP-01-x", "delivery", **fields)])
+                self.assertEqual(self.fields(), ["work_packages"])
+
+    def test_a_repair_package_names_its_issues_and_stores_its_lane(self):
+        for fields in ({"issues": []}, {"lane": None}, {"outcome": "H1"}):
+            with self.subTest(fields=fields):
+                self.write("work_packages", [{**_wp("WP-01-x"), **fields}])
+                self.assertEqual(self.fields(), ["work_packages"])
+
+    def test_a_delivery_package_names_an_outcome_the_catalog_holds(self):
+        self.write("work_packages", [_wp("WP-01-x", "delivery", outcome="H9")])
+        errors = audit_catalog(self.root)
+        self.assertEqual([e.field for e in errors], ["work_packages"])
+        self.assertIn("H9", errors[0].message)
+
+    def test_each_issue_belongs_to_one_repair_package(self):
+        self.write("work_packages", [_wp("WP-01-a"), _wp("WP-02-b")])
+        errors = audit_catalog(self.root)
+        self.assertEqual([e.field for e in errors], ["work_packages"])
+        self.assertIn("#1183", errors[0].message)
+        self.assertIn("RO-5 ruling 2", errors[0].message)
+
+    def test_an_alias_names_one_package(self):
+        self.write(
+            "work_packages",
+            [_wp("WP-01-a", aliases=["RO-9"]), _wp("WP-02-b", issues=[7], aliases=["RO-9"])],
+        )
+        self.assertEqual(self.fields(), ["work_packages"])
+
+    def test_a_temporary_departure_has_a_clear_by_condition_and_a_permanent_one_none(self):
+        for departure in (
+            _departure("DFS-1", clear_by=None),
+            _departure("DFS-1", "permanent", clear_by="never"),
+        ):
+            with self.subTest(departure=departure):
+                self.write("work_packages", [_wp("WP-01-x", departures=[departure])])
+                self.assertEqual(self.fields(), ["work_packages"])
+
+    def test_a_departure_on_a_req_names_one_the_catalog_holds(self):
+        self.write("work_packages", [_wp("WP-01-x", departures=[_departure("DFS-1", req="REQ-1")])])
+        self.assertEqual(audit_catalog(self.root), [])
+        self.write("work_packages", [_wp("WP-01-x", departures=[_departure("DFS-1", req="REQ-2")])])
+        self.assertEqual(self.fields(), ["work_packages"])
+
+    def test_alteration_and_departure_ids_are_unique_within_their_package(self):
+        alteration = {"id": "ALT-1", "description": "Rekey.", "configuration_change": "replaced"}
+        for fields in (
+            {"alterations": [alteration, alteration]},
+            {"departures": [_departure("DFS-1"), _departure("DFS-1")]},
+        ):
+            with self.subTest(fields=fields):
+                self.write("work_packages", [{**_wp("WP-01-x"), **fields}])
+                self.assertEqual(self.fields(), ["work_packages"])
+
+    def test_a_section_left_empty_fails_where_na_passes(self):
+        self.write("work_packages", [_wp("WP-01-x", system_restoration="")])
+        self.assertEqual(self.fields(), ["work_packages"])
+
+    def test_a_package_the_ledger_has_booked_stays_in_the_store(self):
+        """An id the ledger names is never reused, so its record is never dropped."""
+        row = {
+            "schema": "gzkit.ledger.v1",
+            "event": "work_package_transitioned",
+            "id": "WP-07-gone",
+            "ts": "2026-10-28T08:00:00+00:00",
+            "work_package": "WP-07-gone",
+            "to_state": "initiated",
+            "evidence": "evt-1",
+            "operator_text": "start",
+        }
+        ledger = self.root / ".gzkit" / "ledger.jsonl"
+        ledger.parent.mkdir(exist_ok=True)
+        ledger.write_text(json.dumps(row) + "\n", encoding="utf-8")
+        errors = audit_catalog(self.root)
+        self.assertEqual([e.field for e in errors], ["work_packages"])
+        self.assertIn("WP-07-gone", errors[0].message)
+        self.write("work_packages", [_wp("WP-07-gone")])
+        self.assertEqual(audit_catalog(self.root), [])
+
+
 class TestLiveTree(unittest.TestCase):
     """The repository's own catalog: the legend seeded, outcomes and REQs empty."""
 
@@ -237,9 +382,9 @@ class TestLiveTree(unittest.TestCase):
             by_band[family.band].add(family.code)
         self.assertEqual(by_band, _RULED_BANDS)
 
-    def test_no_outcome_or_req_is_authored(self):
+    def test_no_outcome_req_or_work_package_is_authored(self):
         catalog = load_catalog(_REPO)
-        self.assertEqual((catalog.outcomes, catalog.reqs), ((), ()))
+        self.assertEqual((catalog.outcomes, catalog.reqs, catalog.work_packages), ((), (), ()))
 
     def test_each_file_is_a_declared_config_registry(self):
         from gzkit.governance.trust_audits.config_registry import audit_config_registry
@@ -269,6 +414,7 @@ class TestDispatch(unittest.TestCase):
                 ("outcomes", []),
                 ("reqs", []),
                 ("externals", []),
+                ("work_packages", []),
             ):
                 text = json.dumps({"_doc": "Fixture catalog.", kind: entries})
                 (catalog / f"{kind}.json").write_text(text, encoding="utf-8")
@@ -319,6 +465,11 @@ class TestNegativeControl(unittest.TestCase):
         self.assertEqual(record.exempts, EXEMPTS_NONE)
         self.assertIsNotNone(record.population)
 
+    def test_the_work_package_control_catches_its_fixture(self):
+        claims = {r.claim_id: r for r in production_enforcement_registry()}
+        result = _run_single_claim(claims["requirements-catalog-work-packages"])
+        self.assertEqual(result.outcome, "PASS", result.message)
+
     def test_the_refuse_entrypoint_reports_no_catch_when_a_decoy_fires(self):
         """A finding against anything but the planted duplicate is a decoy firing."""
         from gzkit.governance.trust_audits import _qc_nc_entrypoints as ep
@@ -331,6 +482,7 @@ class TestNegativeControl(unittest.TestCase):
                 ("outcomes", []),
                 ("reqs", []),
                 ("externals", []),
+                ("work_packages", []),
             ):
                 text = json.dumps({"_doc": "Fixture catalog.", kind: entries})
                 (catalog / f"{kind}.json").write_text(text, encoding="utf-8")

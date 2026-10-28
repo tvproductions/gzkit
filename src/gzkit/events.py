@@ -1742,6 +1742,76 @@ class ReqProofRecordedEvent(_EventBase):
     target: str | None = Field(None, description="The applies_to member, for an NFR")
 
 
+#: RO-5's work-package lifecycle, in order (ruling 5 as amended 2026-10-28).
+WorkPackageState = Literal["initiated", "frozen", "commenced", "accepted", "closed"]
+#: The change ladder's rungs, with alteration and departure from specification (amendments 3, 4).
+WorkPackageRung = Literal[
+    "pen_and_ink", "change_order", "attachment", "supplement", "alteration", "departure"
+]
+#: The Gate 5 decisions a close records (requirements model § 11).
+WorkPackageDecision = Literal["proceed", "redirect", "pause", "terminate"]
+
+
+class BaselinedReq(BaseModel):
+    """One REQ frozen into a work package's baseline, at the revision the catalog held."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    req: str = Field(..., min_length=1, description="The catalog REQ's id")
+    revision: int = Field(..., ge=1, description="The revision frozen")
+
+
+class WorkPackageTransitionedEvent(_EventBase):
+    """work_package_transitioned event — a work package moved in its lifecycle (drydock RO-5).
+
+    Written only by ``gzkit.work_package_ledger.record_work_package_transition``, which
+    derives ``from_state`` from the ledger, moves one step at a time, and refuses a
+    payload field the target state does not carry. ``id`` is the work package id.
+    """
+
+    event: Literal["work_package_transitioned"]
+    work_package: str = Field(..., min_length=1, description="The work package's id")
+    from_state: WorkPackageState | None = Field(None, description="None before initiation")
+    to_state: WorkPackageState = Field(..., description="The state the package moved to")
+    evidence: str = Field(..., min_length=1, description="What justifies the move")
+    attestor: str | None = Field(None, description="The Gate 5 attestor; required into closed")
+    operator_text: str | None = Field(None, description="The operator's words, at initiated")
+    baseline: tuple[BaselinedReq, ...] = Field((), description="The frozen REQ baseline")
+    risk_note: str | None = Field(None, description="The short risk note, at frozen")
+    review_receipt: str | None = Field(None, description="The nine-criteria review receipt")
+    approved_alterations: tuple[str, ...] = Field((), description="Alterations approved at freeze")
+    decision: WorkPackageDecision | None = Field(None, description="The Gate 5 decision, at closed")
+    residual_risk: str | None = Field(None, description="The residual risk, at closed")
+    configuration_changes: tuple[str, ...] = Field(
+        (), description="Each alteration accounted as its configuration change, at closed"
+    )
+    open_departures: tuple[str, ...] = Field((), description="Departures still open at closed")
+
+
+class WorkPackageChangedEvent(_EventBase):
+    """work_package_changed event — one rung of the change ladder on a package (drydock RO-5).
+
+    Written only by ``gzkit.work_package_ledger.record_work_package_change``. A
+    departure's form, duration and clear-by condition are copied from the store,
+    never taken from the caller. ``id`` is the work package id.
+    """
+
+    event: Literal["work_package_changed"]
+    work_package: str = Field(..., min_length=1, description="The work package's id")
+    rung: WorkPackageRung = Field(..., description="The ladder rung the change takes")
+    approver: Literal["operator", "coordinator"] = Field(..., description="Who approved it")
+    change: str = Field(..., min_length=1, description="The change made")
+    superseded: str | None = Field(None, description="The superseded content, kept")
+    work_stopped: bool = Field(default=False, description="True on a change order: work stopped")
+    supplement: str | None = Field(None, description="The supplement's work package id")
+    item: str | None = Field(None, description="The alteration or departure id it records")
+    form: Literal["deviation", "waiver"] | None = Field(None, description="A departure's form")
+    duration: Literal["temporary", "permanent"] | None = Field(
+        None, description="A departure's duration"
+    )
+    clear_by: str | None = Field(None, description="A temporary departure's clear-by condition")
+
+
 TypedLedgerEvent = Annotated[
     ProjectInitEvent
     | PrdCreatedEvent
@@ -1830,7 +1900,9 @@ TypedLedgerEvent = Annotated[
     | SurfaceWeightRecalibratedEvent
     | ReportPublishedEvent
     | OutcomeTransitionedEvent
-    | ReqProofRecordedEvent,
+    | ReqProofRecordedEvent
+    | WorkPackageTransitionedEvent
+    | WorkPackageChangedEvent,
     Field(discriminator="event"),
 ]
 

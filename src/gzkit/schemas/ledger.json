@@ -2225,6 +2225,187 @@
         }
       }
     },
+    "work_package_transitioned": {
+      "required": [
+        "work_package",
+        "to_state",
+        "evidence"
+      ],
+      "properties": {
+        "work_package": {
+          "type": "string",
+          "min_length": 1
+        },
+        "from_state": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "initiated",
+            "frozen",
+            "commenced",
+            "accepted",
+            "closed",
+            null
+          ]
+        },
+        "to_state": {
+          "type": "string",
+          "enum": [
+            "initiated",
+            "frozen",
+            "commenced",
+            "accepted",
+            "closed"
+          ]
+        },
+        "evidence": {
+          "type": "string",
+          "min_length": 1
+        },
+        "attestor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "operator_text": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "baseline": {
+          "type": "array"
+        },
+        "risk_note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review_receipt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "approved_alterations": {
+          "type": "array"
+        },
+        "decision": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "proceed",
+            "redirect",
+            "pause",
+            "terminate",
+            null
+          ]
+        },
+        "residual_risk": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "configuration_changes": {
+          "type": "array"
+        },
+        "open_departures": {
+          "type": "array"
+        }
+      }
+    },
+    "work_package_changed": {
+      "required": [
+        "work_package",
+        "rung",
+        "approver",
+        "change"
+      ],
+      "properties": {
+        "work_package": {
+          "type": "string",
+          "min_length": 1
+        },
+        "rung": {
+          "type": "string",
+          "enum": [
+            "pen_and_ink",
+            "change_order",
+            "attachment",
+            "supplement",
+            "alteration",
+            "departure"
+          ]
+        },
+        "approver": {
+          "type": "string",
+          "enum": [
+            "operator",
+            "coordinator"
+          ]
+        },
+        "change": {
+          "type": "string",
+          "min_length": 1
+        },
+        "superseded": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "work_stopped": {
+          "type": "boolean"
+        },
+        "supplement": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "item": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "form": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "deviation",
+            "waiver",
+            null
+          ]
+        },
+        "duration": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "temporary",
+            "permanent",
+            null
+          ]
+        },
+        "clear_by": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
     "blocks": {
       "required": [
         "blocker",

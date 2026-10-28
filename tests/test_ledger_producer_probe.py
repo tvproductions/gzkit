@@ -280,3 +280,41 @@ class CatalogProducerProbeTests(unittest.TestCase):
         with patch.object(catalog_ledger, "VERDICTS", ("SATISFIED", "PASS")):
             observation = probe_producer("req_proof_recorded")
         self.assertEqual(observation.status, "failed")
+
+
+class WorkPackageProducerProbeTests(unittest.TestCase):
+    """The work-package writers book their events and refuse what the grammar refuses (RO-5)."""
+
+    _WRITERS = (
+        ("work_package_transitioned", "record_work_package_transition"),
+        ("work_package_changed", "record_work_package_change"),
+    )
+
+    def test_the_real_writers_book_one_event_each_in_a_disposable_project(self):
+        for event_type, writer in self._WRITERS:
+            with self.subTest(event_type=event_type):
+                observation = probe_producer(event_type)
+                self.assertEqual(observation.status, "verified", observation.error)
+                self.assertEqual(observation.producer, f"gzkit.work_package_ledger.{writer}")
+                self.assertEqual(observation.record_count, 1)
+                self.assertEqual(observation.subject, "WP-01-producer-probe")
+
+    def test_a_writer_that_books_nothing_gets_no_credit(self):
+        for event_type, writer in self._WRITERS:
+            with (
+                self.subTest(event_type=event_type),
+                patch(f"gzkit.work_package_ledger.{writer}", return_value=None),
+            ):
+                observation = probe_producer(event_type)
+                self.assertEqual(observation.status, "failed")
+                self.assertEqual(observation.record_count, 0)
+
+    def test_a_writer_that_refuses_nothing_gets_no_credit(self):
+        from gzkit import work_package_ledger  # noqa: PLC0415
+
+        with patch.object(work_package_ledger, "STATES", ("initiated", "commenced")):
+            observation = probe_producer("work_package_transitioned")
+        self.assertEqual(observation.status, "failed")
+        with patch.object(work_package_ledger, "_refuse", lambda message: None):
+            observation = probe_producer("work_package_changed")
+        self.assertEqual(observation.status, "failed")

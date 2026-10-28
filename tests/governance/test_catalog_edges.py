@@ -259,6 +259,7 @@ class TestAuditOverAProject(unittest.TestCase):
         (self.root / ".gzkit" / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
         self.write("families", [{"code": "H", "band": "product", "name": "H", "scope": "S."}])
         self.write("externals", [])
+        self.write("work_packages", [])
         self.write("outcomes", [_outcome("H1", depends_on=["gate:5"]).model_dump(mode="json")])
         self.write("reqs", [_req("REQ-1", kind="SUPPORT").model_dump(mode="json")])
 

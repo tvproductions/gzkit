@@ -59,6 +59,12 @@
       "purpose": "The requirements catalog's REQs (`REQ-<n>`), empty until RO-5's verbs author them; `gz validate --catalog`.",
       "derivation": "docs/governance/harbor-ro3-requirements-store.md (operator ruling 2026-10-21)"
     },
+    "catalog/work_packages.json": {
+      "owner": "gzkit/models/catalog.py",
+      "kind": "code",
+      "purpose": "The work packages (WP-<NN>-<slug>), delivery or repair, each with its formal work package and OQE; empty until RO-5's verbs author them; `gz validate --catalog`.",
+      "derivation": "docs/governance/harbor-ro5-work-packages.md (operator rulings 2026-10-25 and 2026-10-28; tranche 1 shape, Accept as drafted (Recommended))"
+    },
     "check_scope_membership.json": {
       "owner": "gzkit/governance/trust_audits/gate_callers.py",
       "kind": "code",

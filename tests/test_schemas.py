@@ -100,6 +100,8 @@ from gzkit.events import (
     TypedLedgerEvent,
     UnownedRatchetUpdatedEvent,
     ValidatesEvent,
+    WorkPackageChangedEvent,
+    WorkPackageTransitionedEvent,
     parse_typed_event,
 )
 from gzkit.ledger import ledger_row, pipeline_stage_transition_event
@@ -379,6 +381,9 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     # The requirements catalog's Layer-2 records (drydock RO-3 tranche 2)
     "outcome_transitioned": OutcomeTransitionedEvent,
     "req_proof_recorded": ReqProofRecordedEvent,
+    # The work-package lifecycle and change ladder (drydock RO-5 tranche 1)
+    "work_package_transitioned": WorkPackageTransitionedEvent,
+    "work_package_changed": WorkPackageChangedEvent,
     # Reversible retirement of OBPIs whose parent ADR demoted to pool (GHI #584)
     "obpi_parked": ObpiParkedEvent,
     "obpi_blocked_on_operator": ObpiBlockedOnOperatorEvent,

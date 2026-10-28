@@ -2606,6 +2606,7 @@ Validates the requirements catalog under `data/catalog/`, the store
 | `reqs.json` | `REQ-<n>` requirements, each a member of one outcome (empty until RO-5's verbs author them) |
 | `externals.json` | The roster of external boundaries an outcome may depend on as `external:<slug>` (empty until one is needed) |
 | `delivery_events.json` | The forward rule's delivery event types and its cutover timestamp |
+| `work_packages.json` | `WP-<NN>-<slug>` work packages, delivery or repair, each with its formal work package and objective quality evidence (empty until RO-5's verbs author them; `docs/governance/harbor-ro5-work-packages.md`) |
 
 The structure checks:
 
@@ -2614,7 +2615,18 @@ The structure checks:
   model in `gzkit.models.catalog`;
 - family codes, outcome codes and REQ ids are unique within their file, a retired
   outcome included, since a retired code is kept so it is never reused;
-- an outcome's family letter is in the legend.
+- an outcome's family letter is in the legend;
+- a work package's number is used once, so an id is never reused (RO-5 ruling
+  6); each issue belongs to one package and each alias names one (rulings 2, 6);
+- a delivery package names an outcome `outcomes.json` holds and holds no issue or
+  lane; a repair package names at least one issue, stores its lane and names no
+  outcome (rulings 1 and 4);
+- alteration and departure ids are unique within their package; a temporary
+  departure has a clear-by condition and a permanent one none; a departure on a
+  REQ names one `reqs.json` holds (the 2026-10-28 amendment).
+
+The work-package events, `work_package_transitioned` and `work_package_changed`,
+are read against the store: a package the ledger has booked must keep its record.
 
 Once the structure holds, the edge checks (RO-3 tranche 3):
 
@@ -2647,7 +2659,7 @@ An event names a REQ when any of its values carries a REQ id in either grammar,
 and an outcome when its `outcome` field holds a code `outcomes.json` holds; a TASK
 id never names its REQ by spelling. Events before the cutover are legacy and are
 never read. The rule is advisory until RO-5's verbs can supply an outcome id. The
-freeze lock is RO-5's.
+freeze lock is RO-5's verbs'.
 
 **Usage:**
 
@@ -2665,12 +2677,28 @@ Validated: catalog
 ✓ All validations passed (1 scopes).
 ```
 
+A work-package store breaking two rules, observed on a scratch project (one
+delivery package naming an outcome the catalog lacks, two repair packages sharing
+issue #1183):
+
+```text
+❌ Validation failed with 2 error(s):
+
+   → [catalog] data/catalog/work_packages.json
+    Issues #1183 appear more than once in data/catalog/work_packages.json. Each issue belongs to exactly one repair package (RO-5 ruling 2). The catalog's shape is ruled in docs/governance/harbor-ro3-requirements-store.md (The store), and its families in docs/governance/ieee/requirements-model.md (decision 8.3). Correct the file, then re-run `uv run gz validate --catalog`.
+    Field: work_packages
+
+   → [catalog] data/catalog/work_packages.json
+    Work package WP-01-resume (delivery) names outcome H9, which the catalog does not hold. RO-5 rulings 1, 2, 4 and 6 and the 2026-10-28 amendment rule its shape (docs/governance/harbor-ro5-work-packages.md). The catalog's shape is ruled in docs/governance/harbor-ro3-requirements-store.md (The store), and its families in docs/governance/ieee/requirements-model.md (decision 8.3). Correct the file, then re-run `uv run gz validate --catalog`.
+    Field: work_packages
+```
+
 **Exit codes:**
 
 | Code | Meaning | Recovery |
 |------|---------|----------|
 | 0 | The catalog matches its schemas, structure, edge and BDD alignment checks | — |
-| 3 | A catalog file is missing, unparseable or off its schema, repeats a code or id, holds an outcome in a family the legend lacks, has an edge that does not resolve or a dependency cycle, or a user-facing outcome out of BDD alignment | Correct the file the finding names, then re-run `gz validate --catalog` |
+| 3 | A catalog file is missing, unparseable or off its schema, repeats a code or id, holds an outcome in a family the legend lacks, has an edge that does not resolve or a dependency cycle, a user-facing outcome out of BDD alignment, a work package off RO-5's rulings, or a booked work package missing from the store | Correct the file the finding names, then re-run `gz validate --catalog` |
 
 Runs in the default `gz check` pipeline as **Requirements catalog**.
 

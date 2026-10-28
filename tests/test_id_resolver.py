@@ -258,7 +258,13 @@ class TestLoadIdentityContext(unittest.TestCase):
 def _write_catalog(root: Path, reqs: list[dict[str, Any]]) -> None:
     catalog = root / "data" / "catalog"
     catalog.mkdir(parents=True)
-    for kind, entries in (("families", []), ("outcomes", []), ("externals", []), ("reqs", reqs)):
+    for kind, entries in (
+        ("families", []),
+        ("outcomes", []),
+        ("externals", []),
+        ("work_packages", []),
+        ("reqs", reqs),
+    ):
         payload = {"_doc": "Fixture.", kind: entries}
         (catalog / f"{kind}.json").write_text(json.dumps(payload), encoding="utf-8")
 

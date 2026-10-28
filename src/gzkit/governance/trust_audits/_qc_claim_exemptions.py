@@ -118,6 +118,8 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     # Tranche 4's forward rule reads the registry's types after its cutover; the
     # cutover bounds what is read, and nothing admits a finding.
     "requirements-catalog-forward-rule": EXEMPTS_NONE,
+    # RO-5 tranche 1's work-package store checks; no table or flag admits a finding.
+    "requirements-catalog-work-packages": EXEMPTS_NONE,
     # Runs the MX hangar's hardening guards over the ledger's open sessions. No
     # waiver table, allowlist or flag admits a finding; in-hangar advisory comes
     # from the shared checkpoint every guard passes through, not from this gate,

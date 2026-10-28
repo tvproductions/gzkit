@@ -1580,6 +1580,7 @@ class TestCoversAcceptsACatalogReq(unittest.TestCase):
             ("families", []),
             ("outcomes", []),
             ("externals", []),
+            ("work_packages", []),
             ("reqs", [req]),
         ):
             payload = {"_doc": "Fixture.", kind: entries}
@@ -1605,6 +1606,7 @@ class TestCoversAcceptsACatalogReq(unittest.TestCase):
                 ("families", []),
                 ("outcomes", []),
                 ("externals", []),
+                ("work_packages", []),
                 ("reqs", [req]),
             ):
                 payload = {"_doc": "Fixture.", kind: entries}

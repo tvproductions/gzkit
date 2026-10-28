@@ -1,0 +1,4 @@
+{
+  "_doc": "The work packages of the requirements catalog (docs/governance/harbor-ro5-work-packages.md, drydock RO-5): one record per package, kind delivery (names its outcome) or repair (names its GitHub issues and stores its lane), each holding its formal work package (initial conditions, procedure, test and inspection, system restoration, NA where a section does not apply) and its objective quality evidence. Edited only through gz verbs (ruling 3). No lifecycle state is held here: it lives only in the ledger, as work_package_transitioned and work_package_changed. Shape: src/gzkit/schemas/catalog_work_packages.json; read by gzkit/models/catalog.py; witnessed by `gz validate --catalog`.",
+  "work_packages": []
+}

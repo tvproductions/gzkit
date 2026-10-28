@@ -223,6 +223,11 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         "task_started",
         "unowned_ratchet_updated",
         "validates",
+        # A work package's lifecycle and change ladder (drydock RO-5). A work
+        # package is a catalog record, not a node of this projection, so a move
+        # or a change on one is no lineage between artifacts here.
+        "work_package_changed",
+        "work_package_transitioned",
     }
 )
 

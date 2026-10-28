@@ -23,6 +23,8 @@ from gzkit.events import (
     OutcomeTransitionedEvent,
     ReportPublishedEvent,
     ReqProofRecordedEvent,
+    WorkPackageChangedEvent,
+    WorkPackageTransitionedEvent,
     parse_typed_event,
 )
 from gzkit.models.catalog import CATALOG_FILES, Catalog, load_catalog
@@ -33,6 +35,7 @@ _AUTHOR = "isolated-producer-probe"
 _REQ = "REQ-0.1.0-01-01"
 _OUTCOME = "H1"
 _CATALOG_REQ = "REQ-1"
+_WORK_PACKAGE = "WP-01-producer-probe"
 _BRIEF_PATH = f"design/adr/obpis/{_OBPI}.md"
 _STATEMENT = "Retain the canonical acceptance obligation."
 
@@ -278,6 +281,23 @@ def _seat_catalog(root: Path) -> Catalog:
             }
         ],
         "externals": [],
+        "work_packages": [
+            {
+                "id": _WORK_PACKAGE,
+                "kind": "delivery",
+                "outcome": _OUTCOME,
+                "issues": [],
+                "lane": None,
+                "aliases": [],
+                "initial_conditions": "NA",
+                "procedure": _STATEMENT,
+                "test_and_inspection": "NA",
+                "system_restoration": "NA",
+                "oqe": [],
+                "alterations": [],
+                "departures": [],
+            }
+        ],
     }
     for kind, entries in files.items():
         path = registry_path(root, CATALOG_FILES[kind])
@@ -287,13 +307,16 @@ def _seat_catalog(root: Path) -> Catalog:
     return load_catalog(root)
 
 
-def _expect_refusal(write: Callable[[], object], case: str) -> None:
+def _expect_refusal(
+    write: Callable[[], object], case: str, refusal: type[Exception] | None = None
+) -> None:
     """Require a refusal; a writer that books what the grammar refuses fails its contract."""
     from gzkit.catalog_ledger import CatalogLedgerError  # noqa: PLC0415 - import only when probed
 
+    expected = refusal or CatalogLedgerError
     try:
         write()
-    except CatalogLedgerError:
+    except expected:
         return
     raise ValueError(f"Writer accepted {case}")
 
@@ -372,6 +395,127 @@ def _probe_req_proof(root: Path) -> ProducerObservation:
     )
 
 
+def _probe_work_package_transition(root: Path) -> ProducerObservation:
+    """Initiate a seated package, then try a skip; one move booked, the skip refused.
+
+    Returns:
+        The verified observation.
+
+    Raises:
+        TypeError: The writer persisted another event type.
+        ValueError: The writer booked the wrong record or accepted the skip.
+
+    """
+    from gzkit import work_package_ledger as wpl  # noqa: PLC0415 - the writer; import only when probed
+    from gzkit.ledger import Ledger  # noqa: PLC0415
+
+    catalog = _seat_catalog(root)
+    ledger_path = root / ".gzkit/ledger.jsonl"
+    ledger = Ledger(ledger_path)
+    wpl.record_work_package_transition(
+        catalog,
+        ledger,
+        wpl.TransitionRequest(
+            work_package=_WORK_PACKAGE,
+            to_state="initiated",
+            evidence=_AUTHOR,
+            operator_text=_STATEMENT,
+        ),
+    )
+    skip = wpl.TransitionRequest(work_package=_WORK_PACKAGE, to_state="commenced", evidence=_AUTHOR)
+    _expect_refusal(
+        lambda: wpl.record_work_package_transition(catalog, ledger, skip),
+        "a transition that skips the lifecycle",
+        wpl.WorkPackageLedgerError,
+    )
+    persisted, row = _single_row(ledger_path)
+    event = parse_typed_event(row)
+    if not isinstance(event, WorkPackageTransitionedEvent):
+        msg = "Writer persisted the wrong event type"
+        raise TypeError(msg)
+    if (event.id, event.from_state, event.to_state) != (_WORK_PACKAGE, None, "initiated"):
+        msg = "Transition record disagrees with the initiation"
+        raise ValueError(msg)
+    return ProducerObservation(
+        event_type="work_package_transitioned",
+        producer="gzkit.work_package_ledger.record_work_package_transition",
+        status="verified",
+        ledger_sha256=hashlib.sha256(persisted).hexdigest(),
+        record_count=1,
+        subject=event.id,
+    )
+
+
+def _probe_work_package_change(root: Path) -> ProducerObservation:
+    """Change an initiated package, then try a coordinator's change order; the second refused.
+
+    Returns:
+        The verified observation.
+
+    Raises:
+        TypeError: The writer persisted another event type.
+        ValueError: The writer booked the wrong record or accepted the change order.
+
+    """
+    from gzkit import work_package_ledger as wpl  # noqa: PLC0415 - the writer; import only when probed
+    from gzkit.ledger import Ledger  # noqa: PLC0415
+
+    catalog = _seat_catalog(root)
+    ledger_path = root / ".gzkit/ledger.jsonl"
+    ledger = Ledger(ledger_path)
+    wpl.record_work_package_transition(
+        catalog,
+        ledger,
+        wpl.TransitionRequest(
+            work_package=_WORK_PACKAGE,
+            to_state="initiated",
+            evidence=_AUTHOR,
+            operator_text=_STATEMENT,
+        ),
+    )
+    seated = ledger_path.read_bytes()
+    wpl.record_work_package_change(
+        catalog,
+        ledger,
+        wpl.ChangeRequest(
+            work_package=_WORK_PACKAGE, rung="attachment", approver="operator", change=_STATEMENT
+        ),
+    )
+    order = wpl.ChangeRequest(
+        work_package=_WORK_PACKAGE,
+        rung="change_order",
+        approver="coordinator",
+        change=_STATEMENT,
+        superseded=_STATEMENT,
+        work_stopped=True,
+    )
+    _expect_refusal(
+        lambda: wpl.record_work_package_change(catalog, ledger, order),
+        "a change order the coordinator approved",
+        wpl.WorkPackageLedgerError,
+    )
+    persisted = ledger_path.read_bytes()
+    added = persisted[len(seated) :].decode("utf-8").splitlines()
+    if not persisted.startswith(seated) or len(added) != 1:
+        msg = "Writer must persist exactly one change and nothing for a refusal"
+        raise ValueError(msg)
+    event = parse_typed_event(json.loads(added[0]))
+    if not isinstance(event, WorkPackageChangedEvent):
+        msg = "Writer persisted the wrong event type"
+        raise TypeError(msg)
+    if (event.id, event.rung, event.approver) != (_WORK_PACKAGE, "attachment", "operator"):
+        msg = "Change record disagrees with the attachment"
+        raise ValueError(msg)
+    return ProducerObservation(
+        event_type="work_package_changed",
+        producer="gzkit.work_package_ledger.record_work_package_change",
+        status="verified",
+        ledger_sha256=hashlib.sha256(persisted).hexdigest(),
+        record_count=1,
+        subject=event.id,
+    )
+
+
 _PRODUCERS = {
     "acceptance_recorded": "gzkit.acceptance_store.initialize",
     "report_published": "gzkit.reports.publish_report",
@@ -379,6 +523,8 @@ _PRODUCERS = {
     "mx_session_lease_renewed": "gzkit.commands.mx_cmd.mx_renew_cmd",
     "outcome_transitioned": "gzkit.catalog_ledger.record_outcome_transition",
     "req_proof_recorded": "gzkit.catalog_ledger.record_req_proof",
+    "work_package_transitioned": "gzkit.work_package_ledger.record_work_package_transition",
+    "work_package_changed": "gzkit.work_package_ledger.record_work_package_change",
 }
 
 
@@ -399,6 +545,10 @@ def probe_producer(event_type: str) -> ProducerObservation:
                 return _probe_outcome_transition(root)
             if event_type == "req_proof_recorded":
                 return _probe_req_proof(root)
+            if event_type == "work_package_transitioned":
+                return _probe_work_package_transition(root)
+            if event_type == "work_package_changed":
+                return _probe_work_package_change(root)
             _prepare_acceptance_project(root)
             acceptance_store.initialize(root, _OBPI, _AUTHOR)
             return _observe_acceptance_contract(root)

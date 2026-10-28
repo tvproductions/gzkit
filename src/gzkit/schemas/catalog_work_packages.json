@@ -1,0 +1,265 @@
+{
+  "$defs": {
+    "Alteration": {
+      "additionalProperties": false,
+      "description": "A planned remodel, approved at freeze and accounted for at close (RO-5 amendment 4).",
+      "properties": {
+        "id": {
+          "description": "Unique within its package.",
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "description": {
+          "description": "What the remodel changes.",
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "configuration_change": {
+          "description": "The maintenance-record line it is accounted as.",
+          "enum": [
+            "reconnected",
+            "replaced",
+            "retired"
+          ],
+          "title": "Configuration Change",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "description",
+        "configuration_change"
+      ],
+      "title": "Alteration",
+      "type": "object"
+    },
+    "Departure": {
+      "additionalProperties": false,
+      "description": "A departure from the package's own approved specification (RO-5 amendment 4).",
+      "properties": {
+        "id": {
+          "description": "Unique within its package.",
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "description": {
+          "description": "What the work cannot meet.",
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "form": {
+          "description": "Requested before the work, or after the nonconformance is found.",
+          "enum": [
+            "deviation",
+            "waiver"
+          ],
+          "title": "Form",
+          "type": "string"
+        },
+        "duration": {
+          "description": "How long it stands.",
+          "enum": [
+            "temporary",
+            "permanent"
+          ],
+          "title": "Duration",
+          "type": "string"
+        },
+        "clear_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The clear-by condition; required when temporary, absent when permanent.",
+          "title": "Clear By"
+        },
+        "req": {
+          "anyOf": [
+            {
+              "pattern": "^REQ-[1-9][0-9]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The REQ it departs on, as its scope disposition.",
+          "title": "Req"
+        }
+      },
+      "required": [
+        "id",
+        "description",
+        "form",
+        "duration",
+        "clear_by",
+        "req"
+      ],
+      "title": "Departure",
+      "type": "object"
+    },
+    "WorkPackage": {
+      "additionalProperties": false,
+      "description": "One work package: its formal work package and its objective quality evidence.\n\nRO-5 rulings 1, 4 and 6 and the 2026-10-28 amendment, the shape ruled by the\noperator at tranche 1 (\"Accept as drafted (Recommended)\"). A delivery package\nnames its outcome and holds no lane, which the outcome derives; a repair\npackage names its issues and holds its lane. Lifecycle state lives only in\nthe ledger, so no field carries it.",
+      "properties": {
+        "id": {
+          "description": "`WP-<NN>-<slug>`.",
+          "pattern": "^WP-[0-9]{2,}-[a-z0-9]+(-[a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "description": "Never the id's spelling.",
+          "enum": [
+            "delivery",
+            "repair"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "outcome": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z][1-9][0-9]*(\\.[1-9][0-9]*)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The outcome a delivery package delivers.",
+          "title": "Outcome"
+        },
+        "issues": {
+          "description": "The GitHub issues a repair package carries.",
+          "items": {
+            "type": "integer"
+          },
+          "title": "Issues",
+          "type": "array"
+        },
+        "lane": {
+          "anyOf": [
+            {
+              "enum": [
+                "lite",
+                "heavy"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Stored on a repair package only.",
+          "title": "Lane"
+        },
+        "aliases": {
+          "description": "Drydock names such as `RO-9`.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Aliases",
+          "type": "array"
+        },
+        "initial_conditions": {
+          "description": "Tag-out line items, or NA.",
+          "minLength": 1,
+          "title": "Initial Conditions",
+          "type": "string"
+        },
+        "procedure": {
+          "description": "The task cards, or NA.",
+          "minLength": 1,
+          "title": "Procedure",
+          "type": "string"
+        },
+        "test_and_inspection": {
+          "description": "The REQ baseline, closing test and dock trial, or NA.",
+          "minLength": 1,
+          "title": "Test And Inspection",
+          "type": "string"
+        },
+        "system_restoration": {
+          "description": "The restoration, or NA.",
+          "minLength": 1,
+          "title": "System Restoration",
+          "type": "string"
+        },
+        "oqe": {
+          "description": "Objective quality evidence: receipts, commits, paths.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Oqe",
+          "type": "array"
+        },
+        "alterations": {
+          "description": "The planned remodels.",
+          "items": {
+            "$ref": "#/$defs/Alteration"
+          },
+          "title": "Alterations",
+          "type": "array"
+        },
+        "departures": {
+          "description": "Departures from specification.",
+          "items": {
+            "$ref": "#/$defs/Departure"
+          },
+          "title": "Departures",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "outcome",
+        "issues",
+        "lane",
+        "aliases",
+        "initial_conditions",
+        "procedure",
+        "test_and_inspection",
+        "system_restoration",
+        "oqe",
+        "alterations",
+        "departures"
+      ],
+      "title": "WorkPackage",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "`data/catalog/work_packages.json`, edited only through `gz` verbs (RO-5 ruling 3).",
+  "properties": {
+    "_doc": {
+      "description": "What the file is.",
+      "minLength": 1,
+      "title": "Doc",
+      "type": "string"
+    },
+    "work_packages": {
+      "description": "The work packages.",
+      "items": {
+        "$ref": "#/$defs/WorkPackage"
+      },
+      "title": "Work Packages",
+      "type": "array"
+    }
+  },
+  "required": [
+    "_doc",
+    "work_packages"
+  ],
+  "title": "WorkPackagesFile",
+  "type": "object"
+}
