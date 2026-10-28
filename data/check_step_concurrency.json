@@ -317,6 +317,11 @@
     "tautological test audit": {
       "class": "read_only",
       "measured_seconds": 1.81
+    },
+    "Supply chain audit": {
+      "class": "read_only",
+      "why": "Measured 2026-10-28 (RO-9 tranche 5), run alone against a marker file: `uv audit --locked` reads pyproject.toml and uv.lock and asks the vulnerability service; nothing under the tree was newer afterwards. Full tier only: src/gzkit/check_step_scopes.json drops it from the per-change gate.",
+      "measured_seconds": 1.78
     }
   }
 }

@@ -13,7 +13,7 @@ gz check [OPTIONS]
 | Flag | Description |
 |------|-------------|
 | `--json` | Output results as JSON to stdout |
-| `--full` | Full sweep: the default steps plus `Test`, `Behave`, `Docs build`, `Preflight` and `Guard canary sweep`. CI runs it on Linux on every code push |
+| `--full` | Full sweep: the default steps plus `Test`, `Behave`, `Docs build`, `Preflight`, `Guard canary sweep` and `Supply chain audit`. CI runs it on Linux on every code push |
 | `--cross-platform` | The full sweep minus the steps whose verdict no platform can change. CI runs it on Windows. Cannot be combined with `--full` |
 | `--reuse-verified` | Skip the run when this exact staged tree already passed a check covering the requested scope. Used by the pre-push gate |
 
@@ -23,8 +23,8 @@ Plain `gz check` runs the `change` scope declared in `src/gzkit/check_step_scope
 inside the gzkit package, so every project that installs gzkit runs this gate:
 lint, format, typecheck, every validator, the smoke tier, and `Test (changed)`,
 the tests the change touches. It drops `Test` (the whole unit tier), `Behave`,
-`Docs build`, `Preflight` and `Guard canary sweep` (GHI #1088, #1191). The
-pre-push hook runs this scope.
+`Docs build`, `Preflight`, `Guard canary sweep` (GHI #1088, #1191) and
+`Supply chain audit` (RO-9 tranche 5). The pre-push hook runs this scope.
 
 `Test (changed)` selects test modules two ways: a changed test module exactly,
 and, for a changed production module, every test module whose filename contains
@@ -49,13 +49,22 @@ to an isolated copy of the tree and requires its designated test to fail. It
 exits 3 when a mutant is not killed. A project with no canary registry has
 nothing to sweep.
 
+`Supply chain audit` runs `uv audit --locked`, which asks OSV about every package
+in `uv.lock` and exits 1 on a known vulnerability or a malware (`MAL-`)
+advisory. It needs the network, and offline uv refuses to audit, so the step
+fails rather than passing. A project with no `uv.lock` is refused with exit 3.
+An advisory named in `[tool.uv.audit] ignore` or `ignore-until-fixed` in
+`pyproject.toml` is admitted. The per-change gate drops it because its verdict
+moves with the advisory databases rather than with the change (RO-9 tranche 5).
+
 The `--fast` flag was retired on 2026-10-11 (GHI #1191): the default scope took
 its shape, so it named nothing the default did not.
 
 ### `--cross-platform`
 
 Runs the `cross-platform` scope declared in `src/gzkit/check_step_scopes.json`:
-the full sweep minus `Guard canary sweep` and `Preflight` (GHI #1253). CI runs
+the full sweep minus `Guard canary sweep`, `Preflight` (GHI #1253) and
+`Supply chain audit`, which audits one lock against one service. CI runs
 it on Windows, beside the Linux `--full` run of the same push.
 
 Windows is in the CI matrix to catch one failure class: compared paths, console
@@ -131,7 +140,7 @@ When drift exists, `gz check` appends an advisory section after the blocking che
   ✓ Typecheck
   ✓ Test (changed)
 
-✓ All per-change checks passed. (Behave, Docs build, Guard canary sweep, Preflight, Test are full-tier scope: run `gz check --full` in CI and before a release)
+✓ All per-change checks passed. (Behave, Docs build, Guard canary sweep, Preflight, Supply chain audit, Test are full-tier scope: run `gz check --full` in CI and before a release)
 
 ⚠ Advisory: spec-test-code drift detected
   Unlinked specs (REQs with no test):

@@ -5,10 +5,10 @@ description: Use when the operator asks to upgrade deps, Python, uv, pyproject o
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-26
+last_reviewed: 2026-10-28
 model: haiku
 metadata:
-  skill-version: "1.5.0"
+  skill-version: "1.6.0"
 ---
 
 # gz deps-upgrade
@@ -76,8 +76,10 @@ order, not skipping the floor-bump or the verification step.
    restatement of the version.
 
 4. **Bump pinned (`==`) deps in `pyproject.toml` to current PyPI latest.**
-   Inspect the pinned entries under `[project.optional-dependencies]` and
-   `[dependency-groups]`. For each pinned package, query PyPI:
+   Inspect the pinned entries under `[project.optional-dependencies]`,
+   `[dependency-groups]` and `[tool.uv] build-constraint-dependencies` (the
+   build backend a source-built dependency takes). For each pinned package,
+   query PyPI:
 
    ```bash
    curl -s "https://pypi.org/pypi/<pkg>/json" \
@@ -93,10 +95,12 @@ order, not skipping the floor-bump or the verification step.
    uv lock --upgrade
    ```
 
-6. **Sync the environment to the new lock.**
+6. **Sync the environment to the new lock, with uv's malware check on.**
+   This is where a new version is first installed, so uv refuses any package
+   OSV names as malware before installing it (RO-9 tranche 5).
 
    ```bash
-   uv sync
+   UV_MALWARE_CHECK=1 uv sync --locked --preview-features malware-check
    ```
 
 7. **Raise `>=` floors in `pyproject.toml` to match what got locked.**
@@ -115,7 +119,7 @@ order, not skipping the floor-bump or the verification step.
 
    ```bash
    uv lock
-   uv sync
+   UV_MALWARE_CHECK=1 uv sync --locked --preview-features malware-check
    ```
 
 9. **Verify with full quality gate.**

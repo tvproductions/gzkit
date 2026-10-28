@@ -18,6 +18,12 @@ permissions:
   contents: read
   issues: read
 
+# uv refuses to install a package OSV names as malware (MAL- advisories) before
+# syncing; CI and release are where a new locked version is first installed
+# (RO-9 tranche 5, operator ruling 2026-10-28; `gz validate --astral-discipline`).
+env:
+  UV_MALWARE_CHECK: "1"
+
 jobs:
   cross-reference-staleness:
     runs-on: ubuntu-latest

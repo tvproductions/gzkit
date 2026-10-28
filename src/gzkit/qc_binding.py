@@ -90,6 +90,10 @@ _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
     # `src/`: the population it mutates is the guard functions there. `bound`:
     # a mutant its designated test does not kill exits 3.
     "Guard canary sweep": ("audit", "src/", "bound", "subprocess"),
+    # Enrolled the same commit it joined `gz check` (RO-9 tranche 5). Subject is
+    # `pyproject.toml`, the project facts the lock is resolved from. `bound`: a
+    # known vulnerability or malware advisory in the lock exits 1 and fails the step.
+    "Supply chain audit": ("audit", "pyproject.toml", "bound", "subprocess"),
     "Docs build": ("audit", "docs/", "bound", "subprocess"),
     # One bare `gz validate` gates the whole default tier (GHI #744). Subject is
     # "all" because the tier spans manifest, ledger, docs, briefs and rules.

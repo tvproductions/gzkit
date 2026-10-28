@@ -43,6 +43,12 @@ on:
 permissions:
   contents: read
 
+# uv refuses to install a package OSV names as malware (MAL- advisories) before
+# syncing; CI and release are where a new locked version is first installed
+# (RO-9 tranche 5, operator ruling 2026-10-28; `gz validate --astral-discipline`).
+env:
+  UV_MALWARE_CHECK: "1"
+
 jobs:
   build:
     if: github.event_name == 'push'
@@ -107,6 +113,18 @@ jobs:
         with:
           path: artifacts
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+
+      # The release's software bill of materials: the runtime dependency set the
+      # package ships, exported from the lock with no dependency group (RO-9
+      # tranche 5). It is a release asset beside the binaries.
+      - name: Export the SBOM from the lock
+        run: |
+          mkdir -p artifacts/sbom
+          uv export --format cyclonedx1.5 --locked --no-default-groups \
+            --output-file artifacts/sbom/py-gzkit.cdx.json > /dev/null
+
       # A tag push is not the same event as a first release. Tag repair, a
       # workflow re-run, a force-pushed tag, or a mis-typed `git push --tags`
       # all re-enter this job with the release already published, and the
@@ -126,9 +144,10 @@ jobs:
       #      with fresh builds (asset created_at moved to 2026-08-19T01:34Z).
       #
       # So the discriminator is the artifact set: this workflow is the only
-      # producer of these three files, and a release already carrying all of
-      # them has already been served. Body writes are gated on the release
-      # being absent; asset writes on the artifact set being incomplete.
+      # producer of these four files (three binaries and the SBOM), and a
+      # release already carrying all of them has already been served. Body
+      # writes are gated on the release being absent; asset writes on the
+      # artifact set being incomplete.
       - name: Decide what this tag still needs
         id: existing
         shell: bash
@@ -136,8 +155,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          # Must equal the `artifact` values in the build matrix above, sorted.
-          want="gz-linux,gz-macos,gz.exe"
+          # Must equal the `artifact` values in the build matrix above plus the
+          # SBOM, sorted.
+          want="gz-linux,gz-macos,gz.exe,py-gzkit.cdx.json"
 
           # First fence: serve only the version `main` currently declares. A
           # historical tag re-pushed for reachability repair (GHI #832) must be
@@ -194,7 +214,8 @@ jobs:
           gh release upload "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --clobber \
             artifacts/gz.exe/gz.exe \
             artifacts/gz-linux/gz-linux \
-            artifacts/gz-macos/gz-macos
+            artifacts/gz-macos/gz-macos \
+            artifacts/sbom/py-gzkit.cdx.json
 
   # The distributions are built here and published by `pypi` below, so the
   # job holding the publishing credential runs no build (RO-9 tranche 3).

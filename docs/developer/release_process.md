@@ -66,8 +66,9 @@ If HEAD or the worktree changes after sync, rerun this step.
 
 Create the release from the curated notes. `--target main` creates and pushes
 the tag, which fires `.github/workflows/release.yml`; that workflow attaches the
-built binaries to the release you just created and never rewrites a body that
-already exists.
+built binaries and `py-gzkit.cdx.json`, the CycloneDX SBOM of the runtime
+dependency set exported from `uv.lock`, to the release you just created, and
+never rewrites a body that already exists.
 
 ```zsh
 BODY="$(mktemp)"

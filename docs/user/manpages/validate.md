@@ -2453,6 +2453,7 @@ than validated against its copies. The rules:
 | `version-restated`, `version-disagrees` | A Python version stated anywhere else (Ruff or ty targets, workflow `python-version:`, `uv python install <version>`, a skill), unless `data/astral_exceptions.json` registers it, and then it must agree |
 | `deferred-annotations-unbanned` | A `requires-python` floor of 3.14 or above whose Ruff config (`ruff.toml`, `.ruff.toml` or `[tool.ruff]`) does not ban `__future__.annotations` through `flake8-tidy-imports` `banned-api`; 3.14 defers every annotation, so PEP 563's import does nothing |
 | `lock-unchecked` | Automation runs `uv sync` without `--locked` |
+| `malware-check-off` | A workflow runs `uv sync` or `uv run` without `UV_MALWARE_CHECK` set to `1`, so uv installs a newly locked version without asking OSV whether it is malware |
 | `pip-in-project` | `pip`, `uv pip` or a `requirements*.txt` beside the lock |
 | `setup-python` | A workflow installs Python with `actions/setup-python` instead of uv |
 | `dev-tool-in-extra` | Development tooling in `[project.optional-dependencies]` instead of `[dependency-groups]` |

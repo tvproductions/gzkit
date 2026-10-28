@@ -294,6 +294,13 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     # The grandfather roster belongs to the binding check (a claim with no canary),
     # which this step does not run, and a project with no registry has nothing to sweep.
     "guard-canary-sweep": EXEMPTS_NONE,
+    # --- RO-9 tranche 5 -------------------------------------------------------
+    # uv reads `[tool.uv.audit] ignore` and `ignore-until-fixed` from pyproject.toml
+    # and admits each advisory they name: a project-controlled input, so the step's
+    # exemption is exercised by a registered admit-half control.
+    "supply-chain-audit": "supply-chain-audit-ignored",
+    # The admit half runs the same step and admits nothing of its own.
+    "supply-chain-audit-ignored": EXEMPTS_NONE,
     # --- GHI #1063 ------------------------------------------------------------
     # Each ratchet admits a finding its shrink-only baseline discloses:
     # data/validator_reachability_grandfather.json and

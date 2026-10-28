@@ -10,6 +10,9 @@ per row of the measured population:
   version is a restatement, unless the exception register names it, and then it
   must agree with its home.
 - ``lock-unchecked``: automation syncs with ``uv sync --locked``.
+- ``malware-check-off``: a workflow that syncs (``uv sync``, ``uv run``) sets
+  ``UV_MALWARE_CHECK``, so uv refuses to install a package OSV names as malware
+  where a new version enters the lock (RO-9 tranche 5, operator ruling 2026-10-28).
 - ``pip-in-project``: no ``pip``, ``uv pip`` or ``requirements*.txt`` anywhere in the tree.
 - ``setup-python``: uv provides the interpreter.
 - ``dev-tool-in-extra``: development tooling lives in ``[dependency-groups]``.
@@ -80,6 +83,11 @@ _RTD_PYTHON_RE = re.compile(rf"""^\s*python:\s*["']?(?P<v>{_VERSION})""", re.MUL
 _CLASSIFIER_RE = re.compile(rf"Programming Language :: Python :: (?P<v>{_VERSION})$")
 _UV_SYNC_RE = re.compile(r"\buv sync\b(?P<flags>[^\n]*)")
 _PIP_RE = re.compile(r"\b(?:uv pip|pip install)\b")
+#: Each of these syncs the environment, installing whatever the lock names.
+_UV_INSTALLS_RE = re.compile(r"\buv (?:sync|run)\b")
+_MALWARE_CHECK_ON_RE = re.compile(
+    r"""\bUV_MALWARE_CHECK:\s*["']?(?:1|true)["']?\s*$""", re.MULTILINE
+)
 _NAME_RE = re.compile(r"\s*(?P<name>[A-Za-z0-9][A-Za-z0-9._-]*)")
 
 
@@ -302,23 +310,33 @@ def _yaml_code(text: str) -> str:
     return "\n".join(line for line in text.splitlines() if not line.lstrip().startswith("#"))
 
 
+def _workflow_rules(rel: str, text: str) -> Iterator[Violation]:
+    """Check one workflow; ``text`` is its code, comments dropped.
+
+    Yields:
+        Each violation the workflow carries.
+
+    """
+    if "actions/setup-python" in text:
+        yield Violation(rule="setup-python", file=rel, subject="actions/setup-python")
+    for match in _UV_SYNC_RE.finditer(text):
+        if "--locked" not in match.group("flags"):
+            yield Violation(
+                rule="lock-unchecked", file=rel, subject="uv sync", detail=match.group(0)
+            )
+    for _ in _PIP_RE.finditer(text):
+        yield Violation(rule="pip-in-project", file=rel, subject="pip")
+    if _UV_INSTALLS_RE.search(text) and not _MALWARE_CHECK_ON_RE.search(text):
+        yield Violation(rule="malware-check-off", file=rel, subject="UV_MALWARE_CHECK")
+    if "pypa/gh-action-pypi-publish" in text:
+        yield Violation(rule="publish-not-uv", file=rel, subject="pypa/gh-action-pypi-publish")
+    if re.search(r"\btwine\b", text):
+        yield Violation(rule="publish-not-uv", file=rel, subject="twine")
+
+
 def _automation_rules(root: Path) -> Iterator[Violation]:
     for path in _workflows(root):
-        text = _yaml_code(_read(path))
-        rel = _rel(root, path)
-        if "actions/setup-python" in text:
-            yield Violation(rule="setup-python", file=rel, subject="actions/setup-python")
-        for match in _UV_SYNC_RE.finditer(text):
-            if "--locked" not in match.group("flags"):
-                yield Violation(
-                    rule="lock-unchecked", file=rel, subject="uv sync", detail=match.group(0)
-                )
-        for _ in _PIP_RE.finditer(text):
-            yield Violation(rule="pip-in-project", file=rel, subject="pip")
-        if "pypa/gh-action-pypi-publish" in text:
-            yield Violation(rule="publish-not-uv", file=rel, subject="pypa/gh-action-pypi-publish")
-        if re.search(r"\btwine\b", text):
-            yield Violation(rule="publish-not-uv", file=rel, subject="twine")
+        yield from _workflow_rules(_rel(root, path), _yaml_code(_read(path)))
     for name in (".readthedocs.yaml", ".pre-commit-config.yaml"):
         for _ in _PIP_RE.finditer(_yaml_code(_read(root / name))):
             yield Violation(rule="pip-in-project", file=name, subject="pip")

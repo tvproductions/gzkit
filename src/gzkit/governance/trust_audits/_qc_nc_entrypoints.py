@@ -17,9 +17,17 @@ Split out of ``_qc_negative_controls.py`` for module-size discipline (<=600 line
 `.claude/rules/pythonic.md`).
 """
 
+import contextlib
+import http.server
+import json
+import threading
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from gzkit.core.validation_rules import ValidationError
+
+if TYPE_CHECKING:
+    from collections.abc import Generator, Sequence
 
 
 def _command_fails(command: str, root: Path, *, expected_exit: int) -> int:
@@ -329,6 +337,97 @@ def _ep_guard_canary_sweep(root: Path) -> int:
     result = run_guard_canary_sweep_audit(root)
     caught = result.returncode == 3 and "was not killed (outcome: survived" in result.stdout
     return 1 if caught else 0
+
+
+_OSV_MODIFIED = "2026-01-01T00:00:00Z"
+
+
+def _osv_handler(vuln_ids: Sequence[str]) -> type[http.server.BaseHTTPRequestHandler]:
+    """Answer OSV's two calls: ``/v1/querybatch`` lists the ids, ``/v1/vulns/<id>`` describes one.
+
+    Returns:
+        A request handler class serving ``vuln_ids`` for every query.
+
+    """
+    batch = json.dumps(
+        {"results": [{"vulns": [{"id": v, "modified": _OSV_MODIFIED} for v in vuln_ids]}]}
+    ).encode("utf-8")
+
+    class _Handler(http.server.BaseHTTPRequestHandler):
+        def _answer(self) -> None:
+            self.rfile.read(int(self.headers.get("Content-Length") or 0))
+            if self.path.endswith("/querybatch"):
+                body = batch
+            else:
+                vuln_id = self.path.rsplit("/", 1)[-1]
+                record = {"id": vuln_id, "summary": "planted", "modified": _OSV_MODIFIED}
+                body = json.dumps(record).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(body)
+
+        do_GET = _answer  # noqa: N815 — the name http.server dispatches to
+        do_POST = _answer  # noqa: N815 — the name http.server dispatches to
+
+        def log_message(self, format: str, *args: object) -> None:  # noqa: A002 — stdlib signature
+            """Keep the stub silent; its requests are not the run's output."""
+
+    return _Handler
+
+
+@contextlib.contextmanager
+def osv_stub(vuln_ids: Sequence[str]) -> Generator[str]:
+    """Serve an OSV-shaped service on localhost reporting ``vuln_ids`` for every query.
+
+    Yields:
+        The stub's base URL, for `run_supply_chain_audit`'s ``service_url``.
+
+    """
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), _osv_handler(vuln_ids))
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        yield f"http://127.0.0.1:{server.server_address[1]}"
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join()
+
+
+#: The advisory the stub reports; the admit-half fixture names it in its ignore list.
+NC_ADVISORY = "GHSA-nc00-0000-0000"
+
+
+def _ep_supply_chain_audit(root: Path) -> int:
+    """Run the `Supply chain audit` step against the fixture lock and a stub advisory.
+
+    Exit 1 alone could be uv refusing a stale lock, so the verdict is pinned to the
+    planted advisory's id appearing in the audit's report.
+
+    Returns:
+        1 when the step caught the planted advisory, else 0.
+
+    """
+    from gzkit.quality import run_supply_chain_audit  # noqa: PLC0415 — production path under test
+
+    with osv_stub([NC_ADVISORY]) as url:
+        result = run_supply_chain_audit(root, service_url=url)
+    return int(result.returncode == 1 and NC_ADVISORY in result.stdout)
+
+
+def _ep_supply_chain_audit_admits_ignored(root: Path) -> int:
+    """Truthy only when the step ADMITS an advisory the project's ignore list names.
+
+    Returns:
+        1 when the step passed over the ignored advisory, else 0.
+
+    """
+    from gzkit.quality import run_supply_chain_audit  # noqa: PLC0415 — production path under test
+
+    with osv_stub([NC_ADVISORY]) as url:
+        result = run_supply_chain_audit(root, service_url=url)
+    return int(result.success)
 
 
 def _ep_behave(root: Path) -> int:

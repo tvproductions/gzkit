@@ -82,6 +82,19 @@ required-version = ">=0.13.1"
 # `uv sync` installs both groups by default, so the per-change gate, CI and the
 # release all build the docs from the lock (RO-9 tranche 2).
 default-groups = ["dev", "docs"]
+# The CI matrix (ci.yml): the lock must carry a wheel for every package on each, so a
+# CI sync never builds from source (RO-9 tranche 5). macOS is the release binary's
+# third platform and is not listed: watchdog 6.0.0 (mkdocs, docs group) ships no
+# macOS wheel for Python 3.14, so it builds from its sdist there, under the
+# constraint below.
+required-environments = [
+    "sys_platform == 'linux' and platform_machine == 'x86_64'",
+    "sys_platform == 'win32' and platform_machine == 'AMD64'",
+]
+# A dependency built from source resolves its build backend at build time, outside
+# the lock; this pins it. The one source build is watchdog on macOS, whose sdist
+# declares no build-system and so takes setuptools (measured 2026-10-28: 84.2.1).
+build-constraint-dependencies = ["setuptools==84.2.1"]
 
 [tool.ruff]
 line-length = 100

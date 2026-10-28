@@ -69,6 +69,7 @@ _STEP_GUARD_META: dict[str, tuple[str, int]] = {
     "Test": ("test", _mx_levels.ERROR),
     "Behave": ("behave", _mx_levels.ERROR),
     "Guard canary sweep": ("guard-canary-sweep", _mx_levels.ERROR),
+    "Supply chain audit": ("supply-chain-audit", _mx_levels.ERROR),
     "Docs build": ("docs-build", _mx_levels.ERROR),
     "Validate default scopes": ("validate-default-scopes", _mx_levels.ERROR),
     "Skill audit": ("skill-audit", _mx_levels.ERROR),
@@ -654,6 +655,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         run_skill_audit,
         run_smoke_tier,
         run_status_writer_coverage_audit,
+        run_supply_chain_audit,
         run_surface_fidelity_audit,
         run_task_envelope_coherence_audit,
         run_tautological_debt_audit,
@@ -677,6 +679,9 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         ("Behave", run_behave),
         # Full tier only (GHI #1191): `check_step_scopes.json` drops it per change.
         ("Guard canary sweep", run_guard_canary_sweep_audit),
+        # Full tier only (RO-9 tranche 5): it needs the network, and its verdict
+        # moves with the advisory databases, not with the change.
+        ("Supply chain audit", run_supply_chain_audit),
         ("Docs build", run_mkdocs),
         ("Validate default scopes", run_validate_default_scopes),
         ("Skill audit", run_skill_audit),

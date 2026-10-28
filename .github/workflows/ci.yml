@@ -40,6 +40,12 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# uv refuses to install a package OSV names as malware (MAL- advisories) before
+# syncing; CI and release are where a new locked version is first installed
+# (RO-9 tranche 5, operator ruling 2026-10-28; `gz validate --astral-discipline`).
+env:
+  UV_MALWARE_CHECK: "1"
+
 jobs:
   check:
     # Windows is in the matrix because `.claude/rules/cross-platform.md` declares

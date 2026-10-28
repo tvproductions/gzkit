@@ -85,6 +85,10 @@ QC_CLAIM_POPULATIONS: dict[str, Callable[[], Sequence[str]] | str] = {
     # The sweep reads data/guard_canaries.json itself on every run and applies one
     # verdict to every canary in it, so it cannot pin a literal subset (GHI #1191).
     "guard-canary-sweep": POPULATION_NONE,
+    # uv reads the lock itself on every run and asks the service about every
+    # package in it, so the step cannot pin a literal subset (RO-9 tranche 5).
+    "supply-chain-audit": POPULATION_NONE,
+    "supply-chain-audit-ignored": POPULATION_NONE,
     # Each ratchet reads its subject set from the declaring surface itself on every
     # run -- the live `gz validate` parser, the ledger schema -- and applies one
     # set difference against its baseline uniformly, so it cannot pin a literal

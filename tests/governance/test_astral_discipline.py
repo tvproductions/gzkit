@@ -67,6 +67,8 @@ _EXCEPTIONS = {
 
 _CI = """\
 name: CI
+env:
+  UV_MALWARE_CHECK: "1"
 jobs:
   check:
     steps:
@@ -182,6 +184,21 @@ class TestTheLockIsChecked(unittest.TestCase):
             with self.subTest(flags=flags):
                 ci = _CI.replace("uv sync --locked --all-extras", f"uv sync {flags}".rstrip())
                 self.assertEqual(_rules(**{".github/workflows/ci.yml": ci}), {"lock-unchecked"})
+
+
+class TestAutomationChecksForMalwareBeforeInstalling(unittest.TestCase):
+    """Where a new version enters, uv's malware check runs (operator ruling 2026-10-28)."""
+
+    def test_a_workflow_that_runs_uv_without_the_malware_check_is_a_violation(self) -> None:
+        for env in ('  UV_MALWARE_CHECK: "1"\n', '  UV_MALWARE_CHECK: "0"\n', ""):
+            with self.subTest(env=env):
+                ci = _CI.replace('  UV_MALWARE_CHECK: "1"\n', env)
+                expected = set() if env.endswith('"1"\n') else {"malware-check-off"}
+                self.assertEqual(_rules(**{".github/workflows/ci.yml": ci}), expected)
+
+    def test_a_workflow_that_never_runs_uv_needs_no_malware_check(self) -> None:
+        notes = "name: Notes\njobs:\n  n:\n    steps:\n      - run: gh release view\n"
+        self.assertEqual(_rules(**{".github/workflows/notes.yml": notes}), set())
 
 
 class TestDependenciesLiveInTheProject(unittest.TestCase):

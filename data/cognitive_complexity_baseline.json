@@ -698,11 +698,6 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/astral_discipline.py",
-      "function": "_automation_rules",
-      "score": 18
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/astral_discipline.py",
       "function": "_dependency_rules",
       "score": 17
     },

@@ -127,7 +127,7 @@ Hand edits vs `uv add`; `--locked` vs `--frozen` in CI (RO-9: `--locked`); commi
 and its precision (RO-9: committed, exact patch); tying `.python-version` to `requires-python` (RO-9:
 the pin satisfies the floor, nothing else restates either); pinning uv (RO-9: `required-version`,
 setup-uv reads it); upper bounds on runtime dependencies; which groups exist; `uv_build` over other
-backends (RO-9: `uv_build`, operator ruling 3); upgrade cadence and `exclude-newer` (RO-9 tranche 5);
+backends (RO-9: `uv_build`, operator ruling 3); upgrade cadence and `exclude-newer` (RO-9 tranche 5: no cooldown, ruled 2026-10-28);
 committed exports (RO-9: none); SHA-pinned actions (RO-9: yes, as the guide's examples do); sources in
 published packages; which `uv init` files a project keeps (RO-9 tranche 7); lockfile schema across uv
 minors (RO-9: uv moves first, lock regenerated); lowest-resolution testing.

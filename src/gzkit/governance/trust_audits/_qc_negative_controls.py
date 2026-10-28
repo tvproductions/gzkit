@@ -20,12 +20,17 @@ UN-FORCED — their entrypoints pass no ``fail_closed=True`` (D1 — genuineness
 absolute).
 """
 
+import base64
+import hashlib
 import json
+import subprocess
+import zipfile
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 from gzkit.enforcement import create_fixture_tempdir, enforces, get_enforcement_registry
+from gzkit.executables import resolve_executable
 
 from . import _qc_nc_composite as _cx
 from . import _qc_nc_corpus as _cr
@@ -41,6 +46,8 @@ from ._qc_nc_entrypoints import (
     _ep_astral_discipline_deferred_annotations,
     _ep_catalog_work_packages,
     _ep_model_class_only,
+    _ep_supply_chain_audit,
+    _ep_supply_chain_audit_admits_ignored,
 )
 
 # ---------------------------------------------------------------------------
@@ -575,6 +582,76 @@ def _build_docs_build_validation_floor() -> Path:
         root / "mkdocs.yml",
         "site_name: gzkit-qc-nc\nnav:\n  - Home: index.md\nvalidation:\n  not_found: ignore\n",
     )
+    return root
+
+
+#: The one package the supply-chain fixture locks. The stub OSV service in
+#: ``_qc_nc_entrypoints.osv_stub`` answers for whatever the lock names.
+_NC_WHEEL_FILES = {
+    "ncpkg/__init__.py": "",
+    "ncpkg-1.0.dist-info/METADATA": "Metadata-Version: 2.1\nName: ncpkg\nVersion: 1.0\n",
+    "ncpkg-1.0.dist-info/WHEEL": (
+        "Wheel-Version: 1.0\nGenerator: gzkit-qc-nc\nRoot-Is-Purelib: true\nTag: py3-none-any\n"
+    ),
+}
+
+
+def _write_nc_wheel(path: Path) -> None:
+    """Write a valid pure-Python wheel, RECORD included, so uv locks and audits it offline."""
+    record = []
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(path, "w") as wheel:
+        for name, text in _NC_WHEEL_FILES.items():
+            data = text.encode("utf-8")
+            digest = base64.urlsafe_b64encode(hashlib.sha256(data).digest()).rstrip(b"=")
+            wheel.writestr(name, data)
+            record.append(f"{name},sha256={digest.decode('ascii')},{len(data)}")
+        record.append("ncpkg-1.0.dist-info/RECORD,,")
+        wheel.writestr("ncpkg-1.0.dist-info/RECORD", "\n".join(record) + "\n")
+
+
+def _build_supply_chain_audit() -> Path:
+    """Violation: a locked package the vulnerability service has an advisory for.
+
+    The lock resolves one local wheel through ``find-links`` with no index, so the
+    fixture builds offline; the entrypoint's stub OSV service supplies the
+    advisory. A lock missing or stale would fail the audit for a different reason
+    (exit 3, or uv's lock check), which the entrypoint does not count as a catch.
+
+    Returns:
+        The fixture project root.
+
+    """
+    root = _mkroot("supply-chain-audit")
+    _write_nc_wheel(root / "wheels" / "ncpkg-1.0-py3-none-any.whl")
+    _write(
+        root / "pyproject.toml",
+        "[project]\nname = 'gzkit-qc-nc'\nversion = '0.0.0'\nrequires-python = '>=3.14'\n"
+        "dependencies = ['ncpkg==1.0']\n\n"
+        "[tool.uv]\npackage = false\nno-index = true\nfind-links = ['wheels']\n",
+    )
+    subprocess.run(  # noqa: S603 — fixed argv, executable resolved off PATH
+        [resolve_executable("uv"), "lock", "--offline", "--quiet"],
+        cwd=root,
+        check=True,
+        capture_output=True,
+    )
+    return root
+
+
+def _build_supply_chain_audit_ignored() -> Path:
+    """Admit half: the same lock and advisory, with the advisory in ``[tool.uv.audit] ignore``.
+
+    uv reads the ignore list from the project, so it is a project-controlled admit
+    path (ADR-0.0.74 Boundary Invariant #8), exercised here rather than declared away.
+
+    Returns:
+        The fixture project root.
+
+    """
+    root = _build_supply_chain_audit()
+    with (root / "pyproject.toml").open("a", encoding="utf-8", newline="\n") as handle:
+        handle.write(f"\n[tool.uv.audit]\nignore = ['{_ep.NC_ADVISORY}']\n")
     return root
 
 
@@ -1392,7 +1469,10 @@ def _astral_root(slug: str, *, fresh: bool, ban: bool = True) -> Path:
     steps = "      - run: uv sync --frozen\n"
     if fresh:
         steps += "      - uses: actions/setup-python@v6\n"
-    _write(root / ".github" / "workflows" / "ci.yml", "jobs:\n  c:\n    steps:\n" + steps)
+    _write(
+        root / ".github" / "workflows" / "ci.yml",
+        'env:\n  UV_MALWARE_CHECK: "1"\njobs:\n  c:\n    steps:\n' + steps,
+    )
     held = {
         "rule": "lock-unchecked",
         "file": ".github/workflows/ci.yml",
@@ -2185,6 +2265,12 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
     ("test", _build_test, _ep._ep_test),
     ("behave", _build_behave, _ep._ep_behave),
     ("guard-canary-sweep", _build_guard_canary_sweep, _ep._ep_guard_canary_sweep),
+    ("supply-chain-audit", _build_supply_chain_audit, _ep_supply_chain_audit),
+    (
+        "supply-chain-audit-ignored",
+        _build_supply_chain_audit_ignored,
+        _ep_supply_chain_audit_admits_ignored,
+    ),
     ("docs-build", _build_docs_build, _ep._ep_docs_build),
     (
         "docs-build-validation-floor",

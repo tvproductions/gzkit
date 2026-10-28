@@ -1069,6 +1069,47 @@ def run_mkdocs(project_root: Path) -> QualityResult:
     return run_command("uv run mkdocs build --strict", cwd=project_root)
 
 
+#: `uv audit` is preview on uv 0.13; naming the feature silences the warning, never the audit.
+SUPPLY_CHAIN_AUDIT_ARGV: tuple[str, ...] = (
+    "uv",
+    "audit",
+    "--locked",
+    "--preview-features",
+    "audit-command",
+)
+
+
+def run_supply_chain_audit(project_root: Path, service_url: str | None = None) -> QualityResult:
+    """Audit every locked package against OSV: known vulnerabilities and malware (RO-9 tranche 5).
+
+    The verdict moves with the world, not with the change, and the audit needs the
+    network, so `src/gzkit/check_step_scopes.json` drops this step from the
+    per-change gate; `gz check --full` runs it in CI, at release and in the
+    quality-check chore. Offline, uv refuses (exit 2), so an unreachable service
+    fails the step rather than passing it. ``service_url`` points the audit at
+    another OSV-shaped service; the negative control passes a local stub.
+
+    Returns:
+        The audit's result; exit 3 when the project has no ``uv.lock``.
+
+    """
+    argv = [*SUPPLY_CHAIN_AUDIT_ARGV]
+    if not (project_root / "uv.lock").is_file():
+        return QualityResult(
+            success=False,
+            command=shlex.join(argv),
+            stdout="",
+            stderr="supply chain audit: no uv.lock, so there are no locked packages to audit.\n"
+            "A uv project declares its dependencies once, in pyproject.toml and uv.lock "
+            "(docs/governance/harbor-ro9-astral-toolchain.md § The discipline).\n"
+            "Recovery: run `uv lock`, commit uv.lock, and re-run `uv run gz check --full`.",
+            returncode=3,
+        )
+    if service_url is not None:
+        argv += ["--service-url", service_url]
+    return run_command(argv, cwd=project_root)
+
+
 def run_skill_audit(project_root: Path) -> QualityResult:
     """Run skill lifecycle/parity audit."""
     return run_command("uv run gz skill audit", cwd=project_root)

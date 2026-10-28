@@ -2,7 +2,7 @@
 
 # RO-9 specification — the toolchain realigned to Astral's project discipline
 
-**2026-10-19. Status: tranche 1 landed (the witness, uv and the Astral tools current, Python declared once at 3.14); tranche 2 landed 2026-10-21 (lock discipline: `--locked` everywhere, docs from a locked group, every project tool through `uv run`); tranche 3 landed 2026-10-22 (`uv_build`, `uv publish` with attestations from a credential-only job, `uv version` writing the version); tranche 4 closed against its specification at `559eb82d7` (§ Ruled for tranche 4); tranches 5 to 7 open.** Status line corrected 2026-10-28: it had kept tranche 4 open after the close. Operator: **g0**. Repair order RO-9 of the
+**2026-10-19. Status: tranche 1 landed (the witness, uv and the Astral tools current, Python declared once at 3.14); tranche 2 landed 2026-10-21 (lock discipline: `--locked` everywhere, docs from a locked group, every project tool through `uv run`); tranche 3 landed 2026-10-22 (`uv_build`, `uv publish` with attestations from a credential-only job, `uv version` writing the version); tranche 4 closed against its specification at `559eb82d7` (§ Ruled for tranche 4); tranche 5 landed 2026-10-28 (supply chain, § Ruled for tranche 5); tranches 6 and 7 open.** Status line corrected 2026-10-28: it had kept tranche 4 open after the close. Operator: **g0**. Repair order RO-9 of the
 [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders), mandate item 7: gzkit
 and every project `gz init` scaffolds follow [uv's project model](https://docs.astral.sh/uv/concepts/projects/)
 strictly and use Astral's tools to the maximum, on Python 3.14, with stdlib first and curated
@@ -86,7 +86,7 @@ own baseline.
 | 8 | uv pinned `==0.12.23`, setup-uv v10.2.0, Ruff 0.16.10 | current uv (the docs describe 0.13.x), setup-uv v10.3.0, Ruff 0.17.x; lockfiles may break across uv minors, so uv moves first |
 | 9 | Project tools through unpinned `uvx` (chores, `gz arb ty`) or bare `PATH` (`gz arb ruff`, `gz arb coverage`) | `uv run` for a tool that needs the project; `uvx` for one-off tools only |
 | 10 | `bandit`, `detect-secrets`, `pygount` and `vulture` declared and never invoked | removed |
-| 11 | No `exclude-newer` cooldown, `required-environments`, build constraints, `uv audit` or malware check | adopted (operator ruling 2: preview allowed) |
+| 11 | No `exclude-newer` cooldown, `required-environments`, build constraints, `uv audit` or malware check | adopted (operator ruling 2: preview allowed), the cooldown excepted (§ Ruled for tranche 5) |
 
 **What `gz init` hands an adopter.** `src/gzkit/commands/init_cmd.py` writes `pyproject.toml` by hand:
 Ruff under `[project.optional-dependencies] dev` (a published extra uv does not sync by default),
@@ -105,7 +105,7 @@ hatchling, Ruff's `py313` restated, no `[dependency-groups]`, no ty, no `[tool.u
 | whitespace hooks | Ruff `W` for Python files |
 | hatchling, `twine`, the PyPI action | `uv_build`, `uv build --no-sources`, `uv publish` |
 | hand-written version bumps | `uv version --bump`, with `__init__.py` and the README badge derived from it |
-| the empty security slot | `uv audit` (OSV) and the malware check |
+| no dependency audit | `uv audit` (OSV) at full tier and uv's malware check where a new version is installed; the Gate 5 security slot stays reserved (§ Ruled for tranche 5) |
 | hand-rolled import-boundary tests | kept: the AST allowlist test stays, and `ruff analyze graph` moves to the transitive direction check (GHI #1267; § Amended for tranche 4, 2026-10-24) |
 | no `[tool.ty]` | a `[tool.ty]` table, with the warn-level rules raised |
 | the hand-written scaffold | `uv init` and `uv add` inside `gz init`, where they produce the same project |
@@ -149,7 +149,7 @@ in the same commit. Tranche 1 lands first; 2 to 7 follow in order, because they 
 | 2 | Lock discipline: `--locked` everywhere; a `docs` group replacing `requirements-docs.txt`, `uv pip` and Read the Docs' `pip`; the `docs` extra retired; `release.yml` repaired; every project tool through `uv run`; unused dev dependencies removed; the uv-pre-commit `uv-lock` hook | No lock or tool-provenance row remains |
 | 3 | Build and publish: `uv_build` with `--distribution` and `--wheel-path-literals` ported to its configuration in the same commit; `uv build --no-sources`; `uv publish` with trusted publishing and attestations in separate jobs; `uv version --bump` driving the version surfaces | `gz validate --distribution` passes on a `uv_build` wheel; a dry-run publish succeeds |
 | 4 | Lint and type to the maximum: the Ruff selection widened (`S`, `C901`, `FIX`, `TD`, `W`, `TID251`, preview `DOC`, the `PLR09xx` family), xenon and radon retired for Ruff, complexipy and Lizard (GHI #1183, with the C/C/C contract re-derived and changed verdicts reviewed; complexipy then retired for gzkit's own cognitive score, 2026-10-23), interrogate retired, `[tool.ty]` landed with the warn rules raised, the PEP 563 import removed and `TID251` refusing it with no baseline row (the graph moved to GHI #1267, 2026-10-24) | No lint or type row remains; GHI #1183 closes |
-| 5 | Supply chain: `uv audit` in `gz check`, the malware check, `exclude-newer`, `required-environments` for the CI matrix, build constraints, a CycloneDX export at release | The security slot is filled; the release carries an SBOM |
+| 5 | Supply chain: `uv audit` in `gz check --full`, the malware check where new versions are installed, `required-environments` for the CI matrix, build constraints, a CycloneDX export at release (`exclude-newer` dropped, § Ruled for tranche 5) | `uv audit` gates the full tier; the release carries an SBOM |
 | 6 | Python 3.14 idioms and stdlib first: Ruff's `UP` rules at the 3.14 target, deferred annotations and `annotationlib` where they apply, the 3.14 stdlib APIs over third-party or hand-rolled code (GHI #1184's candidates, adopted unless an exception is recorded), and every runtime dependency re-read against the stdlib | GHI #1184 closes with an adopt or exception record per candidate; every runtime dependency is in the register |
 | 7 | Adopters: `gz init` builds the project through `uv init` and `uv add` (a `dev` group with Ruff and ty, `.python-version`, `uv.lock`, the 3.14 floor, `uv_build`), ships a CI workflow template on setup-uv with `--locked`, and runs the witness on the result; adopter docs give `uv tool install` and `uvx` only | A fresh `gz init` project passes `gz validate --astral-discipline` and `uv lock --check`; the baseline is empty, and RO-9 closes |
 
@@ -245,6 +245,38 @@ cause (Rec.)"*): the `features/**` override went behind a behave stub (`45c62217
 
 **Amended for tranche 4 (2026-10-24): the import-boundary row and the PEP 563 ban.** Measured on Ruff 0.17.1, `ruff analyze graph` reports first-party files only: `core/models.py` imports Pydantic and its entry lists `src/gzkit/skill_contract.py` alone, so the graph cannot carry the core's stdlib-and-Pydantic allowlist, and `TID251` banned-api is a ban list, which cannot state an allowlist either. The hand-written AST test in `tests/policy/test_import_boundaries.py` therefore stays. What the graph does that the test cannot is follow imports transitively, and that reading found `core/id_resolver.py` reaching 76 `cli`/`commands` files through a function-local import at `req_kind_support.py:320`. The operator ruled that work out of this tranche (verbatim *"okay - do 1-3"*, accepting the recommendation to file it), so the graph lands as the direction check under GHI #1267. The `TID251` ban on `__future__.annotations` is ordered after the import's removal (selection *"Remove first, then ban (Rec.)"*): 1,058 files carried it, and holding them would raise `data/ruff_baseline.json` above its `baseline_count` of 4,613 in `data/waiver_ratchet_registry.json`, which a shrink-ratchet forbids. With every copy removed the ban enters with no row.
 
+**Ruled for tranche 5 (2026-10-28).** Read on uv 0.13.6.
+
+- *The security slot.* The specification named `CANONICAL_STEP_COMMANDS["security"]`, the Gate 5
+  scanner slot for `sensitivity: security` OBPIs, which attested REQ-0.0.22-05-03 holds empty for the
+  ADR promoting `pool.agentic-security-review`, and filling it with a dependency audit would let a CVE
+  scan stand in for the security review of code. Ruled by selection, *"Audit in gz check (Rec.)"*: the
+  audit is its own `gz check` step, `Supply chain audit`, and the slot stays reserved, so no attested
+  REQ moves.
+- *Its tier.* `uv audit` needs the network (offline it exits 2, so the step fails closed) and its verdict
+  moves with the advisory databases, not with the change. Ruled by selection, *"Full tier only
+  (Rec.)"*: `gz check --full`, which CI runs on every push and the release and the quality-check chore
+  run; the `change` and `cross-platform` scopes drop it. `[tool.uv.audit] ignore` admits an advisory
+  and is exercised by the `supply-chain-audit-ignored` admit control.
+- *The malware check.* uv's `malware-check` refuses to install a PyPI package OSV lists under a `MAL-`
+  advisory, and runs on every sync, so on every `uv run`: measured, 0.02 s became 0.65 s per call, and
+  offline `uv run` failed outright. Ruled by selection, *"Where new versions enter (Rec.)"*:
+  `UV_MALWARE_CHECK` is set in every workflow that syncs, which the witness's `malware-check-off` rule
+  holds, and in `gz-deps-upgrade`'s sync steps; a local `uv run` does not check. `uv audit` reports a
+  `MAL-` advisory against a package already locked.
+- *`exclude-newer`.* A cooldown protects the moment a new release is resolved, which here is only a
+  deliberate relock: `--locked` everywhere keeps it out otherwise, and it would lag the ruled currency of
+  the Astral tools. The operator asked *"why do we want a cooldown?"* and, on the answer, ruled *"drop
+  it"*.
+- *Build constraints and platforms.* No locked package lacks a wheel on the CI platforms, so
+  `required-environments` names Linux x86_64 and Windows AMD64 and the lock holds them. macOS is left
+  out: watchdog 6.0.0 (mkdocs, the `docs` group) has no macOS wheel for 3.14 and builds from its sdist,
+  which declares no build system and so takes setuptools, resolved at build time outside the lock
+  (84.2.1 when measured). `build-constraint-dependencies` pins it. `uv build` of gzkit itself uses uv's
+  bundled `uv_build` and resolves no build dependency.
+- *The SBOM.* `uv export --format cyclonedx1.5 --locked --no-default-groups`, the runtime set, attached to
+  the release as `py-gzkit.cdx.json` beside the binaries.
+
 **Known uncertainties.** Each is read by the tranche that owns it:
 
 - Whether `uv_build` ships the wheel's non-Python data (the `.md` and `.json` under `src/gzkit`) with
@@ -262,7 +294,9 @@ cause (Rec.)"*): the `features/**` override went behind a behave stub (`45c62217
   smoke test uv's GitHub guide recommends, each built distribution installed into a throwaway
   environment with `uv run --isolated --no-project --with` and its CLI run.
 - Which of `uv check`, `uv format` and `uv audit` are preview on the pinned uv, and what each changes in
-  the `CANONICAL_STEP_COMMANDS` receipts the lockstep tests pin.
+  the `CANONICAL_STEP_COMMANDS` receipts the lockstep tests pin. *Read by tranche 5 for `uv audit`:*
+  preview on uv 0.13.6 (`--preview-features audit-command` names it), and it is a `gz check` step,
+  not a receipt-producing canonical step, so no lockstep test pins it.
 
 ## Before-figures
 
