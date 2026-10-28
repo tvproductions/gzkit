@@ -70,6 +70,7 @@ class TestSearchesAnywhereInTheCommandLine(_HookCase):
             "cd /repo && grep -rn AdvisorDiagnosis .",
             "git status; rg AdvisorDiagnosis src",
             "git log -1 || grep -rn AdvisorDiagnosis src",
+            "git ls-files src | grep AdvisorDiagnosis",
             "echo $(grep -rn AdvisorDiagnosis .)",
             "echo `grep -rn AdvisorDiagnosis .`",
             "FOO=1 grep -rn AdvisorDiagnosis .",
