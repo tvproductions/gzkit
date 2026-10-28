@@ -263,11 +263,14 @@ witness, or earlier at the operator's word:
 6. The in-flight work is disposed.
 7. The toolchain follows Astral's project discipline: the RO-9 witness reads zero for gzkit and for a
    freshly scaffolded project (added 2026-10-19 with RO-9).
-8. § List of discrepancies is empty, each line cleared by its owning order: the tests are adjusted to the new
-   structure and every alarm is back on at full strength, read from `gz mx exit`'s re-run and a green
-   `gz check --full` (added 2026-10-25; renamed from § Punch list 2026-10-28).
-9. The handback amendment is ratified: § List of discrepancies (formerly § Punch list, the compliance register), with every line cleared
-   and each repair order closed through the operator's Gate 5 (replacing the per-commit kept-or-reverted
+8. Every line of § List of discrepancies graded *blocks return to service* is cleared by its owning order: the
+   tests are adjusted to the new structure and every alarm is back on at full strength, read from `gz mx exit`'s
+   re-run and a green `gz check --full` (added 2026-10-25; renamed from § Punch list 2026-10-28). A line graded
+   *due by a named event* need not be cleared; it transfers at the handback with its named holder and event
+   (C12). Amended 2026-10-28 from "is empty" (operator, verbatim choice: *"Blocking lines clear
+   (Recommended)"*), so the exit agrees with the B′ grading and the transfer of custody.
+9. The handback amendment is ratified: § List of discrepancies (formerly § Punch list, the compliance register), with every blocking line cleared,
+   every other open line transferred to its named holder (C12), and each repair order closed through the operator's Gate 5 (replacing the per-commit kept-or-reverted
    list, operator 2026-10-25); this passage log carried; the suspended rules restored. Civil rule
    resumes on the ratification.
 10. The sea trial has passed, before the handback in item 9 is put for ratification (added
