@@ -55,6 +55,8 @@ _HUMAN_ACT = frozenset(
         "gz obpi acceptance",
         # GHI #1161: records the operator's own act of reviewing a canary's mutant.
         "gz canary review",
+        # RO-5 tranche 2: closing a work package is Gate 5, the operator's own act.
+        "gz wp close",
     }
 )
 

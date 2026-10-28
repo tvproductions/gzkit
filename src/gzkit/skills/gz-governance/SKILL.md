@@ -5,9 +5,9 @@ category: agent-operations
 lifecycle_state: active
 disable-model-invocation: true
 owner: gzkit-governance
-last_reviewed: 2026-09-18
+last_reviewed: 2026-10-28
 metadata:
-  skill-version: "0.8.0"
+  skill-version: "0.9.0"
 model: haiku
 ---
 
@@ -32,5 +32,6 @@ model: haiku
 | ontology | `gz-ontology` |
 | health audit | `gz-health-audit` |
 | intent trace | `gz-intent-trace` |
+| work package | `gz-wp` |
 
 Invoke the matched skill directly. See `gz-how` for the flows and the full catalog.

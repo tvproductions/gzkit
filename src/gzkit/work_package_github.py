@@ -43,18 +43,17 @@ def _gh(*args: str) -> str:
 
     """
     try:
-        argv = [resolve_executable("gh"), *args]
+        result = subprocess.run(  # noqa: S603 - gh with fixed subcommands and the package's fields
+            [resolve_executable("gh"), *args],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            check=False,
+        )
     except FileNotFoundError as exc:
         msg = "gh is not on PATH; install the GitHub CLI and run `gh auth login`."
         raise WorkPackageGithubError(msg) from exc
-    result = subprocess.run(  # noqa: S603 - gh with fixed subcommands and the package's own fields
-        argv,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        check=False,
-    )
     if result.returncode != 0:
         msg = f"`gh {' '.join(args[:3])}` failed: {result.stderr.strip() or result.returncode}"
         raise WorkPackageGithubError(msg)

@@ -27,6 +27,7 @@
       "gh-cli.md",
       "guardrail-feedback-prose.md",
       "hexagonal-architecture.md",
+      "mode-contract.md",
       "model-selection.md",
       "models.md",
       "mx-mode.md",
@@ -153,7 +154,8 @@
       "gz-tech-debt-review/SKILL.md",
       "gz-tidy/SKILL.md",
       "gz-validate/SKILL.md",
-      "gz-workflow/SKILL.md"
+      "gz-workflow/SKILL.md",
+      "gz-wp/SKILL.md"
     ],
     "templates": [
       "adr.md",

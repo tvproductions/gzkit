@@ -45,10 +45,14 @@ def _register_wp_record(wp_commands: argparse._SubParsersAction) -> None:
         description="Write a new work-package record with the next id in the one series.",
         epilog=build_epilog(["gz wp new --kind repair --slug astral --issue 1183 --lane lite"]),
     )
-    p_new.add_argument("--kind", required=True, choices=("delivery", "repair"))
+    p_new.add_argument(
+        "--kind", required=True, choices=("delivery", "repair"), help="delivery or repair"
+    )
     p_new.add_argument("--slug", required=True, help="Lowercase words joined by hyphens")
     p_new.add_argument("--outcome", default=None, help="The outcome code (delivery only)")
-    p_new.add_argument("--issue", dest="issues", type=int, action="append", default=[])
+    p_new.add_argument(
+        "--issue", dest="issues", type=int, action="append", default=[], help="Repeatable"
+    )
     p_new.add_argument("--lane", choices=("lite", "heavy"), default=None, help="Repair only")
     p_new.add_argument("--alias", dest="aliases", action="append", default=[], help="RO-<n>")
     p_new.add_argument("--initial-conditions", default="NA", help="Section text, or NA")
@@ -257,14 +261,19 @@ def _register_wp_close_change(wp_commands: argparse._SubParsersAction) -> None:
         description="Close an accepted work package through Gate 5.",
         epilog=build_epilog(
             [
-                "gz wp close WP-01-x --decision proceed --attestor g0 \\",
-                "    --residual-risk R --evidence E",
+                (
+                    "gz wp close WP-01-x --decision proceed --attestor g0 "
+                    "--residual-risk R --evidence E"
+                ),
             ]
         ),
     )
     p_close.add_argument("work_package", help="The work package's id, WP-<NN>-<slug>")
     p_close.add_argument(
-        "--decision", required=True, choices=("proceed", "redirect", "pause", "terminate")
+        "--decision",
+        required=True,
+        choices=("proceed", "redirect", "pause", "terminate"),
+        help="The Gate 5 decision",
     )
     # Human-act verb (GHI #1036): Gate 5 is the operator's own act, so never defaulted.
     p_close.add_argument("--attestor", required=True, help="Gate 5 attestor, never defaulted")
@@ -305,7 +314,9 @@ def _register_wp_close_change(wp_commands: argparse._SubParsersAction) -> None:
     p_change.add_argument(
         "--rung", required=True, choices=_RUNGS, metavar="RUNG", help=", ".join(_RUNGS)
     )
-    p_change.add_argument("--approver", required=True, choices=("operator", "coordinator"))
+    p_change.add_argument(
+        "--approver", required=True, choices=("operator", "coordinator"), help="Who approves"
+    )
     p_change.add_argument("--change", required=True, help="The change made")
     p_change.add_argument("--superseded", default=None, help="The superseded content, kept")
     p_change.add_argument("--work-stopped", action="store_true", help="Change order: work stops")
@@ -317,8 +328,15 @@ def _register_wp_close_change(wp_commands: argparse._SubParsersAction) -> None:
         default=None,
         help="A new alteration's configuration change",
     )
-    p_change.add_argument("--form", choices=("deviation", "waiver"), default=None)
-    p_change.add_argument("--duration", choices=("temporary", "permanent"), default=None)
+    p_change.add_argument(
+        "--form", choices=("deviation", "waiver"), default=None, help="A departure's form"
+    )
+    p_change.add_argument(
+        "--duration",
+        choices=("temporary", "permanent"),
+        default=None,
+        help="A departure's duration",
+    )
     p_change.add_argument("--clear-by", default=None, help="A temporary departure's condition")
     p_change.add_argument("--req", default=None, help="The REQ a departure departs on")
     add_json_flag(p_change)

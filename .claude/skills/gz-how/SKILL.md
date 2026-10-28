@@ -5,10 +5,10 @@ description: Use when the operator asks "how do I …?" or "what can I …?", or
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-10-28
 model: sonnet
 metadata:
-  skill-version: "1.0.2"
+  skill-version: "1.0.3"
 ---
 
 # gz-how
@@ -186,6 +186,7 @@ skill is missing here, so this list cannot fall behind the catalog.
 | Intent | Skill |
 |---|---|
 | enter or leave the maintenance hangar | `gz-mx` |
+| run a repair or delivery as a work package | `gz-wp` |
 
 ### Looking outward
 

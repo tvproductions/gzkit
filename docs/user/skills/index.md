@@ -109,6 +109,7 @@ First-stage intent routers. Pick the namespace that matches your intent, then in
 | [`/gz-state`](gz-state.md) | Query artifact relationships and readiness state |
 | [`/gz-status`](gz-status.md) | Report gate and lifecycle status across ADRs |
 | [`/gz-validate`](gz-validate.md) | Validate governance artifacts against schema rules |
+| [`/gz-wp`](gz-wp.md) | Create, attach issues to, move, change or add evidence to a work package |
 
 ---
 
