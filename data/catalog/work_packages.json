@@ -32,7 +32,12 @@
         "7109e6120 GHI #1183: chore registry, gz-session-handoff and ratchet registry stop naming xenon and Radon as current",
         "989215394 GHI #1183: git-sync template and five docstrings on the C/C/C ceiling",
         "GHI #1183 reviews 2026-10-28: three spec-reviewer subagents (NOT CONFIRMED, NOT CONFIRMED, CONFIRMED after 989215394); closed with evidence on GitHub",
-        "Formal work package reviews 2026-10-28: spec-reviewer FINDINGS (system restoration owed RO-9 lines; dock trial lacked uv lock --check; RO-9 status line stale), all addressed in 088fd76c3 and the record; second spec-reviewer PASS"
+        "Formal work package reviews 2026-10-28: spec-reviewer FINDINGS (system restoration owed RO-9 lines; dock trial lacked uv lock --check; RO-9 status line stale), all addressed in 088fd76c3 and the record; second spec-reviewer PASS",
+        "commit d5db67090 (RO-9 tranche 5, supply chain)",
+        "commit 6689a68f3 (tranche 5 passage-log row)",
+        "arb-red-commit-d5db67090b76-d3d000fdec224ed4bf7f98c257311623",
+        "tests/test_supply_chain_audit.py",
+        "docs/governance/harbor-ro9-astral-toolchain.md § Ruled for tranche 5"
       ],
       "alterations": [],
       "departures": []
