@@ -38,8 +38,8 @@ refresh the landscape and get it on a chore rotation (staleness) - yes, chore it
 
 ## Policy and Guardrails
 
-- **Lane:** Lite. The scan is read-only against governance. Routed moves land
-  through their own governed paths.
+- **Read-only against governance.** The scan writes only its own report; routed
+  moves land through their own governed paths.
 - **Network:** Required (official sites, repositories, release notes).
 - **Primary sources, never memory.** Every snapshot cites the sources it was
   refreshed from (the skill's workflow step 1).
@@ -61,19 +61,33 @@ written in a Markdown doc is illustrative, never authoritative (`AGENTS.md`
 
 ## Workflow
 
-Follow `.gzkit/skills/gz-competitor-radar/SKILL.md` § Workflow in order:
+Follow `.gzkit/skills/gz-competitor-radar/SKILL.md` § Workflow in order.
 
-1. Refresh sources for every competitor in
-   `artifacts/reports/competitor-radar/registry.json`, and run active discovery.
-2. Create the month's scan with
-   `uv run python .gzkit/skills/gz-competitor-radar/scripts/radar.py new-scan --month YYYY-MM`,
-   and author its snapshots, discovered candidates and suggested moves from the
-   evidence.
-3. Render: `uv run python .gzkit/skills/gz-competitor-radar/scripts/radar.py render`.
-4. Validate: `uv run python .gzkit/skills/gz-competitor-radar/scripts/radar.py validate`.
-5. Open the grill discussion, one question at a time. Record the answers into the
-   scan JSON, rerender and revalidate.
-6. Route approved moves. Record rejections.
+### 1. Refresh sources — observe
+
+Refresh sources for every competitor in
+`artifacts/reports/competitor-radar/registry.json`, and run active discovery.
+
+### 2. Author the month's scan — observe
+
+Create the month's scan with
+`uv run python .gzkit/skills/gz-competitor-radar/scripts/radar.py new-scan --month YYYY-MM`,
+and author its snapshots, discovered candidates and suggested moves from the
+evidence.
+
+### 3. Render and validate — observe
+
+`uv run python .gzkit/skills/gz-competitor-radar/scripts/radar.py render`, then
+`uv run python .gzkit/skills/gz-competitor-radar/scripts/radar.py validate`.
+
+### 4. Grill discussion — propose
+
+Open the grill discussion, one question at a time. Record the answers into the
+scan JSON, rerender and revalidate.
+
+### 5. Route moves — propose
+
+Route approved moves through their own governed paths. Record rejections.
 
 ## Acceptance Criteria
 

@@ -3,6 +3,9 @@
 **Lane:** Lite
 **Slug:** `complexity-reduction-xenon`
 
+> **Version 3.1.1 (2026-10-28, GHI #1183):** the remediation and non-authority
+> text stop naming xenon as the current ceiling; the procedure is unchanged.
+>
 > **Version 3.1.0 (2026-10-22, RO-9 tranche 4):** complexipy is retired (operator,
 > verbatim: *"so, this is a poor replacement: \"complexipy\""*). Cognitive
 > complexity is scored by gzkit over CPython's `ast` and held by the same
