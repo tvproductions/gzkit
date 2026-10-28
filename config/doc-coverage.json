@@ -732,6 +732,96 @@
       },
       "governance_relevant": true
     },
+    "wp new": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "wp attach": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "wp initiate": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "wp freeze": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "wp commence": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "wp accept": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "wp close": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "wp change": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "wp show": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
     "handoff decide": {
       "surfaces": {
         "manpage": true,

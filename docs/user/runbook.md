@@ -949,6 +949,30 @@ A canary rebound since your last review (its guard, claim or designated test
 changed) shows up as pending again. A stale binding refuses with exit 3 and
 writes nothing.
 
+**Work packages (drydock RO-5).** A work package is one dated attempt to deliver
+one outcome (`delivery`) or to carry one or more GitHub issues (`repair`). The
+record lives in `data/catalog/work_packages.json` and is written only by
+`gz wp new` and `gz wp attach`; its lifecycle and changes live in the ledger. You
+initiate it, the independent reviewer checks the baseline before you freeze it,
+and you close it through Gate 5:
+
+```bash
+uv run gz wp new --kind repair --slug astral --issue 1183 --lane lite --alias RO-9
+uv run gz wp attach WP-01-astral --issue 1184
+uv run gz wp initiate WP-01-astral --operator-text "<your exact words>"
+uv run gz wp freeze WP-01-astral --risk-note "<note>" --review-receipt <id> --evidence <id>
+uv run gz wp commence WP-01-astral --evidence <what was checked>
+uv run gz wp accept WP-01-astral --evidence <final inspection>
+uv run gz wp close WP-01-astral --decision proceed --attestor g0 --residual-risk "<risk>" --evidence <id>
+uv run gz wp change WP-01-astral --rung change_order --approver operator --work-stopped \
+  --change "<the change>" --superseded "<what it replaces>"
+uv run gz wp show WP-01-astral
+```
+
+The lifecycle moves one step at a time (initiated, frozen, commenced, accepted,
+closed). Pen and ink is the coordinator's; every other rung of the change ladder
+is yours. Any refusal exits 3 and writes nothing.
+
 When the store accretes, declutter it with the governed move-not-delete
 retention verb — `gz handoff archive` relocates handoffs older than the
 threshold into `.gzkit/handoffs/archive/`, skipping any that are lock-coupled or

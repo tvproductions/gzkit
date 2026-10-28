@@ -120,7 +120,7 @@ def _structure_findings(catalog: Catalog) -> list[ValidationError]:
                 f"data/{CATALOG_FILES['families']} does not hold.",
             )
         )
-    return errors + _work_package_findings(catalog)
+    return errors + work_package_findings(catalog)
 
 
 def _kind_breaches(package: WorkPackage, outcomes: frozenset[str]) -> list[str]:
@@ -203,7 +203,7 @@ def _series_findings(packages: tuple[WorkPackage, ...]) -> list[ValidationError]
     )
 
 
-def _work_package_findings(catalog: Catalog) -> list[ValidationError]:
+def work_package_findings(catalog: Catalog) -> list[ValidationError]:
     """Read the work-package store against RO-5's rulings.
 
     The rulings are `docs/governance/harbor-ro5-work-packages.md`'s.

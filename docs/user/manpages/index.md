@@ -94,6 +94,15 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz handoff rulings`](handoff-rulings.md) | Read the append-only settled-ruling corpus carried across sessions |
 | [`gz handoff decide`](handoff-decide.md) | Book the operator's transit decision on a resumed handoff (advisory record; it gates nothing) |
 | [`gz canary review`](canary-review.md) | Record the operator's review of guard mutation canaries as ledger witnesses |
+| [`gz wp new`](wp-new.md) | Write a new work-package record with the next id in the one series (drydock RO-5) |
+| [`gz wp attach`](wp-attach.md) | Attach GitHub issues to a repair package |
+| [`gz wp initiate`](wp-initiate.md) | Initiate a work package on the operator's words |
+| [`gz wp freeze`](wp-freeze.md) | Freeze a work package's REQ baseline after the nine-criteria review |
+| [`gz wp commence`](wp-commence.md) | Record that work has commenced on a frozen work package |
+| [`gz wp accept`](wp-accept.md) | Record final inspection of a commenced work package |
+| [`gz wp close`](wp-close.md) | Close an accepted work package through Gate 5 |
+| [`gz wp change`](wp-change.md) | Record one change on the change ladder, or an alteration or departure |
+| [`gz wp show`](wp-show.md) | Show a work package's record, state and ledger history |
 | [`gz handoff authorize`](handoff-authorize.md) | Deprecated alias for `gz handoff decide` |
 | [`gz handoff archive`](handoff-archive.md) | Move handoffs older than a threshold into `.gzkit/handoffs/archive/` (move-not-delete) |
 | [`gz insights remember`](insights-remember.md) | Append one schema-valid record to the insights store and its ledger pointer |

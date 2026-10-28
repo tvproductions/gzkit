@@ -57,6 +57,12 @@ _LAZY_HANDLERS: dict[str, str] = {
     "airlock_out_cmd": "gzkit.commands.airlock",
     # --- canary group (parser_maintenance) ---
     "canary_review_cmd": "gzkit.commands.canary",
+    # --- wp group (parser_wp, drydock RO-5 tranche 2) ---
+    "wp_attach_cmd": "gzkit.commands.wp",
+    "wp_change_cmd": "gzkit.commands.wp",
+    "wp_new_cmd": "gzkit.commands.wp",
+    "wp_show_cmd": "gzkit.commands.wp",
+    "wp_transition_cmd": "gzkit.commands.wp",
     # --- handoff group (parser_maintenance) ---
     "handoff_archive_cmd": "gzkit.commands.handoff_archive",
     "handoff_authorize_cmd": "gzkit.commands.handoff",

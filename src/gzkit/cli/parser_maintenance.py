@@ -20,6 +20,7 @@ from gzkit.cli.helpers import (
 from gzkit.cli.helpers.attestor_default import default_attestor_from_config
 from gzkit.cli.parser_handler_manifest import _lazy
 from gzkit.cli.parser_handoff import register_handoff_parsers
+from gzkit.cli.parser_wp import register_wp_parsers
 from gzkit.ledger_corrections import CAUSES, DISPOSITIONS
 from gzkit.skills import DEFAULT_MAX_REVIEW_AGE_DAYS
 
@@ -35,6 +36,7 @@ def register_maintenance_parsers(commands: argparse._SubParsersAction) -> None:
     _register_frontmatter_parsers(commands)
     register_handoff_parsers(commands)
     _register_canary_parsers(commands)
+    register_wp_parsers(commands)
 
 
 def _register_canary_parsers(commands: argparse._SubParsersAction) -> None:
