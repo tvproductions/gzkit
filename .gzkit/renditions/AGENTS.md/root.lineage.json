@@ -81,12 +81,12 @@
   "make-llm-stochastic-vibes-inert-anti-vibing-mantra": {
     "owned": true,
     "entry_ids": [
-      "corpus-make-llm-stochastic-vibes-inert-anti-vibing-mantra-2026-09-17T11:39:29.716071+00:00",
-      "corpus-make-llm-stochastic-vibes-inert-anti-vibing-mantra-2026-09-17T11:39:29.868038+00:00"
+      "corpus-make-llm-stochastic-vibes-inert-anti-vibing-mantra-2026-09-17T11:39:29.868038+00:00",
+      "corpus-make-llm-stochastic-vibes-inert-anti-vibing-mantra-2026-10-28T00:57:41.529303+00:00"
     ],
     "byte_span": [
       4361,
-      4773
+      4747
     ]
   },
   "stdlib-first-doctrine-dependency-posture": {
@@ -95,8 +95,8 @@
       "corpus-stdlib-first-doctrine-dependency-posture-2026-09-17T11:39:30.020757+00:00"
     ],
     "byte_span": [
-      4773,
-      5180
+      4747,
+      5154
     ]
   },
   "operator-economy-of-effort-design-dialogue-mode": {
@@ -109,8 +109,8 @@
       "corpus-operator-economy-of-effort-design-dialogue-mode-2026-09-24T10:35:55.289160+00:00"
     ],
     "byte_span": [
-      5180,
-      6041
+      5154,
+      6015
     ]
   },
   "behavior-rules": {
@@ -132,8 +132,8 @@
       "corpus-behavior-rules-2026-10-05T21:33:08.624072+00:00"
     ],
     "byte_span": [
-      6041,
-      8461
+      6015,
+      8435
     ]
   },
   "pattern-discovery": {
@@ -143,8 +143,8 @@
       "corpus-pattern-discovery-2026-10-10T13:36:48.315217+00:00"
     ],
     "byte_span": [
-      8461,
-      8941
+      8435,
+      8915
     ]
   },
   "skills": {
@@ -153,8 +153,8 @@
       "corpus-skills-2026-09-17T11:39:33.116462+00:00"
     ],
     "byte_span": [
-      8941,
-      9106
+      8915,
+      9080
     ]
   },
   "gate-covenant": {
@@ -171,8 +171,8 @@
       "corpus-gate-covenant-2026-10-11T01:06:55.421395+00:00"
     ],
     "byte_span": [
-      9106,
-      11598
+      9080,
+      11572
     ]
   },
   "obpi-acceptance-protocol": {
@@ -186,8 +186,8 @@
       "corpus-obpi-acceptance-protocol-2026-09-24T10:04:51.311314+00:00"
     ],
     "byte_span": [
-      11598,
-      13349
+      11572,
+      13323
     ]
   },
   "execution-rules": {
@@ -201,8 +201,8 @@
       "corpus-execution-rules-2026-10-11T11:16:46.636331+00:00"
     ],
     "byte_span": [
-      13349,
-      15085
+      13323,
+      15059
     ]
   },
   "attestation": {
@@ -213,8 +213,8 @@
       "corpus-attestation-2026-10-05T21:33:07.666420+00:00"
     ],
     "byte_span": [
-      15085,
-      16092
+      15059,
+      16066
     ]
   },
   "defect-fix-routing": {
@@ -226,8 +226,8 @@
       "corpus-defect-fix-routing-2026-09-24T10:04:51.916661+00:00"
     ],
     "byte_span": [
-      16092,
-      16954
+      16066,
+      16928
     ]
   },
   "control-surfaces": {
@@ -236,16 +236,16 @@
       "corpus-control-surfaces-2026-09-17T11:39:37.113322+00:00"
     ],
     "byte_span": [
-      16954,
-      17220
+      16928,
+      17194
     ]
   },
   "local-agent-rules": {
     "owned": false,
     "entry_ids": [],
     "byte_span": [
-      17220,
-      17240
+      17194,
+      17214
     ]
   },
   "operator-doctrine-verbatim-canon": {
@@ -260,8 +260,8 @@
       "corpus-operator-doctrine-verbatim-canon-2026-09-27T20:35:02.678914+00:00"
     ],
     "byte_span": [
-      17240,
-      19914
+      17214,
+      19888
     ]
   },
   "governance-doctrine-surfaces": {
@@ -286,8 +286,8 @@
       "corpus-governance-doctrine-surfaces-2026-10-18T07:45:29.432603+00:00"
     ],
     "byte_span": [
-      19914,
-      23901
+      19888,
+      23875
     ]
   },
   "architectural-boundaries": {
@@ -299,8 +299,8 @@
       "corpus-architectural-boundaries-2026-10-10T13:36:48.462663+00:00"
     ],
     "byte_span": [
-      23901,
-      24785
+      23875,
+      24759
     ]
   }
 }
