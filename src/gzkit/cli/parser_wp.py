@@ -38,7 +38,7 @@ def register_wp_parsers(commands: argparse._SubParsersAction) -> None:
 
 
 def _register_wp_record(wp_commands: argparse._SubParsersAction) -> None:
-    """Register ``gz wp new``, ``attach`` and ``show``."""
+    """Register ``gz wp new``, ``attach``, ``resolve`` and ``show``."""
     p_new = wp_commands.add_parser(
         "new",
         help="Write a new work-package record with the next id",
@@ -96,6 +96,32 @@ def _register_wp_record(wp_commands: argparse._SubParsersAction) -> None:
     p_attach.set_defaults(
         func=lambda a: _lazy("wp_attach_cmd")(
             work_package=a.work_package, issues=a.issues, as_json=a.as_json
+        )
+    )
+
+    p_resolve = wp_commands.add_parser(
+        "resolve",
+        help="Record an issue's close against its repair package",
+        description=(
+            "Record a GitHub issue's close against its repair package (ruling 10).\n"
+            "The package itself closes only through Gate 5 (gz wp close)."
+        ),
+        epilog=build_epilog(
+            ["gz wp resolve WP-01-astral 1183 --commit abc1234 --reviewer spec-reviewer"]
+        ),
+    )
+    p_resolve.add_argument("work_package", help="The work package's id, WP-<NN>-<slug>")
+    p_resolve.add_argument("issue", type=int, help="The GitHub issue number")
+    p_resolve.add_argument("--commit", required=True, help="The fix's commit SHA")
+    p_resolve.add_argument("--reviewer", required=True, help="Who confirmed the fix")
+    add_json_flag(p_resolve)
+    p_resolve.set_defaults(
+        func=lambda a: _lazy("wp_resolve_cmd")(
+            work_package=a.work_package,
+            issue=a.issue,
+            commit=a.commit,
+            reviewer=a.reviewer,
+            as_json=a.as_json,
         )
     )
 

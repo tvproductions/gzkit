@@ -96,6 +96,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz canary review`](canary-review.md) | Record the operator's review of guard mutation canaries as ledger witnesses |
 | [`gz wp new`](wp-new.md) | Write a new work-package record with the next id in the one series (drydock RO-5) |
 | [`gz wp attach`](wp-attach.md) | Attach GitHub issues to a repair package |
+| [`gz wp resolve`](wp-resolve.md) | Record an issue's close against its repair package |
 | [`gz wp initiate`](wp-initiate.md) | Initiate a work package on the operator's words |
 | [`gz wp freeze`](wp-freeze.md) | Freeze a work package's REQ baseline after the nine-criteria review |
 | [`gz wp commence`](wp-commence.md) | Record that work has commenced on a frozen work package |

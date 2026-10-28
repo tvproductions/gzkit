@@ -959,6 +959,7 @@ and you close it through Gate 5:
 ```bash
 uv run gz wp new --kind repair --slug astral --issue 1183 --lane lite --alias RO-9
 uv run gz wp attach WP-01-astral --issue 1184
+uv run gz wp resolve WP-01-astral 1183 --commit <fix-sha> --reviewer <reviewer>
 uv run gz wp initiate WP-01-astral --operator-text "<your exact words>"
 uv run gz wp freeze WP-01-astral --risk-note "<note>" --review-receipt <id> --evidence <id>
 uv run gz wp commence WP-01-astral --evidence <what was checked>
@@ -971,7 +972,10 @@ uv run gz wp show WP-01-astral
 
 The lifecycle moves one step at a time (initiated, frozen, commenced, accepted,
 closed). Pen and ink is the coordinator's; every other rung of the change ladder
-is yours. Any refusal exits 3 and writes nothing.
+is yours. Any refusal exits 3 and writes nothing. Attaching an issue also labels
+it `repair` and comments the package id on it; `ghi-close` records each fixed
+issue with `gz wp resolve`, and the last one's close leaves the package for your
+Gate 5.
 
 When the store accretes, declutter it with the governed move-not-delete
 retention verb — `gz handoff archive` relocates handoffs older than the

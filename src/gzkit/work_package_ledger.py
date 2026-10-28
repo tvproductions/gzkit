@@ -22,6 +22,7 @@ from gzkit.events import (
     BaselinedReq,
     WorkPackageChangedEvent,
     WorkPackageDecision,
+    WorkPackageIssueClosedEvent,
     WorkPackageRung,
     WorkPackageState,
     WorkPackageTransitionedEvent,
@@ -43,6 +44,17 @@ _STATE_FIELDS: dict[str, frozenset[str]] = {
     "closed": frozenset({"decision", "residual_risk", "configuration_changes", "open_departures"}),
 }
 _MOVE_FIELDS = frozenset({"work_package", "to_state", "evidence", "attestor"})
+
+
+class IssueClosure(BaseModel):
+    """One requested `work_package_issue_closed` record (ruling 10)."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    work_package: str = Field(..., description="The repair package's id")
+    issue: int = Field(..., description="The GitHub issue closed")
+    commit: str = Field(..., description="The fix's commit SHA")
+    reviewer: str = Field(..., description="The reviewer who confirmed the fix")
 
 
 class WorkPackageLedgerError(ValueError):
@@ -260,6 +272,64 @@ def record_work_package_change(
             "event": "work_package_changed",
             "id": package.id,
             "change": change.change.strip(),
+        }
+    )
+    ledger.append(ledger_row(event))
+    return event
+
+
+def _closed_issues(ledger: Ledger, work_package: str) -> set[int]:
+    return {
+        int(row.extra["issue"])
+        for row in ledger.query(event_type="work_package_issue_closed")
+        if row.extra.get("work_package") == work_package
+    }
+
+
+def open_issues(catalog: Catalog, ledger: Ledger, work_package: str) -> tuple[int, ...]:
+    """Return the package's issues the ledger has not yet recorded closed.
+
+    Returns:
+        The open issues, in the order the record carries them.
+
+    """
+    closed = _closed_issues(ledger, work_package)
+    return tuple(i for i in _package(catalog, work_package).issues if i not in closed)
+
+
+def record_work_package_issue_closed(
+    catalog: Catalog, ledger: Ledger, closure: IssueClosure
+) -> WorkPackageIssueClosedEvent:
+    """Book an issue's close against its repair package, or refuse it and write nothing.
+
+    Ruling 10: the close of a package's last issue never closes the package, which
+    closes only through Gate 5, so this writer never moves its state.
+
+    Returns:
+        The event booked.
+
+    """
+    package = _package(catalog, closure.work_package)
+    if package.kind != "repair":
+        _refuse(f"Work package {package.id} is a delivery package; it carries no issue.")
+    if closure.issue not in package.issues:
+        _refuse(f"Issue #{closure.issue} is not one {package.id} carries.")
+    state = work_package_state(ledger, package.id)
+    if state in {None, "closed"}:
+        _refuse(
+            f"Work package {package.id} is {state or 'not initiated'}; it takes no issue close."
+        )
+    if closure.issue in _closed_issues(ledger, package.id):
+        _refuse(f"Issue #{closure.issue} is already recorded closed against {package.id}.")
+    if not closure.commit.strip() or not closure.reviewer.strip():
+        _refuse("An issue close names the fix's commit and the reviewer who confirmed it.")
+    event = WorkPackageIssueClosedEvent.model_validate(
+        {
+            **closure.model_dump(),
+            "event": "work_package_issue_closed",
+            "id": package.id,
+            "commit": closure.commit.strip(),
+            "reviewer": closure.reviewer.strip(),
         }
     )
     ledger.append(ledger_row(event))

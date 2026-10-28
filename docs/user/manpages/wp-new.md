@@ -36,12 +36,17 @@ names no outcome; an issue belongs to one package. A record the rules refuse
 exits 3 and nothing is written. No lifecycle state is stored: `gz wp initiate`
 books the first move in the ledger.
 
+A repair package's issues are labeled `repair` and commented with the package
+id on GitHub once the record passes its checks and before it is written (ruling
+7, RO-5 tranche 3), so a failed `gh` call exits 2 and writes nothing. A delivery
+package reaches no GitHub.
+
 The verbs are drydock RO-5 tranche 2; the operator named them on 2026-10-28.
 
 ## Examples
 
 Observed in a scratch project seeded with one family, outcome `H1` and `REQ-1`
-at revision 2:
+at revision 2, with a stub `gh` on `PATH` so no real issue was touched:
 
 ```console
 $ uv run gz wp new --kind repair --slug astral --issue 1183 --lane lite --alias RO-9
@@ -53,7 +58,7 @@ Wrote WP-01-astral (repair).
 | Code | Meaning |
 |------|---------|
 | 0 | The record was written |
-| 2 | Usage error |
+| 2 | Usage error, or a `gh` call failed; nothing was written |
 | 3 | The record breaks a store rule; nothing was written |
 
 ## See also

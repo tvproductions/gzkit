@@ -101,6 +101,7 @@ from gzkit.events import (
     UnownedRatchetUpdatedEvent,
     ValidatesEvent,
     WorkPackageChangedEvent,
+    WorkPackageIssueClosedEvent,
     WorkPackageTransitionedEvent,
     parse_typed_event,
 )
@@ -384,6 +385,8 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     # The work-package lifecycle and change ladder (drydock RO-5 tranche 1)
     "work_package_transitioned": WorkPackageTransitionedEvent,
     "work_package_changed": WorkPackageChangedEvent,
+    # An issue closed against its repair package (drydock RO-5 tranche 3)
+    "work_package_issue_closed": WorkPackageIssueClosedEvent,
     # Reversible retirement of OBPIs whose parent ADR demoted to pool (GHI #584)
     "obpi_parked": ObpiParkedEvent,
     "obpi_blocked_on_operator": ObpiBlockedOnOperatorEvent,

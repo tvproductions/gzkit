@@ -286,21 +286,22 @@ class WorkPackageProducerProbeTests(unittest.TestCase):
     """The work-package writers book their events and refuse what the grammar refuses (RO-5)."""
 
     _WRITERS = (
-        ("work_package_transitioned", "record_work_package_transition"),
-        ("work_package_changed", "record_work_package_change"),
+        ("work_package_transitioned", "record_work_package_transition", "WP-01-producer-probe"),
+        ("work_package_changed", "record_work_package_change", "WP-01-producer-probe"),
+        ("work_package_issue_closed", "record_work_package_issue_closed", "WP-02-producer-probe"),
     )
 
     def test_the_real_writers_book_one_event_each_in_a_disposable_project(self):
-        for event_type, writer in self._WRITERS:
+        for event_type, writer, subject in self._WRITERS:
             with self.subTest(event_type=event_type):
                 observation = probe_producer(event_type)
                 self.assertEqual(observation.status, "verified", observation.error)
                 self.assertEqual(observation.producer, f"gzkit.work_package_ledger.{writer}")
                 self.assertEqual(observation.record_count, 1)
-                self.assertEqual(observation.subject, "WP-01-producer-probe")
+                self.assertEqual(observation.subject, subject)
 
     def test_a_writer_that_books_nothing_gets_no_credit(self):
-        for event_type, writer in self._WRITERS:
+        for event_type, writer, _ in self._WRITERS:
             with (
                 self.subTest(event_type=event_type),
                 patch(f"gzkit.work_package_ledger.{writer}", return_value=None),
@@ -317,4 +318,7 @@ class WorkPackageProducerProbeTests(unittest.TestCase):
         self.assertEqual(observation.status, "failed")
         with patch.object(work_package_ledger, "_refuse", lambda message: None):
             observation = probe_producer("work_package_changed")
+        self.assertEqual(observation.status, "failed")
+        with patch.object(work_package_ledger, "_refuse", lambda message: None):
+            observation = probe_producer("work_package_issue_closed")
         self.assertEqual(observation.status, "failed")

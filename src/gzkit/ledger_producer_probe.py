@@ -24,6 +24,7 @@ from gzkit.events import (
     ReportPublishedEvent,
     ReqProofRecordedEvent,
     WorkPackageChangedEvent,
+    WorkPackageIssueClosedEvent,
     WorkPackageTransitionedEvent,
     parse_typed_event,
 )
@@ -36,6 +37,8 @@ _REQ = "REQ-0.1.0-01-01"
 _OUTCOME = "H1"
 _CATALOG_REQ = "REQ-1"
 _WORK_PACKAGE = "WP-01-producer-probe"
+_REPAIR_PACKAGE = "WP-02-producer-probe"
+_ISSUE = 1
 _BRIEF_PATH = f"design/adr/obpis/{_OBPI}.md"
 _STATEMENT = "Retain the canonical acceptance obligation."
 
@@ -296,7 +299,22 @@ def _seat_catalog(root: Path) -> Catalog:
                 "oqe": [],
                 "alterations": [],
                 "departures": [],
-            }
+            },
+            {
+                "id": _REPAIR_PACKAGE,
+                "kind": "repair",
+                "outcome": None,
+                "issues": [_ISSUE],
+                "lane": "lite",
+                "aliases": [],
+                "initial_conditions": "NA",
+                "procedure": _STATEMENT,
+                "test_and_inspection": "NA",
+                "system_restoration": "NA",
+                "oqe": [],
+                "alterations": [],
+                "departures": [],
+            },
         ],
     }
     for kind, entries in files.items():
@@ -516,6 +534,65 @@ def _probe_work_package_change(root: Path) -> ProducerObservation:
     )
 
 
+def _probe_work_package_issue_closed(root: Path) -> ProducerObservation:
+    """Close an initiated repair package's issue, then try it again; the second refused.
+
+    Returns:
+        The verified observation.
+
+    Raises:
+        TypeError: The writer persisted another event type.
+        ValueError: The writer booked the wrong record or accepted the second close.
+
+    """
+    from gzkit import work_package_ledger as wpl  # noqa: PLC0415 - the writer; import only when probed
+    from gzkit.ledger import Ledger  # noqa: PLC0415
+
+    catalog = _seat_catalog(root)
+    ledger_path = root / ".gzkit/ledger.jsonl"
+    ledger = Ledger(ledger_path)
+    wpl.record_work_package_transition(
+        catalog,
+        ledger,
+        wpl.TransitionRequest(
+            work_package=_REPAIR_PACKAGE,
+            to_state="initiated",
+            evidence=_AUTHOR,
+            operator_text=_STATEMENT,
+        ),
+    )
+    seated = ledger_path.read_bytes()
+    closure = wpl.IssueClosure(
+        work_package=_REPAIR_PACKAGE, issue=_ISSUE, commit=_AUTHOR, reviewer=_AUTHOR
+    )
+    wpl.record_work_package_issue_closed(catalog, ledger, closure)
+    _expect_refusal(
+        lambda: wpl.record_work_package_issue_closed(catalog, ledger, closure),
+        "an issue closed twice against its package",
+        wpl.WorkPackageLedgerError,
+    )
+    persisted = ledger_path.read_bytes()
+    added = persisted[len(seated) :].decode("utf-8").splitlines()
+    if not persisted.startswith(seated) or len(added) != 1:
+        msg = "Writer must persist exactly one issue close and nothing for a refusal"
+        raise ValueError(msg)
+    event = parse_typed_event(json.loads(added[0]))
+    if not isinstance(event, WorkPackageIssueClosedEvent):
+        msg = "Writer persisted the wrong event type"
+        raise TypeError(msg)
+    if (event.id, event.issue) != (_REPAIR_PACKAGE, _ISSUE):
+        msg = "Issue-close record disagrees with the close"
+        raise ValueError(msg)
+    return ProducerObservation(
+        event_type="work_package_issue_closed",
+        producer="gzkit.work_package_ledger.record_work_package_issue_closed",
+        status="verified",
+        ledger_sha256=hashlib.sha256(persisted).hexdigest(),
+        record_count=1,
+        subject=event.id,
+    )
+
+
 _PRODUCERS = {
     "acceptance_recorded": "gzkit.acceptance_store.initialize",
     "report_published": "gzkit.reports.publish_report",
@@ -525,6 +602,7 @@ _PRODUCERS = {
     "req_proof_recorded": "gzkit.catalog_ledger.record_req_proof",
     "work_package_transitioned": "gzkit.work_package_ledger.record_work_package_transition",
     "work_package_changed": "gzkit.work_package_ledger.record_work_package_change",
+    "work_package_issue_closed": "gzkit.work_package_ledger.record_work_package_issue_closed",
 }
 
 
@@ -549,6 +627,8 @@ def probe_producer(event_type: str) -> ProducerObservation:
                 return _probe_work_package_transition(root)
             if event_type == "work_package_changed":
                 return _probe_work_package_change(root)
+            if event_type == "work_package_issue_closed":
+                return _probe_work_package_issue_closed(root)
             _prepare_acceptance_project(root)
             acceptance_store.initialize(root, _OBPI, _AUTHOR)
             return _observe_acceptance_contract(root)

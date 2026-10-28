@@ -1,13 +1,13 @@
 ---
 name: gz-wp
 persona: main-session
-description: Use to create, attach issues to, move or change a work package (WP-<NN>-<slug>) through gz wp.
+description: Use to create, attach issues to, move, change or record an issue close on a work package (WP-<NN>-<slug>) through gz wp.
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-10-28
 metadata:
-  skill-version: "0.1.0"
+  skill-version: "0.2.0"
 model: sonnet
 ---
 
@@ -32,6 +32,17 @@ uv run gz wp new --kind repair --slug <slug> --issue <n> --lane lite [--alias RO
 uv run gz wp new --kind delivery --slug <slug> --outcome <code> [--alteration ID:replaced:<text>]
 uv run gz wp attach <WP-id> --issue <n>
 ```
+
+Attaching an issue, by `new` or `attach`, also labels it `repair` and comments
+the package id on it, aliases in parentheses (ruling 7); the verb creates the
+label when the repository lacks it. If `gh` fails, the verb exits 2 and writes
+nothing; fix `gh` and re-run.
+
+## An issue's close
+
+`ghi-close` records each fixed issue against its repair package (ruling 10):
+`uv run gz wp resolve <WP-id> <n> --commit <fix-sha> --reviewer <reviewer>`.
+The last issue's close never closes the package; it closes only through Gate 5.
 
 ## The lifecycle
 

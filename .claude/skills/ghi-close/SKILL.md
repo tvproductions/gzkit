@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-10-28
 metadata:
-  skill-version: "2.14.0"
+  skill-version: "2.15.0"
 model: opus
 ---
 
@@ -204,7 +204,7 @@ Four-phase protocol: **read**, **execute**, **verify**, **close**.
 | Read | Load GHI; extract prescribed fix or fix options from the body |
 | Execute | Apply the fix via the correct route per AGENTS.md § Defect-fix routing |
 | Verify | Run the evidence block against the landed artifacts |
-| Close | Emit the citation comment and `gh issue close` |
+| Close | Emit the citation comment, `gh issue close`, and record the close against the issue's repair package |
 
 ## Prerequisites
 
@@ -399,6 +399,8 @@ Four-phase protocol: **read**, **execute**, **verify**, **close**.
    )"
    ```
 
+9a. **Record the close against its repair package** (RO-5 ruling 10). When a work package carries the issue (`gz wp show <WP-ID>`; an attached issue carries the `repair` label and the package's comment), run `uv run gz wp resolve <WP-ID> <N> --commit <fix-sha> --reviewer <the Review line's reviewer>`. The last issue's close leaves the package open: it closes only through Gate 5 (`gz wp close`), so report the open issues `resolve` prints and stop there.
+
 10. **Propagate and stop.** Record the close through the permitted surfaces; preserve append-only history and operator-only brief-edit rules. Report references requiring another authorized workflow rather than initiating it. Once accounting and guarded sync finish, stop this work order; do not draw a discovered sibling automatically.
 
 ## Examples
@@ -470,7 +472,6 @@ These thoughts mean STOP — you are about to either leave a corrupted audit tra
 | "The prior close comment said #N is still open, so I can carry that forward" | A prior comment describes the day it was written — the same hearsay problem as a stale blocker, one row up. Re-resolve every `#N` at *this* close (step 7f). GHI #708's note on #573 was true on 2026-07-21 and false when restated on 2026-08-08; nothing in between changed except the world. |
 | "I'll close it now and add the evidence later" | The close comment is the evidence. "Later" never comes. |
 | "This GHI is stale; just close it" | Stale GHIs get `withdrawn` (rule changed) or `won't-fix` (operator-approved risk), not silent closes. Name the disposition. |
-| "Multiple GHIs resolve together; let me close them all with one comment" | Each GHI has its own disposition. Batching conflates them. |
 | "The commit trailer is missing but the fix is obvious" | Missing trailer is a process defect. Amend via a new trailer-bearing commit. |
 | "Won't-fix without operator sign-off is fine for small ones" | Won't-fix is risk acceptance. Unilateral risk acceptance is the scope-creep anti-pattern in a different costume. |
 | "I analyzed the GHI, posted a thorough comment, and left it open — that's the right conservative move" | No. Analysis without execution is busywork; leaving it open is correct only when a Phase 2 escalation blocker holds. |
@@ -485,7 +486,6 @@ These thoughts mean STOP — you are about to either leave a corrupted audit tra
 - **Close comment cites a destination that doesn't exist yet** — "the eventual ADR for this", "should become an OBPI", "operator will route to /gz-design next", "re-route to design pipeline" — these are dead-letter signatures (§ Doctrine — NEVER, EVER, EVER dead-letter a GHI)
 - **`withdrawn` disposition on a GHI whose premise still stands** — `withdrawn` is for premise-evaporated GHIs, not for "this should be an ADR but I haven't authored one yet"
 - **A recorded precondition is honored without being re-derived** — the GHI says "blocked on X" / "sequence after #M" and the agent accepts it rather than reading the surface it names. The blocker describes a past tree (Phase 1 step 1a)
-- Agent posts a long analysis comment and does not close, when no escalation blocker holds
 - **Class-of-failure claim asserts a family in prose with no cause→test table** — "every path inherits it", "all three now hit the same guard", "closed at the root" are the signatures. A family worth claiming is a family worth enumerating; if it cannot be enumerated, say so and scope the claim (step 7b)
 - **A `#N` described as open, blocked, or outstanding that was copied from a prior comment rather than resolved** — especially in `## Related` on a re-close, where the citation is inherited from the close being superseded (step 7f)
 - Close happens before verification steps 7a–7f run

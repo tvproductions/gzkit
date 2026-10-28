@@ -18,3 +18,11 @@ Feature: Work packages run through the gz wp verbs
   Scenario: a package the store does not hold is a user error
     When I run the gz command "wp show WP-99-nothing"
     Then the command exits with code 1
+
+  Scenario: recording an issue close without its reviewer is a usage error
+    When I run the gz command "wp resolve WP-01-x 1183 --commit abc1234"
+    Then the command exits with code 2
+
+  Scenario: an issue close on a package the store does not hold is a user error
+    When I run the gz command "wp resolve WP-99-nothing 1183 --commit abc1234 --reviewer r"
+    Then the command exits with code 1

@@ -17,6 +17,7 @@ from tempfile import TemporaryDirectory
 from gzkit.events import (
     BaselinedReq,
     WorkPackageChangedEvent,
+    WorkPackageIssueClosedEvent,
     WorkPackageTransitionedEvent,
     parse_typed_event,
 )
@@ -33,9 +34,12 @@ from gzkit.models.catalog import (
 from gzkit.ontology.corpus import project_corpus
 from gzkit.work_package_ledger import (
     ChangeRequest,
+    IssueClosure,
     TransitionRequest,
     WorkPackageLedgerError,
+    open_issues,
     record_work_package_change,
+    record_work_package_issue_closed,
     record_work_package_transition,
     work_package_state,
 )
@@ -101,11 +105,12 @@ def _package(wp_id: str, kind: str = "delivery") -> WorkPackage:
 
 
 def _catalog() -> Catalog:
+    astral = _package("WP-02-astral", "repair").model_copy(update={"issues": (1183, 1184)})
     return Catalog(
         families=(),
         outcomes=(_outcome("H1"), _outcome("H2")),
         reqs=(_req(), _req("REQ-2", member_of="H2")),
-        work_packages=(_package("WP-01-resume"), _package("WP-02-astral", "repair")),
+        work_packages=(_package("WP-01-resume"), astral),
     )
 
 
@@ -367,6 +372,66 @@ class ChangeTests(_LedgerCase):
         for step in _LIFECYCLE[1:]:
             self.move(step, **_PAYLOADS[step])
         self.assert_refused(self.change, rung="attachment", approver="operator")
+
+
+class IssueClosedTests(_LedgerCase):
+    """Ruling 10: an issue's close is recorded against its repair package, never closing it."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        request = TransitionRequest(
+            work_package="WP-02-astral", to_state="initiated", evidence="e", operator_text="go"
+        )
+        record_work_package_transition(_catalog(), self.ledger, request)
+
+    def close_issue(self, **fields: object) -> WorkPackageIssueClosedEvent:
+        closure = IssueClosure.model_validate(
+            {"work_package": "WP-02-astral", "issue": 1183, "commit": "abc1234",
+             "reviewer": "spec-reviewer", **fields}
+        )  # fmt: skip
+        return record_work_package_issue_closed(_catalog(), self.ledger, closure)
+
+    def test_the_close_is_booked_with_its_fix_and_reviewer(self) -> None:
+        event = self.close_issue()
+        (_, row) = _rows(self.path)
+        persisted = parse_typed_event(row)
+        self.assertIsInstance(persisted, WorkPackageIssueClosedEvent)
+        self.assertEqual(_unstamped(persisted), _unstamped(event))
+        self.assertEqual(
+            (event.issue, event.commit, event.reviewer), (1183, "abc1234", "spec-reviewer")
+        )
+        self.assertEqual(open_issues(_catalog(), self.ledger, "WP-02-astral"), (1184,))
+
+    def test_the_last_issue_closed_leaves_the_package_in_its_state(self) -> None:
+        self.close_issue()
+        self.close_issue(issue=1184)
+        self.assertEqual(open_issues(_catalog(), self.ledger, "WP-02-astral"), ())
+        self.assertEqual(work_package_state(self.ledger, "WP-02-astral"), "initiated")
+
+    def test_an_issue_the_package_does_not_carry_is_refused(self) -> None:
+        self.assert_refused(self.close_issue, issue=7)
+
+    def test_an_issue_is_closed_against_its_package_once(self) -> None:
+        self.close_issue()
+        self.assert_refused(self.close_issue)
+
+    def test_the_fix_and_the_reviewer_are_named(self) -> None:
+        self.assert_refused(self.close_issue, commit=" ")
+        self.assert_refused(self.close_issue, reviewer="")
+
+    def test_a_delivery_package_carries_no_issue(self) -> None:
+        self.move("initiated", operator_text="go")
+        self.assert_refused(self.close_issue, work_package="WP-01-resume")
+
+    def test_a_package_not_live_takes_no_issue_close(self) -> None:
+        fresh = TemporaryDirectory()
+        self.addCleanup(fresh.cleanup)
+        ledger = Ledger(Path(fresh.name) / "ledger.jsonl")
+        closure = IssueClosure(
+            work_package="WP-02-astral", issue=1183, commit="abc1234", reviewer="r"
+        )
+        with self.assertRaises(WorkPackageLedgerError):
+            record_work_package_issue_closed(_catalog(), ledger, closure)
 
 
 class CorpusTests(_LedgerCase):

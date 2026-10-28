@@ -1812,6 +1812,21 @@ class WorkPackageChangedEvent(_EventBase):
     clear_by: str | None = Field(None, description="A temporary departure's clear-by condition")
 
 
+class WorkPackageIssueClosedEvent(_EventBase):
+    """work_package_issue_closed event — an issue closed against its repair package (RO-5).
+
+    Written only by ``gzkit.work_package_ledger.record_work_package_issue_closed``
+    (ruling 10): the close of a package's last issue never closes the package,
+    which closes only through Gate 5. ``id`` is the work package id.
+    """
+
+    event: Literal["work_package_issue_closed"]
+    work_package: str = Field(..., min_length=1, description="The repair package's id")
+    issue: int = Field(..., ge=1, description="The GitHub issue closed")
+    commit: str = Field(..., min_length=1, description="The fix's commit SHA")
+    reviewer: str = Field(..., min_length=1, description="The reviewer who confirmed the fix")
+
+
 TypedLedgerEvent = Annotated[
     ProjectInitEvent
     | PrdCreatedEvent
@@ -1902,7 +1917,8 @@ TypedLedgerEvent = Annotated[
     | OutcomeTransitionedEvent
     | ReqProofRecordedEvent
     | WorkPackageTransitionedEvent
-    | WorkPackageChangedEvent,
+    | WorkPackageChangedEvent
+    | WorkPackageIssueClosedEvent,
     Field(discriminator="event"),
 ]
 

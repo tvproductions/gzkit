@@ -11,9 +11,11 @@ import json
 import unittest
 from pathlib import Path
 from typing import Any
+from unittest.mock import patch
 
 from gzkit.cli import main
 from gzkit.governance.trust_audits.catalog import audit_catalog
+from gzkit.work_package_github import WorkPackageGithubError
 from tests.commands.common import CliRunner, _quick_init
 
 _OUTCOME = {
@@ -70,6 +72,7 @@ class _WpCase(unittest.TestCase):
         self.enterContext(self.runner.isolated_filesystem())
         _quick_init()
         _seed_catalog()
+        self.tag = self.enterContext(patch("gzkit.commands.wp.tag_issues"))
 
     def gz(self, *args: str, code: int = 0) -> str:
         result = self.runner.invoke(main, ["wp", *args])
@@ -111,6 +114,77 @@ class NewAndAttachTests(_WpCase):
 
     def test_an_unknown_package_exits_1(self) -> None:
         self.gz("attach", "WP-09-ghost", "--issue", "1", code=1)
+
+
+class GithubTaggingTests(_WpCase):
+    """Ruling 7 with the 2026-10-28 rulings: check the edit, tag on GitHub, then write."""
+
+    def test_new_and_attach_tag_only_the_issues_they_add(self) -> None:
+        self.gz(
+            "new", "--kind", "repair", "--slug", "astral", "--issue", "1183",
+            "--lane", "lite", "--alias", "RO-9",
+        )  # fmt: skip
+        self.gz("attach", "WP-01-astral", "--issue", "1184")
+        calls = [call.args for call in self.tag.call_args_list]
+        self.assertEqual(
+            calls, [("WP-01-astral", ("RO-9",), (1183,)), ("WP-01-astral", ("RO-9",), (1184,))]
+        )
+
+    def test_a_delivery_package_reaches_no_github(self) -> None:
+        self.gz("new", "--kind", "delivery", "--slug", "resume", "--outcome", "H1")
+        self.tag.assert_not_called()
+
+    def test_a_refused_edit_reaches_no_github(self) -> None:
+        self.new_repair()
+        self.gz(
+            "new", "--kind", "repair", "--slug", "ruff", "--issue", "1183", "--lane", "lite", code=3
+        )
+        self.assertEqual(self.tag.call_count, 1)
+
+    def test_a_github_failure_writes_nothing_and_exits_2(self) -> None:
+        self.new_repair()
+        self.tag.side_effect = WorkPackageGithubError("gh failed")
+        self.gz("attach", "WP-01-astral", "--issue", "1184", code=2)
+        self.gz(
+            "new", "--kind", "repair", "--slug", "ruff", "--issue", "7", "--lane", "lite", code=2
+        )
+        self.assertEqual([wp["issues"] for wp in _store()], [[1183]])
+
+
+class ResolveTests(_WpCase):
+    """Ruling 10: gz wp resolve books an issue's close; the package closes only through Gate 5."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.new_repair()
+        self.gz("attach", "WP-01-astral", "--issue", "1184")
+        self.gz("initiate", "WP-01-astral", "--operator-text", "go")
+
+    def resolve(self, issue: str, code: int = 0) -> str:
+        return self.gz(
+            "resolve", "WP-01-astral", issue, "--commit", "abc1234",
+            "--reviewer", "spec-reviewer", "--json", code=code,
+        )  # fmt: skip
+
+    def test_resolve_books_the_close_and_reports_the_issues_still_open(self) -> None:
+        reported = json.loads(self.resolve("1183"))
+        (event,) = _ledger_rows("work_package_issue_closed")
+        self.assertEqual((event["issue"], event["commit"]), (1183, "abc1234"))
+        self.assertEqual(reported["open_issues"], [1184])
+
+    def test_the_last_issue_leaves_the_package_open_for_gate_5(self) -> None:
+        self.resolve("1183")
+        reported = json.loads(self.resolve("1184"))
+        self.assertEqual((reported["open_issues"], reported["state"]), ([], "initiated"))
+        shown = json.loads(self.gz("show", "WP-01-astral", "--json"))
+        self.assertEqual(shown["state"], "initiated")
+        self.assertIn("work_package_issue_closed", [row["event"] for row in shown["history"]])
+
+    def test_a_refused_close_exits_3_and_books_nothing(self) -> None:
+        self.resolve("7", code=3)
+        self.resolve("1183")
+        self.resolve("1183", code=3)
+        self.assertEqual(len(_ledger_rows("work_package_issue_closed")), 1)
 
 
 class LifecycleTests(_WpCase):

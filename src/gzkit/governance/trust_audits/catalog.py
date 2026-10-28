@@ -274,7 +274,11 @@ def _booked_findings(ledger: Ledger, catalog: Catalog) -> list[ValidationError]:
     held = {package.id for package in catalog.work_packages}
     booked = {
         str(row.extra.get("work_package"))
-        for event_type in ("work_package_transitioned", "work_package_changed")
+        for event_type in (
+            "work_package_transitioned",
+            "work_package_changed",
+            "work_package_issue_closed",
+        )
         for row in ledger.query(event_type=event_type)
     }
     if missing := sorted(booked - held):

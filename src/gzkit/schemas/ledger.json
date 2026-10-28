@@ -2406,6 +2406,32 @@
         }
       }
     },
+    "work_package_issue_closed": {
+      "required": [
+        "work_package",
+        "issue",
+        "commit",
+        "reviewer"
+      ],
+      "properties": {
+        "work_package": {
+          "type": "string",
+          "min_length": 1
+        },
+        "issue": {
+          "type": "integer",
+          "min": 1
+        },
+        "commit": {
+          "type": "string",
+          "min_length": 1
+        },
+        "reviewer": {
+          "type": "string",
+          "min_length": 1
+        }
+      }
+    },
     "blocks": {
       "required": [
         "blocker",

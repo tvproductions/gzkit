@@ -6,21 +6,30 @@ The verbs the operator named on 2026-10-28 ("gz wp <verb> (Recommended)"):
 `close` book `work_package_transitioned`; `change` books `work_package_changed`;
 `show` reads a package and its ledger history. A refusal of the ruled grammar
 exits 3 and writes nothing; an unknown package exits 1.
+
+Tranche 3 (ruling 7 and the operator's rulings of 2026-10-28): `new` and
+`attach` check the store edit, then label and comment each issue they add on
+GitHub, then write, so a failed `gh` call exits 2 and writes nothing; `resolve`
+books `work_package_issue_closed` (ruling 10) and never closes the package.
 """
 
 from typing import TYPE_CHECKING
 
 from gzkit.cli.formatters import OutputFormatter
 from gzkit.commands.common import ensure_initialized, get_project_root
-from gzkit.core.exceptions import PolicyBreachError, ResourceNotFoundError
+from gzkit.core.exceptions import PolicyBreachError, ResourceNotFoundError, TransientError
 from gzkit.events import BaselinedReq
 from gzkit.ledger import Ledger
 from gzkit.models.catalog import Alteration, Catalog, Departure, WorkPackage, load_catalog
+from gzkit.work_package_github import WorkPackageGithubError, tag_issues
 from gzkit.work_package_ledger import (
     ChangeRequest,
+    IssueClosure,
     TransitionRequest,
     WorkPackageLedgerError,
+    open_issues,
     record_work_package_change,
+    record_work_package_issue_closed,
     record_work_package_transition,
     work_package_state,
 )
@@ -47,11 +56,29 @@ def _held(catalog: Catalog, work_package: str) -> WorkPackage:
     return held
 
 
-def _store(root: Path, catalog: Catalog, package: WorkPackage) -> Catalog:
+def _store(
+    root: Path, catalog: Catalog, package: WorkPackage, added: tuple[int, ...] = ()
+) -> Catalog:
+    """Check the edit, tag the issues it adds on GitHub, then write (tranche 3).
+
+    Returns:
+        The catalog as written.
+
+    Raises:
+        PolicyBreachError: The edit breaks a rule `gz validate --catalog` reads.
+        TransientError: A `gh` call failed; nothing was written.
+
+    """
     try:
         staged = stage(catalog, package)
     except WorkPackageStoreError as exc:
         raise PolicyBreachError(str(exc)) from exc
+    try:
+        if added:
+            tag_issues(package.id, package.aliases, added)
+    except WorkPackageGithubError as exc:
+        msg = f"{exc} Nothing was written; re-run once gh works."
+        raise TransientError(msg) from exc
     write(root, staged)
     return staged
 
@@ -105,7 +132,7 @@ def wp_new_cmd(*, record: dict[str, object], alterations: list[str], as_json: bo
     except ValueError as exc:
         msg = f"The record does not match its schema: {exc}"
         raise PolicyBreachError(msg) from exc
-    _store(root, catalog, package)
+    _store(root, catalog, package, package.issues)
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
     fmt.emit(package if as_json else f"Wrote {package.id} ({package.kind}).")
 
@@ -115,7 +142,7 @@ def wp_attach_cmd(*, work_package: str, issues: list[int], as_json: bool) -> Non
     root, catalog, _ = _context()
     held = _held(catalog, work_package)
     package = held.model_copy(update={"issues": (*held.issues, *issues)})
-    _store(root, catalog, package)
+    _store(root, catalog, package, tuple(issues))
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
     attached = ", ".join(f"#{issue}" for issue in issues)
     fmt.emit(package if as_json else f"Attached {attached} to {package.id}.")
@@ -236,7 +263,11 @@ def wp_show_cmd(*, work_package: str, as_json: bool) -> None:
     package = _held(catalog, work_package)
     history = [
         row.model_dump()
-        for event_type in ("work_package_transitioned", "work_package_changed")
+        for event_type in (
+            "work_package_transitioned",
+            "work_package_changed",
+            "work_package_issue_closed",
+        )
         for row in ledger.query(event_type=event_type)
         if row.extra.get("work_package") == work_package
     ]
@@ -250,5 +281,46 @@ def wp_show_cmd(*, work_package: str, as_json: bool) -> None:
     target = package.outcome or ", ".join(f"#{issue}" for issue in package.issues)
     fmt.emit(f"  delivers: {target}" + (f"  lane: {package.lane}" if package.lane else ""))
     for row in history:
-        move = row.get("to_state") or row.get("rung")
+        move = row.get("to_state") or row.get("rung") or f"#{row.get('issue')}"
         fmt.emit(f"  {row.get('ts')}  {row.get('event')}  {move}")
+
+
+def wp_resolve_cmd(
+    *, work_package: str, issue: int, commit: str, reviewer: str, as_json: bool
+) -> None:
+    """Book an issue's close against its repair package (ruling 10).
+
+    The close of the package's last issue never closes the package, which closes
+    only through Gate 5 (`gz wp close`).
+
+    Raises:
+        PolicyBreachError: The close is one ruling 10 refuses; nothing is booked.
+
+    """
+    _, catalog, ledger = _context()
+    _held(catalog, work_package)
+    closure = IssueClosure(work_package=work_package, issue=issue, commit=commit, reviewer=reviewer)
+    try:
+        event = record_work_package_issue_closed(catalog, ledger, closure)
+    except WorkPackageLedgerError as exc:
+        raise PolicyBreachError(str(exc)) from exc
+    still_open = open_issues(catalog, ledger, work_package)
+    state = work_package_state(ledger, work_package)
+    fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
+    if as_json:
+        fmt.emit(
+            {
+                "event": event.model_dump(mode="json"),
+                "open_issues": list(still_open),
+                "state": state,
+            }
+        )
+        return
+    fmt.emit(f"Recorded #{issue} closed against {work_package} at {event.commit}.")
+    if still_open:
+        fmt.emit(f"  still open: {', '.join(f'#{i}' for i in still_open)}")
+    else:
+        fmt.emit(
+            f"  every issue is closed; {work_package} stays {state} and closes only "
+            "through Gate 5 (gz wp close)."
+        )
