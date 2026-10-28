@@ -312,7 +312,7 @@ class TestStage1AirlockGate(_AirlockEnterCase):
         )
         # Wiring chain: obpi_pipeline_cmd -> _run_airlock_in_diagnostic -> check_airlock_in_gate.
         # The diagnostic is extracted into its own helper to keep obpi_pipeline_cmd under the
-        # xenon C ceiling; the test follows the chain rather than pinning the call to one frame.
+        # complexity ceiling; the test follows the chain rather than pinning the call to one frame.
         pipeline_source = inspect.getsource(obpi_cmd.obpi_pipeline_cmd)
         self.assertIn(
             "_run_airlock_in_diagnostic",

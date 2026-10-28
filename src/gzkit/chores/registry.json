@@ -74,7 +74,7 @@
     {
       "slug": "complexity-reduction-xenon",
       "title": "Complexity Reduction (C/C/C ceiling)",
-      "version": "3.1.0",
+      "version": "3.1.1",
       "path": ".gzkit/chores/complexity-reduction-xenon",
       "lane": "lite",
       "timeoutSeconds": 180,
@@ -90,9 +90,9 @@
       },
       "remediation": {
         "category": "vendor_fix",
-        "details": "Refactor the functions over the xenon ceiling by extracting helpers and flattening nesting, keeping behavior and tests unchanged."
+        "details": "Refactor the functions over the C/C/C ceiling (`gz validate --complexity-ceiling`) by extracting helpers and flattening nesting, keeping behavior and tests unchanged."
       },
-      "nonAuthority": "Never changes behavior, a public import, a CLI contract or a test's semantics; never suppresses a finding with noqa or an ignore comment. Never moves the gate from xenon C to the threshold table's block band; that conflict awaits an operator ruling.",
+      "nonAuthority": "Never changes behavior, a public import, a CLI contract or a test's semantics; never suppresses a finding with noqa or an ignore comment. Never moves the ceiling from Ruff's max-complexity and the cognitive ceiling to the threshold table's block band; that conflict awaits an operator ruling.",
       "governingRule": ".gzkit/rules/pythonic.md \u00a7 Size Limits & Refactoring"
     },
     {
@@ -521,7 +521,7 @@
     {
       "slug": "pythonic-design-pattern-application",
       "title": "Pythonic Design Pattern Application (Before/After Evidence Capture)",
-      "version": "1.2.3",
+      "version": "1.2.4",
       "path": ".gzkit/chores/pythonic-design-pattern-application",
       "lane": "lite",
       "timeoutSeconds": 180,
@@ -539,7 +539,7 @@
         "category": "vendor_fix",
         "details": "Apply a detected Pythonic rewrite under TDD with before/after complexity and SLOC evidence."
       },
-      "nonAuthority": "Never applies a rewrite with no detection row, regresses xenon, or bundles two rewrites in one evidence file.",
+      "nonAuthority": "Never applies a rewrite with no detection row, regresses the complexity ceiling, or bundles two rewrites in one evidence file.",
       "governingRule": ".gzkit/rules/pythonic.md \u00a7 Core Principles"
     },
     {

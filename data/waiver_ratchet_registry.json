@@ -155,7 +155,7 @@
     },
     {
       "data_file": "data/module_size_grandfather.json",
-      "gates_step": "module size vs the canonical radon_raw_nloc block band (.gzkit/chores/module-sloc-cap-radon/check_module_size.py)",
+      "gates_step": "module size vs the canonical lizard_file_nloc block band (.gzkit/chores/module-sloc-cap-radon/check_module_size.py)",
       "mechanism": "shrink-ratchet",
       "entries_path": "grandfathered_modules",
       "baseline_count": 5,
