@@ -80,6 +80,17 @@ class TestFastStaticStaysArmed(unittest.TestCase):
                 self.assertIn(hook, entries)
                 self.assertNotIn("gzkit.mx.alarms", entries[hook])
 
+    def test_the_pytest_ban_hook_never_routes_through_the_alarm_switch(self):
+        """Operator, 2026-10-25: "never, ever, ever turn this off: "the pytest ban""."""
+        config = yaml.safe_load(
+            (Path(__file__).resolve().parents[2] / ".pre-commit-config.yaml").read_text(
+                encoding="utf-8"
+            )
+        )
+        entries = {h["id"]: h.get("entry", "") for repo in config["repos"] for h in repo["hooks"]}
+        self.assertIn("forbid-pytest", entries)
+        self.assertNotIn("gzkit.mx.alarms", entries["forbid-pytest"])
+
     def test_fast_static_scopes_are_pinned_critical(self):
         levels_by_scope = {e.stem: e.level for e in VALIDATOR_REGISTRY}
         for scope in self._SCOPES:
