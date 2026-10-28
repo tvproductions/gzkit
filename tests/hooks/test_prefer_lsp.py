@@ -16,12 +16,12 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from gzkit.hooks.scripts.lsp import _prefer_lsp_script
+from gzkit.hooks.scripts.lsp import prefer_lsp_script
 
 
 def _load_hook() -> types.ModuleType:
     module = types.ModuleType("prefer_lsp_hook")
-    exec(compile(_prefer_lsp_script(), "prefer-lsp.py", "exec"), module.__dict__)  # noqa: S102
+    exec(compile(prefer_lsp_script(), "prefer-lsp.py", "exec"), module.__dict__)  # noqa: S102
     return module
 
 

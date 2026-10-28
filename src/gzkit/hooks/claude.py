@@ -12,7 +12,7 @@ from pathlib import Path
 from gzkit.config import GzkitConfig
 from gzkit.hooks.core import _ruff_format_dir
 from gzkit.hooks.scripts.ghi import _ghi_triage_chat_silence_script
-from gzkit.hooks.scripts.lsp import _prefer_lsp_script
+from gzkit.hooks.scripts.lsp import prefer_lsp_script
 from gzkit.hooks.scripts.mx import _mx_awareness_script
 from gzkit.hooks.scripts.pipeline import (
     _pipeline_completion_reminder_script,
@@ -600,7 +600,7 @@ def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) ->
         ("pipeline-gate.py", _pipeline_gate_script, True),
         ("pipeline-completion-reminder.py", _pipeline_completion_reminder_script, True),
         ("ghi-triage-chat-silence.py", _ghi_triage_chat_silence_script, True),
-        ("prefer-lsp.py", _prefer_lsp_script, True),
+        ("prefer-lsp.py", prefer_lsp_script, True),
         ("session-start-advisement.py", _session_start_advisement_script, True),
         ("session-exit-bookmark.py", _session_exit_bookmark_script, True),
         ("verifier-pipe-gate.py", _verifier_pipe_gate_script, True),

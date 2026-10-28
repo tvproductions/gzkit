@@ -3,7 +3,7 @@
 from textwrap import dedent
 
 
-def _prefer_lsp_script() -> str:
+def prefer_lsp_script() -> str:
     """Return the prefer-LSP PreToolUse hook script.
 
     PreToolUse hook on Grep, Bash and PowerShell. The first text search for a

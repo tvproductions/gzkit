@@ -29,7 +29,7 @@ from gzkit.hooks.core import (
     is_governance_artifact,
     write_hook_script,
 )
-from gzkit.hooks.scripts.lsp import _prefer_lsp_script
+from gzkit.hooks.scripts.lsp import prefer_lsp_script
 from gzkit.lock_manager import LockData, write_lock
 from gzkit.traceability import covers
 from tests.commands.common import argv_by_tool_name
@@ -1040,7 +1040,7 @@ class TestPreferLspHookDelivery(unittest.TestCase):
     def test_rendered_hook_parses_on_a_pre_314_grammar(self) -> None:
         # The hook runs in the adopter's interpreter; 3.14-only syntax made it
         # a SyntaxError, so the hook failed open, on any older Python.
-        ast.parse(_prefer_lsp_script(), feature_version=(3, 10))
+        ast.parse(prefer_lsp_script(), feature_version=(3, 10))
 
 
 class TestPostEditRuffHook(unittest.TestCase):
