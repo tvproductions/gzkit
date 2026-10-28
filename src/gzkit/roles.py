@@ -192,7 +192,7 @@ PLANNER = RoleDefinition(
         ],
     ),
     agent_spec=AgentFileSpec(
-        tools=["Read", "Glob", "Grep", "Bash", "Agent"],
+        tools=["Read", "Glob", "Grep", "LSP", "Bash", "Agent"],
         model="inherit",
         permission_mode="default",
         max_turns=20,
@@ -224,7 +224,7 @@ IMPLEMENTER = RoleDefinition(
         ],
     ),
     agent_spec=AgentFileSpec(
-        tools=["Read", "Edit", "Write", "Glob", "Grep", "Bash"],
+        tools=["Read", "Edit", "Write", "Glob", "Grep", "LSP", "Bash"],
         model="inherit",
         permission_mode="acceptEdits",
         max_turns=25,
@@ -254,7 +254,7 @@ REVIEWER = RoleDefinition(
         ],
     ),
     agent_spec=AgentFileSpec(
-        tools=["Read", "Glob", "Grep"],
+        tools=["Read", "Glob", "Grep", "LSP"],
         model="inherit",
         permission_mode="default",
         max_turns=15,
@@ -284,7 +284,7 @@ NARRATOR = RoleDefinition(
         ],
     ),
     agent_spec=AgentFileSpec(
-        tools=["Read", "Glob", "Grep", "Bash"],
+        tools=["Read", "Glob", "Grep", "LSP", "Bash"],
         model="inherit",
         permission_mode="default",
         max_turns=10,

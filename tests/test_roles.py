@@ -1,9 +1,11 @@
 """Tests for agent role taxonomy and handoff protocols."""
 
 import unittest
+from pathlib import Path
 
 from pydantic import ValidationError
 
+from gzkit.pipeline_runtime import AGENT_FILE_MAP
 from gzkit.roles import (
     CONFLICT_PRECEDENCE,
     ROLE_NAMES,
@@ -17,6 +19,7 @@ from gzkit.roles import (
     ReviewResult,
     ReviewVerdict,
     RoleDefinition,
+    RoleName,
     get_role,
     get_roles_for_stage,
     resolve_conflict,
@@ -117,6 +120,36 @@ class TestToolBoundaries(unittest.TestCase):
         violations = validate_tool_boundaries(bad_role)
         self.assertEqual(len(violations), 1)
         self.assertIn("can_write=False", violations[0])
+
+    def test_every_role_can_look_up_python_symbols(self) -> None:
+        """Each role reads code, and CLAUDE.md routes symbol lookups to LSP (GHI #1287)."""
+        for name, role in ROLE_REGISTRY.items():
+            with self.subTest(role=name):
+                self.assertIn("LSP", role.agent_spec.tools)
+
+    def test_agent_files_declare_their_role_grant(self) -> None:
+        """A dispatched agent holds exactly the tools its role declares (GHI #1287).
+
+        Nothing renders the agent frontmatter from the roles, so the two would
+        drift silently; this is the fence. The quality reviewer is a Reviewer.
+        """
+        agent_roles: dict[str, RoleName] = {
+            "Implementer": "Implementer",
+            "Reviewer": "Reviewer",
+            "QualityReviewer": "Reviewer",
+            "Narrator": "Narrator",
+        }
+        repo_root = Path(__file__).resolve().parents[1]
+        for map_role, rel_path in AGENT_FILE_MAP.items():
+            if not rel_path:
+                continue
+            role = get_role(agent_roles[map_role])
+            with self.subTest(agent=rel_path):
+                text = (repo_root / rel_path).read_text(encoding="utf-8")
+                frontmatter = text.split("---", 2)[1]
+                line = next(ln for ln in frontmatter.splitlines() if ln.startswith("tools:"))
+                declared = [tool.strip() for tool in line.removeprefix("tools:").split(",")]
+                self.assertEqual(declared, role.agent_spec.tools)
 
 
 class TestHandoffProtocol(unittest.TestCase):

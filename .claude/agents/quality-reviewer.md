@@ -1,7 +1,7 @@
 ---
 name: quality-reviewer
 description: Evaluates code architecture, SOLID, test coverage, maintainability. Independent review by reading; cannot execute commands (GHI #968).
-tools: Read, Glob, Grep
+tools: Read, Glob, Grep, LSP
 model: inherit
 maxTurns: 15
 ---

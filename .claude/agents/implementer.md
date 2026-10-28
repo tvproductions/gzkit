@@ -1,7 +1,7 @@
 ---
 name: implementer
 description: Implements plan tasks with TDD discipline. Dispatched per-task by the pipeline controller.
-tools: Read, Edit, Write, Glob, Grep, Bash
+tools: Read, Edit, Write, Glob, Grep, LSP, Bash
 model: inherit
 permissionMode: acceptEdits
 maxTurns: 25

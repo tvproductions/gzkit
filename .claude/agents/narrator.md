@@ -1,7 +1,7 @@
 ---
 name: narrator
 description: Presents evidence for ceremony and documentation sync. Reads implementation and verification outputs.
-tools: Read, Glob, Grep, Bash
+tools: Read, Glob, Grep, LSP, Bash
 model: inherit
 maxTurns: 10
 ---
