@@ -242,7 +242,7 @@ def _refuse_section_id_collision(sid: str, title: str, first_title: str) -> NoRe
     """Fail closed on a second heading resolving to a section id already seen.
 
     Lifted out of `iter_section_boundaries`'s walking loop so that function
-    holds at xenon rank C, the same shape `_refuse_section_coverage_drift` and
+    holds at the C/C/C ceiling, the same shape `_refuse_section_coverage_drift` and
     `_refuse_grown_or_flipped_span` were lifted into under GHI #976/#978. This
     holds whether the two heading titles match or differ: title equality is
     not the discriminator, id collision is.
@@ -576,7 +576,7 @@ def _refuse_section_coverage_drift(
 ) -> None:
     """Fail closed when the declaration and the surface disagree about sections.
 
-    Lifted out of `load_declaration` so it holds at xenon rank C (the shape
+    Lifted out of `load_declaration` so it holds at the C/C/C ceiling (the shape
     `_refuse_grown_or_flipped_span` was lifted into under GHI #976). Three
     states produce each direction of the disagreement and they repair DIFFERENT
     artifacts, so each arm routes by cause rather than prescribing the artifact

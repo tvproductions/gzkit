@@ -445,7 +445,7 @@ def _refuse_lineage_mismatch(
     """Raise the three-part recovery prose for a lineage/candidate disagreement.
 
     Lifted out of :func:`_refuse_generated_lineage_drift` so that function
-    holds at xenon rank C, the same shape ``_refuse_section_id_collision`` was
+    holds at the C/C/C ceiling, the same shape ``_refuse_section_id_collision`` was
     lifted into in ``ownership.py``.
     """
     extra = sorted(set(actual) - set(claimed))

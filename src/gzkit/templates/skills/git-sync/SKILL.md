@@ -7,9 +7,9 @@ lifecycle_state: active
 disable-model-invocation: true
 owner: gzkit-governance
 model: haiku
-last_reviewed: 2026-04-19
+last_reviewed: 2026-10-28
 metadata:
-  skill-version: "1.2.2"
+  skill-version: "1.2.3"
 ---
 
 # SKILL.md
@@ -46,7 +46,7 @@ Use the `gz git-sync` command flow (dry-run first, then apply as requested).
 > Read your own `.pre-commit-config.yaml` for which gates run at commit
 > and which at push — gzkit ships no pre-commit config, so this skill
 > cannot state your roster. gzkit's own convention is cheap gates at
-> commit (ruff, ty, xenon) with the unit suite reached only at push,
+> commit (ruff, ty, the complexity ceiling) with the unit suite reached only at push,
 > through a hook that runs `gz check`. `--lint` and `--test` re-run those
 > gates at the `gz` level — redundant when the hooks already cover them,
 > and multi-minute pain. Defaults are `False` to match that (airlineops

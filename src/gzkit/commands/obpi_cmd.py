@@ -419,7 +419,7 @@ def _gate_completed_receipt_binding(
     """ADR-0.0.24-02 receipt-binding gate wrapper for the emit-receipt path.
 
     Mirrors ``_gate_completed_receipt_authenticity`` (the GHI #290 gate
-    wrapper) so ``obpi_emit_receipt_cmd`` stays below the xenon C-rank
+    wrapper) so ``obpi_emit_receipt_cmd`` stays below the C/C/C
     complexity ceiling. Resolves the parent ADR's ``kind`` from frontmatter
     and dispatches to the shared helper in ``obpi_complete``.
     """
@@ -460,7 +460,7 @@ def _resolve_emit_receipt_authenticity_context(
     """Return ``(sensitivity, parent_kind)`` for the emit-receipt authenticity gate.
 
     Extracted from ``obpi_emit_receipt_cmd`` so that path stays under the
-    xenon C-rank complexity ceiling (GHI #412 plumbing added the lookup).
+    C/C/C complexity ceiling (GHI #412 plumbing added the lookup).
     """
     sensitivity_value = parse_frontmatter_value(obpi_content, "sensitivity")
     parent_kind_value: str | None = None
