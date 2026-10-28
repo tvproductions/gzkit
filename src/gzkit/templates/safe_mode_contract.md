@@ -43,20 +43,36 @@ arrangement.
 
 ## Records
 
+- This contract changes only by its own amendment, never through a repair order: a repair order
+  that needs a contract change stops for a contract amendment first. Each committed edit is booked
+  `mx_contract_amended` against the hash pinned at entry (decision *B1*, after DFARS
+  217.7103-6(b): *"A master agreement shall be changed only by modifying the master agreement
+  itself. It shall not be changed through a job order."*).
 - Every change is one commit with a `Task:` trailer naming its repair order. No long check runs
   per act: the alarms are off in safe mode (`gzkit.mx.alarms`), and what an act leaves broken goes
-  on § Punch list, which the exit empties before the alarms come back on.
+  on § List of discrepancies. The exit clears every line that blocks return to service before the
+  alarms come back on, and the handback transfers the rest.
+- Three records, carried by the handback: § Tag-out log, the temporary isolations with their
+  removal procedures, empty at return to service; the maintenance record, the permanent work
+  under 14 CFR § 43.9(a), whose per-act entries are § Passage log and each order closed by the
+  operator's Gate 5; § List of discrepancies, the outstanding work.
 - Every operator ruling is an insight record when given and an `[operator-ruled]` handoff entry.
 - Every session ends with a handoff citing this file and listing the commits since the last.
 - § Passage log is appended per act with bytes or counts before and after.
-- § Repair orders is the register until the repair tagging scheme carries the orders as issues.
+- The state of every order is read from the work package log, never from this contract (see
+  § Repair orders).
 
 ## Repair orders
 
 In dependency order (the standard shape; keep the numbers, mark an order not applicable with its
 reason, add orders as the appraisal finds them). Each order owns restoring what it disconnects,
-reroutes or changes, to the prior or to the new stable state, and closes only when its § Punch list
-lines are cleared.
+reroutes or changes, to the prior or to the new stable state, and closes only when its line items
+on § Tag-out log are cleared and its discrepancies that block return to service are cleared.
+
+The table states what each order lands; it is changed only by amendment of this contract. Which
+orders are open is the **work package log**: a Layer 3 view assembled from the repair-order issues
+and the ledger, never edited, and never blocking a gate (decision *B11*;
+`docs/governance/safe-mode-doctrine.md` § The instruments, item 3). Read it there, not here.
 
 | Order | Serves | What it lands | Witness | Owner |
 |---|---|---|---|---|
@@ -69,6 +85,25 @@ lines are cleared.
 | RO-6 | every band | contradicted canon retired with retention maps | | |
 | RO-7 | control plane | the rest of the cut, staged, with an effectiveness report per stage | | |
 | RO-8 | the in-flight work | disposition of what was open, and the handback | | |
+
+## Tag-out log
+
+One line item per isolation an order hangs: a Danger tag (an alarm off and locked) or a Caution
+tag (a tripwire that records). Each carries its removal procedure and is cleared, restored or
+reconnected, by the person assigned before return to service.
+
+| Line item | Order | Tag | What is isolated | Removal procedure | Cleared |
+|---|---|---|---|---|---|
+
+## List of discrepancies
+
+One line per discrepancy, graded *blocks return to service* or *due by a named event*, cleared
+with its evidence. A line takes the fuller record (root cause and corrective action) only when it
+blocks return to service or recurs, by the threshold in `data/recurrence_threshold.json` checked
+by `gz insights recurrence`.
+
+| Discrepancy | Order | Grade | Root cause and corrective action | Cleared, with evidence |
+|---|---|---|---|---|
 
 ## Exit — seaworthiness
 

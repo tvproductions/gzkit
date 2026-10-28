@@ -56,6 +56,15 @@ verification:
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
+## Mode Contract
+
+<!-- Required for every control, module, skill, rule or surface this brief
+     builds (.gzkit/rules/mode-contract.md; advisory until RO-13 lands its
+     witness). For each: what it does at the operational condition, at hangar
+     and at drydock; its MEL entry; its built-in self-test. -->
+
+_[Author: For each new control, state its level at the operational condition, hangar and drydock, its MEL entry and its self-test, or state that this brief builds no control.]_
+
 ## Discovery Checklist
 
 <!-- What to read before implementation. Complete this checklist first.

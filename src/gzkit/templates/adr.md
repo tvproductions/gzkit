@@ -36,6 +36,16 @@ date: {date}
 
 {negative_consequences}
 
+## Mode Contract
+
+<!-- Required for every control, module, skill, rule or surface this ADR builds
+     (.gzkit/rules/mode-contract.md; advisory until RO-13 lands its witness).
+     For each: what it does at the operational condition, at hangar and at
+     drydock; its MEL entry; its built-in self-test. Name the floor items it
+     touches, which are never lowered. -->
+
+_[Author: For each new control, state its level at the operational condition, hangar and drydock, its MEL entry and its self-test, or state that this ADR builds no control.]_
+
 ## Fidelity Assertions
 
 <!-- Every non-pool ADR Decision ships runnable commands that exercise its thesis
