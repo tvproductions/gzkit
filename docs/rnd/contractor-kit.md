@@ -3239,6 +3239,22 @@ require, the agent said so, named the three places its framing carried the most 
 against the matrix's own proposal; RO-12 delaying RO-4; RO-13 lengthening the exit), and asked
 whether the questions were the right ones. Operator: *"yes, your suggestions were good"*.
 
+## decision · the design review: alarms off is the purpose; one gap reopens the frontier
+
+The operator asked to review the design together (*"review the design here with me"*). The agent
+led with five weak points. On hearing them the operator said: *"i am shocked that this so weak after
+all this effort"*. The agent sorted the five: two left open by design for diamond 2 (the runtime's
+refusals, the per-package cost); one mitigated (the coordinator's framing); two called real gaps
+(the time with the alarms off, and who inspects the self-test). It said the close was premature.
+
+The operator corrected the first of the two gaps: *"the whole point of safemode is to turn off the
+alarms and guards to get repair and remodel work done. we can't have it both ways."* Point 2 is
+withdrawn. Alarms off is the drydock's purpose, not its cost. The RO-12 and RO-13 placements stand
+as ruled. Insight 2026-10-28T00:40:09Z, scope `gz-rnd:contractor-kit`.
+
+**Reopened:** who confirms a self-test can fail before the control it tests counts as accepted.
+This bears on the restoration side, where the alarms come back on, and not on the work side.
+
 ---
 
 ## Disposition map
@@ -3266,7 +3282,7 @@ requirement for what is built next); and a chore that hunts the same failure els
 original question, *"How many other poorly-handled functions and processes of MAJOR consequent"*,
 is answered by that chore, not by this run.
 
-**Frontier.** Empty, 2026-10-27: every matrix row ruled, the two subjects the operator opened ruled, placement ruled, and all six disposition rows carry a decision.
+**Frontier.** Reopened 2026-10-28 at the design review (self-test inspection); before that, empty, 2026-10-27: every matrix row ruled, the two subjects the operator opened ruled, placement ruled, and all six disposition rows carry a decision.
 
 **Review.** Written at `docs/rnd/contractor-kit/review.md` (2026-10-27); awaiting the operator's read before sign-off.
 
