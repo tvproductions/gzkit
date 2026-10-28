@@ -604,7 +604,6 @@ class TestSetupClaudeHooks(unittest.TestCase):
             session_staleness_check = hooks_dir / "session-staleness-check.py"
             obpi_completion_validator = hooks_dir / "obpi-completion-validator.py"
             ledger_writer = hooks_dir / "ledger-writer.py"
-            control_surface_sync = hooks_dir / "control-surface-sync.py"
             verifier_pipe_gate = hooks_dir / "verifier-pipe-gate.py"
             readme = hooks_dir / "README.md"
             settings_path = project_root / ".claude" / "settings.json"
@@ -618,7 +617,6 @@ class TestSetupClaudeHooks(unittest.TestCase):
                 session_staleness_check,
                 obpi_completion_validator,
                 ledger_writer,
-                control_surface_sync,
                 verifier_pipe_gate,
                 readme,
                 settings_path,
@@ -634,8 +632,10 @@ class TestSetupClaudeHooks(unittest.TestCase):
             self.assertIn(".claude/hooks/session-staleness-check.py", created)
             self.assertIn(".claude/hooks/obpi-completion-validator.py", created)
             self.assertIn(".claude/hooks/ledger-writer.py", created)
-            self.assertIn(".claude/hooks/control-surface-sync.py", created)
             self.assertIn(".claude/hooks/verifier-pipe-gate.py", created)
+            # `control-surface-sync.py` is NOT written: unregistered 2026-05-31 and
+            # retired from the generator by GHI #1278.
+            self.assertNotIn(".claude/hooks/control-surface-sync.py", created)
             # `handoff-resume-gate.py` is NOT written: the hook was retired
             # 2026-08-15 (operator ruling: a handoff is an advisor, not a
             # gate-keeping nanny) and its generator template deleted. Asserting
@@ -2784,3 +2784,52 @@ class TestInstructionRouterIsRetired(unittest.TestCase):
         setup_claude_hooks(root, config)
         self.assertFalse((hooks_dir / "instruction-router.py").exists())
         self.assertTrue(operator_hook.exists())
+
+
+def _registered_hook_names(settings: dict) -> set[str]:
+    """Return the hook script names a settings payload registers.
+
+    Returns:
+        The script file names named by every hook command in ``settings``.
+    """
+    return {
+        Path(hook["command"].rsplit("/", 1)[-1].rstrip('"')).name
+        for groups in settings["hooks"].values()
+        for group in groups
+        for hook in group["hooks"]
+    }
+
+
+class TestHookSetsAgree(unittest.TestCase):
+    """The registered, generated and on-disk hook sets agree (GHI #1278).
+
+    A script on disk that nothing registers looks like a control while nothing
+    runs it: `ceremony-step-gate.py` outlived its 2026-03-30 retirement, and
+    `control-surface-sync.py` stayed in the generator after its 2026-05-31
+    unregistration, so every sync rewrote a hook no settings entry ran.
+    """
+
+    def test_the_generator_writes_exactly_the_hooks_its_settings_register(self) -> None:
+        root = Path(self.enterContext(tempfile.TemporaryDirectory()))
+        config = GzkitConfig(project_name="gzkit-test")
+        created = setup_claude_hooks(root, config)
+        generated = {Path(p).name for p in created if p.endswith(".py")}
+        self.assertEqual(generated, _registered_hook_names(generate_claude_settings(config, root)))
+
+    def test_every_hook_on_disk_is_registered_and_every_registered_hook_is_on_disk(self) -> None:
+        repo = Path(__file__).resolve().parents[1]
+        config = GzkitConfig(project_name="gzkit")
+        on_disk = {p.name for p in (repo / config.paths.claude_hooks).glob("*.py")}
+        self.assertEqual(on_disk, _registered_hook_names(generate_claude_settings(config, repo)))
+
+    def test_a_sync_removes_the_retired_hooks_an_earlier_install_left(self) -> None:
+        root = Path(self.enterContext(tempfile.TemporaryDirectory()))
+        hooks_dir = root / ".claude" / "hooks"
+        hooks_dir.mkdir(parents=True)
+        retired = ("ceremony-step-gate.py", "control-surface-sync.py")
+        for name in retired:
+            (hooks_dir / name).write_text("# left behind\n", encoding="utf-8")
+        setup_claude_hooks(root, GzkitConfig(project_name="gzkit-test"))
+        for name in retired:
+            with self.subTest(hook=name):
+                self.assertFalse((hooks_dir / name).exists())

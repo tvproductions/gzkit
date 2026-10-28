@@ -543,7 +543,6 @@ PRIVATE_CROSS_PACKAGE_IMPORT_BASELINE: dict[str, tuple[str, ...]] = {
         "hooks.scripts.routing._pipeline_router_script",
         "hooks.scripts.session_exit._session_exit_bookmark_script",
         "hooks.scripts.session_exit._session_start_advisement_script",
-        "hooks.scripts.validation._control_surface_sync_script",
         "hooks.scripts.validation._ledger_writer_script",
         "hooks.scripts.validation._obpi_completion_validator_script",
     ),

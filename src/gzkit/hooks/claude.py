@@ -33,7 +33,6 @@ from gzkit.hooks.scripts.session_exit import (
     _session_start_advisement_script,
 )
 from gzkit.hooks.scripts.validation import (
-    _control_surface_sync_script,
     _ledger_writer_script,
     _obpi_completion_validator_script,
 )
@@ -560,6 +559,12 @@ _RETIRED_HOOKS: tuple[str, ...] = (
     # Hand-wired under this name before the generator delivered it as
     # `prefer-lsp.py` (GHI #1278).
     "prefer_lsp.py",
+    # Hand-wired closeout step gate, unregistered 2026-03-30 when the CLI took
+    # over step ordering (f999941b9) and left on disk (GHI #1278).
+    "ceremony-step-gate.py",
+    # Unregistered 2026-05-31 (792bba4ed), yet still rendered by every sync
+    # until GHI #1278 retired its template.
+    "control-surface-sync.py",
 )
 
 
@@ -604,7 +609,6 @@ def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) ->
         ("ledger-writer.py", _ledger_writer_script, True),
         ("stop-turn-feedback.py", _stop_turn_feedback_script, True),
         ("mx-awareness.py", _mx_awareness_script, True),
-        ("control-surface-sync.py", _control_surface_sync_script, True),
         ("README.md", _claude_hooks_readme, False),
     )
 

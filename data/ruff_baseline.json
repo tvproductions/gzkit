@@ -172,31 +172,6 @@
       "count": 12
     },
     {
-      "file": ".claude/hooks/ceremony-step-gate.py",
-      "rule": "T201",
-      "count": 1
-    },
-    {
-      "file": ".claude/hooks/control-surface-sync.py",
-      "rule": "ANN201",
-      "count": 1
-    },
-    {
-      "file": ".claude/hooks/control-surface-sync.py",
-      "rule": "PLW0717",
-      "count": 1
-    },
-    {
-      "file": ".claude/hooks/control-surface-sync.py",
-      "rule": "PLW1510",
-      "count": 1
-    },
-    {
-      "file": ".claude/hooks/control-surface-sync.py",
-      "rule": "T201",
-      "count": 5
-    },
-    {
       "file": ".claude/hooks/ghi-triage-chat-silence.py",
       "rule": "DOC201",
       "count": 2
@@ -11339,7 +11314,7 @@
     {
       "file": "src/gzkit/hooks/scripts/validation.py",
       "rule": "DOC201",
-      "count": 3
+      "count": 2
     },
     {
       "file": "src/gzkit/insights/append.py",
