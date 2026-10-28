@@ -796,6 +796,17 @@ Each line is `open` until the restoration contractor clears it with the alarms o
 - `open` **retired** — ADR-0.35.0's nine unlanded briefs and the four repudiated OBPIs (0.34.0-02, 0.0.24-04, 0.0.26-02, 0.35.0-09), withdrawn as superseded, each naming where its REQs went. Authority: RO-8 rulings 1 and 2.
 - `open` **replaced** — their obligations, by catalog REQs finished as work packages in the 0.35.0 Release Package. Authority: RO-8 ruling 1.
 
+### RO-9 — the Astral toolchain
+
+Added 2026-10-28, when RO-5 tranche 5's independent review found RO-9 had landed retirements and a replacement with no line here (operator: *"Add RO-9's lines (Recommended)"*). The work package `RO-9` cites these lines as its system restoration.
+
+- `open` **retired** — xenon, for the C/C/C ceiling over Lizard and Ruff (`25287b8e0`). Authority: RO-9 tranche 4, GHI #1183.
+- `open` **retired** — Radon, with the corpus re-distilled on Lizard (`e1470956d`); the module-size chore's guidance followed on 2026-10-28 (`5de0f9a5d`). Authority: RO-9 tranche 4, GHI #1183.
+- `open` **retired** — complexipy, the complexity-ceiling gate owning cognitive complexity (`6f0f2a956`). Authority: RO-9 tranche 4.
+- `open` **retired** — interrogate, for Ruff's D-series (`6732155fe`). Authority: RO-9 tranche 4.
+- `open` **retired** — `gz validate --python-version-pins`, folded into `--astral-discipline` (`fea4697ac`). Authority: RO-9 tranche 1.
+- `open` **replaced** — hatchling, by `uv_build` (`c9be1203e`). Authority: RO-9 tranche 3.
+
 ### Every open order
 
 Each order adds a line for whatever else it unplugs, dismantles or modifies as it lands work.
