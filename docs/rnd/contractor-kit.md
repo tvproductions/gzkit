@@ -3352,6 +3352,21 @@ after two corrections).
 
 ---
 
+## decision · sign-off: funded, with the go on rows 2 and 4
+
+Operator, 2026-10-28, verbatim, after reading `docs/rnd/contractor-kit/review.md` and asking what
+the four advised steps were before ruling: *"fund, yes to 2 and 4"*.
+
+- **Diamond 1 is closed.** Both conditions hold: the mechanical three (frontier empty after the
+  design review's reopening was ruled, challenge restated 2026-10-27, six rows decided) and the
+  human one (review read, sign-off put and answered).
+- **Row 2 has its go:** each GHI the row names is filed through `ghi-author`.
+- **Row 4 has its go:** each surface the row names is drafted.
+- **Row 3 and row 5 are unchanged by this ruling:** row 3 stays advise-only until the operator
+  directs admission, and row 5 waits for RO-13 to be specified with the operator after RO-12.
+
+---
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
@@ -3379,9 +3394,9 @@ is answered by that chore, not by this run.
 
 **Frontier.** Empty again, 2026-10-28, once self-test inspection was ruled; reopened that day at the design review. Before that, empty, 2026-10-27: every matrix row ruled, the two subjects the operator opened ruled, placement ruled, and all six disposition rows carry a decision.
 
-**Review.** Written at `docs/rnd/contractor-kit/review.md` (2026-10-27); awaiting the operator's read before sign-off.
+**Review.** Written at `docs/rnd/contractor-kit/review.md` (2026-10-27); read by the operator before sign-off (2026-10-28).
 
-**Sign-off.** Not yet put.
+**Sign-off.** Funded, 2026-10-28 (operator: *"fund, yes to 2 and 4"*); rows 2 and 4 have their go.
 
 ## What this record does not license
 
