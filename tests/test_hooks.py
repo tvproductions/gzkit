@@ -18,7 +18,7 @@ from pathlib import Path
 from unittest import mock
 
 from gzkit.config import GzkitConfig
-from gzkit.hooks.claude import generate_claude_settings, setup_claude_hooks
+from gzkit.hooks.claude import generate_claude_settings, merge_settings, setup_claude_hooks
 from gzkit.hooks.core import (
     generate_hook_script,
     is_governance_artifact,
@@ -918,6 +918,46 @@ class TestSettingsMergePreservesUserHooks(unittest.TestCase):
             plugins = merged["enabledPlugins"]
             self.assertTrue(plugins["project-plugin@some-marketplace"])
             self.assertFalse(plugins["superpowers@claude-plugins-official"])
+
+    def test_an_exec_form_hook_in_the_hooks_dir_is_gzkit_owned(self) -> None:
+        """Ownership reads the args of an exec-form hook, not only its command.
+
+        GHI #1285: an exec-form entry puts the interpreter in `command` and the
+        script path in `args`, so a hook in gzkit's own hooks directory read as
+        user content and survived every sync on a matcher gzkit does not define.
+        An exec-form hook outside the hooks directory is still the project's.
+        """
+        config = GzkitConfig(project_name="gzkit-test")
+        settings = generate_claude_settings(config)
+        gzkit_exec = {
+            "type": "command",
+            "command": "python",
+            "args": ["${CLAUDE_PROJECT_DIR}/.claude/hooks/retired-hook.py"],
+        }
+        user_exec = {
+            "type": "command",
+            "command": "python",
+            "args": ["${CLAUDE_PROJECT_DIR}/tools/project-hook.py"],
+        }
+
+        with tempfile.TemporaryDirectory() as tmp:
+            settings_path = Path(tmp) / "settings.json"
+            existing = {"hooks": dict(settings["hooks"])}
+            existing["hooks"]["PreToolUse"] = [
+                *settings["hooks"]["PreToolUse"],
+                {"matcher": "Glob", "hooks": [gzkit_exec, user_exec]},
+            ]
+            settings_path.write_text(json.dumps(existing), encoding="utf-8")
+
+            merged = merge_settings(settings_path, settings, ".claude/hooks")
+
+            kept = [
+                h
+                for g in merged["hooks"]["PreToolUse"]
+                if g.get("matcher") == "Glob"
+                for h in g["hooks"]
+            ]
+            self.assertEqual(kept, [user_exec])
 
 
 class TestPostEditRuffHook(unittest.TestCase):

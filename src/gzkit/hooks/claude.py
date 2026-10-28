@@ -352,9 +352,14 @@ def generate_claude_settings(config: GzkitConfig, project_root: Path | None = No
 
 
 def _is_gzkit_owned_hook(hook_entry: dict, hooks_dir: str) -> bool:
-    """Return True if a hook entry's command references the gzkit hooks directory."""
-    command = hook_entry.get("command", "")
-    return hooks_dir in command
+    """Return True if a hook entry's command or args reference the gzkit hooks directory.
+
+    An exec-form entry names the interpreter in ``command`` and the script in
+    ``args``, so reading ``command`` alone took a gzkit hook for user content
+    (GHI #1285).
+    """
+    parts = [hook_entry.get("command", ""), *hook_entry.get("args", [])]
+    return any(hooks_dir in str(part) for part in parts)
 
 
 def _is_gzkit_owned_group(group: dict, hooks_dir: str) -> bool:
