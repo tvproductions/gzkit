@@ -3231,6 +3231,14 @@ Not a new question. Each item below was ruled earlier, and this entry collects t
 
 **commissions:** 6 — the five items above, each with its reason in place.
 
+## decision · the questions are the right ones, a third time
+
+The operator took the recommended option on all eleven questions since the second check (C5, C10,
+C11, C12, B12, the pipeline crosswalk, RO-12, the chore's shape, row 1, row 5). As the red flags
+require, the agent said so, named the three places its framing carried the most weight (C10
+against the matrix's own proposal; RO-12 delaying RO-4; RO-13 lengthening the exit), and asked
+whether the questions were the right ones. Operator: *"yes, your suggestions were good"*.
+
 ---
 
 ## Disposition map
@@ -3240,17 +3248,27 @@ Not a new question. Each item below was ruled earlier, and this entry collects t
 | 1 | ADR / OBPI | not pursued | — | the kit's home is RO-12 and the mode contract's is row 5; revisit at civil rule, pulled as a work package by RO-11's process (ruled 2026-10-27) |
 | 2 | GHI / direct fix | commissioned | the ten census defects filed as #1271 to #1280 (2026-10-26); direct repair of the eleven defects in the pipeline parts the kit reuses (#1200, #1206, #1208, #1198, #1203, #1205, #1194, #1209, #1185, a cwd-escape guard to be filed, #1028's stop-and-ask boundary); a GHI on the persona witness measuring a total; each lesson crossing kit and pipeline as a GHI, the four from the pipeline crosswalk among them (2026-10-27); #1273 before RO-12 | operator, questions 8, 14, 17, 21; crosswalk and RO-12 rulings |
 | 3 | chore | commissioned | the vibe-coded and underbaked audit chore, as a signature catalogue (ruled 2026-10-27); `frontier-model-card-currency` widened to model-level assignments (landed `9649d0eb0`) | operator directed both, 2026-10-25 |
-| 4 | control surface, rule, doc, skill, hook | commissioned | the contractor kit (four positions and the surveillant, runtime, tag-out log, maintenance record, punch list, job order and change order); the contract's division of labor, cheaper-sessions clause, exit conditions and § Punch list; the doctrine's § Seaworthy and § Handback; Part 0's sea-trial term and the campaign's Movement E (operator ratification); RO-7's persona exit number; `gz-rnd`'s both-sides rule; the vocabulary crosswalk; from 2026-10-27: the MX model and the two-way mode contract by decorator, the matrix rows ruled (B1, B11, B12, C1, C5, C10, C11, C12), the RO-12 row and the contractor brief's order | operator, questions 1–24; rulings of 2026-10-26/27 |
+| 4 | control surface, rule, doc, skill, hook | commissioned | the contractor kit (four positions and the surveillant, runtime, tag-out log, maintenance record, list of discrepancies (B8), work package and change order (B3, B10)); the contract's division of labor, cheaper-sessions clause, exit conditions and § Punch list; the doctrine's § Seaworthy and § Handback; Part 0's sea-trial term and the campaign's Movement E (operator ratification); RO-7's persona exit number; `gz-rnd`'s both-sides rule; the vocabulary crosswalk; from 2026-10-27: the MX model and the two-way mode contract by decorator, the matrix rows ruled (B1, B11, B12, C1, C5, C10, C11, C12), the RO-12 row and the contractor brief's order | operator, questions 1–24; rulings of 2026-10-26/27 |
 | 5 | one-shot refactoring | commissioned | the two-way mode contract across every control, monitor, alarm and safeguard: each module onboards its MEL entry, takes the standby level command from the central condition signal at its place of call, and reports suitability for function through its built-in self-test (operator: *"a MASSIVE refactor, but it is the best way that I can see"*) | RO-13 after RO-12, in tranches by kind, a shrink-only baseline of controls with no MEL entry closed at zero (ruled 2026-10-27); route chosen for the design (*"not be so parsimonious or urgent to get back underway"*); a self-test chore remains an advise-only candidate for row 3 |
 | 6 | no action | commissioned | C13 (defined in canon); the handoff not renamed; the GHI not renamed; no separate pipeline design; the not-from-the-start question | each ruled in its own entry; collected 2026-10-27 |
 
 ## Close
 
-**Challenge restated.** Open.
+**Challenge restated** (2026-10-27, deliberately, at the close). gzkit was about to run safe
+mode's repair and restoration work as prose prompts. The problem is wider than the two contractors.
+gzkit had no governed apparatus for maintenance work: no positions kept apart by mechanism, no
+record of what was isolated, no inspection independent of the performer, and no closure a reviewer
+witnesses. Its controls carried no contract for the condition they run under, so the drydock
+demoted them from outside, and a control cannot know it has been demoted. The run defines three
+things from the naval and aviation maintenance texts: the apparatus (the contractor kit, RO-12);
+the two-way mode contract every control carries (RO-13 for what exists, and a standing design
+requirement for what is built next); and a chore that hunts the same failure elsewhere. The
+original question, *"How many other poorly-handled functions and processes of MAJOR consequent"*,
+is answered by that chore, not by this run.
 
-**Frontier.** Open; recomputed 2026-10-27 (see the third resume entry).
+**Frontier.** Empty, 2026-10-27: every matrix row ruled, the two subjects the operator opened ruled, placement ruled, and all six disposition rows carry a decision.
 
-**Review.** Not yet written.
+**Review.** Written at `docs/rnd/contractor-kit/review.md` (2026-10-27); awaiting the operator's read before sign-off.
 
 **Sign-off.** Not yet put.
 
