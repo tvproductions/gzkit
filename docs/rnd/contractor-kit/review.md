@@ -95,6 +95,9 @@ A GitHub issue's role is a **problem report** with AC 00-71's states: recorded, 
     passed within the entry's declared interval.
 - Each surface onboards its own contract. Only the signal is central. A control is **accepted and
   lowered** (restored at exit) or **not yet accepted** (enabled by its first acceptance).
+- **Acceptance needs a red witness.** A self-test counts only once it has been shown failing against
+  a broken input and the QAI has inspected that witness at restoration (ruled 2026-10-28, at the
+  design review). Nothing is owed while the work goes on.
 - **Syntax.** Code controls use **two decorators joined by reference**: the MEL entry names its
   self-tests, read at the place of call. Non-Python controls declare in their own slot against one
   shared schema.

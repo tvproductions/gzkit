@@ -3255,6 +3255,27 @@ as ruled. Insight 2026-10-28T00:40:09Z, scope `gz-rnd:contractor-kit`.
 **Reopened:** who confirms a self-test can fail before the control it tests counts as accepted.
 This bears on the restoration side, where the alarms come back on, and not on the work side.
 
+## decision · a self-test is accepted only on a red witness, inspected at restoration
+
+Ruled; reopened at the design review. Question: who confirms a self-test can fail before the
+control it tests counts as accepted? As ruled, suitability for function is *"the latest self-test
+passed within the entry's declared interval"*, and the craftsman who refactors a control writes its
+self-test: tier one only. The run's own instance: `assert load_baseline() is not None` in the
+`ghi-cross-reference-staleness` arm, read 2026-10-27. Options put: **A** a red witness, the
+self-test shown failing against a broken input, checked by the QAI as an (I) inspection point at
+restoration; nothing owed during the work (recommended); **B** the craftsman's own verification,
+with the audit chore's first signature catching a vacuous self-test later; **C** inspection when
+the self-test is written, on the repair side. Operator: *"A"*.
+
+- **Not yet accepted** becomes **accepted** on two things: the self-test passing, and its red
+  witness inspected. A passing self-test with no inspected red witness leaves the control not yet
+  accepted, so its alarm does not come back on.
+- The check falls where the alarm comes back on. The work side owes nothing, as safe mode intends.
+- C was not taken because it puts an inspection inside the work while the alarms are off.
+
+**commissions:** 4 — the kit's inspector position and the restoration procedure carry the red-
+witness inspection point. 5 — RO-13's tranches each carry it per restored control.
+
 ---
 
 ## Disposition map
@@ -3282,7 +3303,7 @@ requirement for what is built next); and a chore that hunts the same failure els
 original question, *"How many other poorly-handled functions and processes of MAJOR consequent"*,
 is answered by that chore, not by this run.
 
-**Frontier.** Reopened 2026-10-28 at the design review (self-test inspection); before that, empty, 2026-10-27: every matrix row ruled, the two subjects the operator opened ruled, placement ruled, and all six disposition rows carry a decision.
+**Frontier.** Empty again, 2026-10-28, once self-test inspection was ruled; reopened that day at the design review. Before that, empty, 2026-10-27: every matrix row ruled, the two subjects the operator opened ruled, placement ruled, and all six disposition rows carry a decision.
 
 **Review.** Written at `docs/rnd/contractor-kit/review.md` (2026-10-27); awaiting the operator's read before sign-off.
 
