@@ -3319,6 +3319,37 @@ Insight 2026-10-28T01:00:11Z, scope `gz-rnd:contractor-kit`.
 - **The test for the rest of the review:** does the design let repair go direct, and is the rewiring
   afterwards real? Canon's ceremony is not the measure inside the drydock.
 
+## decision · the maintenance discipline is the drydock's own; safe mode suspends canon, not it
+
+The operator said: *"i am not sure you ever looked at this from the drydock perspective"*. In
+reply the agent claimed: *"Every question I put asked what the texts require. The texts are the
+JFMM, Part 121, TUM and DFARS, and each one governs normal-operations industrial work. They are
+ceremony regimes written for ships and aircraft in service. I carried their ceremony into the
+drydock under naval names. That is canon's ceremony again, in different vocabulary. I never asked
+the drydock's question: what is the least the work needs, so that the rewiring afterwards can be
+done and is real?"* On that ground it drafted a re-sort that would have dropped commencement, the
+tiers of check, rework and buy-back, the change ladder, the dock trial, shift turnover,
+surveillance and the coordinator from the work.
+
+Operator, 2026-10-28, verbatim:
+
+> i disagree, are these all not about how we effect repairs for servicing, maintenance, and
+> restoration? those are about how we go into and out of mx; very important: [the agent's claim,
+> quoted above]
+
+Ruled: the claim is wrong and the re-sort is withdrawn. The texts govern how repair, servicing,
+maintenance and restoration are carried out, and how work goes into and out of MX. That is the
+drydock's subject. **Safe mode suspends canon** (gzkit's normal-operations rules and ceremony). It
+**does not suspend the maintenance discipline**, which is what the drydock runs on in canon's
+place. The kit is that discipline, taken from texts written for it. Every ruling in this record
+stands as made. Insight 2026-10-28T01:05:02Z, scope `gz-rnd:contractor-kit` (an overcorrection
+after two corrections).
+
+- The two earlier corrections of this review still hold: alarms off is the drydock's purpose
+  (point 2), and canon's ceremony is not the measure inside the drydock (points 4 and 5).
+- The measure inside the drydock is the maintenance discipline. Judge a design by whether it
+  carries out that discipline, not by how much canon it keeps.
+
 ---
 
 ## Disposition map
