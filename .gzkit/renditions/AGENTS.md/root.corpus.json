@@ -1,10 +1,10 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "9809f3f8378a438fe9d0e7303968fb0906df94fcbcd7edb2c3733d58047e751a",
-  "corpus_entry_count": 524,
-  "rendition_fingerprint": "e43d95ba235062b901d21d5405f12ac5a40c5ce1ecd0128db9cbc5b0e7f94629",
-  "committed_ts": "2026-10-28T00:59:16.202138+00:00",
+  "corpus_fingerprint": "1733c99d493514870a6882d795c980beb2c8393d6a1f11fcb3476865e1cd8894",
+  "corpus_entry_count": 526,
+  "rendition_fingerprint": "504a610e72bf5315ca15f8a7cb9c5b2c8aa5701e134b8299fb2d7d7879401782",
+  "committed_ts": "2026-10-28T05:33:10.441618+00:00",
   "attestor": "g0",
-  "attestation_text": "the anti-vibing mantra is very awkwardly worded; 1 — operator selected redraft 1 for the § Make LLM Stochastic Vibes Inert entry, retiring corpus-make-llm-stochastic-vibes-inert-anti-vibing-mantra-2026-09-17T11:39:29.716071+00:00; no condition dropped",
-  "landing_id": "landing-20261028T005916Z-7ade04ed"
+  "attestation_text": "take care of all 4 items then i give my funding decision — handoff step 3: restore the AGENTS.md anti-vibing section order; drift bullet re-captured verbatim and its 2026-09-17 entry retired",
+  "landing_id": "landing-20261028T053310Z-4bac2f12"
 }

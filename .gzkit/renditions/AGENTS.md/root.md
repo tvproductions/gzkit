@@ -62,9 +62,9 @@ When a skill matches the task, read its `SKILL.md` before edits, shell, ledger o
 When no skill clearly matches, or two look alike, consult `gz-how` before choosing.
 ## MAKE LLM STOCHASTIC VIBES INERT (ANTI-VIBING MANTRA)
 
-- A silent change to a rule or threshold is doctrine drift. Change doctrine only with a recorded witness.
-
 - Governance is how agent-driven work is steered and held to account. Between two options, choose the one that leaves less to unverified guesswork. Maintenance burden, speed and lighter ceremony are not reasons to choose.
+
+- A silent change to a rule or threshold is doctrine drift. Change doctrine only with a recorded witness.
 ## STDLIB-FIRST DOCTRINE (DEPENDENCY POSTURE)
 
 Use stdlib by default. A runtime dependency, new or existing, needs ADR or OBPI rationale naming the capability stdlib cannot supply; popularity or recency is not rationale. Standing choices: `unittest` (pytest is blocked by the `forbid-pytest` hook), `argparse` (ADR-0.0.2), and Pydantic as the one named departure, for validation (`.gzkit/rules/models.md`).
