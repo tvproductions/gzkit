@@ -967,8 +967,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         "--model-class-only",
         dest="check_model_class_only",
         action="store_true",
-        help="Rule, skill and agent canon name models by class, never a versioned ID, "
-        "exit 3 (GHI #1284).",
+        help="Canon names models by class, never a versioned ID, exit 3 (GHI #1284).",
     )
     p_validate.add_argument(
         "--changelog",
