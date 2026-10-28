@@ -538,11 +538,22 @@ class TestCeremonyWritesNoUnreadState(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
-            for args in ([], ["--next"], ["--next"], []):
+            seen: set[int] = set()
+            # Start, then --next through EXECUTE and every demo to ATTESTATION, then
+            # resume: every site that wrote the lock is driven.
+            for args in [[]] + [["--next"]] * 25 + [[]]:
+                state = load_ceremony_state(Path.cwd(), "ADR-0.1.0-f")
+                if args and state is not None and state.current_step >= CeremonyStep.ATTESTATION:
+                    continue
                 result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony", *args])
                 self.assertEqual(result.exit_code, 0, result.output)
-                with self.subTest(args=args):
+                state = load_ceremony_state(Path.cwd(), "ADR-0.1.0-f")
+                assert state is not None
+                seen.add(state.current_step)
+                with self.subTest(step=state.current_step, args=args):
                     self.assertEqual(list(Path.cwd().rglob("*.turn-lock")), [])
+            self.assertIn(CeremonyStep.EXECUTE, seen)
+            self.assertIn(CeremonyStep.ATTESTATION, seen)
 
 
 class TestCeremonyCompleted(unittest.TestCase):
