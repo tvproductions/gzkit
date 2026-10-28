@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-10-28
 metadata:
-  skill-version: "2.13.0"
+  skill-version: "2.14.0"
 model: opus
 ---
 
@@ -41,7 +41,7 @@ not an exit condition; it is the *trigger* to author the fix.
 
 ### The four states of a problem report
 
-A GHI carries a **problem report** through four states: **recorded** (filed through `ghi-author`), **classified** (its class label), **resolved** (the fix landed and Phase 3 verified it; the `(GHI #N)` commit SHA witnesses this state) and **closed** (a review on record confirmed the resolution). The commit resolves; only the review closes (`docs/rnd/contractor-kit.md`, decision B12; operator: *"A"*). No step yet separates resolved from closed: the review step and its record are diamond-2 work. Until they land, the close comment's **Review:** line is the record and names who reviewed. A close reviewed only by the fixing session says so there. Definitions and sources: [`references/problem-report-states.md`](references/problem-report-states.md).
+A GHI carries a **problem report** through four states: **recorded** (filed through `ghi-author`), **classified** (its class label), **resolved** (the fix landed and Phase 3 verified it; the `(GHI #N)` commit SHA witnesses this state) and **closed** (a review on record confirmed the resolution). The commit resolves; only the review closes (`docs/rnd/contractor-kit.md`, decision B12; operator: *"A"*). The review step and its record are diamond-2 work. Until they land, dispatch a reviewer subagent that did not do the fix (`spec-reviewer` or `quality-reviewer`) to confirm the resolution against the closure contract, and post its verdict on the issue before closing; the close comment's **Review:** line names that reviewer (operator ruling 2026-10-28: *"Reviewer subagent (Recommended)"*). A verdict that does not confirm leaves the issue open at resolved. Definitions and sources: [`references/problem-report-states.md`](references/problem-report-states.md).
 
 ### Bounded closure contract (GHI #980)
 
@@ -377,7 +377,7 @@ Four-phase protocol: **read**, **execute**, **verify**, **close**.
 
    <one sentence: how you determined the enumeration is exhaustive — or which causes it deliberately does not claim>
 
-   **Review:** <who reviewed (fixing session or independent); criterion-based findings and their disposition; remaining blockers, or none>
+   **Review:** <the reviewer subagent that confirmed the fix; criterion-based findings and their disposition; remaining blockers, or none>
    **Independent discoveries:** <tracked references that do not block this contract, or none>
    ```
 

@@ -29,11 +29,12 @@ The review step before GitHub's close, and its record, are diamond-2 work (B12 c
 No mechanism separates resolved from closed yet, and GitHub knows only open and closed. Until the
 step lands:
 
-- the close comment's **Review:** line (`ghi-close` step 8) is the review's record;
-- the line names who reviewed: the fixing session, or an independent reviewer;
-- a close whose only review is the fixing session's own says so in that line, which makes the
-  skipped state visible.
+- a reviewer subagent that did not do the fix confirms the resolution against the closure
+  contract, and its verdict is posted on the issue before the close (operator ruling 2026-10-28:
+  *"Reviewer subagent (Recommended)"*);
+- the close comment's **Review:** line (`ghi-close` step 8) names that reviewer;
+- a verdict that does not confirm leaves the issue open, at resolved.
 
-`AGENTS.md` § Defect-fix routing still reads *"closed with the commit SHA"*. The record commissions
-that clause to change through the content skills, on the operator's go (B12 commission 4), and it
-binds as written until then.
+`AGENTS.md` § Defect-fix routing carries the same: the commit SHA marks a GHI resolved, and it is
+closed only after a reviewer that did not do the fix confirms it (B12 commission 4, landed
+2026-10-28).
