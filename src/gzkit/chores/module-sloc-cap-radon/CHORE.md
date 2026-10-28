@@ -1,28 +1,29 @@
-# CHORE: Module SLOC Cap (Radon)
+# CHORE: Module Size Cap (Lizard)
 
 **Lane:** Lite
-**Slug:** `module-sloc-cap-radon`
+**Slug:** `module-sloc-cap-radon` (the historical name; the chore has measured
+Lizard's `lizard_file_nloc` since RO-9 tranche 4, GHI #1183)
 
 ---
 
 ## Overview
 
 Enforce module size against the **one canonical threshold table**
-(`.gzkit/rules/complexity-thresholds.json`), metric `radon_raw_nloc`:
+(`.gzkit/rules/complexity-thresholds.json`), metric `lizard_file_nloc`:
 
-| Band | Percentile | SLOC | Trigger |
+| Band | Percentile | NLOC | Trigger |
 |---|---|---|---|
-| advise | p75 | 311.75 | advisory |
-| warn | p90 | 733.2 | advisory |
+| advise | p75 | 307.25 | advisory |
+| warn | p90 | 716.5 | advisory |
 | warn | p95 | 1031.9 | advisory |
-| **block** | **p99** | **3143.82** | **fails the chore** |
+| **block** | **p99** | **3130.24** | **fails the chore** |
 
-> Dated illustration of `.gzkit/rules/complexity-thresholds.json` as of 2026-08-26,
+> Dated illustration of `.gzkit/rules/complexity-thresholds.json` as of 2026-10-28,
 > not the authority — the chore reads the table, never this transcription.
 >
 > **Amended 2026-08-26 (operator override): block moved p95 -> p99.** The
-> distilled-characteristics document reports inter-project variance of
-> **1,093,055** on `radon_raw_nloc` and states in its own words *"high variance,
+> distilled-characteristics document of that date reported inter-project variance
+> of **1,093,055** on module size (then `radon_raw_nloc`) and stated in its own words *"high variance,
 > the corpus disagrees and per-domain narration matters"* — against **0.0833** for
 > `radon_cc`, where it says the corpus *"speaks with one voice"*. Thirteen projects
 > spanning a web framework, a package manager, a type checker and a TUI toolkit
@@ -32,10 +33,12 @@ Enforce module size against the **one canonical threshold table**
 > outlier. Every grandfather entry fell under the new band and was surrendered the
 > same day, emptying the ratchet list.
 
-`radon_raw_nloc` is radon's `sloc` field — see
-`gzkit.complexity.measurement._run_radon_raw`, which records `entry.get("sloc")`
-under that metric key. Measuring any other field would compare a different
-quantity than the corpus was measured with.
+`lizard_file_nloc` is Lizard's whole-file NLOC, read through
+`gzkit.complexity.lizard_adapter.file_nloc`, the same reader
+`gzkit.complexity.measurement` measures the corpus with. Measuring any other
+quantity would compare a different number than the corpus was measured with.
+Until RO-9 tranche 4 retired Radon (GHI #1183), both read radon's `sloc` as
+`radon_raw_nloc`.
 
 > **This chore previously declared its own `<=1000` hard cap and `<=600` soft
 > cap.** Both were a threshold authority outside the canonical table, which
@@ -74,12 +77,12 @@ Invariant #8 forbids.
 ### 1. Baseline — observe
 
 ```bash
-uv run radon raw src/ -s -j > .gzkit/chores/module-sloc-cap-radon/proofs/radon-baseline.json
+uv run python .gzkit/chores/module-sloc-cap-radon/check_module_size.py
 ```
 
 ### 2. Plan — propose
 
-- Identify modules in the table's `warn` or `block` band for `radon_raw_nloc`
+- Identify modules in the table's `warn` or `block` band for `lizard_file_nloc`
   (`uv run python .gzkit/chores/module-sloc-cap-radon/check_module_size.py`) —
   the bands live in `.gzkit/rules/complexity-thresholds.json`, never in this file
 - Plan cohesive splits preserving public API
@@ -92,7 +95,7 @@ Split modules by responsibility. Maintain backwards-compatible imports.
 
 ```bash
 uv run gz test
-uv run radon raw src/ -s -j
+uv run python .gzkit/chores/module-sloc-cap-radon/check_module_size.py
 ```
 
 ## Checklist
@@ -108,9 +111,9 @@ Criteria live in `acceptance.json`, which `gz chores run` executes; render them 
 ## Evidence Commands
 
 ```bash
-uv run radon raw src/ -s -j > .gzkit/chores/module-sloc-cap-radon/proofs/radon-report.json
+uv run python .gzkit/chores/module-sloc-cap-radon/check_module_size.py > .gzkit/chores/module-sloc-cap-radon/proofs/module-size-report.txt
 ```
 
 ---
 
-**End of CHORE: Module SLOC Cap (Radon)**
+**End of CHORE: Module Size Cap (Lizard)**

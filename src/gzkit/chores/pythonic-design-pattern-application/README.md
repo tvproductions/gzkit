@@ -7,7 +7,7 @@ Every evidence file names the local Python example witness from `design-patterns
 ## Quick Start
 
 ```bash
-uv run xenon --max-absolute C --max-modules C --max-average C src/
+uv run gz validate --complexity-ceiling
 uv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer
 ```
 

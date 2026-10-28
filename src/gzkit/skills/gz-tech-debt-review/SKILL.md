@@ -5,9 +5,9 @@ description: Use for a tech-debt review of files, paths, ADRs, OBPIs or the repo
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-23
+last_reviewed: 2026-10-28
 metadata:
-  skill-version: "1.4.5"
+  skill-version: "1.4.6"
 model: sonnet
 ---
 
@@ -114,7 +114,7 @@ big the diff is to fix.
 | Severity | Definition | Examples |
 |----------|------------|----------|
 | **Critical** | Violates a Prime-Directive invariant, a Gate Covenant rule, or a published external contract. Operator should stop and route now. | Unsuppressed `# type: ignore[code]` (GHI #197 class), missing `@covers` on a **BEHAVIOR** REQ in a Completed/Validated heavy brief, `gz` verb prescribed in runbook but unregistered, ledger reference to a missing receipt, security-sensitivity finding. |
-| **High** | Breaks a binding rule but not Gate-Covenant. Will block the next operator touching the surface. | Module >600 LOC, function >50 LOC in a hot path, xenon hot-spot above configured band, ruff/ty error not suppressed, doc example drifted from CLI output, frontmatter/ledger disagreement. |
+| **High** | Breaks a binding rule but not Gate-Covenant. Will block the next operator touching the surface. | Module >600 LOC, function >50 LOC in a hot path, complexity hot-spot above the configured ceiling, ruff/ty error not suppressed, doc example drifted from CLI output, frontmatter/ledger disagreement. |
 | **Medium** | Drift that compounds silently. Worth scheduling but won't block a near-term change. | Pythonic-pattern candidate, dead code with no tests pinning it, TODO older than 90 days, dependency >2y stale (not yet 5y), CLI verb registered but undocumented. |
 | **Low** | Stylistic or cosmetic, fixed by autotools or one-line edits. Bundle into the next opportunistic touch. | ruff-fixable warning, missing docstring, single-line dead import. |
 

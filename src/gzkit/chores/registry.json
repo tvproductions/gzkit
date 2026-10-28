@@ -448,8 +448,8 @@
     },
     {
       "slug": "module-sloc-cap-radon",
-      "title": "Module SLOC Cap (Radon)",
-      "version": "1.1.0",
+      "title": "Module Size Cap (Lizard)",
+      "version": "1.2.0",
       "path": ".gzkit/chores/module-sloc-cap-radon",
       "lane": "lite",
       "timeoutSeconds": 180,
@@ -521,7 +521,7 @@
     {
       "slug": "pythonic-design-pattern-application",
       "title": "Pythonic Design Pattern Application (Before/After Evidence Capture)",
-      "version": "1.2.2",
+      "version": "1.2.3",
       "path": ".gzkit/chores/pythonic-design-pattern-application",
       "lane": "lite",
       "timeoutSeconds": 180,

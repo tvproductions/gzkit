@@ -10,7 +10,7 @@
       "type": "exitCodeEquals",
       "command": "uv run python .gzkit/chores/module-sloc-cap-radon/check_module_size.py",
       "expected": 0,
-      "description": "modules obey the canonical radon_raw_nloc block band; shrink-only ratchet"
+      "description": "modules obey the canonical lizard_file_nloc block band; shrink-only ratchet"
     },
     {
       "type": "exitCodeEquals",
