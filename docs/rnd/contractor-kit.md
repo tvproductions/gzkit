@@ -3297,6 +3297,28 @@ showing it refuses, the list carried on the order as its witness, as RO-2 and RO
 **commissions:** 4 — the contract's RO-12 row carries the refusal list as its witness, with the
 row itself (on the operator's go on that row).
 
+## decision · the design review is judged from the drydock's side, not canon's
+
+Operator, 2026-10-28, verbatim, while point 4 (cost against cheaper sessions) was put:
+
+> don't you understand that safemode drydock is there to remove most rules from the model so that
+> we can just quickly make repairs, adjustments, and remodels? most of your worries seem to be about
+> how safemode thwarts canon, and it does... it is intentional. we set that aside so we can just
+> direct repair with a minimum of ceremony, we can rewire all of that AFTER redesign/repair happens.
+> Otherwise, I'll never be able to adjust/correct gzkit. I think you easily lose sight of this.
+
+The second correction of the same kind in one review (the first: *"we can't have it both ways"*).
+Insight 2026-10-28T01:00:11Z, scope `gz-rnd:contractor-kit`.
+
+- **Point 4 is withdrawn.** The question put (measure the cost at the first package, or set a
+  ceiling now) is not answered, because it asked canon's question of the drydock.
+- **Point 5 is dropped.** It was a worry about reporting, not a gap in the design.
+- **The two review rulings stand,** because both fall on the rewiring side, after the work: the red
+  witness is inspected at restoration, and RO-12's refusal tests are what closing it requires. Work
+  inside an order owes neither.
+- **The test for the rest of the review:** does the design let repair go direct, and is the rewiring
+  afterwards real? Canon's ceremony is not the measure inside the drydock.
+
 ---
 
 ## Disposition map
