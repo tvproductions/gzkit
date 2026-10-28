@@ -523,6 +523,28 @@ class TestCeremonyResume(unittest.TestCase):
             self.assertIn("Bill of Materials", result.output)
 
 
+class TestCeremonyWritesNoUnreadState(unittest.TestCase):
+    """The ceremony writes no turn-lock: its reader was retired (GHI #1297).
+
+    ceremony-step-gate.py read `<ADR>.turn-lock`; it was unregistered on
+    2026-03-30 and deleted under GHI #1278, so the file guards nothing.
+    """
+
+    @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
+    def test_start_next_and_resume_leave_no_turn_lock(self, mock_readiness):
+        mock_readiness.return_value = {"blockers": [], "ready": True}
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _init_git_repo(Path.cwd())
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            for args in ([], ["--next"], ["--next"], []):
+                result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony", *args])
+                self.assertEqual(result.exit_code, 0, result.output)
+                with self.subTest(args=args):
+                    self.assertEqual(list(Path.cwd().rglob("*.turn-lock")), [])
+
+
 class TestCeremonyCompleted(unittest.TestCase):
     """Second --ceremony on completed ceremony offers restart."""
 

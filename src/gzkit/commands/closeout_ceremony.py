@@ -23,7 +23,6 @@ from gzkit.commands.ceremony_state import (
     _next_step,
     _now_iso,
     _output,
-    _write_turn_lock,
     ceremony_state_path,  # noqa: F401  re-export for closeout.py
     load_ceremony_state,
     save_ceremony_state,
@@ -174,7 +173,6 @@ def _initialize_ceremony(
     if existing and not existing.completed_at and not restart:
         # Resume from current step
         output = _present_step(existing, project_root, adr_file, lane, manifest, obpi_files)
-        _write_turn_lock(project_root, adr_id, existing.current_step)
         _output(as_json, existing, output)
         return
 
@@ -214,7 +212,6 @@ def _initialize_ceremony(
         obpi_rows=obpi_rows,
         readiness=readiness,
     )
-    _write_turn_lock(project_root, adr_id, CeremonyStep.INITIALIZE)
     _output(as_json, state, output)
 
 
@@ -237,7 +234,6 @@ def _advance_demo_index(
     )
     save_ceremony_state(project_root, new_state)
     output = _present_step(new_state, project_root, adr_file, lane, manifest, obpi_files)
-    _write_turn_lock(project_root, state.adr_id, CeremonyStep.EXECUTE)
     _output(as_json, new_state, output)
 
 
@@ -405,8 +401,6 @@ def _commit_advance(
     output = _present_step(new_state, project_root, adr_file, lane, manifest, obpi_files)
     if completed_at:
         _cleanup_hook_files(project_root, state.adr_id)
-    else:
-        _write_turn_lock(project_root, state.adr_id, next_s)
     _output(as_json, new_state, output)
 
 

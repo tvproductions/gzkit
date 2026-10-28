@@ -794,6 +794,10 @@ gzkit is 1.0 when ALL hold:
 > `GZ_<LEVEL>` system MX drains. **Open, unbooked-as-ruled:** the de-tax
 > ratification (relax token-block Sub-Invariant 5 / amend ADR-0.0.41). Source:
 > handoff `.gzkit/handoffs/20260620T180109Z-levels-mx-gzkit-lobotomy.md`.
+>
+> *Note appended 2026-10-28 (a record of that day, not a rewrite of the entry above):* the
+> spot-verification of the ceremony turn-lock found no reader. Its only reader,
+> `ceremony-step-gate.py`, was retired on 2026-03-30, and the writer was retired under GHI #1297.
 
 > **Reframed (operator verbatim, 2026-06-15):** *"we are attending to schema
 > validation through Pydantic … to create term uniformity with fillable

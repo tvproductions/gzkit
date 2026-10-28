@@ -165,15 +165,12 @@ def save_ceremony_state(project_root: Path, state: CeremonyState) -> None:
     path.write_text(state.model_dump_json(indent=2) + "\n", encoding="utf-8")
 
 
-def _write_turn_lock(project_root: Path, adr_id: str, step: int) -> None:
-    d = _ceremony_dir(project_root)
-    d.mkdir(parents=True, exist_ok=True)
-    lock = _turn_lock_path(project_root, adr_id)
-    lock.write_text(json.dumps({"presented_step": step}) + "\n", encoding="utf-8")
-
-
 def _cleanup_hook_files(project_root: Path, adr_id: str) -> None:
-    """Remove turn-lock and hook-state files after ceremony completes."""
+    """Remove a stale turn-lock and hook-state file an earlier release wrote.
+
+    Nothing writes them since GHI #1297 retired the writer; this sweep stays one
+    release so an adopter's leftovers clear on the next completion or pause.
+    """
     for path in (_turn_lock_path(project_root, adr_id), _hook_state_path(project_root, adr_id)):
         if path.exists():
             path.unlink()
