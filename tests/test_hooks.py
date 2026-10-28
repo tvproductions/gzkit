@@ -18,7 +18,12 @@ from pathlib import Path
 from unittest import mock
 
 from gzkit.config import GzkitConfig
-from gzkit.hooks.claude import generate_claude_settings, merge_settings, setup_claude_hooks
+from gzkit.hooks.claude import (
+    _claude_hooks_readme,
+    generate_claude_settings,
+    merge_settings,
+    setup_claude_hooks,
+)
 from gzkit.hooks.core import (
     generate_hook_script,
     is_governance_artifact,
@@ -1009,6 +1014,28 @@ class TestPreferLspHookDelivery(unittest.TestCase):
 
             self.assertTrue((hooks_dir / "prefer-lsp.py").is_file())
             self.assertFalse((hooks_dir / "prefer_lsp.py").exists())
+
+    def test_the_hooks_readme_documents_every_registered_hook(self) -> None:
+        """Each hook the settings register has a README entry and an order line.
+
+        The generated README is the hook surface's description; a registered
+        hook it omits runs undocumented (found for `mx-awareness.py` while
+        delivering the prefer-LSP hook, GHI #1278).
+        """
+        settings = generate_claude_settings(GzkitConfig(project_name="gzkit-test"))
+        registered = {
+            Path(h["command"].rsplit("/", 1)[-1].rstrip('"')).name
+            for groups in settings["hooks"].values()
+            for group in groups
+            for h in group["hooks"]
+        }
+        readme = _claude_hooks_readme()
+        entries, _, order = readme.partition("## Registration Order")
+        self.assertTrue(order, "README has no Registration Order section")
+        for name in sorted(registered):
+            with self.subTest(hook=name):
+                self.assertIn(f"- `{name}`", entries)
+                self.assertIn(f"`{name}`", order)
 
     def test_rendered_hook_parses_on_a_pre_314_grammar(self) -> None:
         # The hook runs in the adopter's interpreter; 3.14-only syntax made it

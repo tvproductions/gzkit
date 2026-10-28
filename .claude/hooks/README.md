@@ -31,6 +31,10 @@ Current hook surface in gzkit:
 - `pipeline-completion-reminder.py`
   PreToolUse (`Bash`) hook that warns before `git commit` and
   `git push` when an active OBPI runtime still appears incomplete.
+- `ghi-triage-chat-silence.py`
+  PreToolUse (`Bash`) hook that blocks `triage.py --format rank`
+  when the assistant's last turn already restated the ranked queue
+  as prose (GHI #424).
 - `post-edit-ruff.py`
   PostToolUse (`Write|Edit`) hook that runs `gz lint` on
   edited Python files and surfaces findings to stderr (GHI #239).
@@ -41,6 +45,10 @@ Current hook surface in gzkit:
   Stop (`*`) hook that runs `gz lint` over git-dirty Python
   files at turn end and blocks the stop with agent-actionable
   prose; fail-open, one block per turn (ADR-0.0.70).
+- `mx-awareness.py`
+  UserPromptSubmit (`*`) hook that injects the MX banner into every
+  turn while the MX marker is present; a no-op otherwise, and
+  fail-open (ADR-0.0.74).
 - `session-start-advisement.py`
   SessionStart (`*`) hook that surfaces the newest handoff and its
   advised steps via `additionalContext`, its one channel. Not
@@ -81,6 +89,7 @@ Current hook surface in gzkit:
 - `PostToolUse` `Edit|Write`: `post-edit-ruff.py`,
   then `ledger-writer.py`
 - `Stop` `*`: `stop-turn-feedback.py`
+- `UserPromptSubmit` `*`: `mx-awareness.py`
 - `SessionStart` `*`: `session-start-advisement.py` (only without
   `scripts/session_orientation.py`)
 - `SessionEnd` `*`: `session-exit-bookmark.py`
