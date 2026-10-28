@@ -1,4 +1,4 @@
-<!-- Stage 4 procedure, served by the runtime at stage entry (OBPI-0.35.0-17; cut over in OBPI-0.35.0-20). Rendered from data/obpi_pipeline_control_inventory.json by gzkit.governance.pipeline_procedure_render: the stage's own section first, then every block from another section holding a control whose applies_at names this stage. Every control is verbatim from the attested baseline of .gzkit/skills/gz-obpi-pipeline/SKILL.md (072317673, body sha256 fe97fe3139282b0ceec5b11866e97efad11761d8e35a5e4977c84f3d6b388367); passages the inventory classes as rationale are in docs/governance/obpi-pipeline-control-rationale.md under the control they explain, and a control that applies elsewhere is left out of its block here. Nothing is reworded. Do not edit by hand: tests/governance/test_pipeline_procedure_render.py holds this file to the render. -->
+<!-- Stage 4 procedure, served by the runtime at stage entry (OBPI-0.35.0-17; cut over in OBPI-0.35.0-20). Rendered from data/obpi_pipeline_control_inventory.json by gzkit.governance.pipeline_procedure_render: the stage's own section first, then every block from another section holding a control whose applies_at names this stage. Every control is verbatim from the attested baseline of .gzkit/skills/gz-obpi-pipeline/SKILL.md (072317673, body sha256 fe97fe3139282b0ceec5b11866e97efad11761d8e35a5e4977c84f3d6b388367); passages the inventory classes as rationale are in docs/governance/obpi-pipeline-control-rationale.md under the control they explain, and a control that applies elsewhere is left out of its block here. Reworded, each with its reason in the inventory: I-028, S4-002, S4-032, S4-033, S4-045. Do not edit by hand: tests/governance/test_pipeline_procedure_render.py holds this file to the render. -->
 
 # Stage 4: Present Evidence — served procedure
 
@@ -9,7 +9,7 @@ Stage 4 is three steps and one bounded loop:
 ```
 4a author the packet → 4a-v replay the packet → 4b independent review → pass condition met?
    ├─ yes → present 4a + 4a-v + 4b together → await attestation
-   └─ no  → ONE repair round (§ The review window) → re-enter at 4a
+   └─ no  → ONE rework round (§ The review window) → re-enter at 4a
 ```
 
 You do not get to skip 4b because your own evidence looks green. You are not the exception. The sequence admits
@@ -105,12 +105,12 @@ history sections and its Change Log do not move it.
    audited population: not the source, not a test, not a data file, not a rule, and
    do not `gz git-sync` in other work. An edit inside the window spends the round.
 
-**When a round returns findings, run ONE repair round.** Collect all of them first.
-Repair them as one batch (§ Repair the whole obligation, below). Then repeat steps 1–5
-once, dispatching the focused follow-up described below — never one dispatch per
+**When a round returns findings, run ONE rework round.** Collect all of them first.
+Rework them as one batch (§ Repair the whole obligation, below). Then repeat steps 1–5
+once, dispatching the focused buy-back described below — never one dispatch per
 finding, and never a fresh unrestricted review.
 
-After fixing a finding, obtain a focused independent Step 4b follow-up. Supply the prior findings, the changed artifacts and evidence, and the unchanged scope/threat-model boundary. The adversary must verify each claimed closure and check the affected requirements for regressions; it must not restart an unrestricted search for stronger guarantees. Record the actual new verdict and receipt, with each prior finding's disposition and demonstrated evidence. Preserve earlier rounds as history. Never request a preferred verdict or relabel `CORROBORATED-WITH-CAVEATS` as clean yourself.
+After the rework, obtain the buy-back: a focused independent Step 4b follow-up, limited to the findings. Supply the prior findings, the changed artifacts and evidence, and the unchanged scope/threat-model boundary. The adversary must verify each claimed closure and check the affected requirements for regressions; it must not restart an unrestricted search for stronger guarantees. Record the actual new verdict and receipt, with each prior finding's disposition and demonstrated evidence. Preserve earlier rounds as history. Never request a preferred verdict or relabel `CORROBORATED-WITH-CAVEATS` as clean yourself.
 
 **Repair the whole obligation before redispatch (GHI #984).** Carry the accepted
 finding back through the existing implementation and verification stages. Trace
@@ -147,7 +147,7 @@ Then present the open findings, what each round changed, and one recommendation.
 
 > Rationale: docs/governance/obpi-pipeline-control-rationale.md § S4-044
 
-**When a round repeats the prior round's ROOT, stop dispatching and escalate the DESIGN (operator ruling 2026-09-03).** Compare each round's `Weakest point` against the last. If it names the same root cause at a different surface, another fix cycle will surface it again one layer deeper: stop, and put the design decision to the operator (§ Behavior Rules — Always #9).
+**When a round repeats the prior round's ROOT, stop dispatching and escalate the DESIGN (operator ruling 2026-09-03).** Compare each round's `Weakest point` against the last. If it names the same root cause at a different surface, another rework round will surface it again one layer deeper: stop, and put the design decision to the operator (§ Behavior Rules — Always #9).
 
 > Rationale: docs/governance/obpi-pipeline-control-rationale.md § S4-045
 
@@ -593,7 +593,7 @@ These thoughts mean STOP — you are about to break the pipeline:
 | "I'll present Step 4a now and run the adversary after the operator responds / in the next turn" | Sequence violation. The adversary runs BEFORE attestation, not after — the operator attests holding the adversary's verdict. Presenting 4a as the terminal step of the turn, with 4b deferred, is the skip this gate forbids. Dispatch any missing required review before soliciting attestation; retain already applicable imported review. |
 | "An independent Claude subagent is fine for 4b — I don't need Codex" | Tier-order bypass (GHI #678). A Claude validating Claude shares this agent's blind spots — the exact failure Step 4b exists to break. Codex (tier 1) is REQUIRED first; tier 2 is permitted ONLY after a checked `ready: false`. Run `codex:setup`; if `ready: true`, the Claude subagent is forbidden. "It was convenient" is not a fallback reason. |
 | "The adversary is there to find problems, so a round that confirms the feature works is a soft round" | Inverted. A second model CONFIRMING the first model's implementation is correct is the entire point of Step 4b; probing is how that confirmation is earned. A round that only lists what it broke, and never demonstrates the feature doing its job, has not done the job. |
-| "The adversary refuted again, so I'll fix these findings and re-run" | Check its `Weakest point` against the previous round FIRST. If it names the same root, another fix cycle surfaces it one layer deeper — that is three rounds and ~9 hours in the measured case. Stop and put the design to the operator. |
+| "The adversary refuted again, so I'll fix these findings and re-run" | Check its `Weakest point` against the previous round FIRST. If it names the same root, another rework round surfaces it one layer deeper — that is three rounds and ~9 hours in the measured case. Stop and put the design to the operator. |
 | "I'll tell the adversary to REFUTE the claim — that's what adversarial means" | It is not, and this exact wording cost OBPI-0.35.0-04 six rounds. A model told "your job is to REFUTE this, not to confirm it" will escalate until something falls, and its best available outcome is "I could not refute it" — absence of evidence, never confirmation. Prompt for independent confirmation, with probing as the method. |
 | "This is a security property, so the claim should be absolute" | An absolute claim cannot be refuted in bounded time: the adversary escalates the attacker until something falls. Declare the threat model in the brief FIRST, state it in the prompt, and forbid out-of-scope findings — otherwise the gate never converges. |
 | "The adversary found something, so the OBPI cannot pass" | Apply the September 5 independent-closure rule below: every finding against the agreed requirements or their required proof needs a disposition and independent closure. Severity alone does not clear it. Track independent discoveries without silently making them acceptance prerequisites; never dismiss a relevant finding merely because it arose in an auxiliary audit. |

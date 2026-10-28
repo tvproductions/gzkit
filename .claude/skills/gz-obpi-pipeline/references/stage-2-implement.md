@@ -1,4 +1,4 @@
-<!-- Stage 2 procedure, served by the runtime at stage entry (OBPI-0.35.0-17; cut over in OBPI-0.35.0-20). Rendered from data/obpi_pipeline_control_inventory.json by gzkit.governance.pipeline_procedure_render: the stage's own section first, then every block from another section holding a control whose applies_at names this stage. Every control is verbatim from the attested baseline of .gzkit/skills/gz-obpi-pipeline/SKILL.md (072317673, body sha256 fe97fe3139282b0ceec5b11866e97efad11761d8e35a5e4977c84f3d6b388367); passages the inventory classes as rationale are in docs/governance/obpi-pipeline-control-rationale.md under the control they explain, and a control that applies elsewhere is left out of its block here. Reworded, each with its reason in the inventory: S2-064, S2-080. Do not edit by hand: tests/governance/test_pipeline_procedure_render.py holds this file to the render. -->
+<!-- Stage 2 procedure, served by the runtime at stage entry (OBPI-0.35.0-17; cut over in OBPI-0.35.0-20). Rendered from data/obpi_pipeline_control_inventory.json by gzkit.governance.pipeline_procedure_render: the stage's own section first, then every block from another section holding a control whose applies_at names this stage. Every control is verbatim from the attested baseline of .gzkit/skills/gz-obpi-pipeline/SKILL.md (072317673, body sha256 fe97fe3139282b0ceec5b11866e97efad11761d8e35a5e4977c84f3d6b388367); passages the inventory classes as rationale are in docs/governance/obpi-pipeline-control-rationale.md under the control they explain, and a control that applies elsewhere is left out of its block here. Reworded, each with its reason in the inventory: S2-062, S2-064, S2-074, S2-080. Do not edit by hand: tests/governance/test_pipeline_procedure_render.py holds this file to the render. -->
 
 # Stage 2: Implement — served procedure
 
@@ -193,10 +193,10 @@ A check
          - Any mapped acceptance finding remains blocking until an independent
            closure names its original finding, obligation, and current proof.
          - Critical finding from either reviewer → **fix** — redispatch the implementer with
-           the finding as additional context, then re-review after the fix
-         - Fix cycles are bounded: maximum 2 fix cycles per task (`MAX_REVIEW_FIX_CYCLES`).
-           After exhausting fix cycles → **blocked** — halt Stage 2 and escalate to user.
-         - When both reviewers find critical issues, combine findings into a single fix dispatch.
+           the finding as additional context, then re-review after the rework
+         - Rework cycles are bounded: maximum 2 per task (`MAX_REVIEW_FIX_CYCLES`).
+           After exhausting them → **blocked** — halt Stage 2 and escalate to user.
+         - When both reviewers find critical issues, combine findings into a single rework dispatch.
 
       vii. **Log review concerns** — if `DONE_WITH_CONCERNS` from implementer, pass concerns
          as additional context to reviewers. Accumulate review findings in dispatch state for
@@ -239,7 +239,7 @@ A check
 
 > Rationale: docs/governance/obpi-pipeline-control-rationale.md § S2-071, § S2-073
 
-**Abort if:** Any task returns `BLOCKED` after retry or after exhausting review fix cycles. Surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.
+**Abort if:** Any task returns `BLOCKED` after retry or after exhausting review rework cycles. Surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.
 
 #### Inline Fallback (declared single-driver)
 

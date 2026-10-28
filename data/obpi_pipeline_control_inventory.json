@@ -652,8 +652,11 @@
       "stage4"
      ],
      "cause": "operator ruling 2026-09-03",
-     "delivered_span": "| \"The adversary refuted again, so I'll fix these findings and re-run\" | Check its `Weakest point` against the previous round FIRST. If it names the same root, another fix cycle surfaces it one layer deeper — that is three rounds and ~9 hours in the measured case. Stop and put the design to the operator. |",
-     "reworded": null
+     "delivered_span": "| \"The adversary refuted again, so I'll fix these findings and re-run\" | Check its `Weakest point` against the previous round FIRST. If it names the same root, another rework round surfaces it one layer deeper — that is three rounds and ~9 hours in the measured case. Stop and put the design to the operator. |",
+     "reworded": {
+      "text": "| \"The adversary refuted again, so I'll fix these findings and re-run\" | Check its `Weakest point` against the previous round FIRST. If it names the same root, another rework round surfaces it one layer deeper — that is three rounds and ~9 hours in the measured case. Stop and put the design to the operator. |",
+      "reason": "A ruled correction (contractor-kit C5, row 4; operator 2026-10-28, \"Reword now via inventory (Recommended)\"): rework is the repair activity's repeat and buy-back the reinspection limited to the finding. Stage 2's full re-review is rework with no per-finding reinspection, so it takes rework only; Step 4b's focused follow-up is the buy-back. Code identifiers (the `fix` literal, MAX_REVIEW_FIX_CYCLES) are unchanged."
+     }
     }
    ],
    "non_control": []
@@ -3093,8 +3096,11 @@
       "stage2"
      ],
      "cause": null,
-     "delivered_span": "      vi. **Handle review results** via `handle_review_cycle(state, task_index, spec_result, quality_result, acceptance=...)`:\n         - Both reviewers pass AND current task-scoped Stage-2 acceptance is ready\n           → **advance** to the next task. Obtain that readiness using\n           `status --stage stage2 --req {REQ-ID}` (repeat `--req` for this task's\n           obligations). Scope selects the readiness decision; the full canonical\n           roster and finding history remain retained. Before leaving Stage 2,\n           require unscoped `status --stage stage2` to clear every obligation.\n         - Any mapped acceptance finding remains blocking until an independent\n           closure names its original finding, obligation, and current proof.\n         - Critical finding from either reviewer → **fix** — redispatch the implementer with\n           the finding as additional context, then re-review after the fix\n         - Fix cycles are bounded: maximum 2 fix cycles per task (`MAX_REVIEW_FIX_CYCLES`).\n           After exhausting fix cycles → **blocked** — halt Stage 2 and escalate to user.\n         - When both reviewers find critical issues, combine findings into a single fix dispatch.",
-     "reworded": null
+     "delivered_span": "      vi. **Handle review results** via `handle_review_cycle(state, task_index, spec_result, quality_result, acceptance=...)`:\n         - Both reviewers pass AND current task-scoped Stage-2 acceptance is ready\n           → **advance** to the next task. Obtain that readiness using\n           `status --stage stage2 --req {REQ-ID}` (repeat `--req` for this task's\n           obligations). Scope selects the readiness decision; the full canonical\n           roster and finding history remain retained. Before leaving Stage 2,\n           require unscoped `status --stage stage2` to clear every obligation.\n         - Any mapped acceptance finding remains blocking until an independent\n           closure names its original finding, obligation, and current proof.\n         - Critical finding from either reviewer → **fix** — redispatch the implementer with\n           the finding as additional context, then re-review after the rework\n         - Rework cycles are bounded: maximum 2 per task (`MAX_REVIEW_FIX_CYCLES`).\n           After exhausting them → **blocked** — halt Stage 2 and escalate to user.\n         - When both reviewers find critical issues, combine findings into a single rework dispatch.",
+     "reworded": {
+      "text": "      vi. **Handle review results** via `handle_review_cycle(state, task_index, spec_result, quality_result, acceptance=...)`:\n         - Both reviewers pass AND current task-scoped Stage-2 acceptance is ready\n           → **advance** to the next task. Obtain that readiness using\n           `status --stage stage2 --req {REQ-ID}` (repeat `--req` for this task's\n           obligations). Scope selects the readiness decision; the full canonical\n           roster and finding history remain retained. Before leaving Stage 2,\n           require unscoped `status --stage stage2` to clear every obligation.\n         - Any mapped acceptance finding remains blocking until an independent\n           closure names its original finding, obligation, and current proof.\n         - Critical finding from either reviewer → **fix** — redispatch the implementer with\n           the finding as additional context, then re-review after the rework\n         - Rework cycles are bounded: maximum 2 per task (`MAX_REVIEW_FIX_CYCLES`).\n           After exhausting them → **blocked** — halt Stage 2 and escalate to user.\n         - When both reviewers find critical issues, combine findings into a single rework dispatch.",
+      "reason": "A ruled correction (contractor-kit C5, row 4; operator 2026-10-28, \"Reword now via inventory (Recommended)\"): rework is the repair activity's repeat and buy-back the reinspection limited to the finding. Stage 2's full re-review is rework with no per-finding reinspection, so it takes rework only; Step 4b's focused follow-up is the buy-back. Code identifiers (the `fix` literal, MAX_REVIEW_FIX_CYCLES) are unchanged."
+     }
     }
    ],
    "non_control": []
@@ -3289,8 +3295,11 @@
       "stage2"
      ],
      "cause": null,
-     "delivered_span": "**Abort if:** Any task returns `BLOCKED` after retry or after exhausting review fix cycles. Surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.",
-     "reworded": null
+     "delivered_span": "**Abort if:** Any task returns `BLOCKED` after retry or after exhausting review rework cycles. Surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.",
+     "reworded": {
+      "text": "**Abort if:** Any task returns `BLOCKED` after retry or after exhausting review rework cycles. Surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.",
+      "reason": "A ruled correction (contractor-kit C5, row 4; operator 2026-10-28, \"Reword now via inventory (Recommended)\"): rework is the repair activity's repeat and buy-back the reinspection limited to the finding. Stage 2's full re-review is rework with no per-finding reinspection, so it takes rework only; Step 4b's focused follow-up is the buy-back. Code identifiers (the `fix` literal, MAX_REVIEW_FIX_CYCLES) are unchanged."
+     }
     }
    ],
    "non_control": []
@@ -4713,8 +4722,11 @@
       "stage4"
      ],
      "cause": null,
-     "delivered_span": "```\n4a author the packet → 4a-v replay the packet → 4b independent review → pass condition met?\n   ├─ yes → present 4a + 4a-v + 4b together → await attestation\n   └─ no  → ONE repair round (§ The review window) → re-enter at 4a\n```",
-     "reworded": null
+     "delivered_span": "```\n4a author the packet → 4a-v replay the packet → 4b independent review → pass condition met?\n   ├─ yes → present 4a + 4a-v + 4b together → await attestation\n   └─ no  → ONE rework round (§ The review window) → re-enter at 4a\n```",
+     "reworded": {
+      "text": "```\n4a author the packet → 4a-v replay the packet → 4b independent review → pass condition met?\n   ├─ yes → present 4a + 4a-v + 4b together → await attestation\n   └─ no  → ONE rework round (§ The review window) → re-enter at 4a\n```",
+      "reason": "A ruled correction (contractor-kit C5, row 4; operator 2026-10-28, \"Reword now via inventory (Recommended)\"): rework is the repair activity's repeat and buy-back the reinspection limited to the finding. Stage 2's full re-review is rework with no per-finding reinspection, so it takes rework only; Step 4b's focused follow-up is the buy-back. Code identifiers (the `fix` literal, MAX_REVIEW_FIX_CYCLES) are unchanged."
+     }
     }
    ],
    "non_control": []
@@ -5217,8 +5229,11 @@
       "stage4"
      ],
      "cause": null,
-     "delivered_span": "**When a round returns findings, run ONE repair round.** Collect all of them first.\nRepair them as one batch (§ Repair the whole obligation, below). Then repeat steps 1–5\nonce, dispatching the focused follow-up described below — never one dispatch per\nfinding, and never a fresh unrestricted review.",
-     "reworded": null
+     "delivered_span": "**When a round returns findings, run ONE rework round.** Collect all of them first.\nRework them as one batch (§ Repair the whole obligation, below). Then repeat steps 1–5\nonce, dispatching the focused buy-back described below — never one dispatch per\nfinding, and never a fresh unrestricted review.",
+     "reworded": {
+      "text": "**When a round returns findings, run ONE rework round.** Collect all of them first.\nRework them as one batch (§ Repair the whole obligation, below). Then repeat steps 1–5\nonce, dispatching the focused buy-back described below — never one dispatch per\nfinding, and never a fresh unrestricted review.",
+      "reason": "A ruled correction (contractor-kit C5, row 4; operator 2026-10-28, \"Reword now via inventory (Recommended)\"): rework is the repair activity's repeat and buy-back the reinspection limited to the finding. Stage 2's full re-review is rework with no per-finding reinspection, so it takes rework only; Step 4b's focused follow-up is the buy-back. Code identifiers (the `fix` literal, MAX_REVIEW_FIX_CYCLES) are unchanged."
+     }
     }
    ],
    "non_control": []
@@ -5233,8 +5248,11 @@
       "stage4"
      ],
      "cause": null,
-     "delivered_span": "After fixing a finding, obtain a focused independent Step 4b follow-up. Supply the prior findings, the changed artifacts and evidence, and the unchanged scope/threat-model boundary. The adversary must verify each claimed closure and check the affected requirements for regressions; it must not restart an unrestricted search for stronger guarantees. Record the actual new verdict and receipt, with each prior finding's disposition and demonstrated evidence. Preserve earlier rounds as history. Never request a preferred verdict or relabel `CORROBORATED-WITH-CAVEATS` as clean yourself.",
-     "reworded": null
+     "delivered_span": "After the rework, obtain the buy-back: a focused independent Step 4b follow-up, limited to the findings. Supply the prior findings, the changed artifacts and evidence, and the unchanged scope/threat-model boundary. The adversary must verify each claimed closure and check the affected requirements for regressions; it must not restart an unrestricted search for stronger guarantees. Record the actual new verdict and receipt, with each prior finding's disposition and demonstrated evidence. Preserve earlier rounds as history. Never request a preferred verdict or relabel `CORROBORATED-WITH-CAVEATS` as clean yourself.",
+     "reworded": {
+      "text": "After the rework, obtain the buy-back: a focused independent Step 4b follow-up, limited to the findings. Supply the prior findings, the changed artifacts and evidence, and the unchanged scope/threat-model boundary. The adversary must verify each claimed closure and check the affected requirements for regressions; it must not restart an unrestricted search for stronger guarantees. Record the actual new verdict and receipt, with each prior finding's disposition and demonstrated evidence. Preserve earlier rounds as history. Never request a preferred verdict or relabel `CORROBORATED-WITH-CAVEATS` as clean yourself.",
+      "reason": "A ruled correction (contractor-kit C5, row 4; operator 2026-10-28, \"Reword now via inventory (Recommended)\"): rework is the repair activity's repeat and buy-back the reinspection limited to the finding. Stage 2's full re-review is rework with no per-finding reinspection, so it takes rework only; Step 4b's focused follow-up is the buy-back. Code identifiers (the `fix` literal, MAX_REVIEW_FIX_CYCLES) are unchanged."
+     }
     }
    ],
    "non_control": []
@@ -5403,8 +5421,11 @@
       "stage4"
      ],
      "cause": "operator ruling 2026-09-03",
-     "delivered_span": "**When a round repeats the prior round's ROOT, stop dispatching and escalate the DESIGN (operator ruling 2026-09-03).** Compare each round's `Weakest point` against the last. If it names the same root cause at a different surface, another fix cycle will surface it again one layer deeper: stop, and put the design decision to the operator (§ Behavior Rules — Always #9).",
-     "reworded": null
+     "delivered_span": "**When a round repeats the prior round's ROOT, stop dispatching and escalate the DESIGN (operator ruling 2026-09-03).** Compare each round's `Weakest point` against the last. If it names the same root cause at a different surface, another rework round will surface it again one layer deeper: stop, and put the design decision to the operator (§ Behavior Rules — Always #9).",
+     "reworded": {
+      "text": "**When a round repeats the prior round's ROOT, stop dispatching and escalate the DESIGN (operator ruling 2026-09-03).** Compare each round's `Weakest point` against the last. If it names the same root cause at a different surface, another rework round will surface it again one layer deeper: stop, and put the design decision to the operator (§ Behavior Rules — Always #9).",
+      "reason": "A ruled correction (contractor-kit C5, row 4; operator 2026-10-28, \"Reword now via inventory (Recommended)\"): rework is the repair activity's repeat and buy-back the reinspection limited to the finding. Stage 2's full re-review is rework with no per-finding reinspection, so it takes rework only; Step 4b's focused follow-up is the buy-back. Code identifiers (the `fix` literal, MAX_REVIEW_FIX_CYCLES) are unchanged."
+     }
     }
    ],
    "non_control": [
