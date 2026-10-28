@@ -24,6 +24,7 @@ from gzkit.hooks.core import (
     is_governance_artifact,
     write_hook_script,
 )
+from gzkit.hooks.scripts.lsp import _prefer_lsp_script
 from gzkit.lock_manager import LockData, write_lock
 from gzkit.traceability import covers
 from tests.commands.common import argv_by_tool_name
@@ -312,6 +313,15 @@ class TestGenerateClaudeSettings(unittest.TestCase):
                         },
                     ],
                 },
+                {
+                    "matcher": "Grep|Bash|PowerShell",
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": _expected_hook_command("prefer-lsp.py"),
+                        }
+                    ],
+                },
             ],
         )
         self.assertEqual(
@@ -368,8 +378,9 @@ class TestGenerateClaudeSettings(unittest.TestCase):
         # (2026-08-14), 12 when the hook itself was retired (2026-08-15, operator
         # ruling: a handoff is an advisor, not a gate-keeping nanny). Nothing
         # registers it on any matcher now. 11 since the instruction router's
-        # retirement (2026-10-17, drydock RO-1 act b).
-        self.assertEqual(len(commands), 11, commands)
+        # retirement (2026-10-17, drydock RO-1 act b). 12 since the prefer-LSP
+        # hook joined the generator (GHI #1278).
+        self.assertEqual(len(commands), 12, commands)
         for command in commands:
             self.assertIn('"$CLAUDE_PROJECT_DIR/', command, command)
             self.assertNotIn("python .claude/hooks/", command, command)
@@ -681,6 +692,15 @@ class TestSetupClaudeHooks(unittest.TestCase):
                             },
                         ],
                     },
+                    {
+                        "matcher": "Grep|Bash|PowerShell",
+                        "hooks": [
+                            {
+                                "type": "command",
+                                "command": _expected_hook_command("prefer-lsp.py"),
+                            }
+                        ],
+                    },
                 ],
             )
             self.assertEqual(
@@ -958,6 +978,42 @@ class TestSettingsMergePreservesUserHooks(unittest.TestCase):
                 for h in g["hooks"]
             ]
             self.assertEqual(kept, [user_exec])
+
+
+class TestPreferLspHookDelivery(unittest.TestCase):
+    """GHI #1278: the prefer-LSP hook ships through the generator.
+
+    Hand-wired in this repository's settings only, it reached no adopter while
+    the generated CLAUDE.md line it enforces did, and it ran under a bare
+    `python` whose grammar might predate its source.
+    """
+
+    def test_generated_settings_register_the_hook_on_search_tools(self) -> None:
+        settings = generate_claude_settings(GzkitConfig(project_name="gzkit-test"))
+        commands = [
+            h["command"]
+            for g in settings["hooks"]["PreToolUse"]
+            if g["matcher"] == "Grep|Bash|PowerShell"
+            for h in g["hooks"]
+        ]
+        self.assertEqual(commands, [_expected_hook_command("prefer-lsp.py")])
+
+    def test_setup_writes_the_hook_and_retires_the_hand_wired_file(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            hooks_dir = project_root / ".claude" / "hooks"
+            hooks_dir.mkdir(parents=True)
+            (hooks_dir / "prefer_lsp.py").write_text("# hand-wired\n", encoding="utf-8")
+
+            setup_claude_hooks(project_root, GzkitConfig(project_name="gzkit-test"))
+
+            self.assertTrue((hooks_dir / "prefer-lsp.py").is_file())
+            self.assertFalse((hooks_dir / "prefer_lsp.py").exists())
+
+    def test_rendered_hook_parses_on_a_pre_314_grammar(self) -> None:
+        # The hook runs in the adopter's interpreter; 3.14-only syntax made it
+        # a SyntaxError, so the hook failed open, on any older Python.
+        ast.parse(_prefer_lsp_script(), feature_version=(3, 10))
 
 
 class TestPostEditRuffHook(unittest.TestCase):

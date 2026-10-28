@@ -12,6 +12,7 @@ from pathlib import Path
 from gzkit.config import GzkitConfig
 from gzkit.hooks.core import _ruff_format_dir
 from gzkit.hooks.scripts.ghi import _ghi_triage_chat_silence_script
+from gzkit.hooks.scripts.lsp import _prefer_lsp_script
 from gzkit.hooks.scripts.mx import _mx_awareness_script
 from gzkit.hooks.scripts.pipeline import (
     _pipeline_completion_reminder_script,
@@ -61,6 +62,10 @@ def _claude_hooks_readme() -> str:
             "  report the last stage's exit, masking a failing run as green.",
             "  Mechanizes `.gzkit/rules/tests.md` § Verification exit-code",
             "  integrity; `pipefail` / `PIPESTATUS` opt out (GHI #589).",
+            "- `prefer-lsp.py`",
+            "  PreToolUse (`Grep|Bash|PowerShell`) hook that denies the first",
+            "  text search for a Python symbol in a session and points at the",
+            "  ty-backed LSP tool; repeating the search lets it through.",
             "- `session-staleness-check.py`",
             "  PreToolUse (`Write|Edit`) hook that detects stale pipeline",
             "  artifacts from previous sessions and emits warnings.",
@@ -125,6 +130,7 @@ def _claude_hooks_readme() -> str:
             "- `PreToolUse` `Bash`: `verifier-pipe-gate.py`,",
             "  then `pipeline-completion-reminder.py`,",
             "  then `ghi-triage-chat-silence.py`",
+            "- `PreToolUse` `Grep|Bash|PowerShell`: `prefer-lsp.py`",
             "- `PostToolUse` `Edit|Write`: `post-edit-ruff.py`,",
             "  then `ledger-writer.py`",
             "- `Stop` `*`: `stop-turn-feedback.py`",
@@ -262,6 +268,17 @@ def generate_claude_settings(config: GzkitConfig, project_root: Path | None = No
                             "type": "command",
                             "command": _hook_command(hooks_dir, "ghi-triage-chat-silence.py"),
                         },
+                    ],
+                },
+                {
+                    # Routes Python symbol lookups to the ty-backed LSP tool, the
+                    # rule the generated CLAUDE.md states (GHI #1278).
+                    "matcher": "Grep|Bash|PowerShell",
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": _hook_command(hooks_dir, "prefer-lsp.py"),
+                        }
                     ],
                 },
             ],
@@ -531,6 +548,9 @@ _RETIRED_HOOKS: tuple[str, ...] = (
     # Read `.github/instructions/`, which nothing renders since GHI #924; Claude
     # loads the same rules natively from `.claude/rules/` (drydock RO-1 act b).
     "instruction-router.py",
+    # Hand-wired under this name before the generator delivered it as
+    # `prefer-lsp.py` (GHI #1278).
+    "prefer_lsp.py",
 )
 
 
@@ -556,7 +576,7 @@ def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) ->
 
     hooks_path = project_root / config.paths.claude_hooks
 
-    # (filename, renderer, executable). A table rather than seventeen repeated
+    # (filename, renderer, executable). A table rather than repeated
     # write blocks, so the staging pass in ``_write_hook_dir`` can treat every
     # generated hook uniformly.
     scripts: tuple[tuple[str, Callable[[], str], bool], ...] = (
@@ -566,6 +586,7 @@ def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) ->
         ("pipeline-gate.py", _pipeline_gate_script, True),
         ("pipeline-completion-reminder.py", _pipeline_completion_reminder_script, True),
         ("ghi-triage-chat-silence.py", _ghi_triage_chat_silence_script, True),
+        ("prefer-lsp.py", _prefer_lsp_script, True),
         ("session-start-advisement.py", _session_start_advisement_script, True),
         ("session-exit-bookmark.py", _session_exit_bookmark_script, True),
         ("verifier-pipe-gate.py", _verifier_pipe_gate_script, True),

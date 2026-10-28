@@ -9,6 +9,10 @@ Current hook surface in gzkit:
   report the last stage's exit, masking a failing run as green.
   Mechanizes `.gzkit/rules/tests.md` § Verification exit-code
   integrity; `pipefail` / `PIPESTATUS` opt out (GHI #589).
+- `prefer-lsp.py`
+  PreToolUse (`Grep|Bash|PowerShell`) hook that denies the first
+  text search for a Python symbol in a session and points at the
+  ty-backed LSP tool; repeating the search lets it through.
 - `session-staleness-check.py`
   PreToolUse (`Write|Edit`) hook that detects stale pipeline
   artifacts from previous sessions and emits warnings.
@@ -73,6 +77,7 @@ Current hook surface in gzkit:
 - `PreToolUse` `Bash`: `verifier-pipe-gate.py`,
   then `pipeline-completion-reminder.py`,
   then `ghi-triage-chat-silence.py`
+- `PreToolUse` `Grep|Bash|PowerShell`: `prefer-lsp.py`
 - `PostToolUse` `Edit|Write`: `post-edit-ruff.py`,
   then `ledger-writer.py`
 - `Stop` `*`: `stop-turn-feedback.py`
