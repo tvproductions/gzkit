@@ -2318,6 +2318,17 @@
         },
         "open_departures": {
           "type": "array"
+        },
+        "lane": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "lite",
+            "heavy",
+            null
+          ]
         }
       }
     },

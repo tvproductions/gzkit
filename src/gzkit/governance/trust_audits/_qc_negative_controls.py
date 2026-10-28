@@ -1669,10 +1669,11 @@ def _build_catalog_bdd() -> Path:
 
 
 def _build_catalog_forward_rule() -> Path:
-    """Plant one unnamed delivery event after the cutover — it MUST be announced (RO-3 t4).
+    """Plant one unnamed delivery event after the cutover — it MUST be refused (RO-3 t4).
 
-    Decoys the rule must not count: an unnamed event before the cutover (legacy,
-    never read), a named event after it, and an unlisted type after it.
+    Decoys the rule must not count: an unnamed event before the cutover (never
+    read), a named event after it, an event naming an OBPI after it (frozen
+    legacy, RO-5 tranche 4), and an unlisted type after it.
     """
     root = _catalog_project("catalog-forward-rule", [], [])
     registry = {
@@ -1692,6 +1693,12 @@ def _build_catalog_forward_rule() -> Path:
                 "event": "acceptance_recorded",
                 "ts": "2026-01-02T00:00:00+00:00",
                 "req_id": "REQ-0.1.0-01-01",
+            },
+            base
+            | {
+                "event": "task_started",
+                "ts": "2026-01-02T00:00:00+00:00",
+                "obpi_id": "OBPI-0.1.0-01",
             },
             base | {"event": "insight_recorded", "ts": "2026-01-02T00:00:00+00:00"},
         ],
@@ -2331,8 +2338,8 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         "requirements-catalog-forward-rule",
         _build_catalog_forward_rule,
         _ep._ep_catalog_forward_rule,
-        "1 of 2 delivery events since 2026-01-01T00:00:00+00:00 name no REQ or outcome "
-        "(task_started 1)",
+        "1 of 3 delivery events since 2026-01-01T00:00:00+00:00 name no REQ, outcome or "
+        "work package and no OBPI or ADR (task_started 1)",
     ),
     (
         "requirements-catalog-work-packages",

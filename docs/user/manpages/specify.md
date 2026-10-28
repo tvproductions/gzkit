@@ -42,8 +42,9 @@ gz specify <name> --parent <ADR-ID> --item <N> [OPTIONS]
 5. Records `obpi_created` event in ledger
 
 Pool ADRs (`ADR-pool.*` or legacy `ADR-*.pool.*`) are blocked as parents until promoted.
-If the parent ADR scorecard is missing/invalid, or checklist count drifts from scorecard target,
-`gz specify` fails closed.
+If the parent ADR scorecard is missing or invalid, `gz specify` fails closed. The checklist
+count no longer has to match the scorecard target: that step was retired on 2026-10-28 (RO-5
+ruling 9, `docs/governance/GovZero/obpi-decomposition-matrix.md`).
 
 ---
 

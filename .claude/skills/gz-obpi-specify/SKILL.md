@@ -5,9 +5,9 @@ description: Use to decompose an ADR item into an authored OBPI brief.
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-10-28
 metadata:
-  skill-version: "1.9.4"
+  skill-version: "1.10.0"
 model: opus
 ---
 
@@ -174,7 +174,7 @@ done
 ## What the Command Does
 
 1. **Reads the parent ADR** — resolves file, parses Feature Checklist and Decomposition Scorecard
-2. **Validates alignment** — checklist item count must match scorecard target
+2. **Validates the scorecard** — it must parse; its target no longer binds the checklist count (RO-5 ruling 9)
 3. **Parses the WBS table** — extracts lane, specification summary, and status per row
 4. **Resolves lane** — priority: explicit `--lane` CLI arg > WBS table row > fallback `lite`
 5. **Resolves objective** — from WBS specification summary column (not "TBD")
@@ -295,7 +295,6 @@ pass that turns the generated brief into an execution contract.
 ## Pre-Conditions
 
 - Parent ADR must have a valid Decomposition Scorecard
-- Feature Checklist item count must match scorecard `Final Target OBPI Count`
 - Parent ADR must not be a pool ADR
 
 ## Post-Conditions

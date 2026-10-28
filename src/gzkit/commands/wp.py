@@ -31,6 +31,7 @@ from gzkit.work_package_ledger import (
     record_work_package_change,
     record_work_package_issue_closed,
     record_work_package_transition,
+    work_package_lane,
     work_package_state,
 )
 from gzkit.work_package_store import WorkPackageStoreError, next_id, stage, write
@@ -273,13 +274,15 @@ def wp_show_cmd(*, work_package: str, as_json: bool) -> None:
     ]
     history.sort(key=lambda row: str(row.get("ts")))
     state = work_package_state(ledger, work_package)
+    lane = work_package_lane(catalog, work_package)
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
     if as_json:
-        fmt.emit({"record": package.model_dump(mode="json"), "state": state, "history": history})
+        record = package.model_dump(mode="json")
+        fmt.emit({"record": record, "state": state, "lane": lane, "history": history})
         return
     fmt.emit(f"{package.id} ({package.kind}), state: {state or 'not initiated'}")
     target = package.outcome or ", ".join(f"#{issue}" for issue in package.issues)
-    fmt.emit(f"  delivers: {target}" + (f"  lane: {package.lane}" if package.lane else ""))
+    fmt.emit(f"  delivers: {target}  lane: {lane}")
     for row in history:
         move = row.get("to_state") or row.get("rung") or f"#{row.get('issue')}"
         fmt.emit(f"  {row.get('ts')}  {row.get('event')}  {move}")

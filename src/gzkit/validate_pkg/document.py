@@ -10,7 +10,6 @@ from gzkit.core.validation_rules import (
     parse_frontmatter,
 )
 from gzkit.decomposition import (
-    active_checklist_items,
     extract_markdown_section,
     parse_checklist_items,
     parse_scorecard,
@@ -267,7 +266,7 @@ def _validate_adr_decomposition(body: str, artifact_path: str) -> list[Validatio
             )
         )
 
-    scorecard, scorecard_errors = parse_scorecard(body)
+    _, scorecard_errors = parse_scorecard(body)
     for message in scorecard_errors:
         errors.append(
             ValidationError(
@@ -278,26 +277,7 @@ def _validate_adr_decomposition(body: str, artifact_path: str) -> list[Validatio
             )
         )
 
-    if (
-        scorecard is not None
-        and checklist_items
-        and (len(active_checklist_items(checklist_items)) != scorecard.final_target_obpi_count)
-    ):
-        live_count = len(active_checklist_items(checklist_items))
-        errors.append(
-            ValidationError(
-                type="decomposition",
-                artifact=artifact_path,
-                message=(
-                    "Checklist count must match scorecard final target "
-                    "(does not match): "
-                    f"active={live_count} "
-                    f"total={len(checklist_items)} "
-                    f"target={scorecard.final_target_obpi_count}."
-                ),
-                field="Checklist",
-            )
-        )
+    # The checklist-count step is retired (RO-5 ruling 9).
     return errors
 
 

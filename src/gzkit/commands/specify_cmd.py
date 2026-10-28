@@ -26,7 +26,6 @@ from gzkit.core.models import (
 )
 from gzkit.decomposition import (
     WbsRow,
-    active_checklist_items,
     extract_markdown_section,
     is_withdrawn_checklist_item,
     parse_checklist_items,
@@ -696,7 +695,7 @@ def _validate_parent_adr(
     resolved_parent: str,
     item: int,
 ) -> list[str]:
-    """Validate parent ADR checklist, scorecard, and item range. Returns checklist items."""
+    """Validate parent ADR checklist, scorecard shape, and item range. Returns checklist items."""
     checklist_items = parse_checklist_items(adr_content)
     if not checklist_items:
         msg = (
@@ -717,21 +716,13 @@ def _validate_parent_adr(
         )
         raise GzCliError(msg)
 
-    scorecard, scorecard_errors = parse_scorecard(adr_content)
+    _, scorecard_errors = parse_scorecard(adr_content)
     if scorecard_errors:
         summary = "; ".join(scorecard_errors)
         msg = f"Parent ADR decomposition scorecard is invalid for {resolved_parent}: {summary}"
         raise GzCliError(msg)
-    assert scorecard is not None
-    live_items = active_checklist_items(checklist_items)
-    if len(live_items) != scorecard.final_target_obpi_count:
-        msg = (
-            "ADR active checklist count does not match scorecard target for "
-            f"{resolved_parent}: active={len(live_items)} "
-            f"total={len(checklist_items)} "
-            f"target={scorecard.final_target_obpi_count}."
-        )
-        raise GzCliError(msg)
+    # The checklist-count step is retired (RO-5 ruling 9): the scorecard no longer
+    # binds how many items a legacy ADR checklist holds.
     return checklist_items
 
 

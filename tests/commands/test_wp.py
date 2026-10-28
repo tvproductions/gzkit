@@ -225,6 +225,7 @@ class LifecycleTests(_WpCase):
         shown = json.loads(self.gz("show", "WP-01-resume", "--json"))
         self.assertEqual(shown["state"], "initiated")
         self.assertEqual(shown["record"]["outcome"], "H1")
+        self.assertEqual(shown["lane"], "lite")
         self.assertEqual(len(shown["history"]), 1)
 
 

@@ -107,6 +107,21 @@ def _package(catalog: Catalog, work_package: str) -> WorkPackage:
     return held
 
 
+def work_package_lane(catalog: Catalog, work_package: str) -> str:
+    """Read a package's lane, held once (ruling 4, RO-5 tranche 4).
+
+    Returns:
+        A repair package's stored lane; for a delivery package, `heavy` exactly
+        when its outcome is user-facing (requirements model decision 10).
+
+    """
+    package = _package(catalog, work_package)
+    if package.kind == "repair":
+        return str(package.lane)
+    outcome = next(o for o in catalog.outcomes if o.code == package.outcome)
+    return "heavy" if outcome.user_facing else "lite"
+
+
 def work_package_state(ledger: Ledger, work_package: str) -> str | None:
     """Read the package's lifecycle state from the ledger.
 
@@ -204,6 +219,7 @@ def record_work_package_transition(
             "from_state": current,
             "evidence": move.evidence.strip(),
             "attestor": move.attestor.strip() if move.attestor else None,
+            "lane": work_package_lane(catalog, package.id) if move.to_state == "closed" else None,
         }
     )
     ledger.append(ledger_row(event))

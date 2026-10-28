@@ -79,6 +79,22 @@ class TestSpecifyCommand(unittest.TestCase):
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("out of range", result.output)
 
+    def test_specify_no_longer_binds_checklist_count_to_scorecard_target(self) -> None:
+        """RO-5 ruling 9 retires the checklist-count step: a count off the target is accepted."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            adr_path = Path("design/adr/pre-release/ADR-0.1.0-f/ADR-0.1.0-f.md")
+            content = adr_path.read_text(encoding="utf-8")
+            row = "- [ ] OBPI-0.1.0-01: Define scope, constraints, and acceptance criteria"
+            content = content.replace(row, f"{row}\n- [ ] OBPI-0.1.0-02: A second live item")
+            adr_path.write_text(content, encoding="utf-8")
+            result = runner.invoke(
+                main, ["specify", "second", "--parent", "ADR-0.1.0-f", "--item", "2"]
+            )
+            self.assertEqual(result.exit_code, 0, result.output)
+
     def test_specify_ignores_withdrawn_checklist_items_for_live_target(self) -> None:
         """Withdrawn checklist identities remain addressable history, not live target count."""
         runner = CliRunner()

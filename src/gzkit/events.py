@@ -1786,6 +1786,9 @@ class WorkPackageTransitionedEvent(_EventBase):
         (), description="Each alteration accounted as its configuration change, at closed"
     )
     open_departures: tuple[str, ...] = Field((), description="Departures still open at closed")
+    lane: Literal["lite", "heavy"] | None = Field(
+        None, description="The package's lane, derived by the writer at closed (RO-5 tranche 4)"
+    )
 
 
 class WorkPackageChangedEvent(_EventBase):

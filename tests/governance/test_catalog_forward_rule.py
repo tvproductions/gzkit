@@ -1,16 +1,17 @@
 """The forward rule, its delivery-event registry and cutover: RO-3 tranche 4.
 
 `docs/governance/harbor-ro3-requirements-store.md` § Tranches row 4: an undeclared
-delivery event after the cutover is announced; legacy events are not read. Ruling
-4 keeps it advisory until RO-5. Rulings of 2026-10-22: the nine measured types,
-naming by the identity seam's grammars over the event's values, and the cutover
-as a timestamp in `data/catalog/delivery_events.json`.
+delivery event after the cutover is refused; legacy events are not read. Ruling
+4 kept it advisory until RO-5; RO-5 tranche 4 made it fail-closed with frozen
+legacy exempt (operator, 2026-10-28: "Fail-closed, legacy exempt (Recommended)"):
+an event naming an OBPI or ADR id passes, and any other names a REQ, an outcome
+or a held work package. Rulings of 2026-10-22: the nine measured types, naming
+by the identity seam's grammars over the event's values, and the cutover as a
+timestamp in `data/catalog/delivery_events.json`.
 """
 
-import io
 import json
 import unittest
-from contextlib import redirect_stderr
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
@@ -18,6 +19,7 @@ from unittest.mock import patch
 from gzkit.governance.trust_audits.catalog import audit_catalog
 from gzkit.governance.trust_audits.catalog_forward import (
     forward_rule_reading,
+    is_frozen_legacy,
     names_req_or_outcome,
 )
 from gzkit.models.catalog import (
@@ -88,12 +90,44 @@ class TestNaming(unittest.TestCase):
         self.assertFalse(names_req_or_outcome(row, frozenset()))
 
 
+class TestLegacyAndWorkPackage(unittest.TestCase):
+    """RO-5 tranche 4: frozen OBPI and ADR work passes; new work names its package."""
+
+    def test_an_obpi_or_adr_id_in_any_value_marks_frozen_legacy(self):
+        for fields in (
+            {"obpi_id": "OBPI-0.23.0-04"},
+            {"adr_id": "ADR-0.23.0"},
+            {"evidence": "closeout of ADR-0.0.3-hexagonal-architecture-tune-up"},
+            {"adr_id": "ADR-pool.contractor-kit"},
+        ):
+            with self.subTest(fields=fields):
+                self.assertTrue(is_frozen_legacy(_row("task_started", _AFTER, **fields)))
+
+    def test_a_task_id_and_lookalikes_are_not_legacy(self):
+        for fields in ({}, {"evidence": "PREADR-0.1.0 and XOBPI-0.1.0-01"}):
+            with self.subTest(fields=fields):
+                self.assertFalse(is_frozen_legacy(_row("task_started", _AFTER, **fields)))
+
+    def test_legacy_and_a_held_work_package_are_not_unnamed(self):
+        rows = [
+            _row("task_started", _AFTER, obpi_id="OBPI-0.23.0-04"),
+            _row("task_started", _AFTER, work_package="WP-01-astral"),
+            _row("task_started", _AFTER, work_package="WP-09-ghost"),
+        ]
+        reading = forward_rule_reading(rows, _registry(), frozenset(), frozenset({"WP-01-astral"}))
+        self.assertEqual(
+            (reading.read, reading.legacy, reading.unnamed), (3, 1, {"task_started": 1})
+        )
+
+
 class TestReading(unittest.TestCase):
     """Only listed types after the cutover are read; legacy events never are."""
 
     def test_an_unnamed_listed_event_after_the_cutover_is_counted(self):
         reading = forward_rule_reading([_row("task_started", _AFTER)], _registry(), frozenset())
-        self.assertEqual((reading.read, reading.unnamed), (1, {"task_started": 1}))
+        self.assertEqual(
+            (reading.read, reading.legacy, reading.unnamed), (1, 0, {"task_started": 1})
+        )
 
     def test_a_legacy_event_is_not_read(self):
         rows = [_row("task_started", _BEFORE), _row("task_started", _CUTOVER)]
@@ -135,8 +169,8 @@ class TestRegistry(unittest.TestCase):
         self.assertIn(DELIVERY_EVENTS_FILE, declared["registries"])
 
 
-class TestAuditAnnounces(unittest.TestCase):
-    """The audit announces the unnamed events as one advisory line and never fails on them."""
+class TestAuditRefuses(unittest.TestCase):
+    """The audit refuses the unnamed events as one finding (RO-5 tranche 4)."""
 
     def setUp(self) -> None:
         self._tmp = TemporaryDirectory()
@@ -159,33 +193,27 @@ class TestAuditAnnounces(unittest.TestCase):
         ]
         ledger.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
 
-    def test_one_unnamed_event_of_two_read_is_announced(self):
-        stderr = io.StringIO()
-        with redirect_stderr(stderr):
-            errors = audit_catalog(self.root)
-        self.assertEqual(errors, [])
-        self.assertIn(
-            f"catalog-forward-rule: 1 of 2 delivery events since {_CUTOVER} name no REQ or "
-            "outcome (task_started 1)",
-            stderr.getvalue(),
-        )
+    def test_one_unnamed_event_of_two_read_is_a_finding(self):
+        errors = audit_catalog(self.root)
+        (finding,) = [e for e in errors if e.field == "delivery_events"]
+        self.assertIn(f"1 of 2 delivery events since {_CUTOVER}", finding.message)
+        self.assertIn("task_started 1", finding.message)
+
+    def test_a_legacy_event_after_the_cutover_is_no_finding(self):
+        ledger = self.root / ".gzkit" / "ledger.jsonl"
+        row = _row("task_started", _AFTER, obpi_id="OBPI-0.23.0-04")
+        ledger.write_text(json.dumps(row) + "\n", encoding="utf-8")
+        self.assertEqual(audit_catalog(self.root), [])
 
     def test_a_project_without_the_registry_reads_no_delivery_events(self):
         (self.root / "data" / "catalog" / "delivery_events.json").unlink()
-        stderr = io.StringIO()
-        with redirect_stderr(stderr):
-            errors = audit_catalog(self.root)
-        self.assertEqual(errors, [])
-        self.assertNotIn("catalog-forward-rule", stderr.getvalue())
+        self.assertEqual(audit_catalog(self.root), [])
 
-    def test_nothing_is_announced_when_every_event_is_named(self):
+    def test_nothing_is_refused_when_every_event_is_named(self):
         ledger = self.root / ".gzkit" / "ledger.jsonl"
         row = _row("task_started", _AFTER, req_id="REQ-0.1.0-01-01")
         ledger.write_text(json.dumps(row) + "\n", encoding="utf-8")
-        stderr = io.StringIO()
-        with redirect_stderr(stderr):
-            audit_catalog(self.root)
-        self.assertNotIn("catalog-forward-rule", stderr.getvalue())
+        self.assertEqual(audit_catalog(self.root), [])
 
 
 class TestNegativeControl(unittest.TestCase):
@@ -204,7 +232,7 @@ class TestNegativeControl(unittest.TestCase):
         self.assertIsNotNone(record.population)
 
     def test_reading_the_legacy_event_changes_the_count(self):
-        """Moving the cutover before the legacy event changes the count the control expects."""
+        """Moving the cutover before the pre-cutover event changes the count the control expects."""
         from gzkit.governance.trust_audits import _qc_nc_entrypoints as ep
         from gzkit.governance.trust_audits import _qc_negative_controls as nc
 
@@ -215,9 +243,8 @@ class TestNegativeControl(unittest.TestCase):
         payload = json.loads(registry.read_text(encoding="utf-8"))
         payload["cutover"] = "2000-01-01T00:00:00+00:00"
         registry.write_text(json.dumps(payload), encoding="utf-8")
-        lines = ep._ep_catalog_forward_rule(root)
-        self.assertEqual(len(lines), 1)
-        self.assertIn("2 of 3 delivery events", lines[0])
+        (finding,) = ep._ep_catalog_forward_rule(root)
+        self.assertIn("2 of 4 delivery events", finding.message)
 
 
 if __name__ == "__main__":

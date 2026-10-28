@@ -1,18 +1,18 @@
 # OBPI Decomposition Matrix
 
 Status: Active
-Last reviewed: 2026-03-04
+Last reviewed: 2026-10-28
 Authority: Canon (Defines the granularity standards for work breakdown structures)
 
-This document provides the formal matrix for decomposing Architectural Decision Records (ADRs) into One Brief Per Item (OBPI) units. It moves the project from heuristic-based planning to a mature, dimension-aware granularity model.
+This document provides the formal matrix for sizing work. **Rekeyed 2026-10-28** by drydock RO-5 ruling 9 (`docs/governance/harbor-ro5-work-packages.md`): the five dimensions and the single-narrative rule size an **outcome** and a **task card** instead of an ADR checklist, detached from lane and kind. The Lite, Heavy and Foundation columns and the checklist-count step are retired. A work package's lane is read from its outcome (heavy when the outcome is user-facing, requirements model decision 10) or stored on its repair package (ruling 4), never from this matrix. Legacy ADR checklists and OBPIs stay as frozen history; the sections marked *legacy* below describe how they were sized.
 
 ---
 
 ## The Granularity Matrix
 
-Decomposition must be right-sized by assessing the ADR across five dimensions.
+Size an outcome by assessing it across five dimensions; each scores 0, 1 or 2.
 
-| Dimension | **Atomic (Lite)** | **Modular (Heavy)** | **Structural (Foundation)** |
+| Dimension | **Score 0** | **Score 1** | **Score 2** |
 | :--- | :--- | :--- | :--- |
 | **Data & State** | No schema changes; logic-only. | New schema, config key, or JSON field. | New ledger event, storage engine, or DB migration. |
 | **Logic/Engine** | Pure function update or bug fix. | New service, logic flow, or internal component. | New execution runtime, subsystem, or core engine. |
@@ -22,9 +22,9 @@ Decomposition must be right-sized by assessing the ADR across five dimensions.
 
 ---
 
-## Baseline Structure: The Rule of Three
+## Baseline Structure: The Rule of Three (legacy)
 
-For any **Heavy** or **Foundation (0.0.x)** ADR, the initial decomposition follows a standard three-layer structural template:
+Legacy **Heavy** and **Foundation (0.0.x)** ADRs followed a standard three-layer structural template:
 
 1.  **OBPI-01: Registry/Interface** (Schema, configuration, data structures).
 2.  **OBPI-02: Core Execution** (Internal engine, primary logic, algorithms).
@@ -34,10 +34,10 @@ For any **Heavy** or **Foundation (0.0.x)** ADR, the initial decomposition follo
 
 ## Refining Overlay: The Matrix of Four
 
-Once the baseline structure is established, apply the **Matrix of Four** as an overlay filter. Each baseline unit must be tested against these principles; if a unit fails a principle, it MUST be decomposed further.
+Apply the **Matrix of Four** as an overlay filter to each task card (and, on legacy ADRs, to each OBPI). A unit that fails a principle MUST be decomposed further.
 
 ### 1. The Single-Narrative Rule (Overlay)
-**One OBPI = One clear "Value Narrative."**
+**One task card = One clear "Value Narrative."**
 -   *Rule*: Avoid the word "and" in objectives.
 -   *Decomposition*: If OBPI-03 covers "Implement CLI commands AND automated auditing," split into two OBPIs.
 
@@ -58,19 +58,10 @@ Once the baseline structure is established, apply the **Matrix of Four** as an o
 
 ---
 
-## Lane-Aware Scaling
+## Deterministic Decomposition Scorecard (legacy)
 
-The matrix scales based on the ADR's lane:
-
--   **Lite Lane**: Typically triggers 1-2 dimensions. A single, high-granularity OBPI is preferred.
--   **Heavy Lane**: Typically triggers 3+ dimensions. Decomposition into 3-5 OBPIs is the standard.
--   **Foundation (0.0.x)**: Triggers all dimensions. Requires maximum granularity (5+ OBPIs) to ensure base stability.
-
----
-
-## Deterministic Decomposition Gate
-
-To remove intuition-only planning, ADR decomposition MUST be computed using a scorecard.
+Legacy ADR decomposition was computed with a scorecard. The scorecard's arithmetic is still
+validated where a legacy ADR carries one; its target no longer binds the checklist (Step 4).
 
 ### Step 1: Dimension Scores (0/1/2)
 
@@ -111,16 +102,15 @@ Compute:
 - `Split Total = sum(triggered split rules)`
 - `Final Target OBPI Count = Baseline Selected + Split Total`
 
-### Step 4: Checklist Synchronization
+### Step 4: Checklist Synchronization (retired)
 
-ADR checklist count MUST equal `Final Target OBPI Count`.
-
-This is enforced as a mechanics contract in gzkit command surfaces (`gz plan` seed + `gz specify`
-binding + validation checks).
+Retired 2026-10-28 by RO-5 ruling 9. The checklist count was bound to `Final Target OBPI Count`
+by `gz specify`, `gz validate --decomposition` and the ADR document check; none binds it now
+(the harbor contract's § List of discrepancies records the retirement).
 
 ### Step 5: Per-Brief Size Bounds
 
-Steps 1 to 4 set how many briefs an ADR has. They do not measure one brief. Each live brief is
+Steps 1 to 3 set how many briefs a legacy ADR had. They do not measure one brief. Each live brief is
 also held to size bounds on its REQs, requirements, allowed paths, contract bytes and total bytes
 by `gz validate --brief-size`, which runs in `gz check`. The bounds are the table in
 `src/gzkit/brief_size_bounds.json`; a brief past one is split, as the Refining Overlay requires.
@@ -134,4 +124,4 @@ evidence (rework rate, failed gates, attestation churn, and delivery predictabil
 
 ## Enforcement
 
-The `gz-plan` and `gz-adr-promote` skills utilize this matrix during the **Spec Developer Phase**. Agents must perform a "Granularity Assessment" and present the rationale for the resulting OBPI checklist based on these dimensions.
+Agents sizing an outcome or its task cards perform a "Granularity Assessment" against the five dimensions and the overlays, and present the rationale. The `gz-plan` and `gz-adr-promote` skills still read the legacy scorecard for ADRs authored before the rekey.

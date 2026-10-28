@@ -41,6 +41,7 @@ from gzkit.work_package_ledger import (
     record_work_package_change,
     record_work_package_issue_closed,
     record_work_package_transition,
+    work_package_lane,
     work_package_state,
 )
 
@@ -304,6 +305,33 @@ class CloseTests(_LedgerCase):
         event = self.move("closed", **_CLOSE)
         self.assertEqual((event.attestor, event.decision), ("g0", "proceed"))
         self.assertEqual(event.open_departures, ("DFS-1",))
+
+    def test_the_close_records_the_lane_the_writer_derives(self) -> None:
+        event = self.move("closed", **_CLOSE)
+        self.assertEqual(event.lane, "lite")
+        with self.assertRaises(ValueError):  # the caller never supplies the lane
+            TransitionRequest.model_validate(
+                {"work_package": "WP-01-resume", "to_state": "closed", "evidence": "e",
+                 "lane": "heavy", **_CLOSE}
+            )  # fmt: skip
+
+
+class LaneTests(unittest.TestCase):
+    """Ruling 4 and decision 10: a delivery lane is its outcome's; a repair lane is stored."""
+
+    def test_a_delivery_package_is_heavy_exactly_when_its_outcome_is_user_facing(self) -> None:
+        for user_facing, lane in ((False, "lite"), (True, "heavy")):
+            with self.subTest(user_facing=user_facing):
+                outcome = _outcome("H1").model_copy(update={"user_facing": user_facing})
+                catalog = _catalog().model_copy(update={"outcomes": (outcome, _outcome("H2"))})
+                self.assertEqual(work_package_lane(catalog, "WP-01-resume"), lane)
+
+    def test_a_repair_package_reads_its_stored_lane(self) -> None:
+        heavy = _catalog().work_packages[1].model_copy(update={"lane": "heavy"})
+        catalog = _catalog().model_copy(
+            update={"work_packages": (_catalog().work_packages[0], heavy)}
+        )
+        self.assertEqual(work_package_lane(catalog, "WP-02-astral"), "heavy")
 
 
 class ChangeTests(_LedgerCase):

@@ -187,8 +187,8 @@ Test evidence.
             errors = validate_document(Path(f.name), "adr")
             self.assertEqual(errors, [])
 
-    def test_adr_decomposition_checklist_mismatch_fails(self) -> None:
-        """Checklist count must match scorecard final target."""
+    def test_adr_decomposition_checklist_count_is_no_longer_bound(self) -> None:
+        """RO-5 ruling 9 retires the checklist-count step: one row against a target of 2 passes."""
         with tempfile.NamedTemporaryFile(
             mode="w", encoding="utf-8", suffix=".md", delete=False
         ) as f:
@@ -247,12 +247,7 @@ Test evidence.
 """)
             f.flush()
             errors = validate_document(Path(f.name), "adr")
-            self.assertTrue(any(e.type == "decomposition" for e in errors))
-            self.assertTrue(
-                any(
-                    "Checklist count must match scorecard final target" in e.message for e in errors
-                )
-            )
+            self.assertEqual([e for e in errors if e.type == "decomposition"], [])
 
     def _adr_with_checklist(self, checklist: str) -> str:
         """Return a valid two-item ADR body carrying the given checklist rows."""

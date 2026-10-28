@@ -7,7 +7,6 @@ entries:
     from: approved
     to: implemented
 packages: []
-lane: heavy
 gates: []
 attestation:
   attestor:
@@ -38,7 +37,7 @@ What this version changes for the operator and for adopters, in a paragraph.
 
 ## Gates
 
-The lane's gates and their receipts.
+Each shipped package's lane gates and their receipts; the lane is the package's own (RO-5 ruling 4).
 
 ## Open defects
 

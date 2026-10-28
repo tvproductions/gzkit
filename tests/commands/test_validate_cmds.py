@@ -82,8 +82,8 @@ Rules here
             self.assertEqual(result.exit_code, 0)
             self.assertIn("decomposition", result.output.lower())
 
-    def test_validate_decomposition_detects_count_mismatch(self) -> None:
-        """Decomposition validation detects checklist-scorecard mismatch."""
+    def test_validate_decomposition_no_longer_binds_the_checklist_count(self) -> None:
+        """RO-5 ruling 9 retires the checklist-count step: a count off the target passes."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
@@ -115,8 +115,7 @@ Rules here
 """
             (adr_dir / "ADR-0.0.99-test.md").write_text(adr_content, encoding="utf-8")
             result = runner.invoke(main, ["validate", "--decomposition"])
-            self.assertNotEqual(result.exit_code, 0)
-            self.assertIn("does not match", result.output)
+            self.assertNotIn("does not match", result.output)
 
     def test_validate_decomposition_skips_validated_legacy_adr_shape(self) -> None:
         """Validated ADRs keep authoring-era decomposition shape under GHI #480."""

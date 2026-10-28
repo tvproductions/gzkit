@@ -296,7 +296,8 @@ def _booked_findings(ledger: Ledger, catalog: Catalog) -> list[ValidationError]:
 def audit_catalog(project_root: Path) -> list[ValidationError]:
     """Run the catalog checks; any finding makes the caller exit 3.
 
-    The coverage report is advisory: it is announced and never a finding.
+    The coverage report is advisory: it is announced and never a finding. The
+    forward rule is a finding since RO-5 tranche 4.
     """
     errors = _schema_findings(project_root)
     if errors:
@@ -321,21 +322,44 @@ def audit_catalog(project_root: Path) -> list[ValidationError]:
             f"catalog-coverage: {len(gaps)} of {len(needs)} PRD needs have no deriving "
             f"REQ: {', '.join(gaps)}"
         )
-    _announce_forward_rule(project_root, config, catalog)
+    errors += _forward_rule_findings(project_root, config, catalog)
     return errors
 
 
-def _announce_forward_rule(project_root: Path, config: GzkitConfig, catalog: Catalog) -> None:
-    """Announce post-cutover delivery events naming no REQ or outcome; advisory until RO-5."""
+def _forward_rule_findings(
+    project_root: Path, config: GzkitConfig, catalog: Catalog
+) -> list[ValidationError]:
+    """Refuse post-cutover delivery events naming no REQ, outcome or work package.
+
+    Fail-closed since RO-5 tranche 4 (operator, 2026-10-28: "Fail-closed, legacy
+    exempt (Recommended)"): an event naming an OBPI or ADR id is frozen legacy.
+
+    Returns:
+        One finding counting the unnamed events by type, or none.
+
+    """
     if not registry_path(project_root, DELIVERY_EVENTS_FILE).is_file():
-        return
+        return []
     registry = load_delivery_events(project_root)
     rows = [event.model_dump() for event in Ledger(project_root / config.paths.ledger).read_all()]
     outcomes = frozenset(outcome.code for outcome in catalog.outcomes)
-    reading = forward_rule_reading(rows, registry, outcomes)
-    if reading.unnamed:
-        counts = ", ".join(f"{kind} {count}" for kind, count in reading.unnamed.items())
-        emit_advisory(
-            f"catalog-forward-rule: {sum(reading.unnamed.values())} of {reading.read} delivery "
-            f"events since {registry.cutover.isoformat()} name no REQ or outcome ({counts})"
+    packages = frozenset(package.id for package in catalog.work_packages)
+    reading = forward_rule_reading(rows, registry, outcomes, packages)
+    if not reading.unnamed:
+        return []
+    counts = ", ".join(f"{kind} {count}" for kind, count in reading.unnamed.items())
+    return [
+        ValidationError(
+            type=_TYPE,
+            artifact=f"data/{DELIVERY_EVENTS_FILE}",
+            message=(
+                f"{sum(reading.unnamed.values())} of {reading.read} delivery events since "
+                f"{registry.cutover.isoformat()} name no REQ, outcome or work package and no "
+                f"OBPI or ADR ({counts}). A delivery event names its REQ, its outcome or its "
+                "work package (RO-3 ruling 4, fail-closed since RO-5 tranche 4; "
+                "docs/governance/harbor-ro5-work-packages.md). Book the work under a work "
+                "package or a REQ, then re-run `uv run gz validate --catalog`."
+            ),
+            field="delivery_events",
         )
+    ]

@@ -6837,11 +6837,6 @@
       "count": 2
     },
     {
-      "file": "src/gzkit/commands/specify_cmd.py",
-      "rule": "S101",
-      "count": 1
-    },
-    {
       "file": "src/gzkit/commands/state.py",
       "rule": "DOC201",
       "count": 4
@@ -9814,7 +9809,7 @@
     {
       "file": "src/gzkit/governance/trust_audits/catalog_forward.py",
       "rule": "DOC201",
-      "count": 2
+      "count": 1
     },
     {
       "file": "src/gzkit/governance/trust_audits/catalog_forward.py",

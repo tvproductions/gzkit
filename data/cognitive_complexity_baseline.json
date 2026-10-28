@@ -509,7 +509,7 @@
     {
       "file": "src/gzkit/commands/validate_decomposition.py",
       "function": "validate_decomposition",
-      "score": 28
+      "score": 26
     },
     {
       "file": "src/gzkit/commands/validate_frontmatter.py",

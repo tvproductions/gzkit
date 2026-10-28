@@ -2647,19 +2647,30 @@ The coverage report lists the PRD needs no REQ derives from. It is advisory and
 never changes the exit code.
 
 The forward rule (RO-3 tranche 4) reads the ledger's events of the types
-`delivery_events.json` lists, appended after its cutover, and announces those that
-name no REQ or outcome as one advisory line, counted by type. Observed on the
+`delivery_events.json` lists, appended after its cutover, and refuses those that
+name no REQ, outcome or work package as one finding, counted by type (exit 3). It
+was advisory until RO-5 tranche 4 made it fail-closed (operator, 2026-10-28:
+*"Fail-closed, legacy exempt (Recommended)"*). Observed on the
 `requirements-catalog-forward-rule` negative control's fixture:
 
 ```text
-[advisory] catalog-forward-rule: 1 of 2 delivery events since 2026-01-01T00:00:00+00:00 name no REQ or outcome (task_started 1)
+❌ Validation failed with 1 error(s):
+
+   → [catalog] data/catalog/delivery_events.json
+    1 of 3 delivery events since 2026-01-01T00:00:00+00:00 name no REQ, outcome
+or work package and no OBPI or ADR (task_started 1). A delivery event names its
+REQ, its outcome or its work package (RO-3 ruling 4, fail-closed since RO-5
+tranche 4; docs/governance/harbor-ro5-work-packages.md). Book the work under a
+work package or a REQ, then re-run `uv run gz validate --catalog`.
+    Field: delivery_events
 ```
 
 An event names a REQ when any of its values carries a REQ id in either grammar,
-and an outcome when its `outcome` field holds a code `outcomes.json` holds; a TASK
-id never names its REQ by spelling. Events before the cutover are legacy and are
-never read. The rule is advisory until RO-5's verbs can supply an outcome id. The
-freeze lock is RO-5's verbs'.
+an outcome when its `outcome` field holds a code `outcomes.json` holds, and a work
+package when its `work_package` field holds an id `work_packages.json` holds; a
+TASK id never names its REQ by spelling. An event that names none but carries an
+OBPI or ADR id is frozen legacy work and passes. Events before the cutover are
+never read. The freeze lock is RO-5's verbs'.
 
 **Usage:**
 

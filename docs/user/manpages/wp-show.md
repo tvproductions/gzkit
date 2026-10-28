@@ -20,10 +20,13 @@ gz wp show <WP-id> [OPTIONS]
 
 ## Description
 
-Reads the record from the store and its `work_package_transitioned` and
-`work_package_changed` events from the ledger. The state is the last move's
-target; a package with no move is `not initiated`. `--json` prints the record,
-the state and every event.
+Reads the record from the store and its `work_package_transitioned`,
+`work_package_changed` and `work_package_issue_closed` events from the ledger.
+The state is the last move's target; a package with no move is `not initiated`.
+The lane is held once (ruling 4): a repair package's stored lane, or for a
+delivery package `heavy` exactly when its outcome is user-facing (requirements
+model decision 10; RO-5 tranche 4). `--json` prints the record, the state, the
+lane and every event.
 
 The verbs are drydock RO-5 tranche 2; the operator named them on 2026-10-28.
 
@@ -36,8 +39,17 @@ at revision 2:
 $ uv run gz wp show WP-01-astral
 WP-01-astral (repair), state: initiated
   delivers: #1183, #1184  lane: lite
-  2026-10-28T07:11:48.689204+00:00  work_package_transitioned  initiated
-  2026-10-28T07:11:48.689786+00:00  work_package_changed  departure
+  2026-10-28T07:42:15.383859+00:00  work_package_transitioned  initiated
+  2026-10-28T07:42:15.633870+00:00  work_package_issue_closed  #1183
+  2026-10-28T07:42:15.885162+00:00  work_package_issue_closed  #1184
+$ uv run gz wp show WP-02-resume
+WP-02-resume (delivery), state: closed
+  delivers: H1  lane: lite
+  2026-10-28T08:23:19.142735+00:00  work_package_transitioned  initiated
+  2026-10-28T08:23:19.392955+00:00  work_package_transitioned  frozen
+  2026-10-28T08:23:19.643329+00:00  work_package_transitioned  commenced
+  2026-10-28T08:23:19.894378+00:00  work_package_transitioned  accepted
+  2026-10-28T08:23:20.146768+00:00  work_package_transitioned  closed
 ```
 
 ## Exit codes

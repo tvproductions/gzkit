@@ -26,7 +26,6 @@ __all__ = ["validate_decomposition"]
 def validate_decomposition(project_root: Path) -> list[ValidationError]:
     """Validate ADR decomposition scorecards and checklist-to-brief alignment."""
     from gzkit.core.scoring import (  # noqa: PLC0415
-        active_checklist_items,
         parse_checklist_items,
         parse_scorecard,
     )
@@ -68,21 +67,7 @@ def validate_decomposition(project_root: Path) -> list[ValidationError]:
         if scorecard is None:
             continue
 
-        live_items = active_checklist_items(checklist_items)
-        if len(live_items) != scorecard.final_target_obpi_count:
-            errors.append(
-                ValidationError(
-                    type="decomposition",
-                    artifact=adr_md.relative_to(project_root).as_posix(),
-                    message=(
-                        "Checklist count must match scorecard final target "
-                        "(does not match): "
-                        f"active={len(live_items)} "
-                        f"target={scorecard.final_target_obpi_count}; "
-                        f"total checklist rows including withdrawn history: {len(checklist_items)}."
-                    ),
-                )
-            )
+        # The checklist-count step is retired (RO-5 ruling 9).
 
         # Check that OBPI brief files exist for each checklist item
         adr_dir = adr_md.parent

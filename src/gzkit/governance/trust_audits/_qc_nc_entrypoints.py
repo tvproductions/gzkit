@@ -709,9 +709,14 @@ def _ep_catalog_coverage(root: Path) -> list[str]:
     return [] if errors else advisory_lines(stream.getvalue())
 
 
-def _ep_catalog_forward_rule(root: Path) -> list[str]:
-    """Return the forward rule's advisory, and nothing when the audit also found something."""
-    return [line for line in _ep_catalog_coverage(root) if "catalog-forward-rule" in line]
+def _ep_catalog_forward_rule(root: Path) -> list[ValidationError]:
+    """Return the forward rule's finding, and nothing when the audit found anything else."""
+    from gzkit.governance.trust_audits.catalog import audit_catalog  # noqa: PLC0415
+
+    errors = audit_catalog(root)
+    if any(error.field != "delivery_events" for error in errors):
+        return []
+    return errors
 
 
 def _ep_complexity_ceiling(root: Path) -> list[ValidationError]:

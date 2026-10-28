@@ -29,8 +29,11 @@ gz wp close <WP-id> --decision <decision> --attestor <id> --residual-risk <text>
 Gate 5 stays per work package (R2). `close` moves an accepted package to
 `closed`, recording the decision, the attestor and the residual risk. Every
 alteration is accounted as its configuration change, and each departure still
-open is named. A delivery close also moves its outcome; that coupling arrives
-with the outcome verbs.
+open is named. The event also records the package's lane, which the writer
+derives and the caller never supplies (RO-5 tranche 4): the stored lane of a
+repair package, or `heavy` for a delivery package whose outcome is user-facing.
+Lane-specific gate enforcement at close is RO-12's. A delivery close also moves
+its outcome; that coupling arrives with the outcome verbs.
 
 The verbs are drydock RO-5 tranche 2; the operator named them on 2026-10-28.
 
