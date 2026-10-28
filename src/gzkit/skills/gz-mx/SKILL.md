@@ -5,11 +5,11 @@ description: Use to open or exit the MX hangar or safe mode, or to check which m
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-20
+last_reviewed: 2026-10-28
 model: haiku
 gz_command: mx
 metadata:
-  skill-version: "1.7.0"
+  skill-version: "1.8.0"
 ---
 
 # gz mx
@@ -124,6 +124,17 @@ operator a raw `gz mx` command is a defect in the surface that gave it.
    reverted, the passage log carried, the suspended rules restored) is drafted by the
    session and ratified by the operator. Civil rule resumes on that ratification, not on
    the exit.
+
+   The handback takes the form of a **transfer of custody**. It enumerates three
+   categories: every open discrepancy on the list of discrepancies, every departure from
+   specification the session accepted, and each deferred action with its new holder. State
+   an empty category as *none*. Silence is not *none*: a category left out is a defect in
+   the handback. Draw the enumeration from the list of discrepancies and the work package
+   log, its sources; the handback is not a third copy of them (`docs/rnd/contractor-kit.md`,
+   decision C12 and its correction, which replaces *punch list* with *list of
+   discrepancies*; operator: *"A"*). No verb checks the enumeration against its sources
+   yet. That refusal is diamond-2 work, so until it lands the check is the operator's
+   ratification.
 
 ## Example
 

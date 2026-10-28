@@ -5,18 +5,18 @@ description: Use to create or resume a session handoff document.
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "7.6.4"
+  skill-version: "7.7.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-10-28
 model: sonnet
 ---
 
-# gz-session-handoff (v7.6.1)
+# gz-session-handoff (v7.7.0)
 
 ## Purpose
 
@@ -424,6 +424,10 @@ session. Relaying "release the lock" as the next action would have acted on a
 claim that was false at read-time. The completion claim in the same handoff
 verified TRUE (`gz obpi status` → `ATTESTED COMPLETED`); claims are verified
 **individually**, never trusted as a block.
+
+### Shift turnover (hangar sessions)
+
+While `.gzkit/mx.json` is open, in either mode, a session relief is a **shift turnover**, a named act the handoff carries (`docs/rnd/contractor-kit.md`, decision C11; operator: *"a"*). On CREATE, the relieved session's handoff names every tag it hung, every finding awaiting buy-back and every commenced work package. On RESUME, the relieving session reviews the tag-out log, the findings awaiting buy-back and the commenced packages, records the review in its own handoff, and takes over each hung tag by name. A tag hung by a relieved session that no turnover names has no holder. The tag-out log and the work package are contractor-kit records (RO-12) and do not exist yet. Until they land, review what stands in their place (the contract's § List of discrepancies and passage log, `gz obpi lock list`) and say which you read. Nothing refuses a turnover that omits a tag; that refusal is diamond-2 work.
 
 ---
 

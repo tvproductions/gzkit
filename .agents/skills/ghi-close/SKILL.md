@@ -5,9 +5,9 @@ description: Use to do the work a GHI describes, verify it and close the issue w
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-10-28
 metadata:
-  skill-version: "2.12.1"
+  skill-version: "2.13.0"
 model: opus
 ---
 
@@ -38,6 +38,10 @@ The skill is not an evaluator-only surface. If it terminates without
 closing, the reason is a concrete blocker the agent cannot remove
 unilaterally — not a missing pre-existing commit. "No fix landed yet" is
 not an exit condition; it is the *trigger* to author the fix.
+
+### The four states of a problem report
+
+A GHI carries a **problem report** through four states: **recorded** (filed through `ghi-author`), **classified** (its class label), **resolved** (the fix landed and Phase 3 verified it; the `(GHI #N)` commit SHA witnesses this state) and **closed** (a review on record confirmed the resolution). The commit resolves; only the review closes (`docs/rnd/contractor-kit.md`, decision B12; operator: *"A"*). No step yet separates resolved from closed: the review step and its record are diamond-2 work. Until they land, the close comment's **Review:** line is the record and names who reviewed. A close reviewed only by the fixing session says so there. Definitions and sources: [`references/problem-report-states.md`](references/problem-report-states.md).
 
 ### Bounded closure contract (GHI #980)
 
@@ -373,7 +377,7 @@ Four-phase protocol: **read**, **execute**, **verify**, **close**.
 
    <one sentence: how you determined the enumeration is exhaustive — or which causes it deliberately does not claim>
 
-   **Review:** <criterion-based findings and their disposition; remaining blockers, or none>
+   **Review:** <who reviewed (fixing session or independent); criterion-based findings and their disposition; remaining blockers, or none>
    **Independent discoveries:** <tracked references that do not block this contract, or none>
    ```
 
@@ -482,14 +486,11 @@ These thoughts mean STOP — you are about to either leave a corrupted audit tra
 - **`withdrawn` disposition on a GHI whose premise still stands** — `withdrawn` is for premise-evaporated GHIs, not for "this should be an ADR but I haven't authored one yet"
 - **A recorded precondition is honored without being re-derived** — the GHI says "blocked on X" / "sequence after #M" and the agent accepts it rather than reading the surface it names. The blocker describes a past tree (Phase 1 step 1a)
 - Agent posts a long analysis comment and does not close, when no escalation blocker holds
-- Close comment is "Done" or "Fixed" with no artifact reference
 - **Class-of-failure claim asserts a family in prose with no cause→test table** — "every path inherits it", "all three now hit the same guard", "closed at the root" are the signatures. A family worth claiming is a family worth enumerating; if it cannot be enumerated, say so and scope the claim (step 7b)
 - **A `#N` described as open, blocked, or outstanding that was copied from a prior comment rather than resolved** — especially in `## Related` on a re-close, where the citation is inherited from the close being superseded (step 7f)
 - Close happens before verification steps 7a–7f run
-- Multiple GHIs closed in a loop without individual re-evaluation
 - Disposition chosen by vibe rather than by the Phase 1 shape table
 - Commit claimed to fix but has no `(GHI #N)` trailer and no follow-up amendment
-- Personal email or other PII in the close comment
 - Closing a `heavy`-lane or `foundation`-kind GHI without ARB receipts
 - **Authoring or specifying a new OBPI as the resolution path for a `defect`-labeled GHI, or handing off mid-Phase-2 to `gz-obpi-specify`** — defect remedies are direct fixes (§ Doctrine — defect remedies are direct fixes, NEVER new OBPIs); the one exception is a repair assignment the operator ruled ([`references/repair-assignment.md`](references/repair-assignment.md))
 
@@ -511,4 +512,3 @@ These thoughts mean STOP — you are about to either leave a corrupted audit tra
 - `docs/governance/tool-skill-runbook-rationale.md` § Commit-message discipline for skill-routing changes (observed-output evidence)
 - AGENTS.md § Defect-fix routing (the routing matrix applied in Phase 2)
 - `.gzkit/rules/tests.md` § Tests assert semantics, not strings (test verification in step 7c)
-- `AGENTS.md` § Execution Rules (operator PII — never in close comments)

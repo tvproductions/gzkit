@@ -5,9 +5,9 @@ description: Use to file a GitHub issue when a finding needs its own work order 
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-10-28
 metadata:
-  skill-version: "1.11.1"
+  skill-version: "1.12.0"
 model: sonnet
 ---
 
@@ -98,6 +98,8 @@ artifact's responsibility (its own gates, its own attestation, its own
 ledger events). A GHI that waits around to mirror the destination's
 status is duplicate state — the same shape Layer-3 derived views become
 when they silently shadow Layer-2 truth.
+
+**Problem report states.** A GHI carries a **problem report** through four states: this skill takes it to **recorded** (Steps 0–5) and **classified** (Step 1's label); the fix commit takes it to **resolved**; only a review on record takes it to **closed** (`docs/rnd/contractor-kit.md`, decision B12; operator: *"A"*). A commit SHA therefore witnesses resolved, not closed. The review step is diamond-2 work and does not exist yet; `ghi-close` records the review in its close comment until it lands ([states and sources](../ghi-close/references/problem-report-states.md)).
 
 ## Trigger
 
@@ -312,7 +314,7 @@ Surface **the brief id, its `status:`, its parent ADR, and the requirement lines
 
    | Finding shape | Destination | Same-session action |
    |---|---|---|
-   | Defect with a known repair (a GHI authorizes direct repair — `AGENTS.md` § Defect-fix routing) | Commit SHA | Apply the fix, commit `fix(<scope>): … (GHI #N)`, close `fixed` citing the SHA |
+   | Defect with a known repair (a GHI authorizes direct repair — `AGENTS.md` § Defect-fix routing) | Commit SHA | Apply the fix, commit `fix(<scope>): … (GHI #N)` (resolved), close `fixed` citing the SHA with the review recorded per `ghi-close` |
    | Architectural absence / new-capability finding | Pool ADR | `uv run gz plan create <slug> --kind pool --lane <lite|heavy> --title …`, then close `superseded` citing `ADR-pool.<slug>` |
    | Bounded planned-increment finding under an existing active ADR | OBPI brief | `gz-obpi-specify` against the parent ADR, then close `superseded` citing the new OBPI ID |
    | No same-session destination yet (genuinely needs operator design conversation) | None yet | Leave the GHI **open** with a blocker comment naming the next concrete operator action — see `ghi-close` § Doctrine — NEVER, EVER, EVER dead-letter a GHI |
@@ -370,7 +372,6 @@ These thoughts mean STOP — you are about to produce a low-quality GHI:
 - Multiple unrelated defects bundled into one GHI
 - No label applied (breaks `gh issue list --label <class>` triage)
 - Body cites `src/gzkit/` paths, `gz <verb>` runtime symptoms, or a `fix(...)` remedy shape but the `gh issue create` invocation omits `--label runtime` — this is the GHI #402 silent-qualifier-drift signature
-- Personal email or other PII in the body
 - Filed as a replacement for a fix that was in-scope and skipped
 - No bounded closure contract, or an acceptance criterion that merely repeats the proposed implementation
 
@@ -387,4 +388,3 @@ These thoughts mean STOP — you are about to produce a low-quality GHI:
 - `AGENTS.md` § DO IT RIGHT 6h (verbatim quotes, not narrative reconstruction)
 - `.gzkit/rules/gh-cli.md` (allowed `gh` commands)
 - AGENTS.md § Defect-fix routing (the routing decision this GHI's evidence will feed)
-- `AGENTS.md` § Execution Rules (operator PII — never in the GHI body)

@@ -5,9 +5,9 @@ description: Run a governed R&D session — diamond 1 of the double diamond, whi
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-25
+last_reviewed: 2026-10-28
 metadata:
-  skill-version: "0.6.0"
+  skill-version: "0.7.0"
 model: opus
 ---
 
@@ -110,6 +110,12 @@ the mechanic, not the posture** — full inventory and the not-appropriated list
 - **Read the source before anything drawn from it becomes a `decision`**: a name, a
   mapping, an analogy, a claim about what a standard says. Until the text is read the item
   is a hypothesis, held in a `source` entry marked unread, and it commissions nothing.
+- **Read both sides of a mapping in full before putting it to the operator.** gzkit's side
+  is a source too. A question that maps a text onto gzkit canon cites both sides, each read
+  in full, and says so. The rule followed a ruling on a mapping whose canon side was never
+  read (operator: *"I am liable for accepting summarized (partially vibed) reads from you of
+  the foundational documents"*; `docs/rnd/contractor-kit.md`, decision *every mapping put to
+  the operator reads both sides in full first*).
 - **Find the text before researching it.** Check what the project and the operator already
   hold (`docs/governance/ieee/README.md` § Standards corpus lists the licensed standards).
   When a host refuses automated retrieval, ask the operator for the file; do not work
