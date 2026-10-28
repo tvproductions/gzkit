@@ -3276,6 +3276,27 @@ the self-test is written, on the repair side. Operator: *"A"*.
 **commissions:** 4 — the kit's inspector position and the restoration procedure carry the red-
 witness inspection point. 5 — RO-13's tranches each carry it per restored control.
 
+## decision · RO-12 closes only when every runtime refusal is witnessed refusing
+
+Ruled; from the design review's point 1. Question: what keeps RO-12 from landing the kit's
+documents without the runtime that carries them? The design's refusals, collected from the
+decisions above: a session that hung a tag clearing it (A4, A6); work before commencement (C1);
+an inspector dispatched by the coordinator (A3, A5); landing on a package with an open stop or
+hold (C4, A8); a finding closed without a buy-back (C5); acceptance with a tag still hung (C10); a
+hangar handoff whose turnover omits a hung tag (C11); a control accepted with no inspected red
+witness (2026-10-28). AGENTS.md § DO IT RIGHT #12: *"A gate's evidence must witness the required
+state or action — a stage, a dispatch record, a receipt. A file or marker being present shows only
+that something is armed."* Options put: **A** RO-12 closes only when each refusal has a test
+showing it refuses, the list carried on the order as its witness, as RO-2 and RO-9 carry theirs
+(recommended); **B** the refusals as specification only, judged at RO-12's final inspection;
+**C** the independence refusals witnessed now, the rest at the dock trial. Operator: *"A"*.
+
+- A refusal with no test leaves RO-12 open. The list is the witness's floor; the specification may
+  add to it, and never subtract from it.
+
+**commissions:** 4 — the contract's RO-12 row carries the refusal list as its witness, with the
+row itself (on the operator's go on that row).
+
 ---
 
 ## Disposition map

@@ -148,6 +148,9 @@ A GitHub issue's role is a **problem report** with AC 00-71's states: recorded, 
 
 ## The order this sets
 
+RO-12 closes only when each of the kit's eight runtime refusals has a test showing it refuses
+(ruled 2026-10-28, at the design review).
+
 RO-5, with the five pre-kit repairs as RO-12's preconditions → **RO-12, the kit** → RO-4 and the
 rest under the kit, as its first flight. **RO-13** follows RO-12; its place against RO-4 onward is
 set when it is specified. Then the sea trial, the handback and `gz mx exit`.
