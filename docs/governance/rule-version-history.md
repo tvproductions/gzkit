@@ -733,6 +733,12 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `mx-mode.md`
 
+### Changed 2026-10-28 at version `1.14.1` (wording)
+
+The contract's § Punch list is renamed its § List of discrepancies, by the contractor-kit ruling *"the punch list becomes
+the list of discrepancies"* (`docs/rnd/contractor-kit.md`, row 4; operator, verbatim: *"fund, yes to 2 and 4"*). The two
+references in § Safe mode follow it. Binding rules unchanged.
+
 ### Changed 2026-10-27 at version `1.14.0` (operator correction)
 
 Safe mode had switched every alarm hook off (ruling 2026-10-25), and lint debt from `757ddea7e` waited on the RO-0

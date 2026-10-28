@@ -41,7 +41,7 @@ The contractor stops and waits on every structural question. Every correction fo
 2. **IEEE and ladder records.** The IEEE README's § Currently prohibited and phase table brought up to Q-19 and RO-3; Q-18's *"Names are chosen later"*; the engineering-order rung and *"release → block"* in the ladder records; DISAGREEMENTS D-02 (ruling 7); the requirements model's pool wording (pool entries are intentions).
 3. **Skills, glossary and GovZero.** The four skills (ruling 9); `docs/examples/glossary.md` (ruling 6); the GovZero text the drydock contradicts (ruling 8).
 
-## Restoration (RO-6's punch-list lines)
+## Restoration (RO-6's list-of-discrepancies lines)
 
 RO-6 changes text, not controls, so it expects few lines: any validator or test that pins a sentence RO-6 changes (the control inventory JSON is one) is a line, cleared before RO-6 closes.
 

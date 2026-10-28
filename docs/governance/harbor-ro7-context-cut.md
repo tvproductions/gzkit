@@ -7,7 +7,7 @@
 ## Already ruled in the record
 
 - The cut (operator, 2026-10-16): *"A (in safe mode - make backups!!! - help me test how much we can cut and remain effective…)"*; the backup is the tag `control-plane-baseline-2026-10-16`; canon is reset *"against the trimmed state"* through `gz content retire` and `land`.
-- Exit numbers (GHIs #1250 and #1251, ruled A): at most 40 skills; descriptions at most 6,000 chars (met by RO-1 act (c)); every skill model-invoked or `disable-model-invocation: true`; bodies under ceiling; nested `AGENTS.md` at most 60 KB, agents 6 KB, personas 12 KB, hook text 4 KB per turn.
+- Exit numbers (GHIs #1250 and #1251, ruled A): at most 40 skills; descriptions at most 6,000 chars (met by RO-1 act (c)); every skill model-invoked or `disable-model-invocation: true`; bodies under ceiling; nested `AGENTS.md` at most 60 KB, agents 6 KB, personas a per-file cap (amended 2026-10-28 by change order: the personas total of 12 KB is retired, because each dispatch loads one persona file; the cap value is set by measurement under GHI #1295; contractor-kit decision *"each persona file is capped; the total is retired"*, row 4, operator: *"fund, yes to 2 and 4"*), hook text 4 KB per turn.
 - The merge plan goes to the operator *"before the first deletion"*; a retired skill is deleted from every surface root in the same commit as its successor (#1250). *"most 'obpi' skills will change to work package skills"* (#1250, 2026-10-18).
 - Rules: *"no binding clause is removed or reworded"* (#1246).
 - Which skills become `disable-model-invocation` is the operator's choice (passage log, RO-1 act (c)).
@@ -44,9 +44,9 @@ Each stage is measured by RO-1's protocol before the next begins; the contractor
 6. **Catalogue merge toward 40** (#1250): the merge plan to the operator before the first deletion, drafted after RO-5 so OBPI skills map to work-package skills; `gz-release` subsuming `gz-patch-release` (RO-4) counts as one merge.
 7. **AGENTS.md:** only entries the operator names for retirement or re-tiering, through `gz content retire` and `land`.
 
-## Restoration (RO-7's punch-list lines)
+## Restoration (RO-7's list-of-discrepancies lines)
 
-Each stage adds a § Punch list line for what it disconnects, reroutes or changes: at least the generator's nested-file tests and the budget validator's scope (stage 2), `skill_body_grandfather.json` and `gz skill audit` (stage 4), and every test or validator that names a merged or deleted skill (stage 6). RO-7 closes when those lines are cleared.
+Each stage adds a § List of discrepancies line for what it disconnects, reroutes or changes: at least the generator's nested-file tests and the budget validator's scope (stage 2), `skill_body_grandfather.json` and `gz skill audit` (stage 4), and every test or validator that names a merged or deleted skill (stage 6). RO-7 closes when those lines are cleared.
 
 ## Witness
 

@@ -27,7 +27,7 @@ Landed 2026-10-25 and frozen for the rest of this drydock (`757ddea7e`, `62e4041
 
 - `gzkit.mx.alarms` switches off six pre-commit and pre-push hooks and the verifier pipe gate while the marker carries `mode: safe`; the `gz mx exit` re-run sounds them at full strength.
 - On throughout: the secret scan, the authorship check, the guards sweep (the pytest ban pinned `CRITICAL`, the ledger and Gate-5 guards), ruff and ty.
-- No per-act check; a § Punch list in the contract; each repair order restores what it disconnected, rerouted or changed before it closes.
+- No per-act check; a § List of discrepancies (formerly § Punch list) in the contract; each repair order restores what it disconnected, rerouted or changed before it closes.
 
 Amended 2026-10-27 (a record of that day's change; the freeze above is otherwise kept): two of the six hooks, the complexity ceiling and the cheap surface-fidelity subset, no longer route through `gzkit.mx.alarms`, and a whole-tree `gz lint` runs at every push; all are pinned `CRITICAL`. Operator, verbatim: *i think, even during repairs or contruction, somebody sweeps up the shop floor every night. The point is, it is too strivt to disable linting during safemode drydock/mx hangar. We are writing/changing code and that deserves*
 
@@ -43,7 +43,7 @@ Amended 2026-10-27 (a record of that day's change; the freeze above is otherwise
 
 ### 2. Alarm versus tripwire
 
-An **alarm** stops the work. A **tripwire** does not stop the work and does not ring; it records that an order touched something it guards, as a punch-list line, so the contractor finds it at closing. A tripwire must run its check to know it tripped, so it suits checks cheap enough to run per commit.
+An **alarm** stops the work. A **tripwire** does not stop the work and does not ring; it records that an order touched something it guards, as a list-of-discrepancies line, so the contractor finds it at closing. A tripwire must run its check to know it tripped, so it suits checks cheap enough to run per commit.
 
 ### 3. The rubric
 

@@ -30,7 +30,7 @@ The baseline is the tag `control-plane-baseline-2026-10-16`.
 
 Steps 1 to 3 run in seconds and ring no alarm, so they run with the alarms off.
 
-## Restoration (RO-1's punch-list line)
+## Restoration (RO-1's list-of-discrepancies line)
 
 The flight runs once, when the cleanup contractor turns the alarms back on: a fresh session flies one work package on the cut surfaces, scored on `gz check` green, `gz arb red --commit` driven, the `Task:` trailer and the passage-log row present without being asked, and every guard that fired recorded. The result closes the per-stage report series with a one-table summary of what each stage cost and what it lost. It is one sample, and the report says so.
 
@@ -41,4 +41,4 @@ The flight runs once, when the cleanup contractor turns the alarms back on: a fr
 
 ## Closure
 
-RO-1 closes when the baseline report exists, every RO-7 stage has its report, and its punch-list line (the restoration flight) is cleared.
+RO-1 closes when the baseline report exists, every RO-7 stage has its report, and its list-of-discrepancies line (the restoration flight) is cleared.

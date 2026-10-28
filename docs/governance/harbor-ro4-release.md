@@ -34,9 +34,9 @@ The contractor stops and waits on every structural question; the names of new ve
 3. **Closeout.** `gz closeout <version>` (ruling 3), its dry run against an empty Release Package, the release attestation (R2), ending in `release_recorded`.
 4. **Skills and canon.** `gz-release` subsuming `gz-patch-release` (R3); `gz validate --version-release` reading release records; the ADR-as-carrier text retired with retention maps in `GovZero/releases/README.md`, `GovZero/adr-lifecycle.md` and the sibling `patch-release.md`, `minor-release.md` and `major-release.md`; the template retired (ruling 7); the safe-mode doctrine's § The Release Package and `doctrine-merge.md` Part 0's Release Package term, which still name a Markdown document per version, corrected to ruling 1 (moved here from RO-6).
 
-## Restoration (RO-4's punch-list lines)
+## Restoration (RO-4's list-of-discrepancies lines)
 
-Each tranche adds a § Punch list line for what it disconnects, reroutes or changes: at least the tests of `version_sync` and `closeout`, the `--version-release` audit and its manifests, and the `gz-patch-release` flow until `gz-release` replaces it. RO-4 closes when those lines are cleared.
+Each tranche adds a § List of discrepancies line for what it disconnects, reroutes or changes: at least the tests of `version_sync` and `closeout`, the `--version-release` audit and its manifests, and the `gz-patch-release` flow until `gz-release` replaces it. RO-4 closes when those lines are cleared.
 
 ## Witness
 
