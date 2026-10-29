@@ -356,6 +356,11 @@ ruling"*.
   A requirements finding has no landing place: issues carry no requirements work (ruling of
   2026-10-17), the ADR no longer carries requirements, the requirements model's `queued` outcome
   (§ 4) has no capture process, and RO-11 designs only the pulling of a pool entry.
+- **Every unspecified order is specified now**, ahead of the sequence its row states. Operator,
+  verbatim: *"First of all, any unspecified repair orders need to be fixed immediately. That's
+  intrinsic and critical to even understanding scope."* On 2026-10-29 that is RO-11 (its row:
+  *"the session specifies with the operator after RO-4"*) and RO-13 (its row: *"the session
+  specifies with the operator after RO-12"*).
 
 Gate 5. The ledger rule. The operator-PII rule. The Prime Directive. TOPMOST remains `ADR-0.35.0`
 until RO-8 disposes of it; the drydock works inside the campaign, which sequences what follows.
