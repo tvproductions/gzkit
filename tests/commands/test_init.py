@@ -2,6 +2,7 @@ import importlib.metadata
 import inspect
 import json
 import re
+import sys
 import tempfile
 import tomllib
 import unittest
@@ -9,6 +10,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from gzkit.cli import main
+from gzkit.commands.common import GzCliError
 from gzkit.commands.init_cmd import (
     PROJECT_TYPES,
     ProjectSkeleton,
@@ -16,7 +18,11 @@ from gzkit.commands.init_cmd import (
     scaffold_project_skeleton,
 )
 from gzkit.config import GzkitConfig
-from gzkit.governance.trust_audits.astral_discipline import BASELINE_RELPATH, find_violations
+from gzkit.governance.trust_audits.astral_discipline import (
+    BASELINE_RELPATH,
+    find_violations,
+    seed_discipline_baseline,
+)
 from gzkit.traceability import covers
 from gzkit.validate_pkg.sync_parity import check_sync_parity
 from tests.commands.common import (
@@ -298,7 +304,9 @@ class TestInitBuildsTheProjectThroughUv(unittest.TestCase):
     def test_ci_workflow_runs_uv_with_the_lock_checked(self) -> None:
         with CliRunner().isolated_filesystem():
             self._init()
-            workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+            ci = Path(".github/workflows/ci.yml")
+            self.assertTrue(ci.is_file(), "gz init wrote no CI workflow")
+            workflow = ci.read_text(encoding="utf-8")
             steps = [line.strip().removeprefix("- ") for line in workflow.splitlines()]
             setup_uv = [step for step in steps if "astral-sh/setup-uv@" in step]
             self.assertEqual(len(setup_uv), 1, workflow)
@@ -349,11 +357,117 @@ class TestInitBuildsTheProjectThroughUv(unittest.TestCase):
             self.assertEqual(manifest["tool"]["uv"]["build-backend"]["module-root"], "lib")
             self.assertEqual(manifest["tool"]["ruff"]["src"], ["lib", "tests"])
 
+    def test_readme_points_at_the_agent_contract(self) -> None:
+        # uv writes a README of its own; gzkit replaces it with the governance one.
+        with CliRunner().isolated_filesystem():
+            self._init()
+            self.assertIn("AGENTS.md", Path("README.md").read_text(encoding="utf-8"))
+
     def test_unknown_project_type_is_a_usage_error(self) -> None:
         with CliRunner().isolated_filesystem():
             result = CliRunner().invoke(main, ["init", "--project-type", "script"])
             self.assertEqual(result.exit_code, 2, result.output)
             self.assertFalse(Path("pyproject.toml").exists())
+
+
+class TestUvSkeletonFailsWithRecovery(unittest.TestCase):
+    """When uv cannot build the project, init stops and names the recovery."""
+
+    def _scaffold_fails(self, root: Path) -> str:
+        with self.assertRaises(GzCliError) as caught:
+            scaffold_project_skeleton(root, ProjectSkeleton(name="demo-proj"))
+        self.assertFalse((root / "pyproject.toml").exists())
+        self.assertFalse((root / ".github").exists())
+        return str(caught.exception)
+
+    def test_missing_uv_names_the_install_step(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            missing = str(Path(tmp) / "no-such-uv")
+            with patch("gzkit.commands.init_cmd.resolve_executable", return_value=missing):
+                message = self._scaffold_fails(Path(tmp))
+            self.assertIn("uv is not on PATH", message)
+            self.assertIn("re-run `gz init`", message)
+
+    def test_failing_uv_command_names_the_command_and_stops(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            # The interpreter given uv's argv exits non-zero with its own stderr: a real
+            # failing process, on every platform.
+            with patch("gzkit.commands.init_cmd.resolve_executable", return_value=sys.executable):
+                message = self._scaffold_fails(Path(tmp))
+            self.assertIn("`uv init --lib", message)
+            self.assertIn("re-run `gz init`", message)
+
+    def test_missing_python_floor_refuses_to_pin_one(self) -> None:
+        with (
+            tempfile.TemporaryDirectory() as tmp,
+            patch(
+                "gzkit.commands.init_cmd.importlib.metadata.metadata",
+                return_value={"Requires-Python": "~=3.14"},
+            ),
+        ):
+            message = self._scaffold_fails(Path(tmp))
+        self.assertIn("no Python floor", message)
+
+
+class TestInitRepairBuildsAndSeeds(unittest.TestCase):
+    """The repair flow (an initialized project) honours the same tranche 7 contract."""
+
+    def test_repair_builds_the_requested_project_type(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            self.assertEqual(runner.invoke(main, ["init", "--no-skeleton"]).exit_code, 0)
+            result = runner.invoke(main, ["init", "--project-type", "package"])
+            self.assertEqual(result.exit_code, 0, result.output)
+            manifest = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
+            self.assertIn("scripts", manifest["project"])
+
+    def test_repair_seeds_a_missing_baseline(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            self.assertEqual(runner.invoke(main, ["init"]).exit_code, 0)
+            Path(BASELINE_RELPATH).unlink()
+            Path("requirements.txt").write_text("requests\n", encoding="utf-8")
+            result = runner.invoke(main, ["init"])
+            self.assertEqual(result.exit_code, 0, result.output)
+            self.assertTrue(Path(BASELINE_RELPATH).is_file(), result.output)
+            rows = json.loads(Path(BASELINE_RELPATH).read_text(encoding="utf-8"))["violations"]
+            self.assertIn(
+                ("pip-in-project", "requirements.txt"), {(r["rule"], r["file"]) for r in rows}
+            )
+
+    def test_repair_dry_run_plans_the_seed_without_writing_it(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            self.assertEqual(runner.invoke(main, ["init"]).exit_code, 0)
+            Path(BASELINE_RELPATH).unlink()
+            result = runner.invoke(main, ["init", "--dry-run"])
+            self.assertEqual(result.exit_code, 0, result.output)
+            self.assertFalse(Path(BASELINE_RELPATH).exists())
+            # output-contract: the dry-run plan is the command's named output.
+            self.assertIn(f"Would seed {BASELINE_RELPATH}", result.output)
+
+
+class TestSeedDisciplineBaseline(unittest.TestCase):
+    """seed_discipline_baseline writes once, exactly, and reports what it wrote."""
+
+    def test_returns_the_number_of_rows_it_wrote(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "requirements.txt").write_text("requests\n", encoding="utf-8")
+            written = seed_discipline_baseline(root)
+            rows = json.loads((root / BASELINE_RELPATH).read_text(encoding="utf-8"))
+            self.assertTrue(rows["violations"])
+            self.assertEqual(written, len(rows["violations"]))
+
+    def test_existing_baseline_is_left_untouched(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "requirements.txt").write_text("requests\n", encoding="utf-8")
+            (root / "data").mkdir()
+            prior = '{"violations": []}\n'
+            (root / BASELINE_RELPATH).write_text(prior, encoding="utf-8")
+            self.assertIsNone(seed_discipline_baseline(root))
+            self.assertEqual((root / BASELINE_RELPATH).read_text(encoding="utf-8"), prior)
 
 
 class TestInitPersonaScaffolding(unittest.TestCase):
