@@ -14,30 +14,6 @@
       "count": 1
     },
     {
-      "rule": "non-astral-unregistered",
-      "file": "pyproject.toml",
-      "subject": "jinja2",
-      "count": 1
-    },
-    {
-      "rule": "non-astral-unregistered",
-      "file": "pyproject.toml",
-      "subject": "jsonschema",
-      "count": 1
-    },
-    {
-      "rule": "non-astral-unregistered",
-      "file": "pyproject.toml",
-      "subject": "pyyaml",
-      "count": 1
-    },
-    {
-      "rule": "non-astral-unregistered",
-      "file": "pyproject.toml",
-      "subject": "rich",
-      "count": 1
-    },
-    {
       "rule": "version-home-missing",
       "file": "gz init scaffold:.python-version",
       "subject": ".python-version",

@@ -58,6 +58,22 @@
       "name": "gitleaks",
       "external": true,
       "reason": "Scans commits for secrets; Ruff S105 to S107 catch hard-coded passwords only."
+    },
+    {
+      "name": "jinja2",
+      "reason": "Renders the control-surface renditions and the justify walkthrough from template files with loops, conditionals and StrictUndefined (src/gzkit/content/render/pipeline.py, src/gzkit/justify/walkthrough.py). Stdlib has no template language: string.Template substitutes names only, and Python 3.14's t-strings are code literals with no processor (RO-9 tranche 6, GHI #1184)."
+    },
+    {
+      "name": "jsonschema",
+      "reason": "Validates documents against the JSON Schema files under src/gzkit/schemas/ at runtime (ADR-0.0.30), in the ARB validator, the catalog, the vendor manifest and the frontmatter audits. Stdlib has no JSON Schema validator, and Pydantic validates its own models, not arbitrary schema documents (RO-9 tranche 6)."
+    },
+    {
+      "name": "pyyaml",
+      "reason": "Parses YAML frontmatter, mkdocs.yml and workflow files across the governance audits. Stdlib has no YAML parser (tomllib reads TOML only) (RO-9 tranche 6)."
+    },
+    {
+      "name": "rich",
+      "reason": "Renders the CLI's tables, styled text and markup across 65 modules, the human-first output the CLI doctrine requires. Stdlib has no table or markup renderer (RO-9 tranche 6)."
     }
   ],
   "restatements": [
