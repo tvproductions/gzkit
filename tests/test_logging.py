@@ -13,10 +13,9 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-import structlog
-
 from gzkit.cli.logging import (
     VERBOSITY_TO_LEVEL,
+    Verbosity,
     bind_correlation_id,
     configure_logging,
 )
@@ -27,12 +26,9 @@ class TestConfigureLogging(unittest.TestCase):
     """Test the single configuration entry point."""
 
     def setUp(self) -> None:
-        # Reset structlog state between tests
-        structlog.reset_defaults()
         bind_correlation_id("test-corr-id")
 
     def tearDown(self) -> None:
-        structlog.reset_defaults()
         # Clean up root logger handlers
         root = logging.getLogger()
         root.handlers.clear()
@@ -66,11 +62,9 @@ class TestVerbosityLevels(unittest.TestCase):
     """
 
     def setUp(self) -> None:
-        structlog.reset_defaults()
         bind_correlation_id("test-corr-id")
 
     def tearDown(self) -> None:
-        structlog.reset_defaults()
         root = logging.getLogger()
         for handler in root.handlers:
             handler.close()
@@ -85,49 +79,49 @@ class TestVerbosityLevels(unittest.TestCase):
     def test_quiet_suppresses_info(self) -> None:
         buf = io.StringIO()
         configure_logging("quiet", console_stream=buf)
-        log = structlog.get_logger()
+        log = logging.getLogger("gzkit.test")
         log.info("should not appear")
         self.assertEqual(buf.getvalue(), "")
 
     def test_quiet_shows_errors(self) -> None:
         buf = io.StringIO()
         configure_logging("quiet", console_stream=buf)
-        log = structlog.get_logger()
+        log = logging.getLogger("gzkit.test")
         log.error("critical problem")
         self.assertIn("critical problem", buf.getvalue())
 
     def test_normal_shows_warnings(self) -> None:
         buf = io.StringIO()
         configure_logging("normal", console_stream=buf)
-        log = structlog.get_logger()
+        log = logging.getLogger("gzkit.test")
         log.warning("disk nearly full")
         self.assertIn("disk nearly full", buf.getvalue())
 
     def test_normal_suppresses_info(self) -> None:
         buf = io.StringIO()
         configure_logging("normal", console_stream=buf)
-        log = structlog.get_logger()
+        log = logging.getLogger("gzkit.test")
         log.info("status update")
         self.assertEqual(buf.getvalue(), "")
 
     def test_verbose_shows_info(self) -> None:
         buf = io.StringIO()
         configure_logging("verbose", console_stream=buf)
-        log = structlog.get_logger()
+        log = logging.getLogger("gzkit.test")
         log.info("status update")
         self.assertIn("status update", buf.getvalue())
 
     def test_verbose_suppresses_debug(self) -> None:
         buf = io.StringIO()
         configure_logging("verbose", console_stream=buf)
-        log = structlog.get_logger()
+        log = logging.getLogger("gzkit.test")
         log.debug("verbose detail")
         self.assertEqual(buf.getvalue(), "")
 
     def test_debug_shows_debug(self) -> None:
         buf = io.StringIO()
         configure_logging("debug", console_stream=buf)
-        log = structlog.get_logger()
+        log = logging.getLogger("gzkit.test")
         log.debug("debug info")
         self.assertIn("debug info", buf.getvalue())
 
@@ -136,11 +130,9 @@ class TestJsonFileOutput(unittest.TestCase):
     """Test JSON file output for machine consumption."""
 
     def setUp(self) -> None:
-        structlog.reset_defaults()
         bind_correlation_id("json-test-id")
 
     def tearDown(self) -> None:
-        structlog.reset_defaults()
         root = logging.getLogger()
         for handler in root.handlers:
             handler.close()
@@ -151,8 +143,8 @@ class TestJsonFileOutput(unittest.TestCase):
             log_path = Path(tmp) / "test.log"
             buf = io.StringIO()
             configure_logging("normal", log_file=log_path, console_stream=buf)
-            log = structlog.get_logger()
-            log.info("test event", key="value")
+            log = logging.getLogger("gzkit.test")
+            log.info("test event", extra={"key": "value"})
 
             # Close handlers before temp dir cleanup (Windows file lock)
             root = logging.getLogger()
@@ -173,7 +165,7 @@ class TestJsonFileOutput(unittest.TestCase):
             log_path = Path(tmp) / "test.log"
             buf = io.StringIO()
             configure_logging("normal", log_file=log_path, console_stream=buf)
-            log = structlog.get_logger()
+            log = logging.getLogger("gzkit.test")
             log.info("first event")
             log.warning("second event")
 
@@ -194,7 +186,7 @@ class TestJsonFileOutput(unittest.TestCase):
             log_path = Path(tmp) / "test.log"
             buf = io.StringIO()
             configure_logging("normal", log_file=log_path, console_stream=buf)
-            log = structlog.get_logger()
+            log = logging.getLogger("gzkit.test")
             log.debug("debug event for file")
 
             root = logging.getLogger()
@@ -213,11 +205,9 @@ class TestConsoleOutput(unittest.TestCase):
     """Test human-readable console output."""
 
     def setUp(self) -> None:
-        structlog.reset_defaults()
         bind_correlation_id("console-test")
 
     def tearDown(self) -> None:
-        structlog.reset_defaults()
         root = logging.getLogger()
         for handler in root.handlers:
             handler.close()
@@ -227,7 +217,7 @@ class TestConsoleOutput(unittest.TestCase):
     def test_console_output_is_human_readable(self) -> None:
         buf = io.StringIO()
         configure_logging("normal", console_stream=buf)
-        log = structlog.get_logger()
+        log = logging.getLogger("gzkit.test")
         log.warning("hello world")
         output = buf.getvalue()
         self.assertIn("hello world", output)
@@ -241,7 +231,7 @@ class TestConsoleOutput(unittest.TestCase):
         # We test this by providing a mock
         buf = io.StringIO()
         configure_logging("normal", console_stream=buf)
-        log = structlog.get_logger()
+        log = logging.getLogger("gzkit.test")
         log.warning("test message")
         self.assertIn("test message", buf.getvalue())
 
@@ -249,11 +239,7 @@ class TestConsoleOutput(unittest.TestCase):
 class TestCorrelationId(unittest.TestCase):
     """Test correlation ID binding and propagation."""
 
-    def setUp(self) -> None:
-        structlog.reset_defaults()
-
     def tearDown(self) -> None:
-        structlog.reset_defaults()
         root = logging.getLogger()
         for handler in root.handlers:
             handler.close()
@@ -275,7 +261,7 @@ class TestCorrelationId(unittest.TestCase):
             buf = io.StringIO()
             bind_correlation_id("corr-abc-123")
             configure_logging("normal", log_file=log_path, console_stream=buf)
-            log = structlog.get_logger()
+            log = logging.getLogger("gzkit.test")
             log.info("test with correlation")
 
             root = logging.getLogger()
@@ -295,7 +281,7 @@ class TestCorrelationId(unittest.TestCase):
             buf = io.StringIO()
             bind_correlation_id("propagate-test")
             configure_logging("normal", log_file=log_path, console_stream=buf)
-            log = structlog.get_logger()
+            log = logging.getLogger("gzkit.test")
             log.info("first call")
             log.info("second call")
 
@@ -312,19 +298,20 @@ class TestCorrelationId(unittest.TestCase):
 
 
 class TestCoreLayerBinding(unittest.TestCase):
-    """Verify core layer can use structlog binding without CLI config imports."""
+    """Verify core layer can bind context through stdlib logging alone."""
 
     @covers("REQ-0.0.3-07-07")
-    def test_structlog_get_logger_works_without_configure(self) -> None:
-        """Core code can call get_logger() independently."""
-        structlog.reset_defaults()
-        log = structlog.get_logger()
-        # Should not raise — core can bind without CLI config
-        bound = log.bind(module="core.lifecycle")
-        self.assertIsNotNone(bound)
+    def test_core_binds_context_without_the_cli_configuration(self) -> None:
+        """A core module binds fields with a stdlib adapter; the CLI formatter renders them."""
+        bound = logging.LoggerAdapter(
+            logging.getLogger("gzkit.core.lifecycle"), {"component": "core.lifecycle"}
+        )
+        with self.assertLogs("gzkit.core.lifecycle", level="WARNING") as cap:
+            bound.warning("state.changed")
+        self.assertEqual(getattr(cap.records[0], "component", None), "core.lifecycle")
 
     def test_core_binding_only_imports(self) -> None:
-        """Verify that using structlog in core requires only structlog, not cli.logging."""
+        """Verify that the CLI logging adapter imports nothing from core or ports."""
         import ast
 
         src = Path(__file__).resolve().parent.parent / "src" / "gzkit" / "cli" / "logging.py"
@@ -358,34 +345,40 @@ class TestExportFromCliPackage(unittest.TestCase):
 class TestConsoleColorsFollowThePlatformDefault(unittest.TestCase):
     """GHI #1010: the entrypoint runs `configure_logging` for every `gz` command.
 
-    structlog raises `SystemError` for `ConsoleRenderer(colors=True)` on Windows
-    without colorama, and colorama is not a gzkit runtime dependency. Forcing
-    colors on would therefore crash every command there, so no verbosity may
-    request them; structlog's own default already enables them where they work.
-
-    Wiring the adapter also routes gzkit's stdlib warnings through the renderer.
-    Before it they reached stderr plain, so captured or piped stderr must stay
-    free of ANSI styling, and `NO_COLOR` must hold even on a terminal.
+    The console styles its level only for a terminal that wants colour, with plain
+    ANSI that needs no colorama on Windows. gzkit's stdlib warnings reach the same
+    formatter, so captured or piped stderr must stay free of ANSI styling, and
+    `NO_COLOR` must hold even on a terminal.
     """
 
     class _Terminal(io.StringIO):
         def isatty(self) -> bool:
             return True
 
-    def _render_warning(self, stream: io.StringIO, env: dict[str, str]) -> str:
+    def _render_warning(
+        self, stream: io.StringIO, env: dict[str, str], verbosity: Verbosity = "normal"
+    ) -> str:
         with patch.dict(os.environ, env, clear=True):
-            configure_logging("normal", console_stream=stream)
+            configure_logging(verbosity, console_stream=stream)
         logging.getLogger("gzkit.triangle").warning("Malformed REQ line (skipped): %s", "x")
-        structlog.get_logger().warning("chore.resolver.fallback", slug="demo")
+        logging.getLogger("gzkit.commands.chores").error(
+            "chore.resolver.fallback", extra={"slug": "demo"}
+        )
         return stream.getvalue()
 
     def _environment_without_color_settings(self) -> dict[str, str]:
         return {k: v for k, v in os.environ.items() if k not in {"NO_COLOR", "FORCE_COLOR"}}
 
+    def tearDown(self) -> None:
+        root = logging.getLogger()
+        for handler in root.handlers:
+            handler.close()
+        root.handlers.clear()
+
     def test_a_piped_stream_receives_no_styling(self) -> None:
         output = self._render_warning(io.StringIO(), self._environment_without_color_settings())
         self.assertIn("Malformed REQ line (skipped): x", output)
-        self.assertIn("chore.resolver.fallback", output)
+        self.assertIn("chore.resolver.fallback slug=demo", output)
         self.assertNotIn("\x1b[", output)
 
     def test_no_color_keeps_a_terminal_plain(self) -> None:
@@ -393,6 +386,12 @@ class TestConsoleColorsFollowThePlatformDefault(unittest.TestCase):
         output = self._render_warning(self._Terminal(), env)
         self.assertIn("Malformed REQ line (skipped): x", output)
         self.assertNotIn("\x1b[", output)
+
+    def test_a_terminal_that_wants_colour_gets_it_and_quiet_never_does(self) -> None:
+        env = self._environment_without_color_settings()
+        self.assertIn("\x1b[", self._render_warning(self._Terminal(), env))
+        self.tearDown()
+        self.assertNotIn("\x1b[", self._render_warning(self._Terminal(), env, "quiet"))
 
     def test_a_detached_stderr_does_not_stop_the_command(self) -> None:
         """Under pythonw or a detached launch `sys.stderr` is None.
@@ -406,31 +405,6 @@ class TestConsoleColorsFollowThePlatformDefault(unittest.TestCase):
             except Exception as exc:
                 self.fail(f"configuring logging with no stderr raised {exc!r}")
         self.assertIsInstance(logging.getLogger().handlers[0].formatter, logging.Formatter)
-
-    def setUp(self) -> None:
-        structlog.reset_defaults()
-
-    def tearDown(self) -> None:
-        structlog.reset_defaults()
-        root = logging.getLogger()
-        for handler in root.handlers:
-            handler.close()
-        root.handlers.clear()
-
-    def test_no_verbosity_forces_console_colors_on(self) -> None:
-        """Even on a terminal, where colour is wanted, it is never forced."""
-        for verbosity in VERBOSITY_TO_LEVEL:
-            with (
-                self.subTest(verbosity=verbosity),
-                patch.dict(os.environ, self._environment_without_color_settings(), clear=True),
-                patch.object(
-                    structlog.dev, "ConsoleRenderer", wraps=structlog.dev.ConsoleRenderer
-                ) as renderer,
-            ):
-                configure_logging(verbosity, console_stream=self._Terminal())
-                self.assertTrue(renderer.called)
-                for call in renderer.call_args_list:
-                    self.assertIsNot(call.kwargs.get("colors"), True)
 
 
 if __name__ == "__main__":

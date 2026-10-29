@@ -6,11 +6,11 @@ containing CHORE.md (human workflow) and acceptance.json (machine criteria).
 
 import importlib.resources
 import json
+import logging
 import re
 from pathlib import Path
 from typing import Literal
 
-import structlog
 from pydantic import BaseModel, ConfigDict
 from rich.markup import escape
 from rich.table import Table
@@ -19,7 +19,7 @@ from gzkit.commands.chores_declaration import ChoreDeclaration
 from gzkit.commands.common import GzCliError, console, get_project_root
 from gzkit.config import load_config
 
-logger = structlog.get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 CHORE_SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 ALLOWED_LANES = {"lite", "heavy"}
@@ -178,10 +178,12 @@ def _resolve_chore_dir(slug: str) -> ResolvedPath:
         cfg = load_config()
         logger.info(
             "chore.resolver.fallback",
-            slug=slug,
-            project_path=str(project_candidate),
-            package_path=str(package_candidate),
-            paths_chores=cfg.paths.chores,
+            extra={
+                "slug": slug,
+                "project_path": str(project_candidate),
+                "package_path": str(package_candidate),
+                "paths_chores": cfg.paths.chores,
+            },
         )
         return ResolvedPath(path=package_candidate, source="package")
 
@@ -203,10 +205,12 @@ def _resolve_registry() -> ResolvedPath:
         cfg = load_config()
         logger.info(
             "chore.resolver.fallback",
-            slug="registry",
-            project_path=str(project_candidate),
-            package_path=str(package_candidate),
-            paths_chores=cfg.paths.chores,
+            extra={
+                "slug": "registry",
+                "project_path": str(project_candidate),
+                "package_path": str(package_candidate),
+                "paths_chores": cfg.paths.chores,
+            },
         )
         return ResolvedPath(path=package_candidate, source="package")
 

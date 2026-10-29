@@ -1,8 +1,9 @@
 """`--json` stdout carries only JSON; logs go to stderr (GHI #1010).
 
 `.gzkit/rules/cli.md` § Output Contracts: `--json` is *"Valid JSON to stdout;
-logs to stderr"*. structlog's unconfigured default logger prints to stdout, so
-while the entrypoint never applied `configure_logging`, every structlog event a
+logs to stderr"*. Before GHI #1010 the entrypoint never applied
+`configure_logging`, and the logger it used then (structlog, replaced by stdlib
+`logging` in RO-9 tranche 6) printed to stdout by default, so every event a
 `--json` command emitted landed inside the document its consumer parses —
 `scripts/session_orientation.py` parses `gz chores status --json`.
 
@@ -18,8 +19,6 @@ import logging
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 
-import structlog
-
 from gzkit.cli.main import main
 from tests.commands.common import CliRunner, parse_json_document
 
@@ -27,18 +26,15 @@ _FALLBACK_EVENT = "chore.resolver.fallback"
 
 
 class TestJsonStdoutCarriesOnlyJson(unittest.TestCase):
-    """A structlog event emitted during a `--json` command never reaches stdout."""
+    """A log event emitted during a `--json` command never reaches stdout."""
 
     def setUp(self) -> None:
-        # Start from structlog's unconfigured default: that is the state a fresh
-        # `gz` process is in, and the state that wrote logs to stdout.
-        structlog.reset_defaults()
+        # Start from logging's unconfigured state, the state a fresh `gz` process is in.
         root = logging.getLogger()
         self._root_handlers = list(root.handlers)
         self._root_level = root.level
 
     def tearDown(self) -> None:
-        structlog.reset_defaults()
         root = logging.getLogger()
         root.handlers[:] = self._root_handlers
         root.setLevel(self._root_level)

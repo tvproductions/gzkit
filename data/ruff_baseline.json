@@ -3593,16 +3593,6 @@
     },
     {
       "file": "src/gzkit/cli/logging.py",
-      "rule": "ANN401",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/cli/logging.py",
-      "rule": "ARG001",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/cli/logging.py",
       "rule": "DOC201",
       "count": 3
     },
@@ -18745,11 +18735,6 @@
       "file": "tests/test_lock_manager.py",
       "rule": "PLR6201",
       "count": 3
-    },
-    {
-      "file": "tests/test_logging.py",
-      "rule": "FBT003",
-      "count": 1
     },
     {
       "file": "tests/test_logging.py",

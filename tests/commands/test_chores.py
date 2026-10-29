@@ -5,8 +5,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from unittest.mock import patch
 
-import structlog.testing
-
 from gzkit.cli import main
 from gzkit.traceability import covers
 from tests.commands.common import CliRunner, _quick_init
@@ -604,7 +602,7 @@ class TestChoreResolver(unittest.TestCase):
         with runner.isolated_filesystem():
             _quick_init()
             with (
-                structlog.testing.capture_logs() as cap,
+                self.assertLogs(chores_mod.logger, level="INFO") as cap,
                 patch.object(chores_mod, "_package_chores_root") as mock_pkg_root,
             ):
                 pkg_root = Path("fake-pkg-root").resolve()
@@ -614,9 +612,9 @@ class TestChoreResolver(unittest.TestCase):
                 result = chores_mod._resolve_chore_dir("pkg-chore")
             self.assertEqual(result.source, "package")
             self.assertEqual(result.path.resolve(), (pkg_root / "pkg-chore").resolve())
-            events = [e for e in cap if e.get("event") == "chore.resolver.fallback"]
-            self.assertTrue(events, f"no fallback log event in: {cap}")
-            self.assertEqual(events[0].get("slug"), "pkg-chore")
+            events = [r for r in cap.records if r.getMessage() == "chore.resolver.fallback"]
+            self.assertTrue(events, f"no fallback log event in: {cap.output}")
+            self.assertEqual(getattr(events[0], "slug", None), "pkg-chore")
 
     @covers("REQ-0.0.21-04-03")
     def test_chore_resolver_raises_with_both_paths_named(self) -> None:
@@ -688,7 +686,7 @@ class TestChoreResolver(unittest.TestCase):
         with runner.isolated_filesystem():
             _quick_init()
             with (
-                structlog.testing.capture_logs() as cap,
+                self.assertLogs(chores_mod.logger, level="INFO") as cap,
                 patch.object(chores_mod, "_package_chores_root") as mock_pkg_root,
             ):
                 pkg_root = Path("fake-pkg-root").resolve()
@@ -698,9 +696,9 @@ class TestChoreResolver(unittest.TestCase):
                 result = chores_mod._resolve_registry()
             self.assertEqual(result.source, "package")
             self.assertEqual(result.path.resolve(), (pkg_root / "registry.json").resolve())
-            events = [e for e in cap if e.get("event") == "chore.resolver.fallback"]
-            self.assertTrue(events, f"no fallback log event in: {cap}")
-            self.assertEqual(events[0].get("slug"), "registry")
+            events = [r for r in cap.records if r.getMessage() == "chore.resolver.fallback"]
+            self.assertTrue(events, f"no fallback log event in: {cap.output}")
+            self.assertEqual(getattr(events[0], "slug", None), "registry")
 
     @covers("REQ-0.0.21-04-06")
     def test_resolved_path_model_is_well_typed(self) -> None:

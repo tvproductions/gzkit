@@ -12,8 +12,6 @@ import sys
 import unittest
 from unittest import mock
 
-import structlog
-
 from gzkit.cli import logging as cli_logging
 from gzkit.enforcement import (
     EXEMPTS_NONE,
@@ -37,7 +35,6 @@ class TestLogLevelsFollowSpecControl(unittest.TestCase):
         self._handlers, self._level = list(root.handlers), root.level
 
     def tearDown(self) -> None:
-        structlog.reset_defaults()
         root = logging.getLogger()
         root.handlers[:] = self._handlers
         root.setLevel(self._level)

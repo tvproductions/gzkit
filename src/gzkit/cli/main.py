@@ -110,9 +110,9 @@ def _get_parser() -> argparse.ArgumentParser:
 def configure_logging_from_flags(args: argparse.Namespace) -> None:
     """Apply the CLI logging adapter at the verbosity the common flags select.
 
-    Unconfigured, structlog prints to stdout, which corrupts ``--json`` output;
-    ``.gzkit/rules/cli.md`` § Output Contracts sends logs to stderr (GHI #1010).
-    Imported here, after parsing, so ``gz --help`` never loads structlog.
+    Every log record goes to stderr, never stdout, so ``--json`` output stays
+    clean (``.gzkit/rules/cli.md`` § Output Contracts, GHI #1010). Imported here,
+    after parsing, so ``gz --help`` never loads the adapter.
     """
     from gzkit.cli.logging import Verbosity, configure_logging  # noqa: PLC0415
 

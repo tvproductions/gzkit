@@ -18,8 +18,6 @@ import logging
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 
-import structlog
-
 CLI_LOG_LEVELS_CLAIM_ID = "cli-log-levels-follow-spec"
 
 CLI_LOG_LEVEL_CLAIM_IDS: frozenset[str] = frozenset({CLI_LOG_LEVELS_CLAIM_ID})
@@ -52,10 +50,10 @@ def _pole_holds(flags: dict[str, bool], shown: int, hidden: int | None, token: s
     stdout, stderr = io.StringIO(), io.StringIO()
     with redirect_stdout(stdout), redirect_stderr(stderr):
         configure_logging_from_flags(args)
-        log = structlog.get_logger()
-        log.log(shown, f"{token}-shown")  # noqa: G004 — structlog renders the event as given; it does not %-format
+        log = logging.getLogger("gzkit")
+        log.log(shown, "%s-shown", token)
         if hidden is not None:
-            log.log(hidden, f"{token}-hidden")  # noqa: G004 — as above
+            log.log(hidden, "%s-hidden", token)
     visible = f"{token}-shown" in stderr.getvalue()
     suppressed = hidden is None or f"{token}-hidden" not in stderr.getvalue()
     return visible and suppressed and token not in stdout.getvalue()
@@ -72,14 +70,11 @@ def _ep_log_levels_follow_spec(root: Path) -> int:
     token = f"nc-{root.name.lower().replace('_', '-')}"
     root_logger = logging.getLogger()
     saved_handlers, saved_level = list(root_logger.handlers), root_logger.level
-    saved_structlog = structlog.get_config()
     try:
         held = all(_pole_holds(flags, shown, hidden, token) for flags, shown, hidden in _POLES)
     finally:
         root_logger.handlers[:] = saved_handlers
         root_logger.setLevel(saved_level)
-        structlog.reset_defaults()
-        structlog.configure(**saved_structlog)
     return 1 if held else 0
 
 

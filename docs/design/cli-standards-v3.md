@@ -36,7 +36,7 @@ states, measured 2026-08-16 against `main`. Cite the state, not just the section
 | § Output Modes — `--json` | **Live, UNMET** | 73 of 136 leaf commands declare it |
 | § Output Modes — `--plain`, `--log-file` | **Live, UNMET** | 13 call sites; `--log-file` does not exist (0 occurrences) |
 | § Output Rules — formatter is sole chokepoint | **Live, UNMET** | **1,230 `console.print(` sites** vs 1 `OutputFormatter`. Errors to stderr, re-measured 2026-09-14: the shared error boundary in `cli/main.py` conforms, but 127 red `console.print` error lines in 42 command modules still print to stdout (GHI #810) |
-| § Logging — structlog, correlation IDs | **Live, UNMET** | Re-measured 2026-09-14 (GHI #1010): `cli/main.py` applies `configure_logging` for every command at § Verbosity Levels, logging to stderr; `--log-file` does not exist |
+| § Logging — stdlib `logging`, correlation IDs | **Live, UNMET** | Re-measured 2026-09-14 (GHI #1010): `cli/main.py` applies `configure_logging` for every command at § Verbosity Levels, logging to stderr; `--log-file` does not exist |
 | § Architecture — Port Interfaces, DI, Layer Dependencies | **RETIRED** | facade retired 2026-07-06 (banner below) |
 | § Project Structure — `ports/`, `adapters/`, `tests/fakes/` tree | **RETIRED** | layout does not exist; **adding it is now forbidden** by `.claude/rules/hexagonal-architecture.md` rule 7 |
 | § Testing — Test Fakes (`tests/fakes/`) | **RETIRED** | same ruling |
@@ -82,7 +82,6 @@ The approved scaffold dependencies are:
 
 - **pydantic** — typed configuration, domain model validation, JSON serialization
 - **rich** — human-readable terminal output (tables, progress indicators, styled text)
-- **structlog** — structured logging with key-value pairs, JSON output, correlation IDs
 
 Every scaffold capability not covered above must come from the Python 3.13+ standard
 library. Adding a new scaffold dependency requires explicit human approval before
@@ -140,13 +139,13 @@ The project uses hexagonal (ports and adapters) architecture with three distinct
 
 1. **CLI Adapter Layer** — The inbound adapter. Parses arguments via `argparse`, invokes
    core services, formats output. This layer knows about `argparse`, `rich`, and
-   `structlog` configuration. It knows nothing about how core logic does its work.
+   the `logging` configuration. It knows nothing about how core logic does its work.
 
 2. **Core Domain Layer** — Business logic and domain models. This layer has zero
    knowledge of the CLI framework, output formatting, or any specific I/O
    implementation. It communicates with the outside world exclusively through ports.
-   Core code may use `pydantic.BaseModel` for domain models and may bind a structlog
-   logger for structured diagnostic output, but never configures logging or writes
+   Core code may use `pydantic.BaseModel` for domain models and may obtain a stdlib
+   `logging` logger for structured diagnostic output, but never configures logging or writes
    directly to stderr/stdout.
 
 3. **Ports and Adapters** — Ports are `typing.Protocol` classes defining structural
@@ -207,8 +206,8 @@ class ProcessingService:
 ### Layer Dependencies (Allowed Imports)
 
 ```
-cli/          → core/, ports/, adapters/, rich, structlog, argparse, logging, json, pydantic
-core/         → ports/, pydantic, structlog (binding only), stdlib, domain deps
+cli/          → core/, ports/, adapters/, rich, argparse, logging, json, pydantic
+core/         → ports/, pydantic, stdlib (logging: loggers only, never configuration), domain deps
 ports/        → typing (Protocol), abc (only when runtime isinstance is needed), stdlib only
 adapters/     → ports/, stdlib, approved external libs, domain deps
 tests/fakes/  → ports/, stdlib only
@@ -602,7 +601,7 @@ human-readable mode. Use `rich.progress` for this. Progress indicators must:
 > **State: LIVE but UNMET — wired, not yet conformant** (see § Document status).
 > `src/gzkit/cli/logging.py` implements this section. Measured 2026-08-16 it was
 > built and unwired: **`cli/main.py` never called `configure_logging`**, so
-> structlog kept its default logger, which prints to **stdout**. That default
+> structlog, the logger then in use, kept its default, which prints to **stdout**. That default
 > corrupted `--json` output. Its only consumer, `src/gzkit/commands/chores.py`,
 > emits an INFO event on the package fallback. It was the same "wired into zero
 > production code" shape the facade banner above records for ports/adapters.
@@ -611,17 +610,21 @@ human-readable mode. Use `rich.progress` for this. Progress indicators must:
 > `--quiet`), and logs reach stderr. The level map follows § Verbosity Levels
 > below; it briefly mapped the default to INFO and `--verbose` to DEBUG, copied
 > from a drifted `.gzkit/rules/cli.md` row that has been corrected with it. One
-> divergence remains: `--log-file` does not exist.
+> divergence remains: `--log-file` does not exist. Since RO-9 tranche 6 (2026-10-28,
+> operator: "Replace with stdlib (Rec.)") the adapter is stdlib `logging` alone;
+> structlog is no longer a dependency.
 
 Logging and user-facing output are **two separate systems** and must never be conflated.
 User output flows through the `OutputFormatter` to stdout. Logging flows through
-`structlog` to stderr and optionally to a log file. They never share a code path.
+stdlib `logging` to stderr and optionally to a log file. They never share a code path.
 
 ### Stack
 
-The logging stack is `structlog` configured to wrap the stdlib `logging` module. This
-gives structured key-value log records with JSON rendering while preserving
-compatibility with any stdlib logging integrations.
+The logging stack is the stdlib `logging` module. An event is a record whose message
+is the event name and whose fields arrive through `extra=`; the CLI adapter's
+formatters render them as `key=value` pairs on stderr and as JSON in the log file.
+Stdlib supplies everything this needs, so no logging dependency is taken
+(`AGENTS.md` § STDLIB-FIRST DOCTRINE).
 
 ### Verbosity Levels
 
@@ -641,98 +644,76 @@ at startup in the CLI adapter layer.
 ### Correlation IDs
 
 Every top-level command invocation generates a correlation ID (a short UUID token)
-that is bound to the structlog context at startup. All log records emitted during
+that a filter on every handler stamps on each record. All log records emitted during
 that invocation carry the correlation ID. This allows tracing a single CLI run through
 file logs, especially when the tool is invoked repeatedly by automation.
 
 ```python
+import json
+import logging
+import sys
 import uuid
-import structlog
+
+_correlation_id = uuid.uuid4().hex[:12]
+_FIELDS = set(vars(logging.LogRecord("", 0, "", 0, "", None, None))) | {"message"}
+
+
+def _stamp(record: logging.LogRecord) -> bool:
+    record.correlation_id = _correlation_id
+    return True
+
+
+class JsonFormatter(logging.Formatter):
+    def format(self, record: logging.LogRecord) -> str:
+        fields = {k: v for k, v in vars(record).items() if k not in _FIELDS}
+        return json.dumps({"event": record.getMessage(), "level": record.levelname.lower(), **fields})
+
 
 def configure_logging(level: int, log_file: str | None = None) -> None:
-    """Configure structlog + stdlib logging. Called once at CLI startup."""
-    shared_processors = [
-        structlog.contextvars.merge_contextvars,
-        structlog.processors.add_log_level,
-        structlog.processors.TimeStamper(fmt="iso"),
-        structlog.stdlib.add_logger_name,
-    ]
-
-    structlog.configure(
-        processors=[
-            *shared_processors,
-            structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
-        ],
-        logger_factory=structlog.stdlib.LoggerFactory(),
-        wrapper_class=structlog.stdlib.BoundLogger,
-        cache_logger_on_first_use=True,
-    )
-
-    # Stderr handler: human-readable when interactive, JSON otherwise
-    stderr_formatter = structlog.stdlib.ProcessorFormatter(
-        processors=[
-            structlog.stdlib.ProcessorFormatter.remove_processors_meta,
-            structlog.dev.ConsoleRenderer()
-            if sys.stderr.isatty()
-            else structlog.processors.JSONRenderer(),
-        ],
-        foreign_pre_chain=shared_processors,
-    )
-
-    import logging
-
+    """Configure stdlib logging. Called once at CLI startup."""
     root = logging.getLogger()
-    root.setLevel(level)
-
+    root.handlers.clear()
     stderr_handler = logging.StreamHandler(sys.stderr)
-    stderr_handler.setFormatter(stderr_formatter)
+    stderr_handler.setLevel(level)
+    stderr_handler.addFilter(_stamp)
+    stderr_handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
     root.addHandler(stderr_handler)
-
     if log_file:
-        # File handler: always JSON
-        file_formatter = structlog.stdlib.ProcessorFormatter(
-            processors=[
-                structlog.stdlib.ProcessorFormatter.remove_processors_meta,
-                structlog.processors.JSONRenderer(),
-            ],
-            foreign_pre_chain=shared_processors,
-        )
-        file_handler = logging.FileHandler(log_file)
-        file_handler.setFormatter(file_formatter)
+        file_handler = logging.FileHandler(log_file, encoding="utf-8")  # always JSON
+        file_handler.addFilter(_stamp)
+        file_handler.setFormatter(JsonFormatter())
         root.addHandler(file_handler)
-
-    # Bind correlation ID for this invocation
-    structlog.contextvars.clear_contextvars()
-    structlog.contextvars.bind_contextvars(
-        correlation_id=str(uuid.uuid4())[:8],
-    )
+    root.setLevel(logging.DEBUG if log_file else level)
 ```
 
 ### Using Loggers
 
-In any module, obtain a logger via structlog and bind context as needed:
+In any module, obtain a stdlib logger by module name and pass fields through `extra=`;
+a `logging.LoggerAdapter` binds fields that every call carries:
 
 ```python
-import structlog
+import logging
 
-log = structlog.get_logger()
+log = logging.getLogger(__name__)
 
 class ProcessingService:
     def process(self, path: str) -> Result:
-        log.info("processing_started", path=path)
+        log.info("processing_started", extra={"path": path})
         # ...work...
-        log.debug("validation_passed", record_count=len(records))
+        log.debug("validation_passed", extra={"record_count": len(records)})
         return result
 ```
 
-Key-value pairs are the primary mechanism. Use them for every log call. Bare string
+Key-value fields are the primary mechanism. Use them for every log call. Bare string
 messages without structured context are discouraged. Prefer
-`log.info("file_loaded", path=p, size=s)` over `log.info(f"Loaded {p} ({s} bytes)")`.
+`log.info("file_loaded", extra={"path": p, "size": s})` over
+`log.info(f"Loaded {p} ({s} bytes)")`. A field may not reuse a `LogRecord` attribute
+name (`module`, `name`, `lineno`, ...); stdlib refuses it.
 
 ### Logging Rules
 
-1. Core domain code may call `structlog.get_logger()` and emit log records. It must
-   never configure logging, add handlers, or import `logging` directly.
+1. Core domain code may call `logging.getLogger(__name__)` and emit log records. It must
+   never configure logging or add handlers.
 2. Logging configuration happens exactly once, in `cli/main.py`, before any command
    handler runs.
 3. All log output goes to stderr (and optionally to a file). Never to stdout.
@@ -987,18 +968,16 @@ codes, stdout content, and stderr content.
 
 ### Logging in Tests
 
-Use `structlog.testing.capture_logs()` to assert on log output in unit tests without
-configuring real handlers:
+Use `unittest`'s `assertLogs` to assert on log output without configuring real
+handlers:
 
 ```python
-import structlog.testing
-
 class TestProcessingService(unittest.TestCase):
     def test_logs_processing_start(self) -> None:
-        with structlog.testing.capture_logs() as cap_logs:
+        with self.assertLogs("projectname.service", level="INFO") as cap:
             self.service.process("input.txt")
         self.assertTrue(
-            any(l["event"] == "processing_started" for l in cap_logs)
+            any(r.getMessage() == "processing_started" for r in cap.records)
         )
 ```
 
@@ -1039,7 +1018,6 @@ requires-python = ">=3.13"
 dependencies = [
     "pydantic",
     "rich",
-    "structlog",
 ]
 
 [project.scripts]
@@ -1102,7 +1080,7 @@ policy tests, which enforce architectural boundaries automatically.
 | Configuration (read) | `tomllib` (stdlib) for TOML, `json` (stdlib) for JSON |
 | Configuration (typed) | `pydantic` |
 | Domain models | `pydantic` |
-| Logging | `structlog` wrapping stdlib `logging` |
+| Logging | stdlib `logging` |
 | Testing | `unittest` (stdlib) |
 | Type checking | `ty` (Astral) |
 | Linting / formatting | `ruff` (Astral) |

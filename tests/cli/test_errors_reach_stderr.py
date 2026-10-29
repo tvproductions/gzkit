@@ -14,8 +14,6 @@ import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from unittest.mock import patch
 
-import structlog
-
 from gzkit.cli.main import main
 from gzkit.commands import task
 from tests.commands.common import CliRunner
@@ -30,7 +28,6 @@ class TestTheErrorBoundaryWritesToStderr(unittest.TestCase):
         self._root_level = root.level
 
     def tearDown(self) -> None:
-        structlog.reset_defaults()
         root = logging.getLogger()
         root.handlers[:] = self._root_handlers
         root.setLevel(self._root_level)

@@ -38,12 +38,6 @@
       "count": 1
     },
     {
-      "rule": "non-astral-unregistered",
-      "file": "pyproject.toml",
-      "subject": "structlog",
-      "count": 1
-    },
-    {
       "rule": "version-home-missing",
       "file": "gz init scaffold:.python-version",
       "subject": ".python-version",
