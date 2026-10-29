@@ -1808,3 +1808,4 @@
 {"ts": "2026-10-29T05:25:27Z", "source": "20261029T052527Z-ro9-tranches-5-6-landed-tranche-7-in-flight.md", "text": "RO-9 tranche 6 attested REQ-0.0.3-07-02 (verbatim choice: \"Amend in place (Rec.)\")."}
 {"ts": "2026-10-29T05:25:27Z", "source": "20261029T052527Z-ro9-tranches-5-6-landed-tranche-7-in-flight.md", "text": "RO-9 tranche 7 init shape (verbatim: \"why wouldn't we support each variant?\"), taken as gz init --project-type lib|package|app with lib the default."}
 {"ts": "2026-10-29T05:25:27Z", "source": "20261029T052527Z-ro9-tranches-5-6-landed-tranche-7-in-flight.md", "text": "RO-9 tranche 7 adopter baseline (verbatim choice: \"Seed at init (Rec.)\")."}
+{"ts": "2026-10-29T05:39:48Z", "source": "20261029T053948Z-ro9-tranche-7-checkpoint-committed.md", "text": "Commit tranche 7's work in progress as a checkpoint before it is finished (verbatim: \"commit now\")."}
