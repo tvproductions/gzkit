@@ -182,10 +182,11 @@ class TestReceiptArchive(unittest.TestCase):
             plans = Path(td)
             path, _ = self._receipt(plans)
 
-            def _corrupting_copy(src: str, dst: str) -> None:
-                Path(dst).write_text("{}", encoding="utf-8")
+            def _corrupting_copy(_source: Path, target: Path, **_kwargs: object) -> Path:
+                target.write_text("{}", encoding="utf-8")
+                return target
 
-            with mock.patch("gzkit.commands.preflight.shutil.copyfile", _corrupting_copy):
+            with mock.patch.object(Path, "copy", _corrupting_copy):
                 result = archive_plan_audit_receipt(path)
             self.assertFalse(result.archived)
             self.assertIn("digest mismatch", result.error)

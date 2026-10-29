@@ -23,7 +23,6 @@ survived. A brief with no demo, or a demo exiting non-zero, is a packet blocker.
 import json
 import os
 import re
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -336,7 +335,7 @@ def _materialize_demo_checkout(project_root: Path, destination: Path) -> None:
         if source.is_file():
             target = destination / source.relative_to(project_root)
             target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(source, target)
+            source.copy(target, preserve_metadata=True)
 
 
 def demo_env(project_root: Path, checkout: Path) -> dict[str, str]:

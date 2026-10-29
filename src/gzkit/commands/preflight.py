@@ -2,7 +2,6 @@
 
 import hashlib
 import json
-import shutil
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -115,7 +114,7 @@ def archive_plan_audit_receipt(receipt_path: Path) -> ReceiptArchiveResult:
         archive_dir = receipt_path.parent / ARCHIVE_DIR_NAME
         archive_dir.mkdir(parents=True, exist_ok=True)
         archive_path = archive_dir / receipt_path.name
-        shutil.copyfile(receipt_path, archive_path)
+        receipt_path.copy(archive_path)
         if hashlib.sha256(archive_path.read_bytes()).hexdigest() != digest:
             return ReceiptArchiveResult(
                 archived=False, error=f"archive digest mismatch for {receipt_path.name}"

@@ -309,7 +309,7 @@ def _graft_test_files(project_root: Path, worktree: Path, test_files: list[Path]
             continue
         target = worktree / rel
         target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source, target)
+        source.copy(target, preserve_metadata=True)
 
 
 #: Default runner. Parameterized rather than hard-coded so the core can be exercised

@@ -138,7 +138,7 @@ def staged_fingerprint(project_root: Path) -> str | None:
     tmp_dir = Path(tempfile.mkdtemp(prefix="gzkit-fp-"))
     tmp_index = tmp_dir / "index"
     try:
-        shutil.copy2(real_index, tmp_index)
+        real_index.copy(tmp_index, preserve_metadata=True)
         env = {**os.environ, "GIT_INDEX_FILE": str(tmp_index)}
         # Drop the receipt so it can never perturb the hash it is recording.
         # `.gitignore` normally covers `.gzkit/cache/`, but relying on that would
