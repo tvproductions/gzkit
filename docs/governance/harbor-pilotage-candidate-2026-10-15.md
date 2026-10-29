@@ -227,6 +227,12 @@ Not suspended, under any reading:
 In dependency order. RO-1 and RO-7 run in parallel with the rest on cheaper sessions. Each names
 the band of the general arrangement it serves.
 
+**The work scope is frozen at induction** (amended 2026-10-29, § Rulings of 2026-10-29): the orders
+are RO-0 to RO-13 as the table stands. A finding raised from then on is graded, not added: one that
+blocks return to service is worked under its owning order or a change order the operator issues; one
+that does not is a deferred finding, carried into civil rule with a named holder and a revisit
+condition, and never a new order.
+
 **Restoration is the order's own work** (operator ruling 2026-10-25, verbatim: *"the renovation contractor must reattach all safeguards and reconfigurethem if they've been altered/rerouted/changed, etc. that is part of the repair order. It is the RO's obligation to restore the system either to prior operations or the repaired/renovated new operational status, which why it is important to disconnect all guards and alarms. The RO (or a sequence of ROs) are obligated to return the system to a prior, or new, stable system state."*).
 An order disconnects whatever guards and alarms its work needs, and closes only when every safeguard
 it disconnected, rerouted or changed is reattached and reconfigured, to the prior state or to the new
@@ -322,7 +328,34 @@ inventory attested; "adrs are not releases" and the Release Package; safe mode a
 hangar and the sole term; the work order retired; the control-plane cut ruled A with backups; the
 chart amended to one exceptional period, now superseded by § Exit above.
 
-## What does not change
+## Rulings of 2026-10-29
+
+The step-back session. Put to the operator: a heavy check fixes its work scope at induction; each
+non-routine finding takes one test, *does it affect airworthiness?*; yes is fixed before release,
+no goes to the deferred-defect list with a time limit and the aircraft returns to service carrying
+it; the customer rules on each finding. Operator, verbatim: *"this is perfect. are we using it?"*;
+then, on the gap reported (the test graded discrepancy lines only, and the kit record's change-order
+decision makes *"work wholly outside scope ... a new job order, a new RO"*): *"record it now as a
+ruling"*.
+
+- **Induction freeze.** The drydock's work scope is RO-0 to RO-13 as § Repair orders stands on
+  2026-10-29. No order is added after it.
+- **Findings are graded.** Every finding raised after the freeze takes the return-to-service test,
+  the same grading § List of discrepancies applies to its lines (*blocks return to service* or
+  *due by a named event*). Blocking: worked under its owning order, or by a change order the operator
+  issues within that order's scope. Not blocking: a deferred finding with a named holder and a
+  revisit condition, transferred at the handback as exit item 8 transfers a line.
+- **The operator rules on each finding**, as the airline does for the check.
+- **Superseded for findings:** the [contractor-kit record](../rnd/contractor-kit.md)'s clause that
+  work wholly outside an order's scope is a new repair order. Such work is a deferred finding unless
+  it blocks return to service.
+- **The first finding, ungraded: deferral has no requirements intake.** Operator, verbatim, the same
+  turn: *"we don't have a way, except for the R&D system, to surface new requirements ... we have a
+  lot of long-standing ceremony about starting ADRs, but we don't have anything about starting new
+  requirements."* A repair finding defers to a GitHub issue (maintenance mode, ruling of 2026-10-17).
+  A requirements finding has no landing place: issues carry no requirements work (ruling of
+  2026-10-17), the ADR no longer carries requirements, the requirements model's `queued` outcome
+  (§ 4) has no capture process, and RO-11 designs only the pulling of a pool entry.
 
 Gate 5. The ledger rule. The operator-PII rule. The Prime Directive. TOPMOST remains `ADR-0.35.0`
 until RO-8 disposes of it; the drydock works inside the campaign, which sequences what follows.
