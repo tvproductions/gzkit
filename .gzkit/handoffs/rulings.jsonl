@@ -1797,3 +1797,14 @@
 {"ts": "2026-10-28T09:40:51Z", "source": "20261028T094050Z-ro5-tranches-3-to-5-wp-ro9-commenced.md", "text": "WP RO-9 initiation words (verbatim: \"do: tranche 5 (witness)\")."}
 {"ts": "2026-10-28T09:40:51Z", "source": "20261028T094050Z-ro5-tranches-3-to-5-wp-ro9-commenced.md", "text": "GHI #1183 after failed review (verbatim choice: \"Reopen, repair, re-review (Recommended)\")."}
 {"ts": "2026-10-28T09:40:51Z", "source": "20261028T094050Z-ro5-tranches-3-to-5-wp-ro9-commenced.md", "text": "RO-9 system restoration (verbatim choice: \"Add RO-9's lines (Recommended)\")."}
+{"ts": "2026-10-29T05:25:27Z", "source": "20261029T052527Z-ro9-tranches-5-6-landed-tranche-7-in-flight.md", "text": "Resume decision on the predecessor handoff (verbatim: \"A\")."}
+{"ts": "2026-10-29T05:25:27Z", "source": "20261029T052527Z-ro9-tranches-5-6-landed-tranche-7-in-flight.md", "text": "RO-9 tranche 5 security slot (verbatim choice: \"Audit in gz check (Rec.)\")."}
+{"ts": "2026-10-29T05:25:27Z", "source": "20261029T052527Z-ro9-tranches-5-6-landed-tranche-7-in-flight.md", "text": "RO-9 tranche 5 cooldown (verbatim: \"why do we want a cooldown?\", then \"drop it\")."}
+{"ts": "2026-10-29T05:25:27Z", "source": "20261029T052527Z-ro9-tranches-5-6-landed-tranche-7-in-flight.md", "text": "RO-9 tranche 5 audit tier (verbatim choice: \"Full tier only (Rec.)\")."}
+{"ts": "2026-10-29T05:25:27Z", "source": "20261029T052527Z-ro9-tranches-5-6-landed-tranche-7-in-flight.md", "text": "RO-9 tranche 5 malware check (verbatim choice: \"Where new versions enter (Rec.)\")."}
+{"ts": "2026-10-29T05:25:27Z", "source": "20261029T052527Z-ro9-tranches-5-6-landed-tranche-7-in-flight.md", "text": "Canary review of requirements-catalog and requirements-catalog-work-packages (verbatim: \"accept\")."}
+{"ts": "2026-10-29T05:25:27Z", "source": "20261029T052527Z-ro9-tranches-5-6-landed-tranche-7-in-flight.md", "text": "RO-9 tranche 6 structlog (verbatim choice: \"Replace with stdlib (Rec.)\")."}
+{"ts": "2026-10-29T05:25:27Z", "source": "20261029T052527Z-ro9-tranches-5-6-landed-tranche-7-in-flight.md", "text": "RO-9 tranche 6 Path.copy (verbatim choice: \"Adopt at 4, except copytree (Rec.)\")."}
+{"ts": "2026-10-29T05:25:27Z", "source": "20261029T052527Z-ro9-tranches-5-6-landed-tranche-7-in-flight.md", "text": "RO-9 tranche 6 attested REQ-0.0.3-07-02 (verbatim choice: \"Amend in place (Rec.)\")."}
+{"ts": "2026-10-29T05:25:27Z", "source": "20261029T052527Z-ro9-tranches-5-6-landed-tranche-7-in-flight.md", "text": "RO-9 tranche 7 init shape (verbatim: \"why wouldn't we support each variant?\"), taken as gz init --project-type lib|package|app with lib the default."}
+{"ts": "2026-10-29T05:25:27Z", "source": "20261029T052527Z-ro9-tranches-5-6-landed-tranche-7-in-flight.md", "text": "RO-9 tranche 7 adopter baseline (verbatim choice: \"Seed at init (Rec.)\")."}
