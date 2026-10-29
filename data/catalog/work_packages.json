@@ -37,7 +37,15 @@
         "commit 6689a68f3 (tranche 5 passage-log row)",
         "arb-red-commit-d5db67090b76-d3d000fdec224ed4bf7f98c257311623",
         "tests/test_supply_chain_audit.py",
-        "docs/governance/harbor-ro9-astral-toolchain.md § Ruled for tranche 5"
+        "docs/governance/harbor-ro9-astral-toolchain.md § Ruled for tranche 5",
+        "commit ece23848e (RO-9 tranche 6, Path.copy)",
+        "commit 7e42868f2 (structlog replaced by stdlib logging)",
+        "commit 59f545766 (four runtime dependencies registered)",
+        "commit d74cdd4b1 and 5ca202989 (logging tests)",
+        "commit 1ec5b00c0 (tranche 6 record)",
+        "arb-red-commit-ece23848e3c7-8a2833acc87847ca8c9e28b8c6a337f4",
+        "arb-red-commit-7e42868f29dc-b354785a776240e8a917b26296750a04",
+        "docs/governance/harbor-ro9-astral-toolchain.md § Ruled for tranche 6"
       ],
       "alterations": [],
       "departures": []
