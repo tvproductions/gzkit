@@ -292,6 +292,11 @@ witness, or earlier at the operator's word:
     follow exit. Operator, verbatim, before ruling: *"Make the two an OR - we'll do the better
     approach at a time where we can, but, the alternative approved approachis the one I suggest,
     better/best sort of thing."*
+11. The replacement for the ADR/OBPI process is described in one clear place: § The general
+    arrangement, redrawn to the standing rulings and walking through each of its processes
+    (intake, the catalog and its organization, catalog to work package, release and the Release
+    Package, and any further component), with the requirements model and the order
+    specifications as its detail (added 2026-10-29, § Rulings of 2026-10-29).
 
 **Superseded 2026-10-28** by item 10 (record, not binding), the text of 2026-10-25: *"The sea trial
 (a fresh project on the released wheel runs one work package end to end) is civil rule's first act,
@@ -371,6 +376,17 @@ ruling"*.
   of requirements and how is that organized and is it segmented or, you know, categorized or
   grouped or anything. The process by which we put those into work packages, and there might even
   be more components, but all that needs to be very well refined and made very clear."*
+- **The general arrangement becomes the one clear description of the replacement, and exit waits
+  for it** (exit item 11). Put to the operator: *"Should the general arrangement become that one
+  clear description of the replacement, redrawn to today's rulings and walking through each
+  process, with the other documents as its detail?"* Operator, verbatim: *"Yeah. It's very clear to
+  me that we have no business leaving dry dock without that being clear. ... the replacement for
+  the ADR to OBPI process, which is the main driver for progress and development of gzkit, needs to
+  be very, very clear. And I think the pieces are laying around, as you point out, but I guess we
+  never committed to a very solid model of it."* The finding blocks return to service and is worked
+  under RO-0, whose row already lands *"this contract rewritten to the ratified plan with the
+  drawing saved beside it"*; the 2026-10-17 drawing predates the requirements model's amendment of
+  2026-10-18 and is redrawn with it.
 
 Gate 5. The ledger rule. The operator-PII rule. The Prime Directive. TOPMOST remains `ADR-0.35.0`
 until RO-8 disposes of it; the drydock works inside the campaign, which sequences what follows.
