@@ -45,7 +45,18 @@
         "commit 1ec5b00c0 (tranche 6 record)",
         "arb-red-commit-ece23848e3c7-8a2833acc87847ca8c9e28b8c6a337f4",
         "arb-red-commit-7e42868f29dc-b354785a776240e8a917b26296750a04",
-        "docs/governance/harbor-ro9-astral-toolchain.md § Ruled for tranche 6"
+        "docs/governance/harbor-ro9-astral-toolchain.md § Ruled for tranche 6",
+        "commit b5d6335cf (RO-9 tranche 7 checkpoint: gz init builds the project through uv)",
+        "commit 82bb9eddc (tranche 7 tests, init manpage, adopter docs on uv tool install and uvx, behave scenario)",
+        "commit 750b93a4b (tranche 7 gap tests and the checkpoint's mutation sweep record)",
+        "commit 15ea1131b (tranche 7 record: specification and passage log)",
+        "arb-red-commit-b5d6335cfb83-33b9efa3129b40bb801ad40cf89edbb3 (undriven against the checkpoint's own tests, which predate its test commits)",
+        "docs/governance/ro9-tranche7-red-sweep-2026-10-29-evidence/README.md (sweep of the 15 surviving hunks against the landed tests: 13 killed, 2 survived, every sweep conclusive)",
+        "arb-step-mkdocs-e40a8b04048d46dc87c03c1f214320b5, arb-step-mkdocs-d649a0e075704e7fa529dafc41b0c27f, arb-step-mkdocs-754f5f59ec654b20b0a323b1f3d2c0d5",
+        "CI run 40830666171 on 5427c7a15: ubuntu-latest gz check --full success; windows-latest gz check --cross-platform success",
+        "Dock trial 2026-10-29, fresh gz init --project-type package: uv lock --check exit 0; gz validate --astral-discipline exit 0",
+        "Closing test read 2026-10-29 at 5427c7a15: gz validate --astral-discipline exit 0, data/astral_discipline_baseline.json 0 rows; data/astral_exceptions.json 18 tools, each with a reason",
+        "Before-figures re-read 2026-10-29 at 5427c7a15 (2026-10-19 figure in brackets): Python declared in .python-version, requires-python and the classifier with no restatement row [11 places]; setup-python workflows 0 [4]; uv sync --frozen 0 and bare 0, --locked 5 [4 and 1]; requirements*.txt 0 [1]; uv pip or pip install in automation 0 [2]; uvx lines under src/gzkit 9, none a locked tool run outside the lock by the witness [51 sites]; never-invoked dev dependencies 0 by the witness [4]; lock-freshness checks: the uv-lock hook and --locked in CI [0]; uv required-version >=0.13.1 [==0.12.23]"
       ],
       "alterations": [],
       "departures": []
