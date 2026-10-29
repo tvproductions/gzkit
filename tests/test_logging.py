@@ -236,6 +236,88 @@ class TestConsoleOutput(unittest.TestCase):
         self.assertIn("test message", buf.getvalue())
 
 
+_BOOM = "boom"
+
+
+def _raise_boom() -> None:
+    raise ValueError(_BOOM)
+
+
+class TestRecordDetail(unittest.TestCase):
+    """What each formatter carries beyond the event: callsite, exception, stack, an own ID."""
+
+    def setUp(self) -> None:
+        bind_correlation_id("detail-test")
+        self._tmp = tempfile.TemporaryDirectory()
+        self._log_path = Path(self._tmp.name) / "detail.log"
+
+    def tearDown(self) -> None:
+        root = logging.getLogger()
+        for handler in root.handlers:
+            handler.close()
+        root.handlers.clear()
+        self._tmp.cleanup()
+
+    def _emit(
+        self,
+        verbosity: Verbosity,
+        *,
+        raised: bool = False,
+        stack_info: bool = False,
+        extra: dict[str, object] | None = None,
+    ) -> tuple[str, dict]:
+        """Log one record at ERROR.
+
+        Returns:
+            The console text and the log file's last JSON record.
+
+        """
+        console = io.StringIO()
+        configure_logging(verbosity, log_file=self._log_path, console_stream=console)
+        log = logging.getLogger("gzkit.test")
+        if raised:
+            try:
+                _raise_boom()
+            except ValueError:
+                log.exception("failed.step", stack_info=stack_info, extra=extra)
+        else:
+            log.error("plain.step", stack_info=stack_info, extra=extra)
+        for handler in logging.getLogger().handlers:
+            handler.flush()
+        last = self._log_path.read_text(encoding="utf-8").strip().splitlines()[-1]
+        return console.getvalue(), json.loads(last)
+
+    def test_debug_carries_the_callsite_and_other_verbosities_do_not(self) -> None:
+        console, record = self._emit("debug")
+        self.assertEqual(record["funcName"], "_emit")
+        self.assertIn("lineno", record)
+        self.assertIn("funcName=_emit", console)
+        console, record = self._emit("normal")
+        self.assertNotIn("funcName", record)
+        self.assertNotIn("funcName=", console)
+
+    def test_an_exception_reaches_both_formatters(self) -> None:
+        console, record = self._emit("normal", raised=True)
+        self.assertIn("ValueError: boom", record["exception"])
+        self.assertIn("ValueError: boom", console)
+
+    def test_a_stack_reaches_both_formatters(self) -> None:
+        console, record = self._emit("normal", stack_info=True)
+        self.assertIn("Stack (most recent call last)", record["stack"])
+        self.assertIn("Stack (most recent call last)", console)
+
+    def test_a_record_that_names_its_own_correlation_id_keeps_it(self) -> None:
+        _, record = self._emit("normal", extra={"correlation_id": "explicit-id"})
+        self.assertEqual(record["correlation_id"], "explicit-id")
+
+    def test_reconfiguring_closes_the_previous_log_file(self) -> None:
+        configure_logging("normal", log_file=self._log_path, console_stream=io.StringIO())
+        previous = [h for h in logging.getLogger().handlers if isinstance(h, logging.FileHandler)]
+        configure_logging("normal", console_stream=io.StringIO())
+        self.assertTrue(previous)
+        self.assertIsNone(previous[0].stream)
+
+
 class TestCorrelationId(unittest.TestCase):
     """Test correlation ID binding and propagation."""
 
