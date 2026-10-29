@@ -160,6 +160,7 @@ class TestJsonFileOutput(unittest.TestCase):
             self.assertEqual(parsed["key"], "value")
 
     @covers("REQ-0.0.3-07-04")
+    @covers("REQ-0.0.3-07-08")
     def test_json_file_contains_valid_json(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             log_path = Path(tmp) / "test.log"
@@ -214,6 +215,7 @@ class TestConsoleOutput(unittest.TestCase):
         root.handlers.clear()
 
     @covers("REQ-0.0.3-07-05")
+    @covers("REQ-0.0.3-07-08")
     def test_console_output_is_human_readable(self) -> None:
         buf = io.StringIO()
         configure_logging("normal", console_stream=buf)
@@ -391,6 +393,16 @@ class TestCoreLayerBinding(unittest.TestCase):
         with self.assertLogs("gzkit.core.lifecycle", level="WARNING") as cap:
             bound.warning("state.changed")
         self.assertEqual(getattr(cap.records[0], "component", None), "core.lifecycle")
+        console = io.StringIO()
+        try:
+            configure_logging("normal", console_stream=console)
+            bound.warning("state.changed")
+        finally:
+            root = logging.getLogger()
+            for handler in root.handlers:
+                handler.close()
+            root.handlers.clear()
+        self.assertIn("state.changed component=core.lifecycle", console.getvalue())
 
     def test_core_binding_only_imports(self) -> None:
         """Verify that the CLI logging adapter imports nothing from core or ports."""
