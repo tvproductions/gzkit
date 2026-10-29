@@ -458,7 +458,7 @@
         "replace": "    repeated: list[str] = []\n",
         "label": "a repeated code or id is never reported"
       },
-      "binding_sha256": "34103ba0a8a28a983513ca0def4818abf7a28b46a2530718ec807f7b28eb469c",
+      "binding_sha256": "6dda3eb7e1d37347f8dd691f6ab1042556d070c2a8a3664faae4fe26257e405a",
       "authority": "docs/governance/harbor-ro3-requirements-store.md (drydock RO-3 tranche 1)",
       "proposed_by": "claude-code session 2026-10-21",
       "reviewed_by": "g0"
@@ -548,6 +548,34 @@
       "reviewed_by": "g0"
     },
     {
+      "claim_id": "supply-chain-audit",
+      "guard": "gzkit.quality:run_supply_chain_audit",
+      "failing_test": "tests.test_supply_chain_audit.TestTheAuditJudgesTheLock.test_a_locked_package_with_an_advisory_fails_naming_it",
+      "mutation": {
+        "find": "    argv = [*SUPPLY_CHAIN_AUDIT_ARGV]\n",
+        "replace": "    argv = [\"uv\", \"--version\"]\n",
+        "label": "the step never audits the lock"
+      },
+      "binding_sha256": "8fc9907544796b2074c815311becf1022e4f1d618a30d0cd9ef61440bbc122bc",
+      "authority": "docs/governance/harbor-ro9-astral-toolchain.md (drydock RO-9 tranche 5, § Ruled for tranche 5); GHI #1154 item 5 (every registered claim binds a reviewed canary)",
+      "proposed_by": "claude-code session 2026-10-28",
+      "reviewed_by": null
+    },
+    {
+      "claim_id": "supply-chain-audit-ignored",
+      "guard": "gzkit.quality:run_supply_chain_audit",
+      "failing_test": "tests.test_supply_chain_audit.TestTheAuditJudgesTheLock.test_an_advisory_the_project_ignores_is_admitted",
+      "mutation": {
+        "find": "        argv += [\"--service-url\", service_url]\n",
+        "replace": "        argv += [\"--service-url\", service_url, \"--no-config\"]\n",
+        "label": "the step stops reading the project's ignore list"
+      },
+      "binding_sha256": "31a02b5402e4fbf9e126660990acd3c9697bbd4a7b26c1dbe775897a044d5f88",
+      "authority": "docs/governance/harbor-ro9-astral-toolchain.md (drydock RO-9 tranche 5, § Ruled for tranche 5); GHI #1154 item 5 (every registered claim binds a reviewed canary)",
+      "proposed_by": "claude-code session 2026-10-28",
+      "reviewed_by": null
+    },
+    {
       "claim_id": "requirements-catalog-work-packages",
       "guard": "gzkit.governance.trust_audits.catalog:_kind_breaches",
       "failing_test": "tests.governance.test_catalog.TestWorkPackages.test_a_delivery_package_names_an_outcome_the_catalog_holds",
@@ -559,7 +587,7 @@
       "binding_sha256": "49651b34d5d3a0647483421c9a453e62d5171440fc798b2788bc3945731b73be",
       "authority": "docs/governance/harbor-ro5-work-packages.md (drydock RO-5 tranche 1)",
       "proposed_by": "claude-code session 2026-10-28",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     }
   ]
 }
