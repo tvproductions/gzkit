@@ -430,7 +430,7 @@ Manpage: `docs/user/manpages/issue.md`.
 
 ## Cross-Version Upgrade (`gz init --update`)
 
-When `pip install --upgrade py-gzkit` brings a newer wheel into an existing
+When `uv tool upgrade py-gzkit` brings a newer wheel into an existing
 adopter project, the new wheel may carry updated canonical content for
 skills, rules, chores, personas, and templates. The adopter's
 `.gzkit/<surface>/` (project canonical source-of-truth) is the editing

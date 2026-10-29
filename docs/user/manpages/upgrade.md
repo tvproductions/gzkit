@@ -63,7 +63,7 @@ Exit code 3 when any EDITED conflict remains unresolved (without `--force`).
 
 ## Bootstrap Retrofit
 
-`gz upgrade` works in a fresh `pip install py-gzkit` environment without
+`gz upgrade` works in a fresh `uv tool install py-gzkit` environment without
 requiring `gz init` to have been run first. When `.gzkit/<surface>/` does not
 exist, the command creates it and writes canonical content from the wheel — the
 **bootstrap-retrofit** case. This makes `gz upgrade` the preferred first-touch

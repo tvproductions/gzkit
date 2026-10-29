@@ -14583,11 +14583,6 @@
     },
     {
       "file": "tests/commands/test_init.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "tests/commands/test_init.py",
       "rule": "FBT003",
       "count": 2
     },

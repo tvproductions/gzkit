@@ -1,6 +1,7 @@
 import importlib.metadata
 import inspect
 import json
+import re
 import tempfile
 import tomllib
 import unittest
@@ -8,8 +9,14 @@ from pathlib import Path
 from unittest.mock import patch
 
 from gzkit.cli import main
-from gzkit.commands.init_cmd import _normalize_package_name
+from gzkit.commands.init_cmd import (
+    PROJECT_TYPES,
+    ProjectSkeleton,
+    _normalize_package_name,
+    scaffold_project_skeleton,
+)
 from gzkit.config import GzkitConfig
+from gzkit.governance.trust_audits.astral_discipline import BASELINE_RELPATH, find_violations
 from gzkit.traceability import covers
 from gzkit.validate_pkg.sync_parity import check_sync_parity
 from tests.commands.common import (
@@ -230,6 +237,123 @@ class TestInitProjectSkeleton(unittest.TestCase):
             )
             # Only tests/ repair should appear, not pyproject.toml
             self.assertNotIn("pyproject.toml", result.output)
+
+
+def _dev_group_names(project: dict) -> set[str]:
+    """Return the distribution names in a manifest's dev dependency group.
+
+    Returns:
+        The lower-cased names, without version specifiers or markers.
+
+    """
+    return {
+        re.split(r"[<>=!~;\[\s]", spec, maxsplit=1)[0].lower()
+        for spec in project.get("dependency-groups", {}).get("dev", [])
+    }
+
+
+class TestInitBuildsTheProjectThroughUv(unittest.TestCase):
+    """RO-9 tranche 7: `gz init` builds a new project with uv init and uv add."""
+
+    def _init(self, *args: str) -> tuple[dict, Path]:
+        result = CliRunner().invoke(main, ["init", *args])
+        self.assertEqual(result.exit_code, 0, result.output)
+        manifest = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
+        return manifest, Path("src") / _normalize_package_name(Path.cwd().name)
+
+    def test_each_project_type_builds_its_uv_shape(self) -> None:
+        for project_type in PROJECT_TYPES:
+            with self.subTest(project_type=project_type), CliRunner().isolated_filesystem():
+                manifest, package = self._init("--project-type", project_type)
+                self.assertEqual(manifest["build-system"]["build-backend"], "uv_build")
+                self.assertTrue((package / "__init__.py").is_file())
+                # A library ships typing information and no entry point; a package or
+                # an app is something one runs, so uv declares its script.
+                self.assertEqual(project_type == "lib", (package / "py.typed").is_file())
+                self.assertEqual(project_type != "lib", "scripts" in manifest["project"])
+
+    def test_default_project_type_is_lib(self) -> None:
+        with CliRunner().isolated_filesystem():
+            manifest, package = self._init()
+            self.assertTrue((package / "py.typed").is_file())
+            self.assertNotIn("scripts", manifest["project"])
+
+    def test_no_author_identity_lands_in_the_manifest(self) -> None:
+        with CliRunner().isolated_filesystem():
+            manifest, _ = self._init()
+            self.assertNotIn("authors", manifest["project"])
+
+    def test_dev_group_locks_ruff_and_ty(self) -> None:
+        with CliRunner().isolated_filesystem():
+            manifest, _ = self._init()
+            self.assertEqual(_dev_group_names(manifest), {"ruff", "ty"})
+            self.assertNotIn("optional-dependencies", manifest["project"])
+
+    def test_ruff_config_bans_the_pep_563_import(self) -> None:
+        with CliRunner().isolated_filesystem():
+            manifest, _ = self._init()
+            banned = manifest["tool"]["ruff"]["lint"]["flake8-tidy-imports"]["banned-api"]
+            self.assertIn("__future__.annotations", banned)
+
+    def test_ci_workflow_runs_uv_with_the_lock_checked(self) -> None:
+        with CliRunner().isolated_filesystem():
+            self._init()
+            workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+            steps = [line.strip().removeprefix("- ") for line in workflow.splitlines()]
+            setup_uv = [step for step in steps if "astral-sh/setup-uv@" in step]
+            self.assertEqual(len(setup_uv), 1, workflow)
+            # The action is pinned to a commit, never a movable tag.
+            self.assertRegex(setup_uv[0], r"setup-uv@[0-9a-f]{40}\b")
+            self.assertIn("run: uv sync --locked", steps)
+            self.assertNotIn("actions/setup-python", workflow)
+
+    def test_fresh_scaffold_carries_no_astral_discipline_violation(self) -> None:
+        with CliRunner().isolated_filesystem():
+            self._init()
+            self.assertEqual(find_violations(Path.cwd()), [])
+            seeded = json.loads(Path(BASELINE_RELPATH).read_text(encoding="utf-8"))
+            self.assertEqual(seeded["violations"], [])
+
+    def test_adopting_project_seeds_its_existing_debt(self) -> None:
+        with CliRunner().isolated_filesystem():
+            Path("pyproject.toml").write_text(
+                '[project]\nname = "adopter"\nversion = "1.0.0"\n', encoding="utf-8"
+            )
+            Path("requirements.txt").write_text("requests\n", encoding="utf-8")
+            result = CliRunner().invoke(main, ["init"])
+            self.assertEqual(result.exit_code, 0, result.output)
+            rows = json.loads(Path(BASELINE_RELPATH).read_text(encoding="utf-8"))["violations"]
+            held = {(row["rule"], row["file"]) for row in rows}
+            self.assertIn(("pip-in-project", "requirements.txt"), held)
+            # What the baseline holds is exactly what the scan finds: it starts exact.
+            self.assertEqual(sum(row["count"] for row in rows), len(find_violations(Path.cwd())))
+
+    def test_existing_baseline_is_never_reseeded(self) -> None:
+        with CliRunner().isolated_filesystem():
+            Path("data").mkdir()
+            prior = '{"violations": []}\n'
+            Path(BASELINE_RELPATH).write_text(prior, encoding="utf-8")
+            Path("requirements.txt").write_text("requests\n", encoding="utf-8")
+            self._init()
+            self.assertEqual(Path(BASELINE_RELPATH).read_text(encoding="utf-8"), prior)
+
+    def test_non_src_source_root_moves_the_package_and_tells_uv_build(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            scaffold_project_skeleton(
+                root, ProjectSkeleton(name="demo-proj", source_root="lib", tests_root="tests")
+            )
+            manifest = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
+            self.assertTrue((root / "lib" / "demo_proj" / "__init__.py").is_file())
+            self.assertFalse((root / "src").exists())
+            self.assertEqual(manifest["tool"]["uv"]["build-backend"]["module-root"], "lib")
+            self.assertEqual(manifest["tool"]["ruff"]["src"], ["lib", "tests"])
+
+    def test_unknown_project_type_is_a_usage_error(self) -> None:
+        with CliRunner().isolated_filesystem():
+            result = CliRunner().invoke(main, ["init", "--project-type", "script"])
+            self.assertEqual(result.exit_code, 2, result.output)
+            self.assertFalse(Path("pyproject.toml").exists())
 
 
 class TestInitPersonaScaffolding(unittest.TestCase):
@@ -793,9 +917,14 @@ class TestScaffoldedManifestIsSelfConsistent(unittest.TestCase):
     def _declared_file_references(pyproject: dict) -> list[str]:
         """Return every path in the manifest that must exist on disk.
 
-        The PEP 621 file-valued fields plus hatchling's packaging includes.
-        `readme` and `license` each accept a bare string or a `{file = ...}`
-        table, and both spellings name a file the tree has to carry.
+        The PEP 621 file-valued fields plus uv_build's module root, the backend
+        the scaffold builds with since RO-9 tranche 7. `readme` and `license`
+        each accept a bare string or a `{file = ...}` table, and both spellings
+        name a file the tree has to carry.
+
+        Returns:
+            The declared paths, relative to the project root.
+
         """
         project = pyproject.get("project", {})
         declared: list[str] = []
@@ -808,8 +937,9 @@ class TestScaffoldedManifestIsSelfConsistent(unittest.TestCase):
                 declared.append(value["file"])
 
         declared.extend(project.get("license-files", []))
-        wheel = pyproject.get("tool", {}).get("hatch", {}).get("build", {})
-        declared.extend(wheel.get("targets", {}).get("wheel", {}).get("packages", []))
+        backend = pyproject.get("tool", {}).get("uv", {}).get("build-backend", {})
+        if "module-root" in backend:
+            declared.append(backend["module-root"])
         return declared
 
     def test_init_creates_the_readme_its_manifest_names(self) -> None:

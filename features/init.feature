@@ -1,8 +1,23 @@
-Feature: gz init --update — version-aware canonical refresh
+Feature: gz init — the uv-built project and the version-aware canonical refresh
   Heavy-lane Gate 4 proof for OBPI-0.0.32-05 under ADR-0.0.32 (canonical
   surface packaging). Exercises the three-state IDENTICAL/STALE/EDITED
   detection in :func:`gzkit.commands.init_cmd._refresh_canonical_surfaces`
-  via the operator-facing ``gz init --update`` flag.
+  via the operator-facing ``gz init --update`` flag. The first scenario is
+  RO-9 tranche 7's operator flow: ``gz init --project-type`` builds the
+  project through uv and leaves it inside the Astral discipline.
+
+  Scenario: gz init builds a package project through uv
+    Given a fresh empty project directory
+    When I run "gz init --project-type package --attestor-handle g0" as a subprocess
+    Then the subprocess exits with code 0
+    And the file "pyproject.toml" contains "uv_build"
+    And the file "pyproject.toml" contains "[project.scripts]"
+    And the file "pyproject.toml" does not contain "authors"
+    And the file "uv.lock" exists
+    And the file ".github/workflows/ci.yml" contains "uv sync --locked"
+    And the file "data/astral_discipline_baseline.json" exists
+    When I run "gz validate --astral-discipline" as a subprocess
+    Then the subprocess exits with code 0
 
   @REQ-0.0.32-05-01
   @REQ-0.0.32-05-07

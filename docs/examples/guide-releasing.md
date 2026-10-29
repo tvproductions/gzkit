@@ -7,7 +7,7 @@ GZKit has two distribution channels:
 | Channel | Command | Who It's For |
 |---------|---------|-------------|
 | **GitHub Release** | Download `gz.exe` from Releases page | Students — zero Python install needed |
-| **PyPI** | `uv tool install py-gzkit` or `pip install py-gzkit` | Developers who already have Python/uv |
+| **PyPI** | `uv tool install py-gzkit`, or `uvx --from py-gzkit gz` without installing | Developers who already have uv |
 
 Both are triggered by pushing a version tag.
 

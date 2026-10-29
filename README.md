@@ -136,11 +136,11 @@ For details on any skill, read its `SKILL.md` in `.gzkit/skills/<skill-name>/`.
 ## Installation
 
 ```bash
-# Using uv (recommended)
+# Install the gz tool with uv
 uv tool install py-gzkit
 
-# Or pip
-pip install py-gzkit
+# Or run it once without installing
+uvx --from py-gzkit gz --help
 ```
 
 ## Quick Start

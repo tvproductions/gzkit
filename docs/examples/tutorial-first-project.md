@@ -28,7 +28,7 @@ with passing tests, and a human-attested completion record.
 ## Prerequisites
 
 - Python 3.13+ installed
-- [uv](https://docs.astral.sh/uv/) installed (`pip install uv` or see uv docs)
+- [uv](https://docs.astral.sh/uv/) installed (see the [uv installation guide](https://docs.astral.sh/uv/getting-started/installation/))
 - Git installed and configured
 - A text editor (VS Code recommended)
 

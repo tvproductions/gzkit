@@ -20,6 +20,7 @@ gz init [OPTIONS]
 | `--force` | flag | — | Full reinitialize (overwrites config, re-scaffolds). Mutually exclusive with `--update` |
 | `--update` | flag | — | Version-aware refresh of canonical surfaces from the installed wheel; leaves any file that matches no version gzkit shipped (an operator edit) untouched. Mutually exclusive with `--force` |
 | `--no-skeleton` | flag | — | Skip Python project skeleton (pyproject.toml, src/, tests/) |
+| `--project-type` | `lib` \| `package` \| `app` | `lib` | Shape `uv init` builds for a new project: `lib` ships `py.typed` and no entry point; `package` and `app` declare a `[project.scripts]` entry. Ignored when `pyproject.toml` already exists |
 | `--yes` | flag | — | Auto-accept registry-merge prompts during repair or `--update` |
 | `--attestor-handle` | string | — | Record `authorship.attestor_handle` in `.gzkit.json`: the handle an omitted `--attestor` records on the verbs that default it. A handle with no spaces, never a real name. On first init without the flag, an interactive terminal is asked; otherwise none is set, and gzkit's own handle is never scaffolded. Mutually exclusive with `--update` (GHI #1036) |
 | `--dry-run` | flag | — | Show actions without writing |
@@ -31,29 +32,30 @@ gz init [OPTIONS]
 1. Creates `.gzkit/` directory with ledger
 2. Creates `.gzkit.json` configuration
 3. Detects project structure (source, tests, docs paths)
-4. Creates Python project skeleton (`pyproject.toml`, `README.md`, `src/<package>/`, `tests/`) and runs `uv sync` when `.venv` is absent
-5. Copies the wheel's canonical skills, chores, personas, templates and rules into `.gzkit/`, runs the sync preflight, and syncs every control surface (`AGENTS.md`, `CLAUDE.md`, vendor mirrors, manifest, Codex files); see [`gz agent sync control-surfaces`](agent-sync-control-surfaces.md)
-6. Sets up agent hooks (Claude)
-7. Creates `design/` directories for governance artifacts
-8. Scans for existing PRDs/ADRs and offers to register them
-9. Writes `.pre-commit-config.yaml` declaring the pre-push `gz check` gate
-   (ADR-0.0.68), preserving any config already present
-10. Runs `pre-commit install` for every hook type the config declares
+4. Builds the Python project through uv when there is no `pyproject.toml` (`uv init --<project-type>`, then `uv add --dev ruff ty`), adds `tests/` and a CI workflow, and runs `uv sync` when `.venv` is absent; see [Project Skeleton](#project-skeleton)
+5. Seeds `data/astral_discipline_baseline.json` from the violations of the Astral discipline the project carries now, when it has no baseline; `gz validate --astral-discipline` then fails on any new one, and the list only shrinks
+6. Copies the wheel's canonical skills, chores, personas, templates and rules into `.gzkit/`, runs the sync preflight, and syncs every control surface (`AGENTS.md`, `CLAUDE.md`, vendor mirrors, manifest, Codex files); see [`gz agent sync control-surfaces`](agent-sync-control-surfaces.md)
+7. Sets up agent hooks (Claude)
+8. Creates `design/` directories for governance artifacts
+9. Scans for existing PRDs/ADRs and offers to register them
+10. Writes `.pre-commit-config.yaml` declaring the pre-push `gz check` gate
+    (ADR-0.0.68), preserving any config already present
+11. Runs `pre-commit install` for every hook type the config declares
     (`default_install_hook_types`, plus `pre-push`), so the gate is actually
     delivered into `.git/hooks/`, not merely declared
-11. When the config declares `post-commit`, installs the commit-locus ledger
+12. When the config declares `post-commit`, installs the commit-locus ledger
     recorder as `.git/hooks/post-commit.legacy`. pre-commit runs that file
     before it stashes unstaged changes; run as an ordinary post-commit hook,
     the recorder's ledger row was rolled back whenever the ledger had
     unstaged rows (GHI #1092). An existing `post-commit.legacy` that is not
     gzkit's is left in place and reported
-12. Writes `.gitignore` and `data/audit_thresholds.json` when absent and, in a
+13. Writes `.gitignore` and `data/audit_thresholds.json` when absent and, in a
     git worktree, registers the `gzkit-jsonl` append-only merge driver in
     local git config
-13. Appends `project_init` to the ledger, plus one `agent_sync_completed` per
+14. Appends `project_init` to the ledger, plus one `agent_sync_completed` per
     sync it runs
 
-Steps 9 and 10 are separate on purpose. A declared-but-uninstalled gate
+Steps 10 and 11 are separate on purpose. A declared-but-uninstalled gate
 enforces nothing while every surface reports green, so `gz check` verifies the
 hook is on disk rather than trusting the declaration (GHI #715). When
 installation cannot complete — `pre-commit` unavailable, or `core.hooksPath`
@@ -140,7 +142,7 @@ What it refreshes is what delivery defines (GHI #1123):
 | Mode | When to use | Behavior on existing canonical files |
 |------|-------------|--------------------------------------|
 | **default** (`gz init`) | First init, or repair missing artifacts on an existing project | Skip-existing: never overwrites |
-| **`--update`** | Cross-version upgrade after `pip install py-gzkit==X.Y.Z` brings new canonical content | Refresh STALE entries in place; preserve EDITED entries; report conflicts |
+| **`--update`** | Cross-version upgrade after `uv tool install py-gzkit==X.Y.Z` brings new canonical content | Refresh STALE entries in place; preserve EDITED entries; report conflicts |
 | **`--force`** | Full reinitialize; willing to lose operator edits | Re-copy the wheel's skills, rules, templates and chores over the project's copies; deletes nothing (project-local files remain) and never overwrites personas |
 
 ### Three-state detection (REQ-0.0.32-05-02)
@@ -283,18 +285,35 @@ semantics). Operator edits to `.gzkit/templates/<name>.md` are preserved.
 
 ## Project Skeleton
 
-By default, `gz init` creates a minimal Python project skeleton:
+When the directory has no `pyproject.toml`, `gz init` builds the project
+through uv rather than writing a manifest of its own:
+
+```bash
+uv init --<project-type> --name <package> --python <gzkit's floor> \
+  --no-workspace --vcs none --author-from none .
+uv add --dev --frozen ruff ty
+```
+
+The Python floor is read from the installed gzkit's `Requires-Python`, never
+restated, and `--author-from none` keeps your git identity out of the
+manifest. gzkit then adds what uv does not write:
 
 | Artifact | Content |
 |----------|---------|
-| `pyproject.toml` | Project metadata, Python >=3.13, ruff config, hatchling build |
-| `src/<project>/__init__.py` | Source package (name derived from directory) |
+| `pyproject.toml` | uv's manifest (uv_build backend, `dev` dependency group with `ruff` and `ty`), plus a Ruff configuration that bans `from __future__ import annotations` |
+| `src/<package>/__init__.py` | Source package (name derived from directory); `lib` adds `py.typed` |
+| `README.md` | Governance README, unless one already exists |
 | `tests/__init__.py` | Test package |
-| `.venv/` | Virtual environment (via `uv sync`) |
+| `.github/workflows/ci.yml` | CI on `astral-sh/setup-uv` pinned to a commit: `uv sync --locked`, Ruff, ty and `gz check`, with `UV_MALWARE_CHECK` on |
+| `.venv/`, `uv.lock` | Virtual environment and lockfile (via `uv sync`) |
 
-All skeleton files are idempotent — existing files are never overwritten.
-`uv sync` only runs when `.venv` does not yet exist.
-Use `--no-skeleton` to skip skeleton creation entirely (governance-only init).
+A project whose detected source root is not `src/` gets its package moved
+there and `[tool.uv.build-backend] module-root` set to match.
+
+An existing `pyproject.toml` is left exactly as it is; only `tests/` is
+repaired. Every other skeleton file is idempotent too. `uv sync` only runs when
+`.venv` does not yet exist. Use `--no-skeleton` to skip skeleton creation
+entirely (governance-only init).
 
 ---
 
@@ -335,6 +354,9 @@ gz init --mode heavy
 # Governance-only (no pyproject.toml, src/, tests/)
 gz init --no-skeleton
 
+# Build a runnable package rather than a library
+gz init --project-type package
+
 # Repair missing artifacts on an existing project
 gz init
 
@@ -344,7 +366,7 @@ gz init --force
 # Dry run
 gz init --dry-run
 
-# Version-aware refresh after pip install py-gzkit==<newer> (preserves operator edits)
+# Version-aware refresh after uv tool install py-gzkit==<newer> (preserves operator edits)
 gz init --update
 
 # Preview what --update would refresh, without writing
@@ -355,31 +377,36 @@ gz init --update --dry-run
 
 ## Output
 
-A dated record, observed 2026-09-27: `gz init --no-skeleton` in an empty
-directory that is not a git worktree, excerpt. The counts are what that
-installed wheel shipped, not a contract; `gz skill list` shows the current
-set. Most of the first sync's `Generated <path>` lines are elided. Without
-`--no-skeleton`, `Created pyproject.toml`, `README.md`, the package and test
-`__init__.py` files and `Ran uv sync` precede the scaffold lines.
+A dated record, observed 2026-10-29: `gz init --project-type package
+--attestor-handle g0` in an empty git repository, excerpt. The counts are what
+that installed wheel shipped, not a contract; `gz skill list` shows the current
+set. Most of the first sync's `Generated <path>` lines are elided. With
+`--no-skeleton`, the two `uv` lines, the `tests/__init__.py` line and `Ran uv
+sync` are absent.
 
 ```text
 Initializing gzkit for demo-proj in lite mode...
-  No attestor handle set; `gz init --attestor-handle <handle>` records one.
+  Recorded attestor handle: g0
   Created design/prd/
   Created design/constitutions/
   Created design/adr/
+  Created the project with uv init --package --author-from none, uv add --dev ruff ty
+  Created src/demo_proj/ and .github/workflows/ci.yml
+  Created tests/__init__.py
+  Ran uv sync (virtualenv created)
   Created .gitignore
+  Seeded data/astral_discipline_baseline.json (0 violation row(s); it only shrinks)
   Created .pre-commit-config.yaml (pre-push gz check gate)
   Installed pre-commit, pre-push hooks (session-green gate active)
   Registered git merge driver 'gzkit-jsonl' for append-only JSONL
-  Scaffolded 71 core skills
+  Scaffolded 72 core skills
   Scaffolded 31 core chores
   Scaffolded 7 core personas
   Scaffolded 14 core templates
   ...
   Generated AGENTS.md
   Generated CLAUDE.md
-  Scaffolded 27 core rules
+  Scaffolded 28 core rules
   Created .claude/hooks/post-edit-ruff.py
   ...
   Created .claude/settings.json
@@ -387,7 +414,7 @@ Initializing gzkit for demo-proj in lite mode...
 
 gzkit initialized successfully!
 
-  Scaffolded 71 skills (run gz skill list to see all)
+  Scaffolded 72 skills (run gz skill list to see all)
 
 Next steps:
   Skill (preferred)         CLI equivalent
@@ -428,17 +455,24 @@ my-project/
 │   ├── personas/              ← Codex persona mirror
 │   └── skills/                ← Codex skill mirror
 ├── .codex/config.toml         ← Codex project baseline
-├── .github/discovery-index.json
-├── data/audit_thresholds.json
+├── .github/
+│   ├── discovery-index.json
+│   └── workflows/ci.yml       ← CI on setup-uv, uv sync --locked
+├── data/
+│   ├── astral_discipline_baseline.json  ← Seeded at init; only shrinks
+│   └── audit_thresholds.json
 ├── design/
 │   ├── prd/                   ← Product Requirements Documents
 │   ├── constitutions/         ← Governance constitutions
 │   └── adr/                   ← Architecture Decision Records + OBPIs
 ├── src/my_project/
-│   └── __init__.py
+│   ├── __init__.py
+│   └── py.typed               ← lib only
 ├── tests/
 │   └── __init__.py
-├── pyproject.toml
+├── .python-version
+├── pyproject.toml             ← Built by uv init
+├── uv.lock
 ├── README.md
 ├── .gitignore
 ├── .pre-commit-config.yaml    ← Pre-push gz check gate
