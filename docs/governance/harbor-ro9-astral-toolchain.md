@@ -2,7 +2,7 @@
 
 # RO-9 specification — the toolchain realigned to Astral's project discipline
 
-**2026-10-19. Status: tranche 1 landed (the witness, uv and the Astral tools current, Python declared once at 3.14); tranche 2 landed 2026-10-21 (lock discipline: `--locked` everywhere, docs from a locked group, every project tool through `uv run`); tranche 3 landed 2026-10-22 (`uv_build`, `uv publish` with attestations from a credential-only job, `uv version` writing the version); tranche 4 closed against its specification at `559eb82d7` (§ Ruled for tranche 4); tranche 5 landed 2026-10-28 (supply chain, § Ruled for tranche 5); tranches 6 and 7 open.** Status line corrected 2026-10-28: it had kept tranche 4 open after the close. Operator: **g0**. Repair order RO-9 of the
+**2026-10-19. Status: tranche 1 landed (the witness, uv and the Astral tools current, Python declared once at 3.14); tranche 2 landed 2026-10-21 (lock discipline: `--locked` everywhere, docs from a locked group, every project tool through `uv run`); tranche 3 landed 2026-10-22 (`uv_build`, `uv publish` with attestations from a credential-only job, `uv version` writing the version); tranche 4 closed against its specification at `559eb82d7` (§ Ruled for tranche 4); tranche 5 landed 2026-10-28 (supply chain, § Ruled for tranche 5); tranche 6 landed 2026-10-28 (the 3.14 idioms and the stdlib re-read, § Ruled for tranche 6); tranche 7 open.** Status line corrected 2026-10-28: it had kept tranche 4 open after the close. Operator: **g0**. Repair order RO-9 of the
 [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders), mandate item 7: gzkit
 and every project `gz init` scaffolds follow [uv's project model](https://docs.astral.sh/uv/concepts/projects/)
 strictly and use Astral's tools to the maximum, on Python 3.14, with stdlib first and curated
@@ -276,6 +276,24 @@ cause (Rec.)"*): the `features/**` override went behind a behave stub (`45c62217
   bundled `uv_build` and resolves no build dependency.
 - *The SBOM.* `uv export --format cyclonedx1.5 --locked --no-default-groups`, the runtime set, attached to
   the release as `py-gzkit.cdx.json` beside the binaries.
+
+**Ruled for tranche 6 (2026-10-28).** Read on Python 3.14.10 against the code, one record per GHI #1184
+candidate; *adopt* changes code, every other verdict is the recorded exception the specification requires.
+
+| Candidate | Consumers measured | Verdict |
+|---|---|---|
+| Deferred annotations, `annotationlib` | the PEP 563 import in no module and banned (tranche 4); no `__annotations__` read under `src` | adopted at tranche 4; nothing further |
+| Ruff `UP` at the 3.14 target | the target is inferred from `requires-python`; no `UP` row in `data/ruff_baseline.json` | adopted; nothing held |
+| `Path.copy` / `move` | five `shutil` copy sites | adopted at four (`ece23848e`; operator, by selection, *"Adopt at 4, except copytree (Rec.)"*); exception: `guard_canary.py`'s `copytree` passes an `ignore` filter, which `Path.copy` does not take |
+| `Executor.map(buffersize=)` | one `map`, over the Behave shards in `quality.py` | not applicable: buffering bounds submission of large or unbounded inputs; the shard list is a handful of items |
+| `InterpreterPoolExecutor` | four thread pools: Behave shards, `gz check` steps, the justify evidence gather, OBPI stage reads | not applicable: each pool waits on subprocesses or I/O, not CPU |
+| Process-pool worker controls, the POSIX start-method change | no `multiprocessing` or process pool under `src` | not applicable |
+| `compression.zstd` | `zipfile` in the negative-control wheel fixture only | not applicable: no compression requirement, and the wheel format is fixed |
+| Template strings | jinja2 renders template files; subprocess argv are lists | not applicable: t-strings are code literals with no template language, and no interpolation here lacks a processor |
+| Runtime dependencies | jinja2, jsonschema, pyyaml, rich, structlog | structlog replaced by stdlib `logging` (`7e42868f2`; operator, by selection, *"Replace with stdlib (Rec.)"*; attested REQ-0.0.3-07-02 amended in place, *"Amend in place (Rec.)"*); the other four registered with their reasons (`59f545766`) |
+
+Free-threading and the experimental JIT are separate interpreter builds, not part of the 3.14 floor, and
+are not assessed here. The baseline's last three rows are the `gz init` scaffold's, tranche 7's.
 
 **Known uncertainties.** Each is read by the tranche that owns it:
 
