@@ -2,7 +2,7 @@
 
 # RO-9 specification — the toolchain realigned to Astral's project discipline
 
-**2026-10-19. Status: tranche 1 landed (the witness, uv and the Astral tools current, Python declared once at 3.14); tranche 2 landed 2026-10-21 (lock discipline: `--locked` everywhere, docs from a locked group, every project tool through `uv run`); tranche 3 landed 2026-10-22 (`uv_build`, `uv publish` with attestations from a credential-only job, `uv version` writing the version); tranche 4 closed against its specification at `559eb82d7` (§ Ruled for tranche 4); tranche 5 landed 2026-10-28 (supply chain, § Ruled for tranche 5); tranche 6 landed 2026-10-28 (the 3.14 idioms and the stdlib re-read, § Ruled for tranche 6); tranche 7 open.** Status line corrected 2026-10-28: it had kept tranche 4 open after the close. Operator: **g0**. Repair order RO-9 of the
+**2026-10-19. Status: tranche 1 landed (the witness, uv and the Astral tools current, Python declared once at 3.14); tranche 2 landed 2026-10-21 (lock discipline: `--locked` everywhere, docs from a locked group, every project tool through `uv run`); tranche 3 landed 2026-10-22 (`uv_build`, `uv publish` with attestations from a credential-only job, `uv version` writing the version); tranche 4 closed against its specification at `559eb82d7` (§ Ruled for tranche 4); tranche 5 landed 2026-10-28 (supply chain, § Ruled for tranche 5); tranche 6 landed 2026-10-28 (the 3.14 idioms and the stdlib re-read, § Ruled for tranche 6); tranche 7 landed 2026-10-29 (adopters, § Ruled for tranche 7); RO-9 closes on a green `gz check --full` on every CI platform and the operator's Gate 5 through `gz wp close`.** Status line corrected 2026-10-28: it had kept tranche 4 open after the close. Operator: **g0**. Repair order RO-9 of the
 [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders), mandate item 7: gzkit
 and every project `gz init` scaffolds follow [uv's project model](https://docs.astral.sh/uv/concepts/projects/)
 strictly and use Astral's tools to the maximum, on Python 3.14, with stdlib first and curated
@@ -295,6 +295,37 @@ candidate; *adopt* changes code, every other verdict is the recorded exception t
 Free-threading and the experimental JIT are separate interpreter builds, not part of the 3.14 floor, and
 are not assessed here. The baseline's last three rows are the `gz init` scaffold's, tranche 7's.
 
+**Ruled for tranche 7 (2026-10-29).** Ruled by the operator and landed under `WP-01-astral-toolchain`:
+
+- **The project shape.** `gz init --project-type lib|package|app`, `lib` the default, each passed to
+  `uv init` (operator, verbatim: *"why wouldn't we support each variant?"*). `--bare` and `--script`
+  are not offered: they make no package for gzkit to govern.
+- **The adopter baseline.** `gz init` seeds `data/astral_discipline_baseline.json` from the violations
+  the project carries when it has none, in the fresh, dry-run and repair flows (operator, by selection,
+  *"Seed at init (Rec.)"*). A fresh scaffold seeds an empty list; an adopting project seeds its debt,
+  which then only shrinks.
+- **The checkpoint.** The scaffold was committed before its tests (`b5d6335cf`; operator, verbatim
+  *"commit now"*), so `gz arb red --commit b5d6335cf` read `undriven`, 22 hunks surviving against the
+  only tests that commit touched (receipt `arb-red-commit-b5d6335cfb83-33b9efa3129b40bb801ad40cf89edbb3`).
+  The tests landed in `82bb9eddc` and `750b93a4b`, and a mutation sweep of every surviving hunk against
+  them stands in for the per-commit witness (operator, verbatim *"a"*):
+  [the sweep record](ro9-tranche7-red-sweep-2026-10-29-evidence/README.md), 13 killed and 2 survived
+  (a `--help` example and an `__all__` entry), every sweep conclusive.
+
+What landed: `uv init --<project-type> --python <gzkit's floor> --author-from none --vcs none
+--no-workspace`, then `uv add --dev --frozen ruff ty`, with the floor read from the installed gzkit's
+`Requires-Python`; the Ruff configuration with the PEP 563 ban, the governance README, `tests/`, and a
+CI workflow on a commit-pinned setup-uv with `uv sync --locked` and `UV_MALWARE_CHECK`; a non-`src`
+source root moved and named to `uv_build` through `module-root`; the init manpage, and adopter docs
+naming `uv tool install` and `uvx` only (`init.md`, `upgrade.md`, the runbook, `guide-releasing.md`,
+the README, the tutorial's uv prerequisite); a Behave scenario in `features/init.feature` that builds a
+`package` project and runs the witness inside it.
+
+The done condition, read 2026-10-29 on a fresh `gz init --project-type package` project: `uv lock
+--check` exit 0, `gz validate --astral-discipline` exit 0; on gzkit, `gz validate --astral-discipline`
+exit 0 and the baseline holds 0 rows. RO-9's closing read of `gz check --full` on every CI platform
+follows the sync.
+
 **Known uncertainties.** Each is read by the tranche that owns it:
 
 - Whether `uv_build` ships the wheel's non-Python data (the `.md` and `.json` under `src/gzkit`) with
@@ -307,7 +338,9 @@ are not assessed here. The baseline's last three rows are the `gz init` scaffold
 - Whether Read the Docs can build through uv with a locked group, or the docs build moves to the
   `docs.yml` workflow alone.
 - Whether `uv init` produces the scaffold `gz init` needs, or `gz init` writes the same files through
-  `uv add` and `uv python pin` after a `uv init --bare`.
+  `uv add` and `uv python pin` after a `uv init --bare`. *Read by tranche 7:* `uv init --lib`,
+  `--package` and `--app` each produce it on uv 0.13.6 (`src/<package>/`, `uv_build`, `.python-version`,
+  the floor from `--python`); `gz init` adds only what uv does not write.
 - What replaces `twine check --strict`; uv documents no metadata check. *Read by tranche 3:* the
   smoke test uv's GitHub guide recommends, each built distribution installed into a throwaway
   environment with `uv run --isolated --no-project --with` and its CLI run.
