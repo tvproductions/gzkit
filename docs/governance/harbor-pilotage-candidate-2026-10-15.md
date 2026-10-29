@@ -361,6 +361,16 @@ ruling"*.
   intrinsic and critical to even understanding scope."* On 2026-10-29 that is RO-11 (its row:
   *"the session specifies with the operator after RO-4"*) and RO-13 (its row: *"the session
   specifies with the operator after RO-12"*).
+- **The requirements-intake finding is graded: it blocks return to service, and RO-11 is widened by
+  change order** from pulling a pool entry to every way a requirement enters the catalog (a pool
+  entry, an R&D disposition, a deferred finding, the operator's own word). Put to the operator: *"Is
+  that right: intake blocks return to service, and you issue a change order widening RO-11 to cover
+  it?"* Operator, verbatim: *"Yeah, the intake system does, but the entire replacement for the ADR
+  or OBPI is critical. You know, I'll just describe it in broad terms. The process by which we
+  manage releases and what a release package looks like. The process by which we manage a catalog
+  of requirements and how is that organized and is it segmented or, you know, categorized or
+  grouped or anything. The process by which we put those into work packages, and there might even
+  be more components, but all that needs to be very well refined and made very clear."*
 
 Gate 5. The ledger rule. The operator-PII rule. The Prime Directive. TOPMOST remains `ADR-0.35.0`
 until RO-8 disposes of it; the drydock works inside the campaign, which sequences what follows.
