@@ -294,17 +294,12 @@
     {
       "file": "src/gzkit/commands/init_cmd.py",
       "function": "_repair_missing_artifacts",
-      "score": 30
+      "score": 29
     },
     {
       "file": "src/gzkit/commands/init_cmd.py",
       "function": "init",
       "score": 27
-    },
-    {
-      "file": "src/gzkit/commands/init_cmd.py",
-      "function": "scaffold_project_skeleton",
-      "score": 16
     },
     {
       "file": "src/gzkit/commands/interview_cmd.py",

@@ -61,6 +61,7 @@ __all__ = [
     "check_discipline_baseline",
     "find_violations",
     "scaffold_violations",
+    "seed_discipline_baseline",
 ]
 
 BASELINE_NAME = "astral_discipline_baseline.json"
@@ -554,11 +555,14 @@ def find_violations(root: Path) -> list[Violation]:
 
 def scaffold_violations() -> list[Violation]:
     """Return the violations in the project ``gz init`` scaffolds, labelled as such."""
-    from gzkit.commands.init_cmd import scaffold_project_skeleton  # noqa: PLC0415
+    from gzkit.commands.init_cmd import (  # noqa: PLC0415
+        ProjectSkeleton,
+        scaffold_project_skeleton,
+    )
 
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
-        scaffold_project_skeleton(root, "scaffold-probe", "src", "tests")
+        scaffold_project_skeleton(root, ProjectSkeleton(name="scaffold-probe"))
         found = find_violations(root)
     return [v.model_copy(update={"file": f"{_SCAFFOLD_PREFIX}{v.file}"}) for v in found]
 
@@ -613,6 +617,39 @@ def check_discipline_baseline(
                 )
             )
     return errors
+
+
+_SEEDED_DOC = (
+    "The violations of RO-9's Astral discipline this project carried when `gz init` "
+    "seeded it, keyed by rule, file and subject (docs/governance/"
+    'harbor-ro9-astral-toolchain.md, operator ruling 2026-10-29: "Seed at init"). '
+    "`gz validate --astral-discipline` fails on any violation not held here, and a "
+    "row whose violation is gone must be removed: the list only shrinks."
+)
+
+
+def seed_discipline_baseline(root: Path) -> int | None:
+    """Write the project's baseline from the violations it carries now, when it has none.
+
+    A fresh scaffold seeds an empty list; an existing project adopting gzkit seeds its
+    debt, which then only shrinks (RO-9 tranche 7).
+
+    Returns:
+        The number of rows written, or None when a baseline already exists.
+
+    """
+    path = root / BASELINE_RELPATH
+    if path.exists():
+        return None
+    counts = Counter((v.rule, v.file, v.subject) for v in find_violations(root))
+    rows = [
+        {"rule": rule, "file": file, "subject": subject, "count": count}
+        for (rule, file, subject), count in sorted(counts.items())
+    ]
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {"_doc": _SEEDED_DOC, "violations": rows}
+    path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    return len(rows)
 
 
 def audit_astral_discipline(root: Path) -> list[ValidationError]:

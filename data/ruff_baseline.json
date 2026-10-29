@@ -5604,7 +5604,7 @@
     {
       "file": "src/gzkit/commands/init_cmd.py",
       "rule": "PLR0915",
-      "count": 2
+      "count": 1
     },
     {
       "file": "src/gzkit/commands/init_cmd.py",

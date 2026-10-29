@@ -1,3 +1,4 @@
+import importlib.metadata
 import inspect
 import json
 import tempfile
@@ -135,7 +136,8 @@ class TestInitProjectSkeleton(unittest.TestCase):
             self.assertTrue(pyproject.exists())
             content = pyproject.read_text(encoding="utf-8")
             self.assertIn("[project]", content)
-            self.assertIn('requires-python = ">=3.13"', content)
+            floor = importlib.metadata.metadata("py-gzkit")["Requires-Python"]
+            self.assertIn(f'requires-python = "{floor}"', content)
 
     def test_init_creates_src_package(self) -> None:
         """init creates src/<project>/__init__.py."""

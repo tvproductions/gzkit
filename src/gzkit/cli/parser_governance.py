@@ -120,6 +120,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
                 "gz init --update",
                 "gz init --update --dry-run",
                 "gz init --attestor-handle g0",
+                "gz init --project-type package",
             ]
         ),
     )
@@ -134,6 +135,13 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
         action="store_true",
         default=False,
         help="Skip Python project skeleton (pyproject.toml, src/, tests/)",
+    )
+    p_init.add_argument(
+        "--project-type",
+        dest="project_type",
+        choices=["lib", "package", "app"],
+        default="lib",
+        help="Shape uv init builds: lib (default), package or app",
     )
     p_init.add_argument(
         "--yes",
@@ -164,6 +172,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
             yes=a.yes,
             update=a.update,
             attestor_handle=a.attestor_handle,
+            project_type=a.project_type,
         )
     )
 

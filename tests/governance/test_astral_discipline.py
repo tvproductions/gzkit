@@ -362,20 +362,19 @@ class TestBuildAndPublishThroughUv(unittest.TestCase):
 
 
 class TestTheScaffoldIsWitnessed(unittest.TestCase):
-    def test_gz_inits_project_is_checked_by_the_same_rules(self) -> None:
-        found = scaffold_violations()
-        self.assertTrue(all(v.file.startswith("gz init scaffold:") for v in found))
-        self.assertTrue(
-            {v.rule for v in found}
-            <= {
-                "version-restated",
-                "dev-tool-in-extra",
-                "build-backend-not-uv",
-                "version-home-missing",
-                "unused-dependency",
-                "non-astral-unregistered",
-            }
-        )
+    """RO-9 tranche 7's done condition: the project `gz init` builds carries no violation."""
+
+    def test_gz_inits_project_carries_no_violation(self) -> None:
+        self.assertEqual(scaffold_violations(), [])
+
+    def test_a_scaffold_violation_is_labelled_as_the_scaffolds(self) -> None:
+        planted = Violation(rule="setup-python", file="ci.yml", subject="actions/setup-python")
+        with mock.patch(
+            "gzkit.governance.trust_audits.astral_discipline.find_violations",
+            return_value=[planted],
+        ):
+            found = scaffold_violations()
+        self.assertEqual([v.file for v in found], ["gz init scaffold:ci.yml"])
 
 
 def _violation(rule: str, file: str, subject: str) -> Violation:
@@ -693,8 +692,10 @@ class TestTheScaffoldIsPlannedOnADryRun(unittest.TestCase):
             result = runner.invoke(main, ["init", "--dry-run"])
             name = _normalize_package_name(Path.cwd().name)
         self.assertEqual(result.exit_code, 0, result.output)
-        self.assertIn("Would create pyproject.toml", result.output)
-        self.assertIn(f"Would create src/{name}/__init__.py", result.output)
+        self.assertIn("Would build the project with uv init --lib", result.output)
+        self.assertIn("Would seed data/astral_discipline_baseline.json", result.output)
+        self.assertIn("Would create tests/__init__.py", result.output)
+        self.assertFalse(Path(name).exists())
 
 
 class TestGzValidateRunsTheScope(unittest.TestCase):

@@ -1,5 +1,7 @@
 """Init, PRD, and constitution command implementations."""
 
+import contextlib
+import importlib.metadata
 import importlib.resources
 import json
 import re
@@ -23,6 +25,7 @@ from gzkit.chores import (
     scaffold_core_chores,
 )
 from gzkit.commands.common import (
+    GzCliError,
     _confirm,
     console,
     ensure_initialized,
@@ -39,6 +42,10 @@ from gzkit.commands.register import (
 from gzkit.commands.sync_guard import refuse_on_sync_blockers, report_sync_blockers
 from gzkit.config import AuthorshipConfig, GzkitConfig, PathConfig
 from gzkit.executables import resolve_argv, resolve_executable
+from gzkit.governance.trust_audits.astral_discipline import (
+    BASELINE_RELPATH,
+    seed_discipline_baseline,
+)
 from gzkit.governance.trust_audits.session_green_gate import (
     configured_hooks_path,
     declared_hook_types,
@@ -324,103 +331,228 @@ def _normalize_package_name(project_name: str) -> str:
     return name or "app"
 
 
+#: The project shapes `uv init` builds that gzkit can govern (a `src/` package with
+#: tests beside it). `--bare` and `--script` make no package, so they are not offered.
+ProjectType = Literal["lib", "package", "app"]
+PROJECT_TYPES: tuple[ProjectType, ...] = ("lib", "package", "app")
+
+#: The dev tools a scaffolded project locks, both run through `uv run`.
+_DEV_TOOLS = ("ruff", "ty")
+
+_RUFF_CONFIG = """
+[tool.ruff]
+line-length = 100
+src = ["{source_root}", "{tests_root}"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "TRY", "RUF", "TID"]
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"__future__.annotations".msg = "annotations are deferred at this project's Python floor"
+"""
+
+_README = """# {project_name}
+
+{project_name}
+
+## Governance
+
+This project is governed by gzkit. Read `AGENTS.md` for the agent
+contract, and run `uv run gz status` for current gate state.
+"""
+
+#: The CI the scaffold ships (RO-9 tranche 7): uv provides Python and tools, the
+#: lock is checked, and uv's malware check runs where a new version is installed.
+_CI_WORKFLOW = """name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  UV_MALWARE_CHECK: "1"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run ty check
+      - run: uvx --from py-gzkit gz check
+"""
+
+
+def _python_floor() -> str:
+    """Return gzkit's own Python floor, read from its installed metadata.
+
+    The floor is declared once, in gzkit's `requires-python`; the scaffold takes it
+    from there rather than restating it (RO-9 § The discipline).
+
+    Returns:
+        The floor as `major.minor`.
+
+    Raises:
+        GzCliError: gzkit's metadata carries no `>=` floor.
+
+    """
+    declared = importlib.metadata.metadata("py-gzkit").get("Requires-Python") or ""
+    match = re.search(r">=\s*(\d+\.\d+)", declared)
+    if match is None:
+        msg = (
+            f"gzkit's installed metadata declares no Python floor (Requires-Python "
+            f"{declared!r}), so the scaffold cannot pin one. The floor lives in gzkit's "
+            "pyproject.toml `requires-python` (docs/governance/harbor-ro9-astral-toolchain.md). "
+            "Reinstall gzkit (`uv tool install --reinstall py-gzkit`) and re-run `gz init`."
+        )
+        raise GzCliError(msg)
+    return match.group(1)
+
+
+def _run_uv(project_root: Path, *args: str) -> None:
+    """Run one uv command the scaffold needs; fail with recovery prose.
+
+    Raises:
+        GzCliError: uv is missing or the command exits non-zero.
+
+    """
+    command = f"uv {' '.join(args)}"
+    try:
+        result = subprocess.run(  # noqa: S603 — uv with a fixed argv; executable resolved
+            [resolve_executable("uv"), *args],
+            cwd=project_root,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            check=False,
+        )
+    except FileNotFoundError as exc:
+        msg = (
+            "`gz init` builds the project through uv, and uv is not on PATH. "
+            "Install it (https://docs.astral.sh/uv/getting-started/installation/), "
+            "then re-run `gz init`."
+        )
+        raise GzCliError(msg) from exc
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout).strip().splitlines()[-1:] or [""]
+        msg = (
+            f"`{command}` failed (exit {result.returncode}): {detail[0]}. The project "
+            "skeleton is built by uv (RO-9 tranche 7), so nothing further was scaffolded. "
+            "Fix the cause uv names, then re-run `gz init`."
+        )
+        raise GzCliError(msg)
+
+
+def _uv_project(project_root: Path, skeleton: ProjectSkeleton) -> str:
+    """Build the project with `uv init` and `uv add`, then add what uv does not write.
+
+    Returns:
+        The package name uv created.
+
+    """
+    project_name, source_root = skeleton.name, skeleton.source_root
+    package_name = _normalize_package_name(project_name)
+    readme_existed = (project_root / "README.md").exists()
+    _run_uv(
+        project_root,
+        "init",
+        f"--{skeleton.project_type}",
+        "--name",
+        package_name,
+        "--python",
+        _python_floor(),
+        "--no-workspace",
+        "--vcs",
+        "none",
+        "--author-from",
+        "none",
+        ".",
+    )
+    # `--frozen` writes the group without resolving, so the scaffold needs no network;
+    # `gz init`'s `uv sync` resolves and writes uv.lock afterwards.
+    _run_uv(project_root, "add", "--dev", "--frozen", *_DEV_TOOLS)
+    pyproject = project_root / "pyproject.toml"
+    extra = _RUFF_CONFIG.format(source_root=source_root, tests_root=skeleton.tests_root)
+    if source_root != "src":
+        # uv lays the package under src/; move it where the project keeps source.
+        (project_root / source_root).mkdir(parents=True, exist_ok=True)
+        (project_root / "src" / package_name).rename(project_root / source_root / package_name)
+        with contextlib.suppress(OSError):
+            (project_root / "src").rmdir()
+        extra += f'\n[tool.uv.build-backend]\nmodule-root = "{source_root}"\n'
+    with pyproject.open("a", encoding="utf-8", newline="\n") as handle:
+        handle.write(extra)
+    if not readme_existed:
+        (project_root / "README.md").write_text(
+            _README.format(project_name=project_name), encoding="utf-8"
+        )
+    workflow = project_root / ".github" / "workflows" / "ci.yml"
+    if not workflow.exists():
+        workflow.parent.mkdir(parents=True, exist_ok=True)
+        workflow.write_text(_CI_WORKFLOW, encoding="utf-8")
+    return package_name
+
+
+class ProjectSkeleton(BaseModel):
+    """What `gz init` scaffolds: the project's name, layout and the shape uv init builds."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    name: str = Field(..., description="The project name uv init records")
+    source_root: str = Field("src", description="Directory holding the package")
+    tests_root: str = Field("tests", description="Directory holding the tests")
+    project_type: ProjectType = Field("lib", description="The uv init shape: lib, package or app")
+
+
 def scaffold_project_skeleton(
-    project_root: Path,
-    project_name: str,
-    source_root: str,
-    tests_root: str,
-    *,
-    dry_run: bool = False,
+    project_root: Path, skeleton: ProjectSkeleton, *, dry_run: bool = False
 ) -> list[str]:
-    """Create the minimal Python project skeleton.
+    """Create the Python project skeleton through uv (RO-9 tranche 7).
 
-    Creates pyproject.toml, README.md, src/<package>/__init__.py, and
-    tests/__init__.py. Idempotent: skips any artifact that already exists.
-
-    The README is here because the manifest above NAMES it. A generated
-    manifest referencing a file the generator does not create is syntactically
-    valid, so every static check accepts it and only a build reads the
-    reference -- and `gz init` never performs one. The tree it produced could
-    not be built at all: hatchling raised "Readme file does not exist:
-    README.md", so every `uv run` in a freshly scaffolded project failed,
-    including the `uv run gz ...` form init's own closing output recommends
-    (GHI #910).
+    A project with no pyproject.toml is built by `uv init --<project_type>` at
+    gzkit's own Python floor, with `--author-from none` so no git identity lands
+    in the manifest, then `uv add --dev --frozen ruff ty`. gzkit adds what uv does
+    not write: the Ruff configuration (PEP 563's import banned), the governance
+    README when none exists, tests/, and a CI workflow on setup-uv with `--locked`
+    and the malware check. A project that already has a pyproject.toml is left as
+    it is, and only tests/ is repaired. Every file uv's manifest names is one uv
+    wrote, so the tree builds (GHI #910).
 
     Returns a list of human-readable descriptions of created artifacts.
     """
     created: list[str] = []
-    package_name = _normalize_package_name(project_name)
-
-    # --- pyproject.toml ---
+    project_type, source_root, tests_root = (
+        skeleton.project_type,
+        skeleton.source_root,
+        skeleton.tests_root,
+    )
     pyproject_path = project_root / "pyproject.toml"
     if not pyproject_path.exists():
+        uv_args = (
+            f"uv init --{project_type} --author-from none, uv add --dev {' '.join(_DEV_TOOLS)}"
+        )
         if dry_run:
-            created.append("Would create pyproject.toml")
-        else:
-            pyproject_content = (
-                "[project]\n"
-                f'name = "{project_name}"\n'
-                'version = "0.1.0"\n'
-                f'description = "{project_name}"\n'
-                'readme = "README.md"\n'
-                'requires-python = ">=3.13"\n'
-                "\n"
-                "dependencies = []\n"
-                "\n"
-                "[project.optional-dependencies]\n"
-                "dev = [\n"
-                '    "ruff>=0.8",\n'
-                "]\n"
-                "\n"
-                "[build-system]\n"
-                'requires = ["hatchling"]\n'
-                'build-backend = "hatchling.build"\n'
-                "\n"
-                "[tool.hatch.build.targets.wheel]\n"
-                f'packages = ["{source_root}/{package_name}"]\n'
-                "\n"
-                "[tool.ruff]\n"
-                "line-length = 100\n"
-                f'src = ["{source_root}", "{tests_root}"]\n'
-                "\n"
-                "[tool.ruff.lint]\n"
-                'select = ["E", "F", "I", "UP", "B", "SIM", "TRY", "RUF"]\n'
+            created.extend(
+                (
+                    f"Would build the project with {uv_args}",
+                    "Would create .github/workflows/ci.yml (setup-uv, uv sync --locked)",
+                )
             )
-            pyproject_path.write_text(pyproject_content, encoding="utf-8")
-            created.append("Created pyproject.toml")
-
-    # --- README.md ---
-    # Named by `readme` in the manifest written above; see this function's
-    # docstring for why the pair must land together (GHI #910).
-    readme_path = project_root / "README.md"
-    if not readme_path.exists():
-        if dry_run:
-            created.append("Would create README.md")
         else:
-            readme_content = (
-                f"# {project_name}\n"
-                "\n"
-                f"{project_name}\n"
-                "\n"
-                "## Governance\n"
-                "\n"
-                "This project is governed by gzkit. Read `AGENTS.md` for the agent\n"
-                "contract, and run `uv run gz status` for current gate state.\n"
+            package_name = _uv_project(project_root, skeleton)
+            created.extend(
+                (
+                    f"Created the project with {uv_args}",
+                    f"Created {source_root}/{package_name}/ and .github/workflows/ci.yml",
+                )
             )
-            readme_path.write_text(readme_content, encoding="utf-8")
-            created.append("Created README.md")
-
-    # --- src/<package>/__init__.py ---
-    package_dir = project_root / source_root / package_name
-    init_file = package_dir / "__init__.py"
-    if not init_file.exists():
-        if dry_run:
-            created.append(f"Would create {source_root}/{package_name}/__init__.py")
-        else:
-            package_dir.mkdir(parents=True, exist_ok=True)
-            init_content = f'"""{project_name}."""\n'
-            init_file.write_text(init_content, encoding="utf-8")
-            created.append(f"Created {source_root}/{package_name}/__init__.py")
 
     # --- tests/__init__.py ---
     tests_dir = project_root / tests_root
@@ -671,6 +803,31 @@ def _scaffold_audit_thresholds(project_root: Path) -> None:
         + "\n",
         encoding="utf-8",
     )
+
+
+def _present(*statuses: str | None) -> list[str]:
+    """Return the statuses a step reported, dropping the steps that had nothing to do.
+
+    Returns:
+        The non-empty statuses, in order.
+
+    """
+    return [status for status in statuses if status]
+
+
+def _seed_astral_baseline(project_root: Path, *, dry_run: bool = False) -> str | None:
+    """Seed the project's Astral-discipline baseline when it has none (RO-9 tranche 7).
+
+    Returns:
+        A human-readable status string, or None when a baseline already exists.
+
+    """
+    if (project_root / BASELINE_RELPATH).exists():
+        return None
+    if dry_run:
+        return f"Would seed {BASELINE_RELPATH} from the project's current violations"
+    rows = seed_discipline_baseline(project_root)
+    return f"Seeded {BASELINE_RELPATH} ({rows} violation row(s); it only shrinks)"
 
 
 def _scaffold_gitignore(project_root: Path, *, dry_run: bool = False) -> str | None:
@@ -953,6 +1110,7 @@ def _repair_missing_artifacts(
     dry_run: bool = False,
     yes: bool = False,
     attestor_handle: str | None = None,
+    project_type: ProjectType = "lib",
 ) -> None:
     """Detect and repair missing artifacts on an already-initialized project.
 
@@ -968,9 +1126,12 @@ def _repair_missing_artifacts(
     if not no_skeleton:
         skeleton = scaffold_project_skeleton(
             project_root,
-            project_name,
-            config.paths.source_root,
-            config.paths.tests_root,
+            ProjectSkeleton(
+                name=project_name,
+                source_root=config.paths.source_root,
+                tests_root=config.paths.tests_root,
+                project_type=project_type,
+            ),
             dry_run=dry_run,
         )
         repaired.extend(skeleton)
@@ -992,10 +1153,13 @@ def _repair_missing_artifacts(
         if uv_status:
             repaired.append(uv_status)
 
-    # Repair .gitignore
-    gi_status = _scaffold_gitignore(project_root, dry_run=dry_run)
-    if gi_status:
-        repaired.append(gi_status)
+    # Repair .gitignore and the Astral-discipline baseline
+    repaired.extend(
+        _present(
+            _scaffold_gitignore(project_root, dry_run=dry_run),
+            _seed_astral_baseline(project_root, dry_run=dry_run),
+        )
+    )
 
     # Repair the session-green gate — declaration then delivery. Projects
     # initialized before GHI #715 carry neither; repair is how they get both.
@@ -1132,6 +1296,7 @@ def init(
     yes: bool = False,
     update: bool = False,
     attestor_handle: str | None = None,
+    project_type: ProjectType = "lib",
 ) -> None:
     """Initialize gzkit in the current project.
 
@@ -1177,6 +1342,7 @@ def init(
             dry_run=dry_run,
             yes=yes,
             attestor_handle=attestor_handle,
+            project_type=project_type,
         )
         return
 
@@ -1200,12 +1366,20 @@ def init(
         console.print("  Would create governance directories (prd, constitutions, adr)")
         if not no_skeleton:
             skeleton = scaffold_project_skeleton(
-                project_root, project_name, source_root, tests_root, dry_run=True
+                project_root,
+                ProjectSkeleton(
+                    name=project_name,
+                    source_root=source_root,
+                    tests_root=tests_root,
+                    project_type=project_type,
+                ),
+                dry_run=True,
             )
             for item in skeleton:
                 console.print(f"  {item}")
             console.print("  Would run uv sync")
         console.print("  Would create .gitignore")
+        console.print(f"  Would seed {BASELINE_RELPATH} from the project's current violations")
         _setup_session_green_gate(project_root, dry_run=True)
         console.print(f"  Would register git merge driver '{MERGE_DRIVER_NAME}'")
         console.print("  Would generate control surfaces (AGENTS.md, CLAUDE.md, etc.)")
@@ -1256,17 +1430,25 @@ def init(
 
     # Scaffold project skeleton (pyproject.toml, src/, tests/)
     if not no_skeleton:
-        skeleton = scaffold_project_skeleton(project_root, project_name, source_root, tests_root)
+        skeleton = scaffold_project_skeleton(
+            project_root,
+            ProjectSkeleton(
+                name=project_name,
+                source_root=source_root,
+                tests_root=tests_root,
+                project_type=project_type,
+            ),
+        )
         for item in skeleton:
             console.print(f"  {item}")
         uv_status = _run_uv_sync(project_root)
         if uv_status:
             console.print(f"  {uv_status}")
 
-    # Create .gitignore
-    gi_status = _scaffold_gitignore(project_root)
-    if gi_status:
-        console.print(f"  {gi_status}")
+    # Create .gitignore, and seed the Astral-discipline baseline from what the
+    # project carries now
+    for status in _present(_scaffold_gitignore(project_root), _seed_astral_baseline(project_root)):
+        console.print(f"  {status}")
 
     # Session-green gate: declare it, then deliver it. `gz check` verifies the
     # delivery, so a failure to install here surfaces rather than going silent.

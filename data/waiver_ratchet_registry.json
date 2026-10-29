@@ -375,7 +375,7 @@
       "gates_step": "Astral discipline (gz validate --astral-discipline)",
       "mechanism": "shrink-ratchet",
       "entries_path": "violations",
-      "baseline_count": 3,
+      "baseline_count": 0,
       "identity": {
         "kind": "fields",
         "fields": [
@@ -390,7 +390,7 @@
       "gates_step": "Complexity ceiling (gz validate --complexity-ceiling)",
       "mechanism": "shrink-ratchet",
       "entries_path": "functions",
-      "baseline_count": 262,
+      "baseline_count": 261,
       "identity": {
         "kind": "fields",
         "fields": [
