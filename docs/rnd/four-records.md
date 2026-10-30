@@ -222,6 +222,17 @@ term) with REQs beneath it. Operator, verbatim: *"yes, i couldn't remeber it. / 
 The four, as named: the **REQ catalog** (`family.capability.outcome`, REQs beneath each outcome),
 the **feature pack**, the **work pack** (the OBPI renamed) and the **release pack**.
 
+## decision · a feature pack lists catalog outcomes, plus the story
+
+The agent asked, putting no options, what is inside a feature pack: catalog outcomes, intentions not
+yet admitted, or only the story with outcomes pointing to it. Operator, verbatim: *"it lists
+outcomes from the catalog, plus the story - it is my ability to recover what was useful about my
+mADRs"*.
+
+A feature pack holds two things: a list of outcomes already in the REQ catalog, and the story of
+why they belong together and the value they bring. It names no intention that has not been
+admitted. This settles the open point *whether a bundle holds only admitted items*: it does.
+
 ---
 
 ## Disposition map
