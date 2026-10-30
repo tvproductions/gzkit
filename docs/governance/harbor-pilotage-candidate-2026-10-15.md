@@ -457,6 +457,16 @@ ruling"*.
   `governed_by` are the ADR, and a work package delivers it; B, the outcome made at the package's
   initiation; C, a package delivering the decision with no outcome. Operator, verbatim: *"A"*.
   Decision 9 is reworded the same day.
+- **Unstarted feature ADRs stay decision records and enter through the fifth door when accepted**
+  (the redraw's legacy migration, first case). Surveyed with `gz adr status`: ADR-0.36.0
+  (Proposed, 0 of 9 OBPIs), ADR-0.37.0 (Draft, 0 of 6) and ADR-0.39.0 (Draft, 0 of 7), 22 briefs
+  with no landed work. Put to the operator: A, each ADR keeps its decision and status, its briefs
+  are withdrawn as superseded as RO-8 does for 0.35.0, and each brief's REQs are carried as a
+  queued outcome whose source and `governed_by` are the ADR once the ADR is accepted, waiting with
+  the ADR until then; B, the items become pool intentions now; C, all carried into the catalog now.
+  Operator, verbatim: *"A"*. The second case, ADR-0.0.2, 0.0.71 and 0.0.74 (Completed, every OBPI
+  attested, closeout ready while `gz closeout` is re-keyed to the Release Package under RO-4),
+  remains for its own question.
 
 Gate 5. The ledger rule. The operator-PII rule. The Prime Directive. TOPMOST remains `ADR-0.35.0`
 until RO-8 disposes of it; the drydock works inside the campaign, which sequences what follows.
