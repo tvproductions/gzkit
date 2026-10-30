@@ -72,10 +72,12 @@ arrangement below. Normal voyages, ordinary operations under them (work-package 
 release management, the feature and requirement backlog), resume when safe mode is turned off.
 
 A drydock session holds repair orders. A repair order is the maintenance mirror of the work
-package: one bounded repair with a scope, a witness and an owner, recorded to the ledger, and held
-as a GitHub issue under the repair tagging scheme once RO-5 lands it (operator, verbatim: *"dry
-dock orders can have repair orders... Those can still go over to the ledger. And for all I know, we
-might even be able to make them as a part of the GitHub issue system, which I'd be fine with"*).
+package: one bounded repair with a scope, a witness and an owner, recorded to the ledger (operator,
+verbatim: *"dry dock orders can have repair orders... Those can still go over to the ledger. And
+for all I know, we might even be able to make them as a part of the GitHub issue system, which I'd
+be fine with"*). RO-5 settled the form on 2026-10-25 (rulings 1 and 2, *"A"*): a repair order is
+a repair work package (`kind: repair` in `data/catalog/work_packages.json`) naming one or more
+GitHub issues under the repair tagging scheme, each issue in exactly one package.
 
 ## The general arrangement
 
@@ -204,10 +206,10 @@ Not suspended, under any reading:
 - Every operator ruling is an insight record when given and an `[operator-ruled]` handoff entry.
 - Every session ends with a handoff citing this file and listing the commits since the last.
 - § Passage log is appended per act with bytes or counts before and after.
-- § Repair orders is the register of this drydock until RO-5 moves repair orders to GitHub issues;
-  an order's state moves only by an act in the passage log. Once its producer lands, the **work
-  package log**, a Layer 3 view assembled from the repair-order issues and the ledger and never
-  edited, is the log of open orders; it never blocks a gate (operator: *"A"*; record decision
+- § Repair orders is the register of this drydock until its orders are held as RO-5's repair work
+  packages; an order's state moves only by an act in the passage log. Once its producer lands, the
+  **work package log**, a Layer 3 view assembled from the repair work packages, their issues and
+  the ledger and never edited, is the log of open orders; it never blocks a gate (operator: *"A"*; record decision
   *B11: the work package log, a Layer 3 view over the issues and the ledger*).
 - **Three records** stand in place of the single compliance register (amended 2026-10-28; record
   decisions *three records: the lockout log, the maintenance record, the punch list* and *the

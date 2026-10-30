@@ -70,8 +70,8 @@ reroutes or changes, to the prior or to the new stable state, and closes only wh
 on § Tag-out log are cleared and its discrepancies that block return to service are cleared.
 
 The table states what each order lands; it is changed only by amendment of this contract. Which
-orders are open is the **work package log**: a Layer 3 view assembled from the repair-order issues
-and the ledger, never edited, and never blocking a gate (decision *B11*;
+orders are open is the **work package log**: a Layer 3 view assembled from the repair work
+packages, their issues and the ledger, never edited, and never blocking a gate (decision *B11*;
 `docs/governance/safe-mode-doctrine.md` § The instruments, item 3). Read it there, not here.
 
 | Order | Serves | What it lands | Witness | Owner |

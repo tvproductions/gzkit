@@ -69,5 +69,5 @@
   <text x="535" y="460" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="#444441">Safe mode: occasional flip</text>
   <line x1="535" y1="480" x2="535" y2="498" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
   <rect x="440" y="500" width="190" height="40" rx="8" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="0.5"/>
-  <text x="535" y="520" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="#444441">Drydock: repair orders as GHIs</text>
+  <text x="535" y="520" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="#444441">Drydock: repair orders as repair WPs</text>
 </svg>
