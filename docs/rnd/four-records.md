@@ -188,6 +188,30 @@ they do not summarize.
   read include no named grouping of requirements by value, release or increment.
 - `other-candidates.md` (DoD instructions and TOGAF refused or unread; one CRS report secondary).
 
+## decision · the bill-of-materials shape does not fit; turn to first principles
+
+The agent put the research to the operator and asked whether manufacturing's model bill and
+configuration bill (`bom-kits.md`), the most structurally complete match found, fit the operator's
+prepared meals and kits. Operator, verbatim: *"not really, what is our first principles list?"*
+No literature shape is adopted. Per the challenge (*"If we can't find them, we stick to these first
+principles approaches"*), the run proceeds from first principles, drawn from the operator's own
+sources above; the literature stays on record as vocabulary that may be reached for later.
+
+## decision · the four named
+
+The agent put the four with their canon and sourced names (outcome in the requirements catalog,
+feature bundle as stand-in, work package, Release Package) and the bundle's candidates (theme,
+pitch, kit, Minimum Marketable Feature, each with its departure). Operator, verbatim: *"REQ catalog
+with fdau familiy.cap.? structure, feature pack, work pack, release pack - work packs ARE OBPIs and
+match TASKs to REQs"*.
+
+The four are the **REQ catalog** (FDAU's family and capability structure, its third level marked
+open by the operator's "?"), the **feature pack**, the **work pack** and the **release pack**. A
+work pack is the OBPI, and it matches TASKs to REQs. "Work pack" and "release pack" depart from the
+canon names "work package" and "Release Package" (requirements model, records table; RO-4 and
+RO-5); carrying the new names into canon is downstream of this run. The shared word *pack* is the
+operator's choice over the candidates put, none of which was taken.
+
 ---
 
 ## Disposition map
