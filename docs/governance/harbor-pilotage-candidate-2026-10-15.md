@@ -92,6 +92,7 @@ flowchart TB
     OUT -.- FEAT["Feature file @H1.4<br/>user-facing only"]
   end
   ADR["ADR: decision record, peer of the catalog"]
+  FP["Feature package<br/>the story of why, and its outcomes<br/>successor to the mADR"]
   subgraph doors["Intake: five doors"]
     D1["Pool entry pulled"]
     D2["R&D sign-off"]
@@ -132,7 +133,10 @@ flowchart TB
   WPR --> TASK
   WPD -- Gate 5 at close, outcome validated --> RR
   WPR -- Gate 5 at close --> RR
+  FP -- lists, at most one package per outcome --> OUT
+  RP -- takes whole or in part --> FP
   RP -- ships as --> RR
+  RR -. value attested .-> FP
 ```
 
 
@@ -151,10 +155,11 @@ under § Superseded on 2026-10-30.
 | The product's truth | Family `H`, capability `H1`, outcome `H1.4` | exactly three levels; a capability groups outcomes and never carries work; an outcome is one reviewable deliverable with its statement, owner, `user_facing`, `governed_by`, `depends_on`, its `source` (the door it came through and the record behind it) and its `modules` (the code paths it owns: its contract) | rulings of 2026-10-29 (three levels, the source) and 2026-10-30 (the contract) |
 | The product's truth | REQ, `REQ-<n>` | one atomic obligation, a member of one outcome (`member_of`), with its statement, criteria, kind and revision; its proof (`SATISFIED`, `UNSATISFIED`, `UNKNOWN`) lives only in the ledger, bound to its revision and commit | requirements model, decisions 2 and 4 |
 | The product's truth | Feature file | a user-facing outcome's behaviour, tagged with the outcome's code, each scenario tagged with the REQ it proves | requirements model, decision 10 |
+| The product's truth, told as stories | Feature package | a list of outcomes already in the catalog, each in at most one feature package (or none), plus the story of why they belong together and the value they bring together; no version, release, order or prerequisite field; its value delivered is attested by a human at the release package's or work package's attestation; the successor to the mADR, as the pool entry is its predecessor | rulings of 2026-10-30; [the four-records R&D](../rnd/four-records.md) |
 | Decisions, peer of the catalog | ADR | one architecture decision and its status; no version, checklist or work; an accepted ADR's consequence enters the catalog as a queued outcome governed by it | requirements model, decision 9; rulings of 2026-10-29 (the fifth door) |
-| Labor | Work package, `WP-<NN>-<slug>` | `kind: delivery`, delivering exactly one outcome, or `kind: repair`, naming one or more GitHub issues; a frozen REQ baseline; closes by the 100% rule, through one Gate 5 attestation at its close, which moves the outcome | requirements model § 6; RO-5 rulings 1 and 2; rulings of 2026-10-29 (Gate 5) |
+| Labor | Work package, `WP-<NN>-<slug>` | the OBPI's successor, matching TASKs to REQs: `kind: delivery`, delivering exactly one outcome, or `kind: repair`, naming one or more GitHub issues; a frozen REQ baseline; closes by the 100% rule, through one Gate 5 attestation at its close, which moves the outcome | requirements model § 6; RO-5 rulings 1 and 2; rulings of 2026-10-29 (Gate 5) |
 | Labor | Task card, `TASK-…` | one commit, one trailer, the REQ ids it drives | requirements model, records table |
-| Version | Release Package | the version, planned in outcomes and repair packages; the lowest-version open package is worked first | rulings of 2026-10-29 (members, work selection) |
+| Version | Release Package | the cart for one order, carrying the version: feature packages whole or in part, loose outcomes and repair packages, and whatever the release needs (corrections, scaffolds, shims, prerequisites); it alone drives the next minor release; the lowest-version open package is worked first | rulings of 2026-10-29 (members, work selection) and 2026-10-30 (the four records) |
 | Version | `release_recorded` | what shipped: the closed work packages and issues that delivered the package's members | rulings of 2026-10-29 (members) |
 | The record | Ledger | every transition, proof result, freeze, attestation and release record | `docs/governance/state-doctrine.md` |
 | Views | the backlog board, the work package log | Layer 3, composed from the catalog, the packages and the ledger; never edited | requirements model, records table; decision B11 |
@@ -175,6 +180,17 @@ close of the last issue never closes the package, which closes only through Gate
 identifiers are frozen and resolve through the alias layer; Completed legacy ADRs stand as legacy
 evidence, unstarted ones as decision records, and ADR-0.35.0's twenty items enter as the 0.35.0
 Release Package at civil rule.
+
+A feature package tells why a set of outcomes belongs together, as an mADR did; it lists outcomes
+only once they are admitted. An emergent prerequisite is admitted as its own outcome, usually in
+no feature package, and joined by a `depends_on` edge to the outcome that needs it, so the feature
+package's story and list stay as written; the Release Package is where readiness shows which
+prerequisites travel with a feature package's outcomes or go in an earlier release. When its
+outcomes ship, a human attests the feature package's value delivered, at the release package's or
+work package's attestation. A pool entry stays an intention until brought down: its outcomes are
+admitted on the operator's word, then the feature package that carries its story is written. The
+whole is a loosening and renaming of the ADR/OBPI system, not a greenfield (§ Rulings of
+2026-10-30).
 
 ### The processes and their edges
 
@@ -223,8 +239,8 @@ an outcome or a REQ (RO-11); a production writer of `outcome_transitioned` and `
 whose only caller is the producer probe; a work package's close moving its outcome; capability
 records and the tightened outcome code; the outcome's `source` and `modules` fields; the airlock
 reading the outcome, since `gz airlock in` still targets an OBPI brief; the Release Package store,
-`release_recorded` and `gz closeout` keyed to the package (RO-4); and the five unwitnessed edges
-above.
+`release_recorded` and `gz closeout` keyed to the package (RO-4); the feature package's store and
+its value attestation, which no order yet owns; and the five unwitnessed edges above.
 
 ## What is suspended, and what is not
 
@@ -725,6 +741,15 @@ The general-arrangement redraw continues with its remaining components.
   release is a repair work package in a cart. Exposed for the R&D: the checklist joined the bundle
   to its items, which nothing in the new model does yet; and emergence had no place but the ADR,
   where the new model puts prerequisites as loose items in the cart.
+- **The four records named and settled by R&D** ([`docs/rnd/four-records.md`](../rnd/four-records.md),
+  signed off *"read it, fund (req catalog, feature pack, work pack, release pack)"*, the names
+  being shortenings: *"requirements catalog (family.capability.outcome), feature package, work
+  package, release package"*). The feature package is the one new record: catalog outcomes plus
+  the story, each outcome in at most one; prerequisites are outcome `depends_on` edges; a human
+  attests its value delivered at the release or work package attestation; the pool stays as
+  intentions; the whole a loosening and renaming of the old system (*"not abandonment or
+  greenfield"*). § The general arrangement is amended the same day by the run's disposition row 4
+  (operator: *"yes, go on row 4"*).
 
 ## Superseded on 2026-10-30 (record, not binding)
 
