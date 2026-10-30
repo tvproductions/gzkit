@@ -387,6 +387,29 @@ ruling"*.
   under RO-0, whose row already lands *"this contract rewritten to the ratified plan with the
   drawing saved beside it"*; the 2026-10-17 drawing predates the requirements model's amendment of
   2026-10-18 and is redrawn with it.
+- **Intake: where each source enters the catalog** (the redraw's first question, worked under
+  RO-0 as RO-11's widened scope). A pool entry stays an intention until pulled (RO-11's row). Put
+  to the operator: *"These three are the ones that go straight into the catalog as queued outcomes.
+  Only pool entries wait as intentions until pulled."* Operator, verbatim: *"yes, but let's do some
+  homework too: what common and successful approaches?"* The agent compared the Scrum product
+  backlog, upstream Kanban, Shape Up, dual-track agile and SAFe's portfolio funnel, ISO/IEC/IEEE
+  29148 and aviation deferred defects. Operator, verbatim: *"product backlog == pool adr /
+  interested == ISO/IEC/IEEE 29148 / Aviation deferred defects (MEL, squawks) == wouldn't these
+  already be a natural part of the mx process / i like your direction, let's refine"*. They are:
+  the [contractor-kit record](../rnd/contractor-kit.md)'s B′ puts a deferred finding on the list of
+  discrepancies and C12 transfers each deferred action to a new holder at the handback, naming no
+  holder. Two refinements followed.
+  - **An R&D disposition and the operator's word enter the catalog directly as queued outcomes.**
+  - **A deferred finding stays on the list of discrepancies while the hangar is open; at the
+    handback, C12's transfer of custody hands it to its owning outcome in the catalog** as an open
+    correction with its due-by event, not as a new queued outcome. Operator, verbatim: *"yes, hand
+    it to the owning outcome"*.
+  - **Every catalog outcome requires its source**: the door it came through and the record behind
+    it (a pool entry's id, an R&D disposition row, a discrepancy line, or the operator's verbatim
+    words and their ledger event). It is 29148's *source* attribute and the upward trace leg the
+    [engineering-method assessment](ieee/01-engineering-method-2026-09-22.md) found missing;
+    `gz validate --catalog` refuses an outcome that names none. Operator, verbatim: *"yes, require
+    the source"*.
 
 Gate 5. The ledger rule. The operator-PII rule. The Prime Directive. TOPMOST remains `ADR-0.35.0`
 until RO-8 disposes of it; the drydock works inside the campaign, which sequences what follows.
