@@ -207,10 +207,9 @@ match TASKs to REQs"*.
 
 The four are the **REQ catalog** (FDAU's family and capability structure, its third level marked
 open by the operator's "?"), the **feature pack**, the **work pack** and the **release pack**. A
-work pack is the OBPI, and it matches TASKs to REQs. "Work pack" and "release pack" depart from the
-canon names "work package" and "Release Package" (requirements model, records table; RO-4 and
-RO-5); carrying the new names into canon is downstream of this run. The shared word *pack* is the
-operator's choice over the candidates put, none of which was taken.
+work pack is the OBPI, and it matches TASKs to REQs. *Corrected at sign-off (decision* the four's
+names are full words; "pack" was shorthand*): the agent read "pack" as a rename departing from
+canon; it was the operator's shortening of "package", and no name departs from canon.*
 
 ## decision · the catalog's third level is the outcome
 
@@ -293,6 +292,20 @@ predecessor of a feature pack. Bringing one down is two steps, admission of its 
 feature pack that lists them with the entry's story, motivation and why. This settles the last of
 the six open points, *the pool's form for bundles*.
 
+## decision · the four's names are full words; "pack" was shorthand
+
+After the sign-off the agent asked for the go on row 5, a rename program from *work package* to
+*work pack* and *Release Package* to *release pack*. Operator, verbatim: *"no, those were
+shortenings (surprised I need to be this pedantic): requirements catalog
+(family.capability.outcome), feature package, work package, release package."*
+
+The four are the **requirements catalog** (`family.capability.outcome`), the **feature package**,
+the **work package** and the **release package**. "REQ catalog", "feature pack", "work pack" and
+"release pack", wherever they appear in this record and in the operator's words, are shortenings
+of those names, not renames. *Work package* and *release package* are canon's names unchanged; the
+only new name is *feature package*. Row 5's rename program had no subject and is not pursued. The
+agent's misreading is recorded as a defect insight.
+
 ---
 
 ## Disposition map
@@ -302,18 +315,18 @@ the six open points, *the pool's form for bundles*.
 | 1 | ADR / OBPI | not pursued | — | The drydock's induction freeze and safe mode suspend initiation; the four records land through the open repair orders by change order or as graded findings. Admission question: the feature pack is a new record, but the operator ruled it a loosening and renaming of the mADR, not a fresh architecture choice. Revisit if a feature-pack design question turns out hard to reverse and a real trade-off. |
 | 2 | GHI / direct fix | not pursued | — | No defect outside the drydock's own orders surfaced; this run's findings are drydock findings, graded under the freeze. |
 | 3 | chore | not pursued | — | Nothing recurring was found to schedule. |
-| 4 | control surface, rule, doc, skill, hook | commissioned | Amend the drydock contract's § The general arrangement and the requirements model to the four records as named: the REQ catalog (`family.capability.outcome`), the feature pack (a story plus a list of catalog outcomes, each outcome in at most one pack), the work pack (the OBPI renamed, matching TASKs to REQs) and the release pack; the pool unchanged as intentions; prerequisites as outcome `depends_on`; the feature pack's value human-attested at the release-pack or work-pack attestation. Put the feature pack's store and attestation to the operator as a finding graded under the induction freeze, with its owning order. | The general arrangement must be the one clear description before exit (§ Rulings of 2026-10-29), and it has no feature pack today. |
-| 5 | one-shot refactoring | commissioned | A rename program, *work package* to *work pack* and *Release Package* to *release pack*, across canon and code, its route for the operator to select: prose only, prose and code identifiers, or those and the ledger event types. | The operator renamed both; the old names reach 16 source files, the `release_package.md` template and the `work_package_transitioned` ledger event (booked five times), so the code and Layer-2 legs are the operator's to route. |
+| 4 | control surface, rule, doc, skill, hook | commissioned | Amend the drydock contract's § The general arrangement and the requirements model to the four records as named: the requirements catalog (`family.capability.outcome`), the feature package (a story plus a list of catalog outcomes, each outcome in at most one package), the work package (the OBPI renamed, matching TASKs to REQs) and the release package; the pool unchanged as intentions; prerequisites as outcome `depends_on`; the feature package's value human-attested at the release package's or work package's attestation. Put the feature package's store and attestation to the operator as a finding graded under the induction freeze, with its owning order. | The general arrangement must be the one clear description before exit (§ Rulings of 2026-10-29), and it has no feature package today. |
+| 5 | one-shot refactoring | not pursued | — | Drafted at first as a rename program from *work package* to *work pack* and *Release Package* to *release pack*; the operator ruled those were shortenings, so no name changes and the program has no subject. |
 | 6 | no action | not pursued | The literature's shapes (the model and configuration bill, kit and phantom; the pitch; the Minimum Marketable Feature and architectural element; the theme; the WBS planning package) are not adopted. | The operator set the bill-of-materials shape aside (*"not really"*) and declined the others; they stay on record as sourced vocabulary. Revisit if a feature-pack mechanism (a value rollup, for example) needs a known shape. |
 
 ## Close
 
 **Challenge restated.** How the four records form a system, now that they are named and their
-membership settled: the REQ catalog holds what must be true, filed `family.capability.outcome`; a
-feature pack, the mADR's successor, tells why a set of those outcomes belongs together and is
-attested for its value delivered; a work pack, the OBPI renamed, delivers one outcome by matching
-TASKs to REQs; a release pack, the cart for one order, carries the version and takes feature packs
-whole or in part with loose items. All of it a loosening and renaming of the old system, not a
+membership settled: the requirements catalog holds what must be true, filed `family.capability.outcome`; a
+feature package, the mADR's successor, tells why a set of those outcomes belongs together and is
+attested for its value delivered; a work package, the OBPI renamed, delivers one outcome by
+matching TASKs to REQs; a release package, the cart for one order, carries the version and takes
+feature packages whole or in part with loose items. All of it a loosening and renaming of the old system, not a
 greenfield. Restated on purpose at the close; the question has not changed, its answer has form.
 
 **Frontier.** Empty: the six open points of the locked model are each settled by a decision above.
@@ -323,7 +336,8 @@ operator's request (*"review here"*). Operator, verbatim: *"read it, fund (req c
 work pack, release pack)"*.
 
 **Sign-off.** *"read it, fund (req catalog, feature pack, work pack, release pack)"* — **fund**.
-Rows 4 and 5 are commissioned; each executes only on the operator's go on that row.
+Row 4 is commissioned and executes only on the operator's go on that row; row 5 was set to not
+pursued after the sign-off (decision *the four's names are full words*).
 
 ## What this record does not license
 
