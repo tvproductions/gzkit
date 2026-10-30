@@ -318,10 +318,12 @@ greenfield. Restated on purpose at the close; the question has not changed, its 
 
 **Frontier.** Empty: the six open points of the locked model are each settled by a decision above.
 
-**Review.** The account at `docs/rnd/four-records/review.md`. Not yet read by the operator; sign-off
-is not put before it is.
+**Review.** The account at `docs/rnd/four-records/review.md`, presented in full in session at the
+operator's request (*"review here"*). Operator, verbatim: *"read it, fund (req catalog, feature pack,
+work pack, release pack)"*.
 
-**Sign-off.** Not yet put.
+**Sign-off.** *"read it, fund (req catalog, feature pack, work pack, release pack)"* — **fund**.
+Rows 4 and 5 are commissioned; each executes only on the operator's go on that row.
 
 ## What this record does not license
 
