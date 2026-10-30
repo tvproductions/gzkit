@@ -715,6 +715,16 @@ The general-arrangement redraw continues with its remaining components.
   form a system, searching the literature for well-known shapes and keeping to first principles
   where none fits. The bundle has no record in § The general arrangement yet; that is the R&D's
   finding to dispose.
+- **The four mapped to what gzkit had** (operator, verbatim: *"yes"*). The ADR did five jobs, and
+  only the decision stays with it: its intent and consequences read as a whole, and the pool ADR,
+  are the feature/value bundle; each Feature Checklist item is a catalog outcome and its briefs'
+  `REQ-<semver>-NN-MM` are the outcome's REQs, freed from the ADR by RO-2; its semver is the
+  release package's version and its closeout the release package's close (RO-4); the corrections,
+  prerequisites, sidecars and twin ADRs grafted onto it are loose items in the cart. The OBPI did
+  one job, which survives intact as the work package, its TASKs as task cards; a GHI with a patch
+  release is a repair work package in a cart. Exposed for the R&D: the checklist joined the bundle
+  to its items, which nothing in the new model does yet; and emergence had no place but the ADR,
+  where the new model puts prerequisites as loose items in the cart.
 
 ## Superseded on 2026-10-30 (record, not binding)
 
