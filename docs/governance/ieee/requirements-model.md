@@ -28,7 +28,7 @@ is the operator's rulings below.
 | PRD | 1 | `PRD-…` | Functional (`FR-nnn`) and non-functional (§7) requirements: the parent obligation set | why the product exists |
 | Family | 1 (catalog) | mnemonic letter, `H` | One responsibility area, with a one-sentence scope in the legend | where an obligation belongs |
 | Capability | 1 (catalog) | family + number, `H1` | A named grouping of outcomes with a scope; never carries work (ruled 2026-10-29) | which outcomes belong together |
-| Outcome | 1 (catalog) | capability + dotted number, `H1.4` | One reviewable deliverable: statement, owner, `user_facing`, `governed_by`, `depends_on` | what is delivered |
+| Outcome | 1 (catalog) | capability + dotted number, `H1.4` | One reviewable deliverable: statement, owner, `user_facing`, `governed_by`, `depends_on`, `modules` (the code paths it owns; ruled 2026-10-30) | what is delivered |
 | REQ | 1 (catalog) | sequential, area-free, `REQ-1207` | One atomic obligation: statement, kind (BEHAVIOR, SUPPORT, STRUCTURAL-FENCE), revision, `member_of`, `applies_to` for an NFR | what must be true |
 | Feature file and steps | 1 | the outcome's code as a tag, `@H1.4` | The executable behaviour of one user-facing outcome; each scenario tagged with the REQ it proves | proof of user-facing behaviour |
 | ADR | 1 | `ADR-<n>` (decision record) | One architecture decision: context, alternatives, consequences, decision status, supersession links | which choice was made |
@@ -109,7 +109,9 @@ REQ asked for. The outcome outlives its work packages: a reopened outcome takes 
 with a ledger record naming the REQs that changed and why, and the first package's record stays
 intact. A small feature is itself the outcome; no redundant layer is created to hold it. This
 replaces the general arrangement's "a work package selects the REQs sharing one contract": an
-outcome's REQs are the REQs that share its contract.
+outcome's REQs are the REQs that share its contract. *The contract is the outcome* (operator
+ruling 2026-10-30, *"A"*; the drydock contract's § Rulings of 2026-10-30): the outcome's `modules`
+name the code paths it owns, and every rail that reads a contract reads the outcome code.
 
 ### 7. Release
 

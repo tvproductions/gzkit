@@ -100,6 +100,11 @@ standing (the hangar, the chores, the patch releases; GHIs carry repair and refa
 feature or requirements work); safe mode is an occasional flip inside it; a drydock is one session
 of safe mode holding repair orders.
 
+**Amended 2026-10-30.** The contract the rails read is the outcome (§ Rulings of 2026-10-30):
+the airlock derives its slice from the outcome's `modules`, GHIs and MX visits classify by the
+outcome they repair, eval checks an outcome's declared `modules` against the code, and every
+control names the outcome it protects.
+
 There is no bounded-advance document. The feature area groups the requirements and the Release
 Package selects the work packages that ship together, so which work packages advance a feature
 together is a query over those records.
@@ -489,6 +494,23 @@ ruling"*.
 
 Gate 5. The ledger rule. The operator-PII rule. The Prime Directive. TOPMOST remains `ADR-0.35.0`
 until RO-8 disposes of it; the drydock works inside the campaign, which sequences what follows.
+
+## Rulings of 2026-10-30
+
+The general-arrangement redraw continues with its remaining components.
+
+- **The contract is the outcome, and the outcome carries its `modules`** (the redraw's remaining
+  components, the contract field). The rails read *the contract* (the airlock's slice from its
+  modules, GHI and MX classification, eval of module design against module code, the control
+  naming what it protects), and the requirements model's § 6 says an outcome's REQs are those
+  sharing its contract, yet no schema in `src/gzkit/schemas/catalog_*.json` holds a contract and
+  the airlock still derives its slice from an OBPI brief. Put to the operator: A, the contract is
+  the outcome, which gains a `modules` field naming the code paths it owns, and every rail reads
+  the outcome code; B, a separate contract record that outcomes reference; C, no stored field,
+  modules derived from the paths a work package's commits touched. Operator, verbatim: *"A"*. The
+  rails paragraph and the requirements model's records table and § 6 are amended the same day; the
+  `modules` field lands in `catalog_outcomes.json` with the outcome-authoring work of RO-3 and
+  RO-5, not in this redraw.
 
 ## Superseded on 2026-10-17 (record, not binding)
 
