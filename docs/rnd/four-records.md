@@ -233,6 +233,19 @@ A feature pack holds two things: a list of outcomes already in the REQ catalog, 
 why they belong together and the value they bring. It names no intention that has not been
 admitted. This settles the open point *whether a bundle holds only admitted items*: it does.
 
+## decision · an outcome sits in at most one feature pack, for now
+
+The agent recommended "at most one" for now, since relaxing it later invalidates nothing while
+tightening "many" later forces a per-case ownership call, and since the sharing the operator
+described (prerequisites, scaffolds, shims, sidecars) is what the first principles keep out of
+feature packs, as loose items in the release pack. The operator had said, verbatim: *"I am not sure
+if an outcome should be in more than one feature pack"*; then, verbatim: *"yes, at most one for now
+- this the successor to the madr and the work pack is the successor to the obpi"*.
+
+An outcome belongs to at most one feature pack, and may belong to none. **Revisit condition:** the
+first time a real outcome genuinely belongs to two stories, the rule is reopened with that case in
+hand. The feature pack is the mADR's successor, as the work pack is the OBPI's.
+
 ---
 
 ## Disposition map
