@@ -48,7 +48,7 @@ A contract instantiates the shape below. An instance adds orders as its appraisa
 | RO-0 | the drydock itself | the contract and the drawing ratified; the toggle's suspension in force; prior drift disposed |
 | RO-1 | control plane | the bleeding stopped: whatever an agent loads cut to its budget first, measured for effect |
 | RO-2 | identity | the seam that gives every artifact its own identity by alias and resolver, renaming nothing |
-| RO-3 | catalog | the requirements store and the feature-area registry as empty structure, with their validators |
+| RO-3 | catalog | the requirements store and the family legend as empty structure, with their validators |
 | RO-4 | version | the release detached from whatever carried it, one release shape, closeout keyed to it |
 | RO-5 | labor, maintenance | the work-package, task-card and repair-order structure, with the repair tagging scheme |
 | RO-6 | every band | the canon the general arrangement contradicts, retired with retention maps |

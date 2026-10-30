@@ -38,6 +38,8 @@ On 2026-10-01 the operator repudiated OBPI-0.34.0-02 (its REQ-02-05 had no red r
 
 ## Acts (for the contractor)
 
+**Amended 2026-10-30** (operator, verbatim: *"A"*, twice; the contract's § Rulings of 2026-10-30): the catalog is empty at the handback. In the drydock RO-8 freezes ADR-0.35.0, books the disposition plan of acts 1 to 3 and runs act 4; acts 1, 2 and 3 run in that order at the transfer of custody, on the operator's word, as the first work under civil rule.
+
 The contractor stops and waits on every structural question.
 
 1. **Carry.** For each of ADR-0.35.0's nine unlanded briefs and the four repudiated OBPIs, the REQs written as catalog REQs under the outcome the requirements model maps them to, with fresh proof where the work already landed (briefs 17 and 20; 0.34.0-02's red receipt).

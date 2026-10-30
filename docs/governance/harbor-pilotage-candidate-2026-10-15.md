@@ -89,10 +89,10 @@ Verified from first principles the same day (§ Rulings of 2026-10-17). The band
 
 | Band | Carrier | Holds | Relation downward |
 |---|---|---|---|
-| Product intent | PRD | functional requirements (`FR-nnn`) and non-functional requirements (§7 quality attributes) | feature areas trace to an FR or a quality attribute |
-| The product's truth, and decisions, as peers | Requirements catalog, beside the ADR | Catalog: feature areas, first-class and typed functional or non-functional; REQs, each in one area, carrying its contract, state, revision history and its legacy id as an alias; Gherkin feature files prove functional REQs where there is a user (the `gz` CLI). ADR: a decision and its rationale, made only where a decision is needed; it lands contracts on the REQs it touches and carries no version and no release. The REQ–ADR link is two-way for those REQs. Not every requirement or feature needs an ADR | a work package is cut from the catalog directly in the ordinary case, or from an ADR where one exists |
+| Product intent | PRD | functional requirements (`FR-nnn`) and non-functional requirements (§7 quality attributes) | families trace to an FR or a quality attribute |
+| The product's truth, and decisions, as peers | Requirements catalog, beside the ADR | Catalog: families, capabilities and outcomes, typed functional or non-functional; REQs, each a member of one outcome (its contract), carrying its revision history and its legacy id as an alias, its proof held in the ledger; Gherkin feature files prove functional REQs where there is a user (the `gz` CLI). ADR: a decision and its rationale, made only where a decision is needed; it lands contracts on the REQs it touches and carries no version and no release. The REQ–ADR link is two-way for those REQs. Not every requirement or feature needs an ADR | a work package is cut from the catalog directly in the ordinary case, or from an ADR where one exists |
 | Labor | Work package, then task cards | a work package selects the REQs sharing one contract, from the catalog or from an ADR, and always names its REQs; a task card is the increment: one commit, one trailer, one commit-grain witness citing the REQ | the Release Package ships work packages; the release record carries the task cards' witnesses |
-| Version | Release Package, and the ledger release record | the Release Package (planned, in-flight, released) selects the work packages that ship and says which REQ states advance in the version; the version lives here. The ledger release record says what actually shipped. The campaign sequences releases; a Release Package says what one release contains | — |
+| Version | Release Package, and the ledger release record | the Release Package (planned, in-flight, released) selects the outcomes and repair packages that ship; the version lives here. The ledger release record says what actually shipped. The campaign sequences releases; a Release Package says what one release contains | — |
 
 The rails: the control plane reads the contract (the airlock derives its slice from the contract's
 modules; GHIs and MX visits classify by the contract they repair; eval checks module design
@@ -107,8 +107,8 @@ the airlock derives its slice from the outcome's `modules`, GHIs and MX visits c
 outcome they repair, eval checks an outcome's declared `modules` against the code, and every
 control names the outcome it protects.
 
-There is no bounded-advance document. The feature area groups the requirements and the Release
-Package selects the work packages that ship together, so which work packages advance a feature
+There is no bounded-advance document. The outcome groups the requirements and the Release
+Package selects the outcomes that ship together, so which work packages advance an outcome
 together is a query over those records.
 
 **Amended 2026-10-18.** The operator ruled [the requirements model](ieee/requirements-model.md):
@@ -186,7 +186,7 @@ Not suspended, under any reading:
 1. Cut what every agent loads to a witnessed budget, each cut measured for effect.
 2. Give REQ, TASK and release identity independent of the ADR, by alias and resolver, renaming
    nothing before 1.0.
-3. Land the requirements store and the feature-area registry as empty structure, with their
+3. Land the requirements store and the family legend as empty structure, with their
    validators and the BDD alignment check.
 4. Detach the release from the ADR: one release shape, the Release Package with the ledger release
    record, and `gz closeout` keyed to it.
@@ -270,10 +270,12 @@ witness, or earlier at the operator's word:
 
 1. Every surface an agent loads is within a witnessed budget, with an effectiveness report per cut.
 2. The resolver and the parent fields are in place and every regex reader is replaced.
-3. The catalog, feature-area and release schemas and their validators are landed, empty.
+3. The catalog, family and release schemas and their validators are landed, empty; the 0.35.0
+   outcomes enter at civil rule (§ Rulings of 2026-10-30).
 4. One release shape is ruled and `gz closeout` is keyed to it.
 5. The contradicted canon is retired.
-6. The in-flight work is disposed.
+6. The in-flight work is disposed: RO-8's disposition plan is booked, and its carry, withdraw and
+   Release Package acts run at civil rule (§ Rulings of 2026-10-30).
 7. The toolchain follows Astral's project discipline: the RO-9 witness reads zero for gzkit and for a
    freshly scaffolded project (added 2026-10-19 with RO-9).
 8. Every line of § List of discrepancies graded *blocks return to service* is cleared by its owning order: the
@@ -513,6 +515,22 @@ The general-arrangement redraw continues with its remaining components.
   rails paragraph and the requirements model's records table and § 6 are amended the same day; the
   `modules` field lands in `catalog_outcomes.json` with the outcome-authoring work of RO-3 and
   RO-5, not in this redraw.
+- **The catalog is empty at the handback; the 0.35.0 outcomes enter at civil rule** (the redraw's
+  remaining components, the terms and mandate 3). Mandate 3 lands the store "as empty structure"
+  and exit item 3 tests the schemas "landed, empty", while RO-8 act 3 drafted the 0.35.0 Release
+  Package with outcomes as members inside the drydock and RO-8's row carries the items into the
+  catalog "at civil rule". Put to the operator: A, empty at the handback, the 0.35.0 package
+  drafted under civil rule on the operator's word at the transfer of custody; B, populated during
+  the drydock, exit item 3 and RO-8's row amended; C, "empty" dropped from exit item 3. Operator,
+  verbatim: *"A"*. Then, since RO-8 act 1 also writes catalog REQs and act 2 names where they
+  went: A′, acts 1 to 3 move to civil rule in order, the drydock freezing ADR-0.35.0, booking the
+  disposition plan and running act 4, exit item 6 reading as disposed by that booked plan; B′,
+  act 3 alone moves; C′, acts 1 and 2 stage REQs outside `data/catalog/`. Operator, verbatim:
+  *"A"*. Exit items 3 and 6 and RO-8's acts are amended the same day. With them, the terms that
+  requirements-model § 8 Q-19 point 3 and decisions 2 and 4 already settle are repaired in the
+  general arrangement, mandate 3, exit item 3 and the doctrine's RO-3 row: the feature-area
+  registry is the family legend, a REQ's area is its outcome (`member_of`), and a REQ carries
+  proof, not a state (§ 4).
 
 ## Superseded on 2026-10-17 (record, not binding)
 
