@@ -212,6 +212,16 @@ canon names "work package" and "Release Package" (requirements model, records ta
 RO-5); carrying the new names into canon is downstream of this run. The shared word *pack* is the
 operator's choice over the candidates put, none of which was taken.
 
+## decision · the catalog's third level is the outcome
+
+The agent asked what the "?" in `family.cap.?` stood for, recommending the outcome (`H1.4`, the
+requirements model's "one reviewable deliverable", what an OBPI delivered, FDAU's and Backplane's
+term) with REQs beneath it. Operator, verbatim: *"yes, i couldn't remeber it. / req catalog
+(family.capability.outcome, feature pack, work pack (OBPI renamed), release pack"*.
+
+The four, as named: the **REQ catalog** (`family.capability.outcome`, REQs beneath each outcome),
+the **feature pack**, the **work pack** (the OBPI renamed) and the **release pack**.
+
 ---
 
 ## Disposition map
