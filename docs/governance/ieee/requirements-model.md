@@ -26,8 +26,9 @@ is the operator's rulings below.
 | Record | Layer | Identity | Holds | Answers |
 |---|---|---|---|---|
 | PRD | 1 | `PRD-…` | Functional (`FR-nnn`) and non-functional (§7) requirements: the parent obligation set | why the product exists |
-| Family | 1 (catalog) | mnemonic letter + number, `H1` | One responsibility area, with a one-sentence scope in the legend | where an obligation belongs |
-| Outcome | 1 (catalog) | family + dotted number, `H1.4` | One reviewable deliverable: statement, owner, `user_facing`, `governed_by`, `depends_on` | what is delivered |
+| Family | 1 (catalog) | mnemonic letter, `H` | One responsibility area, with a one-sentence scope in the legend | where an obligation belongs |
+| Capability | 1 (catalog) | family + number, `H1` | A named grouping of outcomes with a scope; never carries work (ruled 2026-10-29) | which outcomes belong together |
+| Outcome | 1 (catalog) | capability + dotted number, `H1.4` | One reviewable deliverable: statement, owner, `user_facing`, `governed_by`, `depends_on` | what is delivered |
 | REQ | 1 (catalog) | sequential, area-free, `REQ-1207` | One atomic obligation: statement, kind (BEHAVIOR, SUPPORT, STRUCTURAL-FENCE), revision, `member_of`, `applies_to` for an NFR | what must be true |
 | Feature file and steps | 1 | the outcome's code as a tag, `@H1.4` | The executable behaviour of one user-facing outcome; each scenario tagged with the REQ it proves | proof of user-facing behaviour |
 | ADR | 1 | `ADR-<n>` (decision record) | One architecture decision: context, alternatives, consequences, decision status, supersession links | which choice was made |
@@ -44,8 +45,10 @@ parent of the families: every FR and every §7 attribute has a disposition (see 
 
 ### 2. Identity
 
-Families and outcomes take FDAU mnemonic codes with a recorded legend: `H1` is a family, `H1.4` an
-outcome. REQs keep sequential ids that do not depend on their area, and membership is a field
+Families and outcomes take FDAU mnemonic codes with a recorded legend: `H` is a family, `H1` a
+capability, `H1.4` an outcome, exactly three levels, and a work package always delivers an outcome
+(operator ruling 2026-10-29, *"A"*, recorded in the drydock contract's § Rulings of 2026-10-29).
+REQs keep sequential ids that do not depend on their area, and membership is a field
 (`member_of`), so moving a REQ between outcomes keeps its id, its `@covers` tags and its proof
 history (the 2026-10-17 ruling stands). Codes are never derived into parentage: the catalog holds
 the relationships, and a code's spelling proves nothing (Backplane: "Do not derive live parentage

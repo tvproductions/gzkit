@@ -410,6 +410,16 @@ ruling"*.
     [engineering-method assessment](ieee/01-engineering-method-2026-09-22.md) found missing;
     `gz validate --catalog` refuses an outcome that names none. Operator, verbatim: *"yes, require
     the source"*.
+- **The catalog has exactly three levels** (the redraw's second question, the catalog's
+  organization). The requirements model's table named `H1` a family while the store holds one-letter
+  families and lets outcome codes nest to any depth, so nothing said which node a work package
+  (one per outcome, RO-5) attaches to. Put to the operator: A, three fixed levels: family `H`, then
+  a capability `H1` (a named grouping with a scope, which never carries work), then an outcome
+  `H1.4`, always the level a work package delivers, the outcome code pattern tightened to that
+  shape; B, two levels; C, any depth with leaves only taking work. Operator, verbatim: *"A"*. The
+  [requirements model](ieee/requirements-model.md)'s records table and decision 2 are corrected the
+  same day. Open for the specification: where capability records are stored and the schema change
+  that tightens the code pattern.
 
 Gate 5. The ledger rule. The operator-PII rule. The Prime Directive. TOPMOST remains `ADR-0.35.0`
 until RO-8 disposes of it; the drydock works inside the campaign, which sequences what follows.
