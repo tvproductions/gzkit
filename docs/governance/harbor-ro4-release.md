@@ -26,6 +26,10 @@
 6. **Members are work packages and their issues** (selection *"A"*; *amended 2026-10-29*: the plan's members are outcomes and repair packages, and `release_recorded` names the closed work packages and issues that delivered them, operator *"a"*, the contract's § Rulings of 2026-10-29): delivery and repair packages; legacy ADR work is not a member and is not backfilled, with ADR-0.35.0 the one exception (2026-10-29: its twenty items' outcomes are members, the eleven attested carrying their attestations as legacy evidence). **Flagged for review:** RO-8 ruling 1 makes the 0.35.0 Release Package *"the sum of that adr's obpis"*, attested ones included; the operator will reconcile the two when reviewing requirements and Release Packages *"VERY CAREFULLY"*.
 7. **The `release_package.md` template retires, settled by rulings 1 and 6:** the package is a catalog record, not a document, and its members are outcomes and repair packages, not REQ states (model § 7; amended 2026-10-29).
 
+## Change order of 2026-10-30
+
+8. **RO-4 lands the feature package's store and its value attestation** (operator, verbatim: *"yes, it blocks; RO-4 owns it"*; the contract's § Rulings of 2026-10-30). The feature package is the mADR's successor from [the four-records R&D](../rnd/four-records.md): a list of catalog outcomes, each in at most one feature package, plus the story of why they belong together; no version, release, order or prerequisite field. A human attests its value delivered at the release package's or the work package's attestation, not in a ceremony of its own. It blocks return to service because RO-8's first act at civil rule turns ADR-0.35.0, an mADR, into the 0.35.0 release package. The store's place and form, and the verbs and event names, are structural questions the contractor stops on.
+
 ## Tranches (for the contractor)
 
 The contractor stops and waits on every structural question; the names of new verbs and events are among them.

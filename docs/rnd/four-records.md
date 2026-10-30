@@ -306,6 +306,14 @@ of those names, not renames. *Work package* and *release package* are canon's na
 only new name is *feature package*. Row 5's rename program had no subject and is not pursued. The
 agent's misreading is recorded as a defect insight.
 
+## decision · the feature package's store and value attestation block return to service, under RO-4
+
+Row 4's last clause, put after the doc amendments landed (`6f98736cc`): does building the feature
+package's store and its value attestation block leaving drydock, and does RO-4 take it on by
+change order? The agent recommended yes and RO-4: RO-8's first act at civil rule turns ADR-0.35.0,
+an mADR, into the 0.35.0 release package. Operator, verbatim: *"yes, it blocks; RO-4 owns it"*.
+Recorded in the contract's § Rulings of 2026-10-30, RO-4's row and its specification (ruling 8).
+
 ---
 
 ## Disposition map
