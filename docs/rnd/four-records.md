@@ -246,6 +246,19 @@ An outcome belongs to at most one feature pack, and may belong to none. **Revisi
 first time a real outcome genuinely belongs to two stories, the rule is reopened with that case in
 hand. The feature pack is the mADR's successor, as the work pack is the OBPI's.
 
+## decision · prerequisites are outcome-to-outcome `depends_on` edges, never a feature-pack field
+
+Canon already holds prerequisites at the outcome: `depends_on`, readiness only from those edges
+(`docs/governance/ieee/requirements-model.md` § 5). The agent put it: an emergent prerequisite is
+admitted as its own outcome, often in no feature pack; the outcome that needs it gains a
+`depends_on` edge; the feature pack's list and story stay as written; the release pack is where
+readiness shows which prerequisites travel with a feature pack's outcomes, as loose items or in an
+earlier release. Operator, verbatim: *"yes, it matches"*.
+
+A feature pack has no prerequisite field. What it needs is read by following the `depends_on` edges
+of the outcomes it lists. This settles the open point *how prerequisites relate to the bundle that
+needs them*.
+
 ---
 
 ## Disposition map
