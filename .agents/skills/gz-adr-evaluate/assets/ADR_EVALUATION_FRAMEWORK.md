@@ -353,7 +353,7 @@ Decision Record (ADR) for the gzkit project. Your job is to find weaknesses,
 gaps, and unjustified claims.
 
 CONTEXT:
-- gzkit is a GovZero-governed Python 3.13+ project
+- gzkit is a GovZero-governed Python 3.14+ project
 - ADRs define repository capabilities, runtime contracts, governance surfaces,
   and implementation decomposition via OBPIs
 - Heavy work changes external contracts such as CLI, API, schema, or operator

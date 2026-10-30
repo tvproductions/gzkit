@@ -1,0 +1,23 @@
+{
+  "surface": "AGENTS.md",
+  "consumer": "root",
+  "extracted_by": "spec-reviewer",
+  "mapped_by": "main-session",
+  "blocks": [
+    {
+      "removed": "Python 3.13+ with uv, ruff, ty; always `uv run` for Python commands.",
+      "non_binding": [
+        {"quote": ",", "reason": "List separator between the toolchain items (uv, ruff, ty). It binds nothing beyond the items it separates."},
+        {"quote": ";", "reason": "Clause separator between the toolchain statement and the uv-run rule. It binds nothing on its own."},
+        {"quote": ".", "reason": "Sentence-terminating period. It binds nothing."}
+      ],
+      "conditions": [
+        {"id": "C1", "quote": "Python 3.13+", "disposition": "dropped", "span": null, "reason": "The 3.13 floor contradicts pyproject.toml requires-python >=3.14 and .python-version 3.14.10; superseded by 'Python 3.14+' (operator 2026-10-30: 'fix AGENTS.md')."},
+        {"id": "C2", "quote": "with uv", "disposition": "kept", "span": "with uv", "reason": null},
+        {"id": "C3", "quote": "ruff", "disposition": "kept", "span": "ruff", "reason": null},
+        {"id": "C4", "quote": "ty", "disposition": "kept", "span": "ty", "reason": null},
+        {"id": "C5", "quote": "always `uv run` for Python commands", "disposition": "kept", "span": "always `uv run` for Python commands", "reason": null}
+      ]
+    }
+  ]
+}

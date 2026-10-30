@@ -6,7 +6,7 @@ Universal agent contract for {project_name}.
 
 **Name**: {project_name}
 **Purpose**: A gzkit-governed project
-**Tech Stack**: Python 3.13+ with uv, ruff, ty
+**Tech Stack**: Python 3.14+ with uv, ruff, ty
 
 ## Why this contract is not minimal
 

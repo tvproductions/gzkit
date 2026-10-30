@@ -3,7 +3,7 @@
 
 Project instructions for gzkit.
 
-Python 3.13+ with uv, ruff, ty; always `uv run` for Python commands.
+Python 3.14+ with uv, ruff, ty; always `uv run` for Python commands.
 ## Persona
 
 Every agent frame MUST include a Persona. Default: `main-session` — craftsperson, governance-aware, whole-file-reasoning, direct. Read the applicable definition in [`.gzkit/personas/`](.gzkit/personas/) when assigning a role; compose traits, not generic expertise claims.
