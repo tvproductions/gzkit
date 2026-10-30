@@ -7,7 +7,7 @@
 [the requirements model](ieee/requirements-model.md) rules, landed as empty structure under
 `data/catalog/`. It populates nothing beyond the ruled family legend, changes no identifier, and
 migrates no legacy ADR, OBPI or REQ. The verbs that edit the catalog, freeze a baseline and move an
-outcome are RO-5's. The session that specified it does not land it; a cheaper session does, one
+outcome are RO-5's (*amended 2026-10-30*: creating an outcome is RO-11's, by change order). The session that specified it does not land it; a cheaper session does, one
 tranche per act.
 
 ## Rulings

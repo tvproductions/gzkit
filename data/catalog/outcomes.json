@@ -1,4 +1,4 @@
 {
-  "_doc": "The outcomes of the requirements catalog, each a member of one family in data/catalog/families.json (docs/governance/ieee/requirements-model.md). Empty by drydock RO-3's ruling (docs/governance/harbor-ro3-requirements-store.md, operator ruling 2026-10-21); outcomes are authored through RO-5's verbs. No lifecycle state is held here: delivery status lives only in the ledger (decision 3). Shape: src/gzkit/schemas/catalog_outcomes.json; read by gzkit/models/catalog.py; witnessed by `gz validate --catalog`.",
+  "_doc": "The outcomes of the requirements catalog, each a member of one family in data/catalog/families.json (docs/governance/ieee/requirements-model.md). Empty by drydock RO-3's ruling (docs/governance/harbor-ro3-requirements-store.md, operator ruling 2026-10-21); an outcome is created by RO-11's entry verb and edited, moved, reopened or withdrawn by RO-5's (change orders of 2026-10-30). No lifecycle state is held here: delivery status lives only in the ledger (decision 3). Shape: src/gzkit/schemas/catalog_outcomes.json; read by gzkit/models/catalog.py; witnessed by `gz validate --catalog`.",
   "outcomes": []
 }
