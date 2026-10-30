@@ -279,27 +279,47 @@ greenfield"*. Every design question in this run is read against it: where the ol
 had a working mechanism, the successor keeps it, renamed and loosened, unless the operator retires
 it. It binds the remaining frontier and every downstream disposition.
 
+## decision · the pool stays as intentions until brought down
+
+The agent put the tension: a pool ADR is a story with unadmitted intentions, while a feature pack
+lists only admitted outcomes; and the reading that the pool stays a store of intentions, renamed in
+name only, brought down by admitting its outcomes on the operator's word and then writing the
+feature pack that carries its story forward. Operator, verbatim: *"yes, the pool stays as
+intentions until brought down - which is what the pool is now - the madr captured story,
+motivation, and why"*.
+
+The pool is unchanged: intentions (`docs/design/adr/pool/`, per the ruling of 2026-10-25), each the
+predecessor of a feature pack. Bringing one down is two steps, admission of its outcomes and the
+feature pack that lists them with the entry's story, motivation and why. This settles the last of
+the six open points, *the pool's form for bundles*.
+
 ---
 
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
 |---|---|---|---|---|
-| 1 | ADR / OBPI | | | |
-| 2 | GHI / direct fix | | | |
-| 3 | chore | | | |
-| 4 | control surface, rule, doc, skill, hook | | | |
-| 5 | one-shot refactoring | | | |
-| 6 | no action | | | |
+| 1 | ADR / OBPI | not pursued | — | The drydock's induction freeze and safe mode suspend initiation; the four records land through the open repair orders by change order or as graded findings. Admission question: the feature pack is a new record, but the operator ruled it a loosening and renaming of the mADR, not a fresh architecture choice. Revisit if a feature-pack design question turns out hard to reverse and a real trade-off. |
+| 2 | GHI / direct fix | not pursued | — | No defect outside the drydock's own orders surfaced; this run's findings are drydock findings, graded under the freeze. |
+| 3 | chore | not pursued | — | Nothing recurring was found to schedule. |
+| 4 | control surface, rule, doc, skill, hook | commissioned | Amend the drydock contract's § The general arrangement and the requirements model to the four records as named: the REQ catalog (`family.capability.outcome`), the feature pack (a story plus a list of catalog outcomes, each outcome in at most one pack), the work pack (the OBPI renamed, matching TASKs to REQs) and the release pack; the pool unchanged as intentions; prerequisites as outcome `depends_on`; the feature pack's value human-attested at the release-pack or work-pack attestation. Put the feature pack's store and attestation to the operator as a finding graded under the induction freeze, with its owning order. | The general arrangement must be the one clear description before exit (§ Rulings of 2026-10-29), and it has no feature pack today. |
+| 5 | one-shot refactoring | commissioned | A rename program, *work package* to *work pack* and *Release Package* to *release pack*, across canon and code, its route for the operator to select: prose only, prose and code identifiers, or those and the ledger event types. | The operator renamed both; the old names reach 16 source files, the `release_package.md` template and the `work_package_transitioned` ledger event (booked five times), so the code and Layer-2 legs are the operator's to route. |
+| 6 | no action | not pursued | The literature's shapes (the model and configuration bill, kit and phantom; the pitch; the Minimum Marketable Feature and architectural element; the theme; the WBS planning package) are not adopted. | The operator set the bill-of-materials shape aside (*"not really"*) and declined the others; they stay on record as sourced vocabulary. Revisit if a feature-pack mechanism (a value rollup, for example) needs a known shape. |
 
 ## Close
 
-**Challenge restated.** Not yet.
+**Challenge restated.** How the four records form a system, now that they are named and their
+membership settled: the REQ catalog holds what must be true, filed `family.capability.outcome`; a
+feature pack, the mADR's successor, tells why a set of those outcomes belongs together and is
+attested for its value delivered; a work pack, the OBPI renamed, delivers one outcome by matching
+TASKs to REQs; a release pack, the cart for one order, carries the version and takes feature packs
+whole or in part with loose items. All of it a loosening and renaming of the old system, not a
+greenfield. Restated on purpose at the close; the question has not changed, its answer has form.
 
-**Frontier.** The six open points of the locked model, and how the four records relate as one
-system.
+**Frontier.** Empty: the six open points of the locked model are each settled by a decision above.
 
-**Review.** Not yet written.
+**Review.** The account at `docs/rnd/four-records/review.md`. Not yet read by the operator; sign-off
+is not put before it is.
 
 **Sign-off.** Not yet put.
 
