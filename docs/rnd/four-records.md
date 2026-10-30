@@ -259,6 +259,26 @@ A feature pack has no prerequisite field. What it needs is read by following the
 of the outcomes it lists. This settles the open point *how prerequisites relate to the bundle that
 needs them*.
 
+## decision · a human attests the feature pack's value delivered
+
+The agent asked whether, once a feature pack's outcomes have landed, a human reads the story
+against what shipped and says whether the value was delivered (the successor to the mADR's
+closeout), or whether "all listed outcomes released" suffices. Operator, verbatim: *"yes, a human
+moment to attest the value delivered - it would be JUST LIKE the obpi/madr pipelines but it is
+attested during release and/or work package attestation. this is a loosening/renaming of the old
+systems, not abandonment or greenfield"*.
+
+A feature pack's value delivered is attested by a human, as the mADR's was. The attestation rides
+an existing moment, the release pack's or the work pack's attestation, not a ceremony of its own.
+This settles the open point *how a bundle's promised value is checked against what landed*.
+
+## decision · the four are a loosening and renaming of the old system, not a greenfield
+
+From the same words: *"this is a loosening/renaming of the old systems, not abandonment or
+greenfield"*. Every design question in this run is read against it: where the old ADR/OBPI system
+had a working mechanism, the successor keeps it, renamed and loosened, unless the operator retires
+it. It binds the remaining frontier and every downstream disposition.
+
 ---
 
 ## Disposition map
