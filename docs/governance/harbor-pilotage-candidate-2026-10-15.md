@@ -122,6 +122,28 @@ Every arrow is realizable by a stored field on one condition the as-built tree v
 identity independent of the ADR and the work package. Today the ADR's semver is embedded in every
 REQ, TASK and OBPI id, so the drawing is a target until that seam lands (RO-2).
 
+**The processes and their edges** (ruled 2026-10-30, § Rulings of 2026-10-30). A strategic,
+operational and tactical brief is known at every major state change; those changes are the edges
+below, and the session's two edges are the handoff's bookends. Transit (`airlock_in`,
+`airlock_out`) is not a process here: it is a gate the work-package and maintenance arrows pass
+through, its own subject under the three-subjects ruling. The witness column is a record of
+2026-10-30, counted from `.gzkit/ledger.jsonl`.
+
+| # | Process | Entry edge | Exit edge | Ledger witness, 2026-10-30 |
+|---|---|---|---|---|
+| 1 | Session | the resume ruled | the handoff authored, or the exit bookmark | entry `handoff_resume_decided`; exit none, the handoff is a file only |
+| 2 | Mode (normal, hangar, drydock) | `mx_session_opened` at a level | the handback ratified, then `mx_session_closed` | both edges |
+| 3 | R&D | the run opened | sign-off with the disposition map; the run closes when its last commissioned row lands | none; `rnd-discipline.md` § Ledger events is designed, not built |
+| 4 | Design | the dialogue opened | the ADR accepted, the fifth intake door | `adr_created` only; no acceptance event |
+| 5 | Intake | a pull through one of the five doors | the outcome `queued` | none; `outcome_transitioned` has no production writer |
+| 6 | Work package | commenced, its baseline frozen | closed through Gate 5, moving the outcome | `work_package_transitioned` |
+| 7 | Maintenance (a squawk, a hangar visit) | the issue recorded and classified | resolved by the fix SHA, closed by review | `work_package_issue_closed`, with GitHub's issue state |
+| 8 | Chore | the run started | the run validated | none; the record is a file under `.gzkit/chores/` |
+| 9 | Release | the Release Package opened, planned | `release_recorded` | legacy `patch-release` only; `release_recorded` is not built |
+
+The five edges with no witness are findings raised after the induction freeze and take its
+return-to-service grading.
+
 ## What is suspended, and what is not
 
 Suspended while `.gzkit/mx.json` carries `mode: safe`, by the ruling of 2026-10-17 (R6, "A"):
@@ -531,6 +553,11 @@ The general-arrangement redraw continues with its remaining components.
   general arrangement, mandate 3, exit item 3 and the doctrine's RO-3 row: the feature-area
   registry is the family legend, a REQ's area is its outcome (`member_of`), and a REQ carries
   proof, not a state (§ 4).
+- **The processes whose edges carry the brief** (step 3 of the redraw). Put to the operator: A, nine
+  processes (session, mode, R&D, design, intake, work package, maintenance, chore, release), with
+  transit drawn as a gate the work-package and maintenance arrows pass through; B, the operator's
+  seven of 2026-10-29, intake and release drawn as arrows; C, the nine with transit a tenth.
+  Operator, verbatim: *"a"*. The edge table is written under § The general arrangement.
 
 ## Superseded on 2026-10-17 (record, not binding)
 
