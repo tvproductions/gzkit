@@ -140,6 +140,54 @@ decision and nothing commissions anything until a primary text is read.
 - ISO/IEC/IEEE 29148 (held in the repository at
   `docs/rnd/renewing-vows/sources/std-iso-iec-ieee-29148.md`).
 
+## source · the research pass, landed verbatim
+
+`docs/rnd/four-records/sources/` · written by a research subagent 2026-10-30, every file read in
+full by the run's agent the same day. Primary unless marked. Refusals were recorded and not worked
+around. Each file carries its own URLs, access dates and verbatim quotations; the lines below cite,
+they do not summarize.
+
+- `fdau-backlog-model.md` (primary, the model's lineage): *"A **feature record** is the proposed
+  local artifact name for a capability or reviewable outcome."*; *"A **release record** selects
+  completed outcomes, checks compatibility and release gates, and receives a version."*;
+  *"`candidate_release` is optional, mutable planning data. `released_in` is historical evidence
+  added after publication."*; *"A pool idea without a chosen solution belongs in a capability pool,
+  not in an accepted-decision register."*
+- `backplane-governance.md` (primary, the model's lineage): *"A grouping capability is not an
+  implementation leaf. A small feature may itself be the bounded outcome; do not create redundant
+  layers."*; *"A milestone groups targets; it does not authorize publication."*
+- `shape-up.md` (primary): *"There are five ingredients that we always want to include in a pitch:
+  Problem [...] Appetite [...] Solution [...] Rabbit holes [...] No-gos"*; *"The pitch defines a
+  specific payout that makes the bet worth making."*; *"Now that we've written a pitch, where does
+  it go? It doesn't go onto a backlog."*
+- `ifm-mmf.md` (primary texts NOT read, paywalled; definitions secondary): *"Minimum Marketable
+  Features, or MMF for short, indicating that they contain strongly-related software features that
+  can be quickly delivered and that are valued by customers"*; *"the architectural infrastructure,
+  i.e. the set of basic features that offers no direct value to customers, but that are required by
+  the MMFs"*.
+- `release-planning.md` (EVOLVE primary; NRP abstract primary; Carlshamre and the theme papers
+  secondary, one refused): *"The technical precedence constraints relate to situations where one
+  requirement cannot be implemented until another is completed or where one requirement is
+  implemented in the same increment as another one."*; theme, secondary: *"the requirements within
+  a theme would be preferably delivered or postponed together"*.
+- `wbs.md` (DoD EVMSIG and NASA primary; PMI not read, one refused): *"PLANNING PACKAGE (PP) — A
+  logical aggregation of future work within a control account that cannot yet be planned in detail
+  at the work package or task level."*; *"common elements of work must be included that are not
+  necessarily product-oriented."*
+- `bom-kits.md` (vendor documentation, primary as to Oracle only; APICS not read): *"A model bill
+  [...] also specifies mandatory components or included items that are required for each
+  configuration of that model. You do not order or build the model itself: you order and build
+  configurations of the model."*; *"A configuration bill (a type of standard bill) is a set of
+  option choices made from a model bill"*; *"As a subassembly, however, they lose their identity as
+  distinct assemblies and are a collection of their components."*; *"The cost rollup treats phantom
+  assemblies the same as regular assemblies. The phantom is treated as a distinct entity"*.
+- `feature-models.md` (FODA primary, one copy refused): *"All optional and alternative features that
+  must be selected when the named feature is selected must be defined using the "requires"
+  statement."*
+- `iso-29148-grouping.md` (sample clauses primary; 5.2.6, 5.2.8, 9.6.9 not read): the defined terms
+  read include no named grouping of requirements by value, release or increment.
+- `other-candidates.md` (DoD instructions and TOGAF refused or unread; one CRS report secondary).
+
 ---
 
 ## Disposition map
