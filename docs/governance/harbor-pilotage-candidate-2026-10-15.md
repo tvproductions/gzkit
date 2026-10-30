@@ -197,8 +197,9 @@ through, its own subject under the three-subjects ruling. The witness column is 
 | 8 | Chore | the run started | the run validated | none; the record is a file under `.gzkit/chores/` |
 | 9 | Release | the Release Package opened, planned | `release_recorded` | legacy `patch-release` only; `release_recorded` is not built |
 
-The five edges with no witness are findings raised after the induction freeze and take its
-return-to-service grading.
+The five edges with no witness are findings raised after the induction freeze, graded 2026-10-30:
+intake's blocks return to service under RO-11, and the other four are due by a named event
+(§ List of discrepancies, RO-0).
 
 ### The rails
 
@@ -656,9 +657,19 @@ The general-arrangement redraw continues with its remaining components.
   2026-10-17 SVG stays as record under § Superseded on 2026-10-30.
 - **The three-level-brief finding is graded due by a named event** (step 4 of the redraw, under
   the induction freeze). Put to the operator: A, due by a named event, held by a session-and-handoff
-  outcome in family M from the handback and specified before the first work package commences under
+  outcome in family M (the agent's error: the legend puts handoffs in H, and the line names H) from
+  the handback and specified before the first work package commences under
   civil rule; B, blocking, worked under RO-0 by change order; C, blocking, worked under RO-12 by
   change order. Operator, verbatim: *"A"*. The line is on § List of discrepancies under RO-0.
+- **The five unwitnessed edges are split by owner** (the edge table's finding, under the induction
+  freeze). Put to the operator: A, intake blocks return to service inside RO-11's widened scope,
+  whose specification names the edge's witness, and the other four (session exit, R&D open and
+  sign-off, design acceptance, chore run and validate) are due by a named event, each handed at the
+  handback to its owning outcome, revisited when the three-level brief is specified; B, all five
+  block under RO-0 by change order; C, all five due by a named event. Operator, verbatim: *"A"*.
+  The owners by the family legend: session H, design D, chores M; R&D is named in no family's
+  scope and is assigned when specified. The R&D events are a correction, ruled 2026-09-16 (*"yes
+  to ledger"*) and not built.
 
 ## Superseded on 2026-10-30 (record, not binding)
 
@@ -1145,8 +1156,16 @@ Each line is `open` until the restoration contractor clears it with the alarms o
 - `open` **due by a named event** — no strategic, operational and tactical brief is produced at the
   major state changes, the entry and exit edges of § The processes and their edges (insight
   `2026-10-29T08:00:30Z`, scope `handoff-picture`). Holder: a session-and-handoff outcome in family
-  M, handed over at the handback. Revisit: specified before the first work package commences under
+  H (corrected 2026-10-30 from the agent's misstated M; the legend puts handoffs in H), handed over
+  at the handback. Revisit: specified before the first work package commences under
   civil rule (RO-8's acts 1 to 3). Authority: operator, 2026-10-30, *"A"* (§ Rulings of 2026-10-30).
+- `open` **due by a named event** — four process edges have no ledger witness: session exit (the
+  handoff is a file only; holder H), R&D open and sign-off (`rnd-discipline.md` § Ledger events,
+  ruled 2026-09-16, not built; holder assigned when specified), design acceptance (`adr_created`
+  only; holder D) and chore run and validate (a file under `.gzkit/chores/`; holder M). Handed at
+  the handback to each owning outcome. Revisit: when the three-level brief is specified. Intake's
+  edge blocks return to service and is RO-11's. Authority: operator, 2026-10-30, *"A"*
+  (§ Rulings of 2026-10-30).
 
 ### RO-1 — measuring the cut
 
