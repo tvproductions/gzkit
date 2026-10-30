@@ -467,6 +467,13 @@ ruling"*.
   Operator, verbatim: *"A"*. The second case, ADR-0.0.2, 0.0.71 and 0.0.74 (Completed, every OBPI
   attested, closeout ready while `gz closeout` is re-keyed to the Release Package under RO-4),
   remains for its own question.
+- **Completed legacy ADRs finish with their delivery standing as legacy evidence, with no
+  closeout** (legacy migration, second case). ADR-0.0.2 (5 of 5), ADR-0.0.71 (2 of 2) and
+  ADR-0.0.74 (19 of 19) are Completed and closeout-ready, and an ADR now carries only a decision
+  status (decision 9). Put to the operator: A, the attested OBPIs are the delivery record, carried
+  through the alias layer as legacy evidence, each ADR's status mapping to *accepted*, no
+  ADR-keyed closeout run and the legacy verb not kept past RO-4; B, the old closeout first; C,
+  carried in as outcomes and validated through the new Gate 5. Operator, verbatim: *"A"*.
 
 Gate 5. The ledger rule. The operator-PII rule. The Prime Directive. TOPMOST remains `ADR-0.35.0`
 until RO-8 disposes of it; the drydock works inside the campaign, which sequences what follows.
