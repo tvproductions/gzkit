@@ -420,6 +420,15 @@ ruling"*.
   [requirements model](ieee/requirements-model.md)'s records table and decision 2 are corrected the
   same day. Open for the specification: where capability records are stored and the schema change
   that tightens the code pattern.
+- **Gate 5 is attested once, at the work package's close, and that close moves the outcome** (the
+  redraw's third question, catalog to work package). R2 (2026-10-17) put Gate 5 per work package,
+  the requirements model (2026-10-18) per outcome, and RO-5 ruling 5 did both; with one work package
+  per outcome they collide only when an outcome takes more than one package. Put to the operator: A,
+  one attestation recorded on the package emits both events (proceed validates the outcome,
+  redirect reopens it under a new package, pause defers it, terminate withdraws it), R2's release
+  attestation on top; B, on the outcome only; C, both separately. Operator, verbatim: *"A"*. The
+  [requirements model](ieee/requirements-model.md)'s outcome lifecycle and maxim-17 row are
+  corrected the same day; R2's wording above stands as the record of its day.
 
 Gate 5. The ledger rule. The operator-PII rule. The Prime Directive. TOPMOST remains `ADR-0.35.0`
 until RO-8 disposes of it; the drydock works inside the campaign, which sequences what follows.

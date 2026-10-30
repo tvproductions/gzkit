@@ -76,7 +76,9 @@ this split: its ROADMAP is the catalog, its BACKLOG is the ledger.
 with the side states `blocked` and `deferred`. Each transition needs a named ledger event as its
 evidence. `verified` means every member REQ is SATISFIED at its current revision and review findings
 are resolved. Only a Gate 5 human attestation on the outcome, made after reading the inspector's
-report, moves `verified` to `validated`. `released` comes from the ledger release record.
+report, moves `verified` to `validated`. It is one act, recorded at the close of the outcome's work
+package, and that close moves the outcome (operator ruling 2026-10-29, *"A"*; the drydock
+contract's § Rulings of 2026-10-29). `released` comes from the ledger release record.
 
 **Each REQ carries proof only** (amended from "binary" after the operator's direction to learn from
 Backplane): `SATISFIED`, `UNSATISFIED` or `UNKNOWN`. Missing evidence is `UNKNOWN`, never a pass and
@@ -187,7 +189,7 @@ insight record. Maxims and concepts are the note's numbering.
 | The REQ as trace key | maxim 5 | Baseline and forward rule: RO-2 records the before-figures (361 of 736 test files carry `@covers`; 731 REQs have no test; 1,340 of 19,241 ledger events name a REQ); every new delivery event names its REQ or outcome; nothing legacy is backfilled |
 | The safe-mode entry record | maxim 14 | The safe-mode entry event records the contract's content hash, its suspended list and its exit conditions; a contract edit while a session is open books a contract-amended event |
 | Tampering | maxim 13 | RO-1 and RO-7 classify each cut candidate as common or special cause from its recorded provenance; special-cause clauses move to rationale records. A single failure is recorded as an insight and becomes a rule only on recurrence: a proposal cites at least the threshold of insight or GHI records of one class (3, in `data/recurrence_threshold.json`; operator: *"3 occurrences (Rec.)"*, *"Cited records (Rec.)"*), every pair at least one session lease apart by full timestamp (*"One lease apart (Rec.)"*), checked by `gz insights recurrence` |
-| The operator's variety | maxim 17 | The operator initiates a work package, not each slice; Gate 5 sits per outcome; the passage log carries the baseline of human acts per delivered outcome |
+| The operator's variety | maxim 17 | The operator initiates a work package, not each slice; Gate 5 sits per outcome, attested once at its work package's close; the passage log carries the baseline of human acts per delivered outcome |
 | Acceptance criteria | maxim 8 | A REQ carries a statement (effect and rationale) and one or more pass/fail criteria (state or input → required outcome → evidence), on the `ghi-close` closure-contract precedent; proof binds to the criteria |
 | Done drift | maxim 2 | Agents may draft REQs before freeze; after freeze the catalog verb refuses an edit to a baselined REQ except a reopening carrying the operator's words and attestor, which opens a new work package and resets that REQ's proof |
 | REQ quality | protocol step 1 | Before freeze, the independent reviewer checks each baselined REQ against BABOK's nine criteria and returns failures by name, never rewriting; the validator checks only *testable* and *atomic*; *prioritized* is met at package level |
