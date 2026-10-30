@@ -689,6 +689,32 @@ The general-arrangement redraw continues with its remaining components.
   the allowed values of `source`, and that a special witness flight was ceremony on ceremony, and
   recommended C. Operator, verbatim: *"yes, it is just admitting/registering a new requirement into
   the requirements catalog, nothing more."* RO-11's row is amended the same day.
+- **Admission is on the operator's word, separate from work selection.** Operator, verbatim:
+  *"yes, admission is on my word. we would create pool ADRs as a way to capture intent on future
+  features and requirements where the ADR was a convenient bundle of cohered and aligned
+  features/requirements that served an aligned purpose."*
+- **The four records, locked as the broader model, with stand-in names** (the operator's pause in
+  RO-11's review). The operator, verbatim: *"the release package is the shoppomg cart, the
+  requirements catalog is the items and sone items come in packs/kits of the feature bundle items.
+  I am struggling to find the containers for these things, which is why we are in drydock. the ADR
+  + OBPI system was failing. The OBPI, was NOT failing, at all actually, but placing them in ADRS,
+  and pegging a release to that ADR was."* The agent drafted the four; the operator, verbatim:
+  *"yes, those are the four"*. They are: (1) the **catalog item**, an outcome and its REQs, filed by
+  product responsibility, admitted on the operator's word, naming its source; (2) the
+  **feature/value bundle**, a named set of requirements with the bounded story of why they belong
+  together and the value they bring when realized together, with no version, release or order, able
+  to wait in a pool; (3) the **work package**, the OBPI's essence carried forward, one outcome
+  delivered against a frozen baseline through task cards and closed by Gate 5; (4) the **release
+  package**, the shopping cart for one order, holding bundles whole or in part, loose items and
+  whatever the release needs (corrections, scaffolds, shims, prerequisites), alone driving the next
+  minor release and carrying the version. The ADR stays a decision record outside the four. Left
+  open for R&D: the names; whether a bundle holds only admitted items; whether an item may sit in
+  more than one bundle; how a bundle's promised value is checked against what landed; how
+  prerequisites relate to the bundle that needs them; the pool's form for bundles. The operator
+  directs: map the four to what gzkit used to have, then re-enter R&D with all four to find how they
+  form a system, searching the literature for well-known shapes and keeping to first principles
+  where none fits. The bundle has no record in § The general arrangement yet; that is the R&D's
+  finding to dispose.
 
 ## Superseded on 2026-10-30 (record, not binding)
 
