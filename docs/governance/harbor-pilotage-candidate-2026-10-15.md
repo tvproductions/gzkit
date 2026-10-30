@@ -83,46 +83,49 @@ GitHub issues under the repair tagging scheme, each issue in exactly one package
 
 ![gzkit general arrangement, 2026-10-17](general-arrangement-2026-10-17.svg)
 
-Redrawn 2026-10-17 from § Entry of the 2026-10-15 text and the operator's rulings of that day; the
-pilot's original drawing of 2026-10-15 was made outside this repository and is not recoverable.
-Verified from first principles the same day (§ Rulings of 2026-10-17). The bands, top to bottom:
+Redrawn 2026-10-30 as the one clear description of the replacement for the ADR-to-OBPI process
+(§ Rulings of 2026-10-29, exit item 11), from the rulings of 2026-10-17, the
+[requirements model](ieee/requirements-model.md) of 2026-10-18 and the rulings of 2026-10-29 and
+2026-10-30; the requirements model is its detail. The drawing above is the 2026-10-17 one until the
+redraw's drawing lands, and where they differ this text governs. The 2026-10-17 text is kept as
+record under § Superseded on 2026-10-30.
 
-| Band | Carrier | Holds | Relation downward |
+### The records, by band
+
+| Band | Record | Holds | Ruled by |
 |---|---|---|---|
-| Product intent | PRD | functional requirements (`FR-nnn`) and non-functional requirements (§7 quality attributes) | families trace to an FR or a quality attribute |
-| The product's truth, and decisions, as peers | Requirements catalog, beside the ADR | Catalog: families, capabilities and outcomes, typed functional or non-functional; REQs, each a member of one outcome (its contract), carrying its revision history and its legacy id as an alias, its proof held in the ledger; Gherkin feature files prove functional REQs where there is a user (the `gz` CLI). ADR: a decision and its rationale, made only where a decision is needed; it lands contracts on the REQs it touches and carries no version and no release. The REQ–ADR link is two-way for those REQs. Not every requirement or feature needs an ADR | a work package is cut from the catalog directly in the ordinary case, or from an ADR where one exists |
-| Labor | Work package, then task cards | a work package selects the REQs sharing one contract, from the catalog or from an ADR, and always names its REQs; a task card is the increment: one commit, one trailer, one commit-grain witness citing the REQ | the Release Package ships work packages; the release record carries the task cards' witnesses |
-| Version | Release Package, and the ledger release record | the Release Package (planned, in-flight, released) selects the outcomes and repair packages that ship; the version lives here. The ledger release record says what actually shipped. The campaign sequences releases; a Release Package says what one release contains | — |
+| Product intent | PRD | the functional (`FR-nnn`) and non-functional (§ 7) requirements; parent of the families; drives the major version | requirements model, records table and § PRD dispositions |
+| The product's truth | Family `H`, capability `H1`, outcome `H1.4` | exactly three levels; a capability groups outcomes and never carries work; an outcome is one reviewable deliverable with its statement, owner, `user_facing`, `governed_by`, `depends_on`, its `source` (the door it came through and the record behind it) and its `modules` (the code paths it owns: its contract) | rulings of 2026-10-29 (three levels, the source) and 2026-10-30 (the contract) |
+| The product's truth | REQ, `REQ-<n>` | one atomic obligation, a member of one outcome (`member_of`), with its statement, criteria, kind and revision; its proof (`SATISFIED`, `UNSATISFIED`, `UNKNOWN`) lives only in the ledger, bound to its revision and commit | requirements model, decisions 2 and 4 |
+| The product's truth | Feature file | a user-facing outcome's behaviour, tagged with the outcome's code, each scenario tagged with the REQ it proves | requirements model, decision 10 |
+| Decisions, peer of the catalog | ADR | one architecture decision and its status; no version, checklist or work; an accepted ADR's consequence enters the catalog as a queued outcome governed by it | requirements model, decision 9; rulings of 2026-10-29 (the fifth door) |
+| Labor | Work package, `WP-<NN>-<slug>` | `kind: delivery`, delivering exactly one outcome, or `kind: repair`, naming one or more GitHub issues; a frozen REQ baseline; closes by the 100% rule, through one Gate 5 attestation at its close, which moves the outcome | requirements model § 6; RO-5 rulings 1 and 2; rulings of 2026-10-29 (Gate 5) |
+| Labor | Task card, `TASK-…` | one commit, one trailer, the REQ ids it drives | requirements model, records table |
+| Version | Release Package | the version, planned in outcomes and repair packages; the lowest-version open package is worked first | rulings of 2026-10-29 (members, work selection) |
+| Version | `release_recorded` | what shipped: the closed work packages and issues that delivered the package's members | rulings of 2026-10-29 (members) |
+| The record | Ledger | every transition, proof result, freeze, attestation and release record | `docs/governance/state-doctrine.md` |
+| Views | the backlog board, the work package log | Layer 3, composed from the catalog, the packages and the ledger; never edited | requirements model, records table; decision B11 |
 
-The rails: the control plane reads the contract (the airlock derives its slice from the contract's
-modules; GHIs and MX visits classify by the contract they repair; eval checks module design
-against module code; every control names the contract it protects; every surface an agent loads
-is within a witnessed budget; the ledger is the record and the human attests). Maintenance mode is
-standing (the hangar, the chores, the patch releases; GHIs carry repair and refactor work, never
-feature or requirements work); safe mode is an occasional flip inside it; a drydock is one session
-of safe mode holding repair orders.
+### How work moves
 
-**Amended 2026-10-30.** The contract the rails read is the outcome (§ Rulings of 2026-10-30):
-the airlock derives its slice from the outcome's `modules`, GHIs and MX visits classify by the
-outcome they repair, eval checks an outcome's declared `modules` against the code, and every
-control names the outcome it protects.
+An obligation enters the catalog through one of five doors, each named as the outcome's source: a
+pool entry pulled (an intention until then), an R&D disposition at sign-off, a deferred finding
+handed to its owning outcome at the handback, the operator's word, and an accepted ADR. It enters
+as a queued outcome. Work selection takes the lowest-version open Release Package; a member is
+ready when its `depends_on` edges are met, and the operator's pull order recorded on the package
+orders the ready members. A delivery work package is cut for one outcome, its REQ baseline frozen,
+and commenced; it enters through the airlock, which derives its slice from the outcome's
+`modules`; its task cards land one commit each; it closes through Gate 5, which moves the outcome
+to `validated`, and `release_recorded` moves it to `released`. A repair runs the same lifecycle as
+a repair work package: its GitHub issues are resolved by the fix SHA and closed by a review, and the
+close of the last issue never closes the package, which closes only through Gate 5. Legacy
+identifiers are frozen and resolve through the alias layer; Completed legacy ADRs stand as legacy
+evidence, unstarted ones as decision records, and ADR-0.35.0's twenty items enter as the 0.35.0
+Release Package at civil rule.
 
-There is no bounded-advance document. The outcome groups the requirements and the Release
-Package selects the outcomes that ship together, so which work packages advance an outcome
-together is a query over those records.
+### The processes and their edges
 
-**Amended 2026-10-18.** The operator ruled [the requirements model](ieee/requirements-model.md):
-a work package delivers exactly one outcome (an outcome's REQs are those sharing its contract), and
-the Release Package selects outcomes, not REQ states. Where the table above says otherwise, that
-model governs. The engineering-order rung of the 2026-10-05 ladder is
-retired (operator, verbatim: *"A, no separate document — retire the engineering order rung"*);
-the ladder's other rungs stand, and identifiers still migrate at 1.0 with aliases before it.
-
-Every arrow is realizable by a stored field on one condition the as-built tree violates: REQ
-identity independent of the ADR and the work package. Today the ADR's semver is embedded in every
-REQ, TASK and OBPI id, so the drawing is a target until that seam lands (RO-2).
-
-**The processes and their edges** (ruled 2026-10-30, § Rulings of 2026-10-30). A strategic,
+Ruled 2026-10-30 (§ Rulings of 2026-10-30). A strategic,
 operational and tactical brief is known at every major state change; those changes are the edges
 below, and the session's two edges are the handoff's bookends. Transit (`airlock_in`,
 `airlock_out`) is not a process here: it is a gate the work-package and maintenance arrows pass
@@ -143,6 +146,31 @@ through, its own subject under the three-subjects ruling. The witness column is 
 
 The five edges with no witness are findings raised after the induction freeze and take its
 return-to-service grading.
+
+### The rails
+
+The control plane reads the outcome as the contract: the airlock derives its slice from the
+outcome's `modules`; GHIs and MX visits classify by the outcome they repair; eval checks an
+outcome's declared `modules` against the code; every control names the outcome it protects; every
+surface an agent loads is within a witnessed budget; the ledger is the record and the human
+attests. Maintenance mode is standing (the hangar, the chores, the patch releases; GitHub issues
+carry repair and refactor work, never feature or requirements work); safe mode is an occasional
+flip inside it; a drydock is one session of safe mode holding repair orders, each a repair work
+package. There is no bounded-advance document: which work packages advance an outcome together is
+a query over the outcome, its packages and the Release Package.
+
+### What the as-built tree still lacks
+
+A record of 2026-10-30. Landed: the identity seam (RO-2, closed 2026-10-19), so no arrow above
+waits on identity any longer; the catalog store with its eleven families and no outcome or REQ,
+witnessed by `gz validate --catalog` (RO-3); the work-package store and the `gz wp` verbs, flown
+once end to end with `WP-01-astral-toolchain` (RO-5). Not landed: intake and any verb that authors
+an outcome or a REQ (RO-11); a production writer of `outcome_transitioned` and `req_proof_recorded`,
+whose only caller is the producer probe; a work package's close moving its outcome; capability
+records and the tightened outcome code; the outcome's `source` and `modules` fields; the airlock
+reading the outcome, since `gz airlock in` still targets an OBPI brief; the Release Package store,
+`release_recorded` and `gz closeout` keyed to the package (RO-4); and the five unwitnessed edges
+above.
 
 ## What is suspended, and what is not
 
@@ -558,6 +586,57 @@ The general-arrangement redraw continues with its remaining components.
   transit drawn as a gate the work-package and maintenance arrows pass through; B, the operator's
   seven of 2026-10-29, intake and release drawn as arrows; C, the nine with transit a tenth.
   Operator, verbatim: *"a"*. The edge table is written under § The general arrangement.
+- **The general arrangement is rewritten in place as one current description** (step 3 of the
+  redraw). Put to the operator: A, rewrite § The general arrangement as one description (the
+  records by band, how work moves, the processes and their edges, the rails, what the as-built tree
+  still lacks), each claim citing its ruling, with the 2026-10-17 text moved verbatim into
+  § Superseded on 2026-10-30; B, rewrite and drop the old text; C, add the new description above
+  the old. Operator, verbatim: *"A"*. The drawing is put to the operator separately.
+
+## Superseded on 2026-10-30 (record, not binding)
+
+§ The general arrangement as it stood before the redraw of 2026-10-30, kept verbatim (operator,
+verbatim: *"A"*; § Rulings of 2026-10-30). The terms in its table were repaired earlier the same
+day (§ Rulings of 2026-10-30, the catalog empty at the handback).
+
+Redrawn 2026-10-17 from § Entry of the 2026-10-15 text and the operator's rulings of that day; the
+pilot's original drawing of 2026-10-15 was made outside this repository and is not recoverable.
+Verified from first principles the same day (§ Rulings of 2026-10-17). The bands, top to bottom:
+
+| Band | Carrier | Holds | Relation downward |
+|---|---|---|---|
+| Product intent | PRD | functional requirements (`FR-nnn`) and non-functional requirements (§7 quality attributes) | families trace to an FR or a quality attribute |
+| The product's truth, and decisions, as peers | Requirements catalog, beside the ADR | Catalog: families, capabilities and outcomes, typed functional or non-functional; REQs, each a member of one outcome (its contract), carrying its revision history and its legacy id as an alias, its proof held in the ledger; Gherkin feature files prove functional REQs where there is a user (the `gz` CLI). ADR: a decision and its rationale, made only where a decision is needed; it lands contracts on the REQs it touches and carries no version and no release. The REQ–ADR link is two-way for those REQs. Not every requirement or feature needs an ADR | a work package is cut from the catalog directly in the ordinary case, or from an ADR where one exists |
+| Labor | Work package, then task cards | a work package selects the REQs sharing one contract, from the catalog or from an ADR, and always names its REQs; a task card is the increment: one commit, one trailer, one commit-grain witness citing the REQ | the Release Package ships work packages; the release record carries the task cards' witnesses |
+| Version | Release Package, and the ledger release record | the Release Package (planned, in-flight, released) selects the outcomes and repair packages that ship; the version lives here. The ledger release record says what actually shipped. The campaign sequences releases; a Release Package says what one release contains | — |
+
+The rails: the control plane reads the contract (the airlock derives its slice from the contract's
+modules; GHIs and MX visits classify by the contract they repair; eval checks module design
+against module code; every control names the contract it protects; every surface an agent loads
+is within a witnessed budget; the ledger is the record and the human attests). Maintenance mode is
+standing (the hangar, the chores, the patch releases; GHIs carry repair and refactor work, never
+feature or requirements work); safe mode is an occasional flip inside it; a drydock is one session
+of safe mode holding repair orders.
+
+**Amended 2026-10-30.** The contract the rails read is the outcome (§ Rulings of 2026-10-30):
+the airlock derives its slice from the outcome's `modules`, GHIs and MX visits classify by the
+outcome they repair, eval checks an outcome's declared `modules` against the code, and every
+control names the outcome it protects.
+
+There is no bounded-advance document. The outcome groups the requirements and the Release
+Package selects the outcomes that ship together, so which work packages advance an outcome
+together is a query over those records.
+
+**Amended 2026-10-18.** The operator ruled [the requirements model](ieee/requirements-model.md):
+a work package delivers exactly one outcome (an outcome's REQs are those sharing its contract), and
+the Release Package selects outcomes, not REQ states. Where the table above says otherwise, that
+model governs. The engineering-order rung of the 2026-10-05 ladder is
+retired (operator, verbatim: *"A, no separate document — retire the engineering order rung"*);
+the ladder's other rungs stand, and identifiers still migrate at 1.0 with aliases before it.
+
+Every arrow is realizable by a stored field on one condition the as-built tree violates: REQ
+identity independent of the ADR and the work package. Today the ADR's semver is embedded in every
+REQ, TASK and OBPI id, so the drawing is a target until that seam lands (RO-2).
 
 ## Superseded on 2026-10-17 (record, not binding)
 

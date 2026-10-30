@@ -388,7 +388,8 @@ Nothing below is changed by this document; each is a coupled surface the adoptio
 
 - `AGENTS.md` § Gate Covenant: lane wording moves from the ADR to the outcome (decision 10).
 - [The general arrangement](../harbor-pilotage-candidate-2026-10-15.md#the-general-arrangement): its
-  work-package and Release Package cells (amended there 2026-10-18 by pointer to this document).
+  work-package and Release Package cells (amended there 2026-10-18 by pointer to this document;
+  rewritten there 2026-10-30 as one description with this model as its detail).
 - The identifier migration program's work-package row (amended there 2026-10-18).
 - `docs/governance/GovZero/adr-lifecycle.md`, its own identifier scheme (already flagged by the
   identifier program's phase 0).
