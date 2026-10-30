@@ -244,7 +244,13 @@ markdown_extensions:
   - tables
   - admonition
   - pymdownx.details
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      # Mermaid drawings render in the reader's browser through Material; no
+      # Node toolchain (operator ruling 2026-10-30, the general arrangement).
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.highlight:
       anchor_linenums: true
       # auto_title ensures `title` is always a string. Without it,

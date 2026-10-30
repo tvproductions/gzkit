@@ -81,14 +81,67 @@ GitHub issues under the repair tagging scheme, each issue in exactly one package
 
 ## The general arrangement
 
-![gzkit general arrangement, 2026-10-17](general-arrangement-2026-10-17.svg)
+```mermaid
+flowchart TB
+  subgraph intent["Product intent"]
+    PRD["PRD: FRs and § 7 attributes"]
+  end
+  subgraph truth["The product's truth: the catalog"]
+    FAM["Family H"] --> CAP["Capability H1<br/>never carries work"] --> OUT["Outcome H1.4<br/>source, modules (its contract)"]
+    OUT --- REQ["REQ-n<br/>proof lives in the ledger"]
+    OUT -.- FEAT["Feature file @H1.4<br/>user-facing only"]
+  end
+  ADR["ADR: decision record, peer of the catalog"]
+  subgraph doors["Intake: five doors"]
+    D1["Pool entry pulled"]
+    D2["R&D sign-off"]
+    D3["Deferred finding at handback"]
+    D4["Operator's word"]
+    D5["Accepted ADR"]
+  end
+  subgraph labor["Labor"]
+    WPD["Delivery work package<br/>one outcome, frozen baseline"]
+    WPR["Repair work package<br/>one or more issues"]
+    TASK["Task cards<br/>one commit each"]
+  end
+  subgraph version["Version"]
+    RP["Release Package<br/>plans outcomes and repair packages"]
+    RR["release_recorded<br/>the closed packages and issues"]
+  end
+  subgraph standing["Standing processes"]
+    SES["Session: the handoff's bookends"]
+    MODE["Mode: normal, hangar, drydock"]
+    CHO["Chores"]
+  end
+  GHI["GitHub issue: a squawk"]
+  AIR{{"Airlock: transit gate, slice from modules"}}
+  PRD --> FAM
+  D1 --> OUT
+  D2 --> OUT
+  D3 --> OUT
+  D4 --> OUT
+  D5 --> OUT
+  ADR --> D5
+  ADR -. governed_by .-> OUT
+  RP -- selects ready members --> OUT
+  OUT -- cut, frozen, commenced --> AIR
+  GHI --> AIR
+  AIR -- delivery --> WPD
+  AIR -- repair --> WPR
+  WPD --> TASK
+  WPR --> TASK
+  WPD -- Gate 5 at close, outcome validated --> RR
+  WPR -- Gate 5 at close --> RR
+  RP -- ships as --> RR
+```
+
 
 Redrawn 2026-10-30 as the one clear description of the replacement for the ADR-to-OBPI process
 (§ Rulings of 2026-10-29, exit item 11), from the rulings of 2026-10-17, the
 [requirements model](ieee/requirements-model.md) of 2026-10-18 and the rulings of 2026-10-29 and
-2026-10-30; the requirements model is its detail. The drawing above is the 2026-10-17 one until the
-redraw's drawing lands, and where they differ this text governs. The 2026-10-17 text is kept as
-record under § Superseded on 2026-10-30.
+2026-10-30; the requirements model is its detail. The drawing is the Mermaid source above, its
+one authority, rendered in the reader's browser. The 2026-10-17 text and drawing are kept as record
+under § Superseded on 2026-10-30.
 
 ### The records, by band
 
@@ -592,12 +645,23 @@ The general-arrangement redraw continues with its remaining components.
   still lacks), each claim citing its ruling, with the 2026-10-17 text moved verbatim into
   § Superseded on 2026-10-30; B, rewrite and drop the old text; C, add the new description above
   the old. Operator, verbatim: *"A"*. The drawing is put to the operator separately.
+- **The drawing is Mermaid source in the page, with no Node** (step 3 of the redraw, the drawing).
+  Put to the operator: A, a new hand-authored SVG; B, Mermaid source in the repo as the authority,
+  rendered in the docs; C, Mermaid source rendered to a committed SVG with `mermaid-cli`. Operator,
+  verbatim: *"why not both? mermaid + derived/rendered svg?"*; then, on how a rendered SVG stays in
+  step with its source: *"no node, python only. option B. again no node,"*. Read as the first
+  question's B: the Mermaid block is the drawing's one authority, rendered in the reader's browser
+  by Material through a `pymdownx.superfences` custom fence in `mkdocs.yml`; no Node toolchain and no
+  new Python dependency. No committed SVG is derived, since nothing in Python renders Mermaid; the
+  2026-10-17 SVG stays as record under § Superseded on 2026-10-30.
 
 ## Superseded on 2026-10-30 (record, not binding)
 
 § The general arrangement as it stood before the redraw of 2026-10-30, kept verbatim (operator,
 verbatim: *"A"*; § Rulings of 2026-10-30). The terms in its table were repaired earlier the same
 day (§ Rulings of 2026-10-30, the catalog empty at the handback).
+
+![gzkit general arrangement, 2026-10-17](general-arrangement-2026-10-17.svg)
 
 Redrawn 2026-10-17 from § Entry of the 2026-10-15 text and the operator's rulings of that day; the
 pilot's original drawing of 2026-10-15 was made outside this repository and is not recoverable.
