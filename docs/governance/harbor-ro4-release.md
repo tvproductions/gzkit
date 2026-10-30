@@ -16,21 +16,21 @@
 
 1. **A Release Package lives in `data/catalog/releases.json`, edited only through `gz` verbs** (selection *"A"*) that book each membership change to the ledger. This amends the contract's § The Release Package, which named one Markdown document per version under `docs/design/releases/`.
 
-2. **One `release_recorded` event for every release** (selection *"A"*): the version, its Release Package members and the R2 release attestation. Past `patch_release_event` rows stay as history, read as the same claim; none are written after.
+2. **One `release_recorded` event for every release** (selection *"A"*): the version, its Release Package members, the closed work packages and issues that delivered them (amended 2026-10-29, ruling 6) and the R2 release attestation. Past `patch_release_event` rows stay as history, read as the same claim; none are written after.
 3. **`gz closeout` is keyed to a Release Package, settled by the row** (*"`gz closeout` keyed to a Release Package"*, witness *"a dry-run closeout keyed to an empty Release Package"*): `gz closeout <version>` is the release ceremony, ending in `release_recorded`; per-package Gate 5 lives in the work-package close (RO-5 ruling 5); the `gz-release` skill drives it and subsumes `gz-patch-release` (R3).
 
 <!-- gz-validate-skip: command-shape -->
 4. **The version is the operator's, with a floor and a recommendation** (operator: *"A & C together"*): the operator sets it on the Release Package; the verb refuses a number below what the members require (any delivery outcome needs at least a minor bump; only `runtime`-eligible repairs allow a patch); `gz release pressure` recommends. This replaces `check_version_sync`'s ADR-derived target. **Semver rule** (operator, verbatim: *"release packages drive semver and semver rules. prd drives major, release package drives minor, ghi pressure drives patch. confirm."*): a major bump requires a PRD version change and nothing else allows one (as `GovZero/releases/README.md:41` already holds); a minor bump is a Release Package of delivery work; a patch is driven by GHI pressure over `runtime` repairs. `gz release pressure` reads GHIs and recommends a patch only (operator, verbatim: *"let the gz pressure tool work with ghis for patch..."*); a minor comes from a Release Package and a major from the PRD, neither from the pressure reading.
 5. **RO-4 carries GHI #1248**, the pressure verb and its data file included, as a consequence of ruling 4 (and RO-5 ruling 2: a repair order carries its issues).
 
-6. **Members are work packages and their issues** (selection *"A"*): delivery and repair packages; legacy ADR work is not a member and is not backfilled. **Flagged for review:** RO-8 ruling 1 makes the 0.35.0 Release Package *"the sum of that adr's obpis"*, attested ones included; the operator will reconcile the two when reviewing requirements and Release Packages *"VERY CAREFULLY"*.
-7. **The `release_package.md` template retires, settled by rulings 1 and 6:** the package is a catalog record, not a document, and its members are packages, not REQ states (model § 7).
+6. **Members are work packages and their issues** (selection *"A"*; *amended 2026-10-29*: the plan's members are outcomes and repair packages, and `release_recorded` names the closed work packages and issues that delivered them, operator *"a"*, the contract's § Rulings of 2026-10-29): delivery and repair packages; legacy ADR work is not a member and is not backfilled. **Flagged for review:** RO-8 ruling 1 makes the 0.35.0 Release Package *"the sum of that adr's obpis"*, attested ones included; the operator will reconcile the two when reviewing requirements and Release Packages *"VERY CAREFULLY"*.
+7. **The `release_package.md` template retires, settled by rulings 1 and 6:** the package is a catalog record, not a document, and its members are outcomes and repair packages, not REQ states (model § 7; amended 2026-10-29).
 
 ## Tranches (for the contractor)
 
 The contractor stops and waits on every structural question; the names of new verbs and events are among them.
 
-1. **Store and events.** `data/catalog/releases.json` and its schema (version, members, state); the membership verb booking each change to the ledger; `release_recorded` (ruling 2) with the version, members and release attestation.
+1. **Store and events.** `data/catalog/releases.json` and its schema (version, members as outcomes and repair packages, state); the membership verb booking each change to the ledger; `release_recorded` (ruling 2) with the version, the closed work packages and issues that delivered the members, and the release attestation.
 <!-- gz-validate-skip: command-shape -->
 2. **Version.** `version_sync` stops deriving from the ADR id (`version_sync.py:18`, Q-08) and `closeout.py:557-563` stops bumping from it; the floor rule (ruling 4); `gz release pressure` and its data file (GHI #1248).
 3. **Closeout.** `gz closeout <version>` (ruling 3), its dry run against an empty Release Package, the release attestation (R2), ending in `release_recorded`.

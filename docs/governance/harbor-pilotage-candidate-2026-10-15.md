@@ -429,6 +429,16 @@ ruling"*.
   attestation on top; B, on the outcome only; C, both separately. Operator, verbatim: *"A"*. The
   [requirements model](ieee/requirements-model.md)'s outcome lifecycle and maxim-17 row are
   corrected the same day; R2's wording above stands as the record of its day.
+- **A Release Package plans in outcomes and ships in packages** (the redraw's fourth question,
+  release). The requirements model's § 7 and FR-017 made members outcomes; RO-4 ruling 6 made them
+  work packages and their issues, flagged for the operator's careful review. Put to the operator:
+  A, the Release Package (the plan) holds outcomes and repair packages, and `release_recorded` (the
+  shipped claim) names the closed work packages and issues that delivered them, each record at its
+  own layer as R3 splits them; B, work packages and their issues only; C, outcomes only. Operator,
+  verbatim: *"a"*. The [requirements model](ieee/requirements-model.md)'s § 7 and the
+  [RO-4 specification](harbor-ro4-release.md)'s rulings 2, 6 and 7 and tranche 1 are amended the
+  same day. The 0.35.0 Release Package's membership (RO-4 ruling 6 against RO-8 ruling 1) remains
+  for its own question.
 
 Gate 5. The ledger rule. The operator-PII rule. The Prime Directive. TOPMOST remains `ADR-0.35.0`
 until RO-8 disposes of it; the drydock works inside the campaign, which sequences what follows.

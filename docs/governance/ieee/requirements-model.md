@@ -116,7 +116,10 @@ release target is Release Package membership, mutable through a `gz` verb that b
 a slip changes membership and nothing else. `released_in` derives from the ledger release record and
 never changes. FDAU's `candidate_release` is therefore not a field on the outcome; the Release
 Package holds it once. The Release Package says which **outcomes** advance in a version, replacing
-the earlier "which REQ states advance".
+the earlier "which REQ states advance". Its members are those outcomes and the repair packages a version
+carries; the ledger release record, the shipped claim, names the closed work packages and issues
+that delivered them (operator ruling 2026-10-29, *"a"*; the drydock contract's § Rulings of
+2026-10-29).
 
 ### 8. The Q-19 open points
 
