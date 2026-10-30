@@ -758,6 +758,14 @@ The general-arrangement redraw continues with its remaining components.
   feature package that mADR's story has no record to go to. Operator, verbatim: *"yes, it blocks;
   RO-4 owns it"*. RO-4's row and [its specification](harbor-ro4-release.md) take the change order
   the same day; the line is on § List of discrepancies under RO-4.
+- **Family codes are a fixed three letters** (RO-11's review, the code pattern). Canon held one
+  letter (requirements model's records table, RO-3's specification, `Family.code`), a limit of 26
+  families; the operator asked whether it must be one letter, and observed *"out legend would be
+  constrained to 26 families"*. Put to the operator: accept that limit and keep one letter, or move
+  to three letters now, while the catalog is empty and re-coding is free; the agent leaned to one
+  letter. Operator, verbatim: *"three"*. Three letters are fixed, not a maximum, so one code form
+  holds throughout. The eleven codes, the amendments to the model and RO-3's specification, and the
+  order that lands them follow from this ruling and are put separately.
 
 ## Superseded on 2026-10-30 (record, not binding)
 
