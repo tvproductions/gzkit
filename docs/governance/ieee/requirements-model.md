@@ -94,7 +94,11 @@ the catalog, validated to exist and to be acyclic. Readiness derives only from t
 from codes or list order. Pull order is a separate operator ruling recorded with the work or
 Release Package. The standing ruling that feature ADRs are worked "in ascending semver order" stays
 binding on legacy (m)ADR work until the operator retires it explicitly; nothing here retires it by
-inference.
+inference. *Retired explicitly 2026-10-29* (operator, verbatim: *"a"*; the drydock contract's
+§ Rulings of 2026-10-29): the lowest-version open Release Package is worked first; within it a
+member is ready only when its `depends_on` edges are met, and the order among ready members is the
+operator's pull order recorded on the package; work outside a Release Package is pulled only on
+the operator's word; the campaign names the package in flight.
 
 ### 6. Work package
 
