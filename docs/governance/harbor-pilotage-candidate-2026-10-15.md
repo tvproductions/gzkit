@@ -654,6 +654,11 @@ The general-arrangement redraw continues with its remaining components.
   by Material through a `pymdownx.superfences` custom fence in `mkdocs.yml`; no Node toolchain and no
   new Python dependency. No committed SVG is derived, since nothing in Python renders Mermaid; the
   2026-10-17 SVG stays as record under § Superseded on 2026-10-30.
+- **The three-level-brief finding is graded due by a named event** (step 4 of the redraw, under
+  the induction freeze). Put to the operator: A, due by a named event, held by a session-and-handoff
+  outcome in family M from the handback and specified before the first work package commences under
+  civil rule; B, blocking, worked under RO-0 by change order; C, blocking, worked under RO-12 by
+  change order. Operator, verbatim: *"A"*. The line is on § List of discrepancies under RO-0.
 
 ## Superseded on 2026-10-30 (record, not binding)
 
@@ -1136,6 +1141,12 @@ Each line is `open` until the restoration contractor clears it with the alarms o
 - `open` **reconnected** — the four pre-commit and pre-push alarm hooks still switched off (validator reachability, ledger vocabulary, the `gz check` pre-push gate, unittest) and the verifier pipe gate, switched off through `gzkit.mx.alarms` (`757ddea7e`), run at full strength at exit; the complexity ceiling and the cheap surface-fidelity subset were reconnected 2026-10-27 by operator correction; `tests.arb.test_unittest_runner_lockstep`'s two pinned-entry tests reconfigured to the wrapped entries. Authority: operator, 2026-10-25 (*"i don't want any long check at all"*).
 - `open` **restored** — the commit witness (`gz arb red --commit`) as a per-act record, after GHI #1268 is fixed and GHI #1269's acceptance rerun on `7b7ea83cd` is booked. Authority: same ruling.
 - `cleared` **restored** — `gz lint` clean on the code `757ddea7e` landed while the alarms were off: `src/gzkit/mx/alarms.py` carries TC003 (two annotation-only imports outside `TYPE_CHECKING`), DOC201 (two docstrings without a return), PLR2004 (a magic `3`) and T201 (two `print` calls), and `.claude/hooks/verifier-pipe-gate.py` carries two new PLC0415 lazy imports, from its generator template in `src/gzkit/hooks/scripts/`, none held in `data/ruff_baseline.json`. Found 2026-10-26 by `gz check` in flight on the radar routing; the hook fails until it is fixed. Authority: operator, 2026-10-25, *"leave things partially broken until the reconfiguration is complete"*. Cleared 2026-10-27 in the act that swept it, under the operator's correction of that day, verbatim: *"i think, even during repairs or contruction, somebody sweeps up the shop floor every night. The point is, it is too strivt to disable linting during safemode drydock/mx hangar. We are writing/changing code and that deserves"*.
+
+- `open` **due by a named event** — no strategic, operational and tactical brief is produced at the
+  major state changes, the entry and exit edges of § The processes and their edges (insight
+  `2026-10-29T08:00:30Z`, scope `handoff-picture`). Holder: a session-and-handoff outcome in family
+  M, handed over at the handback. Revisit: specified before the first work package commences under
+  civil rule (RO-8's acts 1 to 3). Authority: operator, 2026-10-30, *"A"* (§ Rulings of 2026-10-30).
 
 ### RO-1 — measuring the cut
 
