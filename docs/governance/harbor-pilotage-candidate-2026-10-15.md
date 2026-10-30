@@ -766,6 +766,14 @@ The general-arrangement redraw continues with its remaining components.
   letter. Operator, verbatim: *"three"*. Three letters are fixed, not a maximum, so one code form
   holds throughout. The eleven codes, the amendments to the model and RO-3's specification, and the
   order that lands them follow from this ruling and are put separately.
+- **The eleven family codes.** Put to the operator, replacing the legend's letters: `AIR` airlock
+  and entry (X), `SES` session continuity (H), `CTL` control surfaces and corpus (C), `MNT`
+  maintenance (M), `PKG` packaging and release (P), `DEC` decision records (D), `RQW` requirements
+  and work (R), `GAT` gates and verification (G), `ATT` attestation and closeout (A), `LED` ledger
+  and state (L), `QUA` quality attributes (Q). `REQ` was passed over for family R because `REQ1.4`
+  would sit beside catalog ids such as `REQ-1207`; `ADR`, `PRD` and `GHI` are avoided likewise.
+  Operator, verbatim: *"yes, those eleven"*. An outcome reads `SES1.4`. Dated records keep the
+  letters they were written with; the landing order is put separately.
 
 ## Superseded on 2026-10-30 (record, not binding)
 
