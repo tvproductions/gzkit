@@ -439,6 +439,16 @@ ruling"*.
   [RO-4 specification](harbor-ro4-release.md)'s rulings 2, 6 and 7 and tranche 1 are amended the
   same day. The 0.35.0 Release Package's membership (RO-4 ruling 6 against RO-8 ruling 1) remains
   for its own question.
+- **The 0.35.0 Release Package is the outcomes of all twenty items** (the careful review RO-8
+  ruling 1 called for). Version 0.35.0 is unreleased (`0.34.9` is current) and the eleven attested
+  OBPIs already landed on `main`, so their code ships in it. Put to the operator: A, all twenty
+  items' outcomes are members, the eleven attested entering the catalog with their attestations
+  carried as legacy evidence through the alias layer, not re-attested, the nine unfinished finished
+  as work packages, `release_recorded` naming the new packages and the legacy OBPI completions, and
+  RO-4's no-backfill rule standing with 0.35.0 its one exception; B, the nine unfinished only; C,
+  all twenty with the eleven re-proved. Operator, verbatim: *"A"*. The
+  [RO-8](harbor-ro8-in-flight-work.md) and [RO-4](harbor-ro4-release.md) specifications are
+  amended the same day.
 
 Gate 5. The ledger rule. The operator-PII rule. The Prime Directive. TOPMOST remains `ADR-0.35.0`
 until RO-8 disposes of it; the drydock works inside the campaign, which sequences what follows.
