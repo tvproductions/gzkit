@@ -143,7 +143,9 @@ An outcome links to zero or more governing ADRs (`governed_by`); not every outco
 (operator, 2026-10-17: *"I don't think that every requirements or feature necessitates an
 architectural design or decision record"*). An ADR carries only a decision status (proposed,
 accepted, superseded, with supersedes links): no checklist, no work packages, no release. Either the
-catalog or an ADR may originate a work package. Legacy ADR checklists and OBPIs stay as frozen
+catalog or an ADR may originate a work package; an ADR does it through an outcome, entering the
+catalog as a queued outcome whose source and `governed_by` are the ADR, which a work package then
+delivers (operator ruling 2026-10-29, *"A"*; the drydock contract's § Rulings of 2026-10-29). Legacy ADR checklists and OBPIs stay as frozen
 history behind the aliases.
 
 ### 10. BDD on user-facing outcomes

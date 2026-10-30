@@ -449,6 +449,14 @@ ruling"*.
   all twenty with the eleven re-proved. Operator, verbatim: *"A"*. The
   [RO-8](harbor-ro8-in-flight-work.md) and [RO-4](harbor-ro4-release.md) specifications are
   amended the same day.
+- **An ADR leads to work through an outcome, a fifth intake door** (the redraw's ADR and PRD
+  roles; the PRD's role was found already ruled: parent of the families, driver of the major
+  version). The requirements model's decision 9 let an ADR originate a work package, while a work
+  package delivers exactly one outcome and every outcome names its source. Put to the operator: A,
+  an accepted ADR's consequence enters the catalog as a queued outcome whose source and
+  `governed_by` are the ADR, and a work package delivers it; B, the outcome made at the package's
+  initiation; C, a package delivering the decision with no outcome. Operator, verbatim: *"A"*.
+  Decision 9 is reworded the same day.
 
 Gate 5. The ledger rule. The operator-PII rule. The Prime Directive. TOPMOST remains `ADR-0.35.0`
 until RO-8 disposes of it; the drydock works inside the campaign, which sequences what follows.
