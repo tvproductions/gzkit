@@ -97,7 +97,7 @@ def _session_is_open(project_root: Path, session_id: str) -> bool:
     bound = False
     try:
         text = project_root.joinpath(*_LEDGER_RELPATH).read_text(encoding="utf-8")
-    except OSError:
+    except OSError, ValueError:
         return False
     for line in text.splitlines():
         if session_id not in line or "mx_session_" not in line:

@@ -85,6 +85,16 @@ class TestBannerReadsTheCondition(unittest.TestCase):
             with self.subTest(banner=banner[:30]):
                 self.assertIn("SAFE MODE ACTIVE", banner)
 
+    def test_an_undecodable_ledger_reads_unbound_in_both(self):
+        hook = _load_hook_module()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            (root / ".gzkit").mkdir()
+            (root / ".gzkit" / "mx.json").write_text(self.SAFE, encoding="utf-8")
+            (root / ".gzkit" / "ledger.jsonl").write_bytes(b"\xff\xfe")
+            for banner in (awareness.get_banner(root), hook._banner_stdlib(str(root))):
+                self.assertIn("UNBOUND", banner)
+
     def test_no_marker_says_nothing(self):
         self.assertEqual(self._banners(None, [self.BOUND]), ("", ""))
 

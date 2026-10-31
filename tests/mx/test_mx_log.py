@@ -14,6 +14,7 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from gzkit.mx import log
 from gzkit.traceability import covers
 from tests.commands.common import SilencedConsoleTestCase, _isolated_git_env
 
@@ -195,6 +196,24 @@ class TestAssembleWindow(unittest.TestCase):
 # ---------------------------------------------------------------------------
 # REQ-06-02 (roll-up) + render.
 # ---------------------------------------------------------------------------
+class TestReopenedSessionWindow(unittest.TestCase):
+    """GHI #1273: the harness's session id survives a close, so the log reads the last span."""
+
+    def test_a_reopened_session_is_open_from_its_reopening(self) -> None:
+        spans = (
+            ("mx_session_opened", "2026-10-01T00:00:00+00:00"),
+            ("mx_session_closed", "2026-10-02T00:00:00+00:00"),
+            ("mx_session_opened", "2026-10-03T00:00:00+00:00"),
+        )
+        events = [{"event": kind, "session_id": "s", "ts": ts} for kind, ts in spans]
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            _write_ledger(root, events)
+            window = log.assemble_window(root, "s")
+        self.assertEqual(window.opened_at, spans[2][1])
+        self.assertIsNone(window.closed_at)
+
+
 class TestRender(unittest.TestCase):
     @covers("REQ-0.0.74-06-02")
     def test_render_names_window_and_artifacts(self) -> None:

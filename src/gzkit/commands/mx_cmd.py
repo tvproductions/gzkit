@@ -397,10 +397,6 @@ def mx_exit_cmd(
     and exits 3 if any guard is red. On all-green, writes the mx_session_closed
     ledger event, then removes the marker.
 
-    Raises:
-        OSError: When the guard run cannot start; the marker is put back first.
-        KeyboardInterrupt: When the run is interrupted; the marker is put back first.
-
     """
     if not attestor.strip():
         console.print("[red]ERROR:[/red] --attestor cannot be empty.")
@@ -425,33 +421,34 @@ def mx_exit_cmd(
     unheld = m.model_copy(update={"exiting": False})
     marker.write(m.model_copy(update={"exiting": True}), root)
 
+    # Whatever ends the run before the close is booked, the hold ends with it, so no
+    # interrupt or failure leaves the marker exiting (GHI #1273).
+    closed = False
     try:
-        exit_code = runner(root)
-    except OSError, KeyboardInterrupt:
-        marker.write(unheld, root)
-        raise
+        if runner(root) != 0:
+            console.print("[red]Guards reported failures. MX session remains open.[/red]")
+            sys.exit(3)
 
-    if exit_code != 0:
-        # Guards red — restore marker, hard refuse.
-        marker.write(unheld, root)
-        console.print("[red]Guards reported failures. MX session remains open.[/red]")
-        sys.exit(3)
+        # All-green — assemble the complete-by-construction MX log and render it for
+        # operator review BEFORE the close signature is taken (REQ-06-03). The log is
+        # derived from the ledger events + commits in the enter→exit window, so it
+        # cannot be hand-narrated or forgotten.
+        console.print(log.assemble_and_render(root, m.session_id))
 
-    # All-green — assemble the complete-by-construction MX log and render it for
-    # operator review BEFORE the close signature is taken (REQ-06-03). The log is
-    # derived from the ledger events + commits in the enter→exit window, so it
-    # cannot be hand-narrated or forgotten.
-    console.print(log.assemble_and_render(root, m.session_id))
+        # airlock-OUT fires (co-equal exit membrane, ADR-0.33.0) — ADDITIVE to the hard
+        # guard-gate above, never a replacement: it runs only after the guards pass,
+        # before the close signature. DIAGNOSTIC-ONLY (real-entry accounting deferred).
+        _run_mx_airlock_out_diagnostic(m.inspection_scope, root, reach_fn=_airlock_reach)
 
-    # airlock-OUT fires (co-equal exit membrane, ADR-0.33.0) — ADDITIVE to the hard
-    # guard-gate above, never a replacement: it runs only after the guards pass,
-    # before the close signature. DIAGNOSTIC-ONLY (real-entry accounting deferred).
-    _run_mx_airlock_out_diagnostic(m.inspection_scope, root, reach_fn=_airlock_reach)
+        # Signature: write mx_session_closed, then clear the marker. The close event
+        # lands first, so no window shows an open session with no marker (BI#4).
+        ledger = Ledger(root.joinpath(*_LEDGER_RELPATH))
+        ledger.append(_mx_session_closed_event(m.session_id, attestor.strip()))
+        closed = True
+    finally:
+        if not closed:
+            marker.write(unheld, root)
 
-    # Signature: write mx_session_closed, then clear the marker. The close event
-    # lands first, so no window shows an open session with no marker (BI#4).
-    ledger = Ledger(root.joinpath(*_LEDGER_RELPATH))
-    ledger.append(_mx_session_closed_event(m.session_id, attestor.strip()))
     marker_file.unlink(missing_ok=True)
 
     # Release the lock the matching enter claimed. Without this the hangar is

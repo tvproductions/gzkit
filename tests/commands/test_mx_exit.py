@@ -15,6 +15,7 @@ import json
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest import mock
 
 from gzkit.commands.mx_cmd import mx_exit_cmd
 from gzkit.mx import marker
@@ -151,6 +152,29 @@ class TestMxExitHardRefuseOnRed(SilencedConsoleTestCase):
             root = _mk_root_with_session(tmp)
             with self.assertRaises(KeyboardInterrupt):
                 mx_exit_cmd(attestor="tester", project_root=root, _run_guards=_interrupted)
+            self.assertTrue(marker.condition(root).on)
+
+    def test_a_failure_after_green_guards_leaves_the_marker_not_exiting(self) -> None:
+        for failure in (KeyboardInterrupt, ValueError):
+            with (
+                self.subTest(failure=failure.__name__),
+                TemporaryDirectory() as tmp,
+                mock.patch("gzkit.mx.log.assemble_and_render", side_effect=failure),
+            ):
+                root = _mk_root_with_session(tmp)
+                with self.assertRaises(failure):
+                    mx_exit_cmd(attestor="tester", project_root=root, _run_guards=_green_guard)
+                self.assertTrue(marker.condition(root).on)
+                self.assertEqual(_read_ledger_events(root, "mx_session_closed"), [])
+
+    def test_a_red_retry_cannot_restore_a_stuck_exiting_marker(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _mk_root_with_session(tmp)
+            held = marker.read(root)
+            assert held is not None
+            marker.write(held.model_copy(update={"exiting": True}), root)
+            with self.assertRaises(SystemExit):
+                mx_exit_cmd(attestor="tester", project_root=root, _run_guards=_red_guard)
             self.assertTrue(marker.condition(root).on)
 
     @covers("REQ-0.0.74-05-02")

@@ -273,6 +273,11 @@ class TestCondition(unittest.TestCase):
                 path.write_bytes(raw)
                 self._assert_off("unreadable")
 
+    def test_an_undecodable_ledger_binds_nothing(self) -> None:
+        marker.write(Marker(session_id="s-1"), self.root)
+        (self.root / ".gzkit" / "ledger.jsonl").write_bytes(b"\xff\xfe")
+        self._assert_off("unbound")
+
     def test_a_guard_run_scans_the_ledger_once_and_sees_a_later_close(self) -> None:
         marker.write(Marker(session_id="s-1"), self.root)
         _write_ledger(self.root, [_OPENED])

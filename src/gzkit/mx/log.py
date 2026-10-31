@@ -166,7 +166,8 @@ def assemble_window(root: Path, session_id: str) -> MxLog:
 
     Complete by construction (REQ-06-01): the window is bounded by the
     ``mx_session_opened`` event's ``ts`` and the matching ``mx_session_closed``
-    ``ts`` when present (at exit time it is not), and the log names every fix
+    ``ts`` when present (at exit time it is not), the session's last span when the
+    harness's id reopened it (GHI #1273), and the log names every fix
     and the ADRs/OBPIs/REQs each touched (REQ-06-02).
     """
     events = _read_ledger_lines(root)
@@ -181,6 +182,7 @@ def assemble_window(root: Path, session_id: str) -> MxLog:
         kind = ev.get("event")
         if kind == "mx_session_opened":
             opened_at = str(ev.get("ts", ""))
+            closed_at = None
             reason = str(ev.get("reason", ""))
             attestor = str(ev.get("attestor", ""))
         elif kind == "mx_session_closed":

@@ -251,11 +251,9 @@ def _debt_since(root: Path, sessions: dict[str, str]) -> dict[str, str]:
     first: dict[str, str] = {}
     contract_of: dict[str, str] = {}
     for event in opened:
-        contract = event.extra.get("contract")
-        if not isinstance(contract, str) or not contract:
-            continue
+        contract = str(event.extra.get("contract") or "")
         contract_of[str(event.extra.get("session_id"))] = contract
-        if contract not in first or event.ts < first[contract]:
+        if contract and (contract not in first or event.ts < first[contract]):
             first[contract] = event.ts
     return {sid: first.get(contract_of.get(sid, ""), ts) for sid, ts in sessions.items()}
 

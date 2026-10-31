@@ -37,7 +37,7 @@ def _session_bound(root: Path, session: str) -> bool:
     bound = False
     try:
         lines = (root / ".gzkit" / "ledger.jsonl").read_text(encoding="utf-8")
-    except OSError:
+    except OSError, ValueError:
         return False
     for line in lines.splitlines():
         if session not in line or "mx_session_" not in line:

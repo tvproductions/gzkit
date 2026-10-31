@@ -203,7 +203,7 @@ def _scan_open_session_ids(ledger: Path, _size: int, _mtime_ns: int) -> frozense
     opened: set[str] = set()
     try:
         text = ledger.read_text(encoding="utf-8")
-    except OSError:
+    except OSError, ValueError:
         return frozenset()
     for line in text.splitlines():
         line = line.strip()

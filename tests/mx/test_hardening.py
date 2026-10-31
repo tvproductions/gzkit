@@ -467,6 +467,22 @@ class TestStructuralFence(unittest.TestCase):
 class TestOpenSessionsOrder(unittest.TestCase):
     """GHI #1273: a session id can reopen, so a close counts only until the next open."""
 
+    def test_a_reopening_without_a_contract_ages_alone(self) -> None:
+        first = datetime(2026, 10, 1, tzinfo=UTC)
+        again = first + timedelta(days=2)
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_ledger(
+                root,
+                [
+                    _opened_under("s", first, "docs/governance/harbor.md"),
+                    _closed("s", first + timedelta(days=1)),
+                    _opened("s", again),
+                ],
+            )
+            result = hardening.debt_aging_status(root, now=again + timedelta(hours=1))
+        self.assertAlmostEqual(result.age_hours, 1.0)
+
     def test_a_session_reopened_under_its_id_is_open_from_the_reopening(self) -> None:
         first = datetime(2026, 10, 1, tzinfo=UTC)
         with TemporaryDirectory() as tmp:
