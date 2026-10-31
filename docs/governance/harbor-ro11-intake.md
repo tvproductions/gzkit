@@ -20,14 +20,13 @@ The pool stays a store of intentions, and draining it stays on demand (*"A + B. 
 5. **RO-11 lands the capability records, the tightened pattern and the re-coded legend** (operator: *"a"*). A capability is a named grouping with a scope and never carries work (§ Rulings of 2026-10-29).
 6. **Capability records live in `data/catalog/capabilities.json`** (operator: *"A"*), one file for the kind, extending RO-3's layout. The store lands empty (operator: *"a"*); each capability is created when its first real outcome needs it, at civil rule.
 <!-- gz-validate-skip: command-shape -->
-7. **A capability is written by `gz catalog capability`** on the operator's word, taking a name and a scope (operator: *"A"*, twice), so a mistyped code at admission cannot create one; the entry verb refuses an outcome under a capability that has no record.
+7. **A capability is written by `gz catalog capability`** on the operator's word, taking a name and a scope (operator: *"A"*, twice), so a mistyped code at admission cannot create one; the entry verb refuses an outcome under a capability that has no record, and `gz validate --catalog` refuses one on the stored data (operator: *"a"*).
 
 ## Not ruled
 
 Drafted by the agent and open, none of it to be built until the operator rules:
 
 - this page itself, and the tranches below; the operator asked for the row's rewrite, not a specification page;
-- whether `gz validate --catalog` refuses an outcome whose capability has no record;
 - dropping the old row's *"marked as pulled"* step: put in the draft, not objected to, not ruled.
 
 ## Tranches (for the contractor)

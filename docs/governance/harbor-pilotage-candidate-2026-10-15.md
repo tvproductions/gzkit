@@ -807,6 +807,9 @@ The general-arrangement redraw continues with its remaining components.
   catalog is empty at the handback. Put to the operator: A, empty, each capability created when its
   first real outcome needs it; B, seeded with a ruled list, a carve-out from that ruling. Operator,
   verbatim: *"a"*.
+- **`gz validate --catalog` refuses an outcome whose capability has no record** (RO-11's open
+  points). Put to the operator: A, yes, the family check one level down, enforced on the stored
+  data; B, no, the verb's refusal is enough. Operator, verbatim: *"a"*.
 
 ## Superseded on 2026-10-30 (record, not binding)
 
