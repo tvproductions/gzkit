@@ -18,6 +18,7 @@ lines we want to tolerate) is exactly what MX mode exists to survive.
 """
 
 import json
+from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
@@ -32,6 +33,9 @@ _LEDGER_RELPATH = (".gzkit", "ledger.jsonl")
 # ledger line shape {"schema":…, "event":…, …}).
 _OPENED_EVENT = "mx_session_opened"
 _CLOSED_EVENT = "mx_session_closed"
+
+# Why the condition reads as it does: ``on``, or the reason it is off.
+ConditionCause = Literal["on", "absent", "unreadable", "unbound", "exiting"]
 
 # The hangar's lease on the token rail: the singleton lock key `gz mx enter` claims.
 # Named here, beside the marker it leases, so the lock reaper and the MX commands
@@ -63,7 +67,8 @@ class Marker(BaseModel):
         "mx",
         description=(
             "mx: the Maintenance Hangar, guards demote to advisory; safe: safe mode, "
-            "ceremony suspended under a contract, guards at full strength (GHI #1244)"
+            "guards demote, the slow alarms are off and ceremony is suspended under a "
+            "contract (GHI #1244, rulings 2026-10-17 and 2026-10-25)"
         ),
     )
     contract: str = Field(
@@ -76,6 +81,20 @@ class Marker(BaseModel):
             "checks, as gz obpi complete holds its lock, and demotes nothing (GHI #1257)"
         ),
     )
+
+
+class Condition(BaseModel):
+    """One reading of the non-operational condition, for whatever would lower a control."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    cause: ConditionCause = Field(..., description="Why the condition reads as it does")
+    marker: Marker | None = Field(None, description="The marker payload, when it parsed")
+
+    @property
+    def on(self) -> bool:
+        """Whether the marker lowers anything."""
+        return self.cause == "on"
 
 
 def _find_project_root(start: Path | None = None) -> Path:
@@ -150,14 +169,30 @@ def _open_session_ids(ledger: Path) -> set[str]:
 
     Read raw with stdlib ``json`` (tolerant of malformed lines, no
     ``gzkit.ledger`` dependency) so the binding check works when gz is the
-    patient.
+    patient. Memoized on the ledger's size and modification time: every guard
+    asks, and the ledger is tens of megabytes (GHI #1273).
+    """
+    try:
+        stat = ledger.stat()
+    except OSError:
+        return set()
+    return set(_scan_open_session_ids(ledger, stat.st_size, stat.st_mtime_ns))
+
+
+@lru_cache(maxsize=8)
+def _scan_open_session_ids(ledger: Path, _size: int, _mtime_ns: int) -> frozenset[str]:
+    """Scan *ledger*; ``_size`` and ``_mtime_ns`` exist only to key the memo.
+
+    Returns:
+        The ids with an ``mx_session_opened`` and no ``mx_session_closed``.
+
     """
     opened: set[str] = set()
     closed: set[str] = set()
     try:
         text = ledger.read_text(encoding="utf-8")
     except OSError:
-        return set()
+        return frozenset()
     for line in text.splitlines():
         line = line.strip()
         if not line:
@@ -176,7 +211,7 @@ def _open_session_ids(ledger: Path) -> set[str]:
             opened.add(sid)
         elif kind == _CLOSED_EVENT:
             closed.add(sid)
-    return opened - closed
+    return frozenset(opened - closed)
 
 
 def is_valid(project_root: Path | None = None, ledger_path: Path | None = None) -> bool:
@@ -192,3 +227,24 @@ def is_valid(project_root: Path | None = None, ledger_path: Path | None = None) 
         return False
     ledger = _ledger_path(project_root, ledger_path)
     return marker.session_id in _open_session_ids(ledger)
+
+
+def condition(project_root: Path | None = None, ledger_path: Path | None = None) -> Condition:
+    """Return the one reading of *on*: present, readable, ledger-bound and not exiting.
+
+    Anything else is normal operation at full strength, so a hand-made or corrupted
+    marker lowers nothing (operator ruling 2026-10-27, "A"; GHI #1273). A reader that
+    raises protection on the file itself keeps :func:`is_active` (ruling 2026-10-31).
+
+    Returns:
+        The reading, with its cause and the marker when it parsed.
+
+    """
+    if not is_active(project_root):
+        return Condition(cause="absent")
+    held = read(project_root)
+    if held is None:
+        return Condition(cause="unreadable")
+    if held.session_id not in _open_session_ids(_ledger_path(project_root, ledger_path)):
+        return Condition(cause="unbound", marker=held)
+    return Condition(cause="exiting" if held.exiting else "on", marker=held)

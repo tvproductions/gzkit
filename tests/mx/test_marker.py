@@ -17,6 +17,7 @@ import json
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest import mock
 
 from gzkit.mx import marker
 from gzkit.mx.marker import Marker
@@ -185,6 +186,66 @@ class TestMarkerLedgerBinding(unittest.TestCase):
             root = _mk_root(tmp)
             _write_ledger(root, [{"event": "mx_session_opened", "session_id": "s-1"}])
             self.assertFalse(marker.is_valid(root))  # no marker file
+
+
+_OPENED = {"event": "mx_session_opened", "session_id": "s-1"}
+_CLOSED = {"event": "mx_session_closed", "session_id": "s-1"}
+
+
+class TestCondition(unittest.TestCase):
+    """GHI #1273: one reading of *on*, ruled in the contractor-kit record (operator: "A")."""
+
+    def setUp(self) -> None:
+        self._tmp = TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.root = _mk_root(self._tmp.name)
+
+    def _assert_off(self, cause: str) -> None:
+        held = marker.condition(self.root)
+        self.assertFalse(held.on)
+        self.assertEqual(held.cause, cause)
+
+    def test_a_bound_readable_marker_not_exiting_is_on(self) -> None:
+        marker.write(Marker(session_id="s-1"), self.root)
+        _write_ledger(self.root, [_OPENED])
+        held = marker.condition(self.root)
+        self.assertTrue(held.on)
+        self.assertEqual(held.cause, "on")
+        self.assertEqual(held.marker, Marker(session_id="s-1"))
+
+    def test_no_marker_is_off(self) -> None:
+        _write_ledger(self.root, [_OPENED])
+        self._assert_off("absent")
+
+    def test_an_unreadable_marker_is_off_even_with_the_session_open(self) -> None:
+        marker.marker_path(self.root).write_text("{not json", encoding="utf-8")
+        _write_ledger(self.root, [_OPENED])
+        self._assert_off("unreadable")
+
+    def test_a_hand_made_marker_is_off(self) -> None:
+        marker.write(Marker(session_id="s-1"), self.root)
+        self._assert_off("unbound")
+
+    def test_a_marker_whose_session_closed_is_off(self) -> None:
+        marker.write(Marker(session_id="s-1"), self.root)
+        _write_ledger(self.root, [_OPENED, _CLOSED])
+        self._assert_off("unbound")
+
+    def test_the_exit_rerun_is_off_and_keeps_its_session_open(self) -> None:
+        marker.write(Marker(session_id="s-1", exiting=True), self.root)
+        _write_ledger(self.root, [_OPENED])
+        self._assert_off("exiting")
+        self.assertTrue(marker.is_valid(self.root))
+
+    def test_a_guard_run_scans_the_ledger_once_and_sees_a_later_close(self) -> None:
+        marker.write(Marker(session_id="s-1"), self.root)
+        _write_ledger(self.root, [_OPENED])
+        with mock.patch.object(marker.json, "loads", wraps=json.loads) as loads:
+            for _ in range(5):
+                self.assertTrue(marker.condition(self.root).on)
+            self.assertEqual(loads.call_count, 1)
+        _write_ledger(self.root, [_OPENED, _CLOSED])
+        self.assertFalse(marker.condition(self.root).on)
 
 
 if __name__ == "__main__":
