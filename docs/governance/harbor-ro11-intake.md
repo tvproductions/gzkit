@@ -8,7 +8,7 @@
 
 Intake is one act. Operator, verbatim: *"yes, it is just admitting/registering a new requirement into the requirements catalog, nothing more."* Admission is on the operator's word (*"yes, admission is on my word"*) and is separate from work selection, which is the Release Package's rule. What happens to an outcome after it enters, editing before the freeze, moves, reopening and withdrawal, is RO-5's by the change order of 2026-10-30.
 
-The pool stays a store of intentions, and draining it stays on demand (*"A + B. A for design, B for execution"*). One entry is brought down by admitting its outcomes, each naming the entry as its `source`, and then writing the feature package that carries its story, in RO-4's store. No separate mark records the pull: an entry counts as brought down once an outcome names it.
+The pool stays a store of intentions, and draining it stays on demand (*"A + B. A for design, B for execution"*). One entry is brought down by admitting its outcomes, each naming the entry as its `source`, and then writing the feature package that carries its story, in RO-4's store. The first admission through the pool door changes the entry's `status:` to `Pulled` (ruling 8); the mark means bringing it down has begun, not that it has finished.
 
 ## Rulings
 
@@ -22,12 +22,14 @@ The pool stays a store of intentions, and draining it stays on demand (*"A + B. 
 <!-- gz-validate-skip: command-shape -->
 7. **A capability is written by `gz catalog capability`** on the operator's word, taking a name and a scope (operator: *"A"*, twice), so a mistyped code at admission cannot create one; the entry verb refuses an outcome under a capability that has no record, and `gz validate --catalog` refuses one on the stored data (operator: *"a"*).
 
+<!-- gz-validate-skip: command-shape -->
+8. **The pull is marked by the verb** (operator: *"A"*): the first `gz catalog admit` through the pool door changes the entry's `status:` to `Pulled`.
+
 ## Not ruled
 
 Drafted by the agent and open, none of it to be built until the operator rules:
 
 - this page itself, and the tranches below; the operator asked for the row's rewrite, not a specification page;
-- dropping the old row's *"marked as pulled"* step: put in the draft, not objected to, not ruled.
 
 ## Tranches (for the contractor)
 
@@ -36,7 +38,7 @@ The contractor stops and waits on every structural question; the names of new ve
 1. **The code.** `OUTCOME_CODE_PATTERN` and `Family.code` in `src/gzkit/models/catalog.py`, with the schemas regenerated from them; the family lookup at `src/gzkit/governance/trust_audits/catalog.py:114`, which reads `o.code[0]`; `data/catalog/families.json` re-coded; the tests in `tests/governance/test_catalog.py` and the sample codes in `tests/test_id_resolver.py`.
 2. **The records.** `capabilities.json`, its model and schema; `gz validate --catalog` refusing an outcome whose capability has no record; the outcome's `source` and `modules` fields.
 <!-- gz-validate-skip: command-shape -->
-3. **The verbs.** `gz catalog admit` and `gz catalog capability`, their manpages, and the `queued` writer in `src/gzkit/catalog_ledger.py`.
+3. **The verbs.** `gz catalog admit` and `gz catalog capability`, their manpages, the `Pulled` value in the pool `status:` vocabulary, and the `queued` writer in `src/gzkit/catalog_ledger.py`.
 
 ## Restoration (RO-11's list-of-discrepancies lines)
 
