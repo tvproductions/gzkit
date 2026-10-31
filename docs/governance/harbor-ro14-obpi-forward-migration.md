@@ -2,7 +2,7 @@
 
 # RO-14 specification — the forward migration from OBPI to work package
 
-**2026-10-31. Status: scope and tranches ruled; the open points below are unruled, and tranche 1 waits on them.** Operator: **g0**. Repair order of the [harbor pilotage contract](harbor-pilotage-candidate-2026-10-15.md), which holds the binding rulings.
+**2026-10-31. Status: scope, tranches and open points ruled; tranche 1 cut into acts; act 1 under rebuild after its independent review failed.** Operator: **g0**. Repair order of the [harbor pilotage contract](harbor-pilotage-candidate-2026-10-15.md), which holds the binding rulings.
 
 ## Scope
 
@@ -26,7 +26,12 @@ The rulings on GHI #1200, carried here because its repair lands in tranche 1:
 9. **The single-driver route splits by `kind`.** A `delivery` run may declare single-driver and records each fix cycle through the same verb, so the bound applies. A `repair` run cannot be single-driver, because nobody inspects their own work. The count sees only what is recorded, and the precomplete refusal of silent single-driver runs moves with the pipeline. Put to the operator: A, split by `kind`; B, removed everywhere; C, left as it is. Operator, verbatim: *"a"*.
 10. **The exit baseline has one seam.** All code that reads history goes through a single alias module, the only code allowed OBPI ids or event names; `src`, tests, skills, rules and live docs read zero. The ledger, briefs, handoffs, rulings, passage logs and dated snapshots are exempt as history. Put to the operator: A, one seam; B, a declared exemption list; C, surface names only. Operator, verbatim: *"a"*.
 11. **Tranche 2 splits by owner.** The operator and a working session move the pipeline itself: the delivery procedure, its stages, its persona and the pipeline skill. The rest of tranche 2 and all of tranche 3 run under the kit as repair packages. Put to the operator: A, split; B, everything under the kit; C, everything by the operator and a working session. Operator, verbatim: *"a"*.
+<!-- gz-validate-skip: command-shape -->
 12. **The exits fit the freeze rules** (amends rulings 6 and 7). The freeze lock keeps no exception, so a requirement cannot change inside a package. The exits at the bound are: **reopen**, the requirement changing through `gz catalog reopen`, this package closing and the operator initiating a new one; **departure**, a bounded claim recorded as a waiver through `gz wp change`, the REQ moving out by disposition and the package carrying on; **hold**, the block clearing with no repair dispatched; and **terminate**, the package closing through Gate 5. The once-only limit attaches to the requirement across its outcome's packages: a REQ reaching the bound again after a reopening has only departure, hold and terminate. Put to the operator: A, this mapping; B, an exception to the freeze lock; C, the count per package. Operator, verbatim: *"a"*.
+<!-- gz-validate-skip: command-shape -->
+13. **The names.** `gz wp dispatch`, `gz wp block`, `gz wp unblock` with `--exit reopen|departure|hold|terminate`, and `gz wp withdraw-legacy`; the events `work_package_dispatched`, `work_package_blocked`, `work_package_unblocked` and `legacy_unit_withdrawn`. Put to the operator: A, flat verbs with the existing event prefix; B, a `run` group; C, as A with the withdrawal on the catalog. Operator, verbatim: *"a"*.
+14. **The bound counts against the frozen subject**, amending the task key of rulings 5 to 8: a REQ in the package's frozen baseline, or an issue the repair package carries. A caller's task number is refused as a key because a new number resets the count; `--task` is replaced by `--req` or `--issue`. Put to the operator: A, the frozen subject; B, one bound per package; C, declared task cards. Operator, verbatim: *"a"*.
+15. **The count follows the REQ at its revision, across packages.** A new package at the same revision starts where the last stopped; a reopening changes the revision and starts clean. A REQ at the bound and already reopened once can only be departed from, held or terminated. Put to the operator: A, across packages; B, a new package starts clean; C, clean with the history shown. Operator, verbatim: *"a"*.
 
 ## Starting measure
 
@@ -42,9 +47,11 @@ Measured 2026-10-31, a dated record. Counts of files that mention OBPI, not of m
 
 ## #1200's design facts
 
-A fix cycle is an Implementer dispatch that follows a review of the same task, since the Implementer's previous dispatch. A raw count of Implementer dispatches is wrong: Task 1 of `OBPI-0.35.0-15-pipeline-run-position` had four dispatches and one fix cycle.
+Every implementing dispatch after a subject's first review, or after its first single-driver dispatch, is a fix cycle. Several implementing dispatches may precede the first review: Task 1 of `OBPI-0.35.0-15-pipeline-run-position` had three before its review and one fix cycle after it. Repeating the Implementer after a review counts each time, so a run cannot buy a cycle by not reviewing.
 
-Replayed over that run's ledger rows with the bound of `MAX_REVIEW_FIX_CYCLES`, the count refuses the `2026-10-11T23:35` dispatch that followed the first unblock, as #1200's acceptance (a) requires. With a changed-requirement exit taken at that first bound, Task 2's next refusal is the dispatch of `2026-10-12T09:20`. An earlier statement to the operator named the `07:38` block, which was not at the bound; ruling 7 was given with that figure in front of them.
+Replayed over that run's ledger rows with the bound of `MAX_REVIEW_FIX_CYCLES`, the count refuses the `2026-10-11T23:35` dispatch that followed the first unblock, as #1200's acceptance (a) requires.
+
+**Corrected 2026-10-31.** Two figures given to the operator were wrong. The `07:38` block was not at the bound, and the later figure of a `09:20` refusal relied on a restart inside a package, which ruling 12 removed. Ruling 7 was given with the first in front of them. The rulings do not depend on either figure; the `23:35` refusal is the one the replay proves.
 
 ## Settled from the record
 
@@ -53,8 +60,25 @@ Replayed over that run's ledger rows with the bound of `MAX_REVIEW_FIX_CYCLES`, 
 - **The same-root rule is scored advisory.** Comparing two rounds' weakest points is judgment, and ruling 7 now holds the mechanical part. #1200's acceptance (d) is met by the score in `docs/governance/advisory-rules-audit.md`, written when #1200 lands.
 - **The other reused parts, by surface.** Move in tranche 1: #1198 and #1208 (dispatch), #1203, #1205 and #1209 (run position and markers), #1206 (the task fence), #1028 (Stage 4's bound) and #1185 (the airlock, which still targets a brief). #1194 sits in the ledger and names no OBPI surface, so it stays a direct fix in place. The cwd-escape guard has no issue yet; the contractor-kit record owes one through `ghi-author`.
 
-## Open points
+## Tranche 1, cut into acts
 
-Each is put to the operator one at a time before tranche 1 is cut.
+1. **The bound.** `gz wp dispatch`, `block` and `unblock` with `gzkit.work_package_run` (#1200). The first build failed independent review on the routes rulings 14 and 15 close; rebuilt, not yet landed.
+2. **Dispatch's defects.** #1198 and #1208, read against the new verb.
+3. **Run position and markers.** #1203, #1205 and #1209.
+4. **The fence and the stage bound.** #1206, and #1028 with its stop-and-ask boundary.
+5. **Acceptance on the work package**, which gives `gz wp block` the refutation count ruling 8 requires.
+6. **The airlock on the work package.** #1185.
+<!-- gz-validate-skip: command-shape -->
+7. **`gz wp withdraw-legacy`.**
 
-1. **The names.** The new `gz wp` verbs and ledger events; the contractor brief reserves new names for the operator. Put last, once the parts are known.
+## Mode contract
+
+`gz wp dispatch`, `block` and `unblock` are on at the operational condition and at the hangar and drydock levels. They are ledger writers that read no marker, because a repair loop under safe mode is the case the bound exists for. MEL entry: not bypassable, no (M) or (O) limitation, no placard or deadline; accepted state, on. Self-test: `ledger_producer_probe` for each event, at the producer check's interval.
+
+## Known limits of act 1
+
+- The block carries no refutation count until act 5.
+- A subject can take any number of reviews; only implementing dispatches are bounded.
+- `reopen` names the act and is not checked against a reopening, because that verb lands with RO-5's tranche 6.
+- The count sees only what is recorded.
+- #1200 stays open: its exit condition has the pipeline's sentence name the mechanism, and the OBPI pipeline moves in tranche 2.
