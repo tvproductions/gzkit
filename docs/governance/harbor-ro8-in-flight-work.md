@@ -43,7 +43,7 @@ On 2026-10-01 the operator repudiated OBPI-0.34.0-02 (its REQ-02-05 had no red r
 The contractor stops and waits on every structural question.
 
 1. **Carry.** For each of ADR-0.35.0's nine unlanded briefs and the four repudiated OBPIs, the REQs written as catalog REQs under the outcome the requirements model maps them to, with fresh proof where the work already landed (briefs 17 and 20; 0.34.0-02's red receipt).
-2. **Withdraw.** Each brief withdrawn as superseded through `gz obpi withdraw`, naming where its REQs went (brief 19 also naming the never-evict supersession).
+2. **Withdraw.** Each brief withdrawn as superseded through the successor to `gz obpi withdraw` that RO-14 lands, naming where its REQs went (brief 19 also naming the never-evict supersession).
 3. **Release Package.** The 0.35.0 Release Package drafted with the outcomes of all twenty items as members, the eleven attested items carrying their attestations as legacy evidence (reconciled with RO-4 ruling 6 on 2026-10-29).
 4. **Handback.** The compliance register closed (ruling 5), TOPMOST named as disposed (ruling 4).
 

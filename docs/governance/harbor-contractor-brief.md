@@ -11,15 +11,18 @@
 **Order of work** (the register's order, which is dependency order):
 
 1. [RO-5](harbor-ro5-work-packages.md) — work packages, repair orders, GitHub coupling (tranches 1 to 5 landed; RO-5 stays open for tranche 6, step 4).
-2. RO-12 — the contractor kit. **Not worked by this contractor**: the operator and a working session build it (the bootstrap, the contract's § Division of labor), after #1200, #1206, #1208, #1028 and #1273 and the other reused-part defects the contract's RO-12 row lists are repaired as direct fixes. Stop and wait. Every order below then runs under the kit as its first flight.
-3. [RO-11](harbor-ro11-intake.md) — intake: the capability records, the three-letter legend and the entry verb (three tranches; placed before RO-4, amended 2026-10-30, operator: *"A"*).
-4. [RO-5](harbor-ro5-work-packages.md), tranche 6 — the catalog verbs after entry, the freeze lock and the delivery close (operator: *"A"*).
-5. [RO-13](harbor-ro13-mode-contract.md), foundation tranches F1 to F5 — the two-way mode contract's shared parts (operator: *"c"*). **Not worked by this contractor**: the operator and a working session land them (operator: *"A"*). Stop and wait.
-6. [RO-4](harbor-ro4-release.md) — release detached from the ADR (four tranches).
-7. [RO-6](harbor-ro6-canon-retirement.md) — superseded canon corrected (three tranches).
-8. [RO-7](harbor-ro7-context-cut.md) — the context cut (seven stages, each measured by [RO-1's protocol](harbor-ro1-cut-measurement.md); RO-1's baseline report is written first).
-9. [RO-8](harbor-ro8-in-flight-work.md) — the in-flight work absorbed (four acts; act 3 waits for the operator's review).
-10. [RO-13](harbor-ro13-mode-contract.md), retrofit tranches R1 to R3 — code controls by role, then skills, then rules and the other surfaces, after the operator rules the tables (T0).
+2. [RO-14](harbor-ro14-obpi-forward-migration.md), tranche 1 — the runtime parts on the work-package surface, with #1200, #1206, #1208 and #1028 repaired there (amended 2026-10-31, operator: *"a"*). **Not worked by this contractor**: the operator and a working session land it. Stop and wait.
+3. RO-12 — the contractor kit. **Not worked by this contractor**: the operator and a working session build it (the bootstrap, the contract's § Division of labor), after RO-14's tranche 1 and the other reused-part defects the contract's RO-12 row lists are repaired. Stop and wait. Every order below then runs under the kit as its first flight.
+4. [RO-11](harbor-ro11-intake.md) — intake: the capability records, the three-letter legend and the entry verb (three tranches; placed before RO-4, amended 2026-10-30, operator: *"A"*).
+5. [RO-5](harbor-ro5-work-packages.md), tranche 6 — the catalog verbs after entry, the freeze lock and the delivery close (operator: *"A"*).
+6. [RO-13](harbor-ro13-mode-contract.md), foundation tranches F1 to F5 — the two-way mode contract's shared parts (operator: *"c"*). **Not worked by this contractor**: the operator and a working session land them (operator: *"A"*). Stop and wait.
+7. [RO-4](harbor-ro4-release.md) — release detached from the ADR (four tranches).
+8. [RO-6](harbor-ro6-canon-retirement.md) — superseded canon corrected (three tranches).
+9. [RO-7](harbor-ro7-context-cut.md) — the context cut (seven stages, each measured by [RO-1's protocol](harbor-ro1-cut-measurement.md); RO-1's baseline report is written first).
+10. [RO-8](harbor-ro8-in-flight-work.md) — the in-flight work absorbed (four acts; act 3 waits for the operator's review).
+11. [RO-14](harbor-ro14-obpi-forward-migration.md), tranche 2 — the pipeline, skills, rules and docs, before the retrofit below.
+12. [RO-13](harbor-ro13-mode-contract.md), retrofit tranches R1 to R3 — code controls by role, then skills, then rules and the other surfaces, after the operator rules the tables (T0).
+13. [RO-14](harbor-ro14-obpi-forward-migration.md), tranche 3 — `gz obpi` removed, last.
 
 RO-10 is parked and not worked. RO-9 closed through Gate 5 on 2026-10-29.
 **Each act:**
@@ -38,7 +41,7 @@ RO-10 is parked and not worked. RO-9 closed through Gate 5 on 2026-10-29.
 - every binding loss a cut stage finds (RO-1 step 4);
 - the skill demotion list (RO-7 ruling 3) and the catalogue merge plan (RO-7 stage 6), each as one batch;
 - RO-8 act 3;
-- RO-12 and RO-13 (above);
+- RO-12, RO-13 and RO-14 (above);
 - any repair order that needs the contract changed: the contract changes only by its own amendment, never through a repair order (contract § Records, B1);
 - anything that would delete data, rewrite history or force-push.
 
