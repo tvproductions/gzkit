@@ -23,6 +23,8 @@ This order does not repair the MX system itself. GHI #1273 is an RO-12 precondit
 7. **The retrofit runs code by role, then skills, then rules and the other surfaces** (operator: *"a"*).
 8. **Self-test intervals are defaults per role and kind, in JSON** (operator: *"a"*). An entry shortens its own freely; lengthening past the default is on the operator's word.
 9. **The self-test chore is admitted, and `gz check` re-proves what a change touches** (operator: *"a"*).
+10. **Lockout is dropped as a mode signal** (operator: *"A"*). The tag-out log carries isolating one surface. An entry declares no lockout level, and the doctrine's one condition with a standby level, hangar or drydock, stands.
+11. **The operator and a working session land F1 to F5; the drydock contractor lands R1 to R3 under the kit** (operator: *"A"*), a tranche at a time, stopping on an entry below default.
 
 Carried from the record, not re-ruled: one MEL entry per control (level per standby level, (M) bypass, (O) limitation, placard, restore condition and deadline, self-test interval, accepted state); two decorators joined by reference, `@enforces` unchanged; three declaration shapes against one schema (decorator, Markdown MEL block, `gzkit.mx.alarms` arguments); suitable when the latest self-test passed within the interval; accepted only on a passing self-test and an inspected red witness.
 
@@ -49,13 +51,6 @@ The contractor stops and waits on every structural question; the names of new ve
 - **R3, rules and the other surfaces.** Rules, personas, agent definitions, chores, templates and the text-injecting hooks, by the Markdown block.
 
 Each control leaves the group entry when it has its own entry, a passing self-test and an inspected red witness. A control an earlier order retired is not retrofitted; the enumerator stops finding it.
-
-## Not ruled
-
-The contractor stops on each; the operator rules before F1 begins.
-
-1. **Lockout.** The record's early entries name a lockout scoped to a surface as a third signal. The model it later settled, the doctrine and the mode-contract rule carry one condition with a standby level, hangar or drydock. This page follows the doctrine and declares no lockout level. Whether lockout is dropped or carried by the tag-out log is unruled.
-2. **Who lands RO-13.** The row says only that it runs under the kit, and the retrofit's size may not suit one session.
 
 ## Restoration (RO-13's list-of-discrepancies lines)
 
