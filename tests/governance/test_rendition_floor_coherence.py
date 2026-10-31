@@ -17,10 +17,9 @@ from gzkit.content.rendition_store import save_rendition
 from gzkit.governance.trust_audits.rendition_floor_coherence import (
     validate_rendition_floor_coherence,
 )
-from gzkit.mx import marker as _marker
-from gzkit.mx.marker import Marker
 from gzkit.traceability import covers
 from tests.governance.common import QuietAdvisoriesMixin
+from tests.mx.held import open_marker
 
 _INV = "Never, ever again give me that TTY or PTY bullshit — attestation is sacrosanct."
 _INV2 = "There is no such thing as a headless OBPI: every OBPI traces to a parent ADR."
@@ -245,7 +244,7 @@ class TestCheckpointWiringFloor(_TempProject):
         """Active MX marker → default mode is advisory (gates demote inside the hangar)."""
         append_entry(self.root, "AGENTS.md", _entry(_INV, entry_id="corpus-tty"))
         save_rendition(self.root, "AGENTS.md", "root", b"# AGENTS.md\n\nUnrelated body.\n")
-        _marker.write(Marker(session_id="test-session"), self.root)
+        open_marker(self.root)
         errors = validate_rendition_floor_coherence(self.root)
         self.assertEqual(errors, [], "inside hangar: gate must be advisory by default")
 

@@ -18,6 +18,7 @@ from tempfile import TemporaryDirectory
 from gzkit.mx import marker
 from gzkit.mx.marker import Marker
 from gzkit.traceability import covers
+from tests.mx.held import open_marker
 
 
 def _mk_root(tmp: str) -> Path:
@@ -27,7 +28,7 @@ def _mk_root(tmp: str) -> Path:
 
 
 def _write_marker(root: Path) -> None:
-    marker.write(Marker(session_id="test-session"), root)
+    open_marker(root)
 
 
 class TestInHangar(unittest.TestCase):
@@ -165,7 +166,7 @@ class TestSafeMode(unittest.TestCase):
 
         with TemporaryDirectory() as tmp:
             root = _mk_root(tmp)
-            marker.write(Marker(session_id="safe-session", mode="safe"), root)
+            open_marker(root, Marker(session_id="safe-session", mode="safe"))
             self.assertTrue(checkpoint.is_advisory("gate3-docs", root))
             self.assertEqual(
                 checkpoint.resolve("gate3-docs", levels.ERROR, root),
@@ -179,7 +180,7 @@ class TestSafeMode(unittest.TestCase):
 
         with TemporaryDirectory() as tmp:
             root = _mk_root(tmp)
-            marker.write(Marker(session_id="safe-session", mode="safe"), root)
+            open_marker(root, Marker(session_id="safe-session", mode="safe"))
             for name in GATE5_INVARIANTS:
                 self.assertFalse(checkpoint.is_advisory(name, root), name)
                 self.assertEqual(
@@ -193,7 +194,7 @@ class TestSafeMode(unittest.TestCase):
 
         with TemporaryDirectory() as tmp:
             root = _mk_root(tmp)
-            marker.write(Marker(session_id="mx-session", mode="mx"), root)
+            open_marker(root, Marker(session_id="mx-session", mode="mx"))
             self.assertTrue(checkpoint.is_advisory("gate3-docs", root))
 
 
@@ -211,20 +212,22 @@ class TestExitingMarker(unittest.TestCase):
         for mode in ("mx", "safe"):
             with self.subTest(mode=mode), TemporaryDirectory() as tmp:
                 root = _mk_root(tmp)
-                marker.write(Marker(session_id="s", mode=mode, exiting=True), root)
+                open_marker(root, Marker(session_id="s", mode=mode, exiting=True))
                 self.assertFalse(checkpoint.hangar_demotes(root))
                 self.assertEqual(
                     checkpoint.resolve("gate3-docs", levels.ERROR, root),
                     disposition.route(levels.ERROR),
                 )
 
-    def test_an_unreadable_marker_keeps_the_presence_reading(self) -> None:
+    def test_an_unreadable_or_hand_made_marker_lowers_nothing(self) -> None:
         from gzkit.mx import checkpoint
 
         with TemporaryDirectory() as tmp:
             root = _mk_root(tmp)
             marker.marker_path(root).write_text("{not json", encoding="utf-8")
-            self.assertTrue(checkpoint.hangar_demotes(root))
+            self.assertFalse(checkpoint.hangar_demotes(root))
+            marker.write(Marker(session_id="hand-made", mode="safe"), root)
+            self.assertFalse(checkpoint.hangar_demotes(root))
 
 
 class TestValidateAnnouncesDemotion(unittest.TestCase):
@@ -260,7 +263,7 @@ class TestValidateAnnouncesDemotion(unittest.TestCase):
     def test_a_demoted_default_tier_scope_is_announced_too(self) -> None:
         with TemporaryDirectory() as tmp:
             root = _mk_root(tmp)
-            marker.write(Marker(session_id="safe-session", mode="safe"), root)
+            open_marker(root, Marker(session_id="safe-session", mode="safe"))
             errors, stderr = self._run(root, tier="default")
         self.assertEqual(errors, [])
         self.assertIn("a.py: the finding itself", stderr)
@@ -268,7 +271,7 @@ class TestValidateAnnouncesDemotion(unittest.TestCase):
     def test_a_demoted_scope_names_itself_and_its_findings_on_stderr(self) -> None:
         with TemporaryDirectory() as tmp:
             root = _mk_root(tmp)
-            marker.write(Marker(session_id="safe-session", mode="safe"), root)
+            open_marker(root, Marker(session_id="safe-session", mode="safe"))
             errors, stderr = self._run(root)
         self.assertEqual(errors, [])
         self.assertIn("[MX advisory] guard 'id_seam'", stderr)

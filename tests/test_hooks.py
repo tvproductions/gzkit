@@ -34,6 +34,7 @@ from gzkit.hooks.scripts.lsp import prefer_lsp_script
 from gzkit.lock_manager import LockData, write_lock
 from gzkit.traceability import covers
 from tests.commands.common import argv_by_tool_name
+from tests.mx.held import open_marker
 
 
 def _expected_hook_command(script: str) -> str:
@@ -1730,7 +1731,7 @@ class TestPipelineGateHook(unittest.TestCase):
             plans_dir = project_root / ".claude" / "plans"
             script_path = self._create_hook(project_root)
             self._write_receipt(plans_dir, obpi_id="OBPI-0.12.0-04", verdict="PASS")
-            mx_marker.write(mx_marker.Marker(session_id="safe-session", mode="safe"), project_root)
+            open_marker(project_root, mx_marker.Marker(session_id="safe-session", mode="safe"))
 
             result = self._run_hook(script_path, project_root, file_path="src/demo.py")
 

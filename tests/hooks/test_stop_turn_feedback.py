@@ -20,10 +20,10 @@ from pathlib import Path
 from typing import Literal
 from unittest.mock import patch
 
-from gzkit.mx import marker
 from gzkit.mx.marker import Marker
 from gzkit.traceability import covers
 from tests.commands.common import argv_by_tool_name
+from tests.mx.held import open_marker
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _HOOK_PATH = _REPO_ROOT / ".claude" / "hooks" / "stop-turn-feedback.py"
@@ -355,7 +355,7 @@ class TestOpenModeReports(unittest.TestCase):
     ) -> tuple[int, str]:
         root = Path(tmp)
         if mode is not None:
-            marker.write(Marker(session_id="stop-hook-test", mode=mode, exiting=exiting), root)
+            open_marker(root, Marker(session_id="stop-hook-test", mode=mode, exiting=exiting))
         transcript = _write_transcript(root, "OBPI-0.0.37-22 is attested-complete.")
         stderr = io.StringIO()
         with (

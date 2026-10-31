@@ -28,11 +28,11 @@ def alarms_off(project_root: Path | None = None) -> bool:
     """Return True while an open safe-mode marker holds the alarms off.
 
     Returns:
-        True when the marker is open in safe mode and not exiting.
+        True when the condition is on and the marker is in safe mode.
 
     """
-    held = marker.read(project_root) if marker.is_active(project_root) else None
-    return held is not None and held.mode == "safe" and not held.exiting
+    held = marker.condition(project_root)
+    return held.on and held.marker is not None and held.marker.mode == "safe"
 
 
 def main(argv: Sequence[str] | None = None) -> int:

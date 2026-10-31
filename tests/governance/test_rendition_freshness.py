@@ -26,10 +26,9 @@ from gzkit.content.rendition_store import (
     save_rendition,
 )
 from gzkit.governance.trust_audits.rendition_freshness import validate_rendition_freshness
-from gzkit.mx import marker as _marker
-from gzkit.mx.marker import Marker
 from gzkit.traceability import covers
 from tests.governance.common import QuietAdvisoriesMixin
+from tests.mx.held import open_marker
 
 
 class _TempProjectMixin(QuietAdvisoriesMixin):
@@ -346,7 +345,7 @@ class TestCheckpointWiringFreshness(_TempProjectMixin):
         corpus = self._seed_corpus("AGENTS.md", "original")
         save_rendition(self.root, "AGENTS.md", "root", b"no sidecar\n")
         del corpus
-        _marker.write(Marker(session_id="test-session"), self.root)
+        open_marker(self.root)
         errors = validate_rendition_freshness(self.root)
         self.assertEqual(errors, [], "inside hangar: gate must be advisory by default")
 

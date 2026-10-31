@@ -15,6 +15,7 @@ from pathlib import Path
 from unittest import mock
 
 from gzkit.hooks import guards
+from tests.mx.held import open_marker
 
 
 def _write(path: Path, content: str) -> Path:
@@ -329,7 +330,7 @@ class TestMxCheckpointSeam(unittest.TestCase):
         """Return a project root carrying an active MX marker."""
         root = Path(td)
         (root / ".gzkit").mkdir(parents=True, exist_ok=True)
-        (root / ".gzkit" / "mx.json").write_text('{"session_id": "test-session"}', encoding="utf-8")
+        open_marker(root)
         return root
 
     def _sweep(self, root: Path, failing: str) -> tuple[int, str]:

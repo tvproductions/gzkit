@@ -12,6 +12,7 @@ import yaml
 from gzkit.commands.quality import _STEP_GUARD_META
 from gzkit.commands.validate_cmd import VALIDATOR_REGISTRY
 from gzkit.mx import alarms, levels
+from tests.mx.held import bind_session
 
 
 class TestAlarmsOff(unittest.TestCase):
@@ -29,10 +30,16 @@ class TestAlarmsOff(unittest.TestCase):
         if mode == "safe":
             body["contract"] = "docs/c.md"
         (self.root / ".gzkit" / "mx.json").write_text(json.dumps(body), encoding="utf-8")
+        bind_session(self.root, "s")
 
     def test_safe_mode_holds_the_alarms_off(self):
         self._marker("safe")
         self.assertTrue(alarms.alarms_off(self.root))
+
+    def test_a_hand_made_safe_marker_leaves_them_on(self):
+        self._marker("safe")
+        (self.root / ".gzkit" / "ledger.jsonl").unlink()
+        self.assertFalse(alarms.alarms_off(self.root))
 
     def test_the_exit_rerun_turns_them_back_on(self):
         self._marker("safe", exiting=True)

@@ -13,7 +13,6 @@ own pre-commit entrypoint would pass that one while consulting nothing.
 
 import ast
 import importlib.util
-import json
 import re
 import tempfile
 import unittest
@@ -21,6 +20,8 @@ from pathlib import Path
 from unittest import mock
 
 import yaml
+
+from tests.mx.held import open_marker
 
 _ROOT = Path(__file__).resolve().parents[2]
 _PRECOMMIT = _ROOT / ".pre-commit-config.yaml"
@@ -105,7 +106,7 @@ def _hangar(td: str) -> Path:
     """Return a project root carrying an active MX marker."""
     root = Path(td)
     (root / ".gzkit").mkdir(parents=True, exist_ok=True)
-    (root / ".gzkit" / "mx.json").write_text(json.dumps({"session_id": "t"}), encoding="utf-8")
+    open_marker(root)
     return root
 
 

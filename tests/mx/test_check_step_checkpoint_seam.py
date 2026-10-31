@@ -17,9 +17,8 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from gzkit.mx import marker
-from gzkit.mx.marker import Marker
 from gzkit.traceability import covers
+from tests.mx.held import open_marker
 
 
 def _mk_root(tmp: str) -> Path:
@@ -29,7 +28,7 @@ def _mk_root(tmp: str) -> Path:
 
 
 def _write_marker(root: Path) -> None:
-    marker.write(Marker(session_id="test-session"), root)
+    open_marker(root)
 
 
 def _failing_result():

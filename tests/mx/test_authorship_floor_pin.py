@@ -22,15 +22,15 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from gzkit.mx import marker
 from gzkit.mx.marker import Marker
+from tests.mx.held import open_marker
 
 
 def _hangar_root(tmp: str) -> Path:
     """Return a project root with an OPEN hangar marker."""
     root = Path(tmp)
     (root / ".gzkit").mkdir(parents=True, exist_ok=True)
-    marker.write(Marker(session_id="ghi-852-test"), root)
+    open_marker(root, Marker(session_id="ghi-852-test"))
     return root
 
 

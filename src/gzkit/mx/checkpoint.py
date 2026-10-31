@@ -32,22 +32,18 @@ def resolve(
 
 
 def hangar_demotes(project_root: Path | None = None) -> bool:
-    """Return True when an open marker demotes guards: the hangar and safe mode both do.
+    """Return True when the condition is on: the hangar and safe mode both demote.
 
     Safe mode lowers every guard outside ``GATE5_INVARIANTS`` to advisory while its
     marker is open, as the hangar does, and the hard-gate exit re-runs all at full
     strength (operator ruling 2026-10-17, R6). GHI #1244 first built safe mode with
-    every guard at full strength; that disposition was replaced by the ruling. An
-    unreadable marker keeps the hangar's original presence-only reading.
+    every guard at full strength; that disposition was replaced by the ruling.
 
-    A marker ``gz mx exit`` holds through its re-run is marked ``exiting`` and
-    demotes nothing, so the re-run is at full strength while the marker stays on
-    disk and the session never looks dangling (GHI #1257).
+    An unreadable or unbound marker demotes nothing, and neither does the marker
+    ``gz mx exit`` holds through its re-run, which stays on disk so the session never
+    looks dangling (:func:`gzkit.mx.marker.condition`; GHI #1257, #1273).
     """
-    if not marker.is_active(project_root):
-        return False
-    held = marker.read(project_root)
-    return held is None or not held.exiting
+    return marker.condition(project_root).on
 
 
 def is_advisory(guard_name: str, project_root: Path | None = None) -> bool:
