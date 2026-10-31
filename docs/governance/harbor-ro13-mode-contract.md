@@ -2,7 +2,7 @@
 
 # RO-13 specification — the two-way mode contract
 
-**2026-10-31. Status: drafted by the agent at the operator's request (*"I want a RO-13 tranche page"*), not yet accepted.** Operator: **g0**. Repair order RO-13 of the [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders), serving every band and the control plane. Split around RO-4 to RO-8 (operator: *"c"*): the foundation tranches land directly after RO-11, the retrofit tranches after RO-8. The rulings are quoted with the options put in the contract's § Rulings of 2026-10-31. The design is the [contractor-kit record](../rnd/contractor-kit.md), whose counts are dated measurements.
+**2026-10-31. Status: specified; its open points ruled one at a time, drafted by the agent at the operator's request (*"I want a RO-13 tranche page"*), and the page and its tranches accepted by the operator the same day (*"i accept"*).** Operator: **g0**. Repair order RO-13 of the [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders), serving every band and the control plane. Split around RO-4 to RO-8 (operator: *"c"*): the foundation tranches land directly after RO-11, the retrofit tranches after RO-8. The rulings are quoted with the options put in the contract's § Rulings of 2026-10-31. The design is the [contractor-kit record](../rnd/contractor-kit.md), whose counts are dated measurements.
 
 ## Scope
 

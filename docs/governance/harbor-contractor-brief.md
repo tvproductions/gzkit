@@ -20,8 +20,7 @@
 8. [RO-8](harbor-ro8-in-flight-work.md) — the in-flight work absorbed (four acts; act 3 waits for the operator's review).
 9. [RO-13](harbor-ro13-mode-contract.md), retrofit tranches R1 to R3 — code controls by role, then skills, then rules and the other surfaces, after the operator rules the tables (T0).
 
-RO-10 is parked and not worked. RO-9 closed through Gate 5 on 2026-10-29. RO-13's page is not yet accepted: stop and ask before working the retrofit.
-
+RO-10 is parked and not worked. RO-9 closed through Gate 5 on 2026-10-29.
 **Each act:**
 
 - One commit: `fix(<scope>): … (GHI #N)` or `feat(<scope>): …` or `docs(drydock): …`, with a `Task: TASK-ro<n>-<slug>` trailer.
