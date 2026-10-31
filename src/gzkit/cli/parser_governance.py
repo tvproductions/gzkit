@@ -878,7 +878,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
         help="hangar (default): one squawk; drydock: safe mode under --contract (GHI #1273)",
     )
     p_mx_enter_level.add_argument(
-        "--mode", choices=("mx", "safe"), default="mx", help=argparse.SUPPRESS
+        "--mode", choices=("mx", "safe"), default="mx", help="Older spelling of --level"
     )
     p_mx_enter.add_argument(
         "--contract",

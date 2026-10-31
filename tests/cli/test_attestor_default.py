@@ -51,6 +51,7 @@ _HUMAN_ACT = frozenset(
         "gz mx exit",
         # GHI #1261: renewing the drydock lease is the operator's act, as enter and exit are.
         "gz mx renew",
+        "gz mx repair",
         "gz ledger correct",
         "gz obpi acceptance",
         # GHI #1161: records the operator's own act of reviewing a canary's mutant.
