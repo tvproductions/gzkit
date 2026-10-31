@@ -399,7 +399,7 @@ class TestSyncCommand(unittest.TestCase):
             )
             # And the model-sourced prose IS present.
             self.assertIn("**Purpose**: A gzkit-governed project", rendered)
-            self.assertIn("**Tech Stack**: Python 3.13+ with uv, ruff, ty", rendered)
+            self.assertIn("**Tech Stack**: Python 3.14+ with uv, ruff, ty", rendered)
 
     @covers("REQ-0.0.37-22-04")
     def test_invariant_coherence_catches_hand_edit_to_agents_md(self) -> None:
