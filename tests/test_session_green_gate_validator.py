@@ -11,6 +11,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from gzkit.governance.trust_audits.session_green_gate import declared_hook_entries
 from gzkit.traceability import covers
 
 _HOOK_WITH_PRE_PUSH = """\
@@ -360,3 +361,28 @@ class SessionGreenGateDeliversEveryDeclaredHookType(unittest.TestCase):
             errors, _ = self._audit(root)
         self.assertEqual(len(errors), 1, errors)
         self.assertIn("pre-push", errors[0].artifact)
+
+
+class DeclaredHookEntries(unittest.TestCase):
+    """The hook-id to entry map the alarm-routing tests read."""
+
+    def _entries(self, config: str | None) -> dict[str, str]:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            if config is not None:
+                (root / ".pre-commit-config.yaml").write_text(config, encoding="utf-8")
+            return declared_hook_entries(root)
+
+    def test_maps_every_hook_to_its_entry(self) -> None:
+        self.assertEqual(
+            self._entries(_HOOK_WITH_PRE_PUSH), {"gz-check-pre-push": "uv run gz check"}
+        )
+
+    def test_a_remote_hook_declares_no_entry(self) -> None:
+        config = "repos:\n  - repo: https://example.test/r\n    hooks:\n      - id: ruff-check\n"
+        self.assertEqual(self._entries(config), {"ruff-check": ""})
+
+    def test_a_missing_or_unparseable_config_declares_nothing(self) -> None:
+        for config in (None, "repos: [unterminated", "- a\n- list\n"):
+            with self.subTest(config=config):
+                self.assertEqual(self._entries(config), {})

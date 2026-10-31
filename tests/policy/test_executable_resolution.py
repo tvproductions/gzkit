@@ -85,8 +85,7 @@ def _is_resolved(argv: ast.expr | None, resolved: set[str]) -> bool:
     return False
 
 
-def _unresolved(source: str, label: str) -> list[str]:
-    tree = ast.parse(source)
+def _unresolved(tree: ast.AST, label: str) -> list[str]:
     resolved = _resolved_names(tree)
     return [
         f"{label}:{call.lineno} spawns {ast.unparse(argv) if argv else '?'}"
@@ -122,7 +121,8 @@ class TestEverySpawnIsResolved(unittest.TestCase):
             finding
             for path in sorted(SRC_ROOT.rglob("*.py"))
             for finding in _unresolved(
-                path.read_text(encoding="utf-8"), path.relative_to(REPO_ROOT).as_posix()
+                ast.parse(path.read_text(encoding="utf-8")),
+                path.relative_to(REPO_ROOT).as_posix(),
             )
         ]
         self.assertEqual(findings, [])
@@ -130,7 +130,7 @@ class TestEverySpawnIsResolved(unittest.TestCase):
     def test_generated_hooks(self) -> None:
         scripts = list(_hook_scripts())
         self.assertTrue(scripts, "no hook template renders a script")
-        findings = [f for label, source in scripts for f in _unresolved(source, label)]
+        findings = [f for label, source in scripts for f in _unresolved(ast.parse(source), label)]
         self.assertEqual(findings, [])
 
     def test_canonical_skill_and_chore_scripts(self) -> None:
@@ -138,7 +138,8 @@ class TestEverySpawnIsResolved(unittest.TestCase):
             finding
             for path in _canonical_scripts()
             for finding in _unresolved(
-                path.read_text(encoding="utf-8"), path.relative_to(REPO_ROOT).as_posix()
+                ast.parse(path.read_text(encoding="utf-8")),
+                path.relative_to(REPO_ROOT).as_posix(),
             )
         ]
         self.assertEqual(findings, [])
@@ -166,11 +167,11 @@ class TestTheScanSeesABareExecutable(unittest.TestCase):
 
     def test_refuses_a_bare_literal(self) -> None:
         source = 'import subprocess\nsubprocess.run(["git", "status"])\n'
-        self.assertEqual(len(_unresolved(source, "planted")), 1)
+        self.assertEqual(len(_unresolved(ast.parse(source), "planted")), 1)
 
     def test_refuses_a_variable_argv(self) -> None:
         source = "import subprocess\ndef f(cmd):\n    subprocess.run(cmd)\n"
-        self.assertEqual(len(_unresolved(source, "planted")), 1)
+        self.assertEqual(len(_unresolved(ast.parse(source), "planted")), 1)
 
     def test_admits_the_resolver_shapes(self) -> None:
         source = (
@@ -182,7 +183,7 @@ class TestTheScanSeesABareExecutable(unittest.TestCase):
             '    tool = find_executable("codex")\n'
             '    subprocess.run([tool, "--version"])\n'
         )
-        self.assertEqual(_unresolved(source, "planted"), [])
+        self.assertEqual(_unresolved(ast.parse(source), "planted"), [])
 
 
 if __name__ == "__main__":

@@ -563,7 +563,7 @@ def count_waived(waivers: dict[str, list[str]], file_path: str) -> int:
     return len(waivers.get(file_path, []))
 
 
-def _op_identity(op: TautologicalTestOperation) -> tuple[str, str, str, str]:
+def _op_identity(op: TautologicalTestOperation) -> tuple[str, str, str]:
     """Stable identity for baseline matching (GHI #632).
 
     Excludes ``line_number`` (shifts on unrelated edits elsewhere in the file)
@@ -571,8 +571,13 @@ def _op_identity(op: TautologicalTestOperation) -> tuple[str, str, str, str]:
     it is, not WHERE it sits or in what scan position. This replaces the brittle
     count/positional comparison that both tripped on benign additions and
     misreported a baselined op as the culprit.
+
+    Excludes ``assertion_kind`` too: the scan keeps one op per function and
+    reports whichever assertion it walks first, so the kind distinguishes no two
+    debts, and a narrowing ``assert`` beside a check re-keyed four baselined ops
+    into "new" ones.
     """
-    return (op.file_path, op.function_name, op.operation_kind, op.assertion_kind)
+    return (op.file_path, op.function_name, op.operation_kind)
 
 
 def audit_test_quality(project_root: Path) -> list[ValidationError]:

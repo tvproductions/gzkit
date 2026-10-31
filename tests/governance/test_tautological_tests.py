@@ -17,6 +17,7 @@ import tempfile
 import textwrap
 import unittest
 
+from gzkit.tautological_tests import audit_drift
 from gzkit.traceability import covers
 
 
@@ -556,6 +557,52 @@ class TestDriftGate(unittest.TestCase):
             errors = audit_drift(tmp)
 
         self.assertEqual(errors, [])
+
+    def _audit_one_test(self, body: str, baselined: dict) -> list:
+        with tempfile.TemporaryDirectory() as tmp_str:
+            tmp = pathlib.Path(tmp_str)
+            data_dir = tmp / "data"
+            data_dir.mkdir()
+            tests_dir = tmp / "tests"
+            tests_dir.mkdir()
+            (tests_dir / "test_drift.py").write_text(textwrap.dedent(body), encoding="utf-8")
+            self._write_baseline(data_dir, [baselined])
+            self._write_empty_waivers(data_dir)
+            return audit_drift(tmp)
+
+    _NARROWED = """\
+        import unittest
+
+        class TestFoo(unittest.TestCase):
+            def test_something(self):
+                m = open("data/x.json").read()
+                self.assertIsNotNone(m)
+                assert m is not None
+        """
+
+    @covers("REQ-0.0.59-04-04")
+    def test_a_baselined_op_survives_a_changed_first_assertion(self) -> None:
+        # A type-narrowing `assert` beside its check changed the reported kind and
+        # turned four known debts into "new" ones; the op is the same op.
+        baselined = {
+            "file_path": "tests/test_drift.py",
+            "line_number": 4,
+            "operation_kind": "open",
+            "function_name": "test_something",
+            "assertion_kind": "assertIsNotNone",
+        }
+        self.assertEqual(self._audit_one_test(self._NARROWED, baselined), [])
+
+    @covers("REQ-0.0.59-04-03")
+    def test_another_function_is_still_new_debt(self) -> None:
+        baselined = {
+            "file_path": "tests/test_drift.py",
+            "line_number": 4,
+            "operation_kind": "open",
+            "function_name": "test_another",
+            "assertion_kind": "assert",
+        }
+        self.assertEqual(len(self._audit_one_test(self._NARROWED, baselined)), 1)
 
 
 class TestSelfExemption(unittest.TestCase):

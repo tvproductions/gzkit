@@ -59,11 +59,45 @@ def declared_hook_types(project_root: Path) -> list[str]:
     under-installs exactly what the witness would then under-check. An unreadable
     config reads as pre-commit's default; the declaration arm reports it.
     """
+    return _declared_hook_types(_read_config(project_root))
+
+
+def declared_hook_entries(project_root: Path) -> dict[str, str]:
+    """Read how each declared hook is wired.
+
+    Public so a reading of how a hook is wired walks the config the way this
+    gate does. An unreadable config declares nothing, and the declaration arm
+    reports it.
+
+    Returns:
+        Each hook's entry by hook id; a remote hook's entry is empty.
+
+    """
+    return {hook["id"]: hook.get("entry", "") for hook in _hooks(_read_config(project_root))}
+
+
+def _read_config(project_root: Path) -> dict[str, object]:
+    """Parse the project's pre-commit config.
+
+    Returns:
+        The parsed config, or an empty one when it cannot be read.
+
+    """
     try:
         config = yaml.safe_load((project_root / ".pre-commit-config.yaml").read_text("utf-8"))
     except OSError, UnicodeDecodeError, yaml.YAMLError:
         config = None
-    return _declared_hook_types(config if isinstance(config, dict) else {})
+    return config if isinstance(config, dict) else {}
+
+
+def _hooks(config: dict) -> list[dict]:
+    """Flatten the config's hooks.
+
+    Returns:
+        Every hook the config declares, across its repos.
+
+    """
+    return [hook for repo in config.get("repos", []) for hook in repo.get("hooks", [])]
 
 
 def _declared_hook_types(config: dict[str, object]) -> list[str]:
@@ -234,10 +268,9 @@ def audit_session_green_gate(
                 message=f"Invalid .pre-commit-config.yaml structure. {_RECOVERY}",
             )
         ]
-    all_hooks = [hook for repo in config.get("repos", []) for hook in repo.get("hooks", [])]
     pre_push_gz_hooks = [
         h
-        for h in all_hooks
+        for h in _hooks(config)
         if "pre-push" in (h.get("stages") or []) and _runs_gz_check(h.get("entry", ""))
     ]
     if not pre_push_gz_hooks:

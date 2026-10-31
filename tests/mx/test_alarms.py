@@ -7,12 +7,13 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-import yaml
-
 from gzkit.commands.quality import _STEP_GUARD_META
 from gzkit.commands.validate_cmd import VALIDATOR_REGISTRY
+from gzkit.governance.trust_audits.session_green_gate import declared_hook_entries
 from gzkit.mx import alarms, levels
 from tests.mx.held import bind_session
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 class TestAlarmsOff(unittest.TestCase):
@@ -76,12 +77,7 @@ class TestFastStaticStaysArmed(unittest.TestCase):
     _STEPS = ("Lint", "Complexity ceiling")
 
     def test_no_fast_static_hook_routes_through_the_alarm_switch(self):
-        config = yaml.safe_load(
-            (Path(__file__).resolve().parents[2] / ".pre-commit-config.yaml").read_text(
-                encoding="utf-8"
-            )
-        )
-        entries = {h["id"]: h.get("entry", "") for repo in config["repos"] for h in repo["hooks"]}
+        entries = declared_hook_entries(REPO_ROOT)
         for hook in self._HOOKS:
             with self.subTest(hook=hook):
                 self.assertIn(hook, entries)
@@ -89,12 +85,7 @@ class TestFastStaticStaysArmed(unittest.TestCase):
 
     def test_the_pytest_ban_hook_never_routes_through_the_alarm_switch(self):
         """Operator, 2026-10-25: "never, ever, ever turn this off: "the pytest ban""."""
-        config = yaml.safe_load(
-            (Path(__file__).resolve().parents[2] / ".pre-commit-config.yaml").read_text(
-                encoding="utf-8"
-            )
-        )
-        entries = {h["id"]: h.get("entry", "") for repo in config["repos"] for h in repo["hooks"]}
+        entries = declared_hook_entries(REPO_ROOT)
         self.assertIn("forbid-pytest", entries)
         self.assertNotIn("gzkit.mx.alarms", entries["forbid-pytest"])
 
