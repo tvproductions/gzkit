@@ -26,11 +26,11 @@ is the operator's rulings below.
 | Record | Layer | Identity | Holds | Answers |
 |---|---|---|---|---|
 | PRD | 1 | `PRD-…` | Functional (`FR-nnn`) and non-functional (§7) requirements: the parent obligation set | why the product exists |
-| Family | 1 (catalog) | mnemonic letter, `H` | One responsibility area, with a one-sentence scope in the legend | where an obligation belongs |
-| Capability | 1 (catalog) | family + number, `H1` | A named grouping of outcomes with a scope; never carries work (ruled 2026-10-29) | which outcomes belong together |
-| Outcome | 1 (catalog) | capability + dotted number, `H1.4` | One reviewable deliverable: statement, owner, `user_facing`, `governed_by`, `depends_on`, `modules` (the code paths it owns; ruled 2026-10-30) | what is delivered |
+| Family | 1 (catalog) | three-letter mnemonic, `SES` (ruled 2026-10-30) | One responsibility area, with a one-sentence scope in the legend | where an obligation belongs |
+| Capability | 1 (catalog) | family + number, `SES1` | A named grouping of outcomes with a scope; never carries work (ruled 2026-10-29) | which outcomes belong together |
+| Outcome | 1 (catalog) | capability + dotted number, `SES1.4` | One reviewable deliverable: statement, owner, `user_facing`, `governed_by`, `depends_on`, `modules` (the code paths it owns; ruled 2026-10-30) | what is delivered |
 | REQ | 1 (catalog) | sequential, area-free, `REQ-1207` | One atomic obligation: statement, kind (BEHAVIOR, SUPPORT, STRUCTURAL-FENCE), revision, `member_of`, `applies_to` for an NFR | what must be true |
-| Feature file and steps | 1 | the outcome's code as a tag, `@H1.4` | The executable behaviour of one user-facing outcome; each scenario tagged with the REQ it proves | proof of user-facing behaviour |
+| Feature file and steps | 1 | the outcome's code as a tag, `@SES1.4` | The executable behaviour of one user-facing outcome; each scenario tagged with the REQ it proves | proof of user-facing behaviour |
 | ADR | 1 | `ADR-<n>` (decision record) | One architecture decision: context, alternatives, consequences, decision status, supersession links | which choice was made |
 | Feature package | 1 | to be named when its store lands | A list of outcomes already in the catalog, each in at most one feature package, plus the story of why they belong together and the value they bring together; no version, release or order; its value delivered attested by a human at the release or work package attestation (ruled 2026-10-30, [the four-records R&D](../../rnd/four-records.md)); the successor to the mADR | why these outcomes belong together |
 | Work package | 1, with its events in 2 | sequential, `WP-<NN>-<slug>` | One dated attempt to deliver one outcome: the frozen REQ baseline, the closing test, the task cards; the OBPI's successor, matching TASKs to REQs (ruled 2026-10-30) | how one outcome is delivered |
@@ -46,8 +46,8 @@ parent of the families: every FR and every §7 attribute has a disposition (see 
 
 ### 2. Identity
 
-Families and outcomes take FDAU mnemonic codes with a recorded legend: `H` is a family, `H1` a
-capability, `H1.4` an outcome, exactly three levels, and a work package always delivers an outcome
+Families and outcomes take FDAU mnemonic codes with a recorded legend: `SES` is a family, `SES1` a
+capability, `SES1.4` an outcome, exactly three levels, and a work package always delivers an outcome
 (operator ruling 2026-10-29, *"A"*, recorded in the drydock contract's § Rulings of 2026-10-29).
 REQs keep sequential ids that do not depend on their area, and membership is a field
 (`member_of`), so moving a REQ between outcomes keeps its id, its `@covers` tags and its proof
@@ -171,6 +171,11 @@ resolving through the aliases; regrouping the files by outcome is later drydock 
 what kind of need it is; its kind (ADR-0.0.59) says which proof channel binds it.
 
 ### 8.3. The family legend — MIL-STD-881's compromise
+
+*Amended 2026-10-30*: the letters below are recoded to a fixed three letters, in this order: X `AIR`,
+H `SES`, C `CTL`, M `MNT`, P `PKG`, D `DEC`, R `RQW`, G `GAT`, A `ATT`, L `LED`, Q `QUA` (the drydock
+contract's § Rulings of 2026-10-30). This decision and the worked examples keep the letters they
+were ruled and run with.
 
 Ruled 2026-10-18. Torn between Schemes A and B (operator, verbatim: *"torn here, there are reasons for
 A and B"*, then *"so, perhaps MIL-STD-881 had the best compromise?"*), the operator selected one tree

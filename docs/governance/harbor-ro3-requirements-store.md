@@ -72,7 +72,8 @@ selection:
 
 **`families.json`** — the legend, seeded with decision 8.3's table: `code` (one letter), `band`
 (`product` or `common`), `name`, and `scope` (one sentence). Product: X, H, C, M, P, D. Common: R, G,
-A, L, Q.
+A, L, Q. (*Amended 2026-10-30*: codes become a fixed three letters, re-coded by
+[RO-11](harbor-ro11-intake.md), which also tightens the outcome code to `SES1.4`'s shape.)
 
 **`outcomes.json`** — empty. Each entry: `code` (family letter and dotted number, `H1.4`), `statement`,
 `owner`, `user_facing` (decision 10's test), `governed_by` (ADR ids, resolved through the RO-2 seam),

@@ -2,7 +2,7 @@
 
 # RO-4 specification — release detached from the ADR
 
-**2026-10-25. Status: specified; every open question ruled the same day.** Operator: **g0**. Repair order RO-4 of the [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders), serving version. Sequenced after RO-5 ([its specification](harbor-ro5-work-packages.md)), because the Release Package ships work packages.
+**2026-10-25. Status: specified; every open question ruled the same day.** Operator: **g0**. Repair order RO-4 of the [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders), serving version. Sequenced after RO-5 ([its specification](harbor-ro5-work-packages.md)), because the Release Package ships work packages, and after RO-11 ([its specification](harbor-ro11-intake.md); amended 2026-10-30, operator: *"A"*), because its packages reference outcome codes.
 
 ## Already ruled in the record
 
