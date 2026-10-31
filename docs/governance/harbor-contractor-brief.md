@@ -12,7 +12,7 @@
 
 1. [RO-5](harbor-ro5-work-packages.md) — work packages, repair orders, GitHub coupling (five tranches).
 2. RO-12 — the contractor kit. **Not worked by this contractor**: the operator and a working session build it (the bootstrap, the contract's § Division of labor), after #1200, #1206, #1208, #1028 and #1273 and the other reused-part defects the contract's RO-12 row lists are repaired as direct fixes. Stop and wait. Every order below then runs under the kit as its first flight.
-3. [RO-11](harbor-ro11-intake.md) — intake: the capability records, the three-letter legend and the entry verb (three tranches; placed before RO-4, amended 2026-10-30, operator: *"A"*).
+3. [RO-11](harbor-ro11-intake.md) — intake: the capability records, the three-letter legend and the entry verb (placed before RO-4, amended 2026-10-30, operator: *"A"*). **Not worked** until the operator has reviewed its draft specification. Stop and ask.
 4. [RO-4](harbor-ro4-release.md) — release detached from the ADR (four tranches).
 5. [RO-6](harbor-ro6-canon-retirement.md) — superseded canon corrected (three tranches).
 6. [RO-7](harbor-ro7-context-cut.md) — the context cut (seven stages, each measured by [RO-1's protocol](harbor-ro1-cut-measurement.md); RO-1's baseline report is written first).
@@ -36,7 +36,7 @@ RO-10 is parked and not worked. RO-13, the two-way mode contract, is **not worke
 - every structural question a specification does not answer, including the names of new `gz` verbs and ledger events;
 - every binding loss a cut stage finds (RO-1 step 4);
 - the skill demotion list (RO-7 ruling 3) and the catalogue merge plan (RO-7 stage 6), each as one batch;
-- RO-8 act 3;
+- RO-11's specification, and RO-8 act 3;
 - RO-12 and RO-13 (above);
 - any repair order that needs the contract changed: the contract changes only by its own amendment, never through a repair order (contract § Records, B1);
 - anything that would delete data, rewrite history or force-push.
