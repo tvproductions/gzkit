@@ -237,7 +237,8 @@ witnessed by `gz validate --catalog` (RO-3); the work-package store and the `gz 
 once end to end with `WP-01-astral-toolchain` (RO-5). Not landed: intake and any verb that authors
 an outcome or a REQ (RO-11); a production writer of `outcome_transitioned` and `req_proof_recorded`,
 whose only caller is the producer probe; a work package's close moving its outcome; capability
-records and the tightened outcome code; the outcome's `source` and `modules` fields; the airlock
+records, the tightened outcome code and the three-letter legend (RO-11, by change order of
+2026-10-30); the outcome's `source` and `modules` fields; the airlock
 reading the outcome, since `gz airlock in` still targets an OBPI brief; the Release Package store,
 `release_recorded` and `gz closeout` keyed to the package (RO-4); the feature package's store and
 its value attestation (RO-4, by change order of 2026-10-30); and the five unwitnessed edges above.
@@ -774,6 +775,12 @@ The general-arrangement redraw continues with its remaining components.
   would sit beside catalog ids such as `REQ-1207`; `ADR`, `PRD` and `GHI` are avoided likewise.
   Operator, verbatim: *"yes, those eleven"*. An outcome reads `SES1.4`. Dated records keep the
   letters they were written with; the landing order is put separately.
+- **RO-11 lands the capability records, the tightened code pattern and the re-coded legend** (RO-11's
+  review, a finding graded blocking: the entry verb cannot file an outcome without them, and no
+  order owned them). Put to the operator: A, RO-11 by change order, its entry verb being their
+  first writer; B, reopen RO-3, closed 2026-10-22; C, no capability records, short of the
+  three-level ruling. Operator, verbatim: *"a"*. RO-11's row takes the change order when it is
+  rewritten.
 
 ## Superseded on 2026-10-30 (record, not binding)
 
