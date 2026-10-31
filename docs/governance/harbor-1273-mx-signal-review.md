@@ -2,7 +2,7 @@
 
 # GHI #1273 review — the MX signal, audited against the ruled model
 
-**2026-10-31. Status: review written; All three questions ruled. The repair has not begun. No code has changed.** Operator: **g0**. This is the deliverable #1273's closure contract names, a precondition of [RO-12](harbor-pilotage-candidate-2026-10-15.md#repair-orders). Its measurements are dated and taken at `145a44b6b`.
+**2026-10-31. Status: review written; All three questions ruled, and the repair landed the same day (operator: *"a"*); § The repair lists it. No code has changed.** Operator: **g0**. This is the deliverable #1273's closure contract names, a precondition of [RO-12](harbor-pilotage-candidate-2026-10-15.md#repair-orders). Its measurements are dated and taken at `145a44b6b`.
 
 ## What this review is
 
@@ -60,7 +60,7 @@ Four readers refuse or detect on the file's presence, and `is_active` is what ma
 1. **The one reading costs about 640 times more per call.** Measured: `hangar_demotes` 0.08 ms, `is_valid` 50.9 ms, because `_open_session_ids` parses all 19,975 lines of a 27.9 MB ledger. `hangar_demotes` runs once per guard. The repair memoizes the scan per process, keyed on the ledger's size and modification time, or every guard pays for it.
 2. **The level rename would corrupt the open marker.** `Marker` is `extra="forbid"` and `mode` is `Literal["mx", "safe"]`. A marker holding a new value or field reads as unreadable under the code that does not expect it, and an unreadable marker now means full strength. See § Question 2.
 3. **No one-command recovery exists.** The ruling requires one, and `gz mx exit` refuses an unreadable marker. See § Question 3, ruled: a new verb.
-4. **At least 48 test fixtures write a marker with no ledger event** (`tests/mx/test_hardening.py` 11, `test_marker.py` 10, `test_checkpoint.py` 8, `tests/governance/test_mx_hardening_audit.py` 7, and more). Each expects demotion and would read as unbound. They need one shared helper that books the event. This is the repair's largest diff.
+4. **Tests wrote a marker with no ledger event.** Counting the sites gave at least 48, an overestimate: changing the two readers failed 25 tests of 12,919, measured, because most of those sites never asked whether anything demotes. `tests/mx/held.py` books the event for them.
 5. **The handoff claimed a pre-push pass that proves nothing.** It says `a73c70974` *"passed the pre-push gz check"*, but at the drydock level that hook exits 0 without running the check. The handoff stands as written; the Trust Model repair below removes the sentence that invites the claim.
 6. **`Marker.mode`'s description is stale.** It says safe mode runs *"guards at full strength (GHI #1244)"*, which the ruling of 2026-10-17 replaced.
 
@@ -70,9 +70,9 @@ Four readers refuse or detect on the file's presence, and `is_active` is what ma
 - **A self-test failure demoted as a policy breach (#1289, #1272).** RO-13's F5 owns the uniform exit statuses.
 - **The measured traps of 2026-10-26.** Items 1, 2 and 4 are fixed or reverted; item 5's instance is reverted; item 6 is ruled, lint stays on. Item 3 stands: the post-commit recorder appends `artifact_edited` rows during a rebase, and `git rebase --continue` refuses. It is not a signal defect, so it takes its own issue.
 
-## The repair, once the questions are ruled
+## The repair
 
-Each step lands with its RED test, as #1273's closure contract requires.
+Each step lands with its RED test, as #1273's closure contract requires, except step 5, whose tests and verb landed together. It landed in the order below, with step 5 before step 4 so the banner names a verb that exists, and with steps 6 and 7 in one commit because their tests share a file.
 
 1. `marker.py`: the one reading of *on*, beside `is_valid` and adding the `exiting` check, with the per-process memo and a typed cause for each off state. The stale `mode` description goes.
 2. The shared fixture helper, so the tests below it can move.
@@ -82,6 +82,8 @@ Each step lands with its RED test, as #1273's closure contract requires.
 6. The level (§ Question 2): the marker, `--level` beside `--mode`, the banners, the readers.
 7. The report-only CI job beside the unchanged blocking job.
 8. Canon, in the same commits as the behavior: `mx-mode.md` § Honor the marker, `gz-mx`, `src/gzkit/mx/AGENTS.md`, `gz-session-handoff` § Trust Model naming the drydock-level exception, and the `safe-mode-doctrine.md` sentence *"The code does not yet read this way"*.
+
+**Limits as landed.** The banner is stdlib-only, so it cannot see a schema failure: a marker with an unknown field reads active there and unreadable to `marker.condition`, which is what lowers things. The ledger's `mx_session_opened` keeps `mode`, in the ledger's own words.
 
 The cost was accepted when the reading was ruled: a marker corrupted mid-drydock brings every guard back.
 

@@ -10,20 +10,30 @@ paths:
   - "src/gzkit/mx/awareness.py"
   - "src/gzkit/hooks/guards.py"
 ---
-<!-- rule-version: 1.14.1 -->
+<!-- rule-version: 1.15.0 -->
 
 # MX Mode (Maintenance Hangar) (gzkit)
 
-> **Rule version:** `1.14.1` — the contract's § Punch list is now its § List of discrepancies (contractor-kit row 4, 2026-10-28); version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#mx-modemd).
+> **Rule version:** `1.15.0` — one reading of the condition, the commanded level and `gz mx repair` (GHI #1273); version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#mx-modemd).
 
 ## Non-negotiable rules
 
 ### Honor the marker
 
-- Honor the marker: when `.gzkit/mx.json` exists, most guards drop to advisory
+- Honor the marker: when the condition is on, most guards drop to advisory
+
+**The condition is on only when `.gzkit/mx.json` is present, parses, is bound to a still-open
+`mx_session_opened` and is not `exiting`** (`gzkit.mx.marker.condition`; operator ruling
+2026-10-27, *"A"*). Anything else is normal operation at full strength: an unreadable or
+hand-made marker lowers nothing, the banner names its cause, and `gz mx repair`, through the
+`gz-mx` skill, is the recovery. Readers that raise protection keep the file's presence, so a
+corrupted marker still refuses a second entry and a release (ruling 2026-10-31, *"a"*). The marker
+is committed: the condition belongs to the repository, every clone and CI (2026-10-27, *"A"*). CI's
+`full-strength-report` job sets `GZKIT_MX_FULL_STRENGTH` and reports without failing the run
+(2026-10-26, *"report only, decide within #1273"*).
 
 Before every action in a session where `.gzkit/mx.json` exists, confirm the
-hangar is open. When the marker is present:
+hangar is open. While the condition is on:
 
 - `gate5_invariants` remain **fail-closed**. Gate 5 is never advisory.
 - **Both enforcement surfaces honor the marker (GHI #843).** Governance is enforced on two
@@ -62,8 +72,8 @@ demotion by default and must opt into the floor explicitly.
 
 ### Safe mode: ceremony suspended under a contract
 
-`gz mx enter --mode safe --contract <path>` opens the same marker in safe mode (GHI #1244).
-The marker's `mode` and `contract` fields, and the `mx_session_opened` event that binds them,
+`gz mx enter --level drydock --contract <path>` opens the same marker in safe mode (GHI #1244).
+The marker's `level` (hangar or drydock; an older marker's `mode` reads as its alias) and `contract` fields, and the `mx_session_opened` event that binds them,
 say which mode is open; the awareness banner names it every turn.
 
 - **What safe mode suspends:** the operator-only initiation of OBPI work and the brief
@@ -71,7 +81,7 @@ say which mode is open; the awareness banner names it every turn.
 - **What still binds:** `gate5_invariants`, the ledger written only through `gz` verbs,
   operator PII, the secret scan, no removal of a control, and the PRIME DIRECTIVE's
   trackability (below), and lint with the fast static checks. Every other guard drops to
-  advisory, and every slow alarm hook is off, while the marker is open, as in the hangar: `gzkit.mx.checkpoint.hangar_demotes`
+  advisory, and every slow alarm hook is off, while the condition is on, as in the hangar: `gzkit.mx.checkpoint.hangar_demotes`
   is true under either mode, and the pipeline gate honors the marker (R6, 2026-10-17);
   `gz mx exit` re-runs every guard at full strength.
 - **What it records:** every act is one commit with its `Task:` trailer, no long check per

@@ -5,14 +5,14 @@ description: Use to create or resume a session handoff document.
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "7.7.1"
+  skill-version: "7.7.2"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-28
+last_reviewed: 2026-10-31
 model: sonnet
 ---
 
@@ -98,7 +98,7 @@ than evidence of a closed issue.
 - **Reads (CREATE):** every reference cited in a **prospective** section, each against its own Layer-2 authority — GHI via `gh issue view`, OBPI and ADR from the ledger — to annotate settled citations at authoring time (§ Settled-citation annotation). Unreachable `gh` resolves `unknown` and annotates nothing.
 - **Writes:** Handoff markdown files under `.gzkit/handoffs/` (canonical storage per ADR-0.0.41 / OBPI-0.0.41-03); the settled-ruling store `.gzkit/handoffs/rulings.jsonl`; and, through `gz handoff decide`, one Layer-2 `handoff_resume_decided` event
 - **Validates:** No placeholders, no secrets, all sections present **and populated**, referenced files exist
-- **Blocks (RESUME): NOTHING. There is no gate.** A handoff ADVISES, and that is the whole mechanism; § Operator Authorization carries the retirement ruling. Every mutating tool call — `Write`, `Edit`, `NotebookEdit`, `gz obpi complete`, `gz attest`, commits — runs on an unruled handoff. **Gate 5 human attestation, the commit-time hooks (ruff/ty/the complexity ceiling and the guards) and the pre-push `gz check`, which runs every validator and the tests the change touches, are untouched.**
+- **Blocks (RESUME): NOTHING. There is no gate.** A handoff ADVISES, and that is the whole mechanism; § Operator Authorization carries the retirement ruling. Every mutating tool call — `Write`, `Edit`, `NotebookEdit`, `gz obpi complete`, `gz attest`, commits — runs on an unruled handoff. **Gate 5 human attestation, the commit-time hooks (ruff/ty/the complexity ceiling and the guards) and the pre-push `gz check`, which runs every validator and the tests the change touches, are untouched.** The drydock level is the exception: its slow alarms are off, so no `gz check` runs at push and a whole-tree `gz lint` does (`docs/governance/safe-mode-doctrine.md` § The instruments, item 5). A handoff written there does not claim a pre-push `gz check` passed.
 - **Still records:** `gz handoff decide` books the operator's verbatim ruling to Layer 2 (`handoff_resume_decided`, `proceed` | `pause` | `hold` | `revert`). That record is provenance an operator and an auditor read; nothing gates on its absence. The booking-coupling control (GHI #795/#797) still fails `gz check` if a ruling is recorded against a document other than the one advised.
 - **Does NOT write:** ADR status, OBPI brief status
 

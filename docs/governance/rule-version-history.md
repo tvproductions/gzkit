@@ -733,6 +733,15 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `mx-mode.md`
 
+### Changed 2026-10-31 at version `1.15.0` (operator rulings)
+
+§ Honor the marker now states the one reading of the condition, `gzkit.mx.marker.condition`, which
+reverses the presence-only reading (`docs/rnd/contractor-kit.md`, decision *the condition is on
+only when the marker is present, readable, ledger-bound and not exiting*, operator: *"A"*). Readers
+that raise protection keep presence, the marker names the level, and `gz mx repair` is the recovery
+(`docs/governance/harbor-1273-mx-signal-review.md`, operator: *"a"*, *"a"*, *"b"*). CI's report-only
+job is named (*"report only, decide within #1273"*).
+
 ### Changed 2026-10-28 at version `1.14.1` (wording)
 
 The contract's § Punch list is renamed its § List of discrepancies, by the contractor-kit ruling *"the punch list becomes

@@ -5,11 +5,11 @@ description: Use to open or exit the MX hangar or safe mode, or to check which m
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-28
+last_reviewed: 2026-10-31
 model: haiku
 gz_command: mx
 metadata:
-  skill-version: "1.8.0"
+  skill-version: "1.9.0"
 ---
 
 # gz mx
@@ -83,10 +83,10 @@ operator a raw `gz mx` command is a defect in the surface that gave it.
 
 2. **Enter safe mode**
    ```bash
-   uv run gz mx enter --mode safe --contract <contract path> --reason "<why>" --attestor g0
+   uv run gz mx enter --level drydock --contract <contract path> --reason "<why>" --attestor g0
    ```
-   Same marker, `mode: safe`, bound to its `mx_session_opened` event. The verb refuses a
-   missing or outside contract and refuses a contract under `--mode mx`. From this turn
+   Same marker, `level: drydock`, bound to its `mx_session_opened` event. The verb refuses a
+   missing or outside contract and refuses a contract under `--level hangar`. From this turn
    the banner names the contract; guards outside the floor are advisory until the exit.
    The entry event pins the contract: its SHA-256 and the bodies of § What is suspended
    and § Exit. Each commit that edits the contract while the session is open books
@@ -153,13 +153,26 @@ Safe mode, as the skill runs it for the operator:
 
 ```bash
 # Step 2 — enter under the pilotage contract
-uv run gz mx enter --mode safe --contract docs/governance/harbor-pilotage-candidate-2026-10-15.md --reason "harbor pilotage" --attestor g0
+uv run gz mx enter --level drydock --contract docs/governance/harbor-pilotage-candidate-2026-10-15.md --reason "harbor pilotage" --attestor g0
 
 # Steps 3 and 4 — repair orders under § Records; § Exit read before leaving
 
 # Step 5 — exit through the hard gate
 uv run gz mx exit --attestor g0
 ```
+
+## Repairing the marker
+
+The banner may read `MX MARKER UNREADABLE` or `MX MARKER UNBOUND`. Nothing is lowered then: every
+guard is at full strength. When a session should be open, the operator authorizes the repair:
+
+```bash
+uv run gz mx repair --attestor g0
+```
+
+It rewrites the marker from the one session the ledger keeps open, or removes a marker no session
+backs, and books `mx_marker_repaired`. A healthy marker is left alone, and two open sessions refuse.
+Commit the repaired marker, since the condition belongs to the repository.
 
 ## Repairing a ledger row
 
