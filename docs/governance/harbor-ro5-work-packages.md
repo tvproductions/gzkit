@@ -2,7 +2,7 @@
 
 # RO-5 specification — work packages, task cards and repair orders
 
-**2026-10-25. Status: specified; every open question ruled the same day.** Operator: **g0**. Repair order RO-5 of the [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders), serving labor and maintenance. Sequenced before RO-4 (operator, 2026-10-25: *"yes"*), because the Release Package ships work packages. **Amended 2026-10-28** (§ Amended 2026-10-28): the work-package record carries the bundle, the change ladder, alteration and departure from specification; RO-5 lands before RO-12, the contractor kit. **Amended 2026-10-31** (§ Amended 2026-10-31): the change order of 2026-10-30 is specified as tranche 6, landing directly after RO-11, not yet accepted.
+**2026-10-25. Status: specified; every open question ruled the same day.** Operator: **g0**. Repair order RO-5 of the [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders), serving labor and maintenance. Sequenced before RO-4 (operator, 2026-10-25: *"yes"*), because the Release Package ships work packages. **Amended 2026-10-28** (§ Amended 2026-10-28): the work-package record carries the bundle, the change ladder, alteration and departure from specification; RO-5 lands before RO-12, the contractor kit. **Amended 2026-10-31** (§ Amended 2026-10-31): the change order of 2026-10-30 is specified as tranche 6, landing directly after RO-11, accepted by the operator the same day (*"accept"*).
 
 ## Already ruled in the record
 

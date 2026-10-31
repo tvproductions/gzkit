@@ -918,6 +918,9 @@ same class as the ruling of 2026-10-29.
 - **The names.** Under the `catalog` parent, the verbs are `edit`, `reopen` and `withdraw`, and the
   event is `catalog_edited`. Put to the operator for the lifecycle verb: A, `transition`; B, `move`.
   Operator, verbatim: *"A"*.
+- **RO-5's change order is specified.** With its open points ruled, the page's § Amended 2026-10-31
+  and tranche 6 were put to the operator: accepted as the change order's specification? Operator,
+  verbatim: *"accept"*.
 
 ## Superseded on 2026-10-30 (record, not binding)
 
