@@ -23,6 +23,8 @@ The rulings on GHI #1200, carried here because its repair lands in tranche 1:
 6. **At the bound there is no further repair cycle.** The unblock names one exit: a changed requirement or bounded claim, a hold, or a withdrawal. A changed requirement restarts the task's count; a hold or a withdrawal clears the block and restarts nothing. Operator, verbatim: *"a"*.
 7. **The changed-requirement exit is usable once per requirement, per run.** Operator, verbatim: *"A"*.
 8. **An escalation at the bound may carry an agent recommendation**, beside facts the runtime writes into the block: the task's cycle count, the refutations of the requirement and the exits already used. Operator, verbatim: *"a"*.
+9. **The single-driver route splits by `kind`.** A `delivery` run may declare single-driver and records each fix cycle through the same verb, so the bound applies. A `repair` run cannot be single-driver, because nobody inspects their own work. The count sees only what is recorded, and the precomplete refusal of silent single-driver runs moves with the pipeline. Put to the operator: A, split by `kind`; B, removed everywhere; C, left as it is. Operator, verbatim: *"a"*.
+10. **The exit baseline has one seam.** All code that reads history goes through a single alias module, the only code allowed OBPI ids or event names; `src`, tests, skills, rules and live docs read zero. The ledger, briefs, handoffs, rulings, passage logs and dated snapshots are exempt as history. Put to the operator: A, one seam; B, a declared exemption list; C, surface names only. Operator, verbatim: *"a"*.
 
 ## Starting measure
 
@@ -53,7 +55,5 @@ Replayed over that run's ledger rows with the bound of `MAX_REVIEW_FIX_CYCLES`, 
 
 Each is put to the operator one at a time before tranche 1 is cut.
 
-1. **The single-driver route.** A declared single-driver run records no dispatch rows, so the count sees no cycles.
-2. **What the exit baseline counts.** The readers of history must still read OBPI ids and event names, so the alias layer and its legacy readers need a declared exemption, or *"zero"* cannot be reached.
-3. **The names.** The new `gz wp` verbs and ledger events; the contractor brief reserves new names for the operator. Put last, once the parts are known.
-4. **The later tranches' owner.**
+1. **The names.** The new `gz wp` verbs and ledger events; the contractor brief reserves new names for the operator. Put last, once the parts are known.
+2. **The later tranches' owner.**
