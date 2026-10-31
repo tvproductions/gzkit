@@ -213,6 +213,21 @@ class TestReopenedSessionWindow(unittest.TestCase):
         self.assertEqual(window.opened_at, spans[2][1])
         self.assertIsNone(window.closed_at)
 
+    def test_a_reopened_session_closed_again_reads_its_last_close(self) -> None:
+        last = "2026-10-04T00:00:00+00:00"
+        spans = (
+            ("mx_session_opened", "2026-10-01T00:00:00+00:00"),
+            ("mx_session_closed", "2026-10-02T00:00:00+00:00"),
+            ("mx_session_opened", "2026-10-03T00:00:00+00:00"),
+            ("mx_session_closed", last),
+        )
+        events = [{"event": kind, "session_id": "s", "ts": ts} for kind, ts in spans]
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            _write_ledger(root, events)
+            window = log.assemble_window(root, "s")
+        self.assertEqual((window.opened_at, window.closed_at), (spans[2][1], last))
+
 
 class TestRender(unittest.TestCase):
     @covers("REQ-0.0.74-06-02")
