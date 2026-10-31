@@ -781,6 +781,11 @@ The general-arrangement redraw continues with its remaining components.
   first writer; B, reopen RO-3, closed 2026-10-22; C, no capability records, short of the
   three-level ruling. Operator, verbatim: *"a"*. RO-11's row takes the change order when it is
   rewritten.
+- **RO-11 lands before RO-4** (RO-11's review). RO-4's release and feature packages reference
+  outcome codes, which RO-11 settles. Put to the operator: A, RO-5, RO-12, RO-11, RO-4, the register
+  and the contractor brief changed to match; B, RO-4 then RO-11 unchanged, RO-11 then touching RO-4's
+  stores; C, side by side, colliding on the outcome's shape. Operator, verbatim: *"A"*. RO-12 stays
+  ahead of both.
 
 ## Superseded on 2026-10-30 (record, not binding)
 
