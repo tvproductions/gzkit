@@ -79,7 +79,9 @@ evidence. `verified` means every member REQ is SATISFIED at its current revision
 are resolved. Only a Gate 5 human attestation on the outcome, made after reading the inspector's
 report, moves `verified` to `validated`. It is one act, recorded at the close of the outcome's work
 package, and that close moves the outcome (operator ruling 2026-10-29, *"A"*; the drydock
-contract's § Rulings of 2026-10-29). `released` comes from the ledger release record.
+contract's § Rulings of 2026-10-29). `released` comes from the ledger release record. *Amended
+2026-10-31* (operator: *"A"*, RO-5's § Amended 2026-10-31): a reopening returns an outcome to
+`designing`, and a withdrawal is the terminal state `withdrawn`, allowed only before `released`.
 
 **Each REQ carries proof only** (amended from "binary" after the operator's direction to learn from
 Backplane): `SATISFIED`, `UNSATISFIED` or `UNKNOWN`. Missing evidence is `UNKNOWN`, never a pass and

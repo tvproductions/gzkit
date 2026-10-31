@@ -2,7 +2,7 @@
 
 # RO-13 specification — the two-way mode contract
 
-**2026-10-31. Status: specified; its open points ruled one at a time, drafted by the agent at the operator's request (*"I want a RO-13 tranche page"*), and the page and its tranches accepted by the operator the same day (*"i accept"*).** Operator: **g0**. Repair order RO-13 of the [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders), serving every band and the control plane. Split around RO-4 to RO-8 (operator: *"c"*): the foundation tranches land directly after RO-11, the retrofit tranches after RO-8. The rulings are quoted with the options put in the contract's § Rulings of 2026-10-31. The design is the [contractor-kit record](../rnd/contractor-kit.md), whose counts are dated measurements.
+**2026-10-31. Status: specified; its open points ruled one at a time, drafted by the agent at the operator's request (*"I want a RO-13 tranche page"*), and the page and its tranches accepted by the operator the same day (*"i accept"*).** Operator: **g0**. Repair order RO-13 of the [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders), serving every band and the control plane. Split around RO-4 to RO-8 (operator: *"c"*): the foundation tranches land after RO-11 and RO-5's tranche 6 (operator: *"A"*, 2026-10-31), the retrofit tranches after RO-8. The rulings are quoted with the options put in the contract's § Rulings of 2026-10-31. The design is the [contractor-kit record](../rnd/contractor-kit.md), whose counts are dated measurements.
 
 ## Scope
 
@@ -14,7 +14,7 @@ This order does not repair the MX system itself. GHI #1273 is an RO-12 precondit
 
 ## Rulings
 
-1. **Split** (operator: *"c"*). The foundation goes directly after RO-11, so RO-4 to RO-8 declare in the real shape from their first commit. The retrofit goes after RO-8, against the final structure.
+1. **Split** (operator: *"c"*). The foundation goes after RO-11 and RO-5's tranche 6, before RO-4, so RO-4 to RO-8 declare in the real shape from their first commit. The retrofit goes after RO-8, against the final structure.
 2. **One control per distinct check, wherever it is reached** (operator: *"A"*). The entry sits at the implementation. A step, hook line or twin that only dispatches to it inherits that entry.
 3. **A control's CLI refusal goes through one named call carrying its control identity** (operator: *"a"*). A plain `GzCliError` stays a usage error.
 4. **The checkpoint is one temporary group entry** (operator: *"a"*). Its members keep today's demotion and leave as each gets its own entry. The baseline counts them as having none, and the MEL view shows them not yet contracted.
@@ -32,7 +32,7 @@ Carried from the record, not re-ruled: one MEL entry per control (level per stan
 
 The contractor stops and waits on every structural question; the names of new verbs, decorators, events and data files are among them. Every surface these tranches add carries the contract from its first commit.
 
-### Foundation, directly after RO-11
+### Foundation, after RO-11 and RO-5's tranche 6
 
 - **F1, the declaration.** The shared Pydantic MEL model and its schema. The MEL decorator, metadata-only at import, with a self-test reference that names no registered claim or arm failing at decoration, on the precedent of `enforces` in `src/gzkit/enforcement.py`. The Markdown MEL block and its validator. The MEL arguments on the `gzkit.mx.alarms` wrapper.
 - **F2, the place of call.** The reader that takes declaration and signal through one function, widening `resolve` in `src/gzkit/mx/checkpoint.py` from one marker reading to the doctrine's condition and standby level. The group entry of ruling 4. No control changes behavior in this tranche.
