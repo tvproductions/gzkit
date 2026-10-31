@@ -15,7 +15,10 @@ MX_BANNER = (
 )
 
 
-MX_EXITING_BANNER = "MX EXIT RUNNING — every guard at full strength until gz mx exit finishes"
+MX_EXITING_BANNER = (
+    "MX EXIT RUNNING — every guard at full strength; if no exit is running, "
+    "recover with gz mx repair through the gz-mx skill"
+)
 
 
 def void_marker_banner(cause: str) -> str:
@@ -73,10 +76,12 @@ def _read_marker(project_root: Path) -> dict | None:
         raw = json.loads(project_root.joinpath(*_MARKER_RELPATH).read_text(encoding="utf-8"))
     except OSError, ValueError:
         return None
-    if not isinstance(raw, dict) or not raw.get("session_id"):
+    if not isinstance(raw, dict) or not isinstance(raw.get("session_id"), str):
         return None
-    known = raw.get("level", "hangar") in LEVELS and raw.get("mode", "mx") in {"mx", "safe"}
-    return raw if known else None
+    level, mode = raw.get("level", "hangar"), raw.get("mode", "mx")
+    if not isinstance(level, str) or not isinstance(mode, str) or not raw["session_id"]:
+        return None
+    return raw if level in LEVELS and mode in {"mx", "safe"} else None
 
 
 def _session_is_open(project_root: Path, session_id: str) -> bool:
@@ -86,10 +91,10 @@ def _session_is_open(project_root: Path, session_id: str) -> bool:
     no gzkit code, so the banner fires when gz is the patient.
 
     Returns:
-        True when an open event stands with no close after it.
+        True when the session's last open has no close after it.
 
     """
-    state = False
+    bound = False
     try:
         text = project_root.joinpath(*_LEDGER_RELPATH).read_text(encoding="utf-8")
     except OSError:
@@ -104,9 +109,10 @@ def _session_is_open(project_root: Path, session_id: str) -> bool:
         if not isinstance(event, dict) or event.get("session_id") != session_id:
             continue
         if event.get("event") == "mx_session_closed":
-            return False
-        state = state or event.get("event") == "mx_session_opened"
-    return state
+            bound = False
+        elif event.get("event") == "mx_session_opened":
+            bound = True
+    return bound
 
 
 def get_banner(project_root: Path | None = None) -> str:

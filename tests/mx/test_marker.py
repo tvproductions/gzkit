@@ -260,6 +260,19 @@ class TestCondition(unittest.TestCase):
         self._assert_off("exiting")
         self.assertTrue(marker.is_valid(self.root))
 
+    def test_a_session_reopened_under_its_id_is_on(self) -> None:
+        marker.write(Marker(session_id="s-1"), self.root)
+        _write_ledger(self.root, [_OPENED, _CLOSED, _OPENED])
+        self.assertTrue(marker.condition(self.root).on)
+
+    def test_a_marker_that_cannot_decode_or_validate_reads_unreadable(self) -> None:
+        path = marker.marker_path(self.root)
+        _write_ledger(self.root, [_OPENED])
+        for raw in (b"\xff\xfe", b'{"session_id": "s-1", "level": []}'):
+            with self.subTest(raw=raw):
+                path.write_bytes(raw)
+                self._assert_off("unreadable")
+
     def test_a_guard_run_scans_the_ledger_once_and_sees_a_later_close(self) -> None:
         marker.write(Marker(session_id="s-1"), self.root)
         _write_ledger(self.root, [_OPENED])

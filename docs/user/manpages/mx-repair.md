@@ -23,15 +23,16 @@ strength, and this is the recovery that announcement names.
 
 | The marker reads | Open sessions | What the repair does |
 |---|---|---|
-| unreadable, missing, or names another session | one | Rewrites it from that session's `mx_session_opened` event |
-| unreadable, or names a closed session | none | Removes it |
-| on, or held by an exit re-run | any | Nothing |
+| unreadable, missing, naming another session, or left `exiting` by a killed exit | one | Rewrites it from that session's `mx_session_opened` event |
+| unreadable, naming a closed session, or left `exiting` | none | Removes it |
+| on | any | Nothing |
 | missing | none | Nothing |
 | anything it would change | two or more | Refuses with exit 1 |
 
 - Validates that `--attestor` is non-empty, and fails closed (exit 1) otherwise. Rewriting a
   marker lowers protection again, so it is the operator's act.
 - Each change books one `mx_marker_repaired` ledger event carrying the cause and the action.
+- Do not run it while `gz mx exit` is running: it would clear the `exiting` hold.
 - Runs **no guard** and leaves the `mx-session` lock and the session's lease alone.
 - The marker is committed, so the repaired file is a working-tree change to commit.
 

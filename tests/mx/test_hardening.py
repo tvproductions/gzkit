@@ -18,7 +18,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from gzkit.mx import disposition, levels, marker
+from gzkit.mx import disposition, hardening, levels, marker
 from gzkit.mx.marker import Marker
 from gzkit.traceability import covers
 from tests.commands.common import CliRunner, SilencedConsoleTestCase, _quick_init
@@ -462,6 +462,25 @@ class TestStructuralFence(unittest.TestCase):
                         result.route,
                         checkpoint.resolve(name, expected_level, root),
                     )
+
+
+class TestOpenSessionsOrder(unittest.TestCase):
+    """GHI #1273: a session id can reopen, so a close counts only until the next open."""
+
+    def test_a_session_reopened_under_its_id_is_open_from_the_reopening(self) -> None:
+        first = datetime(2026, 10, 1, tzinfo=UTC)
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            again = first + timedelta(days=2)
+            _write_ledger(
+                root,
+                [
+                    _opened("s", first),
+                    _closed("s", first + timedelta(days=1)),
+                    _opened("s", again),
+                ],
+            )
+            self.assertEqual(hardening.open_sessions(root), {"s": _iso(again)})
 
 
 if __name__ == "__main__":

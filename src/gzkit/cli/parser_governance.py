@@ -909,7 +909,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
             "inspection scope, green-or-grounded, no --force. "
             "On all-green, the operator signs and the tool writes mx_session_closed "
             "and removes the marker. "
-            "Exit is the ONLY path that clears the marker."
+            "Exit is the only path that closes a session."
         ),
         epilog=build_epilog(["gz mx exit --attestor g0"]),
     )

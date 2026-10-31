@@ -234,7 +234,7 @@ def _resolve_contract(root: Path, mode: str, contract: str | None) -> str:
     if mode == "mx":
         if contract:
             console.print(
-                "[red]ERROR:[/red] --contract belongs to --mode safe; the hangar carries no "
+                "[red]ERROR:[/red] --contract belongs to --level drydock; the hangar carries no "
                 "contract."
             )
             sys.exit(1)
@@ -242,7 +242,7 @@ def _resolve_contract(root: Path, mode: str, contract: str | None) -> str:
     text = (contract or "").strip()
     if not text:
         console.print(
-            "[red]ERROR:[/red] --mode safe requires --contract <path>: the contract names what "
+            "[red]ERROR:[/red] --level drydock requires --contract <path>: the contract names what "
             "safe mode suspends and what still binds (GHI #1244)."
         )
         sys.exit(1)
@@ -393,9 +393,14 @@ def mx_exit_cmd(
     Holds the marker through the re-run, marked ``exiting``, so checkpoint.resolve()
     demotes nothing and every guard emits at real severity, while the marker stays
     on disk and the open session is never a dangling state — as ``gz obpi complete``
-    holds its lock through its checks (GHI #1257). Puts the marker back unchanged
+    holds its lock through its checks (GHI #1257). Puts the marker back, not exiting,
     and exits 3 if any guard is red. On all-green, writes the mx_session_closed
     ledger event, then removes the marker.
+
+    Raises:
+        OSError: When the guard run cannot start; the marker is put back first.
+        KeyboardInterrupt: When the run is interrupted; the marker is put back first.
+
     """
     if not attestor.strip():
         console.print("[red]ERROR:[/red] --attestor cannot be empty.")
@@ -409,7 +414,7 @@ def mx_exit_cmd(
 
     m = marker.read(root)
     if m is None:
-        console.print("[red]ERROR:[/red] Marker file unreadable.")
+        console.print("[red]ERROR:[/red] Marker file unreadable. Recover with `gz mx repair`.")
         sys.exit(1)
 
     runner = _run_guards if _run_guards is not None else _default_run_guards
@@ -417,18 +422,18 @@ def mx_exit_cmd(
     # Hold the marker, marked exiting, so checkpoint.resolve() demotes nothing
     # (guards emit at their real severity) and the session stays bound to it.
     marker_file = marker.marker_path(root)
-    saved = marker_file.read_text(encoding="utf-8")
+    unheld = m.model_copy(update={"exiting": False})
     marker.write(m.model_copy(update={"exiting": True}), root)
 
     try:
         exit_code = runner(root)
-    except OSError:
-        marker_file.write_text(saved, encoding="utf-8")
+    except OSError, KeyboardInterrupt:
+        marker.write(unheld, root)
         raise
 
     if exit_code != 0:
         # Guards red — restore marker, hard refuse.
-        marker_file.write_text(saved, encoding="utf-8")
+        marker.write(unheld, root)
         console.print("[red]Guards reported failures. MX session remains open.[/red]")
         sys.exit(3)
 
@@ -505,7 +510,7 @@ def mx_repair_cmd(attestor: str, project_root: Path | None = None) -> None:
     root = project_root if project_root is not None else get_project_root()
     cause = marker.condition(root).cause
     sessions = sorted(hardening.open_sessions(root))
-    if cause in {"on", "exiting"} or (cause == "absent" and not sessions):
+    if cause == "on" or (cause == "absent" and not sessions):
         console.print(f"[green]Nothing to repair.[/green] The marker reads {cause}.")
         return
     if len(sessions) > 1:

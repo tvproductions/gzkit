@@ -103,19 +103,19 @@ class DanglingStateResult(BaseModel):
 def open_sessions(root: Path) -> dict[str, str]:
     """Map ``session_id`` → earliest ``opened_at`` ts for still-open MX sessions.
 
-    A session is open when it has an ``mx_session_opened`` event and no matching
-    ``mx_session_closed`` — the same open-set rule the marker's binding check uses.
+    A session is open when its last ``mx_session_opened`` has no ``mx_session_closed``
+    after it — the same open-set rule the marker's binding check uses.
     Reads through :class:`gzkit.ledger.Ledger` (the guards READ the ledger; they
     never mutate the writer — brief Denied Paths).
     """
-    ledger = Ledger(root.joinpath(*_LEDGER_RELPATH))
-    closed = {e.extra.get("session_id") for e in ledger.query(event_type="mx_session_closed")}
     out: dict[str, str] = {}
-    for event in ledger.query(event_type="mx_session_opened"):
+    for event in Ledger(root.joinpath(*_LEDGER_RELPATH)).query():
         sid = event.extra.get("session_id")
-        if not isinstance(sid, str) or not sid or sid in closed:
+        if not isinstance(sid, str) or not sid:
             continue
-        if sid not in out or event.ts < out[sid]:
+        if event.event == "mx_session_closed":
+            out.pop(sid, None)
+        elif event.event == "mx_session_opened" and (sid not in out or event.ts < out[sid]):
             out[sid] = event.ts
     return out
 
@@ -296,10 +296,10 @@ def debt_aging_status(
 def dangling_state_status(root: Path | None = None) -> DanglingStateResult:
     """Detect an open ledger session whose marker file is missing on disk.
 
-    Exit (writing ``mx_session_closed``) is the only sanctioned path that clears
-    the marker; a marker removed without a close event leaves an open session with
-    no marker — the dangling state this guard flags. Marker absent ⇒ the checkpoint
-    does not demote, so ``ERROR`` grounds.
+    Exit (writing ``mx_session_closed``) is the only sanctioned path that closes a
+    session; a marker removed without a close event leaves an open session with no
+    marker — the dangling state this guard flags, which ``gz mx repair`` rewrites.
+    Marker absent ⇒ the checkpoint does not demote, so ``ERROR`` grounds.
     """
     root = root or Path.cwd()
     sessions = open_sessions(root)

@@ -48,6 +48,16 @@ ConditionCause = Literal["on", "absent", "unreadable", "unbound", "exiting"]
 SESSION_LOCK_KEY = "mx-session"
 
 
+def _level_of(value: object) -> object:
+    """Read an older marker's ``mode`` as its level; anything else meets the schema.
+
+    Returns:
+        The level a ``mode`` names, or *value* unchanged.
+
+    """
+    return LEVEL_OF_MODE.get(value, value) if isinstance(value, str) else value
+
+
 class Marker(BaseModel):
     """The marker payload. ``session_id`` is the binding key to the ledger.
 
@@ -68,7 +78,7 @@ class Marker(BaseModel):
     inspection_scope: list[str] = Field(
         default_factory=list, description="ADRs/OBPIs under inspection"
     )
-    level: Annotated[Level, BeforeValidator(lambda value: LEVEL_OF_MODE.get(value, value))] = Field(
+    level: Annotated[Level, BeforeValidator(_level_of)] = Field(
         "hangar",
         validation_alias=AliasChoices("level", "mode"),
         description=(
@@ -142,12 +152,8 @@ def read(project_root: Path | None = None) -> Marker | None:
     """
     path = marker_path(project_root)
     try:
-        raw = path.read_text(encoding="utf-8")
-    except OSError:
-        return None
-    try:
-        return Marker.model_validate_json(raw)
-    except ValueError:
+        return Marker.model_validate_json(path.read_text(encoding="utf-8"))
+    except OSError, ValueError:
         return None
 
 
@@ -190,11 +196,11 @@ def _scan_open_session_ids(ledger: Path, _size: int, _mtime_ns: int) -> frozense
     """Scan *ledger*; ``_size`` and ``_mtime_ns`` exist only to key the memo.
 
     Returns:
-        The ids with an ``mx_session_opened`` and no ``mx_session_closed``.
+        The ids whose last open has no close after it: the harness's session id
+        survives a close, so ``gz mx enter`` can reopen one.
 
     """
     opened: set[str] = set()
-    closed: set[str] = set()
     try:
         text = ledger.read_text(encoding="utf-8")
     except OSError:
@@ -216,8 +222,8 @@ def _scan_open_session_ids(ledger: Path, _size: int, _mtime_ns: int) -> frozense
         if kind == _OPENED_EVENT:
             opened.add(sid)
         elif kind == _CLOSED_EVENT:
-            closed.add(sid)
-    return frozenset(opened - closed)
+            opened.discard(sid)
+    return frozenset(opened)
 
 
 def is_valid(project_root: Path | None = None, ledger_path: Path | None = None) -> bool:

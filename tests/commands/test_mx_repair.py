@@ -117,6 +117,15 @@ class TestMxRepair(SilencedConsoleTestCase):
         self.assertFalse(marker.is_active(self.root))
         self.assertEqual((booked["cause"], booked["action"]), ("unbound", "removed"))
 
+    def test_a_marker_left_exiting_by_a_killed_exit_is_rewritten(self) -> None:
+        held = self._open()
+        marker.write(held.model_copy(update={"exiting": True}), self.root)
+
+        booked = self._repair()
+
+        self.assertTrue(marker.condition(self.root).on)
+        self.assertEqual((booked["cause"], booked["action"]), ("exiting", "rewritten"))
+
     def test_a_healthy_marker_or_none_changes_nothing(self) -> None:
         mx_repair_cmd(attestor="g0", project_root=self.root)
         self.assertEqual(_events(self.root, "mx_marker_repaired"), [])

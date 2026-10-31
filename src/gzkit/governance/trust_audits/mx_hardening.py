@@ -129,8 +129,9 @@ def _dangling_findings(root: Path) -> list[MxHardeningFinding]:
             message=(
                 f"MX session {', '.join(result.dangling_sessions)} is open in the ledger but "
                 f"`.gzkit/mx.json` is missing: the marker was removed outside `gz mx exit`, "
-                f"the only path that clears it (ADR-0.0.74 Boundary Invariant #4). Restore "
-                f"the marker its `mx_session_opened` event binds, then {_RECOVER}."
+                f"the only path that closes a session (ADR-0.0.74 Boundary Invariant #4). "
+                f"Rewrite it from its `mx_session_opened` event with `gz mx repair`, then "
+                f"{_RECOVER}."
             ),
         )
     ]

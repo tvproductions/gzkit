@@ -17,7 +17,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest import mock
 
-from gzkit.mx import checkpoint, hardening, marker
+from gzkit.mx import checkpoint, disposition, hardening, levels, marker
 from gzkit.mx.marker import Marker
 from gzkit.traceability import covers
 from tests.mx.held import open_marker
@@ -266,7 +266,10 @@ class TestFullStrengthSwitch(unittest.TestCase):
             with mock.patch.dict(os.environ, {"GZKIT_MX_FULL_STRENGTH": "1"}):
                 for invariant in checkpoint.GATE5_INVARIANTS:
                     with self.subTest(invariant=invariant):
-                        self.assertFalse(checkpoint.is_advisory(invariant, root))
+                        self.assertEqual(
+                            checkpoint.resolve(invariant, levels.INFO, root),
+                            disposition.route(levels.CRITICAL),
+                        )
 
 
 class TestValidateAnnouncesDemotion(unittest.TestCase):

@@ -16,6 +16,7 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from gzkit.commands.mx_cmd import mx_exit_cmd
 from gzkit.mx import marker
 from gzkit.traceability import covers
 from tests.commands.common import SilencedConsoleTestCase
@@ -141,6 +142,16 @@ class TestMxExitHardRefuseOnRed(SilencedConsoleTestCase):
             with self.assertRaises(SystemExit) as ctx:
                 mx_exit_cmd(attestor="tester", project_root=root, _run_guards=_red_guard)
             self.assertEqual(ctx.exception.code, 3)
+
+    def test_an_interrupted_exit_leaves_the_marker_not_exiting(self) -> None:
+        def _interrupted(_root: Path) -> int:
+            raise KeyboardInterrupt
+
+        with TemporaryDirectory() as tmp:
+            root = _mk_root_with_session(tmp)
+            with self.assertRaises(KeyboardInterrupt):
+                mx_exit_cmd(attestor="tester", project_root=root, _run_guards=_interrupted)
+            self.assertTrue(marker.condition(root).on)
 
     @covers("REQ-0.0.74-05-02")
     def test_exit_red_leaves_marker_in_place(self) -> None:

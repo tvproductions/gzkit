@@ -133,6 +133,7 @@ class TestDispatch(unittest.TestCase):
         result = self._invoke(with_marker=False)
         self.assertEqual(result.exit_code, 3, result.output)
         self.assertIn("s1", result.output)
+        self.assertIn("gz mx repair", " ".join(result.output.split()))
 
     def test_an_open_hangar_inside_its_lease_passes_through_the_flag(self) -> None:
         result = self._invoke(with_marker=True)

@@ -5773,11 +5773,6 @@
     },
     {
       "file": "src/gzkit/commands/mx_cmd.py",
-      "rule": "DOC501",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/mx_cmd.py",
       "rule": "PLR0913",
       "count": 2
     },

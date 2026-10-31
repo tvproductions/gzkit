@@ -80,6 +80,11 @@ class TestBannerReadsTheCondition(unittest.TestCase):
         self.assertEqual(from_level, from_mode)
         self.assertIn("SAFE MODE ACTIVE", from_level[0])
 
+    def test_a_session_reopened_under_its_id_reads_on(self):
+        for banner in self._banners(self.SAFE, [self.BOUND, self.CLOSED, self.BOUND]):
+            with self.subTest(banner=banner[:30]):
+                self.assertIn("SAFE MODE ACTIVE", banner)
+
     def test_no_marker_says_nothing(self):
         self.assertEqual(self._banners(None, [self.BOUND]), ("", ""))
 
@@ -91,6 +96,8 @@ class TestBannerReadsTheCondition(unittest.TestCase):
                 ("{}", [self.BOUND]),
                 ('{"session_id": "s", "mode": "drydockish"}', [self.BOUND]),
                 ('{"session_id": "s", "level": "drydockish"}', [self.BOUND]),
+                ('{"session_id": "s", "level": []}', [self.BOUND]),
+                ('{"session_id": "s", "mode": {}}', [self.BOUND]),
             ],
             "unbound": [(self.SAFE, []), (self.SAFE, [self.BOUND, self.CLOSED])],
         }
@@ -108,6 +115,7 @@ class TestBannerReadsTheCondition(unittest.TestCase):
         for banner in self._banners(marker, [self.BOUND]):
             with self.subTest(banner=banner):
                 self.assertIn("full strength", banner)
+                self.assertIn("gz mx repair", banner)
                 self.assertNotIn("ACTIVE", banner)
 
 

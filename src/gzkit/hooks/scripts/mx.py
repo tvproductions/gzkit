@@ -69,8 +69,9 @@ def _mx_awareness_script() -> str:
                     if not isinstance(event, dict) or event.get("session_id") != session:
                         continue
                     if event.get("event") == "mx_session_closed":
-                        return False
-                    bound = bound or event.get("event") == "mx_session_opened"
+                        bound = False
+                    elif event.get("event") == "mx_session_opened":
+                        bound = True
                 return bound
 
 
@@ -105,6 +106,21 @@ def _mx_awareness_script() -> str:
                 )
 
 
+            def _known_marker(raw: object) -> bool:
+                \"\"\"Check what a marker must name.
+
+                Returns:
+                    True when *raw* names a session and a known level or mode.
+
+                \"\"\"
+                if not isinstance(raw, dict) or not isinstance(raw.get("session_id"), str):
+                    return False
+                level, mode = raw.get("level", "hangar"), raw.get("mode", "mx")
+                if not isinstance(level, str) or not isinstance(mode, str):
+                    return False
+                return bool(raw["session_id"]) and level in {"hangar", "drydock"} and mode in {"mx", "safe"}
+
+
             def _banner_stdlib(cwd: str | None) -> str:
                 \"\"\"Stdlib-only reading of the condition — the gzkit-import-free fallback.\"\"\"
                 _BANNER = (
@@ -119,18 +135,16 @@ def _mx_awareness_script() -> str:
                 try:
                     raw = json.loads(root.joinpath(*_MARKER).read_text(encoding="utf-8"))
                 except (OSError, ValueError):
-                    raw = None
-                if (
-                    not isinstance(raw, dict)
-                    or not raw.get("session_id")
-                    or raw.get("mode", "mx") not in {"mx", "safe"}
-                    or raw.get("level", "hangar") not in {"hangar", "drydock"}
-                ):
+                    raw = {}
+                if not _known_marker(raw):
                     return f"MX MARKER UNREADABLE — {_RECOVER}"
                 if not _session_bound(root, str(raw["session_id"])):
                     return f"MX MARKER UNBOUND — {_RECOVER}"
                 if raw.get("exiting"):
-                    return "MX EXIT RUNNING — every guard at full strength until gz mx exit finishes"
+                    return (
+                        "MX EXIT RUNNING — every guard at full strength; if no exit is "
+                        "running, recover with gz mx repair through the gz-mx skill"
+                    )
                 if raw.get("level") == "drydock" or raw.get("mode") == "safe":
                     return _safe_banner(str(raw.get("contract") or "<no contract recorded>"))
                 return _BANNER
