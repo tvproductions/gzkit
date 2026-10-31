@@ -25,6 +25,7 @@ The rulings on GHI #1200, carried here because its repair lands in tranche 1:
 8. **An escalation at the bound may carry an agent recommendation**, beside facts the runtime writes into the block: the task's cycle count, the refutations of the requirement and the exits already used. Operator, verbatim: *"a"*.
 9. **The single-driver route splits by `kind`.** A `delivery` run may declare single-driver and records each fix cycle through the same verb, so the bound applies. A `repair` run cannot be single-driver, because nobody inspects their own work. The count sees only what is recorded, and the precomplete refusal of silent single-driver runs moves with the pipeline. Put to the operator: A, split by `kind`; B, removed everywhere; C, left as it is. Operator, verbatim: *"a"*.
 10. **The exit baseline has one seam.** All code that reads history goes through a single alias module, the only code allowed OBPI ids or event names; `src`, tests, skills, rules and live docs read zero. The ledger, briefs, handoffs, rulings, passage logs and dated snapshots are exempt as history. Put to the operator: A, one seam; B, a declared exemption list; C, surface names only. Operator, verbatim: *"a"*.
+11. **Tranche 2 splits by owner.** The operator and a working session move the pipeline itself: the delivery procedure, its stages, its persona and the pipeline skill. The rest of tranche 2 and all of tranche 3 run under the kit as repair packages. Put to the operator: A, split; B, everything under the kit; C, everything by the operator and a working session. Operator, verbatim: *"a"*.
 
 ## Starting measure
 
@@ -56,4 +57,3 @@ Replayed over that run's ledger rows with the bound of `MAX_REVIEW_FIX_CYCLES`, 
 Each is put to the operator one at a time before tranche 1 is cut.
 
 1. **The names.** The new `gz wp` verbs and ledger events; the contractor brief reserves new names for the operator. Put last, once the parts are known.
-2. **The later tranches' owner.**
