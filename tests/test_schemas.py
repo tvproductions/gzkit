@@ -101,9 +101,12 @@ from gzkit.events import (
     TypedLedgerEvent,
     UnownedRatchetUpdatedEvent,
     ValidatesEvent,
+    WorkPackageBlockedEvent,
     WorkPackageChangedEvent,
+    WorkPackageDispatchedEvent,
     WorkPackageIssueClosedEvent,
     WorkPackageTransitionedEvent,
+    WorkPackageUnblockedEvent,
     parse_typed_event,
 )
 from gzkit.ledger import ledger_row, pipeline_stage_transition_event
@@ -389,6 +392,9 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "work_package_changed": WorkPackageChangedEvent,
     # An issue closed against its repair package (drydock RO-5 tranche 3)
     "work_package_issue_closed": WorkPackageIssueClosedEvent,
+    "work_package_dispatched": WorkPackageDispatchedEvent,
+    "work_package_blocked": WorkPackageBlockedEvent,
+    "work_package_unblocked": WorkPackageUnblockedEvent,
     # Reversible retirement of OBPIs whose parent ADR demoted to pool (GHI #584)
     "obpi_parked": ObpiParkedEvent,
     "obpi_blocked_on_operator": ObpiBlockedOnOperatorEvent,

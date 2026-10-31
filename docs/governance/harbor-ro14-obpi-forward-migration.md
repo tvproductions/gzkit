@@ -32,6 +32,8 @@ The rulings on GHI #1200, carried here because its repair lands in tranche 1:
 13. **The names.** `gz wp dispatch`, `gz wp block`, `gz wp unblock` with `--exit reopen|departure|hold|terminate`, and `gz wp withdraw-legacy`; the events `work_package_dispatched`, `work_package_blocked`, `work_package_unblocked` and `legacy_unit_withdrawn`. Put to the operator: A, flat verbs with the existing event prefix; B, a `run` group; C, as A with the withdrawal on the catalog. Operator, verbatim: *"a"*.
 14. **The bound counts against the frozen subject**, amending the task key of rulings 5 to 8: a REQ in the package's frozen baseline, or an issue the repair package carries. A caller's task number is refused as a key because a new number resets the count; `--task` is replaced by `--req` or `--issue`. Put to the operator: A, the frozen subject; B, one bound per package; C, declared task cards. Operator, verbatim: *"a"*.
 15. **The count follows the REQ at its revision, across packages.** A new package at the same revision starts where the last stopped; a reopening changes the revision and starts clean. A REQ at the bound and already reopened once can only be departed from, held or terminated. Put to the operator: A, across packages; B, a new package starts clean; C, clean with the history shown. Operator, verbatim: *"a"*.
+16. **What counts as a fix cycle.** A subject's first implementing dispatch is free. After it, any review anywhere in the package arms every subject already started, and each later implementing dispatch on an armed subject counts. Put to the operator: A, this definition; B, a review required on each subject; C, one cap per package. Operator, verbatim: *"a"*.
+17. **A hold stops only the subjects at the bound.** Other subjects of the package continue, a held subject stays open to a later exit, and `terminate` is the full stop. Put to the operator: A, the subjects at the bound; B, the whole package until lifted; C, a fifth exit. Operator, verbatim: *"a"*.
 
 ## Starting measure
 
@@ -47,11 +49,11 @@ Measured 2026-10-31, a dated record. Counts of files that mention OBPI, not of m
 
 ## #1200's design facts
 
-Every implementing dispatch after a subject's first review, or after its first single-driver dispatch, is a fix cycle. Several implementing dispatches may precede the first review: Task 1 of `OBPI-0.35.0-15-pipeline-run-position` had three before its review and one fix cycle after it. Repeating the Implementer after a review counts each time, so a run cannot buy a cycle by not reviewing.
+Ruling 16 defines the count. Several implementing dispatches may precede a subject's first review: Task 1 of `OBPI-0.35.0-15-pipeline-run-position` had three before its review and one fix cycle after it. Repeating the Implementer after a review counts each time, so a relaunch after a crash spends a cycle. A review arms every subject its package has started, and a review of a subject arms it in any package (the agent's reading of ruling 15, tightening the bound, stated to the operator 2026-10-31), so splitting reviews from fixes on true labels buys nothing.
 
 Replayed over that run's ledger rows with the bound of `MAX_REVIEW_FIX_CYCLES`, the count refuses the `2026-10-11T23:35` dispatch that followed the first unblock, as #1200's acceptance (a) requires.
 
-**Corrected 2026-10-31.** Two figures given to the operator were wrong. The `07:38` block was not at the bound, and the later figure of a `09:20` refusal relied on a restart inside a package, which ruling 12 removed. Ruling 7 was given with the first in front of them. The rulings do not depend on either figure; the `23:35` refusal is the one the replay proves.
+**Corrected 2026-10-31.** An interim build counted every implementing dispatch from a subject's own first review; that definition was the agent's, and the second independent review showed it left an unbounded route through a sibling subject. Ruling 16 replaced it. Two figures given to the operator were wrong. The `07:38` block was not at the bound, and the later figure of a `09:20` refusal relied on a restart inside a package, which ruling 12 removed. Ruling 7 was given with the first in front of them. The rulings do not depend on either figure; the `23:35` refusal is the one the replay proves.
 
 ## Settled from the record
 
@@ -62,7 +64,7 @@ Replayed over that run's ledger rows with the bound of `MAX_REVIEW_FIX_CYCLES`, 
 
 ## Tranche 1, cut into acts
 
-1. **The bound.** `gz wp dispatch`, `block` and `unblock` with `gzkit.work_package_run` (#1200). The first build failed independent review on the routes rulings 14 and 15 close; rebuilt, not yet landed.
+1. **The bound.** `gz wp dispatch`, `block` and `unblock` with `gzkit.work_package_run` (#1200). Three builds failed independent review; the routes are closed by rulings 14 to 17 and a same-subject arming clause; the fourth passed and landed.
 2. **Dispatch's defects.** #1198 and #1208, read against the new verb.
 3. **Run position and markers.** #1203, #1205 and #1209.
 4. **The fence and the stage bound.** #1206, and #1028 with its stop-and-ask boundary.
@@ -80,5 +82,11 @@ Replayed over that run's ledger rows with the bound of `MAX_REVIEW_FIX_CYCLES`, 
 - The block carries no refutation count until act 5.
 - A subject can take any number of reviews; only implementing dispatches are bounded.
 - `reopen` names the act and is not checked against a reopening, because that verb lands with RO-5's tranche 6.
-- The count sees only what is recorded.
+- The count sees only what is recorded and what its labels say: a review booked falsely against another package's subject arms nothing, and an Implementer falsely labelled on a sibling subject takes that subject's dispatches, about three per subject.
+- A subject with no review and no single-driver declaration has no bound: ruling 16 counts only after a review, and nothing in act 1 requires one.
+- A subject that passed on its last fix cycle reads as at the bound at the next block, because the runtime cannot see a passed review until act 5; a hold clears it.
+- An issue added to a frozen package by hand is a new subject, as a hand-raised revision is.
+- Raising a REQ's revision by hand resets its count, because the freeze lock lands with RO-5's tranche 6.
+- A package can reach acceptance with a subject at the bound and no exit taken; escalation is procedure, and Gate 5 still sees the package.
+- A new repair package on a new issue has no link to any earlier REQ or issue; only the operator initiates one.
 - #1200 stays open: its exit condition has the pipeline's sentence name the mechanism, and the OBPI pipeline moves in tranche 2.

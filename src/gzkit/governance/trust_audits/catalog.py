@@ -278,6 +278,9 @@ def _booked_findings(ledger: Ledger, catalog: Catalog) -> list[ValidationError]:
             "work_package_transitioned",
             "work_package_changed",
             "work_package_issue_closed",
+            "work_package_dispatched",
+            "work_package_blocked",
+            "work_package_unblocked",
         )
         for row in ledger.query(event_type=event_type)
     }

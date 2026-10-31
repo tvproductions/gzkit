@@ -35,6 +35,104 @@ def register_wp_parsers(commands: argparse._SubParsersAction) -> None:
     _register_wp_record(wp_commands)
     _register_wp_lifecycle(wp_commands)
     _register_wp_close_change(wp_commands)
+    _register_wp_run(wp_commands)
+
+
+def _register_wp_run(wp_commands: argparse._SubParsersAction) -> None:
+    """Register ``gz wp dispatch``, ``block`` and ``unblock`` (RO-14 tranche 1)."""
+    p_dispatch = wp_commands.add_parser(
+        "dispatch",
+        help="Record a dispatch on a commenced package, holding the fix-cycle bound",
+        description=(
+            "Record one dispatch on a commenced work package. The cycle past the\n"
+            "fix-cycle bound is refused whatever was ruled (GHI #1200)."
+        ),
+        epilog=build_epilog(
+            ["gz wp dispatch WP-01-x --role Implementer --model sonnet --req REQ-1"]
+        ),
+    )
+    p_dispatch.add_argument("work_package", help="The work package's id, WP-<NN>-<slug>")
+    p_dispatch.add_argument(
+        "--role",
+        required=True,
+        help="Implementer, SpecReviewer, QualityReviewer or SingleDriver",
+    )
+    p_dispatch.add_argument("--model", required=True, help="The model tier")
+    p_dispatch.add_argument("--req", default=None, help="The frozen REQ dispatched against")
+    p_dispatch.add_argument(
+        "--issue", type=int, default=None, help="The carried issue dispatched against"
+    )
+    p_dispatch.add_argument("--reason", default=None, help="Why the run is single-driver")
+    add_json_flag(p_dispatch)
+    p_dispatch.set_defaults(
+        func=lambda a: _lazy("wp_dispatch_cmd")(
+            fields={
+                "work_package": a.work_package,
+                "role": a.role,
+                "model": a.model,
+                "req": a.req,
+                "issue": a.issue,
+                "reason": a.reason,
+            },
+            as_json=a.as_json,
+        )
+    )
+
+    p_block = wp_commands.add_parser(
+        "block",
+        help="Record that a package awaits the operator",
+        description=(
+            "Record that a work package awaits the operator. The runtime writes the\n"
+            "fix-cycle count and the exits used, so the facts are not the agent's."
+        ),
+        epilog=build_epilog(['gz wp block WP-01-x --reason R --next-action "rule on REQ-1"']),
+    )
+    p_block.add_argument("work_package", help="The work package's id, WP-<NN>-<slug>")
+    p_block.add_argument("--reason", required=True, help="Why the package cannot proceed")
+    p_block.add_argument("--next-action", required=True, help="The decision the operator owes")
+    add_json_flag(p_block)
+    p_block.set_defaults(
+        func=lambda a: _lazy("wp_block_cmd")(
+            work_package=a.work_package,
+            reason=a.reason,
+            next_action=a.next_action,
+            as_json=a.as_json,
+        )
+    )
+
+    p_unblock = wp_commands.add_parser(
+        "unblock",
+        help="Record the operator's ruling on a blocked package",
+        description=(
+            "Record the operator's ruling and clear the block. At the fix-cycle bound\n"
+            "the ruling names one exit; no exit opens a further repair cycle."
+        ),
+        epilog=build_epilog(['gz wp unblock WP-01-x --ruling "hold" --operator g0 --exit hold']),
+    )
+    p_unblock.add_argument("work_package", help="The work package's id, WP-<NN>-<slug>")
+    p_unblock.add_argument("--ruling", required=True, help="The operator's decision, verbatim")
+    # Human-act verb (GHI #1036): the ruling is the operator's own, so never defaulted.
+    p_unblock.add_argument("--operator", required=True, help="Who ruled, never defaulted")
+    p_unblock.add_argument(
+        "--exit",
+        dest="exit_taken",
+        default=None,
+        help="reopen, departure, hold or terminate; required at the bound",
+    )
+    p_unblock.add_argument("--req", default=None, help="The REQ a reopen or departure names")
+    add_json_flag(p_unblock)
+    p_unblock.set_defaults(
+        func=lambda a: _lazy("wp_unblock_cmd")(
+            fields={
+                "work_package": a.work_package,
+                "ruling": a.ruling,
+                "operator": a.operator,
+                "exit_taken": a.exit_taken,
+                "req": a.req,
+            },
+            as_json=a.as_json,
+        )
+    )
 
 
 def _register_wp_record(wp_commands: argparse._SubParsersAction) -> None:

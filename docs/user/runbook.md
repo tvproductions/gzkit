@@ -968,6 +968,9 @@ uv run gz wp accept WP-01-astral --evidence <final inspection>
 uv run gz wp close WP-01-astral --decision proceed --attestor g0 --residual-risk "<risk>" --evidence <id>
 uv run gz wp change WP-01-astral --rung change_order --approver operator --work-stopped \
   --change "<the change>" --superseded "<what it replaces>"
+uv run gz wp dispatch WP-01-astral --role Implementer --model sonnet --issue 1183
+uv run gz wp block WP-01-astral --reason "<why>" --next-action "<your decision>"
+uv run gz wp unblock WP-01-astral --ruling "<your exact words>" --operator g0 --exit hold
 uv run gz wp show WP-01-astral
 ```
 
@@ -976,7 +979,9 @@ closed). Pen and ink is the coordinator's; every other rung of the change ladder
 is yours. Any refusal exits 3 and writes nothing. Attaching an issue also labels
 it `repair` and comments the package id on it; `ghi-close` records each fixed
 issue with `gz wp resolve`, and the last one's close leaves the package for your
-Gate 5.
+Gate 5. A REQ or issue may use two fix cycles; the next is refused whatever you
+rule, and a block at that bound clears only by naming an exit: `reopen`, `departure`, `hold`
+or `terminate`.
 
 When the store accretes, declutter it with the governed move-not-delete
 retention verb — `gz handoff archive` relocates handoffs older than the

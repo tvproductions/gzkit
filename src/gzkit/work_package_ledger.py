@@ -30,6 +30,7 @@ from gzkit.events import (
 from gzkit.ledger import Ledger, ledger_row
 
 if TYPE_CHECKING:
+    from gzkit.ledger import LedgerEvent
     from gzkit.models.catalog import Catalog, WorkPackage
 
 STATES: tuple[str, ...] = get_args(WorkPackageState)
@@ -138,6 +139,36 @@ def work_package_state(ledger: Ledger, work_package: str) -> str | None:
     return moves[-1].extra["to_state"] if moves else None
 
 
+def package_rows(ledger: Ledger, event_type: str, work_package: str) -> list[LedgerEvent]:
+    """Read one package's rows of one event type.
+
+    Returns:
+        The rows, oldest first.
+
+    """
+    return [
+        row
+        for row in ledger.query(event_type=event_type)
+        if row.extra.get("work_package") == work_package
+    ]
+
+
+def is_blocked(ledger: Ledger, work_package: str) -> bool:
+    """Read whether the package's latest block or unblock is a block.
+
+    Returns:
+        True while the package awaits the operator.
+
+    """
+    kinds = {"work_package_blocked", "work_package_unblocked"}
+    rows = [
+        row.event
+        for row in ledger.query()
+        if row.event in kinds and row.extra.get("work_package") == work_package
+    ]
+    return bool(rows) and rows[-1] == "work_package_blocked"
+
+
 def _check_frozen(catalog: Catalog, package: WorkPackage, move: TransitionRequest) -> None:
     """Freeze: risk note and receipt, a baseline at the catalog's revisions, every alteration."""
     if not (move.risk_note or "").strip() or not (move.review_receipt or "").strip():
@@ -210,6 +241,8 @@ def record_work_package_transition(
             f"{move.to_state!r}; the lifecycle allows {expected or 'no move'} from here."
         )
     _check_move(catalog, package, move)
+    if is_blocked(ledger, package.id):
+        _refuse(f"Work package {package.id} is blocked on the operator; it does not move.")
     fields = move.model_dump(exclude_unset=True)
     event = WorkPackageTransitionedEvent.model_validate(
         {

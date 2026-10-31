@@ -228,9 +228,12 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         # RO-5). A work package is a catalog record, not a node of this
         # projection, so a move, a change or an issue close on one is no
         # lineage between artifacts here.
+        "work_package_blocked",
         "work_package_changed",
+        "work_package_dispatched",
         "work_package_issue_closed",
         "work_package_transitioned",
+        "work_package_unblocked",
     }
 )
 

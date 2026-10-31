@@ -69,6 +69,25 @@ One step at a time: `initiated`, `frozen`, `commenced`, `accepted`, `closed`.
    defaulted. Account every alteration and name each departure still open.
    `uv run gz wp close <WP-id> --decision proceed --attestor g0 --residual-risk "<risk>" --account <alt-id> --evidence <id>`
 
+## The run
+
+Once commenced, each dispatch is booked, and the runtime holds the fix-cycle bound:
+
+1. `uv run gz wp dispatch <WP-id> --role Implementer --model <tier> --req REQ-<n>`
+   (or `--issue <n>`), and the same for `SpecReviewer` and `QualityReviewer`. The
+   bound counts against that frozen subject, across packages: its first dispatch
+   is free, any review in the package arms it, and each later one is a fix cycle. A delivery package that
+   cannot dispatch declares `--role SingleDriver --reason "<why>"`; a repair package
+   cannot.
+2. **At the bound the dispatch refuses (exit 3).** Do not route around it: a further
+   repair cycle does not exist. Escalate:
+   `uv run gz wp block <WP-id> --reason "<why>" --next-action "<decision>"`. The
+   runtime writes the count; you may add a recommendation among the exits.
+3. **The operator rules:**
+   `uv run gz wp unblock <WP-id> --ruling "<their exact words>" --operator g0 --exit <exit>`.
+   `reopen` and `departure` add `--req REQ-<n>`, the REQ at the bound, and a waiver
+   is recorded through `gz wp change` since the block first. `hold` and `terminate` name no REQ.
+
 ## The change ladder
 
 Every change to a live package is one `gz wp change` with its rung:

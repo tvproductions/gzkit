@@ -12,6 +12,17 @@ from gzkit.reports import publish_report
 
 
 class ProducerProbeTests(unittest.TestCase):
+    def test_the_run_writers_are_verified_and_their_refusals_proven(self) -> None:
+        for event_type in (
+            "work_package_dispatched",
+            "work_package_blocked",
+            "work_package_unblocked",
+        ):
+            with self.subTest(event_type=event_type):
+                observation = probe_producer(event_type)
+                self.assertEqual(observation.status, "verified", observation.error)
+                self.assertEqual(observation.subject, "WP-02-producer-probe")
+
     def test_real_initializer_persists_obligation_and_disposes_the_project(self) -> None:
         roots: list[Path] = []
 

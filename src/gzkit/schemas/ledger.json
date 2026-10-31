@@ -2468,6 +2468,124 @@
         }
       }
     },
+    "work_package_dispatched": {
+      "required": [
+        "work_package",
+        "role",
+        "model",
+        "subject"
+      ],
+      "properties": {
+        "work_package": {
+          "type": "string",
+          "min_length": 1
+        },
+        "role": {
+          "type": "string",
+          "min_length": 1
+        },
+        "model": {
+          "type": "string",
+          "min_length": 1
+        },
+        "subject": {
+          "type": "string",
+          "min_length": 1
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "work_package_blocked": {
+      "required": [
+        "work_package",
+        "reason",
+        "next_operator_action",
+        "fix_cycles",
+        "bound",
+        "at_bound",
+        "held",
+        "exits_used",
+        "reopened"
+      ],
+      "properties": {
+        "work_package": {
+          "type": "string",
+          "min_length": 1
+        },
+        "reason": {
+          "type": "string",
+          "min_length": 1
+        },
+        "next_operator_action": {
+          "type": "string",
+          "min_length": 1
+        },
+        "fix_cycles": {
+          "type": "object"
+        },
+        "bound": {
+          "type": "integer",
+          "min": 0
+        },
+        "at_bound": {
+          "type": "array"
+        },
+        "held": {
+          "type": "array"
+        },
+        "exits_used": {
+          "type": "array"
+        },
+        "reopened": {
+          "type": "array"
+        }
+      }
+    },
+    "work_package_unblocked": {
+      "required": [
+        "work_package",
+        "ruling",
+        "operator",
+        "covered"
+      ],
+      "properties": {
+        "work_package": {
+          "type": "string",
+          "min_length": 1
+        },
+        "ruling": {
+          "type": "string",
+          "min_length": 1
+        },
+        "operator": {
+          "type": "string",
+          "min_length": 1
+        },
+        "exit_taken": {
+          "enum": [
+            "reopen",
+            "departure",
+            "hold",
+            "terminate",
+            null
+          ]
+        },
+        "req": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "covered": {
+          "type": "array"
+        }
+      }
+    },
     "blocks": {
       "required": [
         "blocker",

@@ -24,12 +24,14 @@ from gzkit.events import (
     OutcomeTransitionedEvent,
     ReportPublishedEvent,
     ReqProofRecordedEvent,
+    WorkPackageBlockedEvent,
     WorkPackageChangedEvent,
     WorkPackageIssueClosedEvent,
     WorkPackageTransitionedEvent,
     parse_typed_event,
 )
 from gzkit.models.catalog import CATALOG_FILES, Catalog, load_catalog
+from gzkit.pipeline_dispatch import MAX_REVIEW_FIX_CYCLES
 from gzkit.registries import registry_path
 
 _OBPI = "OBPI-0.1.0-01-producer-probe"
@@ -642,6 +644,100 @@ def _probe_work_package_issue_closed(root: Path) -> ProducerObservation:
     )
 
 
+_RUN_EVENTS = frozenset(
+    {"work_package_dispatched", "work_package_blocked", "work_package_unblocked"}
+)
+
+
+def _probe_work_package_run(root: Path, event_type: str) -> ProducerObservation:
+    """Commence a package, then dispatch, block and unblock; each writer's refusal is proven.
+
+    Returns:
+        The verified observation of the named event.
+
+    Raises:
+        TypeError: The writer persisted another event type.
+        ValueError: The writer booked for a refusal or lost a row.
+
+    """
+    from gzkit import work_package_ledger as wpl  # noqa: PLC0415 - the writer; import only when probed
+    from gzkit import work_package_run as run  # noqa: PLC0415
+    from gzkit.ledger import Ledger  # noqa: PLC0415
+
+    catalog = _seat_catalog(root)
+    ledger_path = root / ".gzkit/ledger.jsonl"
+    ledger = Ledger(ledger_path)
+    for move in (
+        wpl.TransitionRequest(
+            work_package=_REPAIR_PACKAGE,
+            to_state="initiated",
+            evidence=_AUTHOR,
+            operator_text=_STATEMENT,
+        ),
+        wpl.TransitionRequest(
+            work_package=_REPAIR_PACKAGE,
+            to_state="frozen",
+            evidence=_AUTHOR,
+            risk_note=_AUTHOR,
+            review_receipt=_AUTHOR,
+        ),
+        wpl.TransitionRequest(work_package=_REPAIR_PACKAGE, to_state="commenced", evidence=_AUTHOR),
+    ):
+        wpl.record_work_package_transition(catalog, ledger, move)
+    seated = ledger_path.read_bytes()
+    roles = (run.IMPLEMENTER, "SpecReviewer") * (MAX_REVIEW_FIX_CYCLES + 1)
+    for role in roles:
+        run.record_work_package_dispatch(
+            catalog,
+            ledger,
+            run.DispatchRequest(
+                work_package=_REPAIR_PACKAGE, role=role, model=_AUTHOR, issue=_ISSUE
+            ),
+        )
+    past_the_bound = run.DispatchRequest(
+        work_package=_REPAIR_PACKAGE, role=run.IMPLEMENTER, model=_AUTHOR, issue=_ISSUE
+    )
+    _expect_refusal(
+        lambda: run.record_work_package_dispatch(catalog, ledger, past_the_bound),
+        "the fix cycle past the bound",
+        wpl.WorkPackageLedgerError,
+    )
+    block = run.BlockRequest(work_package=_REPAIR_PACKAGE, reason=_AUTHOR, next_action=_AUTHOR)
+    run.record_work_package_block(catalog, ledger, block)
+    no_exit = run.UnblockRequest(work_package=_REPAIR_PACKAGE, ruling=_AUTHOR, operator=_AUTHOR)
+    _expect_refusal(
+        lambda: run.record_work_package_unblock(catalog, ledger, no_exit),
+        "an unblock at the bound naming no exit",
+        wpl.WorkPackageLedgerError,
+    )
+    hold = no_exit.model_copy(update={"exit_taken": "hold"})
+    run.record_work_package_unblock(catalog, ledger, hold)
+    persisted = ledger_path.read_bytes()
+    added = [
+        parse_typed_event(json.loads(line))
+        for line in persisted[len(seated) :].decode("utf-8").splitlines()
+    ]
+    if not persisted.startswith(seated) or len(added) != len(roles) + 2:
+        msg = "Writers must persist one row per act and nothing for a refusal"
+        raise ValueError(msg)
+    event = next((row for row in added if row.event == event_type), None)
+    if event is None:
+        msg = "Writer persisted the wrong event type"
+        raise TypeError(msg)
+    blocked = next(row for row in added if isinstance(row, WorkPackageBlockedEvent))
+    if blocked.at_bound != (f"#{_ISSUE}",):
+        msg = "The block must name the subject at the bound"
+        raise ValueError(msg)
+    return ProducerObservation(
+        event_type=event_type,
+        producer=_PRODUCERS[event_type],
+        status="verified",
+        ledger_sha256=hashlib.sha256(persisted).hexdigest(),
+        record_count=1,
+        subject=event.id,
+    )
+
+
 _PRODUCERS = {
     "acceptance_recorded": "gzkit.acceptance_store.initialize",
     "report_published": "gzkit.reports.publish_report",
@@ -653,6 +749,9 @@ _PRODUCERS = {
     "work_package_transitioned": "gzkit.work_package_ledger.record_work_package_transition",
     "work_package_changed": "gzkit.work_package_ledger.record_work_package_change",
     "work_package_issue_closed": "gzkit.work_package_ledger.record_work_package_issue_closed",
+    "work_package_dispatched": "gzkit.work_package_run.record_work_package_dispatch",
+    "work_package_blocked": "gzkit.work_package_run.record_work_package_block",
+    "work_package_unblocked": "gzkit.work_package_run.record_work_package_unblock",
 }
 
 
@@ -681,6 +780,8 @@ def probe_producer(event_type: str) -> ProducerObservation:
                 return _probe_work_package_change(root)
             if event_type == "work_package_issue_closed":
                 return _probe_work_package_issue_closed(root)
+            if event_type in _RUN_EVENTS:
+                return _probe_work_package_run(root, event_type)
             _prepare_acceptance_project(root)
             acceptance_store.initialize(root, _OBPI, _AUTHOR)
             return _observe_acceptance_contract(root)

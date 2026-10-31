@@ -1765,6 +1765,8 @@ WorkPackageRung = Literal[
 ]
 #: The Gate 5 decisions a close records (requirements model § 11).
 WorkPackageDecision = Literal["proceed", "redirect", "pause", "terminate"]
+#: The exits from the fix-cycle bound (RO-14 ruling 12).
+WorkPackageExit = Literal["reopen", "departure", "hold", "terminate"]
 
 
 class BaselinedReq(BaseModel):
@@ -1843,6 +1845,60 @@ class WorkPackageIssueClosedEvent(_EventBase):
     issue: int = Field(..., ge=1, description="The GitHub issue closed")
     commit: str = Field(..., min_length=1, description="The fix's commit SHA")
     reviewer: str = Field(..., min_length=1, description="The reviewer who confirmed the fix")
+
+
+class WorkPackageDispatchedEvent(_EventBase):
+    """work_package_dispatched event — one role dispatched on a commenced package (RO-14).
+
+    Written only by ``gzkit.work_package_run.record_work_package_dispatch``, which
+    counts fix cycles from these rows and refuses the cycle past the bound
+    (GHI #1200). ``id`` is the work package id.
+    """
+
+    event: Literal["work_package_dispatched"]
+    work_package: str = Field(..., min_length=1, description="The work package's id")
+    role: str = Field(..., min_length=1, description="The role dispatched, or SingleDriver")
+    model: str = Field(..., min_length=1, description="The model tier")
+    subject: str = Field(..., min_length=1, description="REQ-<n>@<rev> or #<issue>, as counted")
+    reason: str | None = Field(None, description="Why the run is single-driver")
+
+
+class WorkPackageBlockedEvent(_EventBase):
+    """work_package_blocked event — the package's next act is the operator's (RO-14).
+
+    Every count and list here is written from the ledger, never taken from the
+    caller, so an escalation's facts are not the agent's framing.
+    ``id`` is the work package id.
+    """
+
+    event: Literal["work_package_blocked"]
+    work_package: str = Field(..., min_length=1, description="The work package's id")
+    reason: str = Field(..., min_length=1, description="Why the package cannot proceed")
+    next_operator_action: str = Field(
+        ..., min_length=1, description="The concrete decision the operator owes"
+    )
+    fix_cycles: dict[str, int] = Field(..., description="Fix cycles used, per subject")
+    bound: int = Field(..., ge=0, description="The fix cycles a subject may use")
+    at_bound: tuple[str, ...] = Field(..., description="Subjects at the bound with no exit yet")
+    held: tuple[str, ...] = Field(..., description="Subjects a hold left open to a later exit")
+    exits_used: tuple[str, ...] = Field(..., description="The package's exits taken so far")
+    reopened: tuple[str, ...] = Field(..., description="Baseline REQs reopened in any package")
+
+
+class WorkPackageUnblockedEvent(_EventBase):
+    """work_package_unblocked event — the operator ruled on a blocked package (RO-14).
+
+    At the bound the ruling names one exit, and ``reopen`` and ``departure`` name
+    their requirement. ``id`` is the work package id.
+    """
+
+    event: Literal["work_package_unblocked"]
+    work_package: str = Field(..., min_length=1, description="The work package's id")
+    ruling: str = Field(..., min_length=1, description="The operator's decision, verbatim")
+    operator: str = Field(..., min_length=1, description="Who ruled")
+    exit_taken: WorkPackageExit | None = Field(None, description="The exit named at the bound")
+    req: str | None = Field(None, description="The requirement a reopen or departure names")
+    covered: tuple[str, ...] = Field(..., description="The at-bound subjects this exit settled")
 
 
 TypedLedgerEvent = Annotated[
@@ -1937,7 +1993,10 @@ TypedLedgerEvent = Annotated[
     | ReqProofRecordedEvent
     | WorkPackageTransitionedEvent
     | WorkPackageChangedEvent
-    | WorkPackageIssueClosedEvent,
+    | WorkPackageIssueClosedEvent
+    | WorkPackageDispatchedEvent
+    | WorkPackageBlockedEvent
+    | WorkPackageUnblockedEvent,
     Field(discriminator="event"),
 ]
 

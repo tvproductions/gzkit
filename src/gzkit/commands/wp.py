@@ -11,6 +11,9 @@ Tranche 3 (ruling 7 and the operator's rulings of 2026-10-28): `new` and
 `attach` check the store edit, then label and comment each issue they add on
 GitHub, then write, so a failed `gh` call exits 2 and writes nothing; `resolve`
 books `work_package_issue_closed` (ruling 10) and never closes the package.
+
+RO-14 tranche 1: `dispatch`, `block` and `unblock` book the run's events through
+`gzkit.work_package_run`, which holds the fix-cycle bound (GHI #1200).
 """
 
 from typing import TYPE_CHECKING
@@ -27,12 +30,21 @@ from gzkit.work_package_ledger import (
     IssueClosure,
     TransitionRequest,
     WorkPackageLedgerError,
+    is_blocked,
     open_issues,
     record_work_package_change,
     record_work_package_issue_closed,
     record_work_package_transition,
     work_package_lane,
     work_package_state,
+)
+from gzkit.work_package_run import (
+    BlockRequest,
+    DispatchRequest,
+    UnblockRequest,
+    record_work_package_block,
+    record_work_package_dispatch,
+    record_work_package_unblock,
 )
 from gzkit.work_package_store import WorkPackageStoreError, next_id, stage, write
 
@@ -139,9 +151,20 @@ def wp_new_cmd(*, record: dict[str, object], alterations: list[str], as_json: bo
 
 
 def wp_attach_cmd(*, work_package: str, issues: list[int], as_json: bool) -> None:
-    """Attach GitHub issues to a repair package; each issue belongs to one package (ruling 2)."""
-    root, catalog, _ = _context()
+    """Attach GitHub issues to a repair package; each issue belongs to one package (ruling 2).
+
+    Raises:
+        PolicyBreachError: The package is frozen; nothing is written.
+
+    """
+    root, catalog, ledger = _context()
     held = _held(catalog, work_package)
+    if work_package_state(ledger, work_package) not in {None, "initiated"}:
+        msg = (
+            f"Work package {work_package} is frozen; its issues are the subjects the fix-cycle "
+            "bound counts against (RO-14 ruling 14). Another issue is a new package."
+        )
+        raise PolicyBreachError(msg)
     package = held.model_copy(update={"issues": (*held.issues, *issues)})
     _store(root, catalog, package, tuple(issues))
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
@@ -268,6 +291,9 @@ def wp_show_cmd(*, work_package: str, as_json: bool) -> None:
             "work_package_transitioned",
             "work_package_changed",
             "work_package_issue_closed",
+            "work_package_dispatched",
+            "work_package_blocked",
+            "work_package_unblocked",
         )
         for row in ledger.query(event_type=event_type)
         if row.extra.get("work_package") == work_package
@@ -284,7 +310,14 @@ def wp_show_cmd(*, work_package: str, as_json: bool) -> None:
     target = package.outcome or ", ".join(f"#{issue}" for issue in package.issues)
     fmt.emit(f"  delivers: {target}  lane: {lane}")
     for row in history:
-        move = row.get("to_state") or row.get("rung") or f"#{row.get('issue')}"
+        move = (
+            row.get("to_state")
+            or row.get("rung")
+            or row.get("role")
+            or row.get("exit_taken")
+            or row.get("reason")
+            or (f"#{row['issue']}" if row.get("issue") else "cleared")
+        )
         fmt.emit(f"  {row.get('ts')}  {row.get('event')}  {move}")
 
 
@@ -357,3 +390,75 @@ def wp_evidence_cmd(*, work_package: str, items: list[str], as_json: bool) -> No
         if as_json
         else f"Recorded {len(added)} OQE entr{'y' if len(added) == 1 else 'ies'} on {work_package}."
     )
+
+
+def wp_dispatch_cmd(*, fields: dict[str, object], as_json: bool) -> None:
+    """Book one dispatch on a commenced package, holding the fix-cycle bound (GHI #1200).
+
+    Raises:
+        PolicyBreachError: The dispatch is refused, the bound included; nothing is booked.
+
+    """
+    _, catalog, ledger = _context()
+    _held(catalog, str(fields["work_package"]))
+    try:
+        request = DispatchRequest.model_validate(fields)
+        event = record_work_package_dispatch(catalog, ledger, request)
+    except ValueError as exc:
+        raise PolicyBreachError(str(exc)) from exc
+    fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
+    fmt.emit(
+        event if as_json else f"Recorded {event.role} on {event.subject} of {event.work_package}."
+    )
+
+
+def wp_block_cmd(*, work_package: str, reason: str, next_action: str, as_json: bool) -> None:
+    """Book that a package awaits the operator, with the runtime's own count.
+
+    Raises:
+        PolicyBreachError: The block is refused; nothing is booked.
+
+    """
+    _, catalog, ledger = _context()
+    _held(catalog, work_package)
+    try:
+        request = BlockRequest(work_package=work_package, reason=reason, next_action=next_action)
+        event = record_work_package_block(catalog, ledger, request)
+    except ValueError as exc:
+        raise PolicyBreachError(str(exc)) from exc
+    fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
+    if as_json:
+        fmt.emit(event)
+        return
+    fmt.emit(f"Blocked {work_package} on the operator: {event.next_operator_action}")
+    cycles = ", ".join(f"{subject}: {n}" for subject, n in event.fix_cycles.items())
+    fmt.emit(f"  fix cycles (bound {event.bound}): {cycles or 'none'}")
+    fmt.emit(f"  at the bound: {', '.join(event.at_bound) or 'none'}")
+    fmt.emit(f"  held: {', '.join(event.held) or 'none'}")
+    fmt.emit(f"  exits used: {', '.join(event.exits_used) or 'none'}")
+    fmt.emit(f"  reopened: {', '.join(event.reopened) or 'none'}")
+
+
+def wp_unblock_cmd(*, fields: dict[str, object], as_json: bool) -> None:
+    """Book the operator's ruling and clear the block; at the bound it names an exit.
+
+    Raises:
+        PolicyBreachError: The unblock is refused; nothing is booked.
+
+    """
+    _, catalog, ledger = _context()
+    work_package = str(fields["work_package"])
+    _held(catalog, work_package)
+    try:
+        request = UnblockRequest.model_validate(fields)
+        event = record_work_package_unblock(catalog, ledger, request)
+    except ValueError as exc:
+        raise PolicyBreachError(str(exc)) from exc
+    fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
+    if as_json:
+        fmt.emit(
+            {"event": event.model_dump(mode="json"), "blocked": is_blocked(ledger, work_package)}
+        )
+        return
+    named = f" by exit {event.exit_taken}" if event.exit_taken else ""
+    fmt.emit(f"Unblocked {work_package}{named}.")
