@@ -2567,6 +2567,10 @@
           "min_length": 1
         },
         "exit_taken": {
+          "type": [
+            "string",
+            "null"
+          ],
           "enum": [
             "reopen",
             "departure",
