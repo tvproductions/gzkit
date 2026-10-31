@@ -19,7 +19,7 @@ from pathlib import Path
 from unittest import mock
 
 from gzkit.commands.quality import _STEP_GUARD_META, _build_check_steps, _select_check_steps
-from gzkit.enforcement import get_enforcement_registry
+from gzkit.enforcement import production_enforcement_registry
 from gzkit.governance.trust_audits import _qc_negative_controls as nc
 from gzkit.governance.trust_audits._qc_nc_entrypoints import (
     NC_ADVISORY,
@@ -115,7 +115,7 @@ class TestTheStepIsQcBound(unittest.TestCase):
         self.assertEqual(_STEP_GUARD_META[_STEP][0], "supply-chain-audit")
 
     def test_its_claims_declare_the_ignore_list_as_their_one_admit_path(self) -> None:
-        claims = {c.claim_id: c for c in get_enforcement_registry()}
+        claims = {c.claim_id: c for c in production_enforcement_registry()}
         audit, admit = claims["supply-chain-audit"], claims["supply-chain-audit-ignored"]
         self.assertEqual(audit.exempts, "supply-chain-audit-ignored")
         self.assertEqual(admit.exempts, "none")
