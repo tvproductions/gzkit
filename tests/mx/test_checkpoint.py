@@ -11,11 +11,13 @@ is the single severity authority) per ADR-0.0.59, not a ``@covers`` test;
 decorated as the fence's proof.
 """
 
+import os
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest import mock
 
-from gzkit.mx import marker
+from gzkit.mx import checkpoint, hardening, marker
 from gzkit.mx.marker import Marker
 from gzkit.traceability import covers
 from tests.mx.held import open_marker
@@ -166,7 +168,7 @@ class TestSafeMode(unittest.TestCase):
 
         with TemporaryDirectory() as tmp:
             root = _mk_root(tmp)
-            open_marker(root, Marker(session_id="safe-session", mode="safe"))
+            open_marker(root, Marker(session_id="safe-session", level="drydock"))
             self.assertTrue(checkpoint.is_advisory("gate3-docs", root))
             self.assertEqual(
                 checkpoint.resolve("gate3-docs", levels.ERROR, root),
@@ -180,7 +182,7 @@ class TestSafeMode(unittest.TestCase):
 
         with TemporaryDirectory() as tmp:
             root = _mk_root(tmp)
-            open_marker(root, Marker(session_id="safe-session", mode="safe"))
+            open_marker(root, Marker(session_id="safe-session", level="drydock"))
             for name in GATE5_INVARIANTS:
                 self.assertFalse(checkpoint.is_advisory(name, root), name)
                 self.assertEqual(
@@ -194,7 +196,7 @@ class TestSafeMode(unittest.TestCase):
 
         with TemporaryDirectory() as tmp:
             root = _mk_root(tmp)
-            open_marker(root, Marker(session_id="mx-session", mode="mx"))
+            open_marker(root, Marker(session_id="mx-session", level="hangar"))
             self.assertTrue(checkpoint.is_advisory("gate3-docs", root))
 
 
@@ -212,7 +214,8 @@ class TestExitingMarker(unittest.TestCase):
         for mode in ("mx", "safe"):
             with self.subTest(mode=mode), TemporaryDirectory() as tmp:
                 root = _mk_root(tmp)
-                open_marker(root, Marker(session_id="s", mode=mode, exiting=True))
+                level = marker.LEVEL_OF_MODE[mode]
+                open_marker(root, Marker(session_id="s", level=level, exiting=True))
                 self.assertFalse(checkpoint.hangar_demotes(root))
                 self.assertEqual(
                     checkpoint.resolve("gate3-docs", levels.ERROR, root),
@@ -226,8 +229,44 @@ class TestExitingMarker(unittest.TestCase):
             root = _mk_root(tmp)
             marker.marker_path(root).write_text("{not json", encoding="utf-8")
             self.assertFalse(checkpoint.hangar_demotes(root))
-            marker.write(Marker(session_id="hand-made", mode="safe"), root)
+            marker.write(Marker(session_id="hand-made", level="drydock"), root)
             self.assertFalse(checkpoint.hangar_demotes(root))
+
+
+class TestFullStrengthSwitch(unittest.TestCase):
+    """GHI #1263: a shared verifier lifts the demotion and keeps the marker."""
+
+    def _open(self, root: Path) -> None:
+        open_marker(root, Marker(session_id="s", level="drydock"))
+
+    def test_the_switch_lifts_demotion_with_the_marker_on_disk(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            self._open(root)
+            for value in ("1", "true", "YES"):
+                with (
+                    self.subTest(value=value),
+                    mock.patch.dict(os.environ, {"GZKIT_MX_FULL_STRENGTH": value}),
+                ):
+                    self.assertFalse(checkpoint.hangar_demotes(root))
+                    self.assertFalse(hardening.dangling_state_status(root).dangling)
+
+    def test_unset_or_false_still_demotes(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            self._open(root)
+            self.assertTrue(checkpoint.hangar_demotes(root))
+            with mock.patch.dict(os.environ, {"GZKIT_MX_FULL_STRENGTH": "0"}):
+                self.assertTrue(checkpoint.hangar_demotes(root))
+
+    def test_the_floor_is_unchanged(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            self._open(root)
+            with mock.patch.dict(os.environ, {"GZKIT_MX_FULL_STRENGTH": "1"}):
+                for invariant in checkpoint.GATE5_INVARIANTS:
+                    with self.subTest(invariant=invariant):
+                        self.assertFalse(checkpoint.is_advisory(invariant, root))
 
 
 class TestValidateAnnouncesDemotion(unittest.TestCase):
@@ -263,7 +302,7 @@ class TestValidateAnnouncesDemotion(unittest.TestCase):
     def test_a_demoted_default_tier_scope_is_announced_too(self) -> None:
         with TemporaryDirectory() as tmp:
             root = _mk_root(tmp)
-            open_marker(root, Marker(session_id="safe-session", mode="safe"))
+            open_marker(root, Marker(session_id="safe-session", level="drydock"))
             errors, stderr = self._run(root, tier="default")
         self.assertEqual(errors, [])
         self.assertIn("a.py: the finding itself", stderr)
@@ -271,7 +310,7 @@ class TestValidateAnnouncesDemotion(unittest.TestCase):
     def test_a_demoted_scope_names_itself_and_its_findings_on_stderr(self) -> None:
         with TemporaryDirectory() as tmp:
             root = _mk_root(tmp)
-            open_marker(root, Marker(session_id="safe-session", mode="safe"))
+            open_marker(root, Marker(session_id="safe-session", level="drydock"))
             errors, stderr = self._run(root)
         self.assertEqual(errors, [])
         self.assertIn("[MX advisory] guard 'id_seam'", stderr)

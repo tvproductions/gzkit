@@ -6,6 +6,7 @@ checkpoint for free; nobody can forget to wire it, and the never-relax list live
 in exactly one place.
 """
 
+import os
 from pathlib import Path
 
 from gzkit.mx import disposition as _disposition
@@ -31,6 +32,19 @@ def resolve(
     return _disposition.route(emitted_level)
 
 
+def full_strength_requested() -> bool:
+    """Say whether ``GZKIT_MX_FULL_STRENGTH`` is 1, true or yes, in any case.
+
+    A shared verifier checks out the committed marker; the switch lifts its demotion
+    so CI's report-only job runs every guard at full strength (GHI #1263, #1273).
+
+    Returns:
+        True when the switch is set to a true value.
+
+    """
+    return os.environ.get("GZKIT_MX_FULL_STRENGTH", "").strip().lower() in {"1", "true", "yes"}
+
+
 def hangar_demotes(project_root: Path | None = None) -> bool:
     """Return True when the condition is on: the hangar and safe mode both demote.
 
@@ -42,8 +56,9 @@ def hangar_demotes(project_root: Path | None = None) -> bool:
     An unreadable or unbound marker demotes nothing, and neither does the marker
     ``gz mx exit`` holds through its re-run, which stays on disk so the session never
     looks dangling (:func:`gzkit.mx.marker.condition`; GHI #1257, #1273).
+    ``GZKIT_MX_FULL_STRENGTH`` does the same for a shared verifier (GHI #1263).
     """
-    return marker.condition(project_root).on
+    return marker.condition(project_root).on and not full_strength_requested()
 
 
 def is_advisory(guard_name: str, project_root: Path | None = None) -> bool:

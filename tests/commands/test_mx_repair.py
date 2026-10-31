@@ -106,7 +106,7 @@ class TestMxRepair(SilencedConsoleTestCase):
 
         rebuilt = marker.read(self.root)
         assert rebuilt is not None
-        self.assertEqual((rebuilt.mode, rebuilt.contract), ("safe", "contract.md"))
+        self.assertEqual((rebuilt.level, rebuilt.contract), ("drydock", "contract.md"))
         self.assertEqual(rebuilt.opened_at, "2026-10-20T00:00:00+00:00")
 
     def test_a_marker_no_session_backs_is_removed(self) -> None:

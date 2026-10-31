@@ -74,7 +74,7 @@ def book_contract_amendment(root: Path, text: str, *, commit: str | None = None)
     safe-mode session is open under a contract.
     """
     held = marker.read(root)
-    if held is None or held.mode != "safe" or not held.contract or not marker.is_valid(root):
+    if held is None or held.level != "drydock" or not held.contract or not marker.is_valid(root):
         return False
     ledger = Ledger(root.joinpath(*_LEDGER_RELPATH))
     pin = contract_pin(text)
@@ -112,7 +112,7 @@ def _git(root: Path, *args: str) -> str | None:
 def book_committed_contract_amendment(root: Path, rev: str = "HEAD") -> bool:
     """Book the open session's contract as committed at ``rev``, when it changed."""
     held = marker.read(root)
-    if held is None or held.mode != "safe" or not held.contract:
+    if held is None or held.level != "drydock" or not held.contract:
         return False
     text = _git(root, "show", f"{rev}:{held.contract}")
     if text is None:

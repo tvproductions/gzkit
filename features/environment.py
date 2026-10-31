@@ -13,6 +13,9 @@ import os
 # singleton is already frozen by then. This is the behave analog of
 # ``tests/__init__.py`` popping FORCE_COLOR before ``unittest`` imports gzkit.
 os.environ.pop("FORCE_COLOR", None)
+# CI's report-only job sets the MX full-strength switch for its own guards;
+# scenarios build their own markers and expect the demotion (GHI #1263).
+os.environ.pop("GZKIT_MX_FULL_STRENGTH", None)
 
 import logging
 import shutil

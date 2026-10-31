@@ -2222,7 +2222,7 @@ class TestMxHangarReachesSessionStart(unittest.TestCase):
         }
         (root / ".gzkit" / "ledger.jsonl").write_text(json.dumps(row) + "\n", encoding="utf-8")
         if with_marker:
-            marker.write(Marker(session_id="s1", mode="safe"), root)
+            marker.write(Marker(session_id="s1", level="drydock"), root)
         return root
 
     def _ledger_events(self, root: Path) -> list[str]:

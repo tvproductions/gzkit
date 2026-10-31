@@ -20,9 +20,9 @@ lines we want to tolerate) is exactly what MX mode exists to survive.
 import json
 from functools import lru_cache
 from pathlib import Path
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import AliasChoices, BaseModel, BeforeValidator, ConfigDict, Field
 
 # The single MX truth-source location (ADR-0.0.74 Boundary Invariant #1). Every
 # surface — code guards and agents — reads MX state from here and nowhere else.
@@ -33,6 +33,11 @@ _LEDGER_RELPATH = (".gzkit", "ledger.jsonl")
 # ledger line shape {"schema":…, "event":…, …}).
 _OPENED_EVENT = "mx_session_opened"
 _CLOSED_EVENT = "mx_session_closed"
+
+# The standby level commanded at entry, and what a marker or ledger ``mode`` names
+# (operator rulings 2026-10-27 and 2026-10-31, "A" and "a"; GHI #1273).
+Level = Literal["hangar", "drydock"]
+LEVEL_OF_MODE: dict[str, Level] = {"mx": "hangar", "safe": "drydock"}
 
 # Why the condition reads as it does: ``on``, or the reason it is off.
 ConditionCause = Literal["on", "absent", "unreadable", "unbound", "exiting"]
@@ -63,12 +68,13 @@ class Marker(BaseModel):
     inspection_scope: list[str] = Field(
         default_factory=list, description="ADRs/OBPIs under inspection"
     )
-    mode: Literal["mx", "safe"] = Field(
-        "mx",
+    level: Annotated[Level, BeforeValidator(lambda value: LEVEL_OF_MODE.get(value, value))] = Field(
+        "hangar",
+        validation_alias=AliasChoices("level", "mode"),
         description=(
-            "mx: the Maintenance Hangar, guards demote to advisory; safe: safe mode, "
-            "guards demote, the slow alarms are off and ceremony is suspended under a "
-            "contract (GHI #1244, rulings 2026-10-17 and 2026-10-25)"
+            "hangar: guards demote and the slow alarms stay on; drydock, safe mode: guards "
+            "demote, the slow alarms are off and ceremony is suspended under a contract. A "
+            "marker written before GHI #1273 carries ``mode``, read here as its alias"
         ),
     )
     contract: str = Field(

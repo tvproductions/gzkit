@@ -124,13 +124,14 @@ def _mx_awareness_script() -> str:
                     not isinstance(raw, dict)
                     or not raw.get("session_id")
                     or raw.get("mode", "mx") not in {"mx", "safe"}
+                    or raw.get("level", "hangar") not in {"hangar", "drydock"}
                 ):
                     return f"MX MARKER UNREADABLE — {_RECOVER}"
                 if not _session_bound(root, str(raw["session_id"])):
                     return f"MX MARKER UNBOUND — {_RECOVER}"
                 if raw.get("exiting"):
                     return "MX EXIT RUNNING — every guard at full strength until gz mx exit finishes"
-                if raw.get("mode") == "safe":
+                if raw.get("level") == "drydock" or raw.get("mode") == "safe":
                     return _safe_banner(str(raw.get("contract") or "<no contract recorded>"))
                 return _BANNER
 

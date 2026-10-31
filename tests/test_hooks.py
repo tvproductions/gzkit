@@ -1731,7 +1731,7 @@ class TestPipelineGateHook(unittest.TestCase):
             plans_dir = project_root / ".claude" / "plans"
             script_path = self._create_hook(project_root)
             self._write_receipt(plans_dir, obpi_id="OBPI-0.12.0-04", verdict="PASS")
-            open_marker(project_root, mx_marker.Marker(session_id="safe-session", mode="safe"))
+            open_marker(project_root, mx_marker.Marker(session_id="safe-session", level="drydock"))
 
             result = self._run_hook(script_path, project_root, file_path="src/demo.py")
 

@@ -6,7 +6,7 @@ partially broken until the reconfiguration is complete, then we adjust tests and
 the "security alarms" back on."*
 
 An alarm hook runs through ``python -m gzkit.mx.alarms <hook-id> -- <command...>``.
-While the marker carries ``mode: safe`` the command does not run at all; otherwise it
+While the condition is on at the drydock level the command does not run at all; otherwise it
 runs unchanged and its exit status is the hook's. The marker ``gz mx exit`` holds
 through its re-run is ``exiting``, so the exit gate runs every alarm at full strength.
 The secret scan and the authorship check are not alarms and never route through here.
@@ -28,11 +28,11 @@ def alarms_off(project_root: Path | None = None) -> bool:
     """Return True while an open safe-mode marker holds the alarms off.
 
     Returns:
-        True when the condition is on and the marker is in safe mode.
+        True when the condition is on at the drydock level.
 
     """
     held = marker.condition(project_root)
-    return held.on and held.marker is not None and held.marker.mode == "safe"
+    return held.on and held.marker is not None and held.marker.level == "drydock"
 
 
 def main(argv: Sequence[str] | None = None) -> int:

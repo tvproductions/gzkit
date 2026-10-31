@@ -274,8 +274,8 @@ def mx_enter_cmd(
     captures the inspection scope.  The operator (``attestor``) is required;
     an agent cannot open the hangar autonomously.  Empty or whitespace-only
     ``reason`` or ``attestor`` fails closed with exit 1. Safe mode, the
-    toggle (GHI #1244), requires a readable ``contract`` and demotes
-    no guard; the hangar refuses a contract.
+    toggle (GHI #1244), requires a readable ``contract``; the hangar refuses a
+    contract. ``mode`` carries the commanded level in the ledger's own words.
     """
     if not reason.strip():
         console.print("[red]ERROR:[/red] --reason cannot be empty.")
@@ -334,7 +334,7 @@ def mx_enter_cmd(
         reason=reason.strip(),
         attestor=attestor.strip(),
         inspection_scope=list(inspection_scope),
-        mode=mode,
+        level=marker.LEVEL_OF_MODE[mode],
         contract=contract_path,
     )
     marker.write(m, root)
@@ -454,7 +454,7 @@ def mx_exit_cmd(
     # (GHI #848).
     _release_session_lock(root)
 
-    label = "Safe mode closed" if m.mode == "safe" else "MX session closed"
+    label = "Safe mode closed" if m.level == "drydock" else "MX session closed"
     console.print(f"[green]{label}.[/green] session_id={m.session_id}, attestor={attestor.strip()}")
 
 
@@ -482,7 +482,7 @@ def _marker_from_session(root: Path, session_id: str) -> Marker:
         reason=str(opened.extra.get("reason", "")),
         attestor=str(opened.extra.get("attestor", "")),
         inspection_scope=list(opened.extra.get("inspection_scope", [])),
-        mode="safe" if opened.extra.get("mode") == "safe" else "mx",
+        level=marker.LEVEL_OF_MODE.get(str(opened.extra.get("mode")), "hangar"),
         contract=str(opened.extra.get("contract", "")),
     )
 

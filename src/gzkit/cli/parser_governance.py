@@ -816,7 +816,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
                 reason=a.reason,
                 attestor=a.attestor,
                 inspection_scope=a.inspection_scope,
-                mode=a.mode,
+                mode={"drydock": "safe", "hangar": "mx"}.get(a.level, a.mode),
                 contract=a.contract,
             )
         elif a.mx_command == "exit":
@@ -865,17 +865,20 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
             [
                 'gz mx enter --reason "re-true locks under ADR-0.0.74" --attestor g0',
                 "gz mx enter --reason 'repair ledger' --attestor g0 --scope ADR-0.0.74",
-                "gz mx enter --mode safe --contract docs/governance/pilotage.md "
+                "gz mx enter --level drydock --contract docs/governance/pilotage.md "
                 "--reason 'harbor pilotage' --attestor g0",
             ]
         ),
     )
     p_mx_enter.add_argument("--reason", required=True, help="Reason for entering MX mode")
-    p_mx_enter.add_argument(
-        "--mode",
-        choices=("mx", "safe"),
-        default="mx",
-        help="mx (default): Maintenance Hangar; safe: safe mode under --contract (GHI #1244)",
+    p_mx_enter_level = p_mx_enter.add_mutually_exclusive_group()
+    p_mx_enter_level.add_argument(
+        "--level",
+        choices=("hangar", "drydock"),
+        help="hangar (default): one squawk; drydock: safe mode under --contract (GHI #1273)",
+    )
+    p_mx_enter_level.add_argument(
+        "--mode", choices=("mx", "safe"), default="mx", help=argparse.SUPPRESS
     )
     p_mx_enter.add_argument(
         "--contract",

@@ -18,7 +18,7 @@ from typing import Literal
 from unittest.mock import patch
 
 from gzkit.mx import awareness
-from gzkit.mx.marker import Marker
+from gzkit.mx.marker import LEVEL_OF_MODE, Marker
 from gzkit.traceability import covers
 from tests.mx.held import open_marker
 
@@ -46,7 +46,7 @@ def _load_hook_module():
 
 def _open_hangar(root: Path, mode: Literal["mx", "safe"] = "mx", contract: str = "") -> None:
     """Write a marker and the ledger row that binds it, so the condition reads on."""
-    open_marker(root, Marker(session_id="s", mode=mode, contract=contract))
+    open_marker(root, Marker(session_id="s", level=LEVEL_OF_MODE[mode], contract=contract))
 
 
 class TestBannerReadsTheCondition(unittest.TestCase):
@@ -70,6 +70,16 @@ class TestBannerReadsTheCondition(unittest.TestCase):
         expected = awareness.safe_mode_banner("docs/governance/pilotage.md")
         self.assertEqual(self._banners(self.SAFE, [self.BOUND]), (expected, expected))
 
+    def test_the_level_and_its_alias_both_read(self):
+        from_level = self._banners(
+            '{"session_id": "s", "level": "drydock", "contract": "c.md"}', [self.BOUND]
+        )
+        from_mode = self._banners(
+            '{"session_id": "s", "mode": "safe", "contract": "c.md"}', [self.BOUND]
+        )
+        self.assertEqual(from_level, from_mode)
+        self.assertIn("SAFE MODE ACTIVE", from_level[0])
+
     def test_no_marker_says_nothing(self):
         self.assertEqual(self._banners(None, [self.BOUND]), ("", ""))
 
@@ -80,6 +90,7 @@ class TestBannerReadsTheCondition(unittest.TestCase):
                 ("[]", [self.BOUND]),
                 ("{}", [self.BOUND]),
                 ('{"session_id": "s", "mode": "drydockish"}', [self.BOUND]),
+                ('{"session_id": "s", "level": "drydockish"}', [self.BOUND]),
             ],
             "unbound": [(self.SAFE, []), (self.SAFE, [self.BOUND, self.CLOSED])],
         }

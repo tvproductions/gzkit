@@ -20,7 +20,7 @@ from pathlib import Path
 from typing import Literal
 from unittest.mock import patch
 
-from gzkit.mx.marker import Marker
+from gzkit.mx.marker import LEVEL_OF_MODE, Marker
 from gzkit.traceability import covers
 from tests.commands.common import argv_by_tool_name
 from tests.mx.held import open_marker
@@ -355,7 +355,10 @@ class TestOpenModeReports(unittest.TestCase):
     ) -> tuple[int, str]:
         root = Path(tmp)
         if mode is not None:
-            open_marker(root, Marker(session_id="stop-hook-test", mode=mode, exiting=exiting))
+            open_marker(
+                root,
+                Marker(session_id="stop-hook-test", level=LEVEL_OF_MODE[mode], exiting=exiting),
+            )
         transcript = _write_transcript(root, "OBPI-0.0.37-22 is attested-complete.")
         stderr = io.StringIO()
         with (

@@ -250,7 +250,7 @@ class TestMxEnterSafeMode(SilencedConsoleTestCase):
             m = marker.read(root)
             self.assertIsNotNone(m)
             assert m is not None
-            self.assertEqual((m.mode, m.contract), ("safe", contract))
+            self.assertEqual((m.level, m.contract), ("drydock", contract))
             events = _read_ledger_events(root, "mx_session_opened")
             self.assertEqual(len(events), 1)
             self.assertEqual(events[0].get("mode"), "safe")
@@ -264,7 +264,7 @@ class TestMxEnterSafeMode(SilencedConsoleTestCase):
             mx_enter_cmd(reason="repair", attestor="g0", inspection_scope=[], project_root=root)
             m = marker.read(root)
             assert m is not None
-            self.assertEqual((m.mode, m.contract), ("mx", ""))
+            self.assertEqual((m.level, m.contract), ("hangar", ""))
             self.assertEqual(_read_ledger_events(root, "mx_session_opened")[0].get("mode"), "mx")
 
     def test_safe_mode_without_a_contract_is_refused(self) -> None:
@@ -383,47 +383,51 @@ class TestMxEnterCliOutputForm(unittest.TestCase):
             contract = root / "docs" / "governance" / "pilotage.md"
             contract.parent.mkdir(parents=True)
             contract.write_text("# contract\n", encoding="utf-8")
-            result = runner.invoke(
-                main,
-                [
-                    "mx",
-                    "enter",
-                    "--mode",
-                    "safe",
-                    "--contract",
-                    "docs/governance/pilotage.md",
-                    "--reason",
-                    "harbor pilotage",
-                    "--attestor",
-                    "g0",
-                ],
-            )
-            self.assertEqual(result.exit_code, 0, result.output)
-            opened = marker.read(root)
-            self.assertIsNotNone(opened)
-            assert opened is not None
-            self.assertEqual(
-                (opened.mode, opened.contract), ("safe", "docs/governance/pilotage.md")
-            )
-            self.assertIn("Safe mode opened", result.output)
-            self.assertIn("contract=docs/governance/pilotage.md", result.output)
+            for flags in (["--level", "drydock"], ["--mode", "safe"]):
+                with self.subTest(flags=flags):
+                    result = runner.invoke(
+                        main,
+                        [
+                            "mx",
+                            "enter",
+                            *flags,
+                            "--contract",
+                            "docs/governance/pilotage.md",
+                            "--reason",
+                            "harbor pilotage",
+                            "--attestor",
+                            "g0",
+                        ],
+                    )
+                    self.assertEqual(result.exit_code, 0, result.output)
+                    opened = marker.read(root)
+                    self.assertIsNotNone(opened)
+                    assert opened is not None
+                    self.assertEqual(
+                        (opened.level, opened.contract),
+                        ("drydock", "docs/governance/pilotage.md"),
+                    )
+                    self.assertIn("Safe mode opened", result.output)
+                    self.assertIn("contract=docs/governance/pilotage.md", result.output)
+                    marker.marker_path(root).unlink()
+                    lock_manager.delete_lock(root, marker.SESSION_LOCK_KEY)
 
     def test_the_help_shows_the_safe_mode_example(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
             result = runner.invoke(main, ["mx", "enter", "--help"])
-            self.assertIn("--mode safe --contract", " ".join(result.output.split()))
+            self.assertIn("--level drydock --contract", " ".join(result.output.split()))
             # Safe mode is the sole term (operator ruling 2026-10-16).
             self.assertNotIn("martial", result.output.lower())
 
     def test_safe_mode_is_the_sole_term_on_the_mode_fields(self) -> None:
         """Operator ruling 2026-10-16, verbatim "safe mode is the sole term, update the
-        canon": the marker's and the event's ``mode`` descriptions name safe mode and no
-        other regime."""
+        canon": the marker's ``level`` and the event's ``mode`` descriptions name safe mode
+        and no other regime."""
         from gzkit.events import MxSessionOpenedEvent
 
-        for model in (marker.Marker, MxSessionOpenedEvent):
+        for model, field in ((marker.Marker, "level"), (MxSessionOpenedEvent, "mode")):
             with self.subTest(model=model.__name__):
-                description = (model.model_fields["mode"].description or "").lower()
+                description = (model.model_fields[field].description or "").lower()
                 self.assertIn("safe mode", description)
                 self.assertNotIn("martial", description)

@@ -26,11 +26,16 @@ the explicit local statement; this pop is what also covers the git that
 PRODUCTION code spawns when a test drives it. A test that needs a planted
 ``GIT_DIR`` sets it after import (``patch.dict``), so nothing here is lost to
 it. Commands run inside a checkout still discover that checkout by ``cwd``.
+
+MX full strength (GHI #1263): CI's report-only job sets ``GZKIT_MX_FULL_STRENGTH``.
+Tests build their own markers and assert the demotion, so the switch is dropped
+here; a test that needs it sets it with ``patch.dict``.
 """
 
 import os
 
 from gzkit.git_spawn_boundary import scrub_repo_local_git_env
 
-os.environ.pop("FORCE_COLOR", None)
+for _ambient in ("FORCE_COLOR", "GZKIT_MX_FULL_STRENGTH"):
+    os.environ.pop(_ambient, None)
 scrub_repo_local_git_env(os.environ)

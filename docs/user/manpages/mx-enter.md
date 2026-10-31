@@ -6,7 +6,7 @@ Open the Maintenance Hangar (MX mode).
 
 <!-- gz-validate-skip: command-shape -->
 ```bash
-gz mx enter --reason REASON --attestor ATTESTOR [--scope ADR_OR_OBPI ...] [--mode {mx,safe}] [--contract PATH]
+gz mx enter --reason REASON --attestor ATTESTOR [--scope ADR_OR_OBPI ...] [--level {hangar,drydock}] [--contract PATH]
 ```
 
 ## Arguments
@@ -16,8 +16,8 @@ gz mx enter --reason REASON --attestor ATTESTOR [--scope ADR_OR_OBPI ...] [--mod
 | `--reason REASON` | Reason for entering MX mode (required; must be non-empty) |
 | `--attestor ATTESTOR` | Operator identity (required; never an agent — only operators may open the hangar) |
 | `--scope ADR_OR_OBPI ...` | ADRs/OBPIs under inspection (optional; 0 or more) |
-| `--mode {mx,safe}` | `mx` (default): the Maintenance Hangar, most guards demote to advisory. `safe`: safe mode (GHI #1244): OBPI initiation and brief ceremony are suspended under the contract, every guard runs at full strength |
-| `--contract PATH` | Project-relative path of the safe-mode contract, the document that says what the mode suspends and what still binds. Required with `--mode safe`; refused with `--mode mx` |
+| `--level {hangar,drydock}` | The standby level. `hangar` (default): most guards demote to advisory and the slow alarms stay on. `drydock`, safe mode (GHI #1244): guards demote, the slow alarms are off, and OBPI initiation and brief ceremony are suspended under the contract. `--mode {mx,safe}` is still accepted as an older spelling |
+| `--contract PATH` | Project-relative path of the safe-mode contract, the document that says what the mode suspends and what still binds. Required with `--level drydock`; refused with `--level hangar` |
 
 ## Runtime Behavior
 
@@ -33,14 +33,14 @@ gz mx enter --reason REASON --attestor ATTESTOR [--scope ADR_OR_OBPI ...] [--mod
   as a refusal naming the un-accounted seam — it does **not** block the marker write. Fail-closing
   and real-entry seam accounting (the corrective ceremony weight, brief-less scopes) are the
   attested deferred calibration frontier.
-- Resolves the mode. `--mode safe` requires `--contract` naming a readable file inside the
-  project and fails closed (exit 1) without one; `--mode mx` refuses `--contract`. Under
+- Resolves the level. `--level drydock` requires `--contract` naming a readable file inside the
+  project and fails closed (exit 1) without one; `--level hangar` refuses `--contract`. Under
   safe mode `gzkit.mx.checkpoint` demotes every guard outside `gate5_invariants` to
   advisory, as the hangar does (operator ruling 2026-10-17); the marker also suspends
   ceremony, and the awareness banner names the contract every turn.
 - Writes the marker file (`.gzkit/mx.json`) with `session_id`, `opened_at`, `reason`,
-  `attestor`, `inspection_scope`, `mode`, and `contract`.
-- Writes one `mx_session_opened` ledger event carrying the same fields, binding the marker to
+  `attestor`, `inspection_scope`, `level`, and `contract`.
+- Writes one `mx_session_opened` ledger event carrying those fields with the level as `mode`, binding the marker to
   the ledger (anti-contrivance: a hand-created marker with no matching ledger event is void).
 - Emits a success message with `session_id` and `attestor`.
 
@@ -67,7 +67,7 @@ gz mx enter --reason "repair marker binding" --attestor g0 --scope ADR-0.0.74 OB
 gz mx enter --reason "broad repair" --attestor g0 --scope ADR-0.0.74 ADR-0.0.73 OBPI-0.0.74-02
 
 # Safe mode, under a written contract
-gz mx enter --mode safe --contract docs/governance/harbor-pilotage-candidate-2026-10-15.md --reason "harbor pilotage" --attestor g0
+gz mx enter --level drydock --contract docs/governance/harbor-pilotage-candidate-2026-10-15.md --reason "harbor pilotage" --attestor g0
 ```
 
 ## Related

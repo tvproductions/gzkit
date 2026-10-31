@@ -69,8 +69,8 @@ class TestMxHardeningScope(unittest.TestCase):
         """Today's live case: safe mode open past its lease, marker held."""
         opened = _NOW - timedelta(hours=30)
         for label, held in {
-            "hangar open": Marker(session_id="s1", mode="safe"),
-            "exit re-run": Marker(session_id="s1", mode="safe", exiting=True),
+            "hangar open": Marker(session_id="s1", level="drydock"),
+            "exit re-run": Marker(session_id="s1", level="drydock", exiting=True),
         }.items():
             with self.subTest(state=label), TemporaryDirectory() as tmp:
                 errors, advisories = _run(_root(tmp, [_opened("s1", opened)], held))
@@ -84,7 +84,7 @@ class TestMxHardeningScope(unittest.TestCase):
     def test_the_lease_announcement_names_the_renewal_as_its_recovery(self) -> None:
         # output-contract: the recovery step in guardrail prose is the contract (GHI #1261)
         with TemporaryDirectory() as tmp:
-            held = Marker(session_id="s1", mode="safe")
+            held = Marker(session_id="s1", level="drydock")
             _, advisories = _run(_root(tmp, [_opened("s1", _NOW - timedelta(hours=30))], held))
         lease = [ln for ln in advisories if "past its lease" in ln]
         self.assertEqual(len(lease), 1, advisories)

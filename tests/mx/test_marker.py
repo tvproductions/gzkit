@@ -74,7 +74,7 @@ class TestMarkerPresence(unittest.TestCase):
                 session_id="s-43",
                 reason="harbor pilotage",
                 attestor="g0",
-                mode="safe",
+                level="drydock",
                 contract="docs/governance/harbor-pilotage-candidate-2026-10-15.md",
             )
             marker.write(m, root)
@@ -83,7 +83,7 @@ class TestMarkerPresence(unittest.TestCase):
             old = marker.read(root)
             self.assertIsNotNone(old)
             assert old is not None
-            self.assertEqual((old.mode, old.contract), ("mx", ""))
+            self.assertEqual((old.level, old.contract), ("hangar", ""))
             with self.assertRaises(ValueError):
                 Marker.model_validate({"session_id": "s-45", "mode": "lenient"})
 
@@ -190,6 +190,29 @@ class TestMarkerLedgerBinding(unittest.TestCase):
 
 _OPENED = {"event": "mx_session_opened", "session_id": "s-1"}
 _CLOSED = {"event": "mx_session_closed", "session_id": "s-1"}
+
+
+class TestLevel(unittest.TestCase):
+    """GHI #1273: the marker names the commanded level; ``mode`` reads as its alias."""
+
+    def test_the_old_field_reads_as_the_level(self) -> None:
+        for mode, level in (("mx", "hangar"), ("safe", "drydock")):
+            with self.subTest(mode=mode):
+                held = Marker.model_validate({"session_id": "s", "mode": mode})
+                self.assertEqual(held.level, level)
+
+    def test_a_marker_writes_only_the_level(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            marker.write(Marker(session_id="s", level="drydock"), root)
+            raw = json.loads(marker.marker_path(root).read_text(encoding="utf-8"))
+            self.assertEqual(raw["level"], "drydock")
+            self.assertNotIn("mode", raw)
+
+    def test_an_unknown_level_or_mode_is_refused(self) -> None:
+        for field, value in (("level", "drydockish"), ("mode", "lenient")):
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                Marker.model_validate({"session_id": "s", field: value})
 
 
 class TestCondition(unittest.TestCase):

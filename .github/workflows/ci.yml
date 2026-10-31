@@ -113,3 +113,34 @@ jobs:
       - name: Run gz check --cross-platform (the full sweep minus platform-independent steps)
         if: runner.os == 'Windows'
         run: uv run gz check --cross-platform
+
+  # While the hangar or safe mode is open, the committed marker demotes every guard
+  # outside gate5_invariants, in the job above too. This job lifts the demotion, keeps
+  # the marker so the session is not dangling, and reports: it never fails the run.
+  # Operator ruling, 2026-10-26, verbatim: "report only, decide within #1273".
+  # (GHI #1263, #1273)
+  full-strength-report:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    env:
+      GZKIT_MX_FULL_STRENGTH: "1"
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # gz check has git-history-dependent validators
+
+      - name: Configure git identity for the authorship audit
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          enable-cache: true
+
+      - name: Sync dependencies
+        run: uv sync --locked
+
+      - name: Run gz check --full at full strength
+        run: uv run gz check --full

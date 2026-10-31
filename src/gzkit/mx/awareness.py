@@ -37,6 +37,7 @@ def safe_mode_banner(contract: str) -> str:
     )
 
 
+LEVELS = {"hangar", "drydock"}
 _MARKER_RELPATH = (".gzkit", "mx.json")
 _LEDGER_RELPATH = (".gzkit", "ledger.jsonl")
 _HOOK_RELPATH = (".claude", "hooks", "mx-awareness.py")
@@ -74,7 +75,8 @@ def _read_marker(project_root: Path) -> dict | None:
         return None
     if not isinstance(raw, dict) or not raw.get("session_id"):
         return None
-    return raw if raw.get("mode", "mx") in {"mx", "safe"} else None
+    known = raw.get("level", "hangar") in LEVELS and raw.get("mode", "mx") in {"mx", "safe"}
+    return raw if known else None
 
 
 def _session_is_open(project_root: Path, session_id: str) -> bool:
@@ -124,7 +126,7 @@ def get_banner(project_root: Path | None = None) -> str:
         return void_marker_banner("unbound")
     if held.get("exiting"):
         return MX_EXITING_BANNER
-    if held.get("mode") == "safe":
+    if held.get("level") == "drydock" or held.get("mode") == "safe":
         return safe_mode_banner(str(held.get("contract") or ""))
     return MX_BANNER
 
