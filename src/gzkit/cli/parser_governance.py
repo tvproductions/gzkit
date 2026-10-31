@@ -823,6 +823,10 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
             from gzkit.commands.mx_cmd import mx_exit_cmd  # noqa: PLC0415
 
             mx_exit_cmd(attestor=a.attestor)
+        elif a.mx_command == "repair":
+            from gzkit.commands.mx_cmd import mx_repair_cmd  # noqa: PLC0415
+
+            mx_repair_cmd(attestor=a.attestor)
         elif a.mx_command == "renew":
             from gzkit.commands.mx_cmd import mx_renew_cmd  # noqa: PLC0415
 
@@ -930,6 +934,23 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
         help="Operator identity renewing the lease (required; never an agent)",
     )
     p_mx_renew.set_defaults(func=_mx_dispatch)
+
+    p_mx_repair = mx_commands.add_parser(
+        "repair",
+        help="Repair an unreadable, missing or unbound marker (operator only)",
+        description=(
+            "Repair the MX marker: rewrite it from the session the ledger keeps open, "
+            "or remove it when no session backs it, and book mx_marker_repaired. A "
+            "healthy marker is left alone. Runs no guard."
+        ),
+        epilog=build_epilog(["gz mx repair --attestor g0"]),
+    )
+    p_mx_repair.add_argument(
+        "--attestor",
+        required=True,
+        help="Operator identity repairing the marker (required; never an agent)",
+    )
+    p_mx_repair.set_defaults(func=_mx_dispatch)
 
     # gz permitted-entry — the airlock's third door (ADR-0.33.0, OBPI-05) ---------
     def _permitted_entry_dispatch(a: argparse.Namespace) -> None:

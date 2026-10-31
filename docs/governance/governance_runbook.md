@@ -67,6 +67,7 @@ uv run gz obpi emit-receipt OBPI-<X.Y.Z-NN> --event completed --attestor "<name>
 uv run gz mx enter --reason "<text>" --attestor "<operator>"  # Open the MX hangar (operator only)
 uv run gz mx exit --attestor "<operator>"                    # Close the MX hangar (hard gate; operator signs)
 uv run gz mx renew --attestor "<operator>"                   # Renew the open session's lease (no guard runs)
+uv run gz mx repair --attestor "<operator>"                  # Repair an unreadable, missing or unbound marker
 # While the hangar is open, normal releases are refused (exit 3): gz patch release and
 # gz closeout block until you gz mx exit (ADR-0.0.74 hardening). Dry-run preview is unaffected.
 uv run gz permitted-entry --target <path> --recon  # Airlock ad-hoc door (recon; light repair at most)

@@ -81,12 +81,26 @@ Claims the `mx-session` lock afresh for the open session and books one
 runs, the marker stays, and advisory debt keeps aging. Empty `--attestor`, or no ledger-bound
 open session, fails closed with exit 1. See [`gz mx renew`](mx-renew.md).
 
+### repair
+
+Repair an unreadable, missing or unbound marker.
+
+<!-- gz-validate-skip: command-shape -->
+```bash
+gz mx repair --attestor ATTESTOR
+```
+
+Rewrites the marker from the session the ledger keeps open, or removes it when no session backs
+it, and books one `mx_marker_repaired` event. A healthy marker is left alone. This is the
+recovery the condition's announcement names (operator ruling 2026-10-31, GHI #1273). See
+[`gz mx repair`](mx-repair.md).
+
 ## Options
 
 | Flag | Applies To | Description |
 |------|-----------|-------------|
 | `--reason REASON` | enter | Reason for entering MX mode (required; must be non-empty) |
-| `--attestor ATTESTOR` | enter, exit, renew | Operator identity; never an agent (required) |
+| `--attestor ATTESTOR` | enter, exit, renew, repair | Operator identity; never an agent (required) |
 | `--scope ADR_OR_OBPI ...` | enter | ADRs/OBPIs under inspection (optional; 0 or more) |
 
 ## Examples

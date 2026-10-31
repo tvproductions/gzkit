@@ -147,6 +147,7 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         "intrinsic-complexity-attestation",
         "lifecycle_transition",
         "mx_contract_amended",
+        "mx_marker_repaired",
         "mx_session_closed",
         "mx_session_lease_expired",
         "mx_session_lease_renewed",

@@ -1940,7 +1940,7 @@ uv run gz mx exit --attestor g0
 
 See `gz mx enter --help` and [`docs/user/manpages/mx-enter.md`](manpages/mx-enter.md) for full options.
 See `gz mx exit --help` and [`docs/user/manpages/mx-exit.md`](manpages/mx-exit.md) for exit gate details.
-See `gz mx renew --help` and [`docs/user/manpages/mx-renew.md`](manpages/mx-renew.md) for lease renewal.
+See `gz mx renew --help` and [`docs/user/manpages/mx-renew.md`](manpages/mx-renew.md) for lease renewal. When the banner reports an unreadable or unbound marker, every guard is at full strength until `uv run gz mx repair --attestor g0` runs; see [`docs/user/manpages/mx-repair.md`](manpages/mx-repair.md).
 The marker file (`.gzkit/mx.json`) and the `mx_session_opened` ledger event are the two
 truth-sources. A hand-created marker without a matching ledger event is void (anti-contrivance).
 

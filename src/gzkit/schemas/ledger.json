@@ -2126,6 +2126,31 @@
         }
       }
     },
+    "mx_marker_repaired": {
+      "required": [
+        "session_id",
+        "attestor",
+        "cause",
+        "action"
+      ],
+      "properties": {
+        "session_id": {
+          "type": "string"
+        },
+        "attestor": {
+          "type": "string",
+          "min_length": 1
+        },
+        "cause": {
+          "type": "string",
+          "min_length": 1
+        },
+        "action": {
+          "type": "string",
+          "min_length": 1
+        }
+      }
+    },
     "outcome_transitioned": {
       "required": [
         "outcome",

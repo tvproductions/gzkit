@@ -77,6 +77,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz mx enter`](mx-enter.md) | Open the Maintenance Hangar (MX) mode |
 | [`gz mx exit`](mx-exit.md) | Close the Maintenance Hangar — hard gate (re-run every guard at full strength) |
 | [`gz mx renew`](mx-renew.md) | Renew the open session's lease; runs no guard |
+| [`gz mx repair`](mx-repair.md) | Repair an unreadable, missing or unbound marker |
 | [`gz permitted-entry`](permitted-entry.md) | Airlock permitted-entry door — ad-hoc reconnaissance, light repair at most |
 | [`gz register-adrs`](register-adrs.md) | Register existing ADR packages and linked OBPIs into ledger |
 | [`gz personas drift`](personas-drift.md) | Report persona trait adherence from behavioral proxies |

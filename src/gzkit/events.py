@@ -1103,6 +1103,21 @@ class MxSessionLeaseRenewedEvent(_EventBase):
     lease_minutes: int = Field(..., description="Length of the renewed lease")
 
 
+class MxMarkerRepairedEvent(_EventBase):
+    """mx_marker_repaired event — the operator repaired the marker (GHI #1273).
+
+    Operator ruling 2026-10-31, "b": the condition's announcement names one verb.
+    ``rewritten`` restores the marker from its open session, which lowers protection
+    again; ``removed`` clears a marker no session backs.
+    """
+
+    event: Literal["mx_marker_repaired"]
+    session_id: str = Field(..., description="The open session rewritten; empty when removed")
+    attestor: str = Field(..., description="Operator who repaired the marker")
+    cause: str = Field(..., description="Why the condition read off: the marker cause repaired")
+    action: Literal["rewritten", "removed"] = Field(..., description="What the repair did")
+
+
 class MxContractAmendedEvent(_EventBase):
     """mx_contract_amended event — the open safe-mode session's contract changed.
 
@@ -1894,6 +1909,7 @@ TypedLedgerEvent = Annotated[
     | MxSessionClosedEvent
     | MxSessionLeaseExpiredEvent
     | MxSessionLeaseRenewedEvent
+    | MxMarkerRepairedEvent
     | InsightRecordedEvent
     | MxContractAmendedEvent
     | BlocksEvent

@@ -29,7 +29,7 @@ from gzkit.commands.common import console, get_project_root
 from gzkit.executables import resolve_executable
 from gzkit.ledger import Ledger, LedgerEvent
 from gzkit.lock_manager import LockData
-from gzkit.mx import log, marker
+from gzkit.mx import hardening, log, marker
 from gzkit.mx.contract import contract_pin_for
 from gzkit.mx.marker import Marker
 
@@ -461,6 +461,79 @@ def mx_exit_cmd(
 def _now() -> datetime:
     """Return the current UTC time (a seam the renewal tests move forward)."""
     return datetime.now(UTC)
+
+
+def _marker_from_session(root: Path, session_id: str) -> Marker:
+    """Rebuild the marker the session's ``mx_session_opened`` event binds.
+
+    Returns:
+        The marker as ``gz mx enter`` wrote it, its ``opened_at`` the event's ``ts``.
+
+    """
+    ledger = Ledger(root.joinpath(*_LEDGER_RELPATH))
+    opened = [
+        event
+        for event in ledger.query(event_type="mx_session_opened")
+        if event.extra.get("session_id") == session_id
+    ][-1]
+    return Marker(
+        session_id=session_id,
+        opened_at=opened.ts,
+        reason=str(opened.extra.get("reason", "")),
+        attestor=str(opened.extra.get("attestor", "")),
+        inspection_scope=list(opened.extra.get("inspection_scope", [])),
+        mode="safe" if opened.extra.get("mode") == "safe" else "mx",
+        contract=str(opened.extra.get("contract", "")),
+    )
+
+
+def mx_repair_cmd(attestor: str, project_root: Path | None = None) -> None:
+    """Repair the marker: the recovery the condition's announcement names (GHI #1273).
+
+    Operator ruling 2026-10-31, "b". A marker unreadable, missing or naming the wrong
+    session is rewritten from the one session the ledger keeps open; a marker no
+    session backs is removed; a healthy marker is left alone. Rewriting lowers
+    protection again, so it takes the operator's attestor. Two open sessions refuse
+    rather than guess. Refuses with exit 1 on an empty attestor.
+    """
+    if not attestor.strip():
+        console.print(
+            "[red]ERROR:[/red] --attestor cannot be empty. Only the operator repairs the marker."
+        )
+        sys.exit(1)
+
+    root = project_root if project_root is not None else get_project_root()
+    cause = marker.condition(root).cause
+    sessions = sorted(hardening.open_sessions(root))
+    if cause in {"on", "exiting"} or (cause == "absent" and not sessions):
+        console.print(f"[green]Nothing to repair.[/green] The marker reads {cause}.")
+        return
+    if len(sessions) > 1:
+        console.print(
+            f"[red]ERROR:[/red] {len(sessions)} sessions are open in the ledger "
+            f"({', '.join(sessions)}); the repair will not choose between them."
+        )
+        sys.exit(1)
+
+    session_id = sessions[0] if sessions else ""
+    if session_id:
+        marker.write(_marker_from_session(root, session_id), root)
+    else:
+        marker.marker_path(root).unlink()
+    action = "rewritten" if session_id else "removed"
+    Ledger(root.joinpath(*_LEDGER_RELPATH)).append(
+        LedgerEvent(
+            event="mx_marker_repaired",
+            id=session_id or marker.SESSION_LOCK_KEY,
+            extra={
+                "session_id": session_id,
+                "attestor": attestor.strip(),
+                "cause": cause,
+                "action": action,
+            },
+        )
+    )
+    console.print(f"[green]Marker {action}.[/green] It read {cause}; attestor={attestor.strip()}.")
 
 
 def mx_renew_cmd(attestor: str, project_root: Path | None = None) -> None:

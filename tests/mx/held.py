@@ -14,7 +14,13 @@ def bind_session(root: Path, session_id: str) -> None:
     """Append the ``mx_session_opened`` row that binds a marker to *session_id*."""
     ledger = root / ".gzkit" / "ledger.jsonl"
     ledger.parent.mkdir(parents=True, exist_ok=True)
-    row = {"event": "mx_session_opened", "session_id": session_id}
+    row = {
+        "schema": "gzkit.ledger.v1",
+        "event": "mx_session_opened",
+        "id": session_id,
+        "ts": "2026-10-31T00:00:00+00:00",
+        "session_id": session_id,
+    }
     with ledger.open("a", encoding="utf-8") as stream:
         stream.write(json.dumps(row) + "\n")
 

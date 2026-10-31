@@ -18,6 +18,7 @@ from gzkit import acceptance_store, reports
 from gzkit.config import GzkitConfig, PathConfig
 from gzkit.events import (
     AcceptanceRecordedEvent,
+    MxMarkerRepairedEvent,
     MxSessionLeaseRenewedEvent,
     ObpiLockLeaseExpiredEvent,
     OutcomeTransitionedEvent,
@@ -246,6 +247,54 @@ def _probe_mx_lease_renewal(root: Path) -> ProducerObservation:
     return ProducerObservation(
         event_type="mx_session_lease_renewed",
         producer="gzkit.commands.mx_cmd.mx_renew_cmd",
+        status="verified",
+        ledger_sha256=hashlib.sha256(persisted).hexdigest(),
+        record_count=1,
+        subject=event.session_id,
+    )
+
+
+def _probe_mx_marker_repair(root: Path) -> ProducerObservation:
+    """Corrupt a live marker, repair it, and read back the one record the repair books.
+
+    Returns:
+        The verified observation of the repair's record.
+
+    Raises:
+        ValueError: When the repair refuses, leaves the condition off or books no record.
+        TypeError: When the record is not an ``mx_marker_repaired`` event.
+
+    """
+    from gzkit.commands import mx_cmd  # noqa: PLC0415 - a command handler; import only when probed
+    from gzkit.mx import marker  # noqa: PLC0415
+
+    (root / ".gzkit").mkdir()
+    try:
+        with mx_cmd.console.capture():
+            mx_cmd.mx_enter_cmd(
+                reason="probe", attestor=_AUTHOR, inspection_scope=[], project_root=root
+            )
+            marker.marker_path(root).write_text("{not json", encoding="utf-8")
+            mx_cmd.mx_repair_cmd(_AUTHOR, project_root=root)
+    except SystemExit as exc:
+        message = f"Repair refused with exit {exc.code}"
+        raise ValueError(message) from exc
+    if not marker.condition(root).on:
+        message = "Repair left the condition off"
+        raise ValueError(message)
+    persisted = (root / ".gzkit/ledger.jsonl").read_bytes()
+    rows = [json.loads(line) for line in persisted.decode("utf-8").splitlines() if line.strip()]
+    repairs = [row for row in rows if row.get("event") == "mx_marker_repaired"]
+    if len(repairs) != 1:
+        message = "Repair must persist exactly one record"
+        raise ValueError(message)
+    event = parse_typed_event(repairs[0])
+    if not isinstance(event, MxMarkerRepairedEvent):
+        message = "Repair persisted the wrong event type"
+        raise TypeError(message)
+    return ProducerObservation(
+        event_type="mx_marker_repaired",
+        producer="gzkit.commands.mx_cmd.mx_repair_cmd",
         status="verified",
         ledger_sha256=hashlib.sha256(persisted).hexdigest(),
         record_count=1,
@@ -598,6 +647,7 @@ _PRODUCERS = {
     "report_published": "gzkit.reports.publish_report",
     "obpi_lock_lease_expired": "gzkit.lock_manager.reap_expired_locks",
     "mx_session_lease_renewed": "gzkit.commands.mx_cmd.mx_renew_cmd",
+    "mx_marker_repaired": "gzkit.commands.mx_cmd.mx_repair_cmd",
     "outcome_transitioned": "gzkit.catalog_ledger.record_outcome_transition",
     "req_proof_recorded": "gzkit.catalog_ledger.record_req_proof",
     "work_package_transitioned": "gzkit.work_package_ledger.record_work_package_transition",
@@ -619,6 +669,8 @@ def probe_producer(event_type: str) -> ProducerObservation:
                 return _probe_lock_lease_expiry(root)
             if event_type == "mx_session_lease_renewed":
                 return _probe_mx_lease_renewal(root)
+            if event_type == "mx_marker_repaired":
+                return _probe_mx_marker_repair(root)
             if event_type == "outcome_transitioned":
                 return _probe_outcome_transition(root)
             if event_type == "req_proof_recorded":
