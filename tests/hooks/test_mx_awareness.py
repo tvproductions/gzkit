@@ -14,9 +14,13 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Literal
 from unittest.mock import patch
 
+from gzkit.mx import awareness
+from gzkit.mx.marker import Marker
 from gzkit.traceability import covers
+from tests.mx.held import open_marker
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _HOOK_PATH = _REPO_ROOT / ".claude" / "hooks" / "mx-awareness.py"
@@ -40,6 +44,62 @@ def _load_hook_module():
 # ---------------------------------------------------------------------------
 
 
+def _open_hangar(root: Path, mode: Literal["mx", "safe"] = "mx", contract: str = "") -> None:
+    """Write a marker and the ledger row that binds it, so the condition reads on."""
+    open_marker(root, Marker(session_id="s", mode=mode, contract=contract))
+
+
+class TestBannerReadsTheCondition(unittest.TestCase):
+    """GHI #1273: the banner and its fallback say what the one reading of *on* says."""
+
+    SAFE = '{"session_id": "s", "mode": "safe", "contract": "docs/governance/pilotage.md"}'
+    BOUND = '{"schema": "gzkit.ledger.v1", "event": "mx_session_opened", "session_id": "s"}'
+    CLOSED = '{"schema": "gzkit.ledger.v1", "event": "mx_session_closed", "session_id": "s"}'
+
+    def _banners(self, marker: str | None, ledger: list[str]) -> tuple[str, str]:
+        hook = _load_hook_module()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            (root / ".gzkit").mkdir()
+            if marker is not None:
+                (root / ".gzkit" / "mx.json").write_text(marker, encoding="utf-8")
+            (root / ".gzkit" / "ledger.jsonl").write_text("\n".join(ledger), encoding="utf-8")
+            return awareness.get_banner(root), hook._banner_stdlib(str(root))
+
+    def test_a_bound_marker_reads_its_mode(self):
+        expected = awareness.safe_mode_banner("docs/governance/pilotage.md")
+        self.assertEqual(self._banners(self.SAFE, [self.BOUND]), (expected, expected))
+
+    def test_no_marker_says_nothing(self):
+        self.assertEqual(self._banners(None, [self.BOUND]), ("", ""))
+
+    def test_a_void_marker_announces_its_cause_and_recovery(self):
+        cases = {
+            "unreadable": [
+                ("{not json", [self.BOUND]),
+                ("[]", [self.BOUND]),
+                ("{}", [self.BOUND]),
+                ('{"session_id": "s", "mode": "drydockish"}', [self.BOUND]),
+            ],
+            "unbound": [(self.SAFE, []), (self.SAFE, [self.BOUND, self.CLOSED])],
+        }
+        for cause, states in cases.items():
+            for marker, ledger in states:
+                for banner in self._banners(marker, ledger):
+                    with self.subTest(cause=cause, marker=marker):
+                        self.assertIn(cause.upper(), banner)
+                        self.assertIn("full strength", banner)
+                        self.assertIn("gz mx repair", banner)
+                        self.assertNotIn("ACTIVE", banner)
+
+    def test_the_exit_rerun_says_full_strength(self):
+        marker = '{"session_id": "s", "exiting": true}'
+        for banner in self._banners(marker, [self.BOUND]):
+            with self.subTest(banner=banner):
+                self.assertIn("full strength", banner)
+                self.assertNotIn("ACTIVE", banner)
+
+
 class TestGetBannerFunction(unittest.TestCase):
     """get_banner() returns exact banner when marker present; empty string absent."""
 
@@ -50,7 +110,7 @@ class TestGetBannerFunction(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
             (root / ".gzkit").mkdir()
-            (root / ".gzkit" / "mx.json").write_text("{}", encoding="utf-8")
+            _open_hangar(root)
             result = get_banner(root)
 
         self.assertEqual(result, MX_BANNER)
@@ -62,10 +122,7 @@ class TestGetBannerFunction(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
             (root / ".gzkit").mkdir()
-            (root / ".gzkit" / "mx.json").write_text(
-                '{"session_id": "s", "mode": "safe", "contract": "docs/governance/pilotage.md"}',
-                encoding="utf-8",
-            )
+            _open_hangar(root, mode="safe", contract="docs/governance/pilotage.md")
             result = get_banner(root)
 
         self.assertEqual(result, safe_mode_banner("docs/governance/pilotage.md"))
@@ -83,26 +140,12 @@ class TestGetBannerFunction(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
             (root / ".gzkit").mkdir()
-            (root / ".gzkit" / "mx.json").write_text(
-                '{"session_id": "s", "mode": "safe", "contract": "docs/governance/pilotage.md"}',
-                encoding="utf-8",
-            )
+            _open_hangar(root, mode="safe", contract="docs/governance/pilotage.md")
             fallback = hook._banner_stdlib(str(root))
         for banner in (safe_mode_banner("docs/governance/pilotage.md"), fallback):
             with self.subTest(banner=banner[:40]):
                 self.assertTrue(banner.startswith("SAFE MODE ACTIVE — "))
                 self.assertNotIn("martial", banner.lower())
-
-    def test_an_unreadable_or_non_object_marker_is_read_as_the_hangar(self):
-        """GHI #1244: a marker that cannot say its mode keeps the hangar's presence reading."""
-        from gzkit.mx.awareness import MX_BANNER, get_banner
-
-        for raw in ("{not json", "[]", '"safe"'):
-            with self.subTest(raw=raw), tempfile.TemporaryDirectory() as tmpdir:
-                root = Path(tmpdir)
-                (root / ".gzkit").mkdir()
-                (root / ".gzkit" / "mx.json").write_text(raw, encoding="utf-8")
-                self.assertEqual(get_banner(root), MX_BANNER)
 
     def test_the_hook_fallback_reads_the_mode_without_gzkit(self):
         """GHI #1244: the stdlib fallback in the hook script names safe mode and its contract."""
@@ -112,17 +155,11 @@ class TestGetBannerFunction(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
             (root / ".gzkit").mkdir()
-            marker = root / ".gzkit" / "mx.json"
-            marker.write_text(
-                '{"session_id": "s", "mode": "safe", "contract": "docs/governance/pilotage.md"}',
-                encoding="utf-8",
-            )
+            _open_hangar(root, mode="safe", contract="docs/governance/pilotage.md")
             self.assertEqual(
                 hook._banner_stdlib(str(root)), safe_mode_banner("docs/governance/pilotage.md")
             )
-            marker.write_text('{"session_id": "s"}', encoding="utf-8")
-            self.assertEqual(hook._banner_stdlib(str(root)), MX_BANNER)
-            marker.write_text("{not json", encoding="utf-8")
+            _open_hangar(root)
             self.assertEqual(hook._banner_stdlib(str(root)), MX_BANNER)
 
     @covers("REQ-0.0.74-07-01")
@@ -155,7 +192,7 @@ class TestHookAdapterBannerInjection(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
             (root / ".gzkit").mkdir()
-            (root / ".gzkit" / "mx.json").write_text("{}", encoding="utf-8")
+            _open_hangar(root)
 
             payload = {"hook_event_name": "UserPromptSubmit", "cwd": str(root)}
             stdout = io.StringIO()
@@ -289,10 +326,7 @@ class TestSafeModeBannerStatesTheDemotion(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             (root / ".gzkit").mkdir()
-            (root / ".gzkit" / "mx.json").write_text(
-                '{"session_id": "s", "mode": "safe", "contract": "docs/governance/pilotage.md"}',
-                encoding="utf-8",
-            )
+            _open_hangar(root, mode="safe", contract="docs/governance/pilotage.md")
             hook = _load_hook_module()
             fallback = hook._banner_stdlib(str(root))
         for banner in (safe_mode_banner("docs/governance/pilotage.md"), fallback):

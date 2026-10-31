@@ -39,41 +39,100 @@ def _mx_awareness_script() -> str:
             import json
             import os
             import sys
+            from pathlib import Path
+
+            _RECOVER = (
+                "nothing is lowered, every guard is at full strength; if a session "
+                "should be open, recover with gz mx repair through the gz-mx skill"
+            )
+
+
+            def _session_bound(root: Path, session: str) -> bool:
+                \"\"\"Read the ledger for *session*.
+
+                Returns:
+                    True when the ledger opened *session* and has not closed it.
+
+                \"\"\"
+                bound = False
+                try:
+                    lines = (root / ".gzkit" / "ledger.jsonl").read_text(encoding="utf-8")
+                except OSError:
+                    return False
+                for line in lines.splitlines():
+                    if session not in line or "mx_session_" not in line:
+                        continue
+                    try:
+                        event = json.loads(line)
+                    except ValueError:
+                        continue
+                    if not isinstance(event, dict) or event.get("session_id") != session:
+                        continue
+                    if event.get("event") == "mx_session_closed":
+                        return False
+                    bound = bound or event.get("event") == "mx_session_opened"
+                return bound
+
+
+            def _project_root(cwd: str | None) -> Path | None:
+                \"\"\"Walk up from *cwd*.
+
+                Returns:
+                    The nearest directory holding ``.gzkit``, or None.
+
+                \"\"\"
+                start = Path(cwd).resolve() if cwd else Path.cwd()
+                for candidate in (start, *start.parents):
+                    if (candidate / ".gzkit").is_dir():
+                        return candidate
+                return None
+
+
+            def _safe_banner(contract: str) -> str:
+                \"\"\"Say what safe mode suspends.
+
+                Returns:
+                    The banner, the stdlib twin of ``safe_mode_banner``.
+
+                \"\"\"
+                return (
+                    "SAFE MODE ACTIVE — OBPI initiation and brief "
+                    f"ceremony are suspended under {contract}; most guards "
+                    "advisory; slow alarms off, lint and fast static checks on; "
+                    "gate5_invariants, the ledger through gz verbs and operator PII "
+                    "still bind; every act is one commit with its trailer; what it "
+                    "breaks goes on the punch list"
+                )
 
 
             def _banner_stdlib(cwd: str | None) -> str:
-                \"\"\"Stdlib-only marker read — the gzkit-import-free fallback.\"\"\"
-                from pathlib import Path
-
+                \"\"\"Stdlib-only reading of the condition — the gzkit-import-free fallback.\"\"\"
                 _BANNER = (
                     "MX MODE ACTIVE — most guards advisory; "
                     "gate5_invariants and the PRIME DIRECTIVE still bind"
                 )
                 _MARKER = (".gzkit", "mx.json")
 
-                start = Path(cwd).resolve() if cwd else Path.cwd()
-                for candidate in (start, *start.parents):
-                    if not (candidate / ".gzkit").is_dir():
-                        continue
-                    path = candidate.joinpath(*_MARKER)
-                    if not path.is_file():
-                        return ""
-                    try:
-                        raw = json.loads(path.read_text(encoding="utf-8"))
-                    except (OSError, ValueError):
-                        return _BANNER
-                    if isinstance(raw, dict) and raw.get("mode") == "safe":
-                        contract = str(raw.get("contract") or "<no contract recorded>")
-                        return (
-                            "SAFE MODE ACTIVE — OBPI initiation and brief "
-                            f"ceremony are suspended under {contract}; most guards "
-                            "advisory; slow alarms off, lint and fast static checks on; "
-                            "gate5_invariants, the ledger through gz verbs and operator PII "
-                            "still bind; every act is one commit with its trailer; what it "
-                            "breaks goes on the punch list"
-                        )
-                    return _BANNER
-                return ""
+                root = _project_root(cwd)
+                if root is None or not root.joinpath(*_MARKER).is_file():
+                    return ""
+                try:
+                    raw = json.loads(root.joinpath(*_MARKER).read_text(encoding="utf-8"))
+                except (OSError, ValueError):
+                    raw = None
+                if (
+                    not isinstance(raw, dict)
+                    or not raw.get("session_id")
+                    or raw.get("mode", "mx") not in {"mx", "safe"}
+                ):
+                    return f"MX MARKER UNREADABLE — {_RECOVER}"
+                if not _session_bound(root, str(raw["session_id"])):
+                    return f"MX MARKER UNBOUND — {_RECOVER}"
+                if raw.get("exiting"):
+                    return "MX EXIT RUNNING — every guard at full strength until gz mx exit finishes"
+                if raw.get("mode") == "safe":
+                    return _safe_banner(str(raw.get("contract") or "<no contract recorded>"))
+                return _BANNER
 
 
             def main() -> int:
@@ -87,8 +146,6 @@ def _mx_awareness_script() -> str:
 
                 banner = ""
                 try:
-                    from pathlib import Path
-
                     from gzkit.mx.awareness import _find_project_root, get_banner
 
                     root = _find_project_root(Path(cwd).resolve() if cwd else None)

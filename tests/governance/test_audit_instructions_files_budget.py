@@ -22,6 +22,7 @@ from pathlib import Path
 from gzkit.advisory import ADVISORY_MARKER
 from gzkit.governance.trust_audits import audit_instructions_files_budget
 from gzkit.governance.trust_audits.instructions_files_budget import _load_budget_config
+from tests.mx.held import bind_session
 
 
 def _run(root: Path) -> tuple[list[object], str]:
@@ -337,6 +338,7 @@ class SurfaceTotalsTests(unittest.TestCase):
                 root / ".gzkit" / "mx.json",
                 json.dumps({"session_id": "s", "mode": "safe", "contract": "c.md"}),
             )
+            bind_session(root, "s")
             self._write_config(root, {"injected_hook_text": {"max_bytes": 10}})
             findings, stream = _run(root)
             self.assertEqual(findings, [])
