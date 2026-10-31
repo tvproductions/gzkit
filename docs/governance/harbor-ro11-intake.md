@@ -18,7 +18,7 @@ The pool stays a store of intentions, and draining it stays on demand (*"A + B. 
 3. **Exactly three levels, enforced** (operator: *"A"*, 2026-10-29): family, capability, outcome. An outcome's code has one dotted part, `SES1.4`; a bare capability code is not an outcome, and a fourth level is refused.
 4. **Family codes are a fixed three letters** (operator: *"three"*), and the eleven are `AIR`, `SES`, `CTL`, `MNT`, `PKG`, `DEC`, `RQW`, `GAT`, `ATT`, `LED` and `QUA` (operator: *"yes, those eleven"*). The pattern is `^[A-Z]{3}[1-9][0-9]*\.[1-9][0-9]*$`.
 5. **RO-11 lands the capability records, the tightened pattern and the re-coded legend** (operator: *"a"*). A capability is a named grouping with a scope and never carries work (§ Rulings of 2026-10-29).
-6. **Capability records live in `data/catalog/capabilities.json`** (operator: *"A"*), one file for the kind, extending RO-3's layout.
+6. **Capability records live in `data/catalog/capabilities.json`** (operator: *"A"*), one file for the kind, extending RO-3's layout. The store lands empty (operator: *"a"*); each capability is created when its first real outcome needs it, at civil rule.
 <!-- gz-validate-skip: command-shape -->
 7. **A capability is written by `gz catalog capability`** on the operator's word, taking a name and a scope (operator: *"A"*, twice), so a mistyped code at admission cannot create one; the entry verb refuses an outcome under a capability that has no record.
 
@@ -27,7 +27,6 @@ The pool stays a store of intentions, and draining it stays on demand (*"A + B. 
 Drafted by the agent and open, none of it to be built until the operator rules:
 
 - this page itself, and the tranches below; the operator asked for the row's rewrite, not a specification page;
-- whether the capability store lands empty;
 - whether `gz validate --catalog` refuses an outcome whose capability has no record;
 - dropping the old row's *"marked as pulled"* step: put in the draft, not objected to, not ruled.
 

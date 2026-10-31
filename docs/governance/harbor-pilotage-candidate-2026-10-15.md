@@ -803,6 +803,10 @@ The general-arrangement redraw continues with its remaining components.
   B, created by the entry verb the first time an outcome names it, a typo then creating one
   silently; C, no verb, hand-edited like the seeded legend. Operator, verbatim: *"A"*. Its name, put
   next: A, `capability`; B, `define`; C, `add-capability`. Operator, verbatim: *"A"*.
+- **The capability store lands empty** (RO-11's open points). No capability list is ruled, and the
+  catalog is empty at the handback. Put to the operator: A, empty, each capability created when its
+  first real outcome needs it; B, seeded with a ruled list, a carve-out from that ruling. Operator,
+  verbatim: *"a"*.
 
 ## Superseded on 2026-10-30 (record, not binding)
 
