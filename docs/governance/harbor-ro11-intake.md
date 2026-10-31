@@ -2,7 +2,7 @@
 
 # RO-11 specification — intake
 
-**2026-10-30. Status: agent's draft, not reviewed by the operator; not specified until the operator rules on it (§ Not ruled).** Operator: **g0**. Repair order RO-11 of the [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders), serving the catalog. Sequenced after RO-12 and before RO-4 (operator: *"A"*), because RO-4's release and feature packages reference outcome codes this order settles. The rulings are quoted in full in the contract's § Rulings of 2026-10-29 and § Rulings of 2026-10-30.
+**2026-10-30. Status: specified; drafted by the agent unasked, its open points ruled one at a time, and the page and its tranches accepted by the operator the same day (*"yes"*).** Operator: **g0**. Repair order RO-11 of the [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders), serving the catalog. Sequenced after RO-12 and before RO-4 (operator: *"A"*), because RO-4's release and feature packages reference outcome codes this order settles. The rulings are quoted in full in the contract's § Rulings of 2026-10-29 and § Rulings of 2026-10-30.
 
 ## Scope
 
@@ -24,12 +24,6 @@ The pool stays a store of intentions, and draining it stays on demand (*"A + B. 
 
 <!-- gz-validate-skip: command-shape -->
 8. **The pull is marked by the verb** (operator: *"A"*): the first `gz catalog admit` through the pool door changes the entry's `status:` to `Pulled`.
-
-## Not ruled
-
-Drafted by the agent and open, none of it to be built until the operator rules:
-
-- this page itself, and the tranches below; the operator asked for the row's rewrite, not a specification page;
 
 ## Tranches (for the contractor)
 
