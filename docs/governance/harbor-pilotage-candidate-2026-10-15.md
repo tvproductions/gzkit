@@ -798,6 +798,10 @@ The general-arrangement redraw continues with its remaining components.
   store the ruling of 2026-10-29 left open). Put to the operator: A, a new file, extending RO-3's
   one file per kind; B, nested inside `families.json`; C, derived from outcome codes, with no
   store. Operator, verbatim: *"A"*.
+- **A capability record is written by its own verb under the `catalog` command** (RO-11's open
+  points). Put to the operator: A, its own verb, taking a name and a scope, on the operator's word;
+  B, created by the entry verb the first time an outcome names it, a typo then creating one
+  silently; C, no verb, hand-edited like the seeded legend. Operator, verbatim: *"A"*.
 
 ## Superseded on 2026-10-30 (record, not binding)
 

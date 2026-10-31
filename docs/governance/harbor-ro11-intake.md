@@ -19,13 +19,14 @@ The pool stays a store of intentions, and draining it stays on demand (*"A + B. 
 4. **Family codes are a fixed three letters** (operator: *"three"*), and the eleven are `AIR`, `SES`, `CTL`, `MNT`, `PKG`, `DEC`, `RQW`, `GAT`, `ATT`, `LED` and `QUA` (operator: *"yes, those eleven"*). The pattern is `^[A-Z]{3}[1-9][0-9]*\.[1-9][0-9]*$`.
 5. **RO-11 lands the capability records, the tightened pattern and the re-coded legend** (operator: *"a"*). A capability is a named grouping with a scope and never carries work (§ Rulings of 2026-10-29).
 6. **Capability records live in `data/catalog/capabilities.json`** (operator: *"A"*), one file for the kind, extending RO-3's layout.
+7. **A capability is written by its own verb** on the operator's word, taking a name and a scope (operator: *"A"*), so a mistyped code at admission cannot create one; the entry verb refuses an outcome under a capability that has no record.
 
 ## Not ruled
 
 Drafted by the agent and open, none of it to be built until the operator rules:
 
 - this page itself, and the tranches below; the operator asked for the row's rewrite, not a specification page;
-- what writes a capability record, and whether that store lands empty;
+- the name of the verb that writes a capability record, and whether that store lands empty;
 - whether `gz validate --catalog` refuses an outcome whose capability has no record;
 - dropping the old row's *"marked as pulled"* step: put in the draft, not objected to, not ruled.
 
