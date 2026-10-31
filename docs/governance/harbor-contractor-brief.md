@@ -2,7 +2,7 @@
 
 # Drydock contractor brief
 
-**Last updated: 2026-10-30.** Operator: **g0**. The instructions for the two contractors of the [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md) (operator, 2026-10-25: *"freeze lean, park the spec, two contractors"*). Ruled the same day: *"specify all six first and launch the contractor once on everything"*; on a structural question the contractor stops and waits (*"A"*). **Amended 2026-10-28** with the contract (its Status line) on the operator's sign-off of the contractor-kit R&D, verbatim *"fund, yes to 2 and 4"* ([`docs/rnd/contractor-kit.md`](../rnd/contractor-kit.md)): the launch now runs RO-5, then RO-12, then the rest under the kit (operator: *"A"*; record decision *the kit is RO-12, placed immediately after RO-5*), and the compliance register is three records, the tag-out log, the maintenance record and the list of discrepancies (contract § Records).
+**Last updated: 2026-10-31.** Operator: **g0**. The instructions for the two contractors of the [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md) (operator, 2026-10-25: *"freeze lean, park the spec, two contractors"*). Ruled the same day: *"specify all six first and launch the contractor once on everything"*; on a structural question the contractor stops and waits (*"A"*). **Amended 2026-10-28** with the contract (its Status line) on the operator's sign-off of the contractor-kit R&D, verbatim *"fund, yes to 2 and 4"* ([`docs/rnd/contractor-kit.md`](../rnd/contractor-kit.md)): the launch now runs RO-5, then RO-12, then the rest under the kit (operator: *"A"*; record decision *the kit is RO-12, placed immediately after RO-5*), and the compliance register is three records, the tag-out log, the maintenance record and the list of discrepancies (contract § Records).
 
 ## The drydock contractor
 
@@ -13,13 +13,14 @@
 1. [RO-5](harbor-ro5-work-packages.md) — work packages, repair orders, GitHub coupling (five tranches).
 2. RO-12 — the contractor kit. **Not worked by this contractor**: the operator and a working session build it (the bootstrap, the contract's § Division of labor), after #1200, #1206, #1208, #1028 and #1273 and the other reused-part defects the contract's RO-12 row lists are repaired as direct fixes. Stop and wait. Every order below then runs under the kit as its first flight.
 3. [RO-11](harbor-ro11-intake.md) — intake: the capability records, the three-letter legend and the entry verb (three tranches; placed before RO-4, amended 2026-10-30, operator: *"A"*).
-4. [RO-4](harbor-ro4-release.md) — release detached from the ADR (four tranches).
-5. [RO-6](harbor-ro6-canon-retirement.md) — superseded canon corrected (three tranches).
-6. [RO-7](harbor-ro7-context-cut.md) — the context cut (seven stages, each measured by [RO-1's protocol](harbor-ro1-cut-measurement.md); RO-1's baseline report is written first).
-7. [RO-9](harbor-ro9-astral-toolchain.md) — tranches 5 to 7.
+4. RO-13, foundation tranche — the two-way mode contract's shared parts (the contract's RO-13 row and § Rulings of 2026-10-31; operator: *"c"*).
+5. [RO-4](harbor-ro4-release.md) — release detached from the ADR (four tranches).
+6. [RO-6](harbor-ro6-canon-retirement.md) — superseded canon corrected (three tranches).
+7. [RO-7](harbor-ro7-context-cut.md) — the context cut (seven stages, each measured by [RO-1's protocol](harbor-ro1-cut-measurement.md); RO-1's baseline report is written first).
 8. [RO-8](harbor-ro8-in-flight-work.md) — the in-flight work absorbed (four acts; act 3 waits for the operator's review).
+9. RO-13, retrofit tranches — code controls by role, then skills, then rules and the other surfaces, after the operator rules the default level and interval tables.
 
-RO-10 is parked and not worked. RO-13, the two-way mode contract, is **not worked**: specified with the operator after RO-12, its place against RO-11 onward set then. Stop and ask.
+RO-10 is parked and not worked. RO-9 closed through Gate 5 on 2026-10-29. RO-13 has no tranche page yet: stop and ask before working either step.
 
 **Each act:**
 
