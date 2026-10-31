@@ -19,25 +19,26 @@ The pool stays a store of intentions, and draining it stays on demand (*"A + B. 
 4. **Family codes are a fixed three letters** (operator: *"three"*), and the eleven are `AIR`, `SES`, `CTL`, `MNT`, `PKG`, `DEC`, `RQW`, `GAT`, `ATT`, `LED` and `QUA` (operator: *"yes, those eleven"*). The pattern is `^[A-Z]{3}[1-9][0-9]*\.[1-9][0-9]*$`.
 5. **RO-11 lands the capability records, the tightened pattern and the re-coded legend** (operator: *"a"*). A capability is a named grouping with a scope and never carries work (§ Rulings of 2026-10-29).
 6. **Capability records live in `data/catalog/capabilities.json`** (operator: *"A"*), one file for the kind, extending RO-3's layout.
-7. **A capability is written by its own verb** on the operator's word, taking a name and a scope (operator: *"A"*), so a mistyped code at admission cannot create one; the entry verb refuses an outcome under a capability that has no record.
+<!-- gz-validate-skip: command-shape -->
+7. **A capability is written by `gz catalog capability`** on the operator's word, taking a name and a scope (operator: *"A"*, twice), so a mistyped code at admission cannot create one; the entry verb refuses an outcome under a capability that has no record.
 
 ## Not ruled
 
 Drafted by the agent and open, none of it to be built until the operator rules:
 
 - this page itself, and the tranches below; the operator asked for the row's rewrite, not a specification page;
-- the name of the verb that writes a capability record, and whether that store lands empty;
+- whether the capability store lands empty;
 - whether `gz validate --catalog` refuses an outcome whose capability has no record;
 - dropping the old row's *"marked as pulled"* step: put in the draft, not objected to, not ruled.
 
 ## Tranches (for the contractor)
 
-The contractor stops and waits on every structural question; the names of new verbs and events are among them, the capability-adding verb's included.
+The contractor stops and waits on every structural question; the names of new verbs and events are among them.
 
 1. **The code.** `OUTCOME_CODE_PATTERN` and `Family.code` in `src/gzkit/models/catalog.py`, with the schemas regenerated from them; the family lookup at `src/gzkit/governance/trust_audits/catalog.py:114`, which reads `o.code[0]`; `data/catalog/families.json` re-coded; the tests in `tests/governance/test_catalog.py` and the sample codes in `tests/test_id_resolver.py`.
 2. **The records.** `capabilities.json`, its model and schema; `gz validate --catalog` refusing an outcome whose capability has no record; the outcome's `source` and `modules` fields.
 <!-- gz-validate-skip: command-shape -->
-3. **The verb.** `gz catalog admit`, its manpage, and the `queued` writer in `src/gzkit/catalog_ledger.py`.
+3. **The verbs.** `gz catalog admit` and `gz catalog capability`, their manpages, and the `queued` writer in `src/gzkit/catalog_ledger.py`.
 
 ## Restoration (RO-11's list-of-discrepancies lines)
 
