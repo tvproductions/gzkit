@@ -794,6 +794,10 @@ The general-arrangement redraw continues with its remaining components.
   [RO-11 specification](harbor-ro11-intake.md), unasked and awaiting review; the row's earlier text is kept under
   § Superseded on 2026-10-30. The row's *"marked as pulled"* step is dropped by the agent's draft
   and not ruled: an entry would count as brought down once an outcome names it as its source.
+- **Capability records are stored in `data/catalog/capabilities.json`** (RO-11's open points, the
+  store the ruling of 2026-10-29 left open). Put to the operator: A, a new file, extending RO-3's
+  one file per kind; B, nested inside `families.json`; C, derived from outcome codes, with no
+  store. Operator, verbatim: *"A"*.
 
 ## Superseded on 2026-10-30 (record, not binding)
 
