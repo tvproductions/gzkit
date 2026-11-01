@@ -2319,6 +2319,9 @@
         "approved_alterations": {
           "type": "array"
         },
+        "modules": {
+          "type": "array"
+        },
         "decision": {
           "type": [
             "string",
@@ -2411,6 +2414,9 @@
             "string",
             "null"
           ]
+        },
+        "modules": {
+          "type": "array"
         },
         "form": {
           "type": [
@@ -2832,6 +2838,21 @@
             "integer",
             "null"
           ]
+        },
+        "observed_commits": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "changed_files": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
         },
         "drift": {
           "type": [

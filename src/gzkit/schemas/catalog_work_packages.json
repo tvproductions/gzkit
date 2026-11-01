@@ -170,6 +170,15 @@
           "title": "Aliases",
           "type": "array"
         },
+        "modules": {
+          "default": [],
+          "description": "A repair package's footprint; a delivery package reads its outcome's.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Modules",
+          "type": "array"
+        },
         "initial_conditions": {
           "description": "Tag-out line items, or NA.",
           "minLength": 1,

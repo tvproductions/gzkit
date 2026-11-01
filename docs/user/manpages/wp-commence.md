@@ -26,6 +26,9 @@ every surface the package works has its tag hung). The tag-out log is RO-12's;
 until it lands, `--evidence` names what was checked. A move that skips a step
 exits 3.
 
+Commencing crosses the airlock: it books one `airlock_in` for the package and
+prints what it read (GHI #1185). The airlock reports and refuses nothing here.
+
 The verbs are drydock RO-5 tranche 2; the operator named them on 2026-10-28.
 
 ## Examples
@@ -36,6 +39,7 @@ at revision 2:
 ```console
 $ uv run gz wp commence WP-02-resume --evidence tags-hung
 WP-02-resume: frozen -> commenced
+  airlock in: proceed
 
 $ uv run gz wp commence WP-01-astral --evidence early
 Work package WP-01-astral cannot move from nothing to 'commenced'; the lifecycle

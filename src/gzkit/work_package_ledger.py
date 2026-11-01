@@ -95,6 +95,7 @@ class ChangeRequest(BaseModel):
     work_stopped: bool = Field(default=False, description="True on a change order")
     supplement: str | None = Field(None, description="The supplement's work package id")
     item: str | None = Field(None, description="The alteration or departure id")
+    modules: tuple[str, ...] = Field((), description="Paths a change order adds to the footprint")
 
 
 def _refuse(message: str) -> NoReturn:
@@ -184,6 +185,34 @@ def is_blocked(ledger: Ledger, work_package: str) -> bool:
     return bool(rows) and rows[-1] == "work_package_blocked"
 
 
+def declared_modules(ledger: Ledger, package: WorkPackage) -> tuple[str, ...]:
+    """Read a package's footprint: what froze, plus what change orders added.
+
+    Once frozen the ledger holds it, so an edited store moves nothing, as it lifts no
+    fence (GHI #1206), and only a later change order adds to it. Before that the record
+    is the only declaration there is.
+
+    Returns:
+        The paths, in the order they were declared.
+
+    """
+    frozen = [
+        row
+        for row in package_rows(ledger, "work_package_transitioned", package.id)
+        if row.extra.get("to_state") == "frozen"
+    ]
+    if not frozen:
+        return package.modules
+    seal = frozen[-1]
+    orders = [
+        row
+        for row in package_rows(ledger, "work_package_changed", package.id)
+        if row.ts > seal.ts and row.extra.get("rung") == "change_order"
+    ]
+    rows = (seal, *orders)
+    return tuple(dict.fromkeys(str(m) for row in rows for m in row.extra.get("modules") or ()))
+
+
 def _check_frozen(catalog: Catalog, package: WorkPackage, move: TransitionRequest) -> None:
     """Freeze: risk note and receipt, a baseline at the catalog's revisions, every alteration."""
     if not (move.risk_note or "").strip() or not (move.review_receipt or "").strip():
@@ -266,6 +295,7 @@ def record_work_package_transition(
             "id": package.id,
             "from_state": current,
             "evidence": move.evidence.strip(),
+            "modules": package.modules if move.to_state == "frozen" else (),
             "attestor": move.attestor.strip() if move.attestor else None,
             "lane": work_package_lane(catalog, package.id) if move.to_state == "closed" else None,
         }

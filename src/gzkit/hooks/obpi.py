@@ -103,23 +103,47 @@ def extract_allowed_paths(content: str) -> list[str]:
     return patterns
 
 
-def collect_changed_files(project_root: Path) -> list[str]:
-    """Return the live changed-file set for scope validation."""
+def read_changed_files(project_root: Path) -> list[str] | None:
+    """Read the live changed-file set.
+
+    Returns:
+        The paths, sorted, or None when git could not show all of it.
+
+    """
     files: set[str] = set()
+    # Rename detection would list only a moved file's destination, hiding the path it
+    # left (GHI #1185), and path quoting would turn a non-ASCII path into an escaped one
+    # that matches no pattern.
     commands = (
-        ("diff", "--name-only"),
-        ("diff", "--cached", "--name-only"),
+        ("diff", "--no-renames", "--name-only"),
+        ("diff", "--no-renames", "--cached", "--name-only"),
         ("ls-files", "--others", "--exclude-standard"),
     )
     for command in commands:
-        rc, output, _ = git_cmd(project_root, *command)
+        rc, output, _ = git_cmd(project_root, "-c", "core.quotePath=false", *command)
         if rc != 0:
-            continue
+            return None
         for line in output.splitlines():
             normalized = line.strip().replace("\\", "/")
             if normalized:
                 files.add(normalized)
     return sorted(files)
+
+
+def collect_changed_files(project_root: Path) -> list[str]:
+    """Return the live changed-file set for scope validation, empty when git cannot show it."""
+    return read_changed_files(project_root) or []
+
+
+def allow_pattern(declared: str) -> str:
+    """Normalize a declared path.
+
+    Returns:
+        The pattern `path_is_allowlisted` reads.
+
+    """
+    normalized = declared.strip().replace("\\", "/")
+    return f"{normalized.rstrip('/')}/**" if normalized.endswith("/") else normalized
 
 
 def path_is_allowlisted(path: str, allowlist: list[str]) -> bool:

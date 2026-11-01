@@ -32,6 +32,26 @@ looked at none carries no such field. At the pipeline's Stage 5 seam the exit
 reads the changed files sealed on the completion receipt, because the working
 tree has been committed by then.
 
+A work package is a target too (RO-14 act 6): `--target WP-<NN>-<slug>` holds its
+declared `modules` against the commits whose `Task:` trailer starts with the
+lowercased package id and against the uncommitted tree, so a defect fix under its
+own trailer is not attributed to the package. The event also carries
+`observed_commits`. A package with no declared footprint exits `undeclared`, never
+`clean`, because nothing was compared, and one whose changes git cannot show exits
+`unobserved`. The event also seals `changed_files`, and the footprint read is the
+one the ledger froze. `gz wp accept` crosses this edge itself and
+refuses on the same finding; this verb reports and never refuses.
+
+```console
+$ uv run gz airlock out --target WP-01-loop --dry-run
+airlock out (dry-run) — WP-01-loop
+  verdict: surface
+  decision menu: leave_it_be, modify, repair, adjust_maps
+  finding (wrecked_something): src/app/other.py
+    -> route a fresh transit (pipeline door) to account for src/app/other.py
+  fresh transit -> pipeline: account for src/app/other.py (smuggled=False)
+```
+
 ### Diagnostic-only tracer contract
 
 `gz airlock out` is **not fail-closed at the CLI**. Surfaced drift prints
@@ -58,14 +78,14 @@ returned as a **proposal** for governed attestation, never a write (parent ADR
 ## Usage
 
 ```
-gz airlock out --target OBPI [--dry-run] [--json]
+gz airlock out --target ID [--dry-run] [--json]
 ```
 
 ### Options
 
 | Option | Description |
 |--------|-------------|
-| `--target OBPI` | Target OBPI id to exit-account (required). |
+| `--target ID` | Target OBPI or work package id (required). |
 | `--dry-run` | Run the drift-diff without booking an `airlock_out` event. |
 | `--json` | Emit a machine-readable exit-report payload. |
 
@@ -115,4 +135,4 @@ uv run gz airlock out --target OBPI-0.33.0-01 --json
 | Code | Meaning |
 |------|---------|
 | 0 | Drift-diff ran — verdict reported (`clean` **or** surfaced findings). |
-| 1 | User error — no OBPI brief could be resolved for `--target`. |
+| 1 | User error — no OBPI brief or work package could be resolved for `--target`. |

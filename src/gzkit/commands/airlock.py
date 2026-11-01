@@ -23,14 +23,21 @@ logged and revocable override) so a NO-GO is never an undiagnosable 2am wall.
 """
 
 import json
+import re
+from typing import TYPE_CHECKING
 
 from gzkit.airlock.enter import airlock_enter, build_refusal
 from gzkit.airlock.exit import ExitReport, airlock_exit
 from gzkit.airlock.model import Decision, Preflight
-from gzkit.commands.common import console, get_project_root
+from gzkit.commands.common import console, ensure_initialized, get_project_root
 from gzkit.hooks.obpi import collect_changed_files
 from gzkit.ledger import Ledger
+from gzkit.models.catalog import WORK_PACKAGE_ID_PATTERN, WorkPackage, load_catalog
 from gzkit.pipeline_markers import find_obpi_brief
+from gzkit.work_package_transit import enter_package, exit_package
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def _preflight_payload(target: str, phase: str | None, preflight: Preflight) -> dict:
@@ -69,6 +76,25 @@ def _render_human(target: str, phase: str | None, preflight: Preflight, dry_run:
         console.print(build_refusal(seam_map, target))
 
 
+def _held_package(project_root: Path, target: str) -> WorkPackage | None:
+    """Resolve a work-package target.
+
+    Returns:
+        The package, or None for a target of another kind.
+
+    Raises:
+        SystemExit: 1 when the id is a package's and the store does not hold it.
+
+    """
+    if not re.match(WORK_PACKAGE_ID_PATTERN, target):
+        return None
+    held = next((wp for wp in load_catalog(project_root).work_packages if wp.id == target), None)
+    if held is None:
+        console.print(f"[red]No work package found for target:[/red] {target}")
+        raise SystemExit(1)
+    return held
+
+
 def airlock_in_cmd(
     *,
     target: str,
@@ -76,22 +102,26 @@ def airlock_in_cmd(
     dry_run: bool = False,
     as_json: bool = False,
 ) -> None:
-    """Run the airlock-IN preflight gate for a target OBPI and report the decision.
+    """Run the airlock-IN preflight gate for a target OBPI or work package.
 
-    Resolves the target's brief, runs ``airlock_enter``, and reports the decision
+    Resolves the target's brief or package, runs the gate, and reports the decision
     plus seam-map counts. DIAGNOSTIC-ONLY: a NO-GO prints a refusal but still
     exits 0. In ``--dry-run`` no ledger is written (no L2 ``airlock_in`` event);
     otherwise the transit is booked to the project ledger.
     """
     project_root = get_project_root()
-    docs_root = project_root / "docs" / "design" / "adr"
-    brief_path = find_obpi_brief(docs_root, target)
-    if brief_path is None:
-        console.print(f"[red]No OBPI brief found for target:[/red] {target}")
-        raise SystemExit(1)
-
-    ledger = None if dry_run else Ledger(project_root / ".gzkit" / "ledger.jsonl")
-    preflight = airlock_enter(target, brief_path, ledger=ledger)
+    held = Ledger(project_root / ensure_initialized().paths.ledger)
+    ledger = None if dry_run else held
+    package = _held_package(project_root, target)
+    if package is not None:
+        preflight = enter_package(package, held, book=not dry_run)
+    else:
+        docs_root = project_root / "docs" / "design" / "adr"
+        brief_path = find_obpi_brief(docs_root, target)
+        if brief_path is None:
+            console.print(f"[red]No OBPI brief found for target:[/red] {target}")
+            raise SystemExit(1)
+        preflight = airlock_enter(target, brief_path, ledger=ledger)
 
     if as_json:
         print(json.dumps(_preflight_payload(target, phase, preflight), indent=2))  # noqa: T201
@@ -142,32 +172,37 @@ def airlock_out_cmd(
     dry_run: bool = False,
     as_json: bool = False,
 ) -> None:
-    """Run the airlock-OUT exit membrane for a target OBPI and report the drift-diff.
+    """Run the airlock-OUT exit membrane for a target OBPI or work package.
 
-    Resolves the target's brief, runs ``airlock_exit``, and reports the drift-diff
+    Resolves the target's brief or package, runs the exit, and reports the drift-diff
     verdict, findings + recommendations, the closed decision menu, and any
-    fresh-transit routing. The uncommitted working tree is held against the brief's
-    Allowed Paths: each changed file outside them is a finding (GHI #1185).
+    fresh-transit routing. A brief's Allowed Paths are held against the uncommitted
+    working tree; a package's footprint is held against its attributed commits and
+    that tree. Each changed file outside is a finding (GHI #1185).
     DIAGNOSTIC-ONLY (co-equal with ``gz airlock in``): a surfaced drift prints
     findings but still exits 0 — it reports, it never blocks. In ``--dry-run`` no
     ledger is written (no L2 ``airlock_out`` event); otherwise the transit is
     booked to the project ledger. NEVER writes L1 canon.
     """
     project_root = get_project_root()
-    docs_root = project_root / "docs" / "design" / "adr"
-    brief_path = find_obpi_brief(docs_root, target)
-    if brief_path is None:
-        console.print(f"[red]No OBPI brief found for target:[/red] {target}")
-        raise SystemExit(1)
-
-    ledger = None if dry_run else Ledger(project_root / ".gzkit" / "ledger.jsonl")
-    report = airlock_exit(
-        target,
-        brief_path,
-        ledger=ledger,
-        changed_files=collect_changed_files(project_root),
-        project_root=project_root,
-    )
+    held = Ledger(project_root / ensure_initialized().paths.ledger)
+    ledger = None if dry_run else held
+    package = _held_package(project_root, target)
+    if package is not None:
+        report = exit_package(project_root, package, held, book=not dry_run)
+    else:
+        docs_root = project_root / "docs" / "design" / "adr"
+        brief_path = find_obpi_brief(docs_root, target)
+        if brief_path is None:
+            console.print(f"[red]No OBPI brief found for target:[/red] {target}")
+            raise SystemExit(1)
+        report = airlock_exit(
+            target,
+            brief_path,
+            ledger=ledger,
+            changed_files=collect_changed_files(project_root),
+            project_root=project_root,
+        )
 
     if as_json:
         print(json.dumps(_exit_payload(target, report), indent=2))  # noqa: T201

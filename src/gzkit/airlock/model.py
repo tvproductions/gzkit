@@ -54,6 +54,11 @@ class Verdict(enum.StrEnum):
     before the drift-diff could be measured: the transit is still paired on both
     edges (an ``airlock_out`` is booked so it matches its ``airlock_in``), but the
     adjudication never ran (GHI #679 failure-atomic accounting).
+
+    ``UNDECLARED`` is an exit whose transit declared no footprint, so nothing could
+    be held against it. It is never ``CLEAN``, which claims the comparison ran
+    (GHI #1185). ``UNOBSERVED`` is a declared footprint whose changed files could not
+    be read, for the same reason.
     """
 
     CLEAN = "clean"
@@ -61,6 +66,8 @@ class Verdict(enum.StrEnum):
     SURFACE = "surface"
     RESOLVE = "resolve"
     ABORTED = "aborted"
+    UNDECLARED = "undeclared"
+    UNOBSERVED = "unobserved"
 
 
 class SeamEdge(BaseModel):
@@ -105,6 +112,39 @@ class Preflight(BaseModel):
     blast_radius: int
     authority: Authority
     decision: Decision | None
+
+
+class TransitSlice(BaseModel):
+    """What a transit declared: the slice both edges of the airlock hold it against.
+
+    A brief and a work package each supply one, so there is one primitive and the
+    doors do not fork (ADR-0.33.0 § Boundary Invariants 3). ``declaration`` is the
+    text a seam is accounted in, ``bodies`` the footprint as declared, ``allowlist``
+    the patterns the exit compares changed files with, and ``own_paths`` the records
+    this transit owns, which never count. ``undeclared`` marks a transit with no
+    footprint at all, whose exit reports that rather than reading clean, and
+    ``must_observe`` one whose exit may not read clean without seeing what changed.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    target: str
+    declaration: str = ""
+    bodies: tuple[str, ...] = ()
+    allowlist: tuple[str, ...] = ()
+    own_paths: tuple[str, ...] = ()
+    parent_invariants: tuple[str, ...] = ()
+    undeclared: bool = False
+    must_observe: bool = False
+
+
+class TransitObservation(BaseModel):
+    """What a transit changed, as its door observed it."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    files: tuple[str, ...]
+    commits: int | None = None
 
 
 class DriftDiff(BaseModel):

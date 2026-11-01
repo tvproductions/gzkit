@@ -17,6 +17,10 @@ The report carries the two-layer seam-map counts: `bodies` (the brief's declared
 (declared parent-ADR invariants), and `unaccounted` (real push/pull edges the
 brief text never names).
 
+A work package is a target too: `--target WP-<NN>-<slug>` reads its declared
+`modules` for `bodies`, books the same `airlock_in`, and has no reach, because the
+ontology holds no work-package node. `gz wp commence` crosses this edge itself.
+
 ### Diagnostic-only tracer contract
 
 `gz airlock in` is **not fail-closed at the CLI**. A NO-GO (any un-accounted
@@ -40,14 +44,14 @@ canon; its verdict is never a Gate-5 completion attestation (parent ADR
 ## Usage
 
 ```
-gz airlock in --target OBPI [--phase PHASE] [--dry-run] [--json]
+gz airlock in --target ID [--phase PHASE] [--dry-run] [--json]
 ```
 
 ### Options
 
 | Option | Description |
 |--------|-------------|
-| `--target OBPI` | Target OBPI id to preflight (required). |
+| `--target ID` | Target OBPI or work package id (required). |
 | `--phase PHASE` | Optional pipeline phase label (e.g. `build`). |
 | `--dry-run` | Run the preflight without booking an `airlock_in` event. |
 | `--json` | Emit a machine-readable preflight payload. |
@@ -98,4 +102,4 @@ uv run gz airlock in --target OBPI-0.33.0-01 --json
 | Code | Meaning |
 |------|---------|
 | 0 | Preflight ran — decision reported (PROCEED **or** a diagnostic NO-GO). |
-| 1 | User error — no OBPI brief could be resolved for `--target`. |
+| 1 | User error — no OBPI brief or work package could be resolved for `--target`. |

@@ -32,6 +32,7 @@ from gzkit.airlock.model import (
     SeamEdge,
     SeamKind,
     SeamMap,
+    TransitSlice,
 )
 from gzkit.core.models import IdKind, compose_probe_id
 from gzkit.enforcement import (
@@ -78,10 +79,40 @@ def airlock_enter(
 ) -> Preflight:
     """Three-beat airlock-IN gate — DECLARE -> PING -> RECONCILE -> decide."""
     target = slug_id_for(target, brief_path.stem)  # book the slug, never a bare id (GHI #1118)
-    brief_text = brief_path.read_text(encoding="utf-8")  # DECLARE (intent + expectation)
-    bodies = tuple(extract_allowed_paths(brief_path) or ())
+    declared = TransitSlice(
+        target=target,
+        declaration=brief_path.read_text(encoding="utf-8"),  # DECLARE (intent + expectation)
+        bodies=tuple(extract_allowed_paths(brief_path) or ()),
+        parent_invariants=parent_invariants,
+    )
+    return enter_slice(
+        declared,
+        reach_fn=reach_fn,
+        override=override,
+        blast_radius=blast_radius,
+        ledger=ledger,
+    )
+
+
+def enter_slice(
+    declared: TransitSlice,
+    *,
+    reach_fn: Callable[[str], list[str] | None] = _default_reach,
+    override: CaptainOverride | None = None,
+    blast_radius: int = 0,
+    ledger: Ledger | None = None,
+) -> Preflight:
+    """Run the gate over a declared slice, whichever door declared it.
+
+    Returns:
+        The preflight: the seam map, its authority and the decision.
+
+    """
+    target = declared.target
     reach = reach_fn(target) or []  # PING: L3 advisory input, never the verdict
-    seam_map = _reconcile(target, brief_text, bodies, reach, parent_invariants)
+    seam_map = _reconcile(
+        target, declared.declaration, declared.bodies, reach, declared.parent_invariants
+    )
     decision = _decide(seam_map.unaccounted, override)
     authority = _resolve_authority(seam_map.unaccounted, blast_radius)
     if ledger is not None:

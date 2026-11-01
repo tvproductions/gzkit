@@ -11,6 +11,7 @@ import json
 import unittest
 import uuid
 from pathlib import Path
+from unittest import mock
 
 from gzkit.acceptance import Proof
 from gzkit.acceptance_execution import canonical_obligations, input_digest, prove
@@ -49,6 +50,7 @@ def _record(package: str, *, kind: str = "repair") -> dict[str, object]:
         "issues": [] if delivery else [1206],
         "lane": None if delivery else "lite",
         "aliases": [],
+        "modules": [] if delivery else ["data/catalog/"],
         "initial_conditions": "NA",
         "procedure": "NA",
         "test_and_inspection": "The closing test.",
@@ -256,7 +258,8 @@ class TestTheGate(_PackageCase):
         self._init()
         self._approve(self._proof())
         self.assertTrue(acceptance_status(self.root, _PACKAGE).ready)
-        self._wp("accept", _PACKAGE, "--evidence", "e")
+        with mock.patch("gzkit.commands.wp.footprint_refusal", return_value=None):
+            self._wp("accept", _PACKAGE, "--evidence", "e")
 
     def test_a_terminated_package_reaches_gate_5_with_no_proof(self) -> None:
         self._commence()

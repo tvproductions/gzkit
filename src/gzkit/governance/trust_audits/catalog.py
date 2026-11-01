@@ -30,6 +30,7 @@ from gzkit.config import GzkitConfig
 from gzkit.core.id_resolver import IdResolutionError, load_identity_context, resolve
 from gzkit.core.models import IdKind
 from gzkit.core.validation_rules import ValidationError
+from gzkit.governance.brief_path_validity import has_glob_chars
 from gzkit.governance.trust_audits.catalog_edges import (
     bdd_findings,
     coverage_gaps,
@@ -145,6 +146,46 @@ def _kind_breaches(package: WorkPackage, outcomes: frozenset[str]) -> list[str]:
     return breaches
 
 
+def _names_no_path(module: str) -> bool:
+    """Read whether a module lacks a literal root.
+
+    Git prints no path starting `./`, `/` or `-`. A glob in the first segment is what
+    lets a pattern reach across the tree: `fnmatch`'s `*` crosses `/`, so `*.*` and `s*`
+    each cover nearly every file. Requiring a literal root, as a brief's paths have, is
+    a rule about the module rather than a sample of what it matches, and any sample
+    misses a pattern it does not happen to fit.
+
+    Returns:
+        True when the module names no literal path.
+
+    """
+    stripped = module.strip()
+    if not stripped or stripped.startswith(("./", "/", "-")):
+        return True
+    return has_glob_chars(stripped.split("/", 1)[0])
+
+
+def footprint_breaches(package: WorkPackage) -> list[str]:
+    """Ruling 21: a repair package declares paths, and a delivery package reads its outcome's.
+
+    A module that names no path would declare nothing while the refusal at acceptance
+    read it as declared.
+
+    Returns:
+        Each breach, as a clause completing "Work package <id> ...".
+
+    """
+    if package.kind == "delivery":
+        return ["holds modules, which a delivery package reads from its outcome"] * bool(
+            package.modules
+        )
+    return [
+        f"declares module {module!r}, which names no literal path"
+        for module in package.modules
+        if _names_no_path(module)
+    ]
+
+
 def _record_breaches(package: WorkPackage, reqs: frozenset[str]) -> list[str]:
     """Amendment 4: alteration and departure ids unique, and each departure well formed.
 
@@ -216,7 +257,11 @@ def work_package_findings(catalog: Catalog) -> list[ValidationError]:
     reqs = frozenset(req.id for req in catalog.reqs)
     errors = _series_findings(catalog.work_packages)
     for package in catalog.work_packages:
-        breaches = _kind_breaches(package, outcomes) + _record_breaches(package, reqs)
+        breaches = (
+            _kind_breaches(package, outcomes)
+            + footprint_breaches(package)
+            + _record_breaches(package, reqs)
+        )
         if breaches:
             errors.append(
                 _err(

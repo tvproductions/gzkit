@@ -26,7 +26,7 @@ The state is the last move's target; a package with no move is `not initiated`.
 The lane is held once (ruling 4): a repair package's stored lane, or for a
 delivery package `heavy` exactly when its outcome is user-facing (requirements
 model decision 10; RO-5 tranche 4). A run in flight, from `commenced` until
-`closed`, also shows the position `gz wp runs` reports. `--json` prints the record,
+`closed`, also shows the position `gz wp runs` reports. `footprint` is what the airlock holds the package against, read from the ledger once frozen, or `undeclared`; `--json` carries it as `footprint`. `--json` prints the record,
 the state, the lane, the position, which is null with no run in flight, and every
 event.
 
@@ -41,12 +41,14 @@ at revision 2:
 $ uv run gz wp show WP-01-astral
 WP-01-astral (repair), state: initiated
   delivers: #1183, #1184  lane: lite
+  footprint: undeclared
   2026-10-28T07:42:15.383859+00:00  work_package_transitioned  initiated
   2026-10-28T07:42:15.633870+00:00  work_package_issue_closed  #1183
   2026-10-28T07:42:15.885162+00:00  work_package_issue_closed  #1184
 $ uv run gz wp show WP-02-resume
 WP-02-resume (delivery), state: closed
   delivers: H1  lane: lite
+  footprint: undeclared
   2026-10-28T08:23:19.142735+00:00  work_package_transitioned  initiated
   2026-10-28T08:23:19.392955+00:00  work_package_transitioned  frozen
   2026-10-28T08:23:19.643329+00:00  work_package_transitioned  commenced

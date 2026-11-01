@@ -1140,7 +1140,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
         ),
     )
     p_airlock_in.add_argument(
-        "--target", required=True, metavar="OBPI", help="Target OBPI id to preflight"
+        "--target", required=True, metavar="ID", help="Target OBPI or work package id"
     )
     p_airlock_in.add_argument("--phase", help="Optional pipeline phase label (e.g. build)")
     add_dry_run_flag(
@@ -1171,7 +1171,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
         ),
     )
     p_airlock_out.add_argument(
-        "--target", required=True, metavar="OBPI", help="Target OBPI id to exit-account"
+        "--target", required=True, metavar="ID", help="Target OBPI or work package id"
     )
     add_dry_run_flag(
         p_airlock_out, help_override="Run the drift-diff without booking an airlock_out event"

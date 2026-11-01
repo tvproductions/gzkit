@@ -1360,6 +1360,8 @@ class AirlockOutEvent(_EventBase):
     routing: list[str] | None = None
     bodies: int | None = None
     observed_files: int | None = None
+    observed_commits: int | None = None
+    changed_files: list[str] | None = None
     aborted: StrictBool | None = None
     error: str | None = None
 
@@ -1797,6 +1799,7 @@ class WorkPackageTransitionedEvent(_EventBase):
     risk_note: str | None = Field(None, description="The short risk note, at frozen")
     review_receipt: str | None = Field(None, description="The nine-criteria review receipt")
     approved_alterations: tuple[str, ...] = Field((), description="Alterations approved at freeze")
+    modules: tuple[str, ...] = Field((), description="The footprint frozen, at frozen")
     decision: WorkPackageDecision | None = Field(None, description="The Gate 5 decision, at closed")
     residual_risk: str | None = Field(None, description="The residual risk, at closed")
     configuration_changes: tuple[str, ...] = Field(
@@ -1825,6 +1828,7 @@ class WorkPackageChangedEvent(_EventBase):
     work_stopped: bool = Field(default=False, description="True on a change order: work stopped")
     supplement: str | None = Field(None, description="The supplement's work package id")
     item: str | None = Field(None, description="The alteration or departure id it records")
+    modules: tuple[str, ...] = Field((), description="Paths a change order adds to the footprint")
     form: Literal["deviation", "waiver"] | None = Field(None, description="A departure's form")
     duration: Literal["temporary", "permanent"] | None = Field(
         None, description="A departure's duration"

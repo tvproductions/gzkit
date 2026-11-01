@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-01
 metadata:
-  skill-version: "0.4.0"
+  skill-version: "0.5.0"
 model: sonnet
 ---
 
@@ -59,10 +59,16 @@ One step at a time: `initiated`, `frozen`, `commenced`, `accepted`, `closed`.
    `uv run gz wp initiate <WP-id> --operator-text "<their exact words>"`
 2. **Freeze after the independent review.** A reviewer who did not write the
    baseline checks each REQ against the nine criteria; the operator approves
-   every planned alteration.
+   every planned alteration. A repair package must declare a valid footprint with
+   `--module` on `gz wp new`, or the freeze refuses it, as a brief must carry Allowed
+   Paths.
    `uv run gz wp freeze <WP-id> --baseline REQ-<n>@<rev> --risk-note "<note>" --review-receipt <id> --approve-alteration <id> --evidence <id>`
 3. **Commence** once every surface the package works has its tag hung:
-   `uv run gz wp commence <WP-id> --evidence <what was checked>`.
+   `uv run gz wp commence <WP-id> --evidence <what was checked>`. This crosses the
+   airlock and books `airlock_in`.
+   Commit the package's work under a `Task:` trailer that starts with the lowercased
+   package id, such as `TASK-wp-02-resume-#1185`: that trailer is how the exit knows
+   the commit is the package's. A defect fix keeps its own trailer.
 4. **Prove and review.** `uv run gz wp acceptance <WP-id> init --author <session>`,
    then `prove --spec <file>` and `review --receipt <run-id>`, on the frozen REQs or
    each carried issue. Spec, quality and adversarial reviews approve each proof. A
@@ -71,7 +77,10 @@ One step at a time: `initiated`, `frozen`, `commenced`, `accepted`, `closed`.
    `docs/user/manpages/wp-acceptance.md`.
 5. **Accept** at final inspection with no tag still hung, once
    `uv run gz wp acceptance <WP-id> status` reads ready:
-   `uv run gz wp accept <WP-id> --evidence <inspection>`. A package stopped by an
+   `uv run gz wp accept <WP-id> --evidence <inspection>`. This crosses the airlock
+   outward and refuses a file outside a declared footprint; the refusal names the
+   governed recovery, and only a `change_order` with `--module` moves the footprint.
+   A package stopped by an
    exit is excused, and unless its acceptance reads ready it closes as `redirect`,
    `pause` or `terminate`.
 6. **Close through Gate 5.** The attestor is the operator and is never

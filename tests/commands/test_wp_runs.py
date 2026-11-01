@@ -26,6 +26,7 @@ def _record(package: str, *issues: int) -> dict[str, object]:
         "issues": list(issues),
         "lane": "lite",
         "aliases": [],
+        "modules": ["data/catalog/"],
         "initial_conditions": "NA",
         "procedure": "NA",
         "test_and_inspection": "NA",
@@ -143,7 +144,8 @@ class TestRunsReadTheLedger(_RunsCase):
 
     def test_a_run_ends_at_the_close_and_not_at_acceptance(self) -> None:
         self._commence(_FIRST)
-        self._wp("accept", _FIRST, "--evidence", "e")
+        with mock.patch("gzkit.commands.wp.footprint_refusal", return_value=None):
+            self._wp("accept", _FIRST, "--evidence", "e")
         self.assertEqual([run["state"] for run in self._runs()], ["accepted"])
         self._wp(
             "close",

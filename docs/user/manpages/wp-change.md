@@ -21,6 +21,8 @@ gz wp change <WP-id> --rung <rung> --approver {operator,coordinator} --change <t
 | `--supplement` | The supplement's work package id (supplement only) |
 | `--item` | The alteration or departure id the change records |
 | `--configuration-change` | A new alteration's configuration change: `reconnected`, `replaced` or `retired` |
+| `--module` | A path this change order adds to a repair package's footprint. It must exist, or be a path the package changed and left behind, and not be a vendor mirror. Repeatable; refused on any other rung |
+| `--drop-module` | A path this change order drops from the footprint. Repeatable; refused once the package is frozen, because a frozen footprint only grows |
 | `--form`, `--duration`, `--clear-by`, `--req` | A new departure: `deviation` or `waiver`; `temporary` (with a clear-by condition) or `permanent`; the REQ it departs on |
 | `--json` | Output as JSON |
 | `--quiet`, `-q` | Suppress non-error output |
@@ -34,7 +36,9 @@ amendments 3 and 4). A package must be initiated and not closed. A departure or
 alteration not yet in the record joins the store together with the event that
 records it; when the change is refused, neither the record nor the ledger
 changes. A departure's form, duration and clear-by condition on the event are
-copied from the store.
+copied from the store. `--module` moves the footprint `gz wp accept` holds the
+package against, on the same terms; scope is the operator's, so only a change
+order takes it (GHI #1185).
 
 The verbs are drydock RO-5 tranche 2; the operator named them on 2026-10-28.
 

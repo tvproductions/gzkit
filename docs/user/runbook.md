@@ -640,8 +640,8 @@ preflight membrane (ADR-0.33.0). It reconciles the target's observed
 blast-radius and declared parent invariants against what the brief names:
 
 ```bash
-uv run gz airlock in --target <OBPI> --dry-run   # preflight, no ledger write
-uv run gz airlock in --target <OBPI> --json       # machine-readable payload
+uv run gz airlock in --target <OBPI-or-WP> --dry-run   # preflight, no ledger write
+uv run gz airlock in --target <OBPI-or-WP> --json       # machine-readable payload
 ```
 
 The airlock is a **diagnostic-only tracer**: a NO-GO prints a refusal but still

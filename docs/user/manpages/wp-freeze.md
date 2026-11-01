@@ -32,6 +32,8 @@ outcome. The operator approves each planned alteration at freeze (ruling of
 
 The verbs are drydock RO-5 tranche 2; the operator named them on 2026-10-28.
 
+A repair package must carry a valid footprint, as a brief must carry valid Allowed Paths (RO-14 ruling 24): the verb exits 3 on a repair package with no `modules`, on a module that does not exist, on a generated vendor mirror, on a directory not ending `/`, and on a module with no literal root, such as `*.*` or `s*`. A new file is declared by its existing parent directory. The refusal names the recovery: a change order with `--drop-module` and `--module`. A delivery package reads its outcome's `modules`, so this does not apply to it. The freeze books the footprint on the ledger, which is what the airlock reads from then on.
+
 ## Examples
 
 Observed in a scratch project seeded with one family, outcome `H1` and `REQ-1`

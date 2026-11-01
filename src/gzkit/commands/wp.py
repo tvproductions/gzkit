@@ -15,9 +15,15 @@ books `work_package_issue_closed` (ruling 10) and never closes the package.
 RO-14 tranche 1: `dispatch`, `block` and `unblock` book the run's events through
 `gzkit.work_package_run`, which holds the fix-cycle bound (GHI #1200). `runs`
 reads every run in flight from the ledger (GHI #1203).
+
+RO-14 act 6: `commence` and `accept` cross the airlock through
+`gzkit.work_package_transit`, and `accept` refuses a file outside a declared
+footprint (GHI #1185).
 """
 
 from typing import TYPE_CHECKING
+
+from pydantic import BaseModel, ConfigDict
 
 from gzkit.acceptance_store import (
     acceptance_blockers,
@@ -28,6 +34,7 @@ from gzkit.cli.formatters import OutputFormatter
 from gzkit.commands.common import ensure_initialized, get_project_root
 from gzkit.core.exceptions import PolicyBreachError, ResourceNotFoundError, TransientError
 from gzkit.events import BaselinedReq
+from gzkit.governance.trust_audits.catalog import footprint_breaches
 from gzkit.ledger import Ledger
 from gzkit.models.catalog import Alteration, Catalog, Departure, WorkPackage, load_catalog
 from gzkit.work_package_github import WorkPackageGithubError, tag_issues
@@ -36,6 +43,7 @@ from gzkit.work_package_ledger import (
     IssueClosure,
     TransitionRequest,
     WorkPackageLedgerError,
+    declared_modules,
     is_blocked,
     open_issues,
     record_work_package_change,
@@ -59,6 +67,15 @@ from gzkit.work_package_run import (
     took_stopping_exit,
 )
 from gzkit.work_package_store import WorkPackageStoreError, next_id, stage, write
+from gzkit.work_package_transit import (
+    NEW_FILE_ROUTE,
+    enter_package,
+    exit_package,
+    footprint_refusal,
+    freeze_refusal,
+    module_gaps,
+    package_changes,
+)
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -157,6 +174,9 @@ def wp_new_cmd(*, record: dict[str, object], alterations: list[str], as_json: bo
     except ValueError as exc:
         msg = f"The record does not match its schema: {exc}"
         raise PolicyBreachError(msg) from exc
+    gaps = module_gaps(root, package.modules) if package.kind == "repair" else []
+    if gaps and not footprint_breaches(package):
+        raise PolicyBreachError(_gaps_message(gaps))
     _store(root, catalog, package, package.issues)
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
     fmt.emit(package if as_json else f"Wrote {package.id} ({package.kind}).")
@@ -198,9 +218,14 @@ def wp_transition_cmd(
 
     """
     root, catalog, ledger = _context()
-    _held(catalog, str(fields["work_package"]))
+    held = _held(catalog, str(fields["work_package"]))
+    if fields.get("to_state") == "frozen" and work_package_state(ledger, held.id) == "initiated":
+        refusal = freeze_refusal(root, held)
+        if refusal:
+            raise PolicyBreachError(refusal)
     if fields.get("to_state") == "accepted":
         _refuse_unready(root, ledger, str(fields["work_package"]))
+        _refuse_outside_footprint(root, ledger, held)
     if fields.get("to_state") == "closed" and fields.get("decision") == "proceed":
         _refuse_undelivered_proceed(root, ledger, str(fields["work_package"]))
     if baseline is not None:
@@ -211,10 +236,45 @@ def wp_transition_cmd(
         )
     except (WorkPackageLedgerError, ValueError) as exc:
         raise PolicyBreachError(str(exc)) from exc
+    crossed = _cross_airlock(root, ledger, held, event.to_state)
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
     fmt.emit(
         event if as_json else f"{event.id}: {event.from_state or 'nothing'} -> {event.to_state}"
     )
+    if crossed and not as_json:
+        fmt.emit(f"  {crossed}")
+
+
+def _cross_airlock(root: Path, ledger: Ledger, package: WorkPackage, state: str) -> str | None:
+    """Book the airlock's edge a move crosses, so neither edge can go unreached (GHI #1185).
+
+    Returns:
+        What the airlock read, or None for a move that crosses neither edge.
+
+    """
+    if state == "commenced":
+        decision = enter_package(package, ledger).decision
+        return f"airlock in: {decision.value if decision else 'none'}"
+    if state == "accepted":
+        return f"airlock out: {exit_package(root, package, ledger).drift_diff.verdict.value}"
+    return None
+
+
+def _refuse_outside_footprint(root: Path, ledger: Ledger, package: WorkPackage) -> None:
+    """Refuse final inspection of a file outside a declared footprint (RO-14 act 6).
+
+    A package stopped by an exit is excused, as it is from readiness: it claims no
+    delivery. The exit still books what it changed.
+
+    Raises:
+        PolicyBreachError: The refusal names the files and the governed next step.
+
+    """
+    if took_stopping_exit(ledger, package.id):
+        return
+    refusal = footprint_refusal(root, package, ledger)
+    if refusal:
+        raise PolicyBreachError(refusal)
 
 
 def _refuse_unready(root: Path, ledger: Ledger, work_package: str) -> None:
@@ -278,13 +338,16 @@ def wp_change_cmd(
     *,
     fields: dict[str, object],
     item_fields: dict[str, object],
+    modules: list[str] | None = None,
+    dropped: list[str] | None = None,
     as_json: bool,
 ) -> None:
     """Book one change on the ladder; a new alteration or departure joins the store with it.
 
     A departure (or alteration) not yet in the record is written to the store only once
     the event is booked, so a refused change leaves both the ledger and the store as they
-    were.
+    were. `modules` are the paths a change order adds to a repair package's footprint,
+    written on the same terms, and `dropped` the paths one removes before the freeze.
 
     Raises:
         PolicyBreachError: The rung, approver or package state refuses the change; nothing
@@ -297,14 +360,82 @@ def wp_change_cmd(
     new_item = _new_item(fields, item_fields)
     if new_item is not None:
         staged = _with_item(catalog, held, str(fields["rung"]), new_item)
+    added: tuple[str, ...] = ()
+    if modules or dropped:
+        move = _FootprintMove(
+            rung=str(fields["rung"]), added=tuple(modules or ()), dropped=tuple(dropped or ())
+        )
+        staged, added = _with_modules(root, staged, ledger, held, move)
     try:
-        event = record_work_package_change(staged, ledger, ChangeRequest.model_validate(fields))
+        request = ChangeRequest.model_validate({**fields, "modules": added})
+        event = record_work_package_change(staged, ledger, request)
     except (WorkPackageLedgerError, ValueError) as exc:
         raise PolicyBreachError(str(exc)) from exc
     if staged is not catalog:
         write(root, staged)
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
     fmt.emit(event if as_json else f"{event.id}: {event.rung} recorded ({event.approver}).")
+
+
+def _gaps_message(gaps: list[str]) -> str:
+    return (
+        f"{'; '.join(gaps)}. A footprint takes the check Allowed Paths take (GHI #393). Re-run "
+        f"naming an existing path, {NEW_FILE_ROUTE}."
+    )
+
+
+class _FootprintMove(BaseModel):
+    """The paths one change order adds to or drops from a footprint."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    rung: str
+    added: tuple[str, ...]
+    dropped: tuple[str, ...]
+
+
+def _with_modules(
+    root: Path, catalog: Catalog, ledger: Ledger, held: WorkPackage, move: _FootprintMove
+) -> tuple[Catalog, tuple[str, ...]]:
+    """Stage what a change order does to the footprint, which keeps what it supersedes.
+
+    A freeze seals the footprint, so a path can be dropped only before one, and a path
+    the package changed may be added though it is gone, as a brief's created path may.
+
+    Returns:
+        The staged catalog and the paths added.
+
+    Raises:
+        PolicyBreachError: The rung is not a change order, a path does not hold, a frozen
+            path is dropped, or the store refuses the record.
+
+    """
+    if move.rung != "change_order":
+        msg = (
+            f"A {move.rung} change does not move a footprint: scope is the operator's, and only a "
+            "change order keeps what it supersedes. Re-run with `--rung change_order`."
+        )
+        raise PolicyBreachError(msg)
+    if move.dropped and work_package_state(ledger, held.id) != "initiated":
+        state = work_package_state(ledger, held.id) or "not initiated"
+        msg = (
+            f"{held.id} is {state}, and a path drops only while a package is initiated: a "
+            "frozen footprint only grows, so a dropped path cannot hide what was allowed. "
+            "Initiate the package first, or once frozen add what is missing with `--module`."
+        )
+        raise PolicyBreachError(msg)
+    declared = declared_modules(ledger, held)
+    added = tuple(module for module in move.added if module not in declared)
+    kept = tuple(module for module in held.modules if module not in move.dropped)
+    try:
+        staged = stage(catalog, held.model_copy(update={"modules": (*kept, *added)}))
+    except WorkPackageStoreError as exc:
+        raise PolicyBreachError(str(exc)) from exc
+    changes = package_changes(root, held.id)
+    gaps = module_gaps(root, added, frozenset(changes.files) if changes else frozenset())
+    if gaps:
+        raise PolicyBreachError(_gaps_message(gaps))
+    return staged, added
 
 
 def _with_item(catalog: Catalog, held: WorkPackage, rung: str, item: dict[str, object]) -> Catalog:
@@ -346,6 +477,7 @@ def wp_show_cmd(*, work_package: str, as_json: bool) -> None:
                 "record": record,
                 "state": state,
                 "lane": lane,
+                "footprint": list(declared_modules(ledger, package)),
                 "position": position.model_dump() if position else None,
                 "history": [row.model_dump() for row in history],
             }
@@ -354,6 +486,7 @@ def wp_show_cmd(*, work_package: str, as_json: bool) -> None:
     fmt.emit(f"{package.id} ({package.kind}), state: {state or 'not initiated'}")
     target = package.outcome or ", ".join(f"#{issue}" for issue in package.issues)
     fmt.emit(f"  delivers: {target}  lane: {lane}")
+    fmt.emit(f"  footprint: {', '.join(declared_modules(ledger, package)) or 'undeclared'}")
     if position:
         for line in _position_lines(position):
             fmt.emit(f"  {line}")

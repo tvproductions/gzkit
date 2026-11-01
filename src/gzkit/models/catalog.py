@@ -169,6 +169,10 @@ class WorkPackage(BaseModel):
         ..., description="Stored on a repair package only."
     )
     aliases: tuple[str, ...] = Field(..., description="Drydock names such as `RO-9`.")
+    modules: tuple[str, ...] = Field(
+        default=(),
+        description="A repair package's footprint; a delivery package reads its outcome's.",
+    )
     initial_conditions: str = Field(..., min_length=1, description="Tag-out line items, or NA.")
     procedure: str = Field(..., min_length=1, description="The task cards, or NA.")
     test_and_inspection: str = Field(

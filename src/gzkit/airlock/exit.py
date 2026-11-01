@@ -42,6 +42,8 @@ from gzkit.airlock.model import (
     Provenance,
     SeamEdge,
     SeamKind,
+    TransitObservation,
+    TransitSlice,
     Verdict,
 )
 from gzkit.governance.brief_path_validity import extract_allowed_paths
@@ -184,20 +186,20 @@ def compute_drift_diff(
     return DriftDiff(drift=drift, verdict=verdict, resolutions=())
 
 
-def compute_footprint_drift(
-    changed_files: Sequence[str],
-    brief_path: Path,
-    project_root: Path | None = None,
-) -> tuple[SeamEdge, ...]:
-    """Return a PUSH edge for each changed file outside the brief's Allowed Paths.
+def _footprint_edges(changed_files: Sequence[str], declared: TransitSlice) -> tuple[SeamEdge, ...]:
+    """Return a PUSH edge for each changed file outside the declared slice.
 
     The comparison is the one the completion receipt's scope audit makes
     (``hooks.obpi.out_of_scope_files``), so the exit and the receipt cannot name
-    different files. The brief and its package log are exempt only when
-    *project_root* locates them.
+    different files.
+
+    Returns:
+        One edge per file outside the slice.
+
     """
-    allowlist = extract_scope_allowlist(brief_path.read_text(encoding="utf-8"))
-    own_paths = brief_record_paths(project_root, brief_path) if project_root else []
+    outside = out_of_scope_files(
+        list(changed_files), list(declared.allowlist), own_paths=list(declared.own_paths)
+    )
     return tuple(
         SeamEdge(
             kind=SeamKind.PUSH,
@@ -206,7 +208,26 @@ def compute_footprint_drift(
             target=path,
             accounted=False,
         )
-        for path in out_of_scope_files(list(changed_files), allowlist, own_paths=own_paths)
+        for path in outside
+    )
+
+
+def compute_footprint_drift(
+    changed_files: Sequence[str],
+    brief_path: Path,
+    project_root: Path | None = None,
+) -> tuple[SeamEdge, ...]:
+    """Return a PUSH edge for each changed file outside the brief's Allowed Paths.
+
+    The brief and its package log are exempt only when *project_root* locates them.
+    """
+    return _footprint_edges(
+        changed_files,
+        TransitSlice(
+            target=brief_path.stem,
+            allowlist=tuple(extract_scope_allowlist(brief_path.read_text(encoding="utf-8"))),
+            own_paths=tuple(brief_record_paths(project_root, brief_path) if project_root else ()),
+        ),
     )
 
 
@@ -288,21 +309,77 @@ def airlock_exit(
     reach INFORMS the drift-diff, it never gates (BI #6, state-doctrine Rule 5).
     """
     target = slug_id_for(target, brief_path.stem)  # book the slug, never a bare id (GHI #1118)
+
+    def declare() -> TransitSlice:
+        allowlist = ()
+        if changed_files is not None:
+            text = brief_path.read_text(encoding="utf-8")
+            allowlist = tuple(extract_scope_allowlist(text))
+        return TransitSlice(
+            target=target,
+            bodies=tuple(extract_allowed_paths(brief_path) or ()),  # DECLARE: the footprint
+            allowlist=allowlist,
+            own_paths=tuple(brief_record_paths(project_root, brief_path) if project_root else ()),
+            parent_invariants=parent_invariants,
+        )
+
+    observed = None if changed_files is None else TransitObservation(files=tuple(changed_files))
+    return exit_slice(target, declare, reach_fn=reach_fn, ledger=ledger, observed=observed)
+
+
+def _with_footprint(
+    drift: DriftDiff, observed: TransitObservation | None, declared: TransitSlice
+) -> DriftDiff:
+    """Add the footprint vein: a diff reads clean only if something was compared.
+
+    Returns:
+        The diff with its footprint edges and the verdict they earn.
+
+    """
+    if declared.undeclared:
+        verdict = Verdict.SURFACE if drift.drift else Verdict.UNDECLARED
+        return DriftDiff(drift=drift.drift, verdict=verdict, resolutions=())
+    if observed is None:
+        if declared.must_observe and not drift.drift:
+            return DriftDiff(drift=(), verdict=Verdict.UNOBSERVED, resolutions=())
+        return drift
+    edges = (*drift.drift, *_footprint_edges(observed.files, declared))
+    verdict = Verdict.SURFACE if edges else Verdict.CLEAN
+    return DriftDiff(drift=edges, verdict=verdict, resolutions=())
+
+
+def exit_slice(
+    target: str,
+    declare: Callable[[], TransitSlice],
+    *,
+    reach_fn: Callable[[str], list[str] | None] = _default_reach,
+    ledger: Ledger | None = None,
+    observed: TransitObservation | None = None,
+) -> ExitReport:
+    """Run the exit over a declared slice, whichever door declared it.
+
+    *declare* is called inside the failure-atomic window, so a declaration that
+    raises still pairs the transit with an aborted ``airlock_out``. *observed* carries
+    the commits the door attributed, booked so an exit that read none can be told from
+    one that read some and found nothing.
+
+    Returns:
+        The report: the drift-diff, findings, decision menu, routing and proposals.
+
+    """
     booked = False
     try:
-        bodies = tuple(extract_allowed_paths(brief_path) or ())  # DECLARE: the footprint
+        declared = declare()
         reach = reach_fn(target) or []  # PING: FACT (OBSERVED), advisory input
-        drift = compute_drift_diff(tuple(reach), tuple(parent_invariants))
-        extra: dict[str, Any] = {"bodies": len(bodies)}
-        if changed_files is not None:
-            footprint = compute_footprint_drift(changed_files, brief_path, project_root)
-            edges = (*drift.drift, *footprint)
-            drift = DriftDiff(
-                drift=edges,
-                verdict=Verdict.SURFACE if edges else Verdict.CLEAN,
-                resolutions=(),
-            )
-            extra["observed_files"] = len(changed_files)
+        drift = _with_footprint(
+            compute_drift_diff(tuple(reach), declared.parent_invariants), observed, declared
+        )
+        extra: dict[str, Any] = {"bodies": len(declared.bodies)}
+        if observed is not None:
+            extra["observed_files"] = len(observed.files)
+            if observed.commits is not None:
+                extra["observed_commits"] = observed.commits
+                extra["changed_files"] = list(observed.files)
         findings = build_findings(drift)
         routing = tuple(
             route_fresh_transit(f) for f in findings if f.kind is FindingKind.WRECKED_SOMETHING

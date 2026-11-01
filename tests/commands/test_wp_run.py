@@ -46,6 +46,7 @@ def _seed_store() -> None:
         "issues": [1200],
         "lane": "lite",
         "aliases": [],
+        "modules": ["data/catalog/"],
         "initial_conditions": "NA",
         "procedure": "NA",
         "test_and_inspection": "NA",

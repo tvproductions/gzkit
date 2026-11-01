@@ -155,6 +155,13 @@ def _register_wp_record(wp_commands: argparse._SubParsersAction) -> None:
     )
     p_new.add_argument("--lane", choices=("lite", "heavy"), default=None, help="Repair only")
     p_new.add_argument("--alias", dest="aliases", action="append", default=[], help="RO-<n>")
+    p_new.add_argument(
+        "--module",
+        dest="modules",
+        action="append",
+        default=[],
+        help="A path in a repair package's footprint (repeatable)",
+    )
     p_new.add_argument("--initial-conditions", default="NA", help="Section text, or NA")
     p_new.add_argument("--procedure", default="NA", help="Section text, or NA")
     p_new.add_argument("--test-and-inspection", default="NA", help="Section text, or NA")
@@ -176,6 +183,7 @@ def _register_wp_record(wp_commands: argparse._SubParsersAction) -> None:
                 "issues": a.issues,
                 "lane": a.lane,
                 "aliases": a.aliases,
+                "modules": a.modules,
                 "initial_conditions": a.initial_conditions,
                 "procedure": a.procedure,
                 "test_and_inspection": a.test_and_inspection,
@@ -472,6 +480,20 @@ def _register_wp_close_change(wp_commands: argparse._SubParsersAction) -> None:
     )
     p_change.add_argument("--clear-by", default=None, help="A temporary departure's condition")
     p_change.add_argument("--req", default=None, help="The REQ a departure departs on")
+    p_change.add_argument(
+        "--module",
+        dest="modules",
+        action="append",
+        default=[],
+        help="A path a change order adds to the footprint (repeatable)",
+    )
+    p_change.add_argument(
+        "--drop-module",
+        dest="dropped",
+        action="append",
+        default=[],
+        help="A path a change order drops before the freeze (repeatable)",
+    )
     add_json_flag(p_change)
     p_change.set_defaults(
         func=lambda a: _lazy("wp_change_cmd")(
@@ -492,6 +514,8 @@ def _register_wp_close_change(wp_commands: argparse._SubParsersAction) -> None:
                 "clear_by": a.clear_by,
                 "req": a.req,
             },
+            modules=a.modules,
+            dropped=a.dropped,
             as_json=a.as_json,
         )
     )

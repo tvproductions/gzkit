@@ -18,6 +18,7 @@ gz wp new --kind {delivery,repair} --slug <slug> [--outcome <code>] [--issue <n>
 | `--issue` | A GitHub issue a repair package carries. Repeatable |
 | `--lane` | `lite` or `heavy`; stored on a repair package only, since a delivery package derives its lane from its outcome |
 | `--alias` | A drydock name such as `RO-9`. Repeatable |
+| `--module` | A path in a repair package's footprint: a file, a glob, or a directory ending `/`. Repeatable. It takes the check Allowed Paths take: it must exist and not be a vendor mirror, a directory ends `/`, and a module must start from a literal path, so a glob in its first segment is refused. `gz wp freeze` refuses a repair package with none. A delivery package reads its outcome's and takes none |
 | `--initial-conditions`, `--procedure`, `--test-and-inspection`, `--system-restoration` | The formal work package's four sections. Each defaults to `NA` |
 | `--alteration` | A planned remodel as `ID:reconnected\|replaced\|retired:description`. Repeatable |
 | `--json` | Output as JSON |

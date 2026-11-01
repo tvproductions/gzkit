@@ -5,11 +5,11 @@ description: Use to read a target's seam map before touching it (gz airlock in),
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-11-01
 model: haiku
 gz_command: airlock
 metadata:
-  skill-version: "1.2.1"
+  skill-version: "1.3.0"
 ---
 
 # gz airlock
@@ -47,16 +47,17 @@ Keep three subjects distinct: transit is ecosystem movement through the airlock 
 
 - Before starting ad-hoc work in an unfamiliar area — cross via
   `gz permitted-entry --recon` to image the seam-map before you touch anything.
-- Before/after a transit — inspect a target OBPI's seam-map (`airlock in`) or
+- Before/after a transit — inspect a target OBPI's or work package's seam-map (`airlock in`) or
   read what the work disturbed (`airlock out`).
 - To check whether a target's blast radius carries **un-accounted** seams (a
   real push/pull edge absent from the declared set) before committing to work.
 
 ## When NOT to Use
 
-- The pipeline door (`gz obpi pipeline` Stage 1/5) and the mx door
-  (`gz mx enter`/`exit`, via the `gz-mx` skill) already call the airlock — do
-  not re-cross it manually for those transits.
+- The pipeline door (`gz obpi pipeline` Stage 1/5), the mx door
+  (`gz mx enter`/`exit`, via the `gz-mx` skill) and the work package's
+  `gz wp commence` and `gz wp accept` already call the airlock — do not
+  re-cross it manually for those transits. A `--dry-run` read is always fine.
 - To image structural lineage without entering — that is the `gz-ontology`
   sonar (`gz ontology sense/trace/reach`), which this skill's PING beat consumes.
 

@@ -45,6 +45,7 @@ def _record(package: str) -> dict[str, object]:
         "issues": [1206],
         "lane": "lite",
         "aliases": [],
+        "modules": ["data/catalog/"],
         "initial_conditions": "NA",
         "procedure": "NA",
         "test_and_inspection": "NA",
@@ -75,6 +76,10 @@ class _FenceCase(unittest.TestCase):
         gate = mock.patch("gzkit.commands.wp.acceptance_blockers", return_value=[])
         gate.start()
         self.addCleanup(gate.stop)
+        # Nor is the footprint: tests/commands/test_wp_airlock.py is, in a real repository.
+        scope = mock.patch("gzkit.commands.wp.footprint_refusal", return_value=None)
+        scope.start()
+        self.addCleanup(scope.stop)
         self.runner = CliRunner()
         self.enterContext(self.runner.isolated_filesystem())
         _quick_init()
