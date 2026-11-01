@@ -217,7 +217,8 @@ through, its own subject under the three-subjects ruling. The witness column is 
 
 The five edges with no witness are findings raised after the induction freeze, graded 2026-10-30:
 intake's blocks return to service under RO-11, and the other four are due by a named event
-(§ List of discrepancies, RO-0).
+(§ List of discrepancies, RO-0). The session's exit edge has a specified witness, a ledger signal
+replacing the exit bookmark; the table stands until it lands (§ Rulings of 2026-10-31).
 
 ### The rails
 
@@ -940,6 +941,17 @@ same class as the ruling of 2026-10-29.
   and none in the old way after it. The [RO-14 specification](harbor-ro14-obpi-forward-migration.md)
   holds the rulings on #1200 and the points still open.
 
+The three-level brief, specified ahead of its named event.
+
+- **The three-level brief is specified.** The
+  [specification](../design/briefs/SPEC-session-handoff-picture.md) strengthens `gz-session-handoff`
+  in place, adds the session log and the boundary recommendation, and replaces the exit bookmark
+  with a ledger signal, which is the session's exit-edge witness. Put to the operator: accepted?
+  Operator, verbatim: *"Accept it"*. The grading of 2026-10-30 stands, so the build follows the
+  handback as the `SES` outcome and both lines under RO-0 stay open until it lands. This is the
+  revisit the four-edges line named: session exit has its witness specified, and R&D, design
+  acceptance and chores are unchanged.
+
 ## Superseded on 2026-10-30 (record, not binding)
 
 § The general arrangement as it stood before the redraw of 2026-10-30, kept verbatim (operator,
@@ -1434,13 +1446,15 @@ Each line is `open` until the restoration contractor clears it with the alarms o
   H (corrected 2026-10-30 from the agent's misstated M; the legend puts handoffs in H), handed over
   at the handback. Revisit: specified before the first work package commences under
   civil rule (RO-8's acts 1 to 3). Authority: operator, 2026-10-30, *"A"* (§ Rulings of 2026-10-30).
+  Specified and accepted 2026-10-31 (§ Rulings of 2026-10-31); open until built.
 - `open` **due by a named event** — four process edges have no ledger witness: session exit (the
   handoff is a file only; holder H), R&D open and sign-off (`rnd-discipline.md` § Ledger events,
   ruled 2026-09-16, not built; holder assigned when specified), design acceptance (`adr_created`
   only; holder D) and chore run and validate (a file under `.gzkit/chores/`; holder M). Handed at
   the handback to each owning outcome. Revisit: when the three-level brief is specified. Intake's
   edge blocks return to service and is RO-11's. Authority: operator, 2026-10-30, *"A"*
-  (§ Rulings of 2026-10-30).
+  (§ Rulings of 2026-10-30). Revisited 2026-10-31: session exit's witness is specified, the other
+  three are unchanged (§ Rulings of 2026-10-31).
 
 ### RO-1 — measuring the cut
 
