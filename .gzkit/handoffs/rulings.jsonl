@@ -1921,3 +1921,5 @@
 {"ts": "2026-11-01T12:29:11Z", "source": "20261101T122907Z-ro14-act5-landed-act6-next.md", "text": "The general arrangement's six flows are confirmed and act 5 proceeds (verbatim: \"yes, those match, proceed with act 5\")."}
 {"ts": "2026-11-01T12:29:11Z", "source": "20261101T122907Z-ro14-act5-landed-act6-next.md", "text": "Act 5 adapts the existing pipeline rather than building anew (verbatim: \"we will adapt, as much as possible, the current gz-obpi-pipeline\")."}
 {"ts": "2026-11-01T12:29:11Z", "source": "20261101T122907Z-ro14-act5-landed-act6-next.md", "text": "At the spent fix bound, act 5's count was fixed and it landed (verbatim: \"Fix the count, land (Recommended)\")."}
+{"ts": "2026-11-01T13:17:28Z", "source": "20261101T131724Z-rulings-19-20-act6-next.md", "text": "terminate is open on any block, amending ruling 12 (verbatim: \"ok\", to the recommendation to keep it)."}
+{"ts": "2026-11-01T13:17:28Z", "source": "20261101T131724Z-rulings-19-20-act6-next.md", "text": "Past the round limit human-review refuses and only an unblock restarts the count (verbatim: \"yes\", to the recommendation)."}
