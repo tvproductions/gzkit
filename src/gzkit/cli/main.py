@@ -136,6 +136,16 @@ def _ensure_utf8_console() -> None:
             stream.reconfigure(encoding="utf-8")
 
 
+def _exit_code_from(result: object) -> int:
+    """Read a handler's return; GHI #1198, a refused dispatch exited 0.
+
+    Returns:
+        ``result`` when it is an int, which is the handler's exit code, otherwise 0.
+
+    """
+    return result if isinstance(result, int) else 0
+
+
 def main(argv: list[str] | None = None) -> int:
     """argparse-based gz entrypoint."""
     _ensure_utf8_console()
@@ -154,7 +164,7 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     try:
-        handler(args)
+        result = handler(args)
     # Every branch reports on stderr: errors and diagnostics never reach stdout,
     # where a command's output is read (cli-standards-v3.md § Output Rules).
     except GzkitError as exc:
@@ -190,7 +200,7 @@ def main(argv: list[str] | None = None) -> int:
         err_console.print(f"[red]Unexpected error: {escape(str(exc))}[/red]")
         return exit_code_for(exc)
     else:
-        return 0
+        return _exit_code_from(result)
 
 
 if __name__ == "__main__":

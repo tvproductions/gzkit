@@ -36,27 +36,16 @@ _LAZY_HANDLERS: dict[str, str] = {
 
 
 def _arb(name: str) -> Any:
-    """Resolve an ``arb_*_cmd`` handler lazily, propagating its exit code.
+    """Resolve an ``arb_*_cmd`` handler lazily.
 
-    ``cli.main`` discards a handler's return value; only ``SystemExit`` reaches the
-    shell. Every ``arb_*_cmd`` returns a meaningful status, so without this wrapper
-    ``gz arb step --name unittest -- <failing suite>`` exits 0 — and that command is
-    AGENTS.md § Attestation's canonical "tests pass" invocation. The ``--soft-fail``
-    flag ("emit a receipt but always return exit 0") is only coherent if the default
-    propagates, which is the tell that the swallow was a defect (GHI #642).
+    Every ``arb_*_cmd`` returns a meaningful status and ``cli.main`` carries it to
+    the shell, so ``gz arb step --name unittest -- <failing suite>``, the canonical
+    "tests pass" invocation of AGENTS.md § Attestation, exits non-zero (GHI #642,
+    GHI #1198).
     """
     from importlib import import_module
 
-    module = import_module("gzkit.commands.arb")
-    handler = getattr(module, name)
-
-    def _propagating(**kwargs: Any) -> int:
-        code = handler(**kwargs)
-        if isinstance(code, int) and code != 0:
-            raise SystemExit(code)
-        return 0
-
-    return _propagating
+    return getattr(import_module("gzkit.commands.arb"), name)
 
 
 def register_arb_parsers(commands: argparse._SubParsersAction) -> None:

@@ -17,6 +17,25 @@ from tests.commands.common import CliRunner, _quick_init
 _PACKAGE = "WP-01-loop"
 
 
+_REAL_WRITE_TEXT = Path.write_text
+
+
+def _refuse_marker_writes(path: Path, *args: object, **kwargs: object) -> int:
+    """Stand in for a marker file that cannot be written, on any platform.
+
+    Returns:
+        What the real ``Path.write_text`` returns, for any other file.
+
+    Raises:
+        PermissionError: ``path`` is a pipeline marker.
+
+    """
+    if path.name.startswith(".pipeline-active"):
+        message = f"Permission denied: {path}"
+        raise PermissionError(message)
+    return _REAL_WRITE_TEXT(path, *args, **kwargs)  # ty: ignore[invalid-argument-type]
+
+
 def _seed_store() -> None:
     catalog = Path("data") / "catalog"
     catalog.mkdir(parents=True, exist_ok=True)
@@ -80,6 +99,15 @@ class TestRunVerbs(unittest.TestCase):
         booked = len(_rows("work_package_dispatched"))
         self.assertEqual(self._dispatch("Implementer"), 3)
         self.assertEqual(len(_rows("work_package_dispatched")), booked)
+
+    def test_a_marker_fault_costs_the_dispatch_no_row(self) -> None:
+        """GHI #1208's invariant on the successor: the verb's only store is the ledger."""
+        marker = Path(f".claude/plans/.pipeline-active-{_PACKAGE}.json")
+        marker.parent.mkdir(parents=True, exist_ok=True)
+        marker.write_text('{"dispatch_state": [{"task_id": "not a record"}]}', encoding="utf-8")
+        with patch.object(Path, "write_text", _refuse_marker_writes):
+            self.assertEqual(self._dispatch("Implementer"), 0)
+        self.assertEqual(len(_rows("work_package_dispatched")), 1)
 
     def test_a_block_records_the_count_and_an_unblock_clears_it(self) -> None:
         self.assertEqual(self._dispatch("Implementer"), 0)

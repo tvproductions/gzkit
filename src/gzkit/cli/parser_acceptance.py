@@ -38,8 +38,8 @@ def configure_acceptance_parser(parser: argparse.ArgumentParser) -> None:
 
 
 def acceptance_handler(a: argparse.Namespace) -> int:
-    """Resolve lazily and propagate refusals through the CLI's SystemExit contract."""
-    code = _lazy("obpi_acceptance_cmd")(
+    """Resolve the handler lazily; ``cli.main`` carries its returned code to the shell."""
+    return _lazy("obpi_acceptance_cmd")(
         obpi_id=a.obpi,
         action=a.action,
         author=a.author,
@@ -51,8 +51,3 @@ def acceptance_handler(a: argparse.Namespace) -> int:
         attestor=a.attestor,
         ruling=a.ruling,
     )
-    # cli.main ignores returned values; only SystemExit carries failure to
-    # the shell (the same adapter convention as the ARB command family).
-    if code:
-        raise SystemExit(code)
-    return 0

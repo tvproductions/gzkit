@@ -63,9 +63,8 @@ def obpi_precomplete_cmd(*, obpi_id: str, as_json: bool = False) -> int:
       1 = user/config error (brief not found, OBPI id invalid, etc.)
       3 = policy breach (one or more preconditions failed)
 
-    Non-zero exit codes are propagated via ``SystemExit`` so
-    ``gzkit.cli.main`` terminates the process with the correct code — its
-    else-branch swallows handler return values otherwise.
+    Non-zero exit codes are propagated via ``SystemExit``, which
+    ``gzkit.cli.main`` turns into the process's exit code.
 
     Running the checks is a recorded boundary (OBPI-0.35.0-15, operator ruling
     2026-10-11 on Open Design Question 9): the verify runner runs this command

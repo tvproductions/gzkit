@@ -3658,18 +3658,13 @@
     },
     {
       "file": "src/gzkit/cli/parser_acceptance.py",
-      "rule": "DOC501",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/cli/parser_acceptance.py",
       "rule": "TC003",
       "count": 1
     },
     {
       "file": "src/gzkit/cli/parser_arb.py",
       "rule": "ANN401",
-      "count": 2
+      "count": 1
     },
     {
       "file": "src/gzkit/cli/parser_arb.py",

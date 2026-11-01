@@ -548,9 +548,8 @@ class TestArbRedCommitCli(unittest.TestCase):
             contextlib.redirect_stderr(io.StringIO()),
         ):
             args = self._parse("--commit", "abc123")
-            with self.assertRaises(SystemExit) as exited:  # _arb propagates the status
-                args.func(args)
-        self.assertEqual(exited.exception.code, 1)
+            status = args.func(args)  # cli.main carries this to the shell
+        self.assertEqual(status, 1)
         self.assertEqual(run.call_args.args[1], "abc123")
 
     def _exit_for(self, verdict: str, outcome: str = "killed") -> tuple[int, str]:

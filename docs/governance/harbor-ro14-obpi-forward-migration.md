@@ -2,7 +2,7 @@
 
 # RO-14 specification — the forward migration from OBPI to work package
 
-**2026-10-31. Status: scope, tranches and open points ruled; tranche 1 cut into acts; act 1 under rebuild after its independent review failed.** Operator: **g0**. Repair order of the [harbor pilotage contract](harbor-pilotage-candidate-2026-10-15.md), which holds the binding rulings.
+**2026-10-31. Status: scope, tranches and open points ruled; tranche 1 cut into acts; acts 1 and 2 landed.** Operator: **g0**. Repair order of the [harbor pilotage contract](harbor-pilotage-candidate-2026-10-15.md), which holds the binding rulings.
 
 ## Scope
 
@@ -65,13 +65,21 @@ Replayed over that run's ledger rows with the bound of `MAX_REVIEW_FIX_CYCLES`, 
 ## Tranche 1, cut into acts
 
 1. **The bound.** `gz wp dispatch`, `block` and `unblock` with `gzkit.work_package_run` (#1200). Three builds failed independent review; the routes are closed by rulings 14 to 17 and a same-subject arming clause; the fourth passed and landed.
-2. **Dispatch's defects.** #1198 and #1208, read against the new verb.
-3. **Run position and markers.** #1203, #1205 and #1209.
+2. **Dispatch's defects.** #1198 and #1208, read against the new verb. See § Act 2's reading.
+3. **Run position and markers.** #1203, #1205 and #1209, and the half of #1208 that act 2 leaves open.
 4. **The fence and the stage bound.** #1206, and #1028 with its stop-and-ask boundary.
 5. **Acceptance on the work package**, which gives `gz wp block` the refutation count ruling 8 requires.
 6. **The airlock on the work package.** #1185.
 <!-- gz-validate-skip: command-shape -->
 7. **`gz wp withdraw-legacy`.**
+
+## Act 2's reading
+
+**#1198 is repaired at its cause, not on `gz obpi`.** `cli.main` discarded every handler's returned code. It now carries a returned int to the shell, so the class is closed for every verb, `gz wp` included. Measured over the 134 handlers the parsers name, two lost a refusal: `gz obpi dispatch` and `gz obpi adversary-workspace`. The two adapters that worked around the discard, for `gz arb` and `gz obpi acceptance`, went with it.
+
+**#1208 is half answered.** `gz wp dispatch` reads and writes no marker, so a marker fault cannot cost it its row; `test_a_marker_fault_costs_the_dispatch_no_row` holds that. The work-package surface has no run position yet, so the transition row #1208 protects has no successor until act 3, and #1208 stays open for it. Act 3 records position ledger first, with no cache in front of it.
+
+**`gz obpi dispatch` is not repaired.** `record_dispatch` keeps its uncontained cache refresh, and the command keeps printing refusals on stdout. The contract moved these repairs to tranche 1 because a repair to `gz obpi` would guard no run (§ Rulings of 2026-10-31); tranche 3 removes the surface. A repair of `record_dispatch` was built and withdrawn in this act, before landing, when that sentence was read.
 
 ## Mode contract
 
