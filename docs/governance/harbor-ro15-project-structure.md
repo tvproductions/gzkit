@@ -2,7 +2,7 @@
 
 # RO-15 specification — maximal Astral project structure
 
-**2026-11-01. Status: scope and the brownfield reach ruled; placement and tranche owner open; no tranche started.** Operator: **g0**. Repair order of the [harbor pilotage contract](harbor-pilotage-candidate-2026-10-15.md), added by amendment. It follows [RO-9](harbor-ro9-astral-toolchain.md), which aligned the toolchain and left the structure of a project unwitnessed.
+**2026-11-01. Status: scope, the brownfield reach and placement ruled; tranche owner open; no tranche started.** Operator: **g0**. Repair order of the [harbor pilotage contract](harbor-pilotage-candidate-2026-10-15.md), added by amendment. It follows [RO-9](harbor-ro9-astral-toolchain.md), which aligned the toolchain and left the structure of a project unwitnessed.
 
 ## Scope
 
@@ -13,6 +13,8 @@ gzkit and every project it governs follow [uv's project model](https://docs.astr
 1. **Project structure is a repair order** (operator, verbatim: *"the reason I wanted you to look at that starter is because it adopts/assumes maximal python project structuring via astral's recommended best practices. I consider that RO worthy."*).
 2. **The standard** (operator, verbatim: *"maxx: <https://docs.astral.sh/uv/concepts/projects/>"* and *"gz-starter maximizes this, we should too/"*).
 3. **Brownfield reach.** Put to the operator: report then prove; migrate automatically; refuse until conformant. Operator, by selection: *"Report, then prove (Recommended)"*. `gz init` never breaks a working build and never refactors a project's code. It inventories every gap, and adoption stays incomplete until a governed migration passes the structure rules. An old layout needs an evidenced exception.
+
+4. **Placement.** Put to the operator: immediately before RO-4, or straight after RO-14's tranche 1. Operator, verbatim: *"agree"* to the first, so the kit work is uninterrupted and the sea trial's released wheel proves the structure.
 
 ## The gap, measured 2026-11-01
 
@@ -48,10 +50,9 @@ The defect that makes this blocking: `gz init` adds `data/` and `design/` beside
 
 ## Open points
 
-1. Placement. Recommended: immediately before RO-4, so the kit work continues and the sea trial's released wheel proves the structure.
-2. Who lands the tranches.
-3. Whether a scaffold's `.python-version` takes an exact patch, as gzkit's own does.
-4. Whether `build-constraint-dependencies` carries hashes, which uv's build page describes.
+1. Who lands the tranches.
+2. Whether a scaffold's `.python-version` takes an exact patch, as gzkit's own does.
+3. Whether `build-constraint-dependencies` carries hashes, which uv's build page describes.
 
 ## Witness
 

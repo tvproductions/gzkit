@@ -16,7 +16,7 @@
 4. [RO-11](harbor-ro11-intake.md) — intake: the capability records, the three-letter legend and the entry verb (three tranches; placed before RO-4, amended 2026-10-30, operator: *"A"*).
 5. [RO-5](harbor-ro5-work-packages.md), tranche 6 — the catalog verbs after entry, the freeze lock and the delivery close (operator: *"A"*).
 6. [RO-13](harbor-ro13-mode-contract.md), foundation tranches F1 to F5 — the two-way mode contract's shared parts (operator: *"c"*). **Not worked by this contractor**: the operator and a working session land them (operator: *"A"*). Stop and wait.
-7. [RO-15](harbor-ro15-project-structure.md) — maximal Astral project structure (five tranches; added 2026-11-01; placement and owner open, recommended here).
+7. [RO-15](harbor-ro15-project-structure.md) — maximal Astral project structure (five tranches; placed before RO-4, amended 2026-11-01, operator: *"agree"*; owner open).
 8. [RO-4](harbor-ro4-release.md) — release detached from the ADR (four tranches).
 9. [RO-6](harbor-ro6-canon-retirement.md) — superseded canon corrected (three tranches).
 10. [RO-7](harbor-ro7-context-cut.md) — the context cut (seven stages, each measured by [RO-1's protocol](harbor-ro1-cut-measurement.md); RO-1's baseline report is written first).
