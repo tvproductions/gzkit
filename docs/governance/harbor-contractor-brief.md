@@ -16,13 +16,14 @@
 4. [RO-11](harbor-ro11-intake.md) — intake: the capability records, the three-letter legend and the entry verb (three tranches; placed before RO-4, amended 2026-10-30, operator: *"A"*).
 5. [RO-5](harbor-ro5-work-packages.md), tranche 6 — the catalog verbs after entry, the freeze lock and the delivery close (operator: *"A"*).
 6. [RO-13](harbor-ro13-mode-contract.md), foundation tranches F1 to F5 — the two-way mode contract's shared parts (operator: *"c"*). **Not worked by this contractor**: the operator and a working session land them (operator: *"A"*). Stop and wait.
-7. [RO-4](harbor-ro4-release.md) — release detached from the ADR (four tranches).
-8. [RO-6](harbor-ro6-canon-retirement.md) — superseded canon corrected (three tranches).
-9. [RO-7](harbor-ro7-context-cut.md) — the context cut (seven stages, each measured by [RO-1's protocol](harbor-ro1-cut-measurement.md); RO-1's baseline report is written first).
-10. [RO-8](harbor-ro8-in-flight-work.md) — the in-flight work absorbed (four acts; act 3 waits for the operator's review).
-11. [RO-14](harbor-ro14-obpi-forward-migration.md), tranche 2 — the pipeline, skills, rules and docs, before the retrofit below. **The pipeline itself is not worked by this contractor**: the operator and a working session move it (operator: *"a"*). Stop and wait.
-12. [RO-13](harbor-ro13-mode-contract.md), retrofit tranches R1 to R3 — code controls by role, then skills, then rules and the other surfaces, after the operator rules the tables (T0).
-13. [RO-14](harbor-ro14-obpi-forward-migration.md), tranche 3 — `gz obpi` removed, last.
+7. [RO-15](harbor-ro15-project-structure.md) — maximal Astral project structure (five tranches; added 2026-11-01; placement and owner open, recommended here).
+8. [RO-4](harbor-ro4-release.md) — release detached from the ADR (four tranches).
+9. [RO-6](harbor-ro6-canon-retirement.md) — superseded canon corrected (three tranches).
+10. [RO-7](harbor-ro7-context-cut.md) — the context cut (seven stages, each measured by [RO-1's protocol](harbor-ro1-cut-measurement.md); RO-1's baseline report is written first).
+11. [RO-8](harbor-ro8-in-flight-work.md) — the in-flight work absorbed (four acts; act 3 waits for the operator's review).
+12. [RO-14](harbor-ro14-obpi-forward-migration.md), tranche 2 — the pipeline, skills, rules and docs, before the retrofit below. **The pipeline itself is not worked by this contractor**: the operator and a working session move it (operator: *"a"*). Stop and wait.
+13. [RO-13](harbor-ro13-mode-contract.md), retrofit tranches R1 to R3 — code controls by role, then skills, then rules and the other surfaces, after the operator rules the tables (T0).
+14. [RO-14](harbor-ro14-obpi-forward-migration.md), tranche 3 — `gz obpi` removed, last.
 
 RO-10 is parked and not worked. RO-9 closed through Gate 5 on 2026-10-29.
 **Each act:**
