@@ -1923,3 +1923,9 @@
 {"ts": "2026-11-01T12:29:11Z", "source": "20261101T122907Z-ro14-act5-landed-act6-next.md", "text": "At the spent fix bound, act 5's count was fixed and it landed (verbatim: \"Fix the count, land (Recommended)\")."}
 {"ts": "2026-11-01T13:17:28Z", "source": "20261101T131724Z-rulings-19-20-act6-next.md", "text": "terminate is open on any block, amending ruling 12 (verbatim: \"ok\", to the recommendation to keep it)."}
 {"ts": "2026-11-01T13:17:28Z", "source": "20261101T131724Z-rulings-19-20-act6-next.md", "text": "Past the round limit human-review refuses and only an unblock restarts the count (verbatim: \"yes\", to the recommendation)."}
+{"ts": "2026-11-01T16:03:52Z", "source": "20261101T160350Z-ro14-tranche1-complete.md", "text": "A repair package declares its own footprint and a delivery package reads its outcome's (verbatim: \"Repair declares (Recommended)\")."}
+{"ts": "2026-11-01T16:03:52Z", "source": "20261101T160350Z-ro14-tranche1-complete.md", "text": "A commit is the package's by its Task trailer (verbatim: \"Task trailer (Recommended)\")."}
+{"ts": "2026-11-01T16:03:52Z", "source": "20261101T160350Z-ro14-tranche1-complete.md", "text": "gz wp accept refuses a file outside a declared footprint (verbatim: \"Refuse at accept (Recommended)\")."}
+{"ts": "2026-11-01T16:03:52Z", "source": "20261101T160350Z-ro14-tranche1-complete.md", "text": "A repair package is held to the brief's standard at freeze (verbatim: \"Hold at freeze (Recommended)\")."}
+{"ts": "2026-11-01T16:03:52Z", "source": "20261101T160350Z-ro14-tranche1-complete.md", "text": "At the spent bound act 6 took one last repair and landed unreviewed (verbatim: \"Fix the two, land (Recommended)\")."}
+{"ts": "2026-11-01T16:03:52Z", "source": "20261101T160350Z-ro14-tranche1-complete.md", "text": "The docs-organization note holds until the handback (verbatim: \"A\", to the recommendation)."}
