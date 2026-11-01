@@ -70,7 +70,7 @@ Replayed over that run's ledger rows with the bound of `MAX_REVIEW_FIX_CYCLES`, 
 - **A package's count is read over its whole history.** The dispatch channel reads whole history on purpose, because a relaunch must not discard credit (GHI #886), so a relaunch resets nothing. Ruling 12 carries the once-only limit across packages.
 - **The refutation count is reliable, in reviews.** Read through `load_history`, not from receipts' truncated tails, `OBPI-0.35.0-15-pipeline-run-position` holds 55 reviews, 25 refuted, every refuted review carrying a mapped finding: REQ-0.35.0-15-02 13, -08 10, -09 2, -05 1. A round with two reviewers can add two, so the block states reviews, not rounds.
 - **The same-root rule is scored advisory.** Comparing two rounds' weakest points is judgment, and ruling 7 now holds the mechanical part. #1200's acceptance (d) is met by the score in `docs/governance/advisory-rules-audit.md`, written when #1200 lands.
-- **The other reused parts, by surface.** Move in tranche 1: #1198 and #1208 (dispatch), #1203, #1205 and #1209 (run position and markers), #1206 (the task fence), #1028 (Stage 4's bound) and #1185 (the airlock, which still targets a brief). #1194 sits in the ledger and names no OBPI surface, so it stays a direct fix in place. The cwd-escape guard has no issue yet; the contractor-kit record owes one through `ghi-author`.
+- **The other reused parts, by surface.** Move in tranche 1: #1198 and #1208 (dispatch), #1203, #1205 and #1209 (run position and markers), #1206 (the task fence), #1028 (Stage 4's bound) and #1185 (the airlock, which still targets a brief). #1194 sits in the ledger and names no OBPI surface, so it stays a direct fix in place. The cwd-escape guard is #1296.
 
 ## Tranche 1, cut into acts
 
