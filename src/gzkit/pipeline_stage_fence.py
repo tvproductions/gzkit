@@ -95,6 +95,28 @@ def refuses_production_commit(stage: str | None, rel_path: str) -> bool:
     return stage not in COMMITTING_STAGES
 
 
+def work_package_write_refusal(project_root: Path, rel_path: str) -> str | None:
+    """Return the refusal for a production write a work package fences, if any.
+
+    The hook's one entry to the work-package fence (GHI #1206), so the rule stays in
+    :mod:`gzkit.work_package_fence` and the hook gains no import of its own. The
+    import is local so this module stays the stdlib leaf `pipeline_markers` loads.
+
+    Returns:
+        The message to print, or None when the write may proceed.
+
+    """
+    if not is_production_path(rel_path):
+        return None
+    from gzkit.work_package_fence import (  # noqa: PLC0415 - keeps this module a stdlib leaf
+        fenced_packages,
+        work_package_write_message,
+    )
+
+    fenced = fenced_packages(project_root)
+    return work_package_write_message(fenced[0], rel_path) if fenced else None
+
+
 def post_authoring_message(obpi_id: str, stage: str, rel_path: str) -> str:
     """Render why a production WRITE is refused after Stage 2, and how to proceed."""
     return (

@@ -388,17 +388,21 @@ def forbid_post_authoring_src_commits(root: Path) -> int:
     outside the session all land in ``git diff --cached`` identically.
 
     The decision itself lives in :mod:`gzkit.pipeline_stage_fence` so this guard
-    and the hook cannot drift apart.
+    and the hook cannot drift apart. A blocked, accepted or stopped work package
+    fences the same way, from :mod:`gzkit.work_package_fence` (GHI #1206), and needs no
+    plans directory, because its state is on the ledger.
     """
     from gzkit.pipeline_stage_fence import (  # noqa: PLC0415
+        is_production_path,
         marker_stage,
         post_authoring_commit_message,
         refuses_production_commit,
     )
+    from gzkit.work_package_fence import (  # noqa: PLC0415
+        fenced_packages,
+        work_package_commit_message,
+    )
 
-    plans_dir = root / ".claude" / "plans"
-    if not plans_dir.is_dir():
-        return 0
     staged = _run_git(["diff", "--cached", "--name-status"], root)
     if not staged:
         return 0
@@ -406,6 +410,15 @@ def forbid_post_authoring_src_commits(root: Path) -> int:
     if not changed:
         return 0
 
+    production = [path for path in changed if is_production_path(path)]
+    fenced = fenced_packages(root) if production else ()
+    if fenced:
+        _safe_print(work_package_commit_message(fenced[0], production))
+        return 1
+
+    plans_dir = root / ".claude" / "plans"
+    if not plans_dir.is_dir():
+        return 0
     for marker_path in sorted(plans_dir.glob(".pipeline-active*.json")):
         stage = marker_stage(marker_path)
         if stage is None:

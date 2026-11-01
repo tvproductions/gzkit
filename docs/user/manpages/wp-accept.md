@@ -26,6 +26,8 @@ final inspection with no tag still hung). RO-12's refusals read this state.
 
 The verbs are drydock RO-5 tranche 2; the operator named them on 2026-10-28.
 
+While a package is accepted and not yet closed, the production-write fence applies across the whole tree, so land the package's production code before accepting it (GHI #1206). See [`gz wp block`](wp-block.md) for what the fence refuses.
+
 ## Examples
 
 Observed in a scratch project seeded with one family, outcome `H1` and `REQ-1`

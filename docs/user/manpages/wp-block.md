@@ -28,6 +28,8 @@ bound, the subjects a hold left open, the exits the package has used, and any ba
 any package. An escalation may carry the agent's recommendation, and these
 facts sit beside it. A blocked package takes no dispatch until `gz wp unblock`.
 
+While a package is blocked, the production-write fence applies across the whole tree, because a package names no paths (GHI #1206). The pre-commit guard refuses a commit that adds or changes a file under `src/`, and it is on in the hangar and in safe mode. The write hook refuses an edit tool's write there, and is advisory in those two modes. Deletions and `tests/**` stay open. A package stopped by an exit holds the same fence. A subject at the fix-cycle bound does not, because the last admitted cycle must still land, and neither does a hold, which stops only the held subjects; `gz wp dispatch` still refuses both. The state is read from the ledger, and a ledger that cannot be read fences the tree.
+
 ## Examples
 
 Observed in a scratch project holding `WP-01-loop`, with `#1200` at the bound:

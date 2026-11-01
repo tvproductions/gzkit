@@ -271,6 +271,11 @@ the run back to `implement` and records the re-entry on the ledger.
 `gz task complete`, `gz task block` and `gz task escalate` are bookkeeping and
 do not move the stage. Do not edit the marker by hand.
 
+These two re-entries do not run the launcher's gates. The successor closes that
+on the work-package surface: `gz wp dispatch` refuses a blocked or accepted
+package, and implementing work on a stopped one, and the fence holds production
+writes in those same states (GHI #1206). See [`gz wp block`](wp-block.md).
+
 ### A deleted marker
 
 `gz state --repair` is the one command that restores or rebuilds a missing

@@ -207,6 +207,7 @@ def _pipeline_gate_script() -> str:
                         marker_stage,
                         post_authoring_message,
                         refuses_production_write,
+                        work_package_write_refusal,
                     )
                 except Exception:
                     sys.exit(0)
@@ -223,6 +224,13 @@ def _pipeline_gate_script() -> str:
                 ):
                     print(_checkpoint.demote_notice("pipeline-gate"), file=sys.stderr)
                     sys.exit(0)
+
+                # A blocked, accepted or stopped work package fences the tree, so
+                # a write here cannot dodge `gz wp dispatch` (GHI #1206).
+                refusal = work_package_write_refusal(project_root, rel_path)
+                if refusal:
+                    sys.stderr.write(refusal + "\\n")
+                    sys.exit(2)
 
                 plans_dir = pipeline_plans_dir(project_root)
                 docs_root = project_root / "docs"

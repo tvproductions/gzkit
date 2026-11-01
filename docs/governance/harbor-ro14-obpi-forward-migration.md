@@ -77,6 +77,16 @@ Replayed over that run's ledger rows with the bound of `MAX_REVIEW_FIX_CYCLES`, 
 <!-- gz-validate-skip: command-shape -->
 7. **`gz wp withdraw-legacy`.**
 
+## Act 4's reading
+
+**#1206 is repaired on the work-package surface.** Put to the operator: a fence on the surface; the launcher's gates added to `gz task start`; or closing on the dispatch's own refusal. Operator, by selection: *"Fence on the WP surface (Recommended)"*. The fence read only the OBPI marker, so a write without a dispatch went unrefused in any state `gz wp dispatch` refuses. `gzkit.work_package_fence` holds the rule for the hook and the pre-commit guard, from the ledger alone. It fences a package that is blocked, accepted or stopped by an exit, across the whole tree, because a package names no paths. A ledger that cannot be read fences the tree.
+
+Independent review refuted three builds, and the repair bound was spent on the third. The first missed the stopped state and failed open on a ledger fault. The second read a subject at the bound from its own package only, and printed recovery commands that could not run. The third showed that a fence at the bound refuses the last fix cycle dispatch admits, because dispatch refuses past the bound and the ledger shows the same rows while that cycle runs and after it ends. Put to the operator as an exit: drop the bound state and land; land the two ruled states only; or hold. Operator, by selection: *"Drop bound state, land (Recommended)"*.
+
+Limits. A subject at the bound and a held subject are unfenced, since neither can be told from admitted work; `gz wp dispatch` still refuses both. Before commencement a package is fenced only while it is blocked or stopped. The `reopen` exit shares `terminate`'s constant but no fence test reaches it, because that needs catalog REQs. The hook binds edit tools only, so the commit guard is the arm that binds. The reconcile-receipt and plan-audit gates have no work-package equivalent yet and stay with act 5 and tranche 2.
+
+**Mode contract.** Commit arm: on at the operational condition and at both standby levels, under the `post-authoring-src-commits` pin. Write arm: on at the operational condition, advisory at both standby levels, under the `pipeline-gate` demotion. MEL: (M) none, the governed recovery is the refusal's own next step; (O) a write through a shell is seen at the commit; placard, the demotion notice; restore at the exit re-run; self-test `tests/commands/test_wp_fence.py`, every change that touches it; accepted state, no package fenced.
+
 ## Act 2's reading
 
 **#1198 is repaired at its cause, not on `gz obpi`.** `cli.main` discarded every handler's returned code. It now carries a returned int to the shell, so the class is closed for every verb, `gz wp` included. Measured over the 134 handlers the parsers name, two lost a refusal: `gz obpi dispatch` and `gz obpi adversary-workspace`. The two adapters that worked around the discard, for `gz arb` and `gz obpi acceptance`, went with it.

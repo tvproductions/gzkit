@@ -304,6 +304,19 @@ def _check_role(package: WorkPackage, request: DispatchRequest) -> None:
         _refuse("A single-driver dispatch carries its reason, and only it does.")
 
 
+def took_stopping_exit(ledger: Ledger, work_package: str) -> bool:
+    """Read whether an exit has stopped the package.
+
+    Returns:
+        True once a `reopen` or `terminate` exit is on the ledger.
+
+    """
+    return any(
+        row.extra.get("exit_taken") in _STOPPING_EXITS
+        for row in package_rows(ledger, "work_package_unblocked", work_package)
+    )
+
+
 def _check_not_stopped(ledger: Ledger, package: WorkPackage) -> None:
     for row in package_rows(ledger, "work_package_unblocked", package.id):
         if row.extra.get("exit_taken") in _STOPPING_EXITS:
