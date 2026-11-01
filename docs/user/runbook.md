@@ -582,8 +582,9 @@ ledger (see `docs/governance/pipeline-marker-migration-path.md`):
   declined while a later one is in flight. A marker file that is on disk is
   never overwritten.
 
-A run is in flight from its latest launch until its completion receipt, or
-until its OBPI is parked, withdrawn or superseded.
+A run is in flight from its latest launch until a completion receipt, or an
+event parking, withdrawing or superseding its OBPI, follows that launch on the
+ledger.
 
 With one deleted marker rebuilt, the human-readable report reads:
 
@@ -972,7 +973,11 @@ uv run gz wp dispatch WP-01-astral --role Implementer --model sonnet --issue 118
 uv run gz wp block WP-01-astral --reason "<why>" --next-action "<your decision>"
 uv run gz wp unblock WP-01-astral --ruling "<your exact words>" --operator g0 --exit hold
 uv run gz wp show WP-01-astral
+uv run gz wp runs
 ```
+
+`gz wp runs` reports every run in flight from the ledger: the last row it booked,
+when, the subject last dispatched against and whether it is blocked.
 
 The lifecycle moves one step at a time (initiated, frozen, commenced, accepted,
 closed). Pen and ink is the coordinator's; every other rung of the change ladder

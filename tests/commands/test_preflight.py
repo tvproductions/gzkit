@@ -67,6 +67,90 @@ class TestPreflightCommand(unittest.TestCase):
             self.assertIn("mx-session", result.output)
             self.assertIn("lock", result.output.lower())
 
+    def test_a_lock_with_a_zoneless_claim_is_reported_and_stops_nothing(self) -> None:
+        """A time that cannot be compared reads as one that cannot be read (GHI #1205's class)."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init("lite")
+            locks_dir = Path(".gzkit/locks/obpi")
+            locks_dir.mkdir(parents=True, exist_ok=True)
+            lock = {"obpi_id": "mx-session", "claimed_at": "2026-01-01T00:00:00", "pid": 0}
+            (locks_dir / "mx-session.lock.json").write_text(json.dumps(lock), encoding="utf-8")
+            result = runner.invoke(main, ["preflight"])
+            self.assertEqual(result.exit_code, 1)
+            self.assertIn("mx-session", result.output)
+            self.assertNotIn("Unexpected error", result.output)
+
+    def _lock(self, name: str, **fields: object) -> Path:
+        lock = {
+            "obpi_id": name,
+            "claimed_at": "2020-01-01T00:00:00+00:00",
+            "ttl_minutes": 60,
+            "agent": "claude-code",
+            "pid": 0,
+            "session_id": "test",
+            "branch": "main",
+            **fields,
+        }
+        locks_dir = Path(".gzkit/locks/obpi")
+        locks_dir.mkdir(parents=True, exist_ok=True)
+        path = locks_dir / f"{name.strip('[]/')}.lock.json"
+        path.write_text(json.dumps(lock), encoding="utf-8")
+        return path
+
+    def test_a_complete_orphan_lock_with_a_zoneless_claim_is_reaped_by_apply(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init("lite")
+            lock = self._lock("mx-session", claimed_at="2020-01-01T00:00:00")
+            result = runner.invoke(main, ["preflight", "--apply"])
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertFalse(lock.exists())
+
+    def test_a_work_lock_with_a_zoneless_claim_is_booked_and_stays_held(self) -> None:
+        """Expiry is never an eviction, whatever spelling the claim's time has."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init("lite")
+            lock = self._lock("OBPI-0.99.0-01-probe", claimed_at="2020-01-01T00:00:00")
+            result = runner.invoke(main, ["preflight", "--apply"])
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertTrue(lock.exists())
+            ledger = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
+            self.assertIn("obpi_lock_lease_expired", ledger)
+
+    def test_a_lock_naming_markup_stops_nothing(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init("lite")
+            self._lock("[/x]")
+            result = runner.invoke(main, ["preflight", "--apply"])
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+
+    def test_a_lock_whose_ttl_is_no_number_is_reported_and_stops_nothing(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init("lite")
+            self._lock("mx-session", ttl_minutes="x")
+            result = runner.invoke(main, ["preflight"])
+            self.assertEqual(result.exit_code, 1)
+            self.assertIn("mx-session", result.output)
+            self.assertNotIn("Unexpected error", result.output)
+
+    def test_a_lock_or_receipt_past_the_decoder_stops_nothing(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init("lite")
+            locks_dir = Path(".gzkit/locks/obpi")
+            locks_dir.mkdir(parents=True, exist_ok=True)
+            (locks_dir / "deep.lock.json").write_bytes(b"[" * 200_000)
+            plans_dir = Path(".claude/plans")
+            plans_dir.mkdir(parents=True, exist_ok=True)
+            (plans_dir / ".plan-audit-receipt-OBPI-0.99.0-01.json").write_bytes(b"[" * 200_000)
+            result = runner.invoke(main, ["preflight", "--apply"])
+            self.assertNotIn("Unexpected error", result.output)
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+
     def test_detects_orphan_receipt(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():

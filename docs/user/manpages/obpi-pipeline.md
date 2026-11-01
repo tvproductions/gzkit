@@ -80,7 +80,10 @@ Current command contract:
   Otherwise it prints the `--from=sync` command to run once the human has
   attested; human attestation is required for every OBPI completion
   (ADR-0.0.36). Both markers stay in place
-- `--from=sync` requires `--attestor` and `--evidence-json`. It runs
+- `--from=sync` requires `--attestor` and `--evidence-json`. That check comes
+  after the launch has written both markers afresh at stage `sync` and appended
+  its `pipeline_launched` event, as every launch does, so a refused entry leaves
+  both. It runs
   `gz obpi complete`, the guarded repository sync, `gz obpi sync` and the
   parent ADR status refresh, and removes both markers and the OBPI's plan-audit
   receipt once every one of those steps has passed. A failed step exits `1`
@@ -198,8 +201,9 @@ run's behalf. A position recorded at `complete` says the run reached that
 step, not that completion succeeded; the outcome is the completion receipt.
 
 A boundary is recorded only for a run in flight. A run is in flight from its
-latest `pipeline_launched` event until its completion receipt, or until its
-OBPI is parked, withdrawn or superseded; a later launch starts a new run.
+latest `pipeline_launched` event until a completion receipt, or an event parking,
+withdrawing or superseding its OBPI, follows that launch on the ledger; a
+retirement before the launch ends nothing, and a later launch starts a new run.
 An I/O failure while recording a position warns and leaves the outcome of the
 command that marked the boundary as it was. No gate reads a position: it is
 orientation, not evidence.
@@ -237,9 +241,9 @@ exactly one run in flight, the boundary is recorded for that run; when it
 names no run in flight, nothing is recorded; when it names more than one,
 nothing is recorded and a warning is logged. Which ids name which run after
 a rename, beside a second OBPI under the same semver and item, or after a
-retirement follows from what the rename, launch and retirement commands have
-written to the ledger and from the ledger's rule for renames, and is not
-promised here. A rename is not one of the events that end a
+retirement follows from what the rename, launch, retirement and completion
+commands have written to the ledger, from the ledger's rule for renames and from
+the recorder's short-form match, and is not promised here. A rename is not one of the events that end a
 run, and neither is a rename that is later reversed. A run is named by every
 id whose current name is the current name of its launch id, where an id's
 current name is where the ledger's `artifact_renamed` events leave it now, by

@@ -20,7 +20,7 @@
 - **`uv run gz state --repair` rebuilds a missing or deleted marker from those events.** Nothing else rebuilds one.
 - **No second state file.** Position lives in the two existing marker files, and the ledger is the system of record (Open Design Question 3).
 
-`OBPI-0.35.0-15` is Decision item 11 of `ADR-0.35.0`, a repair assignment against `ADR-0.13.0` (GHI #1172). Later rulings on that brief, made on 2026-10-11 and 2026-10-12, fixed which boundaries move the stage, where a run ends and what the repair declines; they are carried in the sections below.
+`OBPI-0.35.0-15` is Decision item 11 of `ADR-0.35.0`, a repair assignment against `ADR-0.13.0` (GHI #1172). Later rulings on that brief, made from 2026-10-11 to 2026-10-13, fixed which boundaries move the stage, where a run ends and what the repair declines; they are carried in the sections below.
 
 ---
 
@@ -90,7 +90,7 @@ The operator-facing tables are in [`gz obpi pipeline`](../user/manpages/obpi-pip
 
 A run is in flight from its latest `pipeline_launched` event until an event that ends it follows under an id whose current name is the current name of the launch's id: an `obpi_receipt_emitted` event whose `receipt_event` is `completed`, or an `obpi_parked`, `obpi_withdrawn` or `obpi_superseded` event. An id's current name is the id taken through the ledger's `artifact_renamed` rows by the ledger's one fold (`fold_renames` in `src/gzkit/obpi_lifecycle.py`), and an id never renamed is its own current name, so a rename is not an event that ends a run, and a rename that is later reversed leaves both ids with the one name the OBPI has. A later launch under an id with that current name starts a new run in its place. The marker is not consulted for this, so a deleted marker drops no crossing and a stale one invents no run. A boundary is recorded only for a run in flight, and the rebuild considers exactly the same runs (`_launches_in_flight`).
 
-A boundary is recorded by the id its command hands the recorder, under the rule `_runs_named` (operator ruling 2026-10-13, Open Design Question 26 of the OBPI-0.35.0-15 brief): when that id names exactly one run in flight, the boundary is recorded for that run; when it names no run in flight, nothing is recorded; when it names more than one, nothing is recorded and a warning is logged. Which ids name which run after a rename, beside a second OBPI under the same semver and item, or after a retirement follows from what the rename, launch and retirement commands have written to the ledger and from the ledger's rule for renames, and is not promised here.
+A boundary is recorded by the id its command hands the recorder, under the rule `_runs_named` (operator ruling 2026-10-13, Open Design Question 26 of the OBPI-0.35.0-15 brief): when that id names exactly one run in flight, the boundary is recorded for that run; when it names no run in flight, nothing is recorded; when it names more than one, nothing is recorded and a warning is logged. Which ids name which run after a rename, beside a second OBPI under the same semver and item, or after a retirement follows from what the rename, launch, retirement and completion commands have written to the ledger, from the ledger's rule for renames and from the recorder's short-form match, and is not promised here. An I/O failure while recording a boundary warns and leaves the outcome of the command that marked it as it was.
 
 A `pipeline_launched` event with the entry `audit`, which `gz adr audit-begin` writes under an ADR's id, starts no pipeline run.
 

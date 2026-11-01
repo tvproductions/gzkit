@@ -1070,12 +1070,9 @@ class TestRepairDeclinesARunStaleOnArrival(_RepairableRun):
         hour old by the wall clock on purpose: read as a time, it would pass
         for a live run.
 
-        This is the rebuild's own rule, and stale detection on a marker on
-        disk agrees with it for one of the two shapes only. A marker whose
-        ``updated_at`` is no time at all is reported stale. One whose time
-        names no zone is not: ``find_stale_pipeline_markers`` raises on it.
-        That raise is older than this OBPI, is tracked, and is not changed
-        here (Requirement 6 leaves stale-marker handling as it is).
+        The rebuild reads the one stale rule, ``marker_time_is_stale``, so
+        stale detection on a marker on disk agrees on both shapes: a time that
+        is no time and a time that names no zone (GHI #1205).
         """
         an_hour_ago = datetime.now(UTC) - timedelta(hours=1)
         unplaceable = {

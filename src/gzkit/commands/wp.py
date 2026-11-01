@@ -13,7 +13,8 @@ GitHub, then write, so a failed `gh` call exits 2 and writes nothing; `resolve`
 books `work_package_issue_closed` (ruling 10) and never closes the package.
 
 RO-14 tranche 1: `dispatch`, `block` and `unblock` book the run's events through
-`gzkit.work_package_run`, which holds the fix-cycle bound (GHI #1200).
+`gzkit.work_package_run`, which holds the fix-cycle bound (GHI #1200). `runs`
+reads every run in flight from the ledger (GHI #1203).
 """
 
 from typing import TYPE_CHECKING
@@ -41,10 +42,15 @@ from gzkit.work_package_ledger import (
 from gzkit.work_package_run import (
     BlockRequest,
     DispatchRequest,
+    RunPosition,
     UnblockRequest,
+    history_move,
+    package_history,
     record_work_package_block,
     record_work_package_dispatch,
     record_work_package_unblock,
+    run_position,
+    run_positions,
 )
 from gzkit.work_package_store import WorkPackageStoreError, next_id, stage, write
 
@@ -285,40 +291,57 @@ def wp_show_cmd(*, work_package: str, as_json: bool) -> None:
     """Show a package's record, its lifecycle state and its ledger history."""
     _, catalog, ledger = _context()
     package = _held(catalog, work_package)
-    history = [
-        row.model_dump()
-        for event_type in (
-            "work_package_transitioned",
-            "work_package_changed",
-            "work_package_issue_closed",
-            "work_package_dispatched",
-            "work_package_blocked",
-            "work_package_unblocked",
-        )
-        for row in ledger.query(event_type=event_type)
-        if row.extra.get("work_package") == work_package
-    ]
-    history.sort(key=lambda row: str(row.get("ts")))
+    history = package_history(ledger, work_package)
+    position = run_position(catalog, ledger, work_package)
     state = work_package_state(ledger, work_package)
     lane = work_package_lane(catalog, work_package)
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
     if as_json:
         record = package.model_dump(mode="json")
-        fmt.emit({"record": record, "state": state, "lane": lane, "history": history})
+        fmt.emit(
+            {
+                "record": record,
+                "state": state,
+                "lane": lane,
+                "position": position.model_dump() if position else None,
+                "history": [row.model_dump() for row in history],
+            }
+        )
         return
     fmt.emit(f"{package.id} ({package.kind}), state: {state or 'not initiated'}")
     target = package.outcome or ", ".join(f"#{issue}" for issue in package.issues)
     fmt.emit(f"  delivers: {target}  lane: {lane}")
+    if position:
+        for line in _position_lines(position):
+            fmt.emit(f"  {line}")
     for row in history:
-        move = (
-            row.get("to_state")
-            or row.get("rung")
-            or row.get("role")
-            or row.get("exit_taken")
-            or row.get("reason")
-            or (f"#{row['issue']}" if row.get("issue") else "cleared")
-        )
-        fmt.emit(f"  {row.get('ts')}  {row.get('event')}  {move}")
+        fmt.emit(f"  {row.ts}  {row.event}  {history_move(row)}")
+
+
+def _position_lines(position: RunPosition) -> list[str]:
+    event = position.event.removeprefix("work_package_")
+    return [
+        f"last: {event} {position.move}",
+        f"at: {position.at}",
+        f"subject: {position.subject or 'none dispatched'}",
+        f"blocked: {'yes' if position.blocked else 'no'}",
+    ]
+
+
+def wp_runs_cmd(*, as_json: bool) -> None:
+    """Report what the ledger says every run in flight has reached (GHI #1203)."""
+    _, catalog, ledger = _context()
+    runs = run_positions(catalog, ledger)
+    fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
+    if as_json:
+        fmt.emit([run.model_dump() for run in runs])
+        return
+    if not runs:
+        fmt.emit("No work package is in flight.")
+    for run in runs:
+        fmt.emit(f"{run.work_package} ({run.kind}), state: {run.state}")
+        for line in _position_lines(run):
+            fmt.emit(f"  {line}")
 
 
 def wp_resolve_cmd(

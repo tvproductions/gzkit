@@ -13,6 +13,7 @@ from gzkit.commands.common import console, ensure_initialized, get_project_root
 from gzkit.ledger import Ledger
 from gzkit.lock_manager import (
     DEFAULT_LOCK_TTL_MINUTES,
+    read_claim_time,
     reap_expired_locks,
     resolve_agent,
 )
@@ -59,16 +60,12 @@ def _find_expired_locks(locks_dir: Path) -> list[tuple[Path, str, float]]:
             continue
         obpi_id = str(lock.get("obpi_id") or "unknown")
         claimed_at = str(lock.get("claimed_at") or "")
-        ttl_minutes = int(lock.get("ttl_minutes") or DEFAULT_LOCK_TTL_MINUTES)
-        if not claimed_at:
-            expired.append((lock_path, obpi_id, 0))
-            continue
         try:
-            claim_time = datetime.fromisoformat(claimed_at.replace("Z", "+00:00"))
-        except ValueError:
+            ttl_minutes = int(lock.get("ttl_minutes") or DEFAULT_LOCK_TTL_MINUTES)
+            age_minutes = (now - read_claim_time(claimed_at)).total_seconds() / 60
+        except ValueError, TypeError:
             expired.append((lock_path, obpi_id, 0))
             continue
-        age_minutes = (now - claim_time).total_seconds() / 60
         if age_minutes > ttl_minutes:
             expired.append((lock_path, obpi_id, age_minutes))
     return expired
@@ -155,7 +152,7 @@ def _receipt_field(source_bytes: bytes, key: str) -> str:
     """Read one field from the receipt for provenance; never fail the archive on it."""
     try:
         return str(json.loads(source_bytes.decode("utf-8")).get(key, "unknown"))
-    except json.JSONDecodeError, UnicodeDecodeError, AttributeError:
+    except ValueError, AttributeError, RecursionError:
         return "unreadable"
 
 
@@ -225,7 +222,8 @@ def _print_held_leases(expired_locks, held: set[str]) -> None:
     for path, obpi_id, age in expired_locks:
         if obpi_id in held:
             console.print(
-                f"  Expired lease:   {path.name} ({obpi_id}, {age:.0f}m) — held; expiry "
+                f"  Expired lease:   {escape(path.name)} ({escape(obpi_id)}, {age:.0f}m) — "
+                "held; expiry "
                 "booked, never evicted. Freed by its holder's completion or a release "
                 "on the operator's word."
             )
@@ -236,11 +234,11 @@ def _print_issues(stale_markers, orphan_receipts, cleanable) -> None:
     console.print("Preflight scan:")
     for path, marker in stale_markers:
         obpi_id = str(marker.get("obpi_id", "unknown"))
-        console.print(f"  Stale marker:   {path.name} ({obpi_id})")
+        console.print(f"  Stale marker:   {escape(path.name)} ({escape(obpi_id)})")
     for path, obpi_id in orphan_receipts:
-        console.print(f"  Orphan receipt:  {path.name} ({obpi_id})")
+        console.print(f"  Orphan receipt:  {escape(path.name)} ({escape(obpi_id)})")
     for path, obpi_id, age in cleanable:
-        console.print(f"  Expired lock:    {path.name} ({obpi_id}, {age:.0f}m)")
+        console.print(f"  Expired lock:    {escape(path.name)} ({escape(obpi_id)}, {age:.0f}m)")
 
 
 def preflight_cmd(*, apply: bool = False, as_json: bool = False) -> None:

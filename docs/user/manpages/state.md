@@ -66,9 +66,9 @@ whose file is an audit ceremony's marker and no run's. Nothing else writes
 one: the hooks and the commands that record a run's position all leave a
 missing marker missing.
 
-A run is in flight from its latest `pipeline_launched` event until its
-completion receipt, or until its OBPI is parked, withdrawn or superseded. A run
-has two marker files: its own, `.claude/plans/.pipeline-active-<OBPI-ID>.json`,
+A run is in flight from its latest `pipeline_launched` event until a completion
+receipt, or an event parking, withdrawing or superseding its OBPI, follows that
+launch on the ledger. A run has two marker files: its own, `.claude/plans/.pipeline-active-<OBPI-ID>.json`,
 and the legacy marker, `.claude/plans/.pipeline-active.json`. The legacy marker
 is one file for the whole project and names the run launched last. The repair
 therefore acts on one run, the run in flight that was launched last, and does

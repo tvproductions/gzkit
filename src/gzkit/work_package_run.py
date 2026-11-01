@@ -21,9 +21,15 @@ requirement, across packages, and stops the package, as `terminate` does. The ex
 name the act and do not perform
 it: `gz wp change` records a departure before the unblock, and the close follows.
 
+A run's position is replayed from those same rows (the specification's ruling
+18), so the row that books a dispatch is the row that records the boundary and
+no cache stands in front of it (GHI #1203, #1208). A package's run is in flight
+from commencement until it closes, and `gz wp runs` reads every one.
+
 Mode contract: the bound and the exits are on at the operational condition and
 at both standby levels. They read no marker: a repair loop under safe mode is
-the case they exist for. Their self-test is `ledger_producer_probe`.
+the case they exist for. Their self-test is `ledger_producer_probe`. The position
+is a read of the ledger and refuses nothing, so it is on at all three.
 """
 
 from itertools import starmap
@@ -49,6 +55,7 @@ from gzkit.work_package_ledger import (
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+    from gzkit.ledger import LedgerEvent
     from gzkit.models.catalog import Catalog, WorkPackage
 
 IMPLEMENTER = "Implementer"
@@ -58,6 +65,18 @@ EXITS: tuple[str, ...] = get_args(WorkPackageExit)
 _IMPLEMENTING = frozenset({IMPLEMENTER, SINGLE_DRIVER})
 _REQ_EXITS = frozenset({"reopen", "departure"})
 _STOPPING_EXITS = frozenset({"reopen", "terminate"})
+_IN_FLIGHT = frozenset({"commenced", "accepted"})
+_DISPATCHED = "work_package_dispatched"
+_HISTORY_EVENTS = frozenset(
+    {
+        "work_package_transitioned",
+        "work_package_changed",
+        "work_package_issue_closed",
+        _DISPATCHED,
+        "work_package_blocked",
+        "work_package_unblocked",
+    }
+)
 
 
 class DispatchRequest(BaseModel):
@@ -95,6 +114,21 @@ class UnblockRequest(BaseModel):
     req: str | None = Field(None, description="The requirement a reopen or departure names")
 
 
+class RunPosition(BaseModel):
+    """What the ledger says a run in flight has reached."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    work_package: str = Field(..., description="The work package's id")
+    kind: str = Field(..., description="delivery or repair, which selects the procedure")
+    state: str = Field(..., description="The lifecycle state: commenced or accepted")
+    blocked: bool = Field(..., description="Whether the package awaits the operator")
+    event: str = Field(..., description="The run's last ledger event")
+    move: str = Field(..., description="What that event recorded")
+    at: str = Field(..., description="When that event was recorded")
+    subject: str | None = Field(None, description="The subject last dispatched against")
+
+
 def _refuse(message: str) -> NoReturn:
     raise WorkPackageLedgerError(message)
 
@@ -104,6 +138,73 @@ def _package(catalog: Catalog, work_package: str) -> WorkPackage:
     if held is None:
         _refuse(f"Work package {work_package!r} is not in data/catalog/work_packages.json.")
     return held
+
+
+def package_history(ledger: Ledger, work_package: str) -> list[LedgerEvent]:
+    """Read every lifecycle, change and run row of one package.
+
+    Returns:
+        The rows in ledger order.
+
+    """
+    return [
+        row
+        for row in ledger.query()
+        if row.event in _HISTORY_EVENTS and row.extra.get("work_package") == work_package
+    ]
+
+
+def history_move(row: LedgerEvent) -> str:
+    """Say what one row of a package's history recorded.
+
+    Returns:
+        A dispatch's role and subject, or the row's own state, rung, exit or reason.
+
+    """
+    held = row.extra
+    if row.event == _DISPATCHED:
+        return f"{held['role']} {held['subject']}"
+    named = held.get("to_state") or held.get("rung") or held.get("exit_taken") or held.get("reason")
+    if named:
+        return str(named)
+    return f"#{held['issue']}" if held.get("issue") else "cleared"
+
+
+def run_position(catalog: Catalog, ledger: Ledger, work_package: str) -> RunPosition | None:
+    """Replay what a package's run has reached from its ledger rows alone.
+
+    Returns:
+        The position, or None when the package has no run in flight.
+
+    """
+    package = _package(catalog, work_package)
+    state = work_package_state(ledger, package.id)
+    if state not in _IN_FLIGHT:
+        return None
+    history = package_history(ledger, package.id)
+    last = history[-1]
+    dispatches = [row for row in history if row.event == _DISPATCHED]
+    return RunPosition(
+        work_package=package.id,
+        kind=package.kind,
+        state=state,
+        blocked=is_blocked(ledger, package.id),
+        event=last.event,
+        move=history_move(last),
+        at=last.ts,
+        subject=str(dispatches[-1].extra["subject"]) if dispatches else None,
+    )
+
+
+def run_positions(catalog: Catalog, ledger: Ledger) -> list[RunPosition]:
+    """Read every run in flight, in the catalog's order.
+
+    Returns:
+        One position per package commenced or accepted and not yet closed.
+
+    """
+    read = (run_position(catalog, ledger, wp.id) for wp in catalog.work_packages)
+    return [position for position in read if position is not None]
 
 
 def count_fix_cycles(rows: Iterable[tuple[str, str, str]]) -> dict[str, int]:

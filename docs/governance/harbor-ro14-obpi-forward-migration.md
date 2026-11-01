@@ -2,7 +2,7 @@
 
 # RO-14 specification — the forward migration from OBPI to work package
 
-**2026-10-31. Status: scope, tranches and open points ruled; tranche 1 cut into acts; acts 1 and 2 landed.** Operator: **g0**. Repair order of the [harbor pilotage contract](harbor-pilotage-candidate-2026-10-15.md), which holds the binding rulings.
+**2026-10-31. Status: scope, tranches and open points ruled; tranche 1 cut into acts; acts 1 to 3 landed.** Operator: **g0**. Repair order of the [harbor pilotage contract](harbor-pilotage-candidate-2026-10-15.md), which holds the binding rulings.
 
 ## Scope
 
@@ -34,6 +34,10 @@ The rulings on GHI #1200, carried here because its repair lands in tranche 1:
 15. **The count follows the REQ at its revision, across packages.** A new package at the same revision starts where the last stopped; a reopening changes the revision and starts clean. A REQ at the bound and already reopened once can only be departed from, held or terminated. Put to the operator: A, across packages; B, a new package starts clean; C, clean with the history shown. Operator, verbatim: *"a"*.
 16. **What counts as a fix cycle.** A subject's first implementing dispatch is free. After it, any review anywhere in the package arms every subject already started, and each later implementing dispatch on an armed subject counts. Put to the operator: A, this definition; B, a review required on each subject; C, one cap per package. Operator, verbatim: *"a"*.
 17. **A hold stops only the subjects at the bound.** Other subjects of the package continue, a held subject stays open to a later exit, and `terminate` is the full stop. Put to the operator: A, the subjects at the bound; B, the whole package until lifted; C, a fifth exit. Operator, verbatim: *"a"*.
+
+The ruling on run position, put at act 3:
+
+18. **A work package's run position is a read of the rows its verbs already book.** No position event: `work_package_dispatched` is the successor of the transition row #1208 protects, and the position is replayed from the package's ledger rows. `gz wp runs` lists every run in flight, answering #1203, and `gz wp show` carries the position. A, this reading; B, a new position event with a stage table per `kind`; C, A now and a stage record at tranche 2. Operator, by selection: *"A: Read existing rows (Recommended)"*, on the statement that #1205 and #1209 are repaired in place.
 
 ## Starting measure
 
@@ -81,7 +85,17 @@ Replayed over that run's ledger rows with the bound of `MAX_REVIEW_FIX_CYCLES`, 
 
 **`gz obpi dispatch` is not repaired.** `record_dispatch` keeps its uncontained cache refresh, the command keeps printing refusals on stdout, and `--role` still records and exits 0 on a marker file naming another OBPI, which `--single-driver` refuses. The contract moved these repairs to tranche 1 because a repair to `gz obpi` would guard no run (§ Rulings of 2026-10-31); tranche 3 removes the surface. A repair of `record_dispatch` was built and withdrawn in this act, before landing, when that sentence was read.
 
+## Act 3's reading
+
+**A run's position is replayed, not recorded twice (ruling 18).** The row that books a dispatch is the row that records the boundary, so no cache stands in front of it and there is no second row to lose. A stage table per `kind` waits for tranche 2 and RO-12, which define the procedures it would name; recording one here would have fixed them first. A run is in flight from `commenced` until `closed`, so `accepted`, awaiting Gate 5, is still reported, as a pipeline run stayed in flight until its completion receipt.
+
+**#1203 and #1208 are read on the successor.** #1208's exit condition names `gz obpi dispatch`, and #1203's boundary names `_launches_in_flight`, the OBPI runs. `gz wp runs` reports every run in flight with no marker, and #1203's four cases hold there: an older run beside a later one, a run past any age, a marker on disk moving nothing, and no run reporting nothing. Left on `gz obpi` until tranche 3 removes it: an OBPI run with no marker that `gz state --repair` declines still has no operator reader, and neither the session orientation nor `gz obpi status` replays one; `record_dispatch` keeps its uncontained cache refresh and `declare_single_driver` its raise. No OBPI run was in flight when this landed (measured by `runs_in_flight`, 2026-11-01). The contract suspends OBPI initiation under safe mode, but that is a ruling and not a control: nothing in the launch path refuses, so a run launched anyway would carry these.
+
+**#1205 and #1209 are repaired in place.** The contract's sentence that a repair to `gz obpi` would guard no run names RO-12's four preconditions and not these, and the zoneless marker also stopped `gz preflight`, which outlives `gz obpi`. The stale rule now exists once, as `marker_time_is_stale` in `gzkit.pipeline_markers`, read by the sweep and by the rebuild. Independent review refuted the first build against #1205's invariant, *"complete for any marker file content"*: an integer past the conversion limit and nesting past the decoder's depth still raised out of the loader, and a marker naming `[/x]` stopped both commands in Rich's markup parser. `load_pipeline_json` now reads both as unreadable, both commands escape marker text, and `OutputFormatter.emit` prints a string as text for every verb, which the same review found in `gz wp block`'s reason. The second review refuted the second build: a lone surrogate stopped `--apply` at the console, and the first repair of a zoneless lock claim had only moved its crash from the scan to `--apply`. The CLI's streams now escape what they cannot encode, and `read_claim_time` in `gzkit.lock_manager` reads a zoneless claim as UTC for the scan and the reap alike, so such a lock is booked and stays held as any other does. OBPI-0.35.0-15's Tracked Defects entry *"The stale rule has two copies"* is answered here, because that brief is sealed history (ruling 2). The review question #1205 left open, whether Requirement 6 froze a crash, is settled by the operator's ruling that the repair goes in place. For #1209's items 1 to 3 the docstrings were corrected and the code left as it is, the first of the two repairs its boundary allows.
+
 ## Mode contract
+
+`gz wp runs` and the position on `gz wp show` are reads of the ledger and the catalog, on at the operational condition and at the hangar and drydock levels. They gate nothing, so they have no level to apply and no bypass. MEL entry: no (M) or (O) limitation, no placard or deadline; accepted state, on. Self-test: none of its own, because they write nothing for `ledger_producer_probe` to prove; the rows they replay are proved there.
 
 `gz wp dispatch`, `block` and `unblock` are on at the operational condition and at the hangar and drydock levels. They are ledger writers that read no marker, because a repair loop under safe mode is the case the bound exists for. MEL entry: not bypassable, no (M) or (O) limitation, no placard or deadline; accepted state, on. Self-test: `ledger_producer_probe` for each event, at the producer check's interval.
 

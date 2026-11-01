@@ -75,6 +75,7 @@ from gzkit.pipeline_markers import (
     load_pipeline_json,
     load_plan_audit_receipt,
     marker_matches,
+    marker_time_is_stale,
     pipeline_command,
     pipeline_completion_reminder_message,
     pipeline_concurrency_blockers,
@@ -736,7 +737,8 @@ def run_launch_id(project_root: Path, obpi_id: str) -> str | None:
     """Return the launch id of the run ``obpi_id`` names on this project's ledger.
 
     The read-side twin of :func:`record_run_position`: it opens the project's
-    ledger and asks the recorder's own rule (:func:`in_flight_launch_id`). A
+    ledger and asks the rule the recorder shares (:func:`in_flight_launch_id`
+    over :func:`_runs_named`). A
     run's marker files and its dispatch records carry the id its launch row
     carries, which is no longer the OBPI's id once the ledger renames it
     (OBPI-0.35.0-15, Open Design Question 21). ``None`` when the id names no
@@ -810,6 +812,7 @@ __all__ = [
     "load_pipeline_json",
     "load_plan_audit_receipt",
     "marker_matches",
+    "marker_time_is_stale",
     "pipeline_command",
     "pipeline_completion_reminder_message",
     "pipeline_concurrency_blockers",

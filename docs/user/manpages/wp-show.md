@@ -20,13 +20,15 @@ gz wp show <WP-id> [OPTIONS]
 
 ## Description
 
-Reads the record from the store and its `work_package_transitioned`,
-`work_package_changed` and `work_package_issue_closed` events from the ledger.
+Reads the record from the store and its lifecycle, change, issue-close, dispatch,
+block and unblock events from the ledger, in ledger order.
 The state is the last move's target; a package with no move is `not initiated`.
 The lane is held once (ruling 4): a repair package's stored lane, or for a
 delivery package `heavy` exactly when its outcome is user-facing (requirements
-model decision 10; RO-5 tranche 4). `--json` prints the record, the state, the
-lane and every event.
+model decision 10; RO-5 tranche 4). A run in flight, from `commenced` until
+`closed`, also shows the position `gz wp runs` reports. `--json` prints the record,
+the state, the lane, the position, which is null with no run in flight, and every
+event.
 
 The verbs are drydock RO-5 tranche 2; the operator named them on 2026-10-28.
 
@@ -62,5 +64,5 @@ WP-02-resume (delivery), state: closed
 
 ## See also
 
-[`gz wp new`](wp-new.md), [`gz wp show`](wp-show.md),
+[`gz wp new`](wp-new.md), [`gz wp runs`](wp-runs.md),
 [`gz validate --catalog`](validate.md)

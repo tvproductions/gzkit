@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-10-28
 metadata:
-  skill-version: "0.3.0"
+  skill-version: "0.3.1"
 model: sonnet
 ---
 
@@ -108,6 +108,7 @@ own approved specification; a difference from the prior shape is not one.
 ## Read
 
 `uv run gz wp show <WP-id>` prints the record, the state and the history;
+`uv run gz wp runs` reports what the ledger says every run in flight has reached;
 `uv run gz validate --catalog` checks the store against RO-5's rulings.
 
 ## Common Rationalizations

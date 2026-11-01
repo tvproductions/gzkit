@@ -1184,7 +1184,11 @@ class TestBothMarkerFilesAgreeAfterADispatch(unittest.TestCase):
 
     @covers("REQ-0.35.0-15-07")
     def test_a_dispatch_after_an_advance_keeps_the_stage_and_position(self) -> None:
-        """A dispatch adds its record and moves nothing else the advance wrote."""
+        """With no launch on this ledger, a dispatch moves nothing the advance wrote.
+
+        A run in flight is another case: its dispatch records the `dispatch`
+        boundary and moves the run to `implement`.
+        """
         position = {"kind": "phase", "label": "verification", "boundary": "gz obpi pipeline"}
         advance_pipeline_markers(
             self.plans,

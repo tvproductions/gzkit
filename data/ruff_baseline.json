@@ -6563,11 +6563,6 @@
     },
     {
       "file": "src/gzkit/commands/preflight.py",
-      "rule": "FURB162",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/preflight.py",
       "rule": "PLR6201",
       "count": 1
     },
@@ -12363,11 +12358,6 @@
     },
     {
       "file": "src/gzkit/pipeline_markers.py",
-      "rule": "FURB162",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/pipeline_markers.py",
       "rule": "ISC004",
       "count": 1
     },
@@ -12384,17 +12374,12 @@
     {
       "file": "src/gzkit/pipeline_position.py",
       "rule": "DOC201",
-      "count": 24
+      "count": 23
     },
     {
       "file": "src/gzkit/pipeline_position.py",
       "rule": "FBT003",
       "count": 2
-    },
-    {
-      "file": "src/gzkit/pipeline_position.py",
-      "rule": "FURB162",
-      "count": 1
     },
     {
       "file": "src/gzkit/pipeline_position.py",

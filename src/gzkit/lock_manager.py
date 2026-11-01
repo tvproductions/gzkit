@@ -44,6 +44,21 @@ class _LedgerSink(Protocol):
     def append(self, event: LedgerEvent) -> None: ...
 
 
+def read_claim_time(claimed_at: str) -> datetime:
+    """Read a lock's claim time; one that names no zone is read as UTC.
+
+    Every writer stamps an offset, so a zoneless time is a hand edit. Reading it as
+    UTC gives it an age, so the lock is judged and booked like any other and stays
+    held where any other would (GHI #1205's class; expiry never evicts).
+
+    Returns:
+        A timezone-aware time; a string that is no time raises ``ValueError``.
+
+    """
+    claimed = datetime.fromisoformat(claimed_at)
+    return claimed if claimed.tzinfo else claimed.replace(tzinfo=UTC)
+
+
 class LockData(BaseModel):
     """Immutable representation of a single OBPI work lock."""
 
@@ -70,8 +85,7 @@ class LockData(BaseModel):
         a finite TTL, passed for a day, then failed forever once the wall clock
         crossed expiry — in a change that touched no production code.
         """
-        claimed = datetime.fromisoformat(self.claimed_at)
-        return (now - claimed).total_seconds() / 60
+        return (now - read_claim_time(self.claimed_at)).total_seconds() / 60
 
     def is_expired_at(self, now: datetime) -> bool:
         """Return True if the lock TTL has elapsed as measured at *now*.
@@ -222,7 +236,7 @@ def list_locks(project_root: Path, adr_filter: str | None = None) -> list[LockDa
             raw = lock_file.read_text(encoding="utf-8")
             data = json.loads(raw)
             lock = LockData(**data)
-        except json.JSONDecodeError, OSError, TypeError, ValueError:
+        except json.JSONDecodeError, OSError, TypeError, ValueError, RecursionError:
             continue
 
         if adr_filter is not None and adr_id_from_obpi(lock.obpi_id) != adr_filter:

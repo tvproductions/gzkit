@@ -230,11 +230,14 @@ def load_pipeline_json(path: Path) -> dict[str, Any] | None:
     """Best-effort JSON loader for pipeline receipts and markers.
 
     A receipt or marker is a JSON object in UTF-8. Anything else on disk is
-    unreadable, and reads as ``None`` like a missing or truncated file.
+    unreadable, and reads as ``None`` like a missing or truncated file. That
+    covers what the decoder itself refuses: ``ValueError`` holds undecodable
+    bytes, bad JSON and an integer past the conversion limit, and nesting past
+    its depth raises ``RecursionError`` (GHI #1205).
     """
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except OSError, UnicodeDecodeError, json.JSONDecodeError:
+    except OSError, ValueError, RecursionError:
         return None
     return cast("dict[str, Any]", payload) if isinstance(payload, dict) else None
 
@@ -921,10 +924,31 @@ def completion_receipt_missing_message(obpi_id: str) -> str:
     )
 
 
+def marker_time_is_stale(
+    updated_at: str, now: datetime, *, max_age_hours: int = STALE_MARKER_HOURS
+) -> bool:
+    """Return whether a marker last updated at ``updated_at`` is stale at ``now``.
+
+    The one stale rule (GHI #1205), read by the sweep and by the marker rebuild.
+    A marker is a cache anyone can write and the sweep exists to clear a bad one,
+    so a time that cannot be compared with ``now``, empty, unparseable or
+    zoneless, reads as stale and never stops the sweep.
+
+    Returns:
+        True past ``max_age_hours`` or when the time cannot be compared.
+
+    """
+    try:
+        marker_time = datetime.fromisoformat(updated_at)
+        return (now - marker_time).total_seconds() / 3600 > max_age_hours
+    except ValueError, TypeError:
+        return True
+
+
 def find_stale_pipeline_markers(
     plans_dir: Path, *, max_age_hours: int = STALE_MARKER_HOURS
 ) -> list[tuple[Path, dict[str, Any]]]:
-    """Return marker paths and payloads whose updated_at exceeds the TTL."""
+    """Return marker paths and payloads that are unreadable or fail the stale rule."""
     now = datetime.now(UTC)
     stale: list[tuple[Path, dict[str, Any]]] = []
     candidates = sorted(plans_dir.glob(".pipeline-active-*.json"))
@@ -937,16 +961,7 @@ def find_stale_pipeline_markers(
             stale.append((marker_path, {}))
             continue
         updated_at = str(marker.get("updated_at") or "")
-        if not updated_at:
-            stale.append((marker_path, marker))
-            continue
-        try:
-            marker_time = datetime.fromisoformat(updated_at.replace("Z", "+00:00"))
-        except ValueError:
-            stale.append((marker_path, marker))
-            continue
-        age_hours = (now - marker_time).total_seconds() / 3600
-        if age_hours > max_age_hours:
+        if marker_time_is_stale(updated_at, now, max_age_hours=max_age_hours):
             stale.append((marker_path, marker))
     return stale
 

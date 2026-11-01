@@ -67,6 +67,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     "wp_block_cmd": "gzkit.commands.wp",
     "wp_unblock_cmd": "gzkit.commands.wp",
     "wp_show_cmd": "gzkit.commands.wp",
+    "wp_runs_cmd": "gzkit.commands.wp",
     "wp_transition_cmd": "gzkit.commands.wp",
     # --- handoff group (parser_maintenance) ---
     "handoff_archive_cmd": "gzkit.commands.handoff_archive",

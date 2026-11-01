@@ -272,17 +272,18 @@ names no OBPI, names two, or names one with no brief on disk exits `1` with
 the resolver's message,
 printed as an `{"error": ...}` object under `--json`; it is a user error and
 not a blocked acceptance. The boundary is recorded for the run that id names,
-under the id the run was launched with. The acceptance records stay keyed by
-the id as typed, and `init`, `prove` and `status` take the id as they did.
+under the id the run was launched with. An I/O failure while recording it warns
+and leaves the outcome of the command as it was. The acceptance records stay
+keyed by the id as typed, and `init`, `prove` and `status` take the id as they did.
 
 A boundary is recorded by the id its command supplies: when that id names
 exactly one run in flight, the boundary is recorded for that run; when it
 names no run in flight, nothing is recorded; when it names more than one,
 nothing is recorded and a warning is logged. Which ids name which run after
 a rename, beside a second OBPI under the same semver and item, or after a
-retirement follows from what the rename, launch and retirement commands have
-written to the ledger and from the ledger's rule for renames, and is not
-promised here. A rename is not one of the events that end a
+retirement follows from what the rename, launch, retirement and completion
+commands have written to the ledger, from the ledger's rule for renames and from
+the recorder's short-form match, and is not promised here. A rename is not one of the events that end a
 run, and neither is a rename that is later reversed. A run is named by every
 id whose current name is the current name of its launch id, where an id's
 current name is where the ledger's `artifact_renamed` events leave it now, by

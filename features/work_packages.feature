@@ -15,6 +15,11 @@ Feature: Work packages run through the gz wp verbs
     When I run the gz command "wp close WP-01-x --decision proceed --residual-risk none --evidence E"
     Then the command exits with code 2
 
+  Scenario: the runs report names what it reads
+    When I run the gz command "wp runs --help"
+    Then the command exits with code 0
+    And the output contains "no marker is read"
+
   Scenario: a package the store does not hold is a user error
     When I run the gz command "wp show WP-99-nothing"
     Then the command exits with code 1

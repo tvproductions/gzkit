@@ -12,12 +12,16 @@ Which boundaries move the stage is said once, in :data:`RULED_BOUNDARIES`. A
 command reports the boundary it marked by name and the recorder decides the
 stage from that table and the ledger, so no command chooses a stage.
 
-Which run a command means is said once too, in :func:`in_flight_launch_id`. A
-command hands over the OBPI id it holds, and the recorder finds the run among
-the launches in flight on the ledger, so no command resolves an id for it.
+Which runs an id names is said once too, in :func:`_runs_named`. A command hands
+over the OBPI id it holds, and the recorder finds the run among the launches in
+flight on the ledger, so no command resolves an id for it. The exactly-one
+decision on that answer is written twice, in :func:`in_flight_launch_id` and in
+the recorder's :func:`_run_in_flight`, which alone warns on an id naming several.
 
-When a run is in flight is said once as well, in :func:`_launches_in_flight`.
-The recorder and the marker rebuild both read it. :func:`rebuild_marker` decides
+When a run is in flight is said once as well, in the loop
+:func:`_launches_by_current_name`. The marker rebuild reads it through
+:func:`_launches_in_flight` and the recorder through :func:`_runs_named`, and each
+composes the fold of the ledger's renames itself. :func:`rebuild_marker` decides
 what ``gz state --repair`` does for the run launched last: restore one missing
 marker file as a copy of its twin on disk, or, with neither file on disk, write
 the payload it builds from the ledger rows it is handed. The command carries
@@ -27,10 +31,9 @@ out either through the marker module.
 import logging
 import re
 from collections.abc import Iterable, Mapping
-from datetime import datetime
 from pathlib import Path
 from types import MappingProxyType
-from typing import Any, Protocol
+from typing import TYPE_CHECKING, Any, Protocol
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
@@ -44,12 +47,16 @@ from gzkit.pipeline_markers import (
     load_pipeline_json,
     load_plan_audit_receipt,
     marker_matches,
+    marker_time_is_stale,
     pipeline_marker_paths,
     pipeline_marker_payload,
     pipeline_stage_name,
     pipeline_stage_output,
 )
 from gzkit.pipeline_stage_fence import CANONICAL_STAGES
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -370,10 +377,11 @@ def _ends_run(row: PipelineLedgerRow) -> bool:
 def _launches_in_flight(events: Iterable[PipelineLedgerRow]) -> dict[str, PipelineLedgerRow]:
     """Return the launch of every run in flight, keyed by the id it carries.
 
-    The one rule for when a run is in flight, read by the recorder and by the
-    marker rebuild alike. A run is in flight from its latest launch
-    (:func:`_starts_run`) until a row that ends it (:func:`_ends_run`) follows
-    under the same id, in ledger order; a launch after that starts a new run.
+    The in-flight rule for the marker rebuild and :func:`runs_in_flight`; the
+    recorder reaches the same loop through :func:`_runs_named`. A run is in
+    flight from its latest launch (:func:`_starts_run`) until a row that ends
+    it (:func:`_ends_run`) follows under the same id, in ledger order; a launch
+    after that starts a new run.
     The marker is not consulted: a deleted marker would otherwise drop a
     crossing, and a stale one would invent a run. The launches come back
     oldest first, by the order their runs began.
@@ -559,7 +567,7 @@ def record_position(
     Nothing is recorded unless the ledger shows the run ``obpi_id`` names in
     flight: the launch that carries that id or an id the ledger renamed it to
     or from, or the one launch whose short ``OBPI-<semver>-<item>`` form it is
-    (:func:`in_flight_launch_id`). The
+    (:func:`_runs_named`, through :func:`_run_in_flight`). The
     record is filed under THAT LAUNCH'S id, never the id as given, so a
     command that holds only the short form still records the boundary where
     every reader looks for it. An id that names two runs in flight records
@@ -581,7 +589,8 @@ def record_position(
 
     Returns what the ledger says the run has reached, or ``None`` when the id
     names no run in flight or names more than one, or the record could not be
-    written.
+    written in full: after a failed marker write that is ``None`` with the event
+    already on the ledger.
     """
     try:
         return _record_crossing(ledger, plans_dir, obpi_id, crossing)
@@ -666,8 +675,8 @@ class MarkerRebuild(BaseModel):
 def runs_in_flight(events: Iterable[PipelineLedgerRow]) -> list[str]:
     """Return the id of every run in flight, the latest launched first.
 
-    The runs are the recorder's own (:func:`_launches_in_flight`): a rebuild
-    considers exactly the runs a boundary would be recorded for.
+    The runs are the loop the recorder reads too (:func:`_launches_in_flight`):
+    a rebuild considers exactly the runs a boundary would be recorded for.
     """
     return list(reversed(_launches_in_flight(events)))
 
@@ -709,20 +718,6 @@ def _marker_from_ledger(
     return payload
 
 
-def _stale_on_arrival(updated_at: str, now: datetime) -> bool:
-    """Return whether a marker last updated at ``updated_at`` would be stale at ``now``.
-
-    The rule ``find_stale_pipeline_markers`` applies to a marker on disk,
-    applied to one before it is written: older than ``STALE_MARKER_HOURS``, or
-    a time that cannot be read.
-    """
-    try:
-        crossed = datetime.fromisoformat(updated_at.replace("Z", "+00:00"))
-        return (now - crossed).total_seconds() / 3600 > STALE_MARKER_HOURS
-    except ValueError, TypeError:
-        return True
-
-
 def _file_in_the_way(per_obpi: Path, legacy: Path, obpi_id: str) -> str | None:
     """Return why a file on disk stops the repair, or ``None`` when none does.
 
@@ -755,7 +750,7 @@ def _rebuild_refusal(
     """
     if not launch.extra.get("nonce"):
         return "its pipeline_launched event records no nonce, and a rebuild invents none"
-    if _stale_on_arrival(reached.updated_at, now):
+    if marker_time_is_stale(reached.updated_at, now):
         return (
             f"its last recorded crossing ({reached.updated_at}) is older than "
             f"{STALE_MARKER_HOURS} hours, so its marker would be stale on arrival; "

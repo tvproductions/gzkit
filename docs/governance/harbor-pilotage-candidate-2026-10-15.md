@@ -952,6 +952,16 @@ The three-level brief, specified ahead of its named event.
   revisit the four-edges line named: session exit has its witness specified, and R&D, design
   acceptance and chores are unchanged.
 
+## Rulings of 2026-11-01
+
+- **A work package's run position is a read of the rows its verbs already book** (the RO-14
+  specification said act 3 records position ledger first, and never ruled whether that meant a new
+  event). Put to the operator: A, no new event, `work_package_dispatched` as #1208's successor row
+  and a new `gz wp runs` for #1203; B, a new position event with a stage table per `kind`; C, A now and a
+  stage record at tranche 2. Operator, by selection: *"A: Read existing rows (Recommended)"*. The
+  question stated that #1205 and #1209 are repaired in place, because this contract's sentence that
+  a repair to `gz obpi` would guard no run names only RO-12's four preconditions.
+
 ## Superseded on 2026-10-30 (record, not binding)
 
 § The general arrangement as it stood before the redraw of 2026-10-30, kept verbatim (operator,
@@ -1475,7 +1485,10 @@ Each line is `open` until the restoration contractor clears it with the alarms o
 - `open` **replaced** — `gz obpi withdraw`, by a successor accepting legacy ids, before RO-8's withdrawal runs. Authority: the RO-14 specification, tranche 1.
 - `open` **due by a named event** — `gz wp block` carries no refutation count, as ruling 8 requires, until acceptance reaches the work package (RO-14 tranche 1, act 5). Authority: operator, 2026-10-31, *"a"*.
 - `open` **due by a named event** — the `reopen` exit is not checked against a reopening, and a hand-raised REQ revision resets its count, until the catalog verbs and freeze lock land with RO-5's tranche 6. Authority: RO-14 rulings 12 and 15.
-- `open` **due by a named event** — the work-package surface records no run position, so #1208's transition row has no successor until RO-14 tranche 1, act 3, and #1208 stays open for it. Authority: the RO-14 specification, § Act 2's reading.
+- `cleared` **due by a named event** — the work-package surface recorded no run position, so #1208's transition row had no successor. Cleared by RO-14 tranche 1, act 3: `work_package_dispatched` is that successor and `gz wp runs` reads every run in flight from the ledger (ruling 18 of the RO-14 specification). Authority: the RO-14 specification, § Act 2's reading and § Act 3's reading.
+- `open` **due by a named event** — two lock files still stop `gz preflight`: `"ttl_minutes": Infinity` raises `OverflowError` in the scan, and a complete lock whose `claimed_at` is no time passes the scan and raises `ValueError` in `reap_expired_locks` on `--apply`. Lock content, outside #1205's marker boundary; found by independent review of RO-14 act 3 and reproduced 2026-11-01. Due with the kit's tag-out log (RO-12), which replaces this surface's reading of locks. Authority: `AGENTS.md` § PRIME DIRECTIVE, item 6.
+- `open` **blocks return to service** — `gz init` delivers no `data/catalog/`, so on a fresh project `gz wp new` and `gz wp runs` both exit 1 with `Unexpected error` on the missing registry: no verb creates the store, and a work package cannot start there. Found by independent review of RO-14 act 3 and confirmed in a scratch project, 2026-11-01. Authority: § Exit item 10's sea trial, one work package run on a fresh install.
+- `open` **due by a named event** — an OBPI run with no marker that `gz state --repair` declines has no operator reader, and `record_dispatch` keeps its uncontained cache refresh; #1203 and #1208 closed on the successor, so these stand until RO-14 tranche 3 removes the surface. No OBPI run is in flight. Safe mode suspends initiation by ruling, and nothing in the launch path refuses one. Authority: the RO-14 specification, § Act 3's reading.
 
 ### RO-11 — intake
 
@@ -1654,3 +1667,4 @@ Each order adds a line for whatever else it unplugs, dismantles or modifies as i
 | 2026-10-31 | RO-14 added by contract amendment, RO-12's row, § Exit and the contractor brief following it (operator, verbatim *"A"* then *"a"*; insight scope `obpi-to-wp`) | no order or exit item carried the OBPI to work-package migration; 14 repair orders, 11 exit items | RO-14 specified with its open points unruled; 15 repair orders, 12 exit items; 3 new discrepancy lines; no code changed | the commit carrying this row | read of § Repair orders and § Exit against `gz wp --help` and `gz obpi --help` |
 | 2026-10-31 | RO-14 tranche 1, act 1: the fix-cycle bound on the work-package surface (GHI #1200; operator rulings 5 to 13 of the RO-14 specification) | the bound was a sentence and a function with no production caller; `OBPI-0.35.0-15` ran seven blocks and unblocks on one requirement | `gz wp dispatch`, `block` and `unblock`, three new events; the replayed run refuses the `2026-10-11T23:35` dispatch; #1200 stays open for tranche 2 | the commit carrying this row | three builds failed independent review, the first two confirmed by execution; the fourth passed; 194 affected tests; mutation sweep of 48 mutants, 38 killed, 10 inconclusive, 0 survived; `gz check` exit 0 |
 | 2026-10-31 | RO-14 tranche 1, act 2: dispatch's defects read against the new verb (GHI #1198 repaired, GHI #1208 half answered; operator, verbatim *"proceed with act 2"*) | `cli.main` discarded every handler's returned code, so a refused `gz obpi dispatch` exited 0; two of 134 handlers lost a refusal | `cli.main` carries a returned int to the shell, two adapters retired; `gz wp dispatch` witnessed against a marker fault; `gz obpi` left unrepaired under § Rulings of 2026-10-31; #1208 stays open for act 3 | the commit carrying this row | each refusal through the CLI entry point; mutation sweep of `cli.main`, 3 mutants, 3 killed; full `gz test` exit 0 |
+| 2026-11-01 | RO-14 tranche 1, act 3: run position and markers (GHI #1203, #1205, #1208, #1209; operator, verbatim *"proceed with act 3"*, then *"A: Read existing rows (Recommended)"*) | no operator command read a recorded position without a marker; the work-package surface had no run position; a zoneless marker stopped the stale sweep with `TypeError` and the rule had two copies; nine sentences disagreed with the code | `gz wp runs` and the position on `gz wp show`, replayed from the rows the verbs book, no new event; `marker_time_is_stale` the one stale rule; #1209's nine items corrected in place; #1203 and #1208 read on the successor | the commit carrying this row | tests in `tests/commands/test_wp_runs.py` and `tests/test_stale_marker_rule.py`; mutation sweep of the reader, the rule and the rebuild, 19 mutants, 19 killed, every sweep conclusive; independent review refuted the first two builds on #1205 and passed the third |

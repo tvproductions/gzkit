@@ -240,7 +240,8 @@ class OutputFormatter:
             if self._mode == OutputMode.JSON:
                 print(data, file=sys.stdout)  # noqa: T201
             else:
-                self._console.print(data)
+                # Text, never markup: a verb's line can carry an operator's words.
+                self._console.print(data, markup=False, emoji=False)
             return
 
         if isinstance(data, dict | list):

@@ -259,6 +259,18 @@ def _register_wp_record(wp_commands: argparse._SubParsersAction) -> None:
         func=lambda a: _lazy("wp_show_cmd")(work_package=a.work_package, as_json=a.as_json)
     )
 
+    p_runs = wp_commands.add_parser(
+        "runs",
+        help="Report what the ledger says every run in flight has reached",
+        description=(
+            "Report every work package commenced and not yet closed, with the last\n"
+            "row its run booked. Replayed from the ledger; no marker is read."
+        ),
+        epilog=build_epilog(["gz wp runs --json"]),
+    )
+    add_json_flag(p_runs)
+    p_runs.set_defaults(func=lambda a: _lazy("wp_runs_cmd")(as_json=a.as_json))
+
 
 def _register_wp_lifecycle(wp_commands: argparse._SubParsersAction) -> None:
     """Register ``gz wp initiate``, ``freeze``, ``commence`` and ``accept``."""

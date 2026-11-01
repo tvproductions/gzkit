@@ -127,13 +127,18 @@ def configure_logging_from_flags(args: argparse.Namespace) -> None:
 
 
 def _ensure_utf8_console() -> None:
-    """Reconfigure stdout/stderr to UTF-8 on Windows to avoid cp1252 crashes from Rich."""
+    """Reconfigure stdout/stderr to UTF-8 on Windows to avoid cp1252 crashes from Rich.
+
+    Text a command prints can come from a file anyone can write, and a JSON string
+    can decode to a lone surrogate no UTF-8 stream encodes, so such a character is
+    shown escaped and never stops the command (GHI #1205).
+    """
     import sys  # noqa: PLC0415
 
     for stream_name in ("stdout", "stderr"):
         stream = getattr(sys, stream_name, None)
         if stream is not None and hasattr(stream, "reconfigure"):
-            stream.reconfigure(encoding="utf-8")
+            stream.reconfigure(encoding="utf-8", errors="backslashreplace")
 
 
 def _exit_code_from(result: object) -> int:

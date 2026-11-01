@@ -814,7 +814,8 @@ def obpi_pipeline_cmd(
             removed = clear_stale_pipeline_markers(plans_dir)
             if removed:
                 for marker_path, marker_obpi in removed:
-                    console.print(f"Removed stale marker: {marker_path.name} ({marker_obpi})")
+                    name, named = escape(marker_path.name), escape(marker_obpi)
+                    console.print(f"Removed stale marker: {name} ({named})")
             else:
                 console.print("No stale markers found.")
         else:
