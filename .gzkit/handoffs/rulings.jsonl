@@ -1918,3 +1918,6 @@
 {"ts": "2026-11-01T09:54:08Z", "source": "20261101T095404Z-ro14-act4-closed-ro15-added.md", "text": "#1206 is repaired by a fence on the work-package surface (verbatim: \"Fence on the WP surface (Recommended)\")."}
 {"ts": "2026-11-01T09:54:08Z", "source": "20261101T095404Z-ro14-act4-closed-ro15-added.md", "text": "At the spent fix bound, the bound state was dropped and the fence landed (verbatim: \"Drop bound state, land (Recommended)\")."}
 {"ts": "2026-11-01T09:54:08Z", "source": "20261101T095404Z-ro14-act4-closed-ro15-added.md", "text": "The #1028 hold lifts for this purpose only and its remainder moves into act 5 (verbatim: \"Lift, fold into act 5 (Recommended)\")."}
+{"ts": "2026-11-01T12:29:11Z", "source": "20261101T122907Z-ro14-act5-landed-act6-next.md", "text": "The general arrangement's six flows are confirmed and act 5 proceeds (verbatim: \"yes, those match, proceed with act 5\")."}
+{"ts": "2026-11-01T12:29:11Z", "source": "20261101T122907Z-ro14-act5-landed-act6-next.md", "text": "Act 5 adapts the existing pipeline rather than building anew (verbatim: \"we will adapt, as much as possible, the current gz-obpi-pipeline\")."}
+{"ts": "2026-11-01T12:29:11Z", "source": "20261101T122907Z-ro14-act5-landed-act6-next.md", "text": "At the spent fix bound, act 5's count was fixed and it landed (verbatim: \"Fix the count, land (Recommended)\")."}
