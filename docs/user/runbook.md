@@ -33,7 +33,7 @@ CLI verb. For the narrative account of why these stages compose this way
 | 2 | Intent (PRD → Constitution → Design) | `/gz-prd`, `/gz-constitute`, `/gz-design` | `uv run gz prd <name>`; `uv run gz constitute <name>` |
 | 3 | Decomposition (ADR → OBPI) | `/gz-plan`, `/gz-adr-create`, `/gz-obpi-specify` | `uv run gz plan create <name> --kind feature --semver X.Y.Z`; `uv run gz specify <slug> --parent ADR-<X.Y.Z> --item <N>` |
 | 4 | Pre-execution reasoning | `/gz-justify`, `/gz-plan-audit` | `uv run gz justify <anchor> --save`; `uv run gz justify validate <path>` |
-| 5 | Implementation | `/gz-obpi-pipeline`, `/gz-arb` | `uv run gz obpi pipeline OBPI-<X.Y.Z-NN>` |
+| 5 | Implementation | `/gz-obpi-pipeline`, `/gz-arb` | `uv run gz obpi pipeline OBPI-<X.Y.Z-NN-slug>` |
 | 6 | Verification (Gates 1–5) | `/gz-check`, `/gz-implement` | `uv run gz check`; `uv run gz closeout ADR-<X.Y.Z> --dry-run` |
 | 7 | Closeout | `/gz-adr-closeout-ceremony`, `/gz-adr-audit`, `/gz-adr-emit-receipt` | `uv run gz closeout ADR-<X.Y.Z>`; `uv run gz attest ADR-<X.Y.Z> --status completed`; `uv run gz audit ADR-<X.Y.Z>`; `uv run gz adr emit-receipt ADR-<X.Y.Z> --event validated --attestor "<Name>" --evidence-json '{"scope":"ADR-<X.Y.Z>","date":"YYYY-MM-DD"}'` |
 | 8 | Release (GHI-driven patch) | `/gz-patch-release` | `uv run gz patch release --full` |
@@ -113,7 +113,7 @@ of the scaffold comes from the renderer, never from an LLM.
 | Anchor type | When to invoke | Example |
 |-------------|----------------|---------|
 | GHI issue | Defect fix where root cause is uncertain | `uv run gz justify GHI-<N> --save` |
-| OBPI brief | Heavy-lane OBPI with ambiguous scope or evidence | `uv run gz justify OBPI-<X.Y.Z-NN> --save` |
+| OBPI brief | Heavy-lane OBPI with ambiguous scope or evidence | `uv run gz justify OBPI-<X.Y.Z-NN-slug> --save` |
 | Draft text | Pre-decision exploration before a brief exists | `uv run gz justify --draft "outline" --save --draft-slug <slug>` |
 
 Fill the saved scaffold's `_[To be filled]_` blocks with grounded
@@ -143,13 +143,13 @@ only; each stage's procedure lives in the file served at its entry (OBPI-0.35.0-
 
 | Skill (preferred) | CLI equivalent |
 |---|---|
-| `/gz-obpi-pipeline OBPI-<X.Y.Z-NN>` | `uv run gz obpi pipeline OBPI-<X.Y.Z-NN>` |
+| `/gz-obpi-pipeline OBPI-<X.Y.Z-NN-slug>` | `uv run gz obpi pipeline OBPI-<X.Y.Z-NN-slug>` |
 
 Compatibility entry points for partial re-runs:
 
 ```bash
-uv run gz obpi pipeline OBPI-<X.Y.Z-NN> --from=verify
-uv run gz obpi pipeline OBPI-<X.Y.Z-NN> --from=ceremony
+uv run gz obpi pipeline OBPI-<X.Y.Z-NN-slug> --from=verify
+uv run gz obpi pipeline OBPI-<X.Y.Z-NN-slug> --from=ceremony
 ```
 
 Within the operator-initiated pipeline, `gz obpi acceptance` executes requirement
@@ -170,9 +170,9 @@ quality-reviewer review. Record each dispatch so `gz obpi precomplete` can
 attest it at Stage 5 — credit is never inferred from the presence of code:
 
 ```bash
-uv run gz obpi dispatch OBPI-<X.Y.Z-NN> --role Implementer --model <tier> --task 1
-uv run gz obpi dispatch OBPI-<X.Y.Z-NN> --role SpecReviewer --model <tier> --task 2
-uv run gz obpi dispatch OBPI-<X.Y.Z-NN> --role QualityReviewer --model <tier> --task 3
+uv run gz obpi dispatch OBPI-<X.Y.Z-NN-slug> --role Implementer --model <tier> --task 1
+uv run gz obpi dispatch OBPI-<X.Y.Z-NN-slug> --role SpecReviewer --model <tier> --task 2
+uv run gz obpi dispatch OBPI-<X.Y.Z-NN-slug> --role QualityReviewer --model <tier> --task 3
 ```
 
 If the session genuinely cannot dispatch, declare it rather than running
@@ -181,7 +181,7 @@ declared single-driver run and, while the run's per-OBPI marker file is on
 disk, refuses a silent one (step 2c below):
 
 ```bash
-uv run gz obpi dispatch OBPI-<X.Y.Z-NN> --single-driver --reason "<why>"
+uv run gz obpi dispatch OBPI-<X.Y.Z-NN-slug> --single-driver --reason "<why>"
 ```
 
 > The CLI and generated Claude hooks share the same runtime engine in
@@ -228,7 +228,7 @@ re-entry. Do not edit the marker by hand.
 
 # 2b) Inspect pipeline roles and dispatch history
 uv run gz roles
-uv run gz roles --pipeline OBPI-<X.Y.Z-NN>
+uv run gz roles --pipeline OBPI-<X.Y.Z-NN-slug>
 
 # 2c) Subagent dispatch operation
 #    Stage 2 dispatches fresh implementer subagents per plan task by default.
@@ -236,7 +236,7 @@ uv run gz roles --pipeline OBPI-<X.Y.Z-NN>
 #    routed to the appropriate model tier (haiku/sonnet/opus).
 #
 #    A run declared single-driver runs Stage 2 inline in one session:
-#      uv run gz obpi dispatch OBPI-<X.Y.Z-NN> --single-driver --reason "<why>"
+#      uv run gz obpi dispatch OBPI-<X.Y.Z-NN-slug> --single-driver --reason "<why>"
 #    The declaration is a ledger event. While the run's per-OBPI marker file
 #    is on disk, `uv run gz obpi precomplete` refuses READY when the ledger
 #    holds, under the id that file is named for, neither a recorded dispatch
@@ -264,7 +264,7 @@ uv run gz roles --pipeline OBPI-<X.Y.Z-NN>
 #    written that way. A dispatch recorded after that is added to the cache
 #    in each marker file that reads as the run's own; when neither file
 #    does, the dispatch is on the ledger and in no cache:
-#      cat .claude/plans/.pipeline-active-OBPI-<X.Y.Z-NN>.json | python -m json.tool
+#      cat .claude/plans/.pipeline-active-OBPI-<X.Y.Z-NN-slug>.json | python -m json.tool
 #
 #    An entry holds what the dispatch wrote and nothing more: task_id, role,
 #    agent_file, model, isolation, background, dispatched_at and the status
@@ -288,7 +288,7 @@ uv run gz roles --pipeline OBPI-<X.Y.Z-NN>
 #
 #    Review findings are not in the marker. They are in the acceptance
 #    record; read them with:
-#      uv run gz obpi acceptance OBPI-<X.Y.Z-NN> status
+#      uv run gz obpi acceptance OBPI-<X.Y.Z-NN-slug> status
 
 # 3) Verify this increment
 #    Skill shortcuts — run all quality checks in one pass or with receipt artifacts:
@@ -358,11 +358,11 @@ uv run gz arb patterns --compact      # optional: scan for recurring anti-patter
 #    register-entry handoff and releases the lock; no manual
 #    `gz obpi lock release` step is needed (GHI #619). Cite the ARB receipt IDs
 #    from step 4b in --attestation-text per `AGENTS.md` § Attestation.
-uv run gz obpi complete OBPI-<X.Y.Z-NN>-<slug> --attestor "<name>" --attestation-text "<attestation>"
+uv run gz obpi complete OBPI-<X.Y.Z-NN-slug>-<slug> --attestor "<name>" --attestation-text "<attestation>"
 
 # 6) Run guarded sync, then reconcile and confirm
 uv run gz git-sync --apply --lint --test
-uv run gz obpi sync OBPI-<X.Y.Z-NN>-<slug>
+uv run gz obpi sync OBPI-<X.Y.Z-NN-slug>-<slug>
 uv run gz adr status ADR-<X.Y.Z> --json
 uv run gz git-sync --apply --lint --test
 ```
@@ -691,11 +691,11 @@ drift; `--apply --attestor "<name>"` writes operator-attested amendments:
 
 ```bash
 # Report drift across the five dimensions (exit 3 on drift)
-uv run gz obpi brief-drift OBPI-<X.Y.Z-NN>
+uv run gz obpi brief-drift OBPI-<X.Y.Z-NN-slug>
 
 # Preview, then apply operator-attested amendments after review
-uv run gz obpi brief-drift OBPI-<X.Y.Z-NN> --apply --attestor "<name>" --dry-run
-uv run gz obpi brief-drift OBPI-<X.Y.Z-NN> --apply --attestor "<name>"
+uv run gz obpi brief-drift OBPI-<X.Y.Z-NN-slug> --apply --attestor "<name>" --dry-run
+uv run gz obpi brief-drift OBPI-<X.Y.Z-NN-slug> --apply --attestor "<name>"
 ```
 
 **When Stage 1 blocks: no or stale brief_reconciled receipt (OBPI-0.0.37-07)**
@@ -706,18 +706,18 @@ the receipt:
 
 ```bash
 # Refresh the reconcile receipt (reports per-dimension drift)
-uv run gz obpi brief-drift OBPI-<X.Y.Z-NN>
+uv run gz obpi brief-drift OBPI-<X.Y.Z-NN-slug>
 
 # Then re-launch the pipeline
-uv run gz obpi pipeline OBPI-<X.Y.Z-NN>
+uv run gz obpi pipeline OBPI-<X.Y.Z-NN-slug>
 ```
 
 If the brief has drift (`has_drift=True`), fix the drifted dimensions first:
 
 ```bash
 # Preview amendments, then apply
-uv run gz obpi brief-drift OBPI-<X.Y.Z-NN> --apply --attestor "<name>" --dry-run
-uv run gz obpi brief-drift OBPI-<X.Y.Z-NN> --apply --attestor "<name>"
+uv run gz obpi brief-drift OBPI-<X.Y.Z-NN-slug> --apply --attestor "<name>" --dry-run
+uv run gz obpi brief-drift OBPI-<X.Y.Z-NN-slug> --apply --attestor "<name>"
 ```
 
 If `gz adr audit-check` reports missing or placeholder implementation evidence:
@@ -978,6 +978,7 @@ uv run gz wp block WP-01-astral --reason "<why>" --next-action "<your decision>"
 uv run gz wp unblock WP-01-astral --ruling "<your exact words>" --operator g0 --exit hold
 uv run gz wp show WP-01-astral
 uv run gz wp runs
+uv run gz wp withdraw-legacy OBPI-0.35.0-11-corpus-shape-witness --reason "<why, and where its REQs went>" --attestor g0
 ```
 
 `gz wp runs` reports every run in flight from the ledger: the last row it booked,
@@ -1080,7 +1081,7 @@ reporting is informational --- no tests break if annotations are absent.
 uv run gz covers ADR-<X.Y.Z>
 
 # Check coverage for a single OBPI
-uv run gz covers OBPI-<X.Y.Z-NN>
+uv run gz covers OBPI-<X.Y.Z-NN-slug>
 
 # Full summary across all ADRs
 uv run gz covers
@@ -1104,13 +1105,13 @@ def test_my_feature(self):
 After annotating, verify coverage improved:
 
 ```bash
-uv run gz covers OBPI-<X.Y.Z-NN>
+uv run gz covers OBPI-<X.Y.Z-NN-slug>
 ```
 
 For three-channel enriched output (BEHAVIOR/SUPPORT/STRUCTURAL-FENCE per-REQ):
 
 ```bash
-uv run gz covers OBPI-<X.Y.Z-NN> --json
+uv run gz covers OBPI-<X.Y.Z-NN-slug> --json
 ```
 
 The JSON output includes `taxonomy_kind`, `proof_channel`, `proof_status`,
@@ -1119,7 +1120,7 @@ The JSON output includes `taxonomy_kind`, `proof_channel`, `proof_status`,
 **Emergency bypass** (2am-operator forcing function — requires a reason):
 
 ```bash
-uv run gz covers OBPI-<X.Y.Z-NN> --json \
+uv run gz covers OBPI-<X.Y.Z-NN-slug> --json \
   --bypass-req-kind-discipline-once \
   --bypass-reason "<mandatory reason string>"
 ```
@@ -1176,19 +1177,19 @@ Use [`/gz-check`](skills/gz-check.md) to run all quality checks in one pass, or 
 - `uv run gz readiness audit`
 - `uv run gz readiness evaluate`
 - `uv run gz parity check`
-- `uv run gz obpi status OBPI-<X.Y.Z-NN>`
-- `uv run gz obpi repudiate OBPI-<X.Y.Z-NN> --cause <enum> --reason "..." --attestor "<human>"` (repudiate a fraudulent or erroneous completion — reverse-and-keep; OBPI stays live)
-- `uv run gz obpi withdraw OBPI-<X.Y.Z-NN> --reason "..." --attestor "<human>"` (withdraw an OBPI from counts — permanent retirement)
-- `uv run gz obpi supersede OBPI-<X.Y.Z-NN> --by OBPI-<X.Y.Z-MM> --rationale "..." --attestor "<human>"` (supersede one OBPI by another that carries its intent forward)
-- `uv run gz obpi block OBPI-<X.Y.Z-NN> --reason "..." --next-action "..."` (record that the next legitimate action is a human's; the pipeline refuses to launch until it clears)
-- `uv run gz obpi unblock OBPI-<X.Y.Z-NN> --ruling "..." --operator "<who>"` (record the operator's ruling verbatim and release the block)
-- `uv run gz obpi audit OBPI-<X.Y.Z-NN>` (gather evidence and record in audit ledger)
-- `uv run gz obpi lock claim OBPI-<X.Y.Z-NN>` (claim an OBPI work lock)
-- `uv run gz obpi lock release OBPI-<X.Y.Z-NN>` (release an OBPI work lock)
-- `uv run gz obpi lock check OBPI-<X.Y.Z-NN>` (check if an OBPI is locked)
+- `uv run gz obpi status OBPI-<X.Y.Z-NN-slug>`
+- `uv run gz obpi repudiate OBPI-<X.Y.Z-NN-slug> --cause <enum> --reason "..." --attestor "<human>"` (repudiate a fraudulent or erroneous completion — reverse-and-keep; OBPI stays live)
+- `uv run gz obpi withdraw OBPI-<X.Y.Z-NN-slug> --reason "..." --attestor "<human>"` (withdraw an OBPI from counts — permanent retirement)
+- `uv run gz obpi supersede OBPI-<X.Y.Z-NN-slug> --by OBPI-<X.Y.Z-MM> --rationale "..." --attestor "<human>"` (supersede one OBPI by another that carries its intent forward)
+- `uv run gz obpi block OBPI-<X.Y.Z-NN-slug> --reason "..." --next-action "..."` (record that the next legitimate action is a human's; the pipeline refuses to launch until it clears)
+- `uv run gz obpi unblock OBPI-<X.Y.Z-NN-slug> --ruling "..." --operator "<who>"` (record the operator's ruling verbatim and release the block)
+- `uv run gz obpi audit OBPI-<X.Y.Z-NN-slug>` (gather evidence and record in audit ledger)
+- `uv run gz obpi lock claim OBPI-<X.Y.Z-NN-slug>` (claim an OBPI work lock)
+- `uv run gz obpi lock release OBPI-<X.Y.Z-NN-slug>` (release an OBPI work lock)
+- `uv run gz obpi lock check OBPI-<X.Y.Z-NN-slug>` (check if an OBPI is locked)
 - `uv run gz obpi lock list` (list active OBPI work locks)
 - `uv run gz plan create <name> --kind feature --semver X.Y.Z` (create a new ADR)
-- `uv run gz plan audit OBPI-<X.Y.Z-NN>` (structural prerequisite check for plan-OBPI alignment; scans both `<project>/.claude/plans/` and `~/.claude/plans/` — see #128)
+- `uv run gz plan audit OBPI-<X.Y.Z-NN-slug>` (structural prerequisite check for plan-OBPI alignment; scans both `<project>/.claude/plans/` and `~/.claude/plans/` — see #128)
 - `uv run gz patch release` (GHI-driven patch release ceremony; writes manifest and bumps version)
 - `uv run gz patch release --dry-run` (preview GHI discovery and proposed version without modifying state)
 - `uv run gz patch release --dry-run --json` (machine-readable discovery output)
@@ -1694,8 +1695,8 @@ Rewrites drifted ADR/OBPI `id`/`parent`/`lane`/`status` to match the ledger; ung
 ## Task Commands
 
 ```bash
-uv run gz task list OBPI-<X.Y.Z-NN>       # List tasks for an OBPI
-uv run gz task list OBPI-<X.Y.Z-NN> --json # JSON output
+uv run gz task list OBPI-<X.Y.Z-NN-slug>       # List tasks for an OBPI
+uv run gz task list OBPI-<X.Y.Z-NN-slug> --json # JSON output
 uv run gz task start TASK-<id>             # Start a pending task
 uv run gz task complete TASK-<id>          # Complete an in-progress task
 uv run gz task block TASK-<id> --reason "..." # Block with reason

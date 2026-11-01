@@ -5914,7 +5914,7 @@
     {
       "file": "src/gzkit/commands/obpi_cmd.py",
       "rule": "DOC201",
-      "count": 9
+      "count": 7
     },
     {
       "file": "src/gzkit/commands/obpi_cmd.py",
@@ -11775,11 +11775,6 @@
       "file": "src/gzkit/ledger_producer_probe.py",
       "rule": "EM102",
       "count": 2
-    },
-    {
-      "file": "src/gzkit/ledger_producer_probe.py",
-      "rule": "PLR0911",
-      "count": 1
     },
     {
       "file": "src/gzkit/ledger_producer_probe.py",

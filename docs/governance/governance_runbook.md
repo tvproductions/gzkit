@@ -25,7 +25,7 @@ uv run gz adr audit-check ADR-<X.Y.Z>
 uv run gz adr fidelity ADR-<X.Y.Z>   # bound gate; closeout + audit invoke it (ADR-0.0.73)
 uv run gz adr covers-check ADR-<X.Y.Z>
 uv run gz closeout ADR-<X.Y.Z> --dry-run
-uv run gz obpi status OBPI-<X.Y.Z-NN>
+uv run gz obpi status OBPI-<X.Y.Z-NN-slug>
 uv run gz roles
 uv run gz personas list               # List agent personas
 uv run gz personas list --json         # List personas as JSON
@@ -39,13 +39,13 @@ uv run gz upgrade                     # Surface-only refresh from installed whee
 uv run gz prd <name>                  # Create Product Requirements Document
 uv run gz constitute <name>           # Create constitution artifact
 uv run gz plan create <name> --kind feature --semver X.Y.Z  # Create an ADR
-uv run gz plan audit OBPI-<X.Y.Z-NN> # Structural prereq check for plan alignment
+uv run gz plan audit OBPI-<X.Y.Z-NN-slug> # Structural prereq check for plan alignment
 uv run gz specify                     # Create implementation brief (OBPI)
-uv run gz obpi pipeline OBPI-<X.Y.Z-NN>  # Execute OBPI pipeline
-uv run gz obpi dispatch OBPI-<X.Y.Z-NN> --role <Role> --model <tier>  # Record a Stage-2 dispatch (credit is never inferred)
-uv run gz obpi audit OBPI-<X.Y.Z-NN> # Gather evidence and record in audit ledger
-uv run gz obpi sync OBPI-<X.Y.Z-NN> # Fail-closed reconciliation
-uv run gz obpi brief-drift OBPI-<X.Y.Z-NN> # Reconcile brief content vs project (5 drift dimensions)
+uv run gz obpi pipeline OBPI-<X.Y.Z-NN-slug>  # Execute OBPI pipeline
+uv run gz obpi dispatch OBPI-<X.Y.Z-NN-slug> --role <Role> --model <tier>  # Record a Stage-2 dispatch (credit is never inferred)
+uv run gz obpi audit OBPI-<X.Y.Z-NN-slug> # Gather evidence and record in audit ledger
+uv run gz obpi sync OBPI-<X.Y.Z-NN-slug> # Fail-closed reconciliation
+uv run gz obpi brief-drift OBPI-<X.Y.Z-NN-slug> # Reconcile brief content vs project (5 drift dimensions)
 uv run gz ontology sense                  # Image the current governance shape (read-only sonar; STRUCTURAL seams)
 uv run gz ontology trace <ID>             # Walk one node's vertical lineage + lateral proof + edge provenance (read-only)
 uv run gz ontology resense                # Diff the shape vs the last sweep — the airlock re-sense gate (read-only)
@@ -53,17 +53,17 @@ uv run gz ontology seams                  # Fast contacts-only STRUCTURAL seam c
 uv run gz ontology reach <ID>             # One node's downstream blast-radius / transitive dependents (read-only)
 uv run gz airlock in --target <OBPI-or-WP> --dry-run # Airlock-IN preflight membrane (diagnostic-only; NO-GO reports but exits 0)
 uv run gz airlock out --target <OBPI-or-WP> --dry-run # Airlock-OUT exit drift-diff membrane (diagnostic-only; surfaced drift reports but exits 0; never writes L1)
-uv run gz obpi repudiate OBPI-<X.Y.Z-NN> --cause <enum> --reason "..." --attestor "<human>" # Repudiate fraudulent/erroneous completion (reverse-and-keep; OBPI stays live)
-uv run gz obpi withdraw OBPI-<X.Y.Z-NN> --reason "..." --attestor "<human>" # Withdraw OBPI from counts (permanent retirement; witnessed transition)
-uv run gz obpi supersede OBPI-<X.Y.Z-NN> --by OBPI-<X.Y.Z-MM> --rationale "..." --attestor "<human>" # Supersede one OBPI by another (witnessed transition; superseded node marked in graph)
-uv run gz obpi block OBPI-<X.Y.Z-NN> --reason "..." --next-action "..." # Record an outstanding operator ruling (reversible, unattested; blocks pipeline launch)
-uv run gz obpi unblock OBPI-<X.Y.Z-NN> --ruling "..." --operator "<who>" # Record the ruling verbatim and release the block
-uv run gz obpi lock claim OBPI-<X.Y.Z-NN>  # Claim OBPI work lock
-uv run gz obpi lock release OBPI-<X.Y.Z-NN> # Release OBPI work lock
-uv run gz obpi lock check OBPI-<X.Y.Z-NN>  # Check if OBPI is locked
+uv run gz obpi repudiate OBPI-<X.Y.Z-NN-slug> --cause <enum> --reason "..." --attestor "<human>" # Repudiate fraudulent/erroneous completion (reverse-and-keep; OBPI stays live)
+uv run gz obpi withdraw OBPI-<X.Y.Z-NN-slug> --reason "..." --attestor "<human>" # Withdraw OBPI from counts (permanent retirement; witnessed transition)
+uv run gz obpi supersede OBPI-<X.Y.Z-NN-slug> --by OBPI-<X.Y.Z-MM> --rationale "..." --attestor "<human>" # Supersede one OBPI by another (witnessed transition; superseded node marked in graph)
+uv run gz obpi block OBPI-<X.Y.Z-NN-slug> --reason "..." --next-action "..." # Record an outstanding operator ruling (reversible, unattested; blocks pipeline launch)
+uv run gz obpi unblock OBPI-<X.Y.Z-NN-slug> --ruling "..." --operator "<who>" # Record the ruling verbatim and release the block
+uv run gz obpi lock claim OBPI-<X.Y.Z-NN-slug>  # Claim OBPI work lock
+uv run gz obpi lock release OBPI-<X.Y.Z-NN-slug> # Release OBPI work lock
+uv run gz obpi lock check OBPI-<X.Y.Z-NN-slug>  # Check if OBPI is locked
 uv run gz obpi lock list               # List active OBPI work locks
-uv run gz obpi complete OBPI-<X.Y.Z-NN> --attestation-text "<verbatim user words — session evidence>"
-uv run gz obpi emit-receipt OBPI-<X.Y.Z-NN> --event completed --attestor "<name>" --evidence-json '{...}'
+uv run gz obpi complete OBPI-<X.Y.Z-NN-slug> --attestation-text "<verbatim user words — session evidence>"
+uv run gz obpi emit-receipt OBPI-<X.Y.Z-NN-slug> --event completed --attestor "<name>" --evidence-json '{...}'
 uv run gz mx enter --reason "<text>" --attestor "<operator>"  # Open the MX hangar (operator only)
 uv run gz mx exit --attestor "<operator>"                    # Close the MX hangar (hard gate; operator signs)
 uv run gz mx renew --attestor "<operator>"                   # Renew the open session's lease (no guard runs)
@@ -83,7 +83,7 @@ Skill-based entry points:
 /gz-adr-create
 /gz-adr-manager   # compatibility alias for /gz-adr-create
 /gz-obpi-brief
-/gz-obpi-pipeline OBPI-<X.Y.Z-NN>
+/gz-obpi-pipeline OBPI-<X.Y.Z-NN-slug>
 /gz-obpi-sync ADR-<X.Y.Z>
 /gz-adr-sync ADR-<X.Y.Z>
 /gz-adr-sync
@@ -585,15 +585,15 @@ uv run gz obpi validate <path-to-brief> --authored
    pointer; the skill body carries the invocation text only (OBPI-0.35.0-20).
 
 ```text
-/gz-obpi-pipeline OBPI-<X.Y.Z-NN>
+/gz-obpi-pipeline OBPI-<X.Y.Z-NN-slug>
 ```
 
 Use compatibility entry points when implementation or verification already
 exists:
 
 ```text
-/gz-obpi-pipeline OBPI-<X.Y.Z-NN> --from=verify
-/gz-obpi-pipeline OBPI-<X.Y.Z-NN> --from=ceremony
+/gz-obpi-pipeline OBPI-<X.Y.Z-NN-slug> --from=verify
+/gz-obpi-pipeline OBPI-<X.Y.Z-NN-slug> --from=ceremony
 ```
 
 4. Inside the pipeline, implement + verify Gate 2 (+ Gate 3 when docs change).
@@ -708,12 +708,13 @@ Rules:
 - Record attestation terms explicitly (`Completed`, `Completed — Partial: <reason>`, `Dropped — <reason>`).
 - Both the closeout ceremony (EXECUTE→ATTESTATION edge) and `gz audit` invoke the **same bound fidelity gate** (`gz adr fidelity`), which RUNS the ADR Decision's `## Fidelity Assertions` against the running system — the bound replacement for the prose 'Demonstrate Value' step (ADR-0.0.73). A failed assertion blocks the ceremony; a missing block is flagged with a warning (presence is hard-enforced at ADR closeout, Boundary Invariant #4). Do not substitute agent prose for the gate.
 - **Test-shape inventory (GHI #571):** `uv run gz test-shape` reports advisory test-shape debt — tautological content-echo operations with their proposed disposition, and output/render assertions with whether the `# output-contract:` carve-out is declared. It always exits 0. The fail-closed *growth* gate is `uv run gz validate --tautological-test-audit`; the inventory routes the cleanup the gate cannot describe. Only **BEHAVIOR** REQs carry `@covers` tests — never author one to make a SUPPORT or STRUCTURAL-FENCE REQ appear covered (ADR-0.0.59).
-- **RED falsifiability gate (GHI #642):** `@covers` parity proves a BEHAVIOR REQ has a covering test; it never proves that test can fail. `uv run gz arb red --req REQ-<X.Y.Z-NN-MM> --obpi OBPI-<X.Y.Z-NN>` runs the covering test against the base tree with the production hunks withheld and records a `red_receipt_emitted` event carrying a `failure_class` of `assertion` (strong RED), `error` (weak RED — failed for the wrong reason), or `none` (the test passed without its implementation and therefore cannot fail). `uv run gz validate --red-parity`, a bound `gz check` step, fails closed on a missing witness or a `none` verdict.
+- **RED falsifiability gate (GHI #642):** `@covers` parity proves a BEHAVIOR REQ has a covering test; it never proves that test can fail. `uv run gz arb red --req REQ-<X.Y.Z-NN-MM> --obpi OBPI-<X.Y.Z-NN-slug>` runs the covering test against the base tree with the production hunks withheld and records a `red_receipt_emitted` event carrying a `failure_class` of `assertion` (strong RED), `error` (weak RED — failed for the wrong reason), or `none` (the test passed without its implementation and therefore cannot fail). `uv run gz validate --red-parity`, a bound `gz check` step, fails closed on a missing witness or a `none` verdict.
 - **Guard canary review (GHI #1154, GHI #1161):** a canary in `data/guard_canaries.json` binds one reviewed mutant to one registered enforcement claim. The unit tier checks every binding on each run, and the `Guard canary sweep` step of `uv run gz check --full` applies every mutant to an isolated copy and fails when its designated test does not kill it (GHI #1191). The operator's review is recorded with `uv run gz canary review --claim <claim-id> --attestor <id> --operator-text "<verbatim>"`, which appends a `guard_canary_reviewed` event at the canary's current binding. That event is the review's only witness: `reviewed_by` is a projection, a rebound canary needs a fresh review, and session orientation lists the canaries still pending.
+- **Withdrawing a legacy unit (RO-14 act 7):** `uv run gz wp withdraw-legacy <OBPI-id> --reason "<why>" --attestor g0` is the successor to `gz obpi withdraw`. It is one-way, takes a human witness, and reads as a withdrawal everywhere the old event does.
 - **The run of a work package (drydock RO-14, `docs/governance/harbor-ro14-obpi-forward-migration.md`):** `uv run gz wp dispatch` books each dispatch and refuses the fix cycle past the bound (GHI #1200); `uv run gz wp block` escalates with the runtime's own count; `uv run gz wp unblock` books the ruling, and at the bound it names one exit; `uv run gz wp runs` reports every run in flight, replayed from those rows with no marker read (GHI #1203); a blocked, accepted or stopped package fences production writes across the tree, read from the ledger (GHI #1206); `uv run gz wp acceptance` runs proof and reviews on the package, `uv run gz wp accept` refuses until it reads ready, and three adversarial rounds with a mapped finding stop for the operator (GHI #1028).
 - **Work packages (drydock RO-5, `docs/governance/harbor-ro5-work-packages.md`):** the record is `data/catalog/work_packages.json`, written only by `uv run gz wp new` and `uv run gz wp attach`, and checked by `uv run gz validate --catalog`. The lifecycle is `work_package_transitioned` through `uv run gz wp initiate`, `uv run gz wp freeze`, `uv run gz wp commence`, `uv run gz wp accept` and `uv run gz wp close` (Gate 5, attestor never defaulted); every change is `work_package_changed` through `uv run gz wp change`, naming its rung and approver. Attaching an issue labels it `repair` and comments the package id on GitHub before the store is written (a `gh` failure writes nothing); `ghi-close` books `work_package_issue_closed` through `uv run gz wp resolve`, which never closes the package. Objective quality evidence is appended to a live package with `uv run gz wp evidence` (amendment 1), never edited or removed. `uv run gz wp show <id>` reads a package with its history. The `gz-wp` skill wields the verbs.
 - **Scope gate (GHI #1181):** `gz obpi complete` exits 3 when an uncommitted file lies outside the closing brief's Allowed Paths; `gz obpi precomplete` reports the same finding before attestation. gzkit's own records never count (`GZKIT_RECORD_PATHS` in `src/gzkit/hooks/obpi.py`, plus the brief and its package's `logs/`). `gz airlock out` holds the same changed files against the same Allowed Paths and reports them as findings (GHI #1185); it does not refuse.
-- **REQ-coverage gate (ADR-0.0.25):** `gz obpi complete` exits 3 when any REQ in the closing brief's `## Acceptance Criteria` lacks a passing `@covers`-decorated test. Use `uv run gz covers OBPI-<X.Y.Z-NN>` to check coverage before invoking completion. The same gate mirrors to `gz adr emit-receipt --event closed`: an ADR cannot close while any OBPI has an unwaived REQ gap. A **BEHAVIOR** REQ cannot be waived: `--accept-uncovered` is refused on every lane, because BEHAVIOR's only proof channel is a `@covers` test (ADR-0.0.59, GHI #537). SUPPORT and STRUCTURAL-FENCE REQs never reach the waiver path — they are exempt from the coverage gate by proof channel — so the flag has no REQ kind it may waive. The refusal fires on kind, before the `--attestor-present` gate; no transport mechanism gates it (GHI #587 stands).
+- **REQ-coverage gate (ADR-0.0.25):** `gz obpi complete` exits 3 when any REQ in the closing brief's `## Acceptance Criteria` lacks a passing `@covers`-decorated test. Use `uv run gz covers OBPI-<X.Y.Z-NN-slug>` to check coverage before invoking completion. The same gate mirrors to `gz adr emit-receipt --event closed`: an ADR cannot close while any OBPI has an unwaived REQ gap. A **BEHAVIOR** REQ cannot be waived: `--accept-uncovered` is refused on every lane, because BEHAVIOR's only proof channel is a `@covers` test (ADR-0.0.59, GHI #537). SUPPORT and STRUCTURAL-FENCE REQs never reach the waiver path — they are exempt from the coverage gate by proof channel — so the flag has no REQ kind it may waive. The refusal fires on kind, before the `--attestor-present` gate; no transport mechanism gates it (GHI #587 stands).
 
 ---
 
@@ -727,7 +728,7 @@ briefs reference identifiable requirement states and retain local criteria;
 current identifiers and proof bindings continue until governed migration.
 
 ```bash
-uv run gz task list OBPI-<X.Y.Z-NN>              # List tasks for an OBPI
+uv run gz task list OBPI-<X.Y.Z-NN-slug>              # List tasks for an OBPI
 uv run gz task start TASK-<id>                    # Start a pending task
 uv run gz task complete TASK-<id>                 # Complete an in-progress task
 uv run gz task block TASK-<id> --reason "..."     # Block with reason

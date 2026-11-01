@@ -54,6 +54,17 @@ from gzkit.ledger_events import (
     obpi_completion_repudiated_event,
     obpi_superseded_event,
 )
+from gzkit.legacy_units import (
+    LegacyUnitNotFoundError,
+    LegacyUnitRetiredError,
+    withdrawal_subject,
+)
+from gzkit.legacy_units import (
+    current_terminal_state as _current_terminal_state,
+)
+from gzkit.legacy_units import (
+    withdraw_transition_available as _withdraw_transition_available,  # noqa: F401
+)
 from gzkit.pipeline_procedure import render_pointer, resolve_launch_procedures
 from gzkit.pipeline_runtime import (
     check_airlock_in_gate,
@@ -71,18 +82,6 @@ from gzkit.pipeline_runtime import (
 from gzkit.utils import capture_validation_anchor
 
 
-def _withdraw_transition_available(current_state: OBPIState) -> bool:
-    """Return True iff a withdraw transition out of ``current_state`` is declared.
-
-    Genuinely consults CANONICAL_TRANSITIONS: a state with no outgoing transition
-    into WITHDRAWN (i.e. a terminal state) cannot be withdrawn.
-    """
-    return any(
-        t.from_state == current_state and t.to_state == OBPIState.WITHDRAWN
-        for t in CANONICAL_TRANSITIONS
-    )
-
-
 def _supersede_transition_available(current_state: OBPIState) -> bool:
     """Return True iff a supersede transition out of ``current_state`` is declared.
 
@@ -94,21 +93,6 @@ def _supersede_transition_available(current_state: OBPIState) -> bool:
         t.from_state == current_state and t.to_state == OBPIState.SUPERSEDED
         for t in CANONICAL_TRANSITIONS
     )
-
-
-def _current_terminal_state(info: dict[str, Any]) -> OBPIState | None:
-    """Map an artifact-graph entry's terminal flags to a terminal ``OBPIState``.
-
-    Returns ``None`` when the OBPI is non-terminal.
-    The exact non-terminal lifecycle position is deferred-in-keel (parent ADR);
-    for the withdraw/supersede gates only the terminal cases must be resolved,
-    since every non-terminal state shares the same declared transition.
-    """
-    if info.get("withdrawn"):
-        return OBPIState.WITHDRAWN
-    if info.get("superseded"):
-        return OBPIState.SUPERSEDED
-    return None
 
 
 def obpi_withdraw_cmd(obpi: str, reason: str, attestor: str, dry_run: bool) -> None:
@@ -123,28 +107,14 @@ def obpi_withdraw_cmd(obpi: str, reason: str, attestor: str, dry_run: bool) -> N
     project_root = get_project_root()
     ledger = Ledger(project_root / config.paths.ledger)
 
-    canonical_id = ledger.canonicalize_id(obpi)
-    graph = ledger.get_artifact_graph()
-    info = graph.get(canonical_id, {})
-    if info.get("type") != "obpi":
-        msg = f"OBPI not found in ledger: {canonical_id}"
-        raise GzCliError(msg)
+    try:
+        canonical_id, parent = withdrawal_subject(ledger, obpi)
+    except (LegacyUnitNotFoundError, LegacyUnitRetiredError) as exc:
+        raise GzCliError(str(exc)) from exc
 
-    # Gate the emit on a genuine CANONICAL_TRANSITIONS consultation: a terminal
-    # OBPI has no declared withdraw transition, so the model refuses it. The
-    # per-state message explains which terminal state blocked the transition.
-    current_state = _current_terminal_state(info)
-    if current_state is not None and not _withdraw_transition_available(current_state):
-        if current_state is OBPIState.WITHDRAWN:
-            msg = f"OBPI is already withdrawn: {canonical_id}"
-        else:
-            msg = f"OBPI is superseded and cannot be withdrawn: {canonical_id}"
-        raise GzCliError(msg)
-
-    parent = info.get("parent", "")
     event = obpi_withdrawn_event(
         obpi_id=canonical_id,
-        parent=parent if isinstance(parent, str) else "",
+        parent=parent,
         reason=reason,
         attestor=attestor,
     )

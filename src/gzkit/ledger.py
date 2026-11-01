@@ -1229,7 +1229,9 @@ class Ledger:
         canonical_id: str,
         event: LedgerEvent,
     ) -> None:
-        if event.event != "obpi_withdrawn" or canonical_id not in graph:
+        if event.event not in {"obpi_withdrawn", "legacy_unit_withdrawn"}:
+            return
+        if canonical_id not in graph:
             return
         if graph[canonical_id].get("type") != "obpi":
             return

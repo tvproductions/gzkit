@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-01
 metadata:
-  skill-version: "0.5.0"
+  skill-version: "0.6.0"
 model: sonnet
 ---
 
@@ -86,6 +86,13 @@ One step at a time: `initiated`, `frozen`, `commenced`, `accepted`, `closed`.
 6. **Close through Gate 5.** The attestor is the operator and is never
    defaulted. Account every alteration and name each departure still open.
    `uv run gz wp close <WP-id> --decision proceed --attestor g0 --residual-risk "<risk>" --account <alt-id> --evidence <id>`
+
+## Withdrawing a legacy unit
+
+`uv run gz wp withdraw-legacy <OBPI-id> --reason "<why, and where its REQs went>" --attestor g0`
+withdraws a legacy OBPI for good, as `gz obpi withdraw` does; RO-8 runs it on the
+operator's word. It takes a legacy id, not a package, the attestor is human and never
+defaulted, and `--dry-run` shows the event first.
 
 ## The run
 

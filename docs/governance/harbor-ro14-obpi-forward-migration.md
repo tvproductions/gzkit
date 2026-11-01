@@ -2,7 +2,7 @@
 
 # RO-14 specification — the forward migration from OBPI to work package
 
-**2026-10-31. Status: scope, tranches and open points ruled; tranche 1 cut into acts; acts 1 to 6 landed.** Operator: **g0**. Repair order of the [harbor pilotage contract](harbor-pilotage-candidate-2026-10-15.md), which holds the binding rulings.
+**2026-10-31. Status: scope, tranches and open points ruled; tranche 1 cut into acts; acts 1 to 7 landed; tranche 1 is complete.** Operator: **g0**. Repair order of the [harbor pilotage contract](harbor-pilotage-candidate-2026-10-15.md), which holds the binding rulings.
 
 ## Scope
 
@@ -80,8 +80,15 @@ Replayed over that run's ledger rows with the bound of `MAX_REVIEW_FIX_CYCLES`, 
 4. **The fence.** #1206, landed. #1028 moved to act 5 (operator, by selection: *"Lift, fold into act 5 (Recommended)"*).
 5. **Acceptance on the work package**, which gives `gz wp block` the refutation count ruling 8 requires, and #1028's remainder: a reachable exit and a runtime bound for review rounds, at the ruled N=2, with its stop-and-ask boundary.
 6. **The airlock on the work package.** #1185.
-<!-- gz-validate-skip: command-shape -->
 7. **`gz wp withdraw-legacy`.**
+
+## Act 7's reading
+
+**`gz wp withdraw-legacy` is `gz obpi withdraw`'s successor, at full parity.** One rule, `gzkit.legacy_units`, serves both verbs until `gz obpi` is removed, so they cannot differ on what may be withdrawn: the model's declared transitions, a required human witness, a dry run. `legacy_unit_withdrawn` joins `obpi_withdrawn` in `WITHDRAWN_EVENTS`, which the artifact graph, run position, the closeout proof and the park replay read, so a unit withdrawn by either verb reads as withdrawn to all of them. It adds a machine-readable `--json` and refuses a blank `--reason`, which `gz obpi withdraw` does not.
+
+Limits. `--attestor` is a typed name, as on every human-act verb. RO-8 names where a brief's REQs went in `--reason`, in prose, because the catalog REQs do not exist yet. `gz obpi withdraw` itself leaves with tranche 3.
+
+**Mode contract.** The refusals are on at the operational condition and at both standby levels, reading no marker. MEL: (M) none, the recovery is the refusal's own text; no (O) limitation, placard or restore deadline; self-test `tests/commands/test_wp_withdraw_legacy.py`, every change that touches it; accepted state, on.
 
 ## Act 6's reading
 

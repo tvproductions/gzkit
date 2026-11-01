@@ -18,6 +18,7 @@ from gzkit import acceptance_store, reports
 from gzkit.config import GzkitConfig, PathConfig
 from gzkit.events import (
     AcceptanceRecordedEvent,
+    LegacyUnitWithdrawnEvent,
     MxMarkerRepairedEvent,
     MxSessionLeaseRenewedEvent,
     ObpiLockLeaseExpiredEvent,
@@ -738,6 +739,53 @@ def _probe_work_package_run(root: Path, event_type: str) -> ProducerObservation:
     )
 
 
+def _probe_legacy_withdrawal(root: Path) -> ProducerObservation:
+    """Withdraw a seated legacy unit, then try it again; the second is refused.
+
+    Returns:
+        The verified observation.
+
+    Raises:
+        TypeError: The writer persisted another event type.
+        ValueError: The writer booked the wrong record or accepted the second withdrawal.
+
+    """
+    from gzkit import legacy_units  # noqa: PLC0415 - the writer; import only when probing
+    from gzkit.ledger import Ledger, obpi_created_event  # noqa: PLC0415
+
+    ledger_path = root / ".gzkit/ledger.jsonl"
+    ledger_path.parent.mkdir(parents=True, exist_ok=True)
+    ledger = Ledger(ledger_path)
+    ledger.append(obpi_created_event(_OBPI, "ADR-0.0.1"))
+    seated = ledger_path.read_bytes()
+    legacy_units.withdraw_legacy_unit(ledger, _OBPI, _STATEMENT, _AUTHOR)
+    _expect_refusal(
+        lambda: legacy_units.withdraw_legacy_unit(ledger, _OBPI, _STATEMENT, _AUTHOR),
+        "a unit withdrawn twice",
+        legacy_units.LegacyUnitRetiredError,
+    )
+    persisted = ledger_path.read_bytes()
+    added = persisted[len(seated) :].decode("utf-8").splitlines()
+    if not persisted.startswith(seated) or len(added) != 1:
+        msg = "Writer must persist exactly one withdrawal and nothing for a refusal"
+        raise ValueError(msg)
+    event = parse_typed_event(json.loads(added[0]))
+    if not isinstance(event, LegacyUnitWithdrawnEvent):
+        msg = "Writer persisted the wrong event type"
+        raise TypeError(msg)
+    if (event.id, event.attestor) != (_OBPI, _AUTHOR):
+        msg = "Withdrawal record disagrees with the request"
+        raise ValueError(msg)
+    return ProducerObservation(
+        event_type="legacy_unit_withdrawn",
+        producer=_PRODUCERS["legacy_unit_withdrawn"],
+        status="verified",
+        ledger_sha256=hashlib.sha256(persisted).hexdigest(),
+        record_count=1,
+        subject=event.id,
+    )
+
+
 _PRODUCERS = {
     "acceptance_recorded": "gzkit.acceptance_store.initialize",
     "report_published": "gzkit.reports.publish_report",
@@ -752,6 +800,21 @@ _PRODUCERS = {
     "work_package_dispatched": "gzkit.work_package_run.record_work_package_dispatch",
     "work_package_blocked": "gzkit.work_package_run.record_work_package_block",
     "work_package_unblocked": "gzkit.work_package_run.record_work_package_unblock",
+    "legacy_unit_withdrawn": "gzkit.legacy_units.withdraw_legacy_unit",
+}
+
+
+_ROOT_PROBES = {
+    "report_published": _probe_report,
+    "obpi_lock_lease_expired": _probe_lock_lease_expiry,
+    "mx_session_lease_renewed": _probe_mx_lease_renewal,
+    "mx_marker_repaired": _probe_mx_marker_repair,
+    "outcome_transitioned": _probe_outcome_transition,
+    "req_proof_recorded": _probe_req_proof,
+    "work_package_transitioned": _probe_work_package_transition,
+    "work_package_changed": _probe_work_package_change,
+    "work_package_issue_closed": _probe_work_package_issue_closed,
+    "legacy_unit_withdrawn": _probe_legacy_withdrawal,
 }
 
 
@@ -762,24 +825,8 @@ def probe_producer(event_type: str) -> ProducerObservation:
     try:
         with tempfile.TemporaryDirectory(prefix="gzkit-ledger-producer-") as directory:
             root = Path(directory)
-            if event_type == "report_published":
-                return _probe_report(root)
-            if event_type == "obpi_lock_lease_expired":
-                return _probe_lock_lease_expiry(root)
-            if event_type == "mx_session_lease_renewed":
-                return _probe_mx_lease_renewal(root)
-            if event_type == "mx_marker_repaired":
-                return _probe_mx_marker_repair(root)
-            if event_type == "outcome_transitioned":
-                return _probe_outcome_transition(root)
-            if event_type == "req_proof_recorded":
-                return _probe_req_proof(root)
-            if event_type == "work_package_transitioned":
-                return _probe_work_package_transition(root)
-            if event_type == "work_package_changed":
-                return _probe_work_package_change(root)
-            if event_type == "work_package_issue_closed":
-                return _probe_work_package_issue_closed(root)
+            if event_type in _ROOT_PROBES:
+                return _ROOT_PROBES[event_type](root)
             if event_type in _RUN_EVENTS:
                 return _probe_work_package_run(root, event_type)
             _prepare_acceptance_project(root)

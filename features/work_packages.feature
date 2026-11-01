@@ -15,6 +15,10 @@ Feature: Work packages run through the gz wp verbs
     When I run the gz command "wp close WP-01-x --decision proceed --residual-risk none --evidence E"
     Then the command exits with code 2
 
+  Scenario: a legacy withdrawal without its human witness is a usage error
+    When I run the gz command "wp withdraw-legacy OBPI-0.1.0-01 --reason r"
+    Then the command exits with code 2
+
   Scenario: the runs report names what it reads
     When I run the gz command "wp runs --help"
     Then the command exits with code 0

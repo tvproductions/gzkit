@@ -353,6 +353,18 @@ class ObpiWithdrawnEvent(_EventBase):
     attestor: str = ""
 
 
+class LegacyUnitWithdrawnEvent(_EventBase):
+    """legacy_unit_withdrawn event — `gz obpi withdraw`'s successor (RO-14 ruling 13).
+
+    Written only by ``gz wp withdraw-legacy``. ``id`` is the legacy unit's id, and the
+    attestor is the human who witnessed the withdrawal, never defaulted.
+    """
+
+    event: Literal["legacy_unit_withdrawn"]
+    reason: str = Field(..., min_length=1, description="Why, and where its REQs went")
+    attestor: str = Field(..., min_length=1, description="The human witness")
+
+
 class ObpiParkedEvent(_EventBase):
     """obpi_parked event — reversible retirement of an OBPI whose parent left active status.
 
@@ -1932,6 +1944,7 @@ TypedLedgerEvent = Annotated[
     | ObpiLockTtlWarningEvent
     | ObpiLockLeaseExpiredEvent
     | ObpiWithdrawnEvent
+    | LegacyUnitWithdrawnEvent
     | ObpiParkedEvent
     | ObpiUnparkedEvent
     | ObpiBlockedOnOperatorEvent

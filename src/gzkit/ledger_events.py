@@ -107,6 +107,23 @@ def obpi_withdrawn_event(obpi_id: str, parent: str, reason: str, attestor: str =
     )
 
 
+def legacy_unit_withdrawn_event(
+    unit_id: str, parent: str, reason: str, attestor: str
+) -> LedgerEvent:
+    """Create the event `gz wp withdraw-legacy` books (RO-14 ruling 13).
+
+    Returns:
+        The event.
+
+    """
+    return LedgerEvent(
+        event="legacy_unit_withdrawn",
+        id=unit_id,
+        parent=parent,
+        extra={"reason": reason, "attestor": attestor},
+    )
+
+
 def obpi_parked_event(
     obpi_id: str,
     parent: str,

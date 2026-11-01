@@ -46,6 +46,7 @@ _HUMAN_ACT = frozenset(
     {
         "gz obpi repudiate",
         "gz obpi withdraw",
+        "gz wp withdraw-legacy",
         "gz obpi supersede",
         "gz mx enter",
         "gz mx exit",

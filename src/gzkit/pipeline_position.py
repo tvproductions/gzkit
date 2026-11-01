@@ -40,7 +40,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_valida
 from gzkit.core.models import OBPI_ANY_WIDTH_SHORT_ID_BODY
 from gzkit.ledger import LedgerEvent, pipeline_stage_transition_event
 from gzkit.ledger_semantics import _uncompleted_attestation_requirement
-from gzkit.obpi_lifecycle import fold_renames
+from gzkit.obpi_lifecycle import WITHDRAWN_EVENTS, fold_renames
 from gzkit.pipeline_markers import (
     STALE_MARKER_HOURS,
     advance_pipeline_markers,
@@ -351,7 +351,7 @@ _COMPLETION_RECEIPT = "completed"
 #: supersede`` writes under the superseded OBPI's id. ``obpi_unparked`` is
 #: deliberately absent from every rule here: unparking releases the OBPI for
 #: work and resumes nothing, and "a later launch starts a new run" (Question 12).
-_RETIRING_EVENTS = frozenset({"obpi_parked", "obpi_withdrawn", "obpi_superseded"})
+_RETIRING_EVENTS = frozenset({"obpi_parked", "obpi_superseded", *WITHDRAWN_EVENTS})
 
 
 def _starts_run(row: PipelineLedgerRow) -> bool:

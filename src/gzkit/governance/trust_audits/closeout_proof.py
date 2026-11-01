@@ -21,6 +21,7 @@ from pydantic import ValidationError as PydanticValidationError
 
 from gzkit.core.models import REQ_ID_BODY_PLAIN
 from gzkit.core.validation_rules import ValidationError
+from gzkit.obpi_lifecycle import WITHDRAWN_EVENTS
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -156,7 +157,7 @@ def _enforcement_floor_green(project_root: Path) -> bool:
 
 
 def _withdrawn_obpi_ids(project_root: Path) -> set[str]:
-    """Return OBPI ids carrying an ``obpi_withdrawn`` event in the ledger.
+    """Return OBPI ids carrying a withdrawal event in the ledger.
 
     A withdrawn OBPI (e.g. one superseded by a sibling ADR) was never built;
     demanding @covers proof for its REQs at the parent ADR's closeout is a
@@ -177,7 +178,7 @@ def _withdrawn_obpi_ids(project_root: Path) -> set[str]:
                 ev = json.loads(raw)
             except json.JSONDecodeError:
                 continue
-            if ev.get("event") == "obpi_withdrawn" and isinstance(ev.get("id"), str):
+            if ev.get("event") in WITHDRAWN_EVENTS and isinstance(ev.get("id"), str):
                 withdrawn.add(ev["id"])
     except OSError:
         return set()

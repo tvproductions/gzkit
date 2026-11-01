@@ -170,7 +170,7 @@ class TestWithdrawTransitionConsultsModel(unittest.TestCase):
                 witness=_WR.HUMAN_ATTESTED,
             ),
         )
-        with patch("gzkit.commands.obpi_cmd.CANONICAL_TRANSITIONS", synthetic):
+        with patch("gzkit.legacy_units.CANONICAL_TRANSITIONS", synthetic):
             self.assertIs(_withdraw_transition_available(OBPIState.WITHDRAWN), True)
             self.assertIs(_withdraw_transition_available(OBPIState.DRAFTED), False)
 

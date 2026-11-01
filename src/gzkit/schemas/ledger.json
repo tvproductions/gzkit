@@ -985,6 +985,22 @@
         }
       }
     },
+    "legacy_unit_withdrawn": {
+      "required": [
+        "reason",
+        "attestor"
+      ],
+      "properties": {
+        "reason": {
+          "type": "string",
+          "min_length": 1
+        },
+        "attestor": {
+          "type": "string",
+          "min_length": 1
+        }
+      }
+    },
     "obpi_superseded": {
       "required": [
         "superseded_by",

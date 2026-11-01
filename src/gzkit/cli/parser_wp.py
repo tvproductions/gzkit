@@ -9,13 +9,17 @@ scanner discovers commands from that shape.
 
 from typing import TYPE_CHECKING
 
-from gzkit.cli.helpers import add_json_flag, build_epilog
+from gzkit.cli.helpers import add_dry_run_flag, add_json_flag, build_epilog
 from gzkit.cli.parser_acceptance import acceptance_handler, configure_acceptance_parser
 from gzkit.cli.parser_handler_manifest import _lazy
 
 if TYPE_CHECKING:
     import argparse
 
+_WITHDRAW_EXAMPLE = (
+    "gz wp withdraw-legacy OBPI-0.35.0-11-corpus-shape-witness "
+    '--reason "carried to REQ-7" --attestor g0'
+)
 _RUNGS = ("pen_and_ink", "change_order", "attachment", "supplement", "alteration", "departure")
 
 
@@ -38,6 +42,35 @@ def register_wp_parsers(commands: argparse._SubParsersAction) -> None:
     _register_wp_close_change(wp_commands)
     _register_wp_run(wp_commands)
     _register_wp_acceptance(wp_commands)
+    _register_wp_withdraw_legacy(wp_commands)
+
+
+def _register_wp_withdraw_legacy(wp_commands: argparse._SubParsersAction) -> None:
+    """Register ``gz wp withdraw-legacy``, the successor to ``gz obpi withdraw``."""
+    p_withdraw = wp_commands.add_parser(
+        "withdraw-legacy",
+        help="Withdraw a legacy unit, permanently, on a human witness",
+        description=(
+            "Withdraw a legacy OBPI: one-way, and read as withdrawn everywhere. The\n"
+            "successor to gz obpi withdraw, accepting legacy ids (RO-14 act 7)."
+        ),
+        epilog=build_epilog([_WITHDRAW_EXAMPLE]),
+    )
+    p_withdraw.add_argument("unit", help="The legacy unit's id, OBPI-<X.Y.Z-NN-slug>")
+    p_withdraw.add_argument("--reason", required=True, help="Why, and where its REQs went")
+    # Human-act verb (GHI #1036): only a human witnesses a withdrawal, so never defaulted.
+    p_withdraw.add_argument("--attestor", required=True, help="The human witness, never defaulted")
+    add_dry_run_flag(p_withdraw, help_override="Show the event without booking it")
+    add_json_flag(p_withdraw)
+    p_withdraw.set_defaults(
+        func=lambda a: _lazy("wp_withdraw_legacy_cmd")(
+            unit=a.unit,
+            reason=a.reason,
+            attestor=a.attestor,
+            dry_run=a.dry_run,
+            as_json=a.as_json,
+        )
+    )
 
 
 def _register_wp_run(wp_commands: argparse._SubParsersAction) -> None:

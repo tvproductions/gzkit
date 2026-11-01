@@ -51,6 +51,7 @@ _CORPUS_LINEAGE_EVENT_TYPES: frozenset[str] = frozenset(
         "obpi_receipt_emitted",
         "pipeline_launched",
         "obpi_withdrawn",
+        "legacy_unit_withdrawn",
         "obpi_parked",
         "obpi_unparked",
         "obpi_blocked_on_operator",

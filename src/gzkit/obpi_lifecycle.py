@@ -13,11 +13,15 @@ predicate is testable without a project tree (hexagonal-architecture.md § 6).
 from collections.abc import Iterable, Mapping
 from typing import Any
 
+#: The events that withdraw a unit: `gz obpi withdraw`'s and its successor's (RO-14 act 7).
+#: Every reader of a withdrawal reads this, so neither verb's row can be missed.
+WITHDRAWN_EVENTS = frozenset({"obpi_withdrawn", "legacy_unit_withdrawn"})
+
 #: Events that permanently retire an OBPI. A terminal OBPI is never parked —
 #: parking one would double-count it against a disposition it already has.
 TERMINAL_EVENTS = frozenset(
     {
-        "obpi_withdrawn",
+        *WITHDRAWN_EVENTS,
         "obpi_completion_repudiated",
         "obpi_superseded",
         "obpi_abandoned",

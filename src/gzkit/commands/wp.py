@@ -36,6 +36,11 @@ from gzkit.core.exceptions import PolicyBreachError, ResourceNotFoundError, Tran
 from gzkit.events import BaselinedReq
 from gzkit.governance.trust_audits.catalog import footprint_breaches
 from gzkit.ledger import Ledger
+from gzkit.legacy_units import (
+    LegacyUnitNotFoundError,
+    LegacyUnitRetiredError,
+    withdraw_legacy_unit,
+)
 from gzkit.models.catalog import Alteration, Catalog, Departure, WorkPackage, load_catalog
 from gzkit.work_package_github import WorkPackageGithubError, tag_issues
 from gzkit.work_package_ledger import (
@@ -308,6 +313,40 @@ def _refuse_undelivered_proceed(root: Path, ledger: Ledger, work_package: str) -
             "delivered nothing to proceed with. Close it as `redirect`, `pause` or `terminate`."
         )
         raise PolicyBreachError(msg)
+
+
+def wp_withdraw_legacy_cmd(
+    *, unit: str, reason: str, attestor: str, dry_run: bool, as_json: bool
+) -> None:
+    """Withdraw a legacy unit, the successor to `gz obpi withdraw` (RO-14 act 7).
+
+    Raises:
+        PolicyBreachError: The reason or the witness is blank, or the unit is terminal;
+            nothing is written.
+        ResourceNotFoundError: The ledger holds no such unit.
+
+    """
+    ledger = Ledger(get_project_root() / ensure_initialized().paths.ledger)
+    if not reason.strip() or not attestor.strip():
+        msg = (
+            "A withdrawal names why, and a human witnesses it (OBPI state machine, the "
+            "`withdrawn` transition). Re-run with a non-empty --reason and --attestor."
+        )
+        raise PolicyBreachError(msg)
+    try:
+        event = withdraw_legacy_unit(ledger, unit, reason, attestor, book=not dry_run)
+    except LegacyUnitNotFoundError as exc:
+        raise ResourceNotFoundError(str(exc)) from exc
+    except LegacyUnitRetiredError as exc:
+        msg = f"{exc}. A withdrawal is permanent, so nothing is owed."
+        raise PolicyBreachError(msg) from exc
+    fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
+    if as_json:
+        fmt.emit(event.model_dump())
+    elif dry_run:
+        fmt.emit(f"Dry run, nothing booked:\n{event.model_dump_json(indent=2)}")
+    else:
+        fmt.emit(f"{event.id}: withdrawn.")
 
 
 def _baselined(entry: str) -> BaselinedReq:

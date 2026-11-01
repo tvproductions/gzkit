@@ -110,6 +110,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz wp block`](wp-block.md) | Record that a work package awaits the operator |
 | [`gz wp unblock`](wp-unblock.md) | Record the operator's ruling on a blocked work package |
 | [`gz wp show`](wp-show.md) | Show a work package's record, state and ledger history |
+| [`gz wp withdraw-legacy`](wp-withdraw-legacy.md) | Withdraw a legacy unit, permanently, on a human witness |
 | [`gz wp runs`](wp-runs.md) | Report what the ledger says every run in flight has reached |
 | [`gz handoff authorize`](handoff-authorize.md) | Deprecated alias for `gz handoff decide` |
 | [`gz handoff archive`](handoff-archive.md) | Move handoffs older than a threshold into `.gzkit/handoffs/archive/` (move-not-delete) |
