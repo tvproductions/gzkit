@@ -17,6 +17,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from rich.markup import escape
 
 from gzkit.canonical_history import content_hash, load_canonical_history, skill_body_slug
+from gzkit.catalog_seed import seed_catalog
 from gzkit.chores import (
     RegistryMergeReport,
     iter_deliverable_chore_files,
@@ -1153,11 +1154,12 @@ def _repair_missing_artifacts(
         if uv_status:
             repaired.append(uv_status)
 
-    # Repair .gitignore and the Astral-discipline baseline
+    # Repair .gitignore, the Astral-discipline baseline and the requirements catalog
     repaired.extend(
         _present(
             _scaffold_gitignore(project_root, dry_run=dry_run),
             _seed_astral_baseline(project_root, dry_run=dry_run),
+            seed_catalog(project_root, dry_run=dry_run),
         )
     )
 
@@ -1445,9 +1447,13 @@ def init(
         if uv_status:
             console.print(f"  {uv_status}")
 
-    # Create .gitignore, and seed the Astral-discipline baseline from what the
-    # project carries now
-    for status in _present(_scaffold_gitignore(project_root), _seed_astral_baseline(project_root)):
+    # Create .gitignore, seed the Astral-discipline baseline from what the project
+    # carries now, and seed the requirements catalog a work package needs
+    for status in _present(
+        _scaffold_gitignore(project_root),
+        _seed_astral_baseline(project_root),
+        seed_catalog(project_root),
+    ):
         console.print(f"  {status}")
 
     # Session-green gate: declare it, then deliver it. `gz check` verifies the

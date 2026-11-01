@@ -49,7 +49,10 @@ gz init [OPTIONS]
     the recorder's ledger row was rolled back whenever the ledger had
     unstaged rows (GHI #1092). An existing `post-commit.legacy` that is not
     gzkit's is left in place and reported
-13. Writes `.gitignore` and `data/audit_thresholds.json` when absent and, in a
+13. Writes `.gitignore`, `data/audit_thresholds.json` and each absent
+    `data/catalog/` file (the family legend, the delivery event types with a
+    cutover stamped at that moment, and empty stores, so `gz wp` works on a
+    fresh project) and, in a
     git worktree, registers the `gzkit-jsonl` append-only merge driver in
     local git config
 14. Appends `project_init` to the ledger, plus one `agent_sync_completed` per
@@ -396,6 +399,7 @@ Initializing gzkit for demo-proj in lite mode...
   Ran uv sync (virtualenv created)
   Created .gitignore
   Seeded data/astral_discipline_baseline.json (0 violation row(s); it only shrinks)
+  Seeded 6 data/catalog/ file(s)
   Created .pre-commit-config.yaml (pre-push gz check gate)
   Installed pre-commit, pre-push hooks (session-green gate active)
   Registered git merge driver 'gzkit-jsonl' for append-only JSONL

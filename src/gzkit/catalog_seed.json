@@ -1,0 +1,106 @@
+{
+  "_doc": "What gz init writes into a project's data/catalog/ when a file is absent (RO-14, the fresh-project discrepancy; operator ruling 2026-11-01: \"Seed at gz init (Recommended)\"). Keyed by registry name: the legend and the delivery event types, every store empty. delivery_events.json takes its cutover at seeding, so a project's own earlier events stay legacy. Written by gzkit/catalog_seed.py; held equal to gzkit's own data/catalog/ by tests/test_catalog_seed.py.",
+  "files": {
+    "catalog/families.json": {
+      "_doc": "The family legend of the requirements catalog: decision 8.3 of docs/governance/ieee/requirements-model.md (operator ruling 2026-10-18), Scheme A's families banded as MIL-STD-881's product and common elements; each scope is Scheme A's. Seeded by drydock RO-3 (docs/governance/harbor-ro3-requirements-store.md, operator ruling 2026-10-21: \"Seed the legend (Rec.)\"). Shape: src/gzkit/schemas/catalog_families.json; read by gzkit/models/catalog.py; witnessed by `gz validate --catalog`.",
+      "families": [
+        {
+          "code": "X",
+          "band": "product",
+          "name": "Airlock and entry",
+          "scope": "The airlock, permitted entry, ontology imaging and the focused context loader, which govern how work enters the project; session memory is H's."
+        },
+        {
+          "code": "H",
+          "band": "product",
+          "name": "Session continuity",
+          "scope": "Handoffs, the ruling store, session orientation and insights, which carry one session's model to the next; ecosystem transit is X's."
+        },
+        {
+          "code": "C",
+          "band": "product",
+          "name": "Control surfaces and corpus",
+          "scope": "AGENTS.md composition, the content corpus, vendor sync, skills, rules, personas, roles, readiness and the knowledge bundle; product verification is G's."
+        },
+        {
+          "code": "M",
+          "band": "product",
+          "name": "Maintenance",
+          "scope": "The MX hangar, safe mode, chores, tidy, preflight, GHI repair routing and cross-repo issue filing; feature and requirements work are not M's, since GHIs carry repair only."
+        },
+        {
+          "code": "P",
+          "band": "product",
+          "name": "Packaging and release",
+          "scope": "Init, upgrade, patch release, git-sync, parity, distribution and feature flags; release planning is R's."
+        },
+        {
+          "code": "D",
+          "band": "product",
+          "name": "Decision records",
+          "scope": "ADR authoring, decision status, supersession, pool and promotion, and evaluation; delivery state of any kind is not D's."
+        },
+        {
+          "code": "R",
+          "band": "common",
+          "name": "Requirements and work",
+          "scope": "Intent, the catalog and the labor that delivers it: the PRD, constitution, catalog, work packages, task cards and Release Packages; decision records are D's."
+        },
+        {
+          "code": "G",
+          "band": "common",
+          "name": "Gates and verification",
+          "scope": "Every verification gzkit has: check, tests, smoke, behave, covers, drift, test shape, every validator that spans families, ARB receipts and canaries; human attestation is A's, and a unit's own tests stay with its outcome."
+        },
+        {
+          "code": "A",
+          "band": "common",
+          "name": "Attestation and closeout",
+          "scope": "Gate 5, attestation, closeout, audit and completion reversal; automated verification is G's."
+        },
+        {
+          "code": "L",
+          "band": "common",
+          "name": "Ledger and state",
+          "scope": "The append-only ledger and its schema, state and status views, frontmatter coherence, the alias layer, the backlog board and bulletins; the evidence producers themselves are not L's."
+        },
+        {
+          "code": "Q",
+          "band": "common",
+          "name": "Quality attributes",
+          "scope": "The PRD section 7 attributes and every cross-cutting NFR (decision 8.1); functional behaviour is not Q's."
+        }
+      ]
+    },
+    "catalog/outcomes.json": {
+      "_doc": "The outcomes of the requirements catalog, each a member of one family in data/catalog/families.json (docs/governance/ieee/requirements-model.md). Empty by drydock RO-3's ruling (docs/governance/harbor-ro3-requirements-store.md, operator ruling 2026-10-21); an outcome is created by RO-11's entry verb and edited, moved, reopened or withdrawn by RO-5's (change orders of 2026-10-30). No lifecycle state is held here: delivery status lives only in the ledger (decision 3). Shape: src/gzkit/schemas/catalog_outcomes.json; read by gzkit/models/catalog.py; witnessed by `gz validate --catalog`.",
+      "outcomes": []
+    },
+    "catalog/reqs.json": {
+      "_doc": "The requirements of the requirements catalog, `REQ-<n>`, each a member of one outcome in data/catalog/outcomes.json (docs/governance/ieee/requirements-model.md). Empty by drydock RO-3's ruling (docs/governance/harbor-ro3-requirements-store.md, operator ruling 2026-10-21); no legacy REQ is migrated. No proof is held here: proof lives only in the ledger (decision 4). Shape: src/gzkit/schemas/catalog_reqs.json; read by gzkit/models/catalog.py; witnessed by `gz validate --catalog`.",
+      "reqs": []
+    },
+    "catalog/externals.json": {
+      "_doc": "The external boundaries an outcome in data/catalog/outcomes.json may depend on, named there as `external:<slug>` (docs/governance/harbor-ro3-requirements-store.md, operator ruling 2026-10-22, \"Declared prefixes (Rec.)\"). A boundary is named only if this roster declares it. Empty until an outcome needs one. Shape: src/gzkit/schemas/catalog_externals.json; read by gzkit/models/catalog.py; witnessed by `gz validate --catalog`.",
+      "externals": []
+    },
+    "catalog/work_packages.json": {
+      "_doc": "The work packages of the requirements catalog (docs/governance/harbor-ro5-work-packages.md, drydock RO-5): one record per package, kind delivery (names its outcome) or repair (names its GitHub issues and stores its lane), each holding its formal work package (initial conditions, procedure, test and inspection, system restoration, NA where a section does not apply) and its objective quality evidence. Edited only through gz verbs (ruling 3). No lifecycle state is held here: it lives only in the ledger, as work_package_transitioned and work_package_changed. Shape: src/gzkit/schemas/catalog_work_packages.json; read by gzkit/models/catalog.py; witnessed by `gz validate --catalog`.",
+      "work_packages": []
+    },
+    "catalog/delivery_events.json": {
+      "_doc": "The forward rule's registry (docs/governance/harbor-ro3-requirements-store.md, drydock RO-3 tranche 4). A delivery event of a listed type appended after the cutover that names no REQ or outcome is refused by `gz validate --catalog` (ruling 4; advisory until RO-5 tranche 4 made it fail-closed, operator 2026-10-28: \"Fail-closed, legacy exempt (Recommended)\": an event naming an OBPI or ADR id is frozen legacy and passes, any other names a REQ, an outcome or a held work package). Events before the cutover are legacy and never read or backfilled. Operator rulings of 2026-10-22: \"All nine (Rec.)\" for the types, \"Timestamp in registry (Rec.)\" for the cutover, set when tranche 4 landed. Shape: src/gzkit/schemas/catalog_delivery_events.json; read by gzkit/models/catalog.py.",
+      "event_types": [
+        "task_started",
+        "task_completed",
+        "obpi_receipt_emitted",
+        "gate_checked",
+        "attested",
+        "acceptance_recorded",
+        "red_receipt_emitted",
+        "stage2_dispatch_recorded",
+        "closeout_initiated"
+      ]
+    }
+  }
+}
