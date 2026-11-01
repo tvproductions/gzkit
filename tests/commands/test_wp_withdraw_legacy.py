@@ -7,6 +7,8 @@ to everything that reads a withdrawn OBPI.
 """
 
 import json
+import subprocess
+import sys
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -17,6 +19,7 @@ from gzkit.ledger import Ledger, obpi_created_event
 from gzkit.ledger_events import obpi_superseded_event
 from gzkit.ledger_producer_probe import probe_producer
 from gzkit.obpi_lifecycle import TERMINAL_EVENTS
+from gzkit.ontology.corpus import project_corpus
 from gzkit.pipeline_position import _ends_run
 from tests.commands.common import CliRunner, _quick_init
 
@@ -28,6 +31,20 @@ _WORDS = ("--reason", "carried to REQ-7", "--attestor", "g0")
 
 def _ledger() -> Ledger:
     return Ledger(Path(".gzkit") / "ledger.jsonl")
+
+
+class TestImport(unittest.TestCase):
+    def test_the_rule_imports_as_a_process_first_import(self) -> None:
+        # In one process the suite has already loaded `gzkit.ledger`, hiding the cycle.
+        run = subprocess.run(
+            [sys.executable, "-c", "import gzkit.legacy_units"],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            check=False,
+        )
+        self.assertEqual(run.returncode, 0, msg=run.stderr)
 
 
 class TestWithdrawLegacy(unittest.TestCase):
@@ -54,6 +71,13 @@ class TestWithdrawLegacy(unittest.TestCase):
         node = _ledger().get_artifact_graph()[_UNIT]
         self.assertTrue(node["withdrawn"])
         self.assertEqual(node["withdrawn_reason"], "carried to REQ-7")
+
+    def test_the_corpus_projection_accounts_for_the_withdrawal(self) -> None:
+        self.runner.invoke(main, [*_VERB, *_WORDS])
+        projection = project_corpus(_ledger())
+        self.assertEqual(projection.fidelity.unaccounted_event_types, ())
+        self.assertTrue(projection.fidelity.complete)
+        self.assertTrue(projection.source_graph[_UNIT]["withdrawn"])
 
     def test_the_closeout_proof_reads_the_withdrawal(self) -> None:
         self.runner.invoke(main, [*_VERB, *_WORDS])

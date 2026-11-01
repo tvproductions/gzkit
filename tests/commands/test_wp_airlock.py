@@ -102,6 +102,11 @@ def _commit(path: str, trailer: str) -> None:
     _git("commit", "--no-verify", "-m", f"work on {path}\n\nTask: {trailer}\n")
 
 
+def _corrupt_index() -> None:
+    """Leave history readable and the working tree not, as a damaged index does."""
+    (Path(".git") / "index").write_bytes(b"not an index")
+
+
 def _changes() -> TransitObservation:
     changes = package_changes(Path.cwd(), _PACKAGE)
     if changes is None:
@@ -212,9 +217,15 @@ class TestAttribution(_AirlockCase):
         with tempfile.TemporaryDirectory() as plain:
             self.assertIsNone(package_changes(Path(plain).resolve(), _PACKAGE))
 
+    def test_a_repository_with_no_history_observes_nothing(self) -> None:
+        with tempfile.TemporaryDirectory() as plain:
+            root = Path(plain).resolve()
+            _git("-C", str(root), "init", "--quiet")
+            self.assertIsNone(package_changes(root, _PACKAGE))
+
     def test_a_tree_git_cannot_read_observes_nothing(self) -> None:
-        with mock.patch("gzkit.work_package_transit.read_changed_files", return_value=None):
-            self.assertIsNone(package_changes(Path.cwd(), _PACKAGE))
+        _corrupt_index()
+        self.assertIsNone(package_changes(Path.cwd(), _PACKAGE))
 
 
 class TestAccept(_AirlockCase):
@@ -314,6 +325,13 @@ class TestAccept(_AirlockCase):
             result = self.runner.invoke(main, ["wp", "accept", _PACKAGE, "--evidence", "e"])
         self.assertEqual(result.exit_code, 3, msg=result.output)
         self.assertIn("git", result.output)
+
+    def test_a_declared_footprint_refuses_when_git_cannot_read_the_tree(self) -> None:
+        self._commence()
+        _corrupt_index()
+        result = self.runner.invoke(main, ["wp", "accept", _PACKAGE, "--evidence", "e"])
+        self.assertEqual(result.exit_code, 3, msg=result.output)
+        self.assertEqual(self._rows("airlock_out"), [])
 
     def test_a_footprint_edited_by_hand_after_freeze_moves_nothing(self) -> None:
         self._commence()
@@ -508,11 +526,13 @@ class TestVendorMirror(_AirlockCase):
 
 
 class TestDelivery(unittest.TestCase):
-    def test_a_delivery_package_freezes_and_reads_undeclared_until_ro11(self) -> None:
-        runner = CliRunner()
-        self.enterContext(runner.isolated_filesystem())
+    def setUp(self) -> None:
+        self.runner = CliRunner()
+        self.enterContext(self.runner.isolated_filesystem())
         _quick_init()
         _seed([_delivery_record(_PACKAGE, kind="delivery")], [_req()])
+
+    def _commence(self) -> None:
         for args in (
             ["initiate", _PACKAGE, "--operator-text", "go"],
             [
@@ -528,12 +548,27 @@ class TestDelivery(unittest.TestCase):
             ],
             ["commence", _PACKAGE, "--evidence", "e"],
         ):
-            result = runner.invoke(main, ["wp", *args])
+            result = self.runner.invoke(main, ["wp", *args])
             self.assertEqual(result.exit_code, 0, msg=result.output)
-        result = runner.invoke(
+
+    def test_a_delivery_package_freezes_and_reads_undeclared_until_ro11(self) -> None:
+        self._commence()
+        result = self.runner.invoke(
             main, ["airlock", "out", "--target", _PACKAGE, "--dry-run", "--json"]
         )
         self.assertEqual(json.loads(result.output)["verdict"], "undeclared")
+
+    def test_an_undeclared_footprint_is_reported_at_acceptance_and_not_refused(self) -> None:
+        _git("init", "--quiet")
+        _git("add", "-A")
+        _git("commit", "--no-verify", "--quiet", "-m", "baseline")
+        self._commence()
+        _commit(_OUTSIDE, _TRAILER)
+        with mock.patch("gzkit.commands.wp.acceptance_blockers", return_value=[]):
+            result = self.runner.invoke(main, ["wp", "accept", _PACKAGE, *_EVIDENCE])
+        self.assertEqual(result.exit_code, 0, msg=result.output)
+        rows = Ledger(Path(".gzkit") / "ledger.jsonl").query(event_type="airlock_out")
+        self.assertEqual([row.extra["verdict"] for row in rows], ["undeclared"])
 
 
 class TestDirectoryFootprint(_AirlockCase):

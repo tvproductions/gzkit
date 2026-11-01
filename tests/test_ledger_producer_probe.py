@@ -3,12 +3,18 @@
 import json
 import unittest
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
 from unittest.mock import patch
 
+from gzkit import legacy_units
 from gzkit.acceptance_store import initialize
 from gzkit.events import parse_typed_event
+from gzkit.ledger_events import legacy_unit_withdrawn_event, obpi_withdrawn_event
 from gzkit.ledger_producer_probe import probe_producer
 from gzkit.reports import publish_report
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 class ProducerProbeTests(unittest.TestCase):
@@ -333,3 +339,78 @@ class WorkPackageProducerProbeTests(unittest.TestCase):
         with patch.object(work_package_ledger, "_refuse", lambda message: None):
             observation = probe_producer("work_package_issue_closed")
         self.assertEqual(observation.status, "failed")
+
+
+def _then_refuse(first: Callable[..., object]) -> Callable[..., object]:
+    """Stand in for the writer: *first* on the first call, the refusal on every later one.
+
+    Returns:
+        The stand-in.
+
+    """
+    calls: list[str] = []
+
+    def write(ledger: Any, unit: str, reason: str, attestor: str) -> object:
+        calls.append(unit)
+        if len(calls) > 1:
+            raise legacy_units.LegacyUnitRetiredError(unit)
+        return first(ledger, unit, reason, attestor)
+
+    return write
+
+
+class LegacyWithdrawalProducerProbeTests(unittest.TestCase):
+    """The withdrawal books one true row and refuses a second (RO-14 act 7)."""
+
+    def test_a_writer_that_books_the_wrong_record_gets_no_credit(self) -> None:
+        real = legacy_units.withdraw_legacy_unit
+        cases: tuple[tuple[str, Callable[..., object], str], ...] = (
+            ("nothing", lambda *_: None, "exactly one"),
+            (
+                "the old event",
+                lambda ledger, unit, reason, attestor: ledger.append(
+                    obpi_withdrawn_event(unit, "ADR-0.0.1", reason, attestor)
+                ),
+                "wrong event type",
+            ),
+            (
+                "another unit",
+                lambda ledger, _unit, reason, attestor: ledger.append(
+                    legacy_unit_withdrawn_event("OBPI-0.1.0-02", "ADR-0.0.1", reason, attestor)
+                ),
+                "disagrees",
+            ),
+            (
+                "another attestor",
+                lambda ledger, unit, reason, _attestor: real(ledger, unit, reason, "someone-else"),
+                "disagrees",
+            ),
+        )
+        for name, first, expected in cases:
+            with (
+                self.subTest(name),
+                patch.object(legacy_units, "withdraw_legacy_unit", side_effect=_then_refuse(first)),
+            ):
+                observation = probe_producer("legacy_unit_withdrawn")
+                self.assertEqual(observation.status, "failed")
+                self.assertIn(expected, observation.error or "")
+
+    def test_a_writer_that_withdraws_twice_gets_no_credit(self) -> None:
+        with patch.object(legacy_units, "withdraw_transition_available", return_value=True):
+            observation = probe_producer("legacy_unit_withdrawn")
+        self.assertEqual(observation.status, "failed")
+        self.assertIn("withdrawn twice", observation.error or "")
+
+    def test_a_refusal_that_still_books_a_row_gets_no_credit(self) -> None:
+        real = legacy_units.withdraw_legacy_unit
+
+        def book_then_refuse(ledger: Any, unit: str, reason: str, attestor: str) -> object:
+            if ledger.query(event_type="legacy_unit_withdrawn"):
+                ledger.append(legacy_unit_withdrawn_event(unit, "ADR-0.0.1", reason, attestor))
+                raise legacy_units.LegacyUnitRetiredError(unit)
+            return real(ledger, unit, reason, attestor)
+
+        with patch.object(legacy_units, "withdraw_legacy_unit", side_effect=book_then_refuse):
+            observation = probe_producer("legacy_unit_withdrawn")
+        self.assertEqual(observation.status, "failed")
+        self.assertIn("nothing for a refusal", observation.error or "")

@@ -16,7 +16,7 @@ state, on.
 from typing import TYPE_CHECKING, Any
 
 from gzkit.core.obpi_state_machine import CANONICAL_TRANSITIONS, OBPIState
-from gzkit.ledger_events import legacy_unit_withdrawn_event
+from gzkit.ledger import legacy_unit_withdrawn_event
 
 if TYPE_CHECKING:
     from gzkit.ledger import Ledger, LedgerEvent

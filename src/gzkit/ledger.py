@@ -1529,6 +1529,7 @@ from gzkit.ledger_events import (  # noqa: E402, F401
     constitution_created_event,
     gate_checked_event,
     ledger_event_corrected_event,
+    legacy_unit_withdrawn_event,
     lifecycle_transition_event,
     obpi_blocked_on_operator_event,
     obpi_completion_repudiated_event,
