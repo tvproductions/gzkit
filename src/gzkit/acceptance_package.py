@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.core.models import CATALOG_REQ_ID_BODY
 from gzkit.models.catalog import WORK_PACKAGE_ID_PATTERN
 from gzkit.work_package_ledger import frozen_baseline, package_rows, work_package_state
 
@@ -57,7 +58,7 @@ def binds_by_mutation(obligation_id: str) -> bool:
         True for a carried issue, `#<issue>`, and a catalog REQ, `REQ-<n>`.
 
     """
-    return re.fullmatch(r"#[1-9][0-9]*|REQ-[1-9][0-9]*", obligation_id) is not None
+    return re.fullmatch(rf"#[1-9][0-9]*|{CATALOG_REQ_ID_BODY}", obligation_id) is not None
 
 
 def departed_reqs(ledger: Ledger, work_package: str) -> set[str]:

@@ -54,6 +54,8 @@ _HUMAN_ACT = frozenset(
         "gz mx repair",
         "gz ledger correct",
         "gz obpi acceptance",
+        # RO-14 act 5: the same human-review ruling, on a work package.
+        "gz wp acceptance",
         # GHI #1161: records the operator's own act of reviewing a canary's mutant.
         "gz canary review",
         # RO-5 tranche 2: closing a work package is Gate 5, the operator's own act.
