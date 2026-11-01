@@ -32,9 +32,8 @@ def frontmatter_reconcile_cmd(*, dry_run: bool = False, as_json: bool = False) -
       2 = system/IO error (ledger unreadable, write failure)
       3 = policy breach (UnmappedStatusBlocker)
 
-    Non-zero exit codes are propagated via ``SystemExit`` so ``gzkit.cli.main``
-    terminates the process with the correct code — its else-branch swallows
-    handler return values otherwise.
+    Non-zero exit codes are propagated via ``SystemExit``, which
+    ``gzkit.cli.main`` turns into the process's exit code.
     """
     project_root = _resolve_project_root()
     if project_root is None:

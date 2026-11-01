@@ -92,9 +92,8 @@ def smoke_gate(project_root: Path | None = None, budget: float | None = None) ->
 def smoke_cmd(project_root: Path | None = None, budget: float | None = None) -> None:
     """CLI entrypoint: run the gate and surface its verdict as an exit code.
 
-    `gzkit.cli.main` discards a handler's return value and reads `SystemExit`,
-    so a gate that only *returned* 3 would report success — the failure this
-    wrapper exists to prevent.
+    The gate's code leaves through `SystemExit`, which `gzkit.cli.main` turns into
+    the process's exit code.
     """
     code = smoke_gate(project_root, budget)
     if code:

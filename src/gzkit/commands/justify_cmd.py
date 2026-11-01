@@ -3,8 +3,7 @@
 Dispatches to the scaffold (default) or ``validate`` subverb handlers in
 :mod:`gzkit.justify.cli`. The handler is the argparse entry point registered
 in :mod:`gzkit.cli.parser_artifacts`. Non-zero exit codes are propagated via
-``SystemExit`` because ``gzkit.cli.main`` swallows handler return values
-(same pattern as ``obpi_precomplete_cmd``). Pure unit tests should call
+``SystemExit`` (same pattern as ``obpi_precomplete_cmd``). Pure unit tests should call
 ``gzkit.justify.cli.handle_justify`` or ``handle_validate`` directly — they
 return exit codes and never raise for routine policy decisions.
 """

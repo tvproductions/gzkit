@@ -39,7 +39,9 @@ class TestMainHonoursAReturnedExitCode(unittest.TestCase):
                 self.assertEqual(self._exit_for(result), 0)
 
     def test_a_returned_value_that_is_not_a_code_exits_zero(self) -> None:
-        self.assertEqual(self._exit_for("rendered text"), 0)
+        for result in ("rendered text", True, False):
+            with self.subTest(result=result):
+                self.assertEqual(self._exit_for(result), 0)
 
 
 class _ProjectCase(unittest.TestCase):

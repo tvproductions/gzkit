@@ -140,10 +140,11 @@ def _exit_code_from(result: object) -> int:
     """Read a handler's return; GHI #1198, a refused dispatch exited 0.
 
     Returns:
-        ``result`` when it is an int, which is the handler's exit code, otherwise 0.
+        ``result`` when it is an int, which is the handler's exit code; 0 for anything
+        else, a bool included, which is an answer and not a code.
 
     """
-    return result if isinstance(result, int) else 0
+    return result if type(result) is int else 0
 
 
 def main(argv: list[str] | None = None) -> int:

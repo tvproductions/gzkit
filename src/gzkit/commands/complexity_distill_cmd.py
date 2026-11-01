@@ -56,9 +56,8 @@ def complexity_distill_cmd(
 ) -> int:
     """Compose measurement + distillation render; emit Output Contract summary.
 
-    Returns ``0`` on success and ``raise SystemExit(code)`` for non-zero exits
-    so the CLI dispatcher (which discards handler return values) sees the
-    correct process exit status. Tests can collapse both paths by catching
+    Returns ``0`` on success and ``raise SystemExit(code)`` for non-zero exits.
+    Tests can collapse both paths by catching
     ``SystemExit`` and reading ``exc.code`` (justify_cmd precedent).
     """
     try:

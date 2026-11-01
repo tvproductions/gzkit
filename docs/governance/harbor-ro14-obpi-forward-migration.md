@@ -79,7 +79,7 @@ Replayed over that run's ledger rows with the bound of `MAX_REVIEW_FIX_CYCLES`, 
 
 **#1208 is half answered.** `gz wp dispatch` reads and writes no marker, so a marker fault cannot cost it its row; `test_a_marker_fault_costs_the_dispatch_no_row` holds that. The work-package surface has no run position yet, so the transition row #1208 protects has no successor until act 3, and #1208 stays open for it. Act 3 records position ledger first, with no cache in front of it.
 
-**`gz obpi dispatch` is not repaired.** `record_dispatch` keeps its uncontained cache refresh, and the command keeps printing refusals on stdout. The contract moved these repairs to tranche 1 because a repair to `gz obpi` would guard no run (§ Rulings of 2026-10-31); tranche 3 removes the surface. A repair of `record_dispatch` was built and withdrawn in this act, before landing, when that sentence was read.
+**`gz obpi dispatch` is not repaired.** `record_dispatch` keeps its uncontained cache refresh, the command keeps printing refusals on stdout, and `--role` still records and exits 0 on a marker file naming another OBPI, which `--single-driver` refuses. The contract moved these repairs to tranche 1 because a repair to `gz obpi` would guard no run (§ Rulings of 2026-10-31); tranche 3 removes the surface. A repair of `record_dispatch` was built and withdrawn in this act, before landing, when that sentence was read.
 
 ## Mode contract
 

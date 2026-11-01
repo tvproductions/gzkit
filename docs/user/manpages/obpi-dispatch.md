@@ -76,8 +76,8 @@ Two consequences worth knowing at the command line:
 | Code | Meaning |
 |------|---------|
 | 0 | Dispatch recorded, declaration written, or channel rendered |
-| 1 | No active pipeline marker, unknown role, `--role` without `--model`, or `--single-driver` without `--reason`; nothing is recorded |
-| 2 | System error |
+| 1 | No active pipeline marker, unknown role, `--role` without `--model`, or `--single-driver` without `--reason`, with nothing recorded; or an unexpected failure |
+| 2 | Usage error: the arguments do not parse |
 
 ## Examples
 
