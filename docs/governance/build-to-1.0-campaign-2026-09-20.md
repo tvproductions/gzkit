@@ -687,6 +687,10 @@ chores after rnd"*, 2026-10-09). The freeze of 2026-06-09 stays a dated record; 
 reconciliation of the three June acts is candidate text in the same Part 0 and is ratified
 with the doctrine, not by this entry.
 
+### 2026-11-01 — #1028 hold lifted to fold its remainder into RO-14 act 5 (operator-ratified)
+
+**Operator (`g0`), by selection:** *"Lift, fold into act 5 (Recommended)"*. The hold lifts for this purpose only. GHI #1028's remainder, a reachable exit and a runtime bound for review rounds, moves into RO-14 tranche 1 act 5, acceptance on the work package, carrying the ruled N=2. The pipeline skill's Stage 4 text is not reworked on a surface tranche 3 retires. The issue stays open until act 5 discharges it.
+
 ### 2026-10-07 — #1028 hold lifted for the measurement only (operator-ratified)
 
 **Operator (`g0`), verbatim (2026-10-07):** *"A"*, selecting "lift the hold for the measurement

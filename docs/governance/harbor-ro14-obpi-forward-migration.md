@@ -71,8 +71,8 @@ Replayed over that run's ledger rows with the bound of `MAX_REVIEW_FIX_CYCLES`, 
 1. **The bound.** `gz wp dispatch`, `block` and `unblock` with `gzkit.work_package_run` (#1200). Three builds failed independent review; the routes are closed by rulings 14 to 17 and a same-subject arming clause; the fourth passed and landed.
 2. **Dispatch's defects.** #1198 and #1208, read against the new verb. See § Act 2's reading.
 3. **Run position and markers.** #1203, #1205 and #1209, and the half of #1208 that act 2 leaves open.
-4. **The fence and the stage bound.** #1206, and #1028 with its stop-and-ask boundary.
-5. **Acceptance on the work package**, which gives `gz wp block` the refutation count ruling 8 requires.
+4. **The fence.** #1206, landed. #1028 moved to act 5 (operator, by selection: *"Lift, fold into act 5 (Recommended)"*).
+5. **Acceptance on the work package**, which gives `gz wp block` the refutation count ruling 8 requires, and #1028's remainder: a reachable exit and a runtime bound for review rounds, at the ruled N=2, with its stop-and-ask boundary.
 6. **The airlock on the work package.** #1185.
 <!-- gz-validate-skip: command-shape -->
 7. **`gz wp withdraw-legacy`.**
