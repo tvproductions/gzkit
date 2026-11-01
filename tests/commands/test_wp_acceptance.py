@@ -332,11 +332,27 @@ class TestTheRoundBound(_PackageCase):
         self.assertEqual(refuted_rounds(self.root, _PACKAGE), 0)
         self._wp(*self._dispatch())
 
-    def test_a_human_review_restarts_the_count(self) -> None:
+    def test_a_human_review_is_refused_past_the_limit(self) -> None:
         self._init()
         self._refute(3)
-        record_human_review(self.root, _PACKAGE, attestor="g0", ruling="accepted as it stands")
-        self.assertEqual(refuted_rounds(self.root, _PACKAGE), 0)
+        message = self._refused(
+            "acceptance", _PACKAGE, "human-review", "--attestor", "g0", "--ruling", "as it stands"
+        )
+        self.assertIn(f"gz wp block {_PACKAGE}", " ".join(message.split()))
+        self.assertEqual(refuted_rounds(self.root, _PACKAGE), 3)
+
+    def test_a_human_review_under_the_limit_keeps_the_count(self) -> None:
+        self._init()
+        self._refute(2)
+        record_human_review(self.root, _PACKAGE, attestor="g0", ruling="as it stands")
+        self.assertEqual(refuted_rounds(self.root, _PACKAGE), 2)
+
+    def test_a_human_review_after_the_unblock_is_admitted(self) -> None:
+        self._init()
+        self._refute(3)
+        self._wp("block", _PACKAGE, "--reason", "r", "--next-action", "n")
+        self._wp("unblock", _PACKAGE, "--ruling", "as it stands", "--operator", "g0")
+        record_human_review(self.root, _PACKAGE, attestor="g0", ruling="as it stands")
 
     def test_an_identical_receipt_counts_once(self) -> None:
         self._init()

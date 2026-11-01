@@ -66,8 +66,8 @@ One step at a time: `initiated`, `frozen`, `commenced`, `accepted`, `closed`.
 4. **Prove and review.** `uv run gz wp acceptance <WP-id> init --author <session>`,
    then `prove --spec <file>` and `review --receipt <run-id>`, on the frozen REQs or
    each carried issue. Spec, quality and adversarial reviews approve each proof. A
-   package gets three adversarial rounds with a mapped finding; dispatch and accept
-   then refuse until `gz wp block` and the operator's ruling. See
+   package gets three adversarial rounds with a mapped finding; dispatch, accept and
+   `human-review` then refuse until `gz wp block` and the operator's unblock. See
    `docs/user/manpages/wp-acceptance.md`.
 5. **Accept** at final inspection with no tag still hung, once
    `uv run gz wp acceptance <WP-id> status` reads ready:

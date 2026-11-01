@@ -34,7 +34,7 @@ A delivery package's obligations are its frozen REQs at their frozen revisions, 
 
 [`gz wp accept`](wp-accept.md) refuses until `status` reads ready. Appending objective quality evidence with `gz wp evidence` makes no review stale; any other edit to the record does.
 
-A package gets three adversarial rounds with a mapped finding: the first and two follow-ups (GHI #1028). A review is recorded past the limit, so no finding is lost. Past the limit, `gz wp dispatch` and `gz wp accept` refuse until [`gz wp block`](wp-block.md), which reports the refutations per subject, and the operator's ruling. That ruling, through `gz wp unblock` or `human-review`, restarts the round count; the fix-cycle bound still holds any repair, and `--exit terminate` is open on any block. A departed REQ leaves the package's acceptance with its proofs and findings, which stay on the ledger.
+A package gets three adversarial rounds with a mapped finding: the first and two follow-ups (GHI #1028). A review is recorded past the limit, so no finding is lost. Past the limit, `gz wp dispatch`, `gz wp accept` and `human-review` refuse until [`gz wp block`](wp-block.md), which reports the refutations per subject, and the operator's ruling through `gz wp unblock`. That ruling restarts the round count; the fix-cycle bound still holds any repair, and `--exit terminate` is open on any block. A departed REQ leaves the package's acceptance with its proofs and findings, which stay on the ledger.
 
 ## Examples
 

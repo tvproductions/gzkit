@@ -404,8 +404,9 @@ def refuted_rounds(root: Path, work_package: str) -> int:
     """Count adversarial rounds with a mapped finding since the operator last ruled.
 
     A mapped finding is what blocks readiness, so it counts and the verdict token
-    does not. An unblock or a human review is the operator's ruling and restarts the
-    count; a repair still needs a dispatch, which the fix-cycle bound holds.
+    does not. An unblock is the operator's ruling and restarts the count, once the
+    block has shown the facts; a repair still needs a dispatch, which the fix-cycle
+    bound holds.
 
     Returns:
         The rounds that count against :func:`review_round_limit`.
@@ -413,9 +414,7 @@ def refuted_rounds(root: Path, work_package: str) -> int:
     """
     rounds = 0
     for event in _review_rows(root, work_package):
-        if event.event == "work_package_unblocked" or (
-            event.extra.get("record_type") == "human-review"
-        ):
+        if event.event == "work_package_unblocked":
             rounds = 0
         elif event.extra.get("record_type") == "review" and _is_round(event):
             rounds += 1
@@ -445,7 +444,8 @@ def round_bound_refusal(root: Path, work_package: str) -> str | None:
     bound stands where the work would restart.
 
     Returns:
-        The refusal for `gz wp dispatch` and `gz wp accept`, or None under the limit.
+        The refusal for `gz wp dispatch`, `gz wp accept` and `human-review`, or None
+        under the limit.
 
     """
     if refuted_rounds(root, work_package) < review_round_limit():
@@ -513,7 +513,16 @@ def record_human_review(root: Path, obpi_id: str, *, attestor: str, ruling: str)
 
     Caller authorization is the same operator-verbatim boundary as attestation;
     never infer this action from permission to implement or repair an OBPI.
+
+    Raises:
+        ValueError: A package is past its round limit, so the block comes first (ruling
+            20), or the ruling has no current proof to judge.
+
     """
+    if is_work_package_id(obpi_id):
+        refusal = round_bound_refusal(root, obpi_id)
+        if refusal:
+            raise ValueError(refusal)
     history = load_history(root, obpi_id)
     current = {proof.obligation_id: proof for proof in history.proofs}
     status = acceptance_status(root, obpi_id)
