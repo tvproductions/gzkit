@@ -2,7 +2,7 @@
 
 # RO-14 specification — the forward migration from OBPI to work package
 
-**2026-10-31. Status: scope, tranches and open points ruled; tranche 1 cut into acts; acts 1 to 3 landed.** Operator: **g0**. Repair order of the [harbor pilotage contract](harbor-pilotage-candidate-2026-10-15.md), which holds the binding rulings.
+**2026-10-31. Status: scope, tranches and open points ruled; tranche 1 cut into acts; acts 1 to 5 landed.** Operator: **g0**. Repair order of the [harbor pilotage contract](harbor-pilotage-candidate-2026-10-15.md), which holds the binding rulings.
 
 ## Scope
 
@@ -77,13 +77,27 @@ Replayed over that run's ledger rows with the bound of `MAX_REVIEW_FIX_CYCLES`, 
 <!-- gz-validate-skip: command-shape -->
 7. **`gz wp withdraw-legacy`.**
 
+## Act 5's reading
+
+Independent review refuted two builds. The first refused truthful findings at import and dead-ended the departure exit. The second could not prove a catalog REQ at all and repaired departure only for a REQ with no history. The third read of the repair bound found a block writing zero for a departed REQ's refutations; put to the operator as an exit: fix the count and land; land as it stands; or hold. Operator, by selection: *"Fix the count, land (Recommended)"*.
+
+**Acceptance moves to the work package by adapting the pipeline.** Operator, verbatim: *"we will adapt, as much as possible, the current gz-obpi-pipeline"*. A package supplies the contract a brief supplies, so proofs, reviews, closures and readiness run unchanged through the same store and reducer, and `gz wp acceptance` reaches them. A delivery package owes its frozen REQs, less any a `departure` exit moved out (ruling 12); a repair package owes one obligation per carried issue, named as the bound names it. An issue or a catalog REQ has no `@covers` scan, so its proof binds by killing the named mutants. The contract holds the whole record but its evidence.
+
+**`gz wp accept` refuses until the reducer reads ready**, as the pipeline's completion does. A package stopped by an exit is excused: it claims no delivery and closes through Gate 5 (ruling 12), and requiring proof would leave it fenced for good. Unless its acceptance reads ready, it cannot then close as `proceed`.
+
+**#1028's remainder lands here.** A package gets three adversarial rounds with a mapped finding, the first and the ruled N=2 follow-ups, the limit being one more than the fix-cycle bound. A review is recorded past the limit, so a truthful finding is never lost: the bound stands at `gz wp dispatch` and `gz wp accept`, which refuse past the limit and name `gz wp block`, the exit #1028 found unreachable. A mapped finding counts and the verdict token does not, because a mapped finding is what blocks readiness. The operator's ruling, through `gz wp unblock` or `human-review`, restarts the count, and the fix-cycle bound still holds any repair. `gz wp block` carries the refutations per subject, which ruling 8 required, written by the runtime from the whole replay, so a departed REQ's refutations stay facts; a malformed acceptance row costs the count, said in the reason, and not the block; a line the ledger itself cannot read stops every verb. The pipeline skill's Stage 4 text moves with the pipeline in tranche 2.
+
+Limits. The count reads one package, though fix cycles follow a REQ across packages (ruling 15). It sees only imported receipts. Parallel adversarial reviews spend a round each. A package whose every REQ departed owes nothing and reads unready, so it leaves by `terminate`, which the operator now holds on any block: the limit can stop a package with no subject at the fix-cycle bound, which ruling 12's exits did not reach. A departed REQ's proofs and findings stay on the ledger and leave the package's acceptance. A malformed review row counts no round, so it never stops a dispatch, and `gz wp accept` refuses that history. Catalog `STRUCTURAL-FENCE` REQs cannot yet be proved, because their resolver reads the legacy id grammar, and a catalog `SUPPORT` REQ proves only through a witness clause in its statement; no catalog REQ has those kinds. An issue is always a `BEHAVIOR` obligation, so a docs or chore issue has no honest proof and needs a discrepancy until repair kinds are ruled. The reconcile-receipt and plan-audit gates stay with tranche 2.
+
+**Mode contract.** The gate and the round bound are on at the operational condition and at both standby levels: they read no marker, and a review loop under safe mode is the case they exist for. MEL: (M) none, the governed recovery is the refusal's own next step; no (O) limitation, placard or restore deadline; self-test `tests/commands/test_wp_acceptance.py`, every change that touches it; accepted state, on.
+
 ## Act 4's reading
 
 **#1206 is repaired on the work-package surface.** Put to the operator: a fence on the surface; the launcher's gates added to `gz task start`; or closing on the dispatch's own refusal. Operator, by selection: *"Fence on the WP surface (Recommended)"*. The fence read only the OBPI marker, so a write without a dispatch went unrefused in any state `gz wp dispatch` refuses. `gzkit.work_package_fence` holds the rule for the hook and the pre-commit guard, from the ledger alone. It fences a package that is blocked, accepted or stopped by an exit, across the whole tree, because a package names no paths. A ledger that cannot be read fences the tree.
 
 Independent review refuted three builds, and the repair bound was spent on the third. The first missed the stopped state and failed open on a ledger fault. The second read a subject at the bound from its own package only, and printed recovery commands that could not run. The third showed that a fence at the bound refuses the last fix cycle dispatch admits, because dispatch refuses past the bound and the ledger shows the same rows while that cycle runs and after it ends. Put to the operator as an exit: drop the bound state and land; land the two ruled states only; or hold. Operator, by selection: *"Drop bound state, land (Recommended)"*.
 
-Limits. A subject at the bound and a held subject are unfenced, since neither can be told from admitted work; `gz wp dispatch` still refuses both. Before commencement a package is fenced only while it is blocked or stopped. The `reopen` exit shares `terminate`'s constant but no fence test reaches it, because that needs catalog REQs. The hook binds edit tools only, so the commit guard is the arm that binds. The reconcile-receipt and plan-audit gates have no work-package equivalent yet and stay with act 5 and tranche 2.
+Limits. A subject at the bound and a held subject are unfenced, since neither can be told from admitted work; `gz wp dispatch` still refuses both. Before commencement a package is fenced only while it is blocked or stopped. The `reopen` exit shares `terminate`'s constant but no fence test reaches it, because that needs catalog REQs. The hook binds edit tools only, so the commit guard is the arm that binds. The reconcile-receipt and plan-audit gates have no work-package equivalent yet and stay with tranche 2.
 
 **Mode contract.** Commit arm: on at the operational condition and at both standby levels, under the `post-authoring-src-commits` pin. Write arm: on at the operational condition, advisory at both standby levels, under the `pipeline-gate` demotion. MEL: (M) none, the governed recovery is the refusal's own next step; (O) a write through a shell is seen at the commit; placard, the demotion notice; restore at the exit re-run; self-test `tests/commands/test_wp_fence.py`, every change that touches it; accepted state, no package fenced.
 
@@ -111,12 +125,11 @@ Limits. A subject at the bound and a held subject are unfenced, since neither ca
 
 ## Known limits of act 1
 
-- The block carries no refutation count until act 5.
 - A subject can take any number of reviews; only implementing dispatches are bounded.
 - `reopen` names the act and is not checked against a reopening, because that verb lands with RO-5's tranche 6.
 - The count sees only what is recorded and what its labels say: a review booked falsely against another package's subject arms nothing, and an Implementer falsely labelled on a sibling subject takes that subject's dispatches, about three per subject.
 - A subject with no review and no single-driver declaration has no bound: ruling 16 counts only after a review, and nothing in act 1 requires one.
-- A subject that passed on its last fix cycle reads as at the bound at the next block, because the runtime cannot see a passed review until act 5; a hold clears it.
+- A subject that passed on its last fix cycle reads as at the bound at the next block, because the bound reads dispatches and not reviews; a hold clears it.
 - An issue added to a frozen package by hand is a new subject, as a hand-raised revision is.
 - Raising a REQ's revision by hand resets its count, because the freeze lock lands with RO-5's tranche 6.
 - A package can reach acceptance with a subject at the bound and no exit taken; escalation is procedure, and Gate 5 still sees the package.

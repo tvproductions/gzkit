@@ -10,6 +10,7 @@ scanner discovers commands from that shape.
 from typing import TYPE_CHECKING
 
 from gzkit.cli.helpers import add_json_flag, build_epilog
+from gzkit.cli.parser_acceptance import acceptance_handler, configure_acceptance_parser
 from gzkit.cli.parser_handler_manifest import _lazy
 
 if TYPE_CHECKING:
@@ -36,6 +37,7 @@ def register_wp_parsers(commands: argparse._SubParsersAction) -> None:
     _register_wp_lifecycle(wp_commands)
     _register_wp_close_change(wp_commands)
     _register_wp_run(wp_commands)
+    _register_wp_acceptance(wp_commands)
 
 
 def _register_wp_run(wp_commands: argparse._SubParsersAction) -> None:
@@ -270,6 +272,27 @@ def _register_wp_record(wp_commands: argparse._SubParsersAction) -> None:
     )
     add_json_flag(p_runs)
     p_runs.set_defaults(func=lambda a: _lazy("wp_runs_cmd")(as_json=a.as_json))
+
+
+def _register_wp_acceptance(wp_commands: argparse._SubParsersAction) -> None:
+    p_acceptance = wp_commands.add_parser(
+        "acceptance",
+        help="Execute proof, record independent reviews and derive readiness",
+        description=(
+            "Run the acceptance runtime on a commenced work package: the frozen REQs,\n"
+            "or one obligation per carried issue. `gz wp accept` refuses until it reads\n"
+            "ready, and three adversarial rounds with a mapped finding stop for the operator."
+        ),
+        epilog=build_epilog(
+            [
+                "gz wp acceptance WP-01-x init --author implementing-session",
+                "gz wp acceptance WP-01-x prove --spec controls.json",
+                "gz wp acceptance WP-01-x status --json",
+            ]
+        ),
+    )
+    configure_acceptance_parser(p_acceptance)
+    p_acceptance.set_defaults(func=acceptance_handler)
 
 
 def _register_wp_lifecycle(wp_commands: argparse._SubParsersAction) -> None:

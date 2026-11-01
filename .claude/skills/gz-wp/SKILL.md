@@ -5,9 +5,9 @@ description: Use to create, attach issues to, move, change, add evidence to or r
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-28
+last_reviewed: 2026-11-01
 metadata:
-  skill-version: "0.3.1"
+  skill-version: "0.4.0"
 model: sonnet
 ---
 
@@ -63,9 +63,18 @@ One step at a time: `initiated`, `frozen`, `commenced`, `accepted`, `closed`.
    `uv run gz wp freeze <WP-id> --baseline REQ-<n>@<rev> --risk-note "<note>" --review-receipt <id> --approve-alteration <id> --evidence <id>`
 3. **Commence** once every surface the package works has its tag hung:
    `uv run gz wp commence <WP-id> --evidence <what was checked>`.
-4. **Accept** at final inspection with no tag still hung:
-   `uv run gz wp accept <WP-id> --evidence <inspection>`.
-5. **Close through Gate 5.** The attestor is the operator and is never
+4. **Prove and review.** `uv run gz wp acceptance <WP-id> init --author <session>`,
+   then `prove --spec <file>` and `review --receipt <run-id>`, on the frozen REQs or
+   each carried issue. Spec, quality and adversarial reviews approve each proof. A
+   package gets three adversarial rounds with a mapped finding; dispatch and accept
+   then refuse until `gz wp block` and the operator's ruling. See
+   `docs/user/manpages/wp-acceptance.md`.
+5. **Accept** at final inspection with no tag still hung, once
+   `uv run gz wp acceptance <WP-id> status` reads ready:
+   `uv run gz wp accept <WP-id> --evidence <inspection>`. A package stopped by an
+   exit is excused, and unless its acceptance reads ready it closes as `redirect`,
+   `pause` or `terminate`.
+6. **Close through Gate 5.** The attestor is the operator and is never
    defaulted. Account every alteration and name each departure still open.
    `uv run gz wp close <WP-id> --decision proceed --attestor g0 --residual-risk "<risk>" --account <alt-id> --evidence <id>`
 

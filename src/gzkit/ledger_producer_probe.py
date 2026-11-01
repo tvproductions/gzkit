@@ -703,7 +703,7 @@ def _probe_work_package_run(root: Path, event_type: str) -> ProducerObservation:
         wpl.WorkPackageLedgerError,
     )
     block = run.BlockRequest(work_package=_REPAIR_PACKAGE, reason=_AUTHOR, next_action=_AUTHOR)
-    run.record_work_package_block(catalog, ledger, block)
+    run.record_work_package_block(catalog, ledger, block, refutations={})
     no_exit = run.UnblockRequest(work_package=_REPAIR_PACKAGE, ruling=_AUTHOR, operator=_AUTHOR)
     _expect_refusal(
         lambda: run.record_work_package_unblock(catalog, ledger, no_exit),

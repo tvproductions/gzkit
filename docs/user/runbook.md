@@ -965,6 +965,10 @@ uv run gz wp initiate WP-01-astral --operator-text "<your exact words>"
 uv run gz wp evidence WP-01-astral --oqe "<receipt, commit or path>"
 uv run gz wp freeze WP-01-astral --risk-note "<note>" --review-receipt <id> --evidence <id>
 uv run gz wp commence WP-01-astral --evidence <what was checked>
+uv run gz wp acceptance WP-01-astral init --author <implementing session>
+uv run gz wp acceptance WP-01-astral prove --spec <controls.json>
+uv run gz wp acceptance WP-01-astral review --receipt <arb-run-id>
+uv run gz wp acceptance WP-01-astral status
 uv run gz wp accept WP-01-astral --evidence <final inspection>
 uv run gz wp close WP-01-astral --decision proceed --attestor g0 --residual-risk "<risk>" --evidence <id>
 uv run gz wp change WP-01-astral --rung change_order --approver operator --work-stopped \

@@ -18,6 +18,7 @@ from pathlib import Path
 import yaml
 
 from gzkit.acceptance import Obligation, Proof
+from gzkit.acceptance_package import STORE_PATH, PackageContract, binds_by_mutation
 from gzkit.config import GzkitConfig
 from gzkit.executables import resolve_argv
 from gzkit.frontmatter import read_frontmatter
@@ -25,8 +26,11 @@ from gzkit.governance.req_coverage import discover_covers
 from gzkit.mutation_witness import Mutation, run_mutation_sweep
 from gzkit.req_kind_fence import resolve_fence_proof
 from gzkit.req_kind_support import resolve_support_proof
-from gzkit.triangle import ReqEntity, extract_reqs_from_brief
+from gzkit.triangle import extract_reqs_from_brief
 from gzkit.unit_run_provenance import read_test_observations
+
+#: What acceptance reads a contract from: a brief, or a work package (RO-14 act 5).
+AcceptanceSource = Path | PackageContract
 
 # These sections carry workflow history, not the contract being accepted. All
 # other sections are conservatively included, including unknown new headings.
@@ -133,7 +137,9 @@ def _frontmatter_parts(content: str) -> tuple[str, str]:
     return "\n".join(lines[1:end]), "\n".join(lines[end + 1 :])
 
 
-def _brief_contract(root: Path, brief_path: Path) -> tuple[dict, list[ReqEntity]]:
+def _brief_contract(root: Path, brief_path: AcceptanceSource) -> dict:
+    if isinstance(brief_path, PackageContract):
+        return brief_path.contract
     brief = _inside(root, brief_path)
     content = brief.read_text(encoding="utf-8")
     frontmatter = read_frontmatter(content)
@@ -161,7 +167,7 @@ def _brief_contract(root: Path, brief_path: Path) -> tuple[dict, list[ReqEntity]
     parent_content = parent.read_text(encoding="utf-8")
     if read_frontmatter(parent_content).is_readable:
         parent_content = _frontmatter_parts(parent_content)[1]
-    contract = {
+    return {
         "brief": brief.relative_to(root.resolve()).as_posix(),
         "id": metadata["id"],
         "parent": metadata["parent"],
@@ -184,25 +190,25 @@ def _brief_contract(root: Path, brief_path: Path) -> tuple[dict, list[ReqEntity]
             {"id": str(r.id), "kind": r.taxonomy_kind, "statement": r.description} for r in reqs
         ],
     }
-    return contract, reqs
 
 
-def canonical_obligations(root: Path, brief_path: Path) -> list[Obligation]:
+def canonical_obligations(root: Path, brief_path: AcceptanceSource) -> list[Obligation]:
     """Read obligations through the existing REQ parser and validate its complete roster."""
     root = root.resolve()
-    contract, reqs = _brief_contract(root, brief_path)
+    contract = _brief_contract(root, brief_path)
     digest = _sha(_json(contract).encode())
+    authority = contract.get("authority", f"{contract['brief']}#acceptance-criteria")
     return [
         Obligation.model_validate(
             {
-                "id": str(req.id),
-                "kind": req.taxonomy_kind,
-                "statement": req.description,
-                "authority": f"{contract['brief']}#acceptance-criteria",
+                "id": req["id"],
+                "kind": req["kind"],
+                "statement": req["statement"],
+                "authority": authority,
                 "contract_digest": digest,
             }
         )
-        for req in reqs
+        for req in contract["requirements"]
     ]
 
 
@@ -226,6 +232,17 @@ def _input_paths(root: Path) -> tuple[set[Path], Path, Path]:
     return paths, source, tests
 
 
+def _is_audited(relative: Path) -> bool:
+    """Say whether a roster member counts; a package's evidence is appended to the store.
+
+    Returns:
+        True for a member the digest reads.
+
+    """
+    ignored = any(part in _IGNORED_PARTS for part in relative.parts)
+    return not ignored and relative.as_posix() != STORE_PATH
+
+
 def _file_roster(root: Path) -> dict[str, str]:
     """Hash every file in the audited input population, by content.
 
@@ -239,7 +256,7 @@ def _file_roster(root: Path) -> dict[str, str]:
         members = sorted(path.rglob("*")) if path.is_dir() else [path]
         roster[path.relative_to(root).as_posix()] = "directory" if path.is_dir() else "missing"
         for member in members:
-            if any(part in _IGNORED_PARTS for part in member.relative_to(root).parts):
+            if not _is_audited(member.relative_to(root)):
                 continue
             if member.is_symlink():
                 raise ValueError(f"Acceptance dependency symlinks are unsupported: {member}")
@@ -249,7 +266,7 @@ def _file_roster(root: Path) -> dict[str, str]:
     return roster
 
 
-def digest_components(root: Path, brief_path: Path) -> dict[str, str]:
+def digest_components(root: Path, brief_path: AcceptanceSource) -> dict[str, str]:
     """Return the two terms :func:`input_digest` composes, separately digested.
 
     Callers refusing a stale record use this to name WHICH term moved. The
@@ -258,14 +275,14 @@ def digest_components(root: Path, brief_path: Path) -> dict[str, str]:
     exist (GHI #989).
     """
     root = root.resolve()
-    contract, _ = _brief_contract(root, brief_path)
+    contract = _brief_contract(root, brief_path)
     return {
         "files": _sha(_json(_file_roster(root)).encode()),
         "contract": _sha(_json(contract).encode()),
     }
 
 
-def input_digest(root: Path, brief_path: Path) -> str:
+def input_digest(root: Path, brief_path: AcceptanceSource) -> str:
     """Hash the reviewed INPUTS: the audited file population and the contract.
 
     Ledger/receipts are excluded because proof execution appends to them. SUPPORT
@@ -346,9 +363,11 @@ def _validate_behavior_inputs(
     if not source or not mutations or not selectors or len(set(selectors)) != len(selectors):
         raise ValueError("BEHAVIOR proof requires source, mutations and unique full test selectors")
     source = _production_control_source(root, source, production, tests)
-    covering = _covering_selectors(root, req_id, tests)
-    if not set(selectors).issubset(covering):
-        raise ValueError("Every full test selector must cover the nominated requirement")
+    # An issue or a catalog REQ has no `@covers` scan; its selectors bind by killing mutants.
+    if not binds_by_mutation(req_id):
+        covering = _covering_selectors(root, req_id, tests)
+        if not set(selectors).issubset(covering):
+            raise ValueError("Every full test selector must cover the nominated requirement")
     for mutation in mutations:
         if not mutation.expected_tests or not set(mutation.expected_tests).issubset(selectors):
             raise ValueError("Each mutation must nominate full selected covering test IDs")
@@ -384,7 +403,7 @@ def _behavior_evidence(
 
 def prove(
     root: Path,
-    brief_path: Path,
+    brief_path: AcceptanceSource,
     req_id: str,
     *,
     source: Path | None = None,

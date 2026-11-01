@@ -71,6 +71,10 @@ def _seed_store() -> None:
 
 class _FenceCase(unittest.TestCase):
     def setUp(self) -> None:
+        # Acceptance is not this suite's subject: tests/commands/test_wp_acceptance.py is.
+        gate = mock.patch("gzkit.commands.wp.acceptance_blockers", return_value=[])
+        gate.start()
+        self.addCleanup(gate.stop)
         self.runner = CliRunner()
         self.enterContext(self.runner.isolated_filesystem())
         _quick_init()

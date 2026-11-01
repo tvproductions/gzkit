@@ -9,7 +9,7 @@ producer/output; it is not a claim of cryptographic reviewer authentication.
 import hashlib
 import json
 from pathlib import Path
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -26,18 +26,27 @@ from gzkit.acceptance import (
     validate_review_record,
 )
 from gzkit.acceptance_execution import (
+    AcceptanceSource,
     canonical_obligations,
     digest_components,
     execution_conditions_digest,
     input_digest,
 )
 from gzkit.acceptance_grounds import refuse_uncited_approval
+from gzkit.acceptance_package import departed_reqs, is_work_package_id, package_contract
 from gzkit.adversary_workspace import validate_replay_records
 from gzkit.config import GzkitConfig
-from gzkit.ledger import Ledger
+from gzkit.ledger import Ledger, LedgerEvent
 from gzkit.ledger_events import acceptance_recorded_event
+from gzkit.models.catalog import load_catalog
+from gzkit.pipeline_dispatch import MAX_REVIEW_FIX_CYCLES
+from gzkit.registries import RegistryError
 from gzkit.req_kind_fence import resolve_fence_proof
 from gzkit.req_kind_support import resolve_support_proof
+from gzkit.work_package_ledger import package_rows
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 
 class Contract(BaseModel):
@@ -76,9 +85,18 @@ def acceptance_ledger(root: Path) -> Ledger:
     return Ledger(root / relative)
 
 
-def resolve_brief(root: Path, obpi_id: str) -> Path:
-    """Resolve a real canonical brief; an evidence filename is not an OBPI."""
+def resolve_brief(root: Path, obpi_id: str) -> AcceptanceSource:
+    """Resolve a real canonical brief; an evidence filename is not an OBPI.
+
+    A work package supplies its contract in place of a brief (RO-14 act 5).
+    """
     from gzkit.commands.obpi_precomplete import resolve_brief_path  # noqa: PLC0415
+
+    if is_work_package_id(obpi_id):
+        try:
+            return package_contract(load_catalog(root), acceptance_ledger(root), obpi_id)
+        except RegistryError as exc:
+            raise ValueError(str(exc)) from exc
 
     brief = resolve_brief_path(root, obpi_id)
     if brief is None:
@@ -97,7 +115,22 @@ def _append(
 
 
 def load_history(root: Path, obpi_id: str) -> AcceptanceHistory:
-    """Replay this OBPI's netted ledger history, refusing malformed records."""
+    """Replay this OBPI's history as acceptance reads it, a departed REQ moved out.
+
+    Returns:
+        The history of what is still owed.
+
+    """
+    return _without_departed(root, obpi_id, _replay_history(root, obpi_id))
+
+
+def _replay_history(root: Path, obpi_id: str) -> AcceptanceHistory:
+    """Replay this OBPI's netted ledger history, refusing malformed records.
+
+    Returns:
+        Every recorded proof and review.
+
+    """
     history = AcceptanceHistory()
     for event in acceptance_ledger(root).read_all():
         if event.event != "acceptance_recorded" or event.id != obpi_id:
@@ -123,6 +156,45 @@ def load_history(root: Path, obpi_id: str) -> AcceptanceHistory:
     return history
 
 
+def _without_departed(root: Path, obpi_id: str, history: AcceptanceHistory) -> AcceptanceHistory:
+    """Take the REQs a departure moved out of a package's history (ruling 12).
+
+    The one place this is done, so the reducer, the store and the review context
+    agree: a departed REQ's proofs and findings stay on the ledger and leave the
+    acceptance of what the package still owes.
+
+    Returns:
+        The history of what the package still owes.
+
+    """
+    if not is_work_package_id(obpi_id):
+        return history
+    departed = departed_reqs(acceptance_ledger(root), obpi_id)
+    if not departed:
+        return history
+    kept = [proof for proof in history.proofs if proof.obligation_id not in departed]
+    gone = {proof.id for proof in history.proofs} - {proof.id for proof in kept}
+    reviews = [_scoped(review, departed, gone) for review in history.reviews]
+    history.proofs = kept
+    history.reviews = [review for review in reviews if review.obligation_ids]
+    return history
+
+
+def _scoped(review: Review, departed: set[str], gone: set[str]) -> Review:
+    return review.model_copy(
+        update={
+            "obligation_ids": tuple(i for i in review.obligation_ids if i not in departed),
+            "proof_ids": tuple(i for i in review.proof_ids if i not in gone),
+            "accepted_proof_ids": tuple(i for i in review.accepted_proof_ids if i not in gone),
+            "recorded_current_ids": tuple(
+                i for i in review.recorded_current_ids or () if i not in gone
+            ),
+            "findings": tuple(f for f in review.findings if f.obligation_id not in departed),
+            "closures": tuple(c for c in review.closures if c.obligation_id not in departed),
+        }
+    )
+
+
 def _at_ledger_position(review: Review, proofs: list[Proof]) -> Review:
     """Bind observation chronology without modifying a captured reviewer receipt."""
     current = {proof.obligation_id: proof.id for proof in proofs}
@@ -137,7 +209,11 @@ def initialize(root: Path, obpi_id: str, author_id: str) -> Contract:
     )
     previous = load_history(root, obpi_id).contract
     if previous is not None:
-        if previous != contract:
+        # A departure narrows a package's obligations; its author stays the identity.
+        same = previous == contract or (
+            is_work_package_id(obpi_id) and previous.author_id == contract.author_id
+        )
+        if not same:
             raise ValueError(
                 "Acceptance already initialized; preserve its author and obligation identities"
             )
@@ -247,7 +323,7 @@ def review_from_receipt(receipt: dict[str, Any]) -> Review:
     )
 
 
-def _stale_review_message(root: Path, brief: Path, reviewed: str) -> str:
+def _stale_review_message(root: Path, brief: AcceptanceSource, reviewed: str) -> str:
     """Refuse without claiming a cause this function cannot establish (GHI #989).
 
     The digest composes two terms -- the audited file roster and the contract --
@@ -296,6 +372,110 @@ def _validate_new_review(root: Path, obpi_id: str, review: Review) -> bool:
     if errors:
         raise ValueError("; ".join(errors))
     return True
+
+
+def review_round_limit() -> int:
+    """Give the adversarial rounds a package may run (GHI #1028, the ruled N=2).
+
+    Each follow-up round reviews one fix cycle, so the limit is the first round
+    plus the fix-cycle bound, and the number lives in one place.
+
+    Returns:
+        The first round and its follow-ups.
+
+    """
+    return 1 + MAX_REVIEW_FIX_CYCLES
+
+
+def _review_rows(root: Path, work_package: str) -> Iterator[LedgerEvent]:
+    for event in acceptance_ledger(root).read_all():
+        if event.id == work_package and event.event in {
+            "acceptance_recorded",
+            "work_package_unblocked",
+        }:
+            yield event
+
+
+def _has_mapped_finding(review: Review) -> bool:
+    return any(finding.obligation_id for finding in review.findings)
+
+
+def refuted_rounds(root: Path, work_package: str) -> int:
+    """Count adversarial rounds with a mapped finding since the operator last ruled.
+
+    A mapped finding is what blocks readiness, so it counts and the verdict token
+    does not. An unblock or a human review is the operator's ruling and restarts the
+    count; a repair still needs a dispatch, which the fix-cycle bound holds.
+
+    Returns:
+        The rounds that count against :func:`review_round_limit`.
+
+    """
+    rounds = 0
+    for event in _review_rows(root, work_package):
+        if event.event == "work_package_unblocked" or (
+            event.extra.get("record_type") == "human-review"
+        ):
+            rounds = 0
+        elif event.extra.get("record_type") == "review" and _is_round(event):
+            rounds += 1
+    return rounds
+
+
+def _is_round(event: LedgerEvent) -> bool:
+    """Say whether a review row counts; a malformed one cannot, and never stops a dispatch.
+
+    `gz wp accept` still refuses such a history, through :func:`load_history`.
+
+    Returns:
+        True for a readable adversarial review with a mapped finding.
+
+    """
+    try:
+        review = review_from_receipt(event.extra["payload"])
+    except ValueError, KeyError, TypeError, AttributeError:
+        return False
+    return review.stage == "adversarial" and _has_mapped_finding(review)
+
+
+def round_bound_refusal(root: Path, work_package: str) -> str | None:
+    """Say why the package stops for the operator, once its rounds are used (GHI #1028).
+
+    An import is never refused here: a truthful finding must be recorded, so the
+    bound stands where the work would restart.
+
+    Returns:
+        The refusal for `gz wp dispatch` and `gz wp accept`, or None under the limit.
+
+    """
+    if refuted_rounds(root, work_package) < review_round_limit():
+        return None
+    return (
+        f"{work_package} has used its {review_round_limit()} adversarial rounds (GHI #1028). "
+        f"Record the block with `uv run gz wp block {work_package} --reason <text> "
+        "--next-action <text>`, so the operator can rule"
+    )
+
+
+def refutation_counts(root: Path, work_package: str) -> dict[str, int]:
+    """Count the reviews carrying a mapped finding on each obligation.
+
+    Read from the whole replay, never a receipt's truncated tail: a departed REQ's
+    refutations left acceptance and stay facts, so a later block counts them (ruling
+    8). A review counts once per obligation it maps a finding to, whatever its
+    verdict token says, since a mapped finding is what blocks readiness. A package
+    with no acceptance history has refuted nothing.
+
+    Returns:
+        Reviews per obligation id.
+
+    """
+    counts: dict[str, int] = {}
+    for review in _replay_history(root, work_package).reviews:
+        for obligation_id in {item.obligation_id for item in review.findings}:
+            if obligation_id:
+                counts[obligation_id] = counts.get(obligation_id, 0) + 1
+    return counts
 
 
 def record_review(root: Path, obpi_id: str, receipt: dict[str, Any]) -> Review:
@@ -370,6 +550,28 @@ def record_human_review(root: Path, obpi_id: str, *, attestor: str, ruling: str)
     return review
 
 
+def owed_ids(root: Path, obpi_id: str, contract: Contract) -> set[str]:
+    """Read the roster a contract still owes: a departure moves a REQ out (ruling 12).
+
+    Returns:
+        The obligation ids.
+
+    """
+    owed = {item.id for item in contract.obligations}
+    if is_work_package_id(obpi_id):
+        owed -= departed_reqs(acceptance_ledger(root), obpi_id)
+    return owed
+
+
+def _declared_single_driver(root: Path, obpi_id: str) -> bool:
+    from gzkit.obpi_dispatch_channel import single_driver_declaration  # noqa: PLC0415
+
+    if is_work_package_id(obpi_id):
+        rows = package_rows(acceptance_ledger(root), "work_package_dispatched", obpi_id)
+        return any(row.extra.get("role") == "SingleDriver" for row in rows)
+    return single_driver_declaration(root, obpi_id) is not None
+
+
 def acceptance_status(
     root: Path,
     obpi_id: str,
@@ -384,13 +586,11 @@ def acceptance_status(
         if history.contract is None:
             raise ValueError("No durable acceptance contract/proof history")
         current = canonical_obligations(root, brief)
-        if {item.id for item in current} != {item.id for item in history.contract.obligations}:
+        if {item.id for item in current} != owed_ids(root, obpi_id, history.contract):
             raise ValueError(
                 "Canonical obligation roster changed; it cannot silently replace acceptance scope"
             )
-        from gzkit.obpi_dispatch_channel import single_driver_declaration  # noqa: PLC0415
-
-        declared_single_driver = single_driver_declaration(root, obpi_id) is not None
+        declared_single_driver = _declared_single_driver(root, obpi_id)
         required_stages = None
         if declared_single_driver:
             required_stages = () if stage == "stage2" else ("adversarial",)
@@ -410,7 +610,7 @@ def acceptance_status(
             blockers=(*status.blockers, *live_blockers),
             open_findings=status.open_findings,
         )
-    except (OSError, ValueError, KeyError) as exc:
+    except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:
         return Readiness(ready=False, blockers=(str(exc),), open_findings=())
 
 
@@ -445,6 +645,16 @@ def _live_proof_blockers(
     return live_blockers
 
 
+def acceptance_verb(obpi_id: str) -> str:
+    """Name the verb that reads this id's acceptance.
+
+    Returns:
+        `gz wp acceptance` for a work package, else `gz obpi acceptance`.
+
+    """
+    return "gz wp acceptance" if is_work_package_id(obpi_id) else "gz obpi acceptance"
+
+
 def acceptance_blockers(
     root: Path, obpi_id: str, *, stage: Literal["stage2", "stage4"] = "stage4"
 ) -> list[str]:
@@ -454,7 +664,7 @@ def acceptance_blockers(
         return []
     return [
         f"Acceptance blocked: {message}. Required proof and independent closure must remain "
-        f"bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance {obpi_id} status "
+        f"bound to canon (GHI #985; T1/T2/T3). Run `{acceptance_verb(obpi_id)} {obpi_id} status "
         f"--stage {stage}` and repair the named obligation through the existing pipeline."
         for message in status.blockers
     ]
@@ -468,11 +678,9 @@ def completion_review(root: Path, obpi_id: str) -> CompletionReview:
     history = load_history(root, obpi_id)
     current = {proof.obligation_id: proof for proof in history.proofs}
     aliases = proof_aliases(history.proofs)
-    from gzkit.obpi_dispatch_channel import single_driver_declaration  # noqa: PLC0415
-
     channels = (
         ("adversarial",)
-        if single_driver_declaration(root, obpi_id)
+        if _declared_single_driver(root, obpi_id)
         else (
             "spec",
             "quality",

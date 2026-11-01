@@ -35,3 +35,7 @@ Feature: Work packages run through the gz wp verbs
   Scenario: recording evidence without an entry is a usage error
     When I run the gz command "wp evidence WP-01-x"
     Then the command exits with code 2
+
+  Scenario: acceptance on a package the store does not hold is blocked
+    When I run the gz command "wp acceptance WP-99-nothing status"
+    Then the command exits with code 3

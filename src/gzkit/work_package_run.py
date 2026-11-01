@@ -47,13 +47,14 @@ from gzkit.ledger import Ledger, ledger_row
 from gzkit.pipeline_dispatch import MAX_REVIEW_FIX_CYCLES
 from gzkit.work_package_ledger import (
     WorkPackageLedgerError,
+    frozen_baseline,
     is_blocked,
     package_rows,
     work_package_state,
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Iterable, Mapping
 
     from gzkit.ledger import LedgerEvent
     from gzkit.models.catalog import Catalog, WorkPackage
@@ -241,27 +242,12 @@ def count_fix_cycles(rows: Iterable[tuple[str, str, str]]) -> dict[str, int]:
     return cycles
 
 
-def _baseline(ledger: Ledger, work_package: str) -> dict[str, int]:
-    """Read the package's frozen baseline, REQ to revision.
-
-    Returns:
-        The baseline its `frozen` move recorded.
-
-    """
-    return {
-        str(entry["req"]): int(entry["revision"])
-        for row in package_rows(ledger, "work_package_transitioned", work_package)
-        if row.extra.get("to_state") == "frozen"
-        for entry in row.extra.get("baseline") or ()
-    }
-
-
 def _req_subject(req: str, revision: int) -> str:
     return f"{req}@{revision}"
 
 
 def _subjects(ledger: Ledger, package: WorkPackage) -> list[str]:
-    frozen = _baseline(ledger, package.id)
+    frozen = frozen_baseline(ledger, package.id)
     held = list(starmap(_req_subject, sorted(frozen.items())))
     return [*held, *(f"#{issue}" for issue in package.issues)]
 
@@ -286,7 +272,7 @@ def _dispatch_subject(ledger: Ledger, package: WorkPackage, request: DispatchReq
         if request.issue not in package.issues:
             _refuse(f"Issue #{request.issue} is not one {package.id} carries.")
         return f"#{request.issue}"
-    revision = _baseline(ledger, package.id).get(str(request.req))
+    revision = frozen_baseline(ledger, package.id).get(str(request.req))
     if revision is None:
         _refuse(f"{request.req} is not in {package.id}'s frozen baseline.")
     return _req_subject(str(request.req), revision)
@@ -392,12 +378,17 @@ def _reopened(ledger: Ledger, req: str) -> bool:
 
 
 def record_work_package_block(
-    catalog: Catalog, ledger: Ledger, request: BlockRequest
+    catalog: Catalog,
+    ledger: Ledger,
+    request: BlockRequest,
+    *,
+    refutations: Mapping[str, int],
 ) -> WorkPackageBlockedEvent:
     """Book that the package awaits the operator, with the runtime's own facts.
 
     The counts come from the ledger, never the caller, so an escalation's
     recommendation sits beside facts the agent did not frame (ruling 8).
+    `refutations` is the acceptance runtime's own count, keyed by obligation.
 
     Returns:
         The event booked.
@@ -422,6 +413,9 @@ def record_work_package_block(
             "reason": request.reason.strip(),
             "next_operator_action": request.next_action.strip(),
             "fix_cycles": cycles,
+            "refutations": {
+                subject: refutations.get(subject.partition("@")[0], 0) for subject in cycles
+            },
             "bound": MAX_REVIEW_FIX_CYCLES,
             "at_bound": [
                 s for s, n in cycles.items() if n >= MAX_REVIEW_FIX_CYCLES and s not in covered
@@ -432,7 +426,7 @@ def record_work_package_block(
                 for row in package_rows(ledger, "work_package_unblocked", package.id)
                 if row.extra.get("exit_taken")
             ],
-            "reopened": [r for r in _baseline(ledger, package.id) if _reopened(ledger, r)],
+            "reopened": [r for r in frozen_baseline(ledger, package.id) if _reopened(ledger, r)],
         }
     )
     ledger.append(ledger_row(event))
@@ -450,6 +444,16 @@ def _check_departure(package: WorkPackage, ledger: Ledger, req: str, blocked_at:
     )
     if not recorded:
         _refuse(f"No waiver on {req} is recorded since the block; `gz wp change` records it.")
+
+
+def _check_exit_applies(package: WorkPackage, exit_taken: str, subjects: list[str]) -> None:
+    """Refuse an exit with nothing at the bound, `terminate` excepted.
+
+    `terminate` is the full stop (ruling 17), so the operator holds it on any block:
+    the review-round limit stops a package with no subject at the fix-cycle bound.
+    """
+    if not subjects and exit_taken != "terminate":
+        _refuse(f"Nothing is at the bound on {package.id}; exit {exit_taken!r} does not apply.")
 
 
 def _exit_subjects(
@@ -470,8 +474,7 @@ def _exit_subjects(
             _refuse("Only a reopen or a departure names a REQ.")
         return []
     subjects = [*pending, *held]
-    if not subjects:
-        _refuse(f"Nothing is at the bound on {package.id}; exit {exit_taken!r} does not apply.")
+    _check_exit_applies(package, exit_taken, subjects)
     if exit_taken not in EXITS:
         _refuse(f"Exit {exit_taken!r} is not one of {', '.join(EXITS)}.")
     if (exit_taken in _REQ_EXITS) != (req is not None):

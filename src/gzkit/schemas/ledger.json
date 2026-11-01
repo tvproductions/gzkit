@@ -2506,6 +2506,7 @@
         "reason",
         "next_operator_action",
         "fix_cycles",
+        "refutations",
         "bound",
         "at_bound",
         "held",
@@ -2524,6 +2525,9 @@
         "next_operator_action": {
           "type": "string",
           "min_length": 1
+        },
+        "refutations": {
+          "type": "object"
         },
         "fix_cycles": {
           "type": "object"

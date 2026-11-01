@@ -28,9 +28,11 @@ The verbs are drydock RO-5 tranche 2; the operator named them on 2026-10-28.
 
 While a package is accepted and not yet closed, the production-write fence applies across the whole tree, so land the package's production code before accepting it (GHI #1206). See [`gz wp block`](wp-block.md) for what the fence refuses.
 
+The verb refuses until `gz wp acceptance` reads ready: current proof on every obligation, with accepted spec, quality and adversarial reviews and no open finding, and a single-driver package's adversarial review alone. It also refuses past the round limit. A package stopped by a `reopen` or `terminate` exit is excused, and unless its acceptance reads ready it closes as `redirect`, `pause` or `terminate`.
+
 ## Examples
 
-Observed in a scratch project seeded with one family, outcome `H1` and `REQ-1`
+Observed in a scratch project whose acceptance reads ready seeded with one family, outcome `H1` and `REQ-1`
 at revision 2:
 
 ```console

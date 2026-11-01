@@ -68,6 +68,10 @@ def _ledger_rows(event: str) -> list[dict[str, Any]]:
 
 class _WpCase(unittest.TestCase):
     def setUp(self) -> None:
+        # Acceptance is not this suite's subject: tests/commands/test_wp_acceptance.py is.
+        gate = patch("gzkit.commands.wp.acceptance_blockers", return_value=[])
+        gate.start()
+        self.addCleanup(gate.stop)
         self.runner = CliRunner()
         self.enterContext(self.runner.isolated_filesystem())
         _quick_init()

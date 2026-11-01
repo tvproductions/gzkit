@@ -244,6 +244,7 @@ class _Run(unittest.TestCase):
             self.catalog,
             self.ledger,
             BlockRequest(work_package=package, reason="refuted", next_action="rule on it"),
+            refutations={},
         )
 
     def _unblock(

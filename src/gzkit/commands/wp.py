@@ -19,6 +19,11 @@ reads every run in flight from the ledger (GHI #1203).
 
 from typing import TYPE_CHECKING
 
+from gzkit.acceptance_store import (
+    acceptance_blockers,
+    refutation_counts,
+    round_bound_refusal,
+)
 from gzkit.cli.formatters import OutputFormatter
 from gzkit.commands.common import ensure_initialized, get_project_root
 from gzkit.core.exceptions import PolicyBreachError, ResourceNotFoundError, TransientError
@@ -51,6 +56,7 @@ from gzkit.work_package_run import (
     record_work_package_unblock,
     run_position,
     run_positions,
+    took_stopping_exit,
 )
 from gzkit.work_package_store import WorkPackageStoreError, next_id, stage, write
 
@@ -191,8 +197,12 @@ def wp_transition_cmd(
             written.
 
     """
-    _, catalog, ledger = _context()
+    root, catalog, ledger = _context()
     _held(catalog, str(fields["work_package"]))
+    if fields.get("to_state") == "accepted":
+        _refuse_unready(root, ledger, str(fields["work_package"]))
+    if fields.get("to_state") == "closed" and fields.get("decision") == "proceed":
+        _refuse_undelivered_proceed(root, ledger, str(fields["work_package"]))
     if baseline is not None:
         fields = {**fields, "baseline": [_baselined(entry) for entry in baseline]}
     try:
@@ -205,6 +215,39 @@ def wp_transition_cmd(
     fmt.emit(
         event if as_json else f"{event.id}: {event.from_state or 'nothing'} -> {event.to_state}"
     )
+
+
+def _refuse_unready(root: Path, ledger: Ledger, work_package: str) -> None:
+    """Refuse final inspection until the acceptance reducer reads ready (RO-14 act 5).
+
+    A package stopped by an exit is excused: it claims no delivery, and Gate 5 is
+    how it closes (ruling 12), so requiring proof would leave it fenced for good.
+
+    Raises:
+        PolicyBreachError: Acceptance reports its blockers.
+
+    """
+    if took_stopping_exit(ledger, work_package):
+        return
+    refusal = round_bound_refusal(root, work_package)
+    blockers = [*acceptance_blockers(root, work_package), *([refusal] if refusal else [])]
+    if blockers:
+        raise PolicyBreachError("\n".join(blockers))
+
+
+def _refuse_undelivered_proceed(root: Path, ledger: Ledger, work_package: str) -> None:
+    """Refuse `proceed` on a stopped package that acceptance never read ready.
+
+    Raises:
+        PolicyBreachError: The package was excused at acceptance, so it claims no delivery.
+
+    """
+    if took_stopping_exit(ledger, work_package) and acceptance_blockers(root, work_package):
+        msg = (
+            f"{work_package} took a stopping exit and acceptance does not read ready, so it "
+            "delivered nothing to proceed with. Close it as `redirect`, `pause` or `terminate`."
+        )
+        raise PolicyBreachError(msg)
 
 
 def _baselined(entry: str) -> BaselinedReq:
@@ -422,9 +465,12 @@ def wp_dispatch_cmd(*, fields: dict[str, object], as_json: bool) -> None:
         PolicyBreachError: The dispatch is refused, the bound included; nothing is booked.
 
     """
-    _, catalog, ledger = _context()
+    root, catalog, ledger = _context()
     _held(catalog, str(fields["work_package"]))
     try:
+        refusal = round_bound_refusal(root, str(fields["work_package"]))
+        if refusal:
+            raise PolicyBreachError(refusal)
         request = DispatchRequest.model_validate(fields)
         event = record_work_package_dispatch(catalog, ledger, request)
     except ValueError as exc:
@@ -435,6 +481,19 @@ def wp_dispatch_cmd(*, fields: dict[str, object], as_json: bool) -> None:
     )
 
 
+def _read_refutations(root: Path, work_package: str, reason: str) -> tuple[dict[str, int], str]:
+    """Read the count, never letting a bad acceptance row cost the escalation.
+
+    Returns:
+        The refutations, and the reason, which says when they could not be read.
+
+    """
+    try:
+        return refutation_counts(root, work_package), reason
+    except (ValueError, KeyError, TypeError, AttributeError) as exc:
+        return {}, f"{reason} (acceptance history unreadable, refutations not counted: {exc})"
+
+
 def wp_block_cmd(*, work_package: str, reason: str, next_action: str, as_json: bool) -> None:
     """Book that a package awaits the operator, with the runtime's own count.
 
@@ -442,11 +501,12 @@ def wp_block_cmd(*, work_package: str, reason: str, next_action: str, as_json: b
         PolicyBreachError: The block is refused; nothing is booked.
 
     """
-    _, catalog, ledger = _context()
+    root, catalog, ledger = _context()
     _held(catalog, work_package)
+    refutations, reason = _read_refutations(root, work_package, reason)
     try:
         request = BlockRequest(work_package=work_package, reason=reason, next_action=next_action)
-        event = record_work_package_block(catalog, ledger, request)
+        event = record_work_package_block(catalog, ledger, request, refutations=refutations)
     except ValueError as exc:
         raise PolicyBreachError(str(exc)) from exc
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
@@ -456,6 +516,8 @@ def wp_block_cmd(*, work_package: str, reason: str, next_action: str, as_json: b
     fmt.emit(f"Blocked {work_package} on the operator: {event.next_operator_action}")
     cycles = ", ".join(f"{subject}: {n}" for subject, n in event.fix_cycles.items())
     fmt.emit(f"  fix cycles (bound {event.bound}): {cycles or 'none'}")
+    refuted = ", ".join(f"{subject}: {n}" for subject, n in event.refutations.items())
+    fmt.emit(f"  refutations: {refuted or 'none'}")
     fmt.emit(f"  at the bound: {', '.join(event.at_bound) or 'none'}")
     fmt.emit(f"  held: {', '.join(event.held) or 'none'}")
     fmt.emit(f"  exits used: {', '.join(event.exits_used) or 'none'}")

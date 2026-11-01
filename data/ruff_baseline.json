@@ -2754,7 +2754,7 @@
     {
       "file": "src/gzkit/acceptance_store.py",
       "rule": "DOC201",
-      "count": 15
+      "count": 14
     },
     {
       "file": "src/gzkit/acceptance_store.py",

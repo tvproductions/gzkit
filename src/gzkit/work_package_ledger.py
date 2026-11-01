@@ -153,6 +153,21 @@ def package_rows(ledger: Ledger, event_type: str, work_package: str) -> list[Led
     ]
 
 
+def frozen_baseline(ledger: Ledger, work_package: str) -> dict[str, int]:
+    """Read the package's frozen baseline, REQ to revision.
+
+    Returns:
+        The baseline its `frozen` move recorded.
+
+    """
+    return {
+        str(entry["req"]): int(entry["revision"])
+        for row in package_rows(ledger, "work_package_transitioned", work_package)
+        if row.extra.get("to_state") == "frozen"
+        for entry in row.extra.get("baseline") or ()
+    }
+
+
 def is_blocked(ledger: Ledger, work_package: str) -> bool:
     """Read whether the package's latest block or unblock is a block.
 

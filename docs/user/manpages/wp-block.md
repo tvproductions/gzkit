@@ -38,6 +38,7 @@ Observed in a scratch project holding `WP-01-loop`, with `#1200` at the bound:
 $ uv run gz wp block WP-01-loop --reason "REQ refuted again" --next-action "rule on the exit"
 Blocked WP-01-loop on the operator: rule on the exit
   fix cycles (bound 2): #1200: 2
+  refutations: #1200: 1
   at the bound: #1200
   held: none
   exits used: none

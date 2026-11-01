@@ -106,6 +106,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz wp close`](wp-close.md) | Close an accepted work package through Gate 5 |
 | [`gz wp change`](wp-change.md) | Record one change on the change ladder, or an alteration or departure |
 | [`gz wp dispatch`](wp-dispatch.md) | Record a dispatch on a commenced package, holding the fix-cycle bound |
+| [`gz wp acceptance`](wp-acceptance.md) | Execute proof, record independent reviews and derive readiness on a work package |
 | [`gz wp block`](wp-block.md) | Record that a work package awaits the operator |
 | [`gz wp unblock`](wp-unblock.md) | Record the operator's ruling on a blocked work package |
 | [`gz wp show`](wp-show.md) | Show a work package's record, state and ledger history |

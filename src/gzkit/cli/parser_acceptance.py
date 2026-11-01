@@ -8,7 +8,7 @@ from gzkit.cli.parser_handler_manifest import _lazy
 
 def configure_acceptance_parser(parser: argparse.ArgumentParser) -> None:
     """Configure arguments for the leaf registered in its OBPI parent."""
-    parser.add_argument("obpi", help="Canonical OBPI identifier")
+    parser.add_argument("obpi", help="Canonical OBPI or work package identifier")
     parser.add_argument(
         "action",
         choices=("init", "prove", "review", "human-review", "status"),

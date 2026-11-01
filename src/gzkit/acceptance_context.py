@@ -19,7 +19,13 @@ from gzkit.acceptance import (
 )
 from gzkit.acceptance_execution import canonical_obligations, digest_components, input_digest
 from gzkit.acceptance_grounds import MIN_EXCERPT_CHARS
-from gzkit.acceptance_store import Contract, acceptance_status, load_history, resolve_brief
+from gzkit.acceptance_store import (
+    Contract,
+    acceptance_status,
+    load_history,
+    owed_ids,
+    resolve_brief,
+)
 
 
 class ReviewContext(AcceptanceModel):
@@ -86,7 +92,7 @@ def build_review_context(
     if history.contract is None:
         raise ValueError("Review context requires initialized canonical acceptance records")
     obligations = tuple(canonical_obligations(root, brief))
-    if {item.id for item in obligations} != {item.id for item in history.contract.obligations}:
+    if {item.id for item in obligations} != owed_ids(root, obpi_id, history.contract):
         raise ValueError("Canonical obligation roster changed; cannot dispatch a narrowed context")
     status = acceptance_status(root, obpi_id, stage=stage, obligation_ids=obligation_ids)
     context = ReviewContext(

@@ -8,7 +8,9 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.acceptance_context import build_review_context
 from gzkit.acceptance_execution import prove
+from gzkit.acceptance_package import is_work_package_id
 from gzkit.acceptance_store import (
+    acceptance_verb,
     initialize,
     load_history,
     record_human_review,
@@ -82,7 +84,7 @@ def obpi_acceptance_cmd(
         message = (
             f"Acceptance blocked: {exc}. GHI #985 and T1/T2/T3 require current, "
             "executed proof and receipt-bound independent closure. Use "
-            f"`gz obpi acceptance {obpi_id} status` to inspect the retained obligations; "
+            f"`{acceptance_verb(obpi_id)} {obpi_id} status` to inspect the retained obligations; "
             "repair or record the named evidence through the existing pipeline."
         )
         print(json.dumps({"error": message}) if as_json else message)  # noqa: T201
@@ -111,7 +113,8 @@ def _execute(
     before anything is read or imported (:func:`resolve_obpi_at_entry`). The
     boundary is recorded under the id it returns. The acceptance records stay
     keyed by ``obpi_id`` as typed, and ``init``, ``prove`` and ``status``
-    resolve nothing.
+    resolve nothing. A work package has no launch, so it marks no boundary:
+    its position is replayed from its own rows (ruling 18).
 
     Raises:
         ObpiEntryError: when ``review`` or ``human-review`` is given an id that
@@ -119,7 +122,7 @@ def _execute(
 
     """
     if action in ("review", "human-review"):
-        launch_id = resolve_obpi_at_entry(root, obpi_id)[0]
+        launch_id = None if is_work_package_id(obpi_id) else resolve_obpi_at_entry(root, obpi_id)[0]
         if action == "review":
             return _execute_review(root, obpi_id, receipt, launch_id)
         return _execute_human_review(root, obpi_id, attestor, ruling, launch_id)
@@ -155,7 +158,7 @@ def _execute_proof(root: Path, obpi_id: str, specification: str | None) -> tuple
     return proof.model_dump(mode="json"), proof.valid
 
 
-def _record_review_round(root: Path, launch_id: str) -> None:
+def _record_review_round(root: Path, launch_id: str | None) -> None:
     """Record the boundary a successful review import marks (OBPI-0.35.0-15).
 
     Called for an adversarial review and for a human review only (operator
@@ -169,13 +172,16 @@ def _record_review_round(root: Path, launch_id: str) -> None:
     the command's entry (operator rulings 2026-10-12, Open Design Questions 19
     and 20), so a review imported under any spelling the launcher accepts
     lands on the launch's id. There is no fallback to the id as typed: an id
-    the resolver cannot name is refused before the import.
+    the resolver cannot name is refused before the import. A work package
+    passes None and records nothing.
     """
+    if launch_id is None:
+        return
     record_run_position(root, launch_id, RunCrossing(boundary="acceptance-review"))
 
 
 def _execute_review(
-    root: Path, obpi_id: str, receipt: str | None, launch_id: str
+    root: Path, obpi_id: str, receipt: str | None, launch_id: str | None
 ) -> tuple[dict, bool]:
     """Resolve the named transport receipt and retain its independent judgment.
 
@@ -196,7 +202,7 @@ def _execute_review(
 
 
 def _execute_human_review(
-    root: Path, obpi_id: str, attestor: str | None, ruling: str | None, launch_id: str
+    root: Path, obpi_id: str, attestor: str | None, ruling: str | None, launch_id: str | None
 ) -> tuple[dict, bool]:
     """Record an explicitly supplied operator ruling against current proof.
 

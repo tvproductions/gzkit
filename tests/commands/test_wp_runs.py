@@ -9,6 +9,7 @@ already book (the specification's ruling 18), so there is no second row to lose.
 import json
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from gzkit.cli import main
 from tests.commands.common import CliRunner, _quick_init
@@ -52,6 +53,10 @@ def _seed_store() -> None:
 
 class _RunsCase(unittest.TestCase):
     def setUp(self) -> None:
+        # Acceptance is not this suite's subject: tests/commands/test_wp_acceptance.py is.
+        gate = mock.patch("gzkit.commands.wp.acceptance_blockers", return_value=[])
+        gate.start()
+        self.addCleanup(gate.stop)
         self.runner = CliRunner()
         self.enterContext(self.runner.isolated_filesystem())
         _quick_init()

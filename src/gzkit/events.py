@@ -1878,6 +1878,9 @@ class WorkPackageBlockedEvent(_EventBase):
         ..., min_length=1, description="The concrete decision the operator owes"
     )
     fix_cycles: dict[str, int] = Field(..., description="Fix cycles used, per subject")
+    refutations: dict[str, int] = Field(
+        ..., description="Reviews with a mapped finding on the subject, per subject"
+    )
     bound: int = Field(..., ge=0, description="The fix cycles a subject may use")
     at_bound: tuple[str, ...] = Field(..., description="Subjects at the bound with no exit yet")
     held: tuple[str, ...] = Field(..., description="Subjects a hold left open to a later exit")
