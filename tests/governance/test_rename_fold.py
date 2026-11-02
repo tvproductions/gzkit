@@ -18,12 +18,14 @@ consumer actually asks flip. The defect was latent, not active; these tests are
 what stop it going latent again.
 """
 
+import json
 import tempfile
 import unittest
+from itertools import permutations, product
 from pathlib import Path
 
 from gzkit.ledger import Ledger, adr_created_event, artifact_renamed_event
-from gzkit.obpi_lifecycle import fold_renames, rename_chain_target
+from gzkit.obpi_lifecycle import fold_renames, rename_chain_target, rename_events
 
 
 def _renamed(old_id: str, new_id: str) -> dict[str, str]:
@@ -107,6 +109,74 @@ class FoldRenames(unittest.TestCase):
         folded = fold_renames([("", "B"), ("A", ""), ("A", "B")])
 
         self.assertEqual(folded, {"A": "B"})
+
+
+class ARenameOntoARenamedAwayId(unittest.TestCase):
+    """GHI #1194: the id renamed onto is a freed slot, so it names the renamed artifact."""
+
+    def _assert_settled(self, folded: dict[str, str], ids: tuple[str, ...]) -> None:
+        for name in ids:
+            once = folded.get(name, name)
+            self.assertEqual(folded.get(once, once), once, f"{name} answers twice")
+
+    def test_the_new_holder_of_the_name_keeps_it(self) -> None:
+        folded = fold_renames([("Y", "Z"), ("X", "Y")])
+
+        self.assertEqual(folded.get("X", "X"), "Y")
+        self.assertEqual(folded.get("Y", "Y"), "Y")
+        self.assertEqual(folded.get("Z", "Z"), "Z")
+        self._assert_settled(folded, ("X", "Y", "Z"))
+
+    def test_the_first_artifact_keeps_its_older_aliases(self) -> None:
+        folded = fold_renames([("W", "Y"), ("Y", "Z"), ("X", "Y")])
+
+        self.assertEqual(folded.get("W", "W"), "Z")
+        self._assert_settled(folded, ("W", "X", "Y", "Z"))
+
+    def test_a_later_rename_of_the_reused_name_moves_only_its_new_holder(self) -> None:
+        folded = fold_renames([("Y", "Z"), ("X", "Y"), ("Y", "V")])
+
+        self.assertEqual(folded.get("X", "X"), "V")
+        self.assertEqual(folded.get("Y", "Y"), "V")
+        self.assertEqual(folded.get("Z", "Z"), "Z")
+        self._assert_settled(folded, ("X", "Y", "Z", "V"))
+
+    def test_the_fold_settles_on_every_order_of_three_ids(self) -> None:
+        ids = ("A", "B", "C")
+        moves = list(permutations(ids, 2))
+        for count in range(1, 5):
+            for pairs in product(moves, repeat=count):
+                with self.subTest(pairs=pairs):
+                    self._assert_settled(fold_renames(pairs), ids)
+
+
+class NonStringNewIds(unittest.TestCase):
+    """GHI #1194: both extractions take a rename only when its `new_id` is a string."""
+
+    def test_a_row_naming_no_new_id_yields_no_pair(self) -> None:
+        for name, row in (
+            ("null", {"event": "artifact_renamed", "id": "A", "new_id": None}),
+            ("number", {"event": "artifact_renamed", "id": "A", "new_id": 7}),
+            ("nested null", {"event": "artifact_renamed", "id": "A", "extra": {"new_id": None}}),
+        ):
+            with self.subTest(name):
+                self.assertEqual(rename_events([row]), [])
+
+    def test_both_extractions_answer_alike(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "ledger.jsonl"
+            ledger = Ledger(path)
+            ledger.append(adr_created_event("A", "PRD-1", "heavy"))
+            with path.open("a", encoding="utf-8") as handle:
+                row = artifact_renamed_event("A", "B").model_dump()
+                flat = {key: value for key, value in row.items() if key != "extra"}
+                handle.write(json.dumps({**flat, "new_id": None}) + "\n")
+            reread = Ledger(path)
+
+            events = [event.model_dump() for event in reread.read_all()]
+
+            self.assertEqual(reread.canonicalize_id("A"), rename_chain_target(events, "A"))
+            self.assertEqual(reread.canonicalize_id("A"), "A")
 
 
 class RenameChainTargetUsesTheFold(unittest.TestCase):

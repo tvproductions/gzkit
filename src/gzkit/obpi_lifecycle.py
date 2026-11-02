@@ -198,6 +198,14 @@ def fold_renames(pairs: Iterable[tuple[str, str]]) -> dict[str, str]:
     reused: a demoted ADR's short id moves to the new ADR while the demoted ADR
     keeps its slugged and pool ids (GHI #1151).
 
+    The same rule holds on the new-id side (GHI #1194). When B was already renamed
+    away and A is renamed onto it, B is a freed slot being reused: it now names the
+    artifact that was A, and whatever B once pointed at keeps its own name and its
+    older aliases. So every id answers once: ``fold(fold(id)) == fold(id)``, and a
+    reader handed an already-folded id cannot land on a different artifact. The fold
+    takes no account of time, so rows booked under B before the reuse read as the new
+    holder's, as rows under a reused old id do.
+
     A flat last-write-wins dict cannot do this: it stores ``{A: B, B: A}`` and
     leaves the reader to walk it, which either loops or must stop early, and
     stopping early is stopping one hop short of the answer. That was the shape
@@ -215,16 +223,27 @@ def fold_renames(pairs: Iterable[tuple[str, str]]) -> dict[str, str]:
             if target == old_id:
                 canonical[key] = new_id
         canonical[old_id] = new_id
+        if new_id in canonical:
+            canonical[new_id] = new_id
     return canonical
 
 
 def rename_events(events: Iterable[Mapping[str, Any]]) -> list[tuple[str, str]]:
-    """Extract ``(old_id, new_id)`` pairs from mapping-shaped ledger events."""
-    return [
-        (str(event.get("id", "")), _field(event, "new_id"))
-        for event in events
-        if _event_type(event) == "artifact_renamed"
-    ]
+    """Extract ``(old_id, new_id)`` pairs from mapping-shaped ledger events.
+
+    A row whose ``new_id`` is not a string names no rename, as every other extraction
+    of these rows reads it; `_field` would turn a null into the id ``None`` (GHI #1194).
+    """
+    pairs: list[tuple[str, str]] = []
+    for event in events:
+        if _event_type(event) != "artifact_renamed":
+            continue
+        extra = event.get("extra")
+        nested = extra.get("new_id") if isinstance(extra, Mapping) else None
+        new_id = event.get("new_id", nested)
+        if isinstance(new_id, str):
+            pairs.append((str(event.get("id", "")), new_id))
+    return pairs
 
 
 def rename_chain_target(events: Iterable[Mapping[str, Any]], artifact_id: str) -> str:
