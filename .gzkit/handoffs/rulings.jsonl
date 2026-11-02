@@ -1929,3 +1929,7 @@
 {"ts": "2026-11-01T16:03:52Z", "source": "20261101T160350Z-ro14-tranche1-complete.md", "text": "A repair package is held to the brief's standard at freeze (verbatim: \"Hold at freeze (Recommended)\")."}
 {"ts": "2026-11-01T16:03:52Z", "source": "20261101T160350Z-ro14-tranche1-complete.md", "text": "At the spent bound act 6 took one last repair and landed unreviewed (verbatim: \"Fix the two, land (Recommended)\")."}
 {"ts": "2026-11-01T16:03:52Z", "source": "20261101T160350Z-ro14-tranche1-complete.md", "text": "The docs-organization note holds until the handback (verbatim: \"A\", to the recommendation)."}
+{"ts": "2026-11-02T08:25:16Z", "source": "20261102T082512Z-ro12-specification-next.md", "text": "--approver and --operator stay typed names, the limit staying on the discrepancy list and any fix taken up for every human-act verb together (verbatim: \"A\")."}
+{"ts": "2026-11-02T08:25:16Z", "source": "20261102T082512Z-ro12-specification-next.md", "text": "Repair #1296 and #1194 first, then specify RO-12; RO-14 tranche 2's pipeline move waits (verbatim: \"A\")."}
+{"ts": "2026-11-02T08:25:16Z", "source": "20261102T082512Z-ro12-specification-next.md", "text": "The cwd-escape guard leaves RO-12's preconditions and becomes a requirement of its specification, with #1296's acceptance cases unchanged (verbatim: \"A\")."}
+{"ts": "2026-11-02T08:25:16Z", "source": "20261102T082512Z-ro12-specification-next.md", "text": "Cover the four undriven gaps with tests as one commit (verbatim: \"yes\")."}
