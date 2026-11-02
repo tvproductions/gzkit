@@ -231,8 +231,8 @@ def fold_renames(pairs: Iterable[tuple[str, str]]) -> dict[str, str]:
 def rename_events(events: Iterable[Mapping[str, Any]]) -> list[tuple[str, str]]:
     """Extract ``(old_id, new_id)`` pairs from mapping-shaped ledger events.
 
-    A row whose ``new_id`` is not a string names no rename, as every other extraction
-    of these rows reads it; `_field` would turn a null into the id ``None`` (GHI #1194).
+    A row whose ``new_id`` is not a string names no rename, as the ledger's own
+    extraction reads it; `_field` would turn a null into the id ``None`` (GHI #1194).
     """
     pairs: list[tuple[str, str]] = []
     for event in events:
@@ -288,12 +288,11 @@ def park_coherence_violations(
     implementation — resolve the ``obpi_created`` parent through
     :func:`rename_chain_target` and test it against the non-pool ADR ids — is
     wrong for exactly the ADRs that matter. A demote-then-promote round trip is a
-    rename *cycle* (``A -> B -> A``), and that function seeds ``seen = {current}``
-    and halts when the next hop is already seen, so it resolves such an ADR to its
-    **pool** id while the file sits in ``pre-release/``. Round-tripped ADRs are
-    precisely the population this check exists to find, so the chain would have
-    hidden them. Where the brief *is* needs no inference, and it is also exactly
-    the set ``gz adr demote`` would delete.
+    rename *cycle* (``A -> B -> A``), and the walk the shared fold later replaced
+    halted on it, resolving such an ADR to its **pool** id while the file sat in
+    ``pre-release/``. Round-tripped ADRs are precisely the population this check
+    exists to find, so the chain hid them. Where the brief *is* needs no inference,
+    and it is also exactly the set ``gz adr demote`` would delete.
 
     Completion does not exempt a violation: completion is a disposition, not a
     location, and the most consequential instance (a Gate-5-attested brief in a
@@ -332,8 +331,8 @@ def orphaned_obpi_ids(
     completed by the time they were renamed — leaving the arm reachable only by
     an undisposed brief, which is exactly the case a live slug correction makes.
     Each arm tests the id *and* its chain terminal rather than the terminal
-    alone, because :func:`rename_chain_target` halts on a cycle: an ``A -> B ->
-    A`` round trip resolves to ``B`` while the artifact sits on disk as ``A``.
+    alone. That guarded the walk the shared fold replaced, which resolved an ``A ->
+    B -> A`` round trip to ``B`` while the artifact sat on disk as ``A``.
     """
     materialized = list(events)
     terminal = terminal_obpi_ids(materialized)
