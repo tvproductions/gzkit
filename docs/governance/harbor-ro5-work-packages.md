@@ -1,8 +1,13 @@
 <!-- markdownlint-configure-file { "MD013": { "line_length": 9999 } } -->
 
-# RO-5 specification — work packages, task cards and repair orders
+# RP-5 specification — work packages, task cards and repair orders
+
+> Named `RO-5` until 2026-11-03; `RP-5` replaces it in live text and `RO-5` stays its alias (contract § Rulings of 2026-11-03). The dated rulings below keep the name they were written with.
+
 
 **2026-10-25. Status: specified; every open question ruled the same day.** Operator: **g0**. Repair order RO-5 of the [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders), serving labor and maintenance. Sequenced before RO-4 (operator, 2026-10-25: *"yes"*), because the Release Package ships work packages. **Amended 2026-10-28** (§ Amended 2026-10-28): the work-package record carries the bundle, the change ladder, alteration and departure from specification; RO-5 lands before RO-12, the contractor kit. **Amended 2026-10-31** (§ Amended 2026-10-31): the change order of 2026-10-30 is specified as tranche 6, landing directly after RO-11, accepted by the operator the same day (*"accept"*).
+
+**Amended 2026-11-03** (contract § Rulings of 2026-11-03; `docs/governance/ieee/requirements-model.md` § 12): work is organized package, order, task beneath a why. The work package is the story and the mADR's successor, grouping work orders and drawing REQs from any outcomes; the **work order**, retired by R1, returns as the OBPI's successor and carries the freeze, inspection and Gate 5; the repair package holds repair orders, each freezing once its REQ is known; *task card* becomes *task*. The base requirement specializes into the catalog and the repair requirement. This specification's rulings stand as written where these do not reach; the order record and the level table land with RP-12.
 
 ## Already ruled in the record
 

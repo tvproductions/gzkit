@@ -1,6 +1,9 @@
 <!-- markdownlint-configure-file { "MD013": { "line_length": 9999 } } -->
 
-# RO-6 specification — superseded canon corrected
+# RP-6 specification — superseded canon corrected
+
+> Named `RO-6` until 2026-11-03; `RP-6` replaces it in live text and `RO-6` stays its alias (contract § Rulings of 2026-11-03). The dated rulings below keep the name they were written with.
+
 
 **2026-10-25. Status: specified; every open question ruled the same day.** Operator: **g0**. Repair order RO-6 of the [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders), serving every band. Nothing of RO-6 has landed.
 

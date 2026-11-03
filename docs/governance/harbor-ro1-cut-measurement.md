@@ -1,6 +1,9 @@
 <!-- markdownlint-configure-file { "MD013": { "line_length": 9999 } } -->
 
-# RO-1 specification — stopping the bleeding, and measuring every cut
+# RP-1 specification — stopping the bleeding, and measuring every cut
+
+> Named `RO-1` until 2026-11-03; `RP-1` replaces it in live text and `RO-1` stays its alias (contract § Rulings of 2026-11-03). The dated rulings below keep the name they were written with.
+
 
 **2026-10-25. Status: acts (a) to (g) landed 2026-10-17 and 2026-10-18 (passage log); specified for the remaining work.** Operator: **g0**. Repair order RO-1 of the [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders), serving the control plane.
 

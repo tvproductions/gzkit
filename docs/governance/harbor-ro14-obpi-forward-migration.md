@@ -1,8 +1,13 @@
 <!-- markdownlint-configure-file { "MD013": { "line_length": 9999 } } -->
 
-# RO-14 specification — the forward migration from OBPI to work package
+# RP-14 specification — the forward migration from OBPI to work package
+
+> Named `RO-14` until 2026-11-03; `RP-14` replaces it in live text and `RO-14` stays its alias (contract § Rulings of 2026-11-03). The dated rulings below keep the name they were written with.
+
 
 **2026-10-31. Status: scope, tranches and open points ruled; tranche 1 cut into acts; acts 1 to 7 landed; tranche 1 is complete.** Operator: **g0**. Repair order of the [harbor pilotage contract](harbor-pilotage-candidate-2026-10-15.md), which holds the binding rulings.
+
+**Amended 2026-11-03** (contract § Rulings of 2026-11-03, operator, verbatim: *"the obpi to work package alignment is right on. exactly ==> "RO-14's migration really runs from OBPI to work order.""*, and *"work package is the mADR successor, the WO is the OBPI successor"*; `docs/rnd/repair-work-organization.md`): the forward migration runs from the OBPI to the **work order**, its successor; the work package succeeds the mADR. Tranche 1's landed acts stand on the work-package surface; tranches 2 and 3 take the work order as the destination once RP-12 lands its record.
 
 ## Scope
 

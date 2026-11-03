@@ -1,6 +1,9 @@
 <!-- markdownlint-configure-file { "MD013": { "line_length": 9999 } } -->
 
-# RO-15 specification — maximal Astral project structure
+# RP-15 specification — maximal Astral project structure
+
+> Named `RO-15` until 2026-11-03; `RP-15` replaces it in live text and `RO-15` stays its alias (contract § Rulings of 2026-11-03). The dated rulings below keep the name they were written with.
+
 
 **2026-11-01. Status: scope, the brownfield reach and placement ruled; tranche owner open; no tranche started.** Operator: **g0**. Repair order of the [harbor pilotage contract](harbor-pilotage-candidate-2026-10-15.md), added by amendment. It follows [RO-9](harbor-ro9-astral-toolchain.md), which aligned the toolchain and left the structure of a project unwitnessed.
 

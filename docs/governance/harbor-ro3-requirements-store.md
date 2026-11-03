@@ -1,6 +1,9 @@
 <!-- markdownlint-configure-file { "MD013": { "line_length": 9999 } } -->
 
-# RO-3 specification — the requirements store, empty
+# RP-3 specification — the requirements store, empty
+
+> Named `RO-3` until 2026-11-03; `RP-3` replaces it in live text and `RO-3` stays its alias (contract § Rulings of 2026-11-03). The dated rulings below keep the name they were written with.
+
 
 **2026-10-21. Status: specified; tranche 1 landed (`96e7ed62f`, `cd1afd70f`); tranche 2 landed (`2fa677a76`, `d39752974`, `a43f0220e`); tranche 3 landed (`a627dbc2d`, `021db4c62`, `67227d524`); tranche 4 landed (`ed9ca3e74`, `b4f7c92b0`); all four tranches landed and the witness reads true; RO-3 closed 2026-10-22 on the operator's word.** Operator: **g0**. Repair order RO-3 of the
 [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders): the store that

@@ -1,8 +1,13 @@
 <!-- markdownlint-configure-file { "MD013": { "line_length": 9999 } } -->
 
-# RO-12 specification — the contractor kit
+# RP-12 specification — the contractor kit
+
+> Named `RO-12` until 2026-11-03; `RP-12` replaces it in live text and `RO-12` stays its alias (contract § Rulings of 2026-11-03). The dated rulings below keep the name they were written with.
+
 
 **2026-11-02. Status: draft; its open points are being put to the operator one at a time, and nothing here binds until the operator accepts the page.** Operator: **g0**. Repair order RO-12 of the [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders), placed immediately after RO-5 (operator: *"A"*), with the ruled order RO-5, RO-12, RO-11, RO-4. This is diamond 2 of the [contractor-kit record](../rnd/contractor-kit.md), funded 2026-10-28 (operator: *"fund, yes to 2 and 4"*). The record holds the design and its sources; [`review.md`](../rnd/contractor-kit/review.md) is a view over it. Where this page and the record disagree, the record governs until an amendment here says otherwise.
+
+**Ground amended 2026-11-03**: the R&D run `docs/rnd/repair-work-organization.md`, signed off and funded, is this specification's ground. RP-12 lands the order record (work and repair order) with its own id, freeze and inspection, **Gate 5 at the order**, and the repair requirement with its `supersedes` link (requirements model § 12). Ruling 1 stands; open point 2 is re-put in the run's terms.
 
 ## Scope
 

@@ -1,6 +1,9 @@
 <!-- markdownlint-configure-file { "MD013": { "line_length": 9999 } } -->
 
-# RO-10 specification — safe-mode guard classification and A/B/C/D scheduling
+# RP-10 specification — safe-mode guard classification and A/B/C/D scheduling
+
+> Named `RO-10` until 2026-11-03; `RP-10` replaces it in live text and `RO-10` stays its alias (contract § Rulings of 2026-11-03). The dated rulings below keep the name they were written with.
+
 
 **2026-10-25. Status: PARKED.** Drafted from the design session of 2026-10-25 and parked by the operator's word (*"yes, draft RO-10 and park it"*). It is not worked during this drydock. Its home is the new requirements, work and release system (RO-3 to RO-5): this design is meant to be one of that system's first entries, which is why it waits for it. Operator: **g0**. Repair order RO-10 of the [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders).
 

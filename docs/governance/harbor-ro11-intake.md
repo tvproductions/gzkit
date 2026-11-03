@@ -1,6 +1,9 @@
 <!-- markdownlint-configure-file { "MD013": { "line_length": 9999 } } -->
 
-# RO-11 specification — intake
+# RP-11 specification — intake
+
+> Named `RO-11` until 2026-11-03; `RP-11` replaces it in live text and `RO-11` stays its alias (contract § Rulings of 2026-11-03). The dated rulings below keep the name they were written with.
+
 
 **2026-10-30. Status: specified; drafted by the agent unasked, its open points ruled one at a time, and the page and its tranches accepted by the operator the same day (*"yes"*).** Operator: **g0**. Repair order RO-11 of the [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders), serving the catalog. Sequenced after RO-12 and before RO-4 (operator: *"A"*), because RO-4's release and feature packages reference outcome codes this order settles. The rulings are quoted in full in the contract's § Rulings of 2026-10-29 and § Rulings of 2026-10-30.
 

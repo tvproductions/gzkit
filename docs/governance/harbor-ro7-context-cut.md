@@ -1,6 +1,9 @@
 <!-- markdownlint-configure-file { "MD013": { "line_length": 9999 } } -->
 
-# RO-7 specification — the rest of the context cut
+# RP-7 specification — the rest of the context cut
+
+> Named `RO-7` until 2026-11-03; `RP-7` replaces it in live text and `RO-7` stays its alias (contract § Rulings of 2026-11-03). The dated rulings below keep the name they were written with.
+
 
 **2026-10-25. Status: specified; every open question ruled the same day.** Operator: **g0**. Repair order RO-7 of the [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders), serving the control plane. Every stage is measured by [RO-1's protocol](harbor-ro1-cut-measurement.md); each binding loss stops for the operator's ruling.
 
