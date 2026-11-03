@@ -122,6 +122,11 @@ Ruled whole by the operator on 2026-10-10: 'it stands, add the seventh'.
   order binds one work package and carries the role's auspices. *(Line 2.)*
 - **Release.** The captain's signature on what ships; in gzkit, Gate 5 attestation, which is
   return to service. *(Line 6; `AGENTS.md` § Gate Covenant; 14 CFR § 43.9 as landed.)*
+  *Amended 2026-11-03* (`docs/rnd/repair-work-organization.md`, decision *return to service is
+  the package's close, apart from each order's Gate 5*, operator: *"Option A"*): Gate 5 attests
+  each work or repair order's work; **return to service** is the operator's separate act at the
+  return to service package's close, as 14 CFR § 43.9 separates approving the work from
+  returning the aircraft to service.
 - **Safe mode.** The regime for a crisis the ordinary ceremony cannot govern:
   entered and left only through the `gz-mx` skill under a written contract; one exceptional
   period through harbor, drydock and sea trial; exit at seaworthiness. **Harbor pilot.** The

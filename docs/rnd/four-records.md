@@ -243,7 +243,7 @@ if an outcome should be in more than one feature pack"*; then, verbatim: *"yes, 
 
 An outcome belongs to at most one feature pack, and may belong to none. **Revisit condition:** the
 first time a real outcome genuinely belongs to two stories, the rule is reopened with that case in
-hand. The feature pack is the mADR's successor, as the work pack is the OBPI's.
+hand. The feature pack is the mADR's successor, as the work pack is the OBPI's. *Amended 2026-11-03* (`docs/rnd/repair-work-organization.md`, decisions *the correction: the work order is the OBPI's successor* and *the work package inherits the mADR as the story; the feature package is the epic*; operator: *"work package is the mADR successor, the WO is the OBPI successor"*): the work package succeeds the mADR, the work order succeeds the OBPI, and the feature package is the epic, succeeding no earlier record.
 
 ## decision · prerequisites are outcome-to-outcome `depends_on` edges, never a feature-pack field
 
