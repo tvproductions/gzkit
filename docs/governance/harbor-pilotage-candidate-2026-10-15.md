@@ -9,6 +9,7 @@ rows 2 and 4*): row 4's amendments to this contract, each cited below to its rec
 **AMENDED 2026-10-31** to add RO-14 and § Exit item 12 (operator, verbatim: *"a"*; § Rulings of
 2026-10-31);
 **AMENDED 2026-11-01** to add RO-15 and § Exit item 13 (§ Rulings of 2026-11-01).
+**AMENDED 2026-11-03** to the repair-work-organization model, `RP-n` in live text (§ Rulings of 2026-11-03).
 Drafted 2026-10-15 in session `4fd13b45-724e-4433-ab23-fd6c5df2b932`.
 This file is the binding text; the campaign plan carries a pointer entry at
 [`build-to-1.0-campaign-2026-09-20.md`](build-to-1.0-campaign-2026-09-20.md)
@@ -78,7 +79,7 @@ A drydock session holds repair orders. A repair order is the maintenance mirror 
 package: one bounded repair with a scope, a witness and an owner, recorded to the ledger (operator,
 verbatim: *"dry dock orders can have repair orders... Those can still go over to the ledger. And
 for all I know, we might even be able to make them as a part of the GitHub issue system, which I'd
-be fine with"*). RO-5 settled the form on 2026-10-25 (rulings 1 and 2, *"A"*): a repair order is
+be fine with"*). RP-5 settled the form on 2026-10-25 (rulings 1 and 2, *"A"*): a repair order is
 a repair work package (`kind: repair` in `data/catalog/work_packages.json`) naming one or more
 GitHub issues under the repair tagging scheme, each issue in exactly one package.
 
@@ -95,7 +96,7 @@ flowchart TB
     OUT -.- FEAT["Feature file @SES1.4<br/>user-facing only"]
   end
   ADR["ADR: decision record, peer of the catalog"]
-  FP["Feature package<br/>the story of why, and its outcomes<br/>successor to the mADR"]
+  FP["Feature package, the epic<br/>the story of why, and its outcomes"]
   subgraph doors["Intake: five doors"]
     D1["Pool entry pulled"]
     D2["R&D sign-off"]
@@ -103,18 +104,21 @@ flowchart TB
     D4["Operator's word"]
     D5["Accepted ADR"]
   end
-  subgraph labor["Labor"]
-    WPD["Delivery work package<br/>one outcome, frozen baseline"]
-    WPR["Repair work package<br/>one or more issues"]
-    TASK["Task cards<br/>one commit each"]
+  subgraph labor["Labor: package, order, task"]
+    WPD["Work package, the story<br/>groups work orders; REQs from any outcomes"]
+    WPR["Repair package<br/>one or more issues"]
+    WO["Work order<br/>REQs married to tasks, frozen"]
+    RO["Repair order<br/>frozen once its REQ is known"]
+    TASK["Tasks<br/>one commit each"]
   end
+  RTS["Return to service package, the epic<br/>why the flag opened, and its measure"]
   subgraph version["Version"]
     RP["Release Package<br/>plans outcomes and repair packages"]
-    RR["release_recorded<br/>the closed packages and issues"]
+    RR["release_recorded<br/>the completed work orders and issues"]
   end
   subgraph standing["Standing processes"]
     SES["Session: the handoff's bookends"]
-    MODE["Mode: normal, hangar, drydock"]
+    MODE["Mode: on the line, or out of service"]
     CHO["Chores"]
   end
   GHI["GitHub issue: a squawk"]
@@ -132,10 +136,14 @@ flowchart TB
   GHI --> AIR
   AIR -- delivery --> WPD
   AIR -- repair --> WPR
-  WPD --> TASK
-  WPR --> TASK
-  WPD -- Gate 5 at close, outcome validated --> RR
-  WPR -- Gate 5 at close --> RR
+  WPD --> WO
+  WPR --> RO
+  WO --> TASK
+  RO --> TASK
+  WO -- Gate 5; outcomes validated as derived --> RR
+  RO -- Gate 5 --> RR
+  RTS -- groups --> WPR
+  RTS -- return to service at close --> MODE
   FP -- lists, at most one package per outcome --> OUT
   RP -- takes whole or in part --> FP
   RP -- ships as --> RR
@@ -148,7 +156,9 @@ Redrawn 2026-10-30 as the one clear description of the replacement for the ADR-t
 [requirements model](ieee/requirements-model.md) of 2026-10-18 and the rulings of 2026-10-29 and
 2026-10-30; the requirements model is its detail. The drawing is the Mermaid source above, its
 one authority, rendered in the reader's browser. The 2026-10-17 text and drawing are kept as record
-under § Superseded on 2026-10-30.
+under § Superseded on 2026-10-30. *Redrawn 2026-11-03* to the four levels of § Rulings of
+2026-11-03: the labor band reads package, order, task, Gate 5 sits at the order, and the return to
+service package closes the flag.
 
 ### The records, by band
 
@@ -158,12 +168,13 @@ under § Superseded on 2026-10-30.
 | The product's truth | Family `SES`, capability `SES1`, outcome `SES1.4` | exactly three levels; a family code is a fixed three letters; a capability groups outcomes and never carries work; an outcome is one reviewable deliverable with its statement, owner, `user_facing`, `governed_by`, `depends_on`, its `source` (the door it came through and the record behind it) and its `modules` (the code paths it owns: its contract) | rulings of 2026-10-29 (three levels, the source) and 2026-10-30 (the contract, the family codes) |
 | The product's truth | REQ, `REQ-<n>` | one atomic obligation, a member of one outcome (`member_of`), with its statement, criteria, kind and revision; its proof (`SATISFIED`, `UNSATISFIED`, `UNKNOWN`) lives only in the ledger, bound to its revision and commit | requirements model, decisions 2 and 4 |
 | The product's truth | Feature file | a user-facing outcome's behaviour, tagged with the outcome's code, each scenario tagged with the REQ it proves | requirements model, decision 10 |
-| The product's truth, told as stories | Feature package | a list of outcomes already in the catalog, each in at most one feature package (or none), plus the story of why they belong together and the value they bring together; no version, release, order or prerequisite field; its value delivered is attested by a human at the release package's or work package's attestation; the successor to the mADR, as the pool entry is its predecessor | rulings of 2026-10-30; [the four-records R&D](../rnd/four-records.md) |
+| The product's truth, told as stories | Feature package | a list of outcomes already in the catalog, each in at most one feature package (or none), plus the story of why they belong together and the value they bring together; no version, release, order or prerequisite field; its value delivered is attested by a human at the release package's or work package's attestation; the successor to the mADR, as the pool entry is its predecessor. *Amended 2026-11-03*: the **epic**, succeeding no earlier record; the work package succeeds the mADR | rulings of 2026-10-30; rulings of 2026-11-03; [the four-records R&D](../rnd/four-records.md) |
 | Decisions, peer of the catalog | ADR | one architecture decision and its status; no version, checklist or work; an accepted ADR's consequence enters the catalog as a queued outcome governed by it | requirements model, decision 9; rulings of 2026-10-29 (the fifth door) |
-| Labor | Work package, `WP-<NN>-<slug>` | the OBPI's successor, matching TASKs to REQs: `kind: delivery`, delivering exactly one outcome, or `kind: repair`, naming one or more GitHub issues; a frozen REQ baseline; closes by the 100% rule, through one Gate 5 attestation at its close, which moves the outcome | requirements model § 6; RO-5 rulings 1 and 2; rulings of 2026-10-29 (Gate 5) |
-| Labor | Task card, `TASK-…` | one commit, one trailer, the REQ ids it drives | requirements model, records table |
+| Labor | Work package, `WP-<NN>-<slug>` | *Amended 2026-11-03*: the **story**, the mADR's successor, grouping work orders for cohesion and drawing REQs from any outcomes; it may ship part of its work, its remainder rebundled. As ruled before: the OBPI's successor, matching TASKs to REQs: `kind: delivery`, delivering exactly one outcome, or `kind: repair`, naming one or more GitHub issues; a frozen REQ baseline; closes by the 100% rule, through one Gate 5 attestation at its close, which moves the outcome | requirements model § 6; RP-5 rulings 1 and 2; rulings of 2026-10-29 (Gate 5) |
+| Labor | Work order (record lands with RP-12) | the OBPI's successor: which REQs marry which tasks, in what order; its own freeze, inspection and buy-back; **Gate 5**; a repair order is its repair mirror | requirements model § 12; rulings of 2026-11-03 |
+| Labor | Task, `TASK-…` (called *task card* until 2026-11-03) | one recorded action: one commit, one trailer, the REQ ids it drives, its measure and its (V) mark | requirements model, records table and § 12 |
 | Version | Release Package | the cart for one order, carrying the version: feature packages whole or in part, loose outcomes and repair packages, and whatever the release needs (corrections, scaffolds, shims, prerequisites); it alone drives the next minor release; the lowest-version open package is worked first | rulings of 2026-10-29 (members, work selection) and 2026-10-30 (the four records) |
-| Version | `release_recorded` | what shipped: the closed work packages and issues that delivered the package's members | rulings of 2026-10-29 (members) |
+| Version | `release_recorded` | what shipped: the closed work packages and issues that delivered the package's members; *amended 2026-11-03*, the completed work orders, a work package's among them whether or not it is complete | rulings of 2026-10-29 (members) |
 | The record | Ledger | every transition, proof result, freeze, attestation and release record | `docs/governance/state-doctrine.md` |
 | Views | the backlog board, the work package log | Layer 3, composed from the catalog, the packages and the ledger; never edited | requirements model, records table; decision B11 |
 
@@ -176,8 +187,11 @@ as a queued outcome. Work selection takes the lowest-version open Release Packag
 ready when its `depends_on` edges are met, and the operator's pull order recorded on the package
 orders the ready members. A delivery work package is cut for one outcome, its REQ baseline frozen,
 and commenced; it enters through the airlock, which derives its slice from the outcome's
-`modules`; its task cards land one commit each; it closes through Gate 5, which moves the outcome
-to `validated`, and `release_recorded` moves it to `released`. A repair runs the same lifecycle as
+`modules`; its tasks land one commit each; it closes through Gate 5, which moves the outcome
+to `validated`, and `release_recorded` moves it to `released`. *Amended 2026-11-03* (§ Rulings of
+2026-11-03): work is grouped package, order, task beneath a why; Gate 5 sits at each work order,
+an outcome's `validated` derives from its REQs and their orders, and a release may carry completed
+work orders from a package that is not complete. A repair runs the same lifecycle as
 a repair work package: its GitHub issues are resolved by the fix SHA and closed by a review, and the
 close of the last issue never closes the package, which closes only through Gate 5. Legacy
 identifiers are frozen and resolve through the alias layer; Completed legacy ADRs stand as legacy
@@ -217,8 +231,8 @@ through, its own subject under the three-subjects ruling. The witness column is 
 | 9 | Release | the Release Package opened, planned | `release_recorded` | legacy `patch-release` only; `release_recorded` is not built |
 
 The five edges with no witness are findings raised after the induction freeze, graded 2026-10-30:
-intake's blocks return to service under RO-11, and the other four are due by a named event
-(§ List of discrepancies, RO-0). The session's exit edge has a specified witness, a ledger signal
+intake's blocks return to service under RP-11, and the other four are due by a named event
+(§ List of discrepancies, RP-0). The session's exit edge has a specified witness, a ledger signal
 replacing the exit bookmark; the table stands until it lands (§ Rulings of 2026-10-31).
 
 ### The rails
@@ -252,7 +266,7 @@ its value attestation (RO-4, by change order of 2026-10-30); and the five unwitn
 Suspended while `.gzkit/mx.json` carries `mode: safe`, by the ruling of 2026-10-17 (R6, "A"):
 
 - Every guard outside the four below drops to advisory, as the Maintenance Hangar's do, and the
-  hard-gate exit re-runs every guard at full strength. In force since RO-0's second act: the
+  hard-gate exit re-runs every guard at full strength. In force since RP-0's second act: the
   checkpoint demotes under either mode and the pipeline gate honors the marker.
 - The IRON LAW's initiation clause, for repair orders: the session cuts, authors and executes
   repair orders toward the general arrangement without an initiation per order.
@@ -286,8 +300,8 @@ Not suspended, under any reading:
   one sitting (operator, 2026-10-16: *"fable extra is expensive if you have a deterministic plan
   you are now executing"*).
 - **Cheaper sessions** execute the deterministic repair orders under § Records. **Amended
-  2026-10-28:** cheapness is per task card, by the pipeline's routing reused unchanged (performers by
-  each task card's complexity, the inspector by `REVIEW_MODEL_MAP`, the coordinator on the session's
+  2026-10-28:** cheapness is per task, by the pipeline's routing reused unchanged (performers by
+  each task's complexity, the inspector by `REVIEW_MODEL_MAP`, the coordinator on the session's
   model), kept current by the `frontier-model-card-currency` chore widened to the model-level
   assignments (operator, verbatim: *"A is good, but only if the model system card chore keeps these
   up. ALSO, the chore should look at these model level assignments as a part of that chore's task.
@@ -295,7 +309,7 @@ Not suspended, under any reading:
   kept current by the model-card chore*).
 - **The operator** rules every structural question, with the facts and at most three options,
   enters and exits through the `gz-mx` skill, and attests.
-- **The bootstrap is the exception** (amended 2026-10-28). RO-12, the contractor kit, is neither
+- **The bootstrap is the exception** (amended 2026-10-28). RP-12, the contractor kit, is neither
   small nor deterministic, and no repairer exists until the kit does, so both clauses above refuse
   it. The operator and a working session build it: each act one commit with an independent reviewer
   subagent that never did the work, each disconnection on a hand-kept lockout log (the last
@@ -315,7 +329,7 @@ Not suspended, under any reading:
    validators and the BDD alignment check.
 4. Detach the release from the ADR: one release shape, the Release Package with the ledger release
    record, and `gz closeout` keyed to it.
-5. Land the work-package, task-card and repair-order structure, with the repair tagging scheme for
+5. Land the work-package, task and repair-order structure, with the repair tagging scheme for
    GitHub issues.
 6. Retire the canon the general arrangement contradicts, with retention maps.
 7. Realign the toolchain to Astral's project discipline for gzkit and every project it scaffolds:
@@ -331,7 +345,7 @@ Not suspended, under any reading:
 - Every operator ruling is an insight record when given and an `[operator-ruled]` handoff entry.
 - Every session ends with a handoff citing this file and listing the commits since the last.
 - § Passage log is appended per act with bytes or counts before and after.
-- § Repair orders is the register of this drydock until its orders are held as RO-5's repair work
+- § Repair orders is the register of this drydock until its orders are held as RP-5's repair work
   packages; an order's state moves only by an act in the passage log. Once its producer lands, the
   **work package log**, a Layer 3 view assembled from the repair work packages, their issues and
   the ledger and never edited, is the log of open orders; it never blocks a gate (operator: *"A"*; record decision
@@ -345,7 +359,7 @@ Not suspended, under any reading:
   deficiencies, what is left broken and the inspector's rejections). Operator, verbatim: *"A. and
   that matters because mx/drydock (with the alarms and tripwire concepts) DOES require that lockout
   concept. It seems that if I don't push back, I am liable for accepting summarized (partially
-  vibed) reads from you of the foundational documents."* Until RO-12 lands them, the lines stand in
+  vibed) reads from you of the foundational documents."* Until RP-12 lands them, the lines stand in
   § List of discrepancies below.
 - **This contract changes only by its own amendment, never through a repair order** (operator:
   *"A"*; record decision *B1: the contract changes only by its own amendment, never through a
@@ -356,11 +370,11 @@ Not suspended, under any reading:
 
 ## Repair orders
 
-In dependency order. RO-1 and RO-7 run in parallel with the rest on cheaper sessions. Each names
+In dependency order. RP-1 and RP-7 run in parallel with the rest on cheaper sessions. Each names
 the band of the general arrangement it serves.
 
 **The work scope is frozen at induction** (amended 2026-10-29, § Rulings of 2026-10-29): the orders
-are RO-0 to RO-13 as the table stood, with RO-14 and RO-15 added by the operator's amendment. A finding raised from then on is graded, not added: one that
+are RP-0 to RP-13 as the table stood, with RP-14 and RP-15 added by the operator's amendment. A finding raised from then on is graded, not added: one that
 blocks return to service is worked under its owning order or a change order the operator issues; one
 that does not is a deferred finding, carried into civil rule with a named holder and a revisit
 condition, and never a new order.
@@ -373,22 +387,22 @@ its last order owns it.
 
 | Order | Serves | What it lands | Witness | Owner |
 |---|---|---|---|---|
-| RO-0 | the drydock itself | this contract rewritten to the ratified plan with the drawing saved beside it; the doctrine page and the contract template to match; safe mode lowering every guard but the four to advisory while the marker is open (R6); the uncommitted 2026-10-17 drift disposed; amended 2026-10-18 (requirements model § 11): operator rulings reach the ledger as `insight_recorded` pointers (`d7e332190`), and the contract is pinned at safe-mode entry and on each committed amendment (`e621a4d2c`) | `mkdocs build --strict`; `gz validate --distribution`; the guard tests; `gz validate --insights-shape`; `tests/mx/test_contract_pin.py` | the session |
-| RO-1 | control plane | the bleeding stopped: session-start text under 4 KB on one channel; the dead `instruction-router` hook removed; skill descriptions to one sentence, under 6,000 chars in total; rule version banners lifted to rule-version-history; the governance read mandate pointed at the Coverage Ledger section; the budget witness extended to every loaded surface, measuring the skills that load; from 2026-10-18 each remaining cut is chosen by cause: a clause answering one recorded incident (special cause) moves to a rationale record, one answering a recurring pattern (common cause) stays, and a single failure becomes a rule only on recurrence: at least the threshold in `data/recurrence_threshold.json` (3) of cited insight or GHI records, each pair a session lease apart, checked by `gz insights recurrence` (ruled 2026-10-18); acts (a) to (g) landed, the remaining work specified 2026-10-25 in [the RO-1 specification](harbor-ro1-cut-measurement.md): the per-stage measurement protocol RO-7's cuts are read by (GHI #1252) | `gz validate --instructions-files-budget` over every surface; the proof file; WP-16's effectiveness read per cut | cheaper sessions (GHIs #1246, #1249, #1252) |
-| RO-2 | catalog, labor, version | the keystone: one id-resolution seam shared by every reader (phase 1 of `ADR-pool.identifier-ladder-migration`, pulled forward by R5); explicit parent fields on REQ and TASK read everywhere the regex sites recover them today; the grammar copies replaced by one body per kind (re-measured 2026-10-18: about 118 independent copies and 28 spelling-derived parents, not the nine first written); no identifier changes; the resolver tells a reused numeric prefix apart by slug, rename event or parked state (`OBPI-0.28.0-01`); before-figures in the passage log (2026-10-18); specified 2026-10-18 in [the RO-2 specification](harbor-ro2-identity-seam.md) as one order in five tranches (operator: *"One RO, tranches (Rec.)"*) | `gz validate --id-seam`: a shrink-only baseline of the sites outside the seam, closed at zero (operator: *"Ratchet to zero (Rec.)"*); the scenario REQ tags and every `@covers` still resolve | **closed 2026-10-19**: tranches 1 to 5 landed, the baseline empty (passage log, 2026-10-19) |
-| RO-3 | catalog | the requirements store as empty structure under `data/catalog/`, specified 2026-10-21 in [the RO-3 specification](harbor-ro3-requirements-store.md) (operator rulings: *"One file per kind (Rec.)"*, *"Seed the legend (Rec.)"*, *"Library producer + probe (Rec.)"*, *"Advisory until RO-5 (Rec.)"*), re-scoped 2026-10-18 to [the requirements model](ieee/requirements-model.md) (it named `data/requirements_catalog.json` and a feature-area registry before): schemas for families (the legend, banded product and common), outcomes (`user_facing`, `governed_by`, `depends_on`, the outcome lifecycle) and REQs (sequential id, `member_of`, statement and pass/fail criteria, kind, revision, proof SATISFIED / UNSATISFIED / UNKNOWN, `derives_from`, `applies_to` for an NFR); outcome-lifecycle and REQ-proof events; validators for acyclic edges, resolvable `derives_from`, an FR no REQ derives from, the BDD alignment of each user-facing outcome, and the freeze lock; every new delivery event names its REQ or outcome. No entry authored | schemas validate; `gz test` green; the validators registered | **closed 2026-10-22**: four tranches landed, the witness read true (passage log, 2026-10-22) |
-| RO-5 | labor, maintenance (sequenced before RO-4, operator 2026-10-25: *"yes"*; the Release Package ships work packages) | the work-package and task-card structure: lane held once, on the work package; checklist to brief link by stored id, not position; the decomposition matrix detached from lane and kind; the repair-order template and the repair tagging scheme for GitHub issues; a repair-order lifecycle event with the issue number as alias; `ghi-close` recording an issue's close against its repair package (the unsourced "PR-closeout distinctions" dropped, operator 2026-10-25); specified 2026-10-25 in [the RO-5 specification](harbor-ro5-work-packages.md); from the requirements model (2026-10-18): one work package per outcome, initiated by the operator per work package, frozen with a risk note after the independent reviewer's nine-criteria check, closed by Gate 5 per outcome recording proceed, redirect, pause or terminate with the residual risk ; **change order 2026-10-30** (operator: *"A"*; § Rulings of 2026-10-30): the catalog verbs after entry, editing an outcome or REQ before the freeze, outcome moves, reopening and withdrawal, which RO-3 assigned here; specified as [tranche 6](harbor-ro5-work-packages.md#amended-2026-10-31-the-catalog-verbs-after-entry), landing directly after RO-11 (operator: *"A"*; § Rulings of 2026-10-31), RO-5 staying open across RO-12 and RO-11; creation is RO-11's | schema validation; one repair order of this drydock run through the new template | the session specifies; a cheaper session lands |
-| RO-14 | labor, every band (added 2026-10-31, operator: *"a"*; tranche 1 before RO-12 lands, tranche 2 before RO-13's retrofit, tranche 3 last) | the forward migration from OBPI to the work package: everything live moves and `gz obpi` is removed, history staying as read-only record through the alias layer. **Tranche 1:** the runtime parts the kit reuses, on the work-package surface, with #1200, #1206, #1208 and #1028 repaired there, and the successor to `gz obpi withdraw` accepting legacy ids. **Tranche 2:** the pipeline, skills, rules and docs. **Tranche 3:** `gz obpi` removed. Specified in [the RO-14 specification](harbor-ro14-obpi-forward-migration.md) | a shrink-only baseline of live OBPI references outside the one alias module, closed at zero (§ Exit item 12) | the operator and a working session land tranche 1 and tranche 2's pipeline; the rest of tranche 2 and tranche 3 run under the kit (operator: *"a"*) |
-| RO-12 | the drydock itself, maintenance (placed immediately after RO-5, amended 2026-10-28, operator: *"A"*; record decision *the kit is RO-12, placed immediately after RO-5*) | the contractor kit: the positions (the craftsman in repair and restoration, the Quality Assurance Inspector, the coordinator, the surveillant) and their personas, the runtime that drives each act, the tag-out log, the maintenance record and the list of discrepancies, the work package and the change ladder, keyed on RO-5's work-package id; preconditions, repaired before it lands: #1200, #1206, #1208 and #1028 on the work-package surface in RO-14's tranche 1 (amended 2026-10-31, operator: *"a"*) and #1273 (the ruling; closed 2026-10-31), with the other reused-part defects the record's disposition row 2 lists (#1198, #1203, #1205, #1194, #1209 and #1185, #1028 being its stop-and-ask boundary); the cwd-escape guard, #1296, is not a precondition but a requirement of the RO-12 specification, its three acceptance cases unchanged (amended 2026-11-02, operator: *"A"*; § Rulings of 2026-11-02); every order from RO-11 on then runs under the kit as its first flight; specification is diamond 2 of [the contractor-kit record](../rnd/contractor-kit.md) | each of the kit's runtime refusals has a test showing it refuses (operator: *"A"*; record decision *RO-12 closes only when every runtime refusal is witnessed refusing*); the list is the witness's floor, which the specification may add to and never subtract from, and a refusal with no test leaves RO-12 open: (1) a session that hung a tag clearing it (A4, A6); (2) work before commencement (C1); (3) an inspector dispatched by the coordinator (A3, A5); (4) landing on a package with an open stop or hold (C4, A8); (5) a finding closed without a buy-back (C5); (6) acceptance with a tag still hung (C10); (7) a hangar handoff whose turnover omits a hung tag (C11); (8) a control accepted with no inspected red witness (2026-10-28); (9) a dispatched agent's state-changing command aimed at a root its dispatch did not intend (#1296, 2026-11-02) | the operator and a working session (the bootstrap, § Division of labor) |
-| RO-13 | every band, control plane (split 2026-10-31, operator: *"c"*: the foundation tranche after RO-11 and RO-5's tranche 6, before RO-4, the retrofit tranches after RO-8; first placed after RO-12, amended 2026-10-28, operator: *"A"*; record decision *row 5: the two-way mode contract program is RO-13, ratcheted to zero*) | the two-way mode contract across every control: each control onboards its MEL entry, takes the standby level from the central condition signal at its place of call, and reports suitability for function through its built-in self-test. **Foundation tranche:** the shared MEL model, the decorator, the place-of-call reader, the named refusal call for a control's CLI refusals, the enumerator, the shrink-only baseline, the checkpoint declared as one temporary group entry, and the self-test chore. **Retrofit tranches**, in the order ruled: code controls by role (alarms, gates, then safeguards, monitors and tripwires), then skills, then rules and the other surfaces. The unit is one control per distinct check, so the census's 421 code controls and 206 model-oriented surfaces are its dated starting measure, not the population. Each rule is in § Rulings of 2026-10-31 (operator: *"a MASSIVE refactor, but it is the best way that I can see"*; the route chosen for the design, *"not be so parsimonious or urgent to get back underway"*); the kit's first flight does not wait for it | a shrink-only baseline of controls with no MEL entry, closed at zero, group-entry members counted as having none, turning the doctrine's standing exit measure *"the count of controls with no named contract, at zero"* into a check | specified 2026-10-31 in [the RO-13 specification](harbor-ro13-mode-contract.md) (operator: *"i accept"*); the operator and a working session land the foundation, a contractor under the kit lands the retrofit |
-| RO-11 | catalog (placed before RO-4, amended 2026-10-30, operator: *"A"*; RO-4's packages reference outcome codes this order settles) | intake: admitting a requirement into the requirements catalog, nothing more (operator, verbatim: *"yes, it is just admitting/registering a new requirement into the requirements catalog, nothing more."*), on the operator's word and separate from work selection, specified 2026-10-30 in [the RO-11 specification](harbor-ro11-intake.md). The entry verb creates a queued outcome with its `source`, `modules` and REQs and books `outcome_transitioned` for `queued`, the intake edge's witness; everything after entry stays RO-5's. The five doors (a pool entry, an R&D disposition, a deferred finding, the operator's word, an accepted ADR) are the allowed values of `source`. The pool stays a store of intentions, drained on demand (*"process for pool drain and work for pool drain are not the same thing"*); an entry is brought down by admitting its outcomes, each naming it as `source`, and the first such admission marks it `Pulled`. **Change order 2026-10-30** (operator: *"a"*; § Rulings of 2026-10-30): RO-11 also lands the capability records, the outcome code tightened to exactly three levels, and the legend re-coded to its three-letter families | the entry verb's unit tests, run against a temporary catalog with a real pool entry as input; `gz validate --catalog` | the session specified with the operator on 2026-10-30; a cheaper session lands |
-| RO-15 | every band (added 2026-11-01, operator: *"I consider that RO worthy."*; placed immediately before RO-4, amended 2026-11-01, operator: *"agree"*) | maximal Astral project structure, to [uv's project model](https://docs.astral.sh/uv/concepts/projects/) as `gz-skills-first-starter` maximizes it: structure rules in the discipline scope, gzkit's own tree, `gz` locked in a scaffolded project, clean-install proof, and brownfield adoption by report then proof. Specified in [the RO-15 specification](harbor-ro15-project-structure.md), its owner unruled | `gz validate --astral-discipline` reads zero on the structure rules for gzkit and a freshly scaffolded project, and a brownfield fixture reaches conformance with its build intact (§ Exit item 13) | open |
-| RO-4 | version | release detached from the ADR (R3): the Release Package as the plan and the ledger release record as the shipped claim; the version lives on the release; `version_sync` stops deriving from the ADR id (Q-08); `gz closeout` keyed to a Release Package; patch qualification stated on the receipt; `gz-release` subsumes `gz-patch-release` (GHI #1248); `releases/README.md` and `adr-lifecycle.md` ADR-as-carrier text retired; specified 2026-10-25 in [the RO-4 specification](harbor-ro4-release.md). **Change order 2026-10-30** (operator, verbatim: *"yes, it blocks; RO-4 owns it"*; § Rulings of 2026-10-30): RO-4 also lands the feature package's store and its value attestation, taken at the release package's or work package's attestation | `gz validate --version-release`; a dry-run closeout keyed to an empty Release Package | the session specifies; a cheaper session lands |
-| RO-6 | every band | contradicted canon retired with retention maps: PRD INV-013, INV-017, INV-023, FR-005a, FR-006 and its stale frontmatter; the GovZero docs stale as a class (GHI #1188); the IEEE README's bars and Q-18's "names chosen later"; the engineering-order rung in the ladder records; Astra's rejection reconciled in DISAGREEMENTS; the glossary; specified 2026-10-25 in [the RO-6 specification](harbor-ro6-canon-retirement.md) (nothing deleted: undated live documents, dated snapshots) | `mkdocs build --strict`; `gz validate --adr-status-fresh`; the retention maps | cheaper sessions |
-| RO-7 | control plane | the rest of the cut, staged, one WP-16 report per stage: skill bodies' rationalizations and doctrine restatements to `references/`, the catalogue merged toward 40 with the merge plan put to the operator first (GHI #1250); rules narrative lifted (GHI #1246); personas, agents and nested `AGENTS.md` to budget after confirming what Claude loads (GHI #1251); AGENTS.md only by operator retire or re-tier of invariant entries; every stage chooses its cuts by cause, as RO-1 does from 2026-10-18, and a clause kept as common cause cites records that pass `gz insights recurrence`; specified 2026-10-25 in [the RO-7 specification](harbor-ro7-context-cut.md) (nested `AGENTS.md` no longer generated); **change order 2026-10-28**: the personas exit number becomes a cap per persona file, what one dispatch or role assignment carries, its value in `data/instructions_files_budget.json` set by measurement under RO-1's protocol, and the personas total is retired (operator, verbatim: *"so, yes, caping each personal file directly is the best approach. ==> "A""*; record decision *each persona file is capped; the total is retired*) | `gz validate --instructions-files-budget`; the stage reports under `docs/evals/` | cheaper sessions |
-| RO-9 | every band | the toolchain realigned to Astral's project discipline, specified 2026-10-19 in [the RO-9 specification](harbor-ro9-astral-toolchain.md) (operator rulings: *"1. 3.14"*, *"2. yes, MAXX astral... MAXX"*, *"3. yes, MAXX astral... MAXX"*, *"4. A we are in dry dock"*): each fact declared once where Astral's tools read it (the Python version is stated in 11 places today); `uv sync --locked`; docs tooling into a locked group; every project tool through `uv run`; `uv_build`, `uv build --no-sources` and `uv publish`; Ruff, ty and uv used to the maximum, preview included, with a register of curated non-Astral exceptions; Python 3.14 and its idioms, stdlib first (absorbs GHI #1184 and #1183); `gz init` scaffolding a uv-compliant project; seven tranches | `gz validate --astral-discipline`: a shrink-only baseline of violations, closed at zero, run against the tree and a freshly scaffolded project | the session specifies; cheaper sessions land the tranches after tranche 1 |
-| RO-8 | the in-flight work | ADR-0.35.0 frozen (R4): no further OBPI completions; briefs 17 and 20 stand on the passage log and their receipts; the unlanded items and the obligations of 11 to 20 carried into the catalog at civil rule; OBPI-0.35.0-19's Requirement 8 and REQ-0.35.0-19-08 ("a TTL reap by `reap_expired_locks` … behave as they do now") are carried as superseded by the 2026-10-18 never-evict ruling, landed under RO-5; the Movement A to F boxes and the handback's kept-or-reverted list ; specified 2026-10-25 in [the RO-8 specification](harbor-ro8-in-flight-work.md): the unfinished and repudiated work absorbed into the catalog, the 0.35.0 Release Package | the handback amendment | the operator rules; the session drafts |
-| RO-10 | the drydock itself, maintenance | safe-mode guard classification: three kinds of protection, alarm versus tripwire, the rubric that decides between them, classification review over time, and the timed trigger the A/B/C/D checks lack (ADR-0.0.74 deferred their intervals to a "Phase 2" nothing carries); specified 2026-10-25 in [the RO-10 specification](harbor-ro10-safe-mode-classification.md) from that day's design session; the lean version is in force and frozen | the specification's open questions ruled; then the mechanism's own witnesses | **PARKED** (operator: *"yes, draft RO-10 and park it"*): designed in the new requirements system once RO-3 to RO-5 carry it |
+| RP-0 | the drydock itself | this contract rewritten to the ratified plan with the drawing saved beside it; the doctrine page and the contract template to match; safe mode lowering every guard but the four to advisory while the marker is open (R6); the uncommitted 2026-10-17 drift disposed; amended 2026-10-18 (requirements model § 11): operator rulings reach the ledger as `insight_recorded` pointers (`d7e332190`), and the contract is pinned at safe-mode entry and on each committed amendment (`e621a4d2c`) | `mkdocs build --strict`; `gz validate --distribution`; the guard tests; `gz validate --insights-shape`; `tests/mx/test_contract_pin.py` | the session |
+| RP-1 | control plane | the bleeding stopped: session-start text under 4 KB on one channel; the dead `instruction-router` hook removed; skill descriptions to one sentence, under 6,000 chars in total; rule version banners lifted to rule-version-history; the governance read mandate pointed at the Coverage Ledger section; the budget witness extended to every loaded surface, measuring the skills that load; from 2026-10-18 each remaining cut is chosen by cause: a clause answering one recorded incident (special cause) moves to a rationale record, one answering a recurring pattern (common cause) stays, and a single failure becomes a rule only on recurrence: at least the threshold in `data/recurrence_threshold.json` (3) of cited insight or GHI records, each pair a session lease apart, checked by `gz insights recurrence` (ruled 2026-10-18); acts (a) to (g) landed, the remaining work specified 2026-10-25 in [the RP-1 specification](harbor-ro1-cut-measurement.md): the per-stage measurement protocol RP-7's cuts are read by (GHI #1252) | `gz validate --instructions-files-budget` over every surface; the proof file; WP-16's effectiveness read per cut | cheaper sessions (GHIs #1246, #1249, #1252) |
+| RP-2 | catalog, labor, version | the keystone: one id-resolution seam shared by every reader (phase 1 of `ADR-pool.identifier-ladder-migration`, pulled forward by R5); explicit parent fields on REQ and TASK read everywhere the regex sites recover them today; the grammar copies replaced by one body per kind (re-measured 2026-10-18: about 118 independent copies and 28 spelling-derived parents, not the nine first written); no identifier changes; the resolver tells a reused numeric prefix apart by slug, rename event or parked state (`OBPI-0.28.0-01`); before-figures in the passage log (2026-10-18); specified 2026-10-18 in [the RP-2 specification](harbor-ro2-identity-seam.md) as one order in five tranches (operator: *"One RO, tranches (Rec.)"*) | `gz validate --id-seam`: a shrink-only baseline of the sites outside the seam, closed at zero (operator: *"Ratchet to zero (Rec.)"*); the scenario REQ tags and every `@covers` still resolve | **closed 2026-10-19**: tranches 1 to 5 landed, the baseline empty (passage log, 2026-10-19) |
+| RP-3 | catalog | the requirements store as empty structure under `data/catalog/`, specified 2026-10-21 in [the RP-3 specification](harbor-ro3-requirements-store.md) (operator rulings: *"One file per kind (Rec.)"*, *"Seed the legend (Rec.)"*, *"Library producer + probe (Rec.)"*, *"Advisory until RP-5 (Rec.)"*), re-scoped 2026-10-18 to [the requirements model](ieee/requirements-model.md) (it named `data/requirements_catalog.json` and a feature-area registry before): schemas for families (the legend, banded product and common), outcomes (`user_facing`, `governed_by`, `depends_on`, the outcome lifecycle) and REQs (sequential id, `member_of`, statement and pass/fail criteria, kind, revision, proof SATISFIED / UNSATISFIED / UNKNOWN, `derives_from`, `applies_to` for an NFR); outcome-lifecycle and REQ-proof events; validators for acyclic edges, resolvable `derives_from`, an FR no REQ derives from, the BDD alignment of each user-facing outcome, and the freeze lock; every new delivery event names its REQ or outcome. No entry authored | schemas validate; `gz test` green; the validators registered | **closed 2026-10-22**: four tranches landed, the witness read true (passage log, 2026-10-22) |
+| RP-5 | labor, maintenance (sequenced before RP-4, operator 2026-10-25: *"yes"*; the Release Package ships work packages) | the work-package and task structure: lane held once, on the work package; checklist to brief link by stored id, not position; the decomposition matrix detached from lane and kind; the repair-order template and the repair tagging scheme for GitHub issues; a repair-order lifecycle event with the issue number as alias; `ghi-close` recording an issue's close against its repair package (the unsourced "PR-closeout distinctions" dropped, operator 2026-10-25); specified 2026-10-25 in [the RP-5 specification](harbor-ro5-work-packages.md); from the requirements model (2026-10-18): one work package per outcome, initiated by the operator per work package, frozen with a risk note after the independent reviewer's nine-criteria check, closed by Gate 5 per outcome recording proceed, redirect, pause or terminate with the residual risk ; **change order 2026-10-30** (operator: *"A"*; § Rulings of 2026-10-30): the catalog verbs after entry, editing an outcome or REQ before the freeze, outcome moves, reopening and withdrawal, which RP-3 assigned here; specified as [tranche 6](harbor-ro5-work-packages.md#amended-2026-10-31-the-catalog-verbs-after-entry), landing directly after RP-11 (operator: *"A"*; § Rulings of 2026-10-31), RP-5 staying open across RP-12 and RP-11; creation is RP-11's | schema validation; one repair order of this drydock run through the new template | the session specifies; a cheaper session lands |
+| RP-14 | labor, every band (added 2026-10-31, operator: *"a"*; tranche 1 before RP-12 lands, tranche 2 before RP-13's retrofit, tranche 3 last) | the forward migration from OBPI to the work package: everything live moves and `gz obpi` is removed, history staying as read-only record through the alias layer. **Tranche 1:** the runtime parts the kit reuses, on the work-package surface, with #1200, #1206, #1208 and #1028 repaired there, and the successor to `gz obpi withdraw` accepting legacy ids. **Tranche 2:** the pipeline, skills, rules and docs. **Tranche 3:** `gz obpi` removed. Specified in [the RP-14 specification](harbor-ro14-obpi-forward-migration.md) | a shrink-only baseline of live OBPI references outside the one alias module, closed at zero (§ Exit item 12) | the operator and a working session land tranche 1 and tranche 2's pipeline; the rest of tranche 2 and tranche 3 run under the kit (operator: *"a"*) |
+| RP-12 | the drydock itself, maintenance (placed immediately after RP-5, amended 2026-10-28, operator: *"A"*; record decision *the kit is RP-12, placed immediately after RP-5*) | the contractor kit: the positions (the craftsman in repair and restoration, the Quality Assurance Inspector, the coordinator, the surveillant) and their personas, the runtime that drives each act, the tag-out log, the maintenance record and the list of discrepancies, the work package and the change ladder, keyed on RP-5's work-package id; preconditions, repaired before it lands: #1200, #1206, #1208 and #1028 on the work-package surface in RP-14's tranche 1 (amended 2026-10-31, operator: *"a"*) and #1273 (the ruling; closed 2026-10-31), with the other reused-part defects the record's disposition row 2 lists (#1198, #1203, #1205, #1194, #1209 and #1185, #1028 being its stop-and-ask boundary); the cwd-escape guard, #1296, is not a precondition but a requirement of the RP-12 specification, its three acceptance cases unchanged (amended 2026-11-02, operator: *"A"*; § Rulings of 2026-11-02); every order from RP-11 on then runs under the kit as its first flight; specification is diamond 2 of [the contractor-kit record](../rnd/contractor-kit.md) | each of the kit's runtime refusals has a test showing it refuses (operator: *"A"*; record decision *RP-12 closes only when every runtime refusal is witnessed refusing*); the list is the witness's floor, which the specification may add to and never subtract from, and a refusal with no test leaves RP-12 open: (1) a session that hung a tag clearing it (A4, A6); (2) work before commencement (C1); (3) an inspector dispatched by the coordinator (A3, A5); (4) landing on a package with an open stop or hold (C4, A8); (5) a finding closed without a buy-back (C5); (6) acceptance with a tag still hung (C10); (7) a hangar handoff whose turnover omits a hung tag (C11); (8) a control accepted with no inspected red witness (2026-10-28); (9) a dispatched agent's state-changing command aimed at a root its dispatch did not intend (#1296, 2026-11-02) | the operator and a working session (the bootstrap, § Division of labor) |
+| RP-13 | every band, control plane (split 2026-10-31, operator: *"c"*: the foundation tranche after RP-11 and RP-5's tranche 6, before RP-4, the retrofit tranches after RP-8; first placed after RP-12, amended 2026-10-28, operator: *"A"*; record decision *row 5: the two-way mode contract program is RP-13, ratcheted to zero*) | the two-way mode contract across every control: each control onboards its MEL entry, takes the standby level from the central condition signal at its place of call, and reports suitability for function through its built-in self-test. **Foundation tranche:** the shared MEL model, the decorator, the place-of-call reader, the named refusal call for a control's CLI refusals, the enumerator, the shrink-only baseline, the checkpoint declared as one temporary group entry, and the self-test chore. **Retrofit tranches**, in the order ruled: code controls by role (alarms, gates, then safeguards, monitors and tripwires), then skills, then rules and the other surfaces. The unit is one control per distinct check, so the census's 421 code controls and 206 model-oriented surfaces are its dated starting measure, not the population. Each rule is in § Rulings of 2026-10-31 (operator: *"a MASSIVE refactor, but it is the best way that I can see"*; the route chosen for the design, *"not be so parsimonious or urgent to get back underway"*); the kit's first flight does not wait for it | a shrink-only baseline of controls with no MEL entry, closed at zero, group-entry members counted as having none, turning the doctrine's standing exit measure *"the count of controls with no named contract, at zero"* into a check | specified 2026-10-31 in [the RP-13 specification](harbor-ro13-mode-contract.md) (operator: *"i accept"*); the operator and a working session land the foundation, a contractor under the kit lands the retrofit |
+| RP-11 | catalog (placed before RP-4, amended 2026-10-30, operator: *"A"*; RP-4's packages reference outcome codes this order settles) | intake: admitting a requirement into the requirements catalog, nothing more (operator, verbatim: *"yes, it is just admitting/registering a new requirement into the requirements catalog, nothing more."*), on the operator's word and separate from work selection, specified 2026-10-30 in [the RP-11 specification](harbor-ro11-intake.md). The entry verb creates a queued outcome with its `source`, `modules` and REQs and books `outcome_transitioned` for `queued`, the intake edge's witness; everything after entry stays RP-5's. The five doors (a pool entry, an R&D disposition, a deferred finding, the operator's word, an accepted ADR) are the allowed values of `source`. The pool stays a store of intentions, drained on demand (*"process for pool drain and work for pool drain are not the same thing"*); an entry is brought down by admitting its outcomes, each naming it as `source`, and the first such admission marks it `Pulled`. **Change order 2026-10-30** (operator: *"a"*; § Rulings of 2026-10-30): RP-11 also lands the capability records, the outcome code tightened to exactly three levels, and the legend re-coded to its three-letter families | the entry verb's unit tests, run against a temporary catalog with a real pool entry as input; `gz validate --catalog` | the session specified with the operator on 2026-10-30; a cheaper session lands |
+| RP-15 | every band (added 2026-11-01, operator: *"I consider that RO worthy."*; placed immediately before RP-4, amended 2026-11-01, operator: *"agree"*) | maximal Astral project structure, to [uv's project model](https://docs.astral.sh/uv/concepts/projects/) as `gz-skills-first-starter` maximizes it: structure rules in the discipline scope, gzkit's own tree, `gz` locked in a scaffolded project, clean-install proof, and brownfield adoption by report then proof. Specified in [the RP-15 specification](harbor-ro15-project-structure.md), its owner unruled | `gz validate --astral-discipline` reads zero on the structure rules for gzkit and a freshly scaffolded project, and a brownfield fixture reaches conformance with its build intact (§ Exit item 13) | open |
+| RP-4 | version | release detached from the ADR (R3): the Release Package as the plan and the ledger release record as the shipped claim; the version lives on the release; `version_sync` stops deriving from the ADR id (Q-08); `gz closeout` keyed to a Release Package; patch qualification stated on the receipt; `gz-release` subsumes `gz-patch-release` (GHI #1248); `releases/README.md` and `adr-lifecycle.md` ADR-as-carrier text retired; specified 2026-10-25 in [the RP-4 specification](harbor-ro4-release.md). **Change order 2026-10-30** (operator, verbatim: *"yes, it blocks; RP-4 owns it"*; § Rulings of 2026-10-30): RP-4 also lands the feature package's store and its value attestation, taken at the release package's or work package's attestation | `gz validate --version-release`; a dry-run closeout keyed to an empty Release Package | the session specifies; a cheaper session lands |
+| RP-6 | every band | contradicted canon retired with retention maps: PRD INV-013, INV-017, INV-023, FR-005a, FR-006 and its stale frontmatter; the GovZero docs stale as a class (GHI #1188); the IEEE README's bars and Q-18's "names chosen later"; the engineering-order rung in the ladder records; Astra's rejection reconciled in DISAGREEMENTS; the glossary; specified 2026-10-25 in [the RP-6 specification](harbor-ro6-canon-retirement.md) (nothing deleted: undated live documents, dated snapshots) | `mkdocs build --strict`; `gz validate --adr-status-fresh`; the retention maps | cheaper sessions |
+| RP-7 | control plane | the rest of the cut, staged, one WP-16 report per stage: skill bodies' rationalizations and doctrine restatements to `references/`, the catalogue merged toward 40 with the merge plan put to the operator first (GHI #1250); rules narrative lifted (GHI #1246); personas, agents and nested `AGENTS.md` to budget after confirming what Claude loads (GHI #1251); AGENTS.md only by operator retire or re-tier of invariant entries; every stage chooses its cuts by cause, as RP-1 does from 2026-10-18, and a clause kept as common cause cites records that pass `gz insights recurrence`; specified 2026-10-25 in [the RP-7 specification](harbor-ro7-context-cut.md) (nested `AGENTS.md` no longer generated); **change order 2026-10-28**: the personas exit number becomes a cap per persona file, what one dispatch or role assignment carries, its value in `data/instructions_files_budget.json` set by measurement under RP-1's protocol, and the personas total is retired (operator, verbatim: *"so, yes, caping each personal file directly is the best approach. ==> "A""*; record decision *each persona file is capped; the total is retired*) | `gz validate --instructions-files-budget`; the stage reports under `docs/evals/` | cheaper sessions |
+| RP-9 | every band | the toolchain realigned to Astral's project discipline, specified 2026-10-19 in [the RP-9 specification](harbor-ro9-astral-toolchain.md) (operator rulings: *"1. 3.14"*, *"2. yes, MAXX astral... MAXX"*, *"3. yes, MAXX astral... MAXX"*, *"4. A we are in dry dock"*): each fact declared once where Astral's tools read it (the Python version is stated in 11 places today); `uv sync --locked`; docs tooling into a locked group; every project tool through `uv run`; `uv_build`, `uv build --no-sources` and `uv publish`; Ruff, ty and uv used to the maximum, preview included, with a register of curated non-Astral exceptions; Python 3.14 and its idioms, stdlib first (absorbs GHI #1184 and #1183); `gz init` scaffolding a uv-compliant project; seven tranches | `gz validate --astral-discipline`: a shrink-only baseline of violations, closed at zero, run against the tree and a freshly scaffolded project | the session specifies; cheaper sessions land the tranches after tranche 1 |
+| RP-8 | the in-flight work | ADR-0.35.0 frozen (R4): no further OBPI completions; briefs 17 and 20 stand on the passage log and their receipts; the unlanded items and the obligations of 11 to 20 carried into the catalog at civil rule; OBPI-0.35.0-19's Requirement 8 and REQ-0.35.0-19-08 ("a TTL reap by `reap_expired_locks` … behave as they do now") are carried as superseded by the 2026-10-18 never-evict ruling, landed under RP-5; the Movement A to F boxes and the handback's kept-or-reverted list ; specified 2026-10-25 in [the RP-8 specification](harbor-ro8-in-flight-work.md): the unfinished and repudiated work absorbed into the catalog, the 0.35.0 Release Package | the handback amendment | the operator rules; the session drafts |
+| RP-10 | the drydock itself, maintenance | safe-mode guard classification: three kinds of protection, alarm versus tripwire, the rubric that decides between them, classification review over time, and the timed trigger the A/B/C/D checks lack (ADR-0.0.74 deferred their intervals to a "Phase 2" nothing carries); specified 2026-10-25 in [the RP-10 specification](harbor-ro10-safe-mode-classification.md) from that day's design session; the lean version is in force and frozen | the specification's open questions ruled; then the mechanism's own witnesses | **PARKED** (operator: *"yes, draft RP-10 and park it"*): designed in the new requirements system once RP-3 to RP-5 carry it |
 
 ## Exit — seaworthiness
 
@@ -401,10 +415,10 @@ witness, or earlier at the operator's word:
    outcomes enter at civil rule (§ Rulings of 2026-10-30).
 4. One release shape is ruled and `gz closeout` is keyed to it.
 5. The contradicted canon is retired.
-6. The in-flight work is disposed: RO-8's disposition plan is booked, and its carry, withdraw and
+6. The in-flight work is disposed: RP-8's disposition plan is booked, and its carry, withdraw and
    Release Package acts run at civil rule (§ Rulings of 2026-10-30).
-7. The toolchain follows Astral's project discipline: the RO-9 witness reads zero for gzkit and for a
-   freshly scaffolded project (added 2026-10-19 with RO-9).
+7. The toolchain follows Astral's project discipline: the RP-9 witness reads zero for gzkit and for a
+   freshly scaffolded project (added 2026-10-19 with RP-9).
 8. Every line of § List of discrepancies graded *blocks return to service* is cleared by its owning order: the
    tests are adjusted to the new structure and every alarm is back on at full strength, read from `gz mx exit`'s
    re-run and a green `gz check --full` (added 2026-10-25; renamed from § Punch list 2026-10-28). A line graded
@@ -433,10 +447,10 @@ witness, or earlier at the operator's word:
     (intake, the catalog and its organization, catalog to work package, release and the Release
     Package, and any further component), with the requirements model and the order
     specifications as its detail (added 2026-10-29, § Rulings of 2026-10-29).
-12. Nothing live remains in OBPI: `gz obpi` is removed and RO-14's shrink-only baseline of live OBPI
+12. Nothing live remains in OBPI: `gz obpi` is removed and RP-14's shrink-only baseline of live OBPI
     references reads zero, history staying as read-only record through the alias layer (added
     2026-10-31, § Rulings of 2026-10-31).
-13. Project structure follows uv's project model to the maximum: RO-15's structure rules read zero
+13. Project structure follows uv's project model to the maximum: RP-15's structure rules read zero
     for gzkit and a freshly scaffolded project, and a brownfield fixture reaches conformance with its
     build intact (added 2026-11-01, § Rulings of 2026-11-01).
 
@@ -984,6 +998,15 @@ The three-level brief, specified ahead of its named event.
 - **#1296 and #1194 first, then RO-12's specification; RO-14 tranche 2's pipeline move waits.** The ruled order is RO-5, RO-12, RO-11, RO-4, and the move's only deadline is RO-13's retrofit. Put to the operator: this; the pipeline move now; or the two repairs, the move, then RO-12. Operator, verbatim: *"A"*. Amended by the next ruling for #1296.
 - **The cwd-escape guard moves into RO-12's specification.** #1296 names a control never built, with one recorded incident, on the dispatch surface RO-12 defines, so a guard built now may be rebuilt on the kit's. Operator, verbatim: *"why are doing this anyway? for a defect fix?"*, then *"A"* to moving it. This narrows *"every open defect in a part the kit reuses is repaired before reuse"* for this one item. The issue stays open until the specification carries it, and its three acceptance cases and real-dispatch exit stand unchanged. Its documented harness facts, read 2026-11-02: hooks fire in subagents and carry `agent_id`; no environment variable marks a subagent; `isolation: "worktree"` refuses a Bash command aimed at the main checkout and does not track shell file writes.
 
+## Rulings of 2026-11-03
+
+From the R&D run [`repair-work-organization`](../rnd/repair-work-organization.md), signed off and funded (operator: *"yes, read in full - fund"*), its row 4 given its go (*"row 4 is go"*). Each ruling is in that record with its question, options and verbatim words; the canon form is `docs/governance/ieee/requirements-model.md` § 12 and `docs/governance/safe-mode-doctrine.md` § Out of service and the four levels. This contract adopts them by amendment (decision B1):
+
+- Work is organized at four levels on both sides, package, order and task beneath a why: feature package (the epic) and return to service package; work package (the story, the mADR's successor) and repair package; work order (the OBPI's successor) and repair order; task. *Task card* is dropped.
+- Gate 5 sits at the order. An outcome's `validated` is derived from its REQs and their orders' Gate 5; a Release Package may carry completed work orders from a work package that is not complete.
+- Out of service is one state, the open MX flag, decided by the alarm test; hangar and drydock are synonyms. Every opening has a return to service package, and return to service is the operator's act at its close.
+- **`RP-n` replaces `RO-n` in live text** (operator: *"A"*). Each order is a repair package; `RO-n` stays its alias through the identity seam (GHI #1302). Scope, operator, 2026-11-03, verbatim: *"A"*, on the option *"live text only. Rename in the general arrangement, § Repair orders, § Exit and other current prose. Leave the dated records (passage log rows, ruling entries, dated amendments) as written, like ledger rows."* So the rulings sections, the superseded records, the passage log, the dated *AMENDED* banners, the record of 2026-10-30 and the lines of the list of discrepancies keep `RO-n`; the headings that group those lines read `RP-n`.
+
 ## Superseded on 2026-10-30 (record, not binding)
 
 § The general arrangement as it stood before the redraw of 2026-10-30, kept verbatim (operator,
@@ -1448,7 +1471,7 @@ specification is a DFS, not a discrepancy (record decision *alteration and depar
 specification, both against the package's own spec*).
 
 The lines below were recorded under the single register and keep their states. Each is carried to
-its record when RO-12 lands the records, by the record's own finding (*what the contract's punch
+its record when RP-12 lands the records, by the record's own finding (*what the contract's punch
 list holds*): a temporary isolation (the alarms and pipe gate off, the commit witness off, the
 brief-lane validators disconnected) is a tag-out line item; a *retired* or *replaced* line, and the
 new form of a *reconnected* one, is a maintenance-record entry; outstanding work (GHI #1252's
@@ -1464,7 +1487,7 @@ Each repair order is a directive for the system's health, consistent with the AD
 
 Each line is `open` until the restoration contractor clears it with the alarms on; an order closes through the operator's Gate 5 only when all its lines are cleared. Orders add lines as they land work; the lines below are those the specifications already name.
 
-### RO-0 — the drydock itself
+### RP-0 — the drydock itself
 
 - `open` **reconnected** — the four pre-commit and pre-push alarm hooks still switched off (validator reachability, ledger vocabulary, the `gz check` pre-push gate, unittest) and the verifier pipe gate, switched off through `gzkit.mx.alarms` (`757ddea7e`), run at full strength at exit; the complexity ceiling and the cheap surface-fidelity subset were reconnected 2026-10-27 by operator correction; `tests.arb.test_unittest_runner_lockstep`'s two pinned-entry tests reconfigured to the wrapped entries. Authority: operator, 2026-10-25 (*"i don't want any long check at all"*).
 - `open` **restored** — the commit witness (`gz arb red --commit`) as a per-act record, after GHI #1268 is fixed and GHI #1269's acceptance rerun on `7b7ea83cd` is booked. Authority: same ruling.
@@ -1488,11 +1511,11 @@ Each line is `open` until the restoration contractor clears it with the alarms o
   (§ Rulings of 2026-10-30). Revisited 2026-10-31: session exit's witness is specified, the other
   three are unchanged (§ Rulings of 2026-10-31).
 
-### RO-1 — measuring the cut
+### RP-1 — measuring the cut
 
 - `open` **restored** — GHI #1252's effectiveness flight, run once the alarms are on. Authority: operator, 2026-10-25, *"B"*.
 
-### RO-5 — work packages
+### RP-5 — work packages
 
 - `open` **restored** — the brief-lane validators (`_detect_lane_section_mismatch` in `hooks/obpi.py`, called from `validate_briefs.py`), never disconnected: RO-5 tranche 4 kept them connected over frozen legacy briefs (operator, 2026-10-28: *"Leave them connected (Recommended)"*), and new work's lane is read from the outcome or the repair package by `gzkit.work_package_ledger.work_package_lane`. Cleared once the exit run confirms them with the alarms on. Authority: RO-5 ruling 4.
 - `open` **retired** — the checklist-count step (matrix Step 4) at its three sites: `gz specify`'s parent-ADR check (`specify_cmd._validate_parent_adr`), `gz validate --decomposition` and the ADR document check (`validate_pkg/document.py`), retired 2026-10-28 by RO-5 tranche 4; the scorecard's own arithmetic is still validated. Authority: RO-5 ruling 9.
@@ -1500,7 +1523,7 @@ Each line is `open` until the restoration contractor clears it with the alarms o
 - `open` **replaced** — new work's OBPI briefs, by work packages (`data/catalog/work_packages.json`). Authority: RO-5 ruling 1; the requirements model § 9.
 - `open` **blocks return to service** — the catalog has no verb after entry: an outcome or REQ cannot be edited, moved, reopened or withdrawn, the freeze lock does not exist, and a delivery close does not move its outcome. Authority: RO-5's § Amended 2026-10-31; the change order of 2026-10-30.
 
-### RO-14 — the forward migration
+### RP-14 — the forward migration
 
 - `open` **blocks return to service** — the work package has no pipeline: `gz wp` carries no dispatch, block, unblock, acceptance, lock or completion surface, so § Exit item 10's sea trial has nothing of its own to run on. Authority: operator, 2026-10-31, *"a"* (§ Rulings of 2026-10-31).
 - `open` **replaced** — `gz obpi` and every live surface naming OBPI, by their work-package successors, history excepted. Authority: operator, 2026-10-31, *"A"*.
@@ -1524,17 +1547,17 @@ Each line is `open` until the restoration contractor clears it with the alarms o
 
 - `open` **due by a named event** — the documentation folders need better organization, `docs/governance` above all (265 files, 123 at its top level, measured 2026-11-01), due after the handback, because canon, handoffs and validators cite those paths while the orders that move them are still landing. Authority: operator, 2026-11-01, on holding it until the handback, *"A"*.
 
-### RO-11 — intake
+### RP-11 — intake
 
 - `open` **blocks return to service** — the intake edge has no witness: no verb authors an outcome and `outcome_transitioned` has no production writer. Authority: operator, 2026-10-30, *"A"* (§ Rulings of 2026-10-30); RO-11 ruling 1.
 - `open` **replaced** — the one-letter legend and the any-depth outcome code, by the fixed three-letter families and exactly three levels, with capability records added. Authority: RO-11 rulings 3 to 5.
 
-### RO-13 — the two-way mode contract
+### RP-13 — the two-way mode contract
 
 - `open` **blocks return to service** — controls with no named contract: the exit measure has no check and no measured population, the census's counts being dated and overlapping. Authority: RO-13's row; rulings of 2026-10-31.
 - `open` **replaced** — the external checkpoint's undeclared demotion, by the temporary group entry and then each control's own entry. Authority: rulings of 2026-10-31.
 
-### RO-4 — release
+### RP-4 — release
 
 - `open` **reconnected** — `version_sync` and `closeout` and their tests, to the Release Package (`gz closeout <version>`). Authority: RO-4 rulings 3 and 4; Q-08.
 - `open` **replaced** — `patch_release_event`, by `release_recorded` for new releases. Authority: RO-4 ruling 2.
@@ -1542,23 +1565,23 @@ Each line is `open` until the restoration contractor clears it with the alarms o
 - `open` **retired** — the `release_package.md` template. Authority: RO-4 ruling 7.
 - `open` **blocks return to service** — the feature package has no store and its value delivered no attestation, so the mADR ADR-0.35.0, which RO-8's first act at civil rule turns into the 0.35.0 release package, has no record for its story. Holder: RO-4, by change order of 2026-10-30. Authority: operator, 2026-10-30, *"yes, it blocks; RO-4 owns it"* (§ Rulings of 2026-10-30).
 
-### RO-6 — superseded canon
+### RP-6 — superseded canon
 
 - `open` **retired** — each corrected document's replaced text, kept as a dated snapshot. Authority: RO-6 ruling 2.
 - `open` **retired** — the engineering-order rung. Authority: operator, 2026-10-17.
 
-### RO-7 — the context cut
+### RP-7 — the context cut
 
 - `open` **retired** — the 33 generated nested `AGENTS.md` files and their budget-validator surface. Authority: RO-7 rulings 1 and 2.
 - `open` **reconnected** — `skill_body_grandfather.json` and `gz skill audit`, to the cut bodies. Authority: the RO-7 row.
 - `open` **replaced** — each merged skill, by its named successor. Authority: GHI #1250.
 
-### RO-8 — the in-flight work
+### RP-8 — the in-flight work
 
 - `open` **retired** — ADR-0.35.0's nine unlanded briefs and the four repudiated OBPIs (0.34.0-02, 0.0.24-04, 0.0.26-02, 0.35.0-09), withdrawn as superseded, each naming where its REQs went. Authority: RO-8 rulings 1 and 2.
 - `open` **replaced** — their obligations, by catalog REQs finished as work packages in the 0.35.0 Release Package. Authority: RO-8 ruling 1.
 
-### RO-9 — the Astral toolchain
+### RP-9 — the Astral toolchain
 
 Added 2026-10-28, when RO-5 tranche 5's independent review found RO-9 had landed retirements and a replacement with no line here (operator: *"Add RO-9's lines (Recommended)"*). The work package `RO-9` cites these lines as its system restoration.
 
@@ -1570,7 +1593,7 @@ Added 2026-10-28, when RO-5 tranche 5's independent review found RO-9 had landed
 - `open` **replaced** — hatchling, by `uv_build` (`c9be1203e`). Authority: RO-9 tranche 3.
 - `open` **replaced** — `gz init`'s hand-written `pyproject.toml` (hatchling, a `dev` optional extra holding Ruff), by `uv init` and `uv add --dev` (`b5d6335cf`). Authority: RO-9 tranche 7.
 
-### RO-15 — project structure
+### RP-15 — project structure
 
 - `open` **blocks return to service** — `gz init` breaks a working brownfield build: beside a flat package it adds `data/` and `design/`, setuptools discovery refuses *"Multiple top-level packages"*, and `uv build` moved from exit 0 to exit 2 in a scratch project, 2026-11-01. Authority: RO-15 ruling 3, *"Report, then prove (Recommended)"*.
 - `open` **blocks return to service** — `gz validate --astral-discipline` has no rule about a project's structure, so a nonconforming project's violations are held and the scope passes. Authority: RO-15 ruling 2.
