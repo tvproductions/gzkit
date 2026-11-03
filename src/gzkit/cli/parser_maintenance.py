@@ -1604,7 +1604,15 @@ def _register_chores_parsers(commands: argparse._SubParsersAction) -> None:
             "its staleness band: overdue, due, unmeasured, paused or current. Nothing "
             "is run. Staleness announces and never gates: every band exits 0."
         ),
-        epilog=build_epilog(["gz chores status", "gz chores status --json"]),
+        epilog=build_epilog(
+            ["gz chores status", "gz chores status --check B", "gz chores status --json"]
+        ),
+    )
+    p_chores_status.add_argument(
+        "--check",
+        choices=("A", "B", "C", "D"),
+        default=None,
+        help="Show one check's package: the chores at that level and every level below it.",
     )
     p_chores_status.add_argument(
         "--json",
@@ -1612,7 +1620,9 @@ def _register_chores_parsers(commands: argparse._SubParsersAction) -> None:
         action="store_true",
         help="Emit {chores: [...], counts: {...}} as JSON to stdout.",
     )
-    p_chores_status.set_defaults(func=lambda a: _lazy("chores_status")(as_json=a.as_json))
+    p_chores_status.set_defaults(
+        func=lambda a: _lazy("chores_status")(as_json=a.as_json, check=a.check)
+    )
 
     p_chores_audit = chores_commands.add_parser(
         "audit",

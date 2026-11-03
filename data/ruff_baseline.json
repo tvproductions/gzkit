@@ -4569,12 +4569,7 @@
     {
       "file": "src/gzkit/commands/chores_staleness.py",
       "rule": "DOC201",
-      "count": 5
-    },
-    {
-      "file": "src/gzkit/commands/chores_staleness.py",
-      "rule": "PLR0911",
-      "count": 1
+      "count": 4
     },
     {
       "file": "src/gzkit/commands/chores_staleness.py",
@@ -4589,7 +4584,7 @@
     {
       "file": "src/gzkit/commands/chores_staleness.py",
       "rule": "TC003",
-      "count": 2
+      "count": 1
     },
     {
       "file": "src/gzkit/commands/chores_status_cmd.py",

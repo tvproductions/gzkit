@@ -29,11 +29,37 @@ StalenessSignal = Literal["accumulated-work", "content-delta", "elapsed-time"]
 # CSAF 2.0 remediation categories: "no repair" is a declared value, never an absence.
 RemediationCategory = Literal["vendor_fix", "workaround", "no_fix_planned", "none_available"]
 
+# The FAA's four check levels as gzkit packages them: A inspects and reports, B
+# repairs touching no control, C may reach a control, D re-authors one or its
+# standard. Each check includes the levels below it (R&D run
+# repair-work-organization, decision *gzkit adopts four check levels*).
+CheckLevel = Literal["A", "B", "C", "D"]
+
 # Registry keys that belong to the declaration. Presence of any one means the
 # chore is attempting a declaration, so the whole declaration must validate.
 DECLARATION_KEYS = frozenset(
-    {"class", "rung", "idempotent", "staleness", "remediation", "nonAuthority", "governingRule"}
+    {
+        "class",
+        "rung",
+        "idempotent",
+        "staleness",
+        "remediation",
+        "nonAuthority",
+        "governingRule",
+        "check",
+    }
 )
+
+
+class ChoreCheck(BaseModel):
+    """The check level a chore belongs to, and whether that level is provisional."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    level: CheckLevel = Field(..., description="A, B, C or D; each check includes those below")
+    provisional: bool = Field(
+        ..., description="True until the classification program confirms the level"
+    )
 
 
 class ChoreStaleness(BaseModel):
@@ -43,7 +69,10 @@ class ChoreStaleness(BaseModel):
 
     signal: StalenessSignal = Field(..., description="What makes this chore stale")
     period_days: int | None = Field(
-        None, alias="periodDays", gt=0, description="Expected days between runs"
+        None,
+        alias="periodDays",
+        gt=0,
+        description="Days between runs; beside another signal, due at whichever comes first",
     )
     surfaces: tuple[str, ...] | None = Field(
         None, description="Repo-relative paths whose commits make a content-delta chore due"
@@ -134,6 +163,9 @@ class ChoreDeclaration(BaseModel):
         alias="governingRule",
         pattern=r"^(none|\.gzkit/rules/[A-Za-z0-9_.-]+\.md( § .+)?)$",
         description="The .gzkit/rules clause served, or an explicit none",
+    )
+    check: ChoreCheck | None = Field(
+        None, description="The check level, admitted provisionally on 2026-11-03"
     )
 
 

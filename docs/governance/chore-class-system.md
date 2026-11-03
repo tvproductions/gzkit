@@ -1082,12 +1082,13 @@ Required per-chore fields:
 | `rung` | `observe` · `propose` · `repair` · `operator-only-repair` |
 | `idempotent` | the scheduling license (added at the schema step, see § Two licenses) |
 | `staleness.signal` | `accumulated-work` · `content-delta` · `elapsed-time` |
-| `staleness.periodDays` / `.graceDays` | the two declared numbers; the period is required for `elapsed-time` |
+| `staleness.periodDays` / `.graceDays` | the two declared numbers; the period is required for `elapsed-time`, and beside another signal it dates the chore at whichever comes first (every chore due by date, admitted 2026-11-03) |
 | `staleness.artifacts` | the scan record an `elapsed-time` chore's procedure writes; the clock its gate reads (GHI #935) |
 | `staleness.paused` | intentional dormancy, distinguishable from neglect |
 | `remediation` | `vendor_fix` · `workaround` · `no_fix_planned` · `none_available` — plus required details |
 | `nonAuthority` | what this chore refuses to touch, and why |
 | `governingRule` | the `.gzkit/rules/**` clause it serves, or an explicit `none` |
+| `check` | `{level, provisional}`: the check level A to D whose package runs it, each check including those below; optional in the schema, declared by every registered chore, every level provisional (R&D run `repair-work-organization`, row 3, operator 2026-11-03: *"A, admit as advised, marked provisional"*) |
 
 **As landed (GHI #999).** Keys follow the registry's existing camelCase
 (`timeoutSeconds`, `projectLocal`); remediation categories take CSAF's own underscore

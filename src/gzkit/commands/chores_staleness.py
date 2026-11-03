@@ -26,7 +26,12 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from gzkit.commands.chores_declaration import ChoreDeclaration, StalenessSignal
+from gzkit.commands.chores_declaration import (
+    CheckLevel,
+    ChoreDeclaration,
+    ChoreStaleness,
+    StalenessSignal,
+)
 from gzkit.executables import resolve_executable
 
 StalenessBand = Literal["current", "due", "overdue", "paused", "unmeasured"]
@@ -50,6 +55,20 @@ class ChoreStalenessReading(BaseModel):
     )
     due_since: datetime | None = Field(None, description="When the chore came due, if known")
     reason: str = Field(..., min_length=1, description="Why the chore reads this band")
+    check_level: CheckLevel | None = Field(None, description="Declared check level, if any")
+    check_provisional: bool = Field(
+        default=False, description="True while the level is provisional"
+    )
+
+
+def in_check_package(level: CheckLevel | None, check: CheckLevel) -> bool:
+    """Say whether a chore at *level* runs in a *check*: each includes those below.
+
+    Returns:
+        True when the chore has a level at or below the check's.
+
+    """
+    return level is not None and level <= check
 
 
 def newest_pass_stamp(log_text: str) -> datetime | None:
@@ -84,6 +103,16 @@ def _by_grace(
     )
 
 
+class _GitHistory(BaseModel):
+    """The three git readings a band needs, taken as parameters so tests inject them."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    newest_commit: Callable[[tuple[str, ...]], datetime | None]
+    first_commit_after: Callable[[tuple[str, ...], datetime], datetime | None]
+    artifact_changed: Callable[[tuple[str, ...]], datetime | None]
+
+
 def read_chore_staleness(
     slug: str,
     declaration: ChoreDeclaration | None,
@@ -94,7 +123,36 @@ def read_chore_staleness(
     first_commit_after: Callable[[tuple[str, ...], datetime], datetime | None],
     artifact_changed: Callable[[tuple[str, ...]], datetime | None],
 ) -> ChoreStalenessReading:
-    """Read *slug*'s band from its declaration and its ``CHORE-LOG.md`` text."""
+    """Read *slug*'s band from its declaration and its ``CHORE-LOG.md`` text.
+
+    The reading carries the chore's declared check level, so a board can be read
+    by check package as well as by band.
+
+    Returns:
+        The chore's staleness reading.
+
+    """
+    history = _GitHistory(
+        newest_commit=newest_commit,
+        first_commit_after=first_commit_after,
+        artifact_changed=artifact_changed,
+    )
+    reading = _band(slug, declaration, log_text, now, history)
+    check = declaration.check if declaration else None
+    if check is None:
+        return reading
+    return reading.model_copy(
+        update={"check_level": check.level, "check_provisional": check.provisional}
+    )
+
+
+def _band(
+    slug: str,
+    declaration: ChoreDeclaration | None,
+    log_text: str | None,
+    now: datetime,
+    history: _GitHistory,
+) -> ChoreStalenessReading:
     if declaration is None:
         return ChoreStalenessReading(
             slug=slug, band="unmeasured", reason="no class declaration to read a signal from"
@@ -105,41 +163,62 @@ def read_chore_staleness(
         return ChoreStalenessReading(
             slug=slug, signal=signal, band="paused", reason="declared paused: intentional dormancy"
         )
-    if signal == "accumulated-work":
+    if signal == "accumulated-work" and staleness.period_days is None:
         return ChoreStalenessReading(
             slug=slug,
             signal=signal,
             band="unmeasured",
             reason="accumulated-work declares no counter to compare against a threshold",
         )
-
     last_run = newest_pass_stamp(log_text) if log_text else None
+    # Every chore is due by date (operator, 2026-11-03: *"A, admit as advised"*). An
+    # accumulated-work chore declares no counter yet, so its period alone dates it.
+    if signal in {"elapsed-time", "accumulated-work"}:
+        return _by_date(slug, staleness, last_run, now, history.artifact_changed)
+    return _by_surfaces(slug, staleness, last_run, now, history)
+
+
+def _by_date(
+    slug: str,
+    staleness: ChoreStaleness,
+    last_run: datetime | None,
+    now: datetime,
+    artifact_changed: Callable[[tuple[str, ...]], datetime | None],
+) -> ChoreStalenessReading:
+    signal = staleness.signal
+    period = timedelta(days=staleness.period_days or 0)
+    witness = "passing run"
+    if staleness.artifacts:
+        last_run = artifact_changed(staleness.artifacts)
+        witness = "scan record change"
+    if last_run is None:
+        return ChoreStalenessReading(
+            slug=slug, signal=signal, band="overdue", reason=f"no {witness} on record"
+        )
+    due_at = last_run + period
+    if now <= due_at:
+        return ChoreStalenessReading(
+            slug=slug,
+            signal=signal,
+            band="current",
+            last_run=last_run,
+            reason=f"last {witness} within its {period.days}d period",
+        )
+    cause = f"{period.days}d period elapsed since the last {witness}"
     grace = timedelta(days=staleness.grace_days)
+    return _by_grace(slug, signal, last_run, due_at, grace, now, cause)
 
-    if signal == "elapsed-time":
-        period = timedelta(days=staleness.period_days or 0)
-        witness = "passing run"
-        if staleness.artifacts:
-            last_run = artifact_changed(staleness.artifacts)
-            witness = "scan record change"
-        if last_run is None:
-            return ChoreStalenessReading(
-                slug=slug, signal=signal, band="overdue", reason=f"no {witness} on record"
-            )
-        due_at = last_run + period
-        if now <= due_at:
-            return ChoreStalenessReading(
-                slug=slug,
-                signal=signal,
-                band="current",
-                last_run=last_run,
-                reason=f"last {witness} within its {period.days}d period",
-            )
-        cause = f"{period.days}d period elapsed since the last {witness}"
-        return _by_grace(slug, signal, last_run, due_at, grace, now, cause)
 
+def _by_surfaces(
+    slug: str,
+    staleness: ChoreStaleness,
+    last_run: datetime | None,
+    now: datetime,
+    history: _GitHistory,
+) -> ChoreStalenessReading:
+    signal = staleness.signal
     surfaces = staleness.surfaces or ()
-    if newest_commit(surfaces) is None:
+    if history.newest_commit(surfaces) is None:
         return ChoreStalenessReading(
             slug=slug,
             signal=signal,
@@ -151,7 +230,13 @@ def read_chore_staleness(
         return ChoreStalenessReading(
             slug=slug, signal=signal, band="overdue", reason="no passing run on record"
         )
-    moved_at = first_commit_after(surfaces, last_run)
+    grace = timedelta(days=staleness.grace_days)
+    moved_at = history.first_commit_after(surfaces, last_run)
+    # A declared period dates the chore beside its surfaces: due at whichever comes first.
+    dated_at = last_run + timedelta(days=staleness.period_days) if staleness.period_days else None
+    if dated_at is not None and dated_at <= now and (moved_at is None or dated_at < moved_at):
+        cause = f"{staleness.period_days}d period elapsed since the last passing run"
+        return _by_grace(slug, signal, last_run, dated_at, grace, now, cause)
     if moved_at is None:
         return ChoreStalenessReading(
             slug=slug,

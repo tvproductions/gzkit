@@ -38,7 +38,11 @@
         "details": "A recurring pattern is a candidate; the chore classifies each as auto-fixable, manual or structural and the operator decides whether it earns a work order."
       },
       "nonAuthority": "Never edits source, lint configuration or a rule.",
-      "governingRule": "none"
+      "governingRule": "none",
+      "check": {
+        "level": "A",
+        "provisional": true
+      }
     },
     {
       "slug": "cli-contract-governance",
@@ -62,14 +66,19 @@
           "docs/governance/governance_runbook.md",
           ".gzkit/rules/cli.md"
         ],
-        "graceDays": 7
+        "graceDays": 7,
+        "periodDays": 90
       },
       "remediation": {
         "category": "vendor_fix",
         "details": "Cosmetic and ergonomic drift (formatting, help-text clarity) is repaired in place; a breaking change (exit code, removed or renamed flag, changed behavior) lands only in an operator-initiated run."
       },
       "nonAuthority": "Never changes an exit code, flag name or command behavior outside an operator-initiated run; never edits .gzkit/rules/cli.md to match drift.",
-      "governingRule": ".gzkit/rules/cli.md"
+      "governingRule": ".gzkit/rules/cli.md",
+      "check": {
+        "level": "C",
+        "provisional": true
+      }
     },
     {
       "slug": "complexity-reduction-xenon",
@@ -86,14 +95,19 @@
         "surfaces": [
           "src/gzkit"
         ],
-        "graceDays": 7
+        "graceDays": 7,
+        "periodDays": 90
       },
       "remediation": {
         "category": "vendor_fix",
         "details": "Refactor the functions over the C/C/C ceiling (`gz validate --complexity-ceiling`) by extracting helpers and flattening nesting, keeping behavior and tests unchanged."
       },
       "nonAuthority": "Never changes behavior, a public import, a CLI contract or a test's semantics; never suppresses a finding with noqa or an ignore comment. Never moves the ceiling from Ruff's max-complexity and the cognitive ceiling to the threshold table's block band; that conflict awaits an operator ruling.",
-      "governingRule": ".gzkit/rules/pythonic.md \u00a7 Size Limits & Refactoring"
+      "governingRule": ".gzkit/rules/pythonic.md \u00a7 Size Limits & Refactoring",
+      "check": {
+        "level": "C",
+        "provisional": true
+      }
     },
     {
       "slug": "config-paths-remediation",
@@ -112,14 +126,19 @@
           ".gzkit.json",
           ".gzkit/manifest.json"
         ],
-        "graceDays": 7
+        "graceDays": 7,
+        "periodDays": 90
       },
       "remediation": {
         "category": "vendor_fix",
         "details": "Replace hard-coded path literals with config-driven resolution until gz check-config-paths is clean."
       },
       "nonAuthority": "Never changes behavior, a public import, a CLI contract or a test's semantics; never suppresses a finding with noqa or an ignore comment. Never exempts a literal it resolves by declaring it an audit subject.",
-      "governingRule": "none"
+      "governingRule": "none",
+      "check": {
+        "level": "C",
+        "provisional": true
+      }
     },
     {
       "slug": "coverage-40pct",
@@ -138,14 +157,19 @@
           "tests",
           "pyproject.toml"
         ],
-        "graceDays": 7
+        "graceDays": 7,
+        "periodDays": 30
       },
       "remediation": {
         "category": "vendor_fix",
         "details": "Add table-driven behavior tests to low-coverage public modules until the floor holds."
       },
       "nonAuthority": "Never lowers the floor, excludes a module from measurement, or adds a test that asserts a string rather than behavior.",
-      "governingRule": ".gzkit/rules/tests.md \u00a7 Coverage Floor (binding)"
+      "governingRule": ".gzkit/rules/tests.md \u00a7 Coverage Floor (binding)",
+      "check": {
+        "level": "B",
+        "provisional": true
+      }
     },
     {
       "slug": "cross-platform-test-cleanup",
@@ -170,14 +194,19 @@
           "scripts",
           ".claude/hooks"
         ],
-        "graceDays": 7
+        "graceDays": 7,
+        "periodDays": 90
       },
       "remediation": {
         "category": "vendor_fix",
         "details": "Replace raw shutil.rmtree teardown with TemporaryDirectory context managers."
       },
       "nonAuthority": "Never changes what a test asserts; never skips a test on a platform to make it pass.",
-      "governingRule": ".gzkit/rules/cross-platform.md \u00a7 Quick Reference"
+      "governingRule": ".gzkit/rules/cross-platform.md \u00a7 Quick Reference",
+      "check": {
+        "level": "C",
+        "provisional": true
+      }
     },
     {
       "slug": "decommission-tautological-tests",
@@ -191,14 +220,19 @@
       "idempotent": true,
       "staleness": {
         "signal": "accumulated-work",
-        "graceDays": 7
+        "graceDays": 7,
+        "periodDays": 180
       },
       "remediation": {
         "category": "vendor_fix",
         "details": "Apply each file's proposed disposition (convert, replace-with-ledger, fold-to-validator) and shrink the baseline to the new count."
       },
       "nonAuthority": "Never re-baselines upward or adds a waiver to absorb a new operation; never deletes a test to reduce the count.",
-      "governingRule": ".gzkit/rules/tests.md \u00a7 Red-Green-Refactor (TDD Discipline \u2014 binding)"
+      "governingRule": ".gzkit/rules/tests.md \u00a7 Red-Green-Refactor (TDD Discipline \u2014 binding)",
+      "check": {
+        "level": "D",
+        "provisional": true
+      }
     },
     {
       "slug": "dependency-currency",
@@ -220,7 +254,11 @@
         "details": "Each run applies the gz-deps-upgrade procedure: lock, pins and floors to latest, .python-version to the newest floor-minor patch, gated by gz check --full; a bump that turns the gate red is pinned at last-known-good and filed as a GHI (operator ruling 2026-10-27)."
       },
       "nonAuthority": "Never touches gzkit's own version surfaces, the requires-python floor or the [tool.uv] required-version floor; never lowers a floor to pass the gate.",
-      "governingRule": "none"
+      "governingRule": "none",
+      "check": {
+        "level": "D",
+        "provisional": true
+      }
     },
     {
       "slug": "doc-coverage",
@@ -243,14 +281,19 @@
           "docs/user/runbook.md",
           "docs/governance/governance_runbook.md"
         ],
-        "graceDays": 7
+        "graceDays": 7,
+        "periodDays": 30
       },
       "remediation": {
         "category": "vendor_fix",
         "details": "Create each missing documentation surface the manifest requires (manpage, index entry, runbook reference, docstring)."
       },
       "nonAuthority": "Never removes a manifest requirement to close a gap; never documents a command's behavior without running it.",
-      "governingRule": ".gzkit/rules/gate5-runbook-code-covenant.md"
+      "governingRule": ".gzkit/rules/gate5-runbook-code-covenant.md",
+      "check": {
+        "level": "B",
+        "provisional": true
+      }
     },
     {
       "slug": "eval-feedback-cluster",
@@ -272,7 +315,11 @@
         "details": "Proposal records name a rule target; the operator decides, and a rule edit lands with its Eval-feedback-source trailer."
       },
       "nonAuthority": "Never edits a rule, the ledger or docs/design/adr/**; never publishes a GHI.",
-      "governingRule": "none"
+      "governingRule": "none",
+      "check": {
+        "level": "A",
+        "provisional": true
+      }
     },
     {
       "slug": "evidence-integrity-audit",
@@ -293,14 +340,19 @@
           "data/historical_self_close_waivers.json",
           "data/behave_coverage_waivers.json"
         ],
-        "graceDays": 7
+        "graceDays": 7,
+        "periodDays": 14
       },
       "remediation": {
         "category": "no_fix_planned",
         "details": "Evidence in a completed brief is a sealed record and OBPI briefs are operator-only, so the chore recommends a disposition per finding (repudiation, receipt re-emission, none) and stops."
       },
       "nonAuthority": "Never edits an OBPI brief, ADR or the ledger; never repudiates or re-attests; those are operator-gated.",
-      "governingRule": ".gzkit/rules/adr-audit.md \u00a7 Rules"
+      "governingRule": ".gzkit/rules/adr-audit.md \u00a7 Rules",
+      "check": {
+        "level": "A",
+        "provisional": true
+      }
     },
     {
       "slug": "exceptions-and-logging-rationalization",
@@ -317,14 +369,19 @@
         "surfaces": [
           "src/gzkit"
         ],
-        "graceDays": 7
+        "graceDays": 7,
+        "periodDays": 90
       },
       "remediation": {
         "category": "vendor_fix",
         "details": "Replace bare and broad excepts with specific exception types, and operational print calls with logging."
       },
       "nonAuthority": "Never changes behavior, a public import, a CLI contract or a test's semantics; never suppresses a finding with noqa or an ignore comment. Never widens an except at a non-boundary site.",
-      "governingRule": ".gzkit/rules/pythonic.md \u00a7 Error Handling"
+      "governingRule": ".gzkit/rules/pythonic.md \u00a7 Error Handling",
+      "check": {
+        "level": "C",
+        "provisional": true
+      }
     },
     {
       "slug": "failure-class-index",
@@ -346,7 +403,11 @@
         "details": "A chain is evidence a family recurs; the chore routes each live family to its owning surface and the operator decides the work order."
       },
       "nonAuthority": "Never edits, files or closes a GHI; never commits the corpus snapshot.",
-      "governingRule": "none"
+      "governingRule": "none",
+      "check": {
+        "level": "A",
+        "provisional": true
+      }
     },
     {
       "slug": "frontmatter-ledger-coherence",
@@ -364,14 +425,19 @@
           "docs/design/adr",
           ".gzkit/ledger.jsonl"
         ],
-        "graceDays": 7
+        "graceDays": 7,
+        "periodDays": 90
       },
       "remediation": {
         "category": "vendor_fix",
         "details": "Rewrite drifted id/parent/lane/status frontmatter to the ledger value; the ledger is Layer-2 truth."
       },
       "nonAuthority": "Never edits the ledger, an ungoverned frontmatter key, or a pool ADR; stops with zero files mutated on an unmapped status term.",
-      "governingRule": "none"
+      "governingRule": "none",
+      "check": {
+        "level": "C",
+        "provisional": true
+      }
     },
     {
       "slug": "hardcoded-root-eradication",
@@ -390,14 +456,19 @@
           ".gzkit.json",
           ".gzkit/manifest.json"
         ],
-        "graceDays": 7
+        "graceDays": 7,
+        "periodDays": 90
       },
       "remediation": {
         "category": "vendor_fix",
         "details": "Thread config-resolved paths and thresholds through parameters in place of module constants and parents walks."
       },
       "nonAuthority": "Never changes behavior, a public import, a CLI contract or a test's semantics; never suppresses a finding with noqa or an ignore comment. Never declares a resolved literal an audit subject to silence the check.",
-      "governingRule": "none"
+      "governingRule": "none",
+      "check": {
+        "level": "C",
+        "provisional": true
+      }
     },
     {
       "slug": "instructions-files-diet",
@@ -411,14 +482,19 @@
       "idempotent": true,
       "staleness": {
         "signal": "accumulated-work",
-        "graceDays": 7
+        "graceDays": 7,
+        "periodDays": 180
       },
       "remediation": {
         "category": "vendor_fix",
         "details": "Lift and compress the items the operator ruled, through the corpus, the canonical rule sources and the canonical skill files, until each rendered surface sits inside its range and each skill body meets skill-authoring.md \u00a7 Parsimony."
       },
       "nonAuthority": "Never edits a rendered surface or vendor mirror; never trims a tier: invariant entry or a Mechanical or Promotable bullet; never acts on an item the operator did not rule; never removes a step, a stop condition or an authority line from a skill; never runs a skill it is trimming.",
-      "governingRule": ".gzkit/rules/agents-md-map-doctrine.md \u00a7 Budget"
+      "governingRule": ".gzkit/rules/agents-md-map-doctrine.md \u00a7 Budget",
+      "check": {
+        "level": "D",
+        "provisional": true
+      }
     },
     {
       "slug": "memory-hygiene",
@@ -437,14 +513,19 @@
           "AGENTS.md",
           ".gzkit/renditions/AGENTS.md"
         ],
-        "graceDays": 7
+        "graceDays": 7,
+        "periodDays": 180
       },
       "remediation": {
         "category": "vendor_fix",
         "details": "Migrate process-encoding memories into their governed source (corpus, rule or skill) and remove stale memory files, in an operator-initiated run."
       },
       "nonAuthority": "Never edits a rendered surface (AGENTS.md, CLAUDE.md, .claude/**); never removes user or reference memories.",
-      "governingRule": "none"
+      "governingRule": "none",
+      "check": {
+        "level": "D",
+        "provisional": true
+      }
     },
     {
       "slug": "module-sloc-cap-radon",
@@ -463,14 +544,19 @@
           ".gzkit/rules/complexity-thresholds.json",
           "data/module_size_grandfather.json"
         ],
-        "graceDays": 7
+        "graceDays": 7,
+        "periodDays": 90
       },
       "remediation": {
         "category": "vendor_fix",
         "details": "Split over-band modules by cohesion, keeping public imports stable, and surrender grandfather entries that fall under the band."
       },
       "nonAuthority": "Never adds a grandfather entry to absorb a new violation or raises a listed ceiling; never states a threshold outside complexity-thresholds.json.",
-      "governingRule": ".gzkit/rules/complexity-thresholds.md \u00a7 Invariant"
+      "governingRule": ".gzkit/rules/complexity-thresholds.md \u00a7 Invariant",
+      "check": {
+        "level": "C",
+        "provisional": true
+      }
     },
     {
       "slug": "pep257-docstring-compliance",
@@ -488,14 +574,19 @@
           "src/gzkit",
           "pyproject.toml"
         ],
-        "graceDays": 7
+        "graceDays": 7,
+        "periodDays": 30
       },
       "remediation": {
         "category": "vendor_fix",
         "details": "Add missing docstrings and fix ruff D-series violations."
       },
       "nonAuthority": "Never ignores a D rule to pass.",
-      "governingRule": "none"
+      "governingRule": "none",
+      "check": {
+        "level": "B",
+        "provisional": true
+      }
     },
     {
       "slug": "pool-triage",
@@ -509,14 +600,19 @@
       "idempotent": true,
       "staleness": {
         "signal": "accumulated-work",
-        "graceDays": 7
+        "graceDays": 7,
+        "periodDays": 14
       },
       "remediation": {
         "category": "no_fix_planned",
         "details": "Archival and promotion are operator acts (git mv; the gz adr promote ceremony), so the chore recommends an action per finding and stops."
       },
       "nonAuthority": "Never writes to docs/design/adr/pool/, the ledger or any governance artifact; never ranks pool items.",
-      "governingRule": "none"
+      "governingRule": "none",
+      "check": {
+        "level": "A",
+        "provisional": true
+      }
     },
     {
       "slug": "pythonic-design-pattern-application",
@@ -533,14 +629,19 @@
         "surfaces": [
           "src/gzkit"
         ],
-        "graceDays": 7
+        "graceDays": 7,
+        "periodDays": 90
       },
       "remediation": {
         "category": "vendor_fix",
         "details": "Apply a detected Pythonic rewrite under TDD with before/after complexity and SLOC evidence."
       },
       "nonAuthority": "Never applies a rewrite with no detection row, regresses the complexity ceiling, or bundles two rewrites in one evidence file.",
-      "governingRule": ".gzkit/rules/pythonic.md \u00a7 Core Principles"
+      "governingRule": ".gzkit/rules/pythonic.md \u00a7 Core Principles",
+      "check": {
+        "level": "C",
+        "provisional": true
+      }
     },
     {
       "slug": "pythonic-design-pattern-detection",
@@ -557,14 +658,19 @@
         "surfaces": [
           "src/gzkit"
         ],
-        "graceDays": 7
+        "graceDays": 7,
+        "periodDays": 14
       },
       "remediation": {
         "category": "vendor_fix",
         "details": "The repair is the paired pythonic-design-pattern-application chore; detection records a disposition per candidate and stops."
       },
       "nonAuthority": "Never edits source; never marks a candidate not-pythonic-rewrite without reading the example and naming the reason.",
-      "governingRule": ".gzkit/rules/pythonic.md \u00a7 Core Principles"
+      "governingRule": ".gzkit/rules/pythonic.md \u00a7 Core Principles",
+      "check": {
+        "level": "A",
+        "provisional": true
+      }
     },
     {
       "slug": "pythonic-refactoring",
@@ -593,14 +699,19 @@
           ".gzkit/chores/pythonic-design-pattern-detection/scan.py",
           "pyproject.toml"
         ],
-        "graceDays": 7
+        "graceDays": 7,
+        "periodDays": 90
       },
       "remediation": {
         "category": "vendor_fix",
         "details": "Apply ruff safe fixes and hand Pythonic rewrites until ruff and ty are clean."
       },
       "nonAuthority": "Never changes behavior, a public import, a CLI contract or a test's semantics; never suppresses a finding with noqa or an ignore comment. Never uses --unsafe-fixes.",
-      "governingRule": ".gzkit/rules/pythonic.md \u00a7 Core Principles"
+      "governingRule": ".gzkit/rules/pythonic.md \u00a7 Core Principles",
+      "check": {
+        "level": "C",
+        "provisional": true
+      }
     },
     {
       "slug": "quality-check",
@@ -629,14 +740,19 @@
           ".claude",
           ".agents"
         ],
-        "graceDays": 7
+        "graceDays": 7,
+        "periodDays": 14
       },
       "remediation": {
         "category": "no_fix_planned",
         "details": "A gate failure has no single repair; the chore names the chore or direct fix that owns each failing gate and stops."
       },
       "nonAuthority": "Never skips a gate, adds a waiver or suppression, or re-runs a failing step until it passes by chance.",
-      "governingRule": "none"
+      "governingRule": "none",
+      "check": {
+        "level": "A",
+        "provisional": true
+      }
     },
     {
       "slug": "repository-structure-normalization",
@@ -676,14 +792,19 @@
           ".codex/config.toml",
           ".github/discovery-index.json"
         ],
-        "graceDays": 7
+        "graceDays": 7,
+        "periodDays": 90
       },
       "remediation": {
         "category": "vendor_fix",
         "details": "Create missing directories and move misplaced files to the layout gz validate --documents --surfaces expects."
       },
       "nonAuthority": "Never changes behavior or file content while moving it; never edits a validator to accept a deviation.",
-      "governingRule": "none"
+      "governingRule": "none",
+      "check": {
+        "level": "C",
+        "provisional": true
+      }
     },
     {
       "slug": "session-correction-mining",
@@ -705,7 +826,11 @@
         "details": "Proposals are candidates for the advisory scorecard; nothing auto-promotes."
       },
       "nonAuthority": "Never writes outside its proofs directory; never quotes more than one scrubbed line.",
-      "governingRule": "none"
+      "governingRule": "none",
+      "check": {
+        "level": "A",
+        "provisional": true
+      }
     },
     {
       "slug": "skill-authoring-quality",
@@ -730,14 +855,19 @@
           "src/gzkit/cli",
           "src/gzkit/governance/trust_audits/cli.py"
         ],
-        "graceDays": 7
+        "graceDays": 7,
+        "periodDays": 14
       },
       "remediation": {
         "category": "no_fix_planned",
         "details": "Skills are operator-authored canon, so the chore records the action each skill needs and stops; any fix it recommends must preserve behavior."
       },
       "nonAuthority": "Never edits .gzkit/skills/** or a vendor mirror.",
-      "governingRule": ".gzkit/rules/skill-authoring.md"
+      "governingRule": ".gzkit/rules/skill-authoring.md",
+      "check": {
+        "level": "A",
+        "provisional": true
+      }
     },
     {
       "slug": "skill-command-doc-parity",
@@ -764,14 +894,19 @@
           ".agents/skills",
           "docs/user/skills"
         ],
-        "graceDays": 7
+        "graceDays": 7,
+        "periodDays": 180
       },
       "remediation": {
         "category": "vendor_fix",
         "details": "Missing, orphaned and index or runbook gaps are repaired in documentation; aligning a skill's purpose statement lands only in an operator-initiated run, because skills are operator-authored canon."
       },
       "nonAuthority": "Never edits .gzkit/skills/** outside an operator-initiated run; never edits vendor mirrors; never removes a command to close a doc gap.",
-      "governingRule": ".gzkit/rules/gate5-runbook-code-covenant.md"
+      "governingRule": ".gzkit/rules/gate5-runbook-code-covenant.md",
+      "check": {
+        "level": "D",
+        "provisional": true
+      }
     },
     {
       "slug": "skill-trigger-testing",
@@ -789,14 +924,19 @@
           ".gzkit/skills",
           "src/gzkit/cli"
         ],
-        "graceDays": 7
+        "graceDays": 7,
+        "periodDays": 14
       },
       "remediation": {
         "category": "no_fix_planned",
         "details": "Skills are operator-authored canon, so the chore proposes replacement description and output-contract text per flagged skill and stops."
       },
       "nonAuthority": "Never edits .gzkit/skills/** or a vendor mirror.",
-      "governingRule": "none"
+      "governingRule": "none",
+      "check": {
+        "level": "A",
+        "provisional": true
+      }
     },
     {
       "slug": "test-isolation-compliance",
@@ -814,14 +954,19 @@
           "tests",
           "src/gzkit/smoke.py"
         ],
-        "graceDays": 7
+        "graceDays": 7,
+        "periodDays": 90
       },
       "remediation": {
         "category": "vendor_fix",
         "details": "Fix each isolation, speed or stdout-noise violation at its root cause (shared setup, mocked roots, patched console)."
       },
       "nonAuthority": "Never masks a slow test with sleep or clock hacks, or loosens a profiler threshold to pass.",
-      "governingRule": ".gzkit/rules/tests.md \u00a7 General Rules (binding)"
+      "governingRule": ".gzkit/rules/tests.md \u00a7 General Rules (binding)",
+      "check": {
+        "level": "C",
+        "provisional": true
+      }
     },
     {
       "slug": "test-manpage-examples",
@@ -844,14 +989,19 @@
           "docs/user/runbook.md",
           "docs/governance/governance_runbook.md"
         ],
-        "graceDays": 7
+        "graceDays": 7,
+        "periodDays": 30
       },
       "remediation": {
         "category": "vendor_fix",
         "details": "Replace each manpage example whose output no longer matches with output captured from a real run."
       },
       "nonAuthority": "Never edits the CLI to match a stale example; a behavior change the example expected is an operator ruling.",
-      "governingRule": ".gzkit/rules/gate5-runbook-code-covenant.md"
+      "governingRule": ".gzkit/rules/gate5-runbook-code-covenant.md",
+      "check": {
+        "level": "B",
+        "provisional": true
+      }
     }
   ]
 }

@@ -1,6 +1,6 @@
 # Row 3 advice: the chores by check level
 
-> Advice for disposition row 3 of [`repair-work-organization.md`](../repair-work-organization.md), written 2026-11-03 on the operator's go (*"row 3 is a go"*). Row 3 is **advise only**: the operator directs admission, and nothing here is written to `.gzkit/chores/registry.json` until then. It holds no authority; the record governs.
+> Advice for disposition row 3 of [`repair-work-organization.md`](../repair-work-organization.md), written 2026-11-03 on the operator's go (*"row 3 is a go"*). Row 3 is **advise only**: the operator directs admission. **Admitted as advised, 2026-11-03** (operator: *"A, admit as advised, marked provisional"*): the levels and intervals below are in `.gzkit/chores/registry.json`, every level provisional. It holds no authority; the record governs.
 
 ## What is advised
 
@@ -12,7 +12,7 @@
 
 ## What admission needs first
 
-The registry cannot carry a level today. `ChoreDeclaration` (`src/gzkit/commands/chores_declaration.py:119`) is `extra="forbid"`, so a `checkLevel` key fails the registry's own parse, and `ChoreStaleness` requires a signal, with a period optional. Admitting the levels is therefore a schema change to the chore declaration, coupled to the chore class system in row 4 (`docs/governance/chore-class-system.md`) and to `gz chores status`, which would read the level and package by it. Until then the table below is the advice of record.
+The registry cannot carry a level today. `ChoreDeclaration` (`src/gzkit/commands/chores_declaration.py:119`) is `extra="forbid"`, so a `checkLevel` key fails the registry's own parse, and `ChoreStaleness` requires a signal, with a period optional. Admitting the levels is therefore a schema change to the chore declaration, coupled to the chore class system in row 4 (`docs/governance/chore-class-system.md`) and to `gz chores status`, which would read the level and package by it. That change landed with the admission: `ChoreDeclaration` takes an optional `check`, a period beside a signal dates the chore at whichever comes first, and `gz chores status` shows the level and filters by `--check`.
 
 ## The chores
 

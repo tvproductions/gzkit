@@ -8,6 +8,7 @@ announces and never gates: every band exits 0 (operator ruling 2026-09-12,
 """
 
 from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
 from rich.markup import escape
 from rich.table import Table
@@ -21,9 +22,13 @@ from gzkit.commands.chores_staleness import (
     git_artifact_changed,
     git_first_commit_after,
     git_newest_commit,
+    in_check_package,
     read_chore_staleness,
 )
 from gzkit.commands.common import get_project_root
+
+if TYPE_CHECKING:
+    from gzkit.commands.chores_declaration import CheckLevel
 
 # Loudest first: the order an operator should read the board in.
 BAND_ORDER: tuple[StalenessBand, ...] = ("overdue", "due", "unmeasured", "paused", "current")
@@ -66,9 +71,21 @@ def _day(moment: datetime | None) -> str:
     return moment.date().isoformat() if moment else "-"
 
 
-def chores_status(*, as_json: bool = False) -> None:
-    """Report each registered chore's staleness band; announces, never gates."""
+def _level(reading: ChoreStalenessReading) -> str:
+    if reading.check_level is None:
+        return "-"
+    return f"{reading.check_level}?" if reading.check_provisional else reading.check_level
+
+
+def chores_status(*, as_json: bool = False, check: CheckLevel | None = None) -> None:
+    """Report each registered chore's staleness band; announces, never gates.
+
+    With *check*, report only that check's package: the chores at its level and
+    every level below it.
+    """
     readings = collect_chore_staleness()
+    if check is not None:
+        readings = [r for r in readings if in_check_package(r.check_level, check)]
     counts = {band: sum(1 for r in readings if r.band == band) for band in BAND_ORDER}
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
     if as_json:
@@ -76,12 +93,15 @@ def chores_status(*, as_json: bool = False) -> None:
             {
                 "chores": [reading.model_dump(mode="json") for reading in readings],
                 "counts": counts,
+                "check": check,
             }
         )
         return
 
-    table = Table(title="Chore Staleness")
+    title = f"Chore Staleness — {check} check" if check else "Chore Staleness"
+    table = Table(title=title)
     table.add_column("Slug", style="cyan", no_wrap=True, overflow="fold")
+    table.add_column("Level", no_wrap=True)
     table.add_column("Signal")
     table.add_column("Band", no_wrap=True)
     table.add_column("Last run")
@@ -91,6 +111,7 @@ def chores_status(*, as_json: bool = False) -> None:
         style = _BAND_STYLE[reading.band]
         table.add_row(
             reading.slug,
+            _level(reading),
             reading.signal or "-",
             f"[{style}]{reading.band}[/{style}]",
             _day(reading.last_run),
@@ -99,3 +120,5 @@ def chores_status(*, as_json: bool = False) -> None:
         )
     fmt.table(table)
     fmt.print(", ".join(f"{counts[band]} {band}" for band in BAND_ORDER))
+    if any(r.check_provisional for r in readings):
+        fmt.print("A level marked ? is provisional until the chore is classified.")

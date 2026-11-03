@@ -182,11 +182,6 @@
       "score": 22
     },
     {
-      "file": "src/gzkit/commands/chores_staleness.py",
-      "function": "read_chore_staleness",
-      "score": 16
-    },
-    {
       "file": "src/gzkit/commands/cli_audit.py",
       "function": "cli_audit_cmd",
       "score": 31

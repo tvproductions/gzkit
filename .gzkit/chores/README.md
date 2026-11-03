@@ -254,7 +254,8 @@ declaration and the PASS blocks `gz chores run` appends to `CHORE-LOG.md`, and
 session orientation announces the due and overdue ones (GHI #936). An
 `elapsed-time` chore is due `periodDays` after its last passing run; a
 `content-delta` chore is due from the first commit touching a declared
-`staleness.surfaces` path after it. Declare the surfaces the chore actually
+`staleness.surfaces` path after it, or `periodDays` after its last passing run
+when it also declares one, whichever comes first. Declare the surfaces the chore actually
 inspects: too broad and it is always due, too narrow and its decay is hidden.
 
 **A chore whose criteria gate on elapsed time declares its scan record.**
@@ -320,6 +321,7 @@ rationale are in `docs/governance/chore-class-system.md`.
 | `remediation` | `{category, details}`; `category` is `vendor_fix` · `workaround` · `no_fix_planned` · `none_available`; `details` non-empty | What repair means — "no repair" is a declared value, never an absence |
 | `nonAuthority` | non-empty text | What it refuses to touch, and why |
 | `governingRule` | `.gzkit/rules/<file>.md` (optionally ` § <clause>`) or `none` | The rule it serves |
+| `check` | `{level, provisional}`; `level` is `A` · `B` · `C` · `D`; `provisional` is `true` until the chore is classified | Which check package runs it; each check includes those below (`gz chores status --check`) |
 
 ```json
 {

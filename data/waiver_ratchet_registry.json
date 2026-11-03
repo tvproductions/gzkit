@@ -390,7 +390,7 @@
       "gates_step": "Complexity ceiling (gz validate --complexity-ceiling)",
       "mechanism": "shrink-ratchet",
       "entries_path": "functions",
-      "baseline_count": 261,
+      "baseline_count": 260,
       "identity": {
         "kind": "fields",
         "fields": [
