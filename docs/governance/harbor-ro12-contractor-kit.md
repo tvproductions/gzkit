@@ -1,0 +1,76 @@
+<!-- markdownlint-configure-file { "MD013": { "line_length": 9999 } } -->
+
+# RO-12 specification — the contractor kit
+
+**2026-11-02. Status: draft; its open points are being put to the operator one at a time, and nothing here binds until the operator accepts the page.** Operator: **g0**. Repair order RO-12 of the [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders), placed immediately after RO-5 (operator: *"A"*), with the ruled order RO-5, RO-12, RO-11, RO-4. This is diamond 2 of the [contractor-kit record](../rnd/contractor-kit.md), funded 2026-10-28 (operator: *"fund, yes to 2 and 4"*). The record holds the design and its sources; [`review.md`](../rnd/contractor-kit/review.md) is a view over it. Where this page and the record disagree, the record governs until an amendment here says otherwise.
+
+## Scope
+
+RO-12 lands the governed apparatus for maintenance work: the positions, kept apart by mechanism; the records of what was isolated, done and left outstanding; the inspection independent of the performer; the runtime that drives each act; and the closure a reviewer witnesses. It keys on RO-5's work-package id and extends the runtime RO-14's tranche 1 moved to the work-package surface, as `kind: repair` (RO-14 ruling 4: one runtime, `kind` selecting the procedure).
+
+The test for the design inside the drydock is the maintenance discipline, not canon's ceremony. Safe mode suspends canon and does not suspend that discipline (record decisions *the design review is judged from the drydock's side* and *the maintenance discipline is the drydock's own*).
+
+It does not land the two-way mode contract across existing controls, which is RO-13, or `gz obpi`'s removal, which is RO-14's tranche 3. The pipeline is carried forward unchanged: lessons cross each way as GHIs.
+
+## Carried from the record, not re-ruled
+
+- **Positions.** The operator, always the commander (A1). The coordinator, the operator-facing session, which performs no work and holds the Authorizing Officer duty (A3). One craftsman persona in two positions, repair and restoration (A4, A6). The Quality Assurance Inspector, dispatched by the runtime and never by the coordinator, its findings reaching the operator unedited (A5). The surveillant, dispatched by the operator only (A8).
+- **Records.** The tag-out log of line items, Danger and Caution, each line carrying its removal procedure, written when hung (B6). The maintenance record (B7). The list of discrepancies, graded *blocks return to service* or *due by a named event* (B8). The work package log, a Layer 3 view (B11).
+- **Acts.** Initiation, the operator's, then commencement of work, the coordinator's, once every surface has its tag hung (C1). Three tiers of check, (V), second person, (I), a lower tier never satisfying a higher mark (C3). Stop work, a recorded event with a trigger from a closed list, routed to its resolver (C4). Rework, then a buy-back limited to the finding (C5). Final inspection and acceptance, then closed (C10). Shift turnover (C11). Transfer of custody (C12).
+- **Rules on the work.** One tag-out per surface, overlapping packages in sequence, a second craftsman only on disjoint surfaces. Every line item legible to a worker not involved in the disconnection (JFMM I-13.2.c). A piece found out of its expected position stops restoration (TUM 1.8.5.b(2)). Each position carries its own obligations, and the vocabulary lives once, in the crosswalk.
+- **Model routing.** The pipeline's maps, performers by task-card complexity and the inspector by `REVIEW_MODEL_MAP`, kept current by `frontier-model-card-currency`.
+
+## Preconditions, as measured 2026-11-02
+
+Read with `gh issue view`, a dated record.
+
+| Issue | State | Note |
+|---|---|---|
+| #1198, #1203, #1205, #1206, #1208, #1209, #1028, #1194, #1273 | closed | repaired before reuse |
+| #1200 | open | the code repair landed in RO-14 act 1; its exit condition waits on the pipeline's sentence in tranche 2 |
+| #1185 | open | the code repair landed in RO-14 act 6; its exit condition waits on one real package completion |
+| #1296 | open | a requirement of this specification, not a precondition (§ Rulings of 2026-11-02) |
+
+## The witness floor, against what stands today
+
+RO-12 closes only when each refusal has a test showing it refuses. The specification may add to this list and never subtract from it. Measured against `src/gzkit/work_package_run.py`, `src/gzkit/work_package_fence.py` and `src/gzkit/commands/wp.py`.
+
+| # | The refusal | What stands today |
+|---|---|---|
+| 1 | A session that hung a tag clearing it (A4, A6) | Nothing: no tag record exists |
+| 2 | Work before commencement (C1) | Half: `gz wp dispatch` refuses a package not commenced; `gz wp commence` reads no tag, and a direct write before commencement is unfenced |
+| 3 | An inspector dispatched by the coordinator (A3, A5) | Nothing: `--role` is a value the caller supplies |
+| 4 | Landing on a package with an open stop or hold (C4, A8) | Half: the fence holds a blocked package; no stop or hold record exists |
+| 5 | A finding closed without a buy-back (C5) | Partial: the acceptance store carries closures, not a buy-back by name; read at that open point |
+| 6 | Acceptance with a tag still hung (C10) | Nothing: no tag record exists |
+| 7 | A hangar handoff whose turnover omits a hung tag (C11) | Nothing: `gz-session-handoff` § Shift turnover records that nothing refuses |
+| 8 | A control accepted with no inspected red witness | Nothing: the accepted state is RO-13's MEL field, and F1 lands after this order |
+| 9 | A dispatched agent's state-changing command aimed at a root its dispatch did not intend (#1296) | Nothing: observed absent on the dispatch, the agent definitions, the hooks and the hook modules |
+
+## The cwd-escape guard (#1296)
+
+The issue's acceptance cases, unchanged by ruling, are requirements of this order:
+
+1. A dispatch meant for a throwaway project whose shell is left at the repo root, running a ledger- or canon-writing `gz` verb, is refused before any write, and the ledger line count is unchanged.
+2. The same verb run where the dispatch intended proceeds (the valid control).
+3. A main-session `gz` command run by the operator in the live checkout is unaffected (second control).
+
+Each is shown by a test that fails if the guard is removed, and one of the three against a real dispatched subagent. The harness facts are in the contract's § Rulings of 2026-11-02.
+
+## Rulings
+
+1. **A position is told by its dispatch record** (operator, by selection: *"Dispatch record (Recommended)"*). The runtime mints a dispatch id on `work_package_dispatched`, bound to the position, the subject and the intended root, and puts it in the prompt it composes. A position-bound verb requires the id and refuses by what the ledger says that dispatch may do. Hooks record `agent_id` beside it where the harness gives one. The limit stands in the open: the id can be copied, so it stops mistakes and shortcuts and not forgery, as with a typed name. Put to the operator: A, this; B, harness identity in hooks, which leaves Codex sessions without the refusals; C, a typed position.
+
+## Open points, to be put one at a time
+
+2. **How the runtime drives an act:** what serves the repair procedure on `kind: repair`, and what it refuses.
+3. **The tag-out log:** its store, its fields, and hanging, clearing and the not-available mark.
+4. **The maintenance record and the list of discrepancies:** their stores, and what becomes of the contract's hand-kept lines.
+5. **Stop work and the hold:** the closed trigger list, the events and the resolvers' records.
+6. **Inspection:** the (I) marks, and how a finding, rework and buy-back sit on `gz wp acceptance`.
+7. **The guard's mechanism** for refusal 9.
+8. **Refusal 8's sequencing:** this order closes before RO-13's F1 lands the field it reads.
+9. **The handoff refusal,** refusal 7, against an authoring gate that does not read the log.
+10. **Personas, skill and crosswalk:** names, the skill's shape, the term witness and the crosswalk's home.
+11. **The surveillant's dispatch:** how an operator-only dispatch is told from any other.
+12. **Tranches, acts and the kit's own mode contract,** including the bootstrap's hand-kept log and the dock trial.
