@@ -828,6 +828,16 @@ word should not be read as a shared definition.
 
 ---
 
+## Check levels
+
+Ruled 2026-11-03 in the R&D run `docs/rnd/repair-work-organization.md` (operator: *"yes, adopt the four levels - use the rich detail we found"*). gzkit packages its chores into the four check levels of FAA Order 8900.1 Vol. 20 Ch. 8 Sec. 1, each check including those below; the table and the disconnect lists are in `docs/governance/safe-mode-doctrine.md` § Out of service and the four levels.
+
+- **A** inspects and reports; **B** repairs touching no control; both are line work, GHI-driven, recommended at a GHI drawdown. **C** repairs that may reach a control; **D** re-authors a control or the standard one judges by; both are out of service, MX-driven, recommended at a minor release and at `gz mx exit`.
+- **A chore's level is the level of its inspection and the repairs that level allows.** A finding that needs more leaves the run as a problem report, for the next check at that level or a return to service package (operator: *"A"*).
+- **Every chore is due by date** for now (operator: *"B for now until we have more maturity"*): a `periodDays` beside another signal dates the chore at whichever comes first.
+- Each chore declares `check: {level, provisional}` (§ The declaration, and the fence). The levels were admitted provisionally from the census's reading through the rung (operator: *"A, admit as advised, marked provisional"*; `docs/rnd/repair-work-organization/row3-chore-levels.md`). The classification program, the run's row 5, classifies each chore and cuts any step above its level.
+- The level and the rung are separate declarations: the rung is the writing license, the level says which check package runs the chore and what disconnection that package may take.
+
 ## Staleness
 
 ### Four signals, not interchangeable
