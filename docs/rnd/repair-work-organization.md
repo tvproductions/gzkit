@@ -525,6 +525,64 @@ Ruled. Question: how the levels run in gzkit. Options put: **A** C at each minor
 - Carried into the classification program, not put: whether B means a change to no control's behavior or no control file touched. It sorts the census's 13 unclear chores and moves no disposition.
 - The waiver lists have no drawdown commitment (measured above). The agent's draft placed their drawdown in C. That placement is carried to row 3 as advice, not ruled.
 
+## decision · the review's level table is the canon form of the model
+
+Ruled at the sign-off walk-through, 2026-11-03. Question: does the two-column model in the review's § The model stand, and does its blank *Succeeds* cell on the epic row read *none (new)*? Operator, verbatim: *"yes, it stands; use "none (new)" the table needs to kept and associated as canon - it captures the design very well."*
+
+- The review's table (level, construction, repair, succeeds, decides, who) is kept as the canon form of the model, its epic row reading *none (new)*: neither the feature package nor the return to service package succeeds an earlier record.
+- Row 4 carries that table whole into canon, not the three-column level table above it.
+
+## source · the operator at the sign-off walk-through: a remodel supersedes
+
+At the review's input table, whose remodel row read *"changes one"*. Operator, 2026-11-03, verbatim:
+
+> we don't change a req with a model as much as we supersede it - we remodel to refocus, refurbish, and redescribe. we transcend the prior req in the remodel. this precerves the value of prior work that was realized in the prior req
+
+**Canon this meets, quoted.** `src/gzkit/models/catalog.py`, `Req.revision`: *"Only rises."*; the model has no field naming another REQ. `docs/governance/ieee/requirements-model.md`: *"Evidence is bound to the REQ's revision and the commit it was taken at"*, and its worked example, *"the affected REQs take a new revision, and their proof resets to `UNKNOWN` until revalidated, while the shipped evidence stays attached to the earlier revision."* Canon keeps prior value by revision in place; the operator's words keep it by a new REQ.
+
+## decision · a remodel revises forward into a new REQ that supersedes the prior
+
+Ruled. Question: when a remodel supersedes a REQ, is the result **A** a new REQ with a `supersedes` link, the prior kept whole with its evidence, or **B** a new revision of the same REQ, as canon has it? Recommended A. Operator, verbatim: *"yes, A and it is cleaner and addresses the discussion of revision - we revise forward into a new req."*
+
+- A remodel states a new REQ that supersedes the prior. The prior REQ stays whole, with its evidence, as the record of value realized; it is not edited.
+- The input table's remodel row reads *supersedes one*. The agent's proposal above (*"remodel **changes** a REQ"*) and the restore-and-remodel decision's *"changes an obligation"* are corrected by this entry, not rewritten.
+- Commissions to row 4: the requirements model's revision rule and worked example amended to revise forward; a `supersedes` link on the base requirement. Carried as advice, not put: what `revision` still counts once an obligation's change makes a new REQ.
+- Commissions to row 5: RP-12's repair requirement carries the `supersedes` link.
+
+## decision · return to service is the package's close, apart from each order's Gate 5
+
+Ruled at the sign-off walk-through, 2026-11-03. The review read *"returning it is Gate 5's return to service"*, from Part 0's *Release* term (*"in gzkit, Gate 5 attestation, which is return to service"*, `docs/rnd/renewing-vows/doctrine-merge.md`), while placing Gate 5 at the order and the return to service package at the epic. Question: is return to service **A** a separate operator act at the return to service package's close, certifying the vessel seaworthy after every order's Gate 5, or **B** the last order's Gate 5? Recommended A, on 14 CFR § 43.9's separation of approving the work from returning the aircraft to service. Operator, verbatim: *"Option A"*.
+
+- Each order's Gate 5 attests that order's work. Return to service is the operator's act at the return to service package's close, and the flag closes on it.
+- Commissions to row 4: Part 0's *Release* term amended so Gate 5 is not itself the return to service.
+
+## source · the operator at the sign-off walk-through: components built for service
+
+At the review's alarm test and standard disconnect list. Operator, 2026-11-03, verbatim:
+
+> the parts we build are going to need their own mx awareness moving forward. All complex machines are build with service and mx in mind. So, BITS, safeguards, alarms, flags, safe mode compliance, and switched feature/caps flagging would become normals parts of component design. I think any complex machine/component is designed and engineered with these in mind. I realize that this would become a significant retrofit to current gzkit, but this was design immaturity on my part from the get go. I feel this mx/service awareness is a natural design expectation that we've missed.
+
+Read against the run: the alarm test and the standard disconnect list both presume that each component already declares what can be lowered, tested and switched. Today the disconnect list is RO-13's temporary group entry, a blanket, because no component declares its own. The operator names that missing declaration as a design expectation, which under the correction-versus-enhancement doctrine reads as a correction. Its disposition is put to the operator below.
+
+## decision · design for service gets its own R&D run
+
+Ruled. Question: does designed-in MX awareness take **A** a decision inside this run, row 4 a component design standard and row 5 the retrofit; **B** its own R&D run, this run recording the source and pointing to it; or **C** this run's frontier reopened? Recommended B: this run organizes the work, the source is about how components are designed. Operator, verbatim:
+
+> B, its own R&D run - we are building an integrated system and the requirements of integration are part of the spec that constrains design and integration. For instance: Eventually, in the case of AirlineOps, I grew tired of having the entire test suite run and asked if we could group tests by the subsystems they taught. Full test runs should come with releases, but not the daily git sync work. By tracking what systems are touched by each construction or repair, we can test for only planned direct effects. This is a design with subsystem awareness for modularity and purpose. That would be the case with everything - alarms, tripwires, access panels, mx procedures, safeguards. Like unittesting, these are all a normal part of fulfilling the contract and why things like keeping the hexagonal architecture in mind aslo helps.
+
+- A separate R&D run takes design for service: integration requirements as part of the spec that constrains design; subsystem awareness, so each construction or repair tracks the subsystems it touches and tests its planned direct effects, the full suite riding releases; and alarms, tripwires, access panels, MX procedures and safeguards as normal parts of fulfilling the contract, as unit tests are, with the hexagonal architecture in mind.
+- Ground it starts from, named and not read in full here: `gz check` already runs *"the tests the change touches"*, and the full suite runs under `gz check --full` at CI, release and the `quality-check` chore (root `AGENTS.md`); AirlineOps's subsystem test grouping, the operator's precedent.
+- This run's standard disconnect list waits on that run: a level's list is drawn from what each component declares, and until components declare, RO-13's group entry stands.
+- The run is commissioned, not opened. It opens on the operator's word through `gz-rnd`.
+
+## decision · further research is a seventh disposition
+
+Ruled at the sign-off walk-through, 2026-11-03, on the R&D discipline itself. The agent asked whether the design-for-service run should be tracked by a GHI under row 2 or recorded under row 6. Operator, verbatim: *"six dispositions of what?"*, then *"we are missing reframing/further research option? one outcome of rnd is expository: we have a better understanding that now opens up the need/opportunity for further research."* Options put: **A** a seventh row, *further research*; **B** further research routed to row 2 as a GHI; **C** row 6's reason field. Recommended A: the Design Council source already holds that findings *"can send them back to the beginning of their diamond work"*, and the map had no row for it. Operator, verbatim: *"A, add row 7 further research"*.
+
+- Amended in the same act: `docs/governance/rnd-discipline.md` § Amended 2026-11-03, the `gz-rnd` skill (0.8.0) and its record template. This run's map gains row 7.
+
+**commissions:** 7 — the design-for-service run.
+
 ---
 
 ## Disposition map
@@ -534,9 +592,10 @@ Ruled. Question: how the levels run in gzkit. Options put: **A** C at each minor
 | 1 | ADR / OBPI | not pursued | — | Every outcome has a governed home in the drydock's canon and repair packages; the structure is reversible, so it fails the admission question. Revisit at civil rule if the structure outgrows the drydock |
 | 2 | GHI / direct fix | commissioned | the `RP-n` alias in the identity seam; `gz mx enter` requiring a return to service package, and whether a patch release is mandatory at `gz mx exit`; `--level` and the marker's level field retired, every reader keyed to one state; the census's five statements that disagree with their mechanism (`census-chores.md` § Population findings, 5) | each by `ghi-author`, on the operator's go on this row |
 | 3 | chore | commissioned | the chore registry carries each chore's check level and a date interval; the checks packaged by level, each including those below; A and B recommended at a GHI drawdown, C and D at a minor release and `gz mx exit`; the waiver lists' drawdown as C work, which has no commitment today | advise only; the operator directs admission (the operator: *"we need to be aggressive on these chores"*) |
-| 4 | control surface, rule, doc, skill, hook | commissioned | the work order as the OBPI's successor and the work package as the mADR's, the feature package as the epic, Gate 5 at the order, the care rule with the governors off; the four levels, the two columns and the level table into the requirements model and the four-records succession, the doctrine and the contract (by amendment, `RP-n` among it); the RO-5, RO-12, RO-13 and RO-14 specifications; `gz-mx`, `mx-mode.md` and the contract template; the chore class system and the chores README; *task card* to *task* | drafted on the operator's go on this row |
-| 5 | one-shot refactoring | commissioned | every chore classified A to D and cut to its level, with findings above it leaving as problem reports; the checkpoint read through tag-out lines as RO-13 retires its group entry; RP-12 lands the order record, Gate 5 at the order and the repair requirement; RP-14 migrates OBPI to work order | a program; the operator selects its route |
+| 4 | control surface, rule, doc, skill, hook | commissioned | the work order as the OBPI's successor and the work package as the mADR's, the feature package as the epic, Gate 5 at the order, the care rule with the governors off; return to service as the package's close and Part 0's *Release* term amended to match; the four levels, the two columns and the review's level table, whole, into the requirements model, with its revision rule amended so a remodel revises forward into a new REQ carrying `supersedes` and the four-records succession, the doctrine and the contract (by amendment, `RP-n` among it); the RO-5, RO-12, RO-13 and RO-14 specifications; `gz-mx`, `mx-mode.md` and the contract template; the chore class system and the chores README; *task card* to *task* | drafted on the operator's go on this row |
+| 5 | one-shot refactoring | commissioned | every chore classified A to D and cut to its level, with findings above it leaving as problem reports; the checkpoint read through tag-out lines as RO-13 retires its group entry; RP-12 lands the order record, Gate 5 at the order and the repair requirement with its `supersedes` link; RP-14 migrates OBPI to work order | a program; the operator selects its route |
 | 6 | no action | commissioned | the Navy's counterpart left unsought; the hyphen or acronym for the package names | each recorded in its entry |
+| 7 | further research | commissioned | design for service: components built with their own tests, alarms, tripwires, access panels, MX procedures, safeguards and switches; integration requirements in the spec; each construction or repair tracking the subsystems it touches | opened on the operator's word through `gz-rnd`; the standard disconnect list waits on it |
 
 ## Close
 
@@ -544,10 +603,10 @@ Ruled. Question: how the levels run in gzkit. Options put: **A** C at each minor
 
 **Frontier.** Empty again, 2026-11-03, after the review's reopening was ruled.
 
-**Review.** Written at `docs/rnd/repair-work-organization/review.md`, 2026-11-03; walked with the operator the same day, whose corrections reopened the frontier; rewritten after them.
+**Review.** Written at `docs/rnd/repair-work-organization/review.md`, 2026-11-03; walked with the operator the same day, whose corrections reopened the frontier; rewritten after them. Walked again section by section at sign-off, 2026-11-03, where five rulings landed (the level table as canon, a remodel supersedes, return to service at the package's close, design for service as its own run, further research as a seventh disposition) and the review was corrected to them. Operator, verbatim: *"yes, read in full"*.
 
-**Sign-off.**
+**Sign-off.** *"yes, read in full - fund"* — **fund**, 2026-11-03. Rows 2 to 5 and row 7 each still await the operator's go on that row.
 
 ## What this record does not license
 
-No record, verb, rename or canon change is authorized by this run. Rows 2 to 5 await the operator's go on each row. The RP-12 specification draft (`docs/governance/harbor-ro12-contractor-kit.md`) stays paused, its ruling 1 standing.
+No record, verb, rename or canon change is authorized by this run; funding authorizes none. Rows 2 to 5 await the operator's go on each row, and row 7's run opens on the operator's word. The one canon change made during the run, the seventh disposition row, was the operator's ruling on the R&D discipline itself, not a row of this run. The RP-12 specification draft (`docs/governance/harbor-ro12-contractor-kit.md`) stays paused, its ruling 1 standing.

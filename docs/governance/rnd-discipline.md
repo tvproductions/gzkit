@@ -37,7 +37,7 @@ Three sources compose, each supplying what the others lack:
   diamond 1's contract.
 - **MPAS** supplies the *mechanics that run inside each diamond* — the interrogation
   mechanic, the entry-at-the-moment-of-resolution rule, the invocation-class invariant.
-- **gzkit** supplies the *six-way fan*, which neither source has, because neither begins
+- **gzkit** supplies the *seven-way fan* (six until § Amended 2026-11-03), which neither source has, because neither begins
   destination-unknown. MPAS's every entry point is destination-typed before it starts.
 
 Re-entry is native, not an exception: the primary source states that findings "can send
@@ -55,7 +55,7 @@ different questions and neither substitutes for the other.
 
 | | Mechanical | Human |
 |---|---|---|
-| **Diamond 1** | the frontier is empty **and** the challenge has been deliberately restated **and** every one of the six dispositions carries a decision | the operator's **review** of one readable account of the plan, then **sign-off — kill or fund** (review added 2026-10-07, § Amended 2026-10-07) |
+| **Diamond 1** | the frontier is empty **and** the challenge has been deliberately restated **and** every one of the seven dispositions carries a decision | the operator's **review** of one readable account of the plan, then **sign-off — kill or fund** (review added 2026-10-07, § Amended 2026-10-07) |
 | **Diamond 2** | every row carries a disposition | the operator agrees convergence is reached |
 
 **"Deliberately restated"** is satisfied by a restatement made on purpose at the close. It
@@ -98,7 +98,7 @@ commissioned with no recorded reasoning behind it.
 Everything else is a **view over the entries**, derived and never separately authored:
 
 - the **plan** is the set of decisions with `commissions:` set;
-- the **six-row disposition map** renders from those;
+- the **seven-row disposition map** renders from those;
 - the **sign-off one-pager** is derivable rather than written.
 
 ### `term` and `insight` are not entry kinds
@@ -120,9 +120,9 @@ Until it does, a run holds each term it lands in its own record as a `decision` 
 that run collects them. This is the one exception to "never holds a copy", and it ends when
 the home is named.
 
-### The disposition map: six rows, two states
+### The disposition map: seven rows, two states
 
-All six rows are always present. Every one carrying a decision is half of diamond 1's
+All seven rows are always present. Every one carrying a decision is half of diamond 1's
 mechanical stopping condition, so an absent row is an unfinished run, not a tidy one.
 
 | # | Disposition | The agent may |
@@ -133,6 +133,7 @@ mechanical stopping condition, so an absent row is an unfinished run, not a tidy
 | 4 | control surface, rule, doc, skill, hook | draft, on the operator's go for that row |
 | 5 | one-shot refactoring | propose a program; the operator selects its route |
 | 6 | no action | record it, with the reason |
+| 7 | further research | name each follow-on R&D run the understanding opened: its subject and what opened it; the operator opens it (§ Amended 2026-11-03) |
 
 **Row 4 includes the planning documents.** The Magna Carta
 ([`build-to-1.0-campaign-2026-09-20.md`](build-to-1.0-campaign-2026-09-20.md)), the roadmap
@@ -392,6 +393,28 @@ the offer rule, unseated since 2026-09-15, is now seated in the skill. This supe
 invocation). The hard stop is unchanged: it lives in the skill file, which the run does not
 edit, and every row still needs the operator's go on that row.
 
+## Amended 2026-11-03 — a seventh row, further research
+
+**Status of this amendment.** Operator-ruled at the sign-off walk-through of the
+repair-work-organization run (`docs/rnd/repair-work-organization.md`, decision *further
+research is a seventh disposition*). Operator, verbatim: *"we are missing reframing/further
+research option? one outcome of rnd is expository: we have a better understanding that now
+opens up the need/opportunity for further research."*; then, on the options put, *"A, add row
+7 further research"*.
+
+**What prompted it.** That run's understanding opened a new question, design for service,
+and the six rows had no place for it: rows 1 to 5 route into diamond 2, and row 6 records no
+action. The reason field carries a revisit condition for something set aside; it does not
+carry a question the run opened. § Still out of scope below was already this outcome, held
+in prose with nothing tracking it.
+
+**The rule.** Row 7, *further research*, names each follow-on R&D run the work opened: its
+subject and the understanding that opened it. States stay `commissioned` and `not pursued`.
+A commissioned row 7 opens a new run only on the operator's word, as § Amended 2026-10-25
+starts any run; it never re-enters the run that commissioned it, which re-entry already
+covers. Diamond 1's mechanical condition now reads seven rows. Records closed before this
+amendment keep their six rows.
+
 ## Still out of scope
 
 Each needs its own run:
@@ -402,7 +425,7 @@ Each needs its own run:
 
 ## What this record does not license
 
-- **It starts no R&D run.** Only the operator invokes `gz-rnd`.
+- **It starts no R&D run.** A run starts on the operator's call or an accepted offer (§ Amended 2026-10-25).
 - **It does not declare ledger vocabulary.** The three event types land with their producer.
 - **It does not pre-create `docs/rnd/`.** The first run creates it.
 - **It does not change the IRON LAW or any canon.**

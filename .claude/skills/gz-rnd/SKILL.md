@@ -1,13 +1,13 @@
 ---
 name: gz-rnd
 persona: main-session
-description: Run a governed R&D session — diamond 1 of the double diamond, which defines the problem and names which fan-out artifacts are warranted. Use when the operator pastes external material and says "consider this for gzkit", asks "is there something here gzkit is missing or could improve on", opens an exploratory design discussion whose outcome is not yet known, or asks why a class of defects keeps recurring and how the issues carrying it should be restructured. Ends at a six-row disposition map and operator sign-off; produces no fan-out artifact itself. Start it when the operator says R&D is needed; offer it when the signals fit; the operator may decline.
+description: Run a governed R&D session — diamond 1 of the double diamond, which defines the problem and names which fan-out artifacts are warranted. Use when the operator pastes external material and says "consider this for gzkit", asks "is there something here gzkit is missing or could improve on", opens an exploratory design discussion whose outcome is not yet known, or asks why a class of defects keeps recurring and how the issues carrying it should be restructured. Ends at a seven-row disposition map and operator sign-off; produces no fan-out artifact itself. Start it when the operator says R&D is needed; offer it when the signals fit; the operator may decline.
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-28
+last_reviewed: 2026-11-03
 metadata:
-  skill-version: "0.7.0"
+  skill-version: "0.8.0"
 model: opus
 ---
 
@@ -147,7 +147,7 @@ the mechanic, not the posture** — full inventory and the not-appropriated list
 
 ## The disposition map
 
-Maintain it live, as decisions land — not at the close. All six rows are always present; an
+Maintain it live, as decisions land — not at the close. All seven rows are always present; an
 absent row is an unfinished run.
 
 | # | Disposition | You may | Consultation point |
@@ -158,6 +158,7 @@ absent row is an unfinished run.
 | 4 | control surface, rule, doc, skill, hook | draft | the operator's go on that row |
 | 5 | one-shot refactoring | propose a program | the operator selects its route |
 | 6 | no action | record it, with the reason | none |
+| 7 | further research | name each follow-on R&D run the understanding opened: its subject and what opened it | the operator opens it |
 
 Row 4 includes the Magna Carta (`docs/governance/build-to-1.0-campaign-2026-09-20.md`), the
 roadmap (`docs/design/roadmap/ROADMAP-GZKIT.md`) and the backlog: a sequencing or priority
@@ -180,7 +181,7 @@ Two conditions, and neither substitutes for the other.
 1. the frontier is empty;
 2. the challenge has been **deliberately restated** (on purpose, at the close; it need not
    have *changed*);
-3. every one of the six dispositions carries a decision.
+3. every one of the seven dispositions carries a decision.
 
 **Human — review, then sign-off: kill or fund.** Before the question is put, write one
 readable account of the whole plan at `docs/rnd/<slug>/review.md` and wait for the operator
@@ -204,7 +205,7 @@ anyone — licenses a row: the stop lives in this file, which the run does not e
 - Every name and mapping in a `decision` has a `source` entry that was read before it.
 - Terms went to the project glossary (or, until its home is named, into `decision` entries)
   and insights through `gz insights remember`.
-- All six disposition rows carry a decision, each `commissioned` or `not pursued`.
+- All seven disposition rows carry a decision, each `commissioned` or `not pursued`.
 - The operator read the account before sign-off, and the challenge was restated on purpose.
 - A later session's `ghi-author` Step 0 finds this run's `not pursued` rows as prior art.
 

@@ -49,7 +49,7 @@ put, and their verbatim words.>
 
 ## Disposition map
 
-<!-- All six rows always present. An absent row is an unfinished run, not a tidy one.
+<!-- All seven rows always present. An absent row is an unfinished run, not a tidy one.
      State is `commissioned` or `not pursued` — there is no third state. Where something
      is set aside but worth revisiting, the reason carries the revisit condition. -->
 
@@ -61,6 +61,7 @@ put, and their verbatim words.>
 | 4 | control surface, rule, doc, skill, hook | | | |
 | 5 | one-shot refactoring | | | |
 | 6 | no action | | | |
+| 7 | further research | | | |
 
 ## Close
 

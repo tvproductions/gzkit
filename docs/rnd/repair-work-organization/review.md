@@ -1,6 +1,6 @@
 # Repair work organization: the review before sign-off
 
-> A view over [`docs/rnd/repair-work-organization.md`](../repair-work-organization.md), written 2026-11-03 and rewritten the same day after the operator's corrections at the first walk-through. It holds no authority: where it and the record disagree, the record governs. Every name below is marked **ruled**, **sourced**, **contradicted** or **unsourced**.
+> A view over [`docs/rnd/repair-work-organization.md`](../repair-work-organization.md), written 2026-11-03 and rewritten the same day after the operator's corrections at the first walk-through. It holds no authority: where it and the record disagree, the record governs. Every name in § Names, by standing is marked **ruled**, **sourced**, **contradicted** or **unsourced**.
 
 ## The problem
 
@@ -12,7 +12,7 @@ gzkit's maintenance work was organized by structure the agent improvised. *Act* 
 
 | Level | Construction | Repair | Succeeds | Decides | Who |
 |---|---|---|---|---|---|
-| Epic | Feature package | Return to service package | | why, and the measure of success: value delivered, or seaworthiness | Operator |
+| Epic | Feature package | Return to service package | none (new) | why, and the measure of success: value delivered, or seaworthiness | Operator |
 | Story | Work package | Repair package | the mADR | the cohesive grouping of orders; scope and footprint; initiation | Operator |
 | Order | Work order | Repair order | the OBPI | the REQ-to-task binding and order; the freeze; inspection and buy-back; **Gate 5** | Coordinator, inspector, operator |
 | Action | Task | Task | the TASK | one recorded action, its measure, its (V) mark | Craftsman |
@@ -31,14 +31,14 @@ A base requirement carries statement, criteria, kind, revision and proof. The ca
 |---|---|---|
 | New construction | states a new one | Release Package, minor |
 | Repair (restore) | answers what must hold again | patch |
-| Remodel | changes one | Release Package, minor |
+| Remodel | supersedes one: a new REQ transcends the prior, which stays whole with its evidence | Release Package, minor |
 | Refactor | preserves them as invariants | patch |
 
 MX work advances patches through the patch release skill, not one patch per item: on the operator's judgment for A and B work, perhaps mandatory at `gz mx exit`. The Release Package's members are unchanged.
 
 ### Out of service
 
-- The vessel is **out of service** exactly while the MX flag, `.gzkit/mx.json`, is open; returning it is Gate 5's **return to service**. Hangar and drydock are synonyms; the commands stay `gz mx`.
+- The vessel is **out of service** exactly while the MX flag, `.gzkit/mx.json`, is open; returning it is the **return to service**, the operator's act at the return to service package's close, apart from each order's Gate 5. Hangar and drydock are synonyms; the commands stay `gz mx`.
 - **The alarm test** decides: work done with every alarm on is on the line, a GHI fixed directly included; work that must lower an alarm, or changes a control or the standard one judges by, is out of service.
 - Out of service is one state. What comes down within it is each level's **standard disconnect list**, the manual; today's blanket is RO-13's temporary group entry.
 - With the governors off the work still takes care. Running past a disabled limit is a deliberate act of diagnosis or test, noted as such.
@@ -64,9 +64,9 @@ MX work advances patches through the patch release skill, not one patch per item
 ## Names, by standing
 
 - **Ruled and sourced:** the four levels A to D, line and heavy maintenance (FAA Order 8900.1); return to service (14 CFR § 43.9, Part 0); problem report; task (AC 120-16G); tag-out; the airworthiness directive as the model for a manual change.
-- **Ruled, the operator's own:** return to service package; repair package; work order and repair order; epic and story for the two upper levels; out of service as the flag's state; on the line; the standard disconnect list as the manual; `RP-n`.
+- **Ruled, the operator's own:** return to service package; repair package; work order and repair order; epic and story for the two upper levels; out of service as the flag's state; on the line; the standard disconnect list as the manual; `RP-n`; *supersedes*, a remodel revising forward into a new REQ; *design for service*, the commissioned run's subject.
 - **Ruled, gzkit canon carried:** feature package; work package, re-scoped; `gz mx`; Gate 5 universal (ADR-0.0.36).
-- **Contradicted and retired:** *act*, *tranche*; *task card*; *out-of-service package*; *hangar* and *drydock* as two standby levels; *repair order* for what RO-14 is; the work package as the OBPI's successor; *one outcome per work package*; *Gate 5 at the package*; *letter checks absent from FAA text*.
+- **Contradicted and retired:** *act*, *tranche*; *task card*; *out-of-service package*; *hangar* and *drydock* as two standby levels; *repair order* for what RO-14 is; the work package as the OBPI's successor; *one outcome per work package*; *Gate 5 at the package*; *letter checks absent from FAA text*; *a remodel changes a REQ*; *Gate 5 is the return to service* (Part 0's *Release*).
 - **Unsourced:** none held as a decision. The Navy's counterpart was not sought further.
 
 ## What each disposition row would produce
@@ -76,10 +76,11 @@ MX work advances patches through the patch release skill, not one patch per item
 | 1 ADR / OBPI | not pursued | nothing; the structure is reversible and has governed homes |
 | 2 GHI / direct fix | commissioned | the `RP-n` alias; `gz mx enter` requiring the package, and whether a patch release is mandatory at exit; `--level` retired; the census's five statement-mechanism disagreements |
 | 3 chore | commissioned | the registry carrying each chore's level and date interval; checks packaged by level; their recommendation points; the waiver drawdown as C work |
-| 4 surfaces | commissioned | the model into the requirements model and the four-records succession, the doctrine, the contract, the RP-5, RP-12, RP-13 and RP-14 specifications, `gz-mx`, `mx-mode.md`, the chore class system; *task card* to *task*; the care rule |
-| 5 refactoring | commissioned | every chore classified and cut to its level; the checkpoint read through the standard disconnect lists as RO-13 retires its group entry; RP-12 landing the order record, Gate 5 at the order and the repair requirement; RP-14 migrating OBPI to work order |
+| 4 surfaces | commissioned | the model, with § The model's level table whole as its canon form, into the requirements model, its revision rule amended so a remodel revises forward into a new REQ carrying `supersedes`; Part 0's *Release* amended so return to service is the package's close; the model into the four-records succession, the doctrine, the contract, the RP-5, RP-12, RP-13 and RP-14 specifications, `gz-mx`, `mx-mode.md`, the chore class system; *task card* to *task*; the care rule |
+| 5 refactoring | commissioned | every chore classified and cut to its level; the checkpoint read through the standard disconnect lists as RO-13 retires its group entry; RP-12 landing the order record, Gate 5 at the order and the repair requirement with its `supersedes` link; RP-14 migrating OBPI to work order |
 | 6 no action | commissioned | the Navy counterpart; the hyphen or acronym |
+| 7 further research | commissioned | the design-for-service run, opened on the operator's word |
 
 ## What this run does not do
 
-It executes no row. It specifies no field, verb or file; that is diamond 2. The RP-12 specification stays paused until sign-off, then takes this model as its ground.
+It executes no row. It specifies no field, verb or file; that is diamond 2. It does not take up design for service, components built with their own tests, alarms, tripwires, access panels, MX procedures, safeguards and switches, each construction or repair tracking the subsystems it touches: that is a separate R&D run, commissioned at the walk-through and opened on the operator's word. Until it lands, the standard disconnect list stays RO-13's group entry. The RP-12 specification stays paused until sign-off, then takes this model as its ground.
