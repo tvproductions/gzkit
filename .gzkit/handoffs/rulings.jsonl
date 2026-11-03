@@ -1968,3 +1968,7 @@
 {"ts": "2026-11-03T09:33:24Z", "source": "20261103T093319Z-rnd-funded-rows-2-4-landed-row5-next.md", "text": "Row 4 is given its go (verbatim: \"row 4 is go\")."}
 {"ts": "2026-11-03T09:33:24Z", "source": "20261103T093319Z-rnd-funded-rows-2-4-landed-row5-next.md", "text": "An outcome's validated is derived from its REQs and their orders' Gate 5 (verbatim: \"c - it is possible that a release package includes some completed work orders from a work package without completing the whole package, this is the decoupling we were working towards.\")."}
 {"ts": "2026-11-03T09:33:24Z", "source": "20261103T093319Z-rnd-funded-rows-2-4-landed-row5-next.md", "text": "RP-n replaces RO-n in the contract's live text only, dated records kept as written (verbatim: \"A\")."}
+{"ts": "2026-11-03T10:54:30Z", "source": "20261103T105425Z-rp12-ruling2-row5-route-a.md", "text": "Row 5 is given its go on route A, RP-12 first, then RP-14, then the chore classification and RP-13 (verbatim: \"A\")."}
+{"ts": "2026-11-03T10:54:30Z", "source": "20261103T105425Z-rp12-ruling2-row5-route-a.md", "text": "Row 7's design-for-service run is held until RP-12 lands, opening ahead of RP-13 (verbatim: \"A\")."}
+{"ts": "2026-11-03T10:54:30Z", "source": "20261103T105425Z-rp12-ruling2-row5-route-a.md", "text": "Construction and repair are two pipelines on one runtime (verbatim: \"yes, two pipelines on one runtime\")."}
+{"ts": "2026-11-03T10:54:30Z", "source": "20261103T105425Z-rp12-ruling2-row5-route-a.md", "text": "GHI #1296 closes as superseded by the RP-12 specification (verbatim: \"A\")."}
