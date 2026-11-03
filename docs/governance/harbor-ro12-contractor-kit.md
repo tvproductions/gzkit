@@ -60,7 +60,7 @@ The issue's acceptance cases, unchanged by ruling, are requirements of this orde
 2. The same verb run where the dispatch intended proceeds (the valid control).
 3. A main-session `gz` command run by the operator in the live checkout is unaffected (second control).
 
-Each is shown by a test that fails if the guard is removed, and one of the three against a real dispatched subagent. The harness facts are in the contract's § Rulings of 2026-11-02.
+Each is shown by a test that fails if the guard is removed, and one of the three against a real dispatched subagent. The harness facts are in the contract's § Rulings of 2026-11-02. #1296 closes as superseded by this section, which is the requirement's one home (operator, 2026-11-03, verbatim: *"A"*); the guard itself is not yet built.
 
 ## Rulings
 
