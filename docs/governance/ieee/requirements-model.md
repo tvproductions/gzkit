@@ -2,7 +2,7 @@
 
 # The requirements model — families, outcomes, REQs, work and release
 
-**2026-10-18. Status: decisions ruled, including the family legend (decision 8.3).**
+**2026-10-18. Status: decisions ruled, including the family legend (decision 8.3).** *Amended 2026-11-03* by § 12, construction and repair at four levels, from the R&D run [`repair-work-organization`](../../rnd/repair-work-organization.md), signed off and funded that day; the amended cells below say so where they stand.
 Operator: **g0**. This document replaces
 [`design-candidates.md` § The joined requirements model](design-candidates.md#the-joined-requirements-model),
 which recorded the model of 2026-10-17 for ratification with five open points
@@ -32,9 +32,10 @@ is the operator's rulings below.
 | REQ | 1 (catalog) | sequential, area-free, `REQ-1207` | One atomic obligation: statement, kind (BEHAVIOR, SUPPORT, STRUCTURAL-FENCE), revision, `member_of`, `applies_to` for an NFR | what must be true |
 | Feature file and steps | 1 | the outcome's code as a tag, `@SES1.4` | The executable behaviour of one user-facing outcome; each scenario tagged with the REQ it proves | proof of user-facing behaviour |
 | ADR | 1 | `ADR-<n>` (decision record) | One architecture decision: context, alternatives, consequences, decision status, supersession links | which choice was made |
-| Feature package | 1 | to be named when its store lands | A list of outcomes already in the catalog, each in at most one feature package, plus the story of why they belong together and the value they bring together; no version, release or order; its value delivered attested by a human at the release or work package attestation (ruled 2026-10-30, [the four-records R&D](../../rnd/four-records.md)); the successor to the mADR | why these outcomes belong together |
-| Work package | 1, with its events in 2 | sequential, `WP-<NN>-<slug>` | One dated attempt to deliver one outcome: the frozen REQ baseline, the closing test, the task cards; the OBPI's successor, matching TASKs to REQs (ruled 2026-10-30) | how one outcome is delivered |
-| Task card | 1, with its events in 2 | `TASK-…` | One slice sized to an agent's context: one commit, one trailer, the REQ ids it drives | the increment |
+| Feature package | 1 | to be named when its store lands | A list of outcomes already in the catalog, each in at most one feature package, plus the story of why they belong together and the value they bring together; no version, release or order; its value delivered attested by a human at the release or work package attestation (ruled 2026-10-30, [the four-records R&D](../../rnd/four-records.md)). *Amended 2026-11-03* (§ 12): the **epic**, succeeding no earlier record; it may be fulfilled by many combinations of work packages | why these outcomes belong together |
+| Work package | 1, with its events in 2 | sequential, `WP-<NN>-<slug>` | *Amended 2026-11-03* (§ 12): the **story** and the mADR's successor, a cohesive grouping of work orders drawing REQs from any outcomes, bound to no feature package or release; it may ship part of its work, and its remainder is rebundled. Ruled 2026-10-30 as one dated attempt to deliver one outcome and the OBPI's successor | how work is grouped for cohesion |
+| Work order | 1, with its events in 2 | to be named when its record lands (RP-12) | Which REQs marry which tasks, in what order; its own freeze, inspection and buy-back; Gate 5. The OBPI's successor (ruled 2026-11-03, § 12) | how REQs are delivered |
+| Task | 1, with its events in 2 | `TASK-…` | One recorded action sized to an agent's context: one commit, one trailer, the REQ ids it drives, its measure and its (V) mark. Called *task card* until 2026-11-03 | the increment |
 | Release Package | 1, with its events in 2 | the version | Which outcomes a version is planned to carry; mutable while a target | what is planned to ship |
 | Ledger | 2 | event ids | Every status transition, proof result, freeze, attestation and release record | what happened |
 | Backlog board | 3 | none | A view composed from the catalog and the ledger; never edited | where everything stands |
@@ -79,7 +80,10 @@ evidence. `verified` means every member REQ is SATISFIED at its current revision
 are resolved. Only a Gate 5 human attestation on the outcome, made after reading the inspector's
 report, moves `verified` to `validated`. It is one act, recorded at the close of the outcome's work
 package, and that close moves the outcome (operator ruling 2026-10-29, *"A"*; the drydock
-contract's § Rulings of 2026-10-29). `released` comes from the ledger release record. *Amended
+contract's § Rulings of 2026-10-29). *Amended 2026-11-03* (§ 12): Gate 5 sits at the work order,
+and `validated` is derived, not attested: an outcome is `validated` once every member REQ is
+SATISFIED and every work order that bound one has passed Gate 5, the last such Gate 5 event its
+evidence. `released` comes from the ledger release record. *Amended
 2026-10-31* (operator: *"A"*, RO-5's § Amended 2026-10-31): a reopening returns an outcome to
 `designing`, and a withdrawal is the terminal state `withdrawn`, allowed only before `released`.
 
@@ -87,7 +91,9 @@ contract's § Rulings of 2026-10-29). `released` comes from the ledger release r
 Backplane): `SATISFIED`, `UNSATISFIED` or `UNKNOWN`. Missing evidence is `UNKNOWN`, never a pass and
 never a fabricated failure. Evidence is bound to the REQ's revision and the commit it was taken at:
 a behaviour-changing revision resets the affected claims to `UNKNOWN` until revalidated ("a prior
-pass at commit B does not prove commit C"). A deferral or exclusion is a scope disposition with an
+pass at commit B does not prove commit C"). *Amended 2026-11-03* (§ 12): a change to the obligation
+is not a revision. A remodel revises forward into a new REQ that supersedes the prior, and the prior
+REQ stays whole with its evidence. What `revision` still counts is open. A deferral or exclusion is a scope disposition with an
 approver and a revisit condition, never a satisfaction result.
 
 ### 5. Dependencies
@@ -104,6 +110,12 @@ operator's pull order recorded on the package; work outside a Release Package is
 the operator's word; the campaign names the package in flight.
 
 ### 6. Work package
+
+*Amended 2026-11-03* (§ 12): this decision as ruled described one dated attempt per outcome. A
+work package now groups work orders for cohesion and draws REQs from any outcomes; *one outcome* and
+the 100% rule are amended, since a work package may ship part of its work and its remainder is
+rebundled. The freeze and the 100% rule's *nothing landed that no REQ asked for* fall to the work
+order. The decision as ruled follows.
 
 A work package delivers exactly one outcome. It freezes that outcome's REQ set as its baseline,
 carries the task cards that execute it, and closes by the 100% rule: every REQ in the baseline
@@ -128,7 +140,8 @@ Package holds it once. The Release Package says which **outcomes** advance in a 
 the earlier "which REQ states advance". Its members are those outcomes and the repair packages a version
 carries; the ledger release record, the shipped claim, names the closed work packages and issues
 that delivered them (operator ruling 2026-10-29, *"a"*; the drydock contract's § Rulings of
-2026-10-29).
+2026-10-29). *Amended 2026-11-03* (§ 12): a Release Package may carry completed work orders from a
+work package that is not complete, and the release record names those work orders.
 
 ### 8. The Q-19 open points
 
@@ -208,12 +221,12 @@ insight record. Maxims and concepts are the note's numbering.
 | The REQ as trace key | maxim 5 | Baseline and forward rule: RO-2 records the before-figures (361 of 736 test files carry `@covers`; 731 REQs have no test; 1,340 of 19,241 ledger events name a REQ); every new delivery event names its REQ or outcome; nothing legacy is backfilled |
 | The safe-mode entry record | maxim 14 | The safe-mode entry event records the contract's content hash, its suspended list and its exit conditions; a contract edit while a session is open books a contract-amended event |
 | Tampering | maxim 13 | RO-1 and RO-7 classify each cut candidate as common or special cause from its recorded provenance; special-cause clauses move to rationale records. A single failure is recorded as an insight and becomes a rule only on recurrence: a proposal cites at least the threshold of insight or GHI records of one class (3, in `data/recurrence_threshold.json`; operator: *"3 occurrences (Rec.)"*, *"Cited records (Rec.)"*), every pair at least one session lease apart by full timestamp (*"One lease apart (Rec.)"*), checked by `gz insights recurrence` |
-| The operator's variety | maxim 17 | The operator initiates a work package, not each slice; Gate 5 sits per outcome, attested once at its work package's close; the passage log carries the baseline of human acts per delivered outcome |
+| The operator's variety | maxim 17 | The operator initiates a work package, not each slice; Gate 5 sits per outcome, attested once at its work package's close; the passage log carries the baseline of human acts per delivered outcome. *Amended 2026-11-03* (§ 12): Gate 5 sits per work order, and an outcome's `validated` derives from its orders' |
 | Acceptance criteria | maxim 8 | A REQ carries a statement (effect and rationale) and one or more pass/fail criteria (state or input → required outcome → evidence), on the `ghi-close` closure-contract precedent; proof binds to the criteria |
 | Done drift | maxim 2 | Agents may draft REQs before freeze; after freeze the catalog verb refuses an edit to a baselined REQ except a reopening carrying the operator's words and attestor, which opens a new work package and resets that REQ's proof |
 | REQ quality | protocol step 1 | Before freeze, the independent reviewer checks each baselined REQ against BABOK's nine criteria and returns failures by name, never rewriting; the validator checks only *testable* and *atomic*; *prioritized* is met at package level |
 | Risk | maxim 12 | A short note at freeze (how the evidence could be green and still wrong) and the residual at validation, read at Gate 5; no scored register |
-| Gate outcomes | protocol step 8 | Gate 5 on an outcome records one of proceed (→ `validated`), redirect (→ reopening, new work package), pause (→ `deferred` with a revisit condition) or terminate (→ withdrawal, never delivered); PRD FR-009's Completed, Partial and Dropped map to proceed, redirect and terminate |
+| Gate outcomes | protocol step 8 | *Amended 2026-11-03* (§ 12): Gate 5 now sits on the work order; how these four outcomes apply to an order is open. As ruled: Gate 5 on an outcome records one of proceed (→ `validated`), redirect (→ reopening, new work package), pause (→ `deferred` with a revisit condition) or terminate (→ withdrawal, never delivered); PRD FR-009's Completed, Partial and Dropped map to proceed, redirect and terminate |
 | Derive | concept 3 | A REQ names the PRD FR or § 7 attributes it refines (`derives_from`); an FR with no deriving REQ is reported, and a PRD change lists the REQs it touches |
 | Needs and requirements | concept 1 | The PRD FR or § 7 attribute is the stakeholder need, written by the operator; the catalog REQ is the system requirement derived from it, drafted by an agent and frozen by the operator. Solution wording in FRs is flagged for later rewording |
 
@@ -225,6 +238,64 @@ differ, this model governs and the mapping is:
 | work package, "a release-sequencing group of REQs, frozen for a release" | an outcome (the deliverable and its REQs), its work package (one dated, frozen attempt to deliver it) and its Release Package membership (the sequencing) |
 | REQ, "an atomic statement of intent or needed effect" | intent is the PRD FR or § 7 attribute; the REQ is the system requirement derived from it, with pass/fail criteria |
 | safe mode, "named governance rules are turned off" | every guard outside the `gate5_invariants` floor goes advisory; the contract names the suspensions, and the ledger pins the contract by hash at entry |
+
+### 12. Construction and repair, four levels
+
+Ruled 2026-11-03 in the R&D run [`repair-work-organization`](../../rnd/repair-work-organization.md),
+signed off and funded that day (operator: *"yes, read in full - fund"*), and carried here on the
+operator's go on its row 4 (*"row 4 is go"*). Each ruling is in that record with its question,
+options and verbatim words; this section is its canon form. Where a decision above disagrees, this
+section governs, and the decision carries an amended note.
+
+**The level table is the canon form of the model** (operator: *"the table needs to kept and
+associated as canon - it captures the design very well"*).
+
+| Level | Construction | Repair | Succeeds | Decides | Who |
+|---|---|---|---|---|---|
+| Epic | Feature package | Return to service package | none (new) | why, and the measure of success: value delivered, or seaworthiness | Operator |
+| Story | Work package | Repair package | the mADR | the cohesive grouping of orders; scope and footprint; initiation | Operator |
+| Order | Work order | Repair order | the OBPI | the REQ-to-task binding and order; the freeze; inspection and buy-back; **Gate 5** | Coordinator, inspector, operator |
+| Action | Task | Task | the TASK | one recorded action, its measure, its (V) mark | Craftsman |
+
+- A feature package may be fulfilled by many combinations of work packages, and a work package
+  draws REQs from any feature packages. Neither binds a release (operator: *"A wins because you
+  elevate the feature pack to "epic" and keep the WP (mADR) as a story"*).
+- A work package may ship part of its work; its remainder is rebundled.
+- **Gate 5 sits at the order**, as on every OBPI (operator: *"answer was A"*). The package closes
+  when its orders close and its why is answered; the epic carries the value or seaworthiness
+  attestation.
+- **An outcome's `validated` is derived, not attested**: it holds once every member REQ is
+  SATISFIED and every work order that bound one has passed Gate 5, the last such Gate 5 event its
+  evidence. Operator, 2026-11-03, verbatim: *"c - it is possible that a release package includes
+  some completed work orders from a work package without completing the whole package, this is the
+  decoupling we were working towards."*
+- A Release Package may carry completed work orders from a work package that is not complete; the
+  release record names them.
+- A repair order freezes once its REQ is known, so a repair package stays open through exploration.
+- Both top rows serve users: one delivers value, the other restores a seaworthy vessel. Return to
+  service is the operator's act at the return to service package's close, apart from each order's
+  Gate 5, and the MX flag closes on it (operator: *"Option A"*).
+
+**One requirement, specialized** (operator: *"sounds an opportunity for classic inheritance - they
+likely have some specialization"*). A base requirement carries statement, criteria, kind, revision
+and proof. The **catalog requirement** keeps `member_of` an outcome, `derives_from` and `applies_to`.
+The **repair requirement** is held on its repair package, names its problem report, and may name a
+design REQ it aligns to. Proof runs one path. Which fields and how they are declared are RP-12's.
+
+**The input sets the REQ's relationship and the release.**
+
+| Input | Relationship to a REQ | Release |
+|---|---|---|
+| New construction | states a new one | Release Package, minor |
+| Repair (restore) | answers what must hold again | patch |
+| Remodel | supersedes one: a new REQ transcends the prior, which stays whole with its evidence | Release Package, minor |
+| Refactor | preserves them as invariants | patch |
+
+A remodel revises forward: the new REQ carries a `supersedes` link and the prior is never edited
+(operator: *"we don't change a req with a model as much as we supersede it"*; *"yes, A and it is
+cleaner and addresses the discussion of revision - we revise forward into a new req."*). What
+`revision` still counts once an obligation's change makes a new REQ is open. MX work advances
+patches through the patch release skill, not one patch per item.
 
 ## Family schemes — the candidates, as drafted for selection
 
@@ -362,7 +433,9 @@ through the alias layer before any authoring rule changes: that is RO-2.
   evicted" supersedes TTL reaping for the hangar. Under the model a new decision record supersedes the
   reaping clause of ADR-0.0.41, the affected REQs take a new revision, and their proof resets to
   `UNKNOWN` until revalidated, while the shipped evidence stays attached to the earlier revision. The
-  surface amendment of REQ-0.0.74-05-01 in `d5fcd5c3f` is that pattern, done by hand today.
+  surface amendment of REQ-0.0.74-05-01 in `d5fcd5c3f` is that pattern, done by hand today. *A record
+  of 2026-10-18; under § 12 (2026-11-03) the affected REQs are superseded by new REQs, the prior
+  ones kept whole with their evidence.*
 
 **Verdict on paper: pass.** Only membership changes on a slip, evidence stays linked through the
 aliases, and supersession moves decision authority without erasing shipped history.
@@ -404,3 +477,6 @@ Nothing below is changed by this document; each is a coupled surface the adoptio
 - ~~The PRD~~ — amended 2026-10-18 (FR-004 retired, FR-005/005a/005b split, FR-013 to FR-031 added).
 - The `gz-design`, `gz-obpi-pipeline` and `gz-adr-create` skills, which assume an ADR parents its
   work.
+- Under § 12 (2026-11-03): the `Req` model (`src/gzkit/models/catalog.py`), which has no
+  `supersedes` link and no repair specialization; the work-package store, whose record is still one
+  outcome's (RP-12 lands the order record); the RP-5, RP-12, RP-13 and RP-14 specifications.
