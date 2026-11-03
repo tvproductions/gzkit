@@ -5,11 +5,11 @@ description: Use to open or exit the MX hangar or safe mode, or to check which m
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-31
+last_reviewed: 2026-11-03
 model: haiku
 gz_command: mx
 metadata:
-  skill-version: "1.9.0"
+  skill-version: "1.10.0"
 ---
 
 # gz mx
@@ -27,6 +27,13 @@ The same marker carries a second mode. **Safe mode** is the toggle
 contract, every guard outside the floor drops to advisory as in the hangar, and the banner names the contract each
 turn. Gate 5, the ledger through `gz` verbs, operator PII and the PRIME DIRECTIVE bind
 in both modes.
+
+**Out of service is one state** (ruled 2026-11-03,
+`docs/governance/safe-mode-doctrine.md` § Out of service and the four levels): hangar and
+drydock are synonyms, and the alarm test decides whether work needs the flag at all. Work done
+with every alarm on stays on the line. Every opening has a **return to service package**: the
+contract for an incident, the generated package for a scheduled C or D check. Return to service
+is the operator's act at that package's close, apart from each order's Gate 5.
 
 The operator operates this skill; the skill invokes `gz mx`; nobody shells
 out to `gz mx enter` or `gz mx exit` directly. The operator never types the verb:
@@ -54,7 +61,9 @@ operator a raw `gz mx` command is a defect in the surface that gave it.
    uv run gz mx enter --reason "<why>" --attestor g0 [--scope ADR-X.Y.Z ...]
    ```
    Creates `.gzkit/mx.json` marker. Most governance guards drop to advisory. `--reason`
-   and `--attestor` are required; the attestor is the operator, never an agent.
+   and `--attestor` are required; the attestor is the operator, never an agent. Before
+   entry, confirm with the operator which return to service package this opening serves;
+   until GHI #1303 makes the verb require it, the skill asks and `--reason` names it.
 
 2. **Perform the repair**
    Work on the governance surfaces that needed fixing. Gate 5 invariants and
@@ -66,7 +75,8 @@ operator a raw `gz mx` command is a defect in the surface that gave it.
    uv run gz mx exit --attestor g0
    ```
    Removes `.gzkit/mx.json` marker. Every guard re-runs at full strength;
-   exit is a hard gate (all guards must pass before exit succeeds).
+   exit is a hard gate (all guards must pass before exit succeeds). Return to service is
+   the operator's word on the package's close; the exit records it, it does not make it.
 
 ## Workflow — safe mode (GHI #1244)
 

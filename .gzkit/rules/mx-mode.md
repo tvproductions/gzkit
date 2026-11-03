@@ -10,11 +10,11 @@ paths:
   - "src/gzkit/mx/awareness.py"
   - "src/gzkit/hooks/guards.py"
 ---
-<!-- rule-version: 1.15.0 -->
+<!-- rule-version: 1.16.0 -->
 
 # MX Mode (Maintenance Hangar) (gzkit)
 
-> **Rule version:** `1.15.0` — one reading of the condition, the commanded level and `gz mx repair` (GHI #1273); version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#mx-modemd).
+> **Rule version:** `1.16.0` — out of service is one state decided by the alarm test, with a return to service package and care with the governors off (repair-work-organization, 2026-11-03); version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#mx-modemd).
 
 ## Non-negotiable rules
 
@@ -69,6 +69,17 @@ un-forced negative controls in `test_gate5_invariants_live_nc.py`
 `gate5_invariants` member stays fatal *under* the marker, and stays fatal
 *outside* it, so the carve-out cannot silently invert. A new guard inherits
 demotion by default and must opt into the floor explicitly.
+
+### Out of service: one state, the alarm test, a return to service package
+
+Ruled 2026-11-03 (`docs/governance/safe-mode-doctrine.md` § Out of service and the four levels):
+the condition on is **out of service**, one state; hangar and drydock are synonyms. Work done with
+every alarm on is line work, a direct GHI fix included; work that must lower an alarm, or changes
+a control or its standard, is out of service. Every opening has a return to service package, and
+**return to service** is the operator's act at its close, apart from each order's Gate 5. With the
+governors off the work still takes care: running past a disabled limit is a deliberate act of
+diagnosis or test, noted as such. **(Advisory until GHI #1303 and #1304 land:** `gz mx enter`
+still takes `--level` and asks for no package.**)**
 
 ### Safe mode: ceremony suspended under a contract
 

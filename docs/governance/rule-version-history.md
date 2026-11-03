@@ -733,6 +733,14 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `mx-mode.md`
 
+### Changed 2026-11-03 at version `1.16.0` (operator rulings)
+
+§ Out of service is new: out of service is one state decided by the alarm test, hangar and drydock
+are synonyms, every opening has a return to service package whose close is the return to service,
+and the work takes care with the governors off (`docs/rnd/repair-work-organization.md`, signed off
+*"yes, read in full - fund"*, row 4 *"row 4 is go"*). The mechanism still reads `--level` until
+GHI #1304, and `gz mx enter` asks for no package until GHI #1303.
+
 ### Changed 2026-10-31 at version `1.15.0` (operator rulings)
 
 § Honor the marker now states the one reading of the condition, `gzkit.mx.marker.condition`, which

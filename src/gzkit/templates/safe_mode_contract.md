@@ -3,6 +3,11 @@
 > Template for a safe-mode period. Doctrine: `docs/governance/safe-mode-doctrine.md`.
 > The `gz-mx` skill reads this document before entry and refuses when a required section is
 > missing. Fill every section; delete this note.
+>
+> This contract is the opening's **return to service package**: it states why the vessel is out
+> of service and what returns it, and return to service is the operator's act at its close, apart
+> from each order's Gate 5 (`docs/governance/safe-mode-doctrine.md` § Out of service and the four
+> levels). Each order is a repair package named `RP-n`; `RO-n` is its older alias.
 
 ## Authority
 
@@ -70,21 +75,21 @@ reroutes or changes, to the prior or to the new stable state, and closes only wh
 on § Tag-out log are cleared and its discrepancies that block return to service are cleared.
 
 The table states what each order lands; it is changed only by amendment of this contract. Which
-orders are open is the **work package log**: a Layer 3 view assembled from the repair work
+orders are open is the **work package log**: a Layer 3 view assembled from the repair
 packages, their issues and the ledger, never edited, and never blocking a gate (decision *B11*;
 `docs/governance/safe-mode-doctrine.md` § The instruments, item 3). Read it there, not here.
 
 | Order | Serves | What it lands | Witness | Owner |
 |---|---|---|---|---|
-| RO-0 | the drydock itself | this contract and the drawing ratified; the suspension in force; prior drift disposed | | |
-| RO-1 | control plane | the bleeding stopped: loaded surfaces cut to budget first, measured for effect | | |
-| RO-2 | identity | the identity seam by alias and resolver, renaming nothing | | |
-| RO-3 | catalog | the requirements store and feature-area registry as empty structure | | |
-| RO-4 | version | the release detached and keyed to one release shape | | |
-| RO-5 | labor, maintenance | the work-package, task-card and repair-order structure | | |
-| RO-6 | every band | contradicted canon retired with retention maps | | |
-| RO-7 | control plane | the rest of the cut, staged, with an effectiveness report per stage | | |
-| RO-8 | the in-flight work | disposition of what was open, and the handback | | |
+| RP-0 | the drydock itself | this contract and the drawing ratified; the suspension in force; prior drift disposed | | |
+| RP-1 | control plane | the bleeding stopped: loaded surfaces cut to budget first, measured for effect | | |
+| RP-2 | identity | the identity seam by alias and resolver, renaming nothing | | |
+| RP-3 | catalog | the requirements store and feature-area registry as empty structure | | |
+| RP-4 | version | the release detached and keyed to one release shape | | |
+| RP-5 | labor, maintenance | the work-package, task-card and repair-order structure | | |
+| RP-6 | every band | contradicted canon retired with retention maps | | |
+| RP-7 | control plane | the rest of the cut, staged, with an effectiveness report per stage | | |
+| RP-8 | the in-flight work | disposition of what was open, and the handback | | |
 
 ## Tag-out log
 
