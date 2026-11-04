@@ -5,11 +5,11 @@ description: Use to open or exit the MX hangar or safe mode, or to check which m
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-03
+last_reviewed: 2026-11-04
 model: haiku
 gz_command: mx
 metadata:
-  skill-version: "1.10.0"
+  skill-version: "1.10.1"
 ---
 
 # gz mx
@@ -143,8 +143,9 @@ operator a raw `gz mx` command is a defect in the surface that gave it.
    log, its sources; the handback is not a third copy of them (`docs/rnd/contractor-kit.md`,
    decision C12 and its correction, which replaces *punch list* with *list of
    discrepancies*; operator: *"A"*). No verb checks the enumeration against its sources
-   yet. That refusal is diamond-2 work, so until it lands the check is the operator's
-   ratification.
+   yet. RP-12 ruling 33 specifies it and it is not built: the drafting verb will compose the
+   three categories from their sources, and refuse an enumeration that does not match them.
+   Until it lands the check is the operator's ratification.
 
 ## Example
 
