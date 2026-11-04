@@ -5,18 +5,18 @@ description: Use to create or resume a session handoff document.
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "7.8.0"
+  skill-version: "7.8.1"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-03
+last_reviewed: 2026-11-04
 model: sonnet
 ---
 
-# gz-session-handoff (v7.8.0)
+# gz-session-handoff (v7.8.1)
 
 ## Purpose
 
@@ -427,7 +427,7 @@ verified TRUE (`gz obpi status` → `ATTESTED COMPLETED`); claims are verified
 
 ### Shift turnover (hangar sessions)
 
-While `.gzkit/mx.json` is open, in either mode, a session relief is a **shift turnover**, a named act the handoff carries (`docs/rnd/contractor-kit.md`, decision C11; operator: *"a"*). On CREATE, the relieved session's handoff names every tag it hung, every finding awaiting buy-back and every commenced work package. On RESUME, the relieving session reviews the tag-out log, the findings awaiting buy-back and the commenced packages, and records the review in its own handoff. The MX session holds every hung tag and the lease, never the harness session, which a `/clear` replaces (RP-12 ruling 3, operator: *"mx session makes sense"*); a relief inside one MX session therefore takes over nothing by name, and a tag's holder changes only with the MX session. `gz mx renew` still writes the harness id as the lease's agent until RP-12 lands the holder; read that id as stale after a `/clear`, never as a different holder. The tag-out log and the work package are contractor-kit records (RO-12) and do not exist yet. Until they land, review what stands in their place (the contract's § List of discrepancies and passage log, `gz obpi lock list`) and say which you read. Nothing refuses a turnover that omits a tag; that refusal is diamond-2 work.
+While `.gzkit/mx.json` is open, in either mode, a session relief is a **shift turnover**, a named act the handoff carries (`docs/rnd/contractor-kit.md`, decision C11; operator: *"a"*). On CREATE, the relieved session's handoff names every tag it hung, every finding awaiting buy-back and every commenced work package. On RESUME, the relieving session reviews the tag-out log, the findings awaiting buy-back and the commenced packages, and records the review in its own handoff. The MX session holds every hung tag and the lease, never the harness session, which a `/clear` replaces (RP-12 ruling 3, operator: *"mx session makes sense"*); a relief inside one MX session therefore takes over nothing by name, and a tag's holder changes only with the MX session. `gz mx renew` still writes the harness id as the lease's agent until RP-12 lands the holder; read that id as stale after a `/clear`, never as a different holder. The tag-out log and the work package are contractor-kit records (RO-12) and do not exist yet. Until they land, review what stands in their place (the contract's § List of discrepancies and passage log, `gz obpi lock list`) and say which you read. Nothing refuses a turnover that omits a tag yet. RP-12 ruling 19 specifies the refusal and it is not built: `gz handoff create` will compose § Shift turnover from the views, and the `handoff-documents` gate will replay the ledger to each handoff's timestamp (operator: *"A"*).
 
 ---
 
