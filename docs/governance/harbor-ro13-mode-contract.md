@@ -64,3 +64,5 @@ The lines are in the contract's § List of discrepancies under RO-13.
 ## Witness
 
 The shrink-only baseline of controls with no MEL entry, closed at zero, read from the enumerator. The foundation's unit tests, run against a temporary tree holding one declared control, one unlisted control and one group member. Each restored control's inspected red witness (the contract's RO-12 row, refusal 8).
+
+Amended 2026-11-04 by RP-12's ruling 18 (operator, verbatim: *"A"*): the MEL entry's accepted state that F1 lands is derived from RP-12's red-witness (I) review event at restoration, never set by hand, and this witness reads that event.
