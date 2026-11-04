@@ -692,11 +692,19 @@ def _probe_work_package_run(root: Path, event_type: str) -> ProducerObservation:
             catalog,
             ledger,
             run.DispatchRequest(
-                work_package=_REPAIR_PACKAGE, role=role, model=_AUTHOR, issue=_ISSUE
+                work_package=_REPAIR_PACKAGE,
+                role=role,
+                model=_AUTHOR,
+                issue=_ISSUE,
+                root=root.resolve().as_posix(),
             ),
         )
     past_the_bound = run.DispatchRequest(
-        work_package=_REPAIR_PACKAGE, role=run.IMPLEMENTER, model=_AUTHOR, issue=_ISSUE
+        work_package=_REPAIR_PACKAGE,
+        role=run.IMPLEMENTER,
+        model=_AUTHOR,
+        issue=_ISSUE,
+        root=root.resolve().as_posix(),
     )
     _expect_refusal(
         lambda: run.record_work_package_dispatch(catalog, ledger, past_the_bound),

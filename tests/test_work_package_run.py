@@ -11,7 +11,7 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from gzkit.events import BaselinedReq
+from gzkit.events import BaselinedReq, WorkPackageDispatchedEvent
 from gzkit.ledger import Ledger
 from gzkit.models.catalog import Catalog, Criterion, Departure, Outcome, Req, WorkPackage
 from gzkit.pipeline_dispatch import MAX_REVIEW_FIX_CYCLES
@@ -27,6 +27,9 @@ from gzkit.work_package_run import (
     DispatchRequest,
     UnblockRequest,
     count_fix_cycles,
+    dispatch_line,
+    find_dispatch,
+    read_dispatch_id,
     record_work_package_block,
     record_work_package_dispatch,
     record_work_package_unblock,
@@ -192,7 +195,8 @@ class _Run(unittest.TestCase):
     def setUp(self) -> None:
         directory = TemporaryDirectory()
         self.addCleanup(directory.cleanup)
-        self.ledger = Ledger(Path(directory.name) / "ledger.jsonl")
+        self.root = Path(directory.name).resolve()
+        self.ledger = Ledger(self.root / "ledger.jsonl")
         self.catalog = _catalog()
         self._commence(_FIRST, ("REQ-1", "REQ-2"))
         self._commence(_REPAIR, ())
@@ -224,7 +228,7 @@ class _Run(unittest.TestCase):
         req: str | None = "REQ-1",
         issue: int | None = None,
         reason: str | None = None,
-    ) -> None:
+    ) -> WorkPackageDispatchedEvent:
         request = DispatchRequest(
             work_package=package,
             role=role,
@@ -232,8 +236,9 @@ class _Run(unittest.TestCase):
             req=None if issue is not None and req == "REQ-1" else req,
             issue=issue,
             reason=reason,
+            root=self.root.as_posix(),
         )
-        record_work_package_dispatch(self.catalog, self.ledger, request)
+        return record_work_package_dispatch(self.catalog, self.ledger, request)
 
     def _reach_the_bound(self, package: str = _FIRST, req: str = "REQ-1") -> None:
         for role in _roles("ISQISQISQ"):
@@ -399,7 +404,12 @@ class Dispatch(_Run):
         ):
             with self.subTest(req=req, issue=issue):
                 request = DispatchRequest(
-                    work_package=_FIRST, role="Implementer", model="m", req=req, issue=issue
+                    work_package=_FIRST,
+                    role="Implementer",
+                    model="m",
+                    req=req,
+                    issue=issue,
+                    root=self.root.as_posix(),
                 )
                 self._refused(
                     pattern,
@@ -419,7 +429,13 @@ class Dispatch(_Run):
 
     def test_an_unknown_role_and_an_empty_model_are_refused(self) -> None:
         self._refused("role", "work_package_dispatched", lambda: self._dispatch("Narrator"))
-        request = DispatchRequest(work_package=_FIRST, role="Implementer", model=" ", req="REQ-1")
+        request = DispatchRequest(
+            work_package=_FIRST,
+            role="Implementer",
+            model=" ",
+            req="REQ-1",
+            root=self.root.as_posix(),
+        )
         self._refused(
             "model",
             "work_package_dispatched",
@@ -732,6 +748,55 @@ class Unblock(_Run):
             "work_package_unblocked",
             lambda: record_work_package_unblock(self.catalog, self.ledger, request),
         )
+
+
+class DispatchRecord(_Run):
+    """A position is told by its dispatch record (RP-12 ruling 1)."""
+
+    def test_a_dispatch_is_bound_to_a_minted_id_and_its_intended_root(self) -> None:
+        self._dispatch("Implementer")
+        self._dispatch("SpecReviewer")
+        first, second = self._rows("work_package_dispatched")
+        self.assertRegex(str(first["dispatch_id"]), r"^D-[0-9a-f]{16}$")
+        self.assertNotEqual(first["dispatch_id"], second["dispatch_id"])
+        self.assertEqual(first["intended_root"], self.root.as_posix())
+        self.assertEqual((first["role"], first["subject"]), ("Implementer", "REQ-1@2"))
+
+    def test_a_relative_intended_root_is_refused_and_books_nothing(self) -> None:
+        request = DispatchRequest(
+            work_package=_FIRST, role="Implementer", model="m", req="REQ-1", root="sandbox"
+        )
+        self._refused(
+            "absolute",
+            "work_package_dispatched",
+            lambda: record_work_package_dispatch(self.catalog, self.ledger, request),
+        )
+
+    def test_a_dispatch_is_found_by_its_id_and_an_unknown_id_finds_none(self) -> None:
+        event = self._dispatch("Implementer")
+        assert event.dispatch_id is not None
+        found = find_dispatch(self.ledger, event.dispatch_id)
+        assert found is not None
+        self.assertEqual(found.intended_root, self.root.as_posix())
+        self.assertEqual(found.role, "Implementer")
+        self.assertIsNone(find_dispatch(self.ledger, "D-0000000000000000"))
+
+    def test_the_dispatch_line_is_read_back_from_a_prompt(self) -> None:
+        event = self._dispatch("Implementer")
+        assert event.dispatch_id is not None
+        prompt = f"{dispatch_line(event.dispatch_id)}\n\nImplement REQ-1."
+        self.assertEqual(read_dispatch_id(prompt), event.dispatch_id)
+
+    def test_a_prompt_with_no_line_or_two_different_lines_names_no_dispatch(self) -> None:
+        one, two = "D-" + "a" * 16, "D-" + "b" * 16
+        for prompt in (
+            "Implement REQ-1.",
+            f"{dispatch_line(one)}\n{dispatch_line(two)}",
+            "GZKIT-DISPATCH: not-an-id",
+        ):
+            with self.subTest(prompt=prompt):
+                self.assertIsNone(read_dispatch_id(prompt))
+        self.assertEqual(read_dispatch_id(f"{dispatch_line(one)}\n{dispatch_line(one)}"), one)
 
 
 if __name__ == "__main__":

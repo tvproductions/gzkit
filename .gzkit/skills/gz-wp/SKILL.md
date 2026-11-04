@@ -5,9 +5,9 @@ description: Use to create, attach issues to, move, change, add evidence to or r
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-01
+last_reviewed: 2026-11-04
 metadata:
-  skill-version: "0.6.0"
+  skill-version: "0.7.0"
 model: sonnet
 ---
 
@@ -103,7 +103,9 @@ Once commenced, each dispatch is booked, and the runtime holds the fix-cycle bou
    bound counts against that frozen subject, across packages: its first dispatch
    is free, any review in the package arms it, and each later one is a fix cycle. A delivery package that
    cannot dispatch declares `--role SingleDriver --reason "<why>"`; a repair package
-   cannot.
+   cannot. The verb mints the dispatch's id and prints its `GZKIT-DISPATCH:` line:
+   put that line in the dispatched agent's prompt, and name another project's root
+   with `--root <dir>` when the dispatch is meant for one (RP-12 rulings 1 and 35).
 2. **At the bound the dispatch refuses (exit 3).** Do not route around it: a further
    repair cycle does not exist. Escalate:
    `uv run gz wp block <WP-id> --reason "<why>" --next-action "<decision>"`. The

@@ -21,7 +21,7 @@ RO-14 act 6: `commence` and `accept` cross the airlock through
 footprint (GHI #1185).
 """
 
-from typing import TYPE_CHECKING
+from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict
 
@@ -62,6 +62,7 @@ from gzkit.work_package_run import (
     DispatchRequest,
     RunPosition,
     UnblockRequest,
+    dispatch_line,
     history_move,
     package_history,
     record_work_package_block,
@@ -81,9 +82,6 @@ from gzkit.work_package_transit import (
     module_gaps,
     package_changes,
 )
-
-if TYPE_CHECKING:
-    from pathlib import Path
 
 
 def _context() -> tuple[Path, Catalog, Ledger]:
@@ -633,24 +631,39 @@ def wp_evidence_cmd(*, work_package: str, items: list[str], as_json: bool) -> No
 def wp_dispatch_cmd(*, fields: dict[str, object], as_json: bool) -> None:
     """Book one dispatch on a commenced package, holding the fix-cycle bound (GHI #1200).
 
+    The dispatch is bound to a minted id and its intended root, by default this
+    project's, and the line naming the id goes in the dispatched agent's prompt
+    (RP-12 rulings 1 and 35).
+
     Raises:
         PolicyBreachError: The dispatch is refused, the bound included; nothing is booked.
+        ResourceNotFoundError: The intended root is not an existing directory.
 
     """
     root, catalog, ledger = _context()
     _held(catalog, str(fields["work_package"]))
+    intended = Path(str(fields.get("root") or root)).expanduser().resolve()
+    if not intended.is_dir():
+        msg = f"The intended root {intended.as_posix()} is not an existing directory."
+        raise ResourceNotFoundError(msg)
     try:
         refusal = round_bound_refusal(root, str(fields["work_package"]))
         if refusal:
             raise PolicyBreachError(refusal)
-        request = DispatchRequest.model_validate(fields)
+        request = DispatchRequest.model_validate({**fields, "root": intended.as_posix()})
         event = record_work_package_dispatch(catalog, ledger, request)
     except ValueError as exc:
         raise PolicyBreachError(str(exc)) from exc
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
+    if as_json:
+        fmt.emit(event)
+        return
     fmt.emit(
-        event if as_json else f"Recorded {event.role} on {event.subject} of {event.work_package}."
+        f"Recorded {event.role} on {event.subject} of {event.work_package} as dispatch "
+        f"{event.dispatch_id}, for {event.intended_root}."
     )
+    fmt.emit("Put this line in the dispatched agent's prompt:")
+    fmt.emit(dispatch_line(str(event.dispatch_id)))
 
 
 def _read_refutations(root: Path, work_package: str, reason: str) -> tuple[dict[str, int], str]:

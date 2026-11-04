@@ -5,7 +5,7 @@ Record one dispatch on a commenced work package, holding the fix-cycle bound.
 ## Usage
 
 ```bash
-gz wp dispatch <WP-id> --role <role> --model <tier> (--req <REQ> | --issue <n>) [OPTIONS]
+gz wp dispatch <WP-id> --role <role> --model <tier> (--req <REQ> | --issue <n>) [--root <dir>] [OPTIONS]
 ```
 
 ## Options
@@ -18,7 +18,8 @@ gz wp dispatch <WP-id> --role <role> --model <tier> (--req <REQ> | --issue <n>) 
 | `--req` | The frozen REQ dispatched against. Give this or `--issue` |
 | `--issue` | The carried issue dispatched against. Give this or `--req` |
 | `--reason` | Why the run is single-driver. Required with `SingleDriver`, refused otherwise |
-| `--json` | Output as JSON |
+| `--root` | The project root the dispatch is for, an existing directory. Defaults to this project's root |
+| `--json` | Output as JSON: the booked event, `dispatch_id` and `intended_root` included |
 | `--quiet`, `-q` | Suppress non-error output |
 | `--verbose`, `-v` | Enable verbose output |
 | `--debug` | Enable debug mode with full tracebacks |
@@ -52,14 +53,37 @@ The count sees only what is recorded, under the labels recorded: a dispatch nobo
 books is not counted. A subject with no review and no single-driver declaration
 has no bound, because the count starts at a review.
 
+Each dispatch is its own record (RP-12 ruling 1,
+`docs/governance/harbor-ro12-contractor-kit.md`): the runtime mints a dispatch id,
+binds it to the role, the subject and the intended root, and prints the line that
+names it. Put that line in the dispatched agent's prompt. The stamp hook reads it
+from the subagent's own transcript to learn which dispatch, and so which root, a
+subagent's `gz` command belongs to (rulings 17, 34 and 35). A dispatch meant for
+another project, a throwaway one included, names it with `--root`. A relative
+root is resolved against the current directory, and a root that is not an
+existing directory exits 1 and books nothing.
+
 ## Examples
 
-Observed in a scratch project holding `WP-01-loop`, commenced, with `#1200` at the
-bound:
+Observed in a scratch project holding `WP-01-loop`, commenced, at
+`/private/tmp/claude-501/wpd`:
 
 ```console
-$ uv run gz wp dispatch WP-01-loop --role SpecReviewer --model sonnet --issue 1200
-Recorded SpecReviewer on #1200 of WP-01-loop.
+$ uv run gz wp dispatch WP-01-loop --role Implementer --model sonnet --issue 1200
+Recorded Implementer on #1200 of WP-01-loop as dispatch D-d74b40917b13f4f5, for
+/private/tmp/claude-501/wpd.
+Put this line in the dispatched agent's prompt:
+GZKIT-DISPATCH: D-d74b40917b13f4f5
+$ uv run gz wp dispatch WP-01-loop --role Implementer --model sonnet --issue 1200 --root ../wpd-scratch
+Recorded Implementer on #1200 of WP-01-loop as dispatch D-1edf53c694bba4ca, for
+/private/tmp/claude-501/wpd-scratch.
+Put this line in the dispatched agent's prompt:
+GZKIT-DISPATCH: D-1edf53c694bba4ca
+```
+
+With `#1200` at the bound:
+
+```console
 $ uv run gz wp dispatch WP-01-loop --role Implementer --model sonnet --issue 1200
 #1200 has used the bound of 2 fix cycles; no further repair cycle runs. Block
 and take an exit: reopen, departure, hold, terminate.
@@ -70,7 +94,7 @@ and take an exit: reopen, departure, hold, terminate.
 | Code | Meaning |
 |------|---------|
 | 0 | The dispatch was booked |
-| 1 | The work package is not in the store |
+| 1 | The work package is not in the store, or the intended root is not an existing directory |
 | 2 | Usage error |
 | 3 | The dispatch is refused, the bound included; nothing was booked |
 

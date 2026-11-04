@@ -80,10 +80,18 @@ def _register_wp_run(wp_commands: argparse._SubParsersAction) -> None:
         help="Record a dispatch on a commenced package, holding the fix-cycle bound",
         description=(
             "Record one dispatch on a commenced work package. The cycle past the\n"
-            "fix-cycle bound is refused whatever was ruled (GHI #1200)."
+            "fix-cycle bound is refused whatever was ruled (GHI #1200). The dispatch\n"
+            "is bound to a minted id and its intended root; put the printed line in\n"
+            "the dispatched agent's prompt (RP-12 rulings 1 and 35)."
         ),
         epilog=build_epilog(
-            ["gz wp dispatch WP-01-x --role Implementer --model sonnet --req REQ-1"]
+            [
+                "gz wp dispatch WP-01-x --role Implementer --model sonnet --req REQ-1",
+                (
+                    "gz wp dispatch WP-01-x --role Implementer --model sonnet --req REQ-1 "
+                    "--root ../scratch"
+                ),
+            ]
         ),
     )
     p_dispatch.add_argument("work_package", help="The work package's id, WP-<NN>-<slug>")
@@ -98,6 +106,11 @@ def _register_wp_run(wp_commands: argparse._SubParsersAction) -> None:
         "--issue", type=int, default=None, help="The carried issue dispatched against"
     )
     p_dispatch.add_argument("--reason", default=None, help="Why the run is single-driver")
+    p_dispatch.add_argument(
+        "--root",
+        default=None,
+        help="The project root the dispatch is for; defaults to this project's",
+    )
     add_json_flag(p_dispatch)
     p_dispatch.set_defaults(
         func=lambda a: _lazy("wp_dispatch_cmd")(
@@ -108,6 +121,7 @@ def _register_wp_run(wp_commands: argparse._SubParsersAction) -> None:
                 "req": a.req,
                 "issue": a.issue,
                 "reason": a.reason,
+                "root": a.root,
             },
             as_json=a.as_json,
         )

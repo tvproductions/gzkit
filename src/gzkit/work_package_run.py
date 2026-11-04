@@ -32,7 +32,10 @@ the case they exist for. Their self-test is `ledger_producer_probe`. The positio
 is a read of the ledger and refuses nothing, so it is on at all three.
 """
 
+import re
+import secrets
 from itertools import starmap
+from pathlib import PurePosixPath
 from typing import TYPE_CHECKING, NoReturn, get_args
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -68,6 +71,10 @@ _REQ_EXITS = frozenset({"reopen", "departure"})
 _STOPPING_EXITS = frozenset({"reopen", "terminate"})
 _IN_FLIGHT = frozenset({"commenced", "accepted"})
 _DISPATCHED = "work_package_dispatched"
+DISPATCH_LINE_PREFIX = "GZKIT-DISPATCH: "
+_DISPATCH_LINE = re.compile(
+    rf"^{re.escape(DISPATCH_LINE_PREFIX)}(D-[0-9a-f]{{16}})\s*$", re.MULTILINE
+)
 _HISTORY_EVENTS = frozenset(
     {
         "work_package_transitioned",
@@ -91,6 +98,19 @@ class DispatchRequest(BaseModel):
     req: str | None = Field(None, description="The frozen REQ dispatched against")
     issue: int | None = Field(None, description="The carried issue dispatched against")
     reason: str | None = Field(None, description="Why the run is single-driver")
+    root: str = Field(..., description="The absolute project root the dispatch is for")
+
+
+class DispatchRecord(BaseModel):
+    """What the ledger says one dispatch may do (RP-12 ruling 1)."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    dispatch_id: str = Field(..., description="The id the runtime minted")
+    work_package: str = Field(..., description="The work package's id")
+    role: str = Field(..., description="The position dispatched")
+    subject: str = Field(..., description="The subject dispatched against")
+    intended_root: str = Field(..., description="The absolute project root the dispatch is for")
 
 
 class BlockRequest(BaseModel):
@@ -329,6 +349,8 @@ def record_work_package_dispatch(
     subject = _dispatch_subject(ledger, package, request)
     if is_blocked(ledger, package.id):
         _refuse(f"Work package {package.id} is blocked on the operator; it takes no dispatch.")
+    if not PurePosixPath(request.root).is_absolute():
+        _refuse(f"A dispatch's intended root is an absolute path; {request.root!r} is not.")
     if request.role in _IMPLEMENTING:
         _check_not_stopped(ledger, package)
         rows = [*_dispatch_rows(ledger), (package.id, subject, request.role)]
@@ -346,10 +368,53 @@ def record_work_package_dispatch(
             "model": request.model.strip(),
             "subject": subject,
             "reason": request.reason,
+            "dispatch_id": f"D-{secrets.token_hex(8)}",
+            "intended_root": request.root,
         }
     )
     ledger.append(ledger_row(event))
     return event
+
+
+def dispatch_line(dispatch_id: str) -> str:
+    """Compose the line the runtime puts in a dispatched agent's prompt (ruling 35).
+
+    Returns:
+        The line, which the stamp hook reads from the subagent's first record.
+
+    """
+    return f"{DISPATCH_LINE_PREFIX}{dispatch_id}"
+
+
+def read_dispatch_id(prompt: str) -> str | None:
+    """Read the one dispatch a prompt names.
+
+    Returns:
+        The dispatch id, or None when the prompt names none or two different ones.
+
+    """
+    named = set(_DISPATCH_LINE.findall(prompt))
+    return named.pop() if len(named) == 1 else None
+
+
+def find_dispatch(ledger: Ledger, dispatch_id: str) -> DispatchRecord | None:
+    """Read what the ledger says one dispatch may do.
+
+    Returns:
+        The dispatch's record, or None when no row carries that id.
+
+    """
+    for row in ledger.query(event_type=_DISPATCHED):
+        held = row.extra
+        if held.get("dispatch_id") == dispatch_id and held.get("intended_root"):
+            return DispatchRecord(
+                dispatch_id=dispatch_id,
+                work_package=str(held["work_package"]),
+                role=str(held["role"]),
+                subject=str(held["subject"]),
+                intended_root=str(held["intended_root"]),
+            )
+    return None
 
 
 def _settled(ledger: Ledger, work_package: str) -> tuple[set[str], set[str]]:

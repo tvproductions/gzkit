@@ -12,6 +12,7 @@ from unittest.mock import patch
 
 from gzkit.cli import main
 from gzkit.work_package_ledger import WorkPackageLedgerError
+from gzkit.work_package_run import read_dispatch_id
 from tests.commands.common import CliRunner, _quick_init
 
 _PACKAGE = "WP-01-loop"
@@ -119,6 +120,29 @@ class TestRunVerbs(unittest.TestCase):
         self.assertEqual(self.runner.invoke(main, args).exit_code, 0)
         self.assertEqual(_rows("work_package_unblocked")[0]["ruling"], "go on")
         self.assertEqual(self._dispatch("SpecReviewer"), 0)
+
+    def test_the_intended_root_defaults_to_this_project_and_the_line_names_the_dispatch(
+        self,
+    ) -> None:
+        args = ["wp", "dispatch", _PACKAGE, "--role", "Implementer", "--model", "m"]
+        result = self.runner.invoke(main, [*args, "--issue", "1200"])
+        self.assertEqual(result.exit_code, 0, msg=result.output)
+        (row,) = _rows("work_package_dispatched")
+        self.assertEqual(row["intended_root"], Path.cwd().resolve().as_posix())
+        self.assertEqual(read_dispatch_id(result.output), row["dispatch_id"])
+
+    def test_a_named_root_reaches_the_ledger_and_a_missing_one_exits_1(self) -> None:
+        scratch = Path("scratch")
+        scratch.mkdir()
+        args = ["wp", "dispatch", _PACKAGE, "--role", "Implementer", "--model", "m"]
+        named = self.runner.invoke(main, [*args, "--issue", "1200", "--root", "scratch"])
+        self.assertEqual(named.exit_code, 0, msg=named.output)
+        self.assertEqual(
+            _rows("work_package_dispatched")[0]["intended_root"], scratch.resolve().as_posix()
+        )
+        missing = self.runner.invoke(main, [*args, "--issue", "1200", "--root", "nowhere"])
+        self.assertEqual(missing.exit_code, 1, msg=missing.output)
+        self.assertEqual(len(_rows("work_package_dispatched")), 1)
 
     def test_the_operator_is_never_defaulted(self) -> None:
         self.assertEqual(self._block(), 0)

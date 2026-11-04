@@ -1868,7 +1868,9 @@ class WorkPackageDispatchedEvent(_EventBase):
 
     Written only by ``gzkit.work_package_run.record_work_package_dispatch``, which
     counts fix cycles from these rows and refuses the cycle past the bound
-    (GHI #1200). ``id`` is the work package id.
+    (GHI #1200). ``id`` is the work package id. Since RP-12 ruling 1 every new
+    row carries the minted ``dispatch_id`` and the ``intended_root``; rows booked
+    before it carry neither, so both are optional on replay.
     """
 
     event: Literal["work_package_dispatched"]
@@ -1877,6 +1879,12 @@ class WorkPackageDispatchedEvent(_EventBase):
     model: str = Field(..., min_length=1, description="The model tier")
     subject: str = Field(..., min_length=1, description="REQ-<n>@<rev> or #<issue>, as counted")
     reason: str | None = Field(None, description="Why the run is single-driver")
+    dispatch_id: str | None = Field(
+        None, min_length=1, description="The id the runtime minted, D-<16 hex>"
+    )
+    intended_root: str | None = Field(
+        None, min_length=1, description="The absolute project root the dispatch is for"
+    )
 
 
 class WorkPackageBlockedEvent(_EventBase):
