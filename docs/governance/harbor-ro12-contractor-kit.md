@@ -62,6 +62,17 @@ The issue's acceptance cases, unchanged by ruling, are requirements of this orde
 
 Each is shown by a test that fails if the guard is removed, and one of the three against a real dispatched subagent. The harness facts are in the contract's § Rulings of 2026-11-02. #1296 closes as superseded by this section, which is the requirement's one home (operator, 2026-11-03, verbatim: *"A"*); the guard itself is not yet built.
 
+## Mode Contract
+
+Ruling 28, stated here under `.gzkit/rules/mode-contract.md` until RP-13's F1 builds the declaration shapes. No kit control calls the checkpoint's demotion or joins its group entry.
+
+| Control | Operational | Hangar | Drydock | (M) bypass | Self-test | Accepted |
+|---|---|---|---|---|---|---|
+| Refusals 1 to 9 (the witness floor) | on | on | on | none; a hold is released by its resolver (ruling 13) | its red refusal test, re-run by `gz check` when touched | not yet, until its dock trial's red witness is inspected (rulings 18, 27) |
+| The hook stamp (ruling 17) | on | on | on | none | the stamp test against a real dispatched subagent | as above |
+| The term witness (ruling 21) | on | on | on | none | a persona fixture carrying a rejected synonym | as above |
+| The documents-gate replay (ruling 19) | on | on | on | none | a handoff fixture omitting a hung tag | as above |
+
 ## Rulings
 
 1. **A position is told by its dispatch record** (operator, by selection: *"Dispatch record (Recommended)"*). The runtime mints a dispatch id on `work_package_dispatched`, bound to the position, the subject and the intended root, and puts it in the prompt it composes. A position-bound verb requires the id and refuses by what the ledger says that dispatch may do. Hooks record `agent_id` beside it where the harness gives one. The limit stands in the open: the id can be copied, so it stops mistakes and shortcuts and not forgery, as with a typed name. Put to the operator: A, this; B, harness identity in hooks, which leaves Codex sessions without the refusals; C, a typed position.
