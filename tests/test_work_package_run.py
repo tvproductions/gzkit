@@ -778,7 +778,15 @@ class DispatchRecord(_Run):
                 )
 
     def test_an_absolute_root_of_either_platform_is_booked_in_one_form(self) -> None:
-        for root, booked in (("/a/b/", "/a/b"), ("C:/work/x", "C:/work/x"), ("C:\\w\\x", "C:/w/x")):
+        for root, booked in (
+            ("/a/b/", "/a/b"),
+            ("C:/work/x", "C:/work/x"),
+            ("C:\\w\\x", "C:/w/x"),
+            ("\\\\server\\share", "//server/share"),
+            ("//server/share/dir/", "//server/share/dir"),
+            ("C:/", "C:/"),
+            ("/", "/"),
+        ):
             with self.subTest(root=root):
                 event = record_work_package_dispatch(self.catalog, self.ledger, self._request(root))
                 self.assertEqual(event.intended_root, booked)

@@ -347,7 +347,9 @@ def _intended_root(root: str) -> str:
     path = windows if windows.drive else PurePosixPath(root.strip())
     if not root.strip() or not path.is_absolute() or ".." in path.parts:
         _refuse(f"A dispatch's intended root is an absolute, normal path; {root!r} is not.")
-    return path.as_posix()
+    text = path.as_posix()
+    # A bare UNC share renders with a trailing slash; a drive or POSIX root keeps its own.
+    return text.rstrip("/") if path.drive.startswith(("\\\\", "//")) else text
 
 
 def record_work_package_dispatch(
