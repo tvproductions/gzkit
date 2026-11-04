@@ -93,7 +93,7 @@ never a fabricated failure. Evidence is bound to the REQ's revision and the comm
 a behaviour-changing revision resets the affected claims to `UNKNOWN` until revalidated ("a prior
 pass at commit B does not prove commit C"). *Amended 2026-11-03* (§ 12): a change to the obligation
 is not a revision. A remodel revises forward into a new REQ that supersedes the prior, and the prior
-REQ stays whole with its evidence. What `revision` still counts is open. A deferral or exclusion is a scope disposition with an
+REQ stays whole with its evidence. *Amended 2026-11-04* ([RP-12 ruling 31](../harbor-ro12-contractor-kit.md#rulings), operator: *"A"*): `revision` counts editorial amendments only, wording or criteria clarified with the obligation unchanged, each with its approver, and a revision never resets proof; a change a test asserting the prior statement would fail against is a new REQ carrying `supersedes`. The resetting rule above is retired. A deferral or exclusion is a scope disposition with an
 approver and a revisit condition, never a satisfaction result.
 
 ### 5. Dependencies
@@ -293,8 +293,8 @@ design REQ it aligns to. Proof runs one path. Which fields and how they are decl
 
 A remodel revises forward: the new REQ carries a `supersedes` link and the prior is never edited
 (operator: *"we don't change a req with a model as much as we supersede it"*; *"yes, A and it is
-cleaner and addresses the discussion of revision - we revise forward into a new req."*). What
-`revision` still counts once an obligation's change makes a new REQ is open. MX work advances
+cleaner and addresses the discussion of revision - we revise forward into a new req."*). `revision`
+counts editorial amendments only and never resets proof (RP-12 ruling 31, 2026-11-04). MX work advances
 patches through the patch release skill, not one patch per item.
 
 ## Family schemes — the candidates, as drafted for selection
