@@ -11,6 +11,7 @@ from typing import Literal, get_args, get_origin
 from pydantic import BaseModel, ValidationError
 
 from gzkit.events import (
+    DISPATCH_ID_PATTERN,
     AcceptanceRecordedEvent,
     AdrAnnotatedEvent,
     AdrCreatedEvent,
@@ -761,6 +762,16 @@ class TestUnownedRatchetUpdatedOwningArm(unittest.TestCase):
         }
         event = parse_typed_event(payload)
         self.assertNotIn("section", event.extra)
+
+    def test_the_schema_types_the_dispatch_record_fields(self) -> None:
+        """RP-12 ruling 1: the dispatch id and intended root are typed on disk,
+        nullable and not required, since rows booked before the ruling lack them."""
+        entry = load_schema("ledger")["events"]["work_package_dispatched"]
+        for field in ("dispatch_id", "intended_root"):
+            with self.subTest(field=field):
+                self.assertEqual(entry["properties"][field]["type"], ["string", "null"])
+                self.assertNotIn(field, entry["required"])
+        self.assertEqual(entry["properties"]["dispatch_id"]["pattern"], f"^{DISPATCH_ID_PATTERN}$")
 
     def test_the_schema_declares_every_owning_field_the_model_carries(self) -> None:
         """A field the model carries and the schema does not is a field the

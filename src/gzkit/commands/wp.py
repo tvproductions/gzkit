@@ -32,7 +32,12 @@ from gzkit.acceptance_store import (
 )
 from gzkit.cli.formatters import OutputFormatter
 from gzkit.commands.common import ensure_initialized, get_project_root
-from gzkit.core.exceptions import PolicyBreachError, ResourceNotFoundError, TransientError
+from gzkit.core.exceptions import (
+    PolicyBreachError,
+    ResourceNotFoundError,
+    TransientError,
+    ValidationError,
+)
 from gzkit.events import BaselinedReq
 from gzkit.governance.trust_audits.catalog import footprint_breaches
 from gzkit.ledger import Ledger
@@ -638,11 +643,16 @@ def wp_dispatch_cmd(*, fields: dict[str, object], as_json: bool) -> None:
     Raises:
         PolicyBreachError: The dispatch is refused, the bound included; nothing is booked.
         ResourceNotFoundError: The intended root is not an existing directory.
+        ValidationError: ``--root`` was given empty.
 
     """
     root, catalog, ledger = _context()
     _held(catalog, str(fields["work_package"]))
-    intended = Path(str(fields.get("root") or root)).expanduser().resolve()
+    named = fields.get("root")
+    if named is not None and not str(named).strip():
+        msg = "--root names a directory; it is empty. Omit it to dispatch for this project."
+        raise ValidationError(msg)
+    intended = Path(str(root if named is None else named)).expanduser().resolve()
     if not intended.is_dir():
         msg = f"The intended root {intended.as_posix()} is not an existing directory."
         raise ResourceNotFoundError(msg)

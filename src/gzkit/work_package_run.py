@@ -35,12 +35,13 @@ is a read of the ledger and refuses nothing, so it is on at all three.
 import re
 import secrets
 from itertools import starmap
-from pathlib import PurePosixPath
+from pathlib import PurePosixPath, PureWindowsPath
 from typing import TYPE_CHECKING, NoReturn, get_args
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.events import (
+    DISPATCH_ID_PATTERN,
     WorkPackageBlockedEvent,
     WorkPackageDispatchedEvent,
     WorkPackageExit,
@@ -73,7 +74,7 @@ _IN_FLIGHT = frozenset({"commenced", "accepted"})
 _DISPATCHED = "work_package_dispatched"
 DISPATCH_LINE_PREFIX = "GZKIT-DISPATCH: "
 _DISPATCH_LINE = re.compile(
-    rf"^{re.escape(DISPATCH_LINE_PREFIX)}(D-[0-9a-f]{{16}})\s*$", re.MULTILINE
+    rf"^{re.escape(DISPATCH_LINE_PREFIX)}({DISPATCH_ID_PATTERN})\s*$", re.MULTILINE
 )
 _HISTORY_EVENTS = frozenset(
     {
@@ -332,6 +333,23 @@ def _check_not_stopped(ledger: Ledger, package: WorkPackage) -> None:
             )
 
 
+def _intended_root(root: str) -> str:
+    """Read a dispatch's root as one absolute, normal, forward-slash path.
+
+    A root is absolute on either platform, a drive-rooted Windows path or a
+    POSIX one, so a dispatch booked on one host reads the same on another.
+
+    Returns:
+        The root, forward-slashed and without a trailing slash.
+
+    """
+    windows = PureWindowsPath(root.strip())
+    path = windows if windows.drive else PurePosixPath(root.strip())
+    if not root.strip() or not path.is_absolute() or ".." in path.parts:
+        _refuse(f"A dispatch's intended root is an absolute, normal path; {root!r} is not.")
+    return path.as_posix()
+
+
 def record_work_package_dispatch(
     catalog: Catalog, ledger: Ledger, request: DispatchRequest
 ) -> WorkPackageDispatchedEvent:
@@ -349,8 +367,7 @@ def record_work_package_dispatch(
     subject = _dispatch_subject(ledger, package, request)
     if is_blocked(ledger, package.id):
         _refuse(f"Work package {package.id} is blocked on the operator; it takes no dispatch.")
-    if not PurePosixPath(request.root).is_absolute():
-        _refuse(f"A dispatch's intended root is an absolute path; {request.root!r} is not.")
+    intended_root = _intended_root(request.root)
     if request.role in _IMPLEMENTING:
         _check_not_stopped(ledger, package)
         rows = [*_dispatch_rows(ledger), (package.id, subject, request.role)]
@@ -369,7 +386,7 @@ def record_work_package_dispatch(
             "subject": subject,
             "reason": request.reason,
             "dispatch_id": f"D-{secrets.token_hex(8)}",
-            "intended_root": request.root,
+            "intended_root": intended_root,
         }
     )
     ledger.append(ledger_row(event))

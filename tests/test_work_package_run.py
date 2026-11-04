@@ -762,15 +762,26 @@ class DispatchRecord(_Run):
         self.assertEqual(first["intended_root"], self.root.as_posix())
         self.assertEqual((first["role"], first["subject"]), ("Implementer", "REQ-1@2"))
 
-    def test_a_relative_intended_root_is_refused_and_books_nothing(self) -> None:
-        request = DispatchRequest(
-            work_package=_FIRST, role="Implementer", model="m", req="REQ-1", root="sandbox"
+    def _request(self, root: str) -> DispatchRequest:
+        return DispatchRequest(
+            work_package=_FIRST, role="SpecReviewer", model="m", req="REQ-1", root=root
         )
-        self._refused(
-            "absolute",
-            "work_package_dispatched",
-            lambda: record_work_package_dispatch(self.catalog, self.ledger, request),
-        )
+
+    def test_an_intended_root_that_is_not_absolute_and_normal_is_refused(self) -> None:
+        for root in ("sandbox", "C:x", " ", "/a/../b", "C:/a/../b"):
+            with self.subTest(root=root):
+                request = self._request(root)
+                self._refused(
+                    "intended root",
+                    "work_package_dispatched",
+                    lambda r=request: record_work_package_dispatch(self.catalog, self.ledger, r),
+                )
+
+    def test_an_absolute_root_of_either_platform_is_booked_in_one_form(self) -> None:
+        for root, booked in (("/a/b/", "/a/b"), ("C:/work/x", "C:/work/x"), ("C:\\w\\x", "C:/w/x")):
+            with self.subTest(root=root):
+                event = record_work_package_dispatch(self.catalog, self.ledger, self._request(root))
+                self.assertEqual(event.intended_root, booked)
 
     def test_a_dispatch_is_found_by_its_id_and_an_unknown_id_finds_none(self) -> None:
         event = self._dispatch("Implementer")

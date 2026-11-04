@@ -2519,6 +2519,20 @@
             "string",
             "null"
           ]
+        },
+        "dispatch_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^D-[0-9a-f]{16}$"
+        },
+        "intended_root": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "min_length": 1
         }
       }
     },

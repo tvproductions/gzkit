@@ -1863,6 +1863,10 @@ class WorkPackageIssueClosedEvent(_EventBase):
     reviewer: str = Field(..., min_length=1, description="The reviewer who confirmed the fix")
 
 
+#: A dispatch id as the runtime mints it (RP-12 ruling 1): ``D-`` and 16 hex digits.
+DISPATCH_ID_PATTERN = "D-[0-9a-f]{16}"
+
+
 class WorkPackageDispatchedEvent(_EventBase):
     """work_package_dispatched event — one role dispatched on a commenced package (RO-14).
 
@@ -1880,7 +1884,7 @@ class WorkPackageDispatchedEvent(_EventBase):
     subject: str = Field(..., min_length=1, description="REQ-<n>@<rev> or #<issue>, as counted")
     reason: str | None = Field(None, description="Why the run is single-driver")
     dispatch_id: str | None = Field(
-        None, min_length=1, description="The id the runtime minted, D-<16 hex>"
+        None, pattern=f"^{DISPATCH_ID_PATTERN}$", description="The id the runtime minted"
     )
     intended_root: str | None = Field(
         None, min_length=1, description="The absolute project root the dispatch is for"

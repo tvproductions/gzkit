@@ -142,6 +142,8 @@ class TestRunVerbs(unittest.TestCase):
         )
         missing = self.runner.invoke(main, [*args, "--issue", "1200", "--root", "nowhere"])
         self.assertEqual(missing.exit_code, 1, msg=missing.output)
+        blank = self.runner.invoke(main, [*args, "--issue", "1200", "--root", ""])
+        self.assertEqual(blank.exit_code, 1, msg=blank.output)
         self.assertEqual(len(_rows("work_package_dispatched")), 1)
 
     def test_the_operator_is_never_defaulted(self) -> None:

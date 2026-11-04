@@ -60,8 +60,9 @@ names it. Put that line in the dispatched agent's prompt. The stamp hook reads i
 from the subagent's own transcript to learn which dispatch, and so which root, a
 subagent's `gz` command belongs to (rulings 17, 34 and 35). A dispatch meant for
 another project, a throwaway one included, names it with `--root`. A relative
-root is resolved against the current directory, and a root that is not an
-existing directory exits 1 and books nothing.
+root is resolved against the current directory; an empty `--root`, or a root that
+is not an existing directory, exits 1 and books nothing. The root is booked as one
+absolute path with forward slashes, a drive-rooted Windows path included.
 
 ## Examples
 
@@ -94,7 +95,7 @@ and take an exit: reopen, departure, hold, terminate.
 | Code | Meaning |
 |------|---------|
 | 0 | The dispatch was booked |
-| 1 | The work package is not in the store, or the intended root is not an existing directory |
+| 1 | The work package is not in the store, or the intended root is empty or not an existing directory |
 | 2 | Usage error |
 | 3 | The dispatch is refused, the bound included; nothing was booked |
 

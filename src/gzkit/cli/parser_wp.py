@@ -87,10 +87,7 @@ def _register_wp_run(wp_commands: argparse._SubParsersAction) -> None:
         epilog=build_epilog(
             [
                 "gz wp dispatch WP-01-x --role Implementer --model sonnet --req REQ-1",
-                (
-                    "gz wp dispatch WP-01-x --role Implementer --model sonnet --req REQ-1 "
-                    "--root ../scratch"
-                ),
+                "gz wp dispatch WP-01-x --role Implementer --model m --issue 1 --root ../tmp",
             ]
         ),
     )
