@@ -71,6 +71,24 @@ The issue's acceptance cases, unchanged by ruling, are requirements of this pack
 
 Each is shown by a test that fails if the guard is removed, and one of the three against a real dispatched subagent. The harness facts are in the contract's § Rulings of 2026-11-02. #1296 closes as superseded by this section, which is the requirement's one home (operator, 2026-11-03, verbatim: *"A"*); the guard itself is not yet built.
 
+### The Bash `updatedInput` probe, measured 2026-11-04
+
+O1's first task, the probe ruling 17 carries (a dated record; Claude Code 2.1.317, headless `claude -p` in a throwaway git project, never the live checkout). A `PreToolUse` hook on `Bash` logged every payload and, only where the payload carried `agent_id`, returned `hookSpecificOutput.updatedInput` with the command prefixed by a stamp: `export GZ_PROBE_ROOT=/probe/intended GZ_PROBE_DISPATCH=d-<agent_id>;` and a space (runs 1 to 6), or the bare assignments `GZ_PROBE_ROOT=… GZ_PROBE_DISPATCH=…` and a space (run 7). The `d-<agent_id>` value is the probe's own; under rulings 1 and 17 the stamped dispatch id is the one the runtime minted on `work_package_dispatched`, read from the ledger, never derived from `agent_id`. In each run one dispatched `general-purpose` subagent ran the command named below; in runs 1, 2, 5 and 7 the main session also ran one.
+
+| Run | Hook output | Permissions | Observed |
+|---|---|---|---|
+| 1 | `updatedInput` and `permissionDecision: "allow"` | Bash allowed | main `MAIN:[][]`; subagent `cd /tmp && echo …` printed `SUB:[/probe/intended][d-aa7d9aa8a0c63182e]:/tmp` |
+| 2 | `updatedInput`, no decision | Bash allowed | main `MAIN:[][]`; subagent printed `SUB:[/probe/intended][d-a434d1f2d10838337]:/tmp` |
+| 3 | `updatedInput`, no decision | Bash not allowed, `default` mode | the hook fired on the subagent's call (`agent_id` `a8dcf217470b0b582`, `permission_mode` `default`) and Bash was denied |
+| 4 | `updatedInput` and `allow` | Bash not allowed, `default` mode | subagent printed `SUB:[/probe/intended][d-aa083132794a945ed]:/tmp`: `allow` ran a call the settings refused |
+| 5 | `updatedInput`, no decision | only `Bash(echo:*)`, `default` mode | main `echo` logged, its output outside the captured lines; subagent `echo …` was refused, its approval error naming the rewritten `export GZ_PROBE_ROOT=…` command |
+| 6 | `updatedInput`, no decision | Bash allowed | subagent `python3 -c` printed `CHILD:/probe/intended:d-a00205e9840ae5c84` |
+| 7 | `updatedInput` as bare assignments, no decision | only `Bash(echo:*)` and `Bash(printenv:*)`, `default` mode | main `echo MAIN-OK` ran; subagent `printenv GZ_PROBE_ROOT`: "This command requires approval" |
+
+What it shows. `updatedInput` rewrites a subagent's Bash command; the stamp is in the environment of the command that runs, survives its `cd` (runs 1, 2) and reaches a child process (run 6), as a `uv run gz` verb would be. The subagent payloads carry `agent_id`, as the harness facts of 2026-11-02 said, and, newly observed, `agent_type` and a `cwd` that is the session's, read before the command's `cd` (run 3's payload); the main session's payloads logged in runs 1, 2, 5 and 7 carry no `agent_id`, so its calls take no stamp, case 3 by construction.
+
+What it leaves open for O1, put to the operator. The permission check reads the **rewritten** command. With `allow` (run 4) the stamp approves every stamped call, lowering the operator's permission settings for every subagent; with no decision (runs 5, 7) an allow rule no longer matches, in either prefix form, so every stamped call needs approval, and in a headless or background dispatch it is refused. Ruling 17 as written meets one or the other. Not measured: what an interactive prompt shows and runs once approved; deny-rule matching; multi-line commands; any harness but Claude Code, Codex sessions getting no stamp (ruling 17).
+
 ## Mode Contract
 
 Ruling 28, stated here under `.gzkit/rules/mode-contract.md` until RP-13's F1 builds the declaration shapes. Out of service is one state (ruled 2026-11-03, `safe-mode-doctrine.md` § Out of service and the four levels), hangar and drydock its synonyms, so the table reads two conditions where the mode-contract rule still names three; that rule's re-reading is RP-13's open point in canon. No kit control calls the checkpoint's demotion or joins its group entry.
