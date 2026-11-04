@@ -5,25 +5,25 @@
 > Named `RO-12` until 2026-11-03; `RP-12` replaces it in live text and `RO-12` stays its alias (contract § Rulings of 2026-11-03). The dated rulings below keep the name they were written with.
 
 
-**2026-11-02. Status: draft; its open points are being put to the operator one at a time, and nothing here binds until the operator accepts the page.** Operator: **g0**. Repair order RO-12 of the [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders), placed immediately after RO-5 (operator: *"A"*), with the ruled order RO-5, RO-12, RO-11, RO-4. This is diamond 2 of the [contractor-kit record](../rnd/contractor-kit.md), funded 2026-10-28 (operator: *"fund, yes to 2 and 4"*). The record holds the design and its sources; [`review.md`](../rnd/contractor-kit/review.md) is a view over it. Where this page and the record disagree, the record governs until an amendment here says otherwise.
+**2026-11-02. Status: draft; every open point is ruled (rulings 1 to 28, 2026-11-04), and nothing here binds until the operator accepts the page.** Operator: **g0**. Repair package RP-12 of the [harbor pilotage drydock](harbor-pilotage-candidate-2026-10-15.md#repair-orders), a repair order when this page was opened (the repair strata ruling, 2026-11-03), placed immediately after RP-5 (operator: *"A"*), with the ruled order RP-5, RP-12, RP-11, RP-4. This is diamond 2 of the [contractor-kit record](../rnd/contractor-kit.md), funded 2026-10-28 (operator: *"fund, yes to 2 and 4"*). The record holds the design and its sources; [`review.md`](../rnd/contractor-kit/review.md) is a view over it. Where this page and the record disagree, the record governs until an amendment here says otherwise.
 
-**Ground amended 2026-11-03**: the R&D run `docs/rnd/repair-work-organization.md`, signed off and funded, is this specification's ground. RP-12 lands the order record (work and repair order) with its own id, freeze and inspection, **Gate 5 at the order**, and the repair requirement with its `supersedes` link (requirements model § 12). Ruling 1 stands; open point 2 is re-put in the run's terms. The kit's personas carry the care rule of the maintenance discipline: with the governors off the work still takes care, and running past a disabled limit is a deliberate act of diagnosis or test, noted as such (operator: *"while the governors are disabled don't overrev the engine"*).
+**Ground amended 2026-11-03**: the R&D run `docs/rnd/repair-work-organization.md`, signed off and funded, is this specification's ground. RP-12 lands the order record (work and repair order) with its own id, freeze and inspection, **Gate 5 at the order**, and the repair requirement with its `supersedes` link (requirements model § 12). Ruling 1 stands; open point 2 was re-put in the run's terms and ruled (ruling 2). The kit's personas carry the care rule of the maintenance discipline: with the governors off the work still takes care, and running past a disabled limit is a deliberate act of diagnosis or test, noted as such (operator: *"while the governors are disabled don't overrev the engine"*).
 
 ## Scope
 
-RO-12 lands the governed apparatus for maintenance work: the positions, kept apart by mechanism; the records of what was isolated, done and left outstanding; the inspection independent of the performer; the runtime that drives each act; and the closure a reviewer witnesses. It keys on RO-5's work-package id and extends the runtime RO-14's tranche 1 moved to the work-package surface, as `kind: repair` (RO-14 ruling 4: one runtime, `kind` selecting the procedure).
+RP-12 lands the governed apparatus for maintenance work: the positions, kept apart by mechanism; the records of what was isolated, done and left outstanding; the inspection independent of the performer; the runtime that drives each act; and the closure a reviewer witnesses. It keys on RP-5's work-package id and extends the runtime RP-14's tranche 1 moved to the work-package surface, as `kind: repair` (RP-14 ruling 4: one runtime, `kind` selecting the procedure).
 
 The test for the design inside the drydock is the maintenance discipline, not canon's ceremony. Safe mode suspends canon and does not suspend that discipline (record decisions *the design review is judged from the drydock's side* and *the maintenance discipline is the drydock's own*).
 
-It does not land the two-way mode contract across existing controls, which is RO-13, or `gz obpi`'s removal, which is RO-14's tranche 3. The pipeline is carried forward unchanged: lessons cross each way as GHIs.
+It does not land the two-way mode contract across existing controls, which is RP-13, or `gz obpi`'s removal, which is RP-14's tranche 3. The pipeline is carried forward unchanged: lessons cross each way as GHIs.
 
 ## Carried from the record, not re-ruled
 
 - **Positions.** The operator, always the commander (A1). The coordinator, the operator-facing session, which performs no work and holds the Authorizing Officer duty (A3). One craftsman persona in two positions, repair and restoration (A4, A6). The Quality Assurance Inspector, dispatched by the runtime and never by the coordinator, its findings reaching the operator unedited (A5). The surveillant, dispatched by the operator only (A8).
 - **Records.** The tag-out log of line items, Danger and Caution, each line carrying its removal procedure, written when hung (B6). The maintenance record (B7). The list of discrepancies, graded *blocks return to service* or *due by a named event* (B8). The work package log, a Layer 3 view (B11).
-- **Acts.** Initiation, the operator's, then commencement of work, the coordinator's, once every surface has its tag hung (C1). Three tiers of check, (V), second person, (I), a lower tier never satisfying a higher mark (C3). Stop work, a recorded event with a trigger from a closed list, routed to its resolver (C4). Rework, then a buy-back limited to the finding (C5). Final inspection and acceptance, then closed (C10). Shift turnover (C11). Transfer of custody (C12).
+- **Acts.** Initiation, the operator's, then commencement of work, the coordinator's, once every surface has its tag hung (C1). Three tiers of check, (V), second person, (I), a lower tier never satisfying a higher mark (C3). Stop work, a recorded event with a trigger from a closed list, routed to its resolver (C4). Rework, then a buy-back limited to the finding (C5). Final inspection and acceptance, then closed (C10; final inspection at the order, ruling 14). Shift turnover (C11; its transfer by name amended by rulings 3 and 19). Transfer of custody (C12).
 - **Rules on the work.** One tag-out per surface, overlapping packages in sequence, a second craftsman only on disjoint surfaces. Every line item legible to a worker not involved in the disconnection (JFMM I-13.2.c). A piece found out of its expected position stops restoration (TUM 1.8.5.b(2)). Each position carries its own obligations, and the vocabulary lives once, in the crosswalk.
-- **Model routing.** The pipeline's maps, performers by task-card complexity and the inspector by `REVIEW_MODEL_MAP`, kept current by `frontier-model-card-currency`.
+- **Model routing.** The pipeline's maps, performers by task complexity and the inspector by `REVIEW_MODEL_MAP`, kept current by `frontier-model-card-currency`.
 
 ## Preconditions, as measured 2026-11-02
 
@@ -36,9 +36,11 @@ Read with `gh issue view`, a dated record.
 | #1185 | open | the code repair landed in RO-14 act 6; its exit condition waits on one real package completion |
 | #1296 | open | a requirement of this specification, not a precondition (§ Rulings of 2026-11-02) |
 
+Re-measured 2026-11-04: #1200 and #1185 open, as above; #1296 closed as superseded by § The cwd-escape guard.
+
 ## The witness floor, against what stands today
 
-RO-12 closes only when each refusal has a test showing it refuses. The specification may add to this list and never subtract from it. Measured against `src/gzkit/work_package_run.py`, `src/gzkit/work_package_fence.py` and `src/gzkit/commands/wp.py`.
+RP-12 closes only when each refusal has a test showing it refuses. The specification may add to this list and never subtract from it. Measured against `src/gzkit/work_package_run.py`, `src/gzkit/work_package_fence.py` and `src/gzkit/commands/wp.py`.
 
 | # | The refusal | What stands today |
 |---|---|---|
@@ -50,11 +52,11 @@ RO-12 closes only when each refusal has a test showing it refuses. The specifica
 | 6 | Acceptance with a tag still hung (C10) | Nothing: no tag record exists |
 | 7 | A hangar handoff whose turnover omits a hung tag (C11, ruling 19) | Nothing: `gz-session-handoff` § Shift turnover records that nothing refuses |
 | 8 | A control accepted with no inspected red witness (ruling 18) | Nothing: no red-witness (I) review exists; the MEL's accepted field, RO-13's F1, lands after this order and derives from that review |
-| 9 | A dispatched agent's state-changing command aimed at a root its dispatch did not intend (#1296) | Nothing: observed absent on the dispatch, the agent definitions, the hooks and the hook modules |
+| 9 | A dispatched agent's state-changing command aimed at a root its dispatch did not intend (#1296, ruling 17) | Nothing: observed absent on the dispatch, the agent definitions, the hooks and the hook modules |
 
 ## The cwd-escape guard (#1296)
 
-The issue's acceptance cases, unchanged by ruling, are requirements of this order:
+The issue's acceptance cases, unchanged by ruling, are requirements of this package, landed by O1 (ruling 25):
 
 1. A dispatch meant for a throwaway project whose shell is left at the repo root, running a ledger- or canon-writing `gz` verb, is refused before any write, and the ledger line count is unchanged.
 2. The same verb run where the dispatch intended proceeds (the valid control).
