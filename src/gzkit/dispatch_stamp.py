@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
+    from collections.abc import Callable, Mapping
 
 #: The root the subagent's dispatch intends; present, possibly empty, on every stamped call.
 STAMP_ROOT_ENV = "GZKIT_DISPATCH_ROOT"
@@ -24,18 +24,37 @@ STAMP_ROOT_ENV = "GZKIT_DISPATCH_ROOT"
 STAMP_ID_ENV = "GZKIT_DISPATCH_ID"
 
 
-def stamp_refusal(environ: Mapping[str, str], cwd: Path) -> str | None:
+def _same_directory(intended: Path, real: Path) -> bool:
+    """Compare two roots as directories, not spellings.
+
+    ``samefile`` reads the volume, so a case-folding volume's respelling, a link and
+    a Windows short name all count as the root they name.
+
+    Returns:
+        True when both name one directory; False otherwise, a root that does not
+        exist or cannot be read included, being no directory a verb runs in.
+
+    """
+    try:
+        return intended.samefile(real)
+    except OSError:
+        return False
+
+
+def stamp_refusal(environ: Mapping[str, str], real_root: Callable[[], Path]) -> str | None:
     """Say why a stamped call is refused, or nothing when it may run.
 
     Args:
         environ: The process environment.
-        cwd: The directory the verb runs in, its real project root.
+        real_root: Reads the directory the verb runs in, its real project root;
+            called only for a stamped call, so an unstamped one is unaffected even
+            where that read fails.
 
     Returns:
-        None for an unstamped call, or one whose stamped root is ``cwd`` once both
-        are resolved; otherwise the refusal's message. A stamp naming no root, a
-        subagent with no dispatch record, is refused, and so is a relative one,
-        which no dispatch books.
+        None for an unstamped call, or one whose stamped root is the real root's
+        directory; otherwise the refusal's message. A stamp naming no root, a
+        subagent with no dispatch record, is refused, and so is a root that is not
+        absolute on this host, which no dispatch here books.
 
     """
     if STAMP_ROOT_ENV not in environ:
@@ -46,10 +65,13 @@ def stamp_refusal(environ: Mapping[str, str], cwd: Path) -> str | None:
     if not stamped:
         return f"{lead}, which names no intended root (RP-12 ruling 17)."
     intended = Path(stamped)
-    real = cwd.resolve()
     if not intended.is_absolute():
-        return f"{lead}, whose root {stamped!r} is not absolute (RP-12 ruling 17)."
-    if intended.resolve() != real:
+        return (
+            f"{lead}, whose root {stamped!r} is not an absolute path on this host "
+            "(RP-12 ruling 17)."
+        )
+    real = real_root()
+    if not _same_directory(intended, real):
         return (
             f"{lead}, for {intended.as_posix()}, and this verb runs in {real.as_posix()}. "
             "Run it from the root the dispatch intends (RP-12 ruling 17)."

@@ -167,7 +167,7 @@ def _refused_by_stamp() -> bool:
     """
     from gzkit.commands.common import err_console, get_project_root  # noqa: PLC0415
 
-    refusal = stamp_refusal(os.environ, get_project_root())
+    refusal = stamp_refusal(os.environ, get_project_root)
     if refusal is None:
         return False
     from rich.markup import escape  # noqa: PLC0415

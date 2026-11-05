@@ -3,7 +3,8 @@
 The stamp is two environment variables (ruling 34 has the hook set them on a
 subagent's ``gz`` command). A call carrying the root variable is a subagent's; a
 call without it is the main session's and is never refused (#1296's case 3). The
-real root is the directory the verb runs in, ``get_project_root``'s answer.
+real root is the directory the verb runs in, ``get_project_root``'s answer, read
+only for a stamped call.
 """
 
 import tempfile
@@ -11,6 +12,16 @@ import unittest
 from pathlib import Path
 
 from gzkit.dispatch_stamp import STAMP_ID_ENV, STAMP_ROOT_ENV, stamp_refusal
+
+
+def _never() -> Path:
+    """Stand in for a root that cannot be read, as from a deleted directory.
+
+    Raises:
+        FileNotFoundError: always.
+
+    """
+    raise FileNotFoundError
 
 
 class StampRefusal(unittest.TestCase):
@@ -23,17 +34,19 @@ class StampRefusal(unittest.TestCase):
         self.project.mkdir()
         self.scratch.mkdir()
 
-    def _stamp(self, root: str) -> dict[str, str]:
-        return {STAMP_ROOT_ENV: root, STAMP_ID_ENV: "D-0123456789abcdef"}
+    def _refusal(self, root: str, real: Path) -> str | None:
+        stamp = {STAMP_ROOT_ENV: root, STAMP_ID_ENV: "D-0123456789abcdef"}
+        return stamp_refusal(stamp, lambda: real)
 
     def test_an_unstamped_call_is_the_main_sessions_and_proceeds(self) -> None:
-        self.assertIsNone(stamp_refusal({}, self.project))
+        """Case 3, the root never read: an unreadable one is the verb's own failure."""
+        self.assertIsNone(stamp_refusal({}, _never))
 
     def test_a_stamp_naming_the_real_root_proceeds(self) -> None:
-        self.assertIsNone(stamp_refusal(self._stamp(self.project.as_posix()), self.project))
+        self.assertIsNone(self._refusal(self.project.as_posix(), self.project))
 
     def test_a_stamp_naming_another_root_is_refused(self) -> None:
-        refusal = stamp_refusal(self._stamp(self.scratch.as_posix()), self.project)
+        refusal = self._refusal(self.scratch.as_posix(), self.project)
         self.assertIsNotNone(refusal)
         self.assertIn("D-0123456789abcdef", str(refusal))
 
@@ -41,16 +54,19 @@ class StampRefusal(unittest.TestCase):
         """Ruling 17: a subagent with no dispatch record is stamped with no root."""
         for empty in ("", "  "):
             with self.subTest(root=empty):
-                self.assertIsNotNone(stamp_refusal(self._stamp(empty), self.project))
+                self.assertIsNotNone(self._refusal(empty, self.project))
 
     def test_a_relative_stamp_root_is_refused(self) -> None:
-        self.assertIsNotNone(stamp_refusal(self._stamp("project"), self.base))
+        self.assertIsNotNone(self._refusal("project", self.base))
+
+    def test_a_stamped_root_that_does_not_exist_is_refused(self) -> None:
+        self.assertIsNotNone(self._refusal((self.base / "gone").as_posix(), self.project))
 
     def test_a_subdirectory_of_the_intended_root_is_another_root(self) -> None:
         """A verb's root is its directory, so a subdirectory books into another project."""
         inner = self.project / "inner"
         inner.mkdir()
-        self.assertIsNotNone(stamp_refusal(self._stamp(self.project.as_posix()), inner))
+        self.assertIsNotNone(self._refusal(self.project.as_posix(), inner))
 
     def test_both_sides_are_resolved_before_comparing(self) -> None:
         """A link to the intended root is the intended root, and a link elsewhere is not."""
@@ -59,9 +75,18 @@ class StampRefusal(unittest.TestCase):
             link.symlink_to(self.project, target_is_directory=True)
         except OSError as exc:  # Windows without the symlink privilege
             self.skipTest(f"no symlink here: {exc}")
-        self.assertIsNone(stamp_refusal(self._stamp(link.as_posix()), self.project))
-        self.assertIsNone(stamp_refusal(self._stamp(self.project.as_posix()), link))
-        self.assertIsNotNone(stamp_refusal(self._stamp(link.as_posix()), self.scratch))
+        self.assertIsNone(self._refusal(link.as_posix(), self.project))
+        self.assertIsNone(self._refusal(self.project.as_posix(), link))
+        self.assertIsNotNone(self._refusal(link.as_posix(), self.scratch))
+
+    def test_a_root_spelled_in_another_case_is_the_same_directory_where_case_folds(
+        self,
+    ) -> None:
+        """A case-insensitive volume keeps the case typed, so the spelling is not the root."""
+        respelled = self.base / "PROJECT"
+        if not respelled.is_dir():
+            self.skipTest("this volume is case-sensitive")
+        self.assertIsNone(self._refusal(respelled.as_posix(), self.project))
 
 
 if __name__ == "__main__":
