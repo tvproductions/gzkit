@@ -142,7 +142,7 @@ class WhatIsStamped(_Session):
 
     def test_a_subagent_command_naming_no_gz_passes_untouched(self) -> None:
         """Ruling 34: its allow rules keep matching."""
-        for command in ("echo hi", "ls src/gzkit", "gzip -d x.gz", "cat docs/gz.md"):
+        for command in ("echo hi", "ls src/gzkit/", "gzip -d x.gz", "cat docs/gz-notes.md"):
             with self.subTest(command=command):
                 self.assertIsNone(stamp_hook_output(self._payload(command), self.project))
 
@@ -159,8 +159,18 @@ class WhatIsStamped(_Session):
             "uv run -m gzkit justify x",
             "(gz status)",
             "echo; gz test",
+            ".venv/bin/gz status",
+            "/x/.venv/bin/gz status",
+            "./.venv/bin/gzkit",
+            "$HOME/bin/gz",
+            "\\gz status",
+            "gz>out.txt",
+            "gz<in",
+            "python -m gzkit.cli.main status",
+            "python -c 'from gzkit.cli.main import main; main()'",
+            "GZ status",
         )
-        unnamed = ("ls src/gzkit", "gzip f", "zgz", "cat gz-notes", "git log", "echo $GZ")
+        unnamed = ("ls src/gzkit/", "gzip f", "zgz", "cat gz-notes", "git log", "echo $GZIP")
         for command in named:
             with self.subTest(named=command):
                 self.assertTrue(names_gz(command))
@@ -242,6 +252,25 @@ class NoRootIsStamped(_Session):
         prefix = output["hookSpecificOutput"]["updatedInput"]["command"].removesuffix("gz status")
         self.assertEqual(_environment_of(prefix)[STAMP_ROOT_ENV], "")
 
+    def test_a_first_record_that_is_not_the_prompt(self) -> None:
+        self._book()
+        self._prompt(f"GZKIT-DISPATCH: {_DISPATCH}")
+        path = self.subagents / f"agent-{_AGENT}.jsonl"
+        record = json.loads(path.read_text(encoding="utf-8").splitlines()[0])
+        record["type"] = "assistant"
+        path.write_text(json.dumps(record) + "\n", encoding="utf-8")
+        self._assert_no_root()
+
+    def test_a_dispatch_booked_twice_with_different_roots(self) -> None:
+        """Ids are minted unique; a ledger that disagrees with itself names no root."""
+        self._book()
+        first = self.intended
+        self.intended = first.parent / "other"
+        self.intended.mkdir()
+        self._book()
+        self._prompt(f"GZKIT-DISPATCH: {_DISPATCH}")
+        self._assert_no_root()
+
     def test_an_unreadable_ledger(self) -> None:
         self._prompt(f"GZKIT-DISPATCH: {_DISPATCH}")
         self.ledger.write_text("{broken\n", encoding="utf-8")
@@ -294,6 +323,18 @@ class TheGeneratedHook(_Session):
 
     def test_the_hook_prints_nothing_for_the_main_session(self) -> None:
         self.assertEqual(self._run_hook(self._payload("gz status", agent=None)), "")
+
+    def test_the_fail_closed_path_leaves_the_main_session_alone(self) -> None:
+        payload = self._payload("gz status", agent=None)
+        self.assertEqual(self._run_hook(payload, shadow_gzkit=True), "")
+
+    def test_the_ledger_is_the_project_dirs_not_the_calls_cwd(self) -> None:
+        """The dispatch was booked in the coordinator's project, whatever the shell's cwd."""
+        self._book()
+        self._prompt(f"GZKIT-DISPATCH: {_DISPATCH}")
+        payload = {**self._payload("gz status"), "cwd": self.intended.as_posix()}
+        stamp = _environment_of(self._prefix(self._run_hook(payload), "gz status"))
+        self.assertEqual(stamp[STAMP_ROOT_ENV], self.intended.as_posix())
 
     def test_the_hook_fails_closed_when_gzkit_cannot_load(self) -> None:
         """Ruling 35: a breakage shows as refusals, never as an unstamped call."""

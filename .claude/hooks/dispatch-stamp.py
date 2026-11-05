@@ -52,15 +52,15 @@ def _no_root(payload: dict) -> dict | None:
 def main() -> None:
     try:
         payload = json.load(sys.stdin)
-    except json.JSONDecodeError, OSError:
+    except json.JSONDecodeError, UnicodeDecodeError, OSError:
         sys.exit(0)  # no payload, no command to stamp
     if not isinstance(payload, dict):
         sys.exit(0)
 
-    root = Path(os.environ.get("CLAUDE_PROJECT_DIR") or payload.get("cwd") or ".")
     try:
         from gzkit.dispatch_stamp import stamp_hook_output  # noqa: PLC0415
 
+        root = Path(os.environ.get("CLAUDE_PROJECT_DIR") or str(payload.get("cwd") or "."))
         output = stamp_hook_output(payload, root)
     except Exception:  # fail closed: stamp no root
         output = _no_root(payload)

@@ -13,8 +13,8 @@ Current hook surface in gzkit:
   PreToolUse (`Bash`) hook that stamps a subagent's `gz` command
   with the root its dispatch intends, read from the subagent's own
   transcript and the ledger, so `gz` refuses it anywhere else; no
-  permission decision, fail-closed to a no-root stamp, on at every
-  mode level (RP-12 rulings 17, 34, 35).
+  permission decision, a no-root stamp when gzkit or the decision
+  fails, on at every mode level (RP-12 rulings 17, 34, 35).
 - `prefer-lsp.py`
   PreToolUse (`Grep|Bash|PowerShell`) hook that denies the first
   text search for a Python symbol in a session and points at the

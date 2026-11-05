@@ -111,17 +111,20 @@ def consume_stamp(environ: MutableMapping[str, str]) -> None:
         environ.pop(name, None)
 
 
-# A ``gz`` or ``gzkit`` word, bounded by the shell's own separators and quotes.
+# A ``gz`` or ``gzkit`` word, bounded by the shell's separators, quotes and
+# redirections, a path's last part (``.venv/bin/gz``) or a module's first
+# (``gzkit.cli``), in any case, since a case-folding volume runs ``GZ``.
 # Over-matching is the safe error: a stamped call only waits for approval.
-_GZ_WORD = re.compile(r"""(?:^|[\s;&|()`"'])(?:gz|gzkit)(?=$|[\s;&|()`"'])""")
+_GZ_WORD = re.compile(r"""(?:^|[\s;&|()`"'/\\=])(?:gz|gzkit)(?=$|[\s;&|()`"'<>.])""", re.IGNORECASE)
 
 
 def names_gz(command: str) -> bool:
     """Say whether a Bash command names ``gz`` or ``gzkit`` (ruling 34).
 
     Returns:
-        True when either word stands as a word of the command; a path, a flag or
-        a longer word containing it is not one.
+        True when either word stands as a word of the command, the last part of
+        a path or the first of a module name included; a directory on a path,
+        a flag or a longer word containing it is not one.
 
     """
     return _GZ_WORD.search(command) is not None

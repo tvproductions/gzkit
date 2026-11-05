@@ -12,10 +12,13 @@ def _dispatch_stamp_script() -> str:
     so the hook stays unit-testable. Unlike the guards, it reads no safe-mode
     marker: it is a kit control, on at every level (ruling 28).
 
-    Fail-CLOSED, unlike the guards: when gzkit cannot be imported or the decision
-    raises, a subagent's Bash call naming ``gz`` is still stamped, with no root, so
-    every verb refuses it (rulings 17, 35). A breakage shows as refusals, never as
-    an unstamped call. The stamp's variable names are written in from
+    Fail-CLOSED, unlike the guards, as far as the script reaches: once a payload
+    is read, gzkit failing to import or the decision raising still stamps a
+    subagent's Bash call naming ``gz``, with no root, so every verb refuses it
+    (rulings 17, 35). A hook that cannot run at all, ``uv`` failing, a timeout, or
+    a payload that is not JSON, leaves the call unstamped, since Claude Code
+    proceeds past a failing hook; that limit is stated in the contract kit. The
+    stamp's variable names are written in from
     :mod:`gzkit.dispatch_stamp` here, their one home.
 
     Returns:
@@ -79,15 +82,15 @@ def _dispatch_stamp_script() -> str:
             def main() -> None:
                 try:
                     payload = json.load(sys.stdin)
-                except (json.JSONDecodeError, OSError):
+                except (json.JSONDecodeError, UnicodeDecodeError, OSError):
                     sys.exit(0)  # no payload, no command to stamp
                 if not isinstance(payload, dict):
                     sys.exit(0)
 
-                root = Path(os.environ.get("CLAUDE_PROJECT_DIR") or payload.get("cwd") or ".")
                 try:
                     from gzkit.dispatch_stamp import stamp_hook_output  # noqa: PLC0415
 
+                    root = Path(os.environ.get("CLAUDE_PROJECT_DIR") or str(payload.get("cwd") or "."))
                     output = stamp_hook_output(payload, root)
                 except Exception:  # fail closed: stamp no root
                     output = _no_root(payload)
