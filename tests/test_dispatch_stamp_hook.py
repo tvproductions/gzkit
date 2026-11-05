@@ -31,7 +31,7 @@ from gzkit.dispatch_stamp import (
 )
 from gzkit.executables import find_executable
 from gzkit.hooks.claude import generate_claude_settings
-from gzkit.hooks.scripts.dispatch import _dispatch_stamp_script
+from gzkit.hooks.scripts.dispatch import dispatch_stamp_script
 
 if TYPE_CHECKING:
     from contextlib import AbstractContextManager
@@ -682,7 +682,7 @@ class TheGeneratedHook(_Session):
         hook_dir = self.project.parent / "hook"
         hook_dir.mkdir(exist_ok=True)
         script = hook_dir / "dispatch-stamp.py"
-        script.write_text(_dispatch_stamp_script(), encoding="utf-8")
+        script.write_text(dispatch_stamp_script(), encoding="utf-8")
         if shadow_gzkit:
             # A package beside the script shadows the installed one and cannot load.
             broken = hook_dir / "gzkit"

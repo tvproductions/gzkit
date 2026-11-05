@@ -16,7 +16,7 @@ def _wrapped_literal(text: str) -> str:
     return "\n    ".join(repr(chunk) for chunk in chunks)
 
 
-def _dispatch_stamp_script() -> str:
+def dispatch_stamp_script() -> str:
     """Return the PreToolUse Bash hook that stamps a subagent's ``gz`` command.
 
     Thin adapter: the decision is :func:`gzkit.dispatch_stamp.stamp_hook_output`,

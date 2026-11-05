@@ -11,7 +11,7 @@ from pathlib import Path
 
 from gzkit.config import GzkitConfig
 from gzkit.hooks.core import _ruff_format_dir
-from gzkit.hooks.scripts.dispatch import _dispatch_stamp_script
+from gzkit.hooks.scripts.dispatch import dispatch_stamp_script
 from gzkit.hooks.scripts.ghi import _ghi_triage_chat_silence_script
 from gzkit.hooks.scripts.lsp import prefer_lsp_script
 from gzkit.hooks.scripts.mx import _mx_awareness_script
@@ -644,7 +644,7 @@ def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) ->
         ("session-start-advisement.py", _session_start_advisement_script, True),
         ("session-exit-bookmark.py", _session_exit_bookmark_script, True),
         ("verifier-pipe-gate.py", _verifier_pipe_gate_script, True),
-        ("dispatch-stamp.py", _dispatch_stamp_script, True),
+        ("dispatch-stamp.py", dispatch_stamp_script, True),
         ("session-staleness-check.py", _session_staleness_check_script, True),
         ("obpi-completion-validator.py", _obpi_completion_validator_script, True),
         ("ledger-writer.py", _ledger_writer_script, True),
