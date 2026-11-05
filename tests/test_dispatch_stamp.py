@@ -120,6 +120,17 @@ class StampRefusal(unittest.TestCase):
         self.assertIsNone(self._refusal(respelled.as_posix(), self.project))
 
 
+class RefusalOutOfService(unittest.TestCase):
+    """Ruling 28: the verb refusal is on at every level, out of service included."""
+
+    def test_the_refusal_holds_with_the_alarms_off(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            here = Path(directory).resolve()
+            stamp = {STAMP_ROOT_ENV: (here / "elsewhere").as_posix(), STAMP_ID_ENV: "D-x"}
+            with patch("gzkit.mx.alarms.alarms_off", return_value=True):
+                self.assertIsNotNone(stamp_refusal(stamp, lambda: here))
+
+
 class StampConsumed(unittest.TestCase):
     """Ruling 37: a call that passes takes the stamp out of what it runs."""
 

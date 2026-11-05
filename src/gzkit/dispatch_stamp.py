@@ -1020,8 +1020,9 @@ def stamp_hook_output(payload: Mapping[str, Any], project_root: Path) -> dict | 
 def claim_hook_output(payload: Mapping[str, Any], project_root: Path) -> None:
     """Book a dispatch's claim when the Agent tool returns (ruling 40).
 
-    PostToolUse on Agent carries the prompt and the subagent's ``agentId``
-    (probe run 8, at a foreground subagent's finish), so a dispatched subagent
+    PostToolUse on Agent carries the prompt and the subagent's ``agentId``: at a
+    foreground subagent's finish, at a background one's launch (probe run 8 and
+    RP-12's dock trial), so a dispatched subagent
     that never runs ``gz`` still claims its dispatch, and an undispatched one is
     not held to no root by it for longer than it runs.
 

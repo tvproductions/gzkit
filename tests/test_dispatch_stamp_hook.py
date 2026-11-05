@@ -17,6 +17,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from gzkit.dispatch_stamp import (
     STAMP_ID_ENV,
@@ -486,6 +487,16 @@ class TheClaim(_Session):
             with self.subTest(prompt=prompt):
                 self.assertIsNone(claim_hook_output(self._returned(prompt), self.project))
         self.assertEqual(self._claims(), [])
+
+
+class OutOfService(_Session):
+    """Ruling 28: a kit control is on at every level, out of service included."""
+
+    def test_the_stamp_holds_with_the_alarms_off(self) -> None:
+        self._book()
+        self._prompt(f"GZKIT-DISPATCH: {_DISPATCH}")
+        with patch("gzkit.mx.alarms.alarms_off", return_value=True):
+            self.assertEqual(self._stamped()[STAMP_ROOT_ENV], self.intended.as_posix())
 
 
 class TheUndispatchedSubagent(_Session):
