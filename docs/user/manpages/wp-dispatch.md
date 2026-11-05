@@ -20,7 +20,7 @@ gz wp dispatch <WP-id> --void <D-id> --reason <why> [OPTIONS]
 | `--req` | The frozen REQ dispatched against. Give this or `--issue` |
 | `--issue` | The carried issue dispatched against. Give this or `--req` |
 | `--reason` | Why the run is single-driver: required with `SingleDriver`, refused otherwise. With `--void`, why the dispatch is abandoned, required |
-| `--void` | Abandon this booked dispatch, `D-` and 16 hex digits, instead of booking one; takes no `--role` or `--model` |
+| `--void` | Abandon this booked dispatch, `D-` and 16 hex digits, instead of booking one; takes none of booking's flags |
 | `--root` | The project root the dispatch is for, an existing directory. Defaults to this project's root |
 | `--json` | Output as JSON: the booked event, `dispatch_id` and `intended_root` included |
 | `--quiet`, `-q` | Suppress non-error output |
@@ -81,8 +81,8 @@ no hooks, or whose subagent stopped before it ran `gz`. It books one
 `dispatch_voided` event with its reason, and a voided dispatch is no dispatch: it
 is never open, and a subagent carrying its line is stamped no root (ruling 42).
 Only the coordinator voids: a call stamped as a subagent's is refused with exit
-3, as far as the stamp reaches; a subagent's `gz` run through `gz arb step` keeps
-its stamp (ruling 37). `--void` takes none of booking's flags. A dispatch already voided, never
+3, as far as the stamp reaches; a subagent's `gz` run through `gz arb step`, `coverage`
+or `ty` keeps its stamp (ruling 37). `--void` takes none of booking's flags. A dispatch already voided, never
 booked, or booked on another package is refused with exit 3.
 
 ## Examples

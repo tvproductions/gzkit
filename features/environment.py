@@ -16,6 +16,12 @@ os.environ.pop("FORCE_COLOR", None)
 # CI's report-only job sets the MX full-strength switch for its own guards;
 # scenarios build their own markers and expect the demotion (GHI #1263).
 os.environ.pop("GZKIT_MX_FULL_STRENGTH", None)
+# A dispatched agent's forwarded behave run inherits the dispatch stamp; its
+# scenarios run gz in temporary directories, which the stamp would refuse
+# (RP-12 ruling 37, as tests/__init__.py drops it). Names spelled here: this
+# module imports nothing from gzkit before the step files load.
+os.environ.pop("GZKIT_DISPATCH_ROOT", None)
+os.environ.pop("GZKIT_DISPATCH_ID", None)
 
 import logging
 import shutil
