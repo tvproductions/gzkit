@@ -150,12 +150,12 @@ def _prompt_text(record: dict[str, Any]) -> str:
     return ""
 
 
-def _dispatch_named(payload: Mapping[str, Any], agent_id: str) -> str | None:
-    """Read the dispatch id from the subagent's own transcript (ruling 35).
+def _subagent_prompt(payload: Mapping[str, Any], agent_id: str) -> str | None:
+    """Read the subagent's prompt from its own transcript (ruling 35).
 
     Returns:
-        The id its first record names, or None when the transcript is missing or
-        unreadable, its first record is not this agent's prompt, or it names none.
+        The prompt its first record carries, or None when the transcript is
+        missing or unreadable, or its first record is not this agent's prompt.
 
     """
     transcript = payload.get("transcript_path")
@@ -165,10 +165,32 @@ def _dispatch_named(payload: Mapping[str, Any], agent_id: str) -> str | None:
     record = _first_record(session / "subagents" / f"agent-{agent_id}.jsonl")
     if record is None or record.get("type") != "user" or record.get("agentId") != agent_id:
         return None
-    # Deferred, as in `_intended_root`: only a subagent's gz command reads it.
-    from gzkit.work_package_run import read_dispatch_id  # noqa: PLC0415
+    return _prompt_text(record)
 
-    return read_dispatch_id(_prompt_text(record))
+
+def _stamp_for(payload: Mapping[str, Any], agent_id: str, project_root: Path) -> tuple[str, str]:
+    """Decide the root and the dispatch id a subagent's call is stamped with.
+
+    A prompt with no dispatch line is the undispatched subagent, held to this
+    project's own root (ruling 38). One that mentions a dispatch is held to the
+    root the ledger books for it (rulings 1, 35). Anything unread stamps no root.
+
+    Returns:
+        The root, possibly empty, and the dispatch id, possibly empty.
+
+    """
+    prompt = _subagent_prompt(payload, agent_id)
+    if prompt is None:
+        return "", ""
+    # Deferred, as in `_intended_root`: only a subagent's gz command reads it.
+    from gzkit.work_package_run import DISPATCH_LINE_PREFIX, read_dispatch_id  # noqa: PLC0415
+
+    if DISPATCH_LINE_PREFIX.strip() not in prompt:
+        return project_root.resolve().as_posix(), ""
+    dispatch_id = read_dispatch_id(prompt)
+    if dispatch_id is None:
+        return "", ""
+    return _intended_root(project_root, dispatch_id), dispatch_id
 
 
 def _intended_root(project_root: Path, dispatch_id: str) -> str:
@@ -208,7 +230,7 @@ def stamp_prefix(root: str, dispatch_id: str) -> str:
 
 
 def stamp_hook_output(payload: Mapping[str, Any], project_root: Path) -> dict | None:
-    """Decide the PreToolUse output for one Bash call (rulings 34, 35).
+    """Decide the PreToolUse output for one Bash call (rulings 34, 35, 38).
 
     Args:
         payload: The hook's input.
@@ -217,8 +239,9 @@ def stamp_hook_output(payload: Mapping[str, Any], project_root: Path) -> dict | 
     Returns:
         None to let the call run untouched: not Bash, the main session's (no
         ``agent_id``), or a command naming no ``gz``. Otherwise the output that
-        rewrites the command to carry the stamp, with no permission decision. A
-        dispatch that cannot be read and found stamps no root.
+        rewrites the command to carry the stamp, with no permission decision: a
+        dispatch's root, this project's for an undispatched subagent, or none
+        for a dispatch that cannot be read and found.
 
     """
     agent_id = payload.get("agent_id")
@@ -230,8 +253,7 @@ def stamp_hook_output(payload: Mapping[str, Any], project_root: Path) -> dict | 
     command = tool_input.get("command")
     if not isinstance(command, str) or not names_gz(command):
         return None
-    dispatch_id = _dispatch_named(payload, agent_id) or ""
-    root = _intended_root(project_root, dispatch_id) if dispatch_id else ""
+    root, dispatch_id = _stamp_for(payload, agent_id, project_root)
     return {
         "hookSpecificOutput": {
             "hookEventName": "PreToolUse",

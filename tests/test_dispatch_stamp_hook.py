@@ -212,15 +212,32 @@ class TheStamp(_Session):
         self.assertEqual(self._stamped()[STAMP_ROOT_ENV], self.intended.as_posix())
 
 
+class TheUndispatchedSubagent(_Session):
+    """Ruling 38: a prompt with no dispatch line is held to this project's root."""
+
+    def test_it_is_stamped_with_the_project_root(self) -> None:
+        self._book()
+        self._prompt("Review this commit; no dispatch line.")
+        self.assertEqual(
+            self._stamped(), {STAMP_ROOT_ENV: self.project.as_posix(), STAMP_ID_ENV: ""}
+        )
+
+
 class NoRootIsStamped(_Session):
     """Ruling 35: what cannot be read stamps no root, so a breakage shows as refusals."""
 
     def _assert_no_root(self) -> None:
         self.assertEqual(self._stamped()[STAMP_ROOT_ENV], "")
 
-    def test_an_undispatched_subagent(self) -> None:
+    def test_a_dispatch_line_that_does_not_parse(self) -> None:
+        """A prompt that mentions a dispatch it cannot name is not an undispatched one."""
         self._book()
-        self._prompt("Do the work, no dispatch line.")
+        self._prompt("GZKIT-DISPATCH: D-not-an-id")
+        self._assert_no_root()
+
+    def test_two_different_dispatch_lines(self) -> None:
+        self._book()
+        self._prompt(f"GZKIT-DISPATCH: {_DISPATCH}\nGZKIT-DISPATCH: D-fedcba9876543210")
         self._assert_no_root()
 
     def test_a_dispatch_the_ledger_does_not_hold(self) -> None:
