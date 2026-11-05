@@ -14,6 +14,7 @@ stamp from its own process environment (ruling 37), so in one process only the
 first ``main`` call is checked; nothing in the package calls ``main`` twice.
 """
 
+import base64
 import contextlib
 import itertools
 import json
@@ -125,18 +126,21 @@ def consume_stamp(environ: MutableMapping[str, str]) -> None:
 
 
 _GZ = frozenset({"gz", "gzkit"})
+#: What a lifted substitution reads as: one that names gz, and one that does not.
+_SUB_GZ, _SUB = "__gz_substitution__", "__substitution__"
 #: Words a shell reads before a command's program: keywords and prefixes.
 _LEADERS = frozenset(
     {"if", "then", "else", "elif", "do", "while", "until", "!", "coproc", "builtin"}
 )
 #: Programs that run the program named after their own options, and the options
-#: of theirs known to take a value. An option outside its set may take one, so
-#: a command past such an option is also read for any later ``gz`` word.
+#: of theirs known to take a value. Past an option outside its set, the next word
+#: may be that option's value, so the word after it is read as the program too.
 _WRAPPERS: dict[str, frozenset[str]] = {
     "env": frozenset({"-u", "--unset", "-C", "--chdir"}),
     "exec": frozenset({"-a"}),
     "command": frozenset(),
     "nohup": frozenset(),
+    "busybox": frozenset(),
     "time": frozenset({"-f", "--format", "-o", "--output"}),
     "sudo": frozenset({"-u", "-g", "-h", "-p", "-C", "-D", "-r", "-t", "-U"}),
     "doas": frozenset({"-u", "-C"}),
@@ -148,14 +152,33 @@ _WRAPPERS: dict[str, frozenset[str]] = {
     "stdbuf": frozenset({"-i", "-o", "-e"}),
     "caffeinate": frozenset({"-t", "-w"}),
 }
+#: Environment managers that run a command after ``run`` or ``exec``.
+_ENV_RUNNERS = frozenset(
+    {"poetry", "pdm", "hatch", "pixi", "conda", "mamba", "mise", "pipx", "pyenv", "rye"}
+)
+_ENV_VALUED = frozenset(
+    {
+        "-n",
+        "--name",
+        "-p",
+        "--prefix",
+        "--spec",
+        "-e",
+        "--env",
+        "--environment",
+        "--cwd",
+        "-C",
+        "--directory",
+        "--project",
+        "--python",
+    }
+)
 #: Programs that run a command among their arguments in a shape of their own:
-#: any later ``gz`` word counts.
+#: a word that is ``gz`` itself, or a quoted command string that runs it, counts.
 _RUNNERS = frozenset(
     {
-        "direnv",
         "flock",
         "script",
-        "parallel",
         "chronic",
         "unbuffer",
         "systemd-run",
@@ -166,7 +189,14 @@ _RUNNERS = frozenset(
         "strace",
         "ltrace",
         "valgrind",
+        "tmux",
+        "hyperfine",
+        "watchexec",
+        "entr",
+        "su",
         "start-process",
+        "get-command",
+        "direnv",
     }
 )
 #: ``uv``'s options, before or after its subcommand, known to take a value.
@@ -193,14 +223,59 @@ _UV_VALUED = frozenset(
         "-w",
     }
 )
-_PYTHON_VALUED = frozenset({"-X", "-W", "--check-hash-based-pycs"})
+#: Options well known to take no value, so skipping one leaves no doubt where
+#: the program starts; a program's own valued set is consulted first.
+_BARE = frozenset(
+    {
+        "-0",
+        "--null",
+        "-r",
+        "--no-run-if-empty",
+        "-t",
+        "--verbose",
+        "-v",
+        "-x",
+        "--exit",
+        "--foreground",
+        "--preserve-status",
+        "-q",
+        "--quiet",
+        "--frozen",
+        "--locked",
+        "--no-sync",
+        "--no-project",
+        "--isolated",
+        "--offline",
+        "--no-dev",
+        "--all-extras",
+        "--active",
+        "--exact",
+        "--no-cache",
+        "-E",
+        "--preserve-env",
+        "-H",
+        "-i",
+        "--ignore-environment",
+        "-S",
+        "--stdin",
+        "-k",
+        "-b",
+        "--background",
+    }
+)
+_PARALLEL_VALUED = frozenset({"-j", "--jobs", "-S", "--sshlogin", "--joblog", "-a", "--arg-file"})
 _SHELL_VALUED = frozenset({"-o", "+o", "-O", "+O", "--rcfile", "--init-file"})
 _SHELLS = frozenset({"sh", "bash", "zsh", "dash", "ksh", "pwsh", "powershell"})
+_ENCODED = frozenset({"-encodedcommand", "-enc", "-ec", "-e"})
 _EVALUATORS = frozenset({"eval", "invoke-expression", "iex"})
-_GROUPING = frozenset({"(", ")", "{", "}", "((", "))", "|&", ";;", ";&", ";;&", "<(", ">("})
+_GROUPING = frozenset({"(", ")", "{", "}", "((", "))", "|&", ";;", ";&", ";;&"})
 _REDIRECTS = frozenset({">", ">>", "<", "<<", "<<<", "&>", "&>>", ">&", "<&", ">|", "<>"})
 _ASSIGNMENT = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
-_GZKIT_WORD = re.compile(r"\bgzkit\b", re.IGNORECASE)
+#: gzkit named as code names it, never as a dotted file (``.gzkit.json``) or a path part.
+_GZKIT_CODE = re.compile(r"(?<![\w./\\-])gzkit\b", re.IGNORECASE)
+#: gz or gzkit as a word of raw text, for what cannot be read as commands.
+_GZ_TEXT = re.compile(r"(?<![\w./\\$-])gz(?:kit)?(?![\w.-])", re.IGNORECASE)
+_HEREDOC = re.compile(r"(?<!<)<<(-?)\s*(['\"]?)([A-Za-z_][A-Za-z0-9_]*)\2")
 
 
 def _program(word: str) -> str:
@@ -221,6 +296,155 @@ def _gz_word(word: str) -> bool:
     return "/" not in lowered or any(part in lowered for part in ("/bin/", "/scripts/"))
 
 
+def _strip_heredoc_bodies(text: str) -> str:
+    """Drop each heredoc's body and terminator: it is data, not commands.
+
+    Returns:
+        The text with every line from a ``<<`` marker's next line to its
+        terminator removed.
+
+    """
+    out: list[str] = []
+    pending: list[tuple[bool, str]] = []
+    for line in text.split("\n"):
+        if pending:
+            tabs, end = pending[0]
+            if (line.lstrip("\t") if tabs else line).strip() == end:
+                pending.pop(0)
+            continue
+        out.append(line)
+        pending.extend((bool(dash), end) for dash, _quote, end in _HEREDOC.findall(line))
+    return "\n".join(out)
+
+
+def _next_quote(quote: str | None, char: str) -> str | None:
+    """Track the quote a scan is inside after one more character.
+
+    Returns:
+        The quote character it is inside, or None.
+
+    """
+    if char in "'\"" and quote in {None, char}:
+        return None if quote == char else char
+    return quote
+
+
+def _escaped(text: str, index: int, quote: str | None) -> bool:
+    """Say whether a backslash escapes the next character (not inside single quotes).
+
+    Returns:
+        True when the character at ``index`` is such a backslash.
+
+    """
+    return text[index] == "\\" and quote != "'" and index + 1 < len(text)
+
+
+def _comment_starts(text: str, index: int) -> bool:
+    return text[index] == "#" and (index == 0 or text[index - 1] in " \t\n;&|()")
+
+
+def _strip_comments(text: str) -> str:
+    """Drop what the shell reads as a comment: ``#`` at a word's start to the line's end.
+
+    A ``#`` inside a word is kept, as the shell keeps it, and then written as
+    ``_``, since the shared lexer would read it as a comment (an insight records
+    that defect of ``gzkit.shell_reading``).
+
+    Returns:
+        The text without comments, its other ``#`` written as ``_``.
+
+    """
+    out: list[str] = []
+    quote: str | None = None
+    index = 0
+    while index < len(text):
+        if quote is None and _comment_starts(text, index):
+            end = text.find("\n", index)
+            index = len(text) if end < 0 else end
+            continue
+        if _escaped(text, index, quote):
+            out.append(text[index : index + 2])
+            index += 2
+            continue
+        quote = _next_quote(quote, text[index])
+        out.append("_" if text[index] == "#" else text[index])
+        index += 1
+    return "".join(out)
+
+
+def _closing(text: str, start: int) -> int:
+    """Find the ``)`` that closes the parenthesis opened before ``start``.
+
+    Returns:
+        Its index, or -1 when it is not closed.
+
+    """
+    depth, quote, index = 1, None, start
+    while index < len(text):
+        if _escaped(text, index, quote):
+            index += 2
+            continue
+        quote = _next_quote(quote, text[index])
+        if quote is None:
+            depth += {"(": 1, ")": -1}.get(text[index], 0)
+            if depth == 0:
+                return index
+        index += 1
+    return -1
+
+
+def _substitution_at(
+    text: str, index: int, quote: str | None, *, backticks: bool
+) -> tuple[str, int] | None:
+    """Read a substitution opening at ``index``, if one does (none in single quotes).
+
+    Returns:
+        Its text and the index of its last character, or None.
+
+    """
+    if quote == "'":
+        return None
+    if text[index : index + 2] in {"$(", "<(", ">("}:
+        end = _closing(text, index + 2)
+        return (text[index + 2 : end], end) if end >= 0 else None
+    if backticks and text[index] == "`":
+        end = text.find("`", index + 1)
+        return (text[index + 1 : end], end) if end > index else None
+    return None
+
+
+def _lift_substitutions(text: str, *, backticks: bool) -> tuple[str, list[str]]:
+    """Lift each ``$(…)``, ``<(…)``, ``>(…)`` and backtick pair out of a command.
+
+    Each is a command of its own, read separately; in its place stands a word
+    that reads as ``gz`` when the substitution names it (``$(which gz) status``).
+
+    Returns:
+        The text with each substitution replaced, and the substitutions' texts.
+
+    """
+    out: list[str] = []
+    inners: list[str] = []
+    quote: str | None = None
+    index = 0
+    while index < len(text):
+        if _escaped(text, index, quote):
+            out.append(text[index : index + 2])
+            index += 2
+            continue
+        lifted = _substitution_at(text, index, quote, backticks=backticks)
+        if lifted is not None:
+            inner, end = lifted
+            inners.append(inner)
+            out.append(_SUB_GZ if _GZ_TEXT.search(inner) else _SUB)
+            index = end + 1
+            continue
+        quote = _next_quote(quote, text[index])
+        out.append(text[index])
+        index += 1
+    return "".join(out), inners
+
+
 def _skip_options(words: list[str], valued: frozenset[str]) -> tuple[list[str], bool]:
     """Drop a program's leading options, and the value of each known to take one.
 
@@ -233,7 +457,8 @@ def _skip_options(words: list[str], valued: frozenset[str]) -> tuple[list[str], 
     index, unsure = 0, False
     while index < len(words) and words[index].startswith("-") and words[index] not in {"-", "--"}:
         known = words[index] in valued
-        unsure = unsure or (not known and "=" not in words[index])
+        bare = words[index] in _BARE or "=" in words[index]
+        unsure = unsure or (not known and not bare)
         index += 2 if known else 1
     if index < len(words) and words[index] == "--":
         index += 1
@@ -262,31 +487,53 @@ def _peel(words: list[str]) -> list[str]:
 
 
 def _program_runs_gz(command: str, program: list[str], *, unsure: bool) -> bool:
-    """Read a wrapper's program, and past an unknown option any later ``gz`` word.
+    """Read the program a wrapper runs: a quoted command string, or its words.
+
+    Past an option not known to take no value, the word after the first is read
+    as the program as well, the one that option may have consumed.
 
     Returns:
         True when it runs ``gz``.
 
     """
-    if program and _command_runs_gz(command, program):
+    if not program:
+        return False
+    if len(program) == 1 and any(char.isspace() for char in program[0]):
+        return names_gz(program[0])
+    if _command_runs_gz(command, program):
         return True
-    return unsure and any(_gz_word(word) for word in program)
+    return unsure and len(program) > 1 and _command_runs_gz(command, program[1:])
+
+
+def _subcommand_runs(
+    command: str, rest: list[str], valued: frozenset[str], verbs: tuple[tuple[str, ...], ...]
+) -> bool:
+    """Read a tool that runs a program after a subcommand: ``uv run``, ``poetry run``.
+
+    Returns:
+        True when the program after one of ``verbs`` runs ``gz``.
+
+    """
+    rest, unsure = _skip_options(rest, valued)
+    for attempt in (rest, rest[1:] if unsure else []):
+        for verb in verbs:
+            if attempt[: len(verb)] == list(verb):
+                program, later = _skip_options(attempt[len(verb) :], valued)
+                return _program_runs_gz(command, program, unsure=later)
+    return False
 
 
 def _uv_runs(command: str, rest: list[str]) -> bool:
-    rest, unsure = _skip_options(rest, _UV_VALUED)
-    if rest[:1] == ["run"]:
-        program, later = _skip_options(rest[1:], _UV_VALUED)
-    elif rest[:2] == ["tool", "run"]:
-        program, later = _skip_options(rest[2:], _UV_VALUED)
-    else:
-        program, later = (rest if unsure else []), False
-    return _program_runs_gz(command, program, unsure=unsure or later)
+    return _subcommand_runs(command, rest, _UV_VALUED, (("run",), ("tool", "run")))
 
 
 def _uvx_runs(command: str, rest: list[str]) -> bool:
     program, unsure = _skip_options(rest, _UV_VALUED)
     return _program_runs_gz(command, program, unsure=unsure)
+
+
+def _env_runner_runs(command: str, rest: list[str]) -> bool:
+    return _subcommand_runs(command, rest, _ENV_VALUED, (("run",), ("exec",), ("x",)))
 
 
 def _wrapper_runs(head: str) -> Callable[[str, list[str]], bool]:
@@ -306,68 +553,154 @@ def _wrapper_runs(head: str) -> Callable[[str, list[str]], bool]:
 
 
 def _runner_runs(_command: str, rest: list[str]) -> bool:
-    return any(_gz_word(word) for word in rest)
+    return any(_gz_word(word) for word in rest) or any(
+        names_gz(word) for word in rest if any(char.isspace() for char in word)
+    )
+
+
+def _parallel_runs(command: str, rest: list[str]) -> bool:
+    before = rest[: rest.index(":::")] if ":::" in rest else rest
+    program, unsure = _skip_options(before, _PARALLEL_VALUED)
+    return _program_runs_gz(command, program, unsure=unsure)
 
 
 def _eval_runs(_command: str, rest: list[str]) -> bool:
     return names_gz(" ".join(rest))
 
 
-def _cmd_runs(command: str, rest: list[str]) -> bool:
+def _source_runs(_command: str, rest: list[str]) -> bool:
+    return bool(rest) and _gz_word(rest[0])
+
+
+def _cmd_runs(_command: str, rest: list[str]) -> bool:
     switch = next((index for index, word in enumerate(rest) if word.lower() in {"/c", "/k"}), None)
-    return switch is not None and _command_runs_gz(command, rest[switch + 1 :])
+    return switch is not None and names_gz(" ".join(rest[switch + 1 :]))
 
 
-def _find_runs(command: str, rest: list[str]) -> bool:
-    return any(
-        flag in {"-exec", "-execdir", "-ok", "-okdir"}
-        and _command_runs_gz(command, rest[index + 1 :])
-        for index, flag in enumerate(rest)
-    )
+def _exec_flag_runs(flags: frozenset[str]) -> Callable[[str, list[str]], bool]:
+    def runs(command: str, rest: list[str]) -> bool:
+        return any(
+            flag in flags and _program_runs_gz(command, rest[index + 1 :], unsure=False)
+            for index, flag in enumerate(rest)
+        )
+
+    return runs
+
+
+def _git_runs(command: str, rest: list[str]) -> bool:
+    for flag, value in itertools.pairwise(rest):
+        if flag in {"-x", "--exec"} and "rebase" in rest and names_gz(value):
+            return True
+    for index, word in enumerate(rest[:-1]):
+        if word == "bisect" and rest[index + 1] == "run":
+            return _program_runs_gz(command, rest[index + 2 :], unsure=False)
+    return False
+
+
+def _python_flag(flag: str, value: str) -> tuple[bool | None, int]:
+    """Read one Python option: the verdict it settles, and the words it takes.
+
+    Returns:
+        True or False when ``-m`` or ``-c`` (joined, or last in a cluster such as
+        ``-Im``) settles it, else None; and how many words the option takes.
+
+    """
+    if flag.startswith("--"):
+        return None, 2 if flag == "--check-hash-based-pycs" else 1
+    for position, letter in enumerate(flag[1:], start=2):
+        tail = flag[position:]
+        if letter == "m":
+            return (tail or value).lower().split(".")[0] == "gzkit", 0
+        if letter == "c":
+            return _GZKIT_CODE.search(tail or value) is not None, 0
+        if letter in "XW":
+            return None, 1 if tail else 2
+    return None, 1
 
 
 def _python_runs_gzkit(command: str, rest: list[str]) -> bool:
     """Say whether a Python command line runs gzkit.
 
     Returns:
-        True for ``-m gzkit…`` (joined or not), ``-c`` code naming gzkit, or a
-        script read from stdin (``-``) when the command names gzkit at all.
+        True for ``-m gzkit…``, ``-c`` code naming gzkit, or a script read from
+        stdin (``-``) when the command names gzkit as code does.
 
     """
     index = 0
-    while index < len(rest) and rest[index].startswith("-"):
-        flag = rest[index]
+    while index < len(rest) and rest[index].startswith("-") and rest[index] != "-":
         value = rest[index + 1] if index + 1 < len(rest) else ""
-        if flag.startswith("-m"):
-            module = flag.removeprefix("-m") or value
-            return module.lower().split(".")[0] == "gzkit"
-        if flag == "-c":
-            return _GZKIT_WORD.search(value) is not None
-        if flag == "-":
-            return _GZKIT_WORD.search(command) is not None
-        index += 2 if flag in _PYTHON_VALUED else 1
-    return False
+        verdict, step = _python_flag(rest[index], value)
+        if verdict is not None:
+            return verdict
+        index += step
+    return index < len(rest) and rest[index] == "-" and _GZKIT_CODE.search(command) is not None
 
 
-def _shell_runs(_command: str, rest: list[str]) -> bool:
-    """Read the script a shell runs with ``-c``, its flags combined or not.
+def _encoded_runs_gz(value: str) -> bool:
+    """Read ``pwsh -EncodedCommand``'s script; one that cannot be decoded counts.
 
     Returns:
-        True when that script runs ``gz``.
+        True when the script runs ``gz``, or cannot be decoded.
 
     """
-    index, script = 0, False
-    while index < len(rest):
-        flag = rest[index]
-        if not flag.startswith(("-", "+")):
-            return script and names_gz(flag)
-        if flag in _SHELL_VALUED:
-            index += 2
-            continue
-        if not flag.startswith("--") and "c" in flag[1:].lower():
-            script = True
-        index += 1
-    return False
+    try:
+        return names_gz(base64.b64decode(value).decode("utf-16-le"))
+    except ValueError, UnicodeDecodeError:
+        return True
+
+
+def _shell_word(head: str, flag: str, value: str, *, script: bool) -> bool | None:
+    """Read one word of a shell's arguments.
+
+    Returns:
+        The verdict it settles: ``<<<``'s string, an encoded script, or the first
+        operand (``-c``'s script, or a script file, which is not read); else None.
+
+    """
+    if flag == "<<<":
+        return names_gz(value)
+    if flag in _REDIRECTS or flag in _SHELL_VALUED:
+        return None
+    if head in {"pwsh", "powershell"} and flag.lower() in _ENCODED:
+        return _encoded_runs_gz(value)
+    if not flag.startswith(("-", "+")):
+        return script and names_gz(flag)
+    return None
+
+
+def _takes_script(flag: str) -> bool:
+    """Say whether a shell flag (``-c``, ``-lc``, ``-Command``) makes its operand a script.
+
+    Returns:
+        True for such a flag.
+
+    """
+    if flag in _SHELL_VALUED or flag in _REDIRECTS or flag.startswith("--"):
+        return False
+    return flag.startswith(("-", "+")) and "c" in flag[1:].lower()
+
+
+def _shell_runs(head: str) -> Callable[[str, list[str]], bool]:
+    def runs(command: str, rest: list[str]) -> bool:
+        """Read the script a shell runs: ``-c``'s string, ``<<<``'s, or its stdin.
+
+        Returns:
+            True when that script runs ``gz``.
+
+        """
+        index, script = 0, False
+        while index < len(rest):
+            flag = rest[index]
+            value = rest[index + 1] if index + 1 < len(rest) else ""
+            verdict = _shell_word(head, flag, value, script=script)
+            if verdict is not None:
+                return verdict
+            script = script or _takes_script(flag)
+            index += 2 if flag in _REDIRECTS or flag in _SHELL_VALUED else 1
+        # No script and no file: the shell reads its stdin, from this command.
+        return not script and _GZ_TEXT.search(command) is not None
+
+    return runs
 
 
 def _reader_for(head: str) -> Callable[[str, list[str]], bool] | None:
@@ -381,14 +714,20 @@ def _reader_for(head: str) -> Callable[[str, list[str]], bool] | None:
     readers: dict[str, Callable[[str, list[str]], bool]] = {
         "uv": _uv_runs,
         "uvx": _uvx_runs,
-        "find": _find_runs,
+        "find": _exec_flag_runs(frozenset({"-exec", "-execdir", "-ok", "-okdir"})),
+        "fd": _exec_flag_runs(frozenset({"-x", "--exec", "-X", "--exec-batch"})),
+        "git": _git_runs,
         "cmd": _cmd_runs,
+        "parallel": _parallel_runs,
         "py": _python_runs_gzkit,
+        ".": _source_runs,
+        "source": _source_runs,
     }
     readers |= {name: _wrapper_runs(name) for name in _WRAPPERS}
+    readers |= {name: _shell_runs(name) for name in _SHELLS}
+    readers |= dict.fromkeys(_ENV_RUNNERS, _env_runner_runs)
     readers |= dict.fromkeys(_EVALUATORS, _eval_runs)
     readers |= dict.fromkeys(_RUNNERS, _runner_runs)
-    readers |= dict.fromkeys(_SHELLS, _shell_runs)
     if head.startswith("python"):
         return _python_runs_gzkit
     return readers.get(head)
@@ -405,64 +744,67 @@ def _command_runs_gz(command: str, words: list[str]) -> bool:
     if not words:
         return False
     head = _program(words[0])
-    if head in _GZ:
+    if head in _GZ or head == _SUB_GZ:
         return True
     reader = _reader_for(head)
     return reader is not None and reader(command, words[1:])
 
 
-def names_gz(command: str) -> bool:
-    r"""Say whether a Bash command runs ``gz`` or ``gzkit`` (ruling 34).
+def _reads_gz(command: str, text: str, *, backticks: bool) -> bool:
+    text, inners = _lift_substitutions(_strip_comments(text), backticks=backticks)
+    if any(names_gz(inner) for inner in inners):
+        return True
+    tokens = tokenize_shell(normalize_statement_newlines(text))
+    if tokens is None:
+        return _GZ_TEXT.search(text) is not None
+    separators = STATEMENT_SEPARATORS | _GROUPING | {PIPE}
+    return any(_command_runs_gz(command, segment) for segment in split_on(tokens, separators))
 
-    Reads each simple command down to the program it runs: past keywords
-    (``if``, ``do``), assignments, redirections, wrappers and their options
-    (``env``, ``time``, ``sudo``, ``timeout``, ``xargs``, ``watch``, ``ionice``,
-    ``find -exec``, ``eval``, ``direnv exec``, ``flock``), ``uv run``, ``uv tool
-    run`` and ``uvx`` past ``uv``'s options, and into ``sh -c`` scripts,
-    ``$(…)``, ``<(…)`` and backticks. Past an option not known to take no
-    value, any later word that is ``gz`` itself counts too, the safe error. The
-    program is ``gz`` or ``gzkit`` by its name in any case (``.venv/bin/gz``,
-    ``\gz``, ``GZ.EXE``), or Python running gzkit (``-m``, ``-c``, a stdin
-    script). A path or word that is only an argument, ``git -C …/gzkit log``,
-    ``uv run --project …/gzkit python``, is not one, so ruling 34's other calls
-    keep their allow rules. ``#`` is read as a space, since the shared lexer
-    ends a line at a ``#`` inside a word; a command that does not parse counts
-    when it mentions ``gz`` at all. Heredoc bodies are read as commands, an
-    over-match that costs the allow rule.
+
+def names_gz(command: str) -> bool:
+    r"""Say whether a Bash command runs ``gz`` or ``gzkit`` (rulings 34, 41).
+
+    Reads each simple command down to the program it runs, after dropping
+    heredoc bodies and comments and lifting each ``$(…)``, ``<(…)`` and
+    backtick pair out to be read on its own. The program is ``gz`` or ``gzkit``
+    by name in any case (``.venv/bin/gz``, ``\gz``, ``GZ.EXE``), a substitution
+    naming it in command position (``$(which gz) status``), or Python running
+    gzkit. Wrappers, environment runners, ``uv``, ``eval``, ``find``/``fd``
+    exec flags, ``git rebase -x`` and ``bisect run``, ``cmd /c`` and shells
+    (``-c``, ``<<<``, stdin) are read for what they run, a quoted command string
+    included. Past an option not known to take no value, the word it may have
+    consumed is skipped as well. A path or word that is only an argument is not
+    one, so ruling 34's other calls keep their allow rules. A command that does
+    not parse counts when it names ``gz`` as a word.
+
+    The declared coverage is the form lists in
+    ``tests/test_dispatch_stamp_hook.py`` (ruling 41); a form outside them is
+    ruling 34's limit until O1's dock trial finds it in real use.
 
     Returns:
         True when the command runs ``gz`` or ``gzkit``.
 
     """
-    text = normalize_statement_newlines(command).replace("#", " ")
-    tokens = tokenize_shell(text)
-    if tokens is None:
-        return "gz" in command.lower()
-    for word in tokens:
-        if (
-            ("$(" in word or "`" in word)
-            and word != command
-            and names_gz(word.replace("$(", " ; ").replace("`", " ; ").replace(")", " ; "))
-        ):
-            return True
-    separators = STATEMENT_SEPARATORS | _GROUPING | {PIPE}
-    plain = [token for token in tokens if "`" not in token]
-    return any(_command_runs_gz(command, segment) for segment in split_on(plain, separators))
+    return _reads_gz(command, _strip_heredoc_bodies(command), backticks=True)
 
 
 def powershell_names_gz(command: str) -> bool:
-    r"""Say whether a PowerShell command runs ``gz`` or ``gzkit`` (ruling 39).
+    r"""Say whether a PowerShell command runs ``gz`` or ``gzkit`` (rulings 39, 41).
 
-    Read as POSIX shell once its backslashes are slashes, so a Windows path keeps
-    its parts: ``.venv\Scripts\gz.exe`` is ``gz``, ``git -C C:\code\gzkit``
-    is not. ``Invoke-Expression``, ``iex``, ``cmd /c`` and ``Start-Process`` are
-    read for the command they run.
+    Read by the same program reader once here-strings and block comments are
+    dropped, its backslashes made slashes so a Windows path keeps its parts
+    (``.venv\Scripts\gz.exe`` is ``gz``, ``git -C C:\code\gzkit`` is not), and
+    its backticks left as the escapes they are. ``Invoke-Expression``, ``iex``,
+    ``cmd /c``, ``Start-Process``, ``Get-Command``, ``. `` and ``pwsh
+    -EncodedCommand`` are read for what they run.
 
     Returns:
         True when the command runs either.
 
     """
-    return names_gz(command.replace("\\", "/"))
+    text = re.sub(r"@(['\"])\n.*?\n\1@", " ", command, flags=re.DOTALL)
+    text = re.sub(r"<#.*?#>", " ", text, flags=re.DOTALL)
+    return _reads_gz(command, text.replace("\\", "/").replace("`", ""), backticks=False)
 
 
 def _first_record(path: Path) -> dict[str, Any] | None:
@@ -677,7 +1019,7 @@ def claim_hook_output(payload: Mapping[str, Any], project_root: Path) -> None:
     """
     tool_input = payload.get("tool_input")
     response = payload.get("tool_response")
-    if payload.get("tool_name") not in {"Agent", "Task"}:
+    if payload.get("tool_name") != "Agent":
         return
     if not isinstance(tool_input, dict) or not isinstance(response, dict):
         return

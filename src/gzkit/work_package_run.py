@@ -444,7 +444,11 @@ def find_dispatch(ledger: Ledger, dispatch_id: str) -> DispatchRecord | None:
 def record_dispatch_claim(
     ledger: Ledger, dispatch_id: str, agent_id: str, source: str
 ) -> DispatchClaimedEvent | None:
-    """Book that a subagent carries a dispatch (rulings 1, 40), once per pair.
+    """Book that a subagent carries a dispatch (rulings 1, 40).
+
+    A pair already booked is not booked again, but the check reads outside the
+    ledger's append lock, so two hooks racing on one pair may book it twice;
+    every reader takes the claims as a set, so a second row changes nothing.
 
     Returns:
         The event booked, or None when the ledger holds no such dispatch or the

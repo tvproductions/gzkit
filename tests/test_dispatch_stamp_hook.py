@@ -261,6 +261,40 @@ class WhatIsStamped(_Session):
             "ionice -c3 gz status",
             "script -q /dev/null gz status",
             "parallel gz ::: a",
+            "watch -n5 'gz status'",
+            "watch 'uv run gz status'",
+            "script -qc 'gz status' /dev/null",
+            "flock /tmp/l -c 'gz status'",
+            "parallel 'gz {}' ::: a",
+            'cmd /c "gz status"',
+            "cmd.exe /c 'uv run gz status'",
+            "bash <<< 'gz status'",
+            "bash -s <<< 'gz status'",
+            "echo 'gz status' | bash",
+            "su -c 'gz status' me",
+            "busybox sh -c 'gz status'",
+            "tmux new -d 'gz status'",
+            "hyperfine 'gz status'",
+            "git rebase -x 'gz check' HEAD~3",
+            "git bisect run gz test",
+            "watchexec -- gz test",
+            "entr gz status",
+            "fd -x gz",
+            "python -Im gzkit status",
+            "python3 -Bm gzkit",
+            "uv run python -Im gzkit",
+            "poetry run gz status",
+            "pdm run gz status",
+            "hatch run gz status",
+            "pixi run gz status",
+            "conda run -n env gz status",
+            "mise exec -- gz status",
+            "pipx run --spec py-gzkit gz status",
+            "pyenv exec python -m gzkit status",
+            ". gz",
+            "$(which gz) status",
+            '"$(which gz)" status',
+            "`command -v gz` status",
         )
         unnamed = (
             "ls src/gzkit",
@@ -297,6 +331,27 @@ class WhatIsStamped(_Session):
             "find . -name gz -print",
             "watch -n 5 ls src/gzkit",
             "python -m pip install gzkit",
+            "git ls-files -z | xargs -0 grep -l gzkit",
+            "find . -print0 | xargs -0 grep -n gzkit",
+            "xargs -r rg gz < files.txt",
+            "uv run --frozen pytest -k gz",
+            "uv run --locked python -m unittest -k gzkit",
+            "timeout --foreground 60 rg gzkit",
+            "sudo -E grep -r gzkit /etc",
+            (
+                "git commit -m \"$(cat <<'EOF'\nfix the subagent's hook in src/gzkit\n\n"
+                '(ruling 40) gz verbs refuse\nuv run gz check passed\nEOF\n)"'
+            ),
+            "gh pr create --body \"$(cat <<'EOF'\nIt's the gzkit hook\nEOF\n)\"",
+            "python3 -c \"import json; json.load(open('.gzkit.json'))\"",
+            "uv run python -c \"print(open('.gzkit/ledger.jsonl').readline())\"",
+            "python3 - <<'EOF'\nprint(open('.gzkit/ledger.jsonl').readline())\nEOF",
+            "python3 - <<'EOF'\nopen('/Users/jeff/Documents/Code/gzkit/x.txt')\nEOF",
+            "ls\n# gz status is slow\nls -la",
+            "ls; #gz notes",
+            'echo "$(date) gz done"',
+            "fd gz",
+            "poetry run pytest -k gz",
         )
         for command in named:
             with self.subTest(named=command):
@@ -370,6 +425,10 @@ class PowerShell(_Session):
             "uv run gz status",
             "GZ status",
             "Start-Process gz -ArgumentList status",
+            ". .venv\\Scripts\\gz.exe status",
+            "& (Get-Command gz) status",
+            "pwsh -EncodedCommand ZwB6ACAAcwB0AGEAdAB1AHMA",
+            'cmd /c "gz status"',
         ):
             with self.subTest(command=command):
                 output = stamp_hook_output(self._powershell(command), self.project)
@@ -387,6 +446,9 @@ class PowerShell(_Session):
             "Get-Content docs/gz.md",
             "Select-String -Pattern gz *.md",
             "$gz = 1",
+            "python -c \"import json; json.load(open('.gzkit.json'))\"",
+            "git commit -m @'\nfix the subagent's gzkit hook\n'@",
+            "<# run gz later #> Get-ChildItem",
         ):
             with self.subTest(command=command):
                 self.assertIsNone(stamp_hook_output(self._powershell(command), self.project))
@@ -448,6 +510,13 @@ class TheUndispatchedSubagent(_Session):
         )
         self._prompt("Review this commit; no dispatch line.")
         self.assertEqual(self._stamped()[STAMP_ROOT_ENV], self.project.as_posix())
+
+    def test_an_accepted_package_is_still_in_flight(self) -> None:
+        self._move("commenced")
+        self._book()
+        self._move("accepted")
+        self._prompt("Review this commit; no dispatch line.")
+        self.assertEqual(self._stamped()[STAMP_ROOT_ENV], "")
 
     def test_a_dispatch_whose_run_is_not_in_flight_does_not_count(self) -> None:
         self._move("commenced")

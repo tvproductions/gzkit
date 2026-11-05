@@ -63,9 +63,10 @@ under that stamp from any directory but the intended root, or under a stamp that
 names no root, is refused with exit 3 before it writes (ruling 36). A call
 that passes drops the stamp, so what it runs, a test or a nested `gz`, is not
 refused (ruling 37). A subagent with no dispatch line is held to the project's
-own root (ruling 38), unless a dispatch for another root is open and no
-subagent has claimed it, a claim the hooks book as `dispatch_claimed` at the
-subagent's first `gz` call and when the Agent tool returns (ruling 40). A subagent's `gz` command through the PowerShell tool is
+own root (ruling 38), unless a dispatch is open: booked for another root, on a
+package whose run is in flight, and claimed by no subagent. The hooks book a
+claim as `dispatch_claimed` at a subagent's first `gz` call and when the Agent
+tool returns, measured for a foreground subagent (ruling 40). A subagent's `gz` command through the PowerShell tool is
 denied, with a reason pointing to Bash (ruling 39). A dispatch meant for
 another project, a throwaway one included, names it with `--root`. A relative
 root is resolved against the current directory; an empty `--root`, or a root that

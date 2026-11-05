@@ -1896,8 +1896,9 @@ class DispatchClaimedEvent(_EventBase):
 
     Ruling 1's "hooks record ``agent_id`` beside it". Written only by
     ``gzkit.work_package_run.record_dispatch_claim``, from the stamp hook at the
-    subagent's first ``gz`` call and from the hook on the Agent tool's return,
-    once per dispatch and agent. ``id`` is the dispatch id. A dispatch no claim
+    subagent's first ``gz`` call and from the hook on the Agent tool's return.
+    ``id`` is the dispatch id. Readers take the claims as a set: hooks racing on
+    one pair may book it twice. A dispatch no claim
     names, booked for another root on a run in flight, is open: while one is, an
     undispatched subagent is stamped no root (ruling 40).
     """
