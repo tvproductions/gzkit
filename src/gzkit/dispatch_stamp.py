@@ -14,12 +14,23 @@ stamp from its own process environment (ruling 37), so in one process only the
 first ``main`` call is checked; nothing in the package calls ``main`` twice.
 """
 
+import itertools
 import json
 import os
 import re
 import shlex
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
+
+from gzkit.shell_reading import (
+    PIPE,
+    STATEMENT_SEPARATORS,
+    normalize_statement_newlines,
+    program_name,
+    split_on,
+    strip_uv_run,
+    tokenize_shell,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Mapping, MutableMapping
@@ -111,23 +122,93 @@ def consume_stamp(environ: MutableMapping[str, str]) -> None:
         environ.pop(name, None)
 
 
-# A ``gz`` or ``gzkit`` word, bounded by the shell's separators, quotes and
-# redirections, a path's last part (``.venv/bin/gz``) or a module's first
-# (``gzkit.cli``), in any case, since a case-folding volume runs ``GZ``.
-# Over-matching is the safe error: a stamped call only waits for approval.
-_GZ_WORD = re.compile(r"""(?:^|[\s;&|()`"'/\\=])(?:gz|gzkit)(?=$|[\s;&|()`"'<>.])""", re.IGNORECASE)
+_GZ = frozenset({"gz", "gzkit"})
+#: Programs that run the command they are given, its words after their own.
+_WRAPPERS = frozenset(
+    {"env", "exec", "command", "time", "nohup", "sudo", "xargs", "nice", "timeout", "!"}
+)
+_SHELLS = frozenset({"sh", "bash", "zsh", "dash", "ksh"})
+_GROUPING = frozenset({"(", ")", "{", "}", "((", "))", "|&"})
+_ASSIGNMENT = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
+_GZKIT_IMPORT = re.compile(r"\bgzkit\b")
+
+
+def _is_gz(word: str) -> bool:
+    return program_name(word).lower() in _GZ
+
+
+def _python_runs_gzkit(words: list[str]) -> bool:
+    """Say whether a Python command line runs gzkit.
+
+    Returns:
+        True for ``-m gzkit…`` or ``-c`` code naming gzkit.
+
+    """
+    for flag, value in itertools.pairwise(words):
+        if flag == "-m" and value.lower().split(".")[0] == "gzkit":
+            return True
+        if flag == "-c" and _GZKIT_IMPORT.search(value):
+            return True
+    return False
+
+
+def _command_runs_gz(words: list[str]) -> bool:
+    """Say whether one simple command, its words in order, runs ``gz``.
+
+    Returns:
+        True when its program, or the program a wrapper runs, is ``gz``.
+
+    """
+    while words and _ASSIGNMENT.match(words[0]):
+        words = words[1:]
+    if not words:
+        return False
+    head = program_name(words[0]).lower()
+    rest = words[1:]
+    if head in _GZ:
+        return True
+    if head in {"uv", "uvx"} or head in _WRAPPERS or head.startswith("-"):
+        # A leading option is `uv run`'s, left after `strip_uv_run` (`-m gzkit`,
+        # `--project <dir> gz`), read like a wrapper's.
+        # Options and their values vary by wrapper, so any word that is gz runs it.
+        return any(_is_gz(word) for word in rest) or _python_runs_gzkit(words)
+    if head.startswith("python"):
+        return _python_runs_gzkit(rest)
+    if head in _SHELLS:
+        return any(flag == "-c" and names_gz(script) for flag, script in itertools.pairwise(rest))
+    return False
 
 
 def names_gz(command: str) -> bool:
-    """Say whether a Bash command names ``gz`` or ``gzkit`` (ruling 34).
+    r"""Say whether a Bash command runs ``gz`` or ``gzkit`` (ruling 34).
+
+    Reads command words, not text: a word in command position whose program is
+    ``gz`` or ``gzkit`` in any case (``.venv/bin/gz``, ``\gz`` and ``GZ``
+    included, since a case-folding volume runs it), behind assignments or a
+    wrapper (``uv run``, ``uvx``, ``env``, ``exec``, ``time``, ``sudo``),
+    ``python -m gzkit…`` or ``-c`` code importing gzkit, and a ``sh -c`` script,
+    ``$(…)`` or backticks read the same way. A path or word that is only an
+    argument, ``git -C …/gzkit log`` or ``ls src/gzkit``, is not one, so ruling
+    34's other calls keep their allow rules. A command that does not parse
+    counts when it mentions ``gz`` at all, the safe error.
 
     Returns:
-        True when either word stands as a word of the command, the last part of
-        a path or the first of a module name included; a directory on a path,
-        a flag or a longer word containing it is not one.
+        True when the command runs ``gz`` or ``gzkit``.
 
     """
-    return _GZ_WORD.search(command) is not None
+    tokens = tokenize_shell(normalize_statement_newlines(command))
+    if tokens is None:
+        return "gz" in command.lower()
+    for word in tokens:
+        if (
+            ("$(" in word or "`" in word)
+            and word != command
+            and names_gz(word.replace("$(", " ; ").replace("`", " ; ").replace(")", " ; "))
+        ):
+            return True
+    separators = STATEMENT_SEPARATORS | _GROUPING | {PIPE}
+    plain = [token for token in tokens if "`" not in token]
+    return any(_command_runs_gz(strip_uv_run(segment)) for segment in split_on(plain, separators))
 
 
 def _first_record(path: Path) -> dict[str, Any] | None:

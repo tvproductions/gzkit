@@ -48,14 +48,14 @@ class _Session(unittest.TestCase):
         self.subagents = base / "sessions" / "s-1" / "subagents"
         self.subagents.mkdir(parents=True)
 
-    def _book(self, dispatch_id: str = _DISPATCH) -> None:
+    def _book(self, dispatch_id: str = _DISPATCH, role: str = "Implementer") -> None:
         row = {
             "schema": "gzkit.ledger.v1",
             "event": "work_package_dispatched",
             "id": "WP-01-loop",
             "ts": "2026-11-05T00:00:00+00:00",
             "work_package": "WP-01-loop",
-            "role": "Implementer",
+            "role": role,
             "model": "sonnet",
             "subject": "#1200",
             "dispatch_id": dispatch_id,
@@ -142,7 +142,7 @@ class WhatIsStamped(_Session):
 
     def test_a_subagent_command_naming_no_gz_passes_untouched(self) -> None:
         """Ruling 34: its allow rules keep matching."""
-        for command in ("echo hi", "ls src/gzkit/", "gzip -d x.gz", "cat docs/gz-notes.md"):
+        for command in ("echo hi", "ls src/gzkit", "gzip -d x.gz", "cat docs/gz.md"):
             with self.subTest(command=command):
                 self.assertIsNone(stamp_hook_output(self._payload(command), self.project))
 
@@ -169,8 +169,36 @@ class WhatIsStamped(_Session):
             "python -m gzkit.cli.main status",
             "python -c 'from gzkit.cli.main import main; main()'",
             "GZ status",
+            "bash -c 'gz status'",
+            "x=$(gz status)",
+            'echo "$(uv run gz status)"',
+            "echo `gz status`",
+            "X=1 gz status",
+            "env -u FOO gz status",
+            "uvx --from py-gzkit gz status",
+            "{ gz status; }",
+            "time gz status",
+            "sudo gz status",
+            "! gz status",
+            "echo 'unbalanced; gz status",
+            "uv run --project /x gz status",
         )
-        unnamed = ("ls src/gzkit/", "gzip f", "zgz", "cat gz-notes", "git log", "echo $GZIP")
+        unnamed = (
+            "ls src/gzkit",
+            "ls src/gzkit/",
+            "gzip f",
+            "zgz",
+            "cat gz-notes",
+            "git log",
+            "echo $GZIP",
+            "cd /Users/jeff/Documents/Code/gzkit && git status",
+            "git -C /x/gzkit log",
+            "ruff check src/gzkit",
+            "cat docs/gz.md",
+            "echo 'gz status'",
+            "grep -rn gzkit docs",
+            "python -m unittest tests.test_gzkit",
+        )
         for command in named:
             with self.subTest(named=command):
                 self.assertTrue(names_gz(command))
@@ -261,6 +289,12 @@ class NoRootIsStamped(_Session):
         self._prompt("GZKIT-DISPATCH: D-not-an-id")
         self._assert_no_root()
 
+    def test_a_prompt_that_mentions_the_dispatch_line_in_prose(self) -> None:
+        """Fails safe: a mention it cannot read as one dispatch is not an undispatched agent."""
+        self._book()
+        self._prompt("The runtime puts a GZKIT-DISPATCH: line in a dispatched prompt.")
+        self._assert_no_root()
+
     def test_two_different_dispatch_lines(self) -> None:
         self._book()
         self._prompt(f"GZKIT-DISPATCH: {_DISPATCH}\nGZKIT-DISPATCH: D-fedcba9876543210")
@@ -311,6 +345,13 @@ class NoRootIsStamped(_Session):
         self.intended = first.parent / "other"
         self.intended.mkdir()
         self._book()
+        self._prompt(f"GZKIT-DISPATCH: {_DISPATCH}")
+        self._assert_no_root()
+
+    def test_a_dispatch_booked_twice_with_different_roles(self) -> None:
+        """Ruling 1: what the ledger says a dispatch may do must be one thing."""
+        self._book()
+        self._book(role="SpecReviewer")
         self._prompt(f"GZKIT-DISPATCH: {_DISPATCH}")
         self._assert_no_root()
 

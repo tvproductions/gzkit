@@ -421,25 +421,22 @@ def find_dispatch(ledger: Ledger, dispatch_id: str) -> DispatchRecord | None:
 
     Returns:
         The dispatch's record, or None when no row carries that id, or when rows
-        carrying it disagree on its root: ids are minted unique, so a ledger that
-        names two roots for one names neither.
+        carrying it disagree on what it may do: ids are minted unique, so a
+        ledger that says two things of one says neither.
 
     """
-    found = [
-        row.extra
-        for row in ledger.query(event_type=_DISPATCHED)
-        if row.extra.get("dispatch_id") == dispatch_id and row.extra.get("intended_root")
-    ]
-    if not found or len({str(held["intended_root"]) for held in found}) != 1:
-        return None
-    held = found[0]
-    return DispatchRecord(
-        dispatch_id=dispatch_id,
-        work_package=str(held["work_package"]),
-        role=str(held["role"]),
-        subject=str(held["subject"]),
-        intended_root=str(held["intended_root"]),
-    )
+    found = {
+        DispatchRecord(
+            dispatch_id=dispatch_id,
+            work_package=str(held["work_package"]),
+            role=str(held["role"]),
+            subject=str(held["subject"]),
+            intended_root=str(held["intended_root"]),
+        )
+        for held in (row.extra for row in ledger.query(event_type=_DISPATCHED))
+        if held.get("dispatch_id") == dispatch_id and held.get("intended_root")
+    }
+    return found.pop() if len(found) == 1 else None
 
 
 def _settled(ledger: Ledger, work_package: str) -> tuple[set[str], set[str]]:
