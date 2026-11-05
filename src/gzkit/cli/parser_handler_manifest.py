@@ -64,6 +64,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     "wp_new_cmd": "gzkit.commands.wp",
     "wp_resolve_cmd": "gzkit.commands.wp",
     "wp_dispatch_cmd": "gzkit.commands.wp",
+    "wp_dispatch_void_cmd": "gzkit.commands.wp",
     "wp_block_cmd": "gzkit.commands.wp",
     "wp_unblock_cmd": "gzkit.commands.wp",
     "wp_show_cmd": "gzkit.commands.wp",

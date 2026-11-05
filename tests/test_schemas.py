@@ -42,6 +42,7 @@ from gzkit.events import (
     CorpusRetirementReconciledEvent,
     DiscoveredFromEvent,
     DispatchClaimedEvent,
+    DispatchVoidedEvent,
     DistributionBaselineRegeneratedEvent,
     EnforcementClaimVerifiedEvent,
     FoundationGrandfatheredEvent,
@@ -398,6 +399,7 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "work_package_issue_closed": WorkPackageIssueClosedEvent,
     "work_package_dispatched": WorkPackageDispatchedEvent,
     "dispatch_claimed": DispatchClaimedEvent,
+    "dispatch_voided": DispatchVoidedEvent,
     "work_package_blocked": WorkPackageBlockedEvent,
     "work_package_unblocked": WorkPackageUnblockedEvent,
     # Reversible retirement of OBPIs whose parent ADR demoted to pool (GHI #584)

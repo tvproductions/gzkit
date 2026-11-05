@@ -231,6 +231,7 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         # lineage between artifacts here.
         # A subagent's claim of its dispatch (RP-12 ruling 40), a run record.
         "dispatch_claimed",
+        "dispatch_voided",
         "work_package_blocked",
         "work_package_changed",
         "work_package_dispatched",

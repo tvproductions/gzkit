@@ -43,6 +43,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from gzkit.events import (
     DISPATCH_ID_PATTERN,
     DispatchClaimedEvent,
+    DispatchVoidedEvent,
     WorkPackageBlockedEvent,
     WorkPackageDispatchedEvent,
     WorkPackageExit,
@@ -74,6 +75,7 @@ _STOPPING_EXITS = frozenset({"reopen", "terminate"})
 _IN_FLIGHT = frozenset({"commenced", "accepted"})
 _DISPATCHED = "work_package_dispatched"
 _CLAIMED = "dispatch_claimed"
+_VOIDED = "dispatch_voided"
 DISPATCH_LINE_PREFIX = "GZKIT-DISPATCH: "
 _DISPATCH_LINE = re.compile(
     rf"^{re.escape(DISPATCH_LINE_PREFIX)}({DISPATCH_ID_PATTERN})\s*$", re.MULTILINE
@@ -422,11 +424,14 @@ def find_dispatch(ledger: Ledger, dispatch_id: str) -> DispatchRecord | None:
     """Read what the ledger says one dispatch may do.
 
     Returns:
-        The dispatch's record, or None when no row carries that id, or when rows
-        carrying it disagree on what it may do: ids are minted unique, so a
-        ledger that says two things of one says neither.
+        The dispatch's record, or None when no row carries that id, when rows
+        carrying it disagree on what it may do (ids are minted unique, so a
+        ledger that says two things of one says neither), or when it is voided
+        (ruling 42).
 
     """
+    if dispatch_id in _voided(ledger):
+        return None
     found = {
         DispatchRecord(
             dispatch_id=dispatch_id,
@@ -485,6 +490,7 @@ def open_unclaimed_dispatches(ledger: Ledger, project_root: str) -> list[str]:
 
     """
     claimed = {row.extra.get("dispatch_id") for row in ledger.query(event_type=_CLAIMED)}
+    claimed |= _voided(ledger)
     in_flight: dict[str, bool] = {}
     found: list[str] = []
     for row in ledger.query(event_type=_DISPATCHED):
@@ -498,6 +504,37 @@ def open_unclaimed_dispatches(ledger: Ledger, project_root: str) -> list[str]:
         if in_flight[package] and dispatch_id not in found:
             found.append(str(dispatch_id))
     return found
+
+
+def _voided(ledger: Ledger) -> set[str]:
+    return {str(row.extra.get("dispatch_id")) for row in ledger.query(event_type=_VOIDED)}
+
+
+def record_dispatch_void(
+    ledger: Ledger, work_package: str, dispatch_id: str, reason: str
+) -> DispatchVoidedEvent:
+    """Book that the coordinator abandoned a dispatch (RP-12 ruling 42).
+
+    Returns:
+        The event booked.
+
+    """
+    record = find_dispatch(ledger, dispatch_id)
+    if record is None:
+        _refuse(f"No live dispatch {dispatch_id} is booked; nothing to void.")
+    if record.work_package != work_package:
+        _refuse(f"Dispatch {dispatch_id} was booked on {record.work_package}, not {work_package}.")
+    event = DispatchVoidedEvent.model_validate(
+        {
+            "event": _VOIDED,
+            "id": dispatch_id,
+            "dispatch_id": dispatch_id,
+            "work_package": work_package,
+            "reason": reason,
+        }
+    )
+    ledger.append(ledger_row(event))
+    return event
 
 
 def _settled(ledger: Ledger, work_package: str) -> tuple[set[str], set[str]]:

@@ -20,7 +20,7 @@ from gzkit.cli.parser_maintenance import register_maintenance_parsers
 from gzkit.commands.content import register_content_parsers
 from gzkit.commands.insights import register_insights_parsers
 from gzkit.core.exceptions import GzkitError
-from gzkit.dispatch_stamp import consume_stamp, stamp_refusal
+from gzkit.dispatch_stamp import consume_stamp, is_stamped, stamp_refusal
 
 # Lazy re-exports preserved for ``@patch("gzkit.cli.main.X")`` compatibility in
 # tests and for backward-compat callers. Resolving these at module top pulls
@@ -216,6 +216,9 @@ def main(argv: list[str] | None = None) -> int:
         parser.print_help()
         return 2
 
+    # Read before the check consumes it: a verb an operator or the coordinator
+    # alone may run refuses a call stamped as a subagent's (RP-12 ruling 42).
+    args.called_by_subagent = is_stamped(os.environ)
     if _refused_by_stamp():
         return 3
 

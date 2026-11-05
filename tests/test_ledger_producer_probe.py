@@ -35,6 +35,12 @@ class ProducerProbeTests(unittest.TestCase):
         self.assertEqual(observation.status, "verified", observation.error)
         self.assertRegex(observation.subject or "", r"^D-[0-9a-f]{16}$")
 
+    def test_the_void_writer_is_verified_and_its_refusals_proven(self) -> None:
+        """RP-12 ruling 42: one void, none for a voided or unknown dispatch."""
+        observation = probe_producer("dispatch_voided")
+        self.assertEqual(observation.status, "verified", observation.error)
+        self.assertRegex(observation.subject or "", r"^D-[0-9a-f]{16}$")
+
     def test_real_initializer_persists_obligation_and_disposes_the_project(self) -> None:
         roots: list[Path] = []
 

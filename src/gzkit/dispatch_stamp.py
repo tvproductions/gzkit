@@ -68,6 +68,16 @@ def _same_directory(intended: Path, real: Path) -> bool:
         return False
 
 
+def is_stamped(environ: Mapping[str, str]) -> bool:
+    """Say whether a call carries the stamp, so is a subagent's (rulings 17, 38).
+
+    Returns:
+        True when the root variable is present, empty or not.
+
+    """
+    return STAMP_ROOT_ENV in environ
+
+
 def stamp_refusal(environ: Mapping[str, str], real_root: Callable[[], Path]) -> str | None:
     """Say why a stamped call is refused, or nothing when it may run.
 
@@ -84,7 +94,7 @@ def stamp_refusal(environ: Mapping[str, str], real_root: Callable[[], Path]) -> 
         absolute on this host, which no dispatch here books.
 
     """
-    if STAMP_ROOT_ENV not in environ:
+    if not is_stamped(environ):
         return None
     stamped = environ[STAMP_ROOT_ENV].strip()
     dispatch = environ.get(STAMP_ID_ENV, "").strip() or "no dispatch id"

@@ -70,6 +70,7 @@ from gzkit.work_package_run import (
     dispatch_line,
     history_move,
     package_history,
+    record_dispatch_void,
     record_work_package_block,
     record_work_package_dispatch,
     record_work_package_unblock,
@@ -674,6 +675,44 @@ def wp_dispatch_cmd(*, fields: dict[str, object], as_json: bool) -> None:
     )
     fmt.emit("Put this line in the dispatched agent's prompt:")
     fmt.emit(dispatch_line(str(event.dispatch_id)))
+
+
+def wp_dispatch_void_cmd(
+    *,
+    work_package: str,
+    dispatch_id: str,
+    reason: str | None,
+    called_by_subagent: bool,
+    as_json: bool,
+) -> None:
+    """Abandon a booked dispatch, so it is never open (RP-12 ruling 42).
+
+    Raises:
+        PolicyBreachError: The call is a subagent's, or the void is refused.
+        ValidationError: ``--reason`` is missing or empty.
+
+    """
+    if called_by_subagent:
+        msg = (
+            "A dispatch void is refused from a subagent's call: it releases the guard "
+            "that holds undispatched subagents while a dispatch is open, so only the "
+            "coordinator voids (RP-12 ruling 42). Run it from the main session."
+        )
+        raise PolicyBreachError(msg)
+    if reason is None or not reason.strip():
+        msg = "--void needs --reason, why the dispatch is abandoned."
+        raise ValidationError(msg)
+    _root, catalog, ledger = _context()
+    _held(catalog, work_package)
+    try:
+        event = record_dispatch_void(ledger, work_package, dispatch_id, reason.strip())
+    except ValueError as exc:
+        raise PolicyBreachError(str(exc)) from exc
+    fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
+    if as_json:
+        fmt.emit(event)
+        return
+    fmt.emit(f"Voided dispatch {event.dispatch_id} on {event.work_package}: {event.reason}.")
 
 
 def _read_refutations(root: Path, work_package: str, reason: str) -> tuple[dict[str, int], str]:

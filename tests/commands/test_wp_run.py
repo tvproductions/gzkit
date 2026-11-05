@@ -187,6 +187,38 @@ class TestRunVerbs(unittest.TestCase):
             self.assertEqual(self._dispatch("Implementer"), 0)
         self.assertEqual(len(_rows("work_package_dispatched")), 1)
 
+    def _void(self, dispatch_id: str, *extra: str) -> int:
+        args = ["wp", "dispatch", _PACKAGE, "--void", dispatch_id, *extra]
+        return self.runner.invoke(main, args).exit_code
+
+    def test_a_void_books_its_reason_and_needs_one(self) -> None:
+        """RP-12 ruling 42."""
+        self.assertEqual(self._dispatch("Implementer"), 0)
+        (row,) = _rows("work_package_dispatched")
+        self.assertEqual(self._void(row["dispatch_id"]), 1)
+        self.assertEqual(self._void(row["dispatch_id"], "--reason", "never spawned"), 0)
+        (void,) = _rows("dispatch_voided")
+        self.assertEqual(
+            (void["dispatch_id"], void["reason"]), (row["dispatch_id"], "never spawned")
+        )
+        self.assertEqual(self._void(row["dispatch_id"], "--reason", "again"), 3)
+
+    def test_a_void_from_a_subagents_call_is_refused(self) -> None:
+        """Ruling 42: no subagent voids its way out, as rulings 24 and 32 refuse."""
+        self.assertEqual(self._dispatch("Implementer"), 0)
+        (row,) = _rows("work_package_dispatched")
+        stamp = {STAMP_ROOT_ENV: Path.cwd().resolve().as_posix(), STAMP_ID_ENV: ""}
+        with patch.dict(os.environ, stamp):
+            self.assertEqual(self._void(row["dispatch_id"], "--reason", "why"), 3)
+        self.assertEqual(_rows("dispatch_voided"), [])
+
+    def test_a_booking_still_needs_its_role_and_model(self) -> None:
+        bare = ["wp", "dispatch", _PACKAGE, "--issue", "1200"]
+        self.assertEqual(self.runner.invoke(main, bare).exit_code, 2)
+        self.assertEqual(self.runner.invoke(main, [*bare, "--role", "Implementer"]).exit_code, 2)
+        both = [*bare, "--role", "Implementer", "--model", "m", "--void", "D-0123456789abcdef"]
+        self.assertEqual(self.runner.invoke(main, both).exit_code, 2)
+
     def test_the_operator_is_never_defaulted(self) -> None:
         self.assertEqual(self._block(), 0)
         args = ["wp", "unblock", _PACKAGE, "--ruling", "go on"]

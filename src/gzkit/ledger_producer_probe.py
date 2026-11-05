@@ -10,7 +10,7 @@ import tempfile
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -34,6 +34,9 @@ from gzkit.events import (
 from gzkit.models.catalog import CATALOG_FILES, Catalog, load_catalog
 from gzkit.pipeline_dispatch import MAX_REVIEW_FIX_CYCLES
 from gzkit.registries import registry_path
+
+if TYPE_CHECKING:
+    from gzkit.ledger import Ledger
 
 _OBPI = "OBPI-0.1.0-01-producer-probe"
 _AUTHOR = "isolated-producer-probe"
@@ -747,7 +750,47 @@ def _probe_work_package_run(root: Path, event_type: str) -> ProducerObservation:
     )
 
 
-def _probe_dispatch_claim(root: Path) -> ProducerObservation:
+def _observe_dispatch_void(
+    ledger: Ledger, ledger_path: Path, dispatch_id: str
+) -> ProducerObservation:
+    """Void a booked dispatch, then try it again and an unknown id (RP-12 ruling 42).
+
+    Returns:
+        The verified observation.
+
+    Raises:
+        ValueError: A refusal booked a row, or the void left the dispatch live.
+
+    """
+    from gzkit import work_package_ledger as wpl  # noqa: PLC0415 - the writer; import only when probed
+    from gzkit import work_package_run as run  # noqa: PLC0415
+
+    seated = ledger_path.read_bytes()
+    event = run.record_dispatch_void(ledger, _REPAIR_PACKAGE, dispatch_id, _AUTHOR)
+    for target in (dispatch_id, "D-0000000000000000"):
+        _expect_refusal(
+            lambda target=target: run.record_dispatch_void(
+                ledger, _REPAIR_PACKAGE, target, _AUTHOR
+            ),
+            "a void of no live dispatch",
+            wpl.WorkPackageLedgerError,
+        )
+    persisted = ledger_path.read_bytes()
+    added = persisted[len(seated) :].decode("utf-8").splitlines()
+    if len(added) != 1 or run.find_dispatch(ledger, dispatch_id) is not None:
+        msg = "A void must book one row, none for a refusal, and leave no live dispatch"
+        raise ValueError(msg)
+    return ProducerObservation(
+        event_type="dispatch_voided",
+        producer=_PRODUCERS["dispatch_voided"],
+        status="verified",
+        ledger_sha256=hashlib.sha256(persisted).hexdigest(),
+        record_count=1,
+        subject=event.id,
+    )
+
+
+def _probe_dispatch_claim(root: Path, event_type: str = "dispatch_claimed") -> ProducerObservation:
     """Commence and dispatch, then claim it twice and claim an unknown id (RP-12 ruling 40).
 
     Returns:
@@ -795,6 +838,8 @@ def _probe_dispatch_claim(root: Path) -> ProducerObservation:
         ),
     )
     dispatch_id = str(dispatched.dispatch_id)
+    if event_type == "dispatch_voided":
+        return _observe_dispatch_void(ledger, ledger_path, dispatch_id)
     seated = ledger_path.read_bytes()
     claimed = run.record_dispatch_claim(ledger, dispatch_id, "a-probe", "stamp")
     again = run.record_dispatch_claim(ledger, dispatch_id, "a-probe", "agent_returned")
@@ -882,6 +927,7 @@ _PRODUCERS = {
     "work_package_blocked": "gzkit.work_package_run.record_work_package_block",
     "work_package_unblocked": "gzkit.work_package_run.record_work_package_unblock",
     "dispatch_claimed": "gzkit.work_package_run.record_dispatch_claim",
+    "dispatch_voided": "gzkit.work_package_run.record_dispatch_void",
     "legacy_unit_withdrawn": "gzkit.legacy_units.withdraw_legacy_unit",
 }
 
@@ -898,6 +944,7 @@ _ROOT_PROBES = {
     "work_package_issue_closed": _probe_work_package_issue_closed,
     "legacy_unit_withdrawn": _probe_legacy_withdrawal,
     "dispatch_claimed": _probe_dispatch_claim,
+    "dispatch_voided": lambda root: _probe_dispatch_claim(root, "dispatch_voided"),
 }
 
 

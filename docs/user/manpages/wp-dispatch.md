@@ -1,11 +1,13 @@
 # gz wp dispatch
 
-Record one dispatch on a commenced work package, holding the fix-cycle bound.
+Record one dispatch on a commenced work package, holding the fix-cycle bound, or
+void one the coordinator abandoned.
 
 ## Usage
 
 ```bash
 gz wp dispatch <WP-id> --role <role> --model <tier> (--req <REQ> | --issue <n>) [--root <dir>] [OPTIONS]
+gz wp dispatch <WP-id> --void <D-id> --reason <why> [OPTIONS]
 ```
 
 ## Options
@@ -13,11 +15,12 @@ gz wp dispatch <WP-id> --role <role> --model <tier> (--req <REQ> | --issue <n>) 
 | Flag | Description |
 |------|-------------|
 | `WP-id` | The work package's id. Required |
-| `--role` | `Implementer`, `SpecReviewer`, `QualityReviewer` or `SingleDriver`. Required |
-| `--model` | The model tier. Required |
+| `--role` | `Implementer`, `SpecReviewer`, `QualityReviewer` or `SingleDriver`. Required to book |
+| `--model` | The model tier. Required to book |
 | `--req` | The frozen REQ dispatched against. Give this or `--issue` |
 | `--issue` | The carried issue dispatched against. Give this or `--req` |
-| `--reason` | Why the run is single-driver. Required with `SingleDriver`, refused otherwise |
+| `--reason` | Why the run is single-driver: required with `SingleDriver`, refused otherwise. With `--void`, why the dispatch is abandoned, required |
+| `--void` | Abandon this booked dispatch, `D-` and 16 hex digits, instead of booking one; takes no `--role` or `--model` |
 | `--root` | The project root the dispatch is for, an existing directory. Defaults to this project's root |
 | `--json` | Output as JSON: the booked event, `dispatch_id` and `intended_root` included |
 | `--quiet`, `-q` | Suppress non-error output |
@@ -73,6 +76,14 @@ root is resolved against the current directory; an empty `--root`, or a root tha
 is not an existing directory, exits 1 and books nothing. The root is booked as one
 absolute path with forward slashes, a drive-rooted Windows path included.
 
+`--void` abandons a booked dispatch: one never spawned, handed to a harness with
+no hooks, or whose subagent stopped before it ran `gz`. It books one
+`dispatch_voided` event with its reason, and a voided dispatch is no dispatch: it
+is never open, and a subagent carrying its line is stamped no root (ruling 42).
+Only the coordinator voids: a call stamped as a subagent's is refused with exit
+3, so no subagent voids its way past the guard. A dispatch already voided, never
+booked, or booked on another package is refused with exit 3.
+
 ## Examples
 
 Observed in a scratch project holding `WP-01-loop`, commenced, at
@@ -91,6 +102,17 @@ Put this line in the dispatched agent's prompt:
 GZKIT-DISPATCH: D-1edf53c694bba4ca
 ```
 
+Voiding an abandoned dispatch, then the refusals, in the same project:
+
+```console
+$ uv run gz wp dispatch WP-01-loop --void D-07aa91ba3ebabbf1 --reason "never spawned"
+Voided dispatch D-07aa91ba3ebabbf1 on WP-01-loop: never spawned.
+$ uv run gz wp dispatch WP-01-loop --void D-07aa91ba3ebabbf1 --reason "again"
+No live dispatch D-07aa91ba3ebabbf1 is booked; nothing to void.
+$ uv run gz wp dispatch WP-01-loop --void D-07aa91ba3ebabbf1
+--void needs --reason, why the dispatch is abandoned.
+```
+
 With `#1200` at the bound:
 
 ```console
@@ -103,10 +125,10 @@ and take an exit: reopen, departure, hold, terminate.
 
 | Code | Meaning |
 |------|---------|
-| 0 | The dispatch was booked |
-| 1 | The work package is not in the store, or the intended root is empty or not an existing directory |
-| 2 | Usage error |
-| 3 | The dispatch is refused, the bound included; nothing was booked |
+| 0 | The dispatch was booked, or voided |
+| 1 | The work package is not in the store, the intended root is empty or not an existing directory, or `--void` has no `--reason` |
+| 2 | Usage error: `--role` or `--model` missing to book, or given with `--void` |
+| 3 | The dispatch or the void is refused, the bound and a subagent's call included; nothing was booked |
 
 ## See also
 

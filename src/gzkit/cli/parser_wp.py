@@ -73,6 +73,43 @@ def _register_wp_withdraw_legacy(wp_commands: argparse._SubParsersAction) -> Non
     )
 
 
+def _dispatch_or_void(parser: argparse.ArgumentParser, a: argparse.Namespace) -> object:
+    """Route ``gz wp dispatch`` to its booking or, with ``--void``, to its void.
+
+    Booking needs ``--role`` and ``--model`` and takes no ``--void``; a void
+    takes neither. A wrong combination is a usage error, exit 2.
+
+    Returns:
+        What the handler returns.
+
+    """
+    if a.void is not None:
+        if a.role is not None or a.model is not None:
+            parser.error("--void abandons a dispatch; it takes no --role or --model")
+        return _lazy("wp_dispatch_void_cmd")(
+            work_package=a.work_package,
+            dispatch_id=a.void,
+            reason=a.reason,
+            called_by_subagent=bool(getattr(a, "called_by_subagent", False)),
+            as_json=a.as_json,
+        )
+    missing = [flag for flag, value in (("--role", a.role), ("--model", a.model)) if value is None]
+    if missing:
+        parser.error(f"the following arguments are required: {', '.join(missing)}")
+    return _lazy("wp_dispatch_cmd")(
+        fields={
+            "work_package": a.work_package,
+            "role": a.role,
+            "model": a.model,
+            "req": a.req,
+            "issue": a.issue,
+            "reason": a.reason,
+            "root": a.root,
+        },
+        as_json=a.as_json,
+    )
+
+
 def _register_wp_run(wp_commands: argparse._SubParsersAction) -> None:
     """Register ``gz wp dispatch``, ``block`` and ``unblock`` (RO-14 tranche 1)."""
     p_dispatch = wp_commands.add_parser(
@@ -82,47 +119,41 @@ def _register_wp_run(wp_commands: argparse._SubParsersAction) -> None:
             "Record one dispatch on a commenced work package. The cycle past the\n"
             "fix-cycle bound is refused whatever was ruled (GHI #1200). The dispatch\n"
             "is bound to a minted id and its intended root; put the printed line in\n"
-            "the dispatched agent's prompt (RP-12 rulings 1 and 35)."
+            "the dispatched agent's prompt (RP-12 rulings 1 and 35). --void abandons\n"
+            "a booked dispatch, refused from a subagent's call (ruling 42)."
         ),
         epilog=build_epilog(
             [
                 "gz wp dispatch WP-01-x --role Implementer --model sonnet --req REQ-1",
                 "gz wp dispatch WP-01-x --role Implementer --model m --issue 1 --root ../tmp",
+                "gz wp dispatch WP-01-x --void D-0123456789abcdef --reason 'never spawned'",
             ]
         ),
     )
     p_dispatch.add_argument("work_package", help="The work package's id, WP-<NN>-<slug>")
     p_dispatch.add_argument(
         "--role",
-        required=True,
-        help="Implementer, SpecReviewer, QualityReviewer or SingleDriver",
+        default=None,
+        help="Implementer, SpecReviewer, QualityReviewer or SingleDriver; required to book",
     )
-    p_dispatch.add_argument("--model", required=True, help="The model tier")
+    p_dispatch.add_argument("--model", default=None, help="The model tier; required to book")
     p_dispatch.add_argument("--req", default=None, help="The frozen REQ dispatched against")
     p_dispatch.add_argument(
         "--issue", type=int, default=None, help="The carried issue dispatched against"
     )
-    p_dispatch.add_argument("--reason", default=None, help="Why the run is single-driver")
+    p_dispatch.add_argument(
+        "--reason", default=None, help="Why the run is single-driver, or why a dispatch is voided"
+    )
+    p_dispatch.add_argument(
+        "--void", default=None, metavar="D-ID", help="Abandon this booked dispatch instead"
+    )
     p_dispatch.add_argument(
         "--root",
         default=None,
         help="The project root the dispatch is for; defaults to this project's",
     )
     add_json_flag(p_dispatch)
-    p_dispatch.set_defaults(
-        func=lambda a: _lazy("wp_dispatch_cmd")(
-            fields={
-                "work_package": a.work_package,
-                "role": a.role,
-                "model": a.model,
-                "req": a.req,
-                "issue": a.issue,
-                "reason": a.reason,
-                "root": a.root,
-            },
-            as_json=a.as_json,
-        )
-    )
+    p_dispatch.set_defaults(func=lambda a: _dispatch_or_void(p_dispatch, a))
 
     p_block = wp_commands.add_parser(
         "block",

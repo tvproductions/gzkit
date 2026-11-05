@@ -5,9 +5,9 @@ description: Use to create, attach issues to, move, change, add evidence to or r
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-04
+last_reviewed: 2026-11-05
 metadata:
-  skill-version: "0.7.1"
+  skill-version: "0.8.0"
 model: sonnet
 ---
 
@@ -107,6 +107,10 @@ Once commenced, each dispatch is booked, and the runtime holds the fix-cycle bou
    put that line in the dispatched agent's prompt, and name another project's root
    with `--root <dir>` when the dispatch is meant for one (RP-12 rulings 1 and 35).
    A stamped `gz` call from any other root exits 3 before it writes (ruling 36).
+   A dispatch you booked and will not spawn, or handed to a harness with no
+   hooks, holds ad hoc subagents to no root while it is open: void it from the
+   main session with `uv run gz wp dispatch <WP-id> --void <D-id> --reason "<why>"`
+   (rulings 40 and 42).
 2. **At the bound the dispatch refuses (exit 3).** Do not route around it: a further
    repair cycle does not exist. Escalate:
    `uv run gz wp block <WP-id> --reason "<why>" --next-action "<decision>"`. The

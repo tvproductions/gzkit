@@ -2560,6 +2560,27 @@
         }
       }
     },
+    "dispatch_voided": {
+      "required": [
+        "dispatch_id",
+        "work_package",
+        "reason"
+      ],
+      "properties": {
+        "dispatch_id": {
+          "type": "string",
+          "pattern": "^D-[0-9a-f]{16}$"
+        },
+        "work_package": {
+          "type": "string",
+          "min_length": 1
+        },
+        "reason": {
+          "type": "string",
+          "min_length": 1
+        }
+      }
+    },
     "work_package_blocked": {
       "required": [
         "work_package",

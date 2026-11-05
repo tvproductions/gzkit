@@ -1913,6 +1913,23 @@ class DispatchClaimedEvent(_EventBase):
     )
 
 
+class DispatchVoidedEvent(_EventBase):
+    """dispatch_voided event — a dispatch the coordinator abandoned (RP-12 ruling 42).
+
+    Written only by ``gzkit.work_package_run.record_dispatch_void`` through
+    ``gz wp dispatch --void``, refused on a call stamped as a subagent's. A
+    voided dispatch is no dispatch: it is never open, and a subagent carrying its
+    line is stamped no root. ``id`` is the dispatch id.
+    """
+
+    event: Literal["dispatch_voided"]
+    dispatch_id: str = Field(
+        ..., pattern=f"^{DISPATCH_ID_PATTERN}$", description="The dispatch voided"
+    )
+    work_package: str = Field(..., min_length=1, description="The package it was booked on")
+    reason: str = Field(..., min_length=1, description="Why it was abandoned")
+
+
 class WorkPackageBlockedEvent(_EventBase):
     """work_package_blocked event — the package's next act is the operator's (RO-14).
 
@@ -2050,6 +2067,7 @@ TypedLedgerEvent = Annotated[
     | WorkPackageIssueClosedEvent
     | WorkPackageDispatchedEvent
     | DispatchClaimedEvent
+    | DispatchVoidedEvent
     | WorkPackageBlockedEvent
     | WorkPackageUnblockedEvent,
     Field(discriminator="event"),

@@ -29,7 +29,9 @@ from gzkit.work_package_run import (
     count_fix_cycles,
     dispatch_line,
     find_dispatch,
+    open_unclaimed_dispatches,
     read_dispatch_id,
+    record_dispatch_void,
     record_work_package_block,
     record_work_package_dispatch,
     record_work_package_unblock,
@@ -816,6 +818,53 @@ class DispatchRecord(_Run):
             with self.subTest(prompt=prompt):
                 self.assertIsNone(read_dispatch_id(prompt))
         self.assertEqual(read_dispatch_id(f"{dispatch_line(one)}\n{dispatch_line(one)}"), one)
+
+
+class DispatchVoid(_Run):
+    """RP-12 ruling 42: a dispatch the coordinator abandons is voided, never open."""
+
+    def _booked(self, package: str = _FIRST) -> str:
+        event = self._dispatch("Implementer", package)
+        assert event.dispatch_id is not None
+        return event.dispatch_id
+
+    def _elsewhere(self) -> str:
+        """Book a dispatch for another root, so it can be open.
+
+        Returns:
+            Its dispatch id.
+
+        """
+        request = DispatchRequest(
+            work_package=_FIRST, role="Implementer", model="m", req="REQ-1", root="/elsewhere"
+        )
+        event = record_work_package_dispatch(self.catalog, self.ledger, request)
+        assert event.dispatch_id is not None
+        return event.dispatch_id
+
+    def test_a_voided_dispatch_is_no_dispatch_and_never_open(self) -> None:
+        dispatch_id = self._elsewhere()
+        self.assertEqual(
+            open_unclaimed_dispatches(self.ledger, self.root.as_posix()), [dispatch_id]
+        )
+        event = record_dispatch_void(self.ledger, _FIRST, dispatch_id, "never spawned")
+        self.assertEqual((event.dispatch_id, event.reason), (dispatch_id, "never spawned"))
+        self.assertIsNone(find_dispatch(self.ledger, dispatch_id))
+        self.assertEqual(open_unclaimed_dispatches(self.ledger, self.root.as_posix()), [])
+
+    def test_a_void_is_refused_for_an_unknown_a_foreign_or_a_voided_dispatch(self) -> None:
+        dispatch_id = self._booked()
+        cases = (
+            ("D-0000000000000000", _FIRST, "unknown"),
+            (dispatch_id, _SECOND, "foreign"),
+        )
+        for target, package, label in cases:
+            with self.subTest(case=label), self.assertRaises(WorkPackageLedgerError):
+                record_dispatch_void(self.ledger, package, target, "why")
+        record_dispatch_void(self.ledger, _FIRST, dispatch_id, "why")
+        with self.assertRaises(WorkPackageLedgerError):
+            record_dispatch_void(self.ledger, _FIRST, dispatch_id, "again")
+        self.assertEqual(len(self._rows("dispatch_voided")), 1)
 
 
 if __name__ == "__main__":
