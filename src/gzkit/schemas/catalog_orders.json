@@ -17,8 +17,9 @@
           "type": "string"
         },
         "aliases": {
-          "description": "Short names such as `O2`.",
+          "description": "Short names such as `O2`, each unique within the package.",
           "items": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
             "type": "string"
           },
           "title": "Aliases",

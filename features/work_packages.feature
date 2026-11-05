@@ -25,12 +25,18 @@ Feature: Work packages run through the gz wp verbs
     And the output contains "no marker is read"
 
   Scenario: an order the store does not hold is a user error
+    Given the workspace is initialized
+    And the requirements catalog is seeded
     When I run the gz command "wp order show ORD-99-nothing"
     Then the command exits with code 1
+    And the output contains "is not in data/catalog/orders.json"
 
   Scenario: a package the store does not hold is a user error
+    Given the workspace is initialized
+    And the requirements catalog is seeded
     When I run the gz command "wp show WP-99-nothing"
     Then the command exits with code 1
+    And the output contains "is not in data/catalog/work_packages.json"
 
   Scenario: recording an issue close without its reviewer is a usage error
     When I run the gz command "wp resolve WP-01-x 1183 --commit abc1234"

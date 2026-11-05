@@ -44,6 +44,7 @@ from ._qc_claim_exemptions import QC_CLAIM_EXEMPTS
 from ._qc_claim_populations import QC_CLAIM_POPULATIONS
 from ._qc_nc_entrypoints import (
     _ep_astral_discipline_deferred_annotations,
+    _ep_catalog_orders,
     _ep_catalog_work_packages,
     _ep_model_class_only,
     _ep_supply_chain_audit,
@@ -1728,6 +1729,45 @@ def _build_catalog_work_packages() -> Path:
     return root
 
 
+def _nc_order(order_id: str, work_package: str, aliases: list[str]) -> dict[str, object]:
+    return {
+        "id": order_id,
+        "work_package": work_package,
+        "aliases": aliases,
+        "purpose": "Negative control.",
+        "procedure": "NA",
+    }
+
+
+def _build_catalog_orders() -> Path:
+    """Plant an order in a delivery package and two orders sharing an alias (RP-12 O2).
+
+    ORD-03-ok sits in a repair package and shares its alias with an order of another
+    package, which ruling 49 allows, so a finding naming it is a decoy firing.
+
+    Returns:
+        The project root.
+
+    """
+    root = _catalog_project("catalog-orders", [_nc_outcome("H1")], [])
+    delivery = {**_nc_work_package("WP-01-d", 0), "kind": "delivery", "outcome": "H1"}
+    delivery |= {"issues": [], "lane": None}
+    packages = [delivery, _nc_work_package("WP-02-r", 7), _nc_work_package("WP-03-s", 8)]
+    payload = json.dumps({"_doc": "Negative control.", "work_packages": packages})
+    _write(root / "data" / "catalog" / "work_packages.json", payload)
+    orders = [
+        _nc_order("ORD-01-nc", "WP-01-d", []),
+        _nc_order("ORD-02-a", "WP-02-r", ["O1"]),
+        _nc_order("ORD-04-b", "WP-02-r", ["O1"]),
+        _nc_order("ORD-03-ok", "WP-03-s", ["O1"]),
+    ]
+    _write(
+        root / "data" / "catalog" / "orders.json",
+        json.dumps({"_doc": "Negative control.", "orders": orders}),
+    )
+    return root
+
+
 def _build_catalog_coverage() -> Path:
     """Leave FR-002 with no deriving REQ — the coverage report MUST name it (RO-3)."""
     return _catalog_project("catalog-coverage", [_nc_outcome("H1")], [_nc_req("REQ-1", "H1")])
@@ -2434,6 +2474,12 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         _build_catalog_work_packages,
         _ep_catalog_work_packages,
         "Work package WP-01-nc (delivery) names outcome H9, which the catalog does not hold",
+    ),
+    (
+        "requirements-catalog-orders",
+        _build_catalog_orders,
+        _ep_catalog_orders,
+        "Order ORD-01-nc sits in delivery package WP-01-d",
     ),
     (
         "requirements-catalog-bdd",

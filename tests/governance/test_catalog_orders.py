@@ -14,6 +14,7 @@ from pydantic import ValidationError as PydanticValidationError
 
 from gzkit.governance.trust_audits.catalog import audit_catalog
 from gzkit.models.catalog import Order, load_catalog
+from gzkit.registries import RegistryError
 from tests.governance.test_catalog import _Tree, _wp
 
 
@@ -58,7 +59,10 @@ class TestOrderStore(_Tree):
 
     def setUp(self) -> None:
         super().setUp()
-        self.write("work_packages", [_wp("WP-01-x"), _wp("WP-02-d", "delivery")])
+        self.write(
+            "work_packages",
+            [_wp("WP-01-x"), _wp("WP-02-d", "delivery"), _wp("WP-03-y", issues=[7])],
+        )
 
     def test_an_order_on_a_repair_package_the_catalog_holds_passes(self):
         self.write("orders", [_order("ORD-01-a"), _order("ORD-02-b", aliases=["O2"])])
@@ -79,21 +83,60 @@ class TestOrderStore(_Tree):
         self.assertIn("ruling 44", errors[0].message)
 
     def test_an_id_or_its_number_is_never_reused(self):
-        for second in ("ORD-01-a", "ORD-01-other"):
+        """The series compares numbers, so ORD-001 reuses ORD-01's number."""
+        for second in ("ORD-01-a", "ORD-01-other", "ORD-001-b"):
             with self.subTest(second=second):
                 self.write("orders", [_order("ORD-01-a"), _order(second)])
                 self.assertEqual(self.fields(), ["orders"])
 
-    def test_an_alias_names_one_order(self):
+    def test_an_alias_is_unique_within_its_package(self):
+        """Ruling 49: two orders of one package may not share an alias."""
         self.write(
             "orders", [_order("ORD-01-a", aliases=["O2"]), _order("ORD-02-b", aliases=["O2"])]
         )
-        self.assertEqual(self.fields(), ["orders"])
+        errors = audit_catalog(self.root)
+        self.assertEqual([e.field for e in errors], ["orders"])
+        self.assertIn("ruling 49", errors[0].message)
+
+    def test_orders_of_two_packages_may_share_an_alias(self):
+        """Ruling 49: a specification's short name numbers the orders of one package."""
+        self.write(
+            "orders",
+            [_order("ORD-01-a", aliases=["O2"]), _order("ORD-02-b", "WP-03-y", aliases=["O2"])],
+        )
+        self.assertEqual(audit_catalog(self.root), [])
+
+    def test_an_alias_is_never_an_order_or_package_id(self):
+        for alias in ("ORD-02-b", "WP-03-y"):
+            with self.subTest(alias=alias):
+                self.write("orders", [_order("ORD-01-a", aliases=[alias])])
+                self.assertEqual(self.fields(), ["orders"])
+
+    def test_an_alias_is_one_word(self):
+        for alias in ("", "O 2", "-O2"):
+            with self.subTest(alias=alias), self.assertRaises(PydanticValidationError):
+                Order.model_validate(_order("ORD-01-a", aliases=[alias]))
 
     def test_a_missing_store_is_a_tree_defect(self):
         """A registry the tree lacks fails the scope rather than reading as empty (GHI #1067)."""
         (self.root / "data" / "catalog" / "orders.json").unlink()
         self.assertEqual(self.fields(), ["orders"])
+
+    def test_a_reader_of_a_catalog_missing_a_file_is_told_the_repair(self):
+        """A project initialized before a catalog file landed is pointed at `gz init`'s repair."""
+        (self.root / "data" / "catalog" / "orders.json").unlink()
+        with self.assertRaises(RegistryError) as caught:
+            load_catalog(self.root)
+        self.assertIn("data/catalog/orders.json", str(caught.exception))
+        self.assertIn("uv run gz init", str(caught.exception))
+
+
+class TestWorkPackageSeries(_Tree):
+    """The work-package series compares numbers too, so WP-001 reuses WP-01's (RO-5 ruling 6)."""
+
+    def test_a_padded_number_is_the_same_number(self):
+        self.write("work_packages", [_wp("WP-01-a"), _wp("WP-001-b", issues=[7])])
+        self.assertEqual(self.fields(), ["work_packages"])
 
 
 if __name__ == "__main__":

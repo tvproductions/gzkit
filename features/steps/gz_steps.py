@@ -98,6 +98,14 @@ def step_init_default(_context) -> None:
     _quick_init(mode="lite")
 
 
+@given("the requirements catalog is seeded")
+def step_seed_catalog(_context) -> None:
+    """Seed `data/catalog/` as `gz init` does; the quick init writes no catalog."""
+    from gzkit.catalog_seed import seed_catalog  # noqa: PLC0415
+
+    seed_catalog(Path.cwd())
+
+
 @given("the workspace is initialized with agent surfaces in heavy mode")
 def step_init_heavy_with_surfaces(_context) -> None:
     _init_with_agent_surfaces(mode="heavy")

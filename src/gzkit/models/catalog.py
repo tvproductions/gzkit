@@ -16,12 +16,12 @@ is what keeps either from creeping back in as a field.
 """
 
 from pathlib import Path
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
 from gzkit.core.models import CATALOG_REQ_ID_BODY
-from gzkit.registries import load_registry
+from gzkit.registries import RegistryError, load_registry, registry_path
 
 #: The catalog files, by kind, and the seam name each is read under.
 CATALOG_FILES: dict[str, str] = {
@@ -47,6 +47,9 @@ WORK_PACKAGE_ID_PATTERN = r"^WP-[0-9]{2,}-[a-z0-9]+(-[a-z0-9]+)*$"
 
 #: One id series for every order, work or repair: `ORD-<NN>-<slug>` (RP-12 ruling 43).
 ORDER_ID_PATTERN = r"^ORD-[0-9]{2,}-[a-z0-9]+(-[a-z0-9]+)*$"
+
+#: An order's alias: one word, a specification's short name such as `O2` (RP-12 ruling 43).
+ORDER_ALIAS_PATTERN = r"^[A-Za-z0-9][A-Za-z0-9._-]*$"
 
 
 class Family(BaseModel):
@@ -207,7 +210,9 @@ class Order(BaseModel):
     work_package: str = Field(
         ..., pattern=WORK_PACKAGE_ID_PATTERN, description="The package the order sits in."
     )
-    aliases: tuple[str, ...] = Field(..., description="Short names such as `O2`.")
+    aliases: tuple[Annotated[str, Field(pattern=ORDER_ALIAS_PATTERN)], ...] = Field(
+        ..., description="Short names such as `O2`, each unique within the package."
+    )
     purpose: str = Field(..., min_length=1, description="What the order delivers or restores.")
     procedure: str = Field(..., min_length=1, description="Its procedure in prose, or NA.")
 
@@ -294,12 +299,35 @@ def catalog_json_schemas() -> dict[str, dict[str, Any]]:
     return {kind: model.model_json_schema() for kind, model in FILE_MODELS.items()}
 
 
+def _require_files(project_root: Path) -> None:
+    """Refuse a catalog missing a file, naming the repair that seeds it.
+
+    Raises:
+        RegistryError: A catalog file is absent.
+
+    """
+    missing = [
+        f"data/{name}"
+        for name in CATALOG_FILES.values()
+        if not registry_path(project_root, name).is_file()
+    ]
+    if missing:
+        msg = (
+            f"The requirements catalog lacks {', '.join(missing)}. Every catalog file is "
+            "read together, and a missing one is a tree defect, never an empty store "
+            "(GHI #1067). Run `uv run gz init`: its repair mode seeds each absent "
+            "data/catalog/ file and overwrites none."
+        )
+        raise RegistryError(msg)
+
+
 def load_catalog(project_root: Path) -> Catalog:
     """Read and parse the catalog files through the registry seam.
 
-    Raises `RegistryError` for a file that is missing or not JSON, and Pydantic's
-    `ValidationError` for one that does not match its model.
+    Raises `RegistryError` for a file that is missing, naming `gz init`'s repair, or
+    not JSON, and Pydantic's `ValidationError` for one that does not match its model.
     """
+    _require_files(project_root)
     families = FamiliesFile.model_validate(load_registry(project_root, CATALOG_FILES["families"]))
     outcomes = OutcomesFile.model_validate(load_registry(project_root, CATALOG_FILES["outcomes"]))
     reqs = ReqsFile.model_validate(load_registry(project_root, CATALOG_FILES["reqs"]))

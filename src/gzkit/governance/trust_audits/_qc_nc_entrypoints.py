@@ -789,6 +789,24 @@ def _ep_catalog_work_packages(root: Path) -> list[ValidationError]:
     return errors if caught == [1, 1] and on_store and len(errors) == len(planted) else []
 
 
+def _ep_catalog_orders(root: Path) -> list[ValidationError]:
+    """Both planted order breaches must fire, and the valid order must not.
+
+    Returns:
+        The two findings, or nothing when one is missing or a decoy fired.
+
+    """
+    from gzkit.governance.trust_audits.catalog import audit_catalog  # noqa: PLC0415
+
+    errors = audit_catalog(root)
+    planted = ("Order ORD-01-nc sits in delivery package", "Aliases O1 name more than one")
+    caught = [sum(error.message.startswith(p) for error in errors) for p in planted]
+    decoy = any("WP-03-s" in error.message or "ORD-03-ok" in error.message for error in errors)
+    on_store = all(error.field == "orders" for error in errors)
+    clean = on_store and not decoy and len(errors) == len(planted)
+    return errors if caught == [1, 1] and clean else []
+
+
 def _ep_catalog_bdd(root: Path) -> list[ValidationError]:
     """Each BDD alignment check must fire on its planted break, and nothing else."""
     return _ep_catalog_fields(root, {"feature", "scenario", "covers"})

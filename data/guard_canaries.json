@@ -588,6 +588,20 @@
       "authority": "docs/governance/harbor-ro5-work-packages.md (drydock RO-5 tranche 1)",
       "proposed_by": "claude-code session 2026-10-28",
       "reviewed_by": "g0"
+    },
+    {
+      "claim_id": "requirements-catalog-orders",
+      "guard": "gzkit.governance.trust_audits.catalog:order_breaches",
+      "failing_test": "tests.governance.test_catalog_orders.TestOrderStore.test_an_order_on_a_delivery_package_waits_for_rp14",
+      "mutation": {
+        "find": "        if kind == \"repair\":\n",
+        "replace": "        if kind in {\"repair\", \"delivery\"}:\n",
+        "label": "an order in a delivery package is accepted"
+      },
+      "binding_sha256": "d1331899e411907133882ae08ba83640e4af9d51326ab6a7ae880f1996302622",
+      "authority": "docs/governance/harbor-ro12-contractor-kit.md (RP-12 O2 task 1, rulings 43, 44 and 49)",
+      "proposed_by": "claude-code session 2026-11-05",
+      "reviewed_by": null
     }
   ]
 }

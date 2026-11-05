@@ -19,6 +19,7 @@ lock is RO-5's verbs'. RP-12 O2 adds the order store's checks (rulings 43 to 47)
 """
 
 import json
+import re
 from collections import Counter
 from collections.abc import Callable
 from pathlib import Path
@@ -42,6 +43,8 @@ from gzkit.ledger import Ledger
 from gzkit.models.catalog import (
     CATALOG_FILES,
     DELIVERY_EVENTS_FILE,
+    ORDER_ID_PATTERN,
+    WORK_PACKAGE_ID_PATTERN,
     Catalog,
     WorkPackage,
     load_catalog,
@@ -224,7 +227,7 @@ def _series_findings(packages: tuple[WorkPackage, ...]) -> list[ValidationError]
         One finding per repeated number, issue or alias family.
 
     """
-    numbers = [f"WP-{package.id.split('-')[1]}" for package in packages]
+    numbers = [f"WP-{int(package.id.split('-')[1])}" for package in packages]
     issues = [f"#{issue}" for package in packages for issue in package.issues]
     aliases = [alias for package in packages for alias in package.aliases]
     errors = _duplicates(
@@ -274,47 +277,86 @@ def work_package_findings(catalog: Catalog) -> list[ValidationError]:
     return errors
 
 
-def order_findings(catalog: Catalog) -> list[ValidationError]:
-    """Read the order store against RP-12's rulings 43 and 44.
+def _repeated(values: list[str]) -> list[str]:
+    return sorted(value for value, count in Counter(values).items() if count > 1)
 
-    One id series, each alias naming one order, and each order sitting in a repair
-    package the catalog holds: a delivery package keeps its five states until RP-14
-    moves construction onto the order (ruling 44).
+
+def _alias_breaches(catalog: Catalog) -> list[str]:
+    """Ruling 49: an alias is unique within its package, and never an order's or package's id.
 
     Returns:
-        The store's findings, empty when it holds.
+        Each breach as a sentence naming its ruling.
 
     """
-    numbers = [f"ORD-{order.id.split('-')[1]}" for order in catalog.orders]
-    aliases = [alias for order in catalog.orders for alias in order.aliases]
-    errors = _duplicates(
-        "orders",
-        "Order numbers",
-        numbers,
-        "One id series: a number names one order, never reused (RP-12 ruling 43).",
-    )
-    errors += _duplicates(
-        "orders", "Aliases", aliases, "An alias resolves to one order (RP-12 ruling 43)."
-    )
+    breaches: list[str] = []
+    packages = sorted({order.work_package for order in catalog.orders})
+    for package in packages:
+        aliases = [a for o in catalog.orders if o.work_package == package for a in o.aliases]
+        if repeated := _repeated(aliases):
+            breaches.append(
+                f"Aliases {', '.join(repeated)} name more than one order in {package}; an "
+                "alias is unique within its package (RP-12 ruling 49)."
+            )
+    shaped = [
+        alias
+        for order in catalog.orders
+        for alias in order.aliases
+        if re.match(ORDER_ID_PATTERN, alias) or re.match(WORK_PACKAGE_ID_PATTERN, alias)
+    ]
+    if shaped:
+        breaches.append(
+            f"Aliases {', '.join(sorted(set(shaped)))} are shaped as an order's or a package's "
+            "id; an alias is a specification's short name such as O2 (RP-12 ruling 43)."
+        )
+    return breaches
+
+
+def order_breaches(catalog: Catalog) -> list[str]:
+    """Read the order store against RP-12's rulings 43, 44 and 49.
+
+    One id series, compared by number; each alias unique within its package; and each
+    order sitting in a repair package the catalog holds, since a delivery package keeps
+    its five states until RP-14 moves construction onto the order (ruling 44).
+
+    Returns:
+        Each breach as a sentence naming its ruling, empty when the store holds.
+
+    """
+    numbers = [str(int(order.id.split("-")[1])) for order in catalog.orders]
+    breaches = [
+        f"Order number {number} names more than one order; one id series, a number never "
+        "reused (RP-12 ruling 43)."
+        for number in _repeated(numbers)
+    ]
+    breaches += _alias_breaches(catalog)
     kinds = {package.id: package.kind for package in catalog.work_packages}
     for order in catalog.orders:
         kind = kinds.get(order.work_package)
         if kind == "repair":
             continue
-        breach = (
-            f"names {order.work_package}, which data/{CATALOG_FILES['work_packages']} does "
-            "not hold; an order sits in a package the catalog holds"
+        breaches.append(
+            f"Order {order.id} names {order.work_package}, which "
+            f"data/{CATALOG_FILES['work_packages']} does not hold; an order sits in a package "
+            "the catalog holds."
             if kind is None
-            else f"sits in delivery package {order.work_package}; a delivery package keeps "
-            "its five states until RP-14 moves construction onto the order (RP-12 ruling 44)"
+            else f"Order {order.id} sits in delivery package {order.work_package}; a delivery "
+            "package keeps its five states until RP-14 moves construction onto the order "
+            "(RP-12 ruling 44)."
         )
-        errors.append(
-            _err(
-                "orders",
-                f"Order {order.id} {breach} (docs/governance/harbor-ro12-contractor-kit.md).",
-            )
-        )
-    return errors
+    return breaches
+
+
+def order_findings(catalog: Catalog) -> list[ValidationError]:
+    """Report the order store's breaches as findings of `gz validate --catalog`.
+
+    Returns:
+        One finding per breach, empty when the store holds.
+
+    """
+    return [
+        _err("orders", f"{breach} (docs/governance/harbor-ro12-contractor-kit.md).")
+        for breach in order_breaches(catalog)
+    ]
 
 
 def _needs(project_root: Path, config: GzkitConfig) -> tuple[str, ...]:

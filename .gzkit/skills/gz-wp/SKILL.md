@@ -134,8 +134,9 @@ Every change to a live package is one `gz wp change` with its rung:
 | `departure` | operator | `--item <id> --form deviation\|waiver --duration temporary\|permanent [--clear-by]` |
 
 An order sits inside a package: the unit Gate 5 sits at (RP-12 O2). Write its
-record with the next `ORD-<NN>-<slug>`; its kind is its package's, and only a
-repair package takes one until RP-14 (rulings 43 to 47):
+record with the next `ORD-<NN>-<slug>`; its kind is its package's. Only a repair
+package that is initiated and not closed takes one until RP-14, and an alias is
+unique within its package (rulings 43 to 49):
 
 ```bash
 uv run gz wp order new <WP-id> --slug <slug> --purpose "<what it restores>" [--alias O<n>]

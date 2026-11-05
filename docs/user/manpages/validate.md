@@ -2608,6 +2608,7 @@ Validates the requirements catalog under `data/catalog/`, the store
 | `externals.json` | The roster of external boundaries an outcome may depend on as `external:<slug>` (empty until one is needed) |
 | `delivery_events.json` | The forward rule's delivery event types and its cutover timestamp |
 | `work_packages.json` | `WP-<NN>-<slug>` work packages, delivery or repair, each with its formal work package and objective quality evidence (empty until RO-5's verbs author them; `docs/governance/harbor-ro5-work-packages.md`) |
+| `orders.json` | `ORD-<NN>-<slug>` orders, each naming the work package it sits in, its aliases, its purpose and its procedure (empty until `gz wp order new` writes one; `docs/governance/harbor-ro12-contractor-kit.md`, rulings 43 to 49) |
 
 The structure checks:
 
@@ -2617,14 +2618,23 @@ The structure checks:
 - family codes, outcome codes and REQ ids are unique within their file, a retired
   outcome included, since a retired code is kept so it is never reused;
 - an outcome's family letter is in the legend;
-- a work package's number is used once, so an id is never reused (RO-5 ruling
-  6); each issue belongs to one package and each alias names one (rulings 2, 6);
+- a work package's number is used once, compared as a number so `WP-001` reuses
+  `WP-01`'s, so an id is never reused (RO-5 ruling 6); each issue belongs to one
+  package and each alias names one (rulings 2, 6);
 - a delivery package names an outcome `outcomes.json` holds and holds no issue or
   lane; a repair package names at least one issue, stores its lane and names no
   outcome (rulings 1 and 4);
 - alteration and departure ids are unique within their package; a temporary
   departure has a clear-by condition and a permanent one none; a departure on a
-  REQ names one `reqs.json` holds (the 2026-10-28 amendment).
+  REQ names one `reqs.json` holds (the 2026-10-28 amendment);
+- an order's number is used once, compared as a number (RP-12 ruling 43); its
+  alias is unique within its package and never shaped as an order's or a
+  package's id (rulings 43, 49); it sits in a repair package `work_packages.json`
+  holds, a delivery package keeping its five states until RP-14 (ruling 44).
+
+A catalog missing a file fails as a tree defect, never an empty store (GHI
+#1067), and a reader of it is pointed at `uv run gz init`, whose repair mode
+seeds each absent `data/catalog/` file.
 
 The work-package events, `work_package_transitioned` and `work_package_changed`,
 are read against the store: a package the ledger has booked must keep its record.

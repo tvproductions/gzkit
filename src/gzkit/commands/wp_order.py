@@ -2,18 +2,28 @@
 
 The verbs the operator named on 2026-11-05 (RP-12 ruling 47, *"a"*): a nested
 group on the work-package surface. `new` writes an order's record with the next
-`ORD-<NN>-<slug>` (ruling 43) through `gzkit.order_store`; `show` reads it with
-the kind of the package it sits in. The record is thin (ruling 46). A refusal of
-the rulings exits 3 and writes nothing; an unknown package or order exits 1.
+`ORD-<NN>-<slug>` (ruling 43) through `gzkit.order_store`, into a repair package
+that is initiated and not closed (rulings 2, 44); `show` reads it with the kind of
+the package it sits in. The record is thin (ruling 46). A refusal of the rulings
+exits 3 and writes nothing, naming the flag at fault and the call to re-run; an
+unknown package or order exits 1.
 """
+
+import re
+from typing import TYPE_CHECKING, NoReturn
 
 from pydantic import ValidationError as PydanticValidationError
 
 from gzkit.cli.formatters import OutputFormatter
 from gzkit.commands.common import ensure_initialized, get_project_root
 from gzkit.core.exceptions import PolicyBreachError, ResourceNotFoundError
+from gzkit.ledger import Ledger
 from gzkit.models.catalog import Catalog, Order, WorkPackage, load_catalog
 from gzkit.order_store import OrderStoreError, next_order_id, stage_order, write_orders
+from gzkit.work_package_ledger import work_package_state
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def _package(catalog: Catalog, work_package: str) -> WorkPackage:
@@ -38,33 +48,82 @@ def _order(catalog: Catalog, order_id: str) -> Order:
     return held
 
 
+_SLUG = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
+_FLAGS = {"purpose": "--purpose", "procedure": "--procedure", "aliases": "--alias"}
+_OPEN = "initiated"
+
+
+def _refuse(failed: str, why: str) -> NoReturn:
+    msg = (
+        f"{failed} {why} Nothing was written; correct the call and re-run "
+        "`uv run gz wp order new <WP-id> --slug <slug> --purpose <text>`."
+    )
+    raise PolicyBreachError(msg)
+
+
+def _schema_errors(exc: PydanticValidationError) -> str:
+    """Name each refused field by the flag the operator typed, never the model's field.
+
+    Returns:
+        One clause per refused field, joined by semicolons.
+
+    """
+    return "; ".join(
+        f"{_FLAGS.get(str(error['loc'][0]), str(error['loc'][0]))}: {error['msg']}"
+        for error in exc.errors()
+    )
+
+
+def _check_open(root: Path, package: WorkPackage) -> None:
+    """Ruling 2 keeps a repair package open while its orders are found; ruling 44 closes it."""
+    config = ensure_initialized()
+    state = work_package_state(Ledger(root / config.paths.ledger), package.id)
+    if state != _OPEN:
+        _refuse(
+            f"Work package {package.id} is {state or 'not initiated'}.",
+            "An order is written into a repair package that is initiated and not closed, "
+            "since its close reads every order's Gate 5 (RP-12 rulings 2 and 44); "
+            f"`uv run gz wp initiate {package.id} --operator-text <words>` initiates one.",
+        )
+
+
 def wp_order_new_cmd(*, work_package: str, record: dict[str, object], as_json: bool) -> None:
     """Write a new order's record with the next id in the one series (RP-12 ruling 43).
 
     ``record`` carries the verb's fields bar the id and the package: the slug, the
     purpose, the procedure and the aliases.
 
-    Raises:
-        PolicyBreachError: The record breaks its schema or a rule `gz validate --catalog`
-            reads, such as an order on a delivery package (ruling 44); nothing is written.
-
+    A refusal of the slug, a field, the package's state or a rule `gz validate
+    --catalog` reads exits 3 through `_refuse` and writes nothing.
     """
     ensure_initialized()
     root = get_project_root()
     catalog = load_catalog(root)
     package = _package(catalog, work_package)
+    slug = str(record["slug"])
+    if not _SLUG.match(slug):
+        _refuse(
+            f"--slug {slug!r} is not lowercase words joined by hyphens.",
+            "It is the last part of the order's id, ORD-<NN>-<slug> (RP-12 ruling 43).",
+        )
     try:
         order = Order.model_validate(
             {
                 **{key: value for key, value in record.items() if key != "slug"},
-                "id": next_order_id(catalog, str(record["slug"])),
+                "id": next_order_id(catalog, slug),
                 "work_package": package.id,
             }
         )
+    except PydanticValidationError as exc:
+        _refuse(f"{_schema_errors(exc)}.", "The order record is ruled by RP-12 ruling 46.")
+    try:
         staged = stage_order(catalog, order)
-    except (PydanticValidationError, OrderStoreError) as exc:
-        msg = f"The order record is refused: {exc}"
-        raise PolicyBreachError(msg) from exc
+    except OrderStoreError as exc:
+        _refuse(
+            " ".join(exc.breaches),
+            "The rulings are in docs/governance/harbor-ro12-contractor-kit.md.",
+        )
+    _check_open(root, package)
     write_orders(root, staged)
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
     fmt.emit(order if as_json else f"Wrote {order.id} in {package.id} ({package.kind}).")

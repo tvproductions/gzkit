@@ -2,14 +2,15 @@
 
 `data/catalog/orders.json` is edited only through `gz wp order` (RP-12 ruling
 47), and this module is what it calls. Every write is checked against the rules
-`gz validate --catalog` reads (`order_findings`) before it reaches the file, so a
-verb can never leave the store in a state the scope refuses.
+`gz validate --catalog` reads (`order_breaches`) before it reaches the file, so a
+verb can never leave the store in a state the scope refuses. The store only
+grows: no verb edits an order once written.
 """
 
 import json
 from typing import TYPE_CHECKING
 
-from gzkit.governance.trust_audits.catalog import order_findings
+from gzkit.governance.trust_audits.catalog import order_breaches
 from gzkit.models.catalog import CATALOG_FILES, Catalog, Order
 from gzkit.registries import load_registry, registry_path
 
@@ -18,7 +19,16 @@ if TYPE_CHECKING:
 
 
 class OrderStoreError(ValueError):
-    """A store edit RP-12's rulings refuse; nothing was written."""
+    """A store edit RP-12's rulings refuse; nothing was written.
+
+    Carries each breach as a sentence naming its ruling, so the verb can say what
+    failed and why without the file-editing recovery a validator finding carries.
+    """
+
+    def __init__(self, breaches: list[str]) -> None:
+        """Hold the breaches the edit would have written."""
+        super().__init__(" ".join(breaches))
+        self.breaches = breaches
 
 
 def _number(order_id: str) -> int:
@@ -37,21 +47,22 @@ def next_order_id(catalog: Catalog, slug: str) -> str:
 
 
 def stage_order(catalog: Catalog, order: Order) -> Catalog:
-    """Return the catalog with the order added or replaced, refusing a breach.
+    """Return the catalog with the order added, refusing a breach.
 
     Returns:
         The catalog as it would read once written.
 
     Raises:
-        OrderStoreError: The edit breaks a rule `gz validate --catalog` reads.
+        OrderStoreError: The order's id is held already, or the edit breaks a rule
+            `gz validate --catalog` reads.
 
     """
-    others = tuple(held for held in catalog.orders if held.id != order.id)
-    ordered = tuple(sorted((*others, order), key=lambda held: _number(held.id)))
+    if any(held.id == order.id for held in catalog.orders):
+        raise OrderStoreError([f"Order {order.id} is in the store already; an id is never reused."])
+    ordered = tuple(sorted((*catalog.orders, order), key=lambda held: _number(held.id)))
     staged = catalog.model_copy(update={"orders": ordered})
-    findings = order_findings(staged)
-    if findings:
-        raise OrderStoreError(" ".join(finding.message for finding in findings))
+    if breaches := order_breaches(staged):
+        raise OrderStoreError(breaches)
     return staged
 
 
