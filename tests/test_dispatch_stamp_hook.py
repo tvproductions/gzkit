@@ -182,6 +182,37 @@ class WhatIsStamped(_Session):
             "! gz status",
             "echo 'unbalanced; gz status",
             "uv run --project /x gz status",
+            "if uv run gz status; then echo ok; fi",
+            "for x in a; do gz status; done",
+            "while true; do gz status; break; done",
+            "if true\nthen gz status\nfi",
+            "eval 'gz status'",
+            "eval uv run gz status",
+            "watch gz status",
+            "stdbuf -oL gz status",
+            "coproc gz status",
+            "builtin command gz status",
+            "find . -exec gz status \\;",
+            "bash -lc 'gz status'",
+            "sh -ec 'gz status'",
+            "python -mgzkit status",
+            "python3 - <<'EOF'\nfrom gzkit.cli.main import main\nmain()\nEOF",
+            "py -m gzkit status",
+            ">log gz status",
+            "2>/dev/null uv run gz status",
+            "echo a#b; gz status",
+            "git log --format=%h#%s -1; uv run gz status",
+            "uv tool run gz status",
+            "uv --directory /r run gz status",
+            "uv run python -I -m gzkit status",
+            "[ -d x ] || gz status",
+            "f() { gz status; }; f",
+            "uv run 'gz' status",
+            "gz status #note",
+            "timeout 60 gz status",
+            "env -C /x gz status",
+            "nice -n 5 gz status",
+            "sudo -u me gz status",
         )
         unnamed = (
             "ls src/gzkit",
@@ -198,6 +229,20 @@ class WhatIsStamped(_Session):
             "echo 'gz status'",
             "grep -rn gzkit docs",
             "python -m unittest tests.test_gzkit",
+            "uv run --project /Users/jeff/Documents/Code/gzkit python -m unittest tests.x",
+            "uv --directory /Users/jeff/Documents/Code/gzkit run ruff check .",
+            "uvx ruff check src/gzkit",
+            "env -C /Users/jeff/Documents/Code/gzkit git status",
+            "timeout 60 git -C /Users/jeff/Documents/Code/gzkit log",
+            "nohup ls src/gzkit",
+            "sudo ls /opt/gzkit",
+            "uv pip show gzkit",
+            "uv run --with gzkit python x.py",
+            "xargs grep -l gz",
+            "time grep -rn gz src",
+            "command -v gz",
+            "git commit -m 'gz: fix'",
+            "uv pip show py-gzkit",
         )
         for command in named:
             with self.subTest(named=command):
@@ -259,6 +304,20 @@ class PowerShell(_Session):
         self.assertIn("PowerShell", reason)
         self.assertIn("ruling 39", reason)
         self.assertIn("Bash", reason)
+
+    def test_windows_paths_and_wrappers_are_denied(self) -> None:
+        for command in (
+            ".venv\\Scripts\\gz.exe status",
+            ".\\.venv\\Scripts\\gz status",
+            "C:\\r\\.venv\\Scripts\\gz.exe status",
+            "Invoke-Expression 'gz status'",
+            "cmd /c gz status",
+            "& 'C:\\r\\.venv\\Scripts\\gz.exe' status",
+        ):
+            with self.subTest(command=command):
+                output = stamp_hook_output(self._powershell(command), self.project)
+                assert output is not None
+                self.assertEqual(output["hookSpecificOutput"]["permissionDecision"], "deny")
 
     def test_other_powershell_calls_pass_untouched(self) -> None:
         self.assertIsNone(stamp_hook_output(self._powershell("Get-ChildItem"), self.project))
