@@ -13,6 +13,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from gzkit.dispatch_stamp import STAMP_ID_ENV, STAMP_ROOT_ENV, consume_stamp, stamp_refusal
 
@@ -67,6 +68,26 @@ class StampRefusal(unittest.TestCase):
     def test_a_stamped_root_that_does_not_exist_is_refused(self) -> None:
         self.assertIsNotNone(self._refusal((self.base / "gone").as_posix(), self.project))
 
+    def test_a_stamped_call_whose_real_root_cannot_be_read_is_refused(self) -> None:
+        """Ruling 36's exit 3 holds where the directory was deleted under the shell."""
+        stamp = {STAMP_ROOT_ENV: self.project.as_posix(), STAMP_ID_ENV: "D-0123456789abcdef"}
+        refusal = stamp_refusal(stamp, _never)
+        self.assertIsNotNone(refusal)
+        self.assertIn("D-0123456789abcdef", str(refusal))
+
+    def test_a_volume_with_no_real_inode_numbers_compares_by_path(self) -> None:
+        """Where every directory reports inode 0, matching inodes say nothing."""
+        real_stat = Path.stat
+
+        def no_inode(path: Path, *args: object, **kwargs: object) -> os.stat_result:
+            fields = list(real_stat(path, *args, **kwargs))  # ty: ignore[invalid-argument-type]
+            fields[1], fields[2] = 0, 1  # st_ino, st_dev
+            return os.stat_result(fields)
+
+        with patch.object(Path, "stat", no_inode):
+            self.assertIsNotNone(self._refusal(self.scratch.as_posix(), self.project))
+            self.assertIsNone(self._refusal(self.project.as_posix(), self.project))
+
     def test_a_subdirectory_of_the_intended_root_is_another_root(self) -> None:
         """A verb's root is its directory, so a subdirectory books into another project."""
         inner = self.project / "inner"
@@ -110,6 +131,7 @@ class StampConsumed(unittest.TestCase):
     def test_the_test_harness_drops_an_inherited_stamp(self) -> None:
         """A stamped agent's own test run reaches its fixtures as the main session's would."""
         stamped = {**os.environ, STAMP_ROOT_ENV: _REPO.as_posix(), STAMP_ID_ENV: "D-x"}
+        stamped.pop("PYTHONSAFEPATH", None)  # the probe imports ``tests`` from its cwd
         probe = f"import os, tests; print(os.environ.get({STAMP_ROOT_ENV!r}, 'absent'))"
         result = subprocess.run(  # noqa: S603 -- the running interpreter, a literal argv
             [sys.executable, "-c", probe],
@@ -120,6 +142,7 @@ class StampConsumed(unittest.TestCase):
             encoding="utf-8",
             errors="replace",
             check=True,
+            timeout=60,
         )
         self.assertEqual(result.stdout.strip(), "absent")
 

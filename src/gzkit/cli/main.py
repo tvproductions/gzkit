@@ -161,6 +161,10 @@ def _refused_by_stamp() -> bool:
     like the ones in ``main``: ``--help`` exits before this runs, and every handler
     loads ``gzkit.commands.common`` anyway.
 
+    A call that passes consumes the stamp from ``os.environ`` (ruling 37), so what
+    the verb runs carries none, and a second ``main`` call in this process is not
+    checked.
+
     Returns:
         True when the call is refused, its message already on stderr.
 

@@ -9,9 +9,12 @@ directory and the environment, both taken as parameters.
 
 ``gz`` runs it before any handler, for every verb (ruling 36): one check, nothing
 to enumerate, so a writer added later is covered without a change here. It is on
-at every level (ruling 28) and reads no mode.
+at every level (ruling 28) and reads no mode. A call that passes consumes the
+stamp from its own process environment (ruling 37), so in one process only the
+first ``main`` call is checked; nothing in the package calls ``main`` twice.
 """
 
+import os
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -27,8 +30,12 @@ STAMP_ID_ENV = "GZKIT_DISPATCH_ID"
 def _same_directory(intended: Path, real: Path) -> bool:
     """Compare two roots as directories, not spellings.
 
-    ``samefile`` reads the volume, so a case-folding volume's respelling, a link and
-    a Windows short name all count as the root they name.
+    The volume's own identity decides: device and inode, so a case-folding
+    volume's respelling, a link and a Windows short name all count as the root
+    they name. A volume that reports inode 0 (some network shares and FUSE
+    mounts) gives every directory one identity, so there the resolved paths are
+    compared instead, case folded on Windows only, so elsewhere a respelling
+    there is refused.
 
     Returns:
         True when both name one directory; False otherwise, a root that does not
@@ -36,7 +43,10 @@ def _same_directory(intended: Path, real: Path) -> bool:
 
     """
     try:
-        return intended.samefile(real)
+        mine, theirs = intended.stat(), real.stat()
+        if mine.st_ino and theirs.st_ino:
+            return (mine.st_dev, mine.st_ino) == (theirs.st_dev, theirs.st_ino)
+        return os.path.normcase(intended.resolve()) == os.path.normcase(real.resolve())
     except OSError:
         return False
 
@@ -70,7 +80,12 @@ def stamp_refusal(environ: Mapping[str, str], real_root: Callable[[], Path]) -> 
             f"{lead}, whose root {stamped!r} is not an absolute path on this host "
             "(RP-12 ruling 17)."
         )
-    real = real_root()
+    try:
+        real = real_root()
+    except OSError as exc:
+        return (
+            f"{lead}, and the directory this verb runs in cannot be read: {exc} (RP-12 ruling 17)."
+        )
     if not _same_directory(intended, real):
         return (
             f"{lead}, for {intended.as_posix()}, and this verb runs in {real.as_posix()}. "
