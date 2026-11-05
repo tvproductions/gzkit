@@ -7,15 +7,20 @@ real root is the directory the verb runs in, ``get_project_root``'s answer, read
 only for a stamped call.
 """
 
+import argparse
 import os
 import subprocess
 import sys
 import tempfile
 import unittest
+import unittest.mock
 from pathlib import Path
 from unittest.mock import patch
 
+from gzkit.cli import main
+from gzkit.cli.main import _build_parser
 from gzkit.dispatch_stamp import STAMP_ID_ENV, STAMP_ROOT_ENV, consume_stamp, stamp_refusal
+from tests.commands.common import CliRunner, _quick_init
 
 _REPO = Path(__file__).resolve().parents[1]
 
@@ -145,6 +150,44 @@ class StampConsumed(unittest.TestCase):
             timeout=60,
         )
         self.assertEqual(result.stdout.strip(), "absent")
+
+
+def _leaf_parsers(parser: argparse.ArgumentParser) -> list[argparse.ArgumentParser]:
+    found = [parser]
+    for action in parser._actions:
+        if isinstance(action, argparse._SubParsersAction):
+            for child in action.choices.values():
+                found.extend(_leaf_parsers(child))
+    return found
+
+
+class StampForwarded(unittest.TestCase):
+    """A verb that runs a command its caller supplies passes the stamp on to it.
+
+    Ruling 37 rests on a nested gz having its directory chosen by the verb's code;
+    a forwarded command is the agent's, so it keeps the stamp (the review of
+    ruling 42, which voided through `gz arb step -- gz wp dispatch --void`).
+    """
+
+    def test_every_parser_taking_a_trailing_command_forwards_the_stamp(self) -> None:
+        for parser in _leaf_parsers(_build_parser()):
+            trailing = any(action.nargs == argparse.REMAINDER for action in parser._actions)
+            if trailing:
+                with self.subTest(parser=parser.prog):
+                    self.assertTrue(parser.get_default("forwards_command"))
+
+    def test_a_forwarded_command_runs_with_the_stamp(self) -> None:
+
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            root = Path.cwd().resolve().as_posix()
+            probe = f"import os; print('child:', os.environ.get({STAMP_ROOT_ENV!r}, 'absent'))"
+            argv = ["arb", "step", "--name", "probe", "--", sys.executable, "-c", probe]
+            with unittest.mock.patch.dict(os.environ, {STAMP_ROOT_ENV: root, STAMP_ID_ENV: ""}):
+                result = runner.invoke(main, argv)
+        self.assertEqual(result.exit_code, 0, result.output)
+        self.assertIn(f"child: {root}", result.output)
 
 
 if __name__ == "__main__":

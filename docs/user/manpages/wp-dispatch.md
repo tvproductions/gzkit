@@ -81,7 +81,8 @@ no hooks, or whose subagent stopped before it ran `gz`. It books one
 `dispatch_voided` event with its reason, and a voided dispatch is no dispatch: it
 is never open, and a subagent carrying its line is stamped no root (ruling 42).
 Only the coordinator voids: a call stamped as a subagent's is refused with exit
-3, so no subagent voids its way past the guard. A dispatch already voided, never
+3, as far as the stamp reaches; a subagent's `gz` run through `gz arb step` keeps
+its stamp (ruling 37). `--void` takes none of booking's flags. A dispatch already voided, never
 booked, or booked on another package is refused with exit 3.
 
 ## Examples

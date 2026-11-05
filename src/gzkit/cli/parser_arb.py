@@ -188,13 +188,15 @@ def _register_step(arb_commands: argparse._SubParsersAction) -> None:
         help="Command to run (everything after '--').",
     )
     p.set_defaults(
+        # Runs a command its caller supplies: the stamp passes on (RP-12 ruling 37).
+        forwards_command=True,
         func=lambda a: _arb("arb_step_cmd")(
             name=a.name,
             argv=[arg for arg in a.argv if arg != "--"],
             quiet=getattr(a, "quiet", False),
             soft_fail=a.soft_fail,
             max_output_chars=a.max_output_chars,
-        )
+        ),
     )
 
 
@@ -207,10 +209,12 @@ def _register_ty(arb_commands: argparse._SubParsersAction) -> None:
     )
     p.add_argument("argv", nargs=argparse.REMAINDER, help="Arguments to forward to ty.")
     p.set_defaults(
+        # Runs a command its caller supplies: the stamp passes on (RP-12 ruling 37).
+        forwards_command=True,
         func=lambda a: _arb("arb_ty_cmd")(
             argv=[arg for arg in a.argv if arg != "--"],
             quiet=getattr(a, "quiet", False),
-        )
+        ),
     )
 
 
@@ -244,10 +248,12 @@ def _register_coverage(arb_commands: argparse._SubParsersAction) -> None:
     )
     p.add_argument("argv", nargs=argparse.REMAINDER, help="Arguments to forward to coverage.")
     p.set_defaults(
+        # Runs a command its caller supplies: the stamp passes on (RP-12 ruling 37).
+        forwards_command=True,
         func=lambda a: _arb("arb_coverage_cmd")(
             argv=[arg for arg in a.argv if arg != "--"],
             quiet=getattr(a, "quiet", False),
-        )
+        ),
     )
 
 

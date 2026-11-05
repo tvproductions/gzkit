@@ -218,6 +218,10 @@ class TestRunVerbs(unittest.TestCase):
         self.assertEqual(self.runner.invoke(main, [*bare, "--role", "Implementer"]).exit_code, 2)
         both = [*bare, "--role", "Implementer", "--model", "m", "--void", "D-0123456789abcdef"]
         self.assertEqual(self.runner.invoke(main, both).exit_code, 2)
+        void = ["wp", "dispatch", _PACKAGE, "--void", "D-0123456789abcdef", "--reason", "r"]
+        for extra in (["--issue", "1200"], ["--req", "REQ-1"], ["--root", "."]):
+            with self.subTest(extra=extra):
+                self.assertEqual(self.runner.invoke(main, [*void, *extra]).exit_code, 2)
 
     def test_the_operator_is_never_defaulted(self) -> None:
         self.assertEqual(self._block(), 0)

@@ -77,15 +77,17 @@ def _dispatch_or_void(parser: argparse.ArgumentParser, a: argparse.Namespace) ->
     """Route ``gz wp dispatch`` to its booking or, with ``--void``, to its void.
 
     Booking needs ``--role`` and ``--model`` and takes no ``--void``; a void
-    takes neither. A wrong combination is a usage error, exit 2.
+    takes none of booking's flags. A wrong combination is a usage error, exit 2.
 
     Returns:
         What the handler returns.
 
     """
     if a.void is not None:
-        if a.role is not None or a.model is not None:
-            parser.error("--void abandons a dispatch; it takes no --role or --model")
+        booking = ("--role", "--model", "--req", "--issue", "--root")
+        given = [flag for flag in booking if getattr(a, flag[2:]) is not None]
+        if given:
+            parser.error(f"--void abandons a dispatch; it takes no {', '.join(given)}")
         return _lazy("wp_dispatch_void_cmd")(
             work_package=a.work_package,
             dispatch_id=a.void,

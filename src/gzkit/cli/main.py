@@ -154,7 +154,7 @@ def _exit_code_from(result: object) -> int:
     return result if type(result) is int else 0
 
 
-def _refused_by_stamp() -> bool:
+def _refused_by_stamp(*, forwards: bool) -> bool:
     """Refuse a stamped subagent call aimed at another root (RP-12 rulings 17, 36).
 
     Checked before any handler, so no verb writes for it. The imports are deferred
@@ -163,7 +163,9 @@ def _refused_by_stamp() -> bool:
 
     A call that passes consumes the stamp from ``os.environ`` (ruling 37), so what
     the verb runs carries none, and a second ``main`` call in this process is not
-    checked.
+    checked. A verb that runs a command its caller supplies (``forwards``, set by
+    its parser) keeps it: ruling 37 rests on a nested ``gz`` whose directory the
+    verb's code chooses, and a forwarded command is the agent's own.
 
     Returns:
         True when the call is refused, its message already on stderr.
@@ -173,7 +175,8 @@ def _refused_by_stamp() -> bool:
 
     refusal = stamp_refusal(os.environ, get_project_root)
     if refusal is None:
-        consume_stamp(os.environ)
+        if not forwards:
+            consume_stamp(os.environ)
         return False
     from rich.markup import escape  # noqa: PLC0415
 
@@ -219,7 +222,7 @@ def main(argv: list[str] | None = None) -> int:
     # Read before the check consumes it: a verb an operator or the coordinator
     # alone may run refuses a call stamped as a subagent's (RP-12 ruling 42).
     args.called_by_subagent = is_stamped(os.environ)
-    if _refused_by_stamp():
+    if _refused_by_stamp(forwards=bool(getattr(args, "forwards_command", False))):
         return 3
 
     try:
