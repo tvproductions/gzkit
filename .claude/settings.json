@@ -129,6 +129,15 @@
             "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/obpi-completion-validator.py\""
           }
         ]
+      },
+      {
+        "matcher": "PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/dispatch-stamp.py\""
+          }
+        ]
       }
     ],
     "Stop": [

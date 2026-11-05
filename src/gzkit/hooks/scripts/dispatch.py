@@ -1,8 +1,19 @@
 """The dispatch stamp hook's script generator (RP-12 rulings 17, 34, 35)."""
 
-from textwrap import dedent
+from textwrap import dedent, wrap
 
-from gzkit.dispatch_stamp import STAMP_ID_ENV, STAMP_ROOT_ENV
+from gzkit.dispatch_stamp import POWERSHELL_DENIAL, STAMP_ID_ENV, STAMP_ROOT_ENV
+
+
+def _wrapped_literal(text: str) -> str:
+    """Render text as adjacent string literals, one per line, that join back to it.
+
+    Returns:
+        The literal lines, the first unindented, for a parenthesized assignment.
+
+    """
+    chunks = wrap(text, 72, drop_whitespace=False, break_on_hyphens=False)
+    return "\n    ".join(repr(chunk) for chunk in chunks)
 
 
 def _dispatch_stamp_script() -> str:
@@ -53,23 +64,35 @@ def _dispatch_stamp_script() -> str:
 
             STAMP_ROOT_ENV = "@ROOT@"
             STAMP_ID_ENV = "@ID@"
+            POWERSHELL_DENIAL = (
+            @DENIAL@
+            )
 
 
             def _no_root(payload: dict) -> dict | None:
-                \"\"\"Stamp no root on any subagent Bash call that mentions gz at all.
+                \"\"\"Stamp no root on a subagent Bash call mentioning gz; deny PowerShell.
 
                 Returns:
                     The rewrite, or None for a call it leaves alone.
 
                 \"\"\"
                 tool_input = payload.get("tool_input")
-                if payload.get("tool_name") != "Bash" or not payload.get("agent_id"):
+                tool_name = payload.get("tool_name")
+                if tool_name not in {"Bash", "PowerShell"} or not payload.get("agent_id"):
                     return None
                 if not isinstance(tool_input, dict):
                     return None
                 command = tool_input.get("command")
-                if not isinstance(command, str) or "gz" not in command:
+                if not isinstance(command, str) or "gz" not in command.lower():
                     return None
+                if tool_name == "PowerShell":
+                    return {
+                        "hookSpecificOutput": {
+                            "hookEventName": "PreToolUse",
+                            "permissionDecision": "deny",
+                            "permissionDecisionReason": POWERSHELL_DENIAL,
+                        }
+                    }
                 prefix = f"export {STAMP_ROOT_ENV}='' {STAMP_ID_ENV}=''; "
                 return {
                     "hookSpecificOutput": {
@@ -106,4 +129,5 @@ def _dispatch_stamp_script() -> str:
         )
         .replace("@ROOT@", STAMP_ROOT_ENV)
         .replace("@ID@", STAMP_ID_ENV)
+        .replace("@DENIAL@", _wrapped_literal(POWERSHELL_DENIAL))
     )

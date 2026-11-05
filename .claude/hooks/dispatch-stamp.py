@@ -23,23 +23,39 @@ from pathlib import Path
 
 STAMP_ROOT_ENV = "GZKIT_DISPATCH_ROOT"
 STAMP_ID_ENV = "GZKIT_DISPATCH_ID"
+POWERSHELL_DENIAL = (
+    "A subagent's PowerShell command naming gz is denied: the dispatch stamp "
+    "is measured on the Bash tool only, and an unstamped gz call from a "
+    "subagent is the wrong-root write the cwd-escape guard exists to stop "
+    "(RP-12 ruling 39). Run the same gz command through the Bash tool, where "
+    "it is stamped with its dispatch's root."
+)
 
 
 def _no_root(payload: dict) -> dict | None:
-    """Stamp no root on any subagent Bash call that mentions gz at all.
+    """Stamp no root on a subagent Bash call mentioning gz; deny PowerShell.
 
     Returns:
         The rewrite, or None for a call it leaves alone.
 
     """
     tool_input = payload.get("tool_input")
-    if payload.get("tool_name") != "Bash" or not payload.get("agent_id"):
+    tool_name = payload.get("tool_name")
+    if tool_name not in {"Bash", "PowerShell"} or not payload.get("agent_id"):
         return None
     if not isinstance(tool_input, dict):
         return None
     command = tool_input.get("command")
-    if not isinstance(command, str) or "gz" not in command:
+    if not isinstance(command, str) or "gz" not in command.lower():
         return None
+    if tool_name == "PowerShell":
+        return {
+            "hookSpecificOutput": {
+                "hookEventName": "PreToolUse",
+                "permissionDecision": "deny",
+                "permissionDecisionReason": POWERSHELL_DENIAL,
+            }
+        }
     prefix = f"export {STAMP_ROOT_ENV}='' {STAMP_ID_ENV}=''; "
     return {
         "hookSpecificOutput": {

@@ -229,6 +229,32 @@ def stamp_prefix(root: str, dispatch_id: str) -> str:
     return f"export {assignments}; "
 
 
+#: Why a subagent's PowerShell ``gz`` call is denied, and what to do instead.
+POWERSHELL_DENIAL = (
+    "A subagent's PowerShell command naming gz is denied: the dispatch stamp is "
+    "measured on the Bash tool only, and an unstamped gz call from a subagent is "
+    "the wrong-root write the cwd-escape guard exists to stop (RP-12 ruling 39). "
+    "Run the same gz command through the Bash tool, where it is stamped with its "
+    "dispatch's root."
+)
+
+
+def powershell_denial() -> dict:
+    """Compose the PreToolUse deny for a subagent's PowerShell ``gz`` call (ruling 39).
+
+    Returns:
+        The hook output: a deny with recovery prose, rewriting nothing.
+
+    """
+    return {
+        "hookSpecificOutput": {
+            "hookEventName": "PreToolUse",
+            "permissionDecision": "deny",
+            "permissionDecisionReason": POWERSHELL_DENIAL,
+        }
+    }
+
+
 def stamp_hook_output(payload: Mapping[str, Any], project_root: Path) -> dict | None:
     """Decide the PreToolUse output for one Bash call (rulings 34, 35, 38).
 
@@ -237,8 +263,9 @@ def stamp_hook_output(payload: Mapping[str, Any], project_root: Path) -> dict | 
         project_root: The project whose ledger books the dispatches.
 
     Returns:
-        None to let the call run untouched: not Bash, the main session's (no
-        ``agent_id``), or a command naming no ``gz``. Otherwise the output that
+        None to let the call run untouched: neither Bash nor PowerShell, the main
+        session's (no ``agent_id``), or a command naming no ``gz``. A subagent's
+        PowerShell ``gz`` call is denied (ruling 39). Otherwise the output that
         rewrites the command to carry the stamp, with no permission decision: a
         dispatch's root, this project's for an undispatched subagent, or none
         for a dispatch that cannot be read and found.
@@ -246,13 +273,16 @@ def stamp_hook_output(payload: Mapping[str, Any], project_root: Path) -> dict | 
     """
     agent_id = payload.get("agent_id")
     tool_input = payload.get("tool_input")
-    if payload.get("tool_name") != "Bash" or not isinstance(agent_id, str) or not agent_id:
+    tool_name = payload.get("tool_name")
+    if tool_name not in {"Bash", "PowerShell"} or not isinstance(agent_id, str) or not agent_id:
         return None
     if not isinstance(tool_input, dict):
         return None
     command = tool_input.get("command")
     if not isinstance(command, str) or not names_gz(command):
         return None
+    if tool_name == "PowerShell":
+        return powershell_denial()
     root, dispatch_id = _stamp_for(payload, agent_id, project_root)
     return {
         "hookSpecificOutput": {

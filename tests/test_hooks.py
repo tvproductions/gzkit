@@ -325,6 +325,15 @@ class TestGenerateClaudeSettings(unittest.TestCase):
                     ],
                 },
                 {
+                    "matcher": "PowerShell",
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": _expected_hook_command("dispatch-stamp.py"),
+                        }
+                    ],
+                },
+                {
                     "matcher": "Grep|Bash|PowerShell",
                     "hooks": [
                         {
@@ -391,8 +400,8 @@ class TestGenerateClaudeSettings(unittest.TestCase):
         # registers it on any matcher now. 11 since the instruction router's
         # retirement (2026-10-17, drydock RO-1 act b). 12 since the prefer-LSP
         # hook joined the generator (GHI #1278). 13 since the dispatch stamp
-        # (RP-12 rulings 34, 35).
-        self.assertEqual(len(commands), 13, commands)
+        # (RP-12 rulings 34, 35), 14 with its PowerShell entry (ruling 39).
+        self.assertEqual(len(commands), 14, commands)
         for command in commands:
             self.assertIn('"$CLAUDE_PROJECT_DIR/', command, command)
             self.assertNotIn("python .claude/hooks/", command, command)
@@ -706,6 +715,15 @@ class TestSetupClaudeHooks(unittest.TestCase):
                                 "type": "command",
                                 "command": _expected_hook_command("dispatch-stamp.py"),
                             },
+                        ],
+                    },
+                    {
+                        "matcher": "PowerShell",
+                        "hooks": [
+                            {
+                                "type": "command",
+                                "command": _expected_hook_command("dispatch-stamp.py"),
+                            }
                         ],
                     },
                     {

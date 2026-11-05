@@ -212,6 +212,32 @@ class TheStamp(_Session):
         self.assertEqual(self._stamped()[STAMP_ROOT_ENV], self.intended.as_posix())
 
 
+class PowerShell(_Session):
+    """Ruling 39: a subagent's PowerShell gz call is denied, never rewritten unprobed."""
+
+    def _powershell(self, command: str, *, agent: str | None = _AGENT) -> dict:
+        return {**self._payload(command, agent=agent), "tool_name": "PowerShell"}
+
+    def test_a_subagents_powershell_gz_call_is_denied_with_recovery_prose(self) -> None:
+        self._book()
+        self._prompt(f"GZKIT-DISPATCH: {_DISPATCH}")
+        output = stamp_hook_output(self._powershell("uv run gz status"), self.project)
+        assert output is not None
+        specific = output["hookSpecificOutput"]
+        self.assertEqual(specific["permissionDecision"], "deny")
+        self.assertNotIn("updatedInput", specific)
+        reason = specific["permissionDecisionReason"]
+        # guardrail-feedback-prose: what failed, why (the ruling), the next step.
+        self.assertIn("PowerShell", reason)
+        self.assertIn("ruling 39", reason)
+        self.assertIn("Bash", reason)
+
+    def test_other_powershell_calls_pass_untouched(self) -> None:
+        self.assertIsNone(stamp_hook_output(self._powershell("Get-ChildItem"), self.project))
+        main = self._powershell("uv run gz status", agent=None)
+        self.assertIsNone(stamp_hook_output(main, self.project))
+
+
 class TheUndispatchedSubagent(_Session):
     """Ruling 38: a prompt with no dispatch line is held to this project's root."""
 
@@ -340,6 +366,12 @@ class TheGeneratedHook(_Session):
 
     def test_the_hook_prints_nothing_for_the_main_session(self) -> None:
         self.assertEqual(self._run_hook(self._payload("gz status", agent=None)), "")
+
+    def test_the_fail_closed_path_denies_a_subagents_powershell_gz_call(self) -> None:
+        """Ruling 39 holds when gzkit cannot load."""
+        payload = {**self._payload("gz status"), "tool_name": "PowerShell"}
+        stdout = self._run_hook(payload, shadow_gzkit=True)
+        self.assertEqual(json.loads(stdout)["hookSpecificOutput"]["permissionDecision"], "deny")
 
     def test_the_fail_closed_path_leaves_the_main_session_alone(self) -> None:
         payload = self._payload("gz status", agent=None)
