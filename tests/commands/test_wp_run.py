@@ -6,11 +6,13 @@ flag is never defaulted.
 """
 
 import json
+import os
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
 from gzkit.cli import main
+from gzkit.dispatch_stamp import STAMP_ID_ENV, STAMP_ROOT_ENV
 from gzkit.work_package_ledger import WorkPackageLedgerError
 from gzkit.work_package_run import read_dispatch_id
 from tests.commands.common import CliRunner, _quick_init
@@ -144,6 +146,37 @@ class TestRunVerbs(unittest.TestCase):
         self.assertEqual(missing.exit_code, 1, msg=missing.output)
         blank = self.runner.invoke(main, [*args, "--issue", "1200", "--root", ""])
         self.assertEqual(blank.exit_code, 1, msg=blank.output)
+        self.assertEqual(len(_rows("work_package_dispatched")), 1)
+
+    def _ledger_lines(self) -> int:
+        return len(
+            (Path.cwd() / ".gzkit" / "ledger.jsonl").read_text(encoding="utf-8").splitlines()
+        )
+
+    def _stamped(self, root: str) -> int:
+        stamp = {STAMP_ROOT_ENV: root, STAMP_ID_ENV: "D-0123456789abcdef"}
+        with patch.dict(os.environ, stamp):
+            return self._dispatch("Implementer")
+
+    def test_a_call_stamped_for_another_root_is_refused_before_any_write(self) -> None:
+        """#1296 case 1: a dispatch meant for a throwaway project, its shell left here."""
+        throwaway = Path("throwaway").resolve()
+        throwaway.mkdir()
+        before = self._ledger_lines()
+        self.assertEqual(self._stamped(throwaway.as_posix()), 3)
+        self.assertEqual(self._stamped(""), 3)
+        self.assertEqual(self._ledger_lines(), before)
+
+    def test_a_call_stamped_for_this_root_proceeds(self) -> None:
+        """#1296 case 2, the valid control."""
+        self.assertEqual(self._stamped(Path.cwd().resolve().as_posix()), 0)
+        self.assertEqual(len(_rows("work_package_dispatched")), 1)
+
+    def test_an_unstamped_call_proceeds(self) -> None:
+        """#1296 case 3: the main session carries no stamp."""
+        with patch.dict(os.environ):
+            os.environ.pop(STAMP_ROOT_ENV, None)
+            self.assertEqual(self._dispatch("Implementer"), 0)
         self.assertEqual(len(_rows("work_package_dispatched")), 1)
 
     def test_the_operator_is_never_defaulted(self) -> None:

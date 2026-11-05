@@ -4,6 +4,7 @@ A Development Covenant for Human-AI Collaboration.
 """
 
 import argparse
+import os
 from importlib import import_module
 from typing import Any
 
@@ -19,6 +20,7 @@ from gzkit.cli.parser_maintenance import register_maintenance_parsers
 from gzkit.commands.content import register_content_parsers
 from gzkit.commands.insights import register_insights_parsers
 from gzkit.core.exceptions import GzkitError
+from gzkit.dispatch_stamp import stamp_refusal
 
 # Lazy re-exports preserved for ``@patch("gzkit.cli.main.X")`` compatibility in
 # tests and for backward-compat callers. Resolving these at module top pulls
@@ -152,6 +154,46 @@ def _exit_code_from(result: object) -> int:
     return result if type(result) is int else 0
 
 
+def _refused_by_stamp() -> bool:
+    """Refuse a stamped subagent call aimed at another root (RP-12 rulings 17, 36).
+
+    Checked before any handler, so no verb writes for it. The imports are deferred
+    like the ones in ``main``: ``--help`` exits before this runs, and every handler
+    loads ``gzkit.commands.common`` anyway.
+
+    Returns:
+        True when the call is refused, its message already on stderr.
+
+    """
+    from gzkit.commands.common import err_console, get_project_root  # noqa: PLC0415
+
+    refusal = stamp_refusal(os.environ, get_project_root())
+    if refusal is None:
+        return False
+    from rich.markup import escape  # noqa: PLC0415
+
+    err_console.print(f"[red]{escape(refusal)}[/red]")
+    return True
+
+
+def _report_failure(args: argparse.Namespace, message: str) -> None:
+    """Report a handler's failure on stderr, with its traceback under ``--debug``.
+
+    Called from inside an ``except`` block, so the traceback is the one in flight.
+    """
+    from rich.markup import escape  # noqa: PLC0415
+
+    from gzkit.commands.common import err_console  # noqa: PLC0415
+
+    if getattr(args, "debug", False):
+        import sys  # noqa: PLC0415
+        import traceback  # noqa: PLC0415
+
+        traceback.print_exc(file=sys.stderr)
+    # The message is text: unescaped, Rich consumes bracketed spans as tags.
+    err_console.print(f"[red]{escape(message)}[/red]")
+
+
 def main(argv: list[str] | None = None) -> int:
     """argparse-based gz entrypoint."""
     _ensure_utf8_console()
@@ -169,22 +211,15 @@ def main(argv: list[str] | None = None) -> int:
         parser.print_help()
         return 2
 
+    if _refused_by_stamp():
+        return 3
+
     try:
         result = handler(args)
     # Every branch reports on stderr: errors and diagnostics never reach stdout,
     # where a command's output is read (cli-standards-v3.md § Output Rules).
     except GzkitError as exc:
-        from rich.markup import escape  # noqa: PLC0415
-
-        from gzkit.commands.common import err_console  # noqa: PLC0415
-
-        if getattr(args, "debug", False):
-            import sys  # noqa: PLC0415
-            import traceback  # noqa: PLC0415
-
-            traceback.print_exc(file=sys.stderr)
-        # The message is text: unescaped, Rich consumes bracketed spans as tags.
-        err_console.print(f"[red]{escape(str(exc))}[/red]")
+        _report_failure(args, str(exc))
         return exit_code_for(exc)
     except SystemExit as exc:
         return int(exc.code) if isinstance(exc.code, int) else 1
@@ -194,16 +229,7 @@ def main(argv: list[str] | None = None) -> int:
         err_console.print("[yellow]Interrupted.[/yellow]")
         return 130
     except Exception as exc:  # noqa: BLE001 -- CLI main entry point
-        from rich.markup import escape  # noqa: PLC0415
-
-        from gzkit.commands.common import err_console  # noqa: PLC0415
-
-        if getattr(args, "debug", False):
-            import sys  # noqa: PLC0415
-            import traceback  # noqa: PLC0415
-
-            traceback.print_exc(file=sys.stderr)
-        err_console.print(f"[red]Unexpected error: {escape(str(exc))}[/red]")
+        _report_failure(args, f"Unexpected error: {exc}")
         return exit_code_for(exc)
     else:
         return _exit_code_from(result)

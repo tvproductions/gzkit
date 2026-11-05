@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-04
 metadata:
-  skill-version: "0.7.0"
+  skill-version: "0.7.1"
 model: sonnet
 ---
 
@@ -106,6 +106,7 @@ Once commenced, each dispatch is booked, and the runtime holds the fix-cycle bou
    cannot. The verb mints the dispatch's id and prints its `GZKIT-DISPATCH:` line:
    put that line in the dispatched agent's prompt, and name another project's root
    with `--root <dir>` when the dispatch is meant for one (RP-12 rulings 1 and 35).
+   A stamped `gz` call from any other root exits 3 before it writes (ruling 36).
 2. **At the bound the dispatch refuses (exit 3).** Do not route around it: a further
    repair cycle does not exist. Escalate:
    `uv run gz wp block <WP-id> --reason "<why>" --next-action "<decision>"`. The

@@ -58,7 +58,9 @@ Each dispatch is its own record (RP-12 ruling 1,
 binds it to the role, the subject and the intended root, and prints the line that
 names it. Put that line in the dispatched agent's prompt. The stamp hook reads it
 from the subagent's own transcript to learn which dispatch, and so which root, a
-subagent's `gz` command belongs to (rulings 17, 34 and 35). A dispatch meant for
+subagent's `gz` command belongs to (rulings 17, 34 and 35). Every `gz` verb run
+under that stamp from any directory but the intended root, or under a stamp that
+names no root, is refused with exit 3 before it writes (ruling 36). A dispatch meant for
 another project, a throwaway one included, names it with `--root`. A relative
 root is resolved against the current directory; an empty `--root`, or a root that
 is not an existing directory, exits 1 and books nothing. The root is booked as one
