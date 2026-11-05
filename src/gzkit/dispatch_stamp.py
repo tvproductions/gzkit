@@ -14,6 +14,7 @@ stamp from its own process environment (ruling 37), so in one process only the
 first ``main`` call is checked; nothing in the package calls ``main`` twice.
 """
 
+import contextlib
 import json
 import os
 import re
@@ -32,6 +33,8 @@ from gzkit.shell_reading import (
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Mapping, MutableMapping
+
+    from gzkit.ledger import Ledger
 
 #: The root the subagent's dispatch intends; present, possibly empty, on every stamped call.
 STAMP_ROOT_ENV = "GZKIT_DISPATCH_ROOT"
@@ -432,8 +435,10 @@ def _stamp_for(payload: Mapping[str, Any], agent_id: str, project_root: Path) ->
     """Decide the root and the dispatch id a subagent's call is stamped with.
 
     A prompt with no dispatch line is the undispatched subagent, held to this
-    project's own root (ruling 38). One that mentions a dispatch is held to the
-    root the ledger books for it (rulings 1, 35). Anything unread stamps no root.
+    project's own root (ruling 38) unless an unclaimed dispatch for another root
+    is open (ruling 40). One that mentions a dispatch is held to the root the
+    ledger books for it, and its claim is booked (rulings 1, 35, 40). Anything
+    unread stamps no root.
 
     Returns:
         The root, possibly empty, and the dispatch id, possibly empty.
@@ -442,37 +447,71 @@ def _stamp_for(payload: Mapping[str, Any], agent_id: str, project_root: Path) ->
     prompt = _subagent_prompt(payload, agent_id)
     if prompt is None:
         return "", ""
-    # Deferred, as in `_intended_root`: only a subagent's gz command reads it.
+    # Deferred, as in `_ledger`: only a subagent's gz command reads it.
     from gzkit.work_package_run import DISPATCH_LINE_PREFIX, read_dispatch_id  # noqa: PLC0415
 
     if DISPATCH_LINE_PREFIX.strip() not in prompt:
-        return project_root.resolve().as_posix(), ""
+        return _undispatched_root(project_root), ""
     dispatch_id = read_dispatch_id(prompt)
     if dispatch_id is None:
         return "", ""
-    return _intended_root(project_root, dispatch_id), dispatch_id
+    return _bind(project_root, dispatch_id, agent_id, "stamp"), dispatch_id
 
 
-def _intended_root(project_root: Path, dispatch_id: str) -> str:
-    """Read the root the ledger books for a dispatch (rulings 1, 35).
+def _ledger(project_root: Path) -> Ledger:
+    """Open the project's ledger, where the coordinator books its dispatches.
 
     Returns:
-        The root, or an empty string when the ledger cannot be read or holds no
-        such dispatch.
+        The ledger, at the path the project's config names.
 
     """
     # Deferred: `gz` imports this module on every call, and only a subagent's
-    # gz command reaches the ledger.
+    # gz command, or the Agent tool's return, reaches the ledger.
     from gzkit.config import GzkitConfig  # noqa: PLC0415
     from gzkit.ledger import Ledger  # noqa: PLC0415
-    from gzkit.work_package_run import find_dispatch  # noqa: PLC0415
+
+    config = GzkitConfig.load(project_root / ".gzkit.json")
+    return Ledger(project_root / config.paths.ledger)
+
+
+def _bind(project_root: Path, dispatch_id: str, agent_id: str, source: str) -> str:
+    """Read the root a dispatch intends, booking the subagent's claim of it.
+
+    Returns:
+        The root, or an empty string when the ledger cannot be read or holds no
+        such dispatch. A claim that cannot be booked leaves the dispatch open,
+        which errs toward refusal (ruling 40).
+
+    """
+    from gzkit.work_package_run import find_dispatch, record_dispatch_claim  # noqa: PLC0415
 
     try:
-        config = GzkitConfig.load(project_root / ".gzkit.json")
-        record = find_dispatch(Ledger(project_root / config.paths.ledger), dispatch_id)
+        ledger = _ledger(project_root)
+        record = find_dispatch(ledger, dispatch_id)
     except OSError, ValueError:
         return ""
-    return record.intended_root if record is not None else ""
+    if record is None:
+        return ""
+    with contextlib.suppress(OSError, ValueError):
+        record_dispatch_claim(ledger, dispatch_id, agent_id, source)
+    return record.intended_root
+
+
+def _undispatched_root(project_root: Path) -> str:
+    """Read the root an undispatched subagent is held to (rulings 38, 40).
+
+    Returns:
+        The project's own root, or an empty string while an unclaimed dispatch
+        for another root is open, or when the ledger cannot be read.
+
+    """
+    from gzkit.work_package_run import open_unclaimed_dispatches  # noqa: PLC0415
+
+    root = project_root.resolve().as_posix()
+    try:
+        return "" if open_unclaimed_dispatches(_ledger(project_root), root) else root
+    except OSError, ValueError:
+        return ""
 
 
 def stamp_prefix(root: str, dispatch_id: str) -> str:
@@ -552,3 +591,29 @@ def stamp_hook_output(payload: Mapping[str, Any], project_root: Path) -> dict | 
             "updatedInput": {**tool_input, "command": stamp_prefix(root, dispatch_id) + command},
         }
     }
+
+
+def claim_hook_output(payload: Mapping[str, Any], project_root: Path) -> None:
+    """Book a dispatch's claim when the Agent tool returns (ruling 40).
+
+    PostToolUse on Agent carries the prompt and the subagent's ``agentId``
+    (probe run 8, at a foreground subagent's finish), so a dispatched subagent
+    that never runs ``gz`` still claims its dispatch, and an undispatched one is
+    not held to no root by it for longer than it runs.
+
+    The hook decides nothing; it only books.
+    """
+    tool_input = payload.get("tool_input")
+    response = payload.get("tool_response")
+    if payload.get("tool_name") not in {"Agent", "Task"}:
+        return
+    if not isinstance(tool_input, dict) or not isinstance(response, dict):
+        return
+    prompt, agent_id = tool_input.get("prompt"), response.get("agentId")
+    if not isinstance(prompt, str) or not isinstance(agent_id, str) or not agent_id:
+        return
+    from gzkit.work_package_run import read_dispatch_id  # noqa: PLC0415
+
+    dispatch_id = read_dispatch_id(prompt)
+    if dispatch_id is not None:
+        _bind(project_root, dispatch_id, agent_id, "agent_returned")

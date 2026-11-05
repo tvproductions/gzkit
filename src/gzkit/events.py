@@ -1891,6 +1891,27 @@ class WorkPackageDispatchedEvent(_EventBase):
     )
 
 
+class DispatchClaimedEvent(_EventBase):
+    """dispatch_claimed event — a subagent bound to the dispatch it carries (RP-12 ruling 40).
+
+    Ruling 1's "hooks record ``agent_id`` beside it". Written only by
+    ``gzkit.work_package_run.record_dispatch_claim``, from the stamp hook at the
+    subagent's first ``gz`` call and from the hook on the Agent tool's return,
+    once per dispatch and agent. ``id`` is the dispatch id. A dispatch no claim
+    names, booked for another root on a run in flight, is open: while one is, an
+    undispatched subagent is stamped no root (ruling 40).
+    """
+
+    event: Literal["dispatch_claimed"]
+    dispatch_id: str = Field(
+        ..., pattern=f"^{DISPATCH_ID_PATTERN}$", description="The dispatch claimed"
+    )
+    agent_id: str = Field(..., min_length=1, description="The harness's id of the subagent")
+    source: Literal["stamp", "agent_returned"] = Field(
+        ..., description="Which hook booked it: the stamp, or the Agent tool's return"
+    )
+
+
 class WorkPackageBlockedEvent(_EventBase):
     """work_package_blocked event — the package's next act is the operator's (RO-14).
 
@@ -2027,6 +2048,7 @@ TypedLedgerEvent = Annotated[
     | WorkPackageChangedEvent
     | WorkPackageIssueClosedEvent
     | WorkPackageDispatchedEvent
+    | DispatchClaimedEvent
     | WorkPackageBlockedEvent
     | WorkPackageUnblockedEvent,
     Field(discriminator="event"),

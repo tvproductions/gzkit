@@ -747,6 +747,79 @@ def _probe_work_package_run(root: Path, event_type: str) -> ProducerObservation:
     )
 
 
+def _probe_dispatch_claim(root: Path) -> ProducerObservation:
+    """Commence and dispatch, then claim it twice and claim an unknown id (RP-12 ruling 40).
+
+    Returns:
+        The verified observation.
+
+    Raises:
+        TypeError: The writer persisted another event type.
+        ValueError: The writer booked a second claim of one pair, or a claim of
+            no dispatch.
+
+    """
+    from gzkit import work_package_ledger as wpl  # noqa: PLC0415 - the writer; import only when probed
+    from gzkit import work_package_run as run  # noqa: PLC0415
+    from gzkit.ledger import Ledger  # noqa: PLC0415
+
+    catalog = _seat_catalog(root)
+    ledger_path = root / ".gzkit/ledger.jsonl"
+    ledger = Ledger(ledger_path)
+    for move in (
+        wpl.TransitionRequest(
+            work_package=_REPAIR_PACKAGE,
+            to_state="initiated",
+            evidence=_AUTHOR,
+            operator_text=_STATEMENT,
+        ),
+        wpl.TransitionRequest(
+            work_package=_REPAIR_PACKAGE,
+            to_state="frozen",
+            evidence=_AUTHOR,
+            risk_note=_AUTHOR,
+            review_receipt=_AUTHOR,
+        ),
+        wpl.TransitionRequest(work_package=_REPAIR_PACKAGE, to_state="commenced", evidence=_AUTHOR),
+    ):
+        wpl.record_work_package_transition(catalog, ledger, move)
+    dispatched = run.record_work_package_dispatch(
+        catalog,
+        ledger,
+        run.DispatchRequest(
+            work_package=_REPAIR_PACKAGE,
+            role=run.IMPLEMENTER,
+            model=_AUTHOR,
+            issue=_ISSUE,
+            root=root.resolve().as_posix(),
+        ),
+    )
+    dispatch_id = str(dispatched.dispatch_id)
+    seated = ledger_path.read_bytes()
+    claimed = run.record_dispatch_claim(ledger, dispatch_id, "a-probe", "stamp")
+    again = run.record_dispatch_claim(ledger, dispatch_id, "a-probe", "agent_returned")
+    unknown = run.record_dispatch_claim(ledger, "D-0000000000000000", "a-probe", "stamp")
+    persisted = ledger_path.read_bytes()
+    added = [
+        parse_typed_event(json.loads(line))
+        for line in persisted[len(seated) :].decode("utf-8").splitlines()
+    ]
+    if again is not None or unknown is not None or len(added) != 1:
+        msg = "The claim writer must book one row per dispatch and agent, and none for no dispatch"
+        raise ValueError(msg)
+    if claimed is None or added[0].event != "dispatch_claimed":
+        msg = "Writer persisted the wrong event type"
+        raise TypeError(msg)
+    return ProducerObservation(
+        event_type="dispatch_claimed",
+        producer=_PRODUCERS["dispatch_claimed"],
+        status="verified",
+        ledger_sha256=hashlib.sha256(persisted).hexdigest(),
+        record_count=1,
+        subject=added[0].id,
+    )
+
+
 def _probe_legacy_withdrawal(root: Path) -> ProducerObservation:
     """Withdraw a seated legacy unit, then try it again; the second is refused.
 
@@ -808,6 +881,7 @@ _PRODUCERS = {
     "work_package_dispatched": "gzkit.work_package_run.record_work_package_dispatch",
     "work_package_blocked": "gzkit.work_package_run.record_work_package_block",
     "work_package_unblocked": "gzkit.work_package_run.record_work_package_unblock",
+    "dispatch_claimed": "gzkit.work_package_run.record_dispatch_claim",
     "legacy_unit_withdrawn": "gzkit.legacy_units.withdraw_legacy_unit",
 }
 
@@ -823,6 +897,7 @@ _ROOT_PROBES = {
     "work_package_changed": _probe_work_package_change,
     "work_package_issue_closed": _probe_work_package_issue_closed,
     "legacy_unit_withdrawn": _probe_legacy_withdrawal,
+    "dispatch_claimed": _probe_dispatch_claim,
 }
 
 

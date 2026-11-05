@@ -42,6 +42,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.events import (
     DISPATCH_ID_PATTERN,
+    DispatchClaimedEvent,
     WorkPackageBlockedEvent,
     WorkPackageDispatchedEvent,
     WorkPackageExit,
@@ -72,6 +73,7 @@ _REQ_EXITS = frozenset({"reopen", "departure"})
 _STOPPING_EXITS = frozenset({"reopen", "terminate"})
 _IN_FLIGHT = frozenset({"commenced", "accepted"})
 _DISPATCHED = "work_package_dispatched"
+_CLAIMED = "dispatch_claimed"
 DISPATCH_LINE_PREFIX = "GZKIT-DISPATCH: "
 _DISPATCH_LINE = re.compile(
     rf"^{re.escape(DISPATCH_LINE_PREFIX)}({DISPATCH_ID_PATTERN})\s*$", re.MULTILINE
@@ -437,6 +439,61 @@ def find_dispatch(ledger: Ledger, dispatch_id: str) -> DispatchRecord | None:
         if held.get("dispatch_id") == dispatch_id and held.get("intended_root")
     }
     return found.pop() if len(found) == 1 else None
+
+
+def record_dispatch_claim(
+    ledger: Ledger, dispatch_id: str, agent_id: str, source: str
+) -> DispatchClaimedEvent | None:
+    """Book that a subagent carries a dispatch (rulings 1, 40), once per pair.
+
+    Returns:
+        The event booked, or None when the ledger holds no such dispatch or the
+        pair is already booked.
+
+    """
+    if find_dispatch(ledger, dispatch_id) is None:
+        return None
+    for row in ledger.query(event_type=_CLAIMED):
+        if row.extra.get("dispatch_id") == dispatch_id and row.extra.get("agent_id") == agent_id:
+            return None
+    event = DispatchClaimedEvent.model_validate(
+        {
+            "event": _CLAIMED,
+            "id": dispatch_id,
+            "dispatch_id": dispatch_id,
+            "agent_id": agent_id,
+            "source": source,
+        }
+    )
+    ledger.append(ledger_row(event))
+    return event
+
+
+def open_unclaimed_dispatches(ledger: Ledger, project_root: str) -> list[str]:
+    """Read the dispatches no subagent has claimed that are still open (ruling 40).
+
+    Open: booked for a root other than ``project_root``, on a package whose run
+    is in flight. While one is, an undispatched subagent may be that dispatch's,
+    its line lost, so it is held to no root.
+
+    Returns:
+        Their dispatch ids, oldest first.
+
+    """
+    claimed = {row.extra.get("dispatch_id") for row in ledger.query(event_type=_CLAIMED)}
+    in_flight: dict[str, bool] = {}
+    found: list[str] = []
+    for row in ledger.query(event_type=_DISPATCHED):
+        held = row.extra
+        dispatch_id, root = held.get("dispatch_id"), held.get("intended_root")
+        if not dispatch_id or not root or dispatch_id in claimed or root == project_root:
+            continue
+        package = str(held["work_package"])
+        if package not in in_flight:
+            in_flight[package] = work_package_state(ledger, package) in _IN_FLIGHT
+        if in_flight[package] and dispatch_id not in found:
+            found.append(str(dispatch_id))
+    return found
 
 
 def _settled(ledger: Ledger, work_package: str) -> tuple[set[str], set[str]]:

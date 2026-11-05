@@ -29,6 +29,12 @@ class ProducerProbeTests(unittest.TestCase):
                 self.assertEqual(observation.status, "verified", observation.error)
                 self.assertEqual(observation.subject, "WP-02-producer-probe")
 
+    def test_the_claim_writer_is_verified_and_books_each_pair_once(self) -> None:
+        """RP-12 ruling 40: one claim per dispatch and agent, none for no dispatch."""
+        observation = probe_producer("dispatch_claimed")
+        self.assertEqual(observation.status, "verified", observation.error)
+        self.assertRegex(observation.subject or "", r"^D-[0-9a-f]{16}$")
+
     def test_real_initializer_persists_obligation_and_disposes_the_project(self) -> None:
         roots: list[Path] = []
 

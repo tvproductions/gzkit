@@ -348,6 +348,15 @@ class TestGenerateClaudeSettings(unittest.TestCase):
             posttool_hooks,
             [
                 {
+                    "matcher": "Agent",
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": _expected_hook_command("dispatch-stamp.py"),
+                        }
+                    ],
+                },
+                {
                     "matcher": "ExitPlanMode",
                     "hooks": [
                         {
@@ -400,8 +409,9 @@ class TestGenerateClaudeSettings(unittest.TestCase):
         # registers it on any matcher now. 11 since the instruction router's
         # retirement (2026-10-17, drydock RO-1 act b). 12 since the prefer-LSP
         # hook joined the generator (GHI #1278). 13 since the dispatch stamp
-        # (RP-12 rulings 34, 35), 14 with its PowerShell entry (ruling 39).
-        self.assertEqual(len(commands), 14, commands)
+        # (RP-12 rulings 34, 35), 14 with its PowerShell entry (ruling 39), 15
+        # with its claim on the Agent tool's return (ruling 40).
+        self.assertEqual(len(commands), 15, commands)
         for command in commands:
             self.assertIn('"$CLAUDE_PROJECT_DIR/', command, command)
             self.assertNotIn("python .claude/hooks/", command, command)
@@ -740,6 +750,15 @@ class TestSetupClaudeHooks(unittest.TestCase):
             self.assertEqual(
                 settings["hooks"]["PostToolUse"],
                 [
+                    {
+                        "matcher": "Agent",
+                        "hooks": [
+                            {
+                                "type": "command",
+                                "command": _expected_hook_command("dispatch-stamp.py"),
+                            }
+                        ],
+                    },
                     {
                         "matcher": "ExitPlanMode",
                         "hooks": [

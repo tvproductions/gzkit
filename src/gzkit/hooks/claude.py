@@ -67,9 +67,10 @@ def _claude_hooks_readme() -> str:
             "  with the root its dispatch intends, read from the subagent's own",
             "  transcript and the ledger, or the project's root when it has no",
             "  dispatch, so `gz` refuses it anywhere else; a subagent's",
-            "  PowerShell `gz` call is denied (ruling 39); no",
+            "  PowerShell `gz` call is denied (ruling 39), and on the Agent",
+            "  tool's return it books the subagent's claim (ruling 40); no",
             "  permission decision, a no-root stamp when gzkit or the decision",
-            "  fails, on at every mode level (RP-12 rulings 17, 34, 35, 38, 39).",
+            "  fails, on at every mode level (RP-12 rulings 17, 34, 35, 38, 39, 40).",
             "- `prefer-lsp.py`",
             "  PreToolUse (`Grep|Bash|PowerShell`) hook that denies the first",
             "  text search for a Python symbol in a session and points at the",
@@ -140,6 +141,7 @@ def _claude_hooks_readme() -> str:
             "## Registration Order",
             "",
             "- `PreToolUse` `ExitPlanMode`: `plan-audit-gate.py`",
+            "- `PostToolUse` `Agent`: `dispatch-stamp.py` (the claim, ruling 40)",
             "- `PostToolUse` `ExitPlanMode`: `pipeline-router.py`",
             "- `PreToolUse` `Write|Edit|NotebookEdit`: `session-staleness-check.py`,",
             "  then `pipeline-gate.py`, then `obpi-completion-validator.py`",
@@ -318,6 +320,17 @@ def generate_claude_settings(config: GzkitConfig, project_root: Path | None = No
                 },
             ],
             "PostToolUse": [
+                {
+                    # Books a returned subagent's claim of its dispatch (RP-12
+                    # ruling 40); decides nothing.
+                    "matcher": "Agent",
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": _hook_command(hooks_dir, "dispatch-stamp.py"),
+                        }
+                    ],
+                },
                 {
                     "matcher": "ExitPlanMode",
                     "hooks": [

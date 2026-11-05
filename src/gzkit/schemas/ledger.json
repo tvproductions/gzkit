@@ -2536,6 +2536,30 @@
         }
       }
     },
+    "dispatch_claimed": {
+      "required": [
+        "dispatch_id",
+        "agent_id",
+        "source"
+      ],
+      "properties": {
+        "dispatch_id": {
+          "type": "string",
+          "pattern": "^D-[0-9a-f]{16}$"
+        },
+        "agent_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "stamp",
+            "agent_returned"
+          ]
+        }
+      }
+    },
     "work_package_blocked": {
       "required": [
         "work_package",

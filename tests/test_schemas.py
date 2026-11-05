@@ -41,6 +41,7 @@ from gzkit.events import (
     CorpusEntryRetiredEvent,
     CorpusRetirementReconciledEvent,
     DiscoveredFromEvent,
+    DispatchClaimedEvent,
     DistributionBaselineRegeneratedEvent,
     EnforcementClaimVerifiedEvent,
     FoundationGrandfatheredEvent,
@@ -396,6 +397,7 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     # An issue closed against its repair package (drydock RO-5 tranche 3)
     "work_package_issue_closed": WorkPackageIssueClosedEvent,
     "work_package_dispatched": WorkPackageDispatchedEvent,
+    "dispatch_claimed": DispatchClaimedEvent,
     "work_package_blocked": WorkPackageBlockedEvent,
     "work_package_unblocked": WorkPackageUnblockedEvent,
     # Reversible retirement of OBPIs whose parent ADR demoted to pool (GHI #584)

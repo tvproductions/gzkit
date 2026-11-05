@@ -8,6 +8,8 @@ from the ledger, and rewrites the command through `updatedInput` to
 carry both in its environment, with no permission decision. `gz` then
 refuses the call before any write unless it runs in that root. Every
 other call passes untouched; the main session's carry no `agent_id`.
+On PostToolUse for the Agent tool it books the returned subagent's
+claim of the dispatch its prompt names (ruling 40), deciding nothing.
 
 Thin adapter only: the decision is
 `gzkit.dispatch_stamp.stamp_hook_output`.
@@ -16,6 +18,7 @@ Exit codes:
   0 - Always; the rewrite, when there is one, is on stdout
 """
 
+import contextlib
 import json
 import os
 import sys
@@ -71,6 +74,15 @@ def main() -> None:
     except json.JSONDecodeError, UnicodeDecodeError, OSError:
         sys.exit(0)  # no payload, no command to stamp
     if not isinstance(payload, dict):
+        sys.exit(0)
+
+    if payload.get("hook_event_name") == "PostToolUse":
+        # A claim unbooked leaves its dispatch open, which errs toward refusal.
+        with contextlib.suppress(Exception):
+            from gzkit.dispatch_stamp import claim_hook_output  # noqa: PLC0415
+
+            root = Path(os.environ.get("CLAUDE_PROJECT_DIR") or str(payload.get("cwd") or "."))
+            claim_hook_output(payload, root)
         sys.exit(0)
 
     try:

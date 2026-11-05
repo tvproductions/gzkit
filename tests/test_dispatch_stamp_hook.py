@@ -21,6 +21,7 @@ from pathlib import Path
 from gzkit.dispatch_stamp import (
     STAMP_ID_ENV,
     STAMP_ROOT_ENV,
+    claim_hook_output,
     names_gz,
     stamp_hook_output,
 )
@@ -63,6 +64,32 @@ class _Session(unittest.TestCase):
         }
         with self.ledger.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(row) + "\n")
+
+    def _move(self, to_state: str, work_package: str = "WP-01-loop") -> None:
+        row = {
+            "schema": "gzkit.ledger.v1",
+            "event": "work_package_transitioned",
+            "id": work_package,
+            "ts": "2026-11-05T00:00:00+00:00",
+            "work_package": work_package,
+            "from_state": None,
+            "to_state": to_state,
+            "evidence": "e",
+        }
+        with self.ledger.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(row) + "\n")
+
+    def _returned(self, prompt: str, agent: str = _AGENT) -> dict:
+        return {
+            "hook_event_name": "PostToolUse",
+            "tool_name": "Agent",
+            "tool_input": {"prompt": prompt, "description": "work"},
+            "tool_response": {"agentId": agent, "status": "completed"},
+        }
+
+    def _claims(self) -> list[dict]:
+        rows = [json.loads(line) for line in self.ledger.read_text(encoding="utf-8").splitlines()]
+        return [row for row in rows if row.get("event") == "dispatch_claimed"]
 
     def _prompt(self, content: object, agent: str = _AGENT) -> None:
         first = {
@@ -325,8 +352,74 @@ class PowerShell(_Session):
         self.assertIsNone(stamp_hook_output(main, self.project))
 
 
+class TheClaim(_Session):
+    """Ruling 40: a subagent's binding to its dispatch is booked, at two points."""
+
+    def test_a_dispatched_subagents_gz_call_books_its_claim_once(self) -> None:
+        self._move("commenced")
+        self._book()
+        self._prompt(f"GZKIT-DISPATCH: {_DISPATCH}")
+        self._stamped()
+        self._stamped()
+        (claim,) = self._claims()
+        self.assertEqual(
+            (claim["dispatch_id"], claim["agent_id"], claim["source"]),
+            (_DISPATCH, _AGENT, "stamp"),
+        )
+
+    def test_the_agent_tools_return_books_the_claim(self) -> None:
+        self._move("commenced")
+        self._book()
+        self.assertIsNone(
+            claim_hook_output(self._returned(f"GZKIT-DISPATCH: {_DISPATCH}"), self.project)
+        )
+        (claim,) = self._claims()
+        self.assertEqual((claim["agent_id"], claim["source"]), (_AGENT, "agent_returned"))
+
+    def test_no_claim_for_a_prompt_naming_no_booked_dispatch(self) -> None:
+        self._book()
+        for prompt in ("no line here", "GZKIT-DISPATCH: D-fedcba9876543210"):
+            with self.subTest(prompt=prompt):
+                self.assertIsNone(claim_hook_output(self._returned(prompt), self.project))
+        self.assertEqual(self._claims(), [])
+
+
 class TheUndispatchedSubagent(_Session):
-    """Ruling 38: a prompt with no dispatch line is held to this project's root."""
+    """Ruling 38: a prompt with no dispatch line is held to this project's root.
+
+    Ruling 40: not while an unclaimed dispatch for another root is open, since
+    that subagent may be the dispatched one whose line was lost.
+    """
+
+    def test_an_open_unclaimed_dispatch_elsewhere_stamps_no_root(self) -> None:
+        self._move("commenced")
+        self._book()
+        self._prompt("Review this commit; no dispatch line.")
+        self.assertEqual(self._stamped(), {STAMP_ROOT_ENV: "", STAMP_ID_ENV: ""})
+
+    def test_once_claimed_the_undispatched_subagent_is_held_to_the_project(self) -> None:
+        self._move("commenced")
+        self._book()
+        claim_hook_output(
+            self._returned(f"GZKIT-DISPATCH: {_DISPATCH}", agent="a-implementer"),
+            self.project,
+        )
+        self._prompt("Review this commit; no dispatch line.")
+        self.assertEqual(self._stamped()[STAMP_ROOT_ENV], self.project.as_posix())
+
+    def test_a_dispatch_whose_run_is_not_in_flight_does_not_count(self) -> None:
+        self._move("commenced")
+        self._book()
+        self._move("closed")
+        self._prompt("Review this commit; no dispatch line.")
+        self.assertEqual(self._stamped()[STAMP_ROOT_ENV], self.project.as_posix())
+
+    def test_an_unclaimed_dispatch_for_this_project_does_not_count(self) -> None:
+        self._move("commenced")
+        self.intended = self.project
+        self._book()
+        self._prompt("Review this commit; no dispatch line.")
+        self.assertEqual(self._stamped()[STAMP_ROOT_ENV], self.project.as_posix())
 
     def test_it_is_stamped_with_the_project_root(self) -> None:
         self._book()
@@ -472,6 +565,13 @@ class TheGeneratedHook(_Session):
         payload = {**self._payload("gz status"), "tool_name": "PowerShell"}
         stdout = self._run_hook(payload, shadow_gzkit=True)
         self.assertEqual(json.loads(stdout)["hookSpecificOutput"]["permissionDecision"], "deny")
+
+    def test_the_hook_books_a_claim_on_the_agent_tools_return(self) -> None:
+        self._move("commenced")
+        self._book()
+        stdout = self._run_hook(self._returned(f"GZKIT-DISPATCH: {_DISPATCH}"))
+        self.assertEqual(stdout, "")
+        self.assertEqual([claim["source"] for claim in self._claims()], ["agent_returned"])
 
     def test_the_fail_closed_path_leaves_the_main_session_alone(self) -> None:
         payload = self._payload("gz status", agent=None)

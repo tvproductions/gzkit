@@ -177,6 +177,15 @@
             "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/ledger-writer.py\""
           }
         ]
+      },
+      {
+        "matcher": "Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/dispatch-stamp.py\""
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [
