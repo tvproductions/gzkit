@@ -21,7 +21,10 @@ and background (ruling 40's open limit). Usage:
 
     uv run python docs/governance/harbor-ro12-dock-trial-evidence/dock_trial.py <scratch-dir>
 
-It writes `<scratch-dir>/trial.json`; the trial's record cites what it printed.
+It writes `<scratch-dir>/trial.json`: per run the booked rows' cases, each
+subagent Bash call's command, cwd and raw output (PostToolUse), each Agent
+return's status and timing, and each claim. Setup needs this checkout's `.venv`
+(its `gz` initialises both projects); a failed setup step stops the trial.
 """
 
 import json
@@ -34,8 +37,9 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[3]
 VERB = "gz insights remember --type discovery --scope dock-trial --summary"
 LOGGER = """\
-import json, os, sys
+import json, os, sys, time
 payload = json.load(sys.stdin)
+payload["logged_at"] = time.time()
 with open(os.environ["DOCK_TRIAL_LOG"], "a", encoding="utf-8") as handle:
     handle.write(json.dumps(payload) + "\\n")
 """
@@ -57,11 +61,24 @@ CATALOG = {
 }
 
 
+def _clean_env(**extra: str) -> dict[str, str]:
+    """Build a child's environment: this one's, less the checkout's venv and any stamp.
+
+    Returns:
+        The environment, with ``extra`` added.
+
+    """
+    env = {**os.environ, **extra}
+    for name in ("VIRTUAL_ENV", "GZKIT_DISPATCH_ROOT", "GZKIT_DISPATCH_ID"):
+        env.pop(name, None)
+    return env
+
+
 def _run(argv: list[str], cwd: Path, *, env: dict[str, str] | None = None) -> str:
     result = subprocess.run(
         argv,
         cwd=cwd,
-        env=env,
+        env=_clean_env() if env is None else env,
         capture_output=True,
         text=True,
         encoding="utf-8",
@@ -72,8 +89,24 @@ def _run(argv: list[str], cwd: Path, *, env: dict[str, str] | None = None) -> st
     return f"exit {result.returncode}\n{result.stdout}{result.stderr}"
 
 
+def _must(output: str, step: str) -> str:
+    """Stop the trial when a setup step failed, rather than fly it on a broken project.
+
+    Returns:
+        The step's output, when it succeeded.
+
+    Raises:
+        SystemExit: the step failed.
+
+    """
+    if not output.startswith("exit 0\n"):
+        msg = f"setup step {step!r} failed: {output[:400]}"
+        raise SystemExit(msg)
+    return output
+
+
 def _gz(project: Path, *args: str) -> str:
-    return _run(["uv", "run", "--project", str(project), "gz", *args], project)
+    return _must(_run(["uv", "run", "--project", str(project), "gz", *args], project), args[0])
 
 
 def _setup(base: Path) -> tuple[Path, Path]:
@@ -83,9 +116,9 @@ def _setup(base: Path) -> tuple[Path, Path]:
     target.mkdir()
     checkout_gz = str(REPO / ".venv" / "bin" / "gz")
     for root, extra in ((project, []), (target, ["--no-skeleton"])):
-        _run(["git", "init", "-q"], root)
-        _run([checkout_gz, "init", "--yes", *extra], root)
-    _run(["uv", "add", "--dev", "--editable", str(REPO)], project)
+        _must(_run(["git", "init", "-q"], root), "git init")
+        _must(_run([checkout_gz, "init", "--yes", *extra], root), "gz init")
+    _must(_run(["uv", "add", "--dev", "--editable", str(REPO)], project), "uv add")
     catalog = project / "data" / "catalog"
     held = json.loads((catalog / "work_packages.json").read_text(encoding="utf-8"))
     held["work_packages"] = [CATALOG]
@@ -112,7 +145,7 @@ def _setup(base: Path) -> tuple[Path, Path]:
         "hooks": {
             "PreToolUse": [{"matcher": "Bash", "hooks": [{"type": "command", "command": logged}]}],
             "PostToolUse": [
-                {"matcher": "Agent", "hooks": [{"type": "command", "command": logged}]}
+                {"matcher": "Agent|Bash", "hooks": [{"type": "command", "command": logged}]}
             ],
         },
     }
@@ -214,9 +247,7 @@ def _trial(project: Path, target: Path, label: str, *, background: bool, guard: 
         "P": len(_rows(project, "insight_recorded")),
         "T": len(_rows(target, "insight_recorded")),
     }
-    env = {**os.environ, "DOCK_TRIAL_LOG": str(log)}
-    for name in ("GZKIT_DISPATCH_ROOT", "GZKIT_DISPATCH_ID"):
-        env.pop(name, None)
+    env = _clean_env(DOCK_TRIAL_LOG=str(log))
     output = _run(
         [
             "claude",
@@ -236,13 +267,30 @@ def _trial(project: Path, target: Path, label: str, *, background: bool, guard: 
         else []
     )
     agent_returns = [
-        {key: p.get(key) for key in ("hook_event_name", "tool_name")}
-        | {
-            "tool_response_keys": sorted((p.get("tool_response") or {}).keys()),
+        {
+            "logged_at": p.get("logged_at"),
             "agentId": (p.get("tool_response") or {}).get("agentId"),
+            "status": (p.get("tool_response") or {}).get("status"),
+            "isAsync": (p.get("tool_response") or {}).get("isAsync"),
+            "agentType": (p.get("tool_response") or {}).get("agentType"),
+            "prompt_carries_line": "GZKIT-DISPATCH: "
+            in str((p.get("tool_input") or {}).get("prompt")),
         }
         for p in payloads
         if p.get("tool_name") == "Agent"
+    ]
+    subagent_bash = [
+        {
+            "logged_at": p.get("logged_at"),
+            "event": p.get("hook_event_name"),
+            "agent_id": p.get("agent_id"),
+            "cwd": p.get("cwd"),
+            "command": (p.get("tool_input") or {}).get("command"),
+            "stdout": (p.get("tool_response") or {}).get("stdout"),
+            "stderr": (p.get("tool_response") or {}).get("stderr"),
+        }
+        for p in payloads
+        if p.get("tool_name") == "Bash" and p.get("agent_id")
     ]
     return {
         "label": label,
@@ -254,15 +302,11 @@ def _trial(project: Path, target: Path, label: str, *, background: bool, guard: 
         "summaries_in_P": _summaries(project),
         "summaries_in_T": _summaries(target),
         "claims": [
-            {k: row.get(k) for k in ("dispatch_id", "agent_id", "source")}
+            {k: row.get(k) for k in ("ts", "dispatch_id", "agent_id", "source")}
             for row in _rows(project, "dispatch_claimed")
             if row.get("dispatch_id") == dispatch_id
         ],
-        "subagent_bash_calls": [
-            {"agent_id": p.get("agent_id"), "command": (p.get("tool_input") or {}).get("command")}
-            for p in payloads
-            if p.get("tool_name") == "Bash" and p.get("agent_id")
-        ],
+        "subagent_bash": subagent_bash,
         "agent_returns": agent_returns,
         "claude_output": output,
     }
@@ -277,7 +321,11 @@ def main() -> None:
         _trial(project, target, "guard-on-background", background=True, guard=True),
         _trial(project, target, "guard-off", background=False, guard=False),
     ]
-    (base / "trial.json").write_text(json.dumps(runs, indent=2), encoding="utf-8")
+    record = {
+        "claude_version": _run(["claude", "--version"], base).split("\n", 1)[1].strip(),
+        "runs": runs,
+    }
+    (base / "trial.json").write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
     for run in runs:
         sys.stdout.write(
             f"{run['label']} before {run['insights_before']} after {run['insights_after']}\n"

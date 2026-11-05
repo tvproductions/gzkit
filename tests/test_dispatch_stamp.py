@@ -15,6 +15,7 @@ import tempfile
 import unittest
 import unittest.mock
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from gzkit.cli import main
@@ -127,7 +128,8 @@ class RefusalOutOfService(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             here = Path(directory).resolve()
             stamp = {STAMP_ROOT_ENV: (here / "elsewhere").as_posix(), STAMP_ID_ENV: "D-x"}
-            with patch("gzkit.mx.alarms.alarms_off", return_value=True):
+            held = SimpleNamespace(on=True, marker=SimpleNamespace(level="drydock"), cause=None)
+            with patch("gzkit.mx.marker.condition", return_value=held):
                 self.assertIsNotNone(stamp_refusal(stamp, lambda: here))
 
 

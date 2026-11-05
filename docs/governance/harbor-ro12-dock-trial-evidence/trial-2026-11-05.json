@@ -1,189 +1,236 @@
-[
-  {
-    "label": "guard-on-foreground",
-    "guard": true,
-    "background": false,
-    "dispatch_id": "D-49862b7c16ccefa4",
-    "insights_before": {
-      "P": 0,
-      "T": 0
-    },
-    "insights_after": {
-      "P": 1,
-      "T": 1
-    },
-    "summaries_in_P": [
-      "main-session-case-3"
-    ],
-    "summaries_in_T": [
-      "subagent-case-2"
-    ],
-    "claims": [
-      {
-        "dispatch_id": "D-49862b7c16ccefa4",
-        "agent_id": "a12bdbb34d9e218ef",
-        "source": "stamp"
-      }
-    ],
-    "subagent_bash_calls": [
-      {
-        "agent_id": "a12bdbb34d9e218ef",
-        "command": "uv run gz insights remember --type discovery --scope dock-trial --summary subagent-case-1; echo EXIT=$?"
+{
+  "claude_version": "2.1.318 (Claude Code)",
+  "runs": [
+    {
+      "label": "guard-on-foreground",
+      "guard": true,
+      "background": false,
+      "dispatch_id": "D-260c7c470abbc4cf",
+      "insights_before": {
+        "P": 0,
+        "T": 0
       },
-      {
-        "agent_id": "a12bdbb34d9e218ef",
-        "command": "cd /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/T && uv run --project /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P gz insights remember --type discovery --scope dock-trial --summary subagent-case-2; echo EXIT=$?"
-      }
-    ],
-    "agent_returns": [
-      {
-        "hook_event_name": "PostToolUse",
-        "tool_name": "Agent",
-        "tool_response_keys": [
-          "agentId",
-          "agentType",
-          "canContinueAgent",
-          "content",
-          "handback",
-          "handbackReport",
-          "harnessNoteCount",
-          "harnessSectionHash",
-          "harnessTailCount",
-          "prompt",
-          "resolvedModel",
-          "status",
-          "toolStats",
-          "toolsUsed",
-          "totalDurationMs",
-          "totalTokens",
-          "totalToolUseCount",
-          "usage"
-        ],
-        "agentId": "a12bdbb34d9e218ef"
-      }
-    ],
-    "claude_output": "exit 0\n**Subagent report**\n\nBoth commands ran as written, one at a time. Command 1 was refused with EXIT=3 and wrote nothing. Command 2 succeeded with EXIT=0.\n\nCommand 1 (run from the P root):\n```\nwarning: `VIRTUAL_ENV=/Users/jeff/Documents/Code/gzkit/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nRefused before any write: this call is stamped as a dispatched subagent's \n(D-49862b7c16ccefa4), for \n/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a\n-d9b2bb08495c/scratchpad/dock/T, and this verb runs in \n/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a\n-d9b2bb08495c/scratchpad/dock/P. Run it from the root the dispatch intends \n(RP-12 ruling 17).\nEXIT=3\n```\n\nCommand 2 (run from T, with `--project` pointing at P):\n```\nwarning: `VIRTUAL_ENV=/Users/jeff/Documents/Code/gzkit/.venv` does not match the project environment path `/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P/.venv` and will be ignored; use `--active` to target the active environment instead\nAppended insight record to /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/T/.gzkit/insights/agent-insights.jsonl: {\"ts\":\"2026-11-05T08:14:05.514534+00:00\",\"type\":\"discovery\",\"scope\":\"dock-trial\",\"summary\":\"subagent-case-2\"}\nEXIT=0\n```\n\nThe subagent said the two runs differed only in directory. The dispatch is stamped for T, so the run from P was refused (RP-12 ruling 17) and the run from T was accepted.\n\n**My command (main session, from P)**\n```\nwarning: `VIRTUAL_ENV=/Users/jeff/Documents/Code/gzkit/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nAppended insight record to /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P/.gzkit/insights/agent-insights.jsonl: {\"ts\":\"2026-11-05T08:14:14.183600+00:00\",\"type\":\"discovery\",\"scope\":\"dock-trial\",\"summary\":\"main-session-case-3\"}\nEXIT=0\n```\nWarning: no stdin data received in 3s, proceeding without it. If piping from a slow command, redirect stdin explicitly: < /dev/null to skip, or wait longer.\n"
-  },
-  {
-    "label": "guard-on-background",
-    "guard": true,
-    "background": true,
-    "dispatch_id": "D-f6709cf9c86ea083",
-    "insights_before": {
-      "P": 1,
-      "T": 1
-    },
-    "insights_after": {
-      "P": 2,
-      "T": 2
-    },
-    "summaries_in_P": [
-      "main-session-case-3",
-      "main-session-case-3"
-    ],
-    "summaries_in_T": [
-      "subagent-case-2",
-      "subagent-case-2"
-    ],
-    "claims": [
-      {
-        "dispatch_id": "D-f6709cf9c86ea083",
-        "agent_id": "aded9ba0319ca2c27",
-        "source": "agent_returned"
-      }
-    ],
-    "subagent_bash_calls": [
-      {
-        "agent_id": "aded9ba0319ca2c27",
-        "command": "uv run gz insights remember --type discovery --scope dock-trial --summary subagent-case-1; echo EXIT=$?"
+      "insights_after": {
+        "P": 1,
+        "T": 1
       },
-      {
-        "agent_id": "aded9ba0319ca2c27",
-        "command": "cd /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/T && uv run --project /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P gz insights remember --type discovery --scope dock-trial --summary subagent-case-2; echo EXIT=$?"
-      }
-    ],
-    "agent_returns": [
-      {
-        "hook_event_name": "PostToolUse",
-        "tool_name": "Agent",
-        "tool_response_keys": [
-          "agentId",
-          "canContinueAgent",
-          "canReadOutputFile",
-          "description",
-          "isAsync",
-          "outputFile",
-          "prompt",
-          "resolvedModel",
-          "status"
-        ],
-        "agentId": "aded9ba0319ca2c27"
-      }
-    ],
-    "claude_output": "exit 0\nThe subagent is running in the background. I'll wait for its completion notification before running my own command.\n\n**Subagent's report (verbatim):**\n\n```\nCommand 1 was refused (EXIT=3). Command 2 succeeded (EXIT=0).\n\nCommand 1 (run from the P directory):\nwarning: `VIRTUAL_ENV=/Users/jeff/Documents/Code/gzkit/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nRefused before any write: this call is stamped as a dispatched subagent's \n(D-f6709cf9c86ea083), for \n/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a\n-d9b2bb08495c/scratchpad/dock/T, and this verb runs in \n/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a\n-d9b2bb08495c/scratchpad/dock/P. Run it from the root the dispatch intends \n(RP-12 ruling 17).\nEXIT=3\n\nCommand 2 (run from the T directory, with `--project` pointing at P):\nwarning: `VIRTUAL_ENV=/Users/jeff/Documents/Code/gzkit/.venv` does not match the project environment path `/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P/.venv` and will be ignored; use `--active` to target the active environment instead\nAppended insight record to /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/T/.gzkit/insights/agent-insights.jsonl: {\"ts\":\"2026-11-05T08:14:39.506866+00:00\",\"type\":\"discovery\",\"scope\":\"dock-trial\",\"summary\":\"subagent-case-2\"}\nEXIT=0\n```\n\n**My command (case 3):**\n\n```\nwarning: `VIRTUAL_ENV=/Users/jeff/Documents/Code/gzkit/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nAppended insight record to /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P/.gzkit/insights/agent-insights.jsonl: {\"ts\":\"2026-11-05T08:14:48.003788+00:00\",\"type\":\"discovery\",\"scope\":\"dock-trial\",\"summary\":\"main-session-case-3\"}\nEXIT=0\n```\nWarning: no stdin data received in 3s, proceeding without it. If piping from a slow command, redirect stdin explicitly: < /dev/null to skip, or wait longer.\n"
-  },
-  {
-    "label": "guard-off",
-    "guard": false,
-    "background": false,
-    "dispatch_id": "D-8b9acd0d9dabd5a8",
-    "insights_before": {
-      "P": 2,
-      "T": 2
+      "summaries_in_P": [
+        "main-session-case-3"
+      ],
+      "summaries_in_T": [
+        "subagent-case-2"
+      ],
+      "claims": [
+        {
+          "ts": "2026-11-05T08:26:43.807707+00:00",
+          "dispatch_id": "D-260c7c470abbc4cf",
+          "agent_id": "a661172da04db9ba3",
+          "source": "stamp"
+        }
+      ],
+      "subagent_bash": [
+        {
+          "logged_at": 1793867203.719806,
+          "event": "PreToolUse",
+          "agent_id": "a661172da04db9ba3",
+          "cwd": "/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P",
+          "command": "uv run gz insights remember --type discovery --scope dock-trial --summary subagent-case-1; echo EXIT=$?",
+          "stdout": null,
+          "stderr": null
+        },
+        {
+          "logged_at": 1793867206.1780171,
+          "event": "PostToolUse",
+          "agent_id": "a661172da04db9ba3",
+          "cwd": "/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P",
+          "command": "export GZKIT_DISPATCH_ROOT=/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/T GZKIT_DISPATCH_ID=D-260c7c470abbc4cf; uv run gz insights remember --type discovery --scope dock-trial --summary subagent-case-1; echo EXIT=$?",
+          "stdout": "Refused before any write: this call is stamped as a dispatched subagent's \n(D-260c7c470abbc4cf), for \n/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a\n-d9b2bb08495c/scratchpad/dock/T, and this verb runs in \n/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a\n-d9b2bb08495c/scratchpad/dock/P. Run it from the root the dispatch intends \n(RP-12 ruling 17).\nEXIT=3",
+          "stderr": ""
+        },
+        {
+          "logged_at": 1793867209.584555,
+          "event": "PreToolUse",
+          "agent_id": "a661172da04db9ba3",
+          "cwd": "/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P",
+          "command": "cd /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/T && uv run --project /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P gz insights remember --type discovery --scope dock-trial --summary subagent-case-2; echo EXIT=$?",
+          "stdout": null,
+          "stderr": null
+        },
+        {
+          "logged_at": 1793867212.088535,
+          "event": "PostToolUse",
+          "agent_id": "a661172da04db9ba3",
+          "cwd": "/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P",
+          "command": "export GZKIT_DISPATCH_ROOT=/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/T GZKIT_DISPATCH_ID=D-260c7c470abbc4cf; cd /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/T && uv run --project /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P gz insights remember --type discovery --scope dock-trial --summary subagent-case-2; echo EXIT=$?",
+          "stdout": "Appended insight record to /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/T/.gzkit/insights/agent-insights.jsonl: {\"ts\":\"2026-11-05T08:26:52.045994+00:00\",\"type\":\"discovery\",\"scope\":\"dock-trial\",\"summary\":\"subagent-case-2\"}\nEXIT=0",
+          "stderr": ""
+        }
+      ],
+      "agent_returns": [
+        {
+          "logged_at": 1793867221.6098602,
+          "agentId": "a661172da04db9ba3",
+          "status": "completed",
+          "isAsync": null,
+          "agentType": "general-purpose",
+          "prompt_carries_line": true
+        }
+      ],
+      "claude_output": "exit 0\n**Subagent report**\n\nCommand 1 (run from the P directory) was refused. Command 2 (run from the T directory) succeeded.\n\nCommand 1: `uv run gz insights remember --type discovery --scope dock-trial --summary subagent-case-1; echo EXIT=$?`\n```\nRefused before any write: this call is stamped as a dispatched subagent's \n(D-260c7c470abbc4cf), for \n/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a\n-d9b2bb08495c/scratchpad/dock/T, and this verb runs in \n/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a\n-d9b2bb08495c/scratchpad/dock/P. Run it from the root the dispatch intends \n(RP-12 ruling 17).\nEXIT=3\n```\n\nCommand 2: `cd .../dock/T && uv run --project .../dock/P gz insights remember --type discovery --scope dock-trial --summary subagent-case-2; echo EXIT=$?`\n```\nAppended insight record to /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/T/.gzkit/insights/agent-insights.jsonl: {\"ts\":\"2026-11-05T08:26:52.045994+00:00\",\"type\":\"discovery\",\"scope\":\"dock-trial\",\"summary\":\"subagent-case-2\"}\nEXIT=0\n```\n\n**My command**\n\n`uv run gz insights remember --type discovery --scope dock-trial --summary main-session-case-3; echo EXIT=$?`\n```\nAppended insight record to /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P/.gzkit/insights/agent-insights.jsonl: {\"ts\":\"2026-11-05T08:27:06.799367+00:00\",\"type\":\"discovery\",\"scope\":\"dock-trial\",\"summary\":\"main-session-case-3\"}\nEXIT=0\n```\nWarning: no stdin data received in 3s, proceeding without it. If piping from a slow command, redirect stdin explicitly: < /dev/null to skip, or wait longer.\n"
     },
-    "insights_after": {
-      "P": 4,
-      "T": 3
-    },
-    "summaries_in_P": [
-      "main-session-case-3",
-      "main-session-case-3",
-      "subagent-case-1",
-      "main-session-case-3"
-    ],
-    "summaries_in_T": [
-      "subagent-case-2",
-      "subagent-case-2",
-      "subagent-case-2"
-    ],
-    "claims": [],
-    "subagent_bash_calls": [
-      {
-        "agent_id": "ab906ae907fa78012",
-        "command": "uv run gz insights remember --type discovery --scope dock-trial --summary subagent-case-1; echo EXIT=$?"
+    {
+      "label": "guard-on-background",
+      "guard": true,
+      "background": true,
+      "dispatch_id": "D-e972b206705dfbdc",
+      "insights_before": {
+        "P": 1,
+        "T": 1
       },
-      {
-        "agent_id": "ab906ae907fa78012",
-        "command": "cd /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/T && uv run --project /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P gz insights remember --type discovery --scope dock-trial --summary subagent-case-2; echo EXIT=$?"
-      }
-    ],
-    "agent_returns": [
-      {
-        "hook_event_name": "PostToolUse",
-        "tool_name": "Agent",
-        "tool_response_keys": [
-          "agentId",
-          "agentType",
-          "canContinueAgent",
-          "content",
-          "handback",
-          "handbackReport",
-          "harnessNoteCount",
-          "harnessSectionHash",
-          "harnessTailCount",
-          "prompt",
-          "resolvedModel",
-          "status",
-          "toolStats",
-          "toolsUsed",
-          "totalDurationMs",
-          "totalTokens",
-          "totalToolUseCount",
-          "usage"
-        ],
-        "agentId": "ab906ae907fa78012"
-      }
-    ],
-    "claude_output": "exit 0\n**Subagent report** (the subagent said both commands exited 0, and command 2 wrote its record to the T tree, not P):\n\nCommand 1 (cwd P):\n```\nwarning: `VIRTUAL_ENV=/Users/jeff/Documents/Code/gzkit/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nAppended insight record to /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P/.gzkit/insights/agent-insights.jsonl: {\"ts\":\"2026-11-05T08:15:05.441700+00:00\",\"type\":\"discovery\",\"scope\":\"dock-trial\",\"summary\":\"subagent-case-1\"}\nEXIT=0\n```\n\nCommand 2 (cd to T, `uv run --project` pointing at P):\n```\nwarning: `VIRTUAL_ENV=/Users/jeff/Documents/Code/gzkit/.venv` does not match the project environment path `/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P/.venv` and will be ignored; use `--active` to target the active environment instead\nAppended insight record to /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/T/.gzkit/insights/agent-insights.jsonl: {\"ts\":\"2026-11-05T08:15:07.898405+00:00\",\"type\":\"discovery\",\"scope\":\"dock-trial\",\"summary\":\"subagent-case-2\"}\nEXIT=0\n```\n\n**My command (main session, cwd P):**\n```\nwarning: `VIRTUAL_ENV=/Users/jeff/Documents/Code/gzkit/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nAppended insight record to /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P/.gzkit/insights/agent-insights.jsonl: {\"ts\":\"2026-11-05T08:15:15.141627+00:00\",\"type\":\"discovery\",\"scope\":\"dock-trial\",\"summary\":\"main-session-case-3\"}\nEXIT=0\n```\nWarning: no stdin data received in 3s, proceeding without it. If piping from a slow command, redirect stdin explicitly: < /dev/null to skip, or wait longer.\n"
-  }
-]
+      "insights_after": {
+        "P": 2,
+        "T": 2
+      },
+      "summaries_in_P": [
+        "main-session-case-3",
+        "main-session-case-3"
+      ],
+      "summaries_in_T": [
+        "subagent-case-2",
+        "subagent-case-2"
+      ],
+      "claims": [
+        {
+          "ts": "2026-11-05T08:27:23.288232+00:00",
+          "dispatch_id": "D-e972b206705dfbdc",
+          "agent_id": "af694d7f26771c864",
+          "source": "agent_returned"
+        }
+      ],
+      "subagent_bash": [
+        {
+          "logged_at": 1793867247.902443,
+          "event": "PreToolUse",
+          "agent_id": "af694d7f26771c864",
+          "cwd": "/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P",
+          "command": "uv run gz insights remember --type discovery --scope dock-trial --summary subagent-case-1; echo EXIT=$?",
+          "stdout": null,
+          "stderr": null
+        },
+        {
+          "logged_at": 1793867250.156199,
+          "event": "PostToolUse",
+          "agent_id": "af694d7f26771c864",
+          "cwd": "/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P",
+          "command": "export GZKIT_DISPATCH_ROOT=/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/T GZKIT_DISPATCH_ID=D-e972b206705dfbdc; uv run gz insights remember --type discovery --scope dock-trial --summary subagent-case-1; echo EXIT=$?",
+          "stdout": "Refused before any write: this call is stamped as a dispatched subagent's \n(D-e972b206705dfbdc), for \n/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a\n-d9b2bb08495c/scratchpad/dock/T, and this verb runs in \n/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a\n-d9b2bb08495c/scratchpad/dock/P. Run it from the root the dispatch intends \n(RP-12 ruling 17).\nEXIT=3",
+          "stderr": ""
+        },
+        {
+          "logged_at": 1793867253.7854989,
+          "event": "PreToolUse",
+          "agent_id": "af694d7f26771c864",
+          "cwd": "/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P",
+          "command": "cd /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/T && uv run --project /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P gz insights remember --type discovery --scope dock-trial --summary subagent-case-2; echo EXIT=$?",
+          "stdout": null,
+          "stderr": null
+        },
+        {
+          "logged_at": 1793867256.222122,
+          "event": "PostToolUse",
+          "agent_id": "af694d7f26771c864",
+          "cwd": "/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P",
+          "command": "export GZKIT_DISPATCH_ROOT=/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/T GZKIT_DISPATCH_ID=D-e972b206705dfbdc; cd /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/T && uv run --project /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P gz insights remember --type discovery --scope dock-trial --summary subagent-case-2; echo EXIT=$?",
+          "stdout": "Appended insight record to /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/T/.gzkit/insights/agent-insights.jsonl: {\"ts\":\"2026-11-05T08:27:36.180721+00:00\",\"type\":\"discovery\",\"scope\":\"dock-trial\",\"summary\":\"subagent-case-2\"}\nEXIT=0",
+          "stderr": ""
+        }
+      ],
+      "agent_returns": [
+        {
+          "logged_at": 1793867243.1927838,
+          "agentId": "af694d7f26771c864",
+          "status": "async_launched",
+          "isAsync": true,
+          "agentType": null,
+          "prompt_carries_line": true
+        }
+      ],
+      "claude_output": "exit 0\nI launched the subagent in the background. I'll wait for its completion notification before running my own command.\n\n**Subagent report:**\n\nCommand 1 was refused and wrote nothing. Command 2 succeeded.\n\nCommand 1 (run from the P root):\n```\nRefused before any write: this call is stamped as a dispatched subagent's \n(D-e972b206705dfbdc), for \n/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a\n-d9b2bb08495c/scratchpad/dock/T, and this verb runs in \n/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P. Run it from the root the dispatch intends \n(RP-12 ruling 17).\nEXIT=3\n```\n\nCommand 2 (run from the T directory, with `--project` pointing at P):\n```\nAppended insight record to /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/T/.gzkit/insights/agent-insights.jsonl: {\"ts\":\"2026-11-05T08:27:36.180721+00:00\",\"type\":\"discovery\",\"scope\":\"dock-trial\",\"summary\":\"subagent-case-2\"}\nEXIT=0\n```\n\n**My command (case 3):**\n```\nAppended insight record to /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P/.gzkit/insights/agent-insights.jsonl: {\"ts\":\"2026-11-05T08:27:56.859108+00:00\",\"type\":\"discovery\",\"scope\":\"dock-trial\",\"summary\":\"main-session-case-3\"}\nEXIT=0\n```\nWarning: no stdin data received in 3s, proceeding without it. If piping from a slow command, redirect stdin explicitly: < /dev/null to skip, or wait longer.\n"
+    },
+    {
+      "label": "guard-off",
+      "guard": false,
+      "background": false,
+      "dispatch_id": "D-7d95f02101ff4ed8",
+      "insights_before": {
+        "P": 2,
+        "T": 2
+      },
+      "insights_after": {
+        "P": 4,
+        "T": 3
+      },
+      "summaries_in_P": [
+        "main-session-case-3",
+        "main-session-case-3",
+        "subagent-case-1",
+        "main-session-case-3"
+      ],
+      "summaries_in_T": [
+        "subagent-case-2",
+        "subagent-case-2",
+        "subagent-case-2"
+      ],
+      "claims": [],
+      "subagent_bash": [
+        {
+          "logged_at": 1793867297.387838,
+          "event": "PreToolUse",
+          "agent_id": "a51cdd65fb9b70081",
+          "cwd": "/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P",
+          "command": "uv run gz insights remember --type discovery --scope dock-trial --summary subagent-case-1; echo EXIT=$?",
+          "stdout": null,
+          "stderr": null
+        },
+        {
+          "logged_at": 1793867297.862616,
+          "event": "PostToolUse",
+          "agent_id": "a51cdd65fb9b70081",
+          "cwd": "/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P",
+          "command": "uv run gz insights remember --type discovery --scope dock-trial --summary subagent-case-1; echo EXIT=$?",
+          "stdout": "Appended insight record to /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P/.gzkit/insights/agent-insights.jsonl: {\"ts\":\"2026-11-05T08:28:17.819973+00:00\",\"type\":\"discovery\",\"scope\":\"dock-trial\",\"summary\":\"subagent-case-1\"}\nEXIT=0",
+          "stderr": ""
+        },
+        {
+          "logged_at": 1793867301.096111,
+          "event": "PreToolUse",
+          "agent_id": "a51cdd65fb9b70081",
+          "cwd": "/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P",
+          "command": "cd /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/T && uv run --project /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P gz insights remember --type discovery --scope dock-trial --summary subagent-case-2; echo EXIT=$?",
+          "stdout": null,
+          "stderr": null
+        },
+        {
+          "logged_at": 1793867301.593333,
+          "event": "PostToolUse",
+          "agent_id": "a51cdd65fb9b70081",
+          "cwd": "/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P",
+          "command": "cd /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/T && uv run --project /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P gz insights remember --type discovery --scope dock-trial --summary subagent-case-2; echo EXIT=$?",
+          "stdout": "Appended insight record to /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/T/.gzkit/insights/agent-insights.jsonl: {\"ts\":\"2026-11-05T08:28:21.552467+00:00\",\"type\":\"discovery\",\"scope\":\"dock-trial\",\"summary\":\"subagent-case-2\"}\nEXIT=0",
+          "stderr": ""
+        }
+      ],
+      "agent_returns": [
+        {
+          "logged_at": 1793867312.077235,
+          "agentId": "a51cdd65fb9b70081",
+          "status": "completed",
+          "isAsync": null,
+          "agentType": "general-purpose",
+          "prompt_carries_line": true
+        }
+      ],
+      "claude_output": "exit 0\n**Subagent report (verbatim):**\n\nBoth commands ran and exited 0.\n\n1. `uv run gz insights remember --type discovery --scope dock-trial --summary subagent-case-1; echo EXIT=$?`\n```\nAppended insight record to /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P/.gzkit/insights/agent-insights.jsonl: {\"ts\":\"2026-11-05T08:28:17.819973+00:00\",\"type\":\"discovery\",\"scope\":\"dock-trial\",\"summary\":\"subagent-case-1\"}\nEXIT=0\n```\n\n2. `cd .../dock/T && uv run --project .../dock/P gz insights remember --type discovery --scope dock-trial --summary subagent-case-2; echo EXIT=$?`\n```\nAppended insight record to /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/T/.gzkit/insights/agent-insights.jsonl: {\"ts\":\"2026-11-05T08:28:21.552467+00:00\",\"type\":\"discovery\",\"scope\":\"dock-trial\",\"summary\":\"subagent-case-2\"}\nEXIT=0\n```\n\nCase 1 wrote to the `P` project's `.gzkit/insights/agent-insights.jsonl`. Case 2 ran from `dock/T` with `--project` pointing at `P`, and wrote to `T`'s `.gzkit/insights/agent-insights.jsonl`, not `P`'s.\n\n**My command's output:**\n```\nAppended insight record to /private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/9e95040b-2af2-4f22-a63a-d9b2bb08495c/scratchpad/dock/P/.gzkit/insights/agent-insights.jsonl: {\"ts\":\"2026-11-05T08:28:34.414856+00:00\",\"type\":\"discovery\",\"scope\":\"dock-trial\",\"summary\":\"main-session-case-3\"}\nEXIT=0\n```\nWarning: no stdin data received in 3s, proceeding without it. If piping from a slow command, redirect stdin explicitly: < /dev/null to skip, or wait longer.\n"
+    }
+  ]
+}

@@ -17,8 +17,11 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
+from typing import TYPE_CHECKING
 from unittest.mock import patch
 
+from gzkit.config import GzkitConfig
 from gzkit.dispatch_stamp import (
     STAMP_ID_ENV,
     STAMP_ROOT_ENV,
@@ -27,7 +30,11 @@ from gzkit.dispatch_stamp import (
     stamp_hook_output,
 )
 from gzkit.executables import find_executable
+from gzkit.hooks.claude import generate_claude_settings
 from gzkit.hooks.scripts.dispatch import _dispatch_stamp_script
+
+if TYPE_CHECKING:
+    from contextlib import AbstractContextManager
 
 _AGENT = "a0123456789abcdef"
 _DISPATCH = "D-0123456789abcdef"
@@ -489,14 +496,40 @@ class TheClaim(_Session):
         self.assertEqual(self._claims(), [])
 
 
+def drydock() -> AbstractContextManager[object]:
+    """Hold the safe-mode condition on at the drydock level, at its source.
+
+    Returns:
+        A patch of ``gzkit.mx.marker.condition``, which ``alarms_off`` and every
+        other reader of the mode consult, however they were imported.
+
+    """
+    held = SimpleNamespace(on=True, marker=SimpleNamespace(level="drydock"), cause=None)
+    return patch("gzkit.mx.marker.condition", return_value=held)
+
+
 class OutOfService(_Session):
     """Ruling 28: a kit control is on at every level, out of service included."""
 
     def test_the_stamp_holds_with_the_alarms_off(self) -> None:
         self._book()
         self._prompt(f"GZKIT-DISPATCH: {_DISPATCH}")
-        with patch("gzkit.mx.alarms.alarms_off", return_value=True):
+        with drydock():
             self.assertEqual(self._stamped()[STAMP_ROOT_ENV], self.intended.as_posix())
+
+    def test_no_dispatch_stamp_hook_is_routed_through_the_alarm_switch(self) -> None:
+        """The switch that turns slow alarms off in the drydock never wraps the stamp."""
+        settings = generate_claude_settings(GzkitConfig())
+        commands = [
+            hook["command"]
+            for phase in settings["hooks"].values()
+            for entry in phase
+            for hook in entry["hooks"]
+            if "dispatch-stamp" in hook["command"]
+        ]
+        self.assertEqual(len(commands), 3)
+        for command in commands:
+            self.assertNotIn("gzkit.mx.alarms", command)
 
 
 class TheUndispatchedSubagent(_Session):
