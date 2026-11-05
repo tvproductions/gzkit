@@ -240,6 +240,27 @@ class WhatIsStamped(_Session):
             "env -C /x gz status",
             "nice -n 5 gz status",
             "sudo -u me gz status",
+            "time -p gz status",
+            "python -X utf8 -m gzkit status",
+            "python -W ignore -m gzkit status",
+            "bash -o pipefail -c 'gz status'",
+            "bash -e -o pipefail -c 'uv run gz check'",
+            "bash --login -c 'gz status'",
+            "uv run --exclude-newer 2026-01-01 gz status",
+            "uv run --no-group dev gz status",
+            "uv --color never run gz status",
+            "uv run --link-mode copy gz status",
+            "xargs --max-args 1 gz",
+            "cat <(gz status)",
+            "env -S 'gz status'",
+            "GZ.EXE status",
+            "uv run gz.EXE status",
+            "direnv exec . gz status",
+            "caffeinate -i gz status",
+            "flock /tmp/l gz status",
+            "ionice -c3 gz status",
+            "script -q /dev/null gz status",
+            "parallel gz ::: a",
         )
         unnamed = (
             "ls src/gzkit",
@@ -270,6 +291,12 @@ class WhatIsStamped(_Session):
             "command -v gz",
             "git commit -m 'gz: fix'",
             "uv pip show py-gzkit",
+            "uv run --frozen python -m unittest tests.test_gzkit",
+            "uv run --exclude-newer 2026-01-01 ruff check src/gzkit",
+            "which gz",
+            "find . -name gz -print",
+            "watch -n 5 ls src/gzkit",
+            "python -m pip install gzkit",
         )
         for command in named:
             with self.subTest(named=command):
@@ -340,6 +367,9 @@ class PowerShell(_Session):
             "Invoke-Expression 'gz status'",
             "cmd /c gz status",
             "& 'C:\\r\\.venv\\Scripts\\gz.exe' status",
+            "uv run gz status",
+            "GZ status",
+            "Start-Process gz -ArgumentList status",
         ):
             with self.subTest(command=command):
                 output = stamp_hook_output(self._powershell(command), self.project)
@@ -347,7 +377,19 @@ class PowerShell(_Session):
                 self.assertEqual(output["hookSpecificOutput"]["permissionDecision"], "deny")
 
     def test_other_powershell_calls_pass_untouched(self) -> None:
-        self.assertIsNone(stamp_hook_output(self._powershell("Get-ChildItem"), self.project))
+        for command in (
+            "Get-ChildItem",
+            "Set-Location C:\\code\\gzkit; git status",
+            "Get-ChildItem C:\\code\\gzkit\\src",
+            "git -C C:\\code\\gzkit log",
+            "tar -xzf file.tar.gz",
+            "Expand-Archive x.gz",
+            "Get-Content docs/gz.md",
+            "Select-String -Pattern gz *.md",
+            "$gz = 1",
+        ):
+            with self.subTest(command=command):
+                self.assertIsNone(stamp_hook_output(self._powershell(command), self.project))
         main = self._powershell("uv run gz status", agent=None)
         self.assertIsNone(stamp_hook_output(main, self.project))
 
