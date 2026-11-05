@@ -97,6 +97,10 @@
           {
             "type": "command",
             "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/ghi-triage-chat-silence.py\""
+          },
+          {
+            "type": "command",
+            "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/dispatch-stamp.py\""
           }
         ]
       },

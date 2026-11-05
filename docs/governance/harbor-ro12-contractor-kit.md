@@ -53,7 +53,7 @@ RP-12 closes only when each refusal has a test showing it refuses. The specifica
 | 6 | Acceptance with a tag still hung (C10) | Nothing: no tag record exists |
 | 7 | A hangar handoff whose turnover omits a hung tag (C11, ruling 19) | Nothing: `gz-session-handoff` § Shift turnover records that nothing refuses |
 | 8 | A control accepted with no inspected red witness (ruling 18) | Nothing: no red-witness (I) review exists; the MEL's accepted field, RO-13's F1, lands after this order and derives from that review |
-| 9 | A dispatched agent's state-changing command aimed at a root its dispatch did not intend (#1296, ruling 17) | Half: every `gz` verb refuses a call stamped with no root or another root (ruling 36, `src/gzkit/dispatch_stamp.py`), and no hook sets the stamp yet |
+| 9 | A dispatched agent's state-changing command aimed at a root its dispatch did not intend (#1296, ruling 17) | Built, not yet accepted: every `gz` verb refuses a call stamped with no root or another root (ruling 36), and the `dispatch-stamp.py` PreToolUse hook stamps a subagent's `gz` command (rulings 34, 35), both in `src/gzkit/dispatch_stamp.py`; shown on fixtures only, the real dispatched subagent being O1's dock trial |
 | 10 | An unblock from anyone but the named resolver, an answer its trigger does not allow, or evidence the ledger does not resolve (rulings 12, 13; added by ruling 29) | Partial: `gz wp unblock` records the operator's ruling; it reads no resolver, trigger or evidence |
 | 11 | An (I) mark signed by a dispatch that is not the QAI's, or an order read ready with an (I) point missing (rulings 14, 15; added by ruling 29) | Nothing: a review carries no tier, and readiness reads no (I) point |
 | 12 | A kit persona or the kit skill using a crosswalk term undeclared, or a rejected synonym (ruling 21; added by ruling 29) | Nothing: no crosswalk or term witness exists |
@@ -69,7 +69,7 @@ The issue's acceptance cases, unchanged by ruling, are requirements of this pack
 2. The same verb run where the dispatch intended proceeds (the valid control).
 3. A main-session `gz` command run by the operator in the live checkout is unaffected (second control).
 
-Each is shown by a test that fails if the guard is removed, and one of the three against a real dispatched subagent. The harness facts are in the contract's § Rulings of 2026-11-02. #1296 closes as superseded by this section, which is the requirement's one home (operator, 2026-11-03, verbatim: *"A"*); the guard is half built: the verb refusal stands (ruling 36, `src/gzkit/dispatch_stamp.py`), each case shown against `gz wp dispatch` in `tests/commands/test_wp_run.py`, and nothing yet sets the stamp, the hook being O1's next task.
+Each is shown by a test that fails if the guard is removed, and one of the three against a real dispatched subagent. The harness facts are in the contract's § Rulings of 2026-11-02. #1296 closes as superseded by this section, which is the requirement's one home (operator, 2026-11-03, verbatim: *"A"*); the guard is built and not yet accepted: the verb refusal (ruling 36), each case shown against `gz wp dispatch` in `tests/commands/test_wp_run.py`, and the stamp hook (rulings 34, 35, `.claude/hooks/dispatch-stamp.py`), shown on fixture transcripts and ledgers in `tests/test_dispatch_stamp_hook.py`. The case against a real dispatched subagent is O1's dock trial, its last task.
 
 ### The Bash `updatedInput` probe, measured 2026-11-04
 

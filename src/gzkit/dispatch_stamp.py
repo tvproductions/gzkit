@@ -14,9 +14,12 @@ stamp from its own process environment (ruling 37), so in one process only the
 first ``main`` call is checked; nothing in the package calls ``main`` twice.
 """
 
+import json
 import os
+import re
+import shlex
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Mapping, MutableMapping
@@ -106,3 +109,129 @@ def consume_stamp(environ: MutableMapping[str, str]) -> None:
     """
     for name in (STAMP_ROOT_ENV, STAMP_ID_ENV):
         environ.pop(name, None)
+
+
+# A ``gz`` or ``gzkit`` word, bounded by the shell's own separators and quotes.
+# Over-matching is the safe error: a stamped call only waits for approval.
+_GZ_WORD = re.compile(r"""(?:^|[\s;&|()`"'])(?:gz|gzkit)(?=$|[\s;&|()`"'])""")
+
+
+def names_gz(command: str) -> bool:
+    """Say whether a Bash command names ``gz`` or ``gzkit`` (ruling 34).
+
+    Returns:
+        True when either word stands as a word of the command; a path, a flag or
+        a longer word containing it is not one.
+
+    """
+    return _GZ_WORD.search(command) is not None
+
+
+def _first_record(path: Path) -> dict[str, Any] | None:
+    try:
+        with path.open(encoding="utf-8") as handle:
+            record = json.loads(handle.readline())
+    except OSError, UnicodeDecodeError, json.JSONDecodeError:
+        return None
+    return record if isinstance(record, dict) else None
+
+
+def _prompt_text(record: dict[str, Any]) -> str:
+    message = record.get("message")
+    content = message.get("content") if isinstance(message, dict) else None
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        blocks = [b.get("text") for b in content if isinstance(b, dict)]
+        return "\n".join(text for text in blocks if isinstance(text, str))
+    return ""
+
+
+def _dispatch_named(payload: Mapping[str, Any], agent_id: str) -> str | None:
+    """Read the dispatch id from the subagent's own transcript (ruling 35).
+
+    Returns:
+        The id its first record names, or None when the transcript is missing or
+        unreadable, its first record is not this agent's prompt, or it names none.
+
+    """
+    transcript = payload.get("transcript_path")
+    if not isinstance(transcript, str) or not transcript.endswith(".jsonl"):
+        return None
+    session = Path(transcript.removesuffix(".jsonl"))
+    record = _first_record(session / "subagents" / f"agent-{agent_id}.jsonl")
+    if record is None or record.get("type") != "user" or record.get("agentId") != agent_id:
+        return None
+    # Deferred, as in `_intended_root`: only a subagent's gz command reads it.
+    from gzkit.work_package_run import read_dispatch_id  # noqa: PLC0415
+
+    return read_dispatch_id(_prompt_text(record))
+
+
+def _intended_root(project_root: Path, dispatch_id: str) -> str:
+    """Read the root the ledger books for a dispatch (rulings 1, 35).
+
+    Returns:
+        The root, or an empty string when the ledger cannot be read or holds no
+        such dispatch.
+
+    """
+    # Deferred: `gz` imports this module on every call, and only a subagent's
+    # gz command reaches the ledger.
+    from gzkit.config import GzkitConfig  # noqa: PLC0415
+    from gzkit.ledger import Ledger  # noqa: PLC0415
+    from gzkit.work_package_run import find_dispatch  # noqa: PLC0415
+
+    try:
+        config = GzkitConfig.load(project_root / ".gzkit.json")
+        record = find_dispatch(Ledger(project_root / config.paths.ledger), dispatch_id)
+    except OSError, ValueError:
+        return ""
+    return record.intended_root if record is not None else ""
+
+
+def stamp_prefix(root: str, dispatch_id: str) -> str:
+    """Compose the prefix that puts the stamp in a command's environment.
+
+    ``export`` rather than bare assignments, so the stamp reaches every command
+    of a chain, a ``gz`` after a ``cd`` included (the probe's runs 1 and 2).
+
+    Returns:
+        The prefix, ending in a space, to put before the command.
+
+    """
+    assignments = f"{STAMP_ROOT_ENV}={shlex.quote(root)} {STAMP_ID_ENV}={shlex.quote(dispatch_id)}"
+    return f"export {assignments}; "
+
+
+def stamp_hook_output(payload: Mapping[str, Any], project_root: Path) -> dict | None:
+    """Decide the PreToolUse output for one Bash call (rulings 34, 35).
+
+    Args:
+        payload: The hook's input.
+        project_root: The project whose ledger books the dispatches.
+
+    Returns:
+        None to let the call run untouched: not Bash, the main session's (no
+        ``agent_id``), or a command naming no ``gz``. Otherwise the output that
+        rewrites the command to carry the stamp, with no permission decision. A
+        dispatch that cannot be read and found stamps no root.
+
+    """
+    agent_id = payload.get("agent_id")
+    tool_input = payload.get("tool_input")
+    if payload.get("tool_name") != "Bash" or not isinstance(agent_id, str) or not agent_id:
+        return None
+    if not isinstance(tool_input, dict):
+        return None
+    command = tool_input.get("command")
+    if not isinstance(command, str) or not names_gz(command):
+        return None
+    dispatch_id = _dispatch_named(payload, agent_id) or ""
+    root = _intended_root(project_root, dispatch_id) if dispatch_id else ""
+    return {
+        "hookSpecificOutput": {
+            "hookEventName": "PreToolUse",
+            "updatedInput": {**tool_input, "command": stamp_prefix(root, dispatch_id) + command},
+        }
+    }

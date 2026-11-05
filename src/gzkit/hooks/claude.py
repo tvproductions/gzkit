@@ -11,6 +11,7 @@ from pathlib import Path
 
 from gzkit.config import GzkitConfig
 from gzkit.hooks.core import _ruff_format_dir
+from gzkit.hooks.scripts.dispatch import _dispatch_stamp_script
 from gzkit.hooks.scripts.ghi import _ghi_triage_chat_silence_script
 from gzkit.hooks.scripts.lsp import prefer_lsp_script
 from gzkit.hooks.scripts.mx import _mx_awareness_script
@@ -61,6 +62,12 @@ def _claude_hooks_readme() -> str:
             "  report the last stage's exit, masking a failing run as green.",
             "  Mechanizes `.gzkit/rules/tests.md` § Verification exit-code",
             "  integrity; `pipefail` / `PIPESTATUS` opt out (GHI #589).",
+            "- `dispatch-stamp.py`",
+            "  PreToolUse (`Bash`) hook that stamps a subagent's `gz` command",
+            "  with the root its dispatch intends, read from the subagent's own",
+            "  transcript and the ledger, so `gz` refuses it anywhere else; no",
+            "  permission decision, fail-closed to a no-root stamp, on at every",
+            "  mode level (RP-12 rulings 17, 34, 35).",
             "- `prefer-lsp.py`",
             "  PreToolUse (`Grep|Bash|PowerShell`) hook that denies the first",
             "  text search for a Python symbol in a session and points at the",
@@ -136,7 +143,7 @@ def _claude_hooks_readme() -> str:
             "  then `pipeline-gate.py`, then `obpi-completion-validator.py`",
             "- `PreToolUse` `Bash`: `verifier-pipe-gate.py`,",
             "  then `pipeline-completion-reminder.py`,",
-            "  then `ghi-triage-chat-silence.py`",
+            "  then `ghi-triage-chat-silence.py`, then `dispatch-stamp.py`",
             "- `PreToolUse` `Grep|Bash|PowerShell`: `prefer-lsp.py`",
             "- `PostToolUse` `Edit|Write`: `post-edit-ruff.py`,",
             "  then `ledger-writer.py`",
@@ -275,6 +282,11 @@ def generate_claude_settings(config: GzkitConfig, project_root: Path | None = No
                         {
                             "type": "command",
                             "command": _hook_command(hooks_dir, "ghi-triage-chat-silence.py"),
+                        },
+                        # Last, so the hooks above read the command as written.
+                        {
+                            "type": "command",
+                            "command": _hook_command(hooks_dir, "dispatch-stamp.py"),
                         },
                     ],
                 },
@@ -604,6 +616,7 @@ def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) ->
         ("session-start-advisement.py", _session_start_advisement_script, True),
         ("session-exit-bookmark.py", _session_exit_bookmark_script, True),
         ("verifier-pipe-gate.py", _verifier_pipe_gate_script, True),
+        ("dispatch-stamp.py", _dispatch_stamp_script, True),
         ("session-staleness-check.py", _session_staleness_check_script, True),
         ("obpi-completion-validator.py", _obpi_completion_validator_script, True),
         ("ledger-writer.py", _ledger_writer_script, True),

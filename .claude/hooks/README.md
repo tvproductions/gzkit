@@ -9,6 +9,12 @@ Current hook surface in gzkit:
   report the last stage's exit, masking a failing run as green.
   Mechanizes `.gzkit/rules/tests.md` § Verification exit-code
   integrity; `pipefail` / `PIPESTATUS` opt out (GHI #589).
+- `dispatch-stamp.py`
+  PreToolUse (`Bash`) hook that stamps a subagent's `gz` command
+  with the root its dispatch intends, read from the subagent's own
+  transcript and the ledger, so `gz` refuses it anywhere else; no
+  permission decision, fail-closed to a no-root stamp, on at every
+  mode level (RP-12 rulings 17, 34, 35).
 - `prefer-lsp.py`
   PreToolUse (`Grep|Bash|PowerShell`) hook that denies the first
   text search for a Python symbol in a session and points at the
@@ -84,7 +90,7 @@ Current hook surface in gzkit:
   then `pipeline-gate.py`, then `obpi-completion-validator.py`
 - `PreToolUse` `Bash`: `verifier-pipe-gate.py`,
   then `pipeline-completion-reminder.py`,
-  then `ghi-triage-chat-silence.py`
+  then `ghi-triage-chat-silence.py`, then `dispatch-stamp.py`
 - `PreToolUse` `Grep|Bash|PowerShell`: `prefer-lsp.py`
 - `PostToolUse` `Edit|Write`: `post-edit-ruff.py`,
   then `ledger-writer.py`

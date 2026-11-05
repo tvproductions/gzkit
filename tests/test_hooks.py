@@ -318,6 +318,10 @@ class TestGenerateClaudeSettings(unittest.TestCase):
                             "type": "command",
                             "command": _expected_hook_command("ghi-triage-chat-silence.py"),
                         },
+                        {
+                            "type": "command",
+                            "command": _expected_hook_command("dispatch-stamp.py"),
+                        },
                     ],
                 },
                 {
@@ -386,8 +390,9 @@ class TestGenerateClaudeSettings(unittest.TestCase):
         # ruling: a handoff is an advisor, not a gate-keeping nanny). Nothing
         # registers it on any matcher now. 11 since the instruction router's
         # retirement (2026-10-17, drydock RO-1 act b). 12 since the prefer-LSP
-        # hook joined the generator (GHI #1278).
-        self.assertEqual(len(commands), 12, commands)
+        # hook joined the generator (GHI #1278). 13 since the dispatch stamp
+        # (RP-12 rulings 34, 35).
+        self.assertEqual(len(commands), 13, commands)
         for command in commands:
             self.assertIn('"$CLAUDE_PROJECT_DIR/', command, command)
             self.assertNotIn("python .claude/hooks/", command, command)
@@ -696,6 +701,10 @@ class TestSetupClaudeHooks(unittest.TestCase):
                             {
                                 "type": "command",
                                 "command": _expected_hook_command("ghi-triage-chat-silence.py"),
+                            },
+                            {
+                                "type": "command",
+                                "command": _expected_hook_command("dispatch-stamp.py"),
                             },
                         ],
                     },
