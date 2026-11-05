@@ -500,8 +500,9 @@ def drydock() -> AbstractContextManager[object]:
     """Hold the safe-mode condition on at the drydock level, at its source.
 
     Returns:
-        A patch of ``gzkit.mx.marker.condition``, which ``alarms_off`` and every
-        other reader of the mode consult, however they were imported.
+        A patch of ``gzkit.mx.marker.condition``, which ``alarms_off`` consults
+        however it was imported; a reader binding ``condition`` itself at import
+        would escape it.
 
     """
     held = SimpleNamespace(on=True, marker=SimpleNamespace(level="drydock"), cause=None)
