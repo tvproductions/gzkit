@@ -50,6 +50,7 @@ def _seed_catalog() -> None:
         ("reqs", [_REQ]),
         ("externals", []),
         ("work_packages", []),
+        ("orders", []),
     ):
         text = json.dumps({"_doc": "Fixture catalog.", kind: entries})
         (catalog / f"{kind}.json").write_text(text, encoding="utf-8")

@@ -101,6 +101,10 @@
         "stage2_dispatch_recorded",
         "closeout_initiated"
       ]
+    },
+    "catalog/orders.json": {
+      "_doc": "The orders of the requirements catalog (docs/governance/harbor-ro12-contractor-kit.md, drydock RP-12 O2): one record per order, ORD-<NN>-<slug> (ruling 43), naming the work package it sits in, its aliases, its purpose and its procedure in prose, or NA. The order's kind is its package's, and it holds no REQ list: its frozen event carries the REQ baseline and its tasks bind by their own events (ruling 46). Edited only through `gz wp order` (ruling 47). No lifecycle state is held here: it lives only in the ledger (ruling 44). Shape: src/gzkit/schemas/catalog_orders.json; read by gzkit/models/catalog.py; witnessed by `gz validate --catalog`.",
+      "orders": []
     }
   }
 }

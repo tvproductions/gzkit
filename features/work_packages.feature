@@ -24,6 +24,10 @@ Feature: Work packages run through the gz wp verbs
     Then the command exits with code 0
     And the output contains "no marker is read"
 
+  Scenario: an order the store does not hold is a user error
+    When I run the gz command "wp order show ORD-99-nothing"
+    Then the command exits with code 1
+
   Scenario: a package the store does not hold is a user error
     When I run the gz command "wp show WP-99-nothing"
     Then the command exits with code 1

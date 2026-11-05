@@ -65,6 +65,12 @@
       "purpose": "The work packages (WP-<NN>-<slug>), delivery or repair, each with its formal work package and OQE; empty until RO-5's verbs author them; `gz validate --catalog`.",
       "derivation": "docs/governance/harbor-ro5-work-packages.md (operator rulings 2026-10-25 and 2026-10-28; tranche 1 shape, Accept as drafted (Recommended))"
     },
+    "catalog/orders.json": {
+      "owner": "gzkit/models/catalog.py",
+      "kind": "code",
+      "purpose": "The orders (ORD-<NN>-<slug>), each naming the work package it sits in, its aliases, its purpose and its procedure; empty until `gz wp order new` writes one; `gz validate --catalog`.",
+      "derivation": "docs/governance/harbor-ro12-contractor-kit.md (RP-12 rulings 43 to 47, 2026-11-05)"
+    },
     "check_scope_membership.json": {
       "owner": "gzkit/governance/trust_audits/gate_callers.py",
       "kind": "code",

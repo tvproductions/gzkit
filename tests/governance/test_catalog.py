@@ -117,6 +117,7 @@ class _Tree(unittest.TestCase):
         self.write("reqs", [_req("REQ-1")])
         self.write("externals", [])
         self.write("work_packages", [])
+        self.write("orders", [])
         # The REQ derives from FR-001, which tranche 3's derives_from check reads
         # from the live PRD under the configured PRD directory.
         prd = self.root / "design" / "prd" / "PRD-FIXTURE-1.0.0.md"
@@ -418,6 +419,7 @@ class TestDispatch(unittest.TestCase):
                 ("reqs", []),
                 ("externals", []),
                 ("work_packages", []),
+                ("orders", []),
             ):
                 text = json.dumps({"_doc": "Fixture catalog.", kind: entries})
                 (catalog / f"{kind}.json").write_text(text, encoding="utf-8")
@@ -486,6 +488,7 @@ class TestNegativeControl(unittest.TestCase):
                 ("reqs", []),
                 ("externals", []),
                 ("work_packages", []),
+                ("orders", []),
             ):
                 text = json.dumps({"_doc": "Fixture catalog.", kind: entries})
                 (catalog / f"{kind}.json").write_text(text, encoding="utf-8")

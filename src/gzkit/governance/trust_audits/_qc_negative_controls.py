@@ -1610,6 +1610,7 @@ def _build_catalog() -> Path:
         ("reqs", []),
         ("externals", []),
         ("work_packages", []),
+        ("orders", []),
     ):
         _write(catalog / f"{kind}.json", json.dumps({"_doc": "Negative control.", kind: entries}))
     return catalog.parents[1]
@@ -1625,6 +1626,7 @@ def _catalog_project(slug: str, outcomes: list[dict], reqs: list[dict]) -> Path:
         ("reqs", reqs),
         ("externals", []),
         ("work_packages", []),
+        ("orders", []),
     ):
         payload = json.dumps({"_doc": "Negative control.", kind: entries})
         _write(root / "data" / "catalog" / f"{kind}.json", payload)

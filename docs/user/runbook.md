@@ -984,6 +984,16 @@ uv run gz wp withdraw-legacy OBPI-0.35.0-11-corpus-shape-witness --reason "<why,
 `gz wp runs` reports every run in flight from the ledger: the last row it booked,
 when, the subject last dispatched against and whether it is blocked.
 
+An order is the unit Gate 5 sits at, inside a work package (drydock RP-12 O2).
+Its record lives in `data/catalog/orders.json`, written only by `gz wp order new`,
+as `ORD-<NN>-<slug>`; its kind is its package's, and it sits in a repair package
+until RP-14 moves construction onto the order:
+
+```bash
+uv run gz wp order new WP-01-stamp --slug import --purpose "<what it restores>" --alias O2
+uv run gz wp order show ORD-01-import
+```
+
 The lifecycle moves one step at a time (initiated, frozen, commenced, accepted,
 closed). Pen and ink is the coordinator's; every other rung of the change ladder
 is yours. Any refusal exits 3 and writes nothing. Attaching an issue also labels

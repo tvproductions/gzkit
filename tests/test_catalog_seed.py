@@ -114,7 +114,7 @@ class TestSeedMatchesCanon(unittest.TestCase):
                 canon.pop("cutover", None)
                 if name in {
                     CATALOG_FILES[kind]
-                    for kind in ("outcomes", "reqs", "externals", "work_packages")
+                    for kind in ("outcomes", "reqs", "externals", "work_packages", "orders")
                 }:
                     canon[next(key for key in canon if key != "_doc")] = []
                 self.assertEqual(seeded, canon)

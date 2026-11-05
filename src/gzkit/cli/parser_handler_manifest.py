@@ -71,6 +71,9 @@ _LAZY_HANDLERS: dict[str, str] = {
     "wp_runs_cmd": "gzkit.commands.wp",
     "wp_withdraw_legacy_cmd": "gzkit.commands.wp",
     "wp_transition_cmd": "gzkit.commands.wp",
+    # --- wp order group (parser_wp_order, RP-12 O2) ---
+    "wp_order_new_cmd": "gzkit.commands.wp_order",
+    "wp_order_show_cmd": "gzkit.commands.wp_order",
     # --- handoff group (parser_maintenance) ---
     "handoff_archive_cmd": "gzkit.commands.handoff_archive",
     "handoff_authorize_cmd": "gzkit.commands.handoff",

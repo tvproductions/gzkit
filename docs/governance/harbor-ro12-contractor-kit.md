@@ -115,6 +115,7 @@ Ruling 28, stated here under `.gzkit/rules/mode-contract.md` until RP-13's F1 bu
 | The hook stamp (rulings 17, 34) | on | on | none | the stamp test against a real dispatched subagent | not yet: its red witness and refusal 9's inspected 2026-11-05 (§ The dock trial), the accepted state booked when O6's inspection record lands (ruling 18) |
 | The term witness (ruling 21) | on | on | none | a persona fixture carrying a rejected synonym | as above |
 | The documents-gate replay (ruling 19) | on | on | none | a handoff fixture omitting a hung tag | as above |
+| The order store's refusals: one id series, one order per alias, an order only in a repair package the catalog holds (rulings 43, 44; `order_findings`, read by `gz validate --catalog` and by `gz wp order new` before it writes) | on | on | none | `tests/governance/test_catalog_orders.py` and `tests/commands/test_wp_order.py`, re-run by `gz check` when touched | not yet, until O2's dock trial's red witness is inspected (ruling 27) |
 
 ## Rulings
 

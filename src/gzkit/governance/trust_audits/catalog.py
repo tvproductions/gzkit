@@ -15,7 +15,7 @@ Tranche 4's forward rule then reads the delivery events since the cutover in
 `data/catalog/delivery_events.json` and announces the ones naming no REQ or
 outcome (`gzkit.governance.trust_audits.catalog_forward`). RO-5 tranche 1 adds
 the work-package store's checks and reads its two events against it; the freeze
-lock is RO-5's verbs'.
+lock is RO-5's verbs'. RP-12 O2 adds the order store's checks (rulings 43 to 47).
 """
 
 import json
@@ -121,7 +121,7 @@ def _structure_findings(catalog: Catalog) -> list[ValidationError]:
                 f"data/{CATALOG_FILES['families']} does not hold.",
             )
         )
-    return errors + work_package_findings(catalog)
+    return errors + work_package_findings(catalog) + order_findings(catalog)
 
 
 def _kind_breaches(package: WorkPackage, outcomes: frozenset[str]) -> list[str]:
@@ -271,6 +271,49 @@ def work_package_findings(catalog: Catalog) -> list[ValidationError]:
                     "(docs/governance/harbor-ro5-work-packages.md).",
                 )
             )
+    return errors
+
+
+def order_findings(catalog: Catalog) -> list[ValidationError]:
+    """Read the order store against RP-12's rulings 43 and 44.
+
+    One id series, each alias naming one order, and each order sitting in a repair
+    package the catalog holds: a delivery package keeps its five states until RP-14
+    moves construction onto the order (ruling 44).
+
+    Returns:
+        The store's findings, empty when it holds.
+
+    """
+    numbers = [f"ORD-{order.id.split('-')[1]}" for order in catalog.orders]
+    aliases = [alias for order in catalog.orders for alias in order.aliases]
+    errors = _duplicates(
+        "orders",
+        "Order numbers",
+        numbers,
+        "One id series: a number names one order, never reused (RP-12 ruling 43).",
+    )
+    errors += _duplicates(
+        "orders", "Aliases", aliases, "An alias resolves to one order (RP-12 ruling 43)."
+    )
+    kinds = {package.id: package.kind for package in catalog.work_packages}
+    for order in catalog.orders:
+        kind = kinds.get(order.work_package)
+        if kind == "repair":
+            continue
+        breach = (
+            f"names {order.work_package}, which data/{CATALOG_FILES['work_packages']} does "
+            "not hold; an order sits in a package the catalog holds"
+            if kind is None
+            else f"sits in delivery package {order.work_package}; a delivery package keeps "
+            "its five states until RP-14 moves construction onto the order (RP-12 ruling 44)"
+        )
+        errors.append(
+            _err(
+                "orders",
+                f"Order {order.id} {breach} (docs/governance/harbor-ro12-contractor-kit.md).",
+            )
+        )
     return errors
 
 

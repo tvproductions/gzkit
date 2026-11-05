@@ -80,6 +80,7 @@ def _seed_store(package: dict[str, object]) -> None:
         ("reqs", []),
         ("externals", []),
         ("work_packages", [package]),
+        ("orders", []),
     ):
         text = json.dumps({"_doc": "Fixture catalog.", kind: entries})
         (catalog / f"{kind}.json").write_text(text, encoding="utf-8")

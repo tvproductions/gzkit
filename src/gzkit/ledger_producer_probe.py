@@ -371,6 +371,7 @@ def _seat_catalog(root: Path) -> Catalog:
                 "departures": [],
             },
         ],
+        "orders": [],
     }
     for kind, entries in files.items():
         path = registry_path(root, CATALOG_FILES[kind])

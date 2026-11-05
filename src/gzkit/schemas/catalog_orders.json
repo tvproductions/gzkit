@@ -1,0 +1,75 @@
+{
+  "$defs": {
+    "Order": {
+      "additionalProperties": false,
+      "description": "One order: the unit Gate 5 sits at, inside its work package (RP-12 O2).\n\nRuling 43 sets the id and reads the order's kind from its package, never from a\nfield; ruling 46 keeps the record thin, since the order's `frozen` event carries\nits REQ baseline and its tasks bind by their own events. Lifecycle state lives\nonly in the ledger (ruling 44), so no field carries it.",
+      "properties": {
+        "id": {
+          "description": "`ORD-<NN>-<slug>`.",
+          "pattern": "^ORD-[0-9]{2,}-[a-z0-9]+(-[a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "work_package": {
+          "description": "The package the order sits in.",
+          "pattern": "^WP-[0-9]{2,}-[a-z0-9]+(-[a-z0-9]+)*$",
+          "title": "Work Package",
+          "type": "string"
+        },
+        "aliases": {
+          "description": "Short names such as `O2`.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Aliases",
+          "type": "array"
+        },
+        "purpose": {
+          "description": "What the order delivers or restores.",
+          "minLength": 1,
+          "title": "Purpose",
+          "type": "string"
+        },
+        "procedure": {
+          "description": "Its procedure in prose, or NA.",
+          "minLength": 1,
+          "title": "Procedure",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "work_package",
+        "aliases",
+        "purpose",
+        "procedure"
+      ],
+      "title": "Order",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "`data/catalog/orders.json`, edited only through `gz wp order` (RP-12 ruling 47).",
+  "properties": {
+    "_doc": {
+      "description": "What the file is.",
+      "minLength": 1,
+      "title": "Doc",
+      "type": "string"
+    },
+    "orders": {
+      "description": "The orders.",
+      "items": {
+        "$ref": "#/$defs/Order"
+      },
+      "title": "Orders",
+      "type": "array"
+    }
+  },
+  "required": [
+    "_doc",
+    "orders"
+  ],
+  "title": "OrdersFile",
+  "type": "object"
+}

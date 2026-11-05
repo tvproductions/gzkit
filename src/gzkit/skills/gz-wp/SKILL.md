@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-05
 metadata:
-  skill-version: "0.8.0"
+  skill-version: "0.9.0"
 model: sonnet
 ---
 
@@ -133,12 +133,21 @@ Every change to a live package is one `gz wp change` with its rung:
 | `alteration` | operator | `--item <id>` (`--configuration-change` for a new one) |
 | `departure` | operator | `--item <id> --form deviation\|waiver --duration temporary\|permanent [--clear-by]` |
 
+An order sits inside a package: the unit Gate 5 sits at (RP-12 O2). Write its
+record with the next `ORD-<NN>-<slug>`; its kind is its package's, and only a
+repair package takes one until RP-14 (rulings 43 to 47):
+
+```bash
+uv run gz wp order new <WP-id> --slug <slug> --purpose "<what it restores>" [--alias O<n>]
+```
+
 Work outside the package's general scope is a new work package, never a change.
 A departure from specification is recorded only where the work cannot meet its
 own approved specification; a difference from the prior shape is not one.
 
 ## Read
 
+`uv run gz wp order show <ORD-id>` prints an order's record and its package's kind;
 `uv run gz wp show <WP-id>` prints the record, the state and the history;
 `uv run gz wp runs` reports what the ledger says every run in flight has reached;
 `uv run gz validate --catalog` checks the store against RO-5's rulings.

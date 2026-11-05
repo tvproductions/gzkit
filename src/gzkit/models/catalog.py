@@ -6,6 +6,8 @@ files under `data/catalog/`, each a list under a `_doc` header, one model and on
 committed schema each. Tranche 3 adds a fourth, the roster of external boundaries
 `depends_on` may name (operator, "Declared prefixes (Rec.)", 2026-10-22). RO-5
 tranche 1 adds a fifth, the work packages (`docs/governance/harbor-ro5-work-packages.md`).
+RP-12 O2 adds a sixth, the orders (`docs/governance/harbor-ro12-contractor-kit.md`,
+rulings 43 to 47).
 
 What a catalog entry does NOT carry is as ruled as what it does: an outcome has
 no lifecycle state (delivery status lives only in the ledger, decision 3) and a
@@ -28,6 +30,7 @@ CATALOG_FILES: dict[str, str] = {
     "reqs": "catalog/reqs.json",
     "externals": "catalog/externals.json",
     "work_packages": "catalog/work_packages.json",
+    "orders": "catalog/orders.json",
 }
 
 #: The forward rule's registry, read beside the catalog but not part of it (RO-3 tranche 4).
@@ -41,6 +44,9 @@ REQ_ID_PATTERN = rf"^{CATALOG_REQ_ID_BODY}$"
 
 #: One id series for every work package, repair or delivery: `WP-<NN>-<slug>` (RO-5 ruling 6).
 WORK_PACKAGE_ID_PATTERN = r"^WP-[0-9]{2,}-[a-z0-9]+(-[a-z0-9]+)*$"
+
+#: One id series for every order, work or repair: `ORD-<NN>-<slug>` (RP-12 ruling 43).
+ORDER_ID_PATTERN = r"^ORD-[0-9]{2,}-[a-z0-9]+(-[a-z0-9]+)*$"
 
 
 class Family(BaseModel):
@@ -186,6 +192,26 @@ class WorkPackage(BaseModel):
     departures: tuple[Departure, ...] = Field(..., description="Departures from specification.")
 
 
+class Order(BaseModel):
+    """One order: the unit Gate 5 sits at, inside its work package (RP-12 O2).
+
+    Ruling 43 sets the id and reads the order's kind from its package, never from a
+    field; ruling 46 keeps the record thin, since the order's `frozen` event carries
+    its REQ baseline and its tasks bind by their own events. Lifecycle state lives
+    only in the ledger (ruling 44), so no field carries it.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    id: str = Field(..., pattern=ORDER_ID_PATTERN, description="`ORD-<NN>-<slug>`.")
+    work_package: str = Field(
+        ..., pattern=WORK_PACKAGE_ID_PATTERN, description="The package the order sits in."
+    )
+    aliases: tuple[str, ...] = Field(..., description="Short names such as `O2`.")
+    purpose: str = Field(..., min_length=1, description="What the order delivers or restores.")
+    procedure: str = Field(..., min_length=1, description="Its procedure in prose, or NA.")
+
+
 class FamiliesFile(BaseModel):
     """`data/catalog/families.json`."""
 
@@ -231,12 +257,22 @@ class WorkPackagesFile(BaseModel):
     work_packages: tuple[WorkPackage, ...] = Field(..., description="The work packages.")
 
 
+class OrdersFile(BaseModel):
+    """`data/catalog/orders.json`, edited only through `gz wp order` (RP-12 ruling 47)."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid", populate_by_name=True)
+
+    doc: str = Field(..., alias="_doc", min_length=1, description="What the file is.")
+    orders: tuple[Order, ...] = Field(..., description="The orders.")
+
+
 FILE_MODELS: dict[str, type[BaseModel]] = {
     "families": FamiliesFile,
     "outcomes": OutcomesFile,
     "reqs": ReqsFile,
     "externals": ExternalsFile,
     "work_packages": WorkPackagesFile,
+    "orders": OrdersFile,
 }
 
 
@@ -250,6 +286,7 @@ class Catalog(BaseModel):
     reqs: tuple[Req, ...]
     externals: tuple[External, ...] = ()
     work_packages: tuple[WorkPackage, ...] = ()
+    orders: tuple[Order, ...] = ()
 
 
 def catalog_json_schemas() -> dict[str, dict[str, Any]]:
@@ -272,12 +309,14 @@ def load_catalog(project_root: Path) -> Catalog:
     work_packages = WorkPackagesFile.model_validate(
         load_registry(project_root, CATALOG_FILES["work_packages"])
     )
+    orders = OrdersFile.model_validate(load_registry(project_root, CATALOG_FILES["orders"]))
     return Catalog(
         families=families.families,
         outcomes=outcomes.outcomes,
         reqs=reqs.reqs,
         externals=externals.externals,
         work_packages=work_packages.work_packages,
+        orders=orders.orders,
     )
 
 

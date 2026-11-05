@@ -263,6 +263,7 @@ def _write_catalog(root: Path, reqs: list[dict[str, Any]]) -> None:
         ("outcomes", []),
         ("externals", []),
         ("work_packages", []),
+        ("orders", []),
         ("reqs", reqs),
     ):
         payload = {"_doc": "Fixture.", kind: entries}
