@@ -7,11 +7,16 @@ real root is the directory the verb runs in, ``get_project_root``'s answer, read
 only for a stamped call.
 """
 
+import os
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-from gzkit.dispatch_stamp import STAMP_ID_ENV, STAMP_ROOT_ENV, stamp_refusal
+from gzkit.dispatch_stamp import STAMP_ID_ENV, STAMP_ROOT_ENV, consume_stamp, stamp_refusal
+
+_REPO = Path(__file__).resolve().parents[1]
 
 
 def _never() -> Path:
@@ -87,6 +92,36 @@ class StampRefusal(unittest.TestCase):
         if not respelled.is_dir():
             self.skipTest("this volume is case-sensitive")
         self.assertIsNone(self._refusal(respelled.as_posix(), self.project))
+
+
+class StampConsumed(unittest.TestCase):
+    """Ruling 37: a call that passes takes the stamp out of what it runs."""
+
+    def test_consuming_removes_the_stamp_and_nothing_else(self) -> None:
+        environ = {STAMP_ROOT_ENV: "/r", STAMP_ID_ENV: "D-0123456789abcdef", "HOME": "/h"}
+        consume_stamp(environ)
+        self.assertEqual(environ, {"HOME": "/h"})
+
+    def test_an_unstamped_environment_is_left_as_it_was(self) -> None:
+        environ = {"HOME": "/h"}
+        consume_stamp(environ)
+        self.assertEqual(environ, {"HOME": "/h"})
+
+    def test_the_test_harness_drops_an_inherited_stamp(self) -> None:
+        """A stamped agent's own test run reaches its fixtures as the main session's would."""
+        stamped = {**os.environ, STAMP_ROOT_ENV: _REPO.as_posix(), STAMP_ID_ENV: "D-x"}
+        probe = f"import os, tests; print(os.environ.get({STAMP_ROOT_ENV!r}, 'absent'))"
+        result = subprocess.run(  # noqa: S603 -- the running interpreter, a literal argv
+            [sys.executable, "-c", probe],
+            cwd=_REPO,
+            env=stamped,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            check=True,
+        )
+        self.assertEqual(result.stdout.strip(), "absent")
 
 
 if __name__ == "__main__":

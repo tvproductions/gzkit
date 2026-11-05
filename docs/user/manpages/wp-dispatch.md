@@ -60,7 +60,9 @@ names it. Put that line in the dispatched agent's prompt. The stamp hook reads i
 from the subagent's own transcript to learn which dispatch, and so which root, a
 subagent's `gz` command belongs to (rulings 17, 34 and 35). Every `gz` verb run
 under that stamp from any directory but the intended root, or under a stamp that
-names no root, is refused with exit 3 before it writes (ruling 36). A dispatch meant for
+names no root, is refused with exit 3 before it writes (ruling 36). A call
+that passes drops the stamp, so what it runs, a test or a nested `gz`, is not
+refused (ruling 37). A dispatch meant for
 another project, a throwaway one included, names it with `--root`. A relative
 root is resolved against the current directory; an empty `--root`, or a root that
 is not an existing directory, exits 1 and books nothing. The root is booked as one

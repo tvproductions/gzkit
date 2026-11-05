@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Mapping
+    from collections.abc import Callable, Mapping, MutableMapping
 
 #: The root the subagent's dispatch intends; present, possibly empty, on every stamped call.
 STAMP_ROOT_ENV = "GZKIT_DISPATCH_ROOT"
@@ -77,3 +77,17 @@ def stamp_refusal(environ: Mapping[str, str], real_root: Callable[[], Path]) -> 
             "Run it from the root the dispatch intends (RP-12 ruling 17)."
         )
     return None
+
+
+def consume_stamp(environ: MutableMapping[str, str]) -> None:
+    """Take the stamp out of an environment, once its call has passed (ruling 37).
+
+    A stamp is checked once, at the call it was put on. What that verb then runs,
+    a test whose fixtures sit in a temporary directory or a nested ``gz`` the
+    verb aims elsewhere, runs as the main session's would; the test harness
+    drops it the same way for a test run started some other way. The limit is
+    ruling 37's: a nested ``gz`` a passing verb starts is unguarded, its
+    directory chosen by the verb's code, not by the agent.
+    """
+    for name in (STAMP_ROOT_ENV, STAMP_ID_ENV):
+        environ.pop(name, None)

@@ -20,7 +20,7 @@ from gzkit.cli.parser_maintenance import register_maintenance_parsers
 from gzkit.commands.content import register_content_parsers
 from gzkit.commands.insights import register_insights_parsers
 from gzkit.core.exceptions import GzkitError
-from gzkit.dispatch_stamp import stamp_refusal
+from gzkit.dispatch_stamp import consume_stamp, stamp_refusal
 
 # Lazy re-exports preserved for ``@patch("gzkit.cli.main.X")`` compatibility in
 # tests and for backward-compat callers. Resolving these at module top pulls
@@ -169,6 +169,7 @@ def _refused_by_stamp() -> bool:
 
     refusal = stamp_refusal(os.environ, get_project_root)
     if refusal is None:
+        consume_stamp(os.environ)
         return False
     from rich.markup import escape  # noqa: PLC0415
 

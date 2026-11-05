@@ -30,12 +30,19 @@ it. Commands run inside a checkout still discover that checkout by ``cwd``.
 MX full strength (GHI #1263): CI's report-only job sets ``GZKIT_MX_FULL_STRENGTH``.
 Tests build their own markers and assert the demotion, so the switch is dropped
 here; a test that needs it sets it with ``patch.dict``.
+
+The dispatch stamp (RP-12 ruling 37): a dispatched agent's test run inherits the
+stamp its ``gz`` call carried, and every fixture that runs ``gz`` from a
+temporary directory would be refused as another root. The stamp is dropped
+here as a passing ``gz`` call drops it; a test that needs one sets it with
+``patch.dict``.
 """
 
 import os
 
+from gzkit.dispatch_stamp import STAMP_ID_ENV, STAMP_ROOT_ENV
 from gzkit.git_spawn_boundary import scrub_repo_local_git_env
 
-for _ambient in ("FORCE_COLOR", "GZKIT_MX_FULL_STRENGTH"):
+for _ambient in ("FORCE_COLOR", "GZKIT_MX_FULL_STRENGTH", STAMP_ROOT_ENV, STAMP_ID_ENV):
     os.environ.pop(_ambient, None)
 scrub_repo_local_git_env(os.environ)

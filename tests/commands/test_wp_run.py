@@ -172,6 +172,14 @@ class TestRunVerbs(unittest.TestCase):
         self.assertEqual(self._stamped(Path.cwd().resolve().as_posix()), 0)
         self.assertEqual(len(_rows("work_package_dispatched")), 1)
 
+    def test_a_call_that_passes_runs_on_without_the_stamp(self) -> None:
+        """Ruling 37: what a passing verb runs, a test or a nested gz, is not refused."""
+        stamp = {STAMP_ROOT_ENV: Path.cwd().resolve().as_posix(), STAMP_ID_ENV: "D-x"}
+        with patch.dict(os.environ, stamp):
+            self.assertEqual(self._dispatch("Implementer"), 0)
+            self.assertNotIn(STAMP_ROOT_ENV, os.environ)
+            self.assertNotIn(STAMP_ID_ENV, os.environ)
+
     def test_an_unstamped_call_proceeds(self) -> None:
         """#1296 case 3: the main session carries no stamp."""
         with patch.dict(os.environ):
