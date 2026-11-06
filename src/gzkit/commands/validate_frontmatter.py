@@ -40,6 +40,11 @@ def _status_matches(fm_status: str, ledger_status: str) -> bool:
     frontmatter say "Completed" while the ledger has advanced to
     ``attested_completed`` without flagging drift — the frontmatter is less
     specific, not contradictory.
+
+    Returns:
+        True when the ledger status is an allowed specialization of the canonical frontmatter status
+        (or matches case-insensitively when the frontmatter term is unmapped); False otherwise.
+
     """
     canon = canonicalize_status(fm_status)
     ledger_canon = canonicalize_ledger_status(ledger_status)
@@ -73,6 +78,11 @@ def _resolve_ledger_id_from_path(
     Keying on ``fm.id`` reproduces GHI #166 (validator silently trusts a
     rewritten id). The filesystem stem is the canonical naming convention:
     ADRs use ``ADR-X.Y.Z-slug`` and OBPIs use ``OBPI-X.Y.Z-NN-slug``.
+
+    Returns:
+        The ledger graph key matched from the file stem or its id prefix (canonicalized first), or
+        None when none matches.
+
     """
     stem = artifact_file.stem
     canonical = canonicalize(stem)
@@ -122,6 +132,10 @@ def _check_one_artifact(
     ``derive_status`` is a zero-arg callback invoked only when the file has a
     ``status:`` frontmatter key — avoids the heavy status-derivation cost for
     the majority of files that do not carry a status field.
+
+    Returns:
+        One :class:`ValidationError` per governed field that disagrees with the ledger.
+
     """
     errors: list[ValidationError] = []
     fm_id = fm.get("id", "")
@@ -183,6 +197,11 @@ def _derive_status_from_graph(info: dict) -> str | None:
     inputs. Both paths share the canonical derivation logic; we skip the
     expensive anchor analysis and file inspection the report needs but the
     validator does not.
+
+    Returns:
+        The derived lifecycle or runtime status, or None when it cannot be derived or the artifact
+        type is neither ADR nor OBPI.
+
     """
     from gzkit.ledger import Ledger as _Ledger
     from gzkit.ledger_semantics import _derive_obpi_runtime_state
@@ -238,6 +257,11 @@ def validate_frontmatter_coherence(
     This lets a caller pin the ledger state for a run — the reconciliation
     chore uses this to guarantee the receipt reflects the starting cursor's
     state only, never a mid-run mutation.
+
+    Returns:
+        One :class:`ValidationError` per frontmatter/ledger disagreement; empty when the project has
+        no config or ledger, or the ledger cannot be read.
+
     """
     from gzkit.config import GzkitConfig
     from gzkit.core.validation_rules import parse_frontmatter

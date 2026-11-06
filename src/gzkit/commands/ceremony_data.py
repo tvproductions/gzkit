@@ -37,6 +37,11 @@ def extract_brief_metadata(obpi_file: Path) -> dict[str, Any]:
 
     Returns dict with *id*, *title*, *objective*, *status*, *lane*,
     *acceptance_criteria* (list[str]).
+
+    Returns:
+        Dict with ``id``, ``title``, ``objective``, ``status``, ``lane``, ``acceptance_criteria``
+        (list of criterion strings) and ``path`` (the brief's path as a string).
+
     """
     content = obpi_file.read_text(encoding="utf-8")
     lines = content.splitlines()
@@ -94,6 +99,10 @@ def extract_adr_intent(adr_file: Path) -> str:
 
     Heading match is case-insensitive so ADRs that drift to ``## INTENT``
     still surface correctly. Returns an empty string if the section is absent.
+
+    Returns:
+        The stripped ``## Intent`` section body, or an empty string when the section is absent.
+
     """
     content = adr_file.read_text(encoding="utf-8")
     return _extract_section(content.splitlines(), "Intent")
@@ -106,6 +115,10 @@ def _extract_section(lines: list[str], heading: str) -> str:
     ADRs have drifted from the canonical ``## Objective`` template to
     ``## OBJECTIVE``. A case-sensitive match silently dropped the objective
     from ceremony Step 2's Bill-of-Materials table.
+
+    Returns:
+        The stripped section body, or an empty string when the heading is absent.
+
     """
     target = heading.casefold()
     in_section = False
@@ -144,6 +157,11 @@ def check_doc_alignment(
 
     Returns list of dicts with *command*, *manpage_path*,
     *manpage_exists*, *runbook_mention*.
+
+    Returns:
+        List of dicts with ``command``, ``manpage_path``, ``manpage_exists`` and ``runbook_mention``
+        for each registered command found.
+
     """
     registered = _collect_registered_invocations()
     results: list[dict[str, Any]] = []
@@ -216,6 +234,10 @@ def _collect_registered_invocations() -> frozenset[str]:
     Lazy-imports :mod:`gzkit.cli.main` the same way :mod:`cli_audit` does to
     avoid an import cycle — ``ceremony_data`` is pulled in by the ceremony
     command chain, which is itself reached from the CLI dispatcher.
+
+    Returns:
+        Frozenset of space-joined verb chains for every registered subcommand.
+
     """
     from gzkit.cli.main import _build_parser  # noqa: PLC0415
 
@@ -246,6 +268,11 @@ def _extract_gz_verb_chain(line: str) -> str | None:
     ``--json``, positional args that start with a digit or dash) terminate
     the chain — we only return the verb portion, which is what needs to be
     validated against the parser.
+
+    Returns:
+        The space-joined verb tokens after ``uv run gz``, or None when the line is not a ``uv run
+        gz`` invocation, cannot be tokenized, or has no verb.
+
     """
     try:
         tokens = shlex.split(line)
@@ -279,6 +306,10 @@ def _is_housekeeping_verb_chain(verb_chain: str) -> bool:
     because ``arb`` is. Housekeeping verbs belong in the Quality Evidence section
     (§3b), never the Product Demo walkthrough (§3a). See
     ``_HOUSEKEEPING_GZ_VERB_ROOTS`` for the ``validate`` carve-out rationale.
+
+    Returns:
+        True when the chain's root token is in ``_HOUSEKEEPING_GZ_VERB_ROOTS``, otherwise False.
+
     """
     return verb_chain.split(" ", 1)[0] in _HOUSEKEEPING_GZ_VERB_ROOTS
 
@@ -296,6 +327,11 @@ def _fidelity_demos(adr_file: Path | None) -> list[WalkthroughDemo]:
     The self-referential ``gz adr fidelity`` guard is honored here as it is in
     the gate: a demo that runs the fidelity gate demonstrates the gate, not the
     ADR's product.
+
+    Returns:
+        One :class:`WalkthroughDemo` per non-self-referential Fidelity Assertion; empty when the ADR
+        file is missing or its block cannot be parsed.
+
     """
     if adr_file is None or not adr_file.is_file():
         return []
@@ -328,6 +364,11 @@ def _dedupe_demos(demos: list[WalkthroughDemo]) -> list[WalkthroughDemo]:
     A demo carrying a claim wins over a bare duplicate of the same command, so
     merging Fidelity Assertions in enriches an existing row rather than adding a
     second one for the same invocation.
+
+    Returns:
+        The demos with one entry per command, in first-seen order, preferring a demo that carries a
+        claim.
+
     """
     by_command: dict[str, WalkthroughDemo] = {}
     for demo in demos:
@@ -363,6 +404,11 @@ def discover_demo_commands(
     Every strategy validates derived ``gz`` invocations against the registered
     CLI parser (GHI-156) — an unregistered verb chain is dropped before the
     walkthrough can try to execute it.
+
+    Returns:
+        The de-duplicated demo list from the winning brief strategy (or the ``gz adr status``
+        fallback) merged with the ADR's Fidelity Assertions.
+
     """
     # Strategies 1-3 select the brief-sourced product demos; the Fidelity
     # Assertions are merged onto whichever wins rather than competing in the
@@ -406,6 +452,11 @@ def _commands_from_demo_sections(obpi_files: list[Path]) -> list[str]:
     walkthrough as if it were the yielded product. A brief whose Demo section
     yields no product ``gz`` command contributes nothing and the discovery chain
     falls through to the ``--help`` strategies.
+
+    Returns:
+        Registered, non-housekeeping ``gz`` commands from the briefs' Demo/Examples sections; empty
+        when none qualify.
+
     """
     registered = _collect_registered_invocations()
     commands: list[str] = []
@@ -442,6 +493,12 @@ def _commands_from_command_doc_links(
     manpages-directory ToC page) and any other non-manpage page drops out
     because its derived verb chain is not registered — this is the GHI-156
     fix that the instance check ``skip index.md by name`` would have missed.
+
+    Returns:
+        ``uv run gz <verb> --help`` commands, one per distinct manpage slug linked from the
+        briefs whose manpage file exists and whose verb is registered and not housekeeping, in
+        first-seen order.
+
     """
     registered = _collect_registered_invocations()
     commands: list[str] = []
@@ -475,6 +532,11 @@ def _commands_from_brief_titles(obpi_files: list[Path]) -> list[str]:
     ``gz arb surface`` (real verb + noise) matches as the one-token chain
     ``arb``. A title that produces no registered chain is dropped — the
     ceremony will fall back to Strategy 4 (adr status).
+
+    Returns:
+        De-duplicated ``uv run gz <verb> --help`` commands for registered, non-housekeeping verbs
+        found in brief titles.
+
     """
     registered = _collect_registered_invocations()
     commands: list[str] = []
@@ -507,6 +569,10 @@ def _render_to_text(renderable: Any) -> str:
     """Render any Rich renderable to plain text (no ANSI codes).
 
     Uses the current terminal width (or 80 as fallback).
+
+    Returns:
+        The rendered plain text with trailing whitespace stripped.
+
     """
     import shutil
 
@@ -588,6 +654,10 @@ def format_summary_table(briefs: list[dict[str, Any]], title: str) -> str:
     description is readable at normal terminal widths (#116). Lane and Status
     no longer set ``no_wrap``, but in practice they are short enough that
     Rich keeps them on one line anyway.
+
+    Returns:
+        The rendered table as plain text.
+
     """
     rows = []
     for b in briefs:

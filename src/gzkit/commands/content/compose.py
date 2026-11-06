@@ -41,6 +41,10 @@ def _stdin_is_tty() -> bool:
     ``isatty()`` can raise on an unusual stdin object; any exception is
     treated as "not a tty" so this guard can never break a currently-working
     piped/redirected invocation.
+
+    Returns:
+        True when ``sys.stdin.isatty()`` is true; False otherwise or when it raises.
+
     """
     try:
         return sys.stdin.isatty()

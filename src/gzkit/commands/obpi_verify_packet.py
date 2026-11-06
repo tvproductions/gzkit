@@ -43,6 +43,10 @@ def _packet_obpi_id(packet_path: Path) -> str:
     2026-10-12, Open Design Question 19), so a short form or a longer prefix
     records under the id the launch carries. A packet named any other way
     names no run, and no position is recorded for it.
+
+    Returns:
+        The packet file name with the packet suffix removed.
+
     """
     return packet_path.name.removesuffix(_PACKET_SUFFIX)
 
@@ -80,6 +84,11 @@ def obpi_verify_packet_cmd(*, packet: str, as_json: bool = False) -> int:
     working tree, never the root itself (GHI #1157). Returns
     ``EXIT_POLICY_BREACH`` (3) when a pasted line does not reproduce, so the operator
     and any downstream gate see the fail-closed signal before attestation.
+
+    Returns:
+        ``EXIT_SUCCESS`` (0); a missing packet raises ``SystemExit(1)`` and a non-reproducing packet
+        raises ``SystemExit(3)``.
+
     """
     project_root = get_project_root()
     packet_path = Path(packet)

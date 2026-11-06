@@ -77,6 +77,10 @@ def newest_pass_stamp(log_text: str) -> datetime | None:
     File order is not trusted: the newest stamp wins wherever it sits. A stamp
     written without an offset is read as UTC rather than skipped, since dropping
     it would silently age the log toward a false breach.
+
+    Returns:
+        The latest stamp (naive stamps read as UTC), or None when no stamp parses.
+
     """
     stamps: list[datetime] = []
     for raw in _RUN_HEADING.findall(log_text):
@@ -288,6 +292,11 @@ def git_artifact_changed(
     would make the gate's own recovery a two-step dance. Otherwise the newest
     committer date wins. A deleted artifact never reads as now, so removing the
     record cannot pass for writing it; one git has never seen reads None.
+
+    Returns:
+        A function mapping artifact paths to *now* when one has uncommitted changes, otherwise the
+        newest commit time, or None when every path is a directory or git has no record.
+
     """
 
     def changed(artifacts: tuple[str, ...]) -> datetime | None:
@@ -325,6 +334,11 @@ def git_first_commit_after(
     Committer dates, never filesystem mtimes: a clone or branch switch rewrites
     every mtime (``scripts/check_proof_freshness.py``). ``--since`` narrows the
     walk; the strict comparison drops a commit landing in the run's own second.
+
+    Returns:
+        A function mapping surfaces and a moment to the earliest commit time strictly after that
+        moment, or None when there is none.
+
     """
 
     def first_after(surfaces: tuple[str, ...], since: datetime) -> datetime | None:

@@ -42,6 +42,10 @@ def _release_session_lock(project_root: Path) -> bool:
     :func:`gzkit.lock_manager.write_lock` (exclusive-creation, TTL-blind)
     refused forever. Idempotent: exit must not fail because the lock is already
     gone.
+
+    Returns:
+        True when a lock was present and deleted, otherwise False.
+
     """
     return lock_manager.delete_lock(project_root, marker.SESSION_LOCK_KEY)
 
@@ -53,6 +57,10 @@ def _clear_expired_session_lock(project_root: Path) -> bool:
     between enter and exit, no exit runs and the orphan blocks every future
     entry regardless of age. A live lock is never cleared — that exclusion is
     the property the lock exists to provide.
+
+    Returns:
+        True when an expired lock was deleted; False when no lock exists or it is still live.
+
     """
     existing = lock_manager.read_lock(project_root, marker.SESSION_LOCK_KEY)
     if existing is None or not existing.is_expired:
@@ -66,6 +74,10 @@ def _entry_refusal_message(existing: LockData | None) -> str:
     The prior message said "another session is opening" unconditionally, which
     is false when the previous session closed cleanly and left an orphan — and
     it sent the reader hunting a concurrency problem that did not exist.
+
+    Returns:
+        The refusal message for an unreadable lock, an expired orphan, or a live claim.
+
     """
     if existing is None:
         return (
@@ -113,6 +125,11 @@ def _resolve_mx_airlock_brief(
     resolves — the brief-less DECLARE case — this returns ``None`` and the mx
     airlock diagnostic is skipped: brief-less DECLARE is the attested deferred
     calibration frontier (parent ADR § Consequences), not this increment.
+
+    Returns:
+        ``(scope_id, brief_path)`` for the first scope id with a matching artifact, or None when the
+        ADR root is absent or nothing matches.
+
     """
     adr_root = project_root.joinpath(*_ADR_RELPATH)
     if not adr_root.is_dir():
@@ -208,6 +225,10 @@ def _mx_session_opened_event(
     Typed by :class:`gzkit.events.MxSessionOpenedEvent` at parse time. Under safe mode
     ``contract_pin`` carries the contract's hash and its suspended and exit bodies, so
     the ledger records what was switched off at entry (operator ruling 2026-10-18).
+
+    Returns:
+        The ``mx_session_opened`` :class:`LedgerEvent`.
+
     """
     return LedgerEvent(
         event="mx_session_opened",
@@ -230,6 +251,11 @@ def _resolve_contract(root: Path, mode: str, contract: str | None) -> str:
     Safe mode (GHI #1244) is entered under a contract that says what it suspends and
     what still binds; the hangar carries none. The path is project-relative and must
     name a readable file, so the banner every turn points at something real.
+
+    Returns:
+        The project-relative contract path, or an empty string in mx mode; invalid input exits 1
+        instead.
+
     """
     if mode == "mx":
         if contract:
@@ -364,6 +390,10 @@ def _mx_session_closed_event(session_id: str, attestor: str) -> LedgerEvent:
     """Build the mx_session_closed ledger event (the exit anchor).
 
     Typed by :class:`gzkit.events.MxSessionClosedEvent` at parse time.
+
+    Returns:
+        The ``mx_session_closed`` :class:`LedgerEvent`.
+
     """
     return LedgerEvent(
         event="mx_session_closed",

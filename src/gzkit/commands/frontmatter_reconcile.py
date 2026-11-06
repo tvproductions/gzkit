@@ -34,6 +34,10 @@ def frontmatter_reconcile_cmd(*, dry_run: bool = False, as_json: bool = False) -
 
     Non-zero exit codes are propagated via ``SystemExit``, which
     ``gzkit.cli.main`` turns into the process's exit code.
+
+    Returns:
+        ``EXIT_SUCCESS`` (0); failures raise ``SystemExit`` with codes 1-3 as listed above.
+
     """
     project_root = _resolve_project_root()
     if project_root is None:

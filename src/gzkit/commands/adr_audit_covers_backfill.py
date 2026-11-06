@@ -51,6 +51,11 @@ def _run_git(args: list[str], cwd: Path) -> tuple[int, str, str]:
     Returns ``(returncode, stdout, stderr)``. A missing ``git`` binary is
     surfaced as ``rc=127`` so callers handle it the same way they handle
     any other non-zero rc — uniform fail-soft pathway, no exception.
+
+    Returns:
+        ``(returncode, stdout, stderr)`` from the git run, or ``(127, "", "git not found")`` when
+        the git binary is missing.
+
     """
     try:
         completed = subprocess.run(  # noqa: S603 — list-form, no shell
@@ -140,6 +145,10 @@ def load_audit_thresholds(path: Path) -> AuditThresholds:
     Raises :class:`GzCliError` (exit code 1) on missing file, JSON parse
     error, or model-validation failure. Never silently falls back to
     compiled-in defaults — REQ-0.0.23-05-05 is fail-closed by design.
+
+    Returns:
+        The validated :class:`AuditThresholds` model.
+
     """
     if not path.is_file():
         msg = f"audit thresholds file missing: {path}"
@@ -172,6 +181,11 @@ def _parse_first_log_header(stdout: str) -> tuple[str, date] | None:
     Returns ``None`` if no parsable header was found. Resilient to hunk
     noise: only lines matching the canonical ``sha|iso-ts`` shape are
     considered candidates.
+
+    Returns:
+        ``(short_sha, commit_date)`` from the first parsable header line, or None when no line
+        parses.
+
     """
     for raw_line in stdout.splitlines():
         line = raw_line.strip()
@@ -210,6 +224,11 @@ def find_covers_decorator_introductions(
     output) become entries in the second-tuple's diagnostic list rather
     than raising — REQ-0.0.23-05-07 wants the audit to keep going under
     default mode.
+
+    Returns:
+        Tuple of (resolved :class:`CoverIntroduction` records, diagnostic strings for triples that
+        could not be resolved).
+
     """
     introductions: list[CoverIntroduction] = []
     unresolvable: list[str] = []
@@ -279,6 +298,11 @@ def _iso_to_utc_date(ts: str) -> date | None:
     (UTC, already past midnight) land on different calendar days near the UTC
     boundary — making ``receipt_after_intro`` True and wrongly exempting a
     same-instant cosmetic-backfill triple (a time-of-day-dependent flake).
+
+    Returns:
+        The UTC calendar date of the timestamp (naive input is treated as UTC), or None when it is
+        not valid ISO-8601.
+
     """
     try:
         parsed = datetime.fromisoformat(ts)
@@ -301,6 +325,10 @@ def _event_field(event: Mapping, key: str) -> object:
     shape can reach the heuristic depending on whether the caller passes
     a freshly-dumped event (flattened) or a raw mapping built by hand
     (with explicit ``extra`` substructure). Look in both, top-level first.
+
+    Returns:
+        The top-level value when ``key`` is present, else the value under ``extra``, else None.
+
     """
     if key in event:
         return event[key]
@@ -317,6 +345,10 @@ def _latest_receipt_event(obpi_id: str, events: Sequence[Mapping]) -> Mapping | 
     OBPI id (bare or slugged) whose ``receipt_event`` field — at top level
     or under ``extra`` — is in :data:`_RECEIPT_EVENTS`. Returns ``None``
     when no event matches.
+
+    Returns:
+        The matching event with the latest ``ts``, or None when no event matches.
+
     """
     candidates: list[Mapping] = []
     for event in events:
@@ -373,6 +405,11 @@ def _resolve_no_receipt_fallback(
     Looks up the brief path under
     ``docs/design/adr/{foundation,pre-release}/ADR-*/obpis/<obpi_id>*.md``.
     Returns ``None`` if neither the file nor the git log resolves.
+
+    Returns:
+        A :class:`ReqClosingReceipt` with a ``git-fallback:`` receipt id built from the brief's
+        latest commit, or None when git fails or its output does not parse.
+
     """
     pattern = f"docs/design/adr/*/ADR-*/obpis/{obpi_id}*.md"
     rc, stdout, _stderr = git_runner(
@@ -434,6 +471,11 @@ def determine_severity(
     heuristic to distinguish ``Ceremony: <name>`` ceremony-bundled commits
     and same-commit file-creation from the GHI #272 cosmetic-backfill
     anti-pattern. Lite-feature non-strict invocations remain warning-only.
+
+    Returns:
+        ``"blocking"`` when ``strict`` is set, the lane is heavy, or the kind is foundation;
+        ``"warning"`` otherwise.
+
     """
     if strict or lane == "heavy" or kind == "foundation":
         return "blocking"
@@ -501,6 +543,10 @@ def _read_source_lines(file_path: Path) -> list[str] | None:
     Returns ``None`` (not raises) so the predicate degrades to "no exemption"
     rather than crashing the audit when a source file the heuristic was told
     about is unreadable — same fail-soft posture as the git-runner boundary.
+
+    Returns:
+        The file's lines, or None when it cannot be read or decoded.
+
     """
     try:
         return file_path.read_text(encoding="utf-8").splitlines()
@@ -516,6 +562,11 @@ def _find_function_def_line(source_lines: list[str], decorator_line_no: int) -> 
     lines, and comment lines that may appear in a decorator stack. Returns
     ``None`` when no def line is found within :data:`_MAX_DECORATOR_STACK_SCAN`
     lines or when the decorator line is past end-of-file.
+
+    Returns:
+        The 1-indexed line number of the def line, or None when the decorator line is out of range
+        or no def is found within the scan window.
+
     """
     if decorator_line_no < 1 or decorator_line_no > len(source_lines):
         return None
@@ -535,6 +586,11 @@ def _line_intro_short_sha(
     first hex-only line. ``--reverse`` pins the FIRST entry as the introducing
     commit; the helper is resilient to diff-hunk noise that follows the SHA.
     Returns ``None`` on git failure or unparseable output.
+
+    Returns:
+        The first 7 characters of the introducing commit SHA, or None on git failure or when no
+        bare-SHA line is found.
+
     """
     rc, stdout, _stderr = git_runner(
         ["log", "--reverse", "--format=%H", f"-L{line_no},{line_no}:{rel_file}"],
@@ -560,6 +616,11 @@ def _blame_line_short_sha(
     used by the ambiguity re-anchor in :func:`compute_backfill_findings`.
     Returns ``None`` on git failure or unparseable output (fail-soft: the
     caller treats that as "no re-anchor possible" and the finding stands).
+
+    Returns:
+        The first 7 characters of the blamed commit SHA, or None on git failure or unparseable
+        output.
+
     """
     rc, stdout, _stderr = git_runner(
         ["blame", "--porcelain", f"-L{line_no},{line_no}", "--", rel_file],
@@ -587,6 +648,11 @@ def _is_same_commit_block_creation(
     Caller is responsible for the receipt-coupling guard (see GHI #309): if
     ``intro.commit_sha == receipt.commit_sha`` the file/block-creation
     exemptions are suppressed by the orchestrator.
+
+    Returns:
+        True when the def line's introducing SHA equals the decorator's commit SHA; False when the
+        source, def line, or SHA cannot be resolved or they differ.
+
     """
     source_lines = _read_source_lines(project_root / intro.file)
     if source_lines is None:
@@ -628,6 +694,11 @@ def _has_inline_audit_exempt_marker(
     overlay shape only occurs when the operator is claiming a new REQ
     against a test that pre-existed the receipt commit, and the marker
     is the operator's explicit attestation that this is legitimate.
+
+    Returns:
+        True when the decorator line matches the audit-exempt marker; False when the source is
+        unreadable, the line is out of range, or no marker is present.
+
     """
     source_lines = _read_source_lines(project_root / intro.file)
     if source_lines is None:
@@ -659,6 +730,11 @@ def _ceremony_subject_marker(sha: str, project_root: Path, git_runner: GitRunner
     cross-OBPI coverage extension being bundled into a single ``gz git-sync``
     commit. Maps the historical suffix to the same canonical names that
     :data:`_EXEMPT_CEREMONIES` enumerates.
+
+    Returns:
+        The canonical ceremony name whose subject pattern matches, or None on git failure, an empty
+        subject, or no match.
+
     """
     rc, stdout, _stderr = git_runner(["log", "-1", "--format=%s", sha], project_root)
     if rc != 0:
@@ -721,6 +797,10 @@ def _is_legitimate_authoring(
     Any other shape (later-commit decoration on a pre-existing test, no
     marker, no ceremony) remains flag-eligible — that is the GHI #272
     cosmetic-backfill anti-pattern this heuristic exists to catch.
+
+    Returns:
+        True when any of the five legitimate-authoring shapes applies, otherwise False.
+
     """
     # GHI #309 receipt-coupling guard, narrowed by GHI #667: the file/block-
     # creation exemptions are suppressed only when the receipt was emitted
@@ -925,6 +1005,11 @@ def evaluate_backfill_for_audit(
     REQ-0.0.23-05-03 binds eager-load only when the heuristic has work; the
     file-MUST-exit-1 contract still fires on every audit run that has actual
     decorators to evaluate.
+
+    Returns:
+        A :class:`BackfillResult` carrying the findings, unresolvable diagnostics, and exit code; an
+        empty default result when ``covers_locations`` is empty.
+
     """
     if not covers_locations:
         return BackfillResult()

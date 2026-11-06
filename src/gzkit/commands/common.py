@@ -149,6 +149,10 @@ def manifest_path(manifest: dict[str, Any], section: str, key: str) -> Path:
 
     Raises ``KeyError`` with a descriptive message when the section or
     key cannot be found.
+
+    Returns:
+        The resolved path, relative to the project root.
+
     """
     # v2: section is a dict containing the key
     if section in manifest and isinstance(manifest[section], dict):
@@ -205,6 +209,11 @@ def project_lane_gates(
     (coupled-surface coherence, AGENTS.md § DO IT RIGHT 1a). Gates 1 (always the
     entry gate) and 5 (human attestation) are not lane-masked and stay with
     their owning surfaces.
+
+    Returns:
+        Mapping of gates 2, 3 and 4 to their effective status (``"pending"`` when unrecorded,
+        ``"n/a"`` when masked).
+
     """
     return {
         2: gate_statuses.get(2, "pending"),
@@ -337,6 +346,11 @@ def resolve_adr_ledger_id(
     When frontmatter ``id:`` (e.g. ``ADR-0.16.0``) differs from the ledger
     registration key (e.g. ``ADR-0.16.0-cms-architecture-formalization``),
     the file stem is tried as a fallback so that graph lookups succeed.
+
+    Returns:
+        ``adr_id`` when it is an ADR key in the graph, else the file stem when that is, else
+        ``adr_id`` unchanged.
+
     """
     graph = ledger.get_artifact_graph()
     info = graph.get(adr_id)
@@ -393,6 +407,11 @@ def _prefix_match_candidates(
 
     Each filter applies only when it leaves at least one survivor: two REAL
     briefs stay ambiguous.
+
+    Returns:
+        The active prefix matches, narrowed to those with a brief on disk when more than one matches
+        and at least one has a brief.
+
     """
     hits = active_prefix_matches(graph, canonical_obpi, artifact_type="obpi")
     if len(hits) > 1 and docs_root is not None:
@@ -410,6 +429,10 @@ def _prefix_match_obpi(
     """Find a unique OBPI in the graph whose ID starts with *canonical_obpi*.
 
     Returns the full ID if exactly one match, ``None`` otherwise.
+
+    Returns:
+        The full OBPI id when exactly one candidate matches, otherwise None.
+
     """
     hits = _prefix_match_candidates(graph, canonical_obpi, docs_root)
     return hits[0] if len(hits) == 1 else None
@@ -426,6 +449,11 @@ def resolve_obpi(
     Accepts both full slugs (``OBPI-0.0.12-02-implementer-agent-persona``) and
     short-form IDs (``OBPI-0.0.12-02``).  When the exact ID is not found, a
     unique prefix match against the ledger graph is attempted.
+
+    Returns:
+        Tuple of (canonical OBPI id, the matching brief path or None when only the ledger knows
+        it); an id matching more than one brief raises instead.
+
     """
     obpi_input = normalize_obpi_input(obpi)
     canonical_obpi = ledger.canonicalize_id(obpi_input)
@@ -557,6 +585,11 @@ def extract_closing_argument(brief_text: str) -> str | None:
 
     Returns the argument text (before evidence subsections), or None if
     the section is missing, empty, or still a placeholder.
+
+    Returns:
+        The closing argument text before any evidence subsection, or None when the section is
+        missing, empty, or a placeholder.
+
     """
     match = _CLOSING_ARG_HEADING_RE.search(brief_text)
     if not match:
@@ -577,6 +610,11 @@ def gather_reviewer_assessments(adr_package_dir: Path) -> dict[str, Path]:
     """Find REVIEW-*.md reviewer artifacts in the ADR package.
 
     Searches briefs/ and obpis/ subdirectories.
+
+    Returns:
+        Mapping of OBPI id (file stem without ``REVIEW-``) to review file path; empty when none are
+        found.
+
     """
     reviews: dict[str, Path] = {}
     for subdir in ("briefs", "obpis"):
@@ -593,6 +631,11 @@ def _extract_review_fields(review_path: Path) -> dict[str, str]:
 
     Returns a dict with keys: verdict, docs_quality, closing_argument_quality,
     promises_met (as "N/M" string).
+
+    Returns:
+        Dict with ``verdict``, ``docs_quality``, ``closing_argument_quality`` and ``promises_met``
+        (``"N/M"``, or ``"n/a"`` when no promises are listed).
+
     """
     content = review_path.read_text(encoding="utf-8")
     fields: dict[str, str] = {
@@ -638,6 +681,9 @@ def render_defense_brief_section(
         closing_args: OBPI ID to closing argument text.
         proof_obpis: ProductProofResult (or None). Accessed via duck typing.
         reviews: OBPI ID to REVIEW-*.md path.
+
+    Returns:
+        The Defense Brief markdown section.
 
     """
     lines = ["## Defense Brief", ""]
@@ -696,6 +742,10 @@ def compute_defense_brief(
 
     Reads closing arguments from OBPI briefs, gathers reviewer artifacts,
     and combines with product proof data into a single markdown section.
+
+    Returns:
+        The Defense Brief markdown section.
+
     """
     closing_args: dict[str, str] = {}
     for obpi_id, brief_path in sorted(obpi_files.items()):
@@ -714,6 +764,10 @@ def _cli_main():
     separate command modules.  This helper lets command modules look up
     shared dependencies through main.py's namespace so ``mock.patch``
     targets continue to work.
+
+    Returns:
+        The ``gzkit.cli.main`` module object from ``sys.modules``.
+
     """
     import sys  # deferred to avoid top-level import of sys just for this helper
 

@@ -176,6 +176,11 @@ def _attestor_was_supplied(root: Path, attestor: str) -> bool:
     default was read the same way an omission is -- never as an operator
     override on THIS invocation -- or every resume on a configured machine
     would report a flag nobody typed as ignored.
+
+    Returns:
+        True when ``attestor`` is non-empty and differs from the configured attestor handle,
+        otherwise False.
+
     """
     return bool(attestor) and attestor != (configured_attestor_handle(root) or "")
 

@@ -58,6 +58,10 @@ def _is_cross_vendor_adversary(adversary: str) -> bool:
     agent's blind spots. Detection is an explicit allowlist of vendor prefixes —
     an unrecognized name is treated as NOT cross-vendor so the gate fails closed
     (the caller must justify why Codex was unavailable), never open by ambiguity.
+
+    Returns:
+        True when the lowercased name starts with a known cross-vendor prefix, otherwise False.
+
     """
     name = adversary.strip().lower()
     return any(name.startswith(prefix) for prefix in _CROSS_VENDOR_ADVERSARY_PREFIXES)
@@ -91,6 +95,10 @@ def receipt_binary_name(argv_head: str) -> str:
     Handles both separators explicitly rather than via ``Path``: the receipt may
     have been written on a different platform than the one reading it, and
     ``PurePosixPath`` does not split a Windows head (`.claude/rules/cross-platform.md`).
+
+    Returns:
+        The final path component of the argv head.
+
     """
     return argv_head.replace("\\", "/").rsplit("/", 1)[-1]
 
@@ -110,6 +118,11 @@ def receipt_proves_cross_vendor(receipt: dict[str, Any]) -> bool:
 
     Malformed receipts return False rather than raising: an unreadable proof is an
     absent proof, and the caller fails closed on it (GHI #765).
+
+    Returns:
+        True when the first non-wrapper argv entry is a cross-vendor binary; False for a malformed
+        receipt or any other binary.
+
     """
     step = receipt.get("step")
     if not isinstance(step, dict):
@@ -151,6 +164,11 @@ def _build_adversarial_event(
     Returns ``None`` when no verdict or adversary is supplied. Optional detail
     fields are omitted rather than emitted as null, matching
     ``_EventBase._serialize``.
+
+    Returns:
+        The validated ``adversarial_validation`` :class:`LedgerEvent`, or None when verdict or
+        adversary is missing.
+
     """
     if not verdict or not adversary:
         return None

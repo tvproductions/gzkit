@@ -28,6 +28,11 @@ def smoke_gate(project_root: Path | None = None, budget: float | None = None) ->
     Exit codes follow `.claude/rules/cli.md`: 1 for a test failure the author
     can fix in code, 3 for a policy breach — a required empty tier or an
     over-budget run. An empty tier without opt-in is advisory success (0).
+
+    Returns:
+        Exit code: 0 on pass or an advisory empty tier, 1 on a test or discovery failure, 3 on a
+        policy breach (required empty tier or over budget).
+
     """
     root = project_root or Path.cwd()
     budget = SMOKE_BUDGET_SECONDS if budget is None else budget

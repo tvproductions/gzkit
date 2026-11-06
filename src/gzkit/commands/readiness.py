@@ -145,6 +145,11 @@ def _vendor_enabled(project_root: Path, vendor: str) -> bool:
 
     Legacy projects declare no vendors and render every surface, matching
     ``sync_all``'s own gate -- readiness must require exactly what sync writes.
+
+    Returns:
+        True for a legacy project with no vendor declaration or when the vendor is declared and
+        enabled; False otherwise.
+
     """
     from gzkit.sync_surfaces import has_vendor_declaration
 

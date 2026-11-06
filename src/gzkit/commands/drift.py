@@ -34,6 +34,10 @@ def scan_covers_references(test_dir: Path) -> list[LinkageRecord]:
     Delegates to the canonical scanner in :mod:`gzkit.traceability` so drift,
     coverage, and audit-check share one detection contract (see #120). Both
     decorator-call and docstring/comment forms are recognized.
+
+    Returns:
+        One COVERS :class:`LinkageRecord` per ``@covers`` reference found.
+
     """
     linkages: list[LinkageRecord] = []
 
@@ -71,6 +75,11 @@ def get_changed_files(project_root: Path) -> list[VertexRef]:
 
     Includes both staged and unstaged changes relative to HEAD.
     Only considers ``src/`` Python files as code vertices.
+
+    Returns:
+        Code-vertex refs for changed ``src/**/*.py`` files in sorted order; empty when git is not
+        available.
+
     """
     try:
         result = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved

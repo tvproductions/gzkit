@@ -176,6 +176,11 @@ def parse_chore_declaration(
 
     A partial or malformed declaration appends blockers and returns None;
     callers distinguish the two by whether blockers grew.
+
+    Returns:
+        The validated :class:`ChoreDeclaration`, or None when no declaration keys are present or
+        validation fails (failures append blockers).
+
     """
     raw = {key: value for key, value in data.items() if key in DECLARATION_KEYS}
     if not raw:

@@ -155,6 +155,10 @@ def _flatten_manifest_paths(manifest: dict[str, Any]) -> set[str]:
     Returns a set of normalized path strings that represent known manifest
     mappings. Used to determine whether a source-code path literal is
     already governed by the manifest.
+
+    Returns:
+        Normalized manifest path strings plus their derived parent directories.
+
     """
     path_sections = ("structure", "data", "ops", "control_surfaces")
     paths: set[str] = set()
@@ -195,6 +199,10 @@ def _flatten_config_paths(config: GzkitConfig) -> set[str]:
     :func:`_is_path_covered_by_manifest`, silently exempt every ``.github/**``
     literal in the tree -- the opposite of what this audit exists to do.
     Pinned by ``TestPathConfigDeclaredDefaults.test_undeclared_sibling_still_flagged``.
+
+    Returns:
+        The normalized, non-empty string values of ``config.paths``.
+
     """
     return {
         value.strip("/").replace("\\", "/")
@@ -208,6 +216,11 @@ def _is_path_covered_by_manifest(literal: str, manifest_paths: set[str]) -> bool
 
     A literal is covered if it exactly matches, is a component-aligned ancestor
     of, or is a descendant of a known manifest path.
+
+    Returns:
+        True when the literal equals, is an ancestor of, or is a descendant of a manifest path,
+        otherwise False.
+
     """
     normalized = literal.strip("/").replace("\\", "/")
     for mp in manifest_paths:
@@ -270,6 +283,11 @@ def _collect_declared_audit_subjects(tree: ast.Module) -> set[str]:
     The value's shape is deliberately unconstrained (tuple, list, set,
     ``frozenset(...)``): every string constant inside it is taken, so the
     declaration reads naturally with a per-entry comment beside each literal.
+
+    Returns:
+        The normalized string constants found in module-level ``_AUDIT_SUBJECT_DECLARATION``
+        assignments; empty when the module declares none.
+
     """
     declared: set[str] = set()
     for node in tree.body:
@@ -311,6 +329,11 @@ def _collect_source_path_literal_issues(
     no config field can govern -- the ones naming a surface the code audits,
     rosters, or checks for absence. The declaration is read per-file, so it
     never reaches another module (GHI #938).
+
+    Returns:
+        List of issue dicts for unmapped path literals; empty when the source directory is absent or
+        every literal is governed.
+
     """
     issues: list[dict[str, str]] = []
     src_dir = project_root / config.paths.source_root / "gzkit"

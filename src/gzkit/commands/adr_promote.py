@@ -55,6 +55,10 @@ def _adr_bucket_for_kind(kind: str) -> str:
     """Return canonical ADR directory bucket from kind (post-OBPI-0.0.17-01).
 
     REQ-0.0.17-03-06: foundation -> foundation/, feature -> pre-release/.
+
+    Returns:
+        ``"foundation"`` for the foundation kind, otherwise ``"pre-release"``.
+
     """
     return "foundation" if kind == "foundation" else "pre-release"
 
@@ -145,6 +149,11 @@ def _build_adr_promotion_plan(
 
     Conditioned on the project-local closure decision, same as the CLI guard
     (ADR-0.34.0 § Decision; GHI #740).
+
+    Returns:
+        Plan dict holding the pool and target ids, target bucket/dir/file, kind, semver, promoted
+        parent/lane/status, rendered ADR content, OBPI plans, and updated pool content.
+
     """
     if kind == "foundation" and foundation_kind_is_closed(project_root):
         msg = (
@@ -349,6 +358,11 @@ def _check_scaffold_obpis(
     allowed-path drift (GHI #419) — vendor-mirror surfaces and references
     to non-existent files in any pre-authored brief are surfaced at
     promotion time so post-promotion edits start from a clean slate.
+
+    Returns:
+        Tuple of (number of OBPI briefs with scaffold warnings, list of ``"<brief>: <error>"``
+        structure and path-validity errors).
+
     """
     from gzkit.commands.obpi_cmd import _validate_brief_structure  # noqa: PLC0415
     from gzkit.governance.brief_path_validity import (  # noqa: PLC0415

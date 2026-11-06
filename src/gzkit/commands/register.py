@@ -58,6 +58,10 @@ def is_unreadable_adr(adr_file: Path) -> bool:
     perfectly while hiding the block from `splitlines()`-based readers. Both
     were "decodable" and both defeated `kind:` detection, which every guard
     downstream reads as permission.
+
+    Returns:
+        True when the frontmatter reads as malformed or the file cannot be read, otherwise False.
+
     """
     try:
         return read_frontmatter_bytes(adr_file.read_bytes()).state == "malformed"
@@ -108,6 +112,11 @@ def is_ungrandfathered_foundation(
     is hidden — by an invisible line separator or a BOM-less UTF-16/32
     rendering that decodes as UTF-8 "successfully". Both previously returned
     the same permissive "no kind".
+
+    Returns:
+        True when closure applies and the package is unreadable, malformed, or a non-grandfathered
+        foundation ADR; False otherwise.
+
     """
     if not kind_is_closed:
         return False
@@ -235,6 +244,10 @@ def _collect_disk_drift_renames(
     § Architectural Boundaries #4 (reconciliation as a continuous gated
     operation, not a maintenance chore) and #6 (Layer-1 canon + Layer-2
     ledger as joint truth, never the hand-curated tuple alone).
+
+    Returns:
+        ``(bare_id, slug_id)`` rename candidates sorted by bare id; empty when none apply.
+
     """
     candidates: list[tuple[str, str]] = []
     seen: set[tuple[str, str]] = set()
@@ -270,6 +283,10 @@ def pending_semver_renames(
 
     The single source for the migration and for ``gz validate --pending-renames``
     (GHI #1118), so the gate cannot report a rename the migration would not make.
+
+    Returns:
+        ``(old_id, new_id)`` pairs not yet applied, in discovery order.
+
     """
     events = ledger.read_all()
 
@@ -379,6 +396,10 @@ def _is_pool_archived(metadata: dict[str, str]) -> bool:
     `status: Superseded` plus `promoted_to: ADR-X.Y.Z-...` frontmatter, written by
     `_mark_pool_adr_promoted` in adr_promote_utils.py. Either marker alone is
     insufficient — both must be present for the file to count as archived.
+
+    Returns:
+        True when ``status`` is Superseded and ``promoted_to`` names an ADR, otherwise False.
+
     """
     return metadata.get("status", "").lower() == "superseded" and metadata.get(
         "promoted_to", ""
@@ -542,6 +563,11 @@ def _detect_orphan_obpis(
     rename to fix" would invite re-dispositioning work the Foundation Sunset
     deliberately parked. ``parked`` is two-way, so ``obpi_unparked`` returns an
     OBPI to orphan reporting when its brief is genuinely missing again.
+
+    Returns:
+        Sorted ids of OBPIs that are neither withdrawn nor parked, sit under an eligible parent, and
+        have no brief on disk.
+
     """
     on_disk_ids: set[str] = set()
     for obpi_file in artifacts.get("obpis", []):

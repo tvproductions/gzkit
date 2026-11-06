@@ -88,6 +88,11 @@ def _supersede_transition_available(current_state: OBPIState) -> bool:
     Genuinely consults CANONICAL_TRANSITIONS, mirroring
     ``_withdraw_transition_available``: a state with no outgoing transition into
     SUPERSEDED (i.e. a terminal state) cannot be superseded.
+
+    Returns:
+        True when a canonical transition from ``current_state`` to SUPERSEDED exists, otherwise
+        False.
+
     """
     return any(
         t.from_state == current_state and t.to_state == OBPIState.SUPERSEDED
@@ -289,6 +294,11 @@ def _reset_brief_status_after_repudiation(
     Completed."). Returns the brief path when a reset was written, else ``None``
     (no on-disk brief — phantom/ledger-only OBPI — or status was not
     ``Completed``).
+
+    Returns:
+        The brief path when its status was reset, or None when no brief exists or its status was not
+        ``Completed``.
+
     """
     _canonical, obpi_file = resolve_obpi(project_root, config, ledger, canonical_id)
     if obpi_file is None or not obpi_file.exists():
@@ -431,6 +441,11 @@ def _resolve_emit_receipt_authenticity_context(
 
     Extracted from ``obpi_emit_receipt_cmd`` so that path stays under the
     C/C/C complexity ceiling (GHI #412 plumbing added the lookup).
+
+    Returns:
+        Tuple of (brief ``sensitivity`` value or None, parent ADR ``kind`` or None when there is no
+        parent ADR).
+
     """
     sensitivity_value = parse_frontmatter_value(obpi_content, "sensitivity")
     parent_kind_value: str | None = None
@@ -691,6 +706,10 @@ def _advance_brief_status_on_launch(obpi_file: Path) -> bool:
     ``gz validate --status-writer-coverage`` fails closed on bypassing).
     Returns True iff a write landed; a no-op re-launch and a refused terminal
     both return False.
+
+    Returns:
+        True when the status write landed; False for a no-op or refused write.
+
     """
     from gzkit.commands.closeout_form import guarded_obpi_status_write  # noqa: PLC0415
     from gzkit.governance.status_vocab import frontmatter_status_for_ledger  # noqa: PLC0415
@@ -965,6 +984,10 @@ def _validate_brief_structure(project_root: Path, brief_path: Path) -> list[str]
 
     Checks required frontmatter fields and required section headings,
     independent of completion status.
+
+    Returns:
+        Formatted schema-error strings; empty when the brief conforms.
+
     """
     from gzkit.validate import validate_document  # noqa: PLC0415
 
@@ -989,6 +1012,10 @@ def _validate_brief_path_existence(project_root: Path, brief_path: Path) -> list
     surface no errors. Net-new paths declared via ``**CREATE**`` markers
     or under a ``Creates these files`` heading are exempt from the
     existence gap; vendor-mirror surfaces fail fail-closed regardless.
+
+    Returns:
+        Path-validity error strings; empty when every allowed path is valid.
+
     """
     from gzkit.governance.brief_path_validity import (  # noqa: PLC0415
         check_brief_path_validity_for_brief,

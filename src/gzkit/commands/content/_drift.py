@@ -49,6 +49,11 @@ def drifted_consumers(root: Path, surface: str) -> list[str]:
     re-attest it — an action the manifest makes impossible (no declared setpoint) and
     doctrine forbids (per-vendor ``AgentContract`` renditions), against a record kept
     deliberately because an attested rendition is never deleted.
+
+    Returns:
+        Stems of graded renditions whose sidecar fingerprint differs from the current corpus; empty
+        when the rendition directory is absent.
+
     """
     rendition_dir = root / ".gzkit" / "renditions" / surface
     if not rendition_dir.is_dir():
@@ -78,6 +83,10 @@ def _advisory_lines(
     from the current corpus, and in that state ``gz content land`` refuses unless
     both are non-blank (``landing._resolve_attestation``). The placeholders reuse the
     wording of that refusal.
+
+    Returns:
+        The advisory's lines, including the floor-gate warning when ``floor_risk`` is set.
+
     """
     lines = [
         "",

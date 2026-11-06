@@ -89,6 +89,11 @@ def _run_tidy(
     """Run the real *handler* over the given findings; return (exit code, rendered output).
 
     The collaborators are bound on the handler's own module, ``gzkit.commands.tidy``.
+
+    Returns:
+        Tuple of (exit code, captured rendered output); the exit code is 0 unless the handler raised
+        ``SystemExit``.
+
     """
     from rich.console import Console  # noqa: PLC0415
 

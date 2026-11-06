@@ -78,6 +78,11 @@ def _validate_surfaces(raw: str) -> list[str] | None:
     unknown (printing the bad token to stdout before exiting).
 
     Returns ``None`` when the caller should use all surfaces (empty/None raw).
+
+    Returns:
+        The validated surface tokens, or None when ``raw`` is empty or holds no tokens; an unknown
+        token exits 1 instead.
+
     """
     if not raw:
         return None

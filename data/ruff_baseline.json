@@ -3573,11 +3573,6 @@
     },
     {
       "file": "src/gzkit/commands/adr_audit.py",
-      "rule": "DOC201",
-      "count": 15
-    },
-    {
-      "file": "src/gzkit/commands/adr_audit.py",
       "rule": "DOC501",
       "count": 4
     },
@@ -3663,11 +3658,6 @@
     },
     {
       "file": "src/gzkit/commands/adr_audit_covers_backfill.py",
-      "rule": "DOC201",
-      "count": 18
-    },
-    {
-      "file": "src/gzkit/commands/adr_audit_covers_backfill.py",
       "rule": "DOC501",
       "count": 1
     },
@@ -3688,11 +3678,6 @@
     },
     {
       "file": "src/gzkit/commands/adr_coverage.py",
-      "rule": "DOC201",
-      "count": 3
-    },
-    {
-      "file": "src/gzkit/commands/adr_coverage.py",
       "rule": "PERF401",
       "count": 1
     },
@@ -3710,11 +3695,6 @@
       "file": "src/gzkit/commands/adr_demote.py",
       "rule": "ANN401",
       "count": 3
-    },
-    {
-      "file": "src/gzkit/commands/adr_demote.py",
-      "rule": "DOC201",
-      "count": 6
     },
     {
       "file": "src/gzkit/commands/adr_demote.py",
@@ -3773,11 +3753,6 @@
     },
     {
       "file": "src/gzkit/commands/adr_promote.py",
-      "rule": "DOC201",
-      "count": 3
-    },
-    {
-      "file": "src/gzkit/commands/adr_promote.py",
       "rule": "DOC501",
       "count": 2
     },
@@ -3823,11 +3798,6 @@
     },
     {
       "file": "src/gzkit/commands/adr_promote_utils.py",
-      "rule": "DOC201",
-      "count": 5
-    },
-    {
-      "file": "src/gzkit/commands/adr_promote_utils.py",
       "rule": "DOC501",
       "count": 1
     },
@@ -3870,11 +3840,6 @@
       "file": "src/gzkit/commands/airlock.py",
       "rule": "FBT001",
       "count": 2
-    },
-    {
-      "file": "src/gzkit/commands/arb.py",
-      "rule": "DOC201",
-      "count": 4
     },
     {
       "file": "src/gzkit/commands/arb.py",
@@ -3998,11 +3963,6 @@
     },
     {
       "file": "src/gzkit/commands/brief_reconcile.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/commands/brief_reconcile.py",
       "rule": "EM101",
       "count": 1
     },
@@ -4025,11 +3985,6 @@
       "file": "src/gzkit/commands/ceremony_data.py",
       "rule": "ANN401",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/ceremony_data.py",
-      "rule": "DOC201",
-      "count": 15
     },
     {
       "file": "src/gzkit/commands/ceremony_data.py",
@@ -4068,18 +4023,8 @@
     },
     {
       "file": "src/gzkit/commands/ceremony_intent.py",
-      "rule": "DOC201",
-      "count": 3
-    },
-    {
-      "file": "src/gzkit/commands/ceremony_intent.py",
       "rule": "PLR2004",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/ceremony_state.py",
-      "rule": "DOC201",
-      "count": 2
     },
     {
       "file": "src/gzkit/commands/ceremony_state.py",
@@ -4095,11 +4040,6 @@
       "file": "src/gzkit/commands/ceremony_state.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/ceremony_steps.py",
-      "rule": "DOC201",
-      "count": 3
     },
     {
       "file": "src/gzkit/commands/ceremony_steps.py",
@@ -4158,11 +4098,6 @@
     },
     {
       "file": "src/gzkit/commands/chores_declaration.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/chores_declaration.py",
       "rule": "FBT003",
       "count": 1
     },
@@ -4213,11 +4148,6 @@
     },
     {
       "file": "src/gzkit/commands/chores_staleness.py",
-      "rule": "DOC201",
-      "count": 3
-    },
-    {
-      "file": "src/gzkit/commands/chores_staleness.py",
       "rule": "PLR0913",
       "count": 2
     },
@@ -4265,11 +4195,6 @@
       "file": "src/gzkit/commands/cli_audit.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/closeout.py",
-      "rule": "DOC201",
-      "count": 4
     },
     {
       "file": "src/gzkit/commands/closeout.py",
@@ -4344,11 +4269,6 @@
     {
       "file": "src/gzkit/commands/closeout_ceremony.py",
       "rule": "ARG001",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/closeout_ceremony.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
@@ -4418,11 +4338,6 @@
     },
     {
       "file": "src/gzkit/commands/closeout_form.py",
-      "rule": "DOC201",
-      "count": 3
-    },
-    {
-      "file": "src/gzkit/commands/closeout_form.py",
       "rule": "FBT001",
       "count": 1
     },
@@ -4463,11 +4378,6 @@
     },
     {
       "file": "src/gzkit/commands/common.py",
-      "rule": "DOC201",
-      "count": 12
-    },
-    {
-      "file": "src/gzkit/commands/common.py",
       "rule": "DOC501",
       "count": 3
     },
@@ -4494,11 +4404,6 @@
     {
       "file": "src/gzkit/commands/common.py",
       "rule": "PLC0415",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/complexity_advise.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
@@ -4538,11 +4443,6 @@
     },
     {
       "file": "src/gzkit/commands/complexity_distill_cmd.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/commands/complexity_distill_cmd.py",
       "rule": "DOC501",
       "count": 1
     },
@@ -4575,11 +4475,6 @@
       "file": "src/gzkit/commands/complexity_guide.py",
       "rule": "TC001",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/config_paths.py",
-      "rule": "DOC201",
-      "count": 5
     },
     {
       "file": "src/gzkit/commands/config_paths.py",
@@ -4625,11 +4520,6 @@
       "file": "src/gzkit/commands/content/__init__.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/content/_drift.py",
-      "rule": "DOC201",
-      "count": 2
     },
     {
       "file": "src/gzkit/commands/content/_drift.py",
@@ -4688,11 +4578,6 @@
     },
     {
       "file": "src/gzkit/commands/content/compose.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/content/compose.py",
       "rule": "PLR0912",
       "count": 1
     },
@@ -4730,11 +4615,6 @@
       "file": "src/gzkit/commands/content/import_.py",
       "rule": "T201",
       "count": 6
-    },
-    {
-      "file": "src/gzkit/commands/content/land.py",
-      "rule": "DOC201",
-      "count": 1
     },
     {
       "file": "src/gzkit/commands/content/land.py",
@@ -4808,11 +4688,6 @@
     },
     {
       "file": "src/gzkit/commands/content/retire.py",
-      "rule": "DOC201",
-      "count": 3
-    },
-    {
-      "file": "src/gzkit/commands/content/retire.py",
       "rule": "T201",
       "count": 9
     },
@@ -4845,11 +4720,6 @@
       "file": "src/gzkit/commands/content/unown.py",
       "rule": "ANN401",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/content/unown.py",
-      "rule": "DOC201",
-      "count": 21
     },
     {
       "file": "src/gzkit/commands/content/unown.py",
@@ -4890,11 +4760,6 @@
       "file": "src/gzkit/commands/content/unown.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/context_cmd.py",
-      "rule": "DOC201",
-      "count": 4
     },
     {
       "file": "src/gzkit/commands/context_cmd.py",
@@ -4963,11 +4828,6 @@
     },
     {
       "file": "src/gzkit/commands/drift.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/commands/drift.py",
       "rule": "DOC501",
       "count": 1
     },
@@ -5013,11 +4873,6 @@
     },
     {
       "file": "src/gzkit/commands/frontmatter_reconcile.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/frontmatter_reconcile.py",
       "rule": "DOC501",
       "count": 1
     },
@@ -5035,11 +4890,6 @@
       "file": "src/gzkit/commands/gates.py",
       "rule": "ANN401",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/gates.py",
-      "rule": "DOC201",
-      "count": 2
     },
     {
       "file": "src/gzkit/commands/gates.py",
@@ -5098,11 +4948,6 @@
     },
     {
       "file": "src/gzkit/commands/handoff.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/commands/handoff.py",
       "rule": "DOC501",
       "count": 2
     },
@@ -5110,16 +4955,6 @@
       "file": "src/gzkit/commands/handoff.py",
       "rule": "PLR0913",
       "count": 2
-    },
-    {
-      "file": "src/gzkit/commands/handoff_archive.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/init_cmd.py",
-      "rule": "DOC201",
-      "count": 18
     },
     {
       "file": "src/gzkit/commands/init_cmd.py",
@@ -5213,11 +5048,6 @@
     },
     {
       "file": "src/gzkit/commands/interview_cmd.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/commands/interview_cmd.py",
       "rule": "DOC501",
       "count": 2
     },
@@ -5249,11 +5079,6 @@
     {
       "file": "src/gzkit/commands/interview_cmd.py",
       "rule": "PLW0717",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/issue_cmd.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
@@ -5298,11 +5123,6 @@
     },
     {
       "file": "src/gzkit/commands/ledger.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/ledger.py",
       "rule": "DOC501",
       "count": 1
     },
@@ -5310,11 +5130,6 @@
       "file": "src/gzkit/commands/ledger_correct.py",
       "rule": "PLR0913",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/mx_cmd.py",
-      "rule": "DOC201",
-      "count": 7
     },
     {
       "file": "src/gzkit/commands/mx_cmd.py",
@@ -5340,11 +5155,6 @@
       "file": "src/gzkit/commands/mx_cmd.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/obpi_acceptance.py",
-      "rule": "DOC201",
-      "count": 4
     },
     {
       "file": "src/gzkit/commands/obpi_acceptance.py",
@@ -5375,16 +5185,6 @@
       "file": "src/gzkit/commands/obpi_acceptance.py",
       "rule": "TRY003",
       "count": 7
-    },
-    {
-      "file": "src/gzkit/commands/obpi_adversary_workspace.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/obpi_audit_cmd.py",
-      "rule": "DOC201",
-      "count": 2
     },
     {
       "file": "src/gzkit/commands/obpi_audit_cmd.py",
@@ -5463,11 +5263,6 @@
     },
     {
       "file": "src/gzkit/commands/obpi_cmd.py",
-      "rule": "DOC201",
-      "count": 6
-    },
-    {
-      "file": "src/gzkit/commands/obpi_cmd.py",
       "rule": "DOC501",
       "count": 5
     },
@@ -5530,11 +5325,6 @@
       "file": "src/gzkit/commands/obpi_complete.py",
       "rule": "ARG001",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/obpi_complete.py",
-      "rule": "DOC201",
-      "count": 16
     },
     {
       "file": "src/gzkit/commands/obpi_complete.py",
@@ -5618,11 +5408,6 @@
     },
     {
       "file": "src/gzkit/commands/obpi_complete_adversarial.py",
-      "rule": "DOC201",
-      "count": 4
-    },
-    {
-      "file": "src/gzkit/commands/obpi_complete_adversarial.py",
       "rule": "PERF403",
       "count": 1
     },
@@ -5640,11 +5425,6 @@
       "file": "src/gzkit/commands/obpi_dispatch.py",
       "rule": "PLR0913",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/obpi_lock.py",
-      "rule": "DOC201",
-      "count": 2
     },
     {
       "file": "src/gzkit/commands/obpi_lock.py",
@@ -5683,11 +5463,6 @@
     },
     {
       "file": "src/gzkit/commands/obpi_precomplete.py",
-      "rule": "DOC201",
-      "count": 12
-    },
-    {
-      "file": "src/gzkit/commands/obpi_precomplete.py",
       "rule": "DOC501",
       "count": 1
     },
@@ -5722,16 +5497,6 @@
       "count": 1
     },
     {
-      "file": "src/gzkit/commands/obpi_precomplete_receipt_claims.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/obpi_present_evidence.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
       "file": "src/gzkit/commands/obpi_present_evidence.py",
       "rule": "DOC501",
       "count": 1
@@ -5740,11 +5505,6 @@
       "file": "src/gzkit/commands/obpi_present_evidence.py",
       "rule": "T201",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/obpi_stages.py",
-      "rule": "DOC201",
-      "count": 5
     },
     {
       "file": "src/gzkit/commands/obpi_stages.py",
@@ -5768,11 +5528,6 @@
     },
     {
       "file": "src/gzkit/commands/obpi_verify_packet.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/commands/obpi_verify_packet.py",
       "rule": "DOC501",
       "count": 1
     },
@@ -5785,11 +5540,6 @@
       "file": "src/gzkit/commands/ontology.py",
       "rule": "ARG001",
       "count": 3
-    },
-    {
-      "file": "src/gzkit/commands/ontology.py",
-      "rule": "DOC201",
-      "count": 2
     },
     {
       "file": "src/gzkit/commands/ontology.py",
@@ -5825,11 +5575,6 @@
       "file": "src/gzkit/commands/parity.py",
       "rule": "PLR0914",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/patch_release.py",
-      "rule": "DOC201",
-      "count": 13
     },
     {
       "file": "src/gzkit/commands/patch_release.py",
@@ -5903,11 +5648,6 @@
     },
     {
       "file": "src/gzkit/commands/permitted_entry.py",
-      "rule": "DOC201",
-      "count": 5
-    },
-    {
-      "file": "src/gzkit/commands/permitted_entry.py",
       "rule": "FBT001",
       "count": 2
     },
@@ -5938,11 +5678,6 @@
     },
     {
       "file": "src/gzkit/commands/pipeline.py",
-      "rule": "DOC201",
-      "count": 3
-    },
-    {
-      "file": "src/gzkit/commands/pipeline.py",
       "rule": "FURB113",
       "count": 5
     },
@@ -5955,11 +5690,6 @@
       "file": "src/gzkit/commands/pipeline.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/plan.py",
-      "rule": "DOC201",
-      "count": 2
     },
     {
       "file": "src/gzkit/commands/plan.py",
@@ -6005,11 +5735,6 @@
       "file": "src/gzkit/commands/plan.py",
       "rule": "TRY003",
       "count": 2
-    },
-    {
-      "file": "src/gzkit/commands/plan_audit_cmd.py",
-      "rule": "DOC201",
-      "count": 8
     },
     {
       "file": "src/gzkit/commands/plan_audit_cmd.py",
@@ -6073,11 +5798,6 @@
     },
     {
       "file": "src/gzkit/commands/preflight.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/commands/preflight.py",
       "rule": "PLR6201",
       "count": 1
     },
@@ -6100,11 +5820,6 @@
       "file": "src/gzkit/commands/quality.py",
       "rule": "ANN401",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/quality.py",
-      "rule": "DOC201",
-      "count": 22
     },
     {
       "file": "src/gzkit/commands/quality.py",
@@ -6153,11 +5868,6 @@
     },
     {
       "file": "src/gzkit/commands/readiness.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/readiness.py",
       "rule": "FBT001",
       "count": 2
     },
@@ -6178,18 +5888,8 @@
     },
     {
       "file": "src/gzkit/commands/reference_checker.py",
-      "rule": "DOC201",
-      "count": 6
-    },
-    {
-      "file": "src/gzkit/commands/reference_checker.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/register.py",
-      "rule": "DOC201",
-      "count": 6
     },
     {
       "file": "src/gzkit/commands/register.py",
@@ -6243,11 +5943,6 @@
     },
     {
       "file": "src/gzkit/commands/smoke_cmd.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/smoke_cmd.py",
       "rule": "DOC501",
       "count": 1
     },
@@ -6255,11 +5950,6 @@
       "file": "src/gzkit/commands/specify_cmd.py",
       "rule": "ANN401",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/specify_cmd.py",
-      "rule": "DOC201",
-      "count": 8
     },
     {
       "file": "src/gzkit/commands/specify_cmd.py",
@@ -6303,11 +5993,6 @@
     },
     {
       "file": "src/gzkit/commands/state.py",
-      "rule": "DOC201",
-      "count": 4
-    },
-    {
-      "file": "src/gzkit/commands/state.py",
       "rule": "FBT001",
       "count": 6
     },
@@ -6325,11 +6010,6 @@
       "file": "src/gzkit/commands/state.py",
       "rule": "TC003",
       "count": 2
-    },
-    {
-      "file": "src/gzkit/commands/status.py",
-      "rule": "DOC201",
-      "count": 4
     },
     {
       "file": "src/gzkit/commands/status.py",
@@ -6403,11 +6083,6 @@
     },
     {
       "file": "src/gzkit/commands/status_obpi.py",
-      "rule": "DOC201",
-      "count": 3
-    },
-    {
-      "file": "src/gzkit/commands/status_obpi.py",
       "rule": "FBT001",
       "count": 1
     },
@@ -6443,11 +6118,6 @@
     },
     {
       "file": "src/gzkit/commands/status_obpi_inspect.py",
-      "rule": "DOC201",
-      "count": 4
-    },
-    {
-      "file": "src/gzkit/commands/status_obpi_inspect.py",
       "rule": "PIE810",
       "count": 1
     },
@@ -6478,11 +6148,6 @@
     },
     {
       "file": "src/gzkit/commands/status_render.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/commands/status_render.py",
       "rule": "FBT001",
       "count": 2
     },
@@ -6505,11 +6170,6 @@
       "file": "src/gzkit/commands/status_render.py",
       "rule": "RUF052",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/sync.py",
-      "rule": "DOC201",
-      "count": 10
     },
     {
       "file": "src/gzkit/commands/sync.py",
@@ -6568,11 +6228,6 @@
     },
     {
       "file": "src/gzkit/commands/task.py",
-      "rule": "DOC201",
-      "count": 10
-    },
-    {
-      "file": "src/gzkit/commands/task.py",
       "rule": "DOC501",
       "count": 1
     },
@@ -6614,11 +6269,6 @@
     {
       "file": "src/gzkit/commands/task.py",
       "rule": "TC003",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/test_shape.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
@@ -6673,11 +6323,6 @@
     },
     {
       "file": "src/gzkit/commands/tidy_claims.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/tidy_claims.py",
       "rule": "PLR0913",
       "count": 1
     },
@@ -6695,11 +6340,6 @@
       "file": "src/gzkit/commands/tidy_claims.py",
       "rule": "TC003",
       "count": 2
-    },
-    {
-      "file": "src/gzkit/commands/upgrade.py",
-      "rule": "DOC201",
-      "count": 1
     },
     {
       "file": "src/gzkit/commands/upgrade.py",
@@ -6743,11 +6383,6 @@
     },
     {
       "file": "src/gzkit/commands/validate_briefs.py",
-      "rule": "DOC201",
-      "count": 4
-    },
-    {
-      "file": "src/gzkit/commands/validate_briefs.py",
       "rule": "PERF401",
       "count": 2
     },
@@ -6760,11 +6395,6 @@
       "file": "src/gzkit/commands/validate_cmd.py",
       "rule": "ARG001",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/validate_cmd.py",
-      "rule": "DOC201",
-      "count": 10
     },
     {
       "file": "src/gzkit/commands/validate_cmd.py",
@@ -6843,11 +6473,6 @@
     },
     {
       "file": "src/gzkit/commands/validate_commit_trailers.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/commands/validate_commit_trailers.py",
       "rule": "TC003",
       "count": 1
     },
@@ -6865,11 +6490,6 @@
       "file": "src/gzkit/commands/validate_frontmatter.py",
       "rule": "ARG001",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/validate_frontmatter.py",
-      "rule": "DOC201",
-      "count": 5
     },
     {
       "file": "src/gzkit/commands/validate_frontmatter.py",
@@ -6918,11 +6538,6 @@
     },
     {
       "file": "src/gzkit/commands/validate_json_exit_claims.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/commands/validate_json_exit_claims.py",
       "rule": "TC003",
       "count": 3
     },
@@ -6930,11 +6545,6 @@
       "file": "src/gzkit/commands/validate_pending_renames.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/validate_req_kind.py",
-      "rule": "DOC201",
-      "count": 2
     },
     {
       "file": "src/gzkit/commands/validate_req_kind.py",
@@ -6963,11 +6573,6 @@
     },
     {
       "file": "src/gzkit/commands/validate_task_envelope.py",
-      "rule": "DOC201",
-      "count": 19
-    },
-    {
-      "file": "src/gzkit/commands/validate_task_envelope.py",
       "rule": "FURB162",
       "count": 1
     },
@@ -6990,11 +6595,6 @@
       "file": "src/gzkit/commands/validate_task_envelope.py",
       "rule": "PLW2901",
       "count": 5
-    },
-    {
-      "file": "src/gzkit/commands/version_sync.py",
-      "rule": "DOC201",
-      "count": 4
     },
     {
       "file": "src/gzkit/commands/version_sync.py",

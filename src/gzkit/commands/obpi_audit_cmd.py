@@ -295,6 +295,11 @@ def _brief_src_paths(brief_path: Path | None) -> list[str]:
     becomes a recursive glob so ``coverage report --include`` matches the files
     beneath it. Non-``src`` entries (tests, docs, data) are excluded: they are
     the test surface and coupled surfaces, not the measured unit.
+
+    Returns:
+        The brief's ``src/`` allowed paths, directories expanded to ``<dir>/*``; empty when there is
+        no brief or no allowed paths.
+
     """
     if brief_path is None:
         return []
@@ -323,6 +328,10 @@ def _measure_coverage(
     tests" rather than "the whole ``src/`` tree is N% exercised" — the latter is
     structurally unreachable for any well-scoped OBPI (GHI #591). With no scoped
     paths the measurement falls back to the whole-``src`` denominator.
+
+    Returns:
+        The coverage percentage, or None when there are no test files or the measurement fails.
+
     """
     if not test_files:
         return None

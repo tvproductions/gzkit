@@ -205,6 +205,11 @@ def _consume_ceremony_attestation(
     Step 6, the closeout pipeline must consume that decision rather than
     re-prompting interactively. Returns ``(attest_status, reason,
     raw_attestation_text)`` when consumable, ``None`` otherwise.
+
+    Returns:
+        ``(attest_status, reason, raw_attestation_text)`` when the ceremony reached the attestation
+        step with text recorded, otherwise None.
+
     """
     state = load_ceremony_state(project_root, adr_id)
     if state is None:
@@ -221,6 +226,11 @@ def _prompt_closeout_attestation(*, quiet: bool = False) -> tuple[str, str | Non
     """Interactive attestation prompt for the closeout pipeline.
 
     Returns ``(attest_status, reason)`` tuple.
+
+    Returns:
+        ``("completed", None)``, ``("partial", reason)`` or ``("dropped", reason)`` according to the
+        selection.
+
     """
     if not quiet:
         print("Attestation choices:")  # noqa: T201
@@ -463,6 +473,11 @@ def _work_start_evidence(graph: dict[str, dict[str, Any]], adr_id: str) -> str |
 
     A launched pipeline or a ledger completion is evidence the ADR was worked,
     which is what licenses a late ``Proposed -> Accepted`` catch-up (GHI #1014).
+
+    Returns:
+        The first child OBPI id with a launched pipeline or ledger completion, or None when no child
+        shows work.
+
     """
     for child in graph.get(adr_id, {}).get("children", []):
         info = graph.get(child, {})
@@ -480,6 +495,11 @@ def _plan_closeout_lifecycle(
     a pair ``ADR_TRANSITIONS`` forbids, 62 times; those rows stay as dated
     records (operator ruling 2026-09-28, "Fix forward only"). Refuses before any
     ledger write when the ADR's state cannot legally reach its closeout state.
+
+    Returns:
+        Tuple of (ordered ``(from_state, to_state)`` transitions, id of the child OBPI licensing a
+        ``Proposed -> Accepted`` catch-up or None when no catch-up is planned).
+
     """
     from gzkit.lifecycle import InvalidTransitionError, closeout_transitions, current_adr_state
 

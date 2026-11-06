@@ -164,6 +164,11 @@ def delivery_scope(project_root: Path) -> set[str]:
     The slugs the wheel delivers, plus any the project already holds: a project
     that has a skill the wheel withholds (gzkit's own project-local skills) keeps
     its routes to it, and an adopter gets exactly what a fresh scaffold writes.
+
+    Returns:
+        The wheel-delivered skill slugs united with the slugs of skills already present under
+        ``.gzkit/skills``.
+
     """
     bodies = {
         rel.parts[0]: source.read_bytes()
@@ -201,6 +206,10 @@ def _refresh_one_artifact(
     Writes to ``project_path`` only when the state is STALE and ``dry_run`` is
     False. EDITED state never writes; the caller is responsible for recording
     the conflict.
+
+    Returns:
+        The detected refresh state; ``"STALE"`` when the project copy was missing.
+
     """
     if not project_path.exists():
         if not dry_run:
@@ -242,6 +251,9 @@ def _refresh_canonical_surfaces(
         project_root: Project root containing the adopter's ``.gzkit/``.
         dry_run: When True, detect and report state without writing.
         yes: Accept the chores registry merge without prompting.
+
+    Returns:
+        The :class:`RefreshResult` recording each artifact's state and any EDITED conflicts.
 
     """
     # upgrade imports this module, so its classifier map is read at call time.
@@ -325,6 +337,10 @@ def _normalize_package_name(project_name: str) -> str:
 
     Replaces hyphens and spaces with underscores, strips non-alphanumeric
     characters, and lowercases the result.
+
+    Returns:
+        The normalized package name, or ``"app"`` when nothing valid remains.
+
     """
     name = project_name.lower().replace("-", "_").replace(" ", "_")
     name = re.sub(r"[^a-z0-9_]", "", name)
@@ -527,6 +543,10 @@ def scaffold_project_skeleton(
     wrote, so the tree builds (GHI #910).
 
     Returns a list of human-readable descriptions of created artifacts.
+
+    Returns:
+        Human-readable descriptions of the artifacts created (or that would be, on a dry run).
+
     """
     created: list[str] = []
     project_type, source_root, tests_root = (
@@ -667,6 +687,10 @@ def _scaffold_pre_commit_config(project_root: Path, *, dry_run: bool = False) ->
     (GHI #715).
 
     Returns a human-readable status string, or None if skipped.
+
+    Returns:
+        The created (or would-create) status string, or None when a config already exists.
+
     """
     config = project_root / ".pre-commit-config.yaml"
     if config.exists():
@@ -687,6 +711,11 @@ def _install_pre_commit_hooks(project_root: Path, *, dry_run: bool = False) -> s
     what fails closed.
 
     Returns a human-readable status string, or None if skipped.
+
+    Returns:
+        A status string describing the install, the would-install plan, or why the gate was not
+        installed; None when there is no ``.git`` directory or no pre-commit config.
+
     """
     if not (project_root / ".git").is_dir():
         return None
@@ -748,6 +777,11 @@ def _install_commit_locus_recorder(project_root: Path, *, dry_run: bool = False)
     rows (GHI #1092).
 
     Returns a human-readable status string, or None if skipped.
+
+    Returns:
+        The install (or would-install) status string, or None when skipped: no ``.git`` directory,
+        no ``post-commit`` hook type, or ``core.hooksPath`` set.
+
     """
     if not (project_root / ".git").is_dir():
         return None
@@ -766,6 +800,10 @@ def _session_green_gate_statuses(project_root: Path, *, dry_run: bool = False) -
 
     Two steps, not one: declaring a gate and installing it fail independently,
     and the pairing is the whole point of GHI #715.
+
+    Returns:
+        The non-empty status lines from the config, hook-install, and recorder steps, in that order.
+
     """
     return [
         status
@@ -836,6 +874,10 @@ def _scaffold_gitignore(project_root: Path, *, dry_run: bool = False) -> str | N
 
     Idempotent: preserves any existing .gitignore.
     Returns a human-readable status string, or None if skipped.
+
+    Returns:
+        The created (or would-create) status string, or None when a ``.gitignore`` already exists.
+
     """
     gitignore = project_root / ".gitignore"
     if gitignore.exists():
@@ -852,6 +894,11 @@ def _run_uv_sync(project_root: Path, *, dry_run: bool = False) -> str | None:
     Idempotent: skips if no pyproject.toml exists or .venv already present.
 
     Returns a human-readable status string, or None if skipped.
+
+    Returns:
+        A status string when uv sync ran or would run; None when skipped (no pyproject.toml or
+        ``.venv`` present) or when uv sync failed.
+
     """
     if not (project_root / "pyproject.toml").exists():
         return None
@@ -889,6 +936,11 @@ def _repair_chores(
 
     A dry run never calls the scaffolder, which writes (GHI #1098); it lists what
     the real run's ``skip_existing`` scaffold would add instead.
+
+    Returns:
+        The repair messages (or would-do lines on a dry run) for chores scaffolding and registry
+        merge.
+
     """
     from gzkit.chores import _iter_canonical_chore_slugs  # noqa: PLC0415
 
@@ -988,6 +1040,11 @@ def _dry_run_missing_canonical_skills(
     canonical slugs from the wheel's package surface and skip
     ``lifecycle_state: retired`` (GHI #453 — formerly iterated
     ``CORE_SKILLS`` which carried stale retired slugs).
+
+    Returns:
+        One ``Would scaffold skill: <slug>`` line per non-retired canonical skill missing from the
+        project.
+
     """
     from gzkit.skills import _iter_canonical_skill_slugs, _parse_frontmatter  # noqa: PLC0415
 
@@ -1016,6 +1073,11 @@ def _repair_control_surfaces(
     the mirrors of an artifact it has not yet scaffolded; its ``Would scaffold``
     line stands for them. A tree already in sync plans nothing, so repair runs no
     sync and appends no ``agent_sync_completed`` row.
+
+    Returns:
+        ``Synced <path>`` lines (``Would sync <path>`` on a dry run) for each file the sync changes;
+        empty when already in sync.
+
     """
     changes = plan_sync_changes(project_root, config)
     if dry_run:
@@ -1059,6 +1121,10 @@ def _first_init_authorship(attestor_handle: str | None) -> AuthorshipConfig:
 
     gzkit's own handle is never scaffolded: the value comes from this project's
     operator, by flag or prompt, or stays unset (GHI #1036).
+
+    Returns:
+        The :class:`AuthorshipConfig` carrying the handle, or an unset handle when none was given.
+
     """
     handle = attestor_handle if attestor_handle is not None else _prompt_attestor_handle()
     if handle:
@@ -1073,6 +1139,10 @@ def _prompt_attestor_handle() -> str | None:
 
     Asked only when both streams are a terminal, so a scripted or captured init
     never blocks on input (GHI #1036).
+
+    Returns:
+        The entered handle, or None when not interactive or left blank.
+
     """
     if not (sys.stdin.isatty() and sys.stdout.isatty()):
         return None
@@ -1554,6 +1624,11 @@ def _canonicalize_prd_id(name: str) -> tuple[str, str]:
     scaffolder and validator agree on the id format (GHI #186).
 
     Returns ``(prd_id, semver)``.
+
+    Returns:
+        Tuple of (canonical ``PRD-<SLUG>-<semver>`` id, semver), with semver defaulting to
+        ``1.0.0``.
+
     """
     stem = name.removeprefix("PRD-")
     semver = "1.0.0"
@@ -1613,6 +1688,11 @@ def _canonicalize_constitution_id(name: str) -> tuple[str, str]:
     the scaffolder and validator agree on id format (GHI #216 / GZKIT-BOOTSTRAP-008).
 
     Returns ``(constitution_id, semver)``.
+
+    Returns:
+        Tuple of (canonical ``CONSTITUTION-<SLUG>-<semver>`` id, semver), with semver defaulting to
+        ``1.0.0``.
+
     """
     stem = name.removeprefix("CONSTITUTION-")
     semver = "1.0.0"

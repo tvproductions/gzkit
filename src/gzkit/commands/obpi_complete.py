@@ -96,6 +96,10 @@ def _load_security_checklist(project_root: Path) -> list[str]:
     The checklist is enumerated in ``.gzkit/rules/security-sensitivity.md``
     (authored by OBPI-0.0.22-06). Per REQ-0.0.22-05-02 the list is read at
     runtime — never hardcoded into the OBPI command surface.
+
+    Returns:
+        The checklist items listed under the checklist heading; empty when the section has none.
+
     """
     rule_path = project_root / _SECURITY_RULE_RELATIVE_PATH
     if not rule_path.is_file():
@@ -137,6 +141,10 @@ def _find_fresh_security_receipt(
     of age; ``fresh_receipt`` is the same receipt only when its
     ``timestamp_utc`` is within ``max_age_hours``. Either is ``None`` when no
     receipt exists or no fresh receipt exists, respectively.
+
+    Returns:
+        ``(newest_receipt, fresh_receipt)``, each a path or None as described above.
+
     """
     if not receipts_dir.is_dir():
         return None, None
@@ -285,6 +293,10 @@ def _read_adr_kind(adr_file: Path) -> str:
 
     Defaults to ``"feature"`` when the field is missing — preserving the
     pre-ADR-0.0.17 behavior for any pre-kind-schema briefs still in flight.
+
+    Returns:
+        The lowercased ``kind`` value, or ``"feature"`` when the ADR file or field is missing.
+
     """
     if not adr_file.is_file():
         return "feature"
@@ -307,6 +319,10 @@ def _build_meta_receipt_evidence(
 
     The ``run_id`` is a stable arb-step receipt-shape ID so downstream
     tooling can resolve it the same way every other receipt resolves.
+
+    Returns:
+        The evidence payload dict, including ``obpi_id`` only when one is given.
+
     """
     run_id = f"arb-meta-receipt-bind-{secrets.token_hex(16)}"
     resolved_ids = [
@@ -359,6 +375,11 @@ def _enforce_attestation_receipt_gate(
     The gate runs BEFORE the operator-verbatim attestation step; a
     mechanical-receipt failure short-circuits attestation recording (REQ-07
     in the brief, mechanism for REQ-02).
+
+    Returns:
+        The resolved receipt ids recorded in the meta-receipt-bind event; empty on a dry run or the
+        warn-only paths.
+
     """
     if dry_run:
         return []
@@ -428,6 +449,11 @@ def _qualified_to_unittest_target(ref: TestRef, project_root: Path) -> str | Non
     the AST scanner. The unittest runner needs ``module.path.ClassName.method``
     relative to the project root. Returns ``None`` when the file path falls
     outside ``project_root`` or cannot be expressed as a Python module.
+
+    Returns:
+        The dotted ``module.QualifiedName`` target, or None when the file is outside
+        ``project_root`` or has no module parts.
+
     """
     try:
         rel = Path(ref.file_path).resolve().relative_to(project_root.resolve())
@@ -448,6 +474,10 @@ def _run_captured(cmd: list[str], *, cwd: str) -> subprocess.CompletedProcess[st
     0xa7``) cannot raise ``UnicodeDecodeError`` out of the reader path and abort
     completion. ``UnicodeDecodeError`` is a ``ValueError``, so the callers'
     ``(OSError, SubprocessError)`` guards would not otherwise catch it.
+
+    Returns:
+        The completed process with decoded stdout and stderr.
+
     """
     return subprocess.run(  # noqa: S603 — argv from this module's callers, list form
         resolve_argv(cmd),
@@ -480,6 +510,11 @@ def _any_covering_test_passes(refs: list[TestRef], project_root: Path, *, req_id
     Behave refs (``.feature`` file paths) are dispatched through
     ``_behave_ref_passes``; all other refs run under ``uv run -m unittest``.
     One green observation satisfies the REQ (REQ-0.0.25-01-06).
+
+    Returns:
+        True when any covering test passes (a unittest run must exit 0 and actually execute a test);
+        False when none does.
+
     """
     for ref in refs:
         if ref.file_path.endswith(".feature"):
@@ -744,6 +779,11 @@ def _latest_reconcile_receipt(
 
     Returns ``(latest_ts, has_drift, drifted_dims, receipt_id)``; ``latest_ts`` is
     ``None`` when no matching event exists.
+
+    Returns:
+        ``(latest_ts, has_drift, drifted_dims, receipt_id)`` from the latest matching event;
+        ``(None, False, [], None)`` when the ledger is absent or no event matches.
+
     """
     ledger_path = project_root / ".gzkit" / "ledger.jsonl"
     latest_ts: datetime | None = None
@@ -882,6 +922,11 @@ def _resolve_and_validate(
     :func:`detect_brief_security_floor` (GHI #413). Both the security gate and
     the attestation matrix consume this value so completion enforces the same
     floor that ``audit_sensitivity_binding`` reports at validate time.
+
+    Returns:
+        Tuple of (obpi_file, obpi_id, original_content, resolved_parent, parent_lane,
+        requires_human, effective_sensitivity).
+
     """
     obpi_file, obpi_id = resolve_obpi_file(project_root, config, ledger, obpi)
     if not obpi_file.exists():
@@ -972,6 +1017,10 @@ def _resolve_evidence(
     """Resolve evidence from flags or existing brief content.
 
     Returns (effective_summary, effective_proof).
+
+    Returns:
+        Tuple of (effective_summary, effective_proof); a missing value exits via ``_fail`` instead.
+
     """
     effective_summary = implementation_summary or _read_existing_summary(original_content)
     effective_proof = key_proof or _read_existing_key_proof(original_content)
@@ -1759,6 +1808,10 @@ def _read_observation(content: str) -> str | None:
     ``_sanitize_exchange_text`` strips by design so a prompt is never carried inward
     as content. Those degrade to the prior boilerplate rather than to an empty
     section.
+
+    Returns:
+        The Value Narrative body, or None when the section is absent or holds only scaffold prose.
+
     """
     body = _extract_h3_body(content, "Value Narrative")
     if body is None or _is_placeholder(body):
@@ -1774,6 +1827,10 @@ def _read_open_loops(content: str) -> str | None:
     GHI #764 that section held the *implementation summary*, which is retrospective
     — the writer had retrospective content and a prospective schema and placed it
     where it fit rather than where it belonged.
+
+    Returns:
+        The Tracked Defects body, or None when the section is absent, empty, or a placeholder.
+
     """
     match = re.search(
         r"^## Tracked Defects\s*$([\s\S]*?)(?=^## |\n---|\Z)",
@@ -1867,6 +1924,10 @@ def _replace_h3_section(content: str, heading: str, new_body: str) -> str:
     """Replace the body of an H3 section, preserving the heading.
 
     Stops at the next H2 or H3 heading, a horizontal rule (---), or EOF.
+
+    Returns:
+        The content with the section body replaced, or unchanged when the heading is absent.
+
     """
     pattern = (
         rf"(^### {re.escape(heading)}\s*$)"
@@ -1921,6 +1982,10 @@ def _validate_would_be_content(content: str, requires_human: bool) -> list[str]:
     — and a mirror is exactly what a completion gate must not be: the writer and
     the gate could disagree about what counts as evidence, and whichever locus the
     agent happened to reach would rule (GHI #847).
+
+    Returns:
+        Completion-blocker messages; empty when the content satisfies the completion requirements.
+
     """
     return completion_blockers(content, requires_human=requires_human)
 
@@ -1946,6 +2011,10 @@ def _build_attestation_audit_entry(
     gate: ``human`` (TTY+ATTEST) or ``agent-relayed-operator-attestation``
     (GHI #292 --attestor-present). Ignored when ``requires_human`` is False;
     self-close paths always record ``self-close-exception``.
+
+    Returns:
+        The ``obpi-audit`` ledger entry dict.
+
     """
     entry: dict[str, Any] = {
         "type": "obpi-audit",

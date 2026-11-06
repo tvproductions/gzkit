@@ -83,6 +83,10 @@ def _dispatch_verification_commands(
     the rest run serially in input order. Results return in input order
     regardless of completion order. Fail-closed: every command runs even
     when an earlier one fails (no early-exit).
+
+    Returns:
+        ``(command, passed, output)`` tuples in input order.
+
     """
     results: list[tuple[str, bool, str]] = [("", False, "")] * len(commands)
     i = 0
@@ -117,6 +121,11 @@ def _pipeline_behave_command(behave_tags: list[str] | None) -> str | None:
       behave at Stage 3; the full sweep runs at ADR closeout.
     * ``behave_tags`` non-empty — scope the run to ``--tags=<csv>`` so
       cross-OBPI rot in unrelated feature files cannot block this OBPI.
+
+    Returns:
+        The full ``features/`` behave command when ``behave_tags`` is None, None when it is empty,
+        otherwise the command scoped by ``--tags``.
+
     """
     if behave_tags is None:
         return "uv run gz arb step --name behave -- uv run -m behave features/"
@@ -146,6 +155,10 @@ def _pipeline_verification_commands(
     A non-``None`` empty list means the OBPI has no @REQ-tagged scenarios;
     behave is skipped at Stage 3 in that case (the full ``features/``
     sweep runs at ADR closeout).
+
+    Returns:
+        The de-duplicated verification commands in order.
+
     """
     commands: list[str] = list(BASELINE_VERIFICATION)
     section = extract_markdown_section(obpi_content, "Verification") or ""
@@ -424,6 +437,10 @@ def _evidence_json_to_complete_flags(evidence_json: str) -> list[str]:
     instead of letting the inner CLI die on a generic
     ``the following arguments are required: --attestation-text`` that doesn't
     name the user-facing flag at all.
+
+    Returns:
+        The ``gz obpi complete`` flag tokens built from the payload.
+
     """
     try:
         payload = json.loads(evidence_json)
@@ -515,6 +532,11 @@ def _build_sync_stage_steps(
     ``attestation_text`` (or a malformed payload) fails closed at this boundary
     with a message that names ``--evidence-json``, rather than at the inner CLI
     with a flag the agent's command line never mentioned.
+
+    Returns:
+        ``(command, label)`` pairs for complete, git-sync, OBPI sync, and parent ADR status, in
+        execution order.
+
     """
     complete_flags = _evidence_json_to_complete_flags(evidence_json)
     complete_cmd = " ".join(

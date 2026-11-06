@@ -85,6 +85,10 @@ def _delivery_arm_enabled() -> bool:
     separates the two cases without asking adopters to configure anything. The
     read lives here, at the CLI adapter boundary, so the audit itself stays a
     parameterized pure function (GHI #715).
+
+    Returns:
+        True unless the ``CI`` environment variable is set.
+
     """
     return not os.environ.get("CI")
 
@@ -94,6 +98,10 @@ def _ta() -> ModuleType:
 
     Preserves the module-load circular-import guard the dispatch runners have
     always relied on (``taxonomy``/``closeout_proof`` back-reference this module).
+
+    Returns:
+        The ``gzkit.governance.trust_audits`` module.
+
     """
     from gzkit.governance import trust_audits  # noqa: PLC0415
 
@@ -107,6 +115,10 @@ def _validate_tautological_test_audit(project_root: Path) -> list[ValidationErro
     - a genuinely-new tautological op, uncovered by baseline or waiver → fail (3)
     - a fixture whose verdict decays with the wall clock → fail (3)
     Waivers file path is self-exempt from the scan (circular-dependency analysis).
+
+    Returns:
+        The test-quality findings; empty when the gate passes.
+
     """
     from gzkit.tautological_tests import audit_test_quality  # noqa: PLC0415
 
@@ -123,6 +135,10 @@ def _collect_errors(
     ``checks`` maps scope stem -> requested flag (the param->stem bridge built by
     ``validate()``). The default/explicit tier split is derived from
     ``VALIDATOR_REGISTRY`` so the tiers can never drift from the runners.
+
+    Returns:
+        The validation errors from the requested scopes (all scopes when none is requested).
+
     """
     default_scopes = {
         e.stem: checks.get(e.stem, False) for e in VALIDATOR_REGISTRY if e.tier == "default"
@@ -549,6 +565,10 @@ def _taxonomy_runner(project_root: Path) -> list[ValidationError]:
     kind/semver decision tree, and the ADR-0.34.0 foundation-closure
     containment checks. They stay separate functions so the former's contract
     does not depend on the grandfather manifest's population state.
+
+    Returns:
+        The combined findings of the taxonomy and foundation-closure audits.
+
     """
     from gzkit.governance import trust_audits  # noqa: PLC0415
     from gzkit.governance.trust_audits.taxonomy import (  # noqa: PLC0415
@@ -639,6 +659,11 @@ def _scan_all_evaluation_justify_binding(project_root: Path) -> list[ValidationE
     so a Validated or Abandoned ADR has no subject for it. Each ADR is graded once,
     under the id the ledger's rename map folds its evaluation ids to — the same fold
     the per-ADR gate reads its latest evaluation through (GHI #1150).
+
+    Returns:
+        Evaluation-justify-binding errors across every non-terminal evaluated ADR; empty when the
+        ledger is absent.
+
     """
     from gzkit.governance.trust_audits.evaluation_justify_binding import (  # noqa: PLC0415
         validate_evaluation_justify_binding,
@@ -988,6 +1013,11 @@ def _validate_exemplar_corpus(project_root: Path) -> list[ValidationError]:
     Returns an empty list when the file is absent (the corpus is authored in a
     later OBPI stage).  Returns one ValidationError per Pydantic validation
     failure, or a single ValidationError on JSON parse failure.
+
+    Returns:
+        Empty when the file is absent or valid, a single error on a JSON parse failure, otherwise
+        one error per validation failure.
+
     """
     corpus_path = project_root / "data" / "exemplar_corpus.json"
     if not corpus_path.is_file():
@@ -1033,6 +1063,11 @@ def _validate_ownership_declarations(project_root: Path) -> list[ValidationError
     artifact-vs-schema drift; model-validation catches artifact-vs-code
     drift (both were silently unwitnessed before this validator existed --
     Step-4b adversary finding 3, OBPI-0.35.0-04).
+
+    Returns:
+        Empty when the directory is absent or every declaration is valid, otherwise one error per
+        parse, schema, or model failure.
+
     """
     ownership_dir = project_root / ".gzkit" / "ownership"
     if not ownership_dir.is_dir():
@@ -1141,6 +1176,11 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
 
     Default-tier scopes run on the no-flag path; explicit-tier scopes only when
     their flag is set. Both come from ``VALIDATOR_REGISTRY`` in registry order.
+
+    Returns:
+        Scope stems to validate in registry order: every default-tier scope when no flag is set,
+        else the flagged scopes.
+
     """
     run_all_scopes = [e.stem for e in VALIDATOR_REGISTRY if e.tier == "default"]
     opt_in_scopes = [e.stem for e in VALIDATOR_REGISTRY if e.tier == "explicit"]
@@ -1389,6 +1429,10 @@ def _dispatch_early_return_scopes(
 
     Returns True when one of these scopes handled the invocation — the caller
     must then return without running the aggregate validation path.
+
+    Returns:
+        True when an early-return scope handled the invocation, otherwise False.
+
     """
     if check_audits:
         # The umbrella owns its own 0/2/3 lifecycle: it runs each solo-only

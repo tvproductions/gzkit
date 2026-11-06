@@ -104,6 +104,11 @@ def archive_plan_audit_receipt(receipt_path: Path) -> ReceiptArchiveResult:
     Order is the safety property. The copy is written and its digest compared to
     the source BEFORE the source is removed, so any failure leaves the only copy
     where it was.
+
+    Returns:
+        A :class:`ReceiptArchiveResult`: archived with archive and provenance paths on success, or
+        not archived with an error when preservation fails.
+
     """
     try:
         source_bytes = receipt_path.read_bytes()
@@ -160,6 +165,11 @@ def _expired_lock_stays_held(project_root: Path, obpi_id: str) -> bool:
     """Whether an expired lock stays held: every work lock, and an open hangar's lock.
 
     An unreadable lock file is not a lock anyone holds, so it stays cleanable.
+
+    Returns:
+        False for an unreadable lock; True for any work lock, and for the session lock only while
+        the hangar marker is valid.
+
     """
     if obpi_id in ("unreadable", "unknown"):
         return False

@@ -68,6 +68,11 @@ def _hide_withdrawn_obpis(graph: dict[str, dict[str, Any]]) -> dict[str, dict[st
     """Strip withdrawn OBPIs from graph and from each parent's children (GHI #221).
 
     The ledger is never mutated; this acts on the derived graph copy.
+
+    Returns:
+        The graph without withdrawn OBPIs and with their ids removed from ``children``; the input
+        unchanged when none are withdrawn.
+
     """
     withdrawn_ids = {
         artifact_id
@@ -202,6 +207,11 @@ def _derive_expected_status(info: dict[str, Any]) -> str | None:
     Returns the canonical frontmatter status the OBPI should have based on
     ledger events, or None if the ledger has no definitive state (the OBPI
     is still in-progress and frontmatter should not be changed).
+
+    Returns:
+        ``"Abandoned"`` for a withdrawn OBPI, ``"Completed"`` for a ledger-completed one, otherwise
+        None (including non-OBPI entries).
+
     """
     if info.get("type") != "obpi":
         return None
@@ -248,6 +258,11 @@ def _resolve_expected_statuses(
     Handles renamed OBPIs (old slug withdrawn, new slug active) by
     collecting all graph entries per short ID and applying priority:
     active non-withdrawn entries take precedence over withdrawn ones.
+
+    Returns:
+        Mapping of OBPI short id to expected status; ``"Abandoned"`` when every entry for an id is
+        withdrawn.
+
     """
     # Collect all graph entries per short ID
     entries_by_short_id: dict[str, list[dict[str, Any]]] = {}
@@ -292,6 +307,10 @@ def _rebuild_pipeline_markers(
     is in flight, so the legacy marker stays with the run launched last.
     Returns the runs rebuilt, the files restored and the runs declined, each
     declined run with its reason.
+
+    Returns:
+        Dict with ``rebuilt``, ``restored`` and ``declined`` lists of per-run records.
+
     """
     rows = list(ledger.read_all())
     plans_dir = pipeline_plans_dir(project_root)

@@ -197,6 +197,10 @@ def _extract_tracked_defects(content: str) -> list[dict[str, Any]]:
     the defect's truth. ``state`` starts ``unresolved``; only
     :func:`_resolve_tracked_defects` may move it, and only from live state
     (GHI #966). Pure and adapter-free.
+
+    Returns:
+        Tracked-defect dicts in first-seen order; empty when the section is absent or empty.
+
     """
     body = _section_body(content, "Tracked Defects")
     if not body:
@@ -265,6 +269,11 @@ def _resolve_tracked_defects(
     contract says it is never a synonym for live — and with no ``checker`` every
     defect stays ``unresolved``: not having checked is not the same as having
     checked. The authored token is never promoted to the verdict on either path.
+
+    Returns:
+        Copies of each defect with ``state`` set to the label of its resolved
+        :class:`ReferenceState` (``unresolved`` when unchecked or unknown).
+
     """
     resolved: list[dict[str, Any]] = []
     for defect in tracked_defects:
@@ -284,6 +293,11 @@ def _tracked_defect_refs(tracked_defects: list[dict[str, Any]]) -> str:
     brief's authored token disagrees with the live verdict (or could not be
     checked against it) the token is named as the brief's claim, so a stale line
     is visible in both directions rather than silently overwritten or trusted.
+
+    Returns:
+        Comma-separated ``<id> (<state>)`` refs, annotated with the brief's authored state where it
+        differs; empty when no defect has an id.
+
     """
     refs: list[str] = []
     for defect in tracked_defects:
@@ -335,6 +349,11 @@ def _compute_brief_authored(
     (AGENTS.md Architectural Boundary #6).
 
     Returns ``None`` for terminal briefs, where authored-readiness is moot.
+
+    Returns:
+        True when the brief passes authored validation, False when it has findings, or None for a
+        completed or terminal brief.
+
     """
     if (
         file_completed

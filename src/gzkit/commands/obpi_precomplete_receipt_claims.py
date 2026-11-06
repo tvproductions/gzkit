@@ -84,6 +84,11 @@ def _ep_red_run_refused(step: str) -> list[str]:
 
     The receipt exists and its content records a failed run; the gate must refuse it and name
     the recorded exit status, not merely refuse for some other reason (GHI #699).
+
+    Returns:
+        A one-item finding list when the gate refuses the red receipt and names its exit status,
+        otherwise an empty list.
+
     """
     from gzkit.commands.obpi_precomplete import _check_arb_receipts_passed  # noqa: PLC0415
 

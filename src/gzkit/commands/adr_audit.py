@@ -124,6 +124,11 @@ def _partition_coverage_findings(
     :func:`_compute_adr_coverage`) surface as warnings and do not block the
     audit; non-advisory severities are reserved for future per-REQ escalation
     and retain fail-closed behavior.
+
+    Returns:
+        Tuple of (all findings, blocking non-advisory findings, advisory findings), each a list of
+        ``{"id", "issue", "severity"}`` dicts; all empty when nothing is uncovered.
+
     """
     findings: list[dict[str, Any]] = [
         {
@@ -160,6 +165,12 @@ def _partition_advisory_by_kind(
     anti-pattern (GHI #701). Untagged/legacy REQs default to BEHAVIOR (the
     conservative channel that owes proof), matching ``parse_brief_req_kinds``'s
     documented caller contract. Each returned entry is stamped with ``kind``.
+
+    Returns:
+        Tuple of (BEHAVIOR entries that owe a ``@covers`` test, proof-exempt
+        SUPPORT/STRUCTURAL-FENCE entries), each entry a copy of the input finding stamped with
+        ``kind``.
+
     """
     behavior: list[dict[str, Any]] = []
     exempt: list[dict[str, Any]] = []
@@ -260,6 +271,11 @@ def _collect_covers_locations_for_adr(
     scan must stay consistent with the completion check (``_collect_obpi_files_for_adr``
     already excludes withdrawn OBPIs). An empty *active_obpi_ids* is a no-op — the
     caller is not scoping to a known active set.
+
+    Returns:
+        List of ``(req_id, rel_file, line_no)`` triples in sorted test-file order; empty when the
+        ADR id has no semver or ``tests/`` is absent.
+
     """
     from gzkit.commands.adr_coverage import _extract_adr_semver
 
@@ -447,6 +463,10 @@ def _is_foundation_adr(adr_id: str) -> bool:
     ``_requires_human_obpi_attestation`` now returns True unconditionally per
     ADR-0.0.36 and OBPI-0.0.36-02. Do not re-introduce attestation routing
     logic that calls this function.
+
+    Returns:
+        True when ``adr_id`` is a 0.0.x foundation ADR, otherwise False.
+
     """
     return is_foundation_adr(adr_id)
 
@@ -461,6 +481,11 @@ def _requires_security_review_attestation(
     can construct synthetic dicts. The schema currently enumerates only
     ``"security"`` for the ``sensitivity`` field; future values must declare
     their own attestation rule rather than silently inheriting this one.
+
+    Returns:
+        True when the frontmatter's ``sensitivity`` is ``"security"``; False otherwise, including
+        when no mapping is given.
+
     """
     if not isinstance(brief_frontmatter, Mapping):
         return False
@@ -479,6 +504,10 @@ def _requires_human_obpi_attestation(
     sensitivity. The foundation/lane/security branching logic has been
     collapsed. The signature is preserved for call-site compatibility; all
     three parameters are accepted but not evaluated.
+
+    Returns:
+        Always True: human attestation is required for every OBPI completion.
+
     """
     return True
 
@@ -509,6 +538,11 @@ def _is_human_attestation_tty_available() -> bool:
 
     Split out so tests can patch it. An agent subprocess without a controlling
     terminal returns False here, which is the desired enforcement path.
+
+    Returns:
+        True when both stdin and stdout report ``isatty()``; False otherwise, or when probing raises
+        ``ValueError``/``OSError``.
+
     """
     try:
         return bool(sys.stdin.isatty()) and bool(sys.stdout.isatty())
@@ -579,6 +613,11 @@ def _validate_active_pipeline_marker(
     Stage 1, must be fresh, and its nonce must appear in a
     ``pipeline_launched`` ledger event for the same OBPI. Returns
     ``(True, "")`` when every check passes, otherwise ``(False, reason)``.
+
+    Returns:
+        ``(True, "")`` when every marker check passes, otherwise ``(False, reason)`` naming the
+        first failed check.
+
     """
     marker = project_root / ".claude" / "plans" / f".pipeline-active-{obpi_id}.json"
     if not marker.is_file():
@@ -622,6 +661,11 @@ def _active_pipeline_marker_exists(project_root: Path, obpi_id: str) -> bool:
     match expected obpi_id, carry a valid nonce, be fresh, and be witnessed
     by a ``pipeline_launched`` ledger event. Callers that need the rejection
     reason should call :func:`_validate_active_pipeline_marker` directly.
+
+    Returns:
+        True only when the marker exists, parses as a JSON object with a string ``parent_adr``, and
+        passes :func:`_validate_active_pipeline_marker`; False otherwise.
+
     """
     marker = project_root / ".claude" / "plans" / f".pipeline-active-{obpi_id}.json"
     if not marker.is_file():
@@ -673,6 +717,11 @@ def _enforce_human_attestation_authenticity(
        marker fails authenticity validation. Agent-synthesized attestation
        from a fully-headless context is prohibited per GHI #290; the function
        raises :class:`GzCliError`.
+
+    Returns:
+        :data:`ATTESTATION_TYPE_HUMAN` for the confirmed TTY path, or
+        :data:`ATTESTATION_TYPE_AGENT_RELAYED` for the validated agent-relayed path.
+
     """
     if _is_human_attestation_tty_available():
         console.print("")
@@ -791,6 +840,12 @@ def _enforce_uncovered_acceptance_confirmation(
        operator-verbatim path. Security scopes' attack-surface dimension
        requires the interactive ACCEPT ceremony; the canon-owner directive
        does not lift the GHI #412/#434 security-scope narrowing.
+
+    Returns:
+        :data:`ATTESTATION_TYPE_HUMAN` for the TTY path, :data:`ATTESTATION_TYPE_AGENT_RELAYED` for
+        the marker-backed path, or :data:`ATTESTATION_TYPE_OPERATOR_VERBATIM` for the headless
+        operator-verbatim path.
+
     """
     req_list = ", ".join(req_ids)
     if _is_human_attestation_tty_available():
@@ -1031,6 +1086,10 @@ def _select_adr_package_dir(matches: list[Path]) -> Path | None:
     the directory first, but Linux/ext4 yields hash-arbitrary order and can yield
     the file — silently skipping every OBPI brief and passing the coverage gate.
     Filter to directories and sort so selection is order-independent.
+
+    Returns:
+        The first directory in sorted order, or None when no match is a directory.
+
     """
     dirs = sorted(d for d in matches if d.is_dir())
     return dirs[0] if dirs else None
@@ -1047,6 +1106,11 @@ def _check_adr_obpi_coverage_gaps(
     coverage structurally (no test re-run), then subtracts any REQ waivers
     recorded via ``obpi_completion_uncovered_accept`` ledger events. Returns
     an empty list when all OBPIs have full or waived coverage.
+
+    Returns:
+        List of ``(obpi_id, unwaived_gap_req_ids)`` pairs; empty when the ADR package or its briefs
+        are absent, or every OBPI has full or waived coverage.
+
     """
     import json as _json
 
@@ -1178,6 +1242,10 @@ def _enforce_human_authenticity_gate(
     (GHI #290) is no longer invoked; ``attestor`` / ``attestor_present`` /
     ``project_root`` are retained on the signature for the call graph and
     are slated for removal with the gate scaffolding under a separate ADR.
+
+    Returns:
+        Always :data:`ATTESTATION_TYPE_OPERATOR_VERBATIM` when attestation text is present.
+
     """
     text = attestation_text
     if isinstance(evidence, dict):
@@ -1325,6 +1393,11 @@ def _is_human_attestation_receipt_event(receipt_event: str) -> bool:
     Keeps the gate scoped: ``emitted``, ``corrected``, ``superseded``, and
     other informational events remain headless-safe; Gate 5 attestation
     events require the authenticity check.
+
+    Returns:
+        True when the stripped, lowercased event name is in ``_HUMAN_ATTESTATION_RECEIPT_EVENTS``,
+        otherwise False.
+
     """
     return receipt_event.strip().lower() in _HUMAN_ATTESTATION_RECEIPT_EVENTS
 

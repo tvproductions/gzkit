@@ -60,6 +60,10 @@ def _record_commit_witness(witness: CommitWitness, project_root: Path, duration_
 
     ``ghi-close`` cites this verdict when it closes a direct fix, so a run that left
     only terminal output left nothing a reader could resolve.
+
+    Returns:
+        The receipt id (the receipt file's stem).
+
     """
     from gzkit.arb.red_reporter import build_red_commit_receipt, write_red_commit_receipt
     from gzkit.ledger import Ledger
@@ -149,6 +153,14 @@ def arb_red_cmd(
     ``error``); exit 1 means the test PASSED with the production hunks withheld — it
     cannot fail, so it proves nothing. ``--commit``: exit 1 when a hunk the commit
     added survives being reverted, or the commit touches no test module.
+
+    Returns:
+        Exit code. 0 when a RED is witnessed, when the witness reports nothing to test, or when
+        the verdict is inconclusive (in both modes; inconclusive witnesses nothing either way).
+        1 when neither ``--req`` nor ``--commit`` is given, no ``@covers`` test covers the REQ,
+        the test passes with production hunks withheld, or the commit's verdict is ``no-tests``
+        or ``undriven``. The internal-error code when the base-tree or commit witness cannot run.
+
     """
     if commit is not None:
         return _arb_red_commit(commit, quiet)
@@ -283,6 +295,10 @@ def arb_typecheck_cmd(*, quiet: bool = False) -> int:
     The argv is READ from ``CANONICAL_STEP_COMMANDS`` for the same reason
     ``quality.run_typecheck`` reads it: a third hand-spelled copy of the command
     is a third place the #199 divergence can re-enter.
+
+    Returns:
+        The exit code of the wrapped ``gz typecheck`` step.
+
     """
     return arb_step_cmd(
         name="typecheck", argv=list(CANONICAL_STEP_COMMANDS["typecheck"]), quiet=quiet
@@ -298,6 +314,10 @@ def arb_coverage_cmd(*, argv: list[str], quiet: bool = False) -> int:
     <args>`` cannot spell, so without this form the verb named ``coverage`` could
     only emit receipts ``gz arb validate`` rejects. With arguments it forwards to
     coverage.py as before (``gz arb coverage report --fail-under=40``).
+
+    Returns:
+        The exit code of the wrapped coverage step.
+
     """
     if not argv:
         return arb_step_cmd(

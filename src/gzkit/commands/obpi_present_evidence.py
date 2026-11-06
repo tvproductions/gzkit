@@ -75,6 +75,11 @@ def obpi_present_evidence_cmd(*, obpi_id: str, as_json: bool = False) -> int:
     An id the resolver cannot give to exactly one OBPI with a brief on disk is
     refused with exit 1 and the resolver's own message: no packet is generated
     or written, and nothing is recorded.
+
+    Returns:
+        ``EXIT_SUCCESS`` (0); an unresolvable id raises ``SystemExit(1)`` and packet blockers raise
+        ``SystemExit(3)``.
+
     """
     project_root = get_project_root()
     try:

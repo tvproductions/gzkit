@@ -40,6 +40,11 @@ def _compute_amendments(result: ReconcileResult, attestor: str) -> tuple[list[st
 
     The CLI never silently rewrites verb references (operator-judgment call); it
     records them as tracked defects instead.
+
+    Returns:
+        Tuple of (bare allowlist paths missing from the brief, tracked-defect notes for unresolved
+        verbs and REQ identity drift).
+
     """
     allowlist_adds = list(result.allowlist_delta.missing_in_brief)
     defects = [
@@ -78,6 +83,11 @@ def _amended_text(brief_path, result: ReconcileResult, attestor: str) -> str:
     ``## Allowed Paths`` prose for a ``LegacyBriefShape``. Writing the prose
     unconditionally left every structured brief reporting drift this verb had
     just claimed to repair, indefinitely (GHI #825).
+
+    Returns:
+        The brief text with allowlist and tracked-defect amendments applied; unchanged when there
+        are none.
+
     """
     allowlist_adds, defects = _compute_amendments(result, attestor)
     text = brief_path.read_text(encoding="utf-8")

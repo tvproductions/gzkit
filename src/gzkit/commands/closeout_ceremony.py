@@ -249,6 +249,11 @@ def _has_fresh_attestation_receipt(project_root: Path, state: CeremonyState) -> 
     comparison is wrong because ``started_at`` is second-resolution Zulu
     (``...SSZ``) while event ``ts`` carries fractional seconds and a ``+00:00``
     offset (``.`` sorts before ``Z`` in ASCII).
+
+    Returns:
+        True when any ``attested`` event for the ADR has a timestamp at or after the run's start,
+        otherwise False.
+
     """
     config = ensure_initialized()
     ledger = Ledger(project_root / config.paths.ledger)

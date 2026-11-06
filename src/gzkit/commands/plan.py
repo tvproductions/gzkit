@@ -62,6 +62,11 @@ def _compose_canonical_adr_id(name: str, semver: str) -> str:
     ``adr_created`` event diverges from the slugged on-disk directory and
     renders as two rows in ``gz adr report``. Closing the class requires
     fail-fast at composition time, not catch-up renames.
+
+    Returns:
+        The canonical ADR id: ``name`` unchanged when already a canonical id, otherwise
+        ``ADR-<semver>-<name>``.
+
     """
     if name.startswith("ADR-"):
         if not CANONICAL_ADR_ID_RE.match(name):
@@ -240,6 +245,10 @@ def _render_adr_by_kind(
     The refusal is conditioned on ``foundation_kind_is_closed(project_root)``:
     closure is a project-local decision, so an adopter who never sunset the kind
     authors foundation ADRs normally (ADR-0.34.0 § Decision; GHI #740).
+
+    Returns:
+        Tuple of (ADR id, path of the written ADR file).
+
     """
     if kind == "foundation" and foundation_kind_is_closed(project_root):
         msg = (

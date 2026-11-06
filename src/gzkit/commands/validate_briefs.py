@@ -34,6 +34,11 @@ def _validate_obpi_briefs(project_root: Path) -> list[ValidationError]:
     contradictions. Strict authored and completion-readiness checks remain in
     ``gz obpi validate --authored``, ``gz obpi precomplete``, and
     ``gz obpi complete``.
+
+    Returns:
+        One :class:`ValidationError` per scaffold-default or lane-mismatch finding; empty when the
+        project is not initialized or nothing is found.
+
     """
     from gzkit.hooks.obpi import ObpiValidator  # noqa: PLC0415
 
@@ -69,6 +74,10 @@ def _load_interview_transcript_waivers(project_root: Path) -> set[str]:
     not happen would fabricate a governance receipt (GHI #515). An absent or
     malformed file loads as no waivers, so the check fails closed for every
     ADR authored after the convention landed.
+
+    Returns:
+        ADR ids listed as waivers; empty when the file is absent or malformed.
+
     """
     waiver_path = project_root / "data" / "interview_transcript_waivers.json"
     if not waiver_path.is_file():
@@ -96,6 +105,11 @@ def _validate_interviews(project_root: Path) -> list[ValidationError]:
 
     ADRs listed in ``data/interview_transcript_waivers.json`` are skipped: they
     predate the convention and have no recoverable transcript (GHI #515).
+
+    Returns:
+        One :class:`ValidationError` per non-waived ADR with OBPIs but no transcript section; empty
+        when the ADR tree is absent.
+
     """
     adr_root = project_root / "docs" / "design" / "adr"
     if not adr_root.is_dir():
@@ -172,6 +186,10 @@ def _validate_requirements(project_root: Path) -> list[ValidationError]:
     GHI-160 Phase 6 rot-prevention check. An OBPI that declares requirements
     in prose but never assigns ``REQ-X.Y.Z-NN-MM`` identifiers is invisible
     to the `gz covers` traceability graph.
+
+    Returns:
+        One :class:`ValidationError` per brief with a REQUIREMENTS section but no REQ ids.
+
     """
     errors: list[ValidationError] = []
     for brief_path in _find_obpi_briefs(project_root):

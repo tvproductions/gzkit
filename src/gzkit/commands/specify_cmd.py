@@ -55,6 +55,10 @@ def _extract_semver(adr_id: str) -> str | None:
 
     Handles both bare (``ADR-0.14.0``) and slugged
     (``ADR-0.14.0-multi-agent-...``) forms.
+
+    Returns:
+        The semver portion of the ADR id, or None when it has none.
+
     """
     return adr_semver(adr_id)
 
@@ -70,6 +74,11 @@ def _slugify_obpi_name(value: str) -> str:
     ``- **slug** — narrative`` bullet convention (GHI #241) — the bold
     prefix is used verbatim as the slug. Otherwise the full text is
     slugified as before.
+
+    Returns:
+        The bold-prefix slug when present, else the slugified text, or ``"scope-item"`` when that is
+        empty.
+
     """
     bold_match = _BOLD_PREFIX_SLUG_RE.match(value)
     if bold_match:
@@ -126,6 +135,10 @@ def _resolve_lane_from_wbs(wbs_rows: list[WbsRow], item: int, cli_lane: str | No
     """Resolve OBPI lane from WBS table, with CLI override.
 
     Priority: explicit CLI --lane > WBS table row > fallback 'lite'.
+
+    Returns:
+        The CLI lane when given, else the matching WBS row's lane, else ``"lite"``.
+
     """
     if cli_lane is not None:
         return cli_lane
@@ -152,6 +165,11 @@ def _extract_integration_points(adr_content: str) -> str:
 
     Parses the bullet list under **Integration Points:** and converts each
     path reference into an allowed-path entry.
+
+    Returns:
+        Markdown allowed-path bullets from the Integration Points list, or placeholder bullets when
+        the section is absent or yields none.
+
     """
     # Look for Integration Points in the Agent Context Frame
     # Use \n+ to consume optional blank line(s) between heading and bullets
@@ -212,6 +230,10 @@ def _extract_backticked_paths(text: str) -> list[str]:
     so extracted tokens stay filesystem-resolvable (GHI #536) -- e.g.
     ``src/gzkit/commands/foo.py:401, 416-426`` normalizes to
     ``src/gzkit/commands/foo.py``.
+
+    Returns:
+        Path-like backticked tokens with any line-range suffix removed, in order.
+
     """
     paths: list[str] = []
     for candidate in re.findall(r"`([^`]+)`", text):
@@ -369,6 +391,11 @@ def _build_item_requirements(
     all items' scope (GHI #485). The checklist item text and WBS spec
     summary are the per-item intent. The ADR-wide Critical Constraint
     genuinely binds every item, so it is still appended.
+
+    Returns:
+        Numbered requirement lines joined by newlines, ending with the ADR's Critical Constraint
+        when one exists.
+
     """
     item_intent = _normalized_objective_from_checklist_item(checklist_item_text)
     reqs: list[str] = []
@@ -531,6 +558,10 @@ def _yaml_block_sequence(values: list[str]) -> str:
     those as broken YAML, which ``parse_brief`` then reports as a *missing*
     field -- the same silent fallback to ``LegacyBriefShape`` this fix exists
     to close (GHI #615).
+
+    Returns:
+        The indented YAML block sequence, or ``"  []"`` when ``values`` is empty.
+
     """
     if not values:
         return "  []"
@@ -561,6 +592,10 @@ def obpi_template_vars(
     as ``allowed_paths_md``, ``denied_paths_md`` or ``acceptance_criteria_seed``
     replaces the inferred one, and the frontmatter lists derive from whichever
     value the body renders.
+
+    Returns:
+        Mapping of template variable name to rendered value.
+
     """
     version = adr_version_term(parent_adr_id)
     lane_cap = lane.capitalize()

@@ -46,6 +46,10 @@ def derive_consumer_slug() -> str:
     Picks ``origin`` when present; falls back to the first remote otherwise.
     Strips a trailing ``.git`` suffix. Handles SSH (``git@github.com:owner/repo``)
     and HTTPS (``https://github.com/owner/repo``) URL forms.
+
+    Returns:
+        The ``owner/repo`` slug of the chosen remote.
+
     """
     result = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
         [resolve_executable("git"), "remote", "-v"],

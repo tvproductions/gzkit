@@ -36,6 +36,11 @@ def gh_issue_state(number: str, project_root: Path) -> ReferenceState:
     resolves to ``UNKNOWN`` rather than to ``LIVE``. Degrading to "verified"
     when the check could not run would reintroduce exactly the unverified
     advisory this adapter exists to catch.
+
+    Returns:
+        ``SETTLED`` for a closed issue, ``LIVE`` for an open one, ``UNKNOWN`` when ``gh`` fails or
+        the payload is unrecognized.
+
     """
     rc, out, _ = run_exec(
         ["gh", "issue", "view", number, "--json", "state"], project_root, timeout=10
@@ -74,6 +79,10 @@ def _unique_prefix_entry(
     both a parked ``-forbid-pytest`` and the live ``-remember-post-append-advisory``.
     Candidates come from :func:`gzkit.artifact_prefix.active_prefix_matches`, the
     rule ``gz obpi status`` also resolves through, so the two cannot disagree.
+
+    Returns:
+        The single active graph entry extending ``identifier``, or None when zero or several match.
+
     """
     matches = active_prefix_matches(graph, identifier)
     if len(matches) == 1:
@@ -101,6 +110,11 @@ def _artifact_info(identifier: str, project_root: Path) -> dict[str, Any] | None
     :func:`_unique_prefix_entry` for the kinds that method passes through. The
     fold is reused rather than reimplemented so two resolvers cannot disagree
     about what an id means.
+
+    Returns:
+        The artifact's graph entry, or None when the ledger is absent, unreadable, or has no
+        matching id.
+
     """
     from gzkit.ledger import Ledger  # noqa: PLC0415 — import cost stays off the CLI's cold path
 
@@ -138,6 +152,11 @@ def obpi_ledger_state(identifier: str, project_root: Path) -> ReferenceState:
     Any failure — no ledger, unreadable rows, an id the ledger never recorded —
     resolves to ``UNKNOWN`` rather than to ``LIVE``, on ``gh_issue_state``'s
     discipline: a surface that could not be read has verified nothing.
+
+    Returns:
+        ``SETTLED`` when withdrawn or completed, ``LIVE`` when repudiated or not completed,
+        ``UNKNOWN`` when the ledger has no entry.
+
     """
     info = _artifact_info(identifier, project_root)
     if info is None:
@@ -170,6 +189,11 @@ def adr_ledger_state(identifier: str, project_root: Path) -> ReferenceState:
     ``Abandoned`` settles alongside ``Validated`` and ``Completed``. That is the
     GHI sense of settled — stop advising this — and not a claim the work
     shipped.
+
+    Returns:
+        ``SETTLED`` when the derived lifecycle is closed out, ``LIVE`` otherwise, ``UNKNOWN`` when
+        the ledger has no entry.
+
     """
     from gzkit.ledger import Ledger  # noqa: PLC0415 — import cost stays off the CLI's cold path
 
@@ -219,6 +243,10 @@ def live_reference_checker(project_root: Path) -> ReferenceChecker:
     The ledger arms carry no such latch: they read a local file, so a failure is
     per-reference rather than a broken transport. Build one checker per command
     invocation so the memo spans every citation that invocation renders.
+
+    Returns:
+        A memoizing checker that maps a :class:`StepReference` to its :class:`ReferenceState`.
+
     """
     cache: dict[tuple[ReferenceKind, str], ReferenceState] = {}
     reachable = True

@@ -88,6 +88,10 @@ def _intent_tokens(repair: str) -> set[str]:
     ``re-write`` all normalize to ``rewrite`` (Codex Step-4b, GHI #678). It remains a
     best-effort heuristic — synonyms and unlisted structural verbs are the deferred
     calibration frontier, not a semantic guarantee (parent ADR, option-c reconcile).
+
+    Returns:
+        The set of lowercased alphanumeric token cores, excluding empty ones.
+
     """
     normalized = {"".join(ch for ch in token.lower() if ch.isalnum()) for token in repair.split()}
     return normalized - {""}
@@ -99,6 +103,11 @@ def classify_repair(repair: str | None) -> RepairScope:
     ``None``/blank → ``NONE`` (recon-only); an intent naming a structural-work verb
     → ``BEYOND`` (exceeds the ceiling); otherwise ``LIGHT`` (within the ceiling).
     The ceiling is a heuristic tripwire (diagnostic), not a semantic guarantee.
+
+    Returns:
+        ``RepairScope.NONE`` for a missing or blank intent, ``RepairScope.BEYOND`` when it names a
+        structural verb, otherwise ``RepairScope.LIGHT``.
+
     """
     if not repair or not repair.strip():
         return RepairScope.NONE
@@ -119,6 +128,10 @@ def _resolve_declare(
     returned ``tmp_root`` must be cleaned up by the caller. Brief-less DECLARE
     RICHNESS is the deferred calibration frontier; CALLING the primitive is realized
     now.
+
+    Returns:
+        ``(declare_id, brief_path, tmp_root)``; ``tmp_root`` is None when a real artifact was found.
+
     """
     adr_root = project_root.joinpath(*_ADR_RELPATH)
     if adr_root.is_dir():
@@ -158,6 +171,10 @@ def _sanitize_for_brief(text: str) -> str:
     here. Applied ONLY to the descriptive intent, NEVER to the target (whose identity
     must stay lossless; unrepresentable targets are rejected upstream) — Codex Step-4b,
     GHI #678.
+
+    Returns:
+        The intent with whitespace collapsed to single spaces and backticks removed.
+
     """
     return " ".join(text.split()).replace("`", "")
 
@@ -167,6 +184,10 @@ def _render_comprehension(seam_map: SeamMap, declare_id: str) -> str:
 
     Names the declared bodies (footprint) and any push/pull edges (the join). Always
     non-empty — it names the entry and at minimum the declared footprint.
+
+    Returns:
+        The multi-line recon report text.
+
     """
     footprint = ", ".join(seam_map.bodies) or "(none declared)"
     lines = [f"permitted-entry recon: {declare_id}"]

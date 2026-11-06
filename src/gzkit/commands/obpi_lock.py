@@ -43,6 +43,10 @@ def _slug_obpi_id(project_root: Path, adrs: str, obpi_id: str) -> str:
 
     A lock keyed by the bare id typed let a second agent claim the same brief
     under its slug, and booked events the ledger did not resolve to the OBPI.
+
+    Returns:
+        The brief's slug id, or ``obpi_id`` unchanged when no brief is found.
+
     """
     brief = find_obpi_brief(project_root / adrs, obpi_id)
     return slug_id_for(obpi_id, brief.stem) if brief is not None else obpi_id
@@ -399,6 +403,10 @@ def _adr_id_from_obpi(obpi_id: str) -> str:
 
     Used by the degenerate-handoff writer so the handoff frontmatter carries the
     parent ADR ID without the caller needing to thread it through.
+
+    Returns:
+        The parent ``ADR-X.Y.Z`` id, or ``"ADR-unknown"`` when it cannot be derived.
+
     """
     return obpi_adr_id(obpi_id) or "ADR-unknown"
 

@@ -32,6 +32,10 @@ def _parse_older_than(raw: str) -> int:
     verb and ``gz arb archive`` cannot drift into accepting different values under
     the same flag name (GHI #594). Retained as a named local so this module's call
     sites and tests keep their existing shape.
+
+    Returns:
+        The number of days.
+
     """
     return parse_older_than_days(raw)
 

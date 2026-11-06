@@ -81,6 +81,10 @@ def compose_reviewer_prompt(
 
     The reviewer receives the brief, closing argument, changed files, and
     doc files — then independently verifies delivery against promises.
+
+    Returns:
+        The reviewer prompt text.
+
     """
     lines = [
         "# OBPI Reviewer Assessment",
@@ -176,6 +180,11 @@ def parse_reviewer_assessment(agent_output: str, obpi_id: str) -> ReviewerAssess
 
     Looks for a JSON code block matching the assessment schema.
     Returns None if no valid assessment is found.
+
+    Returns:
+        The parsed :class:`ReviewerAssessment`, or None when no JSON block is found or it fails to
+        parse or validate.
+
     """
     match = _ASSESSMENT_JSON_RE.search(agent_output)
     if not match:
@@ -201,6 +210,10 @@ def store_reviewer_assessment(
 
     Creates a REVIEW-{obpi_id}.md file in the briefs/ subdirectory of the
     ADR package. Creates the briefs/ directory if it does not exist.
+
+    Returns:
+        Path of the written ``REVIEW-<obpi_id>.md`` artifact.
+
     """
     briefs_dir = adr_package_dir / "briefs"
     briefs_dir.mkdir(parents=True, exist_ok=True)

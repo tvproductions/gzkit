@@ -78,6 +78,11 @@ def parse_intent_items(intent_text: str) -> list[dict[str, str]]:
 
     Prose-only intent sections return an empty list; the Step 2 renderer
     falls back to prose display in that case.
+
+    Returns:
+        List of ``{"heading", "body"}`` dicts, one per recognised bullet; empty for prose-only
+        intent.
+
     """
     items: list[dict[str, str]] = []
     current: dict[str, str] | None = None
@@ -131,6 +136,11 @@ def pair_intent_with_obpis(
     kept, capturing the ``one intent → several OBPIs`` case; when the best
     match is weak (single token), only OBPIs tied at that top score are kept.
     Empty ``delivered_by`` surfaces as ``(review BOM below)`` at render time.
+
+    Returns:
+        Each intent item copied with a ``delivered_by`` list of matching OBPI ids (empty when
+        nothing overlaps).
+
     """
     result: list[dict[str, Any]] = []
     for item in items:
@@ -157,6 +167,10 @@ def format_intent_pairing_table(pairings: list[dict[str, Any]]) -> str:
     Empty ``delivered_by`` lists render as ``(review BOM below)`` so the
     operator knows the pairing could not be derived and the Bill of Materials
     is the fallback surface.
+
+    Returns:
+        The rendered table as plain text.
+
     """
     rows = []
     for p in pairings:

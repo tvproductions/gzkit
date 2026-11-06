@@ -49,6 +49,10 @@ def _canonicalize_obpi_id(project_root: Path, obpi_id: str) -> str:
     the full-slug pipeline marker, and the failure resurfaces three layers away
     as ``pipeline-gate``'s misleading "Pipeline not invoked". Fail loud here,
     where the cause is known.
+
+    Returns:
+        The canonical OBPI id, or ``obpi_id`` unchanged when it cannot be resolved.
+
     """
     from gzkit.commands.common import GzCliError, ObpiAmbiguityError, resolve_obpi
     from gzkit.config import load_config
@@ -181,6 +185,10 @@ def _derive_adr_id(obpi_id: str) -> str | None:
     triple after the ``OBPI-`` prefix. A prior ``rsplit("-", 1)`` variant
     broke on full slugs like ``OBPI-0.0.16-05-status-vocab-mapping`` because
     the last segment was the slug tail, not the item number.
+
+    Returns:
+        The parent ``ADR-X.Y.Z`` id, or None when the id does not parse.
+
     """
     return obpi_adr_id(obpi_id)
 
@@ -215,6 +223,11 @@ def _find_plan_file(plans_dir: Path, obpi_id: str) -> Path | None:
 
     Prefer :func:`gzkit.pipeline_markers.find_plan_for_obpi`, which scans both
     the project-local and global plan directories (see #128).
+
+    Returns:
+        The most recently modified plan mentioning ``obpi_id``, or None when the directory is absent
+        or nothing matches.
+
     """
     if not plans_dir.exists():
         return None
@@ -237,6 +250,11 @@ def _paths_overlap(a: str, b: str) -> bool:
     """Return True when two declared paths share a directory-prefix relationship.
 
     Separator-aware: ``src/gzkit/a`` does not overlap ``src/gzkit/arb``.
+
+    Returns:
+        True when the paths are equal or one is a directory prefix of the other; False otherwise,
+        including when either is empty.
+
     """
     a = a.rstrip("/")
     b = b.rstrip("/")
@@ -254,6 +272,10 @@ def _is_specific_path(path: str) -> bool:
     paths like ``src/gzkit/`` are too broad -- every brief targets one of
     them. We only flag overlaps whose contested path descends at least three
     components deep.
+
+    Returns:
+        True when the path has at least three components, otherwise False.
+
     """
     parts = [p for p in path.rstrip("/").split("/") if p]
     return len(parts) >= 3
@@ -282,6 +304,10 @@ def _contested_paths_between(target_allowed: list[str], sibling_allowed: list[st
     ``src/gzkit/``) has not made a specific claim on the target's path; the
     overlap is a contract-style allowance, not a scope collision. Require the
     SIBLING's declared path to be specific (>= 3 components) before reporting.
+
+    Returns:
+        The specific contested paths, de-duplicated in discovery order; empty when none overlap.
+
     """
     contested: list[str] = []
     for tp in target_allowed:
@@ -343,6 +369,11 @@ def _scan_sibling_adr_collisions(
     Same-ADR siblings are excluded (intra-ADR scope conflicts are governed
     by the existing brief-authoring discipline). Overlaps whose contested
     paths are all root-level globs are excluded as noise.
+
+    Returns:
+        Collision records for overlapping OBPI briefs in other ADR packages; empty when the ADR tree
+        is absent or none overlap.
+
     """
     adr_base = project_root / "docs" / "design" / "adr"
     if not adr_base.exists():
@@ -407,6 +438,10 @@ def _gather_brief_path_gaps(
     Returns the gap list and the cached ``target_allowed`` value so the
     caller can reuse it for the sibling-ADR scope-collision scan without
     re-parsing the brief.
+
+    Returns:
+        Tuple of (gap messages, the brief's allowed paths or None when it declares none).
+
     """
     target_allowed = _extract_allowed_paths(brief_path)
     # The brief's own **CREATE** markers are authoritative (GHI #419 built

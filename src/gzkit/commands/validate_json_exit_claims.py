@@ -50,6 +50,10 @@ def _plant(root: Path, finding_class: str | None) -> str:
     ``None`` plants a tree the same scope finds clean. A malformed insights line is a
     policy-breach finding (``insights_shape``); an uninitialised tree has no manifest,
     a non-policy ``manifest`` finding.
+
+    Returns:
+        The validate scope flag name that finds the planted condition.
+
     """
     if finding_class == _NON_POLICY:
         return "check_manifest"
@@ -80,6 +84,11 @@ def _json_exit(handler: Callable[..., None], finding_class: str | None) -> int:
     """Run the real *handler* in ``--json`` mode on a planted tree; return its exit code.
 
     ``0`` means the handler returned without exiting: it signalled success.
+
+    Returns:
+        The handler's exit code: 0 when it returned normally, otherwise its ``SystemExit`` code (1
+        for a non-integer code).
+
     """
     params = inspect.signature(handler).parameters
     kwargs = {

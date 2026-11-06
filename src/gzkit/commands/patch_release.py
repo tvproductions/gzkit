@@ -184,6 +184,11 @@ def _version_in_flight(current_version: str | None, tag: str | None) -> bool:
     and stopped before publishing. Bumping again would skip a version nobody
     released, so the caller releases this one. A newest tag that is not a
     version reads as not in flight, which keeps the ordinary bump.
+
+    Returns:
+        True when the declared version parses higher than the tag; False when either is missing or
+        does not parse.
+
     """
     if not current_version or not tag:
         return False
@@ -209,6 +214,11 @@ def _discover_ghis(project_root: Path, base_ref: str | None) -> list[GhiRecord]:
        release-ready.
 
     When *base_ref* is ``None`` (no prior tag), walks all history.
+
+    Returns:
+        :class:`GhiRecord` entries for every GHI referenced in the range; empty when no commit
+        references one.
+
     """
     in_range_refs = _collect_ghi_refs_in_range(project_root, base_ref)
     if not in_range_refs:
@@ -236,6 +246,10 @@ def _fetch_ghi_records(project_root: Path, numbers: set[int]) -> list[GhiRecord]
     title, labels, and state the operator needs to adjudicate it — a bare
     number would move the investigation off the report and back into
     ``gh issue view``.
+
+    Returns:
+        :class:`GhiRecord` entries with upstream metadata, sorted by number.
+
     """
     records: list[GhiRecord] = []
     for number in sorted(numbers):
@@ -321,6 +335,11 @@ def _collect_ghi_refs_in_range(project_root: Path, base_ref: str | None) -> set[
     in v_n if and only if its closure commit is in the ``v_(n-1)..HEAD``
     range. Close-time windows are post-hoc reconstruction and double-count
     GHIs shipped in the prior tag.
+
+    Returns:
+        GHI numbers matched by the closure pattern in the range's commit messages; empty when git
+        fails or the range is empty.
+
     """
     log_args = ["log", "--format=%H%n%B%x00"]
     if base_ref is not None:
@@ -377,6 +396,11 @@ def _collect_unclassified_ghi_refs_in_range(
        closure is the normal case — a ``fix(...)`` remedy plus a
        ``docs(...)`` commit naming the same GHI. Measured over five
        releases, these two narrowings yield ~1.4 reports per release.
+
+    Returns:
+        GHI numbers cited in non-closure commit subjects, minus ``closure_refs``; empty when git
+        fails or the range is empty.
+
     """
     log_args = ["log", "--format=%H%n%B%x00"]
     if base_ref is not None:
@@ -409,6 +433,10 @@ def _ghi_has_src_commits(project_root: Path, ghi_number: int, base_ref: str | No
     back to ``--all``. Per GHI #233: release discovery must anchor on the
     commit range, not repo-wide history, so a GHI whose closure commit
     landed in a prior tag does not re-qualify for the next release.
+
+    Returns:
+        True when git finds at least one matching commit touching ``src/gzkit/``, otherwise False.
+
     """
     log_args: list[str] = ["log"]
     if base_ref is None:
@@ -470,6 +498,11 @@ def _classify_unclassified_reference(
     content — but they do not select the status. The bucket's claim is
     narrower than the other four: not *this qualifies* or *this is
     excluded*, only *no closure rule matched this, and you should look*.
+
+    Returns:
+        A :class:`GhiQualification` with status ``"unclassified_reference"`` and an adjudication
+        warning.
+
     """
     return GhiQualification(
         ghi=ghi,
@@ -492,6 +525,10 @@ def _build_qualifications(project_root: Path, base_ref: str | None) -> list[GhiQ
     disclosure pass (GHI #794) reports only what is left over. Running them
     the other way round would warn on the normal case — a ``fix(...)``
     remedy plus a ``docs(...)`` commit naming the same GHI.
+
+    Returns:
+        Closure and disclosure qualifications together, sorted by GHI number.
+
     """
     closure = [
         _classify_ghi(project_root, ghi, base_ref) for ghi in _discover_ghis(project_root, base_ref)
@@ -516,6 +553,11 @@ def _parse_ts(value: str | None) -> datetime | None:
 
     A naive timestamp (no offset — e.g. a date-only ``tag_date``) is assumed
     UTC so it compares cleanly against the tz-aware ledger receipt timestamps.
+
+    Returns:
+        The tz-aware datetime (naive input treated as UTC), or None when the value is empty or
+        unparseable.
+
     """
     if not value:
         return None
@@ -551,6 +593,10 @@ def _discover_foundation_closeouts(
     Foundation closeouts are release-worthy
     code surfaces equal to behavior-level GHIs per the hexagonal port/adapter
     doctrine (GHI #490; completes the GHI #330 residual TODO).
+
+    Returns:
+        The latest qualifying :class:`FoundationCloseout` per ADR, sorted by semver.
+
     """
     cutoff = _parse_ts(tag_date)
     latest: dict[str, FoundationCloseout] = {}
@@ -681,6 +727,10 @@ def _write_manifest_atomic(project_root: Path, manifest: PatchManifest) -> Path:
     """Write the markdown manifest to ``docs/releases/``.
 
     Returns the relative path to the manifest file.
+
+    Returns:
+        The manifest's path relative to the project root.
+
     """
     releases_dir = project_root / "docs" / "releases"
     releases_dir.mkdir(parents=True, exist_ok=True)
@@ -796,6 +846,10 @@ def _abort_hint_lines(version: str) -> list[str]:
 
     ``RELEASE_NOTES.md`` is cumulative, so the release body is sliced to the
     newest version block before ``gh release create`` reads it (GHI #710).
+
+    Returns:
+        The shell command lines that commit, push, and publish the release.
+
     """
     return [
         f"git add -A && git commit -m 'release: v{version}'",
@@ -932,6 +986,11 @@ def _apply_version(
 
     Returns the files updated and the version this release follows: the tag's
     for a version in flight, the pre-bump one otherwise.
+
+    Returns:
+        Tuple of (files updated, version this release follows); no files and the tag's version when
+        in flight.
+
     """
     if in_flight and tag is not None:
         return [], tag.removeprefix("v")

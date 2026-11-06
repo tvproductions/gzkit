@@ -186,6 +186,10 @@ def _req_line_text(ac_section: str, req_id: str) -> str:
     Feeds the enforcement/state-property split in ``_check_structural_fence_req``:
     an enforcement-asserting fence proves via its claim registry, a state-property
     fence via the OBPI anchor.
+
+    Returns:
+        The first line containing ``req_id``, or an empty string when absent.
+
     """
     for line in ac_section.splitlines():
         if req_id in line:
@@ -245,6 +249,10 @@ def _validate_req_kind_discipline(project_root: Path) -> list[ValidationError]:
     - If ALL REQs in a brief lack [kind] tags → passes (legacy/grandfathered).
     - If SOME REQs have [kind] tags and SOME do not → fails (mixed-state).
     - For each tagged REQ, per-kind proof-citation checks fire (see _check_tagged_req).
+
+    Returns:
+        The REQ kind-discipline errors across every OBPI brief.
+
     """
     errors: list[ValidationError] = []
     for brief_path in _find_obpi_briefs(project_root):

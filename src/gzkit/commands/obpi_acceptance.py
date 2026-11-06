@@ -62,6 +62,11 @@ def obpi_acceptance_cmd(
     (OBPI-0.35.0-15, operator ruling 2026-10-12 on Open Design Question 20).
     That refusal is a user error and prints the resolver's own message:
     nothing is read, imported or recorded.
+
+    Returns:
+        Exit code: 0 on success, 3 when acceptance is blocked, ``EXIT_USER_ERROR`` (1) when the OBPI
+        id cannot be resolved.
+
     """
     root = get_project_root()
     try:
@@ -115,6 +120,9 @@ def _execute(
     keyed by ``obpi_id`` as typed, and ``init``, ``prove`` and ``status``
     resolve nothing. A work package has no launch, so it marks no boundary:
     its position is replayed from its own rows (ruling 18).
+
+    Returns:
+        Tuple of (result payload dict, whether the action succeeded).
 
     Raises:
         ObpiEntryError: when ``review`` or ``human-review`` is given an id that
@@ -187,6 +195,10 @@ def _execute_review(
 
     The review is stored under ``obpi_id`` as typed; an adversarial review's
     boundary is recorded under ``launch_id``, the resolver's id for it.
+
+    Returns:
+        Tuple of (recorded review as a JSON-ready dict, True).
+
     """
     if not receipt or Path(receipt).name != receipt:
         raise ValueError("review requires --receipt with an ARB run ID")
@@ -208,6 +220,10 @@ def _execute_human_review(
 
     The ruling is stored under ``obpi_id`` as typed; its boundary is recorded
     under ``launch_id``, the resolver's id for it.
+
+    Returns:
+        Tuple of (recorded human review as a JSON-ready dict, True).
+
     """
     if not attestor or not ruling:
         raise ValueError("human-review requires --attestor and the operator's verbatim --ruling")

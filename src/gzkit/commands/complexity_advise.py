@@ -248,6 +248,11 @@ def _run_attest_intrinsic(
     Expects ``path`` as ``<file_path>:<qualname>``. Fails closed on parse
     error, missing reason/attestor, non-crossing function, and headless
     invocation — no ledger event is emitted in any failure branch.
+
+    Returns:
+        Exit code: 0 when the attestation event is emitted, 1 on a usage, gate, or
+        declined-confirmation failure, 2 when the source file cannot be read or parsed.
+
     """
     parts = path.rsplit(":", 1)
     if len(parts) != 2:

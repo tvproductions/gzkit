@@ -156,6 +156,11 @@ def _guard_demoted_in_subprocess(
 
     The notice's wording has one authority, ``checkpoint.demote_notice``; its text
     before the guard name is the prefix searched for here.
+
+    Returns:
+        The demoted guard name from the first matching notice line, or None when no notice is
+        present.
+
     """
     prefix = demote_notice("\0").split("\0", 1)[0]
     tails = (
@@ -185,6 +190,11 @@ def _apply_mx_seam(
     in its output, and is marked with the guard that notice names. A demoted
     result keeps its output and names its guard, so the report announces it
     (GHI #843).
+
+    Returns:
+        The result unchanged (marked with ``demoted_guard`` when a subprocess demoted it), or a
+        passing result naming ``guard_name`` when a policy breach is demoted to advisory.
+
     """
     from gzkit.mx import checkpoint, disposition  # noqa: PLC0415 — lazy: avoids circular risk
 
@@ -297,6 +307,11 @@ def _test_name_from_record(record, project_root: pathlib.Path) -> str | None:
 
     Returns ``None`` when the record has no source location to anchor a
     test name against.
+
+    Returns:
+        ``<module>.<qualname>`` for decorator-form records, the module path alone for
+        comment/docstring forms, or None when the record has no location.
+
     """
     location = record.source.location
     if location is None:
@@ -315,6 +330,10 @@ def _resolve_obpi_test_names(project_root, obpi: str) -> list[str]:
     extraction) to identify which tests cover REQs belonging to the target
     OBPI. Returns unittest-addressable identifiers like
     ``tests.commands.test_validate_frontmatter.TestClass.test_method``.
+
+    Returns:
+        Sorted unittest names covering the OBPI's REQs; empty when the OBPI has no REQs.
+
     """
     from gzkit.traceability import EdgeType, scan_test_tree  # noqa: PLC0415
     from gzkit.triangle import ReqId  # noqa: PLC0415
@@ -352,6 +371,10 @@ def resolve_obpi_behave_tags(project_root, obpi: str) -> list[str]:
     Public surface (GHI #420): consumed by ``obpi_stages._run_pipeline_verify_stage``
     to scope the Stage 3 behave invocation to this OBPI's REQ tags so
     cross-OBPI rot in unrelated feature files cannot block new OBPIs.
+
+    Returns:
+        Sorted ``@REQ-...`` tags covering the OBPI's REQs; empty when the OBPI has no REQs.
+
     """
     from gzkit.traceability import EdgeType, scan_feature_tree  # noqa: PLC0415
     from gzkit.triangle import ReqId  # noqa: PLC0415
@@ -593,6 +616,11 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
     8-11 to seat them. The recurrence at the next count up — 4, then 8, then 11 —
     is the finding, not the specific items. Point of use is the only placement
     that binds.
+
+    Returns:
+        Ordered ``(step name, runner)`` pairs, including the project-local ratchets only when they
+        are installed.
+
     """
     from gzkit.quality import (
         project_local_ratchets_installed,
@@ -780,6 +808,10 @@ def _load_check_step_scopes() -> dict[str, dict[str, Any]]:
     has one shape in every project (GHI #1192). A missing or unreadable file
     returns ``{}``, and every consumer below treats that as "no skips" — the
     conservative direction.
+
+    Returns:
+        The ``scopes`` mapping, or an empty dict when the file is missing, unreadable, or malformed.
+
     """
     path = _check_step_scopes_file()
     if not path.is_file():
@@ -799,6 +831,10 @@ def _scope_skips(scope: str) -> frozenset[str]:
     step runs everywhere until someone excludes it, and an unknown scope name
     (a typo, a missing file) drops nothing rather than silently emptying the
     gate.
+
+    Returns:
+        Frozenset of step names the scope skips; empty when undeclared or malformed.
+
     """
     entry = _load_check_step_scopes().get(scope) or {}
     skips = entry.get("skips")
@@ -814,6 +850,11 @@ def _scope_records_verified(scope: str) -> bool:
     verification that can satisfy a gate is the presence-check failure
     ``AGENTS.md`` names; ``record_verified`` refuses any scope outside
     ``RECORDABLE_SCOPES`` as a second line.
+
+    Returns:
+        True for ``full``, an undeclared scope, or one declaring ``records_verified: true``; False
+        otherwise.
+
     """
     if scope == "full":
         return True
@@ -831,6 +872,11 @@ def _select_check_steps(scope: str) -> list[tuple[str, CheckStepRunner]]:
     A scope that drops ``Test`` runs ``Test (changed)`` in its place: the tests
     the change touches (GHI #1191). A scope with no declaration drops nothing, so
     it keeps the whole unit tier.
+
+    Returns:
+        The ``(name, runner)`` steps the scope keeps, with ``Test (changed)`` appended when ``Test``
+        is skipped.
+
     """
     steps = _build_check_steps()
     if scope == "full":
@@ -865,6 +911,11 @@ def _step_concurrency_classes() -> dict[str, str]:
     under (GHI #857); the file is small and read once per ``check()`` run, so the
     cache would buy nothing and reintroduce a defect this repo is already
     tracking.
+
+    Returns:
+        Mapping of step name to its declared concurrency class; empty when the declaration file is
+        absent.
+
     """
     path = get_project_root() / "data" / "check_step_concurrency.json"
     if not path.is_file():
@@ -895,6 +946,11 @@ def _steps_overlapping_writers() -> set[str]:
     while ``Test`` is declared ``read_only`` (it writes nothing) and every
     reference to ``dist/`` or ``site/`` under ``tests/`` is an EXCLUSION -- those
     trees are named there as "not live state".
+
+    Returns:
+        Names of read-only steps flagged ``overlaps_writers``; empty when the declaration file is
+        absent.
+
     """
     path = get_project_root() / "data" / "check_step_concurrency.json"
     if not path.is_file():
@@ -930,6 +986,10 @@ def _partition_steps_by_concurrency(
     making the runtime brittle for callers that compose their own step lists:
     ``tests/governance/test_check_step_concurrency.py`` fails the commit when a
     real step is missing from the declaration.
+
+    Returns:
+        Tuple of (serial steps, concurrent read-only steps), each in input order.
+
     """
     classes = _step_concurrency_classes()
     serial: list[tuple[str, CheckStepRunner]] = []
@@ -985,6 +1045,10 @@ def _run_check_steps(
     path.  The MX seam and the progress tick both stay on this thread, which
     keeps the single-firing-point requirement (REQ-0.0.74-20-01) intact — every
     ``_seam`` call below happens after a ``.result()``, never inside a worker.
+
+    Returns:
+        ``(step name, result)`` pairs in the order of ``steps``.
+
     """
     serial, concurrent = _partition_steps_by_concurrency(steps)
     # No writers means no lane to overlap, so every reader belongs in ONE pool.
@@ -1009,6 +1073,10 @@ def _run_check_steps(
 
         ``finally`` so a raising step is still accounted; an unmeasured step is
         the gap this closes.
+
+        Returns:
+            The step's :class:`QualityResult`.
+
         """
         start = time.monotonic()
         try:
@@ -1063,6 +1131,11 @@ def _format_elapsed(seconds: float | None) -> str:
     Empty rather than ``0.00s``: an unmeasured step and a free one are different
     claims, and rendering the first as the second is the presence-check failure
     ``AGENTS.md`` names, one surface over.
+
+    Returns:
+        The duration formatted as ``"<seconds>s"`` to two decimals, or an empty string when
+        unmeasured.
+
     """
     return "" if seconds is None else f"{seconds:.2f}s"
 
@@ -1145,6 +1218,11 @@ def _unfingerprinted_findings(project_root: pathlib.Path) -> list:
     leaves the staged tree unchanged, so a matching fingerprint says nothing about
     them, and a trailer-less commit made after the verifying run reached the skip
     unread (GHI #1017).
+
+    Returns:
+        The combined findings of the commit-trailer, eval-feedback-trailer, and task-envelope
+        validators; empty when there are none.
+
     """
     from gzkit.commands.validate_commit_trailers import (  # noqa: PLC0415
         _validate_commit_trailers,
@@ -1169,6 +1247,11 @@ def _report_reuse_skip(project_root: pathlib.Path, *, scope: str, as_json: bool)
     whole unit tier (GHI #1253). A matching tree is also refused when a step whose
     input the fingerprint does not hash has findings, so the gate runs and reports
     them (GHI #1017).
+
+    Returns:
+        True when the tree was already verified and the skip was announced; False when it was not
+        verified or an unfingerprinted step has findings.
+
     """
     import json  # noqa: PLC0415
     import sys  # noqa: PLC0415
@@ -1230,6 +1313,11 @@ def _changed_paths(project_root: pathlib.Path) -> list[str]:
     tree against the upstream branch. The third is what makes the selection hold
     at push time, when the change is already committed and the first two are
     empty (GHI #1191). Without an upstream that arm contributes nothing.
+
+    Returns:
+        Sorted, de-duplicated repo-relative paths from the three git arms; arms that fail contribute
+        nothing.
+
     """
     paths: set[str] = set()
     for args in (
@@ -1265,6 +1353,10 @@ def _select_changed_tests(project_root: pathlib.Path, changed: list[str]) -> lis
     tier is what proves the tree: it runs under ``gz check --full``, in CI on
     every code push, at OBPI completion and at release. A deleted test module is
     a changed path with nothing to run, so it is not selected.
+
+    Returns:
+        Sorted dotted test-module names selected by the change; empty when none match.
+
     """
     selected: set[str] = set()
     stems: set[str] = set()
@@ -1294,6 +1386,11 @@ def _run_changed_tests(project_root: pathlib.Path) -> QualityResult:
     per module with a trailing dot so a module never selects a longer-named
     sibling. Measured 2026-10-11 (a dated record): eleven selected modules took
     113s through the serial stdlib runner and 31s through the parallel one.
+
+    Returns:
+        The unit-tier run's result for the selected modules, or a passing selection-only result when
+        nested or when no module matched.
+
     """
     from gzkit.canonical_steps import CANONICAL_STEP_COMMANDS  # noqa: PLC0415
     from gzkit.quality import run_command  # noqa: PLC0415
@@ -1437,6 +1534,10 @@ def _bears_advisories(result: QualityResult) -> bool:
     would misattribute simulated findings to the real tree. The discriminator is
     the command the step actually ran, recorded on the result, rather than a
     hand-kept list of step names that would drift as steps are added.
+
+    Returns:
+        True when the step's command ran ``gz validate``, otherwise False.
+
     """
     return "gz validate" in result.command
 

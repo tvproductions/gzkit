@@ -25,6 +25,10 @@ def guarded_obpi_status_write(obpi_file: Path, target_status: str) -> bool:
     #669 made mechanical. Returns True iff a write landed (False on a no-op or
     a refused clobber). The refusal surfaces the monitor's three-part recovery
     prose to stderr (guardrail-feedback-prose).
+
+    Returns:
+        True when the status was written; False when it already matched or the write was refused.
+
     """
     from gzkit.governance.frontmatter_coherence import obpi_status_write_refusal
 
@@ -50,6 +54,11 @@ def auto_fix_obpi_brief_frontmatter(obpi_file: Path, runtime_state: str) -> bool
     Silently fixes frontmatter drift at lifecycle moments (closeout, attest,
     reconcile). Returns True if a change was written. Routes through
     :func:`guarded_obpi_status_write` so a terminal status is never clobbered.
+
+    Returns:
+        True when a status change was written; False for non-terminal runtime states, an
+        already-matching status, or a refused write.
+
     """
     if runtime_state in _COMPLETED_RUNTIME_STATES:
         target = "Completed"
@@ -120,6 +129,11 @@ def _append_frontmatter_list_value(content: str, key: str, value: str) -> str:
 
     An appended item joins an existing block at that block's own indentation; a
     newly created block uses two spaces.
+
+    Returns:
+        The content with ``value`` appended under ``key`` (creating the frontmatter or key when
+        absent); unchanged when the value is already listed or the frontmatter is unterminated.
+
     """
     lines = content.splitlines()
     if not lines or lines[0].strip() != "---":

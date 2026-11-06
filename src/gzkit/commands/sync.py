@@ -229,6 +229,11 @@ def _anchor_resolver(project_root: Path) -> Callable[[str], bool]:
     predicate that admits NOTHING. The degradation is to the pre-enrichment
     shape — no anchors — never to unverified ones: emitting a citation the
     scanner could not check is exactly what GHI #1081 found.
+
+    Returns:
+        A predicate returning True when an anchor resolves to exactly one graph artifact; one that
+        always returns False when the ledger cannot be read.
+
     """
     try:
         ledger = Ledger(project_root / ".gzkit" / "ledger.jsonl")
@@ -265,6 +270,11 @@ def _extract_governance_anchors(diff_text: str, resolves: Callable[[str], bool])
     ambiguous prefix, and one a truncation aliasing to an unrelated ADR
     (GHI #1081). GHI anchors bypass it — they are issues, not graph nodes, the
     taxonomy GHI #1079 established.
+
+    Returns:
+        Resolving anchor ids (GHI anchors unfiltered), grouped by family in a fixed order and sorted
+        within each family.
+
     """
     grouped: dict[str, set[str]] = {family: set() for family, _ in _ANCHOR_PATTERNS}
     for family, pattern in _ANCHOR_PATTERNS:
@@ -291,6 +301,11 @@ def _recent_unsynced_ledger_events(
     the auto-commit message is best-effort enrichment, not a validator.
     When ``since_iso`` is ``None`` every event is returned (used for fresh
     branches with no prior commit on this ref).
+
+    Returns:
+        Ledger entry dicts newer than ``since_iso`` (all entries when it is None); empty when the
+        ledger cannot be read.
+
     """
     ledger_path = project_root / ".gzkit" / "ledger.jsonl"
     try:
@@ -330,6 +345,10 @@ def _format_anchors_section(anchors: list[str]) -> str:
     subject to the label instead; that route was weighed and deferred, because
     what "touched" means is unsettled — a commit implementing an OBPI's REQ
     touches that OBPI's subject while touching none of its files.
+
+    Returns:
+        The ``Governance anchors referenced:`` heading followed by one bullet per anchor.
+
     """
     lines = ["Governance anchors referenced:"]
     lines.extend(f"- {anchor}" for anchor in anchors)
@@ -408,6 +427,11 @@ def _build_sync_commit_message(
     and the ledger events accumulated since the last commit on this branch.
     Both sections are omitted when empty so genuinely path-shape-only syncs
     retain their compact pre-enrichment shape.
+
+    Returns:
+        The commit message: subject, optional anchors and ledger-events sections, and the sync
+        trailers.
+
     """
     subject = (
         "chore: sync staged changes (gz git-sync)"
@@ -440,6 +464,11 @@ def _detect_stranded_commit_message(project_root: Path) -> str | None:
     auto-commit path MUST refuse to silently rewrite the operator's intent;
     see GHI #437 for the failure case (``Closes #434`` trailer + ARB receipt
     IDs erased by the template ``chore: update`` rewrite).
+
+    Returns:
+        The stranded commit subject, or None when there is no readable message, it is not
+        conventional-commit shaped, or it matches HEAD.
+
     """
     editmsg_path = project_root / ".git" / "COMMIT_EDITMSG"
     try:
@@ -474,6 +503,11 @@ def _hook_failure_detail(stdout: str, stderr: str, fallback: str) -> str:
 
     stdout leads because it carries the diagnosis; stderr follows as the summary,
     matching the order a direct `git commit`/`git push` prints them.
+
+    Returns:
+        The non-empty stripped stdout and stderr joined by a newline, or ``fallback`` when both are
+        empty.
+
     """
     parts = [part.strip() for part in (stdout, stderr) if part.strip()]
     return "\n".join(parts) or fallback
@@ -629,6 +663,10 @@ def _filter_governed_paths(names: Iterable[str]) -> list[str]:
     Set semantics, not list: the probes overlap by design — a file both staged
     and further modified is reported by two of them — and the guard's subject is
     *which* paths are governed, never how many reads mentioned each one.
+
+    Returns:
+        Sorted, de-duplicated stripped names that start with a governed prefix.
+
     """
     return sorted(
         {
@@ -664,6 +702,10 @@ def _sweep_governed_paths(project_root: Path) -> list[str]:
     Fails **open** on a git error from any probe, preserving GHI #708's ratified
     tradeoff: failing closed on an unreadable worktree would strand every sync
     in a repo the guard cannot inspect.
+
+    Returns:
+        The governed paths ``git add -A`` would stage; empty when none or when any probe fails.
+
     """
     names: list[str] = []
     for probe in _SWEEP_SCOPE_PROBES:
@@ -712,6 +754,11 @@ def _execute_git_sync(
     Takes no ahead/behind/diverged parameters: the pull and push steps each read
     that state themselves, because the auto-commit between them changes it
     (GHI #720).
+
+    Returns:
+        The git commands executed, in order; empty when blockers were already present or the sweep
+        guard refused.
+
     """
     executed: list[str] = []
     if blockers:

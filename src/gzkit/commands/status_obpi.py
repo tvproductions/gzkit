@@ -133,6 +133,10 @@ def _adr_obpi_status_rows(
     state (GHI #966). Pass one checker for the whole call so its memo spans
     every row; pass ``None`` for a view that must not resolve — its rows then
     carry ``unresolved``, never a state they did not check.
+
+    Returns:
+        Per-OBPI status row dicts sorted by id.
+
     """
     obpi_files, expected_obpis = _collect_obpi_files_for_adr(
         project_root, config, ledger, adr_id, obpi_index=obpi_index
@@ -248,6 +252,11 @@ def _obpi_row_complete(row: dict[str, Any]) -> bool:
     the OBPI counts as complete even when the brief file is absent.  Falls back to
     the composite ``completed`` flag (ledger + evidence + attestation) when the
     brief file is present.
+
+    Returns:
+        True when the ledger records completion, or the brief file exists and the row is marked
+        completed; False otherwise.
+
     """
     if row.get("ledger_completed"):
         return True
@@ -349,6 +358,10 @@ def _build_obpi_status_entry(
 
     ``reference_checker`` resolves the brief's tracked defects against live
     state (GHI #966); ``None`` leaves them ``unresolved``.
+
+    Returns:
+        The OBPI's runtime status payload dict.
+
     """
     graph = ledger.get_artifact_graph()
     raw_info = graph.get(obpi_id)

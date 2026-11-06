@@ -32,6 +32,10 @@ def ensure_jsonl_merge_driver(project_root: Path) -> bool:
     seeded by something that runs in the clone — `gz init` for new ones, and
     `gz git-sync` for every clone that already exists, which is also the exact
     moment the driver is about to be needed.
+
+    Returns:
+        True when this call installed the driver, False when it was already configured.
+
     """
     key = f"merge.{MERGE_DRIVER_NAME}.driver"
     rc_read, existing, _err = git_cmd(project_root, "config", "--get", key)

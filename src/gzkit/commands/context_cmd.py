@@ -100,6 +100,11 @@ def _ledger_current_gate(
     counts as cleared, so both surfaces report the same gate for the same ADR.
     When the ledger records no applicable cleared gate it is Gate 1 (the entry
     gate).
+
+    Returns:
+        ``"Gate N (latest applicable gate cleared)"`` for the highest cleared gate among 2-4, or the
+        Gate 1 message when none is cleared.
+
     """
     ledger = Ledger(project_root / config.paths.ledger)
     statuses = ledger.get_effective_gate_statuses(adr_id)
@@ -116,6 +121,10 @@ def _render_governance_rules(adr_file: Path, project_root: Path, config: GzkitCo
     Lane and lifecycle come from the ADR frontmatter; the current gate is
     sourced from the ledger (REQ-0.28.0-01-06) so it cannot drift with a stale
     frontmatter ``status:`` field.
+
+    Returns:
+        Markdown bullet lines for lane, lifecycle, current gate, and next required action.
+
     """
     text = adr_file.read_text(encoding="utf-8")
     lane = "lite"
@@ -163,6 +172,10 @@ def build_context_payload(
     covering-test paths, and (unless ``slim=True``) a governance-rules
     section. No ANSI escapes; suitable for verbatim piping to any agent
     harness (REQ-0.28.0-01-02..08, REQ-0.28.0-02-02..04).
+
+    Returns:
+        The assembled Markdown payload.
+
     """
     parts: list[str] = []
     parts.append(f"# Context payload for {adr_file.stem}\n\n")
@@ -190,6 +203,10 @@ def context_cmd(adr: str, *, slim: bool = False) -> int:
     Returns 0 on success. On unresolvable ADR ID, writes a
     ``BLOCKERS:``-prefixed message to stderr and returns exit code 1
     (REQ-0.28.0-01-07).
+
+    Returns:
+        0 after writing the payload; an unresolvable ADR raises ``SystemExit(1)`` instead.
+
     """
     project_root = get_project_root()
     try:

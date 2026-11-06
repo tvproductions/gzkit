@@ -91,6 +91,10 @@ def _coerce_demo(value: object) -> object:
     written before GHI #738 hold ``list[str]``. Coercing on read keeps a paused
     ceremony resumable across the upgrade instead of failing validation on a
     file the operator cannot regenerate without restarting the ceremony.
+
+    Returns:
+        ``{"command": value}`` when value is a string, otherwise value unchanged.
+
     """
     return {"command": value} if isinstance(value, str) else value
 
@@ -221,6 +225,11 @@ def _classify_attestation_verdict(text: str) -> tuple[str, str | None]:
     the leading 120-char window; the full stripped text is returned as the
     reason for non-completed verdicts so the operator's verbatim attestation
     flows through to the ledger and closeout form unchanged.
+
+    Returns:
+        ``("dropped", text)`` or ``("partial", text)`` when the keyword appears in the leading
+        window (text stripped), otherwise ``("completed", None)``.
+
     """
     head = text.strip().lower()[:120]
     if "dropped" in head:

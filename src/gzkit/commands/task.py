@@ -40,6 +40,11 @@ def _load_tasks_for_obpi(ledger: Ledger, obpi_id: str) -> dict[str, dict[str, st
     """Build current TASK state from ledger events for an OBPI.
 
     Returns a dict keyed by task_id with ``status`` and ``description`` fields.
+
+    Returns:
+        Mapping of task id to its derived ``status`` and ``description`` (plus ``reason`` for
+        blocked or escalated tasks).
+
     """
     tasks: dict[str, dict[str, str]] = {}
     for event in ledger.read_all():
@@ -74,6 +79,11 @@ def _ledger_obpi_for_task(ledger: Ledger, task_id_str: str) -> str:
     ``OBPI-<semver>-<item>`` form derived from the TASK id alone does not equal
     it, so status resolution must read the slug the ledger actually carries.
     Returns ``""`` when no ``task_started`` event names the task.
+
+    Returns:
+        The OBPI id from the latest ``task_started`` event naming the task, or an empty string when
+        none does.
+
     """
     obpi_id = ""
     for event in ledger.read_all():
@@ -94,6 +104,11 @@ def _resolve_obpi_id(ledger: Ledger, short_obpi: str, *, project_root: Path | No
     returns the short id unchanged. ``gz obpi pipeline`` records the full slug,
     so canonicalizing here keeps a manually-started TASK's ``obpi_id`` identical
     to the pipeline's instead of writing a divergent short form (GHI #653).
+
+    Returns:
+        The full OBPI slug when it resolves uniquely (directly or by on-disk brief), otherwise
+        ``short_obpi`` unchanged.
+
     """
     graph = ledger.get_artifact_graph()
     context = IdentityContext(graph={key: dict(info) for key, info in graph.items()})
@@ -120,6 +135,10 @@ def _all_started_task_ids(ledger: Ledger) -> set[str]:
     different ``obpi_id`` spelling (e.g. the short form a manual ``gz task
     start`` wrote before the pipeline ran) must not be double-started under the
     full slug (GHI #653).
+
+    Returns:
+        Every task id that has a ``task_started`` event.
+
     """
     started: set[str] = set()
     for event in ledger.read_all():
@@ -143,6 +162,10 @@ def _resolve_task_context(
     keeping ``_current_task_status`` (which filters on ``obpi_id``) and the
     emitted transition event consistent with the slug the pipeline records
     (GHI #653).
+
+    Returns:
+        Tuple of (parsed :class:`TaskId`, OBPI id, ADR id).
+
     """
     task_id = TaskId.parse(task_id_str)
     adr_id = task_id.adr_id
@@ -233,6 +256,10 @@ def auto_start_obpi_tasks(
     channel empty precisely where the pipeline does the minting. Optional
     because the ledger write is the governance record and the declaration is
     best-effort — attribution must never block the pipeline.
+
+    Returns:
+        The TASK ids newly started by this call; empty when all were already started.
+
     """
     req_entities = extract_reqs_from_brief(brief_content, parent_obpi=obpi_id)
     existing = _all_started_task_ids(ledger)
@@ -273,6 +300,10 @@ def auto_complete_obpi_tasks(
     lands (GHI #552 layer 4). Transitions in_progress TASKs to completed;
     skips terminal states (completed/blocked/escalated). Idempotent: already-
     completed TASKs are not re-emitted.
+
+    Returns:
+        The TASK ids transitioned to completed by this call.
+
     """
     tasks = _load_tasks_for_obpi(ledger, obpi_id)
     completed: list[str] = []
@@ -586,6 +617,11 @@ def _find_brief_path(project_root: Path, obpi_id: str) -> Path | None:
     real briefs writes a confidently wrong answer. Silence is recoverable;
     a stamp in the wrong artifact is not, because the caller cannot tell the two
     apart (`_stamp_brief_task_declaration` is best-effort by contract).
+
+    Returns:
+        The single brief whose stem equals ``obpi_id``, else the single brief whose stem extends it,
+        else None.
+
     """
     from gzkit.commands.validate_briefs import _find_obpi_briefs  # noqa: PLC0415
 
@@ -609,6 +645,10 @@ def _stamp_brief_task_declaration(project_root: Path, obpi_id: str, task_id: str
     Best-effort by design: minting the TASK is the operator's work and the
     declaration is the governance record of it. An unfindable or unwritable brief
     returns None rather than raising, so attribution can never block the pipeline.
+
+    Returns:
+        The brief path when one was found and readable/writable, otherwise None.
+
     """
     brief = _find_brief_path(project_root, obpi_id)
     if brief is None:
@@ -736,6 +776,10 @@ def _build_fanout_rows(ledger: Ledger, req_id: str) -> list[FanoutRow]:
 
     Returns a list of :class:`FanoutRow` sorted by seq, each with:
     task_id, seq, status, files_touched, edits, attribution_check.
+
+    Returns:
+        :class:`FanoutRow` entries sorted by seq.
+
     """
     m = _REQ_PARTS_RE.match(req_id)
     if not m:

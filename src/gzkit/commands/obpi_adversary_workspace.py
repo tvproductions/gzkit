@@ -35,6 +35,11 @@ def obpi_adversary_workspace_cmd(
     """Build the disposable checkout and report how to dispatch a reviewer at it.
 
     Returns 0 on success, 2 when the reviewed source cannot be reproduced.
+
+    Returns:
+        ``EXIT_SUCCESS`` (0) on success, ``EXIT_SYSTEM_ERROR`` (2) when the workspace cannot be
+        materialized.
+
     """
     root = get_project_root()
     target = (

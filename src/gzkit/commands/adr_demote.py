@@ -69,6 +69,10 @@ def _derive_pool_slug_from_adr_id(adr_id: str) -> str:
     """Derive a pool slug from a feature/foundation ADR id.
 
     ``ADR-0.27.0-arb-receipt-system-absorption`` → ``arb-receipt-system-absorption``.
+
+    Returns:
+        The slug portion of the canonical ADR id.
+
     """
     match = _CANONICAL_ID_RE.match(adr_id)
     if not match:
@@ -151,6 +155,11 @@ def _rewrite_h1_id_prefix(content: str, new_id: str) -> str:
     the bare ``# <id>`` that 8 of the demoted files carry. Body prose naming the
     old id is design history (supersession notes, decision records) and is left
     alone: ``REQ-0.34.0-04-01`` makes demotion a re-homing, not a rewrite.
+
+    Returns:
+        The content with the first body H1's id token replaced by ``new_id``; the original content
+        unchanged when no body H1 matches.
+
     """
     lines = content.splitlines()
     for idx in range(_body_start_index(lines), len(lines)):
@@ -179,6 +188,11 @@ def _strip_pool_invalid_sections(content: str, headings: tuple[str, ...]) -> str
     left alone — interview transcripts and dated cross-reference notes are
     records of what was true when written, and rewriting them would falsify a
     source rather than re-home it (``REQ-0.34.0-04-01``).
+
+    Returns:
+        The content with each named section removed up to the next ``##`` heading; headings not
+        present are skipped.
+
     """
     lines = content.splitlines()
     for heading in headings:
@@ -201,6 +215,11 @@ def _reverse_pool_promotion_markers(content: str, demoted_id: str) -> str:
     No-op unless the pool file's ``promoted_to:`` still names the ADR now being
     demoted — guards against mutating an unrelated pool ADR that happens to
     collide on slug (GHI #558).
+
+    Returns:
+        The content with the promotion markers reversed, or the original content unchanged when
+        ``promoted_to`` does not name ``demoted_id``.
+
     """
     if parse_frontmatter_value(content, "promoted_to") != demoted_id:
         return content
@@ -234,6 +253,11 @@ def _live_covers_into_deleted_briefs(project_root: Path, source_id: str) -> list
     ``ADR-0.44.0-vendor-alignment-codex`` broke 36 decorators across four test
     modules — all of them covering an OBPI that was *attested complete* — and the
     only signal was the suite failing to import afterwards.
+
+    Returns:
+        Sorted, de-duplicated REQ ids from ``@covers`` decorators whose semver matches the source
+        ADR; empty when ``tests/`` is absent.
+
     """
     semver = _CANONICAL_ID_RE.match(source_id)
     prefix = source_id.split("-")[1] if not semver else source_id.split("-")[1]
@@ -254,6 +278,11 @@ def _find_dependent_children(project_root: Path, config: Any, demoted_id: str) -
 
     Demoting a parent would orphan its children. Detection is policy-breach
     (exit 3) per .claude/rules/cli.md unless --force is set.
+
+    Returns:
+        Ids of non-pool ADRs whose ``parent`` is ``demoted_id`` (file stem when the id is missing);
+        empty when the ADR root is absent.
+
     """
     adr_root = project_root / config.paths.adrs
     if not adr_root.is_dir():

@@ -201,6 +201,11 @@ def _declared_surface(path: Path) -> str | None:
     caller's raw spelling straight through to the witness -- the exact value
     this whole path exists to keep out of durable state. That case re-raises
     and the caller refuses.
+
+    Returns:
+        The declaration's string ``surface`` value, or None when the file is absent, not valid JSON,
+        or carries no string ``surface``.
+
     """
     try:
         raw = json.loads(path.read_text(encoding="utf-8"))
@@ -220,6 +225,11 @@ def _is_same_file(left: Path, right: Path) -> bool:
     A path that cannot be stat-ed is never the same file as anything, which is
     the fail-closed reading: an unresolvable spelling is refused rather than
     canonicalized.
+
+    Returns:
+        True when both paths stat to the same file; False when they differ or either cannot be
+        stat-ed.
+
     """
     try:
         return left.samefile(right)
@@ -253,6 +263,13 @@ def _resolve_target_or_exit(
     declared identity but names the SAME FILE canonicalizes to the declared
     one; a spelling naming a DIFFERENT file is refused in three-part prose
     before anything is journalled.
+
+    Returns:
+        The transaction target for the declared surface identity (or ``surface`` when no declaration
+        names another). Exits 1 instead when the declaration exists but cannot be read, the
+        requested surface does not exist, the spelling names a different file, or the declared
+        identity does not settle.
+
     """
     try:
         declared = _declared_surface(declaration_path(root, surface))
@@ -427,6 +444,10 @@ def _load_declaration_or_exit(
     *sections_becoming_owned* is passed straight through to `load_declaration`
     (GHI #974): the owning path reads the floor relation over the map it is
     about to produce, and nothing else about the load is relaxed.
+
+    Returns:
+        The loaded ownership declaration; a load failure exits 1 instead.
+
     """
     try:
         return load_declaration(
@@ -504,6 +525,10 @@ def _checked_landed_snapshot(target: _TransactionTarget, record: dict[str, Any])
     pointer this run minted, the floor it computed, and the COMPLETE section
     map the journalled successor commits to. A digest taken from an unchecked
     read describes whatever happens to be there.
+
+    Returns:
+        The validated ``sections`` map of the landed declaration.
+
     """
     landed = json.loads(target.declaration_path.read_text(encoding="utf-8"))
     if landed.get("surface") != target.surface:
@@ -908,6 +933,10 @@ def _owning_successor_map_or_refuse(
     transition completes once coverage is restored. The evidence fields the
     journal carries are copied onto the witness unchanged; what is re-verified
     is the PREDICATE, not the measurement.
+
+    Returns:
+        The successor section map with the journalled section set to ``"corpus-owned"``.
+
     """
     predecessor_status = predecessor.sections.get(record["section"])
     if predecessor_status != "unowned":
@@ -1209,6 +1238,11 @@ def _extract_retained_source(
     The successful branch returns LOCATION, never an instruction: its two
     callers reach state E from different sides -- a pending transition versus
     one already witnessed -- and each supplies its own `step_four`.
+
+    Returns:
+        Tuple of (guidance sentence, True when the verified bytes were extracted and False on a
+        read, digest, or write failure).
+
     """
     try:
         retained = target.journal_source_path.read_bytes()
@@ -1297,6 +1331,10 @@ def _ledger_witness_present(root: Path, event_id: str) -> bool:
     predates this function, and this function neither widens nor repairs it;
     the docstring says so rather than asserting a governed path one arm does
     not have.
+
+    Returns:
+        True when the ledger carries ``event_id``; False when it does not or cannot be read.
+
     """
     try:
         return Ledger(root / ".gzkit" / "ledger.jsonl").latest_event(event_id) is not None
@@ -1407,6 +1445,10 @@ def _journal_record_or_refuse(target: _TransactionTarget) -> dict[str, Any]:
     journal parses, carries every replayable field, names THIS target, carries
     a non-blank attestation, and re-mints its own `event_id` from its own
     content -- and nothing about the on-disk stores has been consulted yet.
+
+    Returns:
+        The parsed journal record, proven replayable.
+
     """
     record: Any = None
     defect: str | None = None
@@ -1465,6 +1507,10 @@ def _on_disk_declaration_or_refuse(target: _TransactionTarget) -> dict[str, Any]
     An ABSENT declaration returns `{}` -- a real state the journal must be
     proven against, and the unlanded branch does prove it. An UNREADABLE one
     that exists is refused instead, because the two are different claims.
+
+    Returns:
+        The raw on-disk declaration dict, or an empty dict when the declaration is absent.
+
     """
     on_disk: dict[str, Any]
     try:
@@ -1553,6 +1599,11 @@ def _replay_pending_transition(
     or an ownership flip that the real `content_unown_cmd` transition never
     produced (Step-4b adversary finding 2; GHI #978's write-side entry, which
     is the half continuing-the-on-disk-predecessor alone did not cover).
+
+    Returns:
+        Tuple of (completed journal record, whether this run committed it), or None when nothing was
+        pending.
+
     """
     if not target.journal_path.exists():
         # The durability boundary and the orphan sweep this state owes were
@@ -1818,6 +1869,11 @@ def _remove_if_present(path: Path) -> OSError | None:
     byte-indistinguishable from one that did (Step-4b round-11 finding 2):
     `journal_unlink_failed exit 0 journal True snapshot False
     diagnostic_mentions_IO_fault False`.
+
+    Returns:
+        None when the path was removed or was already absent, otherwise the ``OSError`` that
+        prevented removal.
+
     """
     try:
         path.unlink()
@@ -1852,6 +1908,11 @@ def _staging_residue(path: Path) -> list[Path]:
     would then leave its own complete copy of the measured source bytes in
     place and remove a stranger's, which is the opposite of both obligations.
     Literal prefix/suffix matching keeps metacharacters inert.
+
+    Returns:
+        Sorted staging-file paths beside ``path`` matching ``.<name>.*.tmp``; empty when there are
+        none.
+
     """
     prefix = f".{path.name}."
     return sorted(
@@ -2212,6 +2273,11 @@ def _journal_dependents(
     the journal's own included: `write_bytes_atomically` stages a COMPLETE COPY
     of the bytes under a name the final target never mentions, so a sweep that
     listed only final names would leave the very material it exists to remove.
+
+    Returns:
+        Tuple of (dependent paths to remove, ``(path, error)`` pairs for directories that could not
+        be inspected).
+
     """
     dependents = [target.journal_source_path, target.recovery_extract_path]
     inspection_failures = []
@@ -2254,6 +2320,11 @@ def _failed_removals(paths: list[Path]) -> list[tuple[Path, OSError]]:
     Every removal is attempted before any failure is reported, so one faulty
     file cannot shelter the rest behind it -- the caller decides what to do
     with the set, and it can only decide over a set that was actually gathered.
+
+    Returns:
+        ``(path, error)`` pairs for each removal that failed, in input order; empty when all
+        succeeded.
+
     """
     return [
         (path, failure)
@@ -2299,6 +2370,11 @@ def _sweep_recovery_residue(
     finalization the file living there is THIS run's measured source and a
     removal failure on it is this run's own cleanup failure. Carrying it would
     be a blanket suppression wearing the ruling's name.
+
+    Returns:
+        On the orphan side, the posix paths it warned about (excluding the retained source);
+        otherwise an empty frozenset.
+
     """
     dependents, inspection_failures = _journal_dependents(target)
     if inspection_failures:
@@ -2341,6 +2417,11 @@ def _establish_recovery_boundary(target: _TransactionTarget) -> frozenset[str]:
     its RESULT outlives the replay: the warned orphan identities travel to
     finalization, and a function that returns None to a caller that discards it
     cannot carry them.
+
+    Returns:
+        The orphan paths the sweep warned about, or an empty frozenset when the journal still exists
+        or nothing was left over.
+
     """
     if target.journal_path.exists():
         return frozenset()
@@ -2438,6 +2519,10 @@ def _reconciliation_sequence(target: _TransactionTarget, step_four: str) -> str:
     `git add -A` before `gz check`, and a full copy of canon saved beside it
     under an unignored name is STAGED rather than merely noticed -- the same
     hazard the `.gitignore` rules for the retained material exist to close.
+
+    Returns:
+        The reconcile-and-restore instruction text with ``step_four`` inserted.
+
     """
     return (
         "Reconcile in this order, which preserves your edit and ends with a "
@@ -2583,6 +2668,11 @@ def _recovery_summary(surface: str, record: dict[str, Any], *, committed_now: bo
     this one, which is the same unsupported premise the refusal paths were
     corrected for. The floor values stay in the sentence because they are true
     of the transition; what changes is whose run made the move.
+
+    Returns:
+        The summary sentence, naming whether this run completed the transition or only cleared
+        material an earlier run left.
+
     """
     moved = _floor_moved(record)
     if committed_now:
@@ -2617,6 +2707,10 @@ def _surface_digest(raw: bytes) -> str:
     taken over exactly the bytes whose spans are measured, which is why the
     read path below decodes with `bytes.decode` (no translation) rather than
     `read_text` (translation).
+
+    Returns:
+        Hex SHA-256 digest of ``raw``.
+
     """
     return hashlib.sha256(raw).hexdigest()
 
@@ -2636,6 +2730,11 @@ def _read_surface_or_exit(surface_path: Path, surface: str) -> tuple[str, str, b
     `Unexpected error: 'utf-8' codec can't decode byte 0xff...` with no
     what/why/next-step (Step-4b round-6 finding 6). Nothing is written on
     either branch: this runs before the declaration is even loaded.
+
+    Returns:
+        Tuple of (decoded text, SHA-256 hex digest, raw bytes); a read or decode failure exits 1
+        instead.
+
     """
     try:
         raw = surface_path.read_bytes()

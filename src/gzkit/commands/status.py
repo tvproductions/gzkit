@@ -111,6 +111,11 @@ def _task_summary_for_adr(
     """Aggregate TASK counts across OBPIs for an ADR.
 
     Returns None when no tasks exist (backward compatible).
+
+    Returns:
+        Dict of aggregated task counts (with ``per_req`` when available), or None when no tasks
+        exist.
+
     """
     total = 0
     pending = 0
@@ -171,6 +176,10 @@ def _req_prefix_from_task_id(task_id: str) -> str | None:
     """Extract the REQ prefix from a TASK ID string.
 
     TASK-semver-obpi_item-req_index-seq → REQ-semver-obpi_item-req_index
+
+    Returns:
+        The ``REQ-...`` id derived from the TASK id, or None when it does not parse.
+
     """
     return task_req_id(task_id)
 
@@ -282,6 +291,11 @@ def _filter_adrs_by_epic(
     Matching is OR'd: a pool ADR matches when EITHER its filename-derived
     epic-slug OR its frontmatter ``epic:`` field equals ``epic_slug``.
     Returns the filtered mapping plus an advisory-warning list.
+
+    Returns:
+        Tuple of (filtered ADR mapping, advisory warnings); the input unchanged with no warnings
+        when ``epic_slug`` is None.
+
     """
     if epic_slug is None:
         return adrs, []
@@ -333,6 +347,11 @@ def _read_workflow_fronts(project_root: Path) -> dict[str, str] | None:
     The optional registry selects the source. The bounded Markdown section is
     also read by the stdlib-only session orientation script; neither reader
     maintains a second front inventory. Projects without a registry opt out.
+
+    Returns:
+        ``{"source", "text"}`` for the Workflow fronts section, ``{"source", "error"}`` when it
+        cannot be read, or None when there is no registry.
+
     """
     registry = project_root / "data/active_campaign.json"
     if not registry.exists():

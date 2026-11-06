@@ -63,6 +63,10 @@ def _at_risk_rationale(added: set[str], removed: set[str]) -> str:
     floor-tier REMOVAL, on every path — including the tombstone-revival path, where
     the entry is revived and the floor GROWS. A round-8 adversary caught the
     diagnostic mischaracterizing the exact class the delta gate was added to catch.
+
+    Returns:
+        A sentence naming whether the retirement would revive floor canon, un-bind it, or both.
+
     """
     if added and removed:
         return "this retirement would both revive and un-bind floor canon"
@@ -107,6 +111,11 @@ def _floor_liveness_delta(corpus, retraction: CorpusEntry) -> tuple[set[str], se
     floor GROWS, while the success message claimed it shrank and suppressed the
     floor-coherence warning. A rendition that satisfied the old floor may fail the
     new one — the operator has to be told which way it went (2026-08-25).
+
+    Returns:
+        ``(added, removed)`` sets of invariant ids; ``({"<unresolvable-fold>"}, set())`` when the
+        fold cannot be resolved.
+
     """
 
     def _invariant_ids(c) -> set[str]:
@@ -131,6 +140,11 @@ def _live_id_hint(corpus, surface: str) -> str:
     send the operator to `gz content list <surface>`, which argparse rejects outright.
     The command already holds the loaded corpus, so it answers the question itself
     rather than delegating it to a verb that does not exist (AGENTS.md Invariant 6g).
+
+    Returns:
+        An indented sentence listing up to ``_ID_SAMPLE`` live entry ids (with a count of the rest),
+        or one saying the corpus holds no live entries.
+
     """
     retired = corpus.retired_ids()
     live = [e.id for e in corpus.entries if e.id not in retired and e.retires is None]

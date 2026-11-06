@@ -105,6 +105,11 @@ def _run_gate_1(
     failures (e.g. ADR missing). Precedence rule: policy-breach exits shadow
     plain-failure exits within the same run; every gate still renders its
     output before the exit is raised, and the ledger records both events.
+
+    Returns:
+        ``"pass"`` when the ADR exists and is coherent, ``"policy_breach"`` on frontmatter drift, or
+        ``"fail"`` on any other Gate 1 failure.
+
     """
     try:
         adr_file, _ = resolve_adr_file(project_root, config, adr_id)
@@ -275,6 +280,11 @@ def _run_eval_delta(
     Runs the eval suite, compares against stored baselines, and reports
     regressions. Gracefully skips when eval datasets are absent (REQ-2).
     Records results via gate_checked_event (REQ-6).
+
+    Returns:
+        True when the eval delta passes or is skipped for missing datasets or baselines; False on an
+        eval error or regression.
+
     """
     from gzkit.eval.delta import (
         check_regressions,

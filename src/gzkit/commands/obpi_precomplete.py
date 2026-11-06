@@ -86,6 +86,11 @@ def obpi_precomplete_cmd(*, obpi_id: str, as_json: bool = False) -> int:
     An id the resolver cannot give to exactly one OBPI with a brief on disk is
     refused with exit 1 and the resolver's own message. Nothing is checked and
     nothing is recorded.
+
+    Returns:
+        ``EXIT_SUCCESS`` (0) when every precondition passes; other outcomes raise ``SystemExit``
+        with codes 1 or 3 as listed above.
+
     """
     from gzkit.pipeline_runtime import RunCrossing, record_run_position
 
@@ -133,6 +138,10 @@ def resolve_brief_path(project_root: Path, obpi_id: str) -> Path | None:
     Honors ``config.paths.design_root`` so the lookup works regardless of
     project layout (``docs/design`` in production, ``design`` in test
     fixtures from ``_quick_init``).
+
+    Returns:
+        The matching brief path, or None when no brief or more than one matches.
+
     """
     from gzkit.config import GzkitConfig
 
@@ -172,6 +181,9 @@ def resolve_obpi_at_entry(project_root: Path, typed: str) -> tuple[str, Path]:
     Returns ``(obpi_id, brief_path)``: the ledger's id for the OBPI and its
     brief.
 
+    Returns:
+        ``(obpi_id, brief_path)``: the ledger's id for the OBPI and its brief.
+
     Raises:
         ObpiEntryError: carrying the resolver's own message when the id names
             no OBPI, names more than one, or names one with no brief on disk,
@@ -206,6 +218,11 @@ def recorded_obpi_id(project_root: Path, named: str) -> str:
     lookup never fails a command whose verdict does not depend on it. A
     command that takes an OBPI id refuses instead (the review imports of
     ``gz obpi acceptance``, Open Design Question 20).
+
+    Returns:
+        The resolver's OBPI id for ``named``, or ``named`` unchanged when it resolves to no single
+        OBPI.
+
     """
     try:
         return resolve_obpi_at_entry(project_root, named)[0]
@@ -267,6 +284,11 @@ def _check_stage2_dispatch(project_root: Path, obpi_id: str) -> CheckResult:
     renamed the two ids are one; for an OBPI renamed after its launch the
     check once looked under the new id, found no marker and passed as "not
     assessable".
+
+    Returns:
+        A ``stage2_dispatch`` :class:`CheckResult`: ok when no marker is active, dispatch is
+        recorded, or single-driver is declared; failed with remediation for silent single-driver.
+
     """
     from gzkit.obpi_dispatch_channel import (
         dispatch_channel,
@@ -344,6 +366,11 @@ def _check_scope_audit(project_root: Path, brief_path: Path) -> CheckResult:
 
     The same audit `gz obpi complete` refuses on, read here so the refusal is known
     before the operator is asked to attest. gzkit's own records never count.
+
+    Returns:
+        A ``scope_audit`` :class:`CheckResult`, failed with remediation when a changed file lies
+        outside Allowed Paths.
+
     """
     from gzkit.hooks.obpi import SCOPE_RECOVERY, build_scope_audit, scope_finding
 
@@ -369,6 +396,11 @@ def _check_reconcile_idempotent(project_root: Path) -> CheckResult:
     `Completed` but canonical-ledger form is `in_progress`): if the brief
     was just `complete`d in a prior precomplete attempt, the dry-run will
     surface the drift and recommend a reconcile round-trip before completion.
+
+    Returns:
+        A ``reconcile_idempotent`` :class:`CheckResult`: failed when files would be rewritten, ok
+        otherwise (noting any refused rewrites).
+
     """
     from gzkit.governance.frontmatter_coherence import reconcile_frontmatter
 
@@ -496,6 +528,11 @@ def _check_arb_receipts_passed(project_root: Path, obpi_id: str) -> CheckResult:
     "Newest per step, since lock"), and each must record ``exit_status`` 0. Red
     history before the claim is not a finding; green history before it is not
     evidence.
+
+    Returns:
+        An ``arb_receipts`` :class:`CheckResult`: failed when no lock claim is readable or a
+        required step's newest receipt is missing or red; ok otherwise.
+
     """
     unittest_cmd = " ".join(CANONICAL_STEP_COMMANDS["unittest"])
     remediation = (
@@ -583,6 +620,11 @@ def _check_brief_headings_scoped(project_root: Path, brief_path: Path) -> CheckR
     GHI #422 fix #2: catch heading drift at Stage 3, before ``gz obpi complete``
     mutates the brief. The whole-tree ``audit_brief_headings`` validator fires
     at git-sync (Stage 5), too late to abort cleanly.
+
+    Returns:
+        A ``brief_headings`` :class:`CheckResult`, failed with remediation when H2 evidence headings
+        are found.
+
     """
     from gzkit.governance.trust_audits.briefs import (  # noqa: PLC0415
         _BRIEF_EVIDENCE_H3_HEADINGS,
@@ -619,6 +661,12 @@ def _check_behave_req_coverage_scoped(
     ``audit_behave_req_tags`` validator only fires on briefs already in
     Completed/Validated status (post-mutation, too late). Lite-lane briefs
     are exempt; waivered OBPIs report ok with the waiver rationale.
+
+    Returns:
+        A ``behave_req_coverage`` :class:`CheckResult`: ok for lite lane, waivers, no REQs,
+        kind-exempt REQs, or full coverage; failed when the brief is unreadable or BEHAVIOR REQs are
+        uncovered.
+
     """
     from gzkit.governance.trust_audits.briefs import (  # noqa: PLC0415
         _ACCEPTANCE_SECTION,
@@ -719,6 +767,11 @@ def _check_task_envelope_coherence(project_root: Path, brief_path: Path) -> Chec
     ``seq=01``-only-without-``req_atomic``, or Sig (c) layer-drift — reddens
     ``gz check`` on the next session. Surfacing it here lets the operator remediate
     *before* invoking ``gz obpi complete``.
+
+    Returns:
+        A ``task_envelope_coherence`` :class:`CheckResult`, failed with remediation when residue is
+        found.
+
     """
     errors = pending_obpi_task_envelope_errors(project_root, brief_path)
     if errors:
@@ -774,6 +827,11 @@ def _check_operator_block(project_root: Path, obpi_id: str) -> CheckResult:
     operator-block gate and the recorder read, so a rename that a correction
     has voided renames nothing here either. That reader skips a line that does
     not decode, as this check always has.
+
+    Returns:
+        An ``operator_block`` :class:`CheckResult`: ok when the ledger is unreadable or no ruling is
+        outstanding; failed with remediation while one is.
+
     """
     from gzkit.ledger import read_corrected_rows  # noqa: PLC0415
     from gzkit.obpi_lifecycle import fold_renames, operator_block_state  # noqa: PLC0415

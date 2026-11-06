@@ -262,6 +262,10 @@ def handoff_rulings_cmd(
     booked by ``gz handoff create`` (the document's own rulings plus those it
     inherits from the predecessor, GHI #1000), never
     by a hand edit here.
+
+    Returns:
+        Always 0.
+
     """
     root = base_path if base_path is not None else get_project_root()
     corpus = read_rulings(root)
@@ -328,6 +332,10 @@ def _current_branch(base_path: Path) -> str:
 
     An empty branch is not silently tolerated: it fails the downstream
     frontmatter gate (fail-closed), which is the correct refusal.
+
+    Returns:
+        The branch name, or an empty string when git fails.
+
     """
     root = get_project_root() if base_path == Path() else base_path
     rc, out, _ = git_cmd(root, "rev-parse", "--abbrev-ref", "HEAD")

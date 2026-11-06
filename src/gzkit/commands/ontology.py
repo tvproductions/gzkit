@@ -114,6 +114,11 @@ def compute_seams(graph: OntologyGraph) -> list[Seam]:
     resolves to a materialized node, so this returns ``[]`` — the false-positive
     floor (REQ-01, § Consequences Negative #7). A genuine structural gap — an
     edge pointing at a node the replay never materialized — surfaces as a seam.
+
+    Returns:
+        Seams for edges with a missing endpoint, sorted by source, target, and link type; empty on a
+        healthy projection.
+
     """
     node_ids = set(graph.node_ids())
     seams: list[Seam] = []
@@ -245,6 +250,11 @@ def render_sense_json(projection: CorpusProjection | UnifiedProjection) -> dict:
     ``UnifiedProjection`` (duck-typed on ``.graph``/``.fidelity``). For the unified
     projection the ``fidelity`` block additively carries per-domain sub-reports
     (corpus/source/work/okf) alongside the back-compat aggregate keys (GHI #672).
+
+    Returns:
+        Dict with coverage notes, node and edge counts, per-type node counts, seams, and the
+        fidelity report.
+
     """
     graph = projection.graph
     node_types: dict[str, int] = {}

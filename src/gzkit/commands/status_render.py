@@ -53,6 +53,11 @@ def _qc_readiness(
     a blocker so QC readiness does not silently report `READY` while live
     evidence contradicts the smoothed view (GHI #411 — observation
     laundering).
+
+    Returns:
+        Tuple of (``"ready"`` when there are no blockers else ``"pending"``, list of blocker
+        labels).
+
     """
     blockers: list[str] = []
     obpi_total = int(obpi_summary.get("total", 0))
@@ -333,6 +338,11 @@ def _brief_cell(row: dict[str, Any]) -> str:
     An authored, not-yet-implemented brief and a raw ``gz specify`` scaffold
     both carry a ``draft`` label; the ``(scaffold)`` suffix surfaces the
     ``brief_authored`` verdict so the two are distinguishable at a glance.
+
+    Returns:
+        The brief status label, suffixed ``(scaffold)`` when the brief is unauthored; ``"draft"``
+        when no status is recorded.
+
     """
     if row.get("brief_authored") is False:
         label = cast("str", row.get("brief_status") or "draft")

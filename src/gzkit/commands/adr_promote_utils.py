@@ -151,6 +151,11 @@ def _parse_top_level_markdown_bullets(section_content: str) -> list[str]:
     Bullets nested inside an H3 (``###``) subsection of the section are
     explicitly skipped — only bullets attached directly to the section's
     top level count as promotion scope (GHI #241).
+
+    Returns:
+        The top-level bullet texts with internal whitespace collapsed; empty when the section has
+        none.
+
     """
     bullets: list[str] = []
     current: list[str] | None = None
@@ -206,6 +211,11 @@ def _parse_decomposition_table(pool_content: str) -> list[tuple[str, str]] | Non
     The table must have at least ``Slug`` and ``Description`` columns; a leading
     ``#`` column is tolerated and ignored. Extra columns (e.g. ``Lane``) are
     ignored.
+
+    Returns:
+        List of ``(slug, description)`` rows (description falls back to slug), or None when the
+        section, table, or a required column is absent, or no rows parse.
+
     """
     section = extract_markdown_section(pool_content, "Proposed OBPI Decomposition")
     if section is None or not section.strip():
@@ -246,6 +256,11 @@ def _extract_bold_prefix_bullet(item: str) -> tuple[str, str] | None:
 
     Accepts em-dash (``—``), en-dash (``–``), or hyphen (``-``) as the separator.
     Returns ``None`` when the bullet does not match the convention.
+
+    Returns:
+        ``(slug, description)`` with description falling back to slug, or None when the bullet does
+        not match or the slug is invalid.
+
     """
     normalized = re.sub(r"\s+", " ", item).strip()
     match = _BOLD_PREFIX_BULLET_RE.match(normalized)
@@ -310,6 +325,11 @@ def _promoted_checklist_from_pool(
 
     Bullets nested under ``### H3`` subsections within ``## Target Scope``
     are ignored by (2) and (3) — only direct top-level bullets count.
+
+    Returns:
+        Tuple of (scope items, rendered ``- [ ] OBPI-...`` checklist text, decomposition scorecard
+        for the item count).
+
     """
     _required_pool_section(pool_content, "Target Scope")
 
@@ -389,6 +409,10 @@ def _render_promoted_adr_content(
     ``{kind}`` and was only ever correct because the upsert happened to
     overwrite it. Rendering the real value removes the ordering dependency —
     the upsert becomes idempotent rather than load-bearing.
+
+    Returns:
+        The rendered ADR markdown with preserved pool sections inserted.
+
     """
     from gzkit.templates import render_template  # noqa: PLC0415
     from gzkit.templates.author_prompts import AUTHOR_PROMPTS, PERSONA_PROMPT  # noqa: PLC0415

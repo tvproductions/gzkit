@@ -78,6 +78,10 @@ def sync_project_version(
     runs without uv.
 
     Returns a list of files that were updated (relative to *project_root*).
+
+    Returns:
+        Files updated, relative to the project root.
+
     """
     updated: list[str] = []
 
@@ -129,6 +133,10 @@ def write_in_flight_release_manifest(project_root: Path, version: str, adr_id: s
     the ceremony's next mandated step unrunnable. ``gz patch release`` already
     filed one at bump time; ``gz closeout`` bumped the same field and filed
     nothing, so every minor release deadlocked.
+
+    Returns:
+        The manifest's repo-relative posix path.
+
     """
     from gzkit.governance.trust_audits.release import in_flight_manifest_path  # noqa: PLC0415
 
@@ -169,6 +177,11 @@ def validate_version_consistency(project_root: Path) -> list[ValidationError]:
 
     Returns a list of ``ValidationError`` for each file whose version
     disagrees with pyproject.toml (the source of truth).
+
+    Returns:
+        One :class:`ValidationError` per file whose version disagrees with pyproject.toml; empty
+        when the project version cannot be read.
+
     """
     from gzkit.core.validation_rules import ValidationError  # noqa: PLC0415
 
@@ -302,6 +315,11 @@ def check_version_sync(project_root: Path, adr_id: str) -> tuple[str | None, str
     """Check if project version should be bumped for this ADR closeout.
 
     Returns ``(current_version, adr_version, needs_bump)``.
+
+    Returns:
+        ``(current_version, adr_version, needs_bump)``: ``(None, None, False)`` when the ADR has no
+        version, and ``needs_bump`` True when the project version is missing or older.
+
     """
     adr_version = _extract_adr_version(adr_id)
     if adr_version is None:

@@ -63,6 +63,10 @@ def render_step_2_summary(
     ADR's ``## Intent`` section and presents it alongside the BOM table so
     the operator can answer the question without opening the ADR in another
     window.
+
+    Returns:
+        The Step 2 scope-review text.
+
     """
     briefs = [extract_brief_metadata(f) for f in obpi_files]
     intent = extract_adr_intent(adr_file)
@@ -200,6 +204,11 @@ def render_step_5_execute(
     ``walkthrough_index`` selects which command this render shows. At index
     ``len(commands) - 1`` the agent runs the final demo and the next ``--next``
     advances the ceremony to Step 6 ATTESTATION.
+
+    Returns:
+        The Step 5 text for the selected demo command, or a no-demos notice when ``commands`` is
+        empty.
+
     """
     if not commands:
         return "\n".join(
@@ -269,6 +278,10 @@ def render_step_6_attestation(adr_id: str) -> str:
     Closeout proof is rendered by the derived ``gz validate --closeout-proof``
     view (ADR-0.0.69), not by a per-brief ``ln:`` binding table — the ``ln:``
     consumer was retired with its producer (GHI #601).
+
+    Returns:
+        The Step 6 attestation prompt text.
+
     """
     lines = [
         "ATTESTATION — Your Verdict",

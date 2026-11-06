@@ -163,6 +163,10 @@ def _bucket_channel_by_lineage(channel: dict[str, set[str]]) -> dict[str, set[st
 
     Narrow by construction: lineage is ``OBPI-<semver>-<item>``, so genuinely
     different OBPIs never merge and real cross-OBPI drift still fires.
+
+    Returns:
+        Mapping of OBPI lineage id to the union of its TASK ids.
+
     """
     bucketed: dict[str, set[str]] = {}
     for obpi_id, task_ids in channel.items():
@@ -175,6 +179,10 @@ def _sig_c_comparison_coverage(project_root: Path) -> tuple[int, int]:
 
     Exposed so the comparison surface is measurable rather than assumed: a gate
     that silently stops comparing looks identical to a gate finding nothing.
+
+    Returns:
+        Tuple of (OBPIs with at least two non-empty channels, total OBPIs).
+
     """
     brief_fms = _collect_obpi_brief_frontmatter(project_root)
     ledger_map, ledger_obpis = _ledger_task_channel(project_root / ".gzkit" / "ledger.jsonl")
@@ -211,6 +219,11 @@ def _is_active_obpi_brief_reflection_event(
     now mirrors the ADR-decision-doc carve-out: a brief edit is excused whenever any
     TASK is active (signature (a) only fires then anyway). Ordinary source/doc
     artifact edits remain worklog events and still require TASK attribution.
+
+    Returns:
+        True for an ``artifact_edited`` event on an ``/obpis/*.md`` brief while any TASK is active,
+        otherwise False.
+
     """
     if ev.get("event") != "artifact_edited":
         return False
@@ -244,6 +257,11 @@ def _is_adr_decision_doc_reflection_event(
     ADR than the active OBPI's own parent — is governance ceremony, not OBPI-REQ
     implementation labor. This is the ADR-decision-doc-layer sibling of the
     OBPI-brief reflection carve-out above.
+
+    Returns:
+        True for an ``artifact_edited`` event on an ADR decision doc (not under ``/obpis/``) while
+        any TASK is active, otherwise False.
+
     """
     if ev.get("event") != "artifact_edited":
         return False
@@ -269,6 +287,11 @@ def _is_support_manpage_reflection_event(
     documentation ceremony, not OBPI-REQ implementation labor. This is the manpage-
     layer sibling of the ADR-decision-doc and OBPI-brief reflection carve-outs above;
     ordinary ``src/`` edits remain worklog events and still require TASK attribution.
+
+    Returns:
+        True for an ``artifact_edited`` event on a manpage while any TASK is active, otherwise
+        False.
+
     """
     if ev.get("event") != "artifact_edited":
         return False
@@ -313,6 +336,11 @@ def _sig_a_is_not_labor_event(
     as a side effect), the ``meta-receipt-bind`` Gate-5 ceremony carve-out, brief
     reflection / REQ-attributed uncovered-accept events, and any non-worklog type.
     Returns ``False`` only for worklog events that must be checked for drift.
+
+    Returns:
+        True when the event is non-labor and should be skipped; False for a worklog event that must
+        be checked.
+
     """
     if ev_type == "task_started" and task_id and obpi_id:
         active_tasks_by_obpi.setdefault(obpi_id, set()).add(task_id)
@@ -431,6 +459,11 @@ def _sig_a_attribution_drift(
     unattributed labor. The active-TASK state walk and every carve-out is
     identical to the unfiltered (repo-wide ``gz check``) pass; only error emission
     is narrowed, so the chokepoint cannot flag another OBPI's drift.
+
+    Returns:
+        One :class:`ValidationError` per unattributed worklog event (only for ``obpi_filter`` when
+        set); empty when the ledger is absent.
+
     """
     import json as _json  # noqa: PLC0415
 
@@ -628,6 +661,10 @@ def pending_obpi_sig_b_error(project_root: Path, brief_path: Path) -> Validation
     the short-vs-full obpi_id divergence (a mismatch would find zero tasks and
     silently pass). Reuses ``_sig_b_error_for_obpi`` so the rule is identical to
     ``gz validate --task-envelope-coherence`` Signature (b) — single source of truth.
+
+    Returns:
+        The Signature (b) :class:`ValidationError`, or None when the OBPI carries no such residue.
+
     """
     fm = _read_brief_frontmatter(brief_path)
     obpi_id = str(fm.get("id") or brief_path.stem)
@@ -651,6 +688,10 @@ def pending_obpi_task_envelope_errors(
       - Sig (a): ``_sig_a_attribution_drift`` with ``obpi_filter`` (carve-outs intact),
       - Sig (b): ``pending_obpi_sig_b_error`` (already scoped, full-slug-id-derived),
       - Sig (c): ``_sig_c_layer_drift`` filtered to this OBPI's ``artifact`` errors.
+
+    Returns:
+        Every Sig (a), (b) and (c) error the pending OBPI would carry; empty when none.
+
     """
     obpi_id = str(_read_brief_frontmatter(brief_path).get("id") or brief_path.stem)
     errors: list[ValidationError] = []
@@ -693,6 +734,11 @@ def _frontmatter_channel_for_obpi(project_root: Path, obpi_id: str) -> set[str]:
     surface whose job is comparing these channels: an empty channel is dropped
     from the drift comparison (``populated``), so the failure is a quiet wrong
     verdict rather than a loud disagreement.
+
+    Returns:
+        The string TASK ids declared under ``tasks:``; empty when no brief matches or the value is
+        not a list.
+
     """
     brief_fms = _collect_obpi_brief_frontmatter(project_root)
     fm = brief_fms.get(obpi_id)
@@ -775,6 +821,10 @@ def _obpi_id_for_task(task_id: str) -> str | None:
     Inverse of ``_task_matches_obpi``: ``_task_matches_obpi(tid, obpi)`` is true
     iff ``_obpi_id_for_task(tid) == obpi``. Slug-form direct-fix ids
     (``TASK-<slug>``, optionally ``-#<ghi>``) have no OBPI parent and return ``None``.
+
+    Returns:
+        The parent OBPI id, or None for a slug-form id.
+
     """
     return task_obpi_id(task_id)
 
@@ -801,6 +851,10 @@ def _frontmatter_channel_map(
 
     Reuses the already-collected ``brief_fms`` mapping so the brief corpus is
     parsed once for the whole audit rather than once per OBPI.
+
+    Returns:
+        Mapping of OBPI id to its declared TASK ids, omitting briefs that declare none.
+
     """
     out: dict[str, set[str]] = {}
     for obpi_id, fm in brief_fms.items():
@@ -819,6 +873,10 @@ def _commit_trailer_channel_map(project_root: Path) -> dict[str, set[str]]:
     Bulk-audit counterpart to ``_commit_trailer_channel_for_obpi``: one
     ``git log --all`` walk for the whole audit instead of one subprocess per
     brief.
+
+    Returns:
+        Mapping of OBPI id to TASK ids found in commit trailers; empty when git fails.
+
     """
     try:
         result = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
@@ -855,6 +913,11 @@ def _ledger_task_channel(ledger_path: Path) -> tuple[dict[str, set[str]], set[st
     ``obpi_id`` appearing on a ``task_started`` event even when the event omits
     ``task_id`` — preserving the brief-less OBPI discovery the audit previously
     did in a separate ledger pass.
+
+    Returns:
+        Tuple of (OBPI id to started TASK ids, every OBPI id seen on a ``task_started`` event); both
+        empty when the ledger is absent.
+
     """
     import json as _json  # noqa: PLC0415
 
@@ -895,6 +958,10 @@ def _sig_c_layer_drift(project_root: Path) -> list[ValidationError]:
     Each channel is materialized ONCE for the whole audit (one ``git log``
     walk, one frontmatter parse, one ledger read) and indexed per-OBPI inside
     the loop, rather than re-scanning every channel per brief.
+
+    Returns:
+        One :class:`ValidationError` per OBPI whose channels cross.
+
     """
     errors: list[ValidationError] = []
     brief_fms = _collect_obpi_brief_frontmatter(project_root)
@@ -975,6 +1042,10 @@ def _crossing_channels(non_empty: dict[str, set[str]]) -> list[str]:
 
     The real signal is preserved: ``@advances`` naming TASK-A while the trailer
     names TASK-C still fires, because neither set contains the other.
+
+    Returns:
+        Sorted names of channels that contradict another channel; empty when all are nested.
+
     """
     crossing: set[str] = set()
     channels = sorted(non_empty.items())
@@ -999,6 +1070,11 @@ def _sig_d_obpi_id_divergence(project_root: Path) -> list[ValidationError]:
     (shrink-only); every other divergence fail-closes.
 
     Heavy-fail: one ValidationError per divergent ``task_id``.
+
+    Returns:
+        One :class:`ValidationError` per non-grandfathered divergent ``task_id``; empty when the
+        ledger is absent.
+
     """
     import json as _json  # noqa: PLC0415
 
@@ -1070,6 +1146,10 @@ def _sig_e_unresolvable_task_declaration(project_root: Path) -> list[ValidationE
 
     Parent resolution reuses the frontmatter already collected for the rest of
     the audit, so the corpus is still parsed once.
+
+    Returns:
+        One :class:`ValidationError` per malformed or unresolvable ``tasks:`` entry.
+
     """
     from gzkit.tasks import TaskId  # noqa: PLC0415  (module-local, as the trailer channel does)
 
@@ -1141,6 +1221,10 @@ def _validate_task_envelope_coherence(project_root: Path) -> list[ValidationErro
 
     All ValidationError instances carry ``type="task_envelope_coherence"`` and
     route to exit 3 via ``_POLICY_BREACH_ERROR_TYPES``.
+
+    Returns:
+        The combined errors from all five signatures.
+
     """
     errors: list[ValidationError] = []
     errors.extend(_sig_a_attribution_drift(project_root))

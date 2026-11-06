@@ -59,6 +59,10 @@ def complexity_distill_cmd(
     Returns ``0`` on success and ``raise SystemExit(code)`` for non-zero exits.
     Tests can collapse both paths by catching
     ``SystemExit`` and reading ``exc.code`` (justify_cmd precedent).
+
+    Returns:
+        0 on success; non-zero outcomes raise ``SystemExit`` instead.
+
     """
     try:
         today = _resolve_today(today_override)
@@ -121,6 +125,10 @@ def _resolve_baseline(
     ``--baseline-json PATH`` short-circuits measurement: the file is parsed
     directly and its path is reported as the baseline artifact path. This
     is the test-injection path; production runs use ``--corpus``.
+
+    Returns:
+        Tuple of (baseline artifact path, validated :class:`BaselineArtifact`).
+
     """
     if baseline_json_arg is not None:
         baseline_path = Path(baseline_json_arg)

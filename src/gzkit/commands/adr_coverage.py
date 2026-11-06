@@ -49,6 +49,11 @@ def _synthesize_doc_proof_linkage(
     etc.). The synthetic records carry ``source.identifier`` like
     ``brief:<OBPI>:<proof_type>`` so the coverage report attributes the
     evidence to its real channel rather than silently skipping it.
+
+    Returns:
+        Synthetic COVERS :class:`LinkageRecord` entries for DOC-kind REQs with non-test proof; empty
+        when no OBPI briefs are found.
+
     """
     obpi_brief_paths: dict[str, Path] = {}
     obpi_doc_reqs: dict[str, list[DiscoveredReq]] = {}
@@ -102,6 +107,12 @@ def _compute_adr_coverage(
     - DOC REQs: decision text, command doc, governance artifact, runbook
       entry, release manifest, or other non-test proof on the parent OBPI
       (see :func:`_synthesize_doc_proof_linkage`).
+
+    Returns:
+        Coverage summary dict with ``total_reqs``, ``covered_reqs``, ``uncovered_reqs``,
+        ``coverage_percent``, ``by_obpi`` and ``uncovered``; the empty summary when the ADR has no
+        semver, its directory is missing, or it has no REQs.
+
     """
     empty: dict[str, Any] = {
         "total_reqs": 0,
@@ -208,6 +219,11 @@ def _collect_covers_annotations(project_root: Path) -> dict[str, list[str]]:
     test file paths that reference it. ``adr_covers_check`` also wants to
     see ADR/OBPI references, which only appear via the decorator-call form;
     those are picked up via a focused AST pass below.
+
+    Returns:
+        Mapping of target identifier to the relative test file paths that reference it; empty when
+        ``tests/`` does not exist.
+
     """
     tests_dir = project_root / "tests"
     if not tests_dir.exists():

@@ -60,6 +60,10 @@ def test_shape_cmd(
 
     Always exits 0. This is a reporting surface, never a gate — 824 of today's 832
     output assertions are undeclared, and most are legitimate render-contract tests.
+
+    Returns:
+        Always 0 (``_ADVISORY_EXIT``).
+
     """
     project_root = get_project_root()
     inventory = build_inventory(project_root)

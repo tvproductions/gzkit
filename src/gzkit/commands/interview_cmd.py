@@ -135,6 +135,9 @@ def _resolve_adr_doc(
     *template_vars*. Returns ``(doc_dir, doc_id)`` for the slug-package
     layout ``<adrs>/{foundation,pre-release}/<id>/<id>.md`` (GHI #505).
 
+    Returns:
+        Tuple of (ADR package directory, ADR id).
+
     Raises:
         GzCliError: If the ``id`` answer is not canonical slug-form.
 
@@ -203,6 +206,10 @@ def _obpi_vars_from_answers(
 
     The parent ADR supplies the checklist item, validated as ``gz specify``
     validates it; an answered section replaces the one ``gz specify`` infers.
+
+    Returns:
+        The ``obpi`` template variables from ``obpi_template_vars``.
+
     """
     item_answer = answers.get("item", "").strip()
     if not item_answer.isdigit():

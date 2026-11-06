@@ -47,6 +47,11 @@ def _pushable_commits(project_root: Path) -> list[tuple[str, str, list[str]]]:
     detached checkout) the range is unknowable, so HEAD alone is read. Commits
     already on the upstream are published history and are not re-flagged.
     Paths use forward slashes, relative to the repo root.
+
+    Returns:
+        ``(short_sha, message, paths)`` per pushable commit, oldest first; HEAD alone when there is
+        no upstream.
+
     """
     revs = _git_out(project_root, ["rev-list", "--reverse", "@{upstream}..HEAD"])
     commits: list[tuple[str, str, list[str]]] = []
@@ -78,6 +83,11 @@ def _validate_commit_trailers(project_root: Path) -> list[ValidationError]:
     Scans every commit ``_pushable_commits`` returns — preventing new trailer
     omissions before they publish, not retroactively flagging historical
     commits. Non-code commits (docs/, .gzkit/, etc.) are skipped.
+
+    Returns:
+        One :class:`ValidationError` per pushable src/tests commit lacking a valid ``Task:``
+        trailer.
+
     """
     errors: list[ValidationError] = []
     for short_sha, message, files in _pushable_commits(project_root):
