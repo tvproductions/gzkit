@@ -2008,48 +2008,13 @@
     },
     {
       "file": "src/gzkit/acceptance_context.py",
-      "rule": "EM101",
-      "count": 6
-    },
-    {
-      "file": "src/gzkit/acceptance_context.py",
-      "rule": "EM102",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/acceptance_context.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/acceptance_context.py",
-      "rule": "TRY003",
-      "count": 8
-    },
-    {
-      "file": "src/gzkit/acceptance_execution.py",
-      "rule": "DOC501",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/acceptance_execution.py",
-      "rule": "EM101",
-      "count": 12
-    },
-    {
-      "file": "src/gzkit/acceptance_execution.py",
-      "rule": "EM102",
-      "count": 3
     },
     {
       "file": "src/gzkit/acceptance_execution.py",
       "rule": "PLR0913",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/acceptance_execution.py",
-      "rule": "TRY003",
-      "count": 15
     },
     {
       "file": "src/gzkit/acceptance_grounds.py",
@@ -2064,16 +2029,11 @@
     {
       "file": "src/gzkit/acceptance_store.py",
       "rule": "DOC501",
-      "count": 4
+      "count": 1
     },
     {
       "file": "src/gzkit/acceptance_store.py",
       "rule": "EM101",
-      "count": 18
-    },
-    {
-      "file": "src/gzkit/acceptance_store.py",
-      "rule": "EM102",
       "count": 2
     },
     {
@@ -2085,21 +2045,6 @@
       "file": "src/gzkit/acceptance_store.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/acceptance_store.py",
-      "rule": "TRY003",
-      "count": 20
-    },
-    {
-      "file": "src/gzkit/acceptance_store.py",
-      "rule": "TRY004",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/acceptance_store.py",
-      "rule": "TRY301",
-      "count": 2
     },
     {
       "file": "src/gzkit/adr_eval.py",
@@ -2178,21 +2123,6 @@
     },
     {
       "file": "src/gzkit/adversary_workspace.py",
-      "rule": "DOC501",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/adversary_workspace.py",
-      "rule": "EM101",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/adversary_workspace.py",
-      "rule": "EM102",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/adversary_workspace.py",
       "rule": "PERF401",
       "count": 1
     },
@@ -2204,11 +2134,6 @@
     {
       "file": "src/gzkit/adversary_workspace.py",
       "rule": "TC003",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/adversary_workspace.py",
-      "rule": "TRY003",
       "count": 2
     },
     {
@@ -2823,21 +2748,6 @@
     },
     {
       "file": "src/gzkit/codex_roles.py",
-      "rule": "DOC501",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/codex_roles.py",
-      "rule": "EM101",
-      "count": 5
-    },
-    {
-      "file": "src/gzkit/codex_roles.py",
-      "rule": "EM102",
-      "count": 3
-    },
-    {
-      "file": "src/gzkit/codex_roles.py",
       "rule": "RUF039",
       "count": 1
     },
@@ -2845,16 +2755,6 @@
       "file": "src/gzkit/codex_roles.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/codex_roles.py",
-      "rule": "TRY003",
-      "count": 8
-    },
-    {
-      "file": "src/gzkit/codex_roles.py",
-      "rule": "TRY004",
-      "count": 3
     },
     {
       "file": "src/gzkit/color_env.py",
@@ -5808,16 +5708,6 @@
     },
     {
       "file": "src/gzkit/commit_witness.py",
-      "rule": "DOC501",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commit_witness.py",
-      "rule": "EM102",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/commit_witness.py",
       "rule": "PLR0913",
       "count": 1
     },
@@ -5840,11 +5730,6 @@
       "file": "src/gzkit/commit_witness.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/commit_witness.py",
-      "rule": "TRY003",
-      "count": 2
     },
     {
       "file": "src/gzkit/complexity/advisor/archetype_rules.py",
@@ -6608,21 +6493,6 @@
     },
     {
       "file": "src/gzkit/exchange_records.py",
-      "rule": "DOC501",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/exchange_records.py",
-      "rule": "EM101",
-      "count": 3
-    },
-    {
-      "file": "src/gzkit/exchange_records.py",
-      "rule": "EM102",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/exchange_records.py",
       "rule": "N818",
       "count": 1
     },
@@ -6640,11 +6510,6 @@
       "file": "src/gzkit/exchange_records.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/exchange_records.py",
-      "rule": "TRY003",
-      "count": 5
     },
     {
       "file": "src/gzkit/fidelity.py",

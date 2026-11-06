@@ -20,6 +20,66 @@ _BODY_KEY = re.compile(
 )
 
 
+class NonStringDeveloperInstructionsError(ValueError):
+    """A Codex role's ``developer_instructions`` value is not a string."""
+
+    def __init__(self, name: str | None = None) -> None:
+        """Build the refusal message from ``name``."""
+        self.name = name
+        message = "Codex role developer_instructions must be a string"
+        super().__init__(message if name is None else f"{message}: {name}")
+
+
+class UnsafeRoleBodyReplacementError(ValueError):
+    """No line span replaces ``developer_instructions`` while preserving every other value."""
+
+    def __init__(self) -> None:
+        """Build the fixed refusal message."""
+        super().__init__("Cannot safely replace Codex role developer_instructions")
+
+
+class InvalidRoleRegistrationError(ValueError):
+    """A registered Codex role has an invalid name or non-mapping metadata."""
+
+    def __init__(self) -> None:
+        """Build the fixed refusal message."""
+        super().__init__("Invalid canonical Codex role registration")
+
+
+class InvalidRoleMetadataError(ValueError):
+    """A registered Codex role lacks a string description or legacy body digest."""
+
+    def __init__(self, name: str) -> None:
+        """Build the refusal message from ``name``."""
+        self.name = name
+        super().__init__(f"Invalid canonical Codex role metadata: {name}")
+
+
+class EmptyCanonicalRoleError(ValueError):
+    """A registered Codex role's canonical body is empty."""
+
+    def __init__(self, name: str) -> None:
+        """Build the refusal message from ``name``."""
+        self.name = name
+        super().__init__(f"Empty canonical Codex role: {name}")
+
+
+class UnsupportedRoleRegistryError(ValueError):
+    """The Codex role registry is not a version-1 mapping."""
+
+    def __init__(self) -> None:
+        """Build the fixed refusal message."""
+        super().__init__("Unsupported canonical Codex role registry")
+
+
+class MissingRolesMappingError(ValueError):
+    """The Codex role registry carries no ``roles`` mapping."""
+
+    def __init__(self) -> None:
+        """Build the fixed refusal message."""
+        super().__init__("Canonical Codex role registry requires a roles mapping")
+
+
 def render_codex_role(source: str, body: str) -> str:
     """Replace one root string while proving every other TOML value survives.
 
@@ -32,10 +92,14 @@ def render_codex_role(source: str, body: str) -> str:
         every other value unchanged, prefixed by the marker line when it does not already open with
         it.
 
+    Raises:
+        NonStringDeveloperInstructionsError: when `developer_instructions` is not a string.
+        UnsafeRoleBodyReplacementError: when no replacement preserves every other value.
+
     """
     original = tomllib.loads(source)
     if not isinstance(original.get("developer_instructions"), str):
-        raise ValueError("Codex role developer_instructions must be a string")
+        raise NonStringDeveloperInstructionsError
     expected = {**original, "developer_instructions": body}
     for match in _BODY_KEY.finditer(source):
         ends = [m.end() for m in re.finditer("\n", source[match.end() :])]
@@ -55,20 +119,20 @@ def render_codex_role(source: str, body: str) -> str:
                 return (
                     candidate if candidate.startswith(MARKER + "\n") else MARKER + "\n" + candidate
                 )
-    raise ValueError("Cannot safely replace Codex role developer_instructions")
+    raise UnsafeRoleBodyReplacementError
 
 
 def _role_output(root: Path, name: str, metadata: object) -> tuple[Path, str] | None:
     """Plan one registered role, leaving customized native bodies untouched."""
     if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", name) or not isinstance(metadata, dict):
-        raise ValueError("Invalid canonical Codex role registration")
+        raise InvalidRoleRegistrationError
     description = metadata.get("description")
     digest = metadata.get("legacy_codex_body_sha256")
     if not isinstance(description, str) or not isinstance(digest, str):
-        raise ValueError(f"Invalid canonical Codex role metadata: {name}")
+        raise InvalidRoleMetadataError(name)
     body = (root / ".gzkit/agents" / f"{name}.md").read_text(encoding="utf-8").strip()
     if not body:
-        raise ValueError(f"Empty canonical Codex role: {name}")
+        raise EmptyCanonicalRoleError(name)
     destination = root / ".codex/agents" / f"{name}.toml"
     if not destination.exists():
         source = f"name = {json.dumps(name)}\ndescription = {json.dumps(description)}\n"
@@ -77,7 +141,7 @@ def _role_output(root: Path, name: str, metadata: object) -> tuple[Path, str] | 
         source = destination.read_text(encoding="utf-8")
         current = tomllib.loads(source).get("developer_instructions")
         if not isinstance(current, str):
-            raise ValueError(f"Codex role developer_instructions must be a string: {name}")
+            raise NonStringDeveloperInstructionsError(name)
         legacy = hashlib.sha256(current.strip().encode("utf-8")).hexdigest() == digest
         if not (source.startswith(MARKER + "\n") or legacy or current.strip() == body):
             return None
@@ -95,16 +159,20 @@ def sync_codex_roles(project_root: Path) -> list[str]:
         Project-relative POSIX paths of every role file the registry manages, in role-name order;
         empty when no registry exists.
 
+    Raises:
+        UnsupportedRoleRegistryError: when the registry is not a version-1 mapping.
+        MissingRolesMappingError: when the registry carries no `roles` mapping.
+
     """
     registry_path = project_root / ".gzkit/agents/roles.json"
     if not registry_path.exists():
         return []
     registry = json.loads(registry_path.read_text(encoding="utf-8"))
     if not isinstance(registry, dict) or registry.get("version") != 1:
-        raise ValueError("Unsupported canonical Codex role registry")
+        raise UnsupportedRoleRegistryError
     roles = registry.get("roles")
     if not isinstance(roles, dict):
-        raise ValueError("Canonical Codex role registry requires a roles mapping")
+        raise MissingRolesMappingError
     outputs = [
         _role_output(project_root, name, metadata) for name, metadata in sorted(roles.items())
     ]

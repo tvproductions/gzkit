@@ -38,6 +38,24 @@ from gzkit.red_witness import classify_failure
 _SUBPROCESS_TIMEOUT_S = 300
 
 
+class AdversaryWorkspaceStepError(RuntimeError):
+    """A step building the adversary checkout failed, so it would be half-built."""
+
+    def __init__(self, step: str, detail: str) -> None:
+        """Build the refusal message from ``step`` and ``detail``."""
+        self.step = step
+        self.detail = detail
+        super().__init__(f"adversary workspace: cannot {step}: {detail}")
+
+
+class EmptyAdversaryWorkspaceError(RuntimeError):
+    """The adversary checkout materialized no files."""
+
+    def __init__(self) -> None:
+        """Build the fixed refusal message."""
+        super().__init__("adversary workspace: materialized no files")
+
+
 class AdversaryWorkspace(BaseModel):
     """Identity of a materialized disposable checkout.
 
@@ -105,10 +123,14 @@ def _refuse(step: str, completed: subprocess.CompletedProcess[bytes]) -> None:
     """Refuse a half-built checkout.
 
     A partial tree would let a replay report against source nobody reviewed.
+
+    Raises:
+        AdversaryWorkspaceStepError: when the build step exited nonzero.
+
     """
     if completed.returncode != 0:
         detail = completed.stderr.decode("utf-8", errors="replace").strip()[:400]
-        raise RuntimeError(f"adversary workspace: cannot {step}: {detail}")
+        raise AdversaryWorkspaceStepError(step, detail)
 
 
 def _digest_tree(root: Path, files: Sequence[Path]) -> str:
@@ -139,7 +161,9 @@ def materialize_adversary_workspace(
         project's `.venv` Python) and the `src` path to put on `PYTHONPATH`.
 
     Raises:
-        RuntimeError: when the reviewed source cannot be reproduced.
+        EmptyAdversaryWorkspaceError: when the checkout materializes no files. A build step
+            that fails raises :class:`AdversaryWorkspaceStepError` through ``_refuse``; both are
+            the ``RuntimeError`` raised when the reviewed source cannot be reproduced.
 
     """
     destination.mkdir(parents=True, exist_ok=True)
@@ -166,7 +190,7 @@ def materialize_adversary_workspace(
 
     files = [path for path in destination.rglob("*") if path.is_file()]
     if not files:
-        raise RuntimeError("adversary workspace: materialized no files")
+        raise EmptyAdversaryWorkspaceError
 
     return AdversaryWorkspace(
         path=str(destination.resolve()),

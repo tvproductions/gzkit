@@ -58,6 +58,27 @@ from gzkit.mutation_witness import (
 from gzkit.reach_trace import ModuleReach, reaching_modules, trace_reach
 from gzkit.red_witness import _git, base_tree_worktree
 
+
+class CommitDiffError(RuntimeError):
+    """Git cannot diff a commit against its parent."""
+
+    def __init__(self, commit: str, stderr: str) -> None:
+        """Build the refusal message from ``commit`` and ``stderr``."""
+        self.commit = commit
+        self.stderr = stderr
+        super().__init__(f"cannot diff {commit} against its parent: {stderr}")
+
+
+class CommitResolutionError(RuntimeError):
+    """Git cannot resolve a revision to a commit."""
+
+    def __init__(self, commit: str, stderr: str) -> None:
+        """Build the refusal message from ``commit`` and ``stderr``."""
+        self.commit = commit
+        self.stderr = stderr
+        super().__init__(f"cannot resolve commit {commit!r}: {stderr}")
+
+
 CommitVerdict = Literal["driven", "undriven", "no-tests", "no-production-hunks", "inconclusive"]
 WitnessUnit = Literal["hunk", "statement", "declaration"]
 
@@ -108,7 +129,7 @@ def _changed_files(project_root: Path, commit: str) -> list[tuple[str, str]]:
     """Return ``(status, path)`` for each ``.py`` file the commit changed vs its parent."""
     out = _git(["diff", "--name-status", "--no-renames", f"{commit}^", commit], project_root)
     if out.returncode != 0:
-        raise RuntimeError(f"cannot diff {commit} against its parent: {out.stderr.strip()}")
+        raise CommitDiffError(commit, out.stderr.strip())
     rows = []
     for line in out.stdout.splitlines():
         status, _, path = line.partition("\t")
@@ -527,10 +548,13 @@ def run_commit_witness(
         file or no hunk changes behavior, "no-tests" when it touches no test module, "inconclusive"
         when the baseline run hangs, otherwise the swept hunks with their aggregate verdict.
 
+    Raises:
+        CommitResolutionError: when git cannot resolve ``commit`` to a commit.
+
     """
     resolved = _git(["rev-parse", "--verify", f"{commit}^{{commit}}"], project_root)
     if resolved.returncode != 0:
-        raise RuntimeError(f"cannot resolve commit {commit!r}: {resolved.stderr.strip()}")
+        raise CommitResolutionError(commit, resolved.stderr.strip())
     sha = resolved.stdout.strip()
     prefix = f"{tests_dir.rstrip('/')}/"
     behave_prefix = f"{features_dir.rstrip('/')}/"

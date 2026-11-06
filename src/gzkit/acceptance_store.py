@@ -25,6 +25,27 @@ from gzkit.acceptance import (
     review_objects,
     validate_review_record,
 )
+from gzkit.acceptance_errors import (
+    AcceptanceAlreadyInitializedError,
+    AcceptanceUninitializedError,
+    CallerSuppliedReviewIdError,
+    CallerSuppliedReviewTierError,
+    ContractReplacedError,
+    HumanReviewAttestorError,
+    HumanReviewRulingError,
+    MissingAcceptanceHistoryError,
+    NoCanonicalBriefError,
+    ObligationRosterChangedError,
+    ProofIdReplacedError,
+    ReviewInvocationUnrecordedError,
+    ReviewReceiptCommandError,
+    ReviewReceiptIdentityError,
+    ReviewReceiptOutputError,
+    StaleProofObligationError,
+    TierTwoAdversarialFallbackError,
+    UnknownAcceptanceRecordTypeError,
+    UnsuccessfulReviewReceiptError,
+)
 from gzkit.acceptance_execution import (
     AcceptanceSource,
     canonical_obligations,
@@ -94,6 +115,10 @@ def resolve_brief(root: Path, obpi_id: str) -> AcceptanceSource:
         The work package's contract for a work-package ID, otherwise the path of the OBPI's
         canonical brief.
 
+    Raises:
+        ValueError: when a work-package ID does not resolve in the catalog.
+        NoCanonicalBriefError: when an OBPI ID resolves to no canonical brief.
+
     """
     from gzkit.commands.obpi_precomplete import resolve_brief_path  # noqa: PLC0415
 
@@ -105,7 +130,7 @@ def resolve_brief(root: Path, obpi_id: str) -> AcceptanceSource:
 
     brief = resolve_brief_path(root, obpi_id)
     if brief is None:
-        raise ValueError(f"No canonical brief for {obpi_id}")
+        raise NoCanonicalBriefError(obpi_id)
     return brief
 
 
@@ -135,6 +160,10 @@ def _replay_history(root: Path, obpi_id: str) -> AcceptanceHistory:
     Returns:
         Every recorded proof and review.
 
+    Raises:
+        ContractReplacedError: when a later contract record differs from the first.
+        UnknownAcceptanceRecordTypeError: when a record carries an unknown record type.
+
     """
     history = AcceptanceHistory()
     for event in acceptance_ledger(root).read_all():
@@ -144,7 +173,7 @@ def _replay_history(root: Path, obpi_id: str) -> AcceptanceHistory:
         if kind == "contract":
             contract = Contract.model_validate(payload)
             if history.contract is not None and history.contract != contract:
-                raise ValueError("Acceptance contract cannot be silently replaced")
+                raise ContractReplacedError
             history.contract = contract
         elif kind == "proof":
             history.proofs.append(Proof.model_validate(payload))
@@ -157,7 +186,7 @@ def _replay_history(root: Path, obpi_id: str) -> AcceptanceHistory:
         elif kind == "human-review":
             history.reviews.append(_at_ledger_position(_human_review(payload), history.proofs))
         else:
-            raise ValueError(f"Unknown acceptance record type: {kind}")
+            raise UnknownAcceptanceRecordTypeError(kind)
     return history
 
 
@@ -219,9 +248,7 @@ def initialize(root: Path, obpi_id: str, author_id: str) -> Contract:
             is_work_package_id(obpi_id) and previous.author_id == contract.author_id
         )
         if not same:
-            raise ValueError(
-                "Acceptance already initialized; preserve its author and obligation identities"
-            )
+            raise AcceptanceAlreadyInitializedError
         return previous
     _append(root, obpi_id, "contract", contract.model_dump(mode="json"))
     return contract
@@ -231,13 +258,13 @@ def record_proof(root: Path, obpi_id: str, proof: Proof) -> None:
     """Persist a proof produced by the execution path, including failed controls."""
     history = load_history(root, obpi_id)
     if history.contract is None:
-        raise ValueError("Initialize acceptance before recording proof")
+        raise AcceptanceUninitializedError("proof")
     current = canonical_obligations(root, resolve_brief(root, obpi_id))
     obligation = next((item for item in current if item.id == proof.obligation_id), None)
     if obligation is None or obligation.contract_digest != proof.contract_digest:
-        raise ValueError("Proof does not describe a current canonical obligation")
+        raise StaleProofObligationError
     if any(item.id == proof.id for item in history.proofs):
-        raise ValueError("A proof ID cannot replace an earlier execution")
+        raise ProofIdReplacedError
     _append(root, obpi_id, "proof", proof.model_dump(mode="json"))
 
 
@@ -279,6 +306,16 @@ def review_from_receipt(receipt: dict[str, Any]) -> Review:
         The review, identified by the receipt's SHA-256 digest and run ID, with tier 1 when the
         receipt proves a cross-vendor invocation and tier 2 otherwise.
 
+    Raises:
+        UnsuccessfulReviewReceiptError: when the receipt is not a successful ARB step receipt.
+        ReviewReceiptIdentityError: when the receipt carries no ARB step run ID.
+        ReviewReceiptOutputError: when the output holds other than exactly one review object.
+        ReviewReceiptCommandError: when the receipt records no executable command.
+        ReviewInvocationUnrecordedError: when no independent agent invocation is recorded.
+        TierTwoAdversarialFallbackError: when a tier-2 adversarial review gives no fallback reason.
+        CallerSuppliedReviewTierError: when the payload supplies its own tier.
+        CallerSuppliedReviewIdError: when the payload supplies its own review or receipt ID.
+
     """
     from gzkit.commands.obpi_complete_adversarial import (  # noqa: PLC0415
         receipt_binary_name,
@@ -286,21 +323,19 @@ def review_from_receipt(receipt: dict[str, Any]) -> Review:
     )
 
     if receipt.get("schema") != "gzkit.arb.step_receipt.v1" or receipt.get("exit_status") != 0:
-        raise ValueError("Review requires a successful ARB step receipt")
+        raise UnsuccessfulReviewReceiptError
     run_id = receipt.get("run_id")
     if not isinstance(run_id, str) or not run_id.startswith("arb-step-"):
-        raise ValueError("Review receipt has no execution identity")
+        raise ReviewReceiptIdentityError
     candidates = review_objects(str(receipt.get("stdout_tail", "")))
     candidates.extend(review_objects(str(receipt.get("stderr_tail", ""))))
     if len(candidates) != 1:
-        raise ValueError(
-            "Receipt output must contain exactly one gzkit.acceptance.review.v1 object"
-        )
+        raise ReviewReceiptOutputError
     payload = dict(candidates[0])
     payload.pop("schema")
     step = receipt.get("step")
     if not isinstance(step, dict) or not isinstance(step.get("command"), list):
-        raise ValueError("Review receipt has no executable command")
+        raise ReviewReceiptCommandError
     command = step["command"]
     # Stage-2 reviewers may share the implementation vendor; Step 4b keeps
     # the existing cross-vendor execution requirement.
@@ -309,19 +344,17 @@ def review_from_receipt(receipt: dict[str, Any]) -> Review:
     )
     cross_vendor = receipt_proves_cross_vendor(receipt)
     if not cross_vendor and not native_claude:
-        raise ValueError("Acceptance review receipt must record the independent agent invocation")
+        raise ReviewInvocationUnrecordedError
     if (
         not cross_vendor
         and payload.get("stage") == "adversarial"
         and not str(payload.get("fallback_reason", "")).strip()
     ):
-        raise ValueError(
-            "Tier-2 adversarial review requires the observed cross-vendor unavailability"
-        )
+        raise TierTwoAdversarialFallbackError
     if "tier" in payload:
-        raise ValueError("Review tier is derived from the execution transport")
+        raise CallerSuppliedReviewTierError
     if "id" in payload or "receipt_id" in payload:
-        raise ValueError("Review IDs are assigned from the executed receipt, never caller supplied")
+        raise CallerSuppliedReviewIdError
     judgment = ReviewResponse.model_validate({"schema": REVIEW_SCHEMA, **payload})
     _refuse_inadequate_replay(judgment)
     digest = hashlib.sha256(json.dumps(receipt, sort_keys=True).encode()).hexdigest()
@@ -364,7 +397,7 @@ def _validate_new_review(root: Path, obpi_id: str, review: Review) -> bool:
     """Validate a forward judgment; return false for an identical already-recorded run."""
     history = load_history(root, obpi_id)
     if history.contract is None:
-        raise ValueError("Initialize acceptance before recording reviews")
+        raise AcceptanceUninitializedError("reviews")
     if any(item.id == review.id for item in history.reviews):
         return False
     brief = resolve_brief(root, obpi_id)
@@ -509,9 +542,9 @@ def _human_review(payload: dict[str, Any]) -> Review:
     """Preserve the existing explicitly recorded human degraded floor."""
     attestor, ruling = payload.get("attestor"), payload.get("ruling")
     if not isinstance(attestor, str) or not attestor.strip():
-        raise ValueError("Human review requires an identified attestor")
+        raise HumanReviewAttestorError
     if not isinstance(ruling, str) or not ruling.strip():
-        raise ValueError("Human review requires the operator's verbatim ruling")
+        raise HumanReviewRulingError
     digest = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
     return Review(
         id=digest,
@@ -613,12 +646,10 @@ def acceptance_status(
         brief = resolve_brief(root, obpi_id)
         history = load_history(root, obpi_id)
         if history.contract is None:
-            raise ValueError("No durable acceptance contract/proof history")
+            raise MissingAcceptanceHistoryError
         current = canonical_obligations(root, brief)
         if {item.id for item in current} != owed_ids(root, obpi_id, history.contract):
-            raise ValueError(
-                "Canonical obligation roster changed; it cannot silently replace acceptance scope"
-            )
+            raise ObligationRosterChangedError
         declared_single_driver = _declared_single_driver(root, obpi_id)
         required_stages = None
         if declared_single_driver:

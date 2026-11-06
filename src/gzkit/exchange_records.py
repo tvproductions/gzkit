@@ -111,6 +111,53 @@ class InvalidAbandonSpec(ValueError):
     """Raised when --abandon argument cannot be parsed or category is unknown."""
 
 
+class AbandonSpecMissingColonError(InvalidAbandonSpec):
+    """An --abandon argument has no ``:`` separating category from reason."""
+
+    def __init__(self) -> None:
+        """Build the fixed refusal message."""
+        super().__init__("abandon spec must be '<category>:<reason>' (missing colon)")
+
+
+class AbandonCategoryWhitespaceError(InvalidAbandonSpec):
+    """An --abandon category carries leading or trailing whitespace."""
+
+    def __init__(self, category: str) -> None:
+        """Build the refusal message from ``category``."""
+        self.category = category
+        super().__init__(
+            f"abandon category must not have leading/trailing whitespace: {category!r}"
+        )
+
+
+class EmptyAbandonCategoryError(InvalidAbandonSpec):
+    """An --abandon argument names no category."""
+
+    def __init__(self) -> None:
+        """Build the fixed refusal message."""
+        super().__init__("abandon category is empty")
+
+
+class EmptyAbandonReasonError(InvalidAbandonSpec):
+    """An --abandon argument gives no reason."""
+
+    def __init__(self) -> None:
+        """Build the fixed refusal message."""
+        super().__init__("abandon reason is empty")
+
+
+class UnknownAbandonCategoryError(ValueError):
+    """An abandon category is outside the closed enum."""
+
+    def __init__(self, category: str, allowed: str) -> None:
+        """Build the refusal message from ``category`` and ``allowed``."""
+        self.category = category
+        super().__init__(
+            f"Unknown abandon category {category!r}; closed enum (see "
+            f".gzkit/rules/token-block-discipline.md § Sub-Invariant 1): {allowed}"
+        )
+
+
 class AbandonSpec(BaseModel):
     """Parsed `--abandon <category>:<reason>` specification."""
 
@@ -124,10 +171,7 @@ class AbandonSpec(BaseModel):
     def _validate_category(cls, v: str) -> str:
         if v not in ABANDON_CATEGORIES:
             allowed = " | ".join(ABANDON_CATEGORIES)
-            raise ValueError(
-                f"Unknown abandon category {v!r}; closed enum (see "
-                f".gzkit/rules/token-block-discipline.md § Sub-Invariant 1): {allowed}"
-            )
+            raise UnknownAbandonCategoryError(v, allowed)
         return v
 
 
@@ -141,18 +185,23 @@ def parse_abandon_spec(raw: str) -> AbandonSpec:
     Returns:
         The validated category and reason.
 
+    Raises:
+        AbandonSpecMissingColonError: when no colon separates category from reason.
+        AbandonCategoryWhitespaceError: when the category has surrounding whitespace.
+        EmptyAbandonCategoryError: when the category is empty.
+        EmptyAbandonReasonError: when the reason is empty.
+        InvalidAbandonSpec: when the category is outside the closed enum.
+
     """
     if ":" not in raw:
-        raise InvalidAbandonSpec("abandon spec must be '<category>:<reason>' (missing colon)")
+        raise AbandonSpecMissingColonError
     category, _, reason = raw.partition(":")
     if category != category.strip():
-        raise InvalidAbandonSpec(
-            f"abandon category must not have leading/trailing whitespace: {category!r}"
-        )
+        raise AbandonCategoryWhitespaceError(category)
     if not category:
-        raise InvalidAbandonSpec("abandon category is empty")
+        raise EmptyAbandonCategoryError
     if not reason:
-        raise InvalidAbandonSpec("abandon reason is empty")
+        raise EmptyAbandonReasonError
     try:
         return AbandonSpec(category=category, reason=reason)
     except ValidationError as e:  # surface as InvalidAbandonSpec for the CLI

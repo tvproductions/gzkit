@@ -29,6 +29,130 @@ from gzkit.req_kind_support import resolve_support_proof
 from gzkit.triangle import extract_reqs_from_brief
 from gzkit.unit_run_provenance import read_test_observations
 
+
+class AcceptanceInputEscapeError(ValueError):
+    """An acceptance input path resolves outside the project root."""
+
+    def __init__(self, path: Path) -> None:
+        """Build the refusal message from ``path``."""
+        self.path = path
+        super().__init__(f"Acceptance input escapes project: {path}")
+
+
+class UnreadableBriefFrontmatterError(ValueError):
+    """A brief's frontmatter cannot be read."""
+
+    def __init__(self, brief: Path) -> None:
+        """Build the refusal message from ``brief``."""
+        self.brief = brief
+        super().__init__(f"Brief frontmatter is not readable: {brief}")
+
+
+class UnidentifiedBriefError(ValueError):
+    """A brief's frontmatter names no ID or no parent ADR."""
+
+    def __init__(self) -> None:
+        """Build the fixed refusal message."""
+        super().__init__("Acceptance requires an identified brief and parent ADR")
+
+
+class NonUniqueRequirementsError(ValueError):
+    """A brief parses to no requirements or to repeated requirement IDs."""
+
+    def __init__(self) -> None:
+        """Build the fixed refusal message."""
+        super().__init__("Acceptance requires unique parsed requirements")
+
+
+class RequirementRosterMismatchError(ValueError):
+    """A brief's `reqs:` roster disagrees with its parsed acceptance criteria."""
+
+    def __init__(self) -> None:
+        """Build the fixed refusal message."""
+        super().__init__("Brief requirement roster disagrees with parsed acceptance criteria")
+
+
+class UndeclaredProofKindError(ValueError):
+    """An acceptance obligation declares no proof kind."""
+
+    def __init__(self) -> None:
+        """Build the fixed refusal message."""
+        super().__init__("Every acceptance obligation must declare its proof kind")
+
+
+class ParentAdrResolutionError(ValueError):
+    """A brief's parent ADR resolves to no file or to more than one."""
+
+    def __init__(self) -> None:
+        """Build the fixed refusal message."""
+        super().__init__("Acceptance requires exactly one canonical parent ADR")
+
+
+class DependencySymlinkError(ValueError):
+    """An audited acceptance dependency is a symlink."""
+
+    def __init__(self, member: Path) -> None:
+        """Build the refusal message from ``member``."""
+        self.member = member
+        super().__init__(f"Acceptance dependency symlinks are unsupported: {member}")
+
+
+class MutationSourceError(ValueError):
+    """A semantic mutation targets a file outside the project's production source."""
+
+    def __init__(self) -> None:
+        """Build the fixed refusal message."""
+        super().__init__("Semantic mutations must target a project production source file")
+
+
+class BehaviorProofInputsError(ValueError):
+    """A BEHAVIOR proof lacks a source, mutations or unique test selectors."""
+
+    def __init__(self) -> None:
+        """Build the fixed refusal message."""
+        super().__init__("BEHAVIOR proof requires source, mutations and unique full test selectors")
+
+
+class UncoveringSelectorError(ValueError):
+    """A test selector does not cover the nominated requirement."""
+
+    def __init__(self) -> None:
+        """Build the fixed refusal message."""
+        super().__init__("Every full test selector must cover the nominated requirement")
+
+
+class MutationTestNominationError(ValueError):
+    """A mutation nominates no tests, or tests outside the selected covering set."""
+
+    def __init__(self) -> None:
+        """Build the fixed refusal message."""
+        super().__init__("Each mutation must nominate full selected covering test IDs")
+
+
+class NonCanonicalObligationError(ValueError):
+    """A proof is requested for a requirement that is not a canonical obligation."""
+
+    def __init__(self) -> None:
+        """Build the fixed refusal message."""
+        super().__init__("Requirement is not a canonical acceptance obligation")
+
+
+class ExecutionConditionKeyError(ValueError):
+    """An execution condition key is empty or is not an environment variable name."""
+
+    def __init__(self) -> None:
+        """Build the fixed refusal message."""
+        super().__init__("Execution condition keys must be nonempty environment names")
+
+
+class NonBehaviorControlError(ValueError):
+    """A non-BEHAVIOR obligation is given mutation controls or test selectors."""
+
+    def __init__(self) -> None:
+        """Build the fixed refusal message."""
+        super().__init__("Non-BEHAVIOR obligations use their canonical proof resolver")
+
+
 #: What acceptance reads a contract from: a brief, or a work package (RO-14 act 5).
 AcceptanceSource = Path | PackageContract
 
@@ -109,7 +233,7 @@ def execution_conditions_digest(keys: tuple[str, ...]) -> str:
 def _inside(root: Path, path: Path) -> Path:
     resolved = (root / path).resolve()
     if not resolved.is_relative_to(root.resolve()):
-        raise ValueError(f"Acceptance input escapes project: {path}")
+        raise AcceptanceInputEscapeError(path)
     return resolved
 
 
@@ -149,25 +273,25 @@ def _brief_contract(root: Path, brief_path: AcceptanceSource) -> dict:
     content = brief.read_text(encoding="utf-8")
     frontmatter = read_frontmatter(content)
     if not frontmatter.is_readable:
-        raise ValueError(f"Brief frontmatter is not readable: {brief}")
+        raise UnreadableBriefFrontmatterError(brief)
     raw, body = _frontmatter_parts(content)
     metadata = yaml.safe_load(raw)
     if not isinstance(metadata, dict) or not metadata.get("id") or not metadata.get("parent"):
-        raise ValueError("Acceptance requires an identified brief and parent ADR")
+        raise UnidentifiedBriefError
     reqs = extract_reqs_from_brief(content, parent_obpi=metadata["id"])
     ids = [str(req.id) for req in reqs]
     roster = metadata.get("reqs")
     if not reqs or len(ids) != len(set(ids)):
-        raise ValueError("Acceptance requires unique parsed requirements")
+        raise NonUniqueRequirementsError
     if not isinstance(roster, list) or len(roster) != len(ids) or set(roster) != set(ids):
-        raise ValueError("Brief requirement roster disagrees with parsed acceptance criteria")
+        raise RequirementRosterMismatchError
     if any(req.taxonomy_kind is None for req in reqs):
-        raise ValueError("Every acceptance obligation must declare its proof kind")
+        raise UndeclaredProofKindError
     config = GzkitConfig.load(root / ".gzkit.json")
     adr_root = _inside(root, Path(config.paths.adrs))
     candidates = list(adr_root.rglob(f"{metadata['parent']}.md"))
     if len(candidates) != 1:
-        raise ValueError("Acceptance requires exactly one canonical parent ADR")
+        raise ParentAdrResolutionError
     parent = _inside(root, candidates[0])
     parent_content = parent.read_text(encoding="utf-8")
     if read_frontmatter(parent_content).is_readable:
@@ -259,6 +383,9 @@ def _file_roster(root: Path) -> dict[str, str]:
         Mapping of each POSIX relative path to its content digest, with each input root itself
         marked "directory" or "missing".
 
+    Raises:
+        DependencySymlinkError: when an audited member is a symlink.
+
     """
     paths, _, _ = _input_paths(root)
     roster: dict[str, str] = {}
@@ -269,7 +396,7 @@ def _file_roster(root: Path) -> dict[str, str]:
             if not _is_audited(member.relative_to(root)):
                 continue
             if member.is_symlink():
-                raise ValueError(f"Acceptance dependency symlinks are unsupported: {member}")
+                raise DependencySymlinkError(member)
             if member.is_file():
                 _inside(root, member)
                 roster[member.relative_to(root).as_posix()] = _sha(member.read_bytes())
@@ -370,7 +497,7 @@ def _production_control_source(root: Path, source: Path, production: Path, tests
             for part in source.relative_to(root).parts
         )
     ):
-        raise ValueError("Semantic mutations must target a project production source file")
+        raise MutationSourceError
     return source
 
 
@@ -380,16 +507,16 @@ def _validate_behavior_inputs(
     """Bind each requested control to a full covering test before executing it."""
     _, production, tests = _input_paths(root)
     if not source or not mutations or not selectors or len(set(selectors)) != len(selectors):
-        raise ValueError("BEHAVIOR proof requires source, mutations and unique full test selectors")
+        raise BehaviorProofInputsError
     source = _production_control_source(root, source, production, tests)
     # An issue or a catalog REQ has no `@covers` scan; its selectors bind by killing mutants.
     if not binds_by_mutation(req_id):
         covering = _covering_selectors(root, req_id, tests)
         if not set(selectors).issubset(covering):
-            raise ValueError("Every full test selector must cover the nominated requirement")
+            raise UncoveringSelectorError
     for mutation in mutations:
         if not mutation.expected_tests or not set(mutation.expected_tests).issubset(selectors):
-            raise ValueError("Each mutation must nominate full selected covering test IDs")
+            raise MutationTestNominationError
     return source
 
 
@@ -434,10 +561,10 @@ def prove(
     root = root.resolve()
     obligations = {item.id: item for item in canonical_obligations(root, brief_path)}
     if req_id not in obligations:
-        raise ValueError("Requirement is not a canonical acceptance obligation")
+        raise NonCanonicalObligationError
     obligation = obligations[req_id]
     if any(not key.strip() or "=" in key for key in environment_keys):
-        raise ValueError("Execution condition keys must be nonempty environment names")
+        raise ExecutionConditionKeyError
     environment_keys = tuple(sorted(set(environment_keys)))
     conditions = execution_conditions_digest(environment_keys)
     before = input_digest(root, brief_path)
@@ -448,7 +575,7 @@ def prove(
         payload, valid = _behavior_evidence(root, req_id, source, mutations, selectors)
     else:
         if source or mutations or selectors:
-            raise ValueError("Non-BEHAVIOR obligations use their canonical proof resolver")
+            raise NonBehaviorControlError
         if obligation.kind == "SUPPORT":
             result = resolve_support_proof(obligation.statement, root, req_id=req_id)
             resolver = "gzkit.req_kind_support.resolve_support_proof"

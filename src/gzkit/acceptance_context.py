@@ -28,6 +28,72 @@ from gzkit.acceptance_store import (
 )
 
 
+class UninitializedReviewContextError(ValueError):
+    """A review context is built before canonical acceptance records exist."""
+
+    def __init__(self) -> None:
+        """Build the fixed refusal message."""
+        super().__init__("Review context requires initialized canonical acceptance records")
+
+
+class NarrowedContextRosterError(ValueError):
+    """The canonical obligation roster changed, so a narrowed context cannot be dispatched."""
+
+    def __init__(self) -> None:
+        """Build the fixed refusal message."""
+        super().__init__("Canonical obligation roster changed; cannot dispatch a narrowed context")
+
+
+class ReviewSubjectChangedError(ValueError):
+    """The acceptance subject changed while its review context was being assembled."""
+
+    def __init__(self) -> None:
+        """Build the fixed refusal message."""
+        super().__init__("Acceptance subject changed while building review context")
+
+
+class ReviewScopeError(ValueError):
+    """A review context's obligation scope is empty or repeats an obligation."""
+
+    def __init__(self) -> None:
+        """Build the fixed refusal message."""
+        super().__init__("Review context needs a nonempty unique obligation scope")
+
+
+class UnknownReviewObligationError(ValueError):
+    """A review context's scope names an obligation its contract does not carry."""
+
+    def __init__(self) -> None:
+        """Build the fixed refusal message."""
+        super().__init__("Review context names an unknown obligation")
+
+
+class MissingReviewProofError(ValueError):
+    """A review context lacks executed proof for an obligation in scope."""
+
+    def __init__(self, obligation_id: str) -> None:
+        """Build the refusal message from ``obligation_id``."""
+        self.obligation_id = obligation_id
+        super().__init__(f"Review context lacks executed proof for {obligation_id}")
+
+
+class SupersededReviewProofError(ValueError):
+    """A review context carries proof superseded by a changed input or contract."""
+
+    def __init__(self, obligation_id: str) -> None:
+        """Build the refusal message from ``obligation_id``."""
+        self.obligation_id = obligation_id
+        super().__init__(f"Review context contains superseded proof for {obligation_id}")
+
+
+class EmptyReviewContextError(ValueError):
+    """A review is composed without a serialized acceptance context."""
+
+    def __init__(self) -> None:
+        """Build the fixed refusal message."""
+        super().__init__("Supply current acceptance context before composing a review")
+
+
 class ReviewContext(AcceptanceModel):
     """A captured read model, not a new source of acceptance requirements."""
 
@@ -90,10 +156,10 @@ def build_review_context(
     before = input_digest(root, brief)
     history = load_history(root, obpi_id)
     if history.contract is None:
-        raise ValueError("Review context requires initialized canonical acceptance records")
+        raise UninitializedReviewContextError
     obligations = tuple(canonical_obligations(root, brief))
     if {item.id for item in obligations} != owed_ids(root, obpi_id, history.contract):
-        raise ValueError("Canonical obligation roster changed; cannot dispatch a narrowed context")
+        raise NarrowedContextRosterError
     status = acceptance_status(root, obpi_id, stage=stage, obligation_ids=obligation_ids)
     context = ReviewContext(
         input_digest=before,
@@ -107,7 +173,7 @@ def build_review_context(
         **status.model_dump(),
     )
     if input_digest(root, brief) != before:
-        raise ValueError("Acceptance subject changed while building review context")
+        raise ReviewSubjectChangedError
     return context
 
 
@@ -116,21 +182,21 @@ def _review_subject(context: ReviewContext) -> tuple[tuple[Obligation, ...], tup
     if not context.obligation_ids or len(set(context.obligation_ids)) != len(
         context.obligation_ids
     ):
-        raise ValueError("Review context needs a nonempty unique obligation scope")
+        raise ReviewScopeError
     if not set(context.obligation_ids).issubset(obligations):
-        raise ValueError("Review context names an unknown obligation")
+        raise UnknownReviewObligationError
     proofs = {item.obligation_id: item for item in context.proofs}
     selected = tuple(obligations[key] for key in context.obligation_ids)
     current = []
     for obligation in selected:
         proof = proofs.get(obligation.id)
         if proof is None:
-            raise ValueError(f"Review context lacks executed proof for {obligation.id}")
+            raise MissingReviewProofError(obligation.id)
         if (
             proof.input_digest != context.input_digest
             or proof.contract_digest != obligation.contract_digest
         ):
-            raise ValueError(f"Review context contains superseded proof for {obligation.id}")
+            raise SupersededReviewProofError(obligation.id)
         current.append(proof)
     return selected, tuple(current)
 
@@ -138,7 +204,7 @@ def _review_subject(context: ReviewContext) -> tuple[tuple[Obligation, ...], tup
 def acceptance_review_frame(stage: str, serialized: str) -> list[str]:
     """Validate local context and examples before an expensive reviewer dispatch."""
     if not serialized.strip():
-        raise ValueError("Supply current acceptance context before composing a review")
+        raise EmptyReviewContextError
     context = ReviewContext.model_validate_json(serialized)
     obligations, proofs = _review_subject(context)
     example = ReviewResponse.model_validate(
