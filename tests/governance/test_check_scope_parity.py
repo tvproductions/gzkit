@@ -64,6 +64,11 @@ def _flags_in(node: ast.AST) -> tuple[set[str], bool]:
     A bare invocation carries no flag and runs the entire default tier, so it
     cannot be read off a flag token — it has to be reported separately and
     expanded against the registry's tiers by the caller.
+
+    Returns:
+        Tuple of the scope stems found in string constants under ``node`` and whether a bare ``gz
+        validate`` string appears.
+
     """
     out: set[str] = set()
     bare = False
@@ -114,6 +119,11 @@ def scopes_reached_by_check(
     embedded in string literals along the way. A bare ``gz validate`` expands to
     every ``default``-tier stem in ``scopes`` (GHI #744): one subprocess runs the
     whole tier, so reachability must follow the tier, not a flag token.
+
+    Returns:
+        The scope stems reached from the step functions within four call levels, plus every
+        default-tier stem in *scopes* when a bare ``gz validate`` is reached.
+
     """
     quality_cmd_tree = ast.parse(quality_cmd_src)
     defs = _func_defs(ast.parse(quality_src)) | _func_defs(quality_cmd_tree)

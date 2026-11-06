@@ -36,6 +36,10 @@ def _invoke(args: list[str]) -> tuple[int, str]:
     Behave exec()s step files without package semantics, so a relative import of
     the shared helper fails at load time; every other step module that needs a
     driver defines its own for the same reason.
+
+    Returns:
+        Tuple of the exit code (0 when ``main`` returns None) and the captured stdout/stderr text.
+
     """
     output = io.StringIO()
     with redirect_stdout(output), redirect_stderr(output):

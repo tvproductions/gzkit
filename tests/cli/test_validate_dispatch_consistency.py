@@ -55,6 +55,11 @@ def _parser_lambda_block() -> str:
     method) so it is not mis-detected as a fixture-op-with-assertion by the
     tautological-test-audit — the audit's count baseline keys on
     filesystem ops co-occurring with assertions *inside test bodies*.
+
+    Returns:
+        The source text captured inside ``p_validate.set_defaults(...)``, or ``""`` when the block
+        is not found.
+
     """
     pm = Path("src/gzkit/cli/parser_maintenance.py").read_text(encoding="utf-8")
     block = re.search(r"p_validate\.set_defaults\((.*?)\n    \)", pm, re.DOTALL)

@@ -45,6 +45,10 @@ def _make_execute_state():
 
     Done lazily to avoid failing at module level when CeremonyState
     is still available but _gate_proof_binding is not yet wired.
+
+    Returns:
+        A ``CeremonyState`` for ``ADR-0.0.63-test`` at the ``EXECUTE`` step.
+
     """
     from gzkit.commands.closeout_ceremony import CeremonyState, CeremonyStep
 

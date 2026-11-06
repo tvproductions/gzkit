@@ -52,6 +52,10 @@ def _invoke_generated(args: list[str]) -> tuple[int, str]:
     tty (``io.StringIO.isatty()`` is ``False``) and carries no content, so
     ``content_compose_cmd`` reads empty/whitespace-only text and calls
     ``generate_candidate()`` rather than ``compose()``.
+
+    Returns:
+        Tuple of the exit code (0 when ``main`` returns None) and the captured stdout/stderr text.
+
     """
     output = io.StringIO()
     empty_stdin = io.StringIO("")

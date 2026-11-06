@@ -37,6 +37,10 @@ def _live_claim(*, minutes_ago: int = 1) -> str:
 
     Liveness is the property under test, so compute it from `now` and let the
     name say so.
+
+    Returns:
+        The ISO timestamp *minutes_ago* minutes before now (UTC).
+
     """
     return (datetime.now(UTC) - timedelta(minutes=minutes_ago)).isoformat()
 

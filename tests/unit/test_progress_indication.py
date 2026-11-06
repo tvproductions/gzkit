@@ -51,6 +51,10 @@ def _result(success: bool) -> QualityResult:
     reads the captured streams (GHI #713) — and a stub that models only the
     field today's assertions touch fails whenever the consumer grows. Using the
     real model makes that class of drift impossible.
+
+    Returns:
+        A ``QualityResult`` with *success* and return code 0 on success, 1 otherwise.
+
     """
     return QualityResult(
         success=success,

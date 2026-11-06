@@ -90,6 +90,10 @@ def _make_tree(
       AGENTS.md                                 ← per-turn surface (optional body)
       CLAUDE.md                                 ← per-turn surface (optional body)
       .claude/rules/test-rule.md               ← per-turn rule (when rule_content given)
+
+    Returns:
+        The seeded project root.
+
     """
     root = Path(tmp)
     scorecard_path = root / "docs" / "governance" / "advisory-rules-audit.md"
@@ -468,6 +472,10 @@ def _seed_advisor_witness(
     receipt_id is the exact linkage the validator follows
     (``rendition_advisor_verdict.receipt_id`` → ``<receipt_id>.json``); the
     receipts root is env-pinned by the caller via ``GZKIT_ARB_RECEIPTS_ROOT``.
+
+    Returns:
+        The receipt id (the receipt file's stem).
+
     """
     resolved_run_id = run_id if run_id is not None else f"arb-step-judge-{'a' * 32}"
     receipt_path = advisor_qc.record_verdict(

@@ -30,6 +30,10 @@ def _seed_adr(adr_root: Path, adr_id: str, *, body: str = "") -> Path:
     Returns the ADR file path. The package layout matches the foundation /
     pre-release shape used by ``resolve_adr_file``: ``<adr_root>/<bucket>/
     <ADR-ID>/<ADR-ID>.md`` plus an ``obpis/`` directory.
+
+    Returns:
+        The path of the seeded ADR markdown file.
+
     """
     bucket = "foundation" if adr_id.startswith("ADR-0.0.") else "pre-release"
     pkg_dir = adr_root / bucket / adr_id

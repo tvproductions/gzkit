@@ -96,6 +96,10 @@ class _GateFixture(unittest.TestCase):
         *artifact_days_ago* is when the declared scan artifact last changed (None:
         never). *log* is the ``CHORE-LOG.md`` body — the record the gate must never
         read, so every case that sets it asserts the verdict ignores it.
+
+        Returns:
+            The exit code the gate's ``main`` returned.
+
         """
         declared = [_ARTIFACT] if artifacts is None else artifacts
         changed = None

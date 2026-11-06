@@ -51,6 +51,11 @@ def _prompt_input(delivered: str, *, project_root: str = "/repo") -> list[dict[s
     an `<INSTRUCTIONS>` element, and the bytes between the element's tags are
     exactly the bytes it loaded from the file (measured 2026-09-05: a 32768-byte
     cap yields a 32768-byte inner block inside a 32862-byte payload).
+
+    Returns:
+        A two-message list (developer, user) whose user content wraps *delivered* in the AGENTS.md
+        instructions block for *project_root*.
+
     """
     return [
         {"role": "developer", "content": [{"text": "<permissions instructions>…"}]},

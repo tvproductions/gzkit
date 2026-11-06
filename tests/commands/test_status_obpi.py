@@ -21,6 +21,10 @@ def _attested_then_repudiated_node() -> dict[str, Any]:
     attestation evidence); only ``ledger_completed`` flips False and
     ``repudiated`` flips True — mirroring how ``ledger.py`` applies the
     repudiation event over the prior completion receipt.
+
+    Returns:
+        Dict of the OBPI node fields, flagged repudiated with stale attested-completion evidence.
+
     """
     return {
         "type": "obpi",

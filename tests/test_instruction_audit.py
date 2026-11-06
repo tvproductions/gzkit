@@ -36,6 +36,10 @@ def _framework_tree(root: Path) -> Path:
     loud. A bare temp directory is an ADOPTER tree; asserting framework
     semantics against one is how a reachability test goes green because the
     discriminator moved rather than because the behaviour holds (GHI #912).
+
+    Returns:
+        The same *root*, now carrying ``src/gzkit/__init__.py``.
+
     """
     package = root / "src" / "gzkit"
     package.mkdir(parents=True, exist_ok=True)

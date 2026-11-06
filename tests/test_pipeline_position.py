@@ -166,6 +166,10 @@ def seed_launchable_obpi(*, with_reqs: bool = False) -> tuple[Path, Path]:
 
     ``with_reqs`` gives the brief ``_CLI_REQS`` as acceptance criteria, so a
     full launch auto-starts one TASK for each of them.
+
+    Returns:
+        The per-OBPI and legacy pipeline marker paths for ``_CLI_OBPI`` under ``.claude/plans``.
+
     """
     criteria = ""
     if with_reqs:
@@ -276,6 +280,10 @@ def completion_gates_replaced(*, failing_write: bool = False) -> Any:
     each is replaced; the transaction, the ledger and the marker are real.
     ``failing_write`` makes the ledger write inside the transaction fail, so
     the completion rolls back and exits 2.
+
+    Returns:
+        A context manager holding every gate replacement patch for one ``with`` block.
+
     """
     module = "gzkit.commands.obpi_complete"
     replaced = [
@@ -325,6 +333,10 @@ def stage4_work_replaced(*, review_stage: str = "adversarial") -> Any:
     """Replace what the three Stage 4 commands compute, keeping what they record.
 
     ``review_stage`` is the stage the imported review carries.
+
+    Returns:
+        A context manager holding every Stage 4 replacement patch for one ``with`` block.
+
     """
     packet = Mock(blockers=[], review_blockers=[])
     packet.model_dump_json.return_value = "{}"
@@ -683,6 +695,10 @@ class _RecordingFixture(_RunFixture):
         """Record a crossing of a ruled boundary, as the command that marks it does.
 
         ``obpi_id`` is the id the command hands the recorder, however it came by it.
+
+        Returns:
+            Whatever ``record_position`` returned for the crossing.
+
         """
         return record_position(
             self.ledger,
@@ -1524,6 +1540,10 @@ class _LaunchableThroughTheCli(unittest.TestCase):
 
         Returns the blockers a failed verification finds, as the console prints
         them; what the run printed is kept in ``self.printed``.
+
+        Returns:
+            The blockers list ``verification_replaced`` yielded.
+
         """
         with verification_replaced(
             failing=failing, detail=detail, at_dispatch=at_dispatch
@@ -2968,6 +2988,11 @@ def _malformed_crossings() -> list[tuple[str, LedgerEvent]]:
 
     Each is a sound later crossing with one required field removed or emptied,
     plus one whose stage is a position inside a stage and not a canonical stage.
+
+    Returns:
+        Pairs of (case label, malformed crossing event) covering each required field removed or
+        emptied and a position used as the stage.
+
     """
     sound = _crossed("ceremony", "round", "present-evidence", _CROSSED_LATER_AT)
     rows: list[tuple[str, LedgerEvent]] = []
@@ -3911,6 +3936,10 @@ def _load_orientation_module() -> Any:
     bound to REQ-0.35.0-15-06 sit in this module and not that one because a
     bound test module's reach is read as the brief's, and that module's other
     tests reach modules the brief does not allow.
+
+    Returns:
+        The loaded ``session_orientation`` module, also registered in ``sys.modules``.
+
     """
     spec = importlib.util.spec_from_file_location("session_orientation", _ORIENTATION_SCRIPT)
     assert spec is not None and spec.loader is not None, f"cannot load {_ORIENTATION_SCRIPT}"

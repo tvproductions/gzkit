@@ -910,6 +910,10 @@ class TestRepairRestoresAMarkersTwin(_RepairableRun):
         The second crossing is appended to the ledger alone, so the marker on
         disk is behind the ledger: a file rebuilt from the ledger would differ
         from the file on disk, and a copy would not.
+
+        Returns:
+            The per-OBPI pipeline marker read back after the second crossing.
+
         """
         self._launch()
         chan.record_dispatch(self.root, _RUN, role="Implementer", model="sonnet", task_id=1)

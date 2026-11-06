@@ -60,6 +60,10 @@ def _project(root: Path) -> Path:
     ``validate_handoff_document`` checks every path cited in Evidence / Artifacts
     against disk, so a fixture that cites a file it never creates fails the gate
     for a reason unrelated to what these tests assert.
+
+    Returns:
+        The same *root*, now containing ``EVIDENCE.md``.
+
     """
     root.mkdir(parents=True, exist_ok=True)
     (root / "EVIDENCE.md").write_text("evidence\n", encoding="utf-8")
@@ -73,6 +77,10 @@ def _chained(base: Path) -> Path:
     that measured an unlinked handoff would pass no matter how large the corpus
     grew, which is the vacuous shape the discriminator in `.gzkit/rules/tests.md`
     exists to catch.
+
+    Returns:
+        The path of the successor handoff.
+
     """
     root = create_handoff(
         branch="main",

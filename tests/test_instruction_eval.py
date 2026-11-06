@@ -28,6 +28,10 @@ def _framework_tree(root: Path) -> Path:
     ``_is_framework_tree`` keys on the package source being present. A bare temp
     directory is an ADOPTER tree, so a test asserting that gzkit's own docs
     surface is required has to say which tree it means (GHI #913).
+
+    Returns:
+        The same *root*, now carrying ``src/gzkit/__init__.py``.
+
     """
     package = root / "src" / "gzkit"
     package.mkdir(parents=True, exist_ok=True)

@@ -384,6 +384,10 @@ class TestFoundationLimboProse(unittest.TestCase):
         ``[0]`` would raise ``IndexError`` when the assertion is absent — a
         weak RED that proves only that a list was empty, never that the prose
         contract was violated (GHI #642 ``failure_class=error``).
+
+        Returns:
+            The message of the single ``foundation_limbo`` finding.
+
         """
         _seed_declared_foundation(root, "ADR-0.0.99-prose")
         _write_ledger(root, [])

@@ -33,6 +33,10 @@ def _invoke_justify(**kwargs: Any) -> int:
     ``justify_cmd`` raises ``SystemExit(code)`` for non-zero exits because
     ``gzkit.cli.main`` swallows handler return values. Tests want the integer
     exit code, so this helper collapses both paths into a returned int.
+
+    Returns:
+        The value ``justify_cmd`` returned, or the ``SystemExit`` code (1 when it is not an int).
+
     """
     try:
         return justify_cmd(**kwargs)

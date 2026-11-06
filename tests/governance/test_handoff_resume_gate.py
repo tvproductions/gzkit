@@ -50,6 +50,10 @@ def _seed_handoff(
     optional because a handoff carries continuity for any work, so an ADR-less
     handoff must still arm the gate. `mode` is required by `HandoffFrontmatter`,
     so a fixture omitting it was never a document the schema would admit.
+
+    Returns:
+        The path of the written handoff.
+
     """
     d = base / ".gzkit" / "handoffs"
     d.mkdir(parents=True, exist_ok=True)

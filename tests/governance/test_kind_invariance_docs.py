@@ -113,6 +113,11 @@ def fence_roster() -> list[tuple[Path, bool]]:
     than infer it. `True` means "only the tests in this file that exercise the
     scope owe `@covers`"; `False` means the whole file does, which is only
     honest for a file whose entire subject is the scope.
+
+    Returns:
+        Pairs of (path, False) for each scope-owned test file followed by (path, True) for each
+        shared test file.
+
     """
     return [(path, False) for path in SCOPE_OWNED_TEST_FILES] + [
         (path, True) for path in SHARED_TEST_FILES

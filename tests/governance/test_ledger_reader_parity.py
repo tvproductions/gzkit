@@ -70,6 +70,10 @@ def _typed_models() -> dict[str, Any]:
     The discriminator value lives in the annotation, not in a field default —
     a probe reading `.default` resolves zero models and reports zero drift,
     which is indistinguishable from a clean result.
+
+    Returns:
+        Mapping of event name to its typed ledger event model.
+
     """
     union = typing.get_args(typing.get_args(TypedLedgerEvent)[0])
     models: dict[str, Any] = {}
@@ -100,6 +104,11 @@ def _model_item_type(annotation: Any) -> str | None:
     `None` for an unparameterized or non-list annotation, so a field this cannot
     resolve is skipped rather than reported — an assertion is worth only what its
     probe can see, and a false finding here would be as bad as a missed one.
+
+    Returns:
+        The JSON type name (``"object"`` for a dict element) of the list element, or None when the
+        annotation has no list form, a bare list, or an unmapped element type.
+
     """
     for candidate in (annotation, *typing.get_args(annotation)):
         if typing.get_origin(candidate) is not list:

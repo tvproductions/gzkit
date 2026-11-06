@@ -40,6 +40,10 @@ def _fixture_root(source: str, rel: str = "sync_surfaces.py") -> TemporaryDirect
     as a finding (so a rename cannot buy silence), so a fixture holding one module
     would return that finding four times over and drown the signal being asserted.
     The modules not under probe get a benign pinned write.
+
+    Returns:
+        The ``TemporaryDirectory`` holding the tree; the caller cleans it up.
+
     """
     tmp = TemporaryDirectory()
     for name in _SURFACE_WRITER_MODULES:

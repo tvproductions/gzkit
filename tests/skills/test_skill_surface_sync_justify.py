@@ -34,6 +34,10 @@ def _read_skill_delivered(name: str) -> str:
 
     OBPI-0.35.0-20 cut each stage's procedure over to ``references/stage-*.md``;
     a REQ about what the skill instructs reads the delivered whole.
+
+    Returns:
+        The skill file text joined by newlines with each sorted ``stage-*.md`` reference.
+
     """
     parts = [_read_skill(name)]
     references = CANONICAL_SKILLS / name / "references"
@@ -69,6 +73,10 @@ def _semver_tuple(version: str) -> tuple[int, ...]:
     (``"6.10.0" < "6.9.0"``); semantic-version comparison must compare each
     component as an integer. Local Agent Rule: 'Order versioned identifiers
     semantically, never lexicographically.'
+
+    Returns:
+        The dot-separated components as a tuple of ints.
+
     """
     return tuple(int(p) for p in version.split("."))
 

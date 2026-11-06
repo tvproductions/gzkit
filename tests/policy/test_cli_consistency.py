@@ -53,6 +53,11 @@ class TestCLIConsistency(unittest.TestCase):
         Walks the argparse tree and returns a flat list of records — one per
         parser node — containing the command path, prog, description, epilog,
         and all arguments registered at that level.
+
+        Returns:
+            One record dict per parser (path, prog, description, epilog, arguments, subcommands),
+            subparsers before their parent.
+
         """
         records: list[dict] = []
         cmd_path = " ".join(path) if path else "ROOT"

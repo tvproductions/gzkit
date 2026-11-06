@@ -853,6 +853,11 @@ def _build_mock_git_cmd(
     the set of GHI numbers the range log should expose. Defaults to the
     keys of ``src_commits`` so most tests need only declare the src-diff
     matrix.
+
+    Returns:
+        A side-effect callable that answers ``tag``, tag-date ``log``, range ``log`` and ``--grep``
+        ``log`` calls from the given fixtures, and ``(0, "", "")`` otherwise.
+
     """
     if range_refs is None:
         range_refs = set(src_commits.keys())
@@ -887,6 +892,11 @@ def _build_mock_run_exec(auth_ok: bool = True, view_payloads: dict[int, dict] | 
     ``view_payloads`` keys are GHI numbers; values are the JSON payload dict
     (must include ``state``, ``number``, ``title``, ``closedAt``, ``labels``,
     ``url``). A missing key returns exit 1 (not found).
+
+    Returns:
+        A side-effect callable that answers ``gh auth status`` per ``auth_ok``, ``gh issue view``
+        from ``view_payloads`` (exit 1 for unknown numbers), and ``(0, "", "")`` otherwise.
+
     """
     payloads = view_payloads or {}
 

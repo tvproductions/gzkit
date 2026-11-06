@@ -81,6 +81,10 @@ class _HandoffCliCase(unittest.TestCase):
         Every required section carries a body: a handoff with empty sections is
         refused at authoring (GHI #692), so a seed that supplied only Decisions
         Made would no longer reach disk.
+
+        Returns:
+            The path of the created handoff.
+
         """
         sections: dict[str, str] = {section: f"Seeded {section}." for section in REQUIRED_SECTIONS}
         sections["Decisions Made"] = "Chose the thin-adapter shape."

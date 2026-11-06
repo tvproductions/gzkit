@@ -60,6 +60,11 @@ def _slug(root: PurePath) -> str:
     inside the repository it exists to survive (GHI #1071). ``as_posix()``
     normalises the separator on every platform, and the character filter
     removes the drive colon and anything else a filesystem would object to.
+
+    Returns:
+        The posix path with each run of unsafe characters replaced by a hyphen and edge hyphens
+        stripped, or ``"root"`` when nothing remains.
+
     """
     flattened = re.sub(r"[^A-Za-z0-9._-]+", "-", root.as_posix()).strip("-")
     return flattened or "root"

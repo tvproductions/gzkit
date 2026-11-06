@@ -54,6 +54,11 @@ def _collect_manifests() -> dict[str, str]:
 
     Discovers the manifest wherever it lives, so the assertion is invariant to
     the #617 collapse (three per-parser dicts before; one shared dict after).
+
+    Returns:
+        Mapping of handler name to module path, merged across every parser module that defines a
+        ``_LAZY_HANDLERS`` dict.
+
     """
     merged: dict[str, str] = {}
     for path in _parser_paths():

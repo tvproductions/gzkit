@@ -26,6 +26,10 @@ def _build_wheel_into(tmpdir: Path) -> Path:
 
     Uses ``uv build --wheel --out-dir`` to keep build hermetic and avoid
     polluting the repo's ``dist/``.
+
+    Returns:
+        The path of the last-sorted ``py_gzkit-*.whl`` built into *tmpdir*.
+
     """
     result = subprocess.run(  # noqa: S603 — uv run of the CLI under test
         ["uv", "build", "--wheel", "--out-dir", str(tmpdir)],

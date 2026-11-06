@@ -40,6 +40,10 @@ def _write_receipt(directory: Path, name: str, payload: dict | str) -> Path:
     ``arb-red-*`` (AGENTS.md § Attestation pins the prefixes), and the validator
     scopes its scan to them because the receipts directory is shared with other
     artifact kinds. Fixtures named ``a`` / ``bad`` did not exercise that contract.
+
+    Returns:
+        The path of the written ``arb-<name>.json`` receipt.
+
     """
     path = directory / f"arb-{name}.json"
     if isinstance(payload, str):

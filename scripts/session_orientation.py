@@ -118,6 +118,12 @@ def collect_campaign(repo_root: Path) -> dict | None:
     the shared-implementation fix unavailable while the discriminator was a
     regex. Returns ``None`` when the registry is missing, unreadable, or names a
     file that is gone; orientation must never crash the boot hook.
+
+    Returns:
+        Dict of the plan's repo-relative path, done/total checkbox counts, first three unchecked
+        items, topmost marker text, workflow-fronts text and ADR refs; None when the registry is
+        missing, unreadable or invalid, or the named plan file is absent or unreadable.
+
     """
     registry = repo_root / "data" / "active_campaign.json"
     try:
@@ -186,6 +192,11 @@ def collect_live_adr_counts(adr_ids: list[str]) -> list[dict]:
     Every failure shape — missing binary, timeout, non-zero exit, unparseable or
     unexpected JSON — drops that ADR from the result. A boot hook must never
     crash the session, and an absent count must never be rendered as a real one.
+
+    Returns:
+        One dict per ADR whose status resolved (adr id, completed and total OBPI counts, lifecycle);
+        ADRs whose lookup failed in any way are omitted.
+
     """
     resolved: list[dict] = []
     for adr_id in adr_ids:
@@ -229,6 +240,11 @@ def _campaign_adr_refs(topmost: str | None, limit: int = CAMPAIGN_ADR_REF_LIMIT)
     something a boot hook can afford. ``dict`` rather than ``set`` because the
     order is the sequencing order, and truncation must drop the tail, not an
     arbitrary member.
+
+    Returns:
+        The distinct ADR ids in first-seen order, capped at ``limit``; empty when ``topmost`` is
+        None or empty.
+
     """
     if not topmost:
         return []
@@ -249,6 +265,12 @@ def _campaign_head(text: str, limit: int = CAMPAIGN_TOPMOST_HEAD_CHARS) -> str:
     The orientation points at the plan; it does not reproduce it. A Topmost
     line or checkbox is amendment history, and its head is enough to name the
     item a session is oriented to (GHI #1242).
+
+    Returns:
+        The first sentence when it ends within ``limit`` characters, else the whole
+        whitespace-collapsed text if it fits, else its first ``limit`` characters followed by an
+        ellipsis.
+
     """
     flat = " ".join(text.split())
     end = flat.find(". ")
@@ -301,6 +323,11 @@ def parse_frontmatter_agent(text: str) -> str | None:
     authored handoff. ``mode`` cannot: both are ``CHECKPOINT`` once an operator
     authors a mid-flight checkpoint, so a mode test would discard the authored
     document (GHI #758).
+
+    Returns:
+        The stripped ``agent`` value, or None when there is no frontmatter block or no ``agent:``
+        line in it.
+
     """
     match = re.match(r"^---\s*\n(.*?)\n---", text, re.DOTALL)
     if match is None:
@@ -320,6 +347,10 @@ def floor_bookmark_agent() -> str | None:
     design and must render orientation even when the package will not import. A
     None here degrades to the pre-GHI-#758 behavior (pure newest-first), which is
     the honest fallback — never a hardcoded duplicate of the identity.
+
+    Returns:
+        ``gzkit.handoff_selection.FLOOR_BOOKMARK_AGENT``, or None when the import fails.
+
     """
     try:
         from gzkit.handoff_selection import FLOOR_BOOKMARK_AGENT
@@ -340,6 +371,11 @@ def handoff_delta_rule() -> tuple[str, Callable[[str | None], str]] | None:
     Composes with `_scan_handoffs`, which already returns None on the same
     condition, so a gzkit that will not import drops the account section whole
     rather than rendering half of one.
+
+    Returns:
+        Tuple of ``HANDOFF_PATHSPEC_EXCLUDE`` and ``commits_since_range`` from
+        ``gzkit.handoff_selection``, or None when the import fails.
+
     """
     try:
         from gzkit.handoff_selection import HANDOFF_PATHSPEC_EXCLUDE, commits_since_range
@@ -373,6 +409,11 @@ def _looks_like_handoff(text: str) -> bool:
     would make ADR-less handoffs invisible to session orientation. ``mode`` is
     required by ``HandoffFrontmatter`` and absent from the AGENTS.md file this
     check exists to exclude.
+
+    Returns:
+        True when the text opens with a frontmatter block containing a non-empty ``mode:`` key,
+        False otherwise.
+
     """
     match = re.match(r"^---\s*\n(.*?)\n---", text, re.DOTALL)
     if match is None:
@@ -386,6 +427,10 @@ def _candidate_handoff_dirs(repo_root: Path) -> list[Path]:
     Token-block doctrine (ADR-0.0.41 / OBPI-0.0.41-03) names ``.gzkit/handoffs/``
     the canonical store, and OBPI-0.0.65-01 migrated every per-ADR handoff into
     it, so orientation scans that one location.
+
+    Returns:
+        A one-element list holding ``<repo_root>/.gzkit/handoffs``.
+
     """
     return [repo_root / ".gzkit" / "handoffs"]
 
@@ -457,6 +502,11 @@ def _scan_handoffs(
 
     None when the corpus cannot be classified at all — no floor-bookmark
     identity to split on, or no handoffs directory.
+
+    Returns:
+        Tuple of (authored handoffs, floor bookmarks), each a list of (timestamp, path); None when
+        gzkit is unavailable or the handoffs directory does not exist.
+
     """
     handoffs_dir = repo_root / ".gzkit" / "handoffs"
     floor_agent = floor_bookmark_agent()
@@ -495,6 +545,12 @@ def _commits_since_handoff(repo_root: Path, rel_path: str) -> dict[str, object] 
     an empty list, which means git answered and nothing has landed. Collapsing
     them would render an unreachable git as a clean account, which is the answer
     that makes a gap look fine.
+
+    Returns:
+        Dict with the landing commit's short sha (``landed``, None when git prints none), up to
+        ``ACCOUNT_COMMIT_LIMIT`` commit sha/subject dicts and the total commit count; None when
+        gzkit is unavailable or either git query fails.
+
     """
     rule = handoff_delta_rule()
     if rule is None:
@@ -538,6 +594,11 @@ def _events_since(ledger_path: Path, anchor: datetime) -> tuple[list[tuple[str, 
     answers a different question and cannot answer this one: an event three hours
     BEFORE the handoff sits inside a 24h window and outside the account, and a
     handoff written four days ago has its whole delta outside the window.
+
+    Returns:
+        Tuple of (event type, count) pairs sorted by count descending then type, and the total event
+        count; ``([], 0)`` when the ledger is missing or unreadable.
+
     """
     counts: dict[str, int] = {}
     total = 0
@@ -581,6 +642,11 @@ def _tree_is_dirty(repo_root: Path) -> bool | None:
     them: this session's own staged bookmark is not work the previous handoff
     failed to account for. Same imported pathspec, so the two cannot come to
     disagree about what "the corpus is not the work" means.
+
+    Returns:
+        True when non-handoff changes are uncommitted, False when the tree is clean, None when gzkit
+        is unavailable or git status fails.
+
     """
     rule = handoff_delta_rule()
     if rule is None:
@@ -620,6 +686,12 @@ def collect_handoff_account(repo_root: Path, now: datetime) -> dict[str, object]
 
     None when no AUTHORED handoff exists to anchor on. That corpus is already
     covered by the bookmarks section, which is the only record it has.
+
+    Returns:
+        Dict describing the anchor handoff, its age, commits and ledger events since it, unprocessed
+        bookmarks and tree dirtiness; None when the scan is unavailable or no authored handoff
+        exists.
+
     """
     scan = _scan_handoffs(repo_root)
     if scan is None:
@@ -729,6 +801,12 @@ def collect_exit_bookmarks(repo_root: Path, now: datetime) -> dict[str, object] 
 
     Returns None when there is nothing to say — an empty section is noise every
     session, and this one is only actionable when it has entries.
+
+    Returns:
+        Dict of bookmark ``entries`` (path, age, inclusion) newest first and an ``unknown_tracking``
+        flag; None when the scan is unavailable or no bookmark postdates the newest authored
+        handoff.
+
     """
     scan = _scan_handoffs(repo_root)
     if scan is None:
@@ -777,6 +855,11 @@ def _tracked_handoff_paths(repo_root: Path) -> set[str] | None:
     Collapsing them would let a failed query render every bookmark as needing
     inclusion, and a noisy false alarm every session is how a real one stops
     being read.
+
+    Returns:
+        The set of non-blank paths ``git ls-files .gzkit/handoffs`` prints, or None when the git
+        query fails.
+
     """
     completed = _git_run(
         ["git", "-C", str(repo_root), "ls-files", ".gzkit/handoffs"],
@@ -864,6 +947,10 @@ def collect_advisement(repo_root: Path, now: datetime, remote_state: object) -> 
     (``gzkit.session_start``); the orientation hosts it rather than a second hook
     delivering it (drydock RO-1 act a). The divergence measured by
     ``collect_remote_state`` is passed in so the caveat is not probed twice.
+
+    Returns:
+        The advisement ``build_advisement`` produced, or None when building it raised.
+
     """
     try:
         from gzkit.remote_divergence import RemoteDivergence
@@ -890,6 +977,11 @@ def _git_run(args: list[str], timeout: int) -> subprocess.CompletedProcess[str] 
     subject in cp1252/latin-1 would otherwise raise ``UnicodeDecodeError`` — a
     ``ValueError``, which the guard below does NOT catch — and kill session boot.
     Same class as the file-read side GHI #688 already patched in this module.
+
+    Returns:
+        The completed process (any exit code), or None when git is missing or the subprocess fails
+        or times out.
+
     """
     try:
         return subprocess.run(  # noqa: S603 — argv this script builds, list form
@@ -918,6 +1010,11 @@ def collect_remote_state() -> dict | None:
     any subprocess fails — orientation must never crash the session-boot hook
     (GHI #338). The `GZKIT_ORIENTATION_NO_FETCH=1` offline escape hatch is
     honoured by the shared probe.
+
+    Returns:
+        Dict of branch, ahead, behind and is_behind (zero divergence still returns a dict, with
+        is_behind false); None when the probe import fails or the remote state cannot be known.
+
     """
     try:
         from gzkit.remote_divergence import probe_remote_divergence
@@ -949,6 +1046,11 @@ def collect_obpi_locks(repo_root: Path) -> list[dict]:
     Guarded end-to-end: any failure (gzkit not importable, ledger I/O error)
     degrades to an empty list so the boot hook never crashes (module docstring
     contract). This is the same boundary-tolerance the MX banner import uses.
+
+    Returns:
+        One dict per held lock (obpi id, agent, ttl_warning, plus ``lease_expired`` for expired
+        locks); empty when no lock is held or any step raises.
+
     """
     try:
         from gzkit.ledger import Ledger
@@ -1006,6 +1108,11 @@ def collect_adr_pipeline(repo_root: Path) -> list[dict]:
     Guarded end-to-end: any failure (gzkit not importable, an unreadable or
     malformed marker) degrades to fewer entries or an empty list so the boot
     hook never crashes (module docstring contract).
+
+    Returns:
+        One dict per in-flight OBPI (obpi id, parent ADR, stage, position, resume command), first
+        marker per OBPI winning; empty when none exist or any step raises.
+
     """
     try:
         from gzkit.pipeline_markers import (
@@ -1046,6 +1153,11 @@ def collect_chore_staleness() -> dict | None:
     no session was told a chore had gone overdue. The bands are resolved by
     ``gz chores status --json`` and never recomputed here: one authority, read
     out-of-process, degrading to silence when unavailable.
+
+    Returns:
+        The parsed ``gz chores status --json`` payload, or None when the command fails, exits
+        non-zero, or its output is not a dict with ``chores`` list and ``counts`` dict.
+
     """
     try:
         proc = subprocess.run(
@@ -1112,6 +1224,10 @@ def collect_unreviewed_canaries(repo_root: Path) -> list[str] | None:
     predicate is the drift GHI #1162 closed for OBPI ids, so there is now one.
     Guarded end-to-end: any failure (gzkit not importable, a missing or malformed
     registry) returns ``None`` so the boot hook never crashes.
+
+    Returns:
+        The unreviewed canary claim ids, or None when gzkit's guard-canary lookup raises.
+
     """
     try:
         from gzkit.guard_canary import unreviewed
@@ -1148,6 +1264,11 @@ def collect_mx_hangar(repo_root: Path, now: datetime) -> dict | None:
     The findings are `gz validate --mx-hardening`'s own rendering, read rather than
     re-derived (GHI #1257). Guarded end-to-end: any failure returns ``None`` so the
     boot hook never crashes.
+
+    Returns:
+        Dict of the ``booked`` lease expiries and the hardening ``findings`` (guard, level,
+        message); None when any step raises.
+
     """
     try:
         from gzkit.governance.trust_audits.mx_hardening import mx_hardening_findings
@@ -1431,6 +1552,11 @@ def load_session_start_budget(repo_root: Path) -> int:
     """Return ``injected_hook_text.max_bytes`` from the budget file, or the fallback.
 
     Never raises: a missing or malformed file must not cost the session its boot.
+
+    Returns:
+        The configured ``injected_hook_text.max_bytes``, or ``SESSION_START_BUDGET_FALLBACK`` when
+        the file is missing, unparseable or lacks the key.
+
     """
     try:
         config = json.loads((repo_root / BUDGET_FILE).read_text(encoding="utf-8"))

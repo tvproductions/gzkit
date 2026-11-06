@@ -44,7 +44,12 @@ _PROJECT_DOC_BUDGET_CEILING_BYTES = 65536
 
 def _budget_within_ceiling(char_budget: int) -> bool:
     """A configured per-turn char budget must not exceed Codex's project-doc byte
-    cap; a budget above the cap would green-light a silently-truncated surface."""
+    cap; a budget above the cap would green-light a silently-truncated surface.
+
+    Returns:
+        True when *char_budget* is at most the project-doc byte ceiling, False otherwise.
+
+    """
     return char_budget <= _PROJECT_DOC_BUDGET_CEILING_BYTES
 
 

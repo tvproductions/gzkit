@@ -136,6 +136,10 @@ def _iso(epoch: int) -> str:
     which is why three separate chores all reported ``2026-06-25``. Only the
     printed prose was affected — ``main`` compares raw epochs, so the exit
     code was always sound.
+
+    Returns:
+        The epoch's UTC calendar date in ISO ``YYYY-MM-DD`` form.
+
     """
     return datetime.fromtimestamp(epoch, UTC).date().isoformat()
 

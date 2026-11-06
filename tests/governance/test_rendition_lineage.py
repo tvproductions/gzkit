@@ -79,6 +79,10 @@ class _LineageFixtureMixin(unittest.TestCase):
         test proves nothing. Capturing here keeps the real stderr clean for any
         consumer that parses it. Tests that ASSERT on the advisory capture it
         themselves and call the gate directly.
+
+        Returns:
+            The findings ``validate_rendition_lineage`` returned.
+
         """
         captured = io.StringIO()
         with redirect_stderr(captured):

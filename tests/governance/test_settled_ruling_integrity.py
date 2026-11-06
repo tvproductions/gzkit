@@ -71,6 +71,10 @@ def _twin_probe(text: str) -> str:
     match there destroys a booked ruling silently. This arm only REPORTS, to a
     human who reads both forms in the failure message. A false positive here
     costs one reading; a false positive there costs an operator's words.
+
+    Returns:
+        The normalized text with trailing periods removed.
+
     """
     return _normalize(text).rstrip(".")
 
@@ -83,6 +87,10 @@ def _head_rulings(head: Path) -> list[str]:
     nothing to check passes vacuously, which is the shape these two arms exist to
     prevent in the first place. A legacy head still carries its corpus as prose
     and is read that way.
+
+    Returns:
+        The rulings store's entries, or the chain head's settled rulings when the store is empty.
+
     """
     return read_rulings(REPO_ROOT) or settled_rulings(head.read_text(encoding="utf-8"))
 
@@ -93,6 +101,11 @@ def _corpus_bullets() -> list[tuple[str, str]]:
     The store joins the two prose channels rather than replacing them: a clip's
     recoverable fuller form may sit only in a pre-cutover document, and dropping
     the prose scan would make those clips unreportable.
+
+    Returns:
+        Pairs of (bullet text, repo-relative origin) from the rulings store and every readable
+        handoff's settled rulings and decisions.
+
     """
     bullets: list[tuple[str, str]] = [
         (entry, f".gzkit/handoffs/{RULINGS_FILENAME}") for entry in read_rulings(REPO_ROOT)

@@ -179,6 +179,11 @@ def _racing_writer(
     A factory rather than a closure defined in the trial loop: a loop-local closure
     captures the NAME of each per-trial list, not its value, so a thread outliving its
     iteration would report into the wrong trial's failure list.
+
+    Returns:
+        A thread body that waits on *gate*, appends one entry named by its argument, and records any
+        exception in *failures*.
+
     """
 
     def writer(name: str) -> None:

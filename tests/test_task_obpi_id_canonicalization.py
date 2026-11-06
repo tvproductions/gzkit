@@ -68,6 +68,11 @@ def _cutover_tolerated(ledger_path: Path, cutover: datetime) -> set[str]:
     the ledger path and cutover as PARAMETERS is what makes the ratchet
     falsifiable: the real repo carries no divergence after the current cutover,
     so a test bound to the live ledger passes whether or not the guard works.
+
+    Returns:
+        The task ids, outside the grandfather list, whose multiple obpi_id spellings share one
+        lineage id and whose latest event is at or before *cutover*.
+
     """
     from collections import defaultdict
 

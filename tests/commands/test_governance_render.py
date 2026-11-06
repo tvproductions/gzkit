@@ -24,6 +24,11 @@ def _invoke_cli(*args: str) -> tuple[int, str, str]:
 
     main() returns an int and internally catches SystemExit,
     so we capture the return value rather than catching SystemExit.
+
+    Returns:
+        Tuple of the exit code (0 unless ``main`` returned an int or raised ``SystemExit``),
+        captured stdout and captured stderr.
+
     """
     stdout_buf = io.StringIO()
     stderr_buf = io.StringIO()

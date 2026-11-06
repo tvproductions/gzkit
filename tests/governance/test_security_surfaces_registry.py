@@ -45,6 +45,10 @@ def _dead_literal_paths(globs: list[str], root: Path) -> list[str]:
     """Return the globs that name one file and resolve to nothing under *root*.
 
     A wildcard pattern is forward-looking and is never reported.
+
+    Returns:
+        The globs that contain no glob characters and name no existing file under *root*.
+
     """
     return [g for g in globs if not _GLOB_CHARS & set(g) and not (root / g).is_file()]
 

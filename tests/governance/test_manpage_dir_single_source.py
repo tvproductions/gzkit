@@ -27,6 +27,10 @@ def _docstring_node_ids(tree: ast.AST) -> set[int]:
 
     A docstring is the first statement of a module/function/class body
     when that statement is an ``Expr`` wrapping a string ``Constant``.
+
+    Returns:
+        The ``id()`` of each docstring ``ast.Constant`` node in *tree*.
+
     """
     ids: set[int] = set()
     for node in ast.walk(tree):
@@ -49,6 +53,11 @@ def _binop_chain_string_parts(node: ast.AST) -> list[str | None]:
     surrounding caller can detect ``docs``/``user``/``manpages`` substrings
     inside a chain whose root is a non-Path expression like
     ``project_root / "docs" / "user" / "manpages"``.
+
+    Returns:
+        The chain's operands left to right, each a string literal or None for a non-literal operand;
+        empty when *node* is not a ``/`` BinOp.
+
     """
     if not (isinstance(node, ast.BinOp) and isinstance(node.op, ast.Div)):
         return []

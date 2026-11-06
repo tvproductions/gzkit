@@ -154,6 +154,11 @@ def _is_rich_print(node: ast.Call) -> bool:
     Builtin ``print``, ``sys.stdout.write`` and file writes do not parse
     markup, so they are out of scope by construction: they are ``Name`` calls
     or write to a stream, never an attribute access on a Rich console.
+
+    Returns:
+        True when the call is a ``print`` attribute on an expression mentioning ``console``, False
+        otherwise.
+
     """
     func = node.func
     if not isinstance(func, ast.Attribute) or func.attr != "print":
@@ -167,6 +172,10 @@ def _closing_tag_expressions(values: list[ast.expr]) -> set[str]:
     ``f"[{style}]text[/{style}]"`` is *intended* markup — the interpolated
     value is a style name and must reach Rich unescaped. The presence of a
     matching closing tag is what distinguishes it from a data bracket.
+
+    Returns:
+        The source text of every expression that directly follows a ``[/`` literal.
+
     """
     closing: set[str] = set()
     for index, node in enumerate(values):
@@ -217,6 +226,11 @@ def _terminal_name(node: ast.expr) -> str | None:
     `issue.message` -> "message"; `row["text"]` -> "text"; `detail[:200]` ->
     "detail". A call resolves to None: its result is not named, so the roster
     cannot speak to it.
+
+    Returns:
+        The innermost name, attribute or string subscript key, or None when the expression does not
+        resolve to one.
+
     """
     while True:
         if isinstance(node, ast.Name):

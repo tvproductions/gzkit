@@ -56,6 +56,11 @@ def rule_mirror_paths(rule_stem: str, project_root: Path | None = None) -> tuple
 
     *rule_stem* is the canonical rule filename without extension (``tests``,
     ``complexity_doctrine``); each vendor's naming convention is applied here.
+
+    Returns:
+        One rendered rule path per enabled vendor with a rules directory (copilot's
+        ``.instructions.md`` form, hyphenated ``.md`` otherwise).
+
     """
     root = project_root or PROJECT_ROOT
     enabled = _enabled(root)

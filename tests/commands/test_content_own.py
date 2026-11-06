@@ -137,6 +137,10 @@ def _seed_overgrown_alpha(*, corpus_texts: tuple[str, ...] = _ALPHA_COVERAGE) ->
 
     Returns the seed floor. After this the live unowned span exceeds it, the
     loader refuses, and the section is 'unowned' so `unown` refuses it too.
+
+    Returns:
+        The unowned byte floor recorded by the seed declaration.
+
     """
     _write_surface(_SEED_SURFACE_TEXT)
     floor = _seed_declaration(
@@ -314,6 +318,10 @@ class TestContentOwnFailsClosed(unittest.TestCase):
 
         The invocation lives INSIDE the helper so the assertion is about what the
         command did, never a bare read of a file the test wrote itself.
+
+        Returns:
+            The CLI result of the refused ``own`` invocation.
+
         """
         before = _DECLARATION_PATH.read_bytes()
         result = _own(self._runner, **own_kwargs)

@@ -97,6 +97,10 @@ def _write_probe_ns(path: Path) -> int:
     become the metadata-change time in a future release, at which point this
     branch collapses and both legs get the strong probe. Written as a branch on
     the platform rather than a skip so that day is a one-line deletion.
+
+    Returns:
+        The file's ``st_mtime_ns`` on Windows, its ``st_ctime_ns`` elsewhere.
+
     """
     st = path.stat()
     return st.st_mtime_ns if os.name == "nt" else st.st_ctime_ns
@@ -120,6 +124,11 @@ def _probe_outresolves(snapshot_ns: int, scratch: Path, timeout_s: float = 5.0) 
 
     ``scratch`` must sit on the same filesystem as the surfaces being measured;
     a probe settled against another volume's clock proves nothing about theirs.
+
+    Returns:
+        True when a write to *scratch* yields a probe timestamp past *snapshot_ns* before
+        *timeout_s* elapses, False otherwise.
+
     """
     deadline = time.monotonic() + timeout_s
     while time.monotonic() < deadline:

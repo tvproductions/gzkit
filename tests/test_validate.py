@@ -33,6 +33,10 @@ def _conditional_findings(
     shipped `ledger.json` -- a misauthored `when` clause, a rule missing its
     recovery prose. Driving those through `validate_ledger` would mean
     shipping a broken rule to prove the validator rejects broken rules.
+
+    Returns:
+        The validation errors the conditional rules produced; empty when none fired.
+
     """
     errors: list[ValidationError] = []
     _validate_ledger_conditionals(
@@ -887,6 +891,10 @@ class TestValidateLedger(unittest.TestCase):
         written twice, which is the separate condition the duplicate-row check
         reports (GHI #1075). Keeping the ids distinct tests the ordering
         invariant this class is about.
+
+        Returns:
+            The errors ``validate_ledger`` reports for the ledger.
+
         """
         with tempfile.NamedTemporaryFile(
             mode="w", encoding="utf-8", suffix=".jsonl", delete=False

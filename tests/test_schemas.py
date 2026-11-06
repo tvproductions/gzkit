@@ -578,6 +578,10 @@ def _live_event_discriminators() -> set[str]:
 
     Read off the discriminated union itself rather than a hand-kept list, so a
     type that is declared everywhere EXCEPT the union cannot read as registered.
+
+    Returns:
+        The set of event names the live ``TypedLedgerEvent`` union discriminates.
+
     """
     union, _field = get_args(TypedLedgerEvent)
     return {get_args(member.model_fields["event"].annotation)[0] for member in get_args(union)}
@@ -589,6 +593,10 @@ def _live_union_member(tag: str) -> type[BaseModel] | None:
     Read off the live union for the reason `_live_event_discriminators` gives: a
     model that is authored and exported but never wired into the union has no
     typed reader, so it is the union's member that the contract is asserted on.
+
+    Returns:
+        The union member whose ``event`` literal includes *tag*, or None when no member does.
+
     """
     union, _field = get_args(TypedLedgerEvent)
     for member in get_args(union):
@@ -1040,6 +1048,10 @@ def _model_alias_map(model: type[BaseModel]) -> dict[str, str]:
     """Build schema-field-name -> model-field-name map from aliases.
 
     For fields without aliases, the mapping is identity.
+
+    Returns:
+        Mapping of each field's alias (or its name when it has none) to the model field name.
+
     """
     mapping: dict[str, str] = {}
     for field_name, field_info in model.model_fields.items():

@@ -77,6 +77,11 @@ def _aliases(hook_id: str) -> set[str]:
     ``gz-check-pre-push`` would otherwise contribute ``gz``, which appears in
     nearly every governed sentence and would make this module fire on prose that
     says nothing about stages.
+
+    Returns:
+        A set holding *hook_id* and, when longer than four characters, its first hyphen-separated
+        segment.
+
     """
     names = {hook_id}
     head = hook_id.split("-", 1)[0]
@@ -123,6 +128,11 @@ def _scan(surfaces: tuple[Path, ...]) -> list[str]:
     Reads at module scope rather than inside a test body: a filesystem op
     co-occurring with an assertion is what the tautological-test audit flags,
     and the read here is fixture work, not the assertion's subject.
+
+    Returns:
+        One ``<path>: claims `<hook>` runs at commit -- <sentence>`` entry per violation; empty when
+        no surface makes such a claim.
+
     """
     aliases = _non_commit_aliases()
     offences: list[str] = []

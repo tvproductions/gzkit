@@ -91,6 +91,10 @@ def _write_release_handoff(
     OBPI-0.0.41-03 makes release fail-closed without a register entry, so any
     normal-release test must seat a matching exchange record under
     ``.gzkit/locks/exchange/``.
+
+    Returns:
+        The path of the written register-entry handoff.
+
     """
     handoff_dir = exchange_dir(root)
     handoff_dir.mkdir(parents=True, exist_ok=True)

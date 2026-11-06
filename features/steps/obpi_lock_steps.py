@@ -20,6 +20,10 @@ def _invoke(args: list[str]) -> tuple[int, str, str]:
     without the diagnostic/warning lines the token-block release path correctly
     emits to stderr (REQ-0.0.41-02-07). Merging them — as this helper previously
     did — made ``json.loads`` choke on the leading warning text.
+
+    Returns:
+        Tuple of the exit code (0 when ``main`` returns None), captured stdout, and captured stderr.
+
     """
     out, err = io.StringIO(), io.StringIO()
     with redirect_stdout(out), redirect_stderr(err):

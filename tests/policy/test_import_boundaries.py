@@ -97,6 +97,10 @@ def _collect_imports(tree: ast.Module) -> list[tuple[str, str]]:
 
     import_kind is "import" for `import X` and "from" for `from X import Y`.
     module_name is the top-level dotted name being imported.
+
+    Returns:
+        Pairs of (``"import"`` or ``"from"``, module name) for every import in *tree*.
+
     """
     imports: list[tuple[str, str]] = []
     for node in ast.walk(tree):
@@ -143,6 +147,11 @@ def _collect_command_env_violations(
     - ``os.getenv("VAR")``
     - ``os.environ.get("VAR")``
     - ``os.environ["VAR"]``
+
+    Returns:
+        Tuples of (line number, access form, variable name) for each literal env-var read not in
+        *allowlist*.
+
     """
     violations: list[tuple[int, str, str]] = []
 
@@ -189,6 +198,10 @@ def _core_violations(path: Path) -> list[str]:
     already satisfies it cannot distinguish "enforces the rule" from "returns
     the empty list" -- and the denylist this replaced had been in exactly that
     state, admitting four third-party dependencies while passing every run.
+
+    Returns:
+        One message per forbidden or non-allowed import in *path*; empty when the file is clean.
+
     """
     tree = _parse_file(path)
     imports = _collect_imports(tree)
@@ -592,6 +605,11 @@ def _collect_private_cross_package_imports(src_root: Path) -> set[str]:
     path never matches, which silently admits all 247 same-directory imports
     and makes the roster measure a class four times larger than the one it
     names -- observed while authoring this, caught by the baseline count.
+
+    Returns:
+        The set of ``<importer> -> <owner>.<_symbol>`` edges for private names imported across
+        package directories.
+
     """
     edges: set[str] = set()
     for path in _collect_py_files(src_root):

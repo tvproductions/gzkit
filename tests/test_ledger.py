@@ -247,6 +247,11 @@ class TestLedger(unittest.TestCase):
         Only ``ledger.jsonl`` opened for append is proxied through
         :class:`_PartialWriteHandle`; every other open delegates unchanged so
         ``create()``/``read_all()`` still work under the patch.
+
+        Returns:
+            An opener that wraps append-mode handles on ``ledger.jsonl`` in ``_PartialWriteHandle``
+            and returns every other handle unchanged.
+
         """
 
         def opener(self_path: Path, *args: Any, **kwargs: Any) -> Any:

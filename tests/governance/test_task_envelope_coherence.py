@@ -55,6 +55,10 @@ def _write_brief_with_id(root: Path, obpi_id: str) -> Path:
 
     Used to populate the drift loop with several distinct OBPIs so a per-OBPI
     subprocess regression is observable as a call count > 1.
+
+    Returns:
+        The path of the written brief.
+
     """
     safe = obpi_id.replace(".", "_")
     brief_dir = root / "docs" / "design" / "adr" / "foundation" / f"ADR-fixture-{safe}" / "obpis"
@@ -1270,6 +1274,10 @@ def _after_cutover(hours: int) -> str:
     silent passes. Deriving the timestamp is still correct: it re-anchors the
     fixture automatically instead of presenting a red test whose obvious "fix"
     is to weaken the assertion.
+
+    Returns:
+        The cutover timestamp plus *hours*, in ISO format.
+
     """
     from datetime import timedelta
 

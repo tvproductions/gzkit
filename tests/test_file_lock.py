@@ -163,6 +163,10 @@ class TestContendedWindowsAcquirerKeepsWaiting(unittest.TestCase):
         executed with the platform reading ``win32``. The lock is taken off
         the main thread because waiting forever is correct under contention:
         a wait that never returned would hang the suite instead of failing it.
+
+        Returns:
+            Tuple of the exceptions the acquirer raised and the pause durations it slept.
+
         """
         stand_in = types.SimpleNamespace(
             LK_LOCK=self._LK_LOCK,

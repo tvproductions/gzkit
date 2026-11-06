@@ -71,6 +71,11 @@ def _consults_the_checkpoint(source: Path) -> bool:
     the presence-check failure AGENTS.md names -- a presence check answers "is
     something armed", never "did the governed procedure run". The predicate is
     therefore the call node itself plus a real ``gzkit.mx`` import.
+
+    Returns:
+        True when *source* calls ``blocks``/``resolve``/``is_advisory`` and imports from
+        ``gzkit.mx``, False otherwise.
+
     """
     tree = ast.parse(source.read_text(encoding="utf-8"))
     calls_blocks = any(

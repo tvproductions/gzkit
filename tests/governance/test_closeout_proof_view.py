@@ -643,6 +643,10 @@ class TestCloseoutProofEnforcementFence(unittest.TestCase):
         belong to — so a state-property fence resolves on the anchor (GHI #538).
         Enforcement fences here still fail-close on their unregistered @enforces
         claim; the OBPI token does not rescue them.
+
+        Returns:
+            The ADR package directory.
+
         """
         adr_dir = _make_adr_dir(self.root, adr_id)
         (adr_dir / f"{adr_id}.md").write_text(

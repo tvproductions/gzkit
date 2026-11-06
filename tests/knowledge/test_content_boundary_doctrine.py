@@ -35,6 +35,10 @@ def _lines_with(*needles: str) -> list[str]:
     A semantic co-occurrence check: an inverted doctrine (one that bound the
     boundary the wrong way round) would NOT produce a single line carrying both
     sides of the relationship, so this fails where a bare substring check passes.
+
+    Returns:
+        The lower-cased doctrine-doc lines that contain every needle.
+
     """
     content = _DOCTRINE_DOC.read_text(encoding="utf-8").lower()
     needles_l = [n.lower() for n in needles]

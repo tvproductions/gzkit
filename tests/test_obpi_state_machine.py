@@ -178,6 +178,11 @@ def _find_forbidden_imports(source: str, forbidden_modules: tuple[str, ...]) -> 
     prefix), and ``from a.b import c`` where the *combined* ``module.alias``
     dotted path is what matches (e.g. ``from gzkit.governance import
     invariants`` matching forbidden ``gzkit.governance.invariants``).
+
+    Returns:
+        Every import name or ``module.name`` that is, or lies under, a forbidden module; empty when
+        none.
+
     """
     tree = ast.parse(source)
     found: list[str] = []

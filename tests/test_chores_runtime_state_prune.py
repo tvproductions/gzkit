@@ -77,6 +77,11 @@ def _pkg_files(root: Path) -> set[str]:
     `.gzkit/rules/tests.md` § Prefer structured assertion targets: a membership
     check on a collection states WHICH tree is being claimed, and a failure prints
     the whole tree instead of a bare ``True is not false``.
+
+    Returns:
+        The posix-form relative paths of every file under ``src/gzkit/chores``, excluding
+        ``__pycache__``.
+
     """
     base = root / "src" / "gzkit" / "chores"
     return {

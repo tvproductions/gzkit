@@ -53,6 +53,10 @@ def _write_cluster_adr(workspace: Path, citation: str) -> None:
 def _workspace(_context) -> Path:
     """The workspace root is the current working directory (set by
     ``before_scenario`` in ``features/environment.py``).
+
+    Returns:
+        The current working directory as a ``Path``.
+
     """
     return Path.cwd()
 

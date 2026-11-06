@@ -537,6 +537,10 @@ class TestCollectCampaign(unittest.TestCase):
         The registry, not the plan's prose, is what `collect_campaign` reads
         (operator ruling 2026-08-16), so a fixture that writes only the markdown
         is describing the superseded contract.
+
+        Returns:
+            The temporary repo root.
+
         """
         root = Path(tmp)
         (root / "docs" / "governance").mkdir(parents=True)

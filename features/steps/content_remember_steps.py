@@ -102,6 +102,10 @@ def _printed_land_command(output: str) -> str:
 
     The advisory wraps the command with a trailing backslash; the continuation line
     carries the flags. Both are read from the captured output, never hard-coded.
+
+    Returns:
+        The printed land command with its backslash continuation lines joined into one line.
+
     """
     lines = output.splitlines()
     for index, line in enumerate(lines):

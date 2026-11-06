@@ -136,6 +136,10 @@ class _DeclarationFixtureMixin(unittest.TestCase):
         not restate it; a caller testing a MAP-side property passes its own, and
         an event whose digest disagrees with the declaration is exactly what the
         loader must refuse.
+
+        Returns:
+            The id of the emitted genesis event.
+
         """
         digest = sections_digest(self._DEFAULT_FIXTURE_SECTIONS if sections is None else sections)
         event_id = f"section-ownership-genesis-{surface}-{digest[:12]}"
@@ -677,6 +681,10 @@ class TestLoadDeclarationChainValidation(_DeclarationFixtureMixin, unittest.Test
         records that SAME total through `record_unowned_total` (a
         decrease-or-equal call, never a raise) so the resulting declaration
         carries a real, ledger-resolvable `floor_event_id`.
+
+        Returns:
+            The path of the written declaration file.
+
         """
         spans = measure_section_spans(_SIMPLE_SURFACE)
         coherent_floor = spans["alpha-section"] + spans["beta-section"]
@@ -2731,6 +2739,10 @@ class TestWitnessMustBeChainedToItsPredecessor(_DeclarationFixtureMixin, unittes
         The governed emitter cannot express a forged predecessor, which is
         exactly the point: the attack this class defends against does not go
         through the command path, so the fixture must not either.
+
+        Returns:
+            The id of the appended event.
+
         """
         digest = sections_digest(self._DEFAULT_FIXTURE_SECTIONS if sections is None else sections)
         eid = event_id or f"{event.replace('_', '-')}-{surface}-{new}"

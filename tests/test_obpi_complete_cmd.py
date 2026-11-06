@@ -1262,6 +1262,10 @@ class TestAgentRelayedEscapePath(unittest.TestCase):
         marker because the validator only ran ``is_file()``. The hardened
         validator requires the full ``pipeline_marker_payload`` shape AND a
         matching ``pipeline_launched`` ledger event with the same nonce.
+
+        Returns:
+            The path of the written marker file.
+
         """
         from datetime import UTC, datetime
 

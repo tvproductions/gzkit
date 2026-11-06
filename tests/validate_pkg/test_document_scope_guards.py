@@ -47,6 +47,10 @@ def _write_adr(
     The artifact omits `semver`, `kind`, and `date` and carries only an Intent
     header, so it trips both the missing-frontmatter-field and the
     missing-required-section families unless a scope guard exempts it.
+
+    Returns:
+        The path of the written ADR file.
+
     """
     path = directory / f"{adr_id}.md"
     path.write_text(

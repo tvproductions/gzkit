@@ -84,6 +84,11 @@ def verification_commands(body: str) -> list[str]:
 
     Prose is dropped only because doing so provably changes no downstream
     decision -- see the module docstring.
+
+    Returns:
+        The stripped non-blank lines of the Verification section that contain ``gz `` or ``uv run``;
+        empty when there are none.
+
     """
     section = _extract_section_text(body, _VERIFICATION_HEADING_RE)
     return [

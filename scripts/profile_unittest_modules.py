@@ -47,6 +47,11 @@ def module_of(test_id: str) -> str:
 
     An id with fewer than three dotted parts (a module that failed to import
     reports one) is its own module.
+
+    Returns:
+        The test id with its last two dotted parts removed, or the id itself when it has fewer than
+        three parts.
+
     """
     parts = test_id.rsplit(".", 2)
     return parts[0] if len(parts) == 3 else test_id
@@ -74,6 +79,10 @@ def profile(
     """Run *suite* in this process, report timings, and return whether it passed.
 
     *stream* receives the human-readable top-*top* tables; ``None`` prints none.
+
+    Returns:
+        True when the suite run was successful, False otherwise.
+
     """
     with open(os.devnull, "w", encoding="utf-8") as devnull:
         runner = TimingRunner(verbosity=0, stream=devnull, buffer=True)

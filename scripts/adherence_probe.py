@@ -200,6 +200,11 @@ def _slug(title: str) -> str:
     Reimplemented rather than imported so the probe runs against ANY rendered
     markdown — including a candidate rendition that is not yet installed, which
     is exactly the artifact a trim needs measured before it lands.
+
+    Returns:
+        The lowercased title with each run of non-alphanumeric characters replaced by a hyphen and
+        leading/trailing hyphens stripped.
+
     """
     lowered = title.strip().lower()
     return re.sub(r"[^a-z0-9]+", "-", lowered).strip("-")
@@ -222,6 +227,11 @@ def _first_sentence(body: str) -> str:
     different one — marking a correct answer wrong. Such a section carries no
     fair probe and is excluded by :func:`is_probeable`; a missing row is honest,
     an unfair row produces a number that looks like evidence.
+
+    Returns:
+        The first sentence of the first non-blank block, or ``""`` when that block opens with a
+        table, list or fence or the body has no non-blank block.
+
     """
     for block in body.split("\n\n"):
         stripped = block.strip()
@@ -245,6 +255,11 @@ def parse_sections(text: str) -> list[Section]:
     Byte offsets, not character offsets: a vendor delivery cap is expressed in
     bytes, so a surface carrying any non-ASCII would otherwise report a
     position that no cap comparison can use.
+
+    Returns:
+        One ``Section`` per ``## `` heading, in document order, each with its slug, title, heading
+        byte offset and first-sentence anchor; empty when the text has no such heading.
+
     """
     lines = text.splitlines(keepends=True)
     heads: list[tuple[str, int, int]] = []
@@ -309,6 +324,11 @@ def answer_tokens(section: Section) -> set[str]:
     hands over is not evidence that anything was recalled. Counting it would
     let a model score by echoing the question back — the hollow-test shape this
     module exists to measure, not to reproduce.
+
+    Returns:
+        The anchor's distinctive tokens minus the title's distinctive tokens and the probe scaffold
+        tokens.
+
     """
     given = distinctive_tokens(section.title) | _SCAFFOLD_TOKENS
     return distinctive_tokens(section.anchor) - given
@@ -341,6 +361,11 @@ def negative_control(text: str) -> Section:
     Deterministic for a given surface so runs stay comparable, and verified
     absent rather than assumed absent — a control that accidentally names a
     real section would invert the whole test.
+
+    Returns:
+        A ``Section`` for the first candidate title absent from ``text``, with offset ``-1`` and an
+        empty anchor.
+
     """
     candidates = (
         "Deprecation Ledger Protocol",

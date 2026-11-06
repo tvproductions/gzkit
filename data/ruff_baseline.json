@@ -1493,11 +1493,6 @@
     },
     {
       "file": "features/steps/attestation_receipt_binding_steps.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "features/steps/attestation_receipt_binding_steps.py",
       "rule": "INP001",
       "count": 1
     },
@@ -1524,11 +1519,6 @@
     {
       "file": "features/steps/check_drift_advisory_steps.py",
       "rule": "INP001",
-      "count": 1
-    },
-    {
-      "file": "features/steps/chores_distribution_steps.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
@@ -1603,11 +1593,6 @@
     },
     {
       "file": "features/steps/complexity_doctrine_links_steps.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "features/steps/complexity_doctrine_links_steps.py",
       "rule": "INP001",
       "count": 1
     },
@@ -1663,11 +1648,6 @@
     },
     {
       "file": "features/steps/content_commit_retention_steps.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "features/steps/content_commit_retention_steps.py",
       "rule": "INP001",
       "count": 1
     },
@@ -1679,11 +1659,6 @@
     {
       "file": "features/steps/content_commit_retention_steps.py",
       "rule": "PLR0917",
-      "count": 1
-    },
-    {
-      "file": "features/steps/content_compose_steps.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
@@ -1723,11 +1698,6 @@
     },
     {
       "file": "features/steps/content_remember_steps.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "features/steps/content_remember_steps.py",
       "rule": "DOC501",
       "count": 1
     },
@@ -1753,27 +1723,12 @@
     },
     {
       "file": "features/steps/content_retire_steps.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "features/steps/content_retire_steps.py",
       "rule": "INP001",
       "count": 1
     },
     {
       "file": "features/steps/content_unown_steps.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "features/steps/content_unown_steps.py",
       "rule": "INP001",
-      "count": 1
-    },
-    {
-      "file": "features/steps/distribution_invariant_steps.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
@@ -1853,11 +1808,6 @@
     },
     {
       "file": "features/steps/gz_steps.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "features/steps/gz_steps.py",
       "rule": "FLY002",
       "count": 1
     },
@@ -1924,11 +1874,6 @@
     {
       "file": "features/steps/obpi_completion_coverage_gate_steps.py",
       "rule": "PLR0913",
-      "count": 1
-    },
-    {
-      "file": "features/steps/obpi_lock_steps.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
@@ -2108,11 +2053,6 @@
     },
     {
       "file": "scripts/adherence_probe.py",
-      "rule": "DOC201",
-      "count": 5
-    },
-    {
-      "file": "scripts/adherence_probe.py",
       "rule": "DOC501",
       "count": 1
     },
@@ -2153,11 +2093,6 @@
     },
     {
       "file": "scripts/backfill_adr_taxonomy.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "scripts/backfill_adr_taxonomy.py",
       "rule": "DOC402",
       "count": 1
     },
@@ -2188,11 +2123,6 @@
     },
     {
       "file": "scripts/backfill_req_ids.py",
-      "rule": "DOC201",
-      "count": 4
-    },
-    {
-      "file": "scripts/backfill_req_ids.py",
       "rule": "FBT001",
       "count": 1
     },
@@ -2218,18 +2148,8 @@
     },
     {
       "file": "scripts/check_proof_freshness.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "scripts/check_proof_freshness.py",
       "rule": "T201",
       "count": 19
-    },
-    {
-      "file": "scripts/migrate_brief_frontmatter.py",
-      "rule": "DOC201",
-      "count": 1
     },
     {
       "file": "scripts/migrate_brief_frontmatter.py",
@@ -2245,11 +2165,6 @@
       "file": "scripts/migrate_brief_frontmatter.py",
       "rule": "T201",
       "count": 3
-    },
-    {
-      "file": "scripts/migrate_handoffs.py",
-      "rule": "DOC201",
-      "count": 2
     },
     {
       "file": "scripts/migrate_handoffs.py",
@@ -2308,11 +2223,6 @@
     },
     {
       "file": "scripts/profile_unittest_modules.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "scripts/profile_unittest_modules.py",
       "rule": "FURB118",
       "count": 2
     },
@@ -2330,11 +2240,6 @@
       "file": "scripts/profile_unittest_modules.py",
       "rule": "PLR2004",
       "count": 1
-    },
-    {
-      "file": "scripts/session_orientation.py",
-      "rule": "DOC201",
-      "count": 25
     },
     {
       "file": "scripts/session_orientation.py",
@@ -2390,11 +2295,6 @@
       "file": "scripts/session_orientation.py",
       "rule": "TRY300",
       "count": 2
-    },
-    {
-      "file": "scripts/settings_local_backup.py",
-      "rule": "DOC201",
-      "count": 1
     },
     {
       "file": "scripts/settings_local_backup.py",
@@ -11868,11 +11768,6 @@
     },
     {
       "file": "tests/adr/test_patch_release.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "tests/adr/test_patch_release.py",
       "rule": "ERA001",
       "count": 5
     },
@@ -11915,11 +11810,6 @@
       "file": "tests/adr/test_patch_release_full_sweep.py",
       "rule": "FBT001",
       "count": 2
-    },
-    {
-      "file": "tests/adr/test_state_doctrine.py",
-      "rule": "DOC201",
-      "count": 1
     },
     {
       "file": "tests/adr/test_state_doctrine.py",
@@ -11983,11 +11873,6 @@
     },
     {
       "file": "tests/arb/test_validator.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "tests/arb/test_validator.py",
       "rule": "PLC0415",
       "count": 10
     },
@@ -11995,11 +11880,6 @@
       "file": "tests/chores/test_failure_class_index.py",
       "rule": "PLC0415",
       "count": 8
-    },
-    {
-      "file": "tests/chores/test_frontmatter_coherence_backfill.py",
-      "rule": "DOC201",
-      "count": 1
     },
     {
       "file": "tests/chores/test_memory_hygiene_witness.py",
@@ -12088,17 +11968,7 @@
     },
     {
       "file": "tests/cli/test_handler_manifest_resolves.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "tests/cli/test_handler_manifest_resolves.py",
       "rule": "PLR0916",
-      "count": 1
-    },
-    {
-      "file": "tests/cli/test_help_path_imports.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
@@ -12122,11 +11992,6 @@
       "count": 1
     },
     {
-      "file": "tests/cli/test_validate_dispatch_consistency.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
       "file": "tests/cli/test_validate_registry_parity.py",
       "rule": "PLR6201",
       "count": 1
@@ -12135,11 +12000,6 @@
       "file": "tests/cli/test_validate_sensitivity_flag.py",
       "rule": "PLC0415",
       "count": 5
-    },
-    {
-      "file": "tests/commands/common.py",
-      "rule": "DOC201",
-      "count": 4
     },
     {
       "file": "tests/commands/common.py",
@@ -12189,11 +12049,6 @@
     {
       "file": "tests/commands/test_adr_emit_receipt.py",
       "rule": "PLR0913",
-      "count": 1
-    },
-    {
-      "file": "tests/commands/test_adr_emit_receipt_coverage_gate.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
@@ -12378,11 +12233,6 @@
     },
     {
       "file": "tests/commands/test_content_own.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "tests/commands/test_content_own.py",
       "rule": "EM101",
       "count": 2
     },
@@ -12403,18 +12253,8 @@
     },
     {
       "file": "tests/commands/test_content_retire.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "tests/commands/test_content_retire.py",
       "rule": "PLR0904",
       "count": 1
-    },
-    {
-      "file": "tests/commands/test_content_unown.py",
-      "rule": "DOC201",
-      "count": 16
     },
     {
       "file": "tests/commands/test_content_unown.py",
@@ -12462,16 +12302,6 @@
       "count": 1
     },
     {
-      "file": "tests/commands/test_context_cmd.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "tests/commands/test_foundation_kind_closed.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
       "file": "tests/commands/test_foundation_kind_closed.py",
       "rule": "PLC0415",
       "count": 8
@@ -12484,11 +12314,6 @@
     {
       "file": "tests/commands/test_frontmatter_reconcile.py",
       "rule": "PLC0415",
-      "count": 1
-    },
-    {
-      "file": "tests/commands/test_governance_render.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
@@ -12588,11 +12413,6 @@
     },
     {
       "file": "tests/commands/test_justify_cmd.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "tests/commands/test_justify_cmd.py",
       "rule": "PLC0415",
       "count": 3
     },
@@ -12663,11 +12483,6 @@
     },
     {
       "file": "tests/commands/test_obpi_complete_coverage_gate.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "tests/commands/test_obpi_complete_coverage_gate.py",
       "rule": "FLY002",
       "count": 4
     },
@@ -12719,11 +12534,6 @@
     {
       "file": "tests/commands/test_obpi_pipeline.py",
       "rule": "RUF003",
-      "count": 1
-    },
-    {
-      "file": "tests/commands/test_obpi_precomplete.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
@@ -12803,11 +12613,6 @@
     },
     {
       "file": "tests/commands/test_skills.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "tests/commands/test_skills.py",
       "rule": "FLY002",
       "count": 1
     },
@@ -12848,17 +12653,7 @@
     },
     {
       "file": "tests/commands/test_status_obpi.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "tests/commands/test_status_obpi.py",
       "rule": "FBT003",
-      "count": 1
-    },
-    {
-      "file": "tests/commands/test_sync_cmds.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
@@ -12973,11 +12768,6 @@
     },
     {
       "file": "tests/commands/test_validate_frontmatter.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "tests/commands/test_validate_frontmatter.py",
       "rule": "PLC0415",
       "count": 2
     },
@@ -12995,11 +12785,6 @@
       "file": "tests/commands/test_validate_ownership_declarations.py",
       "rule": "PLC0415",
       "count": 7
-    },
-    {
-      "file": "tests/complexity/__init__.py",
-      "rule": "DOC201",
-      "count": 1
     },
     {
       "file": "tests/complexity/__init__.py",
@@ -13152,23 +12937,8 @@
       "count": 1
     },
     {
-      "file": "tests/content/test_corpus_model.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "tests/content/test_corpus_store.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
       "file": "tests/content/test_corpus_store.py",
       "rule": "TC003",
-      "count": 1
-    },
-    {
-      "file": "tests/content/test_landing.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
@@ -13195,11 +12965,6 @@
       "file": "tests/content/test_lineage.py",
       "rule": "TRY003",
       "count": 1
-    },
-    {
-      "file": "tests/content/test_ownership.py",
-      "rule": "DOC201",
-      "count": 3
     },
     {
       "file": "tests/content/test_ownership.py",
@@ -13297,16 +13062,6 @@
       "count": 1
     },
     {
-      "file": "tests/governance/_fold_guard.py",
-      "rule": "DOC201",
-      "count": 4
-    },
-    {
-      "file": "tests/governance/common.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
       "file": "tests/governance/common.py",
       "rule": "PLC2801",
       "count": 1
@@ -13325,11 +13080,6 @@
       "file": "tests/governance/test_adr_eval_truth_binding.py",
       "rule": "PLC0415",
       "count": 2
-    },
-    {
-      "file": "tests/governance/test_adr_fidelity.py",
-      "rule": "DOC201",
-      "count": 1
     },
     {
       "file": "tests/governance/test_adr_fidelity.py",
@@ -13380,16 +13130,6 @@
       "file": "tests/governance/test_agents_md_map_conformance.py",
       "rule": "RUF005",
       "count": 2
-    },
-    {
-      "file": "tests/governance/test_agents_md_map_doctrine.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/test_agents_md_map_doctrine_application.py",
-      "rule": "DOC201",
-      "count": 1
     },
     {
       "file": "tests/governance/test_attestation_fold.py",
@@ -13492,11 +13232,6 @@
       "count": 1
     },
     {
-      "file": "tests/governance/test_behave_sharding.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
       "file": "tests/governance/test_brief_command_shape.py",
       "rule": "PLC0415",
       "count": 8
@@ -13505,11 +13240,6 @@
       "file": "tests/governance/test_brief_path_validity_wiring.py",
       "rule": "RUF059",
       "count": 1
-    },
-    {
-      "file": "tests/governance/test_brief_reconcile.py",
-      "rule": "DOC201",
-      "count": 2
     },
     {
       "file": "tests/governance/test_brief_reconcile.py",
@@ -13543,11 +13273,6 @@
     },
     {
       "file": "tests/governance/test_bullet_retention.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "tests/governance/test_bullet_retention.py",
       "rule": "PLC0415",
       "count": 5
     },
@@ -13570,11 +13295,6 @@
       "file": "tests/governance/test_catalog_forward_rule.py",
       "rule": "PLC0415",
       "count": 3
-    },
-    {
-      "file": "tests/governance/test_ceremony_ln_consumption.py",
-      "rule": "DOC201",
-      "count": 1
     },
     {
       "file": "tests/governance/test_ceremony_ln_consumption.py",
@@ -13615,11 +13335,6 @@
       "file": "tests/governance/test_check_registry_coherence.py",
       "rule": "TRY003",
       "count": 1
-    },
-    {
-      "file": "tests/governance/test_check_scope_parity.py",
-      "rule": "DOC201",
-      "count": 2
     },
     {
       "file": "tests/governance/test_check_scope_parity.py",
@@ -13678,18 +13393,8 @@
     },
     {
       "file": "tests/governance/test_closeout_audit_fidelity.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/test_closeout_audit_fidelity.py",
       "rule": "PLC0415",
       "count": 8
-    },
-    {
-      "file": "tests/governance/test_closeout_proof_view.py",
-      "rule": "DOC201",
-      "count": 1
     },
     {
       "file": "tests/governance/test_closeout_proof_view.py",
@@ -13702,11 +13407,6 @@
       "count": 8
     },
     {
-      "file": "tests/governance/test_codex_delivery_witness.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
       "file": "tests/governance/test_commit_trailers_is_gated.py",
       "rule": "RET503",
       "count": 1
@@ -13715,11 +13415,6 @@
       "file": "tests/governance/test_complexity_doctrine_links.py",
       "rule": "PLC0415",
       "count": 2
-    },
-    {
-      "file": "tests/governance/test_complexity_doctrine_rule.py",
-      "rule": "DOC201",
-      "count": 1
     },
     {
       "file": "tests/governance/test_complexity_doctrine_rule.py",
@@ -13739,11 +13434,6 @@
     {
       "file": "tests/governance/test_complexity_doctrine_rule.py",
       "rule": "TRY003",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/test_complexity_thresholds_rule.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
@@ -13922,11 +13612,6 @@
       "count": 1
     },
     {
-      "file": "tests/governance/test_foundation_grandfather_manifest.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
       "file": "tests/governance/test_foundation_invariance_skill_enrichment.py",
       "rule": "RUF052",
       "count": 4
@@ -13957,16 +13642,6 @@
       "count": 1
     },
     {
-      "file": "tests/governance/test_generated_surface_line_endings.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/test_guard_canaries.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
       "file": "tests/governance/test_guard_canaries.py",
       "rule": "EM102",
       "count": 1
@@ -13974,11 +13649,6 @@
     {
       "file": "tests/governance/test_guard_canaries.py",
       "rule": "TRY003",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/test_handoff_api.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
@@ -14007,16 +13677,6 @@
       "count": 1
     },
     {
-      "file": "tests/governance/test_handoff_migration.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "tests/governance/test_handoff_resume_gate.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
       "file": "tests/governance/test_handoff_resume_gate.py",
       "rule": "PLC0415",
       "count": 11
@@ -14025,16 +13685,6 @@
       "file": "tests/governance/test_handoff_resume_gate.py",
       "rule": "PLR0913",
       "count": 1
-    },
-    {
-      "file": "tests/governance/test_handoff_ruling_store.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "tests/governance/test_handoff_selection.py",
-      "rule": "DOC201",
-      "count": 3
     },
     {
       "file": "tests/governance/test_handoff_selection.py",
@@ -14050,11 +13700,6 @@
       "file": "tests/governance/test_handoff_selection.py",
       "rule": "PLC0415",
       "count": 3
-    },
-    {
-      "file": "tests/governance/test_hook_stage_claims.py",
-      "rule": "DOC201",
-      "count": 2
     },
     {
       "file": "tests/governance/test_hook_stage_claims.py",
@@ -14112,24 +13757,9 @@
       "count": 2
     },
     {
-      "file": "tests/governance/test_kind_invariance_docs.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/test_ledger_reader_parity.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
       "file": "tests/governance/test_ledger_reader_parity.py",
       "rule": "RUF012",
       "count": 2
-    },
-    {
-      "file": "tests/governance/test_lock_exchange_coupling_validator.py",
-      "rule": "DOC201",
-      "count": 1
     },
     {
       "file": "tests/governance/test_lock_exchange_coupling_validator.py",
@@ -14150,11 +13780,6 @@
       "file": "tests/governance/test_lock_ttl_canon.py",
       "rule": "PLC0415",
       "count": 1
-    },
-    {
-      "file": "tests/governance/test_manpage_dir_single_source.py",
-      "rule": "DOC201",
-      "count": 2
     },
     {
       "file": "tests/governance/test_manpage_dir_single_source.py",
@@ -14187,24 +13812,9 @@
       "count": 1
     },
     {
-      "file": "tests/governance/test_path_separator_portability.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/test_pipeline_control_inventory.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
       "file": "tests/governance/test_pipeline_control_inventory.py",
       "rule": "PLC0415",
       "count": 2
-    },
-    {
-      "file": "tests/governance/test_pointer_integrity.py",
-      "rule": "DOC201",
-      "count": 1
     },
     {
       "file": "tests/governance/test_pointer_integrity.py",
@@ -14317,19 +13927,9 @@
       "count": 1
     },
     {
-      "file": "tests/governance/test_release_workflow_guard.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
       "file": "tests/governance/test_rendition_floor_coherence.py",
       "rule": "PLC0415",
       "count": 3
-    },
-    {
-      "file": "tests/governance/test_rendition_lineage.py",
-      "rule": "DOC201",
-      "count": 1
     },
     {
       "file": "tests/governance/test_replay_review_import.py",
@@ -14392,11 +13992,6 @@
       "count": 1
     },
     {
-      "file": "tests/governance/test_scan_interval_gate.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
       "file": "tests/governance/test_schema_sensitivity.py",
       "rule": "FURB171",
       "count": 1
@@ -14427,11 +14022,6 @@
       "count": 2
     },
     {
-      "file": "tests/governance/test_security_surfaces_registry.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
       "file": "tests/governance/test_session_exit.py",
       "rule": "PLC0415",
       "count": 4
@@ -14455,11 +14045,6 @@
       "file": "tests/governance/test_setpoint_coherence.py",
       "rule": "PLC0415",
       "count": 5
-    },
-    {
-      "file": "tests/governance/test_settled_ruling_integrity.py",
-      "rule": "DOC201",
-      "count": 3
     },
     {
       "file": "tests/governance/test_skill_delivery_scoping.py",
@@ -14512,11 +14097,6 @@
       "count": 1
     },
     {
-      "file": "tests/governance/test_surface_delivery_witness.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
       "file": "tests/governance/test_surface_fidelity_composite.py",
       "rule": "PLC0415",
       "count": 1
@@ -14530,11 +14110,6 @@
       "file": "tests/governance/test_surface_weight.py",
       "rule": "PLR0917",
       "count": 1
-    },
-    {
-      "file": "tests/governance/test_task_envelope_coherence.py",
-      "rule": "DOC201",
-      "count": 2
     },
     {
       "file": "tests/governance/test_task_envelope_coherence.py",
@@ -14565,11 +14140,6 @@
       "file": "tests/governance/test_taxonomy_closed_kind.py",
       "rule": "PLC0415",
       "count": 2
-    },
-    {
-      "file": "tests/governance/test_test_fixture_encoding.py",
-      "rule": "DOC201",
-      "count": 1
     },
     {
       "file": "tests/governance/test_wall_clock_fixtures_audit.py",
@@ -14639,11 +14209,6 @@
     {
       "file": "tests/justify/test_walkthrough.py",
       "rule": "RUF005",
-      "count": 1
-    },
-    {
-      "file": "tests/knowledge/test_content_boundary_doctrine.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
@@ -14723,11 +14288,6 @@
     },
     {
       "file": "tests/mx/test_mx_lock_lifecycle.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "tests/mx/test_mx_lock_lifecycle.py",
       "rule": "N802",
       "count": 1
     },
@@ -14748,11 +14308,6 @@
     },
     {
       "file": "tests/mx/test_precommit_checkpoint_surface.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "tests/mx/test_precommit_checkpoint_surface.py",
       "rule": "PERF401",
       "count": 1
     },
@@ -14765,11 +14320,6 @@
       "file": "tests/mx/test_proxy_reality.py",
       "rule": "PLC0415",
       "count": 13
-    },
-    {
-      "file": "tests/policy/test_cli_consistency.py",
-      "rule": "DOC201",
-      "count": 1
     },
     {
       "file": "tests/policy/test_cli_consistency.py",
@@ -14808,28 +14358,13 @@
     },
     {
       "file": "tests/policy/test_env_usage.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "tests/policy/test_env_usage.py",
       "rule": "PERF401",
       "count": 1
-    },
-    {
-      "file": "tests/policy/test_import_boundaries.py",
-      "rule": "DOC201",
-      "count": 4
     },
     {
       "file": "tests/policy/test_import_boundaries.py",
       "rule": "PERF401",
       "count": 2
-    },
-    {
-      "file": "tests/policy/test_naming_conventions.py",
-      "rule": "DOC201",
-      "count": 1
     },
     {
       "file": "tests/policy/test_naming_conventions.py",
@@ -14840,11 +14375,6 @@
       "file": "tests/policy/test_naming_conventions.py",
       "rule": "PLC0415",
       "count": 1
-    },
-    {
-      "file": "tests/policy/test_rich_markup_escaping.py",
-      "rule": "DOC201",
-      "count": 3
     },
     {
       "file": "tests/policy/test_rich_markup_escaping.py",
@@ -14859,11 +14389,6 @@
     {
       "file": "tests/scripts/test_profile_unittest_modules.py",
       "rule": "RUF012",
-      "count": 1
-    },
-    {
-      "file": "tests/scripts/test_session_orientation.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
@@ -14980,11 +14505,6 @@
       "file": "tests/skills/test_router_coverage_completion.py",
       "rule": "ICN001",
       "count": 1
-    },
-    {
-      "file": "tests/skills/test_skill_surface_sync_justify.py",
-      "rule": "DOC201",
-      "count": 2
     },
     {
       "file": "tests/skills/test_skill_surface_sync_justify.py",
@@ -15170,11 +14690,6 @@
       "file": "tests/test_chores_project_local.py",
       "rule": "PLC0415",
       "count": 2
-    },
-    {
-      "file": "tests/test_chores_runtime_state_prune.py",
-      "rule": "DOC201",
-      "count": 1
     },
     {
       "file": "tests/test_chores_runtime_state_prune.py",
@@ -15368,11 +14883,6 @@
     },
     {
       "file": "tests/test_file_lock.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "tests/test_file_lock.py",
       "rule": "EM101",
       "count": 3
     },
@@ -15477,16 +14987,6 @@
       "count": 5
     },
     {
-      "file": "tests/test_foundation_doctrine_retirement.py",
-      "rule": "DOC201",
-      "count": 3
-    },
-    {
-      "file": "tests/test_foundation_limbo_gate.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
       "file": "tests/test_foundation_limbo_gate.py",
       "rule": "PLC0415",
       "count": 3
@@ -15533,11 +15033,6 @@
     },
     {
       "file": "tests/test_handoff_cli.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "tests/test_handoff_cli.py",
       "rule": "RUF012",
       "count": 1
     },
@@ -15560,11 +15055,6 @@
       "file": "tests/test_hooks.py",
       "rule": "B903",
       "count": 1
-    },
-    {
-      "file": "tests/test_hooks.py",
-      "rule": "DOC201",
-      "count": 3
     },
     {
       "file": "tests/test_hooks.py",
@@ -15613,11 +15103,6 @@
     },
     {
       "file": "tests/test_hooks_guards_ledger_sync.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "tests/test_hooks_guards_ledger_sync.py",
       "rule": "PLC2801",
       "count": 2
     },
@@ -15643,22 +15128,12 @@
     },
     {
       "file": "tests/test_instruction_audit.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "tests/test_instruction_audit.py",
       "rule": "FURB113",
       "count": 1
     },
     {
       "file": "tests/test_instruction_audit.py",
       "rule": "PLC0415",
-      "count": 1
-    },
-    {
-      "file": "tests/test_instruction_eval.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
@@ -15674,11 +15149,6 @@
     {
       "file": "tests/test_instruction_eval.py",
       "rule": "RUF005",
-      "count": 1
-    },
-    {
-      "file": "tests/test_ledger.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
@@ -15710,11 +15180,6 @@
       "file": "tests/test_ledger_correction_consumers.py",
       "rule": "PLC0415",
       "count": 6
-    },
-    {
-      "file": "tests/test_ledger_corrections.py",
-      "rule": "DOC201",
-      "count": 3
     },
     {
       "file": "tests/test_ledger_corrections.py",
@@ -15770,11 +15235,6 @@
       "file": "tests/test_ledger_producer_probe.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "tests/test_ledger_transaction_boundary.py",
-      "rule": "DOC201",
-      "count": 2
     },
     {
       "file": "tests/test_ledger_transaction_boundary.py",
@@ -15853,11 +15313,6 @@
     },
     {
       "file": "tests/test_obpi_complete_cmd.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "tests/test_obpi_complete_cmd.py",
       "rule": "FBT001",
       "count": 1
     },
@@ -15888,11 +15343,6 @@
     },
     {
       "file": "tests/test_obpi_dispatch_channel.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "tests/test_obpi_dispatch_channel.py",
       "rule": "PLC0415",
       "count": 3
     },
@@ -15904,11 +15354,6 @@
     {
       "file": "tests/test_obpi_dispatch_channel.py",
       "rule": "TC003",
-      "count": 1
-    },
-    {
-      "file": "tests/test_obpi_lock_cmd.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
@@ -15925,16 +15370,6 @@
       "file": "tests/test_obpi_repudiate_cli.py",
       "rule": "PLC0415",
       "count": 6
-    },
-    {
-      "file": "tests/test_obpi_skill_migration.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "tests/test_obpi_state_machine.py",
-      "rule": "DOC201",
-      "count": 1
     },
     {
       "file": "tests/test_obpi_state_machine.py",
@@ -15994,11 +15429,6 @@
     {
       "file": "tests/test_ontology_source.py",
       "rule": "RUF012",
-      "count": 1
-    },
-    {
-      "file": "tests/test_packaging.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
@@ -16090,11 +15520,6 @@
       "file": "tests/test_pipeline_integration.py",
       "rule": "ERA001",
       "count": 1
-    },
-    {
-      "file": "tests/test_pipeline_position.py",
-      "rule": "DOC201",
-      "count": 7
     },
     {
       "file": "tests/test_pipeline_position.py",
@@ -16298,11 +15723,6 @@
     },
     {
       "file": "tests/test_schemas.py",
-      "rule": "DOC201",
-      "count": 3
-    },
-    {
-      "file": "tests/test_schemas.py",
       "rule": "PLC0415",
       "count": 10
     },
@@ -16315,11 +15735,6 @@
       "file": "tests/test_security_floor_overridden.py",
       "rule": "PLC0415",
       "count": 5
-    },
-    {
-      "file": "tests/test_session_green_gate_validator.py",
-      "rule": "DOC201",
-      "count": 1
     },
     {
       "file": "tests/test_session_green_gate_validator.py",
@@ -16443,11 +15858,6 @@
     },
     {
       "file": "tests/test_task_obpi_id_canonicalization.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "tests/test_task_obpi_id_canonicalization.py",
       "rule": "PLC0415",
       "count": 6
     },
@@ -16528,11 +15938,6 @@
     },
     {
       "file": "tests/test_validate.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "tests/test_validate.py",
       "rule": "PLC0415",
       "count": 1
     },
@@ -16545,11 +15950,6 @@
       "file": "tests/test_validate.py",
       "rule": "TC001",
       "count": 1
-    },
-    {
-      "file": "tests/test_validate_sync_parity.py",
-      "rule": "DOC201",
-      "count": 2
     },
     {
       "file": "tests/test_validate_sync_parity.py",
@@ -16638,11 +16038,6 @@
     },
     {
       "file": "tests/unit/test_progress_indication.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "tests/unit/test_progress_indication.py",
       "rule": "FBT001",
       "count": 1
     },
@@ -16664,11 +16059,6 @@
     {
       "file": "tests/unit/test_progress_indication.py",
       "rule": "RUF012",
-      "count": 1
-    },
-    {
-      "file": "tests/unit/test_runtime_presentation.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
@@ -16702,11 +16092,6 @@
       "count": 3
     },
     {
-      "file": "tests/validate_pkg/test_document_scope_guards.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
       "file": "tests/validators/test_unscoped_rules.py",
       "rule": "PERF401",
       "count": 1
@@ -16729,11 +16114,6 @@
     {
       "file": "tests/validators/test_unscoped_rules.py",
       "rule": "RUF059",
-      "count": 1
-    },
-    {
-      "file": "tests/vendor_surfaces.py",
-      "rule": "DOC201",
       "count": 1
     }
   ]

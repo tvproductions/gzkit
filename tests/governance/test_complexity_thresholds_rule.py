@@ -71,6 +71,10 @@ def _canonical_rule_version() -> str:
     The tests pinned "0.5.0" at authoring, and every banner bump broke them
     (2026-10-18); what the REQs require is that the marker, the block quote and
     each mirror agree, so the version is read, never pinned.
+
+    Returns:
+        The version string from the rule's ``rule-version`` marker.
+
     """
     match = re.search(
         r"<!--\s*rule-version:\s*([0-9.]+)\s*-->", _RULE_PATH.read_text(encoding="utf-8")

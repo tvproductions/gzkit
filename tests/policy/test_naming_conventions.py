@@ -46,6 +46,10 @@ def _collect_package_dirs(directory: Path) -> list[Path]:
 
     Only returns directories that contain an __init__.py (i.e., packages),
     plus the root directory itself.
+
+    Returns:
+        *directory* followed by every non-hidden, non-``__pycache__`` subdirectory, sorted.
+
     """
     dirs: list[Path] = [directory]
     for d in sorted(directory.rglob("*")):

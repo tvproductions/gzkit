@@ -80,6 +80,10 @@ def _module_level_imports(tree: ast.Module, module: str) -> set[str]:
     Function bodies are skipped: an import inside a function is deferred to call
     time and costs the help path nothing. Class bodies ARE traversed — they
     execute on import.
+
+    Returns:
+        The set of ``gzkit``-prefixed module names imported outside function bodies.
+
     """
     found: set[str] = set()
 

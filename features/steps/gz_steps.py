@@ -265,6 +265,10 @@ def _unwrapped(value: str) -> str:
     intact on a wide one. These assertions are about the prose the operator
     reads, never the column it happens to wrap at; matching on raw text makes
     the scenario pass or fail on `COLUMNS`, which is not a governed input.
+
+    Returns:
+        ``value`` with every whitespace run collapsed to a single space and the ends trimmed.
+
     """
     return " ".join(value.split())
 

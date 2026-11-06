@@ -1097,6 +1097,10 @@ class TestMissingInBrief(unittest.TestCase):
         covering test does `from gzkit.cli.main import main` — the standard CLI test
         entry point. The glob DECLARES main.py, so it is inside the declared scope, not
         the "work leaked into a sibling module" the dimension exists to report.
+
+        Returns:
+            The path of the written brief.
+
         """
         for rel in ("src/gzkit/cli/main.py", "src/gzkit/cli/nested/deep.py"):
             q = tmp / rel
@@ -1194,6 +1198,10 @@ class TestMissingInBrief(unittest.TestCase):
         This is the OBPI-0.0.74-06 shape: once a top-level src/gzkit/ module is
         allowlisted, src/gzkit/ becomes a neighborhood and the neighborhood
         filter alone leaks the cross-cutting @covers infra (traceability.py).
+
+        Returns:
+            The path of the written brief.
+
         """
         for rel in ("src/gzkit/events.py", "src/gzkit/traceability.py"):
             p = tmp / rel

@@ -49,6 +49,10 @@ def _plans(stage: str | None = "implement", **marker_extra: object) -> tuple[Pat
     Returns the PROJECT ROOT, not the plans dir: since GHI #886 the channel's
     evidence is the Layer-2 ledger, so a fixture that could only produce a marker
     would be unable to express the property under test.
+
+    Returns:
+        Tuple of the temporary project root and the marker's OBPI id.
+
     """
     root = Path(tempfile.mkdtemp(prefix="gzkit-dispatch-"))
     plans = root / ".claude" / "plans"
@@ -321,6 +325,11 @@ class TestPrecompleteNamesTheObpiOnceAtEntry(unittest.TestCase):
 
         Returns its exit code, its report, and the id each replaced id-taking
         check was handed.
+
+        Returns:
+            Dict of the exit code, the parsed JSON report (None when nothing printed), the checks
+            keyed by name, and the ids handed to id-taking checks.
+
         """
         handed: dict[str, str] = {}
 

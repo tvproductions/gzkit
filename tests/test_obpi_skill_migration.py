@@ -42,6 +42,10 @@ def _pipeline_text() -> str:
     invocation text only. REQ-0.0.14-03-* assert what the pipeline instructs, so
     the proof reads the delivered whole and keeps its ``@covers`` binding
     (``docs/governance/attested-req-subject-retirement.md``).
+
+    Returns:
+        The pipeline skill text joined by newlines with each sorted ``stage-*.md`` reference.
+
     """
     parts = [_read(_PIPELINE_SKILL)]
     parts.extend(_read(path) for path in sorted(_PIPELINE_REFERENCES.glob("stage-*.md")))

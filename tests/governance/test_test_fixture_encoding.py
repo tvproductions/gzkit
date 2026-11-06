@@ -85,6 +85,11 @@ def _is_text_tempfile_missing_encoding(node: ast.Call) -> bool:
 
     Unlike ``open()``, a tempfile's default mode is ``"w+b"``, so only an
     explicit mode without ``b`` is a locale-defaulting text open.
+
+    Returns:
+        True when *node* is a recognized ``tempfile`` call with no encoding argument and a literal
+        text mode, False otherwise.
+
     """
     func = node.func
     name = func.attr if isinstance(func, ast.Attribute) else getattr(func, "id", None)

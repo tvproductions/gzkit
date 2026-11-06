@@ -26,6 +26,10 @@ def covers(target: str):
     as allowlist drift; the @covers scanner detects the decorator by syntax
     regardless of where the symbol is defined. Same pattern as
     tests/governance/test_token_block_discipline.py.
+
+    Returns:
+        A decorator that returns the decorated object unchanged.
+
     """
 
     def _identity(obj):

@@ -186,6 +186,10 @@ class SessionGreenGateDelivery(unittest.TestCase):
         A config with no `default_install_hook_types` installs pre-commit's default
         (`pre-commit`) plus the gate's own `pre-push` (GHI #851), so these tests
         seed `pre-commit` to keep each one about the pre-push hook alone.
+
+        Returns:
+            The hooks directory the ``pre-commit`` shim was written to.
+
         """
         (root / ".pre-commit-config.yaml").write_text(_HOOK_WITH_PRE_PUSH, encoding="utf-8")
         hooks = root / ".git" / hooks_dir_name

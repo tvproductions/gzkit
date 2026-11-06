@@ -68,6 +68,10 @@ def _check_step_patch_targets(exclude: frozenset[str] | set[str] = frozenset()) 
     Derived rather than hand-listed because the hand-listed form silently
     omitted each newly added step, letting it execute for real against a temp
     project and fail a test about something else entirely (GHI #724/#725).
+
+    Returns:
+        One ``<namespace>.<runner name>`` patch target per check step, skipping names in *exclude*.
+
     """
     import gzkit.commands.quality as _cq  # noqa: PLC0415 - test-local, avoids import cycles
 

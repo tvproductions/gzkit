@@ -34,6 +34,10 @@ def _scaffold_authored_brief(project_root: Path, adr_id: str, obpi_id: str) -> P
 
     Uses ``status: pending`` (the canonical ledger form for a freshly-created
     OBPI) so that ``_check_reconcile_idempotent`` does not flag drift.
+
+    Returns:
+        The path of the scaffolded brief.
+
     """
     config = GzkitConfig.load(project_root / ".gzkit.json")
     adr_dir = project_root / config.paths.design_root / "adr" / "pre-release" / f"{adr_id}-test"

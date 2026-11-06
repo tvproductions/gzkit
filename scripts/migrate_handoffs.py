@@ -73,6 +73,11 @@ def rewrite_continues_from(text: str) -> str:
 
     Bare-filename pointers (already valid in the flat canonical directory) and
     empty pointers are left untouched.
+
+    Returns:
+        The text with each per-ADR ``continues_from:`` pointer rewritten to point into
+        ``.gzkit/handoffs/``.
+
     """
     return _CONTINUES_FROM_DOCS_RE.sub(r"\1.gzkit/handoffs/\2", text)
 
@@ -82,6 +87,10 @@ def migrate(repo_root: Path, *, apply: bool = True) -> MigrationResult:
 
     When ``apply`` is False, the returned result describes the intended actions
     without touching the filesystem or git index.
+
+    Returns:
+        The ``MigrationResult`` listing the moved, deduplicated and rewritten handoff paths.
+
     """
     result = MigrationResult()
     canonical = repo_root / CANONICAL_DIR

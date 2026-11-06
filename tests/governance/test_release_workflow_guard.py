@@ -87,6 +87,11 @@ def ungated_writes(
     actually queried the release. ``if: always()``, a literal, or a condition on
     an unrelated step all leave the write reachable on a re-push, so referencing
     the probe is the property — not merely carrying some condition.
+
+    Returns:
+        The label of each step that performs the write without an ``if`` condition referencing a
+        probe step's outputs; empty when every such write is gated.
+
     """
     probes = _probe_ids(workflow)
     return [

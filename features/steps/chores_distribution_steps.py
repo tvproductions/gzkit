@@ -37,6 +37,10 @@ def _gz_subprocess(command: str, cwd: Path) -> tuple[int, str]:
     so the editable install in the project's ``.venv`` is exercised. ANSI
     color codes are stripped from the captured output to keep substring
     assertions stable.
+
+    Returns:
+        Tuple of the subprocess exit code and its ANSI-stripped stdout followed by stderr.
+
     """
     parts = shlex.split(command)
     if not parts or parts[0] != "gz":

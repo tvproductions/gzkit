@@ -59,6 +59,10 @@ def _stored_line(artifact_id: str, ts: str) -> str:
     thought it produced. ``lane`` is carried because ``adr_created`` requires
     it, which is what lets the coherence test below assert that
     ``validate_ledger`` reports NOTHING against the row the reader was dropping.
+
+    Returns:
+        The compact JSON serialization of the ``adr_created`` event, with no trailing newline.
+
     """
     event = LedgerEvent.model_validate(
         {"event": "adr_created", "id": artifact_id, "ts": ts, "lane": "lite"}
@@ -85,6 +89,11 @@ class TestConcurrentAppendDoesNotEraseACommittedRow(unittest.TestCase):
         where the rollback can fire. B is released the moment A is inside its
         append, so B reaches the ledger during exactly the window the missing
         lock left open.
+
+        Returns:
+            Mapping of writer name (``"A"``, ``"B"``) to ``"success"`` or the ``OSError`` text it
+            reported.
+
         """
         outcomes: dict[str, str] = {}
         a_inside = threading.Event()

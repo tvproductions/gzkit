@@ -114,6 +114,10 @@ def parse_json_document(testcase: unittest.TestCase, stdout: str) -> Any:
 
     Not parsing IS the defect under test (GHI #1010), so it is reported as an
     assertion failure naming what reached stdout, never as an incidental error.
+
+    Returns:
+        The decoded JSON value; when *stdout* is not valid JSON the test fails instead.
+
     """
     try:
         return json.loads(stdout)
@@ -196,7 +200,8 @@ def subcommand_parser(parser: argparse.ArgumentParser, *path: str) -> argparse.A
     tree, so a checker sees a parser rather than an optional, untyped action.
 
     Returns:
-        The subcommand's parser; a missing name raises ``KeyError``.
+        The subcommand's parser; a missing name raises ``KeyError``, and a parser with no
+        subcommands raises ``StopIteration``.
     """
     for name in path:
         action = next(a for a in parser._actions if isinstance(a, argparse._SubParsersAction))
@@ -226,6 +231,10 @@ def _isolated_git_env(base: Mapping[str, str] | None = None) -> dict[str, str]:
     ``tests/__init__.py`` applies live in ``gzkit.git_spawn_boundary``; this
     is the name the fence in ``test_common_fixtures.py`` checks for at each
     spawn site.
+
+    Returns:
+        A copy of the environment with git's repo-local variables removed.
+
     """
     return isolated_git_env(os.environ if base is None else base)
 
@@ -248,6 +257,11 @@ def _ignore_transient_git(src: str, names: list[str]) -> set[str]:
 
     Dropping them is more correct than copying them, not merely safer — git
     refuses to operate on a repo carrying a stale ``index.lock``.
+
+    Returns:
+        Names of ``.lock`` and ``tmp_`` entries when *src* lies under ``.git``; otherwise an empty
+        set.
+
     """
     if ".git" not in Path(src).parts:
         return set()
@@ -262,6 +276,11 @@ def _init_git_repo(path: Path, *, seed_file: str = "README.md") -> str:
     follow-up ``rev-parse`` — cutting setup from 6 subprocesses to 3.
     Each spawn is ~30ms on Windows, so the savings matter for tests that
     rebuild a repo per-test (GHI #253).
+
+    Returns:
+        The seven-character short SHA of the seed commit, parsed from the commit output or read with
+        ``git rev-parse`` when it cannot be parsed.
+
     """
     env = _isolated_git_env()
     run = lambda args: subprocess.run(  # noqa: E731, S603 — git argv this test builds

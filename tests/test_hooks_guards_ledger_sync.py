@@ -74,6 +74,11 @@ class TestForbidSkillSyncDrift(unittest.TestCase):
         asserts which vendors it names must supply a declared vendor set --
         `has_vendor_declaration` reads `model_fields_set`, and an undeclared
         config is deliberately treated as "every root applies".
+
+        Returns:
+            The ``TemporaryDirectory`` holding the project root (also stored on ``self.root``); the
+            caller cleans it up.
+
         """
         import json  # noqa: PLC0415
         import tempfile  # noqa: PLC0415

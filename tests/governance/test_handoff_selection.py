@@ -120,6 +120,11 @@ class TestBothSelectionReadersAgree(unittest.TestCase):
         `resume_handoff` signals "nothing to resume" by raising rather than
         returning None, so the empty case is translated here instead of being
         allowed to error the differential out.
+
+        Returns:
+            The file name of the handoff ``resume_handoff`` selects, or None when it raises
+            ``HandoffValidationError``.
+
         """
         try:
             return Path(
@@ -320,6 +325,11 @@ class TestTheAccountAnchorAgreesWithSelection(unittest.TestCase):
         (`.gzkit/handoffs/AGENTS.md` is a directory README, not a handoff) and the
         mtime fallback for a missing frontmatter timestamp. A differential that
         admitted a different corpus would compare two answers to two questions.
+
+        Returns:
+            The highest-ranked handoff path, or None when there are no candidates or the winner is a
+            floor bookmark.
+
         """
         candidates = []
         for path in sorted((root / ".gzkit" / "handoffs").glob("*.md")):
@@ -414,6 +424,10 @@ class TestBothRenderersCarryTheSameStalenessQualifiers(unittest.TestCase):
         The three renderers wrap differently — plain joins, a 4000-char budget,
         and a rich console at terminal width. The claim under test is that they
         say the same sentence, never that they lay it out the same way.
+
+        Returns:
+            *text* with every whitespace run collapsed to one space and the ends trimmed.
+
         """
         return " ".join(text.split())
 

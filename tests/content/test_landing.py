@@ -121,6 +121,10 @@ def _must_succeed(test: unittest.TestCase, call, *args):
     A success-path test that lets ``LandingRefusal`` escape errors instead of
     failing, so a mutation that breaks the landing reads as an execution error
     rather than as the assertion the test exists to make.
+
+    Returns:
+        Whatever *call* returned; a ``LandingRefusal`` fails the test instead.
+
     """
     try:
         return call(*args)

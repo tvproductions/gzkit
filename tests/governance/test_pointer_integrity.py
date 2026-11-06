@@ -32,6 +32,10 @@ def _make_tree(
 
     Creates AGENTS.md, CLAUDE.md, optional .claude/rules/test-rule.md, and any
     additional files in extra_files (path relative to root → content).
+
+    Returns:
+        The seeded project root.
+
     """
     root = Path(tmp)
     (root / "AGENTS.md").write_text(agents_content, encoding="utf-8")

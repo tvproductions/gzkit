@@ -114,6 +114,11 @@ def _same_file_alias(surface: str) -> str | None:
     spelling it was passed -- true on the unfixed tree too. That is the
     silently-vacuous fixture shape this OBPI has produced nine times, so it
     fails loudly instead of skipping quietly.
+
+    Returns:
+        The lower-case alias spelling when it resolves to the same file (natively or via the symlink
+        pair this builds), or None when symlinks cannot be created.
+
     """
     alias = surface.lower()
     if alias == surface:
@@ -863,6 +868,10 @@ class TestContentUnownReplayJournalValidation(unittest.TestCase):
         defect, and the parent-mismatch check fires FIRST and masks the check
         under test. Reading the live pointer keeps each test a guard for its own
         check rather than an alias for this one.
+
+        Returns:
+            The ``floor_event_id`` recorded in the on-disk declaration.
+
         """
         return json.loads(_DECLARATION_PATH.read_text(encoding="utf-8"))["floor_event_id"]
 
@@ -901,6 +910,10 @@ class TestContentUnownReplayJournalValidation(unittest.TestCase):
         regardless of whether the check the test actually names still
         exists (the check that check fires LAST, so a wrong-on-its-face
         placeholder masks every earlier check being deleted).
+
+        Returns:
+            The successor declaration serialized as indented JSON with a trailing newline.
+
         """
         on_disk = json.loads(_DECLARATION_PATH.read_text(encoding="utf-8"))
         predecessor = OwnershipDeclaration(**on_disk)
@@ -931,6 +944,10 @@ class TestContentUnownReplayJournalValidation(unittest.TestCase):
         DIFFERENT check to satisfy the assertions and the test stayed green.
         *defect* pins the specific message, so the test fails when its own
         check is removed — which is the only thing that makes it a guard.
+
+        Returns:
+            The CLI result of the refused ``unown`` invocation.
+
         """
         before_bytes = _DECLARATION_PATH.read_bytes()
         before_ledger = len(_ledger_events())
@@ -1995,6 +2012,12 @@ def _writes_a_measured_surface(target: ast.expr) -> bool:
     because the extension is what the artifact IS; the derivation is only how
     it was reached. Suffixes are matched, never substrings, so
     `"Other.md.json"` reads as the JSON declaration it is.
+
+    Returns:
+        True when *target* names a byte-measured surface (a ``.md`` literal, a ``surface`` name or a
+        bare ``Path(...)`` call), False for ``.json`` literals, non-surface markers and anything
+        else.
+
     """
     literals = _string_literals(target)
     if any(literal.endswith(".md") for literal in literals):
@@ -2024,6 +2047,11 @@ def _is_text_mode_open(node: ast.Call) -> bool:
     where translation is configured, and checking it needs no dataflow to
     follow the handle. An explicit `newline=""` disables translation and is the
     legitimate escape `.claude/rules/cross-platform.md` already names.
+
+    Returns:
+        True when *node* is an ``open`` call without ``newline=`` whose literal mode is a text write
+        mode, False otherwise.
+
     """
     func = node.func
     is_open = (isinstance(func, ast.Name) and func.id == "open") or (
@@ -2060,6 +2088,10 @@ def _text_mode_surface_writes(tree: ast.AST, label: str) -> list[str]:
     fence from a test echoing back a file it wrote itself
     (`_reads_project_source`). An earlier extraction moved the parse in here and
     the caller was flagged as a tautology the same day.
+
+    Returns:
+        One ``label:line  target via shape`` entry per offending write; empty when there are none.
+
     """
     offenders: list[str] = []
     for node in ast.walk(tree):
@@ -2115,6 +2147,10 @@ class TestSurfaceFixturesWriteBytes(unittest.TestCase):
         fixture module seeding a surface is silently unscanned, and nothing
         tells anyone. Membership is instead the module naming
         `measure_section_spans`, so enrolment happens by writing the fixture.
+
+        Returns:
+            Sorted Python files under the fixture roots whose text contains the span-measure marker.
+
         """
         modules: list[Path] = []
         for root in self._FIXTURE_ROOTS:
@@ -2990,6 +3026,11 @@ class TestContentUnownRound9(unittest.TestCase):
         Minting the matching genesis row is what makes the swapped state
         coherent, and it is also exactly why this fixture sits outside the
         threat boundary: it needs ledger write access.
+
+        Returns:
+            A copy of the on-disk declaration with ``surface`` set to *alias* and ``floor_event_id``
+            set to the newly emitted genesis id.
+
         """
         on_disk = json.loads(_DECLARATION_PATH.read_text(encoding="utf-8"))
         swapped_id = f"section-ownership-genesis-{alias}-{_SEED_FLOOR}"
@@ -3045,6 +3086,10 @@ class TestContentUnownRound9(unittest.TestCase):
         Built the way production builds it, so only the identity disagrees --
         a placeholder would fail the declaration_json check instead and mask
         the check under test.
+
+        Returns:
+            The successor declaration serialized as indented JSON with a trailing newline.
+
         """
         predecessor = OwnershipDeclaration(**predecessor_raw)
         successor = predecessor.model_copy(
@@ -3610,6 +3655,10 @@ class TestForgedJournalAdviceIsStateDerived(unittest.TestCase):
         check and exits through the shared refusal -- the same prose every
         other forged-journal branch prints, so asserting on it here binds all
         of them.
+
+        Returns:
+            The output text of the refused ``unown`` invocation.
+
         """
         _seed_surface()
         _seed_declaration(alpha="corpus-owned", floor=_SEED_FLOOR)
@@ -4064,6 +4113,11 @@ def _sidecar_names_the_producers_write(name: str) -> dict[str, str]:
     Run in a scratch directory so nothing is written near the repository: only
     the NAMES are carried back, and the caller transplants them beside the real
     target. `git check-ignore` matches on path text, so the files need not exist.
+
+    Returns:
+        Mapping with the ``staging`` sidecar name and the ``lock`` sidecar name the producers
+        created.
+
     """
     staged: list[str] = []
     real_replace = Path.replace
@@ -4317,6 +4371,10 @@ class TestRecoveryProtocolStateDPlusE(unittest.TestCase):
         The stores end in state D -- declaration and witness both durable --
         and the SOURCE ends in state E, carrying bytes the journalled floor was
         never measured against.
+
+        Returns:
+            The CLI result of the refused ``unown`` invocation.
+
         """
         _seed_surface()
         _seed_declaration(alpha="corpus-owned", floor=_SEED_FLOOR)
@@ -6137,6 +6195,10 @@ class _RolledBackUnderAPendingJournal(unittest.TestCase):
         """Land a witnessed transition, retain its journal, then roll the declaration back.
 
         Returns the predecessor bytes that were restored over the successor.
+
+        Returns:
+            The predecessor declaration bytes the declaration was rolled back to.
+
         """
         _seed_surface()
         _seed_declaration(alpha="corpus-owned", floor=_SEED_FLOOR)
@@ -6162,6 +6224,11 @@ class _RolledBackUnderAPendingJournal(unittest.TestCase):
         the re-mint check FIRST, so a relational test built on one never
         reaches the relation it names. Re-minting keeps the journal internally
         self-consistent and wrong in exactly the one way the test is about.
+
+        Returns:
+            The same *record*, mutated in place with its re-minted ``event_id`` and re-serialized
+            ``declaration_json``.
+
         """
         record["event_id"] = mint_event_id(record, record["parent_event_id"])
         successor = json.loads(record["declaration_json"])
@@ -6670,6 +6737,10 @@ class TestReplayMayNotMintFromAStalePredecessor(_RolledBackUnderAPendingJournal,
         through real runs does not always leave a retained source behind, and a
         helper asserting one exists would then be asserting the fixture rather
         than the refusal.
+
+        Returns:
+            Tuple of each tracked artifact's bytes, with None for any that is absent.
+
         """
         return tuple(
             self._bytes_or_absent(path)

@@ -76,6 +76,11 @@ def insert_kind_after_status(content: str, kind: str) -> str:
 
     Operates only inside the leading frontmatter block; the body is
     untouched. Caller guarantees frontmatter exists and lacks a kind line.
+
+    Returns:
+        The content with ``kind: <kind>`` inserted after the first frontmatter ``status:`` line;
+        unchanged apart from reassembly when no ``status:`` line exists.
+
     """
     parts = content.split("---", 2)
     head, fm, body = parts[0], parts[1], parts[2]
@@ -132,6 +137,11 @@ def run_backfill(
     Returns the receipt dict (also written to disk). Pool ADRs are excluded
     by path. Files with `kind:` already present are silently skipped to
     keep the operation idempotent.
+
+    Returns:
+        The receipt dict: timestamp, dry-run flag, files scanned, files modified, the modifications
+        list and the errors list.
+
     """
     timestamp = (now or datetime.now(UTC)).strftime("%Y-%m-%dT%H-%M-%SZ")
     modifications: list[dict[str, str]] = []

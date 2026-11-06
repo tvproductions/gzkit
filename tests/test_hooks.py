@@ -42,6 +42,10 @@ def _expected_hook_command(script: str) -> str:
 
     Independently authored from the production builder so a regression in
     `generate_claude_settings` is caught rather than mirrored (GHI #509).
+
+    Returns:
+        The ``uv run python`` command string for *script* under ``$CLAUDE_PROJECT_DIR``.
+
     """
     return f'uv run python "$CLAUDE_PROJECT_DIR/.claude/hooks/{script}"'
 
@@ -86,6 +90,11 @@ def _run_hook_inprocess(
 
     The script still executes from disk — this tests the same generated
     artifact as subprocess would, just without paying interpreter startup.
+
+    Returns:
+        A ``_HookResult`` of the exit code (0 unless the script raised ``SystemExit`` with an int
+        code), captured stdout and captured stderr.
+
     """
     import io
     import os
@@ -1463,6 +1472,10 @@ class TestPlanAuditGateHook(unittest.TestCase):
 
         Returns the shell-safe GZKIT_PLAN_AUDIT_CMD string the hook's
         ``shlex.split`` resolves back to ``[sys.executable, fake_gz_path]``.
+
+        Returns:
+            A shell-joined command line that runs the fake gz script with this interpreter.
+
         """
         fake_gz = project_root / "fake-gz.py"
         if succeed:

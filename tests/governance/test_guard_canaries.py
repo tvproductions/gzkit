@@ -137,6 +137,10 @@ def _sweep(root: Path) -> subprocess.CompletedProcess[str]:
 
     The child imports the `gzkit` this test imported, so a mutant of the sweep in
     an isolated copy is the code the child runs.
+
+    Returns:
+        The completed sweep process (exit code not checked).
+
     """
     package_parent = str(Path(gc.__file__).resolve().parents[1])
     return subprocess.run(  # noqa: S603 — this interpreter running what the test names

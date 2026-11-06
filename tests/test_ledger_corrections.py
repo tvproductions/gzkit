@@ -78,6 +78,10 @@ def _ledger_file(case: unittest.TestCase, rows: list[dict]) -> Path:
     Shared so the validator and replay are handed the SAME bytes: the defect
     these tests cover is the two paths disagreeing about one row, which is only
     observable when neither gets its own fixture.
+
+    Returns:
+        The path of the written temp ledger.
+
     """
     tmp = Path(case.enterContext(tempfile.TemporaryDirectory()))
     path = tmp / "ledger.jsonl"
@@ -1559,6 +1563,10 @@ class TestAStoredRowsEnvelopeIsNeverManufactured(unittest.TestCase):
 
         Absence is the shape the model repaired; an empty or null value is a
         different case that the parser and the validator both already refuse.
+
+        Returns:
+            A shallow copy of *row* without *field*.
+
         """
         stripped = dict(row)
         del stripped[field]
@@ -1572,6 +1580,11 @@ class TestAStoredRowsEnvelopeIsNeverManufactured(unittest.TestCase):
         One temporary file, read three ways. The last two are SUBJECT STATE:
         whether the corrected row survives the tolerant live stream, and what
         the artifact graph says about the OBPI it launched.
+
+        Returns:
+            Tuple of the ledger validator's messages, whether the tolerant live reader still sees a
+            ``pipeline_launched`` row, and whether the artifact graph flags ``pipeline_launched``.
+
         """
         from gzkit.validate_pkg.ledger_check import validate_ledger
 

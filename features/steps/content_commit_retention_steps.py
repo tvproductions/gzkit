@@ -81,6 +81,10 @@ def _seed_prior_rendition(surface: str, consumer: str, prior_text: str) -> bytes
     Mirrors ``tests/commands/test_content_commit.py::_seed_prior_rendition`` --
     a prior committed rendition is otherwise created by a first successful `gz
     content commit`, but a fixture needs to pin an exact prior text directly.
+
+    Returns:
+        The bytes of the prior rendition's provenance sidecar file as written to disk.
+
     """
     Path(".gzkit").mkdir(exist_ok=True)
     Path(".gzkit", "corpus").mkdir(exist_ok=True)

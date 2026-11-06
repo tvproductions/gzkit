@@ -77,6 +77,10 @@ def _admonition_block(doc: Path, needle: str) -> str:
     to a single line or the whole page — is what keeps a closure-note check
     falsifiable: both pages discuss adopters elsewhere, so a page-wide
     substring would pass no matter what the note said.
+
+    Returns:
+        The first admonition block containing ``needle``, or ``""`` when none does.
+
     """
     lines = doc.read_text(encoding="utf-8").splitlines()
     for start, line in enumerate(lines):
@@ -102,6 +106,10 @@ def _visible_lines(text: str) -> list[str]:
     comment renders as nothing at all — an adversarial pass smuggled a decoy
     heading through a fence and a marker through a comment. Blanking them
     keeps line indices stable while removing what the reader never sees.
+
+    Returns:
+        The lines with HTML comments removed and fence lines and fenced content blanked.
+
     """
     lines = _HTML_COMMENT_RE.sub("", text).splitlines()
     out: list[str] = []
@@ -125,6 +133,10 @@ def _heading_annotation(lines: list[str], at: int) -> str:
     past a +/-16-line window). Unbounded blank runs fail the same way, which is
     why the gap is capped at one: a marker forty blank lines from its heading is
     not attached to it by any reader's measure.
+
+    Returns:
+        The contiguous blockquote lines around ``lines[at]``, joined by newlines.
+
     """
 
     def _walk(index: int, step: int) -> int:

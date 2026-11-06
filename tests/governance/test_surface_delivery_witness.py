@@ -49,6 +49,10 @@ def _write_surface(root: Path, sections: list[tuple[str, int]]) -> int:
     translates each `\\n` to `os.linesep`, so on Windows the file on disk is one
     byte per line larger than the count returned here and every byte-distance
     assertion drifts by the fixture's line count.
+
+    Returns:
+        The UTF-8 byte length of the written surface.
+
     """
     parts = ["# Fixture\n\nPurpose line.\n\n"]
     for title, body_bytes in sections:

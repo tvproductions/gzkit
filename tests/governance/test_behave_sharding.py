@@ -74,6 +74,11 @@ def _wheel_building_features(features_root: Path) -> list[str]:
     only under ``use_nested_step_modules``, which ``behave.ini`` does not set,
     so a nested step file is never loaded and flagging one would be a false
     writer. Do not "tidy" the two into agreement.
+
+    Returns:
+        Sorted feature paths, relative to *features_root* in posix form, whose text contains the
+        wheel-build step.
+
     """
     return sorted(
         path.relative_to(features_root).as_posix()

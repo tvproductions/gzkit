@@ -36,6 +36,10 @@ def _scaffold_drifted_adr(root: Path) -> Path:
     seeds drift on both ``lane`` (heavy vs ledger's lite) and ``status``
     (Completed vs ledger's pending). Both terms are in
     ``STATUS_VOCAB_MAPPING`` so the chore does not raise ``UnmappedStatusBlocker``.
+
+    Returns:
+        The path of the seeded ADR markdown file.
+
     """
     ledger = Ledger(root / ".gzkit" / "ledger.jsonl")
     ledger.append(adr_created_event("ADR-0.1.0", "PRD-TEST-1.0.0", "lite"))

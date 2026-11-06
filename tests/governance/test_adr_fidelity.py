@@ -24,6 +24,10 @@ def _py_exit(code: int) -> str:
     and returns ``observed=-1``. A quoted ``python -c 'raise SystemExit(<code>)'``
     exits deterministically on every platform and survives the runner's POSIX
     ``shlex.split``.
+
+    Returns:
+        A shell command string that runs this interpreter and exits with *code*.
+
     """
     return f"{shlex.quote(sys.executable)} -c {shlex.quote(f'raise SystemExit({code})')}"
 

@@ -76,6 +76,10 @@ def _corpus_fingerprint() -> str:
     the same digest `gz validate --rendition-freshness` reads, so "the corpus did not
     move" is asserted in the units the rest of the system uses, and the filesystem
     read lives here rather than in a test body that is about behavior.
+
+    Returns:
+        The production fingerprint string of the corpus loaded from disk.
+
     """
     return corpus_fingerprint(_load_corpus())
 
@@ -91,6 +95,10 @@ def _corpus_bytes() -> bytes:
     `FINGERPRINT_EQUAL=True`, 2026-08-25). REQ-0.35.0-02-01 literally promises "THE
     CORPUS FILE IS BYTE-UNCHANGED" -- this is the assertion that actually binds that
     word, kept ADDITIONAL to (never a replacement for) the fingerprint check.
+
+    Returns:
+        The corpus store file's raw bytes.
+
     """
     return _CORPUS_PATH.read_bytes()
 

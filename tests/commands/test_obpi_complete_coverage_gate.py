@@ -150,6 +150,11 @@ class _CoverageGateWireFixture(unittest.TestCase):
         ``passing_predicate`` is a callable ``(qualified_name) -> bool``
         deciding whether a discovered covering test "passes" when
         ``_any_covering_test_passes`` is called.
+
+        Returns:
+            Tuple of the exception type (``SystemExit`` or None), its exit code (None when the
+            command did not exit), the recorded console lines and the ledger mock.
+
         """
         del criteria_reqs  # consumed by the brief_text fixture
 

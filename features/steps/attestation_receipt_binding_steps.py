@@ -54,6 +54,10 @@ def _receipts_root(context) -> Path:
     resolves to the tempdir-scoped fixture directory rather than the live
     ``artifacts/receipts/`` tree. Cleanup happens in ``after_scenario`` via
     the ``_orig_arb_receipts_root`` attribute.
+
+    Returns:
+        The ``artifacts/receipts`` directory under the current working directory, created if absent.
+
     """
     if not hasattr(context, "_orig_arb_receipts_root"):
         context._orig_arb_receipts_root = os.environ.get("GZKIT_ARB_RECEIPTS_ROOT")
@@ -231,6 +235,10 @@ def _fixture_req_id(obpi_id: str) -> str:
     brief yielded zero REQs and a ``Malformed REQ line`` warning that escaped
     into committed ADR audit proofs (GHI #726). Deriving the id keeps it correct
     across a rename of the fixture OBPI rather than re-rotting on the next one.
+
+    Returns:
+        The REQ id ``REQ-<semver>-<item>-01`` built from the OBPI id's semver and item fields.
+
     """
     _, semver, item, *_ = obpi_id.split("-")
     return f"REQ-{semver}-{item}-01"

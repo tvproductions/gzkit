@@ -97,6 +97,10 @@ def tracked_files(repo_root: Path) -> list[str]:
     Untracked caches, the virtualenv and mkdocs ``site/`` output are not live
     state, and walking them produced the 261k-path ``rglob`` blow-up that pushed
     these guards past the test-health budget (test-isolation chore).
+
+    Returns:
+        The repo-relative paths ``git ls-files`` lists, empty entries dropped.
+
     """
     completed = subprocess.run(  # noqa: S603 — git argv this test builds
         ["git", "-C", str(repo_root), "ls-files", "-z"],
@@ -124,6 +128,11 @@ def bare_citation_pattern(basename: str) -> re.Pattern[str]:
     while building this guard). Requiring the preceding character to be a
     non-filename character keeps ``per <retired-name>.md`` and
     `` `<retired-name>.md` `` while dropping ``fold-<retired-name>.md``.
+
+    Returns:
+        A compiled pattern matching *basename* only where it is not preceded by a word character,
+        dot or hyphen.
+
     """
     return re.compile(r"(?<![\w.-])" + re.escape(basename))
 
@@ -134,6 +143,10 @@ def unresolvable_basenames(legacy_paths: tuple[str, ...], tracked: list[str]) ->
     A bare citation of one of these resolves to nothing, so it is a dead pointer
     wherever it appears. A basename that IS provided by some tracked file is
     excluded — the citation resolves, whatever directory the reader assumes.
+
+    Returns:
+        The basenames of *legacy_paths* that no tracked file's basename matches.
+
     """
     provided = {Path(rel).name for rel in tracked}
     return {name for p in legacy_paths if (name := Path(p).name) not in provided}
@@ -182,6 +195,11 @@ def stale_narration_grants(
     carries any retired pattern. Either way it is a blanket exemption over a live
     surface, earning its keep by a sentence that is no longer there. Reported so
     the grant is removed rather than left as a silent blind spot.
+
+    Returns:
+        One ``<grant> (reason)`` entry per grant whose path no longer exists or whose files contain
+        no retired pattern; empty when every grant still protects something.
+
     """
     tracked = tracked_files(repo_root)
     dead_names = unresolvable_basenames(legacy_paths, tracked)

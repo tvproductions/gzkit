@@ -29,6 +29,10 @@ def manifest_diverges(manifest_path: Path, golden_path: Path) -> bool:
     The single read-and-compare path the tamper-guard tests all drive, so the
     negative controls exercise the real guard rather than re-asserting
     ``unittest``'s own behavior.
+
+    Returns:
+        True when the two files' text differs, False when identical.
+
     """
     return manifest_path.read_text(encoding="utf-8") != golden_path.read_text(encoding="utf-8")
 

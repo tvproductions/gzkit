@@ -43,6 +43,10 @@ def _scaffold_pool_adr(project_root: Path, adr_id: str, frontmatter: str) -> Pat
     Pool ADRs live outside the active ADR tree and have no per-artifact
     lifecycle. The chore library's ``_is_pool_artifact`` skips them; the
     validator must agree (GHI #192).
+
+    Returns:
+        The path of the written pool ADR file.
+
     """
     config = GzkitConfig.load(project_root / ".gzkit.json")
     pool_dir = project_root / config.paths.design_root / "adr" / "pool"

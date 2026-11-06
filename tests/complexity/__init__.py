@@ -46,6 +46,10 @@ def stub_corpus() -> ExemplarCorpus:
     The included path glob matches a single ``alpha.py`` under the stubbed
     tree; the excluded path glob matches an ``excluded.py`` so path-filter
     behavior is observable.
+
+    Returns:
+        An ``ExemplarCorpus`` holding the single ``fixture-alpha`` project and no vacant cells.
+
     """
     project = ExemplarProject.model_validate(
         {

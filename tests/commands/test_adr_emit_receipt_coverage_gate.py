@@ -115,6 +115,11 @@ class _AdrCloseoutFixture(unittest.TestCase):
         ``covers_layout`` maps ``obpi_id → {req_id → file_body | None}``
         (None = no covering test).
         ``waiver_events`` is a list of pre-rendered JSONL lines to seed the ledger.
+
+        Returns:
+            Tuple of the exception type (``SystemExit`` or None) and its exit code (None when the
+            command did not exit).
+
         """
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

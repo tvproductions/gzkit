@@ -1084,6 +1084,10 @@ def _all_resolve(_anchor: str) -> bool:
     The production caller supplies a graph-backed predicate; these tests are
     about family grouping and sort order, so they state that premise explicitly
     rather than inheriting it from a default (GHI #1081).
+
+    Returns:
+        Always True.
+
     """
     return True
 

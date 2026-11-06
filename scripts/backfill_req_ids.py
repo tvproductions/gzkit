@@ -58,6 +58,11 @@ def find_requirements_section(content: str) -> tuple[int, int] | None:
     The body is everything between the heading line and the next ``## `` heading
     (or end of file). Start offset is the first character after the heading line's
     trailing newline; end offset is the start of the next heading line (or EOF).
+
+    Returns:
+        Tuple of the body's start and end character offsets, or None when the content has no
+        REQUIREMENTS heading.
+
     """
     m = REQUIREMENTS_HEADING.search(content)
     if not m:
@@ -74,6 +79,11 @@ def extract_numbered_items(section_body: str) -> list[str]:
     Markdown allows either `1. 2. 3.` or `1. 1. 1.` numbering — both styles
     are accepted. Multi-line item continuation (indented continuation lines)
     is folded into the preceding item's text.
+
+    Returns:
+        The non-empty prose text of each numbered item, in order, with continuation lines folded in;
+        empty when the section has none.
+
     """
     items: list[str] = []
     current: list[str] = []
@@ -134,6 +144,10 @@ def rewrite_acceptance_section(body: str, semver: str, item: str) -> tuple[str, 
     """Inject REQ IDs into an existing Acceptance Criteria body's `- [ ]` lines.
 
     Returns (rewritten_body, n_reqs_assigned).
+
+    Returns:
+        Tuple of the rewritten body and the number of REQ ids assigned.
+
     """
     nn = item.zfill(2)
     out_lines: list[str] = []
@@ -209,6 +223,11 @@ def find_obpi_files(adr_filter: set[str]) -> list[Path]:
 
     Looks under both ``obpis/`` and ``briefs/`` to handle the ADR-0.40.0 pattern.
     Filters by ADR identifier when ``adr_filter`` is non-empty.
+
+    Returns:
+        Sorted OBPI brief paths under each matching ADR's ``obpis/`` and ``briefs/`` directories,
+        excluding ``REVIEW-`` files.
+
     """
     paths: list[Path] = []
     for adr_dir in sorted(ADR_ROOT.glob("*/ADR-*")):

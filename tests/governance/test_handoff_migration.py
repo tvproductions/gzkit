@@ -49,6 +49,10 @@ def _canonical_handoffs() -> list[Path]:
 
     Non-recursive: the ``archive/`` subdir (OBPI-0.0.65-05) is excluded here and
     counted separately by :func:`_archived_handoffs`.
+
+    Returns:
+        The ``.md`` files in the canonical store other than ``AGENTS.md``.
+
     """
     return [p for p in _CANONICAL_DIR.glob("*.md") if p.name != "AGENTS.md"]
 
@@ -59,6 +63,11 @@ def _archived_handoffs() -> list[Path]:
     Archiving MOVES handoffs (never deletes), so an archived handoff still counts
     toward the migration floor — the store is canonical + archive, not canonical
     alone.
+
+    Returns:
+        The ``.md`` files in the archive other than ``AGENTS.md``; empty when the archive directory
+        does not exist.
+
     """
     if not _ARCHIVE_DIR.is_dir():
         return []

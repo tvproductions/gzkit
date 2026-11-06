@@ -48,6 +48,11 @@ def _is_naked_relative_to_in_fstring(node: ast.AST) -> bool:
     Detects ``FormattedValue`` AST nodes whose value is a ``relative_to`` Call
     with no chained ``.as_posix()`` — i.e. the f-string would render via
     ``Path.__str__`` and emit native separators.
+
+    Returns:
+        True when *node* is a ``FormattedValue`` whose expression is a ``relative_to`` call, False
+        otherwise.
+
     """
     if not isinstance(node, ast.FormattedValue):
         return False

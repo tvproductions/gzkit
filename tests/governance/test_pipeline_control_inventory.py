@@ -325,6 +325,10 @@ def _baseline_body(root: Path, inventory: ControlInventory) -> str | None:
     invocation text, so the before-state checks read the baseline the inventory
     pins (commit, path, digest) from history; the live tree is checked by
     ``tests/governance/test_pipeline_procedure_render.py``.
+
+    Returns:
+        The skill body read from the pinned baseline file, or None when ``git show`` fails.
+
     """
     import subprocess
 

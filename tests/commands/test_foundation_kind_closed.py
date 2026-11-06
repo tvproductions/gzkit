@@ -35,6 +35,10 @@ class TestFoundationKindClosedAtAuthoringTime(unittest.TestCase):
         — no manifest, kind open — so every test asserting gzkit's own refusal
         must first put the project in gzkit's state. Without this the doors are
         correctly open and the refusal assertions are measuring an adopter.
+
+        Returns:
+            The path of the written ``data/foundation_grandfather.json`` manifest.
+
         """
         manifest = Path("data") / "foundation_grandfather.json"
         manifest.parent.mkdir(parents=True, exist_ok=True)

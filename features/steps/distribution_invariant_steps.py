@@ -43,6 +43,10 @@ def _project_python(gzkit_root: Path) -> str:
     the project's declared interpreter. The smoke venv must pin to it: a
     floating ``uv venv`` tests whatever interpreter uv happens to discover,
     not the ``requires-python`` floor the invariant claims to prove (GHI #482).
+
+    Returns:
+        The stripped contents of ``.python-version`` at ``gzkit_root``.
+
     """
     pin = (gzkit_root / ".python-version").read_text(encoding="utf-8").strip()
     assert pin, f".python-version is empty at {gzkit_root}"

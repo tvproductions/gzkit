@@ -48,6 +48,10 @@ def _result(success: bool, returncode: int = 0) -> QualityResult:
     renderer reads ``.command`` and the captured streams (GHI #713) — so a stub
     modelling only today's fields breaks whenever the consumer grows. Using the
     real model makes that class of drift impossible.
+
+    Returns:
+        A ``QualityResult`` with the given *success* and *returncode*.
+
     """
     return QualityResult(
         success=success,

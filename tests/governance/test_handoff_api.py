@@ -791,6 +791,10 @@ class TestSettledRulingsCarryForward(unittest.TestCase):
         ``create_handoff`` stamps second-resolution timestamps, so three handoffs
         authored inside one second tie and "newest predecessor" becomes arbitrary.
         Real handoffs are minutes apart; the fixture must not depend on that.
+
+        Returns:
+            The path of the created handoff.
+
         """
         sections = dict(self._SECTIONS)
         sections["Decisions Made"] = decisions

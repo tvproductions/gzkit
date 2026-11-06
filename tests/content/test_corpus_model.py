@@ -78,6 +78,10 @@ def _jsonl(*entries: CorpusEntry) -> str:
     construction stays permissive, which is what keeps Algebra 9 satisfiable
     (a folded view legitimately carries a `supersedes` row whose target the
     fold just removed).
+
+    Returns:
+        The JSONL text ``Corpus.dumps`` produces for the entries.
+
     """
     return Corpus(entries=entries).dumps()
 
@@ -89,6 +93,10 @@ def _folded_ids(*entries: CorpusEntry) -> list[str]:
     means every fold fixture is also asserted to be LEGAL under Algebra 2/3/7 —
     a fold assertion over a shape the loader would refuse proves nothing about
     the corpus an operator can actually have on disk.
+
+    Returns:
+        The ids of the folded effective corpus entries, in order.
+
     """
     return [e.id for e in effective_corpus(Corpus.loads(_jsonl(*entries))).entries]
 

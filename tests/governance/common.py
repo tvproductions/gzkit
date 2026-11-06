@@ -45,6 +45,10 @@ def init_committed_repo(root: Path) -> Path:
 
     The fidelity gate runs each assertion in a detached worktree at HEAD (GHI
     #1156), so a fixture that exercises it needs a project root with a commit.
+
+    Returns:
+        The same *root*, now a git repository with one commit.
+
     """
     env = _isolated_git_env()
 

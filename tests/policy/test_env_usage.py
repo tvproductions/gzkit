@@ -81,6 +81,11 @@ def _collect_env_violations(tree: ast.Module) -> list[tuple[int, str, str]]:
     - ``os.getenv("VAR")``
     - ``os.environ.get("VAR")``
     - ``os.environ["VAR"]``
+
+    Returns:
+        Tuples of (line number, access form, variable name) for each literal env-var read not in the
+        allowlist.
+
     """
     violations: list[tuple[int, str, str]] = []
 
