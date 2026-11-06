@@ -115,8 +115,8 @@ def _obpi_tally(
     ``TERMINAL_EVENTS`` set — are the correct read.
 
     Returns:
-        ``(completed, live)``: the OBPI children not negated, and those of them with a ledger
-        completion.
+        ``(completed, live)``: the non-negated OBPI children carrying a ledger completion, and all
+        non-negated OBPI children.
 
     """
     canonical = ledger.canonicalize_id(adr_id)
@@ -346,8 +346,9 @@ def interrupted_demotions(project_root: Path, ledger: Ledger) -> list[str]:
     visible; without it the failure is silent by construction.
 
     Returns:
-        One message per journaled demotion left stranded, or a single message when the journal is
-        unreadable; empty when there is no journal or nothing stranded.
+        One message per journaled demotion that did not complete (package still present under the
+        outstanding journal, package gone with no rename, or children left unparked), or a single
+        message when the journal is unreadable; empty when there is no journal or nothing stranded.
 
     """
     from gzkit.commands.adr_demote import _derive_pool_slug_from_adr_id
@@ -911,8 +912,8 @@ def run_migration(
     ``_SUNSET_PREREQUISITES`` within test scope instead.
 
     Returns:
-        The receipt dict (partition, rosters, rename map, graph probes and diff, blockers, and the
-        receipt path) as written to ``receipt_dir``.
+        The receipt dict (partition, rosters, rename map, graph probes and diff, blockers) as
+        written to ``receipt_dir``, plus the ``receipt_path`` key added after the write.
 
     """
     if not dry_run and not (attestor.strip() and attestation.strip()):

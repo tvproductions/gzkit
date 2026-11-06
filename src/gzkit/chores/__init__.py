@@ -393,8 +393,8 @@ def merge_chores_registry(
 
     Returns:
         The merge report naming added, removed, changed and local-only slugs, with ``wrote`` set
-        only when the merged registry was written; a report carrying only the path when no local
-        registry exists.
+        only when the merged registry was written; only the local-only slugs and the path when
+        nothing is added or changed; only the path when no local registry exists.
 
     """
     if config is None:

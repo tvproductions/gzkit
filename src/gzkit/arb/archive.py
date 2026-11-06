@@ -213,7 +213,7 @@ def execute_receipt_archive(plan: ReceiptArchivePlan, *, root: Path) -> ReceiptA
 
     Returns:
         The result naming the receipts moved, those skipped because an archive file appeared in the
-        meantime, and the plan.
+        meantime, and the plan; an eligible receipt no longer on disk appears in neither list.
 
     """
     archive_dir = root / _ARCHIVE_NAME

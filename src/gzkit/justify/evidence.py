@@ -55,8 +55,8 @@ def gather_evidence(
     same resolver as :func:`resolve_anchor` and is best-effort.
 
     Returns:
-        The evidence bundle from the five sources, each failed or timed-out source empty and named
-        in its warnings.
+        The evidence bundle from the five sources, each failed or timed-out source named in its
+        warnings and left empty (the taxonomy reference falls back to its default path).
 
     """
     root = project_root if project_root is not None else Path.cwd()

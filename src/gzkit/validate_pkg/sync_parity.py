@@ -428,7 +428,7 @@ def check_sync_parity(
 
     Returns:
         The Codex config parity errors followed by one error per drifted surface; only the Codex
-        errors when the Codex config path is unresolvable or not a file.
+        errors when the Codex config path is unresolvable or exists but is not a file.
 
     """
     # Resolve to canonical form so Path.relative_to(project_root) works on

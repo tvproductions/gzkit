@@ -119,7 +119,8 @@ def _is_operator_entry(entry: dict) -> bool:
     (observed shapes, 2026-06-12). None of those are corrections.
 
     Returns:
-        False for meta or sidechain entries; True otherwise.
+        False for meta or sidechain entries; True otherwise (``<tag>``-leading caveats pass here
+        and are dropped by the caller).
 
     """
     return not (entry.get("isMeta") or entry.get("isSidechain"))

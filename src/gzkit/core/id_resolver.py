@@ -166,7 +166,8 @@ def _req_owner(identifier: str, context: IdentityContext) -> tuple[Resolution, P
     A REQ whose spelled OBPI is live but does not list it names nothing.
 
     Returns:
-        ``(owner, link)``: the single listing brief's OBPI with a ``brief`` link, or a parked or
+        ``(owner, link)``: the listing brief's OBPI with a ``brief`` link (the one active owner
+        when several briefs list the REQ, else the only one), or a parked or
         withdrawn OBPI the REQ's spelling names with a ``spelling`` link.
 
     """

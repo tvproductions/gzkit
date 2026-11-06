@@ -643,7 +643,8 @@ def scaffold_core_personas(
     API symmetry with sibling scaffolders but is unused. ``skip_existing=True``
     preserves operator-edited files; used by repair mode.
 
-    Returns paths of newly created files; empty when all slugs are skipped.
+    Returns paths of the files written, overwritten ones included unless
+    ``skip_existing``; empty when all slugs are skipped.
 
     Returns:
         The paths of the persona files written; empty when every slug is skipped.
