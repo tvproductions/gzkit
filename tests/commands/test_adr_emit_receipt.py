@@ -8,8 +8,9 @@ Coverage map (formal acceptance criteria — see brief § Acceptance Criteria):
 |                  | TestAdrEmitReceiptHeavyValid (success path emits   |
 |                  |   meta-receipt-bind alongside the audit receipt)   |
 
-The gate runs before ``_enforce_human_attestation_authenticity`` for the
-human-attestation events ``validated``, ``attested``, ``accepted``. The
+The gate runs before the attestation-type resolution for the
+human-attestation events ``validated``, ``attested``, ``accepted`` (the TTY
+authenticity gate that once followed it was removed under GHI #1308). The
 fail-closed posture mirrors ``gz obpi complete``: a heavy-lane (or
 foundation-kind) ADR closeout citing missing or status-mismatched receipts
 exits 3 and refuses to write the audit-receipt-emitted ledger event.
@@ -78,7 +79,6 @@ class _AdrEmitReceiptFixture(unittest.TestCase):
         receipt_event: str,
         attestation_text: str,
         receipts_root_dir: Path,
-        tty_gate_mock: MagicMock | None = None,
     ) -> tuple[type[BaseException] | None, int | None, MagicMock]:
         rec_console = Console(file=StringIO(), record=True)
 
@@ -91,10 +91,6 @@ class _AdrEmitReceiptFixture(unittest.TestCase):
             )
 
             ledger_obj = _mock_ledger(adr_id, lane, kind)
-            tty_mock = (
-                tty_gate_mock if tty_gate_mock is not None else MagicMock(return_value="human")
-            )
-
             evidence = {
                 "scope": adr_id,
                 "date": "2026-05-02",
@@ -123,12 +119,6 @@ class _AdrEmitReceiptFixture(unittest.TestCase):
                 patch(
                     "gzkit.commands.adr_audit.capture_validation_anchor",
                     return_value=EventAnchor(commit="abc1234", semver="0.0.24"),
-                ),
-                # Bypass the GHI #290 TTY gate so the receipt-binding gate
-                # (which runs BEFORE it per REQ-07) is exercised in isolation.
-                patch(
-                    "gzkit.commands.adr_audit._enforce_human_attestation_authenticity",
-                    tty_mock,
                 ),
                 # Patch receipts_root at the validator so fixtures resolve.
                 patch(

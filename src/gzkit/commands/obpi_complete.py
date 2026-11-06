@@ -592,7 +592,6 @@ def _apply_uncovered_waivers(
     as_json: bool,
     ledger: Any,
     sensitivity: str | None = None,
-    parent_kind: str | None = None,
 ) -> list[str]:
     """Apply --accept-uncovered waivers to gaps; emit ledger events. Returns remaining gaps."""
     accepted_set = set(accept_uncovered)
@@ -614,7 +613,6 @@ def _apply_uncovered_waivers(
                 attestor_present=attestor_present,
                 project_root=project_root,
                 sensitivity=sensitivity,
-                parent_kind=parent_kind,
             )
         except GzCliError as exc:
             _fail(str(exc), exit_code=3, as_json=as_json, obpi_id=obpi_id)
@@ -721,7 +719,6 @@ def _enforce_req_coverage_gate(
             project_root=project_root,
             as_json=as_json,
             sensitivity=sensitivity,
-            parent_kind=parent_kind,
             ledger=ledger,
         )
 
@@ -1323,10 +1320,10 @@ def obpi_complete_cmd(
     # "MY WORD IS AUTHORITY IN ALL CASES"), the operator's verbatim attestation
     # relayed into this invocation via --attestation-text IS the Gate-5
     # attestation for every lane / kind / sensitivity. The prior TTY-typed
-    # ATTEST authenticity gate (GHI #290/#292/#412) is no longer invoked;
-    # _enforce_human_attestation_authenticity in adr_audit.py and its pipeline-
-    # marker scaffolding are now unused and slated for removal under a separate
-    # ADR. See AGENTS.md section "Lane & Kind & Sensitivity Attestation Matrix".
+    # ATTEST authenticity gate (GHI #290/#292/#412) was removed under GHI #1308,
+    # as ADR-0.0.36's 2026-05-14 addendum records; the pipeline-marker
+    # validation stays, read by the --accept-uncovered confirmation gate.
+    # See AGENTS.md section "Lane & Kind & Sensitivity Attestation Matrix".
     # Skipped for --dry-run so plans can be previewed headlessly.
     attestation_type: str = ATTESTATION_TYPE_HUMAN
     if requires_human and not dry_run:

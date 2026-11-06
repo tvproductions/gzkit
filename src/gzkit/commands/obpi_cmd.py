@@ -430,55 +430,19 @@ def _gate_completed_receipt_binding(
     )
 
 
-def _resolve_emit_receipt_authenticity_context(
-    *,
-    obpi_content: str,
-    parent_adr: Any,
-    project_root: Path,
-    config: Any,
-) -> tuple[str | None, str | None]:
-    """Return ``(sensitivity, parent_kind)`` for the emit-receipt authenticity gate.
-
-    Extracted from ``obpi_emit_receipt_cmd`` so that path stays under the
-    C/C/C complexity ceiling (GHI #412 plumbing added the lookup).
-
-    Returns:
-        Tuple of (brief ``sensitivity`` value or None, parent ADR ``kind`` or None when there is no
-        parent ADR).
-
-    """
-    sensitivity_value = parse_frontmatter_value(obpi_content, "sensitivity")
-    parent_kind_value: str | None = None
-    if isinstance(parent_adr, str) and parent_adr:
-        from gzkit.commands.obpi_complete import _read_adr_kind
-
-        adr_file_for_kind, _ = resolve_adr_file(project_root, config, parent_adr)
-        parent_kind_value = _read_adr_kind(adr_file_for_kind)
-    return sensitivity_value, parent_kind_value
-
-
 def _gate_completed_receipt_authenticity(
     *,
     obpi_id: str,
-    parent_adr: Any,
-    attestor: str,
     evidence: dict[str, Any] | None,
     dry_run: bool,
-    attestor_present: bool = False,
-    project_root: Path | None = None,
-    sensitivity: str | None = None,
-    parent_kind: str | None = None,
 ) -> None:
     """Resolve attestation_type for the emit-receipt path.
 
     Per the canon-owner declaration (AGENTS.md section "Lane & Kind &
     Sensitivity Attestation Matrix"), the operator's verbatim attestation
     relayed via the receipt evidence IS the Gate-5 attestation for every
-    lane / kind / sensitivity. The prior TTY-typed ATTEST authenticity gate
-    (GHI #290) is no longer invoked; ``attestor`` / ``attestor_present`` /
-    ``project_root`` / ``sensitivity`` / ``parent_kind`` are retained on the
-    signature for the call graph and are slated for removal with the gate
-    scaffolding under a separate ADR. Skipped for --dry-run.
+    lane / kind / sensitivity. The TTY-typed ATTEST authenticity gate
+    (GHI #290) it replaced was removed under GHI #1308. Skipped for --dry-run.
     """
     if dry_run or not isinstance(evidence, dict):
         return
@@ -517,6 +481,10 @@ def obpi_emit_receipt_cmd(
     attestor_present: bool = False,
 ) -> None:
     """Emit an OBPI receipt event anchored in the ledger."""
+    # --attestor-present opened the TTY authenticity gate's agent-relayed path; that
+    # gate was removed (GHI #1308), so the flag is accepted and inert, kept only so
+    # existing invocations still parse.
+    del attestor_present
     config = ensure_initialized()
     project_root = get_project_root()
     ledger = Ledger(project_root / config.paths.ledger)
@@ -567,7 +535,7 @@ def obpi_emit_receipt_cmd(
         )
         # ADR-0.0.24-02 receipt-binding gate: heavy/foundation = fail-closed
         # on unresolvable ARB receipts; lite-non-foundation = warn-only. Runs
-        # BEFORE the GHI #290 TTY gate at ``_gate_completed_receipt_authenticity``
+        # BEFORE the attestation-type resolution at ``_gate_completed_receipt_authenticity``
         # (REQ-0.0.24-02-07, mechanism for REQ-02). Closes the same-class
         # fabrication vector on the lower-level emit-receipt path.
         _gate_completed_receipt_binding(
@@ -581,22 +549,10 @@ def obpi_emit_receipt_cmd(
             attestor=attestor,
             dry_run=dry_run,
         )
-        sensitivity_value, parent_kind_value = _resolve_emit_receipt_authenticity_context(
-            obpi_content=obpi_content,
-            parent_adr=parent_adr,
-            project_root=project_root,
-            config=config,
-        )
         _gate_completed_receipt_authenticity(
             obpi_id=obpi_id,
-            parent_adr=parent_adr,
-            attestor=attestor,
             evidence=evidence,
             dry_run=dry_run,
-            attestor_present=attestor_present,
-            project_root=project_root,
-            sensitivity=sensitivity_value,
-            parent_kind=parent_kind_value,
         )
     elif evidence is not None:
         evidence = dict(evidence)

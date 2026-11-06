@@ -1119,322 +1119,6 @@ class TestObpiCompleteOperatorVerbatimAttestation(SilencedConsoleTestCase):
             ledger.append.assert_not_called()
 
 
-@covers("OBPI-0.0.14-02")
-class TestAuthenticityGateUnit(unittest.TestCase):
-    """Direct unit tests for _enforce_human_attestation_authenticity."""
-
-    def test_non_tty_raises(self):
-        from gzkit.commands.adr_audit import _enforce_human_attestation_authenticity
-        from gzkit.commands.common import GzCliError
-
-        with (
-            patch("gzkit.commands.adr_audit.console", _quiet_console),
-            patch(
-                "gzkit.commands.adr_audit._is_human_attestation_tty_available",
-                return_value=False,
-            ),
-        ):
-            with self.assertRaises(GzCliError) as ctx:
-                _enforce_human_attestation_authenticity(
-                    obpi_id="OBPI-0.0.20-03",
-                    parent_adr="ADR-0.0.20",
-                    attestor="g0",
-                    attestation_text="fabricated",
-                )
-            self.assertIn("TTY", str(ctx.exception))
-            self.assertIn("GHI #290", str(ctx.exception))
-
-    def test_wrong_confirmation_word_raises(self):
-        from gzkit.commands.adr_audit import _enforce_human_attestation_authenticity
-        from gzkit.commands.common import GzCliError
-
-        with (
-            patch("gzkit.commands.adr_audit.console", _quiet_console),
-            patch(
-                "gzkit.commands.adr_audit._is_human_attestation_tty_available",
-                return_value=True,
-            ),
-            patch("gzkit.commands.adr_audit.input", create=True, return_value="attest"),
-        ):
-            with self.assertRaises(GzCliError) as ctx:
-                _enforce_human_attestation_authenticity(
-                    obpi_id="OBPI-0.0.20-03",
-                    parent_adr="ADR-0.0.20",
-                    attestor="g0",
-                    attestation_text="case-sensitive test",
-                )
-            self.assertIn("declined", str(ctx.exception).lower())
-
-    def test_lowercase_y_rejected(self):
-        """A simple [y/N] prompt would be trivially defeatable. Require 'ATTEST'."""
-        from gzkit.commands.adr_audit import _enforce_human_attestation_authenticity
-        from gzkit.commands.common import GzCliError
-
-        with (
-            patch("gzkit.commands.adr_audit.console", _quiet_console),
-            patch(
-                "gzkit.commands.adr_audit._is_human_attestation_tty_available",
-                return_value=True,
-            ),
-            patch("gzkit.commands.adr_audit.input", create=True, return_value="y"),
-            self.assertRaises(GzCliError),
-        ):
-            _enforce_human_attestation_authenticity(
-                obpi_id="OBPI-0.0.20-03",
-                parent_adr="ADR-0.0.20",
-                attestor="g0",
-                attestation_text="y is not enough",
-            )
-
-    def test_eof_aborts(self):
-        from gzkit.commands.adr_audit import _enforce_human_attestation_authenticity
-        from gzkit.commands.common import GzCliError
-
-        def _raise_eof(*_args, **_kwargs):
-            raise EOFError
-
-        with (
-            patch("gzkit.commands.adr_audit.console", _quiet_console),
-            patch(
-                "gzkit.commands.adr_audit._is_human_attestation_tty_available",
-                return_value=True,
-            ),
-            patch("gzkit.commands.adr_audit.input", create=True, side_effect=_raise_eof),
-        ):
-            with self.assertRaises(GzCliError) as ctx:
-                _enforce_human_attestation_authenticity(
-                    obpi_id="OBPI-0.0.20-03",
-                    parent_adr="ADR-0.0.20",
-                    attestor="g0",
-                    attestation_text="eof path",
-                )
-            self.assertIn("aborted", str(ctx.exception).lower())
-
-    def test_attest_exact_match_passes(self):
-        from gzkit.commands.adr_audit import (
-            ATTESTATION_TYPE_HUMAN,
-            _enforce_human_attestation_authenticity,
-        )
-
-        with (
-            patch("gzkit.commands.adr_audit.console", _quiet_console),
-            patch(
-                "gzkit.commands.adr_audit._is_human_attestation_tty_available",
-                return_value=True,
-            ),
-            patch(
-                "gzkit.commands.adr_audit.input",
-                create=True,
-                return_value="ATTEST",
-            ),
-        ):
-            result = _enforce_human_attestation_authenticity(
-                obpi_id="OBPI-0.0.20-03",
-                parent_adr="ADR-0.0.20",
-                attestor="g0",
-                attestation_text="exact uppercase",
-            )
-            self.assertEqual(result, ATTESTATION_TYPE_HUMAN)
-
-
-@covers("OBPI-0.0.14-02")
-class TestAgentRelayedEscapePath(unittest.TestCase):
-    """GHI #292 — --attestor-present escape path for agent+operator co-presence.
-
-    The GHI #290 TTY gate conflated 'headless agent' with 'agent + operator
-    co-present via tool-use Bash'. These tests pin the three branches of the
-    post-#292 gate: TTY path still returns 'human'; non-TTY + --attestor-present
-    + active pipeline marker returns 'agent-relayed-operator-attestation';
-    non-TTY without either signal still fails closed.
-    """
-
-    def _write_marker(
-        self,
-        project_root: Path,
-        obpi_id: str,
-        parent_adr: str = "ADR-0.0.20",
-        nonce: str = "0123456789abcdef0123456789abcdef",
-        emit_ledger_event: bool = True,
-    ) -> Path:
-        """Write a GHI #412-authentic marker and matching ledger event.
-
-        Pre-GHI #412 the test suite wrote a minimal ``{"obpi_id": ..., "current_stage": ...}``
-        marker because the validator only ran ``is_file()``. The hardened
-        validator requires the full ``pipeline_marker_payload`` shape AND a
-        matching ``pipeline_launched`` ledger event with the same nonce.
-
-        Returns:
-            The path of the written marker file.
-
-        """
-        from datetime import UTC, datetime
-
-        plans_dir = project_root / ".claude" / "plans"
-        plans_dir.mkdir(parents=True, exist_ok=True)
-        marker = plans_dir / f".pipeline-active-{obpi_id}.json"
-        timestamp = datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
-        marker.write_text(
-            json.dumps(
-                {
-                    "obpi_id": obpi_id,
-                    "parent_adr": parent_adr,
-                    "lane": "heavy",
-                    "entry": "full",
-                    "execution_mode": "normal",
-                    "current_stage": "ceremony",
-                    "started_at": timestamp,
-                    "updated_at": timestamp,
-                    "receipt_state": "pass",
-                    "nonce": nonce,
-                }
-            ),
-            encoding="utf-8",
-        )
-        if emit_ledger_event:
-            ledger_dir = project_root / ".gzkit"
-            ledger_dir.mkdir(parents=True, exist_ok=True)
-            ledger_path = ledger_dir / "ledger.jsonl"
-            event = {
-                "schema": "gzkit.ledger.v1",
-                "event": "pipeline_launched",
-                "id": obpi_id,
-                "ts": timestamp,
-                "parent": parent_adr,
-                "nonce": nonce,
-                "marker_path": marker.relative_to(project_root).as_posix(),
-                "lane": "heavy",
-                "entry": "full",
-            }
-            with ledger_path.open("a", encoding="utf-8") as handle:
-                handle.write(json.dumps(event) + "\n")
-        return marker
-
-    def test_non_tty_with_attestor_present_and_marker_returns_agent_relayed(self):
-        from gzkit.commands.adr_audit import (
-            ATTESTATION_TYPE_AGENT_RELAYED,
-            _enforce_human_attestation_authenticity,
-        )
-
-        with tempfile.TemporaryDirectory() as tmp:
-            project_root = Path(tmp)
-            self._write_marker(project_root, "OBPI-0.0.20-03")
-            with (
-                patch("gzkit.commands.adr_audit.console", _quiet_console),
-                patch(
-                    "gzkit.commands.adr_audit._is_human_attestation_tty_available",
-                    return_value=False,
-                ),
-            ):
-                result = _enforce_human_attestation_authenticity(
-                    obpi_id="OBPI-0.0.20-03",
-                    parent_adr="ADR-0.0.20",
-                    attestor="g0",
-                    attestation_text="agent-relayed under active pipeline marker",
-                    attestor_present=True,
-                    project_root=project_root,
-                )
-                self.assertEqual(result, ATTESTATION_TYPE_AGENT_RELAYED)
-
-    def test_non_tty_with_attestor_present_but_no_marker_raises(self):
-        from gzkit.commands.adr_audit import _enforce_human_attestation_authenticity
-        from gzkit.commands.common import GzCliError
-
-        with tempfile.TemporaryDirectory() as tmp:
-            project_root = Path(tmp)
-            # Deliberately do not write a marker.
-            with (
-                patch("gzkit.commands.adr_audit.console", _quiet_console),
-                patch(
-                    "gzkit.commands.adr_audit._is_human_attestation_tty_available",
-                    return_value=False,
-                ),
-            ):
-                with self.assertRaises(GzCliError) as ctx:
-                    _enforce_human_attestation_authenticity(
-                        obpi_id="OBPI-0.0.20-03",
-                        parent_adr="ADR-0.0.20",
-                        attestor="g0",
-                        attestation_text="no marker, should fail",
-                        attestor_present=True,
-                        project_root=project_root,
-                    )
-                self.assertIn("marker file does not exist", str(ctx.exception))
-                self.assertIn("gz obpi pipeline", str(ctx.exception))
-
-    def test_non_tty_without_attestor_present_still_raises(self):
-        from gzkit.commands.adr_audit import _enforce_human_attestation_authenticity
-        from gzkit.commands.common import GzCliError
-
-        with tempfile.TemporaryDirectory() as tmp:
-            project_root = Path(tmp)
-            # Even with a marker present, without the flag the gate fails closed.
-            self._write_marker(project_root, "OBPI-0.0.20-03")
-            with (
-                patch("gzkit.commands.adr_audit.console", _quiet_console),
-                patch(
-                    "gzkit.commands.adr_audit._is_human_attestation_tty_available",
-                    return_value=False,
-                ),
-            ):
-                with self.assertRaises(GzCliError) as ctx:
-                    _enforce_human_attestation_authenticity(
-                        obpi_id="OBPI-0.0.20-03",
-                        parent_adr="ADR-0.0.20",
-                        attestor="g0",
-                        attestation_text="flag not set",
-                        attestor_present=False,
-                        project_root=project_root,
-                    )
-                self.assertIn("GHI #290", str(ctx.exception))
-                self.assertIn("--attestor-present", str(ctx.exception))
-
-    def test_tty_path_with_attestor_present_still_prompts_attest(self):
-        """TTY path must not be bypassed by --attestor-present; the flag only
-        opens the non-TTY marker-based escape."""
-        from gzkit.commands.adr_audit import (
-            ATTESTATION_TYPE_HUMAN,
-            _enforce_human_attestation_authenticity,
-        )
-        from gzkit.commands.common import GzCliError
-
-        with (
-            patch("gzkit.commands.adr_audit.console", _quiet_console),
-            patch(
-                "gzkit.commands.adr_audit._is_human_attestation_tty_available",
-                return_value=True,
-            ),
-            patch("gzkit.commands.adr_audit.input", create=True, return_value="nope"),
-            self.assertRaises(GzCliError),
-        ):
-            _enforce_human_attestation_authenticity(
-                obpi_id="OBPI-0.0.20-03",
-                parent_adr="ADR-0.0.20",
-                attestor="g0",
-                attestation_text="TTY still prompts",
-                attestor_present=True,
-                project_root=Path("/nonexistent"),
-            )
-
-        # And when the prompt is satisfied, the resolved type is still 'human'.
-        with (
-            patch("gzkit.commands.adr_audit.console", _quiet_console),
-            patch(
-                "gzkit.commands.adr_audit._is_human_attestation_tty_available",
-                return_value=True,
-            ),
-            patch("gzkit.commands.adr_audit.input", create=True, return_value="ATTEST"),
-        ):
-            result = _enforce_human_attestation_authenticity(
-                obpi_id="OBPI-0.0.20-03",
-                parent_adr="ADR-0.0.20",
-                attestor="g0",
-                attestation_text="TTY-typed wins",
-                attestor_present=True,
-                project_root=Path("/nonexistent"),
-            )
-            self.assertEqual(result, ATTESTATION_TYPE_HUMAN)
-
-
 # ---------------------------------------------------------------------------
 # OBPI-0.0.22-04 — sensitivity:security forces TTY+ATTEST gate via OR
 # ---------------------------------------------------------------------------
@@ -1682,8 +1366,11 @@ class TestObpiCompleteSecuritySensitivityGate(SilencedConsoleTestCase):
 
 # ---------------------------------------------------------------------------
 # GHI #412: pipeline-marker authenticity hardening — closes the
-# "marker.is_file()" forgery surface and refuses agent-relayed attestation
-# for sensitivity:security and foundation-kind scopes.
+# "marker.is_file()" forgery surface and refuses agent-relayed acceptance
+# for sensitivity:security scopes (GHI #434 reverted the foundation-kind
+# refusal). Exercised through _enforce_uncovered_acceptance_confirmation,
+# the live caller of the marker validator since GHI #1308 removed the
+# TTY authenticity gate these tests first ran through.
 # ---------------------------------------------------------------------------
 
 
@@ -1758,9 +1445,8 @@ class TestPipelineMarkerAuthenticityGhi412(unittest.TestCase):
         obpi_id: str = "OBPI-0.0.20-03",
         parent_adr: str = "ADR-0.0.20",
         sensitivity: str | None = None,
-        parent_kind: str | None = None,
     ):
-        from gzkit.commands.adr_audit import _enforce_human_attestation_authenticity
+        from gzkit.commands.adr_audit import _enforce_uncovered_acceptance_confirmation
 
         with (
             patch("gzkit.commands.adr_audit.console", _quiet_console),
@@ -1769,15 +1455,14 @@ class TestPipelineMarkerAuthenticityGhi412(unittest.TestCase):
                 return_value=False,
             ),
         ):
-            return _enforce_human_attestation_authenticity(
+            return _enforce_uncovered_acceptance_confirmation(
                 obpi_id=obpi_id,
                 parent_adr=parent_adr,
+                req_ids=["REQ-0.0.20-03-01"],
                 attestor="g0",
-                attestation_text="GHI #412 unit",
                 attestor_present=True,
                 project_root=project_root,
                 sensitivity=sensitivity,
-                parent_kind=parent_kind,
             )
 
     def test_authentic_marker_with_ledger_event_returns_agent_relayed(self):
@@ -1917,26 +1602,6 @@ class TestPipelineMarkerAuthenticityGhi412(unittest.TestCase):
                 self._run_gate(project_root, sensitivity="security")
             self.assertIn("sensitivity:security", str(ctx.exception))
             self.assertIn("interactive shell", str(ctx.exception))
-
-    def test_foundation_kind_with_authentic_marker_returns_agent_relayed_post_434(self):
-        """GHI #434: agent-relayed attestation IS accepted for foundation-kind
-        when the marker is authentic. The marker authenticity hardening from
-        GHI #412 mitigation #1 (nonce + ledger event witness + freshness)
-        sufficiently raises the forgery bar; the additional foundation-kind
-        refusal from #412 mitigation #2 was reverted because it forced N
-        TTY sessions per ADR closeout for negligible trust gain over #1.
-        ``sensitivity: security`` remains TTY-only — see
-        ``test_security_sensitivity_refuses_agent_relayed_even_with_authentic_marker``.
-        """
-        from gzkit.commands.adr_audit import ATTESTATION_TYPE_AGENT_RELAYED
-
-        with tempfile.TemporaryDirectory() as tmp:
-            project_root = Path(tmp)
-            _write_authentic_marker(project_root, "OBPI-0.0.20-03", "ADR-0.0.20")
-            self.assertEqual(
-                self._run_gate(project_root, parent_kind="foundation"),
-                ATTESTATION_TYPE_AGENT_RELAYED,
-            )
 
 
 if __name__ == "__main__":

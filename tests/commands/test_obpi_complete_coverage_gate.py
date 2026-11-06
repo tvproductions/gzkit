@@ -956,7 +956,6 @@ class TestEnforceUncoveredAcceptanceConfirmationOperatorVerbatim(SilencedConsole
                 attestor_present=False,
                 project_root=None,
                 sensitivity=None,
-                parent_kind="foundation",
             )
 
         self.assertEqual(result, ATTESTATION_TYPE_OPERATOR_VERBATIM)

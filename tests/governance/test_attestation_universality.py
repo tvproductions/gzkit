@@ -6,11 +6,12 @@ REQ-0.0.36-02-01..05: ADR-0.0.36 universal OBPI attestation.
 import ast
 import inspect
 import re
+import subprocess
 import textwrap
 import unittest
+from pathlib import Path
 
 from gzkit.commands.adr_audit import (
-    _enforce_human_attestation_authenticity,
     _is_foundation_adr,
     _requires_human_obpi_attestation,
 )
@@ -114,20 +115,52 @@ class TestIsFoundationAdrRetainedForTaxonomy(unittest.TestCase):
         )
 
 
+_GATE_PATH = "src/gzkit/commands/adr_audit.py"
+_GATE_NAME = "_enforce_human_attestation_authenticity"
+# OBPI-0.0.36-02's landing: the commit inside its lock window (2026-05-17T23:36Z
+# to 2026-05-18T00:19Z on the ledger) that collapsed _requires_human_obpi_attestation.
+_OBPI_LANDING = "e9ebd770f3a11c820443a2cc9bc1f63548be08d7"
+
+
+def _gate_body_at(rev: str) -> str:
+    """Return the authenticity gate's source as it stood at *rev*."""
+    shown = subprocess.run(  # noqa: S603 -- fixed argv; rev and path are module constants
+        ["git", "show", f"{rev}:{_GATE_PATH}"],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=True,
+        cwd=Path(__file__).resolve().parents[2],
+    )
+    for node in ast.walk(ast.parse(shown.stdout)):
+        if isinstance(node, ast.FunctionDef) and node.name == _GATE_NAME:
+            return ast.get_source_segment(shown.stdout, node) or ""
+    return ""
+
+
 @covers("OBPI-0.0.36-02")
 class TestEnforceAuthenticityUnmodified(unittest.TestCase):
-    """REQ-0.0.36-02-05 (acceptance) / -06 (req): authenticity gate must remain intact."""
+    """REQ-0.0.36-02-05: OBPI-0.0.36-02 left the authenticity gate's body byte-identical.
+
+    The REQ asserts a property of that OBPI's own diff: "Given
+    `_enforce_human_attestation_authenticity` after this OBPI, when compared to its
+    pre-OBPI implementation, then the function body is byte-identical (this OBPI does
+    not touch the authenticity gate)." It once read the live function, which made it
+    look like a standing freeze. GHI #1308 removed the gate ADR-0.0.36's 2026-05-14
+    addendum records as removed, and the operator ruled (2026-11-06, verbatim "A")
+    that the REQ is a claim about the OBPI's diff, so it stays true of history and its
+    proof re-points to that history (docs/governance/attested-req-subject-retirement.md,
+    doctrine-neutral case). The proof compares the body on either side of the OBPI's
+    landing commit, which CI's full-depth checkout carries.
+    """
 
     @covers("REQ-0.0.36-02-05")
-    def test_authenticity_gate_three_branches_present(self):
-        # Regression-invariant overlay: structural assertion that the three
-        # branches (TTY, agent-relayed, fail-closed) preserved across the
-        # ADR-0.0.36 collapse. Brief REQ-06 / Acceptance REQ-05 forbid
-        # touching this function's body.
-        source = inspect.getsource(_enforce_human_attestation_authenticity)
-        self.assertIn("ATTESTATION_TYPE_HUMAN", source)
-        self.assertIn("ATTESTATION_TYPE_AGENT_RELAYED", source)
-        self.assertIn("GHI #290", source)
+    def test_obpi_landing_left_the_gate_body_byte_identical(self):
+        before = _gate_body_at(f"{_OBPI_LANDING}^")
+        after = _gate_body_at(_OBPI_LANDING)
+        self.assertTrue(before, "the gate must exist before the OBPI's landing")
+        self.assertEqual(after, before)
 
 
 if __name__ == "__main__":

@@ -515,15 +515,13 @@ def _requires_human_obpi_attestation(
 # ---------------------------------------------------------------------------
 # GHI #290 authenticity gate + GHI #292 agent-relayed escape path
 #
-# DEAD CODE as of the canon-owner attestation declaration: the operator's
-# verbatim conversational attestation relayed via --attestation-text is the
-# Gate-5 attestation for every lane / kind / sensitivity (see AGENTS.md
-# section "Lane & Kind & Sensitivity Attestation Matrix"). Nothing calls
-# _enforce_human_attestation_authenticity or _validate_active_pipeline_marker
-# anymore. This scaffolding (the TTY prompt, pipeline-marker validation, nonce
-# coupling, --attestor-present plumbing) is retained pending removal under a
-# separate ADR so the deletion lands with its own test fallout, not bundled
-# into the doctrine change.
+# Per the canon-owner attestation declaration the operator's verbatim
+# conversational attestation relayed via --attestation-text is the Gate-5
+# attestation for every lane / kind / sensitivity (see AGENTS.md section
+# "Lane & Kind & Sensitivity Attestation Matrix"). The TTY authenticity gate
+# that once guarded Gate 5 was removed under GHI #1308. The TTY probe and the
+# pipeline-marker validation below stay: _enforce_uncovered_acceptance_confirmation
+# still reads both for the --accept-uncovered waiver path.
 # ---------------------------------------------------------------------------
 
 _GHI_290_AUTHENTICITY_CONFIRMATION = "ATTEST"
@@ -652,154 +650,6 @@ def _validate_active_pipeline_marker(
     return True, ""
 
 
-def _active_pipeline_marker_exists(project_root: Path, obpi_id: str) -> bool:
-    """Backward-compat: return True only when the marker is structurally authentic.
-
-    Pre-GHI #412 this was a trivial ``marker.is_file()`` check. The forgery
-    surface that exposed (any process with write access could satisfy the
-    agent-relayed attestation gate) is now closed: the marker must parse,
-    match expected obpi_id, carry a valid nonce, be fresh, and be witnessed
-    by a ``pipeline_launched`` ledger event. Callers that need the rejection
-    reason should call :func:`_validate_active_pipeline_marker` directly.
-
-    Returns:
-        True only when the marker exists, parses as a JSON object with a string ``parent_adr``, and
-        passes :func:`_validate_active_pipeline_marker`; False otherwise.
-
-    """
-    marker = project_root / ".claude" / "plans" / f".pipeline-active-{obpi_id}.json"
-    if not marker.is_file():
-        return False
-    try:
-        payload = json.loads(marker.read_text(encoding="utf-8"))
-    except OSError, json.JSONDecodeError:
-        return False
-    if not isinstance(payload, dict):
-        return False
-    parent_adr = payload.get("parent_adr")
-    if not isinstance(parent_adr, str):
-        return False
-    ok, _reason = _validate_active_pipeline_marker(project_root, obpi_id, parent_adr)
-    return ok
-
-
-def _enforce_human_attestation_authenticity(
-    *,
-    obpi_id: str,
-    parent_adr: str,
-    attestor: str,
-    attestation_text: str,
-    attestor_present: bool = False,
-    project_root: Path | None = None,
-    sensitivity: str | None = None,
-    parent_kind: str | None = None,
-) -> str:
-    """Enforce the GHI #290 authenticity gate and resolve the attestation path.
-
-    The gate closes the vector that allowed a prior agent session to fabricate
-    a ``human_attestation: true`` receipt for OBPI-0.0.20-03 on 2026-04-23.
-    It has three branches (GHI #292 adds the third):
-
-    1. **TTY path (``human``).** stdin AND stdout are attached to a real TTY.
-       The operator reviews the echoed attestation payload and types the
-       exact word ``ATTEST`` (uppercase, no quotes) to confirm. Returns
-       :data:`ATTESTATION_TYPE_HUMAN`.
-    2. **Agent-relayed path (``agent-relayed-operator-attestation``).** No
-       TTY, but ``attestor_present=True`` AND the marker passes
-       :func:`_validate_active_pipeline_marker` (structure, freshness,
-       ledger-witnessed nonce — GHI #412). Returns
-       :data:`ATTESTATION_TYPE_AGENT_RELAYED` so the caller can record a
-       taxonomically distinct ledger receipt. **GHI #412 narrowing:** the
-       agent-relayed path is refused entirely when ``sensitivity == "security"``
-       — that scope requires live TTY attestation, never a file-based proxy.
-       ``parent_kind`` is accepted but not evaluated.
-    3. **Fail-closed.** No TTY and either ``attestor_present=False`` or the
-       marker fails authenticity validation. Agent-synthesized attestation
-       from a fully-headless context is prohibited per GHI #290; the function
-       raises :class:`GzCliError`.
-
-    Returns:
-        :data:`ATTESTATION_TYPE_HUMAN` for the confirmed TTY path, or
-        :data:`ATTESTATION_TYPE_AGENT_RELAYED` for the validated agent-relayed path.
-
-    """
-    if _is_human_attestation_tty_available():
-        console.print("")
-        console.print("[bold yellow]=== Human Attestation Required (GHI #290) ===[/bold yellow]")
-        console.print(f"  OBPI:        {obpi_id}")
-        console.print(f"  Parent ADR:  {parent_adr}")
-        console.print(f"  Attestor:    {attestor}")
-        console.print(f"  Attestation: {attestation_text}")
-        console.print("")
-        console.print(
-            f"Type the word [bold]{_GHI_290_AUTHENTICITY_CONFIRMATION}[/bold] "
-            "(uppercase, no quotes) to confirm you personally attest, "
-            "or anything else to abort:"
-        )
-        try:
-            response = input("> ").strip()
-        except (EOFError, KeyboardInterrupt) as exc:
-            msg = "Attestation aborted (no confirmation received)."
-            raise GzCliError(msg) from exc
-
-        if response != _GHI_290_AUTHENTICITY_CONFIRMATION:
-            msg = (
-                f"Attestation declined (expected "
-                f"{_GHI_290_AUTHENTICITY_CONFIRMATION!r}, got {response!r})."
-            )
-            raise GzCliError(msg)
-        return ATTESTATION_TYPE_HUMAN
-
-    if attestor_present:
-        if project_root is None:
-            msg = (
-                "--attestor-present requires project context to verify the "
-                "pipeline marker; internal caller did not pass project_root."
-            )
-            raise GzCliError(msg)
-        if isinstance(sensitivity, str) and sensitivity.lower() == "security":
-            msg = (
-                "--attestor-present is refused for sensitivity:security "
-                "attestation (GHI #412 + #434). The agent-relayed path is a "
-                "file-based co-presence proxy and cannot satisfy the authority "
-                "boundary required for security scopes. Run this command from "
-                "an interactive shell and type the confirmation yourself."
-            )
-            raise GzCliError(msg)
-        ok, reason = _validate_active_pipeline_marker(project_root, obpi_id, parent_adr)
-        if not ok:
-            msg = (
-                f"--attestor-present rejected: {reason}. "
-                f"Start the pipeline with 'uv run gz obpi pipeline {obpi_id}' "
-                f"first, or re-run this command from an interactive shell and "
-                f"type the confirmation yourself."
-            )
-            raise GzCliError(msg)
-        console.print("")
-        console.print(
-            "[bold yellow]=== Agent-Relayed Operator Attestation (GHI #292) ===[/bold yellow]"
-        )
-        console.print(f"  OBPI:        {obpi_id}")
-        console.print(f"  Parent ADR:  {parent_adr}")
-        console.print(f"  Attestor:    {attestor}")
-        console.print(f"  Attestation: {attestation_text}")
-        console.print(
-            "  [dim]Co-presence proxy: validated active pipeline marker "
-            f".claude/plans/.pipeline-active-{obpi_id}.json[/dim]"
-        )
-        return ATTESTATION_TYPE_AGENT_RELAYED
-
-    msg = (
-        "Human attestation required for this OBPI, but the process is not "
-        "attached to an interactive terminal (stdin/stdout is not a TTY). "
-        "Agent-synthesized attestation is prohibited per GHI #290. "
-        "Re-run this command from an interactive shell and type the "
-        "confirmation yourself, or pass --attestor-present from an active "
-        "'gz obpi pipeline' session (GHI #292)."
-    )
-    raise GzCliError(msg)
-
-
 _UNCOVERED_ACCEPTANCE_CONFIRMATION = "ACCEPT"
 
 
@@ -812,7 +662,6 @@ def _enforce_uncovered_acceptance_confirmation(
     attestor_present: bool = False,
     project_root: Path | None = None,
     sensitivity: str | None = None,
-    parent_kind: str | None = None,
 ) -> str:
     """Gate the --accept-uncovered override for heavy/foundation parents.
 
@@ -1175,7 +1024,6 @@ def _apply_human_attestation_gates(
     adr_file: Path,
     receipt_event: str,
     attestor: str,
-    attestor_present: bool,
     evidence: dict[str, Any] | None,
     ledger: Ledger,
     project_root: Path,
@@ -1183,10 +1031,10 @@ def _apply_human_attestation_gates(
 ) -> None:
     """Run the ADR-0.0.24-02 receipt-binding gate then resolve attestation_type.
 
-    The prior GHI #290 TTY authenticity gate is no longer invoked: per the
-    canon-owner declaration the operator's verbatim attestation relayed via
-    the receipt evidence is the Gate-5 attestation. See AGENTS.md section
-    "Lane & Kind & Sensitivity Attestation Matrix".
+    Per the canon-owner declaration the operator's verbatim attestation
+    relayed via the receipt evidence is the Gate-5 attestation; the GHI #290
+    TTY authenticity gate was removed (ADR-0.0.36 addendum, GHI #1308). See
+    AGENTS.md section "Lane & Kind & Sensitivity Attestation Matrix".
     """
     from gzkit.commands.obpi_complete import _enforce_attestation_receipt_gate, _read_adr_kind
 
@@ -1213,10 +1061,7 @@ def _apply_human_attestation_gates(
     attestation_type = _enforce_human_authenticity_gate(
         adr_id=adr_id,
         receipt_event=receipt_event,
-        attestor=attestor,
-        attestor_present=attestor_present,
         evidence=evidence,
-        project_root=project_root,
         attestation_text=attestation_text,
     )
     if isinstance(evidence, dict):
@@ -1227,10 +1072,7 @@ def _enforce_human_authenticity_gate(
     *,
     adr_id: str,
     receipt_event: str,
-    attestor: str,
-    attestor_present: bool,
     evidence: dict[str, Any] | None,
-    project_root: Path,
     attestation_text: str,
 ) -> str:
     """Resolve the attestation_type for an ADR human-attestation receipt.
@@ -1238,10 +1080,8 @@ def _enforce_human_authenticity_gate(
     Per the canon-owner declaration (AGENTS.md section "Lane & Kind &
     Sensitivity Attestation Matrix"), the operator's verbatim attestation
     relayed via the receipt evidence IS the Gate-5 attestation for every
-    lane / kind / sensitivity. The prior TTY-typed ATTEST authenticity gate
-    (GHI #290) is no longer invoked; ``attestor`` / ``attestor_present`` /
-    ``project_root`` are retained on the signature for the call graph and
-    are slated for removal with the gate scaffolding under a separate ADR.
+    lane / kind / sensitivity. The TTY-typed ATTEST authenticity gate
+    (GHI #290) it replaced was removed under GHI #1308.
 
     Returns:
         Always :data:`ATTESTATION_TYPE_OPERATOR_VERBATIM` when attestation text is present.
@@ -1310,6 +1150,10 @@ def adr_emit_receipt_cmd(
     attestor_present: bool = False,
 ) -> None:
     """Emit an ADR audit receipt event anchored in the ledger."""
+    # --attestor-present opened the TTY authenticity gate's agent-relayed path; that
+    # gate was removed (GHI #1308), so the flag is accepted and inert, kept only so
+    # existing invocations still parse.
+    del attestor_present
     config = ensure_initialized()
     project_root = get_project_root()
     ledger = Ledger(project_root / config.paths.ledger)
@@ -1360,7 +1204,6 @@ def adr_emit_receipt_cmd(
             adr_file=adr_file,
             receipt_event=receipt_event,
             attestor=attestor,
-            attestor_present=attestor_present,
             evidence=evidence,
             ledger=ledger,
             project_root=project_root,
@@ -1411,11 +1254,10 @@ def adr_audit_begin_cmd(adr: str) -> None:
     """Open an ADR audit ceremony — write the co-presence marker.
 
     The marker is the same shape ``gz obpi pipeline`` writes for OBPI
-    ceremonies; ``_active_pipeline_marker_exists`` (GHI #292) accepts it
-    as proof that an operator-typed CLI entry-point opened the ceremony.
-    The skill ``/gz-adr-audit`` calls this verb at the start of Step 8 so
-    the agent-relayed Gate-5 emit can pass the authenticity gate without
-    fabricating the marker by hand.
+    ceremonies. It was the co-presence proof the TTY authenticity gate's
+    agent-relayed path read (GHI #292); that gate was removed under GHI #1308,
+    so nothing reads an ADR audit marker now. The verb is kept, inert, until
+    its removal is ruled with the inert ``--attestor-present`` flags.
 
     Idempotent: a re-invocation refreshes ``updated_at`` and rewrites the
     payload; the marker exists at most once per ADR.

@@ -3179,12 +3179,12 @@
     {
       "file": "src/gzkit/commands/adr_audit.py",
       "rule": "ARG001",
-      "count": 8
+      "count": 3
     },
     {
       "file": "src/gzkit/commands/adr_audit.py",
       "rule": "DOC501",
-      "count": 4
+      "count": 3
     },
     {
       "file": "src/gzkit/commands/adr_audit.py",
@@ -3224,7 +3224,7 @@
     {
       "file": "src/gzkit/commands/adr_audit.py",
       "rule": "PLR0913",
-      "count": 7
+      "count": 5
     },
     {
       "file": "src/gzkit/commands/adr_audit.py",
@@ -4864,12 +4864,12 @@
     {
       "file": "src/gzkit/commands/obpi_cmd.py",
       "rule": "ANN401",
-      "count": 8
+      "count": 5
     },
     {
       "file": "src/gzkit/commands/obpi_cmd.py",
       "rule": "ARG001",
-      "count": 7
+      "count": 1
     },
     {
       "file": "src/gzkit/commands/obpi_cmd.py",
@@ -4889,7 +4889,7 @@
     {
       "file": "src/gzkit/commands/obpi_cmd.py",
       "rule": "PLC0415",
-      "count": 2
+      "count": 1
     },
     {
       "file": "src/gzkit/commands/obpi_cmd.py",
@@ -4899,7 +4899,7 @@
     {
       "file": "src/gzkit/commands/obpi_cmd.py",
       "rule": "PLR0913",
-      "count": 4
+      "count": 3
     },
     {
       "file": "src/gzkit/commands/obpi_cmd.py",
@@ -14303,23 +14303,13 @@
     },
     {
       "file": "tests/test_obpi_complete_cmd.py",
-      "rule": "FBT001",
-      "count": 1
-    },
-    {
-      "file": "tests/test_obpi_complete_cmd.py",
-      "rule": "FBT002",
-      "count": 1
-    },
-    {
-      "file": "tests/test_obpi_complete_cmd.py",
       "rule": "FBT003",
       "count": 3
     },
     {
       "file": "tests/test_obpi_complete_cmd.py",
       "rule": "PLC0415",
-      "count": 31
+      "count": 13
     },
     {
       "file": "tests/test_obpi_complete_cmd.py",

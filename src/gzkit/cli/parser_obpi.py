@@ -100,7 +100,7 @@ def register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         "--attestor-present",
         dest="attestor_present",
         action="store_true",
-        help="Agent-relayed operator attestation, gated on active pipeline marker (GHI #292)",
+        help="Accepted for compatibility; inert since the TTY gate was removed (GHI #1308)",
     )
     add_dry_run_flag(p_obpi_emit)
     p_obpi_emit.set_defaults(

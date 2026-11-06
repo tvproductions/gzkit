@@ -54,8 +54,9 @@ Feature: Universal OBPI attestation doctrine surface
   Scenario: Feature-lite OBPI emit-receipt succeeds with full attestation evidence
     # Confirms the universal gate accepts a complete attestation payload for the
     # feature-lite cell that previously self-closed; also confirms _is_foundation_adr
-    # taxonomy classification and _enforce_human_attestation_authenticity routing
-    # remain intact (foundation/feature distinction still flows through evidence shape).
+    # taxonomy classification remains intact (foundation/feature distinction still
+    # flows through evidence shape). The TTY authenticity gate this once named was
+    # removed under GHI #1308; REQ-0.0.36-02-05's proof reads the OBPI's own diff.
     Given the workspace is initialized
     And ADR-0.1.0 exists
     And I run the gz command "specify demo --parent ADR-0.1.0-f"
