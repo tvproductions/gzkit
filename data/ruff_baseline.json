@@ -1337,11 +1337,6 @@
       "count": 1
     },
     {
-      "file": "features/environment.py",
-      "rule": "TRY003",
-      "count": 1
-    },
-    {
       "file": "features/steps/acceptance_recovery_steps.py",
       "rule": "EM101",
       "count": 2
@@ -1365,11 +1360,6 @@
       "file": "features/steps/acceptance_recovery_steps.py",
       "rule": "PLR6201",
       "count": 1
-    },
-    {
-      "file": "features/steps/acceptance_recovery_steps.py",
-      "rule": "TRY003",
-      "count": 2
     },
     {
       "file": "features/steps/adr_audit_covers_backfill_steps.py",
@@ -1444,11 +1434,6 @@
     {
       "file": "features/steps/chores_distribution_steps.py",
       "rule": "INP001",
-      "count": 1
-    },
-    {
-      "file": "features/steps/chores_distribution_steps.py",
-      "rule": "TRY003",
       "count": 1
     },
     {
@@ -1542,11 +1527,6 @@
       "count": 1
     },
     {
-      "file": "features/steps/constitutional_invariants_steps.py",
-      "rule": "TRY003",
-      "count": 7
-    },
-    {
       "file": "features/steps/content_advise_rendition_steps.py",
       "rule": "INP001",
       "count": 1
@@ -1597,11 +1577,6 @@
       "count": 1
     },
     {
-      "file": "features/steps/content_land_steps.py",
-      "rule": "TRY003",
-      "count": 4
-    },
-    {
       "file": "features/steps/content_own_steps.py",
       "rule": "INP001",
       "count": 1
@@ -1624,11 +1599,6 @@
     {
       "file": "features/steps/content_remember_steps.py",
       "rule": "PLW2901",
-      "count": 1
-    },
-    {
-      "file": "features/steps/content_remember_steps.py",
-      "rule": "TRY003",
       "count": 1
     },
     {
@@ -1797,11 +1767,6 @@
       "count": 1
     },
     {
-      "file": "features/steps/obpi_lock_steps.py",
-      "rule": "TRY003",
-      "count": 2
-    },
-    {
       "file": "features/steps/obpi_pipeline_stage_procedure_steps.py",
       "rule": "INP001",
       "count": 1
@@ -1904,11 +1869,6 @@
     {
       "file": "features/steps/task_governance_steps.py",
       "rule": "INP001",
-      "count": 1
-    },
-    {
-      "file": "features/steps/task_governance_steps.py",
-      "rule": "TRY003",
       "count": 1
     },
     {
@@ -10822,11 +10782,6 @@
       "count": 1
     },
     {
-      "file": "tests/adr/test_storage_tiers.py",
-      "rule": "TRY003",
-      "count": 1
-    },
-    {
       "file": "tests/arb/test_advisor.py",
       "rule": "PLC0415",
       "count": 7
@@ -10892,11 +10847,6 @@
       "count": 1
     },
     {
-      "file": "tests/chores/test_module_size_ratchet.py",
-      "rule": "TRY003",
-      "count": 1
-    },
-    {
       "file": "tests/chores/test_ratchets_in_gz_check.py",
       "rule": "PLC0415",
       "count": 9
@@ -10909,11 +10859,6 @@
     {
       "file": "tests/chores/test_repo_content_walks.py",
       "rule": "TC003",
-      "count": 1
-    },
-    {
-      "file": "tests/chores/test_repo_content_walks.py",
-      "rule": "TRY003",
       "count": 1
     },
     {
@@ -10940,11 +10885,6 @@
       "file": "tests/chores/test_tautological_debt_target.py",
       "rule": "TC003",
       "count": 2
-    },
-    {
-      "file": "tests/chores/test_tautological_debt_target.py",
-      "rule": "TRY003",
-      "count": 1
     },
     {
       "file": "tests/cli/test_attestor_default.py",
@@ -10979,11 +10919,6 @@
     {
       "file": "tests/cli/test_smoke_tier.py",
       "rule": "PLR6201",
-      "count": 1
-    },
-    {
-      "file": "tests/cli/test_smoke_tier.py",
-      "rule": "TRY003",
       "count": 1
     },
     {
@@ -11117,11 +11052,6 @@
       "count": 1
     },
     {
-      "file": "tests/commands/test_chores.py",
-      "rule": "TRY003",
-      "count": 1
-    },
-    {
       "file": "tests/commands/test_chores_declaration.py",
       "rule": "S108",
       "count": 1
@@ -11162,11 +11092,6 @@
       "count": 1
     },
     {
-      "file": "tests/commands/test_complexity_advise.py",
-      "rule": "TRY003",
-      "count": 1
-    },
-    {
       "file": "tests/commands/test_complexity_advise_attest_intrinsic.py",
       "rule": "DOC402",
       "count": 1
@@ -11202,11 +11127,6 @@
       "count": 1
     },
     {
-      "file": "tests/commands/test_content_compose.py",
-      "rule": "TRY003",
-      "count": 1
-    },
-    {
       "file": "tests/commands/test_content_land.py",
       "rule": "EM101",
       "count": 1
@@ -11222,11 +11142,6 @@
       "count": 1
     },
     {
-      "file": "tests/commands/test_content_land.py",
-      "rule": "TRY003",
-      "count": 1
-    },
-    {
       "file": "tests/commands/test_content_own.py",
       "rule": "EM101",
       "count": 2
@@ -11235,11 +11150,6 @@
       "file": "tests/commands/test_content_own.py",
       "rule": "RUF012",
       "count": 1
-    },
-    {
-      "file": "tests/commands/test_content_own.py",
-      "rule": "TRY003",
-      "count": 2
     },
     {
       "file": "tests/commands/test_content_remember.py",
@@ -11365,11 +11275,6 @@
       "file": "tests/commands/test_init_repair_announces_writes.py",
       "rule": "EM102",
       "count": 1
-    },
-    {
-      "file": "tests/commands/test_init_repair_announces_writes.py",
-      "rule": "TRY003",
-      "count": 3
     },
     {
       "file": "tests/commands/test_init_update.py",
@@ -11687,11 +11592,6 @@
       "count": 1
     },
     {
-      "file": "tests/commands/test_sync_preflight_guard.py",
-      "rule": "TRY003",
-      "count": 1
-    },
-    {
       "file": "tests/commands/test_sync_pull_ordering.py",
       "rule": "PLR0911",
       "count": 1
@@ -11709,11 +11609,6 @@
     {
       "file": "tests/commands/test_tidy_claims.py",
       "rule": "EM101",
-      "count": 1
-    },
-    {
-      "file": "tests/commands/test_tidy_claims.py",
-      "rule": "TRY003",
       "count": 1
     },
     {
@@ -11877,11 +11772,6 @@
       "count": 1
     },
     {
-      "file": "tests/complexity/test_distillation.py",
-      "rule": "TRY003",
-      "count": 3
-    },
-    {
       "file": "tests/complexity/test_measurement.py",
       "rule": "PERF401",
       "count": 1
@@ -11937,11 +11827,6 @@
       "count": 5
     },
     {
-      "file": "tests/content/test_landing.py",
-      "rule": "TRY003",
-      "count": 5
-    },
-    {
       "file": "tests/content/test_lineage.py",
       "rule": "EM101",
       "count": 1
@@ -11949,11 +11834,6 @@
     {
       "file": "tests/content/test_lineage.py",
       "rule": "S108",
-      "count": 1
-    },
-    {
-      "file": "tests/content/test_lineage.py",
-      "rule": "TRY003",
       "count": 1
     },
     {
@@ -12207,18 +12087,8 @@
       "count": 1
     },
     {
-      "file": "tests/governance/test_bare_id_producers.py",
-      "rule": "TRY003",
-      "count": 1
-    },
-    {
       "file": "tests/governance/test_bdd_tier_stderr_hygiene.py",
       "rule": "EM102",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/test_bdd_tier_stderr_hygiene.py",
-      "rule": "TRY003",
       "count": 1
     },
     {
@@ -12322,11 +12192,6 @@
       "count": 1
     },
     {
-      "file": "tests/governance/test_check_registry_coherence.py",
-      "rule": "TRY003",
-      "count": 1
-    },
-    {
       "file": "tests/governance/test_check_scope_parity.py",
       "rule": "PLR2004",
       "count": 2
@@ -12352,11 +12217,6 @@
       "count": 1
     },
     {
-      "file": "tests/governance/test_check_step_timing.py",
-      "rule": "TRY003",
-      "count": 1
-    },
-    {
       "file": "tests/governance/test_check_step_writer_overlap.py",
       "rule": "EM101",
       "count": 1
@@ -12374,11 +12234,6 @@
     {
       "file": "tests/governance/test_check_step_writer_overlap.py",
       "rule": "TC003",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/test_check_step_writer_overlap.py",
-      "rule": "TRY003",
       "count": 1
     },
     {
@@ -12422,11 +12277,6 @@
       "count": 1
     },
     {
-      "file": "tests/governance/test_complexity_doctrine_rule.py",
-      "rule": "TRY003",
-      "count": 1
-    },
-    {
       "file": "tests/governance/test_complexity_thresholds_rule.py",
       "rule": "DOC501",
       "count": 1
@@ -12439,11 +12289,6 @@
     {
       "file": "tests/governance/test_complexity_thresholds_rule.py",
       "rule": "PLC0415",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/test_complexity_thresholds_rule.py",
-      "rule": "TRY003",
       "count": 1
     },
     {
@@ -12517,11 +12362,6 @@
       "count": 1
     },
     {
-      "file": "tests/governance/test_enforcement_meta_validator.py",
-      "rule": "TRY003",
-      "count": 2
-    },
-    {
       "file": "tests/governance/test_enforcement_nc_discrimination.py",
       "rule": "PLC0415",
       "count": 42
@@ -12544,11 +12384,6 @@
     {
       "file": "tests/governance/test_enforcement_population.py",
       "rule": "TC003",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/test_enforcement_population.py",
-      "rule": "TRY003",
       "count": 1
     },
     {
@@ -12612,11 +12447,6 @@
       "count": 1
     },
     {
-      "file": "tests/governance/test_frontmatter_coherence.py",
-      "rule": "TRY003",
-      "count": 1
-    },
-    {
       "file": "tests/governance/test_gate_caller_scope.py",
       "rule": "PLR0913",
       "count": 1
@@ -12634,11 +12464,6 @@
     {
       "file": "tests/governance/test_guard_canaries.py",
       "rule": "EM102",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/test_guard_canaries.py",
-      "rule": "TRY003",
       "count": 1
     },
     {
@@ -12909,11 +12734,6 @@
     {
       "file": "tests/governance/test_release_pypi_dispatch.py",
       "rule": "EM102",
-      "count": 1
-    },
-    {
-      "file": "tests/governance/test_release_pypi_dispatch.py",
-      "rule": "TRY003",
       "count": 1
     },
     {
@@ -13232,11 +13052,6 @@
       "count": 5
     },
     {
-      "file": "tests/mx/test_authorship_floor_pin.py",
-      "rule": "TRY003",
-      "count": 1
-    },
-    {
       "file": "tests/mx/test_check_step_checkpoint_seam.py",
       "rule": "PLC0415",
       "count": 45
@@ -13397,11 +13212,6 @@
       "count": 7
     },
     {
-      "file": "tests/scripts/test_session_orientation.py",
-      "rule": "TRY003",
-      "count": 3
-    },
-    {
       "file": "tests/skills/test_complexity_advisor.py",
       "rule": "EM101",
       "count": 2
@@ -13417,11 +13227,6 @@
       "count": 3
     },
     {
-      "file": "tests/skills/test_complexity_advisor.py",
-      "rule": "TRY003",
-      "count": 3
-    },
-    {
       "file": "tests/skills/test_complexity_guide.py",
       "rule": "EM101",
       "count": 2
@@ -13434,11 +13239,6 @@
     {
       "file": "tests/skills/test_complexity_guide.py",
       "rule": "PLC0415",
-      "count": 3
-    },
-    {
-      "file": "tests/skills/test_complexity_guide.py",
-      "rule": "TRY003",
       "count": 3
     },
     {
@@ -13467,28 +13267,13 @@
       "count": 3
     },
     {
-      "file": "tests/skills/test_gz_complexity_distill.py",
-      "rule": "TRY003",
-      "count": 3
-    },
-    {
       "file": "tests/skills/test_gz_justify_complexity_amendment.py",
       "rule": "EM101",
       "count": 2
     },
     {
-      "file": "tests/skills/test_gz_justify_complexity_amendment.py",
-      "rule": "TRY003",
-      "count": 2
-    },
-    {
       "file": "tests/skills/test_gz_justify_skill.py",
       "rule": "EM101",
-      "count": 2
-    },
-    {
-      "file": "tests/skills/test_gz_justify_skill.py",
-      "rule": "TRY003",
       "count": 2
     },
     {
@@ -13499,11 +13284,6 @@
     {
       "file": "tests/skills/test_skill_surface_sync_justify.py",
       "rule": "EM101",
-      "count": 2
-    },
-    {
-      "file": "tests/skills/test_skill_surface_sync_justify.py",
-      "rule": "TRY003",
       "count": 2
     },
     {
@@ -13635,11 +13415,6 @@
       "file": "tests/test_airlock_exit.py",
       "rule": "PLC0415",
       "count": 11
-    },
-    {
-      "file": "tests/test_airlock_exit.py",
-      "rule": "TRY003",
-      "count": 1
     },
     {
       "file": "tests/test_audit_pipeline.py",
@@ -13777,11 +13552,6 @@
       "count": 1
     },
     {
-      "file": "tests/test_configured_path_consumers.py",
-      "rule": "TRY003",
-      "count": 1
-    },
-    {
       "file": "tests/test_core_exceptions.py",
       "rule": "EM101",
       "count": 2
@@ -13790,11 +13560,6 @@
       "file": "tests/test_core_exceptions.py",
       "rule": "PLC0415",
       "count": 1
-    },
-    {
-      "file": "tests/test_core_exceptions.py",
-      "rule": "TRY003",
-      "count": 2
     },
     {
       "file": "tests/test_core_lifecycle.py",
@@ -13885,11 +13650,6 @@
       "file": "tests/test_file_lock.py",
       "rule": "PLR2004",
       "count": 1
-    },
-    {
-      "file": "tests/test_file_lock.py",
-      "rule": "TRY003",
-      "count": 3
     },
     {
       "file": "tests/test_flag_commands.py",
@@ -14162,11 +13922,6 @@
       "count": 1
     },
     {
-      "file": "tests/test_ledger.py",
-      "rule": "TRY003",
-      "count": 1
-    },
-    {
       "file": "tests/test_ledger_correction_consumers.py",
       "rule": "PLC0415",
       "count": 6
@@ -14207,11 +13962,6 @@
       "count": 1
     },
     {
-      "file": "tests/test_ledger_durability.py",
-      "rule": "TRY003",
-      "count": 1
-    },
-    {
       "file": "tests/test_ledger_merge.py",
       "rule": "RUF005",
       "count": 16
@@ -14239,11 +13989,6 @@
     {
       "file": "tests/test_ledger_transaction_boundary.py",
       "rule": "PLC0415",
-      "count": 1
-    },
-    {
-      "file": "tests/test_ledger_transaction_boundary.py",
-      "rule": "TRY003",
       "count": 1
     },
     {
@@ -14432,11 +14177,6 @@
       "count": 4
     },
     {
-      "file": "tests/test_packaging.py",
-      "rule": "TRY003",
-      "count": 2
-    },
-    {
       "file": "tests/test_permitted_entry.py",
       "rule": "PLC0415",
       "count": 2
@@ -14557,11 +14297,6 @@
       "count": 2
     },
     {
-      "file": "tests/test_pipeline_position.py",
-      "rule": "TRY003",
-      "count": 1
-    },
-    {
       "file": "tests/test_pipeline_runtime.py",
       "rule": "FLY002",
       "count": 1
@@ -14610,11 +14345,6 @@
       "file": "tests/test_progress.py",
       "rule": "PLC0415",
       "count": 1
-    },
-    {
-      "file": "tests/test_progress.py",
-      "rule": "TRY003",
-      "count": 3
     },
     {
       "file": "tests/test_quality.py",
@@ -14782,11 +14512,6 @@
       "count": 2
     },
     {
-      "file": "tests/test_smoke_gate.py",
-      "rule": "TRY003",
-      "count": 2
-    },
-    {
       "file": "tests/test_sunset_migrate.py",
       "rule": "PLR0913",
       "count": 1
@@ -14870,11 +14595,6 @@
       "file": "tests/test_templates.py",
       "rule": "PLC0415",
       "count": 2
-    },
-    {
-      "file": "tests/test_templates.py",
-      "rule": "TRY003",
-      "count": 1
     },
     {
       "file": "tests/test_temporal_drift.py",
@@ -15004,11 +14724,6 @@
     {
       "file": "tests/unit/test_exception_hierarchy.py",
       "rule": "RUF012",
-      "count": 1
-    },
-    {
-      "file": "tests/unit/test_exception_hierarchy.py",
-      "rule": "TRY003",
       "count": 1
     },
     {

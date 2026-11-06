@@ -210,8 +210,10 @@ max-complexity = 20
 # scaffolding and behave steps rather than defects in them. S607 joined the list on 2026-10-24
 # ("Package fixed, tests curated (Rec.)"): these spawn into their own temporary repositories,
 # while the package resolves every executable (.gzkit/rules/cross-platform.md § Executable resolution).
-"tests/**/*.py" = ["D", "BLE", "PTH", "ANN", "private-member-access", "import-private-name", "assert", "no-self-use", "ARG", "start-process-with-partial-path"]
-"features/**/*.py" = ["D", "BLE", "PTH", "ANN", "private-member-access", "import-private-name", "assert", "no-self-use", "ARG", "start-process-with-partial-path"]
+# TRY003 joined tests and features on 2026-11-06 (operator verbatim: "a"): a failing test's
+# message is a diagnostic for its reader, not a contract any handler catches by type.
+"tests/**/*.py" = ["D", "BLE", "PTH", "ANN", "private-member-access", "import-private-name", "assert", "no-self-use", "ARG", "start-process-with-partial-path", "raise-vanilla-args"]
+"features/**/*.py" = ["D", "BLE", "PTH", "ANN", "private-member-access", "import-private-name", "assert", "no-self-use", "ARG", "start-process-with-partial-path", "raise-vanilla-args"]
 "scripts/**/*.py" = ["D", "BLE", "PTH", "ANN", "private-member-access", "import-private-name", "assert", "no-self-use", "ARG", "start-process-with-partial-path"]
 ".claude/hooks/*.py" = ["BLE", "PTH"]
 ".github/copilot/hooks/*.py" = ["BLE", "PTH"]
