@@ -89,7 +89,8 @@ def migrate(repo_root: Path, *, apply: bool = True) -> MigrationResult:
     without touching the filesystem or git index.
 
     Returns:
-        The ``MigrationResult`` listing the moved, deduplicated and rewritten handoff paths.
+        The ``MigrationResult`` listing the moved, deduplicated and rewritten handoff paths and the
+        emptied per-ADR ``handoffs/`` directories removed.
 
     """
     result = MigrationResult()

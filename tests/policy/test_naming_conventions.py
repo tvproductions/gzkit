@@ -44,8 +44,8 @@ def _collect_py_files(directory: Path) -> list[Path]:
 def _collect_package_dirs(directory: Path) -> list[Path]:
     """Return all subdirectories under *directory* (recursive), sorted.
 
-    Only returns directories that contain an __init__.py (i.e., packages),
-    plus the root directory itself.
+    Includes every non-hidden, non-``__pycache__`` directory whether or not it
+    contains an ``__init__.py``, plus the root directory itself.
 
     Returns:
         *directory* followed by every non-hidden, non-``__pycache__`` subdirectory, sorted.

@@ -688,9 +688,10 @@ def collect_handoff_account(repo_root: Path, now: datetime) -> dict[str, object]
     covered by the bookmarks section, which is the only record it has.
 
     Returns:
-        Dict describing the anchor handoff, its age, commits and ledger events since it, unprocessed
-        bookmarks and tree dirtiness; None when the scan is unavailable or no authored handoff
-        exists.
+        Dict describing the anchor handoff, its age, its landing commit, commits and ledger events
+        since it, git availability, unprocessed bookmarks, tree dirtiness and the ``current``
+        verdict (true only when git answered and every channel is empty and the tree clean); None
+        when the scan is unavailable or no authored handoff exists.
 
     """
     scan = _scan_handoffs(repo_root)
