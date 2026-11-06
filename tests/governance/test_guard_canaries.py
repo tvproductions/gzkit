@@ -2,9 +2,10 @@
 
 A claim's proof can be erased without anyone deciding to: the guard changes, or the test that
 kills a mutant of it is renamed, weakened or deleted. Operator ruling (defaults taken
-2026-10-01, "approve all three"): a canary is bound by a hash of the guard source, the claim
-and the designated failing test id. These tests derive from that ruling: they hold the live
-registry to its binding and drive each way a binding can go stale.
+2026-10-01, "approve all three"): a canary is bound by a hash of the guard's code (its source
+less docstrings and comments, GHI #1311), the claim and the designated failing test id. These
+tests derive from that ruling: they hold the live registry to its binding and drive each way a
+binding can go stale.
 
 The kill sweep over the whole live registry is the `Guard canary sweep` step of
 `gz check --full` (GHI #1191). It ran here as one test, 22 mutants in series, and set the
@@ -141,6 +142,31 @@ class TestTheBindingReadsCodeOnly(unittest.TestCase):
             "        return x\n    return inner\n"
         )
         self.assertEqual(self._bound(outer.format(doc="one")), self._bound(outer.format(doc="two")))
+
+    def test_every_documented_definition_sheds_its_docstring(self):
+        shapes = {
+            "class": 'class Guard:\n    """{doc}"""\n    limit = 0\n',
+            "async def": 'async def guard(x):\n    """{doc}"""\n    return x < 0\n',
+            "docstring-only body": 'def guard():\n    """{doc}"""\n',
+        }
+        for label, shape in shapes.items():
+            with self.subTest(label):
+                self.assertEqual(
+                    self._bound(shape.format(doc="one")), self._bound(shape.format(doc="two"))
+                )
+
+    def test_a_string_after_the_docstring_is_code(self):
+        guard = 'def guard(x):\n    """Doc."""\n    "{tag}"\n    return x < 0\n'
+        self.assertNotEqual(
+            self._bound(guard.format(tag="one")), self._bound(guard.format(tag="two"))
+        )
+
+    def test_source_that_does_not_parse_is_bound_on_its_text(self):
+        # No code can be read from it, so every byte counts and any edit stales the binding.
+        unparseable = "def guard(x:\n    return x < 0  # the floor\n"
+        expected = hashlib.sha256(f"{unparseable}\nclaim\ntest".encode()).hexdigest()
+        self.assertEqual(self._bound(unparseable), expected)
+        self.assertNotEqual(self._bound(unparseable.replace("the floor", "zero")), expected)
 
     def test_a_code_edit_moves_the_binding(self):
         edits = {

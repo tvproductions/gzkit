@@ -227,7 +227,7 @@ def _check_one(canary: Canary, registered: set[str]) -> list[ValidationError]:
         errors.append(
             _err(
                 name,
-                f"Canary {name} binding is stale: the guard source, the claim or the designated "
+                f"Canary {name} binding is stale: the guard code, the claim or the designated "
                 f"test {canary.failing_test} changed since a human reviewed it, so the mutant "
                 f"may no longer test what it was reviewed against. {_RECOVER}.",
             )

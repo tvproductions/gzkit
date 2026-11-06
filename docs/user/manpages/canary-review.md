@@ -37,8 +37,9 @@ projection.
 ledger holds a `guard_canary_reviewed` event at the canary's *current* binding
 (`gzkit.guard_canary.unreviewed`, which session orientation also calls). A
 hand-edited `reviewed_by` does not count. When a canary is rebound because its
-guard, claim or designated test changed, the old review no longer matches, and
-the canary waits for a fresh review.
+guard's code, claim or designated test changed, the old review no longer
+matches, and the canary waits for a fresh review. The binding reads the guard's
+code only, so an edit to its docstrings or comments leaves it fresh (GHI #1311).
 
 Every input is checked before anything is written. A refusal leaves the ledger
 and the registry untouched:
