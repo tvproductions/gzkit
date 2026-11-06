@@ -1,5 +1,5 @@
 {
-  "_doc": "Reviewed guard mutation canaries (GHI #1154 item 5). Each record binds one reviewed mutant to one registered enforcement claim: the mutant is applied to an isolated copy of the tree and the designated test must fail. binding_sha256 is sha256 of the guard function's source, the claim id and the failing test id joined by newlines (src/gzkit/guard_canary.py binding_hash); when any of them changes the canary is stale and must be re-reviewed, never silently re-hashed. A canary is enforced either way. It counts as reviewed only when .gzkit/ledger.jsonl holds a guard_canary_reviewed event at its current binding_sha256, written by `gz canary review` with the operator's verbatim words (GHI #1161); reviewed_by is a readable projection of that event, and editing it by hand marks nothing reviewed. Seeded 2026-10-02 for the refuse claims enrolled under GHI #1155.",
+  "_doc": "Reviewed guard mutation canaries (GHI #1154 item 5). Each record binds one reviewed mutant to one registered enforcement claim: the mutant is applied to an isolated copy of the tree and the designated test must fail. binding_sha256 is sha256 of the guard function's code (its source with docstrings and comments removed, guard_code), the claim id and the failing test id joined by newlines (src/gzkit/guard_canary.py binding_hash; code only since GHI #1311, operator 2026-11-06: \"yes, bind on code only\"); when any of them changes the canary is stale and must be re-reviewed, never silently re-hashed. A canary is enforced either way. It counts as reviewed only when .gzkit/ledger.jsonl holds a guard_canary_reviewed event at its current binding_sha256, written by `gz canary review` with the operator's verbatim words (GHI #1161); reviewed_by is a readable projection of that event, and editing it by hand marks nothing reviewed. Seeded 2026-10-02 for the refuse claims enrolled under GHI #1155.",
   "canaries": [
     {
       "claim_id": "arb-receipt-red-run-refused",
@@ -10,7 +10,7 @@
         "replace": "        elif False:",
         "label": "receipt exit status never read"
       },
-      "binding_sha256": "415f10a145e9c8233af1e7252ad6d195fccec5a03a7afeb73c593d59f53963bc",
+      "binding_sha256": "a597af565f58ad4e9c2ee117e7f503cafb747c152787aa46ed44f8f44775ebf5",
       "authority": "GHI #1154 item 5 ruling 2026-10-01 (operator, verbatim: \"approve all three\")",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": "g0"
@@ -24,7 +24,7 @@
         "replace": "        if False:",
         "label": "an unclosed finding is never outstanding"
       },
-      "binding_sha256": "7aa46eb3fd77e43846fbea5c5b51bcef76b6ae41279e7ef1ffadb28cf221c6c1",
+      "binding_sha256": "b43319f1c8cc326293a4be3624aebbf5b57aae59851b26659b8812367f4ef672",
       "authority": "GHI #1155: rebound 2026-10-02 to acceptance.assess_readiness, the reducer completion runs since GHI #985; the prior mutant bound obpi_complete_adversarial._enforce_adversarial_validation, which no production path calls",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": "g0"
@@ -38,7 +38,7 @@
         "replace": "    if False:\n        raise SystemExit(3)",
         "label": "policy breach never exits 3"
       },
-      "binding_sha256": "c2eb5a273cda7a896e32298ee30e894969086963fb9dcb5db60748347fc7a67a",
+      "binding_sha256": "a2fd07473be6a3664c28ccf9ba6b758199e300d952ec5d0aa5f9ac41f7eff01e",
       "authority": "GHI #1154 item 5 ruling 2026-10-01 (operator, verbatim: \"approve all three\")",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": "g0"
@@ -52,7 +52,7 @@
         "replace": "    if len(markers) < 1:",
         "label": "a doubled clause is tolerated"
       },
-      "binding_sha256": "0f6c47b9564fc2d246034363a678f831776f8a6d42be17c6e5711800e0e9ca4a",
+      "binding_sha256": "853c47b02e2fafb14e7b88c43ec5acdb6d34fea7b812e26554c378ef30ee664a",
       "authority": "GHI #1154 item 5 ruling 2026-10-01 (operator, verbatim: \"approve all three\")",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": "g0"
@@ -66,7 +66,7 @@
         "replace": "    if False:",
         "label": "back-pointer match never checked"
       },
-      "binding_sha256": "3af4680bf16acd5eb480f4b78854061da7df52f1fc73fe8f300187c86e482f0e",
+      "binding_sha256": "960dce0d1a59be53e8e4fb571e8225bea3843a1221a9805c85e8efbe2ae40640",
       "authority": "GHI #1154 item 5 ruling 2026-10-01 (operator, verbatim: \"approve all three\")",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": "g0"
@@ -80,7 +80,7 @@
         "replace": "    if False:",
         "label": "an origin with no link is accepted"
       },
-      "binding_sha256": "116d31e9a30b044324f6dd4e51fd952fe546aa49132330330deaebe915883854",
+      "binding_sha256": "4558e7b87f7176cb40e8067963e181d236e99dbcbf9174254924e59025de004e",
       "authority": "GHI #1154 item 5 ruling 2026-10-01 (operator, verbatim: \"approve all three\")",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": "g0"
@@ -94,7 +94,7 @@
         "replace": "    if False:",
         "label": "findings never gate"
       },
-      "binding_sha256": "b23c7fc37b36b3942d5fd3303779fec0542571aabcda1fb2caa6915ee805c19e",
+      "binding_sha256": "fdc781b9b60d57ae618bf628ac2959b83da9e348bccb5eae09bba865d1ccad83",
       "authority": "GHI #1154 item 5 ruling 2026-10-01 (operator, verbatim: \"approve all three\")",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": "g0"
@@ -108,7 +108,7 @@
         "replace": "    if False:\n",
         "label": "a new identity is never refused"
       },
-      "binding_sha256": "8fd637f9ccb350b826c615ffb3d68e583cae05ae067e877076ab5e23a071bdd0",
+      "binding_sha256": "5799b539653e048218abe326931ad86ed47ae3c29a7c18b81da6b9fff358e853",
       "authority": "GHI #1154 item 5 ruling 2026-10-01 (operator, verbatim: \"approve all three\")",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": "g0"
@@ -122,7 +122,7 @@
         "replace": "        elif True:",
         "label": "every present receipt is refused"
       },
-      "binding_sha256": "7b9263948dfcf32cd9afa75b1d3c7c3a9e1e8e9eab54c023a3c83e8662585d1c",
+      "binding_sha256": "efe1fb7d9a7a54d254fbc44a0240464802c23cf375d6578fba9362a802987431",
       "authority": "GHI #1154 item 5; admit canaries ordered 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": "g0"
@@ -136,7 +136,7 @@
         "replace": "    return Readiness(ready=False, blockers=tuple(errors), open_findings=outstanding)",
         "label": "readiness is never reached"
       },
-      "binding_sha256": "1ee06a305561a709c6a1dc21aa55e107650cef9d70ce94a9249b8af93e3db4d0",
+      "binding_sha256": "dd0733ddc1c391e9e51531e3073d55c86c39255368071c898d079698902c76b1",
       "authority": "GHI #1155: rebound 2026-10-02 to acceptance.assess_readiness, the reducer completion runs since GHI #985; the prior mutant bound obpi_complete_adversarial._enforce_adversarial_validation, which no production path calls",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": "g0"
@@ -150,7 +150,7 @@
         "replace": "    if True:\n        raise SystemExit(3)",
         "label": "a clean run exits 3"
       },
-      "binding_sha256": "30cedff08996e980b511a1eb4de6f8b67282dcd30c9f68296ac85f99d667069a",
+      "binding_sha256": "4d6cd8847a77455f772f64927af7112f30f60e63bb08571752b62fd517d074cf",
       "authority": "GHI #1154 item 5; admit canaries ordered 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": "g0"
@@ -164,7 +164,7 @@
         "replace": "    if True:",
         "label": "a declared clause is never read"
       },
-      "binding_sha256": "33cc9b7329b1cd2ac6e0b25fffa4aea0b4b3cdcb4504d70f1c50addafa970dfa",
+      "binding_sha256": "9fab790246534aadbb45187295ded51ef68fe5d9089421c97d44315c2ef6d7a9",
       "authority": "GHI #1154 item 5; admit canaries ordered 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": "g0"
@@ -178,7 +178,7 @@
         "replace": "    if True:",
         "label": "a matching back-pointer is refused"
       },
-      "binding_sha256": "66d0f2ac9ee432cfdc48031649cf329eec7141039b8723b16ee6586ac9f0e45b",
+      "binding_sha256": "a2cae53bd22b7b062d062cacd53bd39e692ce62321d843959cdfebf05361c568",
       "authority": "GHI #1154 item 5; admit canaries ordered 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": "g0"
@@ -192,7 +192,7 @@
         "replace": "    if True:",
         "label": "a live lift is orphaned"
       },
-      "binding_sha256": "00bf929e3014ae43e0b358cac629da0641959b9b710d2d930010953b00f7cb13",
+      "binding_sha256": "9abacfdbac059372b6a0afd92aeebbb1912554f54b8d0830e821f7135225f019",
       "authority": "GHI #1154 item 5; admit canaries ordered 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": "g0"
@@ -206,7 +206,7 @@
         "replace": "    if True:",
         "label": "a clean tree exits 3"
       },
-      "binding_sha256": "147cfbcd6498de66acadd4c97b035a769c7d9352863b70229beea4a4c80f8f77",
+      "binding_sha256": "98a68c41f46d3068a856f852025c586cf35e3ab59110c6d131710792e00ce17f",
       "authority": "GHI #1154 item 5; admit canaries ordered 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": "g0"
@@ -220,7 +220,7 @@
         "replace": "    if True:\n",
         "label": "a surface with no new identity is refused"
       },
-      "binding_sha256": "68c437e9ed05e961f49cd62ffa2ff5bc0e07b3d8423036b3cf3121f483ca148b",
+      "binding_sha256": "bec843b4d33880b738518c9db75557a9d5a8ac7dbd60bc3fa9f88c12cee2740d",
       "authority": "GHI #1154 item 5; admit canaries ordered 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": "g0"
@@ -234,7 +234,7 @@
         "replace": "        if True:",
         "label": "an unnamed undisclosed gate is never refused"
       },
-      "binding_sha256": "069a47150e23357b0d30f2dd27b20407fd1fe015183f2e7523549fc25e3311ea",
+      "binding_sha256": "5f1c08d8ee420610f445a4b256baca58f5c4e295e1b2f63d08053c725e29f94a",
       "authority": "GHI #1155 acceptance (a); the population inventory's own claims, bound when they were authored 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": "g0"
@@ -248,7 +248,7 @@
         "replace": "        if enrolled_claims(functions, named):",
         "label": "a disclosure is never honoured"
       },
-      "binding_sha256": "b2f21b35051bcc239d02aca3832939f5d203384b0ebe4d50502061708d6b69f4",
+      "binding_sha256": "d63d397c6ec124885dfbdcdbb1650af6558b014b11dc692390870f8e4c49df99",
       "authority": "GHI #1155 acceptance (a); the population inventory's own claims, bound when they were authored 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": "g0"
@@ -262,7 +262,7 @@
         "replace": "        if True:",
         "label": "an unnamed undisclosed scope is never refused"
       },
-      "binding_sha256": "7ff5a0fba9aef20fad4cf68cd1b103dfd50a13706e1d489892a1afd36ca4d778",
+      "binding_sha256": "5ca2799e9fdd16a4078a5fd50356b8924b1a3a0cc2ce389999503e2ea64d1320",
       "authority": "GHI #1154 item 5 roster shrink, step 5 of the 2026-10-02 handoff (operator, verbatim: \"do all 5 steps\")",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": "g0"
@@ -276,7 +276,7 @@
         "replace": "        if enrolled_claims(functions, named):",
         "label": "a disclosed scope is never admitted"
       },
-      "binding_sha256": "c0a80ab9e98c77445cd957cf7e70456e5bed67eef5dceaea6f9588ffa3e60d10",
+      "binding_sha256": "14c5a952a64423b86ab059b8d95a0a03da5f0691626e506d25eb2939960d14c0",
       "authority": "GHI #1154 item 5 roster shrink, step 5 of the 2026-10-02 handoff (operator, verbatim: \"do all 5 steps\")",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": "g0"
@@ -290,7 +290,7 @@
         "replace": "        if False",
         "label": "no changed file is ever out of scope"
       },
-      "binding_sha256": "ef0f1698583eea57664844fcc6b1ad837cbcb922d0eedd1c031a8f502e8c9460",
+      "binding_sha256": "c4226c6781c4822ad8f1c72f9ffb5673dc92fdca1ea59b5176f58846d164327b",
       "authority": "GHI #1181; operator ruling 2026-10-10 (verbatim: \"refuse, direct fix under 1181\")",
       "proposed_by": "claude-code session 2026-10-10",
       "reviewed_by": "g0"
@@ -304,7 +304,7 @@
         "replace": "    records = []",
         "label": "gzkit's own records count as out of scope"
       },
-      "binding_sha256": "54361a466638afe3c4aec5522e48381c0a6909706fa9ba8a3e7adbfaa38083a1",
+      "binding_sha256": "d5199c949a4b9c5d0145d999ce5d18d3a6708b6134d269a5889394048ee6e642",
       "authority": "GHI #1181; operator ruling 2026-10-10 (verbatim: \"refuse, direct fix under 1181\")",
       "proposed_by": "claude-code session 2026-10-10",
       "reviewed_by": "g0"
@@ -318,7 +318,7 @@
         "replace": "    if missing:\n        return 3\n",
         "label": "a surviving mutant no longer fails the sweep"
       },
-      "binding_sha256": "b563731964b72bd23802d73dd4418244da2dce7f3fe3e9f5cf6ef1f5fc5c4a29",
+      "binding_sha256": "e212803f834160b6bb2a5e458122acfe14e9759cb3cfa57ede2ed6ad8ff29c99",
       "authority": "GHI #1191 (operator ruling 2026-10-11, verbatim: \"move the canary sweep to the full tier\")",
       "proposed_by": "claude-code session 2026-10-11",
       "reviewed_by": "g0"
@@ -332,7 +332,7 @@
         "replace": "            if True:\n",
         "label": "a measured size is never compared with its bound"
       },
-      "binding_sha256": "321b762160713fae6697d25b0d87f82a253429c1e5cd8c83fef5004b3c8c774c",
+      "binding_sha256": "15679b39bb372d83b496e4ee2ed2076077c3bede73df41f4aec80b00c7c2905a",
       "authority": "GHI #1196",
       "proposed_by": "claude-code session 2026-10-13",
       "reviewed_by": "g0"
@@ -346,7 +346,7 @@
         "replace": "            limit = bounds[dimension]\n",
         "label": "a recorded ceiling is never honoured"
       },
-      "binding_sha256": "b9fd7498070d46384c54f2b502bd3d8b70a655b2c2d0fe196a959598222180ac",
+      "binding_sha256": "2bced5c8486e5238fc2a93cdcb18164d0731ff1f2705fdc036d2f5a4545682e4",
       "authority": "GHI #1196",
       "proposed_by": "claude-code session 2026-10-13",
       "reviewed_by": "g0"
@@ -360,7 +360,7 @@
         "replace": "            if False:\n",
         "label": "no canon file is ever read"
       },
-      "binding_sha256": "d7096ee61ad0a45f55aacf3b2d12f11ff90fe50ec2dc05adc2f2e93dd9fab086",
+      "binding_sha256": "0c67ce8dbee85fe1078524b20a4b4924d8ca0833bf9aa61da15bda06a9a7981b",
       "authority": "GHI #1284 (operator ruling 2026-10-26, verbatim: \"fix it now, with the validator\")",
       "proposed_by": "claude-code session 2026-10-27",
       "reviewed_by": "g0"
@@ -374,7 +374,7 @@
         "replace": "        if False:\n",
         "label": "a grounding finding is only announced"
       },
-      "binding_sha256": "d3d8d934d1a4cf74a9ed063e822ae3e8d72c616402c183806776f5f8b7e5691b",
+      "binding_sha256": "fe43a695556e688da7a86ead4e16904d678f71fcf1eb9d49a549d9cad1865f52",
       "authority": "GHI #1257; GHI #1154 item 5 (every registered claim binds a reviewed canary)",
       "proposed_by": "claude-code session 2026-10-18",
       "reviewed_by": "g0"
@@ -388,7 +388,7 @@
         "replace": "        if False:\n",
         "label": "a site the baseline does not hold is never refused"
       },
-      "binding_sha256": "aeaffdbeb93c5d5796a51976f1ccdb1024d6b234437012015066f85918a5cbc9",
+      "binding_sha256": "4ffdfffdd67c2f71f4460f9e02d1c6abdfd011706230d3d64c7a8a6110ea7970",
       "authority": "docs/governance/harbor-ro2-identity-seam.md (drydock RO-2 tranche 1); GHI #1154 item 5 (every registered claim binds a reviewed canary)",
       "proposed_by": "claude-code session 2026-10-19",
       "reviewed_by": "g0"
@@ -402,7 +402,7 @@
         "replace": "        allowed = 0\n",
         "label": "a baselined site is refused as new"
       },
-      "binding_sha256": "31fbf885f06defa930a0dad8dfef1399511fb08709e2f4950157269a598eeafd",
+      "binding_sha256": "e35daf10a243c0ecdbd51f3857f455b79dbb04578db2c1eb6a1b9123b15654c5",
       "authority": "docs/governance/harbor-ro2-identity-seam.md (drydock RO-2 tranche 1); GHI #1154 item 5 (every registered claim binds a reviewed canary)",
       "proposed_by": "claude-code session 2026-10-19",
       "reviewed_by": "g0"
@@ -416,7 +416,7 @@
         "replace": "        if False:\n",
         "label": "a violation the baseline does not hold is never refused"
       },
-      "binding_sha256": "3b0c98596db2f13d484e7b713b3d1290ffc08921ddeb51b6abec094c1c218c51",
+      "binding_sha256": "70c6e7615f12d9acfee4c977176117bb70e12249727d9da06727bc23dc1ac860",
       "authority": "docs/governance/harbor-ro9-astral-toolchain.md (drydock RO-9 tranche 1); GHI #1154 item 5 (every registered claim binds a reviewed canary)",
       "proposed_by": "claude-code session 2026-10-19",
       "reviewed_by": "g0"
@@ -430,7 +430,7 @@
         "replace": "        allowed = 0\n",
         "label": "a baselined violation is refused as new"
       },
-      "binding_sha256": "1adc4c4c8645624ea9f2c5dff00acdc8fbd5e60fdb8e795a38f990b1a026f46d",
+      "binding_sha256": "1de22939e89aee97c2ac444039568632a967aca46d39aba69d66249225914ab5",
       "authority": "docs/governance/harbor-ro9-astral-toolchain.md (drydock RO-9 tranche 1); GHI #1154 item 5 (every registered claim binds a reviewed canary)",
       "proposed_by": "claude-code session 2026-10-19",
       "reviewed_by": "g0"
@@ -444,7 +444,7 @@
         "replace": "        if False\n",
         "label": "a function over the ceiling is never refused"
       },
-      "binding_sha256": "bb78ec0cd5beeb1cac20df60917afeb447ca6119acc1f5207a53f053c9a027e7",
+      "binding_sha256": "6e0eda4704be29d0d069f3e4614260198c53322bd2ecdcf52a3b07bdb9157f18",
       "authority": "docs/governance/harbor-ro9-astral-toolchain.md (drydock RO-9 tranche 4, GHI #1183); GHI #1154 item 5 (every registered claim binds a reviewed canary)",
       "proposed_by": "claude-code session 2026-10-22",
       "reviewed_by": "g0"
@@ -458,7 +458,7 @@
         "replace": "    repeated: list[str] = []\n",
         "label": "a repeated code or id is never reported"
       },
-      "binding_sha256": "6dda3eb7e1d37347f8dd691f6ab1042556d070c2a8a3664faae4fe26257e405a",
+      "binding_sha256": "195b53360aac367c3d54b809355a85e7e5882da37b1df9524cb54b3eaaa6bc3d",
       "authority": "docs/governance/harbor-ro3-requirements-store.md (drydock RO-3 tranche 1)",
       "proposed_by": "claude-code session 2026-10-21",
       "reviewed_by": "g0"
@@ -472,7 +472,7 @@
         "replace": "        if False\n",
         "label": "an ADR nothing records is accepted in governed_by"
       },
-      "binding_sha256": "ffd0c726dbedbadb078a31a78221d847c0faaedd31a67e1e1ce9b38069befbf6",
+      "binding_sha256": "75386e711ae8a43ce2a480063c8be72ee1845448044a07ea1fbb7179c6701d55",
       "authority": "docs/governance/harbor-ro3-requirements-store.md (drydock RO-3 tranche 3)",
       "proposed_by": "claude-code session 2026-10-22",
       "reviewed_by": null
@@ -486,7 +486,7 @@
         "replace": "    return []\n",
         "label": "no uncovered PRD need is ever reported"
       },
-      "binding_sha256": "3449bf5c0d226824da139b00dbda381242d97ff2b6072ce12908b7cc62505289",
+      "binding_sha256": "06afa888c5d945c770ad983f08fdcb91a20c412008f7d50e98f7b67b3e8c821d",
       "authority": "docs/governance/harbor-ro3-requirements-store.md (drydock RO-3 tranche 3)",
       "proposed_by": "claude-code session 2026-10-22",
       "reviewed_by": null
@@ -500,7 +500,7 @@
         "replace": "        if uncovered := []:\n",
         "label": "a BEHAVIOR REQ with no @covers test passes BDD alignment"
       },
-      "binding_sha256": "e8784dbfddea83f657527a4e3255ca17acf292c614c61f883d71e4ee25471070",
+      "binding_sha256": "de2b753e026e421174d10c9dc0bc22a2f39392f3f73dc73f33a23d7a47b1e40a",
       "authority": "docs/governance/harbor-ro3-requirements-store.md (drydock RO-3 tranche 3)",
       "proposed_by": "claude-code session 2026-10-22",
       "reviewed_by": null
@@ -514,7 +514,7 @@
         "replace": "    return True\n",
         "label": "every delivery event reads as naming a REQ, so none is announced"
       },
-      "binding_sha256": "9da03e62a222c8a1eaf6edad10872b1590df7f52db94ef6515dd4d99c189b07b",
+      "binding_sha256": "c8406ba51ee987c41cff07a7b323b79c35119c653afd9d33c83795b29a92440b",
       "authority": "docs/governance/harbor-ro3-requirements-store.md (drydock RO-3 tranche 4)",
       "proposed_by": "claude-code session 2026-10-22",
       "reviewed_by": "g0"
@@ -528,7 +528,7 @@
         "replace": "        if False:\n",
         "label": "a finding no baseline row holds is never refused"
       },
-      "binding_sha256": "11329d354a2f286df126b3a850939f5f6be069f73f836d266ec8511ac5d5fcd8",
+      "binding_sha256": "6d445ff40914202ac351a16a43f8e5c1ed6061340573d0de4c71c045df7cbb4e",
       "authority": "docs/governance/harbor-ro9-astral-toolchain.md (drydock RO-9 tranche 4, Ruff ALL under data/ruff_baseline.json); GHI #1154 item 5 (every registered claim binds a reviewed canary)",
       "proposed_by": "claude-code session 2026-10-23",
       "reviewed_by": "g0"
@@ -542,7 +542,7 @@
         "replace": "    if False:\n",
         "label": "a 3.14 floor whose Ruff config does not ban the PEP 563 import is never refused"
       },
-      "binding_sha256": "7c479c8bdb7d83ce17ada3495926c1cf0c30e0f16aa4c5c63b9d63c50765418e",
+      "binding_sha256": "2f0f2d5724cd9f2776559f210444755c53b7d3810f694bdf7c874f452b785f33",
       "authority": "docs/governance/harbor-ro9-astral-toolchain.md (drydock RO-9 tranche 4, the PEP 563 ban; operator 2026-10-24: \"Remove first, then ban (Rec.)\"); scorecard row 23b; GHI #1154 item 5 (every registered claim binds a reviewed canary)",
       "proposed_by": "claude-code session 2026-10-24",
       "reviewed_by": "g0"
@@ -556,7 +556,7 @@
         "replace": "    argv = [\"uv\", \"--version\"]\n",
         "label": "the step never audits the lock"
       },
-      "binding_sha256": "8fc9907544796b2074c815311becf1022e4f1d618a30d0cd9ef61440bbc122bc",
+      "binding_sha256": "72a9b07057af24d9d0eed325fc3d4c61a3e78374730aa830276ea2984ad09826",
       "authority": "docs/governance/harbor-ro9-astral-toolchain.md (drydock RO-9 tranche 5, § Ruled for tranche 5); GHI #1154 item 5 (every registered claim binds a reviewed canary)",
       "proposed_by": "claude-code session 2026-10-28",
       "reviewed_by": null
@@ -570,7 +570,7 @@
         "replace": "        argv += [\"--service-url\", service_url, \"--no-config\"]\n",
         "label": "the step stops reading the project's ignore list"
       },
-      "binding_sha256": "31a02b5402e4fbf9e126660990acd3c9697bbd4a7b26c1dbe775897a044d5f88",
+      "binding_sha256": "8f6966cdcd59ab8ac4dee2c84b0f46500c5b3d43289dcced0b73958f0a9f7964",
       "authority": "docs/governance/harbor-ro9-astral-toolchain.md (drydock RO-9 tranche 5, § Ruled for tranche 5); GHI #1154 item 5 (every registered claim binds a reviewed canary)",
       "proposed_by": "claude-code session 2026-10-28",
       "reviewed_by": null
@@ -584,7 +584,7 @@
         "replace": "        if False:\n",
         "label": "a delivery package naming an outcome the catalog lacks is accepted"
       },
-      "binding_sha256": "49651b34d5d3a0647483421c9a453e62d5171440fc798b2788bc3945731b73be",
+      "binding_sha256": "c9031d64c48cb91dd5db010211da8da5c0a7e0c365f84b63f5aa8f04afdcfc86",
       "authority": "docs/governance/harbor-ro5-work-packages.md (drydock RO-5 tranche 1)",
       "proposed_by": "claude-code session 2026-10-28",
       "reviewed_by": "g0"
@@ -598,7 +598,7 @@
         "replace": "        if kind in {\"repair\", \"delivery\"}:\n",
         "label": "an order in a delivery package is accepted"
       },
-      "binding_sha256": "d1331899e411907133882ae08ba83640e4af9d51326ab6a7ae880f1996302622",
+      "binding_sha256": "6c34a279d3bb2e8a84e4af62810276fb2f0238023796157f4e3ef61aa75b59e0",
       "authority": "docs/governance/harbor-ro12-contractor-kit.md (RP-12 O2 task 1, rulings 43, 44 and 49)",
       "proposed_by": "claude-code session 2026-11-05",
       "reviewed_by": null
@@ -612,7 +612,7 @@
         "replace": "    if False:\n",
         "label": "a repair REQ naming an issue its package does not carry is accepted"
       },
-      "binding_sha256": "37fae38b375c9be6165c67eba3c89690f59446e4fc40bd4dd7e15327ca2fe515",
+      "binding_sha256": "21dd57e13491fac2c93f35e6436b2e97482793c4daa38aef04dced3c92a7d813",
       "authority": "docs/governance/harbor-ro12-contractor-kit.md (RP-12 O2 task 2, rulings 45 and 48)",
       "proposed_by": "claude-code session 2026-11-05",
       "reviewed_by": null

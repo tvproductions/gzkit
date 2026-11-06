@@ -109,6 +109,52 @@ class TestBindingHash(unittest.TestCase):
                 self.assertNotEqual(gc.binding_hash(*variant), base)
 
 
+_BOUND = 'def guard(x):\n    """Refuse a negative x."""\n    # the floor\n    return x < 0\n'
+
+
+class TestTheBindingReadsCodeOnly(unittest.TestCase):
+    """GHI #1311: documentation edits keep a binding; code edits move it.
+
+    Operator ruling 2026-11-06, verbatim "yes, bind on code only": a reviewed mutant
+    tests the guard's code, so only a change to that code can make it test something
+    other than what was reviewed.
+    """
+
+    def _bound(self, source: str) -> str:
+        return gc.binding_hash(source, "claim", "test")
+
+    def test_documentation_only_edits_keep_the_binding(self):
+        edits = {
+            "docstring reworded": _BOUND.replace("Refuse a negative x.", "Return True below 0."),
+            "docstring removed": _BOUND.replace('    """Refuse a negative x."""\n', ""),
+            "comment reworded": _BOUND.replace("# the floor", "# zero is allowed"),
+            "comment added": _BOUND.replace("    return", "    # strict\n    return"),
+            "indented as a method": "".join(f"    {line}\n" for line in _BOUND.splitlines()),
+        }
+        for label, edited in edits.items():
+            with self.subTest(label):
+                self.assertEqual(self._bound(edited), self._bound(_BOUND))
+
+    def test_a_nested_definition_docstring_is_documentation_too(self):
+        outer = (
+            'def guard(x):\n    def inner():\n        """{doc}"""\n'
+            "        return x\n    return inner\n"
+        )
+        self.assertEqual(self._bound(outer.format(doc="one")), self._bound(outer.format(doc="two")))
+
+    def test_a_code_edit_moves_the_binding(self):
+        edits = {
+            "comparison flipped": _BOUND.replace("x < 0", "x <= 0"),
+            "statement added": _BOUND.replace("    return", "    x = abs(x)\n    return"),
+            "a string that is not a docstring": _BOUND.replace(
+                "return x < 0", 'return x < 0 or x == "-"'
+            ),
+        }
+        for label, edited in edits.items():
+            with self.subTest(label):
+                self.assertNotEqual(self._bound(edited), self._bound(_BOUND))
+
+
 class TestTheLiveRegistry(unittest.TestCase):
     def test_every_registered_claim_has_a_bound_canary_or_a_disclosure(self):
         self.assertEqual(gc.check_canaries(_ROOT, _registered()), [])
@@ -213,12 +259,21 @@ class TestABindingGoesStale(unittest.TestCase):
     def test_a_fresh_canary_is_clean(self):
         self.assertEqual(_findings([_canary()]), [])
 
-    def test_a_changed_guard_source_makes_the_binding_stale(self):
+    def test_a_changed_guard_code_makes_the_binding_stale(self):
         canary = _canary()  # bound to the guard as it is now
         source, path = _resolved(_GUARD)
-        with mock.patch.object(gc, "resolve_guard", lambda _g: (source + "# edited\n", path)):
+        edited = source + "\n_EDITED = 1\n"
+        with mock.patch.object(gc, "resolve_guard", lambda _g: (edited, path)):
             messages = _findings([canary])
         self.assertTrue(any("binding is stale" in m for m in messages), messages)
+
+    def test_a_guard_documentation_edit_leaves_the_binding_fresh(self):
+        canary = _canary()  # bound to the guard as it is now
+        source, path = _resolved(_GUARD)
+        edited = source.replace('"""', '"""Reworded. ', 1) + "# a trailing comment\n"
+        with mock.patch.object(gc, "resolve_guard", lambda _g: (edited, path)):
+            messages = _findings([canary])
+        self.assertEqual(messages, [])
 
     def test_a_different_claim_makes_the_binding_stale(self):
         canary = _canary().model_copy(update={"claim_id": "tidy-breach-exits-three"})

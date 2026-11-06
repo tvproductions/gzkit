@@ -6,11 +6,13 @@ mutant of it is renamed, weakened or deleted, and the claim still reads green. A
 one reviewed mutant to one registered claim, so any of those changes is a finding.
 
 Operator ruling (GHI #1154, defaults taken 2026-10-01, "approve all three"): a canary is
-bound by a hash of the guard source, the claim (the REQ it witnesses) and the designated
-failing test id. This module checks two things, kept apart because they fail differently.
+bound by a hash of the guard's code, the claim (the REQ it witnesses) and the designated
+failing test id. The code is the source less its docstrings and comments (GHI #1311), so a
+documentation edit cannot stale a reviewed mutant. This module checks two things, kept apart
+because they fail differently.
 
 * **Binding (static, cheap).** The recorded hash still equals the hash of the guard's current
-  source, the claim id and the test id; the claim is registered; the test id resolves to a
+  code, the claim id and the test id; the claim is registered; the test id resolves to a
   test definition; the mutation's target occurs exactly once in the guard's file and is inside
   the guard. A stale hash means the guard moved since a human last saw it, so the canary must
   be re-reviewed, never silently re-hashed.
@@ -33,6 +35,7 @@ import json
 import shutil
 import sys
 import tempfile
+import textwrap
 from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -89,8 +92,42 @@ class CanaryRun(BaseModel):
     reason: str = ""
 
 
+_DOCUMENTED = (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)
+
+
+def guard_code(guard_source: str) -> str:
+    """Reduce a guard's source to its code: docstrings and comments removed, layout normalised.
+
+    A reviewed mutant tests the guard's code, so the binding reads only that (GHI #1311;
+    operator ruling 2026-11-06, verbatim "yes, bind on code only"). Parsing drops comments
+    and layout; every docstring, nested ones included, is removed from the tree.
+
+    Returns:
+        The ``ast.unparse`` text of the guard with its docstrings removed; *guard_source*
+        unchanged when it does not parse as Python.
+
+    """
+    try:
+        tree = ast.parse(textwrap.dedent(guard_source))
+    except SyntaxError:
+        return guard_source
+    for node in ast.walk(tree):
+        if not isinstance(node, _DOCUMENTED) or not node.body:
+            continue
+        first = node.body[0]
+        is_docstring = (
+            isinstance(first, ast.Expr)
+            and isinstance(first.value, ast.Constant)
+            and isinstance(first.value.value, str)
+        )
+        if is_docstring:
+            node.body = node.body[1:] or [ast.Pass()]
+    return ast.unparse(tree)
+
+
 def binding_hash(guard_source: str, claim_id: str, failing_test: str) -> str:
-    """Return the hash that binds a canary to the guard, the claim and the designated test."""
+    """Return the hash that binds a canary to the guard's code, the claim and the failing test."""
+    guard_source = guard_code(guard_source)
     payload = "\n".join((guard_source, claim_id, failing_test))
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
