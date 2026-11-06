@@ -70,11 +70,12 @@ def parse_brief_reqs(brief_path: Path) -> list[str]:
     Tolerates the canonical brief shape ``- [ ] REQ-X.Y.Z-NN-MM: <description>``
     and ``- [x] REQ-...`` (checked variant); skips checklist rows that do not
     match the REQ-ID pattern. Returns IDs sorted by canonical REQ ordering
-    (semantic version), deduplicated. Returns ``[]`` when the section is
+    (semantic version), not deduplicated. Returns ``[]`` when the section is
     missing, empty, or the file does not exist.
 
     Returns:
-        The declared REQ ids, in order; empty when the brief file does not exist.
+        The declared REQ ids in canonical REQ order, a repeated id kept; empty when the file does
+        not exist or the section is missing or holds no well-formed REQ line.
 
     """
     if not brief_path.is_file():

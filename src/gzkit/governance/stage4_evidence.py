@@ -206,7 +206,8 @@ def extract_demo_commands(brief_path: Path) -> list[str]:
     ``#`` marks a comment. Returns ``[]`` when no Demo section or fenced block is present.
 
     Returns:
-        The joined commands from the ``## Demo`` fence; empty when the brief file does not exist.
+        The joined commands from the first ``## Demo`` fence; empty when the brief file does not
+        exist or has no Demo section or fenced block.
 
     """
     if not brief_path.is_file():

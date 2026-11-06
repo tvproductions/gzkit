@@ -618,8 +618,8 @@ def _compute_missing_in_brief(
 
     Returns:
         src/ paths imported by the REQ tests, in the allowlist's neighbourhoods, that the allowlist
-        does not declare; empty when there are no REQs, no src/ allowlist entries or no tests
-        directory.
+        does not declare, excluding test infrastructure, denied paths and package ``__init__.py``
+        files; empty when there are no REQs, no src/ allowlist entries or no tests directory.
 
     """
     if not req_ids:
