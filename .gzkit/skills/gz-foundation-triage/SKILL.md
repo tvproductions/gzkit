@@ -5,9 +5,9 @@ description: Use to rank the in-flight foundation backlog by insight signal, GHI
 category: adr-lifecycle
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-11-06
 metadata:
-  skill-version: "1.1.1"
+  skill-version: "1.1.2"
 model: sonnet
 ---
 

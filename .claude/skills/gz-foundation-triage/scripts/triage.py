@@ -29,6 +29,100 @@ _FOUNDATION_ID_PATTERN = re.compile(r"^ADR-\d+\.\d+\.\d+$")
 _FOUNDATION_SHORT_ID_PREFIX = re.compile(r"^(ADR-\d+\.\d+\.\d+)")
 
 
+class RankingsNotListError(SystemExit):
+    """The rank-input 'rankings' field is not a list."""
+
+    def __init__(self) -> None:
+        super().__init__("rank-input 'rankings' must be a list")
+
+
+class ReclassifyNotListError(SystemExit):
+    """The rank-input 'reclassify_foundation' field is not a list."""
+
+    def __init__(self) -> None:
+        super().__init__("rank-input 'reclassify_foundation' must be a list")
+
+
+class RankingEntryNotObjectError(SystemExit):
+    """A rankings entry is not a JSON object."""
+
+    def __init__(self, entry: object) -> None:
+        super().__init__(f"rankings entry must be a JSON object, got {type(entry).__name__}")
+
+
+class RankingForbiddenKeysError(SystemExit):
+    """A rankings entry carries keys outside the structural schema."""
+
+    def __init__(self, adr_id: object, extra_keys: set[str]) -> None:
+        self.adr_id = adr_id
+        self.extra_keys = extra_keys
+        super().__init__(f"rankings entry {adr_id!r} carries forbidden keys: {sorted(extra_keys)}")
+
+
+class RankingUnknownIdError(SystemExit):
+    """A rankings entry names an ADR absent from the fetched candidate set."""
+
+    def __init__(self, adr_id: object) -> None:
+        self.adr_id = adr_id
+        super().__init__(f"rankings entry id {adr_id!r} not in fetched candidate set")
+
+
+class RankingSeverityError(SystemExit):
+    """A rankings entry's severity is outside the allowed values."""
+
+    def __init__(self, adr_id: str, severity: object, allowed: set[str]) -> None:
+        self.adr_id = adr_id
+        self.severity = severity
+        super().__init__(f"rankings entry {adr_id} severity {severity!r} not in {sorted(allowed)}")
+
+
+class ReclassifyEntryNotObjectError(SystemExit):
+    """A reclassify_foundation entry is not a JSON object."""
+
+    def __init__(self) -> None:
+        super().__init__("reclassify_foundation entry must be a JSON object")
+
+
+class ReclassifyForbiddenKeysError(SystemExit):
+    """A reclassify_foundation entry carries keys outside the structural schema."""
+
+    def __init__(self, extra_keys: set[str]) -> None:
+        self.extra_keys = extra_keys
+        super().__init__(
+            f"reclassify_foundation entry carries forbidden keys: {sorted(extra_keys)}"
+        )
+
+
+class ReclassifyInvalidIdError(SystemExit):
+    """A reclassify_foundation entry's id is not a valid ADR id."""
+
+    def __init__(self, adr_id: object) -> None:
+        self.adr_id = adr_id
+        super().__init__(f"reclassify_foundation id {adr_id!r} is not a valid ADR id")
+
+
+class ReclassifyTargetError(SystemExit):
+    """A reclassify_foundation entry's reclassify value is not 'foundation'."""
+
+    def __init__(self, adr_id: str) -> None:
+        self.adr_id = adr_id
+        super().__init__(f"reclassify_foundation entry {adr_id} reclassify must be 'foundation'")
+
+
+class RankInputPathRequiredError(SystemExit):
+    """--format rank was invoked without a --rank-input path."""
+
+    def __init__(self) -> None:
+        super().__init__("--format rank requires --rank-input <path>")
+
+
+class RankInputReadError(SystemExit):
+    """The rank-input file could not be read or decoded."""
+
+    def __init__(self, exc: Exception) -> None:
+        super().__init__(f"failed to read rank-input: {exc}")
+
+
 def _project_root_from_script(script_path: Path) -> Path:
     """Resolve repo root from this script's location.
 
@@ -160,46 +254,38 @@ def _validate_rank_input(payload: dict[str, object], known_ids: set[str]) -> dic
     """Reject any agent-supplied prose fields; enforce structural schema."""
     rankings_raw = payload.get("rankings", [])
     if not isinstance(rankings_raw, list):
-        raise SystemExit("rank-input 'rankings' must be a list")
+        raise RankingsNotListError
     allowed_severity = {"urgent", "next-quarter", "latent"}
     rankings: list[dict[str, str]] = []
     for entry in rankings_raw:
         if not isinstance(entry, dict):
-            raise SystemExit(f"rankings entry must be a JSON object, got {type(entry).__name__}")
+            raise RankingEntryNotObjectError(entry)
         extra_keys = set(entry) - {"id", "severity"}
         if extra_keys:
-            raise SystemExit(
-                f"rankings entry {entry.get('id')!r} carries forbidden keys: {sorted(extra_keys)}"
-            )
+            raise RankingForbiddenKeysError(entry.get("id"), extra_keys)
         adr_id = entry.get("id")
         severity = entry.get("severity")
         if not isinstance(adr_id, str) or adr_id not in known_ids:
-            raise SystemExit(f"rankings entry id {adr_id!r} not in fetched candidate set")
+            raise RankingUnknownIdError(adr_id)
         if not isinstance(severity, str) or severity not in allowed_severity:
-            raise SystemExit(
-                f"rankings entry {adr_id} severity {severity!r} not in {sorted(allowed_severity)}"
-            )
+            raise RankingSeverityError(adr_id, severity, allowed_severity)
         rankings.append({"id": adr_id, "severity": severity})
     reclassify_raw = payload.get("reclassify_foundation", [])
     if not isinstance(reclassify_raw, list):
-        raise SystemExit("rank-input 'reclassify_foundation' must be a list")
+        raise ReclassifyNotListError
     reclassify: list[dict[str, str]] = []
     for entry in reclassify_raw:
         if not isinstance(entry, dict):
-            raise SystemExit("reclassify_foundation entry must be a JSON object")
+            raise ReclassifyEntryNotObjectError
         extra_keys = set(entry) - {"id", "reclassify"}
         if extra_keys:
-            raise SystemExit(
-                f"reclassify_foundation entry carries forbidden keys: {sorted(extra_keys)}"
-            )
+            raise ReclassifyForbiddenKeysError(extra_keys)
         adr_id = entry.get("id")
         reclassify_value = entry.get("reclassify")
         if not isinstance(adr_id, str) or not _ADR_ID_PATTERN.match(adr_id):
-            raise SystemExit(f"reclassify_foundation id {adr_id!r} is not a valid ADR id")
+            raise ReclassifyInvalidIdError(adr_id)
         if reclassify_value != "foundation":
-            raise SystemExit(
-                f"reclassify_foundation entry {adr_id} reclassify must be 'foundation'"
-            )
+            raise ReclassifyTargetError(adr_id)
         reclassify.append({"id": adr_id, "reclassify": "foundation"})
     return {"rankings": rankings, "reclassify_foundation": reclassify}
 
@@ -261,11 +347,11 @@ def main(argv: list[str] | None = None) -> int:
         sys.stdout.write("\n")
         return 0
     if args.rank_input is None:
-        raise SystemExit("--format rank requires --rank-input <path>")
+        raise RankInputPathRequiredError
     try:
         payload = json.loads(args.rank_input.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
-        raise SystemExit(f"failed to read rank-input: {exc}") from exc
+        raise RankInputReadError(exc) from exc
     known_ids = {str(record["id"]) for record in records}
     validated = _validate_rank_input(payload, known_ids)
     sys.stdout.write(render_rank(records, validated))

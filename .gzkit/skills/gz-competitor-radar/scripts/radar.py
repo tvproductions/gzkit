@@ -40,13 +40,194 @@ class RadarError(Exception):
     """Validation or rendering error."""
 
 
+class ProjectRootNotFoundError(RadarError):
+    """No ancestor of the starting directory is the gzkit project root."""
+
+    def __init__(self) -> None:
+        super().__init__("Could not locate gzkit project root.")
+
+
+class MissingJsonFileError(RadarError):
+    """A required JSON file does not exist."""
+
+    def __init__(self, path: Path) -> None:
+        self.path = path
+        super().__init__(f"Missing JSON file: {path}")
+
+
+class InvalidJsonError(RadarError):
+    """A JSON file does not parse."""
+
+    def __init__(self, path: Path, exc: json.JSONDecodeError) -> None:
+        self.path = path
+        super().__init__(f"Invalid JSON in {path}: {exc}")
+
+
+class JsonNotObjectError(RadarError):
+    """A JSON file's top-level value is not an object."""
+
+    def __init__(self, path: Path) -> None:
+        self.path = path
+        super().__init__(f"{path} must contain a JSON object.")
+
+
+class FieldNotNonEmptyStringError(RadarError):
+    """A required field is missing, not a string, or blank."""
+
+    def __init__(self, context: str, key: str) -> None:
+        self.context = context
+        self.key = key
+        super().__init__(f"{context}.{key} must be a non-empty string.")
+
+
+class FieldNotListError(RadarError):
+    """A required field is not a list."""
+
+    def __init__(self, context: str, key: str) -> None:
+        self.context = context
+        self.key = key
+        super().__init__(f"{context}.{key} must be a list.")
+
+
+class CompetitorNotObjectError(RadarError):
+    """A registry competitor entry is not a JSON object."""
+
+    def __init__(self, idx: int) -> None:
+        self.idx = idx
+        super().__init__(f"registry.competitors[{idx}] must be an object.")
+
+
+class LinksNotObjectError(RadarError):
+    """A registry competitor's links field is not a JSON object."""
+
+    def __init__(self, context: str) -> None:
+        self.context = context
+        super().__init__(f"{context}.links must be an object.")
+
+
+class PatternNotObjectError(RadarError):
+    """A registry strength-pattern entry is not a JSON object."""
+
+    def __init__(self, idx: int) -> None:
+        self.idx = idx
+        super().__init__(f"registry.strength_patterns[{idx}] must be an object.")
+
+
+class SnapshotNotObjectError(RadarError):
+    """A scan competitor snapshot is not a JSON object."""
+
+    def __init__(self, idx: int) -> None:
+        self.idx = idx
+        super().__init__(f"scan.competitor_snapshots[{idx}] must be an object.")
+
+
+class MoveNotObjectError(RadarError):
+    """A scan suggested move is not a JSON object."""
+
+    def __init__(self, idx: int) -> None:
+        self.idx = idx
+        super().__init__(f"scan.suggested_moves[{idx}] must be an object.")
+
+
+class DuplicateCompetitorIdError(RadarError):
+    """Two registry competitors share one id."""
+
+    def __init__(self, competitor_id: str) -> None:
+        self.competitor_id = competitor_id
+        super().__init__(f"Duplicate competitor id: {competitor_id}")
+
+
+class DuplicatePatternIdError(RadarError):
+    """Two registry strength patterns share one id."""
+
+    def __init__(self, pattern_id: str) -> None:
+        self.pattern_id = pattern_id
+        super().__init__(f"Duplicate strength pattern id: {pattern_id}")
+
+
+class DuplicateSnapshotError(RadarError):
+    """A scan carries two snapshots for one competitor."""
+
+    def __init__(self, competitor_id: str) -> None:
+        self.competitor_id = competitor_id
+        super().__init__(f"Duplicate scan snapshot for competitor: {competitor_id}")
+
+
+class InvalidChoiceError(RadarError):
+    """A field holds a value outside its allowed set."""
+
+    def __init__(self, context: str, key: str, value: str) -> None:
+        self.context = context
+        self.key = key
+        self.value = value
+        super().__init__(f"{context}.{key} is invalid: {value}")
+
+
+class SnapshotCompetitorNotInRegistryError(RadarError):
+    """A scan snapshot names a competitor the registry does not carry."""
+
+    def __init__(self, context: str, competitor_id: str) -> None:
+        self.context = context
+        self.competitor_id = competitor_id
+        super().__init__(f"{context}.competitor_id is not in registry: {competitor_id}")
+
+
+class MoveUnknownCompetitorError(RadarError):
+    """A suggested move references a competitor the registry does not carry."""
+
+    def __init__(self, context: str, competitor_id: str) -> None:
+        self.context = context
+        self.competitor_id = competitor_id
+        super().__init__(f"{context} references unknown competitor: {competitor_id}")
+
+
+class ScanExistsError(RadarError):
+    """A monthly scan already exists and overwrite was not requested."""
+
+    def __init__(self, path: Path) -> None:
+        self.path = path
+        super().__init__(f"Scan already exists: {path}")
+
+
+class MissingReportError(RadarError):
+    """A generated monthly report is absent."""
+
+    def __init__(self, path: Path) -> None:
+        self.path = path
+        super().__init__(f"Missing generated report: {path}")
+
+
+class ReportDriftError(RadarError):
+    """A generated monthly report differs from its JSON rendering."""
+
+    def __init__(self, path: Path) -> None:
+        self.path = path
+        super().__init__(f"Generated report drifted from JSON: {path}")
+
+
+class MissingIndexError(RadarError):
+    """The generated radar index is absent."""
+
+    def __init__(self, path: Path) -> None:
+        self.path = path
+        super().__init__(f"Missing generated index: {path}")
+
+
+class IndexDriftError(RadarError):
+    """The generated radar index differs from its JSON rendering."""
+
+    def __init__(self, path: Path) -> None:
+        self.path = path
+        super().__init__(f"Generated index drifted from JSON: {path}")
+
+
 def find_project_root(start: Path | None = None) -> Path:
     """Find the repository root from cwd or script path."""
     cursor = (start or Path.cwd()).resolve()
     for candidate in [cursor, *cursor.parents]:
         if (candidate / ".gzkit").is_dir() and (candidate / "artifacts").is_dir():
             return candidate
-    raise RadarError("Could not locate gzkit project root.")
+    raise ProjectRootNotFoundError
 
 
 def read_json(path: Path) -> dict[str, Any]:
@@ -54,11 +235,11 @@ def read_json(path: Path) -> dict[str, Any]:
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except FileNotFoundError as exc:
-        raise RadarError(f"Missing JSON file: {path}") from exc
+        raise MissingJsonFileError(path) from exc
     except json.JSONDecodeError as exc:
-        raise RadarError(f"Invalid JSON in {path}: {exc}") from exc
+        raise InvalidJsonError(path, exc) from exc
     if not isinstance(data, dict):
-        raise RadarError(f"{path} must contain a JSON object.")
+        raise JsonNotObjectError(path)
     return data
 
 
@@ -72,14 +253,14 @@ def write_json(path: Path, data: dict[str, Any]) -> None:
 def _require_str(data: dict[str, Any], key: str, context: str) -> str:
     value = data.get(key)
     if not isinstance(value, str) or not value.strip():
-        raise RadarError(f"{context}.{key} must be a non-empty string.")
+        raise FieldNotNonEmptyStringError(context, key)
     return value
 
 
 def _require_list(data: dict[str, Any], key: str, context: str) -> list[Any]:
     value = data.get(key)
     if not isinstance(value, list):
-        raise RadarError(f"{context}.{key} must be a list.")
+        raise FieldNotListError(context, key)
     return value
 
 
@@ -95,33 +276,33 @@ def validate_registry(registry: dict[str, Any]) -> list[str]:
     ids: list[str] = []
     for idx, competitor in enumerate(competitors):
         if not isinstance(competitor, dict):
-            raise RadarError(f"registry.competitors[{idx}] must be an object.")
+            raise CompetitorNotObjectError(idx)
         context = f"registry.competitors[{idx}]"
         competitor_id = _require_str(competitor, "id", context)
         if competitor_id in ids:
-            raise RadarError(f"Duplicate competitor id: {competitor_id}")
+            raise DuplicateCompetitorIdError(competitor_id)
         ids.append(competitor_id)
         _require_str(competitor, "name", context)
         _require_str(competitor, "category", context)
         watch_level = _require_str(competitor, "watch_level", context)
         if watch_level not in WATCH_LEVELS:
-            raise RadarError(f"{context}.watch_level is invalid: {watch_level}")
+            raise InvalidChoiceError(context, "watch_level", watch_level)
         for key in ("links", "known_strengths", "explicit_rejections", "gzkit_destinations"):
             value = competitor.get(key)
             if key == "links":
                 if not isinstance(value, dict):
-                    raise RadarError(f"{context}.links must be an object.")
+                    raise LinksNotObjectError(context)
             elif not isinstance(value, list):
-                raise RadarError(f"{context}.{key} must be a list.")
+                raise FieldNotListError(context, key)
 
     pattern_ids: list[str] = []
     for idx, pattern in enumerate(patterns):
         if not isinstance(pattern, dict):
-            raise RadarError(f"registry.strength_patterns[{idx}] must be an object.")
+            raise PatternNotObjectError(idx)
         context = f"registry.strength_patterns[{idx}]"
         pattern_id = _require_str(pattern, "id", context)
         if pattern_id in pattern_ids:
-            raise RadarError(f"Duplicate strength pattern id: {pattern_id}")
+            raise DuplicatePatternIdError(pattern_id)
         pattern_ids.append(pattern_id)
         _require_str(pattern, "name", context)
         _require_list(pattern, "gzkit_destinations", context)
@@ -141,13 +322,13 @@ def validate_scan(scan: dict[str, Any], competitor_ids: set[str]) -> None:
     seen: set[str] = set()
     for idx, snapshot in enumerate(snapshots):
         if not isinstance(snapshot, dict):
-            raise RadarError(f"scan.competitor_snapshots[{idx}] must be an object.")
+            raise SnapshotNotObjectError(idx)
         context = f"scan.competitor_snapshots[{idx}]"
         competitor_id = _require_str(snapshot, "competitor_id", context)
         if competitor_id not in competitor_ids:
-            raise RadarError(f"{context}.competitor_id is not in registry: {competitor_id}")
+            raise SnapshotCompetitorNotInRegistryError(context, competitor_id)
         if competitor_id in seen:
-            raise RadarError(f"Duplicate scan snapshot for competitor: {competitor_id}")
+            raise DuplicateSnapshotError(competitor_id)
         seen.add(competitor_id)
         _require_str(snapshot, "status", context)
         _require_str(snapshot, "trajectory", context)
@@ -156,18 +337,18 @@ def validate_scan(scan: dict[str, Any], competitor_ids: set[str]) -> None:
 
     for idx, move in enumerate(moves):
         if not isinstance(move, dict):
-            raise RadarError(f"scan.suggested_moves[{idx}] must be an object.")
+            raise MoveNotObjectError(idx)
         context = f"scan.suggested_moves[{idx}]"
         _require_str(move, "id", context)
         _require_str(move, "title", context)
         route = _require_str(move, "route", context)
         if route not in ROUTES:
-            raise RadarError(f"{context}.route is invalid: {route}")
+            raise InvalidChoiceError(context, "route", route)
         _require_list(move, "source_competitors", context)
         _require_list(move, "grill_questions", context)
         for competitor_id in move["source_competitors"]:
             if competitor_id not in competitor_ids:
-                raise RadarError(f"{context} references unknown competitor: {competitor_id}")
+                raise MoveUnknownCompetitorError(context, competitor_id)
 
 
 def canonical_payload(registry: dict[str, Any], scan: dict[str, Any]) -> str:
@@ -444,7 +625,7 @@ def new_scan(root: Path, month: str, overwrite: bool) -> Path:
     validate_registry(registry)
     path = root / SCAN_DIR / f"{month}.json"
     if path.exists() and not overwrite:
-        raise RadarError(f"Scan already exists: {path}")
+        raise ScanExistsError(path)
     today = dt.date.today().isoformat()
     scan = {
         "schema_version": "1",
@@ -507,16 +688,16 @@ def validate_all(root: Path) -> None:
         try:
             actual = report_path.read_text(encoding="utf-8")
         except FileNotFoundError as exc:
-            raise RadarError(f"Missing generated report: {report_path}") from exc
+            raise MissingReportError(report_path) from exc
         if actual != expected:
-            raise RadarError(f"Generated report drifted from JSON: {report_path}")
+            raise ReportDriftError(report_path)
     expected_index = render_index(registry, scan_paths)
     try:
         actual_index = (root / INDEX_PATH).read_text(encoding="utf-8")
     except FileNotFoundError as exc:
-        raise RadarError(f"Missing generated index: {root / INDEX_PATH}") from exc
+        raise MissingIndexError(root / INDEX_PATH) from exc
     if actual_index != expected_index:
-        raise RadarError(f"Generated index drifted from JSON: {root / INDEX_PATH}")
+        raise IndexDriftError(root / INDEX_PATH)
 
 
 def build_parser() -> argparse.ArgumentParser:

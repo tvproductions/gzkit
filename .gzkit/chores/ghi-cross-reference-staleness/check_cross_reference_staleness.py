@@ -41,6 +41,23 @@ CENSUS_LIMIT = 2000
 ANNOTATION_RE = re.compile(r"#(\d+)\*{0,2}\s*\((open|still open)\)", re.IGNORECASE)
 
 
+class IssueListFailedError(RuntimeError):
+    """The ``gh issue list`` census call exited non-zero."""
+
+    def __init__(self, stderr: str) -> None:
+        self.stderr = stderr
+        super().__init__(f"gh issue list failed: {stderr}")
+
+
+class CensusTruncatedError(RuntimeError):
+    """The issue census hit its limit, so the page may be truncated."""
+
+    def __init__(self, count: int, limit: int) -> None:
+        self.count = count
+        self.limit = limit
+        super().__init__(f"census returned {count} at limit {limit}: page may be truncated")
+
+
 def fetch_issues():
     """Return every issue with number, state and body, refusing a truncated census."""
     proc = subprocess.run(  # noqa: S603 — gh issue list, a fixed argv; executable resolved
@@ -60,12 +77,10 @@ def fetch_issues():
         check=False,
     )
     if proc.returncode != 0:
-        raise RuntimeError(f"gh issue list failed: {proc.stderr.strip()}")
+        raise IssueListFailedError(proc.stderr.strip())
     issues = json.loads(proc.stdout)
     if len(issues) >= CENSUS_LIMIT:
-        raise RuntimeError(
-            f"census returned {len(issues)} at limit {CENSUS_LIMIT}: page may be truncated"
-        )
+        raise CensusTruncatedError(len(issues), CENSUS_LIMIT)
     return issues
 
 

@@ -85,13 +85,23 @@ with contextlib.suppress(AttributeError):
     sys.stdout.reconfigure(encoding="utf-8")  # ty: ignore[unresolved-attribute]
 
 
+class MissingBlockBandError(SystemExit):
+    """The thresholds table carries no block band for the measured metric."""
+
+    def __init__(self, metric: str, thresholds: object) -> None:
+        """Record the metric and the thresholds table searched."""
+        self.metric = metric
+        self.thresholds = thresholds
+        super().__init__(f"no block band for {metric} in {thresholds}")
+
+
 def _block_row() -> dict:
     """Return the canonical ``lizard_file_nloc`` block band row."""
     table = json.loads(_THRESHOLDS.read_text(encoding="utf-8"))
     for band in table["bands"]:
         if band["metric"] == _METRIC and band["trigger_semantic"] == "block":
             return {**band, "corpus_revision": table.get("corpus_revision")}
-    raise SystemExit(f"no block band for {_METRIC} in {_THRESHOLDS}")
+    raise MissingBlockBandError(_METRIC, _THRESHOLDS)
 
 
 def _block_band() -> float:

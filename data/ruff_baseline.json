@@ -18,21 +18,6 @@
     },
     {
       "file": ".agents/skills/ghi-triage/scripts/triage.py",
-      "rule": "DOC501",
-      "count": 2
-    },
-    {
-      "file": ".agents/skills/ghi-triage/scripts/triage.py",
-      "rule": "EM101",
-      "count": 5
-    },
-    {
-      "file": ".agents/skills/ghi-triage/scripts/triage.py",
-      "rule": "EM102",
-      "count": 9
-    },
-    {
-      "file": ".agents/skills/ghi-triage/scripts/triage.py",
       "rule": "FBT001",
       "count": 1
     },
@@ -67,11 +52,6 @@
       "count": 4
     },
     {
-      "file": ".agents/skills/ghi-triage/scripts/triage.py",
-      "rule": "TRY003",
-      "count": 14
-    },
-    {
       "file": ".agents/skills/gz-competitor-radar/scripts/radar.py",
       "rule": "ANN401",
       "count": 1
@@ -80,16 +60,6 @@
       "file": ".agents/skills/gz-competitor-radar/scripts/radar.py",
       "rule": "DTZ011",
       "count": 1
-    },
-    {
-      "file": ".agents/skills/gz-competitor-radar/scripts/radar.py",
-      "rule": "EM101",
-      "count": 1
-    },
-    {
-      "file": ".agents/skills/gz-competitor-radar/scripts/radar.py",
-      "rule": "EM102",
-      "count": 23
     },
     {
       "file": ".agents/skills/gz-competitor-radar/scripts/radar.py",
@@ -117,21 +87,6 @@
       "count": 1
     },
     {
-      "file": ".agents/skills/gz-competitor-radar/scripts/radar.py",
-      "rule": "TRY003",
-      "count": 24
-    },
-    {
-      "file": ".agents/skills/gz-foundation-triage/scripts/triage.py",
-      "rule": "EM101",
-      "count": 4
-    },
-    {
-      "file": ".agents/skills/gz-foundation-triage/scripts/triage.py",
-      "rule": "EM102",
-      "count": 8
-    },
-    {
       "file": ".agents/skills/gz-foundation-triage/scripts/triage.py",
       "rule": "PERF401",
       "count": 1
@@ -140,11 +95,6 @@
       "file": ".agents/skills/gz-foundation-triage/scripts/triage.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": ".agents/skills/gz-foundation-triage/scripts/triage.py",
-      "rule": "TRY003",
-      "count": 12
     },
     {
       "file": ".claude/hooks/ghi-triage-chat-silence.py",
@@ -373,21 +323,6 @@
     },
     {
       "file": ".claude/skills/ghi-triage/scripts/triage.py",
-      "rule": "DOC501",
-      "count": 2
-    },
-    {
-      "file": ".claude/skills/ghi-triage/scripts/triage.py",
-      "rule": "EM101",
-      "count": 5
-    },
-    {
-      "file": ".claude/skills/ghi-triage/scripts/triage.py",
-      "rule": "EM102",
-      "count": 9
-    },
-    {
-      "file": ".claude/skills/ghi-triage/scripts/triage.py",
       "rule": "FBT001",
       "count": 1
     },
@@ -422,11 +357,6 @@
       "count": 4
     },
     {
-      "file": ".claude/skills/ghi-triage/scripts/triage.py",
-      "rule": "TRY003",
-      "count": 14
-    },
-    {
       "file": ".claude/skills/gz-competitor-radar/scripts/radar.py",
       "rule": "ANN401",
       "count": 1
@@ -435,16 +365,6 @@
       "file": ".claude/skills/gz-competitor-radar/scripts/radar.py",
       "rule": "DTZ011",
       "count": 1
-    },
-    {
-      "file": ".claude/skills/gz-competitor-radar/scripts/radar.py",
-      "rule": "EM101",
-      "count": 1
-    },
-    {
-      "file": ".claude/skills/gz-competitor-radar/scripts/radar.py",
-      "rule": "EM102",
-      "count": 23
     },
     {
       "file": ".claude/skills/gz-competitor-radar/scripts/radar.py",
@@ -472,21 +392,6 @@
       "count": 1
     },
     {
-      "file": ".claude/skills/gz-competitor-radar/scripts/radar.py",
-      "rule": "TRY003",
-      "count": 24
-    },
-    {
-      "file": ".claude/skills/gz-foundation-triage/scripts/triage.py",
-      "rule": "EM101",
-      "count": 4
-    },
-    {
-      "file": ".claude/skills/gz-foundation-triage/scripts/triage.py",
-      "rule": "EM102",
-      "count": 8
-    },
-    {
       "file": ".claude/skills/gz-foundation-triage/scripts/triage.py",
       "rule": "PERF401",
       "count": 1
@@ -495,11 +400,6 @@
       "file": ".claude/skills/gz-foundation-triage/scripts/triage.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": ".claude/skills/gz-foundation-triage/scripts/triage.py",
-      "rule": "TRY003",
-      "count": 12
     },
     {
       "file": ".gzkit/chores/control-surface-rule-conflicts/check_evidence.py",
@@ -583,18 +483,8 @@
     },
     {
       "file": ".gzkit/chores/decommission-tautological-tests/check_debt_target.py",
-      "rule": "EM102",
-      "count": 2
-    },
-    {
-      "file": ".gzkit/chores/decommission-tautological-tests/check_debt_target.py",
       "rule": "T201",
       "count": 5
-    },
-    {
-      "file": ".gzkit/chores/decommission-tautological-tests/check_debt_target.py",
-      "rule": "TRY003",
-      "count": 2
     },
     {
       "file": ".gzkit/chores/eval_feedback_cluster_lib.py",
@@ -638,11 +528,6 @@
     },
     {
       "file": ".gzkit/chores/ghi-cross-reference-staleness/check_cross_reference_staleness.py",
-      "rule": "EM102",
-      "count": 2
-    },
-    {
-      "file": ".gzkit/chores/ghi-cross-reference-staleness/check_cross_reference_staleness.py",
       "rule": "FURB118",
       "count": 1
     },
@@ -667,11 +552,6 @@
       "count": 8
     },
     {
-      "file": ".gzkit/chores/ghi-cross-reference-staleness/check_cross_reference_staleness.py",
-      "rule": "TRY003",
-      "count": 2
-    },
-    {
       "file": ".gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py",
       "rule": "PLC0415",
       "count": 3
@@ -693,18 +573,8 @@
     },
     {
       "file": ".gzkit/chores/module-sloc-cap-radon/check_module_size.py",
-      "rule": "EM102",
-      "count": 1
-    },
-    {
-      "file": ".gzkit/chores/module-sloc-cap-radon/check_module_size.py",
       "rule": "T201",
       "count": 11
-    },
-    {
-      "file": ".gzkit/chores/module-sloc-cap-radon/check_module_size.py",
-      "rule": "TRY003",
-      "count": 1
     },
     {
       "file": ".gzkit/chores/pythonic-design-pattern-detection/scan.py",
@@ -823,21 +693,6 @@
     },
     {
       "file": ".gzkit/skills/ghi-triage/scripts/triage.py",
-      "rule": "DOC501",
-      "count": 2
-    },
-    {
-      "file": ".gzkit/skills/ghi-triage/scripts/triage.py",
-      "rule": "EM101",
-      "count": 5
-    },
-    {
-      "file": ".gzkit/skills/ghi-triage/scripts/triage.py",
-      "rule": "EM102",
-      "count": 9
-    },
-    {
-      "file": ".gzkit/skills/ghi-triage/scripts/triage.py",
       "rule": "FBT001",
       "count": 1
     },
@@ -872,11 +727,6 @@
       "count": 4
     },
     {
-      "file": ".gzkit/skills/ghi-triage/scripts/triage.py",
-      "rule": "TRY003",
-      "count": 14
-    },
-    {
       "file": ".gzkit/skills/gz-competitor-radar/scripts/radar.py",
       "rule": "ANN401",
       "count": 1
@@ -885,16 +735,6 @@
       "file": ".gzkit/skills/gz-competitor-radar/scripts/radar.py",
       "rule": "DTZ011",
       "count": 1
-    },
-    {
-      "file": ".gzkit/skills/gz-competitor-radar/scripts/radar.py",
-      "rule": "EM101",
-      "count": 1
-    },
-    {
-      "file": ".gzkit/skills/gz-competitor-radar/scripts/radar.py",
-      "rule": "EM102",
-      "count": 23
     },
     {
       "file": ".gzkit/skills/gz-competitor-radar/scripts/radar.py",
@@ -922,21 +762,6 @@
       "count": 1
     },
     {
-      "file": ".gzkit/skills/gz-competitor-radar/scripts/radar.py",
-      "rule": "TRY003",
-      "count": 24
-    },
-    {
-      "file": ".gzkit/skills/gz-foundation-triage/scripts/triage.py",
-      "rule": "EM101",
-      "count": 4
-    },
-    {
-      "file": ".gzkit/skills/gz-foundation-triage/scripts/triage.py",
-      "rule": "EM102",
-      "count": 8
-    },
-    {
       "file": ".gzkit/skills/gz-foundation-triage/scripts/triage.py",
       "rule": "PERF401",
       "count": 1
@@ -945,11 +770,6 @@
       "file": ".gzkit/skills/gz-foundation-triage/scripts/triage.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": ".gzkit/skills/gz-foundation-triage/scripts/triage.py",
-      "rule": "TRY003",
-      "count": 12
     },
     {
       "file": "docs/evals/three-pillars-impact-2026-09-19/measure.py",
@@ -1928,11 +1748,6 @@
     },
     {
       "file": "scripts/adherence_probe.py",
-      "rule": "EM101",
-      "count": 1
-    },
-    {
-      "file": "scripts/adherence_probe.py",
       "rule": "FURB113",
       "count": 2
     },
@@ -1955,11 +1770,6 @@
       "file": "scripts/adherence_probe.py",
       "rule": "T201",
       "count": 9
-    },
-    {
-      "file": "scripts/adherence_probe.py",
-      "rule": "TRY003",
-      "count": 1
     },
     {
       "file": "scripts/backfill_adr_taxonomy.py",
@@ -2043,11 +1853,6 @@
     },
     {
       "file": "scripts/migrate_handoffs.py",
-      "rule": "EM102",
-      "count": 1
-    },
-    {
-      "file": "scripts/migrate_handoffs.py",
       "rule": "PERF401",
       "count": 2
     },
@@ -2059,11 +1864,6 @@
     {
       "file": "scripts/migrate_handoffs.py",
       "rule": "T201",
-      "count": 1
-    },
-    {
-      "file": "scripts/migrate_handoffs.py",
-      "rule": "TRY003",
       "count": 1
     },
     {
@@ -2658,18 +2458,8 @@
     },
     {
       "file": "src/gzkit/chores/decommission-tautological-tests/check_debt_target.py",
-      "rule": "EM102",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/chores/decommission-tautological-tests/check_debt_target.py",
       "rule": "T201",
       "count": 5
-    },
-    {
-      "file": "src/gzkit/chores/decommission-tautological-tests/check_debt_target.py",
-      "rule": "TRY003",
-      "count": 2
     },
     {
       "file": "src/gzkit/chores/eval_feedback_cluster_lib.py",
@@ -2713,18 +2503,8 @@
     },
     {
       "file": "src/gzkit/chores/module-sloc-cap-radon/check_module_size.py",
-      "rule": "EM102",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/chores/module-sloc-cap-radon/check_module_size.py",
       "rule": "T201",
       "count": 11
-    },
-    {
-      "file": "src/gzkit/chores/module-sloc-cap-radon/check_module_size.py",
-      "rule": "TRY003",
-      "count": 1
     },
     {
       "file": "src/gzkit/chores/pythonic-design-pattern-detection/scan.py",

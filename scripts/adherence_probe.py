@@ -175,6 +175,13 @@ _PUNCT_FOLD = str.maketrans(
 )
 
 
+class NoNegativeControlError(RuntimeError):
+    """Every candidate negative-control title is already present in the surface."""
+
+    def __init__(self) -> None:
+        super().__init__("no negative control available: every candidate title is present")
+
+
 @dataclass(frozen=True)
 class Section:
     """One ``## `` section of a rendered surface, with its measured position."""
@@ -377,7 +384,7 @@ def negative_control(text: str) -> Section:
     for title in candidates:
         if title.lower() not in lowered:
             return Section(section_id=_slug(title), title=title, offset=-1, anchor="")
-    raise RuntimeError("no negative control available: every candidate title is present")
+    raise NoNegativeControlError
 
 
 def control_passed(verdict: str) -> bool:

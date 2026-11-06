@@ -733,6 +733,133 @@ class RankInputError(ValueError):
     """Raised when --rank-input fails the rendering-edge contract."""
 
 
+class RankInputNotObjectError(RankInputError):
+    """The --rank-input payload is not a JSON object."""
+
+    def __init__(self) -> None:
+        super().__init__("--rank-input must be a JSON object")
+
+
+class RankingsMissingError(RankInputError):
+    """The --rank-input payload lacks a non-empty 'rankings' list."""
+
+    def __init__(self) -> None:
+        super().__init__("--rank-input requires non-empty 'rankings' list")
+
+
+class RankingEntryNotObjectError(RankInputError):
+    """A rankings entry is not a JSON object."""
+
+    def __init__(self, idx: int) -> None:
+        self.idx = idx
+        super().__init__(f"rankings[{idx}] must be an object")
+
+
+class RankingForbiddenFieldsError(RankInputError):
+    """A rankings entry carries fields outside the structural schema."""
+
+    def __init__(self, idx: int, extra: list[str]) -> None:
+        self.idx = idx
+        self.extra = extra
+        super().__init__(
+            f"rankings[{idx}] has forbidden field(s) {extra!r}; "
+            "schema accepts only 'number', 'severity' and 'readiness' (GHI #424)"
+        )
+
+
+class RankingNumberTypeError(RankInputError):
+    """A rankings entry's number is not an int."""
+
+    def __init__(self, idx: int) -> None:
+        self.idx = idx
+        super().__init__(f"rankings[{idx}].number must be int")
+
+
+class RankingDuplicateNumberError(RankInputError):
+    """A rankings entry repeats a number an earlier entry carried."""
+
+    def __init__(self, idx: int, number: int) -> None:
+        self.idx = idx
+        self.number = number
+        super().__init__(f"rankings[{idx}].number={number} duplicates earlier entry")
+
+
+class RankingUnknownNumberError(RankInputError):
+    """A rankings entry names an issue absent from the fetched set."""
+
+    def __init__(self, idx: int, number: int) -> None:
+        self.idx = idx
+        self.number = number
+        super().__init__(f"rankings[{idx}].number={number} not present in fetched issue set")
+
+
+class RankingSeverityError(RankInputError):
+    """A rankings entry's severity is outside the allowed values."""
+
+    def __init__(self, idx: int, allowed: tuple[str, ...]) -> None:
+        self.idx = idx
+        super().__init__(f"rankings[{idx}].severity must be one of {allowed}")
+
+
+class RankingReadinessError(RankInputError):
+    """A rankings entry's readiness is outside the allowed values."""
+
+    def __init__(self, idx: int, allowed: tuple[str, ...]) -> None:
+        self.idx = idx
+        super().__init__(f"rankings[{idx}].readiness must be one of {allowed}")
+
+
+class RankingReadinessPartialError(RankInputError):
+    """Readiness is carried by some rankings entries but not all."""
+
+    def __init__(self, carrying: int, total: int) -> None:
+        self.carrying = carrying
+        self.total = total
+        super().__init__(
+            f"readiness is on {carrying} of {total} entries; every entry carries it or none does"
+        )
+
+
+class RankInputPathRequiredError(RankInputError):
+    """--format rank was invoked without a --rank-input path."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            "--format rank requires --rank-input <path>; stdin is not accepted (GHI #424)"
+        )
+
+
+class RankInputStdinError(RankInputError):
+    """--rank-input named stdin, which the contract refuses."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            "--rank-input does not accept stdin ('-'); "
+            "Write the JSON to .gzkit/cache/triage/<name>.json and pass the path "
+            "(GHI #424)"
+        )
+
+
+class RankInputOutsideCacheError(RankInputError):
+    """--rank-input names a path outside the triage cache directory."""
+
+    def __init__(self, cache_dir: str, path: str) -> None:
+        self.cache_dir = cache_dir
+        self.path = path
+        super().__init__(
+            f"--rank-input path must live under {cache_dir}/ "
+            f"(got {path!r}); the cache-path requirement structurally prevents "
+            "inline-pipe duplicate-render shapes (GHI #424)"
+        )
+
+
+class RankInputEmptyError(RankInputError):
+    """The --rank-input file is empty."""
+
+    def __init__(self) -> None:
+        super().__init__("--rank-input is empty")
+
+
 def parse_rank_input(payload: object, known_numbers: set[int]) -> list[RankItem]:
     """Validate agent-supplied rank input.
 
@@ -746,46 +873,50 @@ def parse_rank_input(payload: object, known_numbers: set[int]) -> list[RankItem]
     Returns:
         The validated rank items in input order.
 
+    Raises:
+        RankInputNotObjectError: The payload is not a JSON object.
+        RankingsMissingError: The payload lacks a non-empty 'rankings' list.
+        RankingEntryNotObjectError: A rankings entry is not an object.
+        RankingForbiddenFieldsError: An entry carries a field outside the schema.
+        RankingNumberTypeError: An entry's number is not an int.
+        RankingDuplicateNumberError: An entry repeats an earlier number.
+        RankingUnknownNumberError: An entry names an issue outside the fetched set.
+        RankingSeverityError: An entry's severity is not an allowed value.
+        RankingReadinessError: An entry's readiness is not an allowed value.
+        RankingReadinessPartialError: Readiness is on some entries but not all.
+
     """
     if not isinstance(payload, dict):
-        raise RankInputError("--rank-input must be a JSON object")
+        raise RankInputNotObjectError
     rankings = payload.get("rankings")
     if not isinstance(rankings, list) or not rankings:
-        raise RankInputError("--rank-input requires non-empty 'rankings' list")
+        raise RankingsMissingError
     items: list[RankItem] = []
     seen: set[int] = set()
     for idx, entry in enumerate(rankings):
         if not isinstance(entry, dict):
-            raise RankInputError(f"rankings[{idx}] must be an object")
+            raise RankingEntryNotObjectError(idx)
         extra = sorted(set(entry.keys()) - _ALLOWED_RANKING_KEYS)
         if extra:
-            raise RankInputError(
-                f"rankings[{idx}] has forbidden field(s) {extra!r}; "
-                "schema accepts only 'number', 'severity' and 'readiness' (GHI #424)"
-            )
+            raise RankingForbiddenFieldsError(idx, extra)
         number = entry.get("number")
         if not isinstance(number, int) or isinstance(number, bool):
-            raise RankInputError(f"rankings[{idx}].number must be int")
+            raise RankingNumberTypeError(idx)
         if number in seen:
-            raise RankInputError(f"rankings[{idx}].number={number} duplicates earlier entry")
+            raise RankingDuplicateNumberError(idx, number)
         if number not in known_numbers:
-            raise RankInputError(
-                f"rankings[{idx}].number={number} not present in fetched issue set"
-            )
+            raise RankingUnknownNumberError(idx, number)
         seen.add(number)
         severity = entry.get("severity")
         if not isinstance(severity, str) or severity not in SEVERITY_VALUES:
-            raise RankInputError(f"rankings[{idx}].severity must be one of {SEVERITY_VALUES}")
+            raise RankingSeverityError(idx, SEVERITY_VALUES)
         readiness = entry.get("readiness")
         if readiness is not None and readiness not in READINESS_VALUES:
-            raise RankInputError(f"rankings[{idx}].readiness must be one of {READINESS_VALUES}")
+            raise RankingReadinessError(idx, READINESS_VALUES)
         items.append(RankItem(number=number, severity=severity, readiness=readiness))
     carrying = sum(item.readiness is not None for item in items)
     if carrying not in (0, len(items)):
-        raise RankInputError(
-            f"readiness is on {carrying} of {len(items)} entries; "
-            "every entry carries it or none does"
-        )
+        raise RankingReadinessPartialError(carrying, len(items))
     return items
 
 
@@ -1061,30 +1192,26 @@ def _read_rank_input(path: str | None) -> object:
     Returns:
         The JSON value decoded from the file.
 
+    Raises:
+        RankInputPathRequiredError: No --rank-input path was given.
+        RankInputStdinError: The path is stdin (`-`).
+        RankInputOutsideCacheError: The path lies outside the triage cache.
+        RankInputEmptyError: The file is empty.
+
     """
     if path is None:
-        raise RankInputError(
-            "--format rank requires --rank-input <path>; stdin is not accepted (GHI #424)"
-        )
+        raise RankInputPathRequiredError
     if path == "-":
-        raise RankInputError(
-            "--rank-input does not accept stdin ('-'); "
-            "Write the JSON to .gzkit/cache/triage/<name>.json and pass the path "
-            "(GHI #424)"
-        )
+        raise RankInputStdinError
     cache_root = _ensure_rank_input_cache_dir()
     resolved = Path(path).resolve()
     try:
         resolved.relative_to(cache_root)
     except ValueError as exc:
-        raise RankInputError(
-            f"--rank-input path must live under {RANK_INPUT_CACHE_DIR.as_posix()}/ "
-            f"(got {path!r}); the cache-path requirement structurally prevents "
-            "inline-pipe duplicate-render shapes (GHI #424)"
-        ) from exc
+        raise RankInputOutsideCacheError(RANK_INPUT_CACHE_DIR.as_posix(), path) from exc
     raw = resolved.read_text(encoding="utf-8")
     if not raw.strip():
-        raise RankInputError("--rank-input is empty")
+        raise RankInputEmptyError
     return json.loads(raw)
 
 

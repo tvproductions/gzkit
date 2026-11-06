@@ -8,13 +8,13 @@ compatibility: Project-local skill contract.
 project_local: true
 category: agent-operations
 metadata:
-  skill-version: "1.1.2"
+  skill-version: "1.1.3"
   govzero-framework-version: "v6"
   govzero-author: "gzkit-governance"
   govzero_layer: "Layer 1 - Evidence Gathering"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-26
+last_reviewed: 2026-11-06
 model: opus
 ---
 

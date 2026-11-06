@@ -42,6 +42,19 @@ _CONTINUES_FROM_DOCS_RE = re.compile(
 )
 
 
+class HandoffCollisionError(RuntimeError):
+    """A per-ADR handoff collides by name with a canonical one of differing content."""
+
+    def __init__(self, rel_src: str, rel_dst: str) -> None:
+        self.rel_src = rel_src
+        self.rel_dst = rel_dst
+        super().__init__(
+            f"Handoff name collision with differing content: {rel_src} "
+            f"vs canonical {rel_dst}. Resolve manually before migrating "
+            "(STOP-on-BLOCKERS, OBPI-0.0.65-01 REQ #9)."
+        )
+
+
 @dataclass
 class MigrationResult:
     """Summary of what a migration run did (or would do, in dry-run)."""
@@ -103,11 +116,7 @@ def migrate(repo_root: Path, *, apply: bool = True) -> MigrationResult:
         rel_dst = dst.relative_to(repo_root).as_posix()
         if dst.exists():
             if _sha256(src) != _sha256(dst):
-                raise RuntimeError(
-                    f"Handoff name collision with differing content: {rel_src} "
-                    f"vs canonical {rel_dst}. Resolve manually before migrating "
-                    "(STOP-on-BLOCKERS, OBPI-0.0.65-01 REQ #9)."
-                )
+                raise HandoffCollisionError(rel_src, rel_dst)
             result.deduped.append(rel_src)
             if apply:
                 _git(repo_root, "rm", "-q", rel_src)

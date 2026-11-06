@@ -54,16 +54,35 @@ with contextlib.suppress(AttributeError):
     sys.stdout.reconfigure(encoding="utf-8")  # ty: ignore[unresolved-attribute]
 
 
+class DebtTargetMissingFieldsError(ValueError):
+    """The debt target registry lacks one or more required fields."""
+
+    def __init__(self, missing: list[str]) -> None:
+        """Record the missing field names."""
+        self.missing = missing
+        super().__init__(f"debt target missing field(s): {', '.join(missing)}")
+
+
+class DebtTargetFieldTypeError(ValueError):
+    """A debt target count field is not a non-negative integer."""
+
+    def __init__(self, key: str, value: object) -> None:
+        """Record the offending field and its value."""
+        self.key = key
+        self.value = value
+        super().__init__(f"debt target {key} must be a non-negative integer, got {value!r}")
+
+
 def validate_target(target: dict) -> dict:
     """Return *target* when well-formed; raise ``ValueError`` naming the defect."""
     missing = [key for key in _REQUIRED if key not in target]
     if missing:
-        raise ValueError(f"debt target missing field(s): {', '.join(missing)}")
+        raise DebtTargetMissingFieldsError(missing)
     date.fromisoformat(target["start_date"])
     for key in ("start_count", "decline_per_month"):
         value = target[key]
         if not isinstance(value, int) or isinstance(value, bool) or value < 0:
-            raise ValueError(f"debt target {key} must be a non-negative integer, got {value!r}")
+            raise DebtTargetFieldTypeError(key, value)
     return target
 
 
