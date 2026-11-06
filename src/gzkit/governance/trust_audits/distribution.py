@@ -61,6 +61,11 @@ def _get_surface_classifier(surface: str) -> Callable[[Path], str] | None:
     so the audit's domain and its dispatch cannot drift apart: a surface added
     to the tuple gains a walk and a classifier in the same edit.  Imported
     lazily because each surface module pulls in its own runtime.
+
+    Returns:
+        The surface module's ``_classify_<surface>_file`` function, or None when the surface is not
+        canonical or the module lacks one.
+
     """
     if surface not in _CANONICAL_SURFACES:
         return None
@@ -82,6 +87,11 @@ def _is_package_only(rel_posix: str, project_root: Path | None = None) -> bool:
     Covers package_only, runtime_state, and project_local. The last is a
     declared gzkit-internal chore slug: it is absent from the wheel on purpose,
     so flagging its absence would turn the fix for GHI #728 into a gate failure.
+
+    Returns:
+        True when the file's surface classifier returns a not-shipped class; False when no surface
+        or classifier applies.
+
     """
     surface = _surface_from_posix(rel_posix)
     if surface is None:
@@ -108,6 +118,11 @@ def audit_distribution(project_root: Path) -> list[ValidationError]:
     ``_CANONICAL_SURFACES``, and detects drift.
     Raises ``SystemExit(2)`` on IO/parse failures so callers can distinguish system
     errors (exit 2) from policy breaches (exit 3).
+
+    Returns:
+        The drift findings between the on-disk surfaces, the predicted wheel and the baseline
+        manifest.
+
     """
     shipped_files, baseline_entries, surface_roots = _load_inputs(project_root)
 
@@ -137,6 +152,10 @@ def _excluding_pattern(rel_parts: list[str], patterns: list[str]) -> str | None:
     uv's rule: "Excludes are not anchored", and "All children of an exclusion
     are excluded as well", so a pattern removes a path when it matches any run
     of the path's components (project-relative) starting at any depth.
+
+    Returns:
+        The first exclude pattern matching some run of *rel_parts*, or None when none does.
+
     """
     for pattern in patterns:
         components = pattern.split("/")
@@ -182,6 +201,11 @@ def wheel_shipped_files(project_root: Path, *, missing_ok: bool = False) -> set[
 
     Raises ``SystemExit(2)`` when pyproject.toml is unparseable, when it is
     missing and ``missing_ok`` is false, or when an exclude is anchored.
+
+    Returns:
+        POSIX project-relative paths the wheel ships; empty when no wheel layout is configured (or
+        the pyproject is absent under *missing_ok*).
+
     """
     layout = _wheel_layout(project_root, missing_ok=missing_ok)
     shipped: set[str] = set()
@@ -216,6 +240,11 @@ def _wheel_layout(project_root: Path, *, missing_ok: bool) -> tuple[Path, list[s
     """Return the uv_build module directory and every exclude in force, or None.
 
     Raises ``SystemExit(2)`` per :func:`wheel_shipped_files`.
+
+    Returns:
+        ``(module directory, excludes)``, or None when no build-backend table exists or, under
+        *missing_ok*, the pyproject is absent.
+
     """
     pyproject = project_root / "pyproject.toml"
     try:
@@ -378,6 +407,11 @@ def regenerate_distribution_baseline(project_root: Path) -> dict[str, Any]:
 
     Returns a dict with keys ``surfaces_walked``, ``file_count``,
     ``manifest_hash_before``, ``manifest_hash_after``.
+
+    Returns:
+        Summary dict with ``surfaces_walked``, ``file_count``, ``manifest_hash_before`` and
+        ``manifest_hash_after``.
+
     """
     _shipped, _baseline, surface_roots = _load_inputs(project_root)
     manifest_path = project_root / "data" / "distribution_baseline_manifest.json"

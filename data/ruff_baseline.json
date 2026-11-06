@@ -8078,18 +8078,8 @@
     },
     {
       "file": "src/gzkit/governance/brief_path_validity.py",
-      "rule": "DOC201",
-      "count": 7
-    },
-    {
-      "file": "src/gzkit/governance/brief_path_validity.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/brief_reconcile.py",
-      "rule": "DOC201",
-      "count": 18
     },
     {
       "file": "src/gzkit/governance/brief_reconcile.py",
@@ -8100,11 +8090,6 @@
       "file": "src/gzkit/governance/brief_reconcile.py",
       "rule": "PLR0914",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/brief_structure.py",
-      "rule": "DOC201",
-      "count": 5
     },
     {
       "file": "src/gzkit/governance/brief_structure.py",
@@ -8123,22 +8108,12 @@
     },
     {
       "file": "src/gzkit/governance/compose.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/governance/compose.py",
       "rule": "PLC0415",
       "count": 2
     },
     {
       "file": "src/gzkit/governance/compose.py",
       "rule": "TC003",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/deprecations.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
@@ -8155,11 +8130,6 @@
       "file": "src/gzkit/governance/deprecations.py",
       "rule": "TRY003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/events.py",
-      "rule": "DOC201",
-      "count": 4
     },
     {
       "file": "src/gzkit/governance/events.py",
@@ -8180,11 +8150,6 @@
       "file": "src/gzkit/governance/events.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/frontmatter_coherence.py",
-      "rule": "DOC201",
-      "count": 8
     },
     {
       "file": "src/gzkit/governance/frontmatter_coherence.py",
@@ -8223,23 +8188,8 @@
     },
     {
       "file": "src/gzkit/governance/invariants.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/governance/invariants.py",
       "rule": "PLC0415",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/obpi_park_backfill.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/governance/obpi_slug_rename.py",
-      "rule": "DOC201",
-      "count": 2
     },
     {
       "file": "src/gzkit/governance/obpi_slug_rename.py",
@@ -8259,11 +8209,6 @@
     {
       "file": "src/gzkit/governance/pipeline_procedure_render.py",
       "rule": "ANN001",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/governance/pipeline_procedure_render.py",
-      "rule": "DOC201",
       "count": 2
     },
     {
@@ -8292,16 +8237,6 @@
       "count": 1
     },
     {
-      "file": "src/gzkit/governance/req_coverage.py",
-      "rule": "DOC201",
-      "count": 3
-    },
-    {
-      "file": "src/gzkit/governance/stage4_evidence.py",
-      "rule": "DOC201",
-      "count": 9
-    },
-    {
       "file": "src/gzkit/governance/stage4_evidence.py",
       "rule": "DOC501",
       "count": 1
@@ -8318,27 +8253,12 @@
     },
     {
       "file": "src/gzkit/governance/stage4_packet.py",
-      "rule": "DOC201",
-      "count": 7
-    },
-    {
-      "file": "src/gzkit/governance/stage4_packet.py",
       "rule": "ISC004",
       "count": 1
     },
     {
       "file": "src/gzkit/governance/stage4_packet.py",
       "rule": "SLF001",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/status_vocab.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/__init__.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
@@ -8363,11 +8283,6 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/_qc_nc_composite.py",
-      "rule": "DOC201",
-      "count": 6
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/_qc_nc_composite.py",
       "rule": "FURB113",
       "count": 2
     },
@@ -8378,18 +8293,8 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/_qc_nc_corpus.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/_qc_nc_corpus.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/_qc_nc_entrypoints.py",
-      "rule": "DOC201",
-      "count": 35
     },
     {
       "file": "src/gzkit/governance/trust_audits/_qc_nc_entrypoints.py",
@@ -8408,33 +8313,13 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/_qc_nc_gate_enrollment.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/_qc_nc_gate_enrollment.py",
       "rule": "TC003",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/_qc_nc_hooks.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/_qc_nc_population.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
       "file": "src/gzkit/governance/trust_audits/_qc_nc_population.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/_qc_negative_controls.py",
-      "rule": "DOC201",
-      "count": 58
     },
     {
       "file": "src/gzkit/governance/trust_audits/_qc_negative_controls.py",
@@ -8463,23 +8348,8 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/absorption_duplicates.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/absorption_duplicates.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/adr_sections.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/adversarial_validation.py",
-      "rule": "DOC201",
-      "count": 2
     },
     {
       "file": "src/gzkit/governance/trust_audits/adversarial_validation.py",
@@ -8498,22 +8368,12 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/agents_md_map_conformance.py",
-      "rule": "DOC201",
-      "count": 7
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/agents_md_map_conformance.py",
       "rule": "PLR2004",
       "count": 2
     },
     {
       "file": "src/gzkit/governance/trust_audits/agents_md_map_conformance.py",
       "rule": "RET504",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/astral_discipline.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
@@ -8525,11 +8385,6 @@
       "file": "src/gzkit/governance/trust_audits/astral_discipline.py",
       "rule": "TC003",
       "count": 2
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/attestation_receipts.py",
-      "rule": "DOC201",
-      "count": 1
     },
     {
       "file": "src/gzkit/governance/trust_audits/attestation_receipts.py",
@@ -8548,18 +8403,8 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/authorship.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/authorship.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/brief_reconcile.py",
-      "rule": "DOC201",
-      "count": 2
     },
     {
       "file": "src/gzkit/governance/trust_audits/brief_reconcile.py",
@@ -8568,17 +8413,7 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/brief_size.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/brief_size.py",
       "rule": "TC003",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/brief_structure.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
@@ -8590,11 +8425,6 @@
       "file": "src/gzkit/governance/trust_audits/briefs.py",
       "rule": "ANN401",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/briefs.py",
-      "rule": "DOC201",
-      "count": 11
     },
     {
       "file": "src/gzkit/governance/trust_audits/briefs.py",
@@ -8613,11 +8443,6 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/bullet_retention.py",
-      "rule": "DOC201",
-      "count": 10
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/bullet_retention.py",
       "rule": "PLR2004",
       "count": 1
     },
@@ -8628,18 +8453,8 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/catalog.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/catalog.py",
       "rule": "TC003",
       "count": 2
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/catalog_edges.py",
-      "rule": "DOC201",
-      "count": 1
     },
     {
       "file": "src/gzkit/governance/trust_audits/catalog_edges.py",
@@ -8655,11 +8470,6 @@
       "file": "src/gzkit/governance/trust_audits/catalog_forward.py",
       "rule": "TC001",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/chores.py",
-      "rule": "DOC201",
-      "count": 10
     },
     {
       "file": "src/gzkit/governance/trust_audits/chores.py",
@@ -8680,11 +8490,6 @@
       "file": "src/gzkit/governance/trust_audits/cli.py",
       "rule": "ANN202",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/cli.py",
-      "rule": "DOC201",
-      "count": 11
     },
     {
       "file": "src/gzkit/governance/trust_audits/cli.py",
@@ -8710,11 +8515,6 @@
       "file": "src/gzkit/governance/trust_audits/closeout_proof.py",
       "rule": "ARG001",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/closeout_proof.py",
-      "rule": "DOC201",
-      "count": 6
     },
     {
       "file": "src/gzkit/governance/trust_audits/closeout_proof.py",
@@ -8768,11 +8568,6 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/code_quality.py",
-      "rule": "DOC201",
-      "count": 5
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/code_quality.py",
       "rule": "PERF401",
       "count": 2
     },
@@ -8780,11 +8575,6 @@
       "file": "src/gzkit/governance/trust_audits/code_quality.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/codex_delivery_witness.py",
-      "rule": "DOC201",
-      "count": 3
     },
     {
       "file": "src/gzkit/governance/trust_audits/codex_delivery_witness.py",
@@ -8805,11 +8595,6 @@
       "file": "src/gzkit/governance/trust_audits/complexity_ceiling.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/complexity_doctrine_links.py",
-      "rule": "DOC201",
-      "count": 5
     },
     {
       "file": "src/gzkit/governance/trust_audits/complexity_doctrine_links.py",
@@ -8842,29 +8627,9 @@
       "count": 1
     },
     {
-      "file": "src/gzkit/governance/trust_audits/complexity_thresholds.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/config_derivation.py",
-      "rule": "DOC201",
-      "count": 3
-    },
-    {
       "file": "src/gzkit/governance/trust_audits/config_derivation.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/config_registry.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/corpus_retirement_witness.py",
-      "rule": "DOC201",
-      "count": 2
     },
     {
       "file": "src/gzkit/governance/trust_audits/corpus_retirement_witness.py",
@@ -8878,11 +8643,6 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/cross_platform.py",
-      "rule": "DOC201",
-      "count": 10
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/cross_platform.py",
       "rule": "PLR2004",
       "count": 1
     },
@@ -8893,18 +8653,8 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/deprecated_verb_prescription.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/deprecated_verb_prescription.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/distribution.py",
-      "rule": "DOC201",
-      "count": 7
     },
     {
       "file": "src/gzkit/governance/trust_audits/distribution.py",
@@ -8943,11 +8693,6 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/evaluation_justify_binding.py",
-      "rule": "DOC201",
-      "count": 4
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/evaluation_justify_binding.py",
       "rule": "ISC004",
       "count": 1
     },
@@ -8973,11 +8718,6 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/events.py",
-      "rule": "DOC201",
-      "count": 8
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/events.py",
       "rule": "PERF401",
       "count": 5
     },
@@ -8997,29 +8737,9 @@
       "count": 1
     },
     {
-      "file": "src/gzkit/governance/trust_audits/exemption_controls.py",
-      "rule": "DOC201",
-      "count": 3
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/fidelity_presence.py",
-      "rule": "DOC201",
-      "count": 3
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/gate_callers.py",
-      "rule": "DOC201",
-      "count": 5
-    },
-    {
       "file": "src/gzkit/governance/trust_audits/gate_callers.py",
       "rule": "PERF401",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/gate_enrollment.py",
-      "rule": "DOC201",
-      "count": 3
     },
     {
       "file": "src/gzkit/governance/trust_audits/gate_enrollment.py",
@@ -9038,11 +8758,6 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/gate_population.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/gate_population.py",
       "rule": "SLF001",
       "count": 3
     },
@@ -9053,22 +8768,12 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/gate_population_claims.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/gate_population_claims.py",
       "rule": "TC003",
       "count": 1
     },
     {
       "file": "src/gzkit/governance/trust_audits/how_coverage.py",
       "rule": "PERF401",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/id_seam.py",
-      "rule": "DOC201",
       "count": 2
     },
     {
@@ -9087,16 +8792,6 @@
       "count": 2
     },
     {
-      "file": "src/gzkit/governance/trust_audits/insights.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/instructions_files_budget.py",
-      "rule": "DOC201",
-      "count": 3
-    },
-    {
       "file": "src/gzkit/governance/trust_audits/instructions_files_budget.py",
       "rule": "PLR2004",
       "count": 1
@@ -9113,11 +8808,6 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/intrinsic_attestation.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/intrinsic_attestation.py",
       "rule": "PLW2901",
       "count": 1
     },
@@ -9128,17 +8818,7 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/invariant_coherence.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/invariant_coherence.py",
       "rule": "TC003",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/invariant_witness.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
@@ -9153,28 +8833,13 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/kind_invariance.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/kind_invariance.py",
       "rule": "TC003",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/lifecycle_pointers.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
       "file": "src/gzkit/governance/trust_audits/lifecycle_pointers.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/lock_exchange_coupling.py",
-      "rule": "DOC201",
-      "count": 4
     },
     {
       "file": "src/gzkit/governance/trust_audits/lock_exchange_coupling.py",
@@ -9188,11 +8853,6 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/models.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/models.py",
       "rule": "PERF401",
       "count": 1
     },
@@ -9203,18 +8863,8 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/mx_hardening.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/mx_hardening.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/okf_conformance.py",
-      "rule": "DOC201",
-      "count": 4
     },
     {
       "file": "src/gzkit/governance/trust_audits/okf_conformance.py",
@@ -9238,11 +8888,6 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/orientation.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/orientation.py",
       "rule": "PERF401",
       "count": 1
     },
@@ -9282,16 +8927,6 @@
       "count": 1
     },
     {
-      "file": "src/gzkit/governance/trust_audits/persona_witness.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/pointer_integrity.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
       "file": "src/gzkit/governance/trust_audits/pointer_integrity.py",
       "rule": "PLR0913",
       "count": 2
@@ -9304,11 +8939,6 @@
     {
       "file": "src/gzkit/governance/trust_audits/pointer_integrity_claims.py",
       "rule": "FBT001",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/population_controls.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
@@ -9328,11 +8958,6 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/qc_binding.py",
-      "rule": "DOC201",
-      "count": 4
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/qc_binding.py",
       "rule": "TC001",
       "count": 1
     },
@@ -9340,11 +8965,6 @@
       "file": "src/gzkit/governance/trust_audits/qc_binding.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/receipt_shape.py",
-      "rule": "DOC201",
-      "count": 7
     },
     {
       "file": "src/gzkit/governance/trust_audits/receipt_shape.py",
@@ -9368,11 +8988,6 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/reconcile.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/reconcile.py",
       "rule": "FURB162",
       "count": 1
     },
@@ -9380,11 +8995,6 @@
       "file": "src/gzkit/governance/trust_audits/reconcile.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/red_parity.py",
-      "rule": "DOC201",
-      "count": 4
     },
     {
       "file": "src/gzkit/governance/trust_audits/red_parity.py",
@@ -9398,11 +9008,6 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/release.py",
-      "rule": "DOC201",
-      "count": 20
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/release.py",
       "rule": "PLR2004",
       "count": 4
     },
@@ -9413,28 +9018,13 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/rendition_floor_coherence.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/rendition_floor_coherence.py",
       "rule": "TC003",
       "count": 1
     },
     {
       "file": "src/gzkit/governance/trust_audits/rendition_freshness.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/rendition_freshness.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/rendition_lineage.py",
-      "rule": "DOC201",
-      "count": 10
     },
     {
       "file": "src/gzkit/governance/trust_audits/rendition_lineage.py",
@@ -9458,11 +9048,6 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/router_tables.py",
-      "rule": "DOC201",
-      "count": 4
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/router_tables.py",
       "rule": "PERF401",
       "count": 1
     },
@@ -9470,11 +9055,6 @@
       "file": "src/gzkit/governance/trust_audits/router_tables.py",
       "rule": "PLR6201",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/sensitivity.py",
-      "rule": "DOC201",
-      "count": 6
     },
     {
       "file": "src/gzkit/governance/trust_audits/sensitivity.py",
@@ -9502,24 +9082,9 @@
       "count": 1
     },
     {
-      "file": "src/gzkit/governance/trust_audits/session_green_gate.py",
-      "rule": "DOC201",
-      "count": 7
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/setpoint_coherence.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
       "file": "src/gzkit/governance/trust_audits/setpoint_coherence.py",
       "rule": "PERF401",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/status_writer_coverage.py",
-      "rule": "DOC201",
-      "count": 2
     },
     {
       "file": "src/gzkit/governance/trust_audits/status_writer_coverage.py",
@@ -9538,18 +9103,8 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/surface_delivery_witness.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/surface_delivery_witness.py",
       "rule": "PERF401",
       "count": 2
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/surface_weight.py",
-      "rule": "DOC201",
-      "count": 3
     },
     {
       "file": "src/gzkit/governance/trust_audits/surface_weight.py",
@@ -9573,11 +9128,6 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/taxonomy.py",
-      "rule": "DOC201",
-      "count": 13
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/taxonomy.py",
       "rule": "PLR6201",
       "count": 1
     },
@@ -9590,11 +9140,6 @@
       "file": "src/gzkit/governance/trust_audits/taxonomy.py",
       "rule": "RUF002",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/theater_signature_scan.py",
-      "rule": "DOC201",
-      "count": 8
     },
     {
       "file": "src/gzkit/governance/trust_audits/theater_signature_scan.py",
@@ -9618,11 +9163,6 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/transcribed_counts.py",
-      "rule": "DOC201",
-      "count": 3
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/transcribed_counts.py",
       "rule": "ERA001",
       "count": 1
     },
@@ -9633,17 +9173,7 @@
     },
     {
       "file": "src/gzkit/governance/trust_audits/vendor_manifest.py",
-      "rule": "DOC201",
-      "count": 4
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/vendor_manifest.py",
       "rule": "PLC0415",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/waiver_identity_claims.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
@@ -9655,11 +9185,6 @@
       "file": "src/gzkit/governance/trust_audits/waiver_identity_claims.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/waiver_ratchet.py",
-      "rule": "DOC201",
-      "count": 2
     },
     {
       "file": "src/gzkit/governance/trust_audits/waiver_ratchet.py",
@@ -9679,11 +9204,6 @@
     {
       "file": "src/gzkit/governance/trust_audits/waiver_ratchet.py",
       "rule": "PLR0914",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/trust_audits/wall_clock_fixtures.py",
-      "rule": "DOC201",
       "count": 1
     },
     {

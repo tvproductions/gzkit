@@ -49,6 +49,10 @@ def _root_identity_error(artifact: str, key: str, declared: list[str]) -> Valida
     Reports the declared set rather than only its size: a reader who is told
     "declares 1 vendor" learns nothing about WHICH one, and which one is the
     whole invariant.
+
+    Returns:
+        The ``vendor_manifest`` finding naming the declared vendors.
+
     """
     return ValidationError(
         type="vendor_manifest",
@@ -68,6 +72,10 @@ def _missing_setpoint_error(artifact: str) -> ValidationError:
     Coupled to the ROUTE rather than demanded unconditionally: a partial fixture
     that routes no root contract owes no setpoint, exactly as it owes no
     ``_FALLBACK_ROUTES`` agreement.
+
+    Returns:
+        The ``vendor_manifest`` finding for the missing setpoint.
+
     """
     return ValidationError(
         type="vendor_manifest",
@@ -100,6 +108,12 @@ def _root_contract_errors(
       copy of the routing authority kept in agreement by a comment; that is the same
       two-copies-one-binds shape that let the root doctrine drift for three artifacts,
       so it is witnessed rather than trusted.
+
+    Returns:
+        Findings for per-vendor root-contract routing, a temperature-identity breach, a routed
+        AgentContract with no setpoint, and the manifest diverging from the fallback tables (that
+        agreement check is skipped when the fallback is unavailable).
+
     """
     from gzkit.content.vendors import _FALLBACK_ROUTES, _FALLBACK_SURFACE_CONTENT_TYPES
 
@@ -194,6 +208,11 @@ def validate_vendor_manifest(project_root: Path) -> list[ValidationError]:
 
     Returns an empty list on a clean manifest; otherwise one
     :class:`ValidationError` per finding.
+
+    Returns:
+        Schema, root-contract and ``content_type_routes`` coverage findings; a missing file or
+        invalid JSON returns that single finding alone.
+
     """
     errors: list[ValidationError] = []
     manifest_path = project_root / _MANIFEST_REL

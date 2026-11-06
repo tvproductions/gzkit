@@ -89,6 +89,10 @@ def _registry_declarations() -> dict[str, str | None]:
     Registration is import-time, so the production registrations are ensured
     first — reading an unpopulated registry would report every claim as absent
     and turn this audit into noise on a clean tree.
+
+    Returns:
+        Mapping of claim id to its ``exempts`` value (None when the claim declares none).
+
     """
     from gzkit.enforcement import (  # noqa: PLC0415  (avoids an import cycle)
         _ensure_production_claims_registered,
@@ -113,6 +117,11 @@ def _registry_gate_hints() -> dict[str, str]:
     is empty the entrypoint either IS the gate (co-located, e.g. the resume-gate
     controls) or drives a subprocess, and ``source_fn`` is the honest place to
     send the reader in both cases.
+
+    Returns:
+        Mapping of claim id to its comma-joined gate targets, or its source function when it has
+        none.
+
     """
     from gzkit.enforcement import (  # noqa: PLC0415  (avoids an import cycle)
         _ensure_production_claims_registered,
@@ -146,6 +155,11 @@ def audit_exemption_controls(
     4. an accepted claim that no longer exists — a pointer to a deleted claim;
     5. an empty registry — with no population there is nothing to inventory,
        and a green run would be the silence this gate exists to break.
+
+    Returns:
+        Findings for undeclared unaccepted claims and stale acceptances, or a single error when the
+        accepted list fails to load or the registry is empty.
+
     """
     accepted, load_error = _load_accepted(project_root)
     if load_error is not None:

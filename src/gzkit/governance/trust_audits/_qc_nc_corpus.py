@@ -25,6 +25,10 @@ def build_retirement_witness() -> Path:
     DIFFERENT id. A presence check passes this fixture; the subject-bound gate
     must not (GHI #885). That asymmetry is what makes the control genuine and
     un-forced rather than a fixture the validator cannot help but flag.
+
+    Returns:
+        Path of the fixture project root carrying the unwitnessed tombstone.
+
     """
     root = create_fixture_tempdir(prefix="gzkit-qc-nc-corpus-retirement-")
     base = {

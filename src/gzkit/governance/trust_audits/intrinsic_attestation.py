@@ -32,6 +32,11 @@ def validate_intrinsic_attestation(project_root: Path) -> list[ValidationError]:
     ``intrinsic-complexity-attestation`` event for required-field presence,
     non-empty string values, a valid ``crossing_band`` enum, and a numeric
     ``crossing_value``.
+
+    Returns:
+        One finding per malformed intrinsic-complexity-attestation event; empty when the ledger is
+        absent.
+
     """
     ledger_path = project_root / ".gzkit" / "ledger.jsonl"
     if not ledger_path.exists():

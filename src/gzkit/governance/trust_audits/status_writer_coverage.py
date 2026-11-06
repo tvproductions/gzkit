@@ -87,6 +87,10 @@ def _function_spans(tree: ast.Module) -> dict[str, ast.FunctionDef | ast.AsyncFu
     bare names collide. Two classes with a same-named method would let the
     monitor consultation in one mask a bypass in the other, which is a hole in
     a guard whose whole purpose is closing holes.
+
+    Returns:
+        Mapping of each function's dotted qualified name to its node.
+
     """
     spans: dict[str, ast.FunctionDef | ast.AsyncFunctionDef] = {}
 
@@ -129,6 +133,11 @@ def _touches_status_key(call: ast.Call) -> bool:
        cannot prove it does not — so it must consult the monitor. Assuming the
        benign reading of an unprovable case is how a convention-only guard
        decays in the first place.
+
+    Returns:
+        True when an argument is the ``"status"`` constant or a dict keyed by it, or a
+        ``rewrite_governed_keys_in_place`` call takes a non-literal mapping; False otherwise.
+
     """
     for arg in [*call.args, *(kw.value for kw in call.keywords)]:
         if isinstance(arg, ast.Constant) and arg.value == "status":

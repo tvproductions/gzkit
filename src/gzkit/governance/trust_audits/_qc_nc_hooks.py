@@ -31,6 +31,11 @@ def hook_type_population() -> list[str]:
     Reads the project the floor runs in (``gz check`` runs at the project root), so
     a type added to ``default_install_hook_types`` joins the population the moment
     it is declared — the growth the witness failed to follow.
+
+    Returns:
+        The declared hook types (or the undeclared default pair) followed by ``pre-push``,
+        de-duplicated in order.
+
     """
     config = Path.cwd() / _CONFIG_NAME
     # A project with no config still owes the pair the gate requires; its absence is

@@ -227,6 +227,11 @@ def _identities(collection: object, spec: Mapping[str, object]) -> Counter[str] 
 
     A multiset: two entries may legitimately share an identity, and a second copy of one is
     still growth.
+
+    Returns:
+        Counter of the identities the spec kind's reader yields, or None when that kind has no
+        reader or the reader returns None.
+
     """
     reader = _IDENTITY_READERS.get(str(spec.get("kind")))
     return reader(collection, spec) if reader else None
@@ -361,6 +366,11 @@ def audit_waiver_ratchet(
     exits 3). Also flags an on-disk waiver/grandfather data file that is not in
     the registry (the silent-bypass). ``today`` overrides the cutover clock for
     deterministic tests.
+
+    Returns:
+        Findings for registered waiver surfaces lacking or violating their honesty mechanism, or a
+        single error when the registry is missing or unparseable.
+
     """
     clock = today if today is not None else date.today()
     registry_path = project_root / _REGISTRY_REL

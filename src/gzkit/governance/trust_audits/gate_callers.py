@@ -90,6 +90,11 @@ def _caller_surfaces(project_root: Path, *, include_gz_check: bool) -> list[Path
     ``include_gz_check`` adds ``quality.py``. It is False for validate scopes
     (that half is delegated to ``_MEMBERSHIP_REL``) and True for chores, whose
     only wiring point is a slug reference in ``quality.py``.
+
+    Returns:
+        The existing surface files: ``quality.py`` when requested, the pre-commit config and the
+        workflow YAML files.
+
     """
     surfaces = [project_root / _PRECOMMIT_REL]
     if include_gz_check:
@@ -117,6 +122,11 @@ def _cited_scope_flags(texts: list[tuple[str, str]]) -> dict[str, list[str]]:
 
     Only lines mentioning ``gz validate`` are read, so an unrelated ``--flag``
     elsewhere in a workflow cannot forge a caller.
+
+    Returns:
+        Mapping of scope stem (underscored) to the names of the surfaces citing it on ``gz
+        validate`` lines.
+
     """
     cited: dict[str, list[str]] = {}
     for name, body in texts:
@@ -146,6 +156,11 @@ def _gz_check_uncalled_scopes(project_root: Path) -> list[str] | None:
     audit turns into a fail-closed finding: with no population there is nothing
     to inventory, and reporting green would be the silence this gate exists to
     break.
+
+    Returns:
+        The ``out_of_check`` scope names, or None when the membership file is unreadable or carries
+        no such list.
+
     """
     try:
         payload = json.loads((project_root / _MEMBERSHIP_REL).read_text(encoding="utf-8"))
@@ -176,6 +191,11 @@ def uncalled_gates(
 
     ``gz_check_uncalled_scopes`` is injected for tests; ``None`` reads
     ``data/check_scope_membership.json``.
+
+    Returns:
+        One ``GateStatus`` per candidate validate scope and chore, with whether it has a caller and
+        the citing surfaces.
+
     """
     scopes = (
         _gz_check_uncalled_scopes(project_root) or []
@@ -238,6 +258,11 @@ def audit_gate_callers(
     4. the derived-from population itself being unreadable — with no population
        there is nothing to inventory, and a green run would be the silence this
        gate exists to break.
+
+    Returns:
+        Findings for uncalled unaccepted gates and stale acceptances, or a single load or membership
+        error.
+
     """
     accepted, load_error = _load_accepted(project_root)
     if load_error is not None:

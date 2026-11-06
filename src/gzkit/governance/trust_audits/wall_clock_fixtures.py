@@ -92,6 +92,11 @@ def audit_wall_clock_fixtures(
     *now* is injectable for the same reason this audit exists: an audit that
     read the wall clock internally would itself change verdict with the
     calendar, which is the defect it reports.
+
+    Returns:
+        One finding per fixture pinned to a decaying absolute timestamp; empty when ``tests/`` is
+        absent.
+
     """
     when = now or datetime.now(UTC)
     tests_dir = project_root / "tests"

@@ -63,6 +63,10 @@ def _pattern(entry: DeprecatedVerb) -> re.Pattern[str]:
 
     The trailing boundary keeps ``gz gates`` from matching a longer live verb
     that merely starts with the same characters.
+
+    Returns:
+        A compiled pattern matching ``gz`` followed by the verb on word boundaries.
+
     """
     return re.compile(rf"\bgz\s+{re.escape(entry.verb)}\b")
 

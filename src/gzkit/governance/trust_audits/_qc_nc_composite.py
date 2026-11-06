@@ -68,6 +68,10 @@ def build_bullet_retention() -> Path:
 
     Only the scorecard exists, so the other three sub-validators return no
     findings and this claim isolates bullet-retention.
+
+    Returns:
+        Path of the fixture project root holding only the scorecard bullet.
+
     """
     root = _root("bullet-retention")
     _put(
@@ -89,6 +93,10 @@ def build_surface_weight() -> Path:
     turned against itself by a magic number. ``tests/governance/test_surface_weight.py``
     had already taken the derived approach for the same reason; this fixture is now
     consistent with it and survives the next recalibration by construction.
+
+    Returns:
+        Path of the fixture project root whose AGENTS.md sits in the red band.
+
     """
     root = _root("surface-weight")
     _put(root / "data" / "surface_weight_floor.json", json.dumps({"lines": 0}) + "\n")
@@ -106,6 +114,10 @@ def build_task_envelope_subdivision() -> Path:
 
     No brief on disk, so no ``req_atomic`` exemption applies. ``obpi_receipt_emitted``
     is outside the worklog set, so signature (a) does not also fire.
+
+    Returns:
+        Path of the fixture project root whose ledger closes the OBPI with only seq=01 TASKs.
+
     """
     root = _root("task-envelope-subdivision")
     _put_jsonl(
@@ -155,6 +167,10 @@ def build_task_envelope_obpi_divergence() -> Path:
     The two spellings name different lineages (``-01`` vs ``-02``), so the
     same-lineage grandfather cannot apply regardless of the run date — a
     date-sensitive fixture would silently stop violating later.
+
+    Returns:
+        Path of the fixture project root whose ledger spells one task's OBPI two ways.
+
     """
     root = _root("task-envelope-obpi-divergence")
     _put_jsonl(
@@ -211,6 +227,10 @@ def build_waiver_dated_cutover() -> Path:
 
     2099 keeps the violation in the future for the lifetime of the codebase; a
     near date would quietly stop violating once it passed.
+
+    Returns:
+        Path of the fixture project root carrying the unclosed dated cutover.
+
     """
     root = _root("waiver-dated-cutover")
     _registry(
@@ -252,6 +272,10 @@ def build_handoff_populated_sections() -> Path:
     Frontmatter mirrors the parent fixture (proven to satisfy HandoffFrontmatter
     — the parent fails only on missing sections) and the timestamp is post-cutover
     so ``run_handoff_document_audit`` does not grandfather it.
+
+    Returns:
+        Path of the fixture project root carrying the handoff with one empty required section.
+
     """
     root = _root("handoff-populated-sections")
     sections = (

@@ -38,6 +38,11 @@ def install_command(hook_types: list[str]) -> str:
     Explicit ``--hook-type`` flags rather than a bare install: without a
     ``default_install_hook_types`` list, pre-commit installs only ``pre-commit``,
     leaving the gate's own ``pre-push`` hook undelivered.
+
+    Returns:
+        ``uv run pre-commit install`` followed by one ``--hook-type`` flag per entry of
+        *hook_types*.
+
     """
     return "uv run pre-commit install " + " ".join(f"--hook-type {t}" for t in hook_types)
 
@@ -58,6 +63,11 @@ def declared_hook_types(project_root: Path) -> list[str]:
     installer holding its own list is the producer half of GHI #851 — it
     under-installs exactly what the witness would then under-check. An unreadable
     config reads as pre-commit's default; the declaration arm reports it.
+
+    Returns:
+        The hook types the config declares plus the gate's own, pre-commit's default when the config
+        is unreadable.
+
     """
     return _declared_hook_types(_read_config(project_root))
 
@@ -119,6 +129,11 @@ def configured_hooks_path(project_root: Path) -> Path | None:
     ``gz init``'s activation step (which must not spend a subprocess on a
     ``pre-commit install`` that git's own refusal will reject). A second parser
     would be a place for the two to drift.
+
+    Returns:
+        The ``core.hooksPath`` value, resolved against *project_root* when relative; None when
+        ``.git/config`` is absent, unreadable or sets no override.
+
     """
     config_path = project_root / ".git" / "config"
     if not config_path.is_file():
@@ -141,6 +156,10 @@ def _effective_hooks_dir(project_root: Path) -> Path | None:
     Honors ``core.hooksPath`` rather than assuming ``.git/hooks``: a redirect is
     one of the ways the gate goes undelivered, so assuming the default location
     would blind the check to the exact failure it exists to catch.
+
+    Returns:
+        The configured hooks path or ``.git/hooks``; None when ``.git`` is not a directory.
+
     """
     git_dir = project_root / ".git"
     if not git_dir.is_dir():
@@ -172,6 +191,11 @@ def _delivery_errors(project_root: Path, hook_types: list[str]) -> list[Validati
     (GHI #851): the witness read ``pre-push`` alone while four types were
     declared, so a clone with no ``pre-commit`` hook reported green. A missing
     recording hook is emitted as an advisory rather than returned.
+
+    Returns:
+        One finding per declared hook type missing from the hooks directory; empty outside a git
+        worktree.
+
     """
     hooks_dir = _effective_hooks_dir(project_root)
     if hooks_dir is None:
@@ -216,6 +240,11 @@ def _runs_gz_check(entry: str) -> bool:
     Token-adjacency match: ``gz`` immediately followed by the bare ``check``
     token. Rejects check-prefixed sibling verbs (e.g. ``gz check-config-paths``)
     that an unbounded substring match would false-pass (#600).
+
+    Returns:
+        True when some ``gz`` token is immediately followed by a bare ``check`` token; False
+        otherwise.
+
     """
     tokens = entry.split()
     return any(tokens[i] == "gz" and tokens[i + 1] == "check" for i in range(len(tokens) - 1))
@@ -234,6 +263,12 @@ def audit_session_green_gate(
     opt-in because a fresh CI checkout legitimately has no hooks installed — CI
     *is* the gate there, it does not push — so making it unconditional would
     fail every CI run. It is enabled on the surfaces that precede a push.
+
+    Returns:
+        A single finding when the config is missing, unreadable, malformed or declares no pre-push
+        ``gz check`` hook; otherwise the delivery findings when *check_delivery* is set, else an
+        empty list.
+
     """
     config_path = project_root / ".pre-commit-config.yaml"
     if not config_path.exists():

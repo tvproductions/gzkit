@@ -67,6 +67,10 @@ def _validate_waiver_entry_added_under(
     """Check if waiver entry's added_under matches required OBPI.
 
     Returns None if valid, ValidationError if invalid.
+
+    Returns:
+        A finding when ``added_under`` is not the required OBPI; None otherwise.
+
     """
     if entry.added_under != _REQUIRED_ADDED_UNDER:
         return ValidationError(
@@ -89,6 +93,11 @@ def _load_and_validate_waivers(
     Returns (None, []) when the waiver file is absent.
     Returns (ids, errors) when present; errors include both Pydantic-shape
     failures and any entry whose added_under != OBPI-0.0.36-04-historical-self-close-waivers.
+
+    Returns:
+        ``(waiver ids, errors)``: ``(None, [])`` when the waiver file is absent, an empty id set
+        with errors when it cannot be loaded, otherwise the ids with any per-entry errors.
+
     """
     waiver_path = project_root / _WAIVER_REL
     if not waiver_path.exists():
@@ -137,6 +146,10 @@ def _check_optional_attestation(
     """Check if attestation_requirement is deprecated 'optional'.
 
     Returns ValidationError if deprecated, None otherwise.
+
+    Returns:
+        A finding when the requirement is ``"optional"``; None otherwise.
+
     """
     if attestation_req == "optional":
         return ValidationError(
@@ -158,6 +171,10 @@ def _check_unprefixed_completion(
     """Check if obpi_completion lacks 'attested_' prefix.
 
     Returns ValidationError if deprecated, None otherwise.
+
+    Returns:
+        A finding when ``obpi_completion`` is set without the ``attested_`` prefix; None otherwise.
+
     """
     if obpi_completion is not None and not obpi_completion.startswith("attested_"):
         return ValidationError(
@@ -177,6 +194,10 @@ def _check_agent_attestor(receipt_id: str, attestor: str) -> ValidationError | N
     """Check if attestor matches forbidden ^agent: pattern.
 
     Returns ValidationError if forbidden, None otherwise.
+
+    Returns:
+        A finding when the attestor starts with ``agent:`` (case-insensitive); None otherwise.
+
     """
     if attestor.lower().startswith("agent:"):
         return ValidationError(
@@ -226,6 +247,11 @@ def _process_receipt_event(
 
     Returns errors (may be empty); logs warnings as side effect for pre-cutoff
     unwaivered receipts with deprecated shapes.
+
+    Returns:
+        The shape findings for a post-cutoff event; empty for pre-cutoff events (warned, not failed)
+        and events with an unparseable timestamp.
+
     """
     try:
         ts = event.get("ts", "")
@@ -279,6 +305,11 @@ def audit_receipt_shape(project_root: Path) -> list[ValidationError]:
 
     Validates all waiver entries have added_under == OBPI-0.0.36-04-historical-self-close-waivers.
     Returns an empty list if the ADR or ledger cannot be located.
+
+    Returns:
+        Shape findings across the ledger's receipt events, waiver errors included; empty when no
+        cutoff is configured or the ledger is absent.
+
     """
     cutoff_date = _parse_cutoff_date(project_root)
     if cutoff_date is None:

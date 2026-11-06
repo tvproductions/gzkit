@@ -82,6 +82,11 @@ def load_ceilings(
     Absence means the project grandfathers nothing. An unusable file admits
     nothing either, and says so: a ceiling file that cannot be read must never
     widen what passes.
+
+    Returns:
+        ``(ceilings, [])`` when usable, ``({}, [])`` when the file is absent, or ``({}, [finding])``
+        when it cannot be loaded or is malformed.
+
     """
     path = registry_path(project_root, _GRANDFATHER)
     if not path.is_file():

@@ -55,6 +55,11 @@ def _disposition_of(events: Sequence[Mapping[str, object]], obpi_id: str) -> str
     A disposed OBPI must not be renamed: the census already excludes it, so the
     rename would be a Layer-2 write with no witness behind it, and the id it
     retires under is part of the sealed record.
+
+    Returns:
+        The terminal or completion event kind, ``"obpi_parked"`` when parked, or None when the OBPI
+        is live.
+
     """
     for event in events:
         if str(event.get("id", "")) != obpi_id:
@@ -74,6 +79,10 @@ def _refusals(
 
     Fail-closed and complete: all refusals are reported at once rather than one
     per run, so an operator fixing an invocation sees the whole set.
+
+    Returns:
+        One message per failed precondition; empty when the rename may proceed.
+
     """
     problems: list[str] = []
     known = {str(event.get("id", "")) for event in events}

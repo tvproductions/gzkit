@@ -190,6 +190,10 @@ def _block_transcripts(lines: list[str]) -> list[Transcript]:
     (GHI #965 — splitting at newlines would read a quoted program's own body as
     claimed output and report every interior line as fabricated). Everything from
     there to the next prompt is what the packet says came back.
+
+    Returns:
+        One ``Transcript`` (command plus claimed output lines) per command in the block.
+
     """
     transcripts: list[Transcript] = []
     index = 0
@@ -262,6 +266,10 @@ def _run(command: str, cwd: Path, env: dict[str, str] | None = None) -> tuple[in
 
     *cwd* is the disposable copy `verify_packet` builds, never the live checkout
     (GHI #1157).
+
+    Returns:
+        ``(exit status, combined stdout and stderr, timed_out)``; ``(-1, "", True)`` on timeout.
+
     """
     args, use_shell = replay_invocation(command)
     try:
@@ -289,6 +297,11 @@ def _last_top_level_segment(command: str) -> tuple[str, str | None]:
     — a separator inside a quoted program, belonging to that program and not to the
     shell. A substring match would read those as shell suffixes and block the corpus
     this module exists to protect.
+
+    Returns:
+        ``(final segment, separator)``, or ``(command, None)`` when no top-level ``;`` or ``||``
+        occurs.
+
     """
     depth = 0
     quote: str | None = None
@@ -339,6 +352,11 @@ def _status_suppressing_suffix(command: str) -> str | None:
     verdict idiom (``cmd && echo FAIL || echo PASS``) also ends at 0, but its
     trailing segment prints which branch ran and that line must reproduce under the
     fabrication guard — it discloses the outcome instead of erasing it.
+
+    Returns:
+        The separator and no-op segment (for example ``|| true``), or None when the last segment
+        suppresses nothing.
+
     """
     segment, separator = _last_top_level_segment(command)
     if separator is None:
@@ -362,6 +380,10 @@ def _omitted_failure_lines(claimed: list[str], output: str) -> list[str]:
 
     An elision cannot satisfy this: ``...`` exists for output that cannot reproduce,
     never for output the author would rather not show.
+
+    Returns:
+        The non-zero status lines in *output* that no claimed line shows.
+
     """
     shown = [line.strip() for line in claimed if line.strip()]
     omitted: list[str] = []
@@ -475,6 +497,11 @@ def _replay(
     Returns the results and, when the copy could not be built, the reason every
     transcript was refused. The materializer is read off the module so the one
     seam both replay sites share is the one a test or a fix patches.
+
+    Returns:
+        ``(results, refusal)``: verified results and None, every transcript marked not run with the
+        reason when no copy can be made, or ``([], None)`` for no transcripts.
+
     """
     if not transcripts:
         return [], None
@@ -497,6 +524,11 @@ def verify_packet(project_root: Path, packet_path: Path) -> PacketVerification:
 
     The replay runs in a disposable copy of *project_root*'s working tree, never in
     *project_root* itself (GHI #1157).
+
+    Returns:
+        ``PacketVerification`` with the transcript results, citations, blockers and ``verified``
+        True only when there are no blockers.
+
     """
     text = packet_path.read_text(encoding="utf-8")
     transcripts = extract_transcripts(text)

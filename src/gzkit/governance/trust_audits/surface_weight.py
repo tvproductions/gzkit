@@ -140,6 +140,10 @@ def recalibrate_surface_weight(
     an unattested band change is the silent recalibration the anti-pattern names,
     and a blank reason makes the ledger record unreadable as evidence later.
 
+    Returns:
+        ``RecalibrationOutcome`` with the new and previous floor lines and the band ceilings it
+        witnessed.
+
     Raises:
         ValueError: if ``attestor`` or ``reason`` is empty or whitespace-only.
             Neither surface is mutated.
@@ -267,6 +271,11 @@ def _newest_recalibration(project_root: Path) -> tuple[datetime, dict] | None:
 
     ``None`` means bootstrap: no recalibration has ever been witnessed, so there
     is no baseline for either consumer to measure against.
+
+    Returns:
+        ``(timestamp, event)`` of the newest recalibration, or None when the ledger is absent,
+        unreadable or holds none.
+
     """
     ledger_path = project_root / _LEDGER_PATH
     if not ledger_path.exists():
@@ -315,6 +324,11 @@ def _check_band_coherence(project_root: Path) -> list[ValidationError]:
     Only the NEWEST witness binds. A superseded band generation is history, not
     drift; reading "any event" would redden every repo that has recalibrated
     twice.
+
+    Returns:
+        A single finding when the band constants differ from the newest witnessed values; empty when
+        there is no witness, it is bandless, or it agrees.
+
     """
     newest = _newest_recalibration(project_root)
     if newest is None:

@@ -64,6 +64,11 @@ def _is_void_witness(event: dict) -> bool:
     corpus still satisfies a REQ, but the absence does NOT prove a HEAD run: `gz arb
     red` accepted an explicit ``--base`` before GHI #849. Such an ``error`` is
     therefore never conclusive enough to displace a ``none`` (GHI #1159).
+
+    Returns:
+        True for a ``not-applicable`` event or an ``error`` on a reconstructed base; False
+        otherwise.
+
     """
     failure_class = event.get("failure_class")
     if failure_class == "not-applicable":
@@ -79,6 +84,11 @@ def _is_conclusive_red(event: dict) -> bool:
     An ``error`` is conclusive only on an explicit ``working-tree`` base, where the
     withheld hunk is the only difference; a provenance-less one may have run on an
     older ``--base`` and could be unrelated drift.
+
+    Returns:
+        True for an ``assertion`` failure or an ``error`` on an explicit working-tree base; False
+        otherwise.
+
     """
     failure_class = event.get("failure_class")
     if failure_class == "assertion":
@@ -125,6 +135,10 @@ def _proof_witnesses_falsifiability(event: dict) -> str | None:
     the production hunks have landed, because a reconstructed-base ``error`` is
     void (GHI #849). A proof with no control (a SUPPORT or FENCE resolver) never
     made a test fail, so it witnesses nothing.
+
+    Returns:
+        The obligation id of a valid proof record carrying mutation controls; None otherwise.
+
     """
     if event.get("record_type") != "proof":
         return None
@@ -182,6 +196,10 @@ def _behavior_reqs(brief_path: Path) -> list[str]:
     An untagged REQ defaults to BEHAVIOR, matching the fail-closed default in
     ``.gzkit/rules/tests.md`` § REQ Scope Discipline. Relying on
     ``parse_brief_req_kinds`` alone would silently drop every legacy untagged REQ.
+
+    Returns:
+        The brief's REQ ids whose kind is BEHAVIOR or untagged.
+
     """
     from gzkit.governance.req_coverage import parse_brief_req_kinds, parse_brief_reqs
 

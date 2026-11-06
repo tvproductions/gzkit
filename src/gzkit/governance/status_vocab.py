@@ -82,6 +82,10 @@ def canonicalize_status(term: str) -> str | None:
     Case-insensitive lookup. Returns ``None`` for an empty input or a term
     not present in the mapping — consumers MUST block on ``None`` with a
     clear error naming the unmapped term (REQ-0.0.16-05-06).
+
+    Returns:
+        The canonical ledger term, or None for an empty or unmapped term.
+
     """
     if not term:
         return None

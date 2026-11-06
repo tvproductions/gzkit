@@ -80,6 +80,10 @@ def _has_no_ty_code(comment: str) -> bool:
     See https://docs.astral.sh/ty/suppression/ — *"codes without a `ty:` prefix
     are ignored, which makes it possible to combine suppressions for multiple
     type checkers in a single comment."*
+
+    Returns:
+        True when some bracketed directive in *comment* names no ``ty:`` code; False otherwise.
+
     """
     return any(
         not any(code.strip().startswith("ty:") for code in body.split(","))
@@ -100,6 +104,10 @@ def audit_type_ignores(project_root: Path) -> list[ValidationError]:
 
     Uses ``tokenize`` so only real Python comments match — docstrings and
     string literals that happen to contain the literal pattern are ignored.
+
+    Returns:
+        One finding per comment whose bracketed ``type: ignore`` names no ty rule.
+
     """
     errors: list[ValidationError] = []
     for parts in _TYPE_IGNORE_AUDIT_ROOTS:
@@ -128,6 +136,10 @@ def audit_class_size(project_root: Path) -> list[ValidationError]:
     """Fail on classes whose body exceeds 300 lines (rule 21).
 
     Waivers are explicit in ``_CLASS_SIZE_WAIVERS`` and carry a rationale.
+
+    Returns:
+        One finding per unwaived class over 300 lines; empty when ``src/gzkit`` is absent.
+
     """
     src_root = project_root / "src" / "gzkit"
     if not src_root.is_dir():
@@ -197,6 +209,10 @@ def audit_test_tiers(project_root: Path) -> list[ValidationError]:
     is an implemented mechanism with a real reader (``behave.ini``'s
     ``default_tags = ~@wip``) marking scenarios whose steps are unauthored. The
     distinction is what the tag partitions — unfinished work is not a test tier.
+
+    Returns:
+        Findings for a reappeared third tier directory, CLI flag or feature tag.
+
     """
     errors: list[ValidationError] = []
     forbidden_dirs = ("integration", "e2e", "slow", "bdd")
@@ -251,6 +267,10 @@ def _forbidden_feature_tag_errors(project_root: Path) -> list[ValidationError]:
     Matches on whole tags so ``@slower`` or ``@e2e-ish`` do not trip it, and
     reports the line so the finding points at the declaration rather than the
     file.
+
+    Returns:
+        One finding per tier-shaped feature tag; empty when ``features/`` is absent.
+
     """
     features_root = project_root / "features"
     if not features_root.is_dir():

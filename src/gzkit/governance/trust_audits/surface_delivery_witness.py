@@ -214,6 +214,12 @@ def audit_surface_delivery_witness(project_root: Path) -> list[ValidationError]:
     Returns fail-closed findings for declaration/surface incoherence only.
     Vendor-cap distance is reported to stderr and never changes the exit code.
     A project with no declaration is silently unaffected.
+
+    Returns:
+        Findings for each declared surface whose must-survive canon fails to arrive, or a single
+        finding when the declaration is invalid JSON or lacks a ``surfaces`` mapping; empty when the
+        declaration is absent.
+
     """
     declaration_path = project_root / _DECLARATION_REL
     relpath = _DECLARATION_REL.as_posix()

@@ -60,6 +60,11 @@ def _witnessed_subjects(root: Path) -> set[tuple[str, str]]:
     substring: event names appear inside other events' prose payloads, and a
     grep-shaped read of this ledger has already produced a wrong count once
     (GHI #885's own filing session).
+
+    Returns:
+        ``(surface, retired entry id)`` pairs from the ledger's retirement events; empty when the
+        ledger is absent.
+
     """
     ledger_path = root / ".gzkit" / "ledger.jsonl"
     if not ledger_path.exists():
@@ -96,6 +101,11 @@ def validate_corpus_retirement_witness(root: Path) -> list[ValidationError]:
     Both pointers are read through ``tombstone_target``, the accessor the fold
     itself uses — a fence that re-derived the pair here could drift from the
     projection it guards, which is the trap that accessor exists to close.
+
+    Returns:
+        One finding per retirement pointer with no matching witness; empty when the corpus directory
+        is absent.
+
     """
     corpus_dir = root / ".gzkit" / "corpus"
     if not corpus_dir.exists():

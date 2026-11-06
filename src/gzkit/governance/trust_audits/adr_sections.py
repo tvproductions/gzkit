@@ -40,6 +40,11 @@ def is_placeholder_body(text: str) -> bool:
     once the scaffolding is taken out. Prose that happens to contain a brace
     token or an inline comment therefore still passes — only a body made
     entirely of scaffolding fails.
+
+    Returns:
+        True when the text is empty, a known placeholder, or nothing but bracketed prompts and
+        template tokens; False when it carries authored content.
+
     """
     clean = text.strip().lower()
     if not clean:
@@ -60,6 +65,10 @@ def extract_section_body(content: str, heading: str) -> str | None:
     Returns None when the heading is absent, and an empty string when it is
     present but carries no body lines — the caller distinguishes "section
     missing" from "section hollow" because the recovery differs.
+
+    Returns:
+        The newline-joined body lines, or None when *heading* is absent.
+
     """
     lines = content.splitlines()
     in_section = False

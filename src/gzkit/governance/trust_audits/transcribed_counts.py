@@ -144,6 +144,10 @@ def _scan(text: str, historical: set[str]) -> list[tuple[int, str]]:
     until the next heading of the same-or-shallower depth. Tracking only exact
     heading matches would have let a subsection inside § Amendments count as
     live, which is the archive-falsification the filed GHI warns against.
+
+    Returns:
+        ``(line number, stripped line)`` for each live transcribed count, historical lines excluded.
+
     """
     findings: list[tuple[int, str]] = []
     historical_depth: int | None = None
@@ -189,6 +193,11 @@ def handoff_count_findings(project_root: Path, handoff: Path) -> list[tuple[int,
     or malformed ``newest_handoff`` entry means "nothing declared live here",
     never "scan everything". The opt-in scope is the filed GHI's constraint —
     a blanket sweep would falsify the archive.
+
+    Returns:
+        ``(line number, stripped line)`` per live count in *handoff*; empty when no newest-handoff
+        entry is registered or the file cannot be read.
+
     """
     entry = _registry_payload(project_root).get("newest_handoff")
     if not isinstance(entry, dict):
@@ -216,6 +225,11 @@ def _newest_handoff_errors(project_root: Path) -> list[ValidationError]:
     Section granularity still applies within it, because a handoff is itself
     half record (what this session did) and half live claim (what the next
     session should expect).
+
+    Returns:
+        One finding per live transcribed count in the newest handoff; empty when there is no
+        handoff.
+
     """
     from gzkit.handoff_resume_gate import newest_handoff  # noqa: PLC0415
 

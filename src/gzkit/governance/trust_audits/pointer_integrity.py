@@ -285,6 +285,11 @@ def _slugify(text: str) -> str:
     underscores to ``-``. Adjacent hyphens (e.g. from stripped ``&``) are
     preserved verbatim — that's how anchors like
     ``anti-vibing-mantra--relationship`` arise.
+
+    Returns:
+        The lowercased slug with punctuation removed, whitespace and underscores hyphenated, and
+        edge hyphens stripped.
+
     """
     text = text.lower()
     text = re.sub(r"[^\w\s-]", "", text)

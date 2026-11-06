@@ -211,6 +211,10 @@ def validate_surface_fidelity(project_root: Path) -> list[ValidationError]:
 
     Invariant 4 (scenario reachability) was retired 2026-07-25 — see
     ADR-0.0.33 § Amendment (2026-07-25).
+
+    Returns:
+        The findings of the four invariants, concatenated in declared order.
+
     """
     errors: list[ValidationError] = []
     errors.extend(validate_bullet_retention(project_root))

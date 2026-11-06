@@ -72,6 +72,11 @@ def _canonical_category_for(run_id: str) -> str:
     """Return the canonical claim category for a receipt ``run_id``.
 
     ``arb-ruff-...`` => ``"lint"``; ``arb-step-<name>-...`` => ``"<name>"``.
+
+    Returns:
+        ``"lint"`` for an ``arb-ruff-`` id, the step name for an ``arb-step-`` id, or an empty
+        string for any other id.
+
     """
     if run_id.startswith("arb-ruff-"):
         return _RUFF_CATEGORY

@@ -212,6 +212,12 @@ def reconcile_brief(brief_path: Path, project_root: Path) -> ReconcileResult:
 
     Pure read-only function: reads ``brief_path`` and probes the project tree
     for existence. Emits no ledger events and writes no files.
+
+    Returns:
+        ``ReconcileResult`` carrying the five dimension deltas: ``terminal=True`` and no drift for a
+        sealed brief, otherwise ``has_drift`` set from the gating dimensions (allowlist and verb
+        absence only once started) and ``unstarted`` recorded.
+
     """
     parsed = parse_brief(brief_path)
 
@@ -373,6 +379,10 @@ def _extract_denied_paths(body: str) -> set[str]:
     your allowlist?" — reading only ``## Allowed Paths`` and then reporting the
     denied module as a forgotten declaration inverts the author's precision into
     a defect (GHI #615).
+
+    Returns:
+        Normalized paths listed under the brief's ``## Denied Paths`` section.
+
     """
     return {_norm_rel(p) for p in _extract_section_paths(body, _DENIED_HEADING_RE)}
 
@@ -384,6 +394,11 @@ def _extract_discovery_paths(body: str) -> list[str]:
     carries it, so one ``(if present)`` cannot silence its unqualified siblings.
     That distinction is the whole safety of the narrowing — a section-level skip
     would blind a checklist on a single hedged line (GHI #615).
+
+    Returns:
+        Backticked path tokens from Discovery-checklist rows that assert existence, symbol suffixes
+        stripped, in document order.
+
     """
     paths: list[str] = []
     for line in _section_lines(body, _DISCOVERY_HEADING_RE):
@@ -415,6 +430,11 @@ def _looks_like_path(token: str) -> bool:
     ``{adrs}/{adr_id}.md`` template placeholder is a config substitution that can
     never exist on disk under that spelling. A ``path.py:symbol`` citation is a
     real path; extractors strip the suffix with ``_strip_symbol_suffix`` (GHI #1160).
+
+    Returns:
+        True when the token carries a known path prefix, or contains both ``/`` and ``.``; False for
+        non-path markers and line-range suffixes.
+
     """
     if any(marker in token for marker in _NON_PATH_MARKERS):
         return False
@@ -466,6 +486,11 @@ def _module_to_src_rel(module: str, project_root: Path) -> str | None:
 
     Tries ``src/<dotted/path>.py`` then ``src/<dotted/path>/__init__.py``.
     Returns ``None`` when neither exists on disk.
+
+    Returns:
+        The POSIX project-relative path of the module file or package ``__init__.py``, or None when
+        neither exists.
+
     """
     parts = module.split(".")
     module_file = project_root / "src" / Path(*parts).with_suffix(".py")
@@ -509,6 +534,11 @@ def _covering_test_files(req_ids: list[str], tests_root: Path) -> list[Path]:
     data for a brief it does not cover). ``@covers`` is the declared proof
     channel for BEHAVIOR REQs (`.gzkit/rules/tests.md`), so it is the honest
     basis for "this test belongs to this brief" (GHI #615).
+
+    Returns:
+        Sorted, de-duplicated test file paths claiming coverage of any of *req_ids*; empty when
+        *tests_root* is not a directory.
+
     """
     if not tests_root.is_dir():
         return []
@@ -530,6 +560,11 @@ def _covers_index(tests_root: Path) -> tuple[tuple[str, str], ...]:
     Cached per tests root: the reconcile engine asks this question once per
     brief, and a full AST walk of ~700 test files per brief turns a sub-second
     validator scope into a multi-minute one.
+
+    Returns:
+        Tuple of ``(REQ id, evidence path)`` pairs for every ``@covers`` record that carries an
+        evidence path.
+
     """
     from gzkit.traceability import scan_test_tree  # noqa: PLC0415 — avoids an import cycle
 
@@ -553,6 +588,10 @@ def _declared_by_allowlist(src_rel: str, src_allowlist: set[str]) -> bool:
     ``/``, so ``src/gzkit/cli/*`` would also swallow ``src/gzkit/cli/nested/deep.py``
     and turn a false-accusation repair into a blanket amnesty. ``full_match`` stops a
     single ``*`` at the separator and reserves that reach for ``**``.
+
+    Returns:
+        True when some allowlist entry, path or glob, full-matches *src_rel*; False otherwise.
+
     """
     candidate = PurePosixPath(src_rel)
     return any(candidate.full_match(entry) for entry in src_allowlist)
@@ -576,6 +615,12 @@ def _compute_missing_in_brief(
        ``gzkit.traceability`` is excluded regardless of neighborhood, because
        the neighborhood filter leaks it once a top-level ``src/gzkit/*.py`` file
        is allowlisted.
+
+    Returns:
+        src/ paths imported by the REQ tests, in the allowlist's neighbourhoods, that the allowlist
+        does not declare; empty when there are no REQs, no src/ allowlist entries or no tests
+        directory.
+
     """
     if not req_ids:
         return []
@@ -630,6 +675,11 @@ def _compute_allowlist_delta(
     Out-of-tree paths are likewise exempt: this dimension gates via
     ``gating_allowlist_absence``, so existence-checking a sibling-repo path would
     gate a gzkit brief on another repository's contents (GHI #721).
+
+    Returns:
+        ``AllowlistDelta`` with the allowlist paths missing on disk and the src/ files missing from
+        the brief.
+
     """
     creates = creates_paths or set()
     missing_on_disk = [
@@ -650,6 +700,10 @@ def _is_terminal_status(parsed: BriefStructure | LegacyBriefShape) -> bool:
     Adapts a parsed brief onto ``is_terminal_brief_status``, the single predicate
     `--brief-command-shape` also calls — one vocabulary, one matching rule, so the
     two validators cannot disagree about what "sealed" means (GHI #707).
+
+    Returns:
+        True when the brief's status is a terminal (sealed) status; False otherwise.
+
     """
     if isinstance(parsed, BriefStructure):
         status = parsed.status
@@ -663,6 +717,10 @@ def _is_unstarted_status(parsed: BriefStructure | LegacyBriefShape) -> bool:
 
     Adapts a parsed brief onto ``is_unstarted_brief_status``, the same
     one-vocabulary-one-matching-rule shape ``_is_terminal_status`` uses.
+
+    Returns:
+        True when the brief's status is an unstarted status; False otherwise.
+
     """
     if isinstance(parsed, BriefStructure):
         status = parsed.status
@@ -707,6 +765,11 @@ def _pending_deliverable_paths(brief_path: Path, own_allowlist: list[str]) -> se
 
     Siblings are read only for an unstarted brief that already has unresolved
     paths — 54 of 668 briefs — so the scan stays bounded without a cache.
+
+    Returns:
+        Normalized paths from this brief's own allowlist plus the Allowed Paths of every
+        non-terminal, parseable sibling brief in the same directory.
+
     """
     pending = {_norm_rel(p) for p in own_allowlist}
     for sibling in sorted(brief_path.parent.glob("*.md")):
@@ -732,6 +795,10 @@ def _scope_discovery_to_unbuilt(
     Applied only to unstarted briefs. Narrows the fence by computed predicate
     rather than by exemption: an unstarted brief still gates on every Discovery
     path no OBPI under its ADR claims (GHI #615 operator ruling 2026-07-25).
+
+    Returns:
+        A ``DiscoveryDelta`` keeping only the unresolved paths no pending OBPI will create.
+
     """
     pending = _pending_deliverable_paths(brief_path, own_allowlist)
     return DiscoveryDelta(
@@ -748,6 +815,10 @@ def _escapes_project_root(path: str, project_root: Path) -> bool:
     tree — so existence-checking it makes the verdict vary by machine: green
     wherever the sibling happens to be checked out, red in CI and for every
     adopter (GHI #721).
+
+    Returns:
+        True when *path* resolves outside *project_root*; False otherwise.
+
     """
     return not (project_root / path).resolve().is_relative_to(project_root.resolve())
 
@@ -775,6 +846,11 @@ def _compute_discovery_delta(
 
     A fourth class is filtered a level up, in ``_extract_discovery_paths``: rows
     whose own prose disclaims the existence assertion (``_NON_CLAIM_ROW_RE``).
+
+    Returns:
+        ``DiscoveryDelta`` listing the checklist paths that do not exist on disk, excluding globs,
+        declared creates and paths outside the project root.
+
     """
     creates = creates_paths or set()
     paths = _extract_discovery_paths(body)
@@ -819,6 +895,11 @@ def _compute_req_count_delta(declared_req_ids: list[str] | None, body: str) -> R
     ``declared_req_ids`` is ``None`` for briefs that declare REQ identity nowhere
     (legacy shape). Those are reported unmeasurable rather than compared against a
     fence-line count, which measures a different thing entirely (GHI #664).
+
+    Returns:
+        ``ReqCountDelta`` with the counts and the missing and unexpected REQ ids;
+        ``measurable=False`` when no REQs are declared.
+
     """
     if declared_req_ids is None:
         return ReqCountDelta(measurable=False)
@@ -844,6 +925,10 @@ def _compute_citation_delta(citations: list[tuple[str, str]], project_root: Path
     existence-checking dimensions exempt them: a path escaping ``project_root``
     is not an artifact this repository governs, so judging it makes the verdict a
     function of the developer's working-directory layout (GHI #721).
+
+    Returns:
+        ``CitationDelta`` listing the in-tree citations whose artifact file is missing.
+
     """
     stale = [
         (artifact_path, anchor)

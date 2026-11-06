@@ -78,6 +78,11 @@ def validate_invariant_witnesses(root: Path) -> list[ValidationError]:
 
     Every witness of every entry is checked — a resolvable first witness does not
     excuse a vapor second one. Bootstrap-safe: no registry directory yields no findings.
+
+    Returns:
+        One finding per registered invariant witness that does not resolve; empty when the
+        invariants directory is absent.
+
     """
     from gzkit.governance.invariants import load_invariants  # noqa: PLC0415
 

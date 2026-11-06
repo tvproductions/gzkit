@@ -55,6 +55,10 @@ def prd_needs(text: str) -> tuple[str, ...]:
     """Return the PRD's live FR ids and its § 7 attributes as `NFR-<slug>`, in order.
 
     An FR is live unless the first prose under its heading marks it `**Retired`.
+
+    Returns:
+        Tuple of the live FR ids and ``NFR-<slug>`` attribute ids, in document order.
+
     """
     needs: list[str] = []
     section = ""

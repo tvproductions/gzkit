@@ -72,6 +72,10 @@ def parse_brief_reqs(brief_path: Path) -> list[str]:
     match the REQ-ID pattern. Returns IDs sorted by canonical REQ ordering
     (semantic version), deduplicated. Returns ``[]`` when the section is
     missing, empty, or the file does not exist.
+
+    Returns:
+        The declared REQ ids, in order; empty when the brief file does not exist.
+
     """
     if not brief_path.is_file():
         return []
@@ -92,6 +96,10 @@ def parse_brief_req_kinds(brief_path: Path) -> dict[str, str]:
     parent-ADR ``## Boundary Invariants`` entry respectively, not by a test
     (``.gzkit/rules/tests.md`` § REQ Scope Discipline). Returns ``{}`` when the
     file is absent.
+
+    Returns:
+        Mapping of REQ id to its uppercased kind tag; empty when the brief file does not exist.
+
     """
     if not brief_path.is_file():
         return {}
@@ -118,6 +126,10 @@ def discover_covers(
     consumers (ledger artifacts, JSON, downstream string comparisons) see
     forward-slash separators on every platform per
     ``.claude/rules/cross-platform.md``.
+
+    Returns:
+        One ``TestRef`` per covering test, plus BDD scenarios when *features_root* is given.
+
     """
     records = []
     if tests_root.is_dir():

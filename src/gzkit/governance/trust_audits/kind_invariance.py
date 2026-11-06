@@ -35,6 +35,11 @@ def _check_foundation_adr(adr_file: Path, project_root: Path) -> ValidationError
     MUST carry the section, whether or not it declares ``kind: foundation`` in
     frontmatter. Frontmatter is not consulted here — caller-side enumeration
     excludes sidecar files (closeout forms).
+
+    Returns:
+        A finding when the ``## Why foundation tier?`` section is missing or a placeholder; None
+        when it is substantive or the file cannot be read.
+
     """
     try:
         raw = adr_file.read_text(encoding="utf-8")
@@ -90,6 +95,10 @@ def audit_kind_invariance(project_root: Path) -> list[ValidationError]:
     Exit semantics (per ValidationError aggregation):
         * 0 — all foundation ADRs pass
         * 3 — one or more foundation ADRs fail (policy breach)
+
+    Returns:
+        One finding per failing foundation ADR; empty when the foundation directory is absent.
+
     """
     foundation_dir = project_root / "docs" / "design" / "adr" / "foundation"
     if not foundation_dir.is_dir():

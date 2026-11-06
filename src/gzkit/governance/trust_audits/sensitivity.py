@@ -38,6 +38,10 @@ def _load_floor_grandfather(project_root: Path) -> frozenset[str]:
     malformed file means *nothing* is grandfathered (empty set) — absence must
     not silently widen the waiver, but it is not itself fail-closed (the floor
     enforcement does not depend on the grandfather file existing).
+
+    Returns:
+        The grandfathered brief rel-paths; empty when the file is absent or unreadable.
+
     """
     gf_path = project_root / _FLOOR_GRANDFATHER_REL
     if not gf_path.is_file():
@@ -58,6 +62,11 @@ def _load_sensitivity_registry(
     Returns (registry, None) on success or (None, fail-closed-error) when the
     registry is missing, unparseable, or schema-invalid. The error is shaped
     so it composes with the rest of the audit's findings without raising.
+
+    Returns:
+        ``(entries, None)`` on success, or ``(None, error)`` when the registry is missing,
+        unparseable or fails its schema.
+
     """
     from gzkit.models.security_surfaces import load_registry
 
@@ -225,6 +234,11 @@ def audit_sensitivity_binding(project_root: Path) -> list[ValidationError]:
     bullet-quoted ``## ALLOWED PATHS`` glob list against the registry to compute
     a ``detected_sensitivity``; ``declared_sensitivity`` is read from frontmatter.
     The decision matrix (ADR-0.0.22) lives in ``_classify_brief_sensitivity``.
+
+    Returns:
+        One finding per brief breaching the sensitivity floor, or the single registry error; empty
+        when no brief is in scope.
+
     """
     briefs = _iter_sensitivity_briefs(project_root)
     if not briefs:
@@ -263,6 +277,11 @@ def detect_brief_security_floor(
     fail-closes that case at validate time, and completion falls through to
     the brief's declared sensitivity rather than masking a registry-state
     defect with a synthetic floor.
+
+    Returns:
+        ``"security"`` when some allowed path matches a registered surface; None otherwise,
+        including a missing or unreadable registry.
+
     """
     from gzkit.models.security_surfaces import match_globs
 
@@ -296,6 +315,11 @@ def detect_brief_security_surfaces(
     canonical allowed-paths extraction + registry load — no duplicate parser.
     Returns an empty tuple when the registry is missing/unparseable or no path
     intersects, mirroring the floor's fall-through behavior.
+
+    Returns:
+        The matching category names; an empty tuple when the registry is unusable, the brief lists
+        no paths or matching fails.
+
     """
     from gzkit.models.security_surfaces import match_globs
 
@@ -329,6 +353,11 @@ def explain_sensitivity_for_paths(
     On registry missing/malformed, the ``error`` key is populated and
     ``detected_sensitivity`` is ``None`` — the explain CLI still exits 0 because
     prediction without a registry is informational, not fail-closed.
+
+    Returns:
+        Dict with ``detected_sensitivity`` (``"security"`` or None), ``matching_categories`` and
+        ``input_globs``, plus ``error`` when the registry cannot be loaded.
+
     """
     from gzkit.models.security_surfaces import match_globs
 

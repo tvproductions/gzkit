@@ -39,6 +39,11 @@ def load_invariants(root: Path) -> dict[str, ConstitutionalInvariant]:
 
     Validates each JSON body against the JSON Schema mirror, then constructs
     ConstitutionalInvariant instances. Raises on validation failure; no silent skip.
+
+    Returns:
+        Mapping of invariant id to ``ConstitutionalInvariant``; empty when the invariants directory
+        is absent.
+
     """
     inv_dir = root / ".gzkit" / "invariants"
     if not inv_dir.exists():
@@ -68,6 +73,10 @@ def reconcile_invariant(invariant: ConstitutionalInvariant) -> Bullet:
     The 0-Kelvin floor (invariants render at every temperature) now lives in the
     corpus ``tier: invariant`` designation (OBPI-0.0.37-23), not the retired
     per-``Bullet`` ``density_min`` field.
+
+    Returns:
+        A Mechanical ``Bullet`` carrying the invariant's claim and its first structural witness.
+
     """
     from gzkit.content.models.bullet import Bullet  # local import — avoids circular dep
 

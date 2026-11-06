@@ -74,6 +74,11 @@ def _baseline(project_root: Path, name: str, key: str) -> set[str] | None:
     Reads through `gzkit.registries.load_registry`, like any other consumer. A
     fence that resolved its own `data/` path while refusing that of every other
     module would be the first thing to drift (GHI #1067).
+
+    Returns:
+        The baseline's entries under *key*, or None when the registry is unreadable or the key does
+        not hold a list.
+
     """
     try:
         payload = load_registry(project_root, name)
@@ -89,6 +94,11 @@ def records_derivation(payload: object, entry: Mapping[str, object] | None) -> b
     Either side satisfies it. A bare array cannot carry a provenance field at all,
     so the declaration in `config_registry.json` is the only place its derivation
     can live -- refusing that would make five registries permanently unfixable.
+
+    Returns:
+        True when the declaration's ``derivation`` or the payload's provenance fields name an
+        authority; False otherwise.
+
     """
     if isinstance(entry, Mapping) and AUTHORITY_RE.search(str(entry.get("derivation", ""))):
         return True
@@ -216,6 +226,11 @@ def audit_direct_data_reach(project_root: Path) -> list[ValidationError]:
     3 of the shape campaign Movement F adopts, *"No Parallel Systems: one loader,
     one source of truth"*. The roster is shrink-only, so the thirty readers that
     predate the seam migrate incrementally while a thirty-first is refused.
+
+    Returns:
+        Findings for unbaselined direct-reach modules and stale roster entries, or a single error
+        when the roster is missing or unparseable.
+
     """
     baseline = _baseline(project_root, _REACH_BASELINE, "modules")
     if baseline is None:

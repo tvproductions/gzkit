@@ -41,6 +41,11 @@ def _command_fails(command: str, root: Path, *, expected_exit: int) -> int:
     §5 clause (c) obligation is to assert the production path fails *for the
     reason the claim names*, and a bare ``not success`` cannot express that
     (GHI #699 generator #1).
+
+    Returns:
+        1 when *command* exits with exactly ``expected_exit`` in *root*; 0 for any other exit code,
+        success included.
+
     """
     from gzkit.quality import run_command  # noqa: PLC0415
 
@@ -74,6 +79,11 @@ def _gz_command_fails(
     ``cli/helpers/exit_codes.py``, plus the generic handler in ``cli/main.py``), so on
     a gz verb ``expected_exit`` alone cannot discriminate. The output substring is the
     only channel that can.
+
+    Returns:
+        The ``_command_fails_argv`` signal for ``python -m gzkit <verb>``: 1 on the expected exit
+        (and expected output, when given), else 0.
+
     """
     import sys  # noqa: PLC0415
 
@@ -118,6 +128,11 @@ def _command_fails_argv(
     each fixture because the exposure belongs to the channel: only one of the six
     ``expect_output`` controls carries a digit-bearing substring today, and the
     other five survive by phrasing rather than by construction (GHI #793).
+
+    Returns:
+        1 when *argv* exits with ``expected_exit`` and, if ``expect_output`` is given, its stdout or
+        stderr contains it; otherwise 0.
+
     """
     from gzkit.quality import run_command  # noqa: PLC0415
 
@@ -159,6 +174,10 @@ def _ep_module_size(root: Path) -> int:
     script exits 3 for a policy breach, but a missing thresholds table also
     raises ``SystemExit`` with a message, and exit code alone cannot tell the
     verdict from the bail-out.
+
+    Returns:
+        1 when the gate script exits 3 naming the module as not grandfathered, else 0.
+
     """
     import sys  # noqa: PLC0415
 
@@ -179,6 +198,10 @@ def _ep_tautological_debt(root: Path) -> int:
     Aimed by subprocess cwd, resolved through ``_resolve_chore_dir``, and pinned
     by ``expect_output`` for the reasons ``_ep_module_size`` gives: exit 1 is the
     missing-registry bail-out, so only the breach text proves the verdict.
+
+    Returns:
+        1 when the gate script exits 3 reporting debt above the declining target, else 0.
+
     """
     import sys  # noqa: PLC0415
 
@@ -197,6 +220,10 @@ def _ep_tautological_debt_admits_waived(root: Path) -> int:
     """Truthy only when the gate ADMITS a waived op: exit 0 with zero debt counted.
 
     The admit half (GHI #797 precedent); the refuse half is ``tautological-debt``.
+
+    Returns:
+        1 when the gate script exits 0 reporting zero outstanding debt, else 0.
+
     """
     import sys  # noqa: PLC0415
 
@@ -225,6 +252,10 @@ def _ep_validator_reachability(root: Path) -> int:
     ``_ep_module_size`` gives: exit 2 is the not-a-project-root bail-out and a
     missing baseline raises ``SystemExit`` with exit 1, so only the breach text
     proves the verdict.
+
+    Returns:
+        1 when the ratchet exits 3 reporting a scope that entered the ungated set, else 0.
+
     """
     import sys  # noqa: PLC0415
 
@@ -243,6 +274,10 @@ def _ep_validator_reachability_admits_disclosed(root: Path) -> int:
     """Truthy only when the ratchet ADMITS ungated scopes its baseline discloses.
 
     The admit half (GHI #797 precedent); the refuse half is ``validator-reachability``.
+
+    Returns:
+        1 when the ratchet exits 0 reporting that it holds, else 0.
+
     """
     import sys  # noqa: PLC0415
 
@@ -260,6 +295,10 @@ def _ep_ledger_vocabulary_inertness(root: Path) -> int:
 
     Pinned by ``expect_output``: exit 1 is also a missing-baseline ``SystemExit``,
     so only the breach text proves the verdict.
+
+    Returns:
+        1 when the ratchet exits 3 with the no-live-occurrence breach text, else 0.
+
     """
     import sys  # noqa: PLC0415
 
@@ -277,6 +316,10 @@ def _ep_ledger_vocabulary_inertness_admits_disclosed(root: Path) -> int:
 
     The admit half (GHI #797 precedent); the refuse half is
     ``ledger-vocabulary-inertness``.
+
+    Returns:
+        1 when the ratchet exits 0 reporting that the disclosure holds, else 0.
+
     """
     import sys  # noqa: PLC0415
 
@@ -300,6 +343,11 @@ def _ep_docs_build(root: Path) -> int:
     it parsed the config and walked the nav) AND report the strict-mode abort
     (proving ``--strict`` is what promoted the warning to a failure). Drop
     ``--strict`` from the command and this control goes red, which is the point.
+
+    Returns:
+        1 when mkdocs fails with exit 1 naming both the missing nav target and the strict-mode
+        abort; 0 otherwise.
+
     """
     from gzkit.quality import run_mkdocs  # noqa: PLC0415 — production path under test
 
@@ -316,6 +364,11 @@ def _ep_docs_build_validation_floor(root: Path) -> int:
     Exit 3 alone would not distinguish the floor from any other refusal, so every
     key in ``MKDOCS_VALIDATION_FLOOR`` must be named — the fixture downgrades all
     of them through the shorthand, and a floor that dropped a key goes red here.
+
+    Returns:
+        1 when ``run_mkdocs`` refuses with exit 3 and its stderr names every floored validation key;
+        0 otherwise.
+
     """
     from gzkit.quality import MKDOCS_VALIDATION_FLOOR, run_mkdocs  # noqa: PLC0415
 
@@ -331,6 +384,10 @@ def _ep_guard_canary_sweep(root: Path) -> int:
     The step function is the gate, so the control calls it rather than restating
     its command. Exit 3 alone could be another refusal, so the verdict is pinned
     to the survived-mutant text.
+
+    Returns:
+        1 when the sweep exits 3 reporting the survived mutant, else 0.
+
     """
     from gzkit.quality import run_guard_canary_sweep_audit  # noqa: PLC0415
 
@@ -436,6 +493,10 @@ def _ep_behave(root: Path) -> int:
     ``uv run -m behave`` in a scratch dir resolves an ephemeral environment with no
     behave at all, exiting 1 on ``ModuleNotFoundError`` — a launch failure scored
     as a caught violation (GHI #699).
+
+    Returns:
+        1 when behave exits 1 with the planted failure message in its output, else 0.
+
     """
     import sys  # noqa: PLC0415
 
@@ -477,6 +538,11 @@ def _ep_readiness_audit(root: Path) -> int:
     Reads `--json` rather than the rendered table: grading a control on table
     geometry would be the `shape-graded-not-substance` signature this tree's own
     theater scanner names.
+
+    Returns:
+        1 when the audit exits 1 with exactly one required-surface failure and it names
+        ``CLAUDE.md``; 0 otherwise, including unparseable JSON output.
+
     """
     import json  # noqa: PLC0415
     import sys  # noqa: PLC0415
@@ -531,6 +597,10 @@ def _ep_doc_code_citations(root: Path) -> list[ValidationError]:
     stopped honouring either exemption, which is the property this control
     exists to witness -- so a finding against those decoys is a control
     FAILURE, not a pass, and is surfaced by returning them unfiltered.
+
+    Returns:
+        Every finding ``audit_doc_code_citations`` reports for *root*, unfiltered.
+
     """
     from gzkit.governance.trust_audits.cli import audit_doc_code_citations  # noqa: PLC0415
 
@@ -544,6 +614,10 @@ def _ep_doc_code_citations_admits_exempted(root: Path) -> int:
     citation would make the exemption unusable and silently re-flag the dated
     records, corrective prose and unexecuted specs the marker exists for; the
     refuse half is proven at every member by ``doc-code-citations``.
+
+    Returns:
+        1 when the audit reports no finding for *root*, else 0.
+
     """
     from gzkit.governance.trust_audits.cli import audit_doc_code_citations  # noqa: PLC0415
 
@@ -556,6 +630,10 @@ def _ep_wheel_path_literals(root: Path) -> list[ValidationError]:
     The fixture plants the same literal in an unshipped ``docs/`` file. An
     unfiltered control would pass on a scan that ignored the include block
     entirely, which is the one property this control exists to witness.
+
+    Returns:
+        The wheel-path-literal findings whose artifact is a ``SKILL.md``; empty when none fired.
+
     """
     from gzkit.governance.trust_audits.wheel_path_literals import (  # noqa: PLC0415
         audit_wheel_path_literals,
@@ -599,6 +677,11 @@ def _ep_status_writer_coverage(root: Path) -> list[ValidationError]:
     EVERY real entry is inert — so an unfiltered control would go green on
     findings that have nothing to do with the bypass it plants. A control that
     can pass on the wrong evidence is not a control.
+
+    Returns:
+        The status-writer findings against ``rogue_writer.py`` only; empty when the bypass went
+        undetected.
+
     """
     from gzkit.governance.trust_audits.status_writer_coverage import (  # noqa: PLC0415
         audit_status_writer_coverage,
@@ -618,6 +701,11 @@ def _ep_transcribed_adr_counts(root: Path) -> list[ValidationError]:
     carries), never its line number: an offset filter silently empties the
     moment the fixture gains a line, and an empty filter is a control that
     always passes.
+
+    Returns:
+        The transcribed-count findings whose message names ``Draft``; empty when the live count went
+        undetected.
+
     """
     from gzkit.governance.trust_audits.transcribed_counts import (  # noqa: PLC0415
         audit_transcribed_counts,
@@ -730,6 +818,11 @@ def _ep_brief_size(root: Path) -> list[ValidationError]:
     text, so findings returned unfiltered would let a gate that also measures a
     sealed brief, or refuses the bound itself, pass. A finding against anything
     but the over brief therefore reports no catch, and the control fails.
+
+    Returns:
+        The brief-size findings when every one is against the over brief; an empty list when any
+        finding names another brief, or none fired.
+
     """
     from gzkit.governance.trust_audits.brief_size import audit_brief_size  # noqa: PLC0415
 
@@ -751,6 +844,11 @@ def _ep_catalog(root: Path) -> list[ValidationError]:
 
     The runner passes a control on any truthy result carrying the expected text, so
     a gate that also refused the valid outcome or REQ file would pass unfiltered.
+
+    Returns:
+        The catalog findings when every one is on the ``families`` field; an empty list when any
+        other field fired, or none did.
+
     """
     from gzkit.governance.trust_audits.catalog import audit_catalog  # noqa: PLC0415
 
@@ -933,6 +1031,11 @@ def _ep_mx_hardening(root: Path) -> list[ValidationError]:
     The runner passes a control on any truthy result carrying the expected text,
     so an unfiltered return would let a gate that grounds on the lease, or on an
     ordinary open hangar, pass this control too.
+
+    Returns:
+        The MX findings when every one is ``mx-dangling-state``; an empty list when any other
+        finding fired, or none did.
+
     """
     from gzkit.governance.trust_audits.mx_hardening import audit_mx_hardening  # noqa: PLC0415
 
@@ -1013,6 +1116,10 @@ def _ep_instructions_files_budget(root: Path) -> list[ValidationError]:
     advisory until 1.0 (operator ruling 2026-08-17) and contributes no findings;
     the delivery witness still fail-closes on survival-declaration drift. Calling
     only the budget arm would have made this control structurally unable to fail.
+
+    Returns:
+        The budget-arm findings followed by the surface-delivery-witness findings.
+
     """
     from gzkit.governance.trust_audits.instructions_files_budget import (  # noqa: PLC0415
         audit_instructions_files_budget,
@@ -1080,6 +1187,11 @@ def _ep_session_green_gate_delivery(root: Path) -> list[ValidationError]:
     advisory channel rather than returned (GHI #851). Advisory is a severity, never
     silence, so the control reads that channel too: a witness that drops the report
     for a recording hook must fail at that member.
+
+    Returns:
+        The delivery arm's blocking findings followed by one ``session_green_gate_advisory`` finding
+        per advisory line it emitted.
+
     """
     import contextlib  # noqa: PLC0415
     import io  # noqa: PLC0415
@@ -1128,6 +1240,10 @@ def _ep_handoff_documents_populated(root: Path) -> list[str]:
     control can pin the specific ``Empty required section`` reason via
     ``expect`` — an ``int`` return collapses to ``bool`` and ``_render_findings``
     yields ``""``, which no ``expect`` can match.
+
+    Returns:
+        The non-blank stdout lines of a failing handoff audit; an empty list when the audit passes.
+
     """
     from gzkit.quality import run_handoff_document_audit  # noqa: PLC0415
 
@@ -1204,6 +1320,10 @@ def _ep_exemption_controls(root: Path) -> list[ValidationError]:
     list -- rather than incidentally tripping on the live registry's 75
     claims being absent from a bare fixture. The audit function itself is the
     real one, never a copy.
+
+    Returns:
+        The exemption-control findings for the one-claim injected population.
+
     """
     from gzkit.governance.trust_audits.exemption_controls import (  # noqa: PLC0415
         audit_exemption_controls,
@@ -1218,6 +1338,10 @@ def _ep_population_controls(root: Path) -> list[ValidationError]:
     ``declarations`` is the registry the floor run already populated, on the
     ``_ep_exemption_controls`` precedent: the audit's decision logic is the real one,
     and discovery is not re-run once per member.
+
+    Returns:
+        The population-control findings against the live registry's declarations.
+
     """
     from gzkit.enforcement import get_enforcement_registry  # noqa: PLC0415
     from gzkit.governance.trust_audits.population_controls import (  # noqa: PLC0415
@@ -1234,6 +1358,10 @@ def _ep_population_controls_admits_disclosed(root: Path) -> int:
     The admit half of the gate (GHI #797 precedent). An audit that refused a
     disclosed claim would turn the shrink-only list into an unsatisfiable gate;
     the refuse half is proven at every member by ``population-controls``.
+
+    Returns:
+        1 when the inventory reports no finding for the fully disclosed registry, else 0.
+
     """
     from gzkit.enforcement import get_enforcement_registry  # noqa: PLC0415
     from gzkit.governance.trust_audits.population_controls import (  # noqa: PLC0415
@@ -1250,6 +1378,10 @@ def _ep_gate_enrollment(root: Path) -> list[ValidationError]:
     The audit reads the live validate registry and the registry the floor run already
     populated (discovery is not re-run per member), so the control fails at the one
     scope its fixture left undisclosed.
+
+    Returns:
+        The gate-enrollment findings for *root* against the registry's claimed functions.
+
     """
     from gzkit.enforcement import get_enforcement_registry  # noqa: PLC0415
     from gzkit.governance.trust_audits.gate_enrollment import (  # noqa: PLC0415
@@ -1266,6 +1398,10 @@ def _ep_gate_enrollment_admits_disclosed(root: Path) -> int:
     The admit half of the gate (GHI #797 precedent): an audit that refused a disclosed
     scope would make the shrink-only list an unsatisfiable gate. The refuse half is
     proven at every member by ``gate-enrollment``.
+
+    Returns:
+        1 when the inventory reports no finding for *root*, else 0.
+
     """
     from gzkit.enforcement import get_enforcement_registry  # noqa: PLC0415
     from gzkit.governance.trust_audits.gate_enrollment import (  # noqa: PLC0415
@@ -1292,6 +1428,10 @@ def _ep_evaluation_justify_binding_admits_qualified(root: Path) -> int:
 
     The admit half (GHI #797 precedent). A gate refusing what `gz justify` can
     produce would be unsatisfiable; the refuse half is `evaluation-justify-binding`.
+
+    Returns:
+        1 when the binding validator reports nothing for the fixture subject, else 0.
+
     """
     from gzkit.governance.trust_audits._qc_nc_evaluation import SUBJECT  # noqa: PLC0415
     from gzkit.governance.trust_audits.evaluation_justify_binding import (  # noqa: PLC0415
@@ -1306,6 +1446,10 @@ def _ep_gate_callers(root: Path) -> list[ValidationError]:
 
     ``explicit_scopes=[]`` isolates the chore population the fixture plants; the
     audit function itself is the real one, never a copy.
+
+    Returns:
+        The uncalled-gate findings for *root*, with no explicit gz-check scopes.
+
     """
     from gzkit.governance.trust_audits.gate_callers import audit_gate_callers  # noqa: PLC0415
 
@@ -1317,6 +1461,10 @@ def _ep_enforcement_floor(records: list) -> int:
 
     Returns facade_count + test_bug_count (non-zero = caught the FACADE = PASS for NC).
     If run_meta_validator is gutted to skip FACADE detection, returns 0 = FACADE for NC.
+
+    Returns:
+        The meta-validator's facade count plus test-bug count; non-zero means the FACADE was caught.
+
     """
     from gzkit.enforcement import run_meta_validator  # noqa: PLC0415
 
@@ -1330,6 +1478,10 @@ def _ep_theater_signature_scan(root: Path) -> list:
     Runs the production static analyzer against the planted ``src/gzkit/planted.py``
     violation; a non-empty findings list = caught = PASS. If the detector is gutted, it
     returns [] = FACADE.
+
+    Returns:
+        The analyzer's signature findings for the planted module; empty when the detector missed it.
+
     """
     from gzkit.governance.trust_audits.theater_signature_scan import (  # noqa: PLC0415
         scan_source_for_signatures,

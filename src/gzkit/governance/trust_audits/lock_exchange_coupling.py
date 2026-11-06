@@ -151,6 +151,10 @@ def _git_index_paths(project_root: Path) -> frozenset[str] | None:
     reference is genuinely undurable; None means we do not know, and failing a
     whole governance run because git is missing would be a false alarm of the kind
     that gets a check disabled. The `exists()` arm still binds either way.
+
+    Returns:
+        The stripped index paths, or None when git fails or cannot run.
+
     """
     from gzkit.utils import git_cmd  # noqa: PLC0415 — avoids an import cycle at module load
 
@@ -183,6 +187,10 @@ def _index_claims(events: list) -> dict[str, list[datetime]]:
     Keyed by ``obpi_id`` only (not ``(obpi_id, agent)``): a release concludes the
     active claim regardless of which agent claimed it, so a cross-agent force-reap
     must pair against the reaped claim, not the reaper's own later claim.
+
+    Returns:
+        Mapping of OBPI id to its claim timestamps in ascending order.
+
     """
     index: dict[str, list[datetime]] = {}
     for ev in events:
@@ -203,6 +211,10 @@ def _concluded_claim_ts(claim_tss: list[datetime], release_ts: datetime) -> date
     Pairing by concluded claim (not the releasing agent's newest claim) keeps
     abandon-then-reclaim and cross-agent force-reap sequences valid, while still
     flagging a handoff that genuinely predates the claim it concluded.
+
+    Returns:
+        The latest claim timestamp at or before *release_ts*, or None when there is none.
+
     """
     prior = [ts for ts in claim_tss if ts <= release_ts]
     return prior[-1] if prior else None
@@ -291,6 +303,10 @@ def _check_mode(
     documents at all (GHI #763). This stays as the ledger-replay backstop for a
     release whose ``handoff_path`` was resolved by any other route, and for the
     historical events that still cite `.gzkit/handoffs/`.
+
+    Returns:
+        A single finding when the entry's mode is the checkpoint mode; empty otherwise.
+
     """
     mode = (_parse_frontmatter_field(content, "mode") or "").upper()
     if mode != CHECKPOINT_MODE:

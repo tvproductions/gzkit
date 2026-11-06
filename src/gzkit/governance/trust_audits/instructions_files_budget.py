@@ -93,6 +93,10 @@ def _matching_files(project_root: Path, pattern: str, exclude: list[str]) -> lis
 
     ``**/`` patterns walk the tree, pruning tool output (``_PRUNED_DIRS``); an
     ``exclude`` entry ending in ``/`` drops a subtree, any other drops one path.
+
+    Returns:
+        The matching files whose project-relative path is not excluded.
+
     """
     if pattern.startswith("**/"):
         name_pattern = pattern[3:]
@@ -117,6 +121,11 @@ def _description_chars(skill_file: Path, project_root: Path) -> int:
     Parsed as YAML so a block scalar counts whole, not as its first line. A
     frontmatter that is not valid YAML is reported and counted as 0, never raised:
     one bad skill must not take down the whole scope.
+
+    Returns:
+        The stripped description's character count; 0 when the file has no or unparseable
+        frontmatter or disables model invocation.
+
     """
     parts = skill_file.read_text(encoding="utf-8").split("---", 2)
     if len(parts) < 3:
@@ -179,6 +188,10 @@ def audit_instructions_files_budget(project_root: Path) -> list[ValidationError]
     return type stays ``list[ValidationError]`` because the scope composes with
     ``audit_surface_delivery_witness``, which still fail-closes on
     survival-declaration drift; this arm simply contributes no findings.
+
+    Returns:
+        Always an empty list; budget overruns are reported as advisories.
+
     """
     config = _load_budget_config(project_root)
     for relpath, budget in config.get("files", {}).items():

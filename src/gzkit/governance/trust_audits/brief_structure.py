@@ -43,6 +43,11 @@ def _declared_status(brief_path: Path) -> str:
 
     Read from the raw frontmatter rather than a parsed model because the briefs
     this scope is judging are precisely the ones that may not parse.
+
+    Returns:
+        The stripped ``status:`` value, or an empty string when the file is unreadable, has no
+        frontmatter or no status key.
+
     """
     try:
         text = brief_path.read_text(encoding="utf-8")

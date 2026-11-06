@@ -102,6 +102,11 @@ def _audit_pointers(project_root: Path) -> list[ValidationError]:
     Operator ruling 2026-10-18 ("Pointer + 3 fields"): a record edited after it was
     recorded, or removed, is a finding. A record with no pointer predates the ruling
     and is not backfilled.
+
+    Returns:
+        One ``insights_shape`` finding per insight whose fingerprint disagrees with its ledger
+        pointer.
+
     """
     from gzkit.insights.ledger_ref import insight_lines_by_ts, insight_sha256  # noqa: PLC0415
 
@@ -129,6 +134,11 @@ def audit_insights_shape(project_root: Path) -> list[ValidationError]:
 
     Also holds each record the ledger names by an ``insight_recorded`` event to that
     event's fingerprint.
+
+    Returns:
+        The pointer findings plus one finding per malformed record; only the pointer findings when
+        the insights file is absent.
+
     """
     import hashlib  # noqa: PLC0415
 

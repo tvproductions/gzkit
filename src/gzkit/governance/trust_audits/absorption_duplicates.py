@@ -90,6 +90,11 @@ def audit_absorption_duplicates(project_root: Path) -> list[ValidationError]:
     path under distinct parent ADRs. A pairing is established when one
     brief in the group declares ``paired_with: <other-obpi-id>`` in
     frontmatter — the pair is then mutually waived.
+
+    Returns:
+        One finding per unwaived source path absorbed under more than one parent ADR; empty when the
+        ADR root is absent.
+
     """
     errors: list[ValidationError] = []
     adr_root = project_root / "docs" / "design" / "adr"

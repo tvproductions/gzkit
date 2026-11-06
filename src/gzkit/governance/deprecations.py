@@ -51,6 +51,10 @@ def deprecation_notice(verb: str) -> str:
     Raises ``KeyError`` when the verb is not registered — a command cannot
     announce a deprecation the registry does not carry, because the validator
     would then never learn to police its prescriptions.
+
+    Returns:
+        The one-line notice naming the deprecated verb and its successor.
+
     """
     entry = find_deprecated_verb(verb)
     if entry is None:

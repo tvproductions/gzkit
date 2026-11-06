@@ -84,6 +84,11 @@ def _receipt_ts(event: dict) -> dt.datetime | None:
 
     Naive timestamps are read as UTC — the ledger's writers all stamp UTC, and a
     naive value compared against an aware CUTOVER would raise rather than judge.
+
+    Returns:
+        The timezone-aware timestamp (naive values read as UTC), or None when ``ts`` is missing or
+        unparseable.
+
     """
     raw = event.get("ts")
     if not isinstance(raw, str):
@@ -101,6 +106,10 @@ def _receipt_obpi_id(event: dict) -> str | None:
     Completion receipts carry the OBPI slug on ``id`` and leave ``obpi_id`` null
     (observed across all 635 receipts); newer events populate ``obpi_id``. Prefer
     the explicit field and fall back to ``id``.
+
+    Returns:
+        The ``obpi_id`` or ``id`` value starting with ``OBPI-``, or None when neither does.
+
     """
     for key in ("obpi_id", "id"):
         value = event.get(key)

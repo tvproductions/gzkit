@@ -62,6 +62,10 @@ def _is_pure_operand(node: ast.expr) -> bool:
     The copy-vs-self purity guard: only flag self-equality over call-free operands,
     so a legitimate (possibly side-effecting / non-deterministic) ``now() == now()``
     is never flagged.
+
+    Returns:
+        True when no node under *node* is a call; False otherwise.
+
     """
     return not any(isinstance(child, ast.Call) for child in ast.walk(node))
 
@@ -74,6 +78,10 @@ def _detect_copy_vs_self(
     Calibrated on the ADR-0.0.37 fixture==fixture facade (an assertion that can
     never fail). Guards: only ``Eq``/``Is`` (``!=`` is the NaN idiom), only
     call-free operands (purity).
+
+    Returns:
+        One finding per tautological self-equality over call-free operands in *fn*.
+
     """
     out: list[TheaterSignatureFinding] = []
     for child in ast.walk(fn):
@@ -123,6 +131,11 @@ def _is_mtime_node(node: ast.AST) -> bool:
 
     Inspects Attribute/Call nodes ONLY — never ``ast.Constant`` — so an ``st_mtime``
     mention inside a docstring is structurally invisible (the load-bearing FP guard).
+
+    Returns:
+        True for an ``st_mtime`` attribute or a ``getmtime`` call (bare or attribute); False
+        otherwise.
+
     """
     if isinstance(node, ast.Attribute) and node.attr == "st_mtime":
         return True
@@ -143,6 +156,11 @@ def _detect_mtime_content(
     Calibrated on the repudiated ``rendition_freshness`` mtime tautology. The name
     token is a narrowing filter on top of the concrete mtime node, so a docstring
     mention (Constant) and a non-content reader (``rotate_logs``) are not flagged.
+
+    Returns:
+        A single finding at the first mtime read in a content-named *fn*; empty when the name is not
+        content-shaped or it reads no mtime.
+
     """
     name = fn.name.lower()
     if not any(token in name for token in _CONTENT_NAME_TOKENS):
@@ -186,6 +204,11 @@ def _is_clean_early_return(stmt: ast.stmt) -> bool:
     """Return True for a single clean/empty early return.
 
     Matches ``return []`` / ``0`` / ``None`` / ``True``.
+
+    Returns:
+        True for a bare return or one returning ``[]``, ``0``, ``None`` or ``True``; False
+        otherwise.
+
     """
     if not isinstance(stmt, ast.Return):
         return False
@@ -205,6 +228,10 @@ def _detect_skip_if_pass(
     The guarded value must be persisted/external state (an Attribute/Subscript whose
     root is NOT locally assigned) — a locally-computed ``status = run_check()`` is a
     legitimate early-return and is not flagged.
+
+    Returns:
+        One finding per clean early return gated on a persisted PASS state in *fn*.
+
     """
     local = _locally_assigned_names(fn)
     out: list[TheaterSignatureFinding] = []
@@ -247,6 +274,11 @@ def scan_source_for_signatures(source_path: Path, *, rel: str) -> list[TheaterSi
 
     Unparseable or unreadable files yield no findings (``(SyntaxError, OSError)``),
     matching the tautological-test scanner's posture.
+
+    Returns:
+        All theater-signature findings across the file's functions; empty when it cannot be read or
+        parsed.
+
     """
     try:
         tree = ast.parse(source_path.read_text(encoding="utf-8"), filename=str(source_path))
@@ -266,6 +298,10 @@ def scan_validator_tree(project_root: Path, files: Iterable[Path]) -> list[Theat
 
     ``project_root`` anchors the posix relative path used for findings and for the
     ``_SELF_EXCLUSION`` membership test.
+
+    Returns:
+        The findings of every non-excluded file scanned.
+
     """
     out: list[TheaterSignatureFinding] = []
     for py_file in sorted(files):

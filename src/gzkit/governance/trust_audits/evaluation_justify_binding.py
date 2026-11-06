@@ -107,6 +107,11 @@ def _latest_evaluation_event(
     The aliases are every id the rename map folds onto the same artifact, so a
     walkthrough that answered it under an earlier id — a feature ADR since demoted
     to the pool — still names it (GHI #1150).
+
+    Returns:
+        ``(latest matching event or None, aliases)``; ``(None, {artifact_id})`` when the ledger is
+        absent.
+
     """
     if not ledger_path.exists():
         return None, frozenset({artifact_id})
@@ -141,6 +146,11 @@ def _assess_walkthroughs(
     A candidate is a file whose frontmatter names the subject, or whose name starts
     with the subject's dashed id — the latter only so an operator holding an
     old-convention file learns why it no longer counts. Names never admit.
+
+    Returns:
+        ``(True, [])`` when some walkthrough qualifies; otherwise False with the refusal reasons for
+        candidates naming the subject (empty when there is no evaluation time or justify directory).
+
     """
     justify_dir = project_root / "artifacts" / "justify"
     if evaluated_at is None or not justify_dir.is_dir():
@@ -195,6 +205,11 @@ def _names_subject(anchor: AnchorRef, artifact_id: str) -> bool:
     — `gz-adr-evaluate` routes a low ADR score to one (operator ruling 2026-09-14). An
     OBPI is named by its own ``obpi`` anchor. A GHI anchor never names an evaluation:
     its link to an ADR lives on GitHub, which this gate does not consult.
+
+    Returns:
+        True when the anchor's claimed subject matches *artifact_id* (an OBPI anchor matching its
+        parent ADR); False otherwise.
+
     """
     subject = _subject_key(artifact_id)
     claimed = _claimed_subject(anchor)
@@ -225,6 +240,11 @@ def _subject_key(identifier: str) -> tuple[str, str, str | None]:
     """Return ``(kind, core, slug)``: short and full ids of one ADR/OBPI share kind and core.
 
     An id of neither shape is keyed by its dashed lowercase form and binds only exactly.
+
+    Returns:
+        ``("adr"|"obpi", core, lowercased slug or None)``, or ``("id", dashed lowercase form,
+        None)`` for any other id.
+
     """
     adr = _ADR_ID_RE.match(identifier)
     if adr:

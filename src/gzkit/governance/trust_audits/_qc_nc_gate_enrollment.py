@@ -29,6 +29,10 @@ def unenrolled_scope_population() -> list[str]:
     When the disclosed list drains to empty this population empties with it, and the
     runner reports TEST_BUG rather than a PASS nothing measured. Re-declare this claim
     then: the refuse arm will have no unenrolled member left to plant.
+
+    Returns:
+        Sorted validate scope names whose functions no registered claim enrolls.
+
     """
     claimed = claimed_functions(get_enforcement_registry())
     return sorted(

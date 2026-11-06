@@ -86,6 +86,11 @@ def _integrity_findings(
 
     An absent ``rendition_fingerprint`` is drift, never a skip: treating it as
     "nothing to check" would make the gate bypassable by deleting one JSON field.
+
+    Returns:
+        A single ``(kind, what)`` finding when the fingerprint is missing or the bytes drifted;
+        empty when they match.
+
     """
     if provenance.rendition_fingerprint is None:
         return [
@@ -126,6 +131,11 @@ def validate_rendition_freshness(
 
     Returns no errors when the corpus is absent (bootstrap), the rendition is absent,
     or every committed rendition agrees with both its corpus and its attestation.
+
+    Returns:
+        Freshness and integrity findings across the committed renditions (staged-warn findings go to
+        advisories); empty when ``.gzkit/renditions`` is absent.
+
     """
     closed = (
         _disposition.grounds(_checkpoint.resolve("rendition-freshness", _levels.ERROR, root))

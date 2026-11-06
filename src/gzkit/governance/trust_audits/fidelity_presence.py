@@ -44,6 +44,10 @@ def _load_grandfather(project_root: Path) -> frozenset[str]:
     A missing or malformed file means *nothing* is grandfathered (empty set):
     absence must never silently widen the waiver, and presence enforcement does
     not depend on the grandfather file existing.
+
+    Returns:
+        The grandfathered ADR ids; empty when the file is absent or unreadable.
+
     """
     gf_path = project_root / _GRANDFATHER_REL
     if not gf_path.is_file():
@@ -63,6 +67,10 @@ def _iter_adr_decisions(project_root: Path) -> list[Path]:
     stem matches its parent directory name) — the same identity used across the
     trust audits.  ``ADR-CLOSEOUT-FORM.md`` sidecars and the pool tree are
     excluded (Boundary Invariant #7 scopes to non-pool Decisions).
+
+    Returns:
+        Sorted non-pool ADR Decision file paths; empty when the ADR root is absent.
+
     """
     adr_root = project_root.joinpath(*_ADR_ROOT_SEGMENTS)
     if not adr_root.is_dir():
@@ -90,6 +98,10 @@ def audit_fidelity_presence(
     3).  ``grandfather`` overrides the on-disk grandfather set (the
     test-isolation path); ``None`` loads
     ``data/fidelity_presence_grandfather.json``.
+
+    Returns:
+        One finding per ungrandfathered ADR Decision without a parseable Fidelity Assertions block.
+
     """
     gf = frozenset(grandfather) if grandfather is not None else _load_grandfather(project_root)
     errors: list[ValidationError] = []

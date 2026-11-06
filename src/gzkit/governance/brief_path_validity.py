@@ -67,6 +67,10 @@ def _normalize_for_creates(token: str) -> str:
     from ``str.lstrip("./")`` which would also eat the leading dot of
     dotfile-rooted paths like ``.gzkit/`` or ``.claude/``, breaking the
     prefix check at the call site (GHI #433).
+
+    Returns:
+        *token* with one leading ``./`` and any trailing ``/`` removed.
+
     """
     return token.removeprefix("./").rstrip("/")
 
@@ -82,6 +86,11 @@ def glob_root(path: str) -> str:
     ``src/gzkit/**/*.py`` -> ``src/gzkit``;
     ``.gzkit/skills/<slug>/SKILL.md`` -> ``.gzkit/skills``;
     ``*.md`` -> ``""`` (caller treats as project root).
+
+    Returns:
+        The slash-joined literal components before the first glob component; an empty string when
+        the first one is a glob.
+
     """
     literal: list[str] = []
     for part in path.split("/"):
@@ -124,6 +133,11 @@ def extract_allowed_paths(brief_path: Path) -> list[str] | None:
     lane suffixes like ``## ALLOWED PATHS (Foundational)``). Path bullets are
     read from the first backtick-delimited token on each bullet line, so
     trailing ``-- commentary`` is ignored.
+
+    Returns:
+        The paths listed under ``## Allowed Paths``, or None when the section is absent or lists
+        none.
+
     """
     content = brief_path.read_text(encoding="utf-8")
     in_allowed = False
@@ -162,6 +176,11 @@ def _extract_creates_paths_from_text(content: str) -> set[str]:
     stripped. The same normalization runs on the ``allowed`` side in
     :func:`check_brief_path_validity` so directory-shaped allowed paths
     (``src/gzkit/ports/``) match directory-shaped creates declarations.
+
+    Returns:
+        Cleaned path tokens with a recognized prefix from CREATE lines and creates-these-files
+        sections.
+
     """
     paths: set[str] = set()
     in_creates_section = False
@@ -186,6 +205,10 @@ def extract_brief_creates_paths(brief_path: Path) -> set[str]:
     plan-level GHI #403 marker so authoring-time ``gz obpi validate`` can
     suppress the existence gap on net-new files the brief is creating
     without waiting for the plan to land.
+
+    Returns:
+        The path tokens the brief declares it creates.
+
     """
     return _extract_creates_paths_from_text(brief_path.read_text(encoding="utf-8"))
 
@@ -205,6 +228,11 @@ def check_brief_path_validity(
     Net-new paths declared as created (plan-level GHI #403 or brief-level
     GHI #419) are exempt from the non-existence check — they exist in
     contract before they exist on disk.
+
+    Returns:
+        One gap message per allowed path that is a vendor mirror or does not exist and is not
+        declared created.
+
     """
     creates = creates_paths or set()
     gaps: list[str] = []
@@ -231,6 +259,11 @@ def check_brief_path_validity_for_brief(
 
     Returns an empty list when the brief has no ``## Allowed Paths`` section
     (newly scaffolded briefs surface no signal until paths are authored).
+
+    Returns:
+        The gap messages from ``check_brief_path_validity``; empty when the brief lists no allowed
+        paths.
+
     """
     allowed = extract_allowed_paths(brief_path)
     if not allowed:

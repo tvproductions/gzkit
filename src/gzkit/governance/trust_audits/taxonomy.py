@@ -64,6 +64,12 @@ def audit_pool_adr_isolation(project_root: Path) -> list[ValidationError]:
     means they were promoted without the formal ``gz-adr-promote`` ceremony.
     (Architectural Boundaries 1–2, which this once cited, were retired
     2026-09-29 under GHI #818; the ceremony requirement stands on its own.)
+
+    Returns:
+        One finding per distinct (pool ADR, event type) pair among the runtime-track lifecycle or
+        gate events recorded against pool ADRs, at its first ledger line; empty when the ledger is
+        absent.
+
     """
     ledger = project_root / ".gzkit" / "ledger.jsonl"
     if not ledger.is_file():
@@ -116,6 +122,11 @@ def _pool_identity_problems(
     legitimately produces a non-pool id, and the CLI loader must keep accepting
     one. All four records on disk already hold every rule below; the convention
     existed and was simply undeclared.
+
+    Returns:
+        Human-readable problem strings for each pool-artifact obligation *payload* fails; empty when
+        it meets them all.
+
     """
     problems: list[str] = []
     adr_id = payload.get("id", "")
@@ -165,6 +176,11 @@ def audit_pool_interview_schema(project_root: Path) -> list[ValidationError]:
     records carrying an invented ``forcing_functions`` nested key that no reader
     consumed and that the CLI loader would have rejected — repaired by hand,
     with no guard left behind. Never mutates files.
+
+    Returns:
+        One finding per schema problem in a pool ADR interview record; empty when the pool directory
+        is absent.
+
     """
     from gzkit.interview import (  # noqa: PLC0415 — lazy: avoids a CLI-layer import cycle
         answer_payload_problems,
@@ -341,6 +357,10 @@ def _adr_roots(project_root: Path) -> list[Path]:
     to FIND foundations must not miss one because the project chose a layout. The
     union also keeps every pre-existing fixture (which plants at the canonical
     path regardless of config) covered.
+
+    Returns:
+        The existing ADR root directories, canonical layout first, without duplicates.
+
     """
     import contextlib  # noqa: PLC0415 — paired with the lazy config import below
 
@@ -446,6 +466,11 @@ def _grandfathered_event_ids(project_root: Path) -> set[str]:
     declared proof channel ("ledger event + structural validator") prove only the
     event's EXISTENCE, not its ATTESTATION. ``.strip()`` matters: a whitespace-only
     attestor satisfies a raw length check while naming no witness at all.
+
+    Returns:
+        ADR ids with an attested ``foundation_grandfathered`` ledger event; empty when the ledger is
+        absent.
+
     """
     ledger = project_root / ".gzkit" / "ledger.jsonl"
     if not ledger.is_file():
@@ -516,6 +541,11 @@ def audit_foundation_closure(project_root: Path) -> list[ValidationError]:
     also reported as non-terminal. One defect, one finding; double-counting
     would make the migration-scale finding census unreadable. Never mutates
     files.
+
+    Returns:
+        Findings for foundation-roster membership drift, non-terminal members and members with no
+        attested grandfather event.
+
     """
     on_disk = _on_disk_foundation_ids(project_root)
     declared = _manifest_ids(project_root)
@@ -575,6 +605,10 @@ def audit_adr_taxonomy(project_root: Path) -> list[ValidationError]:
     are deliberately NOT folded in here. This function's contract is the
     ADR-0.0.17 decision tree alone; merging the two would make every existing
     caller's result depend on the grandfather manifest's population state.
+
+    Returns:
+        Every taxonomy finding across all ADR files under the scanned roots.
+
     """
     errors: list[ValidationError] = []
     for adr_md in _iter_adr_files(project_root):
@@ -590,6 +624,11 @@ def _read_adr_frontmatter(path: Path) -> FrontmatterRead:
     resolved permissively: an artifact this audit could not read was skipped as
     frontmatter-less, so a prohibited package stayed green here while booking
     itself at the ingress.
+
+    Returns:
+        The tri-state ``FrontmatterRead``; ``malformed`` with the OS error as reason when the file
+        cannot be read.
+
     """
     try:
         return read_frontmatter_bytes(path.read_bytes())
@@ -603,6 +642,11 @@ def _parse_adr_frontmatter(path: Path) -> dict[str, str] | None:
     Retained for ``sensitivity.py``, which re-imports it. Returns ``None`` for
     both ``absent`` and ``malformed`` — callers that must distinguish the two
     (every membrane guard) use :func:`_read_adr_frontmatter` instead.
+
+    Returns:
+        The frontmatter fields as a ``str -> str`` dict, or None when the frontmatter is absent or
+        malformed.
+
     """
     read = _read_adr_frontmatter(path)
     return dict(read.fields) if read.state == "valid" else None
@@ -619,6 +663,10 @@ def _live_adr_ids(project_root: Path) -> set[str]:
     (``ADR-0.0.43-ddd-domain-cascade``). Both forms are registered so a
     resolvable parent is never reported as an orphan — a gate that false-fires
     is worse than no gate, because it teaches operators to skip the finding.
+
+    Returns:
+        ADR ids found on disk, each in its full and bare forms; empty when the ADR root is absent.
+
     """
     adr_root = project_root / "docs" / "design" / "adr"
     if not adr_root.is_dir():
@@ -652,6 +700,11 @@ def non_pool_brief_owners(project_root: Path) -> dict[str, str]:
 
     A brief's directory needs no inference, and the set it yields is exactly what
     ``gz adr demote`` would delete.
+
+    Returns:
+        Mapping of OBPI id to owning ADR id for every non-pool brief; empty when the ADR root is
+        absent.
+
     """
     adr_root = project_root / "docs" / "design" / "adr"
     if not adr_root.is_dir():
@@ -682,6 +735,12 @@ def audit_obpi_lifecycle_coherence(project_root: Path) -> list[ValidationError]:
     because the demote path transacted over the ADR node but not its children.
     Demotion now parks children in the same ceremony; this audit fail-closes so
     the class cannot recur silently on the next bulk transition.
+
+    Returns:
+        One finding per orphaned ``obpi_created`` record (no disposition, and no brief on disk or
+        no resolvable parent), plus one per OBPI parked while its parent is a live non-pool ADR
+        (GHI #774); empty when the ledger is absent.
+
     """
     from gzkit.ledger import Ledger  # noqa: PLC0415
     from gzkit.obpi_lifecycle import (  # noqa: PLC0415
@@ -752,6 +811,11 @@ def audit_adr_status_fresh(project_root: Path) -> list[ValidationError]:
     because no maintained regenerator existed. Recovery surface is
     ``gz register-adrs`` (which now regenerates the index after ledger
     reconciliation); this audit closes the loop by fail-closing on drift.
+
+    Returns:
+        One finding per ADR whose ``adr-status.md`` row drifted from canon; empty when there is no
+        drift.
+
     """
     from gzkit.governance.adr_status_index import compute_drift  # noqa: PLC0415
 

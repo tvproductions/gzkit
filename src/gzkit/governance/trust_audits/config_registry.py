@@ -66,6 +66,10 @@ def _waiver_owned(project_root: Path, data_root: Path) -> set[str]:
     are its DECLARATIONS — and declarations win. ``distribution_baseline_manifest.json``
     is declared there but matches no glob, so a glob-only reading would claim it
     here and put one file under two owners.
+
+    Returns:
+        File names of the data files the waiver-ratchet registry's surfaces register.
+
     """
     owned: set[str] = set()
     for glob in _WAIVER_GLOBS:
@@ -164,6 +168,11 @@ def audit_config_registry(project_root: Path) -> list[ValidationError]:
     """Flag any config registry that is undeclared, phantom, unowned, or asymmetric.
 
     Returns one ``ValidationError`` per finding (non-empty → caller exits 3).
+
+    Returns:
+        Findings for undeclared, phantom, unowned or asymmetric registries, or a single error when
+        the config registry is missing or unparseable.
+
     """
     registry_path = project_root / _REGISTRY_REL
     payload = _load_json(registry_path)

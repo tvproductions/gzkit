@@ -110,6 +110,11 @@ def _literal_text(node: ast.expr, consts: dict[str, str]) -> str | None:
 
     An f-string's interpolations read as ``{}``, so a pattern that embeds a seam
     body contributes only its own literal parts.
+
+    Returns:
+        The literal text (f-string fields as ``{}``, concatenations joined, names via *consts*), or
+        None when the expression spells no literal.
+
     """
     if isinstance(node, ast.Constant):
         return node.value if isinstance(node.value, str) else None
@@ -172,6 +177,11 @@ def _composes_id(node: ast.JoinedStr) -> bool:
 
     Prose and template lines that mention an id (``f"OBPI-{x} not found"``) carry
     whitespace and are not compositions.
+
+    Returns:
+        True for a multi-part f-string opening with ``<KIND>-`` and containing no whitespace in its
+        literal parts; False otherwise.
+
     """
     head = node.values[0] if node.values else None
     if not (isinstance(head, ast.Constant) and isinstance(head.value, str)):

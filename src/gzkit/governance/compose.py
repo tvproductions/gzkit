@@ -18,6 +18,10 @@ def agent_contract_consumer(project_root: Path) -> str:
     ``AgentContract`` declaration, so the first route is the only route. Falls
     back to ``"root"`` when nothing is declared, which is the doctrine's own token
     (``agent-control-surface-rendering-substrate.md`` § Worked example).
+
+    Returns:
+        The first consumer declared for ``AgentContract``, or ``"root"`` when none is declared.
+
     """
     from gzkit.content.vendors import routes_for
 
@@ -43,6 +47,11 @@ def render_agents_md(project_root: Path, consumer: str | None = None) -> bytes:
     filed about, so the parameters are gone rather than deprecated. Derivation from
     canon is proven by ``gz validate --rendition-freshness`` (corpus fingerprint) and
     ``gz validate --rendition-floor-coherence`` (invariant-tier verbatim floor).
+
+    Returns:
+        The committed rendition's bytes for the resolved consumer, or empty bytes when no rendition
+        exists.
+
     """
     from gzkit.content.rendition_store import load_rendition, rendition_exists
 

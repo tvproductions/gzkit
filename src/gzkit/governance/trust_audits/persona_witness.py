@@ -41,6 +41,10 @@ def grandfathered_persona_ids(project_root: Path) -> frozenset[str]:
     An absent or unreadable manifest exempts **nothing**. The gate's reach must
     widen, never narrow, when its roster cannot be read — the inverse default
     would let a missing file silently disable the scope.
+
+    Returns:
+        The grandfathered ADR ids; empty when the manifest is absent or unreadable.
+
     """
     manifest_path = project_root / _GRANDFATHER_REL
     if not manifest_path.is_file():
@@ -106,6 +110,11 @@ def audit_persona_witness(project_root: Path) -> list[ValidationError]:
     Exit semantics (per ValidationError aggregation):
         * 0 — every non-grandfathered ADR carries an authored persona
         * 3 — one or more do not (policy breach)
+
+    Returns:
+        One finding per canonical ADR without an authored Persona section; empty when the ADR root
+        is absent.
+
     """
     adr_root = project_root / "docs" / "design" / "adr"
     if not adr_root.is_dir():

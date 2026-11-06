@@ -52,6 +52,11 @@ def _enumerate_in_scope_artifacts(project_root: Path) -> list[Path]:
 
     Includes complexity-doctrine.md and docs/governance/complexity/**/*.md
     (excluding distilled-characteristics-*).
+
+    Returns:
+        Paths of the cluster ADR bodies, OBPI briefs and complexity doctrine files,
+        distilled-characteristics files excluded.
+
     """
     artifacts: list[Path] = []
     foundation_root = project_root / "docs" / "design" / "adr" / "foundation"
@@ -78,6 +83,10 @@ def _extract_citations(file: Path) -> list[tuple[int, str]]:
     """Return (lineno, citation_text) for every line referencing a complexity doc.
 
     Lines preceded by the speculative skip marker are excluded.
+
+    Returns:
+        ``(line number, citation text)`` pairs; empty when the file cannot be read.
+
     """
     try:
         lines = file.read_text(encoding="utf-8").splitlines()
@@ -115,6 +124,10 @@ def _slugify_heading_candidates(heading_text: str) -> list[str]:
     Generates:
     1. Default GitHub-style slug (lowercase, non-alphanumeric -> '-', strip).
     2. For each backtick-delimited identifier, a slug variant with '_' -> '-'.
+
+    Returns:
+        Distinct candidate slugs for the heading, in order.
+
     """
     default_slug = re.sub(r"[^a-z0-9]+", "-", heading_text.lower()).strip("-")
     candidates = [default_slug]
@@ -143,6 +156,10 @@ def _read_current_corpus_revision(project_root: Path) -> int | None:
     """Parse corpus_revision from frontmatter of the most recent distilled file.
 
     Uses distilled-characteristics-*.md sorted by filename desc.
+
+    Returns:
+        The integer ``corpus_revision``, or None when no distilled file or usable value exists.
+
     """
     complexity_docs = project_root / "docs" / "governance" / "complexity"
     if not complexity_docs.is_dir():
@@ -187,6 +204,10 @@ def validate_complexity_doctrine_links(project_root: Path) -> list[ValidationErr
     """Enumerate artifacts, walk each citation, apply the four checks.
 
     Returns a list of ValidationError on any miss.
+
+    Returns:
+        One finding per citation failing one of the four checks.
+
     """
     errors: list[ValidationError] = []
     current_revision = _read_current_corpus_revision(project_root)

@@ -116,6 +116,11 @@ def delivered_contract_bytes(payload: object) -> int | None:
     ``None`` means Codex assembled no project-doc block at all — a different
     state from a truncated delivery, and reporting it as ``0`` would read as a
     measurement rather than an absence.
+
+    Returns:
+        The UTF-8 byte length of the project-doc block, or None when the payload is not a list or
+        carries no such block.
+
     """
     if not isinstance(payload, list):
         return None
@@ -157,6 +162,11 @@ def diagnose_delivery(
     The dispute requires truncation. A surface smaller than a correctly applied
     cap also delivers fewer bytes than the cap, and calling that a disputed
     declaration would send the reader to the wrong remedy.
+
+    Returns:
+        ``(severity, message)`` pairs: a WARNING when nothing was delivered, a NOTE when the whole
+        surface was, otherwise the truncation findings.
+
     """
     if delivered_bytes is None:
         return [
@@ -238,6 +248,10 @@ def audit_codex_delivery_witness(
     Always returns an empty list: every finding here is advisory, for the two
     reasons the module docstring states. The return type is kept so the scope
     composes with the other trust audits rather than needing a special case.
+
+    Returns:
+        Always an empty list; every finding is emitted as an advisory.
+
     """
     surface = project_root / _SURFACE_REL
     if not surface.is_file():

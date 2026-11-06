@@ -76,6 +76,11 @@ def audit_population_controls(
     acceptance propping up the shrink baseline); an accepted claim that no longer
     exists; and an empty registry, where a green run would be the silence this exists
     to break. Non-empty → the scope exits 3.
+
+    Returns:
+        Findings for undeclared unaccepted claims and stale acceptances, or a single error when the
+        accepted list fails to load or the registry is empty.
+
     """
     accepted, load_error = _load_accepted(project_root)
     if load_error is not None:

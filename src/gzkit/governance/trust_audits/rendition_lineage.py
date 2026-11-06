@@ -142,6 +142,11 @@ class LineageCoverage(NamedTuple):
         still declared `corpus-owned`, and the surface's total is unchanged, but
         nothing witnessed them, so they leave the numerator of the proven-coverage
         percentage and land in a count whose name says why.
+
+        Returns:
+            A new ``LineageCoverage`` with owned sections and bytes zeroed, the totals kept and the
+            owned counts carried as ungraded.
+
         """
         return LineageCoverage(
             owned_sections=0,
@@ -163,6 +168,11 @@ def measure_coverage(committed_text: str, sections: Mapping[str, str]) -> Lineag
     declaration's key set: a section present in the text is counted whether or
     not the declaration mentions it, because an unmentioned section is undeclared
     debt, never implied coverage.
+
+    Returns:
+        ``LineageCoverage`` with the owned and total section counts and byte sums for
+        *committed_text*.
+
     """
     spans = measure_section_spans(committed_text)
     owned = {sid: span for sid, span in spans.items() if sections.get(sid) == _OWNED}
@@ -189,6 +199,10 @@ def _section_text_by_id(text: str) -> dict[str, str]:
     `iter_section_boundaries` measures in — slicing the `str` by those offsets
     would silently misalign the moment any section carries a multibyte
     character.
+
+    Returns:
+        Mapping of section id to that section's decoded text.
+
     """
     raw = text.encode("utf-8")
     return {
@@ -206,6 +220,10 @@ def _load_committed_lineage(root: Path, surface: str, consumer: str) -> Consumer
     reported as `None` here and graded by the caller: for a surface that
     declares owned sections, absence is a genuine enforcement gap, not a
     bootstrap skip.
+
+    Returns:
+        The committed ``ConsumerLineage``, or None when the sidecar file is absent.
+
     """
     path = lineage_path(root, surface, consumer)
     if not path.exists():
@@ -240,6 +258,10 @@ def _missing_lineage_message(surface: str, consumer: str, owned_count: int, path
     "ungraded" rather than "failed" because nothing failed: the gate is reporting
     the honest extent of its own reach, which is the one thing ADR-0.35.0 forbids
     leaving implied.
+
+    Returns:
+        The what-is-ungraded, why and next-step disclosure text.
+
     """
     plural = "" if owned_count == 1 else "s"
     return (
@@ -261,6 +283,10 @@ def _missing_citation_message(surface: str, consumer: str, section_id: str, entr
     REQ-0.35.0-06-06 scopes the obligation to "the exit-3 path", not to one
     message producer, so a finding that refuses without a runnable next step
     leaves an operator exactly where the guardrail-feedback shape forbids.
+
+    Returns:
+        The what-failed, why and next-step recovery text.
+
     """
     return (
         f"What failed: committed rendition '{surface}/{consumer}' declares section "
@@ -311,6 +337,10 @@ def verify_candidate_against_declaration(
     :func:`effective_corpus`, never of *corpus*'s raw append log — a retired id
     left behind in a committed lineage is exactly the stale reference this check
     exists to catch (REQ-0.35.0-06-04's effective-corpus requirement).
+
+    Returns:
+        One problem message per integrity failure; empty when clean or when *lineage* is None.
+
     """
     if lineage is None:
         return []
@@ -392,6 +422,11 @@ def _uncited_materialized_entries(
     is what keeps a `compressible` entry the setpoint dial legitimately dropped
     from being reported as a missing citation — it is absent from the text, so
     nothing claims it was materialized.
+
+    Returns:
+        One missing-citation message per live entry materialized into the section but not cited;
+        empty when nothing is materialized there.
+
     """
     materialized = derived_by_id.get(section_id)
     if materialized is None:
@@ -425,6 +460,11 @@ def _grade_rendition(root: Path, surface: str, rendition_file: Path) -> _Graded:
     the declaration and the committed bytes, independent of whether the gate
     found anything wrong. Suppressing it on the failing path would hide the
     scope exactly when an operator is reading the finding.
+
+    Returns:
+        ``_Graded`` with the rendition's problems and coverage: ungraded coverage plus a disclosure
+        when owned sections lack lineage, a refusal problem when regeneration fails.
+
     """
     committed_text = rendition_file.read_text(encoding="utf-8")
     consumer = rendition_file.stem
@@ -476,6 +516,11 @@ def validate_rendition_lineage(
     enforce yet), and when every declared owned section is UNGRADED for want of a
     committed lineage — that absence is disclosed on the advisory channel and in
     the coverage figure, never as a finding (operator ruling 2026-09-11).
+
+    Returns:
+        One finding per lineage problem across committed renditions; empty when
+        ``.gzkit/renditions`` is absent.
+
     """
     closed = (
         _disposition.grounds(_checkpoint.resolve(_SCOPE, _levels.ERROR, root))

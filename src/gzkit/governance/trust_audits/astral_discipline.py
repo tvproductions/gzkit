@@ -307,6 +307,10 @@ def _yaml_code(text: str) -> str:
     appears inside shell strings; only a line that is nothing but a comment
     is dropped (RO-9 tranche 3: the release workflow's note on what replaced
     `twine check` read as a use of twine).
+
+    Returns:
+        *text* with every whole-line comment removed, newline-joined.
+
     """
     return "\n".join(line for line in text.splitlines() if not line.lstrip().startswith("#"))
 

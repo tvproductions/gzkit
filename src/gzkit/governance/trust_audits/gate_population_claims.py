@@ -75,6 +75,10 @@ def _floor_claims() -> dict[str, frozenset[str]]:
     """Return the claimed functions of the registry the floor run already populated.
 
     Passing it keeps one floor run from re-running claim discovery once per member.
+
+    Returns:
+        Mapping of each claimed function to the ids of the claims naming it.
+
     """
     from gzkit.enforcement import get_enforcement_registry  # noqa: PLC0415
     from gzkit.governance.trust_audits.gate_enrollment import (  # noqa: PLC0415

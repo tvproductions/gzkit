@@ -73,6 +73,12 @@ def audit_reconcile_freshness(project_root: Path) -> list[ValidationError]:
     ``frontmatter_reconciled`` / ``reconcile_*`` ledger event is older than
     HEAD's commit timestamp by more than 24 hours, derived state is
     potentially stale.
+
+    Returns:
+        A single finding when the newest reconcile event trails HEAD by more than the grace window;
+        empty when the ledger is absent, there is no reconcile event or git is unavailable, or it is
+        fresh.
+
     """
     ledger = project_root / ".gzkit" / "ledger.jsonl"
     if not ledger.is_file():

@@ -66,6 +66,10 @@ def plan_backfill(ledger: Ledger, project_root: Path | None = None) -> list[tupl
     2. **Brief-absent cohort** — undisposed OBPIs whose brief is not on disk,
        regardless of how the brief went away. This is the arm the GHI's title
        actually names ("no on-disk briefs"); parent-resolution alone misses it.
+
+    Returns:
+        ``(obpi_id, original parent, parked-to target)`` per orphan, each OBPI once.
+
     """
     events = [event.model_dump() for event in ledger.read_all()]
     root = project_root or Path()
@@ -153,6 +157,10 @@ def plan_release(ledger: Ledger, project_root: Path | None = None) -> list[tuple
     ``parked_from`` is read off the park event being
     released rather than reconstructed, so the pair reads as a matched
     park/unpark on replay.
+
+    Returns:
+        ``(obpi_id, live parent, parked-from ADR)`` per OBPI parked under a live ADR.
+
     """
     events = [event.model_dump() for event in ledger.read_all()]
     violations = park_coherence_violations(events, non_pool_brief_owners(project_root or Path()))

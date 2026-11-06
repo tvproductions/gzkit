@@ -147,6 +147,10 @@ def audit_mx_hardening(root: Path, *, now: datetime | None = None) -> list[Valid
     """Return a ValidationError for each grounding finding and announce the rest.
 
     A non-grounding finding prints one advisory line and changes no exit code.
+
+    Returns:
+        One finding per grounding finding; the other findings are emitted as advisories.
+
     """
     errors: list[ValidationError] = []
     for finding in mx_hardening_findings(root, now=now):

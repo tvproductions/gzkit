@@ -55,6 +55,11 @@ def _router_rows(skill_path: Path) -> list[tuple[str, str]]:
 
     Returns an empty list when the skill body has no intent table — that
     is the structural signal that the skill is *not* a router.
+
+    Returns:
+        ``(intent, routed slug)`` pairs; empty when the file cannot be read or carries no intent
+        table.
+
     """
     try:
         body = skill_path.read_text(encoding="utf-8")
@@ -85,6 +90,11 @@ def scope_router_rows_for_delivery(body: str, *, delivered: set[str]) -> str:
     A body with no intent table is returned untouched -- the absent header is
     the structural signal that a skill is not a router, and a filter that
     stripped backticked slugs from ordinary prose would rewrite the catalogue.
+
+    Returns:
+        *body* with the rows routing to undelivered slugs removed; *body* unchanged when it has no
+        intent table.
+
     """
     if not _INTENT_TABLE_HEADER.search(body):
         return body
@@ -102,6 +112,10 @@ def _routed_slug(line: str) -> str | None:
     Two shapes, because routers catalogue routes two ways: a pipe-table row and
     an ASCII decision-tree branch. Both are read here so the fence does not
     depend on which shape a given router happened to use.
+
+    Returns:
+        The routed slug from a table row or decision-tree branch, or None.
+
     """
     if line.lstrip().startswith("|"):
         row = _INTENT_ROW.search(line)
@@ -120,6 +134,11 @@ def audit_router_tables(project_root: Path) -> list[ValidationError]:
       intent to a slug that has no canonical ``SKILL.md`` on disk.
     * ``router_tables_coverage`` (advisory, exit 1) — a concrete skill is
       not routed from any router. Coverage gap, not structural breakage.
+
+    Returns:
+        Routed-slug resolution and coverage findings; empty when the canonical skills directory is
+        absent.
+
     """
     skills_root = project_root / _CANONICAL_SKILLS_DIR
     if not skills_root.is_dir():

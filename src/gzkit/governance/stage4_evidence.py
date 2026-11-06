@@ -107,6 +107,11 @@ def _scan_shell(text: str) -> tuple[bool, list[str]]:
     unbalanced ``$(``, or a trailing backslash — meaning the next physical line
     belongs to this same command. Heredoc delimiters are reported separately
     because their bodies end at a sentinel line, not at a balanced character.
+
+    Returns:
+        ``(is_open, heredoc_delimiters)``: ``is_open`` is True while a quote, a ``$(``/bracket
+        nesting or a trailing escape is unclosed; the delimiters are the heredoc terminators seen.
+
     """
     quote: str | None = None
     depth = 0
@@ -155,6 +160,11 @@ def _join_demo_commands(fence_lines: list[str]) -> list[str]:
     A blank or ``#`` line is a fence comment only at the *start* of a command;
     inside a continuation it is program text, and interior lines keep their
     indentation because the languages they carry are whitespace-significant.
+
+    Returns:
+        The whole shell commands, each newline-joined from its physical lines, an unterminated
+        trailing command included.
+
     """
     commands: list[str] = []
     pending: list[str] = []
@@ -194,6 +204,10 @@ def extract_demo_commands(brief_path: Path) -> list[str]:
     Reads the first fenced code block under a ``## Demo`` heading and joins its lines
     into whole commands (see ``_join_demo_commands``); a line starting a command with
     ``#`` marks a comment. Returns ``[]`` when no Demo section or fenced block is present.
+
+    Returns:
+        The joined commands from the ``## Demo`` fence; empty when the brief file does not exist.
+
     """
     if not brief_path.is_file():
         return []
@@ -265,6 +279,11 @@ def replay_shell() -> str | None:
     platform default, which is the pre-existing behaviour, and the tests that
     depend on POSIX shell semantics declare the limit and skip rather than
     asserting a shell that is not there.
+
+    Returns:
+        Path of the POSIX shell (Git for Windows' bash on Windows, ``bash`` elsewhere), or None when
+        none is found.
+
     """
     if os.name == "nt":
         return _windows_posix_shell()
@@ -280,6 +299,11 @@ def _windows_posix_shell() -> str | None:
     read is needed (``tests/policy/test_env_usage.py`` allowlists env access,
     and this lookup has a better answer than widening it). Git for Windows lays
     out ``<root>\cmd\git.exe`` beside ``<root>\bin\bash.exe``.
+
+    Returns:
+        Path of Git for Windows' ``bash.exe``, or a ``bash`` on PATH outside ``system32``; None when
+        neither exists.
+
     """
     git = find_executable("git")
     if git is not None:
@@ -303,6 +327,11 @@ def replay_invocation(command: str) -> tuple[list[str] | str, bool]:
     Windows `shell=True` appends the command to `COMSPEC /c`, so an `executable`
     override hands `/c` to a shell that does not take it. The argv form is the
     one spelling that means the same thing on both platforms.
+
+    Returns:
+        ``([shell, "-c", command], False)`` when a replay shell exists; ``(command, True)``
+        otherwise.
+
     """
     shell = replay_shell()
     if shell is None:
@@ -345,6 +374,10 @@ def demo_env(project_root: Path, checkout: Path) -> dict[str, str]:
     environment without installing into it, and ``PYTHONPATH`` resolves imports
     from the copy, so no Demo command reaches the live checkout through the
     interpreter either.
+
+    Returns:
+        A copy of the process environment with the live-venv and copy-resolving overrides applied.
+
     """
     venv = project_root / ".venv"
     env_root = venv if venv.is_dir() else Path(sys.prefix)
@@ -389,6 +422,11 @@ def run_demos(project_root: Path, commands: list[str]) -> list[DemoResult]:
     a recorded operator attestation and appended a ledger row nothing can
     remove. The Demo therefore runs in a copy that is deleted afterwards. When
     no copy can be made, the Demo is refused, never run live.
+
+    Returns:
+        One ``DemoResult`` per command run in the copy; each marked not run with exit -1 and the
+        reason when no copy can be made; empty when *commands* is empty.
+
     """
     if not commands:
         return []
@@ -442,6 +480,10 @@ def _counts_from_covers_summary(data: dict) -> tuple[int, int]:
     ``@covers`` test (ADR-0.0.59), so they always appear in ``uncovered_reqs``; counting
     them as an attestability blocker is a category error that reports NOT-ATTESTABLE for
     every SUPPORT-carrying OBPI. Only an uncovered BEHAVIOR REQ is a real Stage-4 blocker.
+
+    Returns:
+        ``(total_reqs, behavior_uncovered_reqs)`` from the summary, 0 for each when absent.
+
     """
     summary = data.get("summary", {})
     return int(summary.get("total_reqs", 0)), int(summary.get("behavior_uncovered_reqs", 0))

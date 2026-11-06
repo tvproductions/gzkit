@@ -94,6 +94,10 @@ def _build_empty(slug: str = "empty") -> Path:
     "missing artifact" branch — never the branch the claim actually names. Each
     remaining caller is being replaced by a minimal VALID project carrying exactly
     one planted violation; do not add new callers.
+
+    Returns:
+        Path of a fresh, empty fixture directory named after *slug*.
+
     """
     return _mkroot(slug)
 
@@ -106,6 +110,10 @@ def _build_cli_audit() -> Path:
     different command. Without the manifest the command raises an uncaught
     FileNotFoundError, which also exits 1 — so the old empty fixture scored a crash
     as enforcement (GHI #699).
+
+    Returns:
+        Path of the fixture project root carrying the mismatched manpage heading.
+
     """
     root = _mkroot("cli-audit")
     _write(root / ".gzkit.json", "{}\n")
@@ -149,6 +157,10 @@ def _build_skill_audit() -> Path:
     All four mirror roots carry byte-identical copies so mirror drift does not add a
     second finding, and the canonical root is non-empty so the CANONICAL-ROOT-EMPTY
     branch does not fire. The one violation is the missing required field.
+
+    Returns:
+        Path of the fixture project root whose mirrored SKILL.md lacks `owner`.
+
     """
     root = _mkroot("skill-audit")
     _write(root / ".gzkit.json", "{}\n")
@@ -179,6 +191,10 @@ def _build_readiness_audit() -> Path:
     so omitting exactly one required surface isolates that check: the required list
     has a single entry naming CLAUDE.md. An empty project failed all six at once
     and proved only that *something* was missing (GHI #699).
+
+    Returns:
+        Path of the fixture project root missing exactly one required readiness surface.
+
     """
     root = _mkroot("readiness-audit")
     _write(root / "AGENTS.md", "# Agents\n")
@@ -198,6 +214,10 @@ def _build_session_green_gate() -> Path:
     The claim is token-adjacency: a hook naming a *different* verb that merely starts
     with "gz check" does not run the session green gate. An absent config file proves
     only the existence branch and leaves that logic uncovered.
+
+    Returns:
+        Path of the fixture project root carrying the miswired pre-push hook.
+
     """
     root = _mkroot("session-green-gate")
     _write(
@@ -226,6 +246,10 @@ def _build_orientation_freshness() -> Path:
     in ``_CODEX_START_SOURCES``. ``_codex_session_start_command_strings`` discards
     obsolete flat command arrays wholesale, so the older shape plants a second
     "does not invoke" finding and the fixture stops being minimal-valid.
+
+    Returns:
+        Path of the fixture project root whose orientation output omits one required heading.
+
     """
     root = _mkroot("orientation")
     _write(
@@ -290,6 +314,10 @@ def _build_complexity_thresholds() -> Path:
 
     Exercises the loader, the Pydantic contract, and the canonical-metric coverage
     check. An absent data file short-circuits before any of the three.
+
+    Returns:
+        Path of the fixture project root whose threshold table lacks one metric's bands.
+
     """
     root = _mkroot("complexity-thresholds")
     import importlib.resources  # noqa: PLC0415
@@ -309,6 +337,10 @@ def _build_line_endings() -> Path:
 
     `*.py text` exists but does not pin `eol=lf`, so the audit must flag the weak
     directive — a branch an absent file never reaches.
+
+    Returns:
+        Path of the fixture project root carrying the weak `.gitattributes` directive.
+
     """
     root = _mkroot("line-endings")
     _write(root / ".gitattributes", "*.py text\n")
@@ -323,6 +355,10 @@ def _build_authorship_policy() -> Path:
     suffix uses the reserved `.invalid` TLD (RFC 2606) so the control fires
     identically on every machine, whatever `user.email` that machine resolves —
     including one whose global config already satisfies gzkit's real policy.
+
+    Returns:
+        Path of the fixture project root declaring the unsatisfiable authorship policy.
+
     """
     root = _mkroot("authorship-policy")
     _write(
@@ -339,6 +375,10 @@ def _build_smoke_tier() -> Path:
     matters is a populated project whose smoke tier is EMPTY — the
     green-by-emptiness case, where a budget gate passes because it measured
     nothing.
+
+    Returns:
+        Path of the fixture project root whose opted-in smoke tier is empty.
+
     """
     root = _mkroot("smoke-tier")
     _write(root / "tests" / "test_ordinary.py", "def test_nothing():\n    pass\n")
@@ -353,6 +393,10 @@ def _build_dispatch_absorption_marker() -> Path:
 
     The claim is that the ADR records `absorbed_into: ADR-0.0.73`. A missing file
     proves only that the path is checked, never that the marker is.
+
+    Returns:
+        Path of the fixture project root whose pool ADR lacks the absorption marker.
+
     """
     root = _mkroot("dispatch-absorption-marker")
     pool = root / "docs" / "design" / "adr" / "pool"
@@ -392,6 +436,10 @@ def _build_module_size() -> Path:
     Omitting ``data/module_size_grandfather.json`` leaves the listed set empty,
     which isolates the "over the band and NOT listed" direction; the other three
     directions are driven by the gate's own ``--self-test``.
+
+    Returns:
+        Path of the fixture project root carrying the oversized, ungrandfathered module.
+
     """
     root = _mkroot("module-size")
     _write(
@@ -420,6 +468,10 @@ def _build_tautological_debt() -> Path:
     co-occurring with an assertion is debt the ceiling cannot hold. The empty
     waiver registry is written because the gate reads it through the registry
     seam, which treats a missing registry as a tree defect.
+
+    Returns:
+        Path of the fixture project root carrying one tautological op over a zero ceiling.
+
     """
     root = _mkroot("tautological-debt")
     _write(
@@ -441,6 +493,10 @@ def _build_tautological_debt_waived() -> Path:
     The admit half (GHI #797 precedent): a gate that stopped honouring waiver slots
     would count the op as debt and breach, and this control would fail. The refuse
     half is ``tautological-debt``.
+
+    Returns:
+        Path of the fixture project root whose tautological op is waived.
+
     """
     root = _build_tautological_debt()
     _write(
@@ -457,6 +513,10 @@ def _build_validator_reachability() -> Path:
     entry, so no scope has a gating caller, and the shrink-only baseline discloses
     none of them: the ungated set has grown past its baseline, the ratchet's own
     breach. ``pyproject.toml`` is planted because the script refuses a non-root.
+
+    Returns:
+        Path of the fixture project root with ungated scopes and an empty baseline.
+
     """
     root = _mkroot("validator-reachability")
     _minimal_pyproject(root)
@@ -474,6 +534,10 @@ def _build_validator_reachability_disclosed() -> Path:
     baseline would breach here and this control would fail. The scope list is the
     ratchet's own ``runnable_scopes()`` over the live parser: an admit control asks
     whether a disclosed scope is admitted, so it discloses exactly what is tiered.
+
+    Returns:
+        Path of the fixture project root whose ungated scopes are all disclosed in the baseline.
+
     """
     import importlib.util  # noqa: PLC0415
 
@@ -503,6 +567,10 @@ def _build_ledger_vocabulary_inertness() -> Path:
     The schema declares one type, the ledger is empty and the baseline discloses
     nothing. The type is not one ``probe_producer`` can run in isolation, so no
     fresh-project observation can verify it: the only way out is disclosure.
+
+    Returns:
+        Path of the fixture project root with one undisclosed never-fired event type.
+
     """
     root = _mkroot("ledger-vocabulary-inertness")
     _minimal_pyproject(root)
@@ -523,6 +591,10 @@ def _build_ledger_vocabulary_inertness_disclosed() -> Path:
 
     The admit half (GHI #797 precedent); the refuse half is
     ``ledger-vocabulary-inertness``.
+
+    Returns:
+        Path of the fixture project root whose never-fired event type is disclosed.
+
     """
     root = _build_ledger_vocabulary_inertness()
     _write(
@@ -561,6 +633,10 @@ def _build_docs_build() -> Path:
     This is the shape that shipped broken in this repo — a nav entry pointing at
     a manpage renamed in an earlier pass, green under ``gz check`` until someone
     ran the build by hand (2026-07-26).
+
+    Returns:
+        Path of the fixture project root whose mkdocs nav names a missing page.
+
     """
     root = _mkroot("docs-build")
     _write(root / "docs" / "index.md", "# Home\n")
@@ -577,6 +653,10 @@ def _build_docs_build_validation_floor() -> Path:
     ``validation.not_found: ignore`` propagates to nav and links alike, so a strict
     build would stay green over the dead link — the shape that hid 122 dead links in
     this repo. The gate must refuse the config before building.
+
+    Returns:
+        Path of the fixture project root whose mkdocs config downgrades the validation floor.
+
     """
     root = _mkroot("docs-build-validation-floor")
     _write(root / "docs" / "index.md", "# Home\n\n[gone](absent-page.md)\n")
@@ -666,6 +746,10 @@ def _build_guard_canary_sweep() -> Path:
     The planted test never calls the guard, so it passes before and after the
     mutation and the mutant survives. The binding hash is the real one for the
     planted guard, so the only thing wrong with this canary is the kill.
+
+    Returns:
+        Path of the fixture project root carrying the canary whose test passes on the mutant.
+
     """
     from gzkit.guard_canary import binding_hash  # noqa: PLC0415
 
@@ -711,6 +795,10 @@ def _build_behave() -> Path:
     was evaluated, indistinguishable from a real failure at exit 1 (GHI #699). A
     steps module makes behave run the scenario and fail it on the assertion, which
     is the outcome the claim actually names.
+
+    Returns:
+        Path of the fixture project root carrying the failing behave scenario.
+
     """
     root = _mkroot("behave")
     _write(
@@ -748,6 +836,10 @@ def _build_status_writer_coverage() -> Path:
     nothing would have noticed the next one that did not. An audit for that
     class which only ever runs on a clean tree would reproduce the defect it
     was built to close, so it ships with a tree it must go red on.
+
+    Returns:
+        Path of the fixture project root carrying the monitor-bypassing status writer.
+
     """
     root = _mkroot("status-writer-coverage")
     _write(
@@ -768,6 +860,10 @@ def _build_transcribed_adr_counts() -> Path:
     leave alone. A control planting only the violation would pass just as well
     against an audit that flagged everything, which is the blanket sweep the
     issue forbids.
+
+    Returns:
+        Path of the fixture project root carrying the live transcribed count and the dated record.
+
     """
     root = _mkroot("transcribed-adr-counts")
     _write(
@@ -796,6 +892,10 @@ def _build_obpi_lifecycle_coherence() -> Path:
 
     Proves the census can fail — a gate that cannot go red on a known-bad tree
     is green-by-emptiness, not evidence (GHI #584).
+
+    Returns:
+        Path of the fixture project root carrying the undisposed, orphaned OBPI.
+
     """
     root = _mkroot("obpi-lifecycle-coherence")
     _write(
@@ -839,6 +939,10 @@ def _build_pool_interview_schema() -> Path:
     CLI loader would have rejected it and the pool bucket had no reader to. It
     was repaired by hand with no guard left behind — PASS-on-violation here
     means the audit catches the actual class that shipped (GHI #719).
+
+    Returns:
+        Path of the fixture project root whose pool interview record carries the nested key.
+
     """
     root = _mkroot("pool-interview")
     _write(
@@ -873,6 +977,10 @@ def _build_advisory_scorecard() -> Path:
     stem presence was the entire pre-GHI-754 check, so a fixture whose stem was
     absent would pass the old implementation too and prove nothing about the
     proxy having been removed.
+
+    Returns:
+        Path of the fixture project root whose scorecard omits one canonical rule.
+
     """
     root = _mkroot("advisory-scorecard")
     _write(
@@ -905,6 +1013,10 @@ def _build_advisory_scorecard_counts() -> Path:
     is what shifted the Score column and silently dropped three real rows from
     the first cut of this count. A fixture without one cannot tell a correct
     parse from a three-row undercount.
+
+    Returns:
+        Path of the fixture project root whose scorecard Summary contradicts its rows.
+
     """
     root = _mkroot("advisory-scorecard-counts")
     _write(
@@ -951,6 +1063,10 @@ def _build_advisory_scorecard_ruff_reachability() -> Path:
     A `pyproject.toml` must be planted: with no readable ruff configuration
     `_ruff_selection` returns None and the arm reports nothing, which would make
     an otherwise-correct fixture a hollow control.
+
+    Returns:
+        Path of the fixture project root whose Mechanical row cites an unenabled ruff code.
+
     """
     root = _mkroot("advisory-scorecard-ruff-reachability")
     _write(
@@ -983,6 +1099,10 @@ def _build_adr_taxonomy() -> Path:
     the kind/semver incoherence the taxonomy scope exists to refuse. The ADR
     tree must be planted — `audit_adr_taxonomy` returns clean on an absent
     `docs/design/adr/`, which would make an empty fixture a hollow control.
+
+    Returns:
+        Path of the fixture project root carrying the foundation ADR with a feature semver.
+
     """
     root = _mkroot("adr-taxonomy")
     _write(
@@ -1004,6 +1124,10 @@ def _build_adversarial_validation() -> Path:
     Trips BOTH halves of the audit (GHI #676) — a control that exercised only the
     brief scan would leave the ledger-coherence half unproven, which is the half
     the issue was actually about.
+
+    Returns:
+        Path of the fixture project root carrying the verdictless heavy completion.
+
     """
     root = _mkroot("adversarial-validation")
     obpi_id = "OBPI-0.0.1-01-example"
@@ -1030,6 +1154,10 @@ def _build_red_parity() -> Path:
 
     The completion receipt is stamped past the GHI #642 cutover so the brief is in
     scope; no `red_receipt_emitted` event is written, which is the finding.
+
+    Returns:
+        Path of the fixture project root carrying the BEHAVIOR REQ with no RED witness.
+
     """
     root = _mkroot("red-parity")
     obpi_id = "OBPI-0.0.1-01-example"
@@ -1060,6 +1188,10 @@ def _build_producer_field_parity() -> Path:
     on ``airlock_out`` while both contracts were silent. The fixture producer has
     never fired, so no row exists to parse: a committed-row fence is green here by
     construction, which is why this control is bound to the PRODUCER-side audit.
+
+    Returns:
+        Path of the fixture project root whose producer writes the undeclared payload field.
+
     """
     root = _mkroot("producer-field-parity")
     _write(
@@ -1134,6 +1266,10 @@ def _build_rendition_lineage() -> Path:
     committed lineage is disclosed (exit 0, operator ruling 2026-09-11), never
     failed, so the control's only reachable fail-closed path is drift inside a
     WITNESSED owned section.
+
+    Returns:
+        Path of the fixture project root whose committed rendition drifted from the corpus.
+
     """
     from gzkit.content.corpus_store import append_entry  # noqa: PLC0415
     from gzkit.content.lineage import lineage_path  # noqa: PLC0415
@@ -1231,6 +1367,10 @@ def _build_doc_code_citations() -> Path:
 
     One resolving citation is planted too, so the control cannot pass on an arm
     that flags every `src/gzkit/` string it sees.
+
+    Returns:
+        Path of the fixture project root whose prose cites a nonexistent module.
+
     """
     root = _mkroot("doc-code-citations")
     _write(root / "src" / "gzkit" / "real.py", "")
@@ -1260,6 +1400,10 @@ def _build_doc_code_citations_exempted() -> Path:
     every member by ``doc-code-citations``.
 
     Both admit surfaces are planted: the skip marker, and a fenced code block.
+
+    Returns:
+        Path of the fixture project root carrying only citations the gate must admit.
+
     """
     root = _mkroot("doc-code-citations-exempted")
     _write(
@@ -1306,6 +1450,10 @@ def _build_wheel_path_literals() -> Path:
     The same literal is also planted OUTSIDE the wheel (under ``docs/`` and in
     an excluded chore's ``proofs/``), so the control cannot pass on a scan that
     simply walks every Markdown file it can find.
+
+    Returns:
+        Path of the fixture project root whose shipped skill doc names a home-rooted path.
+
     """
     root = _mkroot("wheel-path-literals")
     _write(
@@ -1337,6 +1485,10 @@ def _build_validate_default_scopes() -> Path:
     mismatch survived eight days of green commits (GHI #744). The frontmatter is
     well-formed on purpose — an invalid rule would trip the `surfaces` scope
     instead, and the control must fail for the marker reason, not a parse error.
+
+    Returns:
+        Path of the fixture project root whose canonical rule's version marker disagrees.
+
     """
     root = _mkroot("validate-default-scopes")
     _write(
@@ -1395,6 +1547,11 @@ def _build_brief_size() -> Path:
     arm that measures sealed records or refuses the bound itself. The count is
     read from the declared bound, never written here, so the fixture follows a
     re-ruled bound.
+
+    Returns:
+        Path of the fixture project root (four levels above the OBPI directory) holding the
+        over-bound live brief and its decoys.
+
     """
     from gzkit.governance.trust_audits.brief_size import load_bounds  # noqa: PLC0415
 
@@ -1412,6 +1569,10 @@ def _build_brief_size_grandfathered() -> Path:
     The admit half of the gate (GHI #797 precedent). A gate that stopped
     honouring a recorded ceiling would hold every project with a brief already
     over a bound red at cutover. The refuse half is proven by ``brief-size``.
+
+    Returns:
+        Path of the fixture project root holding the over-bound brief at its recorded ceiling.
+
     """
     from gzkit.governance.trust_audits.brief_size import load_bounds  # noqa: PLC0415
 
@@ -1454,6 +1615,11 @@ def _astral_root(slug: str, *, fresh: bool, ban: bool = True) -> Path:
 
     Its 3.14 floor bans PEP 563's import unless *ban* is false, the deferred-annotations
     control's new violation.
+
+    Returns:
+        Path of the fixture uv project root with the baselined violation, plus the new one when
+        *fresh*.
+
     """
     root = _mkroot(slug)
     banned = (
@@ -1494,6 +1660,10 @@ def _build_astral_discipline() -> Path:
 
     Decoy: the baselined unchecked lock, which must stay silent; the entrypoint
     reports no catch when anything but the new setup-python step fires.
+
+    Returns:
+        Path of the fixture project root built by ``_astral_root`` with the fresh violation.
+
     """
     return _astral_root("astral-discipline", fresh=True)
 
@@ -1521,6 +1691,11 @@ def _build_complexity_ceiling() -> Path:
     Decoy: a function exactly AT the ceiling in its own module, among simple ones, which
     must stay silent (a value equal to the ceiling passes); the entrypoint reports no
     catch when anything in the decoy module fires.
+
+    Returns:
+        Path of the fixture project root carrying the over-ceiling function and the at-ceiling
+        decoy.
+
     """
     root = _mkroot("complexity-ceiling")
     _write(
@@ -1545,6 +1720,10 @@ def _build_id_seam() -> Path:
     Decoy: the baselined site, which must stay silent; the entrypoint reports no
     catch when anything but the new site fires, so a gate that refuses the
     baseline itself fails the control.
+
+    Returns:
+        Path of the fixture project root built by ``_id_seam_root`` with the fresh site.
+
     """
     return _id_seam_root("id-seam", fresh=True)
 
@@ -1561,6 +1740,10 @@ def _build_mx_hardening() -> Path:
     stay silent; the entrypoint reports no catch when anything but the dangling
     finding fires, so a gate that counts closed sessions, or grounds a session
     for its age, fails the control.
+
+    Returns:
+        Path of the fixture project root whose ledger opens an MX session with no marker.
+
     """
     from datetime import UTC, datetime, timedelta  # noqa: PLC0415
 
@@ -1603,6 +1786,10 @@ def _build_catalog() -> Path:
     The outcome and REQ files are valid and present, so a finding against either
     is a decoy firing, and the entrypoint reports no catch when one does: a gate
     that refused a well-formed file would otherwise pass on the duplicate.
+
+    Returns:
+        Path of the fixture project root (two levels above the catalog directory).
+
     """
     catalog = _mkroot("catalog") / "data" / "catalog"
     family = {"code": "H", "band": "product", "name": "Session continuity", "scope": "One."}
@@ -1675,6 +1862,10 @@ def _build_catalog_edges() -> Path:
     H1 depends on an outcome the catalog lacks and is governed by an ADR nothing
     records; REQ-1 is a member of a missing outcome; REQ-2 derives from no live FR.
     H2's dependency on H1 and its gate are valid decoys.
+
+    Returns:
+        Path of the catalog fixture project root carrying one break per edge check.
+
     """
     outcomes = [
         _nc_outcome("H1", depends_on=["H9"], governed_by=["ADR-9.9.9"]),
@@ -1829,6 +2020,10 @@ def _build_catalog_bdd() -> Path:
     User-facing H1 names no feature; user-facing H2's feature carries @H2, and its
     BEHAVIOR REQ-1 has neither a tagged scenario nor an `@covers` test. REQ-2 is a
     SUPPORT REQ under H2, a decoy that needs neither binding.
+
+    Returns:
+        Path of the catalog fixture project root carrying the BDD alignment breaks.
+
     """
     outcomes = [
         _nc_outcome("H1", user_facing=True),
@@ -1846,6 +2041,10 @@ def _build_catalog_forward_rule() -> Path:
     Decoys the rule must not count: an unnamed event before the cutover (never
     read), a named event after it, an event naming an OBPI after it (frozen
     legacy, RO-5 tranche 4), and an unlisted type after it.
+
+    Returns:
+        Path of the fixture project root carrying the unnamed post-cutover delivery event.
+
     """
     root = _catalog_project("catalog-forward-rule", [], [])
     registry = {
@@ -1884,6 +2083,10 @@ def _build_brief_structure() -> Path:
     Status is `Draft`, so the terminal-status exemption cannot swallow it: this
     fixture fails only if the scope has stopped enforcing `BriefStructure` on the
     live corpus, which is the exact regression the flip exists to prevent.
+
+    Returns:
+        Path of the fixture project root carrying the live brief with no structured frontmatter.
+
     """
     root = _mkroot("brief-structure")
     _write(
@@ -1955,6 +2158,10 @@ def _build_persona_witness() -> Path:
     an omitted template variable as its own literal token and no substance test
     recognised braces as scaffolding (GHI #741). A negative control that only
     proved the easy half would leave the real failure mode unwitnessed.
+
+    Returns:
+        Path of the fixture project root carrying the ADR with unsubstituted persona residue.
+
     """
     root = _mkroot("persona-witness")
     _write(
@@ -2031,6 +2238,10 @@ def _build_instructions_files_budget() -> Path:
     than no control, because it reports a scope as witnessed while it is blind.
     The scope still fail-closes through ``audit_surface_delivery_witness`` on a
     malformed survival declaration, and that is what this control now mutates.
+
+    Returns:
+        Path of the fixture project root carrying the malformed survival declaration.
+
     """
     root = _mkroot("instr-budget")
     _write(root / "data" / "agents_md_survival_declaration.json", '{"surfaces": "not-a-mapping"}\n')
@@ -2087,6 +2298,10 @@ def _build_git_fixture_isolation() -> Path:
     The same file also carries a spawn INSIDE the boundary and a non-git spawn
     with no ``env`` at all, so the control fails for the planted reason — an
     unguarded ``git`` argv — and not for any spawn lacking ``env``.
+
+    Returns:
+        Path of the fixture project root carrying the test that spawns git with the inherited env.
+
     """
     root = _mkroot("git-fixture-isolation")
     _write(
@@ -2109,6 +2324,10 @@ def _build_chore_suppression() -> Path:
     The chore also carries an honest criterion and a workflow report capture
     ending ``|| true``, so the control fails for the planted reason — the
     exit-forcing flag — and not for any command or ``||`` in the chore.
+
+    Returns:
+        Path of the fixture project root carrying the chore whose criterion forces a pass.
+
     """
     root = _mkroot("chore-suppression")
     chore = root / ".gzkit" / "chores" / "demo"
@@ -2201,6 +2420,10 @@ def _build_preflight() -> Path:
     The marker was always planted, but without `.gzkit.json` the command bailed at
     `ensure_initialized` with "gzkit not initialized" — exit 1, same as a real
     finding, so the marker was never inspected (GHI #699).
+
+    Returns:
+        Path of the initialized fixture project root carrying the stale pipeline marker.
+
     """
     root = _mkroot("preflight")
     _write(root / ".gzkit.json", "{}\n")
@@ -2306,6 +2529,10 @@ def _build_enforcement_floor() -> list:
 
     The meta-validator must detect the FACADE (facade_count > 0 = PASS for this NC).
     If run_meta_validator is gutted to skip FACADE detection, this returns 0 = FACADE.
+
+    Returns:
+        A one-element list holding the FACADE ``EnforcementClaimRecord`` ``nc-probe``.
+
     """
     from gzkit.enforcement import EnforcementClaimRecord  # noqa: PLC0415
 
@@ -2327,6 +2554,10 @@ def _build_theater_signature_scan() -> Path:
     Plants the REAL facade shape (the repudiated ``rendition_freshness`` mtime
     tautology), not a degenerate one — so PASS-on-violation means the analyzer
     catches the actual pattern class, not a synthetic stand-in (GHI #657).
+
+    Returns:
+        Path of the fixture project root carrying the planted mtime-reading validator.
+
     """
     root = _mkroot("theater-sig")
     _write(
@@ -2741,6 +2972,11 @@ def _optional_project_local_controls() -> tuple[tuple[Any, ...], ...]:
     chore scripts the wheel withholds (GHI #1114); in a project without them the
     step skips, so there is no gate to prove and no claim is made. Where the gzkit
     checkout carries the scripts, both halves of each gate are proven (GHI #1063).
+
+    Returns:
+        The four (claim id, fixture, entrypoint) control rows for the two ratchet gates, or an empty
+        tuple when the project-local ratchet scripts are not installed.
+
     """
     from gzkit.quality import project_local_ratchets_installed  # noqa: PLC0415
 

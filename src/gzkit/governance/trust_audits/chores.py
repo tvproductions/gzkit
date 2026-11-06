@@ -43,6 +43,11 @@ def audit_chores_layout(project_root: Path) -> list[ValidationError]:
     ``node_modules``. Waiver entries in
     ``data/chores_layout_waivers.json`` (a JSON list of POSIX path strings)
     exempt explicitly-listed paths per trust-doctrine T2.
+
+    Returns:
+        One finding per ``CHORE.md`` or ``acceptance.json`` outside the canonical roots and not
+        waived.
+
     """
     from gzkit.config import GzkitConfig  # noqa: PLC0415
 
@@ -129,6 +134,10 @@ def _mask_fences(chore_md: str) -> str:
     A heading inside a fence is example text. Searching the masked copy and
     slicing the original keeps a fenced ``## Before`` from ending a section, or a
     fenced ``### Heading`` from reading as a step (GHI #999).
+
+    Returns:
+        *chore_md* with every fenced block's non-newline characters replaced by spaces.
+
     """
     return _FENCE_RE.sub(lambda m: re.sub(r"[^\n]", " ", m.group(0)), chore_md)
 
@@ -150,6 +159,10 @@ def _stated_commands(section: str) -> list[str]:
     is a runner in :data:`_COMMAND_RUNNERS`. A lone tool name (`grep`) or a
     pattern (`Path(__file__).parents`) is prose, not a criterion. Commands under
     any other runner are not recognized — a stated limit, not a guarantee.
+
+    Returns:
+        The whitespace-normalized command spans whose first token is a known runner, in order.
+
     """
     fenced = [line for block in _FENCE_RE.findall(section) for line in block.splitlines()]
     unfenced = _FENCE_RE.sub("", section)
@@ -168,6 +181,11 @@ def _runs(command: str, json_commands: frozenset[str]) -> bool:
     A bare ``gz`` form of a JSON command counts as the same command. ``gz chores
     <verb>`` renders or executes the JSON itself, so pointing at it is the
     citation, never a restatement.
+
+    Returns:
+        True when the command, its ``uv run`` form, or a ``gz chores`` verb is carried; False
+        otherwise.
+
     """
     bare = command.removeprefix("uv run ")
     return (
@@ -182,6 +200,11 @@ def _history_mismatch(chore_md: str, entry: dict[str, object]) -> list[str]:
 
     Older notes are the record of how the chore got here and stay; only the
     newest must be the version the registry carries.
+
+    Returns:
+        A single mismatch message when the newest noted version differs from the registry's; empty
+        when none is noted or they agree.
+
     """
     noted = [tuple(int(part) for part in match) for match in _HISTORY_VERSION_RE.findall(chore_md)]
     if not noted:
@@ -240,6 +263,11 @@ def audit_chore_metadata_authority(project_root: Path) -> list[ValidationError]:
     Sync holds each slug's ``CHORE.md`` and ``acceptance.json`` byte-equal at
     ``src/gzkit/chores/``, ``README.md`` likewise, and ships ``registry.json``
     filtered (GHI #728, #1005), so the package copies are not re-read here.
+
+    Returns:
+        One finding per metadata statement the JSON authority does not carry; empty when the
+        registry cannot be read.
+
     """
     from gzkit.config import GzkitConfig  # noqa: PLC0415
 
@@ -364,6 +392,11 @@ def audit_chore_rung_conformance(project_root: Path) -> list[ValidationError]:
     without a declaration has no rung to hold its steps to. A malformed
     declaration is the registry loader's finding, not this audit's, so it is
     skipped here.
+
+    Returns:
+        One finding per workflow step beyond a chore's declared rung; empty when the registry cannot
+        be read.
+
     """
     from gzkit.commands.chores_declaration import parse_chore_declaration  # noqa: PLC0415
     from gzkit.config import GzkitConfig  # noqa: PLC0415
@@ -442,6 +475,10 @@ def _instructed_writers(chore_md: str) -> list[str]:
 
     A span is an inline code span or a fenced line with at least two tokens, so a
     flag named alone in prose (`--add-noqa`) is a mention, never an instruction.
+
+    Returns:
+        Whitespace-normalized spans of two or more tokens that match a suppression writer.
+
     """
     fenced = [line for block in _FENCE_RE.findall(chore_md) for line in block.splitlines()]
     spans = [*_INLINE_CODE_RE.findall(_FENCE_RE.sub("", chore_md)), *fenced]
@@ -484,6 +521,11 @@ def audit_chore_suppression(project_root: Path) -> list[ValidationError]:
     command inside prose code (`ruff check --add-noqa`) reads as an instruction.
     Workflow report captures (``> proofs/x.txt || true``) are deliberately not
     flagged: their exit status gates nothing.
+
+    Returns:
+        One finding per suppression a registered chore instructs or runs; empty when the registry
+        cannot be read.
+
     """
     from gzkit.config import GzkitConfig  # noqa: PLC0415
 
@@ -528,6 +570,10 @@ def _load_chores_layout_waivers(project_root: Path) -> frozenset[str]:
     Returns an empty frozenset if the file is absent, empty, or
     malformed — the audit fails open on waiver IO so a missing file does
     not silently become a strict-mode escape hatch in either direction.
+
+    Returns:
+        The waived path strings; empty when the file is absent, unreadable or not a list.
+
     """
     waiver_file = project_root / "data" / "chores_layout_waivers.json"
     if not waiver_file.is_file():

@@ -42,6 +42,11 @@ def _is_structured_brief(brief_path: Path) -> bool:
     for legacy briefs — this wrapper deliberately classifies brief shape across
     the whole corpus; it is not consuming a single legacy brief in a way that
     warrants the migration nudge.
+
+    Returns:
+        True when the brief parses as a ``BriefStructure``; False for a legacy shape or any parse
+        failure.
+
     """
     try:
         with warnings.catch_warnings():
@@ -65,6 +70,10 @@ def validate_brief_reconcile(root: Path) -> list[ValidationError]:
     ``BriefStructure`` — legacy briefs are skipped (see module docstring §
     Enforcement scope). Returns one ValidationError per dimension with drift
     (type='brief_reconcile', routed to exit 3 via _POLICY_BREACH_ERROR_TYPES).
+
+    Returns:
+        One finding per structured brief whose reconcile reports drift.
+
     """
     errors: list[ValidationError] = []
     for brief_path in _find_obpi_briefs(root):

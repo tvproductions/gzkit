@@ -123,6 +123,11 @@ def _is_active_closeout(ceremony: dict, now: datetime) -> bool:
     left untouched longer than ``_ACTIVE_CLOSEOUT_WINDOW_HOURS`` is not treated as
     an active closeout and is excluded from gz-check failure. The explicit-adr_id
     ceremony-gate path bypasses this and always enforces.
+
+    Returns:
+        True when the ceremony is in closeout and was touched within the active window, or has no
+        timestamp; False otherwise.
+
     """
     if not _is_in_closeout(ceremony):
         return False
@@ -149,6 +154,11 @@ def _enforcement_floor_green(project_root: Path) -> bool:
     guard so an empty registry never reads as a false green. READ-ONLY
     (``root=None`` → no ledger mutation). ``project_root`` is accepted for a
     uniform helper signature and future per-project scoping.
+
+    Returns:
+        True when the meta-validator verifies at least one claim and finds no FACADE or TEST_BUG;
+        False otherwise.
+
     """
     from gzkit.enforcement import run_meta_validator  # noqa: PLC0415
 
@@ -164,6 +174,10 @@ def _withdrawn_obpi_ids(project_root: Path) -> set[str]:
     false positive. The withdrawn signal is read directly from the event
     stream so it holds even when the OBPI has no ``obpi_created`` ancestor in
     the graph (the explicit withdrawal IS the disposition).
+
+    Returns:
+        OBPI ids with a withdrawal ledger event; empty when the ledger is absent or unreadable.
+
     """
     ledger_path = project_root / ".gzkit" / "ledger.jsonl"
     if not ledger_path.is_file():
@@ -193,6 +207,10 @@ def _waived_req_ids(project_root: Path) -> set[str]:
     *removed* by a superseding OBPI (e.g. a staging behavior replaced by a
     fail-closed one). Such REQs have no @covers test by design; the closeout
     proof must honor the waiver rather than re-demand the deleted test.
+
+    Returns:
+        Waived REQ ids; empty when the waiver file is absent or unreadable.
+
     """
     waiver_path = project_root / "data" / "behave_coverage_waivers.json"
     if not waiver_path.is_file():
@@ -325,6 +343,11 @@ def _check_brief(
     never silently treated as proven. On the sweep path (``fail_close=False``)
     an unreadable sibling brief is tolerated so one bad file does not break the
     whole ``gz check`` run.
+
+    Returns:
+        One finding per REQ whose proof fails; for an unreadable brief, one finding under
+        *fail_close* and none otherwise.
+
     """
     artifact = f"{adr_id}/{brief_path.stem}"
     try:
@@ -358,6 +381,11 @@ def validate_closeout_proof(
     Returns an empty list when all REQs are proven (exit 0).
     Returns ValidationError entries when any REQ is unproven (exit 3).
     Never reads from a stored proof artifact (Boundary Invariant 2).
+
+    Returns:
+        Proof findings across the in-closeout ADRs (or *adr_id* alone); empty when there is no
+        ceremonies directory.
+
     """
     ceremonies_dir = project_root / ".gzkit" / "ceremonies"
     if not ceremonies_dir.is_dir():

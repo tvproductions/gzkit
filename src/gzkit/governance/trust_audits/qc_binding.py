@@ -103,6 +103,10 @@ def _check_theater_signatures(step: QCStep) -> list[ValidationError]:
     seventh ``shape-graded-not-substance`` (GHI #624, OBPI-0.0.73-07); any flag
     from ``THEATER_SIGNATURES`` found in step.theater_flags produces an error.
     Unknown flags are noted but not treated as canonical.
+
+    Returns:
+        One finding per theater flag on *step*; empty when it has none.
+
     """
     errors: list[ValidationError] = []
     for flag in step.theater_flags:
@@ -145,6 +149,11 @@ def audit_qc_binding(
     parameter's prior purpose.
 
     Returns a list of ValidationErrors; non-empty → caller should exit 3.
+
+    Returns:
+        QC-binding findings from the registry and the live validator-source scan, or a single
+        finding when the registry build fails.
+
     """
     from gzkit.qc_binding import build_qc_registry  # noqa: PLC0415
 
@@ -202,6 +211,10 @@ def _scan_validator_source(project_root: Path) -> list[ValidationError]:
     the inert ``theater_flags`` self-declaration model never could. Each finding is
     rendered as three-part guardrail-feedback prose (what / why-forbidden / next step)
     per ``.claude/rules/guardrail-feedback-prose.md``.
+
+    Returns:
+        One finding per theater signature in the validator tree; empty when the tree is absent.
+
     """
     from gzkit.governance.trust_audits.theater_signature_scan import (  # noqa: PLC0415
         scan_validator_tree,
@@ -248,6 +261,10 @@ def _build_qc_binding_violation() -> Path:
     analyzer must actually catch it; the tautological assertion is exactly the
     ``copy-vs-self`` shape ``THEATER_SIGNATURES`` names, planted rather than
     declared.
+
+    Returns:
+        Path of the fixture project root carrying the planted facade.
+
     """
     root = create_fixture_tempdir(prefix="gzkit-qc-nc-qc-binding-")
     planted = root / "src" / "gzkit" / "governance" / "trust_audits" / "planted_facade.py"

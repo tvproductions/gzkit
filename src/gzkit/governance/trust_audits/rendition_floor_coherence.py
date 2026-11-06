@@ -71,6 +71,11 @@ def validate_rendition_floor_coherence(
     omitted from the returned list (no ledger mutation). Empty list when the floor
     holds, the corpus is absent, or no invariant entries are declared
     (bootstrap-safe).
+
+    Returns:
+        One finding per committed rendition missing its surface's invariant floor; empty when
+        ``.gzkit/renditions`` is absent.
+
     """
     closed = (
         _disposition.grounds(_checkpoint.resolve("rendition-floor-coherence", _levels.ERROR, root))

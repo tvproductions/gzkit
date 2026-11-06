@@ -54,6 +54,11 @@ def delegated_functions(
     function, or a module-level gzkit function. A function defined in ``local_module``
     is a helper, so it is followed ONE level and its own delegations are read instead.
     The depth bound keeps a helper's utilities from reading as the gate.
+
+    Returns:
+        ``module.qualname`` of each non-local gzkit callable *run* reaches; empty when *run* has no
+        code object.
+
     """
 
     def read(code: types.CodeType, glb: dict[str, object], *, follow: bool) -> set[str]:
@@ -96,6 +101,10 @@ def claimed_functions(
 
     A control passes the registry the floor run already populated, so one floor run
     does not rediscover its claims once per member it plants.
+
+    Returns:
+        Mapping of each named function or gate target to the claim ids naming it.
+
     """
     from gzkit.enforcement import production_enforcement_registry  # noqa: PLC0415
 
@@ -195,6 +204,11 @@ def audit_gate_enrollment(
     4. an accepted entry with no scope or no reason;
     5. an empty population or an empty claim registry: with nothing to compare, a green
        run would be the silence this inventory exists to break.
+
+    Returns:
+        Findings for unclaimed unaccepted scopes and stale entries, or a single error when the
+        accepted list fails to load or either population is empty.
+
     """
     accepted, load_error = _load_accepted(project_root)
     if load_error is not None:

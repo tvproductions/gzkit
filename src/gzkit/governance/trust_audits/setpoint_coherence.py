@@ -38,6 +38,11 @@ def validate_setpoint_coherence(project_root: Path) -> list[ValidationError]:
 
     Returns an empty list on a coherent manifest (REQ-03); otherwise one
     :class:`ValidationError` per finding.
+
+    Returns:
+        One finding per unknown setpoint token or setpoint-less route; a single finding when the
+        manifest is missing or malformed; empty for a coherent manifest.
+
     """
     errors: list[ValidationError] = []
     manifest_path = project_root / _MANIFEST_REL

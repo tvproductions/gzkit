@@ -119,6 +119,10 @@ def audit_agents_md_map_conformance(project_root: Path) -> list[ValidationError]
     for criteria a/b/c/d, and advisory findings (type
     'agents_md_map_conformance_advisory') for the per-bullet 3-line heuristic
     in binding-rule sections of the template.
+
+    Returns:
+        The map-conformance findings across the template and rendered AGENTS.md.
+
     """
     config = _load_budget_config(project_root)
     errors: list[ValidationError] = []
@@ -161,6 +165,10 @@ def _check_budget(text: str, relpath: str, budget: int) -> list[ValidationError]
     Advisory until 1.0 (operator ruling 2026-08-17). Returns no findings; the
     overrun and its distance go to stderr so the operator is warned. Criteria
     (a)/(b)/(c) in this module are unaffected.
+
+    Returns:
+        Always an empty list; an overrun is reported as an advisory on stderr.
+
     """
     actual = len(text)
     if actual <= budget:
@@ -206,6 +214,10 @@ def _check_paragraph_shape(text: str, relpath: str) -> list[ValidationError]:
     and code-block delimiters are excluded from paragraph counting. Lines
     inside fenced code blocks are skipped (they may legitimately exceed
     5 lines without doctrine violation).
+
+    Returns:
+        One finding per paragraph longer than five lines that does not open with a binding marker.
+
     """
     errors: list[ValidationError] = []
     paragraphs = _parse_paragraphs(text)
@@ -248,6 +260,10 @@ def _parse_paragraphs(text: str) -> list[dict[str, Any]]:
     Table rows are skipped because tables are allowed shape (b) under
     `.gzkit/rules/agents-md-map-doctrine.md` § Invariant — distinct from
     prose paragraphs (shape a/c) and exempt from criterion (a)'s length limit.
+
+    Returns:
+        One dict per paragraph with its ``lines`` and ``start_line``.
+
     """
     paragraphs: list[dict[str, Any]] = []
     current_lines: list[str] = []
@@ -293,6 +309,10 @@ def _check_link_resolution(
     intra-document links. For relative paths, the file MUST exist under
     project_root. When '#anchor' is present, the anchor MUST match a
     slugified heading in the target file (GitHub-style slugification).
+
+    Returns:
+        One finding per link whose file or anchor does not resolve.
+
     """
     errors: list[ValidationError] = []
     # Match [text](path) — non-greedy on text; path stops at ')' or whitespace
@@ -366,6 +386,11 @@ def _anchor_resolves(target: Path, anchor: str) -> bool:
 
     Slugification: GitHub-style — lowercase, replace whitespace with '-',
     drop non-alphanumeric except '-' and '_'.
+
+    Returns:
+        True when some heading in *target* slugifies to *anchor*; False otherwise, including an
+        unreadable target.
+
     """
     try:
         text = target.read_text(encoding="utf-8")
@@ -405,6 +430,10 @@ def _check_per_bullet_advisory(text: str, relpath: str) -> list[ValidationError]
     policy-breach set, does not change exit code. Operator-informational only.
     Per ADR-0.0.54 Sec. Consequences Negative #7, hard rejection is reserved
     for the prohibited-subsection-title set; the per-bullet check is heuristic.
+
+    Returns:
+        The advisory findings for bullets past the three-line heuristic in binding-rule sections.
+
     """
     errors: list[ValidationError] = []
     current_section: str | None = None

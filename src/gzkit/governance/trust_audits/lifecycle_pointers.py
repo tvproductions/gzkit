@@ -103,6 +103,10 @@ def _errors_for_surface(
 
     Line scope is deliberate: a claim and a reference three paragraphs apart are
     not the same assertion, and pairing them would manufacture findings.
+
+    Returns:
+        The findings for the surface, each judged within a single line.
+
     """
     rel = path.relative_to(project_root).as_posix()
     errors: list[ValidationError] = []

@@ -103,6 +103,11 @@ def audit_authorship(project_root: Path) -> list[ValidationError]:
     Adapter around :func:`evaluate_authorship`: resolves the policy from
     ``.gzkit.json`` and the effective address from git, then delegates the
     judgment.
+
+    Returns:
+        The ``evaluate_authorship`` findings for this clone's address; empty when no email suffix is
+        required.
+
     """
     config = GzkitConfig.load(project_root / ".gzkit.json")
     required = config.authorship.required_email_suffix

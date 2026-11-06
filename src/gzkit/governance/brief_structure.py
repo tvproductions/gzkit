@@ -77,6 +77,10 @@ def is_terminal_brief_status(status: str) -> bool:
     casefolded, so the corpus's two spellings of ``withdrawn`` resolved
     differently depending on which validator asked. Surrounding whitespace and
     YAML quoting are tolerated because callers pass raw frontmatter values.
+
+    Returns:
+        True when the normalized, casefolded status is terminal; False otherwise.
+
     """
     return status.strip().strip('"').strip("'").casefold() in _TERMINAL_STATUSES_FOLDED
 
@@ -98,6 +102,10 @@ def is_unstarted_brief_status(status: str) -> bool:
 
     Whitespace and YAML quoting are tolerated for the same reason
     ``is_terminal_brief_status`` tolerates them: callers pass raw frontmatter.
+
+    Returns:
+        True when the normalized, casefolded status is unstarted; False otherwise.
+
     """
     return status.strip().strip('"').strip("'").casefold() in _UNSTARTED_STATUSES_FOLDED
 
@@ -166,6 +174,10 @@ class BriefStructure(BaseModel):
         ``Withdrawn`` and ``withdrawn``, and ``is_terminal_brief_status`` already
         folds -- a schema stricter than the predicate that scopes it would
         reject briefs the runtime treats as sealed.
+
+        Returns:
+            The status value unchanged.
+
         """
         if v.strip().strip('"').strip("'").casefold() not in _BRIEF_STATUSES_FOLDED:
             raise ValueError(f"status must be one of {sorted(BRIEF_STATUSES)}: {v!r}")
@@ -192,6 +204,10 @@ class BriefStructure(BaseModel):
         scanning briefs off disk, and this model stays stdlib+Pydantic per
         ``.gzkit/rules/hexagonal-architecture.md`` rule 1. That half lives in
         ``gz validate --task-envelope-coherence``.
+
+        Returns:
+            The tasks value unchanged.
+
         """
         for task in v:
             try:
@@ -220,6 +236,11 @@ def parse_brief(path: Path, *, strict: bool = False) -> BriefStructure | LegacyB
     In permissive mode (default), briefs lacking structured frontmatter fields
     (allowlist, reqs, verification) return as LegacyBriefShape with a
     DeprecationWarning. In strict mode, missing fields raise ValueError.
+
+    Returns:
+        ``BriefStructure`` when the structured fields are present, otherwise (permissive mode) a
+        ``LegacyBriefShape``.
+
     """
     text = path.read_text(encoding="utf-8")
     fm, body = _extract_frontmatter(text)

@@ -537,6 +537,11 @@ def audit_catalog(project_root: Path) -> list[ValidationError]:
 
     The coverage report is advisory: it is announced and never a finding. The
     forward rule is a finding since RO-5 tranche 4.
+
+    Returns:
+        The schema findings, else the structure findings, else the remaining check findings
+        including the forward rule; empty when the catalog is clean.
+
     """
     errors = _schema_findings(project_root)
     if errors:

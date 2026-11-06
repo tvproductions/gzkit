@@ -48,6 +48,11 @@ def _read_frontmatter(path: Path) -> tuple[dict | None, bool]:
       (or does not parse to a mapping).
     * ``parse_ok=True, data=None`` — no frontmatter block present.
     * ``parse_ok=True, data=dict`` — parsed mapping.
+
+    Returns:
+        ``(data, parse_ok)``: ``(None, True)`` when there is no or empty frontmatter, ``(None,
+        False)`` when it is malformed or not a mapping, else the mapping and True.
+
     """
     text = path.read_text(encoding="utf-8")
     if not text.startswith("---"):
@@ -82,6 +87,11 @@ def _is_bundle_root(directory: Path) -> bool:
     bundle whose concept docs were all stripped of frontmatter (e.g. a generator
     regression) is still recognized — and therefore flagged — rather than going
     invisible to the audit.
+
+    Returns:
+        True when the index or a sibling markdown file carries a non-empty ``type``; False
+        otherwise, including no index file.
+
     """
     index = directory / _INDEX_FILE
     if not index.is_file():
@@ -103,6 +113,11 @@ def _validate_file(path: Path, project_root: Path) -> list[ValidationError]:
 
     Reserved files need only parseable frontmatter; concept docs additionally
     need a non-empty ``type``.
+
+    Returns:
+        A single finding for unparseable or missing frontmatter or a missing ``type`` on a
+        non-reserved file; empty when the file conforms.
+
     """
     rel = path.relative_to(project_root).as_posix()
     data, parse_ok = _read_frontmatter(path)
@@ -139,6 +154,10 @@ def audit_okf_conformance(project_root: Path) -> list[ValidationError]:
 
     Generated-bundle-only (Boundary Invariant 2): authored source docs under
     ``docs/`` are never scanned, so they can never be flagged.
+
+    Returns:
+        Conformance findings across every detected bundle; empty when ``.gzkit/`` is absent.
+
     """
     gzkit_dir = project_root / _GZKIT_ROOT
     if not gzkit_dir.is_dir():

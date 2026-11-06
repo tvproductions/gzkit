@@ -61,6 +61,11 @@ def validate_invariant_coherence(root: Path) -> list[ValidationError]:
 
     Bootstrap-safe: returns [] when no committed rendition exists (fresh-init;
     rendition-playback path requires a committed artifact).
+
+    Returns:
+        A single finding when the playback bytes differ from committed AGENTS.md; empty when they
+        match or there is no rendition to play back.
+
     """
     rendered_bytes = render_agents_md(root)
     if not rendered_bytes:

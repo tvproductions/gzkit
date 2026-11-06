@@ -34,6 +34,10 @@ def in_flight_manifest_path(project_root: Path, version: str, prefix: str = "REL
 
     Single source for the path contract shared by the writers
     (``gz patch release``, ``gz closeout``) and the audit that reads it.
+
+    Returns:
+        ``<project_root>/docs/releases/<prefix>-v<version>.md``.
+
     """
     return project_root / "docs" / "releases" / f"{prefix}-v{version}.md"
 
@@ -69,6 +73,12 @@ def audit_version_release(project_root: Path) -> list[ValidationError]:
     ``gz closeout`` wrote no manifest at all, its bump made ``gz test`` red
     while the ceremony's own Step 10 ran that gate before creating the tag —
     a deadlock on every minor release.
+
+    Returns:
+        Findings for the pyproject version (a missing tag with no in-flight manifest, or a tag
+        ``origin/main`` cannot reach) plus the documented-release and undocumented-tag sweeps; empty
+        when ``pyproject.toml``, its version or the local tag set cannot be read.
+
     """
     pyproject = project_root / "pyproject.toml"
     if not pyproject.is_file():
@@ -153,6 +163,11 @@ def _unreachable_tag_errors(
     Absence of ``ORIGIN_MAIN_REF`` is not evidence of a defect: a fresh clone
     or a CI sandbox legitimately has no tracking ref, and there is nothing to
     judge reachability against.
+
+    Returns:
+        One finding when the tag's commit is not contained in ``origin/main``; empty when it is, or
+        when ``origin/main`` or git is unavailable.
+
     """
     import subprocess  # noqa: PLC0415
 
@@ -248,6 +263,12 @@ def _documented_release_errors(project_root: Path, current_version: str) -> list
     ``git fetch --tags`` happened to print a rejection.
 
     The current version is skipped; the caller's arm already judged it.
+
+    Returns:
+        Findings for every documented release other than *current_version* whose tag is missing or
+        unreachable, plus stale-exemption findings; empty when no release is documented or tags or
+        ``origin/main`` cannot be read.
+
     """
     versions = _documented_versions(project_root)
     if not versions:
@@ -319,6 +340,11 @@ def _undocumented_tag_errors(project_root: Path) -> list[ValidationError]:
     An absent ``RELEASE_NOTES.md`` yields nothing. A missing roster is not
     evidence that every tag is undocumented, and reporting the whole tag set
     against a file that does not exist would be noise, not a finding.
+
+    Returns:
+        One finding per strict release tag with no ``RELEASE_NOTES.md`` entry; empty when the notes
+        document no release.
+
     """
     documented = set(_documented_versions(project_root))
     if not documented:
@@ -408,6 +434,11 @@ def _scorecard_section(scorecard_text: str) -> str:
     Slicing is load-bearing: ``## Recommended promotion order`` is *also* a
     numbered table, so a document-wide row scan counts its 20 rows as scored
     rules and inflates every total.
+
+    Returns:
+        The text between the ``## Scorecard`` heading and the next H2 (or end of text); an empty
+        string when the section is absent.
+
     """
     marker = "\n## Scorecard\n"
     start = scorecard_text.find(marker)
@@ -428,6 +459,10 @@ def _scorecard_row_scores(scorecard_text: str) -> Counter[str]:
     A substring scan over the line counts both as Promotable — which is exactly
     how the 2026-08-08 measurement reported two ``Ambiguous`` rules that do not
     exist, having counted the legend row and the Summary row as rules.
+
+    Returns:
+        Counter mapping each score name to the number of rows whose Score cell carries it.
+
     """
     counts: Counter[str] = Counter()
     for line in _scorecard_section(scorecard_text).splitlines():
@@ -454,6 +489,11 @@ def _summary_drift_errors(scorecard_text: str) -> list[ValidationError]:
     A scorecard with no Summary table is clean by construction — there is no
     transcribed count to be wrong. The check fences a claim that was made, and
     never demands the claim be made.
+
+    Returns:
+        One finding naming every score whose Summary count differs from the measured rows; empty
+        when there is no Summary or it agrees.
+
     """
     summary = _scorecard_summary_counts(scorecard_text)
     if not summary:
@@ -505,6 +545,11 @@ def _silent_dropout_errors(scorecard_text: str) -> list[ValidationError]:
     This closes the hole rather than repairs a live break, which is why it is a
     witness and not a migration — the classification cells stay welded to the
     rationale that justifies them.
+
+    Returns:
+        One finding listing the row ids that look scored but yield no score; empty when there are
+        none.
+
     """
     dropouts: list[str] = []
     for line in _scorecard_section(scorecard_text).splitlines():
@@ -554,6 +599,11 @@ def _ruff_selection(project_root: Path) -> tuple[list[str], list[str]] | None:
     None means "no answer available", never "clean": with no parseable config
     there is no configuration for a row's claim to disagree with, so the caller
     reports nothing rather than inventing a verdict from a default it guessed.
+
+    Returns:
+        The ``(select, ignore)`` code lists, or None when ``pyproject.toml`` is absent or unreadable
+        or the lint selection is malformed.
+
     """
     path = project_root / "pyproject.toml"
     if not path.is_file():
@@ -632,6 +682,10 @@ def _ruff_code_is_reachable(code: str, select: list[str], ignore: list[str]) -> 
     whose family is selected while the code itself is switched off one table
     down — the same report-green-while-blind state row 18 was in, reached from
     the other direction.
+
+    Returns:
+        True when some ``select`` entry covers *code* and no ``ignore`` entry does; False otherwise.
+
     """
     if any(_ruff_selector_covers(entry, code) for entry in ignore):
         return False
@@ -651,6 +705,11 @@ def _ruff_family_is_reachable(family: str, select: list[str], ignore: list[str])
     An ``ignore`` entry disables the family only when it covers the whole
     family (``ignore = ["D"]`` kills ``D``); ``ignore = ["D203"]`` switches off
     one member and leaves the family running, which is this repository's state.
+
+    Returns:
+        True when no ``ignore`` entry covers *family* and some ``select`` entry overlaps it in
+        either direction; False otherwise.
+
     """
     if any(_ruff_selector_covers(entry, family) for entry in ignore):
         return False
@@ -711,6 +770,11 @@ def _unreachable_ruff_claim_errors(
       job is to name its witness, and commentary about non-witnesses belongs in
       the rule's own text or in a Judgment row. Name the ruff *rule* instead of
       the code when narrating one — row 44 does, and it is the clearer prose.
+
+    Returns:
+        One finding per Mechanical-row ruff code or family that ruff would not run; empty when the
+        ruff selection cannot be read.
+
     """
     selection = _ruff_selection(project_root)
     if selection is None:
@@ -795,6 +859,11 @@ def _is_executable_witness(token: str) -> bool:
     it exists only inside an MX session. A check over every backticked path
     would fail that row for being right, and a check that then carved out the
     marker by name would be tuned to its corpus instead of stating a rule.
+
+    Returns:
+        True for a non-glob hook script path, a ``src/`` or ``tests/`` ``.py`` file, or a
+        ``features/`` ``.feature`` file; False otherwise.
+
     """
     if _GLOB_CHARS & set(token):
         return False
@@ -811,6 +880,10 @@ def _mechanical_rows(scorecard_text: str) -> list[tuple[str, str]]:
     The key is ``<section-id>#<row>``: bare row numbers are NOT unique — 31 of
     them recur across the scorecard's three tables — so a bare number addresses
     two different rows and cannot key a freeze.
+
+    Returns:
+        ``(<section-id>#<row>, notes)`` pairs for the Mechanical rows, in document order.
+
     """
     from gzkit.content.parse import section_id  # noqa: PLC0415
 
@@ -855,6 +928,11 @@ def _unwitnessed_mechanical_row_errors(
     A row discharges the claim by citing a registered negative control as
     ``NC:<claim-id>``. Rows predating the ruling are frozen in
     ``data/mechanical_witness_grandfather.json``, shrink-only.
+
+    Returns:
+        One finding per unfrozen Mechanical row that cites no registered ``NC:`` negative control;
+        empty when the freeze is absent for this project or every row is frozen or witnessed.
+
     """
     from gzkit.enforcement import (  # noqa: PLC0415
         _ensure_production_claims_registered,
@@ -952,6 +1030,10 @@ def _missing_witness_path_errors(scorecard_text: str, project_root: Path) -> lis
     history of the pointer belongs in prose that does not wear the citation form.
     Row 44 reached the same discipline from the ruff side by naming the ruff
     *rule* instead of its code.
+
+    Returns:
+        One finding per executable witness a Mechanical row cites that does not exist on disk.
+
     """
     errors: list[ValidationError] = []
     for line in _scorecard_section(scorecard_text).splitlines():
@@ -1040,6 +1122,11 @@ def _prose_promotable_errors(scorecard_text: str) -> list[ValidationError]:
     Scoped to **Promotable** on purpose: it is the third state the criterion
     counts. A Mechanical or Judgment narration (the promotion-wave paragraph
     cites a dozen) is history, not a live classification.
+
+    Returns:
+        One finding per prose site outside the scored rows that assigns **Promotable** to a cited
+        clause.
+
     """
     errors: list[ValidationError] = []
     for number, line in enumerate(scorecard_text.splitlines(), start=1):
@@ -1083,6 +1170,11 @@ def _grandfathered_rules(project_root: Path) -> dict[str, str]:
     The freeze is version-pinned on purpose: a grandfathered rule that is *edited*
     leaves its pinned version behind and must be scored for real. Debt cannot grow
     and cannot silently follow a rule forward.
+
+    Returns:
+        Mapping of rule filename to the version at which its coverage debt froze; empty when the
+        grandfather file is absent or unreadable.
+
     """
     path = project_root / _GRANDFATHER_REL
     if not path.is_file():
@@ -1123,6 +1215,12 @@ def audit_advisory_scorecard(project_root: Path) -> list[ValidationError]:
     that reproduce against neither. Those Promotable/Ambiguous figures are the
     completion criterion of the Movement C family-closure box, so a wrong count
     retargets real work. The roll-up is optional; transcribing it wrongly is not.
+
+    Returns:
+        Findings for rules unscored or scored at a stale version, plus the Summary, dropout,
+        ruff-reachability, witness and prose arms; empty when the scorecard or the rules directory
+        is absent.
+
     """
     scorecard = project_root / _SCORECARD_REL
     rules_root = project_root / ".gzkit" / "rules"

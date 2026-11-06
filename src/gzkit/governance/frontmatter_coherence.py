@@ -213,6 +213,11 @@ def obpi_status_is_terminal(status_term: str) -> bool:
     A doctrine claim naming a consumer it did not have is the drift ADR-0.31.0
     Decision item 4 exists to prevent, stated inside the function that was
     supposed to embody it.
+
+    Returns:
+        True when the term maps to an OBPI state marked terminal; False when it is unmapped or
+        non-terminal.
+
     """
     state = _map_vocab_to_obpi_state(status_term)
     return state is not None and OBPI_STATES[state].terminal
@@ -239,6 +244,10 @@ def obpi_status_write_refusal(
     ``gz validate --status-writer-coverage`` fails closed on any writer
     under ``src/gzkit/**`` that reaches an OBPI brief's ``status:`` key without
     routing through here or carrying a documented exemption.
+
+    Returns:
+        The refusal message when *current_status* is terminal; None when the write is allowed.
+
     """
     if not obpi_status_is_terminal(current_status):
         return None
@@ -256,8 +265,8 @@ def _status_is_valid_obpi_transition(
 ) -> bool:
     """Check if an OBPI status transition is valid against the canonical state machine.
 
-    Only applies to OBPI artifacts; ADRs and other artifacts always return True
-    (their state transitions are not governed by OBPIState).
+    Callers apply it to OBPI artifacts only; the function itself does not check the
+    artifact type, and refuses any status term the OBPI vocabulary does not map.
 
     Args:
         monitor: The transition monitor instance.
@@ -368,6 +377,10 @@ def _resolve_artifact_id(abs_path: Path) -> str:
 
     Matches the validator's filesystem-path-keyed lookup precedent —
     stem looks like ``ADR-0.1.0-slug`` or ``OBPI-0.0.16-03-slug``.
+
+    Returns:
+        The ADR or OBPI short id the stem starts with, otherwise the bare stem.
+
     """
     stem = abs_path.stem
     adr_match = re.match(
@@ -396,6 +409,11 @@ def _should_refuse_rewrite(
 
     Returns True if the rewrite contains an invalid OBPI status transition and
     should be tracked as refused instead of applied.
+
+    Returns:
+        True when an OBPI artifact's status diff is not a valid transition; False for non-OBPI files
+        or rewrites with no status diff.
+
     """
     artifact_id = _resolve_artifact_id(abs_path)
     if not _is_obpi_artifact(artifact_id):
@@ -413,8 +431,13 @@ def _build_file_rewrite(
 ) -> tuple[FileRewrite | None, SkipNote | None, str | None]:
     """Turn per-file ValidationErrors into a FileRewrite, skip note, or blocker term.
 
-    Returns (rewrite, skip, unmapped_term). Exactly one of rewrite/skip is non-None
-    unless the errors list yields no governed-field diffs (all None).
+    The tuple shape is (rewrite, skip, unmapped_term); this builder only ever fills
+    the rewrite slot, and returns all None when no governed-field diff exists.
+
+    Returns:
+        ``(FileRewrite, None, None)`` when governed-field diffs exist; ``(None, None, None)`` when
+        there are none.
+
     """
     diffs: list[FieldDiff] = []
     for err in errors:
@@ -481,6 +504,11 @@ def reconcile_frontmatter(project_root: Path, *, dry_run: bool) -> Reconciliatio
 
     Ledger cursor: sampled once at entry (sha256 of ledger file bytes); never
     re-read mid-run. Mid-run ledger mutations do not leak into this receipt.
+
+    Returns:
+        The ``ReconciliationReceipt`` recording the rewrites (applied or, with *dry_run*, planned)
+        and skip notes.
+
     """
     from gzkit.ledger import Ledger  # noqa: PLC0415
 
@@ -563,6 +591,11 @@ def _enumerate_pool_artifacts(project_root: Path) -> list[str]:
     Pool ADRs have no ledger entry by design; the validator skips them silently.
     The chore surfaces them explicitly as ``skipped`` so operators see which
     files were deliberately untouched.
+
+    Returns:
+        POSIX rel-paths of the pool ADR/OBPI files; empty when ``.gzkit.json`` or the pool directory
+        is absent.
+
     """
     from gzkit.config import GzkitConfig  # noqa: PLC0415
 
@@ -618,6 +651,11 @@ def _schema_path() -> Path:
     by ``.gzkit.json``), then returns ``data/schemas/<name>.json`` beneath
     it. Decoupled from ``Path.cwd()`` so tests running under
     ``isolated_filesystem`` still resolve to the real schema file.
+
+    Returns:
+        The schema path under the nearest ancestor holding ``.gzkit.json``, else under
+        ``Path.cwd()``.
+
     """
     candidate = Path(__file__).resolve().parent
     for _ in range(8):

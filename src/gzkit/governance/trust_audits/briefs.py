@@ -117,6 +117,10 @@ def audit_brief_headings(project_root: Path) -> list[ValidationError]:
     that drifts one of these to ``##`` passes schema validation (the section
     exists) but the extractor stops at the next H2 boundary and yields an
     empty body — triggering mid-ceremony failures.
+
+    Returns:
+        Heading findings across every OBPI brief; empty when the ADR root is absent.
+
     """
     adr_root = project_root / "docs" / "design" / "adr"
     if not adr_root.is_dir():
@@ -145,6 +149,10 @@ def _load_behave_coverage_waivers(project_root: Path) -> dict[str, str]:
     message. Keys without a resolvable rationale code still load as waived
     (rationale falls through to the raw code string) so the audit never
     blocks on a malformed entry.
+
+    Returns:
+        Mapping of OBPI id to waiver rationale; empty when the waiver file is absent or unreadable.
+
     """
     waiver_path = project_root / "data" / "behave_coverage_waivers.json"
     if not waiver_path.is_file():
@@ -171,6 +179,10 @@ def _extract_req_kinds(acceptance_text: str) -> dict[str, str]:
     line (no cross-line bleed). A REQ line with no ``[kind]`` tag defaults to
     ``"behavior"`` — the fail-closed default, since BEHAVIOR is the only kind
     whose proof channel a missing tag must not silently exempt.
+
+    Returns:
+        Mapping of REQ id to its lower-cased kind, defaulting to ``"behavior"`` when untagged.
+
     """
     kinds: dict[str, str] = {}
     for line in acceptance_text.splitlines():
@@ -187,6 +199,11 @@ def _extract_one_heavy_brief(brief: Path) -> tuple[Path, str, dict[str, str]] | 
 
     ``req_kinds`` maps each Acceptance-Criteria REQ-ID to its ADR-0.0.59
     taxonomy kind (``behavior`` / ``support`` / ``structural-fence``).
+
+    Returns:
+        ``(brief, obpi_id, req_kinds)`` for a readable heavy-lane brief in a BDD-gated status with
+        an id and REQ-bearing Acceptance Criteria; None otherwise.
+
     """
     try:
         text = brief.read_text(encoding="utf-8")
@@ -221,6 +238,11 @@ def _extract_heavy_obpi_briefs(project_root: Path) -> list[tuple[Path, str, dict
     section only — the REQ Coverage and Requirements sections restate the
     same IDs, and anchoring on Acceptance Criteria matches the brief template
     and the ``gz adr audit-check`` derivation.
+
+    Returns:
+        One ``(brief, obpi_id, req_kinds)`` record per BDD-gated heavy brief; empty when the ADR
+        root is absent.
+
     """
     adr_root = project_root / "docs" / "design" / "adr"
     if not adr_root.is_dir():
@@ -257,6 +279,10 @@ def _collect_covers_req_ids(project_root: Path) -> set[str]:
     a BEHAVIOR REQ's ADR-0.0.59 proof channel is an ``@covers`` test, not a
     behave scenario, so the ``behave_req_tags`` gate treats a covering test as
     satisfying the channel (GHI #636).
+
+    Returns:
+        REQ ids cited by ``@covers`` under ``tests/``; empty when the tests directory is absent.
+
     """
     tests_root = project_root / "tests"
     if not tests_root.is_dir():
@@ -314,6 +340,11 @@ def _resolves(
     ADR family and resolves when the ADR version exists. Drift cases the
     GHI #436 body targets all carry a sequence number; bare-prefix prose is
     not a drift signal.
+
+    Returns:
+        True when the ADR version (for ADRs and bare OBPI prefixes) or the OBPI version-sequence key
+        is known; False otherwise.
+
     """
     if kind == "ADR" or seq is None:
         return version in adr_versions
@@ -410,6 +441,11 @@ def audit_brief_cross_references(project_root: Path) -> list[ValidationError]:
     Recovery: update the reference, or prefix the line with
     ``<!-- gz-validate-skip: brief-cross-references -->`` to mark it as
     a forward-reference to an unlanded artifact.
+
+    Returns:
+        One finding per unresolved identifier reference across all briefs; empty when the ADR root
+        is absent.
+
     """
     adr_root = project_root / "docs" / "design" / "adr"
     if not adr_root.is_dir():
@@ -510,6 +546,11 @@ def audit_brief_demo_section(project_root: Path) -> list[ValidationError]:
     larger non-CLI brief) — place
     ``<!-- gz-validate-skip: brief-demo-section -->`` anywhere in the brief
     body to mark it grandfathered.
+
+    Returns:
+        One finding per heavy-lane CLI-shipping brief missing ``## Demo``; empty when the ADR root
+        is absent.
+
     """
     adr_root = project_root / "docs" / "design" / "adr"
     if not adr_root.is_dir():
@@ -587,6 +628,11 @@ def audit_behave_req_tags(project_root: Path) -> list[ValidationError]:
 
     Pool-ADR briefs are excluded per the ``--pool-adr-isolation`` contract;
     pool ADRs do not carry gate obligations and cannot fire Gate 4.
+
+    Returns:
+        One finding per heavy-lane BEHAVIOR REQ with no proof channel; empty when there are no gated
+        heavy briefs.
+
     """
     briefs = _extract_heavy_obpi_briefs(project_root)
     if not briefs:
@@ -643,6 +689,11 @@ def audit_brief_command_shape(project_root: Path) -> list[ValidationError]:
     Terminal-status briefs (Completed, attested_completed, Validated,
     Superseded, archived, Promoted) are skipped — they are historical
     records, not active authoring surfaces.
+
+    Returns:
+        One finding per Verification command that is not shell-less; empty when the ADR root is
+        absent.
+
     """
     adr_root = project_root / "docs" / "design" / "adr"
     if not adr_root.is_dir():

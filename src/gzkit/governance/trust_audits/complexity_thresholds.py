@@ -48,6 +48,11 @@ def validate_complexity_thresholds(project_root: Path) -> list[ValidationError]:
     ``_emit_bootstrap_mode_notice`` and does not appear in the returned
     list (so the CLI exits 0 when the narrative declares the carve-out
     and the data file is otherwise well-formed).
+
+    Returns:
+        Validation findings for the thresholds file; a single finding when it is missing; empty when
+        valid.
+
     """
     data_path = project_root / _DATA_RELATIVE_PATH
     if not data_path.is_file():

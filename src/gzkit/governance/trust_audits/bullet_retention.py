@@ -195,6 +195,11 @@ def _pins_identities(project_root: Path) -> bool:
     This alone decides whether the pinned check runs, so nothing the audit reads from
     the scorecard, the ownership declarations or the attributions can switch it off.
     A pinned file that is absent or lists nothing pins nothing.
+
+    Returns:
+        True when the pinned file lists an identity or cannot be read; False when it is absent or
+        empty.
+
     """
     if not registry_path(project_root, _PINNED_IDENTITIES).exists():
         return False
@@ -207,6 +212,11 @@ def _absent_scorecard_errors(project_root: Path) -> list[ValidationError]:
 
     A project that pinned row identities had the rows, so its scorecard going
     missing is every pinned row leaving at once.
+
+    Returns:
+        One identity finding for the absent scorecard, or the unreadable-pin findings when the
+        pinned file cannot be read.
+
     """
     pinned = _load_pinned_identities(project_root)
     if isinstance(pinned, str):
@@ -235,6 +245,12 @@ def _resolve_population(project_root: Path) -> tuple[list[_Resolved], list[Valid
     rows are re-read strictly, so no rule-table row is skipped. A project with no
     scorecard and nothing pinned has nothing to audit: a surface can be enrolled
     for section ownership and carry no advisory scorecard.
+
+    Returns:
+        ``(resolved rows, errors)``: no rows with the absent-scorecard or undecodable error when the
+        scorecard is unusable, legacy rows unsourced when nothing maps, otherwise each row with its
+        classifying surface.
+
     """
     scorecard = project_root / _SCORECARD_PATH
     pins = _pins_identities(project_root)
@@ -359,6 +375,11 @@ def _pinned_identity_errors(project_root: Path, rows: list[_Row]) -> list[Valida
     The reader decides what a row is, so a row it stops recognising leaves no trace
     in what it read. The pinned set is the witness that does not depend on the
     reader: an identity pinned there and no longer read is named.
+
+    Returns:
+        Identity findings for pinned rows the audit did not read, or an unreadable-pin finding;
+        empty when every pinned identity is present.
+
     """
     pinned_path = registry_path(project_root, _PINNED_IDENTITIES).relative_to(project_root)
     read = {_identity(row) for row in rows if row.section_id is not None}
@@ -518,6 +539,11 @@ def _disagrees(entry: CorpusEntry, row: _Row) -> bool:
 
     An entry still on the capture default binds nothing: the fence names it, so
     there is no binding disagreement to report.
+
+    Returns:
+        True when a reviewed entry's class differs, case-insensitively, from the row's; False for
+        capture-default entries or agreement.
+
     """
     if entry.classification == _CAPTURE_DEFAULT:
         return False
@@ -646,6 +672,10 @@ def _undecodable_scorecard_error(path: Path) -> ValidationError | None:
 
     A scorecard that cannot be opened is left to the readers: it reads as holding no
     rows, which the pinned check then holds against the identities the project pins.
+
+    Returns:
+        The UTF-8 decode finding, or None when the file decodes or cannot be read.
+
     """
     try:
         path.read_text(encoding="utf-8")
@@ -709,6 +739,10 @@ def _read_rule_rows(path: Path) -> tuple[list[_Row], list[ValidationError]]:
     holds no rows. A table runs to its first blank line or heading, so a line inside a
     rule table that does not begin with a pipe is a row and is refused. Nothing inside
     a rule table is skipped.
+
+    Returns:
+        ``(rows, errors)`` for the rule-table rows; both empty when the file cannot be read.
+
     """
     try:
         lines = [line.strip() for line in path.read_text(encoding="utf-8").splitlines()]
@@ -842,6 +876,10 @@ def _load_corpus_entries(project_root: Path) -> list[CorpusEntry]:
     The surface name is the store filename stem (e.g. ``AGENTS.md.jsonl`` →
     surface ``AGENTS.md``). Returns an empty list when no corpus store exists —
     every enforced bullet then maps to the conservative invariant fallback.
+
+    Returns:
+        Every loadable corpus entry across the surfaces; empty when the corpus directory is absent.
+
     """
     corpus_root = project_root / _CORPUS_DIR
     if not corpus_root.is_dir():
@@ -865,6 +903,11 @@ def _resolve_tier(normalized_rule: str, entries: list[CorpusEntry]) -> tuple[str
     fallback is ``("invariant", None)`` — preserving the Era-1 verbatim contract
     so an un-classified bullet is never silently waived (booked decision,
     2026-06-14).
+
+    Returns:
+        ``(tier, surface)`` of the first entry whose text contains the rule; ``("invariant", None)``
+        when none does.
+
     """
     for entry in entries:
         if normalized_rule in _normalize(entry.text):
@@ -881,6 +924,11 @@ def _retention_witnessed(project_root: Path, surface: str | None) -> bool:
     that exists and carries ``exit_status == 0``. Absence of the event, a
     non-canonical receipt id, a missing receipt, or a non-zero ``exit_status``
     means retention is unwitnessed.
+
+    Returns:
+        True when the surface's latest verdict receipt is a judge receipt whose exit status is OK;
+        False otherwise, including a None surface.
+
     """
     if surface is None:
         return False

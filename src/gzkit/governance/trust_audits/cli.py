@@ -143,6 +143,11 @@ def _cli_alignment_sources(project_root: Path) -> list[Path]:
     The surfaces an agent executes from are read too: chore docs (``gz-chore-runner``
     Step 5 follows a CHORE.md), rules, and the root ``AGENTS.md`` (GHI #1006).
     A chore's ``proofs/`` are run records and stay out, like ``docs/releases/``.
+
+    Returns:
+        Paths of the operator-facing docs, features, skills, chores, rules and root ``AGENTS.md``
+        that exist.
+
     """
     sources: list[Path] = []
     docs_root = project_root / "docs"
@@ -198,6 +203,11 @@ def _is_exempt_source(path: Path, text: str) -> bool:
 
     Everything outside these classes carries the speculative marker instead —
     explicit, greppable, and removed by whoever lands the verb.
+
+    Returns:
+        True for pool ADRs, audit and sealed ADR-package artifacts, and terminal-status briefs;
+        False otherwise.
+
     """
     posix = path.as_posix()
     if "design/adr/pool/" in posix:
@@ -219,6 +229,11 @@ def _collect_verb_references(
     This function previously reimplemented that extraction — without multi-word
     chains, without the speculative-skip marker, and (before GHI #745) without
     fenced blocks — while guarding the wider surface of the two call sites.
+
+    Returns:
+        Mapping of each referenced verb chain to the ``file:line`` locations that cite it, from
+        non-exempt sources.
+
     """
     references: dict[tuple[str, ...], list[str]] = {}
     for source in sources:
@@ -244,6 +259,10 @@ def audit_cli_alignment(project_root: Path) -> list[ValidationError]:
     checked at every level — ``gz adr bogus`` no longer passes because its first
     token is registered (GHI #588 / #748). Trailing positional arguments after a
     leaf verb resolve; unregistered intermediate verbs fail closed.
+
+    Returns:
+        One finding per ``gz <verb>`` reference that resolves to no registered parser verb.
+
     """
     from gzkit.governance.trust_audits.lifecycle_pointers import (  # noqa: PLC0415
         audit_lifecycle_pointers,
@@ -287,6 +306,10 @@ def _manpage_alignment_sources(project_root: Path) -> list[Path]:
     gz-<verb>.md convention drift accumulated; terminal briefs are filtered by
     the caller. It used to be a copy of that enumeration, which is how the two
     would drift the moment one widened (GHI #1006).
+
+    Returns:
+        The source paths ``_cli_alignment_sources`` enumerates.
+
     """
     return _cli_alignment_sources(project_root)
 
@@ -304,6 +327,10 @@ def audit_manpage_alignment(project_root: Path) -> list[ValidationError]:
     references are sealed historical records (GHI #532), scoped via the same
     :func:`is_terminal_brief_status` predicate ``--brief-command-shape`` and the
     ``--sensitivity`` floor use.
+
+    Returns:
+        One finding per reference to a ``manpages/gz-<verb>.md`` path.
+
     """
     errors: list[ValidationError] = []
     for source in _manpage_alignment_sources(project_root):
@@ -357,6 +384,11 @@ def audit_skill_code_citations(project_root: Path) -> list[ValidationError]:
     Non-``src/gzkit`` paths are out of scope for the same reason — widening
     without measuring is how a checklist comes to undercount its obligations
     (GHI #854).
+
+    Returns:
+        One finding per skill citation of a missing ``src/gzkit/`` module; empty when the skills
+        root is absent.
+
     """
     errors: list[ValidationError] = []
     skills_root = project_root / ".gzkit" / "skills"
@@ -432,6 +464,11 @@ def audit_doc_code_citations(project_root: Path) -> list[ValidationError]:
     Scope is the EXISTENCE half only, as in the sibling: whether a cited path
     resolves is mechanical, and whether a cited LINE still holds drifts on every
     edit to the cited file. This arm does not claim the second half.
+
+    Returns:
+        One finding per governance-doc citation of a missing ``src/gzkit/`` module; empty when
+        ``docs/governance`` is absent.
+
     """
     errors: list[ValidationError] = []
     docs_root = project_root / "docs" / "governance"
@@ -547,6 +584,10 @@ def _known_cli_verb_paths() -> frozenset[str]:
     ``"adr status"``, ``"obpi lock claim"``. Invariant 1 enforces against this
     full surface so multi-word subcommands cannot pass the orphan check by
     invisibility (GHI #588).
+
+    Returns:
+        Frozen set of space-joined leaf command paths of the gz parser.
+
     """
     import argparse  # noqa: PLC0415
 
@@ -575,6 +616,10 @@ def _verb_path_waived(path: str) -> bool:
 
     Group keys (e.g. ``"task"``) cascade to every subcommand beneath them —
     they declare the whole namespace intentionally skill-less.
+
+    Returns:
+        True when *path* or its top-level group is in the no-skill waiver set; False otherwise.
+
     """
     return path in _NO_SKILL_VERBS or path.split(" ", 1)[0] in _NO_SKILL_VERBS
 
@@ -594,6 +639,11 @@ def audit_skill_alignment(project_root: Path) -> list[ValidationError]:
     not just top-level verbs (GHI #588). A verb with no wielding skill and no
     explicit (or group-cascading) waiver is a defect signal per
     ``.gzkit/rules/tool-skill-runbook-alignment.md``.
+
+    Returns:
+        One finding per registered, unwaived verb no skill references; empty when the skills root is
+        absent.
+
     """
     skills_root = project_root / ".gzkit" / "skills"
     if not skills_root.is_dir():

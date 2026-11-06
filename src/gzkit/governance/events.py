@@ -74,6 +74,10 @@ def emit_rendition_landed(root: Path, event: RenditionLandedEvent) -> str:
     the one corpus attestation twice (OBPI-0.35.0-07, REQ-0.35.0-07-04). The
     caller holds the surface's landing lock, so no second landing of the
     surface can race this check. Returns the event id.
+
+    Returns:
+        The event's id, whether or not it was appended.
+
     """
     ledger = Ledger(root / ".gzkit" / "ledger.jsonl")
     already = any(
@@ -153,6 +157,10 @@ def emit_unowned_ratchet_updated(
     (REQ-0.35.0-04-02's attested-chain requirement). Returns *event_id*
     unchanged, mirroring the mint-then-embed-then-emit shape
     ``commands/content/unown.py`` uses for its own event.
+
+    Returns:
+        *event_id*.
+
     """
     ledger = Ledger(root / ".gzkit" / "ledger.jsonl")
     ledger.append(
@@ -191,6 +199,10 @@ def emit_section_ownership_genesis(
     declaration's ``floor_event_id`` chain pointer BEFORE this append, so
     Layer-1 (the declaration) and Layer-2 (the ledger) agree on which event
     proves the genesis floor.
+
+    Returns:
+        *event_id*.
+
     """
     ledger = Ledger(root / ".gzkit" / "ledger.jsonl")
     ledger.append(
@@ -240,6 +252,10 @@ def emit_section_ownership_reanchored(
     declaration's ``floor_event_id`` chain pointer BEFORE this append, so
     Layer-1 (the declaration) and Layer-2 (the ledger) agree on which event
     proves the re-anchored floor.
+
+    Returns:
+        *event_id*.
+
     """
     ledger = Ledger(root / ".gzkit" / "ledger.jsonl")
     ledger.append(

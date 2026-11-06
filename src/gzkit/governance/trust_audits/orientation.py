@@ -256,6 +256,11 @@ def audit_orientation_freshness(project_root: Path) -> list[ValidationError]:
     and that the script retains the ``Git remote state`` heading and the
     ``collect_state`` -> ``collect_remote_state`` reference. Recovery: re-run
     ``uv run gz agent sync control-surfaces`` if the hook drifted.
+
+    Returns:
+        Findings for missing SessionStart wiring or a missing heading or reference in the
+        orientation script; empty when the backstop is intact.
+
     """
     errors: list[ValidationError] = []
 

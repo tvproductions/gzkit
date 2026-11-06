@@ -101,6 +101,11 @@ def audit_utf8_prefix(project_root: Path) -> list[ValidationError]:
     The CLI entrypoint configures UTF-8 at runtime; the env-var prefix is
     redundant, but the runtime guard does not cover fresh-interpreter
     helpers — those must reconfigure their own stdio.
+
+    Returns:
+        The UTF-8-prefix findings from every scanned surface, doc pipe patterns and tools scripts
+        included.
+
     """
     errors: list[ValidationError] = []
     errors.extend(_scan_doc_pipe_patterns(project_root))
@@ -169,6 +174,10 @@ def _coalesce_continuations(content: str) -> list[tuple[int, str]]:
     silently evades the scan (GHI #486). Each logical line is reported at
     the physical line where it begins, so waivers keyed to a start line and
     the standalone single-line case both keep their original line numbers.
+
+    Returns:
+        ``(starting line number, joined text)`` pairs, one per logical line.
+
     """
     physical = content.splitlines()
     logical: list[tuple[int, str]] = []
@@ -328,6 +337,10 @@ def audit_line_endings(project_root: Path) -> list[ValidationError]:
       text-mode write — verified STATICALLY over ``tests/**`` source, because
       that fixture is never committed for the index check to see and the runtime
       symptom appears on Windows only (GHI #1069).
+
+    Returns:
+        The line-ending findings from the gitattributes, CRLF-surface and byte-fixture arms.
+
     """
     errors: list[ValidationError] = []
     errors.extend(_check_gitattributes_lf(project_root))
@@ -372,6 +385,10 @@ def _scan_crlf_surfaces(project_root: Path) -> list[ValidationError]:
     checkout or a Python ``write_text`` may transiently render as CRLF and which
     git normalizes away on commit. Trusting the index lets ``.gitattributes`` do
     the work instead of the gate re-deriving it at every write site.
+
+    Returns:
+        One finding per tracked text surface committed with CRLF; empty outside a git work tree.
+
     """
     try:
         result = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
@@ -460,6 +477,11 @@ def _decodes_text(kwargs: dict[str, ast.expr]) -> bool:
     Only text-mode calls decode; passing ``errors=`` to a bytes-mode call would
     silently *enable* text mode (subprocess docs), flipping the return type — so
     bytes-mode calls are never flagged.
+
+    Returns:
+        True when ``text`` or ``universal_newlines`` is truthy or a non-None ``encoding`` is passed;
+        False otherwise.
+
     """
     if _is_truthy_constant(kwargs.get("text", ast.Constant(value=False))):
         return True
@@ -513,6 +535,10 @@ def audit_subprocess_errors(project_root: Path) -> list[ValidationError]:
     Invoked by ``tests/governance/test_subprocess_errors_replace.py`` against the
     real tree so a re-introduced site fails closed in the ``gz check`` test tier,
     mirroring the ``.as_posix()`` rule's ``test_path_separator_portability.py``.
+
+    Returns:
+        One finding per text-mode subprocess capture that omits ``errors=``.
+
     """
     errors: list[ValidationError] = []
     for parts in _SUBPROCESS_AUDIT_ROOTS:
@@ -574,6 +600,11 @@ def _writes_text_without_newline(node: ast.Call) -> str | None:
     ``write_bytes`` and binary ``open`` modes are exempt by construction: they
     perform no newline translation, which is why ``sync_parity._restore`` is
     correct without a pin.
+
+    Returns:
+        ``"write_text"`` or ``"open(mode=...)"`` for an unpinned text write; None when ``newline=``
+        is passed or the call is not a text write.
+
     """
     if any(kw.arg == "newline" for kw in node.keywords):
         return None
@@ -612,6 +643,10 @@ def audit_generated_surface_newlines(project_root: Path) -> list[ValidationError
     known-good line numbers: a line-number allowlist is what let #681 close while
     four modules still drifted. Invoked by
     ``tests/governance/test_generated_surface_line_endings.py``.
+
+    Returns:
+        One finding per generated-surface writer that does not pin the newline.
+
     """
     errors: list[ValidationError] = []
     for rel in _SURFACE_WRITER_MODULES:
@@ -672,6 +707,11 @@ def _asserts_read_bytes_against_literal(func: ast.AST) -> bool:
     both sides translate together, so the assertion holds everywhere. Narrowing to
     a literal is also what keeps the arm meaningful: 2133 unpinned text writes sit
     under ``tests/**`` (measured 2026-09-21) and almost none of them assert bytes.
+
+    Returns:
+        True when some comparison in *func* sets a ``read_bytes()`` call against a bytes constant;
+        False otherwise.
+
     """
     for node in ast.walk(func):
         if not isinstance(node, ast.Call):
@@ -701,6 +741,11 @@ def _scan_test_byte_fixture_writes(project_root: Path) -> list[ValidationError]:
     Reuses :func:`_writes_text_without_newline`, the detector
     :func:`audit_generated_surface_newlines` already owns. The hazard is one
     shape; a second copy of it here would be a second place for it to drift.
+
+    Returns:
+        One finding per unpinned text write inside a byte-exact test; empty when ``tests/`` is
+        absent.
+
     """
     errors: list[ValidationError] = []
     tests_root = project_root / "tests"

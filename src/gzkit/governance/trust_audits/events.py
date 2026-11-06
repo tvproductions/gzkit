@@ -345,6 +345,10 @@ def _collect_typed_model_event_types(source: Path) -> set[str]:
     TASK ledger events (and similar Pydantic-direct emitters) declare their
     event name on the model class, not via a factory call — they need to be
     counted as emitted shapes for schema-coverage purposes.
+
+    Returns:
+        Event names declared as ``event: Literal["<name>"]`` in *source*.
+
     """
     tree = ast.parse(source.read_text(encoding="utf-8"))
     typed: set[str] = set()
@@ -380,6 +384,11 @@ def audit_event_schemas(project_root: Path) -> list[ValidationError]:
     schema entry causes ``gz validate --ledger`` to emit ``Unknown event type``
     once the event lands on the ledger — the same coupled-surface failure the
     handler audit closes on the graph side.
+
+    Returns:
+        One finding per emitted event type absent from ``schemas/ledger.json``; empty when a source
+        or the schema is missing.
+
     """
     ledger_events = project_root / "src" / "gzkit" / "ledger_events.py"
     typed_events = project_root / "src" / "gzkit" / "events.py"
@@ -566,6 +575,10 @@ def _returned_dict_keys(module: ast.Module, func_name: str) -> set[str]:
     call at all. Resolution is single-level and same-module by construction — a
     helper calling a further helper is not followed, which is a limit stated in
     :func:`audit_producer_fields`'s docstring rather than implied.
+
+    Returns:
+        The union of literal keys over every dict-literal return in *func_name*.
+
     """
     keys: set[str] = set()
     for node in ast.walk(module):
@@ -624,6 +637,11 @@ def _parameter_keys(module: ast.Module, scope: _Function, name: str) -> set[str]
     never another name. So this never recurses, and a caller that merely forwards
     its own parameter is a limit, not a loop. Keys are unioned across every call
     site: a field any caller can contribute is a field the producer can write.
+
+    Returns:
+        The payload keys callers pass to that parameter; empty when *name* is not a parameter of
+        *scope*.
+
     """
     if name not in _parameter_names(scope):
         return set()
@@ -646,6 +664,10 @@ def _assigned_dict(node: ast.AST, name: str) -> ast.Dict | None:
     ``payload: dict[str, Any] = {...}`` parses to :class:`ast.AnnAssign`, which
     the plain-``Assign`` test never matched — so even the two literal keys at the
     top of ``_book_transit`` were invisible, before any question of helpers.
+
+    Returns:
+        The dict literal assigned to *name*, or None when the statement assigns anything else.
+
     """
     if isinstance(node, ast.AnnAssign):
         target, value = node.target, node.value
@@ -680,6 +702,11 @@ def _mutation_keys(node: ast.AST, module: ast.Module, scope: _Function, name: st
     assignment (annotated or plain), a literal-key subscript, and an ``.update()``
     merge of a literal, a same-module helper's return, or a parameter carrying
     either from a caller.
+
+    Returns:
+        The literal keys the statement adds to *name* by assignment, subscript store or ``update``;
+        empty when it touches none.
+
     """
     if (assigned := _assigned_dict(node, name)) is not None:
         return _literal_dict_keys(assigned)
@@ -725,6 +752,11 @@ def _payload_keys(module: ast.Module, scope: _Function, extra: ast.expr | None) 
     the real producer's helper is called a function away. A scan reporting clean
     over a shape it cannot reach is the presence-check family — it witnessed that
     it had looked, not that there was nothing there.
+
+    Returns:
+        The literal payload keys traced through a dict literal, helper return or named-dict
+        mutations; empty when *extra* is none of these.
+
     """
     if isinstance(extra, ast.Dict):
         return _literal_dict_keys(extra)
@@ -789,6 +821,11 @@ def audit_producer_fields(project_root: Path) -> list[ValidationError]:
     discharged by declaring the field, never by a clean scan over a shape the
     scanner cannot reach — and a coverage claim is proven against the real
     producer's source, never against a fixture written to match the reader.
+
+    Returns:
+        One finding per producer-written field either contract leaves undeclared; empty when the
+        ledger schema is absent.
+
     """
     schema_file = project_root / "src" / "gzkit" / "schemas" / "ledger.json"
     if not schema_file.is_file():

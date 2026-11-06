@@ -93,6 +93,11 @@ def _remove(text: str, quote: str) -> str:
 
     No line is left with trailing whitespace: the pre-commit hook strips it,
     and a served file must be the bytes the runtime pins.
+
+    Returns:
+        *text* without *quote*, the gap joined by a newline or a space and trailing whitespace
+        stripped from each line.
+
     """
     if quote not in text:
         msg = f"quote is not in the block: {quote[:60]!r}"
@@ -456,6 +461,11 @@ def check_stage_placement(inventory: ControlInventory, served: dict[str, str]) -
     A span that is part of a control delivered at that stage is not misplaced: two
     sections may state the same command, and each statement is its own control.
     The invocation text is ``check_placement``'s subject and is skipped here.
+
+    Returns:
+        One ``misplaced`` ``Violation`` per control span found in a served stage outside its
+        ``applies_at``.
+
     """
     controls = [control for block in inventory.blocks for control in block.controls]
     out: list[Violation] = []

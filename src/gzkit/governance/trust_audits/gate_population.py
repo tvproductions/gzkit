@@ -154,6 +154,11 @@ def _runs_gz_validate(runner: types.FunctionType) -> bool:
     """Return True when a string constant of *runner* IS a ``gz validate`` command.
 
     The docstring is excluded: prose naming the command is not an invocation.
+
+    Returns:
+        True when some non-docstring string constant in *runner* or its nested code fully matches a
+        ``gz validate`` command; False otherwise.
+
     """
     return any(
         isinstance(const, str)
@@ -255,6 +260,11 @@ def audit_gate_population_enrollment(
     disclosed member a claim now names; a disclosure naming no member; an entry with no
     member or reason; and an empty population or claim registry, where a green run would be
     the silence this inventory exists to break.
+
+    Returns:
+        Findings for unclaimed undisclosed members and stale disclosures, or a single error when the
+        accepted list fails to load or either population is empty.
+
     """
     accepted, load_error = _load_accepted(project_root)
     if load_error is not None:

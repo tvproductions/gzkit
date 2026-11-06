@@ -119,6 +119,10 @@ def _audit(
 
     The surface's committed ``baseline_count`` defaults to the larger of its entries and its
     baseline identities, so the count ratchet is satisfied unless a caller sets it lower.
+
+    Returns:
+        The findings *audit* reports for the planted tree.
+
     """
     spec, collection, baseline_ids, authorizations = shape
     count = len(collection)

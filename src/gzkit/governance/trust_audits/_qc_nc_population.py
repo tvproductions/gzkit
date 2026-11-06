@@ -26,6 +26,10 @@ def undeclared_claim_population() -> list[str]:
     then: the refuse arm will have no undeclared member left to plant. Reads the
     registry the floor run has already populated; re-running discovery per member
     would make one floor run discover its claims many times over.
+
+    Returns:
+        Sorted ids of registered claims with no declared population.
+
     """
     return sorted(r.claim_id for r in get_enforcement_registry() if r.population is None)
 

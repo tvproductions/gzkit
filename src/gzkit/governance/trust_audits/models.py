@@ -69,6 +69,11 @@ def audit_pydantic_models(project_root: Path) -> list[ValidationError]:
 
     Rule 25: no stdlib ``dataclass`` for governance data models.
     Rule 26: every ``BaseModel`` subclass declares ``model_config = ConfigDict(...)``.
+
+    Returns:
+        One finding per stdlib dataclass or BaseModel without ConfigDict; empty when ``src/gzkit``
+        is absent.
+
     """
     src_root = project_root / "src" / "gzkit"
     if not src_root.is_dir():
