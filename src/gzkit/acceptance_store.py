@@ -531,7 +531,8 @@ def record_human_review(root: Path, obpi_id: str, *, attestor: str, ruling: str)
 
     Returns:
         The human adversarial review, accepting every current proof and closing each open finding
-        whose obligation has a current proof. It is appended to the ledger only when it validates.
+        whose obligation has a current proof. It is appended to the ledger only when no identical
+        review is already recorded; a review that fails validation raises instead.
 
     Raises:
         ValueError: A package is past its round limit, so the block comes first (ruling

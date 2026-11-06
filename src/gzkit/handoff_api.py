@@ -866,7 +866,8 @@ def _mark_settled(body: str, identifier: str) -> str:
     ``#57`` cannot claim the ``#573`` it is a prefix of.
 
     Returns:
-        The body with every unmarked mention of the GHI number suffixed by the settled marker.
+        The body with every unmarked mention of this repository's GHI number suffixed by the
+        settled marker; a mention that numbers a rule or another repository's issue is unchanged.
 
     """
     pattern = re.compile(

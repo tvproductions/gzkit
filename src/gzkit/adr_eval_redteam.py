@@ -31,8 +31,8 @@ _RESULT_JSON_RE = re.compile(r"```json\s*([\s\S]*?)```")
 def load_framework_redteam_prompt(skill_assets_dir: Path) -> str:
     """Load the Part 4 red-team prompt from ADR_EVALUATION_FRAMEWORK.md.
 
-    Extracts the text between ``### RED-TEAM PROMPT`` and the next ``---``
-    or end of file.
+    Extracts the body of the ``text`` fenced code block that follows the
+    ``### RED-TEAM PROMPT`` heading.
 
     Returns:
         The stripped text of the fenced block following the RED-TEAM PROMPT heading.
@@ -108,8 +108,8 @@ def parse_redteam_result(
     Returns ``None`` if parsing fails.
 
     Returns:
-        The ten challenge results; None when no result JSON is found, it does not parse, an entry is
-        malformed, or the count is not exactly ten.
+        The ten challenge results; None when no result JSON is found, it does not parse, it holds no
+        challenge list, an entry is malformed, or the count is not exactly ten.
 
     """
     match = _RESULT_JSON_RE.search(reviewer_output)

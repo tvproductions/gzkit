@@ -261,7 +261,7 @@ def _install_from_cli(root: Path) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """post-commit entry point. Always exits 0 — a recorder gates nothing.
+    """post-commit entry point. A recording run always exits 0 — a recorder gates nothing.
 
     Git ignores a post-commit hook's exit status, so a non-zero return would
     be theatre. Failure is reported on stderr and the commit stands.
@@ -270,7 +270,8 @@ def main(argv: list[str] | None = None) -> int:
     that ran ``pre-commit install`` but not ``gz init`` (GHI #1092).
 
     Returns:
-        Always 0, or the install status when run with ``--install``.
+        0 for a recording run, whatever happened. With ``--install``: 0 when the recorder was
+        installed, 1 when it was not (no git worktree, or a foreign legacy hook is in place).
 
     """
     args = sys.argv[1:] if argv is None else argv

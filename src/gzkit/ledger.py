@@ -813,7 +813,8 @@ class Ledger:
         so the exchange record a real token surrender cited became archivable.
 
         Returns:
-            The cached evidentiary event list: void rows dropped, discharged rows kept.
+            The cached evidentiary event list: correction rows and void rows dropped, discharged
+            rows kept.
 
         """
         if self._cached_evidence is None:

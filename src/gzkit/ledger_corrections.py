@@ -478,7 +478,7 @@ def evidence_events[EventT](events: Iterable[EventT]) -> list[EventT]:
     was false.
 
     Returns:
-        The events, in order, without those currently voided.
+        The events, in order, without the correction rows themselves and those currently voided.
 
     """
     return _without(events, frozenset({VOID}))
@@ -490,7 +490,8 @@ def live_events[EventT](events: Iterable[EventT]) -> list[EventT]:
     For state derivation — the artifact graph, lifecycle status, TASK liveness.
 
     Returns:
-        The events, in order, without those currently voided or discharged.
+        The events, in order, without the correction rows themselves and those currently voided or
+        discharged.
 
     """
     return _without(events, frozenset({VOID, DISCHARGED}))
