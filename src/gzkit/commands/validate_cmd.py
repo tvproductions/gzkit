@@ -137,7 +137,8 @@ def _collect_errors(
     ``VALIDATOR_REGISTRY`` so the tiers can never drift from the runners.
 
     Returns:
-        The validation errors from the requested scopes (all scopes when none is requested).
+        The validation errors from the requested scopes (every default-tier scope when none is
+        requested); a scope the MX checkpoint demotes prints its errors to stderr instead.
 
     """
     default_scopes = {
@@ -1431,7 +1432,9 @@ def _dispatch_early_return_scopes(
     must then return without running the aggregate validation path.
 
     Returns:
-        True when an early-return scope handled the invocation, otherwise False.
+        True when an early-return scope handled the invocation, otherwise False. Most of
+        these scopes, and the combined-solo-scope refusal, exit through ``SystemExit``
+        instead of returning.
 
     """
     if check_audits:

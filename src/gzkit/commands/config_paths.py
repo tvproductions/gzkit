@@ -331,8 +331,8 @@ def _collect_source_path_literal_issues(
     never reaches another module (GHI #938).
 
     Returns:
-        List of issue dicts for unmapped path literals; empty when the source directory is absent or
-        every literal is governed.
+        List of issue dicts for unmapped path literals and for source files that could not be read
+        or parsed; empty when the source directory is absent or every literal is governed.
 
     """
     issues: list[dict[str, str]] = []

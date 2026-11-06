@@ -960,7 +960,7 @@ def _sig_c_layer_drift(project_root: Path) -> list[ValidationError]:
     the loop, rather than re-scanning every channel per brief.
 
     Returns:
-        One :class:`ValidationError` per OBPI whose channels cross.
+        One :class:`ValidationError` per non-grandfathered OBPI whose channels cross.
 
     """
     errors: list[ValidationError] = []
@@ -1072,7 +1072,8 @@ def _sig_d_obpi_id_divergence(project_root: Path) -> list[ValidationError]:
     Heavy-fail: one ValidationError per divergent ``task_id``.
 
     Returns:
-        One :class:`ValidationError` per non-grandfathered divergent ``task_id``; empty when the
+        One :class:`ValidationError` per non-grandfathered divergent ``task_id``, except a
+        same-lineage divergence last seen at or before the canonical-id cutover; empty when the
         ledger is absent.
 
     """
@@ -1148,7 +1149,8 @@ def _sig_e_unresolvable_task_declaration(project_root: Path) -> list[ValidationE
     the audit, so the corpus is still parsed once.
 
     Returns:
-        One :class:`ValidationError` per malformed or unresolvable ``tasks:`` entry.
+        One :class:`ValidationError` per malformed or unresolvable ``tasks:`` entry; the
+        unresolvable-parent arm is skipped when no brief declares any ``reqs:``.
 
     """
     from gzkit.tasks import TaskId  # noqa: PLC0415  (module-local, as the trailer channel does)

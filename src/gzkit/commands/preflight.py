@@ -167,8 +167,8 @@ def _expired_lock_stays_held(project_root: Path, obpi_id: str) -> bool:
     An unreadable lock file is not a lock anyone holds, so it stays cleanable.
 
     Returns:
-        False for an unreadable lock; True for any work lock, and for the session lock only while
-        the hangar marker is valid.
+        False for an unreadable lock (id ``"unreadable"`` or ``"unknown"``); True for any work
+        lock, and for the session lock only while the hangar marker is valid.
 
     """
     if obpi_id in ("unreadable", "unknown"):

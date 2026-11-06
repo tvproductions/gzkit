@@ -452,7 +452,8 @@ def resolve_obpi(
 
     Returns:
         Tuple of (canonical OBPI id, the matching brief path or None when only the ledger knows
-        it); an id matching more than one brief raises instead.
+        it); an ambiguous prefix, a non-OBPI ledger entry, more than one matching brief, or an id
+        found in neither the ledger nor any brief raises instead.
 
     """
     obpi_input = normalize_obpi_input(obpi)

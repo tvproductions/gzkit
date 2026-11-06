@@ -340,8 +340,9 @@ def _brief_cell(row: dict[str, Any]) -> str:
     ``brief_authored`` verdict so the two are distinguishable at a glance.
 
     Returns:
-        The brief status label, suffixed ``(scaffold)`` when the brief is unauthored; ``"draft"``
-        when no status is recorded.
+        The brief status label, suffixed ``(scaffold)`` when the brief is unauthored (``"draft"``
+        standing in for a missing label there). Otherwise ``"draft"`` only when the row has no
+        ``brief_status`` key; a row whose ``brief_status`` is None returns None.
 
     """
     if row.get("brief_authored") is False:

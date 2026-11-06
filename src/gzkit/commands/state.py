@@ -261,7 +261,7 @@ def _resolve_expected_statuses(
 
     Returns:
         Mapping of OBPI short id to expected status; ``"Abandoned"`` when every entry for an id is
-        withdrawn.
+        withdrawn. An id whose active entries carry no definitive state is omitted.
 
     """
     # Collect all graph entries per short ID

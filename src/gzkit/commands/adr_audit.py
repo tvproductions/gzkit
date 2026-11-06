@@ -711,8 +711,8 @@ def _enforce_human_attestation_authenticity(
        :data:`ATTESTATION_TYPE_AGENT_RELAYED` so the caller can record a
        taxonomically distinct ledger receipt. **GHI #412 narrowing:** the
        agent-relayed path is refused entirely when ``sensitivity == "security"``
-       or ``parent_kind == "foundation"`` — those scopes require live TTY
-       attestation, never a file-based proxy.
+       — that scope requires live TTY attestation, never a file-based proxy.
+       ``parent_kind`` is accepted but not evaluated.
     3. **Fail-closed.** No TTY and either ``attestor_present=False`` or the
        marker fails authenticity validation. Agent-synthesized attestation
        from a fully-headless context is prohibited per GHI #290; the function

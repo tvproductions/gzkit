@@ -68,8 +68,8 @@ def _render_human(packet: EvidencePacket, packet_file: str) -> None:
 def obpi_present_evidence_cmd(*, obpi_id: str, as_json: bool = False) -> int:
     """Handle ``gz obpi present-evidence``.
 
-    Generates and persists the tool-derived evidence packet. Returns
-    ``EXIT_POLICY_BREACH`` (3) when required proof has blockers. Pending review
+    Generates and persists the tool-derived evidence packet. Raises
+    ``SystemExit(EXIT_POLICY_BREACH)`` (3) when required proof has blockers. Pending review
     permits packet generation but still prevents final acceptance.
 
     An id the resolver cannot give to exactly one OBPI with a brief on disk is

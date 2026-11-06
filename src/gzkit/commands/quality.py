@@ -332,7 +332,8 @@ def _resolve_obpi_test_names(project_root, obpi: str) -> list[str]:
     ``tests.commands.test_validate_frontmatter.TestClass.test_method``.
 
     Returns:
-        Sorted unittest names covering the OBPI's REQs; empty when the OBPI has no REQs.
+        Sorted unittest names covering the OBPI's REQs; empty when the OBPI has no REQs or no
+        test covers them.
 
     """
     from gzkit.traceability import EdgeType, scan_test_tree  # noqa: PLC0415
@@ -373,7 +374,8 @@ def resolve_obpi_behave_tags(project_root, obpi: str) -> list[str]:
     cross-OBPI rot in unrelated feature files cannot block new OBPIs.
 
     Returns:
-        Sorted ``@REQ-...`` tags covering the OBPI's REQs; empty when the OBPI has no REQs.
+        Sorted ``@REQ-...`` tags covering the OBPI's REQs; empty when the OBPI has no REQs or no
+        scenario covers them.
 
     """
     from gzkit.traceability import EdgeType, scan_feature_tree  # noqa: PLC0415

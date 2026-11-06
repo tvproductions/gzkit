@@ -113,7 +113,7 @@ def _artifact_info(identifier: str, project_root: Path) -> dict[str, Any] | None
 
     Returns:
         The artifact's graph entry, or None when the ledger is absent, unreadable, or has no
-        matching id.
+        matching id (including a prefix that matches zero or several active entries).
 
     """
     from gzkit.ledger import Ledger  # noqa: PLC0415 — import cost stays off the CLI's cold path
@@ -155,7 +155,7 @@ def obpi_ledger_state(identifier: str, project_root: Path) -> ReferenceState:
 
     Returns:
         ``SETTLED`` when withdrawn or completed, ``LIVE`` when repudiated or not completed,
-        ``UNKNOWN`` when the ledger has no entry.
+        ``UNKNOWN`` when the ledger is absent or unreadable or has no entry.
 
     """
     info = _artifact_info(identifier, project_root)
@@ -192,7 +192,7 @@ def adr_ledger_state(identifier: str, project_root: Path) -> ReferenceState:
 
     Returns:
         ``SETTLED`` when the derived lifecycle is closed out, ``LIVE`` otherwise, ``UNKNOWN`` when
-        the ledger has no entry.
+        the ledger is absent or unreadable or has no entry.
 
     """
     from gzkit.ledger import Ledger  # noqa: PLC0415 — import cost stays off the CLI's cold path

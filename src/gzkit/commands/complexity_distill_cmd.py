@@ -61,7 +61,10 @@ def complexity_distill_cmd(
     ``SystemExit`` and reading ``exc.code`` (justify_cmd precedent).
 
     Returns:
-        0 on success; non-zero outcomes raise ``SystemExit`` instead.
+        0 on success; non-zero outcomes raise ``SystemExit`` instead: 1 for an invalid
+        ``--today`` or an unreadable/invalid corpus or baseline, 2 for a missing measurement
+        tool, a rejected whole-project measurement, or an I/O failure, 3 when the distillation
+        document already exists.
 
     """
     try:

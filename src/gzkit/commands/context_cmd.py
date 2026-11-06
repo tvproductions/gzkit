@@ -201,8 +201,8 @@ def context_cmd(adr: str, *, slim: bool = False) -> int:
     """Render the focused context payload for ``adr`` to stdout.
 
     Returns 0 on success. On unresolvable ADR ID, writes a
-    ``BLOCKERS:``-prefixed message to stderr and returns exit code 1
-    (REQ-0.28.0-01-07).
+    ``BLOCKERS:``-prefixed message to stderr and exits 1 by raising
+    ``SystemExit(1)`` (REQ-0.28.0-01-07).
 
     Returns:
         0 after writing the payload; an unresolvable ADR raises ``SystemExit(1)`` instead.

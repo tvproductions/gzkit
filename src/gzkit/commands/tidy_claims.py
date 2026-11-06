@@ -92,7 +92,7 @@ def _run_tidy(
 
     Returns:
         Tuple of (exit code, captured rendered output); the exit code is 0 unless the handler raised
-        ``SystemExit``.
+        ``SystemExit``, then its integer code (1 when the code is not an integer).
 
     """
     from rich.console import Console  # noqa: PLC0415

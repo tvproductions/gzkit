@@ -139,7 +139,8 @@ def _resolve_adr_doc(
         Tuple of (ADR package directory, ADR id).
 
     Raises:
-        GzCliError: If the ``id`` answer is not canonical slug-form.
+        GzCliError: If the ``id`` answer is not canonical slug-form, or it routes to the
+            foundation kind while that kind is closed for this project.
 
     """
     doc_id = answers.get("id", "").strip()

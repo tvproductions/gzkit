@@ -298,7 +298,7 @@ def _brief_src_paths(brief_path: Path | None) -> list[str]:
 
     Returns:
         The brief's ``src/`` allowed paths, directories expanded to ``<dir>/*``; empty when there is
-        no brief or no allowed paths.
+        no brief or no allowed path under ``src/``.
 
     """
     if brief_path is None:

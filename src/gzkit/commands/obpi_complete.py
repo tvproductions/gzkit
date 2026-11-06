@@ -98,7 +98,8 @@ def _load_security_checklist(project_root: Path) -> list[str]:
     runtime — never hardcoded into the OBPI command surface.
 
     Returns:
-        The checklist items listed under the checklist heading; empty when the section has none.
+        The checklist items listed under the checklist heading; empty when the heading is absent or
+        lists none. A missing rule file raises ``GzCliError`` instead.
 
     """
     rule_path = project_root / _SECURITY_RULE_RELATIVE_PATH

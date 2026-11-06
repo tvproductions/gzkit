@@ -1509,7 +1509,8 @@ def _on_disk_declaration_or_refuse(target: _TransactionTarget) -> dict[str, Any]
     that exists is refused instead, because the two are different claims.
 
     Returns:
-        The raw on-disk declaration dict, or an empty dict when the declaration is absent.
+        The raw on-disk declaration dict, or an empty dict when the declaration is absent or does
+        not parse as JSON; an existing but unreadable declaration exits 2 instead.
 
     """
     on_disk: dict[str, Any]

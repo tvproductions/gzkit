@@ -81,8 +81,8 @@ def obpi_verify_packet_cmd(*, packet: str, as_json: bool = False) -> int:
     """Handle ``gz obpi verify-packet``.
 
     Re-executes the packet's transcripts in a disposable copy of the project root's
-    working tree, never the root itself (GHI #1157). Returns
-    ``EXIT_POLICY_BREACH`` (3) when a pasted line does not reproduce, so the operator
+    working tree, never the root itself (GHI #1157). Raises
+    ``SystemExit(EXIT_POLICY_BREACH)`` (3) when a pasted line does not reproduce, so the operator
     and any downstream gate see the fail-closed signal before attestation.
 
     Returns:

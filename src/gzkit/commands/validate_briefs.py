@@ -107,8 +107,8 @@ def _validate_interviews(project_root: Path) -> list[ValidationError]:
     predate the convention and have no recoverable transcript (GHI #515).
 
     Returns:
-        One :class:`ValidationError` per non-waived ADR with OBPIs but no transcript section; empty
-        when the ADR tree is absent.
+        One :class:`ValidationError` per non-waived ADR with OBPIs that has no ADR body file or
+        whose body has no transcript section; empty when the ADR tree is absent.
 
     """
     adr_root = project_root / "docs" / "design" / "adr"

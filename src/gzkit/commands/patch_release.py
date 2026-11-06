@@ -209,15 +209,15 @@ def _discover_ghis(project_root: Path, base_ref: str | None) -> list[GhiRecord]:
     1. Walks ``git log <base_ref>..HEAD`` and extracts GHI references from
        commit messages (``#N``, ``(GHI #N)``, ``Closes #N``).
     2. For each referenced GHI, calls ``gh issue view N`` to pull metadata.
-    3. Filters out GHIs that are not currently ``state=CLOSED`` — an
-       in-flight GHI mentioned in a commit but not yet closed is not
-       release-ready.
+    3. Does NOT filter by upstream state: an OPEN GHI is collected here and
+       downgraded later by ``_classify_ghi`` to the ``open_upstream`` warned
+       bucket (GHI #714).
 
     When *base_ref* is ``None`` (no prior tag), walks all history.
 
     Returns:
-        :class:`GhiRecord` entries for every GHI referenced in the range; empty when no commit
-        references one.
+        :class:`GhiRecord` entries, in any upstream state, for the GHIs referenced in the range
+        whose ``gh issue view`` lookup succeeded; empty when no commit references one.
 
     """
     in_range_refs = _collect_ghi_refs_in_range(project_root, base_ref)

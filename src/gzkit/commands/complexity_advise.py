@@ -251,7 +251,8 @@ def _run_attest_intrinsic(
 
     Returns:
         Exit code: 0 when the attestation event is emitted, 1 on a usage, gate, or
-        declined-confirmation failure, 2 when the source file cannot be read or parsed.
+        declined-confirmation failure, 2 when the source file cannot be read or parsed. A
+        missing or unloadable threshold table raises ``SystemExit(2)`` instead.
 
     """
     parts = path.rsplit(":", 1)

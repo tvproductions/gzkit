@@ -779,8 +779,9 @@ def _install_commit_locus_recorder(project_root: Path, *, dry_run: bool = False)
     Returns a human-readable status string, or None if skipped.
 
     Returns:
-        The install (or would-install) status string, or None when skipped: no ``.git`` directory,
-        no ``post-commit`` hook type, or ``core.hooksPath`` set.
+        The install, would-install, or not-installed (a foreign ``post-commit.legacy`` hook is in
+        place) status string, or None when skipped: no ``.git`` directory, no ``post-commit`` hook
+        type, or ``core.hooksPath`` set.
 
     """
     if not (project_root / ".git").is_dir():
