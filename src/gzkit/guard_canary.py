@@ -57,6 +57,42 @@ _BOOTSTRAP = "import sys; sys.path[:0] = ['src', '.']; import unittest; unittest
 _REQUIRED = ("claim_id", "guard", "failing_test", "binding_sha256", "authority")
 
 
+class ReviewAttributionMissingError(gz_errors.ValidationError):
+    """A canary review names neither the operator's words nor the attestor."""
+
+    def __init__(self) -> None:
+        """Build the fixed message."""
+        super().__init__(
+            "A review needs the operator's verbatim words and the attestor: a review that "
+            "names neither cannot be told from one an agent wrote (GHI #1161)."
+        )
+
+
+class UnknownCanaryError(gz_errors.ValidationError):
+    """A review names a claim no canary is bound to, or names no claim."""
+
+    def __init__(self, unknown: list[str]) -> None:
+        """Build the message from ``unknown``."""
+        self.unknown = unknown
+        super().__init__(
+            f"No canary is bound to {', '.join(unknown) or 'any claim given'}. "
+            f"Name claims from {_CANARY_REGISTRY}."
+        )
+
+
+class StaleCanaryBindingError(gz_errors.PolicyBreachError):
+    """A review names a canary whose binding no longer matches its guard, claim or test."""
+
+    def __init__(self, stale: list[str]) -> None:
+        """Build the message from ``stale``."""
+        self.stale = stale
+        super().__init__(
+            f"Canary binding is stale for {', '.join(stale)}: the guard, claim or designated "
+            f"test changed since the mutant was bound, so a review now would accept a mutant "
+            f"nobody re-read. {_RECOVER}."
+        )
+
+
 class CanaryMutation(BaseModel):
     """The reviewed mutant: one exact text substitution in the guard's file."""
 
@@ -364,28 +400,23 @@ def record_review(
     Returns:
         The claim ids recorded, de-duplicated in the order given.
 
+    Raises:
+        ReviewAttributionMissingError: the words or the attestor is empty.
+        UnknownCanaryError: no claim is named, or a named claim has no canary.
+        StaleCanaryBindingError: a named canary's binding is stale.
+
     """
     words, who = operator_text.strip(), attestor.strip()
     if not words or not who:
-        raise gz_errors.ValidationError(
-            "A review needs the operator's verbatim words and the attestor: a review that "
-            "names neither cannot be told from one an agent wrote (GHI #1161)."
-        )
+        raise ReviewAttributionMissingError
     wanted = list(dict.fromkeys(claim_ids))
     by_id = {c.claim_id: c for c in load_canaries(project_root)}
     unknown = [claim for claim in wanted if claim not in by_id]
     if not wanted or unknown:
-        raise gz_errors.ValidationError(
-            f"No canary is bound to {', '.join(unknown) or 'any claim given'}. "
-            f"Name claims from {_CANARY_REGISTRY}."
-        )
+        raise UnknownCanaryError(unknown)
     stale = [claim for claim in wanted if _stale(by_id[claim])]
     if stale:
-        raise gz_errors.PolicyBreachError(
-            f"Canary binding is stale for {', '.join(stale)}: the guard, claim or designated "
-            f"test changed since the mutant was bound, so a review now would accept a mutant "
-            f"nobody re-read. {_RECOVER}."
-        )
+        raise StaleCanaryBindingError(stale)
     ledger = Ledger(_ledger_file(project_root, ledger_path))
     for claim in wanted:
         ledger.append(

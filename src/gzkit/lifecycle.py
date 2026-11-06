@@ -46,6 +46,15 @@ __all__ = [
 ]
 
 
+class LifecycleGateBlockedError(ValueError):
+    """The evaluation-justify-binding gate refused a lifecycle transition."""
+
+    def __init__(self, artifact_id: str, message: str) -> None:
+        """Build the message from ``artifact_id``, ``message``."""
+        self.artifact_id = artifact_id
+        super().__init__(f"Lifecycle gate blocked for {artifact_id}: {message}")
+
+
 class LifecycleStateMachine:
     """Validates and records lifecycle transitions for governance artifacts.
 
@@ -97,6 +106,7 @@ class LifecycleStateMachine:
         Raises:
             InvalidTransitionError: If the transition is not allowed.
             KeyError: If the content type has no transition table.
+            LifecycleGateBlockedError: If the evaluation-justify-binding gate refuses it.
 
         """
         if content_type not in TRANSITION_TABLES:
@@ -120,7 +130,7 @@ class LifecycleStateMachine:
             gate_errors = validate_evaluation_justify_binding(artifact_id, self._project_root)
             if gate_errors:
                 error = gate_errors[0]
-                raise ValueError(f"Lifecycle gate blocked for {artifact_id}: {error.message}")
+                raise LifecycleGateBlockedError(artifact_id, error.message)
 
         if self._ledger is not None:
             from gzkit.ledger import lifecycle_transition_event  # noqa: PLC0415

@@ -48,6 +48,116 @@ class WalkthroughParseError(Exception):
     """
 
 
+class EmptyWalkthroughError(WalkthroughParseError):
+    """The walkthrough input is empty, so it has no frontmatter."""
+
+    def __init__(self) -> None:
+        """Build the fixed message."""
+        super().__init__("line 1: missing YAML frontmatter (file is empty)")
+
+
+class FrontmatterOpeningMissingError(WalkthroughParseError):
+    """The first line is not the ``---`` frontmatter opener."""
+
+    def __init__(self, first_line: str) -> None:
+        """Build the message from ``first_line``."""
+        super().__init__(f"line 1: missing YAML frontmatter (expected '---', got {first_line!r})")
+
+
+class FrontmatterClosingMissingError(WalkthroughParseError):
+    """The frontmatter has no closing ``---`` delimiter."""
+
+    def __init__(self) -> None:
+        """Build the fixed message."""
+        super().__init__("line 1: missing YAML frontmatter closing delimiter ('---')")
+
+
+class FrontmatterLineError(WalkthroughParseError):
+    """A frontmatter line is not a ``key: value`` pair."""
+
+    def __init__(self, raw_line: str) -> None:
+        """Build the message from ``raw_line``."""
+        super().__init__(f"frontmatter line is not a key: value pair: {raw_line!r}")
+
+
+class FrontmatterKeyMissingError(WalkthroughParseError):
+    """A required frontmatter key is absent."""
+
+    def __init__(self, key: str) -> None:
+        """Build the message from ``key``."""
+        self.key = key
+        super().__init__(f"frontmatter missing required key: {key}")
+
+
+class AnchorKindInvalidError(WalkthroughParseError):
+    """The frontmatter ``anchor_kind`` is not ghi, obpi or draft."""
+
+    def __init__(self, anchor_kind: str) -> None:
+        """Build the message from ``anchor_kind``."""
+        super().__init__(
+            f"frontmatter anchor_kind must be one of 'ghi', 'obpi', 'draft'; got {anchor_kind!r}"
+        )
+
+
+class SectionCountError(WalkthroughParseError):
+    """The body does not hold exactly eight H2 sections."""
+
+    def __init__(self, found: int) -> None:
+        """Build the message from ``found``."""
+        self.found = found
+        super().__init__(f"expected 8 sections (ordinals 1..8), found {found}")
+
+
+class SectionHeadingMalformedError(WalkthroughParseError):
+    """An H2 line does not have the ``## <n>. <heading>`` shape."""
+
+    def __init__(self, line_no: int, header: str) -> None:
+        """Build the message from ``line_no``, ``header``."""
+        self.line_no = line_no
+        super().__init__(f"line {line_no}: malformed section heading {header!r}")
+
+
+class SectionOrdinalOrderError(WalkthroughParseError):
+    """A section's ordinal is not the next one in sequence."""
+
+    def __init__(self, line_no: int, ordinal: int, expected: int) -> None:
+        """Build the message from ``line_no``, ``ordinal``, ``expected``."""
+        self.line_no = line_no
+        super().__init__(
+            f"line {line_no}: heading ordinal {ordinal} out of order; expected {expected}"
+        )
+
+
+class SectionHeadingMismatchError(WalkthroughParseError):
+    """A section's heading text differs from its canonical heading."""
+
+    def __init__(self, line_no: int, heading: str, expected: str) -> None:
+        """Build the message from ``line_no``, ``heading``, ``expected``."""
+        self.line_no = line_no
+        super().__init__(
+            f"line {line_no}: heading {heading!r} does not match expected {expected!r}"
+        )
+
+
+class SectionBlockMissingError(WalkthroughParseError):
+    """A section lacks one of its required sub-blocks."""
+
+    def __init__(self, line_no: int, ordinal: int, block: str) -> None:
+        """Build the message from ``line_no``, ``ordinal``, ``block``."""
+        self.line_no = line_no
+        self.block = block
+        super().__init__(f"line {line_no}: section {ordinal} missing {block}")
+
+
+class SectionMarkerMismatchError(WalkthroughParseError):
+    """A section sub-block marker line is not the expected marker."""
+
+    def __init__(self, line_no: int, ordinal: int, expected: str, got: str) -> None:
+        """Build the message from ``line_no``, ``ordinal``, ``expected``, ``got``."""
+        self.line_no = line_no
+        super().__init__(f"line {line_no}: section {ordinal} expected {expected}, got {got!r}")
+
+
 class ValidateResult(BaseModel):
     """Structured report for ``gz justify validate --json``.
 
@@ -121,21 +231,24 @@ def _split_frontmatter(markdown: str) -> tuple[str, list[str], int]:
         ``(frontmatter_text, body_lines, body_line_offset)``, the offset being the 1-based line
         number of the first body line.
 
+    Raises:
+        EmptyWalkthroughError: the input is empty.
+        FrontmatterOpeningMissingError: the first line is not ``---``.
+        FrontmatterClosingMissingError: no closing ``---`` follows.
+
     """
     lines = markdown.splitlines()
     if not lines:
-        raise WalkthroughParseError("line 1: missing YAML frontmatter (file is empty)")
+        raise EmptyWalkthroughError
     if _strip_trailing_ws(lines[0]) != _FRONTMATTER_DELIMITER:
-        raise WalkthroughParseError(
-            f"line 1: missing YAML frontmatter (expected '---', got {lines[0].rstrip()!r})"
-        )
+        raise FrontmatterOpeningMissingError(lines[0].rstrip())
     closing_idx: int | None = None
     for idx in range(1, len(lines)):
         if _strip_trailing_ws(lines[idx]) == _FRONTMATTER_DELIMITER:
             closing_idx = idx
             break
     if closing_idx is None:
-        raise WalkthroughParseError("line 1: missing YAML frontmatter closing delimiter ('---')")
+        raise FrontmatterClosingMissingError
     frontmatter_text = "\n".join(lines[1:closing_idx])
     body_lines = lines[closing_idx + 1 :]
     body_offset = closing_idx + 2
@@ -154,6 +267,10 @@ def _parse_frontmatter(text: str) -> dict[str, str]:
     Returns:
         Mapping of each required frontmatter key to its raw string value.
 
+    Raises:
+        FrontmatterLineError: a line is not a ``key: value`` pair.
+        FrontmatterKeyMissingError: a required key is absent.
+
     """
     parsed: dict[str, str] = {}
     for raw_line in text.splitlines():
@@ -161,21 +278,19 @@ def _parse_frontmatter(text: str) -> dict[str, str]:
         if not line or line.startswith("#"):
             continue
         if ":" not in line:
-            raise WalkthroughParseError(f"frontmatter line is not a key: value pair: {raw_line!r}")
+            raise FrontmatterLineError(raw_line)
         key, _, value = line.partition(":")
         parsed[key.strip()] = value.strip()
     for required in _FRONTMATTER_KEYS:
         if required not in parsed:
-            raise WalkthroughParseError(f"frontmatter missing required key: {required}")
+            raise FrontmatterKeyMissingError(required)
     return {key: parsed[key] for key in _FRONTMATTER_KEYS}
 
 
 def _reconstruct_anchor(anchor_kind: str, anchor_id: str) -> AnchorRef:
     kind = anchor_kind.strip().lower()
     if kind not in {"ghi", "obpi", "draft"}:
-        raise WalkthroughParseError(
-            f"frontmatter anchor_kind must be one of 'ghi', 'obpi', 'draft'; got {anchor_kind!r}"
-        )
+        raise AnchorKindInvalidError(anchor_kind)
     if kind == "draft":
         slug = anchor_id.removeprefix("draft-")
         return AnchorRef(
@@ -203,6 +318,11 @@ def _collect_section_blocks(body_lines: list[str], body_offset: int) -> list[lis
         The eight section blocks, each a list of ``(line_number, text)`` pairs headed by its H2
         line.
 
+    Raises:
+        SectionCountError: the body does not hold exactly eight sections.
+        SectionHeadingMalformedError: an H2 line is malformed.
+        SectionOrdinalOrderError: a section ordinal is out of order.
+
     """
     blocks: list[list[tuple[int, str]]] = []
     current: list[tuple[int, str]] | None = None
@@ -219,20 +339,15 @@ def _collect_section_blocks(body_lines: list[str], body_offset: int) -> list[lis
     if current is not None:
         blocks.append(current)
     if len(blocks) != 8:
-        raise WalkthroughParseError(f"expected 8 sections (ordinals 1..8), found {len(blocks)}")
+        raise SectionCountError(len(blocks))
     for position, block in enumerate(blocks, start=1):
         header_line_no, header = block[0]
         match = _H2_RE.match(header)
         if not match:
-            raise WalkthroughParseError(
-                f"line {header_line_no}: malformed section heading {header!r}"
-            )
+            raise SectionHeadingMalformedError(header_line_no, header)
         ordinal = int(match.group(1))
         if ordinal != position:
-            raise WalkthroughParseError(
-                f"line {header_line_no}: heading ordinal {ordinal} out of order; "
-                f"expected {position}"
-            )
+            raise SectionOrdinalOrderError(header_line_no, ordinal, position)
     return blocks
 
 
@@ -243,10 +358,7 @@ def _parse_section_block(block: list[tuple[int, str]]) -> WalkthroughSection:
     ordinal = int(match.group(1))
     heading = match.group(2).strip()
     if heading != SECTION_HEADINGS[ordinal - 1]:
-        raise WalkthroughParseError(
-            f"line {header_line_no}: heading {heading!r} does not match "
-            f"expected {SECTION_HEADINGS[ordinal - 1]!r}"
-        )
+        raise SectionHeadingMismatchError(header_line_no, heading, SECTION_HEADINGS[ordinal - 1])
     prompt, citations, reasoning = _parse_section_body(block[1:], ordinal, header_line_no)
     return WalkthroughSection(
         ordinal=ordinal,
@@ -264,30 +376,20 @@ def _parse_section_body(
     idx = _skip_noise(lines, 0)
     n = len(lines)
     if idx >= n:
-        raise WalkthroughParseError(
-            f"line {header_line_no}: section {ordinal} missing **Prompt:** block"
-        )
+        raise SectionBlockMissingError(header_line_no, ordinal, "**Prompt:** block")
     prompt_line_no, prompt_raw = lines[idx]
     prompt_match = _PROMPT_RE.match(prompt_raw)
     if not prompt_match:
-        raise WalkthroughParseError(
-            f"line {prompt_line_no}: section {ordinal} expected "
-            f"'**Prompt:** *...*', got {prompt_raw!r}"
-        )
+        raise SectionMarkerMismatchError(prompt_line_no, ordinal, "'**Prompt:** *...*'", prompt_raw)
     prompt = prompt_match.group(1).strip()
     idx += 1
 
     idx = _skip_noise(lines, idx)
     if idx >= n:
-        raise WalkthroughParseError(
-            f"line {prompt_line_no}: section {ordinal} missing **Evidence:** block"
-        )
+        raise SectionBlockMissingError(prompt_line_no, ordinal, "**Evidence:** block")
     evidence_line_no, evidence_raw = lines[idx]
     if evidence_raw != _EVIDENCE_HEADER:
-        raise WalkthroughParseError(
-            f"line {evidence_line_no}: section {ordinal} expected "
-            f"'**Evidence:**', got {evidence_raw!r}"
-        )
+        raise SectionMarkerMismatchError(evidence_line_no, ordinal, "'**Evidence:**'", evidence_raw)
     idx += 1
 
     idx = _skip_noise(lines, idx)
@@ -316,9 +418,7 @@ def _parse_section_body(
     while reasoning_lines and reasoning_lines[-1] == "":
         reasoning_lines.pop()
     if not reasoning_lines:
-        raise WalkthroughParseError(
-            f"line {evidence_line_no}: section {ordinal} missing reasoning block"
-        )
+        raise SectionBlockMissingError(evidence_line_no, ordinal, "reasoning block")
     reasoning = "\n".join(reasoning_lines)
     return prompt, citations, reasoning
 

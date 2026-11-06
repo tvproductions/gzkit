@@ -96,7 +96,9 @@ class ProducerProbeTests(unittest.TestCase):
         with patch("gzkit.acceptance_store.initialize", side_effect=produce):
             observation = probe_producer("acceptance_recorded")
         self.assertEqual(observation.status, "failed")
-        self.assertEqual(observation.error, "ValueError: Producer persisted the wrong event type")
+        self.assertEqual(
+            observation.error, "AcceptanceEventTypeError: Producer persisted the wrong event type"
+        )
 
     def test_malformed_empty_or_duplicate_persistence_is_not_valid_emission(self) -> None:
         for corruption in ("", "not JSON\n", "{}\n", "duplicate"):

@@ -41,6 +41,60 @@ class RegistryError(RuntimeError):
     """
 
 
+class RegistryNameError(RegistryError):
+    """A registry name is a path rather than a bare or declared-subdirectory filename."""
+
+    def __init__(self, name: str) -> None:
+        """Build the message from ``name``."""
+        self.name = name
+        super().__init__(
+            f"Registry name {name!r} is not a bare filename or a file directly under "
+            f"one of {sorted(_DECLARED_SUBDIRS)}. The seam resolves names under "
+            f"{_DATA_DIR}/, so a caller passing a path is reaching around it (GHI #1067)."
+        )
+
+
+class RegistryUnreadableError(RegistryError):
+    """A registry file is missing or not UTF-8."""
+
+    def __init__(self, name: str, exc: OSError | UnicodeDecodeError) -> None:
+        """Build the message from ``name``, ``exc``."""
+        self.name = name
+        super().__init__(
+            f"Config registry {_DATA_DIR}/{name} could not be read: {exc}. "
+            f"Every registry is declared in {_DATA_DIR}/config_registry.json or the "
+            f"waiver-ratchet registry, so a missing one is a tree defect rather than "
+            f"an optional file (GHI #1067)."
+        )
+
+
+class RegistryJsonError(RegistryError):
+    """A registry file is not valid JSON."""
+
+    def __init__(self, name: str, exc: json.JSONDecodeError) -> None:
+        """Build the message from ``name``, ``exc``."""
+        self.name = name
+        super().__init__(
+            f"Config registry {_DATA_DIR}/{name} is not valid JSON: {exc}. "
+            f"Execution reads thresholds from JSON, so an unparseable registry "
+            f"silently disarms whatever reads it (GHI #1067)."
+        )
+
+
+class RegistryNotObjectError(RegistryError):
+    """A registry read for a field is not a JSON object."""
+
+    def __init__(self, name: str, field: str) -> None:
+        """Build the message from ``name``, ``field``."""
+        self.name = name
+        self.field = field
+        super().__init__(
+            f"Config registry {_DATA_DIR}/{name} is not an object, so it has no "
+            f"field {field!r}. Read it with load_registry() and handle its shape "
+            f"(GHI #1067)."
+        )
+
+
 def registry_path(project_root: Path, name: str) -> Path:
     """Return the on-disk path of a registry, without reading it.
 
@@ -53,16 +107,15 @@ def registry_path(project_root: Path, name: str) -> Path:
     Returns:
         The path `<project_root>/data/<name>`; the file is not read and need not exist.
 
+    Raises:
+        RegistryNameError: the name is a path rather than a bare or declared-subdirectory name.
+
     """
     parts = name.split("/")
     bare = all(part and part not in {".", ".."} and "\\" not in part for part in parts)
     declared = len(parts) == 1 or (len(parts) == 2 and parts[0] in _DECLARED_SUBDIRS)
     if not (bare and declared):
-        raise RegistryError(
-            f"Registry name {name!r} is not a bare filename or a file directly under "
-            f"one of {sorted(_DECLARED_SUBDIRS)}. The seam resolves names under "
-            f"{_DATA_DIR}/, so a caller passing a path is reaching around it (GHI #1067)."
-        )
+        raise RegistryNameError(name)
     return project_root / _DATA_DIR / name
 
 
@@ -80,6 +133,10 @@ def load_registry(project_root: Path, name: str) -> Any:
         The parsed JSON payload unchanged: an object, an array or whatever top-level value the file
         holds.
 
+    Raises:
+        RegistryUnreadableError: the file is missing or not UTF-8.
+        RegistryJsonError: the file is not valid JSON.
+
     """
     path = registry_path(project_root, name)
     try:
@@ -87,20 +144,11 @@ def load_registry(project_root: Path, name: str) -> Any:
     except (OSError, UnicodeDecodeError) as exc:
         # UnicodeDecodeError is a ValueError, so `except OSError` alone lets a
         # registry that is not UTF-8 out as the raw decode error (GHI #1180).
-        raise RegistryError(
-            f"Config registry {_DATA_DIR}/{name} could not be read: {exc}. "
-            f"Every registry is declared in {_DATA_DIR}/config_registry.json or the "
-            f"waiver-ratchet registry, so a missing one is a tree defect rather than "
-            f"an optional file (GHI #1067)."
-        ) from exc
+        raise RegistryUnreadableError(name, exc) from exc
     try:
         return json.loads(text)
     except json.JSONDecodeError as exc:
-        raise RegistryError(
-            f"Config registry {_DATA_DIR}/{name} is not valid JSON: {exc}. "
-            f"Execution reads thresholds from JSON, so an unparseable registry "
-            f"silently disarms whatever reads it (GHI #1067)."
-        ) from exc
+        raise RegistryJsonError(name, exc) from exc
 
 
 def load_registry_field(project_root: Path, name: str, field: str, default: Any = None) -> Any:
@@ -115,12 +163,11 @@ def load_registry_field(project_root: Path, name: str, field: str, default: Any 
         The registry object's value for `field`, or `default` when the registry parses and lacks the
         field.
 
+    Raises:
+        RegistryNotObjectError: the registry is not a JSON object.
+
     """
     payload = load_registry(project_root, name)
     if not isinstance(payload, dict):
-        raise RegistryError(
-            f"Config registry {_DATA_DIR}/{name} is not an object, so it has no "
-            f"field {field!r}. Read it with load_registry() and handle its shape "
-            f"(GHI #1067)."
-        )
+        raise RegistryNotObjectError(name, field)
     return payload.get(field, default)

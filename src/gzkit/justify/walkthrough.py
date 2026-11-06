@@ -30,6 +30,24 @@ from gzkit.justify.models import AnchorRef, EvidenceBundle
 _PLACEHOLDER = "_[To be filled]_"
 
 
+class WalkthroughOrdinalsError(ValueError):
+    """A walkthrough's sections are not ordinals 1-8 in order."""
+
+    def __init__(self, ordinals: list[int]) -> None:
+        """Build the message from ``ordinals``."""
+        self.ordinals = ordinals
+        super().__init__(f"sections must have ordinals [1,2,3,4,5,6,7,8] in order, got {ordinals}")
+
+
+class WalkthroughHeadingError(ValueError):
+    """A walkthrough section's heading is not its canonical heading."""
+
+    def __init__(self, ordinal: int, expected: str, heading: str) -> None:
+        """Build the message from ``ordinal``, ``expected``, ``heading``."""
+        self.ordinal = ordinal
+        super().__init__(f"section {ordinal} heading must be {expected!r}, got {heading!r}")
+
+
 SECTION_HEADINGS: list[str] = [
     "What I see (the problem)",
     "Per-instance severity",
@@ -111,15 +129,10 @@ class Walkthrough(BaseModel):
     def _validate_sections(self) -> Self:
         ordinals = [section.ordinal for section in self.sections]
         if ordinals != list(range(1, 9)):
-            raise ValueError(
-                f"sections must have ordinals [1,2,3,4,5,6,7,8] in order, got {ordinals}"
-            )
+            raise WalkthroughOrdinalsError(ordinals)
         for section, expected in zip(self.sections, SECTION_HEADINGS, strict=True):
             if section.heading != expected:
-                raise ValueError(
-                    f"section {section.ordinal} heading must be "
-                    f"{expected!r}, got {section.heading!r}"
-                )
+                raise WalkthroughHeadingError(section.ordinal, expected, section.heading)
         return self
 
     def is_complete(self) -> bool:

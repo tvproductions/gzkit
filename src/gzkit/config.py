@@ -14,12 +14,29 @@ CODEX_CONFIG_DEFAULT_PATH = ".codex/config.toml"
 CODEX_CONFIG_MARKER = "# gzkit-managed-codex-config: v1"
 
 
+class CodexConfigPathEscapeError(ValueError):
+    """A configured Codex config path resolves outside the project root."""
+
+    def __init__(self) -> None:
+        """Build the fixed message."""
+        super().__init__("Codex config path must stay within the project root")
+
+
+class CodexConfigNotFileError(ValueError):
+    """The configured Codex config path exists but is not a regular file."""
+
+    def __init__(self, config_path: Path) -> None:
+        """Build the message from ``config_path``."""
+        self.config_path = config_path
+        super().__init__(f"Codex config path is not a regular file: {config_path}")
+
+
 def resolve_codex_config_path(project_root: Path, configured_path: str) -> Path:
     """Resolve a configured Codex path and reject escapes from the project root."""
     root = project_root.resolve()
     resolved = (root / configured_path).resolve()
     if not resolved.is_relative_to(root):
-        raise ValueError("Codex config path must stay within the project root")
+        raise CodexConfigPathEscapeError
     return resolved
 
 

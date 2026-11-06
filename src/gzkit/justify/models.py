@@ -21,6 +21,14 @@ class AnchorResolutionError(Exception):
     """Raised when an anchor cannot be resolved to a concrete artifact."""
 
 
+class UnsupportedAnchorKindError(ValueError):
+    """The ``adr`` anchor kind was given, which justify does not support."""
+
+    def __init__(self) -> None:
+        """Build the fixed message."""
+        super().__init__("anchor kind 'adr' is not supported; use one of 'ghi', 'obpi', 'draft'")
+
+
 class AnchorRef(BaseModel):
     """A resolved anchor — the identity of the thing being justified."""
 
@@ -46,9 +54,7 @@ class AnchorRef(BaseModel):
     @classmethod
     def _validate_kind(cls, value: Any) -> Any:
         if value == "adr":
-            raise ValueError(
-                "anchor kind 'adr' is not supported; use one of 'ghi', 'obpi', 'draft'"
-            )
+            raise UnsupportedAnchorKindError
         return value
 
 

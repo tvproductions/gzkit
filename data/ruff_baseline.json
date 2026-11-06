@@ -6088,17 +6088,7 @@
     },
     {
       "file": "src/gzkit/config.py",
-      "rule": "EM101",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/config.py",
       "rule": "FBT003",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/config.py",
-      "rule": "TRY003",
       "count": 1
     },
     {
@@ -6843,11 +6833,6 @@
     },
     {
       "file": "src/gzkit/fidelity.py",
-      "rule": "EM102",
-      "count": 4
-    },
-    {
-      "file": "src/gzkit/fidelity.py",
       "rule": "PLR2004",
       "count": 1
     },
@@ -6860,11 +6845,6 @@
       "file": "src/gzkit/fidelity.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/fidelity.py",
-      "rule": "TRY003",
-      "count": 4
     },
     {
       "file": "src/gzkit/file_lock.py",
@@ -8208,21 +8188,6 @@
     },
     {
       "file": "src/gzkit/guard_canary.py",
-      "rule": "DOC501",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/guard_canary.py",
-      "rule": "EM101",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/guard_canary.py",
-      "rule": "EM102",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/guard_canary.py",
       "rule": "FLY002",
       "count": 1
     },
@@ -8237,18 +8202,8 @@
       "count": 4
     },
     {
-      "file": "src/gzkit/guard_canary.py",
-      "rule": "TRY003",
-      "count": 3
-    },
-    {
       "file": "src/gzkit/handoff_api.py",
       "rule": "DOC501",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/handoff_api.py",
-      "rule": "EM102",
       "count": 1
     },
     {
@@ -8264,11 +8219,6 @@
     {
       "file": "src/gzkit/handoff_api.py",
       "rule": "PLR6201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/handoff_api.py",
-      "rule": "TRY003",
       "count": 1
     },
     {
@@ -8308,16 +8258,6 @@
     },
     {
       "file": "src/gzkit/handoff_validation.py",
-      "rule": "EM101",
-      "count": 3
-    },
-    {
-      "file": "src/gzkit/handoff_validation.py",
-      "rule": "EM102",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/handoff_validation.py",
       "rule": "ISC004",
       "count": 1
     },
@@ -8330,11 +8270,6 @@
       "file": "src/gzkit/handoff_validation.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/handoff_validation.py",
-      "rule": "TRY003",
-      "count": 4
     },
     {
       "file": "src/gzkit/hooks/claude.py",
@@ -8607,21 +8542,6 @@
       "count": 7
     },
     {
-      "file": "src/gzkit/justify/anchors.py",
-      "rule": "DOC502",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/justify/anchors.py",
-      "rule": "EM102",
-      "count": 8
-    },
-    {
-      "file": "src/gzkit/justify/anchors.py",
-      "rule": "TRY003",
-      "count": 8
-    },
-    {
       "file": "src/gzkit/justify/cli.py",
       "rule": "FBT001",
       "count": 1
@@ -8697,31 +8617,6 @@
       "count": 2
     },
     {
-      "file": "src/gzkit/justify/models.py",
-      "rule": "EM101",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/justify/models.py",
-      "rule": "TRY003",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/justify/parser.py",
-      "rule": "DOC501",
-      "count": 3
-    },
-    {
-      "file": "src/gzkit/justify/parser.py",
-      "rule": "EM101",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/justify/parser.py",
-      "rule": "EM102",
-      "count": 13
-    },
-    {
       "file": "src/gzkit/justify/parser.py",
       "rule": "PLC1901",
       "count": 3
@@ -8742,16 +8637,6 @@
       "count": 1
     },
     {
-      "file": "src/gzkit/justify/parser.py",
-      "rule": "TRY003",
-      "count": 15
-    },
-    {
-      "file": "src/gzkit/justify/walkthrough.py",
-      "rule": "EM102",
-      "count": 2
-    },
-    {
       "file": "src/gzkit/justify/walkthrough.py",
       "rule": "PERF401",
       "count": 1
@@ -8760,11 +8645,6 @@
       "file": "src/gzkit/justify/walkthrough.py",
       "rule": "PLR2004",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/justify/walkthrough.py",
-      "rule": "TRY003",
-      "count": 2
     },
     {
       "file": "src/gzkit/knowledge/__main__.py",
@@ -8819,11 +8699,6 @@
     {
       "file": "src/gzkit/ledger_events.py",
       "rule": "DOC501",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/ledger_events.py",
-      "rule": "EM102",
       "count": 1
     },
     {
@@ -8852,11 +8727,6 @@
       "count": 11
     },
     {
-      "file": "src/gzkit/ledger_events.py",
-      "rule": "TRY003",
-      "count": 1
-    },
-    {
       "file": "src/gzkit/ledger_merge.py",
       "rule": "FURB118",
       "count": 1
@@ -8868,21 +8738,6 @@
     },
     {
       "file": "src/gzkit/ledger_producer_probe.py",
-      "rule": "DOC501",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/ledger_producer_probe.py",
-      "rule": "EM101",
-      "count": 23
-    },
-    {
-      "file": "src/gzkit/ledger_producer_probe.py",
-      "rule": "EM102",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/ledger_producer_probe.py",
       "rule": "PLW0717",
       "count": 1
     },
@@ -8890,16 +8745,6 @@
       "file": "src/gzkit/ledger_producer_probe.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/ledger_producer_probe.py",
-      "rule": "TRY003",
-      "count": 25
-    },
-    {
-      "file": "src/gzkit/ledger_producer_probe.py",
-      "rule": "TRY004",
-      "count": 6
     },
     {
       "file": "src/gzkit/ledger_proof.py",
@@ -8949,16 +8794,11 @@
     {
       "file": "src/gzkit/lifecycle.py",
       "rule": "DOC501",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/lifecycle.py",
-      "rule": "EM101",
       "count": 1
     },
     {
       "file": "src/gzkit/lifecycle.py",
-      "rule": "EM102",
+      "rule": "EM101",
       "count": 1
     },
     {
@@ -8974,11 +8814,6 @@
     {
       "file": "src/gzkit/lifecycle.py",
       "rule": "TC003",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/lifecycle.py",
-      "rule": "TRY003",
       "count": 1
     },
     {
@@ -9414,17 +9249,7 @@
     {
       "file": "src/gzkit/quality.py",
       "rule": "DOC501",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/quality.py",
-      "rule": "EM101",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/quality.py",
-      "rule": "EM102",
-      "count": 2
+      "count": 1
     },
     {
       "file": "src/gzkit/quality.py",
@@ -9482,29 +9307,9 @@
       "count": 2
     },
     {
-      "file": "src/gzkit/quality.py",
-      "rule": "TRY003",
-      "count": 4
-    },
-    {
-      "file": "src/gzkit/quality.py",
-      "rule": "TRY004",
-      "count": 2
-    },
-    {
       "file": "src/gzkit/red_witness.py",
       "rule": "DOC402",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/red_witness.py",
-      "rule": "DOC501",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/red_witness.py",
-      "rule": "EM102",
-      "count": 3
     },
     {
       "file": "src/gzkit/red_witness.py",
@@ -9522,24 +9327,9 @@
       "count": 1
     },
     {
-      "file": "src/gzkit/red_witness.py",
-      "rule": "TRY003",
-      "count": 3
-    },
-    {
       "file": "src/gzkit/registries.py",
       "rule": "ANN401",
       "count": 3
-    },
-    {
-      "file": "src/gzkit/registries.py",
-      "rule": "DOC501",
-      "count": 3
-    },
-    {
-      "file": "src/gzkit/registries.py",
-      "rule": "EM102",
-      "count": 4
     },
     {
       "file": "src/gzkit/registries.py",
@@ -9550,11 +9340,6 @@
       "file": "src/gzkit/registries.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/registries.py",
-      "rule": "TRY003",
-      "count": 4
     },
     {
       "file": "src/gzkit/registry.py",
@@ -9893,11 +9678,6 @@
     },
     {
       "file": "src/gzkit/sync_surfaces.py",
-      "rule": "EM102",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/sync_surfaces.py",
       "rule": "FURB113",
       "count": 1
     },
@@ -9939,11 +9719,6 @@
     {
       "file": "src/gzkit/sync_surfaces.py",
       "rule": "TC003",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/sync_surfaces.py",
-      "rule": "TRY003",
       "count": 1
     },
     {

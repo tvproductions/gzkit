@@ -10,6 +10,7 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any, Literal
 
 from gzkit.ledger import LedgerEvent, ledger_row
+from gzkit.ledger_events_errors import RetirementFloorOverlapError
 
 if TYPE_CHECKING:
     from gzkit.event_evidence import EventAnchor
@@ -1284,6 +1285,9 @@ def corpus_entry_retired_event(
         The ``corpus_entry_retired`` LedgerEvent, keyed by a timestamped
         ``corpus-entry-retired-<ts>`` id.
 
+    Raises:
+        RetirementFloorOverlapError: ``floor_added`` and ``floor_removed`` overlap.
+
     """
     overlap = floor_added & floor_removed
     if overlap:
@@ -1292,11 +1296,7 @@ def corpus_entry_retired_event(
         # A round-9 adversary probe passed the same id in both sets and got a
         # ledger-valid `changed` witness naming one id -- an impossible state that
         # both readers accepted. Refuse it at the boundary rather than emit it.
-        raise ValueError(
-            f"floor_added and floor_removed overlap on {sorted(overlap)}: a retirement "
-            "cannot both revive and un-bind the same invariant entry. The two sets come "
-            "from one before/after fold and are disjoint by construction."
-        )
+        raise RetirementFloorOverlapError(overlap)
 
     return LedgerEvent(
         event="corpus_entry_retired",

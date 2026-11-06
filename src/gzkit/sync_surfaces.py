@@ -20,6 +20,7 @@ from gzkit.codex_roles import sync_codex_roles
 from gzkit.config import (
     CODEX_CONFIG_DEFAULT_PATH,
     CODEX_CONFIG_MARKER,
+    CodexConfigNotFileError,
     GzkitConfig,
     resolve_codex_config_path,
 )
@@ -573,7 +574,7 @@ def sync_codex_config(project_root: Path, config: GzkitConfig) -> str:
         remove_if_present(default_path)
     if config_path.exists():
         if not config_path.is_file():
-            raise ValueError(f"Codex config path is not a regular file: {config_path}")
+            raise CodexConfigNotFileError(config_path)
         existing = config_path.read_bytes()
         if existing:
             return config_path.relative_to(root).as_posix()

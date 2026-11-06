@@ -23,6 +23,7 @@ from typing import Protocol
 import yaml
 from pydantic import BaseModel, ConfigDict, computed_field
 
+from gzkit.handoff_errors import NoHandoffFoundError
 from gzkit.handoff_rulings import (
     RULINGS_FILENAME,
     dedup_rulings,
@@ -1354,11 +1355,14 @@ def resume_handoff(
         A ``ResumeResult`` carrying the newest handoff's path, staleness, verification flag,
         annotated steps and lineage chain.
 
+    Raises:
+        NoHandoffFoundError: no handoff exists for the scope.
+
     """
     infos = list_handoffs(adr_id=adr_id, base_path=base_path)
     if not infos:
         scope = adr_id or "this repository"
-        raise HandoffValidationError(f"No handoff found for {scope}")
+        raise NoHandoffFoundError(scope)
 
     # `max` over an already-total order: ties fall to the earliest element, which
     # `list_handoffs` has already ordered newest-first with a path tie-break, so

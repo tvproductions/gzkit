@@ -31,6 +31,32 @@ from gzkit.events import (
     WorkPackageTransitionedEvent,
     parse_typed_event,
 )
+from gzkit.ledger_producer_probe_errors import (
+    AcceptanceEventTypeError,
+    AcceptanceObligationMismatchError,
+    AcceptancePopulationError,
+    AcceptanceRecordCountError,
+    AcceptanceSubjectError,
+    ArchiveIndexLinkError,
+    ExpiredLockEvictedError,
+    LeaseExpiryEventTypeError,
+    LeaseExpiryMismatchError,
+    LeaseExpiryRecordCountError,
+    ProofMismatchError,
+    PublicationMismatchError,
+    PublishedBytesError,
+    RenewalEndedSessionError,
+    RenewalEventTypeError,
+    RenewalRecordCountError,
+    RenewalRefusedError,
+    RenewedLeaseMissingError,
+    ReportEventTypeError,
+    ReportRecordCountError,
+    TransitionMismatchError,
+    WriterAcceptedRefusalError,
+    WriterEventTypeError,
+    WriterRecordCountError,
+)
 from gzkit.models.catalog import CATALOG_FILES, Catalog, load_catalog
 from gzkit.pipeline_dispatch import MAX_REVIEW_FIX_CYCLES
 from gzkit.registries import registry_path
@@ -94,20 +120,20 @@ def _observe_acceptance_contract(root: Path) -> ProducerObservation:
     persisted = (root / ".gzkit/ledger.jsonl").read_bytes()
     rows = [json.loads(line) for line in persisted.decode("utf-8").splitlines() if line.strip()]
     if len(rows) != 1:
-        raise ValueError("Producer must persist exactly one initial contract record")
+        raise AcceptanceRecordCountError
     event = parse_typed_event(rows[0])
     if not isinstance(event, AcceptanceRecordedEvent):
-        raise ValueError("Producer persisted the wrong event type")
+        raise AcceptanceEventTypeError
     if event.id != _OBPI or event.record_type != "contract":
-        raise ValueError("Producer persisted the wrong subject or acceptance record kind")
+        raise AcceptanceSubjectError
     contract = acceptance_store.Contract.model_validate(event.payload)
     if contract.author_id != _AUTHOR or len(contract.obligations) != 1:
-        raise ValueError("Producer did not preserve the author and obligation population")
+        raise AcceptancePopulationError
     obligation = contract.obligations[0]
     observed = (obligation.id, obligation.kind, obligation.statement, obligation.authority)
     expected = (_REQ, "BEHAVIOR", _STATEMENT, f"{_BRIEF_PATH}#acceptance-criteria")
     if observed != expected:
-        raise ValueError("Persisted obligation disagrees with the canonical fixture")
+        raise AcceptanceObligationMismatchError
     return ProducerObservation(
         event_type="acceptance_recorded",
         producer="gzkit.acceptance_store.initialize",
@@ -134,10 +160,10 @@ def _probe_report(root: Path) -> ProducerObservation:
     persisted = (root / "state/events.jsonl").read_bytes()
     rows = [json.loads(line) for line in persisted.decode("utf-8").splitlines() if line.strip()]
     if len(rows) != 1:
-        raise ValueError("Report producer must persist exactly one publication record")
+        raise ReportRecordCountError
     event = parse_typed_event(rows[0])
     if not isinstance(event, ReportPublishedEvent):
-        raise ValueError("Report producer persisted the wrong event type")
+        raise ReportEventTypeError
     observed = (
         event.id,
         event.path,
@@ -155,13 +181,13 @@ def _probe_report(root: Path) -> ProducerObservation:
         None,
     )
     if observed != expected:
-        raise ValueError("Publication witness disagrees with the authored fixture")
+        raise PublicationMismatchError
     directory = (root / path).parent
     if (root / path).read_bytes() != content or (directory / "current.md").read_bytes() != content:
-        raise ValueError("Published assessment or current view differs from exact source bytes")
+        raise PublishedBytesError
     index = (directory / "index.md").read_text(encoding="utf-8")
     if f"[{report_id}]({report_id}.md)" not in index:
-        raise ValueError("Archive index does not link the retained assessment")
+        raise ArchiveIndexLinkError
     return ProducerObservation(
         event_type="report_published",
         producer="gzkit.reports.publish_report",
@@ -181,6 +207,12 @@ def _probe_lock_lease_expiry(root: Path) -> ProducerObservation:
     Returns:
         A ``verified`` observation of ``obpi_lock_lease_expired`` from the reaper, with the ledger's
         SHA-256, one record, and the OBPI as subject.
+
+    Raises:
+        ExpiredLockEvictedError: the reaper evicted the expired lock.
+        LeaseExpiryRecordCountError: the reaper booked other than one record.
+        LeaseExpiryEventTypeError: the booked record has the wrong event type.
+        LeaseExpiryMismatchError: the booked record disagrees with the expired lock.
 
     """
     from gzkit import lock_manager  # noqa: PLC0415 - the data layer; import only when probed
@@ -202,16 +234,16 @@ def _probe_lock_lease_expiry(root: Path) -> ProducerObservation:
     ledger_path = root / ".gzkit/ledger.jsonl"
     lock_manager.reap_expired_locks(root, ledger=Ledger(ledger_path), reaper_agent=_AUTHOR)
     if lock_manager.read_lock(root, _OBPI) is None:
-        raise ValueError("Reaper evicted an expired work lock instead of keeping it held")
+        raise ExpiredLockEvictedError
     persisted = ledger_path.read_bytes() if ledger_path.is_file() else b""
     rows = [json.loads(line) for line in persisted.decode("utf-8").splitlines() if line.strip()]
     if len(rows) != 1:
-        raise ValueError("Reaper must persist exactly one lease-expiry record")
+        raise LeaseExpiryRecordCountError
     event = parse_typed_event(rows[0])
     if not isinstance(event, ObpiLockLeaseExpiredEvent):
-        raise ValueError("Reaper persisted the wrong event type")
+        raise LeaseExpiryEventTypeError
     if (event.id, event.claimed_at, event.ttl_minutes) != (_OBPI, claimed_at, 1):
-        raise ValueError("Lease-expiry record disagrees with the expired lock")
+        raise LeaseExpiryMismatchError
     return ProducerObservation(
         event_type="obpi_lock_lease_expired",
         producer="gzkit.lock_manager.reap_expired_locks",
@@ -232,6 +264,13 @@ def _probe_mx_lease_renewal(root: Path) -> ProducerObservation:
         A ``verified`` observation of ``mx_session_lease_renewed`` from ``mx_renew_cmd``, with the
         ledger's SHA-256, one record, and the session id as subject.
 
+    Raises:
+        RenewalRefusedError: the renewal exited.
+        RenewalEndedSessionError: the renewal ended the session or dropped its marker.
+        RenewalRecordCountError: other than one renewal was booked, or a close was.
+        RenewalEventTypeError: the booked record has the wrong event type.
+        RenewedLeaseMissingError: the session lock does not carry the renewed lease.
+
     """
     from gzkit import lock_manager  # noqa: PLC0415 - the data layer; import only when probed
     from gzkit.commands import mx_cmd  # noqa: PLC0415 - a command handler; import only when probed
@@ -245,21 +284,21 @@ def _probe_mx_lease_renewal(root: Path) -> ProducerObservation:
             )
             mx_cmd.mx_renew_cmd(_AUTHOR, project_root=root)
     except SystemExit as exc:
-        raise ValueError(f"Renewal refused with exit {exc.code}") from exc
+        raise RenewalRefusedError(exc.code) from exc
     if not marker.is_valid(root):
-        raise ValueError("Renewal ended the session or dropped its marker")
+        raise RenewalEndedSessionError
     ledger_path = root / ".gzkit/ledger.jsonl"
     persisted = ledger_path.read_bytes() if ledger_path.is_file() else b""
     rows = [json.loads(line) for line in persisted.decode("utf-8").splitlines() if line.strip()]
     renewals = [row for row in rows if row.get("event") == "mx_session_lease_renewed"]
     if len(renewals) != 1 or any(row.get("event") == "mx_session_closed" for row in rows):
-        raise ValueError("Renewal must persist exactly one renewal record and no close")
+        raise RenewalRecordCountError
     event = parse_typed_event(renewals[0])
     if not isinstance(event, MxSessionLeaseRenewedEvent):
-        raise ValueError("Renewal persisted the wrong event type")
+        raise RenewalEventTypeError
     lock = lock_manager.read_lock(root, marker.SESSION_LOCK_KEY)
     if lock is None or lock.claimed_at != event.renewed_at or lock.session_id != event.session_id:
-        raise ValueError("The session lock does not carry the renewed lease")
+        raise RenewedLeaseMissingError
     return ProducerObservation(
         event_type="mx_session_lease_renewed",
         producer="gzkit.commands.mx_cmd.mx_renew_cmd",
@@ -403,14 +442,14 @@ def _expect_refusal(
         write()
     except expected:
         return
-    raise ValueError(f"Writer accepted {case}")
+    raise WriterAcceptedRefusalError(case)
 
 
 def _single_row(ledger_path: Path) -> tuple[bytes, dict[str, object]]:
     persisted = ledger_path.read_bytes() if ledger_path.is_file() else b""
     rows = [json.loads(line) for line in persisted.decode("utf-8").splitlines() if line.strip()]
     if len(rows) != 1:
-        raise ValueError("Writer must persist exactly one record and nothing for a refusal")
+        raise WriterRecordCountError
     return persisted, rows[0]
 
 
@@ -434,9 +473,9 @@ def _probe_outcome_transition(root: Path) -> ProducerObservation:
     persisted, row = _single_row(ledger_path)
     event = parse_typed_event(row)
     if not isinstance(event, OutcomeTransitionedEvent):
-        raise ValueError("Writer persisted the wrong event type")
+        raise WriterEventTypeError
     if (event.id, event.from_state, event.to_state) != (_OUTCOME, "queued", "designing"):
-        raise ValueError("Transition record disagrees with the one-step move")
+        raise TransitionMismatchError
     return ProducerObservation(
         event_type="outcome_transitioned",
         producer="gzkit.catalog_ledger.record_outcome_transition",
@@ -467,9 +506,9 @@ def _probe_req_proof(root: Path) -> ProducerObservation:
     persisted, row = _single_row(ledger_path)
     event = parse_typed_event(row)
     if not isinstance(event, ReqProofRecordedEvent):
-        raise ValueError("Writer persisted the wrong event type")
+        raise WriterEventTypeError
     if (event.id, event.revision, event.verdict) != (_CATALOG_REQ, 1, "SATISFIED"):
-        raise ValueError("Proof record disagrees with the REQ the catalog holds")
+        raise ProofMismatchError
     return ProducerObservation(
         event_type="req_proof_recorded",
         producer="gzkit.catalog_ledger.record_req_proof",

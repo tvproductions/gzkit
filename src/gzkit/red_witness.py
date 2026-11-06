@@ -53,6 +53,11 @@ from typing import TYPE_CHECKING, Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.executables import resolve_argv, resolve_executable
+from gzkit.red_witness_errors import (
+    BaseCommitUnresolvedError,
+    BaseWorktreeError,
+    NoCoveringTestsError,
+)
 from gzkit.unit_run_provenance import judge_executed, read_test_observations
 
 if TYPE_CHECKING:
@@ -186,7 +191,7 @@ def resolve_base_commit(project_root: Path) -> str:
     """Return the commit the working tree's changes sit on top of (HEAD)."""
     result = _git(["rev-parse", "HEAD"], project_root)
     if result.returncode != 0:
-        raise RuntimeError(f"cannot resolve base commit: {result.stderr.strip()}")
+        raise BaseCommitUnresolvedError(result.stderr.strip())
     return result.stdout.strip()
 
 
@@ -306,13 +311,17 @@ def base_tree_worktree(project_root: Path, base_commit: str) -> Generator[Path]:
 
     The worktree is removed with ``--force`` because the test run leaves artifacts
     (``__pycache__``, receipts) that would otherwise make git refuse.
+
+    Raises:
+        BaseWorktreeError: the base worktree could not be created.
+
     """
     tmp = Path(tempfile.mkdtemp(prefix="gzkit-red-"))
     worktree = tmp / "base"
     created = _git(["worktree", "add", "--detach", str(worktree), base_commit], project_root)
     if created.returncode != 0:
         shutil.rmtree(tmp, ignore_errors=True)
-        raise RuntimeError(f"cannot create base worktree: {created.stderr.strip()}")
+        raise BaseWorktreeError(created.stderr.strip())
     try:
         yield worktree
     finally:
@@ -548,13 +557,13 @@ def run_red_witness(
         identity check voids it.
 
     Raises:
-        ValueError: when no covering test names were supplied — a BEHAVIOR REQ with
+        NoCoveringTestsError: when no covering test names were supplied — a BEHAVIOR REQ with
             no covering test is a coverage defect, not a falsifiability one, and the
             ``@covers`` parity gate is what must report it.
 
     """
     if not test_names:
-        raise ValueError(f"no covering tests supplied for {req_id}; nothing to witness")
+        raise NoCoveringTestsError(req_id)
 
     resolved = _resolve_base(project_root, req_id, base_commit, tests_dir)
     if resolved is None:

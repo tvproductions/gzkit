@@ -39,6 +39,13 @@ from gzkit.core.models import (
     SLUG_BODY,
 )
 from gzkit.executables import resolve_executable
+from gzkit.handoff_errors import (
+    FrontmatterClosingMissingError,
+    FrontmatterNotMappingError,
+    FrontmatterOpeningMissingError,
+    FrontmatterYamlError,
+    HandoffValidationError,
+)
 
 __all__ = [
     "CHECKPOINT_MODE",
@@ -252,10 +259,6 @@ class HandoffFrontmatter(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class HandoffValidationError(Exception):
-    """Raised when a handoff document fails validation."""
-
-
 def parse_frontmatter(content: str) -> dict:
     """Extract YAML frontmatter from Markdown content.
 
@@ -266,13 +269,16 @@ def parse_frontmatter(content: str) -> dict:
         Parsed YAML as a dict.
 
     Raises:
-        HandoffValidationError: If frontmatter delimiters are missing or YAML is invalid.
+        FrontmatterOpeningMissingError: If the opening delimiter is missing.
+        FrontmatterClosingMissingError: If the closing delimiter is missing.
+        FrontmatterYamlError: If the YAML is invalid.
+        FrontmatterNotMappingError: If the YAML is not a mapping.
 
     """
     content = content.replace("\r\n", "\n")
     lines = content.split("\n")
     if not lines or lines[0].strip() != "---":
-        raise HandoffValidationError("Missing opening frontmatter delimiter (---)")
+        raise FrontmatterOpeningMissingError
 
     end_index = None
     for i, line in enumerate(lines[1:], start=1):
@@ -281,16 +287,16 @@ def parse_frontmatter(content: str) -> dict:
             break
 
     if end_index is None:
-        raise HandoffValidationError("Missing closing frontmatter delimiter (---)")
+        raise FrontmatterClosingMissingError
 
     yaml_text = "\n".join(lines[1:end_index])
     try:
         data = yaml.safe_load(yaml_text)
     except yaml.YAMLError as exc:
-        raise HandoffValidationError(f"Invalid YAML in frontmatter: {exc}") from exc
+        raise FrontmatterYamlError(exc) from exc
 
     if not isinstance(data, dict):
-        raise HandoffValidationError("Frontmatter must be a YAML mapping")
+        raise FrontmatterNotMappingError
 
     return data
 

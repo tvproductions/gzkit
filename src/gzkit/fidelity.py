@@ -14,7 +14,74 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.core.exceptions import PolicyBreachError
 from gzkit.executables import resolve_argv
+
+# ---------------------------------------------------------------------------
+# Errors
+# ---------------------------------------------------------------------------
+
+
+class FidelityBlockMissingError(ValueError):
+    """An ADR carries no ``## Fidelity Assertions`` block."""
+
+    def __init__(self, adr_path: Path) -> None:
+        """Build the message from ``adr_path``."""
+        self.adr_path = adr_path
+        super().__init__(
+            f"No '## Fidelity Assertions' block found in {adr_path}. "
+            "Every ADR Decision must carry a runnable Fidelity Assertions block "
+            "(ADR-0.0.73 Boundary Invariant #4)."
+        )
+
+
+class FidelityBlockEmptyError(ValueError):
+    """An ADR's Fidelity Assertions block has no data rows."""
+
+    def __init__(self, adr_path: Path) -> None:
+        """Build the message from ``adr_path``."""
+        self.adr_path = adr_path
+        super().__init__(
+            f"'## Fidelity Assertions' block in {adr_path} contains no data rows. "
+            "The table must have at least one claim/command/expected-exit row."
+        )
+
+
+class SelfReferentialFidelityError(PolicyBreachError):
+    """A Fidelity Assertions row invokes the fidelity gate that evaluates it (GHI #702)."""
+
+    def __init__(self, adr_path: Path, self_referential: list[FidelityAssertion]) -> None:
+        """Build the message from ``adr_path``, ``self_referential``."""
+        self.adr_path = adr_path
+        rows = "\n".join(f"  - {a.claim!r} (command={a.command!r})" for a in self_referential)
+        super().__init__(
+            f"Fidelity gate: {len(self_referential)} self-referential assertion(s) "
+            f"in {adr_path.name}:\n{rows}\n"
+            "A row whose command invokes `gz adr fidelity` asserts the gate that "
+            "evaluates it — it cannot fail while being evaluated and exercises no "
+            "part of the ADR's thesis (GHI #702). Remove the row; keep only "
+            "assertions that run the ADR's delivered surface."
+        )
+
+
+class FidelityAssertionsFailedError(PolicyBreachError):
+    """One or more Fidelity Assertions returned an exit code other than expected."""
+
+    def __init__(self, adr_id: str, failed: list[FidelityAssertion]) -> None:
+        """Build the message from ``adr_id``, ``failed``."""
+        self.adr_id = adr_id
+        lines = "\n".join(
+            f"  FAIL  {r.claim} (command={r.command!r}, "
+            f"expected={r.expected_exit}, observed={r.observed}){failure_hint(r)}"
+            for r in failed
+        )
+        super().__init__(
+            f"Fidelity gate: {len(failed)} assertion(s) failed for {adr_id}:\n"
+            f"{lines}\n"
+            f"Fix the ADR's thesis against the running system, then re-run "
+            f"`gz adr fidelity {adr_id}`."
+        )
+
 
 # ---------------------------------------------------------------------------
 # Model
@@ -130,10 +197,12 @@ def parse_fidelity_assertions(adr_path: Path) -> list[FidelityAssertion]:
 
     Raises
     ------
-    ValueError
-        If the block is absent or no data rows are found.
-    PolicyBreachError
-        If any row's command is self-referential (GHI #702).
+    FidelityBlockMissingError
+        If the block is absent (a ``ValueError``).
+    FidelityBlockEmptyError
+        If no data rows are found (a ``ValueError``).
+    SelfReferentialFidelityError
+        If any row's command is self-referential (GHI #702; a ``PolicyBreachError``).
 
     """
     text = adr_path.read_text(encoding="utf-8")
@@ -141,11 +210,7 @@ def parse_fidelity_assertions(adr_path: Path) -> list[FidelityAssertion]:
 
     block = _extract_fidelity_block(text)
     if not block:
-        raise ValueError(
-            f"No '## Fidelity Assertions' block found in {adr_path}. "
-            "Every ADR Decision must carry a runnable Fidelity Assertions block "
-            "(ADR-0.0.73 Boundary Invariant #4)."
-        )
+        raise FidelityBlockMissingError(adr_path)
 
     assertions: list[FidelityAssertion] = []
     header_seen = False
@@ -177,10 +242,7 @@ def parse_fidelity_assertions(adr_path: Path) -> list[FidelityAssertion]:
         )
 
     if not assertions:
-        raise ValueError(
-            f"'## Fidelity Assertions' block in {adr_path} contains no data rows. "
-            "The table must have at least one claim/command/expected-exit row."
-        )
+        raise FidelityBlockEmptyError(adr_path)
 
     # Self-referential rows are a policy breach, NOT a structural (ValueError)
     # defect: they parse cleanly. Raise PolicyBreachError (exit 3) so every
@@ -189,17 +251,7 @@ def parse_fidelity_assertions(adr_path: Path) -> list[FidelityAssertion]:
     # tautological block to a silent "no block" warning (GHI #702).
     self_referential = [a for a in assertions if is_self_referential_command(a.command)]
     if self_referential:
-        from gzkit.core.exceptions import PolicyBreachError  # noqa: PLC0415
-
-        rows = "\n".join(f"  - {a.claim!r} (command={a.command!r})" for a in self_referential)
-        raise PolicyBreachError(
-            f"Fidelity gate: {len(self_referential)} self-referential assertion(s) "
-            f"in {adr_path.name}:\n{rows}\n"
-            "A row whose command invokes `gz adr fidelity` asserts the gate that "
-            "evaluates it — it cannot fail while being evaluated and exercises no "
-            "part of the ADR's thesis (GHI #702). Remove the row; keep only "
-            "assertions that run the ADR's delivered surface."
-        )
+        raise SelfReferentialFidelityError(adr_path, self_referential)
     return assertions
 
 
@@ -362,12 +414,11 @@ def assert_fidelity_for_ceremony(
 
     Raises
     ------
-    PolicyBreachError
-        when a present block has any failing assertion (observed != expected).
+    FidelityAssertionsFailedError
+        when a present block has any failing assertion (observed != expected); a
+        ``PolicyBreachError``.
 
     """
-    from gzkit.core.exceptions import PolicyBreachError  # noqa: PLC0415
-
     try:
         assertions = parse_fidelity_assertions(adr_path)
     except ValueError:
@@ -386,15 +437,5 @@ def assert_fidelity_for_ceremony(
     results = run_fidelity_gate(assertions, adr_id=adr_id, project_root=project_root)
     failed = [r for r in results if r.result == "fail"]
     if failed:
-        lines = "\n".join(
-            f"  FAIL  {r.claim} (command={r.command!r}, "
-            f"expected={r.expected_exit}, observed={r.observed}){failure_hint(r)}"
-            for r in failed
-        )
-        raise PolicyBreachError(
-            f"Fidelity gate: {len(failed)} assertion(s) failed for {adr_id}:\n"
-            f"{lines}\n"
-            f"Fix the ADR's thesis against the running system, then re-run "
-            f"`gz adr fidelity {adr_id}`."
-        )
+        raise FidelityAssertionsFailedError(adr_id, failed)
     return results

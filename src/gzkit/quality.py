@@ -35,6 +35,12 @@ from gzkit.handoff_validation import (
     parse_frontmatter,
     validate_handoff_document,
 )
+from gzkit.quality_errors import (
+    MkdocsConfigNotMappingError,
+    MkdocsConfigYamlError,
+    MkdocsInheritCycleError,
+    MkdocsValidationNotMappingError,
+)
 from gzkit.unit_run_provenance import judge_unit_run
 
 
@@ -1011,6 +1017,12 @@ def _raw_mkdocs_validation(config_path: Path, seen: frozenset[Path]) -> dict[str
         The config's ``validation`` mapping deep-merged over its ``INHERIT`` chain; empty when none
         is set.
 
+    Raises:
+        MkdocsConfigYamlError: the config is not valid YAML.
+        MkdocsConfigNotMappingError: the config's top level is not a mapping.
+        MkdocsInheritCycleError: the ``INHERIT`` chain returns to a file already read.
+        MkdocsValidationNotMappingError: the ``validation`` key is not a mapping.
+
     """
     import yaml  # noqa: PLC0415 — only the docs gate parses mkdocs.yml
 
@@ -1025,19 +1037,19 @@ def _raw_mkdocs_validation(config_path: Path, seen: frozenset[Path]) -> dict[str
             Loader=_TagTolerantLoader,  # noqa: S506 — a SafeLoader subclass
         )
     except yaml.YAMLError as exc:
-        raise ValueError(f"not valid YAML: {exc}") from exc
+        raise MkdocsConfigYamlError(exc) from exc
     if not isinstance(raw, dict):
-        raise ValueError("top level is not a mapping")
+        raise MkdocsConfigNotMappingError
     merged: dict[str, Any] = {}
     parent = raw.get("INHERIT")
     if isinstance(parent, str):
         parent_path = (config_path.parent / parent).resolve()
         if parent_path in seen:
-            raise ValueError(f"INHERIT cycle at {parent_path}")
+            raise MkdocsInheritCycleError(parent_path)
         merged = _raw_mkdocs_validation(parent_path, seen | {parent_path})
     own = raw.get("validation") or {}
     if not isinstance(own, dict):
-        raise ValueError("validation is not a mapping")
+        raise MkdocsValidationNotMappingError
     for key, value in own.items():
         if isinstance(value, dict) and isinstance(merged.get(key), dict):
             merged[key] = {**merged[key], **value}
