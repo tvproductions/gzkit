@@ -1203,11 +1203,6 @@
     },
     {
       "file": "docs/governance/context-phase-review-2026-10-04-evidence/context_analysis.py",
-      "rule": "DOC201",
-      "count": 3
-    },
-    {
-      "file": "docs/governance/context-phase-review-2026-10-04-evidence/context_analysis.py",
       "rule": "FURB118",
       "count": 2
     },
@@ -1313,11 +1308,6 @@
     },
     {
       "file": "docs/governance/ieee/02-requirements-vs-release-evidence/measure.py",
-      "rule": "DOC201",
-      "count": 4
-    },
-    {
-      "file": "docs/governance/ieee/02-requirements-vs-release-evidence/measure.py",
       "rule": "FURB167",
       "count": 1
     },
@@ -1325,11 +1315,6 @@
       "file": "docs/governance/ieee/02-requirements-vs-release-evidence/measure.py",
       "rule": "T201",
       "count": 23
-    },
-    {
-      "file": "docs/governance/ieee/03-gate4-gate2-duplication-evidence/measure.py",
-      "rule": "DOC201",
-      "count": 4
     },
     {
       "file": "docs/governance/ieee/03-gate4-gate2-duplication-evidence/measure.py",

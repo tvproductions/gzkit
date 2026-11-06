@@ -227,11 +227,13 @@ max-complexity = 20
 # one to satisfy a ceiling adopted later would rewrite the evidence it is (RO-9
 # tranche 4, the C901 ceiling at 20, the PEP 563 import they ran with, and the bare
 # executables they spawned, read 2026-10-24 under .gzkit/rules/cross-platform.md).
-".gzkit/evidence/*.py" = ["complex-structure", "banned-api", "subprocess-without-shell-equals-true", "start-process-with-partial-path"]
-"docs/governance/*-evidence/*.py" = ["complex-structure", "banned-api", "subprocess-without-shell-equals-true", "start-process-with-partial-path"]
+# DOC201 joins the list on 2026-11-05 for the same reason: a Returns: section
+# written in now would rewrite the record's text.
+".gzkit/evidence/*.py" = ["complex-structure", "banned-api", "subprocess-without-shell-equals-true", "start-process-with-partial-path", "docstring-missing-returns"]
+"docs/governance/*-evidence/*.py" = ["complex-structure", "banned-api", "subprocess-without-shell-equals-true", "start-process-with-partial-path", "docstring-missing-returns"]
 # The same records keep the file mode they ran with: EXE001 reads the executable
 # bit, so the one way to clear it would change the record (RO-9 tranche 4).
-"docs/governance/ieee/*-evidence/*.py" = ["shebang-not-executable", "banned-api", "subprocess-without-shell-equals-true", "start-process-with-partial-path"]
+"docs/governance/ieee/*-evidence/*.py" = ["shebang-not-executable", "banned-api", "subprocess-without-shell-equals-true", "start-process-with-partial-path", "docstring-missing-returns"]
 
 [tool.ruff.format]
 quote-style = "double"
