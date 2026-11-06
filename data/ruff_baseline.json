@@ -11827,11 +11827,6 @@
       "count": 1
     },
     {
-      "file": "tests/complexity/advisor/test_timeout.py",
-      "rule": "PLC0415",
-      "count": 3
-    },
-    {
       "file": "tests/complexity/authoring/test_engine.py",
       "rule": "PLR0913",
       "count": 1

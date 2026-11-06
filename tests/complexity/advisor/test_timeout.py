@@ -25,6 +25,7 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
+from gzkit.complexity.advisor.config import get_advisor_timeout_seconds
 from gzkit.complexity.advisor.timeout import (
     TimeoutOk,
     TimeoutTimedOut,
@@ -193,26 +194,35 @@ class TestAdvisorConfig(unittest.TestCase):
 
     @covers("REQ-0.0.29-09-04")
     def test_default_timeout_30s(self) -> None:
-        from gzkit.complexity.advisor.config import get_advisor_timeout_seconds
-
         result = get_advisor_timeout_seconds(config_path=self.config_path)
         self.assertEqual(result, 30.0)
 
     @covers("REQ-0.0.29-09-04")
     def test_configurable_timeout_from_config_key(self) -> None:
-        from gzkit.complexity.advisor.config import get_advisor_timeout_seconds
-
         self.config_path.write_text(json.dumps({"advisor_timeout_seconds": 15}), encoding="utf-8")
         result = get_advisor_timeout_seconds(config_path=self.config_path)
         self.assertEqual(result, 15.0)
 
     @covers("REQ-0.0.29-09-04")
     def test_missing_config_file_returns_default(self) -> None:
-        from gzkit.complexity.advisor.config import get_advisor_timeout_seconds
-
         nonexistent = Path(self._tmp.name) / "nope.json"
         result = get_advisor_timeout_seconds(config_path=nonexistent)
         self.assertEqual(result, 30.0)
+
+    @covers("REQ-0.0.29-09-04")
+    def test_malformed_config_shape_returns_default(self) -> None:
+        """A config of the wrong JSON shape falls back like a malformed one (GHI #1306)."""
+        cases = {
+            "null value": {"advisor_timeout_seconds": None},
+            "list value": {"advisor_timeout_seconds": [5]},
+            "object value": {"advisor_timeout_seconds": {"s": 5}},
+            "list document": [1],
+            "scalar document": 7,
+        }
+        for label, document in cases.items():
+            with self.subTest(label):
+                self.config_path.write_text(json.dumps(document), encoding="utf-8")
+                self.assertEqual(get_advisor_timeout_seconds(config_path=self.config_path), 30.0)
 
 
 class TestFunctionSize(unittest.TestCase):

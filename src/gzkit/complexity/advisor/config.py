@@ -2,7 +2,7 @@
 
 Reads ``advisor_timeout_seconds`` from ``.gzkit.json`` without extending
 the ``GzkitConfig`` model. Falls back to 30s default when the key is
-absent or the file is missing.
+absent, the file is missing, or the config cannot yield a number.
 """
 
 import json
@@ -15,12 +15,12 @@ def get_advisor_timeout_seconds(*, config_path: Path | None = None) -> float:
     """Return the configured advisor timeout in seconds.
 
     Reads from ``.gzkit.json`` at the project root (or *config_path* if
-    provided). Returns 30.0 when the key is absent or the file is missing.
+    provided). Returns 30.0 when the config cannot yield a number.
 
     Returns:
         The configured ``advisor_timeout_seconds`` as a float; the default when the file is missing
-        or unreadable, is not valid JSON, lacks the key, or holds a value ``float`` rejects with
-        ``ValueError``. A non-object document or a null/list value raises instead.
+        or unreadable, is not valid JSON, is not a JSON object, lacks the key, or holds a value
+        ``float`` cannot convert (GHI #1306).
 
     """
     path = config_path or Path(".gzkit.json")
@@ -28,6 +28,8 @@ def get_advisor_timeout_seconds(*, config_path: Path | None = None) -> float:
         return _DEFAULT_TIMEOUT_SECONDS
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(data, dict):
+            return _DEFAULT_TIMEOUT_SECONDS
         return float(data.get("advisor_timeout_seconds", _DEFAULT_TIMEOUT_SECONDS))
-    except json.JSONDecodeError, ValueError, OSError:
+    except json.JSONDecodeError, ValueError, TypeError, OSError:
         return _DEFAULT_TIMEOUT_SECONDS
