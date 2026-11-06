@@ -227,8 +227,8 @@ def extract_references(text: str) -> list[BlockerRef]:
     one reference to adjudicate rather than two.
 
     Returns:
-        One reference per distinct (kind, identifier) pair in first-seen order; empty when the text
-        cites nothing.
+        One reference per distinct (kind, identifier) pair, grouped by kind in pattern order and
+        first-seen within each kind; empty when the text cites nothing.
 
     """
     seen: set[tuple[str, str]] = set()
