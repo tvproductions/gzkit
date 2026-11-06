@@ -41,17 +41,25 @@ def _reads_utf8_strictly(body: list[ast.stmt]) -> bool:
     return False
 
 
+def _escaping_guard_lines(tree: ast.AST) -> list[int]:
+    """Return the line of each ``try`` in *tree* whose read guard lets a decode failure escape."""
+    lines: list[int] = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Try) or not _reads_utf8_strictly(node.body):
+            continue
+        names = set().union(*(_handler_names(h) for h in node.handlers))
+        if names >= _READ_GUARD and not names & (_DECODE_COVER | {"Exception"}):
+            lines.append(node.lineno)
+    return lines
+
+
 def _unguarded_reads() -> list[str]:
-    """Return ``path:line`` for each read guard that lets a decode failure escape."""
+    """Return ``path:line`` for each read guard in the package that lets a decode failure escape."""
     found: list[str] = []
     for path in sorted(SRC_ROOT.rglob("*.py")):
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-        for node in ast.walk(tree):
-            if not isinstance(node, ast.Try) or not _reads_utf8_strictly(node.body):
-                continue
-            names = set().union(*(_handler_names(h) for h in node.handlers))
-            if names >= _READ_GUARD and not names & (_DECODE_COVER | {"Exception"}):
-                found.append(f"{path.relative_to(SRC_ROOT.parent).as_posix()}:{node.lineno}")
+        rel = path.relative_to(SRC_ROOT.parent).as_posix()
+        found.extend(f"{rel}:{line}" for line in _escaping_guard_lines(tree))
     return found
 
 
@@ -67,17 +75,30 @@ class TestSourceReadDecodeGuard(unittest.TestCase):
             "(GHI #1307): add UnicodeDecodeError to the same except clause",
         )
 
-    def test_the_scan_sees_an_unguarded_read(self) -> None:
-        """Negative control: the detector flags the shape it exists to refuse."""
-        tree = ast.parse(
-            "try:\n"
-            "    s = p.read_text(encoding='utf-8')\n"
-            "except (OSError, SyntaxError):\n"
-            "    pass\n"
-        )
-        guard = next(n for n in ast.walk(tree) if isinstance(n, ast.Try))
-        self.assertTrue(_reads_utf8_strictly(guard.body))
-        self.assertEqual(_handler_names(guard.handlers[0]), _READ_GUARD)
+    def test_the_detector_flags_only_the_escaping_shape(self) -> None:
+        """Negative control: the whole detector, on the refused shape and its repairs."""
+        template = "try:\n    s = p.read_text({read})\n{handlers}"
+        strict = "encoding='utf-8'"
+        guard = "except (OSError, SyntaxError):\n    pass\n"
+        cases = {
+            "escaping guard": (strict, guard, [1]),
+            "PEP 758 unparenthesised": (strict, "except OSError, SyntaxError:\n    pass\n", [1]),
+            "decode covered": (
+                strict,
+                "except (OSError, SyntaxError, UnicodeDecodeError):\n    pass\n",
+                [],
+            ),
+            "covered by a second handler": (
+                strict,
+                guard + "except ValueError:\n    pass\n",
+                [],
+            ),
+            "errors= cannot raise": (strict + ", errors='replace'", guard, []),
+        }
+        for label, (read, handlers, expected) in cases.items():
+            with self.subTest(label):
+                source = template.format(read=read, handlers=handlers)
+                self.assertEqual(_escaping_guard_lines(ast.parse(source)), expected)
 
 
 if __name__ == "__main__":
