@@ -2002,3 +2002,5 @@
 {"ts": "2026-11-05T10:59:41Z", "source": "20261105T105940Z-rp12-o2-task1-landed.md", "text": "RP-12 ruling 47: the order's verbs are the nested group gz wp order (verbatim: \"a\")."}
 {"ts": "2026-11-05T10:59:41Z", "source": "20261105T105940Z-rp12-o2-task1-landed.md", "text": "RP-12 ruling 48: gz wp req new writes a repair requirement (verbatim: \"a\")."}
 {"ts": "2026-11-05T10:59:41Z", "source": "20261105T105940Z-rp12-o2-task1-landed.md", "text": "RP-12 ruling 49: an order's alias is unique within its package (verbatim: \"b\")."}
+{"ts": "2026-11-06T05:39:28Z", "source": "20261106T053928Z-rp12-o2-task2-landed.md", "text": "Begin O2 task 2 (verbatim: \"start task 2\")."}
+{"ts": "2026-11-06T05:39:28Z", "source": "20261106T053928Z-rp12-o2-task2-landed.md", "text": "RP-12 ruling 50: a repair requirement supersedes only a repair requirement (verbatim: \"a\")."}
