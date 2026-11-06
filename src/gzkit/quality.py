@@ -472,8 +472,9 @@ def run_adr_path_contract_lint(project_root: Path) -> QualityResult:
     ``docs/design/adr/adr-0.2.x/...``.
 
     Returns:
-        A passing QualityResult when no legacy ADR path is referenced or no docs/design Markdown
-        exists; otherwise a failing one listing each reference.
+        A passing QualityResult when no legacy ADR path is referenced or there is neither
+        docs/design Markdown nor an ``AGENTS.md`` to scan; otherwise a failing one listing each
+        reference and each unreadable file.
 
     """
     docs_design_root = project_root / "docs" / "design"
@@ -748,7 +749,8 @@ def _plan_behave_shards(project_root: Path, count: int) -> list[list[Path]]:
     differently, it drops it -- silently, under a green ``✓ Behave`` (GHI #917).
 
     Returns:
-        The non-empty shards of feature paths; an empty list when there are no feature files.
+        The non-empty shards of feature paths; an empty list (run single-process) when ``count``
+        is below 2, ``features/`` is absent, or it holds fewer than two feature files.
 
     """
     features_dir = project_root / "features"

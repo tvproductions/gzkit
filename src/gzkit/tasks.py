@@ -408,8 +408,9 @@ def parse_task_trailers(commit_message: str) -> list[TaskId]:
     are returned; other trailers and body text are ignored.
 
     Returns:
-        The TaskId of each Task: trailer in the final trailer block, in order; an empty list when
-        the message has no trailer block or no Task: trailer.
+        The TaskId of each formal-ID Task: trailer in the final trailer block, in order (slug-form
+        trailers are skipped); an empty list when the message has no trailer block or no such
+        trailer.
 
     """
     lines = commit_message.rstrip("\n").split("\n")

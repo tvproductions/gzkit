@@ -420,7 +420,8 @@ def create_verification_dispatch_records(
     persistence in the pipeline marker alongside Stage 2 dispatch records.
 
     Returns:
-        One dispatch-compatible record per verification result.
+        One dispatch-compatible record per plan scope, with status ``MISSING`` for a scope that
+        has no result.
 
     """
     result_map = {r.req_index: r for r in results}

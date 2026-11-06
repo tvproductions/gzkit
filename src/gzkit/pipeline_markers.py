@@ -204,14 +204,16 @@ def find_plan_for_obpi(project_root: Path, obpi_id: str) -> Path | None:
     """Locate the most recent plan file referencing ``obpi_id`` across both dirs (#128).
 
     Searches every directory returned by :func:`pipeline_plan_search_dirs`,
-    chooses the plan file with the most recent mtime that mentions the OBPI,
+    chooses the plan file with the most recent mtime that declares the OBPI,
     and — if that file lives in the global user directory — copies it into
     the project-local plans directory so the plan, the receipt, and the
     pipeline marker stay co-located. Returns the project-local path the
     caller should treat as authoritative, or ``None`` if no plan was found.
 
     Returns:
-        The project-local path of the newest plan for the OBPI, or None if no plan was found.
+        The project-local path of the newest plan declaring the OBPI (copied in from the global
+        directory when needed), the plan's own path when resolving or copying it fails, or None
+        when the id is empty or no plan declares it.
 
     """
     if not obpi_id:

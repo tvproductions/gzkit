@@ -46,7 +46,7 @@ def _persona_frame(project_root: Path, role: str) -> list[str]:
 
     Returns:
         The Persona heading and body lines, or an empty list when the role has no persona or its
-        file is empty.
+        file is absent or empty.
 
     """
     stem = ROLE_PERSONA_MAP.get(role)

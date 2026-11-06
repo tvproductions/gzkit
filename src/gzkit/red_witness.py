@@ -366,7 +366,8 @@ def _resolve_base(
     Whether the covering test is in history is the exact discriminator and needs no
     heuristic, because a test cannot be in flight and already committed.
 
-    The premise is re-checked against whichever base is chosen rather than assumed —
+    The premise is re-checked against whichever base is resolved rather than assumed (an
+    explicit ``base_commit`` is the caller's and is not re-checked) —
     a base that withholds nothing is as vacuous as HEAD was. ``None`` means no tree
     satisfies it, and the caller reports ``not-applicable`` rather than a verdict.
 
@@ -500,9 +501,9 @@ def _identity_void(output: str, test_names: list[str], failure_class: FailureCla
       designated discriminator fail.
 
     Returns:
-        None when every requested name executed (or failed on import) and any RED includes a failure
-        under a requested name, or the class is not a RED; otherwise the reason the run is not the
-        named tests' own result.
+        None when every requested name executed (or failed on import) and either the class is not
+        a RED, a requested module failed on import, or the RED includes a failure under a
+        requested name; otherwise the reason the run is not the named tests' own result.
 
     """
     import_failed = _import_failed_names(output, test_names)

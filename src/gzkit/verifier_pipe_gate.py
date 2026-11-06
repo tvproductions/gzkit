@@ -601,7 +601,8 @@ def _pipe_arm(
 
     Returns:
         The first verifier upstream of the last pipe stage, or None when ``pipefail`` is active,
-        there is a single stage, or a later statement reads ``PIPESTATUS``.
+        there is a single stage, a later statement reads ``PIPESTATUS``, or no upstream stage
+        runs a verifier.
 
     """
     if pipefail_active or len(names) < 2:
@@ -653,8 +654,12 @@ def _replacement_arm(
     last in its AND-OR list, where the shell suppresses errexit for every command.
 
     Returns:
-        ``(verifier, arm)`` when a later statement replaces or carries the verifier's status, or
-        None when the status survives.
+        ``(verifier, arm)`` when a later statement replaces the verifier's status (arm
+        ``"background"``, ``"chain"``, ``"or-else"``, ``"sequence"`` or ``"errexit-suppressed"``);
+        ``(verifier, "carried")`` when its failure reaches the end of the list as the list's
+        status; ``(verifier, "backgrounded")`` when the list ends by backgrounding it with
+        nothing after; None when no reporting stage runs a verifier or the next statement reads
+        ``$?``.
 
     """
     name = _status_carrier(names, pipefail_active=pipefail_active)

@@ -259,8 +259,8 @@ def load_persona_for_dispatch(project_root: Path, role: str) -> str | None:
     degradation cases.
 
     Returns:
-        The persona body text, or None when the role maps to no persona or the persona cannot be
-        loaded.
+        The persona body text, or None when the role maps to no persona or the persona file does
+        not exist.
 
     """
     persona_name = ROLE_PERSONA_MAP.get(role)
@@ -591,8 +591,9 @@ def check_reconcile_receipt_gate(
     return — this is a Policy Breach per the CLI exit-code map.
 
     Returns:
-        Blocking messages for a missing, stale or drifted receipt; an empty list when a fresh,
-        drift-free receipt exists.
+        A single blocking message for a missing, stale or drifted receipt; an empty list when a
+        fresh receipt exists whose only drift (if any) is the advisory ``req_count``, or when the
+        project has no ledger file.
 
     """
     from gzkit.governance.reconcile_freshness import is_receipt_fresh  # noqa: PLC0415
