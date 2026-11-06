@@ -153,6 +153,13 @@ runtime-evaluated-base-classes = [
     "gzkit.models.catalog.ReqBase",
 ]
 
+# A one-line docstring is a summary, which the Google convention exempts from a
+# Returns: section; DOC201 holds every multi-line docstring to one. Cleared 2,066
+# of 4,292 baselined DOC201 findings on Ruff 0.17.3 (a dated record), the rest
+# repaired by package area (ruled 2026-11-05, operator verbatim: "A").
+[tool.ruff.lint.pydoclint]
+ignore-one-line-docstrings = true
+
 [tool.ruff.lint.mccabe]
 max-complexity = 20
 
