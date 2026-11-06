@@ -1611,7 +1611,24 @@ class TestCoversAcceptsACatalogReq(unittest.TestCase):
                 ("externals", []),
                 ("work_packages", []),
                 ("orders", []),
-                ("reqs", [req]),
+                (
+                    "reqs",
+                    [
+                        req,
+                        {
+                            "id": "REQ-4",
+                            "specialization": "repair",
+                            "held_on": "WP-01-stamp",
+                            "problem_report": 1301,
+                            "statement": "Effect.",
+                            "criteria": [
+                                {"state_or_input": "s", "required_outcome": "o", "evidence": "e"}
+                            ],
+                            "kind": "SUPPORT",
+                            "revision": 1,
+                        },
+                    ],
+                ),
             ):
                 payload = {"_doc": "Fixture.", kind: entries}
                 (catalog / f"{kind}.json").write_text(json.dumps(payload), encoding="utf-8")
@@ -1619,6 +1636,8 @@ class TestCoversAcceptsACatalogReq(unittest.TestCase):
             with patch("gzkit.traceability._find_project_root", return_value=root):
                 known = _load_known_reqs()
         self.assertIn("REQ-3", known)
+        # A repair REQ is a known `@covers` target too: proof runs one path (ruling 45).
+        self.assertIn("REQ-4", known)
 
 
 class TestCatalogBindingScanner(unittest.TestCase):

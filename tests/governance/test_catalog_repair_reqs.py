@@ -8,6 +8,7 @@ its package in `held_on`, its problem report, and may name a design REQ it align
 to (ruling 45). Both live in `data/catalog/reqs.json`, one `REQ-<n>` sequence.
 """
 
+import json
 import unittest
 
 from pydantic import TypeAdapter
@@ -118,7 +119,38 @@ class TestRepairReqStore(_Tree):
             with self.subTest(supersedes=supersedes):
                 self.write("reqs", [_req("REQ-1"), _repair_req("REQ-2", supersedes=supersedes)])
                 self.assertEqual(self.fields(), ["reqs"])
+        reqs: list[object] = [_req("REQ-1"), _repair_req("REQ-2"), _repair_req("REQ-3")]
+        reqs[2] = _repair_req("REQ-3", supersedes="REQ-2")
+        self.write("reqs", reqs)
+        self.assertEqual(audit_catalog(self.root), [])
+
+    def test_a_repair_req_never_supersedes_a_catalog_req(self):
+        """Ruling 50: superseding a catalog REQ is a remodel, the catalog's path."""
         self.write("reqs", [_req("REQ-1"), _repair_req("REQ-2", supersedes="REQ-1")])
+        errors = audit_catalog(self.root)
+        self.assertEqual([e.field for e in errors], ["reqs"])
+        self.assertIn("ruling 50", errors[0].message)
+
+    def test_a_req_the_ledger_names_stays_in_the_store(self):
+        """An id is never reused (requirements model § 2), so a booked REQ keeps its record."""
+        row = {
+            "schema": "gzkit.ledger.v1",
+            "event": "req_proof_recorded",
+            "id": "REQ-7",
+            "ts": "2026-11-05T08:00:00+00:00",
+            "req": "REQ-7",
+            "revision": 1,
+            "commit": "abc1234",
+            "verdict": "SATISFIED",
+            "evidence": "e",
+        }
+        ledger = self.root / ".gzkit" / "ledger.jsonl"
+        ledger.parent.mkdir(exist_ok=True)
+        ledger.write_text(json.dumps(row) + "\n", encoding="utf-8")
+        errors = audit_catalog(self.root)
+        self.assertEqual([e.field for e in errors], ["reqs"])
+        self.assertIn("REQ-7", errors[0].message)
+        self.write("reqs", [_req("REQ-1"), _repair_req("REQ-7")])
         self.assertEqual(audit_catalog(self.root), [])
 
     def test_one_sequence_across_both_specializations(self):

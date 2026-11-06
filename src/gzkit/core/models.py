@@ -180,6 +180,33 @@ def compose_req_id(semver: str, item: str | int, criterion: str | int) -> str:
     return f"REQ-{semver}-{_width(item)}-{_width(criterion)}"
 
 
+def compose_catalog_req_id(number: int) -> str:
+    """Compose the catalog form, sequential and area-free.
+
+    Returns:
+        ``REQ-<n>``.
+
+    """
+    return f"REQ-{number}"
+
+
+def catalog_req_number(identifier: str) -> int:
+    """Return the sequence number of a catalog ``REQ-<n>``.
+
+    Returns:
+        ``n``.
+
+    Raises:
+        ValueError: The id is not in the catalog form.
+
+    """
+    match = re.fullmatch(rf"REQ-(?P<number>{CATALOG_REQ_ID_BODY.removeprefix('REQ-')})", identifier)
+    if match is None:
+        msg = f"{identifier!r} is not a catalog REQ id, REQ-<n>."
+        raise ValueError(msg)
+    return int(match["number"])
+
+
 def compose_task_id(semver: str, item: str | int, req_index: str | int, seq: str | int) -> str:
     """Return ``TASK-<semver>-<item>-<req index>-<seq>``."""
     return f"TASK-{semver}-{_width(item)}-{_width(req_index)}-{_width(seq)}"

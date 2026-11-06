@@ -11,6 +11,7 @@ carrying `supersedes` (ruling 31).
 import json
 from typing import TYPE_CHECKING
 
+from gzkit.core.models import catalog_req_number, compose_catalog_req_id
 from gzkit.governance.trust_audits.catalog import req_breaches
 from gzkit.models.catalog import CATALOG_FILES, Catalog, RepairReq
 from gzkit.registries import load_registry, registry_path
@@ -25,21 +26,26 @@ class ReqStoreError(ValueError):
     Carries each breach as a sentence naming its ruling.
     """
 
-    def __init__(self, breaches: list[str]) -> None:
-        """Hold the breaches the edit would have written."""
+    def __init__(self, breaches: list[str], *, in_store: bool = False) -> None:
+        """Hold the breaches, and whether the store broke its rules before this edit."""
         super().__init__(" ".join(breaches))
         self.breaches = breaches
+        self.in_store = in_store
 
 
-def next_req_id(catalog: Catalog) -> str:
+def next_req_id(catalog: Catalog, booked: set[str]) -> str:
     """Return the next id in the one sequence (requirements model § 2).
 
+    ``booked`` holds the REQ ids the ledger names, so an id removed from the file is
+    never minted again (`booked_req_ids`).
+
     Returns:
-        `REQ-<n>`, numbered past every REQ of either specialization.
+        `REQ-<n>`, numbered past every REQ of either specialization and every booked id.
 
     """
-    numbers = [int(req.id.removeprefix("REQ-")) for req in catalog.reqs]
-    return f"REQ-{max(numbers, default=0) + 1}"
+    held = {req.id for req in catalog.reqs} | booked
+    numbers = [catalog_req_number(req_id) for req_id in held]
+    return compose_catalog_req_id(max(numbers, default=0) + 1)
 
 
 def stage_repair_req(catalog: Catalog, req: RepairReq) -> Catalog:
@@ -49,10 +55,12 @@ def stage_repair_req(catalog: Catalog, req: RepairReq) -> Catalog:
         The catalog as it would read once written.
 
     Raises:
-        ReqStoreError: The REQ's id is held already, or the edit breaks a rule
-            `gz validate --catalog` reads.
+        ReqStoreError: The store breaks its rules already, the REQ's id is held, or
+            the edit breaks a rule `gz validate --catalog` reads.
 
     """
+    if existing := req_breaches(catalog):
+        raise ReqStoreError(existing, in_store=True)
     if any(held.id == req.id for held in catalog.reqs):
         raise ReqStoreError([f"{req.id} is in the store already; an id is never reused."])
     staged = catalog.model_copy(update={"reqs": (*catalog.reqs, req)})

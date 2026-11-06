@@ -472,10 +472,10 @@
         "replace": "        if False\n",
         "label": "an ADR nothing records is accepted in governed_by"
       },
-      "binding_sha256": "2108a050f0b2e2f4cecd45fd54bd4317cd7e70a8e4614fda205a0fee7e514073",
+      "binding_sha256": "ffd0c726dbedbadb078a31a78221d847c0faaedd31a67e1e1ce9b38069befbf6",
       "authority": "docs/governance/harbor-ro3-requirements-store.md (drydock RO-3 tranche 3)",
       "proposed_by": "claude-code session 2026-10-22",
-      "reviewed_by": "g0"
+      "reviewed_by": null
     },
     {
       "claim_id": "requirements-catalog-coverage",
@@ -486,10 +486,10 @@
         "replace": "    return []\n",
         "label": "no uncovered PRD need is ever reported"
       },
-      "binding_sha256": "60b50805e7bd97f14203d41ee9e3c6868c12ffa6d7fee4621a064a919894c492",
+      "binding_sha256": "3449bf5c0d226824da139b00dbda381242d97ff2b6072ce12908b7cc62505289",
       "authority": "docs/governance/harbor-ro3-requirements-store.md (drydock RO-3 tranche 3)",
       "proposed_by": "claude-code session 2026-10-22",
-      "reviewed_by": "g0"
+      "reviewed_by": null
     },
     {
       "claim_id": "requirements-catalog-bdd",
@@ -500,10 +500,10 @@
         "replace": "        if uncovered := []:\n",
         "label": "a BEHAVIOR REQ with no @covers test passes BDD alignment"
       },
-      "binding_sha256": "07666d20a243fd76c1fc5a936ca36f60eb7de222b2a7f28cef616c6990da1b87",
+      "binding_sha256": "e8784dbfddea83f657527a4e3255ca17acf292c614c61f883d71e4ee25471070",
       "authority": "docs/governance/harbor-ro3-requirements-store.md (drydock RO-3 tranche 3)",
       "proposed_by": "claude-code session 2026-10-22",
-      "reviewed_by": "g0"
+      "reviewed_by": null
     },
     {
       "claim_id": "requirements-catalog-forward-rule",
@@ -612,7 +612,7 @@
         "replace": "    if False:\n",
         "label": "a repair REQ naming an issue its package does not carry is accepted"
       },
-      "binding_sha256": "7926a5a42bcee926cb740a473e79ee8e965117dd501f39f777d67863317f599c",
+      "binding_sha256": "37fae38b375c9be6165c67eba3c89690f59446e4fc40bd4dd7e15327ca2fe515",
       "authority": "docs/governance/harbor-ro12-contractor-kit.md (RP-12 O2 task 2, rulings 45 and 48)",
       "proposed_by": "claude-code session 2026-11-05",
       "reviewed_by": null

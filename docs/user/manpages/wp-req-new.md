@@ -33,16 +33,22 @@ requirements, one `REQ-<n>` sequence for both, marked `"specialization":
 checking the edit against the rules `gz validate --catalog` reads before the
 file is touched, so a refusal writes nothing.
 
-- The id is the next `REQ-<n>` past every REQ of either specialization, at
-  revision 1.
+- The id is the next `REQ-<n>` past every REQ of either specialization and every
+  REQ id the ledger names, at revision 1, so an id removed from the file is never
+  minted again (requirements model § 2).
 - It is held on a repair package that is initiated and not closed, since the
   package stays open while its REQs are found (rulings 2, 48). A delivery
   package is refused.
 - Its problem report is a GitHub issue the package carries (ruling 9: the issue
   stays the problem report).
-- `--aligns-to` names a catalog REQ the store holds. `--supersedes` names any REQ
-  the store holds, other than itself.
+- `--aligns-to` names a catalog REQ the store holds. `--supersedes` names another
+  repair REQ the store holds: superseding a catalog REQ is a remodel, which goes
+  through the catalog's path (ruling 50).
 - Any kind serves, so a docs repair is an honest `SUPPORT` REQ.
+
+A store that breaks its rules before the call refuses every write, naming its
+findings and pointing to `uv run gz validate --catalog`, since the fault is the
+store's and not the call's.
 
 The verb writes repair REQs only; catalog REQs are RP-11's intake. Nothing edits
 a REQ once written. A change to its obligation is a new REQ carrying
@@ -54,7 +60,8 @@ corrected one written beside it (ruling 48's stated limit).
 ## Examples
 
 Observed in a scratch project holding repair package `WP-01-stamp` (initiated,
-carrying #1301) and delivery package `WP-02-resume`:
+carrying #1301), delivery package `WP-02-resume`, and, for the `--supersedes`
+refusal, catalog REQ `REQ-3`:
 
 ```console
 $ uv run gz wp req new WP-01-stamp --statement "The stamp generator imports by its public name." --criterion "the hook is generated|it imports a public name|the import ratchet test" --kind BEHAVIOR --problem-report 1301
@@ -79,6 +86,13 @@ names its state or input, required outcome, evidence (requirements model § The
 records). Nothing was written; correct the call and re-run `uv run gz wp req new
 <WP-id> --statement <text> --criterion '<state>|<outcome>|<evidence>' --kind
 <kind> --problem-report <issue>`.
+$ uv run gz wp req new WP-01-stamp --statement "S." --criterion "the hook is generated|it imports a public name|the import ratchet test" --kind BEHAVIOR --problem-report 1301 --supersedes REQ-3
+Repair REQ REQ-4 supersedes catalog REQ REQ-3; a remodel of a catalog REQ goes
+through the catalog's path, and a repair REQ supersedes only a repair REQ (RP-12
+ruling 50). The rulings are in docs/governance/harbor-ro12-contractor-kit.md.
+Nothing was written; correct the call and re-run `uv run gz wp req new <WP-id>
+--statement <text> --criterion '<state>|<outcome>|<evidence>' --kind <kind>
+--problem-report <issue>`.
 $ uv run gz wp req new WP-09-ghost --statement "S." --criterion "the hook is generated|it imports a public name|the import ratchet test" --kind BEHAVIOR --problem-report 1
 Work package 'WP-09-ghost' is not in data/catalog/work_packages.json. A repair
 REQ is held on a package the catalog holds; create one with `gz wp new`.
@@ -114,7 +128,7 @@ The second REQ as written to `data/catalog/reqs.json`:
 | 0 | Written |
 | 1 | The work package is not in the store |
 | 2 | Usage error |
-| 3 | The REQ is refused: a criterion, a field, the package's kind or state, the problem report, `--aligns-to` or `--supersedes`; nothing written |
+| 3 | The REQ is refused: a criterion, a field, the package's kind or state, the problem report, `--aligns-to`, `--supersedes`, or a store already breaking its rules; nothing written |
 
 ## See also
 

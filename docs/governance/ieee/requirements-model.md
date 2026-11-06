@@ -29,7 +29,7 @@ is the operator's rulings below.
 | Family | 1 (catalog) | three-letter mnemonic, `SES` (ruled 2026-10-30) | One responsibility area, with a one-sentence scope in the legend | where an obligation belongs |
 | Capability | 1 (catalog) | family + number, `SES1` | A named grouping of outcomes with a scope; never carries work (ruled 2026-10-29) | which outcomes belong together |
 | Outcome | 1 (catalog) | capability + dotted number, `SES1.4` | One reviewable deliverable: statement, owner, `user_facing`, `governed_by`, `depends_on`, `modules` (the code paths it owns; ruled 2026-10-30) | what is delivered |
-| REQ | 1 (catalog) | sequential, area-free, `REQ-1207` | One atomic obligation: statement, kind (BEHAVIOR, SUPPORT, STRUCTURAL-FENCE), revision, `member_of`, `applies_to` for an NFR | what must be true |
+| REQ | 1 (catalog) | sequential, area-free, `REQ-1207` | One atomic obligation: statement, kind (BEHAVIOR, SUPPORT, STRUCTURAL-FENCE), revision, `supersedes`; as a catalog REQ `member_of`, `derives_from`, `applies_to` for an NFR; as a repair REQ `held_on`, `problem_report`, `aligns_to` (§ 12; RP-12 ruling 45) | what must be true |
 | Feature file and steps | 1 | the outcome's code as a tag, `@SES1.4` | The executable behaviour of one user-facing outcome; each scenario tagged with the REQ it proves | proof of user-facing behaviour |
 | ADR | 1 | `ADR-<n>` (decision record) | One architecture decision: context, alternatives, consequences, decision status, supersession links | which choice was made |
 | Feature package | 1 | to be named when its store lands | A list of outcomes already in the catalog, each in at most one feature package, plus the story of why they belong together and the value they bring together; no version, release or order; its value delivered attested by a human at the release or work package attestation (ruled 2026-10-30, [the four-records R&D](../../rnd/four-records.md)). *Amended 2026-11-03* (§ 12): the **epic**, succeeding no earlier record; it may be fulfilled by many combinations of work packages | why these outcomes belong together |
@@ -477,6 +477,8 @@ Nothing below is changed by this document; each is a coupled surface the adoptio
 - ~~The PRD~~ — amended 2026-10-18 (FR-004 retired, FR-005/005a/005b split, FR-013 to FR-031 added).
 - The `gz-design`, `gz-obpi-pipeline` and `gz-adr-create` skills, which assume an ADR parents its
   work.
-- Under § 12 (2026-11-03): the `Req` model (`src/gzkit/models/catalog.py`), which has no
-  `supersedes` link and no repair specialization; the work-package store, whose record is still one
-  outcome's (RP-12 lands the order record); the RP-5, RP-12, RP-13 and RP-14 specifications.
+- Under § 12 (2026-11-03): ~~the `Req` model (`src/gzkit/models/catalog.py`), which has no
+  `supersedes` link and no repair specialization~~ — amended 2026-11-05 (RP-12 O2 task 2: a base
+  with catalog and repair specializations, the base carrying `supersedes`); the work-package store,
+  whose record is still one outcome's (RP-12 lands the order record, `data/catalog/orders.json`,
+  2026-11-05); the RP-5, RP-12, RP-13 and RP-14 specifications.

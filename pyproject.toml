@@ -150,6 +150,7 @@ runtime-evaluated-base-classes = [
     "gzkit.content.models.base.BaseContentModel",
     "gzkit.events._EventBase",
     "gzkit.events._TaskEventBase",
+    "gzkit.models.catalog.ReqBase",
 ]
 
 [tool.ruff.lint.mccabe]

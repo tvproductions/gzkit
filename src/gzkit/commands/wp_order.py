@@ -10,7 +10,7 @@ unknown package or order exits 1.
 """
 
 import re
-from typing import TYPE_CHECKING, NoReturn
+from typing import NoReturn
 
 from pydantic import ValidationError as PydanticValidationError
 
@@ -21,9 +21,6 @@ from gzkit.ledger import Ledger
 from gzkit.models.catalog import Catalog, Order, WorkPackage, load_catalog
 from gzkit.order_store import OrderStoreError, next_order_id, stage_order, write_orders
 from gzkit.work_package_ledger import work_package_state
-
-if TYPE_CHECKING:
-    from pathlib import Path
 
 
 def _package(catalog: Catalog, work_package: str) -> WorkPackage:
@@ -74,33 +71,42 @@ def _schema_errors(exc: PydanticValidationError) -> str:
     )
 
 
-def open_package_refusal(root: Path, package: WorkPackage, what: str) -> tuple[str, str] | None:
-    """Read whether a repair package is open to take ``what``: an order or a repair REQ.
+def open_package_refusal(
+    ledger: Ledger, package: WorkPackage, what: str, why: str
+) -> tuple[str, str] | None:
+    """Read whether a repair package is open to take ``what``, an order or a repair REQ.
 
-    Ruling 2 keeps a repair package open while its orders and REQs are found, and
-    ruling 44 closes it, its close reading every order's Gate 5.
+    ``why`` is the ruling that keeps the package open for it.
 
     Returns:
         What failed and why, or None when the package is initiated and not closed.
 
     """
-    config = ensure_initialized()
-    state = work_package_state(Ledger(root / config.paths.ledger), package.id)
+    state = work_package_state(ledger, package.id)
     if state == _OPEN:
         return None
     return (
         f"Work package {package.id} is {state or 'not initiated'}.",
         (
             f"{what} is written into a repair package that is initiated and not closed, "
-            "since its close reads every order's Gate 5 (RP-12 rulings 2 and 44); "
-            f"`uv run gz wp initiate {package.id} --operator-text <words>` initiates one."
+            f"{why}; `uv run gz wp initiate {package.id} --operator-text <words>` initiates one."
         ),
     )
 
 
-def _check_open(root: Path, package: WorkPackage) -> None:
-    if refusal := open_package_refusal(root, package, "An order"):
-        _refuse(*refusal)
+def store_broken(breaches: list[str], store: str) -> NoReturn:
+    """Refuse a write into a store that breaks its rules before the call (exit 3).
+
+    Raises:
+        PolicyBreachError: Always; nothing is written.
+
+    """
+    msg = (
+        f"{' '.join(breaches)} data/catalog/{store} breaks its rules already, before this "
+        "call, so nothing was written. Run `uv run gz validate --catalog`, which names each "
+        "finding, and repair the store before writing again."
+    )
+    raise PolicyBreachError(msg)
 
 
 def wp_order_new_cmd(*, work_package: str, record: dict[str, object], as_json: bool) -> None:
@@ -112,7 +118,7 @@ def wp_order_new_cmd(*, work_package: str, record: dict[str, object], as_json: b
     A refusal of the slug, a field, the package's state or a rule `gz validate
     --catalog` reads exits 3 through `_refuse` and writes nothing.
     """
-    ensure_initialized()
+    config = ensure_initialized()
     root = get_project_root()
     catalog = load_catalog(root)
     package = _package(catalog, work_package)
@@ -135,11 +141,16 @@ def wp_order_new_cmd(*, work_package: str, record: dict[str, object], as_json: b
     try:
         staged = stage_order(catalog, order)
     except OrderStoreError as exc:
+        if exc.in_store:
+            store_broken(exc.breaches, "orders.json")
         _refuse(
             " ".join(exc.breaches),
             "The rulings are in docs/governance/harbor-ro12-contractor-kit.md.",
         )
-    _check_open(root, package)
+    ledger = Ledger(root / config.paths.ledger)
+    why = "since its close reads every order's Gate 5 (RP-12 rulings 2 and 44)"
+    if refusal := open_package_refusal(ledger, package, "An order", why):
+        _refuse(*refusal)
     write_orders(root, staged)
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
     fmt.emit(order if as_json else f"Wrote {order.id} in {package.id} ({package.kind}).")

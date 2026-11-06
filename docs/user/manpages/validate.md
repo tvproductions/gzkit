@@ -2634,15 +2634,18 @@ The structure checks:
 
 - a repair REQ is held on a repair package `work_packages.json` holds and names
   a problem report that package carries; its `aligns_to` names a catalog REQ the
-  store holds; any REQ's `supersedes` names another REQ the store holds (RP-12
-  rulings 31, 45). The edge, coverage and BDD checks read catalog REQs only.
+  store holds; any REQ's `supersedes` names another REQ the store holds, and a
+  repair REQ's names a repair REQ (RP-12 rulings 31, 45, 50). The edge, coverage
+  and BDD checks read catalog REQs only.
 
 A catalog missing a file fails as a tree defect, never an empty store (GHI
 #1067), and a reader of it is pointed at `uv run gz init`, whose repair mode
 seeds each absent `data/catalog/` file.
 
 The work-package events, `work_package_transitioned` and `work_package_changed`,
-are read against the store: a package the ledger has booked must keep its record.
+are read against the store: a package the ledger has booked must keep its record,
+and so must a REQ the ledger names in a proof, a freeze baseline, a dispatch or an
+unblock, so neither id is reused.
 
 Once the structure holds, the edge checks (RO-3 tranche 3):
 

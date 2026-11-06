@@ -1756,14 +1756,16 @@ class OutcomeTransitionedEvent(_EventBase):
 
 
 class ReqProofRecordedEvent(_EventBase):
-    """req_proof_recorded event — proof for one catalog REQ at one revision (drydock RO-3).
+    """req_proof_recorded event — proof for one REQ at one revision (drydock RO-3).
+
+    Either specialization, catalog or repair: proof runs one path (RP-12 ruling 45).
 
     Written only by ``gzkit.catalog_ledger.record_req_proof``, which refuses a verdict
     outside the three and a revision the catalog does not hold. ``id`` is the REQ id.
     """
 
     event: Literal["req_proof_recorded"]
-    req: str = Field(..., min_length=1, description="The catalog REQ's id")
+    req: str = Field(..., min_length=1, description="The REQ's id, catalog or repair")
     revision: int = Field(..., ge=1, description="The REQ revision the proof is bound to")
     commit: str = Field(..., min_length=1, description="The commit the proof was taken at")
     verdict: ReqVerdict = Field(..., description="SATISFIED, UNSATISFIED or UNKNOWN")
@@ -1788,7 +1790,7 @@ class BaselinedReq(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    req: str = Field(..., min_length=1, description="The catalog REQ's id")
+    req: str = Field(..., min_length=1, description="The REQ's id, catalog or repair")
     revision: int = Field(..., ge=1, description="The revision frozen")
 
 

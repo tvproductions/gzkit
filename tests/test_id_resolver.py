@@ -310,9 +310,27 @@ class TestCatalogReqs(unittest.TestCase):
         }
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            _write_catalog(root, [req])
+            _write_catalog(
+                root,
+                [
+                    req,
+                    {
+                        "id": "REQ-4",
+                        "specialization": "repair",
+                        "held_on": "WP-01-stamp",
+                        "problem_report": 1301,
+                        "statement": "Effect.",
+                        "criteria": [
+                            {"state_or_input": "s", "required_outcome": "o", "evidence": "e"}
+                        ],
+                        "kind": "SUPPORT",
+                        "revision": 1,
+                    },
+                ],
+            )
             context = load_identity_context(ledger, root, "docs/design")
-        self.assertEqual(context.catalog_members, {"REQ-3": "H1"})
+        # A repair REQ's parent is the package it is held on (RP-12 ruling 45).
+        self.assertEqual(context.catalog_members, {"REQ-3": "H1", "REQ-4": "WP-01-stamp"})
 
     def test_a_project_without_a_catalog_has_no_catalog_reqs(self) -> None:
         ledger = _MemoryLedger()

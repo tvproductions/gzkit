@@ -40,6 +40,7 @@ def _seed_catalog() -> None:
     packages = [
         _package("WP-01-stamp", "repair", [1301]),
         _package("WP-02-resume", "delivery", []),
+        _package("WP-03-idle", "repair", [1302]),
     ]
     for kind, entries in (
         ("families", [family]),
@@ -114,13 +115,58 @@ class ReqNewTests(_ReqCase):
 
     def test_a_package_not_open_takes_no_req(self) -> None:
         """Ruling 2: the package stays open while its REQs are found."""
+        args = ["new", "WP-03-idle", "--statement", "S.", "--criterion", _CRITERION]
+        output = self.gz(*args, "--kind", "SUPPORT", "--problem-report", "1302", code=3)
+        self.assertIn("not initiated", output)
+        self.assertIn("rulings 2 and 48", output)
         with patch("gzkit.commands.wp_order.work_package_state", return_value="closed"):
             output = self.new(code=3)
         self.assertIn("is closed", output)
         self.assertEqual(len(_reqs()), 1)
 
-    def test_a_refusal_names_the_flag_and_the_call_to_rerun(self) -> None:
-        """Guardrail prose: what failed by the flag typed, why, and the runnable next step."""
+    def test_a_repair_req_never_supersedes_a_catalog_req(self) -> None:
+        """Ruling 50: superseding a catalog REQ is a remodel, the catalog's path."""
+        output = self.new("--supersedes", "REQ-4", code=3)
+        self.assertIn("ruling 50", output)
+        self.assertEqual(len(_reqs()), 1)
+
+    def test_an_id_the_ledger_names_is_never_minted_again(self) -> None:
+        """Requirements model § 2: an id removed from the file is still booked."""
+        self.new()
+        path = Path("data") / "catalog" / "reqs.json"
+        held = {"_doc": "Fixture catalog.", "reqs": _reqs()[:-1]}
+        path.write_text(json.dumps(held), encoding="utf-8")
+        proof = {
+            "schema": "gzkit.ledger.v1",
+            "event": "req_proof_recorded",
+            "id": "REQ-5",
+            "ts": "2026-11-05T08:00:00+00:00",
+            "req": "REQ-5",
+            "revision": 1,
+            "commit": "abc1234",
+            "verdict": "SATISFIED",
+            "evidence": "e",
+        }
+        with (Path(".gzkit") / "ledger.jsonl").open("a", encoding="utf-8") as ledger:
+            ledger.write(json.dumps(proof) + "\n")
+        self.new()
+        self.assertEqual([req["id"] for req in _reqs()], ["REQ-4", "REQ-6"])
+
+    def test_a_store_broken_before_the_call_names_the_validator(self) -> None:
+        """The fault is the store's, so the next step is the validator, not the call."""
+        self.new()
+        reqs = _reqs()
+        reqs[-1]["problem_report"] = 999
+        path = Path("data") / "catalog" / "reqs.json"
+        path.write_text(json.dumps({"_doc": "Fixture catalog.", "reqs": reqs}), encoding="utf-8")
+        output = self.new(code=3)
+        self.assertIn("breaks its rules already", output)
+        self.assertIn("uv run gz validate --catalog", output)
+        self.assertNotIn("correct the call", output)
+        self.assertEqual(len(_reqs()), 2)
+
+    def test_a_refusal_names_the_value_at_fault_and_the_call_to_rerun(self) -> None:
+        """Guardrail prose: what failed by the value or flag typed, why, and the next step."""
         for extra, flag in (
             (("--aligns-to", "REQ-9"), "REQ-9"),
             (("--supersedes", "REQ-9"), "REQ-9"),

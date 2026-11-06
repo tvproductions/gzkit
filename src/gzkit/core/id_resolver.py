@@ -17,7 +17,8 @@ to answer for itself from an id's spelling:
   :func:`_parent_by_spelling`, the one marked fallback, and every link it makes
   says ``source="spelling"`` so it can be counted while RO-3's ``member_of`` lands.
 - A catalog ``REQ-<n>`` (drydock RO-3 tranche 3) resolves only from the catalog,
-  and its parent is the outcome its ``member_of`` names (``source="catalog"``).
+  and its parent is the outcome its ``member_of`` names, or for a repair REQ the
+  package it is held on (RP-12 ruling 45) (``source="catalog"``).
   Its owner is never read from a brief or from its spelling.
 
 The resolver is pure over an :class:`IdentityContext`; :func:`load_identity_context`

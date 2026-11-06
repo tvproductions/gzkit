@@ -19,7 +19,7 @@ from gzkit.catalog_ledger import (
 )
 from gzkit.events import OutcomeTransitionedEvent, ReqProofRecordedEvent, parse_typed_event
 from gzkit.ledger import Ledger
-from gzkit.models.catalog import Catalog, CatalogReq, Criterion, Outcome
+from gzkit.models.catalog import Catalog, CatalogReq, Criterion, Outcome, RepairReq
 from gzkit.ontology.corpus import project_corpus
 
 _LIFECYCLE = (
@@ -201,6 +201,50 @@ class CorpusAccountingTests(_LedgerCase):
         )
         fidelity = project_corpus(self.ledger).fidelity
         self.assertTrue(fidelity.complete, fidelity)
+
+
+class RepairReqProofTests(_LedgerCase):
+    """RP-12 ruling 45: proof runs one path for both specializations."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        repair = RepairReq(
+            id="REQ-2",
+            specialization="repair",
+            held_on="WP-01-stamp",
+            problem_report=1301,
+            statement="The stamp generator imports by its public name.",
+            criteria=(Criterion(state_or_input="s", required_outcome="o", evidence="e"),),
+            kind="SUPPORT",
+            revision=1,
+        )
+        self.catalog = Catalog(families=(), outcomes=(_outcome(),), reqs=(_req(), repair))
+
+    def test_a_repair_req_is_proved_through_the_same_writer(self) -> None:
+        event = record_req_proof(
+            self.catalog,
+            self.ledger,
+            "REQ-2",
+            1,
+            commit="abc1234",
+            verdict="SATISFIED",
+            evidence="e",
+        )
+        self.assertEqual((event.req, event.revision, event.verdict), ("REQ-2", 1, "SATISFIED"))
+
+    def test_a_repair_req_has_no_target_to_prove_against(self) -> None:
+        with self.assertRaises(CatalogLedgerError):
+            record_req_proof(
+                self.catalog,
+                self.ledger,
+                "REQ-2",
+                1,
+                commit="abc1234",
+                verdict="SATISFIED",
+                evidence="e",
+                target="src/gzkit",
+            )
+        self.assertEqual(_rows(self.path), [])
 
 
 class ReqProofTests(_LedgerCase):

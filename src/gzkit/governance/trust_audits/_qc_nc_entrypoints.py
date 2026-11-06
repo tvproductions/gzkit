@@ -808,21 +808,27 @@ def _ep_catalog_orders(root: Path) -> list[ValidationError]:
 
 
 def _ep_catalog_repair_reqs(root: Path) -> list[ValidationError]:
-    """Both planted repair-REQ breaches must fire, and the valid one must not.
+    """All five planted repair-REQ breaches must fire, and the valid one must not.
 
     Returns:
-        The two findings, or nothing when one is missing or a decoy fired.
+        The five findings, or nothing when one is missing or a decoy fired.
 
     """
     from gzkit.governance.trust_audits.catalog import audit_catalog  # noqa: PLC0415
 
     errors = audit_catalog(root)
-    planted = ("Repair REQ REQ-1 is held on WP-01-d", "Repair REQ REQ-2 names problem report #99")
+    planted = (
+        "Repair REQ REQ-1 is held on WP-01-d",
+        "Repair REQ REQ-2 names problem report #99",
+        "Repair REQ REQ-4 aligns to REQ-9",
+        "REQ-5 supersedes REQ-8, which is no REQ",
+        "Repair REQ REQ-6 supersedes catalog REQ REQ-10",
+    )
     caught = [sum(error.message.startswith(p) for error in errors) for p in planted]
     decoy = any("REQ-3" in error.message for error in errors)
     on_store = all(error.field == "reqs" for error in errors)
     clean = on_store and not decoy and len(errors) == len(planted)
-    return errors if caught == [1, 1] and clean else []
+    return errors if caught == [1] * len(planted) and clean else []
 
 
 def _ep_catalog_bdd(root: Path) -> list[ValidationError]:

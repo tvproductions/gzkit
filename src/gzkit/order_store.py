@@ -25,10 +25,11 @@ class OrderStoreError(ValueError):
     failed and why without the file-editing recovery a validator finding carries.
     """
 
-    def __init__(self, breaches: list[str]) -> None:
-        """Hold the breaches the edit would have written."""
+    def __init__(self, breaches: list[str], *, in_store: bool = False) -> None:
+        """Hold the breaches, and whether the store broke its rules before this edit."""
         super().__init__(" ".join(breaches))
         self.breaches = breaches
+        self.in_store = in_store
 
 
 def _number(order_id: str) -> int:
@@ -53,10 +54,12 @@ def stage_order(catalog: Catalog, order: Order) -> Catalog:
         The catalog as it would read once written.
 
     Raises:
-        OrderStoreError: The order's id is held already, or the edit breaks a rule
-            `gz validate --catalog` reads.
+        OrderStoreError: The store breaks its rules already, the order's id is held,
+            or the edit breaks a rule `gz validate --catalog` reads.
 
     """
+    if existing := order_breaches(catalog):
+        raise OrderStoreError(existing, in_store=True)
     if any(held.id == order.id for held in catalog.orders):
         raise OrderStoreError([f"Order {order.id} is in the store already; an id is never reused."])
     ordered = tuple(sorted((*catalog.orders, order), key=lambda held: _number(held.id)))

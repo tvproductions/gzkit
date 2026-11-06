@@ -29,6 +29,7 @@ from gzkit.models.catalog import (
     Criterion,
     Departure,
     Outcome,
+    RepairReq,
     WorkPackage,
 )
 from gzkit.ontology.corpus import project_corpus
@@ -106,12 +107,25 @@ def _package(wp_id: str, kind: str = "delivery") -> WorkPackage:
     )
 
 
+def _repair_req() -> RepairReq:
+    return RepairReq(
+        id="REQ-3",
+        specialization="repair",
+        held_on="WP-02-astral",
+        problem_report=1183,
+        statement="The toolchain pin holds again.",
+        criteria=(Criterion(state_or_input="a sync", required_outcome="pinned", evidence="t"),),
+        kind="BEHAVIOR",
+        revision=2,
+    )
+
+
 def _catalog() -> Catalog:
     astral = _package("WP-02-astral", "repair").model_copy(update={"issues": (1183, 1184)})
     return Catalog(
         families=(),
         outcomes=(_outcome("H1"), _outcome("H2")),
-        reqs=(_req(), _req("REQ-2", member_of="H2")),
+        reqs=(_req(), _req("REQ-2", member_of="H2"), _repair_req()),
         work_packages=(_package("WP-01-resume"), astral),
     )
 
@@ -261,6 +275,8 @@ class FreezeTests(_LedgerCase):
             BaselinedReq(req="REQ-1", revision=1),
             BaselinedReq(req="REQ-9", revision=1),
             BaselinedReq(req="REQ-2", revision=2),
+            # RP-12 ruling 45: a repair REQ is held on its repair package, never a delivery's.
+            BaselinedReq(req="REQ-3", revision=2),
         ):
             with self.subTest(entry=entry):
                 self.assert_refused(

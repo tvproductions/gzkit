@@ -224,7 +224,11 @@ def _check_baselined(
     if not package.outcome:
         return
     if not isinstance(req, CatalogReq):
-        _refuse(f"{entry.req} is a repair REQ held on {req.held_on}, not a catalog REQ.")
+        _refuse(
+            f"{entry.req} is a repair REQ held on {req.held_on}; a delivery package freezes "
+            f"catalog REQs of its outcome {package.outcome} (RP-12 ruling 45). Freeze it "
+            "without that REQ."
+        )
     if req.member_of != package.outcome:
         _refuse(f"{entry.req} is a member of {req.member_of}, not {package.outcome}.")
 

@@ -15,8 +15,10 @@ from pydantic import ValidationError as PydanticValidationError
 
 from gzkit.cli.formatters import OutputFormatter
 from gzkit.commands.common import ensure_initialized, get_project_root
-from gzkit.commands.wp_order import open_package_refusal
+from gzkit.commands.wp_order import open_package_refusal, store_broken
 from gzkit.core.exceptions import PolicyBreachError, ResourceNotFoundError
+from gzkit.governance.trust_audits.catalog import booked_req_ids
+from gzkit.ledger import Ledger
 from gzkit.models.catalog import Criterion, RepairReq, load_catalog
 from gzkit.req_store import ReqStoreError, next_req_id, stage_repair_req, write_reqs
 
@@ -85,9 +87,10 @@ def wp_req_new_cmd(
         ResourceNotFoundError: The package is not in the store; nothing is written.
 
     """
-    ensure_initialized()
+    config = ensure_initialized()
     root = get_project_root()
     catalog = load_catalog(root)
+    ledger = Ledger(root / config.paths.ledger)
     package = next((wp for wp in catalog.work_packages if wp.id == work_package), None)
     if package is None:
         msg = (
@@ -100,7 +103,7 @@ def wp_req_new_cmd(
             {
                 **record,
                 "criteria": [_criterion(spec) for spec in criteria],
-                "id": next_req_id(catalog),
+                "id": next_req_id(catalog, booked_req_ids(ledger)),
                 "specialization": "repair",
                 "held_on": package.id,
                 "revision": 1,
@@ -111,11 +114,14 @@ def wp_req_new_cmd(
     try:
         staged = stage_repair_req(catalog, req)
     except ReqStoreError as exc:
+        if exc.in_store:
+            store_broken(exc.breaches, "reqs.json")
         _refuse(
             " ".join(exc.breaches),
             "The rulings are in docs/governance/harbor-ro12-contractor-kit.md.",
         )
-    if refusal := open_package_refusal(root, package, "A repair REQ"):
+    why = "since the package stays open while its REQs are found (RP-12 rulings 2 and 48)"
+    if refusal := open_package_refusal(ledger, package, "A repair REQ", why):
         _refuse(*refusal)
     write_reqs(root, staged)
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))

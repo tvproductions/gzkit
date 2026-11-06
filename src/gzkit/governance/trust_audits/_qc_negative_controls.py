@@ -1731,8 +1731,10 @@ def _build_catalog_work_packages() -> Path:
     return root
 
 
-def _nc_repair_req(req_id: str, held_on: str, problem_report: int) -> dict[str, object]:
-    return {
+def _nc_repair_req(
+    req_id: str, held_on: str, problem_report: int, **fields: object
+) -> dict[str, object]:
+    base: dict[str, object] = {
         "id": req_id,
         "specialization": "repair",
         "held_on": held_on,
@@ -1744,13 +1746,16 @@ def _nc_repair_req(req_id: str, held_on: str, problem_report: int) -> dict[str, 
         "kind": "SUPPORT",
         "revision": 1,
     }
+    return base | fields
 
 
 def _build_catalog_repair_reqs() -> Path:
-    """Plant a repair REQ on a delivery package and one naming an issue not carried (RP-12 O2).
+    """Plant each refusal of a repair REQ once (RP-12 O2, rulings 31, 45 and 50).
 
-    REQ-3 is a repair REQ on its repair package answering an issue it carries, so a
-    finding naming it is a decoy firing.
+    A repair REQ on a delivery package, one naming an issue its package does not carry,
+    one aligned to no catalog REQ, one superseding a REQ the store lacks, and one
+    superseding a catalog REQ. REQ-3 is a repair REQ on its repair package answering an
+    issue it carries, so a finding naming it is a decoy firing.
 
     Returns:
         The project root.
@@ -1760,6 +1765,10 @@ def _build_catalog_repair_reqs() -> Path:
         _nc_repair_req("REQ-1", "WP-01-d", 7),
         _nc_repair_req("REQ-2", "WP-02-r", 99),
         _nc_repair_req("REQ-3", "WP-02-r", 7),
+        _nc_repair_req("REQ-4", "WP-02-r", 7, aligns_to="REQ-9"),
+        _nc_repair_req("REQ-5", "WP-02-r", 7, supersedes="REQ-8"),
+        _nc_repair_req("REQ-6", "WP-02-r", 7, supersedes="REQ-10"),
+        _nc_req("REQ-10", "H1"),
     ]
     root = _catalog_project("catalog-repair-reqs", [_nc_outcome("H1")], reqs)
     delivery = {**_nc_work_package("WP-01-d", 0), "kind": "delivery", "outcome": "H1"}

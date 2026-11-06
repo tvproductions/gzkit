@@ -46,7 +46,8 @@ is touched, so a refusal writes nothing.
   construction onto the order, so an order on one is refused (ruling 44).
 
 A refusal names the flag at fault, why, and the call to re-run, and writes
-nothing. The lifecycle verbs (`freeze`, `commence`, `accept`, `close`) land with
+nothing. A store that breaks its rules before the call refuses every write and
+points to `uv run gz validate --catalog`. The lifecycle verbs (`freeze`, `commence`, `accept`, `close`) land with
 RP-12's later O2 tasks (`docs/governance/harbor-ro12-contractor-kit.md`, ruling
 47).
 

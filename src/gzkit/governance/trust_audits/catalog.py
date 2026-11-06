@@ -44,6 +44,7 @@ from gzkit.models.catalog import (
     CATALOG_FILES,
     DELIVERY_EVENTS_FILE,
     ORDER_ID_PATTERN,
+    REQ_ID_PATTERN,
     WORK_PACKAGE_ID_PATTERN,
     Catalog,
     RepairReq,
@@ -174,6 +175,14 @@ def req_breaches(catalog: Catalog) -> list[str]:
         f"{'itself' if req.supersedes == req.id else 'no REQ the store holds'}."
         for req in catalog.reqs
         if req.supersedes is not None and (req.supersedes == req.id or req.supersedes not in ids)
+    ]
+    designs = {held.id for held in catalog.catalog_reqs()}
+    breaches += [
+        f"Repair REQ {req.id} supersedes catalog REQ {req.supersedes}; a remodel of a catalog "
+        "REQ goes through the catalog's path, and a repair REQ supersedes only a repair REQ "
+        "(RP-12 ruling 50)."
+        for req in catalog.repair_reqs()
+        if req.supersedes in designs
     ]
     for req in catalog.repair_reqs():
         breaches += _repair_req_breaches(req, catalog)
@@ -479,6 +488,50 @@ def _booked_findings(ledger: Ledger, catalog: Catalog) -> list[ValidationError]:
     return []
 
 
+def booked_req_ids(ledger: Ledger) -> set[str]:
+    """Read every catalog-grammar REQ id the ledger names, so none is ever minted again.
+
+    A REQ is named by its proof (`req_proof_recorded`), by a freeze baseline, by a
+    dispatch's subject (`REQ-<n>@<revision>`) and by an unblock's exit (requirements
+    model § 2: an id is never reused).
+
+    Returns:
+        The ids, legacy grammars excluded.
+
+    """
+    named: set[str] = set()
+    for row in ledger.query():
+        held = row.extra
+        if row.event == "req_proof_recorded":
+            named.add(str(held.get("req")))
+        elif row.event == "work_package_transitioned":
+            named |= {str(entry.get("req")) for entry in held.get("baseline") or ()}
+        elif row.event == "work_package_dispatched":
+            named.add(str(held.get("subject", "")).partition("@")[0])
+        elif row.event == "work_package_unblocked" and held.get("req"):
+            named.add(str(held["req"]))
+    return {req for req in named if re.match(REQ_ID_PATTERN, req)}
+
+
+def _booked_req_findings(ledger: Ledger, catalog: Catalog) -> list[ValidationError]:
+    """Refuse a store missing a REQ the ledger names, since an id is never reused (§ 2).
+
+    Returns:
+        One finding naming every booked REQ the store no longer holds.
+
+    """
+    if missing := sorted(booked_req_ids(ledger) - {req.id for req in catalog.reqs}):
+        return [
+            _err(
+                "reqs",
+                f"REQs {', '.join(missing)} are named by ledger events but have no record in "
+                f"data/{CATALOG_FILES['reqs']}. An id is never reused (requirements model § 2), "
+                "so restore the record.",
+            )
+        ]
+    return []
+
+
 def audit_catalog(project_root: Path) -> list[ValidationError]:
     """Run the catalog checks; any finding makes the caller exit 3.
 
@@ -500,7 +553,8 @@ def audit_catalog(project_root: Path) -> list[ValidationError]:
         gates=_gates(project_root, config),
         governs=_governs(project_root, config),
     )
-    errors += _booked_findings(Ledger(project_root / config.paths.ledger), catalog)
+    ledger = Ledger(project_root / config.paths.ledger)
+    errors += _booked_findings(ledger, catalog) + _booked_req_findings(ledger, catalog)
     if any(outcome.user_facing for outcome in catalog.outcomes):
         errors += bdd_findings(catalog, scan_catalog_bindings(project_root))
     if gaps := coverage_gaps(catalog, needs):
