@@ -513,7 +513,7 @@ def _requires_human_obpi_attestation(
 
 
 # ---------------------------------------------------------------------------
-# GHI #290 authenticity gate + GHI #292 agent-relayed escape path
+# Attestation types, the TTY probe and pipeline-marker validation
 #
 # Per the canon-owner attestation declaration the operator's verbatim
 # conversational attestation relayed via --attestation-text is the Gate-5
@@ -523,8 +523,6 @@ def _requires_human_obpi_attestation(
 # pipeline-marker validation below stay: _enforce_uncovered_acceptance_confirmation
 # still reads both for the --accept-uncovered waiver path.
 # ---------------------------------------------------------------------------
-
-_GHI_290_AUTHENTICITY_CONFIRMATION = "ATTEST"
 
 ATTESTATION_TYPE_HUMAN = "human"
 ATTESTATION_TYPE_AGENT_RELAYED = "agent-relayed-operator-attestation"

@@ -398,8 +398,8 @@ def _gate_completed_receipt_binding(
 ) -> None:
     """ADR-0.0.24-02 receipt-binding gate wrapper for the emit-receipt path.
 
-    Mirrors ``_gate_completed_receipt_authenticity`` (the GHI #290 gate
-    wrapper) so ``obpi_emit_receipt_cmd`` stays below the C/C/C
+    Mirrors ``_gate_completed_receipt_authenticity`` (the attestation-type
+    resolver) so ``obpi_emit_receipt_cmd`` stays below the C/C/C
     complexity ceiling. Resolves the parent ADR's ``kind`` from frontmatter
     and dispatches to the shared helper in ``obpi_complete``.
     """

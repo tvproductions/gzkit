@@ -15,6 +15,7 @@ from gzkit.commands.adr_audit import (
     _is_foundation_adr,
     _requires_human_obpi_attestation,
 )
+from tests.commands.common import _isolated_git_env
 
 
 def covers(target: str):
@@ -132,6 +133,7 @@ def _gate_body_at(rev: str) -> str:
         errors="replace",
         check=True,
         cwd=Path(__file__).resolve().parents[2],
+        env=_isolated_git_env(),
     )
     for node in ast.walk(ast.parse(shown.stdout)):
         if isinstance(node, ast.FunctionDef) and node.name == _GATE_NAME:
