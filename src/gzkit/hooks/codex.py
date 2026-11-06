@@ -13,6 +13,26 @@ from typing import Any
 from gzkit.session_start import ORIENTATION_SCRIPT as _ORIENTATION
 from gzkit.surface_write import write_text_if_changed
 
+
+class InvalidCodexHookConfigError(ValueError):
+    """The Codex hooks file is not a JSON object with a ``hooks`` mapping."""
+
+    def __init__(self, path: Path) -> None:
+        """Build the message from *path*."""
+        self.path = path
+        super().__init__(f"Invalid Codex hook configuration: {path}; repair JSON before syncing.")
+
+
+class InvalidCodexHookGroupsError(ValueError):
+    """A Codex hook event's groups are not a list of objects."""
+
+    def __init__(self, event: str, path: Path) -> None:
+        """Build the message from *event*, *path*."""
+        self.event = event
+        self.path = path
+        super().__init__(f"Invalid {event} hook groups in {path}; repair JSON before syncing.")
+
+
 _ROOT = "$(git rev-parse --show-toplevel)"
 _COMMAND = f'uv run --cache-dir "{_ROOT}/.gzkit/cache/uv" python "{_ROOT}/{_ORIENTATION}"'
 _ADAPTER = (
@@ -97,18 +117,22 @@ def sync_codex_hooks(project_root: Path) -> list[str]:
         The project-relative path of the Codex hooks file; empty when the project has no orientation
         script.
 
+    Raises:
+        InvalidCodexHookConfigError: When the hooks file is not an object with a ``hooks`` mapping.
+        InvalidCodexHookGroupsError: When an event's hook groups are not a list of objects.
+
     """
     if not (project_root / _ORIENTATION).is_file():
         return []
     path = project_root / ".codex" / "hooks.json"
     payload = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
     if not isinstance(payload, dict) or not isinstance(payload.get("hooks", {}), dict):
-        raise ValueError(f"Invalid Codex hook configuration: {path}; repair JSON before syncing.")
+        raise InvalidCodexHookConfigError(path)
     hooks = payload.setdefault("hooks", {})
     for event in ("SessionStart", "UserPromptSubmit", "PreToolUse"):
         groups = hooks.get(event, [])
         if not isinstance(groups, list) or any(not isinstance(g, dict) for g in groups):
-            raise ValueError(f"Invalid {event} hook groups in {path}; repair JSON before syncing.")
+            raise InvalidCodexHookGroupsError(event, path)
         retained = _operator_groups(groups)
         if retained:
             hooks[event] = retained

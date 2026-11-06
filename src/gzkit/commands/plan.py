@@ -28,6 +28,41 @@ _SEMVER_LITERAL_RE = re.compile(r"^\d+\.\d+\.\d+$")
 # GHI #494 bare-id `adr_created` regression.
 CANONICAL_ADR_ID_RE = re.compile(rf"^{ADR_ID_BODY}$")
 
+
+class BareAdrIdNameError(ValueError):
+    """A plan name is an ADR id without the canonical slug suffix."""
+
+    def __init__(self, name: str, semver: str) -> None:
+        """Build the message from *name*, *semver*."""
+        self.name = name
+        self.semver = semver
+        super().__init__(
+            f"name argument is a bare ADR id without a slug suffix "
+            f"(got {name!r}). Non-pool ADR ids require the canonical "
+            f"slug-form ADR-<semver>-<slug>; a bare id emits an "
+            f"unslugged adr_created event and produces shadow rows in "
+            f"`gz adr report` (GHI #279 / GHI #344 / GHI #494). Pass a "
+            f"descriptive slug instead, e.g. "
+            f"`gz plan create my-doctrine-name --semver {semver}`."
+        )
+
+
+class BareSemverNameError(ValueError):
+    """A plan name is a bare semver literal instead of a descriptive slug."""
+
+    def __init__(self, name: str, semver: str) -> None:
+        """Build the message from *name*, *semver*."""
+        self.name = name
+        self.semver = semver
+        super().__init__(
+            f"name argument must be a descriptive slug, not a bare semver "
+            f"literal (got {name!r}). Bare-semver names emit unslugged "
+            f"adr_created events and produce shadow rows in `gz adr report` "
+            f"(GHI #279 / GHI #344). Pass a slug instead, e.g. "
+            f"`gz plan create my-doctrine-name --semver {semver}`."
+        )
+
+
 # ADR-0.0.35 § Decision item #6 — every foundation-kind ADR scaffolds with a
 # `## Why foundation tier?` section between `## Persona` and `## Intent`,
 # pre-populated with two author prompts: the invariance-test answer and the
@@ -67,27 +102,17 @@ def _compose_canonical_adr_id(name: str, semver: str) -> str:
         The canonical ADR id: ``name`` unchanged when already a canonical id, otherwise
         ``ADR-<semver>-<name>``.
 
+    Raises:
+        BareAdrIdNameError: When ``name`` is an ADR id without a slug suffix.
+        BareSemverNameError: When ``name`` is a bare semver literal.
+
     """
     if name.startswith("ADR-"):
         if not CANONICAL_ADR_ID_RE.match(name):
-            raise ValueError(
-                f"name argument is a bare ADR id without a slug suffix "
-                f"(got {name!r}). Non-pool ADR ids require the canonical "
-                f"slug-form ADR-<semver>-<slug>; a bare id emits an "
-                f"unslugged adr_created event and produces shadow rows in "
-                f"`gz adr report` (GHI #279 / GHI #344 / GHI #494). Pass a "
-                f"descriptive slug instead, e.g. "
-                f"`gz plan create my-doctrine-name --semver {semver}`."
-            )
+            raise BareAdrIdNameError(name, semver)
         return name
     if _SEMVER_LITERAL_RE.match(name):
-        raise ValueError(
-            f"name argument must be a descriptive slug, not a bare semver "
-            f"literal (got {name!r}). Bare-semver names emit unslugged "
-            f"adr_created events and produce shadow rows in `gz adr report` "
-            f"(GHI #279 / GHI #344). Pass a slug instead, e.g. "
-            f"`gz plan create my-doctrine-name --semver {semver}`."
-        )
+        raise BareSemverNameError(name, semver)
     return compose_adr_full_id(semver, name)
 
 

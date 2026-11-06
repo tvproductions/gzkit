@@ -30,6 +30,39 @@ from gzkit.governance.events import (
 )
 
 
+class BriefNotFoundError(GzCliError):
+    """No OBPI brief exists on disk for the requested id."""
+
+    def __init__(self, obpi_id: str) -> None:
+        """Build the message from *obpi_id*."""
+        self.obpi_id = obpi_id
+        super().__init__(f"Brief not found for {obpi_id}")
+
+
+class ApplyRequiresAttestorError(GzCliError):
+    """``--apply`` was given without the ``--attestor`` that owns the amendment."""
+
+    def __init__(self) -> None:
+        """Build the fixed message."""
+        super().__init__("--apply requires --attestor")
+
+
+class SealedBriefApplyError(PolicyBreachError):
+    """``--apply`` was refused because the brief is sealed (terminal status)."""
+
+    def __init__(self, brief_rel: str, obpi_id: str) -> None:
+        """Build the message from *brief_rel*, *obpi_id*."""
+        self.brief_rel = brief_rel
+        self.obpi_id = obpi_id
+        super().__init__(
+            f"{brief_rel} is a sealed brief (terminal status); "
+            "--apply refused, nothing written.\n"
+            "Why: amending a sealed record rewrites it under an attestation no "
+            "operator can honestly give (GHI #707).\n"
+            f"Next: run `gz obpi brief-drift {obpi_id}` without --apply to read its deltas."
+        )
+
+
 def _compute_amendments(result: ReconcileResult, attestor: str) -> tuple[list[str], list[str]]:
     """Return (allowlist path additions, tracked-defect notes) implied by the result.
 
@@ -190,20 +223,14 @@ def brief_reconcile_cmd(
 
     brief_path = _resolve_brief_path(root, obpi_id)
     if brief_path is None:
-        raise GzCliError(f"Brief not found for {obpi_id}")
+        raise BriefNotFoundError(obpi_id)
     if apply and not attestor:
-        raise GzCliError("--apply requires --attestor")
+        raise ApplyRequiresAttestorError
 
     result = reconcile_brief(brief_path, root)
     if apply and result.terminal:
         # Refused under --dry-run too, so the preview predicts the refusal (GHI #1115).
-        raise PolicyBreachError(
-            f"{brief_path.relative_to(root).as_posix()} is a sealed brief (terminal status); "
-            "--apply refused, nothing written.\n"
-            "Why: amending a sealed record rewrites it under an attestation no "
-            "operator can honestly give (GHI #707).\n"
-            f"Next: run `gz obpi brief-drift {obpi_id}` without --apply to read its deltas."
-        )
+        raise SealedBriefApplyError(brief_path.relative_to(root).as_posix(), obpi_id)
     do_write = bool(apply and not dry_run)
     planned = _planned_amendments(brief_path, result, attestor or "") if apply and dry_run else None
 

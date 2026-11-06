@@ -12,7 +12,7 @@ or audit internals until something actually uses them.
 
 from typing import TYPE_CHECKING, Any
 
-from gzkit.cli.main import main
+from gzkit.cli.main import UnknownModuleAttributeError, main
 
 if TYPE_CHECKING:
     from gzkit.cli.formatters import OutputFormatter
@@ -60,7 +60,7 @@ _LAZY_ATTRS: dict[str, tuple[str, str]] = {
 def __getattr__(name: str) -> Any:
     target = _LAZY_ATTRS.get(name)
     if target is None:
-        raise AttributeError(f"module 'gzkit.cli' has no attribute {name!r}")
+        raise UnknownModuleAttributeError(__name__, name)
     module_path, attr = target
     from importlib import import_module
 

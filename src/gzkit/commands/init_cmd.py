@@ -32,6 +32,7 @@ from gzkit.commands.common import (
     ensure_initialized,
     get_project_root,
 )
+from gzkit.commands.init_cmd_errors import InvalidConstitutionSlugError, InvalidPrdSlugError
 from gzkit.commands.ledger import MERGE_DRIVER_NAME, ensure_jsonl_merge_driver
 from gzkit.commands.register import (
     grandfathered_foundation_ids,
@@ -1638,7 +1639,7 @@ def _canonicalize_prd_id(name: str) -> tuple[str, str]:
         stem, semver = trailing[0], trailing[1]
     slug = re.sub(r"[^A-Za-z0-9]", "", stem).upper()
     if not slug:
-        raise SystemExit(f"Invalid PRD slug: {name!r} (need at least one alphanumeric character)")
+        raise InvalidPrdSlugError(name)
     return f"PRD-{slug}-{semver}", semver
 
 
@@ -1702,9 +1703,7 @@ def _canonicalize_constitution_id(name: str) -> tuple[str, str]:
         stem, semver = trailing[0], trailing[1]
     slug = re.sub(r"[^A-Za-z0-9]", "", stem).upper()
     if not slug:
-        raise SystemExit(
-            f"Invalid constitution slug: {name!r} (need at least one alphanumeric character)"
-        )
+        raise InvalidConstitutionSlugError(name)
     return f"CONSTITUTION-{slug}-{semver}", semver
 
 

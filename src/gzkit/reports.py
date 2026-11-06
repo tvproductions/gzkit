@@ -19,10 +19,97 @@ from gzkit.ledger import Ledger, LedgerEvent
 from gzkit.ledger_events import report_published_event
 
 
+class ReportPathEscapeError(ValueError):
+    """A report publication path resolves outside the project root, or to the root itself."""
+
+    def __init__(self, value: str) -> None:
+        """Build the message from *value*."""
+        self.value = value
+        super().__init__(f"Report publication path must stay inside project: {value}")
+
+
+class DuplicateReportIdentityError(ValueError):
+    """The ledger records the same report publication identity more than once."""
+
+    def __init__(self, report_id: str) -> None:
+        """Build the message from *report_id*."""
+        self.report_id = report_id
+        super().__init__(f"Duplicate report publication identity in ledger: {report_id}")
+
+
+class ReportWitnessMismatchError(ValueError):
+    """A published report's bytes no longer match the hash its ledger event witnessed."""
+
+    def __init__(self, path: Path) -> None:
+        """Build the message from *path*."""
+        self.path = path
+        super().__init__(f"Published report differs from its ledger witness: {path}")
+
+
+class InvalidReportIdError(ValueError):
+    """A report id falls outside the permitted lowercase ASCII shape."""
+
+    def __init__(self) -> None:
+        """Build the fixed message."""
+        super().__init__(
+            "Report id must be 1–128 lowercase ASCII letters, digits, underscores or hyphens"
+        )
+
+
+class ReservedReportIdError(ValueError):
+    """A report id names a derived view or a reserved device name."""
+
+    def __init__(self) -> None:
+        """Build the fixed message."""
+        super().__init__("Report id is reserved for a derived view")
+
+
+class EmptyReportError(ValueError):
+    """A report source holds no non-whitespace UTF-8 text."""
+
+    def __init__(self) -> None:
+        """Build the fixed message."""
+        super().__init__("Report must contain non-empty UTF-8 text")
+
+
+class LedgerInsideReportDirectoryError(ValueError):
+    """The configured ledger lives inside the report publication directory."""
+
+    def __init__(self) -> None:
+        """Build the fixed message."""
+        super().__init__("Ledger must be outside the report directory")
+
+
+class ReportDestinationSymlinkError(ValueError):
+    """A report destination path is a symbolic link."""
+
+    def __init__(self) -> None:
+        """Build the fixed message."""
+        super().__init__("Report destination must not be a symbolic link")
+
+
+class ReportInputsConflictError(ValueError):
+    """A report id the ledger already witnessed was republished with different inputs."""
+
+    def __init__(self, report_id: str) -> None:
+        """Build the message from *report_id*."""
+        self.report_id = report_id
+        super().__init__(f"Report id already published with different inputs: {report_id}")
+
+
+class RetainedReportBytesError(ValueError):
+    """An unwitnessed retained report file holds bytes other than the ones being published."""
+
+    def __init__(self, path: Path) -> None:
+        """Build the message from *path*."""
+        self.path = path
+        super().__init__(f"Retained report has different bytes: {path}")
+
+
 def _contained(root: Path, value: str) -> Path:
     path = (root / value).resolve()
     if not path.is_relative_to(root) or path == root:
-        raise ValueError(f"Report publication path must stay inside project: {value}")
+        raise ReportPathEscapeError(value)
     return path
 
 
@@ -47,11 +134,11 @@ def _history(root: Path, ledger: Ledger) -> list[LedgerEvent]:
     for event in events:
         parse_typed_event(event.model_dump())
         if event.id in seen:
-            raise ValueError(f"Duplicate report publication identity in ledger: {event.id}")
+            raise DuplicateReportIdentityError(event.id)
         seen.add(event.id)
         path = _contained(root, event.extra["path"])
         if hashlib.sha256(path.read_bytes()).hexdigest() != event.extra["sha256"]:
-            raise ValueError(f"Published report differs from its ledger witness: {path}")
+            raise ReportWitnessMismatchError(path)
     return events
 
 
@@ -86,23 +173,30 @@ def publish_report(
         with `published` True and `already_published` True when the ledger already witnessed this
         report, False when this call published it.
 
+    Raises:
+        InvalidReportIdError: When ``report_id`` falls outside the permitted shape.
+        ReservedReportIdError: When ``report_id`` names a derived view or reserved name.
+        EmptyReportError: When ``source`` holds no non-whitespace UTF-8 text.
+        LedgerInsideReportDirectoryError: When the ledger lives inside the report directory.
+        ReportDestinationSymlinkError: When the report destination is a symbolic link.
+        ReportInputsConflictError: When ``report_id`` was published with different inputs.
+        RetainedReportBytesError: When an unwitnessed retained file holds different bytes.
+
     """
     if not re.fullmatch(r"[a-z0-9][a-z0-9_-]{0,127}", report_id):
-        raise ValueError(
-            "Report id must be 1–128 lowercase ASCII letters, digits, underscores or hyphens"
-        )
+        raise InvalidReportIdError
     if report_id in {"index", "current", "con", "prn", "aux", "nul"} or re.fullmatch(
         r"(?:com|lpt)[0-9]", report_id
     ):
-        raise ValueError("Report id is reserved for a derived view")
+        raise ReservedReportIdError
     content = source.read_bytes()
     if not content.decode("utf-8").strip():
-        raise ValueError("Report must contain non-empty UTF-8 text")
+        raise EmptyReportError
     root = root.resolve()
     directory = _contained(root, f"{config.paths.docs_root}/reports/big-picture")
     ledger_path = _contained(root, config.paths.ledger)
     if ledger_path.is_relative_to(directory):
-        raise ValueError("Ledger must be outside the report directory")
+        raise LedgerInsideReportDirectoryError
     directory.mkdir(parents=True, exist_ok=True)
     # Flush each newly created ancestor as well as the eventual report entry.
     ancestor = directory
@@ -111,7 +205,7 @@ def publish_report(
         ancestor = ancestor.parent
     path = directory / f"{report_id}.md"
     if path.is_symlink():
-        raise ValueError("Report destination must not be a symbolic link")
+        raise ReportDestinationSymlinkError
     metadata = {
         "series": "big-picture",
         "path": path.relative_to(root).as_posix(),
@@ -126,10 +220,10 @@ def publish_report(
         existing = next((event for event in events if event.id == report_id), None)
         if existing:
             if any(existing.extra[key] != value for key, value in metadata.items()):
-                raise ValueError(f"Report id already published with different inputs: {report_id}")
+                raise ReportInputsConflictError(report_id)
         else:
             if path.exists() and path.read_bytes() != content:
-                raise ValueError(f"Retained report has different bytes: {path}")
+                raise RetainedReportBytesError(path)
             _write_atomic(path, content)
             event = report_published_event(
                 report_id,

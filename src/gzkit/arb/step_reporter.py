@@ -26,6 +26,36 @@ DEFAULT_MAX_OUTPUT_CHARS = 8000
 _CANONICAL_STEP_NAME_RE = re.compile(r"^[a-z][a-z0-9]*$")
 
 
+class MissingStepNameError(ValueError):
+    """An ARB step was requested without a step name."""
+
+    def __init__(self) -> None:
+        """Build the fixed message."""
+        super().__init__("ARB step name is required")
+
+
+class NonCanonicalStepNameError(ValueError):
+    """An ARB step name falls outside the canonical receipt-binding shape."""
+
+    def __init__(self, step_name: str) -> None:
+        """Build the message from *step_name*."""
+        self.step_name = step_name
+        super().__init__(
+            f"ARB step name {step_name!r} is not canonical — must match "
+            "[a-z][a-z0-9]* (lowercase, no hyphens or underscores, no "
+            "leading digit) so the run_id binds against the canonical "
+            "receipt regex arb-(?:ruff|step-[a-z][a-z0-9]*)-[a-f0-9]{32}"
+        )
+
+
+class MissingStepCommandError(ValueError):
+    """An ARB step was requested without a command to run."""
+
+    def __init__(self) -> None:
+        """Build the fixed message."""
+        super().__init__("ARB step command is required")
+
+
 def _canonical(obj: Any) -> str:
     return json.dumps(obj, sort_keys=True, separators=(",", ":"))
 
@@ -70,21 +100,18 @@ def run_step_via_arb(
         Tuple of (exit_status, receipt_path).
 
     Raises:
-        ValueError: If name is empty or cmd is empty.
+        MissingStepNameError: If name is empty.
+        NonCanonicalStepNameError: If name is not a canonical step name.
+        MissingStepCommandError: If cmd is empty.
 
     """
     step_name = (name or "").strip()
     if not step_name:
-        raise ValueError("ARB step name is required")
+        raise MissingStepNameError
     if not _CANONICAL_STEP_NAME_RE.match(step_name):
-        raise ValueError(
-            f"ARB step name {step_name!r} is not canonical — must match "
-            "[a-z][a-z0-9]* (lowercase, no hyphens or underscores, no "
-            "leading digit) so the run_id binds against the canonical "
-            "receipt regex arb-(?:ruff|step-[a-z][a-z0-9]*)-[a-f0-9]{32}"
-        )
+        raise NonCanonicalStepNameError(step_name)
     if not cmd:
-        raise ValueError("ARB step command is required")
+        raise MissingStepCommandError
 
     started = time.perf_counter()
     try:

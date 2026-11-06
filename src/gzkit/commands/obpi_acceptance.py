@@ -27,6 +27,62 @@ from gzkit.mutation_witness import Mutation
 from gzkit.pipeline_runtime import RunCrossing, record_run_position
 
 
+class InitRequiresAuthorError(ValueError):
+    """``acceptance init`` was run without ``--author``."""
+
+    def __init__(self) -> None:
+        """Build the fixed message."""
+        super().__init__("init requires --author naming the implementing session")
+
+
+class UnknownAcceptanceActionError(ValueError):
+    """An acceptance action or status stage outside the supported set was requested."""
+
+    def __init__(self) -> None:
+        """Build the fixed message."""
+        super().__init__("Use init, prove, review or status with stage2/stage4")
+
+
+class ProveRequiresSpecError(ValueError):
+    """``acceptance prove`` was run without ``--spec``."""
+
+    def __init__(self) -> None:
+        """Build the fixed message."""
+        super().__init__("prove requires --spec with the requirement and controls")
+
+
+class AcceptanceNotInitializedError(ValueError):
+    """Proof controls were executed before ``acceptance init`` recorded a contract."""
+
+    def __init__(self) -> None:
+        """Build the fixed message."""
+        super().__init__("Run acceptance init before executing proof controls")
+
+
+class ReviewRequiresReceiptError(ValueError):
+    """``acceptance review`` was run without a bare ARB run ID as ``--receipt``."""
+
+    def __init__(self) -> None:
+        """Build the fixed message."""
+        super().__init__("review requires --receipt with an ARB run ID")
+
+
+class ReceiptIdentityMismatchError(ValueError):
+    """A receipt file's recorded run ID disagrees with its filename."""
+
+    def __init__(self) -> None:
+        """Build the fixed message."""
+        super().__init__("Receipt filename and execution identity disagree")
+
+
+class HumanReviewRequiresRulingError(ValueError):
+    """``acceptance human-review`` was run without ``--attestor`` and ``--ruling``."""
+
+    def __init__(self) -> None:
+        """Build the fixed message."""
+        super().__init__("human-review requires --attestor and the operator's verbatim --ruling")
+
+
 class ProofRequest(BaseModel):
     """Instructions to execute a control; contains no caller-supplied results."""
 
@@ -127,6 +183,8 @@ def _execute(
     Raises:
         ObpiEntryError: when ``review`` or ``human-review`` is given an id that
             names no single OBPI with a brief on disk.
+        InitRequiresAuthorError: when ``init`` is given no ``author``.
+        UnknownAcceptanceActionError: when the action or status stage is unsupported.
 
     """
     if action in ("review", "human-review"):
@@ -136,23 +194,23 @@ def _execute(
         return _execute_human_review(root, obpi_id, attestor, ruling, launch_id)
     if action == "init":
         if not author:
-            raise ValueError("init requires --author naming the implementing session")
+            raise InitRequiresAuthorError
         contract = initialize(root, obpi_id, author)
         return contract.model_dump(mode="json"), True
     if action == "prove":
         return _execute_proof(root, obpi_id, specification)
     if action != "status" or stage not in ("stage2", "stage4"):
-        raise ValueError("Use init, prove, review or status with stage2/stage4")
+        raise UnknownAcceptanceActionError
     return _status_report(root, obpi_id, stage, req_ids)
 
 
 def _execute_proof(root: Path, obpi_id: str, specification: str | None) -> tuple[dict, bool]:
     """Execute a proof request and persist its observed result."""
     if not specification:
-        raise ValueError("prove requires --spec with the requirement and controls")
+        raise ProveRequiresSpecError
     request = ProofRequest.model_validate_json(Path(specification).read_text(encoding="utf-8"))
     if load_history(root, obpi_id).contract is None:
-        raise ValueError("Run acceptance init before executing proof controls")
+        raise AcceptanceNotInitializedError
     proof = prove(
         root,
         resolve_brief(root, obpi_id),
@@ -199,14 +257,18 @@ def _execute_review(
     Returns:
         Tuple of (recorded review as a JSON-ready dict, True).
 
+    Raises:
+        ReviewRequiresReceiptError: When ``receipt`` is not a bare ARB run ID.
+        ReceiptIdentityMismatchError: When the receipt's run ID disagrees with its filename.
+
     """
     if not receipt or Path(receipt).name != receipt:
-        raise ValueError("review requires --receipt with an ARB run ID")
+        raise ReviewRequiresReceiptError
     config = GzkitConfig.load(root / ".gzkit.json")
     path = receipts_root(config=config, project_root=root) / f"{receipt}.json"
     captured = json.loads(path.read_text(encoding="utf-8"))
     if captured.get("run_id") != receipt:
-        raise ValueError("Receipt filename and execution identity disagree")
+        raise ReceiptIdentityMismatchError
     review = record_review(root, obpi_id, captured)
     if review.stage == "adversarial":
         _record_review_round(root, launch_id)
@@ -224,9 +286,12 @@ def _execute_human_review(
     Returns:
         Tuple of (recorded human review as a JSON-ready dict, True).
 
+    Raises:
+        HumanReviewRequiresRulingError: When ``attestor`` or ``ruling`` is missing.
+
     """
     if not attestor or not ruling:
-        raise ValueError("human-review requires --attestor and the operator's verbatim --ruling")
+        raise HumanReviewRequiresRulingError
     review = record_human_review(root, obpi_id, attestor=attestor, ruling=ruling)
     _record_review_round(root, launch_id)
     return review.model_dump(mode="json"), True

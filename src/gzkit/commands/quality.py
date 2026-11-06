@@ -18,6 +18,7 @@ from rich.markup import escape
 
 from gzkit import ruff_baseline
 from gzkit.commands.common import console, get_project_root
+from gzkit.commands.quality_errors import MalformedObpiIdError
 from gzkit.core.models import obpi_parts
 from gzkit.executables import resolve_executable
 from gzkit.quality import (
@@ -284,7 +285,7 @@ def _resolve_obpi_req_ids(project_root, obpi: str) -> set[str]:
 
     parts = obpi_parts(obpi.upper())
     if parts is None:
-        raise ValueError(f"Expected OBPI-<semver>-<item> form, got {obpi!r}")
+        raise MalformedObpiIdError(obpi)
     semver, item = parts
 
     briefs = scan_briefs(project_root / "docs" / "design" / "adr")

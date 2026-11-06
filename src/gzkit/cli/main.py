@@ -22,6 +22,17 @@ from gzkit.commands.insights import register_insights_parsers
 from gzkit.core.exceptions import GzkitError
 from gzkit.dispatch_stamp import consume_stamp, is_stamped, stamp_refusal
 
+
+class UnknownModuleAttributeError(AttributeError):
+    """A lazily exported module attribute was requested that the module does not export."""
+
+    def __init__(self, module: str, name: str) -> None:
+        """Build the message from *module*, *name*."""
+        self.module = module
+        self.attribute = name
+        super().__init__(f"module '{module}' has no attribute {name!r}")
+
+
 # Lazy re-exports preserved for ``@patch("gzkit.cli.main.X")`` compatibility in
 # tests and for backward-compat callers. Resolving these at module top pulls
 # ``gzkit.commands.common`` -> ``gzkit.sync`` -> ``yaml`` into every ``gz --help``
@@ -51,7 +62,7 @@ _LAZY_EXPORTS: dict[str, tuple[str, str]] = {
 def __getattr__(name: str) -> Any:
     target = _LAZY_EXPORTS.get(name)
     if target is None:
-        raise AttributeError(f"module 'gzkit.cli.main' has no attribute {name!r}")
+        raise UnknownModuleAttributeError(__name__, name)
     module_name, attr = target
     value = getattr(import_module(module_name), attr)
     globals()[name] = value

@@ -40,6 +40,14 @@ from gzkit.commands.ceremony_steps import (
     render_step_10_release,
     render_step_11_complete,
 )
+from gzkit.commands.closeout_ceremony_errors import (
+    AttestationBoundaryError,
+    AttestationOutsideStepError,
+    CeremonyAlreadyCompletedError,
+    CeremonyBlockedError,
+    CeremonyFlagConflictError,
+    CeremonyNotInProgressError,
+)
 from gzkit.commands.common import (
     GzCliError,
     console,
@@ -185,7 +193,7 @@ def _initialize_ceremony(
     obpi_rows, readiness = _build_obpi_context(project_root, config, ledger, adr_id)
     blockers = readiness.get("blockers", [])
     if blockers:
-        raise GzCliError(f"Cannot start ceremony: {'; '.join(blockers)}")
+        raise CeremonyBlockedError(blockers)
 
     now = _now_iso()
     commands = discover_demo_commands(project_root, adr_id, obpi_files, adr_file)
@@ -334,20 +342,17 @@ def _gate_attestation_boundary(project_root: Path, state: CeremonyState) -> None
     The ATTESTATION -> CLOSEOUT transition is the human-attestation boundary — the
     one edge the agent must not self-advance with ``--next``. Every other
     transition is a no-op here.
+
+    Raises:
+        AttestationBoundaryError: When the run stands at ATTESTATION with no fresh
+            ``attested`` receipt.
+
     """
     if state.current_step != CeremonyStep.ATTESTATION:
         return
     if _has_fresh_attestation_receipt(project_root, state):
         return
-    from gzkit.core.exceptions import PolicyBreachError
-
-    raise PolicyBreachError(
-        f"Step {int(CeremonyStep.ATTESTATION)} (ATTESTATION) -> "
-        f"{int(CeremonyStep.CLOSEOUT)} (CLOSEOUT) is the human-attestation "
-        "boundary and cannot be self-advanced with --next: no `attested` ledger "
-        "receipt was recorded for this ceremony run. Record the operator's "
-        f'verdict first:\n  gz closeout {state.adr_id} --ceremony --attest "<verdict>"'
-    )
+    raise AttestationBoundaryError(state.adr_id)
 
 
 def _commit_advance(
@@ -425,12 +430,17 @@ def _advance_ceremony(
     ATTESTATION after every command has been presented. The Step 6 -> 7
     transition is ledger-gated by ``_commit_advance`` (BI-3): ``--next`` cannot
     self-advance past the human-attestation boundary.
+
+    Raises:
+        CeremonyNotInProgressError: When no ceremony state exists for ``adr_id``.
+        CeremonyAlreadyCompletedError: When the ceremony has already completed.
+
     """
     state = load_ceremony_state(project_root, adr_id)
     if state is None:
-        raise GzCliError(f"No ceremony in progress for {adr_id}. Run --ceremony first.")
+        raise CeremonyNotInProgressError(adr_id, " Run --ceremony first.")
     if state.completed_at:
-        raise GzCliError(f"Ceremony for {adr_id} already completed.")
+        raise CeremonyAlreadyCompletedError(adr_id)
 
     now = _now_iso()
 
@@ -460,21 +470,20 @@ def _record_attestation(
     ``attested`` surface (BI-2: ``--attest`` is not a parallel emitter); the
     transitional double-emit with the Step-7 closeout (``closeout.py``) is
     collapsed by OBPI-0.0.63-05.
+
+    Raises:
+        CeremonyNotInProgressError: When no ceremony state exists for ``adr_id``.
+        AttestationOutsideStepError: When the ceremony is not at the ATTESTATION step.
+
     """
     from gzkit.commands.common import get_git_user
     from gzkit.ledger import attested_event
 
     state = load_ceremony_state(project_root, adr_id)
     if state is None:
-        raise GzCliError(f"No ceremony in progress for {adr_id}.")
+        raise CeremonyNotInProgressError(adr_id)
     if state.current_step != CeremonyStep.ATTESTATION:
-        from gzkit.core.exceptions import PolicyBreachError
-
-        raise PolicyBreachError(
-            f"Attestation only valid at step {CeremonyStep.ATTESTATION} "
-            f"(current: {state.current_step}). "
-            "Cannot attest outside the attestation step."
-        )
+        raise AttestationOutsideStepError(state.current_step)
 
     config = ensure_initialized()
     ledger = Ledger(project_root / config.paths.ledger)
@@ -510,9 +519,9 @@ def _pause_ceremony(
     """Pause ceremony for revise-and-resubmit."""
     state = load_ceremony_state(project_root, adr_id)
     if state is None:
-        raise GzCliError(f"No ceremony in progress for {adr_id}.")
+        raise CeremonyNotInProgressError(adr_id)
     if state.completed_at:
-        raise GzCliError(f"Ceremony for {adr_id} already completed.")
+        raise CeremonyAlreadyCompletedError(adr_id)
 
     now = _now_iso()
     new_state = state.model_copy(update={"paused_at": now, "updated_at": now})
@@ -572,7 +581,7 @@ def ceremony_cmd(
     # Validate flag combinations
     flags = [ceremony_next, bool(ceremony_attest), ceremony_pause]
     if sum(flags) > 1:
-        raise GzCliError("Cannot combine --next, --attest, and --pause.")
+        raise CeremonyFlagConflictError
 
     project_root, adr_id, adr_file, lane, manifest, obpi_files = _resolve_adr_context(adr)
 

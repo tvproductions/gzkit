@@ -19,11 +19,18 @@ from pydantic import BaseModel, ConfigDict, Field
 from rich.markup import escape
 
 from gzkit.commands.common import (
-    GzCliError,
     _confirm,
     console,
     ensure_initialized,
     get_project_root,
+)
+from gzkit.commands.patch_release_errors import (
+    GhNotAuthenticatedError,
+    GhReleaseCreateFailedError,
+    QualitySweepFailedError,
+    ReleaseCommitFailedError,
+    ReleasePushFailedError,
+    VersionInconsistencyError,
 )
 from gzkit.commands.version_sync import (
     _parse_semver_tuple,
@@ -152,11 +159,7 @@ def _ensure_gh_available(project_root: Path) -> None:
     """Verify ``gh`` CLI is installed and authenticated."""
     rc, _out, err = run_exec(["gh", "auth", "status"], cwd=project_root)
     if rc != 0:
-        raise GzCliError(
-            "BLOCKERS:\n"
-            "  gh CLI is not authenticated.  Run `gh auth login` first.\n"
-            f"  Detail: {err}"
-        )
+        raise GhNotAuthenticatedError(err)
 
 
 def _get_latest_tag(project_root: Path) -> tuple[str | None, str | None]:
@@ -889,7 +892,7 @@ def _commit_release(project_root: Path, version: str) -> None:
         f"release: v{version}",
     )
     if rc != 0:
-        raise GzCliError(f"Commit failed: {err}")
+        raise ReleaseCommitFailedError(err)
     console.print(f"  Committed: release: v{version}")
 
 
@@ -901,6 +904,11 @@ def _push_release(project_root: Path) -> None:
     whole unit tier, behave, the docs build and the guard-canary sweep are paid
     here, once per release. The release commit already exists, so a passing
     sweep records the tree as verified and the pre-push hook reuses it.
+
+    Raises:
+        QualitySweepFailedError: When ``gz check --full`` fails.
+        ReleasePushFailedError: When the push to ``origin/main`` fails.
+
     """
     import sys  # noqa: PLC0415
 
@@ -909,14 +917,12 @@ def _push_release(project_root: Path) -> None:
     sweep = run_command([sys.executable, "-m", "gzkit", "check", "--full"], cwd=project_root)
     if not sweep.success:
         detail = "\n".join((sweep.stdout + "\n" + sweep.stderr).strip().splitlines()[-40:])
-        raise GzCliError(
-            f"The full quality sweep (`gz check --full`) failed. Fix before releasing.\n{detail}"
-        )
+        raise QualitySweepFailedError(detail)
     console.print("  Full quality sweep: passed")
 
     rc, _out, err = git_cmd(project_root, "push", "origin", "main")
     if rc != 0:
-        raise GzCliError(f"Push failed: {err}")
+        raise ReleasePushFailedError(err)
     console.print("  Pushed to origin/main")
 
 
@@ -939,7 +945,7 @@ def _create_gh_release(project_root: Path, version: str) -> str:
     ]
     rc, stdout, err = run_exec(cmd, cwd=project_root)
     if rc != 0:
-        raise GzCliError(f"gh release create failed: {err}")
+        raise GhReleaseCreateFailedError(err)
     url = stdout.strip()
     console.print(f"  Release: {url}")
     return url
@@ -951,7 +957,7 @@ def _verify_release(project_root: Path, version: str) -> None:
     if errors:
         for e in errors:
             console.print(f"  [red]Version mismatch: {escape(e.message)}[/red]")
-        raise GzCliError("Version inconsistency after release.")
+        raise VersionInconsistencyError
 
     rc, _out, _err = git_cmd(project_root, "tag", "-l", f"v{version}")
     if rc != 0 or not _out.strip():

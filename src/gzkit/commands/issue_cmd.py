@@ -35,6 +35,38 @@ class IssueValidationError(Exception):
     """Raised when an issue body fails the gzkit-surface reference check."""
 
 
+class MissingGzkitSurfaceError(IssueValidationError):
+    """An issue body names none of the gzkit-owned surface markers."""
+
+    def __init__(self, marker_list: str) -> None:
+        """Build the message from *marker_list*."""
+        self.marker_list = marker_list
+        super().__init__(
+            "issue body references no gzkit-owned surface — expected at least one of: "
+            f"{marker_list}. file at the consuming repo's tracker if the defect is in "
+            "consumer code; otherwise edit the body to name the gzkit surface."
+        )
+
+
+class NoGitRemoteError(ValueError):
+    """The working tree has no git remote to derive the consumer slug from."""
+
+    def __init__(self) -> None:
+        """Build the fixed message."""
+        super().__init__(
+            "no git remote found in current working tree — cannot derive consumer slug"
+        )
+
+
+class UnexpectedRemoteUrlError(ValueError):
+    """A git remote URL is neither an SSH nor an HTTPS ``owner/repo`` form."""
+
+    def __init__(self, url: str) -> None:
+        """Build the message from *url*."""
+        self.url = url
+        super().__init__(f"git remote URL has unexpected shape: {url!r}")
+
+
 def derive_gzkit_version() -> str:
     """Return the canonical ``gz vX.Y.Z`` shape used in the provenance trailer."""
     return f"gz v{__version__}"
@@ -50,6 +82,10 @@ def derive_consumer_slug() -> str:
     Returns:
         The ``owner/repo`` slug of the chosen remote.
 
+    Raises:
+        NoGitRemoteError: When the working tree has no git remote.
+        UnexpectedRemoteUrlError: When the chosen remote URL has no ``owner/repo`` shape.
+
     """
     result = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
         [resolve_executable("git"), "remote", "-v"],
@@ -60,9 +96,7 @@ def derive_consumer_slug() -> str:
         check=False,
     )
     if result.returncode != 0 or not result.stdout.strip():
-        raise ValueError(
-            "no git remote found in current working tree — cannot derive consumer slug"
-        )
+        raise NoGitRemoteError
 
     remotes: dict[str, str] = {}
     for line in result.stdout.splitlines():
@@ -73,14 +107,12 @@ def derive_consumer_slug() -> str:
         remotes.setdefault(remote_name, url)
 
     if not remotes:
-        raise ValueError(
-            "no git remote found in current working tree — cannot derive consumer slug"
-        )
+        raise NoGitRemoteError
 
     chosen = remotes.get("origin") or next(iter(remotes.values()))
     slug = _extract_slug_from_url(chosen)
     if slug is None:
-        raise ValueError(f"git remote URL has unexpected shape: {chosen!r}")
+        raise UnexpectedRemoteUrlError(chosen)
     return slug
 
 
@@ -108,16 +140,16 @@ def validate_gzkit_surface_reference(body: str) -> None:
     marker so an operator who hits the rejection knows exactly which shape to
     add. This closes the misrouting class structurally per
     `.gzkit/rules/agent-failure-modes.md` § Safeguard circumvention.
+
+    Raises:
+        MissingGzkitSurfaceError: When ``body`` matches none of the surface markers.
+
     """
     for pattern, _label in _SURFACE_MARKERS:
         if re.search(pattern, body):
             return
     marker_list = ", ".join(label for _pattern, label in _SURFACE_MARKERS)
-    raise IssueValidationError(
-        "issue body references no gzkit-owned surface — expected at least one of: "
-        f"{marker_list}. file at the consuming repo's tracker if the defect is in "
-        "consumer code; otherwise edit the body to name the gzkit surface."
-    )
+    raise MissingGzkitSurfaceError(marker_list)
 
 
 def issue_file_cmd(

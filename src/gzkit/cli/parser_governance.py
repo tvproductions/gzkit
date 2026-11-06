@@ -19,6 +19,7 @@ from gzkit.cli.helpers import (
     add_table_flag,
     build_epilog,
 )
+from gzkit.cli.parser_governance_errors import BlankTargetError
 from gzkit.cli.parser_handler_manifest import _lazy
 
 
@@ -32,9 +33,12 @@ def _nonblank_target(value: str) -> str:
     Returns:
         ``value`` unchanged when it is not blank.
 
+    Raises:
+        BlankTargetError: When ``value`` is blank or whitespace-only.
+
     """
     if not value.strip():
-        raise argparse.ArgumentTypeError("must name a non-empty file or region")
+        raise BlankTargetError
     return value
 
 
