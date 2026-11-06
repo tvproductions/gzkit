@@ -64,6 +64,11 @@ def build_red_commit_receipt(
 
     ``ghi-close`` cites this verdict when it closes a direct fix, so the run must
     leave a record a reader can resolve, not only terminal output.
+
+    Returns:
+        The receipt payload: schema, run id, timestamp, git context, the witness fields, exit status
+        and duration.
+
     """
     return {
         "schema": COMMIT_SCHEMA_ID,

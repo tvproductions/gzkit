@@ -42,6 +42,10 @@ def _classify_persona_file(
 
     Signature-compatible with :func:`gzkit.chores._classify_chore_file`. See
     ``.gzkit/rules/skill-surface-sync.md`` § class-classifier.
+
+    Returns:
+        ``"package_only"`` for ``__init__.py`` and ``__pycache__`` files, else ``"canonical"``.
+
     """
     path = Path(path)
     name = path.name
@@ -117,6 +121,10 @@ def scaffold_default_personas(project_root: Path) -> list[Path]:
     Creates the directory if needed and writes each default persona file
     only when no file with that name already exists.  Returns the list of
     newly created paths (empty when all defaults already exist).
+
+    Returns:
+        The paths of newly created persona files; empty when all already exist.
+
     """
     personas_dir = project_root / ".gzkit" / "personas"
     personas_dir.mkdir(parents=True, exist_ok=True)
@@ -135,6 +143,11 @@ def _parse_anchors(body: str, heading: str) -> dict[str, str]:
 
     Expects lines like ``- **Name**: Description text.`` under a ``## Heading``
     section.  Matching is case-insensitive on the bold name.
+
+    Returns:
+        Mapping of lowercased item name to description for the list under ``heading``; empty when
+        the section is absent.
+
     """
     result: dict[str, str] = {}
     in_section = False
@@ -170,6 +183,11 @@ def compose_persona_frame(fm: PersonaFrontmatter, body: str = "") -> str:
     Composition is deterministic: identical inputs always produce identical
     output.  Traits compose by concatenation because they activate orthogonal
     behavioral dimensions (PERSONA/ICLR 2026).
+
+    Returns:
+        The composed frame: grounding, trait lines and, when present, the anti-trait section, joined
+        by blank lines.
+
     """
     trait_descs = _parse_anchors(body, "Behavioral Anchors") if body else {}
     anti_descs = _parse_anchors(body, "Anti-patterns") if body else {}
@@ -213,6 +231,10 @@ def render_persona_claude(fm: PersonaFrontmatter, body: str = "") -> str:
 
     Delegates to ``compose_persona_frame`` which already produces the canonical
     Claude format: grounding anchor, trait instructions, anti-trait constraints.
+
+    Returns:
+        The Claude-format persona frame.
+
     """
     return compose_persona_frame(fm, body)
 
@@ -222,6 +244,10 @@ def render_persona_codex(fm: PersonaFrontmatter, body: str = "") -> str:
 
     Produces a structured markdown block with heading, grounding, behavioral
     traits list, and anti-patterns list suitable for Codex AGENTS.md files.
+
+    Returns:
+        The Markdown instruction block: heading, grounding, traits and, when present, anti-patterns.
+
     """
     trait_descs = _parse_anchors(body, "Behavioral Anchors") if body else {}
     anti_descs = _parse_anchors(body, "Anti-patterns") if body else {}
@@ -256,6 +282,10 @@ def _rebuild_raw_persona(fm: PersonaFrontmatter, body: str) -> str:
 
     Used as the fallback when no vendor adapter is registered — the raw
     canonical format is copied verbatim.
+
+    Returns:
+        The persona Markdown: a ``---``-fenced YAML frontmatter followed by the body.
+
     """
     fm_dict = {
         "name": fm.name,
@@ -289,6 +319,10 @@ def _scan_ledger_events(project_root: Path) -> list[dict[str, object]]:
     """Read ledger events as raw dicts for proxy evaluation.
 
     Returns an empty list if the ledger does not exist.
+
+    Returns:
+        The parsed ledger events, malformed lines skipped; empty when there is no ledger.
+
     """
     import json  # noqa: PLC0415
 
@@ -312,6 +346,10 @@ def _scan_obpi_audit_logs(project_root: Path) -> list[dict[str, object]]:
 
     Scans ``docs/design/adr/**/logs/obpi-audit.jsonl`` for structured
     evidence records.
+
+    Returns:
+        The parsed audit records, malformed lines skipped; empty when there is no ADR directory.
+
     """
     import json  # noqa: PLC0415
 
@@ -500,6 +538,10 @@ def evaluate_persona_drift(
     Loads personas from ``.gzkit/personas/``, pre-scans ledger and audit
     artifacts once, then evaluates each persona's traits against the
     proxy registry.
+
+    Returns:
+        The drift report with per-persona trait checks, totals, drift count and scan timestamp.
+
     """
     import datetime  # noqa: PLC0415
 
@@ -554,6 +596,11 @@ def render_persona_for_vendor(vendor: str, fm: PersonaFrontmatter, body: str = "
     The section composers join with ``"\n\n".join(...)`` and omit the final
     newline, which left every written vendor persona mirror re-flagged by the
     ``end-of-file-fixer`` pre-commit hook on each persona-touching commit.
+
+    Returns:
+        The vendor's rendered frame, or the raw canonical Markdown when no adapter is registered,
+        ending in one newline.
+
     """
     adapter = VENDOR_ADAPTERS.get(vendor)
     rendered = adapter(fm, body) if adapter is not None else _rebuild_raw_persona(fm, body)
@@ -597,6 +644,10 @@ def scaffold_core_personas(
     preserves operator-edited files; used by repair mode.
 
     Returns paths of newly created files; empty when all slugs are skipped.
+
+    Returns:
+        The paths of the persona files written; empty when every slug is skipped.
+
     """
     personas_dir = project_root / ".gzkit" / "personas"
     personas_dir.mkdir(parents=True, exist_ok=True)

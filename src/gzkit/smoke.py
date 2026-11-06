@@ -57,6 +57,10 @@ def smoke[F: Callable[..., object]](fn: F) -> F:
 
     Keep members fast and free of subprocess work; the tier's whole value is
     that it fits a budget the full suite structurally cannot.
+
+    Returns:
+        The same function object, now carrying the smoke marker attribute.
+
     """
     setattr(fn, SMOKE_ATTRIBUTE, True)
     return fn
@@ -87,6 +91,11 @@ def collect_smoke_suite(project_root: Path) -> unittest.TestSuite:
     Discovery imports every test module, which is what applies the decorator —
     so selection is a filter over the real suite rather than a second, separately
     drifting inventory of test names.
+
+    Returns:
+        A suite holding only the discovered tests marked as smoke members; empty when the project
+        has no tests directory.
+
     """
     tests_root = project_root / "tests"
     if not tests_root.is_dir():
@@ -108,6 +117,11 @@ def smoke_marked_files(project_root: Path) -> set[Path]:
 
     Advisory source inventory only: spelling can miss aliases and include
     helpers or inert text. Gate membership comes from runtime discovery.
+
+    Returns:
+        Paths of the test files whose source text matches the smoke decorator; empty when the
+        project has no tests directory.
+
     """
     tests_root = project_root / "tests"
     if not tests_root.is_dir():
@@ -130,6 +144,11 @@ def run_smoke(project_root: Path, *, verbosity: int = 1) -> tuple[unittest.TestR
     Buffered: a passing member must not print, so the tier's output stays
     readable and a real failure is not lost in noise (the GHI #723 lesson,
     applied at authoring time rather than after it bites).
+
+    Returns:
+        The tier's test result and its execution-only elapsed seconds; an empty result and 0.0 when
+        the tier has no members.
+
     """
     suite = collect_smoke_suite(project_root)
     if suite.countTestCases() == 0:

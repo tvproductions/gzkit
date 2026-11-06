@@ -97,6 +97,10 @@ def safe_load_corpus(path: Path) -> ExemplarCorpus:
     validation errors at the corpus-loading boundary so the CLI exit-3
     path can react to "the corpus could not be loaded" without depending
     on which underlying exception fired (REQ-0.0.27-03-05).
+
+    Returns:
+        The loaded corpus.
+
     """
     try:
         return load_corpus(path)
@@ -124,6 +128,11 @@ def measure_corpus(
        ``output_dir/baseline.summary.md``.
 
     Returns the :class:`BaselineArtifact` constructed from the run.
+
+    Returns:
+        The baseline artifact built from the per-project and cross-project distributions, as written
+        to ``output_dir``.
+
     """
     _assert_tool_binaries_present()
     cache = _default_cache_root(cache_root)
@@ -192,6 +201,11 @@ def _collect_tool_versions() -> dict[str, str]:
     sentinel string ``"unknown"`` — the situation only arises when a tool
     binary is on ``PATH`` but its Python distribution is absent (e.g. a
     shim install), which is itself a degraded-environment signal.
+
+    Returns:
+        Mapping of tool name to installed version (``"unknown"`` when its distribution is absent),
+        sorted by key.
+
     """
     versions: dict[str, str] = {}
     for tool in _REQUIRED_TOOLS:
@@ -212,6 +226,10 @@ def _resolve_tree(project: ExemplarProject, cache_root: Path) -> Path:
     Recovery: if the cached tree exists but is corrupt, the operator
     deletes it and re-runs; this function does not attempt automatic
     recovery to avoid hiding upstream-cache corruption.
+
+    Returns:
+        The cached tree path, cloning and checking out the pinned SHA first when it is absent.
+
     """
     target = cache_root / f"{project.name}-{project.commit_sha[:12]}"
     if target.is_dir():
@@ -241,6 +259,10 @@ def _apply_path_filter(tree: Path, project: ExemplarProject) -> tuple[Path, ...]
 
     Globs are expanded relative to *tree*.  An empty include list raises
     :class:`WholeProjectMeasurementRejectedError` per REQ-0.0.27-03-03.
+
+    Returns:
+        The sorted, resolved file paths matched by the include globs and not by any exclude glob.
+
     """
     if not project.included_paths:
         raise WholeProjectMeasurementRejectedError(
@@ -281,6 +303,10 @@ def _run_lizard_file_nloc(path: Path) -> list[float]:
     The per-file size signal (module size) that ``radon raw``'s ``sloc`` was until
     RO-9 tranche 4. A file that cannot be read or decoded yields no value rather
     than raising: measurement of one file must not abort the whole pipeline.
+
+    Returns:
+        A one-element list holding the module's NLOC; empty when the file cannot be read or decoded.
+
     """
     try:
         source = path.read_text(encoding="utf-8")
@@ -299,6 +325,11 @@ def _run_lizard(path: Path) -> dict[str, list[float]]:
     nesting depth (GHI #398).  The resulting layout is 12 columns:
     NLOC, CCN, token_count, PARAM, length, location, file, name,
     signature, start_line, end_line, ND.
+
+    Returns:
+        Mapping of ``nloc``, ``ccn``, ``param_count`` and ``nesting_depth`` to their per-function
+        values; every list empty when lizard prints nothing.
+
     """
     completed = subprocess.run(  # noqa: S603 — lizard over a corpus file; executable resolved
         [resolve_executable("uv"), "run", "lizard", "-End", "--csv", str(path)],
@@ -340,6 +371,10 @@ def _run_cohesion(path: Path) -> list[float]:
     file path with a usage error and produces empty stdout, silently
     yielding zero samples for every project (GHI #398).  Cohesion has no
     JSON mode; output is text of shape ``Class: <name> ... Total: <pct>%``.
+
+    Returns:
+        One LCOM4 percentage per ``Total:`` line that parses; empty when cohesion prints nothing.
+
     """
     completed = subprocess.run(  # noqa: S603 — cohesion over a corpus file; executable resolved
         [resolve_executable("uv"), "run", "cohesion", "-f", str(path)],

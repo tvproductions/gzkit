@@ -83,6 +83,10 @@ def parse_walkthrough(markdown: str) -> Walkthrough:
     and the canonical taxonomy reference path — the template does not
     serialize structured evidence, so round-trip equality is guaranteed only
     for inputs whose original bundle was likewise empty.
+
+    Returns:
+        The reconstructed walkthrough with an evidence bundle of empty collections.
+
     """
     frontmatter_text, body_lines, body_offset = _split_frontmatter(markdown)
     meta = _parse_frontmatter(frontmatter_text)
@@ -112,6 +116,11 @@ def _split_frontmatter(markdown: str) -> tuple[str, list[str], int]:
 
     Returns (frontmatter_text, body_lines, body_line_offset). body_line_offset
     is the 1-based line number of the first body line in the original input.
+
+    Returns:
+        ``(frontmatter_text, body_lines, body_line_offset)``, the offset being the 1-based line
+        number of the first body line.
+
     """
     lines = markdown.splitlines()
     if not lines:
@@ -141,6 +150,10 @@ def _parse_frontmatter(text: str) -> dict[str, str]:
     implicit typing — e.g. the ``generated_at`` ISO-8601 timestamp would
     otherwise be coerced to a datetime and lose its canonical ``T``
     separator on str() round-trip.
+
+    Returns:
+        Mapping of each required frontmatter key to its raw string value.
+
     """
     parsed: dict[str, str] = {}
     for raw_line in text.splitlines():
@@ -185,6 +198,11 @@ def _collect_section_blocks(body_lines: list[str], body_offset: int) -> list[lis
 
     Each block's first element is the H2 header; subsequent elements are
     stripped body lines paired with their 1-based absolute line numbers.
+
+    Returns:
+        The eight section blocks, each a list of ``(line_number, text)`` pairs headed by its H2
+        line.
+
     """
     blocks: list[list[tuple[int, str]]] = []
     current: list[tuple[int, str]] | None = None

@@ -177,6 +177,11 @@ def _probe_lock_lease_expiry(root: Path) -> ProducerObservation:
 
     Operator ruling 2026-10-18: an expired work lock is booked, never evicted. A reaper
     that books nothing, or books and evicts, has not met that contract.
+
+    Returns:
+        A ``verified`` observation of ``obpi_lock_lease_expired`` from the reaper, with the ledger's
+        SHA-256, one record, and the OBPI as subject.
+
     """
     from gzkit import lock_manager  # noqa: PLC0415 - the data layer; import only when probed
     from gzkit.ledger import Ledger  # noqa: PLC0415
@@ -222,6 +227,11 @@ def _probe_mx_lease_renewal(root: Path) -> ProducerObservation:
 
     Operator ruling 2026-10-20: renewal is lease-only. A renewal that books nothing, or
     that ends the session or drops the marker, has not met that contract (GHI #1261).
+
+    Returns:
+        A ``verified`` observation of ``mx_session_lease_renewed`` from ``mx_renew_cmd``, with the
+        ledger's SHA-256, one record, and the session id as subject.
+
     """
     from gzkit import lock_manager  # noqa: PLC0415 - the data layer; import only when probed
     from gzkit.commands import mx_cmd  # noqa: PLC0415 - a command handler; import only when probed

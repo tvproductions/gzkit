@@ -49,6 +49,10 @@ def registry_path(project_root: Path, name: str) -> Path:
 
     A name is a bare filename, or `<subdir>/<filename>` for a subdirectory in
     `_DECLARED_SUBDIRS`, always spelled with `/` so it compares equal everywhere.
+
+    Returns:
+        The path `<project_root>/data/<name>`; the file is not read and need not exist.
+
     """
     parts = name.split("/")
     bare = all(part and part not in {".", ".."} and "\\" not in part for part in parts)
@@ -71,6 +75,11 @@ def load_registry(project_root: Path, name: str) -> Any:
 
     Raises `RegistryError` on a missing file, bytes that are not UTF-8, or
     malformed JSON, so a config fault is one exception type rather than three.
+
+    Returns:
+        The parsed JSON payload unchanged: an object, an array or whatever top-level value the file
+        holds.
+
     """
     path = registry_path(project_root, name)
     try:
@@ -101,6 +110,11 @@ def load_registry_field(project_root: Path, name: str, field: str, default: Any 
     registry parses and the field is absent -- a missing or malformed registry
     still raises, because defaulting past a broken file is how a disarmed check
     reports green.
+
+    Returns:
+        The registry object's value for `field`, or `default` when the registry parses and lacks the
+        field.
+
     """
     payload = load_registry(project_root, name)
     if not isinstance(payload, dict):

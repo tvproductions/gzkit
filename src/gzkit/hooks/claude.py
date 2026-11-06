@@ -186,6 +186,10 @@ def _hook_command(hooks_dir: str, script: str) -> str:
     keeps the hook resolvable even when the Bash tool's tracked cwd drifts
     out of the project root — a bare relative path makes the entire
     PreToolUse/PostToolUse surface fail on any cwd drift (GHI #509).
+
+    Returns:
+        A ``uv run python`` command naming the script under ``$CLAUDE_PROJECT_DIR``.
+
     """
     return f'uv run python "$CLAUDE_PROJECT_DIR/{hooks_dir}/{script}"'
 
@@ -207,6 +211,10 @@ def gzkit_owned_phases() -> tuple[str, ...]:
     hooks that do not reference the gzkit hooks directory are preserved
     alongside gzkit's, so a project's own `SessionStart` orientation script
     keeps running.
+
+    Returns:
+        The owned phase names.
+
     """
     return (
         "PreToolUse",
@@ -422,6 +430,11 @@ def _is_gzkit_owned_hook(hook_entry: dict, hooks_dir: str) -> bool:
     An exec-form entry names the interpreter in ``command`` and the script in
     ``args``, so reading ``command`` alone took a gzkit hook for user content
     (GHI #1285).
+
+    Returns:
+        True when the entry's ``command`` or any of its ``args`` contains ``hooks_dir``; False
+        otherwise.
+
     """
     parts = [hook_entry.get("command", ""), *hook_entry.get("args", [])]
     return any(hooks_dir in str(part) for part in parts)
@@ -456,6 +469,10 @@ def _merge_hook_phase(
     `instruction-router` TWICE, paying four extra `uv run python` interpreter
     starts per edit.  Ownership is decided per HOOK (`_is_gzkit_owned_hook`),
     which is the question that has an answer; matcher identity is not.
+
+    Returns:
+        The merged matcher groups for the phase.
+
     """
     gzkit_by_matcher = {g["matcher"]: g for g in gzkit_groups}
     seen_matchers: set[str] = set()
@@ -506,6 +523,10 @@ def merge_settings(
 
     Preserves user-added hooks and top-level keys. Replaces gzkit-owned
     hook groups with fresh versions.
+
+    Returns:
+        The merged settings; ``gzkit_settings`` itself when no existing settings could be read.
+
     """
     existing: dict = {}
     if settings_path.is_file():
@@ -570,6 +591,10 @@ def _write_hook_dir(
     and it is what made a read-only ``gz validate --surfaces`` move the hook
     surface underneath its caller (GHI #890). Staging puts the comparison
     after normalization, where it can match.
+
+    Returns:
+        The project-relative POSIX path of every hook script, written or already current.
+
     """
     ensure_dir(hooks_path)
     written: list[str] = []

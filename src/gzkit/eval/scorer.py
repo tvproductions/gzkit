@@ -82,6 +82,10 @@ def score_instruction_eval(case_input: dict[str, object]) -> list[DimensionResul
     """Score an instruction_eval dataset case.
 
     Dimensions: completeness, surface_coverage, control_balance.
+
+    Returns:
+        One result each for completeness, surface coverage and control balance.
+
     """
     results: list[DimensionResult] = []
 
@@ -139,6 +143,10 @@ def score_adr_eval(case_input: dict[str, object]) -> list[DimensionResult]:
     deterministic check makes (it belongs to the judge channel
     ``gzkit.adr_eval_substance``). The ``detail`` field states exactly which
     structural signals were observed, so the score is never mistaken for substance.
+
+    Returns:
+        One structural-presence result per scored dimension.
+
     """
     content = str(case_input.get("adr_content", ""))
     results: list[DimensionResult] = []
@@ -250,6 +258,10 @@ def score_skills(case_input: dict[str, object]) -> list[DimensionResult]:
     """Score a skills dataset case.
 
     Dimensions: completeness, trigger_clarity, actionability.
+
+    Returns:
+        One result each for completeness, trigger clarity and actionability.
+
     """
     content = str(case_input.get("skill_content", ""))
     results: list[DimensionResult] = []
@@ -298,6 +310,10 @@ def score_rules(case_input: dict[str, object]) -> list[DimensionResult]:
     """Score a rules dataset case.
 
     Dimensions: frontmatter_valid, path_scoping, body_quality.
+
+    Returns:
+        One result each for frontmatter validity, path scoping and body quality.
+
     """
     content = str(case_input.get("rule_content", ""))
     results: list[DimensionResult] = []
@@ -351,6 +367,10 @@ def score_agents_md(case_input: dict[str, object]) -> list[DimensionResult]:
     """Score an agents_md dataset case.
 
     Dimensions: contract_completeness, agent_coverage, execution_modes.
+
+    Returns:
+        One result each for contract completeness, agent coverage and execution modes.
+
     """
     content = str(case_input.get("agents_content", ""))
     results: list[DimensionResult] = []
@@ -420,6 +440,10 @@ def score_case(surface: str, case_input: dict[str, object]) -> list[DimensionRes
     """Score a single case using the appropriate surface scorer.
 
     Raises ``KeyError`` if no scorer is registered for the surface.
+
+    Returns:
+        The dimension results of the surface's registered scorer.
+
     """
     scorer = SURFACE_SCORERS.get(surface)
     if scorer is None:

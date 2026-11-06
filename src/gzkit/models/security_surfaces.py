@@ -84,6 +84,10 @@ def match_globs(
     Two globs "intersect" when one matches the other as a representative path,
     using ``glob.translate(recursive=True)`` so ``**`` matches across directory
     separators correctly. The returned tuple preserves the registry's ordering.
+
+    Returns:
+        The unique categories whose globs intersect ``candidate_globs``, in registry order.
+
     """
     matched: list[str] = []
     seen: set[str] = set()

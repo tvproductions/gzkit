@@ -33,6 +33,10 @@ def load_framework_redteam_prompt(skill_assets_dir: Path) -> str:
 
     Extracts the text between ``### RED-TEAM PROMPT`` and the next ``---``
     or end of file.
+
+    Returns:
+        The stripped text of the fenced block following the RED-TEAM PROMPT heading.
+
     """
     framework_path = skill_assets_dir / "ADR_EVALUATION_FRAMEWORK.md"
     if not framework_path.exists():
@@ -102,6 +106,11 @@ def parse_redteam_result(
     """Extract structured red-team results from reviewer subagent output.
 
     Returns ``None`` if parsing fails.
+
+    Returns:
+        The ten challenge results; None when no result JSON is found, it does not parse, an entry is
+        malformed, or the count is not exactly ten.
+
     """
     match = _RESULT_JSON_RE.search(reviewer_output)
     if not match:

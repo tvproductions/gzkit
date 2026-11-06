@@ -143,6 +143,12 @@ def classify_failure(exit_status: int, output: str) -> FailureClass:
     failed for the wrong reason even if some other test in the scope failed on an
     assertion. Collapsing the two would launder a weak RED into a strong one — the
     exact equivalence GHI #642 forbids.
+
+    Returns:
+        "none" for a zero exit status; "error" when the run reported errors, crashed without a
+        unittest summary, or failed without a failure count; "assertion" when it reported failures
+        and no errors.
+
     """
     if exit_status == 0:
         return "none"
@@ -204,6 +210,12 @@ def resolve_introducing_base(
     the run would then report a confident class about a tree with no relationship to
     the REQ. Two ways to get None: the string never appears in history, or the
     introducing commit is a root commit and no earlier tree exists.
+
+    Returns:
+        The full hash of the parent of the commit where `@covers("<req_id>")` first entered
+        `tests_dir`, or None when git fails, the string never appears in history, or that commit has
+        no parent.
+
     """
     found = _git(
         ["log", "-S", f'@covers("{req_id}")', "--format=%H", "--reverse", "--", tests_dir],
@@ -229,6 +241,11 @@ def changed_test_files(
     Both arms matter: a modified test file appears in ``git diff``, and a brand-new
     test file appears only in ``ls-files --others``. Missing the second arm would
     silently witness nothing for every new test module.
+
+    Returns:
+        Sorted repo-relative paths of the `.py` files under `tests_dir` that differ from
+        `base_commit` or are untracked; empty when none do or git fails.
+
     """
     paths: set[str] = set()
     diff = _git(["diff", "--name-only", base_commit, "--", tests_dir], project_root)
@@ -265,6 +282,12 @@ def withheld_production_files(
     Scoped to ``.py`` for the same reason the graft is: a dirty ledger, a receipt, or
     a scratch file is not a withheld production hunk, and counting one would restore
     the premise on a tree that has none.
+
+    Returns:
+        Sorted repo-relative paths of the `.py` files outside `tests_dir` that differ from
+        `base_commit` or are untracked; empty when nothing was withheld or both git queries
+        fail.
+
     """
     prefix = f"{tests_dir.rstrip('/')}/"
     paths: set[str] = set()
@@ -346,6 +369,13 @@ def _resolve_base(
     The premise is re-checked against whichever base is chosen rather than assumed —
     a base that withholds nothing is as vacuous as HEAD was. ``None`` means no tree
     satisfies it, and the caller reports ``not-applicable`` rather than a verdict.
+
+    Returns:
+        `(base, provenance)`: the explicit `base_commit` ("working-tree" when it is HEAD, else
+        "reconstructed"); else the reconstructed introducing base when it withholds production files
+        ("reconstructed"); else HEAD when it withholds them ("working-tree"). None when no tree
+        withholds anything.
+
     """
     head = resolve_base_commit(project_root)
     if base_commit is not None:
@@ -365,6 +395,10 @@ def _run_tests(runner: list[str], test_names: list[str], cwd: Path) -> tuple[int
 
     Verbose so every executed and failing test is printed by id; the aggregate
     summary alone cannot say WHICH test failed (GHI #1154).
+
+    Returns:
+        `(exit_code, output)`: the runner's exit code and its stdout followed by its stderr.
+
     """
     result = subprocess.run(  # noqa: S603 — the test runner argv over the commit's tests
         resolve_argv([*runner, "-v", *test_names]),
@@ -390,6 +424,11 @@ def _baseline_void(exit_status: int, output: str) -> str | None:
     The RED premise is a test that passes WITH its implementation and fails
     without it. A test already failing on the current tree fails on the base
     tree too, for reasons that have nothing to do with the withheld code.
+
+    Returns:
+        None when the current-tree run executed tests and exited 0; otherwise a sentence saying the
+        baseline is invalid and why.
+
     """
     executed = judge_executed(output)
     if executed is None and exit_status == 0:
@@ -410,6 +449,11 @@ def _import_failed_names(output: str, test_names: list[str]) -> set[str]:
     means the graft never carried the test, so nothing executed; any other cause —
     ``No module named`` a production module, or an ImportError raised inside the
     module — is the test meeting the withheld implementation, the GHI #849 weak RED.
+
+    Returns:
+        The requested test names whose present module raised while importing; names whose own module
+        is absent from the graft are excluded. Empty when no import failed.
+
     """
     failed: set[str] = set()
     for block in output.split(_FAILURE_BLOCK_SEPARATOR):
@@ -454,6 +498,12 @@ def _identity_void(output: str, test_names: list[str], failure_class: FailureCla
     * **Attribution.** A RED (``assertion`` or ``error``) must include a failure
       under a requested name. A run that failed only elsewhere never observed the
       designated discriminator fail.
+
+    Returns:
+        None when every requested name executed (or failed on import) and any RED includes a failure
+        under a requested name, or the class is not a RED; otherwise the reason the run is not the
+        named tests' own result.
+
     """
     import_failed = _import_failed_names(output, test_names)
     unexecuted = _unexecuted_names(output, test_names, import_failed)
@@ -489,6 +539,12 @@ def run_red_witness(
     before a failure on the base tree can be laid at the withheld code's door. The
     base run's class then stands only when the NAMED tests produced it
     (:func:`_identity_void`); otherwise the witness is ``not-applicable``.
+
+    Returns:
+        The RedWitness for the run: its failure class from the base-tree run when the named tests
+        produced it, or "not-applicable" with the reason in `output_tail` when no base withholds
+        anything, the current-tree baseline is not green, a run hangs, no test executed or the
+        identity check voids it.
 
     Raises:
         ValueError: when no covering test names were supplied — a BEHAVIOR REQ with
@@ -576,6 +632,11 @@ def resolve_covering_test_names(project_root: Path, req_id: str) -> list[str]:
 
     Mirrors ``gzkit.commands.quality._resolve_obpi_test_names`` but scoped to one
     REQ rather than a whole OBPI.
+
+    Returns:
+        Sorted unittest-addressable names of the tests under `tests/` that carry `@covers` for
+        `req_id`; empty when none do.
+
     """
     from gzkit.commands.quality import _test_name_from_record
     from gzkit.traceability import EdgeType, scan_test_tree

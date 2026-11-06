@@ -74,6 +74,11 @@ def ucd_currency_warning(version: str | None = None) -> str:
     CI can re-derive the set, while an operator mid-retirement cannot, so the
     HARD failure belongs in the test suite (``unidata_version`` is asserted there)
     and the runtime gets a line on stderr it can act on or ignore.
+
+    Returns:
+        ``""`` when the UCD version matches the transcribed one; otherwise the drift warning naming
+        both versions and the re-derivation steps.
+
     """
     actual = unicodedata.unidata_version if version is None else version
     if actual == DEFAULT_IGNORABLE_LETTERS_UCD_VERSION:
@@ -107,6 +112,11 @@ def is_named(value: str) -> bool:
     This is a plausibility floor, not identity verification -- ``gz`` has no
     operator registry to check a name against. It rejects the values that are
     certainly not names; it cannot confirm that a name is the person's.
+
+    Returns:
+        True when the NFKC-normalized value holds at least one non-ignorable letter; False
+        otherwise, including when it cannot be normalized.
+
     """
     try:
         normalized = unicodedata.normalize("NFKC", value)

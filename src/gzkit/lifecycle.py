@@ -144,6 +144,10 @@ class LifecycleStateMachine:
         """Check whether a state is valid for a content type.
 
         Returns True if the state appears in the transition table.
+
+        Returns:
+            True when *state* is one of the content type's states; False otherwise.
+
         """
         return state in get_all_states(content_type)
 
@@ -158,6 +162,11 @@ def current_adr_state(graph_info: dict[str, Any], frontmatter_status: str | None
 
     Closeout once wrote a hardcoded ``from_state`` of ``Proposed`` whatever the ADR
     was (GHI #1014); every transition now starts from this value instead.
+
+    Returns:
+        The graph's ``lifecycle_state`` when set, else *frontmatter_status* (None when both are
+        absent).
+
     """
     return graph_info.get("lifecycle_state") or frontmatter_status
 
@@ -168,6 +177,11 @@ def work_start_transitions(state: str | None) -> list[tuple[str, str]]:
     Operator rulings: "if we start work on an ADR, it is accepted" (2026-09-16),
     and a Draft ADR walks through Proposed so the justify-binding gate on
     ``Draft -> Proposed`` still runs (2026-09-28). Any other state is left alone.
+
+    Returns:
+        ``Draft -> Proposed -> Accepted`` for a Draft ADR, ``Proposed -> Accepted`` for a Proposed
+        one, and an empty list for any other state.
+
     """
     if state == "Draft":
         return [("Draft", "Proposed"), ("Proposed", "Accepted")]
@@ -186,6 +200,11 @@ def closeout_transitions(
     existed first catches up through ``Accepted``, but only on evidence that work
     started (operator ruling 2026-09-28). Any illegal pair raises
     ``InvalidTransitionError`` before anything is written.
+
+    Returns:
+        The ordered ``(from, to)`` pairs: an optional ``Proposed -> Accepted`` catch-up, then the
+        move to ``Completed`` (or ``Deprecated`` when dropped).
+
     """
     source = state or ""
     target = "Deprecated" if dropped else "Completed"

@@ -83,6 +83,10 @@ def install_recorder_hook(hooks_dir: Path, *, command: str = _RECORDER_COMMAND) 
 
     Idempotent. A legacy hook that is not gzkit's is never overwritten: it is
     the project's own post-commit hook, which pre-commit moved aside on install.
+
+    Returns:
+        A status line: installed, or not installed because a foreign legacy hook is in place.
+
     """
     target = hooks_dir / RECORDER_HOOK_NAME
     if target.exists():
@@ -153,6 +157,10 @@ def governance_paths_in_commit(root: Path, rev: str = "HEAD") -> list[str]:
     Deletions are excluded on purpose: the ``Edit|Write`` principal cannot
     observe one, and a backstop that recorded more than the locus it backs up
     would be asserting a different claim.
+
+    Returns:
+        The sorted governance-artifact paths the commit added, modified or renamed into place.
+
     """
     out = _git(
         ["diff-tree", "--no-commit-id", "-r", "--root", "--diff-filter=AMR", "--name-only", rev],
@@ -167,6 +175,10 @@ def _window_start(root: Path, rev: str = "HEAD") -> datetime | None:
 
     The parent bounds the dedup window. Suppressing on any row anywhere in
     history would blind the recorder to every edit after a file's first.
+
+    Returns:
+        The commit time of the first parent; None for a root commit.
+
     """
     return _parse_ts(_git(["log", "-1", "--format=%cI", f"{rev}^"], root).strip())
 
@@ -176,6 +188,11 @@ def paths_recorded_since(ledger_path: Path, since: datetime | None) -> set[str]:
 
     ``since`` is ``None`` for a root commit, where the window is all of
     history — which for a first commit is an empty ledger anyway.
+
+    Returns:
+        The paths of ``artifact_edited`` rows at or after ``since``; empty when the ledger cannot be
+        read.
+
     """
     recorded: set[str] = set()
     try:
@@ -208,6 +225,11 @@ def record_committed_artifact_edits(root: Path, rev: str = "HEAD") -> list[str]:
     Returns the paths recorded, sorted. Empty when the commit touched no
     governance artifact, when every one was already recorded, or when the
     project has no ledger — none of which is an error condition here.
+
+    Returns:
+        The sorted paths recorded; empty when the commit touched no governance artifact, all were
+        already recorded, or the project has no ledger.
+
     """
     changed = governance_paths_in_commit(root, rev)
     if not changed:
@@ -246,6 +268,10 @@ def main(argv: list[str] | None = None) -> int:
 
     ``--install`` installs the recorder hook instead of recording, for a clone
     that ran ``pre-commit install`` but not ``gz init`` (GHI #1092).
+
+    Returns:
+        Always 0, or the install status when run with ``--install``.
+
     """
     args = sys.argv[1:] if argv is None else argv
     if args == ["--install"]:

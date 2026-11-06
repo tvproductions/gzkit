@@ -376,6 +376,10 @@ def load_catalog(project_root: Path) -> Catalog:
 
     Raises `RegistryError` for a file that is missing, naming `gz init`'s repair, or
     not JSON, and Pydantic's `ValidationError` for one that does not match its model.
+
+    Returns:
+        The catalog assembled from the six validated catalog files.
+
     """
     _require_files(project_root)
     families = FamiliesFile.model_validate(load_registry(project_root, CATALOG_FILES["families"]))

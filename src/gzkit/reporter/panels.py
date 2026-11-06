@@ -19,6 +19,10 @@ def ceremony_panel(
 
     Each item is rendered as a row in an inner table with step label
     and status columns. Rich handles all padding and alignment.
+
+    Returns:
+        The double-bordered panel holding the items table, or ``(no items)``.
+
     """
     if not items:
         body = "(no items)"

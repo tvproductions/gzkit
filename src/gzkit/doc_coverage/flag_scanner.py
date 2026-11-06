@@ -76,6 +76,11 @@ def _spec_from_call(call: ast.Call, flag: str) -> FlagSpec:
     Non-literal keywords (``required=some_var``) read as absent rather than
     guessed: the audit fails OPEN on what it cannot introspect, because a
     fabricated contract is worse than an unchecked one.
+
+    Returns:
+        The flag's spec, with ``required`` true only for a literal ``required=True`` and
+        ``takes_value`` false only for a literal valueless action.
+
     """
     action = _keyword_constant(call, "action")
     return FlagSpec(
@@ -94,6 +99,10 @@ def _parser_func_depth(name: str) -> int:
     caller's ``X = parent.add_subparsers(...)`` lands in shared
     ``subparser_vars`` before the callee's leaf-parser assignments resolve
     against it.
+
+    Returns:
+        0 for ``_build_parser``, 2 for ``_register_*``, 1 for any other name.
+
     """
     if name == "_build_parser":
         return 0
@@ -109,6 +118,10 @@ def discover_command_flags(source: str) -> dict[str, list[str]]:
     two consumers. A second traversal here would drift from the spec walker the
     first time argparse's registration shape changed (the duplicated-resolver
     class closed at GHI #689).
+
+    Returns:
+        Mapping of leaf command name to its long flags.
+
     """
     return {
         command: [spec.flag for spec in specs]
@@ -127,6 +140,11 @@ def discover_command_flag_specs(source: str) -> dict[str, list[FlagSpec]]:
     (GHI #355). Subparser-group bindings remain shared across functions so
     a caller's ``arb_commands = p_arb.add_subparsers(...)`` is visible in
     the callee's ``arb_commands`` parameter.
+
+    Returns:
+        Mapping of leaf command name to its flag specs; empty when the source has no
+        parser-registration function.
+
     """
     tree = ast.parse(source)
 
@@ -186,6 +204,10 @@ def scan_command_flags(project_root: Path | None = None) -> dict[str, list[str]]
     Returns an empty mapping when the CLI source layout is absent — matches the
     fallback in ``check_surfaces_report`` so an isolated test fixture without
     ``src/gzkit/cli/main.py`` does not crash the audit.
+
+    Returns:
+        Mapping of leaf command name to its long flags; empty when the CLI source is absent.
+
     """
     return {
         command: [spec.flag for spec in specs]
@@ -197,6 +219,10 @@ def scan_command_flag_specs(project_root: Path | None = None) -> dict[str, list[
     """Discover per-command flag specs by AST-scanning cli/main.py and parser modules.
 
     Same absent-source fallback as :func:`scan_command_flags`.
+
+    Returns:
+        Mapping of leaf command name to its flag specs; empty when the CLI source cannot be read.
+
     """
     if project_root is None:
         project_root = get_project_root()
@@ -233,6 +259,11 @@ def check_flag_doc_coverage(
 
     ``waivers`` defaults to ``_PER_FLAG_DOC_WAIVERS`` and lists the
     pre-existing gaps when this audit landed; new gaps fail the check.
+
+    Returns:
+        One ``{path, issue}`` dict per unwaived flag missing from its existing manpage; empty when
+        all are documented.
+
     """
     waiver_map = waivers if waivers is not None else _PER_FLAG_DOC_WAIVERS
     issues: list[dict[str, str]] = []
@@ -303,6 +334,10 @@ def _claims_takes_value(usage: str, flag: str) -> bool:
     Matched on the SAME LINE only: ``\\s+`` would span the newline between a
     valueless flag and the next line's ``GZ COMMAND``, inventing a claim the doc
     never made.
+
+    Returns:
+        True when the flag is followed on the same line by an uppercase placeholder.
+
     """
     return bool(re.search(rf"{re.escape(flag)}{_FLAG_END}[ \t]+[A-Z][A-Z_]*", usage))
 
@@ -327,6 +362,11 @@ def check_flag_doc_truth(
     false-positive failure that routed GHI #690 away from a fail-closed home. A
     missing doc is the presence check's finding, not this one's; reporting it
     here would double-count the same drift under two classes.
+
+    Returns:
+        One ``{path, issue}`` dict per usage claim the parser contradicts; empty when every claim
+        agrees.
+
     """
     waiver_map = waivers if waivers is not None else _FLAG_TRUTH_WAIVERS
     issues: list[dict[str, str]] = []

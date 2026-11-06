@@ -254,6 +254,10 @@ def find_unbacked_claims(text: str) -> list[str]:
     Gates FORM (a citation token is present within
     CLAIM_PROXIMITY_CHARS), not TRUTH — the citation is not verified
     against the claim it accompanies (GHI #620).
+
+    Returns:
+        The unbacked claim matches in pattern order, at most ``MAX_CLAIM_MATCHES``.
+
     """
     unbacked: list[str] = []
     for pattern in CLAIM_PATTERNS:

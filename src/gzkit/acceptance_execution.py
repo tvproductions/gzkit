@@ -80,6 +80,11 @@ def proof_claim_digest(root: Path, payload: dict) -> str:
     Keep control outcomes, actual assertion output, selectors and invocation.
     Unittest elapsed time and isolated cache paths do not change the claim.
     Versioned fingerprints are produced afresh, never inferred for legacy rows.
+
+    Returns:
+        "v1:" followed by the SHA-256 of the canonical JSON of the payload with elapsed times, the
+        project path and `pycache_prefix` keys normalised away.
+
     """
 
     def stable(value: object) -> object:
@@ -249,6 +254,11 @@ def _file_roster(root: Path) -> dict[str, str]:
     Added and deleted files change the roster because absent members are
     recorded as ``missing`` and present ones by content digest -- git is never
     consulted.
+
+    Returns:
+        Mapping of each POSIX relative path to its content digest, with each input root itself
+        marked "directory" or "missing".
+
     """
     paths, _, _ = _input_paths(root)
     roster: dict[str, str] = {}
@@ -273,6 +283,11 @@ def digest_components(root: Path, brief_path: AcceptanceSource) -> dict[str, str
     previous single opaque digest forced every refusal to say "stale file
     contents", which sent a reader looking for a file change that need not
     exist (GHI #989).
+
+    Returns:
+        Mapping with a "files" digest of the audited file roster and a "contract" digest of the
+        brief contract.
+
     """
     root = root.resolve()
     contract = _brief_contract(root, brief_path)
@@ -298,6 +313,10 @@ def input_digest(root: Path, brief_path: AcceptanceSource) -> str:
     refused for a reason unrelated to whether anything changed. Execution
     context stays recorded in each proof's own evidence payload, where it is
     provenance rather than a gate.
+
+    Returns:
+        SHA-256 hex digest of the canonical JSON of both digest components.
+
     """
     return _sha(_json(digest_components(root, brief_path)).encode())
 

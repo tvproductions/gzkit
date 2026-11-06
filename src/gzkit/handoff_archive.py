@@ -109,6 +109,11 @@ def _key(path: Path) -> str:
     ``TARGET.md`` and ``target.md`` resolve to one inode and must not be treated as
     distinct targets (Step-4b round-3 finding). A non-existent target has no inode,
     so it falls back to a resolved-string key (it protects nothing on disk anyway).
+
+    Returns:
+        ``ino:<st_dev>:<st_ino>`` for an existing path; otherwise ``str:`` plus the resolved POSIX
+        path, or the unresolved one when resolution fails.
+
     """
     try:
         stat = path.stat()
@@ -125,6 +130,10 @@ def _dest_occupied(dest: Path) -> bool:
 
     ``exists()`` follows symlinks and misses dangling ones, but ``os.link`` still fails
     on them, so planning must agree with execution (Step-4b round-3 finding).
+
+    Returns:
+        True when ``dest`` exists or is a symlink (dangling included); False otherwise.
+
     """
     return dest.exists() or dest.is_symlink()
 
@@ -174,6 +183,11 @@ def _locked_paths(base_path: Path) -> set[str]:
     protection and the exchange record became archivable (GHI #611). ``void``
     remains the disposition that correctly returns a handoff to the pool — a
     release that never happened cites nothing.
+
+    Returns:
+        Handoff paths cited by release events, ``./`` prefix removed; empty when the ledger is
+        missing or none cite one.
+
     """
     from gzkit.ledger import Ledger  # local import keeps the domain core ledger-free
 
@@ -199,6 +213,10 @@ def _resolve_pointer_key(ref: str, referrer: Path, base_path: Path) -> str:
 
     The branching was previously hand-mirrored here across an OBPI brief boundary
     with the coupling asserted in a docstring and enforced by nothing (GHI #689).
+
+    Returns:
+        The :func:`_key` of the path the pointer resolves to.
+
     """
     return _key(resolve_continues_from(ref, referrer, base_path))
 
@@ -210,6 +228,11 @@ def _chain_target_keys(handoffs: list[Path], base_path: Path) -> set[str]:
     fork collapses, and a guard that read one pointer would leave the second
     ancestor unprotected — archivable while it is still a live chain participant,
     which is the precise harm this guard exists to prevent.
+
+    Returns:
+        Keys of every resolved ``continues_from`` target; handoffs without frontmatter contribute
+        nothing, so the set may be empty.
+
     """
     keys: set[str] = set()
     for path in handoffs:
@@ -240,6 +263,12 @@ def plan_archive(
     not lock-coupled, not part of any continues_from chain (referrer or target),
     and has no pre-existing same-name file in ``archive/``. Undatable handoffs are
     conservatively skipped so an un-ageable audit trail is never lost.
+
+    Returns:
+        ArchivePlan whose ``eligible`` list holds the archivable handoffs and whose ``skipped_*``
+        lists hold the rest by reason (undatable, recent, locked, chained, conflict), as
+        project-relative paths.
+
     """
     handoffs = _canonical_handoffs(base_path)
     cutoff = now - timedelta(days=older_than_days)
@@ -287,6 +316,12 @@ def execute_archive(plan: ArchivePlan, *, base_path: Path) -> ArchiveResult:
     exists) then unlinks the source — an atomic no-clobber move. A same-name file
     that appears in ``archive/`` between planning and execution is therefore NEVER
     overwritten; it is recorded on ``skipped_conflict`` and its source left in place.
+
+    Returns:
+        ArchiveResult with ``moved`` (handoffs relocated), ``skipped_conflict`` (those whose
+        destination appeared before the link) and the original *plan*; sources no longer on disk
+        appear in neither list.
+
     """
     archive_dir = _canonical_dir(base_path) / _ARCHIVE_NAME
     moved: list[str] = []

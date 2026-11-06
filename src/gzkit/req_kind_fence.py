@@ -34,6 +34,11 @@ def _boundary_invariants_section(content: str) -> str | None:
     """Return the ``## Boundary Invariants`` section body, or None when absent.
 
     Spans from the heading to the next H2 (``## ``) or end-of-file.
+
+    Returns:
+        The text after the `## Boundary Invariants` heading up to the next H2 or end of file, or
+        None when the heading is absent.
+
     """
     m = re.search(
         r"^##\s+Boundary Invariants\b(.*?)(?=^##\s|\Z)",
@@ -53,6 +58,11 @@ def _fence_obpi_anchored(section: str, req_id: str) -> bool:
     (``REQ-X.Y.Z-NN-MM …``) is an accepted stricter form. Heading presence alone
     is NOT proof — an invariant list naming no OBPI cannot say which invariant
     proves which fence.
+
+    Returns:
+        True when the section names the REQ's OBPI in short or full OBPI form, or contains the REQ
+        id or its OBPI prefix; False otherwise, including for an unparseable `req_id`.
+
     """
     m = _REQ_ID_RE.match(req_id)
     if m is None:
@@ -111,6 +121,11 @@ def _enforcement_claim_registered(req_text: str) -> bool:
     `_NEGATIVE_CONTROL_DEBT` escape") matches nothing and returns False — those
     are not per-claim bindable and prove via the OBPI-19 floor at ADR closeout,
     not here.
+
+    Returns:
+        True when a backticked token in `req_text` exactly matches a registered `@enforces` claim
+        id; False otherwise.
+
     """
     from gzkit.enforcement import (  # noqa: PLC0415
         _ensure_production_claims_registered,
@@ -137,6 +152,11 @@ def _names_claim_candidate(req_text: str) -> bool:
 
     Enforcement-vocabulary keywords that happen to be hyphenated slugs
     (``fail-closes``) are excluded — they are the enforcement trigger, not a claim.
+
+    Returns:
+        True when a backticked token matches the claim-id shape and is not an enforcement keyword;
+        False otherwise.
+
     """
     keywords = {kw.lower() for kw in _ENFORCEMENT_FENCE_KEYWORDS}
     tokens = {token.strip() for token in _BACKTICK_TOKEN_RE.findall(req_text)}
@@ -158,6 +178,11 @@ def is_meta_property_enforcement_fence(req_text: str) -> bool:
     ``resolve_fence_proof`` deliberately still returns ``"unproven-fence"`` for
     these (the attested REQ-0.0.74-18-01 behavior, "prove via the floor ... not
     via this resolver"); the deferral lives in the consumer, not the resolver.
+
+    Returns:
+        True when the REQ text asserts enforcement and backticks no claim-shaped token; False
+        otherwise.
+
     """
     return _is_enforcement_asserting(req_text) and not _names_claim_candidate(req_text)
 
@@ -189,6 +214,12 @@ def resolve_fence_proof(req_id: str, project_root: Path, req_text: str = "") -> 
     - ``"unproven-fence"`` — proof absent (the fence's claim is unregistered or
       unnamed for an enforcement fence, anchor absent for a state-property fence,
       or req_id unparseable).
+
+    Returns:
+        "pass" when an enforcement fence's named claim is registered or a state-property fence is
+        anchored in its parent ADR's Boundary Invariants; otherwise "unproven-fence", including for
+        an unparseable `req_id`, a missing parent ADR or a missing section.
+
     """
     m = _REQ_ID_RE.match(req_id)
     if m is None:

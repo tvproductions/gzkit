@@ -363,6 +363,11 @@ def _forbidden_mirror_names(
     to write there (GHI #925). Derived from the declared vendor set, so
     retiring a vendor removes its root here in the same edit -- the property
     ``_foreign_vendor_roots`` was written to hold.
+
+    Returns:
+        frozenset({"CLAUDE.md"}) when the mirror root lies inside a foreign vendor's surface root;
+        an empty frozenset otherwise.
+
     """
     from gzkit.rules import _foreign_vendor_roots, _within_any  # noqa: PLC0415
 
@@ -425,6 +430,12 @@ def bootstrap_canonical_skills(project_root: Path, config: GzkitConfig) -> list[
     """Seed canonical skills from legacy mirrors when canonical path is empty.
 
     This supports migration from older layouts where `.github/skills` was canonical.
+
+    Returns:
+        The paths sync_skill_mirror reports from seeding the canonical root out of the first legacy
+        root that holds skill files; an empty list when the canonical root already has skill files
+        or no legacy root has any.
+
     """
     canonical_root = project_root / config.paths.skills
     if _has_skill_files(canonical_root):
@@ -534,6 +545,11 @@ def find_stale_mirror_paths(project_root: Path, config: GzkitConfig | None = Non
 
     Mirrors of retired skills are also considered stale since retired skills
     are excluded from sync.
+
+    Returns:
+        Sorted project-relative POSIX paths of stale mirror entries, a stale directory standing for
+        everything below it; an empty list when the canonical skills root does not exist.
+
     """
     if config is None:
         config = GzkitConfig.load(project_root / ".gzkit.json")

@@ -532,6 +532,10 @@ def render_codex_config() -> str:
     That test compares two authored numbers and cannot see delivery: the
     observation lives in ``gz validate --instructions-files-budget``, whose
     codex-delivery witness reads what Codex actually assembled.
+
+    Returns:
+        The TOML text of the project-local Codex config, headed by the gzkit marker.
+
     """
     return f"""{CODEX_CONFIG_MARKER}
 sandbox_mode = "workspace-write"
@@ -668,6 +672,11 @@ def has_vendor_declaration(config: GzkitConfig) -> bool:
     validates what this module writes, so a second predicate would let the two
     disagree about whether a vendor tree is expected -- demanding exactly the
     mirror sync declined to produce (GHI #921).
+
+    Returns:
+        True when the parsed config explicitly declared a vendors block; False for a legacy config
+        whose vendors are defaulted.
+
     """
     return "vendors" in config.model_fields_set
 
@@ -684,6 +693,10 @@ def _pkg_surface_exists(project_root: Path, surface: str) -> bool:
     signal that the dual-surface layout was set up for this repo (e.g. gzkit's
     own dev tree). Adopter projects do not have src/gzkit/ at all; propagating
     there would silently create a foreign package namespace.
+
+    Returns:
+        True when src/gzkit/<surface>/__init__.py exists under project_root; False otherwise.
+
     """
     return (project_root / "src" / "gzkit" / surface / "__init__.py").exists()
 

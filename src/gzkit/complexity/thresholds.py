@@ -100,6 +100,10 @@ def load_threshold_table(data_path: Path) -> ThresholdTable:
     The path must point at a ``.json`` document conforming to
     ``src/gzkit/schemas/complexity_thresholds.json``. Any other suffix raises
     ``ValueError`` — the markdown rule body is doctrine narrative, not data.
+
+    Returns:
+        The validated threshold table, ``$``-prefixed keys dropped.
+
     """
     if data_path.suffix != ".json":
         msg = (

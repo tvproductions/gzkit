@@ -160,6 +160,11 @@ def resolve_conflict(role_a: RoleName, role_b: RoleName) -> RoleName:
     """Determine which role takes precedence when two agents touch the same file.
 
     Returns the role with higher precedence (lower index in CONFLICT_PRECEDENCE).
+
+    Returns:
+        Whichever of `role_a` and `role_b` comes first in CONFLICT_PRECEDENCE; `role_a` when they
+        tie.
+
     """
     idx_a = CONFLICT_PRECEDENCE.index(role_a)
     idx_b = CONFLICT_PRECEDENCE.index(role_b)
@@ -316,6 +321,11 @@ def validate_tool_boundaries(role: RoleDefinition) -> list[str]:
     """Check that a role's tool allowlist enforces its write access contract.
 
     Returns a list of violation messages (empty if valid).
+
+    Returns:
+        One message per contract violation (write access without Edit/Write tools, or Edit/Write
+        tools without write access); an empty list when the role is consistent.
+
     """
     write_tools = {"Edit", "Write"}
     has_write_tools = bool(write_tools & set(role.agent_spec.tools))

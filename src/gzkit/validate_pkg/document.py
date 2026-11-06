@@ -63,6 +63,10 @@ def is_canonical_adr_intent_path(path: Path) -> bool:
     enumeration has to be revisited every time a package grows a subdirectory,
     and the omission is silent. Measured equivalent to the name-list form over
     all 357 ``ADR-*.md`` files on disk, selecting the same 86 (GHI #742).
+
+    Returns:
+        True when the file's stem equals its parent directory's name; False otherwise.
+
     """
     return path.stem == path.parent.name
 
@@ -191,6 +195,11 @@ def _validate_obpi_id_matches_stem(
     events. A short-form ``id`` (e.g. ``OBPI-0.0.14-01``) creates phantom
     duplicates when the ledger registers the full stem
     (``OBPI-0.0.14-01-obpi-lock-command``).
+
+    Returns:
+        A single error when the frontmatter ``id`` is set and differs from the stem; empty
+        otherwise.
+
     """
     fm_id = frontmatter.get("id", "")
     stem = path.stem

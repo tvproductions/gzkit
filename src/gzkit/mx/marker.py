@@ -120,6 +120,11 @@ def _find_project_root(start: Path | None = None) -> Path:
     the marker read keeps working when gz itself is broken. Falls back to the
     starting dir when no ``.gzkit`` is found, so callers get a deterministic path
     rather than an exception.
+
+    Returns:
+        The nearest directory at or above ``start`` holding ``.gzkit``; the resolved start when none
+        does.
+
     """
     current = (start or Path.cwd()).resolve()
     for candidate in (current, *current.parents):
@@ -139,6 +144,10 @@ def is_active(project_root: Path | None = None) -> bool:
 
     Presence only — the cheap truth-file read code guards use. Validity (the
     ledger binding) is the separate anti-contrivance gate, :func:`is_valid`.
+
+    Returns:
+        True when the marker file exists; False otherwise.
+
     """
     return marker_path(project_root).is_file()
 
@@ -149,6 +158,10 @@ def read(project_root: Path | None = None) -> Marker | None:
     Returns ``None`` when the marker is absent, malformed, or fails schema
     validation — never raises into a guard. (``ValidationError`` subclasses
     ``ValueError``, so the single except covers bad JSON and bad schema.)
+
+    Returns:
+        The validated marker; None when it is absent, malformed or fails validation.
+
     """
     path = marker_path(project_root)
     try:
@@ -162,6 +175,10 @@ def write(marker: Marker, project_root: Path | None = None) -> Path:
 
     Low-level write only — the coupled ``mx_session_opened`` ledger event is
     written by ``gz mx enter`` (OBPI-04), not here.
+
+    Returns:
+        The path of the written marker file.
+
     """
     path = marker_path(project_root)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -183,6 +200,10 @@ def _open_session_ids(ledger: Path) -> set[str]:
     ``gzkit.ledger`` dependency) so the binding check works when gz is the
     patient. Memoized on the ledger's size and modification time: every guard
     asks, and the ledger is tens of megabytes (GHI #1273).
+
+    Returns:
+        The ids of sessions still open in the ledger; empty when the ledger cannot be read.
+
     """
     try:
         stat = ledger.stat()
@@ -233,6 +254,10 @@ def is_valid(project_root: Path | None = None, ledger_path: Path | None = None) 
     marker (anti-contrivance). A hand-created marker with no matching event is
     void → ``False``; a marker whose session was closed (``mx_session_closed``)
     is also void.
+
+    Returns:
+        True when the marker carries a session id that is still open in the ledger; False otherwise.
+
     """
     marker = read(project_root)
     if marker is None or not marker.session_id:

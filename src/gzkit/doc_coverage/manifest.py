@@ -27,6 +27,10 @@ def manpage_path_for(command_name: str) -> Path:
 
     ``"plan create"`` -> ``docs/user/manpages/plan-create.md``
     ``"closeout"``    -> ``docs/user/manpages/closeout.md``
+
+    Returns:
+        ``MANPAGE_DIR / <slug>.md``, the slug being the name with spaces as hyphens.
+
     """
     slug = command_name.replace(" ", "-")
     return MANPAGE_DIR / f"{slug}.md"
@@ -74,6 +78,10 @@ def load_manifest(project_root: Path | None = None) -> DocCoverageManifest:
 
     Reads config/doc-coverage.json relative to *project_root*, parses it as
     JSON, and returns a validated, immutable DocCoverageManifest instance.
+
+    Returns:
+        The validated, immutable manifest.
+
     """
     if project_root is None:
         project_root = get_project_root()
@@ -91,5 +99,9 @@ def find_undeclared_commands(
     These are commands that have no documentation obligation declared and must
     be added to config/doc-coverage.json before documentation coverage is
     considered complete.
+
+    Returns:
+        The sorted discovered names absent from the manifest.
+
     """
     return sorted(name for name in discovered_names if name not in manifest.commands)

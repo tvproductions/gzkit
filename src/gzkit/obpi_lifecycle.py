@@ -49,6 +49,11 @@ def _field(event: Mapping[str, Any], key: str) -> str:
     nests them under ``extra``. Reading only one shape would make this module
     correct for whichever call site was written first and silently wrong for the
     other.
+
+    Returns:
+        The field's value as a string, read from the top level or else from the nested `extra`
+        mapping; an empty string when neither holds it.
+
     """
     if key in event:
         return str(event.get(key, ""))
@@ -79,6 +84,11 @@ def park_state(events: Iterable[Mapping[str, Any]]) -> dict[str, bool]:
     Park and unpark compose as forward corrective events — the ledger is
     append-only, so current state is the net of the sequence, never an edit
     (``AGENTS.md`` § Behavior Rules: write the ledger only through ``gz``).
+
+    Returns:
+        Mapping of OBPI id to True when its last park/unpark event was a park and False when it was
+        an unpark; OBPIs never parked are absent.
+
     """
     state: dict[str, bool] = {}
     for event in events:
@@ -118,6 +128,12 @@ def operator_block_state(
     already spends that term on a different subject: a parked OBPI is fine and
     its parent left, whereas a blocked one is fine, its parent is live, and a
     human owes it a decision.
+
+    Returns:
+        Mapping of each currently blocked OBPI id to its latest block's `reason` and
+        `next_operator_action`; an OBPI whose last block was followed by an unblock is absent, and
+        the mapping is empty when none is blocked.
+
     """
     state: dict[str, dict[str, str]] = {}
     for event in events:
@@ -140,6 +156,11 @@ def parkable_children(events: Iterable[Mapping[str, Any]], parent_id: str) -> li
 
     Excludes OBPIs already terminal (they hold a disposition) and OBPIs already
     parked (parking twice would inflate the census).
+
+    Returns:
+        The ids of `parent_id`'s created children that are neither terminal nor currently parked, in
+        creation order; empty when none qualify.
+
     """
     materialized = list(events)
     terminal = terminal_obpi_ids(materialized)
@@ -169,6 +190,12 @@ def parked_at(events: Iterable[Mapping[str, Any]], pool_id: str) -> list[tuple[s
     OBPI's ``obpi_created`` record names the *pre*-demotion ADR id, so promotion
     cannot find its release set by parent lookup alone. ``parked_to`` is the only
     field that survives the rename.
+
+    Returns:
+        The `(obpi_id, original_parent)` pair of each OBPI whose park event names `pool_id` in
+        `parked_to` and which is still parked; `original_parent` is that park event's `parent`.
+        Empty when none are.
+
     """
     materialized = list(events)
     parked = park_state(materialized)
@@ -214,6 +241,11 @@ def fold_renames(pairs: Iterable[tuple[str, str]]) -> dict[str, str]:
 
     Unrenamed ids are **absent** rather than self-mapped: the result is a pure
     delta, and the caller supplies the identity default.
+
+    Returns:
+        Mapping of each renamed id to the id it currently carries; ids never renamed are absent, so
+        the caller supplies the identity default.
+
     """
     canonical: dict[str, str] = {}
     for old_id, new_id in pairs:
@@ -233,6 +265,11 @@ def rename_events(events: Iterable[Mapping[str, Any]]) -> list[tuple[str, str]]:
 
     A row whose ``new_id`` is not a string names no rename, as the ledger's own
     extraction reads it; `_field` would turn a null into the id ``None`` (GHI #1194).
+
+    Returns:
+        The `(old_id, new_id)` pair of each `artifact_renamed` event whose `new_id` is a string, in
+        event order; empty when there are none.
+
     """
     pairs: list[tuple[str, str]] = []
     for event in events:
@@ -257,6 +294,11 @@ def rename_chain_target(events: Iterable[Mapping[str, Any]], artifact_id: str) -
 
     A shape adapter over :func:`fold_renames`; the semantics live there, shared
     with :meth:`gzkit.ledger.Ledger._build_rename_map`.
+
+    Returns:
+        The id `artifact_id` currently carries after its rename chain is folded, or `artifact_id`
+        itself when it was never renamed.
+
     """
     return fold_renames(rename_events(events)).get(artifact_id, artifact_id)
 
@@ -297,6 +339,11 @@ def park_coherence_violations(
     Completion does not exempt a violation: completion is a disposition, not a
     location, and the most consequential instance (a Gate-5-attested brief in a
     package ``demote`` would delete) is precisely a completed one.
+
+    Returns:
+        Sorted `(obpi_id, owning_adr)` pairs for each OBPI in `brief_owners` that is currently
+        parked; empty when no parked OBPI's brief lives in a non-pool ADR package.
+
     """
     parked = park_state(list(events))
     return sorted(
@@ -333,6 +380,12 @@ def orphaned_obpi_ids(
     Each arm tests the id *and* its chain terminal rather than the terminal
     alone. That guarded the walk the shared fold replaced, which resolved an ``A ->
     B -> A`` round trip to ``B`` while the artifact sat on disk as ``A``.
+
+    Returns:
+        The ids of created OBPIs with no terminal, completed or parked disposition whose parent does
+        not resolve to a live ADR or whose brief is not on disk, de-duplicated in creation order;
+        empty when there are none.
+
     """
     materialized = list(events)
     terminal = terminal_obpi_ids(materialized)

@@ -131,6 +131,11 @@ def handle_validate(*, file: str | None, json_output: bool) -> int:
 
     ``--json`` emits a :class:`gzkit.justify.parser.ValidateResult` JSON
     payload to stdout instead of the human-readable sentence.
+
+    Returns:
+        0 when the walkthrough is parseable and complete; 1 when it is incomplete or the file is
+        missing or unnamed; the system-error code when it cannot be read or parsed.
+
     """
     if not file:
         print("justify validate: <file> is required", file=sys.stderr)

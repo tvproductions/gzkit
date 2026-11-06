@@ -200,6 +200,11 @@ class OutputFormatter:
         """Resolve output mode from CLI flags.
 
         Priority: json > quiet > debug > verbose > human (default).
+
+        Returns:
+            The output mode the highest-priority set flag selects; ``OutputMode.HUMAN`` when none is
+            set.
+
         """
         if json_flag:
             return OutputMode.JSON

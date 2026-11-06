@@ -251,6 +251,9 @@ def score_foundation(
         insights_path: Override for the insights JSONL file.
         pool_adrs_root: Override directory to walk for pool/feature ADRs.
 
+    Returns:
+        The rank entry carrying the summed priority score and its three evidence references.
+
     """
     if insights_path is None:
         insights_path = project_root / ".gzkit" / "insights" / "agent-insights.jsonl"

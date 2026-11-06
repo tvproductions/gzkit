@@ -42,6 +42,10 @@ def _skill_slug_of(path: Path) -> str | None:
     the same slug or a withheld skill stays invisible to the audit that should
     catch it leaking. Mirrors :func:`gzkit.chores._chore_slug_of`, including that
     a file directly under the surface names no slug (GHI #1005).
+
+    Returns:
+        The directory name after ``skills`` when a component sits beneath it; None otherwise.
+
     """
     parts = path.parts
     for index, part in enumerate(parts):
@@ -57,6 +61,11 @@ def _declares_project_local(skill_md: Path) -> bool:
     a missing key, or any other value ships, which preserves today's delivery
     exactly rather than withholding a skill on a typo -- the same fail-toward-
     the-status-quo posture ``_project_local_slugs`` takes with its registry.
+
+    Returns:
+        True only when the frontmatter's project-local key reads ``true``; False otherwise,
+        including for an unreadable file.
+
     """
     try:
         content = skill_md.read_text(encoding="utf-8")
@@ -93,6 +102,10 @@ def _classify_skill_file(
 
     Signature-compatible with :func:`gzkit.chores._classify_chore_file`. See
     ``.gzkit/rules/skill-surface-sync.md`` § class-classifier.
+
+    Returns:
+        The content class of ``path``: ``package_only``, ``project_local`` or ``canonical``.
+
     """
     path = Path(path)
     name = path.name
@@ -132,6 +145,11 @@ def _canonical_skill_md(path: Path, slug: str, project_root: Path | None) -> Pat
     reconstructed ``.gzkit/skills/<slug>``, because the canonical skills root is
     configurable (``config.paths.skills``) and a reconstructed one would silently
     stop finding the declaration the moment a project moved that surface.
+
+    Returns:
+        The canonical ``SKILL.md`` for the slug; ``path`` itself when it does not sit under a skills
+        directory.
+
     """
     for index, part in enumerate(path.parts):
         if part != "skills" or index + 1 >= len(path.parts):
@@ -305,6 +323,10 @@ def _load_packaged_skill_resource(dir_name: str) -> str | None:
     rendering a generic ``Step 1 / Step 2 / Step 3`` placeholder. Returns
     ``None`` when the slug has no packaged resource — caller falls back to
     template rendering. (GHI #315)
+
+    Returns:
+        The packaged ``SKILL.md`` text; None when the slug has no packaged resource.
+
     """
     resource = files("gzkit.templates").joinpath("skills", dir_name, "SKILL.md")
     if not resource.is_file():
@@ -329,6 +351,10 @@ def _render_inline_skill_stub(dir_name: str, **kwargs: str) -> str:
     Frontmatter satisfies the metadata contract; the explicit placeholder
     steps remain blocking findings until authored according to
     ``.gzkit/rules/skill-authoring.md``. A scaffold is not a finished procedure.
+
+    Returns:
+        The scaffold ``SKILL.md`` text with frontmatter and placeholder steps.
+
     """
     skill_name = kwargs.get("skill_name", dir_name.replace("-", " ").title())
     skill_description = kwargs.get("skill_description", "A custom skill for this project.")
@@ -420,6 +446,10 @@ def delivered_skill_slugs(bodies: dict[str, bytes]) -> set[str]:
 
     Every skill that is not retired. One definition for ``gz init`` delivery,
     ``gz init --update``, ``gz upgrade`` and the shipped hash history (GHI #1122).
+
+    Returns:
+        The slugs whose ``lifecycle_state`` is not ``retired``.
+
     """
     delivered: set[str] = set()
     for slug, content in bodies.items():
@@ -436,6 +466,10 @@ def delivered_skill_body(content: bytes, delivered: set[str]) -> bytes:
     rows naming a slug outside ``delivered`` are dropped (GHI #915). The result
     is LF-encoded: this is a generated surface, and a Windows default would emit
     CRLF (GHI #681).
+
+    Returns:
+        The ``SKILL.md`` content, router rows outside ``delivered`` dropped, encoded as UTF-8.
+
     """
     from gzkit.governance.trust_audits.router_tables import (  # noqa: PLC0415
         scope_router_rows_for_delivery,

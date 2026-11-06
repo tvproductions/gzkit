@@ -50,6 +50,11 @@ def _shipped_files(pkg_root: Path) -> dict[str, bytes]:
 
     Mirrors ``_walk_traversable``: any path part starting with ``_`` is package
     infrastructure (``__init__.py``, ``__pycache__``), never delivered content.
+
+    Returns:
+        Mapping of `<surface>/<relative path>` to the bytes delivery would write, skipping
+        infrastructure paths and files with no effective bytes.
+
     """
     shipped: dict[str, bytes] = {}
     for surface in CANONICAL_SURFACES:
@@ -70,6 +75,11 @@ def delivered_variants(shipped: dict[str, bytes]) -> dict[str, set[bytes]]:
     A file is delivered as its wheel bytes, except a skill router, whose rows
     are scoped to the skills that delivery lands (GHI #915): a freshly scaffolded
     adopter holds that scoped form, so the history must recognize it too.
+
+    Returns:
+        Mapping of each shipped key to its wheel bytes, plus the scoped router form for a skill
+        body.
+
     """
     bodies = {slug: shipped[key] for key in shipped if (slug := skill_body_slug(key))}
     delivered = delivered_skill_slugs(bodies)

@@ -42,6 +42,10 @@ def _resolve_canonical_rule_table_path() -> Path:
     fails (editable install in-tree). Lazy resolution (call-time, not
     import-time) keeps path identity stable across CWD changes that
     legitimately fire during tests and pipelines.
+
+    Returns:
+        The packaged ``data/`` table path when it exists; otherwise the relative ``data/`` path.
+
     """
     from importlib.resources import files  # noqa: PLC0415
 
@@ -166,6 +170,10 @@ def load_archetype_rules(path: Path | None = None) -> tuple[ArchetypeRule, ...]:
     one pass; no silent truncation), then constructs frozen Pydantic
     ``ArchetypeRule`` instances. Raises :class:`ValueError` on schema failure;
     raises :class:`pydantic.ValidationError` on Pydantic-level failure.
+
+    Returns:
+        The validated rules, one frozen ``ArchetypeRule`` per table entry, in table order.
+
     """
     target = path if path is not None else CANONICAL_RULE_TABLE_PATH
     schema_text = CANONICAL_SCHEMA_PATH.read_text(encoding="utf-8")

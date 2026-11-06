@@ -49,6 +49,11 @@ def _git_raw(args: list[str], cwd: Path, env: dict[str, str] | None = None) -> s
     """Return stdout of ``git <args>`` VERBATIM, or None when git fails.
 
     Column-significant output (``status --porcelain``) must not be stripped.
+
+    Returns:
+        Git's stdout unstripped when it exits 0; None when it exits non-zero, cannot be spawned or
+        times out.
+
     """
     try:
         result = subprocess.run(  # noqa: S603 — git argv this module builds, never user text; executable resolved
@@ -95,6 +100,11 @@ def tree_is_fully_staged(project_root: Path) -> bool:
     while the fingerprint names the INDEX tree, and those are the same object only
     when nothing is outstanding. Recording otherwise would attest a tree that was
     never the one tested.
+
+    Returns:
+        True when `git status --porcelain` shows no untracked and no unstaged entry; False when one
+        appears or git fails.
+
     """
     # NOT via `_git`: it strips, and porcelain's first column is a SPACE for an
     # unstaged modification (" M path"). Stripping shifts the columns left, so an
@@ -127,6 +137,11 @@ def staged_fingerprint(project_root: Path) -> str | None:
 
     The real index is never mutated — it is copied to a throwaway path and read
     there — so taking a fingerprint can never stage the operator's work.
+
+    Returns:
+        The tree hash `git write-tree` gives for a copy of the index with the receipt removed; None
+        when the git directory or the index cannot be found, or git fails.
+
     """
     git_dir = _git(["rev-parse", "--git-dir"], project_root)
     if git_dir is None:
@@ -217,6 +232,11 @@ def already_verified(
     caller accepts: a ``change`` pass never ran ``Behave``, so it cannot stand in
     for a ``full`` request. A missing receipt, an unreadable tree, or any
     difference returns None and the caller runs the gate.
+
+    Returns:
+        The current staged fingerprint when it equals the receipt's and the receipt's scope is
+        accepted; None otherwise.
+
     """
     receipt = _read_receipt(project_root)
     if receipt is None or receipt[1] not in accept:

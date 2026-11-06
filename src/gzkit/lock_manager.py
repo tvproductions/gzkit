@@ -49,10 +49,11 @@ def read_claim_time(claimed_at: str) -> datetime:
 
     Every writer stamps an offset, so a zoneless time is a hand edit. Reading it as
     UTC gives it an age, so the lock is judged and booked like any other and stays
-    held where any other would (GHI #1205's class; expiry never evicts).
+    held where any other would (GHI #1205's class; expiry never evicts). A string that
+    is no ISO time lets ``datetime.fromisoformat``'s ``ValueError`` propagate.
 
     Returns:
-        A timezone-aware time; a string that is no time raises ``ValueError``.
+        A timezone-aware time.
 
     """
     claimed = datetime.fromisoformat(claimed_at)
@@ -84,6 +85,10 @@ class LockData(BaseModel):
         produced a time bomb: a fixture pinned an absolute ``claimed_at`` against
         a finite TTL, passed for a day, then failed forever once the wall clock
         crossed expiry — in a change that touched no production code.
+
+        Returns:
+            Minutes, as a float, from ``claimed_at`` to *now*.
+
         """
         return (now - read_claim_time(self.claimed_at)).total_seconds() / 60
 
@@ -94,6 +99,10 @@ class LockData(BaseModel):
         wall-clock property below delegates here rather than repeating the
         arithmetic — a seam that is a second implementation proves nothing about
         the behavior the runtime actually takes.
+
+        Returns:
+            True when the elapsed minutes at *now* reach or exceed the TTL; False otherwise.
+
         """
         return self.elapsed_minutes_at(now) >= self.ttl_minutes
 
@@ -117,6 +126,11 @@ def resolve_agent(agent_override: str | None = None) -> str:
     running environment is inspected: ``CLAUDECODE`` env var (Claude Code
     exports this, not ``CLAUDE_CODE``) → ``"claude-code[-<sid8>]"``,
     ``CODEX_SANDBOX`` env var → ``"codex"``, fallback → ``"unknown-<pid>"``.
+
+    Returns:
+        *agent_override* when given; else ``claude-code-<sid8>`` (or ``claude-code`` without a
+        session id), ``codex``, or ``unknown-<pid>``.
+
     """
     if agent_override is not None:
         return agent_override
@@ -169,6 +183,11 @@ def read_lock(project_root: Path, obpi_id: str) -> LockData | None:
     """Read and parse a lock file.
 
     Returns ``None`` if the file does not exist or contains invalid JSON.
+
+    Returns:
+        The parsed lock; None when the file is absent, unreadable, not valid JSON, or not a valid
+        lock.
+
     """
     path = lock_path(project_root, obpi_id)
     if not path.is_file():
@@ -192,6 +211,10 @@ def write_lock(project_root: Path, lock: LockData) -> Path:
 
     Computed fields (``is_expired``, ``elapsed_minutes``) are excluded from the
     stored payload.
+
+    Returns:
+        The path of the newly created lock file.
+
     """
     path = lock_path(project_root, lock.obpi_id)
     payload = lock.model_dump(exclude={"is_expired", "elapsed_minutes"})
@@ -205,6 +228,10 @@ def delete_lock(project_root: Path, obpi_id: str) -> bool:
 
     Returns ``True`` if the file existed and was removed, ``False`` if it was
     not found.
+
+    Returns:
+        True when the lock file existed and was removed; False when it was not found.
+
     """
     path = lock_path(project_root, obpi_id)
     if not path.is_file():
@@ -219,6 +246,10 @@ def adr_id_from_obpi(obpi_id: str) -> str | None:
     Anchored on the semver triplet — never ``rsplit("-", 1)``, which mis-parses
     slug-bearing ids by stripping only the final slug segment (GHI #622). Returns
     ``None`` when *obpi_id* is not a recognizable OBPI id.
+
+    Returns:
+        The parent ``ADR-X.Y.Z`` id; None when *obpi_id* is not a recognizable OBPI id.
+
     """
     return obpi_adr_id(obpi_id)
 
@@ -228,6 +259,11 @@ def list_locks(project_root: Path, adr_filter: str | None = None) -> list[LockDa
 
     *adr_filter* should be an ADR identifier such as ``"ADR-0.0.14"``.
     Matching converts OBPI-X.Y.Z-NN[-slug] → ADR-X.Y.Z and compares.
+
+    Returns:
+        Parseable locks in lock-file name order, only those whose parent ADR equals *adr_filter*
+        when it is given; unparseable files are skipped.
+
     """
     d = lock_dir(project_root)
     locks: list[LockData] = []
@@ -271,6 +307,10 @@ def _write_reaping_exchange(project_root: Path, lock: LockData, reaper_agent: st
     ``abandoned_by``, ``abandoned_at``, ``previous_agent``) plus the
     Sub-Invariant 2 minimum-information fields (``last_lock_event_timestamp``,
     ``last_commit_sha``). Returns the on-disk path written.
+
+    Returns:
+        The path of the register entry written.
+
     """
     handoff_dir = exchange_dir(project_root)
     handoff_dir.mkdir(parents=True, exist_ok=True)
@@ -359,6 +399,11 @@ def reap_expired_locks(
     When *ledger* is provided, the event cites the written register entry's
     ``handoff_path``. When *ledger* is ``None`` the register entry is still
     written and the lock still reaped, but no event is emitted (no sink).
+
+    Returns:
+        The orphan session locks actually reaped (register entry written and lock deleted); expired
+        work locks, which are only booked, never appear, so the list is usually empty.
+
     """
     # Lazy import: gzkit.ledger_events ↔ gzkit.ledger form a load-order cycle
     # (ledger_events imports LedgerEvent from ledger; ledger re-imports the event

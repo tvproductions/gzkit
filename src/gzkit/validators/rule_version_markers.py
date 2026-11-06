@@ -85,6 +85,10 @@ def rule_version_of(body: str) -> str | None:
     version (``advisory_scorecard``'s Coverage Ledger, GHI #754) call this
     rather than restating the regex — a second copy is how two readers of one
     convention drift apart.
+
+    Returns:
+        The marker's version string; None when the body has no marker.
+
     """
     match = _MARKER_RE.search(body)
     return match.group(1) if match else None
@@ -166,6 +170,10 @@ def audit_rule_version_markers_errors(project_root: Path) -> list[ValidationErro
     ``VALIDATOR_REGISTRY`` entries answer to
     ``Callable[[Path, str | None], list[ValidationError]]``; the structured
     ``MarkerViolation`` model above stays the validator's own vocabulary.
+
+    Returns:
+        One ``ValidationError`` per marker violation.
+
     """
     from gzkit.core.validation_rules import ValidationError  # noqa: PLC0415
 

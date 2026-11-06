@@ -27,6 +27,10 @@ def memory_dir(cwd: Path, home: Path) -> Path:
     Derived from the checkout path rather than hardcoded: the shipped wheel used to
     carry the gzkit maintainer's own absolute project path literally, so every
     adopter's copy of this chore checked a file on a machine they do not own.
+
+    Returns:
+        ``<home>/.claude/projects/<slug>/memory``, the slug derived from ``cwd``.
+
     """
     slug = str(cwd).replace("/", "-").replace("\\", "-").replace(":", "")
     return home / ".claude" / "projects" / slug / "memory"
@@ -39,6 +43,11 @@ def auto_memory_enabled(home: Path) -> bool | None:
     operator has switched auto-memory off, the files on disk are inert and a
     "clean" verdict says nothing about drift, so the state is reported beside it
     (maintenance visit A, 2026-10-10).
+
+    Returns:
+        The boolean ``autoMemoryEnabled`` value; None when the settings file is missing or
+        unreadable or the value is absent or not a boolean.
+
     """
     settings = home / ".claude" / "settings.json"
     try:

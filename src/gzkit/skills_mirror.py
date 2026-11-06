@@ -144,6 +144,11 @@ def _collect_package_files(skill_dir: Path) -> dict[str, Path]:
     inside asset directories to avoid double-counting, and Python bytecode
     caches (``__pycache__/*.pyc`` and ``.pyo``) which are gitignored Layer 3
     derived artifacts that never live in mirrors (GHI #379).
+
+    Returns:
+        Mapping of each file's POSIX path relative to skill_dir to its absolute path; empty when
+        skill_dir does not exist.
+
     """
     package: dict[str, Path] = {}
     if not skill_dir.exists():

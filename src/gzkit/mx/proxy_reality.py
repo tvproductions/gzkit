@@ -74,6 +74,9 @@ def scan(root: Path | None = None) -> ProxyRealityScanResult:
         root: Project root whose ``.gzkit/ledger.jsonl`` is scanned.
               Defaults to the current working directory.
 
+    Returns:
+        The result listing one record per fabrication repudiation and their count.
+
     """
     if root is None:
         root = Path.cwd()
@@ -108,6 +111,10 @@ def _build_proxy_reality_violation() -> Path:
 
     The violation is a ``model-induced-fabrication`` repudiation event. The
     fixture builds inside the active runner-owned workspace.
+
+    Returns:
+        The temp project root holding the planted ledger.
+
     """
     root = create_fixture_tempdir(prefix="gzkit-proxy-reality-nc-")
     gzkit_dir = root / ".gzkit"
@@ -137,6 +144,10 @@ def _ep_proxy_reality(root: Path) -> int:
     Returns ``count`` — truthy (> 0) when the violation is caught, falsy (0)
     when it is not. Genuineness is structural: this callable invokes the
     production path; no forcing kwargs are pre-bound.
+
+    Returns:
+        The number of fabrication records the scan found; 0 when none.
+
     """
     return scan(root).count
 

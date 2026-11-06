@@ -283,6 +283,11 @@ def _parse_frontmatter(fields: Mapping[str, str], result: dict[str, str]) -> boo
     given a VT-prefixed artifact this reader extracted `id` while that one
     reported no frontmatter at all. Two answers for one file is the defect; one
     reader is the fix.
+
+    Returns:
+        True when the block carried an id with an allowed prefix; False otherwise. The other
+        recognized fields are merged into result either way.
+
     """
     has_frontmatter_id = False
     for raw_key, raw_value in fields.items():

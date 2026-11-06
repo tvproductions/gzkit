@@ -42,6 +42,10 @@ def _chore_slug_of(path: Path) -> str | None:
     slug: a slug is a directory, so it needs a component beneath it. Treating the
     file as its own slug let the orphan guard withhold the registry from the
     wheel (GHI #1005).
+
+    Returns:
+        The directory name after ``chores`` when a component sits beneath it; None otherwise.
+
     """
     parts = path.parts
     for index, part in enumerate(parts):
@@ -56,6 +60,11 @@ def _project_local_slugs(project_root: Path | None) -> frozenset[str]:
     Read fresh rather than cached: the registry is small, and a cache keyed on
     project_root would go stale exactly when sync rewrites the registry during
     the same run.
+
+    Returns:
+        The slugs whose registry entry has ``projectLocal: true``; empty when no root is given or
+        the registry is missing, unreadable or malformed.
+
     """
     if project_root is None:
         return frozenset()
@@ -83,6 +92,10 @@ def exportable_registry(registry_path: Path) -> dict[str, Any]:
     — a registered chore with no files, which `gz chores doctor` reports as
     MISSING. Withholding files without withholding the entry trades a leak for a
     broken install (GHI #728).
+
+    Returns:
+        The parsed registry with every ``projectLocal`` entry dropped from ``chores``.
+
     """
     data = json.loads(Path(registry_path).read_text(encoding="utf-8"))
     entries = data.get("chores")
@@ -112,6 +125,11 @@ def _classify_chore_file(
                must not reach the wheel or an adopter (GHI #728)
 
     See .gzkit/rules/skill-surface-sync.md § Chores class-classifier.
+
+    Returns:
+        The content class of ``path``: ``project_local``, ``package_only``, ``runtime_state`` or
+        ``canonical``.
+
     """
     path = Path(path)
     name = path.name
@@ -318,6 +336,11 @@ def missing_surface_files(chores_dir: Path) -> list[str]:
     Scaffolding delivers these, and the registry, only when absent and reports
     none of them, so a repair lists them beforehand to announce the write
     (GHI #1098).
+
+    Returns:
+        The sorted names of surface-root files (and the registry, when shipped) that are absent from
+        ``chores_dir``.
+
     """
     names = [entry.name for entry in _surface_level_entries()]
     if importlib.resources.files(_CANONICAL_RESOURCE).joinpath(_REGISTRY_FILE).is_file():
@@ -367,6 +390,11 @@ def merge_chores_registry(
     union (canonical-wins on shipped slugs, local-wins on unknown slugs),
     prints a diff to stdout, and unless ``auto_yes`` or ``dry_run`` is set,
     prompts the operator before writing.
+
+    Returns:
+        The merge report naming added, removed, changed and local-only slugs, with ``wrote`` set
+        only when the merged registry was written; a report carrying only the path when no local
+        registry exists.
 
     """
     if config is None:

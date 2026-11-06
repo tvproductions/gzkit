@@ -33,5 +33,9 @@ def grounds(level: int) -> bool:
 
     WARNING, NOTICE, INFO, and DEBUG are visible-but-non-grounding (return
     False); ERROR and CRITICAL ground (return True).
+
+    Returns:
+        True when ``level`` is at or above the grounding threshold (ERROR); False otherwise.
+
     """
     return level >= GROUNDING_THRESHOLD

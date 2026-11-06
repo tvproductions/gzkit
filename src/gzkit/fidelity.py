@@ -70,6 +70,11 @@ def is_self_referential_command(command: str) -> bool:
     command (a leading ``uv run`` wrapper is transparent), which is the only
     shape that re-enters the gate. A command we cannot tokenize is not
     self-referential — the gate runner already reports it as unrunnable.
+
+    Returns:
+        True when the tokenized command contains the `gz adr fidelity` token run; False otherwise,
+        including when it cannot be tokenized.
+
     """
     try:
         tokens = shlex.split(command)
@@ -87,6 +92,10 @@ def _strip_inline_code(cell: str) -> str:
     so a literal backtick makes the first token ```uv`` — not an executable —
     yielding an opaque ``observed=-1`` (GHI #673). Stripping surrounding backticks
     makes the natural authoring form runnable; a bare command is unaffected.
+
+    Returns:
+        The cell with surrounding whitespace and backticks removed.
+
     """
     return cell.strip().strip("`").strip()
 
@@ -113,10 +122,18 @@ def parse_fidelity_assertions(adr_path: Path) -> list[FidelityAssertion]:
     Returns one ``FidelityAssertion`` per data row in the table.  The
     ``observed`` and ``result`` fields are ``None`` until the gate runs.
 
+    Returns
+    -------
+    list[FidelityAssertion]
+        One assertion per data row whose expected-exit cell parses as an integer, with
+        ``observed`` and ``result`` set to None.
+
     Raises
     ------
     ValueError
         If the block is absent or no data rows are found.
+    PolicyBreachError
+        If any row's command is self-referential (GHI #702).
 
     """
     text = adr_path.read_text(encoding="utf-8")
@@ -202,6 +219,10 @@ def _run_in(assertion: FidelityAssertion, worktree: Path, project_root: Path) ->
     ``uv run`` and ``python`` resolve the worktree's ``src`` through the live,
     unsynced venv (``demo_env``, the GHI #1093 Stage-4 Demo environment), so no
     command reaches the live checkout through its cwd or its interpreter.
+
+    Returns:
+        The command's exit code, or -1 when it cannot be tokenized or spawned.
+
     """
     from gzkit.governance.stage4_evidence import demo_env  # noqa: PLC0415
 
@@ -224,6 +245,10 @@ def _restore_head(worktree: Path, head: str) -> bool:
     A forced detached checkout undoes tracked edits, deletions and a moved HEAD;
     ``clean -ffdx`` removes untracked and ignored files. What the next row sees
     is then the committed tree and nothing a previous row left (GHI #1156).
+
+    Returns:
+        True when both the forced checkout and the clean exit 0, otherwise False.
+
     """
     from gzkit.red_witness import _git  # noqa: PLC0415
 
@@ -258,6 +283,12 @@ def run_fidelity_gate(
     ``result`` is ``"pass"`` when ``observed == expected_exit`` else ``"fail"``.
     Pydantic frozen models are immutable; new instances are created via
     ``model_copy(update=...)``.
+
+    Returns:
+        A copy of each assertion with `observed` set to its exit code (WORKTREE_UNAVAILABLE when it
+        could not be run) and `result` set to "pass" when that equals the expected exit, else
+        "fail".
+
     """
     from gzkit.red_witness import base_tree_worktree, resolve_base_commit  # noqa: PLC0415
 
@@ -323,13 +354,16 @@ def assert_fidelity_for_ceremony(
     at ADR closeout (Boundary Invariant #4) and the new-ADR template. When a
     block IS present, the gate hard-runs and a failed assertion blocks.
 
+    Returns
+    -------
+    list[FidelityAssertion]
+        The run assertions, all passing, when the gate is green; an empty list when the
+        ADR has no Fidelity Assertions block (a warning is emitted).
+
     Raises
     ------
     PolicyBreachError
         when a present block has any failing assertion (observed != expected).
-
-    Returns the run assertions (all passing) when the gate is green, or an empty
-    list when the block is absent (warning emitted).
 
     """
     from gzkit.core.exceptions import PolicyBreachError  # noqa: PLC0415

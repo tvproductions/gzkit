@@ -30,6 +30,10 @@ def book_lease_expiries(root: Path, *, now: datetime | None = None) -> list[str]
     A lease already booked is skipped, so a session that stays open for days
     carries one expiry status per lease, not one per boot. A renewal starts a new
     lease, which is booked again only if it too runs out (GHI #1261).
+
+    Returns:
+        The ids of the sessions whose expiry was booked by this call.
+
     """
     now = now or datetime.now(UTC)
     expired = hardening.ttl_max_open_status(root, now=now).flagged_sessions

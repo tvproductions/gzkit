@@ -62,6 +62,11 @@ def parse_artifacts(message: str) -> dict[str, list[str]]:
     Returns a dict with exactly the keys ``ADR``, ``OBPI``, ``REQ`` — empty
     lists when none are present — so nothing in the window can be forgotten or
     narrated away.
+
+    Returns:
+        Mapping with exactly the keys ``ADR``, ``OBPI`` and ``REQ``, each the unique ids of that
+        kind found, empty when none are.
+
     """
     return {
         "ADR": _unique(_ADR_RE.findall(message)),
@@ -124,6 +129,10 @@ def _git_commits_since(root: Path, since_ts: str, until_ts: str | None) -> list[
 
     Tolerant of a non-git working tree (returns ``[]``) — assembly never raises
     into the exit path.
+
+    Returns:
+        One fix entry per commit in the window; empty when git cannot run or fails.
+
     """
     cmd = ["git", "log", "--since", since_ts, f"--pretty=format:%H{_FIELD_SEP}%B{_RECORD_SEP}"]
     if until_ts:
@@ -169,6 +178,11 @@ def assemble_window(root: Path, session_id: str) -> MxLog:
     ``ts`` when present (at exit time it is not), the session's last span when the
     harness's id reopened it (GHI #1273), and the log names every fix
     and the ADRs/OBPIs/REQs each touched (REQ-06-02).
+
+    Returns:
+        The MX log naming the session's window bounds, reason and attestor, the ledger event types
+        inside it, its fixes, and the ADRs, OBPIs and REQs they touched.
+
     """
     events = _read_ledger_lines(root)
 

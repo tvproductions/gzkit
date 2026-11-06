@@ -30,6 +30,10 @@ def parse_persona_file(path: Path) -> tuple[PersonaFrontmatter, str]:
     """Parse a persona markdown file into frontmatter model and body text.
 
     Raises ``ValueError`` if frontmatter is missing or malformed.
+
+    Returns:
+        ``(frontmatter, body)``: the validated frontmatter model and the text after it.
+
     """
     content = path.read_text(encoding="utf-8")
     if not content.startswith("---"):
@@ -110,6 +114,10 @@ def validate_persona_structure(path: Path) -> list[str]:
     - ``name`` matches the filename stem
 
     Returns a list of error messages (empty means valid).
+
+    Returns:
+        The structural error messages; empty when the persona is valid.
+
     """
     errors: list[str] = []
     try:
@@ -134,6 +142,10 @@ def load_persona(project_root: Path, role_name: str) -> str | None:
     Looks for ``.gzkit/personas/{role_name}.md``. Returns the markdown body
     (everything after frontmatter) if found and valid.  Returns ``None`` if
     the persona file does not exist.  Raises ``ValueError`` on parse errors.
+
+    Returns:
+        The persona body text; None when the persona file does not exist.
+
     """
     persona_path = project_root / ".gzkit" / "personas" / f"{role_name}.md"
     if not persona_path.is_file():

@@ -51,6 +51,11 @@ def parse_citation(text: str) -> Citation:
 
     Raises :class:`pydantic.ValidationError` when any of the three fields is
     missing or fails its constraint.
+
+    Returns:
+        The parsed citation. Text that does not match the canonical form returns nothing: the
+        empty-field ``Citation`` it builds raises ``pydantic.ValidationError``.
+
     """
     match = _CANONICAL_PATTERN.match(text.strip())
     if match is None:
@@ -77,6 +82,11 @@ def is_portable(
     is in ``[N, N + supported_window - 1]``.  At ``current_revision >= N + supported_window``
     the citation is out of date and the link-integrity validator (OBPI-07) flags
     it for amendment.
+
+    Returns:
+        True when ``current_revision`` lies within ``supported_window`` revisions at or after the
+        citation's revision; False otherwise.
+
     """
     delta = current_revision - citation.corpus_revision
     return 0 <= delta < supported_window

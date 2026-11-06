@@ -59,6 +59,10 @@ def extract_gz_command_chains(content: str) -> list[list[str]]:
     descriptive, not prescriptive). Returns bare chains — briefs report by
     chain, not by line — while the operator-doc checker consumes the line
     attribution the shared extractor also carries.
+
+    Returns:
+        One verb chain per ``gz`` invocation found in the brief's code segments.
+
     """
     return [list(ref.chain) for ref in extract_verb_references(content, segments=BRIEF_SEGMENTS)]
 
@@ -215,6 +219,10 @@ def scope_finding(scope_audit: dict[str, list[str]]) -> str | None:
 
     The one decision both ``gz obpi precomplete`` and ``gz obpi complete`` read, so the
     check that reports before attestation and the gate that refuses cannot disagree.
+
+    Returns:
+        The finding naming the out-of-scope files (the overflow counted); None when there are none.
+
     """
     outside = scope_audit.get("out_of_scope_files") or []
     if not outside:
@@ -320,6 +328,11 @@ def _should_use_sealed_scope(obpi_info: dict[str, Any]) -> bool:
     the live tree shows only post-repudiation governance churn, the changed-files
     audit false-fails, and the re-completion the repudiate contract promises is
     blocked.
+
+    Returns:
+        True for a ledger-completed OBPI, or a repudiated one carrying completion evidence; False
+        otherwise.
+
     """
     if obpi_info.get("ledger_completed"):
         return True
@@ -339,6 +352,10 @@ class ObpiValidator:
         """Validate an OBPI file for completion readiness.
 
         Returns a list of error messages (empty if valid).
+
+        Returns:
+            The error messages; empty when the brief is valid.
+
         """
         if not obpi_path.exists():
             return [f"File not found: {obpi_path}"]
@@ -494,6 +511,10 @@ class ObpiValidator:
         plural ``gz chores run``) and the agent only discovers the typo at
         pipeline runtime. Each unique chain is verified once against the
         cached parser tree.
+
+        Returns:
+            One error per unique ``gz`` chain that does not resolve; empty when all do.
+
         """
         errors: list[str] = []
         chains = extract_gz_command_chains(content)
@@ -513,6 +534,10 @@ class ObpiValidator:
 
         Returns a list of warnings identifying which sections still contain
         the scaffold defaults emitted by OBPI template scaffolding.
+
+        Returns:
+            One warning per section still holding a scaffold marker; empty when none do.
+
         """
         warnings: list[str] = []
         for section_name, markers in TEMPLATE_SCAFFOLD_MARKERS.items():

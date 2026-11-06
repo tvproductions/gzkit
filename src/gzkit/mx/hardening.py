@@ -107,6 +107,10 @@ def open_sessions(root: Path) -> dict[str, str]:
     after it — the same open-set rule the marker's binding check uses.
     Reads through :class:`gzkit.ledger.Ledger` (the guards READ the ledger; they
     never mutate the writer — brief Denied Paths).
+
+    Returns:
+        Mapping of each open session id to its earliest open timestamp.
+
     """
     out: dict[str, str] = {}
     for event in Ledger(root.joinpath(*_LEDGER_RELPATH)).query():
@@ -126,6 +130,10 @@ def lease_starts(root: Path) -> dict[str, str]:
     A lease begins at the session's open and again at each ``mx_session_lease_renewed``
     (its ``renewed_at``). Only the lease restarts: debt keeps aging from the contract's
     first open (:func:`_debt_since`, GHI #1258).
+
+    Returns:
+        Mapping of each open session id to the start of its current lease.
+
     """
     starts = open_sessions(root)
     renewals = Ledger(root.joinpath(*_LEDGER_RELPATH)).query(event_type="mx_session_lease_renewed")
@@ -172,6 +180,11 @@ def ttl_max_open_status(
     ledger status by :func:`gzkit.mx.lease.book_lease_expiries`, not enforced by
     eviction. Exceeding ``max_open`` is a hard single-occupancy breach and emits
     ``CRITICAL``, which the checkpoint pins through an active marker.
+
+    Returns:
+        The result naming the sessions past their lease, whether ``max_open`` was exceeded, and the
+        emitted level and its route.
+
     """
     root = root or Path.cwd()
     now = now or datetime.now(UTC)
@@ -210,6 +223,11 @@ def normal_release_blocked(root: Path | None = None) -> ReleaseLockResult:
     grounding route) rather than demoting it to advisory; emits ``INFO`` (the
     non-grounding track route) when no hangar is open. The release funnels
     (``gz patch release`` / ``gz closeout``) consult ``.blocked`` and refuse.
+
+    Returns:
+        The result with ``blocked`` true and a reason when the hangar is open, and the emitted level
+        and route.
+
     """
     root = root or Path.cwd()
     emitted = levels.CRITICAL if marker.is_active(root) else levels.INFO
@@ -232,6 +250,10 @@ def _debt_level(age: float) -> int:
     The rungs are fractions of the lease: a quarter is NOTICE, a half warns. The top
     rung is WARNING, never a grounding level: debt past the lease announces at full
     volume and blocks nothing, exit included (GHI #1257, operator ruling 2026-10-18).
+
+    Returns:
+        WARNING at half the lease or more, NOTICE at a quarter or more, otherwise INFO.
+
     """
     lease = lease_hours()
     if age >= lease / 2:
@@ -246,6 +268,11 @@ def _debt_since(root: Path, sessions: dict[str, str]) -> dict[str, str]:
 
     A safe-mode session cycle under one contract renews the lease, never the debt
     (GHI #1258, operator ruling 2026-10-18 'Per contract (Rec.)').
+
+    Returns:
+        Mapping of each open session to the first open under its contract, or to its own open when
+        it has no contract.
+
     """
     opened = Ledger(root.joinpath(*_LEDGER_RELPATH)).query(event_type="mx_session_opened")
     first: dict[str, str] = {}
@@ -268,6 +295,11 @@ def debt_aging_status(
     The open hangar is the advisory-debt state (every non-floor guard demoted to
     advisory while the marker is up); the longer the oldest open session sits, the
     louder the emitted level — debt does not stay silent.
+
+    Returns:
+        The result carrying whether debt is flagged, the oldest age in hours, and the emitted level,
+        route and grounding.
+
     """
     root = root or Path.cwd()
     now = now or datetime.now(UTC)
@@ -298,6 +330,11 @@ def dangling_state_status(root: Path | None = None) -> DanglingStateResult:
     session; a marker removed without a close event leaves an open session with no
     marker — the dangling state this guard flags, which ``gz mx repair`` rewrites.
     Marker absent ⇒ the checkpoint does not demote, so ``ERROR`` grounds.
+
+    Returns:
+        The result carrying whether the state dangles, the dangling session ids, and the emitted
+        level, route and grounding.
+
     """
     root = root or Path.cwd()
     sessions = open_sessions(root)

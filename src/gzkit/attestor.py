@@ -18,6 +18,11 @@ def configured_attestor_handle(project_root: Path | None = None) -> str | None:
 
     An unreadable `.gzkit.json` yields None rather than an error: the verb that
     needs the config reports that failure itself, on its own terms.
+
+    Returns:
+        The configured attestor handle; None when `.gzkit.json` is absent or unreadable, or sets no
+        handle.
+
     """
     path = (project_root or Path.cwd()) / ".gzkit.json"
     if not path.is_file():

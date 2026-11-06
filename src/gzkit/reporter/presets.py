@@ -64,6 +64,10 @@ def status_table(
     """Build a governance-style status table.
 
     Uses box.ROUNDED, alternating row striping, and zero padding.
+
+    Returns:
+        The striped status table; a one-cell table holding ``empty_message`` when there are no rows.
+
     """
     if not rows:
         table = Table(title=title, box=box.ROUNDED, padding=(0, 0))
@@ -87,6 +91,10 @@ def kv_table(
     """Build a two-column key-value table.
 
     Uses box.ROUNDED with bold labels and no header row.
+
+    Returns:
+        The key-value table; a single ``No data.`` row when there are no rows.
+
     """
     table = Table(title=title, box=box.ROUNDED, show_header=False, padding=(0, 1))
     table.add_column("Label", style="bold")
@@ -109,6 +117,10 @@ def list_table(
     """Build a simple list-style table.
 
     Uses box.ROUNDED with no row striping.
+
+    Returns:
+        The list table; a one-cell table holding ``empty_message`` when there are no rows.
+
     """
     if not rows:
         table = Table(title=title, box=box.ROUNDED)

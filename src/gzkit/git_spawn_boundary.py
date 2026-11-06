@@ -109,6 +109,11 @@ def isolated_git_env(base: Mapping[str, str]) -> dict[str, str]:
     The injection uses ``GIT_CONFIG_COUNT``/``GIT_CONFIG_KEY_<n>``, which the
     scrub above removes from the inherited environment; these are written AFTER
     that filter, so a fixture's pins can never be a caller's leftovers.
+
+    Returns:
+        A new environment mapping: *base* without its repo-local git variables, plus the
+        GIT_CONFIG_COUNT/KEY/VALUE entries that pin PINNED_FIXTURE_GIT_CONFIG.
+
     """
     env = {key: value for key, value in base.items() if not is_repo_local_git_var(key)}
     for index, (key, value) in enumerate(PINNED_FIXTURE_GIT_CONFIG):
@@ -129,6 +134,10 @@ def scrub_repo_local_git_env(environ: MutableMapping[str, str]) -> list[str]:
     production code honouring ``GIT_DIR`` is correct git-tool behaviour. Measured
     2026-09-07: with every fixture site guarded, a linked-worktree push still
     left the hosting clone bare with three foreign commits on its branch.
+
+    Returns:
+        The sorted names of the variables removed; empty when *environ* held none.
+
     """
     removed = sorted(key for key in environ if is_repo_local_git_var(key))
     for key in removed:
@@ -181,6 +190,11 @@ def git_spawns_outside_boundary(tests_root: Path) -> list[str]:
     Paths are relative to *tests_root*'s parent (the project root). Files that do
     not parse are reported as offenders too: a fence that skips what it cannot
     read is a fence with a hole shaped like a syntax error.
+
+    Returns:
+        Sorted-by-file ``<path>:<line>`` offenders, with ``<path>:0 (unparseable)`` for a file that
+        does not parse; empty when every spawn is guarded.
+
     """
     offenders: list[str] = []
     base = tests_root.parent

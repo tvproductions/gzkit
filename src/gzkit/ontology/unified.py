@@ -193,6 +193,11 @@ def _resolve_okf_link_targets(
     on a materialized ``Doc`` node, rewrite the target so :func:`_add_grounded_edges`
     admits the edge; otherwise leave the ref raw so it is dropped — a cross-bundle /
     non-Doc target is never minted into a fake node (BI#1, GHI #674).
+
+    Returns:
+        The edges, each target rewritten to its Doc node id when it resolves to one and left raw
+        otherwise.
+
     """
     resolved: list[OntologyEdge] = []
     for edge in edges:
@@ -270,6 +275,10 @@ def project_all(
     emission, no graph-state write; composed edges land only on materialized nodes.
     The returned :class:`UnifiedProjection` carries the composed graph plus the
     per-domain :class:`UnifiedFidelity` confession (BI#1).
+
+    Returns:
+        The projection carrying the composed graph and the per-domain fidelity.
+
     """
     ledger = ledger or _default_ledger()
     corpus = project_corpus(ledger)

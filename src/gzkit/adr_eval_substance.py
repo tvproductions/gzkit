@@ -97,6 +97,11 @@ def get_substance_verdict_for_adr(
     explanation >= _MIN_EXPLANATION_CHARS and a judge receipt id); otherwise
     returns an UNGRADED verdict. NEVER computes a grade from the ADR prose —
     substance is judged, not pattern-matched.
+
+    Returns:
+        The verdict from the last ledger event matching the ADR and dimension, or an UNGRADED
+        verdict when none does or the ledger does not exist.
+
     """
     ledger_path = project_root / ".gzkit" / "ledger.jsonl"
     if not ledger_path.exists():

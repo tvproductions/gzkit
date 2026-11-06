@@ -148,6 +148,11 @@ def _stream_wants_color(stream: TextIO | None) -> bool:
     """Return True when log output to *stream* should be coloured.
 
     *stream* is None when the process has no stderr (pythonw, a detached launch).
+
+    Returns:
+        False when there is no stream or colour is disabled; otherwise True when colour is forced or
+        the stream is a TTY.
+
     """
     if stream is None or should_disable_color():
         return False

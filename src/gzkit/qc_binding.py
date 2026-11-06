@@ -266,6 +266,11 @@ def build_qc_registry() -> list[QCStep]:
     self-registration, so the derived bound steps plus the self-registered
     advisory steps are both present whenever the registry is built — neither is
     a hand-maintained list.
+
+    Returns:
+        One QCStep per `gz check` step, classified from `_STEP_CLASSIFICATION` and wired into `gz
+        check`, followed by the self-registered advisory steps.
+
     """
     import gzkit.adr_eval  # noqa: F401, PLC0415 — triggers gz-adr-evaluate self-registration
     from gzkit.commands.quality import _build_check_steps  # noqa: PLC0415

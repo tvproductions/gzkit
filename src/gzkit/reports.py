@@ -80,6 +80,12 @@ def publish_report(
     Report IDs and metadata are immutable. Retry the same inputs after an IO
     failure: a retained but unwitnessed file is adopted only if bytes agree;
     an already-witnessed report merely rebuilds views from ledger order.
+
+    Returns:
+        The report's `id` and metadata (`series`, `path`, `sha256`, `period`, `evidence_cutoff`)
+        with `published` True and `already_published` True when the ledger already witnessed this
+        report, False when this call published it.
+
     """
     if not re.fullmatch(r"[a-z0-9][a-z0-9_-]{0,127}", report_id):
         raise ValueError(

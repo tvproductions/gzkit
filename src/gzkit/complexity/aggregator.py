@@ -48,6 +48,11 @@ def compute_metric_distribution(
     Returns a frozen :class:`MetricDistribution`.  ``sample_count`` reflects
     the number of raw inputs (so a thin sample stays mechanically visible
     to consumers).
+
+    Returns:
+        The frozen distribution; all percentiles 0.0 for no values and equal to the value for a
+        single value.
+
     """
     sample_count = len(values)
     if sample_count == 0:
@@ -101,6 +106,10 @@ def aggregate_project(
     *raw_metrics*.  Missing metric keys produce empty distributions
     (sample_count == 0) rather than raising — the pipeline records "this
     metric was not measurable" mechanically.
+
+    Returns:
+        The project baseline with one distribution per metric key, in the supplied order.
+
     """
     distributions = tuple(
         compute_metric_distribution(raw_metrics.get(key, ()), key) for key in metric_keys
@@ -127,6 +136,10 @@ def aggregate_cross_project(
     :func:`statistics.variance` of the per-project p50 medians for each
     metric — the headline doctrine signal answering "how much does the
     median move project-to-project?".
+
+    Returns:
+        The aggregate with one cross-project metric per key, in the supplied order.
+
     """
     cross = tuple(
         _build_cross_metric(metric_key, projects, pooled_raw.get(metric_key, ()))

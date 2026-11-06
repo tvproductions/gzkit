@@ -50,6 +50,10 @@ def resolve_git_head_commit(project_root: Path) -> str | None:
     """Return the current HEAD short SHA, or None when unavailable.
 
     Cached within the process to avoid redundant subprocess calls.
+
+    Returns:
+        The seven-character short SHA of HEAD; None when git fails or prints nothing.
+
     """
     key = f"head:{project_root}"
     if key in _git_cache:
@@ -82,6 +86,12 @@ def capture_validation_anchor_with_warnings(
     resolved; returns ``None`` with accumulated warnings when the anchor
     is degraded (missing required fields). The typed return shape replaces
     the legacy ``dict[str, str] | None`` per GHI #143.
+
+    Returns:
+        An EventAnchor of the HEAD commit, the first tag at HEAD (if any) and the semver read from
+        adr_id, with any warnings; None in place of the anchor when the commit or semver cannot be
+        resolved.
+
     """
     from gzkit.event_evidence import EventAnchor
 
@@ -118,6 +128,11 @@ def capture_validation_anchor(project_root: Path, adr_id: str | None = None) -> 
 
     Degraded fallback returns a sentinel ``EventAnchor`` with zeroed commit
     and semver so downstream consumers always receive a typed value.
+
+    Returns:
+        The resolved EventAnchor, or a sentinel EventAnchor with commit "0000000" and semver "0.0.0"
+        when the anchor is degraded.
+
     """
     from gzkit.event_evidence import EventAnchor
 

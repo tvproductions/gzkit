@@ -128,6 +128,11 @@ def _leading_verb_tokens(text: str) -> tuple[str, ...]:
 
     ``"justify --draft 'pre-decision text'"`` yields ``("justify",)`` — flags,
     ids, and quoted text are arguments, and only the verb prefix is resolvable.
+
+    Returns:
+        The leading tokens of text that match the verb pattern, up to the first that does not; an
+        empty tuple when the first token is not a verb.
+
     """
     chain: list[str] = []
     for token in text.split():
@@ -158,6 +163,11 @@ def extract_verb_references(
     OUTSIDE the construct it suppresses; a line-granular marker would have to be
     written between two table rows or two blockquote lines, which breaks the
     rendered page while every validator here still reports green.
+
+    Returns:
+        A VerbReference, with its chain and 1-based line number, for each prescriptive gz chain
+        found, in document order; references in marker-suppressed blocks are left out.
+
     """
     references: list[VerbReference] = []
     in_fence = False
@@ -224,6 +234,11 @@ def verify_gz_chain(verbs: Sequence[str]) -> tuple[bool, str]:
     frontmatter-ledger-coherence`` resolves at ``run`` and the slug is a
     positional. Verbs at intermediate levels MUST be registered choices, so
     typos fail closed.
+
+    Returns:
+        (True, a "resolved 'gz ...'" message) when every intermediate verb is a registered choice;
+        (False, the reason naming the unregistered verb and the available choices) otherwise.
+
     """
     import argparse  # noqa: PLC0415
 
@@ -257,6 +272,11 @@ def _unregistered_reason(verb: str, walked: list[str], available: list[str]) -> 
     Near-matches lead the sample so the likely-intended verb (e.g. the plural
     `chores` for a `chore` typo) always appears even when the list is truncated.
     Prefix overlap is checked in both directions.
+
+    Returns:
+        A message naming the parser level reached, the unregistered verb, and up to eight available
+        subcommands (near matches first), ending in "..." when more exist.
+
     """
     near = [v for v in available if v.startswith(verb[:3]) or verb.startswith(v[:3])]
     ordered = near + [v for v in available if v not in near]

@@ -33,6 +33,11 @@ def _operator_groups(groups: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
     The generated status labels are stable ownership markers. The old command
     array has no marker, so only its exact shipped command is migrated.
+
+    Returns:
+        The groups with owned handlers removed, dropping a group left with no handlers and the
+        legacy shipped command group.
+
     """
     retained = []
     for group in groups:
@@ -87,6 +92,11 @@ def sync_codex_hooks(project_root: Path) -> list[str]:
     Adopter projects without the repository's orientation script get no dangling
     command. Malformed operator JSON is surfaced, never overwritten as empty.
     All writes participate in the sync preview's capture sink.
+
+    Returns:
+        The project-relative path of the Codex hooks file; empty when the project has no orientation
+        script.
+
     """
     if not (project_root / _ORIENTATION).is_file():
         return []

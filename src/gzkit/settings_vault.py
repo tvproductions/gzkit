@@ -68,6 +68,11 @@ def vault_slug(root: PurePath) -> str:
     backslashes and its drive letter; a segment carrying a drive is absolute
     and ``pathlib`` discards everything to its left, which is how the vault
     ended up inside the repository it protects (GHI #1071).
+
+    Returns:
+        The root's POSIX form with each run of characters outside `[A-Za-z0-9._-]` replaced by `-`
+        and edge dashes stripped, or "root" when nothing remains.
+
     """
     flattened = re.sub(r"[^A-Za-z0-9._-]+", "-", root.as_posix()).strip("-")
     return flattened or "root"
@@ -78,6 +83,10 @@ def vault_dir(root: PurePath, vault_root: Path | None = None) -> Path:
 
     ``vault_root`` overrides the computed location for tests; production
     callers omit it and get ``~/.claude/backups/<slug>/settings.local``.
+
+    Returns:
+        `vault_root` when given, otherwise `~/.claude/backups/<slug>/settings.local`.
+
     """
     if vault_root is not None:
         return vault_root
@@ -102,6 +111,11 @@ def _status_without_live_file(directory: Path, snapshots: list[Path]) -> VaultSt
     Surviving snapshots make this the recovery case, which is the scenario the
     backup hook was written for; no snapshots means there was never anything
     to protect here.
+
+    Returns:
+        A RECOVERABLE VaultStatus naming the newest snapshot when snapshots survive; otherwise a
+        NOT_APPLICABLE status with a zero snapshot count.
+
     """
     if snapshots:
         newest = snapshots[-1]
@@ -130,6 +144,12 @@ def vault_status(root: Path, vault_root: Path | None = None) -> VaultStatus:
     Absence is reported rather than passed over, because an empty vault and an
     unchecked vault look identical from the outside. That indistinguishability
     is what let GHI #1071 run undetected.
+
+    Returns:
+        A VaultStatus whose state is RECOVERABLE or NOT_APPLICABLE when the live file is missing,
+        ABSENT when it exists with no snapshots, CURRENT when the newest snapshot matches it and
+        DRIFTED when it differs, with the snapshot count and an explanatory message.
+
     """
     directory = vault_dir(root, vault_root)
     snapshots = _snapshots(directory)

@@ -106,6 +106,11 @@ def trace_reach(
 
     ``run`` is the sweep's own runner, so the hang bound applies here too: a module
     that does not return raises :class:`subprocess.TimeoutExpired` to the caller.
+
+    Returns:
+        Mapping of each module to the ModuleReach its traced run recorded: the worktree lines it
+        executed, the files it read and the tests it ran.
+
     """
     reach: dict[str, ModuleReach] = {}
     with tempfile.TemporaryDirectory() as tmp:
@@ -138,6 +143,11 @@ def reaching_modules(reach: dict[str, ModuleReach], path: str, first: int, last:
 
     When none did, every module is returned: the trace may have missed a child it
     could not see, and grading against all of them is the witness's prior behavior.
+
+    Returns:
+        Sorted names of the modules that executed a line in the span or read `path`; when none did,
+        every module in `reach`, sorted.
+
     """
     span = {(path, n) for n in range(first, last + 1)}
     reached = (m for m, r in reach.items() if r.lines & span or path in r.reads)

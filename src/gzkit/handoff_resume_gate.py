@@ -96,6 +96,11 @@ def newest_handoff(project_root: Path) -> Path | None:
     both `CHECKPOINT`, so filtering on mode here would discard the authored one.
     Mode is the right question on the release arm (no checkpoint of any
     authorship surrenders a token); "who wrote it" is the right question here.
+
+    Returns:
+        The newest authored, non-abandoned handoff (or the first one whose frontmatter is not a
+        mapping); else the newest floor bookmark; None when no candidate exists.
+
     """
     from gzkit.handoff_api import list_handoffs  # noqa: PLC0415  (avoids an import cycle)
     from gzkit.handoff_selection import is_floor_bookmark  # noqa: PLC0415  (same cycle)
@@ -161,6 +166,11 @@ def booking_targets_the_armed_handoff(project_root: Path, handoff: Path) -> bool
     Relative paths resolve against *project_root*, because the repo-relative
     spelling is what the block prose prints — a predicate that compared only
     absolute paths would refuse the exact command it tells the operator to run.
+
+    Returns:
+        True when nothing is armed or *handoff* resolves to the armed document; False when it
+        resolves elsewhere or resolution raises OSError.
+
     """
     armed = newest_handoff(project_root)
     if armed is None:
@@ -213,6 +223,10 @@ def _build_mis_targeted_booking_violation() -> Path:
     pass against a gate that never compares anything — the facade shape §5
     exists to refuse. The runtime-random root name keeps both paths unknowable
     at mutation-authoring time.
+
+    Returns:
+        The fixture root holding the two planted handoffs under ``.gzkit/handoffs``.
+
     """
     from gzkit.enforcement import create_fixture_tempdir  # noqa: PLC0415
 
@@ -242,6 +256,10 @@ def _ep_resume_gate_booking_coupling(root: Path) -> int:
     Truthy only when BOTH hold. An always-refuse mutation blocks the gate's own
     recovery path; an always-permit mutation is GHI #795 itself — consent
     recorded against a document the operator never read.
+
+    Returns:
+        1 when the older target is refused and the armed one permitted; 0 otherwise.
+
     """
     handoffs = root / ".gzkit" / "handoffs"
     refused = not booking_targets_the_armed_handoff(root, handoffs / "20260716T000000Z-older.md")

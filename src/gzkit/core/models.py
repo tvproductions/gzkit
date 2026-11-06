@@ -96,6 +96,10 @@ def id_kind(identifier: str) -> IdKind:
     """Return the kind an identifier's leading token names.
 
     Raises ``ValueError`` for an identifier no kind claims.
+
+    Returns:
+        The ``IdKind`` whose value matches the identifier's leading token.
+
     """
     head, _, rest = identifier.partition("-")
     if rest:
@@ -281,6 +285,10 @@ def spelled_parent(identifier: str) -> str | None:
     ``REQ-<semver>-<NN>-<MM>``. ``None`` for an id that carries no parent (an
     ADR, a slug TASK) or is not well formed. A reader with a ledger uses
     ``parent_of``, which reads stored fields first.
+
+    Returns:
+        The parent id the spelling names; None when it names none or is malformed.
+
     """
     return obpi_adr_id(identifier) or req_obpi_id(identifier) or task_req_id(identifier)
 
@@ -617,6 +625,10 @@ def _translate_pydantic_errors(
     """Convert Pydantic v2 errors to dicts matching gzkit error format.
 
     Returns a list of dicts with keys: type, artifact, message, field.
+
+    Returns:
+        One ``{type, artifact, message, field}`` dict per Pydantic error.
+
     """
     results: list[dict[str, Any]] = []
     for err in exc.errors():
@@ -679,6 +691,11 @@ def validate_frontmatter_model(
 
     Each dict has keys: type, artifact, message, field — matching the
     constructor kwargs of ``gzkit.validate.ValidationError``.
+
+    Returns:
+        The translated error dicts, empty when the frontmatter validates; None when no model is
+        registered for the schema.
+
     """
     schema_id = schema.get("$id", "")
     model_cls = SCHEMA_TO_MODEL.get(schema_id)
@@ -719,6 +736,10 @@ def obpi_item_reference_pattern(item: int) -> str:
 
     An invariant list may name an OBPI by item alone (``(OBPI-04)``), a form
     outside the id grammar.
+
+    Returns:
+        A regex matching ``OBPI-<item>`` with optional leading zeros, at a word boundary.
+
     """
     return rf"OBPI-0*{item}\b"
 

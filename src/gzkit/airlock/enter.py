@@ -50,6 +50,11 @@ def _default_reach(node_id: str) -> list[str] | None:
 
     Lazily imports the ontology surface so the core stays exercisable with NO
     projection built (hexagonal rule 6) — tests inject a fake ``reach_fn``.
+
+    Returns:
+        The transitive reach of ``node_id`` in the projected ontology graph, as ``compute_reach``
+        returns it (None when it cannot resolve the node).
+
     """
     from gzkit.commands.ontology import compute_reach  # noqa: PLC0415
     from gzkit.ontology.unified import project_all  # noqa: PLC0415
@@ -131,6 +136,11 @@ def _resolve_authority(unaccounted: tuple[SeamEdge, ...], blast_radius: int) -> 
     A small, FULLY-ACCOUNTED entry may auto-proceed under DELEGATED authority
     (logged). It is never a responsibility dial — the captain owns every outcome,
     and a non-accounted seam is never auto-proceeded by ``blast_radius`` alone.
+
+    Returns:
+        ``Authority.DELEGATED`` when every seam is accounted and ``blast_radius`` is positive;
+        otherwise ``Authority.CAPTAIN``.
+
     """
     if not unaccounted and blast_radius > 0:
         return Authority.DELEGATED
@@ -161,6 +171,11 @@ def _reconcile(
     edges are the observed reach blast-radius; pull edges are the declared parent
     -ADR invariants (LAW). An edge is ``accounted`` iff its target id appears in
     the brief text — the declarer names the seam to account for it (D1).
+
+    Returns:
+        The seam map carrying the declared bodies, the push and pull edges, and the subset of edges
+        left un-accounted.
+
     """
     push = tuple(
         SeamEdge(
@@ -193,6 +208,11 @@ def _decide(unaccounted: tuple[SeamEdge, ...], override: CaptainOverride | None)
     un-accounted (D2, parent ADR § Boundary Invariants #4) — fail-closed. A live
     (non-revoked) captain override is the only way past a NO-GO; a revoked
     override restores it.
+
+    Returns:
+        ``Decision.PROCEED`` when no seam is un-accounted or a live override is present; otherwise
+        ``Decision.HOLD``.
+
     """
     if not unaccounted:
         return Decision.PROCEED
@@ -229,6 +249,11 @@ def build_refusal(seam_map: SeamMap, target: str) -> str:
     Names, for each un-accounted seam: (a) the exact seam id, (b) its provenance
     (direction: push-from-reach vs pull-from-invariant; vein: LAW vs OBSERVED),
     and (c) a one-command re-sense to rule out a stale L3 baseline.
+
+    Returns:
+        The multi-line NO-GO message: a header, one line per un-accounted seam, and the re-sense
+        command.
+
     """
     lines = [f"AIRLOCK NO-GO: un-accounted seam(s) block GO for {target}."]
     for edge in seam_map.unaccounted:
@@ -256,6 +281,10 @@ def _build_unaccounted_seam_violation() -> Path:
     dependent stays un-accounted; the accounted control (``accounted.md``) names it,
     so the SAME dependent is accounted — the differential the entrypoint reconciles.
     Returns the fixture root inside the runner-owned workspace.
+
+    Returns:
+        The temp-dir root holding ``brief.md`` (un-accounted) and ``accounted.md`` (accounted).
+
     """
     root = create_fixture_tempdir(prefix="gzkit-airlock-nc-")
     dep = f"DEP-UNACCOUNTED-{root.name}"
@@ -284,6 +313,11 @@ def _ep_airlock_unaccounted_seam(root: Path) -> int:
     unknowable id; an always-HOLD mutation fails (b); an always-PROCEED mutation fails
     (a). The reach is the INPUT SCENARIO; the verdict is COMPUTED by production
     ``_decide`` with no forcing kwarg pre-bound.
+
+    Returns:
+        1 when the airlock holds on the un-accounted seam and proceeds once it is accounted; 0
+        otherwise.
+
     """
     dep = f"DEP-UNACCOUNTED-{root.name}"
     target = compose_probe_id(IdKind.OBPI, f"airlock-nc-{root.name}")

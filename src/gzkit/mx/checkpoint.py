@@ -24,6 +24,11 @@ def resolve(
 
     Under-marker demotion: non-floor guards demote to ADVISORY (visible ledger debt).
     gate5_invariants pin to CRITICAL regardless of emitted level or marker state.
+
+    Returns:
+        The CRITICAL route for a Gate-5 invariant, ADVISORY for a non-critical level while the
+        hangar demotes, otherwise the route for ``emitted_level``.
+
     """
     if guard_name in GATE5_INVARIANTS:
         return _disposition.route(_levels.CRITICAL)
@@ -57,6 +62,10 @@ def hangar_demotes(project_root: Path | None = None) -> bool:
     ``gz mx exit`` holds through its re-run, which stays on disk so the session never
     looks dangling (:func:`gzkit.mx.marker.condition`; GHI #1257, #1273).
     ``GZKIT_MX_FULL_STRENGTH`` does the same for a shared verifier (GHI #1263).
+
+    Returns:
+        True when the marker condition is on and full strength was not requested; False otherwise.
+
     """
     return marker.condition(project_root).on and not full_strength_requested()
 
@@ -69,6 +78,10 @@ def is_advisory(guard_name: str, project_root: Path | None = None) -> bool:
     its resolved route is the under-marker demotion sentinel, which reproduces the
     prior decision rules: gate5_invariants pin (never advisory), outside the hangar
     nothing demotes, inside the hangar non-invariant guards demote to ADVISORY.
+
+    Returns:
+        True when the guard's resolved route at ERROR is ADVISORY; False otherwise.
+
     """
     return resolve(guard_name, _levels.ERROR, project_root) == _disposition.Route.ADVISORY
 
@@ -86,6 +99,10 @@ def blocks(
     the pre-commit enforcement surface (GHI #843), which has three separate
     entrypoints and would otherwise carry three copies of the composition --
     the N-inline-substitutions shape parent ADR-0.0.74 BI#2 exists to prevent.
+
+    Returns:
+        True when the resolved route grounds; False otherwise.
+
     """
     return _disposition.grounds(resolve(guard_name, emitted_level, project_root))
 
@@ -96,6 +113,10 @@ def demote_notice(guard_name: str) -> str:
     Demotion is announced, never silent: advisory means non-grounding, not
     discarded. One authority for the wording so every consuming surface says the
     same thing about what did and did not just happen (GHI #843).
+
+    Returns:
+        The demotion notice naming the guard.
+
     """
     return (
         f"[MX advisory] guard '{guard_name}' reported a violation and was demoted "

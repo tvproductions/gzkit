@@ -26,6 +26,12 @@ def render_codex_role(source: str, body: str) -> str:
     Try complete line spans instead of interpreting TOML string escapes. Parsing
     the candidate and comparing the whole document also rejects apparent keys
     embedded inside another multiline string or a nested table.
+
+    Returns:
+        The source with the `developer_instructions` value replaced by the JSON-quoted body and
+        every other value unchanged, prefixed by the marker line when it does not already open with
+        it.
+
     """
     original = tomllib.loads(source)
     if not isinstance(original.get("developer_instructions"), str):
@@ -84,6 +90,11 @@ def sync_codex_roles(project_root: Path) -> list[str]:
     No registry means no ownership and no writes. Preflight every role before
     applying any writes so an invalid registry, body, or native TOML fails cleanly.
     The caller decides whether Codex delivery is enabled for this project.
+
+    Returns:
+        Project-relative POSIX paths of every role file the registry manages, in role-name order;
+        empty when no registry exists.
+
     """
     registry_path = project_root / ".gzkit/agents/roles.json"
     if not registry_path.exists():

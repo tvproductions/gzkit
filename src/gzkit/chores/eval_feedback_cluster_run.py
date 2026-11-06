@@ -29,6 +29,10 @@ def load_thresholds(project_root: Path) -> dict[str, float]:
     registry runs on the library's defaults, and the run says so. A registry
     that is present and unreadable raises: defaulting past a broken file would
     report a configured run that was not one.
+
+    Returns:
+        The threshold for each default key: the registry value when configured, else the default.
+
     """
     if not thresholds_configured(project_root):
         return dict(_DEFAULTS)

@@ -126,6 +126,11 @@ def _load_allowlist(
 
     Returns (entries, error_message). When the manifest is missing or
     malformed, entries is empty and error_message is populated.
+
+    Returns:
+        ``(entries, error_message)``: the entries and None on success; an empty list and the message
+        when the manifest is missing, unreadable or invalid.
+
     """
     manifest_path = project_root / _MANIFEST_REL
     if not manifest_path.exists():
@@ -152,6 +157,11 @@ def run_unscoped_rules(project_root: Path) -> UnscopedRulesResult:
 
     Reads only `.gzkit/rules/*.md` (never mirrors — REQ-4) and
     `.gzkit/manifest.json`. Never writes. Never invokes shell.
+
+    Returns:
+        The aggregate result: ``"fail"`` with exit code 2 when the manifest or a rule cannot be
+        read, ``"fail"`` with exit code 3 on a non-allowlisted violation, otherwise ``"pass"``.
+
     """
     allowlist, manifest_error = _load_allowlist(project_root)
 

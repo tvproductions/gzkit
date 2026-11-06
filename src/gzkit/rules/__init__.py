@@ -53,6 +53,12 @@ def _classify_rule_file(
 
     Signature-compatible with :func:`gzkit.chores._classify_chore_file`. See
     ``.gzkit/rules/skill-surface-sync.md`` § class-classifier.
+
+    Returns:
+        ``"package_only"`` for package files and assets with no canonical counterpart;
+        ``"canonical"`` for Markdown rules, canonical-side files and assets with a ``.gzkit/rules/``
+        counterpart.
+
     """
     path = Path(path)
     name = path.name
@@ -224,6 +230,11 @@ def _extract_subtree_prefix(pattern: str) -> str | None:
     Returns None for global patterns like ``**/*``.
     Returns None for literal file paths with no glob segments (GHI #142) —
     a pattern with no wildcards is a file path, not a subtree prefix.
+
+    Returns:
+        The literal directory prefix before the first wildcard segment; None for a global pattern, a
+        pattern with no wildcard, or a wildcard in the first segment.
+
     """
     if _is_global_pattern(pattern):
         return None
@@ -266,6 +277,10 @@ def _is_vendor_mirror_prefix(prefix: str) -> bool:
     whose paths enumerate the vendor mirror it is itself rendered into
     (e.g. skill-surface-sync includes .github/instructions/**) creates a
     self-referential subtree the validator must waive (GHI #375).
+
+    Returns:
+        True when the prefix is, or lies under, a vendor mirror root; False otherwise.
+
     """
     normalized = prefix.replace("\\", "/").strip("/")
     return any(
@@ -412,6 +427,10 @@ def _classify_canonical_rules(project_root: Path) -> list[ClassifiedRule]:
     only ``applyTo``, so ``audience`` and ``excludeAgent`` are already absent
     from every canon-rendered instruction file and their defaults here lose
     nothing.
+
+    Returns:
+        One classified rule per canonical rule file; empty when ``.gzkit/rules/`` does not exist.
+
     """
     canonical_dir = project_root / ".gzkit" / "rules"
     if not canonical_dir.is_dir():
@@ -465,6 +484,10 @@ def _shared_subtree_rules(project_root: Path) -> dict[str, list[ClassifiedRule]]
     The instruction-file path remains as the fallback for trees with no
     ``.gzkit/rules/`` canon -- an adopter hand-authoring ``.github/instructions/``
     directly -- where those files ARE the source rather than a rendering of one.
+
+    Returns:
+        Mapping of subtree prefix to the shared, non-global rules that apply to it.
+
     """
     canonical = _classify_canonical_rules(project_root)
     rules = canonical or classify_instruction_rules(project_root)
@@ -484,6 +507,10 @@ def _subtree_sections(rules_for_subtree: list[ClassifiedRule]) -> list[str]:
     by :func:`nested_agents_md_paths`. Two copies would drift on the
     empty-body case, and the helper under-reporting the writer is the class of
     defect GHI #890 closed.
+
+    Returns:
+        The non-empty stripped bodies of the subtree's rules.
+
     """
     return [body for rule in rules_for_subtree if (body := rule.body.strip())]
 
@@ -496,6 +523,10 @@ def _foreign_vendor_roots(project_root: Path, config: GzkitConfig) -> tuple[Path
     ``CLAUDE.md`` claims a surface gzkit does not own there. Derived from the
     declared vendor set rather than a literal list, so retiring a vendor
     removes its root here in the same edit.
+
+    Returns:
+        The surface roots of every non-Claude vendor that declares one.
+
     """
     vendors = config.vendors
     return tuple(
@@ -516,6 +547,11 @@ def _nested_subtrees(project_root: Path) -> list[tuple[str, Path, list[str]]]:
     The single walk both :func:`sync_nested_agents_md` and
     :func:`nested_agents_md_paths` read, so the write set and the writer cannot
     disagree about which directories are in play.
+
+    Returns:
+        ``(subtree, subtree_dir, sections)`` for each subtree whose directory exists, in subtree
+        order.
+
     """
     found: list[tuple[str, Path, list[str]]] = []
     for subtree, rules_for_subtree in sorted(_shared_subtree_rules(project_root).items()):
@@ -540,6 +576,10 @@ def nested_agents_md_paths(project_root: Path, config: GzkitConfig | None = None
     --surfaces`` leave 16 files modified after a read-only run — the tuple named
     3 paths while the writer touched ~19, so restore could only put back the 3
     it knew about.
+
+    Returns:
+        The ``AGENTS.md`` path of every subtree the writer walks.
+
     """
     del config  # kept for callers; the write set no longer has a vendor dimension
     return {
@@ -613,6 +653,10 @@ def _mirror_owned_roots(project_root: Path, config: GzkitConfig) -> tuple[tuple[
     them from churning but would also orphan a copy forever once the canonical
     file it mirrors is retired, and ``sync_skill_mirror`` is documented as
     "intentionally additive/non-destructive", so nothing else would remove it.
+
+    Returns:
+        The sorted ``(mirror_root, canonical_root)`` pairs, the canonical root itself excluded.
+
     """
     canonical = project_root / config.paths.skills
     mirrors = (
@@ -769,6 +813,10 @@ def _parse_canonical_frontmatter(path: Path) -> tuple[dict[str, Any], str]:
     """Parse a canonical rule file into (frontmatter_dict, body).
 
     Raises ValueError if frontmatter delimiters are missing.
+
+    Returns:
+        ``(frontmatter_dict, body)``, the frontmatter parsed from YAML and the body stripped.
+
     """
     text = path.read_text(encoding="utf-8")
     if not text.startswith("---"):
@@ -792,6 +840,10 @@ def load_rule(path: Path) -> CanonicalRule:
 
     Raises ValueError for parse errors, pydantic.ValidationError for
     invalid frontmatter.
+
+    Returns:
+        The validated rule with its body and source path.
+
     """
     fm_dict, body = _parse_canonical_frontmatter(path)
     frontmatter = RuleFrontmatter(**fm_dict)
@@ -808,6 +860,10 @@ def load_rules(rules_dir: Path) -> list[CanonicalRule]:
     Returns a list of validated CanonicalRule objects sorted by rule ID.
     Raises ValueError if the directory does not exist.
     Raises pydantic.ValidationError if any rule has invalid frontmatter.
+
+    Returns:
+        The validated rules, nested surface files skipped, sorted by rule id.
+
     """
     if not rules_dir.is_dir():
         msg = f"Rules directory does not exist: {rules_dir}"
@@ -836,6 +892,11 @@ def render_rule_for_claude(rule: CanonicalRule) -> str:
     Scoped rules get ``paths:`` YAML frontmatter on line 1 — Claude
     Code's parser falls back to unconditional load when anything
     (HTML comment included) precedes the opening ``---``.
+
+    Returns:
+        The Claude rule text: the header and body, preceded by ``paths:`` frontmatter for a scoped
+        rule.
+
     """
     is_global = rule.frontmatter.paths == ["**/*"]
     if is_global:
@@ -850,6 +911,10 @@ def render_rule_for_copilot(rule: CanonicalRule) -> str:
     Produces ``applyTo:`` frontmatter on line 1; the generator header
     follows the closing ``---`` so the frontmatter parser sees a
     well-formed block (same constraint as Claude rules).
+
+    Returns:
+        The Copilot instructions text: ``applyTo:`` frontmatter, the header and the body.
+
     """
     apply_to = ", ".join(rule.frontmatter.paths)
     return f'---\napplyTo: "{apply_to}"\n---\n{_RENDER_HEADER}\n{rule.body}\n'
@@ -859,6 +924,11 @@ def _render_path_str(target: Path, project_root: Path | None) -> str:
     """Render a written path as a project-relative posix string when possible.
 
     Mirrors ``plan_sync_all``'s normalization so apply mode and dry-run agree.
+
+    Returns:
+        The path relative to ``project_root`` in POSIX form; the path as given when no root is
+        passed, or in POSIX form when it lies outside the root.
+
     """
     if project_root is None:
         return str(target)
@@ -898,6 +968,10 @@ def _is_framework_tree(project_root: Path | None) -> bool:
     ``None`` means the caller did not say, and the conservative answer is "yes,
     the framework": it preserves today's rendering exactly rather than silently
     stripping scope from a caller that never opted in.
+
+    Returns:
+        True when no root is given or the root carries ``src/gzkit/__init__.py``; False otherwise.
+
     """
     if project_root is None:
         return True
@@ -925,6 +999,11 @@ def _scope_rule_for_delivery(
     This mirrors `_prune_unshippable_chores` (GHI #783) one level down, including
     its reason for keying on a classifier: the class definition is the contract,
     and a glob restating one shape of it would drift.
+
+    Returns:
+        The rule unchanged for the framework tree or when every path is deliverable, a copy narrowed
+        to the deliverable paths, or None when none survives.
+
     """
     if _is_framework_tree(project_root):
         return rule

@@ -608,6 +608,10 @@ def _report_format_failure(directory: Path, reason: str) -> str:
     picking either rebuilds the lossy channel this function exists to replace.
     A formatting failure is rare; verbose on failure and silent on success is
     the right trade (GHI #914).
+
+    Returns:
+        The failure message written to stderr.
+
     """
     message = f"ruff format did not run on {directory}: {reason}"
     print(f"Warning: {message}", file=sys.stderr)  # noqa: T201

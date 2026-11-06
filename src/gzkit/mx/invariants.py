@@ -66,6 +66,10 @@ def _build_gate5_ledger_violation() -> Path:
     integrity path is schema/shape conformance. The synthetic violation is a
     corrupted ledger: an invalid-JSON line plus a line missing the required
     ``id``/``ts`` fields. The runner removes the temp dir after the entrypoint runs.
+
+    Returns:
+        The temp project root holding the corrupted ledger.
+
     """
     root = create_fixture_tempdir(prefix="gzkit-gate5-ledger-nc-")
     gzkit_dir = root / ".gzkit"
@@ -83,6 +87,10 @@ def _ep_gate5_ledger(root: Path) -> list[Any]:
     Returns the validator's error list — truthy (non-empty) when the corruption is
     caught. Lazy import avoids pulling the validate package into the widely-imported
     ``mx.invariants`` module at import time.
+
+    Returns:
+        The validator's error list; non-empty when the corruption is caught.
+
     """
     from gzkit.validate_pkg.ledger_check import validate_ledger  # noqa: PLC0415
 
@@ -95,6 +103,10 @@ def _build_gate5_attestation_absence() -> dict[str, Any]:
     Every field except ``attestation_text`` is valid, so the ONLY violation the real
     attestation-field validator can complain about is the absent attestation — the
     NC isolates the absence case, not a malformed date or placeholder attestor.
+
+    Returns:
+        The completion payload whose only defect is the empty attestation text.
+
     """
     return {
         "attestor": "Test Attestor",
@@ -118,6 +130,10 @@ def _ep_gate5_attestation_absence(scenario: dict[str, Any]) -> bool:
     accept empty text — the violation would slip and this returns False (FACADE).
     Forgery-detection is OUT — only the absence case is NC-able. Lazy import avoids
     pulling the commands package into ``mx.invariants`` at import time.
+
+    Returns:
+        True when both production checks reject the absent attestation; False otherwise.
+
     """
     from gzkit.commands.adr_audit import (  # noqa: PLC0415
         _requires_human_obpi_attestation,
@@ -214,6 +230,11 @@ def unenrolled_gate5_members(registered_claim_ids: Iterable[str]) -> list[tuple[
 
     ``_GATE5_NAMED_NOT_ENFORCED`` members are exempt by design: no unified gate5
     entrypoint exists for them, and faking one is forbidden.
+
+    Returns:
+        ``(member, reason)`` pairs for each floor member with no claim or an orphaned claim, in
+        member order; empty when all are enrolled.
+
     """
     registered = set(registered_claim_ids)
     unenrolled: list[tuple[str, str]] = []

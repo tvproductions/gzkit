@@ -210,6 +210,11 @@ def is_blocker_comment(body: str) -> bool:
     Deliberately narrow. Every comment cross-links issues, so mining all of them
     would turn ordinary discussion into false gates -- the noise that gets a
     freshness signal ignored, which is indistinguishable from not having one.
+
+    Returns:
+        True when any blocker marker matches the body (an empty or None body never matches),
+        otherwise False.
+
     """
     return any(p.search(body or "") for p in _BLOCKER_MARKERS)
 
@@ -220,6 +225,11 @@ def extract_references(text: str) -> list[BlockerRef]:
     Pure -- no network, no `gh`. Deduplicated on (kind, identifier) with
     first-seen order preserved, so a blocker naming the same GHI twice yields
     one reference to adjudicate rather than two.
+
+    Returns:
+        One reference per distinct (kind, identifier) pair in first-seen order; empty when the text
+        cites nothing.
+
     """
     seen: set[tuple[str, str]] = set()
     found: list[BlockerRef] = []
@@ -250,6 +260,12 @@ def blockers(issue: Issue, resolver=None) -> list[Blocker]:
     ADR and OBPI references always resolve `unknown` -- their only repo-local
     index is a Layer-3 derived view, which `state-doctrine.md` forbids as a
     source of truth. Reporting them as unverified is the honest outcome.
+
+    Returns:
+        One blocker per precondition comment, carrying its creation time and the references it
+        cites, with GHI references resolved when a resolver is given; empty when no comment records
+        a precondition.
+
     """
     found: list[Blocker] = []
     for comment in issue.comments:
@@ -337,6 +353,10 @@ def family_signal(issue: Issue) -> list[str]:
     Candidate evidence for the Step 2 body read, never a verdict and never a
     count -- see the calibration above. An empty list means no phrase matched,
     which is not evidence the issue is outside the family.
+
+    Returns:
+        The distinct matched phrases, lowercased and sorted; empty when no phrase matches.
+
     """
     haystack = f"{issue.title}\n{issue.body or ''}"
     return sorted({m.group(0).lower() for p in _FAMILY_SIGNALS for m in p.finditer(haystack)})
@@ -356,6 +376,11 @@ def stale_annotations(issue: Issue, resolver=None) -> list[dict]:
     `#889 (open)` is a dated record of what its author observed; this function
     reports the decay so the reader discounts the annotation, and the remedy is
     to stop writing them (`ghi-author` § Step 4).
+
+    Returns:
+        One `{"identifier", "annotated"}` dict per distinct cited issue the resolver reports
+        settled, the last annotation winning; empty when no resolver is given or none has decayed.
+
     """
     if resolver is None:
         return []
@@ -470,6 +495,11 @@ def gh_reference_resolver(open_numbers: set[int]):
     issue costs nothing. Anything else needs one `gh` call to distinguish
     *closed* from *never existed* -- a distinction that matters, because a
     blocker citing a typo'd number is not a discharged precondition.
+
+    Returns:
+        A resolver mapping a GHI number to "live" (open, or not closed), "settled" (closed) or
+        "unknown" (the `gh` lookup failed), caching each answer.
+
     """
     cache: dict[int, str] = {}
 
@@ -593,6 +623,11 @@ def route(issue: Issue, precedent_ok: bool, duplicates: dict[int, int]) -> str:
     directed via gz plan / gz-design), not produced from the issue queue.
     Feature-shape signals on a GHI are surfaced through `rationale()` as
     escalation hints for operator judgment, not as a routing flip.
+
+    Returns:
+        "close-dup" when the issue is a known duplicate, "ambiguous" when the fix() precedent is too
+        thin, otherwise "direct-fix".
+
     """
     if issue.number in duplicates:
         return "close-dup"
@@ -707,6 +742,10 @@ def parse_rank_input(payload: object, known_numbers: set[int]) -> list[RankItem]
     and produced the recurring chat-surface duplication GHI #424 closed
     structurally. Cognitive freedom lives in selection + ordering + severity;
     the renderer owns all prose.
+
+    Returns:
+        The validated rank items in input order.
+
     """
     if not isinstance(payload, dict):
         raise RankInputError("--rank-input must be a JSON object")
@@ -767,6 +806,11 @@ def render_rank(
     fetched issue set. No prose field appears in both surfaces. When the input
     carries readiness, items render in fixed-order readiness groups, caller
     order kept within each.
+
+    Returns:
+        The Markdown deliverable: a header line, then the rank lines either grouped under readiness
+        headers or in caller order.
+
     """
     lines = [
         f"# GHI Triage Ranking — {len(items)} ranked of {total} open "
@@ -807,6 +851,10 @@ def _detect_width() -> int:
       2. COLUMNS env var (parent shell or harness propagation)
       3. shutil.get_terminal_size() when stdout is a real TTY (no cap)
       4. 100 cols (agent-harness display column; no TTY detected)
+
+    Returns:
+        The render width in columns from the first source in the resolution order that applies.
+
     """
     env_explicit = os.environ.get("GHI_TRIAGE_WIDTH")
     if env_explicit and env_explicit.isdigit():
@@ -832,6 +880,11 @@ def _make_console(width: int | None):
     Rich is imported lazily here so consumers that ship the skill without
     `rich` installed can still use the markdown / json / rank paths
     (`--format rich` is the only consumer of this helper).
+
+    Returns:
+        A Rich console forced to terminal mode with truecolor, at the given width or the detected
+        one when width is None.
+
     """
     from rich.console import Console  # noqa: PLC0415 — lazy: see docstring
 
@@ -928,6 +981,11 @@ def render_json(
     peers: `stale_annotations` is an exact lookup, `family_signal` is candidate
     evidence with a measured disagreement rate that the agent adjudicates.
     Neither feeds the rank-input schema, which stays structural-only (GHI #424).
+
+    Returns:
+        Indented JSON object carrying the 60-day precedent count, the issue count and the per-issue
+        records sorted by urgency and then issue number.
+
     """
     precedent_ok = precedent >= 3
     records: list[dict] = []
@@ -980,6 +1038,10 @@ def _ensure_rank_input_cache_dir() -> Path:
     `Write .gzkit/cache/triage/<name>.json` step would otherwise fail with
     a parent-directory error on first use. The directory is the supported
     Write target, so the script owns its lifecycle.
+
+    Returns:
+        The cache directory's resolved absolute path.
+
     """
     RANK_INPUT_CACHE_DIR.mkdir(parents=True, exist_ok=True)
     return RANK_INPUT_CACHE_DIR.resolve()
@@ -995,6 +1057,10 @@ def _read_rank_input(path: str | None) -> object:
     round 4) — a `Write` tool call surfaces only the file path in chat,
     while `echo '<json>' | …` surfaces the whole rank payload as the
     command line itself.
+
+    Returns:
+        The JSON value decoded from the file.
+
     """
     if path is None:
         raise RankInputError(

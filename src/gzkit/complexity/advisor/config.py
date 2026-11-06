@@ -16,6 +16,12 @@ def get_advisor_timeout_seconds(*, config_path: Path | None = None) -> float:
 
     Reads from ``.gzkit.json`` at the project root (or *config_path* if
     provided). Returns 30.0 when the key is absent or the file is missing.
+
+    Returns:
+        The configured ``advisor_timeout_seconds`` as a float; the default when the file is missing
+        or unreadable, is not valid JSON, lacks the key, or holds a value ``float`` rejects with
+        ``ValueError``. A non-object document or a null/list value raises instead.
+
     """
     path = config_path or Path(".gzkit.json")
     if not path.exists():

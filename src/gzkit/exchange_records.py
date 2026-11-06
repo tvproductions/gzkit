@@ -137,6 +137,10 @@ def parse_abandon_spec(raw: str) -> AbandonSpec:
     Whitespace around the category is rejected so the audit surface stays
     canonical — ``" network_loss:reason"`` is the same operator typo class as
     misspelling the category itself.
+
+    Returns:
+        The validated category and reason.
+
     """
     if ":" not in raw:
         raise InvalidAbandonSpec("abandon spec must be '<category>:<reason>' (missing colon)")
@@ -192,6 +196,11 @@ def _sanitize_exchange_text(text: str | None, *, limit: int = 600) -> str:
     silently dropped operator verbatim words (``AGENTS.md`` § Attestation). The
     marker is ``…``, the same glyph elisions already fold to, so it cannot trip
     the placeholder scan. The returned text never exceeds ``limit``.
+
+    Returns:
+        The cleaned text, truncated on a word boundary and ending in an ellipsis when it exceeds
+        `limit`; an empty string when the text is None or empty.
+
     """
     if not text:
         return ""
@@ -224,6 +233,10 @@ def write_degenerate_exchange(
     minimum-information fields per Sub-Invariant 2 (last lock-event timestamp,
     last commit SHA, decision context, branch state) plus abandon-specific
     frontmatter (``abandoned: true``, ``category``, ``reason``).
+
+    Returns:
+        Path of the record written.
+
     """
     target_dir = exchange_dir(project_root)
     target_dir.mkdir(parents=True, exist_ok=True)
@@ -331,6 +344,10 @@ def write_completion_exchange(
     ``### Value Narrative`` and ``## Tracked Defects``, which is where the completing
     agent already wrote the observation report — so the usual path needs no new
     operator input at all.
+
+    Returns:
+        Path of the record written.
+
     """
     target_dir = exchange_dir(project_root)
     target_dir.mkdir(parents=True, exist_ok=True)
@@ -457,6 +474,11 @@ def is_exchange_register_entry(frontmatter: dict) -> bool:
     - ``abandoned`` is not true. An abandoned record satisfies the pairing only
       when release is invoked through the ``--abandon`` code path, which cites the
       record it just wrote rather than searching for one.
+
+    Returns:
+        True when `mode` is the exchange mode (case-insensitively) and `abandoned` is not True,
+        otherwise False.
+
     """
     if str(frontmatter.get("mode", "")).upper() != EXCHANGE_MODE:
         return False
@@ -482,6 +504,11 @@ def find_exchange_for_release(
     discharge a surrender?"*, which is a different question over a different
     corpus. Sharing a rule across two questions that merely look alike is how the
     wrong filter gets applied to the wrong arm.
+
+    Returns:
+        Path of the matching record with the latest timestamp, or None when the directory is absent
+        or nothing matches.
+
     """
     search_dir = exchange_dir(project_root)
     if not search_dir.is_dir():

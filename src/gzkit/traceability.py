@@ -72,6 +72,11 @@ def find_covers_in_source(content: str) -> list[tuple[str, int]]:
     from inside them (GHI #390 Case A). Module / class / function docstrings
     remain in scope — they are the legitimate AST-invisible site this scanner
     exists to cover.
+
+    Returns:
+        (req_id, line_number) pairs in source order for each @covers reference outside non-docstring
+        string literals; an empty list when there is none.
+
     """
     excluded = _non_docstring_string_ranges(content)
     hits: list[tuple[str, int]] = []
@@ -102,6 +107,11 @@ def _non_docstring_string_ranges(content: str) -> list[tuple[int, int]]:
     Falls back to ``[]`` on any AST/tokenize error so callers preserve their
     historical behavior of "regex over raw source" when the file cannot be
     parsed (e.g. a fixture containing a deliberate syntax error).
+
+    Returns:
+        (start_offset, end_offset) character ranges of the non-docstring string tokens; an empty
+        list when the source cannot be parsed or tokenized.
+
     """
     try:
         tree = ast.parse(content)
@@ -226,6 +236,10 @@ def covers(req_id_str: str) -> Callable[[_F], _F]:
 
     A catalog ``REQ-<n>`` is accepted when ``data/catalog/reqs.json`` holds it.
 
+    Returns:
+        A decorator that registers a COVERS LinkageRecord from the test to the REQ and returns the
+        test unchanged.
+
     Raises:
         ValueError: If *req_id_str* has an invalid format or does not exist
             in the extracted brief-defined REQ set or the catalog.
@@ -302,6 +316,11 @@ def _iter_test_functions(
     the class, so a runner given the record executes that class, not its whole module;
     the decorator pass once skipped classes, and the regex pass recorded the file
     instead (GHI #1154).
+
+    Returns:
+        Module-level functions and top-level classes in source order, each class followed by its
+        direct methods; nested inner functions are left out.
+
     """
     nodes: list[ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef] = []
     for top_node in ast.iter_child_nodes(tree):
@@ -325,6 +344,12 @@ def scan_test_tree(test_dir: pathlib.Path) -> list[LinkageRecord]:
     the canonical regex scanner so audit-check, drift, and gz covers all see
     the same set (see #120). Returns deterministic results sorted by
     (file path, line number).
+
+    Returns:
+        One COVERS LinkageRecord per decorator-form or docstring/comment-form @covers reference,
+        sorted by evidence path and line; malformed REQs, catalog REQ decorators and unparseable
+        files are skipped.
+
     """
     records: list[LinkageRecord] = []
 
@@ -424,6 +449,11 @@ def scan_feature_tree(features_dir: pathlib.Path) -> list[LinkageRecord]:
     feature-level tags). This gives ``gz covers`` the same REQ-to-behave
     coverage graph it already has for unit tests, closing the remaining gap
     in GHI #185.
+
+    Returns:
+        The LinkageRecords for every @REQ tag in the feature files, sorted by evidence path and
+        line; an empty list when features_dir is not a directory.
+
     """
     records: list[LinkageRecord] = []
     if not features_dir.is_dir():
@@ -728,6 +758,11 @@ def compute_coverage(
     tests are for code, and a doc-only ADR has no test surface. Set
     ``include_doc=True`` to surface doc-kind REQs in the report (useful for
     inspecting governance graph completeness rather than test coverage).
+
+    Returns:
+        A CoverageReport holding one entry per testable REQ (doc-kind REQs too when include_doc is
+        set) with its sorted covering tests, rolled up by ADR and by OBPI, and an overall summary.
+
     """
     # Filter to testable REQs only — doc REQs have no test surface unless requested
     if include_doc:

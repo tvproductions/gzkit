@@ -72,6 +72,11 @@ def book_contract_amendment(root: Path, text: str, *, commit: str | None = None)
 
     Returns ``True`` when an amendment was booked. Nothing is booked unless a valid
     safe-mode session is open under a contract.
+
+    Returns:
+        True when an amendment was booked; False when no valid safe-mode session is open under a
+        contract or the text matches the pinned contract.
+
     """
     held = marker.read(root)
     if held is None or held.level != "drydock" or not held.contract or not marker.is_valid(root):

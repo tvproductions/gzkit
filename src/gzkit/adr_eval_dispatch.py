@@ -97,6 +97,11 @@ def get_dispatch_record_for_adr(
     and this persona; otherwise NOT_DISPATCHED. Requiring the event to cite its
     subject is the GHI #647 lesson: an event of the right type that names a
     different subject proves nothing about this one.
+
+    Returns:
+        The record from the last ledger event citing both the ADR and the persona, or a
+        NOT_DISPATCHED record when none does or the ledger does not exist.
+
     """
     ledger_path = project_root / ".gzkit" / "ledger.jsonl"
     if not ledger_path.exists():
@@ -148,5 +153,9 @@ def is_single_driver(channel: list[PersonaDispatchRecord]) -> bool:
     Partial dispatch is still single-driver. The three personas score different
     dimension families, so crediting a partial run as independent would let one
     cheap dispatch launder the two that never happened.
+
+    Returns:
+        False only when every record is dispatched; True when any is not.
+
     """
     return not all(record.is_dispatched for record in channel)

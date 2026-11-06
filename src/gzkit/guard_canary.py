@@ -262,6 +262,11 @@ def review_witnesses(project_root: Path, ledger_path: Path | None = None) -> set
 
     A missing ledger or an unparseable row contributes nothing: a review the ledger cannot
     show is not a review.
+
+    Returns:
+        The set of ``(claim id, binding sha256)`` pairs recorded by review events; empty when the
+        ledger is missing or holds none.
+
     """
     path = _ledger_file(project_root, ledger_path)
     if not path.is_file():
@@ -282,6 +287,11 @@ def unreviewed(project_root: Path, ledger_path: Path | None = None) -> list[str]
     field is writable by anyone, so it cannot tell an operator's review from an agent's
     (GHI #1161). A review of an earlier binding does not count, so a rebound canary must be
     reviewed again. Session orientation calls this function rather than re-deriving it.
+
+    Returns:
+        Claim ids, in registry order, whose current binding has no review event; empty when every
+        canary is reviewed.
+
     """
     witnesses = review_witnesses(project_root, ledger_path)
     return [
@@ -313,6 +323,10 @@ def record_review(
     the registry untouched. Empty words, an empty attestor or an unknown claim is a usage
     error. A stale binding is a policy breach: the operator would be accepting a mutant
     against a guard that has changed since the canary was bound.
+
+    Returns:
+        The claim ids recorded, de-duplicated in the order given.
+
     """
     words, who = operator_text.strip(), attestor.strip()
     if not words or not who:
@@ -375,6 +389,11 @@ def run_canaries(project_root: Path, claim_ids: set[str] | None = None) -> list[
     """Apply each canary's mutant to an isolated copy and report whether its test kills it.
 
     One copy serves every canary: the sweep restores the file it mutates after each mutant.
+
+    Returns:
+        One CanaryRun per canary selected (all when *claim_ids* is None), with outcome ``invalid``
+        (reason ``guard``) when its guard does not resolve, else the sweep's outcome and reason.
+
     """
     runs: list[CanaryRun] = []
     with tempfile.TemporaryDirectory() as tmp:
@@ -424,6 +443,11 @@ def sweep_main(project_root: Path | None = None) -> int:
     copy. It runs in the full tier of `gz check`, never in the unit tier, where it set the
     whole tier's wall time (GHI #1191). A project with no canary registry has nothing to
     sweep and passes.
+
+    Returns:
+        0 when every canary's mutant is killed or there is no canary registry; 3 when a mutant
+        survives or a canary produces no run.
+
     """
     root = (project_root or Path.cwd()).resolve()
     if not registry_path(root, _CANARY_REGISTRY).is_file():

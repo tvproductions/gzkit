@@ -59,6 +59,10 @@ class ReqId(BaseModel):
         """Parse a REQ identifier string into a ``ReqId``.
 
         Raises ``ValueError`` when *raw* does not match the canonical pattern.
+
+        Returns:
+            The ReqId whose semver, OBPI item and criterion index are read from raw.
+
         """
         m = _REQ_PATTERN.match(raw.strip())
         if m is None:
@@ -257,6 +261,11 @@ def extract_reqs_from_brief(
 
     Malformed REQ lines are logged as warnings and skipped.
     Results are sorted by REQ identifier (semantic version ordering).
+
+    Returns:
+        The ReqEntity of each well-formed REQ checkbox line in the Acceptance Criteria section,
+        sorted by REQ identifier; an empty list when the section is absent or holds none.
+
     """
     in_section = False
     reqs: list[ReqEntity] = []
@@ -343,6 +352,11 @@ def scan_briefs(directory: pathlib.Path) -> list[DiscoveredReq]:
 
     Returns discovered REQs with their source file paths, sorted by REQ identifier
     (semantic version ordering).
+
+    Returns:
+        A DiscoveredReq for each REQ in every Markdown file whose frontmatter id is an OBPI, with
+        its source path, sorted by REQ identifier; files of other ids are skipped.
+
     """
     discovered: list[DiscoveredReq] = []
 
@@ -416,6 +430,11 @@ def covers_channel_reqs(reqs: list[ReqEntity]) -> list[ReqEntity]:
     every declared REQ, or a test legitimately citing a SUPPORT REQ reads as a
     phantom orphan — which is why :func:`detect_drift` applies this internally
     rather than callers pre-filtering what they hand it.
+
+    Returns:
+        The REQs, in input order, that are not doc-kind, not SUPPORT or STRUCTURAL-FENCE, and not
+        owned by a retired brief.
+
     """
     in_scope: list[ReqEntity] = []
     for entity in reqs:
@@ -550,6 +569,11 @@ def detect_drift(
     (ADR-0.32.0, OBPI-0.32.0-07 REQ-06). Behavior is preserved exactly: pure
     computation — no I/O, deterministic, results sorted by identifier (semantic
     version order for REQs, alphabetical for code).
+
+    Returns:
+        A DriftReport of the sorted unlinked specs, orphan tests (reserved fixture REQs excluded)
+        and unjustified code changes, with their counts and scan_timestamp.
+
     """
     view = _project_source_subgraph(reqs, linkage_records)
 

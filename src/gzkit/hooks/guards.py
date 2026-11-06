@@ -111,6 +111,10 @@ def scan_file(path: Path) -> list[str]:
     """Scan a single file for pytest usage violations.
 
     Returns list of violation messages (empty if clean).
+
+    Returns:
+        One message per violation; empty when the file is clean.
+
     """
     violations: list[str] = []
     if path.name == "conftest.py":
@@ -204,6 +208,10 @@ def forbid_manual_ledger_edits(root: Path) -> int:
     is a manual-edit signal and fails closed. New trailing append-only lines
     are allowed — the agent may have legitimately emitted an event via
     ``gz`` before staging.
+
+    Returns:
+        1 when the staged ledger diff removes or modifies a line; 0 otherwise.
+
     """
     staged = _run_git(["diff", "--cached", ".gzkit/ledger.jsonl"], root)
     if not staged:
@@ -230,6 +238,11 @@ def _parse_staged_name_status(staged: str) -> dict[str, str]:
     Rename/copy entries are the three-field form ``R<score>\\t<old>\\t<new>``:
     the new path maps to the rename code, the old path maps to ``D``. Plain
     entries are the two-field ``<code>\\t<path>`` form.
+
+    Returns:
+        Mapping of each staged path to its one-letter status code, the old side of a rename or copy
+        mapped to ``D``.
+
     """
     status: dict[str, str] = {}
     for line in staged.splitlines():
@@ -273,6 +286,11 @@ def _vendor_mirror_roots(root: Path) -> tuple[tuple[str, ...], tuple[str, ...]]:
     project config is absent or unparseable would be a worse failure than the
     drift it exists to catch, so an unreadable config falls back to the model
     defaults.
+
+    Returns:
+        ``(skill_mirror_roots, rule_mirror_roots)`` for the enabled vendors, or for every vendor
+        when none is declared.
+
     """
     from gzkit.config import GzkitConfig  # noqa: PLC0415
     from gzkit.sync_surfaces import has_vendor_declaration  # noqa: PLC0415
@@ -306,6 +324,11 @@ def _missing_mirror_error(
     Both surfaces ask the same question of different roots, so they share one
     implementation: an inlined second copy is what let the skill arm and the
     rule arm drift apart on which vendors they named (GHI #921).
+
+    Returns:
+        The drift message naming the missing mirrors; None when a mirror is staged or there are no
+        mirror roots.
+
     """
     mirrors = [f"{mirror_root}/{rel}" for mirror_root in mirror_roots]
     if not mirrors or any(mirror in staged_paths for mirror in mirrors):
@@ -334,6 +357,10 @@ def forbid_skill_sync_drift(root: Path) -> int:
     ``git diff --name-status`` three-field ``R<score>\\t<old>\\t<new>``
     entries. Detection keys on the new path; the old path is treated as a
     deletion.
+
+    Returns:
+        1 when a staged canonical skill or rule edit lacks a staged mirror; 0 otherwise.
+
     """
     staged = _run_git(["diff", "--cached", "--name-status"], root)
     if not staged:
@@ -391,6 +418,10 @@ def forbid_post_authoring_src_commits(root: Path) -> int:
     and the hook cannot drift apart. A blocked, accepted or stopped work package
     fences the same way, from :mod:`gzkit.work_package_fence` (GHI #1206), and needs no
     plans directory, because its state is on the ledger.
+
+    Returns:
+        1 when the staged commit carries production code the fences refuse; 0 otherwise.
+
     """
     from gzkit.pipeline_stage_fence import (  # noqa: PLC0415
         is_production_path,
@@ -451,6 +482,10 @@ def forbid_unattested_obpi_completion_commits(root: Path) -> int:
 
     The rule lives in :mod:`gzkit.obpi_completion_fence` so this guard, the hook,
     and ``gz obpi complete``'s own pre-flight cannot drift apart.
+
+    Returns:
+        1 when a staged brief turns Completed without its evidence; 0 otherwise.
+
     """
     from gzkit.obpi_completion_fence import (  # noqa: PLC0415
         completion_blockers,
@@ -570,6 +605,11 @@ def _guard_grounds(guard_name: str, emitted_level: int, root: Path) -> bool:
     Fails CLOSED. A broken or half-repaired ``gzkit.mx`` is precisely the state
     MX mode exists to survive, so an unresolvable checkpoint blocks the commit
     rather than silently demoting the guard that could not be resolved.
+
+    Returns:
+        The checkpoint's verdict on whether the finding blocks; True when the checkpoint cannot be
+        resolved.
+
     """
     try:
         from gzkit.mx import checkpoint  # noqa: PLC0415
@@ -588,6 +628,11 @@ def run_guards(root: Path) -> int:
     A demoted finding is ANNOUNCED, never discarded. Collecting findings and
     dropping them with nothing said is the complaint recorded on GHI #843
     itself: an operator otherwise cannot tell a clean run from a hangar run.
+
+    Returns:
+        The exit code of the first guard whose finding grounds the commit; 0 when every guard passed
+        or was demoted to advisory.
+
     """
     module = sys.modules[__name__]
     for guard_name, attr, emitted_level in _GUARD_META:

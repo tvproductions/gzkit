@@ -113,6 +113,11 @@ def _obpi_tally(
 
     See ``_NEGATION_FLAGS`` for why current graph flags — not the ever-seen
     ``TERMINAL_EVENTS`` set — are the correct read.
+
+    Returns:
+        ``(completed, live)``: the OBPI children not negated, and those of them with a ledger
+        completion.
+
     """
     canonical = ledger.canonicalize_id(adr_id)
     info = graph.get(canonical) or graph.get(adr_id) or {}
@@ -139,6 +144,10 @@ def foundation_rows(project_root: Path, ledger: Ledger) -> tuple[FoundationRow, 
     still flagged by the closed-kind gate — while the migration reported success.
     A silent skip in front of an rmtree-capable loop is the defect; the missing
     key is only its trigger.
+
+    Returns:
+        One row per foundation package; empty when the foundation directory does not exist.
+
     """
     config = GzkitConfig.load(project_root / ".gzkit.json")
     foundation_dir = project_root / config.paths.adrs / "foundation"
@@ -230,6 +239,10 @@ def compute_partition(project_root: Path, ledger: Ledger) -> Partition:
     completion. Frontmatter ``status`` is deliberately not consulted: the
     ADR-0.0.37 investigation proved it can claim terminality a foundation has
     not earned.
+
+    Returns:
+        The partition: rows with no completed OBPI to demote, the rest to grandfather.
+
     """
     rows = foundation_rows(project_root, ledger)
     demote = tuple(row for row in rows if row.completed_obpis == 0)
@@ -243,6 +256,10 @@ def _closeout_witnessed_adr_prefixes(ledger: Ledger) -> set[str]:
     Child-OBPI completion equality is NOT proof the parent ADR was closed out —
     an ADR whose every child finished can still be un-attested. The witness is
     the ADR's own ``audit_receipt_emitted`` event, which `gz closeout` writes.
+
+    Returns:
+        The ``ADR-X.Y.Z`` prefixes of every validated graph node.
+
     """
     # Resolve from CANONICAL GRAPH STATE, not from an event discriminator.
     #
@@ -271,6 +288,11 @@ def check_blockers(project_root: Path, ledger: Ledger) -> list[str]:
     an *un-attested* one are blockers just as much as a partly-finished one —
     silence on either would let the migration populate over a non-terminal tree
     and false-red the terminal-partition gate the moment OBPI-05 wires it.
+
+    Returns:
+        One message per absent, partly finished or un-attested Sunset prerequisite; empty when all
+        are terminal.
+
     """
     by_short: dict[str, FoundationRow] = {}
     for row in foundation_rows(project_root, ledger):
@@ -322,6 +344,11 @@ def interrupted_demotions(project_root: Path, ledger: Ledger) -> list[str]:
     ``foundation_rows``, so the migration recomputes over the REDUCED tree and
     reports a clean, seam-neutral success. The journal is what makes the gap
     visible; without it the failure is silent by construction.
+
+    Returns:
+        One message per journaled demotion left stranded, or a single message when the journal is
+        unreadable; empty when there is no journal or nothing stranded.
+
     """
     from gzkit.commands.adr_demote import _derive_pool_slug_from_adr_id
 
@@ -425,6 +452,11 @@ def graph_probe(ledger: Ledger, source_root: Path | None = None) -> dict[str, An
     would rest entirely on a separate manual re-sense. A seam is an edge whose
     endpoint is not a materialized node — precisely an orphaned `@covers`/
     `@surface` or lineage edge after an ADR id changes underneath it.
+
+    Returns:
+        Mapping of node, edge and seam counts, seam ids, ADR node ids and the fidelity flags of the
+        projection.
+
     """
     from gzkit.commands.ontology import compute_seams
     from gzkit.ontology.unified import project_all
@@ -512,6 +544,11 @@ def anchor_integrity(project_root: Path, partition: Partition) -> list[str]:
     pointing at one is a dangling `@covers`/`@surface` edge by definition — which
     is exactly what REQ-03 excludes. Reading the anchor index answers that
     question without needing the projection to retain the edge.
+
+    Returns:
+        One problem per parse failure in the index and per anchor targeting a doomed REQ; empty when
+        nothing is being demoted or no anchor is affected.
+
     """
     from gzkit.ontology.source import build_source_anchor_index
 
@@ -554,6 +591,11 @@ def rename_integrity(
 
     A removed node with no successor is the GHI #520 stranding signature; a node
     that failed to disappear means the rename never transacted at all.
+
+    Returns:
+        One problem per expected rename that cannot be verified, did not remove its node, or left no
+        successor; empty when every rename landed.
+
     """
     problems: list[str] = []
     before_nodes = set(before["adr_node_ids"])
@@ -589,6 +631,10 @@ def _grandfathered_ids(ledger: Ledger) -> set[str]:
 
     Read so emission is idempotent: REQ-02 requires exactly one witness per
     manifest entry, and a retry after a partial apply must not append a second.
+
+    Returns:
+        The ids of every ``foundation_grandfathered`` event in the ledger.
+
     """
     return {
         str(event.id)
@@ -604,6 +650,10 @@ def rename_map(partition: Partition) -> dict[str, str]:
     relabelling the re-sense diff must account for: every removed node needs a
     successor, and every edge touching a removed node must be relabelled with it
     or it is left dangling.
+
+    Returns:
+        Mapping of each demoted ADR id to its pool ADR id.
+
     """
     from gzkit.commands.adr_demote import _derive_pool_slug_from_adr_id
 
@@ -619,6 +669,10 @@ def build_manifest_entries(partition: Partition, frozen_at: str) -> list[dict[st
     No lifecycle field: lifecycle is a Layer-2 fact read live from the ledger.
     Baking it into this committed Layer-1 file is the state-doctrine drift the
     ADR-0.0.37 frontmatter-lie demonstrated.
+
+    Returns:
+        One ``{id, title, semver, frozen_at}`` row per grandfathered foundation.
+
     """
     return [
         {
@@ -651,6 +705,11 @@ def _collision_disposition(pool_dir: Path, row: FoundationRow) -> tuple[str, str
     ``_build_demote_plan``'s own GHI #558 guard governs only whether the marker is
     *reversed*; it does not stop ``keep-pool`` from discarding the body. So the
     distinction has to be made here, before the plan is built.
+
+    Returns:
+        ``("fail", None)`` when no pool file collides, ``("keep-pool", None)`` for a promotion
+        round-trip, otherwise ``("fail", refusal_message)``.
+
     """
     from gzkit.commands.adr_demote import _derive_pool_slug_from_adr_id
 
@@ -679,6 +738,10 @@ def preflight_demotions(
     (``SystemExit(3)`` unless ``--force``) — driving the lower seams directly
     would otherwise silently orphan any ADR naming a demoted foundation as
     ``parent:``.
+
+    Returns:
+        One ``(row, plan)`` pair per demotion, in partition order, once every plan has validated.
+
     """
     from gzkit.commands.adr_demote import _build_demote_plan
     from gzkit.commands.common import GzCliError
@@ -846,6 +909,11 @@ def run_migration(
     pre-migration gate exactly as a fixture does, with no boundary distinguishing
     them — a bypass around a STOP-on-BLOCKERS requirement. Tests patch
     ``_SUNSET_PREREQUISITES`` within test scope instead.
+
+    Returns:
+        The receipt dict (partition, rosters, rename map, graph probes and diff, blockers, and the
+        receipt path) as written to ``receipt_dir``.
+
     """
     if not dry_run and not (attestor.strip() and attestation.strip()):
         # The witness binds HERE, at the library boundary — not only in the CLI

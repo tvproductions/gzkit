@@ -86,6 +86,11 @@ def behind_origin_caveat(behind: int) -> str:
     Carries the measured distance rather than a generic warning — an operator
     deciding whether to stop and pull needs the magnitude, and "behind" alone
     reads the same at 1 commit as at 20.
+
+    Returns:
+        A one-paragraph CAVEAT naming `behind` and telling the reader to pull and re-read before
+        trusting the selection.
+
     """
     return (
         f"CAVEAT: this clone is {behind} commits behind origin, and this "
@@ -106,6 +111,12 @@ def probe_remote_divergence(cwd: Path | None = None) -> RemoteDivergence | None:
     report ``behind=0`` on precisely the clone this caveat exists to warn about
     — a fix that renders green in the failing case is the defect wearing a fix's
     clothes.
+
+    Returns:
+        The RemoteDivergence (branch, ahead, behind) against `origin/main`, or None when git is
+        absent, `origin/main` cannot be resolved or any git call fails or prints an unparseable
+        count.
+
     """
     if os.environ.get(NO_FETCH_ENV) != "1":
         fetched = _git(["fetch", "--quiet", "origin"], FETCH_TIMEOUT_SEC, cwd)
@@ -149,6 +160,11 @@ def _git(
     cp1252/latin-1 would otherwise raise ``UnicodeDecodeError`` — a
     ``ValueError``, which the guard below does NOT catch — and kill session boot
     (the lesson GHI #688 already taught the file-read side).
+
+    Returns:
+        The completed git process, whatever its exit code, or None when git is missing or the
+        subprocess fails or times out.
+
     """
     try:
         return subprocess.run(  # noqa: S603 — git argv this module builds, never user text; executable resolved

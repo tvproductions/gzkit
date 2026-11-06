@@ -42,6 +42,10 @@ def _arb(name: str) -> Any:
     the shell, so ``gz arb step --name unittest -- <failing suite>``, the canonical
     "tests pass" invocation of AGENTS.md § Attestation, exits non-zero (GHI #642,
     GHI #1198).
+
+    Returns:
+        The attribute ``name`` of ``gzkit.commands.arb``.
+
     """
     from importlib import import_module
 

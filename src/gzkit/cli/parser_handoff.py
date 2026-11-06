@@ -31,6 +31,10 @@ def _joined(values: list[str] | None) -> str | None:
 
     Section flags append rather than keep the last value: a repeated
     ``--decisions`` once dropped five operator rulings without a refusal.
+
+    Returns:
+        The values joined with newlines; None when the flag was not supplied.
+
     """
     return None if values is None else "\n".join(values)
 

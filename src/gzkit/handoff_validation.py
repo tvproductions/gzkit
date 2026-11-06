@@ -160,6 +160,11 @@ def continues_from_refs(value: object) -> list[str]:
     dropped rather than returned: an empty pointer is not a parent, and passing
     one through would turn into a resolution attempt against the handoffs
     directory itself.
+
+    Returns:
+        The stripped, non-blank parent refs: one for a string, the string entries of a list, and
+        empty for None, a blank string or any other type.
+
     """
     if value is None:
         return []
@@ -552,6 +557,11 @@ def _existed_in_git_history(base_path: Path, rel_path: str) -> bool:
 
     Bytes-mode capture (no stdout decode) keeps this off the non-UTF-8
     subprocess-read class (GHI #582), matching ``_is_git_tracked``.
+
+    Returns:
+        True when ``git log --all`` finds a commit touching the path; False when it finds none, git
+        fails, or git cannot be spawned.
+
     """
     try:
         result = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
@@ -661,6 +671,11 @@ def _is_git_ignored(base_path: Path, rel_path: str) -> bool:
     the non-UTF-8 subprocess-read class (GHI #582). Fails open to "not ignored"
     on any error, so a genuinely-broken reference is never masked by a git
     failure or a non-git base path.
+
+    Returns:
+        True when ``git check-ignore`` reports the path ignored; False otherwise, including on any
+        git error.
+
     """
     try:
         result = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
@@ -703,6 +718,11 @@ def build_tracked_path_index(base_path: Path) -> frozenset[str] | None:
     Bytes-mode capture with an explicit decode keeps this off the non-UTF-8
     subprocess-read class (GHI #582); a path git cannot round-trip is replaced
     rather than raising, so one odd filename cannot blind the whole index.
+
+    Returns:
+        Frozen set of tracked file paths plus every directory prefix of each; None when ``git
+        ls-files`` cannot run or fails.
+
     """
     try:
         result = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
@@ -748,6 +768,12 @@ def _is_git_tracked(
     Answered from ``git_index`` rather than by a per-path ``git ls-files``
     (GHI #858). A candidate carrying pathspec globs is the one case a set cannot
     answer, so it still shells out — narrowly, and only after the set has missed.
+
+    Returns:
+        True when the path, or a directory containing a tracked file, is tracked; False when it is
+        not; None when *git_index* is None or the glob fallback's ``git ls-files`` cannot run or
+        fails.
+
     """
     if git_index is None:
         return None

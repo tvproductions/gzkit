@@ -46,6 +46,11 @@ def outcome_state(ledger: Ledger, outcome: str) -> tuple[OutcomeState, OutcomeSt
     """Return the outcome's current state and, in a side state, the state it left.
 
     An outcome with no `outcome_transitioned` event is `queued`.
+
+    Returns:
+        Tuple of the state the last transition moved to and, when that is a side state, the state it
+        moved from (None otherwise); ("queued", None) when the outcome has never transitioned.
+
     """
     moves = [
         row
@@ -124,6 +129,10 @@ def record_req_proof(
 
     Proof runs one path for both specializations (RP-12 ruling 45); only a catalog
     REQ has targets to prove against.
+
+    Returns:
+        The proof event that was validated and appended to the ledger.
+
     """
     held = next((entry for entry in catalog.reqs if entry.id == req), None)
     if held is None:

@@ -161,6 +161,11 @@ def obpi_state_machine_json_schema() -> dict[str, Any]:
     ``OBPIState`` members and their per-state terminal flags, plus the
     canonical transition set -- a single deterministic dict, coherence-checked
     against the committed ``schemas/obpi_state_machine.json`` file.
+
+    Returns:
+        Mapping of the state and transition model schemas, the per-state records and the canonical
+        transitions.
+
     """
     return {
         "state_schema": State.model_json_schema(),

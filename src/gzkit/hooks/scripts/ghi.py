@@ -15,6 +15,10 @@ def _ghi_triage_chat_silence_script() -> str:
     Authored under GHI #424 round 4 as the structural backstop on the
     chat-text surface; the cache-path requirement on triage.py covers
     the bash-command-line surface independently.
+
+    Returns:
+        The hook script source, dedented.
+
     """
     return dedent(
         '''\

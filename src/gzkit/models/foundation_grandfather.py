@@ -69,6 +69,10 @@ def foundation_kind_is_closed(project_root: Path) -> bool:
     as an empty roster made ``is_ungrandfathered_foundation`` true for every
     foundation package an adopter held, so all four authoring doors refused them
     while citing gzkit's own ADR as the reason.
+
+    Returns:
+        True when the grandfather manifest file exists in the project; False otherwise.
+
     """
     return (project_root / GRANDFATHER_MANIFEST_REL).is_file()
 

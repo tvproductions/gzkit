@@ -191,6 +191,11 @@ def _drop_signature_annotations(tree: ast.Module, *, deferred: bool) -> set[str]
     module (``deferred``). Class-field annotations are kept (Pydantic builds fields
     from them), as are signatures under a decorator outside
     :data:`_ANNOTATION_BLIND_DECORATORS`.
+
+    Returns:
+        Names the blanked annotations referenced; empty when annotations are not deferred in this
+        module.
+
     """
     if not (deferred or _postponed_annotations(tree)):
         return set()
@@ -252,6 +257,10 @@ def _behavior(source: str, *, deferred: bool = False) -> str | None:
     are dropped (:func:`_drop_signature_annotations`), with any import only they
     used, so a hunk that only re-types a function is not swept as a guard.
     ``deferred`` says the project runs on Python 3.14 or later (PEP 649).
+
+    Returns:
+        The `ast.dump` of the normalised tree, or None when the source does not parse.
+
     """
     try:
         tree = ast.parse(source)
@@ -318,6 +327,12 @@ def statement_mutations(source: str, path: str, first: int, last: int) -> list[M
     A statement that does not open its line (``if x: return``) is reached through the
     statement that does. A mutant that does not parse, or changes no behavior, is not
     built.
+
+    Returns:
+        The mutations whose source still parses and whose behavior fingerprint differs from the
+        original's, in span order; empty when the source does not parse or no such guard statement
+        starts in range.
+
     """
     try:
         tree = ast.parse(source)
@@ -389,6 +404,11 @@ def _sweep_reached(
     Units that share a module set share one sweep, so each set pays one baseline.
     Returns, in unit order, the witness, the modules that graded it, and whether
     that sweep's baseline was green.
+
+    Returns:
+        One tuple per unit, in unit order: the witness, the modules that graded it, and whether that
+        sweep's baseline was green.
+
     """
     groups: dict[tuple[str, ...], list[int]] = {}
     for index, (_, first, last) in enumerate(units):
@@ -476,6 +496,11 @@ def _aggregate(hunks: list[HunkWitness]) -> CommitVerdict:
     """Any survivor is undriven; only an all-killed sweep is driven.
 
     A declaration row makes no guard claim, so it does not enter the verdict.
+
+    Returns:
+        "undriven" when any non-declaration hunk survived, "driven" when every one was killed,
+        otherwise "inconclusive".
+
     """
     outcomes = {h.outcome for h in hunks if h.unit != "declaration"}
     if "survived" in outcomes:
@@ -496,6 +521,12 @@ def run_commit_witness(
     imports: it is neither a production hunk nor a test module here. Counting it as
     production made every commit that carries its Gate 4 scenarios read
     ``undriven`` whatever its guards did (measured 2026-10-15, OBPI-0.35.0-20).
+
+    Returns:
+        The witness for the resolved commit: "no-production-hunks" when it changes no production
+        file or no hunk changes behavior, "no-tests" when it touches no test module, "inconclusive"
+        when the baseline run hangs, otherwise the swept hunks with their aggregate verdict.
+
     """
     resolved = _git(["rev-parse", "--verify", f"{commit}^{{commit}}"], project_root)
     if resolved.returncode != 0:

@@ -41,6 +41,11 @@ def undeclared_shapes() -> dict[str, str]:
 
     Every text mentions a recognized event type, the property that makes it a
     present-but-false input: the substring parser read each of these as a citation.
+
+    Returns:
+        Mapping of shape name (denial, rejected-alternative, doubled-clause, two-events, two-scopes,
+        longer-token, scope-outside-clause, event-outside-clause) to a REQ text of that shape.
+
     """
     a, b = _two_events()
     clause = f"Witnessed by `{a}` + `gz validate --{_SCOPE}`."
@@ -75,6 +80,10 @@ def declared_req() -> tuple[str, str]:
     """Return a REQ that declares one witness clause and the event it declares.
 
     The body names a second event outside the clause, which must not reach the channel.
+
+    Returns:
+        `(text, event_type)`: the REQ text and the one event type its witness clause declares.
+
     """
     a, b = _two_events()
     text = (

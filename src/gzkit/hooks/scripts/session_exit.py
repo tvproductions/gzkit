@@ -20,6 +20,10 @@ def _session_exit_bookmark_script() -> str:
     Always exits 0. ``SessionEnd`` cannot block by platform contract and its
     stdout is not injected, so there is no verdict to report and nobody to
     report it to; the beat's whole contract is that a record exists afterward.
+
+    Returns:
+        The hook script source, dedented.
+
     """
     return dedent(
         """\
@@ -98,6 +102,10 @@ def _session_start_advisement_script() -> str:
 
     Always exits 0. A SessionStart hook that fails takes orientation down with
     it, and there is no agent yet to read the traceback.
+
+    Returns:
+        The hook script source, dedented.
+
     """
     return dedent(
         """\

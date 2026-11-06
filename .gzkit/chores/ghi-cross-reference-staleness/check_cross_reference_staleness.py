@@ -74,6 +74,11 @@ def scan(issues):
 
     An annotation is decayed when an OPEN body asserts a sibling is open and that
     sibling is CLOSED.
+
+    Returns:
+        Tuple of the decayed annotations, each `{"issue", "cites"}` in ascending issue order, and
+        the total count of annotations citing a known sibling.
+
     """
     state = {i["number"]: i["state"] for i in issues}
     decayed, total = [], 0

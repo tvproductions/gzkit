@@ -34,6 +34,10 @@ def _project_root_from_script(script_path: Path) -> Path:
 
     Script lives at ``<repo>/.gzkit/skills/<skill>/scripts/triage.py`` —
     four directory levels below the repository root.
+
+    Returns:
+        The repository root, taken as the fifth ancestor of the resolved script path.
+
     """
     return script_path.resolve().parents[4]
 
@@ -45,6 +49,11 @@ def _parse_simple_frontmatter(text: str) -> dict[str, str]:
     frontmatter block is the leading `---` ... `---` fence; each non-empty
     line is parsed as `key: value`. Nested structures are ignored — the
     only fields the triage cares about (id, status, title) are flat.
+
+    Returns:
+        Mapping of each flat frontmatter key to its value with surrounding quotes stripped; empty
+        when the text has no leading `---` fence or the fence is never closed.
+
     """
     if not text.startswith("---"):
         return {}

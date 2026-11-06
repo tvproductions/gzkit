@@ -93,6 +93,11 @@ def _section(content: str, heading: str) -> str | None:
     The ``#{2,3}`` boundary matters: an H3 that runs to the next H3 only would
     swallow a following H2's content and read a placeholder section as
     substantive.
+
+    Returns:
+        The text between the heading and the next H2 or H3, ``---`` line or end; None when the
+        heading is absent.
+
     """
     match = re.search(
         rf"^### {re.escape(heading)}\s*$([\s\S]*?)(?:^#{{2,3}} |\n---|\Z)",
@@ -162,6 +167,11 @@ def completion_blockers(content: str, *, requires_human: bool = True) -> list[st
     attestation universal — ``_requires_human_obpi_attestation`` returns True
     unconditionally, for every kind, lane, and sensitivity. The parameter exists
     for the one caller that still resolves it, never as a lane carve-out.
+
+    Returns:
+        Messages naming the missing Implementation Summary, Key Proof or human attestation (the last
+        only when *requires_human*); empty when none is missing.
+
     """
     blockers: list[str] = []
     if not has_substantive_implementation_summary(content):
@@ -185,6 +195,10 @@ def _obpi_id_matches(entry_obpi: str, obpi_id: str) -> bool:
     The audit ledger records full-slug ids while the path yields the short id.
     The trailing ``-`` boundary keeps ``OBPI-0.0.73-1`` from matching
     ``OBPI-0.0.73-10`` (GHI #629).
+
+    Returns:
+        True when *entry_obpi* equals *obpi_id* or extends it after a ``-``; False otherwise.
+
     """
     return entry_obpi == obpi_id or entry_obpi.startswith(obpi_id + "-")
 

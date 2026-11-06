@@ -47,6 +47,10 @@ def load_min_occurrences(project_root: Path) -> int:
     constant in a module body). A missing, malformed or field-less registry
     raises ``RegistryError``: defaulting past it would report a configured check
     that was not one.
+
+    Returns:
+        The positive ``min_occurrences`` integer from the registry.
+
     """
     value = load_registry_field(project_root, THRESHOLD_REGISTRY, "min_occurrences")
     if not isinstance(value, int) or isinstance(value, bool) or value < 1:

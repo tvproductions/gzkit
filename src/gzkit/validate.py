@@ -54,6 +54,11 @@ def validate_personas(project_root: Path) -> list[ValidationError]:
 
     Discovers persona files and runs structural validation on each.
     Returns a list of ``ValidationError`` instances (empty if all valid).
+
+    Returns:
+        One persona ValidationError per structural problem found in each persona file; an empty list
+        when every file is valid.
+
     """
     personas_dir = project_root / ".gzkit" / "personas"
     persona_files = discover_persona_files(personas_dir)

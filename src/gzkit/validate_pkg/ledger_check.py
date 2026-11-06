@@ -142,6 +142,10 @@ def _declared_types(rule: dict[str, Any]) -> tuple[str, ...]:
     all -- 14 fields across 12 event types accepted any value whatsoever. The
     silence is what made it survive: an unchecked field looks exactly like a
     field that passed.
+
+    Returns:
+        The declared type names; empty when ``type`` is neither a string nor a list.
+
     """
     declared = rule.get("type")
     if isinstance(declared, str):
@@ -283,6 +287,10 @@ def _conditional_predicate(when: Any) -> tuple[str, list[Any]] | None:
     be REPORTED rather than skipped. A guard the validator quietly ignores is
     indistinguishable from a passing one -- the presence-check family AGENTS.md
     names, where the only witness is that a rule was authored.
+
+    Returns:
+        ``(field, allowed)`` for a supported predicate; None otherwise.
+
     """
     if not isinstance(when, dict):
         return None

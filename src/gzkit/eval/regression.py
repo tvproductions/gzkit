@@ -134,6 +134,10 @@ def load_baseline(surface: str, baselines_dir: Path) -> EvalBaseline | None:
     """Load stored baseline for a surface.
 
     Returns None if no baseline exists (REQ-05: not a failure).
+
+    Returns:
+        The stored baseline; None when the surface has none.
+
     """
     path = baselines_dir / f"{surface}.baseline.json"
     if not path.exists():
@@ -153,6 +157,10 @@ def save_baseline(
 
     This function is the sole mechanism for creating/updating baselines.
     It must be called explicitly — never automatically during comparison.
+
+    Returns:
+        The path of the written ``<surface>.baseline.json`` file.
+
     """
     baselines_dir.mkdir(parents=True, exist_ok=True)
 
@@ -188,6 +196,11 @@ def compare_scores(
 
     A regression is any dimension where the current score drops by more
     than ``threshold`` compared to the stored baseline.
+
+    Returns:
+        The report carrying every dimension delta, the regressions beyond ``threshold``, and the
+        surfaces that had no prior baseline.
+
     """
     commit = _get_commit_hash()
     now = datetime.now(UTC).isoformat()
@@ -278,6 +291,10 @@ def create_initial_baselines(
 
     This is the explicit mechanism for creating baselines on first run.
     Returns the list of baseline file paths created.
+
+    Returns:
+        The paths of the baselines created; empty when every surface already had one.
+
     """
     created: list[Path] = []
     for surface_score in current.surface_scores:

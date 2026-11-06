@@ -43,6 +43,11 @@ def _one_line_descriptions(output: str) -> list[str]:
     sees no result at all -- a green baseline reads red and every mutation is
     graded ``inconclusive`` (GHI #986). Undocumented output is returned
     unchanged, so the one-line form keeps its existing behaviour exactly.
+
+    Returns:
+        The output's lines with each two-line test description folded onto one line ending "...
+        <status>"; other lines unchanged.
+
     """
     lines = output.splitlines()
     folded: list[str] = []
@@ -64,6 +69,12 @@ def read_test_observations(output: str) -> tuple[set[str], list[str], int]:
 
     Unknown/custom runner output is inconclusive. This parses execution reports;
     it does not decide whether an assertion expresses the intended requirement.
+
+    Returns:
+        The executed (non-skipped or failed) test IDs, the failed test IDs in first-seen order
+        without repeats, and the Ran count, which is 0 unless the output holds exactly one Ran
+        summary.
+
     """
     executed: set[str] = set()
     failures: list[str] = []
@@ -102,6 +113,11 @@ def judge_executed(output: str) -> str | None:
 
     The floor-free witness every lane applies to a covering run: a missing
     summary, 0 tests, or only skipped tests all exit 0 yet prove nothing.
+
+    Returns:
+        None when at least one test ran unskipped; otherwise the reason: no Ran summary, 0 tests
+        executed, or every selected test skipped.
+
     """
     ran = _RAN_RE.findall(output)
     if not ran:
@@ -119,6 +135,11 @@ def judge_behave_run(output: str) -> str | None:
     """Return why a zero-exit behave run witnessed no scenario, or ``None`` when one passed.
 
     ``behave --tags @REQ`` exits 0 when the tag selects no scenario.
+
+    Returns:
+        None when the last behave summary shows at least one passed scenario; otherwise the reason:
+        no scenario summary printed, or no scenario passed.
+
     """
     passed = _BEHAVE_PASSED_RE.findall(output)
     if not passed:

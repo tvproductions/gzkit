@@ -63,6 +63,11 @@ def run_with_timeout[T](
     (30s when unset); an explicit value wins (REQ-0.0.29-09-04, GHI #1105).
     Returns ``TimeoutOk`` on success, ``TimeoutTimedOut`` on timeout.
     The caller decides policy (fail-open or closed) based on the result.
+
+    Returns:
+        ``TimeoutOk`` carrying the callable's value, or ``TimeoutTimedOut`` with the elapsed time
+        and callable name when it ran out of time.
+
     """
     if timeout_s is None:
         timeout_s = get_advisor_timeout_seconds()

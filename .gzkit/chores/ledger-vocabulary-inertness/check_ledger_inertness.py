@@ -67,6 +67,11 @@ def fired_events(root: Path) -> Counter[str]:
 
     A malformed line is skipped rather than fatal: the ledger is append-only and
     a partial final write must not make the whole audit unrunnable.
+
+    Returns:
+        Counter of each string `event` value to the number of ledger lines carrying it; blank,
+        malformed and event-less lines are not counted.
+
     """
     counts: Counter[str] = Counter()
     with (root / _LEDGER_REL).open(encoding="utf-8", errors="replace") as handle:
@@ -263,6 +268,10 @@ def _project_root() -> Path | None:
     cwd is the chore-script precedent (``module-sloc-cap-radon``). It also makes
     the script aimable — a negative control points cwd at a fixture and the real
     code under test runs against it.
+
+    Returns:
+        The current working directory when it holds a `pyproject.toml` file, otherwise None.
+
     """
     root = Path.cwd()
     return root if (root / "pyproject.toml").is_file() else None
@@ -284,6 +293,11 @@ def _mx_demoted(guard_name: str, root: Path) -> bool:
     Fails CLOSED: a broken or half-repaired ``gzkit.mx`` is precisely the state
     MX mode exists to survive, so anything unresolvable blocks rather than
     demotes.
+
+    Returns:
+        True when the checkpoint reports the guard does not block at error level; False when it
+        blocks or when the checkpoint cannot be read.
+
     """
     try:
         from gzkit.mx import checkpoint, levels

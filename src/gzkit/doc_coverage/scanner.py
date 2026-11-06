@@ -48,6 +48,11 @@ def _extract_handler_name(set_defaults_call: ast.Call) -> str | None:
     and ``lambda a: _arb("HANDLER")(...)`` used by parser modules that defer
     handler imports until first invocation. Any single-underscore-prefixed
     identifier with a single string argument is treated as a lazy resolver.
+
+    Returns:
+        The handler name from the first ``func`` keyword whose shape is recognized; None when there
+        is none.
+
     """
     for kw in set_defaults_call.keywords:
         if kw.arg != "func":
@@ -81,6 +86,10 @@ def _find_build_parser_body(tree: ast.Module) -> list[ast.stmt] | None:
 
     Collects bodies from ``_build_parser()``, ``register_governance_parsers()``,
     and ``register_maintenance_parsers()`` to support split parser modules.
+
+    Returns:
+        The concatenated bodies of every parser-registration function; None when there are none.
+
     """
     combined: list[ast.stmt] = []
     for node in ast.walk(tree):
@@ -203,6 +212,10 @@ def discover_commands(source: str) -> list[DiscoveredCommand]:
 
     Parses the argparse tree from cli/main.py and parser modules without
     importing. Returns a list of DiscoveredCommand named tuples.
+
+    Returns:
+        The discovered leaf commands; empty when the source has no parser-registration function.
+
     """
     tree = ast.parse(source)
     body = _find_build_parser_body(tree)
@@ -253,6 +266,11 @@ def _build_import_map(source: str) -> Mapping[str, str]:
     per command (measured: 281 ``ast.parse`` calls and 3.4M ``ast.walk`` iterations
     for one ``build_gap_report``). Returns a read-only mapping so a caller cannot
     mutate the shared cached value.
+
+    Returns:
+        A read-only mapping of handler name to the module it is imported from or lazily resolved
+        through.
+
     """
     tree = ast.parse(source)
     import_map: dict[str, str] = {}
@@ -284,6 +302,10 @@ def _extract_local_docstrings(source: str) -> Mapping[str, str]:
     """Extract docstrings from function definitions in source (any nesting depth).
 
     Memoized on the source text for the same reason as ``_build_import_map``.
+
+    Returns:
+        A read-only mapping of function name to its docstring, for every function that has one.
+
     """
     tree = ast.parse(source)
     result: dict[str, str] = {}
@@ -298,6 +320,11 @@ def _resolve_handler_docstring(handler_name: str, main_source: str) -> str | Non
 
     First checks locally-defined functions in the parser source, then falls
     back to import-based resolution for handlers defined in command modules.
+
+    Returns:
+        The handler's docstring from the parser source or its imported module; None when the handler
+        cannot be located or imported, or has no docstring.
+
     """
     local_docs = _extract_local_docstrings(main_source)
     if handler_name in local_docs:
@@ -337,6 +364,10 @@ def check_surfaces(
     """Check all five documentation surfaces for each discovered command.
 
     Returns a list of CommandCoverage objects, one per command.
+
+    Returns:
+        One coverage record per command, carrying its five surface results.
+
     """
     commands_dir = project_root / MANPAGE_DIR
     index_path = commands_dir / "index.md"
@@ -443,6 +474,11 @@ def find_orphaned_docs(
     """Find documentation referencing commands that no longer exist.
 
     Checks manpage files in docs/user/manpages/ against discovered commands.
+
+    Returns:
+        One orphan record per manpage whose slug maps to no discovered command or parent verb; empty
+        when there are none.
+
     """
     orphans: list[OrphanedDoc] = []
 
@@ -500,6 +536,10 @@ def scan_cli_commands(project_root: Path | None = None) -> list[DiscoveredComman
     """Discover all CLI commands by AST-scanning cli/main.py and parser modules.
 
     Returns a list of DiscoveredCommand named tuples, one per leaf subcommand.
+
+    Returns:
+        One discovered command per leaf subcommand.
+
     """
     if project_root is None:
         project_root = get_project_root()
@@ -516,6 +556,11 @@ def _apply_manifest_exemptions(
     When the doc-coverage manifest sets a surface to ``false`` for a command,
     that surface is exempt from checks.  Replace failing results with a
     synthetic pass so they do not block the audit.
+
+    Returns:
+        The coverage list with failing results on manifest-exempt surfaces replaced by synthetic
+        passes; the list unchanged when the manifest cannot be loaded.
+
     """
     from gzkit.doc_coverage.manifest import load_manifest  # noqa: PLC0415
 
@@ -559,6 +604,11 @@ def check_surfaces_report(project_root: Path | None = None) -> CoverageReport:
 
     Discovers commands via AST, checks all five surfaces per command, and
     identifies any orphaned documentation referencing removed commands.
+
+    Returns:
+        The report with discovery and coverage counts, per-command coverage, orphans, and ``passed``
+        true only when there are no gaps and no orphans.
+
     """
     if project_root is None:
         project_root = get_project_root()

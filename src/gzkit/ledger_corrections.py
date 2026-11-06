@@ -96,6 +96,11 @@ def _field(event: Any, key: str) -> Any:
 
     The callers below therefore type-check what they read, which is what the
     event's own declaration says: every one of these fields is ``str``.
+
+    Returns:
+        The field's value as stored, top-level first, then from ``extra``; None when neither holds
+        it.
+
     """
     if isinstance(event, Mapping):
         if key in event:
@@ -115,6 +120,10 @@ def _text(event: Any, key: str) -> str:
     A non-string value reads as ABSENT rather than as its repr: the declared
     contract for every field this is used on is ``str``, so anything else is
     malformed input, never content.
+
+    Returns:
+        The field's string value; ``""`` when it is absent or not a string.
+
     """
     value = _field(event, key)
     return value if isinstance(value, str) else ""
@@ -135,6 +144,11 @@ def _schema_value(event: Any) -> Any:
     :func:`_envelope` would therefore return that bound METHOD on a
     :class:`~gzkit.ledger.LedgerEvent` — truthy, unequal to the tag, and so a
     typed correction would fail the envelope check that a raw one passes.
+
+    Returns:
+        The ``schema`` (else ``schema_``) value of a mapping, or the ``schema_`` attribute of a
+        model; None when absent.
+
     """
     if isinstance(event, Mapping):
         return event.get("schema", event.get("schema_"))
@@ -156,6 +170,11 @@ def parse_ledger_ts(ts_value: Any) -> datetime | None:
     re-exports it, and the envelope check below is the replay-side consumer that
     made sharing necessary: a correction whose ``ts`` the validator refuses was
     still voiding its subject at replay.
+
+    Returns:
+        The aware datetime, UTC assumed for a naive value; None for a non-string, blank or
+        unparseable value.
+
     """
     if not isinstance(ts_value, str) or not ts_value.strip():
         return None
@@ -171,6 +190,10 @@ def subject_key(event: Any) -> SubjectKey:
 
     Values are returned as they are, never stringified, so identity comparison
     is type-strict: an integer ``7`` and the string ``"7"`` are different rows.
+
+    Returns:
+        The ``(event, id, ts)`` triple, values unchanged.
+
     """
     return (_envelope(event, "event"), _envelope(event, "id"), _envelope(event, "ts"))
 
@@ -191,6 +214,10 @@ def identity_key(event: Any) -> SubjectKey | None:
     three components ``str``, so a row failing that has no identity to compute,
     and no well-formed correction can name it. Skipping it from an index is
     therefore complete as well as safe — never a dropped match.
+
+    Returns:
+        The ``(event, id, ts)`` triple when all three are strings; None otherwise.
+
     """
     key = subject_key(event)
     return key if all(isinstance(part, str) for part in key) else None
@@ -203,6 +230,11 @@ def corrected_subject(correction: Any) -> SubjectKey:
     the wrong TYPE names nothing — which is the correct reading: the event
     declares all three components ``str``, and :func:`is_well_formed` refuses a
     correction whose reference is not.
+
+    Returns:
+        The ``(subject_event, subject_id, subject_ts)`` triple, values unchanged (None for an absent
+        field).
+
     """
     return (
         _field(correction, "subject_event"),
@@ -222,6 +254,10 @@ def resolve_subject(events: Iterable[Any], key: SubjectKey) -> list[Any]:
     An empty result is the fail-closed signal: a correction whose subject does
     not resolve names nothing, and callers must refuse it rather than let a
     dangling reference silently void an adjacent row.
+
+    Returns:
+        Every event whose :func:`subject_key` equals ``key``, in input order; empty when none match.
+
     """
     return [event for event in events if subject_key(event) == key]
 
@@ -248,6 +284,11 @@ def _has_valid_envelope(event: Any) -> bool:
     The rule is the validator's rule verbatim — a value that is absent or
     ``None`` is fine, any non-string value is not — because a second reading of
     ``parent`` here would be the drift this shared contract exists to prevent.
+
+    Returns:
+        True when the schema tag is this ledger's, ``id`` is a non-blank string, ``parent`` is
+        absent, None or a string, and ``ts`` parses; False otherwise.
+
     """
     if _schema_value(event) != LEDGER_SCHEMA:
         return False
@@ -304,6 +345,12 @@ def is_well_formed(correction: Any) -> bool:
     boundary that knows a row already exists; the check here is what reads its
     result. A guard cannot be sound about a row whose envelope its own caller
     invented.
+
+    Returns:
+        True only when the envelope is valid, the subject triple is three non-blank strings not
+        naming a correction, the disposition and cause are in vocabulary, and attestor and reason
+        are non-blank; False otherwise.
+
     """
     if not _has_valid_envelope(correction):
         return False
@@ -368,6 +415,12 @@ def correction_state(events: Iterable[Any]) -> dict[SubjectKey, str]:
     correction inverted against a subject the window DOES contain is now refused.
     Dangling references are reported by ``gz validate --ledger``, which holds the
     whole file and can tell "outside my window" from "nowhere at all."
+
+    Returns:
+        Mapping of each currently corrected subject to ``void`` or ``discharged``; reinstated,
+        malformed and not-yet-seen subjects are absent, so the mapping is empty when nothing is in
+        force.
+
     """
     state: dict[SubjectKey, str] = {}
     seen: set[SubjectKey] = set()
@@ -396,6 +449,11 @@ def _disposition(event: Any, state: dict[SubjectKey, str]) -> str | None:
     uncorrectable rather than corrected: no well-formed correction can name it,
     so it is never dropped — and, critically, never HASHED, which is what made
     a single malformed row abort the whole read.
+
+    Returns:
+        The disposition recorded in *state* for the event's identity; None when it has none or the
+        event has no hashable identity.
+
     """
     key = identity_key(event)
     return None if key is None else state.get(key)
@@ -418,6 +476,10 @@ def evidence_events[EventT](events: Iterable[EventT]) -> list[EventT]:
     For witness selection and evidence audits. A ``discharged`` row survives
     here because discharging asserts its condition ended, never that its finding
     was false.
+
+    Returns:
+        The events, in order, without those currently voided.
+
     """
     return _without(events, frozenset({VOID}))
 
@@ -426,5 +488,9 @@ def live_events[EventT](events: Iterable[EventT]) -> list[EventT]:
     """Return the stream answering *what is in force now*: raw minus ``void`` and ``discharged``.
 
     For state derivation — the artifact graph, lifecycle status, TASK liveness.
+
+    Returns:
+        The events, in order, without those currently voided or discharged.
+
     """
     return _without(events, frozenset({VOID, DISCHARGED}))

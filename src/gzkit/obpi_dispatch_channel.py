@@ -90,6 +90,11 @@ def _read_marker(project_root: Path, obpi_id: str) -> dict | None:
     file, the legacy file as fallback, and only a payload that names this OBPI.
     A reader of the per-OBPI file alone disagreed with the writer about which
     file holds the run's marker.
+
+    Returns:
+        The marker payload for this OBPI from the per-OBPI or legacy file; None when absent,
+        unreadable, or naming another OBPI.
+
     """
     from gzkit.pipeline_markers import load_obpi_pipeline_marker
 
@@ -105,6 +110,11 @@ def project_ledger(project_root: Path) -> Ledger:
 
     The one opener of the project ledger for the pipeline's runtime modules:
     the run-position adapter in ``pipeline_runtime`` opens it through here too.
+
+    Returns:
+        The project's Ledger, at the path `.gzkit.json` names, or at `.gzkit/ledger.jsonl` when the
+        config cannot be read.
+
     """
     rel = ".gzkit/ledger.jsonl"
     try:
@@ -132,6 +142,11 @@ def _obpi_events(project_root: Path, obpi_id: str, event_type: str) -> list[dict
     completion inherits its earlier dispatch credit — which is honest, since that
     review did happen, and is the side to err on when the alternative silently
     converts a compliant run into a non-compliant one.
+
+    Returns:
+        The `extra` payloads of every ledger event of `event_type` whose id is `obpi_id`, in ledger
+        order; an empty list when there are none.
+
     """
     return [
         event.extra
@@ -155,6 +170,11 @@ def dispatch_channel(project_root: Path, obpi_id: str) -> list[RoleDispatch]:
     reopen the forgery surface GHI #412 closed for the marker's nonce: any process
     with write access could otherwise buy the verdict by editing a JSON file no
     ceremony produced.
+
+    Returns:
+        One RoleDispatch per mandated Stage-2 role, in roster order: DISPATCHED when the ledger
+        holds a dispatch record for that role, otherwise NOT_DISPATCHED.
+
     """
     recorded = {
         str(payload.get("role"))
@@ -278,6 +298,11 @@ def single_driver_declaration(project_root: Path, obpi_id: str) -> dict | None:
     append-only store (``AGENTS.md`` § Behavior Rules: write the ledger only through ``gz``)
     — a session whose reason changed
     states the new one rather than editing the old.
+
+    Returns:
+        A copy of the payload of the OBPI's most recent single-driver declaration, or None when none
+        is recorded.
+
     """
     declarations = _obpi_events(project_root, obpi_id, _DECLARATION_EVENT)
     return dict(declarations[-1]) if declarations else None

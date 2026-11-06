@@ -116,6 +116,10 @@ def _obpi_short_form(obpi_id: str) -> str:
     (e.g. OBPI-0.0.16-03-chore-registration). Plan text typically carries
     the short form matched by OBPI_PATTERN. Comparison must happen at the
     short form so both ends agree on identity (gzkit#190).
+
+    Returns:
+        The ``OBPI-X.Y.Z-NN`` short form, or the input unchanged when it carries none.
+
     """
     match = OBPI_PATTERN.search(obpi_id)
     return match.group(0) if match else obpi_id
@@ -127,6 +131,11 @@ def _candidate_receipts(plans_dir: Path, obpi_ids: list[str]) -> list[Path]:
     Matches both .plan-audit-receipt-<short>.json and the canonical-slug
     variant .plan-audit-receipt-<short>-<slug>.json. The explicit hyphen
     boundary before the slug prevents NN-prefix collisions (03 vs 030).
+
+    Returns:
+        Existing receipt paths, each once: per OBPI the short-form receipt then its slug variants,
+        then the legacy receipt when present.
+
     """
     seen: set[Path] = set()
     candidates: list[Path] = []
@@ -258,6 +267,11 @@ def attempt_self_audit(obpi_id: str, cwd: str) -> tuple[bool, str]:
     re-checks the receipt to determine whether the audit produced a
     valid PASS/FAIL receipt for this OBPI. Bounded to
     ``SELF_AUDIT_TIMEOUT_SECONDS`` to prevent the hook hanging.
+
+    Returns:
+        ``(invocation_ok, captured_output)``; ``(False, reason)`` when the command is missing or
+        times out.
+
     """
     cmd = _resolve_plan_audit_cmd() + [obpi_id]
     try:

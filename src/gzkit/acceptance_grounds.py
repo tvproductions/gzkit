@@ -49,6 +49,11 @@ def _invoked_agent(command: Sequence[Any]) -> str | None:
     None -- and therefore "cannot execute" -- when no persona is named, when two
     are, when the name is not a plain persona name (``../escape`` would read a
     file outside the agent directory), or when a flag overrides the tool set.
+
+    Returns:
+        The single persona name `--agent` supplies; None when none or several are named, the name is
+        not a plain persona name, or a tool-override flag appears.
+
     """
     names: list[str] = []
     for index, token in enumerate(command):
@@ -72,6 +77,11 @@ def reviewer_executes(root: Path, review: Review, receipt: dict[str, Any]) -> bo
     records (GHI #961). A native invocation executes only when the persona it
     names declares a shell -- read from the agent definition by the same reader
     that discloses the grant to the reviewer (GHI #941), never assumed.
+
+    Returns:
+        True for a tier-1 review, or when the invoked persona's definition grants execution; False
+        otherwise, including when no single persona resolves.
+
     """
     if review.tier == 1:
         return True

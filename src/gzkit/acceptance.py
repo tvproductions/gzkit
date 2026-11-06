@@ -174,6 +174,11 @@ def review_objects(text: str) -> list[dict[str, Any]]:
     The importer and the orchestrator's legacy-result derivation read the same
     envelopes with this one scanner, so they can never disagree about which
     object in a reply is the review (GHI #1095).
+
+    Returns:
+        Every JSON object in the text whose `schema` is the review schema, in order of appearance;
+        empty when none is found.
+
     """
     decoder = json.JSONDecoder()
     objects: list[dict[str, Any]] = []
@@ -445,6 +450,11 @@ def assess_readiness(
     An explicit Stage 2 obligation subset supports one task's review; canonical
     identity and historical record validation still covers the entire population.
     Stage 4 always requires every obligation.
+
+    Returns:
+        Readiness that is ready only when no blocker was found, carrying every blocker message and
+        the findings still open.
+
     """
     errors: list[str] = []
     if not obligations:
@@ -538,6 +548,11 @@ def validate_review_record(
     identity, scope, and closure relationships with the same reducer used for
     readiness. Missing stage approvals and open findings are ordinary state,
     never reasons to reject a truthful review record.
+
+    Returns:
+        The structural and reducer errors for the append; empty when the review record is
+        well-formed.
+
     """
     errors: list[str] = []
     obligation_index = _index_records(obligations, "obligation", errors)

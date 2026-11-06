@@ -737,6 +737,12 @@ def audit_skills(
     ``today`` is the day review ages are measured from. Omitted, it is read from
     :func:`review_clock`, so a live tree is judged against the calendar while a
     test names the day it assumes (GHI #1099).
+
+    Returns:
+        A SkillAuditReport whose issues are sorted by path, code and message, with valid False when
+        any issue is blocking, plus the number of canonical skills checked and the roots checked
+        (the canonical root and each enabled vendor mirror).
+
     """
     # Late import to avoid circular dependency (skills_mirror imports from skills_audit).
     from gzkit.skills_mirror import validate_mirror_root

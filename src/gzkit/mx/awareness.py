@@ -53,6 +53,11 @@ def _find_project_root(start: Path | None = None) -> Path:
 
     Mirrors ``gzkit.mx.marker._find_project_root`` — duplicated deliberately
     so this module stays free of gzkit-internal imports.
+
+    Returns:
+        The nearest directory at or above ``start`` holding ``.gzkit``; the resolved start when none
+        does.
+
     """
     current = (start or Path.cwd()).resolve()
     for candidate in (current, *current.parents):
@@ -121,6 +126,11 @@ def get_banner(project_root: Path | None = None) -> str:
     It says what ``gzkit.mx.marker.condition`` reads: a marker that is unreadable or
     unbound lowers nothing and is announced (GHI #1273). stdlib-only: no gzkit
     imports — fires even when gz itself is the patient.
+
+    Returns:
+        The banner for the marker's condition (void, exiting, safe-mode or MX); the empty string
+        when no marker is active.
+
     """
     root = project_root if project_root is not None else _find_project_root()
     if not _is_marker_active(root):
@@ -159,6 +169,11 @@ def check_hook_liveness(project_root: Path | None = None) -> LivenessResult:
     registered in ``.claude/settings.json`` as a ``UserPromptSubmit`` hook.
     Returns ``LivenessResult(ok=False, defect=<reason>)`` for any defect.
     A non-ok result means the per-turn awareness guarantee is broken.
+
+    Returns:
+        ``LivenessResult(ok=True)`` when the hook file exists and is registered for
+        ``UserPromptSubmit``; otherwise ``ok=False`` with the defect named.
+
     """
     root = project_root if project_root is not None else _find_project_root()
 

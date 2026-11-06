@@ -40,6 +40,11 @@ def _command_complete(text: str) -> bool:
     Uses ``shlex`` itself to decide quote balance: an unterminated quote makes
     ``shlex.split`` raise ``ValueError``, which means the command continues on
     the next physical line. A trailing backslash is an explicit continuation.
+
+    Returns:
+        False when the text ends with a backslash continuation or carries an unterminated quote,
+        otherwise True.
+
     """
     if text.rstrip().endswith("\\"):
         return False
@@ -59,6 +64,11 @@ def extract_fenced_commands(section_text: str) -> list[str]:
     as exactly one command, not one per line (GHI #539). Blank lines and comment
     lines are skipped only at a command boundary; inside an open quote every
     physical line (including ``#`` lines and indentation) is preserved verbatim.
+
+    Returns:
+        The logical commands in fence order, each a newline-joined string of its physical lines;
+        empty when the section has no fenced command.
+
     """
     commands: list[str] = []
     in_fence = False
@@ -92,6 +102,10 @@ def command_argv(command: str) -> list[str]:
 
     A multi-line command's quoted body remains a single argv element — newlines
     are preserved inside it, never split into separate tokens (ADR Decision #3).
+
+    Returns:
+        The argv tokens `shlex.split` produces for the command.
+
     """
     return shlex.split(command)
 
@@ -104,6 +118,11 @@ def is_shell_less_executable(command: str) -> bool:
     (``|``), command substitution (``$(…)`` / backticks), or redirects
     (``>``/``<``). Operators *inside a quoted argument* are program data and are
     permitted. Unbalanced quotes are not executable.
+
+    Returns:
+        True when the command tokenizes to a non-empty argv with no bare shell operator, redirect or
+        command substitution; False otherwise, including for unbalanced quotes.
+
     """
     try:
         argv = shlex.split(command)
@@ -147,6 +166,12 @@ def reexecute_demo(
     ``executed=False`` and ``mismatch=True`` so authoring-vs-runtime drift fails
     closed. An executed command binds the *observed* exit code and a SHA-256 of
     observed stdout — never a prose claim of what the command would do.
+
+    Returns:
+        A receipt with `executed=False` and `mismatch=True` when the command is not
+        shell-less-executable; otherwise the observed exit code, the SHA-256 of stdout, and
+        `mismatch` set when the exit code differs from the expected one.
+
     """
     if not is_shell_less_executable(command):
         return DemoReceipt(

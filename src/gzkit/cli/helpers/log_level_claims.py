@@ -36,6 +36,10 @@ def _build_log_level_fixture() -> Path:
 
     A fixed event name would let a broken configuration special-case one sentinel;
     the token is unknowable when a mutation is authored.
+
+    Returns:
+        The runner-owned temp root created for the fixture.
+
     """
     from gzkit.enforcement import create_fixture_tempdir  # noqa: PLC0415
 
@@ -66,6 +70,10 @@ def _ep_log_levels_follow_spec(root: Path) -> int:
     always-silent or always-verbose configuration cannot discharge the claim, and
     nothing may reach stdout. Process logging state is restored afterwards: the
     enforcement floor runs in-process inside ``gz check``.
+
+    Returns:
+        1 when every verbosity pole holds; 0 otherwise.
+
     """
     token = f"nc-{root.name.lower().replace('_', '-')}"
     root_logger = logging.getLogger()

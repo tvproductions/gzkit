@@ -38,6 +38,11 @@ def gather_hints_markdown(
 
     Returns ``("", [warning])`` and logs to ``.gzkit/insights/justify-failures.jsonl``
     on engine errors (fail-open contract — engine errors never block justify).
+
+    Returns:
+        ``(markdown, warnings)``: ``("", [])`` when there is nothing to hint, ``("", warnings)``
+        when the engine failed, otherwise the hints block and any warnings.
+
     """
     if anchor_ref.source_path is None or anchor_ref.kind != "obpi":
         return "", []

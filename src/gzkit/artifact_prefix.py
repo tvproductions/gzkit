@@ -43,6 +43,11 @@ def active_prefix_matches(
     all, so a caller still sees the ambiguity instead of a silent empty answer.
     Callers decide what more than one survivor means; GHI #826 rules that it names
     none of them.
+
+    Returns:
+        The matching keys with inactive ones removed, or every matching key when all of them are
+        inactive; empty when nothing matches.
+
     """
     prefix = f"{identifier}-"
     hits = [

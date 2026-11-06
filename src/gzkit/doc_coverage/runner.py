@@ -20,6 +20,10 @@ def build_gap_report(project_root: Path | None = None) -> DocCoverageGapReport:
 
     Compares scanner results against manifest requirements to identify
     only the gaps that matter: surfaces marked as required but missing.
+
+    Returns:
+        The gap report listing the required-but-missing surfaces and undeclared commands.
+
     """
     if project_root is None:
         project_root = get_project_root()
@@ -113,6 +117,10 @@ def run_doc_coverage(project_root: Path | None = None, *, json_output: bool = Fa
     """Run the doc-coverage chore and produce a gap report.
 
     Returns 0 when all required surfaces are present, 1 otherwise.
+
+    Returns:
+        0 when the gap report passes; 1 otherwise.
+
     """
     gap_report = build_gap_report(project_root)
 

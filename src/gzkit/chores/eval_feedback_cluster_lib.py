@@ -84,6 +84,10 @@ def _score_band(score: float) -> str:
         < 1.5 -> critical
         < 2.5 -> very_low
         < 3.0 -> low
+
+    Returns:
+        "critical" below 1.5, "very_low" below 2.5, otherwise "low".
+
     """
     if score < 1.5:
         return "critical"
@@ -102,6 +106,11 @@ def _read_adr_evaluation_events(ledger_path: Path) -> list[dict]:
 
     Returns a list of raw dicts for lines where event == "adr-evaluation".
     Non-existent ledger returns empty list.
+
+    Returns:
+        The parsed records whose `event` is "adr-evaluation", in ledger order; empty when the ledger
+        does not exist. Blank and malformed lines are skipped.
+
     """
     if not ledger_path.exists():
         return []
@@ -132,6 +141,11 @@ def _parse_frontmatter(text: str) -> dict[str, str]:
 
     Returns a dict of ``key: value`` pairs parsed from simple ``key: value``
     lines in the frontmatter block. Does not require a YAML parser.
+
+    Returns:
+        Stripped `key: value` pairs from the frontmatter block; empty when the text does not open
+        with `---` or the block is never closed.
+
     """
     lines = text.splitlines()
     if not lines or lines[0].strip() != "---":
@@ -159,6 +173,11 @@ def _walk_justify_artifacts(justify_root: Path) -> list[dict]:
 
     Returns list of dicts: ``{"path": Path, "anchor_id": str, "authored": str}``.
     Non-existent root returns empty list.
+
+    Returns:
+        One `{"path", "anchor_id", "authored"}` dict per readable Markdown file, in sorted path
+        order, with `anchor_id` falling back to the file stem; empty when the root does not exist.
+
     """
     if not justify_root.exists():
         return []
@@ -184,6 +203,11 @@ def _authored_text(raw: str) -> str:
     the author's words clustered any three walkthroughs by construction (GHI #996).
     The generated complexity-hints block renders after section 8 and parses into its
     reasoning, so it is cut off there too.
+
+    Returns:
+        The walkthrough sections' reasoning joined by newlines, each cut at the complexity-hints
+        heading; the raw text unchanged when it does not parse as a walkthrough.
+
     """
     try:
         walkthrough = parse_walkthrough(raw)
@@ -203,6 +227,10 @@ def _extract_confusion_keywords(text: str) -> list[str]:
     """Scan text for confusion-shape vocabulary keywords.
 
     Returns sorted list of matched keywords (case-insensitive substring match).
+
+    Returns:
+        The confusion-vocabulary keywords found in the text, sorted; empty when none match.
+
     """
     lower = text.lower()
     matched = sorted(kw for kw in _CONFUSION_VOCABULARY if kw in lower)
@@ -227,6 +255,11 @@ def _build_buckets(
         ``jk:<keyword>`` — confusion keywords in justify artifacts
 
     Each bucket value is a list of ``{"artifact_id": str, "artifact_path": str}``.
+
+    Returns:
+        Mapping of cluster key to the artifact references that fall in it; a key is present only
+        when at least one artifact matched.
+
     """
     buckets: dict[str, list[dict]] = {}
 
@@ -362,6 +395,11 @@ def cluster_buckets(
 
     The read-only half of :func:`run_cluster`, exposed so the operational runner
     can report what a pass read even when nothing qualifies (GHI #997, #614).
+
+    Returns:
+        Summary carrying the count of evaluation events read, the count of justify artifacts read
+        and the cluster buckets built from them.
+
     """
     if ledger_path is None:
         ledger_path = project_root / ".gzkit" / "ledger.jsonl"

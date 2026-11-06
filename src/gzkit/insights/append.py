@@ -41,6 +41,10 @@ def append_insight_record(
     ``pydantic.ValidationError`` before ``path`` is opened, so an invalid record
     never reaches disk. ``ts`` defaults to the current UTC instant in ISO8601
     with a timezone designator (the schema forbids date-only stamps).
+
+    Returns:
+        The serialized JSON line written, without its newline.
+
     """
     record = InsightRecord(
         ts=ts if ts is not None else datetime.now(UTC).isoformat(),

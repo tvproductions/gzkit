@@ -83,6 +83,10 @@ def _cluster_key(text: str) -> str:
     local-part survives `_WORD_RE` otherwise) leaks into the git-tracked
     `cluster_key` field or the proposal hash built from it. The operator-PII
     rule binds every emitted record (ADR-0.0.70 Boundary Invariant 2).
+
+    Returns:
+        The first ``CLUSTER_KEY_WORDS`` words of the lowercased, email-scrubbed text, space-joined.
+
     """
     scrubbed = _EMAIL_RE.sub(" ", text.lower())
     words = _WORD_RE.findall(scrubbed)
@@ -113,6 +117,10 @@ def _is_operator_entry(entry: dict) -> bool:
     Real transcripts inject user-typed entries the operator never wrote:
     `isMeta: true` records, sidechain turns, and `<tag>`-leading caveats
     (observed shapes, 2026-06-12). None of those are corrections.
+
+    Returns:
+        False for meta or sidechain entries; True otherwise.
+
     """
     return not (entry.get("isMeta") or entry.get("isSidechain"))
 
@@ -124,6 +132,11 @@ def _iter_corrections(path: Path) -> list[str]:
     `ai-title` entries between the assistant turn and the operator reply):
     a correction is an operator message arriving after at least one
     assistant entry since the previous operator message.
+
+    Returns:
+        The corrective operator messages, in transcript order; empty when the file cannot be read or
+        decoded.
+
     """
     corrections: list[str] = []
     assistant_seen = False
@@ -174,6 +187,11 @@ def scan_corrections(
     ``0`` — the decay is visible instead of inferred.
 
     Fails soft: an absent directory yields a zero-count run, never an exception.
+
+    Returns:
+        The run record: threshold, transcript, session, correction and cluster counts, and the
+        proposals.
+
     """
     occurrences: dict[str, list[tuple[str, str]]] = defaultdict(list)
     transcripts_scanned = 0
@@ -213,6 +231,10 @@ def mine_corrections(
     The narrow projection of :func:`scan_corrections` — one scan implementation,
     never a second traversal, so the proposal list and the run counts can never
     disagree about the same pass.
+
+    Returns:
+        One proposal record per cluster meeting the threshold; empty when none does.
+
     """
     return scan_corrections(transcripts_dir, threshold=threshold)["proposals"]
 
@@ -252,6 +274,10 @@ def write_proposals(proposals: list[dict], proofs_dir: Path) -> list[Path]:
     A proposal's filename is keyed by its content hash over
     (cluster_key, sorted session_ids); an existing file is never rewritten,
     so re-runs over unchanged transcripts add nothing.
+
+    Returns:
+        The paths of newly written proposal files; existing ones are skipped.
+
     """
     written: list[Path] = []
     for proposal in proposals:
@@ -276,6 +302,10 @@ def write_run_log(run: dict, proofs_dir: Path) -> Path:
     the miner to write. Counts and config only; the run record carries no
     operator text, so no scrubbing is needed and none is implied. An over-cap log
     is rewritten keeping the newest lines, mirroring the sibling Stop-hook sensor.
+
+    Returns:
+        The path of the run log.
+
     """
     proofs_dir.mkdir(parents=True, exist_ok=True)
     log = proofs_dir / RUN_LOG_NAME

@@ -18,6 +18,10 @@ def _verifier_pipe_gate_script() -> str:
     a gate that bricks the agent when its own plumbing breaks is worse than the
     hole it plugs. There is no evidence read here to fail closed on — the verdict
     is a pure function of the command string.
+
+    Returns:
+        The hook script source, dedented.
+
     """
     return dedent(
         """\
@@ -388,6 +392,10 @@ def _stop_turn_feedback_script() -> str:
                 Gates FORM (a citation token is present within
                 CLAIM_PROXIMITY_CHARS), not TRUTH — the citation is not verified
                 against the claim it accompanies (GHI #620).
+
+                Returns:
+                    The unbacked claim matches in pattern order, at most ``MAX_CLAIM_MATCHES``.
+
                 \"\"\"
                 unbacked: list[str] = []
                 for pattern in CLAIM_PATTERNS:

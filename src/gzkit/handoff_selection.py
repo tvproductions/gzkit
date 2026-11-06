@@ -75,6 +75,10 @@ def is_floor_bookmark(agent: str | None) -> bool:
     """Return True when ``agent`` is the exit beat, i.e. nobody authored this document.
 
     The whole selection rule reduces to this predicate plus "authored wins".
+
+    Returns:
+        True when ``agent`` is the floor-bookmark agent; False otherwise, None included.
+
     """
     return agent == FLOOR_BOOKMARK_AGENT
 
@@ -92,6 +96,10 @@ def selection_rank(agent: str | None, timestamp: Any) -> tuple[bool, Any]:
     authoring leaves nothing else, and covering that case is the whole reason the
     exit beat exists (GHI #756). A floor bookmark still wins when it is alone,
     because every candidate then carries the same first element.
+
+    Returns:
+        The pair ``(authored, timestamp)``, where ``authored`` is False only for a floor bookmark.
+
     """
     return (not is_floor_bookmark(agent), timestamp)
 
@@ -122,5 +130,9 @@ def commits_since_range(landing_sha: str | None) -> str:
     `HEAD..HEAD` is that fact as a range, and it is empty by construction rather
     than by luck. Treating the absence as an uncertainty instead is what made a
     staged handoff unable to cover a session at all.
+
+    Returns:
+        ``<sha>..HEAD``, or ``HEAD..HEAD`` (an empty range) when *landing_sha* is None or blank.
+
     """
     return f"{(landing_sha or '').strip() or 'HEAD'}..HEAD"

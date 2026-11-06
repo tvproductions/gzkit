@@ -42,6 +42,11 @@ def _row_ts(line: str) -> datetime | None:
     Shares `parse_ledger_ts` with the validator deliberately: a driver that
     ordered rows by different rules than the gate checking them could emit a
     merge the gate rejects.
+
+    Returns:
+        The row's parsed ``ts``; None when the line is not a JSON object or its ``ts`` does not
+        parse.
+
     """
     try:
         entry = json.loads(line)
@@ -63,6 +68,11 @@ def _additions(ancestor: list[str], side: list[str]) -> list[str] | None:
     Membership rather than position is what makes a side append-only: a clone
     that merged earlier holds a backfilled row *between* ancestor rows, which
     keeps every ancestor row while destroying the prefix relation (GHI #1075).
+
+    Returns:
+        The rows `side` holds beyond the ancestor's multiset, in `side` order (empty when it adds
+        none); None when an ancestor row is missing from `side`.
+
     """
     outstanding = Counter(ancestor)
     added: list[str] = []
@@ -82,6 +92,11 @@ def _placed(ancestor: list[str], additions: list[tuple[datetime, str]]) -> list[
     An ancestor row is emitted ahead of an addition sharing its instant, so the
     ancestor's own sequence is never reordered — an addition is placed around
     existing rows, never allowed to shuffle them.
+
+    Returns:
+        The merged rows: ancestor rows in their order, each addition placed after the ancestor rows
+        at or before its instant.
+
     """
     merged: list[str] = []
     index = 0
@@ -103,6 +118,11 @@ def _is_non_decreasing(lines: list[str]) -> bool:
     Checked over the whole result rather than the sorted tail alone: the tail is
     sorted by construction, but the seam where it meets the ancestor is not, and
     a row appended with a clock behind the ancestor's last would land there.
+
+    Returns:
+        True when every row has a parseable ``ts`` and none precedes its predecessor; False
+        otherwise.
+
     """
     previous: datetime | None = None
     for line in lines:
@@ -134,6 +154,12 @@ def merge_append_only(
     which now means the ancestor's own rows were already out of order, since an
     addition is always placed at its instant. A None result leaves git's
     conflict markers in place for a human.
+
+    Returns:
+        The merged rows: the ancestor's in their order and both sides' additions placed by ``ts``;
+        None when a side dropped an ancestor row, an addition has no parseable ``ts``, or the result
+        is not non-decreasing.
+
     """
     ours_added = _additions(ancestor, ours)
     theirs_added = _additions(ancestor, theirs)

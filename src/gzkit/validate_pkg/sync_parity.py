@@ -79,6 +79,10 @@ def _nested_agents_md(project_root: Path) -> list[str]:
     files sync never touches. Deriving it from
     :func:`gzkit.rules.nested_agents_md_paths` makes snapshot/restore complete by
     construction rather than by remembering to extend a literal.
+
+    Returns:
+        The sorted project-relative POSIX paths of every nested ``AGENTS.md`` the writer may write.
+
     """
     return sorted(
         path.relative_to(project_root).as_posix() for path in nested_agents_md_paths(project_root)
@@ -151,6 +155,10 @@ def _render_expected(project_root: Path, config: GzkitConfig) -> dict[Path, byte
       would report every unmanaged file under a surface root as stale, which is
       the one way a render-and-compare check can be wrong where a
       sync-and-restore check was right.
+
+    Returns:
+        Mapping of absolute path to the bytes expected after a sync.
+
     """
     current = _collect_files(project_root, config)
     expected = _read_bytes_map(current)
@@ -195,6 +203,10 @@ def _is_tracked(path: Path, tracked: set[Path]) -> bool:
     and widening what parity covers is a separate question with its own drift to
     triage. That the persona mirrors are generated-but-unchecked is disclosed as
     a follow-on, not quietly fixed under this one.
+
+    Returns:
+        True when ``path`` is a tracked root or lies under one; False otherwise.
+
     """
     return path in tracked or any(path.is_relative_to(root) for root in tracked)
 
@@ -206,6 +218,10 @@ def plan_sync_all(project_root: Path, config: GzkitConfig | None = None) -> list
     so the complete write set is derived without applying or restoring writes.
     Used by ``gz agent sync control-surfaces --dry-run`` to preview an exact
     deterministic plan instead of a hand-maintained subset.
+
+    Returns:
+        The sorted display paths ``sync_all()`` would write.
+
     """
     if config is None:
         config = GzkitConfig.load(project_root / ".gzkit.json")
@@ -222,6 +238,10 @@ def plan_sync_changes(project_root: Path, config: GzkitConfig | None = None) -> 
     bytes already match. This lists only real changes -- a create, a differing
     write or a delete -- so ``gz init`` repair can announce exactly what it
     writes, and an already-synced tree plans nothing (GHI #1098).
+
+    Returns:
+        The sorted display paths a sync would create, change or delete; empty for a synced tree.
+
     """
     if config is None:
         config = GzkitConfig.load(project_root / ".gzkit.json")
@@ -254,6 +274,10 @@ def snapshot_surfaces(project_root: Path, config: GzkitConfig | None = None) -> 
     (e.g. immediately after ``gz init`` or a successful sync) and wants
     to feed that snapshot to ``check_sync_parity(..., expected=...)``
     without paying a second ``sync_all`` pass.
+
+    Returns:
+        Mapping of each current surface file to its bytes.
+
     """
     return _read_bytes_map(_collect_files(project_root, config))
 
@@ -267,6 +291,10 @@ def compute_expected_surfaces(
     sink rather than onto disk (GHI #891). Intended for
     callers (tests, repeated audits) that will compare many tree states
     against the same canonical output and want to pay the sync cost once.
+
+    Returns:
+        Mapping of absolute path to the bytes expected after a sync.
+
     """
     if config is None:
         config = GzkitConfig.load(project_root / ".gzkit.json")
@@ -397,6 +425,11 @@ def check_sync_parity(
     directly against the pre-computed expected state. Intended for callers
     — tests, repeated audits — that drive many comparisons against the
     same canonical state and want to pay the sync cost once.
+
+    Returns:
+        The Codex config parity errors followed by one error per drifted surface; only the Codex
+        errors when the Codex config path is unresolvable or not a file.
+
     """
     # Resolve to canonical form so Path.relative_to(project_root) works on
     # macOS where /var is a symlink to /private/var: _collect_files walks a

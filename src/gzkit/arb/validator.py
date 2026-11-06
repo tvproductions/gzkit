@@ -148,6 +148,11 @@ def _iter_receipt_paths(root: Path, *, limit: int) -> list[Path]:
     Deliberately filename-scoped rather than filtered on the ``schema`` field: a
     real ARB receipt with a missing or wrong ``schema`` is precisely the defect
     this validator exists to catch, and a schema-based filter would skip it.
+
+    Returns:
+        The ``arb-*.json`` receipts sorted newest first; all of them when ``limit`` is negative,
+        else at most ``limit``.
+
     """
     paths = sorted(root.glob("arb-*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
     if limit < 0:
@@ -244,6 +249,11 @@ def _matches_retired_canon(name: str, observed: Any, timestamp: Any) -> bool:
     Fails closed on an unreadable or absent timestamp: a receipt that cannot
     prove it predates the change gets today's canon, so the grandfather clause
     can never be claimed by simply omitting the field.
+
+    Returns:
+        True when ``observed`` matches a retired command for ``name`` and the timestamp predates its
+        retirement; False otherwise, including for a missing or unparseable timestamp.
+
     """
     retired = RETIRED_STEP_COMMANDS.get(name)
     if not retired or not isinstance(timestamp, str):
@@ -272,6 +282,12 @@ def _provenance_error(payload: dict[str, Any]) -> str | None:
     now: a receipt emitted before a scope change carries the command that was
     canonical when it ran, and it is valid evidence of that run. See
     ``RETIRED_STEP_COMMANDS``.
+
+    Returns:
+        The mismatch message naming the expected command and the regeneration command; None when the
+        step is absent, not a canonical label, carries the canonical command, or carries a command
+        canonical at its timestamp.
+
     """
     step = payload.get("step")
     if not isinstance(step, dict):

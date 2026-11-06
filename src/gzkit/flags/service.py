@@ -67,6 +67,10 @@ class FlagService:
         """Parse a raw env var string as a boolean.
 
         Raises ``InvalidFlagValueError`` for values outside the canonical set.
+
+        Returns:
+            True or False for a value in the canonical true or false set.
+
         """
         lower = raw.lower()
         if lower in _TRUE_STRINGS:
@@ -115,6 +119,9 @@ class FlagService:
     def is_enabled(self, key: str) -> bool:
         """Return the resolved boolean for *key*.
 
+        Returns:
+            The resolved boolean for ``key``.
+
         Raises:
             UnknownFlagError: If *key* is not in the registry.
             InvalidFlagValueError: If the env var has a non-boolean value.
@@ -125,6 +132,9 @@ class FlagService:
 
     def evaluate(self, key: str) -> FlagEvaluation:
         """Return a ``FlagEvaluation`` with the resolved value and source.
+
+        Returns:
+            The evaluation carrying ``key``, its resolved value and the source of that value.
 
         Raises:
             UnknownFlagError: If *key* is not in the registry.

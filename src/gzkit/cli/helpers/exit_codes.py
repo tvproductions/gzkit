@@ -39,6 +39,10 @@ def exit_code_for(exc: Exception) -> int:
     If *exc* is a :class:`GzkitError` (or subclass), the exit code is read
     from the ``exit_code`` property on the exception itself.  For any other
     exception type, the default is :data:`EXIT_USER_ERROR` (1).
+
+    Returns:
+        The exception's own ``exit_code`` for a ``GzkitError``; otherwise ``EXIT_USER_ERROR`` (1).
+
     """
     if isinstance(exc, GzkitError):
         return exc.exit_code

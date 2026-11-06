@@ -112,6 +112,10 @@ class _Scorer:
 
         The AST spells ``elif`` and ``else: if`` alike, as a lone nested ``If``; only
         the source at the node's position tells them apart.
+
+        Returns:
+            The nested ``If`` when the branch is spelled ``elif``; None otherwise.
+
         """
         node = orelse[0]
         spelled = self._lines[node.lineno - 1].startswith("elif", node.col_offset)
@@ -213,6 +217,10 @@ def score_cognitive(source: str, filename: str = "<source>") -> list[CognitiveSc
 
     Raises ``SyntaxError`` when *source* does not parse; the caller decides how a
     module that cannot be measured is reported.
+
+    Returns:
+        One score per function with no enclosing function, in source order.
+
     """
     tree = ast.parse(source, filename=filename)
     lines = source.splitlines()

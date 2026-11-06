@@ -56,6 +56,10 @@ def run_auto_chain(file_paths: list[str], *, timeout_s: float | None = None) -> 
     """Run the advisor on staged files with timeout. Returns hook exit code.
 
     An omitted *timeout_s* takes ``.gzkit.json`` ``advisor_timeout_seconds``.
+
+    Returns:
+        1 when a diagnosis crosses the block band; 0 otherwise, including on timeout.
+
     """
     result = run_with_timeout(
         lambda: _diagnose_files(file_paths),

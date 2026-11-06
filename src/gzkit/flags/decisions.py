@@ -29,6 +29,10 @@ class FeatureDecisions:
 
         True — closeout is blocked for OBPIs missing operator-facing docs.
         False — closeout warns but does not block.
+
+        Returns:
+            True when the ``ops.product_proof`` flag resolves enabled; False otherwise.
+
         """
         return self._svc.is_enabled("ops.product_proof")
 
@@ -42,6 +46,10 @@ def get_decisions(svc: FlagService | None = None) -> FeatureDecisions:
 
     On first call, *svc* must be provided (or a default FlagService is created
     from the on-disk registry).  Subsequent calls return the cached instance.
+
+    Returns:
+        The cached ``FeatureDecisions`` instance, created on the first call.
+
     """
     global _instance  # noqa: PLW0603
     if _instance is None:

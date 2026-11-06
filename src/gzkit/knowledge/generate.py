@@ -47,6 +47,11 @@ def _discover_concept_slugs(out: Path) -> list[str]:
     preserved authored node (e.g. OBPI-06's ``content-boundary.md``), so
     progressive disclosure from the root index reaches every typed node — no
     orphans. Deterministic (``sorted``) so the index is byte-stable across runs.
+
+    Returns:
+        The sorted stems of every non-reserved Markdown file whose frontmatter carries a non-empty
+        ``type``.
+
     """
     slugs: list[str] = []
     for path in sorted(out.glob("*.md")):
@@ -68,6 +73,10 @@ def _render_frontmatter(model: ConceptFrontmatter) -> str:
     Only the explicitly-set (non-``None``) fields are emitted, so the key set is
     determined by what the caller sets — not by transient optional defaults —
     and ``sort_keys=True`` fixes their order for idempotency.
+
+    Returns:
+        The ``---``-fenced YAML block of the set fields, keys sorted.
+
     """
     fields = {k: v for k, v in model.model_dump().items() if v is not None}
     body = yaml.dump(
@@ -155,6 +164,11 @@ def resolve_active_campaign(registry_path: Path | None = None) -> Path:
     closed on a governance-state anomaly, and newest-by-name is the least-wrong
     source while the anomaly is repaired. The anomaly itself is reported by
     ``tests/governance/test_active_campaign_registry.py``, not swallowed here.
+
+    Returns:
+        The declared plan when the registry names an existing file; otherwise the last campaign
+        edition by name, or the default plan path when none exists.
+
     """
     registry = ACTIVE_CAMPAIGN_REGISTRY if registry_path is None else registry_path
     with contextlib.suppress(OSError, ValueError, KeyError, TypeError):

@@ -156,6 +156,11 @@ def _round_floats(value: Any) -> Any:
     break the byte-for-byte determinism contract.  Booleans are passed
     through unchanged (``isinstance(True, int)`` would otherwise round
     them).
+
+    Returns:
+        ``value`` with every float rounded, recursing through dicts and lists; booleans and other
+        values unchanged.
+
     """
     if isinstance(value, bool):
         return value
@@ -177,6 +182,10 @@ def serialize_baseline(artifact: BaselineArtifact) -> str:
     - All floats rounded to ``_FLOAT_PRECISION`` decimal places.
     - Trailing newline so the file is POSIX-clean and ``diff`` is empty
       between identical runs.
+
+    Returns:
+        The sorted, indented JSON text with floats rounded and a trailing newline.
+
     """
     payload = artifact.model_dump(mode="json")
     rounded = _round_floats(payload)
@@ -193,6 +202,10 @@ def render_summary(artifact: BaselineArtifact) -> str:
 
     The summary is operator-facing prose; it is not parsed by any
     consumer, so its exact format may evolve without breaking determinism.
+
+    Returns:
+        The Markdown summary ending in a single newline.
+
     """
     lines: list[str] = ["# Complexity Baseline Summary", ""]
     lines.append(f"- Corpus revision: {artifact.corpus_revision}")

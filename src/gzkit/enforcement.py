@@ -160,6 +160,11 @@ def _derive_gate_targets(entrypoint: object) -> tuple[str, ...]:
     An empty result is honest silence, never a failure: an entrypoint co-located with
     its gate is already named by ``source_fn``, and a subprocess-backed one delegates
     to a command (``uv run ruff format --check .``) with no gzkit callable to name.
+
+    Returns:
+        The `module:name` pairs imported by the entrypoint's code that fall under the gate package
+        prefix; empty when it has no code object or imports none.
+
     """
     code = getattr(entrypoint, "__code__", None)
     if not isinstance(code, types.CodeType):
@@ -184,6 +189,10 @@ def _load_known_claims() -> frozenset[str]:
     ``_load_known_task_reqs()`` in tasks. The lazy import tolerates the re-entrant
     case where ``_qc_negative_controls`` is mid-import and calling ``enforces`` in its
     own registration loop — ``_KNOWN_QC_CLAIM_IDS`` is defined before that loop runs.
+
+    Returns:
+        The cached set of known claim ids, loaded from the qc negative-control module on first call.
+
     """
     global _KNOWN_CLAIMS
     if _KNOWN_CLAIMS is not None:
@@ -255,6 +264,9 @@ def enforces(
     ``delegates_to`` names the command or script the control drives when the
     verdict is decided out of process (GHI #1155 (d)); ``gate_targets`` is then
     empty, because what such a shim imports locates or launches the command.
+
+    Returns:
+        A decorator that registers the claim record and returns the decorated callable unchanged.
 
     Raises:
         ValueError: If ``claim`` has an invalid format or is not in the
@@ -386,6 +398,11 @@ def _render_findings(result: Any) -> str:
     Only the list form carries a reason, so an ``int``-returning entrypoint cannot
     satisfy an ``expect`` — which is deliberate: a bare exit code is exactly the
     signal that cannot distinguish catching the violation from crashing.
+
+    Returns:
+        `type:message` for each item joined by " | " when the result is a list; an empty string for
+        any other result.
+
     """
     if isinstance(result, list):
         return " | ".join(
@@ -400,6 +417,10 @@ def create_fixture_tempdir(prefix: str) -> Path:
     The runner, not fixture code, owns the workspace lifecycle. Calling this
     helper outside ``_run_single_claim`` is a fixture-authoring error: without an
     active runner there is no cleanup authority to grant.
+
+    Returns:
+        Path of a new temporary directory created under the active runner's workspace.
+
     """
     parent = _FIXTURE_PARENT.get()
     if parent is None:
@@ -426,6 +447,11 @@ def _run_single_claim(record: EnforcementClaimRecord) -> ClaimRunResult:
 
     A claim declaring a callable ``population`` is proven at every member instead
     (GHI #1007) — see :func:`_run_population_claim`.
+
+    Returns:
+        The claim's run result, from the per-member run when it declares a callable population,
+        otherwise from a single run.
+
     """
     population = record.population
     if population is not None and not isinstance(population, str):
@@ -449,6 +475,11 @@ def _run_population_claim(
     (GHI #851: one hook type of four). Requiring the member's name in the finding
     closes the loud version of the same facade — a witness that fails for any
     input would otherwise pass every member without ever reading one.
+
+    Returns:
+        A TEST_BUG result when the population cannot be read or is empty, the first non-PASS member
+        result (prefixed with the member's position), or a PASS naming every member.
+
     """
     try:
         members = list(population())
@@ -518,6 +549,12 @@ def _run_claim_in_workspace(
 
     ``member`` is set when this run proves one member of a declared population;
     the caught finding must then name it (GHI #1007).
+
+    Returns:
+        TEST_BUG when the fixture raises or returns a path outside the workspace, or the entrypoint
+        raises; FACADE when the entrypoint returns falsy or its findings miss the expected text or
+        member; otherwise PASS.
+
     """
     try:
         token = _FIXTURE_PARENT.set(fixture_parent)
@@ -796,6 +833,10 @@ def production_enforcement_registry() -> list[EnforcementClaimRecord]:
     The public route for an inventory reading the registry from another package,
     so it neither reaches the private registration seam nor reads a registry a
     test reset left empty.
+
+    Returns:
+        The full enforcement registry after every production claim source is registered.
+
     """
     _ensure_production_claims_registered()
     return get_enforcement_registry()
@@ -814,6 +855,11 @@ def _gate5_enrollment_results(records: list[EnforcementClaimRecord]) -> list[Cla
 
     Runs only on the production-discovery path (``registry is None``): a caller
     passing an explicit registry is exercising a subset, not auditing the floor.
+
+    Returns:
+        One FACADE result per GATE5_INVARIANTS member with no live enforcement; empty when every
+        member is enrolled.
+
     """
     from gzkit.mx.invariants import unenrolled_gate5_members  # noqa: PLC0415
 
@@ -854,6 +900,11 @@ def run_meta_validator(
 
     ``registry`` defaults to the full discovered ``get_enforcement_registry()`` when
     None — production claim sources are imported first so discovery is complete.
+
+    Returns:
+        Counts of PASS, FACADE and TEST_BUG outcomes together with every per-claim result, including
+        the gate5 enrollment results on the production-discovery path.
+
     """
     if registry is None:
         _ensure_production_claims_registered()

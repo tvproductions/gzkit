@@ -24,6 +24,10 @@ def _build_usage_error_fixture() -> Path:
 
     A fixed flag would let a broken parser special-case one sentinel; the token
     is unknowable when a mutation is authored.
+
+    Returns:
+        The runner-owned temp root created for the fixture.
+
     """
     from gzkit.enforcement import create_fixture_tempdir  # noqa: PLC0415
 
@@ -47,6 +51,10 @@ def _ep_usage_error_exit_two(root: Path) -> int:
     Permit: a declared flag parses without exiting, so an always-exit parser
     cannot discharge the claim. Label: the shared epilog's code-2 line names both
     usage and system/IO — the help text is the operator's reading of the code.
+
+    Returns:
+        1 when the refuse, permit and label poles all hold; 0 otherwise.
+
     """
     from gzkit.cli.helpers import exit_codes  # noqa: PLC0415
     from gzkit.cli.parser import StableArgumentParser  # noqa: PLC0415

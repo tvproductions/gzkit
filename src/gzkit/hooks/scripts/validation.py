@@ -47,6 +47,10 @@ def _obpi_completion_validator_script() -> str:
                 (C:/Users/RUNNER~1/...) and its resolved long form share no
                 prefix, so relative_to() raises and the caller loses the
                 path it was about to gate.
+
+                Returns:
+                    The resolved nearest ancestor containing ``.gzkit``, or the resolved cwd when none does.
+
                 \"\"\"
                 current = Path.cwd().resolve()
                 while current != current.parent:
@@ -60,6 +64,11 @@ def _obpi_completion_validator_script() -> str:
                 \"\"\"Find the parent ADR directory from a brief path.
 
                 gzkit stores briefs in /obpis/ (airlineops uses /briefs/).
+
+                Returns:
+                    The ADR directory holding the brief's ``obpis``/``briefs`` folder, or None when the brief
+                    is not in one.
+
                 \"\"\"
                 parent_dir = brief_path.parent
                 if parent_dir.name not in ("obpis", "briefs"):
@@ -102,6 +111,10 @@ def _obpi_completion_validator_script() -> str:
                 \"\"\"Extract parent ADR ID from OBPI ID.
 
                 e.g. OBPI-0.14.0-04 -> ADR-0.14.0
+
+                Returns:
+                    The parent ``ADR-X.Y.Z`` id, or None when the id is not an OBPI id.
+
                 \"\"\"
                 match = re.match(r"__obpi_parts__", obpi_id)
                 return "__adr_template__".format(semver=match.group("semver")) if match else None
@@ -181,6 +194,10 @@ def _obpi_completion_validator_script() -> str:
                 short id exactly, or as the stem of a full slug (short id + '-' +
                 slug). The trailing '-' boundary keeps OBPI-0.0.73-1 from matching
                 OBPI-0.0.73-10 (GHI #629).
+
+                Returns:
+                    True when the entry id equals the short id or is its full-slug form.
+
                 \"\"\"
                 return entry_obpi == obpi_id or entry_obpi.startswith(obpi_id + "-")
 
@@ -447,6 +464,10 @@ def _ledger_writer_script() -> str:
                 (C:/Users/RUNNER~1/...) and its resolved long form share no
                 prefix, so relative_to() raises and the caller loses the
                 path it was about to gate.
+
+                Returns:
+                    The resolved nearest ancestor containing ``.gzkit``, or the resolved cwd when none does.
+
                 \"\"\"
                 current = Path.cwd().resolve()
                 while current != current.parent:

@@ -68,6 +68,10 @@ def doc_from_concept(frontmatter: dict[str, Any], path: str) -> Doc:
 
     ``subtype`` is the OKF ``type`` value VERBATIM (REQ-01); any non-empty
     ``type`` is accepted with no closed-set membership check (REQ-02).
+
+    Returns:
+        The ``Doc`` for the concept, its subtype the frontmatter ``type`` verbatim.
+
     """
     ownership, plane = OBJECT_TYPE_REGISTRY[ObjectType.DOC]
     node = OntologyNode(node_id=path, object_type=ObjectType.DOC, ownership=ownership, plane=plane)
@@ -89,6 +93,10 @@ def _links_to_edges(doc: Doc, body: str) -> list[OntologyEdge]:
     ``provenance`` is ``INTENT`` — the links are authored in the concept doc.
     Advisory-vs-binding is derived downstream from the ``Doc`` source endpoint
     type, so the edge auto-honors OKF BI-1 (no OKF link read as authority).
+
+    Returns:
+        One ``links_to`` edge per Markdown link in ``body``.
+
     """
     return [
         OntologyEdge(
@@ -107,6 +115,10 @@ def absorb_okf_bundle(bundle_dir: str | Path) -> tuple[list[Doc], list[OntologyE
     Walks ``*.md`` in sorted (deterministic) order; each doc carrying a non-empty
     ``type`` frontmatter becomes a ``Doc`` (subtype verbatim) with a ``links_to``
     edge per body markdown link. Files are only read — never written.
+
+    Returns:
+        ``(docs, edges)``: one ``Doc`` per typed concept doc and every ``links_to`` edge they carry.
+
     """
     root = Path(bundle_dir)
     docs: list[Doc] = []

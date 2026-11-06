@@ -218,6 +218,11 @@ def pydantic_loc_to_field_path(prefix: str, loc: tuple[str | int, ...]) -> str:
     """Convert a Pydantic error location tuple to a dotted field path.
 
     Example: ("req_proof_inputs", 0, "kind") → "evidence.req_proof_inputs[0].kind"
+
+    Returns:
+        The prefix and the location's string segments joined by dots, with each integer segment
+        appended to the previous part as `[index]`.
+
     """
     parts: list[str] = [prefix]
     for segment in loc:

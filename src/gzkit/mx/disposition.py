@@ -75,5 +75,9 @@ def grounds(route: Route) -> bool:
     The consumer-facing counterpart to :func:`levels.grounds`: a guard holding a
     Route resolved by :func:`checkpoint.resolve` asks this whether to fail-closed,
     rather than re-deriving the level→route matrix at the call-site.
+
+    Returns:
+        True when ``route`` is a grounding route; False otherwise.
+
     """
     return route in _GROUNDING_ROUTES

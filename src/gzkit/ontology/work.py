@@ -137,6 +137,10 @@ def work_edge_json_schema() -> dict[str, Any]:
     Coherence-checked (dict equality) against the committed schema by
     REQ-0.32.0-06-05 so the emitted edge vocabulary cannot silently drift from
     the WWHTBT-finalized set.
+
+    Returns:
+        Mapping of the sorted discriminators and each edge event's JSON schema.
+
     """
     return {
         "discriminators": sorted(WORK_EDGE_DISCRIMINATORS),
@@ -164,6 +168,10 @@ def replay_work_queue(ledger: Ledger | None = None) -> WorkQueue:
     blockers surfaced as provenance) and to ``ready`` otherwise. Advisory-first:
     every unsatisfied block is surfaced and the call always returns normally —
     it NEVER raises or gates (REQ-0.32.0-06-02/03; parent ADR Boundary Invariant #2).
+
+    Returns:
+        The queue: ready TASKs with no blocker, and blocked TASKs with their blockers, each sorted.
+
     """
     ledger = ledger or _default_ledger()
     blockers_by_task: dict[str, set[str]] = {}
@@ -204,6 +212,10 @@ def project_work_edges(
     event becomes a typed ``OntologyEdge`` between its two endpoints, both
     materialized as TASK ``OntologyNode``s so a composed edge lands on real nodes
     (parent ADR Boundary Invariant #2, derived-never-authority).
+
+    Returns:
+        ``(nodes, edges)``: one TASK node per edge endpoint and one typed edge per work edge event.
+
     """
     ledger = ledger or _default_ledger()
     nodes: dict[str, OntologyNode] = {}

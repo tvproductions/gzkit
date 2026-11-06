@@ -115,6 +115,13 @@ def assess_git_sync_readiness(
 
     Results are cached within the process to avoid redundant subprocess calls.
     Pass ``use_cache=False`` to force a fresh capture (e.g., after git mutations).
+
+    Returns:
+        Mapping with ``branch``, ``remote``, ``dirty``, ``ahead``, ``behind``, ``diverged``,
+        ``actions`` (the git commands to run), ``warnings`` and ``blockers``. Outside a work tree,
+        or when the branch cannot be read, ``branch`` is None, the counts are zero, ``actions`` is
+        empty and ``blockers`` names the reason (that early result is not cached).
+
     """
     cache_key = str(project_root.resolve())
     if use_cache and cache_key in _readiness_cache:

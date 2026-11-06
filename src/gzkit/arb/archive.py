@@ -133,6 +133,11 @@ def _cited_receipt_ids(base_path: Path) -> set[str]:
     payloads, OBPI completion attestation text, ARB's own events), and enumerating
     those shapes is the failure mode this repo keeps re-learning — an enumeration
     only covers the citation sites someone remembered.
+
+    Returns:
+        Every ``arb-*`` receipt id found in the ledger text; empty when the ledger is absent or
+        unreadable.
+
     """
     ledger_path = base_path / ".gzkit" / "ledger.jsonl"
     if not ledger_path.is_file():
@@ -158,6 +163,10 @@ def plan_receipt_archive(
     same-name file in ``archive/``. Undatable receipts are conservatively skipped so
     an un-ageable receipt is never relocated out from under a citation this scan
     could not read.
+
+    Returns:
+        The plan listing each receipt filename under its eligible or skipped bucket.
+
     """
     cutoff = now - timedelta(days=older_than_days)
     cited = _cited_receipt_ids(base_path)
@@ -201,6 +210,11 @@ def execute_receipt_archive(plan: ReceiptArchivePlan, *, root: Path) -> ReceiptA
     then unlinks the source — an atomic no-clobber move. A same-name file appearing
     in ``archive/`` between planning and execution is therefore NEVER overwritten; it
     is recorded on ``skipped_conflict`` and its source left in place.
+
+    Returns:
+        The result naming the receipts moved, those skipped because an archive file appeared in the
+        meantime, and the plan.
+
     """
     archive_dir = root / _ARCHIVE_NAME
     moved: list[str] = []

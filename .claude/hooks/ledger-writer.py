@@ -27,6 +27,10 @@ def find_project_root() -> Path:
     (C:/Users/RUNNER~1/...) and its resolved long form share no
     prefix, so relative_to() raises and the caller loses the
     path it was about to gate.
+
+    Returns:
+        The resolved nearest ancestor containing ``.gzkit``, or the resolved cwd when none does.
+
     """
     current = Path.cwd().resolve()
     while current != current.parent:

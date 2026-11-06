@@ -31,6 +31,11 @@ def _derive_typed_event_types() -> frozenset[str]:
     from each model's ``event`` field.  This ensures the set grows automatically
     when new event classes are added to the union — eliminating the hand-maintenance
     hazard that introduced the ``"obpi_completed"`` ghost.
+
+    Returns:
+        The `event` Literal value of each model in the TypedLedgerEvent union; empty when the union
+        cannot be unpacked.
+
     """
     result: set[str] = set()
     # TypedLedgerEvent = Annotated[Union[ModelA, ModelB, ...], Field(discriminator="event")]
@@ -106,6 +111,10 @@ def _witness_clause(req_text: str) -> str | None:
     Zero markers is a MISSING declaration; two or more is an AMBIGUOUS one. Both
     return ``None``: the caller must not be handed a clause the author did not
     unambiguously write.
+
+    Returns:
+        The REQ text following its one witness marker, or None when it has zero or several markers.
+
     """
     markers = list(_WITNESS_MARKER_RE.finditer(req_text))
     if len(markers) != 1:
@@ -119,6 +128,11 @@ def _sole_event_type(clause: str) -> str | None:
     Word-boundary matched, never substring: an event name is a token the author
     wrote, not a sequence of characters that happens to occur. Zero or two or more
     distinct types is refused — a proof channel with two candidates names neither.
+
+    Returns:
+        The single recognized ledger event type named as a whole token in the clause, or None when
+        it names none or more than one.
+
     """
     found = {
         event_type
@@ -157,6 +171,12 @@ def parse_support_citation(req_text: str) -> SupportCitation | None:
 
     The artifact path (GHI #647) is captured when the clause names one; it scopes
     the ledger arm to an event CITING that path, not merely one of the type.
+
+    Returns:
+        A SupportCitation carrying the clause's one event type, its one validator scope and its
+        cited artifact path (None when no path is named); None when the clause is missing or names
+        zero or several scopes or event types.
+
     """
     clause = _witness_clause(req_text)
     if clause is None:
@@ -220,6 +240,11 @@ def _ledger_has_event_citing_path(
     cited path (slash-normalized, case-insensitive) as a substring of the
     event's ``path`` / ``id`` / ``artifact`` / ``artifact_path`` fields —
     tolerant of backslash-authored paths and relative-vs-full forms.
+
+    Returns:
+        True when some ledger event of a cited type carries the normalized path in its `path`, `id`,
+        `artifact` or `artifact_path` field; False otherwise, including when the ledger is absent.
+
     """
     ledger_path = project_root / ".gzkit" / "ledger.jsonl"
     if not ledger_path.exists():
@@ -262,6 +287,12 @@ def _support_path_arm_ok(citation: SupportCitation, project_root: Path) -> bool:
        the record the operation ran; these are specific and low-volume (unlike
        the 4295 generic ``artifact_edited``), and their payloads do not reliably
        carry the cited artifact path, so a path-citing check is falsely strict.
+
+    Returns:
+        True when an event of a cited type cites the path, when the citation names `artifact_edited`
+        and the artifact exists, or (for any other cited type) when an event of that type is in the
+        ledger; False otherwise.
+
     """
     assert citation.artifact_path is not None  # caller guards
     if _ledger_has_event_citing_path(citation.event_types, citation.artifact_path, project_root):
@@ -296,6 +327,11 @@ def _support_proof_grandfather(project_root: Path) -> frozenset[str]:
     path no ledger event cites. Like the GHI #625 sensitivity-floor cutover,
     existing entries are tolerated (``grandfathered-support``) while every NEW
     path-citing SUPPORT REQ is enforced fail-closed.
+
+    Returns:
+        The grandfathered REQ ids from `data/support_proof_grandfather.json`; empty when the file is
+        absent.
+
     """
     path = project_root / "data" / "support_proof_grandfather.json"
     if not path.exists():
@@ -314,6 +350,11 @@ def _dispatch_validator_scope(scope: str, project_root: Path) -> bool:
     ``VALIDATOR_REGISTRY`` — so a SUPPORT REQ citing one read
     ``unproven-support`` regardless of truth. That map was a third copy of the
     scope->audit knowledge; registering the three retired it.
+
+    Returns:
+        True when the scope's runner returns no errors; False when it returns errors or no runner is
+        registered for the scope.
+
     """
     from gzkit.commands.validate_cmd import (  # noqa: PLC0415
         _default_scope_runners,
@@ -350,6 +391,11 @@ def resolve_support_proof(req_text: str, project_root: Path, *, req_id: str | No
     an event of the cited type CITING that path — closing the hollow gate where
     any event of the type (4295 unrelated ``artifact_edited`` events) satisfied
     the proof. Path-less citations keep the type-only check (no behaviour change).
+
+    Returns:
+        One of "pass", "grandfathered-support", "undeclared-support", "unproven-support" or
+        "unproven-recursion-fence", as described above.
+
     """
     citation = parse_support_citation(req_text)
     if citation is None:

@@ -127,6 +127,10 @@ def _walk_body(node: ast.FunctionDef | ast.AsyncFunctionDef) -> list[ast.AST]:
     of them walk the body only. Fixing the shared traversal rather than the one
     observed call site closes the class: any gzkit-sourced decorator laundered a
     test, not just ``@covers``.
+
+    Returns:
+        Every AST node reached by walking each statement of the function body, in walk order.
+
     """
     return [child for stmt in node.body for child in ast.walk(stmt)]
 
@@ -146,6 +150,11 @@ def _calls_production_code(
     project's computation; one that exercises none is the superfluous case this
     audit targets. This discriminator stops the scan from flagging the ~88% of
     filesystem-touching tests that are in fact behavioral.
+
+    Returns:
+        True when a body node exercises a gzkit symbol or the CLI, or a same-module helper it calls
+        does; False otherwise.
+
     """
     if any(_exercises_production_symbol(child, gzkit_names) for child in _walk_body(node)):
         return True
@@ -157,6 +166,11 @@ def _exercises_production_symbol(child: ast.AST, gzkit_names: frozenset[str]) ->
 
     Split out of :func:`_calls_production_code` to keep that function under the
     xenon complexity ceiling once GHI #947's two further signals landed.
+
+    Returns:
+        True when the node loads a gzkit name, calls a gzkit symbol, invokes the CLI runner, or
+        launches a subprocess whose argv list names a CLI entry token; False otherwise.
+
     """
     # GHI #947 gap A -- a production symbol can be EXERCISED without being
     # CALLED. `get_args(_Ownership)` passes a gzkit Literal as an argument and
@@ -198,6 +212,12 @@ def _calls_production_via_helper(
     already reaches outside the body for setUp. Depth-bounded and self-call-safe;
     helpers resolve by NAME, so a helper shadowing a builtin resolves to the
     local def, which is the one that would actually run.
+
+    Returns:
+        True when a same-module helper called in the body, other than the function itself, exercises
+        production code within the depth bound; False when no helpers are given, the depth bound is
+        reached, or no helper does.
+
     """
     if not helpers or depth >= _HELPER_RESOLUTION_MAX_DEPTH:
         return False
@@ -250,6 +270,11 @@ def _asserts_only_raises(node: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
 
     Deliberately requires ALL assertions, not any: a function that asserts a
     raise AND echoes file content is still echoing file content.
+
+    Returns:
+        True when the body has at least one assert* method call, no bare assert statement, and every
+        assert* call is a raise assertion; False otherwise.
+
     """
     kinds = [
         child.func.attr
@@ -271,6 +296,11 @@ def _local_function_map(
     (`self._unown_once()`) in one flat namespace, because the resolution is by
     name and the two call shapes are indistinguishable in what they exercise. A
     name defined twice keeps the LAST definition, matching Python's own binding.
+
+    Returns:
+        Mapping of each function or method name in the module to its node, the last definition
+        winning on a repeated name.
+
     """
     out: dict[str, ast.FunctionDef | ast.AsyncFunctionDef] = {}
     for node in ast.walk(tree):
@@ -286,6 +316,11 @@ def _class_setup_map(
 
     A test whose production-code call lives in the class fixture (not the method
     body) is still behavioral, so the exemption must see the setUp too.
+
+    Returns:
+        Mapping of id() of each method node in a class that defines setUp or setUpClass to that
+        class's first such fixture node; classes without one contribute nothing.
+
     """
     out: dict[int, ast.FunctionDef | ast.AsyncFunctionDef] = {}
     for cls in ast.walk(tree):
@@ -320,6 +355,10 @@ def _reads_project_source(node: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
     segment alone is intentionally NOT a signal — too many tautological tests
     reference source paths incidentally. Only consulted for an already-flagged
     op (filesystem-op + assertion, no production call, not a fixture).
+
+    Returns:
+        True when the body calls ast.parse or globs with a pattern ending in .py; False otherwise.
+
     """
     for child in _walk_body(node):
         if not (isinstance(child, ast.Call) and isinstance(child.func, ast.Attribute)):
@@ -362,6 +401,11 @@ def _asserts_shipped_executable(node: ast.FunctionDef | ast.AsyncFunctionDef) ->
     Deliberately narrow, matching the sibling's stated posture: only a literal
     path under a shipped-executable root counts, so a test that merely reads a
     governance doc is never laundered.
+
+    Returns:
+        True when a string constant in the body starts with a shipped-executable root; False
+        otherwise.
+
     """
     for child in _walk_body(node):
         if not (isinstance(child, ast.Constant) and isinstance(child.value, str)):
@@ -379,6 +423,11 @@ def _module_backed_self_attrs(tree: ast.Module) -> frozenset[str]:
     static ``gzkit`` import the name heuristic can see. Returns attr names only
     when the file uses importlib spec-loading — the signal that a
     ``self.X = <loader>()`` fixture assignment holds a project module.
+
+    Returns:
+        Names of the self attributes assigned from a call in setUp or setUpClass; an empty frozenset
+        when the file does no importlib spec-loading.
+
     """
     uses_importlib_load = any(
         isinstance(n, ast.Call)
@@ -414,6 +463,11 @@ def _calls_self_module(
     """Return True if the function calls a method on a loaded-module ``self.<attr>``.
 
     A production call the static-import heuristic misses.
+
+    Returns:
+        True when the body calls a method on self.<attr> for an attr in module_attrs; False
+        otherwise.
+
     """
     for child in _walk_body(node):
         if (
@@ -435,6 +489,11 @@ def scan_test_tree(tests_path: Path) -> list[TautologicalTestOperation]:
     operation and an assertion statement within the same function body.
 
     The waivers file path (_WAIVERS_SELF_EXCLUSION) is unconditionally excluded.
+
+    Returns:
+        The flagged operations, one per test function that pairs a filesystem op with an assertion
+        and meets no exemption, in sorted-file order; an empty list when tests_path does not exist.
+
     """
     results: list[TautologicalTestOperation] = []
     if not tests_path.exists():
@@ -520,6 +579,12 @@ def propose_disposition(op: TautologicalTestOperation) -> ProposedDisposition:
     - ledger/receipt paths referenced → replace_with_ledger
     - schema/config/manifest paths referenced → fold_to_validator
     - default → convert
+
+    Returns:
+        keep_as_fixture for a fixture function, replace_with_ledger when the context hint names a
+        ledger or receipt path, fold_to_validator when it names a schema, config or manifest path,
+        and convert otherwise.
+
     """
     if op.function_name in _FIXTURE_FUNCTION_NAMES:
         return ProposedDisposition.keep_as_fixture
@@ -550,6 +615,11 @@ def load_waivers(data_dir: Path) -> dict[str, list[str]]:
 
     Returns a dict mapping file_path (posix) to list of rationale_key strings.
     Each entry in the list represents one waived operation for that file.
+
+    Returns:
+        The file_waivers mapping of POSIX file path to its rationale keys; an empty dict when the
+        waivers file does not exist.
+
     """
     waivers_path = data_dir / "tautological_test_waivers.json"
     if not waivers_path.exists():
@@ -576,6 +646,10 @@ def _op_identity(op: TautologicalTestOperation) -> tuple[str, str, str]:
     reports whichever assertion it walks first, so the kind distinguishes no two
     debts, and a narrowing ``assert`` beside a check re-keyed four baselined ops
     into "new" ones.
+
+    Returns:
+        The tuple (file_path, function_name, operation_kind).
+
     """
     return (op.file_path, op.function_name, op.operation_kind)
 
@@ -599,6 +673,11 @@ def audit_test_quality(project_root: Path) -> list[ValidationError]:
     shrink-only with no re-baseline path. Folding costs nothing there and
     inherits this scope's existing registration, manpage entry, QC
     classification and ``gz check`` wiring.
+
+    Returns:
+        The findings of audit_drift followed by those of audit_wall_clock_fixtures; an empty list
+        when both pass.
+
     """
     from gzkit.governance.trust_audits.wall_clock_fixtures import (  # noqa: PLC0415
         audit_wall_clock_fixtures,
@@ -619,6 +698,12 @@ def audit_drift(project_root: Path) -> list[ValidationError]:
     Exits:
     - 0 → every live op is covered by baseline or waiver (clean)
     - 3 (via ValidationError type="tautological_test_audit") → genuinely-new op(s)
+
+    Returns:
+        One tautological_test_audit ValidationError per live op that no baseline identity or
+        file-waiver slot covers, naming its suggested disposition; an empty list when every op is
+        covered.
+
     """
     tests_path = project_root / "tests"
     data_dir = project_root / "data"

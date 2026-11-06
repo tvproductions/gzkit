@@ -58,6 +58,10 @@ def read_message(stream: BinaryIO) -> dict:
     skips the blank separator and reads exactly N bytes.  Raises
     ``EOFError`` when the stream is exhausted before a complete message
     is read.  Raises ``ValueError`` on any other framing or JSON error.
+
+    Returns:
+        The decoded JSON body of the message.
+
     """
     content_length: int | None = None
     while True:
@@ -110,6 +114,10 @@ def handle_initialize(params: dict) -> dict:
 
     Validates the client's major version against ``PROTOCOL_VERSION``.
     Raises ``ProtocolError`` with ``VERSION_MISMATCH`` on mismatch.
+
+    Returns:
+        The handshake result carrying the server ``version`` and its ``capabilities``.
+
     """
     client_version = params.get("clientVersion", PROTOCOL_VERSION)
     client_major = client_version.split(".")[0]
@@ -127,6 +135,10 @@ def handle_analyze(params: dict) -> dict:
 
     Calls the authoring engine and returns serialized hints.
     Raises ``ProtocolError`` with ``INVALID_PARAMS`` when ``file_path`` is absent.
+
+    Returns:
+        A ``{"hints": [...]}`` payload of the serialized hints.
+
     """
     file_path = params.get("file_path")
     if not file_path:
@@ -167,6 +179,12 @@ def dispatch(request: dict) -> tuple[dict, bool]:
 
     Returns ``(response_payload, should_shutdown)``.  ``should_shutdown`` is
     ``True`` only when the method is ``"shutdown"``.
+
+    Returns:
+        ``(response_payload, should_shutdown)``: an error payload with False for a missing or
+        unknown method or a handler failure; otherwise the result response, with True only for
+        ``shutdown``.
+
     """
     req_id = request.get("id")
     method = request.get("method")
@@ -199,6 +217,10 @@ def run_server(
 
     Malformed framing or JSON produces a ``-32700`` error response, then the
     loop exits.  EOF with no pending message exits silently.
+
+    Returns:
+        Always 0, once the loop ends on shutdown, EOF or a parse error.
+
     """
     if stdin is None and stdout is None:
         _configure_binary_stdio()

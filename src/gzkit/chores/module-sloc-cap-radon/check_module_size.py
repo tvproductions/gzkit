@@ -108,6 +108,11 @@ def _band_label() -> str:
     percentile -- a value in prose drifting from the authority it cites, which
     `AGENTS.md` § Governance doctrine surfaces rules out. Deriving both from
     one read makes that state unrepresentable.
+
+    Returns:
+        The label ``"p<pct>, corpus revision <rev>"``, each part reading "unrecorded" when the table
+        omits it.
+
     """
     row = _block_row()
     pct = row.get("corpus_percentile")
@@ -137,6 +142,10 @@ def _grandfathered() -> dict[str, int]:
     GHI #853 and they mean different things: the cutover SLOC is a dated
     measurement that must stay true, while the ceiling moves down as the ratchet
     turns. Conflating them made a tightened entry falsify its own field name.
+
+    Returns:
+        Mapping of module path to its ceiling; empty when the ratchet file does not exist.
+
     """
     if not _GRANDFATHER.is_file():
         return {}
@@ -153,6 +162,11 @@ def compute_breaches(block: float, sizes: dict[str, int], listed: dict[str, int]
 
     ``listed`` maps a path to its enforced ``ceiling``, which the ratchet drives
     down toward current SLOC; it is not the dated cutover measurement (GHI #853).
+
+    Returns:
+        One prose breach per ratchet violation (an unlisted module over the block band, a listed
+        module grown past its ceiling, or a stale entry); empty when clean.
+
     """
     breaches: list[str] = []
     for path, sloc in sorted(sizes.items(), key=lambda kv: -kv[1]):

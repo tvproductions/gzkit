@@ -21,6 +21,10 @@ def _uncompleted_attestation_requirement() -> str:
     ``commands.adr_audit._requires_human_obpi_attestation``, a private symbol
     this package may not import (``tests/policy/test_import_boundaries.py``), so
     ``tests/test_ledger.py`` holds this answer and that predicate together.
+
+    Returns:
+        Always ``"required"``.
+
     """
     return "required"
 
@@ -38,6 +42,12 @@ def _resolve_attestation_requirement(
     of a receipt or by what an earlier receipt declared: an uncompleted OBPI
     used to read ``optional`` and render ``Attestation State: not_required``
     against universal Gate 5 (GHI #1170).
+
+    Returns:
+        ``"required"`` for an uncompleted OBPI; otherwise the receipt's recorded
+        ``attestation_requirement`` when it is a string, else ``"required"`` for an
+        ``attested_completed`` completion and ``"optional"`` for any other.
+
     """
     if not ledger_completed:
         return _uncompleted_attestation_requirement()
@@ -207,6 +217,12 @@ def _derive_scope_anchor_state(
     Each OBPI's anchor commit seals that increment's delivery proof.
     Later commits (sibling OBPIs, ADR closeout) supersede the anchor
     without invalidating it -- eventual consistency across the ADR.
+
+    Returns:
+        A triple ``(anchor_state, anchor_issues, anchor_drift_files)``: ``current`` when HEAD is the
+        anchor; ``degraded`` with one issue when the changed files cannot be listed; ``scope_clean``
+        when no relevant file changed; ``superseded`` with the relevant changed files otherwise.
+
     """
     if current_head == anchor_commit:
         return "current", [], []
@@ -231,6 +247,11 @@ def _git_sync_anchor_notes(git_sync_state: Any) -> list[str]:
     The git state at receipt time is metadata about the receipt, not a defect.
     A dirty worktree or ahead/behind state at OBPI completion is normal during
     incremental development -- the ADR closeout anchor seals the final state.
+
+    Returns:
+        Informational notes on recorded blockers, a dirty worktree, and a diverged, ahead or behind
+        branch; empty when the state is not a mapping or records none of these.
+
     """
     if not isinstance(git_sync_state, dict):
         return []
@@ -473,6 +494,11 @@ def _repudiated_obpi_semantics() -> dict[str, Any]:
 
     The attestation is owed, not waived: the completion was reversed and the
     OBPI is re-completable only by attesting it again (GHI #1170).
+
+    Returns:
+        Semantics mapping for the ``repudiated`` runtime state: not completed, proof and REQ proof
+        missing, attestation required, anchor state ``none``, and empty issue lists.
+
     """
     attestation_requirement = _uncompleted_attestation_requirement()
     return {

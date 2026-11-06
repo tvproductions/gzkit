@@ -15,6 +15,10 @@ def _mx_awareness_script() -> str:
     present; strict no-op when absent; fail-open (always exits 0). The marker
     read falls back to a stdlib-only path so the banner fires even when gz
     itself is the patient (the MX premise).
+
+    Returns:
+        The hook script source, dedented.
+
     """
     return dedent(
         """\

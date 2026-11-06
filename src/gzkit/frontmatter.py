@@ -92,6 +92,12 @@ def read_frontmatter(content: str) -> FrontmatterRead:
     Rejection order matters: encoding damage is checked before block shape,
     because a BOM-less UTF-16 document has a well-formed block that simply
     cannot be seen through a UTF-8 lens.
+
+    Returns:
+        A "valid" read carrying the block's `key: value` fields with quotes stripped; "absent" when
+        the content does not open with a `---` line; "malformed" for NUL bytes, a leading invisible
+        separator, or an unclosed block.
+
     """
     if "\x00" in content:
         return _malformed(
@@ -144,6 +150,11 @@ def read_frontmatter_bytes(raw: bytes) -> FrontmatterRead:
     ``UnicodeDecodeError`` is a ``malformed`` verdict, never an ``absent`` one.
     Catching the decode error and returning "no frontmatter" is the precise
     fail-open this module closes.
+
+    Returns:
+        The read of the decoded content, as read_frontmatter gives it; a ``malformed`` read when the
+        bytes are not decodable as UTF-8.
+
     """
     try:
         content = raw.decode("utf-8-sig")

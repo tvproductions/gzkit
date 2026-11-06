@@ -28,6 +28,10 @@ def intrinsic_complexity(*, reason: str, attestor: str) -> Callable[[_F], _F]:
 
     No-op at runtime: returns the decorated function unchanged.
     Registers (file_path, qualname) -> (reason, attestor, date) in the module registry.
+
+    Returns:
+        A decorator that records the attestation and returns the function unchanged.
+
     """
     decoration_date = date.today().isoformat()
 
@@ -46,6 +50,10 @@ def get_attestation(file_path: str, qualname: str) -> tuple[str, str, str] | Non
     """Look up the registry for (file_path, qualname).
 
     Returns (reason, attestor, decoration_date) or None if not registered.
+
+    Returns:
+        ``(reason, attestor, decoration_date)`` for a registered function; None otherwise.
+
     """
     return _REGISTRY.get((file_path, qualname))
 
@@ -58,6 +66,11 @@ def decorator_attestation(node: ast.AST) -> Attestation | None:
     the read date, as the registry's is the decoration (import) date. Arguments
     that are not non-empty string literals are not honoured: they cannot be read
     without executing the file, and an empty one would be a silent escape hatch.
+
+    Returns:
+        ``(reason, attestor, read_date)`` from the first matching decorator with non-empty literal
+        arguments; None when there is none.
+
     """
     for decorator in getattr(node, "decorator_list", ()):
         if not isinstance(decorator, ast.Call):
@@ -84,6 +97,11 @@ def ledger_attestations(ledger_path: Path) -> dict[tuple[str, str], Attestation]
 
     A relative ``file_path`` resolves against the working directory, where
     ``--attest-intrinsic`` recorded it; the latest event for a key wins.
+
+    Returns:
+        Mapping of (resolved file path, qualname) to ``(reason, attestor, attestation_date)`` from
+        the latest event per key; empty when the ledger does not exist.
+
     """
     if not ledger_path.exists():
         return {}

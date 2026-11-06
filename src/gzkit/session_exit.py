@@ -89,6 +89,12 @@ def book_exit_bookmark(
     is recorded as plain text, never as a backtick-quoted path:
     ``validate_referenced_files`` requires backticked paths to exist in
     committed state, and the transcript lives outside the repository.
+
+    Returns:
+        An ExitBookmarkResult: `skipped=True` and `written=False` when an authored handoff already
+        covers the session; `written=False` with the cause in `detail` when the bookmark could not
+        be created; otherwise `written=True` with its path and whether it was staged.
+
     """
     timestamp = now or datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
@@ -155,6 +161,10 @@ def _stage(project_root: Path, path: Path) -> bool:
     for it. If git is absent or the add fails, the bookmark is still on disk and
     still discoverable — the session is leaving either way, and the operator
     ruling that this beat must not block outranks landing the file.
+
+    Returns:
+        True when `git add` exited 0; False when it failed or git could not be run.
+
     """
     from gzkit.utils import git_cmd  # noqa: PLC0415 — avoids an import cycle at module load
 
@@ -196,6 +206,11 @@ def _covering_handoff(project_root: Path) -> str | None:
     Fails toward WRITING the bookmark on every uncertainty: no git, an
     unparseable answer, an unreadable corpus. A spurious bookmark is noise; a
     missing one is lost context, and this surface exists to prevent the second.
+
+    Returns:
+        The project-relative POSIX path of the newest authored handoff when all four clauses hold;
+        None when any fails or cannot be established.
+
     """
     from gzkit.handoff_api import list_handoffs  # noqa: PLC0415 — import cycle
     from gzkit.handoff_selection import (  # noqa: PLC0415 — same cycle
@@ -290,6 +305,10 @@ def _draft_sections(
     can and cannot know. It records where the session stopped; it does not
     claim to know why, or what the work meant. The next session enriches it —
     this is the *floor*, not the ceiling.
+
+    Returns:
+        Mapping of each of the seven required section headings to its drafted body text.
+
     """
     transcript_line = (
         _portable_transcript_reference(transcript_path)
@@ -356,6 +375,11 @@ def _portable_transcript_reference(transcript_path: str) -> str:
     directory. This is the redaction seam for the class — any further
     harness-supplied value the bookmark records goes through a helper like
     this one, not through an f-string.
+
+    Returns:
+        A sentence naming only the transcript's file name ("(unnamed)" when the path has no
+        component) and saying it is resolved by session id in the host's transcript store.
+
     """
     parts = [part for part in _SEPARATOR_RE.split(transcript_path.strip()) if part]
     name = parts[-1] if parts else "(unnamed)"
@@ -372,6 +396,11 @@ def _current_branch(project_root: Path) -> str:
     An empty branch fails the frontmatter gate, which would turn a routine
     missing-git case into a silently absent bookmark. Naming the unknown keeps
     the bookmark writable and keeps the gap legible to the reader.
+
+    Returns:
+        The branch `git rev-parse --abbrev-ref HEAD` prints, or "unknown" when git fails, cannot be
+        run or prints nothing.
+
     """
     from gzkit.utils import git_cmd  # noqa: PLC0415 — avoids an import cycle at module load
 

@@ -35,6 +35,10 @@ def should_disable_color(env: Mapping[str, str] | None = None) -> bool:
 
     An empty ``NO_COLOR`` is *not* set, per no-color.org — the prior
     ``is not None`` check treated ``NO_COLOR=""`` as a request to disable.
+
+    Returns:
+        True when `NO_COLOR` is set and non-empty, otherwise False.
+
     """
     return bool(_resolve(env).get("NO_COLOR", ""))
 
@@ -45,6 +49,11 @@ def should_force_terminal(env: Mapping[str, str] | None = None) -> bool:
     ``NO_COLOR`` takes precedence: forcing a terminal while colour is disabled
     still emits bold SGR codes, which is what made ``NO_COLOR`` alone
     insufficient to get clean captured output.
+
+    Returns:
+        False when colour is disabled or `FORCE_COLOR` is unset; otherwise True unless `FORCE_COLOR`
+        holds a falsey value.
+
     """
     resolved = _resolve(env)
     if should_disable_color(resolved):

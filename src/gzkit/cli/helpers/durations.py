@@ -16,6 +16,10 @@ def parse_older_than_days(raw: str) -> int:
     Exits 1 on a non-integer or negative value — a retention threshold that cannot
     be read must never fall through to a default, because the default would silently
     age a store the operator did not intend to age.
+
+    Returns:
+        The non-negative day count.
+
     """
     # Deferred: this helper is reached from ``gzkit.cli.helpers`` while the parser
     # tree is being built, so a module-scope ``gzkit.commands.common`` import puts

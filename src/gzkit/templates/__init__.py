@@ -32,6 +32,10 @@ def _classify_template_file(
 
     Signature-compatible with :func:`gzkit.chores._classify_chore_file`. See
     ``.gzkit/rules/skill-surface-sync.md`` § class-classifier.
+
+    Returns:
+        ``"canonical"`` for a top-level ``.md`` template; ``"package_only"`` otherwise.
+
     """
     path = Path(path)
     name = path.name
@@ -179,6 +183,10 @@ def render_surface_template(name: str, **kwargs: Any) -> str:
     Strictness here would break ``gz agent sync`` for every project that
     customised a surface — which is why GHI #741's fix is two paths rather than
     one flag flip.
+
+    Returns:
+        The rendered template, unknown tokens left in place.
+
     """
     return load_template(name).format_map(SafeDict({**_RENDER_DEFAULTS, **kwargs}))
 
@@ -256,6 +264,10 @@ def scaffold_core_templates(
     preserves operator-edited files; used by repair mode.
 
     Returns paths of newly created files; empty when all slugs are skipped.
+
+    Returns:
+        The paths of the template files written; empty when every slug is skipped.
+
     """
     templates_dir = project_root / ".gzkit" / "templates"
     templates_dir.mkdir(parents=True, exist_ok=True)

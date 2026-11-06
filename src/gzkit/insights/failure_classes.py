@@ -126,6 +126,11 @@ def parse_entry(record: Mapping[str, object]) -> FailureClassEntry | None:
     ``record`` is a plain mapping with ``number``, ``title``, and ``body`` keys —
     the shape ``gh issue list --json`` emits, taken as a parameter rather than
     fetched, so no adapter is required to exercise this.
+
+    Returns:
+        The entry for the record; None when the body has no class statement or the number is not an
+        int.
+
     """
     body = record.get("body")
     statement = extract_class_statement(body if isinstance(body, str) else None)
@@ -157,6 +162,11 @@ def resolve_chains(entries: Sequence[FailureClassEntry]) -> tuple[RecurrenceChai
     another issue in passing does not merge two families — the author's
     recurrence phrasing is what makes the link, which is why the edge set is
     built from ``declares_recurrence`` rather than from citations alone.
+
+    Returns:
+        One chain per group of declaring entries and their citations, ranked by authored depth, then
+        depth, then members.
+
     """
     parent: dict[int, int] = {}
 
@@ -280,6 +290,11 @@ def load_snapshot(path: Path) -> list[Mapping[str, object]]:
     Fails soft: an unreadable or malformed snapshot yields an empty corpus rather
     than raising, so the chore reports "nothing indexed" instead of crashing a
     maintenance run.
+
+    Returns:
+        The dict records of the snapshot list; empty when the file is unreadable, not JSON, or not a
+        list.
+
     """
     try:
         raw = path.read_text(encoding="utf-8", errors="replace")

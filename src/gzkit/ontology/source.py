@@ -69,6 +69,11 @@ class SourceAnchor(BaseModel):
         ``@covers`` anchors become ``LinkType.COVERS``, ``@surface`` anchors the
         lighter ``LinkType.SURFACE``; both are ``Provenance.OBSERVED`` (extracted
         fact, not authored intent).
+
+        Returns:
+            A COVERS edge for an ``@covers`` anchor, else a SURFACE edge, from the source path to
+            the REQ.
+
         """
         link_type = LinkType.COVERS if self.anchor_kind is AnchorKind.COVERS else LinkType.SURFACE
         return OntologyEdge(
@@ -216,6 +221,10 @@ def _module_name_for(rel_path: str) -> str:
     """Map a POSIX source path to its importable dotted module name.
 
     ``b.py → b`` · ``d/e.py → d.e`` · ``pkg/__init__.py → pkg``.
+
+    Returns:
+        The dotted module name for ``rel_path``.
+
     """
     stem = rel_path.removesuffix(".py")
     stem = stem.removesuffix("/__init__")
@@ -232,6 +241,10 @@ def _assemble_coupling_edges(
     Resolves each import to a source unit via the module map (edges BETWEEN source
     units), and emits a ``uses_definition`` edge when a ``from``-imported symbol is
     genuinely defined in the target unit. Deterministic sorted output.
+
+    Returns:
+        The unique import and ``uses_definition`` edges, sorted.
+
     """
     module_map = {_module_name_for(rel): rel for rel, _ in files}
     edges: set[CodeCouplingEdge] = set()
@@ -482,6 +495,10 @@ def _walk_definitions(root: Any, source_bytes: bytes) -> set[str]:
     node, so we unwrap it via the ``definition`` field — otherwise a ``@decorator``ed
     top-level function/class would be invisible (and disagree with the ``ast``
     adapter, which sees it as a plain ``FunctionDef``).
+
+    Returns:
+        The names of the unit's top-level functions and classes, decorated ones included.
+
     """
     names: set[str] = set()
     for child in root.named_children:
@@ -581,6 +598,11 @@ def build_source_anchor_index(
     code-coupling edges, deterministically sorted so identical source trees yield
     byte-identical JSON that round-trips through its model. Tier-B: regenerable,
     never authoritative (parent ADR Boundary Invariant #2).
+
+    Returns:
+        The index of anchors, coupling edges and parse failures, as written to ``index_path`` when
+        ``write`` is set.
+
     """
     root = Path(source_root) if source_root is not None else _default_source_root()
     parser = parser if parser is not None else TreeSitterSourceParser()
@@ -629,6 +651,10 @@ def detect_orphan_gaps(
     anchor; ``unknown_anchor_reqs`` are anchor REQ ids that are not a known brief
     REQ. Both sorted deterministically. Anchors are scanned through the injected
     ``SourceParser`` port.
+
+    Returns:
+        The report of known REQs with no anchor and anchor REQs not known, each sorted.
+
     """
     root = Path(source_root) if source_root is not None else _default_source_root()
     parser = parser if parser is not None else TreeSitterSourceParser()
@@ -653,6 +679,10 @@ def source_subgraph_edges(linkage_records: list[LinkageRecord]) -> list[Ontology
     are test↔code relations outside the source→REQ subgraph and have no ontology
     ``LinkType`` (the model is owned by OBPI-01, not editable here), so they are
     not projected — the source subgraph images the coverage layer only.
+
+    Returns:
+        One COVERS edge per COVERS linkage record.
+
     """
     edges: list[OntologyEdge] = []
     for record in linkage_records:

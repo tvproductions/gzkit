@@ -75,6 +75,10 @@ def _get_head_commit(project_root: Path) -> str:
     """Return the current HEAD full commit SHA.
 
     Raises ``RuntimeError`` when git is unavailable or HEAD cannot be resolved.
+
+    Returns:
+        The full SHA that HEAD resolves to.
+
     """
     rc, stdout, stderr = git_cmd(project_root, "rev-parse", "HEAD")
     if rc == 127:
@@ -91,6 +95,10 @@ def _resolve_full_commit(project_root: Path, short_sha: str) -> str | None:
 
     Returns ``None`` when the short SHA does not resolve in the repository
     (typical after shallow clone, history rewrite, or force-push).
+
+    Returns:
+        The full commit SHA; None when the short SHA does not resolve or git prints nothing.
+
     """
     rc, stdout, _stderr = git_cmd(project_root, "rev-parse", short_sha)
     if rc != 0:
@@ -103,6 +111,11 @@ def _is_ancestor(project_root: Path, ancestor: str, descendant: str) -> bool | N
 
     Returns ``True`` if ancestor, ``False`` if not, ``None`` when the commit
     is not present in the repository (git exit code 128).
+
+    Returns:
+        True when ancestor is an ancestor of descendant, False when it is not, and None on any other
+        git exit (a commit missing from the repository).
+
     """
     rc, _stdout, _stderr = git_cmd(
         project_root, "merge-base", "--is-ancestor", ancestor, descendant
@@ -118,6 +131,10 @@ def _count_commits_between(project_root: Path, ancestor: str, descendant: str) -
     """Count commits reachable from *descendant* but not from *ancestor*.
 
     Returns ``None`` on git failure (e.g., commit not in repo).
+
+    Returns:
+        The number of commits; None when git fails or its output is not an integer.
+
     """
     rc, stdout, _stderr = git_cmd(project_root, "rev-list", "--count", f"{ancestor}..{descendant}")
     if rc != 0:
@@ -143,6 +160,12 @@ def classify_drift(
     """Classify drift between anchor commit and HEAD.
 
     Pure function -- all I/O results are passed in as arguments.
+
+    Returns:
+        A DriftResult with status none when the anchor is HEAD, commits_ahead with the count (0 when
+        unknown) when the anchor is an ancestor, and diverged when it is not an ancestor or is
+        missing from history.
+
     """
     if anchor_commit == head_commit:
         return DriftResult(
@@ -222,6 +245,11 @@ def _latest_obpi_anchors(
 
     Last entry per OBPI wins. Filtered by ``parent == adr_id`` (and
     ``id == obpi_id`` when supplied).
+
+    Returns:
+        Mapping of each matching OBPI id to the anchor commit of its last receipt that carries one;
+        empty when none does.
+
     """
     events = ledger.query(event_type="obpi_receipt_emitted")
     result: dict[str, str] = {}
@@ -252,6 +280,12 @@ def _resolve_anchor(
     ``diverged`` message. The second element is the resolution flag passed
     through to ``classify_drift`` as ``is_ancestor_result``: ``None`` when
     the anchor is unresolvable.
+
+    Returns:
+        The full SHA (or the original short SHA when it does not resolve) and the ancestry flag:
+        True when it is HEAD or an ancestor of HEAD, False when it is not, None when it does not
+        resolve or git cannot tell.
+
     """
     full = _resolve_full_commit(project_root, anchor_short)
     if full is None:
@@ -269,6 +303,11 @@ def detect_drift(adr_id: str, *, project_root: Path | None = None) -> DriftResul
     commit, and compares against the current HEAD.
 
     Returns ``None`` when no anchored audit receipt exists.
+
+    Returns:
+        The DriftResult of the latest anchored audit receipt against HEAD; None when the ledger is
+        absent or has no anchored audit receipt for the ADR.
+
     """
     root = project_root or Path.cwd()
     ledger_path = root / ".gzkit" / "ledger.jsonl"
@@ -303,6 +342,11 @@ def detect_obpi_drift(
     short SHA-7 anchor, and classifies drift against the current HEAD.
 
     Returns an empty list when no anchored OBPI receipts exist.
+
+    Returns:
+        One ObpiDriftResult per anchored OBPI, sorted by OBPI id; an empty list when the ledger is
+        absent or has no anchored OBPI receipt.
+
     """
     root = project_root or Path.cwd()
     ledger_path = root / ".gzkit" / "ledger.jsonl"

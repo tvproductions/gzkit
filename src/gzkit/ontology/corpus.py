@@ -255,6 +255,10 @@ def ledger_event_discriminators() -> frozenset[str]:
     discriminator added to the union by a later ADR appears here automatically
     and, until dispositioned in ``_ACCOUNTED_EVENT_TYPES``, drives
     ``complete=False`` (parent ADR Boundary Invariant #1, registry-coupled).
+
+    Returns:
+        The ``event`` literal of every member of the ``TypedLedgerEvent`` union.
+
     """
     union, _field = get_args(TypedLedgerEvent)
     return frozenset(
@@ -297,6 +301,11 @@ class RebuildFidelity(BaseModel):
         typed union does not know is exactly the "the graph might be lying about
         what it saw" condition this fence exists to confess (ADR-0.32.0 BI#1).
         ``fresh`` is False when the latest ledger event postdates the build.
+
+        Returns:
+            The fidelity report: unaccounted and unregistered replayed event types, ``complete``
+            only when both are empty, and ``fresh`` when no event postdates the build.
+
         """
         unaccounted = tuple(sorted((registry | replayed) - accounted))
         unregistered_replayed = tuple(sorted(replayed - registry))
@@ -353,6 +362,10 @@ def _relation_edges(node_id: str, info: dict, source_graph: dict[str, dict]) -> 
     node->node from ``superseded_by`` (REQ-03); validates/attests are unary
     attestation facts lifted to self-loop edges so they are first-class, not
     implicit in node dicts (REQ-03, ADR-0.32.0 operator ruling 2026-07-06).
+
+    Returns:
+        The typed child, supersedes and attestation edges for the node.
+
     """
     edges: list[OntologyEdge] = []
     for child_id in info.get("children", []):
@@ -402,6 +415,10 @@ def project_corpus(ledger: Ledger | None = None) -> CorpusProjection:
     read from the same single replay, opening no second scan), reproduces every
     node and parent/child lineage edge as typed ``OntologyNode``/``OntologyEdge``,
     and emits the registry-coupled rebuild-fidelity self-report.
+
+    Returns:
+        The projection carrying the typed graph, the source graph and the rebuild fidelity.
+
     """
     ledger = ledger or _default_ledger()
     source_graph = ledger.get_artifact_graph()

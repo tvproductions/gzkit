@@ -66,6 +66,11 @@ def tokenize_shell(command: str) -> list[str] | None:
     what that means for them — the resume gate fails CLOSED on it (an
     unparseable command is not a recognized read), while the verifier-pipe gate
     declines to guess (the shell will reject it anyway).
+
+    Returns:
+        The posix shlex tokens with control operators as separate tokens, or None when the command
+        cannot be tokenized (unbalanced quotes).
+
     """
     try:
         lexer = shlex.shlex(command, posix=True, punctuation_chars=True)
@@ -93,6 +98,11 @@ def normalize_statement_newlines(command: str) -> str:
     other readers of this grammar are entitled to the tokens the shell would
     actually produce, and only a caller reasoning about statement sequence needs
     this normalization.
+
+    Returns:
+        The command with every unquoted, unescaped newline replaced by `;`; all other characters
+        unchanged.
+
     """
     out: list[str] = []
     quote: str | None = None
@@ -127,6 +137,11 @@ def strip_uv_run(tokens: Iterable[str]) -> list[str]:
 
     Repeated rather than single because ``uv run uv run gz check`` is legal and
     would otherwise smuggle a command past a prefix match.
+
+    Returns:
+        A new list of the tokens with every leading `uv run` pair removed; unchanged when there is
+        none.
+
     """
     parts = list(tokens)
     while parts[:2] == ["uv", "run"]:
@@ -141,6 +156,11 @@ def split_on[ItemT](tokens: Iterable[ItemT], separators: frozenset[str]) -> list
     so splitting on ``{"|"}`` correctly leaves a logical-or intact rather than
     reading it as two empty pipelines. Items need not be strings: a reader that has
     nested a group into one item (GHI #1008) splits around it, never inside it.
+
+    Returns:
+        The segments between separator tokens, in order; always one more segment than separators, so
+        empty segments appear where separators are adjacent or at either end.
+
     """
     segments: list[list[ItemT]] = []
     current: list[ItemT] = []
@@ -161,6 +181,10 @@ def program_name(token: str) -> str:
     *shell word*, not a path this process resolves, and a Windows-shaped
     ``C:\\tools\\ruff.exe`` must reduce on a POSIX host (and vice versa) because
     the gate reads commands, not the filesystem.
+
+    Returns:
+        The token's last `/`- or `\`-separated component with any trailing `.exe` removed.
+
     """
     name = token.replace("\\", "/").rsplit("/", 1)[-1]
     return name.removesuffix(".exe")

@@ -121,6 +121,11 @@ def runnable_scopes() -> list[str]:
     tomorrow is covered without editing this chore. `--evaluation-justify-binding`
     survives the value-taking filter because its argument is optional (`nargs="?"`),
     so it runs bare like any other scope.
+
+    Returns:
+        Sorted, de-duplicated option strings of the `gz validate` flags that are store-true or take
+        an optional argument, excluding `--help` and the non-scope flags.
+
     """
     from gzkit.cli.main import _build_parser  # noqa: PLC0415
 
@@ -157,6 +162,12 @@ def _step_runner_flags(root: Path, registry_text: str) -> set[str]:
     names the scope it runs: the "Requirements catalog" step, guard
     `requirements-catalog`, runs `gz validate --catalog` (2026-10-23). The
     command the runner builds is the evidence.
+
+    Returns:
+        Flag names, without their leading dashes, found in `gz validate` invocations inside the
+        step-runner functions of the two quality modules; empty when neither module exists or no
+        runner names one.
+
     """
     runners = set(_STEP_ENTRY_RE.findall(registry_text))
     stems: set[str] = set()
@@ -297,6 +308,11 @@ def _baseline_scopes(ratchet: dict[str, object]) -> set[str]:
     rather than handle it, and `.claude/rules/pythonic.md` forbids a bracketed
     marker carrying no `ty:`-prefixed code anyway. A malformed baseline reads as
     empty, which fails the ratchet closed rather than passing it vacuously.
+
+    Returns:
+        The `ungated_scopes` entries as strings, or an empty set when that key is absent or not a
+        list.
+
     """
     raw = ratchet.get("ungated_scopes")
     return {str(x) for x in raw} if isinstance(raw, list) else set()
@@ -397,6 +413,10 @@ def sweep(root: Path) -> int:
     Argv is a sequence and the interpreter is re-entered as `-m gzkit`, so the
     code under test is the working tree rather than whatever `gz` resolves to on
     PATH — the wheel-vs-tree trap `_qc_nc_entrypoints` documents.
+
+    Returns:
+        0 when every scope exits 0; 3 when any scope exits non-zero.
+
     """
     matrix = build_matrix(root)
     failures: list[tuple[int, str, str]] = []
@@ -478,6 +498,11 @@ def _mx_demoted(guard_name: str, root: Path) -> bool:
     Fails CLOSED: a broken or half-repaired ``gzkit.mx`` is precisely the state
     MX mode exists to survive, so anything unresolvable blocks rather than
     demotes.
+
+    Returns:
+        True when the checkpoint reports the guard does not block at error level; False when it
+        blocks or when the checkpoint cannot be read.
+
     """
     try:
         from gzkit.mx import checkpoint, levels

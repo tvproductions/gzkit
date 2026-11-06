@@ -168,6 +168,11 @@ def resolve_adr_package(project_root: Path, adr_id: str) -> tuple[Path, str, lis
 
     Returns ``(adr_path, adr_content, obpi_paths)``.
     Raises ``FileNotFoundError`` when the ADR cannot be found.
+
+    Returns:
+        Tuple of the first matching ADR file's path, its text, and the sorted OBPI brief paths under
+        its `obpis` directory (empty when that directory is absent).
+
     """
     config_path = project_root / ".gzkit.json"
     if config_path.exists():
@@ -332,6 +337,10 @@ def _render_dispatch_section(dispatch: list[PersonaDispatchRecord]) -> list[str]
     caller supplies none: the defect this closes is that an undispatched
     ceremony was SILENT, so a missing channel must read NOT DISPATCHED rather
     than vanish.
+
+    Returns:
+        The section's lines: the dispatch table and a DISPATCHED or SINGLE-DRIVER mode statement.
+
     """
     records = dispatch or [not_dispatched(p) for p in MANDATED_EVALUATION_PERSONAS]
     lines = [

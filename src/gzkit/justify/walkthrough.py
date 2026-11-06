@@ -145,6 +145,10 @@ def render_scaffold(
     ``complexity_hints_md`` is the optional authoring-time complexity hints
     markdown block produced by :func:`gzkit.justify.complexity_hints.gather_hints_markdown`.
     Pass ``None`` (the default) to omit the block from the rendered output.
+
+    Returns:
+        The eight-section scaffold with placeholder reasoning, timestamped at ``now``.
+
     """
     timestamp = (now or datetime.now(UTC)).isoformat()
     sections = [_build_section(ordinal, anchor, evidence) for ordinal in range(1, 9)]
@@ -162,6 +166,10 @@ def render_markdown(walkthrough: Walkthrough) -> str:
 
     Output is byte-stable for a given input: identical ``Walkthrough`` produces
     identical markdown on every invocation.
+
+    Returns:
+        The rendered Markdown, trailing whitespace trimmed to a single newline.
+
     """
     template = _get_template()
     anchor_id = _anchor_id_for_frontmatter(walkthrough.anchor)

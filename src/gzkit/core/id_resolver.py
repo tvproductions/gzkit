@@ -164,6 +164,11 @@ def _req_owner(identifier: str, context: IdentityContext) -> tuple[Resolution, P
     withdrawn OBPI the REQ's spelling names still owns it: pool demotion removes
     the brief and parks the OBPI, and the REQs it declared stay recorded as such.
     A REQ whose spelled OBPI is live but does not list it names nothing.
+
+    Returns:
+        ``(owner, link)``: the single listing brief's OBPI with a ``brief`` link, or a parked or
+        withdrawn OBPI the REQ's spelling names with a ``spelling`` link.
+
     """
     owners: dict[str, Resolution] = {}
     for brief_id in context.req_owners.get(identifier, ()):
@@ -237,6 +242,11 @@ def resolve_full(identifier: str, context: IdentityContext) -> Resolution:
     same OBPI, so :func:`resolve` stops at the short key. A producer that books
     events (``gz task start``, GHI #653) must write the slug, so when exactly one
     active key extends the resolved id across a ``-`` that key is the answer.
+
+    Returns:
+        The resolution re-keyed to the single active slug key that extends it; the plain resolution
+        for other kinds or when there is no single such key.
+
     """
     resolution = resolve(identifier, context)
     if resolution.kind not in (IdKind.ADR, IdKind.OBPI):
@@ -261,6 +271,10 @@ def _parent_by_spelling(identifier: str, kind: IdKind) -> ParentLink:
     the seam's grammar parses: ``OBPI-<semver>-…`` → ``ADR-<semver>``;
     ``REQ-<semver>-<NN>-<MM>`` → ``OBPI-<semver>-<NN>``;
     ``TASK-<semver>-<NN>-<MM>-<PP>`` → ``REQ-<semver>-<NN>-<MM>``.
+
+    Returns:
+        The parent the spelling names, with a ``spelling`` source.
+
     """
     parent = spelled_parent(identifier) if id_kind(identifier) is kind else None
     if parent is None:
@@ -274,6 +288,11 @@ def parent_of(identifier: str, context: IdentityContext) -> ParentLink | None:
 
     ``None`` means the artifact has no parent (an ADR the graph records none for).
     Raises :class:`IdResolutionError` when *identifier* names no single artifact.
+
+    Returns:
+        The parent link from the ledger, the brief, the catalog, the REQ's owning OBPI or the id's
+        spelling, in that order; None for an ADR with no recorded parent.
+
     """
     resolution = resolve(identifier, context)
     canonical = resolution.canonical_id

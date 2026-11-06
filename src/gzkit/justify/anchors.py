@@ -41,6 +41,10 @@ def resolve_anchor(
 ) -> AnchorRef:
     """Resolve a raw anchor string into a populated :class:`AnchorRef`.
 
+    Returns:
+        The resolved anchor: a draft anchor when ``raw`` is None, else the GHI or OBPI anchor
+        ``raw`` names.
+
     Raises:
         ValueError: if the input shape is malformed (for any of the three
             accepted kinds), or for invalid draft inputs.

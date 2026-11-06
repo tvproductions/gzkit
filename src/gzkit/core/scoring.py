@@ -192,6 +192,10 @@ def parse_wbs_table(content: str) -> list[WbsRow]:
 
     Expects a markdown table with columns: #, OBPI, Specification Summary, Lane, Status.
     Returns one WbsRow per data row, in order.
+
+    Returns:
+        One ``WbsRow`` per matching table row, in order; empty when the section is absent.
+
     """
     section = extract_markdown_section(content, "OBPI Decomposition")
     if section is None:
@@ -229,6 +233,11 @@ def extract_markdown_section(content: str, section_title: str) -> str | None:
     Matches headings that START with the given title, so
     ``extract_markdown_section(content, "Feature Checklist")`` matches
     ``## Feature Checklist — Appraisal of Completeness``.
+
+    Returns:
+        The body under the first matching H2 heading, up to the next H2, with surrounding newlines
+        stripped; None when no heading matches.
+
     """
     pattern = re.compile(
         rf"(?ms)^## {re.escape(section_title)}[^\n]*\n(.*?)(?=^## |\Z)",

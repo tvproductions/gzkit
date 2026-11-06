@@ -43,6 +43,11 @@ def advisory_lines(*captured: str) -> list[str]:
 
     Accepts several chunks (a step's stdout and stderr) because emitters differ
     on which stream they use. Unmarked lines are dropped.
+
+    Returns:
+        The stripped lines that start with the advisory marker, in order across the chunks; empty
+        when none do.
+
     """
     return [
         stripped

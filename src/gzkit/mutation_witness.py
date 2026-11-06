@@ -165,6 +165,10 @@ def _run(
     """Run the test command with an isolated bytecode cache (GHI #963).
 
     ``pythonpath_prefix`` goes first on any inherited ``PYTHONPATH`` (GHI #1260).
+
+    Returns:
+        The completed process with text-decoded stdout and stderr; a non-zero exit is not raised.
+
     """
     import os  # noqa: PLC0415 — only needed to copy the ambient environment
 
@@ -199,6 +203,10 @@ def _compiles(source: Path, cwd: Path, pycache_prefix: Path) -> bool:
     Compiles with the interpreter running the sweep, never a ``python3`` found on
     PATH: an older one cannot parse the project's syntax (PEP 758 at the 3.14
     floor, drydock RO-9) and would call every mutant uncompilable.
+
+    Returns:
+        True when the compile subprocess exits 0; False otherwise.
+
     """
     result = _run(
         [
@@ -321,6 +329,12 @@ def run_mutation_sweep(
 
     The source file is always restored, including when a mutant leaves it
     unimportable — a sweep that can strand a broken tree is worse than no sweep.
+
+    Returns:
+        MutationSweep recording whether the baseline was green, the original and restored source
+        hashes, the baseline's executed tests, count and output tail, and one witness per mutation
+        (each ``inconclusive`` when the baseline is not green).
+
     """
     original_bytes = source.read_bytes()
     original = original_bytes.decode("utf-8")

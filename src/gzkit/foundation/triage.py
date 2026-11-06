@@ -54,6 +54,10 @@ def _foundation_short_id(raw_id: str) -> str:
     Accepts either bare short form (``ADR-0.0.57``) or canonical-slug form
     (``ADR-0.0.57-<slug>``) and returns the leading ``ADR-X.Y.Z`` prefix.
     Returns the empty string when the input does not start with that shape.
+
+    Returns:
+        The leading ``ADR-X.Y.Z`` prefix; the empty string when the id does not start with it.
+
     """
     if not raw_id:
         return ""
@@ -68,6 +72,11 @@ def gather_in_flight_foundations(project_root: Path) -> list[dict[str, str]]:
     (one of ``Draft``/``Proposed``), ``title`` (H1 title with any
     ``ADR-X:`` prefix stripped), and ``path`` (POSIX relative path).
     The function is a pure file reader.
+
+    Returns:
+        One ``{id, status, title, path}`` dict per in-flight foundation ADR, in path order; empty
+        when the foundation directory does not exist.
+
     """
     foundation_root = project_root / "docs" / "design" / "adr" / "foundation"
     if not foundation_root.is_dir():
@@ -100,6 +109,10 @@ def count_signals(project_root: Path, adr_id: str) -> dict[str, int]:
     ``ghi_count`` (the GHI pattern matched within insight rows that mention
     the ADR id), and ``AGENTS.md`` plus ``.gzkit/rules/*.md`` for
     ``invariant_mentions``. All file I/O is read-only.
+
+    Returns:
+        Mapping of ``insight_count``, ``ghi_count`` and ``invariant_mentions`` to their counts.
+
     """
     insights_path = project_root / ".gzkit" / "insights" / "agent-insights.jsonl"
     insight_count = 0

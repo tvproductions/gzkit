@@ -46,6 +46,11 @@ def _brief_is_completed(cwd: Path, obpi_id: str) -> bool:
     """Check if the referenced OBPI brief has status Completed.
 
     gzkit stores briefs under design/adr/pre-release/ADR-X.Y.Z-.../obpis/OBPI-*.md
+
+    Returns:
+        True when a matching brief's first 15 lines carry ``Status:`` with ``Completed``; False
+        otherwise, including a malformed id, a missing ADR tree or an unreadable brief.
+
     """
     if "-" not in obpi_id:
         return False

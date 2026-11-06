@@ -88,6 +88,11 @@ class ContentTypeRegistry:
 
         Raises KeyError if the content type is not registered.
         Raises TypeError if the content type has no frontmatter model.
+
+        Returns:
+            One error dict (`type`, `artifact`, `message`, `field`) per validation failure; an empty
+            list when the frontmatter is valid.
+
         """
         ct = self.get(type_name)
         if ct.frontmatter_model is None:
@@ -135,6 +140,11 @@ def _constitution_path_pattern() -> str:
     The registry is built at import time with no project root, so it reads the
     configured directory's name rather than one project's full path: a project
     that roots it under ``docs/`` still matches (GHI #1134).
+
+    Returns:
+        The glob `**/<constitutions-dir-name>/CONSTITUTION-*.md`, using the name of the default
+        `paths.constitutions` directory.
+
     """
     from gzkit.config import PathConfig  # noqa: PLC0415 — mirrors the imports below
 

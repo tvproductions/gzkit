@@ -137,6 +137,11 @@ def _default_reach(node_id: str) -> list[str] | None:
 
     Lazily imports the ontology surface so the core stays exercisable with NO
     projection built (hexagonal rule 6) — tests inject a fake ``reach_fn``.
+
+    Returns:
+        The transitive reach of ``node_id`` in the projected ontology graph, as ``compute_reach``
+        returns it (None when it cannot resolve the node).
+
     """
     from gzkit.commands.ontology import compute_reach  # noqa: PLC0415
     from gzkit.ontology.unified import project_all  # noqa: PLC0415
@@ -156,6 +161,11 @@ def compute_drift_diff(
     no matching fact is a "broken contract" PULL edge. A fully-matched two-graph
     yields empty drift and a CLEAN verdict — drift present SURFACEs (the tracer
     reports, it never BLOCKs; state-doctrine Rule 5 keeps this L3-advisory).
+
+    Returns:
+        The drift-diff: PUSH edges for unmatched fact targets, PULL edges for unmatched intent
+        targets, a CLEAN verdict when there are none (SURFACE otherwise), and no resolutions.
+
     """
     fact = dict.fromkeys(fact_targets)  # order-preserving de-dupe
     intent = dict.fromkeys(intent_targets)
@@ -220,6 +230,11 @@ def compute_footprint_drift(
     """Return a PUSH edge for each changed file outside the brief's Allowed Paths.
 
     The brief and its package log are exempt only when *project_root* locates them.
+
+    Returns:
+        One PUSH edge per changed file outside the brief's Allowed Paths; empty when every file is
+        inside them.
+
     """
     return _footprint_edges(
         changed_files,
@@ -237,6 +252,11 @@ def build_findings(drift: DriftDiff) -> tuple[Finding, ...]:
     A PUSH/OBSERVED edge is a wrecked-something finding (route a fresh transit to
     account for it); a PULL/LAW edge is a broken-contract finding (adjust the maps
     — propose reconciling the declared-but-undelivered intent).
+
+    Returns:
+        One finding per drift edge, in drift order: WRECKED_SOMETHING for PUSH edges,
+        BROKEN_CONTRACT for PULL edges, each with its recommendation.
+
     """
     findings: list[Finding] = []
     for edge in drift.drift:
@@ -267,6 +287,11 @@ def route_fresh_transit(finding: Finding) -> FreshTransit:
     The correction is handed to the pipeline door (the canonical door) as a fresh
     transit directive; it is NEVER applied inline against the current sortie
     (parent ADR § Boundary Invariants #5 — "better housekeeping/bookkeeping").
+
+    Returns:
+        A pipeline-door fresh transit naming the correction for the finding's edge target, never
+        marked smuggled.
+
     """
     return FreshTransit(
         door=Door.PIPELINE,
@@ -307,6 +332,10 @@ def airlock_exit(
     map amendment for any broken contract -> book exactly one ``airlock_out`` L2
     event. NEVER writes L1 canon (parent ADR § Boundary Invariants #1); the L3
     reach INFORMS the drift-diff, it never gates (BI #6, state-doctrine Rule 5).
+
+    Returns:
+        The exit report produced by ``exit_slice`` for this transit.
+
     """
     target = slug_id_for(target, brief_path.stem)  # book the slug, never a bare id (GHI #1118)
 
@@ -333,7 +362,10 @@ def _with_footprint(
     """Add the footprint vein: a diff reads clean only if something was compared.
 
     Returns:
-        The diff with its footprint edges and the verdict they earn.
+        An undeclared slice: the drift as given, verdict ``SURFACE`` if it drifted, else
+        ``UNDECLARED``. No observation: an empty ``UNOBSERVED`` diff when the slice must be
+        observed and nothing drifted, otherwise ``drift`` unchanged. Otherwise the drift plus its
+        footprint edges, verdict ``SURFACE`` when any edge exists, else ``CLEAN``.
 
     """
     if declared.undeclared:

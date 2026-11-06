@@ -83,6 +83,11 @@ def ruling_key(entry: str) -> str:
     documents (GHI #838). The storage layer owns identity because it is the layer
     that must not write the same ruling twice; widening the key to shrink the
     corpus is the fix GHI #838 rejects on the asymmetry above.
+
+    Returns:
+        The entry with quote glyphs folded, case folded and whitespace runs collapsed to single
+        spaces.
+
     """
     return " ".join(entry.translate(_QUOTE_GLYPHS).casefold().split())
 
@@ -93,6 +98,10 @@ def dedup_rulings(entries: list[str]) -> list[str]:
     Shared by composition and storage on purpose: a ruling normalized on one path
     and compared exactly on the other would still multiply, which is the defect
     wearing a different hat.
+
+    Returns:
+        The entries with later duplicates removed, first occurrence and order kept.
+
     """
     seen: set[str] = set()
     composed: list[str] = []
@@ -116,6 +125,11 @@ def read_rulings(base_path: Path) -> list[str]:
     A malformed line is skipped rather than aborting the read. The corpus is the
     only copy once the documents stop carrying it, so one bad line must never
     make the other several hundred unreadable.
+
+    Returns:
+        The de-duplicated ruling texts in booking order; empty when the store is missing or
+        unreadable.
+
     """
     store = rulings_store_path(base_path)
     try:
@@ -147,6 +161,10 @@ def prospective_corpus(entries: list[str], *, base_path: Path) -> list[str]:
     Kept honest by construction rather than by comment — it composes exactly the
     two operations :func:`record_rulings` composes, in the same order, so the two
     cannot drift into different answers.
+
+    Returns:
+        The booked rulings followed by the new *entries*, de-duplicated on :func:`ruling_key`.
+
     """
     return dedup_rulings([*read_rulings(base_path), *entries])
 
@@ -173,6 +191,10 @@ def record_rulings(entries: list[str], *, base_path: Path, source: str) -> list[
     while authoring `20260822T170107Z`). The caller now validates first and calls
     this only on the path that goes on to write; :func:`prospective_corpus`
     supplies the count the document needs in the meantime.
+
+    Returns:
+        The full booked corpus after the append, as :func:`read_rulings` reads it.
+
     """
     known = {ruling_key(entry) for entry in read_rulings(base_path)}
     fresh = [entry for entry in dedup_rulings(entries) if ruling_key(entry) not in known]

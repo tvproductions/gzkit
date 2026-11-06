@@ -103,6 +103,13 @@ def build_advisement(
     known state without a subprocess. ``None`` from the probe and a level clone
     are deliberately the same rendering — neither warrants a caveat, and a
     qualifier that fired on "unknown" would fire on every non-repo checkout.
+
+    Returns:
+        An Advisement with `present=False` when no handoff resolves or resolution fails; otherwise
+        `present=True` with the rendered body (clipped to ADVISEMENT_CHAR_BUDGET, `truncated` set
+        when it was), the handoff path, its staleness and the line numbers of transcribed-count
+        findings.
+
     """
     try:
         from gzkit.handoff_api import resume_handoff  # noqa: PLC0415
@@ -138,6 +145,11 @@ def _project_relative(project_root: Path, path: str) -> str:
     The text is injected into the session, so an absolute path would carry the
     host's account name into every context (observed 2026-10-17). A path outside
     the project keeps its own form rather than raising.
+
+    Returns:
+        The handoff path relative to the project root in POSIX form, or `path` unchanged when it
+        lies outside the project or cannot be resolved.
+
     """
     try:
         return Path(path).resolve().relative_to(project_root.resolve()).as_posix()
@@ -152,6 +164,10 @@ def _probe_divergence(project_root: Path) -> RemoteDivergence | None:
     guard is here because this module's contract is that NOTHING escapes it, and
     a contract that depends on a callee keeping its own is one refactor from
     being false.
+
+    Returns:
+        The probed RemoteDivergence, or None when the probe returns None or raises.
+
     """
     try:
         return probe_remote_divergence(project_root)
@@ -165,6 +181,11 @@ def _transcribed_count_findings(project_root: Path, path: str) -> list[tuple[int
     Scans ``path`` — the document this advisement actually resolved — rather
     than letting the guard re-select, so the warning can never name a different
     handoff than the one being injected.
+
+    Returns:
+        `(line_number, text)` findings for transcribed ADR counts in the handoff at `path`; an empty
+        list when there are none or the scan raises.
+
     """
     try:
         from gzkit.governance.trust_audits.transcribed_counts import (  # noqa: PLC0415
@@ -198,6 +219,12 @@ def _chain_line(result: object) -> str | None:
     twenty paths here would push the advised steps out of the delivery. The
     measured instance in GHI #870 needed exactly one fact the renderer already
     held and dropped — that a predecessor exists, and which one.
+
+    Returns:
+        A `- Chained from:` line naming the immediate predecessor, with the ancestor count ("at
+        least" when the walk was truncated) when there is more than one; None when the chain has
+        fewer than two entries.
+
     """
     chain = list(getattr(result, "chain", []) or [])
     if len(chain) < 2:
@@ -234,6 +261,12 @@ def _render(
     The behind-origin caveat sits ahead of even that, because it is the more
     fundamental doubt: the count warning says this document's figures are
     stale, while the caveat says this may not be the right document at all.
+
+    Returns:
+        The advisement body as newline-joined Markdown: heading, path, freshness, any behind-origin
+        caveat, chain line and count warning, the advises-never-authorizes line, then the numbered
+        advised steps when there are any.
+
     """
     path = path if path is not None else getattr(result, "path", "")
     staleness = getattr(result, "staleness", "")

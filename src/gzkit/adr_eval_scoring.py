@@ -84,6 +84,11 @@ def _score_problem_clarity(content: str) -> tuple[int, list[str]]:
     sentences. A high score means the Problem section is structurally complete —
     it does NOT mean the problem is clearly understood. That substance judgment
     is UNGRADED here and belongs to the judge channel (gzkit.adr_eval_substance).
+
+    Returns:
+        Tuple of the score derived from the four presence checks passed, and one finding per check
+        that failed.
+
     """
     findings: list[str] = []
     intent = section_body(content, "Intent")
@@ -116,6 +121,11 @@ def _score_decision_justification(content: str) -> tuple[int, list[str]]:
     downsides. A high score means the Decision is structurally complete — it does
     NOT mean the decision is well justified. That substance judgment is UNGRADED
     here and belongs to the judge channel (gzkit.adr_eval_substance).
+
+    Returns:
+        Tuple of the score derived from the four presence checks passed, and one finding per check
+        that failed.
+
     """
     findings: list[str] = []
     decision = section_body(content, "Decision")
@@ -373,6 +383,11 @@ def _score_architectural_alignment(content: str, obpi_contents: list[str]) -> tu
     four original keywords. Matching only the narrative false-negatived every such
     ADR into a 1.0 that fail-closed ``--evaluation-justify-binding`` and forced a
     justify band-aid defending a wrong number (GHI #631).
+
+    Returns:
+        Tuple of the score derived from the three checks passed, and one finding per check that
+        failed.
+
     """
     findings: list[str] = []
     checks = 0

@@ -298,6 +298,10 @@ def _render_citation_form_section(baseline: BaselineArtifact, document_name: str
     The example once named the 2026-05-04 document in every later document and
     spelled the revision ``corpus_revision``, which ``parse_citation`` does not
     read; it now cites the document being written, in the canonical string form.
+
+    Returns:
+        The Markdown citation-form section.
+
     """
     return (
         "## Citation form\n\n"

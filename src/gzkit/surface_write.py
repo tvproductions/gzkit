@@ -147,6 +147,11 @@ def remove_if_present(path: Path) -> bool:
     """Delete ``path`` if it exists, or record the intent when a sink is active.
 
     Returns True when the file existed, and so would have been removed.
+
+    Returns:
+        True when the file existed (removed, or its removal recorded on the active sink); False when
+        it was absent.
+
     """
     sink = _ACTIVE_SINK.get()
     if sink is not None:
@@ -199,6 +204,11 @@ def dir_exists(path: Path) -> bool:
     directory an earlier pass creates. Calling ``is_dir()`` directly inside a
     captured sync answers a question about the PRE-sync tree and quietly drops
     whatever that branch would have produced.
+
+    Returns:
+        True when path is a directory on disk or one the active sink has recorded as created; False
+        otherwise.
+
     """
     if path.is_dir():
         return True
@@ -211,6 +221,11 @@ def effective_bytes(path: Path) -> bytes | None:
 
     The file-content sibling of :func:`dir_exists`, for a pass that reads what an
     earlier pass wrote. ``None`` means the file does not (or would not) exist.
+
+    Returns:
+        The bytes the active sink recorded for path, else the file's bytes on disk; None when the
+        sink recorded its removal or the file does not exist.
+
     """
     sink = _ACTIVE_SINK.get()
     if sink is not None:

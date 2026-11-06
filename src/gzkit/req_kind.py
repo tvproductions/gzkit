@@ -105,6 +105,11 @@ def infer_req_kind(text: str) -> tuple[ReqKind, str]:
     vocabulary) so behavior REQs that mention "scope" in passing are not pulled
     into the silent-advisory bucket.  SUPPORT triggers fire on ledger/validator
     vocabulary.  Everything else defaults to BEHAVIOR.
+
+    Returns:
+        `(kind, proof_status_label)`: STRUCTURAL_FENCE with "inferred-structural-fence", SUPPORT
+        with "inferred-support", or BEHAVIOR with "inferred-behavior" when no trigger matches.
+
     """
     lower = text.lower()
     if any(trigger in lower for trigger in _STRUCTURAL_FENCE_TRIGGERS):
@@ -123,6 +128,10 @@ def _normalise_kind_spelling(value: object) -> object:
     """Uppercase a kind spelling so ``support`` and ``SUPPORT`` name one kind.
 
     Non-strings pass through untouched so ``ReqKind`` itself rejects them.
+
+    Returns:
+        The string uppercased, or any non-string value unchanged.
+
     """
     return value.upper() if isinstance(value, str) else value
 
@@ -161,6 +170,10 @@ def load_req_kind_grandfathering_cache(project_root: Path) -> dict[str, ReqKind]
     Returns an empty cache when the file is absent (no override configured).
     Raises ``pydantic.ValidationError`` when the file exists but is malformed
     or names a kind outside the taxonomy; callers must not suppress it.
+
+    Returns:
+        Mapping of REQ id to its overriding ReqKind; empty when the file is absent.
+
     """
     cache_path = project_root / "data" / "req_kind_grandfathering.json"
     if not cache_path.exists():
@@ -197,6 +210,12 @@ def compute_three_channel_coverage(
       (``"pass"`` / ``"unproven-fence"``)
     - STRUCTURAL-FENCE + no ``project_root`` → ``"unproven-fence"`` (fail-close; never advisory)
     - Untagged + inferred → ``"inferred-<kind>"`` (advisory; counted in ``grandfathered_reqs``)
+
+    Returns:
+        A new CoverageReport whose entries carry `taxonomy_kind`, `proof_channel` and
+        `proof_status`, with the per-OBPI, per-ADR and summary rollups recomputed from them; entries
+        whose REQ id does not parse are left out of the OBPI and ADR rollups.
+
     """
     from gzkit.traceability import CoverageEntry, CoverageRollup
     from gzkit.traceability import CoverageReport as _CoverageReport

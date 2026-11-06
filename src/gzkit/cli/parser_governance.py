@@ -28,6 +28,10 @@ def _nonblank_target(value: str) -> str:
     ``required=True`` only requires the option to be present, not non-empty; an empty
     target books an anonymous, unaccountable airlock transit and glob-selects an
     unrelated ADR (Codex Step-4b, GHI #678). The handler re-checks defensively.
+
+    Returns:
+        ``value`` unchanged when it is not blank.
+
     """
     if not value.strip():
         raise argparse.ArgumentTypeError("must name a non-empty file or region")

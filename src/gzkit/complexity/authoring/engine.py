@@ -54,6 +54,10 @@ def analyze(
     -- the caller can inject an alternative table for tests.
 
     Empty result (no advise-band crossings) returns ``()`` per REQ-0.0.30-03-05.
+
+    Returns:
+        The advise-band hints for every analyzed file; ``()`` when there are none.
+
     """
     resolved = table if table is not None else load_threshold_table(DEFAULT_RULE_PATH)
     engine = DiagnosisEngine()
@@ -68,6 +72,11 @@ def unmeasured_notes(path: Path) -> tuple[str, ...]:
 
     Kept apart from :func:`analyze`, whose hints also feed the editor protocol
     over stdio, so a caller chooses where the notes go.
+
+    Returns:
+        One note per unmeasured function across the Python files under ``path``; empty when every
+        function was measured.
+
     """
     notes: list[str] = []
     for source_file in _iter_python_files(path):
@@ -141,6 +150,11 @@ def _classify_precedence_band(
     and the warn band's ``absolute_number`` for ``metric``. When no warn
     band exists for the metric, classification falls back to ``approaching``
     (no upper edge to project against).
+
+    Returns:
+        ``"approaching_warn"`` at or above the midpoint; ``"approaching"`` below it or when either
+        band is missing.
+
     """
     advise_abs = _band_absolute(table, metric, "advise")
     warn_abs = _band_absolute(table, metric, "warn")

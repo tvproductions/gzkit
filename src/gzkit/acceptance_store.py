@@ -89,6 +89,11 @@ def resolve_brief(root: Path, obpi_id: str) -> AcceptanceSource:
     """Resolve a real canonical brief; an evidence filename is not an OBPI.
 
     A work package supplies its contract in place of a brief (RO-14 act 5).
+
+    Returns:
+        The work package's contract for a work-package ID, otherwise the path of the OBPI's
+        canonical brief.
+
     """
     from gzkit.commands.obpi_precomplete import resolve_brief_path  # noqa: PLC0415
 
@@ -269,6 +274,11 @@ def review_from_receipt(receipt: dict[str, Any]) -> Review:
     The producer must be an actual agent invocation, not an echo/cat/JSON copier.
     This uses the existing vendor/wrapper vocabulary at its execution boundary.
     The CLI accepts no separately authored review file or verdict override.
+
+    Returns:
+        The review, identified by the receipt's SHA-256 digest and run ID, with tier 1 when the
+        receipt proves a cross-vendor invocation and tier 2 otherwise.
+
     """
     from gzkit.commands.obpi_complete_adversarial import (  # noqa: PLC0415
         receipt_binary_name,
@@ -334,6 +344,11 @@ def _stale_review_message(root: Path, brief: AcceptanceSource, reviewed: str) ->
     file contents" whichever term differed, sending readers hunting for a file
     change that need not exist -- twice in one session, against a tree that
     `git status` reported clean.
+
+    Returns:
+        The refusal message, naming both composing terms and printing the reviewed, current, files
+        and contract digest prefixes.
+
     """
     components = digest_components(root, brief)
     return (
@@ -513,6 +528,10 @@ def record_human_review(root: Path, obpi_id: str, *, attestor: str, ruling: str)
 
     Caller authorization is the same operator-verbatim boundary as attestation;
     never infer this action from permission to implement or repair an OBPI.
+
+    Returns:
+        The human adversarial review, accepting every current proof and closing each open finding
+        whose obligation has a current proof. It is appended to the ledger only when it validates.
 
     Raises:
         ValueError: A package is past its round limit, so the block comes first (ruling

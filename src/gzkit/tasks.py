@@ -58,6 +58,10 @@ class TaskId(BaseModel):
         """Parse a TASK identifier string into a ``TaskId``.
 
         Raises ``ValueError`` when *raw* does not match the canonical pattern.
+
+        Returns:
+            The TaskId whose semver, OBPI item, REQ index and seq are read from raw.
+
         """
         m = _TASK_PATTERN.match(raw.strip())
         if m is None:
@@ -136,6 +140,10 @@ class TaskEntity(BaseModel):
         """Return a new ``TaskEntity`` with *target* status.
 
         Raises ``ValueError`` if the transition is not valid.
+
+        Returns:
+            A copy of this entity with status set to target; this entity is unchanged.
+
         """
         allowed = _VALID_TRANSITIONS.get(self.status, frozenset())
         if target not in allowed:
@@ -153,6 +161,9 @@ def next_seq_for_req(req_id: str, *, existing_task_ids: list[str]) -> int:
     Scans existing_task_ids for TASK IDs whose prefix matches req_id (same
     semver, obpi_item, req_index) and returns max(seq) + 1. Returns 1 when
     no matching IDs exist.
+
+    Returns:
+        One more than the highest seq among the matching TASK IDs, or 1 when none match.
 
     Raises:
         ValueError: If req_id does not match the expected REQ ID format.
@@ -183,6 +194,10 @@ def derive_req_task_id(req_id: str, *, seq: int = 1) -> str:
     The default ``seq=1`` is the auto-coordinated TASK that the OBPI pipeline
     creates on launch (one per REQ). Manual multi-cycle work increments seq
     via subsequent `gz task start TASK-X.Y.Z-NN-MM-PP` invocations.
+
+    Returns:
+        The TASK ID TASK-X.Y.Z-NN-MM-{seq:02d} composed from the REQ ID's parts.
+
     """
     match = _REQ_TO_TASK_RE.match(req_id)
     if not match:
@@ -210,6 +225,11 @@ def create_task_from_plan_step(
     """Create a TASK entity from a plan-file step and parent context.
 
     *seq* is an integer that gets zero-padded to two digits in the identifier.
+
+    Returns:
+        A PENDING TaskEntity whose description is plan_text, with the given parent REQ and OBPI and
+        an ID built from the parts and the zero-padded seq.
+
     """
     task_id = TaskId(
         semver=semver,
@@ -250,6 +270,10 @@ def format_commit_trailer(task: TaskEntity | TaskId) -> str:
     """Produce a git commit trailer line from a TASK entity or identifier.
 
     Returns a string like ``Task: TASK-0.20.0-01-01-01``.
+
+    Returns:
+        The trailer line "Task: <TASK-ID>".
+
     """
     tid = task.id if isinstance(task, TaskEntity) else task
     return f"Task: {tid}"
@@ -278,6 +302,11 @@ def active_task_trailers(ledger_path: pathlib.Path, staged_paths: Iterable[str])
     commit stamps nothing rather than manufacturing attribution the rule never
     asked for. Returns ``[]`` for an absent ledger and skips malformed lines —
     this runs inside a commit hook, where an exception blocks all work.
+
+    Returns:
+        One "Task: <TASK-ID>" line per in-progress TASK; an empty list when no staged path is under
+        src/ or tests/, or the ledger is absent.
+
     """
     if not any(
         path.replace("\\", "/").startswith(_TRAILER_REQUIRED_ROOTS) for path in staged_paths
@@ -301,6 +330,11 @@ def in_scope_task_id(ledger_path: pathlib.Path, scope_id: str | None) -> str | N
     attributed to an unrelated TASK, and an ambiguous one is left for Signature (a)
     of ``gz validate --task-envelope-coherence`` to report (operator ruling
     2026-09-28, "Infer in scope; unset if ambiguous").
+
+    Returns:
+        The one in-progress TASK ID inside the scope; None when scope_id is empty or is neither an
+        ADR nor an OBPI id, or when zero or several TASKs match.
+
     """
     scope = None
     if scope_id:
@@ -323,6 +357,11 @@ def in_progress_task_ids(ledger_path: pathlib.Path) -> list[str]:
 
     Returns ``[]`` for an absent ledger and skips malformed lines: callers include
     a commit hook, where an exception blocks all work.
+
+    Returns:
+        IDs of TASKs with a task_started event and no closing event, deduplicated in first-start
+        order; an empty list when the ledger cannot be read.
+
     """
     try:
         raw = ledger_path.read_text(encoding="utf-8")
@@ -367,6 +406,11 @@ def parse_task_trailers(commit_message: str) -> list[TaskId]:
     ``Key: Value`` lines at the end of the message, separated from the
     body by a blank line.  Only ``Task:`` trailers with valid TASK IDs
     are returned; other trailers and body text are ignored.
+
+    Returns:
+        The TaskId of each Task: trailer in the final trailer block, in order; an empty list when
+        the message has no trailer block or no Task: trailer.
+
     """
     lines = commit_message.rstrip("\n").split("\n")
 
@@ -401,6 +445,11 @@ def has_task_trailer(commit_message: str) -> bool:
     `gz validate --commit-trailers` to enforce TASK discipline on src/tests
     commits without restricting direct-fix authors to formal IDs they have no
     OBPI to mint against.
+
+    Returns:
+        True when a line of the final trailer block is a Task: trailer in formal or slug form; False
+        otherwise.
+
     """
     lines = commit_message.rstrip("\n").split("\n")
     trailer_start = len(lines)
@@ -428,6 +477,11 @@ def parse_ceremony_trailers(commit_message: str) -> list[str]:
     The value names the governing ceremony (``gz-git-sync``,
     ``adr-closeout``, ``obpi-reconcile``) so audits can still trace the
     code change back to governance intent even without a TASK id.
+
+    Returns:
+        The value of each Ceremony: trailer in the final trailer block, in order; an empty list when
+        there is none.
+
     """
     lines = commit_message.rstrip("\n").split("\n")
     trailer_start = len(lines)
@@ -455,6 +509,11 @@ def parse_eval_feedback_source_trailers(commit_message: str) -> list[str]:
 
     Repeatable trailer. Format: Eval-feedback-source: <event-id-or-artifact-path>.
     Used to trace rule edits back to the evaluation feedback loop source artifacts.
+
+    Returns:
+        The value of each Eval-feedback-source: trailer in the final trailer block, in order; an
+        empty list when there is none.
+
     """
     lines = commit_message.rstrip("\n").split("\n")
     trailer_start = len(lines)
@@ -479,6 +538,11 @@ def resolve_task_chain(task_id: TaskId) -> dict[str, str]:
 
     Returns a dict with keys ``task``, ``req``, ``obpi``, ``adr``
     derived purely from the identifier components.
+
+    Returns:
+        Dict with keys task, req, obpi and adr, each the identifier at that tier derived from
+        task_id.
+
     """
     return {
         "task": str(task_id),
@@ -532,6 +596,11 @@ def _load_known_task_reqs() -> frozenset[str]:
     Follows ``@covers``'s ``_load_known_reqs`` lazy pattern. TASKs are validated
     by checking that their derived parent REQ (``REQ-<semver>-<obpi_item>-<req_index>``)
     exists in a discovered brief — TASK IDs themselves are not pre-registered.
+
+    Returns:
+        The cached set of REQ IDs found in the project's OBPI briefs; empty when no project root or
+        docs/design/adr directory is found.
+
     """
     global _KNOWN_TASK_REQS
     if _KNOWN_TASK_REQS is not None:
@@ -571,6 +640,10 @@ def advances(task_id_str: str) -> Callable[[_AF], _AF]:
     brief. Registers a :class:`TaskAttributionRecord` mapping the function
     to the TASK. The decorated function's behavior is unchanged — this is
     metadata-only attribution, peer to ``@covers``.
+
+    Returns:
+        A decorator that records a TaskAttributionRecord for the function and returns the function
+        unchanged.
 
     Raises:
         ValueError: If *task_id_str* has an invalid format, or if the

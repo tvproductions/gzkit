@@ -53,6 +53,11 @@ def gather_evidence(
     warning and produces an empty collection — the function never raises
     for missing data. Anchor resolution for the ``related`` list uses the
     same resolver as :func:`resolve_anchor` and is best-effort.
+
+    Returns:
+        The evidence bundle from the five sources, each failed or timed-out source empty and named
+        in its warnings.
+
     """
     root = project_root if project_root is not None else Path.cwd()
     related_ids = list(related or [])

@@ -133,6 +133,11 @@ def materialize_adversary_workspace(
     with the active environment's interpreter under a ``PYTHONPATH`` that
     redirects imports into the copy.
 
+    Returns:
+        Description of the checkout: its resolved path, HEAD commit, whether uncommitted changes
+        were overlaid, a digest of its files, the file count, the interpreter (the given one or the
+        project's `.venv` Python) and the `src` path to put on `PYTHONPATH`.
+
     Raises:
         RuntimeError: when the reviewed source cannot be reproduced.
 
@@ -196,6 +201,11 @@ def validate_replay_records(
     tests proves nothing at all; a record with no substitution is an inspection
     wearing a replay's name. Each is refused by name rather than collapsed into
     a truthy "replay present" check.
+
+    Returns:
+        One reason per defect found, plus one per expected obligation with no replay record; empty
+        when every record establishes an independent replay.
+
     """
     reasons: list[str] = []
     replayed: set[str] = set()

@@ -39,6 +39,10 @@ def refutation_population() -> list[str]:
 
     Read from the ``Finding.kind`` vocabulary, never from the reducer under test, so a kind
     added later is planted until the claim is shown to hold for it.
+
+    Returns:
+        The literal values of the `Finding.kind` annotation, in declaration order.
+
     """
     from gzkit.acceptance import Finding  # noqa: PLC0415
 
@@ -162,6 +166,10 @@ def _ep_clean_verdict_admitted(_member: str) -> int:
 
     The kinds are read here rather than declared as a population: an admit control
     returns a verdict, not findings that could name a member.
+
+    Returns:
+        1 when the clean round and every repaired refutation round are ready, otherwise 0.
+
     """
     from gzkit.acceptance import assess_readiness  # noqa: PLC0415
 

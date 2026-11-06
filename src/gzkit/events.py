@@ -237,6 +237,10 @@ class FoundationGrandfatheredEvent(_EventBase):
         ``min_length=1`` counts CHARACTERS, so ``"   "`` satisfies it while naming
         no witness at all — a measured bypass of the very guard this field exists
         to be. Stripped-nonempty is the actual invariant.
+
+        Returns:
+            The attestor unchanged.
+
         """
         if not value.strip():
             msg = "attestor must name a witness — whitespace is not an attestation"
@@ -558,6 +562,10 @@ class LedgerEventCorrectedEvent(_EventBase):
         a whitespace-attributed correction. Same invariant as
         ``FoundationGrandfatheredEvent._attestor_is_not_blank`` above, applied to
         the whole set of fields whose emptiness would make the row meaningless.
+
+        Returns:
+            The value unchanged.
+
         """
         if not value.strip():
             msg = (

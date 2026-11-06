@@ -86,6 +86,10 @@ def schedule_date(now: datetime | None = None) -> date:
 
     The local calendar would give one tree two verdicts for a window each day
     equal to the caller's UTC offset, and CI is the binding run (GHI #1177).
+
+    Returns:
+        The UTC calendar date of ``now``, or of the current time when ``now`` is None.
+
     """
     return (now if now is not None else datetime.now(UTC)).astimezone(UTC).date()
 

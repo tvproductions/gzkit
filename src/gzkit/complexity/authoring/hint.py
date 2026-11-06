@@ -91,6 +91,10 @@ def project_diagnosis_to_hint(
     fields from the first :class:`ProofRange`) and ``intrinsic_attestation``
     (not relevant authoring-time), and truncates ``doctrinal_frame.excerpt``
     to its first line as ``doctrinal_frame_headline``.
+
+    Returns:
+        The authoring hint for an advise-band crossing; None for any other band.
+
     """
     if diagnosis.crossing_band != "advise":
         return None
