@@ -26,6 +26,18 @@ from gzkit.registries import RegistryError, load_registry_field
 THRESHOLD_REGISTRY = "recurrence_threshold.json"
 
 
+class InvalidMinOccurrencesError(RegistryError):
+    """The recurrence threshold registry's ``min_occurrences`` is not a positive integer."""
+
+    def __init__(self, registry: str, value: object) -> None:
+        """Name the registry and the value it carries."""
+        self.registry = registry
+        self.value = value
+        super().__init__(
+            f"{registry} must carry min_occurrences as a positive integer, got {value!r}"
+        )
+
+
 class RecurrenceVerdict(BaseModel):
     """Whether a set of cited records qualifies a failure as recurring."""
 
@@ -54,9 +66,7 @@ def load_min_occurrences(project_root: Path) -> int:
     """
     value = load_registry_field(project_root, THRESHOLD_REGISTRY, "min_occurrences")
     if not isinstance(value, int) or isinstance(value, bool) or value < 1:
-        raise RegistryError(
-            f"{THRESHOLD_REGISTRY} must carry min_occurrences as a positive integer, got {value!r}"
-        )
+        raise InvalidMinOccurrencesError(THRESHOLD_REGISTRY, value)
     return value
 
 

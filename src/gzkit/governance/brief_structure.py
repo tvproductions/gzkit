@@ -23,6 +23,55 @@ _ADR_ID_RE = re.compile(rf"^{ADR_ID_BODY}$")
 _REQ_ID_RE = re.compile(rf"^{REQ_ID_BODY_PLAIN}$")
 
 
+class InvalidBriefIdError(ValueError):
+    """A brief's ``id`` does not match the OBPI identifier pattern."""
+
+    def __init__(self, value: str) -> None:
+        """Name the offending id."""
+        self.value = value
+        super().__init__(f"id must match OBPI-X.Y.Z-NN[-slug] pattern: {value!r}")
+
+
+class InvalidBriefParentError(ValueError):
+    """A brief's ``parent`` does not match the ADR identifier pattern."""
+
+    def __init__(self, value: str) -> None:
+        """Name the offending parent."""
+        self.value = value
+        super().__init__(f"parent must match ADR-X.Y.Z-slug pattern: {value!r}")
+
+
+class InvalidBriefStatusError(ValueError):
+    """A brief's ``status`` is not a declared brief status."""
+
+    def __init__(self, value: str, statuses: list[str]) -> None:
+        """Name the offending status and the declared ones."""
+        self.value = value
+        super().__init__(f"status must be one of {statuses}: {value!r}")
+
+
+class InvalidBriefReqError(ValueError):
+    """A brief's ``reqs`` entry does not match the REQ identifier pattern."""
+
+    def __init__(self, req: object) -> None:
+        """Name the offending REQ entry."""
+        self.req = req
+        super().__init__(f"req must match REQ-X.Y.Z-NN-MM pattern: {req!r}")
+
+
+class MissingStructuredFrontmatterError(ValueError):
+    """A brief loaded in strict mode lacks the structured frontmatter fields."""
+
+    def __init__(self, brief_name: str, missing: list[str]) -> None:
+        """Name the brief file and the missing fields."""
+        self.brief_name = brief_name
+        self.missing = missing
+        super().__init__(
+            f"Brief {brief_name!r} missing structured frontmatter fields: "
+            f"{missing}. Set strict=False to load as LegacyBriefShape."
+        )
+
+
 # Terminal statuses: a brief in one of these states is a historical record, not an
 # active authoring surface. Consumers scope on this to avoid asking a sealed brief
 # a question about the present tree — `--brief-command-shape` skips authoring-time
@@ -155,14 +204,14 @@ class BriefStructure(BaseModel):
     @classmethod
     def _validate_id(cls, v: str) -> str:
         if not _OBPI_ID_RE.match(v):
-            raise ValueError(f"id must match OBPI-X.Y.Z-NN[-slug] pattern: {v!r}")
+            raise InvalidBriefIdError(v)
         return v
 
     @field_validator("parent")
     @classmethod
     def _validate_parent(cls, v: str) -> str:
         if not _ADR_ID_RE.match(v):
-            raise ValueError(f"parent must match ADR-X.Y.Z-slug pattern: {v!r}")
+            raise InvalidBriefParentError(v)
         return v
 
     @field_validator("status")
@@ -180,7 +229,7 @@ class BriefStructure(BaseModel):
 
         """
         if v.strip().strip('"').strip("'").casefold() not in _BRIEF_STATUSES_FOLDED:
-            raise ValueError(f"status must be one of {sorted(BRIEF_STATUSES)}: {v!r}")
+            raise InvalidBriefStatusError(v, sorted(BRIEF_STATUSES))
         return v
 
     @field_validator("reqs", mode="before")
@@ -188,7 +237,7 @@ class BriefStructure(BaseModel):
     def _validate_reqs(cls, v: list) -> list:
         for req in v:
             if not _REQ_ID_RE.match(str(req)):
-                raise ValueError(f"req must match REQ-X.Y.Z-NN-MM pattern: {req!r}")
+                raise InvalidBriefReqError(req)
         return v
 
     @field_validator("tasks", mode="before")
@@ -249,10 +298,7 @@ def parse_brief(path: Path, *, strict: bool = False) -> BriefStructure | LegacyB
     if not required.issubset(fm.keys()):
         if strict:
             missing = sorted(required - fm.keys())
-            raise ValueError(
-                f"Brief {path.name!r} missing structured frontmatter fields: "
-                f"{missing}. Set strict=False to load as LegacyBriefShape."
-            )
+            raise MissingStructuredFrontmatterError(path.name, missing)
         warnings.warn(
             f"Brief {path.name!r} lacks structured frontmatter fields "
             f"(allowlist, reqs, verification); loading as LegacyBriefShape. "

@@ -23,6 +23,16 @@ from typing import Literal, NamedTuple
 from pydantic import BaseModel, ConfigDict
 
 from .agent_contract import AgentContract
+from .corpus_errors import (
+    DoubleTombstonePointerError,
+    DuplicateCorpusEntryIdError,
+    ForwardTombstoneReferenceError,
+    SecondLiveTombstoneError,
+    SelfTombstoneError,
+    UnknownCorpusSectionError,
+    UnknownTombstoneTargetError,
+    UnresolvedTombstoneLivenessError,
+)
 
 _Tier = Literal["invariant", "compressible"]
 _Classification = Literal["Mechanical", "Promotable", "Judgment", "Ambiguous"]
@@ -184,51 +194,36 @@ def validate_tombstone_algebra(entries: tuple[CorpusEntry, ...]) -> None:
     per-target count would close it forever.
 
     Raises:
-        ValueError: naming the offending entry id, so an operator can find the
-            row in an append log that only ever grows.
+        DuplicateCorpusEntryIdError: Two rows share one id (Algebra 1).
+        DoubleTombstonePointerError: A row populates both pointers (Algebra 3).
+        SelfTombstoneError: A row names itself as its target (Algebra 2).
+        UnknownTombstoneTargetError: A row's target names no entry (Algebra 2).
+        ForwardTombstoneReferenceError: A row's target appears later (Algebra 2).
+        SecondLiveTombstoneError: Two live tombstones share a target (Algebra 7).
+
+    Each is a ``ValueError`` naming the offending entry id, so an operator can
+    find the row in an append log that only ever grows.
 
     """
     seen: set[str] = set()
     for entry in entries:
         if entry.id in seen:
-            raise ValueError(
-                f"corpus entry id {entry.id!r} appears more than once; an id is an "
-                "entry's ADDRESS (ADR-0.0.37 Decision Re-Alignment part 1), so it must "
-                "name exactly one row (Algebra 1). Two rows at one address make the "
-                "Algebra 5 fold ambiguous: it keys liveness by id, so one row's verdict "
-                "overwrites the other's and BOTH can leave the effective corpus (GHI "
-                "#874). The store is append-only, so resolve this by appending a row "
-                "with a fresh id, never by editing the log"
-            )
+            raise DuplicateCorpusEntryIdError(entry.id)
         seen.add(entry.id)
 
     known = seen
     earlier: set[str] = set()
     for entry in entries:
         if entry.retires is not None and entry.supersedes is not None:
-            raise ValueError(
-                f"corpus entry {entry.id!r} populates both 'retires' "
-                f"({entry.retires!r}) and 'supersedes' ({entry.supersedes!r}); "
-                "an entry may hold at most one tombstone pointer (Algebra 3)"
-            )
+            raise DoubleTombstonePointerError(entry.id, entry.retires, entry.supersedes)
         target = tombstone_target(entry)
         if target is not None:
             if target == entry.id:
-                raise ValueError(
-                    f"corpus entry {entry.id!r} names itself as its tombstone "
-                    "target; a tombstone must name a STRICTLY EARLIER entry (Algebra 2)"
-                )
+                raise SelfTombstoneError(entry.id)
             if target not in known:
-                raise ValueError(
-                    f"corpus entry {entry.id!r} names unknown tombstone target "
-                    f"{target!r}; no entry in the log carries that id (Algebra 2)"
-                )
+                raise UnknownTombstoneTargetError(entry.id, target)
             if target not in earlier:
-                raise ValueError(
-                    f"corpus entry {entry.id!r} forward-references tombstone target "
-                    f"{target!r}, which appears LATER in the append log; a tombstone "
-                    "must name a strictly earlier entry (Algebra 2)"
-                )
+                raise ForwardTombstoneReferenceError(entry.id, target)
         earlier.add(entry.id)
 
     live = _liveness(entries)
@@ -238,13 +233,7 @@ def validate_tombstone_algebra(entries: tuple[CorpusEntry, ...]) -> None:
         if target is None or not live[entry.id]:
             continue
         if target in claimed:
-            raise ValueError(
-                f"corpus entry {entry.id!r} is a second LIVE tombstone targeting "
-                f"{target!r}, which {claimed[target]!r} already retires; at most one "
-                "live tombstone may target an entry, so a double-retire is never "
-                "silently folded into an un-retirement (Algebra 7). To retire "
-                f"{target!r} again, first retire {claimed[target]!r}"
-            )
+            raise SecondLiveTombstoneError(entry.id, target, claimed[target])
         claimed[target] = entry.id
 
 
@@ -367,13 +356,7 @@ def _liveness(entries: tuple[CorpusEntry, ...]) -> dict[str, bool]:
         tombstones: Sequence[_Edge] = edges.get(entry.id, ())
         for tombstone in tombstones:
             if tombstone.id not in live:
-                raise ValueError(
-                    f"corpus entry {entry.id!r} is targeted by tombstone "
-                    f"{tombstone.id!r}, whose own liveness is UNRESOLVED at that point "
-                    "in the reverse pass; the append log is out of order (a tombstone "
-                    "must strictly follow its target, Algebra 2) or carries duplicate "
-                    "entry ids, so liveness is not computable for this corpus"
-                )
+                raise UnresolvedTombstoneLivenessError(entry.id, tombstone.id)
         live[entry.id] = not any(t.is_replacement or live[t.id] for t in tombstones)
     return live
 
@@ -515,7 +498,4 @@ class Corpus(BaseModel):
         valid_sections = {pillar.id for pillar in contract.pillars}
         for entry in self.entries:
             if entry.section not in valid_sections:
-                raise ValueError(
-                    f"corpus entry {entry.id!r} section {entry.section!r} "
-                    "resolves to no Pillar in the contract"
-                )
+                raise UnknownCorpusSectionError(entry.id, entry.section)

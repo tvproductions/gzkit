@@ -35,6 +35,7 @@ from typing import Any, Literal, NamedTuple, NoReturn
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.content.models.corpus import Corpus, effective_corpus
+from gzkit.content.ownership_errors import DeclarationSurfaceMismatchError, OwnershipLoadError
 from gzkit.content.parse import section_id
 from gzkit.durability import commit_directory_entry
 from gzkit.file_lock import exclusive_file_lock
@@ -113,10 +114,6 @@ class OwnershipDeclaration(BaseModel):
             "is never reached on that path."
         ),
     )
-
-
-class OwnershipLoadError(ValueError):
-    """Raised when a declaration or its surface fails the closed-enum/coverage cross-check."""
 
 
 def sections_digest(sections: Mapping[str, str]) -> str:
@@ -2426,17 +2423,7 @@ def _committed_state(
         )
     committed = json.loads(path.read_text(encoding="utf-8"))
     if committed.get("surface") != declaration.surface:
-        raise OwnershipLoadError(
-            f"What failed: the declaration at {path} names surface "
-            f"{committed.get('surface')!r}, but the recording was requested "
-            f"for surface {declaration.surface!r}.\n"
-            "Why forbidden: this path rewrites the file it read, so proceeding "
-            "would overwrite one control surface's ownership declaration with "
-            "another's under a lock taken in the wrong surface's name.\n"
-            "Next step: check the declaration handed to `record_unowned_total` "
-            f"against the file on disk -- one of the two is for the wrong "
-            f"surface, or {path.name} was written by hand."
-        )
+        raise DeclarationSurfaceMismatchError(path, committed.get("surface"), declaration.surface)
     return committed, int(committed["unowned_byte_floor"]), committed.get("floor_event_id")
 
 

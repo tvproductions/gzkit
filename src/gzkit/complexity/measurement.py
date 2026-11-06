@@ -78,6 +78,11 @@ class MissingMeasurementToolError(RuntimeError):
 class CorpusLoaderError(RuntimeError):
     """Raised when the corpus file cannot be loaded or parsed."""
 
+    def __init__(self, path: Path, exc: Exception) -> None:
+        """Name the corpus path and the load failure."""
+        self.path = path
+        super().__init__(f"Failed to load corpus from {path!s}: {exc}")
+
 
 class WholeProjectMeasurementRejectedError(RuntimeError):
     """Raised when a project declares no ``included_paths`` filter.
@@ -87,6 +92,14 @@ class WholeProjectMeasurementRejectedError(RuntimeError):
     project with empty includes is a corpus authoring defect, not a
     measurement edge case.
     """
+
+    def __init__(self, project_name: str) -> None:
+        """Name the project that declared no ``included_paths``."""
+        self.project_name = project_name
+        super().__init__(
+            f"Project {project_name!r} has no included_paths; "
+            "whole-project measurement is rejected."
+        )
 
 
 def safe_load_corpus(path: Path) -> ExemplarCorpus:
@@ -105,7 +118,7 @@ def safe_load_corpus(path: Path) -> ExemplarCorpus:
     try:
         return load_corpus(path)
     except (OSError, ValueError) as exc:
-        raise CorpusLoaderError(f"Failed to load corpus from {path!s}: {exc}") from exc
+        raise CorpusLoaderError(path, exc) from exc
 
 
 def measure_corpus(
@@ -265,10 +278,7 @@ def _apply_path_filter(tree: Path, project: ExemplarProject) -> tuple[Path, ...]
 
     """
     if not project.included_paths:
-        raise WholeProjectMeasurementRejectedError(
-            f"Project {project.name!r} has no included_paths; "
-            "whole-project measurement is rejected."
-        )
+        raise WholeProjectMeasurementRejectedError(project.name)
     included: set[Path] = set()
     for pattern in project.included_paths:
         for match in tree.glob(pattern):

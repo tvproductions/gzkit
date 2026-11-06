@@ -30,6 +30,10 @@ from pydantic import BaseModel, ConfigDict
 
 from gzkit.config import GzkitConfig
 from gzkit.core.models import ADR_SHORT_ID_BODY, REQ_ID_BODY, adr_prefix, compose_pool_adr_id
+from gzkit.foundation.sunset_migrate_errors import (
+    ApplyAttestationMissingError,
+    PartitionNotBijectionError,
+)
 from gzkit.foundation.triage import _extract_h1_title, _parse_simple_frontmatter
 from gzkit.ledger import Ledger
 
@@ -148,6 +152,10 @@ def foundation_rows(project_root: Path, ledger: Ledger) -> tuple[FoundationRow, 
     Returns:
         One row per foundation package; empty when the foundation directory does not exist.
 
+    Raises:
+        RuntimeError: A package fails the Layer-1 identity checks.
+        PartitionNotBijectionError: A ``RuntimeError``; rows and packages differ in count.
+
     """
     config = GzkitConfig.load(project_root / ".gzkit.json")
     foundation_dir = project_root / config.paths.adrs / "foundation"
@@ -225,10 +233,7 @@ def foundation_rows(project_root: Path, ledger: Ledger) -> tuple[FoundationRow, 
             + " | ".join(problems)
         )
     if len(rows) != len(packages):  # pragma: no cover - defended by `problems` above
-        raise RuntimeError(
-            f"BLOCKERS: partition is not a bijection with on-disk packages "
-            f"({len(rows)} rows vs {len(packages)} packages)"
-        )
+        raise PartitionNotBijectionError(len(rows), len(packages))
     return tuple(rows)
 
 
@@ -922,11 +927,7 @@ def run_migration(
         # with a non-empty id and never inspects the attestor, so an unbound
         # library call would satisfy the SUPPORT gate with no human witness: the
         # exact fabrication surface ADR-0.34.0 exists to close.
-        raise ValueError(
-            "--apply requires a non-empty attestor AND attestation text. The Gate-5 "
-            "human attestation IS the terminality witness for pre-ledger foundations; "
-            "emitting these events without it would fabricate the witness."
-        )
+        raise ApplyAttestationMissingError
 
     config = GzkitConfig.load(project_root / ".gzkit.json")
     ledger = Ledger(project_root / config.paths.ledger)

@@ -41,6 +41,18 @@ METRIC = "information-retained-per-byte"
 _STEP_NAME = "judge"
 
 
+class EmptyExplanationError(ValueError):
+    """An advisor-QC receipt was requested with an empty explanation."""
+
+    def __init__(self) -> None:
+        """Build the fixed malformed-receipt message."""
+        super().__init__(
+            "advisor-QC receipt is malformed: explanation is empty. "
+            "ADR-0.0.39 requires the explanation before the verdict; a verdict "
+            "without reasoning is never recorded. No receipt written."
+        )
+
+
 def _new_run_id() -> str:
     """Mint a canonical ``arb-step-judge-<32hex>`` run id."""
     return f"arb-step-{_STEP_NAME}-{uuid.uuid4().hex}"
@@ -75,18 +87,15 @@ def record_verdict(
         The path to the written receipt JSON.
 
     Raises:
-        ValueError: If ``explanation`` is empty or whitespace-only. No receipt
-            is written in this case (fail-closed-before-write) — the verdict
-            value is never the fail-closed trigger; only malformed shape is.
+        EmptyExplanationError: A ``ValueError``, if ``explanation`` is empty or
+            whitespace-only. No receipt is written in this case
+            (fail-closed-before-write) — the verdict value is never the
+            fail-closed trigger; only malformed shape is.
         OSError: If the receipt cannot be written.
 
     """
     if not explanation or not explanation.strip():
-        raise ValueError(
-            "advisor-QC receipt is malformed: explanation is empty. "
-            "ADR-0.0.39 requires the explanation before the verdict; a verdict "
-            "without reasoning is never recorded. No receipt written."
-        )
+        raise EmptyExplanationError
 
     resolved_run_id = run_id or _new_run_id()
     resolved_ts = timestamp or datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")

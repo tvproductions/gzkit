@@ -22,6 +22,7 @@ from gzkit.commands.common import _is_pool_adr_id
 from gzkit.commands.validate_frontmatter import validate_frontmatter_coherence
 from gzkit.core.models import ADR_POOL_PREFIX_BODY, ADR_PREFIX_BODY, OBPI_SHORT_ID_BODY
 from gzkit.core.obpi_state_machine import OBPI_STATES, OBPIState
+from gzkit.governance.frontmatter_coherence_errors import ReceiptConstructionError
 from gzkit.governance.obpi_transition_monitor import TransitionMonitor
 from gzkit.governance.status_vocab import STATUS_VOCAB_MAPPING
 
@@ -581,7 +582,7 @@ def reconcile_frontmatter(project_root: Path, *, dry_run: bool) -> Reconciliatio
     # failure, the exception that triggered the finally propagates past
     # this line; this return is only reached on the normal path.
     if receipt is None:
-        raise RuntimeError("reconcile_frontmatter: receipt construction failed")
+        raise ReceiptConstructionError
     return receipt
 
 

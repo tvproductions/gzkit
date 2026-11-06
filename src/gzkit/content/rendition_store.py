@@ -26,6 +26,20 @@ from pydantic import BaseModel, ConfigDict, Field
 from gzkit.content.models.corpus import Corpus
 
 
+class RenditionMissingError(FileNotFoundError):
+    """No committed rendition exists for the (surface, consumer) pair."""
+
+    def __init__(self, surface: str, consumer: str, path: Path) -> None:
+        """Name the pair and the path that does not exist."""
+        self.surface = surface
+        self.consumer = consumer
+        self.path = path
+        super().__init__(
+            f"No committed rendition for ({surface!r}, {consumer!r}) at {path}. "
+            f"Run `gz content compose {surface}` to compose and commit a rendition."
+        )
+
+
 class RenditionProvenance(BaseModel):
     """Frozen provenance sidecar — the corpus fingerprint a rendition was committed against.
 
@@ -184,10 +198,7 @@ def load_rendition(root: Path, surface: str, consumer: str) -> bytes:
     """
     path = rendition_path(root, surface, consumer)
     if not path.exists():
-        raise FileNotFoundError(
-            f"No committed rendition for ({surface!r}, {consumer!r}) at {path}. "
-            f"Run `gz content compose {surface}` to compose and commit a rendition."
-        )
+        raise RenditionMissingError(surface, consumer, path)
     return path.read_bytes()
 
 

@@ -17,6 +17,34 @@ class MigrationError(ValueError):
     """Raised when no registered migration covers the requested version path."""
 
 
+class UnsupportedSchemaVersionError(MigrationError):
+    """The source schema_version is newer than the current model's."""
+
+    def __init__(self, source_version: int, target_version: int, content_type: str) -> None:
+        """Name the content type and both versions."""
+        self.source_version = source_version
+        self.target_version = target_version
+        self.content_type = content_type
+        super().__init__(
+            f"Unsupported schema_version {source_version} for {content_type!r}; "
+            f"current model is at schema_version {target_version}. "
+            f"NEVER guess a migration when none is registered."
+        )
+
+
+class MigrationGapError(MigrationError):
+    """No migration is registered for one step of the version chain."""
+
+    def __init__(self, content_type: str, version: int) -> None:
+        """Name the content type and the missing step's source version."""
+        self.content_type = content_type
+        self.version = version
+        super().__init__(
+            f"No migration registered for ({content_type!r}, {version}, {version + 1}); "
+            f"cannot migrate {content_type!r} from schema_version {version} to {version + 1}."
+        )
+
+
 MIGRATIONS: dict[tuple[str, int, int], Callable[[BaseContentModel], BaseContentModel]] = {}
 
 
@@ -40,25 +68,20 @@ def apply_migrations(
         migrations (content_type, v, v+1) for v in [source, target).
 
     Raises:
-        MigrationError: if source_version > target_version (unknown future
-            version) or if any (content_type, v, v+1) step is unregistered.
+        UnsupportedSchemaVersionError: A ``MigrationError``, if
+            source_version > target_version (unknown future version).
+        MigrationGapError: A ``MigrationError``, if any (content_type, v, v+1)
+            step is unregistered.
 
     """
     if source_version == target_version:
         return model
     if source_version > target_version:
-        raise MigrationError(
-            f"Unsupported schema_version {source_version} for {content_type!r}; "
-            f"current model is at schema_version {target_version}. "
-            f"NEVER guess a migration when none is registered."
-        )
+        raise UnsupportedSchemaVersionError(source_version, target_version, content_type)
     current = model
     for v in range(source_version, target_version):
         key = (content_type, v, v + 1)
         if key not in MIGRATIONS:
-            raise MigrationError(
-                f"No migration registered for ({content_type!r}, {v}, {v + 1}); "
-                f"cannot migrate {content_type!r} from schema_version {v} to {v + 1}."
-            )
+            raise MigrationGapError(content_type, v)
         current = MIGRATIONS[key](current)
     return current

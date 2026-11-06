@@ -75,6 +75,17 @@ class WorkEmissionRefused(RuntimeError):
     slam the one-way door on an unratified vocabulary (REQ-0.32.0-06-07).
     """
 
+    def __init__(self, committed_vocabulary: list[str]) -> None:
+        """Name the committed edge set the attestation must equal."""
+        self.committed_vocabulary = committed_vocabulary
+        super().__init__(
+            "Refusing to emit a work-domain L2 edge: emission is frozen on a WWHTBT "
+            "edge-vocabulary attestation whose vocabulary must equal the committed "
+            f"work_edges.json set {committed_vocabulary}. L2 is append-only "
+            "— the four edge types are permanent once emitted (ADR-0.32.0 § Consequences "
+            "Negative #4). Record the WWHTBT pass over the exact edge set, then retry."
+        )
+
 
 class WwhtbtRecord(BaseModel):
     """A recorded What-Would-Have-To-Be-True edge-vocabulary attestation.
@@ -256,11 +267,5 @@ def emit_work_edge(
     permanent once emitted (the one true one-way door, § Consequences Negative #4).
     """
     if wwhtbt is None or wwhtbt.vocabulary != WORK_EDGE_DISCRIMINATORS:
-        raise WorkEmissionRefused(
-            "Refusing to emit a work-domain L2 edge: emission is frozen on a WWHTBT "
-            "edge-vocabulary attestation whose vocabulary must equal the committed "
-            f"work_edges.json set {sorted(WORK_EDGE_DISCRIMINATORS)}. L2 is append-only "
-            "— the four edge types are permanent once emitted (ADR-0.32.0 § Consequences "
-            "Negative #4). Record the WWHTBT pass over the exact edge set, then retry."
-        )
+        raise WorkEmissionRefused(sorted(WORK_EDGE_DISCRIMINATORS))
     ledger.append(ledger_row(event))

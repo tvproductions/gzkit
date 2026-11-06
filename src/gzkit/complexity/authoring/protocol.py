@@ -51,6 +51,48 @@ class ProtocolError(Exception):
         self.message = message
 
 
+class StreamExhaustedError(EOFError):
+    """The stream ended before a Content-Length header was read."""
+
+    def __init__(self) -> None:
+        """Build the fixed exhaustion message."""
+        super().__init__("stream exhausted")
+
+
+class StreamEndedMidBodyError(EOFError):
+    """The stream ended before the declared message body was fully read."""
+
+    def __init__(self) -> None:
+        """Build the fixed mid-body message."""
+        super().__init__("stream ended mid-body")
+
+
+class BadContentLengthError(ValueError):
+    """A Content-Length header carried a value that is not an integer."""
+
+    def __init__(self, line: bytes) -> None:
+        """Name the offending header line."""
+        self.line = line
+        super().__init__(f"Bad Content-Length value: {line!r}")
+
+
+class UnexpectedFramingError(ValueError):
+    """A non-header line appeared where the framing expected a header."""
+
+    def __init__(self, line: bytes) -> None:
+        """Name the offending line."""
+        self.line = line
+        super().__init__(f"Unexpected framing content: {line!r}")
+
+
+class MessageJsonDecodeError(ValueError):
+    """A framed message body was not valid JSON."""
+
+    def __init__(self, exc: json.JSONDecodeError) -> None:
+        """Carry the underlying decode error's text."""
+        super().__init__(f"JSON decode error: {exc}")
+
+
 def read_message(stream: BinaryIO) -> dict:
     """Read one Content-Length-framed message from ``stream``.
 
@@ -62,18 +104,25 @@ def read_message(stream: BinaryIO) -> dict:
     Returns:
         The decoded JSON body of the message.
 
+    Raises:
+        StreamExhaustedError: The stream ended before a Content-Length header.
+        StreamEndedMidBodyError: The stream ended before the declared body was read.
+        BadContentLengthError: The Content-Length value is not an integer.
+        UnexpectedFramingError: A non-header line appeared before the body.
+        MessageJsonDecodeError: The body is not valid JSON.
+
     """
     content_length: int | None = None
     while True:
         raw_line = stream.readline()
         if raw_line == b"":
-            raise EOFError("stream exhausted")
+            raise StreamExhaustedError
         line = raw_line.strip()
         if line.lower().startswith(b"content-length:"):
             try:
                 content_length = int(line.split(b":", 1)[1].strip())
             except ValueError as exc:
-                raise ValueError(f"Bad Content-Length value: {line!r}") from exc
+                raise BadContentLengthError(line) from exc
         elif line == b"" and content_length is not None:
             break
         elif line == b"":
@@ -81,15 +130,15 @@ def read_message(stream: BinaryIO) -> dict:
             continue
         else:
             # Unrecognized non-header content: framing error
-            raise ValueError(f"Unexpected framing content: {line!r}")
+            raise UnexpectedFramingError(line)
 
     body = stream.read(content_length)
     if len(body) < content_length:
-        raise EOFError("stream ended mid-body")
+        raise StreamEndedMidBodyError
     try:
         return json.loads(body.decode("utf-8"))
     except json.JSONDecodeError as exc:
-        raise ValueError(f"JSON decode error: {exc}") from exc
+        raise MessageJsonDecodeError(exc) from exc
 
 
 def write_message(stream: BinaryIO, payload: dict) -> None:

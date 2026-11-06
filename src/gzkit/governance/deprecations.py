@@ -22,7 +22,22 @@ out until the deprecation is total.
 
 from pydantic import BaseModel, ConfigDict, Field
 
-__all__ = ["DEPRECATED_VERBS", "DeprecatedVerb", "deprecation_notice", "find_deprecated_verb"]
+__all__ = [
+    "DEPRECATED_VERBS",
+    "DeprecatedVerb",
+    "UnregisteredDeprecatedVerbError",
+    "deprecation_notice",
+    "find_deprecated_verb",
+]
+
+
+class UnregisteredDeprecatedVerbError(KeyError):
+    """A deprecation notice was requested for a verb the registry does not hold."""
+
+    def __init__(self, verb: str) -> None:
+        """Name the unregistered verb."""
+        self.verb = verb
+        super().__init__(f"{verb!r} is not a registered deprecated verb")
 
 
 class DeprecatedVerb(BaseModel):
@@ -58,7 +73,7 @@ def deprecation_notice(verb: str) -> str:
     """
     entry = find_deprecated_verb(verb)
     if entry is None:
-        raise KeyError(f"{verb!r} is not a registered deprecated verb")
+        raise UnregisteredDeprecatedVerbError(verb)
     return (
         f"⚠ Deprecated: `gz {entry.verb}` will be removed in a future release. "
         f"Use `{entry.successor}` instead."

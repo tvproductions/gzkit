@@ -44,6 +44,15 @@ _EVIDENCE_DIR = (".gzkit", "evidence")
 _STDOUT_TAIL_LINES = 40
 
 
+class UntrackedListingError(RuntimeError):
+    """``git ls-files`` could not list the untracked files for the Demo checkout."""
+
+    def __init__(self, detail: str) -> None:
+        """Carry git's trimmed stderr."""
+        self.detail = detail
+        super().__init__(f"cannot list untracked files: {detail}")
+
+
 class DemoResult(BaseModel):
     """Observed result of running one brief ``## Demo`` command."""
 
@@ -357,7 +366,7 @@ def _materialize_demo_checkout(project_root: Path, destination: Path) -> None:
     )
     if listed.returncode != 0:
         detail = listed.stderr.decode("utf-8", errors="replace").strip()[:400]
-        raise RuntimeError(f"cannot list untracked files: {detail}")
+        raise UntrackedListingError(detail)
     for raw in listed.stdout.split(b"\0"):
         if not raw:
             continue

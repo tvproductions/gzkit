@@ -52,6 +52,20 @@ SETPOINT_TOKENS: frozenset[str] = frozenset({"lite", "medium", "heavy"})
 # than resolving to a baked-in default. See temperature_for below.
 
 
+class UndeclaredTemperatureError(ValueError):
+    """The vendor manifest declares no temperature for a (content type, vendor) pair."""
+
+    def __init__(self, content_type: str, vendor: str, manifest_rel: Path) -> None:
+        """Name the pair and the manifest it is missing from."""
+        self.content_type = content_type
+        self.vendor = vendor
+        super().__init__(
+            f"No temperature declared for ({content_type!r}, {vendor!r}) "
+            f"in {manifest_rel}; declare it in content_type_temperatures "
+            f"(REQ-0.0.37-15-02 fail-closed)."
+        )
+
+
 def _read_manifest_key(project_root: Path, key: str) -> dict[str, object]:
     """Read one top-level mapping from ``data/vendor-manifest.json``.
 
@@ -187,11 +201,7 @@ def temperature_for(content_type: str, vendor: str, *, project_root: Path | None
     vendor_map = temps.get(content_type, {})
     if vendor in vendor_map:
         return vendor_map[vendor]
-    raise ValueError(
-        f"No temperature declared for ({content_type!r}, {vendor!r}) "
-        f"in {_MANIFEST_REL}; declare it in content_type_temperatures "
-        f"(REQ-0.0.37-15-02 fail-closed)."
-    )
+    raise UndeclaredTemperatureError(content_type, vendor, _MANIFEST_REL)
 
 
 def delivery_cap_for(

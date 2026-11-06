@@ -25,6 +25,16 @@ from gzkit.content.models.persona import Persona
 from gzkit.content.models.rule import Rule
 from gzkit.content.models.scenario import Scenario
 from gzkit.content.models.skill import Skill
+from gzkit.content.parse.markdown_parser_errors import (
+    MissingBulletLineError,
+    MissingFeatureLineError,
+    MissingH1Error,
+    MissingParagraphError,
+    MissingPrefixedLineError,
+    MissingScenarioLineError,
+    UnexpectedH1PrefixError,
+    UnknownContentTypeError,
+)
 
 _SCHEMA_VERSION_PREFIX = "Schema-version: "
 
@@ -117,21 +127,18 @@ def _first_h1(lines: list[str], prefix: str, file_path: str | None) -> str:
     Returns:
         The first H1's text with ``prefix`` removed.
 
+    Raises:
+        UnexpectedH1PrefixError: The first H1 does not start with ``prefix``.
+        MissingH1Error: The document carries no H1 heading.
+
     """
     for line in lines:
         if line.startswith("# "):
             value = line[2:]
             if not value.startswith(prefix):
-                raise ValueError(
-                    f"{_fp(file_path)}Expected H1 starting with '# {prefix}', got {line!r}"
-                )
+                raise UnexpectedH1PrefixError(file_path, prefix, line)
             return value[len(prefix) :]
-    raise ValueError(f"{_fp(file_path)}No H1 heading found")
-
-
-def _fp(file_path: str | None) -> str:
-    """Format file_path prefix for error messages."""
-    return f"{file_path}: " if file_path else ""
+    raise MissingH1Error(file_path)
 
 
 def _find_inline_value(lines: list[str], prefix: str, file_path: str | None) -> str:
@@ -146,7 +153,7 @@ def _find_inline_value(lines: list[str], prefix: str, file_path: str | None) -> 
     for line in lines:
         if line.startswith(prefix):
             return line[len(prefix) :].strip()
-    raise ValueError(f"{_fp(file_path)}Expected line starting with {prefix!r}")
+    raise MissingPrefixedLineError(file_path, prefix)
 
 
 def _paragraph_after(lines: list[str], after_prefix: str, file_path: str | None) -> str:
@@ -167,7 +174,7 @@ def _paragraph_after(lines: list[str], after_prefix: str, file_path: str | None)
             stripped = line.strip()
             if stripped and not stripped.startswith("#"):
                 return stripped
-    raise ValueError(f"{_fp(file_path)}No paragraph found after {after_prefix!r}")
+    raise MissingParagraphError(file_path, after_prefix)
 
 
 # ---------------------------------------------------------------------------
@@ -507,9 +514,9 @@ def _parse_scenario(lines: list[str], file_path: str | None) -> Scenario:
             then.append(stripped[len("Then ") :].strip())
 
     if not feature:
-        raise ValueError(f"{_fp(file_path)}No 'Feature:' line found")
+        raise MissingFeatureLineError(file_path)
     if not scenario:
-        raise ValueError(f"{_fp(file_path)}No 'Scenario:' line found")
+        raise MissingScenarioLineError(file_path)
 
     return Scenario(feature=feature, scenario=scenario, given=given, when=when, then=then)
 
@@ -533,7 +540,7 @@ def _parse_bullet(lines: list[str], file_path: str | None) -> Bullet:
             indent = leading_spaces // 2
             text = stripped[2:]
             return Bullet(text=text, indent=indent)
-    raise ValueError(f"{_fp(file_path)}No bullet line found")
+    raise MissingBulletLineError(file_path)
 
 
 # ---------------------------------------------------------------------------
@@ -572,7 +579,7 @@ def parse(text: str, as_type: str, *, file_path: str | None = None) -> BaseConte
         A validated Pydantic model instance of the requested type.
 
     Raises:
-        KeyError: if as_type is not in CONTENT_MODELS.
+        UnknownContentTypeError: A ``KeyError``, if as_type is not in CONTENT_MODELS.
         ValueError: if text does not match the expected canonical format for as_type.
             Message includes file path (when provided) and line number where derivable.
         pydantic.ValidationError: if parsed fields fail model validation.
@@ -584,7 +591,7 @@ def parse(text: str, as_type: str, *, file_path: str | None = None) -> BaseConte
 
     """
     if as_type not in CONTENT_MODELS:
-        raise KeyError(f"Unknown content type {as_type!r}; valid types: {sorted(CONTENT_MODELS)}")
+        raise UnknownContentTypeError(as_type, sorted(CONTENT_MODELS))
 
     parser = _PARSERS[as_type]
     lines = _split_lines(text)

@@ -15,6 +15,12 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import NamedTuple, NoReturn
 
+from gzkit.content.composer_errors import (
+    CompressibleInflationError,
+    CorpusStoreMissingError,
+    UndeclaredConsumerRouteError,
+    UndeclaredContentTypeError,
+)
 from gzkit.content.corpus_store import corpus_path, load_corpus
 from gzkit.content.lineage import ConsumerLineage, SectionLineage
 from gzkit.content.models import Corpus, CorpusEntry
@@ -131,16 +137,7 @@ def _refuse_compressible_inflation(bytes_after: int, bytes_before: int) -> None:
     the caller must fix its attribution instead.
     """
     if bytes_after > bytes_before:
-        raise ValueError(
-            f"compressible_bytes_after ({bytes_after}) exceeds "
-            f"compressible_bytes_before ({bytes_before}). Compression "
-            "cannot add compressible bytes, and an inflated figure is a witness that "
-            "cannot fail (ADR-0.35.0 REQ-0.35.0-05-07). Fix the attribution passed to "
-            "_byte_evidence -- attributed_compressible for the generated path, or the "
-            "candidate text itself for the presence-attribution path -- so it names "
-            "only entries that are true members of the corpus's effective compressible "
-            "set; never clamp or emit the inflated number."
-        )
+        raise CompressibleInflationError(bytes_after, bytes_before)
 
 
 def _byte_evidence(
@@ -241,24 +238,20 @@ def _load_corpus_and_owner(
     Returns:
         The loaded corpus and the content type that owns the surface.
 
+    Raises:
+        CorpusStoreMissingError: A ``FileNotFoundError``; no corpus store exists.
+        UndeclaredContentTypeError: A ``ValueError``; the surface has no content type.
+
     """
     store_path = corpus_path(root, surface)
     if not store_path.exists():
-        raise FileNotFoundError(
-            f"No corpus store for {surface!r} at {store_path.as_posix()}. "
-            "Run 'gz content remember' to seed the corpus first."
-        )
+        raise CorpusStoreMissingError(surface, store_path)
 
     corpus = load_corpus(root, surface)
 
     owner = content_type or content_type_for_surface(surface, project_root=root)
     if owner is None:
-        raise ValueError(
-            f"No content type declared for surface {surface!r}; declare it in "
-            "surface_content_types in data/vendor-manifest.json. "
-            f"{verb} under a guessed owner would grade the candidate against "
-            "another type's setpoint and invariant floor (GHI #921)."
-        )
+        raise UndeclaredContentTypeError(surface, verb)
 
     return corpus, owner
 
@@ -605,17 +598,16 @@ def generate_candidate(
     Returns:
         GeneratedCandidate carrying the candidate rendition and its section lineage.
 
+    Raises:
+        UndeclaredConsumerRouteError: A ``ValueError``; the surface's content type
+            declares no route to *consumer*.
+
     """
     corpus, owner = _load_corpus_and_owner(root, surface, content_type, verb="Generating")
 
     declared_routes = routes_for(owner, project_root=root)
     if consumer not in declared_routes:
-        raise ValueError(
-            f"Surface {surface!r} (content type {owner!r}) declares no route to consumer "
-            f"{consumer!r}; declared routes are {declared_routes!r}. Declare the route in "
-            "content_type_routes (data/vendor-manifest.json) before generating a "
-            f"candidate for {consumer!r}."
-        )
+        raise UndeclaredConsumerRouteError(surface, owner, consumer, declared_routes)
 
     setpoint = temperature_for(owner, consumer, project_root=root)
 

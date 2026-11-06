@@ -3,6 +3,15 @@
 from pydantic import BaseModel, ConfigDict
 
 
+class SlugNotKebabCaseError(ValueError):
+    """A content model's slug is not kebab-case."""
+
+    def __init__(self, slug: str) -> None:
+        """Name the offending slug."""
+        self.slug = slug
+        super().__init__(f"slug must be kebab-case; got {slug!r}")
+
+
 class BaseContentModel(BaseModel):
     """Frozen Pydantic base for all per-turn surface content models.
 

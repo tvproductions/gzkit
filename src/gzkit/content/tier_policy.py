@@ -8,6 +8,19 @@ from gzkit.content.models import Corpus, CorpusEntry
 from gzkit.content.models.corpus import effective_corpus
 
 
+class InvariantFloorViolationError(ValueError):
+    """An invariant-tier entry's text is absent from the rendered text."""
+
+    def __init__(self, entry_id: str, entry_text: str) -> None:
+        """Name the entry and quote the start of its text."""
+        self.entry_id = entry_id
+        super().__init__(
+            f"Invariant-floor violation: entry {entry_id!r} text not found verbatim "
+            "in rendered text. Invariant-tier entries MUST appear unchanged at every "
+            f"setpoint. Entry text (first 80 chars): {entry_text[:80]!r}"
+        )
+
+
 def invariant_entries(corpus: Corpus) -> list[CorpusEntry]:
     """Return corpus entries whose tier == 'invariant' in the effective (folded) view.
 
@@ -41,8 +54,4 @@ def assert_invariant_verbatim(corpus: Corpus, rendered_text: str) -> None:
     """
     for entry in invariant_entries(corpus):
         if entry.text not in rendered_text:
-            raise ValueError(
-                f"Invariant-floor violation: entry {entry.id!r} text not found verbatim "
-                "in rendered text. Invariant-tier entries MUST appear unchanged at every "
-                f"setpoint. Entry text (first 80 chars): {entry.text[:80]!r}"
-            )
+            raise InvariantFloorViolationError(entry.id, entry.text)

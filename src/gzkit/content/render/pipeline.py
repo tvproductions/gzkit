@@ -26,6 +26,15 @@ from gzkit.content.models.base import BaseContentModel
 _VALID_TEMPERATURES = frozenset({"lite", "medium", "heavy"})
 
 
+class UnknownTemperatureError(ValueError):
+    """A render was requested at a temperature outside the accepted set."""
+
+    def __init__(self, temperature: str, valid: list[str]) -> None:
+        """Name the requested temperature and the accepted ones."""
+        self.temperature = temperature
+        super().__init__(f"unknown temperature: {temperature!r}; expected one of {valid}")
+
+
 def _build_env() -> jinja2.Environment:
     """Build the Jinja2 environment, resolving the templates directory at call time.
 
@@ -109,9 +118,7 @@ def render(
 
     """
     if temperature not in _VALID_TEMPERATURES:
-        raise ValueError(
-            f"unknown temperature: {temperature!r}; expected one of {sorted(_VALID_TEMPERATURES)}"
-        )
+        raise UnknownTemperatureError(temperature, sorted(_VALID_TEMPERATURES))
     content_type = model.__class__.__name__
 
     # Routing guard — fail-closed before any template lookup. Routes resolve

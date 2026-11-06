@@ -5949,27 +5949,12 @@
     {
       "file": "src/gzkit/complexity/authoring/protocol.py",
       "rule": "DOC501",
-      "count": 4
-    },
-    {
-      "file": "src/gzkit/complexity/authoring/protocol.py",
-      "rule": "EM101",
       "count": 2
-    },
-    {
-      "file": "src/gzkit/complexity/authoring/protocol.py",
-      "rule": "EM102",
-      "count": 3
     },
     {
       "file": "src/gzkit/complexity/authoring/protocol.py",
       "rule": "PLC0415",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/complexity/authoring/protocol.py",
-      "rule": "TRY003",
-      "count": 5
     },
     {
       "file": "src/gzkit/complexity/baseline.py",
@@ -6053,22 +6038,12 @@
     },
     {
       "file": "src/gzkit/complexity/measurement.py",
-      "rule": "EM102",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/complexity/measurement.py",
       "rule": "PLR2004",
       "count": 1
     },
     {
       "file": "src/gzkit/complexity/measurement.py",
       "rule": "TC003",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/complexity/measurement.py",
-      "rule": "TRY003",
       "count": 2
     },
     {
@@ -6098,11 +6073,6 @@
     },
     {
       "file": "src/gzkit/content/advisor_qc.py",
-      "rule": "EM101",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/content/advisor_qc.py",
       "rule": "PLR0913",
       "count": 1
     },
@@ -6112,24 +6082,14 @@
       "count": 1
     },
     {
-      "file": "src/gzkit/content/advisor_qc.py",
-      "rule": "TRY003",
-      "count": 1
-    },
-    {
       "file": "src/gzkit/content/composer.py",
       "rule": "DOC501",
-      "count": 7
+      "count": 5
     },
     {
       "file": "src/gzkit/content/composer.py",
       "rule": "DOC502",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/content/composer.py",
-      "rule": "EM102",
-      "count": 4
     },
     {
       "file": "src/gzkit/content/composer.py",
@@ -6150,11 +6110,6 @@
       "file": "src/gzkit/content/composer.py",
       "rule": "TC003",
       "count": 3
-    },
-    {
-      "file": "src/gzkit/content/composer.py",
-      "rule": "TRY003",
-      "count": 4
     },
     {
       "file": "src/gzkit/content/corpus_store.py",
@@ -6218,18 +6173,8 @@
     },
     {
       "file": "src/gzkit/content/migration/registry.py",
-      "rule": "EM102",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/content/migration/registry.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/content/migration/registry.py",
-      "rule": "TRY003",
-      "count": 2
     },
     {
       "file": "src/gzkit/content/models/__init__.py",
@@ -6242,24 +6187,9 @@
       "count": 1
     },
     {
-      "file": "src/gzkit/content/models/chore.py",
-      "rule": "EM102",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/content/models/chore.py",
-      "rule": "TRY003",
-      "count": 1
-    },
-    {
       "file": "src/gzkit/content/models/corpus.py",
       "rule": "DOC501",
       "count": 2
-    },
-    {
-      "file": "src/gzkit/content/models/corpus.py",
-      "rule": "EM102",
-      "count": 8
     },
     {
       "file": "src/gzkit/content/models/corpus.py",
@@ -6272,56 +6202,6 @@
       "count": 1
     },
     {
-      "file": "src/gzkit/content/models/corpus.py",
-      "rule": "TRY003",
-      "count": 8
-    },
-    {
-      "file": "src/gzkit/content/models/handoff.py",
-      "rule": "EM102",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/content/models/handoff.py",
-      "rule": "TRY003",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/content/models/persona.py",
-      "rule": "EM102",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/content/models/persona.py",
-      "rule": "TRY003",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/content/models/rule.py",
-      "rule": "EM101",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/content/models/rule.py",
-      "rule": "EM102",
-      "count": 3
-    },
-    {
-      "file": "src/gzkit/content/models/rule.py",
-      "rule": "TRY003",
-      "count": 4
-    },
-    {
-      "file": "src/gzkit/content/models/skill.py",
-      "rule": "EM102",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/content/models/skill.py",
-      "rule": "TRY003",
-      "count": 1
-    },
-    {
       "file": "src/gzkit/content/ownership.py",
       "rule": "ANN401",
       "count": 19
@@ -6330,11 +6210,6 @@
       "file": "src/gzkit/content/ownership.py",
       "rule": "DOC501",
       "count": 16
-    },
-    {
-      "file": "src/gzkit/content/ownership.py",
-      "rule": "EM102",
-      "count": 1
     },
     {
       "file": "src/gzkit/content/ownership.py",
@@ -6357,24 +6232,14 @@
       "count": 2
     },
     {
-      "file": "src/gzkit/content/ownership.py",
-      "rule": "TRY003",
-      "count": 1
-    },
-    {
       "file": "src/gzkit/content/parse/markdown_parser.py",
       "rule": "DOC501",
-      "count": 4
+      "count": 3
     },
     {
       "file": "src/gzkit/content/parse/markdown_parser.py",
       "rule": "DOC502",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/content/parse/markdown_parser.py",
-      "rule": "EM102",
-      "count": 8
     },
     {
       "file": "src/gzkit/content/parse/markdown_parser.py",
@@ -6397,19 +6262,9 @@
       "count": 1
     },
     {
-      "file": "src/gzkit/content/parse/markdown_parser.py",
-      "rule": "TRY003",
-      "count": 8
-    },
-    {
       "file": "src/gzkit/content/render/pipeline.py",
       "rule": "DOC501",
       "count": 2
-    },
-    {
-      "file": "src/gzkit/content/render/pipeline.py",
-      "rule": "EM102",
-      "count": 1
     },
     {
       "file": "src/gzkit/content/render/pipeline.py",
@@ -6422,11 +6277,6 @@
       "count": 1
     },
     {
-      "file": "src/gzkit/content/render/pipeline.py",
-      "rule": "TRY003",
-      "count": 1
-    },
-    {
       "file": "src/gzkit/content/rendition.py",
       "rule": "TC003",
       "count": 1
@@ -6434,11 +6284,6 @@
     {
       "file": "src/gzkit/content/rendition_store.py",
       "rule": "DOC501",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/content/rendition_store.py",
-      "rule": "EM102",
       "count": 1
     },
     {
@@ -6459,11 +6304,6 @@
     {
       "file": "src/gzkit/content/rendition_store.py",
       "rule": "TC003",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/content/rendition_store.py",
-      "rule": "TRY003",
       "count": 1
     },
     {
@@ -6488,18 +6328,8 @@
     },
     {
       "file": "src/gzkit/content/tier_policy.py",
-      "rule": "EM102",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/content/tier_policy.py",
       "rule": "TC001",
       "count": 2
-    },
-    {
-      "file": "src/gzkit/content/tier_policy.py",
-      "rule": "TRY003",
-      "count": 1
     },
     {
       "file": "src/gzkit/content/tui/status.py",
@@ -6523,17 +6353,7 @@
     },
     {
       "file": "src/gzkit/content/vendors.py",
-      "rule": "EM102",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/content/vendors.py",
       "rule": "ERA001",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/content/vendors.py",
-      "rule": "TRY003",
       "count": 1
     },
     {
@@ -6944,17 +6764,7 @@
     {
       "file": "src/gzkit/foundation/sunset_migrate.py",
       "rule": "DOC501",
-      "count": 5
-    },
-    {
-      "file": "src/gzkit/foundation/sunset_migrate.py",
-      "rule": "EM101",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/foundation/sunset_migrate.py",
-      "rule": "EM102",
-      "count": 1
+      "count": 4
     },
     {
       "file": "src/gzkit/foundation/sunset_migrate.py",
@@ -6980,11 +6790,6 @@
       "file": "src/gzkit/foundation/sunset_migrate.py",
       "rule": "PLR0914",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/foundation/sunset_migrate.py",
-      "rule": "TRY003",
-      "count": 2
     },
     {
       "file": "src/gzkit/foundation/triage.py",
@@ -7062,16 +6867,6 @@
       "count": 3
     },
     {
-      "file": "src/gzkit/governance/brief_structure.py",
-      "rule": "EM102",
-      "count": 5
-    },
-    {
-      "file": "src/gzkit/governance/brief_structure.py",
-      "rule": "TRY003",
-      "count": 5
-    },
-    {
       "file": "src/gzkit/governance/compose.py",
       "rule": "PLC0415",
       "count": 2
@@ -7084,16 +6879,6 @@
     {
       "file": "src/gzkit/governance/deprecations.py",
       "rule": "DOC501",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/deprecations.py",
-      "rule": "EM102",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/deprecations.py",
-      "rule": "TRY003",
       "count": 1
     },
     {
@@ -7123,11 +6908,6 @@
     },
     {
       "file": "src/gzkit/governance/frontmatter_coherence.py",
-      "rule": "EM101",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/frontmatter_coherence.py",
       "rule": "FBT001",
       "count": 1
     },
@@ -7144,11 +6924,6 @@
     {
       "file": "src/gzkit/governance/frontmatter_coherence.py",
       "rule": "PLR0917",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/frontmatter_coherence.py",
-      "rule": "TRY003",
       "count": 1
     },
     {
@@ -7204,16 +6979,6 @@
     {
       "file": "src/gzkit/governance/stage4_evidence.py",
       "rule": "DOC501",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/stage4_evidence.py",
-      "rule": "EM102",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/governance/stage4_evidence.py",
-      "rule": "TRY003",
       "count": 1
     },
     {
@@ -8458,18 +8223,8 @@
     },
     {
       "file": "src/gzkit/insights/recurrence.py",
-      "rule": "EM102",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/insights/recurrence.py",
       "rule": "TC003",
       "count": 3
-    },
-    {
-      "file": "src/gzkit/insights/recurrence.py",
-      "rule": "TRY003",
-      "count": 1
     },
     {
       "file": "src/gzkit/instruction_audit.py",
@@ -9013,17 +8768,7 @@
     },
     {
       "file": "src/gzkit/ontology/work.py",
-      "rule": "EM102",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/ontology/work.py",
       "rule": "N818",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/ontology/work.py",
-      "rule": "TRY003",
       "count": 1
     },
     {

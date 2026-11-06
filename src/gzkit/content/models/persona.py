@@ -4,7 +4,7 @@ import re
 
 from pydantic import Field, field_validator
 
-from .base import BaseContentModel
+from .base import BaseContentModel, SlugNotKebabCaseError
 
 _SLUG_RE = re.compile(r"^[a-z][a-z0-9-]*$")
 
@@ -20,5 +20,5 @@ class Persona(BaseContentModel):
     @classmethod
     def _validate_slug(cls, v: str) -> str:
         if not _SLUG_RE.match(v):
-            raise ValueError(f"slug must be kebab-case; got {v!r}")
+            raise SlugNotKebabCaseError(v)
         return v
