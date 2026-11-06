@@ -178,7 +178,7 @@ def _render_security_walkthrough(
     parent_adr: str,
     checklist_items: list[str],
 ) -> None:
-    """Render the security walkthrough panel ahead of the GHI #290 ATTEST gate."""
+    """Render the security walkthrough panel ahead of the operator's attestation."""
     console.print("")
     console.print("[bold yellow]=== Security Review Walkthrough (ADR-0.0.22) ===[/bold yellow]")
     console.print(f"  OBPI:        {obpi_id}")
@@ -208,8 +208,8 @@ def _enforce_security_review_gate(
        (REQ-0.0.22-05-05) — ``receipt-missing``.
     3. Fail-closed (exit 3) when the newest receipt is older than 24 hours
        (REQ-0.0.22-05-06) — ``receipt-stale``.
-    4. Render the rule-file-derived checklist before the GHI #290 ATTEST
-       gate runs (REQ-0.0.22-05-01).
+    4. Render the rule-file-derived checklist before the operator's
+       attestation is recorded (REQ-0.0.22-05-01).
 
     ``accept_security_floor`` (GHI #462) provides an operator escape when
     the canonical slot is structurally unfilled — auto-detect classified the
@@ -1199,7 +1199,7 @@ def obpi_complete_cmd(
 
     # 4a. ADR-0.0.22 security gate: when the brief carries sensitivity:security
     # (declared OR auto-detected), enforce the canonical-slot, receipt-freshness
-    # and rule-file-checklist contract before the GHI #290 ATTEST gate fires.
+    # and rule-file-checklist contract before the attestation is recorded.
     # Skipped for --dry-run so plans can be previewed headlessly.
     if not dry_run:
         _enforce_security_review_gate(
@@ -1245,8 +1245,8 @@ def obpi_complete_cmd(
 
     # 4a-bis. ADR-0.0.24-02 receipt-binding gate: heavy/foundation = fail-closed
     # on unresolvable ARB receipts; lite-non-foundation = warn-only. Runs
-    # BEFORE the GHI #290 TTY gate so a mechanical-receipt failure short-
-    # circuits human prompting (REQ-0.0.24-02-07, mechanism for REQ-02).
+    # BEFORE the attestation is recorded so a mechanical-receipt failure
+    # short-circuits it (REQ-0.0.24-02-07, mechanism for REQ-02).
     adr_file_for_kind, _ = resolve_adr_file(project_root, config, resolved_parent)
     parent_kind = _read_adr_kind(adr_file_for_kind)
     _enforce_attestation_receipt_gate(
@@ -2005,10 +2005,12 @@ def _build_attestation_audit_entry(
 ) -> dict[str, Any]:
     """Build the ADR-local audit ledger entry for attestation.
 
-    ``attestation_type`` is the value resolved by the GHI #290 authenticity
-    gate: ``human`` (TTY+ATTEST) or ``agent-relayed-operator-attestation``
-    (GHI #292 --attestor-present). Ignored when ``requires_human`` is False;
-    self-close paths always record ``self-close-exception``.
+    ``attestation_type`` is ``operator-verbatim-conversational`` when the
+    operator's --attestation-text was recorded (the TTY authenticity gate that
+    once resolved ``human`` or ``agent-relayed-operator-attestation`` here was
+    removed under GHI #1308), and ``human`` on a dry run. Ignored when
+    ``requires_human`` is False; self-close paths always record
+    ``self-close-exception``.
 
     Returns:
         The ``obpi-audit`` ledger entry dict.

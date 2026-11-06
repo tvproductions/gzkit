@@ -10,7 +10,7 @@
         "replace": "        elif False:",
         "label": "receipt exit status never read"
       },
-      "binding_sha256": "47a5cc107a96deb1a8c6017e1a16e0f256434f077ab1befc833781f292c063da",
+      "binding_sha256": "415f10a145e9c8233af1e7252ad6d195fccec5a03a7afeb73c593d59f53963bc",
       "authority": "GHI #1154 item 5 ruling 2026-10-01 (operator, verbatim: \"approve all three\")",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": "g0"
@@ -52,7 +52,7 @@
         "replace": "    if len(markers) < 1:",
         "label": "a doubled clause is tolerated"
       },
-      "binding_sha256": "f16c12e25a2c66516d7cb1c23a55126b4bb86afcc2a91d76060617b858a31e99",
+      "binding_sha256": "0f6c47b9564fc2d246034363a678f831776f8a6d42be17c6e5711800e0e9ca4a",
       "authority": "GHI #1154 item 5 ruling 2026-10-01 (operator, verbatim: \"approve all three\")",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": "g0"
@@ -122,7 +122,7 @@
         "replace": "        elif True:",
         "label": "every present receipt is refused"
       },
-      "binding_sha256": "ba7c7dba8a5cc5536e6d3cfd79f0cb2a35314ff6e3ef42ad0b2647edbca98d0a",
+      "binding_sha256": "7b9263948dfcf32cd9afa75b1d3c7c3a9e1e8e9eab54c023a3c83e8662585d1c",
       "authority": "GHI #1154 item 5; admit canaries ordered 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": "g0"
@@ -136,7 +136,7 @@
         "replace": "    return Readiness(ready=False, blockers=tuple(errors), open_findings=outstanding)",
         "label": "readiness is never reached"
       },
-      "binding_sha256": "601c6d13b5cfeb10a662a16026c610819e81b6773186a6befc6a83867800afca",
+      "binding_sha256": "1ee06a305561a709c6a1dc21aa55e107650cef9d70ce94a9249b8af93e3db4d0",
       "authority": "GHI #1155: rebound 2026-10-02 to acceptance.assess_readiness, the reducer completion runs since GHI #985; the prior mutant bound obpi_complete_adversarial._enforce_adversarial_validation, which no production path calls",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": "g0"
@@ -164,7 +164,7 @@
         "replace": "    if True:",
         "label": "a declared clause is never read"
       },
-      "binding_sha256": "15a754e545bb1c42345335fe930fa13b075c8632d7afd7b68ef43e2330c3579f",
+      "binding_sha256": "33cc9b7329b1cd2ac6e0b25fffa4aea0b4b3cdcb4504d70f1c50addafa970dfa",
       "authority": "GHI #1154 item 5; admit canaries ordered 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": "g0"
@@ -234,7 +234,7 @@
         "replace": "        if True:",
         "label": "an unnamed undisclosed gate is never refused"
       },
-      "binding_sha256": "4b0546d3e9af416c7103b9e986a0372fbb125ec05a1f17bf68aa352d24ff59ff",
+      "binding_sha256": "069a47150e23357b0d30f2dd27b20407fd1fe015183f2e7523549fc25e3311ea",
       "authority": "GHI #1155 acceptance (a); the population inventory's own claims, bound when they were authored 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": "g0"
@@ -248,7 +248,7 @@
         "replace": "        if enrolled_claims(functions, named):",
         "label": "a disclosure is never honoured"
       },
-      "binding_sha256": "0c18d490c2dc58715e8d78487fe2fa4ebd10d28122f40a8c65318491c40d3199",
+      "binding_sha256": "b2f21b35051bcc239d02aca3832939f5d203384b0ebe4d50502061708d6b69f4",
       "authority": "GHI #1155 acceptance (a); the population inventory's own claims, bound when they were authored 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": "g0"
@@ -262,7 +262,7 @@
         "replace": "        if True:",
         "label": "an unnamed undisclosed scope is never refused"
       },
-      "binding_sha256": "6b2b856087d1f53e16f45205b979f55dc2d00449c628b533a75d7a68933db5d4",
+      "binding_sha256": "7ff5a0fba9aef20fad4cf68cd1b103dfd50a13706e1d489892a1afd36ca4d778",
       "authority": "GHI #1154 item 5 roster shrink, step 5 of the 2026-10-02 handoff (operator, verbatim: \"do all 5 steps\")",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": "g0"
@@ -276,7 +276,7 @@
         "replace": "        if enrolled_claims(functions, named):",
         "label": "a disclosed scope is never admitted"
       },
-      "binding_sha256": "71a986bc929039836a8509c71c6b2bc58ab463b776e21938cdd914446b6083f8",
+      "binding_sha256": "c0a80ab9e98c77445cd957cf7e70456e5bed67eef5dceaea6f9588ffa3e60d10",
       "authority": "GHI #1154 item 5 roster shrink, step 5 of the 2026-10-02 handoff (operator, verbatim: \"do all 5 steps\")",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": "g0"
@@ -318,7 +318,7 @@
         "replace": "    if missing:\n        return 3\n",
         "label": "a surviving mutant no longer fails the sweep"
       },
-      "binding_sha256": "272445cb264e1586696d4cf18f09cdf9aa84bb0d0a1ad4371cb2982e6a3ce799",
+      "binding_sha256": "b563731964b72bd23802d73dd4418244da2dce7f3fe3e9f5cf6ef1f5fc5c4a29",
       "authority": "GHI #1191 (operator ruling 2026-10-11, verbatim: \"move the canary sweep to the full tier\")",
       "proposed_by": "claude-code session 2026-10-11",
       "reviewed_by": "g0"
@@ -374,7 +374,7 @@
         "replace": "        if False:\n",
         "label": "a grounding finding is only announced"
       },
-      "binding_sha256": "f4df76560d78eb90129c8b185dd1e088966df3ad628b706923b673e5bd0df03f",
+      "binding_sha256": "d3d8d934d1a4cf74a9ed063e822ae3e8d72c616402c183806776f5f8b7e5691b",
       "authority": "GHI #1257; GHI #1154 item 5 (every registered claim binds a reviewed canary)",
       "proposed_by": "claude-code session 2026-10-18",
       "reviewed_by": "g0"
