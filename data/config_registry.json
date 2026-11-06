@@ -56,7 +56,7 @@
     "catalog/reqs.json": {
       "owner": "gzkit/models/catalog.py",
       "kind": "code",
-      "purpose": "The requirements catalog's REQs (`REQ-<n>`), empty until RO-5's verbs author them; `gz validate --catalog`.",
+      "purpose": "The requirements catalog's REQs (`REQ-<n>`), one sequence of catalog REQs (RP-11's intake) and repair REQs (`gz wp req new`, RP-12 ruling 45); `gz validate --catalog`.",
       "derivation": "docs/governance/harbor-ro3-requirements-store.md (operator ruling 2026-10-21)"
     },
     "catalog/work_packages.json": {

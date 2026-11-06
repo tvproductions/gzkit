@@ -24,7 +24,7 @@ from gzkit.governance.trust_audits.catalog_edges import (
     edge_findings,
     prd_needs,
 )
-from gzkit.models.catalog import Catalog, Criterion, External, Outcome, Req
+from gzkit.models.catalog import Catalog, CatalogReq, Criterion, External, Outcome
 from gzkit.traceability import CatalogBindings
 
 _PRD = textwrap.dedent(
@@ -81,9 +81,10 @@ def _outcome(code: str, **fields: object) -> Outcome:
     return Outcome.model_validate(base | fields)
 
 
-def _req(req_id: str, member_of: str = "H1", **fields: object) -> Req:
+def _req(req_id: str, member_of: str = "H1", **fields: object) -> CatalogReq:
     base: dict[str, object] = {
         "id": req_id,
+        "specialization": "catalog",
         "member_of": member_of,
         "statement": "Effect, because rationale.",
         "criteria": [Criterion(state_or_input="s", required_outcome="o", evidence="e")],
@@ -92,12 +93,12 @@ def _req(req_id: str, member_of: str = "H1", **fields: object) -> Req:
         "derives_from": ["FR-001"],
         "applies_to": [],
     }
-    return Req.model_validate(base | fields)
+    return CatalogReq.model_validate(base | fields)
 
 
 def _catalog(
     outcomes: tuple[Outcome, ...] = (),
-    reqs: tuple[Req, ...] = (),
+    reqs: tuple[CatalogReq, ...] = (),
     externals: tuple[External, ...] = (),
 ) -> Catalog:
     return Catalog(families=(), outcomes=outcomes, reqs=reqs, externals=externals)

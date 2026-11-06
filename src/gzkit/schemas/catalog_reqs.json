@@ -1,5 +1,103 @@
 {
   "$defs": {
+    "CatalogReq": {
+      "additionalProperties": false,
+      "description": "A catalog requirement: a member of exactly one outcome.",
+      "properties": {
+        "id": {
+          "description": "`REQ-<n>`, never reused.",
+          "pattern": "^REQ-[1-9][0-9]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "statement": {
+          "description": "Effect and rationale.",
+          "minLength": 1,
+          "title": "Statement",
+          "type": "string"
+        },
+        "criteria": {
+          "description": "Acceptance criteria.",
+          "items": {
+            "$ref": "#/$defs/Criterion"
+          },
+          "minItems": 1,
+          "title": "Criteria",
+          "type": "array"
+        },
+        "kind": {
+          "description": "Which proof channel binds it (ADR-0.0.59).",
+          "enum": [
+            "BEHAVIOR",
+            "SUPPORT",
+            "STRUCTURAL-FENCE"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "revision": {
+          "description": "Editorial amendments only; never resets proof (RP-12 ruling 31).",
+          "minimum": 1,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "supersedes": {
+          "anyOf": [
+            {
+              "pattern": "^REQ-[1-9][0-9]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The REQ this one supersedes, which stays whole.",
+          "title": "Supersedes"
+        },
+        "specialization": {
+          "const": "catalog",
+          "description": "Which requirement this is.",
+          "title": "Specialization",
+          "type": "string"
+        },
+        "member_of": {
+          "description": "Its outcome's code.",
+          "pattern": "^[A-Z][1-9][0-9]*(\\.[1-9][0-9]*)*$",
+          "title": "Member Of",
+          "type": "string"
+        },
+        "derives_from": {
+          "description": "PRD FR ids or section 7 attributes.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Derives From",
+          "type": "array"
+        },
+        "applies_to": {
+          "description": "Targets, for a Q-family NFR only.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Applies To",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "statement",
+        "criteria",
+        "kind",
+        "revision",
+        "specialization",
+        "member_of",
+        "derives_from",
+        "applies_to"
+      ],
+      "title": "CatalogReq",
+      "type": "object"
+    },
     "Criterion": {
       "additionalProperties": false,
       "description": "One acceptance criterion, on the `ghi-close` closure-contract precedent.",
@@ -31,20 +129,14 @@
       "title": "Criterion",
       "type": "object"
     },
-    "Req": {
+    "RepairReq": {
       "additionalProperties": false,
-      "description": "One requirement, a member of exactly one outcome.",
+      "description": "A repair requirement: held on its repair package, naming its problem report.",
       "properties": {
         "id": {
           "description": "`REQ-<n>`, never reused.",
           "pattern": "^REQ-[1-9][0-9]*$",
           "title": "Id",
-          "type": "string"
-        },
-        "member_of": {
-          "description": "Its outcome's code.",
-          "pattern": "^[A-Z][1-9][0-9]*(\\.[1-9][0-9]*)*$",
-          "title": "Member Of",
           "type": "string"
         },
         "statement": {
@@ -73,39 +165,69 @@
           "type": "string"
         },
         "revision": {
-          "description": "Only rises.",
+          "description": "Editorial amendments only; never resets proof (RP-12 ruling 31).",
           "minimum": 1,
           "title": "Revision",
           "type": "integer"
         },
-        "derives_from": {
-          "description": "PRD FR ids or section 7 attributes.",
-          "items": {
-            "type": "string"
-          },
-          "title": "Derives From",
-          "type": "array"
+        "supersedes": {
+          "anyOf": [
+            {
+              "pattern": "^REQ-[1-9][0-9]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The REQ this one supersedes, which stays whole.",
+          "title": "Supersedes"
         },
-        "applies_to": {
-          "description": "Targets, for a Q-family NFR only.",
-          "items": {
-            "type": "string"
-          },
-          "title": "Applies To",
-          "type": "array"
+        "specialization": {
+          "const": "repair",
+          "description": "Which requirement this is.",
+          "title": "Specialization",
+          "type": "string"
+        },
+        "held_on": {
+          "description": "The repair package it is held on.",
+          "pattern": "^WP-[0-9]{2,}-[a-z0-9]+(-[a-z0-9]+)*$",
+          "title": "Held On",
+          "type": "string"
+        },
+        "problem_report": {
+          "description": "The GitHub issue it answers (ruling 9).",
+          "minimum": 1,
+          "title": "Problem Report",
+          "type": "integer"
+        },
+        "aligns_to": {
+          "anyOf": [
+            {
+              "pattern": "^REQ-[1-9][0-9]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "A catalog REQ of design it aligns to.",
+          "title": "Aligns To"
         }
       },
       "required": [
         "id",
-        "member_of",
         "statement",
         "criteria",
         "kind",
         "revision",
-        "derives_from",
-        "applies_to"
+        "specialization",
+        "held_on",
+        "problem_report"
       ],
-      "title": "Req",
+      "title": "RepairReq",
       "type": "object"
     }
   },
@@ -121,7 +243,21 @@
     "reqs": {
       "description": "The requirements.",
       "items": {
-        "$ref": "#/$defs/Req"
+        "discriminator": {
+          "mapping": {
+            "catalog": "#/$defs/CatalogReq",
+            "repair": "#/$defs/RepairReq"
+          },
+          "propertyName": "specialization"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/$defs/CatalogReq"
+          },
+          {
+            "$ref": "#/$defs/RepairReq"
+          }
+        ]
       },
       "title": "Reqs",
       "type": "array"

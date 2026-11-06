@@ -28,7 +28,7 @@ from gzkit.events import (
     SideState,
 )
 from gzkit.ledger import Ledger, ledger_row
-from gzkit.models.catalog import Catalog
+from gzkit.models.catalog import Catalog, CatalogReq
 
 LIFECYCLE: tuple[str, ...] = get_args(LifecycleState)
 SIDE_STATES: tuple[str, ...] = get_args(SideState)
@@ -120,7 +120,11 @@ def record_req_proof(
     evidence: str,
     target: str | None = None,
 ) -> ReqProofRecordedEvent:
-    """Book one proof verdict for a catalog REQ at its current revision, or refuse it."""
+    """Book one proof verdict for a REQ at its current revision, or refuse it.
+
+    Proof runs one path for both specializations (RP-12 ruling 45); only a catalog
+    REQ has targets to prove against.
+    """
     held = next((entry for entry in catalog.reqs if entry.id == req), None)
     if held is None:
         msg = f"REQ {req!r} is not in data/catalog/reqs.json."
@@ -137,8 +141,9 @@ def record_req_proof(
     if not commit.strip() or not evidence.strip():
         msg = "Proof is bound to a commit and an evidence id; neither may be empty."
         raise CatalogLedgerError(msg)
-    if target is not None and target not in held.applies_to:
-        msg = f"{req} does not apply to {target!r}; its targets are {list(held.applies_to)}."
+    targets = held.applies_to if isinstance(held, CatalogReq) else ()
+    if target is not None and target not in targets:
+        msg = f"{req} does not apply to {target!r}; its targets are {list(targets)}."
         raise CatalogLedgerError(msg)
     event = ReqProofRecordedEvent.model_validate(
         {

@@ -74,17 +74,33 @@ def _schema_errors(exc: PydanticValidationError) -> str:
     )
 
 
-def _check_open(root: Path, package: WorkPackage) -> None:
-    """Ruling 2 keeps a repair package open while its orders are found; ruling 44 closes it."""
+def open_package_refusal(root: Path, package: WorkPackage, what: str) -> tuple[str, str] | None:
+    """Read whether a repair package is open to take ``what``: an order or a repair REQ.
+
+    Ruling 2 keeps a repair package open while its orders and REQs are found, and
+    ruling 44 closes it, its close reading every order's Gate 5.
+
+    Returns:
+        What failed and why, or None when the package is initiated and not closed.
+
+    """
     config = ensure_initialized()
     state = work_package_state(Ledger(root / config.paths.ledger), package.id)
-    if state != _OPEN:
-        _refuse(
-            f"Work package {package.id} is {state or 'not initiated'}.",
-            "An order is written into a repair package that is initiated and not closed, "
+    if state == _OPEN:
+        return None
+    return (
+        f"Work package {package.id} is {state or 'not initiated'}.",
+        (
+            f"{what} is written into a repair package that is initiated and not closed, "
             "since its close reads every order's Gate 5 (RP-12 rulings 2 and 44); "
-            f"`uv run gz wp initiate {package.id} --operator-text <words>` initiates one.",
-        )
+            f"`uv run gz wp initiate {package.id} --operator-text <words>` initiates one."
+        ),
+    )
+
+
+def _check_open(root: Path, package: WorkPackage) -> None:
+    if refusal := open_package_refusal(root, package, "An order"):
+        _refuse(*refusal)
 
 
 def wp_order_new_cmd(*, work_package: str, record: dict[str, object], as_json: bool) -> None:

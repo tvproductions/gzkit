@@ -30,6 +30,7 @@ _OUTCOME = {
 }
 _REQ = {
     "id": "REQ-1",
+    "specialization": "catalog",
     "member_of": "H1",
     "statement": "A resumed session names its predecessor.",
     "criteria": [{"state_or_input": "a handoff", "required_outcome": "named", "evidence": "t"}],

@@ -912,6 +912,16 @@
       },
       "governance_relevant": true
     },
+    "wp req new": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
     "wp withdraw-legacy": {
       "surfaces": {
         "manpage": true,

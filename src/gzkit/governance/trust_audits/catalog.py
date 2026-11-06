@@ -46,6 +46,7 @@ from gzkit.models.catalog import (
     ORDER_ID_PATTERN,
     WORK_PACKAGE_ID_PATTERN,
     Catalog,
+    RepairReq,
     WorkPackage,
     load_catalog,
     load_delivery_events,
@@ -124,7 +125,59 @@ def _structure_findings(catalog: Catalog) -> list[ValidationError]:
                 f"data/{CATALOG_FILES['families']} does not hold.",
             )
         )
+    errors += [_err("reqs", f"{breach} {_REQ_RULINGS}") for breach in req_breaches(catalog)]
     return errors + work_package_findings(catalog) + order_findings(catalog)
+
+
+_REQ_RULINGS = (
+    "RP-12 rulings 31 and 45 rule the repair requirement and `supersedes` "
+    "(docs/governance/harbor-ro12-contractor-kit.md)."
+)
+
+
+def _repair_req_breaches(req: RepairReq, catalog: Catalog) -> list[str]:
+    """Ruling 45: held on a repair package, answering an issue it carries, aligned to design.
+
+    Returns:
+        Each breach as a sentence.
+
+    """
+    package = next((wp for wp in catalog.work_packages if wp.id == req.held_on), None)
+    if package is None or package.kind != "repair":
+        held = "is not in the catalog" if package is None else "is a delivery package"
+        return [f"Repair REQ {req.id} is held on {req.held_on}, which {held}."]
+    breaches = []
+    if req.problem_report not in package.issues:
+        breaches.append(
+            f"Repair REQ {req.id} names problem report #{req.problem_report}, which "
+            f"{package.id} does not carry."
+        )
+    designs = {held.id for held in catalog.catalog_reqs()}
+    if req.aligns_to is not None and req.aligns_to not in designs:
+        breaches.append(
+            f"Repair REQ {req.id} aligns to {req.aligns_to}, which is no catalog REQ the "
+            "store holds."
+        )
+    return breaches
+
+
+def req_breaches(catalog: Catalog) -> list[str]:
+    """Read the requirements against rulings 31 and 45, beside the catalog's own checks.
+
+    Returns:
+        Each breach as a sentence, empty when the requirements hold.
+
+    """
+    ids = {req.id for req in catalog.reqs}
+    breaches = [
+        f"{req.id} supersedes {req.supersedes}, which is "
+        f"{'itself' if req.supersedes == req.id else 'no REQ the store holds'}."
+        for req in catalog.reqs
+        if req.supersedes is not None and (req.supersedes == req.id or req.supersedes not in ids)
+    ]
+    for req in catalog.repair_reqs():
+        breaches += _repair_req_breaches(req, catalog)
+    return breaches
 
 
 def _kind_breaches(package: WorkPackage, outcomes: frozenset[str]) -> list[str]:

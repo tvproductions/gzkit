@@ -602,6 +602,20 @@
       "authority": "docs/governance/harbor-ro12-contractor-kit.md (RP-12 O2 task 1, rulings 43, 44 and 49)",
       "proposed_by": "claude-code session 2026-11-05",
       "reviewed_by": null
+    },
+    {
+      "claim_id": "requirements-catalog-repair-reqs",
+      "guard": "gzkit.governance.trust_audits.catalog:_repair_req_breaches",
+      "failing_test": "tests.governance.test_catalog_repair_reqs.TestRepairReqStore.test_the_problem_report_is_an_issue_its_package_carries",
+      "mutation": {
+        "find": "    if req.problem_report not in package.issues:\n",
+        "replace": "    if False:\n",
+        "label": "a repair REQ naming an issue its package does not carry is accepted"
+      },
+      "binding_sha256": "7926a5a42bcee926cb740a473e79ee8e965117dd501f39f777d67863317f599c",
+      "authority": "docs/governance/harbor-ro12-contractor-kit.md (RP-12 O2 task 2, rulings 45 and 48)",
+      "proposed_by": "claude-code session 2026-11-05",
+      "reviewed_by": null
     }
   ]
 }

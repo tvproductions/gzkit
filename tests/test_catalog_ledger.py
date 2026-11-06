@@ -19,7 +19,7 @@ from gzkit.catalog_ledger import (
 )
 from gzkit.events import OutcomeTransitionedEvent, ReqProofRecordedEvent, parse_typed_event
 from gzkit.ledger import Ledger
-from gzkit.models.catalog import Catalog, Criterion, Outcome, Req
+from gzkit.models.catalog import Catalog, CatalogReq, Criterion, Outcome
 from gzkit.ontology.corpus import project_corpus
 
 _LIFECYCLE = (
@@ -49,9 +49,10 @@ def _outcome(code: str = "H1") -> Outcome:
     )
 
 
-def _req(revision: int = 2, applies_to: tuple[str, ...] = ()) -> Req:
-    return Req(
+def _req(revision: int = 2, applies_to: tuple[str, ...] = ()) -> CatalogReq:
+    return CatalogReq(
         id="REQ-1",
+        specialization="catalog",
         member_of="H1",
         statement="A resumed session names its predecessor.",
         criteria=(

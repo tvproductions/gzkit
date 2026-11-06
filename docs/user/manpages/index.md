@@ -114,6 +114,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz wp runs`](wp-runs.md) | Report what the ledger says every run in flight has reached |
 | [`gz wp order new`](wp-order-new.md) | Write a new order's record with the next `ORD-<NN>-<slug>` (RP-12 O2) |
 | [`gz wp order show`](wp-order-show.md) | Show an order's record and its package's kind |
+| [`gz wp req new`](wp-req-new.md) | Write a repair requirement with the next `REQ-<n>`, held on its repair package (RP-12 O2) |
 | [`gz handoff authorize`](handoff-authorize.md) | Deprecated alias for `gz handoff decide` |
 | [`gz handoff archive`](handoff-archive.md) | Move handoffs older than a threshold into `.gzkit/handoffs/archive/` (move-not-delete) |
 | [`gz insights remember`](insights-remember.md) | Append one schema-valid record to the insights store and its ledger pointer |

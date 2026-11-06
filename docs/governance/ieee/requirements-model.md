@@ -280,7 +280,7 @@ associated as canon - it captures the design very well"*).
 likely have some specialization"*). A base requirement carries statement, criteria, kind, revision
 and proof. The **catalog requirement** keeps `member_of` an outcome, `derives_from` and `applies_to`.
 The **repair requirement** is held on its repair package, names its problem report, and may name a
-design REQ it aligns to. Proof runs one path. Which fields and how they are declared are RP-12's.
+design REQ it aligns to. Proof runs one path. Which fields and how they are declared are RP-12's. *Declared 2026-11-05* ([RP-12 rulings 45 and 48](../harbor-ro12-contractor-kit.md#rulings)): both live in `data/catalog/reqs.json`, one `REQ-<n>` sequence, each marked `"specialization": "catalog"` or `"repair"`; the base carries `supersedes`; the repair requirement carries `held_on`, `problem_report` (the issue number) and `aligns_to`; `gz wp req new` writes it.
 
 **The input sets the REQ's relationship and the release.**
 

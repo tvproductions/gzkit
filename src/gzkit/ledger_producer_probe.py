@@ -327,6 +327,7 @@ def _seat_catalog(root: Path) -> Catalog:
         "reqs": [
             {
                 "id": _CATALOG_REQ,
+                "specialization": "catalog",
                 "member_of": _OUTCOME,
                 "statement": _STATEMENT,
                 "criteria": [

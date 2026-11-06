@@ -13,6 +13,7 @@ from gzkit.cli.helpers import add_dry_run_flag, add_json_flag, build_epilog
 from gzkit.cli.parser_acceptance import acceptance_handler, configure_acceptance_parser
 from gzkit.cli.parser_handler_manifest import _lazy
 from gzkit.cli.parser_wp_order import _register_wp_order
+from gzkit.cli.parser_wp_req import _register_wp_req
 
 if TYPE_CHECKING:
     import argparse
@@ -44,6 +45,7 @@ def register_wp_parsers(commands: argparse._SubParsersAction) -> None:
     _register_wp_run(wp_commands)
     _register_wp_acceptance(wp_commands)
     _register_wp_order(wp_commands)
+    _register_wp_req(wp_commands)
     _register_wp_withdraw_legacy(wp_commands)
 
 

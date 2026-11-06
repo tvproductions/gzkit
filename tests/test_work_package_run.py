@@ -13,7 +13,7 @@ from tempfile import TemporaryDirectory
 
 from gzkit.events import BaselinedReq, WorkPackageDispatchedEvent
 from gzkit.ledger import Ledger
-from gzkit.models.catalog import Catalog, Criterion, Departure, Outcome, Req, WorkPackage
+from gzkit.models.catalog import Catalog, CatalogReq, Criterion, Departure, Outcome, WorkPackage
 from gzkit.pipeline_dispatch import MAX_REVIEW_FIX_CYCLES
 from gzkit.work_package_ledger import (
     ChangeRequest,
@@ -88,9 +88,10 @@ def _package(wp_id: str, kind: str = "delivery") -> WorkPackage:
     )
 
 
-def _req(req_id: str, revision: int = 2) -> Req:
-    return Req(
+def _req(req_id: str, revision: int = 2) -> CatalogReq:
+    return CatalogReq(
         id=req_id,
+        specialization="catalog",
         member_of="H1",
         statement="A resumed session names its predecessor.",
         criteria=(Criterion(state_or_input="h", required_outcome="n", evidence="t"),),

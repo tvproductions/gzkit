@@ -167,7 +167,8 @@ def edge_findings(
             )
         )
     codes = {outcome.code for outcome in catalog.outcomes}
-    orphans = [f"{req.id} -> {req.member_of}" for req in catalog.reqs if req.member_of not in codes]
+    reqs = catalog.catalog_reqs()
+    orphans = [f"{req.id} -> {req.member_of}" for req in reqs if req.member_of not in codes]
     if orphans:
         errors.append(
             _err(
@@ -178,10 +179,7 @@ def edge_findings(
             )
         )
     underived = [
-        f"{req.id} -> {need}"
-        for req in catalog.reqs
-        for need in req.derives_from
-        if need not in needs
+        f"{req.id} -> {need}" for req in reqs for need in req.derives_from if need not in needs
     ]
     if underived:
         errors.append(
@@ -197,7 +195,7 @@ def edge_findings(
 
 def coverage_gaps(catalog: Catalog, needs: Sequence[str]) -> list[str]:
     """Return the PRD needs no REQ derives from, in the PRD's order."""
-    derived = {need for req in catalog.reqs for need in req.derives_from}
+    derived = {need for req in catalog.catalog_reqs() for need in req.derives_from}
     return [need for need in needs if need not in derived]
 
 
@@ -220,7 +218,9 @@ def bdd_findings(catalog: Catalog, bindings: CatalogBindings) -> list[Validation
             continue
         tagged = bindings.scenario_reqs.get(feature, frozenset())
         members = [
-            r.id for r in catalog.reqs if r.member_of == outcome.code and r.kind == "BEHAVIOR"
+            r.id
+            for r in catalog.catalog_reqs()
+            if r.member_of == outcome.code and r.kind == "BEHAVIOR"
         ]
         if untagged := [req for req in members if req not in tagged]:
             errors.append(

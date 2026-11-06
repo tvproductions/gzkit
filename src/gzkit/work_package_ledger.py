@@ -28,6 +28,7 @@ from gzkit.events import (
     WorkPackageTransitionedEvent,
 )
 from gzkit.ledger import Ledger, ledger_row
+from gzkit.models.catalog import CatalogReq, RepairReq
 
 if TYPE_CHECKING:
     from gzkit.ledger import LedgerEvent
@@ -213,6 +214,21 @@ def declared_modules(ledger: Ledger, package: WorkPackage) -> tuple[str, ...]:
     return tuple(dict.fromkeys(str(m) for row in rows for m in row.extra.get("modules") or ()))
 
 
+def _check_baselined(
+    held: dict[str, CatalogReq | RepairReq], package: WorkPackage, entry: BaselinedReq
+) -> None:
+    """One baseline entry: a REQ the catalog holds at that revision, of the package's outcome."""
+    req = held.get(entry.req)
+    if req is None or req.revision != entry.revision:
+        _refuse(f"{entry.req} at revision {entry.revision} is not a REQ the catalog holds.")
+    if not package.outcome:
+        return
+    if not isinstance(req, CatalogReq):
+        _refuse(f"{entry.req} is a repair REQ held on {req.held_on}, not a catalog REQ.")
+    if req.member_of != package.outcome:
+        _refuse(f"{entry.req} is a member of {req.member_of}, not {package.outcome}.")
+
+
 def _check_frozen(catalog: Catalog, package: WorkPackage, move: TransitionRequest) -> None:
     """Freeze: risk note and receipt, a baseline at the catalog's revisions, every alteration."""
     if not (move.risk_note or "").strip() or not (move.review_receipt or "").strip():
@@ -221,11 +237,7 @@ def _check_frozen(catalog: Catalog, package: WorkPackage, move: TransitionReques
         _refuse(f"Delivery package {package.id} freezes a REQ baseline; it is empty.")
     held = {req.id: req for req in catalog.reqs}
     for entry in move.baseline:
-        req = held.get(entry.req)
-        if req is None or req.revision != entry.revision:
-            _refuse(f"{entry.req} at revision {entry.revision} is not a REQ the catalog holds.")
-        if package.outcome and req.member_of != package.outcome:
-            _refuse(f"{entry.req} is a member of {req.member_of}, not {package.outcome}.")
+        _check_baselined(held, package, entry)
     planned = {alteration.id for alteration in package.alterations}
     if set(move.approved_alterations) != planned:
         _refuse(

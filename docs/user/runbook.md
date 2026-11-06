@@ -994,6 +994,15 @@ uv run gz wp order new WP-01-stamp --slug import --purpose "<what it restores>" 
 uv run gz wp order show ORD-01-import
 ```
 
+A repair requirement states what must hold again after the repair. It lives in
+`data/catalog/reqs.json` beside the catalog's, written only by `gz wp req new`
+on an open repair package, and names the issue it answers:
+
+```bash
+uv run gz wp req new WP-01-stamp --statement "<what must hold again>" \
+  --criterion "<state>|<outcome>|<evidence>" --kind BEHAVIOR --problem-report 1301
+```
+
 The lifecycle moves one step at a time (initiated, frozen, commenced, accepted,
 closed). Pen and ink is the coordinator's; every other rung of the change ladder
 is yours. Any refusal exits 3 and writes nothing. Attaching an issue also labels

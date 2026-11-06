@@ -25,10 +25,10 @@ from gzkit.ledger import Ledger
 from gzkit.models.catalog import (
     Alteration,
     Catalog,
+    CatalogReq,
     Criterion,
     Departure,
     Outcome,
-    Req,
     WorkPackage,
 )
 from gzkit.ontology.corpus import project_corpus
@@ -58,9 +58,10 @@ _DEPARTURE = Departure(
 )
 
 
-def _req(req_id: str = "REQ-1", member_of: str = "H1", revision: int = 2) -> Req:
-    return Req(
+def _req(req_id: str = "REQ-1", member_of: str = "H1", revision: int = 2) -> CatalogReq:
+    return CatalogReq(
         id=req_id,
+        specialization="catalog",
         member_of=member_of,
         statement="A resumed session names its predecessor.",
         criteria=(

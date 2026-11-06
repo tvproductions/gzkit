@@ -19,9 +19,9 @@ from gzkit.enforcement import _run_single_claim, production_enforcement_registry
 from gzkit.governance.trust_audits.catalog import audit_catalog
 from gzkit.models.catalog import (
     CATALOG_FILES,
+    CatalogReq,
     Family,
     Outcome,
-    Req,
     WorkPackage,
     catalog_json_schemas,
     load_catalog,
@@ -57,6 +57,7 @@ def _outcome(code: str) -> dict[str, object]:
 def _req(req_id: str, member_of: str = "H1") -> dict[str, object]:
     return {
         "id": req_id,
+        "specialization": "catalog",
         "member_of": member_of,
         "statement": "Effect, because rationale.",
         "criteria": [
@@ -156,25 +157,25 @@ class TestModels(unittest.TestCase):
                 Outcome.model_validate(_outcome(code))
 
     def test_a_req_id_is_the_area_free_sequential_grammar(self):
-        self.assertEqual(Req.model_validate(_req("REQ-12")).id, "REQ-12")
+        self.assertEqual(CatalogReq.model_validate(_req("REQ-12")).id, "REQ-12")
         for req_id in ("REQ-0", "REQ-01", "REQ-0.35.0-01-01", "REQ-H1-1", "req-1"):
             with self.subTest(req_id=req_id), self.assertRaises(PydanticValidationError):
-                Req.model_validate(_req(req_id))
+                CatalogReq.model_validate(_req(req_id))
 
     def test_a_req_carries_one_kind_of_three(self):
         with self.assertRaises(PydanticValidationError):
-            Req.model_validate({**_req("REQ-1"), "kind": "PROSE"})
+            CatalogReq.model_validate({**_req("REQ-1"), "kind": "PROSE"})
 
     def test_a_req_has_at_least_one_criterion_and_a_positive_revision(self):
         with self.assertRaises(PydanticValidationError):
-            Req.model_validate({**_req("REQ-1"), "criteria": []})
+            CatalogReq.model_validate({**_req("REQ-1"), "criteria": []})
         with self.assertRaises(PydanticValidationError):
-            Req.model_validate({**_req("REQ-1"), "revision": 0})
+            CatalogReq.model_validate({**_req("REQ-1"), "revision": 0})
 
     def test_a_req_carries_no_proof_and_an_outcome_no_lifecycle_state(self):
         """Proof and delivery status live only in the ledger (decisions 3 and 4)."""
         with self.assertRaises(PydanticValidationError):
-            Req.model_validate({**_req("REQ-1"), "verdict": "SATISFIED"})
+            CatalogReq.model_validate({**_req("REQ-1"), "verdict": "SATISFIED"})
         with self.assertRaises(PydanticValidationError):
             Outcome.model_validate({**_outcome("H1"), "state": "validated"})
 

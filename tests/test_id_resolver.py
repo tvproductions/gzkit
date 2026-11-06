@@ -299,6 +299,7 @@ class TestCatalogReqs(unittest.TestCase):
         ledger = _MemoryLedger()
         req = {
             "id": "REQ-3",
+            "specialization": "catalog",
             "member_of": "H1",
             "statement": "Effect.",
             "criteria": [{"state_or_input": "s", "required_outcome": "o", "evidence": "e"}],

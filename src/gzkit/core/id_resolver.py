@@ -107,7 +107,8 @@ class IdentityContext(BaseModel):
         default_factory=dict, description="Started TASK id -> its task_started obpi_id"
     )
     catalog_members: dict[str, str] = Field(
-        default_factory=dict, description="Catalog REQ-<n> -> the outcome its member_of names"
+        default_factory=dict,
+        description="Catalog REQ-<n> -> its outcome, or the repair package a repair REQ is held on",
     )
 
 
@@ -190,7 +191,7 @@ def _req_owner(identifier: str, context: IdentityContext) -> tuple[Resolution, P
 
 
 def _catalog_outcome(identifier: str, context: IdentityContext) -> str:
-    """Return the outcome a catalog REQ is a member of; the catalog is its only store."""
+    """Return a catalog REQ's outcome, or a repair REQ's package; the catalog is its store."""
     outcome = context.catalog_members.get(identifier)
     if outcome is None:
         msg = f"{identifier} names no REQ in data/catalog/reqs.json"
@@ -339,4 +340,6 @@ def _catalog_members(project_root: Path) -> dict[str, str]:
     """Index the catalog's REQs by id; a project that keeps no catalog has none."""
     if not registry_path(project_root, CATALOG_FILES["reqs"]).is_file():
         return {}
-    return {req.id: req.member_of for req in load_catalog(project_root).reqs}
+    catalog = load_catalog(project_root)
+    members = {req.id: req.member_of for req in catalog.catalog_reqs()}
+    return members | {req.id: req.held_on for req in catalog.repair_reqs()}

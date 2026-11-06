@@ -31,6 +31,13 @@ Feature: Work packages run through the gz wp verbs
     Then the command exits with code 1
     And the output contains "is not in data/catalog/orders.json"
 
+  Scenario: a repair requirement on a package the store does not hold is a user error
+    Given the workspace is initialized
+    And the requirements catalog is seeded
+    When I run the gz command "wp req new WP-99-nothing --statement S. --criterion a|b|c --kind BEHAVIOR --problem-report 1"
+    Then the command exits with code 1
+    And the output contains "is not in data/catalog/work_packages.json"
+
   Scenario: a package the store does not hold is a user error
     Given the workspace is initialized
     And the requirements catalog is seeded

@@ -89,6 +89,7 @@ def _seed(packages: list[dict[str, object]], reqs: list[dict[str, object]]) -> N
 def _req(revision: int = 2) -> dict[str, object]:
     return {
         "id": _REQ,
+        "specialization": "catalog",
         "member_of": "H1.1",
         "statement": "The package carries its frozen requirement.",
         "criteria": [{"state_or_input": "i", "required_outcome": "o", "evidence": "e"}],

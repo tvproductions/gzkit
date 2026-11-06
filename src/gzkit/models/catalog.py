@@ -94,21 +94,53 @@ class Criterion(BaseModel):
     evidence: str = Field(..., min_length=1, description="The semantic evidence that shows it.")
 
 
-class Req(BaseModel):
-    """One requirement, a member of exactly one outcome."""
+class ReqBase(BaseModel):
+    """What every requirement carries (requirements model § 12; RP-12 ruling 45).
+
+    Statement, criteria, kind and revision, and `supersedes`: a change to the
+    obligation is a new REQ superseding the prior, which stays whole (ruling 31).
+    """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     id: str = Field(..., pattern=REQ_ID_PATTERN, description="`REQ-<n>`, never reused.")
-    member_of: str = Field(..., pattern=OUTCOME_CODE_PATTERN, description="Its outcome's code.")
     statement: str = Field(..., min_length=1, description="Effect and rationale.")
     criteria: tuple[Criterion, ...] = Field(..., min_length=1, description="Acceptance criteria.")
     kind: Literal["BEHAVIOR", "SUPPORT", "STRUCTURAL-FENCE"] = Field(
         ..., description="Which proof channel binds it (ADR-0.0.59)."
     )
-    revision: int = Field(..., ge=1, description="Only rises.")
+    revision: int = Field(
+        ..., ge=1, description="Editorial amendments only; never resets proof (RP-12 ruling 31)."
+    )
+    supersedes: str | None = Field(
+        None, pattern=REQ_ID_PATTERN, description="The REQ this one supersedes, which stays whole."
+    )
+
+
+class CatalogReq(ReqBase):
+    """A catalog requirement: a member of exactly one outcome."""
+
+    specialization: Literal["catalog"] = Field(..., description="Which requirement this is.")
+    member_of: str = Field(..., pattern=OUTCOME_CODE_PATTERN, description="Its outcome's code.")
     derives_from: tuple[str, ...] = Field(..., description="PRD FR ids or section 7 attributes.")
     applies_to: tuple[str, ...] = Field(..., description="Targets, for a Q-family NFR only.")
+
+
+class RepairReq(ReqBase):
+    """A repair requirement: held on its repair package, naming its problem report."""
+
+    specialization: Literal["repair"] = Field(..., description="Which requirement this is.")
+    held_on: str = Field(
+        ..., pattern=WORK_PACKAGE_ID_PATTERN, description="The repair package it is held on."
+    )
+    problem_report: int = Field(..., ge=1, description="The GitHub issue it answers (ruling 9).")
+    aligns_to: str | None = Field(
+        None, pattern=REQ_ID_PATTERN, description="A catalog REQ of design it aligns to."
+    )
+
+
+#: One requirement, specialized; the mark selects which (RP-12 ruling 45).
+Req = Annotated[CatalogReq | RepairReq, Field(discriminator="specialization")]
 
 
 class External(BaseModel):
@@ -292,6 +324,24 @@ class Catalog(BaseModel):
     externals: tuple[External, ...] = ()
     work_packages: tuple[WorkPackage, ...] = ()
     orders: tuple[Order, ...] = ()
+
+    def catalog_reqs(self) -> tuple[CatalogReq, ...]:
+        """Return the catalog requirements, the members of an outcome.
+
+        Returns:
+            Every REQ marked `catalog`, in the store's order.
+
+        """
+        return tuple(req for req in self.reqs if isinstance(req, CatalogReq))
+
+    def repair_reqs(self) -> tuple[RepairReq, ...]:
+        """Return the repair requirements, each held on its repair package.
+
+        Returns:
+            Every REQ marked `repair`, in the store's order.
+
+        """
+        return tuple(req for req in self.reqs if isinstance(req, RepairReq))
 
 
 def catalog_json_schemas() -> dict[str, dict[str, Any]]:

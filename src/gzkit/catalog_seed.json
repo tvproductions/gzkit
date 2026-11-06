@@ -77,7 +77,7 @@
       "outcomes": []
     },
     "catalog/reqs.json": {
-      "_doc": "The requirements of the requirements catalog, `REQ-<n>`, each a member of one outcome in data/catalog/outcomes.json (docs/governance/ieee/requirements-model.md). Empty by drydock RO-3's ruling (docs/governance/harbor-ro3-requirements-store.md, operator ruling 2026-10-21); no legacy REQ is migrated. No proof is held here: proof lives only in the ledger (decision 4). Shape: src/gzkit/schemas/catalog_reqs.json; read by gzkit/models/catalog.py; witnessed by `gz validate --catalog`.",
+      "_doc": "The requirements of the requirements catalog, `REQ-<n>`, one sequence for two specializations (docs/governance/ieee/requirements-model.md § 12; RP-12 ruling 45): a catalog requirement, marked \"specialization\": \"catalog\", is a member of one outcome in data/catalog/outcomes.json, admitted by RP-11's intake; a repair requirement, marked \"specialization\": \"repair\", is held on its repair package in data/catalog/work_packages.json and names the issue it answers, written only by `gz wp req new`. No legacy REQ is migrated (RO-3's ruling, 2026-10-21). No proof is held here: proof lives only in the ledger (decision 4). Shape: src/gzkit/schemas/catalog_reqs.json; read by gzkit/models/catalog.py; witnessed by `gz validate --catalog`.",
       "reqs": []
     },
     "catalog/externals.json": {

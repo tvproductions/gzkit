@@ -45,6 +45,7 @@ from ._qc_claim_populations import QC_CLAIM_POPULATIONS
 from ._qc_nc_entrypoints import (
     _ep_astral_discipline_deferred_annotations,
     _ep_catalog_orders,
+    _ep_catalog_repair_reqs,
     _ep_catalog_work_packages,
     _ep_model_class_only,
     _ep_supply_chain_audit,
@@ -1656,6 +1657,7 @@ def _nc_outcome(code: str, **fields: object) -> dict[str, object]:
 def _nc_req(req_id: str, member_of: str, **fields: object) -> dict[str, object]:
     base: dict[str, object] = {
         "id": req_id,
+        "specialization": "catalog",
         "member_of": member_of,
         "statement": "Negative control.",
         "criteria": [{"state_or_input": "s", "required_outcome": "o", "evidence": "e"}],
@@ -1724,6 +1726,45 @@ def _build_catalog_work_packages() -> Path:
         _nc_work_package("WP-03-b", 7),
         _nc_work_package("WP-04-ok", 8),
     ]
+    payload = json.dumps({"_doc": "Negative control.", "work_packages": packages})
+    _write(root / "data" / "catalog" / "work_packages.json", payload)
+    return root
+
+
+def _nc_repair_req(req_id: str, held_on: str, problem_report: int) -> dict[str, object]:
+    return {
+        "id": req_id,
+        "specialization": "repair",
+        "held_on": held_on,
+        "problem_report": problem_report,
+        "aligns_to": None,
+        "supersedes": None,
+        "statement": "Negative control.",
+        "criteria": [{"state_or_input": "s", "required_outcome": "o", "evidence": "e"}],
+        "kind": "SUPPORT",
+        "revision": 1,
+    }
+
+
+def _build_catalog_repair_reqs() -> Path:
+    """Plant a repair REQ on a delivery package and one naming an issue not carried (RP-12 O2).
+
+    REQ-3 is a repair REQ on its repair package answering an issue it carries, so a
+    finding naming it is a decoy firing.
+
+    Returns:
+        The project root.
+
+    """
+    reqs = [
+        _nc_repair_req("REQ-1", "WP-01-d", 7),
+        _nc_repair_req("REQ-2", "WP-02-r", 99),
+        _nc_repair_req("REQ-3", "WP-02-r", 7),
+    ]
+    root = _catalog_project("catalog-repair-reqs", [_nc_outcome("H1")], reqs)
+    delivery = {**_nc_work_package("WP-01-d", 0), "kind": "delivery", "outcome": "H1"}
+    delivery |= {"issues": [], "lane": None}
+    packages = [delivery, _nc_work_package("WP-02-r", 7)]
     payload = json.dumps({"_doc": "Negative control.", "work_packages": packages})
     _write(root / "data" / "catalog" / "work_packages.json", payload)
     return root
@@ -2474,6 +2515,12 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         _build_catalog_work_packages,
         _ep_catalog_work_packages,
         "Work package WP-01-nc (delivery) names outcome H9, which the catalog does not hold",
+    ),
+    (
+        "requirements-catalog-repair-reqs",
+        _build_catalog_repair_reqs,
+        _ep_catalog_repair_reqs,
+        "Repair REQ REQ-1 is held on WP-01-d, which is a delivery package",
     ),
     (
         "requirements-catalog-orders",

@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-05
 metadata:
-  skill-version: "0.9.0"
+  skill-version: "0.10.0"
 model: sonnet
 ---
 
@@ -140,6 +140,15 @@ unique within its package (rulings 43 to 49):
 
 ```bash
 uv run gz wp order new <WP-id> --slug <slug> --purpose "<what it restores>" [--alias O<n>]
+```
+
+A repair requirement is held on its open repair package and answers an issue the
+package carries; write it with the next `REQ-<n>` (rulings 45, 48). A change to
+its obligation is a new REQ carrying `--supersedes`, never an edit (ruling 31):
+
+```bash
+uv run gz wp req new <WP-id> --statement "<what must hold again>" \
+  --criterion "<state>|<outcome>|<evidence>" --kind BEHAVIOR --problem-report <n>
 ```
 
 Work outside the package's general scope is a new work package, never a change.

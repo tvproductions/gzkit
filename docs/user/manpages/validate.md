@@ -2604,7 +2604,7 @@ Validates the requirements catalog under `data/catalog/`, the store
 |------|-------|
 | `families.json` | The family legend, decision 8.3's eleven families in their product and common bands |
 | `outcomes.json` | Outcomes, each a member of one family (empty until RO-5's verbs author them) |
-| `reqs.json` | `REQ-<n>` requirements, each a member of one outcome (empty until RO-5's verbs author them) |
+| `reqs.json` | `REQ-<n>` requirements, one sequence, each marked `catalog` (a member of one outcome, empty until RP-11's intake authors one) or `repair` (held on its repair package, written by `gz wp req new`; RP-12 ruling 45) |
 | `externals.json` | The roster of external boundaries an outcome may depend on as `external:<slug>` (empty until one is needed) |
 | `delivery_events.json` | The forward rule's delivery event types and its cutover timestamp |
 | `work_packages.json` | `WP-<NN>-<slug>` work packages, delivery or repair, each with its formal work package and objective quality evidence (empty until RO-5's verbs author them; `docs/governance/harbor-ro5-work-packages.md`) |
@@ -2631,6 +2631,11 @@ The structure checks:
   alias is unique within its package and never shaped as an order's or a
   package's id (rulings 43, 49); it sits in a repair package `work_packages.json`
   holds, a delivery package keeping its five states until RP-14 (ruling 44).
+
+- a repair REQ is held on a repair package `work_packages.json` holds and names
+  a problem report that package carries; its `aligns_to` names a catalog REQ the
+  store holds; any REQ's `supersedes` names another REQ the store holds (RP-12
+  rulings 31, 45). The edge, coverage and BDD checks read catalog REQs only.
 
 A catalog missing a file fails as a tree defect, never an empty store (GHI
 #1067), and a reader of it is pointed at `uv run gz init`, whose repair mode

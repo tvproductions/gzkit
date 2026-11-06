@@ -3217,11 +3217,6 @@
       "count": 2
     },
     {
-      "file": "src/gzkit/catalog_ledger.py",
-      "rule": "TC001",
-      "count": 1
-    },
-    {
       "file": "src/gzkit/check_fingerprint.py",
       "rule": "DOC201",
       "count": 7
