@@ -193,8 +193,10 @@ def _delivery_errors(project_root: Path, hook_types: list[str]) -> list[Validati
     recording hook is emitted as an advisory rather than returned.
 
     Returns:
-        One finding per declared hook type missing from the hooks directory; empty outside a git
-        worktree.
+        One finding per declared non-recording hook type that is not delivered (no hook file, or a
+        file that is not the pre-commit shim); empty outside a git worktree. An undelivered
+        recording hook (``prepare-commit-msg``, ``post-commit``) is emitted as an advisory and never
+        returned.
 
     """
     hooks_dir = _effective_hooks_dir(project_root)

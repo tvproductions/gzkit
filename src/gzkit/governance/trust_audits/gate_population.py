@@ -262,8 +262,9 @@ def audit_gate_population_enrollment(
     the silence this inventory exists to break.
 
     Returns:
-        Findings for unclaimed undisclosed members and stale disclosures, or a single error when the
-        accepted list fails to load or either population is empty.
+        Findings for unclaimed undisclosed members and for disclosures that are stale, dead or
+        missing a member or reason; or a single error when the accepted list fails to load or
+        either population is empty.
 
     """
     accepted, load_error = _load_accepted(project_root)

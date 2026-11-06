@@ -45,8 +45,8 @@ def audit_chores_layout(project_root: Path) -> list[ValidationError]:
     exempt explicitly-listed paths per trust-doctrine T2.
 
     Returns:
-        One finding per ``CHORE.md`` or ``acceptance.json`` outside the canonical roots and not
-        waived.
+        One finding per unwaived file of any name under ``ops/chores/``, and one per unwaived
+        ``CHORE.md`` or ``acceptance.json`` elsewhere outside the canonical roots.
 
     """
     from gzkit.config import GzkitConfig  # noqa: PLC0415
@@ -394,8 +394,8 @@ def audit_chore_rung_conformance(project_root: Path) -> list[ValidationError]:
     skipped here.
 
     Returns:
-        One finding per workflow step beyond a chore's declared rung; empty when the registry cannot
-        be read.
+        One finding per registered chore with no class declaration and one per workflow step
+        beyond a chore's declared rung; empty when the registry cannot be read.
 
     """
     from gzkit.commands.chores_declaration import parse_chore_declaration  # noqa: PLC0415

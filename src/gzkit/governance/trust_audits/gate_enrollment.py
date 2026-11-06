@@ -206,8 +206,9 @@ def audit_gate_enrollment(
        run would be the silence this inventory exists to break.
 
     Returns:
-        Findings for unclaimed unaccepted scopes and stale entries, or a single error when the
-        accepted list fails to load or either population is empty.
+        Findings for unclaimed unaccepted scopes and for accepted entries that are stale, dead or
+        missing a scope or reason; or a single error when the accepted list fails to load or
+        either population is empty.
 
     """
     accepted, load_error = _load_accepted(project_root)

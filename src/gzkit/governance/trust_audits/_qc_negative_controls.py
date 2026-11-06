@@ -1549,7 +1549,7 @@ def _build_brief_size() -> Path:
     re-ruled bound.
 
     Returns:
-        Path of the fixture project root (four levels above the OBPI directory) holding the
+        Path of the fixture project root (five levels above the ``obpis`` directory) holding the
         over-bound live brief and its decoys.
 
     """
@@ -2528,7 +2528,7 @@ def _build_enforcement_floor() -> list:
     """Build a synthetic registry with one FACADE claim for the enforcement-floor NC.
 
     The meta-validator must detect the FACADE (facade_count > 0 = PASS for this NC).
-    If run_meta_validator is gutted to skip FACADE detection, this returns 0 = FACADE.
+    If run_meta_validator is gutted to skip FACADE detection, the entrypoint returns 0 = FACADE.
 
     Returns:
         A one-element list holding the FACADE ``EnforcementClaimRecord`` ``nc-probe``.

@@ -116,12 +116,14 @@ def audit_agents_md_map_conformance(project_root: Path) -> list[ValidationError]
     migrated to the registry.
 
     Returns hard-rejection ValidationErrors (type 'agents_md_map_conformance')
-    for criteria a/b/c/d, and advisory findings (type
+    for criteria a/b/c, and advisory findings (type
     'agents_md_map_conformance_advisory') for the per-bullet 3-line heuristic
-    in binding-rule sections of the template.
+    in binding-rule sections of the template. Criterion d (budget) is advisory
+    until 1.0 and reports on stderr only, never as a finding.
 
     Returns:
-        The map-conformance findings across the template and rendered AGENTS.md.
+        The template's criteria (a)-(c) findings and per-bullet advisory findings; empty when
+        the template is absent or clean (the rendered file's budget never adds a finding).
 
     """
     config = _load_budget_config(project_root)

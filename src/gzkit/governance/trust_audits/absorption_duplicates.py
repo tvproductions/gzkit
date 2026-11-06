@@ -92,8 +92,8 @@ def audit_absorption_duplicates(project_root: Path) -> list[ValidationError]:
     frontmatter — the pair is then mutually waived.
 
     Returns:
-        One finding per unwaived source path absorbed under more than one parent ADR; empty when the
-        ADR root is absent.
+        One finding per unwaived brief whose source path is absorbed under more than one parent
+        ADR; empty when the ADR root is absent.
 
     """
     errors: list[ValidationError] = []

@@ -68,7 +68,8 @@ def _waiver_owned(project_root: Path, data_root: Path) -> set[str]:
     here and put one file under two owners.
 
     Returns:
-        File names of the data files the waiver-ratchet registry's surfaces register.
+        File names under *data_root* matching a waiver glob, plus the names of the data files
+        the waiver-ratchet registry's surfaces declare.
 
     """
     owned: set[str] = set()
@@ -170,7 +171,8 @@ def audit_config_registry(project_root: Path) -> list[ValidationError]:
     Returns one ``ValidationError`` per finding (non-empty → caller exits 3).
 
     Returns:
-        Findings for undeclared, phantom, unowned or asymmetric registries, or a single error when
+        Findings for phantom, unowned, asymmetric or undeclared registries together with the
+        derivation, module-constant and direct-data-reach audit findings, or a single error when
         the config registry is missing or unparseable.
 
     """

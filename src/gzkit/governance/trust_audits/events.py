@@ -386,8 +386,8 @@ def audit_event_schemas(project_root: Path) -> list[ValidationError]:
     handler audit closes on the graph side.
 
     Returns:
-        One finding per emitted event type absent from ``schemas/ledger.json``; empty when a source
-        or the schema is missing.
+        One finding per emitted event type absent from ``schemas/ledger.json`` and one per schema
+        event no producer emits; empty when a source or the schema is missing.
 
     """
     ledger_events = project_root / "src" / "gzkit" / "ledger_events.py"
@@ -754,8 +754,8 @@ def _payload_keys(module: ast.Module, scope: _Function, extra: ast.expr | None) 
     it had looked, not that there was nothing there.
 
     Returns:
-        The literal payload keys traced through a dict literal, helper return or named-dict
-        mutations; empty when *extra* is none of these.
+        The literal payload keys traced through a dict literal, a helper return, or a named dict
+        (its mutations and the keys callers bind to it as a parameter); empty otherwise.
 
     """
     if isinstance(extra, ast.Dict):

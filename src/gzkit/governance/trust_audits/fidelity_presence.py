@@ -100,7 +100,9 @@ def audit_fidelity_presence(
     ``data/fidelity_presence_grandfather.json``.
 
     Returns:
-        One finding per ungrandfathered ADR Decision without a parseable Fidelity Assertions block.
+        One finding per ungrandfathered ADR Decision: ``fidelity-presence`` when it has no
+        parseable Fidelity Assertions block, ``fidelity-self-reference`` when the block carries a
+        self-referential row. Empty when every Decision passes.
 
     """
     gf = frozenset(grandfather) if grandfather is not None else _load_grandfather(project_root)

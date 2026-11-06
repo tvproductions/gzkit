@@ -258,8 +258,9 @@ def audit_orientation_freshness(project_root: Path) -> list[ValidationError]:
     ``uv run gz agent sync control-surfaces`` if the hook drifted.
 
     Returns:
-        Findings for missing SessionStart wiring or a missing heading or reference in the
-        orientation script; empty when the backstop is intact.
+        Findings for missing SessionStart wiring, a Codex hook not run through ``uv run`` with a
+        project-local cache, a missing orientation script, or a missing heading or reference in
+        it; empty when the backstop is intact.
 
     """
     errors: list[ValidationError] = []

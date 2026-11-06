@@ -34,8 +34,9 @@ def validate_intrinsic_attestation(project_root: Path) -> list[ValidationError]:
     ``crossing_value``.
 
     Returns:
-        One finding per malformed intrinsic-complexity-attestation event; empty when the ledger is
-        absent.
+        One finding per defect in each intrinsic-complexity-attestation event (missing or empty
+        required field, unknown ``crossing_band``, non-numeric ``crossing_value``); empty when the
+        ledger is absent.
 
     """
     ledger_path = project_root / ".gzkit" / "ledger.jsonl"

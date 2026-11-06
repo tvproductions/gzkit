@@ -138,7 +138,8 @@ def audit_class_size(project_root: Path) -> list[ValidationError]:
     Waivers are explicit in ``_CLASS_SIZE_WAIVERS`` and carry a rationale.
 
     Returns:
-        One finding per unwaived class over 300 lines; empty when ``src/gzkit`` is absent.
+        One finding per unwaived class over 300 lines and one per stale waiver naming no extant
+        class; empty when ``src/gzkit`` is absent.
 
     """
     src_root = project_root / "src" / "gzkit"

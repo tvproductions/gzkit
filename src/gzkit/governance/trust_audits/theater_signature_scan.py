@@ -206,8 +206,8 @@ def _is_clean_early_return(stmt: ast.stmt) -> bool:
     Matches ``return []`` / ``0`` / ``None`` / ``True``.
 
     Returns:
-        True for a bare return or one returning ``[]``, ``0``, ``None`` or ``True``; False
-        otherwise.
+        True for a bare return, ``return []``, or a constant equal to ``0``, ``None`` or ``True``
+        (so ``False`` and ``1`` match as well, by equality); False otherwise.
 
     """
     if not isinstance(stmt, ast.Return):

@@ -42,8 +42,9 @@ def is_placeholder_body(text: str) -> bool:
     entirely of scaffolding fails.
 
     Returns:
-        True when the text is empty, a known placeholder, or nothing but bracketed prompts and
-        template tokens; False when it carries authored content.
+        True when the text is empty, a known placeholder, contains a ``paste`` or
+        ``one-sentence`` prompt marker anywhere, or is nothing but comments, bracketed prompts
+        and template tokens; False otherwise.
 
     """
     clean = text.strip().lower()

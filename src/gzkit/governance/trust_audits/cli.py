@@ -261,7 +261,8 @@ def audit_cli_alignment(project_root: Path) -> list[ValidationError]:
     leaf verb resolve; unregistered intermediate verbs fail closed.
 
     Returns:
-        One finding per ``gz <verb>`` reference that resolves to no registered parser verb.
+        The ``audit_lifecycle_pointers`` findings, then one finding per ``gz <verb>`` chain that
+        resolves to no registered parser verb.
 
     """
     from gzkit.governance.trust_audits.lifecycle_pointers import (  # noqa: PLC0415
@@ -641,8 +642,9 @@ def audit_skill_alignment(project_root: Path) -> list[ValidationError]:
     ``.gzkit/rules/tool-skill-runbook-alignment.md``.
 
     Returns:
-        One finding per registered, unwaived verb no skill references; empty when the skills root is
-        absent.
+        One finding per registered, unwaived verb no skill references, per deprecated verb a
+        skill still wraps, and per stale ``_NO_SKILL_VERBS`` waiver; empty when the skills root
+        is absent.
 
     """
     skills_root = project_root / ".gzkit" / "skills"

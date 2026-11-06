@@ -72,7 +72,8 @@ def validate_brief_reconcile(root: Path) -> list[ValidationError]:
     (type='brief_reconcile', routed to exit 3 via _POLICY_BREACH_ERROR_TYPES).
 
     Returns:
-        One finding per structured brief whose reconcile reports drift.
+        One finding per drifted dimension of each structured brief, plus one finding per
+        structured brief that could not be reconciled.
 
     """
     errors: list[ValidationError] = []

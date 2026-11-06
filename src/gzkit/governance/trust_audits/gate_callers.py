@@ -260,8 +260,9 @@ def audit_gate_callers(
        gate exists to break.
 
     Returns:
-        Findings for uncalled unaccepted gates and stale acceptances, or a single load or membership
-        error.
+        Findings for uncalled unaccepted gates, accepted entries with no gate id or no reason, and
+        accepted gates that now have a caller or no longer exist; or a single error when the
+        accepted list fails to load or the membership declaration is unreadable.
 
     """
     accepted, load_error = _load_accepted(project_root)

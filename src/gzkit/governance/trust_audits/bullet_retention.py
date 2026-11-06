@@ -247,9 +247,9 @@ def _resolve_population(project_root: Path) -> tuple[list[_Resolved], list[Valid
     for section ownership and carry no advisory scorecard.
 
     Returns:
-        ``(resolved rows, errors)``: no rows with the absent-scorecard or undecodable error when the
-        scorecard is unusable, legacy rows unsourced when nothing maps, otherwise each row with its
-        classifying surface.
+        ``(resolved rows, errors)``: no rows when the scorecard is absent (with the absent-scorecard
+        findings only when identities are pinned) or undecodable (with that finding); legacy rows
+        unsourced when nothing maps; otherwise each row with its classifying surface.
 
     """
     scorecard = project_root / _SCORECARD_PATH
@@ -377,8 +377,9 @@ def _pinned_identity_errors(project_root: Path, rows: list[_Row]) -> list[Valida
     reader: an identity pinned there and no longer read is named.
 
     Returns:
-        Identity findings for pinned rows the audit did not read, or an unreadable-pin finding;
-        empty when every pinned identity is present.
+        An unreadable-pin finding; otherwise up to two identity findings, one for pinned rows the
+        audit no longer reads and one for read rows that are not pinned; empty when the two sets
+        agree.
 
     """
     pinned_path = registry_path(project_root, _PINNED_IDENTITIES).relative_to(project_root)

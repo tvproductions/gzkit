@@ -105,7 +105,8 @@ def _check_theater_signatures(step: QCStep) -> list[ValidationError]:
     Unknown flags are noted but not treated as canonical.
 
     Returns:
-        One finding per theater flag on *step*; empty when it has none.
+        One finding per canonical theater signature among *step*'s flags; empty when it carries
+        none (unknown flags produce no finding).
 
     """
     errors: list[ValidationError] = []

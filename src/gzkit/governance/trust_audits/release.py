@@ -343,7 +343,7 @@ def _undocumented_tag_errors(project_root: Path) -> list[ValidationError]:
 
     Returns:
         One finding per strict release tag with no ``RELEASE_NOTES.md`` entry; empty when the notes
-        document no release.
+        document no release or the local tag set cannot be read.
 
     """
     documented = set(_documented_versions(project_root))
@@ -601,8 +601,9 @@ def _ruff_selection(project_root: Path) -> tuple[list[str], list[str]] | None:
     reports nothing rather than inventing a verdict from a default it guessed.
 
     Returns:
-        The ``(select, ignore)`` code lists, or None when ``pyproject.toml`` is absent or unreadable
-        or the lint selection is malformed.
+        The ``(select, ignore)`` code lists, or None when ``pyproject.toml`` is absent or
+        unreadable, the lint selection is malformed, or a rule name in it cannot be resolved to a
+        code.
 
     """
     path = project_root / "pyproject.toml"
@@ -772,8 +773,8 @@ def _unreachable_ruff_claim_errors(
       the code when narrating one — row 44 does, and it is the clearer prose.
 
     Returns:
-        One finding per Mechanical-row ruff code or family that ruff would not run; empty when the
-        ruff selection cannot be read.
+        One finding per Mechanical row that cites ruff, naming every code or family it cites that
+        ruff would not run; empty when the ruff selection cannot be read.
 
     """
     selection = _ruff_selection(project_root)

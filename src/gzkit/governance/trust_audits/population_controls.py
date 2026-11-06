@@ -78,8 +78,9 @@ def audit_population_controls(
     to break. Non-empty → the scope exits 3.
 
     Returns:
-        Findings for undeclared unaccepted claims and stale acceptances, or a single error when the
-        accepted list fails to load or the registry is empty.
+        Findings for undeclared unaccepted claims and for accepted claims that have since declared
+        or are no longer registered; or a single error when the accepted list fails to load or
+        the registry is empty.
 
     """
     accepted, load_error = _load_accepted(project_root)

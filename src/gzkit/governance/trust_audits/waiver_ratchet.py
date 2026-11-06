@@ -368,8 +368,9 @@ def audit_waiver_ratchet(
     deterministic tests.
 
     Returns:
-        Findings for registered waiver surfaces lacking or violating their honesty mechanism, or a
-        single error when the registry is missing or unparseable.
+        Findings for registered waiver surfaces lacking or violating their honesty mechanism, an
+        unreadable declared identity baseline, and on-disk waiver files absent from the registry;
+        or a single error when the registry is missing or unparseable.
 
     """
     clock = today if today is not None else date.today()

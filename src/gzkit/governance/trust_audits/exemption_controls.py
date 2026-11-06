@@ -157,8 +157,10 @@ def audit_exemption_controls(
        and a green run would be the silence this gate exists to break.
 
     Returns:
-        Findings for undeclared unaccepted claims and stale acceptances, or a single error when the
-        accepted list fails to load or the registry is empty.
+        Findings for undeclared unaccepted claims, exemptions naming an unregistered control,
+        accepted entries with no claim id, and accepted claims that have since declared or no
+        longer exist; or a single error when the accepted list fails to load or the registry is
+        empty. Empty when every claim is declared or accepted.
 
     """
     accepted, load_error = _load_accepted(project_root)

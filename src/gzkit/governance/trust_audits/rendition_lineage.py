@@ -518,8 +518,9 @@ def validate_rendition_lineage(
     the coverage figure, never as a finding (operator ruling 2026-09-11).
 
     Returns:
-        One finding per lineage problem across committed renditions; empty when
-        ``.gzkit/renditions`` is absent.
+        One finding per lineage problem across committed renditions in fail-closed mode; empty in
+        warn mode (each problem is emitted as a stderr advisory instead), when
+        ``.gzkit/renditions`` is absent, or when no graded rendition has a problem.
 
     """
     closed = (

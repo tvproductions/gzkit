@@ -50,7 +50,7 @@ _CLUSTER_ADR_PREFIXES = (
 def _enumerate_in_scope_artifacts(project_root: Path) -> list[Path]:
     """Return cluster ADR bodies + OBPI briefs + complexity doctrine surfaces.
 
-    Includes complexity-doctrine.md and docs/governance/complexity/**/*.md
+    Includes complexity-doctrine.md and docs/governance/complexity/*.md
     (excluding distilled-characteristics-*).
 
     Returns:

@@ -73,8 +73,9 @@ def validate_rendition_floor_coherence(
     (bootstrap-safe).
 
     Returns:
-        One finding per committed rendition missing its surface's invariant floor; empty when
-        ``.gzkit/renditions`` is absent.
+        In fail-closed mode, one finding per graded rendition missing its surface's invariant
+        floor; empty in warn mode (the misses go to advisories), when ``.gzkit/renditions`` is
+        absent, or when every floor holds.
 
     """
     closed = (

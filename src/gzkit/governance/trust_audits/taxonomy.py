@@ -178,8 +178,8 @@ def audit_pool_interview_schema(project_root: Path) -> list[ValidationError]:
     with no guard left behind. Never mutates files.
 
     Returns:
-        One finding per schema problem in a pool ADR interview record; empty when the pool directory
-        is absent.
+        One finding per schema problem in a pool ADR interview record, plus one per record that
+        cannot be read; empty when the pool directory is absent.
 
     """
     from gzkit.interview import (  # noqa: PLC0415 — lazy: avoids a CLI-layer import cycle
@@ -543,8 +543,9 @@ def audit_foundation_closure(project_root: Path) -> list[ValidationError]:
     files.
 
     Returns:
-        Findings for foundation-roster membership drift, non-terminal members and members with no
-        attested grandfather event.
+        Findings for on-disk foundations absent from the manifest, manifest entries with no on-disk
+        package, and non-terminal members (declared and on disk, with no attested grandfather
+        event).
 
     """
     on_disk = _on_disk_foundation_ids(project_root)

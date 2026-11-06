@@ -202,7 +202,7 @@ from gzkit.governance.trust_audits.wheel_path_literals import audit_wheel_path_l
 
 
 def validate_surface_fidelity(project_root: Path) -> list[ValidationError]:
-    """Composite: run all four surface-fidelity invariants in declared order.
+    """Composite: run the three live surface-fidelity invariants in declared order.
 
     Invokes validate_bullet_retention, validate_surface_weight and
     validate_pointer_integrity in that order and aggregates their
@@ -213,7 +213,7 @@ def validate_surface_fidelity(project_root: Path) -> list[ValidationError]:
     ADR-0.0.33 § Amendment (2026-07-25).
 
     Returns:
-        The findings of the four invariants, concatenated in declared order.
+        The findings of the three live invariants, concatenated in declared order.
 
     """
     errors: list[ValidationError] = []

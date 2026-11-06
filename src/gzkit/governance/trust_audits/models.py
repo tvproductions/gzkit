@@ -71,8 +71,8 @@ def audit_pydantic_models(project_root: Path) -> list[ValidationError]:
     Rule 26: every ``BaseModel`` subclass declares ``model_config = ConfigDict(...)``.
 
     Returns:
-        One finding per stdlib dataclass or BaseModel without ConfigDict; empty when ``src/gzkit``
-        is absent.
+        One finding per stdlib dataclass or BaseModel without ConfigDict, plus one per dataclass
+        waiver naming a class that no longer exists; empty when ``src/gzkit`` is absent.
 
     """
     src_root = project_root / "src" / "gzkit"

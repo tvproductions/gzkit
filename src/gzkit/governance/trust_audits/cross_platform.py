@@ -645,7 +645,8 @@ def audit_generated_surface_newlines(project_root: Path) -> list[ValidationError
     ``tests/governance/test_generated_surface_line_endings.py``.
 
     Returns:
-        One finding per generated-surface writer that does not pin the newline.
+        One finding per text write in a surface-writer module that does not pin ``newline=``,
+        and one per surface-writer module that is unreadable or unparseable.
 
     """
     errors: list[ValidationError] = []

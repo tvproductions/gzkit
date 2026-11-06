@@ -104,8 +104,8 @@ def _audit_pointers(project_root: Path) -> list[ValidationError]:
     and is not backfilled.
 
     Returns:
-        One ``insights_shape`` finding per insight whose fingerprint disagrees with its ledger
-        pointer.
+        One ``insights_shape`` finding per ledger pointer whose record the store no longer has or
+        whose record differs from the fingerprint the pointer carries.
 
     """
     from gzkit.insights.ledger_ref import insight_lines_by_ts, insight_sha256  # noqa: PLC0415

@@ -383,7 +383,8 @@ def validate_closeout_proof(
     Never reads from a stored proof artifact (Boundary Invariant 2).
 
     Returns:
-        Proof findings across the in-closeout ADRs (or *adr_id* alone); empty when there is no
+        Proof findings across the in-closeout ADRs (or *adr_id* alone), plus a fail-close finding
+        for an unreadable ceremony or brief when *adr_id* is given; empty when there is no
         ceremonies directory.
 
     """
