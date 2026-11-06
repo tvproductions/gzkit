@@ -32,6 +32,11 @@ def _build_env() -> jinja2.Environment:
     Uses FileSystemLoader so the environment is resilient to editable-install
     and wheel layouts. The templates directory is resolved relative to the
     gzkit/content package location.
+
+    Returns:
+        A Jinja2 environment loading the templates directory with strict undefined handling and no
+        autoescaping.
+
     """
     try:
         # importlib.resources.files resolves the package root correctly in
@@ -98,6 +103,10 @@ def render(
     The per-temperature model projection was retired (OBPI-0.0.37-27, proven inert);
     *temperature* is validated for fail-closed routing parity but no longer filters
     the model. Output is byte-identical across all valid temperatures.
+
+    Returns:
+        The rendered template as UTF-8 bytes.
+
     """
     if temperature not in _VALID_TEMPERATURES:
         raise ValueError(

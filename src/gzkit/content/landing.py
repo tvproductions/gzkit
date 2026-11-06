@@ -112,6 +112,10 @@ def artifact_relpath(surface: str, consumer: str, kind: ArtifactKind) -> str:
     Agrees with ``rendition_path``/``fingerprint_path``/``lineage_path``/
     ``retention_path`` -- pinned by a test, so the journal can never name a
     file the loaders and gates do not read.
+
+    Returns:
+        The POSIX path of the consumer's artifact under the surface's rendition directory.
+
     """
     return (surface_rendition_dir(surface) / f"{consumer}{_ARTIFACT_SUFFIX[kind]}").as_posix()
 
@@ -133,6 +137,10 @@ def lineage_bytes(lineage: ConsumerLineage) -> bytes:
     and UTF-8 encoded -- the form the lineage loaders and gates read. Replicated
     rather than called because ``save_candidate_lineage`` writes to the STAGED
     path; byte equality with it is pinned by a test.
+
+    Returns:
+        The lineage's section map as indented JSON, LF-terminated and UTF-8 encoded.
+
     """
     document = {
         section_id: section.model_dump(mode="json")
@@ -246,6 +254,10 @@ class ConsumerPlan(BaseModel):
         A removal (``new_sha256`` None) or a consumer with no retention target
         carries no payload. A publishing target without a payload is allowed:
         the ``rendition_landed`` manifest that status reads carries hashes only.
+
+        Returns:
+            This ConsumerPlan, unchanged, once its retention payload checks out.
+
         """
         if self.retention_payload is None:
             return self
@@ -524,6 +536,11 @@ def _resolve_attestation(
     current fingerprint, a rendition fingerprint equal to the committed bytes'
     hash, and one shared attestor and text. Missing or corrupt evidence is never
     proof that canon is unchanged.
+
+    Returns:
+        ``(attestor, attestation_text, reused)``: the explicit values with ``reused`` False, or the
+        committed evidence's values with ``reused`` True.
+
     """
     if attestor.strip() and attestation_text.strip():
         return attestor, attestation_text, False
@@ -595,6 +612,10 @@ def _bind_retention_maps(
     ``gz content commit``. A map naming another surface or no routed consumer
     fails the retention gate's own map-target binding (exit 3, like commit's
     ``check_map_target``): it accounts for no landed consumer's removal.
+
+    Returns:
+        Mapping of consumer to the retention-map path bound to it.
+
     """
     bound: dict[str, str] = {}
     for map_path in retention_maps:
@@ -647,6 +668,10 @@ def _retention_gate(
     Calls ``enforce_retention`` -- the complete gate, never ``validate_retention``
     alone -- against THIS invocation's raw attestation text, never a reused one.
     Returns the validated map to publish, or ``None`` when no block was removed.
+
+    Returns:
+        The validated retention map to publish, or None when no block was removed.
+
     """
     # Deferred: commit.py is a command module that imports this layer's peers.
     from gzkit.commands.content.commit import enforce_retention  # noqa: PLC0415
@@ -816,6 +841,9 @@ def prepare_landing(
     is resolved (Requirement 5); each candidate passes the retention gate; every
     artifact's bytes are built with ONE shared ``landing_id``.
 
+    Returns:
+        LandingPlan carrying the prepared journal, each artifact's payload bytes and any notes.
+
     Raises:
         LandingRefusal: on any refusal; nothing has been written.
 
@@ -871,6 +899,9 @@ def staging_path(root: Path, surface: str, landing_id: str) -> Path:
 
 def load_journal(root: Path, surface: str) -> LandingJournal | None:
     """Load *surface*'s active landing journal, or ``None`` when no landing is in flight.
+
+    Returns:
+        The active landing journal, or None when no landing is in flight.
 
     Raises:
         LandingRefusal: exit 1 when the journal is unreadable or malformed --
@@ -1100,6 +1131,10 @@ def _publish(root: Path, journal: LandingJournal, staging: Path) -> LandingJourn
 
     Residual: a write in the instant between the hash read and the replacement is not detected.
     Other gz landings are excluded by the surface lock.
+
+    Returns:
+        The journal with every consumer's publication progress recorded.
+
     """
     journal = journal.model_copy(update={"phase": "publishing"})
     _write_journal(root, journal)
@@ -1248,6 +1283,9 @@ def publish_landing(root: Path, plan: LandingPlan) -> LandingJournal:
     failure keeps the journal, exit 2); verify every hash, sidecar and lineage
     (a mismatch keeps the journal, exit 2); then :func:`complete_landing`.
 
+    Returns:
+        The completed landing journal.
+
     Raises:
         LandingRefusal: on any refusal or incomplete publication.
 
@@ -1267,6 +1305,10 @@ def _finish(root: Path, journal: LandingJournal, staging: Path) -> LandingJourna
 
     Publication skips every artifact already at its new hash, so a resumed
     landing never rewrites a verified file; completion is idempotent by event id.
+
+    Returns:
+        The journal in phase ``complete``.
+
     """
     try:
         journal = _publish(root, journal, staging)
@@ -1293,6 +1335,10 @@ def _resume_problems(
     Drift -- moved inputs or a file at neither recorded hash -- always refuses.
     Missing or altered staged bytes are recoverable only in phase ``prepared``
     with nothing published (see :func:`_restage_prepared`).
+
+    Returns:
+        ``(drift, staging)``: the drift reasons that always refuse and the staged-byte problems.
+
     """
     try:
         problems = _input_drift(root, journal)
@@ -1336,6 +1382,10 @@ def _regenerate_payloads(root: Path, journal: LandingJournal) -> dict[str, bytes
     reviewed text, recorded in the journal at preparation, is reused. Every
     payload must hash to the journal's ``new_sha256``, or the landing refuses
     (exit 1).
+
+    Returns:
+        Mapping of artifact path to its regenerated payload bytes.
+
     """
     corpus = load_corpus(root, journal.surface)
     frame = _Frame(
@@ -1414,6 +1464,9 @@ def resume_landing(root: Path, surface: str) -> LandingJournal:
     whose bytes are regenerated from the journal's recorded values and must
     reproduce its manifest exactly. Then it continues through the same
     publication path a fresh landing uses.
+
+    Returns:
+        The completed landing journal.
 
     Raises:
         LandingRefusal: on a missing, malformed or unresumable landing, or an
@@ -1640,6 +1693,10 @@ def landing_status(root: Path, surface: str, landing_id: str) -> LandingStatus:
     sidecar names the new corpus fingerprint and this landing, ``old`` when
     every artifact hashes to its old entry, and ``indeterminate`` otherwise.
     Takes no lock, writes nothing, emits nothing, and never reads an mtime.
+
+    Returns:
+        LandingStatus with the landing's phase, source, corpus fingerprint and each consumer's
+        classification.
 
     Raises:
         LandingRefusal: exit 1 for an unknown landing or a malformed record.

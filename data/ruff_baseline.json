@@ -7008,11 +7008,6 @@
     },
     {
       "file": "src/gzkit/content/composer.py",
-      "rule": "DOC201",
-      "count": 9
-    },
-    {
-      "file": "src/gzkit/content/composer.py",
       "rule": "DOC501",
       "count": 7
     },
@@ -7053,18 +7048,8 @@
     },
     {
       "file": "src/gzkit/content/corpus_store.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/content/corpus_store.py",
       "rule": "DOC501",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/content/landing.py",
-      "rule": "DOC201",
-      "count": 15
     },
     {
       "file": "src/gzkit/content/landing.py",
@@ -7118,11 +7103,6 @@
     },
     {
       "file": "src/gzkit/content/lineage.py",
-      "rule": "DOC201",
-      "count": 4
-    },
-    {
-      "file": "src/gzkit/content/lineage.py",
       "rule": "TC003",
       "count": 1
     },
@@ -7160,11 +7140,6 @@
       "file": "src/gzkit/content/models/chore.py",
       "rule": "TRY003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/content/models/corpus.py",
-      "rule": "DOC201",
-      "count": 9
     },
     {
       "file": "src/gzkit/content/models/corpus.py",
@@ -7243,11 +7218,6 @@
     },
     {
       "file": "src/gzkit/content/ownership.py",
-      "rule": "DOC201",
-      "count": 28
-    },
-    {
-      "file": "src/gzkit/content/ownership.py",
       "rule": "DOC501",
       "count": 16
     },
@@ -7280,11 +7250,6 @@
       "file": "src/gzkit/content/ownership.py",
       "rule": "TRY003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/content/parse/markdown_parser.py",
-      "rule": "DOC201",
-      "count": 13
     },
     {
       "file": "src/gzkit/content/parse/markdown_parser.py",
@@ -7328,11 +7293,6 @@
     },
     {
       "file": "src/gzkit/content/render/pipeline.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/content/render/pipeline.py",
       "rule": "DOC501",
       "count": 2
     },
@@ -7358,18 +7318,8 @@
     },
     {
       "file": "src/gzkit/content/rendition.py",
-      "rule": "DOC201",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/content/rendition.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/content/rendition_store.py",
-      "rule": "DOC201",
-      "count": 7
     },
     {
       "file": "src/gzkit/content/rendition_store.py",
@@ -7408,11 +7358,6 @@
     },
     {
       "file": "src/gzkit/content/retention.py",
-      "rule": "DOC201",
-      "count": 14
-    },
-    {
-      "file": "src/gzkit/content/retention.py",
       "rule": "PERF401",
       "count": 1
     },
@@ -7424,11 +7369,6 @@
     {
       "file": "src/gzkit/content/retention.py",
       "rule": "TC003",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/content/tier_policy.py",
-      "rule": "DOC201",
       "count": 1
     },
     {
@@ -7465,11 +7405,6 @@
       "file": "src/gzkit/content/validation/hooks.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/content/vendors.py",
-      "rule": "DOC201",
-      "count": 7
     },
     {
       "file": "src/gzkit/content/vendors.py",
@@ -9808,11 +9743,6 @@
     },
     {
       "file": "src/gzkit/handoff_api.py",
-      "rule": "DOC201",
-      "count": 27
-    },
-    {
-      "file": "src/gzkit/handoff_api.py",
       "rule": "DOC501",
       "count": 2
     },
@@ -10513,11 +10443,6 @@
     },
     {
       "file": "src/gzkit/ledger.py",
-      "rule": "DOC201",
-      "count": 19
-    },
-    {
-      "file": "src/gzkit/ledger.py",
       "rule": "DOC501",
       "count": 1
     },
@@ -10550,11 +10475,6 @@
       "file": "src/gzkit/ledger_corrections.py",
       "rule": "FURB162",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/ledger_events.py",
-      "rule": "DOC201",
-      "count": 41
     },
     {
       "file": "src/gzkit/ledger_events.py",
@@ -11128,11 +11048,6 @@
     },
     {
       "file": "src/gzkit/pipeline_dispatch.py",
-      "rule": "DOC201",
-      "count": 15
-    },
-    {
-      "file": "src/gzkit/pipeline_dispatch.py",
       "rule": "FBT003",
       "count": 1
     },
@@ -11160,11 +11075,6 @@
       "file": "src/gzkit/pipeline_dispatch.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/pipeline_markers.py",
-      "rule": "DOC201",
-      "count": 17
     },
     {
       "file": "src/gzkit/pipeline_markers.py",
@@ -11198,11 +11108,6 @@
     },
     {
       "file": "src/gzkit/pipeline_position.py",
-      "rule": "DOC201",
-      "count": 19
-    },
-    {
-      "file": "src/gzkit/pipeline_position.py",
       "rule": "FBT003",
       "count": 2
     },
@@ -11228,11 +11133,6 @@
     },
     {
       "file": "src/gzkit/pipeline_procedure.py",
-      "rule": "DOC201",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/pipeline_procedure.py",
       "rule": "EM101",
       "count": 1
     },
@@ -11240,11 +11140,6 @@
       "file": "src/gzkit/pipeline_procedure.py",
       "rule": "N818",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/pipeline_runtime.py",
-      "rule": "DOC201",
-      "count": 13
     },
     {
       "file": "src/gzkit/pipeline_runtime.py",
@@ -11303,18 +11198,8 @@
     },
     {
       "file": "src/gzkit/pipeline_stage_fence.py",
-      "rule": "DOC201",
-      "count": 3
-    },
-    {
-      "file": "src/gzkit/pipeline_stage_fence.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/pipeline_verification.py",
-      "rule": "DOC201",
-      "count": 11
     },
     {
       "file": "src/gzkit/pipeline_verification.py",
@@ -11340,11 +11225,6 @@
       "file": "src/gzkit/quality.py",
       "rule": "ARG001",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/quality.py",
-      "rule": "DOC201",
-      "count": 91
     },
     {
       "file": "src/gzkit/quality.py",
@@ -12430,11 +12310,6 @@
       "file": "src/gzkit/verb_references.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/verifier_pipe_gate.py",
-      "rule": "DOC201",
-      "count": 19
     },
     {
       "file": "src/gzkit/verifier_pipe_gate.py",

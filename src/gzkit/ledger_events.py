@@ -32,6 +32,10 @@ def _timestamped_id(prefix: str) -> str:
     write, so an id's instant and its row's ``ts`` differ by the microseconds
     between building a row and committing it. Nothing parses an instant back out
     of an id; readers order rows by ``ts``.
+
+    Returns:
+        ``<prefix>-<ISO-8601 UTC timestamp>``.
+
     """
     return f"{prefix}-{datetime.now(UTC).isoformat()}"
 
@@ -79,6 +83,10 @@ def acceptance_recorded_event(
 
     The typed envelope validates the record kind before the ledger writer sees
     it. Contract/proof/review payload validation belongs to the acceptance store.
+
+    Returns:
+        The ``acceptance_recorded`` LedgerEvent, keyed by ``obpi_id``.
+
     """
     from gzkit.events import AcceptanceRecordedEvent
 
@@ -98,6 +106,10 @@ def obpi_withdrawn_event(obpi_id: str, parent: str, reason: str, attestor: str =
     enforced non-empty at the CLI boundary (``obpi_withdraw_cmd``); the default
     keeps this lower-level factory usable by fixtures and status/reconciliation
     call sites that construct withdrawal events without a witness context.
+
+    Returns:
+        The ``obpi_withdrawn`` LedgerEvent, keyed by ``obpi_id``.
+
     """
     return LedgerEvent(
         event="obpi_withdrawn",
@@ -136,6 +148,10 @@ def obpi_parked_event(
     id the parent ADR became, so a parked OBPI's lineage still resolves after the
     rename — the property the GHI #520 demotion destroyed by emitting no child
     event at all.
+
+    Returns:
+        The ``obpi_parked`` LedgerEvent, keyed by ``obpi_id``.
+
     """
     return LedgerEvent(
         event="obpi_parked",
@@ -206,6 +222,10 @@ def ledger_event_corrected_event(
     validates nothing about its contents; building the row directly let an empty
     attestor and reason through the one constructor callers actually reach.
     Raises ``pydantic.ValidationError`` on an invalid correction.
+
+    Returns:
+        The ``ledger_event_corrected`` LedgerEvent, keyed by ``subject_id``.
+
     """
     from gzkit.events import LedgerEventCorrectedEvent
 
@@ -236,6 +256,10 @@ def security_floor_overridden_event(
     Witnesses an operator override of the completion security floor
     (``gz obpi complete --accept-security-floor``) so the override is
     auditable via ledger census rather than a console-only line.
+
+    Returns:
+        The ``security_floor_overridden`` LedgerEvent, keyed by ``obpi_id``.
+
     """
     return LedgerEvent(
         event="security_floor_overridden",
@@ -262,6 +286,10 @@ def obpi_blocked_on_operator_event(
     reader other than its author can discharge it, and a block naming no awaited
     action is a complaint rather than a state — the shape that let the incident
     run: four agents each re-derived that a human was needed and none could say so.
+
+    Returns:
+        The ``obpi_blocked_on_operator`` LedgerEvent, keyed by ``obpi_id``.
+
     """
     return LedgerEvent(
         event="obpi_blocked_on_operator",
@@ -282,6 +310,10 @@ def obpi_unblocked_event(
     The inverse of :func:`obpi_blocked_on_operator_event`. ``ruling`` carries the
     operator's decision verbatim per ``AGENTS.md`` § Attestation — the agent seats
     the operator's words, never rewrites them.
+
+    Returns:
+        The ``obpi_unblocked`` LedgerEvent, keyed by ``obpi_id``.
+
     """
     return LedgerEvent(
         event="obpi_unblocked",
@@ -303,6 +335,10 @@ def stage2_dispatch_recorded_event(
     One row per dispatched role. The channel credits a role from these rows and
     from nothing else, so the append-only ledger — not the disposable pipeline
     marker — is what a Stage-5 verdict traces to.
+
+    Returns:
+        The ``stage2_dispatch_recorded`` LedgerEvent, keyed by ``obpi_id``.
+
     """
     return LedgerEvent(
         event="stage2_dispatch_recorded",
@@ -322,6 +358,10 @@ def stage2_single_driver_declared_event(
     ``reason`` is required and non-empty for the same argument that makes the
     declaration permissible at all: declaring is compliant precisely because it
     is VISIBLE, and a declaration naming no reason discloses nothing.
+
+    Returns:
+        The ``stage2_single_driver_declared`` LedgerEvent, keyed by ``obpi_id``.
+
     """
     return LedgerEvent(
         event="stage2_single_driver_declared",
@@ -345,6 +385,10 @@ def obpi_superseded_event(
     ``CANONICAL_TRANSITIONS`` declares a ``human_attested`` witness
     requirement). No default: this is a brand-new event with no legacy
     positional callers to protect.
+
+    Returns:
+        The ``obpi_superseded`` LedgerEvent, keyed by ``obpi_id``.
+
     """
     return LedgerEvent(
         event="obpi_superseded",
@@ -377,6 +421,10 @@ def artifact_edited_event(
     (:mod:`gzkit.hooks.commit_ledger`, GHI #847) and names the SHA whose diff
     the row was derived from. Its absence marks a tool-locus row, so the two
     recorders stay distinguishable in the record they share.
+
+    Returns:
+        The ``artifact_edited`` LedgerEvent, keyed by ``path``.
+
     """
     extra: dict[str, Any] = {"path": path}
     if session:
@@ -531,6 +579,10 @@ def artifact_renamed_event(
     unattributed until ADR-0.34.0 OBPI-04: the only prior bulk demotion (GHI #520,
     2026-05-23) predates ``_TASK_ENVELOPE_ENFORCEMENT_EPOCH``, so the gap never
     surfaced. Optional because renames also occur outside any TASK envelope.
+
+    Returns:
+        The ``artifact_renamed`` LedgerEvent, keyed by ``old_id``.
+
     """
     extra: dict[str, Any] = {"new_id": new_id}
     if reason:
@@ -567,6 +619,10 @@ def foundation_grandfathered_event(
     fabrication path — a witnessless event that satisfies the SUPPORT gate. No
     default: this is a new event with no legacy positional callers to protect
     (same posture as ``obpi_superseded_event``).
+
+    Returns:
+        The ``foundation_grandfathered`` LedgerEvent, keyed by ``adr_id``.
+
     """
     if not attestor.strip():
         msg = (
@@ -647,6 +703,10 @@ def obpi_completion_uncovered_accept_event(
     """Create an event recording one accepted-uncovered REQ waiver (ADR-0.0.25-02).
 
     ``task_id`` attributes the waiver to a TASK (GHI #950).
+
+    Returns:
+        The ``obpi_completion_uncovered_accept`` LedgerEvent, keyed by ``obpi_id``.
+
     """
     extra: dict[str, Any] = {
         "obpi_id": obpi_id,
@@ -739,6 +799,10 @@ def obpi_lock_released_event(
     entry that authorized the surrender (token-block discipline, ADR-0.0.41).
     Optional in OBPI-02 (additive, backward-compatible); OBPI-03 will require
     it at every emission site.
+
+    Returns:
+        The ``obpi_lock_released`` LedgerEvent, keyed by ``obpi_id``.
+
     """
     extra: dict[str, object] = {"agent": agent, "force": force}
     if handoff_path is not None:
@@ -760,6 +824,10 @@ def obpi_lock_ttl_warning_event(
 
     Emitted by the SessionStart hook when a held lock has crossed 50% of its
     TTL but has not yet expired (expired locks are reaped, not warned).
+
+    Returns:
+        The ``obpi_lock_ttl_warning`` LedgerEvent, keyed by ``obpi_id``.
+
     """
     return LedgerEvent(
         event="obpi_lock_ttl_warning",
@@ -784,6 +852,10 @@ def obpi_lock_lease_expired_event(
     Operator ruling 2026-10-18: expiry is booked and announced, never evicted, for the
     token block as for the hangar. The lock stays held; the holder's completion or a
     release with an abandon category on the operator's word frees it.
+
+    Returns:
+        The ``obpi_lock_lease_expired`` LedgerEvent, keyed by ``obpi_id``.
+
     """
     return LedgerEvent(
         event="obpi_lock_lease_expired",
@@ -811,6 +883,10 @@ def pipeline_launched_event(
     active marker. The nonce in this event is the same one persisted in the
     marker payload; the agent-relayed attestation gate cross-references the
     pair to refuse forged markers whose nonce does not appear in the ledger.
+
+    Returns:
+        The ``pipeline_launched`` LedgerEvent, keyed by ``obpi_id``.
+
     """
     extra: dict[str, Any] = {
         "nonce": nonce,
@@ -840,6 +916,10 @@ def pipeline_marker_purged_event(
     marker is provably orphaned (Stage 5 cleanup never fired) and is removed
     so the next pipeline invocation isn't fail-closed by it. Recording the
     cleanup as a ledger event keeps the runtime's marker mutations auditable.
+
+    Returns:
+        The ``pipeline_marker_purged`` LedgerEvent, keyed by ``obpi_id``.
+
     """
     return LedgerEvent(
         event="pipeline_marker_purged",
@@ -871,6 +951,10 @@ def pipeline_stage_transition_event(
     Stage 2 task, Stage 3 phase, Stage 4 round or Stage 5 step) and ``boundary``
     names the command that marked the crossing. ``blockers`` is written only
     when the boundary recorded any, as a failed verification does.
+
+    Returns:
+        The ``pipeline_stage_transition`` LedgerEvent, keyed by ``obpi_id``.
+
     """
     extra: dict[str, Any] = {
         "stage": stage,
@@ -898,6 +982,11 @@ def distribution_baseline_regenerated_event(
 
     Symmetric to ``gz register-adrs`` for the ADR status index; records manifest
     hash before/after so Layer-2 truth captures every regeneration.
+
+    Returns:
+        The ``distribution_baseline_regenerated`` LedgerEvent, keyed by a timestamped
+        ``distribution-baseline-regen-<ts>`` id.
+
     """
     return LedgerEvent(
         event="distribution_baseline_regenerated",
@@ -922,6 +1011,10 @@ def agent_sync_completed_event(
     requiring an ARB receipt wrapper. The event is emitted on every real sync —
     operator-initiated, hook-driven, or ``gz tidy --fix`` — and is suppressed in
     snapshot-replay paths (``plan_sync_all`` in ``validate_pkg/sync_parity.py``).
+
+    Returns:
+        The ``agent_sync_completed`` LedgerEvent, keyed by a timestamped ``agent-sync-<ts>`` id.
+
     """
     return LedgerEvent(
         event="agent_sync_completed",
@@ -945,6 +1038,10 @@ def patch_release_event(
 
     *foundation_summary* records foundation-ADR closeouts that qualified the
     release as a code surface equal to behavior-level GHIs (GHI #490).
+
+    Returns:
+        The ``patch-release`` LedgerEvent, keyed by ``v<version>``.
+
     """
     return LedgerEvent(
         event="patch-release",
@@ -970,6 +1067,11 @@ def composition_rendered_event(
 
     ``task_id`` is the roster channel (GHI #950); a render has no ADR or OBPI
     scope, so its producer leaves it unset rather than guess a TASK.
+
+    Returns:
+        The ``composition_rendered`` LedgerEvent, keyed by a timestamped
+        ``composition-rendered-<ts>`` id.
+
     """
     # `render_ts` carries the instant as DATA, so this one keeps its own read
     # rather than using `_timestamped_id`; the row's `ts` is still the writer's.
@@ -1017,6 +1119,11 @@ def composition_candidate_emitted_event(
 
     Layer-2 witness that ``gz content compose`` validated and staged a candidate
     rendition. Carries per-tier byte evidence for the compose audit trail.
+
+    Returns:
+        The ``composition_candidate_emitted`` LedgerEvent, keyed by a timestamped
+        ``composition-candidate-emitted-<ts>`` id.
+
     """
     return LedgerEvent(
         event="composition_candidate_emitted",
@@ -1044,6 +1151,11 @@ def rendition_committed_event(
     Layer-2 witness that ``gz content commit`` promoted a staged candidate to the
     durable committed rendition under operator attestation (Gate 5), freezing the
     corpus content-fingerprint the rendition was attested against.
+
+    Returns:
+        The ``rendition_committed`` LedgerEvent, keyed by a timestamped ``rendition-committed-<ts>``
+        id.
+
     """
     return LedgerEvent(
         event="rendition_committed",
@@ -1068,6 +1180,11 @@ def rendition_advisor_verdict_event(
     Layer-2 witness that ``gz content advise-rendition`` recorded an
     information-retained-per-byte verdict as an ARB receipt. Advisory, never
     gating — emitted on every successful record regardless of the score value.
+
+    Returns:
+        The ``rendition_advisor_verdict`` LedgerEvent, keyed by a timestamped
+        ``rendition-advisor-verdict-<ts>`` id.
+
     """
     extra: dict[str, Any] = {
         "surface": surface,
@@ -1093,6 +1210,11 @@ def corpus_entry_appended_event(
 
     Layer-2 witness for a ``gz content remember`` append to the per-surface corpus
     store. Mirrors ``composition_rendered_event``'s shape.
+
+    Returns:
+        The ``corpus_entry_appended`` LedgerEvent, keyed by a timestamped
+        ``corpus-entry-appended-<ts>`` id.
+
     """
     return LedgerEvent(
         event="corpus_entry_appended",
@@ -1115,6 +1237,11 @@ def floor_direction_for(added: set[str], removed: set[str]) -> str:
     with `floor_moved_ids=[]` validated clean under both readers, so a producer
     could claim the floor grew while naming nothing that moved. Deriving both
     fields from one input makes that state unrepresentable.
+
+    Returns:
+        "changed" when entries were both added and removed, "grew" or "shrank" when only one side
+        moved, otherwise "unchanged".
+
     """
     if added and removed:
         return "changed"
@@ -1152,6 +1279,11 @@ def corpus_entry_retired_event(
     required attestation rather than the retired row's tier, which is only a proxy
     for it (round-6 adversary, 2026-08-25). Both default empty because the ledger is
     append-only and committed rows predating them can never grow the keys.
+
+    Returns:
+        The ``corpus_entry_retired`` LedgerEvent, keyed by a timestamped
+        ``corpus-entry-retired-<ts>`` id.
+
     """
     overlap = floor_added & floor_removed
     if overlap:
@@ -1211,6 +1343,11 @@ def corpus_retirement_reconciled_event(
     whether the change was governed. Whether it WAS governed is readable from
     which event type answers — and that distinction survives only because the
     two types are separate.
+
+    Returns:
+        The ``corpus_retirement_reconciled`` LedgerEvent, keyed by a timestamped
+        ``corpus-retirement-reconciled-<ts>`` id.
+
     """
     return LedgerEvent(
         event="corpus_retirement_reconciled",
@@ -1241,6 +1378,10 @@ def brief_reconciled_event(
 
     Summary record for one ``gz obpi brief-drift`` run. ``applied`` / ``attestor``
     are set only when ``--apply --attestor`` wrote amendments back to the brief.
+
+    Returns:
+        The ``brief_reconciled`` LedgerEvent, keyed by a timestamped ``brief-reconciled-<ts>`` id.
+
     """
     return LedgerEvent(
         event="brief_reconciled",
@@ -1321,6 +1462,10 @@ def intrinsic_complexity_attestation_event(
 
     ``task_id`` is the roster channel (GHI #950); a ``file::qualname`` attestation
     has no ADR or OBPI scope, so its producer leaves it unset.
+
+    Returns:
+        The ``intrinsic-complexity-attestation`` LedgerEvent, keyed by ``<file_path>::<qualname>``.
+
     """
     return LedgerEvent(
         event="intrinsic-complexity-attestation",
@@ -1359,6 +1504,10 @@ def red_receipt_emitted_event(
     ``error`` means (GHI #849). It defaults to ``working-tree``, which is also how a
     reader must treat an event that predates the field: every witness emitted before
     the reconstructed base existed ran against HEAD.
+
+    Returns:
+        The ``red_receipt_emitted`` LedgerEvent, keyed by ``receipt_id``.
+
     """
     extra: dict[str, object] = {
         "req_id": req_id,
@@ -1386,6 +1535,10 @@ def red_commit_receipt_emitted_event(
 
     Books a ``gz arb red --commit`` run so the verdict a GHI close cites resolves to
     a receipt. The id is the receipt's run_id; the per-hunk outcomes live there.
+
+    Returns:
+        The ``red_commit_receipt_emitted`` LedgerEvent, keyed by ``receipt_id``.
+
     """
     return LedgerEvent(
         event="red_commit_receipt_emitted",
@@ -1415,6 +1568,10 @@ def handoff_resume_authorized_event(
 
     ``operator_text`` carries the operator's VERBATIM words, unmodified: the
     agent seats the operator's words, it never rewrites or summarizes them.
+
+    Returns:
+        The ``handoff_resume_authorized`` LedgerEvent, keyed by ``handoff_path``.
+
     """
     return LedgerEvent(
         event="handoff_resume_authorized",
@@ -1449,6 +1606,10 @@ def session_exit_bookmark_skipped_event(
 
     ``handoff_path`` names the authored handoff that made the bookmark redundant,
     so the skip can be audited against the document it deferred to.
+
+    Returns:
+        The ``session_exit_bookmark_skipped`` LedgerEvent, keyed by ``session_id``.
+
     """
     return LedgerEvent(
         event="session_exit_bookmark_skipped",
@@ -1490,6 +1651,11 @@ def surface_weight_recalibrated_event(
     ``previous_floor_lines`` makes the accretion delta legible at Layer 2: the
     superseded floor is otherwise overwritten in ``surface_weight_floor.json``
     and recoverable only from git history.
+
+    Returns:
+        The ``surface_weight_recalibrated`` LedgerEvent, keyed by a timestamped
+        ``surface-weight-<ts>`` id.
+
     """
     return LedgerEvent(
         event="surface_weight_recalibrated",
@@ -1538,6 +1704,10 @@ def handoff_resume_decided_event(
     why, so a session could depart from the handoff's advice invisibly. The
     operator's frame: *"ATC keeps a record of all clearances issued and all
     amendments."*
+
+    Returns:
+        The ``handoff_resume_decided`` LedgerEvent, keyed by ``handoff_path``.
+
     """
     return LedgerEvent(
         event="handoff_resume_decided",
@@ -1565,6 +1735,10 @@ def guard_canary_reviewed_event(
     The Layer-2 witness ``gzkit.guard_canary.unreviewed`` reads. It records the binding
     the operator saw, so a canary rebound since is unreviewed again, and the operator's
     words verbatim. ``ruling_source`` is set when the review is booked after the fact.
+
+    Returns:
+        The ``guard_canary_reviewed`` LedgerEvent, keyed by ``claim_id``.
+
     """
     extra: dict[str, str] = {
         "binding_sha256": binding_sha256,

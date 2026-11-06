@@ -68,6 +68,10 @@ def corpus_fingerprint(corpus: Corpus) -> str:
     ``\\n``) — never the on-disk file bytes — makes the digest cross-platform stable:
     a CRLF ``.jsonl`` on Windows and an LF ``.jsonl`` on Linux with identical entries
     produce the identical digest, because ``Corpus.loads`` absorbs the line ending on read.
+
+    Returns:
+        The SHA-256 hex digest of ``corpus.dumps()``.
+
     """
     return hashlib.sha256(corpus.dumps().encode("utf-8")).hexdigest()
 
@@ -79,6 +83,10 @@ def rendition_fingerprint(content: bytes) -> str:
     replays them, so the digest witnesses what playback will emit. Line endings need
     no normalization here: ``gz content commit`` already re-encodes the candidate to
     LF bytes before the write, and playback is verbatim.
+
+    Returns:
+        The SHA-256 hex digest of ``content``.
+
     """
     return hashlib.sha256(content).hexdigest()
 
@@ -87,6 +95,10 @@ def rendition_path(root: Path, surface: str, consumer: str) -> Path:
     """Return the artifact path for *(surface, consumer)* under ``<root>/.gzkit/renditions/``.
 
     Layout: ``<root>/.gzkit/renditions/<surface>/<consumer>.md``
+
+    Returns:
+        Path of ``.gzkit/renditions/<surface>/<consumer>.md`` under ``root``.
+
     """
     return root / ".gzkit" / "renditions" / surface / f"{consumer}.md"
 
@@ -96,6 +108,10 @@ def fingerprint_path(root: Path, surface: str, consumer: str) -> Path:
 
     Layout: ``<root>/.gzkit/renditions/<surface>/<consumer>.corpus.json`` — the
     ``.corpus.json`` suffix is invisible to the ``*.md`` rendition globs.
+
+    Returns:
+        Path of ``.gzkit/renditions/<surface>/<consumer>.corpus.json`` under ``root``.
+
     """
     return root / ".gzkit" / "renditions" / surface / f"{consumer}.corpus.json"
 
@@ -132,6 +148,11 @@ def is_graded_rendition(rendition_file: Path, root: Path) -> bool:
     has declared, the honest answer is "unknown" — under which "routed for
     something" is a better approximation than excluding every rendition and
     silently grading nothing.
+
+    Returns:
+        True when the file is not a candidate and its consumer is routed for the surface (or nothing
+        is routed); otherwise False.
+
     """
     from gzkit.content.vendors import all_routes, content_type_for_surface, routes_for
 
@@ -156,6 +177,10 @@ def load_rendition(root: Path, surface: str, consumer: str) -> bytes:
 
     Fail-closed: raises ``FileNotFoundError`` when the artifact is absent.
     The same committed artifact always produces the same bytes (deterministic).
+
+    Returns:
+        The committed rendition's bytes.
+
     """
     path = rendition_path(root, surface, consumer)
     if not path.exists():
@@ -194,6 +219,10 @@ def load_fingerprint(root: Path, surface: str, consumer: str) -> RenditionProven
 
     A missing sidecar is NOT an error here: the freshness gate interprets ``None`` as
     drift (the rendition's derivation from the corpus is unproven), with a recompose hint.
+
+    Returns:
+        The parsed RenditionProvenance, or None when the sidecar is absent.
+
     """
     path = fingerprint_path(root, surface, consumer)
     if not path.exists():

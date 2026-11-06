@@ -35,6 +35,10 @@ def _extract_schema_version(lines: list[str]) -> int:
     Defaults to 1 when no such line is present (so existing v1 fixtures
     without the declaration continue to parse unchanged — REQ-0.0.34-07-04
     byte-stability invariant).
+
+    Returns:
+        The declared schema version, or 1 when no line declares it or its value is not an integer.
+
     """
     for line in lines:
         if line.startswith(_SCHEMA_VERSION_PREFIX):
@@ -62,6 +66,10 @@ def _sections(lines: list[str]) -> dict[str, list[str]]:
 
     Special key '' holds content before the first ## heading.
     Multiple consecutive blank lines within a section are preserved as-is.
+
+    Returns:
+        Mapping of section title to its content lines, with ``''`` holding the preamble.
+
     """
     result: dict[str, list[str]] = {}
     current_key = ""
@@ -82,6 +90,10 @@ def _parse_bullets(lines: list[str]) -> list[Bullet]:
 
     Indent level = number of leading spaces // 2.
     Blank lines are skipped.
+
+    Returns:
+        One Bullet per ``- `` line, with indent from its leading spaces.
+
     """
     bullets: list[Bullet] = []
     for line in lines:
@@ -101,6 +113,10 @@ def _first_h1(lines: list[str], prefix: str, file_path: str | None) -> str:
     """Extract value from the first H1 line matching '# <prefix><value>'.
 
     prefix is stripped from the H1 text. Raises ValueError if not found.
+
+    Returns:
+        The first H1's text with ``prefix`` removed.
+
     """
     for line in lines:
         if line.startswith("# "):
@@ -122,6 +138,10 @@ def _find_inline_value(lines: list[str], prefix: str, file_path: str | None) -> 
     """Find the first line starting with 'prefix' and return the trailing value.
 
     Raises ValueError if not found.
+
+    Returns:
+        The stripped text after ``prefix`` on the first matching line.
+
     """
     for line in lines:
         if line.startswith(prefix):
@@ -133,6 +153,10 @@ def _paragraph_after(lines: list[str], after_prefix: str, file_path: str | None)
     """Return the first non-blank text line appearing after the line with after_prefix.
 
     Raises ValueError if not found.
+
+    Returns:
+        The first non-blank, non-heading line after the ``after_prefix`` line, stripped.
+
     """
     found_after = False
     for line in lines:
@@ -182,6 +206,10 @@ def section_id(title: str) -> str:
     field written by ``gz content remember``, and the survival declaration read
     by the surface-delivery witness. It is public because a second slugifier
     would let those surfaces disagree about what a section is called.
+
+    Returns:
+        The lowercase kebab-case slug of the title, or ``section`` when it slugs to nothing.
+
     """
     slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
     return slug or "section"
@@ -192,6 +220,10 @@ def _strip_trailing_blanks(lines: list[str]) -> list[str]:
 
     Applied at both import-capture and round-trip reparse so pillar bodies
     compare equal across render -> parse (ADR-0.0.37-13 REQ-04).
+
+    Returns:
+        The lines without trailing blank lines.
+
     """
     end = len(lines)
     while end > 0 and not lines[end - 1].strip():
@@ -205,6 +237,10 @@ def _normalize_rule(text: str) -> str:
     Drops list markers, markdown emphasis and backticks, non-alphanumerics;
     collapses whitespace; lowercases. The result is a paraphrase-tolerant key
     for high-precision containment matching against the scorecard.
+
+    Returns:
+        The lowercased text with markers, emphasis and punctuation removed and whitespace collapsed.
+
     """
     lowered = re.sub(r"^\s*(?:[-*]|\d+[.)])\s+", "", text.lower())
     lowered = lowered.replace("`", "").replace("*", "")
@@ -229,6 +265,11 @@ def _load_scorecard_index(file_path: str | None) -> dict[str, _Classification]:
 
     Best-effort: returns {} when the scorecard cannot be located or read, so
     fixture parses (no scorecard) gracefully fall back to Ambiguous (REQ-05).
+
+    Returns:
+        Mapping of normalized rule text to its classification; empty when the scorecard cannot be
+        located or read.
+
     """
     path = _find_scorecard(file_path)
     if path is None:
@@ -255,6 +296,11 @@ def _classify(text: str, index: dict[str, _Classification]) -> _Classification:
     Conservative high-precision match: a scorecard rule classifies a bullet only
     when its whole normalized text is contained in (or contains) the bullet's
     normalized text. No match defaults to Ambiguous — never silently Mechanical.
+
+    Returns:
+        The matched scorecard classification, or "Ambiguous" when the text is too short or
+        unmatched.
+
     """
     norm = _normalize_rule(text)
     if len(norm.split()) < _MIN_MATCH_WORDS:
@@ -270,6 +316,10 @@ def _extract_pillar_bullets(lines: list[str], index: dict[str, _Classification])
 
     Each bullet's classification is joined from the scorecard (REQ-02), defaulting
     to Ambiguous when unmatched (REQ-05).
+
+    Returns:
+        One classified Bullet per non-empty bulleted or numbered line.
+
     """
     bullets: list[Bullet] = []
     for line in lines:
@@ -469,6 +519,10 @@ def _parse_bullet(lines: list[str], file_path: str | None) -> Bullet:
 
     Finds first non-blank line starting with optional spaces then '- '.
     indent = leading_spaces // 2.
+
+    Returns:
+        The first ``- `` line as a Bullet with its indent.
+
     """
     for line in lines:
         if not line.strip():

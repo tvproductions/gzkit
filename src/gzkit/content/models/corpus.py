@@ -116,6 +116,10 @@ def _inert_fields(entry: CorpusEntry) -> set[str]:
     These carry no information for this row, so they are excluded from the
     identity serialization — a row that predates a field fingerprints exactly
     as it did before the field existed (GHI #635).
+
+    Returns:
+        Names of the post-baseline identity fields the entry leaves at their defaults.
+
     """
     defaults = type(entry).model_fields
     return {
@@ -137,6 +141,11 @@ def tombstone_target(entry: CorpusEntry) -> str | None:
     ``trust_audits.corpus_retirement_witness`` walks these same edges to assert a
     Layer-2 witness, and a fence that re-derived the pointer pair locally would
     be free to drift from the fold it claims to guard.
+
+    Returns:
+        The ``retires`` target, else the ``supersedes`` target, or None when the entry tombstones
+        nothing.
+
     """
     return entry.retires if entry.retires is not None else entry.supersedes
 
@@ -267,6 +276,10 @@ def _tombstones_by_target(entries: tuple[CorpusEntry, ...]) -> dict[str, list[_E
     § Decision, algebra amended 2026-09-01, GHI #873). A bare id cannot express
     that difference, and the bug the amendment closes is exactly what a
     role-blind edge set produces.
+
+    Returns:
+        Mapping of each targeted entry id to the edges of the rows that tombstone it.
+
     """
     edges: dict[str, list[_Edge]] = {}
     for entry in entries:
@@ -343,6 +356,10 @@ def _liveness(entries: tuple[CorpusEntry, ...]) -> dict[str, bool]:
     ``edges.get(entry.id)``, so such a key is never consulted at all. Only an
     id appearing inside an edge LIST is ever read, and only that id can be
     unresolved.
+
+    Returns:
+        Mapping of every entry id to whether it is live.
+
     """
     edges = _tombstones_by_target(entries)
     live: dict[str, bool] = {}
@@ -374,6 +391,10 @@ def effective_corpus(corpus: Corpus) -> Corpus:
     contradict each other — a folded view legitimately carries a ``supersedes``
     row whose target this very fold removed, so a second pass would raise
     "unknown target" instead of returning an equal corpus.
+
+    Returns:
+        A Corpus of the live, non-``retires`` entries in append order.
+
     """
     live = _liveness(corpus.entries)
     return Corpus(entries=tuple(e for e in corpus.entries if live[e.id] and e.retires is None))
@@ -408,6 +429,10 @@ class Corpus(BaseModel):
         ``src/gzkit/commands/content/retire.py``, owned by OBPI-0.35.0-02 and
         out of this task's allowlist. Redefining the method in place repoints
         that guard without touching the denied file.
+
+        Returns:
+            The ids of every entry that is not live.
+
         """
         live = _liveness(self.entries)
         return frozenset(entry_id for entry_id, is_live in live.items() if not is_live)
@@ -428,6 +453,10 @@ class Corpus(BaseModel):
         byte-identical, so one rendered occurrence satisfied both invariant-floor
         obligations and nothing fired. Near-miss detection would refuse
         legitimate rewordings and is deliberately not attempted here.
+
+        Returns:
+            The first live entry whose text equals ``text``, or None when none does.
+
         """
         return next((e for e in effective_corpus(self).entries if e.text == text), None)
 
@@ -445,6 +474,10 @@ class Corpus(BaseModel):
         corpus-attested recompose for a semantically empty change. A row that actually
         uses the field is serialized with it — real canon drift, which the
         freshness gate should catch.
+
+        Returns:
+            The JSONL text, one entry per line with inert fields omitted.
+
         """
         return "\n".join(
             entry.model_dump_json(exclude=_inert_fields(entry)) for entry in self.entries
@@ -460,6 +493,10 @@ class Corpus(BaseModel):
         — including the one :func:`effective_corpus` performs — and a folded view
         legitimately carries a ``supersedes`` row whose target the fold just
         removed, so Algebra 2 and Algebra 9 would contradict each other directly.
+
+        Returns:
+            The reconstructed Corpus, validated against the tombstone algebra.
+
         """
         entries = tuple(
             CorpusEntry.model_validate_json(line) for line in text.splitlines() if line.strip()

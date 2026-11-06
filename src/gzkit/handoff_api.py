@@ -290,6 +290,11 @@ def _filesystem_safe_timestamp(iso_ts: str) -> str:
 
     Local reimplementation of the module-private pattern in
     ``handoff_validation`` (that helper is not exported).
+
+    Returns:
+        The first 15 characters of the timestamp with ``:``, ``-`` and ``.`` removed, suffixed with
+        ``Z``.
+
     """
     return iso_ts.replace(":", "").replace("-", "").replace(".", "")[:15] + "Z"
 
@@ -309,6 +314,10 @@ def _timestamp_sort_key(raw: str) -> datetime:
     (``10:00+05:00`` is ``05:00Z`` — earlier than ``08:00Z`` yet lexically
     later). Parse to an aware ``datetime`` so the comparison is by instant.
     Unparseable/empty timestamps sort oldest rather than aborting the scan.
+
+    Returns:
+        The parsed timestamp, or ``datetime.min`` (UTC) when it cannot be parsed.
+
     """
     try:
         return _parse_iso(raw)
@@ -323,6 +332,10 @@ def _render_document(frontmatter: dict, sections: dict[str, str]) -> str:
     section is emitted only when it carries entries, so a handoff with no settled
     ruling gains no hollow heading. Written with explicit ``\n`` newlines so the
     committed artifact is LF on every platform.
+
+    Returns:
+        The Markdown document text, ending in exactly one newline.
+
     """
     parts = ["---\n", yaml.safe_dump(frontmatter, sort_keys=False), "---\n\n"]
     for section in (*REQUIRED_SECTIONS, SETTLED_SECTION):
@@ -365,6 +378,11 @@ def _extract_next_steps(content: str) -> list[str]:
     authored no steps (GHI #1082). A line with neither shape is skipped, so
     narrative prose is never split on a bare ``N.`` it happens to contain, and
     only a MARKED chunk becomes a step, so a preamble is never emitted as one.
+
+    Returns:
+        Every item of the Immediate Next Steps section in authored order; an empty list when the
+        section is absent or carries no marked or enumerated items.
+
     """
     heading = re.search(r"^##\s+Immediate Next Steps\s*$", content, re.MULTILINE)
     if heading is None:
@@ -416,6 +434,10 @@ def _section_items(content: str, heading: str) -> list[str]:
     indent is what keeps the join from welding two sibling bullets — or trailing
     section prose — into one ruling, which would lose a booked ruling just as
     surely as truncating it.
+
+    Returns:
+        The section's items in order, wrapped lines joined; an empty list when the section has none.
+
     """
     items: list[str] = []
     for line in _section_body(content, heading).splitlines():
@@ -434,6 +456,10 @@ def parse_decisions(content: str) -> list[Decision]:
     is stripped from the recorded text. An unmarked entry is ``UNATTRIBUTED`` —
     never guessed either way. Matching is case- and spacing-tolerant so the
     marker is not a spelling trap.
+
+    Returns:
+        The ``Decision`` entries of the Decisions Made section, each with its attribution.
+
     """
     decisions: list[Decision] = []
     for item in _section_items(content, "Decisions Made"):
@@ -496,6 +522,11 @@ def _carried_settled(predecessor: str | list[str] | None, base_path: Path) -> li
     the union had to be assembled by hand. Ancestors are folded in declaration
     order, so the ruled anchor's rulings read first, and ``_dedup_rulings``
     collapses what converging lineage would otherwise deliver twice.
+
+    Returns:
+        The deduplicated carried and booked rulings; an empty list when there is no predecessor to
+        read.
+
     """
     refs = continues_from_refs(predecessor)
     if not refs:
@@ -548,6 +579,12 @@ def _ruling_source(previous: Path, base_path: Path) -> Path | None:
     and stays selectable. Only its contribution to the RULING chain is skipped.
     ``None`` when a bookmark has no authored ancestor at all -- a genuine chain
     root, which must inherit nothing rather than invent lineage.
+
+    Returns:
+        The document whose rulings the chain inherits: ``previous`` itself, or for a floor bookmark
+        the newest authored handoff before it or its ``continues_from`` target; None when no such
+        document exists.
+
     """
     from gzkit.handoff_selection import is_floor_bookmark  # noqa: PLC0415 — import cycle
 
@@ -573,6 +610,12 @@ def _newest_authored_before(timestamp: str, base_path: Path) -> Path | None:
     Reuses ``list_handoffs`` (already newest-first, already offset-aware via
     ``_timestamp_sort_key``) rather than re-deriving recency, so this cannot
     disagree with the selection arm about which document is newer.
+
+    Returns:
+        The newest authored handoff older than ``timestamp``, its path joined to ``base_path``
+        unless already absolute, or None when the timestamp is empty or no non-bookmark handoff
+        qualifies.
+
     """
     from gzkit.handoff_selection import is_floor_bookmark  # noqa: PLC0415 — import cycle
 
@@ -622,6 +665,10 @@ def _compose_settled(
     project-wide store read by every authoring pass makes every handoff a
     successor of everything, which is a different rule than the one that was
     ruled. Changing the transport must not change who inherits.
+
+    Returns:
+        The deduplicated union of inherited rulings and the authored entries.
+
     """
     inherited = (
         [*read_rulings(base_path), *_carried_settled(predecessor, base_path)]
@@ -644,6 +691,11 @@ def _own_settled_rulings(sections: dict[str, str]) -> list[str]:
     these rulings belong in is written INTO that document -- parsing the render
     to compute a number the render must carry is a cycle. The booking below uses
     this same list, so the stated count and the stored corpus cannot disagree.
+
+    Returns:
+        The text of each settled decision in the document's Decisions Made section; an empty list
+        when the section is blank.
+
     """
     body = sections.get(DECISIONS_SECTION, "")
     if not body.strip():
@@ -663,6 +715,10 @@ def _settled_pointer(count: int) -> str:
     It states the count rather than eliding one, because a section that said only
     "see the store" would be a silent cap: a reader could not tell 457 rulings
     from 4 without opening another file.
+
+    Returns:
+        The pointer section body citing the ruling count and the rulings store.
+
     """
     plural = "ruling" if count == 1 else "rulings"
     return (
@@ -679,6 +735,10 @@ def _bullet_items(text: str) -> list[str]:
 
     Tolerates a bare line with no marker so an author who writes one ruling as
     plain prose is not silently dropped.
+
+    Returns:
+        The non-empty items of the body in order, markers stripped.
+
     """
     items: list[str] = []
     for line in text.splitlines():
@@ -764,6 +824,10 @@ def _extract_references(text: str) -> tuple[StepReference, ...]:
     the same GHI twice yields one reference. The repository is part of the key:
     ``#1`` and ``gz-skills#1`` are different issues, and folding them would put
     one repository's verdict on the other's citation.
+
+    Returns:
+        The deduplicated references in first-seen order; an empty tuple when the step cites none.
+
     """
     seen: set[tuple[ReferenceKind, str, str | None]] = set()
     found: list[StepReference] = []
@@ -800,6 +864,10 @@ def _mark_settled(body: str, identifier: str) -> str:
     Idempotent by lookahead: a citation already carrying the marker is skipped,
     so re-authoring an annotated section never double-marks it. Word-bounded so
     ``#57`` cannot claim the ``#573`` it is a prefix of.
+
+    Returns:
+        The body with every unmarked mention of the GHI number suffixed by the settled marker.
+
     """
     pattern = re.compile(
         r"(?P<lead>" + _SECTION_NUMBER_LEAD + r")?" + _FOREIGN_REPO + r"?"
@@ -840,6 +908,11 @@ def _annotate_settled_citations(
     ``SETTLED`` marks — ``UNKNOWN`` is missing evidence, not a closed reference.
     With no ``checker`` the sections pass through untouched, so the core is
     exercisable without an adapter (hexagonal § Operative rule 6).
+
+    Returns:
+        A copy of ``sections`` with settled GHI citations marked, or ``sections`` itself when no
+        checker is given.
+
     """
     if checker is None:
         return sections
@@ -861,6 +934,11 @@ def _build_steps(content: str, checker: ReferenceChecker | None) -> list[NextSte
     With no ``checker`` injected every reference stays ``UNKNOWN`` — the core is
     fully exercisable without an adapter (hexagonal § Operative rule 6), and an
     unreachable live state never renders as verified.
+
+    Returns:
+        One ``NextStep`` per authored next step, its references carrying live state when a checker
+        is given.
+
     """
     steps: list[NextStep] = []
     for text in _extract_next_steps(content):
@@ -885,6 +963,11 @@ def _newest_predecessor(adr_id: str | None, base_path: Path) -> str | None:
     handoff overall is not its lineage, and linking to it would assert a
     continuity that does not exist. Pass ``continues_from`` explicitly to chain
     ADR-less handoffs.
+
+    Returns:
+        The newest handoff filename for ``adr_id``, or None when ``adr_id`` is None or no handoff
+        exists.
+
     """
     if adr_id is None:
         return None
@@ -918,6 +1001,11 @@ def resolve_continues_from(ref: str, current: Path, base_path: Path) -> Path:
     hand-mirrored into the archive module across an OBPI brief boundary, with the
     coupling asserted in a docstring and enforced by nothing — any divergence
     would have silently let a live chain link be archived (GHI #689).
+
+    Returns:
+        The absolute pointer, the existing sibling, the existing project-rooted path, or else the
+        unresolved sibling candidate.
+
     """
     candidate = Path(ref)
     if candidate.is_absolute():
@@ -968,6 +1056,10 @@ def create_handoff(
     GHI cited as live work in a prospective section is resolved and, when
     settled, annotated in place, so a handoff cannot be WRITTEN naming a closed
     issue as open work. Omitted, nothing is annotated and the write is unchanged.
+
+    Returns:
+        Path of the written handoff document.
+
     """
     ts = timestamp or _now_iso()
     filename = f"{_filesystem_safe_timestamp(ts)}-{slug}.md"
@@ -1039,6 +1131,10 @@ def _render_scope(adr_id: str | None, obpi_id: str | None) -> str:
 
     An ADR-less handoff (GHI #709) still has a scope — the work itself — so the
     scaffold names what it knows rather than emitting a bare ``None``.
+
+    Returns:
+        ``ADR (OBPI)``, whichever id is present, or ``this session's work`` when neither is.
+
     """
     if adr_id and obpi_id:
         return f"{adr_id} ({obpi_id})"
@@ -1063,6 +1159,10 @@ def scaffold_handoff(
     Checklist) are rendered from the injected ``observed`` state; collections
     are sorted so identical inputs yield byte-identical output. The judgment
     sections (Decisions Made, Important Context) are intentionally NOT pre-filled.
+
+    Returns:
+        Mapping of the three factual section names to their rendered bodies.
+
     """
     scope = _render_scope(adr_id, obpi_id)
     events = sorted(observed.ledger_events)
@@ -1096,6 +1196,10 @@ def list_handoffs(*, adr_id: str | None = None, base_path: Path = Path()) -> lis
     a handoff carries continuity for any work, and ADR-less handoffs (design
     sessions, triage passes, GHI burndowns) must remain discoverable. Passing
     ``adr_id`` still scopes to one ADR, which necessarily excludes them.
+
+    Returns:
+        Handoff infos sorted newest-first; an empty list when the handoffs directory does not exist.
+
     """
     handoff_dir = _handoffs_dir(base_path)
     if not handoff_dir.is_dir():
@@ -1144,6 +1248,10 @@ def _order_handoff_chain(paths: dict[Path, Path], parents: dict[Path, list[Path]
 
     Cyclic input has no ancestry order; marking before descent preserves the
     existing deterministic termination contract and keeps the selected head last.
+
+    Returns:
+        The paths ordered ancestors before descendants, each visited once.
+
     """
     ordered: list[Path] = []
     visited: set[Path] = set()
@@ -1167,6 +1275,10 @@ def _walk_handoff_chain(handoff_path: Path, base_path: Path) -> tuple[list[Path]
     Breadth-first selection preserves both branches at the limit. Reversing that
     discovery order was not a topological sort for shortcut DAG edges (GHI #1038).
     Only unvisited references remaining at the limit mean truncation (GHI #870).
+
+    Returns:
+        The ancestry-ordered paths and whether the walk hit the population limit.
+
     """
     paths: dict[Path, Path] = {}
     parents: dict[Path, list[Path]] = {}
@@ -1194,6 +1306,10 @@ def load_handoff_chain(handoff_path: Path, *, base_path: Path = Path()) -> list[
 
     The selected head remains last. Multi-parent discovery is breadth-first;
     ordering respects every discovered DAG edge. Cycles terminate deterministically.
+
+    Returns:
+        The lineage paths, ancestors first and the selected head last.
+
     """
     chain, _ = _walk_handoff_chain(handoff_path, base_path)
     return chain
@@ -1232,6 +1348,11 @@ def resume_handoff(
     learned this under GHI #758; this reader was missed, so the advisement named
     one document while the gate armed on another and printed the
     `gz handoff decide --handoff <path>` recipe next to the wrong one.
+
+    Returns:
+        A ``ResumeResult`` carrying the newest handoff's path, staleness, verification flag,
+        annotated steps and lineage chain.
+
     """
     infos = list_handoffs(adr_id=adr_id, base_path=base_path)
     if not infos:

@@ -82,6 +82,10 @@ def _quality_command_timeout_file() -> Path:
     Read from the package (as ``canonical_history.json`` is), never from the
     invoking project or from ``run_command``'s ``cwd``: those can be any
     directory, and an adopter project has no ``data/`` of gzkit's.
+
+    Returns:
+        Path to the quality-command timeout declaration inside the installed gzkit package.
+
     """
     return Path(str(importlib.resources.files("gzkit").joinpath(QUALITY_COMMAND_TIMEOUT_FILE)))
 
@@ -92,6 +96,10 @@ def _load_quality_command_timeout(path: Path) -> float:
 
     Fails closed: a missing, unparseable, or non-positive-integer declaration
     raises rather than letting a gate command run unbounded (GHI #1143).
+
+    Returns:
+        The declared ``default_seconds`` as a float.
+
     """
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
@@ -298,6 +306,11 @@ def _find_parents_access_lines(source: str) -> list[int]:
 
     ``Path(__file__).parent`` (singular) is a different attribute, is not a
     positional walk, and is not flagged.
+
+    Returns:
+        Sorted, deduplicated line numbers of each ``Path(__file__).parents`` access; an empty list
+        when the source does not parse.
+
     """
     try:
         tree = ast.parse(source)
@@ -328,6 +341,11 @@ def run_parents_pattern_lint(project_root: Path) -> QualityResult:
     because they legitimately use Path(__file__).parent for fixture location.
 
     @covers OBPI-0.0.7-05-lint-rule-and-check-expansion
+
+    Returns:
+        A passing QualityResult when no violation is found or ``src/gzkit/`` is absent; otherwise a
+        failing one listing each violation.
+
     """
     src_dir = project_root / "src" / "gzkit"
     if not src_dir.exists():
@@ -452,6 +470,11 @@ def run_adr_path_contract_lint(project_root: Path) -> QualityResult:
 
     This check blocks regressions to legacy series-folder links like
     ``docs/design/adr/adr-0.2.x/...``.
+
+    Returns:
+        A passing QualityResult when no legacy ADR path is referenced or no docs/design Markdown
+        exists; otherwise a failing one listing each reference.
+
     """
     docs_design_root = project_root / "docs" / "design"
     files_to_scan: list[Path] = []
@@ -691,6 +714,11 @@ def _behave_shard_count(project_root: Path) -> int:
     set and is project-local, so this speedup is gzkit's own and adopters are
     unaffected rather than broken. Shipping it to them would mean inventing a
     package-data surface, which is scope this change does not carry.
+
+    Returns:
+        The declared shard count, at least 1; 1 when the file is absent, unreadable or lacks the
+        key.
+
     """
     path = project_root / "data" / "check_step_concurrency.json"
     if not path.is_file():
@@ -718,6 +746,10 @@ def _plan_behave_shards(project_root: Path, count: int) -> list[list[Path]]:
     ``features/`` to any depth, while ``_run_behave_shards`` passes only the
     paths planned here. A non-recursive glob therefore does not shard the work
     differently, it drops it -- silently, under a green ``✓ Behave`` (GHI #917).
+
+    Returns:
+        The non-empty shards of feature paths; an empty list when there are no feature files.
+
     """
     features_dir = project_root / "features"
     if count < 2 or not features_dir.is_dir():
@@ -744,6 +776,10 @@ def _run_behave_shards(project_root: Path, shards: list[list[Path]]) -> QualityR
     interpreter. That matters because ``features/environment.py`` ``chdir``s per
     scenario and ``os.chdir`` is process-global -- scenarios can never be
     threaded inside one interpreter, and can always be split across processes.
+
+    Returns:
+        One QualityResult aggregating every shard's run.
+
     """
 
     def one(shard: list[Path]) -> QualityResult:
@@ -764,6 +800,11 @@ def _aggregate_shard_results(
     attribution an operator scrolls a 400-scenario transcript to find which one
     broke. A gate whose failures are hard to read is a gate people route around,
     which is a worse outcome than the seconds this saves.
+
+    Returns:
+        A QualityResult that fails if any shard failed, with failing shards' output first and each
+        block attributed to its files.
+
     """
     ordered = sorted(range(len(results)), key=lambda i: results[i].success)
     blocks: list[str] = []
@@ -859,6 +900,10 @@ def run_drift_advisory(project_root: Path) -> DriftAdvisoryResult:
 
     Reuses the same detection engine as ``gz drift``. Results are advisory —
     drift findings do not affect the overall check pass/fail status.
+
+    Returns:
+        DriftAdvisoryResult carrying the drift findings and whether any drift was found.
+
     """
     from datetime import UTC, datetime
 
@@ -959,6 +1004,11 @@ def _raw_mkdocs_validation(config_path: Path, seen: frozenset[Path]) -> dict[str
     Mirrors mkdocs: a child config deep-merges over the file it inherits, before
     any propagation. Unknown YAML tags (``!ENV``, ``!!python/name:``) load as
     ``None``; only ``validation`` and ``INHERIT`` are read.
+
+    Returns:
+        The config's ``validation`` mapping deep-merged over its ``INHERIT`` chain; empty when none
+        is set.
+
     """
     import yaml  # noqa: PLC0415 — only the docs gate parses mkdocs.yml
 
@@ -1001,6 +1051,11 @@ def mkdocs_validation_floor_violations(config_path: Path) -> list[str]:
     ``setdefault``-ed into each section, so an explicit section key wins; an absent
     key takes mkdocs' default. An unreadable config is itself a violation — the
     floor cannot be shown to hold.
+
+    Returns:
+        One message per floor key resolved below its floor, or a single message when the config
+        cannot be read; an empty list when every key meets its floor.
+
     """
     try:
         validation = _raw_mkdocs_validation(config_path, frozenset({config_path.resolve()}))
@@ -1045,6 +1100,11 @@ def run_mkdocs(project_root: Path) -> QualityResult:
     Adopter projects are not required to author one, so failing on the absence
     of a file they never wrote would make ``gz check`` unadoptable — the same
     presence-test shape ``gz audit`` already uses for its docs arm.
+
+    Returns:
+        A passing skip result when there is no ``mkdocs.yml``, a failing result when the config is
+        below its validation floor, otherwise the result of ``uv run mkdocs build --strict``.
+
     """
     if not (project_root / "mkdocs.yml").is_file():
         return QualityResult(
@@ -1131,6 +1191,10 @@ def run_cli_audit(project_root: Path) -> QualityResult:
     Part of the canonical quality path so workflow drift (e.g. a new subcommand
     not yet documented in the operator runbook) is caught by ``gz check``
     before release.
+
+    Returns:
+        QualityResult of running ``uv run gz cli audit``.
+
     """
     return run_command("uv run gz cli audit", cwd=project_root)
 
@@ -1141,6 +1205,10 @@ def run_unscoped_rules_audit(project_root: Path) -> QualityResult:
     Fails closed (exit 3) on any `.gzkit/rules/*.md` that carries
     `paths: "**"` or lacks a `paths:` frontmatter entry without an
     allow-list exception under `rules.unscoped_allowlist`.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --unscoped-rules``.
+
     """
     return run_command("uv run gz validate --unscoped-rules", cwd=project_root)
 
@@ -1157,6 +1225,10 @@ def run_validate_default_scopes(project_root: Path) -> QualityResult:
     (~2s for 12 scopes), so enrolling them costs one process rather than ten.
     Flag-scoped steps stay separate where a step needs its own name in the
     progress display or its own MX seam.
+
+    Returns:
+        QualityResult of running ``uv run gz validate``.
+
     """
     return run_command("uv run gz validate", cwd=project_root)
 
@@ -1167,6 +1239,10 @@ def run_adr_status_fresh_audit(project_root: Path) -> QualityResult:
     Fails closed when `docs/governance/GovZero/adr-status.md` drifts from
     on-disk ADR canon — the original surface that GHI #322 surfaced.
     Recovery: `uv run gz register-adrs` regenerates the index.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --adr-status-fresh``.
+
     """
     return run_command("uv run gz validate --adr-status-fresh", cwd=project_root)
 
@@ -1183,6 +1259,10 @@ def run_pool_interview_audit(project_root: Path) -> QualityResult:
     single use, so a pool-side check that runs only when an operator remembers
     the flag would leave the two guarantees exactly as unequal as GHI #719
     found them.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --pool-interview``.
+
     """
     return run_command("uv run gz validate --pool-interview", cwd=project_root)
 
@@ -1204,6 +1284,10 @@ def run_advisory_scorecard_audit(project_root: Path) -> QualityResult:
 
     Recovery: `uv run gz validate --advisory-scorecard` names each unscored rule
     and the ledger row to add.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --advisory-scorecard``.
+
     """
     return run_command("uv run gz validate --advisory-scorecard", cwd=project_root)
 
@@ -1216,6 +1300,10 @@ def run_taxonomy_audit(project_root: Path) -> QualityResult:
     grandfathered foundation left in non-terminal `foundation_limbo`
     (OBPI-03's terminal-partition assertion, read from Layer-2 never frontmatter).
     Recovery: `uv run gz validate --taxonomy` names the offending ADR ids.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --taxonomy``.
+
     """
     return run_command("uv run gz validate --taxonomy", cwd=project_root)
 
@@ -1227,6 +1315,10 @@ def run_obpi_lifecycle_coherence_audit(project_root: Path) -> QualityResult:
     its parent ADR does not resolve or its brief is absent from disk — Layer-2
     asserting an artifact Layer-1 cannot show. Recovery:
     `uv run python -m gzkit.governance.obpi_park_backfill --dry-run`.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --obpi-lifecycle-coherence``.
+
     """
     return run_command("uv run gz validate --obpi-lifecycle-coherence", cwd=project_root)
 
@@ -1240,6 +1332,10 @@ def run_adversarial_validation_audit(project_root: Path) -> QualityResult:
     `### Step 4b` evidence section.
     Recovery: record the independent review with `uv run gz obpi acceptance`,
     then re-run `uv run gz obpi complete`, or add the brief's Step-4b section.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --adversarial-validation``.
+
     """
     return run_command("uv run gz validate --adversarial-validation", cwd=project_root)
 
@@ -1251,6 +1347,10 @@ def run_red_parity_audit(project_root: Path) -> QualityResult:
     `red_receipt_emitted` witness, or carries one whose `failure_class` is `none`
     (its covering test passed with the production hunks withheld, so it cannot fail).
     Recovery: `uv run gz arb red --req <REQ> --obpi <OBPI>`.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --red-parity``.
+
     """
     return run_command("uv run gz validate --red-parity", cwd=project_root)
 
@@ -1263,6 +1363,10 @@ def run_producer_fields_audit(project_root: Path) -> QualityResult:
     such a producer writes a row that replay then refuses — and a fence reading
     committed rows cannot see it until the producer first fires.
     Recovery: declare the field in BOTH contracts.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --producer-fields``.
+
     """
     return run_command("uv run gz validate --producer-fields", cwd=project_root)
 
@@ -1273,6 +1377,10 @@ def run_rendition_freshness_audit(project_root: Path) -> QualityResult:
     Fails closed (exit 3) when the corpus has mutated after the committed
     rendition for any (surface, consumer) pair.
     Recovery: `uv run gz content compose <surface>` and attest.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --rendition-freshness``.
+
     """
     return run_command("uv run gz validate --rendition-freshness", cwd=project_root)
 
@@ -1285,6 +1393,10 @@ def run_rendition_floor_coherence_audit(project_root: Path) -> QualityResult:
     comparison) does not perform.
     Recovery: `uv run gz content compose <surface>` with a candidate carrying
     every invariant entry verbatim, then recommit the rendition.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --rendition-floor-coherence``.
+
     """
     return run_command("uv run gz validate --rendition-floor-coherence", cwd=project_root)
 
@@ -1300,6 +1412,10 @@ def run_rendition_lineage_audit(project_root: Path) -> QualityResult:
     are reported as measured debt and never fail.
     Recovery: land the wording in canon, then
     `uv run gz content compose <surface> --consumer <consumer>` and recommit.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --rendition-lineage``.
+
     """
     return run_command("uv run gz validate --rendition-lineage", cwd=project_root)
 
@@ -1313,6 +1429,10 @@ def run_brief_structure_audit(project_root: Path) -> QualityResult:
     to regex-scraped ``LegacyBriefShape``. Sealed briefs are out of scope: their
     only available repair would rewrite an attested artifact. Recovery:
     `uv run python scripts/migrate_brief_frontmatter.py --dry-run`.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --brief-structure``.
+
     """
     return run_command("uv run gz validate --brief-structure", cwd=project_root)
 
@@ -1326,6 +1446,10 @@ def run_brief_size_audit(project_root: Path) -> QualityResult:
     nothing measured one brief, so a brief could be authored oversized and grow
     through its run. Recovery: split or cut back the brief, then
     `uv run gz validate --brief-size`.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --brief-size``.
+
     """
     return run_command("uv run gz validate --brief-size", cwd=project_root)
 
@@ -1338,6 +1462,10 @@ def run_mx_hardening_audit(project_root: Path) -> QualityResult:
     advisory debt it carries, are announced and never fail the step. Recovery:
     close the hangar with `gz mx exit` through the gz-mx skill, then
     `uv run gz validate --mx-hardening`.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --mx-hardening``.
+
     """
     return run_command("uv run gz validate --mx-hardening", cwd=project_root)
 
@@ -1350,6 +1478,10 @@ def run_id_seam_audit(project_root: Path) -> QualityResult:
     cited id does not resolve. Recovery: import the grammar body from
     `gzkit.core.models` or call `gzkit.core.id_resolver`, then
     `uv run gz validate --id-seam`.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --id-seam``.
+
     """
     return run_command("uv run gz validate --id-seam", cwd=project_root)
 
@@ -1361,6 +1493,10 @@ def run_astral_discipline_audit(project_root: Path) -> QualityResult:
     hold appears (a restated Python version, an unchecked lock, a tool run outside
     the lock, an unregistered non-Astral tool) or a baseline row is dead. Recovery:
     the rule the message names, then `uv run gz validate --astral-discipline`.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --astral-discipline``.
+
     """
     return run_command("uv run gz validate --astral-discipline", cwd=project_root)
 
@@ -1372,6 +1508,10 @@ def run_complexity_ceiling_audit(project_root: Path) -> QualityResult:
     overall mean exceeds the cyclomatic ceiling Ruff reads, or when a function
     goes unmeasured. Recovery: split what the message names, then
     `uv run gz validate --complexity-ceiling`.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --complexity-ceiling``.
+
     """
     return run_command("uv run gz validate --complexity-ceiling", cwd=project_root)
 
@@ -1383,6 +1523,10 @@ def run_catalog_audit(project_root: Path) -> QualityResult:
     committed schema, repeats a code or id, or holds an outcome whose family the
     legend lacks. Recovery: correct the file the finding names, then
     `uv run gz validate --catalog`.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --catalog``.
+
     """
     return run_command("uv run gz validate --catalog", cwd=project_root)
 
@@ -1398,6 +1542,10 @@ def run_invariant_coherence_audit(project_root: Path) -> QualityResult:
     pre-push gate silently. The validator is clean-run-pure (no ledger write on
     match), so it is gate-safe like its rendition siblings. Recovery on drift:
     `uv run gz agent sync control-surfaces` to re-render, then commit.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --invariant-coherence``.
+
     """
     return run_command("uv run gz validate --invariant-coherence", cwd=project_root)
 
@@ -1432,6 +1580,10 @@ def run_wheel_path_literals_audit(project_root: Path) -> QualityResult:
     is inert coverage would be the defect wearing the fix's clothes. Recovery:
     replace the literal with a reader-supplied override, a repo-relative path,
     or a `$HOME`/`~` form, and move the surrounding prose with it.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --wheel-path-literals``.
+
     """
     return run_command("uv run gz validate --wheel-path-literals", cwd=project_root)
 
@@ -1455,6 +1607,10 @@ def run_doc_code_citations_audit(project_root: Path) -> QualityResult:
     the module that replaced it, or precede the item with
     ``<!-- gz-validate-skip: code-citation -->`` when the citation is
     historical, corrective, or prospective.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --doc-code-citations``.
+
     """
     return run_command("uv run gz validate --doc-code-citations", cwd=project_root)
 
@@ -1470,6 +1626,10 @@ def run_corpus_retirement_witness_audit(project_root: Path) -> QualityResult:
     curated pipeline, not the bare-`gz validate` default tier, so a scope absent
     here reads as ungated. Recovery: `uv run gz content reconcile-retirements
     <surface>`.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --corpus-retirement-witness``.
+
     """
     return run_command("uv run gz validate --corpus-retirement-witness", cwd=project_root)
 
@@ -1480,6 +1640,10 @@ def run_session_green_gate_audit(project_root: Path) -> QualityResult:
     Fails closed (exit 3) when .pre-commit-config.yaml declares no
     stages: [pre-push] hook running gz check. Recovery: add the hook
     (OBPI-0.0.68-01) and run pre-commit install --hook-type pre-push.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --session-green-gate``.
+
     """
     return run_command("uv run gz validate --session-green-gate", cwd=project_root)
 
@@ -1490,6 +1654,10 @@ def run_closeout_proof_audit(project_root: Path) -> QualityResult:
     Fails closed (exit 3) when any in-closeout ADR has unproven REQs.
     Exit 0: all proven. Exit 3: any unproven. Exit 2: dispatch I/O error.
     Recovery: ``gz validate --closeout-proof`` to see per-REQ details.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --closeout-proof``.
+
     """
     return run_command("uv run gz validate --closeout-proof", cwd=project_root)
 
@@ -1501,6 +1669,10 @@ def run_kind_invariance_audit(project_root: Path) -> QualityResult:
     placeholder-only "## Why foundation tier?" section. Recovery: add/update
     the section with a substantive one-sentence answer to the invariance test
     ('Without this ADR, the project would not be the project because ...').
+
+    Returns:
+        QualityResult of running ``uv run gz validate --kind-invariance``.
+
     """
     return run_command("uv run gz validate --kind-invariance", cwd=project_root)
 
@@ -1514,6 +1686,10 @@ def run_persona_witness_audit(project_root: Path) -> QualityResult:
     behavioral identity for agents working on that ADR (``uv run gz personas
     list`` for reusable definitions). Pre-cutover population is booked in
     ``data/persona_grandfather.json``, which is shrink-only.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --persona-witness``.
+
     """
     return run_command("uv run gz validate --persona-witness", cwd=project_root)
 
@@ -1526,6 +1702,10 @@ def run_receipt_shape_audit(project_root: Path) -> QualityResult:
     obpi_completion without attested_ prefix, or attestor matching ^agent:.
     Recovery: pre-cutoff receipts are registered in data/historical_self_close_waivers.json
     under OBPI-0.0.36-04.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --receipt-shape``.
+
     """
     return run_command("uv run gz validate --receipt-shape", cwd=project_root)
 
@@ -1539,6 +1719,10 @@ def run_req_kind_discipline_audit(project_root: Path) -> QualityResult:
     Recovery: add [BEHAVIOR], [SUPPORT], or [STRUCTURAL-FENCE] tag to each
     untagged REQ in the brief's Acceptance Criteria section, and supply the
     required proof citations per the kind.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --req-kind-discipline``.
+
     """
     return run_command("uv run gz validate --req-kind-discipline", cwd=project_root)
 
@@ -1553,6 +1737,10 @@ def run_status_writer_coverage_audit(project_root: Path) -> QualityResult:
     ``obpi_status_write_refusal`` directly and supply your own consequence, or —
     if the writer does not touch an OBPI brief — register it with a reason
     naming its scope in ``trust_audits/status_writer_coverage.py``.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --status-writer-coverage``.
+
     """
     return run_command("uv run gz validate --status-writer-coverage", cwd=project_root)
 
@@ -1567,6 +1755,10 @@ def run_transcribed_adr_counts_audit(project_root: Path) -> QualityResult:
     or fold. Recovery: delete the number and cite the command. A DATED RECORD
     belongs under a declared historical section or carries the inline
     ``<!-- historical-count -->`` marker — never rewrite history to match today.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --transcribed-adr-counts``.
+
     """
     return run_command("uv run gz validate --transcribed-adr-counts", cwd=project_root)
 
@@ -1578,6 +1770,10 @@ def run_insights_shape_audit(project_root: Path) -> QualityResult:
     drifts from the canonical `InsightRecord` schema. Pre-lock entries are
     waived by content hash in `_INSIGHTS_SHAPE_WAIVERS`; new writes must
     conform.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --insights-shape``.
+
     """
     return run_command("uv run gz validate --insights-shape", cwd=project_root)
 
@@ -1588,6 +1784,10 @@ def run_instructions_files_budget_audit(project_root: Path) -> QualityResult:
     Fails closed (exit 3) when any tracked instructions/memory file exceeds
     its per-file char budget defined in `data/instructions_files_budget.json`.
     Recovery: `/gz-context-diet` lifts inline pedagogy to `docs/governance/`.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --instructions-files-budget``.
+
     """
     return run_command("uv run gz validate --instructions-files-budget", cwd=project_root)
 
@@ -1600,6 +1800,10 @@ def run_agents_md_map_conformance_audit(project_root: Path) -> QualityResult:
     marker, prohibited subsection title, unresolvable link — or when the
     rendered `AGENTS.md` exceeds the budget declared in
     `data/instructions_files_budget.json`. Recovery: `/gz-context-diet`.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --agents-md-map-conformance``.
+
     """
     return run_command("uv run gz validate --agents-md-map-conformance", cwd=project_root)
 
@@ -1610,6 +1814,10 @@ def run_complexity_doctrine_links_audit(project_root: Path) -> QualityResult:
     Fails closed when any citation in the cluster ADRs (0.0.27 / 0.0.28 /
     0.0.29 / 0.0.30) or the rule body references a missing file, unresolved
     anchor, or non-portable corpus revision.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --complexity-doctrine-links``.
+
     """
     return run_command("uv run gz validate --complexity-doctrine-links", cwd=project_root)
 
@@ -1621,6 +1829,10 @@ def run_complexity_thresholds_audit(project_root: Path) -> QualityResult:
     or when any canonical metric is missing a per-metric section. Emits a
     ``bootstrap-mode`` warning (non-policy-breach) when the rule body
     declares the bootstrap-absolutes carve-out section.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --complexity-thresholds``.
+
     """
     return run_command("uv run gz validate --complexity-thresholds", cwd=project_root)
 
@@ -1634,6 +1846,10 @@ def run_orientation_freshness_audit(project_root: Path) -> QualityResult:
     `collect_state` -> `collect_remote_state` wiring that GHI #338 added.
     Recovery: `uv run gz agent sync control-surfaces` for hook drift; restore
     the script edit for script drift.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --orientation-freshness``.
+
     """
     return run_command("uv run gz validate --orientation-freshness", cwd=project_root)
 
@@ -1645,6 +1861,10 @@ def run_tautological_test_audit(project_root: Path) -> QualityResult:
     co-occurrences in tests/** exceeds baseline + waivers count.
     Recovery: update data/tautological_test_baseline.json or add waivers to
     data/tautological_test_waivers.json with rationale-key entries.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --tautological-test-audit``.
+
     """
     return run_command("uv run gz validate --tautological-test-audit", cwd=project_root)
 
@@ -1657,6 +1877,10 @@ def run_task_envelope_coherence_audit(project_root: Path) -> QualityResult:
     no req_atomic exemption, or (c) layer-drift across the four discovery channels.
     Recovery: populate task_id on worklog events, use gz task start --seq next
     for subdivision, or declare req_atomic in brief frontmatter for atomic REQs.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --task-envelope-coherence``.
+
     """
     return run_command("uv run gz validate --task-envelope-coherence", cwd=project_root)
 
@@ -1668,6 +1892,10 @@ def run_lock_exchange_coupling_audit(project_root: Path) -> QualityResult:
     (post-OBPI-02 cutover) lacks a valid handoff_path, references a missing
     file, has a predated frontmatter timestamp, or is missing min-info fields.
     Recovery: uv run gz validate --lock-exchange-coupling for diagnostics.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --lock-exchange-coupling``.
+
     """
     return run_command("uv run gz validate --lock-exchange-coupling", cwd=project_root)
 
@@ -1678,6 +1906,10 @@ def run_qc_binding_audit(project_root: Path) -> QualityResult:
     Fails closed (exit 3) when any bound QC step exhibits a theater signature
     or passes its own negative-control fixture.
     Recovery: uv run gz validate --qc-binding to see per-step details.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --qc-binding``.
+
     """
     return run_command("uv run gz validate --qc-binding", cwd=project_root)
 
@@ -1688,6 +1920,11 @@ def run_enforcement_floor_audit(project_root: Path) -> QualityResult:
     READ-ONLY on a clean run — no ledger mutation when all claims PASS (root=None).
     Fails closed when any enrolled claim lacks a passing un-forced NC (FACADE or TEST_BUG).
     Recovery: uv run gz validate --qc-binding to see per-step details; address any FACADE.
+
+    Returns:
+        A passing QualityResult with the verified claim count, or a failing one (returncode 3)
+        carrying the report.
+
     """
     from gzkit.enforcement import run_meta_validator  # noqa: PLC0415
 
@@ -1719,6 +1956,10 @@ def run_fidelity_presence_audit(project_root: Path) -> QualityResult:
     grandfathered pre-existing block-less ADRs in
     data/fidelity_presence_grandfather.json.
     Recovery: uv run gz validate --fidelity-presence to see the offending ADRs.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --fidelity-presence``.
+
     """
     return run_command("uv run gz validate --fidelity-presence", cwd=project_root)
 
@@ -1731,6 +1972,10 @@ def run_waiver_ratchet_audit(project_root: Path) -> QualityResult:
     cutover, or monotonic shrink-ratchet), or when an on-disk waiver data file is
     not registered (the silent-bypass). Mechanizes Boundary Invariant #8.
     Recovery: uv run gz validate --waiver-ratchet to see the offending surfaces.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --waiver-ratchet``.
+
     """
     return run_command("uv run gz validate --waiver-ratchet", cwd=project_root)
 
@@ -1744,6 +1989,10 @@ def run_config_registry_audit(project_root: Path) -> QualityResult:
     reference its registry, or when a ``relates_to`` edge is one-way. Companion to
     the waiver-ratchet gate; between them the two are exhaustive over ``data/*.json``.
     Recovery: uv run gz validate --config-registry to see the offending surfaces.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --config-registry``.
+
     """
     return run_command("uv run gz validate --config-registry", cwd=project_root)
 
@@ -1757,6 +2006,10 @@ def run_gate_callers_audit(project_root: Path) -> QualityResult:
     exists). This is the only mechanism that asks which gates nothing invokes;
     every other reachability check polices its own membership.
     Recovery: uv run gz validate --gate-callers to see the offending gates.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --gate-callers``.
+
     """
     return run_command("uv run gz validate --gate-callers", cwd=project_root)
 
@@ -1772,6 +2025,10 @@ def run_exemption_controls_audit(project_root: Path) -> QualityResult:
     first; four gates failed on the second half in one session, two of them
     while their controls were registered, enrolled and passing.
     Recovery: uv run gz validate --exemption-controls to see the claims.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --exemption-controls``.
+
     """
     return run_command("uv run gz validate --exemption-controls", cwd=project_root)
 
@@ -1786,6 +2043,10 @@ def run_gate_enrollment_audit(project_root: Path) -> QualityResult:
     The enforcement floor verifies the claims that are present and cannot notice a
     gate with none.
     Recovery: uv run gz validate --gate-enrollment to see the scopes.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --gate-enrollment``.
+
     """
     return run_command("uv run gz validate --gate-enrollment", cwd=project_root)
 
@@ -1800,6 +2061,10 @@ def run_population_controls_audit(project_root: Path) -> QualityResult:
     of a declared set passes it; the session-green gate checked one hook type of
     four (GHI #851).
     Recovery: uv run gz validate --population-controls to see the claims.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --population-controls``.
+
     """
     return run_command("uv run gz validate --population-controls", cwd=project_root)
 
@@ -1828,6 +2093,11 @@ def _handoff_section_grandfather(project_root: Path) -> frozenset[str]:
     Fails OPEN to the empty set (enforce everything) when the manifest is absent
     or unreadable: a missing waiver file must never silently widen the gate. The
     waiver-ratchet audit is what fail-closes on an unregistered or grown file.
+
+    Returns:
+        The tolerated handoff paths; an empty set when the manifest is absent, unreadable or
+        malformed.
+
     """
     path = project_root / _HANDOFF_SECTION_GRANDFATHER_REL
     try:
@@ -1848,6 +2118,10 @@ def _is_non_obpi_register_entry(content: str) -> bool:
     The token-block invariant governs OBPI tokens. The MX hangar's `mx-session`
     lock rides the same lock rail but is a session mutex, not a token, so its
     release record has no OBPI id and no parent ADR to carry (GHI #848).
+
+    Returns:
+        True when the entry's ``obpi_id`` names a non-OBPI lock key; otherwise False.
+
     """
     return bool(re.search(rf"^obpi_id:\s*(?!{OBPI_SHORT_ID_BODY})\S+", content, re.MULTILINE))
 
@@ -1859,6 +2133,11 @@ def _handoff_predates_cutover(content: str, cutover: datetime) -> bool:
     writer emits). An entry whose frontmatter is unparseable or carries no
     parseable timestamp is treated as legacy and grandfathered — it cannot have
     been authored by the reconciled go-forward writers.
+
+    Returns:
+        True when the handoff's timestamp is before ``cutover`` or the frontmatter or timestamp
+        cannot be parsed; otherwise False.
+
     """
     try:
         frontmatter = parse_frontmatter(content)
@@ -1893,6 +2172,11 @@ def run_handoff_document_audit(project_root: Path) -> QualityResult:
     `.gzkit/handoffs/`, a single-directory scan would have silently dropped every
     exchange record from the only authoring-time gate they had, and the gate would
     have kept reporting green.
+
+    Returns:
+        A passing QualityResult when no store exists or every post-cutover entry validates;
+        otherwise a failing one listing each invalid entry.
+
     """
     stores = [project_root / ".gzkit" / "handoffs", exchange_dir(project_root)]
     present = [d for d in stores if d.is_dir()]
@@ -1987,6 +2271,10 @@ def run_surface_fidelity_audit(project_root: Path) -> QualityResult:
     Fails closed when any of bullet_retention, surface_weight or
     pointer_integrity report errors. Invariant 4 (scenario reachability)
     was retired 2026-07-25 — see ADR-0.0.33 § Amendment (2026-07-25).
+
+    Returns:
+        QualityResult of running ``uv run gz validate --surface-fidelity``.
+
     """
     return run_command("uv run gz validate --surface-fidelity", cwd=project_root)
 
@@ -1997,6 +2285,10 @@ def run_line_endings_audit(project_root: Path) -> QualityResult:
     Fails closed when `.gitattributes` lacks the `* text=auto eol=lf`
     directive or any tracked text surface still carries CRLF — the recurring
     Windows<->Mac hazard (ADR-0.0.1; one-off fixes GHIs #478/#161/#384).
+
+    Returns:
+        QualityResult of running ``uv run gz validate --line-endings``.
+
     """
     return run_command("uv run gz validate --line-endings", cwd=project_root)
 
@@ -2007,6 +2299,10 @@ def run_smoke_tier(project_root: Path) -> QualityResult:
     Fails on discovery/test errors, budget breach, or an empty required tier;
     an empty optional tier passes with an advisory. The tier exists so the
     build-verification loop fits a budget the full suite cannot.
+
+    Returns:
+        QualityResult of running ``uv run gz smoke``.
+
     """
     return run_command("uv run gz smoke", cwd=project_root)
 
@@ -2031,6 +2327,11 @@ def run_module_size_audit(project_root: Path) -> QualityResult:
     self-test drives all four breach directions over synthetic data and costs
     no radon run. The chore's remaining criterion (the full unit suite) is
     deliberately NOT run here — `gz check` already runs it as its own step.
+
+    Returns:
+        The failing self-test result if the self-test fails; otherwise the result of the ratchet
+        run.
+
     """
     from gzkit.commands.chores import _resolve_chore_dir  # noqa: PLC0415
 
@@ -2053,6 +2354,11 @@ def run_tautological_debt_audit(project_root: Path) -> QualityResult:
 
     Invokes the chore's own script, self-test first, for the reason
     `run_module_size_audit` gives: one authority, and teeth verified before use.
+
+    Returns:
+        The failing self-test result if the self-test fails; otherwise the result of the debt-target
+        check.
+
     """
     from gzkit.commands.chores import _resolve_chore_dir  # noqa: PLC0415
 
@@ -2072,6 +2378,10 @@ def run_guard_canary_sweep_audit(project_root: Path) -> QualityResult:
     long as the sweep did. It is full-tier work: `src/gzkit/check_step_scopes.json`
     drops it from the per-change gate, and the binding check that reports a
     changed guard, claim or designated test stays in the unit tier.
+
+    Returns:
+        QualityResult of the guard-canary sweep subprocess.
+
     """
     from gzkit.guard_canary import SWEEP_COMMAND_SOURCE  # noqa: PLC0415
 
@@ -2093,6 +2403,11 @@ def source_checkout_chore_script(slug: str, script_name: str) -> Path | None:
     rather than the CWD makes their availability a property of the INSTALL, never
     of the working directory (the capture GHI #857 names): a gzkit source
     checkout carries them, a wheel install carries none.
+
+    Returns:
+        Path to the chore script in the source checkout, or None when it is not present (a wheel
+        install).
+
     """
     package_chores = Path(str(importlib.resources.files("gzkit.chores")))
     checkout = package_chores.parent.parent.parent
@@ -2106,6 +2421,10 @@ def project_local_ratchets_installed() -> bool:
     One predicate keys the `gz check` steps, their QC classification and their
     negative controls, so a wheel install never lists a bound step it cannot prove
     (QC binding's green-by-emptiness refusal) and a checkout never drops one.
+
+    Returns:
+        True when every projectLocal ratchet script resolves from the checkout; otherwise False.
+
     """
     return all(starmap(source_checkout_chore_script, PROJECT_LOCAL_RATCHETS))
 
@@ -2120,6 +2439,11 @@ def _run_project_local_ratchet(project_root: Path, slug: str, script_name: str) 
     a gate it was never delivered would make ``gz check`` unadoptable. Where the
     chore IS present, the self-test runs first for the reason
     ``run_module_size_audit`` gives, then the ratchet's own exit is the verdict.
+
+    Returns:
+        A passing skip result when the chore is absent, the failing self-test result if the
+        self-test fails, otherwise the ratchet run's result.
+
     """
     from gzkit.commands.chores import _resolve_chore_dir  # noqa: PLC0415
     from gzkit.commands.common import GzCliError  # noqa: PLC0415
@@ -2147,6 +2471,11 @@ def run_validator_reachability_audit(project_root: Path) -> QualityResult:
     The ratchet's only automatic caller was a pre-commit hook, so `gz check` and
     CI never ran it and a push could land an ungated scope with the gate green
     (operator ruling 2026-09-29: "Add both ratchets to gz check").
+
+    Returns:
+        QualityResult of the validator-reachability ratchet, or a passing skip when the chore is
+        absent.
+
     """
     return _run_project_local_ratchet(
         project_root, "control-surface-validator-reachability", "check_reachability.py"
@@ -2158,6 +2487,10 @@ def run_ledger_inertness_audit(project_root: Path) -> QualityResult:
 
     Same defect as `run_validator_reachability_audit`: a fail-closed ratchet
     whose only caller was a pre-commit hook, never `gz check` or CI.
+
+    Returns:
+        QualityResult of the ledger-inertness ratchet, or a passing skip when the chore is absent.
+
     """
     return _run_project_local_ratchet(
         project_root, "ledger-vocabulary-inertness", "check_ledger_inertness.py"
@@ -2171,6 +2504,10 @@ def run_authorship_audit(project_root: Path) -> QualityResult:
     declared `authorship.required_email_suffix`. A no-op in projects that
     declare no policy, so adopters inherit no identity rule of gzkit's.
     Recovery: `git config --local user.email '<handle>@users.noreply.github.com'`.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --authorship``.
+
     """
     return run_command("uv run gz validate --authorship", cwd=project_root)
 
@@ -2199,6 +2536,11 @@ def run_dispatch_absorption_marker_audit(project_root: Path) -> QualityResult:
     `gzkit.adr_eval_dispatch` in the evaluation scorecard; the receipt
     machinery that would *cause* one to be recorded remains
     `ADR-pool.obpi-pipeline-dispatch-attestation` Target Scopes #5/#6.
+
+    Returns:
+        A passing QualityResult when the pool ADR carries the absorption marker; a failing one when
+        it is missing or lacks the marker.
+
     """
     pool_adr = project_root / _POOL_ADR_DISPATCH
     if not pool_adr.exists():
@@ -2245,6 +2587,10 @@ def run_interviews_audit(project_root: Path) -> QualityResult:
     from reality goes unnoticed. Recovery: add the section to the ADR body,
     or — for a pre-convention ADR with no recoverable transcript — append a
     waiver entry with rationale.
+
+    Returns:
+        QualityResult of running ``uv run gz validate --interviews``.
+
     """
     return run_command("uv run gz validate --interviews", cwd=project_root)
 
@@ -2255,6 +2601,10 @@ def run_preflight(project_root: Path) -> QualityResult:
     Part of the canonical quality path so stale workflow artifacts apply
     self-healing pressure in the default operator loop rather than
     accumulating silently.
+
+    Returns:
+        QualityResult of running ``uv run gz preflight``.
+
     """
     return run_command("uv run gz preflight", cwd=project_root)
 
@@ -2425,6 +2775,11 @@ def _expand_allowed_paths(allowed_paths: list[str], project_root: Path) -> list[
     into the concrete files beneath them — so directory-scoped OBPIs are not
     invisible to every file-granular checker (surfaced at ADR-0.30.0 closeout:
     OBPI-01/02 scoped `src/gzkit/schemas/` and `tests/` as bare directories).
+
+    Returns:
+        The allowed paths with globs and directories expanded to their concrete relative files and
+        literal entries unchanged.
+
     """
     expanded: list[str] = []
     for path_str in allowed_paths:
@@ -2455,6 +2810,11 @@ def _check_data_or_schema_proof(allowed_paths: list[str], project_root: Path) ->
     Schema-shaped and registry-shaped OBPIs (e.g. ADR-0.0.22-01 schema field
     additions, ADR-0.0.22-02 data/security_surfaces.json) produce durable JSON
     artifacts whose existence the prior proof types could not see (GHI #363).
+
+    Returns:
+        True when an allowed path under ``data/`` or ``src/gzkit/schemas/`` as JSON exists with more
+        than 100 characters of content; otherwise False.
+
     """
     for path_str in allowed_paths:
         is_data = path_str.startswith("data/") and path_str.endswith(".json")
@@ -2510,6 +2870,11 @@ def _check_runbook_proof(
     OBPI clearly did runbook work regardless of slug-keyword coincidence. Keep
     the slug/id match as a short-circuit, fall back to allowed-path presence
     with a substantive-content bar.
+
+    Returns:
+        True when the runbook names the OBPI id or its slug keywords, or is itself a substantive
+        allowed path; otherwise False.
+
     """
     if obpi_id in runbook_text:
         return True
@@ -2530,6 +2895,11 @@ def _check_concepts_page_proof(allowed_paths: list[str], project_root: Path) -> 
     references) a named product-proof path. Foundation ADRs that land operator-
     facing doctrine under ``docs/user/concepts/`` satisfy proof via this
     check instead of tripping the closeout blocker.
+
+    Returns:
+        True when an allowed path under ``docs/user/concepts/`` exists with more than 100 characters
+        of content; otherwise False.
+
     """
     for path_str in allowed_paths:
         if not path_str.startswith("docs/user/concepts/"):
@@ -2588,6 +2958,11 @@ def _check_governance_artifact_proof(allowed_paths: list[str], project_root: Pat
     advisory-rules-audit.md, distribution_invariant_catalog.md, governance_runbook.md,
     state-doctrine.md, etc.); .gzkit/ alone was too narrow and silently classified
     those OBPIs as MISSING product proof (GHI #440, extending #89's type).
+
+    Returns:
+        True when an allowed path under ``.gzkit/`` or ``docs/governance/`` exists with more than
+        100 characters of content; otherwise False.
+
     """
     for path_str in allowed_paths:
         if not (path_str.startswith(".gzkit/") or path_str.startswith("docs/governance/")):
@@ -2643,6 +3018,11 @@ def _check_closeout_artifact_proof(allowed_paths: list[str], project_root: Path)
     judge's scorecard off the machine-regenerated one. It is the more
     substantive of the two by construction — the scorecard is a deterministic
     structural lint, the substance file is the recorded judgment.
+
+    Returns:
+        True when an allowed path naming a closeout-form or evaluation file under
+        ``docs/design/adr/`` exists with more than 100 characters of content; otherwise False.
+
     """
     for path_str in allowed_paths:
         if not path_str.startswith("docs/design/adr/"):
@@ -2669,6 +3049,11 @@ def _check_release_artifact_proof(allowed_paths: list[str], project_root: Path) 
     Recognizes patch-release manifests and similar release evidence files
     produced by ``gz patch release`` (e.g. ``docs/releases/PATCH-vX.Y.Z.md``)
     so OBPIs that ship release artifacts can satisfy product proof.
+
+    Returns:
+        True when an allowed path under ``docs/releases/`` exists with more than 100 characters of
+        content; otherwise False.
+
     """
     for path_str in allowed_paths:
         if not path_str.startswith("docs/releases/"):
@@ -2694,6 +3079,10 @@ def _check_decision_doc_proof(brief_text: str) -> bool:
     Decision-only OBPIs (Confirm existing code, Exclude domain-specific code)
     produce no file-based artifacts — the decision rationale in the brief IS
     the product proof.
+
+    Returns:
+        True when the brief text contains a Confirm/Exclude/Absorb decision; otherwise False.
+
     """
     return bool(_DECISION_PATTERN.search(brief_text))
 

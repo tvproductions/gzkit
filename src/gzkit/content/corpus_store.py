@@ -67,6 +67,10 @@ def append_entry(root: Path, surface: str, entry: CorpusEntry) -> Corpus:
     holds, so no writer can validate against a corpus another writer is replacing.
     Raises ``ValueError`` if the resulting corpus would break the tombstone algebra and
     ``OSError`` if the commit fails; in both cases the store is left byte-identical.
+
+    Returns:
+        The updated corpus including the appended entry.
+
     """
     path = corpus_path(root, surface)
     path.parent.mkdir(parents=True, exist_ok=True)

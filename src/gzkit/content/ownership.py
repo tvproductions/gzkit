@@ -139,6 +139,10 @@ def sections_digest(sections: Mapping[str, str]) -> str:
     copy alongside the sections it summarizes is a second source of truth that can
     disagree with itself, and re-deriving it here means the comparison is always
     against what the declaration actually says.
+
+    Returns:
+        The first 32 hex characters of the SHA-256 of the key-sorted, compact JSON of ``sections``.
+
     """
     canonical = json.dumps(dict(sorted(sections.items())), separators=(",", ":"))
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:32]
@@ -198,6 +202,10 @@ def _fence_run(line: str) -> tuple[str, int] | None:
     Measured: ``# a`` + the line + ``## b`` returned roster ``['a']`` for both,
     against a true ``['a', 'b']``. Tilde fences keep the permissive info-string
     rule, which is CommonMark's actual asymmetry, not an oversight.
+
+    Returns:
+        ``(fence char, run length)`` for a valid CommonMark fence line; None for any other line.
+
     """
     indent = len(line) - len(line.lstrip(" "))
     if indent > _MAX_FENCE_INDENT:
@@ -220,6 +228,11 @@ def _closes_fence(stripped: str, opening: tuple[str, int]) -> bool:
     CommonMark: the closing run uses the same character, is at least as long as
     the opening run, and carries no info string -- so the line is nothing but
     the run itself.
+
+    Returns:
+        True when ``stripped`` is a same-character run at least as long as the opening run with no
+        info string; otherwise False.
+
     """
     run = _fence_run(stripped)
     if run is None or run[0] != opening[0] or run[1] < opening[1]:
@@ -299,6 +312,10 @@ def iter_section_boundaries(surface_text: str) -> list[SectionBoundary]:
         block IS returned as a real boundary. Measured 2026-09-07: both
         governed surfaces (`AGENTS.md` and its rendition) carry 0 tilde
         fences and only balanced backtick fences today.
+
+    Returns:
+        The heading boundaries outside fences, in document order.
+
     """
     lines = surface_text.splitlines(keepends=True)
     raw: list[tuple[int, str, str, int]] = []
@@ -368,6 +385,10 @@ def measure_section_spans(surface_text: str) -> dict[str, int]:
     single heading whose TITLE changed but whose id did not (REQ-0.35.0-04-06)
     -- that case is one heading line, not two, and does not trigger this
     guard.
+
+    Returns:
+        Mapping of section id to its byte span.
+
     """
     spans: dict[str, int] = {}
     for boundary in iter_section_boundaries(surface_text):
@@ -392,6 +413,10 @@ def unowned_span_total(spans: Mapping[str, int], sections: Mapping[str, str]) ->
     unowned section still has the span it had when the prior floor was
     recorded, and the state that motivates owning a section -- an unowned
     section that GREW -- is exactly the state in which that assumption fails.
+
+    Returns:
+        The summed byte span of the sections declared ``unowned``; 0 when there are none.
+
     """
     return sum(span for sid, span in spans.items() if sections.get(sid) == "unowned")
 
@@ -437,6 +462,10 @@ def section_body_lines(surface_text: str, section: str) -> list[str] | None:
 
     Walks the same H1/H2 boundaries `measure_section_spans` walks, keyed by the
     same `section_id`, so what coverage reads is what the floor measures.
+
+    Returns:
+        The section's body lines without its heading, or None when no H1/H2 resolves to ``section``.
+
     """
     current: str | None = None
     found = False
@@ -463,6 +492,11 @@ def _entry_carries_line(entry_text: str, line: str) -> bool:
     A single-line entry carries the line when its text sits inside it verbatim
     (the leading structural marker -- `> `, `- `, `1. ` -- is the surface's);
     a multi-line entry carries the line when the line is one of its own.
+
+    Returns:
+        True when the entry text carries ``line`` (verbatim for a single-line entry, as a whole line
+        for a multi-line one); False for an empty entry or no match.
+
     """
     stripped = entry_text.strip()
     if not stripped:
@@ -478,6 +512,11 @@ def section_coverage(surface_text: str, corpus: Corpus, section: str) -> Section
     Raises `OwnershipLoadError` when no H1/H2 of *surface_text* resolves to
     *section* -- coverage of a section that is not there is not zero, it is
     a question about the wrong surface.
+
+    Returns:
+        SectionCoverage giving the section's content-line count, covered and uncovered lines, and
+        the ids of the covering entries.
+
     """
     body = section_body_lines(surface_text, section)
     if body is None:
@@ -676,6 +715,10 @@ def load_declaration(
     witness chain and the map digest all still hold, and the new floor the
     transition records must still be at or below the stored one. The keyword
     changes which map the arithmetic reads, never whether it is read.
+
+    Returns:
+        The validated OwnershipDeclaration.
+
     """
     raw = json.loads(path.read_text(encoding="utf-8"))
     declared_sections = raw.get("sections", {})
@@ -929,6 +972,11 @@ def _ownership_chain(ledger: Any, surface: str) -> tuple[list[Any], set[str]]:
     repository already carries, so rejecting such a chain would strand the
     surface permanently -- while skipping leaves an attacker's appended genesis
     rows achieving nothing at all.
+
+    Returns:
+        The surface's ownership rows in ledger order and the ids of the later genesis rows treated
+        as inert.
+
     """
     chain: list[Any] = []
     inert: set[str] = set()
@@ -1314,6 +1362,11 @@ def _superseded_witness_recovery(
     (GHI #978's missing-mechanism arm). Extracted because the branch is the
     refusal's whole content and `_refuse_superseded_witness` states the
     invariant, not the remedy.
+
+    Returns:
+        The recovery prose for the witness's state: a journalled retry, a restore from a saved copy,
+        or a plain statement that no governed recovery exists.
+
     """
     journal_path = declaration_journal_path(root, declared_surface)
     record: Any = None
@@ -1415,6 +1468,11 @@ def _journal_completes_this_gap(
       not merely a row wearing its id, compared through the same
       `expected_witness_extra` / `witness_divergence` pair `_append_event_once`
       uses.
+
+    Returns:
+        None when the journal proves the gap is this declaration's own pending move; otherwise the
+        reason the proof is unmet.
+
     """
     replay_defect = journal_replay_defect(record, surface=declared_surface)
     if replay_defect is not None:
@@ -1461,6 +1519,11 @@ def _journal_witness_defect(
     from the journal's serialized successor. On the write side the equivalent
     binding is `_checked_landed_snapshot`, which compares the same map against
     the declaration that actually landed.
+
+    Returns:
+        None when ``standing`` matches the journal's expected witness; otherwise a message naming
+        the divergent fields.
+
     """
     successor_sections = json.loads(record["declaration_json"])["sections"]
     expected = expected_witness_extra(
@@ -1529,6 +1592,10 @@ def stale_predecessor_defect(
     second implementation of it: `_journal_completes_this_gap`'s own docstring
     forbids a second reader holding a journal to a standard the other does not,
     and that is precisely the drift that produced its four-field acceptance.
+
+    Returns:
+        A PredecessorDefect explaining why the record may not be replayed, or None when it may.
+
     """
     chain, _inert = _ownership_chain(Ledger(root / ".gzkit" / "ledger.jsonl"), declared_surface)
     position = next(
@@ -1847,6 +1914,10 @@ def declaration_journal_path(root: Path, surface: str) -> Path:
     only after both writes succeed, so a retry COMPLETES the interrupted move
     with the same event id rather than starting a new one -- recovery from the
     write side, never by softening the loader (REQ-0.35.0-04-02).
+
+    Returns:
+        Path of the ``<surface>.json.journal`` file beside the declaration.
+
     """
     return declaration_path(root, surface).with_name(f"{surface}.json.journal")
 
@@ -1868,6 +1939,10 @@ def declaration_journal_source_path(root: Path, surface: str) -> Path:
     never a surface anything reads as authority. Nothing loads from this file;
     it is extracted to a side path for the operator to reconcile against, and
     the source surface is never rewritten from it.
+
+    Returns:
+        Path of the ``<surface>.json.journal.source`` file beside the declaration.
+
     """
     return declaration_path(root, surface).with_name(f"{surface}.json.journal.source")
 
@@ -1946,6 +2021,11 @@ def mint_event_id(record: Mapping[str, Any], parent_event_id: str | None) -> str
     and reason (un-own, re-own, un-own again) start from different predecessors
     and so earn different ids, where a pure content hash would collide and
     silently drop the second witness.
+
+    Returns:
+        The deterministic event id, shaped for an un-owning or an owning transition, ending in a
+        digest of the transition's content and parent.
+
     """
     fields: dict[str, Any] = {
         "surface": record["surface"],
@@ -1988,6 +2068,11 @@ def journal_replay_defect(record: Any, *, surface: str) -> JournalDefect | None:
     consulted: relationships to a declaration, a chain or a ledger row are the
     CALLER's to prove, because the two consumers stand in different states and
     prove them against different evidence.
+
+    Returns:
+        None when the record can be replayed for ``surface``; otherwise a JournalDefect naming the
+        class (forged or attestation) and the detail.
+
     """
     if not isinstance(record, dict):
         return JournalDefect("forged", f"expected a JSON object, found {type(record).__name__}")
@@ -2035,6 +2120,10 @@ def expected_witness_extra(
     serialized. Both then compare against a real ledger row through
     `witness_divergence`, so "the row standing here IS this journal's witness"
     is decided by one shape rather than by two field lists that can drift.
+
+    Returns:
+        The ``extra`` mapping the witness event for ``record`` carries.
+
     """
     extra: dict[str, Any] = {
         "surface": surface,
@@ -2064,6 +2153,11 @@ def witness_divergence(existing: Any, expected: Mapping[str, Any], event_type: s
     already witnessed (Step-4b round-5), and the loader's exemption needs the
     same statement: a journal whose `event_id` happens to name the row standing
     after a stale declaration has not shown that the row is ITS witness.
+
+    Returns:
+        Names of the fields on which ``existing`` disagrees, with ``event`` first when the event
+        type differs; empty when they agree.
+
     """
     divergent = [field for field, value in expected.items() if existing.extra.get(field) != value]
     if existing.event != event_type:
@@ -2095,6 +2189,11 @@ def _journal_successor_defect(record: Mapping[str, Any], *, surface: str) -> str
     unweakened and still runs where it can; this is the floor beneath it, not a
     replacement for it. The section map is pinned separately, against the
     attested row's own `sections_digest`.
+
+    Returns:
+        None when ``declaration_json`` is this transition's successor; otherwise the reason it is
+        not.
+
     """
     try:
         successor = json.loads(record["declaration_json"])
@@ -2126,6 +2225,10 @@ def declaration_path(root: Path, surface: str) -> Path:
     one function, mirroring the reason `section_id` is the one place a
     heading resolves to a section id: two surfaces independently deciding
     where declarations live are two surfaces that can disagree.
+
+    Returns:
+        Path of ``.gzkit/ownership/<surface>.json`` under ``root``.
+
     """
     return root / ".gzkit" / "ownership" / f"{surface}.json"
 
@@ -2223,6 +2326,11 @@ def record_unowned_total(
     that makes this reachable (OBPI-0.35.0-05's materialization path) must
     either route through the journalled transaction or lift it into a shared
     primitive before this ships live.
+
+    Returns:
+        A new OwnershipDeclaration built from the committed declaration with the recorded floor and
+        event id applied.
+
     """
     # Fast path only: refusing here touches nothing under *root* (not even a
     # lock sidecar), which is what makes the "nothing is written" claim
@@ -2304,6 +2412,11 @@ def _committed_state(
     `declaration.surface`, so the two can only disagree if the file on disk
     belongs to a different control surface -- writing through that would
     destroy another surface's declaration under a lock taken in its name.
+
+    Returns:
+        The committed declaration mapping, its ``unowned_byte_floor`` and its ``floor_event_id``;
+        taken from ``declaration`` when no file exists yet.
+
     """
     if not path.exists():
         return (
@@ -2338,6 +2451,10 @@ def _ratchet_refusal(surface: str, total: int, floor: int, *, floor_is_committed
     earlier moment and, by this module's own comment above that call site,
     possibly stale. Naming a possibly-stale parameter "the current committed
     value" would tell an operator to check the wrong number.
+
+    Returns:
+        The three-part refusal message (what failed, why forbidden, next step).
+
     """
     floor_label = (
         f"the current committed value {floor}"
@@ -2376,6 +2493,11 @@ def _mint_ratchet_event_id(
     write time, which is not necessarily the one the caller read. A chain link
     minted from a stale predecessor points at something that is no longer the
     predecessor, which is a broken chain wearing a valid-looking id.
+
+    Returns:
+        ``unowned-ratchet-updated-<surface>-<digest>``, where the digest covers the surface, both
+        floors and the parent event id.
+
     """
     payload = json.dumps(
         {
@@ -2424,6 +2546,10 @@ def compute_baseline(surface_text: str, corpus: Corpus) -> OwnershipBaseline:
     its section id; every other measured section is 'unowned'. Coverage is
     owned byte span over total byte span (REQ-0.35.0-04-07), never rounded or
     averaged (REQ-0.35.0-04-08).
+
+    Returns:
+        OwnershipBaseline with owned and total section counts and the unowned and total byte spans.
+
     """
     spans = measure_section_spans(surface_text)
     entry_count_by_section: dict[str, int] = {}

@@ -60,6 +60,11 @@ def _stored_record(text: str) -> dict[str, Any] | None:
     no writer deletes. ``append`` is not the validator: a row that decodes but
     fails the event schema is a finding for ``gz validate --ledger`` to report,
     never bytes for a writer to discard.
+
+    Returns:
+        The parsed record dict, or None when the text is blank, is not valid JSON, or does not
+        decode to an object.
+
     """
     stripped = text.strip()
     if not stripped:
@@ -84,6 +89,10 @@ def _extract_bare_adr_semver(adr_id: str) -> str | None:
     ``ADR-0.0.22`` and ``ADR-0.0.22-security-sensitivity-doctrine`` into the
     same identity for idempotency without requiring an explicit
     ``artifact_renamed`` event between them (GHI #279).
+
+    Returns:
+        The bare ``ADR-X.Y.Z`` id, or None when the id carries no foundation/feature semver.
+
     """
     match = _ADR_SEMVER_RE.match(adr_id)
     if match is None:
@@ -100,6 +109,10 @@ def extract_bare_obpi_id(obpi_id: str) -> str | None:
     identity when reconciling ledger touched ids against on-disk canon.
     Returns ``None`` for pool OBPIs and any id that does not match the
     indexed semver shape.
+
+    Returns:
+        The bare ``OBPI-X.Y.Z-NN`` id, or None for pool OBPIs and non-matching ids.
+
     """
     match = _OBPI_BARE_RE.match(obpi_id)
     if match is None:
@@ -114,6 +127,11 @@ def slug_id_for(artifact_id: str, resolved_stem: str) -> str:
     bare id an operator typed orphans the event from its artifact until a rename
     is appended (GHI #1118). Producers pass the stem of the file they resolved
     and record the result; any other pairing returns ``artifact_id`` unchanged.
+
+    Returns:
+        ``resolved_stem`` when it is the slug form of bare ``artifact_id``; otherwise
+        ``artifact_id`` unchanged.
+
     """
     if resolved_stem.startswith("OBPI-"):
         bare = extract_bare_obpi_id(resolved_stem)
@@ -261,6 +279,11 @@ class LedgerEvent(BaseModel):
         :class:`Ledger`'s documented strict contract. The defect was never that
         the model failed to refuse what it could see; it was that it invented
         what was absent.
+
+        Returns:
+            The validated ``LedgerEvent``, with an absent ``schema`` or ``ts`` stored as an empty
+            string rather than a default.
+
         """
         row = dict(data)
         if "schema" not in row and "schema_" not in row:
@@ -280,6 +303,10 @@ def ledger_row(typed: BaseModel) -> LedgerEvent:
     construction-time stamp reached the file and inverted two writers' order
     (GHI #1074). So a defaulted ``ts`` is dropped here for the writer to supply,
     and a genuinely stated one is preserved.
+
+    Returns:
+        The ``LedgerEvent`` row, with ``ts`` omitted when the typed event never stated it.
+
     """
     payload = typed.model_dump()
     if "ts" not in typed.model_fields_set:
@@ -310,6 +337,11 @@ def parse_frontmatter_value(content: str, key: str) -> str | None:
     and BOM-less UTF-16/32 — is NOT closed here; it needs one shared tri-state
     reader (valid / absent / malformed) across this module, ``taxonomy.py``, and
     ``sync.py``, and is tracked at GHI #736.
+
+    Returns:
+        The stripped, unquoted value for ``key``, or None when there is no frontmatter block or the
+        key is absent.
+
     """
     lines = content.replace("﻿", "").splitlines()
     if not lines or lines[0].strip() != "---":
@@ -483,6 +515,11 @@ class Ledger:
         MUST be called under :func:`~gzkit.file_lock.exclusive_file_lock`: it
         writes, and a concurrent appender's bytes would be inside the window it
         computes. :meth:`append` is the only caller for that reason.
+
+        Returns:
+            A ``BoundaryRepair`` naming the action ("intact", "discarded" for residue removed, or
+            "terminated" for a complete record given its newline) and the byte count affected.
+
         """
         size = self.path.stat().st_size
         if size == 0:
@@ -655,6 +692,11 @@ class Ledger:
 
         Used by emission paths to enforce idempotency and prevent the
         duplicate ``adr_created`` class surfaced in GHI #279.
+
+        Returns:
+            True if any ``adr_created`` event matches ``adr_id`` by canonical id or bare semver;
+            otherwise False.
+
         """
         target = self.canonicalize_id(adr_id)
         target_bare = _extract_bare_adr_semver(target)
@@ -681,6 +723,11 @@ class Ledger:
         and it is the only one, so it is where the envelope must be read rather
         than defaulted. See that method for what a default at this boundary let
         through.
+
+        Returns:
+            Every validated row in file order, served from the cache when present; an empty list
+            when the ledger file does not exist.
+
         """
         if self._cached_events is not None:
             return self._cached_events
@@ -740,6 +787,10 @@ class Ledger:
         subject genuinely is every row.
 
         Results are cached for the lifetime of this Ledger instance.
+
+        Returns:
+            The cached corrected event list, in chronological order.
+
         """
         if self._cached_live is None:
             self._cached_live = live_events(self.read_history())
@@ -760,6 +811,10 @@ class Ledger:
         it silently moved evidence consumers with it: a discharged
         ``obpi_lock_released`` vanished from ``handoff_archive._locked_paths``,
         so the exchange record a real token surrender cited became archivable.
+
+        Returns:
+            The cached evidentiary event list: void rows dropped, discharged rows kept.
+
         """
         if self._cached_evidence is None:
             self._cached_evidence = evidence_events(self.read_history())
@@ -830,6 +885,10 @@ class Ledger:
         Pairs are extracted from the typed events directly rather than via
         ``model_dump()`` — this runs on every ``canonicalize_id`` and gate-status
         read, so the whole event list is not re-serialized per call.
+
+        Returns:
+            Mapping of each observed id to its latest renamed id.
+
         """
         return fold_renames(
             (event.id, new_id)
@@ -855,6 +914,10 @@ class Ledger:
         its witness counts ``read_all`` CALLS rather than replays. Honoring the
         REQ at the surface keeps that witness exact instead of loosening it to
         accommodate a redundant call.
+
+        Returns:
+            The cached rename map, folded from ``events`` or the corrected stream on first call.
+
         """
         if self._cached_rename_map is None:
             source = self.read_all() if events is None else events
@@ -877,6 +940,11 @@ class Ledger:
         (``ADR-X.Y.Z``) and exactly one graph key starts with ``ADR-X.Y.Z-``,
         return the long form. Ambiguous prefixes return unchanged. Non-ADR
         ids and already-canonical ids pass through.
+
+        Returns:
+            The canonical id, expanded to the unique long-form ADR graph key when exactly one
+            matches; otherwise the canonical id unchanged.
+
         """
         canonical = self.canonicalize_id(artifact_id)
         if not canonical.startswith("ADR-"):
@@ -950,6 +1018,11 @@ class Ledger:
         Use this for display surfaces (`gz adr report`, `gz adr status`).
         Use raw `get_latest_gate_statuses` for prerequisite checks
         (`_attestation_gate_snapshot`) where lifecycle isn't yet validated.
+
+        Returns:
+            Mapping of gate number to status, with post-validation ``fail`` observations reported as
+            ``pass``.
+
         """
         events = self.read_all()
         rename_map = self._rename_map(events)
@@ -1008,6 +1081,11 @@ class Ledger:
         the lifecycle-authoritative effective value, so display surfaces can
         annotate the smoothed `pass` with the underlying observation. Returns a
         sorted list of gate ids; empty when there is no laundering to surface.
+
+        Returns:
+            Sorted gate numbers whose raw latest status is ``fail`` while the effective status is
+            ``pass``; empty when there are none.
+
         """
         raw = self.get_latest_gate_statuses(adr_id)
         effective = self.get_effective_gate_statuses(adr_id)
@@ -1407,6 +1485,11 @@ class Ledger:
         Building the graph is the single replay; this returns the manifest
         captured during it (no second ``read_all``). Consumed by the ontology
         corpus projection for its rebuild-fidelity self-report.
+
+        Returns:
+            The manifest captured during the graph replay, or an empty ``LedgerReplayManifest`` when
+            none was captured.
+
         """
         self.get_artifact_graph()
         return self._replay_manifest or LedgerReplayManifest()
@@ -1500,6 +1583,11 @@ def read_corrected_rows(
 
     ``stream`` selects the same two readings :meth:`Ledger.read_all` and
     :meth:`Ledger.read_evidence` select, over the flattened dict shape.
+
+    Returns:
+        The decodable rows with corrections applied, as the live or evidence stream per ``stream``;
+        an empty list when the ledger file does not exist.
+
     """
     if not ledger_path.is_file():
         return []

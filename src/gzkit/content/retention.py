@@ -105,6 +105,10 @@ def _normalize_document(text: str) -> str:
 
     Shared by ``split_blocks`` and ``removed_blocks`` so a prior block and the
     candidate it is compared against are normalized identically (Requirement 2).
+
+    Returns:
+        The text with LF line endings and trailing whitespace stripped from each line.
+
     """
     text = text.replace("\r\n", "\n").replace("\r", "\n")
     return "\n".join(line.rstrip() for line in text.split("\n"))
@@ -135,6 +139,10 @@ def _leading_marker_len(block_text: str) -> int:
     followed by '.' and a space, at the very start of the block. Like
     the markdown markup characters, it is excluded from meaningful-
     character coverage (Requirement 3) — it names structure, not meaning.
+
+    Returns:
+        The length of the leading list marker, or 0 when there is none.
+
     """
     match = _LIST_MARKER_RE.match(block_text)
     return match.end() if match else 0
@@ -148,6 +156,11 @@ def _is_meaningful_char(ch: str, position: int, marker_len: int) -> bool:
     every other non-whitespace character — including symbols such as
     ``--``, ``<=``, ``%`` — changes meaning and must lie inside some
     condition or non-binding quote (Requirement 3).
+
+    Returns:
+        True when the character is not whitespace, not markup and past the leading marker; otherwise
+        False.
+
     """
     if ch.isspace():
         return False
@@ -163,6 +176,10 @@ def meaningful_positions(block_text: str) -> list[int]:
     and the block's leading list marker are excluded; every other character is
     meaning. The pipeline control inventory reads coverage through this function
     (OBPI-0.35.0-17) rather than through the private helpers.
+
+    Returns:
+        The positions of every character a quote must cover.
+
     """
     marker = _leading_marker_len(block_text)
     return [pos for pos, ch in enumerate(block_text) if _is_meaningful_char(ch, pos, marker)]
@@ -398,6 +415,10 @@ def _uncovered_text(text: str, marked: list[bool], start: int, end: int) -> str:
     Contiguous unmarked runs are extracted, each stripped of surrounding
     whitespace, and joined with a single space — the "unmarked text" named
     in an ``uncovered-sentence`` violation message.
+
+    Returns:
+        The non-empty unmarked runs in ``[start, end)``, each stripped, joined with single spaces.
+
     """
     runs: list[str] = []
     run_start: int | None = None
@@ -420,6 +441,10 @@ def _id_in_attestation(condition_id: str, attestation_text: str) -> bool:
     inside "C10", falsely treating an attestation of one drop as covering
     another. A token boundary is anything other than a letter, digit,
     underscore or hyphen.
+
+    Returns:
+        True when the id occurs at a token boundary; otherwise False.
+
     """
     pattern = rf"(?<![A-Za-z0-9_-]){re.escape(condition_id)}(?![A-Za-z0-9_-])"
     return re.search(pattern, attestation_text) is not None
@@ -553,6 +578,11 @@ def _check_map_entry_shape(
     order: a removed block absent from the map is ``unmapped-removed-block``;
     two entries for the same removed text is ``duplicate-removed-block``; a
     map entry naming no removed block of this delta is ``unknown-removed-block``.
+
+    Returns:
+        Violations for unmapped, duplicate and unknown removed-block entries; empty when there are
+        none.
+
     """
     mapped_removed_texts = {block.removed for block in retention_map.blocks}
     violations = _check_unmapped_removed_blocks(removed, mapped_removed_texts)
@@ -567,6 +597,10 @@ def _mark_covered_positions(block_text: str, block_map: RemovedBlock) -> list[bo
     condition quote or non-empty non_binding quote — overlap is NOT
     coverage, so a quote naming three words of a sentence leaves the rest
     of that sentence unmarked (GHI #1090).
+
+    Returns:
+        Per-character flags, True where a non-empty condition or non-binding quote occurs.
+
     """
     marked = [False] * len(block_text)
     for condition in block_map.conditions:
@@ -585,6 +619,10 @@ def _check_empty_non_binding_quotes(
 
     ``"" in s`` is always True, so it would otherwise pass the coverage
     check while naming nothing (GHI #1090/#1091).
+
+    Returns:
+        One ``empty-quote`` violation per blank non-binding quote; empty when there are none.
+
     """
     return [
         RetentionViolation(
@@ -610,6 +648,11 @@ def _check_empty_non_binding_reason(
     would turn a map defect into a malformed-map exit 1 and hide every other
     violation, while Requirement 3 needs every violation reported in one
     refusal (amended 2026-09-25 by operator ruling; aux-empty-nonbinding-reason).
+
+    Returns:
+        One ``non-binding-without-reason`` violation per blank non-binding reason; empty when there
+        are none.
+
     """
     return [
         RetentionViolation(
@@ -669,6 +712,11 @@ def _check_condition_quote(
     An empty/whitespace-only quote is itself a violation: ``"" in s`` is
     always True, so it would otherwise trivially pass the quote-in-block
     check and silently cover every sentence.
+
+    Returns:
+        An ``empty-quote`` or ``quote-not-in-block`` violation, or an empty list when the quote is
+        valid.
+
     """
     if not condition.quote.strip():
         return [
@@ -704,6 +752,11 @@ def _check_condition_kept_span(
     stripped) exactly as the candidate is, before the substring check
     (Requirement 4) — otherwise a CRLF candidate would falsely appear to
     have dropped every KEPT span.
+
+    Returns:
+        An ``empty-span`` or ``kept-span-not-in-candidate`` violation, or an empty list when the
+        span is valid or the condition is not KEPT.
+
     """
     if condition.disposition != "kept":
         return []
@@ -794,6 +847,10 @@ def check_map_target(
     authored for one (surface, consumer) pair must never silently govern a
     different one's promotion (aux-retention-map-target-unbound; amended
     2026-09-25 by operator ruling).
+
+    Returns:
+        Violations for each target field that differs from this invocation's; empty when they match.
+
     """
     violations: list[RetentionViolation] = []
     if retention_map.surface != surface:
@@ -864,5 +921,9 @@ def retention_path(root: Path, surface: str, consumer: str) -> Path:
     Layout: `<root>/.gzkit/renditions/<surface>/<consumer>.retention.json`
 
     This mirrors the pattern from lineage.py::lineage_path.
+
+    Returns:
+        Path of ``.gzkit/renditions/<surface>/<consumer>.retention.json`` under ``root``.
+
     """
     return root / ".gzkit" / "renditions" / surface / f"{consumer}.retention.json"

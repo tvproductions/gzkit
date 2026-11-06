@@ -43,6 +43,11 @@ def _persona_frame(project_root: Path, role: str) -> list[str]:
     behavioral frame ADR-0.0.11 makes a first-class control surface reaches
     it only if the prompt carries it. Returns an empty list when the role
     has no mapping or the persona file is absent.
+
+    Returns:
+        The Persona heading and body lines, or an empty list when the role has no persona or its
+        file is empty.
+
     """
     stem = ROLE_PERSONA_MAP.get(role)
     if stem is None:
@@ -58,6 +63,10 @@ def _why_frame(why: str) -> list[str]:
 
     The subagent cannot see why this task exists; without it, it cannot tell
     signal from noise in the surface it is handed.
+
+    Returns:
+        The Why heading and the stripped rationale lines.
+
     """
     return ["### Why", "", why.strip(), ""]
 
@@ -68,6 +77,11 @@ def _threshold_criterion(project_root: Path) -> str:
     Per `AGENTS.md` § Governance doctrine surfaces, thresholds are
     read from JSON, never restated in prose. The band values are rendered from
     the table so that editing the table moves the prompt.
+
+    Returns:
+        The size/complexity criterion line citing the threshold table and its block bands, or noting
+        the table is unreadable.
+
     """
     cite = f"the block bands declared in `{THRESHOLD_TABLE_PATH}`"
     table_path = project_root / THRESHOLD_TABLE_PATH
@@ -192,6 +206,10 @@ def extract_plan_tasks(plan_content: str) -> list[dict[str, str]]:
     Recognises two patterns:
     - Headings: ``## Task 1: description``
     - Numbered items: ``1. description``
+
+    Returns:
+        Task dicts with ``id`` and ``description``, in plan order.
+
     """
     tasks: list[dict[str, str]] = []
     for line in plan_content.splitlines():
@@ -309,6 +327,10 @@ def parse_handoff_result(agent_output: str) -> HandoffResult | None:
 
     Looks for a JSON code block containing the result fields.
     Returns None if no valid result block is found.
+
+    Returns:
+        The parsed HandoffResult, or None if no valid result block is found.
+
     """
     match = _RESULT_JSON_RE.search(agent_output)
     if not match:
@@ -357,6 +379,10 @@ def handle_task_result(
     """Process a subagent result and return the next action.
 
     Returns one of: "advance", "redispatch", "fix", "handoff", "complete".
+
+    Returns:
+        The next action: "advance", "redispatch", "fix", "handoff" or "complete".
+
     """
     if task_index < 0 or task_index >= len(state.records):
         return "handoff"
@@ -423,6 +449,10 @@ def should_dispatch_review(status: HandoffStatus) -> bool:
     """Return True only for terminal-success statuses that warrant review.
 
     DONE and DONE_WITH_CONCERNS trigger review. BLOCKED and NEEDS_CONTEXT do not.
+
+    Returns:
+        True for DONE or DONE_WITH_CONCERNS; otherwise False.
+
     """
     return status in {HandoffStatus.DONE, HandoffStatus.DONE_WITH_CONCERNS}
 
@@ -432,6 +462,10 @@ def select_review_model(complexity: TaskComplexity) -> str:
 
     Reviews always require judgment -- never route to haiku.
     SIMPLE and STANDARD use sonnet; COMPLEX uses opus.
+
+    Returns:
+        The review model for the complexity tier.
+
     """
     return REVIEW_MODEL_MAP[complexity]
 
@@ -460,6 +494,11 @@ def reviewer_capability(project_root: Path, agent: str) -> ReviewerCapability:
     Fails safe toward the restrictive claim: an unreadable or absent definition
     reports no execution, because promising a capability the reviewer may not
     have is the direction that produces the unrunnable ask.
+
+    Returns:
+        ReviewerCapability with the declared tools and whether any grants execution; no tools or
+        execution when the definition is unreadable or has no grant.
+
     """
     definition = project_root / ".claude" / "agents" / f"{agent}.md"
     try:
@@ -571,6 +610,10 @@ def compose_spec_review_prompt(
 
     The reviewer must independently verify all requirements.
     Output carries legacy ReviewResult and a receipt-bound acceptance review.
+
+    Returns:
+        The spec-review prompt text.
+
     """
     lines = _persona_frame(project_root, "Reviewer")
     lines.extend(
@@ -631,6 +674,10 @@ def compose_quality_review_prompt(
     Reviewer checks SOLID principles, size limits, test coverage, error handling,
     cross-platform compliance, and Pydantic conventions.
     Output carries legacy ReviewResult and a receipt-bound acceptance review.
+
+    Returns:
+        The quality-review prompt text.
+
     """
     lines = _persona_frame(project_root, "QualityReviewer")
     lines.extend(
@@ -697,6 +744,10 @@ def review_result_from_envelope(response: ReviewResponse) -> ReviewResult:
     severity; an auxiliary observation (no obligation) is informational and never
     blocks. The reviewer's own coverage limits stay in ``verification_gaps``
     (GHI #941, #1095).
+
+    Returns:
+        ReviewResult whose verdict and findings are derived from the envelope.
+
     """
     findings = [
         ReviewFinding(
@@ -734,6 +785,11 @@ def parse_review_result(reviewer_output: str) -> ReviewResult | None:
     the output carries exactly one valid envelope, the result derives from it and
     any legacy block is ignored. Output with no envelope falls back to the legacy
     JSON block. Returns None if neither yields a valid result.
+
+    Returns:
+        The ReviewResult from the single envelope or the legacy block, or None if neither yields a
+        valid result.
+
     """
     envelopes = review_objects(reviewer_output)
     if len(envelopes) == 1:
@@ -761,6 +817,10 @@ def review_blocks_advancement(result: ReviewResult) -> bool:
 
     FAIL always blocks. CONCERNS with critical findings blocks.
     PASS never blocks. CONCERNS without critical findings does not block.
+
+    Returns:
+        True for FAIL, or CONCERNS with a critical finding; otherwise False.
+
     """
     return result.verdict == ReviewVerdict.FAIL or (
         result.verdict == ReviewVerdict.CONCERNS and review_has_critical_findings(result)
@@ -785,6 +845,10 @@ def handle_review_cycle(
     - If quality blocks advancement: increment review_fix_count, return "fix" or "blocked".
     - Current Stage 2 acceptance readiness is required even when both reviews pass.
       The caller obtains it from the acceptance store for the current artifacts.
+
+    Returns:
+        The next action: "advance", "fix" or "blocked".
+
     """
     if task_index < 0 or task_index >= len(state.records):
         return "blocked"

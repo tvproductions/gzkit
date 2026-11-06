@@ -27,6 +27,10 @@ def _claude_home() -> Path:
     Honors the ``GZKIT_CLAUDE_HOME`` environment variable so tests can point
     plan-discovery at an isolated fake home without monkey-patching the
     subprocess hook.
+
+    Returns:
+        ``GZKIT_CLAUDE_HOME`` as a path when set; otherwise the user's home directory.
+
     """
     override = os.environ.get("GZKIT_CLAUDE_HOME")
     if override:
@@ -70,6 +74,10 @@ def _obpi_short_form(obpi_id: str) -> str:
     reference the short form. Matching on the short form ensures both
     callers — short-form and canonical-slug — agree on plan identity
     (GHI #313).
+
+    Returns:
+        The ``OBPI-X.Y.Z-NN`` short form when present in the id; otherwise the id unchanged.
+
     """
     match = _OBPI_SHORT_FORM_RE.search(obpi_id)
     return match.group(0) if match else obpi_id
@@ -95,6 +103,10 @@ def pipeline_plans_dir(project_root: Path) -> Path:
     Claude Code's plan mode produces) may originate here OR in
     ``~/.claude/plans/``; use ``pipeline_plan_search_dirs`` and
     ``find_plan_for_obpi`` for plan discovery (#128).
+
+    Returns:
+        Path of ``.claude/plans`` under ``project_root``.
+
     """
     return project_root / ".claude" / "plans"
 
@@ -111,6 +123,11 @@ def pipeline_plan_search_dirs(project_root: Path) -> list[Path]:
     Project-local is listed first so a plan that exists in both wins from the
     project (its mtime is the more authoritative signal once a plan has been
     promoted into governance evidence).
+
+    Returns:
+        The existing, deduplicated plan directories: project-local first, then the global user plans
+        directory.
+
     """
     project_local = project_root / ".claude" / "plans"
     global_local = _claude_home() / ".claude" / "plans"
@@ -139,6 +156,11 @@ def _declared_obpi_ids(plan_path: Path) -> set[str]:
     in the H1 and only 217 in the filename, so filename-only ownership would
     orphan every auto-named plan. The two that declare neither own no OBPI (one
     is ADR-scoped, one is a superseded stub).
+
+    Returns:
+        The short-form OBPI ids found in the filename and declaration block; only the filename's
+        when the file cannot be read.
+
     """
     declared = set(_OBPI_SHORT_FORM_RE.findall(plan_path.name))
     try:
@@ -168,6 +190,10 @@ def plan_declares_obpi(plan_path: Path, obpi_id: str) -> bool:
     Ownership is DECLARED (filename, H1, or ``**OBPI:**`` label), never
     incidental. Comparison is on the short form so the short-form and
     canonical-slug callers agree (GHI #313, GHI #967).
+
+    Returns:
+        True when the plan declares ``obpi_id``; False for an empty id or a mere mention.
+
     """
     if not obpi_id:
         return False
@@ -183,6 +209,10 @@ def find_plan_for_obpi(project_root: Path, obpi_id: str) -> Path | None:
     the project-local plans directory so the plan, the receipt, and the
     pipeline marker stay co-located. Returns the project-local path the
     caller should treat as authoritative, or ``None`` if no plan was found.
+
+    Returns:
+        The project-local path of the newest plan for the OBPI, or None if no plan was found.
+
     """
     if not obpi_id:
         return None
@@ -234,6 +264,10 @@ def load_pipeline_json(path: Path) -> dict[str, Any] | None:
     covers what the decoder itself refuses: ``ValueError`` holds undecodable
     bytes, bad JSON and an integer past the conversion limit, and nesting past
     its depth raises ``RecursionError`` (GHI #1205).
+
+    Returns:
+        The JSON object, or None when the file is missing, unreadable, invalid or not an object.
+
     """
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
@@ -331,6 +365,10 @@ def pipeline_marker_payload(
     ``pipeline_launched`` ledger event. The caller may pass an explicit
     nonce (used by tests and replay paths); otherwise a fresh one is
     generated.
+
+    Returns:
+        The marker payload mapping.
+
     """
     timestamp = datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     payload: dict[str, Any] = {
@@ -410,6 +448,10 @@ def restore_pipeline_marker_twin(plans_dir: Path, obpi_id: str) -> tuple[Path, P
     Returns ``(restored, copied_from)``, or ``None`` when there is nothing to
     restore: both files are on disk, neither is, or the one on disk does not
     read as this OBPI's marker.
+
+    Returns:
+        ``(restored, source)`` paths when a missing twin was restored; otherwise None.
+
     """
     per_obpi, legacy = pipeline_marker_paths(plans_dir, obpi_id)
     for source, missing in ((per_obpi, legacy), (legacy, per_obpi)):
@@ -436,6 +478,10 @@ def _position_payload(position: Mapping[str, str]) -> dict[str, str]:
     this module never imports, so the shape is checked here: exactly a
     non-empty ``kind``, ``label`` and ``boundary``. Anything else is a position
     no replay of the ledger could produce.
+
+    Returns:
+        A copy of ``position`` as a plain dict.
+
     """
     well_formed = set(position) == _POSITION_KEYS and all(
         isinstance(value, str) and value for value in position.values()
@@ -465,6 +511,9 @@ def advance_pipeline_markers(
     time (the ledger event's ``ts``), so a replay restores the same value. The
     caller appends the ledger event first. Returns the payload written, or
     ``None`` when no marker names ``obpi_id``.
+
+    Returns:
+        The payload written, or None when no marker names ``obpi_id``.
 
     Raises:
         ValueError: when ``stage`` is not canonical, or ``position`` is not
@@ -557,6 +606,10 @@ def purge_orphaned_active_markers(
     in the returned list so the cleanup is auditable and not a silent unlink.
     The function itself does not import the ledger; it consumes the
     pre-computed artifact-graph mapping the caller already loaded.
+
+    Returns:
+        ``(marker path, OBPI id, parent ADR)`` for each marker removed; empty when none was.
+
     """
     purged: list[tuple[Path, str, str]] = []
 
@@ -597,6 +650,11 @@ def _resolve_receipt_path(plans_dir: Path, obpi_id: str) -> Path | None:
     "what receipt should drive this hook?" — pick the most recently modified
     receipt across per-OBPI and legacy so a stale legacy file cannot mask a
     fresh per-OBPI receipt (gzkit#140).
+
+    Returns:
+        The per-OBPI receipt, else the legacy one, for a given id; the newest receipt for an empty
+        id; None when no receipt exists.
+
     """
     if obpi_id:
         per_obpi = pipeline_receipt_path(plans_dir, obpi_id)
@@ -701,6 +759,10 @@ def select_obpi_brief(candidates: Iterable[Path], obpi_id: str) -> Path | None:
     across a ``-`` separator, so ``OBPI-0.28.0-1`` never reaches items 10 to 19.
     An id that stays ambiguous names none of the briefs (RO-2 tranche 3, the
     seam's rule): a first sorted match would hand back a sibling's controls.
+
+    Returns:
+        The single brief the id names exactly or by slug prefix, or None when zero or several match.
+
     """
     paths = sorted(set(candidates))
     exact = [path for path in paths if path.stem == obpi_id]
@@ -720,6 +782,10 @@ def validate_brief_for_pipeline(project_root: Path, brief_path: Path) -> list[st
 
     Returns a list of blocking errors.  An empty list means the brief
     is safe to execute against.
+
+    Returns:
+        The blocking validation errors; empty when the brief is safe to execute.
+
     """
     from gzkit.hooks.obpi import ObpiValidator  # noqa: PLC0415
 
@@ -745,6 +811,10 @@ def check_adr_evaluation_verdict(adr_dir: Path) -> list[str]:
     The scorecard fallback is retained because 46 of the 55 scorecards on disk
     at the cutover carried judge verdicts; dropping it would disarm the gate for
     every one of them, which is the same defect arriving from the other side.
+
+    Returns:
+        A single blocking error when the verdict is NO GO; otherwise an empty list.
+
     """
     for filename in ("EVALUATION_SUBSTANCE.md", "EVALUATION_SCORECARD.md"):
         verdict_path = adr_dir / filename

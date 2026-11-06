@@ -79,6 +79,10 @@ def extract_verification_scopes(
     test_paths are provided, they are attached to every scope. Otherwise
     scopes have empty test_paths (caller must populate or fall back to
     sequential dispatch).
+
+    Returns:
+        One VerificationScope per numbered requirement line, in order.
+
     """
     scopes: list[VerificationScope] = []
     req_index = 0
@@ -101,6 +105,10 @@ def compute_path_overlap(scopes: list[VerificationScope]) -> dict[tuple[int, int
 
     Keys are ``(req_a, req_b)`` tuples (``a < b``). Values are the shared
     paths. An empty dict means no overlaps exist.
+
+    Returns:
+        Mapping of ``(req_a, req_b)`` to their shared test paths; empty when no scopes overlap.
+
     """
     overlaps: dict[tuple[int, int], list[str]] = {}
     for i, scope_a in enumerate(scopes):
@@ -125,6 +133,11 @@ def partition_independent_groups(
 
     Uses a simple union-find to merge overlapping scopes into connected
     components.
+
+    Returns:
+        Sorted groups of requirement indexes in which no two scopes share test paths; an empty list
+        when there are no scopes.
+
     """
     if not scopes:
         return []
@@ -161,6 +174,11 @@ def build_verification_plan(
     - Zero scopes -> empty plan, sequential (baseline-only).
     - All scopes lack test_paths -> sequential fallback.
     - Otherwise -> compute overlaps and partition into groups.
+
+    Returns:
+        VerificationPlan: empty and sequential for no scopes, one sequential group when no scope has
+        test paths, otherwise the independent groups with a sequential, parallel or mixed strategy.
+
     """
     if not scopes:
         return VerificationPlan(strategy="sequential")
@@ -198,6 +216,10 @@ def compose_verification_prompt(
 
     The subagent receives one or more REQs to verify, runs the specified
     test commands, and returns a JSON result block per REQ.
+
+    Returns:
+        The verification prompt text.
+
     """
     lines = [
         "## REQ Verification",
@@ -255,6 +277,10 @@ def parse_verification_results(agent_output: str) -> list[VerificationResult]:
 
     Looks for a JSON code block containing an array of result objects.
     Returns an empty list if no valid result block is found.
+
+    Returns:
+        The parsed results, or an empty list if no valid result block is found.
+
     """
     match = _VERIFICATION_JSON_RE.search(agent_output)
     if not match:
@@ -277,6 +303,11 @@ def aggregate_verification_results(
     Returns ``(all_passed, failures)`` where ``all_passed`` is True only
     when every expected REQ has a PASS outcome. Missing REQs are treated
     as FAIL.
+
+    Returns:
+        ``(all_passed, failures)``: True only when every expected REQ passed, and the failing or
+        missing REQs' results.
+
     """
     result_map = {r.req_index: r for r in results}
     failures: list[VerificationResult] = []
@@ -304,6 +335,10 @@ def should_fallback_to_sequential(plan: VerificationPlan) -> bool:
     - Strategy is explicitly "sequential"
     - No scopes have test paths
     - All scopes are in a single group (no parallelism benefit)
+
+    Returns:
+        True when the plan's strategy is "sequential"; otherwise False.
+
     """
     return plan.strategy == "sequential"
 
@@ -336,6 +371,10 @@ def prepare_stage3_verification(
     Composes ``extract_verification_scopes`` and ``build_verification_plan``
     into a single call for Stage 3 orchestration. If no requirements are
     found, returns a sequential plan (baseline-only verification).
+
+    Returns:
+        The VerificationPlan built from the brief's requirement scopes.
+
     """
     scopes = extract_verification_scopes(brief_content, test_paths)
     return build_verification_plan(scopes)
@@ -353,6 +392,11 @@ def compute_verification_timing(
     ``start_ns`` and ``end_ns`` are monotonic nanosecond timestamps
     (from ``time.monotonic_ns()``).  ``per_group_estimate_seconds`` is
     the estimated sequential time per group for savings calculation.
+
+    Returns:
+        VerificationTimingMetrics with elapsed, estimated sequential and saved seconds, rounded to
+        two places.
+
     """
     elapsed = (end_ns - start_ns) / 1e9
     estimated_sequential = group_count * per_group_estimate_seconds
@@ -374,6 +418,10 @@ def create_verification_dispatch_records(
 
     Maps each ``VerificationResult`` to a dispatch-compatible dict for
     persistence in the pipeline marker alongside Stage 2 dispatch records.
+
+    Returns:
+        One dispatch-compatible record per verification result.
+
     """
     result_map = {r.req_index: r for r in results}
     records: list[dict[str, Any]] = []

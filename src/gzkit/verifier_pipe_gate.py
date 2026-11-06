@@ -282,6 +282,11 @@ def _canonical_program_names() -> frozenset[str]:
     added to the ARB registry is covered here without a second edit. Reserved
     slots (declared name, empty command — ``security``, ``meta-receipt-bind``)
     contribute nothing, which is correct: there is no invocation to mask yet.
+
+    Returns:
+        The program names (and ``-m`` module names) of every runnable canonical ARB step
+        command.
+
     """
     names: set[str] = set()
     for argv in CANONICAL_STEP_COMMANDS.values():
@@ -334,6 +339,10 @@ def _sets_pipefail(statement: list[str]) -> bool:
     ``set -o pipefail`` are indistinguishable by token presence — posix
     tokenization strips the quotes, so both leave a bare ``pipefail`` operand —
     and only one of them changes how the shell reports a pipeline.
+
+    Returns:
+        True when the statement's head is ``set`` with a ``pipefail`` operand; otherwise False.
+
     """
     tokens = _strip_env_assignments(statement)
     return bool(tokens) and tokens[0] == _SET_BUILTIN and _PIPEFAIL_OPERAND in tokens[1:]
@@ -345,6 +354,10 @@ def _reads_pipestatus(statement: list[str]) -> bool:
     A reference (``${PIPESTATUS[0]}``, ``$PIPESTATUS``) retrieves the upstream
     status; a bare word that merely contains the name — a path, a flag value —
     retrieves nothing.
+
+    Returns:
+        True when any token references ``PIPESTATUS``; otherwise False.
+
     """
     return any(ref in token for token in statement for ref in _PIPESTATUS_REFERENCES)
 
@@ -355,6 +368,11 @@ def _sets_errexit(statement: list[str]) -> bool:
     Head-resolved exactly as :func:`_sets_pipefail` is (GHI #796): ``grep -rn
     "set -e" docs/`` names the escape and enables nothing. Accepts both the
     short-flag bundle (``-e``, ``-euo``) and the long form (``-o errexit``).
+
+    Returns:
+        True when the statement's head is ``set`` with ``-o errexit`` or a short flag cluster
+        containing ``e``; otherwise False.
+
     """
     tokens = _strip_env_assignments(statement)
     if not tokens or tokens[0] != _SET_BUILTIN:
@@ -379,6 +397,10 @@ def _statement_terminators(items: list[str | _Group]) -> list[str | None]:
     terminator list is the separators in order with ``None`` appended. The
     separator matters because ``&&`` propagates a failure and ``;`` discards it —
     a splitter that forgets which one was used cannot tell those apart.
+
+    Returns:
+        The separators ending each statement in order, with a final None for the last statement.
+
     """
     return [*(token for token in _plain(items) if token in _STATEMENT_SEPARATORS), None]
 
@@ -406,6 +428,10 @@ def _verifier_name(segment: list[str]) -> str | None:
     Resolution is by command head — never by token presence. That distinction is
     the whole difference between a gate and a substring search: ``grep -rn
     "unittest" src/`` contains the token and runs no verifier.
+
+    Returns:
+        The verifier name the segment's command head runs, or None when it runs none.
+
     """
     tokens = _strip_env_assignments(strip_uv_run(segment))
     if not tokens:
@@ -441,6 +467,10 @@ def masked_verifier(command: str) -> str | None:
     back after the pipeline it describes. The predicate was previously a
     substring scan over every token in the command, which let any mention of
     either name — a ``grep`` pattern, a filename — disarm the gate wholesale.
+
+    Returns:
+        The name of the masked verifier, or None when no verifier is masked.
+
     """
     reason = masked_verifier_reason(command)
     return reason[0] if reason else None
@@ -462,6 +492,11 @@ def _split_paren_runs(tokens: list[str]) -> list[str]:
     it is prose in a heredoc body, a quoted lone paren, or a function name — so
     the run that CLOSES it keeps its lexing. Splitting there turned heredoc prose
     like ``clean (receipt); mkdocs --strict clean`` into a refused command.
+
+    Returns:
+        The tokens with each paren-bearing punctuation run split at its parens, except a
+        multi-part run that closes prose, which is kept whole.
+
     """
     split: list[str] = []
     opened_after_word: list[bool] = []
@@ -498,6 +533,10 @@ def _read_groups(tokens: list[str]) -> list[str | _Group] | None:
     group. It stays a plain token but is still balanced, so its ``)`` closes
     nothing. ``}`` closes a brace group only in command position, which is the
     only place the shell reads it as a closer.
+
+    Returns:
+        The nested token list, or None when the groups do not balance.
+
     """
     # (opener, items, is_group). A non-group paren shares its parent's items.
     frames: list[tuple[str | None, list[str | _Group], bool]] = [(None, [], False)]
@@ -559,6 +598,11 @@ def _pipe_arm(
 
     ``names`` holds the verifier each stage runs, resolved by the caller so a
     grouped stage names the verifier its group carries (GHI #1008).
+
+    Returns:
+        The first verifier upstream of the last pipe stage, or None when ``pipefail`` is active,
+        there is a single stage, or a later statement reads ``PIPESTATUS``.
+
     """
     if pipefail_active or len(names) < 2:
         return None
@@ -573,6 +617,11 @@ def _status_carrier(names: list[str | None], *, pipefail_active: bool) -> str | 
     Without ``pipefail`` a pipeline reports its last stage. With it, a failing
     verifier in ANY stage becomes the pipeline's status, so a later statement
     that overwrites the pipeline overwrites the verifier (GHI #971).
+
+    Returns:
+        The first verifier among the reporting stages (all stages under ``pipefail``, else the
+        last), or None.
+
     """
     candidates = names if pipefail_active else names[-1:]
     return next((name for name in candidates if name is not None), None)
@@ -602,6 +651,11 @@ def _replacement_arm(
     of this list as the list's own status — what a GROUP around the list then
     reports (GHI #1008). ``errexit_reaches`` is False inside a group that is not
     last in its AND-OR list, where the shell suppresses errexit for every command.
+
+    Returns:
+        ``(verifier, arm)`` when a later statement replaces or carries the verifier's status, or
+        None when the status survives.
+
     """
     name = _status_carrier(names, pipefail_active=pipefail_active)
     if name is None:
@@ -670,6 +724,11 @@ def _leaves_state_behind(stages: list[list[str | _Group]], terminator: str | Non
     What a brace group sets outlives it; a subshell, a pipeline stage or a
     background job runs elsewhere and does not (measured: `{ set -e; }; false; ls`
     exits 1, `{ set -e; } | cat; false; ls` exits 0).
+
+    Returns:
+        True when the statement is a single in-shell brace group not run in the background;
+        otherwise False.
+
     """
     head = stages[0][0] if stages[0] else None
     return (
@@ -799,6 +858,11 @@ def masked_verifier_reason(command: str) -> tuple[str, str] | None:
     that named one remedy for all would hand the caller a correction that leaves
     the command exactly as masked as it was
     (`.claude/rules/guardrail-feedback-prose.md`).
+
+    Returns:
+        ``(verifier, arm)`` for the first masked verifier, or None when the command has unbalanced
+        quotes or masks none.
+
     """
     # Unquoted newlines become `;` first: shlex eats a newline as whitespace, so
     # a multi-line command would otherwise read as ONE statement — and the
@@ -838,6 +902,10 @@ def _block_prose(verifier: str, command: str, arm: str = "pipe") -> str:
     ``command`` is prepended-to whole rather than rewritten per statement: what the
     caller re-runs is the whole line, and ``pipefail`` is shell state that protects
     every pipeline following the ``set``.
+
+    Returns:
+        The BLOCKED message for the masking arm, carrying the caller's command corrected.
+
     """
     if arm == "or-else":
         return (
@@ -965,6 +1033,11 @@ def decide(tool_name: str, tool_input: dict | None = None) -> Verdict:
 
     Scoped to Bash: a verifier reaches the harness no other way, and the clause
     governs shell pipelines specifically.
+
+    Returns:
+        A blocking Verdict with guardrail prose when a Bash command masks a verifier; otherwise a
+        non-blocking Verdict.
+
     """
     if tool_name != "Bash":
         return Verdict(blocked=False)
@@ -1008,6 +1081,10 @@ def _build_masked_verifier_violation() -> Path:
     the control (the Step-4b facade attack — a FIXED string proves only that the
     gate refuses THAT string, never the general rule). The root is allocated
     inside the active runner-owned workspace.
+
+    Returns:
+        Path of a fresh fixture temp directory whose name seeds the command string.
+
     """
     from gzkit.enforcement import create_fixture_tempdir  # noqa: PLC0415
 
@@ -1022,6 +1099,10 @@ def _ep_verifier_pipe_gate(root: Path) -> int:
     an always-allow mutation fails the refuse pole. The verdict is COMPUTED by
     production :func:`decide` with no forcing kwarg pre-bound
     (§ Boundary Invariants #7).
+
+    Returns:
+        1 when the piped form is refused and the unpiped form permitted; otherwise 0.
+
     """
     piped = {"command": f"uv run -m unittest -q --nc-{root.name} | tail -5"}
     unpiped = {"command": f"uv run -m unittest -q --nc-{root.name} > out-{root.name}.log 2>&1"}
@@ -1042,6 +1123,10 @@ def _ep_verifier_escape_must_be_used(root: Path) -> int:
     way to pipe a verifier, and an always-permit mutation is the bypass itself.
     The mention-only command carries a runtime-unique token so a broken predicate
     cannot special-case a fixed sentinel.
+
+    Returns:
+        1 when the named escape is refused and the used escape permitted; otherwise 0.
+
     """
     named = {"command": f'grep -rn "pipefail" docs-{root.name}/ ; uv run gz check | tail -5'}
     used = {"command": f"set -o pipefail; uv run gz check --nc-{root.name} | tail -5"}

@@ -125,6 +125,10 @@ def lineage_path(root: Path, surface: str, consumer: str) -> Path:
     operator-attested commit moment is a later OBPI's scope (mirroring how
     ``rendition_path`` in ``rendition_store.py`` is committed separately from
     ``candidate_path`` in ``rendition.py``).
+
+    Returns:
+        Path of ``.gzkit/renditions/<surface>/<consumer>.lineage.json`` under ``root``.
+
     """
     return root / ".gzkit" / "renditions" / surface / f"{consumer}.lineage.json"
 
@@ -141,6 +145,10 @@ def candidate_lineage_path(root: Path, surface: str, consumer: str) -> Path:
     overwrite the committed lineage of the PRIOR rendition before the new
     candidate lands — the same staged/committed separation that
     ``candidate_path``/``rendition_path`` already enforce for rendition text.
+
+    Returns:
+        Path of ``.gzkit/renditions/<surface>/<consumer>.candidate.lineage.json`` under ``root``.
+
     """
     return root / ".gzkit" / "renditions" / surface / f"{consumer}.candidate.lineage.json"
 
@@ -152,6 +160,10 @@ def save_candidate_lineage(root: Path, lineage: ConsumerLineage) -> Path:
     map — exactly ADR-0.35.0 Decision 5's shape — because ``surface``/``consumer``
     are already encoded in the file path; wrapping it in an envelope would
     duplicate that addressing inside the file.
+
+    Returns:
+        The staged candidate lineage path written.
+
     """
     path = candidate_lineage_path(root, lineage.surface, lineage.consumer)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -177,6 +189,10 @@ def load_candidate_lineage(root: Path, surface: str, consumer: str) -> ConsumerL
     Absent-is-not-an-error, matching ``rendition_store.load_fingerprint``'s
     convention. ``surface``/``consumer`` are reconstructed from the arguments
     since the on-disk file carries only the bare section map.
+
+    Returns:
+        The staged ConsumerLineage, or None when no candidate lineage exists.
+
     """
     path = candidate_lineage_path(root, surface, consumer)
     if not path.exists():

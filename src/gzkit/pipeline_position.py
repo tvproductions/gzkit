@@ -102,6 +102,11 @@ def marker_position(marker: Mapping[str, Any]) -> dict[str, str] | None:
     The result is plain data in the marker's own keys. It is a reading and no
     gate: nothing is refused on what a marker says (Requirement 12), and what
     a run has reached is decided from the ledger (:func:`replay_pipeline_position`).
+
+    Returns:
+        Mapping of ``kind``, ``label`` and ``boundary`` (stripped; boundary empty when absent), or
+        None when the marker holds no well-formed position.
+
     """
     held = marker.get("position")
     if not isinstance(held, Mapping):
@@ -273,6 +278,11 @@ def _recorded_crossing(row: PipelineLedgerRow) -> PipelineReplay | None:
     A row is a crossing only when it carries what the event type requires: a
     canonical stage and a position's kind, label and boundary. Nothing is
     defaulted, so a malformed row never becomes a stage or a position.
+
+    Returns:
+        PipelineReplay of the row's stage, position and time, or None when the row is not a
+        well-formed crossing.
+
     """
     recorded = row.extra
     if recorded.get("stage") not in CANONICAL_STAGES:
@@ -312,6 +322,11 @@ def replay_pipeline_position(
     the launch the result is the launch stage, no position and the launch's
     time. Returns ``None`` when no launch is recorded: a position with no
     Layer-2 source is never invented.
+
+    Returns:
+        PipelineReplay of the latest launch's last recorded crossing, or of the launch itself when
+        no crossing follows it; None when no launch is recorded.
+
     """
     launch: PipelineLedgerRow | None = None
     reached: PipelineReplay | None = None
@@ -358,6 +373,10 @@ def _starts_run(row: PipelineLedgerRow) -> bool:
     """Return whether ``row`` launches an OBPI pipeline run.
 
     A launch row that names no entry is the full launch, as the replay reads it.
+
+    Returns:
+        True when the row is a ``pipeline_launched`` event for a run entry; otherwise False.
+
     """
     return row.event == "pipeline_launched" and (row.extra.get("entry") or "full") in _RUN_ENTRIES
 
@@ -368,6 +387,10 @@ def _ends_run(row: PipelineLedgerRow) -> bool:
     The completion receipt ends it, and so does the OBPI being parked,
     withdrawn or superseded. A receipt of any other kind, or of no kind, ends
     nothing.
+
+    Returns:
+        True for a completion receipt or a parked, withdrawn or superseded row; otherwise False.
+
     """
     if row.event == "obpi_receipt_emitted":
         return row.extra.get("receipt_event") == _COMPLETION_RECEIPT
@@ -396,6 +419,10 @@ def _launches_in_flight(events: Iterable[PipelineLedgerRow]) -> dict[str, Pipeli
     with the one name the OBPI has. Each launch is still keyed by the id its
     own row carries, the one key the replay, the rebuild and the marker files
     share.
+
+    Returns:
+        Mapping of each in-flight launch's id to its launch row.
+
     """
     rows = list(events)
     by_name = _launches_by_current_name(rows, fold_renames(_renames(rows)))
@@ -409,6 +436,10 @@ def _renames(rows: Iterable[PipelineLedgerRow]) -> list[tuple[str, str]]:
     no ledger of its own. A row naming no new id contributes no pair. The
     pairs are what :func:`gzkit.obpi_lifecycle.fold_renames` folds; no rename
     is followed here.
+
+    Returns:
+        ``(id, new id)`` pairs of every rename row with a non-empty new id, in ledger order.
+
     """
     pairs: list[tuple[str, str]] = []
     for row in rows:
@@ -428,6 +459,10 @@ def _launches_by_current_name(
     ends a run ends the one under its id's current name. ``current_names`` is
     the fold of the ledger's renames; an id it does not hold was never
     renamed and is its own current name.
+
+    Returns:
+        Mapping of each id's current name to the launch of its run in flight.
+
     """
     launches: dict[str, PipelineLedgerRow] = {}
     for row in rows:
@@ -473,6 +508,11 @@ def _runs_named(events: Iterable[PipelineLedgerRow], obpi_id: str) -> list[Pipel
     run launched before the rename, or between a rename and its reversal. The
     short form is that of the launch row's own id, the form its TASK ids
     carry, or of its current name.
+
+    Returns:
+        The launch whose id the given id resolves to, else every in-flight launch whose short form
+        matches; empty when none does.
+
     """
     rows = list(events)
     current_names = fold_renames(_renames(rows))
@@ -496,6 +536,10 @@ def in_flight_launch_id(events: Iterable[PipelineLedgerRow], obpi_id: str) -> st
     ``None`` when it names no run in flight, and when it names more than one:
     two runs in flight sharing a short form are not told apart by a guess.
     Pure: it reads the rows it is handed and nothing else.
+
+    Returns:
+        The launch id when exactly one run in flight is named; otherwise None.
+
     """
     named = _runs_named(events, obpi_id)
     return named[0].id if len(named) == 1 else None
@@ -521,6 +565,11 @@ def _blocker_summary(blocker: str) -> str:
     A blocker within :data:`BLOCKER_SUMMARY_WIDTH` is kept as it is. A longer one,
     typically a failed command's whole output, becomes one line cut to the
     bound, which keeps how it began and ends by saying how long it was.
+
+    Returns:
+        The blocker unchanged when within the bound; otherwise its whitespace-collapsed text
+        truncated with a total-length suffix.
+
     """
     if len(blocker) <= BLOCKER_SUMMARY_WIDTH:
         return blocker
@@ -535,6 +584,10 @@ def _position_at(crossing: RunCrossing, reached: str) -> tuple[str, PipelinePosi
     A work-starting boundary names the stage it enters; any other records
     inside ``reached``. The kind is the kind of the stage recorded, and the
     label is the task the crossing names or the boundary's own name.
+
+    Returns:
+        The stage the crossing records and the PipelinePosition inside it.
+
     """
     ruled = RULED_BOUNDARIES[crossing.boundary]
     stage = ruled.enters or reached
@@ -552,6 +605,11 @@ def _blockers_after(crossing: RunCrossing, carried: list[str]) -> list[str]:
     A verification result sets them to its own, each as a bounded summary. A
     work-starting boundary clears them. Any other boundary carries forward the
     blockers the ledger replay says the run already has.
+
+    Returns:
+        The crossing's bounded blockers when its boundary sets them, an empty list when it enters a
+        stage, otherwise the carried blockers.
+
     """
     ruled = RULED_BOUNDARIES[crossing.boundary]
     if ruled.sets_blockers:
@@ -591,6 +649,11 @@ def record_position(
     names no run in flight or names more than one, or the record could not be
     written in full: after a failed marker write that is ``None`` with the event
     already on the ledger.
+
+    Returns:
+        What the ledger says the run has reached, or None when the id names no run or several in
+        flight, or the record could not be written in full.
+
     """
     try:
         return _record_crossing(ledger, plans_dir, obpi_id, crossing)
@@ -677,6 +740,10 @@ def runs_in_flight(events: Iterable[PipelineLedgerRow]) -> list[str]:
 
     The runs are the loop the recorder reads too (:func:`_launches_in_flight`):
     a rebuild considers exactly the runs a boundary would be recorded for.
+
+    Returns:
+        The ids of every run in flight, latest launched first.
+
     """
     return list(reversed(_launches_in_flight(events)))
 
@@ -690,6 +757,10 @@ def _marker_from_ledger(
     recorder advances it, so it holds what the deleted marker held. Its two
     times are the ledger's: the launch event's and the last crossing's. The
     dispatch caches are not here, because no launch or crossing carries them.
+
+    Returns:
+        The marker payload built from the launch and advanced to its last crossing.
+
     """
     entry = str(launch.extra.get("entry") or "full")
     asks_a_human = _uncompleted_attestation_requirement() == "required"
@@ -724,6 +795,10 @@ def _file_in_the_way(per_obpi: Path, legacy: Path, obpi_id: str) -> str | None:
     A repair overwrites no file. A marker file that is on disk and does not
     read as this run's marker, whether it names another run or cannot be
     read, is left exactly as it is, and the run is declined.
+
+    Returns:
+        The reason a file on disk blocks the repair, or None when nothing does.
+
     """
     if per_obpi.exists() and not marker_matches(per_obpi, obpi_id):
         return (
@@ -747,6 +822,11 @@ def _rebuild_refusal(
 
     A rebuild invents no nonce, and it writes no marker that stale detection
     would flag the moment it landed.
+
+    Returns:
+        The reason the ledger rebuilds no marker (no nonce, or a stale last crossing), or None when
+        it may.
+
     """
     if not launch.extra.get("nonce"):
         return "its pipeline_launched event records no nonce, and a rebuild invents none"
@@ -789,6 +869,12 @@ def rebuild_marker(
     crossing is already past the stale bound. This function reads the plans
     directory and writes nothing: the caller hands the decision to the marker
     module's writers.
+
+    Returns:
+        MarkerRebuild carrying the payload to write, the twin file to restore, or the reason the
+        repair is declined; None when no run is in flight under the id or both marker files already
+        read as its own.
+
     """
     rows = list(events)
     in_flight = _launches_in_flight(rows)

@@ -59,6 +59,11 @@ def _read_manifest_key(project_root: Path, key: str) -> dict[str, object]:
     absent or not a mapping — callers handle fallback. Schema validation is the
     responsibility of ``gz validate --vendor-manifest`` (see
     ``gzkit.governance.trust_audits.vendor_manifest``).
+
+    Returns:
+        The mapping under ``key``, or an empty dict when the file is missing, unparseable, or the
+        key is absent or not a mapping.
+
     """
     manifest_path = project_root / _MANIFEST_REL
     if not manifest_path.is_file():
@@ -114,6 +119,11 @@ def routes_for(content_type: str, *, project_root: Path | None = None) -> list[s
 
     Returns an empty list when the content type is not registered — callers
     treat that as fail-closed.
+
+    Returns:
+        The manifest-declared mirrors when the manifest yields routes (empty when it names none for
+        the type); otherwise the built-in fallback mirrors.
+
     """
     if project_root is not None:
         routes = _load_manifest(project_root)
@@ -127,6 +137,11 @@ def all_routes(*, project_root: Path | None = None) -> dict[str, list[str]]:
 
     When ``project_root`` is supplied and the manifest is present and parseable,
     returns the manifest-declared map; otherwise returns the in-code fallback.
+
+    Returns:
+        The manifest-declared routing map when present and parseable; otherwise a copy of the
+        built-in fallback map.
+
     """
     if project_root is not None:
         routes = _load_manifest(project_root)
@@ -141,6 +156,10 @@ def content_type_for_surface(surface: str, *, project_root: Path | None = None) 
     ``None`` means "this project declares no owner for that surface" and is a
     real answer, not an error: callers decide what an unmapped surface means for
     them rather than having a guess imposed here.
+
+    Returns:
+        The owning content type, or None when the surface is unmapped.
+
     """
     if project_root is not None:
         declared = _read_manifest_key(project_root, "surface_content_types")
@@ -159,6 +178,10 @@ def temperature_for(content_type: str, vendor: str, *, project_root: Path | None
     (including when ``project_root`` is absent, so no manifest is readable)
     fails closed with ``ValueError`` rather than resolving to a baked-in tier
     (REQ-0.0.37-15-02; operator directive 2026-06-03 — no vendor-locked rule).
+
+    Returns:
+        The declared temperature for the pair.
+
     """
     temps = _load_temperatures(project_root) if project_root is not None else {}
     vendor_map = temps.get(content_type, {})
@@ -186,6 +209,10 @@ def delivery_cap_for(
     whereas an undeclared cap means gzkit knows of no limit for that vendor.
     Fail-closing here would force an agent to invent a byte cap for every
     vendor, fabricating adapter constraints to satisfy a gate (GHI #712).
+
+    Returns:
+        The declared integer cap in bytes, or None when none is declared.
+
     """
     caps = _read_manifest_key(project_root, "content_type_delivery_caps") if project_root else {}
     vendor_map = caps.get(content_type)
@@ -213,6 +240,10 @@ def binding_delivery_cap(
     Returns ``None`` when no cap is declared. Fails **open** for the reason
     :func:`delivery_cap_for` does: an undeclared cap means gzkit knows of no
     limit, and fail-closing would force an agent to invent byte caps.
+
+    Returns:
+        ``(cap, vendor)`` for the smallest declared cap, or None when no cap is declared.
+
     """
     caps = _read_manifest_key(project_root, "content_type_delivery_caps") if project_root else {}
     vendor_map = caps.get(content_type)

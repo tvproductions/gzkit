@@ -67,6 +67,10 @@ class RenderedBytes(NamedTuple):
         ``NamedTuple``, and overriding ``+`` would give the same operator two
         meanings on the same object -- field-wise addition here, tuple
         concatenation everywhere tuple code touches it.
+
+        Returns:
+            A new RenderedBytes with each count summed.
+
         """
         return RenderedBytes(
             self.emitted_entry + other.emitted_entry,
@@ -82,6 +86,10 @@ def _emission_attributed_bytes(attributed_compressible: Sequence[CorpusEntry]) -
     of exactly the entries the generator actually emitted, deduplicated by
     ``id``. This is the brief's mandated form -- accounting reflects what was
     emitted, never substring subtraction.
+
+    Returns:
+        The UTF-8 byte total of the attributed entries, each id counted once.
+
     """
     seen_ids: set[str] = set()
     total = 0
@@ -104,6 +112,11 @@ def _presence_attributed_bytes(
     most once. This is the WEAKER of the two attributions: nothing tracks
     which entries the caller *intended* to include in freehand text, so
     verbatim textual presence is the only signal available.
+
+    Returns:
+        The UTF-8 byte total of the compressible entries whose text appears verbatim in the
+        candidate.
+
     """
     return sum(
         len(e.text.encode("utf-8")) for e in compressible_entries if e.text in candidate_text
@@ -166,6 +179,10 @@ def _byte_evidence(
     Contract: entry-text totals "remain separately labeled population
     statistics, never a claim of unique rendered-byte coverage").
 
+    Returns:
+        ByteEvidence with the invariant, compressible-before and compressible-after totals and, when
+        supplied, the rendered partition.
+
     Raises:
         ValueError: when the computed ``compressible_bytes_after`` would
             exceed ``compressible_bytes_before`` -- see
@@ -220,6 +237,10 @@ def _load_corpus_and_owner(
     near-verbatim (Task 3b quality review) -- differing only in which verb
     ("Composing" vs "Generating") names the caller in the second message.
     *verb* supplies that word so neither caller's exact wording changes.
+
+    Returns:
+        The loaded corpus and the content type that owns the surface.
+
     """
     store_path = corpus_path(root, surface)
     if not store_path.exists():
@@ -262,6 +283,10 @@ def compose(
        (raises ``ValueError`` on violation — the 0-Kelvin floor).
     4. Compute per-tier byte evidence.
     5. Return a ``CandidateRendition`` (caller writes to disk and ledger).
+
+    Returns:
+        CandidateRendition carrying the candidate text and its byte evidence.
+
     """
     corpus, owner = _load_corpus_and_owner(root, surface, content_type, verb="Composing")
 
@@ -352,6 +377,10 @@ def _join_section_body(entries: Sequence[CorpusEntry]) -> bytes:
     BETWEEN them -- and is pinned by
     ``TestGeneratedBodyPreservesEntryBytesVerbatim`` in
     ``tests/content/test_composer.py``.
+
+    Returns:
+        The entries' UTF-8 text joined by blank lines.
+
     """
     return b"\n\n".join(entry.text.encode("utf-8") for entry in entries)
 
@@ -500,6 +529,11 @@ def _assemble_section(
     :func:`_join_section_body`), and reports which of those entries are
     compressible-tier so the caller can fold them into EMISSION attribution
     (:func:`_emission_attributed_bytes`).
+
+    Returns:
+        The section's candidate chunk and lineage facts: regenerated from its entries when owned,
+        the carried-forward bytes when unowned.
+
     """
     ownership_state = declaration_sections[boundary.section_id]
     if ownership_state == "unowned":
@@ -567,6 +601,10 @@ def generate_candidate(
         byte span against the CANDIDATE's own bytes (REQ-0.35.0-05-05).
     11-14. Assert the section partition is complete, compute byte evidence
         under EMISSION attribution, and return the pure result.
+
+    Returns:
+        GeneratedCandidate carrying the candidate rendition and its section lineage.
+
     """
     corpus, owner = _load_corpus_and_owner(root, surface, content_type, verb="Generating")
 

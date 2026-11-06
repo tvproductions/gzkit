@@ -99,5 +99,9 @@ def candidate_path(root: Path, surface: str, consumer: str) -> Path:
 
     Written by ``gz content compose``; never by the playback path (OBPI-22).
     Path: ``<root>/.gzkit/renditions/<surface>/<consumer>.candidate.md``
+
+    Returns:
+        Path of ``.gzkit/renditions/<surface>/<consumer>.candidate.md`` under ``root``.
+
     """
     return root / ".gzkit" / "renditions" / surface / f"{consumer}.candidate.md"

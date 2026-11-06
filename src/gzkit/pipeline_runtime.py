@@ -154,6 +154,10 @@ def agent_held_obpi_ids(project_root: Path, agent: str | None = None) -> list[st
     marker is freeform implementation of a locked OBPI, which the gate must
     block. Resolving the current agent the same way locks are claimed
     (``resolve_agent``) keeps arming symmetric with the claim.
+
+    Returns:
+        The OBPI ids of every lock held by the resolved agent.
+
     """
     who = resolve_agent(agent)
     return [lock.obpi_id for lock in list_locks(project_root) if lock.agent == who]
@@ -253,6 +257,11 @@ def load_persona_for_dispatch(project_root: Path, role: str) -> str | None:
     does not exist.  Raises ``ValueError`` when the persona file exists but
     has malformed YAML frontmatter — parse errors are defects, not graceful
     degradation cases.
+
+    Returns:
+        The persona body text, or None when the role maps to no persona or the persona cannot be
+        loaded.
+
     """
     persona_name = ROLE_PERSONA_MAP.get(role)
     if persona_name is None:
@@ -267,6 +276,11 @@ def prepend_persona_to_prompt(persona_text: str | None, prompt: str) -> str:
     When persona text is provided, it is placed before the task prompt with
     a horizontal-rule separator so the model receives the identity frame
     before the task instructions.
+
+    Returns:
+        ``prompt`` unchanged when ``persona_text`` is empty; otherwise the persona text, a ``---``
+        separator and the prompt.
+
     """
     if not persona_text:
         return prompt
@@ -334,6 +348,11 @@ def load_dispatch_state(
     per-OBPI marker, the legacy marker as fallback. Read from the per-OBPI file
     alone, a run whose marker survived only in the legacy file read as having
     no records, and the next dispatch replaced them.
+
+    Returns:
+        The marker's dispatch records; an empty list when no marker exists or its ``dispatch_state``
+        is not a list.
+
     """
     marker = load_obpi_pipeline_marker(plans_dir, obpi_id)
     if marker is None:
@@ -458,6 +477,11 @@ def _find_drifted_path(
     Paths in ``creates_paths`` are net-new declarations exempt from the
     missing-path check (GHI #419), mirroring ``is_receipt_fresh`` — so the
     diagnostic never blames a file the brief has merely declared it will create.
+
+    Returns:
+        The first allowed path that is newer than ``receipt_ts`` or (not declared as created)
+        matches nothing on disk; ``(missing)`` when none qualifies.
+
     """
     creates = creates_paths or set()
     for pattern in allowed_paths:
@@ -488,6 +512,11 @@ def _stage2_drift_blocker(
     counts. Block only on the meaningful drift dimensions
     (allowlist/discovery/verification/citation), or fail-closed on an
     unattributable has_drift signal.
+
+    Returns:
+        A single blocking message when drift touches a dimension other than ``req_count`` (or an
+        unknown one); otherwise an empty list.
+
     """
     blocking_dims = [d for d in drifted_dims if d != "req_count"]
     if has_drift and (blocking_dims or not drifted_dims):
@@ -516,6 +545,11 @@ def operator_block_blockers(
     rescue; completion is the operator's own act, and a human attesting IS the
     ruling a block awaits, so gating there would cost two commands for one
     decision.
+
+    Returns:
+        A single blocking message naming the reason and awaited operator action when the OBPI is
+        blocked on the operator; otherwise an empty list.
+
     """
     blocked = operator_block_state(events)
     entry = blocked.get(obpi_id)
@@ -555,6 +589,11 @@ def check_reconcile_receipt_gate(
 
     Exit-code contract: callers should raise ``SystemExit(3)`` on a non-empty
     return — this is a Policy Breach per the CLI exit-code map.
+
+    Returns:
+        Blocking messages for a missing, stale or drifted receipt; an empty list when a fresh,
+        drift-free receipt exists.
+
     """
     from gzkit.governance.reconcile_freshness import is_receipt_fresh  # noqa: PLC0415
     from gzkit.ledger import read_corrected_rows  # noqa: PLC0415
@@ -640,6 +679,10 @@ def check_airlock_in_gate(
     fail-closing on it awaits calibration. ``reach_fn`` defaults to the airlock's
     own ontology-backed reach; tests inject a fake so the seam is exercisable with
     no projection built (hexagonal rule 6).
+
+    Returns:
+        A single refusal message when the airlock decision is not PROCEED; otherwise an empty list.
+
     """
     from gzkit.airlock.enter import airlock_enter, build_refusal  # noqa: PLC0415
     from gzkit.airlock.model import Decision  # noqa: PLC0415
@@ -661,6 +704,11 @@ def _transit_changed_files(ledger: Ledger, obpi_id: str, project_root: Path) -> 
     This seam runs after completion and the guarded sync, when the working tree no
     longer holds the work. The completion receipt sealed the changed files before
     either, so the receipt is read first (GHI #1185).
+
+    Returns:
+        The sealed completion evidence's changed files when present; otherwise the working tree's
+        changed files.
+
     """
     from gzkit.hooks.obpi import collect_changed_files, normalize_scope_audit  # noqa: PLC0415
 
@@ -693,6 +741,10 @@ def check_airlock_out_gate(
     calibration frontier as airlock-IN. ``reach_fn`` defaults to the airlock's own
     ontology-backed reach; tests inject a fake so the seam is exercisable with no
     projection built (hexagonal rule 6).
+
+    Returns:
+        One message per airlock-OUT finding; empty when the transit raised none.
+
     """
     from gzkit.airlock.exit import airlock_exit  # noqa: PLC0415
     from gzkit.ledger import Ledger  # noqa: PLC0415
@@ -743,6 +795,11 @@ def run_launch_id(project_root: Path, obpi_id: str) -> str | None:
     carries, which is no longer the OBPI's id once the ledger renames it
     (OBPI-0.35.0-15, Open Design Question 21). ``None`` when the id names no
     run in flight, names more than one, or the ledger cannot be read.
+
+    Returns:
+        The launch id of the one run in flight the id names, or None when the ledger cannot be read
+        or the id names zero or several runs.
+
     """
     from gzkit.obpi_dispatch_channel import project_ledger  # noqa: PLC0415
 
@@ -757,6 +814,10 @@ def validate_agent_files(project_root: Path) -> list[str]:
     """Validate that all pipeline agent files exist with required frontmatter.
 
     Returns a list of validation error messages (empty = all valid).
+
+    Returns:
+        The validation error messages; empty when every agent file is valid.
+
     """
     errors: list[str] = []
     required_keys = {"name", "tools"}

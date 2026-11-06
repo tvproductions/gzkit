@@ -24,6 +24,10 @@ def invariant_entries(corpus: Corpus) -> list[CorpusEntry]:
     before the next push. This sentence was lifted into the `gz content
     retire` help, where it read as a claim about the whole operation and told
     operators no recomposition was due (GHI #863).
+
+    Returns:
+        The invariant-tier entries of the effective corpus.
+
     """
     return [e for e in effective_corpus(corpus).entries if e.tier == "invariant"]
 

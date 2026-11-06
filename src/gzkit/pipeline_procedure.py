@@ -163,6 +163,10 @@ def resolve_launch_procedures(
 
     A launch whose later stage lacks its procedure is refused here, at the start,
     rather than after markers and ledger rows exist (OBPI-0.35.0-17, Requirement 7).
+
+    Returns:
+        Mapping of each stage key the launch visits to its resolved ProcedurePointer.
+
     """
     return {
         key: resolve_stage_procedure(project_root, key) for key in stages_for_launch(start_from)
@@ -193,6 +197,10 @@ def seed_stage_procedures(project_root: Path) -> list[Path]:
     This is what ``gz init`` delivers for a real project; the test scaffold calls
     it so a seeded project carries the procedures the runtime refuses to run
     without.
+
+    Returns:
+        The paths of the stage files written under ``project_root``.
+
     """
     package = files("gzkit.skills") / SKILL_SLUG / "references"
     target = project_root / REFERENCES_DIR

@@ -61,6 +61,11 @@ def marker_stage(marker_path: Path) -> str | None:
     None is permissive by design: a marker written before this field existed
     must not start failing closed, and an unreadable marker is a separate
     defect with its own guard rather than this one's business.
+
+    Returns:
+        The marker's non-empty ``current_stage`` string, or None when the marker is absent,
+        unreadable or carries none.
+
     """
     try:
         payload = json.loads(marker_path.read_text(encoding="utf-8"))
@@ -78,6 +83,11 @@ def refuses_production_write(stage: str | None, rel_path: str) -> bool:
     The write-time rule. An active marker arms the pipeline; it is never
     evidence that Stage 2 ran, so production authoring is refused once the
     marker leaves the authoring stage.
+
+    Returns:
+        True when a stage is set, the path is production code and the stage is not an authoring
+        stage; otherwise False.
+
     """
     if stage is None or not is_production_path(rel_path):
         return False
@@ -89,6 +99,11 @@ def refuses_production_commit(stage: str | None, rel_path: str) -> bool:
 
     The commit-time rule, and the one that actually binds. It diverges from
     :func:`refuses_production_write` at ``sync`` — see the module docstring.
+
+    Returns:
+        True when a stage is set, the path is production code and the stage is not a committing
+        stage; otherwise False.
+
     """
     if stage is None or not is_production_path(rel_path):
         return False
