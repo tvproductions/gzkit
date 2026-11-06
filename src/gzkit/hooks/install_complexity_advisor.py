@@ -114,7 +114,7 @@ def _diagnose_files(file_paths: list[str]) -> list[AdvisorDiagnosis]:
         try:
             source = file_path.read_text(encoding="utf-8")
             tree = ast.parse(source, filename=file_path_str)
-        except (OSError, SyntaxError) as exc:
+        except (OSError, SyntaxError, UnicodeDecodeError) as exc:
             print(f"warning: skipping {file_path_str}: {exc}", file=sys.stderr)
             continue
 

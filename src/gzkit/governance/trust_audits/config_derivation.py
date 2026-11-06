@@ -114,7 +114,7 @@ def policy_constants(project_root: Path) -> list[str]:
     for path in sorted((project_root / "src" / "gzkit").rglob("*.py")):
         try:
             tree = ast.parse(path.read_text(encoding="utf-8"))
-        except OSError, SyntaxError:
+        except OSError, SyntaxError, UnicodeDecodeError:
             continue
         relative = path.relative_to(project_root).as_posix()
         for node in tree.body:

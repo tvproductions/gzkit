@@ -17,7 +17,7 @@ import tempfile
 import textwrap
 import unittest
 
-from gzkit.tautological_tests import audit_drift
+from gzkit.tautological_tests import audit_drift, scan_test_tree
 from gzkit.traceability import covers
 
 
@@ -1051,6 +1051,31 @@ class TestDecoratorsAreNotBehavior(unittest.TestCase):
             """
         )
         self.assertEqual(ops, [], "asserting an operation raises is behavior, not a content echo")
+
+
+class TestUndecodableTestFile(unittest.TestCase):
+    """An undecodable test file is skipped like an unparseable one (GHI #1307)."""
+
+    def test_non_utf8_file_is_skipped_and_the_scan_continues(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            tests_dir = pathlib.Path(td) / "tests"
+            tests_dir.mkdir()
+            (tests_dir / "test_a_undecodable.py").write_bytes(b"x = '\xff\xfe'\n")
+            (tests_dir / "test_b_tautological.py").write_text(
+                textwrap.dedent(
+                    """\
+                    import unittest
+                    from pathlib import Path
+
+                    class T(unittest.TestCase):
+                        def test_exists(self):
+                            self.assertTrue(Path("README.md").exists())
+                    """
+                ),
+                encoding="utf-8",
+            )
+            ops = scan_test_tree(tests_dir)
+        self.assertEqual([op.file_path for op in ops], ["tests/test_b_tautological.py"])
 
 
 if __name__ == "__main__":

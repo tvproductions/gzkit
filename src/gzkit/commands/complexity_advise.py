@@ -282,7 +282,7 @@ def _run_attest_intrinsic(
     try:
         source = source_file.read_text(encoding="utf-8")
         tree = ast.parse(source, filename=file_path_str)
-    except (OSError, SyntaxError) as exc:
+    except (OSError, SyntaxError, UnicodeDecodeError) as exc:
         print(f"error: cannot read {file_path_str}: {exc}", file=sys.stderr)
         return 2
 

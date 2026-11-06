@@ -127,6 +127,16 @@ class TestSkipIfPass(unittest.TestCase):
         self.assertEqual(findings, [])
 
 
+class TestUnreadableSource(unittest.TestCase):
+    """A source file the scanner cannot decode yields no findings (GHI #1307)."""
+
+    def test_non_utf8_source_yields_no_findings(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / "probe.py"
+            path.write_bytes(b"x = '\xff\xfe'\n")
+            self.assertEqual(scan_source_for_signatures(path, rel="src/probe.py"), [])
+
+
 class TestRealTreeZeroFalsePositives(unittest.TestCase):
     """The load-bearing regression: the current (known-clean post-Movement-I)
     trust_audits validator tree must yield ZERO findings. If this can never go
