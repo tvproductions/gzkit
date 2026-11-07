@@ -21,7 +21,7 @@ from unittest.mock import patch
 from gzkit.cli import main
 from gzkit.cli.main import _build_parser
 from gzkit.dispatch_stamp import STAMP_ID_ENV, STAMP_ROOT_ENV, consume_stamp, stamp_refusal
-from tests.commands.common import CliRunner, _quick_init
+from tests.commands.common import CliRunner, _isolated_git_env, _quick_init
 
 _REPO = Path(__file__).resolve().parents[1]
 
@@ -119,6 +119,57 @@ class StampRefusal(unittest.TestCase):
         if not respelled.is_dir():
             self.skipTest("this volume is case-sensitive")
         self.assertIsNone(self._refusal(respelled.as_posix(), self.project))
+
+
+class LinkedWorktreeAdmitted(unittest.TestCase):
+    """Ruling 51: a linked worktree of the stamped root, under ``.claude/worktrees/``, is it."""
+
+    def setUp(self) -> None:
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        self.base = Path(directory.name).resolve()
+        self.project = self.base / "project"
+        self.project.mkdir()
+        self._git(self.project, "init", "-q")
+        self._git(self.project, "commit", "-q", "--allow-empty", "-m", "seed")
+
+    def _git(self, cwd: Path, *args: str) -> None:
+        subprocess.run(  # noqa: S603 — git argv this test builds against its own temp repository
+            ["git", "-c", "user.name=t", "-c", "user.email=t@example.invalid", *args],
+            cwd=cwd,
+            check=True,
+            capture_output=True,
+            env=_isolated_git_env(),
+        )
+
+    def _worktree(self, repo: Path, where: Path) -> Path:
+        self._git(repo, "worktree", "add", "-q", "--detach", where.as_posix())
+        return where
+
+    def _refusal(self, real: Path) -> str | None:
+        stamp = {STAMP_ROOT_ENV: self.project.as_posix(), STAMP_ID_ENV: "D-0123456789abcdef"}
+        return stamp_refusal(stamp, lambda: real)
+
+    def test_a_linked_worktree_under_claude_worktrees_proceeds(self) -> None:
+        worktree = self._worktree(self.project, self.project / ".claude/worktrees/agent-x")
+        self.assertIsNone(self._refusal(worktree))
+
+    def test_a_linked_worktree_outside_claude_worktrees_is_refused(self) -> None:
+        worktree = self._worktree(self.project, self.base / "elsewhere")
+        self.assertIsNotNone(self._refusal(worktree))
+
+    def test_a_plain_directory_under_claude_worktrees_is_refused(self) -> None:
+        plain = self.project / ".claude/worktrees/plain"
+        plain.mkdir(parents=True)
+        self.assertIsNotNone(self._refusal(plain))
+
+    def test_another_repositorys_worktree_under_claude_worktrees_is_refused(self) -> None:
+        other = self.base / "other"
+        other.mkdir()
+        self._git(other, "init", "-q")
+        self._git(other, "commit", "-q", "--allow-empty", "-m", "seed")
+        foreign = self._worktree(other, self.project / ".claude/worktrees/foreign")
+        self.assertIsNotNone(self._refusal(foreign))
 
 
 class RefusalOutOfService(unittest.TestCase):

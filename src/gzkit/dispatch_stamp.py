@@ -68,6 +68,34 @@ def _same_directory(intended: Path, real: Path) -> bool:
         return False
 
 
+def _linked_worktree_of(intended: Path, real: Path) -> bool:
+    """Say whether *real* is a linked worktree of *intended* in ``.claude/worktrees/`` (ruling 51).
+
+    A linked worktree's ``.git`` is a file naming ``<common dir>/worktrees/<name>``.
+    It counts as the intended root only when that common dir is the intended root's
+    own ``.git`` and the worktree sits directly in the intended root's
+    ``.claude/worktrees/``, so another repository's worktree placed there, a
+    worktree elsewhere, and a plain directory there all stay other roots.
+
+    Returns:
+        True when both hold; False otherwise, an unreadable link included.
+
+    """
+    try:
+        link = (real / ".git").read_text(encoding="utf-8").strip()
+    except OSError, UnicodeDecodeError:
+        return False
+    if not link.startswith("gitdir:"):
+        return False
+    gitdir = Path(link.removeprefix("gitdir:").strip())
+    gitdir = gitdir if gitdir.is_absolute() else real / gitdir
+    return (
+        gitdir.parent.name == "worktrees"
+        and _same_directory(gitdir.parent.parent, intended / ".git")
+        and _same_directory(real.parent, intended / ".claude" / "worktrees")
+    )
+
+
 def is_stamped(environ: Mapping[str, str]) -> bool:
     """Say whether a call carries the stamp, so is a subagent's (rulings 17, 38).
 
@@ -89,9 +117,10 @@ def stamp_refusal(environ: Mapping[str, str], real_root: Callable[[], Path]) -> 
 
     Returns:
         None for an unstamped call, or one whose stamped root is the real root's
-        directory; otherwise the refusal's message. A stamp naming no root, a
-        subagent with no dispatch record, is refused, and so is a root that is not
-        absolute on this host, which no dispatch here books.
+        directory or has the real root as its linked worktree under
+        ``.claude/worktrees/`` (ruling 51); otherwise the refusal's message. A stamp
+        naming no root, a subagent with no dispatch record, is refused, and so is a
+        root that is not absolute on this host, which no dispatch here books.
 
     """
     if not is_stamped(environ):
@@ -113,7 +142,7 @@ def stamp_refusal(environ: Mapping[str, str], real_root: Callable[[], Path]) -> 
         return (
             f"{lead}, and the directory this verb runs in cannot be read: {exc} (RP-12 ruling 17)."
         )
-    if not _same_directory(intended, real):
+    if not _same_directory(intended, real) and not _linked_worktree_of(intended, real):
         return (
             f"{lead}, for {intended.as_posix()}, and this verb runs in {real.as_posix()}. "
             "Run it from the root the dispatch intends (RP-12 ruling 17)."
@@ -788,7 +817,7 @@ def names_gz(command: str) -> bool:
     not parse counts when it names ``gz`` as a word.
 
     The declared coverage is the form lists in
-    ``tests/test_dispatch_stamp_hook.py`` (ruling 41); a form outside them is
+    ``tests/test_dispatch_stamp_hook.py`` (ruling 51); a form outside them is
     ruling 34's limit until O1's dock trial finds it in real use.
 
     Returns:
