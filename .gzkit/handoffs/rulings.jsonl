@@ -2036,3 +2036,15 @@
 {"ts": "2026-11-07T08:33:58Z", "source": "20261107T083356Z-rp12-o2-task3-planned.md", "text": "Accept the seven unreviewed canaries as reviewed (verbatim: \"A\")."}
 {"ts": "2026-11-07T08:33:58Z", "source": "20261107T083356Z-rp12-o2-task3-planned.md", "text": "Begin RP-12 O2 task 3, reading the page and the task 1 and 2 code and bringing the plan before writing anything (verbatim: \"A\")."}
 {"ts": "2026-11-07T08:33:58Z", "source": "20261107T083356Z-rp12-o2-task3-planned.md", "text": "Write a handoff that resumes by putting task 3's eleven open questions to the operator one at a time in act order, and git-sync (verbatim: \"create handoff thst resumes with A, git sync\")."}
+{"ts": "2026-11-07T10:02:34Z", "source": "20261107T100232Z-rp12-o2-task3-act2-landed.md", "text": "Resume step one of the predecessor handoff only, putting task 3's Act 1 questions (verbatim: \"step one\")."}
+{"ts": "2026-11-07T10:02:34Z", "source": "20261107T100232Z-rp12-o2-task3-act2-landed.md", "text": "RP-12 ruling 52: gz wp order new books order_transitioned to opened with the operator's words, as a package books initiated (verbatim: \"b\")."}
+{"ts": "2026-11-07T10:02:34Z", "source": "20261107T100232Z-rp12-o2-task3-act2-landed.md", "text": "RP-12 ruling 53: a repair REQ sits in one live order's frozen baseline at a time, until that order is accepted, stopped or closed (verbatim: \"A\")."}
+{"ts": "2026-11-07T10:02:34Z", "source": "20261107T100232Z-rp12-o2-task3-act2-landed.md", "text": "RP-12 ruling 54: every act of O2 task 3 runs gz arb red --commit and records its verdict (verbatim: \"A\")."}
+{"ts": "2026-11-07T10:02:34Z", "source": "20261107T100232Z-rp12-o2-task3-act2-landed.md", "text": "Build Act 1 (verbatim: \"A\")."}
+{"ts": "2026-11-07T10:02:34Z", "source": "20261107T100232Z-rp12-o2-task3-act2-landed.md", "text": "RP-12 ruling 55: a commit-witness survivor that never runs or is CLI help prose, named in the commit message, does not hold an act back (verbatim: \"A\")."}
+{"ts": "2026-11-07T10:02:34Z", "source": "20261107T100232Z-rp12-o2-task3-act2-landed.md", "text": "RP-12 ruling 56: each order's freeze seals its repair package's footprint (verbatim: \"A\")."}
+{"ts": "2026-11-07T10:02:34Z", "source": "20261107T100232Z-rp12-o2-task3-act2-landed.md", "text": "Build Act 2 (verbatim: \"yes, build it\")."}
+{"ts": "2026-11-07T10:02:34Z", "source": "20261107T100232Z-rp12-o2-task3-act2-landed.md", "text": "RP-12 ruling 57: a dispatch on an order targets only a REQ its freeze holds (verbatim: \"A\")."}
+{"ts": "2026-11-07T10:02:34Z", "source": "20261107T100232Z-rp12-o2-task3-act2-landed.md", "text": "RP-12 ruling 58: an accepted, blocked or stopped order holds the production-write fence (verbatim: \"A\")."}
+{"ts": "2026-11-07T10:02:34Z", "source": "20261107T100232Z-rp12-o2-task3-act2-landed.md", "text": "RP-12 ruling 59: gz wp block --order holds that order alone (verbatim: \"A\")."}
+{"ts": "2026-11-07T10:02:34Z", "source": "20261107T100232Z-rp12-o2-task3-act2-landed.md", "text": "Write a handoff that resumes with Act 3, and git-sync (verbatim: \"create handoff that resumes with Act 3, git sync\")."}
