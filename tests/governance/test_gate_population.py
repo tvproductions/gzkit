@@ -12,8 +12,22 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from gzkit.core.exceptions import PolicyBreachError
 from gzkit.governance.trust_audits import gate_population as gp
 from gzkit.registries import registry_path
+
+
+class _TypedRefusalError(PolicyBreachError):
+    """A typed refusal, as the TRY003 repair writes them."""
+
+
+def _raises_typed_refusal():
+    raise _TypedRefusalError
+
+
+def _raises_value_error():
+    raise ValueError
+
 
 _MEMBERS = {
     "precomplete-check:_check_alpha": frozenset({"gzkit.m._check_alpha", "gzkit.n.audit"}),
@@ -150,6 +164,11 @@ class TestTheBytecodeReaders(unittest.TestCase):
             return "uv run ruff check ."
 
         self.assertFalse(gp._runs_gz_validate(runner))
+
+    def test_a_raise_through_a_typed_refusal_subclass_marks_the_function_refusing(self):
+        """A typed subclass hides its refusal base from the raiser's bytecode."""
+        self.assertEqual(gp._refusal_types(_raises_typed_refusal), {"PolicyBreachError"})
+        self.assertEqual(gp._refusal_types(_raises_value_error), set())
 
     def test_a_lazy_import_of_a_module_that_does_not_exist_names_no_function(self):
         self.assertIsNone(gp._imported("gzkit.no_such_module_for_this_test", "anything"))

@@ -11,8 +11,9 @@ shrink-only list ``data/gate_population_grandfather.json``.
 **Members.** A precomplete check is a ``_check_*`` function ``_run_all_checks`` loads. A
 complete refusal or closeout gate is a function in the command's module, reachable from its
 entry point within that module, that refuses: it raises ``SystemExit``, ``GzCliError`` or
-``PolicyBreachError``, or calls a refusal helper (``_fail``,
-``_abort_closeout_with_blockers``), which are mechanisms rather than members. A check step is
+``PolicyBreachError``, directly or through a typed subclass it loads, or calls a refusal
+helper (``_fail``, ``_abort_closeout_with_blockers``), which are mechanisms rather than
+members. A check step is
 a ``_build_check_steps`` entry, plus the ``Test (changed)`` step the per-change gate runs,
 whose runner holds no string that IS a ``gz validate`` command.
 
@@ -103,6 +104,32 @@ def _names(fn: types.FunctionType) -> set[str]:
     }
 
 
+def _refusal_types(fn: types.FunctionType) -> set[str]:
+    """Return the refusal names *fn* raises through a typed subclass it loads.
+
+    A typed exception class (``class AttestationOutsideStepError(PolicyBreachError)``)
+    carries its base only in its MRO, never in the raising function's bytecode.
+
+    Returns:
+        The names in ``_REFUSALS`` that some class *fn* loads inherits from.
+
+    """
+    found: set[str] = set()
+    for code in _code_objects(fn.__code__):
+        module: str | None = None
+        for ins in dis.get_instructions(code):
+            target: object = None
+            if ins.opname == "IMPORT_NAME":
+                module = str(ins.argval)
+            elif ins.opname == "IMPORT_FROM" and module is not None:
+                target = _imported(module, str(ins.argval))
+            elif ins.opname == "LOAD_GLOBAL":
+                target = fn.__globals__.get(str(ins.argval))
+            if isinstance(target, type):
+                found |= {base.__name__ for base in target.__mro__} & _REFUSALS
+    return found
+
+
 def _qualified(fn: types.FunctionType) -> str:
     return f"{fn.__module__}.{fn.__qualname__}"
 
@@ -119,7 +146,7 @@ def _refusing_members(entry: types.FunctionType) -> list[types.FunctionType]:
     frontier, members = [entry], []
     while frontier:
         fn = frontier.pop()
-        if _names(fn) & (_REFUSALS | _REFUSAL_HELPERS):
+        if _names(fn) & (_REFUSALS | _REFUSAL_HELPERS) or _refusal_types(fn):
             members.append(fn)
         for local in _loaded(fn).values():
             name = local.__qualname__
