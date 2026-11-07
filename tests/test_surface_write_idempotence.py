@@ -228,6 +228,21 @@ class NestedAgentsCleanupTest(unittest.TestCase):
 
         self.assertFalse(stale.is_file(), "stale generated AGENTS.md must still be removed")
 
+    def test_a_nested_checkout_is_never_swept(self) -> None:
+        """A linked worktree under the project is another checkout, not this one's tree.
+
+        Its generated ``AGENTS.md`` is marker-bearing and absent from this sync's
+        expected set, so a sweep that walks into it deletes another checkout's
+        tracked files (four TRY003 worker worktrees, 2026-11-06).
+        """
+        (self.root / ".claude/worktrees/agent-x").mkdir(parents=True)
+        (self.root / ".claude/worktrees/agent-x/.git").write_text("gitdir: elsewhere\n")
+        other = self._seed(".claude/worktrees/agent-x/src/AGENTS.md")
+
+        _cleanup_stale_nested_agents(self.root, set(), self._pairs())
+
+        self.assertTrue(other.is_file(), "another checkout's AGENTS.md must not be deleted")
+
     def test_unmarked_file_is_never_removed(self) -> None:
         hand_written = self.root / "docs" / "AGENTS.md"
         hand_written.parent.mkdir(parents=True, exist_ok=True)

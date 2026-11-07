@@ -143,6 +143,24 @@ def capture_surface_writes() -> Generator[SurfaceSink]:
         _ACTIVE_SINK.reset(token)
 
 
+def in_nested_checkout(root: Path, path: Path) -> bool:
+    """Say whether *path* lies inside another checkout nested under *root*.
+
+    A directory below *root* holding ``.git`` (a linked worktree's file or a
+    clone's directory) is a separate checkout whose files a sweep of *root*
+    does not own.
+
+    Returns:
+        True when some directory between *root* and *path* holds ``.git``.
+
+    """
+    return any(
+        (parent / ".git").exists()
+        for parent in path.parents
+        if parent != root and parent.is_relative_to(root)
+    )
+
+
 def remove_if_present(path: Path) -> bool:
     """Delete ``path`` if it exists, or record the intent when a sink is active.
 

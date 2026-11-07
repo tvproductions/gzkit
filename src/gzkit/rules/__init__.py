@@ -17,7 +17,13 @@ import yaml
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.config import GzkitConfig
-from gzkit.surface_write import dir_exists, ensure_dir, remove_if_present, write_text_if_changed
+from gzkit.surface_write import (
+    dir_exists,
+    ensure_dir,
+    in_nested_checkout,
+    remove_if_present,
+    write_text_if_changed,
+)
 
 _logger = logging.getLogger(__name__)
 
@@ -724,7 +730,9 @@ def _cleanup_stale_nested_agents(
     candidates = [
         path
         for path in project_root.rglob(filename)
-        if path != root_agents and path not in expected_paths
+        if path != root_agents
+        and path not in expected_paths
+        and not in_nested_checkout(project_root, path)
     ]
     surviving_canonicals = {path for path in candidates if not _mirror_root_for(path, mirror_roots)}
     for agents_file in candidates:
