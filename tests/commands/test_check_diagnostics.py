@@ -79,6 +79,31 @@ class TestPerChangePassMessageOutputForm(unittest.TestCase):
         self.assertIn("run `gz check --full` in CI and before a release", out)
         self.assertNotIn("CI runs", out)
 
+    def _announce(self, scope: str, demoted: list[str]) -> str:
+        buf = io.StringIO()
+        recording = Console(file=buf, width=400, force_terminal=False)
+        with (
+            tempfile.TemporaryDirectory() as scratch,
+            patch.object(quality_mod, "console", recording),
+            patch.object(quality_mod, "_record_pass"),
+        ):
+            quality_mod._record_and_announce_pass(Path(scratch), scope=scope, demoted=demoted)
+        return buf.getvalue()
+
+    def test_the_pass_line_names_every_guard_the_hangar_demoted(self) -> None:
+        # output-contract: a reader of the last line alone, or a grep for the
+        # pass, must still see a demoted breach (operator ruling 2026-11-07, "A").
+        for scope in ("change", "full"):
+            with self.subTest(scope=scope):
+                lines = self._announce(scope, ["Tautological debt", "Gate enrollment"])
+                passed = next(line for line in lines.splitlines() if "✓" in line)
+                self.assertIn("2 guards demoted by the MX hangar", passed)
+                self.assertIn("Gate enrollment", passed)
+                self.assertIn("Tautological debt", passed)
+
+    def test_the_pass_line_names_no_demotion_when_none_happened(self) -> None:
+        self.assertNotIn("demoted", self._announce("change", []))
+
 
 if __name__ == "__main__":
     unittest.main()

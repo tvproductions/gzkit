@@ -174,6 +174,14 @@ may
     only shrink. Re-run `uv run gz validate --config-registry`.
 ```
 
+The pass line names the demoted steps too, so a reader of the last line, or a grep for the pass,
+still sees them (operator ruling 2026-11-07). With the tautological-debt step demoted, as on
+2026-11-07, it reads:
+
+```text
+✓ All per-change checks passed. — 1 guard demoted by the MX hangar: Tautological debt (Behave, Docs build, Guard canary sweep, Preflight, Supply chain audit, Test are full-tier scope: run `gz check --full` in CI and before a release)
+```
+
 `gz check --json` names each demoted step and its guard under `demoted`; `checks` still reads
 `true` for it, because a demoted step does not fail the gate.
 

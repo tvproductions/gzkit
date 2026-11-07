@@ -1277,28 +1277,61 @@ def _report_reuse_skip(project_root: pathlib.Path, *, scope: str, as_json: bool)
     return True
 
 
-def _record_and_announce_pass(project_root: pathlib.Path, *, scope: str) -> None:
+def _demoted_names(results: list[tuple[str, QualityResult]]) -> list[str]:
+    """Return the names of the steps the hangar demoted.
+
+    Returns:
+        Each step name whose result carries a ``demoted_guard``.
+
+    """
+    return [name for name, result in results if result.demoted_guard]
+
+
+def _demoted_suffix(demoted: list[str]) -> str:
+    """Name the demoted guards on the pass line itself (operator ruling 2026-11-07, "A").
+
+    The demoted section above the pass line is easy to miss for a reader of the
+    last line or a grep for the pass, which is how a demoted gate-enrollment
+    breach reached main unread (f1c759096).
+
+    Returns:
+        An empty string when nothing was demoted, else a markup suffix naming each.
+
+    """
+    if not demoted:
+        return ""
+    noun = "guard" if len(demoted) == 1 else "guards"
+    return (
+        f" [yellow]— {len(demoted)} {noun} demoted by the MX hangar: "
+        f"{', '.join(sorted(demoted))}[/yellow]"
+    )
+
+
+def _record_and_announce_pass(
+    project_root: pathlib.Path, *, scope: str, demoted: list[str] | None = None
+) -> None:
     """Announce a passing run, recording the fingerprint only for a recordable scope.
 
     A ``change`` pass is recorded (GHI #1088): it drops only steps the per-change
     gate never runs, so the pre-push gate reusing it cannot reach a different
     verdict. A scope declared ``records_verified: false`` is never recorded:
     letting a partial verification satisfy the gate is the presence-check failure
-    ``AGENTS.md`` names.
+    ``AGENTS.md`` names. Every pass line names the steps the hangar demoted.
     """
+    suffix = _demoted_suffix(demoted or [])
     if not _scope_records_verified(scope):
         console.print(
             "\n[green]✓ Scoped checks passed.[/green] "
             f"[yellow](scoped — {', '.join(sorted(_scope_skips(scope)))} not run; "
-            "this does NOT satisfy the pre-push gate)[/yellow]"
+            f"this does NOT satisfy the pre-push gate)[/yellow]{suffix}"
         )
         return
     _record_pass(project_root, scope)
     if scope == "full":
-        console.print("\n[green]✓ All checks passed (full sweep).[/green]")
+        console.print(f"\n[green]✓ All checks passed (full sweep).[/green]{suffix}")
         return
     console.print(
-        "\n[green]✓ All per-change checks passed.[/green] "
+        f"\n[green]✓ All per-change checks passed.[/green]{suffix} "
         f"[dim]({', '.join(sorted(_scope_skips(scope)))} are full-tier scope: "
         "run `gz check --full` in CI and before a release)[/dim]"
     )
@@ -1516,7 +1549,11 @@ def check(
 
     all_passed = all(r.success for _, r in results)
     if all_passed:
-        _record_and_announce_pass(project_root, scope=scope)
+        _record_and_announce_pass(
+            project_root,
+            scope=scope,
+            demoted=_demoted_names(results),
+        )
     else:
         console.print("\n[red]❌ Some checks failed.[/red]")
         _render_step_failures(results)
