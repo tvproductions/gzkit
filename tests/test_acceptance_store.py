@@ -3,6 +3,7 @@
 import json
 import unittest
 import uuid
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from gzkit.acceptance import Proof
@@ -100,6 +101,24 @@ class AcceptanceStoreTests(ExecutionFixture):
         )
         record_proof(self.root, OBPI, proof)
         return proof
+
+    def test_missing_contract_blocks_readiness(self):
+        """No durable contract is a single not-ready blocker, never an exception."""
+        with patch(
+            "gzkit.acceptance_store.load_history", return_value=SimpleNamespace(contract=None)
+        ):
+            status = acceptance_status(self.root, OBPI)
+        self.assertFalse(status.ready)
+        self.assertEqual(len(status.blockers), 1)
+        self.assertIn("No durable acceptance contract", status.blockers[0])
+
+    def test_changed_obligation_roster_blocks_readiness(self):
+        """A roster that no longer matches the contract scope blocks, never replaces it."""
+        with patch("gzkit.acceptance_store.owed_ids", return_value={"REQ-9.9.9-99-99"}):
+            status = acceptance_status(self.root, OBPI)
+        self.assertFalse(status.ready)
+        self.assertEqual(len(status.blockers), 1)
+        self.assertIn("obligation roster changed", status.blockers[0])
 
     def test_delayed_mapped_finding_is_retained_without_current_approval(self):
         """AS-1: a historical observation survives a real subject change and reload."""

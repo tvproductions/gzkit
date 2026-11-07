@@ -151,21 +151,3 @@ class HumanReviewRulingError(ValueError):
     def __init__(self) -> None:
         """Build the fixed refusal message."""
         super().__init__("Human review requires the operator's verbatim ruling")
-
-
-class MissingAcceptanceHistoryError(ValueError):
-    """Readiness is asked of an OBPI with no durable acceptance contract."""
-
-    def __init__(self) -> None:
-        """Build the fixed refusal message."""
-        super().__init__("No durable acceptance contract/proof history")
-
-
-class ObligationRosterChangedError(ValueError):
-    """The canonical obligation roster no longer matches the recorded contract scope."""
-
-    def __init__(self) -> None:
-        """Build the fixed refusal message."""
-        super().__init__(
-            "Canonical obligation roster changed; it cannot silently replace acceptance scope"
-        )

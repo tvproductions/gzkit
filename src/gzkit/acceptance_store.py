@@ -33,9 +33,7 @@ from gzkit.acceptance_errors import (
     ContractReplacedError,
     HumanReviewAttestorError,
     HumanReviewRulingError,
-    MissingAcceptanceHistoryError,
     NoCanonicalBriefError,
-    ObligationRosterChangedError,
     ProofIdReplacedError,
     ReviewInvocationUnrecordedError,
     ReviewReceiptCommandError,
@@ -646,10 +644,23 @@ def acceptance_status(
         brief = resolve_brief(root, obpi_id)
         history = load_history(root, obpi_id)
         if history.contract is None:
-            raise MissingAcceptanceHistoryError
+            return Readiness(
+                ready=False,
+                blockers=("No durable acceptance contract/proof history",),
+                open_findings=(),
+            )
         current = canonical_obligations(root, brief)
         if {item.id for item in current} != owed_ids(root, obpi_id, history.contract):
-            raise ObligationRosterChangedError
+            return Readiness(
+                ready=False,
+                blockers=(
+                    (
+                        "Canonical obligation roster changed; "
+                        "it cannot silently replace acceptance scope"
+                    ),
+                ),
+                open_findings=(),
+            )
         declared_single_driver = _declared_single_driver(root, obpi_id)
         required_stages = None
         if declared_single_driver:
