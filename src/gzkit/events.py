@@ -1982,6 +1982,31 @@ class WorkPackageUnblockedEvent(_EventBase):
     covered: tuple[str, ...] = Field(..., description="The at-bound subjects this exit settled")
 
 
+#: An order's lifecycle (RP-12 rulings 44 and 52): `opened` at `gz wp order new`,
+#: `closed` only through Gate 5 at the order (O2 task 4).
+OrderState = Literal["opened", "frozen", "commenced", "accepted", "closed"]
+
+
+class OrderTransitionedEvent(_EventBase):
+    """order_transitioned event — an order moved in its lifecycle (RP-12 O2 task 3).
+
+    Written only by ``gzkit.order_ledger.record_order_transition``, which derives
+    ``from_state`` and ``work_package`` from the ledger and the store, and refuses a
+    payload field the target state does not carry. ``id`` is the order id.
+    """
+
+    event: Literal["order_transitioned"]
+    order: str = Field(..., min_length=1, description="The order's id, ORD-<NN>-<slug>")
+    work_package: str = Field(..., min_length=1, description="The package the order sits in")
+    from_state: OrderState | None = Field(None, description="None before it is opened")
+    to_state: OrderState = Field(..., description="The state the order moved to")
+    evidence: str = Field(..., min_length=1, description="What justifies the move")
+    operator_text: str | None = Field(None, description="The operator's words, at opened")
+    baseline: tuple[BaselinedReq, ...] = Field((), description="The frozen REQ baseline")
+    risk_note: str | None = Field(None, description="The short risk note, at frozen")
+    review_receipt: str | None = Field(None, description="The nine-criteria review receipt")
+
+
 TypedLedgerEvent = Annotated[
     ProjectInitEvent
     | PrdCreatedEvent
@@ -2080,7 +2105,8 @@ TypedLedgerEvent = Annotated[
     | DispatchClaimedEvent
     | DispatchVoidedEvent
     | WorkPackageBlockedEvent
-    | WorkPackageUnblockedEvent,
+    | WorkPackageUnblockedEvent
+    | OrderTransitionedEvent,
     Field(discriminator="event"),
 ]
 

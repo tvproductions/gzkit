@@ -15,6 +15,7 @@ from gzkit.models.catalog import CATALOG_FILES, Catalog, Order
 from gzkit.registries import load_registry, registry_path
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
     from pathlib import Path
 
 
@@ -36,14 +37,17 @@ def _number(order_id: str) -> int:
     return int(order_id.split("-")[1])
 
 
-def next_order_id(catalog: Catalog, slug: str) -> str:
+def next_order_id(catalog: Catalog, slug: str, booked: Iterable[str]) -> str:
     """Return the next id in the one series (ruling 43): the highest number plus one.
 
+    ``booked`` is every order id the ledger names (`booked_order_ids`), so an id is
+    never reused even if the store has lost a record (ruling 52).
+
     Returns:
-        `ORD-<NN>-<slug>`, numbered past every order the store holds.
+        `ORD-<NN>-<slug>`, numbered past every order the store holds or the ledger names.
 
     """
-    numbers = [_number(order.id) for order in catalog.orders]
+    numbers = [_number(order_id) for order_id in {*(o.id for o in catalog.orders), *booked}]
     return f"ORD-{max(numbers, default=0) + 1:02d}-{slug}"
 
 

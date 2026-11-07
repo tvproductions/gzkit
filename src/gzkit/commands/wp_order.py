@@ -6,7 +6,9 @@ group on the work-package surface. `new` writes an order's record with the next
 that is initiated and not closed (rulings 2, 44); `show` reads it with the kind of
 the package it sits in. The record is thin (ruling 46). A refusal of the rulings
 exits 3 and writes nothing, naming the flag at fault and the call to re-run; an
-unknown package or order exits 1.
+unknown package or order exits 1. `new` books the order's opening on the
+operator's words before it writes the record (ruling 52), so a refusal writes
+neither.
 """
 
 import re
@@ -19,6 +21,12 @@ from gzkit.commands.common import ensure_initialized, get_project_root
 from gzkit.core.exceptions import PolicyBreachError, ResourceNotFoundError
 from gzkit.ledger import Ledger
 from gzkit.models.catalog import Catalog, Order, WorkPackage, load_catalog
+from gzkit.order_ledger import (
+    OrderLedgerError,
+    OrderMove,
+    booked_order_ids,
+    record_order_transition,
+)
 from gzkit.order_store import OrderStoreError, next_order_id, stage_order, write_orders
 from gzkit.work_package_ledger import work_package_state
 
@@ -39,21 +47,29 @@ def _order(catalog: Catalog, order_id: str) -> Order:
     if held is None:
         msg = (
             f"Order {order_id!r} is not in data/catalog/orders.json. "
-            "Write one with `uv run gz wp order new <WP-id> --slug <slug> --purpose <text>`."
+            "Write one with `uv run gz wp order new <WP-id> --slug <slug> --purpose <text> "
+            "--operator-text <words>`."
         )
         raise ResourceNotFoundError(msg)
     return held
 
 
 _SLUG = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
-_FLAGS = {"purpose": "--purpose", "procedure": "--procedure", "aliases": "--alias"}
+_FLAGS = {
+    "purpose": "--purpose",
+    "procedure": "--procedure",
+    "aliases": "--alias",
+    "operator_text": "--operator-text",
+    "evidence": "--evidence",
+}
 _OPEN = "initiated"
 
 
 def _refuse(failed: str, why: str) -> NoReturn:
     msg = (
         f"{failed} {why} Nothing was written; correct the call and re-run "
-        "`uv run gz wp order new <WP-id> --slug <slug> --purpose <text>`."
+        "`uv run gz wp order new <WP-id> --slug <slug> --purpose <text> --operator-text "
+        "<words>`."
     )
     raise PolicyBreachError(msg)
 
@@ -109,19 +125,45 @@ def store_broken(breaches: list[str], store: str) -> NoReturn:
     raise PolicyBreachError(msg)
 
 
-def wp_order_new_cmd(*, work_package: str, record: dict[str, object], as_json: bool) -> None:
-    """Write a new order's record with the next id in the one series (RP-12 ruling 43).
+def _booked_lost(catalog: Catalog, ledger: Ledger) -> None:
+    """Refuse every write while the store has lost an order the ledger names (ruling 52)."""
+    if missing := sorted(booked_order_ids(ledger) - {order.id for order in catalog.orders}):
+        store_broken(
+            [
+                (
+                    f"Orders {', '.join(missing)} have ledger events but no record; an order "
+                    "is born on the ledger and its id is never reused (RP-12 rulings 43, 52)."
+                )
+            ],
+            "orders.json",
+        )
+
+
+def wp_order_new_cmd(
+    *, work_package: str, record: dict[str, object], opening: dict[str, str], as_json: bool
+) -> None:
+    """Write a new order's record and book its opening (RP-12 rulings 43 and 52).
 
     ``record`` carries the verb's fields bar the id and the package: the slug, the
-    purpose, the procedure and the aliases.
+    purpose, the procedure and the aliases. ``opening`` carries the operator's words
+    and the evidence its `order_transitioned` to `opened` books.
 
-    A refusal of the slug, a field, the package's state or a rule `gz validate
-    --catalog` reads exits 3 through `_refuse` and writes nothing.
+    A refusal of the slug, a field, the package's state, the opening or a rule `gz
+    validate --catalog` reads exits 3 through `_refuse` and writes nothing.
     """
     config = ensure_initialized()
     root = get_project_root()
     catalog = load_catalog(root)
+    ledger = Ledger(root / config.paths.ledger)
     package = _package(catalog, work_package)
+    _booked_lost(catalog, ledger)
+    for field, value in opening.items():
+        if not value.strip():
+            _refuse(
+                f"{_FLAGS[field]} is empty.",
+                "An order is opened on the operator's words and booked on the ledger "
+                "(RP-12 ruling 52).",
+            )
     slug = str(record["slug"])
     if not _SLUG.match(slug):
         _refuse(
@@ -132,7 +174,7 @@ def wp_order_new_cmd(*, work_package: str, record: dict[str, object], as_json: b
         order = Order.model_validate(
             {
                 **{key: value for key, value in record.items() if key != "slug"},
-                "id": next_order_id(catalog, slug),
+                "id": next_order_id(catalog, slug, booked_order_ids(ledger)),
                 "work_package": package.id,
             }
         )
@@ -147,10 +189,19 @@ def wp_order_new_cmd(*, work_package: str, record: dict[str, object], as_json: b
             " ".join(exc.breaches),
             "The rulings are in docs/governance/harbor-ro12-contractor-kit.md.",
         )
-    ledger = Ledger(root / config.paths.ledger)
     why = "since its close reads every order's Gate 5 (RP-12 rulings 2 and 44)"
     if refusal := open_package_refusal(ledger, package, "An order", why):
         _refuse(*refusal)
+    move = OrderMove(
+        order=order.id,
+        to_state="opened",
+        evidence=opening["evidence"],
+        operator_text=opening["operator_text"],
+    )
+    try:
+        record_order_transition(staged, ledger, move)
+    except OrderLedgerError as exc:
+        _refuse(str(exc), "The rulings are in docs/governance/harbor-ro12-contractor-kit.md.")
     write_orders(root, staged)
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
     fmt.emit(order if as_json else f"Wrote {order.id} in {package.id} ({package.kind}).")

@@ -52,6 +52,7 @@ from gzkit.models.catalog import (
     load_catalog,
     load_delivery_events,
 )
+from gzkit.order_ledger import booked_order_ids
 from gzkit.registries import RegistryError, load_registry, registry_path
 from gzkit.schemas import load_schema
 from gzkit.traceability import scan_catalog_bindings
@@ -473,6 +474,7 @@ def _booked_findings(ledger: Ledger, catalog: Catalog) -> list[ValidationError]:
             "work_package_dispatched",
             "work_package_blocked",
             "work_package_unblocked",
+            "order_transitioned",
         )
         for row in ledger.query(event_type=event_type)
     }
@@ -491,7 +493,8 @@ def _booked_findings(ledger: Ledger, catalog: Catalog) -> list[ValidationError]:
 def booked_req_ids(ledger: Ledger) -> set[str]:
     """Read every catalog-grammar REQ id the ledger names, so none is ever minted again.
 
-    A REQ is named by its proof (`req_proof_recorded`), by a freeze baseline, by a
+    A REQ is named by its proof (`req_proof_recorded`), by a package's or an order's
+    freeze baseline, by a
     dispatch's subject (`REQ-<n>@<revision>`) and by an unblock's exit (requirements
     model § 2: an id is never reused).
 
@@ -504,13 +507,35 @@ def booked_req_ids(ledger: Ledger) -> set[str]:
         held = row.extra
         if row.event == "req_proof_recorded":
             named.add(str(held.get("req")))
-        elif row.event == "work_package_transitioned":
+        elif row.event in {"work_package_transitioned", "order_transitioned"}:
             named |= {str(entry.get("req")) for entry in held.get("baseline") or ()}
         elif row.event == "work_package_dispatched":
             named.add(str(held.get("subject", "")).partition("@")[0])
         elif row.event == "work_package_unblocked" and held.get("req"):
             named.add(str(held["req"]))
     return {req for req in named if re.match(REQ_ID_PATTERN, req)}
+
+
+def _booked_order_findings(ledger: Ledger, catalog: Catalog) -> list[ValidationError]:
+    """Refuse a store missing an order the ledger names (RP-12 rulings 43 and 52).
+
+    An order is born on the ledger at `opened`, and an id is never reused, so the
+    store keeps the record of every order the ledger has booked.
+
+    Returns:
+        One finding naming every booked order the store no longer holds.
+
+    """
+    if missing := sorted(booked_order_ids(ledger) - {order.id for order in catalog.orders}):
+        return [
+            _err(
+                "orders",
+                f"Orders {', '.join(missing)} have ledger events but no record in "
+                f"data/{CATALOG_FILES['orders']}. An order is born on the ledger and its id is "
+                "never reused (RP-12 rulings 43 and 52), so restore the record.",
+            )
+        ]
+    return []
 
 
 def _booked_req_findings(ledger: Ledger, catalog: Catalog) -> list[ValidationError]:
@@ -560,6 +585,7 @@ def audit_catalog(project_root: Path) -> list[ValidationError]:
     )
     ledger = Ledger(project_root / config.paths.ledger)
     errors += _booked_findings(ledger, catalog) + _booked_req_findings(ledger, catalog)
+    errors += _booked_order_findings(ledger, catalog)
     if any(outcome.user_facing for outcome in catalog.outcomes):
         errors += bdd_findings(catalog, scan_catalog_bindings(project_root))
     if gaps := coverage_gaps(catalog, needs):

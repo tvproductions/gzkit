@@ -29,6 +29,13 @@ class ProducerProbeTests(unittest.TestCase):
                 self.assertEqual(observation.status, "verified", observation.error)
                 self.assertEqual(observation.subject, "WP-02-producer-probe")
 
+    def test_the_order_writer_is_verified_and_refuses_a_second_opening(self) -> None:
+        """RP-12 ruling 52: the order's opening is booked once, in its repair package."""
+        observation = probe_producer("order_transitioned")
+        self.assertEqual(observation.status, "verified", observation.error)
+        self.assertEqual(observation.producer, "gzkit.order_ledger.record_order_transition")
+        self.assertEqual(observation.subject, "ORD-01-producer-probe")
+
     def test_the_claim_writer_is_verified_and_books_each_pair_once(self) -> None:
         """RP-12 ruling 40: one claim per dispatch and agent, none for no dispatch."""
         observation = probe_producer("dispatch_claimed")
@@ -428,3 +435,86 @@ class LegacyWithdrawalProducerProbeTests(unittest.TestCase):
             observation = probe_producer("legacy_unit_withdrawn")
         self.assertEqual(observation.status, "failed")
         self.assertIn("nothing for a refusal", observation.error or "")
+
+
+class OrderProducerProbeTests(unittest.TestCase):
+    """RP-12 ruling 52: the order writer gets credit only for one true opening."""
+
+    @staticmethod
+    def _writer(book: Callable[[Any, Any], None]) -> Callable[..., None]:
+        """A writer that books ``book``'s rows once, then refuses as the real one does.
+
+        Returns:
+            The stand-in writer.
+
+        """
+        from gzkit.order_ledger import OrderLedgerError  # noqa: PLC0415
+
+        calls: list[int] = []
+
+        def write(catalog: Any, ledger: Any, move: Any) -> None:
+            if calls:
+                msg = "opened already"
+                raise OrderLedgerError(msg)
+            calls.append(1)
+            book(ledger, move)
+
+        return write
+
+    def _observe(self, book: Callable[[Any, Any], None]) -> Any:
+        with patch("gzkit.order_ledger.record_order_transition", self._writer(book)):
+            return probe_producer("order_transitioned")
+
+    @staticmethod
+    def _opening(work_package: str = "WP-02-producer-probe") -> Any:
+        from gzkit.events import OrderTransitionedEvent  # noqa: PLC0415
+
+        return OrderTransitionedEvent(
+            event="order_transitioned",
+            id="ORD-01-producer-probe",
+            order="ORD-01-producer-probe",
+            work_package=work_package,
+            to_state="opened",
+            evidence="probe",
+            operator_text="probe",
+        )
+
+    def test_a_writer_that_books_the_opening_twice_gets_no_credit(self) -> None:
+        from gzkit.ledger import ledger_row  # noqa: PLC0415
+
+        def twice(ledger: Any, _move: Any) -> None:
+            for _ in range(2):
+                ledger.append(ledger_row(self._opening()))
+
+        observation = self._observe(twice)
+        self.assertEqual(observation.status, "failed")
+        self.assertIn("exactly one opening", observation.error)
+
+    def test_a_writer_that_books_another_event_gets_no_credit(self) -> None:
+        from gzkit.events import WorkPackageChangedEvent  # noqa: PLC0415
+        from gzkit.ledger import ledger_row  # noqa: PLC0415
+
+        def other(ledger: Any, _move: Any) -> None:
+            event = WorkPackageChangedEvent(
+                event="work_package_changed",
+                id="WP-02-producer-probe",
+                work_package="WP-02-producer-probe",
+                rung="attachment",
+                approver="operator",
+                change="probe",
+            )
+            ledger.append(ledger_row(event))
+
+        observation = self._observe(other)
+        self.assertEqual(observation.status, "failed")
+        self.assertIn("wrong event type", observation.error)
+
+    def test_a_writer_that_books_the_wrong_package_gets_no_credit(self) -> None:
+        from gzkit.ledger import ledger_row  # noqa: PLC0415
+
+        def elsewhere(ledger: Any, _move: Any) -> None:
+            ledger.append(ledger_row(self._opening("WP-01-producer-probe")))
+
+        observation = self._observe(elsewhere)
+        self.assertEqual(observation.status, "failed")
+        self.assertIn("disagrees with the opening", observation.error)

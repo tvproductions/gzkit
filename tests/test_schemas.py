@@ -76,6 +76,7 @@ from gzkit.events import (
     ObpiUnblockedEvent,
     ObpiUnparkedEvent,
     ObpiWithdrawnEvent,
+    OrderTransitionedEvent,
     OutcomeTransitionedEvent,
     PatchReleaseEvent,
     PipelineLaunchedEvent,
@@ -402,6 +403,8 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "dispatch_voided": DispatchVoidedEvent,
     "work_package_blocked": WorkPackageBlockedEvent,
     "work_package_unblocked": WorkPackageUnblockedEvent,
+    # An order's lifecycle (RP-12 O2 task 3)
+    "order_transitioned": OrderTransitionedEvent,
     # Reversible retirement of OBPIs whose parent ADR demoted to pool (GHI #584)
     "obpi_parked": ObpiParkedEvent,
     "obpi_blocked_on_operator": ObpiBlockedOnOperatorEvent,

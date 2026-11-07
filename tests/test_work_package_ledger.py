@@ -301,6 +301,30 @@ class FreezeTests(_LedgerCase):
         event = self.move("frozen", work_package="WP-02-astral", **{**_FREEZE, "baseline": ()})
         self.assertEqual(event.to_state, "frozen")
 
+    def test_a_repair_package_freezes_only_repair_reqs_held_on_it(self) -> None:
+        """RP-12 rulings 2 and 45: a repair REQ is held on one repair package, frozen there."""
+        elsewhere = _repair_req().model_copy(update={"id": "REQ-4", "held_on": "WP-09-other"})
+        catalog = _catalog().model_copy(update={"reqs": (*_catalog().reqs, elsewhere)})
+        self.move("initiated", work_package="WP-02-astral", operator_text="start the repair")
+
+        def freeze(req: str, revision: int) -> WorkPackageTransitionedEvent:
+            baseline = (BaselinedReq(req=req, revision=revision),)
+            request = TransitionRequest.model_validate(
+                {
+                    "work_package": "WP-02-astral",
+                    "to_state": "frozen",
+                    "evidence": "evt-1",
+                    **_FREEZE,
+                    "baseline": baseline,
+                }
+            )
+            return record_work_package_transition(catalog, self.ledger, request)
+
+        for req, revision in (("REQ-1", 2), ("REQ-4", 2)):
+            with self.subTest(req=req):
+                self.assert_refused(freeze, req=req, revision=revision)
+        self.assertEqual(freeze("REQ-3", 2).baseline, (BaselinedReq(req="REQ-3", revision=2),))
+
 
 class CloseTests(_LedgerCase):
     def setUp(self) -> None:

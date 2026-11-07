@@ -28,7 +28,10 @@ def _register_wp_order(wp_commands: argparse._SubParsersAction) -> None:
         ),
         epilog=build_epilog(
             [
-                "gz wp order new WP-01-stamp --slug import --purpose 'Restore it.'",
+                (
+                    "gz wp order new WP-01-stamp --slug import --purpose 'Restore it.'"
+                    " --operator-text 'open it'"
+                ),
                 "gz wp order show ORD-01-import",
             ]
         ),
@@ -41,12 +44,19 @@ def _register_wp_order(wp_commands: argparse._SubParsersAction) -> None:
         help="Write a new order's record with the next id",
         description=(
             "Write a new order's record with the next ORD-<NN>-<slug> in the one\n"
-            "series. It sits in a repair package until RP-14 (RP-12 ruling 44)."
+            "series and book its opening on the operator's words (RP-12 ruling 52).\n"
+            "It sits in a repair package until RP-14 (RP-12 ruling 44)."
         ),
         epilog=build_epilog(
             [
-                "gz wp order new WP-01-stamp --slug import --purpose 'Restore it.'",
-                "gz wp order new WP-01-stamp --slug matcher --purpose 'Fix it.' --alias O2",
+                (
+                    "gz wp order new WP-01-stamp --slug import --purpose 'Restore it.'"
+                    " --operator-text 'open it'"
+                ),
+                (
+                    "gz wp order new WP-01-stamp --slug matcher --purpose 'Fix it.'"
+                    " --operator-text 'go' --alias O2"
+                ),
             ]
         ),
     )
@@ -54,6 +64,8 @@ def _register_wp_order(wp_commands: argparse._SubParsersAction) -> None:
     p_order_new.add_argument("--slug", required=True, help="Lowercase words joined by hyphens")
     p_order_new.add_argument("--purpose", required=True, help="What the order restores")
     p_order_new.add_argument("--procedure", default="NA", help="Its procedure, or NA")
+    p_order_new.add_argument("--operator-text", required=True, help="The operator's words")
+    p_order_new.add_argument("--evidence", default="operator opening", help="Justification")
     p_order_new.add_argument(
         "--alias", dest="aliases", action="append", default=[], help="O<n> (repeatable)"
     )
@@ -67,6 +79,7 @@ def _register_wp_order(wp_commands: argparse._SubParsersAction) -> None:
                 "procedure": a.procedure,
                 "aliases": a.aliases,
             },
+            opening={"operator_text": a.operator_text, "evidence": a.evidence},
             as_json=a.as_json,
         )
     )

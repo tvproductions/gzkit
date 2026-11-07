@@ -217,11 +217,22 @@ def declared_modules(ledger: Ledger, package: WorkPackage) -> tuple[str, ...]:
 def _check_baselined(
     held: dict[str, CatalogReq | RepairReq], package: WorkPackage, entry: BaselinedReq
 ) -> None:
-    """One baseline entry: a REQ the catalog holds at that revision, of the package's outcome."""
+    """One baseline entry: a REQ the catalog holds at that revision, the package's own.
+
+    A delivery package freezes catalog REQs of its outcome; a repair package freezes
+    repair REQs held on it (RP-12 rulings 2 and 45).
+    """
     req = held.get(entry.req)
     if req is None or req.revision != entry.revision:
         _refuse(f"{entry.req} at revision {entry.revision} is not a REQ the catalog holds.")
     if not package.outcome:
+        if not isinstance(req, RepairReq) or req.held_on != package.id:
+            where = f"held on {req.held_on}" if isinstance(req, RepairReq) else "a catalog REQ"
+            _refuse(
+                f"{entry.req} is {where}; repair package {package.id} freezes only the repair "
+                "REQs held on it (RP-12 rulings 2 and 45). Write one with `uv run gz wp req new "
+                f"{package.id}`, or freeze without that REQ."
+            )
         return
     if not isinstance(req, CatalogReq):
         _refuse(

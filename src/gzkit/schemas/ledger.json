@@ -2640,6 +2640,73 @@
         }
       }
     },
+    "order_transitioned": {
+      "required": [
+        "order",
+        "work_package",
+        "to_state",
+        "evidence"
+      ],
+      "properties": {
+        "order": {
+          "type": "string",
+          "min_length": 1
+        },
+        "work_package": {
+          "type": "string",
+          "min_length": 1
+        },
+        "from_state": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "opened",
+            "frozen",
+            "commenced",
+            "accepted",
+            "closed",
+            null
+          ]
+        },
+        "to_state": {
+          "type": "string",
+          "enum": [
+            "opened",
+            "frozen",
+            "commenced",
+            "accepted",
+            "closed"
+          ]
+        },
+        "evidence": {
+          "type": "string",
+          "min_length": 1
+        },
+        "operator_text": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "baseline": {
+          "type": "array"
+        },
+        "risk_note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review_receipt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
     "work_package_unblocked": {
       "required": [
         "work_package",

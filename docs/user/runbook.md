@@ -987,10 +987,12 @@ when, the subject last dispatched against and whether it is blocked.
 An order is the unit Gate 5 sits at, inside a work package (drydock RP-12 O2).
 Its record lives in `data/catalog/orders.json`, written only by `gz wp order new`,
 as `ORD-<NN>-<slug>`; its kind is its package's, and it sits in a repair package
-until RP-14 moves construction onto the order:
+until RP-14 moves construction onto the order. The verb books the order's opening,
+`order_transitioned` to `opened`, on the operator's words before it writes the
+record, so an order is born on the ledger:
 
 ```bash
-uv run gz wp order new WP-01-stamp --slug import --purpose "<what it restores>" --alias O2
+uv run gz wp order new WP-01-stamp --slug import --purpose "<what it restores>" --operator-text "<the operator's words>" --alias O2
 uv run gz wp order show ORD-01-import
 ```
 

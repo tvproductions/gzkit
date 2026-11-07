@@ -238,6 +238,9 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         "work_package_issue_closed",
         "work_package_transitioned",
         "work_package_unblocked",
+        # An order's lifecycle (RP-12 O2 task 3). An order is a catalog record
+        # inside its package, not a node of this projection.
+        "order_transitioned",
     }
 )
 

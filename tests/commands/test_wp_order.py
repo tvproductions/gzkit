@@ -7,13 +7,16 @@ repair package only until RP-14 (ruling 44). A refusal exits 3 and writes
 nothing; an unknown package or order exits 1.
 """
 
+import argparse
 import json
+import shlex
 import unittest
 from pathlib import Path
 from typing import Any
 from unittest.mock import patch
 
 from gzkit.cli import main
+from gzkit.cli.main import _build_parser
 from gzkit.governance.trust_audits.catalog import audit_catalog
 from tests.commands.common import CliRunner, _quick_init
 
@@ -74,6 +77,11 @@ def _orders() -> list[dict[str, Any]]:
     return json.loads(text)["orders"]
 
 
+def _ledger_rows() -> list[dict[str, Any]]:
+    text = (Path(".gzkit") / "ledger.jsonl").read_text(encoding="utf-8")
+    return [json.loads(line) for line in text.splitlines() if line.strip()]
+
+
 class _OrderCase(unittest.TestCase):
     def setUp(self) -> None:
         self.runner = CliRunner()
@@ -92,8 +100,9 @@ class _OrderCase(unittest.TestCase):
         return result.output if code == 0 else " ".join(result.output.split())
 
     def new(self, slug: str, *extra: str, package: str = "WP-01-stamp", code: int = 0) -> str:
+        words = ("--operator-text", "open it")
         return self.gz(
-            "new", package, "--slug", slug, "--purpose", "Restore it.", *extra, code=code
+            "new", package, "--slug", slug, "--purpose", "Restore it.", *words, *extra, code=code
         )
 
 
@@ -121,6 +130,40 @@ class OrderNewTests(_OrderCase):
         catalog.write_text(json.dumps({"_doc": "Fixture.", "orders": [held]}), encoding="utf-8")
         self.new("next")
         self.assertEqual([order["id"] for order in _orders()], ["ORD-05-held", "ORD-06-next"])
+
+    def test_new_books_the_orders_opening_on_the_operators_words(self) -> None:
+        """Ruling 52: the order is born on the ledger, opened with the operator's words."""
+        self.new("import")
+        rows = [r for r in _ledger_rows() if r["event"] == "order_transitioned"]
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(
+            (rows[0]["order"], rows[0]["work_package"], rows[0]["to_state"]),
+            ("ORD-01-import", "WP-01-stamp", "opened"),
+        )
+        self.assertEqual(rows[0]["operator_text"], "open it")
+
+    def test_new_without_the_operators_words_is_refused_and_nothing_written(self) -> None:
+        before = _ledger_rows()
+        args = ("new", "WP-01-stamp", "--slug", "x", "--purpose", "P.", "--operator-text", " ")
+        output = self.gz(*args, code=3)
+        self.assertIn("--operator-text", output)
+        self.assertIn("ruling 52", output)
+        self.assertEqual((_orders(), _ledger_rows()), ([], before))
+
+    def test_new_numbers_past_an_order_the_ledger_names(self) -> None:
+        """Rulings 43 and 52: a booked id is never reused, even once its record is lost."""
+        self.new("import")
+        catalog = Path("data") / "catalog" / "orders.json"
+        catalog.write_text(json.dumps({"_doc": "Fixture.", "orders": []}), encoding="utf-8")
+        output = self.new("next", code=3)
+        self.assertIn("ORD-01-import", output)
+        self.assertIn("gz validate --catalog", output)
+
+    def test_a_refused_order_books_no_opening(self) -> None:
+        before = _ledger_rows()
+        self.new("resume", package="WP-02-resume", code=3)
+        self.new("idle", package="WP-03-idle", code=3)
+        self.assertEqual(_ledger_rows(), before)
 
     def test_an_order_on_a_delivery_package_is_refused_and_nothing_written(self) -> None:
         output = self.new("resume", package="WP-02-resume", code=3)
@@ -150,12 +193,13 @@ class OrderNewTests(_OrderCase):
             (("--procedure", ""), "--procedure"),
         ):
             with self.subTest(flag=flag):
-                args = ("new", "WP-01-stamp", "--purpose", "Restore it.")
+                args = ("new", "WP-01-stamp", "--purpose", "Restore it.", "--operator-text", "go")
                 args += extra if extra[0] == "--slug" else ("--slug", "ok", *extra)
                 output = self.gz(*args, code=3)
                 self.assertIn(flag, output)
                 self.assertIn("Nothing was written", output)
                 self.assertIn("uv run gz wp order new", output)
+                self.assertIn("--operator-text <words>", output)
                 self.assertNotIn("errors.pydantic.dev", output)
                 self.assertNotIn("Correct the file", output)
         self.assertEqual(_orders(), [])
@@ -181,8 +225,39 @@ class OrderShowTests(_OrderCase):
         self.assertIn("  aliases: O2", lines)
         self.assertIn("  purpose: Restore it.", lines)
 
-    def test_an_unknown_order_exits_1(self) -> None:
-        self.gz("show", "ORD-09-ghost", code=1)
+    def test_an_unknown_order_exits_1_naming_the_call_that_writes_one(self) -> None:
+        output = self.gz("show", "ORD-09-ghost", code=1)
+        self.assertIn("--operator-text <words>", output)
+
+
+def _help_parser(parser: argparse.ArgumentParser, path: list[str]) -> argparse.ArgumentParser:
+    """Walk the subparsers to the command ``path`` names.
+
+    Returns:
+        That command's parser.
+
+    """
+    for name in path:
+        actions = [a for a in parser._actions if isinstance(a, argparse._SubParsersAction)]
+        parser = actions[0].choices[name]
+    return parser
+
+
+class OrderEpilogTests(unittest.TestCase):
+    def test_every_example_parses_as_a_real_invocation(self) -> None:
+        """The help's examples are runnable: each parses, every required flag present."""
+        parser = _build_parser()
+        examples = [
+            line.strip()
+            for args in (["wp", "order"], ["wp", "order", "new"])
+            for line in (_help_parser(parser, args).epilog or "").splitlines()
+            if line.strip().startswith("gz ")
+        ]
+        self.assertGreaterEqual(len(examples), 3)
+        for example in examples:
+            with self.subTest(example=example):
+                parsed = parser.parse_args(shlex.split(example)[1:])
+                self.assertTrue(callable(parsed.func))
 
 
 if __name__ == "__main__":

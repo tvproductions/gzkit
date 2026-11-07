@@ -1,0 +1,281 @@
+"""The order's Layer-2 writer: RP-12 O2 task 3, act 1.
+
+`docs/governance/harbor-ro12-contractor-kit.md` § Rulings: an order's lifecycle
+lives only in the ledger (ruling 44), `opened` booked on the operator's words when
+the order is written (ruling 52), then `frozen`, `commenced` and `accepted` one
+step at a time; `closed` is Gate 5 at the order, O2 task 4. A freeze carries the
+risk note, the reviewer's receipt and a baseline of repair REQs held on the
+order's package (rulings 2, 45), each in one live order's baseline at a time
+(ruling 53). A refusal writes nothing.
+"""
+
+import json
+import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
+from gzkit.events import BaselinedReq, OrderTransitionedEvent, parse_typed_event
+from gzkit.ledger import Ledger
+from gzkit.models.catalog import Catalog, Criterion, Order, RepairReq, WorkPackage
+from gzkit.ontology.corpus import project_corpus
+from gzkit.order_ledger import (
+    OrderLedgerError,
+    OrderMove,
+    booked_order_ids,
+    order_state,
+    record_order_transition,
+)
+from gzkit.work_package_ledger import TransitionRequest, record_work_package_transition
+
+
+def _package(wp_id: str, kind: str = "repair") -> WorkPackage:
+    repair = kind == "repair"
+    return WorkPackage(
+        id=wp_id,
+        kind=kind,  # ty: ignore[invalid-argument-type]
+        outcome=None if repair else "H1",
+        issues=(1301,) if wp_id == "WP-01-stamp" else (1302,) if repair else (),
+        lane="lite" if repair else None,
+        aliases=(),
+        initial_conditions="NA",
+        procedure="NA",
+        test_and_inspection="NA",
+        system_restoration="NA",
+        oqe=(),
+        alterations=(),
+        departures=(),
+    )
+
+
+def _repair_req(req_id: str, held_on: str) -> RepairReq:
+    return RepairReq(
+        id=req_id,
+        specialization="repair",
+        held_on=held_on,
+        problem_report=1301 if held_on == "WP-01-stamp" else 1302,
+        statement="The stamp generator imports again.",
+        criteria=(Criterion(state_or_input="an import", required_outcome="ok", evidence="t"),),
+        kind="BEHAVIOR",
+        revision=1,
+    )
+
+
+def _order(order_id: str, package: str = "WP-01-stamp") -> Order:
+    return Order(id=order_id, work_package=package, aliases=(), purpose="Fix.", procedure="NA")
+
+
+def _catalog() -> Catalog:
+    return Catalog(
+        families=(),
+        outcomes=(),
+        reqs=(
+            _repair_req("REQ-1", "WP-01-stamp"),
+            _repair_req("REQ-2", "WP-01-stamp"),
+            _repair_req("REQ-3", "WP-03-other"),
+        ),
+        work_packages=(_package("WP-01-stamp"), _package("WP-03-other")),
+        orders=(
+            _order("ORD-01-import"),
+            _order("ORD-02-matcher"),
+            _order("ORD-03-other", "WP-03-other"),
+        ),
+    )
+
+
+def _rows(path: Path) -> list[dict[str, object]]:
+    if not path.is_file():
+        return []
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line]
+
+
+_FREEZE = {
+    "baseline": (BaselinedReq(req="REQ-1", revision=1),),
+    "risk_note": "The import touches the hook.",
+    "review_receipt": "review-01",
+}
+_PAYLOADS: dict[str, dict[str, object]] = {
+    "opened": {"operator_text": "open the import order"},
+    "frozen": _FREEZE,
+    "commenced": {},
+    "accepted": {},
+}
+
+
+class _OrderCase(unittest.TestCase):
+    def setUp(self) -> None:
+        self._dir = TemporaryDirectory()
+        self.addCleanup(self._dir.cleanup)
+        self.path = Path(self._dir.name) / "ledger.jsonl"
+        self.ledger = Ledger(self.path)
+        self.catalog = _catalog()
+        for package in ("WP-01-stamp", "WP-03-other"):
+            self.initiate(package)
+
+    def initiate(self, package: str) -> None:
+        request = TransitionRequest(
+            work_package=package, to_state="initiated", evidence="e", operator_text="go"
+        )
+        record_work_package_transition(self.catalog, self.ledger, request)
+
+    def move(self, to_state: str, **fields: object) -> OrderTransitionedEvent:
+        request = OrderMove.model_validate(
+            {"order": "ORD-01-import", "to_state": to_state, "evidence": "evt-1", **fields}
+        )
+        return record_order_transition(self.catalog, self.ledger, request)
+
+    def walk_to(self, state: str, order: str = "ORD-01-import", **fields: object) -> None:
+        states = tuple(_PAYLOADS)
+        for step in states[: states.index(state) + 1]:
+            extra = fields if step == "frozen" else {}
+            self.move(step, order=order, **{**_PAYLOADS[step], **extra})
+
+    def assert_refused(self, to_state: str, **fields: object) -> str:
+        before = _rows(self.path)
+        with self.assertRaises(OrderLedgerError) as caught:
+            self.move(to_state, **fields)
+        self.assertEqual(_rows(self.path), before)
+        return str(caught.exception)
+
+
+class LifecycleTests(_OrderCase):
+    def test_an_order_with_no_event_is_not_opened(self) -> None:
+        self.assertIsNone(order_state(self.ledger, "ORD-01-import"))
+
+    def test_opening_is_booked_on_the_operators_words(self) -> None:
+        """Ruling 52: the order is born on the ledger, as a package is initiated."""
+        event = self.move("opened", operator_text="open the import order")
+        self.assertEqual(
+            (event.id, event.order, event.work_package, event.from_state, event.to_state),
+            ("ORD-01-import", "ORD-01-import", "WP-01-stamp", None, "opened"),
+        )
+        self.assertEqual(event.operator_text, "open the import order")
+        persisted = parse_typed_event(_rows(self.path)[-1])
+        self.assertIsInstance(persisted, OrderTransitionedEvent)
+        unstamped = [
+            {key: value for key, value in held.model_dump().items() if key != "ts"}
+            for held in (persisted, event)
+        ]
+        self.assertEqual(unstamped[0], unstamped[1])
+        self.assertEqual(order_state(self.ledger, "ORD-01-import"), "opened")
+
+    def test_opening_without_the_operators_words_is_refused(self) -> None:
+        self.assert_refused("opened")
+        self.assert_refused("opened", operator_text="  ")
+
+    def test_the_lifecycle_walks_one_step_at_a_time_to_accepted(self) -> None:
+        self.walk_to("accepted")
+        moves = [r["to_state"] for r in _rows(self.path) if r["event"] == "order_transitioned"]
+        self.assertEqual(moves, ["opened", "frozen", "commenced", "accepted"])
+
+    def test_a_skipped_or_backward_step_is_refused(self) -> None:
+        self.assert_refused("frozen", **_FREEZE)
+        self.move("opened", **_PAYLOADS["opened"])
+        self.assert_refused("commenced")
+        self.assert_refused("opened", **_PAYLOADS["opened"])
+
+    def test_close_is_gate_5_at_the_order_and_refused_here(self) -> None:
+        """Task 4 lands the close; until then nothing moves an order to closed."""
+        self.walk_to("accepted")
+        self.assertIn("task 4", self.assert_refused("closed"))
+
+    def test_an_accepted_order_moves_no_further(self) -> None:
+        self.walk_to("accepted")
+        for state in ("opened", "frozen", "commenced", "accepted"):
+            with self.subTest(state=state):
+                self.assert_refused(state, **_PAYLOADS[state])
+
+    def test_an_order_the_store_lacks_is_refused(self) -> None:
+        self.assert_refused("opened", order="ORD-09-ghost", **_PAYLOADS["opened"])
+
+    def test_a_field_the_target_state_does_not_carry_is_refused(self) -> None:
+        self.assert_refused("opened", operator_text="go", risk_note="Too early.")
+        self.move("opened", **_PAYLOADS["opened"])
+        self.assert_refused("frozen", **_FREEZE, operator_text="again")
+
+    def test_empty_evidence_is_refused(self) -> None:
+        self.assert_refused("opened", evidence=" ", **_PAYLOADS["opened"])
+
+    def test_each_order_keeps_its_own_state(self) -> None:
+        self.walk_to("commenced")
+        self.move("opened", order="ORD-02-matcher", **_PAYLOADS["opened"])
+        self.assertEqual(order_state(self.ledger, "ORD-01-import"), "commenced")
+        self.assertEqual(order_state(self.ledger, "ORD-02-matcher"), "opened")
+
+    def test_an_order_moves_only_while_its_package_is_open(self) -> None:
+        """Rulings 2 and 44: the package stays initiated while its orders run."""
+        catalog = self.catalog.model_copy(
+            update={"work_packages": (*self.catalog.work_packages, _package("WP-04-idle"))}
+        )
+        self.catalog = catalog.model_copy(
+            update={"orders": (*catalog.orders, _order("ORD-04-idle", "WP-04-idle"))}
+        )
+        output = self.assert_refused("opened", order="ORD-04-idle", **_PAYLOADS["opened"])
+        self.assertIn("not initiated", output)
+
+    def test_booked_order_ids_reads_every_order_the_ledger_names(self) -> None:
+        self.move("opened", **_PAYLOADS["opened"])
+        self.move("opened", order="ORD-03-other", **_PAYLOADS["opened"])
+        self.assertEqual(booked_order_ids(self.ledger), {"ORD-01-import", "ORD-03-other"})
+
+
+class FreezeTests(_OrderCase):
+    def setUp(self) -> None:
+        super().setUp()
+        self.move("opened", **_PAYLOADS["opened"])
+
+    def test_a_freeze_lacking_its_risk_note_or_receipt_is_refused(self) -> None:
+        for missing in ("risk_note", "review_receipt"):
+            with self.subTest(missing=missing):
+                self.assert_refused("frozen", **{**_FREEZE, missing: " "})
+
+    def test_the_freeze_records_its_baseline_note_and_receipt(self) -> None:
+        event = self.move("frozen", **_FREEZE)
+        self.assertEqual(event.baseline, (BaselinedReq(req="REQ-1", revision=1),))
+        self.assertEqual(
+            (event.risk_note, event.review_receipt), ("The import touches the hook.", "review-01")
+        )
+
+    def test_the_baseline_holds_repair_reqs_held_on_the_orders_package(self) -> None:
+        """Rulings 2 and 45: a repair order freezes its own package's repair REQs."""
+        for req, revision in (("REQ-3", 1), ("REQ-1", 2), ("REQ-9", 1)):
+            with self.subTest(req=req):
+                baseline = (BaselinedReq(req=req, revision=revision),)
+                self.assert_refused("frozen", **{**_FREEZE, "baseline": baseline})
+
+    def test_a_req_sits_in_one_live_orders_baseline_at_a_time(self) -> None:
+        """Ruling 53: a second live order cannot freeze a REQ the first holds."""
+        self.move("frozen", **_FREEZE)
+        self.move("opened", order="ORD-02-matcher", **_PAYLOADS["opened"])
+        output = self.assert_refused("frozen", order="ORD-02-matcher", **_FREEZE)
+        self.assertIn("ORD-01-import", output)
+        both = (BaselinedReq(req="REQ-2", revision=1),)
+        self.assertEqual(
+            self.move("frozen", order="ORD-02-matcher", **{**_FREEZE, "baseline": both}).baseline,
+            both,
+        )
+
+    def test_an_order_opened_and_not_frozen_holds_no_baseline(self) -> None:
+        """Ruling 53 reads only frozen baselines: an open order beside holds nothing."""
+        self.move("opened", order="ORD-02-matcher", **_PAYLOADS["opened"])
+        self.assertEqual(self.move("frozen", **_FREEZE).to_state, "frozen")
+
+    def test_an_unknown_state_is_refused(self) -> None:
+        self.assert_refused("inspected")
+
+    def test_a_terminated_orders_req_may_be_frozen_again(self) -> None:
+        """Ruling 53: once the holder is accepted, a later order may freeze the REQ."""
+        self.move("frozen", **_FREEZE)
+        self.move("commenced")
+        self.move("accepted")
+        self.move("opened", order="ORD-02-matcher", **_PAYLOADS["opened"])
+        self.assertEqual(self.move("frozen", order="ORD-02-matcher", **_FREEZE).to_state, "frozen")
+
+
+class CorpusTests(_OrderCase):
+    def test_the_corpus_projection_accounts_for_the_event(self) -> None:
+        self.move("opened", **_PAYLOADS["opened"])
+        project_corpus(self.ledger)
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -8,12 +8,14 @@ event is the binding (ruling 46); a delivery package keeps its five states
 until RP-14 moves construction onto the order (ruling 44).
 """
 
+import json
 import unittest
 
 from pydantic import ValidationError as PydanticValidationError
 
 from gzkit.governance.trust_audits.catalog import audit_catalog
 from gzkit.models.catalog import Order, load_catalog
+from gzkit.order_store import next_order_id
 from gzkit.registries import RegistryError
 from tests.governance.test_catalog import _Tree, _wp
 
@@ -129,6 +131,61 @@ class TestOrderStore(_Tree):
             load_catalog(self.root)
         self.assertIn("data/catalog/orders.json", str(caught.exception))
         self.assertIn("uv run gz init", str(caught.exception))
+
+
+class TestBookedOrders(_Tree):
+    """Ruling 52: an order is born on the ledger, so the store keeps every order it names."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.write("work_packages", [_wp("WP-01-x")])
+
+    def book(self, to_state: str, **fields: object) -> None:
+        row = {
+            "schema": "gzkit.ledger.v1",
+            "event": "order_transitioned",
+            "id": "ORD-07-gone",
+            "ts": "2026-11-07T08:00:00+00:00",
+            "order": "ORD-07-gone",
+            "work_package": "WP-01-x",
+            "to_state": to_state,
+            "evidence": "evt-1",
+            **fields,
+        }
+        ledger = self.root / ".gzkit" / "ledger.jsonl"
+        ledger.parent.mkdir(exist_ok=True)
+        with ledger.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(row) + "\n")
+
+    def test_an_order_the_ledger_names_stays_in_the_store(self):
+        self.book("opened", operator_text="open it")
+        errors = audit_catalog(self.root)
+        self.assertEqual([e.field for e in errors], ["orders"])
+        self.assertIn("ORD-07-gone", errors[0].message)
+        self.write("orders", [_order("ORD-07-gone")])
+        self.assertEqual(audit_catalog(self.root), [])
+
+    def test_a_package_an_order_names_stays_in_the_store(self):
+        """RO-5 ruling 6: a package the ledger names, by an order's event too, is kept."""
+        self.book("opened", operator_text="open it")
+        self.write("work_packages", [])
+        errors = [e for e in audit_catalog(self.root) if e.field == "work_packages"]
+        self.assertEqual(len(errors), 1)
+        self.assertIn("WP-01-x", errors[0].message)
+
+    def test_a_req_an_orders_freeze_names_stays_in_the_store(self):
+        """Requirements model § 2: a REQ id the ledger names is never minted again."""
+        self.write("orders", [_order("ORD-07-gone")])
+        self.book("frozen", baseline=[{"req": "REQ-9", "revision": 1}])
+        errors = audit_catalog(self.root)
+        self.assertEqual([e.field for e in errors], ["reqs"])
+        self.assertIn("REQ-9", errors[0].message)
+
+    def test_the_next_id_numbers_past_every_booked_order(self):
+        """Ruling 43: one series, never reused, even past an order the store has lost."""
+        catalog = load_catalog(self.root)
+        self.assertEqual(next_order_id(catalog, "next", {"ORD-07-gone"}), "ORD-08-next")
+        self.assertEqual(next_order_id(catalog, "next", set()), "ORD-01-next")
 
 
 class TestWorkPackageSeries(_Tree):

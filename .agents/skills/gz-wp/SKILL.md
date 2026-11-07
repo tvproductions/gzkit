@@ -136,10 +136,13 @@ Every change to a live package is one `gz wp change` with its rung:
 An order sits inside a package: the unit Gate 5 sits at (RP-12 O2). Write its
 record with the next `ORD-<NN>-<slug>`; its kind is its package's. Only a repair
 package that is initiated and not closed takes one until RP-14, and an alias is
-unique within its package (rulings 43 to 49):
+unique within its package (rulings 43 to 49). The order is born on the ledger:
+the verb books its `order_transitioned` to `opened` on the operator's words
+before it writes the record (ruling 52):
 
 ```bash
-uv run gz wp order new <WP-id> --slug <slug> --purpose "<what it restores>" [--alias O<n>]
+uv run gz wp order new <WP-id> --slug <slug> --purpose "<what it restores>" \
+  --operator-text "<the operator's words>" [--alias O<n>]
 ```
 
 A repair requirement is held on its open repair package and answers an issue the

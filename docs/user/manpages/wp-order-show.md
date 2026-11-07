@@ -25,8 +25,10 @@ package from `data/catalog/work_packages.json`: an order's kind is its
 package's, never a field of its own (RP-12 ruling 43). `--json` prints the
 record and the kind.
 
-The order's lifecycle lives only in the ledger (ruling 44). Its events land with
-RP-12's later O2 tasks, and this verb shows them once they do.
+The order's lifecycle lives only in the ledger (ruling 44), as
+`order_transitioned`: `gz wp order new` books its `opened` (ruling 52). This verb
+does not show the state yet; `gz wp order show` reads it once O2 task 3 lands
+the freeze and commencement verbs.
 
 ## Examples
 
@@ -54,7 +56,7 @@ $ uv run gz wp order show ORD-01-import --json
 }
 $ uv run gz wp order show ORD-09-ghost
 Order 'ORD-09-ghost' is not in data/catalog/orders.json. Write one with `uv run
-gz wp order new <WP-id> --slug <slug> --purpose <text>`.
+gz wp order new <WP-id> --slug <slug> --purpose <text> --operator-text <words>`.
 ```
 
 ## Exit codes

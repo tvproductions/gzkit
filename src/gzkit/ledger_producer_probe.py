@@ -22,6 +22,7 @@ from gzkit.events import (
     MxMarkerRepairedEvent,
     MxSessionLeaseRenewedEvent,
     ObpiLockLeaseExpiredEvent,
+    OrderTransitionedEvent,
     OutcomeTransitionedEvent,
     ReportPublishedEvent,
     ReqProofRecordedEvent,
@@ -72,6 +73,7 @@ _CATALOG_REQ = "REQ-1"
 _WORK_PACKAGE = "WP-01-producer-probe"
 _REPAIR_PACKAGE = "WP-02-producer-probe"
 _ISSUE = 1
+_ORDER = "ORD-01-producer-probe"
 _BRIEF_PATH = f"design/adr/obpis/{_OBPI}.md"
 _STATEMENT = "Retain the canonical acceptance obligation."
 
@@ -699,6 +701,71 @@ def _probe_work_package_issue_closed(root: Path) -> ProducerObservation:
     )
 
 
+def _probe_order_transition(root: Path) -> ProducerObservation:
+    """Open an order in an initiated repair package, then try it again; the second refused.
+
+    Returns:
+        The verified observation.
+
+    Raises:
+        TypeError: The writer persisted another event type.
+        ValueError: The writer booked the wrong record or accepted the second opening.
+
+    """
+    from gzkit import order_ledger  # noqa: PLC0415 - the writer; import only when probed
+    from gzkit import work_package_ledger as wpl  # noqa: PLC0415
+    from gzkit.ledger import Ledger  # noqa: PLC0415
+    from gzkit.models.catalog import Order  # noqa: PLC0415
+
+    order = Order(
+        id=_ORDER, work_package=_REPAIR_PACKAGE, aliases=(), purpose=_STATEMENT, procedure="NA"
+    )
+    catalog = _seat_catalog(root).model_copy(update={"orders": (order,)})
+    ledger_path = root / ".gzkit/ledger.jsonl"
+    ledger = Ledger(ledger_path)
+    wpl.record_work_package_transition(
+        catalog,
+        ledger,
+        wpl.TransitionRequest(
+            work_package=_REPAIR_PACKAGE,
+            to_state="initiated",
+            evidence=_AUTHOR,
+            operator_text=_STATEMENT,
+        ),
+    )
+    seated = ledger_path.read_bytes()
+    opening = order_ledger.OrderMove(
+        order=_ORDER, to_state="opened", evidence=_AUTHOR, operator_text=_STATEMENT
+    )
+    order_ledger.record_order_transition(catalog, ledger, opening)
+    _expect_refusal(
+        lambda: order_ledger.record_order_transition(catalog, ledger, opening),
+        "an order opened twice",
+        order_ledger.OrderLedgerError,
+    )
+    persisted = ledger_path.read_bytes()
+    added = persisted[len(seated) :].decode("utf-8").splitlines()
+    if not persisted.startswith(seated) or len(added) != 1:
+        msg = "Writer must persist exactly one opening and nothing for a refusal"
+        raise ValueError(msg)
+    event = parse_typed_event(json.loads(added[0]))
+    if not isinstance(event, OrderTransitionedEvent):
+        msg = "Writer persisted the wrong event type"
+        raise TypeError(msg)
+    observed = (event.id, event.work_package, event.from_state, event.to_state)
+    if observed != (_ORDER, _REPAIR_PACKAGE, None, "opened"):
+        msg = "Order record disagrees with the opening"
+        raise ValueError(msg)
+    return ProducerObservation(
+        event_type="order_transitioned",
+        producer="gzkit.order_ledger.record_order_transition",
+        status="verified",
+        ledger_sha256=hashlib.sha256(persisted).hexdigest(),
+        record_count=1,
+        subject=event.id,
+    )
+
+
 _RUN_EVENTS = frozenset(
     {"work_package_dispatched", "work_package_blocked", "work_package_unblocked"}
 )
@@ -980,6 +1047,7 @@ _PRODUCERS = {
     "dispatch_claimed": "gzkit.work_package_run.record_dispatch_claim",
     "dispatch_voided": "gzkit.work_package_run.record_dispatch_void",
     "legacy_unit_withdrawn": "gzkit.legacy_units.withdraw_legacy_unit",
+    "order_transitioned": "gzkit.order_ledger.record_order_transition",
 }
 
 
@@ -993,6 +1061,7 @@ _ROOT_PROBES = {
     "work_package_transitioned": _probe_work_package_transition,
     "work_package_changed": _probe_work_package_change,
     "work_package_issue_closed": _probe_work_package_issue_closed,
+    "order_transitioned": _probe_order_transition,
     "legacy_unit_withdrawn": _probe_legacy_withdrawal,
     "dispatch_claimed": _probe_dispatch_claim,
     "dispatch_voided": lambda root: _probe_dispatch_claim(root, "dispatch_voided"),
