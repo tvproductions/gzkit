@@ -5108,16 +5108,6 @@
     },
     {
       "file": "src/gzkit/commands/status.py",
-      "rule": "DOC501",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/status.py",
-      "rule": "EM101",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/commands/status.py",
       "rule": "FBT001",
       "count": 8
     },
@@ -5165,16 +5155,6 @@
       "file": "src/gzkit/commands/status.py",
       "rule": "TC003",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/commands/status.py",
-      "rule": "TRY003",
-      "count": 2
-    },
-    {
-      "file": "src/gzkit/commands/status.py",
-      "rule": "TRY301",
-      "count": 2
     },
     {
       "file": "src/gzkit/commands/status_obpi.py",

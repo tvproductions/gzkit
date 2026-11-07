@@ -79,7 +79,9 @@ class TestStatusCommand(unittest.TestCase):
             _quick_init()
             Path("data").mkdir(exist_ok=True)
             registry = Path("data/active_campaign.json")
-            for contents in ("{", '{"active": []}', '{"active": "missing.md"}'):
+            Path("nofronts.md").write_text("# Campaign\n\n## Later\ntext\n", encoding="utf-8")
+            cases = ("{", '{"active": []}', '{"active": "missing.md"}', '{"active": "nofronts.md"}')
+            for contents in cases:
                 with self.subTest(contents=contents):
                     registry.write_text(contents, encoding="utf-8")
                     result = runner.invoke(main, ["status", "--json"])

@@ -360,7 +360,10 @@ def _read_workflow_fronts(project_root: Path) -> dict[str, str] | None:
     try:
         declared = json.loads(registry.read_text(encoding="utf-8"))["active"]
         if not isinstance(declared, str) or not declared.strip():
-            raise ValueError("active must name a campaign path")
+            return {
+                "source": source,
+                "error": "Workflow fronts unavailable: active must name a campaign path",
+            }
         path = (project_root / declared).resolve()
         source = path.relative_to(project_root.resolve()).as_posix() + "#workflow-fronts"
         content = path.read_text(encoding="utf-8")
@@ -370,7 +373,12 @@ def _read_workflow_fronts(project_root: Path) -> dict[str, str] | None:
             re.MULTILINE | re.DOTALL,
         )
         if section is None or not section.group(1).strip():
-            raise ValueError("campaign has no nonempty Workflow fronts section")
+            return {
+                "source": source,
+                "error": (
+                    "Workflow fronts unavailable: campaign has no nonempty Workflow fronts section"
+                ),
+            }
         return {"source": source, "text": section.group(1).strip()}
     except (OSError, ValueError, KeyError, TypeError) as exc:
         return {"source": source, "error": f"Workflow fronts unavailable: {exc}"}
