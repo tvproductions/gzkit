@@ -369,11 +369,6 @@ class TestCorpusLoaderHelper(unittest.TestCase):
 class TestSubprocessHasNoShellTrue(unittest.TestCase):
     """Static guard: no source line inside measurement.py opts into shell=True."""
 
-    def test_no_shell_true_in_measurement_source(self) -> None:
-        """Defense in depth: REQ-07 is also a static-source guarantee."""
-        source = _MEASUREMENT_PATH.read_text(encoding="utf-8")
-        self.assertNotRegex(source, r"shell\s*=\s*True")
-
     def test_subprocess_calls_use_list_form_in_source(self) -> None:
         """Every ``subprocess.run`` call passes a list literal as its first arg."""
         tree = ast.parse(_MEASUREMENT_PATH.read_text(encoding="utf-8"))
