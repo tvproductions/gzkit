@@ -60,19 +60,22 @@ class TestResourceResolution(unittest.TestCase):
         self.assertTrue(hasattr(traversable, "is_dir"))
 
     @covers("REQ-0.0.32-14-01")
-    def test_skills_resource_is_directory(self) -> None:
-        """gzkit.skills Traversable must be a directory (has file children)."""
+    def test_skills_resource_yields_children_to_copy(self) -> None:
+        """gzkit.skills enumerates children, the files an upgrade copies out."""
         traversable = importlib.resources.files("gzkit.skills")
-        self.assertTrue(
-            traversable.is_dir(),
-            "gzkit.skills resource must be a directory",
+        self.assertIsNotNone(
+            next(iter(traversable.iterdir()), None),
+            "gzkit.skills resource must enumerate at least one child",
         )
 
     @covers("REQ-0.0.32-14-01")
-    def test_rules_resource_is_directory(self) -> None:
-        """gzkit.rules Traversable must be a directory."""
+    def test_rules_resource_yields_children_to_copy(self) -> None:
+        """gzkit.rules enumerates children, the files an upgrade copies out."""
         traversable = importlib.resources.files("gzkit.rules")
-        self.assertTrue(traversable.is_dir(), "gzkit.rules resource must be a directory")
+        self.assertIsNotNone(
+            next(iter(traversable.iterdir()), None),
+            "gzkit.rules resource must enumerate at least one child",
+        )
 
 
 class TestCoreRegistries(unittest.TestCase):
