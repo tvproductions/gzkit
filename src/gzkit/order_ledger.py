@@ -7,7 +7,9 @@ in the ledger (ruling 44), as `order_transitioned`. `gz wp order new` books
 and lands with O2 task 4, so it is refused here. A freeze carries the risk note,
 the reviewer's receipt and a baseline of the repair REQs held on the order's
 package (rulings 2, 45), each REQ in one live order's frozen baseline at a time
-(ruling 53), and never on an empty baseline (ruling 61). A blocked order does not
+(ruling 53), and never on an empty baseline (ruling 61). A freeze approves exactly
+the package's planned alterations no earlier order's freeze approved (ruling 63),
+since a repair package never freezes itself (ruling 44). A blocked order does not
 move (ruling 59).
 
 The writer takes the parsed catalog and the ledger as parameters, reads the
@@ -26,7 +28,7 @@ from gzkit.work_package_ledger import work_package_state
 
 if TYPE_CHECKING:
     from gzkit.ledger import Ledger, LedgerEvent
-    from gzkit.models.catalog import Catalog, CatalogReq, Order
+    from gzkit.models.catalog import Catalog, CatalogReq, Order, WorkPackage
 
 #: Each state's next state. A table rather than an order of states, so task 4's
 #: close and its re-freeze add edges without reshaping the lifecycle (question 11).
@@ -42,7 +44,7 @@ TERMINATED: frozenset[str] = frozenset({"accepted", "closed"})
 #: The payload fields each target state carries; any other is refused.
 _STATE_FIELDS: dict[str, frozenset[str]] = {
     "opened": frozenset({"operator_text"}),
-    "frozen": frozenset({"baseline", "risk_note", "review_receipt"}),
+    "frozen": frozenset({"baseline", "risk_note", "review_receipt", "approved_alterations"}),
     "commenced": frozenset(),
     "accepted": frozenset(),
 }
@@ -65,6 +67,7 @@ class OrderMove(BaseModel):
     baseline: tuple[BaselinedReq, ...] = Field((), description="The frozen REQ baseline")
     risk_note: str | None = Field(None, description="The short risk note, at frozen")
     review_receipt: str | None = Field(None, description="The nine-criteria review receipt")
+    approved_alterations: tuple[str, ...] = Field((), description="Alterations approved")
 
 
 def _refuse(message: str) -> NoReturn:
@@ -158,14 +161,34 @@ def _order(catalog: Catalog, order_id: str) -> Order:
     return held
 
 
-def _package_modules(catalog: Catalog, order: Order) -> tuple[str, ...]:
-    """Read the footprint the order's freeze seals for its package (ruling 56).
+def _package(catalog: Catalog, order: Order) -> WorkPackage:
+    return next(wp for wp in catalog.work_packages if wp.id == order.work_package)
+
+
+def approved_alterations(ledger: Ledger, work_package: str) -> set[str]:
+    """Read the alterations the package's orders' freezes have approved (RP-12 ruling 63).
 
     Returns:
-        The package's paths as the store holds them now.
+        Those alteration ids.
 
     """
-    return next(wp.modules for wp in catalog.work_packages if wp.id == order.work_package)
+    approved: set[str] = set()
+    for move in _moves(ledger):
+        items = move.get("approved_alterations")
+        if move.get("work_package") == work_package and isinstance(items, list):
+            approved.update(str(item) for item in items)
+    return approved
+
+
+def _check_alterations(ledger: Ledger, order: Order, package: WorkPackage, move: OrderMove) -> None:
+    """Ruling 63: the freeze approves each planned alteration no earlier freeze approved."""
+    due = {a.id for a in package.alterations} - approved_alterations(ledger, package.id)
+    if set(move.approved_alterations) != due:
+        _refuse(
+            f"Order {order.id}'s freeze approves each alteration of {package.id} that no "
+            f"earlier order's freeze approved: {sorted(due)} are due, "
+            f"{sorted(move.approved_alterations)} were approved (RP-12 ruling 63)."
+        )
 
 
 def _live_holders(ledger: Ledger, order: Order) -> dict[str, str]:
@@ -223,6 +246,7 @@ def _check_frozen(catalog: Catalog, ledger: Ledger, order: Order, move: OrderMov
     holders = _live_holders(ledger, order)
     for entry in move.baseline:
         _check_entry(held, holders, order, entry)
+    _check_alterations(ledger, order, _package(catalog, order), move)
 
 
 def _check_move(catalog: Catalog, ledger: Ledger, order: Order, move: OrderMove) -> None:
@@ -281,7 +305,7 @@ def record_order_transition(
             "work_package": order.work_package,
             "from_state": current,
             "evidence": move.evidence.strip(),
-            "modules": _package_modules(catalog, order) if move.to_state == "frozen" else (),
+            "modules": _package(catalog, order).modules if move.to_state == "frozen" else (),
         }
     )
     ledger.append(ledger_row(event))

@@ -64,12 +64,12 @@ class _OrderRun(_OrderCase):
         *,
         order: str | None = _ORDER,
         req: str | None = "REQ-1",
-        issue: int | None = None,
         root: str = _ROOT,
+        reason: str | None = None,
     ):
         request = DispatchRequest(
-            work_package=_PACKAGE, order=order, role=role, model="m", req=req, issue=issue,
-            root=root,
+            work_package=_PACKAGE, order=order, role=role, model="m", req=req, root=root,
+            reason=reason,
         )  # fmt: skip
         return record_work_package_dispatch(self.catalog, self.ledger, request)
 
@@ -116,9 +116,14 @@ class DispatchOnAnOrder(_OrderRun):
         self.commence_second()
         self.refused("frozen baseline", lambda: self.dispatch(req="REQ-2"))
 
-    def test_an_issue_is_refused_on_an_order(self) -> None:
-        self.refused("never an issue", lambda: self.dispatch(req=None, issue=1301))
-        self.refused("never an issue", lambda: self.dispatch(issue=1301))
+    def test_an_order_dispatch_names_a_req(self) -> None:
+        self.refused("names a REQ its freeze holds", lambda: self.dispatch(req=None))
+
+    def test_an_order_of_a_repair_package_cannot_be_single_driver(self) -> None:
+        self.refused(
+            "nobody inspects their own work",
+            lambda: self.dispatch("SingleDriver", reason="none"),
+        )
 
     def test_an_order_not_commenced_takes_no_dispatch(self) -> None:
         self.walk_to("opened", order=_SECOND)
@@ -138,17 +143,17 @@ class DispatchOnAnOrder(_OrderRun):
         self.reach_the_bound()
         self.refused("bound", self.dispatch)
 
-    def test_an_order_whose_package_left_initiated_takes_no_dispatch(self) -> None:
+    def test_an_order_whose_package_closed_takes_no_dispatch(self) -> None:
         """Ruling 44: an order works only while its repair package is initiated."""
-        freeze = TransitionRequest(
-            work_package=_PACKAGE, to_state="frozen", evidence="e", risk_note="r",
-            review_receipt="v",
+        close = TransitionRequest(
+            work_package=_PACKAGE, to_state="closed", evidence="e", attestor="g0",
+            decision="terminate", residual_risk="none",
         )  # fmt: skip
-        record_work_package_transition(self.catalog, self.ledger, freeze)
+        record_work_package_transition(self.catalog, self.ledger, close)
         self.refused("initiated", self.dispatch)
 
-    def test_a_package_dispatch_still_needs_a_commenced_package(self) -> None:
-        self.refused("not commenced", lambda: self.dispatch(order=None))
+    def test_a_dispatch_on_the_repair_package_names_its_order(self) -> None:
+        self.refused("--order", lambda: self.dispatch(order=None))
 
 
 class BlockOnAnOrder(_OrderRun):
@@ -175,9 +180,8 @@ class BlockOnAnOrder(_OrderRun):
         self.move("accepted", order=_SECOND)
         self.assertEqual(order_state(self.ledger, _SECOND), "accepted")
 
-    def test_a_package_block_still_holds_its_orders(self) -> None:
-        self.block(order=None)
-        self.refused("blocked", self.dispatch)
+    def test_a_block_on_the_repair_package_names_its_order(self) -> None:
+        self.refused("--order", lambda: self.block(order=None))
 
     def test_the_facts_are_the_orders_own(self) -> None:
         self.dispatch()
@@ -233,7 +237,7 @@ class UnblockOnAnOrder(_OrderRun):
 
     def test_a_package_unblock_does_not_lift_an_orders_block(self) -> None:
         self.block()
-        self.refused("not blocked", lambda: self.unblock(order=None))
+        self.refused("--order", lambda: self.unblock(order=None))
         self.assertTrue(is_order_blocked(self.ledger, _ORDER))
 
     def test_at_the_bound_the_unblock_names_an_exit(self) -> None:

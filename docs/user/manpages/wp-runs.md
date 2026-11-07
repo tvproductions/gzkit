@@ -45,34 +45,32 @@ condition and at the hangar and drydock levels.
 
 ## Examples
 
-Observed in a scratch project with two repair packages commenced, one dispatched
-against and one blocked:
+Observed in a scratch project at `/private/tmp/gz-act5` holding `WP-02-loop`, a
+delivery package commenced and held at the bound, and repair package `WP-01-stamp`,
+whose order `ORD-01-import` is commenced and unblocked and whose order
+`ORD-02-matcher` was accepted after a `terminate` exit:
 
 ```console
 $ uv run gz wp runs
-WP-01-older (repair), state: commenced
-  last: dispatched Implementer #1203
-  at: 2026-11-01T05:43:08.256952+00:00
-  subject: #1203
+WP-02-loop (delivery), state: commenced
+  last: unblocked hold
+  at: 2026-11-07T12:48:17.684247+00:00
+  subject: REQ-7@1
   blocked: no
-WP-02-later (repair), state: commenced
-  last: blocked the REQ is ambiguous
-  at: 2026-11-01T05:43:08.749669+00:00
-  subject: #1208
-  blocked: yes
-```
-
-An order's run, in a scratch project holding `ORD-01-import` of `WP-01-stamp`
-commenced, dispatched on and blocked:
-
-```console
-$ uv run gz wp runs
 order ORD-01-import of WP-01-stamp (repair), state: commenced
-  last: blocked The review refuted REQ-1.
-  at: 2026-11-07T10:16:47.704131+00:00
-  subject: REQ-1@1
-  blocked: yes
+  last: unblocked cleared
+  at: 2026-11-07T12:48:26.931538+00:00
+  subject: REQ-8@1
+  blocked: no
+order ORD-02-matcher of WP-01-stamp (repair), state: accepted
+  last: order_transitioned accepted
+  at: 2026-11-07T12:49:59.038610+00:00
+  subject: REQ-9@1
+  blocked: no
 ```
+
+A repair package itself is never in flight: it moves only `initiated` to `closed`,
+and its orders carry the run (RP-12 ruling 44).
 
 With no run in flight:
 

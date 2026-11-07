@@ -15,7 +15,7 @@ from unittest import mock
 
 from gzkit.acceptance import Proof
 from gzkit.acceptance_execution import canonical_obligations, input_digest, prove
-from gzkit.acceptance_package import PackageContract
+from gzkit.acceptance_package import PackageContract, binds_by_mutation
 from gzkit.acceptance_store import (
     REVIEW_SCHEMA,
     acceptance_status,
@@ -37,11 +37,10 @@ from tests.commands.common import CliRunner, _quick_init
 from tests.test_acceptance_execution import SELECTOR, ExecutionFixture
 
 _PACKAGE = "WP-01-loop"
-_ISSUE = "#1206"
 _REQ = "REQ-7"
 
 
-def _record(package: str, *, kind: str = "repair") -> dict[str, object]:
+def _record(package: str, *, kind: str = "delivery") -> dict[str, object]:
     delivery = kind == "delivery"
     return {
         "id": package,
@@ -137,7 +136,7 @@ class _PackageCase(unittest.TestCase):
         self.runner = CliRunner()
         self.enterContext(self.runner.isolated_filesystem())
         _quick_init()
-        _seed([_record(_PACKAGE)], [])
+        _seed([_record(_PACKAGE)], [_req()])
         self.root = Path.cwd()
 
     def _wp(self, *args: str) -> str:
@@ -152,14 +151,17 @@ class _PackageCase(unittest.TestCase):
 
     def _commence(self) -> None:
         self._wp("initiate", _PACKAGE, "--operator-text", "go")
-        self._wp("freeze", _PACKAGE, "--risk-note", "r", "--review-receipt", "v", "--evidence", "e")
+        self._wp(
+            "freeze", _PACKAGE, "--risk-note", "r", "--review-receipt", "v", "--evidence", "e",
+            "--baseline", f"{_REQ}@2",
+        )  # fmt: skip
         self._wp("commence", _PACKAGE, "--evidence", "e")
 
     def _init(self) -> None:
         self._commence()
         self._wp("acceptance", _PACKAGE, "init", "--author", "implementing-session")
 
-    def _proof(self, obligation: str = _ISSUE) -> Proof:
+    def _proof(self, obligation: str = _REQ) -> Proof:
         source = resolve_brief(self.root, _PACKAGE)
         held = {item.id: item for item in canonical_obligations(self.root, source)}
         proof = Proof(
@@ -183,13 +185,15 @@ class _PackageCase(unittest.TestCase):
 
 
 class TestTheContract(_PackageCase):
-    def test_a_repair_package_owes_one_obligation_per_issue(self) -> None:
-        self._commence()
-        source = resolve_brief(self.root, _PACKAGE)
-        obligations = canonical_obligations(self.root, source)
-        self.assertEqual([item.id for item in obligations], [_ISSUE])
-        self.assertEqual(obligations[0].kind, "BEHAVIOR")
-        self.assertIn("The closing test.", obligations[0].statement)
+    def test_a_repair_package_runs_no_acceptance_of_its_own(self) -> None:
+        """RP-12 rulings 44 and 64: its issues are no obligation; its orders' REQs are."""
+        _seed([_record(_PACKAGE, kind="repair")], [])
+        self._wp("initiate", _PACKAGE, "--operator-text", "go")
+        with self.assertRaisesRegex(ValueError, "gz wp acceptance <ORD-id>"):
+            resolve_brief(self.root, _PACKAGE)
+        message = " ".join(self._refused("acceptance", _PACKAGE, "init", "--author", "a").split())
+        self.assertIn("repair package", message)
+        self.assertNotIn("..", message)  # output-contract: the reason reads as one sentence
 
     def test_a_delivery_package_owes_its_frozen_reqs(self) -> None:
         _seed([_record(_PACKAGE, kind="delivery")], [_req()])
@@ -224,7 +228,7 @@ class TestTheContract(_PackageCase):
         self._init()
         before = input_digest(self.root, resolve_brief(self.root, _PACKAGE))
         edited = {**_record(_PACKAGE), "system_restoration": "A new restoration."}
-        _seed([edited], [])
+        _seed([edited], [_req()])
         self.assertNotEqual(input_digest(self.root, resolve_brief(self.root, _PACKAGE)), before)
 
     def test_appending_evidence_makes_no_review_stale(self) -> None:
@@ -266,7 +270,7 @@ class TestTheGate(_PackageCase):
     def test_a_terminated_package_reaches_gate_5_with_no_proof(self) -> None:
         self._commence()
         for role in ("Implementer", "SpecReviewer", "Implementer", "Implementer"):
-            self._wp("dispatch", _PACKAGE, "--role", role, "--model", "m", "--issue", "1206")
+            self._wp("dispatch", _PACKAGE, "--role", role, "--model", "m", "--req", _REQ)
         self._wp("block", _PACKAGE, "--reason", "r", "--next-action", "n")
         self._wp("unblock", _PACKAGE, "--ruling", "stop", "--operator", "g0", "--exit", "terminate")
         self._wp("accept", _PACKAGE, "--evidence", "e")
@@ -285,7 +289,7 @@ class TestTheRoundBound(_PackageCase):
         return proof
 
     def _dispatch(self) -> list[str]:
-        return ["dispatch", _PACKAGE, "--role", "Implementer", "--model", "m", "--issue", "1206"]
+        return ["dispatch", _PACKAGE, "--role", "Implementer", "--model", "m", "--req", _REQ]
 
     def test_three_rounds_stop_dispatch_and_accept_and_name_the_block(self) -> None:
         self.assertEqual(review_round_limit(), 3)
@@ -305,7 +309,7 @@ class TestTheRoundBound(_PackageCase):
         proof = self._refute(3)
         self._review(proof)
         self.assertEqual(refuted_rounds(self.root, _PACKAGE), 4)
-        self.assertEqual(refutation_counts(self.root, _PACKAGE), {_ISSUE: 4})
+        self.assertEqual(refutation_counts(self.root, _PACKAGE), {_REQ: 4})
 
     def test_a_mapped_finding_counts_whatever_the_verdict_token_says(self) -> None:
         self._init()
@@ -314,7 +318,7 @@ class TestTheRoundBound(_PackageCase):
             self.root, _PACKAGE, _receipt(proof, "adversarial", verdict="accepted", observed=True)
         )
         self.assertEqual(refuted_rounds(self.root, _PACKAGE), 1)
-        self.assertEqual(refutation_counts(self.root, _PACKAGE), {_ISSUE: 1})
+        self.assertEqual(refutation_counts(self.root, _PACKAGE), {_REQ: 1})
 
     def test_a_clean_adversarial_round_does_not_count(self) -> None:
         self._init()
@@ -401,7 +405,7 @@ class TestTheExits(_PackageCase):
     def _to_the_bound(self) -> None:
         self._commence()
         for role in ("Implementer", "SpecReviewer", "Implementer", "Implementer"):
-            self._wp("dispatch", _PACKAGE, "--role", role, "--model", "m", "--issue", "1206")
+            self._wp("dispatch", _PACKAGE, "--role", role, "--model", "m", "--req", _REQ)
         self._wp("block", _PACKAGE, "--reason", "r", "--next-action", "n")
 
     def _exit(self, name: str) -> None:
@@ -480,7 +484,7 @@ class TestAMalformedReviewRow(_PackageCase):
     def test_it_never_stops_a_dispatch_or_a_block(self) -> None:
         self._init()
         self._plant()
-        self._wp("dispatch", _PACKAGE, "--role", "Implementer", "--model", "m", "--issue", "1206")
+        self._wp("dispatch", _PACKAGE, "--role", "Implementer", "--model", "m", "--req", _REQ)
         self._wp("block", _PACKAGE, "--reason", "r", "--next-action", "n")
 
     def test_accept_refuses_that_history(self) -> None:
@@ -594,9 +598,9 @@ class TestTheRefutationCount(_PackageCase):
         proof = self._proof()
         self._review(proof)
         self._review(proof)
-        self.assertEqual(refutation_counts(self.root, _PACKAGE), {_ISSUE: 2})
+        self.assertEqual(refutation_counts(self.root, _PACKAGE), {_REQ: 2})
         output = self._wp("block", _PACKAGE, "--reason", "r", "--next-action", "n")
-        self.assertIn(f"refutations: {_ISSUE}: 2", output)
+        self.assertIn(f"refutations: {_REQ}@2: 2", output)
 
     def test_an_accepted_review_refutes_nothing(self) -> None:
         self._init()
@@ -634,11 +638,20 @@ class TestTheRefutationCount(_PackageCase):
     def test_a_package_with_no_acceptance_counts_zero_for_each_subject(self) -> None:
         self._commence()
         output = self._wp("block", _PACKAGE, "--reason", "r", "--next-action", "n", "--json")
-        self.assertEqual(json.loads(output)["refutations"], {_ISSUE: 0})
+        self.assertEqual(json.loads(output)["refutations"], {f"{_REQ}@2": 0})
 
 
-class TestAnIssueProof(ExecutionFixture):
-    """A real mutation sweep binds an issue's tests, in place of `@covers`."""
+class TestWhatBindsByMutation(unittest.TestCase):
+    """A catalog REQ binds by mutation; a carried issue is no obligation (RP-12 ruling 64)."""
+
+    def test_only_a_catalog_req_binds_by_mutation(self) -> None:
+        for obligation, binds in (("REQ-7", True), ("#1206", False), ("REQ-0.1.0-01-01", False)):
+            with self.subTest(obligation=obligation):
+                self.assertEqual(binds_by_mutation(obligation), binds)
+
+
+class TestAMutationProof(ExecutionFixture):
+    """A real mutation sweep binds a catalog REQ's tests, in place of `@covers`."""
 
     def _contract(self) -> PackageContract:
         return PackageContract(
@@ -646,69 +659,37 @@ class TestAnIssueProof(ExecutionFixture):
                 "brief": "data/catalog/work_packages.json",
                 "authority": "data/catalog/work_packages.json#WP-01-loop",
                 "id": _PACKAGE,
-                "requirements": [{"id": _ISSUE, "kind": "BEHAVIOR", "statement": "s"}],
+                "requirements": [{"id": _REQ, "kind": "BEHAVIOR", "statement": "s"}],
             }
         )
 
-    def test_killing_the_mutant_proves_the_issue(self) -> None:
-        proof = prove(
+    def _prove(self, replace: str) -> Proof:
+        return prove(
             self.root,
             self._contract(),
-            _ISSUE,
-            source=Path("src/engine.py"),
-            selectors=[SELECTOR],
-            mutations=[
-                Mutation(
-                    find="return value * 2",
-                    replace="return value * 3",
-                    label="triples",
-                    expected_tests=[SELECTOR],
-                )
-            ],
-        )
-        self.assertTrue(proof.valid, proof.evidence)
-
-    def test_killing_the_mutant_proves_a_catalog_req(self) -> None:
-        contract = {**self._contract().contract}
-        contract["requirements"] = [{"id": _REQ, "kind": "BEHAVIOR", "statement": "s"}]
-        proof = prove(
-            self.root,
-            PackageContract(contract=contract),
             _REQ,
             source=Path("src/engine.py"),
             selectors=[SELECTOR],
             mutations=[
                 Mutation(
                     find="return value * 2",
-                    replace="return value * 3",
-                    label="triples",
+                    replace=replace,
+                    label="mutant",
                     expected_tests=[SELECTOR],
                 )
             ],
         )
+
+    def test_killing_the_mutant_proves_a_catalog_req(self) -> None:
+        proof = self._prove("return value * 3")
         self.assertTrue(proof.valid, proof.evidence)
 
     def test_a_surviving_mutant_proves_nothing(self) -> None:
-        proof = prove(
-            self.root,
-            self._contract(),
-            _ISSUE,
-            source=Path("src/engine.py"),
-            selectors=[SELECTOR],
-            mutations=[
-                Mutation(
-                    find="return value * 2",
-                    replace="return 2 * value",
-                    label="commutes",
-                    expected_tests=[SELECTOR],
-                )
-            ],
-        )
-        self.assertFalse(proof.valid)
+        self.assertFalse(self._prove("return 2 * value").valid)
 
-    def test_an_issue_proof_still_needs_selectors(self) -> None:
+    def test_a_catalog_req_proof_still_needs_selectors(self) -> None:
         with self.assertRaisesRegex(ValueError, "BEHAVIOR proof requires"):
-            prove(self.root, self._contract(), _ISSUE, source=Path("src/engine.py"))
+            prove(self.root, self._contract(), _REQ, source=Path("src/engine.py"))
 
 
 if __name__ == "__main__":

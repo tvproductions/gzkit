@@ -89,8 +89,9 @@ def _register_wp_order(wp_commands: argparse._SubParsersAction) -> None:
         help="Freeze an opened order's REQ baseline and seal its package's footprint",
         description=(
             "Freeze an opened order: its REQ baseline of the package's own repair REQs,\n"
-            "the risk note and the reviewer's receipt. The freeze seals the repair\n"
-            "package's footprint (RP-12 rulings 53 and 56)."
+            "the risk note, the reviewer's receipt and every planned alteration no\n"
+            "earlier order's freeze approved. The freeze seals the repair package's\n"
+            "footprint (RP-12 rulings 53, 56 and 63)."
         ),
         epilog=build_epilog(
             [
@@ -107,6 +108,13 @@ def _register_wp_order(wp_commands: argparse._SubParsersAction) -> None:
     )
     p_order_freeze.add_argument("--risk-note", required=True, help="The short risk note")
     p_order_freeze.add_argument("--review-receipt", required=True, help="The reviewer's receipt")
+    p_order_freeze.add_argument(
+        "--approve-alteration",
+        dest="approved",
+        action="append",
+        default=[],
+        help="An alteration this freeze approves (repeatable)",
+    )
     p_order_freeze.add_argument("--evidence", required=True, help="What justifies the freeze")
     add_json_flag(p_order_freeze)
     p_order_freeze.set_defaults(
@@ -117,6 +125,7 @@ def _register_wp_order(wp_commands: argparse._SubParsersAction) -> None:
                 "evidence": a.evidence,
                 "risk_note": a.risk_note,
                 "review_receipt": a.review_receipt,
+                "approved_alterations": a.approved,
             },
             baseline=a.baseline,
             as_json=a.as_json,

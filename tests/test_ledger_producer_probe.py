@@ -6,15 +6,18 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 from unittest.mock import patch
 
-from gzkit import legacy_units
+from gzkit import legacy_units, work_package_ledger, work_package_run
 from gzkit.acceptance_store import initialize
 from gzkit.events import parse_typed_event
 from gzkit.ledger_events import legacy_unit_withdrawn_event, obpi_withdrawn_event
 from gzkit.ledger_producer_probe import probe_producer
+from gzkit.pipeline_dispatch import MAX_REVIEW_FIX_CYCLES
 from gzkit.reports import publish_report
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+
+    from gzkit.models.catalog import WorkPackage
 
 
 class ProducerProbeTests(unittest.TestCase):
@@ -27,7 +30,27 @@ class ProducerProbeTests(unittest.TestCase):
             with self.subTest(event_type=event_type):
                 observation = probe_producer(event_type)
                 self.assertEqual(observation.status, "verified", observation.error)
-                self.assertEqual(observation.subject, "WP-02-producer-probe")
+                # A repair package's run is its orders' (RP-12 ruling 44): the delivery one.
+                self.assertEqual(observation.subject, "WP-01-producer-probe")
+
+    def test_a_refusal_for_another_reason_past_the_bound_gets_no_credit(self) -> None:
+        """Only the bound's own refusal proves the bound; any other proves nothing."""
+        real = work_package_run._check_role
+        calls: list[int] = []
+        booked = 2 * (MAX_REVIEW_FIX_CYCLES + 1)
+
+        def refuse_past_the_bound(
+            package: WorkPackage, request: work_package_run.DispatchRequest
+        ) -> None:
+            calls.append(1)
+            if len(calls) > booked:
+                msg = "refused for another reason"
+                raise work_package_ledger.WorkPackageLedgerError(msg)
+            return real(package, request)
+
+        with patch.object(work_package_run, "_check_role", refuse_past_the_bound):
+            observation = probe_producer("work_package_dispatched")
+        self.assertEqual(observation.status, "failed")
 
     def test_the_order_writer_is_verified_and_refuses_a_second_opening(self) -> None:
         """RP-12 ruling 52: the order's opening is booked once, in its repair package."""
@@ -351,7 +374,7 @@ class WorkPackageProducerProbeTests(unittest.TestCase):
     def test_a_writer_that_refuses_nothing_gets_no_credit(self):
         from gzkit import work_package_ledger  # noqa: PLC0415
 
-        with patch.object(work_package_ledger, "STATES", ("initiated", "commenced")):
+        with patch.dict(work_package_ledger.LIFECYCLES, {"delivery": ("initiated", "commenced")}):
             observation = probe_producer("work_package_transitioned")
         self.assertEqual(observation.status, "failed")
         with patch.object(work_package_ledger, "_refuse", lambda message: None):

@@ -954,31 +954,44 @@ writes nothing.
 one outcome (`delivery`) or to carry one or more GitHub issues (`repair`). The
 record lives in `data/catalog/work_packages.json` and is written only by
 `gz wp new` and `gz wp attach`; its lifecycle and changes live in the ledger. You
-initiate it, the independent reviewer checks the baseline before you freeze it,
-and you close it through Gate 5:
+initiate it and you close it through Gate 5. A delivery package runs through the
+package's own verbs: the independent reviewer checks the baseline before you
+freeze it, and you commence, accept and close it:
+
+```bash
+uv run gz wp new --kind delivery --slug resume --outcome H1
+uv run gz wp initiate WP-02-resume --operator-text "<your exact words>"
+uv run gz wp evidence WP-02-resume --oqe "<receipt, commit or path>"
+uv run gz wp freeze WP-02-resume --baseline REQ-7@1 --risk-note "<note>" --review-receipt <id> --evidence <id>
+uv run gz wp commence WP-02-resume --evidence <what was checked>
+uv run gz wp dispatch WP-02-resume --role Implementer --model sonnet --req REQ-7
+uv run gz wp block WP-02-resume --reason "<why>" --next-action "<your decision>"
+uv run gz wp unblock WP-02-resume --ruling "<your exact words>" --operator g0 --exit hold
+uv run gz wp acceptance WP-02-resume init --author <implementing session>
+uv run gz wp acceptance WP-02-resume prove --spec <controls.json>
+uv run gz wp acceptance WP-02-resume review --receipt <arb-run-id>
+uv run gz wp acceptance WP-02-resume status
+uv run gz wp accept WP-02-resume --evidence <final inspection>
+uv run gz wp close WP-02-resume --decision proceed --attestor g0 --residual-risk "<risk>" --evidence <id>
+uv run gz wp change WP-02-resume --rung change_order --approver operator --work-stopped \
+  --change "<the change>" --superseded "<what it replaces>"
+uv run gz wp show WP-02-resume
+uv run gz wp runs
+uv run gz wp withdraw-legacy OBPI-0.35.0-11-corpus-shape-witness --reason "<why, and where its REQs went>" --attestor g0
+```
+
+A repair package moves only `initiated` to `closed`: it carries its issues while
+it is open, and its orders, below, carry the run (RP-12 ruling 44). Its own
+`freeze`, `commence`, `accept` and `acceptance` are refused and name the order's
+verb, and its `dispatch`, `block` and `unblock` name the order with `--order`. Its
+close carries the payload every close carries:
 
 ```bash
 uv run gz wp new --kind repair --slug astral --issue 1183 --lane lite --alias RO-9
 uv run gz wp attach WP-01-astral --issue 1184
-uv run gz wp resolve WP-01-astral 1183 --commit <fix-sha> --reviewer <reviewer>
 uv run gz wp initiate WP-01-astral --operator-text "<your exact words>"
-uv run gz wp evidence WP-01-astral --oqe "<receipt, commit or path>"
-uv run gz wp freeze WP-01-astral --risk-note "<note>" --review-receipt <id> --evidence <id>
-uv run gz wp commence WP-01-astral --evidence <what was checked>
-uv run gz wp acceptance WP-01-astral init --author <implementing session>
-uv run gz wp acceptance WP-01-astral prove --spec <controls.json>
-uv run gz wp acceptance WP-01-astral review --receipt <arb-run-id>
-uv run gz wp acceptance WP-01-astral status
-uv run gz wp accept WP-01-astral --evidence <final inspection>
+uv run gz wp resolve WP-01-astral 1183 --commit <fix-sha> --reviewer <reviewer>
 uv run gz wp close WP-01-astral --decision proceed --attestor g0 --residual-risk "<risk>" --evidence <id>
-uv run gz wp change WP-01-astral --rung change_order --approver operator --work-stopped \
-  --change "<the change>" --superseded "<what it replaces>"
-uv run gz wp dispatch WP-01-astral --role Implementer --model sonnet --issue 1183
-uv run gz wp block WP-01-astral --reason "<why>" --next-action "<your decision>"
-uv run gz wp unblock WP-01-astral --ruling "<your exact words>" --operator g0 --exit hold
-uv run gz wp show WP-01-astral
-uv run gz wp runs
-uv run gz wp withdraw-legacy OBPI-0.35.0-11-corpus-shape-witness --reason "<why, and where its REQs went>" --attestor g0
 ```
 
 `gz wp runs` reports every run in flight from the ledger: the last row it booked,
@@ -1008,11 +1021,12 @@ uv run gz wp req new WP-01-stamp --statement "<what must hold again>" \
 Freeze the order on its repair requirements once they are written, then record
 commencement. The freeze seals the repair package's footprint, so a change order
 may then only add a path, and a requirement another live order has frozen is
-refused:
+refused. It approves each alteration the package plans that no earlier order's
+freeze approved. Commencing crosses the airlock inward on the package's slice:
 
 ```bash
 uv run gz wp order freeze ORD-01-import --baseline REQ-1@1 --risk-note "<risk>" \
-  --review-receipt <receipt> --evidence "<what justifies it>"
+  --review-receipt <receipt> --approve-alteration ALT-1 --evidence "<what justifies it>"
 uv run gz wp order commence ORD-01-import --evidence "<what justifies it>"
 ```
 
@@ -1031,8 +1045,9 @@ uv run gz wp unblock WP-01-stamp --order ORD-01-import --ruling "<your exact wor
 Acceptance runs on the order: its obligations are its frozen requirements and its
 proofs and reviews are its own, so each order carries its own evidence to its own
 Gate 5. Accepting it refuses until its acceptance reads ready and every changed
-file lies in the package's sealed footprint; an order stopped by an exit is
-excused:
+file lies in the package's sealed footprint, the order and requirement stores
+aside; an order stopped by an exit is excused. Accepting crosses the airlock
+outward:
 
 ```bash
 uv run gz wp acceptance ORD-01-import init --author <implementing session>
@@ -1040,12 +1055,13 @@ uv run gz wp acceptance ORD-01-import status
 uv run gz wp order accept ORD-01-import --evidence "<final inspection>"
 ```
 
-The lifecycle moves one step at a time (initiated, frozen, commenced, accepted,
-closed). Pen and ink is the coordinator's; every other rung of the change ladder
+The lifecycle moves one step at a time: a delivery package's through initiated,
+frozen, commenced, accepted and closed, a repair package's from initiated to
+closed, and an order's through opened, frozen, commenced and accepted. Pen and ink is the coordinator's; every other rung of the change ladder
 is yours. Any refusal exits 3 and writes nothing. Attaching an issue also labels
 it `repair` and comments the package id on it; `ghi-close` records each fixed
 issue with `gz wp resolve`, and the last one's close leaves the package for your
-Gate 5. A REQ or issue may use two fix cycles; the next is refused whatever you
+Gate 5. A REQ may use two fix cycles; the next is refused whatever you
 rule, and a block at that bound clears only by naming an exit: `reopen`, `departure`, `hold`
 or `terminate`.
 

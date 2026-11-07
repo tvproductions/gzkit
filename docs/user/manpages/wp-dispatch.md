@@ -6,7 +6,7 @@ bound, or void one the coordinator abandoned.
 ## Usage
 
 ```bash
-gz wp dispatch <WP-id> --role <role> --model <tier> (--req <REQ> | --issue <n>) [--root <dir>] [OPTIONS]
+gz wp dispatch <WP-id> --role <role> --model <tier> --req <REQ> [--root <dir>] [OPTIONS]
 gz wp dispatch <WP-id> --order <ORD-id> --role <role> --model <tier> --req <REQ> [--root <dir>] [OPTIONS]
 gz wp dispatch <WP-id> --void <D-id> --reason <why> [OPTIONS]
 ```
@@ -18,12 +18,11 @@ gz wp dispatch <WP-id> --void <D-id> --reason <why> [OPTIONS]
 | `WP-id` | The work package's id. Required |
 | `--role` | `Implementer`, `SpecReviewer`, `QualityReviewer` or `SingleDriver`. Required to book |
 | `--model` | The model tier. Required to book |
-| `--req` | The frozen REQ dispatched against. Give this or `--issue` |
-| `--issue` | The carried issue dispatched against. Give this or `--req` |
+| `--req` | The frozen REQ dispatched against. Required to book |
 | `--reason` | Why the run is single-driver: required with `SingleDriver`, refused otherwise. With `--void`, why the dispatch is abandoned, required |
 | `--void` | Abandon this booked dispatch, `D-` and 16 hex digits, instead of booking one; takes none of booking's flags |
 | `--root` | The project root the dispatch is for, an existing directory. Defaults to this project's root |
-| `--order` | The order dispatched on, `ORD-<NN>-<slug>`, one of the package's. It must be commenced, and `--req` must name a REQ its freeze holds; `--issue` is refused. Taken by no `--void` |
+| `--order` | The order dispatched on, `ORD-<NN>-<slug>`, one of the package's. Required on a repair package. It must be commenced, and `--req` must name a REQ its freeze holds. Taken by no `--void` |
 | `--json` | Output as JSON: the booked event, `dispatch_id`, `intended_root` and `order` included |
 | `--quiet`, `-q` | Suppress non-error output |
 | `--verbose`, `-v` | Enable verbose output |
@@ -34,8 +33,9 @@ gz wp dispatch <WP-id> --void <D-id> --reason <why> [OPTIONS]
 The verb books one `work_package_dispatched` event, and fix cycles are counted from
 those rows (GHI #1200, `docs/governance/harbor-ro14-obpi-forward-migration.md`).
 
-The bound counts against a frozen subject: a REQ of the
-package's baseline at its revision, or an issue the package carries. The count
+The bound counts against a frozen subject: a REQ of the package's or the order's
+baseline at its revision. A carried issue is never a subject; `--issue` is retired
+and is a usage error (RP-12 ruling 64). The count
 follows a REQ at its revision across packages, so a new package at that revision
 starts where the last stopped, and a reopening, which raises the revision, starts
 clean.
@@ -50,16 +50,18 @@ repair cycle. A reviewer may still look at a subject at the bound. After a
 subject. A package that is not commenced, or is blocked on the operator, takes no
 dispatch.
 
-With `--order` the dispatch is on an order of a repair package (RP-12 ruling 57,
-`docs/governance/harbor-ro12-contractor-kit.md`). It takes a subject only when the
-REQ is in the order's frozen baseline, at the revision frozen, and only while the
-order is commenced and its package initiated (rulings 2 and 44). A REQ held on the
-package but not frozen by this order, an issue, and an order of another package are
-refused, so a REQ found mid-repair waits for a new order or a re-freeze. The
+A repair package's run is its orders' (RP-12 ruling 44,
+`docs/governance/harbor-ro12-contractor-kit.md`), so its dispatch names the order
+with `--order`, and one that does not is refused with exit 3. With `--order` the
+dispatch is on an order of a repair package (ruling 57). It takes a subject only
+when the REQ is in the order's frozen baseline, at the revision frozen, and only
+while the order is commenced and its package initiated (rulings 2 and 44). A REQ
+held on the package but not frozen by this order, and an order of another package,
+are refused, so a REQ found mid-repair waits for a new order or a re-freeze. The
 fix-cycle bound counts against that subject as it does on a package. An order
 blocked on the operator takes no dispatch until `gz wp unblock --order` (ruling
 59), and after a `reopen` or `terminate` exit on the order it takes no
-implementing dispatch; a block or exit on the package holds its orders too. The
+implementing dispatch. The
 booked row names the order, so the guard on an open dispatch reads the order's
 run: a dispatch on an order is open while that order is commenced or accepted,
 though its package stays initiated (ruling 40).
@@ -104,56 +106,54 @@ booked, or booked on another package is refused with exit 3.
 
 ## Examples
 
-Observed in a scratch project holding `WP-01-loop`, commenced, at
-`/private/tmp/claude-501/wpd`:
+Observed in a scratch project at `/private/tmp/gz-act5` holding `WP-02-loop`, a
+delivery package commenced on `REQ-7@1`:
 
 ```console
-$ uv run gz wp dispatch WP-01-loop --role Implementer --model sonnet --issue 1200
-Recorded Implementer on #1200 of WP-01-loop as dispatch D-d74b40917b13f4f5, for
-/private/tmp/claude-501/wpd.
+$ uv run gz wp dispatch WP-02-loop --role Implementer --model sonnet --req REQ-7
+Recorded Implementer on REQ-7@1 of WP-02-loop as dispatch D-479347538505df73,
+for /private/tmp/gz-act5.
 Put this line in the dispatched agent's prompt:
-GZKIT-DISPATCH: D-d74b40917b13f4f5
-$ uv run gz wp dispatch WP-01-loop --role Implementer --model sonnet --issue 1200 --root ../wpd-scratch
-Recorded Implementer on #1200 of WP-01-loop as dispatch D-1edf53c694bba4ca, for
-/private/tmp/claude-501/wpd-scratch.
+GZKIT-DISPATCH: D-479347538505df73
+$ uv run gz wp dispatch WP-02-loop --role Implementer --model sonnet --req REQ-7 --root ../gz-act5-scratch
+Recorded Implementer on REQ-7@1 of WP-02-loop as dispatch D-1cb6a87eacd9ad34,
+for /private/tmp/gz-act5-scratch.
 Put this line in the dispatched agent's prompt:
-GZKIT-DISPATCH: D-1edf53c694bba4ca
+GZKIT-DISPATCH: D-1cb6a87eacd9ad34
 ```
 
 Voiding an abandoned dispatch, then the refusals, in the same project:
 
 ```console
-$ uv run gz wp dispatch WP-01-loop --void D-07aa91ba3ebabbf1 --reason "never spawned"
-Voided dispatch D-07aa91ba3ebabbf1 on WP-01-loop: never spawned.
-$ uv run gz wp dispatch WP-01-loop --void D-07aa91ba3ebabbf1 --reason "again"
-No live dispatch D-07aa91ba3ebabbf1 is booked; nothing to void.
-$ uv run gz wp dispatch WP-01-loop --void D-07aa91ba3ebabbf1
+$ uv run gz wp dispatch WP-02-loop --void D-1cb6a87eacd9ad34 --reason "never spawned"
+Voided dispatch D-1cb6a87eacd9ad34 on WP-02-loop: never spawned.
+$ uv run gz wp dispatch WP-02-loop --void D-1cb6a87eacd9ad34 --reason "again"
+No live dispatch D-1cb6a87eacd9ad34 is booked; nothing to void.
+$ uv run gz wp dispatch WP-02-loop --void D-1cb6a87eacd9ad34
 --void needs --reason, why the dispatch is abandoned.
 ```
 
-On a commenced order, in a scratch project at `/private/tmp/gz-ord` holding
-`WP-01-stamp` initiated, `ORD-01-import` commenced on `REQ-1@1`, and `REQ-2` held on
-the package but not frozen:
+On a repair package, in the same project, holding `WP-01-stamp` initiated and
+`ORD-01-import` commenced on `REQ-8@1`:
 
 ```console
-$ uv run gz wp dispatch WP-01-stamp --order ORD-01-import --role Implementer --model sonnet --req REQ-1
-Recorded Implementer on REQ-1@1 of order ORD-01-import of WP-01-stamp as
-dispatch D-0fa0dc0c9261611d, for /private/tmp/gz-ord.
+$ uv run gz wp dispatch WP-01-stamp --order ORD-01-import --role Implementer --model sonnet --req REQ-8
+Recorded Implementer on REQ-8@1 of order ORD-01-import of WP-01-stamp as
+dispatch D-155d7b71611281cf, for /private/tmp/gz-act5.
 Put this line in the dispatched agent's prompt:
-GZKIT-DISPATCH: D-0fa0dc0c9261611d
-$ uv run gz wp dispatch WP-01-stamp --order ORD-01-import --role Implementer --model sonnet --req REQ-2
-REQ-2 is not in order ORD-01-import's frozen baseline; a REQ found mid-repair
-waits for a new order or a re-freeze (RP-12 ruling 57).
+GZKIT-DISPATCH: D-155d7b71611281cf
+$ uv run gz wp dispatch WP-01-stamp --role Implementer --model sonnet --req REQ-8
+WP-01-stamp is a repair package; its run is its orders' (RP-12 ruling 44). Name
+the order: `uv run gz wp dispatch WP-01-stamp --order <ORD-id> ...`.
 $ uv run gz wp dispatch WP-01-stamp --order ORD-01-import --role Implementer --model sonnet --issue 1301
-A dispatch on order ORD-01-import names a REQ its freeze holds, never an issue
-(RP-12 ruling 57).
+BLOCKERS: gz: error: unrecognized arguments: --issue 1301
 ```
 
-With `#1200` at the bound:
+With `REQ-7@1` at the bound:
 
 ```console
-$ uv run gz wp dispatch WP-01-loop --role Implementer --model sonnet --issue 1200
-#1200 has used the bound of 2 fix cycles; no further repair cycle runs. Block
+$ uv run gz wp dispatch WP-02-loop --role Implementer --model sonnet --req REQ-7
+REQ-7@1 has used the bound of 2 fix cycles; no further repair cycle runs. Block
 and take an exit: reopen, departure, hold, terminate.
 ```
 
@@ -163,8 +163,8 @@ and take an exit: reopen, departure, hold, terminate.
 |------|---------|
 | 0 | The dispatch was booked, or voided |
 | 1 | The work package is not in the store, the intended root is empty or not an existing directory, or `--void` has no `--reason` |
-| 2 | Usage error: `--role` or `--model` missing to book, or a booking flag, `--order` included, given with `--void` |
-| 3 | The dispatch or the void is refused, the bound, a subagent's call and a subject outside the order's freeze included; nothing was booked |
+| 2 | Usage error: `--role` or `--model` missing to book, a booking flag, `--order` included, given with `--void`, or the retired `--issue` |
+| 3 | The dispatch or the void is refused, the bound, a subagent's call, a repair package's dispatch with no `--order` and a subject outside the order's freeze included; nothing was booked |
 
 ## See also
 

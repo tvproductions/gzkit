@@ -87,14 +87,10 @@ class BlockOrderCli(_CommencedOrder):
         self.assertEqual((payload["event"]["order"], payload["blocked"]), (_ORDER, False))
         self.dispatch()
 
-    def test_the_json_reports_the_orders_block_not_the_packages(self) -> None:
-        self.wp("block", _PACKAGE, "--reason", "R", "--next-action", "rule")
-        self.wp("block", _PACKAGE, "--order", _ORDER, "--reason", "R", "--next-action", "rule")
-        payload = json.loads(
-            self.wp("unblock", _PACKAGE, "--order", _ORDER, "--ruling", "go", "--operator", "g0",
-                    "--json")
-        )  # fmt: skip
-        self.assertFalse(payload["blocked"])
+    def test_a_block_on_the_repair_package_alone_exits_3(self) -> None:
+        """RP-12 ruling 44: the block names the order, and a refusal books nothing."""
+        self.wp("block", _PACKAGE, "--reason", "R", "--next-action", "rule", code=3)
+        self.assertEqual(self.rows("work_package_blocked"), [])
 
     def test_an_unblock_on_the_package_leaves_the_orders_block(self) -> None:
         self.wp("block", _PACKAGE, "--order", _ORDER, "--reason", "R", "--next-action", "rule")

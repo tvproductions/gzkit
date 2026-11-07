@@ -26,6 +26,11 @@ Books the order's `order_transitioned` from `frozen` to `commenced`
 moves one step at a time, so an order that is not frozen is refused, and its
 repair package must be initiated and not closed (rulings 2 and 44).
 
+Commencing crosses the airlock inward on the repair package's slice: it books one
+`airlock_in` for the package and prints what it read, as
+[`gz wp commence`](wp-commence.md) does for a package (ruling 65). The airlock
+reports and refuses nothing here.
+
 A refusal names what failed, why, and the call to re-run, and writes nothing.
 
 ## Examples
@@ -40,6 +45,7 @@ frozen from here. Nothing was written; correct the call and re-run `uv run gz wp
 order commence <ORD-id> --evidence <text>`.
 $ uv run gz wp order commence ORD-01-import --evidence tags-hung
 ORD-01-import: frozen -> commenced
+  airlock in: proceed
 $ uv run gz wp order commence ORD-09-ghost --evidence tags-hung
 Order 'ORD-09-ghost' is not in data/catalog/orders.json. Write one with `uv run
 gz wp order new <WP-id> --slug <slug> --purpose <text> --operator-text <words>`.

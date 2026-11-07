@@ -509,7 +509,7 @@ def _validate_behavior_inputs(
     if not source or not mutations or not selectors or len(set(selectors)) != len(selectors):
         raise BehaviorProofInputsError
     source = _production_control_source(root, source, production, tests)
-    # An issue or a catalog REQ has no `@covers` scan; its selectors bind by killing mutants.
+    # A catalog REQ has no `@covers` scan; its selectors bind by killing mutants.
     if not binds_by_mutation(req_id):
         covering = _covering_selectors(root, req_id, tests)
         if not set(selectors).issubset(covering):

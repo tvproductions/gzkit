@@ -6,12 +6,12 @@ package supplies what a brief supplies, the contract dictionary the acceptance
 modules already read, and proofs, reviews, closures and readiness run unchanged.
 
 A delivery package's obligations are its frozen REQs at their frozen revisions, less
-any a `departure` exit moved out (ruling 12). A repair package's are its carried
-issues, one each, named as the bound names them (`#<issue>`). An order's are its
-own frozen REQs, less those a `departure` exit on the order moved out, and its
-records are kept under the order's id (RP-12 ruling 60). Neither has the
-`@covers` scan the legacy grammar has, so their proofs bind through the mutation
-sweep: the named tests must kill the named mutants.
+any a `departure` exit moved out (ruling 12). A repair package runs no acceptance of
+its own: its run is its orders' (RP-12 ruling 44), and a carried issue is never an
+obligation (RP-12 ruling 64). An order's are its own frozen REQs, less those a
+`departure` exit on the order moved out, and its records are kept under the order's
+id (RP-12 ruling 60). Neither has the `@covers` scan the legacy grammar has, so their
+proofs bind through the mutation sweep: the named tests must kill the named mutants.
 
 Mode contract: a read of the catalog and the ledger, on at the operational condition
 and at both standby levels. It reads no marker; the refusals it raises are the
@@ -79,10 +79,10 @@ def binds_by_mutation(obligation_id: str) -> bool:
     """Say whether a proof binds by killing mutants, in place of the `@covers` scan.
 
     Returns:
-        True for a carried issue, `#<issue>`, and a catalog REQ, `REQ-<n>`.
+        True for a catalog REQ, `REQ-<n>`.
 
     """
-    return re.fullmatch(rf"#[1-9][0-9]*|{CATALOG_REQ_ID_BODY}", obligation_id) is not None
+    return re.fullmatch(CATALOG_REQ_ID_BODY, obligation_id) is not None
 
 
 def departed_reqs(ledger: Ledger, run_id: str) -> set[str]:
@@ -158,17 +158,6 @@ def _baseline_requirements(
     return requirements
 
 
-def _repair_requirements(package: WorkPackage) -> list[dict[str, Any]]:
-    return [
-        {
-            "id": f"#{issue}",
-            "kind": "BEHAVIOR",
-            "statement": f"Issue #{issue}, carried by {package.id}: {package.test_and_inspection}",
-        }
-        for issue in package.issues
-    ]
-
-
 def order_contract(catalog: Catalog, ledger: Ledger, order_id: str) -> PackageContract:
     """Build the acceptance contract of a commenced order (RP-12 ruling 60).
 
@@ -226,22 +215,25 @@ def package_contract(catalog: Catalog, ledger: Ledger, work_package: str) -> Pac
         The contract.
 
     Raises:
-        ValueError: The package is unknown, not commenced, or holds no obligation.
+        ValueError: The package is unknown, a repair package, not commenced, or holds no
+            obligation.
 
     """
     package = next((item for item in catalog.work_packages if item.id == work_package), None)
     if package is None:
         msg = f"Work package {work_package!r} is not in {STORE_PATH}."
         raise ValueError(msg)
+    if package.kind == "repair":
+        msg = (
+            f"{package.id} is a repair package; acceptance runs on each of its orders, "
+            "`uv run gz wp acceptance <ORD-id>` (RP-12 rulings 44, 60 and 64)."
+        )
+        raise ValueError(msg)
     state = work_package_state(ledger, package.id)
     if state not in _ACCEPTABLE_STATES:
         msg = f"Work package {package.id} is {state or 'not initiated'}, not commenced."
         raise ValueError(msg)
-    requirements = (
-        _delivery_requirements(catalog, ledger, package)
-        if package.kind == "delivery"
-        else _repair_requirements(package)
-    )
+    requirements = _delivery_requirements(catalog, ledger, package)
     if not requirements:
         msg = f"Work package {package.id} holds no acceptance obligation."
         raise ValueError(msg)

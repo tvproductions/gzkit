@@ -35,17 +35,40 @@ _OTHER = "WP-02-other"
 _SOURCE = "src/gzkit/example.py"
 _TEST = "tests/test_example.py"
 _BOTH_STAGED = f"M\t{_SOURCE}\nM\t{_TEST}\n"
+_REQ = "REQ-7"
+_OUTCOME = {
+    "code": "H1.1",
+    "statement": "s",
+    "owner": "o",
+    "user_facing": False,
+    "governed_by": [],
+    "depends_on": [],
+    "feature": None,
+    "retired": False,
+}
+_CATALOG_REQ = {
+    "id": _REQ,
+    "specialization": "catalog",
+    "member_of": "H1.1",
+    "statement": "The package carries its frozen requirement.",
+    "criteria": [{"state_or_input": "i", "required_outcome": "o", "evidence": "e"}],
+    "kind": "BEHAVIOR",
+    "revision": 2,
+    "derives_from": [],
+    "applies_to": [],
+}
 
 
 def _record(package: str) -> dict[str, object]:
+    """A delivery package: a repair package's run is its orders' (RP-12 ruling 44)."""
     return {
         "id": package,
-        "kind": "repair",
-        "outcome": None,
-        "issues": [1206],
-        "lane": "lite",
+        "kind": "delivery",
+        "outcome": "H1.1",
+        "issues": [],
+        "lane": None,
         "aliases": [],
-        "modules": ["data/catalog/"],
+        "modules": [],
         "initial_conditions": "NA",
         "procedure": "NA",
         "test_and_inspection": "NA",
@@ -61,8 +84,8 @@ def _seed_store() -> None:
     catalog.mkdir(parents=True, exist_ok=True)
     for kind, entries in (
         ("families", []),
-        ("outcomes", []),
-        ("reqs", []),
+        ("outcomes", [_OUTCOME]),
+        ("reqs", [_CATALOG_REQ]),
         ("externals", []),
         ("work_packages", [_record(_PACKAGE), _record(_OTHER)]),
         ("orders", []),
@@ -92,7 +115,10 @@ class _FenceCase(unittest.TestCase):
 
     def _commence(self, package: str = _PACKAGE) -> None:
         self._wp("initiate", package, "--operator-text", "go")
-        self._wp("freeze", package, "--risk-note", "r", "--review-receipt", "v", "--evidence", "e")
+        self._wp(
+            "freeze", package, "--risk-note", "r", "--review-receipt", "v", "--evidence", "e",
+            "--baseline", f"{_REQ}@2",
+        )  # fmt: skip
         self._wp("commence", package, "--evidence", "e")
 
     def _block(self) -> None:
@@ -188,7 +214,7 @@ class TestTheExits(_FenceCase):
         self._dispatch("Implementer")
 
     def _dispatch(self, role: str) -> None:
-        self._wp("dispatch", _PACKAGE, "--role", role, "--model", "m", "--issue", "1206")
+        self._wp("dispatch", _PACKAGE, "--role", role, "--model", "m", "--req", _REQ)
 
     def _exit(self, name: str) -> None:
         self._block()
@@ -196,7 +222,7 @@ class TestTheExits(_FenceCase):
 
     def _refused(self) -> bool:
         args = ["wp", "dispatch", _PACKAGE, "--role", "Implementer", "--model", "m"]
-        return self.runner.invoke(main, [*args, "--issue", "1206"]).exit_code != 0
+        return self.runner.invoke(main, [*args, "--req", _REQ]).exit_code != 0
 
     def test_the_last_admitted_cycle_is_not_fenced(self) -> None:
         self._to_the_bound()

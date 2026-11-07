@@ -6,7 +6,9 @@ repair: the bound the pipeline only declared is held here, on the production
 path, from `work_package_dispatched` rows.
 
 The bound counts against a frozen subject, never a free label (ruling 14): a
-REQ of the package's baseline at its revision, or an issue the package carries.
+REQ of the package's or the order's baseline at its revision. A repair package's
+run is its orders' (RP-12 ruling 44), so its dispatch, block and unblock name the
+order, and a carried issue is never a subject (RP-12 ruling 64).
 The count follows the subject across packages (ruling 15), so a new package at
 the same revision starts where the last one stopped, and a reopening, which
 raises the revision, starts clean. A subject's first dispatch is free, a review
@@ -102,7 +104,6 @@ class DispatchRequest(BaseModel):
     role: str = Field(..., description="The role dispatched, or SingleDriver")
     model: str = Field(..., description="The model tier")
     req: str | None = Field(None, description="The frozen REQ dispatched against")
-    issue: int | None = Field(None, description="The carried issue dispatched against")
     reason: str | None = Field(None, description="Why the run is single-driver")
     root: str = Field(..., description="The absolute project root the dispatch is for")
     order: str | None = Field(None, description="The order dispatched on (RP-12 ruling 57)")
@@ -317,10 +318,13 @@ def _req_subject(req: str, revision: int) -> str:
     return f"{req}@{revision}"
 
 
-def _subjects(ledger: Ledger, package: WorkPackage) -> list[str]:
-    frozen = frozen_baseline(ledger, package.id)
-    held = list(starmap(_req_subject, sorted(frozen.items())))
-    return [*held, *(f"#{issue}" for issue in package.issues)]
+def _require_order(package: WorkPackage, order: str | None, verb: str) -> None:
+    """Refuse a repair package's run verb that names no order (RP-12 ruling 44)."""
+    if package.kind == "repair" and order is None:
+        _refuse(
+            f"{package.id} is a repair package; its run is its orders' (RP-12 ruling 44). "
+            f"Name the order: `uv run gz wp {verb} {package.id} --order <ORD-id> ...`."
+        )
 
 
 def _dispatch_rows(ledger: Ledger) -> list[tuple[str, str, str]]:
@@ -354,11 +358,8 @@ def _order_subject(ledger: Ledger, order: Order, request: DispatchRequest) -> st
     state = order_state(ledger, order.id)
     if state != "commenced":
         _refuse(f"Order {order.id} is {state or 'not opened'}, not commenced.")
-    if request.req is None or request.issue is not None:
-        _refuse(
-            f"A dispatch on order {order.id} names a REQ its freeze holds, never an issue "
-            "(RP-12 ruling 57)."
-        )
+    if request.req is None:
+        _refuse(f"A dispatch on order {order.id} names a REQ its freeze holds (RP-12 ruling 57).")
     revision = order_baseline(ledger, order.id).get(request.req)
     if revision is None:
         _refuse(
@@ -381,12 +382,8 @@ def _dispatch_subject(
         return _order_subject(ledger, _package_order(catalog, package, request.order), request)
     if state != "commenced":
         _refuse(f"Work package {package.id} is {state or 'not initiated'}, not commenced.")
-    if (request.req is None) == (request.issue is None):
-        _refuse("A dispatch names one subject: a frozen REQ or a carried issue.")
-    if request.issue is not None:
-        if request.issue not in package.issues:
-            _refuse(f"Issue #{request.issue} is not one {package.id} carries.")
-        return f"#{request.issue}"
+    if request.req is None:
+        _refuse("A dispatch names its subject, a frozen REQ.")
     revision = frozen_baseline(ledger, package.id).get(str(request.req))
     if revision is None:
         _refuse(f"{request.req} is not in {package.id}'s frozen baseline.")
@@ -490,6 +487,7 @@ def record_work_package_dispatch(
 
     """
     package = _package(catalog, request.work_package)
+    _require_order(package, request.order, "dispatch")
     _check_role(package, request)
     subject = _dispatch_subject(catalog, ledger, package, request)
     if is_blocked(ledger, package.id):
@@ -722,11 +720,7 @@ def record_work_package_block(
     if not request.reason.strip() or not request.next_action.strip():
         _refuse("A block names its reason and the decision the operator owes.")
     baseline = order_baseline(ledger, order) if order else frozen_baseline(ledger, package.id)
-    subjects = (
-        list(starmap(_req_subject, sorted(baseline.items())))
-        if order
-        else _subjects(ledger, package)
-    )
+    subjects = list(starmap(_req_subject, sorted(baseline.items())))
     counted = count_fix_cycles(_dispatch_rows(ledger))
     cycles = {subject: counted.get(subject, 0) for subject in subjects}
     unblocks = _run_rows(ledger, "work_package_unblocked", package.id, order)
@@ -762,6 +756,7 @@ def _check_blockable(
     catalog: Catalog, ledger: Ledger, package: WorkPackage, order: str | None
 ) -> None:
     """Refuse a block on a package or order not open, or already blocked (ruling 59)."""
+    _require_order(package, order, "block")
     if order is None:
         state = work_package_state(ledger, package.id)
         if state in {None, "closed"}:
@@ -844,6 +839,7 @@ def record_work_package_unblock(
     """
     package = _package(catalog, request.work_package)
     order = request.order
+    _require_order(package, order, "unblock")
     if order is not None:
         _package_order(catalog, package, order)
     if not _held_by_block(ledger, package.id, order):

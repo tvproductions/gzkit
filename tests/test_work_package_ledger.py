@@ -296,34 +296,42 @@ class FreezeTests(_LedgerCase):
         self.assertEqual(event.approved_alterations, ("ALT-1",))
         self.assertEqual(event.review_receipt, "review-01")
 
-    def test_a_repair_package_may_freeze_with_no_req_baseline(self) -> None:
-        self.move("initiated", work_package="WP-02-astral", operator_text="start the repair")
-        event = self.move("frozen", work_package="WP-02-astral", **{**_FREEZE, "baseline": ()})
-        self.assertEqual(event.to_state, "frozen")
 
-    def test_a_repair_package_freezes_only_repair_reqs_held_on_it(self) -> None:
-        """RP-12 rulings 2 and 45: a repair REQ is held on one repair package, frozen there."""
-        elsewhere = _repair_req().model_copy(update={"id": "REQ-4", "held_on": "WP-09-other"})
-        catalog = _catalog().model_copy(update={"reqs": (*_catalog().reqs, elsewhere)})
+class RepairLifecycleTests(_LedgerCase):
+    """RP-12 ruling 44: a repair package moves only initiated -> closed; ruling 62 its close."""
+
+    def setUp(self) -> None:
+        super().setUp()
         self.move("initiated", work_package="WP-02-astral", operator_text="start the repair")
 
-        def freeze(req: str, revision: int) -> WorkPackageTransitionedEvent:
-            baseline = (BaselinedReq(req=req, revision=revision),)
-            request = TransitionRequest.model_validate(
-                {
-                    "work_package": "WP-02-astral",
-                    "to_state": "frozen",
-                    "evidence": "evt-1",
-                    **_FREEZE,
-                    "baseline": baseline,
-                }
-            )
-            return record_work_package_transition(catalog, self.ledger, request)
+    def test_the_run_states_are_refused_and_name_the_orders_verb(self) -> None:
+        for to_state, verb, payload in (
+            ("frozen", "freeze", {**_FREEZE, "baseline": ()}),
+            ("commenced", "commence", {}),
+            ("accepted", "accept", {}),
+        ):
+            with self.subTest(to_state=to_state):
+                before = _rows(self.path)
+                with self.assertRaisesRegex(WorkPackageLedgerError, f"gz wp order {verb}"):
+                    self.move(to_state, work_package="WP-02-astral", **payload)
+                self.assertEqual(_rows(self.path), before)
+        self.assertEqual(work_package_state(self.ledger, "WP-02-astral"), "initiated")
 
-        for req, revision in (("REQ-1", 2), ("REQ-4", 2)):
-            with self.subTest(req=req):
-                self.assert_refused(freeze, req=req, revision=revision)
-        self.assertEqual(freeze("REQ-3", 2).baseline, (BaselinedReq(req="REQ-3", revision=2),))
+    def test_the_close_follows_initiation_and_keeps_the_payload(self) -> None:
+        event = self.move("closed", work_package="WP-02-astral", **_CLOSE)
+        self.assertEqual((event.from_state, event.to_state), ("initiated", "closed"))
+        self.assertEqual((event.attestor, event.decision), ("g0", "proceed"))
+        self.assertEqual(event.configuration_changes, ("ALT-1",))
+        self.assertEqual(event.open_departures, ("DFS-1",))
+        self.assertEqual(event.lane, "lite")
+
+    def test_the_close_still_needs_gate_5_and_every_alteration(self) -> None:
+        for missing in ("attestor", "decision", "residual_risk", "configuration_changes"):
+            with self.subTest(missing=missing):
+                fields = {k: v for k, v in _CLOSE.items() if k != missing}
+                self.assert_refused(
+                    self.move, to_state="closed", work_package="WP-02-astral", **fields
+                )
 
 
 class CloseTests(_LedgerCase):

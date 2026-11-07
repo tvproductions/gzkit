@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-07
 metadata:
-  skill-version: "0.13.0"
+  skill-version: "0.14.0"
 model: sonnet
 ---
 
@@ -52,16 +52,17 @@ The last issue's close never closes the package; it closes only through Gate 5.
 
 ## The lifecycle
 
-One step at a time: `initiated`, `frozen`, `commenced`, `accepted`, `closed`.
+One step at a time. A delivery package moves `initiated`, `frozen`, `commenced`,
+`accepted`, `closed`. A repair package moves only `initiated` to `closed`: steps 2
+to 5 are its orders' (below), and its own freeze, commence, accept and acceptance
+refuse and name the order's verb (RP-12 ruling 44).
 
 1. **Initiate on the operator's words.** Only the operator initiates a work
    package. Pass their words verbatim; never author them.
    `uv run gz wp initiate <WP-id> --operator-text "<their exact words>"`
 2. **Freeze after the independent review.** A reviewer who did not write the
    baseline checks each REQ against the nine criteria; the operator approves
-   every planned alteration. A repair package must declare a valid footprint with
-   `--module` on `gz wp new`, or the freeze refuses it, as a brief must carry Allowed
-   Paths.
+   every planned alteration.
    `uv run gz wp freeze <WP-id> --baseline REQ-<n>@<rev> --risk-note "<note>" --review-receipt <id> --approve-alteration <id> --evidence <id>`
 3. **Commence** once every surface the package works has its tag hung:
    `uv run gz wp commence <WP-id> --evidence <what was checked>`. This crosses the
@@ -70,21 +71,19 @@ One step at a time: `initiated`, `frozen`, `commenced`, `accepted`, `closed`.
    package id, such as `TASK-wp-02-resume-#1185`: that trailer is how the exit knows
    the commit is the package's. A defect fix keeps its own trailer.
 4. **Prove and review.** `uv run gz wp acceptance <WP-id> init --author <session>`,
-   then `prove --spec <file>` and `review --receipt <run-id>`, on the frozen REQs or
-   each carried issue. Spec, quality and adversarial reviews approve each proof. A
+   then `prove --spec <file>` and `review --receipt <run-id>`, on the frozen REQs. Spec, quality and adversarial reviews approve each proof. A
    package gets three adversarial rounds with a mapped finding; dispatch, accept and
    `human-review` then refuse until `gz wp block` and the operator's unblock. See
    `docs/user/manpages/wp-acceptance.md`.
 5. **Accept** at final inspection with no tag still hung, once
    `uv run gz wp acceptance <WP-id> status` reads ready:
    `uv run gz wp accept <WP-id> --evidence <inspection>`. This crosses the airlock
-   outward and refuses a file outside a declared footprint; the refusal names the
-   governed recovery, and only a `change_order` with `--module` moves the footprint.
-   A package stopped by an
+   outward. A package stopped by an
    exit is excused, and unless its acceptance reads ready it closes as `redirect`,
    `pause` or `terminate`.
 6. **Close through Gate 5.** The attestor is the operator and is never
-   defaulted. Account every alteration and name each departure still open.
+   defaulted. Account every alteration and name each departure still open. A
+   repair package closes from `initiated` with the same payload (ruling 62).
    `uv run gz wp close <WP-id> --decision proceed --attestor g0 --residual-risk "<risk>" --account <alt-id> --evidence <id>`
 
 ## Withdrawing a legacy unit
@@ -98,8 +97,9 @@ defaulted, and `--dry-run` shows the event first.
 
 Once commenced, each dispatch is booked, and the runtime holds the fix-cycle bound:
 
-1. `uv run gz wp dispatch <WP-id> --role Implementer --model <tier> --req REQ-<n>`
-   (or `--issue <n>`), and the same for `SpecReviewer` and `QualityReviewer`. The
+1. `uv run gz wp dispatch <WP-id> --role Implementer --model <tier> --req REQ-<n>`,
+   and the same for `SpecReviewer` and `QualityReviewer`; a repair package's run
+   verbs name `--order <ORD-id>`, and an issue is never a subject (ruling 64). The
    bound counts against that frozen subject, across packages: its first dispatch
    is free, any review in the package arms it, and each later one is a fix cycle. A delivery package that
    cannot dispatch declares `--role SingleDriver --reason "<why>"`; a repair package
@@ -157,12 +157,15 @@ uv run gz wp req new <WP-id> --statement "<what must hold again>" \
 Once its repair requirements are written, freeze the order on them, then record
 commencement. The order moves one step at a time while its package is initiated
 (rulings 2, 44). Its baseline holds only repair REQs held on its package, each in
-one live order's baseline at a time (ruling 53), and the freeze seals the
-package's footprint, so a change order may then only add a path (ruling 56):
+one live order's baseline at a time (ruling 53). The freeze seals the package's
+footprint, which must be valid as a brief's Allowed Paths are, so a change order may
+then only add a path (ruling 56), and approves each planned alteration no earlier
+order's freeze approved (ruling 63). Commencement crosses the airlock (ruling 65).
+Commit the order's work under the package's `Task:` trailer, as step 3 says:
 
 ```bash
 uv run gz wp order freeze <ORD-id> --baseline REQ-<n>@<rev> --risk-note "<risk>" \
-  --review-receipt <receipt> --evidence "<what justifies it>"
+  --review-receipt <receipt> [--approve-alteration <id>] --evidence "<what justifies it>"
 uv run gz wp order commence <ORD-id> --evidence "<what justifies it>"
 ```
 
@@ -181,7 +184,8 @@ uv run gz wp unblock <WP-id> --order <ORD-id> --ruling "<their exact words>" --o
 
 Acceptance runs on the order, its obligations the order's frozen REQs and its
 proofs and reviews under its id; accept refuses until it reads ready and the
-package's sealed footprint holds, a stopped order excused (ruling 60). A freeze
+package's sealed footprint holds, the order and requirement stores aside (ruling
+66), a stopped order excused (ruling 60), and crosses the airlock outward. A freeze
 names at least one REQ (ruling 61):
 
 ```bash

@@ -31,7 +31,7 @@ gz wp acceptance (<WP-id> | <ORD-id>) {init,prove,review,human-review,status} [O
 
 This is the acceptance runtime of [`gz obpi acceptance`](obpi-acceptance.md), run on a package from commencement. The verbs, records and readiness are the same. Only the source of the obligations differs.
 
-A delivery package's obligations are its frozen REQs at their frozen revisions, less any a `departure` exit moved out. A repair package's are its carried issues, one each, named `#<issue>`. An order's are its own frozen REQs at their frozen revisions, less any a `departure` exit on the order moved out, and its records are kept under the order's id, so it runs from the order's commencement while its package stays initiated (RP-12 ruling 60). [`gz wp order accept`](wp-order-accept.md) refuses until the order's `status` reads ready. An issue or a catalog REQ has no `@covers` scan, so its proof names its tests directly and they must kill every named mutant.
+A delivery package's obligations are its frozen REQs at their frozen revisions, less any a `departure` exit moved out. A repair package runs no acceptance of its own: its run is its orders' (RP-12 ruling 44), a carried issue is never an obligation (ruling 64), and the verb on a repair package exits 3 and names the order's. An order's are its own frozen REQs at their frozen revisions, less any a `departure` exit on the order moved out, and its records are kept under the order's id, so it runs from the order's commencement while its package stays initiated (RP-12 ruling 60). [`gz wp order accept`](wp-order-accept.md) refuses until the order's `status` reads ready. A catalog REQ has no `@covers` scan, so its proof names its tests directly and they must kill every named mutant.
 
 [`gz wp accept`](wp-accept.md) refuses until `status` reads ready. Appending objective quality evidence with `gz wp evidence` makes no review stale; any other edit to the record does.
 
@@ -39,19 +39,24 @@ A package gets three adversarial rounds with a mapped finding: the first and two
 
 ## Examples
 
-Observed in a scratch project holding `WP-01-loop`, a repair package carrying `#1206`:
+Observed in a scratch project at `/private/tmp/gz-act5` holding `WP-02-loop`, a
+delivery package commenced on `REQ-7@1`:
 
 ```console
-$ uv run gz wp acceptance WP-01-loop init --author implementing-session
+$ uv run gz wp acceptance WP-02-loop init --author implementing-session
 {
   "author_id": "implementing-session",
   "obligations": [
     {
-      "id": "#1206",
+      "id": "REQ-7",
+      "kind": "BEHAVIOR",
+      "statement": "A resumed session names its predecessor.",
+      "authority": "data/catalog/work_packages.json#WP-02-loop",
 ```
 
-On an order, `ORD-01-import` commenced on `REQ-1@1` in repair package
-`WP-01-stamp`, the obligation is the order's frozen REQ:
+On an order, `ORD-01-import` commenced on `REQ-8@1` in repair package
+`WP-01-stamp`, the obligation is the order's frozen REQ, and the package itself
+runs no acceptance:
 
 ```console
 $ uv run gz wp acceptance ORD-01-import init --author implementing-session
@@ -59,10 +64,12 @@ $ uv run gz wp acceptance ORD-01-import init --author implementing-session
   "author_id": "implementing-session",
   "obligations": [
     {
-      "id": "REQ-1",
+      "id": "REQ-8",
       "kind": "BEHAVIOR",
       "statement": "The stamp imports again.",
       "authority": "data/catalog/orders.json#ORD-01-import",
+$ uv run gz wp acceptance WP-01-stamp init --author implementing-session
+Acceptance blocked: WP-01-stamp is a repair package; acceptance runs on each of its orders, `uv run gz wp acceptance <ORD-id>` (RP-12 rulings 44, 60 and 64). GHI #985 and T1/T2/T3 require current, executed proof and receipt-bound independent closure. Use `gz wp acceptance WP-01-stamp status` to inspect the retained obligations; repair or record the named evidence through the existing pipeline.
 ```
 
 ## Exit codes

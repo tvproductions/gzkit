@@ -70,16 +70,23 @@ def _no_reach(_target: str) -> list[str]:
 
 
 def _own_records(project_root: Path) -> tuple[str, ...]:
-    """Read the paths the verbs themselves write: the store and the configured ledger.
+    """Read the paths the verbs themselves write: the stores and the configured ledger.
+
+    `gz wp order new` writes the order store and `gz wp req new` the requirement store,
+    as the package verbs write theirs (RP-12 ruling 66).
 
     Returns:
-        The store, the ledger and the ledger's lock, relative to the project root.
+        The work-package, order and requirement stores, the ledger and the ledger's lock,
+        relative to the project root.
 
     """
-    store = registry_path(project_root, CATALOG_FILES["work_packages"])
+    stores = tuple(
+        registry_path(project_root, CATALOG_FILES[name]).relative_to(project_root).as_posix()
+        for name in ("work_packages", "orders", "reqs")
+    )
     config = GzkitConfig.load(project_root / ".gzkit.json")
     ledger = Path(config.paths.ledger).as_posix()
-    return (store.relative_to(project_root).as_posix(), ledger, f"{ledger}.lock")
+    return (*stores, ledger, f"{ledger}.lock")
 
 
 def _generated_mirrors(changed: tuple[str, ...], allowlist: tuple[str, ...]) -> tuple[str, ...]:
@@ -202,6 +209,27 @@ def exit_package(
         ledger=ledger if book else None,
         observed=observed,
     )
+
+
+def cross_airlock(
+    project_root: Path, ledger: Ledger, package: WorkPackage, state: str
+) -> str | None:
+    """Book the airlock's edge a move crosses, so neither edge can go unreached (GHI #1185).
+
+    A package's commencement and acceptance cross it, and a repair package's orders'
+    do, on the package's slice (RP-12 ruling 65).
+
+    Returns:
+        What the airlock read, or None for a move that crosses neither edge.
+
+    """
+    if state == "commenced":
+        decision = enter_package(package, ledger).decision
+        return f"airlock in: {decision.value if decision else 'none'}"
+    if state == "accepted":
+        verdict = exit_package(project_root, package, ledger).drift_diff.verdict
+        return f"airlock out: {verdict.value}"
+    return None
 
 
 def module_gaps(

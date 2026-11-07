@@ -21,7 +21,7 @@ from gzkit.acceptance_store import acceptance_blockers, round_bound_refusal
 from gzkit.cli.formatters import OutputFormatter
 from gzkit.commands.common import ensure_initialized, get_project_root
 from gzkit.core.exceptions import PolicyBreachError, ResourceNotFoundError
-from gzkit.events import BaselinedReq
+from gzkit.events import BaselinedReq, OrderTransitionedEvent
 from gzkit.ledger import Ledger
 from gzkit.models.catalog import Catalog, Order, WorkPackage, load_catalog
 from gzkit.order_ledger import (
@@ -35,7 +35,7 @@ from gzkit.order_ledger import (
 from gzkit.order_store import OrderStoreError, next_order_id, stage_order, write_orders
 from gzkit.work_package_ledger import work_package_state
 from gzkit.work_package_run import order_took_stopping_exit
-from gzkit.work_package_transit import footprint_refusal, freeze_refusal
+from gzkit.work_package_transit import cross_airlock, footprint_refusal, freeze_refusal
 
 
 def _package(catalog: Catalog, work_package: str) -> WorkPackage:
@@ -217,7 +217,7 @@ def wp_order_new_cmd(
 _RERUN = {
     "frozen": (
         "`uv run gz wp order freeze <ORD-id> --baseline REQ-<n>@<revision> --risk-note <text> "
-        "--review-receipt <id> --evidence <text>`"
+        "--review-receipt <id> [--approve-alteration <id>] --evidence <text>`"
     ),
     "commenced": "`uv run gz wp order commence <ORD-id> --evidence <text>`",
     "accepted": "`uv run gz wp order accept <ORD-id> --evidence <text>`",
@@ -237,21 +237,23 @@ def _baseline_entry(to_state: str, entry: str) -> BaselinedReq:
 
 
 def wp_order_transition_cmd(
-    *, fields: dict[str, str], baseline: list[str] | None, as_json: bool
+    *, fields: dict[str, object], baseline: list[str] | None, as_json: bool
 ) -> None:
     """Move an order one step, `frozen` or `commenced` (RP-12 O2 task 3).
 
     ``fields`` are the ``OrderMove`` fields the verb's flags supplied; a freeze's
     ``baseline`` arrives as ``REQ-<n>@<revision>`` strings. A freeze seals the repair
     package's footprint (ruling 56), so it is refused while that footprint does not
-    hold. An unknown order exits 1; any refusal exits 3 and writes nothing.
+    hold, and approves the package's alterations no earlier freeze approved (ruling
+    63); a commencement crosses the airlock inward on the package's slice (ruling 65).
+    An unknown order exits 1; any refusal exits 3 and writes nothing.
     """
     config = ensure_initialized()
     root = get_project_root()
     catalog = load_catalog(root)
     ledger = Ledger(root / config.paths.ledger)
-    to_state = fields["to_state"]
-    order = _order(catalog, fields["order"])
+    to_state = str(fields["to_state"])
+    order = _order(catalog, str(fields["order"]))
     package = _package(catalog, order.work_package)
     if to_state == "frozen" and (refusal := freeze_refusal(root, package)):
         _refuse_move(to_state, f"{refusal} An order's freeze seals it (RP-12 ruling 56).")
@@ -261,10 +263,17 @@ def wp_order_transition_cmd(
         event = record_order_transition(catalog, ledger, move)
     except OrderLedgerError as exc:
         _refuse_move(to_state, str(exc))
+    _emit_move(event, cross_airlock(root, ledger, package, event.to_state), as_json=as_json)
+
+
+def _emit_move(event: OrderTransitionedEvent, crossed: str | None, *, as_json: bool) -> None:
+    """Print the move and, for a move across the airlock, what it read (RP-12 ruling 65)."""
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
     fmt.emit(
         event if as_json else f"{event.id}: {event.from_state or 'nothing'} -> {event.to_state}"
     )
+    if crossed and not as_json:
+        fmt.emit(f"  {crossed}")
 
 
 def wp_order_show_cmd(*, order_id: str, as_json: bool) -> None:
@@ -303,7 +312,8 @@ def wp_order_accept_cmd(*, order_id: str, evidence: str, as_json: bool) -> None:
     proofs and reviews under its id, with the review-round limit of GHI #1028; then
     the repair package's sealed footprint (ruling 56). An order stopped by an exit
     is excused both, as a stopped package is: it claims no delivery, and Gate 5 is
-    how it closes. An unknown order exits 1; any refusal exits 3 and books nothing.
+    how it closes. The move crosses the airlock outward on the package's slice
+    (ruling 65). An unknown order exits 1; any refusal exits 3 and books nothing.
 
     Raises:
         PolicyBreachError: Acceptance reports its blockers, a file lies outside the
@@ -328,5 +338,4 @@ def wp_order_accept_cmd(*, order_id: str, evidence: str, as_json: bool) -> None:
         event = record_order_transition(catalog, ledger, move)
     except OrderLedgerError as exc:
         _refuse_move("accepted", str(exc))
-    fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
-    fmt.emit(event if as_json else f"{event.id}: {event.from_state} -> {event.to_state}")
+    _emit_move(event, cross_airlock(root, ledger, package, event.to_state), as_json=as_json)

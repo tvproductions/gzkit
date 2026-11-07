@@ -21,8 +21,12 @@ gz wp accept <WP-id> --evidence <text> [OPTIONS]
 
 ## Description
 
-Moves a commenced package to `accepted` (C10 of the contractor-kit record:
-final inspection with no tag still hung). RO-12's refusals read this state.
+Moves a commenced delivery package to `accepted` (C10 of the contractor-kit
+record: final inspection with no tag still hung). RO-12's refusals read this state.
+A repair package moves only `initiated` to `closed`; its acceptance is refused with
+exit 3 and names [`gz wp order accept`](wp-order-accept.md), which holds the
+package's changes to its footprint and crosses the airlock outward (RP-12 rulings
+44, 60 and 65).
 
 The verbs are drydock RO-5 tranche 2; the operator named them on 2026-10-28.
 
@@ -30,7 +34,7 @@ While a package is accepted and not yet closed, the production-write fence appli
 
 The verb refuses until `gz wp acceptance` reads ready: current proof on every obligation, with accepted spec, quality and adversarial reviews and no open finding, and a single-driver package's adversarial review alone. It also refuses past the round limit. A package stopped by a `reopen` or `terminate` exit is excused, and unless its acceptance reads ready it closes as `redirect`, `pause` or `terminate`.
 
-Once acceptance reads ready, the verb holds what the package changed against its footprint (GHI #1185, RO-14 act 6): the commits whose `Task:` trailer starts with the lowercased package id, such as `TASK-wp-02-resume-#1185`, and anything uncommitted. A file outside the footprint exits 3 and names the file, as `gz obpi complete` does for a brief. gzkit's own records and the work-package store never count, and a generated mirror of a file inside the footprint follows that file. An uncommitted file that is not the package's work is committed under its own trailer or reverted. A file already committed under the package's trailer stays in its history, and a revert does not remove it, so the operator adds it with a change order (`gz wp change --rung change_order --module <path>`), the path as listed even if the file has moved away. The footprint is the one the ledger froze plus what change orders added, so editing the store moves nothing. A delivery package has no declared footprint until the outcome's `modules` land, and is reported and not refused. A package stopped by an exit is excused here too.
+Once acceptance reads ready, the verb holds what the package changed against its footprint (GHI #1185, RO-14 act 6): the commits whose `Task:` trailer starts with the lowercased package id, such as `TASK-wp-02-resume-#1185`, and anything uncommitted. A file outside the footprint exits 3 and names the file, as `gz obpi complete` does for a brief. gzkit's own records and the work-package, order and requirement stores never count (RP-12 ruling 66), and a generated mirror of a file inside the footprint follows that file. An uncommitted file that is not the package's work is committed under its own trailer or reverted. A file already committed under the package's trailer stays in its history, and a revert does not remove it, so the operator adds it with a change order (`gz wp change --rung change_order --module <path>`), the path as listed even if the file has moved away. The footprint is the one the ledger froze plus what change orders added, so editing the store moves nothing. A delivery package has no declared footprint until the outcome's `modules` land, and is reported and not refused. A package stopped by an exit is excused here too.
 
 A move that passes crosses the airlock: it books one `airlock_out` and prints the verdict: `clean`, `surface`, `undeclared`, or `unobserved` when git could not show the changes. The event carries `observed_commits`, `observed_files` and `changed_files`, as a completion receipt seals its changed files, so an exit that read nothing can be told from one that read something and found nothing.
 
@@ -43,6 +47,16 @@ at revision 2:
 $ uv run gz wp accept WP-02-resume --evidence final-inspection
 WP-02-resume: commenced -> accepted
   airlock out: undeclared
+```
+
+On a repair package, in a scratch project at `/private/tmp/gz-act5` holding
+`WP-01-stamp` initiated:
+
+```console
+$ uv run gz wp accept WP-01-stamp --evidence E
+Repair package WP-01-stamp moves only initiated -> closed; its orders carry the
+run's states (RP-12 ruling 44). Run `uv run gz wp order accept <ORD-id>` on the
+order instead.
 ```
 
 ## Exit codes

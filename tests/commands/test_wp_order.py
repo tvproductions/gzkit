@@ -256,15 +256,33 @@ class OrderLifecycleTests(_OrderCase):
 
     def test_freeze_then_commence_book_one_step_each(self) -> None:
         self.assertIn("ORD-01-import: opened -> frozen", self.freeze())
-        self.assertIn(
-            "ORD-01-import: frozen -> commenced",
-            self.gz("commence", "ORD-01-import", "--evidence", "tags"),
-        )
+        commenced = self.gz("commence", "ORD-01-import", "--evidence", "tags")
+        self.assertIn("ORD-01-import: frozen -> commenced", commenced)
+        self.assertIn("airlock in:", commenced)  # ruling 65: the order crosses inward
         moves = self.moves()
         self.assertEqual([m["to_state"] for m in moves], ["opened", "frozen", "commenced"])
         self.assertEqual(moves[1]["baseline"], [{"req": "REQ-1", "revision": 1}])
         self.assertEqual(moves[1]["modules"], ["src/stamp.py"])
         self.assertEqual(moves[1]["risk_note"], "Touches the hook.")
+
+    def test_the_freeze_approves_the_packages_planned_alterations(self) -> None:
+        """Ruling 63: `--approve-alteration` names each alteration due at this freeze."""
+        store = Path("data") / "catalog" / "work_packages.json"
+        held = json.loads(store.read_text(encoding="utf-8"))
+        alteration = {
+            "id": "ALT-1",
+            "description": "A remodel.",
+            "configuration_change": "replaced",
+        }
+        held["work_packages"][0]["alterations"] = [alteration]
+        store.write_text(json.dumps(held), encoding="utf-8")
+        before = _ledger_rows()
+        refused = self.freeze(code=3)
+        self.assertIn("ruling 63", refused)
+        self.assertIn("[--approve-alteration <id>]", refused)  # the re-run names the fix
+        self.assertEqual(_ledger_rows(), before)
+        self.freeze("--approve-alteration", "ALT-1")
+        self.assertEqual(self.moves()[-1]["approved_alterations"], ["ALT-1"])
 
     def test_commence_before_the_freeze_is_refused_and_nothing_written(self) -> None:
         before = _ledger_rows()

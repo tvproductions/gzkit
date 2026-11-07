@@ -26,8 +26,13 @@ gz wp close <WP-id> --decision <decision> --attestor <id> --residual-risk <text>
 
 ## Description
 
-Gate 5 stays per work package (R2). `close` moves an accepted package to
-`closed`, recording the decision, the attestor and the residual risk. Every
+Gate 5 stays per work package (R2). `close` moves an accepted delivery package,
+or an initiated repair package, to `closed`, recording the decision, the attestor
+and the residual risk. A repair package moves only `initiated` to `closed`, its
+orders carrying the run (RP-12 ruling 44), and its close carries the same payload
+(ruling 62). Reading every order's Gate 5 lands with Gate 5 at the order (O2
+task 4), and the operator's words for return to service with O5 (ruling 32), so
+until then the close records a Gate 5 decision of its own. Every
 alteration is accounted as its configuration change, and each departure still
 open is named. The event also records the package's lane, which the writer
 derives and the caller never supplies (RO-5 tranche 4): the stored lane of a
@@ -46,6 +51,16 @@ at revision 2:
 $ uv run gz wp close WP-02-resume --decision proceed --attestor g0 --residual-risk none \
     --account ALT-1 --evidence closeout
 WP-02-resume: accepted -> closed
+```
+
+A repair package, in a scratch project at `/private/tmp/gz-act5` holding
+`WP-01-stamp` initiated with the alteration `ALT-1`:
+
+```console
+$ uv run gz wp close WP-01-stamp --decision proceed --attestor g0 --residual-risk none --evidence closeout
+Every alteration of WP-01-stamp is accounted at close as a configuration change.
+$ uv run gz wp close WP-01-stamp --decision proceed --attestor g0 --residual-risk none --account ALT-1 --evidence closeout
+WP-01-stamp: initiated -> closed
 ```
 
 ## Exit codes

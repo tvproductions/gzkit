@@ -143,7 +143,7 @@ def obpi_acceptance_cmd(
         return EXIT_USER_ERROR
     except (ValueError, OSError, KeyError) as exc:
         message = (
-            f"Acceptance blocked: {exc}. GHI #985 and T1/T2/T3 require current, "
+            f"Acceptance blocked: {str(exc).rstrip('.')}. GHI #985 and T1/T2/T3 require current, "
             "executed proof and receipt-bound independent closure. Use "
             f"`{acceptance_verb(obpi_id)} {obpi_id} status` to inspect the retained obligations; "
             "repair or record the named evidence through the existing pipeline."

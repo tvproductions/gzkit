@@ -33,7 +33,14 @@ gates, in order:
    mapped finding hold here as they hold a package (GHI #1028); past them the
    refusal names `gz wp block <WP-id> --order <ORD-id>`.
 2. Every file the repair package changed lies in its footprint, as the order's
-   freeze sealed it (ruling 56).
+   freeze sealed it (ruling 56). The order and requirement stores, which `gz wp
+   order new` and `gz wp req new` write, never count, as the work-package store
+   and the ledger do not (ruling 66).
+
+A move that passes crosses the airlock outward on the repair package's slice: it
+books one `airlock_out` and prints the verdict, as [`gz wp accept`](wp-accept.md)
+does for a package (ruling 65). A stopped order crosses too, and its verdict
+names any file outside the footprint.
 
 An order stopped by a `reopen` or `terminate` exit is excused both gates, as a
 stopped package is: it claims no delivery, and Gate 5 at the order is how it
@@ -51,9 +58,9 @@ A refusal names what failed, why, and the call to re-run, and books nothing.
 
 ## Examples
 
-Observed in a scratch project holding `WP-01-stamp` initiated. `ORD-01-import`
-is commenced with no acceptance; `ORD-02-matcher` was stopped by a `terminate`
-exit:
+Observed in a scratch project at `/private/tmp/gz-act5` holding `WP-01-stamp`
+initiated. `ORD-01-import` is commenced with no acceptance; `ORD-02-matcher` was
+stopped by a `terminate` exit:
 
 ```console
 $ uv run gz wp order accept ORD-01-import --evidence final-inspection
@@ -63,6 +70,7 @@ wp acceptance ORD-01-import status --stage stage4` and repair the named
 obligation through the existing pipeline.
 $ uv run gz wp order accept ORD-02-matcher --evidence "terminated; no delivery"
 ORD-02-matcher: commenced -> accepted
+  airlock out: clean
 ```
 
 ## Exit codes

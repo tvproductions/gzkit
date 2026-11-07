@@ -15,9 +15,11 @@ from gzkit.cli import main
 from gzkit.dispatch_stamp import STAMP_ID_ENV, STAMP_ROOT_ENV
 from gzkit.work_package_ledger import WorkPackageLedgerError
 from gzkit.work_package_run import read_dispatch_id
-from tests.commands.common import CliRunner, _quick_init
+from tests.commands.test_wp_order_run import _CommencedOrder
 
-_PACKAGE = "WP-01-loop"
+_PACKAGE = "WP-01-stamp"
+_ORDER = "ORD-01-import"
+_ON_ORDER = ("--order", _ORDER)
 
 
 _REAL_WRITE_TEXT = Path.write_text
@@ -39,63 +41,21 @@ def _refuse_marker_writes(path: Path, *args: object, **kwargs: object) -> int:
     return _REAL_WRITE_TEXT(path, *args, **kwargs)  # ty: ignore[invalid-argument-type]
 
 
-def _seed_store() -> None:
-    catalog = Path("data") / "catalog"
-    catalog.mkdir(parents=True, exist_ok=True)
-    record = {
-        "id": _PACKAGE,
-        "kind": "repair",
-        "outcome": None,
-        "issues": [1200],
-        "lane": "lite",
-        "aliases": [],
-        "modules": ["data/catalog/"],
-        "initial_conditions": "NA",
-        "procedure": "NA",
-        "test_and_inspection": "NA",
-        "system_restoration": "NA",
-        "oqe": [],
-        "alterations": [],
-        "departures": [],
-    }
-    for kind, entries in (
-        ("families", []),
-        ("outcomes", []),
-        ("reqs", []),
-        ("externals", []),
-        ("work_packages", [record]),
-        ("orders", []),
-    ):
-        text = json.dumps({"_doc": "Fixture catalog.", kind: entries})
-        (catalog / f"{kind}.json").write_text(text, encoding="utf-8")
-
-
 def _rows(kind: str) -> list[dict]:
     text = (Path.cwd() / ".gzkit" / "ledger.jsonl").read_text(encoding="utf-8")
     rows = [json.loads(line) for line in text.splitlines() if line.strip()]
     return [row for row in rows if row.get("event") == kind]
 
 
-class TestRunVerbs(unittest.TestCase):
-    def setUp(self) -> None:
-        self.runner = CliRunner()
-        self.enterContext(self.runner.isolated_filesystem())
-        _quick_init()
-        _seed_store()
-        for args in (
-            ["initiate", _PACKAGE, "--operator-text", "go"],
-            ["freeze", _PACKAGE, "--risk-note", "r", "--review-receipt", "v", "--evidence", "e"],
-            ["commence", _PACKAGE, "--evidence", "e"],
-        ):
-            result = self.runner.invoke(main, ["wp", *args])
-            self.assertEqual(result.exit_code, 0, msg=result.output)
+class TestRunVerbs(_CommencedOrder):
+    """A repair package's run is its order's (RP-12 ruling 44), so each verb names it."""
 
-    def _dispatch(self, role: str, issue: str = "1200") -> int:
-        args = ["wp", "dispatch", _PACKAGE, "--role", role, "--model", "m", "--issue", issue]
-        return self.runner.invoke(main, args).exit_code
+    def _dispatch(self, role: str, req: str = "REQ-1") -> int:
+        args = ["wp", "dispatch", _PACKAGE, *_ON_ORDER, "--role", role, "--model", "m"]
+        return self.runner.invoke(main, [*args, "--req", req]).exit_code
 
     def _block(self) -> int:
-        args = ["wp", "block", _PACKAGE, "--reason", "r", "--next-action", "a"]
+        args = ["wp", "block", _PACKAGE, *_ON_ORDER, "--reason", "r", "--next-action", "a"]
         return self.runner.invoke(main, args).exit_code
 
     def test_the_cycle_past_the_bound_exits_3_and_books_nothing(self) -> None:
@@ -117,9 +77,9 @@ class TestRunVerbs(unittest.TestCase):
     def test_a_block_records_the_count_and_an_unblock_clears_it(self) -> None:
         self.assertEqual(self._dispatch("Implementer"), 0)
         self.assertEqual(self._block(), 0)
-        self.assertEqual(_rows("work_package_blocked")[0]["fix_cycles"], {"#1200": 0})
+        self.assertEqual(_rows("work_package_blocked")[0]["fix_cycles"], {"REQ-1@1": 0})
         self.assertEqual(self._dispatch("SpecReviewer"), 3)
-        args = ["wp", "unblock", _PACKAGE, "--ruling", "go on", "--operator", "g0"]
+        args = ["wp", "unblock", _PACKAGE, *_ON_ORDER, "--ruling", "go on", "--operator", "g0"]
         self.assertEqual(self.runner.invoke(main, args).exit_code, 0)
         self.assertEqual(_rows("work_package_unblocked")[0]["ruling"], "go on")
         self.assertEqual(self._dispatch("SpecReviewer"), 0)
@@ -127,8 +87,8 @@ class TestRunVerbs(unittest.TestCase):
     def test_the_intended_root_defaults_to_this_project_and_the_line_names_the_dispatch(
         self,
     ) -> None:
-        args = ["wp", "dispatch", _PACKAGE, "--role", "Implementer", "--model", "m"]
-        result = self.runner.invoke(main, [*args, "--issue", "1200"])
+        args = ["wp", "dispatch", _PACKAGE, *_ON_ORDER, "--role", "Implementer", "--model", "m"]
+        result = self.runner.invoke(main, [*args, "--req", "REQ-1"])
         self.assertEqual(result.exit_code, 0, msg=result.output)
         (row,) = _rows("work_package_dispatched")
         self.assertEqual(row["intended_root"], Path.cwd().resolve().as_posix())
@@ -137,15 +97,16 @@ class TestRunVerbs(unittest.TestCase):
     def test_a_named_root_reaches_the_ledger_and_a_missing_one_exits_1(self) -> None:
         scratch = Path("scratch")
         scratch.mkdir()
-        args = ["wp", "dispatch", _PACKAGE, "--role", "Implementer", "--model", "m"]
-        named = self.runner.invoke(main, [*args, "--issue", "1200", "--root", "scratch"])
+        args = ["wp", "dispatch", _PACKAGE, *_ON_ORDER, "--role", "Implementer", "--model", "m"]
+        args = [*args, "--req", "REQ-1"]
+        named = self.runner.invoke(main, [*args, "--root", "scratch"])
         self.assertEqual(named.exit_code, 0, msg=named.output)
         self.assertEqual(
             _rows("work_package_dispatched")[0]["intended_root"], scratch.resolve().as_posix()
         )
-        missing = self.runner.invoke(main, [*args, "--issue", "1200", "--root", "nowhere"])
+        missing = self.runner.invoke(main, [*args, "--root", "nowhere"])
         self.assertEqual(missing.exit_code, 1, msg=missing.output)
-        blank = self.runner.invoke(main, [*args, "--issue", "1200", "--root", ""])
+        blank = self.runner.invoke(main, [*args, "--root", ""])
         self.assertEqual(blank.exit_code, 1, msg=blank.output)
         self.assertEqual(len(_rows("work_package_dispatched")), 1)
 
@@ -214,29 +175,39 @@ class TestRunVerbs(unittest.TestCase):
         self.assertEqual(_rows("dispatch_voided"), [])
 
     def test_a_booking_still_needs_its_role_and_model(self) -> None:
-        bare = ["wp", "dispatch", _PACKAGE, "--issue", "1200"]
+        bare = ["wp", "dispatch", _PACKAGE, *_ON_ORDER, "--req", "REQ-1"]
         self.assertEqual(self.runner.invoke(main, bare).exit_code, 2)
         self.assertEqual(self.runner.invoke(main, [*bare, "--role", "Implementer"]).exit_code, 2)
         both = [*bare, "--role", "Implementer", "--model", "m", "--void", "D-0123456789abcdef"]
         self.assertEqual(self.runner.invoke(main, both).exit_code, 2)
         void = ["wp", "dispatch", _PACKAGE, "--void", "D-0123456789abcdef", "--reason", "r"]
-        for extra in (["--issue", "1200"], ["--req", "REQ-1"], ["--root", "."]):
+        for extra in (["--req", "REQ-1"], ["--root", "."], list(_ON_ORDER)):
             with self.subTest(extra=extra):
                 self.assertEqual(self.runner.invoke(main, [*void, *extra]).exit_code, 2)
 
     def test_the_operator_is_never_defaulted(self) -> None:
         self.assertEqual(self._block(), 0)
-        args = ["wp", "unblock", _PACKAGE, "--ruling", "go on"]
+        args = ["wp", "unblock", _PACKAGE, *_ON_ORDER, "--ruling", "go on"]
         self.assertEqual(self.runner.invoke(main, args).exit_code, 2)
 
-    def test_an_issue_the_package_does_not_carry_is_a_refusal(self) -> None:
-        self.assertEqual(self._dispatch("Implementer", "9"), 3)
+    def test_an_issue_is_no_dispatch_subject(self) -> None:
+        """RP-12 ruling 64: `--issue` is retired, a usage error that books nothing."""
+        args = ["wp", "dispatch", _PACKAGE, *_ON_ORDER, "--role", "Implementer", "--model", "m"]
+        self.assertEqual(self.runner.invoke(main, [*args, "--issue", "1301"]).exit_code, 2)
+        self.assertEqual(_rows("work_package_dispatched"), [])
+
+    def test_a_dispatch_on_the_repair_package_alone_exits_3(self) -> None:
+        """RP-12 ruling 44: the dispatch names the order, and a refusal books nothing."""
+        args = ["wp", "dispatch", _PACKAGE, "--role", "Implementer", "--model", "m"]
+        self.assertEqual(self.runner.invoke(main, [*args, "--req", "REQ-1"]).exit_code, 3)
+        self.assertEqual(_rows("work_package_dispatched"), [])
 
     def test_the_exit_and_req_flags_reach_the_ledger(self) -> None:
         for role in ("Implementer", "SpecReviewer") * 3:
             self.assertEqual(self._dispatch(role), 0)
         self.assertEqual(self._block(), 0)
-        args = ["wp", "unblock", _PACKAGE, "--ruling", "hold", "--operator", "g0", "--exit", "hold"]
+        args = ["wp", "unblock", _PACKAGE, *_ON_ORDER, "--ruling", "hold", "--operator", "g0"]
+        args = [*args, "--exit", "hold"]
         self.assertEqual(self.runner.invoke(main, args).exit_code, 0)
         self.assertEqual(_rows("work_package_unblocked")[0]["exit_taken"], "hold")
 
@@ -252,10 +223,14 @@ class TestRunVerbs(unittest.TestCase):
             self.runner.invoke(main, [*args, "--exit", "reopen", "--req", "REQ-1"])
         self.assertEqual(unblock.call_args.args[2].req, "REQ-1")
 
-    def test_a_frozen_package_takes_no_new_issue(self) -> None:
+    def test_a_closed_package_takes_no_new_issue(self) -> None:
+        close = ["wp", "close", _PACKAGE, "--decision", "terminate", "--attestor", "g0"]
+        result = self.runner.invoke(main, [*close, "--residual-risk", "R", "--evidence", "E"])
+        self.assertEqual(result.exit_code, 0, msg=result.output)
         with patch("gzkit.commands.wp.tag_issues") as tag:
             result = self.runner.invoke(main, ["wp", "attach", _PACKAGE, "--issue", "1300"])
         self.assertEqual(result.exit_code, 3)
+        self.assertIn(f"{_PACKAGE} is closed", " ".join(result.output.split()))
         tag.assert_not_called()
 
     def test_an_unknown_package_exits_1(self) -> None:

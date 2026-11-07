@@ -88,7 +88,7 @@ def _dispatch_or_void(parser: argparse.ArgumentParser, a: argparse.Namespace) ->
 
     """
     if a.void is not None:
-        booking = ("--role", "--model", "--req", "--issue", "--root", "--order")
+        booking = ("--role", "--model", "--req", "--root", "--order")
         given = [flag for flag in booking if getattr(a, flag[2:]) is not None]
         if given:
             parser.error(f"--void abandons a dispatch; it takes no {', '.join(given)}")
@@ -108,7 +108,6 @@ def _dispatch_or_void(parser: argparse.ArgumentParser, a: argparse.Namespace) ->
             "role": a.role,
             "model": a.model,
             "req": a.req,
-            "issue": a.issue,
             "reason": a.reason,
             "root": a.root,
             "order": a.order,
@@ -128,13 +127,14 @@ def _register_wp_run(wp_commands: argparse._SubParsersAction) -> None:
             "is bound to a minted id and its intended root; put the printed line in\n"
             "the dispatched agent's prompt (RP-12 rulings 1 and 35). --void abandons\n"
             "a booked dispatch, refused from a subagent's call (ruling 42). --order\n"
-            "dispatches on a commenced order, against a REQ its freeze holds (ruling 57)."
+            "dispatches on a commenced order, against a REQ its freeze holds (ruling 57);\n"
+            "a repair package's dispatch names its order (RP-12 ruling 44)."
         ),
         epilog=build_epilog(
             [
                 "gz wp dispatch WP-01-x --role Implementer --model sonnet --req REQ-1",
                 "gz wp dispatch WP-01-x --order ORD-01-y --role Implementer --model m --req REQ-1",
-                "gz wp dispatch WP-01-x --role Implementer --model m --issue 1 --root ../tmp",
+                "gz wp dispatch WP-01-x --role Implementer --model m --req REQ-1 --root ../tmp",
                 "gz wp dispatch WP-01-x --void D-0123456789abcdef --reason 'never spawned'",
             ]
         ),
@@ -147,9 +147,6 @@ def _register_wp_run(wp_commands: argparse._SubParsersAction) -> None:
     )
     p_dispatch.add_argument("--model", default=None, help="The model tier; required to book")
     p_dispatch.add_argument("--req", default=None, help="The frozen REQ dispatched against")
-    p_dispatch.add_argument(
-        "--issue", type=int, default=None, help="The carried issue dispatched against"
-    )
     p_dispatch.add_argument(
         "--reason", default=None, help="Why the run is single-driver, or why a dispatch is voided"
     )
@@ -173,7 +170,8 @@ def _register_wp_run(wp_commands: argparse._SubParsersAction) -> None:
         description=(
             "Record that a work package awaits the operator. The runtime writes the\n"
             "fix-cycle count and the exits used, so the facts are not the agent's.\n"
-            "--order holds that order alone (RP-12 ruling 59)."
+            "--order holds that order alone (RP-12 ruling 59); a repair package's\n"
+            "block names its order (ruling 44)."
         ),
         epilog=build_epilog(
             [
@@ -203,7 +201,8 @@ def _register_wp_run(wp_commands: argparse._SubParsersAction) -> None:
         description=(
             "Record the operator's ruling and clear the block. At the fix-cycle bound\n"
             "the ruling names one exit; no exit opens a further repair cycle.\n"
-            "--order lifts that order's block alone (RP-12 ruling 59)."
+            "--order lifts that order's block alone (RP-12 ruling 59); a repair\n"
+            "package's unblock names its order (ruling 44)."
         ),
         epilog=build_epilog(
             [
@@ -390,10 +389,11 @@ def _register_wp_acceptance(wp_commands: argparse._SubParsersAction) -> None:
         "acceptance",
         help="Execute proof, record independent reviews and derive readiness",
         description=(
-            "Run the acceptance runtime on a commenced work package: the frozen REQs,\n"
-            "or one obligation per carried issue; or on a commenced order, its frozen\n"
-            "REQs. `gz wp accept` and `gz wp order accept` refuse until it reads ready,\n"
-            "and three adversarial rounds with a mapped finding stop for the operator."
+            "Run the acceptance runtime on a commenced delivery package, its frozen\n"
+            "REQs, or on a commenced order, its frozen REQs; a repair package's\n"
+            "acceptance runs on its orders. `gz wp accept` and `gz wp order accept`\n"
+            "refuse until it reads ready, and three adversarial rounds with a mapped\n"
+            "finding stop for the operator."
         ),
         epilog=build_epilog(
             [
@@ -435,7 +435,11 @@ def _register_wp_lifecycle(wp_commands: argparse._SubParsersAction) -> None:
     p_freeze = wp_commands.add_parser(
         "freeze",
         help="Freeze the baseline after the nine-criteria review",
-        description="Freeze the baseline after the reviewer's nine-criteria check.",
+        description=(
+            "Freeze a delivery package's baseline after the reviewer's nine-criteria\n"
+            "check. A repair package moves only initiated -> closed; its orders\n"
+            "carry this state (RP-12 ruling 44)."
+        ),
         epilog=build_epilog(["gz wp freeze WP-01-x --risk-note R --review-receipt V --evidence E"]),
     )
     p_freeze.add_argument("work_package", help="The work package's id, WP-<NN>-<slug>")
@@ -465,7 +469,11 @@ def _register_wp_lifecycle(wp_commands: argparse._SubParsersAction) -> None:
     p_commence = wp_commands.add_parser(
         "commence",
         help="Record that work has commenced on a frozen package",
-        description="Record that work has commenced on a frozen work package.",
+        description=(
+            "Record that work has commenced on a frozen delivery package.\n"
+            "A repair package moves only initiated -> closed; its orders carry this\n"
+            "state (RP-12 ruling 44)."
+        ),
         epilog=build_epilog(["gz wp commence WP-01-astral --evidence tags-hung"]),
     )
     p_commence.add_argument("work_package", help="The work package's id, WP-<NN>-<slug>")
@@ -485,7 +493,11 @@ def _register_wp_lifecycle(wp_commands: argparse._SubParsersAction) -> None:
     p_accept = wp_commands.add_parser(
         "accept",
         help="Record final inspection of a commenced package",
-        description="Record final inspection of a commenced work package.",
+        description=(
+            "Record final inspection of a commenced delivery package.\n"
+            "A repair package moves only initiated -> closed; its orders carry this\n"
+            "state (RP-12 ruling 44)."
+        ),
         epilog=build_epilog(["gz wp accept WP-01-astral --evidence final-inspection"]),
     )
     p_accept.add_argument("work_package", help="The work package's id, WP-<NN>-<slug>")
@@ -503,8 +515,11 @@ def _register_wp_close_change(wp_commands: argparse._SubParsersAction) -> None:
     """Register ``gz wp close`` and ``change``."""
     p_close = wp_commands.add_parser(
         "close",
-        help="Close an accepted package through Gate 5",
-        description="Close an accepted work package through Gate 5.",
+        help="Close an accepted or repair package through Gate 5",
+        description=(
+            "Close an accepted delivery package, or an initiated repair package,\n"
+            "through Gate 5 (RP-12 rulings 44 and 62)."
+        ),
         epilog=build_epilog(
             [
                 (

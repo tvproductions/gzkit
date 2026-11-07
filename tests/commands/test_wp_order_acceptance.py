@@ -96,9 +96,9 @@ class TestTheOrdersContract(_OrderAcceptance):
         with self.assertRaisesRegex(ValueError, "no longer at the frozen revision 1"):
             resolve_brief(self.root, _ORDER)
 
-    def test_a_package_id_still_reads_the_packages_own_contract(self) -> None:
-        """The order's package is initiated, so its own contract is refused, not the order's."""
-        with self.assertRaisesRegex(ValueError, f"Work package {_PACKAGE} is initiated"):
+    def test_a_repair_package_id_runs_no_acceptance_of_its_own(self) -> None:
+        """RP-12 rulings 44 and 64: a repair package's acceptance runs on its orders."""
+        with self.assertRaisesRegex(ValueError, "gz wp acceptance <ORD-id>"):
             resolve_brief(self.root, _PACKAGE)
 
     def test_an_order_the_store_lacks_is_refused(self) -> None:

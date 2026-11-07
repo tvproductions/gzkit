@@ -6,7 +6,9 @@ only in the ledger, as `work_package_transitioned` (ruling 5 as amended
 change to it rides `work_package_changed`, naming its rung on the change ladder
 (amendment 3) or the alteration or departure from specification it records
 (amendment 4). The shape is the operator's tranche-1 ruling of 2026-10-28,
-"Accept as drafted (Recommended)".
+"Accept as drafted (Recommended)". A repair package moves only `initiated` to
+`closed`: its orders freeze, commence and accept (RP-12 ruling 44, O2 task 3 act 5),
+and its close keeps the payload every close carries (ruling 62).
 
 No CLI verb calls these yet; the verbs are tranche 2, whose names the operator
 rules. Both writers take the parsed catalog and the ledger as parameters, read
@@ -35,6 +37,8 @@ if TYPE_CHECKING:
     from gzkit.models.catalog import Catalog, WorkPackage
 
 STATES: tuple[str, ...] = get_args(WorkPackageState)
+#: Each kind's lifecycle: a delivery package's five states, a repair package's two (ruling 44).
+LIFECYCLES: dict[str, tuple[str, ...]] = {"delivery": STATES, "repair": ("initiated", "closed")}
 RUNGS: tuple[str, ...] = get_args(WorkPackageRung)
 
 #: The payload fields each target state carries; any other is refused.
@@ -251,23 +255,14 @@ def declared_modules(ledger: Ledger, package: WorkPackage) -> tuple[str, ...]:
 def _check_baselined(
     held: dict[str, CatalogReq | RepairReq], package: WorkPackage, entry: BaselinedReq
 ) -> None:
-    """One baseline entry: a REQ the catalog holds at that revision, the package's own.
+    """One baseline entry: a catalog REQ of the delivery package's outcome, at that revision.
 
-    A delivery package freezes catalog REQs of its outcome; a repair package freezes
-    repair REQs held on it (RP-12 rulings 2 and 45).
+    Only a delivery package freezes; a repair package's orders freeze its repair REQs
+    (RP-12 rulings 44 and 45).
     """
     req = held.get(entry.req)
     if req is None or req.revision != entry.revision:
         _refuse(f"{entry.req} at revision {entry.revision} is not a REQ the catalog holds.")
-    if not package.outcome:
-        if not isinstance(req, RepairReq) or req.held_on != package.id:
-            where = f"held on {req.held_on}" if isinstance(req, RepairReq) else "a catalog REQ"
-            _refuse(
-                f"{entry.req} is {where}; repair package {package.id} freezes only the repair "
-                "REQs held on it (RP-12 rulings 2 and 45). Write one with `uv run gz wp req new "
-                f"{package.id}`, or freeze without that REQ."
-            )
-        return
     if not isinstance(req, CatalogReq):
         _refuse(
             f"{entry.req} is a repair REQ held on {req.held_on}; a delivery package freezes "
@@ -338,13 +333,8 @@ def record_work_package_transition(
     if not move.evidence.strip():
         _refuse("A transition names what justifies it; evidence is empty.")
     current = work_package_state(ledger, move.work_package)
-    following = STATES[STATES.index(current) + 1 :] if current else STATES
-    expected = following[0] if following else None
-    if move.to_state != expected:
-        _refuse(
-            f"Work package {package.id} cannot move from {current or 'nothing'} to "
-            f"{move.to_state!r}; the lifecycle allows {expected or 'no move'} from here."
-        )
+    if refusal := lifecycle_refusal(package, current, move.to_state):
+        _refuse(refusal)
     _check_move(catalog, package, move)
     if is_blocked(ledger, package.id):
         _refuse(f"Work package {package.id} is blocked on the operator; it does not move.")
@@ -363,6 +353,34 @@ def record_work_package_transition(
     )
     ledger.append(ledger_row(event))
     return event
+
+
+def lifecycle_refusal(package: WorkPackage, current: str | None, to_state: str) -> str | None:
+    """Say why the package's lifecycle refuses the move, or None when it is the next step.
+
+    A repair package moves only `initiated` to `closed`; its orders carry the run's
+    states (RP-12 ruling 44).
+
+    Returns:
+        The refusal, naming the order's verb for a repair package's run state, or None.
+
+    """
+    states = LIFECYCLES[package.kind]
+    following = states[states.index(current) + 1 :] if current else states
+    expected = following[0] if following else None
+    if to_state == expected:
+        return None
+    if package.kind == "repair" and to_state in {"frozen", "commenced", "accepted"}:
+        verb = {"frozen": "freeze", "commenced": "commence", "accepted": "accept"}[to_state]
+        return (
+            f"Repair package {package.id} moves only initiated -> closed; its orders carry "
+            f"the run's states (RP-12 ruling 44). Run `uv run gz wp order {verb} <ORD-id>` "
+            "on the order instead."
+        )
+    return (
+        f"Work package {package.id} cannot move from {current or 'nothing'} to "
+        f"{to_state!r}; the lifecycle allows {expected or 'no move'} from here."
+    )
 
 
 def _rung_fields(

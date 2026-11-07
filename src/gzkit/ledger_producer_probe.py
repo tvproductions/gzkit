@@ -18,6 +18,7 @@ from gzkit import acceptance_store, reports
 from gzkit.config import GzkitConfig, PathConfig
 from gzkit.events import (
     AcceptanceRecordedEvent,
+    BaselinedReq,
     LegacyUnitWithdrawnEvent,
     MxMarkerRepairedEvent,
     MxSessionLeaseRenewedEvent,
@@ -434,16 +435,29 @@ def _seat_catalog(root: Path) -> Catalog:
 
 
 def _expect_refusal(
-    write: Callable[[], object], case: str, refusal: type[Exception] | None = None
+    write: Callable[[], object],
+    case: str,
+    refusal: type[Exception] | None = None,
+    reason: str = "",
 ) -> None:
-    """Require a refusal; a writer that books what the grammar refuses fails its contract."""
+    """Require a refusal, for ``reason`` when one is named.
+
+    A writer that books what the grammar refuses fails its contract, and so does a
+    refusal for another reason, which proves nothing about the case probed.
+
+    Raises:
+        WriterAcceptedRefusalError: The writer booked the case, or refused it for
+            another reason.
+
+    """
     from gzkit.catalog_ledger import CatalogLedgerError  # noqa: PLC0415 - import only when probed
 
     expected = refusal or CatalogLedgerError
     try:
         write()
-    except expected:
-        return
+    except expected as exc:
+        if reason in str(exc):
+            return
     raise WriterAcceptedRefusalError(case)
 
 
@@ -766,13 +780,40 @@ def _probe_order_transition(root: Path) -> ProducerObservation:
     )
 
 
+def _commence_delivery(catalog: Catalog, ledger: Ledger) -> None:
+    """Move the probe's delivery package to commenced on its one catalog REQ."""
+    from gzkit import work_package_ledger as wpl  # noqa: PLC0415 - the writer; import only when probed
+
+    for move in (
+        wpl.TransitionRequest(
+            work_package=_WORK_PACKAGE,
+            to_state="initiated",
+            evidence=_AUTHOR,
+            operator_text=_STATEMENT,
+        ),
+        wpl.TransitionRequest(
+            work_package=_WORK_PACKAGE,
+            to_state="frozen",
+            evidence=_AUTHOR,
+            risk_note=_AUTHOR,
+            review_receipt=_AUTHOR,
+            baseline=(BaselinedReq(req=_CATALOG_REQ, revision=1),),
+        ),
+        wpl.TransitionRequest(work_package=_WORK_PACKAGE, to_state="commenced", evidence=_AUTHOR),
+    ):
+        wpl.record_work_package_transition(catalog, ledger, move)
+
+
 _RUN_EVENTS = frozenset(
     {"work_package_dispatched", "work_package_blocked", "work_package_unblocked"}
 )
 
 
 def _probe_work_package_run(root: Path, event_type: str) -> ProducerObservation:
-    """Commence a package, then dispatch, block and unblock; each writer's refusal is proven.
+    """Commence a delivery package, then dispatch, block and unblock; each refusal is proven.
+
+    A repair package's run is its orders' (RP-12 ruling 44), so the package-level run
+    verbs are probed on the delivery package.
 
     Returns:
         The verified observation of the named event.
@@ -789,23 +830,7 @@ def _probe_work_package_run(root: Path, event_type: str) -> ProducerObservation:
     catalog = _seat_catalog(root)
     ledger_path = root / ".gzkit/ledger.jsonl"
     ledger = Ledger(ledger_path)
-    for move in (
-        wpl.TransitionRequest(
-            work_package=_REPAIR_PACKAGE,
-            to_state="initiated",
-            evidence=_AUTHOR,
-            operator_text=_STATEMENT,
-        ),
-        wpl.TransitionRequest(
-            work_package=_REPAIR_PACKAGE,
-            to_state="frozen",
-            evidence=_AUTHOR,
-            risk_note=_AUTHOR,
-            review_receipt=_AUTHOR,
-        ),
-        wpl.TransitionRequest(work_package=_REPAIR_PACKAGE, to_state="commenced", evidence=_AUTHOR),
-    ):
-        wpl.record_work_package_transition(catalog, ledger, move)
+    _commence_delivery(catalog, ledger)
     seated = ledger_path.read_bytes()
     roles = (run.IMPLEMENTER, "SpecReviewer") * (MAX_REVIEW_FIX_CYCLES + 1)
     for role in roles:
@@ -813,28 +838,29 @@ def _probe_work_package_run(root: Path, event_type: str) -> ProducerObservation:
             catalog,
             ledger,
             run.DispatchRequest(
-                work_package=_REPAIR_PACKAGE,
+                work_package=_WORK_PACKAGE,
                 role=role,
                 model=_AUTHOR,
-                issue=_ISSUE,
+                req=_CATALOG_REQ,
                 root=root.resolve().as_posix(),
             ),
         )
     past_the_bound = run.DispatchRequest(
-        work_package=_REPAIR_PACKAGE,
+        work_package=_WORK_PACKAGE,
         role=run.IMPLEMENTER,
         model=_AUTHOR,
-        issue=_ISSUE,
+        req=_CATALOG_REQ,
         root=root.resolve().as_posix(),
     )
     _expect_refusal(
         lambda: run.record_work_package_dispatch(catalog, ledger, past_the_bound),
         "the fix cycle past the bound",
         wpl.WorkPackageLedgerError,
+        reason="fix cycles",
     )
-    block = run.BlockRequest(work_package=_REPAIR_PACKAGE, reason=_AUTHOR, next_action=_AUTHOR)
+    block = run.BlockRequest(work_package=_WORK_PACKAGE, reason=_AUTHOR, next_action=_AUTHOR)
     run.record_work_package_block(catalog, ledger, block, refutations={})
-    no_exit = run.UnblockRequest(work_package=_REPAIR_PACKAGE, ruling=_AUTHOR, operator=_AUTHOR)
+    no_exit = run.UnblockRequest(work_package=_WORK_PACKAGE, ruling=_AUTHOR, operator=_AUTHOR)
     _expect_refusal(
         lambda: run.record_work_package_unblock(catalog, ledger, no_exit),
         "an unblock at the bound naming no exit",
@@ -855,7 +881,7 @@ def _probe_work_package_run(root: Path, event_type: str) -> ProducerObservation:
         msg = "Writer persisted the wrong event type"
         raise TypeError(msg)
     blocked = next(row for row in added if isinstance(row, WorkPackageBlockedEvent))
-    if blocked.at_bound != (f"#{_ISSUE}",):
+    if blocked.at_bound != (f"{_CATALOG_REQ}@1",):
         msg = "The block must name the subject at the bound"
         raise ValueError(msg)
     return ProducerObservation(
@@ -884,12 +910,10 @@ def _observe_dispatch_void(
     from gzkit import work_package_run as run  # noqa: PLC0415
 
     seated = ledger_path.read_bytes()
-    event = run.record_dispatch_void(ledger, _REPAIR_PACKAGE, dispatch_id, _AUTHOR)
+    event = run.record_dispatch_void(ledger, _WORK_PACKAGE, dispatch_id, _AUTHOR)
     for target in (dispatch_id, "D-0000000000000000"):
         _expect_refusal(
-            lambda target=target: run.record_dispatch_void(
-                ledger, _REPAIR_PACKAGE, target, _AUTHOR
-            ),
+            lambda target=target: run.record_dispatch_void(ledger, _WORK_PACKAGE, target, _AUTHOR),
             "a void of no live dispatch",
             wpl.WorkPackageLedgerError,
         )
@@ -920,38 +944,21 @@ def _probe_dispatch_claim(root: Path, event_type: str = "dispatch_claimed") -> P
             no dispatch.
 
     """
-    from gzkit import work_package_ledger as wpl  # noqa: PLC0415 - the writer; import only when probed
-    from gzkit import work_package_run as run  # noqa: PLC0415
+    from gzkit import work_package_run as run  # noqa: PLC0415 - the writer; import only when probed
     from gzkit.ledger import Ledger  # noqa: PLC0415
 
     catalog = _seat_catalog(root)
     ledger_path = root / ".gzkit/ledger.jsonl"
     ledger = Ledger(ledger_path)
-    for move in (
-        wpl.TransitionRequest(
-            work_package=_REPAIR_PACKAGE,
-            to_state="initiated",
-            evidence=_AUTHOR,
-            operator_text=_STATEMENT,
-        ),
-        wpl.TransitionRequest(
-            work_package=_REPAIR_PACKAGE,
-            to_state="frozen",
-            evidence=_AUTHOR,
-            risk_note=_AUTHOR,
-            review_receipt=_AUTHOR,
-        ),
-        wpl.TransitionRequest(work_package=_REPAIR_PACKAGE, to_state="commenced", evidence=_AUTHOR),
-    ):
-        wpl.record_work_package_transition(catalog, ledger, move)
+    _commence_delivery(catalog, ledger)
     dispatched = run.record_work_package_dispatch(
         catalog,
         ledger,
         run.DispatchRequest(
-            work_package=_REPAIR_PACKAGE,
+            work_package=_WORK_PACKAGE,
             role=run.IMPLEMENTER,
             model=_AUTHOR,
-            issue=_ISSUE,
+            req=_CATALOG_REQ,
             root=root.resolve().as_posix(),
         ),
     )

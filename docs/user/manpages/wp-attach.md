@@ -24,8 +24,10 @@ gz wp attach <WP-id> --issue <n>... [OPTIONS]
 A repair order carries one or more GitHub issues, and each issue belongs to
 exactly one repair package (RO-5 ruling 2). An issue another package already
 holds, or an issue on a delivery package, exits 3 and the record is unchanged.
-A frozen package takes no new issue, because its issues are the subjects the
-fix-cycle bound counts against; another issue is a new package. Each issue
+A repair package never freezes, since its orders carry the run (RP-12 ruling 44),
+so it takes issues while it is initiated; a closed package takes no new issue, and
+another issue is a new package. An issue is never a run's subject or obligation
+(ruling 64): an order's REQ cites it as its problem report. Each issue
 attached is labeled `repair` and commented with the package id,
 aliases in parentheses (ruling 7); the label is created when the repository
 lacks it. The edit is checked first, then GitHub is tagged, then the record is
@@ -52,6 +54,15 @@ gh is not on PATH; install the GitHub CLI and run `gh auth login`. Nothing was
 written; re-run once gh works.
 ```
 
+Once the package is closed, in a scratch project at `/private/tmp/gz-act5` with
+the same stub `gh`:
+
+```console
+$ uv run gz wp attach WP-01-stamp --issue 1302
+Work package WP-01-stamp is closed; it carries no further issue. Another issue
+is a new package.
+```
+
 ## Exit codes
 
 | Code | Meaning |
@@ -59,7 +70,7 @@ written; re-run once gh works.
 | 0 | The issues were attached |
 | 1 | The work package is not in the store |
 | 2 | Usage error, or a `gh` call failed; nothing was written |
-| 3 | An issue already belongs to another package, the package is not a repair package, or it is frozen |
+| 3 | An issue already belongs to another package, the package is not a repair package, or it is closed |
 
 ## See also
 

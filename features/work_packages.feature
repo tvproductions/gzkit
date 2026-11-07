@@ -80,3 +80,8 @@ Feature: Work packages run through the gz wp verbs
   Scenario: accepting an order without its evidence is a usage error
     When I run the gz command "wp order accept ORD-01-x"
     Then the command exits with code 2
+
+  Scenario: an issue is no dispatch subject
+    When I run the gz command "wp dispatch WP-01-x --order ORD-01-y --role Implementer --model m --issue 1301"
+    Then the command exits with code 2
+    And the output contains "--issue"

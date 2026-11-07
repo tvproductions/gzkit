@@ -2,8 +2,11 @@
 
 A work package enters through the airlock at commencement and leaves it at
 acceptance, and the exit names every file the package changed outside its declared
-footprint. Operator rulings 2026-11-01, by selection: "Repair declares
-(Recommended)", "Task trailer (Recommended)" and "Refuse at accept (Recommended)".
+footprint. A repair package's run is its orders' (RP-12 ruling 44), so its order's
+freeze seals the footprint (ruling 56) and the order's commencement and acceptance
+cross the airlock on the package's slice (ruling 65). Operator rulings 2026-11-01, by
+selection: "Repair declares (Recommended)", "Task trailer (Recommended)" and "Refuse at
+accept (Recommended)".
 
 The package's commits are real commits in a real repository, because attribution
 is what these tests are for: a hand-built list of changed files would hide a
@@ -30,11 +33,17 @@ if TYPE_CHECKING:
     from gzkit.airlock.model import TransitObservation
 
 _PACKAGE = "WP-01-loop"
+_ORDER = "ORD-01-fix"
 _TRAILER = "TASK-wp-01-loop-#1185"
 _MODULE = "src/gzkit/inside/"
 _INSIDE = "src/gzkit/inside/fix.py"
 _OUTSIDE = "src/gzkit/outside.py"
 _EVIDENCE = ("--evidence", "e")
+_ORDER_FREEZE = (
+    "wp", "order", "freeze", _ORDER, "--baseline", "REQ-1@1", "--risk-note", "r",
+    "--review-receipt", "v", *_EVIDENCE,
+)  # fmt: skip
+_ORDER_ACCEPT = ("wp", "order", "accept", _ORDER, *_EVIDENCE)
 _CHANGE_ORDER = (
     "wp",
     "change",
@@ -121,9 +130,10 @@ class _AirlockCase(unittest.TestCase):
 
     def setUp(self) -> None:
         # Acceptance is not this suite's subject: tests/commands/test_wp_acceptance.py is.
-        gate = mock.patch("gzkit.commands.wp.acceptance_blockers", return_value=[])
-        gate.start()
-        self.addCleanup(gate.stop)
+        for seam in ("gzkit.commands.wp", "gzkit.commands.wp_order"):
+            gate = mock.patch(f"{seam}.acceptance_blockers", return_value=[])
+            gate.start()
+            self.addCleanup(gate.stop)
         self.runner = CliRunner()
         self.enterContext(self.runner.isolated_filesystem())
         _quick_init()
@@ -138,17 +148,35 @@ class _AirlockCase(unittest.TestCase):
         self.assertEqual(result.exit_code, 0, msg=result.output)
         return result.output
 
-    def _commence(self) -> None:
+    def _open_order(self) -> None:
+        """Initiate the repair package and open one order on one repair REQ."""
         self._wp("initiate", _PACKAGE, "--operator-text", "go")
-        self._wp("freeze", _PACKAGE, "--risk-note", "r", "--review-receipt", "v", "--evidence", "e")
-        self._wp("commence", _PACKAGE, "--evidence", "e")
+        self._wp(
+            "req", "new", _PACKAGE, "--statement", "The loop holds.", "--criterion",
+            "a run|holds|a test", "--kind", "BEHAVIOR", "--problem-report", "1185",
+        )  # fmt: skip
+        self._wp(
+            "order", "new", _PACKAGE, "--slug", "fix", "--purpose", "Fix it.",
+            "--operator-text", "open it",
+        )  # fmt: skip
 
-    def _rows(self, event: str) -> list[dict[str, Any]]:
+    def _freeze_order(self) -> None:
+        self._wp(*_ORDER_FREEZE[1:])
+
+    def _commence(self) -> None:
+        self._open_order()
+        self._freeze_order()
+        self._wp("order", "commence", _ORDER, "--evidence", "e")
+
+    def _accept(self) -> None:
+        self._wp(*_ORDER_ACCEPT[1:])
+
+    def _rows(self, event: str, target: str = _PACKAGE) -> list[dict[str, Any]]:
         ledger = Ledger(Path(".gzkit") / "ledger.jsonl")
         return [
             {"id": row.id, **row.extra}
             for row in ledger.query(event_type=event)
-            if row.id == _PACKAGE
+            if row.id == target
         ]
 
 
@@ -233,33 +261,40 @@ class TestAccept(_AirlockCase):
     def test_a_package_inside_its_footprint_is_accepted_and_exits_clean(self) -> None:
         self._commence()
         _commit(_INSIDE, _TRAILER)
-        self._wp("accept", _PACKAGE, "--evidence", "e")
+        self._accept()
         rows = self._rows("airlock_out")
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["verdict"], "clean")
         self.assertEqual(rows[0]["observed_commits"], 1)
-        self.assertEqual(rows[0]["observed_files"], 2)  # The file and the dirty ledger.
+        # The file, the dirty ledger, and the order and requirement stores the verbs wrote.
+        self.assertEqual(rows[0]["observed_files"], 4)
+
+    def test_the_orders_accept_prints_what_the_airlock_read(self) -> None:
+        """Ruling 65: the order's acceptance crosses outward and says what it read."""
+        self._commence()
+        _commit(_INSIDE, _TRAILER)
+        self.assertIn("airlock out: clean", self._wp(*_ORDER_ACCEPT[1:]))
 
     def test_a_passed_exit_seals_the_files_it_read(self) -> None:
         self._commence()
         _commit(_INSIDE, _TRAILER)
-        self._wp("accept", _PACKAGE, "--evidence", "e")
+        self._accept()
         self.assertIn(_INSIDE, self._rows("airlock_out")[0]["changed_files"])
 
     def test_a_file_outside_the_footprint_refuses_acceptance_and_names_it(self) -> None:
         self._commence()
         _commit(_OUTSIDE, _TRAILER)
-        result = self.runner.invoke(main, ["wp", "accept", _PACKAGE, "--evidence", "e"])
+        result = self.runner.invoke(main, _ORDER_ACCEPT)
         self.assertEqual(result.exit_code, 3, msg=result.output)
         self.assertIn(_OUTSIDE, result.output)
         self.assertIn("gz wp change", result.output)
         self.assertEqual(self._rows("airlock_out"), [])
-        self.assertNotIn("accepted", self._wp("show", _PACKAGE))
+        self.assertNotIn("accepted", self._wp("order", "show", _ORDER))
 
     def test_a_defect_fix_under_its_own_trailer_does_not_refuse(self) -> None:
         self._commence()
         _commit(_OUTSIDE, "TASK-defect-fix-#9")
-        self._wp("accept", _PACKAGE, "--evidence", "e")
+        self._accept()
         self.assertEqual(self._rows("airlock_out")[0]["verdict"], "clean")
 
     def test_gzkits_own_records_never_refuse(self) -> None:
@@ -267,7 +302,7 @@ class TestAccept(_AirlockCase):
         ledger = Path(".gzkit") / "ledger.jsonl"
         _git("add", ledger.as_posix())
         _git("commit", "--no-verify", "-m", f"records\n\nTask: {_TRAILER}\n")
-        self._wp("accept", _PACKAGE, "--evidence", "e")
+        self._accept()
 
     def test_the_order_that_adds_a_path_lets_the_package_be_accepted(self) -> None:
         self._commence()
@@ -288,7 +323,7 @@ class TestAccept(_AirlockCase):
             _OUTSIDE,
         )
         self.assertIn(_OUTSIDE, load_catalog(Path.cwd()).work_packages[0].modules)
-        self._wp("accept", _PACKAGE, "--evidence", "e")
+        self._accept()
         self.assertEqual(self._rows("airlock_out")[0]["verdict"], "clean")
 
     def test_the_order_recovers_a_file_the_package_moved_away(self) -> None:
@@ -296,26 +331,26 @@ class TestAccept(_AirlockCase):
         self._commence()
         _git("mv", _OUTSIDE, _INSIDE)
         _git("commit", "--no-verify", "-m", f"move\n\nTask: {_TRAILER}\n")
-        refused = self.runner.invoke(main, ["wp", "accept", _PACKAGE, "--evidence", "e"])
+        refused = self.runner.invoke(main, _ORDER_ACCEPT)
         self.assertEqual(refused.exit_code, 3, msg=refused.output)
         self.assertIn(_OUTSIDE, refused.output)
         order = self.runner.invoke(main, [*_CHANGE_ORDER, "--module", _OUTSIDE])
         self.assertEqual(order.exit_code, 0, msg=order.output)
-        self._wp("accept", _PACKAGE, "--evidence", "e")
+        self._accept()
 
     def test_a_revert_does_not_clear_a_committed_file(self) -> None:
         self._commence()
         _commit(_OUTSIDE, _TRAILER)
         _git("revert", "--no-edit", "HEAD")
-        result = self.runner.invoke(main, ["wp", "accept", _PACKAGE, "--evidence", "e"])
+        result = self.runner.invoke(main, _ORDER_ACCEPT)
         self.assertEqual(result.exit_code, 3, msg=result.output)
         self.assertIn("a revert does not remove it", " ".join(result.output.split()))
 
     def test_a_stopped_package_is_excused_and_the_exit_still_names_the_file(self) -> None:
         self._commence()
         _commit(_OUTSIDE, _TRAILER)
-        with mock.patch("gzkit.commands.wp.took_stopping_exit", return_value=True):
-            self._wp("accept", _PACKAGE, "--evidence", "e")
+        with mock.patch("gzkit.commands.wp_order.order_took_stopping_exit", return_value=True):
+            self._accept()
         rows = self._rows("airlock_out")
         self.assertEqual(rows[0]["verdict"], "surface")
         self.assertIn(_OUTSIDE, rows[0]["drift"])
@@ -323,22 +358,28 @@ class TestAccept(_AirlockCase):
     def test_a_declared_footprint_with_no_way_to_read_changes_refuses(self) -> None:
         self._commence()
         with mock.patch("gzkit.work_package_transit.package_changes", return_value=None):
-            result = self.runner.invoke(main, ["wp", "accept", _PACKAGE, "--evidence", "e"])
+            result = self.runner.invoke(main, _ORDER_ACCEPT)
         self.assertEqual(result.exit_code, 3, msg=result.output)
         self.assertIn("git", result.output)
 
     def test_a_declared_footprint_refuses_when_git_cannot_read_the_tree(self) -> None:
         self._commence()
         _corrupt_index()
-        result = self.runner.invoke(main, ["wp", "accept", _PACKAGE, "--evidence", "e"])
+        result = self.runner.invoke(main, _ORDER_ACCEPT)
         self.assertEqual(result.exit_code, 3, msg=result.output)
         self.assertEqual(self._rows("airlock_out"), [])
 
     def test_a_footprint_edited_by_hand_after_freeze_moves_nothing(self) -> None:
         self._commence()
         _commit(_OUTSIDE, _TRAILER)
-        _seed_store(_record([_INSIDE, _OUTSIDE]))
-        result = self.runner.invoke(main, ["wp", "accept", _PACKAGE, "--evidence", "e"])
+        store = Path("data") / "catalog" / "work_packages.json"
+        store.write_text(
+            json.dumps(
+                {"_doc": "Fixture catalog.", "work_packages": [_record([_INSIDE, _OUTSIDE])]}
+            ),
+            encoding="utf-8",
+        )
+        result = self.runner.invoke(main, _ORDER_ACCEPT)
         self.assertEqual(result.exit_code, 3, msg=result.output)
         self.assertIn(_OUTSIDE, result.output)
 
@@ -346,9 +387,9 @@ class TestAccept(_AirlockCase):
         self._commence()
         with (
             mock.patch("gzkit.work_package_transit.package_changes", return_value=None),
-            mock.patch("gzkit.commands.wp.took_stopping_exit", return_value=True),
+            mock.patch("gzkit.commands.wp_order.order_took_stopping_exit", return_value=True),
         ):
-            self._wp("accept", _PACKAGE, "--evidence", "e")
+            self._accept()
         row = self._rows("airlock_out")[0]
         self.assertEqual(row["verdict"], "unobserved")
         self.assertNotIn("observed_files", row)
@@ -358,14 +399,14 @@ class TestUndeclared(_AirlockCase):
     modules = ()
 
     def test_an_undeclared_repair_package_cannot_freeze(self) -> None:
-        self._wp("initiate", _PACKAGE, "--operator-text", "go")
+        self._open_order()
         result = self.runner.invoke(
             main,
-            ["wp", "freeze", _PACKAGE, "--risk-note", "r", "--review-receipt", "v", *_EVIDENCE],
+            _ORDER_FREEZE,
         )
         self.assertEqual(result.exit_code, 3, msg=result.output)
         self.assertIn("gz wp change", result.output)
-        states = [row["to_state"] for row in self._rows("work_package_transitioned")]
+        states = [row["to_state"] for row in self._rows("order_transitioned", _ORDER)]
         self.assertNotIn("frozen", states)
 
     def test_an_undeclared_slice_reads_undeclared_and_never_clean(self) -> None:
@@ -378,18 +419,20 @@ class TestUndeclared(_AirlockCase):
         self.assertEqual(report["drift"], [])
 
     def test_the_refusals_recovery_from_no_footprint_reaches_a_freeze(self) -> None:
-        self._wp("initiate", _PACKAGE, "--operator-text", "go")
+        self._open_order()
         result = self.runner.invoke(main, [*_CHANGE_ORDER, "--module", _MODULE])
         self.assertEqual(result.exit_code, 0, msg=result.output)
-        self._wp("freeze", _PACKAGE, "--risk-note", "r", "--review-receipt", "v", *_EVIDENCE)
+        self._freeze_order()
 
-    def test_a_freeze_from_the_wrong_state_names_the_lifecycle(self) -> None:
+    def test_the_repair_packages_own_freeze_names_the_orders(self) -> None:
+        """RP-12 ruling 44: the package does not freeze; its order does."""
+        self._wp("initiate", _PACKAGE, "--operator-text", "go")
         result = self.runner.invoke(
             main,
             ["wp", "freeze", _PACKAGE, "--risk-note", "r", "--review-receipt", "v", *_EVIDENCE],
         )
         self.assertEqual(result.exit_code, 3, msg=result.output)
-        self.assertIn("lifecycle", result.output)
+        self.assertIn("gz wp order freeze", " ".join(result.output.split()))
 
     def test_a_package_slice_with_no_modules_is_marked_undeclared(self) -> None:
         package = load_catalog(Path.cwd()).work_packages[0]
@@ -400,10 +443,10 @@ class TestFreeze(_AirlockCase):
     modules = ("src/gzkit/absent.py",)
 
     def _refused_freeze(self) -> str:
-        self._wp("initiate", _PACKAGE, "--operator-text", "go")
+        self._open_order()
         result = self.runner.invoke(
             main,
-            ["wp", "freeze", _PACKAGE, "--risk-note", "r", "--review-receipt", "v", *_EVIDENCE],
+            _ORDER_FREEZE,
         )
         self.assertEqual(result.exit_code, 3, msg=result.output)
         return result.output
@@ -426,7 +469,7 @@ class TestFreeze(_AirlockCase):
             main, [*_CHANGE_ORDER, "--drop-module", self.modules[0], "--module", _MODULE]
         )
         self.assertEqual(result.exit_code, 0, msg=result.output)
-        self._wp("freeze", _PACKAGE, "--risk-note", "r", "--review-receipt", "v", *_EVIDENCE)
+        self._freeze_order()
 
     def test_a_frozen_footprint_drops_nothing(self) -> None:
         _seed_store(_record([_MODULE]))
@@ -459,7 +502,7 @@ class TestConfiguredLedger(_AirlockCase):
         )
         self._commence()
         _commit(_INSIDE, _TRAILER)
-        self._wp("accept", _PACKAGE, "--evidence", "e")
+        self._accept()
         result = self.runner.invoke(
             main, ["airlock", "out", "--target", _PACKAGE, "--dry-run", "--json"]
         )
@@ -469,14 +512,14 @@ class TestConfiguredLedger(_AirlockCase):
 
 class TestFootprintOrders(_AirlockCase):
     def test_a_path_dropped_before_the_freeze_stays_out(self) -> None:
-        self._wp("initiate", _PACKAGE, "--operator-text", "go")
+        self._open_order()
         Path(_OUTSIDE).write_text("x = 1\n", encoding="utf-8")
         self._order("--module", _OUTSIDE)
         self._order("--drop-module", _OUTSIDE)
-        self._wp("freeze", _PACKAGE, "--risk-note", "r", "--review-receipt", "v", *_EVIDENCE)
-        self._wp("commence", _PACKAGE, "--evidence", "e")
+        self._freeze_order()
+        self._wp("order", "commence", _ORDER, "--evidence", "e")
         _commit(_OUTSIDE, _TRAILER)
-        result = self.runner.invoke(main, ["wp", "accept", _PACKAGE, "--evidence", "e"])
+        result = self.runner.invoke(main, _ORDER_ACCEPT)
         self.assertEqual(result.exit_code, 3, msg=result.output)
 
     def test_a_drop_before_initiation_names_the_state(self) -> None:
@@ -500,14 +543,14 @@ class TestMirrors(_AirlockCase):
         self._commence()
         _commit(".gzkit/skills/gz-wp/SKILL.md", _TRAILER)
         _commit(".claude/skills/gz-wp/SKILL.md", _TRAILER)
-        self._wp("accept", _PACKAGE, "--evidence", "e")
+        self._accept()
         self.assertEqual(self._rows("airlock_out")[0]["verdict"], "clean")
 
     def test_a_mirror_of_a_file_outside_the_footprint_is_refused(self) -> None:
         self._commence()
         mirror = ".claude/skills/gz-check/SKILL.md"
         _commit(mirror, _TRAILER)
-        result = self.runner.invoke(main, ["wp", "accept", _PACKAGE, "--evidence", "e"])
+        result = self.runner.invoke(main, _ORDER_ACCEPT)
         self.assertEqual(result.exit_code, 3, msg=result.output)
         self.assertIn(mirror, " ".join(result.output.split()))
 
@@ -518,10 +561,10 @@ class TestVendorMirror(_AirlockCase):
     def test_a_generated_vendor_mirror_cannot_freeze(self) -> None:
         Path(self.modules[0]).parent.mkdir(parents=True, exist_ok=True)
         Path(self.modules[0]).write_text("x\n", encoding="utf-8")
-        self._wp("initiate", _PACKAGE, "--operator-text", "go")
+        self._open_order()
         result = self.runner.invoke(
             main,
-            ["wp", "freeze", _PACKAGE, "--risk-note", "r", "--review-receipt", "v", *_EVIDENCE],
+            _ORDER_FREEZE,
         )
         self.assertEqual(result.exit_code, 3, msg=result.output)
 
@@ -578,7 +621,7 @@ class TestDirectoryFootprint(_AirlockCase):
     def test_a_directory_module_covers_its_tree(self) -> None:
         self._commence()
         _commit(_OUTSIDE, _TRAILER)
-        self._wp("accept", _PACKAGE, "--evidence", "e")
+        self._accept()
         self.assertEqual(self._rows("airlock_out")[0]["verdict"], "clean")
 
 

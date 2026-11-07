@@ -6,7 +6,8 @@ the order is written (ruling 52), then `frozen`, `commenced` and `accepted` one
 step at a time; `closed` is Gate 5 at the order, O2 task 4. A freeze carries the
 risk note, the reviewer's receipt and a baseline of repair REQs held on the
 order's package (rulings 2, 45), each in one live order's baseline at a time
-(ruling 53). A refusal writes nothing.
+(ruling 53), and approves the package's alterations no earlier freeze approved
+(ruling 63). A refusal writes nothing.
 """
 
 import json
@@ -16,7 +17,7 @@ from tempfile import TemporaryDirectory
 
 from gzkit.events import BaselinedReq, OrderTransitionedEvent, parse_typed_event
 from gzkit.ledger import Ledger
-from gzkit.models.catalog import Catalog, Criterion, Order, RepairReq, WorkPackage
+from gzkit.models.catalog import Alteration, Catalog, Criterion, Order, RepairReq, WorkPackage
 from gzkit.ontology.corpus import project_corpus
 from gzkit.order_ledger import (
     OrderLedgerError,
@@ -324,6 +325,74 @@ class FootprintSealTests(_OrderCase):
         other = {**_FREEZE, "baseline": (BaselinedReq(req="REQ-3", revision=1),)}
         self.move("frozen", order="ORD-03-other", **other)
         self.assertFalse(footprint_sealed(self.ledger, "WP-01-stamp"))
+
+
+def _alteration(alteration_id: str) -> Alteration:
+    return Alteration(id=alteration_id, description="A remodel.", configuration_change="replaced")
+
+
+class AlterationApprovalTests(_OrderCase):
+    """Ruling 63: each order's freeze approves the alterations no earlier freeze approved."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.plan("ALT-1", "ALT-2")
+        self.move("opened", **_PAYLOADS["opened"])
+        self.move("opened", order="ORD-02-matcher", **_PAYLOADS["opened"])
+
+    def plan(self, *alterations: str, package: str = "WP-01-stamp") -> None:
+        held = [
+            wp.model_copy(update={"alterations": tuple(map(_alteration, alterations))})
+            if wp.id == package
+            else wp
+            for wp in self.catalog.work_packages
+        ]
+        self.catalog = self.catalog.model_copy(update={"work_packages": tuple(held)})
+
+    def freeze(self, *approved: str, order: str = "ORD-01-import", req: str = "REQ-1"):
+        baseline = (BaselinedReq(req=req, revision=1),)
+        return self.move(
+            "frozen", order=order, **{**_FREEZE, "baseline": baseline},
+            approved_alterations=approved,
+        )  # fmt: skip
+
+    def test_the_first_freeze_approves_every_planned_alteration(self) -> None:
+        for approved in ((), ("ALT-1",), ("ALT-1", "ALT-2", "ALT-9")):
+            with self.subTest(approved=approved):
+                output = self.assert_refused(
+                    "frozen", **_FREEZE, approved_alterations=approved
+                )  # fmt: skip
+                self.assertIn("ruling 63", output)
+        event = self.freeze("ALT-2", "ALT-1")
+        self.assertEqual(set(event.approved_alterations), {"ALT-1", "ALT-2"})
+        persisted = parse_typed_event(_rows(self.path)[-1])
+        self.assertIsInstance(persisted, OrderTransitionedEvent)
+
+    def test_a_later_freeze_approves_only_what_was_planned_since(self) -> None:
+        self.freeze("ALT-1", "ALT-2")
+        self.plan("ALT-1", "ALT-2", "ALT-3")
+        output = self.assert_refused(
+            "frozen", order="ORD-02-matcher",
+            **{**_FREEZE, "baseline": (BaselinedReq(req="REQ-2", revision=1),)},
+            approved_alterations=("ALT-1", "ALT-2", "ALT-3"),
+        )  # fmt: skip
+        self.assertIn("['ALT-3'] are due", output)
+        event = self.freeze("ALT-3", order="ORD-02-matcher", req="REQ-2")
+        self.assertEqual(event.approved_alterations, ("ALT-3",))
+
+    def test_nothing_due_is_an_empty_approval(self) -> None:
+        self.freeze("ALT-1", "ALT-2")
+        event = self.freeze(order="ORD-02-matcher", req="REQ-2")
+        self.assertEqual(event.approved_alterations, ())
+
+    def test_another_packages_approvals_do_not_count(self) -> None:
+        self.plan("ALT-1", package="WP-03-other")
+        self.move("opened", order="ORD-03-other", **_PAYLOADS["opened"])
+        self.freeze("ALT-1", order="ORD-03-other", req="REQ-3")
+        self.assert_refused("frozen", **_FREEZE, approved_alterations=("ALT-2",))
+        self.assertEqual(
+            set(self.freeze("ALT-1", "ALT-2").approved_alterations), {"ALT-1", "ALT-2"}
+        )
 
 
 class CorpusTests(_OrderCase):

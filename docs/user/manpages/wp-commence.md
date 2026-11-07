@@ -21,8 +21,11 @@ gz wp commence <WP-id> --evidence <text> [OPTIONS]
 
 ## Description
 
-Moves a frozen package to `commenced` (C1 of the contractor-kit record: once
-every surface the package works has its tag hung). The tag-out log is RO-12's;
+Moves a frozen delivery package to `commenced` (C1 of the contractor-kit record:
+once every surface the package works has its tag hung). A repair package moves
+only `initiated` to `closed`; its commencement is refused with exit 3 and names
+[`gz wp order commence`](wp-order-commence.md), which crosses the airlock on the
+package's slice (RP-12 rulings 44 and 65). The tag-out log is RO-12's;
 until it lands, `--evidence` names what was checked. A move that skips a step
 exits 3.
 
@@ -44,6 +47,16 @@ WP-02-resume: frozen -> commenced
 $ uv run gz wp commence WP-01-astral --evidence early
 Work package WP-01-astral cannot move from nothing to 'commenced'; the lifecycle
 allows initiated from here.
+```
+
+On a repair package, in a scratch project at `/private/tmp/gz-act5` holding
+`WP-01-stamp` initiated:
+
+```console
+$ uv run gz wp commence WP-01-stamp --evidence E
+Repair package WP-01-stamp moves only initiated -> closed; its orders carry the
+run's states (RP-12 ruling 44). Run `uv run gz wp order commence <ORD-id>` on
+the order instead.
 ```
 
 ## Exit codes

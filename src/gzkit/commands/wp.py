@@ -57,6 +57,7 @@ from gzkit.work_package_ledger import (
     declared_modules,
     footprint_sealed,
     is_blocked,
+    lifecycle_refusal,
     open_issues,
     record_work_package_change,
     record_work_package_issue_closed,
@@ -83,8 +84,7 @@ from gzkit.work_package_run import (
 from gzkit.work_package_store import WorkPackageStoreError, next_id, stage, write
 from gzkit.work_package_transit import (
     NEW_FILE_ROUTE,
-    enter_package,
-    exit_package,
+    cross_airlock,
     footprint_refusal,
     freeze_refusal,
     module_gaps,
@@ -197,15 +197,15 @@ def wp_attach_cmd(*, work_package: str, issues: list[int], as_json: bool) -> Non
     """Attach GitHub issues to a repair package; each issue belongs to one package (ruling 2).
 
     Raises:
-        PolicyBreachError: The package is frozen; nothing is written.
+        PolicyBreachError: The package is closed; nothing is written.
 
     """
     root, catalog, ledger = _context()
     held = _held(catalog, work_package)
-    if work_package_state(ledger, work_package) not in {None, "initiated"}:
+    if (state := work_package_state(ledger, work_package)) not in {None, "initiated"}:
         msg = (
-            f"Work package {work_package} is frozen; its issues are the subjects the fix-cycle "
-            "bound counts against (RO-14 ruling 14). Another issue is a new package."
+            f"Work package {work_package} is {state}; it carries no further issue. Another "
+            "issue is a new package."
         )
         raise PolicyBreachError(msg)
     package = held.model_copy(update={"issues": (*held.issues, *issues)})
@@ -230,7 +230,10 @@ def wp_transition_cmd(
     """
     root, catalog, ledger = _context()
     held = _held(catalog, str(fields["work_package"]))
-    if fields.get("to_state") == "frozen" and work_package_state(ledger, held.id) == "initiated":
+    current = work_package_state(ledger, held.id)
+    if refusal := lifecycle_refusal(held, current, str(fields["to_state"])):
+        raise PolicyBreachError(refusal)
+    if fields.get("to_state") == "frozen" and current == "initiated":
         refusal = freeze_refusal(root, held)
         if refusal:
             raise PolicyBreachError(refusal)
@@ -247,28 +250,13 @@ def wp_transition_cmd(
         )
     except (WorkPackageLedgerError, ValueError) as exc:
         raise PolicyBreachError(str(exc)) from exc
-    crossed = _cross_airlock(root, ledger, held, event.to_state)
+    crossed = cross_airlock(root, ledger, held, event.to_state)
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
     fmt.emit(
         event if as_json else f"{event.id}: {event.from_state or 'nothing'} -> {event.to_state}"
     )
     if crossed and not as_json:
         fmt.emit(f"  {crossed}")
-
-
-def _cross_airlock(root: Path, ledger: Ledger, package: WorkPackage, state: str) -> str | None:
-    """Book the airlock's edge a move crosses, so neither edge can go unreached (GHI #1185).
-
-    Returns:
-        What the airlock read, or None for a move that crosses neither edge.
-
-    """
-    if state == "commenced":
-        decision = enter_package(package, ledger).decision
-        return f"airlock in: {decision.value if decision else 'none'}"
-    if state == "accepted":
-        return f"airlock out: {exit_package(root, package, ledger).drift_diff.verdict.value}"
-    return None
 
 
 def _refuse_outside_footprint(root: Path, ledger: Ledger, package: WorkPackage) -> None:
@@ -645,7 +633,7 @@ def wp_evidence_cmd(*, work_package: str, items: list[str], as_json: bool) -> No
 
 
 def wp_dispatch_cmd(*, fields: dict[str, object], as_json: bool) -> None:
-    """Book one dispatch on a commenced package, holding the fix-cycle bound (GHI #1200).
+    """Book one dispatch on a commenced package or order, holding the bound (GHI #1200).
 
     The dispatch is bound to a minted id and its intended root, by default this
     project's, and the line naming the id goes in the dispatched agent's prompt

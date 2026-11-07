@@ -19,7 +19,6 @@ from gzkit.models.catalog import (
     Criterion,
     Departure,
     Outcome,
-    RepairReq,
     WorkPackage,
 )
 from gzkit.pipeline_dispatch import MAX_REVIEW_FIX_CYCLES
@@ -53,7 +52,6 @@ _REPLAY_TASK_2_BEFORE_THE_REFUSED_DISPATCH = "IISQSISQQSISQ"
 _FIRST = "WP-01-resume"
 _REPAIR = "WP-02-astral"
 _SECOND = "WP-03-again"
-_MIXED = "WP-04-mixed"
 _WAIVER = Departure(
     id="DFS-1",
     description="The claim is bounded.",
@@ -110,20 +108,6 @@ def _req(req_id: str, revision: int = 2) -> CatalogReq:
     )
 
 
-def _repair_req(req_id: str, held_on: str) -> RepairReq:
-    """A repair REQ, the only kind a repair package freezes (RP-12 rulings 2 and 45)."""
-    return RepairReq(
-        id=req_id,
-        specialization="repair",
-        held_on=held_on,
-        problem_report=1190,
-        statement="The mixed package's fix holds.",
-        criteria=(Criterion(state_or_input="h", required_outcome="n", evidence="t"),),
-        kind="BEHAVIOR",
-        revision=2,
-    )
-
-
 def _catalog(revision: int = 2) -> Catalog:
     outcome = Outcome(
         code="H1",
@@ -138,12 +122,11 @@ def _catalog(revision: int = 2) -> Catalog:
     return Catalog(
         families=(),
         outcomes=(outcome,),
-        reqs=(_req("REQ-1", revision), _req("REQ-2", revision), _repair_req("REQ-9", _MIXED)),
+        reqs=(_req("REQ-1", revision), _req("REQ-2", revision)),
         work_packages=(
             _package(_FIRST),
             _package(_REPAIR, "repair"),
             _package(_SECOND),
-            _package(_MIXED, "repair").model_copy(update={"issues": (1190,), "departures": ()}),
         ),
     )
 
@@ -224,7 +207,13 @@ class _Run(unittest.TestCase):
         self.ledger = Ledger(self.root / "ledger.jsonl")
         self.catalog = _catalog()
         self._commence(_FIRST, ("REQ-1", "REQ-2"))
-        self._commence(_REPAIR, ())
+        record_work_package_transition(
+            self.catalog,
+            self.ledger,
+            TransitionRequest(
+                work_package=_REPAIR, to_state="initiated", evidence="e", operator_text="go"
+            ),
+        )
 
     def _commence(self, package: str, reqs: tuple[str, ...], revision: int = 2) -> None:
         baseline = tuple(BaselinedReq(req=req, revision=revision) for req in reqs)
@@ -251,15 +240,13 @@ class _Run(unittest.TestCase):
         package: str = _FIRST,
         *,
         req: str | None = "REQ-1",
-        issue: int | None = None,
         reason: str | None = None,
     ) -> WorkPackageDispatchedEvent:
         request = DispatchRequest(
             work_package=package,
             role=role,
             model="m",
-            req=None if issue is not None and req == "REQ-1" else req,
-            issue=issue,
+            req=req,
             reason=reason,
             root=self.root.as_posix(),
         )
@@ -386,17 +373,6 @@ class Dispatch(_Run):
             lambda: self._dispatch("Implementer", req="REQ-2"),
         )
 
-    def test_a_reviewer_on_an_issue_arms_a_req_of_the_same_package(self) -> None:
-        self._commence(_MIXED, ("REQ-9",))
-        for _ in range(MAX_REVIEW_FIX_CYCLES + 1):
-            self._dispatch("Implementer", _MIXED, req="REQ-9")
-            self._dispatch("SpecReviewer", _MIXED, issue=1190)
-        self._refused(
-            "bound",
-            "work_package_dispatched",
-            lambda: self._dispatch("Implementer", _MIXED, req="REQ-9"),
-        )
-
     def test_a_blocked_package_takes_no_dispatch_on_any_subject(self) -> None:
         self._dispatch("Implementer")
         self._block()
@@ -421,19 +397,13 @@ class Dispatch(_Run):
         )
 
     def test_a_dispatch_names_one_held_subject(self) -> None:
-        for req, issue, pattern in (
-            ("REQ-9", None, "baseline"),
-            (None, 9, "carries"),
-            ("REQ-2", 1183, "one subject"),
-            (None, None, "one subject"),
-        ):
-            with self.subTest(req=req, issue=issue):
+        for req, pattern in (("REQ-9", "baseline"), (None, "names its subject")):
+            with self.subTest(req=req):
                 request = DispatchRequest(
                     work_package=_FIRST,
                     role="Implementer",
                     model="m",
                     req=req,
-                    issue=issue,
                     root=self.root.as_posix(),
                 )
                 self._refused(
@@ -442,15 +412,15 @@ class Dispatch(_Run):
                     lambda r=request: record_work_package_dispatch(self.catalog, self.ledger, r),
                 )
 
-    def test_a_repair_package_counts_against_its_issue(self) -> None:
-        for letter in "ISISIS":
-            self._dispatch(_NAMES[letter], _REPAIR, issue=1183)
-        self._refused(
-            "bound",
-            "work_package_dispatched",
-            lambda: self._dispatch("Implementer", _REPAIR, issue=1183),
-        )
-        self._dispatch("Implementer", _REPAIR, issue=1184)
+    def test_a_repair_packages_run_verbs_name_its_order(self) -> None:
+        """RP-12 ruling 44: a repair package's run is its orders', so each verb names one."""
+        for event, verb, call in (
+            ("work_package_dispatched", "dispatch", lambda: self._dispatch("Implementer", _REPAIR)),
+            ("work_package_blocked", "block", lambda: self._block(_REPAIR)),
+            ("work_package_unblocked", "unblock", lambda: self._unblock(package=_REPAIR)),
+        ):
+            with self.subTest(verb=verb):
+                self._refused(f"wp {verb} {_REPAIR} --order", event, call)
 
     def test_an_unknown_role_and_an_empty_model_are_refused(self) -> None:
         self._refused("role", "work_package_dispatched", lambda: self._dispatch("Narrator"))
@@ -530,13 +500,6 @@ class SingleDriver(_Run):
         for _ in range(MAX_REVIEW_FIX_CYCLES + 1):
             self._dispatch("SingleDriver", reason="cron, no subagents")
         self._refused("bound", "work_package_dispatched", lambda: self._dispatch("Implementer"))
-
-    def test_a_repair_package_cannot_be_single_driver(self) -> None:
-        self._refused(
-            "repair",
-            "work_package_dispatched",
-            lambda: self._dispatch("SingleDriver", _REPAIR, issue=1183, reason="none"),
-        )
 
     def test_the_reason_goes_with_the_declaration_alone(self) -> None:
         self._refused("reason", "work_package_dispatched", lambda: self._dispatch("SingleDriver"))
@@ -683,16 +646,6 @@ class Unblock(_Run):
         self._block()
         row = self._rows("work_package_blocked")[1]
         self.assertEqual(row["at_bound"], ["REQ-2@2"])
-
-    def test_a_reopen_names_a_requirement_and_never_an_issue(self) -> None:
-        for letter in "ISISIS":
-            self._dispatch(_NAMES[letter], _REPAIR, issue=1183)
-        self._block(_REPAIR)
-        self._refused(
-            "not at the bound",
-            "work_package_unblocked",
-            lambda: self._unblock("reopen", "#1183", _REPAIR),
-        )
 
     def test_every_exit_stays_reachable_after_a_hold(self) -> None:
         for exit_taken, req in (("terminate", None), ("reopen", "REQ-1")):

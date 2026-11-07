@@ -41,33 +41,35 @@ one names one exit, and no exit opens a further repair cycle:
 With `--order` the ruling lifts that order's block alone (RP-12 ruling 59), read
 against the order's last block, and an exit there settles the order's subjects: a
 `reopen` or `terminate` stops the order, not its package, whose other orders carry
-on. A package unblock does not lift an order's block, and an order unblock does not
-lift the package's. `--json` reports `blocked` for the order unblocked.
+on. A repair package's run is its orders' (ruling 44), so its unblock names the
+order, and one that does not is refused with exit 3. `--json` reports `blocked`
+for the order unblocked.
 
 The exit names the act and does not perform it. A requirement that reaches the
 bound again after a reopening has only `departure`, `hold` and `terminate`.
 
 ## Examples
 
-Observed in a scratch project holding `WP-01-loop`, blocked with `#1200` at
-the bound:
+Observed in a scratch project at `/private/tmp/gz-act5` holding `WP-02-loop`, a
+delivery package, blocked with `REQ-7@1` at the bound:
 
 ```console
-$ uv run gz wp unblock WP-01-loop --ruling "again" --operator g0
-#1200 at the bound; name an exit: reopen, departure, hold, terminate.
-$ uv run gz wp unblock WP-01-loop --ruling "hold it" --operator g0 --exit hold
-Unblocked WP-01-loop by exit hold.
-$ uv run gz wp dispatch WP-01-loop --role Implementer --model sonnet --issue 1200
-#1200 has used the bound of 2 fix cycles; no further repair cycle runs. Block
+$ uv run gz wp unblock WP-02-loop --ruling "again" --operator g0
+REQ-7@1 at the bound; name an exit: reopen, departure, hold, terminate.
+$ uv run gz wp unblock WP-02-loop --ruling "hold it" --operator g0 --exit hold
+Unblocked WP-02-loop by exit hold.
+$ uv run gz wp dispatch WP-02-loop --role Implementer --model sonnet --req REQ-7
+REQ-7@1 has used the bound of 2 fix cycles; no further repair cycle runs. Block
 and take an exit: reopen, departure, hold, terminate.
 ```
 
-On an order, in a scratch project holding `ORD-01-import` of `WP-01-stamp`
+On an order, in the same project holding `ORD-01-import` of `WP-01-stamp`
 blocked:
 
 ```console
 $ uv run gz wp unblock WP-01-stamp --ruling "go on" --operator g0
-Work package WP-01-stamp is not blocked.
+WP-01-stamp is a repair package; its run is its orders' (RP-12 ruling 44). Name
+the order: `uv run gz wp unblock WP-01-stamp --order <ORD-id> ...`.
 $ uv run gz wp unblock WP-01-stamp --order ORD-01-import --ruling "go on" --operator g0
 Unblocked order ORD-01-import of WP-01-stamp.
 ```
@@ -79,7 +81,7 @@ Unblocked order ORD-01-import of WP-01-stamp.
 | 0 | The ruling was booked and the block cleared |
 | 1 | The work package is not in the store |
 | 2 | Usage error |
-| 3 | The unblock is refused, the package or order not blocked or the order not one of the package's included; nothing was booked |
+| 3 | The unblock is refused, the package or order not blocked, the order not one of the package's, and a repair package's unblock with no order included; nothing was booked |
 
 ## See also
 

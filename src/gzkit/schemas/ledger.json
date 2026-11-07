@@ -2719,6 +2719,9 @@
             "null"
           ]
         },
+        "approved_alterations": {
+          "type": "array"
+        },
         "modules": {
           "type": "array"
         }
