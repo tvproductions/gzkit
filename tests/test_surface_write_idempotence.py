@@ -236,7 +236,9 @@ class NestedAgentsCleanupTest(unittest.TestCase):
         tracked files (four TRY003 worker worktrees, 2026-11-06).
         """
         (self.root / ".claude/worktrees/agent-x").mkdir(parents=True)
-        (self.root / ".claude/worktrees/agent-x/.git").write_text("gitdir: elsewhere\n")
+        (self.root / ".claude/worktrees/agent-x/.git").write_text(
+            "gitdir: elsewhere\n", encoding="utf-8"
+        )
         other = self._seed(".claude/worktrees/agent-x/src/AGENTS.md")
 
         _cleanup_stale_nested_agents(self.root, set(), self._pairs())
