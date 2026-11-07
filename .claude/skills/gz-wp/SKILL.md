@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-07
 metadata:
-  skill-version: "0.11.0"
+  skill-version: "0.12.0"
 model: sonnet
 ---
 
@@ -166,6 +166,19 @@ uv run gz wp order freeze <ORD-id> --baseline REQ-<n>@<rev> --risk-note "<risk>"
 uv run gz wp order commence <ORD-id> --evidence "<what justifies it>"
 ```
 
+The order's run is the package's run with `--order`: dispatch only against a REQ
+the order's freeze holds, while the order is commenced (ruling 57). A block on the
+order holds that order alone, its dispatches and moves refused until the operator
+rules; the package's other orders carry on (ruling 59). A blocked, accepted or
+stopped order fences production writes across the tree, as a package does
+(ruling 58):
+
+```bash
+uv run gz wp dispatch <WP-id> --order <ORD-id> --role Implementer --model <tier> --req REQ-<n>
+uv run gz wp block <WP-id> --order <ORD-id> --reason "<why>" --next-action "<decision>"
+uv run gz wp unblock <WP-id> --order <ORD-id> --ruling "<their exact words>" --operator g0
+```
+
 Work outside the package's general scope is a new work package, never a change.
 A departure from specification is recorded only where the work cannot meet its
 own approved specification; a difference from the prior shape is not one.
@@ -175,7 +188,8 @@ own approved specification; a difference from the prior shape is not one.
 `uv run gz wp order show <ORD-id>` prints an order's record, its package's kind, and
 its state and baseline from the ledger;
 `uv run gz wp show <WP-id>` prints the record, the state and the history;
-`uv run gz wp runs` reports what the ledger says every run in flight has reached;
+`uv run gz wp runs` reports what the ledger says every run in flight, a package's or
+an order's, has reached;
 `uv run gz validate --catalog` checks the store against RO-5's rulings.
 
 ## Common Rationalizations

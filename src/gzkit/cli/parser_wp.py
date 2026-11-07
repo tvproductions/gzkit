@@ -88,7 +88,7 @@ def _dispatch_or_void(parser: argparse.ArgumentParser, a: argparse.Namespace) ->
 
     """
     if a.void is not None:
-        booking = ("--role", "--model", "--req", "--issue", "--root")
+        booking = ("--role", "--model", "--req", "--issue", "--root", "--order")
         given = [flag for flag in booking if getattr(a, flag[2:]) is not None]
         if given:
             parser.error(f"--void abandons a dispatch; it takes no {', '.join(given)}")
@@ -111,6 +111,7 @@ def _dispatch_or_void(parser: argparse.ArgumentParser, a: argparse.Namespace) ->
             "issue": a.issue,
             "reason": a.reason,
             "root": a.root,
+            "order": a.order,
         },
         as_json=a.as_json,
     )
@@ -126,11 +127,13 @@ def _register_wp_run(wp_commands: argparse._SubParsersAction) -> None:
             "fix-cycle bound is refused whatever was ruled (GHI #1200). The dispatch\n"
             "is bound to a minted id and its intended root; put the printed line in\n"
             "the dispatched agent's prompt (RP-12 rulings 1 and 35). --void abandons\n"
-            "a booked dispatch, refused from a subagent's call (ruling 42)."
+            "a booked dispatch, refused from a subagent's call (ruling 42). --order\n"
+            "dispatches on a commenced order, against a REQ its freeze holds (ruling 57)."
         ),
         epilog=build_epilog(
             [
                 "gz wp dispatch WP-01-x --role Implementer --model sonnet --req REQ-1",
+                "gz wp dispatch WP-01-x --order ORD-01-y --role Implementer --model m --req REQ-1",
                 "gz wp dispatch WP-01-x --role Implementer --model m --issue 1 --root ../tmp",
                 "gz wp dispatch WP-01-x --void D-0123456789abcdef --reason 'never spawned'",
             ]
@@ -158,6 +161,9 @@ def _register_wp_run(wp_commands: argparse._SubParsersAction) -> None:
         default=None,
         help="The project root the dispatch is for; defaults to this project's",
     )
+    p_dispatch.add_argument(
+        "--order", default=None, help="The commenced order dispatched on, ORD-<NN>-<slug>"
+    )
     add_json_flag(p_dispatch)
     p_dispatch.set_defaults(func=lambda a: _dispatch_or_void(p_dispatch, a))
 
@@ -166,19 +172,27 @@ def _register_wp_run(wp_commands: argparse._SubParsersAction) -> None:
         help="Record that a package awaits the operator",
         description=(
             "Record that a work package awaits the operator. The runtime writes the\n"
-            "fix-cycle count and the exits used, so the facts are not the agent's."
+            "fix-cycle count and the exits used, so the facts are not the agent's.\n"
+            "--order holds that order alone (RP-12 ruling 59)."
         ),
-        epilog=build_epilog(['gz wp block WP-01-x --reason R --next-action "rule on REQ-1"']),
+        epilog=build_epilog(
+            [
+                'gz wp block WP-01-x --reason R --next-action "rule on REQ-1"',
+                'gz wp block WP-01-x --order ORD-01-y --reason R --next-action "rule on it"',
+            ]
+        ),
     )
     p_block.add_argument("work_package", help="The work package's id, WP-<NN>-<slug>")
     p_block.add_argument("--reason", required=True, help="Why the package cannot proceed")
     p_block.add_argument("--next-action", required=True, help="The decision the operator owes")
+    p_block.add_argument("--order", default=None, help="The order held alone, ORD-<NN>-<slug>")
     add_json_flag(p_block)
     p_block.set_defaults(
         func=lambda a: _lazy("wp_block_cmd")(
             work_package=a.work_package,
             reason=a.reason,
             next_action=a.next_action,
+            order=a.order,
             as_json=a.as_json,
         )
     )
@@ -188,9 +202,15 @@ def _register_wp_run(wp_commands: argparse._SubParsersAction) -> None:
         help="Record the operator's ruling on a blocked package",
         description=(
             "Record the operator's ruling and clear the block. At the fix-cycle bound\n"
-            "the ruling names one exit; no exit opens a further repair cycle."
+            "the ruling names one exit; no exit opens a further repair cycle.\n"
+            "--order lifts that order's block alone (RP-12 ruling 59)."
         ),
-        epilog=build_epilog(['gz wp unblock WP-01-x --ruling "hold" --operator g0 --exit hold']),
+        epilog=build_epilog(
+            [
+                'gz wp unblock WP-01-x --ruling "hold" --operator g0 --exit hold',
+                'gz wp unblock WP-01-x --order ORD-01-y --ruling "go on" --operator g0',
+            ]
+        ),
     )
     p_unblock.add_argument("work_package", help="The work package's id, WP-<NN>-<slug>")
     p_unblock.add_argument("--ruling", required=True, help="The operator's decision, verbatim")
@@ -203,6 +223,7 @@ def _register_wp_run(wp_commands: argparse._SubParsersAction) -> None:
         help="reopen, departure, hold or terminate; required at the bound",
     )
     p_unblock.add_argument("--req", default=None, help="The REQ a reopen or departure names")
+    p_unblock.add_argument("--order", default=None, help="The order unblocked, ORD-<NN>-<slug>")
     add_json_flag(p_unblock)
     p_unblock.set_defaults(
         func=lambda a: _lazy("wp_unblock_cmd")(
@@ -212,6 +233,7 @@ def _register_wp_run(wp_commands: argparse._SubParsersAction) -> None:
                 "operator": a.operator,
                 "exit_taken": a.exit_taken,
                 "req": a.req,
+                "order": a.order,
             },
             as_json=a.as_json,
         )

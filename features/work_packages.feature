@@ -71,3 +71,8 @@ Feature: Work packages run through the gz wp verbs
   Scenario: acceptance on a package the store does not hold is blocked
     When I run the gz command "wp acceptance WP-99-nothing status"
     Then the command exits with code 3
+
+  Scenario: voiding a dispatch takes no order
+    When I run the gz command "wp dispatch WP-01-x --void D-0123456789abcdef --reason r --order ORD-01-y"
+    Then the command exits with code 2
+    And the output contains "it takes no --order"

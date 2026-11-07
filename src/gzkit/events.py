@@ -1885,7 +1885,8 @@ class WorkPackageDispatchedEvent(_EventBase):
     counts fix cycles from these rows and refuses the cycle past the bound
     (GHI #1200). ``id`` is the work package id. Since RP-12 ruling 1 every new
     row carries the minted ``dispatch_id`` and the ``intended_root``; rows booked
-    before it carry neither, so both are optional on replay.
+    before it carry neither, so both are optional on replay. A dispatch on an
+    order names it in ``order`` (RP-12 ruling 57).
     """
 
     event: Literal["work_package_dispatched"]
@@ -1899,6 +1900,9 @@ class WorkPackageDispatchedEvent(_EventBase):
     )
     intended_root: str | None = Field(
         None, min_length=1, description="The absolute project root the dispatch is for"
+    )
+    order: str | None = Field(
+        None, min_length=1, description="The order dispatched on (RP-12 ruling 57), or None"
     )
 
 
@@ -1946,7 +1950,8 @@ class WorkPackageBlockedEvent(_EventBase):
 
     Every count and list here is written from the ledger, never taken from the
     caller, so an escalation's facts are not the agent's framing.
-    ``id`` is the work package id.
+    ``id`` is the work package id, or the order's when ``order`` names one: such a
+    block holds that order alone (RP-12 ruling 59).
     """
 
     event: Literal["work_package_blocked"]
@@ -1964,13 +1969,17 @@ class WorkPackageBlockedEvent(_EventBase):
     held: tuple[str, ...] = Field(..., description="Subjects a hold left open to a later exit")
     exits_used: tuple[str, ...] = Field(..., description="The package's exits taken so far")
     reopened: tuple[str, ...] = Field(..., description="Baseline REQs reopened in any package")
+    order: str | None = Field(
+        None, min_length=1, description="The order held alone, RP-12 ruling 59; None on a package"
+    )
 
 
 class WorkPackageUnblockedEvent(_EventBase):
     """work_package_unblocked event — the operator ruled on a blocked package (RO-14).
 
     At the bound the ruling names one exit, and ``reopen`` and ``departure`` name
-    their requirement. ``id`` is the work package id.
+    their requirement. ``id`` is the work package id, or the order's when ``order``
+    names one (RP-12 ruling 59).
     """
 
     event: Literal["work_package_unblocked"]
@@ -1980,6 +1989,9 @@ class WorkPackageUnblockedEvent(_EventBase):
     exit_taken: WorkPackageExit | None = Field(None, description="The exit named at the bound")
     req: str | None = Field(None, description="The requirement a reopen or departure names")
     covered: tuple[str, ...] = Field(..., description="The at-bound subjects this exit settled")
+    order: str | None = Field(
+        None, min_length=1, description="The order unblocked, RP-12 ruling 59; None on a package"
+    )
 
 
 #: An order's lifecycle (RP-12 rulings 44 and 52): `opened` at `gz wp order new`,

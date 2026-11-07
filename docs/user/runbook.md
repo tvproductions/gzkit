@@ -1016,6 +1016,18 @@ uv run gz wp order freeze ORD-01-import --baseline REQ-1@1 --risk-note "<risk>" 
 uv run gz wp order commence ORD-01-import --evidence "<what justifies it>"
 ```
 
+Once the order is commenced, its work runs through the package's run verbs with
+`--order`. A dispatch takes only a requirement the order's freeze holds; a block
+on the order holds that order alone until you rule, while the package's other
+orders carry on; and a blocked, accepted or stopped order fences production
+writes across the tree, as a package does. `gz wp runs` reports the order's run:
+
+```bash
+uv run gz wp dispatch WP-01-stamp --order ORD-01-import --role Implementer --model sonnet --req REQ-1
+uv run gz wp block WP-01-stamp --order ORD-01-import --reason "<why>" --next-action "<your decision>"
+uv run gz wp unblock WP-01-stamp --order ORD-01-import --ruling "<your exact words>" --operator g0
+```
+
 The lifecycle moves one step at a time (initiated, frozen, commenced, accepted,
 closed). Pen and ink is the coordinator's; every other rung of the change ladder
 is yours. Any refusal exits 3 and writes nothing. Attaching an issue also labels

@@ -142,7 +142,10 @@ def work_package_state(ledger: Ledger, work_package: str) -> str | None:
 
 
 def package_rows(ledger: Ledger, event_type: str, work_package: str) -> list[LedgerEvent]:
-    """Read one package's rows of one event type.
+    """Read one package's own rows of one event type.
+
+    A row naming an order is that order's, never its package's: a block on an order
+    holds that order alone (RP-12 ruling 59).
 
     Returns:
         The rows, oldest first.
@@ -151,7 +154,7 @@ def package_rows(ledger: Ledger, event_type: str, work_package: str) -> list[Led
     return [
         row
         for row in ledger.query(event_type=event_type)
-        if row.extra.get("work_package") == work_package
+        if row.extra.get("work_package") == work_package and not row.extra.get("order")
     ]
 
 
@@ -173,6 +176,8 @@ def frozen_baseline(ledger: Ledger, work_package: str) -> dict[str, int]:
 def is_blocked(ledger: Ledger, work_package: str) -> bool:
     """Read whether the package's latest block or unblock is a block.
 
+    An order's block holds that order alone (RP-12 ruling 59), so it is not read here.
+
     Returns:
         True while the package awaits the operator.
 
@@ -181,7 +186,9 @@ def is_blocked(ledger: Ledger, work_package: str) -> bool:
     rows = [
         row.event
         for row in ledger.query()
-        if row.event in kinds and row.extra.get("work_package") == work_package
+        if row.event in kinds
+        and row.extra.get("work_package") == work_package
+        and not row.extra.get("order")
     ]
     return bool(rows) and rows[-1] == "work_package_blocked"
 

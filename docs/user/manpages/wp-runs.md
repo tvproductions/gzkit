@@ -20,7 +20,10 @@ gz wp runs [OPTIONS]
 ## Description
 
 A work package's run is in flight from `commenced` until `closed`, so a package at
-`accepted`, awaiting Gate 5, is still reported. For each one the verb prints the
+`accepted`, awaiting Gate 5, is still reported. An order's run is in flight the
+same way, from its own `commenced`, since its repair package stays `initiated`
+(RP-12 rulings 44 and 57); its line names the order, and `blocked` reads the
+order's block. For each one the verb prints the
 last row the run booked (`last`), when it was booked (`at`), the subject last
 dispatched against (`subject`) and whether the package awaits the operator
 (`blocked`). No run in flight says so and exits 0. Text the verbs recorded, a block
@@ -30,11 +33,12 @@ The position is replayed from the rows `gz wp dispatch`, `block`, `unblock`,
 `change`, `resolve` and the lifecycle verbs already book. There is no position
 event, so no second row can go missing, and no marker file is read or written: a
 run is reported whatever its age and whatever `.claude/plans/` holds (GHI #1203,
-#1208; the RO-14 specification's ruling 18). Packages come in the catalog's order.
+#1208; the RO-14 specification's ruling 18). Packages come in the catalog's order,
+then orders in theirs.
 
 `--json` prints a list with one object per run: `work_package`, `kind`, `state`,
-`blocked`, `event`, `move`, `at` and `subject`, which is null before the first
-dispatch. The same object is the `position` of `gz wp show --json`.
+`blocked`, `event`, `move`, `at`, `subject`, which is null before the first
+dispatch, and `order`, null on a package's run. The same object is the `position` of `gz wp show --json`.
 
 The verb is a read and gates nothing, so it behaves the same at the operational
 condition and at the hangar and drydock levels.
@@ -55,6 +59,18 @@ WP-02-later (repair), state: commenced
   last: blocked the REQ is ambiguous
   at: 2026-11-01T05:43:08.749669+00:00
   subject: #1208
+  blocked: yes
+```
+
+An order's run, in a scratch project holding `ORD-01-import` of `WP-01-stamp`
+commenced, dispatched on and blocked:
+
+```console
+$ uv run gz wp runs
+order ORD-01-import of WP-01-stamp (repair), state: commenced
+  last: blocked The review refuted REQ-1.
+  at: 2026-11-07T10:16:47.704131+00:00
+  subject: REQ-1@1
   blocked: yes
 ```
 

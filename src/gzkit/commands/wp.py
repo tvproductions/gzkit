@@ -47,6 +47,7 @@ from gzkit.legacy_units import (
     withdraw_legacy_unit,
 )
 from gzkit.models.catalog import Alteration, Catalog, Departure, WorkPackage, load_catalog
+from gzkit.order_ledger import is_order_blocked
 from gzkit.work_package_github import WorkPackageGithubError, tag_issues
 from gzkit.work_package_ledger import (
     ChangeRequest,
@@ -566,7 +567,8 @@ def wp_runs_cmd(*, as_json: bool) -> None:
     if not runs:
         fmt.emit("No work package is in flight.")
     for run in runs:
-        fmt.emit(f"{run.work_package} ({run.kind}), state: {run.state}")
+        on = f"order {run.order} of " if run.order else ""
+        fmt.emit(f"{on}{run.work_package} ({run.kind}), state: {run.state}")
         for line in _position_lines(run):
             fmt.emit(f"  {line}")
 
@@ -677,8 +679,9 @@ def wp_dispatch_cmd(*, fields: dict[str, object], as_json: bool) -> None:
     if as_json:
         fmt.emit(event)
         return
+    on = f"order {event.order} of " if event.order else ""
     fmt.emit(
-        f"Recorded {event.role} on {event.subject} of {event.work_package} as dispatch "
+        f"Recorded {event.role} on {event.subject} of {on}{event.work_package} as dispatch "
         f"{event.dispatch_id}, for {event.intended_root}."
     )
     fmt.emit("Put this line in the dispatched agent's prompt:")
@@ -736,8 +739,12 @@ def _read_refutations(root: Path, work_package: str, reason: str) -> tuple[dict[
         return {}, f"{reason} (acceptance history unreadable, refutations not counted: {exc})"
 
 
-def wp_block_cmd(*, work_package: str, reason: str, next_action: str, as_json: bool) -> None:
-    """Book that a package awaits the operator, with the runtime's own count.
+def wp_block_cmd(
+    *, work_package: str, reason: str, next_action: str, order: str | None, as_json: bool
+) -> None:
+    """Book that a package, or with ``order`` that order alone, awaits the operator.
+
+    The runtime writes its own count, never the caller's (RP-12 ruling 59).
 
     Raises:
         PolicyBreachError: The block is refused; nothing is booked.
@@ -747,7 +754,9 @@ def wp_block_cmd(*, work_package: str, reason: str, next_action: str, as_json: b
     _held(catalog, work_package)
     refutations, reason = _read_refutations(root, work_package, reason)
     try:
-        request = BlockRequest(work_package=work_package, reason=reason, next_action=next_action)
+        request = BlockRequest(
+            work_package=work_package, reason=reason, next_action=next_action, order=order
+        )
         event = record_work_package_block(catalog, ledger, request, refutations=refutations)
     except ValueError as exc:
         raise PolicyBreachError(str(exc)) from exc
@@ -755,7 +764,8 @@ def wp_block_cmd(*, work_package: str, reason: str, next_action: str, as_json: b
     if as_json:
         fmt.emit(event)
         return
-    fmt.emit(f"Blocked {work_package} on the operator: {event.next_operator_action}")
+    held = f"order {order} of {work_package}" if order else work_package
+    fmt.emit(f"Blocked {held} on the operator: {event.next_operator_action}")
     cycles = ", ".join(f"{subject}: {n}" for subject, n in event.fix_cycles.items())
     fmt.emit(f"  fix cycles (bound {event.bound}): {cycles or 'none'}")
     refuted = ", ".join(f"{subject}: {n}" for subject, n in event.refutations.items())
@@ -782,10 +792,10 @@ def wp_unblock_cmd(*, fields: dict[str, object], as_json: bool) -> None:
     except ValueError as exc:
         raise PolicyBreachError(str(exc)) from exc
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
+    order = event.order
     if as_json:
-        fmt.emit(
-            {"event": event.model_dump(mode="json"), "blocked": is_blocked(ledger, work_package)}
-        )
+        blocked = is_order_blocked(ledger, order) if order else is_blocked(ledger, work_package)
+        fmt.emit({"event": event.model_dump(mode="json"), "blocked": blocked})
         return
     named = f" by exit {event.exit_taken}" if event.exit_taken else ""
-    fmt.emit(f"Unblocked {work_package}{named}.")
+    fmt.emit(f"Unblocked {f'order {order} of ' if order else ''}{work_package}{named}.")

@@ -13,7 +13,15 @@ from tempfile import TemporaryDirectory
 
 from gzkit.events import BaselinedReq, WorkPackageDispatchedEvent
 from gzkit.ledger import Ledger
-from gzkit.models.catalog import Catalog, CatalogReq, Criterion, Departure, Outcome, WorkPackage
+from gzkit.models.catalog import (
+    Catalog,
+    CatalogReq,
+    Criterion,
+    Departure,
+    Outcome,
+    RepairReq,
+    WorkPackage,
+)
 from gzkit.pipeline_dispatch import MAX_REVIEW_FIX_CYCLES
 from gzkit.work_package_ledger import (
     ChangeRequest,
@@ -102,6 +110,20 @@ def _req(req_id: str, revision: int = 2) -> CatalogReq:
     )
 
 
+def _repair_req(req_id: str, held_on: str) -> RepairReq:
+    """A repair REQ, the only kind a repair package freezes (RP-12 rulings 2 and 45)."""
+    return RepairReq(
+        id=req_id,
+        specialization="repair",
+        held_on=held_on,
+        problem_report=1190,
+        statement="The mixed package's fix holds.",
+        criteria=(Criterion(state_or_input="h", required_outcome="n", evidence="t"),),
+        kind="BEHAVIOR",
+        revision=2,
+    )
+
+
 def _catalog(revision: int = 2) -> Catalog:
     outcome = Outcome(
         code="H1",
@@ -116,7 +138,7 @@ def _catalog(revision: int = 2) -> Catalog:
     return Catalog(
         families=(),
         outcomes=(outcome,),
-        reqs=(_req("REQ-1", revision), _req("REQ-2", revision)),
+        reqs=(_req("REQ-1", revision), _req("REQ-2", revision), _repair_req("REQ-9", _MIXED)),
         work_packages=(
             _package(_FIRST),
             _package(_REPAIR, "repair"),
@@ -365,14 +387,14 @@ class Dispatch(_Run):
         )
 
     def test_a_reviewer_on_an_issue_arms_a_req_of_the_same_package(self) -> None:
-        self._commence(_MIXED, ("REQ-1",))
+        self._commence(_MIXED, ("REQ-9",))
         for _ in range(MAX_REVIEW_FIX_CYCLES + 1):
-            self._dispatch("Implementer", _MIXED, req="REQ-1")
+            self._dispatch("Implementer", _MIXED, req="REQ-9")
             self._dispatch("SpecReviewer", _MIXED, issue=1190)
         self._refused(
             "bound",
             "work_package_dispatched",
-            lambda: self._dispatch("Implementer", _MIXED, req="REQ-1"),
+            lambda: self._dispatch("Implementer", _MIXED, req="REQ-9"),
         )
 
     def test_a_blocked_package_takes_no_dispatch_on_any_subject(self) -> None:

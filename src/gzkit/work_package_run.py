@@ -50,6 +50,7 @@ from gzkit.events import (
     WorkPackageUnblockedEvent,
 )
 from gzkit.ledger import Ledger, ledger_row
+from gzkit.order_ledger import is_order_blocked, order_baseline, order_rows, order_state
 from gzkit.pipeline_dispatch import MAX_REVIEW_FIX_CYCLES
 from gzkit.work_package_ledger import (
     WorkPackageLedgerError,
@@ -63,7 +64,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
 
     from gzkit.ledger import LedgerEvent
-    from gzkit.models.catalog import Catalog, WorkPackage
+    from gzkit.models.catalog import Catalog, Order, WorkPackage
 
 IMPLEMENTER = "Implementer"
 SINGLE_DRIVER = "SingleDriver"
@@ -104,6 +105,7 @@ class DispatchRequest(BaseModel):
     issue: int | None = Field(None, description="The carried issue dispatched against")
     reason: str | None = Field(None, description="Why the run is single-driver")
     root: str = Field(..., description="The absolute project root the dispatch is for")
+    order: str | None = Field(None, description="The order dispatched on (RP-12 ruling 57)")
 
 
 class DispatchRecord(BaseModel):
@@ -126,6 +128,7 @@ class BlockRequest(BaseModel):
     work_package: str = Field(..., description="The work package's id")
     reason: str = Field(..., description="Why the package cannot proceed")
     next_action: str = Field(..., description="The decision the operator owes")
+    order: str | None = Field(None, description="The order held alone (RP-12 ruling 59)")
 
 
 class UnblockRequest(BaseModel):
@@ -138,6 +141,7 @@ class UnblockRequest(BaseModel):
     operator: str = Field(..., description="Who ruled")
     exit_taken: str | None = Field(None, description="The exit named at the bound")
     req: str | None = Field(None, description="The requirement a reopen or departure names")
+    order: str | None = Field(None, description="The order unblocked (RP-12 ruling 59)")
 
 
 class RunPosition(BaseModel):
@@ -153,6 +157,7 @@ class RunPosition(BaseModel):
     move: str = Field(..., description="What that event recorded")
     at: str = Field(..., description="When that event was recorded")
     subject: str | None = Field(None, description="The subject last dispatched against")
+    order: str | None = Field(None, description="The order whose run this is (RP-12 ruling 57)")
 
 
 def _refuse(message: str) -> NoReturn:
@@ -222,15 +227,56 @@ def run_position(catalog: Catalog, ledger: Ledger, work_package: str) -> RunPosi
     )
 
 
-def run_positions(catalog: Catalog, ledger: Ledger) -> list[RunPosition]:
-    """Read every run in flight, in the catalog's order.
+def _order_history(ledger: Ledger, order: str) -> list[LedgerEvent]:
+    """Read one order's lifecycle and run rows, in ledger order.
 
     Returns:
-        One position per package commenced or accepted and not yet closed.
+        Its `order_transitioned` rows and the dispatches, blocks and unblocks naming it.
 
     """
-    read = (run_position(catalog, ledger, wp.id) for wp in catalog.work_packages)
-    return [position for position in read if position is not None]
+    kinds = {"order_transitioned", _DISPATCHED, "work_package_blocked", "work_package_unblocked"}
+    return [row for row in ledger.query() if row.event in kinds and row.extra.get("order") == order]
+
+
+def order_run_position(catalog: Catalog, ledger: Ledger, order: Order) -> RunPosition | None:
+    """Replay what an order's run has reached, as a package's is (RP-12 ruling 57).
+
+    Returns:
+        The position, or None when the order is not commenced or accepted.
+
+    """
+    state = order_state(ledger, order.id)
+    if state not in _IN_FLIGHT:
+        return None
+    history = _order_history(ledger, order.id)
+    last = history[-1]
+    dispatches = [row for row in history if row.event == _DISPATCHED]
+    return RunPosition(
+        work_package=order.work_package,
+        order=order.id,
+        kind=_package(catalog, order.work_package).kind,
+        state=state,
+        blocked=is_order_blocked(ledger, order.id),
+        event=last.event,
+        move=history_move(last),
+        at=last.ts,
+        subject=str(dispatches[-1].extra["subject"]) if dispatches else None,
+    )
+
+
+def run_positions(catalog: Catalog, ledger: Ledger) -> list[RunPosition]:
+    """Read every run in flight, packages then orders, in the catalog's order.
+
+    An order runs while its repair package stays initiated (RP-12 ruling 44), so a
+    reader of packages alone would miss every repair run.
+
+    Returns:
+        One position per package or order commenced or accepted and not yet closed.
+
+    """
+    packages = (run_position(catalog, ledger, wp.id) for wp in catalog.work_packages)
+    orders = (order_run_position(catalog, ledger, order) for order in catalog.orders)
+    return [position for position in (*packages, *orders) if position is not None]
 
 
 def count_fix_cycles(rows: Iterable[tuple[str, str, str]]) -> dict[str, int]:
@@ -290,7 +336,51 @@ def _dispatch_rows(ledger: Ledger) -> list[tuple[str, str, str]]:
     ]
 
 
-def _dispatch_subject(ledger: Ledger, package: WorkPackage, request: DispatchRequest) -> str:
+def _package_order(catalog: Catalog, package: WorkPackage, order_id: str) -> Order:
+    held = next((order for order in catalog.orders if order.id == order_id), None)
+    if held is None or held.work_package != package.id:
+        where = f"an order of {held.work_package}" if held else "not in data/catalog/orders.json"
+        _refuse(f"Order {order_id!r} is {where}; it is not one of {package.id}'s orders.")
+    return held
+
+
+def _order_subject(ledger: Ledger, order: Order, request: DispatchRequest) -> str:
+    """Ruling 57: an order's dispatch takes a REQ its freeze holds, at the frozen revision.
+
+    Returns:
+        The subject, ``REQ-<n>@<rev>``.
+
+    """
+    state = order_state(ledger, order.id)
+    if state != "commenced":
+        _refuse(f"Order {order.id} is {state or 'not opened'}, not commenced.")
+    if request.req is None or request.issue is not None:
+        _refuse(
+            f"A dispatch on order {order.id} names a REQ its freeze holds, never an issue "
+            "(RP-12 ruling 57)."
+        )
+    revision = order_baseline(ledger, order.id).get(request.req)
+    if revision is None:
+        _refuse(
+            f"{request.req} is not in order {order.id}'s frozen baseline; a REQ found "
+            "mid-repair waits for a new order or a re-freeze (RP-12 ruling 57)."
+        )
+    return _req_subject(request.req, revision)
+
+
+def _dispatch_subject(
+    catalog: Catalog, ledger: Ledger, package: WorkPackage, request: DispatchRequest
+) -> str:
+    state = work_package_state(ledger, package.id)
+    if request.order is not None:
+        if state != "initiated":
+            _refuse(
+                f"Work package {package.id} is {state or 'not initiated'}; an order works only "
+                "while its repair package is initiated (RP-12 rulings 2 and 44)."
+            )
+        return _order_subject(ledger, _package_order(catalog, package, request.order), request)
+    if state != "commenced":
+        _refuse(f"Work package {package.id} is {state or 'not initiated'}, not commenced.")
     if (request.req is None) == (request.issue is None):
         _refuse("A dispatch names one subject: a frozen REQ or a carried issue.")
     if request.issue is not None:
@@ -316,10 +406,10 @@ def _check_role(package: WorkPackage, request: DispatchRequest) -> None:
 
 
 def took_stopping_exit(ledger: Ledger, work_package: str) -> bool:
-    """Read whether an exit has stopped the package.
+    """Read whether an exit has stopped the package; an order's exit stops that order alone.
 
     Returns:
-        True once a `reopen` or `terminate` exit is on the ledger.
+        True once a `reopen` or `terminate` exit on the package is on the ledger.
 
     """
     return any(
@@ -328,12 +418,46 @@ def took_stopping_exit(ledger: Ledger, work_package: str) -> bool:
     )
 
 
-def _check_not_stopped(ledger: Ledger, package: WorkPackage) -> None:
-    for row in package_rows(ledger, "work_package_unblocked", package.id):
+def order_took_stopping_exit(ledger: Ledger, order: str) -> bool:
+    """Read whether an exit has stopped the order (RP-12 ruling 59).
+
+    Returns:
+        True once a `reopen` or `terminate` exit on the order is on the ledger.
+
+    """
+    return any(
+        row.extra.get("exit_taken") in _STOPPING_EXITS
+        for row in order_rows(ledger, "work_package_unblocked", order)
+    )
+
+
+def _run_rows(
+    ledger: Ledger, event_type: str, work_package: str, order: str | None
+) -> list[LedgerEvent]:
+    """Read the rows of the run a request names: its order's, or its package's own.
+
+    Returns:
+        The rows, oldest first.
+
+    """
+    if order is not None:
+        return order_rows(ledger, event_type, order)
+    return package_rows(ledger, event_type, work_package)
+
+
+def _held_by_block(ledger: Ledger, work_package: str, order: str | None) -> bool:
+    return (
+        is_order_blocked(ledger, order) if order is not None else is_blocked(ledger, work_package)
+    )
+
+
+def _check_not_stopped(ledger: Ledger, work_package: str, order: str | None) -> None:
+    named = f"Order {order}" if order is not None else f"Work package {work_package}"
+    for row in _run_rows(ledger, "work_package_unblocked", work_package, order):
         if row.extra.get("exit_taken") in _STOPPING_EXITS:
             _refuse(
-                f"Work package {package.id} took the {row.extra['exit_taken']} exit; it "
-                "takes no further repair and closes through Gate 5."
+                f"{named} took the {row.extra['exit_taken']} exit; it takes no further "
+                "repair and closes through Gate 5."
             )
 
 
@@ -359,23 +483,28 @@ def _intended_root(root: str) -> str:
 def record_work_package_dispatch(
     catalog: Catalog, ledger: Ledger, request: DispatchRequest
 ) -> WorkPackageDispatchedEvent:
-    """Book one dispatch on a commenced package, or refuse it and write nothing.
+    """Book one dispatch on a commenced package or order, or refuse it and write nothing.
 
     Returns:
         The event booked.
 
     """
     package = _package(catalog, request.work_package)
-    state = work_package_state(ledger, package.id)
-    if state != "commenced":
-        _refuse(f"Work package {package.id} is {state or 'not initiated'}, not commenced.")
     _check_role(package, request)
-    subject = _dispatch_subject(ledger, package, request)
+    subject = _dispatch_subject(catalog, ledger, package, request)
     if is_blocked(ledger, package.id):
         _refuse(f"Work package {package.id} is blocked on the operator; it takes no dispatch.")
+    if request.order is not None and is_order_blocked(ledger, request.order):
+        _refuse(
+            f"Order {request.order} is blocked on the operator; it takes no dispatch until "
+            f"`uv run gz wp unblock {package.id} --order {request.order} --ruling <words> "
+            "--operator <who>` records the ruling (RP-12 ruling 59)."
+        )
     intended_root = _intended_root(request.root)
     if request.role in _IMPLEMENTING:
-        _check_not_stopped(ledger, package)
+        _check_not_stopped(ledger, package.id, None)
+        if request.order is not None:
+            _check_not_stopped(ledger, package.id, request.order)
         rows = [*_dispatch_rows(ledger), (package.id, subject, request.role)]
         if count_fix_cycles(rows)[subject] > MAX_REVIEW_FIX_CYCLES:
             _refuse(
@@ -393,6 +522,7 @@ def record_work_package_dispatch(
             "reason": request.reason,
             "dispatch_id": f"D-{secrets.token_hex(8)}",
             "intended_root": intended_root,
+            "order": request.order,
         }
     )
     ledger.append(ledger_row(event))
@@ -481,9 +611,11 @@ def record_dispatch_claim(
 def open_unclaimed_dispatches(ledger: Ledger, project_root: str) -> list[str]:
     """Read the dispatches no subagent has claimed that are still open (ruling 40).
 
-    Open: booked for a root other than ``project_root``, on a package whose run
-    is in flight. While one is, an undispatched subagent may be that dispatch's,
-    its line lost, so it is held to no root.
+    Open: booked for a root other than ``project_root``, on a package or an order
+    whose run is in flight; a dispatch on an order reads the order's state, since its
+    repair package stays initiated (RP-12 rulings 44 and 57). While one is open, an
+    undispatched subagent may be that dispatch's, its line lost, so it is held to no
+    root.
 
     Returns:
         Their dispatch ids, oldest first.
@@ -491,17 +623,22 @@ def open_unclaimed_dispatches(ledger: Ledger, project_root: str) -> list[str]:
     """
     claimed = {row.extra.get("dispatch_id") for row in ledger.query(event_type=_CLAIMED)}
     claimed |= _voided(ledger)
-    in_flight: dict[str, bool] = {}
+    in_flight: dict[tuple[str, str], bool] = {}
     found: list[str] = []
     for row in ledger.query(event_type=_DISPATCHED):
         held = row.extra
         dispatch_id, root = held.get("dispatch_id"), held.get("intended_root")
         if not dispatch_id or not root or dispatch_id in claimed or root == project_root:
             continue
-        package = str(held["work_package"])
-        if package not in in_flight:
-            in_flight[package] = work_package_state(ledger, package) in _IN_FLIGHT
-        if in_flight[package] and dispatch_id not in found:
+        run = (
+            ("order", str(held["order"]))
+            if held.get("order")
+            else ("package", str(held["work_package"]))
+        )
+        if run not in in_flight:
+            read = order_state if run[0] == "order" else work_package_state
+            in_flight[run] = read(ledger, run[1]) in _IN_FLIGHT
+        if in_flight[run] and dispatch_id not in found:
             found.append(str(dispatch_id))
     return found
 
@@ -537,8 +674,8 @@ def record_dispatch_void(
     return event
 
 
-def _settled(ledger: Ledger, work_package: str) -> tuple[set[str], set[str]]:
-    """Read the subjects this package's exits settled, split by the exit's reach.
+def _settled(unblocks: list[LedgerEvent]) -> tuple[set[str], set[str]]:
+    """Read the subjects a run's exits settled, split by the exit's reach.
 
     Returns:
         The subjects covered by any exit, and those a hold alone covers. A hold
@@ -547,7 +684,7 @@ def _settled(ledger: Ledger, work_package: str) -> tuple[set[str], set[str]]:
     """
     covered: set[str] = set()
     final: set[str] = set()
-    for row in package_rows(ledger, "work_package_unblocked", work_package):
+    for row in unblocks:
         subjects = {str(subject) for subject in row.extra.get("covered") or ()}
         covered |= subjects
         if row.extra.get("exit_taken") != "hold":
@@ -580,21 +717,26 @@ def record_work_package_block(
 
     """
     package = _package(catalog, request.work_package)
-    state = work_package_state(ledger, package.id)
-    if state in {None, "closed"}:
-        _refuse(f"Work package {package.id} is {state or 'not initiated'}; it takes no block.")
-    if is_blocked(ledger, package.id):
-        _refuse(f"Work package {package.id} is already blocked on the operator.")
+    order = request.order
+    _check_blockable(catalog, ledger, package, order)
     if not request.reason.strip() or not request.next_action.strip():
         _refuse("A block names its reason and the decision the operator owes.")
+    baseline = order_baseline(ledger, order) if order else frozen_baseline(ledger, package.id)
+    subjects = (
+        list(starmap(_req_subject, sorted(baseline.items())))
+        if order
+        else _subjects(ledger, package)
+    )
     counted = count_fix_cycles(_dispatch_rows(ledger))
-    cycles = {subject: counted.get(subject, 0) for subject in _subjects(ledger, package)}
-    covered, held = _settled(ledger, package.id)
+    cycles = {subject: counted.get(subject, 0) for subject in subjects}
+    unblocks = _run_rows(ledger, "work_package_unblocked", package.id, order)
+    covered, held = _settled(unblocks)
     event = WorkPackageBlockedEvent.model_validate(
         {
             "event": "work_package_blocked",
-            "id": package.id,
+            "id": order or package.id,
             "work_package": package.id,
+            "order": order,
             "reason": request.reason.strip(),
             "next_operator_action": request.next_action.strip(),
             "fix_cycles": cycles,
@@ -607,15 +749,32 @@ def record_work_package_block(
             ],
             "held": sorted(held),
             "exits_used": [
-                str(row.extra["exit_taken"])
-                for row in package_rows(ledger, "work_package_unblocked", package.id)
-                if row.extra.get("exit_taken")
+                str(row.extra["exit_taken"]) for row in unblocks if row.extra.get("exit_taken")
             ],
-            "reopened": [r for r in frozen_baseline(ledger, package.id) if _reopened(ledger, r)],
+            "reopened": [r for r in baseline if _reopened(ledger, r)],
         }
     )
     ledger.append(ledger_row(event))
     return event
+
+
+def _check_blockable(
+    catalog: Catalog, ledger: Ledger, package: WorkPackage, order: str | None
+) -> None:
+    """Refuse a block on a package or order not open, or already blocked (ruling 59)."""
+    if order is None:
+        state = work_package_state(ledger, package.id)
+        if state in {None, "closed"}:
+            _refuse(f"Work package {package.id} is {state or 'not initiated'}; it takes no block.")
+        if is_blocked(ledger, package.id):
+            _refuse(f"Work package {package.id} is already blocked on the operator.")
+        return
+    _package_order(catalog, package, order)
+    state = order_state(ledger, order)
+    if state in {None, "closed"}:
+        _refuse(f"Order {order} is {state or 'not opened'}; it takes no block.")
+    if is_order_blocked(ledger, order):
+        _refuse(f"Order {order} is already blocked on the operator.")
 
 
 def _check_departure(package: WorkPackage, ledger: Ledger, req: str, blocked_at: str) -> None:
@@ -684,11 +843,14 @@ def record_work_package_unblock(
 
     """
     package = _package(catalog, request.work_package)
-    if not is_blocked(ledger, package.id):
-        _refuse(f"Work package {package.id} is not blocked.")
+    order = request.order
+    if order is not None:
+        _package_order(catalog, package, order)
+    if not _held_by_block(ledger, package.id, order):
+        _refuse(f"{f'Order {order}' if order else f'Work package {package.id}'} is not blocked.")
     if not request.ruling.strip() or not request.operator.strip():
         _refuse("An unblock carries the operator's ruling and who ruled.")
-    block = package_rows(ledger, "work_package_blocked", package.id)[-1]
+    block = _run_rows(ledger, "work_package_blocked", package.id, order)[-1]
     covered = _exit_subjects(
         package, request, list(block.extra["at_bound"]), list(block.extra["held"])
     )
@@ -700,7 +862,7 @@ def record_work_package_unblock(
         {
             **request.model_dump(),
             "event": "work_package_unblocked",
-            "id": package.id,
+            "id": order or package.id,
             "covered": covered,
         }
     )

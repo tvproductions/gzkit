@@ -1,11 +1,12 @@
 # gz wp unblock
 
-Record the operator's ruling on a blocked work package and clear the block.
+Record the operator's ruling on a blocked work package, or a blocked order, and
+clear the block.
 
 ## Usage
 
 ```bash
-gz wp unblock <WP-id> --ruling <text> --operator <who> [--exit <exit>] [--req <REQ>] [OPTIONS]
+gz wp unblock <WP-id> [--order <ORD-id>] --ruling <text> --operator <who> [--exit <exit>] [--req <REQ>] [OPTIONS]
 ```
 
 ## Options
@@ -17,6 +18,7 @@ gz wp unblock <WP-id> --ruling <text> --operator <who> [--exit <exit>] [--req <R
 | `--operator` | Who ruled, never defaulted. Required |
 | `--exit` | `reopen`, `departure`, `hold` or `terminate`. Required at the bound |
 | `--req` | The REQ a `reopen` or `departure` names, from the frozen baseline |
+| `--order` | The blocked order, `ORD-<NN>-<slug>`, one of the package's; its block alone is lifted |
 | `--json` | Output as JSON |
 | `--quiet`, `-q` | Suppress non-error output |
 | `--verbose`, `-v` | Enable verbose output |
@@ -36,6 +38,12 @@ one names one exit, and no exit opens a further repair cycle:
 | `hold` | The block clears; the subjects at the bound take no further repair, other subjects continue, and a held subject stays open to a later exit |
 | `terminate` | The package takes no further repair and closes through Gate 5 (`gz wp close --decision terminate`) |
 
+With `--order` the ruling lifts that order's block alone (RP-12 ruling 59), read
+against the order's last block, and an exit there settles the order's subjects: a
+`reopen` or `terminate` stops the order, not its package, whose other orders carry
+on. A package unblock does not lift an order's block, and an order unblock does not
+lift the package's. `--json` reports `blocked` for the order unblocked.
+
 The exit names the act and does not perform it. A requirement that reaches the
 bound again after a reopening has only `departure`, `hold` and `terminate`.
 
@@ -54,6 +62,16 @@ $ uv run gz wp dispatch WP-01-loop --role Implementer --model sonnet --issue 120
 and take an exit: reopen, departure, hold, terminate.
 ```
 
+On an order, in a scratch project holding `ORD-01-import` of `WP-01-stamp`
+blocked:
+
+```console
+$ uv run gz wp unblock WP-01-stamp --ruling "go on" --operator g0
+Work package WP-01-stamp is not blocked.
+$ uv run gz wp unblock WP-01-stamp --order ORD-01-import --ruling "go on" --operator g0
+Unblocked order ORD-01-import of WP-01-stamp.
+```
+
 ## Exit codes
 
 | Code | Meaning |
@@ -61,7 +79,7 @@ and take an exit: reopen, departure, hold, terminate.
 | 0 | The ruling was booked and the block cleared |
 | 1 | The work package is not in the store |
 | 2 | Usage error |
-| 3 | The unblock is refused; nothing was booked |
+| 3 | The unblock is refused, the package or order not blocked or the order not one of the package's included; nothing was booked |
 
 ## See also
 

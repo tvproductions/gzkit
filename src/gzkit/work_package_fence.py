@@ -14,6 +14,11 @@ ledger alone: there is no marker to lose, and a damaged or edited catalog lifts
 nothing. A ledger that cannot be read fences the tree, since no state can be
 shown. A package names no paths, so one fenced package fences the whole tree.
 
+An order fences as a package does (RP-12 ruling 58): one commenced or accepted
+that is blocked on the operator, accepted, or stopped by an exit holds every
+write in the tree, and its refusal names the order. An order closed, or not yet
+commenced, does not fence.
+
 Three refusals of `gz wp dispatch` are not fenced. A package not yet commenced has
 not been worked, so nothing re-enters; it is fenced only while blocked or stopped.
 The other two cannot be told from admitted work. A subject at the fix-cycle bound:
@@ -33,8 +38,9 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.config import GzkitConfig
 from gzkit.ledger import Ledger
+from gzkit.order_ledger import is_order_blocked
 from gzkit.work_package_ledger import is_blocked
-from gzkit.work_package_run import took_stopping_exit
+from gzkit.work_package_run import order_took_stopping_exit, took_stopping_exit
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -51,6 +57,7 @@ class FencedPackage(BaseModel):
     reason: Literal["blocked", "accepted", "stopped", "unreadable"] = Field(
         ..., description="Why it holds the fence"
     )
+    order: str | None = Field(None, description="The order that holds it (RP-12 ruling 58)")
 
 
 def fenced_packages(project_root: Path) -> tuple[FencedPackage, ...]:
@@ -86,7 +93,39 @@ def _read_fence(ledger: Ledger) -> tuple[FencedPackage, ...]:
         else:
             continue
         fenced.append(FencedPackage(work_package=work_package, reason=reason))
-    return tuple(fenced)
+    return (*fenced, *_read_order_fence(ledger))
+
+
+#: An order not yet commenced has not been worked, and a closed one is done (ruling 58).
+_ORDER_FENCEABLE = frozenset({"commenced", "accepted"})
+
+
+def _read_order_fence(ledger: Ledger) -> list[FencedPackage]:
+    """Read the orders that hold the fence, as a package does (RP-12 ruling 58).
+
+    Returns:
+        Each commenced or accepted order that is blocked, accepted or stopped, oldest first.
+
+    """
+    latest = {
+        str(row.extra["order"]): row.extra for row in ledger.query(event_type="order_transitioned")
+    }
+    fenced = []
+    for order, move in latest.items():
+        state = str(move["to_state"])
+        if state not in _ORDER_FENCEABLE:
+            continue
+        if is_order_blocked(ledger, order):
+            reason = "blocked"
+        elif state == "accepted":
+            reason = "accepted"
+        elif order_took_stopping_exit(ledger, order):
+            reason = "stopped"
+        else:
+            continue
+        package = str(move["work_package"])
+        fenced.append(FencedPackage(work_package=package, order=order, reason=reason))
+    return fenced
 
 
 def _close(work_package: str) -> str:
@@ -96,7 +135,26 @@ def _close(work_package: str) -> str:
     )
 
 
+def _order_recovery(fence: FencedPackage) -> str:
+    wp, order = fence.work_package, fence.order
+    close = (
+        "the operator closes the order through Gate 5 at the order, which lands with RP-12 O2 "
+        "task 4; until it does, nothing lifts this fence"
+    )
+    return {
+        "blocked": (
+            f"the operator rules and `uv run gz wp unblock {wp} --order {order} --ruling <words> "
+            "--operator <who>` records it, adding `--exit <exit>` if the block found a subject at "
+            "the bound; if the fence still holds, its next refusal names the next step"
+        ),
+        "accepted": f"acceptance has ended the order's work, so {close}",
+        "stopped": f"the order takes no further repair; it is accepted and {close}",
+    }[fence.reason]
+
+
 def _recovery(fence: FencedPackage) -> str:
+    if fence.order is not None:
+        return _order_recovery(fence)
     wp = fence.work_package
     return {
         "blocked": (
@@ -123,6 +181,12 @@ def _recovery(fence: FencedPackage) -> str:
 def _why(fence: FencedPackage) -> str:
     if fence.reason == "unreadable":
         return "the ledger or `.gzkit.json` cannot be read, so no work package's state can be shown"
+    if fence.order is not None:
+        return (
+            f"order {fence.order} of work package {fence.work_package} is {fence.reason}, and "
+            "`gz wp dispatch --order` refuses implementing work on it, so a write here would "
+            "step around that refusal (RP-12 ruling 58)"
+        )
     return (
         f"work package {fence.work_package} is {fence.reason}, and `gz wp dispatch` refuses "
         "implementing work on it, so a write here would step around that refusal"

@@ -2542,6 +2542,13 @@
             "null"
           ],
           "min_length": 1
+        },
+        "order": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "min_length": 1
         }
       }
     },
@@ -2637,6 +2644,13 @@
         },
         "reopened": {
           "type": "array"
+        },
+        "order": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "min_length": 1
         }
       }
     },
@@ -2751,6 +2765,13 @@
         },
         "covered": {
           "type": "array"
+        },
+        "order": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "min_length": 1
         }
       }
     },

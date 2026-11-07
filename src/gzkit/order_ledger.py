@@ -7,7 +7,7 @@ in the ledger (ruling 44), as `order_transitioned`. `gz wp order new` books
 and lands with O2 task 4, so it is refused here. A freeze carries the risk note,
 the reviewer's receipt and a baseline of the repair REQs held on the order's
 package (rulings 2, 45), each REQ in one live order's frozen baseline at a time
-(ruling 53).
+(ruling 53). A blocked order does not move (ruling 59).
 
 The writer takes the parsed catalog and the ledger as parameters, reads the
 current state from the ledger rather than the caller, and refuses a move the
@@ -24,7 +24,7 @@ from gzkit.models.catalog import RepairReq
 from gzkit.work_package_ledger import work_package_state
 
 if TYPE_CHECKING:
-    from gzkit.ledger import Ledger
+    from gzkit.ledger import Ledger, LedgerEvent
     from gzkit.models.catalog import Catalog, CatalogReq, Order
 
 #: Each state's next state. A table rather than an order of states, so task 4's
@@ -87,6 +87,32 @@ def order_state(ledger: Ledger, order: str) -> str | None:
     """
     moves = _moves(ledger, order)
     return str(moves[-1]["to_state"]) if moves else None
+
+
+def order_rows(ledger: Ledger, event_type: str, order: str) -> list[LedgerEvent]:
+    """Read one order's rows of one run event type: its dispatches, blocks and unblocks.
+
+    Returns:
+        The rows naming the order, oldest first.
+
+    """
+    return [row for row in ledger.query(event_type=event_type) if row.extra.get("order") == order]
+
+
+def is_order_blocked(ledger: Ledger, order: str) -> bool:
+    """Read whether the order's latest block or unblock is a block (RP-12 ruling 59).
+
+    Returns:
+        True while the order awaits the operator; its package's other orders are not held.
+
+    """
+    kinds = {"work_package_blocked", "work_package_unblocked"}
+    rows = [
+        row.event
+        for row in ledger.query()
+        if row.event in kinds and row.extra.get("order") == order
+    ]
+    return bool(rows) and rows[-1] == "work_package_blocked"
 
 
 def booked_order_ids(ledger: Ledger) -> set[str]:
@@ -223,6 +249,12 @@ def record_order_transition(
             f"the lifecycle allows {expected or 'no move'} from here."
         )
     _check_move(catalog, ledger, order, move)
+    if is_order_blocked(ledger, order.id):
+        _refuse(
+            f"Order {order.id} is blocked on the operator; it does not move until "
+            f"`uv run gz wp unblock {order.work_package} --order {order.id} --ruling <words> "
+            "--operator <who>` records the ruling (RP-12 ruling 59)."
+        )
     event = OrderTransitionedEvent.model_validate(
         {
             **move.model_dump(exclude_unset=True),
