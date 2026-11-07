@@ -475,7 +475,7 @@
       "binding_sha256": "75386e711ae8a43ce2a480063c8be72ee1845448044a07ea1fbb7179c6701d55",
       "authority": "docs/governance/harbor-ro3-requirements-store.md (drydock RO-3 tranche 3)",
       "proposed_by": "claude-code session 2026-10-22",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     },
     {
       "claim_id": "requirements-catalog-coverage",
@@ -489,7 +489,7 @@
       "binding_sha256": "06afa888c5d945c770ad983f08fdcb91a20c412008f7d50e98f7b67b3e8c821d",
       "authority": "docs/governance/harbor-ro3-requirements-store.md (drydock RO-3 tranche 3)",
       "proposed_by": "claude-code session 2026-10-22",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     },
     {
       "claim_id": "requirements-catalog-bdd",
@@ -503,7 +503,7 @@
       "binding_sha256": "de2b753e026e421174d10c9dc0bc22a2f39392f3f73dc73f33a23d7a47b1e40a",
       "authority": "docs/governance/harbor-ro3-requirements-store.md (drydock RO-3 tranche 3)",
       "proposed_by": "claude-code session 2026-10-22",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     },
     {
       "claim_id": "requirements-catalog-forward-rule",
@@ -559,7 +559,7 @@
       "binding_sha256": "72a9b07057af24d9d0eed325fc3d4c61a3e78374730aa830276ea2984ad09826",
       "authority": "docs/governance/harbor-ro9-astral-toolchain.md (drydock RO-9 tranche 5, § Ruled for tranche 5); GHI #1154 item 5 (every registered claim binds a reviewed canary)",
       "proposed_by": "claude-code session 2026-10-28",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     },
     {
       "claim_id": "supply-chain-audit-ignored",
@@ -573,7 +573,7 @@
       "binding_sha256": "8f6966cdcd59ab8ac4dee2c84b0f46500c5b3d43289dcced0b73958f0a9f7964",
       "authority": "docs/governance/harbor-ro9-astral-toolchain.md (drydock RO-9 tranche 5, § Ruled for tranche 5); GHI #1154 item 5 (every registered claim binds a reviewed canary)",
       "proposed_by": "claude-code session 2026-10-28",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     },
     {
       "claim_id": "requirements-catalog-work-packages",
@@ -601,7 +601,7 @@
       "binding_sha256": "6c34a279d3bb2e8a84e4af62810276fb2f0238023796157f4e3ef61aa75b59e0",
       "authority": "docs/governance/harbor-ro12-contractor-kit.md (RP-12 O2 task 1, rulings 43, 44 and 49)",
       "proposed_by": "claude-code session 2026-11-05",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     },
     {
       "claim_id": "requirements-catalog-repair-reqs",
@@ -615,7 +615,7 @@
       "binding_sha256": "21dd57e13491fac2c93f35e6436b2e97482793c4daa38aef04dced3c92a7d813",
       "authority": "docs/governance/harbor-ro12-contractor-kit.md (RP-12 O2 task 2, rulings 45 and 48)",
       "proposed_by": "claude-code session 2026-11-05",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     }
   ]
 }
