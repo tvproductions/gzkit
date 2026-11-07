@@ -8664,7 +8664,7 @@
     {
       "file": "src/gzkit/tautological_tests.py",
       "rule": "PLR6201",
-      "count": 4
+      "count": 3
     },
     {
       "file": "src/gzkit/tautological_tests.py",

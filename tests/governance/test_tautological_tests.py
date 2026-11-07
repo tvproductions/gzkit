@@ -838,6 +838,31 @@ class TestGhi632ScannerCorrectnessAndDrift(unittest.TestCase):
         )
         self.assertEqual(ops, [], "a call on a module-level loaded script must be exempt")
 
+    def test_a_non_loader_module_level_name_in_a_loading_file_still_flags(self) -> None:
+        """Narrowness: in a file that spec-loads a module, a name bound from any
+        other call (a compiled pattern, a path) is not a loaded module."""
+        ops = self._scan(
+            "test_mixed.py",
+            """\
+            import importlib.util
+            import re
+            from pathlib import Path
+            import unittest
+
+            def _load():
+                spec = importlib.util.spec_from_file_location("h", "hooks/h.py")
+                return importlib.util.module_from_spec(spec)
+
+            _HOOK = _load()
+            _RE = re.compile("x")
+
+            class TestDoc(unittest.TestCase):
+                def test_doc_echo(self):
+                    self.assertTrue(_RE.findall(Path("docs/rule.md").read_text()))
+            """,
+        )
+        self.assertEqual(len(ops), 1, "a re.compile binding must not launder a doc echo")
+
     def test_module_level_name_without_importlib_signal_still_flags(self) -> None:
         """Narrowness: a module-level name with no importlib loading launders nothing."""
         ops = self._scan(

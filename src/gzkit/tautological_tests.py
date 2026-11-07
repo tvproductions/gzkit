@@ -415,34 +415,54 @@ def _asserts_shipped_executable(node: ast.FunctionDef | ast.AsyncFunctionDef) ->
     return False
 
 
-def _uses_importlib_load(tree: ast.Module) -> bool:
-    """Return True when the file loads a module by spec, the signal a bound name holds one."""
-    return any(
-        isinstance(n, ast.Call)
-        and isinstance(n.func, ast.Attribute)
-        and n.func.attr in ("spec_from_file_location", "module_from_spec")
-        for n in ast.walk(tree)
+_SPEC_LOAD_ATTRS: frozenset[str] = frozenset({"spec_from_file_location", "module_from_spec"})
+
+
+def _is_spec_load_call(node: ast.AST) -> bool:
+    """Return True for a ``spec_from_file_location`` / ``module_from_spec`` call."""
+    return (
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr in _SPEC_LOAD_ATTRS
     )
 
 
+def _uses_importlib_load(tree: ast.Module) -> bool:
+    """Return True when the file loads a module by spec, the signal a bound name holds one."""
+    return any(_is_spec_load_call(n) for n in ast.walk(tree))
+
+
 def _module_level_loaded_names(tree: ast.Module) -> frozenset[str]:
-    """Collect module-level names assigned from a call in a file that spec-loads a module.
+    """Collect module-level names bound to a module the file loads by spec.
 
     (GHI #1312.) The module-level twin of :func:`_module_backed_self_attrs`:
     ``_HOOK = _load()`` at module scope holds the loaded project script exactly
-    as ``self.mod = _load()`` in setUp does.
+    as ``self.mod = _load()`` in setUp does. Only a name bound from a direct
+    spec-load call, or from a module-level function whose body makes one, counts,
+    so ``_RE = re.compile(...)`` in the same file launders nothing.
 
     Returns:
-        Names bound at module level from a call; an empty frozenset when the file does no
-        importlib spec-loading.
+        Names bound at module level from a spec-load call or a local loader function; an
+        empty frozenset when the file does no importlib spec-loading.
 
     """
-    if not _uses_importlib_load(tree):
-        return frozenset()
+    loaders = {
+        stmt.name
+        for stmt in tree.body
+        if isinstance(stmt, ast.FunctionDef) and any(_is_spec_load_call(n) for n in ast.walk(stmt))
+    }
     return frozenset(
         target.id
         for stmt in tree.body
-        if isinstance(stmt, ast.Assign) and isinstance(stmt.value, ast.Call)
+        if isinstance(stmt, ast.Assign)
+        and (
+            _is_spec_load_call(stmt.value)
+            or (
+                isinstance(stmt.value, ast.Call)
+                and isinstance(stmt.value.func, ast.Name)
+                and stmt.value.func.id in loaders
+            )
+        )
         for target in stmt.targets
         if isinstance(target, ast.Name)
     )
@@ -582,8 +602,9 @@ def scan_test_tree(tests_path: Path) -> list[TautologicalTestOperation]:
             if _asserts_only_raises(node):
                 continue
             # Static-analysis fences (reading source code as data) and behavioral
-            # tests that call a dynamically-loaded project module via a self-attr
-            # are not tautological echoes — exempt them (GHI #632).
+            # tests that call a dynamically-loaded project module, held on a
+            # self-attr (GHI #632) or a module-level name (GHI #1312), are not
+            # tautological echoes — exempt them.
             if (
                 _reads_project_source(node)
                 or _asserts_shipped_executable(node)
