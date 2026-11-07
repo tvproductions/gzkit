@@ -1442,18 +1442,25 @@ def brief_reconcile_drift_detected_event(
 def chore_decommission_processed_event(
     file_path: str,
     disposition: str,
-    obpi_id: str,
+    *,
+    obpi_id: str | None = None,
+    task_id: str | None = None,
 ) -> LedgerEvent:
-    """Create a chore_decommission_processed event (OBPI-0.0.59-04)."""
-    return LedgerEvent(
-        event="chore_decommission_processed",
-        id=file_path,
-        extra={
-            "file_path": file_path,
-            "disposition": disposition,
-            "obpi_id": obpi_id,
-        },
-    )
+    """Create a chore_decommission_processed event (OBPI-0.0.59-04; GHI #1305).
+
+    The work order is an OBPI id or, for a chore batch outside an OBPI, a TASK id
+    (operator ruling 2026-11-07, verbatim: "A"); only the one given is written.
+
+    Returns:
+        The event, carrying the file, the disposition and the work order given.
+
+    """
+    extra: dict[str, str] = {"file_path": file_path, "disposition": disposition}
+    if obpi_id is not None:
+        extra["obpi_id"] = obpi_id
+    if task_id is not None:
+        extra["task_id"] = task_id
+    return LedgerEvent(event="chore_decommission_processed", id=file_path, extra=extra)
 
 
 def intrinsic_complexity_attestation_event(

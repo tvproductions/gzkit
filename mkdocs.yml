@@ -154,6 +154,7 @@ nav:
     - gz chores plan: user/manpages/chores-plan.md
     - gz chores run: user/manpages/chores-run.md
     - gz chores audit: user/manpages/chores-audit.md
+    - gz chores record-processed: user/manpages/chores-record-processed.md
     - gz skill audit: user/manpages/skill-audit.md
     - gz parity check: user/manpages/parity-check.md
     - gz readiness audit: user/manpages/readiness-audit.md

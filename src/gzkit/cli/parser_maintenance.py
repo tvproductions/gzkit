@@ -1679,6 +1679,48 @@ def _register_chores_parsers(commands: argparse._SubParsersAction) -> None:
     p_chores_propose_ghi.add_argument("slug", help="Chore slug identifier")
     p_chores_propose_ghi.set_defaults(func=lambda a: _lazy("chores_propose_ghi")(slug=a.slug))
 
+    p_chores_record = chores_commands.add_parser(
+        "record-processed",
+        help="Book a tautological-test op the decommission chore processed",
+        description=(
+            "Write one chore_decommission_processed ledger event for a test file the "
+            "decommission-tautological-tests chore processed. Names exactly one work "
+            "order (--obpi or --task); the file must hold an op in "
+            "data/tautological_test_baseline.json. Exit 1 on any refusal, before any write."
+        ),
+        epilog=build_epilog(
+            [
+                (
+                    "gz chores record-processed decommission-tautological-tests "
+                    "--file tests/test_x.py --disposition convert "
+                    "--task TASK-chore-decommission-tautological-tests"
+                )
+            ]
+        ),
+    )
+    p_chores_record.add_argument("slug", help="Chore slug (decommission-tautological-tests)")
+    p_chores_record.add_argument(
+        "--file", dest="file_path", required=True, help="Repo-relative test file processed"
+    )
+    p_chores_record.add_argument(
+        "--disposition", required=True, help="Disposition applied (convert, keep-as-fixture, ...)"
+    )
+    p_chores_record.add_argument("--obpi", dest="obpi_id", help="OBPI id the batch ran under")
+    p_chores_record.add_argument("--task", dest="task_id", help="TASK id the batch ran under")
+    p_chores_record.add_argument(
+        "--json", dest="as_json", action="store_true", help="Output as JSON"
+    )
+    p_chores_record.set_defaults(
+        func=lambda a: _lazy("chores_record_processed")(
+            slug=a.slug,
+            file_path=a.file_path,
+            disposition=a.disposition,
+            obpi_id=a.obpi_id,
+            task_id=a.task_id,
+            as_json=a.as_json,
+        )
+    )
+
 
 def _register_skill_parsers(commands: argparse._SubParsersAction) -> None:
     """Register ``gz skill`` sub-command group."""

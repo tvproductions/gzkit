@@ -5,9 +5,9 @@ description: Use to run a chore from the registry end to end (show, plan, advise
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-24
+last_reviewed: 2026-11-07
 metadata:
-  skill-version: "1.5.7"
+  skill-version: "1.6.0"
 model: sonnet
 ---
 
@@ -87,7 +87,14 @@ Execute a repository chore using the canonical `gz chores` workflow.
    uv run gz chores propose-ghi <chore_slug>
    ```
 
-9. Audit the logged result:
+9. For `decommission-tautological-tests`, book each processed test file on the
+   ledger, one event per file, naming the batch's OBPI or TASK:
+
+   ```bash
+   uv run gz chores record-processed decommission-tautological-tests --file <path> --disposition <disposition> --task <TASK-ID>
+   ```
+
+10. Audit the logged result:
 
    ```bash
    uv run gz chores audit --slug <chore_slug>

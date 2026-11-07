@@ -1852,8 +1852,7 @@
     "chore_decommission_processed": {
       "required": [
         "file_path",
-        "disposition",
-        "obpi_id"
+        "disposition"
       ],
       "properties": {
         "file_path": {
@@ -1873,7 +1872,17 @@
           ]
         },
         "obpi_id": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
+          "min_length": 1
+        },
+        "task_id": {
+          "type": [
+            "string",
+            "null"
+          ],
           "min_length": 1
         }
       }

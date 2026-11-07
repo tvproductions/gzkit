@@ -90,6 +90,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     "chores_list": "gzkit.commands.chores",
     "chores_plan": "gzkit.commands.chores",
     "chores_propose_ghi": "gzkit.commands.chores",
+    "chores_record_processed": "gzkit.commands.chores_record_cmd",
     "chores_run": "gzkit.commands.chores",
     "chores_show": "gzkit.commands.chores",
     "chores_status": "gzkit.commands.chores_status_cmd",

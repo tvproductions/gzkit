@@ -776,7 +776,8 @@ class ChoreDecommissionProcessedEvent(_EventBase):
     event: Literal["chore_decommission_processed"]
     file_path: str
     disposition: str
-    obpi_id: str
+    obpi_id: str | None = None
+    task_id: str | None = None
 
 
 class CorpusEntryAppendedEvent(_EventBase):

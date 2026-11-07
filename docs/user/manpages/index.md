@@ -73,6 +73,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz chores audit`](chores-audit.md) | Audit chore log presence for one/all chores |
 | [`gz chores doctor`](chores-doctor.md) | Re-scaffold missing or damaged canonical chores; preserve `proofs/` |
 | [`gz chores propose-ghi`](chores-propose-ghi.md) | File GitHub issues for unfiled cluster proposal records in a chore's `proofs/` |
+| [`gz chores record-processed`](chores-record-processed.md) | Book a tautological-test op the decommission chore processed |
 | [`gz migrate-semver`](migrate-semver.md) | Record SemVer ID rename events |
 | [`gz mx enter`](mx-enter.md) | Open the Maintenance Hangar (MX) mode |
 | [`gz mx exit`](mx-exit.md) | Close the Maintenance Hangar — hard gate (re-run every guard at full strength) |

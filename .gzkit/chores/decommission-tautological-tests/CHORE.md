@@ -49,6 +49,13 @@ For each file in the scan results, apply the proposed disposition:
 - **fold-to-validator** — delegate the structural check to `gz validate --<scope>` and assert exit code
 - **keep-as-fixture** — no change needed (legitimate fixture pattern in setUp/tearDown)
 
+For each file processed, book it on the ledger, one event per file, naming the
+batch's work order (`--obpi` under an OBPI, `--task` otherwise):
+
+```bash
+uv run gz chores record-processed decommission-tautological-tests --file <path> --disposition <disposition> --task <TASK-ID>
+```
+
 ### 3. Validate drift gate — observe
 
 ```bash

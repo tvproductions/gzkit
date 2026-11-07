@@ -342,6 +342,16 @@
       },
       "governance_relevant": false
     },
+    "chores record-processed": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
     "chores run": {
       "surfaces": {
         "manpage": true,

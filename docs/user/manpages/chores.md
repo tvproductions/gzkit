@@ -133,6 +133,18 @@ and no GHI is created.
 uv run gz chores propose-ghi eval-feedback-cluster
 ```
 
+### record-processed
+
+Book one `chore_decommission_processed` ledger event for a test file the
+`decommission-tautological-tests` chore processed. Exactly one work order is
+named, `--obpi` or `--task`, and the file must hold an op in
+`data/tautological_test_baseline.json`. See
+[`gz chores record-processed`](chores-record-processed.md).
+
+```bash
+gz chores record-processed decommission-tautological-tests --file <path> --disposition <d> --task <TASK-ID>
+```
+
 ## Options
 
 | Flag | Applies To | Description |
