@@ -120,6 +120,16 @@ def _order(catalog: Catalog, order_id: str) -> Order:
     return held
 
 
+def _package_modules(catalog: Catalog, order: Order) -> tuple[str, ...]:
+    """Read the footprint the order's freeze seals for its package (ruling 56).
+
+    Returns:
+        The package's paths as the store holds them now.
+
+    """
+    return next(wp.modules for wp in catalog.work_packages if wp.id == order.work_package)
+
+
 def _live_holders(ledger: Ledger, order: Order) -> dict[str, str]:
     """Map each REQ another live order's frozen baseline holds to that order (ruling 53).
 
@@ -221,6 +231,7 @@ def record_order_transition(
             "work_package": order.work_package,
             "from_state": current,
             "evidence": move.evidence.strip(),
+            "modules": _package_modules(catalog, order) if move.to_state == "frozen" else (),
         }
     )
     ledger.append(ledger_row(event))

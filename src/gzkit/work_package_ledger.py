@@ -186,22 +186,49 @@ def is_blocked(ledger: Ledger, work_package: str) -> bool:
     return bool(rows) and rows[-1] == "work_package_blocked"
 
 
+def _seals(ledger: Ledger, work_package: str) -> list[LedgerEvent]:
+    """Read the freezes that seal a package's footprint, oldest first.
+
+    The package's own `frozen` move, and each `frozen` move of an order in it, since an
+    order's freeze seals its repair package's footprint (RP-12 ruling 56).
+
+    Returns:
+        The sealing rows, in ledger order.
+
+    """
+    kinds = {"work_package_transitioned", "order_transitioned"}
+    return [
+        row
+        for row in ledger.query()
+        if row.event in kinds
+        and row.extra.get("work_package") == work_package
+        and row.extra.get("to_state") == "frozen"
+    ]
+
+
+def footprint_sealed(ledger: Ledger, work_package: str) -> bool:
+    """Read whether a freeze, the package's or one of its orders', has sealed its footprint.
+
+    Returns:
+        True once the ledger holds the footprint, so a path no longer drops.
+
+    """
+    return bool(_seals(ledger, work_package))
+
+
 def declared_modules(ledger: Ledger, package: WorkPackage) -> tuple[str, ...]:
-    """Read a package's footprint: what froze, plus what change orders added.
+    """Read a package's footprint: what the latest freeze sealed, plus later change orders.
 
     Once frozen the ledger holds it, so an edited store moves nothing, as it lifts no
-    fence (GHI #1206), and only a later change order adds to it. Before that the record
-    is the only declaration there is.
+    fence (GHI #1206), and only a later change order adds to it. An order's freeze seals
+    its repair package's footprint as the package's own does (RP-12 ruling 56). Before
+    any freeze the record is the only declaration there is.
 
     Returns:
         The paths, in the order they were declared.
 
     """
-    frozen = [
-        row
-        for row in package_rows(ledger, "work_package_transitioned", package.id)
-        if row.extra.get("to_state") == "frozen"
-    ]
+    frozen = _seals(ledger, package.id)
     if not frozen:
         return package.modules
     seal = frozen[-1]

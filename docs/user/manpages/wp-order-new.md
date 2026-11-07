@@ -56,8 +56,10 @@ is touched, so a refusal writes nothing.
 A refusal names the flag at fault, why, and the call to re-run, and writes
 nothing, in the store or the ledger. A store that breaks its rules before the
 call, a lost order record among them, refuses every write and points to
-`uv run gz validate --catalog`. The lifecycle verbs (`freeze`, `commence`, `accept`, `close`) land with
-RP-12's later O2 tasks (`docs/governance/harbor-ro12-contractor-kit.md`, ruling
+`uv run gz validate --catalog`. The order then moves through
+[`gz wp order freeze`](wp-order-freeze.md) and
+[`gz wp order commence`](wp-order-commence.md); `accept` and `close` land with
+RP-12's later O2 work (`docs/governance/harbor-ro12-contractor-kit.md`, ruling
 47).
 
 ## Examples

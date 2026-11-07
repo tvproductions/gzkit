@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 
 def _register_wp_order(wp_commands: argparse._SubParsersAction) -> None:
-    """Register ``gz wp order`` and its ``new`` and ``show`` subcommands."""
+    """Register ``gz wp order`` and its ``new``, ``freeze``, ``commence`` and ``show``."""
     p_order = wp_commands.add_parser(
         "order",
         help="Orders: the unit Gate 5 sits at, inside a work package",
@@ -80,6 +80,62 @@ def _register_wp_order(wp_commands: argparse._SubParsersAction) -> None:
                 "aliases": a.aliases,
             },
             opening={"operator_text": a.operator_text, "evidence": a.evidence},
+            as_json=a.as_json,
+        )
+    )
+
+    p_order_freeze = order_commands.add_parser(
+        "freeze",
+        help="Freeze an opened order's REQ baseline and seal its package's footprint",
+        description=(
+            "Freeze an opened order: its REQ baseline of the package's own repair REQs,\n"
+            "the risk note and the reviewer's receipt. The freeze seals the repair\n"
+            "package's footprint (RP-12 rulings 53 and 56)."
+        ),
+        epilog=build_epilog(
+            [
+                (
+                    "gz wp order freeze ORD-01-import --baseline REQ-1@1 --risk-note R"
+                    " --review-receipt V --evidence E"
+                ),
+            ]
+        ),
+    )
+    p_order_freeze.add_argument("order", help="The order's id, ORD-<NN>-<slug>")
+    p_order_freeze.add_argument(
+        "--baseline", action="append", default=[], help="REQ-<n>@<rev> (repeatable)"
+    )
+    p_order_freeze.add_argument("--risk-note", required=True, help="The short risk note")
+    p_order_freeze.add_argument("--review-receipt", required=True, help="The reviewer's receipt")
+    p_order_freeze.add_argument("--evidence", required=True, help="What justifies the freeze")
+    add_json_flag(p_order_freeze)
+    p_order_freeze.set_defaults(
+        func=lambda a: _lazy("wp_order_transition_cmd")(
+            fields={
+                "order": a.order,
+                "to_state": "frozen",
+                "evidence": a.evidence,
+                "risk_note": a.risk_note,
+                "review_receipt": a.review_receipt,
+            },
+            baseline=a.baseline,
+            as_json=a.as_json,
+        )
+    )
+
+    p_order_commence = order_commands.add_parser(
+        "commence",
+        help="Record that work has commenced on a frozen order",
+        description="Record that work has commenced on a frozen order (RP-12 O2 task 3).",
+        epilog=build_epilog(["gz wp order commence ORD-01-import --evidence tags-hung"]),
+    )
+    p_order_commence.add_argument("order", help="The order's id, ORD-<NN>-<slug>")
+    p_order_commence.add_argument("--evidence", required=True, help="What justifies the move")
+    add_json_flag(p_order_commence)
+    p_order_commence.set_defaults(
+        func=lambda a: _lazy("wp_order_transition_cmd")(
+            fields={"order": a.order, "to_state": "commenced", "evidence": a.evidence},
+            baseline=None,
             as_json=a.as_json,
         )
     )

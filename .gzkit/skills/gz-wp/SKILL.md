@@ -5,9 +5,9 @@ description: Use to create, attach issues to, move, change, add evidence to or r
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-05
+last_reviewed: 2026-11-07
 metadata:
-  skill-version: "0.10.0"
+  skill-version: "0.11.0"
 model: sonnet
 ---
 
@@ -154,13 +154,26 @@ uv run gz wp req new <WP-id> --statement "<what must hold again>" \
   --criterion "<state>|<outcome>|<evidence>" --kind BEHAVIOR --problem-report <n>
 ```
 
+Once its repair requirements are written, freeze the order on them, then record
+commencement. The order moves one step at a time while its package is initiated
+(rulings 2, 44). Its baseline holds only repair REQs held on its package, each in
+one live order's baseline at a time (ruling 53), and the freeze seals the
+package's footprint, so a change order may then only add a path (ruling 56):
+
+```bash
+uv run gz wp order freeze <ORD-id> --baseline REQ-<n>@<rev> --risk-note "<risk>" \
+  --review-receipt <receipt> --evidence "<what justifies it>"
+uv run gz wp order commence <ORD-id> --evidence "<what justifies it>"
+```
+
 Work outside the package's general scope is a new work package, never a change.
 A departure from specification is recorded only where the work cannot meet its
 own approved specification; a difference from the prior shape is not one.
 
 ## Read
 
-`uv run gz wp order show <ORD-id>` prints an order's record and its package's kind;
+`uv run gz wp order show <ORD-id>` prints an order's record, its package's kind, and
+its state and baseline from the ledger;
 `uv run gz wp show <WP-id>` prints the record, the state and the history;
 `uv run gz wp runs` reports what the ledger says every run in flight has reached;
 `uv run gz validate --catalog` checks the store against RO-5's rulings.

@@ -25,7 +25,12 @@ from gzkit.order_ledger import (
     order_state,
     record_order_transition,
 )
-from gzkit.work_package_ledger import TransitionRequest, record_work_package_transition
+from gzkit.work_package_ledger import (
+    TransitionRequest,
+    declared_modules,
+    footprint_sealed,
+    record_work_package_transition,
+)
 
 
 def _package(wp_id: str, kind: str = "repair") -> WorkPackage:
@@ -37,6 +42,7 @@ def _package(wp_id: str, kind: str = "repair") -> WorkPackage:
         issues=(1301,) if wp_id == "WP-01-stamp" else (1302,) if repair else (),
         lane="lite" if repair else None,
         aliases=(),
+        modules=("src/stamp.py",) if repair else (),
         initial_conditions="NA",
         procedure="NA",
         test_and_inspection="NA",
@@ -269,6 +275,51 @@ class FreezeTests(_OrderCase):
         self.move("accepted")
         self.move("opened", order="ORD-02-matcher", **_PAYLOADS["opened"])
         self.assertEqual(self.move("frozen", order="ORD-02-matcher", **_FREEZE).to_state, "frozen")
+
+
+class FootprintSealTests(_OrderCase):
+    """Ruling 56: each order's freeze seals its repair package's footprint."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.move("opened", **_PAYLOADS["opened"])
+
+    def package(self, *modules: str) -> WorkPackage:
+        return _package("WP-01-stamp").model_copy(update={"modules": modules})
+
+    def test_the_freeze_records_the_packages_footprint(self) -> None:
+        self.assertEqual(self.move("frozen", **_FREEZE).modules, ("src/stamp.py",))
+
+    def test_before_any_order_freezes_the_store_is_the_footprint(self) -> None:
+        self.assertFalse(footprint_sealed(self.ledger, "WP-01-stamp"))
+        edited = self.package("src/stamp.py", "src/extra.py")
+        self.assertEqual(declared_modules(self.ledger, edited), edited.modules)
+
+    def test_a_store_edited_after_the_freeze_moves_nothing(self) -> None:
+        self.move("frozen", **_FREEZE)
+        self.assertTrue(footprint_sealed(self.ledger, "WP-01-stamp"))
+        edited = self.package("src/other.py")
+        self.assertEqual(declared_modules(self.ledger, edited), ("src/stamp.py",))
+
+    def test_a_later_orders_freeze_seals_the_store_as_it_then_reads(self) -> None:
+        """The limit ruling 56 states: a later freeze can widen what the first sealed."""
+        self.move("frozen", **_FREEZE)
+        widened = self.package("src/stamp.py", "src/extra.py")
+        self.catalog = self.catalog.model_copy(
+            update={"work_packages": (widened, _package("WP-03-other"))}
+        )
+        self.move("opened", order="ORD-02-matcher", **_PAYLOADS["opened"])
+        second = {**_FREEZE, "baseline": (BaselinedReq(req="REQ-2", revision=1),)}
+        self.move("frozen", order="ORD-02-matcher", **second)
+        self.assertEqual(
+            declared_modules(self.ledger, self.package()), ("src/stamp.py", "src/extra.py")
+        )
+
+    def test_another_packages_order_does_not_seal_this_one(self) -> None:
+        self.move("opened", order="ORD-03-other", **_PAYLOADS["opened"])
+        other = {**_FREEZE, "baseline": (BaselinedReq(req="REQ-3", revision=1),)}
+        self.move("frozen", order="ORD-03-other", **other)
+        self.assertFalse(footprint_sealed(self.ledger, "WP-01-stamp"))
 
 
 class CorpusTests(_OrderCase):

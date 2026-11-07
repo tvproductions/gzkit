@@ -2005,6 +2005,9 @@ class OrderTransitionedEvent(_EventBase):
     baseline: tuple[BaselinedReq, ...] = Field((), description="The frozen REQ baseline")
     risk_note: str | None = Field(None, description="The short risk note, at frozen")
     review_receipt: str | None = Field(None, description="The nine-criteria review receipt")
+    modules: tuple[str, ...] = Field(
+        (), description="The package's footprint the freeze seals, at frozen (ruling 56)"
+    )
 
 
 TypedLedgerEvent = Annotated[

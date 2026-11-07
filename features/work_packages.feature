@@ -31,6 +31,17 @@ Feature: Work packages run through the gz wp verbs
     Then the command exits with code 1
     And the output contains "is not in data/catalog/orders.json"
 
+  Scenario: freezing an order the store does not hold is a user error
+    Given the workspace is initialized
+    And the requirements catalog is seeded
+    When I run the gz command "wp order freeze ORD-99-nothing --baseline REQ-1@1 --risk-note R --review-receipt V --evidence E"
+    Then the command exits with code 1
+    And the output contains "is not in data/catalog/orders.json"
+
+  Scenario: commencing an order without its evidence is a usage error
+    When I run the gz command "wp order commence ORD-01-x"
+    Then the command exits with code 2
+
   Scenario: a repair requirement on a package the store does not hold is a user error
     Given the workspace is initialized
     And the requirements catalog is seeded

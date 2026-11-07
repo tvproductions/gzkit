@@ -1005,6 +1005,17 @@ uv run gz wp req new WP-01-stamp --statement "<what must hold again>" \
   --criterion "<state>|<outcome>|<evidence>" --kind BEHAVIOR --problem-report 1301
 ```
 
+Freeze the order on its repair requirements once they are written, then record
+commencement. The freeze seals the repair package's footprint, so a change order
+may then only add a path, and a requirement another live order has frozen is
+refused:
+
+```bash
+uv run gz wp order freeze ORD-01-import --baseline REQ-1@1 --risk-note "<risk>" \
+  --review-receipt <receipt> --evidence "<what justifies it>"
+uv run gz wp order commence ORD-01-import --evidence "<what justifies it>"
+```
+
 The lifecycle moves one step at a time (initiated, frozen, commenced, accepted,
 closed). Pen and ink is the coordinator's; every other rung of the change ladder
 is yours. Any refusal exits 3 and writes nothing. Attaching an issue also labels

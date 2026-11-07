@@ -19,16 +19,20 @@ from pydantic import ValidationError as PydanticValidationError
 from gzkit.cli.formatters import OutputFormatter
 from gzkit.commands.common import ensure_initialized, get_project_root
 from gzkit.core.exceptions import PolicyBreachError, ResourceNotFoundError
+from gzkit.events import BaselinedReq
 from gzkit.ledger import Ledger
 from gzkit.models.catalog import Catalog, Order, WorkPackage, load_catalog
 from gzkit.order_ledger import (
     OrderLedgerError,
     OrderMove,
     booked_order_ids,
+    order_baseline,
+    order_state,
     record_order_transition,
 )
 from gzkit.order_store import OrderStoreError, next_order_id, stage_order, write_orders
 from gzkit.work_package_ledger import work_package_state
+from gzkit.work_package_transit import freeze_refusal
 
 
 def _package(catalog: Catalog, work_package: str) -> WorkPackage:
@@ -207,17 +211,82 @@ def wp_order_new_cmd(
     fmt.emit(order if as_json else f"Wrote {order.id} in {package.id} ({package.kind}).")
 
 
+_RERUN = {
+    "frozen": (
+        "`uv run gz wp order freeze <ORD-id> --baseline REQ-<n>@<revision> --risk-note <text> "
+        "--review-receipt <id> --evidence <text>`"
+    ),
+    "commenced": "`uv run gz wp order commence <ORD-id> --evidence <text>`",
+}
+
+
+def _refuse_move(to_state: str, failed: str) -> NoReturn:
+    msg = f"{failed} Nothing was written; correct the call and re-run {_RERUN[to_state]}."
+    raise PolicyBreachError(msg)
+
+
+def _baseline_entry(to_state: str, entry: str) -> BaselinedReq:
+    req, _, revision = entry.partition("@")
+    if not req or not revision.isdigit():
+        _refuse_move(to_state, f"--baseline {entry!r} is not REQ-<n>@<revision>.")
+    return BaselinedReq(req=req, revision=int(revision))
+
+
+def wp_order_transition_cmd(
+    *, fields: dict[str, str], baseline: list[str] | None, as_json: bool
+) -> None:
+    """Move an order one step, `frozen` or `commenced` (RP-12 O2 task 3).
+
+    ``fields`` are the ``OrderMove`` fields the verb's flags supplied; a freeze's
+    ``baseline`` arrives as ``REQ-<n>@<revision>`` strings. A freeze seals the repair
+    package's footprint (ruling 56), so it is refused while that footprint does not
+    hold. An unknown order exits 1; any refusal exits 3 and writes nothing.
+    """
+    config = ensure_initialized()
+    root = get_project_root()
+    catalog = load_catalog(root)
+    ledger = Ledger(root / config.paths.ledger)
+    to_state = fields["to_state"]
+    order = _order(catalog, fields["order"])
+    package = _package(catalog, order.work_package)
+    if to_state == "frozen" and (refusal := freeze_refusal(root, package)):
+        _refuse_move(to_state, f"{refusal} An order's freeze seals it (RP-12 ruling 56).")
+    entries = [_baseline_entry(to_state, entry) for entry in baseline or ()]
+    move = OrderMove.model_validate({**fields, **({"baseline": entries} if entries else {})})
+    try:
+        event = record_order_transition(catalog, ledger, move)
+    except OrderLedgerError as exc:
+        _refuse_move(to_state, str(exc))
+    fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
+    fmt.emit(
+        event if as_json else f"{event.id}: {event.from_state or 'nothing'} -> {event.to_state}"
+    )
+
+
 def wp_order_show_cmd(*, order_id: str, as_json: bool) -> None:
-    """Show an order's record with the kind of the package it sits in (ruling 43)."""
-    ensure_initialized()
-    catalog = load_catalog(get_project_root())
+    """Show an order's record, its package's kind, and its state and baseline (ruling 44)."""
+    config = ensure_initialized()
+    root = get_project_root()
+    catalog = load_catalog(root)
+    ledger = Ledger(root / config.paths.ledger)
     order = _order(catalog, order_id)
     package = _package(catalog, order.work_package)
+    state = order_state(ledger, order.id)
+    baseline = order_baseline(ledger, order.id)
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
     if as_json:
-        fmt.emit({"record": order.model_dump(mode="json"), "kind": package.kind})
+        fmt.emit(
+            {
+                "record": order.model_dump(mode="json"),
+                "kind": package.kind,
+                "state": state,
+                "baseline": baseline,
+            }
+        )
         return
     fmt.emit(f"{order.id} in {package.id} ({package.kind})")
+    fmt.emit(f"  state: {state or 'not opened'}")
+    fmt.emit(f"  baseline: {', '.join(f'{r}@{n}' for r, n in baseline.items()) or 'none'}")
     fmt.emit(f"  aliases: {', '.join(order.aliases) or 'none'}")
     fmt.emit(f"  purpose: {order.purpose}")
     fmt.emit(f"  procedure: {order.procedure}")

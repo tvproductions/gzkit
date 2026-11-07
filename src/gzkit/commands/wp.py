@@ -54,6 +54,7 @@ from gzkit.work_package_ledger import (
     TransitionRequest,
     WorkPackageLedgerError,
     declared_modules,
+    footprint_sealed,
     is_blocked,
     open_issues,
     record_work_package_change,
@@ -465,6 +466,13 @@ def _with_modules(
             f"{held.id} is {state}, and a path drops only while a package is initiated: a "
             "frozen footprint only grows, so a dropped path cannot hide what was allowed. "
             "Initiate the package first, or once frozen add what is missing with `--module`."
+        )
+        raise PolicyBreachError(msg)
+    if move.dropped and footprint_sealed(ledger, held.id):
+        msg = (
+            f"{held.id}'s footprint is sealed by an order's freeze (RP-12 ruling 56), and a "
+            "sealed footprint only grows, so a dropped path cannot hide what was allowed. "
+            "Add what is missing with `--module`."
         )
         raise PolicyBreachError(msg)
     declared = declared_modules(ledger, held)

@@ -114,7 +114,9 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz wp withdraw-legacy`](wp-withdraw-legacy.md) | Withdraw a legacy unit, permanently, on a human witness |
 | [`gz wp runs`](wp-runs.md) | Report what the ledger says every run in flight has reached |
 | [`gz wp order new`](wp-order-new.md) | Write a new order's record with the next `ORD-<NN>-<slug>` (RP-12 O2) |
-| [`gz wp order show`](wp-order-show.md) | Show an order's record and its package's kind |
+| [`gz wp order freeze`](wp-order-freeze.md) | Freeze an order's REQ baseline and seal its repair package's footprint (RP-12 O2) |
+| [`gz wp order commence`](wp-order-commence.md) | Record that work has commenced on a frozen order (RP-12 O2) |
+| [`gz wp order show`](wp-order-show.md) | Show an order's record, its package's kind, its state and its baseline |
 | [`gz wp req new`](wp-req-new.md) | Write a repair requirement with the next `REQ-<n>`, held on its repair package (RP-12 O2) |
 | [`gz handoff authorize`](handoff-authorize.md) | Deprecated alias for `gz handoff decide` |
 | [`gz handoff archive`](handoff-archive.md) | Move handoffs older than a threshold into `.gzkit/handoffs/archive/` (move-not-delete) |

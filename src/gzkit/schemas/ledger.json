@@ -2704,6 +2704,9 @@
             "string",
             "null"
           ]
+        },
+        "modules": {
+          "type": "array"
         }
       }
     },

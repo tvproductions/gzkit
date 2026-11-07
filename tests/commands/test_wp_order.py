@@ -209,6 +209,164 @@ class OrderNewTests(_OrderCase):
         self.assertEqual(_orders(), [])
 
 
+class OrderLifecycleTests(_OrderCase):
+    """`gz wp order freeze` and `commence` (RP-12 O2 task 3, rulings 53 and 56)."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        store = Path("data") / "catalog" / "work_packages.json"
+        held = json.loads(store.read_text(encoding="utf-8"))
+        held["work_packages"][0]["modules"] = ["src/stamp.py"]
+        store.write_text(json.dumps(held), encoding="utf-8")
+        Path("src").mkdir(exist_ok=True)
+        Path("src/stamp.py").write_text("STAMP = 1\n", encoding="utf-8")
+        result = self.runner.invoke(
+            main,
+            [
+                "wp",
+                "req",
+                "new",
+                "WP-01-stamp",
+                "--statement",
+                "The stamp imports again.",
+                "--criterion",
+                "an import|ok|a test",
+                "--kind",
+                "BEHAVIOR",
+                "--problem-report",
+                "1301",
+            ],
+        )
+        self.assertEqual(result.exit_code, 0, result.output)
+        self.new("import")
+
+    def freeze(self, *extra: str, order: str = "ORD-01-import", code: int = 0) -> str:
+        args = (
+            "--risk-note",
+            "Touches the hook.",
+            "--review-receipt",
+            "review-01",
+            "--evidence",
+            "E",
+        )
+        return self.gz("freeze", order, "--baseline", "REQ-1@1", *args, *extra, code=code)
+
+    def moves(self) -> list[dict[str, Any]]:
+        return [r for r in _ledger_rows() if r["event"] == "order_transitioned"]
+
+    def test_freeze_then_commence_book_one_step_each(self) -> None:
+        self.assertIn("ORD-01-import: opened -> frozen", self.freeze())
+        self.assertIn(
+            "ORD-01-import: frozen -> commenced",
+            self.gz("commence", "ORD-01-import", "--evidence", "tags"),
+        )
+        moves = self.moves()
+        self.assertEqual([m["to_state"] for m in moves], ["opened", "frozen", "commenced"])
+        self.assertEqual(moves[1]["baseline"], [{"req": "REQ-1", "revision": 1}])
+        self.assertEqual(moves[1]["modules"], ["src/stamp.py"])
+        self.assertEqual(moves[1]["risk_note"], "Touches the hook.")
+
+    def test_commence_before_the_freeze_is_refused_and_nothing_written(self) -> None:
+        before = _ledger_rows()
+        output = self.gz("commence", "ORD-01-import", "--evidence", "tags", code=3)
+        self.assertIn("allows frozen", output)
+        self.assertIn("Nothing was written", output)
+        self.assertEqual(_ledger_rows(), before)
+
+    def test_a_baseline_entry_not_req_at_revision_is_refused(self) -> None:
+        before = _ledger_rows()
+        output = self.gz(
+            "freeze",
+            "ORD-01-import",
+            "--baseline",
+            "REQ-1",
+            "--risk-note",
+            "r",
+            "--review-receipt",
+            "x",
+            "--evidence",
+            "E",
+            code=3,
+        )
+        self.assertIn("REQ-<n>@<revision>", output)
+        self.assertEqual(_ledger_rows(), before)
+
+    def test_a_freeze_the_writer_refuses_names_the_ruling_and_writes_nothing(self) -> None:
+        before = _ledger_rows()
+        output = self.gz(
+            "freeze",
+            "ORD-01-import",
+            "--baseline",
+            "REQ-1@2",
+            "--risk-note",
+            "r",
+            "--review-receipt",
+            "x",
+            "--evidence",
+            "E",
+            code=3,
+        )
+        self.assertIn("is not a REQ the catalog holds", output)
+        self.assertIn("uv run gz wp order freeze", output)
+        self.assertEqual(_ledger_rows(), before)
+
+    def test_a_package_with_no_footprint_cannot_seal_one(self) -> None:
+        """Ruling 56: the freeze seals the package's footprint, so it must hold one."""
+        store = Path("data") / "catalog" / "work_packages.json"
+        held = json.loads(store.read_text(encoding="utf-8"))
+        held["work_packages"][0]["modules"] = []
+        store.write_text(json.dumps(held), encoding="utf-8")
+        before = _ledger_rows()
+        output = self.freeze(code=3)
+        self.assertIn("declares no footprint", output)
+        self.assertEqual(_ledger_rows(), before)
+
+    def test_the_sealed_footprint_drops_no_path(self) -> None:
+        self.freeze()
+        result = self.runner.invoke(
+            main,
+            [
+                "wp",
+                "change",
+                "WP-01-stamp",
+                "--rung",
+                "change_order",
+                "--approver",
+                "operator",
+                "--change",
+                "Narrow it.",
+                "--superseded",
+                "src/stamp.py",
+                "--work-stopped",
+                "--drop-module",
+                "src/stamp.py",
+            ],
+        )
+        self.assertEqual(result.exit_code, 3, result.output)
+        self.assertIn("ruling 56", " ".join(result.output.split()))
+
+    def test_an_unknown_order_exits_1(self) -> None:
+        self.gz("commence", "ORD-09-ghost", "--evidence", "tags", code=1)
+        self.freeze(order="ORD-09-ghost", code=1)
+
+    def test_show_prints_the_state_and_baseline_lines(self) -> None:
+        # output-contract: the text form is the verb's human rendering.
+        lines = self.gz("show", "ORD-01-import").splitlines()
+        self.assertIn("  state: opened", lines)
+        self.assertIn("  baseline: none", lines)
+        self.freeze()
+        lines = self.gz("show", "ORD-01-import").splitlines()
+        self.assertIn("  state: frozen", lines)
+        self.assertIn("  baseline: REQ-1@1", lines)
+
+    def test_show_reads_the_state_and_baseline_from_the_ledger(self) -> None:
+        self.assertEqual(json.loads(self.gz("show", "ORD-01-import", "--json"))["state"], "opened")
+        self.freeze()
+        shown = json.loads(self.gz("show", "ORD-01-import", "--json"))
+        self.assertEqual(shown["state"], "frozen")
+        self.assertEqual(shown["baseline"], {"REQ-1": 1})
+
+
 class OrderShowTests(_OrderCase):
     def test_show_reads_the_kind_from_the_package(self) -> None:
         self.new("import", "--alias", "O2")
@@ -249,11 +407,16 @@ class OrderEpilogTests(unittest.TestCase):
         parser = _build_parser()
         examples = [
             line.strip()
-            for args in (["wp", "order"], ["wp", "order", "new"])
+            for args in (
+                ["wp", "order"],
+                ["wp", "order", "new"],
+                ["wp", "order", "freeze"],
+                ["wp", "order", "commence"],
+            )
             for line in (_help_parser(parser, args).epilog or "").splitlines()
             if line.strip().startswith("gz ")
         ]
-        self.assertGreaterEqual(len(examples), 3)
+        self.assertGreaterEqual(len(examples), 5)
         for example in examples:
             with self.subTest(example=example):
                 parsed = parser.parse_args(shlex.split(example)[1:])
