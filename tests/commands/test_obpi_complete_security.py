@@ -282,6 +282,7 @@ class _ObpiCompleteIntegrationFixture(unittest.TestCase):
         rule_file_body: str | None,
         canonical_slot: list[str],
         security_registry: list[dict] | None = None,
+        *,
         accept_security_floor: str | None = None,
     ) -> tuple[type[BaseException] | None, int | None, list[str]]:
         """Drive ``obpi_complete_cmd`` against a mocked filesystem; return outcome."""

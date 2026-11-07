@@ -134,19 +134,21 @@ class TestControlsFailWhenTheValidatorIsWeakened(unittest.TestCase):
             self.assertEqual(_outcomes()[REFUSE_CLAIM_ID], "FACADE")
 
 
-def _anchor_never_checked(project_root, dest_path, dest_rel, lineno, declaration, dest_slugs):
+def _anchor_never_checked(project_root, dest_path, dest_rel, lineno, declaration, *, dest_slugs):
     """A reverse arm that stops asking whether the anchor resolves in the declaring page."""
     anchor = declaration.partition("#")[2]
     return _REAL_CHECK_ONE(
-        project_root, dest_path, dest_rel, lineno, declaration, dest_slugs | {anchor}
+        project_root, dest_path, dest_rel, lineno, declaration, dest_slugs=dest_slugs | {anchor}
     )
 
 
-def _placeholder_by_shape(project_root, dest_path, dest_rel, lineno, declaration, dest_slugs):
+def _placeholder_by_shape(project_root, dest_path, dest_rel, lineno, declaration, *, dest_slugs):
     """An exclusion by shape: anything in angle brackets is a placeholder."""
     if declaration.startswith("<"):
         return []
-    return _REAL_VALIDATE_BACK(project_root, dest_path, dest_rel, lineno, declaration, dest_slugs)
+    return _REAL_VALIDATE_BACK(
+        project_root, dest_path, dest_rel, lineno, declaration, dest_slugs=dest_slugs
+    )
 
 
 def _orphan(message: str) -> list[ValidationError]:

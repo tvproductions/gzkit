@@ -406,6 +406,7 @@ def plan_cmd(
     semver: str,
     lane: str,
     title: str | None,
+    *,
     score_data_state: int | None,
     score_logic_engine: int | None,
     score_interface: int | None,

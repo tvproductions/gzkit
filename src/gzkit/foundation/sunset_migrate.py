@@ -767,7 +767,7 @@ def preflight_demotions(
                 row.id,
                 _DEMOTE_GHI,
                 _DEMOTE_NOTE,
-                _DEMOTE_OPERATOR,
+                operator=_DEMOTE_OPERATOR,
                 on_collision=on_collision,
                 ledger=ledger,
             )

@@ -217,6 +217,7 @@ def _mx_session_opened_event(
     attestor: str,
     inspection_scope: list[str],
     mode: str = "mx",
+    *,
     contract: str = "",
     contract_pin: dict[str, str] | None = None,
 ) -> LedgerEvent:
@@ -374,8 +375,8 @@ def mx_enter_cmd(
             attestor.strip(),
             inspection_scope,
             mode,
-            contract_path,
-            contract_pin_for(root / contract_path) if contract_path else None,
+            contract=contract_path,
+            contract_pin=contract_pin_for(root / contract_path) if contract_path else None,
         )
     )
 

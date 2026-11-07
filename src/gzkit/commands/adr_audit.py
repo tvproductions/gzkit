@@ -187,6 +187,7 @@ def _render_audit_check_result(
     findings: list[dict[str, Any]],
     complete: list[str],
     coverage: dict[str, Any],
+    *,
     coverage_blocking: list[dict[str, Any]],
     advisory_behavior: list[dict[str, Any]],
     advisory_exempt: list[dict[str, Any]],
@@ -393,9 +394,9 @@ def adr_audit_check(adr: str, as_json: bool, strict: bool = False) -> None:
             findings,
             complete,
             coverage,
-            coverage_blocking,
-            advisory_behavior,
-            advisory_exempt,
+            coverage_blocking=coverage_blocking,
+            advisory_behavior=advisory_behavior,
+            advisory_exempt=advisory_exempt,
             backfill=backfill,
         )
 
@@ -1145,6 +1146,7 @@ def adr_emit_receipt_cmd(
     attestor: str,
     evidence_json: str | None,
     dry_run: bool,
+    *,
     attestor_present: bool = False,
 ) -> None:
     """Emit an ADR audit receipt event anchored in the ledger."""

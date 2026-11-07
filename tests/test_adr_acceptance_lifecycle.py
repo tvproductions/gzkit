@@ -201,7 +201,9 @@ class TestWorkStartWiring(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             ledger, adr_file = self._setup(tmp, "Proposed")
             graph = ledger.get_artifact_graph()
-            _accept_adr_on_work_start(Path(tmp), ledger, graph, "OBPI-0.1.0-01", _ADR, adr_file)
+            _accept_adr_on_work_start(
+                Path(tmp), ledger, graph, "OBPI-0.1.0-01", _ADR, adr_file=adr_file
+            )
             self.assertEqual(ledger.get_artifact_graph()[_ADR]["lifecycle_state"], "Accepted")
             self.assertIn("status: Accepted", adr_file.read_text(encoding="utf-8"))
 
@@ -218,7 +220,9 @@ class TestWorkStartWiring(unittest.TestCase):
                 ),
                 self.assertRaises(SystemExit) as ctx,
             ):
-                _accept_adr_on_work_start(Path(tmp), ledger, graph, "OBPI-0.1.0-01", _ADR, adr_file)
+                _accept_adr_on_work_start(
+                    Path(tmp), ledger, graph, "OBPI-0.1.0-01", _ADR, adr_file=adr_file
+                )
             self.assertEqual(ctx.exception.code, 3)
             self.assertIsNone(ledger.get_artifact_graph()[_ADR]["lifecycle_state"])
             self.assertIn("status: Draft", adr_file.read_text(encoding="utf-8"))

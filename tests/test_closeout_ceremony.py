@@ -317,7 +317,7 @@ class TestCloseoutFormDefenseBrief(unittest.TestCase):
                 adr_file,
                 [],
                 [],
-                {},
+                gate_statuses={},
                 attestation_command="uv run gz closeout ADR-0.1.0",
                 defense_brief=defense,
             )
@@ -342,7 +342,7 @@ class TestCloseoutFormDefenseBrief(unittest.TestCase):
                 adr_file,
                 [],
                 [],
-                {},
+                gate_statuses={},
                 attestation_command="uv run gz closeout ADR-0.1.0",
             )
             self.assertNotIn("## Defense Brief", form)

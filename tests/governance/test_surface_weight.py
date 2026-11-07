@@ -51,6 +51,7 @@ def _make_surface_tree(
     floor_lines: int,
     waivers: list[dict] | None = None,
     floor_timestamp: str | None = None,
+    *,
     ledger_events: list[dict] | None = None,
 ) -> Path:
     """Create temp project root with synthetic surface files and data files.

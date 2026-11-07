@@ -230,6 +230,7 @@ def enforces(
     entrypoint: Callable[..., Any],
     expect: str | None = None,
     exempts: str | None = None,
+    *,
     population: Callable[[], Sequence[str]] | str | None = None,
     delegates_to: str | None = None,
 ) -> Callable[[_EF], _EF]:

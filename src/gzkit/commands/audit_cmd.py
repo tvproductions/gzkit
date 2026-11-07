@@ -135,6 +135,7 @@ def _write_audit_artifacts(
     audit_dir: Path,
     proofs_dir: Path,
     result_rows: list[dict[str, Any]],
+    *,
     project_root: Path,
     ledger: Ledger | None = None,
 ) -> tuple[Path, Path, dict[str, Any]]:
@@ -302,7 +303,7 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
         audit_dir,
         proofs_dir,
         result_rows,
-        project_root,
+        project_root=project_root,
         ledger=ledger,
     )
 

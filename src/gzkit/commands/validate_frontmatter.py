@@ -125,6 +125,7 @@ def _check_one_artifact(
     info: dict,
     rel_path: str,
     canonicalize: Callable[[str], str],
+    *,
     derive_status: Callable[[], str | None],
 ) -> list[ValidationError]:
     """Compare one file's frontmatter against its ledger entry (four governed fields only).
@@ -324,7 +325,9 @@ def validate_frontmatter_coherence(
                     info,
                     rel_path,
                     canon,
-                    lambda lid=ledger_id, i=info, fs=fm_status_value: _status_for(lid, i, fs),
+                    derive_status=lambda lid=ledger_id, i=info, fs=fm_status_value: _status_for(
+                        lid, i, fs
+                    ),
                 )
             )
 

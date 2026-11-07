@@ -64,6 +64,7 @@ def _make_lock(
     pid: int = 12345,
     session_id: str = "test-session",
     claimed_at: str | None = None,
+    *,
     branch: str = "main",
     ttl_minutes: int = 120,
 ) -> LockData:

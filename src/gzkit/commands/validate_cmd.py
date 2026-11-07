@@ -1551,6 +1551,7 @@ def validate(
     check_surfaces: bool,
     check_ledger: bool,
     check_instructions: bool,
+    *,
     check_briefs: bool,
     check_personas: bool = False,
     check_interviews: bool = False,
@@ -1665,7 +1666,6 @@ def validate(
     check_line_endings: bool = False,
     frontmatter_adr: str | None = None,
     frontmatter_explain: str | None = None,
-    *,
     check_model_class_only: bool = False,
 ) -> None:
     """Validate governance artifacts against schemas.

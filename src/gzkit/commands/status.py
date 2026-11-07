@@ -195,6 +195,7 @@ def _build_adr_status_entry(
     ledger: Ledger,
     adr_id: str,
     info: dict[str, Any],
+    *,
     obpi_index: list[tuple[str, str, Path]] | None = None,
 ) -> dict[str, Any]:
     """Build enriched ADR status payload for one ADR."""

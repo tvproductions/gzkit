@@ -930,6 +930,7 @@ def specify(
     item: int,
     lane: str | None,
     title: str | None,
+    *,
     author: bool,
     dry_run: bool,
 ) -> None:

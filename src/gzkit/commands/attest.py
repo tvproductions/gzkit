@@ -210,7 +210,7 @@ def attest(
         adr_file,
         obpi_rows,
         verification_steps,
-        gate_statuses,
+        gate_statuses=gate_statuses,
         attestation_command=f"uv run gz attest {adr_id} --status completed",
         attestation_text=attestation_text,
         attestation_term=canonical_term,

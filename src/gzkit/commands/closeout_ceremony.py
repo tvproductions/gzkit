@@ -114,6 +114,7 @@ def _present_step(
     adr_file: Path,
     lane: str,
     manifest: dict[str, Any],
+    *,
     obpi_files: list[Path],
     obpi_rows: list[dict[str, Any]] | None = None,
     readiness: dict[str, Any] | None = None,
@@ -161,6 +162,7 @@ def _initialize_ceremony(
     adr_file: Path,
     lane: str,
     manifest: dict[str, Any],
+    *,
     obpi_files: list[Path],
     as_json: bool,
     restart: bool,
@@ -180,7 +182,9 @@ def _initialize_ceremony(
 
     if existing and not existing.completed_at and not restart:
         # Resume from current step
-        output = _present_step(existing, project_root, adr_file, lane, manifest, obpi_files)
+        output = _present_step(
+            existing, project_root, adr_file, lane, manifest, obpi_files=obpi_files
+        )
         _output(as_json, existing, output)
         return
 
@@ -216,7 +220,7 @@ def _initialize_ceremony(
         adr_file,
         lane,
         manifest,
-        obpi_files,
+        obpi_files=obpi_files,
         obpi_rows=obpi_rows,
         readiness=readiness,
     )
@@ -229,6 +233,7 @@ def _advance_demo_index(
     adr_file: Path,
     lane: str,
     manifest: dict[str, Any],
+    *,
     obpi_files: list[Path],
     as_json: bool,
     now: str,
@@ -241,7 +246,7 @@ def _advance_demo_index(
         }
     )
     save_ceremony_state(project_root, new_state)
-    output = _present_step(new_state, project_root, adr_file, lane, manifest, obpi_files)
+    output = _present_step(new_state, project_root, adr_file, lane, manifest, obpi_files=obpi_files)
     _output(as_json, new_state, output)
 
 
@@ -361,10 +366,10 @@ def _commit_advance(
     adr_file: Path,
     lane: str,
     manifest: dict[str, Any],
+    *,
     obpi_files: list[Path],
     as_json: bool,
     now: str,
-    *,
     extra_update: dict[str, Any] | None = None,
 ) -> None:
     """Acknowledge the current step and advance to the next valid step.
@@ -408,7 +413,7 @@ def _commit_advance(
         update.update(extra_update)
     new_state = state.model_copy(update=update)
     save_ceremony_state(project_root, new_state)
-    output = _present_step(new_state, project_root, adr_file, lane, manifest, obpi_files)
+    output = _present_step(new_state, project_root, adr_file, lane, manifest, obpi_files=obpi_files)
     if completed_at:
         _cleanup_hook_files(project_root, state.adr_id)
     _output(as_json, new_state, output)
@@ -420,6 +425,7 @@ def _advance_ceremony(
     adr_file: Path,
     lane: str,
     manifest: dict[str, Any],
+    *,
     obpi_files: list[Path],
     as_json: bool,
 ) -> None:
@@ -445,10 +451,28 @@ def _advance_ceremony(
     now = _now_iso()
 
     if state.current_step == CeremonyStep.EXECUTE and _has_more_demos(state):
-        _advance_demo_index(project_root, state, adr_file, lane, manifest, obpi_files, as_json, now)
+        _advance_demo_index(
+            project_root,
+            state,
+            adr_file,
+            lane,
+            manifest,
+            obpi_files=obpi_files,
+            as_json=as_json,
+            now=now,
+        )
         return
 
-    _commit_advance(project_root, state, adr_file, lane, manifest, obpi_files, as_json, now)
+    _commit_advance(
+        project_root,
+        state,
+        adr_file,
+        lane,
+        manifest,
+        obpi_files=obpi_files,
+        as_json=as_json,
+        now=now,
+    )
 
 
 def _record_attestation(
@@ -457,6 +481,7 @@ def _record_attestation(
     adr_file: Path,
     lane: str,
     manifest: dict[str, Any],
+    *,
     obpi_files: list[Path],
     attestation: str,
     as_json: bool,
@@ -504,9 +529,9 @@ def _record_attestation(
         adr_file,
         lane,
         manifest,
-        obpi_files,
-        as_json,
-        _now_iso(),
+        obpi_files=obpi_files,
+        as_json=as_json,
+        now=_now_iso(),
         extra_update={"attestation": attestation},
     )
 
@@ -574,6 +599,7 @@ def ceremony_cmd(
     ceremony_next: bool,
     ceremony_status: bool,
     ceremony_attest: str | None,
+    *,
     ceremony_pause: bool = False,
     ceremony_restart: bool = False,
 ) -> None:
@@ -600,9 +626,9 @@ def ceremony_cmd(
             adr_file,
             lane,
             manifest,
-            obpi_files,
-            ceremony_attest,
-            as_json,
+            obpi_files=obpi_files,
+            attestation=ceremony_attest,
+            as_json=as_json,
         )
         return
 
@@ -613,8 +639,8 @@ def ceremony_cmd(
             adr_file,
             lane,
             manifest,
-            obpi_files,
-            as_json,
+            obpi_files=obpi_files,
+            as_json=as_json,
         )
         return
 
@@ -625,7 +651,7 @@ def ceremony_cmd(
         adr_file,
         lane,
         manifest,
-        obpi_files,
-        as_json,
+        obpi_files=obpi_files,
+        as_json=as_json,
         restart=ceremony_restart,
     )

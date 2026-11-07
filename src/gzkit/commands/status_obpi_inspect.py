@@ -374,6 +374,7 @@ def _inspect_obpi_brief(
     obpi_id: str | None = None,
     graph: dict[str, Any] | None = None,
     validator: ObpiValidator | None = None,
+    *,
     reference_checker: ReferenceChecker | None = None,
 ) -> dict[str, Any]:
     content = obpi_file.read_text(encoding="utf-8")

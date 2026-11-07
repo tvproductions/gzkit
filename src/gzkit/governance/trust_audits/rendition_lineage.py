@@ -396,7 +396,12 @@ def verify_candidate_against_declaration(
         )
         problems.extend(
             _uncited_materialized_entries(
-                lineage.surface, lineage.consumer, section_id, section, effective, derived
+                lineage.surface,
+                lineage.consumer,
+                section_id,
+                section,
+                effective,
+                derived_by_id=derived,
             )
         )
     return problems
@@ -408,6 +413,7 @@ def _uncited_materialized_entries(
     section_id: str,
     section: SectionLineage,
     effective: Corpus,
+    *,
     derived_by_id: Mapping[str, str],
 ) -> list[str]:
     """Return a problem per live entry materialized into *section_id* that it fails to cite.

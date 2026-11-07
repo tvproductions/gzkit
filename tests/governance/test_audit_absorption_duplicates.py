@@ -20,8 +20,8 @@ def _write_brief(
     brief_name: str,
     obpi_id: str,
     parent: str,
-    source_module: str,
     *,
+    source_module: str,
     paired_with: str | None = None,
 ) -> Path:
     target = root / "docs" / "design" / "adr" / adr_dir / "obpis" / brief_name

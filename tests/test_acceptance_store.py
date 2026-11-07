@@ -211,7 +211,7 @@ class AcceptanceStoreTests(ExecutionFixture):
             expected.append(record_review(self.root, OBPI, receipt).id)
         status = acceptance_status(self.root, OBPI)
         self.assertTrue(status.ready, status.blockers)
-        event = _current_adversarial_event(self.root, OBPI, False, None, None, None)
+        event = _current_adversarial_event(self.root, OBPI, False, None, None, resolution=None)
         assert event is not None
         self.assertEqual(set(event.extra["acceptance_review_ids"]), set(expected))
         self.assertEqual(event.extra["adversary_tier"], 2)

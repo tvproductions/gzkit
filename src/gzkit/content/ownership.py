@@ -883,7 +883,9 @@ def load_declaration(
         raise OwnershipLoadError(msg)
 
     _refuse_wrong_direction_witness(path, event, floor_event_id)
-    _refuse_unchained_witness(path, root, ledger, event, floor_event_id, declared_surface)
+    _refuse_unchained_witness(
+        path, root, ledger, event, floor_event_id, declared_surface=declared_surface
+    )
     _refuse_unwitnessed_section_map(path, event, floor_event_id, declared_sections)
 
     return OwnershipDeclaration.model_validate(raw)
@@ -1213,6 +1215,7 @@ def _refuse_unchained_witness(
     ledger: Any,
     event: Any,
     floor_event_id: str,
+    *,
     declared_surface: str,
 ) -> None:
     """Fail closed unless the witness is the chain TIP and its whole prefix replays.
@@ -1273,7 +1276,9 @@ def _refuse_unchained_witness(
         raise OwnershipLoadError(msg)
 
     _refuse_broken_prefix(path, chain, position, declared_surface, inert_genesis)
-    _refuse_superseded_witness(path, root, chain, position, event, declared_surface)
+    _refuse_superseded_witness(
+        path, root, chain, position, event, declared_surface=declared_surface
+    )
 
 
 def _refuse_superseded_witness(
@@ -1282,6 +1287,7 @@ def _refuse_superseded_witness(
     chain: list[Any],
     position: int,
     event: Any,
+    *,
     declared_surface: str,
 ) -> None:
     """Fail closed when attested transitions stand AFTER this declaration's witness.
@@ -1342,13 +1348,13 @@ def _refuse_superseded_witness(
         "this floor answers 'is something armed', never 'did the governed procedure run' "
         "(AGENTS.md § DO IT RIGHT).\n"
         "Next step: "
-        + _superseded_witness_recovery(path, root, declared_surface, event, later, tip)
+        + _superseded_witness_recovery(path, root, declared_surface, event, later, tip=tip)
     )
     raise OwnershipLoadError(msg)
 
 
 def _superseded_witness_recovery(
-    path: Path, root: Path, declared_surface: str, event: Any, later: list[Any], tip: Any
+    path: Path, root: Path, declared_surface: str, event: Any, later: list[Any], *, tip: Any
 ) -> str:
     """Return the recovery a superseded witness earns -- its STATE decides which.
 

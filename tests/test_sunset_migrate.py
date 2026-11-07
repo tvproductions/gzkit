@@ -534,7 +534,7 @@ class TestEveryTerminalNegationCountsAsUnstarted(unittest.TestCase):
                     "receipt-0001",
                     "model-induced-fabrication",
                     "g0",
-                    "fabricated attestation",
+                    reason="fabricated attestation",
                 )
             )
 
@@ -567,7 +567,7 @@ class TestReversibleDispositionsAreNotPermanent(unittest.TestCase):
                     "receipt-0001",
                     "model-induced-fabrication",
                     "g0",
-                    "fabricated attestation",
+                    reason="fabricated attestation",
                 )
             )
             # Genuine re-attestation CLEARS repudiated (governance-core.md

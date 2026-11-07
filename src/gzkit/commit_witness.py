@@ -451,6 +451,7 @@ def _regrade(
     hunk: HunkWitness,
     span: tuple[int, int],
     reach: dict[str, ModuleReach],
+    *,
     runner: tuple[str, ...],
 ) -> list[HunkWitness]:
     """Re-mutate an ungradable hunk one guard statement at a time (GHI #1153)."""
@@ -507,7 +508,7 @@ def _sweep_hunks(
                     test_modules=graded_by,
                 )
                 if green and w.outcome in ("invalid", "inconclusive"):
-                    hunks.extend(_regrade(worktree, path, row, (first, last), reach, runner))
+                    hunks.extend(_regrade(worktree, path, row, (first, last), reach, runner=runner))
                 else:
                     hunks.append(row)
     return hunks

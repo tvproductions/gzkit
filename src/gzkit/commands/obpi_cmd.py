@@ -478,6 +478,7 @@ def obpi_emit_receipt_cmd(
     attestor: str,
     evidence_json: str | None,
     dry_run: bool,
+    *,
     attestor_present: bool = False,
 ) -> None:
     """Emit an OBPI receipt event anchored in the ledger."""
@@ -600,6 +601,7 @@ def _accept_adr_on_work_start(
     graph: dict[str, dict[str, Any]],
     obpi_id: str,
     adr_id: str,
+    *,
     adr_file: Path,
 ) -> None:
     """Record the parent ADR as Accepted when OBPI work starts on it (GHI #1014).
@@ -841,7 +843,9 @@ def obpi_pipeline_cmd(
         receipt_state,
         requires_human_attestation=requires_human_attestation,
     )
-    _accept_adr_on_work_start(project_root, ledger, graph, obpi_id, resolved_parent, _adr_file)
+    _accept_adr_on_work_start(
+        project_root, ledger, graph, obpi_id, resolved_parent, adr_file=_adr_file
+    )
     per_obpi_marker, legacy_marker = write_pipeline_markers(plans_dir, marker_payload)
     ledger.append(
         pipeline_launched_event(

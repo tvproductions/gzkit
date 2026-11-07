@@ -184,6 +184,7 @@ def _build_error(
     obpi_id: str,
     claim_ts: datetime,
     release_ts: datetime,
+    *,
     edited_paths: list[str],
 ) -> ValidationError:
     rel = brief_path.relative_to(project_root).as_posix()
@@ -239,5 +240,9 @@ def audit_orphaned_implementation(project_root: Path) -> list[ValidationError]:
         if not edited:
             continue
 
-        errors.append(_build_error(project_root, brief_path, obpi_id, claim_ts, release_ts, edited))
+        errors.append(
+            _build_error(
+                project_root, brief_path, obpi_id, claim_ts, release_ts, edited_paths=edited
+            )
+        )
     return errors

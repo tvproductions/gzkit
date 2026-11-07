@@ -395,6 +395,7 @@ def _render_promoted_adr_content(
     target_adr_id: str,
     semver: str,
     lane: str,
+    *,
     parent: str,
     title: str,
     status: str,

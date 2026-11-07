@@ -107,6 +107,7 @@ def enforce_retention(
     consumer: str,
     candidate_text: str,
     retention_map_path: str | None,
+    *,
     attestation_text: str,
 ) -> RetentionOutcome:
     """Run the retention gate for one candidate→committed promotion.
@@ -305,7 +306,7 @@ def content_commit_cmd(
     # supplied WITH THIS COMMIT, so an old attestation that happens to contain
     # a condition id must never satisfy this check.
     outcome = enforce_retention(
-        root, surface, consumer, candidate_text, retention_map, attestation_text
+        root, surface, consumer, candidate_text, retention_map, attestation_text=attestation_text
     )
     if not outcome.ok:
         print(outcome.message, file=sys.stderr)

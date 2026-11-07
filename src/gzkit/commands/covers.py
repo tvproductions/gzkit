@@ -165,6 +165,7 @@ def covers_cmd(
     plain: bool = False,
     adr_dir: str | None = None,
     test_dir: str | None = None,
+    *,
     features_dir: str | None = None,
     include_doc: bool = False,
     bypass_req_kind_discipline_once: bool = False,

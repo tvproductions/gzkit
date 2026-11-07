@@ -123,7 +123,7 @@ def plan_audit_cmd(obpi_id: str, as_json: bool) -> None:
         )
 
     # Write receipt and emit output
-    _emit_result(obpi_id, gaps, plans_dir, plan_file, as_json, collisions)
+    _emit_result(obpi_id, gaps, plans_dir, plan_file, as_json, collisions=collisions)
 
 
 def _emit_result(
@@ -132,6 +132,7 @@ def _emit_result(
     plans_dir: Path,
     plan_file: Path | None,
     as_json: bool,
+    *,
     collisions: list[dict[str, str | list[str]]] | None = None,
 ) -> None:
     """Write receipt file and emit human or JSON output."""

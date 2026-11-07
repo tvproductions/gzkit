@@ -244,7 +244,7 @@ class TestValidateItemized(unittest.TestCase):
             patch.object(validate_cmd, "_dispatch_early_return_scopes", return_value=False),
             patch.object(validate_cmd, "_collect_errors", return_value=[]),
         ):
-            validate_cmd.validate(True, False, False, False, False, False)
+            validate_cmd.validate(True, False, False, False, False, check_briefs=False)
 
         self.assertIn("Validated:", console.text)
         self.assertIn("manifest", console.text)

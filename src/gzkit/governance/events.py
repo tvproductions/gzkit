@@ -141,6 +141,7 @@ def emit_unowned_ratchet_updated(
     surface: str,
     sections_digest: str,
     prior_unowned_byte_floor: int,
+    *,
     new_unowned_byte_floor: int,
 ) -> str:
     """Append an unowned_ratchet_updated event to the project ledger (OBPI-0.35.0-04).
@@ -225,6 +226,7 @@ def emit_section_ownership_reanchored(
     surface: str,
     sections_digest: str,
     prior_unowned_byte_floor: int,
+    *,
     new_unowned_byte_floor: int,
     predecessor_event_id: str,
     reason: str,

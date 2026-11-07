@@ -304,6 +304,7 @@ def _call_write_audit_artifacts(
     ledger: Ledger | None = None,
     result_rows: list | None = None,
     create_obpi_files: bool = False,
+    *,
     create_closeout_form: bool = False,
 ) -> tuple[Path, Path, dict]:
     """Set up directory structure and call _write_audit_artifacts."""

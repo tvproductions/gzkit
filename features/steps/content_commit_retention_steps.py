@@ -137,7 +137,14 @@ def step_staged_candidate(_context, surface: str, consumer: str, content: str) -
     '"{cond_id}" for removed block "{block_text}" with reason "{reason}"'
 )
 def step_retention_map_single_dropped_condition(
-    _context, filename: str, surface: str, consumer: str, cond_id: str, block_text: str, reason: str
+    _context,
+    filename: str,
+    surface: str,
+    consumer: str,
+    cond_id: str,
+    *,
+    block_text: str,
+    reason: str,
 ) -> None:
     retention_map = {
         "surface": surface,

@@ -103,11 +103,11 @@ def _audit_single(project_root: Path, obpi_id: str) -> dict:
         brief_status,
         lane,
         tests_found,
-        tests_passed,
-        test_count,
-        coverage_pct,
-        covers_tags,
-        criteria,
+        tests_passed=tests_passed,
+        test_count=test_count,
+        coverage_pct=coverage_pct,
+        covers_tags=covers_tags,
+        criteria=criteria,
     )
 
     if adr_dir:
@@ -154,6 +154,7 @@ def _build_entry(
     brief_status: str,
     lane: str,
     tests_found: list[Path],
+    *,
     tests_passed: bool,
     test_count: int,
     coverage_pct: float | None,

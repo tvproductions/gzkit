@@ -33,6 +33,7 @@ def _record_gate_result(
     gate: int,
     status: str,
     command: str,
+    *,
     returncode: int,
     evidence: str | None = None,
 ) -> None:
@@ -114,7 +115,9 @@ def _run_gate_1(
     try:
         adr_file, _ = resolve_adr_file(project_root, config, adr_id)
     except GzCliError as exc:
-        _record_gate_result(ledger, adr_id, 1, "fail", "ADR exists", 1, str(exc))
+        _record_gate_result(
+            ledger, adr_id, 1, "fail", "ADR exists", returncode=1, evidence=str(exc)
+        )
         console.print(f"  [red]❌[/red] Gate 1 (ADR): [red]FAIL[/red] ({escape(str(exc))})")
         return "fail"
 
@@ -137,10 +140,18 @@ def _run_gate_1(
                 ],
             }
         )
-        _record_gate_result(ledger, adr_id, 1, "fail", "frontmatter-coherence", 3, drift_evidence)
+        _record_gate_result(
+            ledger,
+            adr_id,
+            1,
+            "fail",
+            "frontmatter-coherence",
+            returncode=3,
+            evidence=drift_evidence,
+        )
         return "policy_breach"
 
-    _record_gate_result(ledger, adr_id, 1, "pass", "ADR exists", 0, evidence)
+    _record_gate_result(ledger, adr_id, 1, "pass", "ADR exists", returncode=0, evidence=evidence)
     console.print(f"  [green]✓[/green] Gate 1 (ADR): [green]PASS[/green] ({evidence})")
     return "pass"
 
@@ -163,8 +174,8 @@ def _run_gate_2(
         2,
         status,
         command,
-        result.returncode,
-        "stdout/stderr captured",
+        returncode=result.returncode,
+        evidence="stdout/stderr captured",
     )
     if result.success:
         console.print("  [green]✓[/green] Gate 2 (TDD): [green]PASS[/green]")
@@ -178,7 +189,9 @@ def _run_gate_3(project_root: Path, ledger: Ledger, adr_id: str, command: str) -
     _m = _cli_main()
     mkdocs_path = project_root / "mkdocs.yml"
     if not mkdocs_path.exists():
-        _record_gate_result(ledger, adr_id, 3, "fail", command, 1, "mkdocs.yml not found")
+        _record_gate_result(
+            ledger, adr_id, 3, "fail", command, returncode=1, evidence="mkdocs.yml not found"
+        )
         console.print("  [red]❌[/red] Gate 3 (Docs): [red]FAIL[/red] (mkdocs.yml not found)")
         return False
 
@@ -192,8 +205,8 @@ def _run_gate_3(project_root: Path, ledger: Ledger, adr_id: str, command: str) -
         3,
         status,
         command,
-        result.returncode,
-        "stdout/stderr captured",
+        returncode=result.returncode,
+        evidence="stdout/stderr captured",
     )
     if not result.success:
         console.print("  [red]❌[/red] Gate 3 (Docs): [red]FAIL[/red]")
@@ -229,11 +242,13 @@ def _run_gate_3_skill_audit(project_root: Path, ledger: Ledger, adr_id: str) -> 
     evidence = f"skills={report.checked_skills} blocking={blocking} warnings={warnings}"
     if blocking == 0:
         console.print(f"  [green]✓[/green] Skill Audit: [green]PASS[/green] ({evidence})")
-        _record_gate_result(ledger, adr_id, 3, "pass", "skill-audit", 0, evidence)
+        _record_gate_result(
+            ledger, adr_id, 3, "pass", "skill-audit", returncode=0, evidence=evidence
+        )
         return True
 
     console.print(f"  [red]❌[/red] Skill Audit: [red]FAIL[/red] ({evidence})")
-    _record_gate_result(ledger, adr_id, 3, "fail", "skill-audit", 1, evidence)
+    _record_gate_result(ledger, adr_id, 3, "fail", "skill-audit", returncode=1, evidence=evidence)
     return False
 
 
@@ -241,7 +256,9 @@ def _run_gate_4(project_root: Path, ledger: Ledger, adr_id: str, command: str) -
     _m = _cli_main()
     features_dir = project_root / "features"
     if not features_dir.exists():
-        _record_gate_result(ledger, adr_id, 4, "fail", command, 1, "features/ not found")
+        _record_gate_result(
+            ledger, adr_id, 4, "fail", command, returncode=1, evidence="features/ not found"
+        )
         console.print("  [red]❌[/red] Gate 4 (BDD): [red]FAIL[/red] (features/ not found)")
         return False
 
@@ -255,8 +272,8 @@ def _run_gate_4(project_root: Path, ledger: Ledger, adr_id: str, command: str) -
         4,
         status,
         command,
-        result.returncode,
-        "stdout/stderr captured",
+        returncode=result.returncode,
+        evidence="stdout/stderr captured",
     )
     if result.success:
         console.print("  [green]✓[/green] Gate 4 (BDD): [green]PASS[/green]")
@@ -299,14 +316,24 @@ def _run_eval_delta(
     # REQ-2: graceful skip when no eval datasets
     if not data_dir.exists() or not any(data_dir.glob("*.json")):
         console.print("  [dim]↳ Eval delta: skipped (no eval datasets)[/dim]")
-        _record_gate_result(ledger, adr_id, 2, "pass", "eval-delta", 0, "skipped: no eval datasets")
+        _record_gate_result(
+            ledger,
+            adr_id,
+            2,
+            "pass",
+            "eval-delta",
+            returncode=0,
+            evidence="skipped: no eval datasets",
+        )
         return True
 
     try:
         current = run_eval_suite(data_dir=data_dir)
     except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
         console.print(f"  [red]❌[/red] Eval delta: ERROR ({escape(str(exc))})")
-        _record_gate_result(ledger, adr_id, 2, "fail", "eval-delta", 1, str(exc))
+        _record_gate_result(
+            ledger, adr_id, 2, "fail", "eval-delta", returncode=1, evidence=str(exc)
+        )
         return False
 
     # REQ-2: graceful skip when no baselines to compare against
@@ -316,7 +343,9 @@ def _run_eval_delta(
             f"{current.surfaces_scored} surfaces scored, "
             f"overall {current.overall_score}/4.0[/dim]"
         )
-        _record_gate_result(ledger, adr_id, 2, "pass", "eval-delta", 0, "skipped: no baselines")
+        _record_gate_result(
+            ledger, adr_id, 2, "pass", "eval-delta", returncode=0, evidence="skipped: no baselines"
+        )
         return True
 
     config = load_thresholds(project_root / "config" / "eval_thresholds.json")
@@ -327,7 +356,13 @@ def _run_eval_delta(
     status = "pass" if result.passed else "fail"
     evidence = output
     _record_gate_result(
-        ledger, adr_id, 2, status, "eval-delta", 0 if result.passed else 1, evidence
+        ledger,
+        adr_id,
+        2,
+        status,
+        "eval-delta",
+        returncode=0 if result.passed else 1,
+        evidence=evidence,
     )
 
     if result.passed:

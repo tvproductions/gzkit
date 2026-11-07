@@ -263,7 +263,7 @@ class ReconciliationLogicTests(unittest.TestCase):
                     "receipt",
                     "verification-invalid",
                     "g0",
-                    "invalid evidence",
+                    reason="invalid evidence",
                 )
             )
             path = _scaffold_obpi(

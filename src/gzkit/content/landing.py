@@ -677,7 +677,12 @@ def _retention_gate(
     from gzkit.commands.content.commit import enforce_retention  # noqa: PLC0415
 
     outcome = enforce_retention(
-        root, surface, generated.consumer, generated.candidate_text, map_path, attestation_text
+        root,
+        surface,
+        generated.consumer,
+        generated.candidate_text,
+        map_path,
+        attestation_text=attestation_text,
     )
     if outcome.ok:
         return outcome.retention_map

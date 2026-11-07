@@ -1088,6 +1088,7 @@ def _current_adversarial_event(
     as_json: bool,
     job_id: str | None,
     refuted_claim: str | None,
+    *,
     resolution: str | None,
 ) -> LedgerEvent | None:
     """Build completion provenance from current independently accepted proof."""
@@ -1116,6 +1117,7 @@ def obpi_complete_cmd(
     attestation_text: str,
     implementation_summary: str | None,
     key_proof: str | None,
+    *,
     as_json: bool,
     dry_run: bool,
     attestor_present: bool = False,
@@ -1397,10 +1399,10 @@ def obpi_complete_cmd(
             parent_lane,
             requires_human,
             completion_term,
-            attestor,
-            audit_entry,
-            receipt_event,
-            as_json,
+            attestor=attestor,
+            audit_entry=audit_entry,
+            receipt_event=receipt_event,
+            as_json=as_json,
         )
         return
 
@@ -1417,7 +1419,7 @@ def obpi_complete_cmd(
         as_json,
         adversary_job_id,
         refuted_claim,
-        adversary_resolution,
+        resolution=adversary_resolution,
     )
     # 6-8. Execute atomic transaction
     try:
@@ -1480,7 +1482,9 @@ def obpi_complete_cmd(
     )
 
     # Success output
-    _print_success(obpi_id, resolved_parent, parent_lane, completion_term, attestor, as_json)
+    _print_success(
+        obpi_id, resolved_parent, parent_lane, completion_term, attestor, as_json=as_json
+    )
 
 
 def _surrender_lock_at_completion(
@@ -1562,6 +1566,7 @@ def _print_dry_run(
     parent_lane: str,
     requires_human: bool,
     completion_term: str,
+    *,
     attestor: str,
     audit_entry: dict[str, Any],
     receipt_event: Any,
@@ -1606,6 +1611,7 @@ def _print_success(
     parent_lane: str,
     completion_term: str,
     attestor: str,
+    *,
     as_json: bool,
 ) -> None:
     """Print success output."""

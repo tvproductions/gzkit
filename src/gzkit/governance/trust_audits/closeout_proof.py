@@ -234,6 +234,7 @@ def _check_req(
     req_id: str,
     kind: str | None,
     line: str,
+    *,
     waived_reqs: set[str],
     floor_green: Callable[[], bool],
 ) -> ValidationError | None:
@@ -357,7 +358,15 @@ def _check_brief(
             return [_err(artifact, f"brief could not be read (fail-close): {exc}")]
         return []
     results = (
-        _check_req(project_root, artifact, req_id, kind, line, waived_reqs, floor_green)
+        _check_req(
+            project_root,
+            artifact,
+            req_id,
+            kind,
+            line,
+            waived_reqs=waived_reqs,
+            floor_green=floor_green,
+        )
         for req_id, kind, line in _parse_reqs_from_brief(body)
     )
     return [e for e in results if e is not None]

@@ -161,6 +161,7 @@ def _validate_ledger_string(
     rule: dict[str, Any],
     errors: list[ValidationError],
     ledger_path: Path,
+    *,
     line_no: int,
 ) -> None:
     """Apply the string predicates of one field rule: ``min_length`` and ``named``."""
@@ -200,6 +201,7 @@ def _validate_ledger_field(
     rule: dict[str, Any],
     errors: list[ValidationError],
     ledger_path: Path,
+    *,
     line_no: int,
 ) -> None:
     """Validate one field against its schema rule, recursing into array items.
@@ -229,7 +231,7 @@ def _validate_ledger_field(
         return
 
     if isinstance(value, str):
-        _validate_ledger_string(value, field, rule, errors, ledger_path, line_no)
+        _validate_ledger_string(value, field, rule, errors, ledger_path, line_no=line_no)
 
     if isinstance(value, int):
         min_value = rule.get("min")
@@ -255,7 +257,7 @@ def _validate_ledger_field(
                 items_rule,
                 errors,
                 ledger_path,
-                line_no,
+                line_no=line_no,
             )
 
     allowed = rule.get("enum")
@@ -307,6 +309,7 @@ def _validate_ledger_conditionals(
     conditionals: Any,
     errors: list[ValidationError],
     ledger_path: Path,
+    *,
     line_no: int,
 ) -> None:
     """Apply cross-field rules: constraints keyed on another field's value.
@@ -400,7 +403,9 @@ def _validate_ledger_conditionals(
             # ValidationError is frozen, and the finding is only actionable
             # once it names the condition that made the field required.
             scratch: list[ValidationError] = []
-            _validate_ledger_field(entry[field], field, field_rule, scratch, ledger_path, line_no)
+            _validate_ledger_field(
+                entry[field], field, field_rule, scratch, ledger_path, line_no=line_no
+            )
             errors.extend(
                 error.model_copy(
                     update={
@@ -548,6 +553,7 @@ def _validate_ledger_event_fields(
     event_rule: dict[str, Any],
     errors: list[ValidationError],
     ledger_path: Path,
+    *,
     line_no: int,
 ) -> None:
     event_required = event_rule.get("required", [])
@@ -573,7 +579,7 @@ def _validate_ledger_event_fields(
                 rule,
                 errors,
                 ledger_path,
-                line_no,
+                line_no=line_no,
             )
 
     # Guarded rather than returned early on a malformed `properties`: the
@@ -599,6 +605,7 @@ def _validate_ledger_entry(
     expected_schema: str,
     event_rules: dict[str, Any],
     errors: list[ValidationError],
+    *,
     ledger_path: Path,
     line_no: int,
 ) -> None:
@@ -620,7 +627,9 @@ def _validate_ledger_entry(
         )
         return
 
-    _validate_ledger_event_fields(entry, event_name, event_rule, errors, ledger_path, line_no)
+    _validate_ledger_event_fields(
+        entry, event_name, event_rule, errors, ledger_path, line_no=line_no
+    )
 
 
 def _validate_ledger_corrections(

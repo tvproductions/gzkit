@@ -51,6 +51,7 @@ def _make_task(
     allowed_paths: list[str] | None = None,
     test_expectations: list[str] | None = None,
     complexity: TaskComplexity = TaskComplexity.SIMPLE,
+    *,
     model: str = "sonnet",
 ) -> DispatchTask:
     """Return a DispatchTask with sensible defaults."""

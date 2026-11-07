@@ -98,6 +98,7 @@ def _by_grace(
     last_run: datetime,
     due_at: datetime,
     grace: timedelta,
+    *,
     now: datetime,
     cause: str,
 ) -> ChoreStalenessReading:
@@ -210,7 +211,7 @@ def _by_date(
         )
     cause = f"{period.days}d period elapsed since the last {witness}"
     grace = timedelta(days=staleness.grace_days)
-    return _by_grace(slug, signal, last_run, due_at, grace, now, cause)
+    return _by_grace(slug, signal, last_run, due_at, grace, now=now, cause=cause)
 
 
 def _by_surfaces(
@@ -240,7 +241,7 @@ def _by_surfaces(
     dated_at = last_run + timedelta(days=staleness.period_days) if staleness.period_days else None
     if dated_at is not None and dated_at <= now and (moved_at is None or dated_at < moved_at):
         cause = f"{staleness.period_days}d period elapsed since the last passing run"
-        return _by_grace(slug, signal, last_run, dated_at, grace, now, cause)
+        return _by_grace(slug, signal, last_run, dated_at, grace, now=now, cause=cause)
     if moved_at is None:
         return ChoreStalenessReading(
             slug=slug,
@@ -250,7 +251,7 @@ def _by_surfaces(
             reason="no declared surface has moved since the last passing run",
         )
     cause = "a declared surface moved after the last passing run"
-    return _by_grace(slug, signal, last_run, moved_at, grace, now, cause)
+    return _by_grace(slug, signal, last_run, moved_at, grace, now=now, cause=cause)
 
 
 def _git_commit_times(project_root: Path, args: list[str]) -> list[datetime]:

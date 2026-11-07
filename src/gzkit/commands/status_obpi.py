@@ -125,6 +125,7 @@ def _adr_obpi_status_rows(
     ledger: Ledger,
     adr_id: str,
     obpi_index: list[tuple[str, str, Path]] | None = None,
+    *,
     reference_checker: ReferenceChecker | None = None,
 ) -> list[dict[str, Any]]:
     """Build per-OBPI status rows for a target ADR.

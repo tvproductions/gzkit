@@ -106,7 +106,9 @@ def _analyze_file(
     tree = ast.parse(source, filename=str(source_file))
     hints: list[AuthoringHint] = []
     for _qualname, node, cyclomatic in scored_functions(source, str(source_file), tree):
-        hint = _process_function(node, cyclomatic, source_file, source, tree, table, engine)
+        hint = _process_function(
+            node, cyclomatic, source_file, source, tree, table=table, engine=engine
+        )
         if hint is not None:
             hints.append(hint)
     return hints
@@ -118,6 +120,7 @@ def _process_function(
     source_file: Path,
     source: str,
     tree: ast.Module,
+    *,
     table: ThresholdTable,
     engine: DiagnosisEngine,
 ) -> AuthoringHint | None:

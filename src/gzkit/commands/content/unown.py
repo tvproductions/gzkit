@@ -833,7 +833,7 @@ def _apply_unlanded_transition(
         _refuse_forged_journal(target, f"on-disk declaration does not validate: {exc}")
     if _transition_kind(record) == _OWN_TRANSITION:
         new_sections = _owning_successor_map_or_refuse(
-            root, target, record, predecessor, spans, surface_text
+            root, target, record, predecessor, spans, surface_text=surface_text
         )
     else:
         new_sections = _unowning_successor_map_or_refuse(target, record, predecessor, spans)
@@ -918,6 +918,7 @@ def _owning_successor_map_or_refuse(
     record: dict[str, Any],
     predecessor: OwnershipDeclaration,
     spans: dict[str, int],
+    *,
     surface_text: str,
 ) -> Mapping[str, str]:
     """Prove an owning journal continues *predecessor*; return the successor map (GHI #974).

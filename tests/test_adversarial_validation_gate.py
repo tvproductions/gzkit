@@ -90,7 +90,7 @@ class TestCompletionTakesNoVerdictFromItsCaller(unittest.TestCase):
                 False,
                 args.adversary_job_id,
                 args.refuted_claim,
-                args.adversary_resolution,
+                resolution=args.adversary_resolution,
             )
         assert event is not None
         recorded = event.model_dump()

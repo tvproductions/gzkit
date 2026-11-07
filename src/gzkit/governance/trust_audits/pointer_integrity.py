@@ -208,7 +208,12 @@ def _check_back_pointers(project_root: Path) -> list[ValidationError]:
                     continue
                 errors.extend(
                     _validate_back_pointer(
-                        project_root, dest_path, dest_rel, lineno, declaration, dest_slugs
+                        project_root,
+                        dest_path,
+                        dest_rel,
+                        lineno,
+                        declaration,
+                        dest_slugs=dest_slugs,
                     )
                 )
     return errors
@@ -220,11 +225,12 @@ def _validate_back_pointer(
     dest_rel: str,
     lineno: int,
     declaration: str,
+    *,
     dest_slugs: set[str],
 ) -> list[ValidationError]:
     """Return errors for one `<!-- lifted-from: origin#anchor -->` declaration."""
     finding = _check_one_back_pointer(
-        project_root, dest_path, dest_rel, lineno, declaration, dest_slugs
+        project_root, dest_path, dest_rel, lineno, declaration, dest_slugs=dest_slugs
     )
     if finding is None:
         return []
@@ -237,6 +243,7 @@ def _check_one_back_pointer(
     dest_rel: str,
     lineno: int,
     declaration: str,
+    *,
     dest_slugs: set[str],
 ) -> str | None:
     """Return the what-failed clause for one declaration, or None when it is satisfied."""

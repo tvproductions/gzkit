@@ -2565,9 +2565,9 @@ class TestSectionOwnershipReanchoredEmitter(unittest.TestCase):
             self._SURFACE,
             self._DIGEST,
             8637,
-            8637,
-            self._PREDECESSOR,
-            self._REASON,
+            new_unowned_byte_floor=8637,
+            predecessor_event_id=self._PREDECESSOR,
+            reason=self._REASON,
         )
 
     def _rows(self) -> list[dict[str, object]]:
@@ -2888,9 +2888,9 @@ class TestWitnessMustBeChainedToItsPredecessor(_DeclarationFixtureMixin, unittes
             "Doc.md",
             digest,
             floor,
-            floor,
-            genesis,
-            "schema migration: sections_digest",
+            new_unowned_byte_floor=floor,
+            predecessor_event_id=genesis,
+            reason="schema migration: sections_digest",
         )
 
         path = self._write_declaration(

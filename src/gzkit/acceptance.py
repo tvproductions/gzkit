@@ -480,7 +480,7 @@ def assess_readiness(
         proof = current.get(obligation.id)
         errors.extend(
             _reviewed_proof_blockers(
-                obligation, proof, input_digest, required_stages, state, aliases
+                obligation, proof, input_digest, required_stages, state, aliases=aliases
             )
         )
     outstanding = _open_findings(
@@ -507,6 +507,7 @@ def _reviewed_proof_blockers(
     input_digest: str,
     stages: tuple[str, ...],
     state: _ReviewState,
+    *,
     aliases: dict[str, str],
 ) -> list[str]:
     errors = _proof_blockers(obligation, proof, input_digest)

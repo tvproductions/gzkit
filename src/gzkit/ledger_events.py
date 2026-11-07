@@ -183,6 +183,7 @@ def obpi_completion_repudiated_event(
     repudiated_receipt: str,
     cause: str,
     attestor: str,
+    *,
     reason: str,
 ) -> LedgerEvent:
     """Create an obpi_completion_repudiated event (ADR-0.0.71)."""
@@ -465,6 +466,7 @@ def gate_checked_event(
     status: str,
     command: str,
     returncode: int,
+    *,
     evidence: str | None = None,
     task_id: str | None = None,
 ) -> LedgerEvent:
@@ -527,6 +529,7 @@ def audit_receipt_emitted_event(
     attestor: str,
     evidence: dict[str, Any] | None = None,
     anchor: EventAnchor | None = None,
+    *,
     task_id: str | None = None,
 ) -> LedgerEvent:
     """Create an audit receipt event; ``task_id`` attributes it to a TASK (GHI #950)."""
@@ -550,6 +553,7 @@ def obpi_receipt_emitted_event(
     attestor: str,
     evidence: dict[str, Any] | None = None,
     parent_adr: str | None = None,
+    *,
     obpi_completion: str | None = None,
     anchor: EventAnchor | None = None,
 ) -> LedgerEvent:
@@ -876,6 +880,7 @@ def pipeline_launched_event(
     lane: str,
     nonce: str,
     marker_path: str,
+    *,
     entry: str | None = None,
 ) -> LedgerEvent:
     """Record a pipeline launch with marker nonce (GHI #412).
@@ -936,6 +941,7 @@ def pipeline_stage_transition_event(
     stage: str,
     position_kind: str,
     position_label: str,
+    *,
     boundary: str,
     blockers: list[str] | None = None,
 ) -> LedgerEvent:
@@ -1033,6 +1039,7 @@ def patch_release_event(
     tag: str | None,
     ghi_summary: list[dict[str, Any]],
     manifest_path: str,
+    *,
     foundation_summary: list[dict[str, Any]] | None = None,
 ) -> LedgerEvent:
     """Create a patch-release event for the governance ledger.
@@ -1113,6 +1120,7 @@ def composition_candidate_emitted_event(
     setpoint: str,
     invariant_bytes: int,
     compressible_bytes_before: int,
+    *,
     compressible_bytes_after: int,
     total_bytes: int,
 ) -> LedgerEvent:
@@ -1259,6 +1267,7 @@ def corpus_entry_retired_event(
     retraction_entry_id: str,
     reason: str,
     tier: str,
+    *,
     floor_added: set[str],
     floor_removed: set[str],
     attestor: str = "",
@@ -1368,9 +1377,9 @@ def brief_reconciled_event(
     allowlist_delta_count: int,
     discovery_delta_count: int,
     verification_delta_count: int,
+    *,
     req_count_delta: int,
     citation_delta_count: int,
-    *,
     applied: bool = False,
     attestor: str | None = None,
 ) -> LedgerEvent:
@@ -1406,6 +1415,7 @@ def brief_reconcile_drift_detected_event(
     allowlist_missing_on_disk: list[str],
     discovery_unresolved_paths: list[str],
     verification_unresolved_verbs: list[str],
+    *,
     declared_reqs: int,
     acceptance_criteria_count: int,
     req_count_delta: int,

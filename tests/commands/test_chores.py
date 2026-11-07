@@ -70,6 +70,7 @@ def _setup_demo_chore(
     lane: str = "lite",
     chore_path: str | None = None,
     command: str | None = None,
+    *,
     expected: int = 0,
     vendor: str | None = None,
     timeout_seconds: int = 120,

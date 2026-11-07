@@ -463,6 +463,7 @@ def _process_file_rewrites(
     monitor: TransitionMonitor,
     dry_run: bool,
     files_rewritten: list[FileRewrite],
+    *,
     refused_rewrites: list[RefusedRewrite],
 ) -> None:
     """Process all drifted files and apply/refuse rewrites.
@@ -555,7 +556,7 @@ def reconcile_frontmatter(project_root: Path, *, dry_run: bool) -> Reconciliatio
             monitor,
             dry_run,
             files_rewritten,
-            refused_rewrites,
+            refused_rewrites=refused_rewrites,
         )
     finally:
         # REQ-0.0.16-03-10 partial-failure: on any mid-loop exception, still

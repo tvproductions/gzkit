@@ -84,6 +84,7 @@ def _plan_git_sync(
     target_branch: str,
     remote: str,
     apply: bool,
+    *,
     auto_add: bool,
     allow_push: bool,
 ) -> dict[str, Any]:
@@ -615,6 +616,7 @@ def _push_if_ahead(
     target_branch: str,
     allow_push: bool,
     blockers: list[str],
+    *,
     executed: list[str],
 ) -> None:
     """Push only when branch is ahead after sync actions."""
@@ -743,6 +745,7 @@ def _execute_git_sync(
     auto_add: bool,
     run_lint_gate: bool,
     run_test_gate: bool,
+    *,
     allow_push: bool,
     remote: str,
     target_branch: str,
@@ -778,7 +781,7 @@ def _execute_git_sync(
     _run_sync_prechecks(project_root, run_lint_gate, run_test_gate, blockers, executed)
     _commit_staged_changes(project_root, blockers, executed)
     _pull_if_needed(project_root, remote, target_branch, blockers, executed)
-    _push_if_ahead(project_root, remote, target_branch, allow_push, blockers, executed)
+    _push_if_ahead(project_root, remote, target_branch, allow_push, blockers, executed=executed)
     _run_post_sync_lint(project_root, run_lint_gate, blockers, executed, warnings)
 
     return executed
@@ -802,6 +805,7 @@ def git_sync(
     apply: bool,
     run_lint_gate: bool,
     run_test_gate: bool,
+    *,
     auto_add: bool,
     allow_push: bool,
     as_json: bool,
