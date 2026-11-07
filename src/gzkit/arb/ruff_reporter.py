@@ -138,7 +138,7 @@ def _write_receipt(receipt: dict[str, object]) -> Path:
     return path
 
 
-def run_ruff_via_arb(  # noqa: PLR0913 — one keyword-only option per `gz arb ruff` flag
+def run_ruff_via_arb(
     *,
     paths: list[str] | None = None,
     fix: bool = False,

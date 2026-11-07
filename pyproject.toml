@@ -133,6 +133,11 @@ ignore = [
     # uv, Ruff and gh by design. The calls stay judged, S607 by a resolved path and
     # S603 by a reasoned noqa (ruled 2026-10-24, "Split by rule (Rec.)").
     "suspicious-subprocess-import",
+    # Counts keyword-only parameters too, so only fewer parameters clear it: about
+    # 180 single-use parameter models, against AGENTS.md § DO IT RIGHT item 10 ("no
+    # abstraction for single-use code"). PLR0917, the positional count that protects
+    # call sites, stays selected and repaired (ruled 2026-11-06, operator verbatim: "A").
+    "too-many-arguments",
 ]
 
 # Pydantic evaluates a model's field annotations when the class is built, so an
