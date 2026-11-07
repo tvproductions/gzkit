@@ -8663,11 +8663,6 @@
     },
     {
       "file": "src/gzkit/tautological_tests.py",
-      "rule": "PLR0916",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/tautological_tests.py",
       "rule": "PLR6201",
       "count": 4
     },

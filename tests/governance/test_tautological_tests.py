@@ -815,6 +815,47 @@ class TestGhi632ScannerCorrectnessAndDrift(unittest.TestCase):
         )
         self.assertEqual(len(ops), 1, "no importlib signal -> not module-backed-exempt")
 
+    def test_module_level_loaded_script_call_exempted(self) -> None:
+        """GHI #1312: the same loader bound at module level, not on self, is exempt."""
+        ops = self._scan(
+            "test_hook.py",
+            """\
+            import importlib.util
+            from pathlib import Path
+            import unittest
+
+            def _load():
+                spec = importlib.util.spec_from_file_location("h", "hooks/h.py")
+                return importlib.util.module_from_spec(spec)
+
+            _HOOK = _load()
+
+            class TestHook(unittest.TestCase):
+                def test_writes_log(self):
+                    _HOOK.main([])
+                    self.assertTrue(Path("log.jsonl").exists())
+            """,
+        )
+        self.assertEqual(ops, [], "a call on a module-level loaded script must be exempt")
+
+    def test_module_level_name_without_importlib_signal_still_flags(self) -> None:
+        """Narrowness: a module-level name with no importlib loading launders nothing."""
+        ops = self._scan(
+            "test_plain.py",
+            """\
+            from pathlib import Path
+            import unittest
+
+            _THING = object()
+
+            class TestPlain(unittest.TestCase):
+                def test_echo(self):
+                    _THING.noop()
+                    self.assertIn("x", Path("docs/rule.md").read_text())
+            """,
+        )
+        self.assertEqual(len(ops), 1, "no importlib signal -> a module-level call is not exempt")
+
     def test_audit_drift_identity_reports_actual_new_op(self) -> None:
         """audit_drift matches by identity (line-independent), flags only the
         genuinely-new op, and reports THAT op — not a baselined one."""

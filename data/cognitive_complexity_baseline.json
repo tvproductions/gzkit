@@ -1194,7 +1194,7 @@
     {
       "file": "src/gzkit/tautological_tests.py",
       "function": "_module_backed_self_attrs",
-      "score": 20
+      "score": 19
     },
     {
       "file": "src/gzkit/tautological_tests.py",

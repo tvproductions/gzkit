@@ -99,20 +99,6 @@
       "assertion_kind": "assertTrue"
     },
     {
-      "file_path": "tests/commands/test_upgrade_resources.py",
-      "line_number": 67,
-      "operation_kind": "is_dir",
-      "function_name": "test_skills_resource_is_directory",
-      "assertion_kind": "assertTrue"
-    },
-    {
-      "file_path": "tests/commands/test_upgrade_resources.py",
-      "line_number": 75,
-      "operation_kind": "is_dir",
-      "function_name": "test_rules_resource_is_directory",
-      "assertion_kind": "assertTrue"
-    },
-    {
       "file_path": "tests/complexity/advisor/test_timeout.py",
       "line_number": 145,
       "operation_kind": "read_text",
@@ -139,13 +125,6 @@
       "operation_kind": "exists",
       "function_name": "test_schema_file_present_and_constrains_three_fields",
       "assertion_kind": "assertTrue"
-    },
-    {
-      "file_path": "tests/complexity/test_citation.py",
-      "line_number": 192,
-      "operation_kind": "read_text",
-      "function_name": "test_canonical_rule_body_present_in_each_vendor_mirror",
-      "assertion_kind": "assertIn"
     },
     {
       "file_path": "tests/complexity/test_citation.py",
@@ -181,20 +160,6 @@
       "operation_kind": "read_text",
       "function_name": "test_module_size_discipline",
       "assertion_kind": "assertLessEqual"
-    },
-    {
-      "file_path": "tests/complexity/test_measurement.py",
-      "line_number": 337,
-      "operation_kind": "read_text",
-      "function_name": "test_no_shell_true_in_measurement_source",
-      "assertion_kind": "assertNotRegex"
-    },
-    {
-      "file_path": "tests/complexity/test_measurement.py",
-      "line_number": 342,
-      "operation_kind": "read_text",
-      "function_name": "test_subprocess_calls_use_list_form_in_source",
-      "assertion_kind": "assertTrue"
     },
     {
       "file_path": "tests/distribution/test_baseline_manifest.py",
@@ -821,20 +786,6 @@
     },
     {
       "file_path": "tests/hooks/test_stop_turn_feedback.py",
-      "line_number": 183,
-      "operation_kind": "read_text",
-      "function_name": "test_block_appends_exactly_one_json_line",
-      "assertion_kind": "assertEqual"
-    },
-    {
-      "file_path": "tests/hooks/test_stop_turn_feedback.py",
-      "line_number": 201,
-      "operation_kind": "read_text",
-      "function_name": "test_over_cap_log_is_rewritten_keeping_newest_lines",
-      "assertion_kind": "assertEqual"
-    },
-    {
-      "file_path": "tests/hooks/test_stop_turn_feedback.py",
       "line_number": 332,
       "operation_kind": "read_text",
       "function_name": "test_settings_json_wires_stop_hook_to_existing_script",
@@ -965,13 +916,6 @@
       "operation_kind": "read_text",
       "function_name": "test_test_module_contains_no_personal_email_addresses",
       "assertion_kind": "assertTrue"
-    },
-    {
-      "file_path": "tests/skills/test_ghi_triage_deliverable.py",
-      "line_number": 366,
-      "operation_kind": "exists",
-      "function_name": "test_cache_dir_auto_created_when_missing",
-      "assertion_kind": "assertFalse"
     },
     {
       "file_path": "tests/skills/test_gz_complexity_distill.py",
@@ -1227,13 +1171,6 @@
     },
     {
       "file_path": "tests/test_packaging.py",
-      "line_number": 174,
-      "operation_kind": "open",
-      "function_name": "test_pyproject_preserves_packages_declaration",
-      "assertion_kind": "assertEqual"
-    },
-    {
-      "file_path": "tests/test_packaging.py",
       "line_number": 193,
       "operation_kind": "is_dir",
       "function_name": "test_importlib_resources_lists_chore_slugs",
@@ -1290,13 +1227,6 @@
     },
     {
       "file_path": "tests/test_personas.py",
-      "line_number": 93,
-      "operation_kind": "read_text",
-      "function_name": "test_pyproject_has_personas_wheel_include",
-      "assertion_kind": "assertIn"
-    },
-    {
-      "file_path": "tests/test_personas.py",
       "line_number": 134,
       "operation_kind": "is_file",
       "function_name": "test_vendor_mirrors_remain_transformed_renders",
@@ -1346,20 +1276,6 @@
     },
     {
       "file_path": "tests/test_rules.py",
-      "line_number": 805,
-      "operation_kind": "read_text",
-      "function_name": "test_req06_pyproject_has_rules_wheel_include",
-      "assertion_kind": "assertIn"
-    },
-    {
-      "file_path": "tests/test_rules.py",
-      "line_number": 1085,
-      "operation_kind": "open",
-      "function_name": "test_pyproject_includes_rules_json",
-      "assertion_kind": "assertIn"
-    },
-    {
-      "file_path": "tests/test_rules.py",
       "line_number": 1109,
       "operation_kind": "read_text",
       "function_name": "test_sync_surfaces_has_rules_classifier_integration",
@@ -1392,13 +1308,6 @@
       "operation_kind": "is_dir",
       "function_name": "test_skills_count_is_full",
       "assertion_kind": "assertGreaterEqual"
-    },
-    {
-      "file_path": "tests/test_skills.py",
-      "line_number": 409,
-      "operation_kind": "read_text",
-      "function_name": "test_pyproject_includes_skills_package_data",
-      "assertion_kind": "assertIn"
     },
     {
       "file_path": "tests/test_skills.py",
@@ -1490,13 +1399,6 @@
       "operation_kind": "is_dir",
       "function_name": "test_skills_subdir_retained",
       "assertion_kind": "assertTrue"
-    },
-    {
-      "file_path": "tests/test_templates.py",
-      "line_number": 444,
-      "operation_kind": "read_text",
-      "function_name": "test_pyproject_includes_template_markdown",
-      "assertion_kind": "assertIn"
     },
     {
       "file_path": "tests/test_templates.py",

@@ -415,6 +415,39 @@ def _asserts_shipped_executable(node: ast.FunctionDef | ast.AsyncFunctionDef) ->
     return False
 
 
+def _uses_importlib_load(tree: ast.Module) -> bool:
+    """Return True when the file loads a module by spec, the signal a bound name holds one."""
+    return any(
+        isinstance(n, ast.Call)
+        and isinstance(n.func, ast.Attribute)
+        and n.func.attr in ("spec_from_file_location", "module_from_spec")
+        for n in ast.walk(tree)
+    )
+
+
+def _module_level_loaded_names(tree: ast.Module) -> frozenset[str]:
+    """Collect module-level names assigned from a call in a file that spec-loads a module.
+
+    (GHI #1312.) The module-level twin of :func:`_module_backed_self_attrs`:
+    ``_HOOK = _load()`` at module scope holds the loaded project script exactly
+    as ``self.mod = _load()`` in setUp does.
+
+    Returns:
+        Names bound at module level from a call; an empty frozenset when the file does no
+        importlib spec-loading.
+
+    """
+    if not _uses_importlib_load(tree):
+        return frozenset()
+    return frozenset(
+        target.id
+        for stmt in tree.body
+        if isinstance(stmt, ast.Assign) and isinstance(stmt.value, ast.Call)
+        for target in stmt.targets
+        if isinstance(target, ast.Name)
+    )
+
+
 def _module_backed_self_attrs(tree: ast.Module) -> frozenset[str]:
     """Collect ``self.<attr>`` names a fixture binds to a dynamically-loaded module.
 
@@ -429,13 +462,7 @@ def _module_backed_self_attrs(tree: ast.Module) -> frozenset[str]:
         when the file does no importlib spec-loading.
 
     """
-    uses_importlib_load = any(
-        isinstance(n, ast.Call)
-        and isinstance(n.func, ast.Attribute)
-        and n.func.attr in ("spec_from_file_location", "module_from_spec")
-        for n in ast.walk(tree)
-    )
-    if not uses_importlib_load:
+    if not _uses_importlib_load(tree):
         return frozenset()
     attrs: set[str] = set()
     for node in ast.walk(tree):
@@ -458,25 +485,31 @@ def _module_backed_self_attrs(tree: ast.Module) -> frozenset[str]:
 
 
 def _calls_self_module(
-    node: ast.FunctionDef | ast.AsyncFunctionDef, module_attrs: frozenset[str]
+    node: ast.FunctionDef | ast.AsyncFunctionDef,
+    module_attrs: frozenset[str],
+    module_names: frozenset[str] = frozenset(),
 ) -> bool:
-    """Return True if the function calls a method on a loaded-module ``self.<attr>``.
+    """Return True if the function calls a method on a loaded module it holds.
 
-    A production call the static-import heuristic misses.
+    A production call the static-import heuristic misses: the module is held on
+    ``self.<attr>`` (GHI #632) or on a module-level name (GHI #1312).
 
     Returns:
-        True when the body calls a method on self.<attr> for an attr in module_attrs; False
-        otherwise.
+        True when the body calls a method on self.<attr> for an attr in module_attrs, or on a
+        name in module_names; False otherwise.
 
     """
     for child in _walk_body(node):
+        if not (isinstance(child, ast.Call) and isinstance(child.func, ast.Attribute)):
+            continue
+        holder = child.func.value
+        if isinstance(holder, ast.Name) and holder.id in module_names:
+            return True
         if (
-            isinstance(child, ast.Call)
-            and isinstance(child.func, ast.Attribute)
-            and isinstance(child.func.value, ast.Attribute)
-            and isinstance(child.func.value.value, ast.Name)
-            and child.func.value.value.id == "self"
-            and child.func.value.attr in module_attrs
+            isinstance(holder, ast.Attribute)
+            and isinstance(holder.value, ast.Name)
+            and holder.value.id == "self"
+            and holder.attr in module_attrs
         ):
             return True
     return False
@@ -518,7 +551,7 @@ def scan_test_tree(tests_path: Path) -> list[TautologicalTestOperation]:
 
         gzkit_names = _gzkit_imported_names(tree)
         setup_map = _class_setup_map(tree)
-        module_attrs = _module_backed_self_attrs(tree)
+        loaded_modules = (_module_backed_self_attrs(tree), _module_level_loaded_names(tree))
         helpers = _local_function_map(tree)
 
         for node in ast.walk(tree):
@@ -554,7 +587,7 @@ def scan_test_tree(tests_path: Path) -> list[TautologicalTestOperation]:
             if (
                 _reads_project_source(node)
                 or _asserts_shipped_executable(node)
-                or _calls_self_module(node, module_attrs)
+                or _calls_self_module(node, *loaded_modules)
             ):
                 continue
             context = _extract_context_hint(node)

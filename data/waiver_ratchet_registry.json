@@ -54,7 +54,7 @@
       "gates_step": "tautological-test baseline (gz validate --tautological-test-audit)",
       "mechanism": "shrink-ratchet",
       "entries_path": "operations",
-      "baseline_count": 290,
+      "baseline_count": 202,
       "identity": {
         "kind": "fields",
         "fields": [
