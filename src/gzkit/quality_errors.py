@@ -20,7 +20,8 @@ class MkdocsConfigYamlError(ValueError):
         super().__init__(f"not valid YAML: {exc}")
 
 
-class MkdocsConfigNotMappingError(ValueError):
+# A TypeError too: raised when an isinstance check fails (TRY004); ValueError keeps its handlers.
+class MkdocsConfigNotMappingError(ValueError, TypeError):
     """A mkdocs config file's top level is not a mapping."""
 
     def __init__(self) -> None:
@@ -37,7 +38,8 @@ class MkdocsInheritCycleError(ValueError):
         super().__init__(f"INHERIT cycle at {parent_path}")
 
 
-class MkdocsValidationNotMappingError(ValueError):
+# A TypeError too: raised when an isinstance check fails (TRY004); ValueError keeps its handlers.
+class MkdocsValidationNotMappingError(ValueError, TypeError):
     """A mkdocs config's ``validation`` key is not a mapping."""
 
     def __init__(self) -> None:

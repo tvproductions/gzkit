@@ -15,7 +15,8 @@ class AcceptanceRecordCountError(ValueError):
         super().__init__("Producer must persist exactly one initial contract record")
 
 
-class AcceptanceEventTypeError(ValueError):
+# A TypeError too: raised when an isinstance check fails (TRY004); ValueError keeps its handlers.
+class AcceptanceEventTypeError(ValueError, TypeError):
     """The acceptance producer persisted an event of the wrong type."""
 
     def __init__(self) -> None:
@@ -55,7 +56,8 @@ class ReportRecordCountError(ValueError):
         super().__init__("Report producer must persist exactly one publication record")
 
 
-class ReportEventTypeError(ValueError):
+# A TypeError too: raised when an isinstance check fails (TRY004); ValueError keeps its handlers.
+class ReportEventTypeError(ValueError, TypeError):
     """The report producer persisted an event of the wrong type."""
 
     def __init__(self) -> None:
@@ -103,7 +105,8 @@ class LeaseExpiryRecordCountError(ValueError):
         super().__init__("Reaper must persist exactly one lease-expiry record")
 
 
-class LeaseExpiryEventTypeError(ValueError):
+# A TypeError too: raised when an isinstance check fails (TRY004); ValueError keeps its handlers.
+class LeaseExpiryEventTypeError(ValueError, TypeError):
     """The reaper persisted an event of the wrong type."""
 
     def __init__(self) -> None:
@@ -135,7 +138,8 @@ class RenewalRecordCountError(ValueError):
         super().__init__("Renewal must persist exactly one renewal record and no close")
 
 
-class RenewalEventTypeError(ValueError):
+# A TypeError too: raised when an isinstance check fails (TRY004); ValueError keeps its handlers.
+class RenewalEventTypeError(ValueError, TypeError):
     """The renewal persisted an event of the wrong type."""
 
     def __init__(self) -> None:
@@ -159,7 +163,8 @@ class WriterRecordCountError(ValueError):
         super().__init__("Writer must persist exactly one record and nothing for a refusal")
 
 
-class WriterEventTypeError(ValueError):
+# A TypeError too: raised when an isinstance check fails (TRY004); ValueError keeps its handlers.
+class WriterEventTypeError(ValueError, TypeError):
     """A catalog writer persisted an event of the wrong type."""
 
     def __init__(self) -> None:

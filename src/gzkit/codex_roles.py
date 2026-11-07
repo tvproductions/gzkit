@@ -20,7 +20,8 @@ _BODY_KEY = re.compile(
 )
 
 
-class NonStringDeveloperInstructionsError(ValueError):
+# A TypeError too: raised when an isinstance check fails (TRY004); ValueError keeps its handlers.
+class NonStringDeveloperInstructionsError(ValueError, TypeError):
     """A Codex role's ``developer_instructions`` value is not a string."""
 
     def __init__(self, name: str | None = None) -> None:
@@ -46,7 +47,8 @@ class InvalidRoleRegistrationError(ValueError):
         super().__init__("Invalid canonical Codex role registration")
 
 
-class InvalidRoleMetadataError(ValueError):
+# A TypeError too: raised when an isinstance check fails (TRY004); ValueError keeps its handlers.
+class InvalidRoleMetadataError(ValueError, TypeError):
     """A registered Codex role lacks a string description or legacy body digest."""
 
     def __init__(self, name: str) -> None:
@@ -72,7 +74,8 @@ class UnsupportedRoleRegistryError(ValueError):
         super().__init__("Unsupported canonical Codex role registry")
 
 
-class MissingRolesMappingError(ValueError):
+# A TypeError too: raised when an isinstance check fails (TRY004); ValueError keeps its handlers.
+class MissingRolesMappingError(ValueError, TypeError):
     """The Codex role registry carries no ``roles`` mapping."""
 
     def __init__(self) -> None:

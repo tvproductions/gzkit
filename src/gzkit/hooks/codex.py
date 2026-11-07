@@ -14,7 +14,8 @@ from gzkit.session_start import ORIENTATION_SCRIPT as _ORIENTATION
 from gzkit.surface_write import write_text_if_changed
 
 
-class InvalidCodexHookConfigError(ValueError):
+# A TypeError too: raised when an isinstance check fails (TRY004); ValueError keeps its handlers.
+class InvalidCodexHookConfigError(ValueError, TypeError):
     """The Codex hooks file is not a JSON object with a ``hooks`` mapping."""
 
     def __init__(self, path: Path) -> None:

@@ -94,7 +94,8 @@ class ReviewReceiptOutputError(ValueError):
         )
 
 
-class ReviewReceiptCommandError(ValueError):
+# A TypeError too: raised when an isinstance check fails (TRY004); ValueError keeps its handlers.
+class ReviewReceiptCommandError(ValueError, TypeError):
     """A review receipt records no executable command."""
 
     def __init__(self) -> None:
