@@ -1,7 +1,8 @@
 """``gz wp order`` commands over the orders (RP-12 O2 task 1).
 
 The verbs the operator named on 2026-11-05 (RP-12 ruling 47, *"a"*): a nested
-group on the work-package surface. `new` writes an order's record with the next
+group on the work-package surface. `accept` waits on the order's own acceptance
+(ruling 60). `new` writes an order's record with the next
 `ORD-<NN>-<slug>` (ruling 43) through `gzkit.order_store`, into a repair package
 that is initiated and not closed (rulings 2, 44); `show` reads it with the kind of
 the package it sits in. The record is thin (ruling 46). A refusal of the rulings
@@ -16,6 +17,7 @@ from typing import NoReturn
 
 from pydantic import ValidationError as PydanticValidationError
 
+from gzkit.acceptance_store import acceptance_blockers, round_bound_refusal
 from gzkit.cli.formatters import OutputFormatter
 from gzkit.commands.common import ensure_initialized, get_project_root
 from gzkit.core.exceptions import PolicyBreachError, ResourceNotFoundError
@@ -32,7 +34,8 @@ from gzkit.order_ledger import (
 )
 from gzkit.order_store import OrderStoreError, next_order_id, stage_order, write_orders
 from gzkit.work_package_ledger import work_package_state
-from gzkit.work_package_transit import freeze_refusal
+from gzkit.work_package_run import order_took_stopping_exit
+from gzkit.work_package_transit import footprint_refusal, freeze_refusal
 
 
 def _package(catalog: Catalog, work_package: str) -> WorkPackage:
@@ -217,6 +220,7 @@ _RERUN = {
         "--review-receipt <id> --evidence <text>`"
     ),
     "commenced": "`uv run gz wp order commence <ORD-id> --evidence <text>`",
+    "accepted": "`uv run gz wp order accept <ORD-id> --evidence <text>`",
 }
 
 
@@ -290,3 +294,39 @@ def wp_order_show_cmd(*, order_id: str, as_json: bool) -> None:
     fmt.emit(f"  aliases: {', '.join(order.aliases) or 'none'}")
     fmt.emit(f"  purpose: {order.purpose}")
     fmt.emit(f"  procedure: {order.procedure}")
+
+
+def wp_order_accept_cmd(*, order_id: str, evidence: str, as_json: bool) -> None:
+    """Accept a commenced order once its acceptance reads ready (RP-12 ruling 60).
+
+    The order's own readiness is read, its obligations its frozen REQs and its
+    proofs and reviews under its id, with the review-round limit of GHI #1028; then
+    the repair package's sealed footprint (ruling 56). An order stopped by an exit
+    is excused both, as a stopped package is: it claims no delivery, and Gate 5 is
+    how it closes. An unknown order exits 1; any refusal exits 3 and books nothing.
+
+    Raises:
+        PolicyBreachError: Acceptance reports its blockers, a file lies outside the
+            footprint, or the lifecycle refuses the move.
+
+    """
+    config = ensure_initialized()
+    root = get_project_root()
+    catalog = load_catalog(root)
+    ledger = Ledger(root / config.paths.ledger)
+    order = _order(catalog, order_id)
+    package = _package(catalog, order.work_package)
+    if not order_took_stopping_exit(ledger, order.id):
+        refusal = round_bound_refusal(root, order.id)
+        blockers = [*acceptance_blockers(root, order.id), *([refusal] if refusal else [])]
+        if blockers:
+            raise PolicyBreachError("\n".join(blockers))
+        if outside := footprint_refusal(root, package, ledger):
+            raise PolicyBreachError(outside)
+    move = OrderMove(order=order.id, to_state="accepted", evidence=evidence)
+    try:
+        event = record_order_transition(catalog, ledger, move)
+    except OrderLedgerError as exc:
+        _refuse_move("accepted", str(exc))
+    fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
+    fmt.emit(event if as_json else f"{event.id}: {event.from_state} -> {event.to_state}")

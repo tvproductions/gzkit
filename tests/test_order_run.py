@@ -345,6 +345,10 @@ class OrderFenceRecovery(unittest.TestCase):
         for message in self.refusals("blocked"):
             self.assertIn(f"gz wp unblock {_PACKAGE} --order {_ORDER} --ruling", message)
 
+    def test_a_stopped_order_names_the_orders_accept(self) -> None:
+        for message in self.refusals("stopped"):
+            self.assertIn(f"gz wp order accept {_ORDER} --evidence", message)
+
     def test_an_accepted_or_stopped_orders_recovery_is_not_the_packages(self) -> None:
         for reason in ("accepted", "stopped"):
             for message in self.refusals(reason):

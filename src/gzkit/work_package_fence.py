@@ -148,7 +148,10 @@ def _order_recovery(fence: FencedPackage) -> str:
             "the bound; if the fence still holds, its next refusal names the next step"
         ),
         "accepted": f"acceptance has ended the order's work, so {close}",
-        "stopped": f"the order takes no further repair; it is accepted and {close}",
+        "stopped": (
+            f"the order takes no further repair: run `uv run gz wp order accept {order} "
+            f"--evidence <text>`, which excuses a stopped order its proof, then {close}"
+        ),
     }[fence.reason]
 
 

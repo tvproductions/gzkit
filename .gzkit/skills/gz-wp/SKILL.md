@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-07
 metadata:
-  skill-version: "0.12.0"
+  skill-version: "0.13.0"
 model: sonnet
 ---
 
@@ -177,6 +177,17 @@ stopped order fences production writes across the tree, as a package does
 uv run gz wp dispatch <WP-id> --order <ORD-id> --role Implementer --model <tier> --req REQ-<n>
 uv run gz wp block <WP-id> --order <ORD-id> --reason "<why>" --next-action "<decision>"
 uv run gz wp unblock <WP-id> --order <ORD-id> --ruling "<their exact words>" --operator g0
+```
+
+Acceptance runs on the order, its obligations the order's frozen REQs and its
+proofs and reviews under its id; accept refuses until it reads ready and the
+package's sealed footprint holds, a stopped order excused (ruling 60). A freeze
+names at least one REQ (ruling 61):
+
+```bash
+uv run gz wp acceptance <ORD-id> init --author <implementing session>
+uv run gz wp acceptance <ORD-id> status
+uv run gz wp order accept <ORD-id> --evidence "<final inspection>"
 ```
 
 Work outside the package's general scope is a new work package, never a change.

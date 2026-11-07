@@ -8,7 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.acceptance_context import build_review_context
 from gzkit.acceptance_execution import prove
-from gzkit.acceptance_package import is_work_package_id
+from gzkit.acceptance_package import is_run_id
 from gzkit.acceptance_store import (
     acceptance_verb,
     initialize,
@@ -188,7 +188,7 @@ def _execute(
 
     """
     if action in ("review", "human-review"):
-        launch_id = None if is_work_package_id(obpi_id) else resolve_obpi_at_entry(root, obpi_id)[0]
+        launch_id = None if is_run_id(obpi_id) else resolve_obpi_at_entry(root, obpi_id)[0]
         if action == "review":
             return _execute_review(root, obpi_id, receipt, launch_id)
         return _execute_human_review(root, obpi_id, attestor, ruling, launch_id)

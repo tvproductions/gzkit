@@ -13,7 +13,7 @@ gz wp order freeze <ORD-id> --baseline REQ-<n>@<rev> --risk-note <text> --review
 | Flag | Description |
 |------|-------------|
 | `ORD-id` | The order to freeze, `ORD-<NN>-<slug>`. Required |
-| `--baseline` | A REQ and the revision frozen, `REQ-<n>@<rev>` (repeatable) |
+| `--baseline` | A REQ and the revision frozen, `REQ-<n>@<rev>` (repeatable). At least one is required |
 | `--risk-note` | The short risk note. Required |
 | `--review-receipt` | The reviewer's nine-criteria receipt. Required |
 | `--evidence` | What justifies the freeze. Required |
@@ -31,7 +31,9 @@ moves one step at a time, `opened` then `frozen`, `commenced` and `accepted`;
 
 - The freeze carries the risk note, the reviewer's receipt and the baseline. Each
   baseline entry is a repair REQ held on the order's own package, at the revision
-  the catalog holds (RP-12 rulings 2 and 45).
+  the catalog holds (RP-12 rulings 2 and 45), and the baseline holds at least one:
+  an order frozen on nothing could take no dispatch and reach no acceptance
+  (ruling 61).
 - A repair REQ sits in one live order's frozen baseline at a time. A REQ another
   order's freeze holds is refused until that order is accepted, stopped or closed
   (ruling 53).
@@ -91,6 +93,19 @@ correct the call and re-run `uv run gz wp order freeze <ORD-id> --baseline
 REQ-<n>@<revision> --risk-note <text> --review-receipt <id> --evidence <text>`.
 ```
 
+A freeze with no `--baseline` is refused, here on a third order opened as
+`ORD-02-matcher` in a later scratch project:
+
+```console
+$ uv run gz wp order freeze ORD-02-matcher --risk-note "Touches the matcher." --review-receipt review-02 --evidence E
+Order ORD-02-matcher freezes at least one repair REQ held on WP-01-stamp; an
+order frozen on nothing takes no dispatch and reaches no acceptance (RP-12
+ruling 61). Write one with `uv run gz wp req new`, then freeze on it. Nothing
+was written; correct the call and re-run `uv run gz wp order freeze <ORD-id>
+--baseline REQ-<n>@<revision> --risk-note <text> --review-receipt <id>
+--evidence <text>`.
+```
+
 Once the footprint is sealed, a change order cannot drop a path:
 
 ```console
@@ -107,7 +122,7 @@ what is missing with `--module`.
 | 0 | Frozen |
 | 1 | The order, or its work package, is not in the store |
 | 2 | Usage error |
-| 3 | The freeze is refused: a baseline entry, the lifecycle, the package's state or footprint, or a REQ another live order holds; nothing written |
+| 3 | The freeze is refused: an empty baseline or a baseline entry, the lifecycle, the package's state or footprint, or a REQ another live order holds; nothing written |
 
 ## See also
 

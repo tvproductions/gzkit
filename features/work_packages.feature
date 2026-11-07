@@ -76,3 +76,7 @@ Feature: Work packages run through the gz wp verbs
     When I run the gz command "wp dispatch WP-01-x --void D-0123456789abcdef --reason r --order ORD-01-y"
     Then the command exits with code 2
     And the output contains "it takes no --order"
+
+  Scenario: accepting an order without its evidence is a usage error
+    When I run the gz command "wp order accept ORD-01-x"
+    Then the command exits with code 2

@@ -1028,6 +1028,18 @@ uv run gz wp block WP-01-stamp --order ORD-01-import --reason "<why>" --next-act
 uv run gz wp unblock WP-01-stamp --order ORD-01-import --ruling "<your exact words>" --operator g0
 ```
 
+Acceptance runs on the order: its obligations are its frozen requirements and its
+proofs and reviews are its own, so each order carries its own evidence to its own
+Gate 5. Accepting it refuses until its acceptance reads ready and every changed
+file lies in the package's sealed footprint; an order stopped by an exit is
+excused:
+
+```bash
+uv run gz wp acceptance ORD-01-import init --author <implementing session>
+uv run gz wp acceptance ORD-01-import status
+uv run gz wp order accept ORD-01-import --evidence "<final inspection>"
+```
+
 The lifecycle moves one step at a time (initiated, frozen, commenced, accepted,
 closed). Pen and ink is the coordinator's; every other rung of the change ladder
 is yours. Any refusal exits 3 and writes nothing. Attaching an issue also labels

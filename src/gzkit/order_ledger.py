@@ -7,7 +7,8 @@ in the ledger (ruling 44), as `order_transitioned`. `gz wp order new` books
 and lands with O2 task 4, so it is refused here. A freeze carries the risk note,
 the reviewer's receipt and a baseline of the repair REQs held on the order's
 package (rulings 2, 45), each REQ in one live order's frozen baseline at a time
-(ruling 53). A blocked order does not move (ruling 59).
+(ruling 53), and never on an empty baseline (ruling 61). A blocked order does not
+move (ruling 59).
 
 The writer takes the parsed catalog and the ledger as parameters, reads the
 current state from the ledger rather than the caller, and refuses a move the
@@ -125,6 +126,17 @@ def booked_order_ids(ledger: Ledger) -> set[str]:
     return {str(move["order"]) for move in _moves(ledger)}
 
 
+def order_work_package(ledger: Ledger, order: str) -> str | None:
+    """Read the package an order sits in, from its own ledger rows.
+
+    Returns:
+        The package its first `order_transitioned` names, or None before it is opened.
+
+    """
+    moves = _moves(ledger, order)
+    return str(moves[0]["work_package"]) if moves else None
+
+
 def order_baseline(ledger: Ledger, order: str) -> dict[str, int]:
     """Read the order's frozen baseline, REQ to revision.
 
@@ -201,6 +213,12 @@ def _check_frozen(catalog: Catalog, ledger: Ledger, order: Order, move: OrderMov
     """Freeze: the note, the receipt, and a baseline of the package's own repair REQs."""
     if not (move.risk_note or "").strip() or not (move.review_receipt or "").strip():
         _refuse("A freeze carries the risk note and the reviewer's nine-criteria receipt.")
+    if not move.baseline:
+        _refuse(
+            f"Order {order.id} freezes at least one repair REQ held on {order.work_package}; "
+            "an order frozen on nothing takes no dispatch and reaches no acceptance (RP-12 "
+            "ruling 61). Write one with `uv run gz wp req new`, then freeze on it."
+        )
     held = {req.id: req for req in catalog.reqs}
     holders = _live_holders(ledger, order)
     for entry in move.baseline:

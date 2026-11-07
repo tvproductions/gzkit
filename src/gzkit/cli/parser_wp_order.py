@@ -140,6 +140,25 @@ def _register_wp_order(wp_commands: argparse._SubParsersAction) -> None:
         )
     )
 
+    p_order_accept = order_commands.add_parser(
+        "accept",
+        help="Accept a commenced order once its acceptance reads ready",
+        description=(
+            "Accept a commenced order. Refused until `gz wp acceptance <ORD-id>` reads\n"
+            "the order ready and every changed file lies in its package's sealed\n"
+            "footprint; an order stopped by an exit is excused (RP-12 ruling 60)."
+        ),
+        epilog=build_epilog(["gz wp order accept ORD-01-import --evidence final-inspection"]),
+    )
+    p_order_accept.add_argument("order", help="The order's id, ORD-<NN>-<slug>")
+    p_order_accept.add_argument("--evidence", required=True, help="The final inspection")
+    add_json_flag(p_order_accept)
+    p_order_accept.set_defaults(
+        func=lambda a: _lazy("wp_order_accept_cmd")(
+            order_id=a.order, evidence=a.evidence, as_json=a.as_json
+        )
+    )
+
     p_order_show = order_commands.add_parser(
         "show",
         help="Show an order's record and its package's kind",

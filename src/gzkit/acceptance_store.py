@@ -52,12 +52,19 @@ from gzkit.acceptance_execution import (
     input_digest,
 )
 from gzkit.acceptance_grounds import refuse_uncited_approval
-from gzkit.acceptance_package import departed_reqs, is_work_package_id, package_contract
+from gzkit.acceptance_package import (
+    departed_reqs,
+    is_order_id,
+    is_run_id,
+    is_work_package_id,
+    run_contract,
+)
 from gzkit.adversary_workspace import validate_replay_records
 from gzkit.config import GzkitConfig
 from gzkit.ledger import Ledger, LedgerEvent
 from gzkit.ledger_events import acceptance_recorded_event
 from gzkit.models.catalog import load_catalog
+from gzkit.order_ledger import order_work_package
 from gzkit.pipeline_dispatch import MAX_REVIEW_FIX_CYCLES
 from gzkit.registries import RegistryError
 from gzkit.req_kind_fence import resolve_fence_proof
@@ -107,22 +114,23 @@ def acceptance_ledger(root: Path) -> Ledger:
 def resolve_brief(root: Path, obpi_id: str) -> AcceptanceSource:
     """Resolve a real canonical brief; an evidence filename is not an OBPI.
 
-    A work package supplies its contract in place of a brief (RO-14 act 5).
+    A work package supplies its contract in place of a brief (RO-14 act 5), and so
+    does an order (RP-12 ruling 60).
 
     Returns:
-        The work package's contract for a work-package ID, otherwise the path of the OBPI's
+        The contract for a work-package or order ID, otherwise the path of the OBPI's
         canonical brief.
 
     Raises:
-        ValueError: when a work-package ID does not resolve in the catalog.
+        ValueError: when a work-package or order ID does not resolve in the catalog.
         NoCanonicalBriefError: when an OBPI ID resolves to no canonical brief.
 
     """
     from gzkit.commands.obpi_precomplete import resolve_brief_path  # noqa: PLC0415
 
-    if is_work_package_id(obpi_id):
+    if is_run_id(obpi_id):
         try:
-            return package_contract(load_catalog(root), acceptance_ledger(root), obpi_id)
+            return run_contract(load_catalog(root), acceptance_ledger(root), obpi_id)
         except RegistryError as exc:
             raise ValueError(str(exc)) from exc
 
@@ -199,7 +207,7 @@ def _without_departed(root: Path, obpi_id: str, history: AcceptanceHistory) -> A
         The history of what the package still owes.
 
     """
-    if not is_work_package_id(obpi_id):
+    if not is_run_id(obpi_id):
         return history
     departed = departed_reqs(acceptance_ledger(root), obpi_id)
     if not departed:
@@ -243,7 +251,7 @@ def initialize(root: Path, obpi_id: str, author_id: str) -> Contract:
     if previous is not None:
         # A departure narrows a package's obligations; its author stays the identity.
         same = previous == contract or (
-            is_work_package_id(obpi_id) and previous.author_id == contract.author_id
+            is_run_id(obpi_id) and previous.author_id == contract.author_id
         )
         if not same:
             raise AcceptanceAlreadyInitializedError
@@ -496,10 +504,16 @@ def round_bound_refusal(root: Path, work_package: str) -> str | None:
     """
     if refuted_rounds(root, work_package) < review_round_limit():
         return None
+    block = f"`uv run gz wp block {work_package} --reason <text> --next-action <text>`"
+    if is_order_id(work_package):
+        package = order_work_package(acceptance_ledger(root), work_package)
+        block = (
+            f"`uv run gz wp block {package} --order {work_package} --reason <text> "
+            "--next-action <text>`"
+        )
     return (
         f"{work_package} has used its {review_round_limit()} adversarial rounds (GHI #1028). "
-        f"Record the block with `uv run gz wp block {work_package} --reason <text> "
-        "--next-action <text>`, so the operator can rule"
+        f"Record the block with {block}, so the operator can rule"
     )
 
 
@@ -570,7 +584,7 @@ def record_human_review(root: Path, obpi_id: str, *, attestor: str, ruling: str)
             20), or the ruling has no current proof to judge.
 
     """
-    if is_work_package_id(obpi_id):
+    if is_run_id(obpi_id):
         refusal = round_bound_refusal(root, obpi_id)
         if refusal:
             raise ValueError(refusal)
@@ -618,7 +632,7 @@ def owed_ids(root: Path, obpi_id: str, contract: Contract) -> set[str]:
 
     """
     owed = {item.id for item in contract.obligations}
-    if is_work_package_id(obpi_id):
+    if is_run_id(obpi_id):
         owed -= departed_reqs(acceptance_ledger(root), obpi_id)
     return owed
 
@@ -720,10 +734,10 @@ def acceptance_verb(obpi_id: str) -> str:
     """Name the verb that reads this id's acceptance.
 
     Returns:
-        `gz wp acceptance` for a work package, else `gz obpi acceptance`.
+        `gz wp acceptance` for a work package or an order, else `gz obpi acceptance`.
 
     """
-    return "gz wp acceptance" if is_work_package_id(obpi_id) else "gz obpi acceptance"
+    return "gz wp acceptance" if is_run_id(obpi_id) else "gz obpi acceptance"
 
 
 def acceptance_blockers(

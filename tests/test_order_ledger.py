@@ -234,6 +234,10 @@ class FreezeTests(_OrderCase):
             with self.subTest(missing=missing):
                 self.assert_refused("frozen", **{**_FREEZE, missing: " "})
 
+    def test_an_empty_baseline_is_refused(self) -> None:
+        """Ruling 61: an order freezes at least one requirement."""
+        self.assertIn("ruling 61", self.assert_refused("frozen", **{**_FREEZE, "baseline": ()}))
+
     def test_the_freeze_records_its_baseline_note_and_receipt(self) -> None:
         event = self.move("frozen", **_FREEZE)
         self.assertEqual(event.baseline, (BaselinedReq(req="REQ-1", revision=1),))

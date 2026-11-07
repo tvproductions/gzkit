@@ -668,9 +668,13 @@ def wp_dispatch_cmd(*, fields: dict[str, object], as_json: bool) -> None:
         msg = f"The intended root {intended.as_posix()} is not an existing directory."
         raise ResourceNotFoundError(msg)
     try:
-        refusal = round_bound_refusal(root, str(fields["work_package"]))
-        if refusal:
-            raise PolicyBreachError(refusal)
+        runs = [
+            str(fields["work_package"]),
+            *([str(fields["order"])] if fields.get("order") else []),
+        ]
+        for run in runs:
+            if refusal := round_bound_refusal(root, run):
+                raise PolicyBreachError(refusal)
         request = DispatchRequest.model_validate({**fields, "root": intended.as_posix()})
         event = record_work_package_dispatch(catalog, ledger, request)
     except ValueError as exc:
@@ -752,7 +756,7 @@ def wp_block_cmd(
     """
     root, catalog, ledger = _context()
     _held(catalog, work_package)
-    refutations, reason = _read_refutations(root, work_package, reason)
+    refutations, reason = _read_refutations(root, order or work_package, reason)
     try:
         request = BlockRequest(
             work_package=work_package, reason=reason, next_action=next_action, order=order

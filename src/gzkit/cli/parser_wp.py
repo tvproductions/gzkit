@@ -391,14 +391,16 @@ def _register_wp_acceptance(wp_commands: argparse._SubParsersAction) -> None:
         help="Execute proof, record independent reviews and derive readiness",
         description=(
             "Run the acceptance runtime on a commenced work package: the frozen REQs,\n"
-            "or one obligation per carried issue. `gz wp accept` refuses until it reads\n"
-            "ready, and three adversarial rounds with a mapped finding stop for the operator."
+            "or one obligation per carried issue; or on a commenced order, its frozen\n"
+            "REQs. `gz wp accept` and `gz wp order accept` refuse until it reads ready,\n"
+            "and three adversarial rounds with a mapped finding stop for the operator."
         ),
         epilog=build_epilog(
             [
                 "gz wp acceptance WP-01-x init --author implementing-session",
                 "gz wp acceptance WP-01-x prove --spec controls.json",
                 "gz wp acceptance WP-01-x status --json",
+                "gz wp acceptance ORD-01-y init --author implementing-session",
             ]
         ),
     )
