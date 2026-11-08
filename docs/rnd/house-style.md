@@ -1175,6 +1175,24 @@ style, then do they reside in the right places now?"*
   false blocks, *"a repeat always passes, so it enforces nothing"*; B14 (H3 evidence headings) is F5
   and H12, the code matching H2 only.
 
+## source · the justify walkthrough's template
+
+`src/gzkit/justify/templates/walkthrough.md.j2` (33 lines) read in full; `src/gzkit/justify/walkthrough.py:180–190,248–256`; `uv run gz justify --help` · read 2026-11-08
+
+> `{% for section in walkthrough.sections %}` · `{% if section.evidence_citations %}` · `{% for cite in section.evidence_citations %}` · `{% if walkthrough.complexity_hints_md %}`
+
+> Output is byte-stable for a given input: identical ``Walkthrough`` produces identical markdown on every invocation.
+
+> Scaffold an 8-section pre-execution reasoning walkthrough for a GHI, OBPI, or draft anchor, or validate a filled walkthrough markdown file via the 'validate' subverb. The CLI never invokes an LLM; the scaffold renders deterministically from gathered evidence, and validate reverse-parses filled markdown into the same Pydantic model used for rendering.
+
+The template is one loop over the eight sections, a nested loop over each section's citations and two
+conditionals; it reads only fields of the frozen `Walkthrough` model. Moving it off jinja2 would mean a
+plain Python function building the same text with f-strings and `"\n".join`, about the same length,
+the template file retired, the byte-stable output and the `validate` round trip held by the existing
+tests. `string.Template` cannot loop, and RP-9 tranche 6 recorded that Python 3.14's t-strings
+*"are code literals with no template language"* (source: RP-9). jinja2 stays a dependency either
+way, for the control-surface pipeline.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
