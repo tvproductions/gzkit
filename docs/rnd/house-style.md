@@ -1229,9 +1229,9 @@ every candidate family and the borderline set are ruled. What remains is diamond
 the register's shape and names, the map's region vocabulary, each check's form, and the hexagonal
 specification run (row 7(c)).
 
-**Review.** The account is at [`house-style/review.md`](house-style/review.md), rewritten at the second close. Awaiting the operator's words that they have read it.
+**Review.** The account is at [`house-style/review.md`](house-style/review.md), rewritten at the second close. Operator, by selection, 2026-11-08: *"Read it: fund"*.
 
-**Sign-off.** —
+**Sign-off.** *"Read it: fund"* (operator, by selection, 2026-11-08) — **fund**. Diamond 1 is closed. Each row still waits for the operator's go on that row.
 
 ## What this record does not license
 
