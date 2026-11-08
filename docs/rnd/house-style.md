@@ -826,6 +826,14 @@ Verbatim:
   in session; open until ruled.
 - **90, no reply:** open.
 
+## decision · family F3: items 90 and 19 admitted
+
+The operator, having said *"hold on, I wasn't done"*, continued, verbatim: *"yes admit 90, yes admit
+19, but is TypedDict Pydantic or stdlib?"* Item 90 (models hold data, business logic in services) is
+admitted; item 19 (TypedDict for shapes) is confirmed admitted. TypedDict is stdlib: `typing.TypedDict`
+(`uv run python -c "import typing; print(typing.TypedDict.__module__)"` printed `typing`, 2026-11-08);
+Pydantic can validate one, but does not provide it. Item 17 stays open on the operator's question.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
