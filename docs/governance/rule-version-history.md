@@ -853,6 +853,8 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `skill-surface-sync.md`
 
+Prior `0.13.1` banner: *"version narrative lifted to Rule Version History; binding rules unchanged."* Superseded 2026-11-08 by `0.14.0`, which extends § Retirement policy to rules.
+
 ### Lifted 2026-09-17 at version `0.12.0` (rule now at `0.13.0`)
 
 Diet pass under GHI #921 (operator: "A" on the full before/after, 11,719 B → 5,785 B). Binding rules unchanged. Lifted verbatim as dated records — the `0.12.0` note, rule 2's GHI #307/2026-07-21 history, § Procedure, § Version discipline, § Conflict resolution, § Do Not, and the class-classifier declaration narrative:
