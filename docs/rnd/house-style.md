@@ -538,6 +538,20 @@ A consequence, not a ruling: ad hoc work through `gz permitted-entry` freezes no
 reached by the airlock's guidance and the chore only; its *"light repair at most"* ceiling (source:
 the airlock) is what keeps a map change out of it.
 
+## decision · corrections go into the drydock under RP-7; the new machinery is built at civil rule
+
+Put to the operator: A, split by kind, the corrections of shipped intent (H1 ruled to the whole
+package with a shrink-only baseline, F22's per-change gate) under RP-7's placement change order, and
+the new machinery (the upfront map, the intake signal, the freeze check, the airlock feed, the chore,
+`gz init` delivery) admitted at civil rule through the R&D door and built as work packages; B, all in
+the drydock by change order; C, all at civil rule. Operator, by selection: *"Split by kind
+(Recommended)"*.
+
+Under the operator's doctrine that *"discovering that more is needed to fulfill the intent of a
+feature is not an enhancement, it is a correction"* (`AGENTS.md` § Operator Doctrine), the machinery
+is carried as correction of the hexagonal directive's intent, not as enhancement; *civil rule* names
+when it is built, not what kind of work it is.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
