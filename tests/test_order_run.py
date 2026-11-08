@@ -14,7 +14,7 @@ import unittest
 from pathlib import Path
 
 from gzkit.events import BaselinedReq
-from gzkit.order_ledger import is_order_blocked, order_state
+from gzkit.order_ledger import is_order_blocked, order_state, order_took_stopping_exit
 from gzkit.pipeline_dispatch import MAX_REVIEW_FIX_CYCLES
 from gzkit.work_package_fence import (
     FencedPackage,
@@ -32,7 +32,6 @@ from gzkit.work_package_run import (
     DispatchRequest,
     UnblockRequest,
     open_unclaimed_dispatches,
-    order_took_stopping_exit,
     record_dispatch_void,
     record_work_package_block,
     record_work_package_dispatch,
@@ -40,7 +39,7 @@ from gzkit.work_package_run import (
     run_positions,
     took_stopping_exit,
 )
-from tests.test_order_ledger import _OrderCase, _rows
+from tests.test_order_ledger import _FREEZE, _PAYLOADS, _OrderCase, _rows
 
 _PACKAGE = "WP-01-stamp"
 _ORDER = "ORD-01-import"
@@ -254,6 +253,16 @@ class UnblockOnAnOrder(_OrderRun):
         self.assertFalse(took_stopping_exit(self.ledger, _PACKAGE))
         self.refused("terminate exit", self.dispatch)
         self.assertEqual(self.dispatch(order=_SECOND, req="REQ-2").order, _SECOND)
+
+    def test_a_stopped_orders_req_may_be_frozen_again(self) -> None:
+        """Ruling 53: a stopped order's REQ is not stranded; a later order may freeze it."""
+        self.move("opened", order=_SECOND, **_PAYLOADS["opened"])
+        self.refused("ORD-01-import", lambda: self.move("frozen", order=_SECOND, **_FREEZE))
+        self.block()
+        self.unblock(exit_taken="terminate")
+        self.assertEqual(
+            self.move("frozen", order=_SECOND, **_FREEZE).baseline, _FREEZE["baseline"]
+        )
 
 
 class OrderFence(_OrderRun):

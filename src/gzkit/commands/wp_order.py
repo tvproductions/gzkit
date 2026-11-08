@@ -30,11 +30,11 @@ from gzkit.order_ledger import (
     booked_order_ids,
     order_baseline,
     order_state,
+    order_took_stopping_exit,
     record_order_transition,
 )
 from gzkit.order_store import OrderStoreError, next_order_id, stage_order, write_orders
 from gzkit.work_package_ledger import work_package_state
-from gzkit.work_package_run import order_took_stopping_exit
 from gzkit.work_package_transit import cross_airlock, footprint_refusal, freeze_refusal
 
 

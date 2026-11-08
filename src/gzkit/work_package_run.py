@@ -52,7 +52,13 @@ from gzkit.events import (
     WorkPackageUnblockedEvent,
 )
 from gzkit.ledger import Ledger, ledger_row
-from gzkit.order_ledger import is_order_blocked, order_baseline, order_rows, order_state
+from gzkit.order_ledger import (
+    STOPPING_EXITS,
+    is_order_blocked,
+    order_baseline,
+    order_rows,
+    order_state,
+)
 from gzkit.pipeline_dispatch import MAX_REVIEW_FIX_CYCLES
 from gzkit.work_package_ledger import (
     WorkPackageLedgerError,
@@ -74,7 +80,6 @@ ROLES: tuple[str, ...] = (IMPLEMENTER, "SpecReviewer", "QualityReviewer", SINGLE
 EXITS: tuple[str, ...] = get_args(WorkPackageExit)
 _IMPLEMENTING = frozenset({IMPLEMENTER, SINGLE_DRIVER})
 _REQ_EXITS = frozenset({"reopen", "departure"})
-_STOPPING_EXITS = frozenset({"reopen", "terminate"})
 _IN_FLIGHT = frozenset({"commenced", "accepted"})
 _DISPATCHED = "work_package_dispatched"
 _CLAIMED = "dispatch_claimed"
@@ -410,21 +415,8 @@ def took_stopping_exit(ledger: Ledger, work_package: str) -> bool:
 
     """
     return any(
-        row.extra.get("exit_taken") in _STOPPING_EXITS
+        row.extra.get("exit_taken") in STOPPING_EXITS
         for row in package_rows(ledger, "work_package_unblocked", work_package)
-    )
-
-
-def order_took_stopping_exit(ledger: Ledger, order: str) -> bool:
-    """Read whether an exit has stopped the order (RP-12 ruling 59).
-
-    Returns:
-        True once a `reopen` or `terminate` exit on the order is on the ledger.
-
-    """
-    return any(
-        row.extra.get("exit_taken") in _STOPPING_EXITS
-        for row in order_rows(ledger, "work_package_unblocked", order)
     )
 
 
@@ -451,7 +443,7 @@ def _held_by_block(ledger: Ledger, work_package: str, order: str | None) -> bool
 def _check_not_stopped(ledger: Ledger, work_package: str, order: str | None) -> None:
     named = f"Order {order}" if order is not None else f"Work package {work_package}"
     for row in _run_rows(ledger, "work_package_unblocked", work_package, order):
-        if row.extra.get("exit_taken") in _STOPPING_EXITS:
+        if row.extra.get("exit_taken") in STOPPING_EXITS:
             _refuse(
                 f"{named} took the {row.extra['exit_taken']} exit; it takes no further "
                 "repair and closes through Gate 5."

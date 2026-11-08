@@ -39,8 +39,11 @@ _NEXT: dict[str | None, str | None] = {
     "commenced": "accepted",
     "accepted": None,
 }
-#: The states that end an order's hold on its baseline (ruling 53). O5 adds stopped.
+#: The states that end an order's hold on its baseline (ruling 53); a stopping exit
+#: ends it too, though the order keeps its state (`order_took_stopping_exit`).
 TERMINATED: frozenset[str] = frozenset({"accepted", "closed"})
+#: The exits that stop a run: an order's or, for a delivery package, the package's.
+STOPPING_EXITS: frozenset[str] = frozenset({"reopen", "terminate"})
 #: The payload fields each target state carries; any other is refused.
 _STATE_FIELDS: dict[str, frozenset[str]] = {
     "opened": frozenset({"operator_text"}),
@@ -117,6 +120,19 @@ def is_order_blocked(ledger: Ledger, order: str) -> bool:
         if row.event in kinds and row.extra.get("order") == order
     ]
     return bool(rows) and rows[-1] == "work_package_blocked"
+
+
+def order_took_stopping_exit(ledger: Ledger, order: str) -> bool:
+    """Read whether an exit has stopped the order (RP-12 ruling 59).
+
+    Returns:
+        True once a `reopen` or `terminate` exit on the order is on the ledger.
+
+    """
+    return any(
+        row.extra.get("exit_taken") in STOPPING_EXITS
+        for row in order_rows(ledger, "work_package_unblocked", order)
+    )
 
 
 def booked_order_ids(ledger: Ledger) -> set[str]:
@@ -203,6 +219,7 @@ def _live_holders(ledger: Ledger, order: Order) -> dict[str, str]:
         req: other
         for other in sorted(others)
         if order_state(ledger, other) not in TERMINATED
+        and not order_took_stopping_exit(ledger, other)
         for req in order_baseline(ledger, other)
     }
 

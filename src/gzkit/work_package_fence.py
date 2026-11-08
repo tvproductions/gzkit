@@ -38,9 +38,9 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.config import GzkitConfig
 from gzkit.ledger import Ledger
-from gzkit.order_ledger import is_order_blocked
+from gzkit.order_ledger import is_order_blocked, order_took_stopping_exit
 from gzkit.work_package_ledger import is_blocked
-from gzkit.work_package_run import order_took_stopping_exit, took_stopping_exit
+from gzkit.work_package_run import took_stopping_exit
 
 if TYPE_CHECKING:
     from pathlib import Path
