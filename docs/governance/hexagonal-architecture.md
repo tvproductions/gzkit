@@ -46,17 +46,7 @@ element to gzkit's actual structure.
 The full ("strong") implementation: **"The app cannot know anything about the
 external technology."** The core is not merely decoupled — it is *ignorant* of
 what sits behind the port, so it can be regression-tested with no production
-connection, swap technologies, and survive a dependency going away. Cockburn
-puts the demand as code that runs *"without either a UI or a database"*.
-
-**Why gzkit holds to it: tracer bullets and seam accountability.** Hexagonal
-reinforces tracer-bullet development (KEEL/ADR-0.31.0): a thin port lets a
-tracer run end to end against a stub adapter before the real one exists. It
-also makes seams accountable: a port is a seam made explicit and owned, and an
-unbounded dependency reaching into the core is a seam let out of hand. Ports
-keep the seam map finite and reviewable. (Lifted 2026-11-08 from
-`.gzkit/rules/hexagonal-architecture.md`, which now carries only the binding
-rules, scoped to the core.)
+connection, swap technologies, and survive a dependency going away.
 
 ### The five elements (four in the pattern + the configurator)
 
