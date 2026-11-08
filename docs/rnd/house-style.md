@@ -982,12 +982,21 @@ convention and the starter's), no `sys.path` injection (Python practice that a p
 makes unnecessary), and no competing `uv.toml`, `ruff.toml` or `ty.toml`, which uv and Ruff both
 permit (source: the `[tool]` table) and gzkit refuses under its own declare-once rule.
 
+## decision · item 42: `gz init` follows uv's default, the application shape; F7 complete
+
+Answered from the observed run (source: what `uv init` writes for each project type): the project
+types are uv's own convention, and uv's default is the application shape where `gz init` defaults to
+`lib`. Put to the operator: follow uv, `app` the default; or keep `lib`. Operator, by selection:
+*"Follow uv: app"*. This supersedes RP-9 § Ruled for tranche 7's *"`lib` the default"* (RP-9 closed
+2026-10-29); the change joins row 2's corrections of tranche 7. Family F7 (items 41, 42, 93) is
+admitted, 93 as a suggestion to adopters still to be defined.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
 |---|---|---|---|---|
 | 1 | ADR / OBPI | commissioned | The upfront whole-system architecture map, approved once as a classic ADR (the first map edition); and the new machinery admitted at civil rule through the R&D door as catalog outcomes: the map as data under `[tool.py-gzkit]`, the intake signal, the freeze check, the airlock feed, `gz init` delivery to adopters | The map passes the admission question: hard to reverse, surprising without context, a real trade-off. Proposed only: the operator initiates. It waits for the classic ADR form and crossover (CO-1, CO-2 on RP-6) |
-| 2 | GHI / direct fix | commissioned | Under RP-7's placement change order: book H1 ruled to the whole package with a shrink-only baseline, and repair F22 so the boundary test runs in the per-change `gz check`; and the `gz init` scaffold's Ruff selection raised from nine families to `ALL` with gzkit's curated exceptions and ty at full strength, a correction of RP-9 tranche 7 (closed), its owner to be ruled | Corrections of shipped intent (decision: corrections go into the drydock under RP-7); both already tracked there, so no new GHI |
+| 2 | GHI / direct fix | commissioned | Under RP-7's placement change order: book H1 ruled to the whole package with a shrink-only baseline, and repair F22 so the boundary test runs in the per-change `gz check`; and the `gz init` scaffold's Ruff selection raised from nine families to `ALL` with gzkit's curated exceptions and ty at full strength, and its default project type moved from `lib` to uv's `app`; both corrections of RP-9 tranche 7 (closed), their owner to be ruled | Corrections of shipped intent (decision: corrections go into the drydock under RP-7); both already tracked there, so no new GHI |
 | 3 | chore | commissioned | A hexagonal tidying chore: the implementation-mode audit of what neither gate nor door judges (ports typed in domain terms, policy kept out of adapters, construction at the edge), after gz-skills' `gzs-hexagonal-architecture-audit`, findings filed as GHIs; and a hygiene chore keeping `docs/design/cli-standards-v3.md` current (F2, item 11) | The third reach the operator ruled (*"chore tidyings"*); advise only, the operator directs admission |
 | 4 | control surface, rule, doc, skill, hook | commissioned | (a) the house style named in canon, its admission rule and its first member; (b) the hexagonal rule cut to its judgment residue once gate, doors and chore carry the rest (RP-7 placement); (c) the canon page's § Departures *"not a code-organization rule"* reconciled with *"primary code directive"*; (d) the design-time imperative written into the design surfaces; (e) `data/waiver_ratchet_registry.json` given an owner, a close-at-zero plan and a target date per shrink-ratchet, the 29 non-empty ones each owned or ruled accepted debt | Drafted on the operator's go per item |
 | 5 | one-shot refactoring | commissioned | gzkit's import sites outside their mapped region driven to zero through the shrink-only baseline; the cognitive ceiling moved from `.gzkit.json` to `[tool.py-gzkit]`; jsonschema retired, each hand-authored schema given a Pydantic model and every validator calling the model, the dependency and its register entry removed at the last site; rich behind the output port, every direct `console.print` routed through `OutputFormatter` with semantic calls and the port made domain-typed; every `# noqa` converted to `# ruff: ignore[<rule name>]` as RUF105's exception is lifted | The whole-package scope and the split config home, ruled; the operator selects the route |
