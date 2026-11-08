@@ -472,6 +472,23 @@ when work must detour through them. But the code paths are declared early: an ou
 doors are fed today, finding 3). That is the first point at which the arrangement knows which code
 a requirement will touch.
 
+## decision · the boundary-sensitivity signal first fires at intake
+
+Reframed from *where design lives* to *where the reminder comes from*: it is computed, not
+remembered, by comparing declared code paths with the boundary declaration (source: the processes
+and their edges, and the outcome's `modules`). Put to the operator, three first points, each
+consumed by the later ones: A, at intake, from the outcome's `modules`; B, at the work package
+freeze; C, at airlock entry. Operator, by selection: *"At intake (Recommended)"*. It depends on
+`modules` being declared at admission, which RP-11 lands.
+
+## decision · question 11 put and not answered
+
+Put to the operator, what a boundary-sensitive outcome must do before its work can start: A, state
+its boundary placement before its package can freeze, checked against the declaration, and route to
+Design for a classic ADR only when the placement moves the boundary; B, always a classic ADR; C, a
+warning carried into the airlock, no freeze block. The operator sent a message in place of an
+answer. Open.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
