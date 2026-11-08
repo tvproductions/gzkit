@@ -2056,3 +2056,13 @@
 {"ts": "2026-11-07T11:58:48Z", "source": "20261107T115845Z-rp12-o2-task3-act4-landed.md", "text": "Git-sync the ruling commits and build Act 4 (verbatim: \"yes, git sync and build Act 4\")."}
 {"ts": "2026-11-07T11:58:48Z", "source": "20261107T115845Z-rp12-o2-task3-act4-landed.md", "text": "Git-sync Act 4 (verbatim: \"git sync\")."}
 {"ts": "2026-11-07T11:58:48Z", "source": "20261107T115845Z-rp12-o2-task3-act4-landed.md", "text": "Write a fresh handoff and git-sync (verbatim: \"create fresh handoff and git sync\")."}
+{"ts": "2026-11-08T02:29:22Z", "source": "20261108T022921Z-rp12-o2-task3-act5-landed.md", "text": "Resume the handoff and draft question 7 (verbatim: \"yes, draft question 7\")."}
+{"ts": "2026-11-08T02:29:22Z", "source": "20261108T022921Z-rp12-o2-task3-act5-landed.md", "text": "RP-12 ruling 62: a repair package's close keeps its payload (by selection: \"A: payload unchanged (Rec.)\")."}
+{"ts": "2026-11-08T02:29:22Z", "source": "20261108T022921Z-rp12-o2-task3-act5-landed.md", "text": "Draft question 9 (verbatim: \"yes, draft question 9\")."}
+{"ts": "2026-11-08T02:29:22Z", "source": "20261108T022921Z-rp12-o2-task3-act5-landed.md", "text": "RP-12 ruling 63: each order's freeze approves the alterations planned since the last (by selection: \"A: at each order freeze (Rec.)\")."}
+{"ts": "2026-11-08T02:29:22Z", "source": "20261108T022921Z-rp12-o2-task3-act5-landed.md", "text": "Git-sync and build Act 5 (verbatim: \"yes, git sync and build Act 5\")."}
+{"ts": "2026-11-08T02:29:22Z", "source": "20261108T022921Z-rp12-o2-task3-act5-landed.md", "text": "RP-12 ruling 64: the issue lane retires in Act 5 (by selection: \"A: retire it in Act 5 (Rec.)\")."}
+{"ts": "2026-11-08T02:29:22Z", "source": "20261108T022921Z-rp12-o2-task3-act5-landed.md", "text": "RP-12 ruling 65: an order's commencement and acceptance cross the airlock (by selection: \"A: at the order's moves (Rec.)\")."}
+{"ts": "2026-11-08T02:29:22Z", "source": "20261108T022921Z-rp12-o2-task3-act5-landed.md", "text": "RP-12 ruling 66: the order and requirement stores are the verbs' own records (by selection: \"A: exempt both stores (Rec.)\")."}
+{"ts": "2026-11-08T02:29:22Z", "source": "20261108T022921Z-rp12-o2-task3-act5-landed.md", "text": "Git-sync after Act 5 (verbatim: \"git sync\"); held until the commit witness finished, then synced after ruling 67."}
+{"ts": "2026-11-08T02:29:22Z", "source": "20261108T022921Z-rp12-o2-task3-act5-landed.md", "text": "RP-12 ruling 67: a witness survivor equivalent to what it replaced does not hold an act back (by selection: \"A: stands, widen ruling 55 (Rec.)\")."}
