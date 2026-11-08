@@ -6,11 +6,11 @@ paths:
 description: Security-sensitivity third axis of attestation rigor (ADR-0.0.22).
 ---
 
-<!-- rule-version: 0.6.1 -->
+<!-- rule-version: 0.6.2 -->
 
 # Security Sensitivity (gzkit)
 
-> **Rule version:** `0.6.1` — version narrative lifted to [Rule Version History](../../docs/governance/rule-version-history.md#security-sensitivitymd); binding rules unchanged.
+> **Rule version:** `0.6.2` — the frontmatter-read citation, the MX trigger and the GHI #682 status match the code and the tracker (operator, 2026-11-08: *"fix what is stale"*); prior banners in [Rule Version History](../../docs/governance/rule-version-history.md#security-sensitivitymd).
 
 ## Invariant
 
@@ -20,13 +20,13 @@ description: Security-sensitivity third axis of attestation rigor (ADR-0.0.22).
 
 Security surfaces are named in [`data/security_surfaces.json`](../../data/security_surfaces.json). The registry is self-bootstrapping: edits require the editing brief to declare `sensitivity: security`.
 
-**Direct-fix path (no brief exists).** Operator canon routes GHI-tracked defect repair to a direct `fix(<scope>): … (GHI #N)` commit and forbids spinning up an OBPI merely to discharge a GHI — so a registry correction filed as a GHI has **no brief and therefore no declaration channel**. `gz validate --sensitivity` reads OBPI brief frontmatter only (`validate_cmd.py`: `declared = frontmatter.get("sensitivity")`); a briefless commit to `data/security_surfaces.json` is never inspected, so the self-bootstrapping floor is **unenforced on the path operator canon mandates**. Until a commit-side channel exists (candidate: a `Sensitivity: security` trailer checked by `gz validate --commit-trailers`), the declaration on a direct-fix registry edit is a **discipline obligation, not a mechanical one** — state the sensitivity in the commit body and cite the GHI. Do not read the absence of a fail-close as permission.
+**Direct-fix path (no brief exists).** Operator canon routes GHI-tracked defect repair to a direct `fix(<scope>): … (GHI #N)` commit and forbids spinning up an OBPI merely to discharge a GHI — so a registry correction filed as a GHI has **no brief and therefore no declaration channel**. `gz validate --sensitivity` reads OBPI brief frontmatter only (`src/gzkit/commands/validate_sensitivity.py`: `declared = frontmatter.get("sensitivity")`; the audit in `src/gzkit/governance/trust_audits/sensitivity.py` reads the same field); a briefless commit to `data/security_surfaces.json` is never inspected, so the self-bootstrapping floor is **unenforced on the path operator canon mandates**. Until a commit-side channel exists (candidate: a `Sensitivity: security` trailer checked by `gz validate --commit-trailers`), the declaration on a direct-fix registry edit is a **discipline obligation, not a mechanical one** — state the sensitivity in the commit body and cite the GHI. Do not read the absence of a fail-close as permission.
 
 ## `gz validate --sensitivity` (binding)
 
 1. **Auto-detect floor.** Briefs whose allowed-paths overlap a registered security surface MUST declare `sensitivity: security` (exit 3 on violation).
 2. **Escalate-not-escape.** A brief MAY declare sensitivity without overlap (escalation). A brief MAY NOT omit sensitivity while overlapping (escape is fail-closed). Both an *omitted* declaration (`sensitivity-floor-violation`) and a *wrong* declaration (`sensitivity-escape-attempt`) over an overlap fail closed at exit 3 (GHI #625).
-3. **The floor demotes to advisory inside the MX hangar — say so out loud.** When `.gzkit/mx.json` exists, `mx-mode.md` § Honor the marker drops every guard outside `GATE5_INVARIANTS` to advisory. `sensitivity` is **not** a member of that set (`src/gzkit/mx/invariants.py`), so `checkpoint.resolve("sensitivity", …)` returns ADVISORY and the exit-3 errors above are dropped from the exit code. The "escape is fail-closed" language in clause 2 does **not** hold in the hangar. This demotion is **deliberate, not a defect**: the briefs most likely to trip the floor are exactly the ones an operator enters the hangar to repair (see GHI #682 — two post-cutover briefs currently failing over incidental overlap), and a fail-closed sensitivity scope would lock the repair path against the thing being repaired. Promoting `sensitivity` into `GATE5_INVARIANTS` would set that trap; do not do it without first discharging #682. What was wrong was the **silence** — the demotion happened unannounced. It is now named.
+3. **The floor demotes to advisory inside the MX hangar — say so out loud.** When the MX condition is on (the `.gzkit/mx.json` marker is present, parses, is bound to an open `mx_session_opened` and is not exiting: `marker.condition(...).on`, read by `src/gzkit/mx/checkpoint.py`), `mx-mode.md` § Honor the marker drops every guard outside `GATE5_INVARIANTS` to advisory. `sensitivity` is **not** a member of that set (`src/gzkit/mx/invariants.py`), so `checkpoint.resolve("sensitivity", …)` returns ADVISORY and the exit-3 errors above are dropped from the exit code. The "escape is fail-closed" language in clause 2 does **not** hold in the hangar. This demotion is **deliberate, not a defect**: the briefs most likely to trip the floor are exactly the ones an operator enters the hangar to repair (GHI #682, closed 2026-07-24, was two post-cutover briefs failing the floor over incidental overlap), and a fail-closed sensitivity scope would lock the repair path against the thing being repaired. Promoting `sensitivity` into `GATE5_INVARIANTS` would set that trap; do not do it without first discharging #682. What was wrong was the **silence** — the demotion happened unannounced. It is now named.
 
 ### Grandfather cutover (GHI #625)
 

@@ -539,7 +539,8 @@ applications under OBPI-0.0.54-02.*
 This rule is **advisory** at authoring time. There is no mechanical
 validator that scans a PR or brief and emits *"this is `Fabrication`
 shape — block."* The mechanical defenses already exist as separate
-rules and gates — the TTY+`ATTEST` authenticity gate, ARB receipt
+rules and gates — Gate 5's `--attestor` plus a non-empty
+`evidence.attestation_text` written to the ledger, ARB receipt
 requirements, hook fail-closed behavior, `gz validate --commit-trailers`,
 the layered-trust T1/T2/T3 invariants — and the rule is the **shared name**
 those defenses point at.

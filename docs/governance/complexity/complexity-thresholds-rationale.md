@@ -108,10 +108,12 @@ record names the metric, the prior mapping, the new mapping, the
 operator-attested rationale, and the receipt ID of the Gate 5
 walkthrough that witnessed the change.
 
-**Silent edits are forbidden** by the validator
-(OBPI-0.0.28-03 -- `gz validate --complexity-thresholds`). An edit to
-the rule body without a corresponding doctrine-amendment-protocol
-record is a policy breach (exit 3).
+**Silent edits are forbidden.** An edit to the table without a
+corresponding doctrine-amendment-protocol record is a policy breach, but
+no validator detects one: `gz validate --complexity-thresholds`
+(OBPI-0.0.28-03) checks the table's shape and citation, never the
+provenance of a change (scorecard row 51d scores the protocol Judgment;
+corrected 2026-11-08, it claimed the validator exits 3).
 
 The scope of amendment is per-metric mapping only. The trigger-semantic
 vocabulary itself (`block` / `warn` / `advise`) is foundation doctrine

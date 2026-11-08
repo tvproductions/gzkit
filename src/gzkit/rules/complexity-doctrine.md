@@ -8,11 +8,11 @@ paths:
 description: Exemplar-corpus selection methodology, distillation cadence, and citation contract for gzkit complexity calibration
 ---
 
-<!-- rule-version: 0.4.1 -->
+<!-- rule-version: 0.4.2 -->
 
 # Complexity Doctrine (gzkit)
 
-> **Rule version:** `0.4.1` — version narrative lifted to [Rule Version History](../../docs/governance/rule-version-history.md#complexity-doctrinemd); binding rules unchanged.
+> **Rule version:** `0.4.2` — the canonical-string example cites the binding 2026-10-22 distillation at `§ lizard-ccn`, not retired Radon's `radon-cc` (operator, 2026-11-08: *"fix what is stale"*); prior banners in [Rule Version History](../../docs/governance/rule-version-history.md#complexity-doctrinemd).
 
 ## Invariant
 
@@ -94,7 +94,7 @@ references are explicitly forbidden.
 Canonical string form (consumed by `parse_citation`):
 
 ```
-docs/governance/complexity/distilled-characteristics-2026-05-04.md § radon-cc (corpus revision 1)
+docs/governance/complexity/distilled-characteristics-2026-10-22.md § lizard-ccn (corpus revision 1)
 ```
 
 Field constraints:

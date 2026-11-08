@@ -487,6 +487,8 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `agent-failure-modes.md`
 
+Prior `0.8.3` banner: *"version narrative lifted to Rule Version History; binding rules unchanged."* Superseded 2026-11-08 by `0.8.4` (operator: *"fix what is stale"*), which re-points the Reckless-action backstop. It cited *"DO IT RIGHT #1 (fix the class, not the instance); brief-boundary anti-pattern"*: DO IT RIGHT #1 guards no hard-to-reverse action, and no canon defines a brief-boundary anti-pattern (the old Never #5 it once named resolves to the pipeline-stage rule in `behavior-rules.md`). It now names the ask-when-unsure rule and the brief's Allowed Paths with DO IT RIGHT #11.
+
 ### Changed 2026-09-24 at version `0.8.2` (GHI #1019)
 
 The OpenAI-tier source moved from the GPT-5.6 System Card (§§ 7.1–7.4, 9.1.3.6, 9.2.2) to the GPT-6 Astra System Card (§§ 8.3.1, 8.6, 8.7, 8.8, 9.1–9.2). GPT-6 § 8.7 splits verbalized metagaming (reasoning about the grader) from oversight gaming (acting on it so the result loses its intended meaning); pattern 9 is oversight gaming. The METR and GPT-5.6 § 9.2.2 summary-omission findings have no GPT-6 counterpart. Patterns unchanged (nine).
@@ -841,6 +843,8 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `security-sensitivity.md`
 
+Prior `0.6.1` banner: *"version narrative lifted to Rule Version History; binding rules unchanged."* Superseded 2026-11-08 by `0.6.2` (operator: *"fix what is stale"*): § Registry contract cites the frontmatter read at `src/gzkit/commands/validate_sensitivity.py` (it named `validate_cmd.py`); clause 3's trigger is the marker condition (it read *"When `.gzkit/mx.json` exists"*); and GHI #682 is recorded closed 2026-07-24 (it read *"two post-cutover briefs currently failing"*). § Heightened walkthrough and clause 3's demotion claim were left for an operator ruling.
+
 Lifted 2026-08-29 at version `0.5.1` (rule now at `0.6.0`).
 
 > **Rule version:** `0.5.1` — aligned the MX-marker path in § 3 to code truth: the hangar marker file is `.gzkit/mx.json` (`src/gzkit/mx/marker.py:29`), not `.gzkit/mx-active` (GHI #650). Prior `0.5.0` — named two unenforced surfaces the rule had been asserting as binding (Pass A conflict-matrix rows 22 and 23, run 2026-07-16). The auto-detect floor's "escape is fail-closed" language silently does not hold inside the MX hangar — `sensitivity` is not in `GATE5_INVARIANTS`, so the scope resolves ADVISORY and its exit-3 errors are dropped; the demotion is deliberate (a fail-closed sensitivity scope would lock the hangar against the briefs an operator enters it to repair — GHI #682) but was unannounced. The § Registry contract's self-bootstrapping clause presupposes an editing brief, which the operator-canon direct-fix path never has, leaving the floor unenforced on the path canon mandates. Both are now stated rather than implied. Prior `0.4.0` — GHI #625: the auto-detect floor now fails closed (`sensitivity-floor-violation`, exit 3) on an *omitted* declaration over a registered overlap, not only on a *wrong* one; pre-cutover briefs are grandfathered via `data/sensitivity_floor_grandfather.json`. Prior `0.3.2` — renamed prohibited `## Anti-patterns` heading → `## Do Not` (OBPI-0.0.54-04 shape conformance pass).
@@ -1115,6 +1119,8 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `complexity-doctrine.md`
 
+Prior `0.4.1` banner: *"version narrative lifted to Rule Version History; binding rules unchanged."* Superseded 2026-11-08 by `0.4.2` (operator: *"fix what is stale"*): the canonical-string example cites the binding 2026-10-22 distillation at `§ lizard-ccn`, where it cited the retired metric at *"distilled-characteristics-2026-05-04.md § radon-cc (corpus revision 1)"* (Radon retired in RO-9 tranche 4, GHI #1183). The pairing example *"(e.g. p90 = 7)"*, also `radon_cc`'s, was left for an operator ruling because an attested test pins it.
+
 Lifted 2026-08-30 at version `0.3.1` (rule now at `0.4.0`).
 
 > **Rule version:** `0.3.1` — renamed prohibited `## Corpus Anti-Patterns` heading → `## Corpus Disqualifiers` (OBPI-0.0.54-04 shape conformance pass).
@@ -1126,6 +1132,8 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 > **Rule version:** `0.4.0` — scored for real under GHI #921 (2026-08-30). This rule sat in `data/advisory_scorecard_grandfather.json`, pinned at `0.3.1` against a version nobody recorded; the pin is stripped by any edit, so its clauses were re-read and its Coverage Ledger rows added or corrected in the same commit. Prior version history lifted to [Rule Version History](rule-version-history.md#complexity-doctrinemd). Binding rules unchanged.
 
 ## `complexity-thresholds.md`
+
+Prior `0.6.0` banner: *"the table binds to the 2026-10-22 distillation: Radon's seven metrics retire, module size is `lizard_file_nloc`, and nesting depth leaves the bootstrap carve-out for corpus bands (RO-9 tranche 4, GHI #1183)."* Superseded 2026-11-08 by `0.6.1` (operator: *"fix what is stale"*): the `block` row read *"`gz complexity advise` exits 3 and the auto-chain hook refuses the commit"*, though the hook is opt-in and not installed here; and the amendment protocol read *"**Silent edits are forbidden** by the validator"*, though `gz validate --complexity-thresholds` checks no edit's provenance. § Invariant's one-authority claim was left for an operator ruling.
 
 Lifted 2026-08-30 at version `0.4.0` (rule now at `0.5.0`).
 

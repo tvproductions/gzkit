@@ -86,7 +86,7 @@ The rule originally lived at `.gzkit/rules/defect-fix-routing.md` with a univers
 ## Related
 
 - [AGENTS.md § Defect-fix routing](https://github.com/tvproductions/gzkit/blob/main/AGENTS.md#defect-fix-routing) — the binding threshold tables and decision protocol this page is the pedagogy for.
-- [AGENTS.md § Behavior Rules — Never, item 5](https://github.com/tvproductions/gzkit/blob/main/AGENTS.md#never) (brief-boundary anti-pattern).
+- [AGENTS.md § Behavior Rules](https://github.com/tvproductions/gzkit/blob/main/AGENTS.md#behavior-rules) — the ask-when-unsure rule, and the brief's Allowed Paths with DO IT RIGHT #11 (surgical changes), which deny an action the brief does not name. The former "Never, item 5" citation resolves through [behavior-rules.md](behavior-rules.md#anchor-in-agentsmd).
 - [AGENTS.md § DO IT RIGHT, item 7 (6c)](https://github.com/tvproductions/gzkit/blob/main/AGENTS.md#do-it-right-craftsmanship-maxim) — "choose fix scope per thresholds, not intuition." Ceremony is not always more thorough.
 - [`gz-obpi-pipeline` SKILL](https://github.com/tvproductions/gzkit/blob/main/.gzkit/skills/gz-obpi-pipeline/SKILL.md) — the ceremony this rule modulates; its "When NOT to Use" section cites the direct-fix thresholds.
 - [`gz-obpi-specify` SKILL](https://github.com/tvproductions/gzkit/blob/main/.gzkit/skills/gz-obpi-specify/SKILL.md) — the brief-authoring skill this rule modulates.

@@ -56,7 +56,7 @@ witnesses, and no two may substitute for the third.
 ## Related
 
 - ADR-0.0.22 — `docs/design/adr/foundation/ADR-0.0.22-security-sensitivity-doctrine/`
-- AGENTS.md § Lane & Kind & Sensitivity Attestation Matrix
+- AGENTS.md § Gate Covenant ("Gate 5 is universal") and § OBPI Acceptance Protocol (the `security` sensitivity bullet), which replaced the Lane & Kind & Sensitivity Attestation Matrix at ADR-0.0.36
 - `docs/governance/arb-middleware.md` — ARB middleware contract
 - `docs/governance/trust-doctrine.md` — T1/T2/T3 invariants
 

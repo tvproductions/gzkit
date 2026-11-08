@@ -9,11 +9,11 @@ paths:
 description: Per-metric threshold table mapping percentile + absolute boundaries to fixed three-value trigger semantics (block / warn / advise) for the gzkit complexity-doctrine cluster
 ---
 
-<!-- rule-version: 0.6.0 -->
+<!-- rule-version: 0.6.1 -->
 
 # Complexity Thresholds (gzkit)
 
-> **Rule version:** `0.6.0` — the table binds to the 2026-10-22 distillation: Radon's seven metrics retire, module size is `lizard_file_nloc`, and nesting depth leaves the bootstrap carve-out for corpus bands (RO-9 tranche 4, GHI #1183); prior banners in [Rule Version History](../../docs/governance/rule-version-history.md#complexity-thresholdsmd).
+> **Rule version:** `0.6.1` — the `block` row and the amendment protocol stop claiming an uninstalled hook and a validator that detects silent edits (operator, 2026-11-08: *"fix what is stale"*); prior banners in [Rule Version History](../../docs/governance/rule-version-history.md#complexity-thresholdsmd).
 
 ## Data source-of-truth
 
@@ -55,7 +55,7 @@ body edit.
 
 | Value | Effect on downstream consumer surfaces |
 |-------|----------------------------------------|
-| `block` | The metric crossing this band fails the gate: `gz complexity advise` exits 3 and the auto-chain hook refuses the commit. |
+| `block` | The metric crossing this band fails the gate: `gz complexity advise` exits 3, and the opt-in auto-chain hook refuses the commit where it is installed. This repository does not install it; its pre-commit runs `gz validate --complexity-ceiling` instead. |
 | `warn` | The metric crossing this band surfaces an advisor recommendation (ADR-0.0.29). The build proceeds; the advisor diagnosis lands in the developer's session. |
 | `advise` | The metric crossing this band feeds the authoring-guidance surface only (ADR-0.0.30). No advisor invocation; no build effect. |
 
@@ -99,6 +99,6 @@ from the 2026-10-22 pass (operator, "Corpus bands (Rec.)").
 
 ## Operator-amendable mapping protocol
 
-Amendments to `(metric, band, trigger)` mappings flow through the doctrine-amendment-protocol stub (ADR-0.0.27 OBPI-02). **Silent edits are forbidden** by the validator (OBPI-0.0.28-03 -- `gz validate --complexity-thresholds`).
+Amendments to `(metric, band, trigger)` mappings flow through the doctrine-amendment-protocol stub (ADR-0.0.27 OBPI-02). **Silent edits are forbidden**, and no validator detects one: `gz validate --complexity-thresholds` (OBPI-0.0.28-03) checks the table's shape and citation, never whether an amendment was recorded, so the protocol is held by review.
 
 > See [rationale doc](../../docs/governance/complexity/complexity-thresholds-rationale.md#operator-amendable-mapping-protocol) for the full amendment protocol.
