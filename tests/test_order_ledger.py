@@ -381,10 +381,18 @@ class GateFiveTests(_OrderCase):
         self.close(decision="terminate", attestor="g0", attestation_text="stop")
         self.assertEqual(order_holds(self.ledger, "ORD-01-import"), {})
 
-    def test_a_closed_order_moves_no_further_and_releases_its_reqs(self) -> None:
-        """Ruling 53: a closed order holds no REQ, so a later order freezes it again."""
+    def test_a_held_req_is_never_frozen_again_at_that_revision(self) -> None:
+        """Ruling 81: a REQ a proceed holds is delivered there, so no later order freezes it."""
         self.walk_to("accepted")
         self.close(**_CLOSE)
+        self.move("opened", order="ORD-02-matcher", **_PAYLOADS["opened"])
+        output = self.assert_refused("frozen", order="ORD-02-matcher", **_FREEZE)
+        self.assertIn("ruling 81", output)
+
+    def test_a_closed_order_moves_no_further_and_releases_its_reqs(self) -> None:
+        """Ruling 53: a terminated order holds no REQ, so a later order freezes it again."""
+        self.walk_to("accepted")
+        self.close(decision="terminate", attestor="g0", attestation_text="stop")
         for state in ("opened", "frozen", "commenced", "accepted", "closed"):
             with self.subTest(state=state):
                 self.assert_refused(state, **_PAYLOADS.get(state, _CLOSE))

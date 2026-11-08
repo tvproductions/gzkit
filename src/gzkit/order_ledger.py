@@ -27,7 +27,12 @@ from pydantic import BaseModel, ConfigDict, Field
 from gzkit.events import BaselinedReq, OrderTransitionedEvent, WorkPackageDecision
 from gzkit.ledger import ledger_row
 from gzkit.models.catalog import RepairReq
-from gzkit.work_package_ledger import declared_modules, footprint_sealed, work_package_state
+from gzkit.work_package_ledger import (
+    declared_modules,
+    footprint_sealed,
+    package_held_reqs,
+    work_package_state,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -305,8 +310,16 @@ def _check_frozen(catalog: Catalog, ledger: Ledger, order: Order, move: OrderMov
         )
     held = {req.id: req for req in catalog.reqs}
     holders = _live_holders(ledger, order)
+    delivered = set(package_held_reqs(ledger, order.work_package))
     for entry in move.baseline:
         _check_entry(held, holders, order, entry)
+        if f"{entry.req}@{entry.revision}" in delivered:
+            _refuse(
+                f"{entry.req} at revision {entry.revision} is held: a proceed delivered it there "
+                "(RP-12 ruling 78), so no later order freezes it at that revision (ruling 81). "
+                "New work on it is a new revision through a `reopen` exit, or a REQ that "
+                "supersedes it."
+            )
     package = _package(catalog, order)
     _check_seal_grows(ledger, package)
     _check_alterations(ledger, order, package, move)
