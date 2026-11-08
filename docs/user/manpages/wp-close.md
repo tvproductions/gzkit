@@ -1,11 +1,11 @@
 # gz wp close
 
-Close an accepted work package through Gate 5.
+Close an accepted delivery package through Gate 5, or a repair package once its orders have closed.
 
 ## Usage
 
 ```bash
-gz wp close <WP-id> --decision <decision> --attestor <id> --residual-risk <text> --evidence <text> [--account <id>]... [--open-departure <id>]... [OPTIONS]
+gz wp close <WP-id> [--decision <decision>] --attestor <id> --residual-risk <text> --evidence <text> [--account <id>]... [--open-departure <id>]... [OPTIONS]
 ```
 
 ## Options
@@ -13,7 +13,7 @@ gz wp close <WP-id> --decision <decision> --attestor <id> --residual-risk <text>
 | Flag | Description |
 |------|-------------|
 | `WP-id` | The work package's id. Required |
-| `--decision` | `proceed`, `redirect`, `pause` or `terminate`. Required |
+| `--decision` | `proceed`, `redirect`, `pause` or `terminate`. Required for a delivery package; refused for a repair package, whose Gate 5 is its orders' |
 | `--attestor` | The Gate 5 attestor. Required and never defaulted: closing is the operator's own act |
 | `--residual-risk` | The residual risk. Required |
 | `--account` | An alteration accounted as its configuration change. Repeatable; every alteration must be accounted |
@@ -26,15 +26,17 @@ gz wp close <WP-id> --decision <decision> --attestor <id> --residual-risk <text>
 
 ## Description
 
-Gate 5 stays per work package (R2). `close` moves an accepted delivery package,
-or an initiated repair package, to `closed`, recording the decision, the attestor
-and the residual risk. A repair package moves only `initiated` to `closed`, its
-orders carrying the run (RP-12 ruling 44), and its close carries the same payload
-(ruling 62). Reading every order's Gate 5 lands with Gate 5 at the order (O2
-task 4), and the operator's words for return to service with O5 (ruling 32), so
-until then the close records a Gate 5 decision of its own. Every
-alteration is accounted as its configuration change, and each departure still
-open is named. The event also records the package's lane, which the writer
+`close` moves an accepted delivery package to `closed` through Gate 5 (R2),
+recording the decision, the attestor and the residual risk. A repair package moves
+only `initiated` to `closed`, its orders carrying the run (RP-12 ruling 44). Gate 5
+sits at each of its orders, [`gz wp order close`](wp-order-close.md), so the
+package's close is refused while any order is not closed, carries no `--decision`
+of its own, and records each order's decision as the ledger holds it in
+`order_decisions` (ruling 76); it keeps the attestor, the residual risk, the
+alterations and the departures (ruling 62). Return to service, on the operator's
+words, lands with O5 (ruling 32). Gate 5 is the operator's act, so a call the
+dispatch stamp marks as a subagent's is refused (ruling 77). Every alteration is
+accounted as its configuration change, and each departure still open is named. The event also records the package's lane, which the writer
 derives and the caller never supplies (RO-5 tranche 4): the stored lane of a
 repair package, or `heavy` for a delivery package whose outcome is user-facing.
 Lane-specific gate enforcement at close is RO-12's. A delivery close also moves
@@ -53,14 +55,32 @@ $ uv run gz wp close WP-02-resume --decision proceed --attestor g0 --residual-ri
 WP-02-resume: accepted -> closed
 ```
 
-A repair package, in a scratch project at `/private/tmp/gz-act5` holding
-`WP-01-stamp` initiated with the alteration `ALT-1`:
+A repair package, in a scratch project holding `WP-01-stamp` initiated with no
+alterations. `ORD-02-spare` is closed as `terminate`; `ORD-01-import` is still
+accepted:
+
+```console
+$ uv run gz wp close WP-01-stamp --attestor g0 --residual-risk none --evidence closeout
+Repair package WP-01-stamp closes once every order is closed; ORD-01-import
+still stands open. Close each through Gate 5 with `uv run gz wp order close
+<ORD-id>` first (RP-12 ruling 76).
+```
+
+Once `ORD-01-import` is closed through Gate 5 too:
 
 ```console
 $ uv run gz wp close WP-01-stamp --decision proceed --attestor g0 --residual-risk none --evidence closeout
-Every alteration of WP-01-stamp is accounted at close as a configuration change.
-$ uv run gz wp close WP-01-stamp --decision proceed --attestor g0 --residual-risk none --account ALT-1 --evidence closeout
+Repair package WP-01-stamp books no Gate 5 decision of its own: Gate 5 sits at
+each order, `uv run gz wp order close` (RP-12 rulings 30 and 76). Close it
+without --decision.
+$ uv run gz wp close WP-01-stamp --attestor g0 --residual-risk none --evidence closeout
 WP-01-stamp: initiated -> closed
+```
+
+The close it booked, read from the scratch ledger:
+
+```json
+{"schema":"gzkit.ledger.v1","event":"work_package_transitioned","id":"WP-01-stamp","ts":"2026-11-08T08:12:29.609905+00:00","work_package":"WP-01-stamp","to_state":"closed","order_decisions":{"ORD-01-import":"terminate","ORD-02-spare":"terminate"},"evidence":"closeout","open_departures":[],"modules":[],"from_state":"initiated","configuration_changes":[],"attestor":"g0","residual_risk":"none","approved_alterations":[],"lane":"lite","baseline":[]}
 ```
 
 ## Exit codes
@@ -70,9 +90,9 @@ WP-01-stamp: initiated -> closed
 | 0 | The move was booked |
 | 1 | The work package is not in `data/catalog/work_packages.json` |
 | 2 | Usage error |
-| 3 | The lifecycle or the move's own rules refuse it; nothing was written |
+| 3 | A subagent's call, or the lifecycle or the move's own rules refuse it, a repair package's open order or decision among them; nothing was written |
 
 ## See also
 
-[`gz wp new`](wp-new.md), [`gz wp show`](wp-show.md),
+[`gz wp new`](wp-new.md), [`gz wp show`](wp-show.md), [`gz wp order close`](wp-order-close.md),
 [`gz validate --catalog`](validate.md)

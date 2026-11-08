@@ -1832,6 +1832,10 @@ class WorkPackageTransitionedEvent(_EventBase):
     lane: Literal["lite", "heavy"] | None = Field(
         None, description="The package's lane, derived by the writer at closed (RO-5 tranche 4)"
     )
+    order_decisions: dict[str, WorkPackageDecision] = Field(
+        default_factory=dict,
+        description="Each order's Gate 5 decision, read by the writer at a repair close (RP-12 76)",
+    )
 
 
 class WorkPackageChangedEvent(_EventBase):

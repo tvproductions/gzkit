@@ -16,12 +16,13 @@ from tempfile import TemporaryDirectory
 
 from gzkit.events import (
     BaselinedReq,
+    OrderTransitionedEvent,
     WorkPackageChangedEvent,
     WorkPackageIssueClosedEvent,
     WorkPackageTransitionedEvent,
     parse_typed_event,
 )
-from gzkit.ledger import Ledger
+from gzkit.ledger import Ledger, ledger_row
 from gzkit.models.catalog import (
     Alteration,
     Catalog,
@@ -161,6 +162,7 @@ _CLOSE = {
     "configuration_changes": ("ALT-1",),
     "open_departures": ("DFS-1",),
 }
+_REPAIR_CLOSE = {k: v for k, v in _CLOSE.items() if k != "decision"}
 _PAYLOADS: dict[str, dict[str, object]] = {
     "initiated": {"operator_text": "start the resume package"},
     "frozen": _FREEZE,
@@ -317,21 +319,54 @@ class RepairLifecycleTests(_LedgerCase):
                 self.assertEqual(_rows(self.path), before)
         self.assertEqual(work_package_state(self.ledger, "WP-02-astral"), "initiated")
 
+    def book_order(self, order: str, to_state: str, **fields: object) -> None:
+        """Book one order move on this test's own ledger, as the order writer would."""
+        event = OrderTransitionedEvent.model_validate(
+            {"event": "order_transitioned", "id": order, "order": order,
+             "work_package": "WP-02-astral", "to_state": to_state, "evidence": "e", **fields}
+        )  # fmt: skip
+        self.ledger.append(ledger_row(event))
+
+    def close(self) -> WorkPackageTransitionedEvent:
+        return self.move("closed", work_package="WP-02-astral", **_REPAIR_CLOSE)
+
     def test_the_close_follows_initiation_and_keeps_the_payload(self) -> None:
-        event = self.move("closed", work_package="WP-02-astral", **_CLOSE)
+        """Rulings 62 and 76: the payload stays, less a Gate 5 decision of its own."""
+        event = self.close()
         self.assertEqual((event.from_state, event.to_state), ("initiated", "closed"))
-        self.assertEqual((event.attestor, event.decision), ("g0", "proceed"))
+        self.assertEqual((event.attestor, event.decision), ("g0", None))
         self.assertEqual(event.configuration_changes, ("ALT-1",))
         self.assertEqual(event.open_departures, ("DFS-1",))
         self.assertEqual(event.lane, "lite")
 
-    def test_the_close_still_needs_gate_5_and_every_alteration(self) -> None:
-        for missing in ("attestor", "decision", "residual_risk", "configuration_changes"):
+    def test_the_close_still_needs_its_attestor_and_every_alteration(self) -> None:
+        for missing in ("attestor", "residual_risk", "configuration_changes"):
             with self.subTest(missing=missing):
-                fields = {k: v for k, v in _CLOSE.items() if k != missing}
+                fields = {k: v for k, v in _REPAIR_CLOSE.items() if k != missing}
                 self.assert_refused(
                     self.move, to_state="closed", work_package="WP-02-astral", **fields
                 )
+
+    def test_a_repair_close_books_no_gate_5_decision_of_its_own(self) -> None:
+        """Ruling 76: Gate 5 sits at the order (ruling 30)."""
+        with self.assertRaisesRegex(WorkPackageLedgerError, "rulings 30 and 76"):
+            self.move("closed", work_package="WP-02-astral", **_CLOSE)
+
+    def test_the_close_waits_for_every_order_and_records_their_decisions(self) -> None:
+        """Ruling 76: the package closes once each order is closed, reading its Gate 5."""
+        self.book_order("ORD-01-x", "opened", operator_text="open it")
+        self.book_order("ORD-02-y", "opened", operator_text="open it")
+        self.book_order("ORD-02-y", "closed", decision="terminate", attestor="g0",
+                        attestation_text="withdraw it")  # fmt: skip
+        before = _rows(self.path)
+        with self.assertRaisesRegex(WorkPackageLedgerError, "ORD-01-x"):
+            self.close()
+        self.assertEqual(_rows(self.path), before)
+        self.book_order("ORD-01-x", "closed", decision="terminate", attestor="g0",
+                        attestation_text="withdraw it too")  # fmt: skip
+        self.assertEqual(
+            self.close().order_decisions, {"ORD-01-x": "terminate", "ORD-02-y": "terminate"}
+        )
 
 
 class CloseTests(_LedgerCase):

@@ -517,8 +517,9 @@ def _register_wp_close_change(wp_commands: argparse._SubParsersAction) -> None:
         "close",
         help="Close an accepted or repair package through Gate 5",
         description=(
-            "Close an accepted delivery package, or an initiated repair package,\n"
-            "through Gate 5 (RP-12 rulings 44 and 62)."
+            "Close an accepted delivery package through Gate 5 with its --decision, or\n"
+            "an initiated repair package once every order is closed, with no decision\n"
+            "of its own; a subagent's call is refused (RP-12 rulings 44, 62, 76, 77)."
         ),
         epilog=build_epilog(
             [
@@ -526,15 +527,15 @@ def _register_wp_close_change(wp_commands: argparse._SubParsersAction) -> None:
                     "gz wp close WP-01-x --decision proceed --attestor g0 "
                     "--residual-risk R --evidence E"
                 ),
+                "gz wp close WP-02-repair --attestor g0 --residual-risk R --evidence E",
             ]
         ),
     )
     p_close.add_argument("work_package", help="The work package's id, WP-<NN>-<slug>")
     p_close.add_argument(
         "--decision",
-        required=True,
         choices=("proceed", "redirect", "pause", "terminate"),
-        help="The Gate 5 decision",
+        help="The Gate 5 decision, for a delivery package; a repair package's is its orders'",
     )
     # Human-act verb (GHI #1036): Gate 5 is the operator's own act, so never defaulted.
     p_close.add_argument("--attestor", required=True, help="Gate 5 attestor, never defaulted")
@@ -554,11 +555,12 @@ def _register_wp_close_change(wp_commands: argparse._SubParsersAction) -> None:
                 "to_state": "closed",
                 "evidence": a.evidence,
                 "attestor": a.attestor,
-                "decision": a.decision,
+                **({"decision": a.decision} if a.decision is not None else {}),
                 "residual_risk": a.residual_risk,
                 "configuration_changes": a.accounted,
                 "open_departures": a.open_departures,
             },
+            called_by_subagent=bool(getattr(a, "called_by_subagent", False)),
             as_json=a.as_json,
         )
     )

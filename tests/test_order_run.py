@@ -143,10 +143,12 @@ class DispatchOnAnOrder(_OrderRun):
         self.refused("bound", self.dispatch)
 
     def test_an_order_whose_package_closed_takes_no_dispatch(self) -> None:
-        """Ruling 44: an order works only while its repair package is initiated."""
+        """Rulings 44 and 76: the package closes once its orders have, and none works on."""
+        self.move("accepted")
+        self.move("closed", decision="terminate", attestor="g0", attestation_text="stop")
         close = TransitionRequest(
             work_package=_PACKAGE, to_state="closed", evidence="e", attestor="g0",
-            decision="terminate", residual_risk="none",
+            residual_risk="none",
         )  # fmt: skip
         record_work_package_transition(self.catalog, self.ledger, close)
         self.refused("initiated", self.dispatch)

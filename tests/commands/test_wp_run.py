@@ -47,8 +47,8 @@ def _rows(kind: str) -> list[dict]:
     return [row for row in rows if row.get("event") == kind]
 
 
-class TestRunVerbs(_CommencedOrder):
-    """A repair package's run is its order's (RP-12 ruling 44), so each verb names it."""
+class _RunCase(_CommencedOrder):
+    """A commenced order on a repair package, driven through the run's verbs."""
 
     def _dispatch(self, role: str, req: str = "REQ-1") -> int:
         args = ["wp", "dispatch", _PACKAGE, *_ON_ORDER, "--role", role, "--model", "m"]
@@ -57,6 +57,64 @@ class TestRunVerbs(_CommencedOrder):
     def _block(self) -> int:
         args = ["wp", "block", _PACKAGE, *_ON_ORDER, "--reason", "r", "--next-action", "a"]
         return self.runner.invoke(main, args).exit_code
+
+
+class TestTheRepairClose(_RunCase):
+    """A repair package's close waits on its orders' Gate 5 (RP-12 rulings 76, 77)."""
+
+    def _stop_and_close_the_order(self) -> None:
+        """Stop the order by a terminate exit, accept it excused, close it through Gate 5."""
+        for role in ("Implementer", "SpecReviewer", "Implementer", "Implementer"):
+            self.assertEqual(self._dispatch(role), 0)
+        self.assertEqual(self._block(), 0)
+        for args in (
+            ["wp", "unblock", _PACKAGE, *_ON_ORDER, "--ruling", "stop", "--operator", "g0",
+             "--exit", "terminate"],
+            ["wp", "order", "accept", _ORDER, "--evidence", "stopped"],
+            ["wp", "order", "close", _ORDER, "--decision", "terminate", "--attestor", "g0",
+             "--attestation-text", "the stop stands", "--evidence", "gate 5"],
+        ):  # fmt: skip
+            result = self.runner.invoke(main, args)
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+
+    def test_a_repair_package_closes_only_once_its_orders_have_closed(self) -> None:
+        """RP-12 ruling 76: its Gate 5 is its orders', so it carries no decision."""
+        close = ["wp", "close", _PACKAGE, "--attestor", "g0", "--residual-risk", "R"]
+        result = self.runner.invoke(main, [*close, "--evidence", "E"])
+        self.assertEqual(result.exit_code, 3, msg=result.output)
+        self.assertIn(f"{_ORDER} still stands open", " ".join(result.output.split()))
+        self._stop_and_close_the_order()
+        decided = self.runner.invoke(main, [*close, "--decision", "proceed", "--evidence", "E"])
+        self.assertEqual(decided.exit_code, 3, msg=decided.output)
+        result = self.runner.invoke(main, [*close, "--evidence", "E", "--json"])
+        self.assertEqual(result.exit_code, 0, msg=result.output)
+        self.assertEqual(json.loads(result.output)["order_decisions"], {_ORDER: "terminate"})
+
+    def test_gate_5_on_a_package_refuses_a_subagents_call(self) -> None:
+        """RP-12 ruling 77: Gate 5 is the operator's act, at the package as at the order."""
+        self._stop_and_close_the_order()
+        stamp = {STAMP_ROOT_ENV: Path.cwd().resolve().as_posix(), STAMP_ID_ENV: ""}
+        close = ["wp", "close", _PACKAGE, "--attestor", "g0", "--residual-risk", "R"]
+        with patch.dict(os.environ, stamp):
+            result = self.runner.invoke(main, [*close, "--evidence", "E"])
+        self.assertEqual(result.exit_code, 3, msg=result.output)
+        self.assertIn("ruling 77", " ".join(result.output.split()))
+        self.assertEqual(_rows("work_package_transitioned")[-1]["to_state"], "initiated")
+
+    def test_a_closed_package_takes_no_new_issue(self) -> None:
+        self._stop_and_close_the_order()
+        close = ["wp", "close", _PACKAGE, "--attestor", "g0"]
+        result = self.runner.invoke(main, [*close, "--residual-risk", "R", "--evidence", "E"])
+        self.assertEqual(result.exit_code, 0, msg=result.output)
+        with patch("gzkit.commands.wp.tag_issues") as tag:
+            result = self.runner.invoke(main, ["wp", "attach", _PACKAGE, "--issue", "1300"])
+        self.assertEqual(result.exit_code, 3)
+        self.assertIn(f"{_PACKAGE} is closed", " ".join(result.output.split()))
+        tag.assert_not_called()
+
+
+class TestRunVerbs(_RunCase):
+    """A repair package's run is its order's (RP-12 ruling 44), so each verb names it."""
 
     def test_the_cycle_past_the_bound_exits_3_and_books_nothing(self) -> None:
         for role in ("Implementer", "SpecReviewer") * 3:
@@ -222,16 +280,6 @@ class TestRunVerbs(_CommencedOrder):
             args = ["wp", "unblock", _PACKAGE, "--ruling", "r", "--operator", "g0"]
             self.runner.invoke(main, [*args, "--exit", "reopen", "--req", "REQ-1"])
         self.assertEqual(unblock.call_args.args[2].req, "REQ-1")
-
-    def test_a_closed_package_takes_no_new_issue(self) -> None:
-        close = ["wp", "close", _PACKAGE, "--decision", "terminate", "--attestor", "g0"]
-        result = self.runner.invoke(main, [*close, "--residual-risk", "R", "--evidence", "E"])
-        self.assertEqual(result.exit_code, 0, msg=result.output)
-        with patch("gzkit.commands.wp.tag_issues") as tag:
-            result = self.runner.invoke(main, ["wp", "attach", _PACKAGE, "--issue", "1300"])
-        self.assertEqual(result.exit_code, 3)
-        self.assertIn(f"{_PACKAGE} is closed", " ".join(result.output.split()))
-        tag.assert_not_called()
 
     def test_an_unknown_package_exits_1(self) -> None:
         args = ["wp", "block", "WP-99-none", "--reason", "r", "--next-action", "a"]

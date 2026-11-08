@@ -290,9 +290,48 @@ def _check_frozen(catalog: Catalog, package: WorkPackage, move: TransitionReques
         )
 
 
-def _check_closed(package: WorkPackage, move: TransitionRequest) -> None:
-    """Close: Gate 5's attestor and decision, the residual, every alteration accounted."""
-    if not (move.attestor or "").strip() or move.decision is None:
+def package_order_moves(ledger: Ledger, work_package: str) -> dict[str, dict[str, object]]:
+    """Read the latest move of each order in a package, from its `order_transitioned` rows.
+
+    Every order is born on the ledger (RP-12 ruling 52), so the rows alone name them.
+
+    Returns:
+        Each order's id to its latest move's fields, in the order the orders were opened.
+
+    """
+    latest: dict[str, dict[str, object]] = {}
+    for row in ledger.query(event_type="order_transitioned"):
+        if row.extra.get("work_package") == work_package:
+            latest[str(row.extra["order"])] = row.extra
+    return latest
+
+
+def _check_repair_close(ledger: Ledger, package: WorkPackage, move: TransitionRequest) -> None:
+    """Refuse a repair close with a decision of its own or an open order (RP-12 ruling 76)."""
+    if move.decision is not None:
+        _refuse(
+            f"Repair package {package.id} books no Gate 5 decision of its own: Gate 5 sits at "
+            "each order, `uv run gz wp order close` (RP-12 rulings 30 and 76). Close it "
+            "without --decision."
+        )
+    moves = package_order_moves(ledger, package.id)
+    if open_orders := [order for order, row in moves.items() if row.get("to_state") != "closed"]:
+        _refuse(
+            f"Repair package {package.id} closes once every order is closed; "
+            f"{', '.join(open_orders)} still stands open. Close each through Gate 5 with "
+            "`uv run gz wp order close <ORD-id>` first (RP-12 ruling 76)."
+        )
+
+
+def _check_closed(ledger: Ledger, package: WorkPackage, move: TransitionRequest) -> None:
+    """Close: Gate 5's attestor and decision, the residual, every alteration accounted.
+
+    A repair package's Gate 5 is its orders' (RP-12 ruling 76), so it carries no
+    decision and waits for every order to close.
+    """
+    if package.kind == "repair":
+        _check_repair_close(ledger, package, move)
+    if not (move.attestor or "").strip() or (package.kind != "repair" and move.decision is None):
         _refuse(
             f"Work package {package.id} closes only through Gate 5: an attestor and a decision."
         )
@@ -306,7 +345,9 @@ def _check_closed(package: WorkPackage, move: TransitionRequest) -> None:
         _refuse(f"An open departure named at close is not one of {package.id}'s departures.")
 
 
-def _check_move(catalog: Catalog, package: WorkPackage, move: TransitionRequest) -> None:
+def _check_move(
+    catalog: Catalog, ledger: Ledger, package: WorkPackage, move: TransitionRequest
+) -> None:
     stray = sorted(move.model_fields_set - _MOVE_FIELDS - _STATE_FIELDS[move.to_state])
     if stray:
         _refuse(f"A move to {move.to_state} does not carry {', '.join(stray)}.")
@@ -317,7 +358,7 @@ def _check_move(catalog: Catalog, package: WorkPackage, move: TransitionRequest)
     if move.to_state == "frozen":
         _check_frozen(catalog, package, move)
     if move.to_state == "closed":
-        _check_closed(package, move)
+        _check_closed(ledger, package, move)
 
 
 def record_work_package_transition(
@@ -337,7 +378,7 @@ def record_work_package_transition(
         _refuse(refusal)
     if refusal := block_refusal(ledger, package.id):
         _refuse(refusal)
-    _check_move(catalog, package, move)
+    _check_move(catalog, ledger, package, move)
     fields = move.model_dump(exclude_unset=True)
     event = WorkPackageTransitionedEvent.model_validate(
         {
@@ -349,6 +390,14 @@ def record_work_package_transition(
             "modules": package.modules if move.to_state == "frozen" else (),
             "attestor": move.attestor.strip() if move.attestor else None,
             "lane": work_package_lane(catalog, package.id) if move.to_state == "closed" else None,
+            "order_decisions": (
+                {
+                    order: row["decision"]
+                    for order, row in package_order_moves(ledger, package.id).items()
+                }
+                if move.to_state == "closed" and package.kind == "repair"
+                else {}
+            ),
         }
     )
     ledger.append(ledger_row(event))

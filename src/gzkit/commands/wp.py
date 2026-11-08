@@ -216,19 +216,42 @@ def wp_attach_cmd(*, work_package: str, issues: list[int], as_json: bool) -> Non
     fmt.emit(package if as_json else f"Attached {attached} to {package.id}.")
 
 
+def _refuse_subagent_gate_5(fields: dict[str, object], *, called_by_subagent: bool) -> None:
+    """Refuse a close from a subagent's call: Gate 5 is the operator's act (ruling 77).
+
+    Raises:
+        PolicyBreachError: The call is a close and the dispatch stamp marks it a subagent's.
+
+    """
+    if called_by_subagent and fields.get("to_state") == "closed":
+        msg = (
+            "Gate 5 is refused from a subagent's call: it is the operator's act (RP-12 "
+            "ruling 77, AGENTS.md § Attestation). Run it from the main session."
+        )
+        raise PolicyBreachError(msg)
+
+
 def wp_transition_cmd(
-    *, fields: dict[str, object], baseline: list[str] | None = None, as_json: bool
+    *,
+    fields: dict[str, object],
+    baseline: list[str] | None = None,
+    called_by_subagent: bool = False,
+    as_json: bool,
 ) -> None:
     """Book one lifecycle move: initiate, freeze, commence, accept or close (ruling 5).
 
     ``fields`` are the ``TransitionRequest`` fields the verb's flags supplied; a freeze's
     ``baseline`` arrives as ``REQ-<n>@<revision>`` strings.
 
+    A close is Gate 5, the operator's act, so a call the dispatch stamp marks as a
+    subagent's is refused (RP-12 ruling 77).
+
     Raises:
-        PolicyBreachError: The lifecycle or the move's own rules refuse it; nothing is
-            written.
+        PolicyBreachError: A subagent's close, or the lifecycle or the move's own rules
+            refuse it; nothing is written.
 
     """
+    _refuse_subagent_gate_5(fields, called_by_subagent=called_by_subagent)
     root, catalog, ledger = _context()
     held = _held(catalog, str(fields["work_package"]))
     current = work_package_state(ledger, held.id)
