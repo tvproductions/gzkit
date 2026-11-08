@@ -3,9 +3,9 @@
 A dated record of the change orders the operator issued on 2026-11-08 to bring the classic
 architectural decision record into this drydock. The contract carries the ruling, the change-order
 notes on each owning order's row, the list-of-discrepancies lines and the passage-log row
-(`harbor-pilotage-candidate-2026-10-15.md`); this page holds the detail they point to. **Grades and
-owners in § The change orders are proposed for the operator's review and bind only once the operator
-rules them.**
+(`harbor-pilotage-candidate-2026-10-15.md`); this page holds the detail they point to. **Owners and
+grades in § The change orders were proposed for the operator's review; the operator ruled the owners
+by H2 and the grades by H3, both 2026-11-08.**
 
 ## Source
 
@@ -86,7 +86,7 @@ competing migration program"*, mapped onto anchors that already exist. No new or
 
 Each line names the owning order, what the order gains, and a proposed grade.
 
-| # | Owning order | What it gains | Proposed grade |
+| # | Owning order | What it gains | Grade (ruled by H3) |
 |---|---|---|---|
 | CO-1 | RP-6, contradicted canon | The ADR authoring surfaces moved to the decision-only form for new records, legacy records untouched: `.gzkit/templates/adr.md` (still carries `semver`, § Checklist, § Decomposition Scorecard and an attestation table), `src/gzkit/schemas/adr.json` (status enum `Pool` … `Deprecated`, `kind` derived from semver), the skills that author ADRs (`gz-adr-create`, `gz-plan`, `gz-design`) and their manpages, each through its generator. Canon that still states ADR-checklist containment is listed for its owner: root `AGENTS.md` § Gate Covenant (*"ADR Feature Checklist items and OBPI briefs correspond 1:1"*) is cut only by the operator (RP-7 stage 7) | blocks return to service (exit item 5) |
 | CO-2 | RP-6, with CO-1 (**ruled 2026-11-08**, H2) | The identity crossover: the resolver seam accepts the sequential decision id and the edition reference (`ADR-0001`, `ADR-0001-001`), new ids never collide with a retained id or alias, and the effective crossover commit and first sequential record are booked. The October identifier program's 1.0 timing and bulk-rename clauses are reconciled explicitly, not silently overridden | blocks return to service (exit items 2 and 11) |
@@ -111,7 +111,10 @@ Put to the operator one at a time; none is assumed.
   the capability records on RO-11, their first writer, rather than reopen the closed RO-3; B, RP-14
   as first drafted; C, reopen RP-2. Operator, by selection: *"RP-6, with CO-1 (Recommended)"*. The
   new form and its id land in one order; RP-6 takes code in the resolver seam.
-- **H3.** The grades in § The change orders.
+- **H3. Ruled 2026-11-08.** The grades in § The change orders. Put to the operator: A, as proposed;
+  B, CO-6 blocking too, so the sea trial could run a real classic-ADR approval; C, CO-1 and CO-2 due
+  before the first classic ADR is authored, short of exit item 5. Operator, by selection: *"Accept as
+  proposed (Recommended)"*.
 - **H4.** The crossover point: the effective commit or date, and the first sequential record.
 - **H5.** The final id grammar: padding width and slug rules for `ADR-<n>-<rev>-<slug>.md`.
 - **H6.** Whether § The general arrangement states the independent-evolution invariant and the
