@@ -280,6 +280,34 @@ class FreezeTests(_OrderCase):
     def test_an_unknown_state_is_refused(self) -> None:
         self.assert_refused("inspected")
 
+    def supersede_req_1(self) -> None:
+        successor = _repair_req("REQ-4", "WP-01-stamp").model_copy(update={"supersedes": "REQ-1"})
+        self.catalog = self.catalog.model_copy(update={"reqs": (*self.catalog.reqs, successor)})
+
+    def test_a_superseded_req_alone_is_never_frozen(self) -> None:
+        """Ruling 85: a superseded REQ is retired whole, so no order freezes it."""
+        self.supersede_req_1()
+        self.assertIn("ruling 85", self.assert_refused("frozen", **_FREEZE))
+
+    def test_a_superseded_req_beside_its_successor_is_never_frozen(self) -> None:
+        """Ruling 85: no order owes a replaced obligation together with its replacement."""
+        self.supersede_req_1()
+        both = (BaselinedReq(req="REQ-1", revision=1), BaselinedReq(req="REQ-4", revision=1))
+        self.assertIn("ruling 85", self.assert_refused("frozen", **{**_FREEZE, "baseline": both}))
+
+    def test_the_successor_is_frozen_in_its_place(self) -> None:
+        self.supersede_req_1()
+        successor = (BaselinedReq(req="REQ-4", revision=1),)
+        frozen = self.move("frozen", **{**_FREEZE, "baseline": successor})
+        self.assertEqual(frozen.baseline, successor)
+
+    def test_an_order_frozen_before_the_supersession_runs_on(self) -> None:
+        """Ruling 85: a later supersession leaves an order already frozen on the REQ."""
+        self.move("frozen", **_FREEZE)
+        self.supersede_req_1()
+        self.assertEqual(self.move("commenced").to_state, "commenced")
+        self.assertEqual(self.move("accepted").to_state, "accepted")
+
     def test_an_accepted_order_holds_its_req_until_its_gate_5(self) -> None:
         """Ruling 82: an accepted order awaiting Gate 5 still holds its baseline."""
         self.move("frozen", **_FREEZE)

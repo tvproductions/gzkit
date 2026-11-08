@@ -311,8 +311,14 @@ def _check_frozen(catalog: Catalog, ledger: Ledger, order: Order, move: OrderMov
     held = {req.id: req for req in catalog.reqs}
     holders = _live_holders(ledger, order)
     delivered = set(package_held_reqs(ledger, order.work_package))
+    successors = {req.supersedes: req.id for req in catalog.reqs if req.supersedes}
     for entry in move.baseline:
         _check_entry(held, holders, order, entry)
+        if successor := successors.get(entry.req):
+            _refuse(
+                f"{entry.req} is superseded by {successor}, so it is retired whole (RP-12 "
+                f"ruling 31) and no order freezes it (ruling 85). Freeze {successor} instead."
+            )
         if f"{entry.req}@{entry.revision}" in delivered:
             _refuse(
                 f"{entry.req} at revision {entry.revision} is held: a proceed delivered it there "

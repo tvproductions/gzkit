@@ -44,6 +44,10 @@ moves one step at a time, `opened` then `frozen`, `commenced` and `accepted`;
   frozen again there (ruling 81); new work on it is a REQ that supersedes it,
   written with [`gz wp req new`](wp-req-new.md) (rulings 50 and 83). No verb raises
   a REQ's revision.
+- A REQ another REQ in the store supersedes is retired whole (ruling 31), so it is
+  never frozen, alone or beside the REQ that supersedes it; the order freezes the
+  successor (ruling 85). An order frozen on a REQ before a later REQ superseded it
+  runs on to its Gate 5.
 - The freeze seals the repair package's footprint: the event records the
   package's paths, and from then on `gz wp show` and the acceptance fence read the
   latest order freeze plus the change orders after it, never the store, and a
@@ -121,6 +125,20 @@ REQ-<n>@<revision> --risk-note <text> --review-receipt <id>
 [--approve-alteration <id>] --evidence <text>`.
 ```
 
+In a scratch project where `REQ-2` was written with `--supersedes REQ-1`, the
+order freezes the successor and never the REQ it replaced:
+
+```console
+$ uv run gz wp order freeze ORD-01-import --baseline REQ-1@1 --risk-note 'Touches the hook.' --review-receipt review-01 --evidence 'nine-criteria review'
+REQ-1 is superseded by REQ-2, so it is retired whole (RP-12 ruling 31) and no
+order freezes it (ruling 85). Freeze REQ-2 instead. Nothing was written; correct
+the call and re-run `uv run gz wp order freeze <ORD-id> --baseline
+REQ-<n>@<revision> --risk-note <text> --review-receipt <id>
+[--approve-alteration <id>] --evidence <text>`.
+$ uv run gz wp order freeze ORD-01-import --baseline REQ-2@1 --risk-note 'Touches the hook.' --review-receipt review-01 --evidence 'nine-criteria review'
+ORD-01-import: opened -> frozen
+```
+
 Once the footprint is sealed, a change order cannot drop a path:
 
 ```console
@@ -151,7 +169,7 @@ ORD-01-import: opened -> frozen
 | 0 | Frozen |
 | 1 | The order, or its work package, is not in the store |
 | 2 | Usage error |
-| 3 | The freeze is refused: a booked order has lost its record, an empty baseline or a baseline entry, the lifecycle, the order's block, the package's state or footprint, a store that dropped a sealed path, a REQ another live order holds or a proceed holds, or approvals other than the alterations due; nothing written |
+| 3 | The freeze is refused: a booked order has lost its record, an empty baseline or a baseline entry, the lifecycle, the order's block, the package's state or footprint, a store that dropped a sealed path, a REQ another live order holds or a proceed holds, a superseded REQ, or approvals other than the alterations due; nothing written |
 
 ## See also
 
