@@ -704,6 +704,41 @@ jsonschema in 7 (`arb/validator.py`, `commands/validate_cmd.py`, `complexity/adv
 `justify/walkthrough.py`). Two readings conflict with item 14 as ruled: rich's registered reason is
 all CLI output, not TUIs; jinja2 renders gzkit's control surfaces, not CMS templates.
 
+## decision · pyyaml admitted as necessary, its reason to be stressed
+
+Operator, verbatim, on item 14c: *"then it would seem pyyaml is necessary - we should stress why"*.
+Admitted as a curated exception: stdlib has no YAML parser, and gzkit's records carry YAML
+frontmatter (source: why jinja2, jsonschema, pyyaml and rich are in gzkit today). *"Stress why"*
+asks for a stronger register reason than the one-line entry in `data/astral_exceptions.json`;
+drafting it is row 4's.
+
+## source · which schemas a Pydantic model already produces
+
+`git grep -n "model_json_schema" -- src` and the six jsonschema call sites read at the lines named · run and read 2026-11-08
+
+> `src/gzkit/models/catalog.py:349:    return {kind: model.model_json_schema() for kind, model in FILE_MODELS.items()}`
+
+> `src/gzkit/governance/trust_audits/catalog.py:86:        validator = Draft202012Validator(load_schema(f"catalog_{kind}"))`
+
+> `src/gzkit/airlock/model.py:162:    return SeamMap.model_json_schema()`; `src/gzkit/ontology/model.py:139:    return OntologyNode.model_json_schema()`; `src/gzkit/core/obpi_state_machine.py:171-172`; `src/gzkit/ontology/work.py:159-162`
+
+`src/gzkit/schemas/` holds 39 entries. At least the catalog, seam map, ontology node, OBPI state
+machine and work-edge schemas have a Pydantic producer, and the catalog audit validates data
+with jsonschema against the schemas its own models produce: a round trip through a schema file
+when the model could validate directly. The other jsonschema sites (the ARB receipts under
+`data/schemas/`, the manifest, the vendor manifest, constitutional invariants, section ownership,
+the advisor's archetype rules) validate against hand-authored schemas with no model behind them.
+Whether each committed schema file equals its producer's output was not traced, and why models were
+not written for the hand-authored ones is not on record: RP-9's register gives only *"Pydantic
+validates its own models, not arbitrary schema documents"*, which holds only where no model exists.
+
+## decision · the operator asks why jsonschema was not replaced by Pydantic models
+
+Operator, verbatim: *"jsonscema: as you point out: why didn't we then make Pydantic models to wrap
+those schema and handle it that way?"* The record has no answer to *why*; the read above shows the
+round trip and the hand-authored remainder. Whether jsonschema leaves gzkit, every schema becoming
+a model's output, is put next.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
