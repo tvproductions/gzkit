@@ -1135,6 +1135,29 @@ are admitted.
 - **98 and 102:** their measurable parts (no network or external services; a unit test under 200 ms)
   are to be enforced by the test runner, not left as rule text.
 
+## decision · family F13 admitted; item 86 made explicit
+
+Operator, verbatim: *"agree on 88, 95, 107 and 108. Agree on 86, but make explicit as much as
+possible. agree on 94."* Items 86, 88, 94, 95, 107 and 108 are admitted, 94 for gzkit and for
+adopters once RP-13 defines a mode contract outside gzkit.
+
+Item 86, *"JSON everywhere"*, made explicit from the rulings already taken, one kind of fact to one
+format and home:
+
+| Kind of fact | Home | Format | From |
+|---|---|---|---|
+| How the project's code is designed (the architecture map, the cognitive ceiling, later members' values) | `pyproject.toml` `[tool.py-gzkit]` | TOML | Q8, Q15 |
+| Tool configuration (uv, Ruff, ty, coverage) | `pyproject.toml` `[tool.<tool>]`, never a competing tool file | TOML | RP-15; F7 item 41 |
+| gzkit's governance settings for the project | `.gzkit.json` | JSON | Q8 |
+| Registers, baselines and thresholds a gate reads | `data/*.json` | JSON | F6 item 43; F9; RP-9 |
+| Events and transitions | `.gzkit/ledger.jsonl` | JSON Lines | `docs/governance/state-doctrine.md` |
+| Schemas | generated from Pydantic models, never hand-written | JSON Schema | F2, *"models first"* |
+| Front matter of Markdown records | in the record | YAML | F2, pyyaml admitted |
+| Third-party files that dictate their own format (`mkdocs.yml`, CI workflows, `.pre-commit-config.yaml`) | where that tool reads them | YAML | — |
+| A value in prose | nowhere authoritative | Markdown | item 88 |
+
+Family F13 is complete; the 14 borderline items remain.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
