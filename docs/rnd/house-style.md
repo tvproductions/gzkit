@@ -747,6 +747,30 @@ some schemas. Operator, by selection: *"Yes, models first"*. The register entry 
 `data/astral_exceptions.json` is to be removed when the last call site moves, and the hand-authored
 schemas (source: which schemas a Pydantic model already produces) each gain a model first.
 
+## decision · jinja2 admitted for rendering gzkit's control surfaces
+
+Operator, verbatim: *"this is what I meant by "CMS templates:" It renders gzkit's own control
+surfaces (content/render/pipeline.py, which builds AGENTS.md and its renditions)."* Admitted for that
+use. The second site, `justify/walkthrough.py`, the justify walkthrough, was not named in the
+ruling and stays to be confirmed.
+
+## source · how gzkit uses rich today
+
+`git grep` over `src/gzkit/**/*.py` for rich imports, grouped, and for call names · run 2026-11-08
+
+> `51 from rich.markup import escape` · `14 from rich.table import Table` · `7 from rich.console import Console` · `4 from rich import box` · `2 from rich.panel import Panel` · `1 from rich.text import Text` · `1 from rich.rule import Rule` · `1 from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn, TimeElapsedColumn` · `1 from rich.markdown import Markdown` · `1 from rich.console import Group`
+
+> `console.print(` 1,357 call sites; `Table(` 31; `escape(` 167
+
+41 files import rich for `escape` alone, which exists only to protect text from rich's own markup.
+Tables are built in 14 files. A `Console` is constructed in 7: `cli/formatters.py`, `cli/progress.py`,
+`commands/ceremony_data.py`, `commands/common.py`, `commands/tidy_claims.py` and three modules
+under `content/tui/` (`panels.py`, `status.py`, `tables.py`), a package already named for TUIs. The
+progress bar and the Markdown renderer are each in one file (`cli/progress.py`;
+`commands/ceremony_steps.py`, `cli/formatters.py`). The formatter chokepoint that would put all of
+this behind one surface is *"Live, UNMET"* (source: the candidate inventory, item 77). Counts of
+`Rule(`, `Status(` and `Text(` call names include gzkit classes of the same names and are not used.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
