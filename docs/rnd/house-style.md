@@ -991,6 +991,29 @@ types are uv's own convention, and uv's default is the application shape where `
 2026-10-29); the change joins row 2's corrections of tranche 7. Family F7 (items 41, 42, 93) is
 admitted, 93 as a suggestion to adopters still to be defined.
 
+## decision · family F8 held for discussion: how judgment style reaches the model
+
+Operator, verbatim: *"these need to be discussed, unless they are enforceable. maybe Pythonic style
+is appropriate in a pythonic rule? I agree on chore vs. rule, but do we have no recourse to get the
+model to do coding style under house style rules? discuss"*. Not ruled.
+
+## source · the write-time and review-time mechanisms gzkit already has
+
+`.claude/hooks/post-edit-ruff.py` lines 1–30; `.claude/settings.json` (its `PostToolUse` `Edit|Write` entry, line 173); `.claude/agents/quality-reviewer.md` lines 1–22 · read 2026-11-08
+
+> PostToolUse hook that runs `gz lint` (Ruff against data/ruff_baseline.json, lint-only, no fix) on edited Python files immediately after each Write/Edit operation, so only findings the baseline does not hold show.
+
+> On non-zero exit, the first N lines of ruff output are written to stderr so the agent sees the warning in the same turn and can correct course
+
+> description: Evaluates code architecture, SOLID, test coverage, maintainability. Independent review by reading; cannot execute commands (GHI #968).
+
+Two recourses exist besides rule and chore. At write time, every edit of a Python file is linted at
+once and the finding reaches the agent in the same turn, so anything Ruff can check is enforced as it
+is typed (whether `gz init` delivers this hook to adopters was not traced). At review time, an
+independent reviewer agent judges the change before it is accepted, but its rubric is generic
+(*"SOLID principles adherence"*) and names neither the house style nor the pythonic or hexagonal
+rules.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
