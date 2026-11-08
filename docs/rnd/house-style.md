@@ -275,6 +275,19 @@ project. Which candidates enter, and by what test, is now a frontier question th
 further placement question. The hexagonal decisions already taken (reach, scope inside gzkit, the
 declaration's home) stand as design of the candidate this run was opened for.
 
+## decision · the declaration's home is reopened: `.gzkit.json` against `pyproject.toml`
+
+Put next was the admission question (how a candidate enters the house style: the operator's ruling
+against a stated test; the ruling alone; or the test admitting). The operator answered with a message
+instead, verbatim: *"Also not sure, so you go between our internal settings file, pyproject.toml, and
+that'll be something to discuss as well."*
+
+This reopens the decision *the boundary is declared in `.gzkit.json`*. Its selection stands as
+recorded, but it is no longer settled: whether a house-style fact lives in gzkit's own settings file
+or in `pyproject.toml` is a frontier question for discussion, wider than the boundary key, since
+it decides where every admitted preference is declared. The admission question stays open, not
+answered.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
