@@ -92,7 +92,7 @@ the order: `uv run gz wp block WP-01-stamp --order <ORD-id> ...`.
 | 0 | The block was booked |
 | 1 | The work package is not in the store |
 | 2 | Usage error |
-| 3 | The block is refused: the package or order is not live, is already blocked, the order is not one of the package's, a repair package's block names no order, or a field is empty |
+| 3 | The block is refused: the package or order is not live or is accepted (RP-12 ruling 69), is already blocked, the order is not one of the package's, a repair package's block names no order, or a field is empty |
 
 ## See also
 

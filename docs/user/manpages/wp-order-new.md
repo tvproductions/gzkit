@@ -59,9 +59,10 @@ call, a lost order record among them, refuses every write, this verb's and
 every order move's (RP-12 ruling 70), and points to
 `uv run gz validate --catalog`. The order then moves through
 [`gz wp order freeze`](wp-order-freeze.md) and
-[`gz wp order commence`](wp-order-commence.md); `accept` and `close` land with
-RP-12's later O2 work (`docs/governance/harbor-ro12-contractor-kit.md`, ruling
-47).
+[`gz wp order commence`](wp-order-commence.md) to
+[`gz wp order accept`](wp-order-accept.md); `close`, Gate 5 at the order, lands
+with RP-12's O2 task 4 (`docs/governance/harbor-ro12-contractor-kit.md`, rulings
+30 and 47).
 
 ## Examples
 
@@ -108,7 +109,7 @@ sits in a package the catalog holds; create one with `gz wp new`.
 The one opening the first call booked, read from the scratch ledger:
 
 ```json
-{"schema":"gzkit.ledger.v1","event":"order_transitioned","id":"ORD-01-import","ts":"2026-11-07T09:01:31.875957+00:00","baseline":[],"evidence":"operator opening","work_package":"WP-01-stamp","to_state":"opened","operator_text":"open the import order","order":"ORD-01-import"}
+{"schema":"gzkit.ledger.v1","event":"order_transitioned","id":"ORD-01-import","ts":"2026-11-08T07:36:44.282739+00:00","evidence":"operator opening","baseline":[],"work_package":"WP-01-stamp","order":"ORD-01-import","approved_alterations":[],"operator_text":"open the import order","modules":[],"to_state":"opened"}
 ```
 
 With `ORD-01-import`'s record then removed from the store by hand:
