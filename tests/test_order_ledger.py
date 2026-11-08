@@ -100,6 +100,12 @@ _FREEZE = {
     "risk_note": "The import touches the hook.",
     "review_receipt": "review-01",
 }
+_CLOSE: dict[str, object] = {
+    "decision": "proceed",
+    "attestor": "g0",
+    "attestation_text": "the import holds",
+    "residual_risk": "none",
+}
 _PAYLOADS: dict[str, dict[str, object]] = {
     "opened": {"operator_text": "open the import order"},
     "frozen": _FREEZE,
@@ -180,10 +186,10 @@ class LifecycleTests(_OrderCase):
         self.assert_refused("commenced")
         self.assert_refused("opened", **_PAYLOADS["opened"])
 
-    def test_close_is_gate_5_at_the_order_and_refused_here(self) -> None:
-        """Task 4 lands the close; until then nothing moves an order to closed."""
+    def test_an_accepted_order_closes_through_gate_5(self) -> None:
+        """Rulings 44 and 74: the lifecycle ends accepted -> closed."""
         self.walk_to("accepted")
-        self.assertIn("task 4", self.assert_refused("closed"))
+        self.assertEqual(self.move("closed", **_CLOSE).from_state, "accepted")
 
     def test_an_accepted_order_moves_no_further(self) -> None:
         self.walk_to("accepted")
@@ -278,6 +284,97 @@ class FreezeTests(_OrderCase):
         self.move("frozen", **_FREEZE)
         self.move("commenced")
         self.move("accepted")
+        self.move("opened", order="ORD-02-matcher", **_PAYLOADS["opened"])
+        self.assertEqual(self.move("frozen", order="ORD-02-matcher", **_FREEZE).to_state, "frozen")
+
+
+class GateFiveTests(_OrderCase):
+    """Rulings 30, 73, 74 and 75: Gate 5 at the order."""
+
+    def close(self, **fields: object) -> OrderTransitionedEvent:
+        return self.move("closed", **fields)
+
+    def refused(self, **fields: object) -> str:
+        return self.assert_refused("closed", **fields)
+
+    def test_proceed_books_the_decision_the_words_and_the_residual_risk(self) -> None:
+        self.walk_to("accepted")
+        event = self.close(**_CLOSE)
+        self.assertEqual(
+            (event.decision, event.attestor, event.attestation_text, event.residual_risk),
+            ("proceed", "g0", "the import holds", "none"),
+        )
+        self.assertEqual(order_state(self.ledger, "ORD-01-import"), "closed")
+
+    def test_a_frozen_or_commenced_order_does_not_close(self) -> None:
+        """Ruling 74: a frozen or commenced order closes only after it is accepted."""
+        for state in ("frozen", "commenced"):
+            with self.subTest(state=state):
+                self.walk_to(state)
+                self.assertIn("ruling 74", self.refused(**_CLOSE))
+                self.setUp()
+
+    def test_an_order_never_frozen_closes_only_as_terminate(self) -> None:
+        """Ruling 74: an opened order holds no REQ, so it is only withdrawn."""
+        self.move("opened", **_PAYLOADS["opened"])
+        self.assertIn("ruling 74", self.refused(**_CLOSE))
+        words = {"attestor": "g0", "attestation_text": "withdraw it"}
+        event = self.close(decision="terminate", **words)
+        self.assertEqual((event.from_state, event.decision), ("opened", "terminate"))
+
+    def test_the_attestor_the_words_and_the_decision_are_required(self) -> None:
+        self.walk_to("accepted")
+        for missing in ("attestor", "attestation_text", "decision"):
+            with self.subTest(missing=missing):
+                fields = {k: v for k, v in _CLOSE.items() if k != missing}
+                self.refused(**fields)
+        self.refused(**{**_CLOSE, "attestation_text": "  "})
+
+    def test_each_decision_carries_its_own_field_and_refuses_the_others(self) -> None:
+        """Ruling 73: proceed the residual risk, redirect its successor, pause the revisit."""
+        self.walk_to("accepted")
+        words = {"attestor": "g0", "attestation_text": "ruled"}
+        for decision, fields in (
+            ("proceed", {}),
+            ("proceed", {"residual_risk": "none", "revisit_condition": "later"}),
+            ("pause", {}),
+            ("pause", {"revisit_condition": "later", "residual_risk": "none"}),
+            ("redirect", {}),
+            ("terminate", {"residual_risk": "none"}),
+        ):
+            with self.subTest(decision=decision, fields=sorted(fields)):
+                self.refused(decision=decision, **words, **fields)
+        paused = self.close(decision="pause", revisit_condition="after RP-14", **words)
+        self.assertEqual(paused.revisit_condition, "after RP-14")
+
+    def test_a_redirect_names_an_opened_order_of_the_same_package(self) -> None:
+        """Ruling 75: the successor is opened, not frozen, and sits in the same package."""
+        self.walk_to("accepted")
+        words = {"decision": "redirect", "attestor": "g0", "attestation_text": "rework"}
+        for successor in ("ORD-02-matcher", "ORD-03-other", "ORD-01-import", "ORD-09-ghost"):
+            with self.subTest(successor=successor):
+                self.refused(superseded_by=successor, **words)
+        self.move("opened", order="ORD-03-other", **_PAYLOADS["opened"])
+        other = self.refused(superseded_by="ORD-03-other", **words)
+        self.assertIn("not another order of WP-01-stamp", other)  # opened, but elsewhere
+        self.move("opened", order="ORD-02-matcher", **_PAYLOADS["opened"])
+        event = self.close(superseded_by="ORD-02-matcher", **words)
+        self.assertEqual(event.superseded_by, "ORD-02-matcher")
+
+    def test_a_redirects_successor_that_has_frozen_is_refused(self) -> None:
+        self.walk_to("accepted")
+        second = {**_FREEZE, "baseline": (BaselinedReq(req="REQ-2", revision=1),)}
+        self.walk_to("frozen", order="ORD-02-matcher", **second)
+        words = {"decision": "redirect", "attestor": "g0", "attestation_text": "rework"}
+        self.assertIn("ruling 75", self.refused(superseded_by="ORD-02-matcher", **words))
+
+    def test_a_closed_order_moves_no_further_and_releases_its_reqs(self) -> None:
+        """Ruling 53: a closed order holds no REQ, so a later order freezes it again."""
+        self.walk_to("accepted")
+        self.close(**_CLOSE)
+        for state in ("opened", "frozen", "commenced", "accepted", "closed"):
+            with self.subTest(state=state):
+                self.assert_refused(state, **_PAYLOADS.get(state, _CLOSE))
         self.move("opened", order="ORD-02-matcher", **_PAYLOADS["opened"])
         self.assertEqual(self.move("frozen", order="ORD-02-matcher", **_FREEZE).to_state, "frozen")
 

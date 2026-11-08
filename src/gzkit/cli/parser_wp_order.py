@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 
 def _register_wp_order(wp_commands: argparse._SubParsersAction) -> None:
-    """Register ``gz wp order`` and its ``new``, ``freeze``, ``commence`` and ``show``."""
+    """Register ``gz wp order`` and its leaves, ``new`` through ``close`` and ``show``."""
     p_order = wp_commands.add_parser(
         "order",
         help="Orders: the unit Gate 5 sits at, inside a work package",
@@ -165,6 +165,68 @@ def _register_wp_order(wp_commands: argparse._SubParsersAction) -> None:
     p_order_accept.set_defaults(
         func=lambda a: _lazy("wp_order_accept_cmd")(
             order_id=a.order, evidence=a.evidence, as_json=a.as_json
+        )
+    )
+
+    p_order_close = order_commands.add_parser(
+        "close",
+        help="Close an order through Gate 5 with the operator's words",
+        description=(
+            "Close an order through Gate 5 at the order: the decision, the attestor\n"
+            "and the operator's verbatim words, from accepted, or from opened as a\n"
+            "terminate. Proceed carries --residual-risk, redirect --superseded-by, an\n"
+            "opened order of the same package, and pause --revisit-condition. A\n"
+            "subagent's call is refused (RP-12 rulings 30 and 73 to 77)."
+        ),
+        epilog=build_epilog(
+            [
+                (
+                    "gz wp order close ORD-01-import --decision proceed --attestor g0"
+                    " --attestation-text 'the import holds' --residual-risk none"
+                    " --evidence gate-5"
+                ),
+                (
+                    "gz wp order close ORD-02-matcher --decision redirect --attestor g0"
+                    " --attestation-text 'rework it' --superseded-by ORD-03-matcher"
+                    " --evidence gate-5"
+                ),
+            ]
+        ),
+    )
+    p_order_close.add_argument("order", help="The order's id, ORD-<NN>-<slug>")
+    p_order_close.add_argument(
+        "--decision",
+        required=True,
+        choices=("proceed", "redirect", "pause", "terminate"),
+        help="The Gate 5 decision",
+    )
+    p_order_close.add_argument("--attestor", required=True, help="Who attests, g0")
+    p_order_close.add_argument(
+        "--attestation-text", required=True, help="The operator's verbatim words"
+    )
+    p_order_close.add_argument("--evidence", required=True, help="What justifies the close")
+    p_order_close.add_argument("--residual-risk", help="The residual risk, for proceed")
+    p_order_close.add_argument("--superseded-by", help="The opened ORD-id, for redirect")
+    p_order_close.add_argument("--revisit-condition", help="When to revisit, for pause")
+    add_json_flag(p_order_close)
+    p_order_close.set_defaults(
+        func=lambda a: _lazy("wp_order_close_cmd")(
+            fields={
+                key: value
+                for key, value in {
+                    "order": a.order,
+                    "evidence": a.evidence,
+                    "decision": a.decision,
+                    "attestor": a.attestor,
+                    "attestation_text": a.attestation_text,
+                    "residual_risk": a.residual_risk,
+                    "superseded_by": a.superseded_by,
+                    "revisit_condition": a.revisit_condition,
+                }.items()
+                if value is not None
+            },
+            called_by_subagent=bool(getattr(a, "called_by_subagent", False)),
+            as_json=a.as_json,
         )
     )
 

@@ -1995,7 +1995,7 @@ class WorkPackageUnblockedEvent(_EventBase):
 
 
 #: An order's lifecycle (RP-12 rulings 44 and 52): `opened` at `gz wp order new`,
-#: `closed` only through Gate 5 at the order (O2 task 4).
+#: `closed` only through Gate 5 at the order, `gz wp order close` (rulings 73, 74).
 OrderState = Literal["opened", "frozen", "commenced", "accepted", "closed"]
 
 
@@ -2023,6 +2023,18 @@ class OrderTransitionedEvent(_EventBase):
     modules: tuple[str, ...] = Field(
         (), description="The package's footprint the freeze seals, at frozen (ruling 56)"
     )
+    decision: WorkPackageDecision | None = Field(
+        None, description="The Gate 5 decision, at closed (rulings 30 and 73)"
+    )
+    attestor: str | None = Field(None, description="The Gate 5 attestor, at closed")
+    attestation_text: str | None = Field(
+        None, description="The operator's verbatim Gate 5 words, at closed"
+    )
+    residual_risk: str | None = Field(None, description="The residual risk, at a proceed")
+    superseded_by: str | None = Field(
+        None, description="The opened order a redirect names, at a redirect (ruling 75)"
+    )
+    revisit_condition: str | None = Field(None, description="When a pause is revisited")
 
 
 TypedLedgerEvent = Annotated[

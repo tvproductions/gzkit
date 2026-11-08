@@ -2,12 +2,13 @@
 
 The verbs the operator named on 2026-11-05 (RP-12 ruling 47, *"a"*): a nested
 group on the work-package surface. `accept` waits on the order's own acceptance
-(ruling 60). `new` writes an order's record with the next
-`ORD-<NN>-<slug>` (ruling 43) through `gzkit.order_store`, into a repair package
-that is initiated and not closed (rulings 2, 44); `show` reads it with the kind of
-the package it sits in. The record is thin (ruling 46). A refusal of the rulings
-exits 3 and writes nothing, naming the flag at fault and the call to re-run; an
-unknown package or order exits 1. `new` books the order's opening on the
+(ruling 60), and `close` is Gate 5 at the order (rulings 73 to 77). `new`
+writes an order's record with the next `ORD-<NN>-<slug>` (ruling 43) through
+`gzkit.order_store`, into a repair package that is initiated and not closed
+(rulings 2, 44); `show` reads it with the kind of the package it sits in. The
+record is thin (ruling 46). A refusal of the rulings exits 3 and writes nothing,
+naming the flag at fault and the call to re-run; an unknown package or order
+exits 1. `new` books the order's opening on the
 operator's words before it writes the record (ruling 52), so a refusal writes
 neither.
 """
@@ -222,6 +223,11 @@ _RERUN = {
     ),
     "commenced": "`uv run gz wp order commence <ORD-id> --evidence <text>`",
     "accepted": "`uv run gz wp order accept <ORD-id> --evidence <text>`",
+    "closed": (
+        "`uv run gz wp order close <ORD-id> --decision <proceed|redirect|pause|terminate> "
+        "--attestor g0 --attestation-text <words> --evidence <text> [--residual-risk <text> | "
+        "--superseded-by <ORD-id> | --revisit-condition <text>]`"
+    ),
 }
 
 
@@ -348,3 +354,45 @@ def wp_order_accept_cmd(*, order_id: str, evidence: str, as_json: bool) -> None:
     except OrderLedgerError as exc:
         _refuse_move("accepted", str(exc))
     _emit_move(event, cross_airlock(root, ledger, package, event.to_state), as_json=as_json)
+
+
+def wp_order_close_cmd(
+    *, fields: dict[str, object], called_by_subagent: bool, as_json: bool
+) -> None:
+    """Close an order through Gate 5 at the order (RP-12 rulings 30 and 73 to 77).
+
+    ``fields`` are the ``OrderMove`` fields the verb's flags supplied, those not given
+    left out so a decision's refusal of another decision's field reads them. Gate 5
+    is the operator's act, so a call the dispatch stamp marks as a subagent's is
+    refused (ruling 77). The order closes from `accepted`, or from `opened` as a
+    terminate alone (ruling 74), with the decision, the attestor, the operator's
+    verbatim words and the field the decision names (ruling 73); a redirect names an
+    order of the same package already opened and not frozen (ruling 75). An unknown
+    order exits 1; any refusal exits 3 and books nothing.
+
+    Raises:
+        PolicyBreachError: The call is a subagent's, a booked order lost its record,
+            or the lifecycle, the block or Gate 5's own rules refuse the close.
+
+    """
+    if called_by_subagent:
+        msg = (
+            "Gate 5 is refused from a subagent's call: it is the operator's act, recorded "
+            "on the operator's own words (RP-12 ruling 77, AGENTS.md § Attestation). Run "
+            "it from the main session."
+        )
+        raise PolicyBreachError(msg)
+    config = ensure_initialized()
+    root = get_project_root()
+    catalog = load_catalog(root)
+    ledger = Ledger(root / config.paths.ledger)
+    _booked_lost(catalog, ledger)
+    order = _order(catalog, str(fields["order"]))
+    if refusal := order_move_refusal(ledger, order, "closed"):
+        _refuse_move("closed", refusal)
+    move = OrderMove.model_validate({**fields, "to_state": "closed"})
+    try:
+        event = record_order_transition(catalog, ledger, move)
+    except OrderLedgerError as exc:
+        _refuse_move("closed", str(exc))
+    _emit_move(event, None, as_json=as_json)

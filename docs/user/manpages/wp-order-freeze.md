@@ -29,7 +29,7 @@ gz wp order freeze <ORD-id> --baseline REQ-<n>@<rev> --risk-note <text> --review
 Books the order's `order_transitioned` to `frozen`
 (`docs/governance/harbor-ro12-contractor-kit.md`, RP-12 O2 task 3). The order
 moves one step at a time, `opened` then `frozen`, `commenced` and `accepted`;
-`closed` is Gate 5 at the order, which lands with O2 task 4.
+`closed` is Gate 5 at the order, [`gz wp order close`](wp-order-close.md).
 
 - The freeze carries the risk note, the reviewer's receipt and the baseline. Each
   baseline entry is a repair REQ held on the order's own package, at the revision

@@ -49,7 +49,7 @@ does not move (ruling 59), and its repair package must be initiated and not
 closed (rulings 2 and 44).
 
 An accepted order holds the production-write fence until it closes (ruling 58).
-Its close is Gate 5 at the order, which lands with RP-12 O2 task 4.
+Its close is Gate 5 at the order, [`gz wp order close`](wp-order-close.md).
 
 The inspection points of rulings 14 and 15 are not read by the runtime yet, so an
 order reads ready without them until a later order adds them.
@@ -85,4 +85,5 @@ ORD-02-matcher: commenced -> accepted
 ## See also
 
 [`gz wp acceptance`](wp-acceptance.md), [`gz wp order commence`](wp-order-commence.md),
-[`gz wp order show`](wp-order-show.md), [`gz wp accept`](wp-accept.md)
+[`gz wp order close`](wp-order-close.md), [`gz wp order show`](wp-order-show.md),
+[`gz wp accept`](wp-accept.md)

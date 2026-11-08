@@ -1055,9 +1055,18 @@ uv run gz wp acceptance ORD-01-import status
 uv run gz wp order accept ORD-01-import --evidence "<final inspection>"
 ```
 
+An accepted order closes through Gate 5 at the order, on your own words: proceed
+with its residual risk, redirect to an order you have already opened, pause with
+its revisit condition, or terminate. An order opened by mistake and never frozen
+closes as terminate, and a subagent's call is refused:
+
+```bash
+uv run gz wp order close ORD-01-import --decision proceed --attestor g0 --attestation-text "<your words>" --residual-risk "<residual risk>" --evidence "<what justifies it>"
+```
+
 The lifecycle moves one step at a time: a delivery package's through initiated,
 frozen, commenced, accepted and closed, a repair package's from initiated to
-closed, and an order's through opened, frozen, commenced and accepted. Pen and ink is the coordinator's; every other rung of the change ladder
+closed, and an order's through opened, frozen, commenced, accepted and closed. Pen and ink is the coordinator's; every other rung of the change ladder
 is yours. Any refusal exits 3 and writes nothing. Attaching an issue also labels
 it `repair` and comments the package id on it; `ghi-close` records each fixed
 issue with `gz wp resolve`, and the last one's close leaves the package for your

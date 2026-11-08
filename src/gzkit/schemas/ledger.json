@@ -2724,6 +2724,49 @@
         },
         "modules": {
           "type": "array"
+        },
+        "decision": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "proceed",
+            "redirect",
+            "pause",
+            "terminate",
+            null
+          ]
+        },
+        "attestor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "attestation_text": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "residual_risk": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "superseded_by": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "revisit_condition": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },

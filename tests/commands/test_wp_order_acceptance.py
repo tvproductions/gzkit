@@ -9,6 +9,7 @@ holds the order as it holds a package. A refusal exits 3 and books nothing.
 """
 
 import json
+import os
 import unittest
 import uuid
 from pathlib import Path
@@ -24,6 +25,7 @@ from gzkit.acceptance_store import (
     resolve_brief,
     round_bound_refusal,
 )
+from gzkit.dispatch_stamp import STAMP_ID_ENV, STAMP_ROOT_ENV
 from tests.commands.test_wp_acceptance import _receipt
 from tests.commands.test_wp_order_run import _ORDER, _PACKAGE, _CommencedOrder
 
@@ -302,6 +304,45 @@ class TestTheOrdersAcceptRefusal(_OrderAcceptance):
             )  # fmt: skip
         fp.assert_not_called()
         self.assertIn("cannot move from commenced", " ".join(output.split()))
+
+
+class TestTheOrdersGateFive(_OrderAcceptance):
+    """`gz wp order close`: Gate 5 at the order (RP-12 rulings 73 to 77)."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.init()
+        self.approve(self.proof())
+        with mock.patch(_FOOTPRINT, return_value=None):
+            self.accept()
+
+    def close(self, *extra: str, code: int = 0) -> str:
+        words = ("--attestor", "g0", "--attestation-text", "the import holds")
+        return self.wp("order", "close", _ORDER, *words, "--evidence", "gate 5", *extra, code=code)
+
+    def test_proceed_books_gate_5_on_the_operators_words(self) -> None:
+        payload = json.loads(
+            self.close("--decision", "proceed", "--residual-risk", "none", "--json")
+        )
+        self.assertEqual(
+            (payload["to_state"], payload["decision"], payload["attestation_text"]),
+            ("closed", "proceed", "the import holds"),
+        )
+        self.assertEqual(self.state(), "closed")
+
+    def test_a_subagents_call_is_refused_and_books_nothing(self) -> None:
+        """Ruling 77: Gate 5 is the operator's act."""
+        stamp = {STAMP_ROOT_ENV: Path.cwd().resolve().as_posix(), STAMP_ID_ENV: ""}
+        with mock.patch.dict(os.environ, stamp):
+            output = self.close("--decision", "proceed", "--residual-risk", "none", code=3)
+        self.assertIn("ruling 77", output)
+        self.assertEqual(self.state(), "accepted")
+
+    def test_a_refused_close_names_the_call_to_rerun(self) -> None:
+        output = self.close("--decision", "proceed", code=3)
+        self.assertIn("residual-risk (RP-12 ruling 73)", output)
+        self.assertIn("re-run `uv run gz wp order close <ORD-id>", output)
+        self.assertEqual(self.state(), "accepted")
 
 
 if __name__ == "__main__":

@@ -5,9 +5,9 @@ description: Use to create, attach issues to, move, change, add evidence to or r
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-07
+last_reviewed: 2026-11-08
 metadata:
-  skill-version: "0.14.0"
+  skill-version: "0.15.0"
 model: sonnet
 ---
 
@@ -192,6 +192,17 @@ names at least one REQ (ruling 61):
 uv run gz wp acceptance <ORD-id> init --author <implementing session>
 uv run gz wp acceptance <ORD-id> status
 uv run gz wp order accept <ORD-id> --evidence "<final inspection>"
+```
+
+Gate 5 at the order closes it, on the operator's verbatim words, which you relay
+and never author. It closes from `accepted`, or from `opened` as a terminate alone;
+each decision carries its own field and refuses the others': proceed the residual
+risk, redirect an order of the same package already opened and not frozen, pause
+the revisit condition, terminate nothing more. A subagent's call is refused
+(rulings 73 to 77):
+
+```bash
+uv run gz wp order close <ORD-id> --decision proceed --attestor g0 --attestation-text "<the operator's words>" --residual-risk "<text>" --evidence "<what justifies it>"
 ```
 
 Work outside the package's general scope is a new work package, never a change.

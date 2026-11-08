@@ -81,6 +81,18 @@ Feature: Work packages run through the gz wp verbs
     When I run the gz command "wp order accept ORD-01-x"
     Then the command exits with code 2
 
+  Scenario: closing an order without the operator's words is a usage error
+    When I run the gz command "wp order close ORD-01-x --decision proceed --attestor g0 --evidence E"
+    Then the command exits with code 2
+    And the output contains "--attestation-text"
+
+  Scenario: closing an order the store does not hold is a user error
+    Given the workspace is initialized
+    And the requirements catalog is seeded
+    When I run the gz command "wp order close ORD-99-nothing --decision terminate --attestor g0 --attestation-text withdraw --evidence E"
+    Then the command exits with code 1
+    And the output contains "is not in data/catalog/orders.json"
+
   Scenario: an issue is no dispatch subject
     When I run the gz command "wp dispatch WP-01-x --order ORD-01-y --role Implementer --model m --issue 1301"
     Then the command exits with code 2

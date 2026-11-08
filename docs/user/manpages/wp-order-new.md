@@ -60,9 +60,9 @@ every order move's (RP-12 ruling 70), and points to
 `uv run gz validate --catalog`. The order then moves through
 [`gz wp order freeze`](wp-order-freeze.md) and
 [`gz wp order commence`](wp-order-commence.md) to
-[`gz wp order accept`](wp-order-accept.md); `close`, Gate 5 at the order, lands
-with RP-12's O2 task 4 (`docs/governance/harbor-ro12-contractor-kit.md`, rulings
-30 and 47).
+[`gz wp order accept`](wp-order-accept.md), and closes through Gate 5 at the
+order with [`gz wp order close`](wp-order-close.md)
+(`docs/governance/harbor-ro12-contractor-kit.md`, rulings 30, 47 and 73 to 77).
 
 ## Examples
 

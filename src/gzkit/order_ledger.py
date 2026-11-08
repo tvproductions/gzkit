@@ -3,8 +3,11 @@
 `docs/governance/harbor-ro12-contractor-kit.md`: an order's lifecycle lives only
 in the ledger (ruling 44), as `order_transitioned`. `gz wp order new` books
 `opened` on the operator's words (ruling 52), and the order then moves `frozen`,
-`commenced` and `accepted`, one step at a time; `closed` is Gate 5 at the order
-and lands with O2 task 4, so it is refused here. A freeze carries the risk note,
+`commenced` and `accepted`, one step at a time, and `closed` through Gate 5 at
+the order: from `accepted`, or from `opened` as a terminate alone (ruling 74), with
+the decision, the attestor, the operator's verbatim words and the field the
+decision names, the others refused (ruling 73); a redirect names an order of the
+same package already opened and not frozen (ruling 75). A freeze carries the risk note,
 the reviewer's receipt and a baseline of the repair REQs held on the order's
 package (rulings 2, 45), each REQ in one live order's frozen baseline at a time
 (ruling 53), and never on an empty baseline (ruling 61). A freeze approves exactly
@@ -21,7 +24,7 @@ from typing import TYPE_CHECKING, NoReturn
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from gzkit.events import BaselinedReq, OrderTransitionedEvent
+from gzkit.events import BaselinedReq, OrderTransitionedEvent, WorkPackageDecision
 from gzkit.ledger import ledger_row
 from gzkit.models.catalog import RepairReq
 from gzkit.work_package_ledger import declared_modules, footprint_sealed, work_package_state
@@ -37,7 +40,8 @@ _NEXT: dict[str | None, str | None] = {
     "opened": "frozen",
     "frozen": "commenced",
     "commenced": "accepted",
-    "accepted": None,
+    "accepted": "closed",
+    "closed": None,
 }
 #: The states that end an order's hold on its baseline (ruling 53); a stopping exit
 #: ends it too, though the order keeps its state (`order_took_stopping_exit`).
@@ -50,6 +54,23 @@ _STATE_FIELDS: dict[str, frozenset[str]] = {
     "frozen": frozenset({"baseline", "risk_note", "review_receipt", "approved_alterations"}),
     "commenced": frozenset(),
     "accepted": frozenset(),
+    "closed": frozenset(
+        {
+            "decision",
+            "attestor",
+            "attestation_text",
+            "residual_risk",
+            "superseded_by",
+            "revisit_condition",
+        }
+    ),
+}
+#: The field each Gate 5 decision carries (ruling 73); a decision refuses the others'.
+_DECISION_FIELD: dict[str, str | None] = {
+    "proceed": "residual_risk",
+    "redirect": "superseded_by",
+    "pause": "revisit_condition",
+    "terminate": None,
 }
 _MOVE_FIELDS = frozenset({"order", "to_state", "evidence"})
 
@@ -71,6 +92,12 @@ class OrderMove(BaseModel):
     risk_note: str | None = Field(None, description="The short risk note, at frozen")
     review_receipt: str | None = Field(None, description="The nine-criteria review receipt")
     approved_alterations: tuple[str, ...] = Field((), description="Alterations approved")
+    decision: WorkPackageDecision | None = Field(None, description="The Gate 5 decision")
+    attestor: str | None = Field(None, description="The Gate 5 attestor, at closed")
+    attestation_text: str | None = Field(None, description="The operator's Gate 5 words")
+    residual_risk: str | None = Field(None, description="The residual risk, at a proceed")
+    superseded_by: str | None = Field(None, description="The order a redirect names")
+    revisit_condition: str | None = Field(None, description="When a pause is revisited")
 
 
 def _refuse(message: str) -> NoReturn:
@@ -280,12 +307,49 @@ def _check_seal_grows(ledger: Ledger, package: WorkPackage) -> None:
         )
 
 
-def _check_move(catalog: Catalog, ledger: Ledger, order: Order, move: OrderMove) -> None:
-    if move.to_state == "closed":
+def _check_successor(catalog: Catalog, ledger: Ledger, order: Order, successor: str) -> None:
+    """Refuse a redirect's successor unless it is opened, unfrozen, in the same package."""
+    held = next((o for o in catalog.orders if o.id == successor), None)
+    state = order_state(ledger, successor) if held else None
+    if held is None or held.id == order.id or held.work_package != order.work_package:
         _refuse(
-            f"Order {order.id} closes only through Gate 5 at the order, which lands with RP-12 "
-            "O2 task 4; nothing moves an order to closed before it."
+            f"--superseded-by {successor} is not another order of {order.work_package}; a "
+            "redirect names the order of the same package that supersedes it (RP-12 ruling 75)."
         )
+    if state != "opened":
+        _refuse(
+            f"{successor} is {state or 'not opened'}; a redirect names an order already opened "
+            "with `uv run gz wp order new` and not yet frozen, so it freezes next (RP-12 "
+            "ruling 75)."
+        )
+
+
+def _check_closed(catalog: Catalog, ledger: Ledger, order: Order, move: OrderMove) -> None:
+    """Check Gate 5 at the order: the words, the decision and its own field (73 to 75)."""
+    if not (move.attestor or "").strip() or not (move.attestation_text or "").strip():
+        _refuse(
+            f"Order {order.id} closes only through Gate 5: an attestor and the operator's "
+            "verbatim words, --attestation-text (AGENTS.md § Attestation)."
+        )
+    if move.decision is None:
+        _refuse("Gate 5 records one of proceed, redirect, pause or terminate (RP-12 ruling 30).")
+    if order_state(ledger, order.id) == "opened" and move.decision != "terminate":
+        _refuse(
+            f"Order {order.id} was never frozen and holds no REQ, so it closes only as "
+            "terminate; a frozen order closes once it is accepted (RP-12 ruling 74)."
+        )
+    own = _DECISION_FIELD[move.decision]
+    given = {f for f in _DECISION_FIELD.values() if f and (getattr(move, f) or "").strip()}
+    if own is not None and own not in given:
+        _refuse(f"A {move.decision} carries {own.replace('_', '-')} (RP-12 ruling 73).")
+    if others := sorted(given - {own}):
+        flags = ", ".join(f"--{f.replace('_', '-')}" for f in others)
+        _refuse(f"A {move.decision} does not carry {flags} (RP-12 ruling 73).")
+    if move.decision == "redirect":
+        _check_successor(catalog, ledger, order, str(move.superseded_by))
+
+
+def _check_move(catalog: Catalog, ledger: Ledger, order: Order, move: OrderMove) -> None:
     stray = sorted(move.model_fields_set - _MOVE_FIELDS - _STATE_FIELDS[move.to_state])
     if stray:
         _refuse(f"A move to {move.to_state} does not carry {', '.join(stray)}.")
@@ -300,6 +364,8 @@ def _check_move(catalog: Catalog, ledger: Ledger, order: Order, move: OrderMove)
         )
     if move.to_state == "frozen":
         _check_frozen(catalog, ledger, order, move)
+    if move.to_state == "closed":
+        _check_closed(catalog, ledger, order, move)
 
 
 def order_move_refusal(ledger: Ledger, order: Order, to_state: str) -> str | None:
@@ -314,10 +380,17 @@ def order_move_refusal(ledger: Ledger, order: Order, to_state: str) -> str | Non
     """
     current = order_state(ledger, order.id)
     expected = _NEXT.get(current)
-    if to_state not in {"closed", expected}:
+    # An order never frozen holds no REQ, so Gate 5 may withdraw it (ruling 74).
+    allowed = {expected, "closed"} if current == "opened" else {expected}
+    if to_state not in allowed:
+        closing = (
+            " An order closes from accepted, or from opened as a terminate (RP-12 ruling 74)."
+            if to_state == "closed"
+            else ""
+        )
         return (
             f"Order {order.id} cannot move from {current or 'nothing'} to {to_state!r}; "
-            f"the lifecycle allows {expected or 'no move'} from here."
+            f"the lifecycle allows {expected or 'no move'} from here.{closing}"
         )
     if is_order_blocked(ledger, order.id):
         return (
