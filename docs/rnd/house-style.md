@@ -579,6 +579,22 @@ time; B, a follow-on run, this one signed off on hexagonal and the model. Operat
 here. The inventory is commissioned from a research agent, its report to be landed verbatim under
 `house-style/sources/`.
 
+## source · the candidate inventory
+
+[`house-style/sources/candidate-inventory-2026-11-08.md`](house-style/sources/candidate-inventory-2026-11-08.md), a research report landed verbatim · read 2026-11-08
+
+> Files read in full: `.gzkit/rules/` — AGENTS.md, adr-audit.md, [...] weaponeering.md; root `AGENTS.md` (as loaded); [...] `docs/design/cli-standards-v3.md` (all of it); `src/gzkit/commands/init_cmd.py` (all of it)
+
+> **R:** yes. `scaffold_core_rules` (init:1579) copies every wheel rule `.md`, plus `complexity-thresholds.json`, into the adopter's `.gzkit/rules/`, and `sync_all` mirrors them. The rule *text* arrives; gzkit's own `tests/` witnesses do not.
+
+> 13. **The scaffold against its own witness.** RO9:129 forbids "`--frozen` or a bare `uv sync` in automation", but init:914 runs a bare `[resolve_executable("uv"), "sync"]` and init:498 runs `uv add --dev --frozen`.
+
+A secondary record: 108 candidates, 14 borderline items and 13 contradictions, each cell citing
+its primary source by path and line, some marked *unverified*. It admits nothing. Two findings bear
+on the whole run: the rule text reaches every adopter through `gz init` while gzkit's own witnesses
+do not, so for an adopter nearly every candidate is a weak rule; and the 13 contradictions are
+defects in canon whatever is admitted, each to be tracked under disposition 4.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
