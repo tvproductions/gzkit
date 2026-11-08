@@ -920,6 +920,24 @@ home, correcting `AGENTS.md`; deliver items 30, 38, 39 and 40 to adopters throug
 Operator, verbatim: *"agree, what is 43?"* The eighteen and the four recommendations are admitted;
 item 43 (shrink-only baselines) waits on the operator's question, answered in session.
 
+## source · whether gzkit's shrink-only baselines ever reach zero
+
+`data/waiver_ratchet_registry.json` read in full and each registered file's entry count computed; `git log --since=2026-10-01 --oneline` on two baselines · run 2026-11-08
+
+> "every gate-bearing waiver/grandfather/baseline surface declares exactly one honesty mechanism (closed-set-lock | dated-cutover | shrink-ratchet) so it cannot launder 'not built' into 'attested green'. Shrink-ratchet baselines were committed at the current entry count on 2026-06-19 (OBPI-0.0.73-09)"
+
+37 registered surfaces: 35 shrink-ratchet, 2 closed-set-lock, none dated-cutover. Of the 35, 6 hold zero
+entries. The largest by committed count, against entries now: `ruff_baseline.json` 4,613 against
+2,567; `behave_coverage_waivers.json` 522 against 522; `cognitive_complexity_baseline.json` 260
+against 260; `adversarial_validation_grandfather.json` 225 against 225; `tautological_test_baseline.json`
+202 against 202; `sensitivity_floor_grandfather.json` 87 against 87. The two baselines repair orders
+drove to zero, RP-2's id seam and RP-9's Astral discipline, did so as those orders' done conditions
+(sources: RP-9; the RP-2 row of the contract). `ruff_baseline.json` changed in 44 commits since
+2026-10-01, as RP-9 tranche 4's repairs lowered it.
+
+A baseline reaches zero when an owned piece of work names zero as its done condition; otherwise it
+stands where it was committed. The ratchet stops growth, not debt.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
