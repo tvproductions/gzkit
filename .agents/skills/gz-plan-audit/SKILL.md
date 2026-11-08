@@ -5,10 +5,10 @@ description: Use when exiting plan mode or before implementing to verify ADR int
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-11-08
 compatibility: Works with GovZero-compliant repositories; in gzkit the receipt is written under .claude/plans/, consumed by gz-obpi-pipeline, and enforced by the registered plan-exit hooks tracked by ADR-0.12.0.
 metadata:
-  skill-version: "6.5.1"
+  skill-version: "6.6.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero_layer: "Layer 1 - Evidence Gathering"
@@ -61,28 +61,15 @@ These thoughts mean STOP — you are about to skip a critical alignment check:
 | Thought | Reality |
 |---------|---------|
 | "The brief requirements are clear enough to skip the audit" | Clarity is not alignment. The audit catches drift between ADR intent and brief scope that no amount of reading catches. |
-| "I already read the ADR and brief, they match" | Reading is not auditing. The structured comparison catches gaps that casual reading misses every time. |
 | "There's no plan yet, so I'll skip the audit entirely" | The ADR-to-OBPI alignment check runs without a plan. Skip plan checks only — the ADR alignment is still required. |
 | "The plan-audit hook will catch problems later" | The hook enforces receipt existence, not alignment quality. This skill provides the quality check the hook cannot. |
-| "This is a small OBPI, alignment is obvious" | Small OBPIs drift more, not less. Brief constraints are easy to miss when scope feels trivial. |
-| "The ADR hasn't changed since the brief was written" | ADR stability does not guarantee brief fidelity. Briefs are authored under time pressure and miss intent regularly. |
 
 ### Red Flags
 
 - Implementation starts without this OBPI's plan-audit receipt in `.claude/plans/`
 - Plan audit receipt shows PASS but gaps were hand-waved as "minor"
-- Agent proceeds directly from brief reading to implementation without structured comparison
 - ADR intent mentions capabilities not reflected in the OBPI brief requirements
 - Plan file references files outside the brief's Allowed Paths
-
-## Invocation
-
-```text
-/gz-plan-audit OBPI-X.Y.Z-NN
-```
-
-Run before planning for ADR <-> OBPI alignment and again after planning for
-Plan <-> OBPI alignment.
 
 ## Trust Model
 
@@ -122,8 +109,8 @@ uv run gz plan audit OBPI-X.Y.Z-NN
 This runs deterministic prerequisite checks (ADR exists, brief exists, plan
 file found, path overlap validation) and writes the receipt to
 `.claude/plans/.plan-audit-receipt-{OBPI-ID}.json`. If PASS and no semantic
-review is needed, the skill is done. If FAIL, review the gaps and continue
-with manual alignment checks below.
+review is needed, run Steps 3 and 3a, and the skill is done unless 3a stops it.
+If FAIL, review the gaps and continue with manual alignment checks below.
 
 ### Step 2: Read the parent ADR
 
@@ -150,6 +137,19 @@ Extract:
 - Allowed and denied paths
 - Acceptance criteria
 - Verification commands
+
+### Step 3a: Check whether the objective is already met
+
+Test each requirement against the repository as it stands, reading the surface
+it names rather than searching for it. If every requirement already holds, stop
+before any implementation and present the finding to the operator, with the
+evidence for each requirement: the operator decides whether to withdraw the
+OBPI (`uv run gz obpi withdraw`) or accept it as done by resuming the pipeline
+with `--from=verify`. Do not plan or build work whose objective is already met.
+The case behind this step: OBPI-0.0.11-05 was already complete as a side effect
+of authoring ADR-0.0.11, and was planned and implemented anyway (operator
+feedback moved here from auto memory on 2026-11-08: *"gz-plan-audit instead"*).
+If only some requirements hold, say which, and continue.
 
 ### Step 4: Audit ADR <-> OBPI alignment
 
