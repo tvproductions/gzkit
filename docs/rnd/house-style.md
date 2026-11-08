@@ -197,6 +197,84 @@ Put to the operator: A, declared by every project, Not Applicable by recorded re
 all, no Not Applicable; C, opt-in. Operator, by selection: *"Declared by every project
 (Recommended)"*.
 
+## decision · the questions are the right ones
+
+Three recommendations accepted in a row, so the run asked whether the questions were the right ones
+before computing the next. Operator, by selection: *"Right questions, go on"*.
+
+## source · third-party import sites in gzkit's package, measured
+
+`git grep -l -E "^\s*(import <dep>|from <dep>)" -- 'src/gzkit/**/*.py'`, and the same over
+`src/gzkit/commands/**` and `src/gzkit/cli/**` · run 2026-11-08 at `6df793052`
+
+| Dependency | Files importing it | Of them in `commands/` or `cli/` |
+|---|---|---|
+| rich | 61 | 56 |
+| yaml | 12 | 2 |
+| jsonschema | 6 | 1 |
+| jinja2 | 2 | 0 |
+| networkx | 1 | 0 |
+| tree_sitter | 0 | 0 |
+
+A dated measurement, counting files with an import line, function-local imports included. It does
+not agree with H1's figures (rich 65, yaml 21, jsonschema 7), whose method the H1 row does not
+state; the difference is unexplained and recorded, not reconciled. The canon page names the CLI
+layer a driving adapter (source: the hexagonal canon page), so most rich sites already sit in an
+adapter.
+
+## decision · the boundary covers the whole of gzkit's package, its debt held by a shrink-only baseline
+
+The measurement (source: third-party import sites in gzkit's package) shows most rich sites already
+in the CLI layer, a driving adapter by canon (source: the hexagonal canon page), and the rest of
+the outside-core population H1 named (source: the outside-core population, RP-7 held ruling H1).
+RP-9's *"even gzkit itself might need to change"* (source: RP-9) is the precedent for holding the
+whole tree rather than narrowing the rule to where its test already looks.
+
+Put to the operator: A, the whole package, the map declaring core and each dependency's allowed
+adapter modules, every other site in a shrink-only baseline closing at zero; B, core only, H1's
+recommendation; C, the whole package with today's sites permanently grandfathered. Operator, by
+selection: *"Whole package, baseline (Recommended)"*. This settles the direction of RP-7's H1; the
+ruling is booked there only on the operator's go on that row.
+
+## source · gzkit's project configuration file
+
+`.gzkit.json` (top-level keys) and `src/gzkit/commands/init_cmd.py:291,1162-1175` · read 2026-11-08
+
+> `['mode', 'paths', 'authorship', 'smoke', 'project_name', 'vendors', 'complexity']`
+
+> `config = GzkitConfig.load(project_root / ".gzkit.json")`
+
+`gz init` reads and writes `.gzkit.json`, and the cognitive ceiling already lives in its
+`complexity` key, *"opt-in for adopters"* (source: RP-9, § Amended for tranche 4, 2026-10-23).
+`pyproject.toml` carries no `[tool.gzkit]` table. No Astral tool reads an import boundary: RP-9
+measured that `ruff analyze graph` reports first-party files only and `TID251` is a ban list that
+cannot state an allowlist (source: RP-9).
+
+## decision · the boundary is declared in `.gzkit.json`, its baseline beside it in `data/`
+
+No Astral tool reads an import allowlist (source: RP-9), so gzkit's own witness is the reader,
+and the one home is the file `gz init` already scaffolds and repairs, where the cognitive ceiling's
+precedent sits (source: gzkit's project configuration file).
+
+Put to the operator: A, a `house_style.boundary` key in `.gzkit.json`, the shrink-only baseline in
+`data/` as RP-9's is; B, a `[tool.gzkit]` table in `pyproject.toml`, a second gzkit config home; C,
+a dedicated `data/` file. Operator, by selection: *"A `.gzkit.json` key (Recommended)"*. The key's
+name is illustrative until diamond 2 specifies it.
+
+## decision · what the project holds today is candidates, not the house style (operator correction)
+
+Operator, verbatim, while the run moved to the next question: *"It's not necessarily the case that
+everything we have in the project now will be the house style, by the way. So I just see you listing
+different things and I wanted to make that clear."*
+
+This corrects the decision *the house style gathers every pillar under one name*. Its ruling
+stands as a ruling on scope, one named house style, each admitted preference keeping its own
+witness. But the six preferences it listed (the Astral alliance, stdlib first, Pydantic, unittest,
+argparse, hexagonal) are **candidates**, not members. None is admitted by being present in the
+project. Which candidates enter, and by what test, is now a frontier question that comes before any
+further placement question. The hexagonal decisions already taken (reach, scope inside gzkit, the
+declaration's home) stand as design of the candidate this run was opened for.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
