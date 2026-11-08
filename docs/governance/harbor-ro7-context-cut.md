@@ -55,6 +55,18 @@ Each stage adds a § List of discrepancies line for what it disconnects, reroute
 
 `gz validate --instructions-files-budget`; the stage reports under `docs/evals/` (RO-1's protocol).
 
+## Change order of 2026-11-08 — placement
+
+Issued by the operator (*"place the entire endeavor into the existing and ongoing drydock"*), on the
+principle *"chores and gates are strong, rules and memory files are weak"*. Every clause of the rules,
+skills, auto memory, `AGENTS.md`, hooks and orientation is placed as a gate, a chore or a rule; the
+placement doctrine is captured in canon; a placement-audit chore checks placement thereafter. For
+rules it supersedes stage 1's *"no binding clause is removed or reworded"* (§ Already ruled, #1246): a
+binding clause may leave a rule for a named gate or chore, never into nothing. Stage 7 and ruling 3
+stand: `AGENTS.md` is cut only by the operator, and the demotion list is the operator's. The scope, the
+work already landed, fourteen held rulings and twenty graded findings are in
+[the change-order record](harbor-ro7-placement.md).
+
 ## Leads, after the drydock
 
 - Prior art on Claude and Codex instruction parity (operator: *"we can't be alone here, this is not the first project to seek parity"*).
