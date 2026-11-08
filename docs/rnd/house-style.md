@@ -559,6 +559,17 @@ on PyPI). Put to the operator: A, register `gzkit` on PyPI and use `[tool.gzkit]
 `[tool.py-gzkit]`, matching the distribution gzkit owns today. Operator, by selection:
 *"[tool.py-gzkit]"*, against the recommendation.
 
+## decision · the deferral of the other candidates was the agent's, not ruled
+
+At review, the operator, verbatim: *"We didn't talk about admitting quite a few other choices. So I'm
+not sure if that was going to be something we did here."*
+
+Row 7(a) sent the admission of the other candidates to a follow-on run on the agent's own call; no
+question put it to the operator. The candidate list was also the agent's: six preferences read from
+`AGENTS.md` § STDLIB-FIRST and the Astral sources, never drawn up with the operator, and *"quite a
+few other choices"* says it is longer. The frontier is reopened by this: whether admission happens in
+this run is the operator's to rule.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
@@ -582,7 +593,7 @@ drawn up front as a map, kept current through classic ADRs, and brought to the m
 design-time imperative enforced at the work package freeze from a signal computed at intake,
 guidance at the airlock, and chore tidyings, for gzkit and for every project built with it.
 
-**Frontier.** Empty. Every open question whose answer would move a disposition is ruled; what
+**Frontier.** Reopened 2026-11-08 at review (decision: the deferral of the other candidates was the agent's). Before that: empty. Every open question whose answer would move a disposition is ruled; what
 remains (the map's region vocabulary, the key names, the checks' shapes) is diamond 2.
 
 **Review.** —
