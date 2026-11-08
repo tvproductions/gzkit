@@ -526,6 +526,18 @@ This answers most of the withdrawn question 11: an addition that fits the map pr
 changes it goes through Design for a classic ADR (the classic ADR change orders, the approval rule).
 What remains is where that is enforced.
 
+## decision · placement against the map is enforced at the work package freeze
+
+Put to the operator: A, at the freeze, no baseline frozen until every footprint module is placed in
+the map and any map change cites a Current classic ADR, the airlock carrying the placement as
+guidance and the chore sweeping drift; B, at intake, which RP-11 holds to *"admitting a
+requirement, nothing more"*; C, at the airlock exit, after the code is written. Operator, by
+selection: *"At the freeze (Recommended)"*.
+
+A consequence, not a ruling: ad hoc work through `gz permitted-entry` freezes nothing, so it is
+reached by the airlock's guidance and the chore only; its *"light repair at most"* ceiling (source:
+the airlock) is what keeps a map change out of it.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
