@@ -331,8 +331,21 @@ class RepairLifecycleTests(_LedgerCase):
     def close(self) -> WorkPackageTransitionedEvent:
         return self.move("closed", work_package="WP-02-astral", **_REPAIR_CLOSE)
 
+    def withdraw_an_order(self, order: str = "ORD-01-x") -> None:
+        self.book_order(order, "opened", operator_text="open it")
+        self.book_order(order, "closed", decision="terminate", attestor="g0",
+                        attestation_text="withdraw it")  # fmt: skip
+
+    def test_a_package_with_no_closed_order_does_not_close(self) -> None:
+        """Ruling 79: Gate 5 is recorded somewhere, so at least one order has closed."""
+        before = _rows(self.path)
+        with self.assertRaisesRegex(WorkPackageLedgerError, "ruling 79"):
+            self.close()
+        self.assertEqual(_rows(self.path), before)
+
     def test_the_close_follows_initiation_and_keeps_the_payload(self) -> None:
         """Rulings 62 and 76: the payload stays, less a Gate 5 decision of its own."""
+        self.withdraw_an_order()
         event = self.close()
         self.assertEqual((event.from_state, event.to_state), ("initiated", "closed"))
         self.assertEqual((event.attestor, event.decision), ("g0", None))

@@ -330,7 +330,7 @@ def package_held_reqs(ledger: Ledger, work_package: str) -> tuple[str, ...]:
 
 
 def _check_repair_close(ledger: Ledger, package: WorkPackage, move: TransitionRequest) -> None:
-    """Refuse a repair close with a decision of its own or an open order (RP-12 ruling 76)."""
+    """Refuse a repair close with its own decision, no order or an open one (rulings 76, 79)."""
     if move.decision is not None:
         _refuse(
             f"Repair package {package.id} books no Gate 5 decision of its own: Gate 5 sits at "
@@ -338,6 +338,13 @@ def _check_repair_close(ledger: Ledger, package: WorkPackage, move: TransitionRe
             "without --decision."
         )
     moves = package_order_moves(ledger, package.id)
+    if not moves:
+        _refuse(
+            f"Repair package {package.id} has no order, so no Gate 5 is recorded for it; it "
+            "closes once at least one order is closed through `uv run gz wp order close`. A "
+            "package with no work is withdrawn by opening an order and closing it as "
+            "terminate (RP-12 ruling 79)."
+        )
     if open_orders := [order for order, row in moves.items() if row.get("to_state") != "closed"]:
         _refuse(
             f"Repair package {package.id} closes once every order is closed; "

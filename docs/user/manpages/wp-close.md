@@ -30,7 +30,8 @@ gz wp close <WP-id> [--decision <decision>] --attestor <id> --residual-risk <tex
 recording the decision, the attestor and the residual risk. A repair package moves
 only `initiated` to `closed`, its orders carrying the run (RP-12 ruling 44). Gate 5
 sits at each of its orders, [`gz wp order close`](wp-order-close.md), so the
-package's close is refused while any order is not closed, carries no `--decision`
+package's close is refused until at least one order is closed and while any is
+not (ruling 79), carries no `--decision`
 of its own, and records each order's decision as the ledger holds it in
 `order_decisions` (ruling 76) and each repair REQ a `proceed` holds in `held_reqs`
 (ruling 78); it keeps the attestor, the residual risk, the
