@@ -807,6 +807,25 @@ columns, never a rich `Table`. They also discharge the CLI rule's formatter chok
 UNMET"* (source: the candidate inventory, item 77). Family F2 is ruled, save the justify
 walkthrough's use of jinja2, still to confirm.
 
+## decision · family F3 ruled in part
+
+The operator numbered the replies 15 to 19 in order, where the list put inventory items 15, 16, 17,
+19 and 90; the replies are read in that order (reply 18 is item 19, reply 19 is item 90).
+Verbatim:
+
+> 15. yes, in for a penny, in for a pound. Good practice says we should dataclass only in the core, but the Pydantic exception seems safe.
+> 16. yes, use those features of Pydantic to achieve those effects
+> 17. I assume those are HA Pydantic constraints?
+> 18. Yes, is TypedDict stdlib?
+> 19.
+
+- **Admitted:** 15 (Pydantic for every data model, the core included, no dataclasses; contradiction
+  4 settled in its favour), 16 (frozen and `extra="forbid"`, achieved through Pydantic's own
+  features), 19 (TypedDict for shapes; it is stdlib, `typing.TypedDict`).
+- **17, a question back:** whether field descriptions are hexagonal Pydantic constraints. Answered
+  in session; open until ruled.
+- **90, no reply:** open.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
