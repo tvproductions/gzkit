@@ -1047,7 +1047,8 @@ Acceptance runs on the order: its obligations are its frozen requirements and it
 proofs and reviews are its own, so each order carries its own evidence to its own
 Gate 5. Accepting it refuses until its acceptance reads ready and every changed
 file lies in the package's sealed footprint, the order and requirement stores
-aside; an order stopped by an exit is excused. Accepting crosses the airlock
+aside; an order stopped by an exit is excused, but whether it read ready is
+booked, and its Gate 5 proceeds only on that. Accepting crosses the airlock
 outward:
 
 ```bash

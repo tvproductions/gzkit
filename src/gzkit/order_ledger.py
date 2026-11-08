@@ -35,8 +35,6 @@ from gzkit.work_package_ledger import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
-
     from gzkit.ledger import Ledger, LedgerEvent
     from gzkit.models.catalog import Catalog, CatalogReq, Order, WorkPackage
 
@@ -61,7 +59,7 @@ _STATE_FIELDS: dict[str, frozenset[str]] = {
     "opened": frozenset({"operator_text"}),
     "frozen": frozenset({"baseline", "risk_note", "review_receipt", "approved_alterations"}),
     "commenced": frozenset(),
-    "accepted": frozenset(),
+    "accepted": frozenset({"acceptance_ready"}),
     "closed": frozenset(
         {
             "decision",
@@ -106,6 +104,7 @@ class OrderMove(BaseModel):
     residual_risk: str | None = Field(None, description="The residual risk, at a proceed")
     superseded_by: str | None = Field(None, description="The order a redirect names")
     revisit_condition: str | None = Field(None, description="When a pause is revisited")
+    acceptance_ready: bool | None = Field(None, description="Readiness read, at accepted")
 
 
 def _refuse(message: str) -> NoReturn:
@@ -367,16 +366,19 @@ def _check_decision_fields(move: OrderMove) -> None:
         _refuse(f"A {move.decision} does not carry {flags} (RP-12 ruling 73).")
 
 
-def _check_delivered(
-    ledger: Ledger, order: Order, acceptance_ready: Callable[[str], bool] | None
-) -> None:
-    """Refuse a proceed on a stopped order whose acceptance never read ready (ruling 80)."""
-    ready = acceptance_ready is not None and acceptance_ready(order.id)
+def _check_delivered(ledger: Ledger, order: Order) -> None:
+    """Refuse a proceed on a stopped order whose acceptance never read ready (80, 84).
+
+    The readiness is the one its `accepted` move booked; a move that booked none
+    reads not ready, fail-closed.
+    """
+    accepted = [move for move in _moves(ledger, order.id) if move.get("to_state") == "accepted"]
+    ready = bool(accepted) and accepted[-1].get("acceptance_ready") is True
     if order_took_stopping_exit(ledger, order.id) and not ready:
         _refuse(
-            f"{order.id} took a stopping exit and acceptance does not read ready, so it "
+            f"{order.id} took a stopping exit and its acceptance did not read ready, so it "
             "delivered nothing to proceed with, and a proceed would hold its REQs (RP-12 "
-            "rulings 78 and 80). Close it as `redirect`, `pause` or `terminate`."
+            "rulings 78, 80 and 84). Close it as `redirect`, `pause` or `terminate`."
         )
 
 
@@ -385,7 +387,6 @@ def _check_closed(
     ledger: Ledger,
     order: Order,
     move: OrderMove,
-    acceptance_ready: Callable[[str], bool] | None,
 ) -> None:
     """Check Gate 5 at the order: the words, the decision and its own field (73 to 75, 80)."""
     if not (move.attestor or "").strip() or not (move.attestation_text or "").strip():
@@ -404,7 +405,7 @@ def _check_closed(
     if move.decision == "redirect":
         _check_successor(catalog, ledger, order, str(move.superseded_by))
     if move.decision == "proceed":
-        _check_delivered(ledger, order, acceptance_ready)
+        _check_delivered(ledger, order)
         _check_not_held(ledger, order)
 
 
@@ -425,7 +426,6 @@ def _check_move(
     ledger: Ledger,
     order: Order,
     move: OrderMove,
-    acceptance_ready: Callable[[str], bool] | None = None,
 ) -> None:
     stray = sorted(move.model_fields_set - _MOVE_FIELDS - _STATE_FIELDS[move.to_state])
     if stray:
@@ -442,7 +442,7 @@ def _check_move(
     if move.to_state == "frozen":
         _check_frozen(catalog, ledger, order, move)
     if move.to_state == "closed":
-        _check_closed(catalog, ledger, order, move, acceptance_ready)
+        _check_closed(catalog, ledger, order, move)
 
 
 def order_move_refusal(ledger: Ledger, order: Order, to_state: str) -> str | None:
@@ -482,14 +482,11 @@ def record_order_transition(
     catalog: Catalog,
     ledger: Ledger,
     move: OrderMove,
-    *,
-    acceptance_ready: Callable[[str], bool] | None = None,
 ) -> OrderTransitionedEvent:
     """Book one lifecycle move for an order, or refuse it and write nothing.
 
-    ``acceptance_ready`` reads whether an order's acceptance reads ready, taken as a
-    parameter since the writer holds no project root; a proceed on an order a
-    stopping exit excused is refused unless it says so, fail-closed (ruling 80).
+    A proceed on an order a stopping exit excused is refused unless its `accepted`
+    move booked `acceptance_ready` true, fail-closed (rulings 80 and 84).
 
     Returns:
         The event booked.
@@ -501,7 +498,7 @@ def record_order_transition(
     current = order_state(ledger, order.id)
     if refusal := order_move_refusal(ledger, order, move.to_state):
         _refuse(refusal)
-    _check_move(catalog, ledger, order, move, acceptance_ready)
+    _check_move(catalog, ledger, order, move)
     event = OrderTransitionedEvent.model_validate(
         {
             **move.model_dump(exclude_unset=True),

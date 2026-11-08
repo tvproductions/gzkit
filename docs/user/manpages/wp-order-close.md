@@ -38,8 +38,10 @@ evidence, and the one field the decision names (ruling 73):
   (rulings 30 and 78). A catalog REQ's proofs counting toward its outcome's
   `validated` lands with RP-14, when orders sit on delivery packages. An order a
   stopping exit excused at acceptance delivered nothing, so its `proceed` is
-  refused unless its acceptance reads ready; the order writer itself holds this
-  (ruling 80). A `proceed` is refused, too, when a REQ its freeze froze already
+  refused unless its acceptance read ready when it was accepted: the readiness
+  [`gz wp order accept`](wp-order-accept.md) booked on the `accepted` move, never
+  one earned afterwards. The order writer itself holds this, and an accepted move
+  that booked no readiness reads not ready (rulings 80 and 84). A `proceed` is refused, too, when a REQ its freeze froze already
   holds at that revision through another order's `proceed`, which a stopped
   order's REQ refrozen by a later order can reach: no REQ holds twice (ruling 82).
 - `redirect` carries `--superseded-by`, an order of the same package already opened
@@ -102,10 +104,10 @@ then the same `terminate` from a subagent's call and from the main session:
 
 ```console
 $ uv run gz wp order close ORD-01-import --decision proceed --attestor g0 --attestation-text 'it holds' --residual-risk none --evidence 'gate 5'
-ORD-01-import took a stopping exit and acceptance does not read ready, so it
+ORD-01-import took a stopping exit and its acceptance did not read ready, so it
 delivered nothing to proceed with, and a proceed would hold its REQs (RP-12
-rulings 78 and 80). Close it as `redirect`, `pause` or `terminate`. Nothing was
-written; correct the call and re-run `uv run gz wp order close <ORD-id>
+rulings 78, 80 and 84). Close it as `redirect`, `pause` or `terminate`. Nothing
+was written; correct the call and re-run `uv run gz wp order close <ORD-id>
 --decision <proceed|redirect|pause|terminate> --attestor g0 --attestation-text
 <words> --evidence <text> [--residual-risk <text> | --superseded-by <ORD-id> |
 --revisit-condition <text>]`.
@@ -117,10 +119,12 @@ $ uv run gz wp order close ORD-01-import --decision terminate --attestor g0 --at
 ORD-01-import: accepted -> closed
 ```
 
-The close it booked, read from the scratch ledger:
+The acceptance that booked it not ready, and the close, read from the scratch
+ledger:
 
 ```json
-{"schema":"gzkit.ledger.v1","event":"order_transitioned","id":"ORD-01-import","ts":"2026-11-08T07:58:21.166547+00:00","modules":[],"attestation_text":"the stop stands","to_state":"closed","evidence":"gate 5","work_package":"WP-01-stamp","order":"ORD-01-import","attestor":"g0","from_state":"accepted","approved_alterations":[],"decision":"terminate","baseline":[]}
+{"schema":"gzkit.ledger.v1","event":"order_transitioned","id":"ORD-01-import","ts":"2026-11-08T10:00:25.218015+00:00","work_package":"WP-01-stamp","from_state":"commenced","baseline":[],"to_state":"accepted","modules":[],"order":"ORD-01-import","acceptance_ready":false,"approved_alterations":[],"evidence":"stopped"}
+{"schema":"gzkit.ledger.v1","event":"order_transitioned","id":"ORD-01-import","ts":"2026-11-08T10:00:25.236618+00:00","work_package":"WP-01-stamp","from_state":"accepted","decision":"terminate","baseline":[],"to_state":"closed","attestor":"g0","modules":[],"order":"ORD-01-import","approved_alterations":[],"attestation_text":"the stop stands","evidence":"gate 5"}
 ```
 
 ## Exit codes

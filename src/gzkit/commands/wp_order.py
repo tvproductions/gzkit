@@ -345,14 +345,17 @@ def wp_order_accept_cmd(*, order_id: str, evidence: str, as_json: bool) -> None:
     package = _package(catalog, order.work_package)
     if refusal := order_move_refusal(ledger, order, "accepted"):
         _refuse_move("accepted", refusal)
+    refusal = round_bound_refusal(root, order.id)
+    blockers = [*acceptance_blockers(root, order.id), *([refusal] if refusal else [])]
+    outside = None if blockers else footprint_refusal(root, package, ledger)
+    # Ruling 84: a stopped order is excused, but whether it read ready is booked.
     if not order_took_stopping_exit(ledger, order.id):
-        refusal = round_bound_refusal(root, order.id)
-        blockers = [*acceptance_blockers(root, order.id), *([refusal] if refusal else [])]
         if blockers:
             raise PolicyBreachError("\n".join(blockers))
-        if outside := footprint_refusal(root, package, ledger):
+        if outside:
             raise PolicyBreachError(outside)
-    move = OrderMove(order=order.id, to_state="accepted", evidence=evidence)
+    ready = not blockers and not outside
+    move = OrderMove(order=order.id, to_state="accepted", evidence=evidence, acceptance_ready=ready)
     try:
         event = record_order_transition(catalog, ledger, move)
     except OrderLedgerError as exc:
@@ -396,9 +399,7 @@ def wp_order_close_cmd(
         _refuse_move("closed", refusal)
     move = OrderMove.model_validate({**fields, "to_state": "closed"})
     try:
-        event = record_order_transition(
-            catalog, ledger, move, acceptance_ready=lambda o: not acceptance_blockers(root, o)
-        )
+        event = record_order_transition(catalog, ledger, move)
     except OrderLedgerError as exc:
         _refuse_move("closed", str(exc))
     _emit_move(event, None, as_json=as_json)

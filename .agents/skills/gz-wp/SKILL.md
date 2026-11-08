@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-08
 metadata:
-  skill-version: "0.16.0"
+  skill-version: "0.17.0"
 model: sonnet
 ---
 
@@ -187,7 +187,7 @@ uv run gz wp unblock <WP-id> --order <ORD-id> --ruling "<their exact words>" --o
 Acceptance runs on the order, its obligations the order's frozen REQs and its
 proofs and reviews under its id; accept refuses until it reads ready and the
 package's sealed footprint holds, the order and requirement stores aside (ruling
-66), a stopped order excused (ruling 60), and crosses the airlock outward. A freeze
+66), a stopped order excused but whether it read ready booked, the fact its Gate 5 reads (rulings 60 and 84), and crosses the airlock outward. A freeze
 names at least one REQ (ruling 61):
 
 ```bash

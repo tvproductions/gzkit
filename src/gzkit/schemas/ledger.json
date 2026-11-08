@@ -2773,6 +2773,12 @@
             "string",
             "null"
           ]
+        },
+        "acceptance_ready": {
+          "type": [
+            "boolean",
+            "null"
+          ]
         }
       }
     },

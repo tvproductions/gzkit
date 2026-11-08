@@ -30,6 +30,8 @@ from tests.commands.test_wp_acceptance import _receipt
 from tests.commands.test_wp_order_run import _ORDER, _PACKAGE, _CommencedOrder
 
 _FOOTPRINT = "gzkit.commands.wp_order.footprint_refusal"
+#: The readiness an `accepted` move books (ruling 84), compared by identity.
+_READY, _NOT_READY = True, False
 
 
 class _OrderAcceptance(_CommencedOrder):
@@ -146,10 +148,11 @@ class TestTheOrdersGate(_OrderAcceptance):
         self.wp("block", _PACKAGE, "--order", _ORDER, "--reason", "r", "--next-action", "n")
         self.wp("unblock", _PACKAGE, "--order", _ORDER, "--ruling", "stop", "--operator", "g0",
                 "--exit", "terminate")  # fmt: skip
-        with mock.patch(_FOOTPRINT, return_value="outside") as footprint:
+        with mock.patch(_FOOTPRINT, return_value="outside"):
             self.accept()
-        footprint.assert_not_called()
+        # Ruling 84: excused, yet its readiness is read and booked: no proof, not ready.
         self.assertEqual(self.state(), "accepted")
+        self.assertIs(self.rows("order_transitioned")[-1]["acceptance_ready"], _NOT_READY)
 
 
 class TestTheOrdersRoundBound(_OrderAcceptance):
@@ -332,11 +335,54 @@ class TestAStoppedOrdersGateFive(_OrderAcceptance):
         self.wp("block", _PACKAGE, "--order", _ORDER, "--reason", "r", "--next-action", "n")
         self.wp("unblock", _PACKAGE, "--order", _ORDER, "--ruling", "stop", "--operator", "g0",
                 "--exit", "terminate")  # fmt: skip
-        self.accept()
+        with mock.patch(_FOOTPRINT, return_value=None):
+            self.accept()
+        self.assertIs(self.rows("order_transitioned")[-1]["acceptance_ready"], _READY)
         self.wp("order", "close", _ORDER, "--decision", "proceed", "--attestor", "g0",
                 "--attestation-text", "it holds", "--residual-risk", "none",
                 "--evidence", "gate 5")  # fmt: skip
         self.assertEqual(self.state(), "closed")
+
+    def test_a_stopped_order_outside_its_footprint_books_not_ready(self) -> None:
+        """Ruling 84: a stopped order's footprint is read, though it is excused."""
+        self.init()
+        self.approve(self.proof())
+        self.wp("block", _PACKAGE, "--order", _ORDER, "--reason", "r", "--next-action", "n")
+        self.wp("unblock", _PACKAGE, "--order", _ORDER, "--ruling", "stop", "--operator", "g0",
+                "--exit", "terminate")  # fmt: skip
+        with mock.patch(_FOOTPRINT, return_value="outside"):
+            self.accept()
+        self.assertEqual(self.state(), "accepted")
+        self.assertIs(self.rows("order_transitioned")[-1]["acceptance_ready"], _NOT_READY)
+
+    def test_readiness_earned_after_acceptance_earns_no_proceed(self) -> None:
+        """Ruling 84: Gate 5 reads the readiness booked at acceptance, not a later one."""
+        self.init()
+        self.wp("block", _PACKAGE, "--order", _ORDER, "--reason", "r", "--next-action", "n")
+        self.wp("unblock", _PACKAGE, "--order", _ORDER, "--ruling", "stop", "--operator", "g0",
+                "--exit", "terminate")  # fmt: skip
+        with mock.patch(_FOOTPRINT, return_value=None):
+            self.accept()
+        self.approve(self.proof())
+        self.assertTrue(acceptance_status(self.root, _ORDER).ready)
+        output = self.wp("order", "close", _ORDER, "--decision", "proceed", "--attestor", "g0",
+                         "--attestation-text", "it holds", "--residual-risk", "none",
+                         "--evidence", "gate 5", code=3)  # fmt: skip
+        self.assertIn("80 and 84", " ".join(output.split()))
+        self.assertEqual(self.state(), "accepted")
+
+    def test_a_stopped_order_past_its_round_bound_books_not_ready(self) -> None:
+        """Ruling 84: the full readiness, the review-round bound included, is booked."""
+        self.init()
+        proof = self.proof()
+        self.approve(proof)
+        with mock.patch("gzkit.commands.wp_order.round_bound_refusal", return_value="three rounds"):
+            self.wp("block", _PACKAGE, "--order", _ORDER, "--reason", "r", "--next-action", "n")
+            self.wp("unblock", _PACKAGE, "--order", _ORDER, "--ruling", "stop", "--operator",
+                    "g0", "--exit", "terminate")  # fmt: skip
+            with mock.patch(_FOOTPRINT, return_value=None):
+                self.accept()
+        self.assertIs(self.rows("order_transitioned")[-1]["acceptance_ready"], _NOT_READY)
 
 
 class TestTheOrdersGateFive(_OrderAcceptance):

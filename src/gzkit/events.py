@@ -2042,6 +2042,9 @@ class OrderTransitionedEvent(_EventBase):
         None, description="The opened order a redirect names, at a redirect (ruling 75)"
     )
     revisit_condition: str | None = Field(None, description="When a pause is revisited")
+    acceptance_ready: bool | None = Field(
+        None, description="Whether acceptance read ready, at accepted (ruling 84)"
+    )
 
 
 TypedLedgerEvent = Annotated[

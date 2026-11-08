@@ -15,11 +15,9 @@ from pathlib import Path
 
 from gzkit.events import BaselinedReq
 from gzkit.order_ledger import (
-    OrderMove,
     is_order_blocked,
     order_state,
     order_took_stopping_exit,
-    record_order_transition,
 )
 from gzkit.pipeline_dispatch import MAX_REVIEW_FIX_CYCLES
 from gzkit.work_package_fence import (
@@ -268,26 +266,27 @@ class UnblockOnAnOrder(_OrderRun):
         self.assertEqual(self.dispatch(order=_SECOND, req="REQ-2").order, _SECOND)
 
     def test_a_stopped_order_never_ready_does_not_close_as_proceed(self) -> None:
-        """Ruling 80: the writer holds it, reading readiness through its parameter."""
+        """Rulings 80 and 84: the writer reads the readiness booked at acceptance."""
+        for booked in ({}, {"acceptance_ready": False}):
+            with self.subTest(booked=booked):
+                self.setUp()
+                self.block()
+                self.unblock(exit_taken="terminate")
+                self.move("accepted", **booked)
+                self.refused("rulings 78, 80 and 84", lambda: self.move("closed", **_CLOSE))
+        self.setUp()
         self.block()
         self.unblock(exit_taken="terminate")
+        self.assertTrue(self.move("accepted", acceptance_ready=True).acceptance_ready)
+        self.assertEqual(self.move("closed", **_CLOSE).decision, "proceed")
+
+    def test_readiness_is_booked_at_acceptance_alone(self) -> None:
+        """Ruling 84: `acceptance_ready` is a field of the accepted move only."""
         self.move("accepted")
-        proceed = OrderMove(
-            order=_ORDER, to_state="closed", evidence="e", decision="proceed", attestor="g0",
-            attestation_text="it holds", residual_risk="none",
-        )  # fmt: skip
-        for ready in (None, lambda _order: False):
-            with self.subTest(ready=ready):
-                self.refused(
-                    "rulings 78 and 80",
-                    lambda ready=ready: record_order_transition(
-                        self.catalog, self.ledger, proceed, acceptance_ready=ready
-                    ),
-                )
-        event = record_order_transition(
-            self.catalog, self.ledger, proceed, acceptance_ready=lambda _order: True
+        self.refused(
+            "does not carry acceptance_ready",
+            lambda: self.move("closed", acceptance_ready=True, **_CLOSE),
         )
-        self.assertEqual(event.decision, "proceed")
 
     def test_a_proceed_on_a_req_another_proceed_holds_is_refused(self) -> None:
         """Ruling 82: a stopped order's REQ refrozen and proceeded is not held twice."""
@@ -295,17 +294,8 @@ class UnblockOnAnOrder(_OrderRun):
         self.unblock(exit_taken="terminate")
         self.walk_to("accepted", order=_SECOND)
         self.move("closed", order=_SECOND, **_CLOSE)
-        self.move("accepted")
-        first = OrderMove(
-            order=_ORDER, to_state="closed", evidence="e", decision="proceed", attestor="g0",
-            attestation_text="it holds too", residual_risk="none",
-        )  # fmt: skip
-        self.refused(
-            "ruling 82",
-            lambda: record_order_transition(
-                self.catalog, self.ledger, first, acceptance_ready=lambda _order: True
-            ),
-        )
+        self.move("accepted", acceptance_ready=True)
+        self.refused("ruling 82", lambda: self.move("closed", **_CLOSE))
         stop = {"decision": "terminate", "attestor": "g0", "attestation_text": "stop"}
         self.assertEqual(self.move("closed", **stop).decision, "terminate")
 
