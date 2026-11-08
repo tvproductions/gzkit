@@ -6,11 +6,11 @@ paths:
 description: Chores workflow command sequences, two-surface layout, and evidence patterns
 ---
 
-<!-- rule-version: 0.6.4 -->
+<!-- rule-version: 0.6.5 -->
 
 # Chores Workflow (gzkit)
 
-> **Rule version:** `0.6.4` — § Apply Advice typechecks the whole tree, `features/` included (RO-9 tranche 4); version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#choresmd).
+> **Rule version:** `0.6.5` — § Evidence & Attestation's behave example names a tag the features carry, not the absent `@schema` (operator, 2026-11-08: *"fix what is stale"*); version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#choresmd).
 
 > **Purpose:** Enable agents to run repository chores effectively with clear,
 > repeatable command sequences, aligned to gzkit guardrails and the two-surface
@@ -137,7 +137,7 @@ whole unit tier and BDD:
 
 ```bash
 uv run gz check --full
-uv run behave features/<feature>.feature --tags=@schema
+uv run -m behave features/<feature>.feature --tags=@REQ-<X.Y.Z-NN-MM>
 ```
 
 ### Prohibited Evidence

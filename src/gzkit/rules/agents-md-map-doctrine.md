@@ -7,11 +7,11 @@ paths:
 description: Map-not-encyclopedia shape invariant for per-turn agent instruction files (ADR-0.0.54)
 ---
 
-<!-- rule-version: 0.13.1 -->
+<!-- rule-version: 0.13.2 -->
 
 # Map-Not-Encyclopedia Doctrine (gzkit)
 
-> **Rule version:** `0.13.1` — version narrative lifted to [Rule Version History](../../docs/governance/rule-version-history.md#agents-md-map-doctrinemd); binding rules unchanged.
+> **Rule version:** `0.13.2` — § Budget points to the ruled destination range instead of a retired `15000` ceiling, and the attestation note states what each `gz content` verb takes today (operator, 2026-11-08: *"fix what is stale"*); version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#agents-md-map-doctrinemd).
 
 ## Invariant
 
@@ -19,7 +19,7 @@ AGENTS.md MUST contain only (a) binding bullet rules (one bullet = one rule, ≤
 
 ## Budget
 
-The enforced budgets are the values in `data/instructions_files_budget.json`, read by `gz validate --instructions-files-budget`; this rule never restates them (a duplicated number drifts from what is enforced — the drift ADR-0.0.54 closeout corrected). The destination for AGENTS.md is the tightened `15000`-char ceiling; reaching it lands under `ADR-0.35.0-canon-entry-corpus-landing` § Decision 3 (sections declare `corpus-owned` or `unowned`, the generator materializes owned sections, the unowned byte total is a decrease-only ratchet). Cite that ADR directly; its predecessors (`ADR-0.0.37`, GHI #533) are terminal.
+The enforced budgets are the values in `data/instructions_files_budget.json`, read by `gz validate --instructions-files-budget`; this rule never restates them (a duplicated number drifts from what is enforced — the drift ADR-0.0.54 closeout corrected). The destination for AGENTS.md is the range in `docs/governance/agents-md-doctrine.md` § Budget targets, an ideal and a ceiling (operator rulings 2026-09-19); closing the distance lands under `ADR-0.35.0-canon-entry-corpus-landing` § Decision 3 (sections declare `corpus-owned` or `unowned`, the generator materializes owned sections, the unowned byte total is a decrease-only ratchet). Cite that ADR directly; its predecessors (`ADR-0.0.37`, GHI #533) are terminal.
 
 Budgets are advisory until 1.0 (operator ruling 2026-08-17): every file is measured and each overrun reported with its distance and the `/gz-context-diet` pointer, but nothing blocks. The Codex delivery cap in `data/vendor-manifest.json` is a limit gzkit **sets** through the `.codex/config.toml` it generates, and any change to it is verified by observing what Codex actually delivered — `gz validate --instructions-files-budget` carries a codex-delivery witness for that (GHI #962). Raising the cap without re-observing delivery is the defect GHI #815 recorded.
 
@@ -45,7 +45,7 @@ Operator ruling 2026-08-17: **the discriminator is whether CANON changed — nev
 - Attestation on add/remove is recorded provenance, never a blocking gate: *"Capture must never be blocked: losing the operator's words is strictly worse than a red tree"* (`ADR-0.35.0` § Decision 7).
 - The transport never gates the attestation: a ruling relayed verbatim via `--attestation-text` IS the attestation; "the operator is not at a terminal" never stops a chore.
 
-(Advisory — the implementation is inverted and no witness holds it: `gz content remember` and `retire` accept no `--attestor`, while `gz content commit` requires one. Reclassify when the verbs carry the granularity.)
+(Advisory — no witness holds it, and the verbs carry the granularity only in part: `gz content remember` takes no `--attestor`, only a `--witness` recorded as provenance; `gz content retire` requires `--attestor` only when the retirement moves invariant-tier liveness; `gz content commit` requires `--attestor` and `--attestation-text` only when the corpus moved since that consumer's last committed rendition (GHI #821). Reclassify when the verbs carry the granularity.)
 
 ## Writing levers
 

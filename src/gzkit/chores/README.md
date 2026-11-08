@@ -54,7 +54,8 @@ every canonical slug. `proofs/` is never canonical.
 Before executing or modifying any chore, read:
 
 1. **The chore's `CHORE.md`** — Contains the authoritative procedure
-2. **The registry** at `src/gzkit/chores/registry.json` (canonical) — for
+2. **The registry** at `.gzkit/chores/registry.json` (canonical; the package
+   copy at `src/gzkit/chores/registry.json` is generated and ships filtered) — for
    discovery; `gz chores list` is the operator-facing surface
 
 ---

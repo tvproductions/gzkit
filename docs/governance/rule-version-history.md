@@ -171,6 +171,10 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `chores.md`
 
+### Changed 2026-11-08 at version `0.6.5` (stale clauses corrected)
+
+Prior `0.6.4` banner: *"§ Apply Advice typechecks the whole tree, `features/` included (RO-9 tranche 4)"*. The rules validity review (`.gzkit/chores/instructions-files-diet/proofs/rules-validity-D-2026-11-08.md`, clause C19) found § Evidence & Attestation's `uv run behave features/<feature>.feature --tags=@schema` naming a tag no file under `features/` carries; the example now reads `uv run -m behave features/<feature>.feature --tags=@REQ-<X.Y.Z-NN-MM>`, the REQ scenario tag `tests.md` defines (operator, 2026-11-08: *"fix what is stale"*). Binding rules unchanged.
+
 ### Changed 2026-10-24 at version `0.6.4`
 
 § Apply Advice's typecheck step is `uv run ty check .`, dropping `--exclude features`: the operator ruled `features/` into ty's scope at RO-9 tranche 4 (verbatim: *"features in ty scope"*). Binding rules unchanged.
@@ -565,6 +569,10 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `agents-md-map-doctrine.md`
 
+### Changed 2026-11-08 at version `0.13.2` (stale clauses corrected)
+
+Prior `0.13.1` banner: *"version narrative lifted to Rule Version History; binding rules unchanged."* The rules validity review (`.gzkit/chores/instructions-files-diet/proofs/rules-validity-D-2026-11-08.md`, clauses D4 and D16) found § Budget naming *"the tightened `15000`-char ceiling"* as the AGENTS.md destination, which the operator rulings of 2026-09-19 replaced with a range (15,000 ideal, 20,000 ceiling; `docs/governance/agents-md-doctrine.md` § Budget targets), and the attestation note saying *"`gz content remember` and `retire` accept no `--attestor`, while `gz content commit` requires one"*, which `gz content retire --help` and `gz content commit --help` no longer bear out. § Budget now points to the range without restating it, and the note states each verb's current flags (operator, 2026-11-08: *"fix what is stale"*). Binding rules unchanged.
+
 ### 0.13.0 — 2026-09-17
 
 Diet pass under GHI #921 (operator: "A" on the full before/after, 11,982 B → 7,083 B). Binding rules unchanged. Lifted verbatim as dated records — the `0.12.0` note, § Five prohibited shapes (a restatement of § Invariant), the § Budget pointer history, the GHI #822 naming paragraph and the attestation-granularity measurement:
@@ -683,6 +691,10 @@ Lifted 2026-08-29 at version `0.2.0` (rule now at `0.3.0`).
 
 ## `model-selection.md`
 
+### Changed 2026-11-08 at version `0.8.1` (stale clauses corrected)
+
+Prior `0.8.0` banner: *"canon names models by class, never a versioned ID, witnessed by `gz validate --model-class-only` (GHI #1284)"*. The rules validity review (`.gzkit/chores/instructions-files-diet/proofs/rules-validity-D-2026-11-08.md`, clauses S4 and S10) found operative claim 4 (*"the Agent tool call carries `model` and `subagent_type` only"*) and § Where effort is set (*"The Agent tool's per-call inputs are `model` and `subagent_type`; it has no effort input"*) contradicted by the tool's schema, which now has an `effort` input documented *"Set this ONLY when the user, or instructions such as CLAUDE.md or a skill, explicitly ask"*. Both passages now state the input and its reservation (operator, 2026-11-08: *"fix what is stale"*). Binding rules unchanged: effort is still set on the agent definition.
+
 ### Changed 2026-10-27 at version `0.8.0` (GHI #1284)
 
 § Skill frontmatter carried a class-to-ID mapping, *"`haiku` → `claude-haiku-4-5`; `sonnet` → `claude-sonnet-5`;
@@ -740,6 +752,10 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 > **Rule version:** `0.7.1` — § Do Not no longer offers prompt-level effort as the alternative to a hardcoded model ID, which claim 4 (0.7.0) declares inert, and its example no longer names a superseded model (found by the rule-conflict audit, maintenance visit E, 2026-10-10). Routing policy and claims unchanged. Prior history, including `0.7.0`: [Rule Version History](rule-version-history.md#model-selectionmd).
 
 ## `mx-mode.md`
+
+### Changed 2026-11-08 at version `1.16.1` (stale clauses corrected)
+
+Prior `1.16.0` banner: *"out of service is one state decided by the alarm test, with a return to service package and care with the governors off (repair-work-organization, 2026-11-03)"*. The rules validity review (`.gzkit/chores/instructions-files-diet/proofs/rules-validity-D-2026-11-08.md`, clauses M9, M15, M17) found three facts incomplete: the floor-pinned-by-LEVEL list omitted `authorship`, which § Opting a guard names as its precedent; *"An unregistered guard name resolves CRITICAL"* held on the validate surface only; and the corrective-action primitive the ledger clause pointed to exists as `gz ledger correct`. Each is corrected to the code (operator, 2026-11-08: *"fix what is stale"*). Binding rules unchanged.
 
 ### Changed 2026-11-03 at version `1.16.0` (operator rulings)
 
@@ -862,6 +878,8 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 > **Rule version:** `0.6.0` — diet pass under GHI #921 (operator ruling 2026-08-29, *"we are compressing everything and anything that the agent can consume"*). Version history lifted to [Rule Version History](rule-version-history.md#security-sensitivitymd). Binding rules unchanged.
 
 ## `skill-surface-sync.md`
+
+Prior `0.14.0` banner: *"§ Retirement policy now covers rules as well as skills (operator, 2026-11-08: "Yes, policy first")"*. Superseded 2026-11-08 by `0.14.1` (operator: *"fix what is stale"*). The rules validity review (`.gzkit/chores/instructions-files-diet/proofs/rules-validity-D-2026-11-08.md`, clauses Y9 and Y17) found § Surface layout describing a version-comparing drift report sync does not make (*"If sync reports a mirror ahead of canonical … use the git timestamp"*), and the classifier table marking `project_local` *(chores only)* while `_classify_skill_file` gives it to skills that declare `project_local: true` (GHI #915). Both now state the code; the `package_only` row also names a retired skill. Binding rules unchanged.
 
 Prior `0.13.1` banner: *"version narrative lifted to Rule Version History; binding rules unchanged."* Superseded 2026-11-08 by `0.14.0`, which extends § Retirement policy to rules.
 

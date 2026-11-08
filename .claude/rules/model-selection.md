@@ -8,16 +8,16 @@ paths:
 
 # Model Selection (gzkit)
 
-<!-- rule-version: 0.8.0 -->
+<!-- rule-version: 0.8.1 -->
 
-> **Rule version:** `0.8.0` — canon names models by class, never a versioned ID, witnessed by `gz validate --model-class-only` (GHI #1284); prior narrative in [Rule Version History](../../docs/governance/rule-version-history.md#model-selectionmd).
+> **Rule version:** `0.8.1` — the Agent tool now has a per-call `effort` input, so two claims that it takes only `model` and `subagent_type` are corrected (operator, 2026-11-08: *"fix what is stale"*); prior narrative in [Rule Version History](../../docs/governance/rule-version-history.md#model-selectionmd).
 
 ## Operative claims (binding)
 
 1. **Model tier is determined by decision complexity, not task size.** Large read-only tasks use Haiku; small design decisions use Opus.
 2. **Default to the lowest tier that closes the decision space.** Each surface must name what "closing the decision" means.
 3. **Skill SKILL.md files carry explicit `model:` frontmatter.** No inference; declaration is the contract.
-4. **Subagent effort is set on the agent definition, never on the dispatch call.** An agent's `effort:` frontmatter (or the SDK `AgentDefinition.effort`) carries it; the Agent tool call carries `model` and `subagent_type` only; an `effort:` line written into a prompt is text the subagent reads, not a harness control. Agents do not hardcode model IDs.
+4. **Subagent effort is set on the agent definition, never on the dispatch call.** An agent's `effort:` frontmatter (or the SDK `AgentDefinition.effort`) carries it. The Agent tool's per-call `effort` input is, by its own description, for when the user or instructions such as CLAUDE.md or a skill explicitly ask; this rule does not ask for it. An `effort:` line written into a prompt is text the subagent reads, not a harness control. Agents do not hardcode model IDs.
 5. **A subagent's claim is not evidence.** Never relay a subagent's factual assertion into ceremony, attestation, or an operator-facing conclusion on the subagent's word — cite the ARB receipt, the file, or re-run the command yourself. The orchestrator owns every claim it passes upward.
 
 ## Routing matrix
@@ -55,7 +55,7 @@ model: haiku  # or: sonnet, opus
 
 ## Subagent effort levels
 
-**Where effort is set.** On the agent definition: `.claude/agents/<name>.md` frontmatter `effort:` (documented values `low`, `medium`, `high`, `xhigh`, `max`; default inherits the session's) or the SDK `AgentDefinition.effort`. The Agent tool's per-call inputs are `model` and `subagent_type`; it has no effort input. A prompt-level `effort:` directive has no mechanical effect. (Claude Code documentation, read 2026-10-06; `docs/rnd/renewing-vows/sources/` and the run record's source entry *Claude Code documentation on subagent effort*.) Today every definition under `.claude/agents/` carries `model: inherit` and no `effort:`, so every subagent runs at the session's effort.
+**Where effort is set.** On the agent definition: `.claude/agents/<name>.md` frontmatter `effort:` (documented values `low`, `medium`, `high`, `xhigh`, `max`; default inherits the session's) or the SDK `AgentDefinition.effort`. The Agent tool also takes a per-call `effort` input (`low` to `max`; ignored for a fork), whose description reads *"Set this ONLY when the user, or instructions such as CLAUDE.md or a skill, explicitly ask"* (Agent tool schema, read 2026-11-08). A prompt-level `effort:` directive has no mechanical effect. (Claude Code documentation, read 2026-10-06; `docs/rnd/renewing-vows/sources/` and the run record's source entry *Claude Code documentation on subagent effort*.) Today every definition under `.claude/agents/` carries `model: inherit` and no `effort:`, so every subagent runs at the session's effort.
 
 **The allocation, by echelon and role** (operator ruling 2026-10-05, verbatim *"A (so model + effort)"*; advisory until agent definitions carry `effort:` and the dispatch record names which definition flew):
 

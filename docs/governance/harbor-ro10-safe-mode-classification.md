@@ -65,7 +65,7 @@ Cost decides how a check runs, never whether it matters (step 5 is last). Steps 
 ### 4. Establishment and review over time
 
 - Classifications are data, read by the switch, not prose: each guard's kind and cost class.
-- A guard with no classification is an alarm, as an unregistered guard resolves `CRITICAL` today, so drift runs toward more protection, never less.
+- A guard with no classification is an alarm, as an unregistered `gz validate` scope resolves `CRITICAL` today, so drift runs toward more protection, never less.
 - Evidence for reclassification comes from use: a tripwire that trips on every order measures intended change; one that never trips is guarding something stable, or is dead; an alarm that misfires is a defect.
 
 ### 5. A/B/C/D checks need a timed trigger
