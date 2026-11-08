@@ -111,7 +111,7 @@ _PAYLOADS: dict[str, dict[str, object]] = {
     "opened": {"operator_text": "open the import order"},
     "frozen": _FREEZE,
     "commenced": {},
-    "accepted": {},
+    "accepted": {"acceptance_ready": True},
 }
 
 
@@ -191,6 +191,17 @@ class LifecycleTests(_OrderCase):
         """Rulings 44 and 74: the lifecycle ends accepted -> closed."""
         self.walk_to("accepted")
         self.assertEqual(self.move("closed", **_CLOSE).from_state, "accepted")
+
+    def test_an_accepted_move_books_its_readiness(self) -> None:
+        """Ruling 86: the writer refuses an accepted move that books no readiness."""
+        self.walk_to("commenced")
+        self.assertIn("84 and 86", self.assert_refused("accepted"))
+
+    def test_an_order_not_stopped_is_never_booked_not_ready(self) -> None:
+        """Ruling 86: an order no exit stopped is accepted only once ready (ruling 60)."""
+        self.walk_to("commenced")
+        self.assertIn("60 and 86", self.assert_refused("accepted", acceptance_ready=False))
+        self.assertTrue(self.move("accepted", acceptance_ready=True).acceptance_ready)
 
     def test_an_accepted_order_moves_no_further(self) -> None:
         self.walk_to("accepted")
@@ -314,13 +325,13 @@ class FreezeTests(_OrderCase):
         self.move("frozen", **_FREEZE)
         self.supersede_req_1()
         self.assertEqual(self.move("commenced").to_state, "commenced")
-        self.assertEqual(self.move("accepted").to_state, "accepted")
+        self.assertEqual(self.move("accepted", **_PAYLOADS["accepted"]).to_state, "accepted")
 
     def test_an_accepted_order_holds_its_req_until_its_gate_5(self) -> None:
         """Ruling 82: an accepted order awaiting Gate 5 still holds its baseline."""
         self.move("frozen", **_FREEZE)
         self.move("commenced")
-        self.move("accepted")
+        self.move("accepted", **_PAYLOADS["accepted"])
         self.move("opened", order="ORD-02-matcher", **_PAYLOADS["opened"])
         output = self.assert_refused("frozen", order="ORD-02-matcher", **_FREEZE)
         self.assertIn("ruling 82", output)

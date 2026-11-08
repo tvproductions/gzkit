@@ -48,7 +48,10 @@ closes. Its readiness is still read in full, the acceptance, the round limit and
 the footprint, and every accepted move books whether it read ready as
 `acceptance_ready`. Gate 5 reads that booked fact, so a stopped order that did not
 read ready here never closes as `proceed`, whatever it earns afterwards (rulings 80
-and 84). The lifecycle moves one step at a time, an order blocked on the operator
+and 84). The order writer refuses an accepted move that books no readiness, and one
+that books an order no exit stopped as not ready (ruling 86). It holds no project
+root, so it cannot read readiness itself: a stopped order booked ready is trusted
+from this verb, which reads it in full. The lifecycle moves one step at a time, an order blocked on the operator
 does not move (ruling 59), and its repair package must be initiated and not
 closed (rulings 2 and 44).
 

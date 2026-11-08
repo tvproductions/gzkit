@@ -425,6 +425,20 @@ def _check_closed(
         _check_not_held(ledger, order)
 
 
+def _check_accepted(ledger: Ledger, order: Order, move: OrderMove) -> None:
+    """Refuse an acceptance that books no readiness, or an unstopped one not ready (86)."""
+    if move.acceptance_ready is None:
+        _refuse(
+            f"Order {order.id}'s acceptance books whether it read ready, `acceptance_ready`, "
+            "which its Gate 5 reads (RP-12 rulings 84 and 86)."
+        )
+    if not move.acceptance_ready and not order_took_stopping_exit(ledger, order.id):
+        _refuse(
+            f"Order {order.id} took no stopping exit, so it is accepted only once its "
+            "acceptance reads ready (RP-12 rulings 60 and 86)."
+        )
+
+
 def _check_not_held(ledger: Ledger, order: Order) -> None:
     """Refuse a proceed whose baseline another order's proceed already holds (ruling 82)."""
     held = set(package_held_reqs(ledger, order.work_package))
@@ -457,6 +471,8 @@ def _check_move(
         )
     if move.to_state == "frozen":
         _check_frozen(catalog, ledger, order, move)
+    if move.to_state == "accepted":
+        _check_accepted(ledger, order, move)
     if move.to_state == "closed":
         _check_closed(catalog, ledger, order, move)
 

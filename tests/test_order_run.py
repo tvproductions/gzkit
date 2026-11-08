@@ -133,7 +133,7 @@ class DispatchOnAnOrder(_OrderRun):
         self.refused("not commenced", lambda: self.dispatch(order=_SECOND))
 
     def test_an_accepted_order_takes_no_dispatch(self) -> None:
-        self.move("accepted")
+        self.move("accepted", **_PAYLOADS["accepted"])
         self.refused("not commenced", self.dispatch)
 
     def test_an_order_of_another_package_is_refused(self) -> None:
@@ -148,7 +148,7 @@ class DispatchOnAnOrder(_OrderRun):
 
     def test_an_order_whose_package_closed_takes_no_dispatch(self) -> None:
         """Rulings 44 and 76: the package closes once its orders have, and none works on."""
-        self.move("accepted")
+        self.move("accepted", **_PAYLOADS["accepted"])
         self.move("closed", decision="terminate", attestor="g0", attestation_text="stop")
         close = TransitionRequest(
             work_package=_PACKAGE, to_state="closed", evidence="e", attestor="g0",
@@ -176,13 +176,13 @@ class BlockOnAnOrder(_OrderRun):
 
     def test_a_blocked_order_does_not_move(self) -> None:
         self.block()
-        self.refused("blocked", lambda: self.move("accepted"))
+        self.refused("blocked", lambda: self.move("accepted", **_PAYLOADS["accepted"]))
 
     def test_the_packages_other_orders_are_still_dispatched_and_moved(self) -> None:
         self.commence_second()
         self.block()
         self.assertEqual(self.dispatch(order=_SECOND, req="REQ-2").order, _SECOND)
-        self.move("accepted", order=_SECOND)
+        self.move("accepted", order=_SECOND, **_PAYLOADS["accepted"])
         self.assertEqual(order_state(self.ledger, _SECOND), "accepted")
 
     def test_a_block_on_the_repair_package_names_its_order(self) -> None:
@@ -209,7 +209,7 @@ class BlockOnAnOrder(_OrderRun):
 
     def test_an_accepted_order_takes_no_block(self) -> None:
         """RP-12 ruling 69: final inspection is done; Gate 5's outcomes remain."""
-        self.move("accepted")
+        self.move("accepted", **_PAYLOADS["accepted"])
         self.refused("accepted", self.block)
 
     def test_an_order_not_opened_or_of_another_package_takes_no_block(self) -> None:
@@ -267,13 +267,10 @@ class UnblockOnAnOrder(_OrderRun):
 
     def test_a_stopped_order_never_ready_does_not_close_as_proceed(self) -> None:
         """Rulings 80 and 84: the writer reads the readiness booked at acceptance."""
-        for booked in ({}, {"acceptance_ready": False}):
-            with self.subTest(booked=booked):
-                self.setUp()
-                self.block()
-                self.unblock(exit_taken="terminate")
-                self.move("accepted", **booked)
-                self.refused("rulings 78, 80 and 84", lambda: self.move("closed", **_CLOSE))
+        self.block()
+        self.unblock(exit_taken="terminate")
+        self.move("accepted", acceptance_ready=False)
+        self.refused("rulings 78, 80 and 84", lambda: self.move("closed", **_CLOSE))
         self.setUp()
         self.block()
         self.unblock(exit_taken="terminate")
@@ -282,7 +279,7 @@ class UnblockOnAnOrder(_OrderRun):
 
     def test_readiness_is_booked_at_acceptance_alone(self) -> None:
         """Ruling 84: `acceptance_ready` is a field of the accepted move only."""
-        self.move("accepted")
+        self.move("accepted", **_PAYLOADS["accepted"])
         self.refused(
             "does not carry acceptance_ready",
             lambda: self.move("closed", acceptance_ready=True, **_CLOSE),
@@ -328,7 +325,7 @@ class OrderFence(_OrderRun):
         self.assertEqual(self.fences(), [])
 
     def test_an_accepted_order_fences(self) -> None:
-        self.move("accepted")
+        self.move("accepted", **_PAYLOADS["accepted"])
         self.assertEqual(self.fences(), [(_PACKAGE, _ORDER, "accepted")])
 
     def test_an_order_stopped_by_an_exit_fences(self) -> None:
@@ -358,7 +355,7 @@ class InFlightOnAnOrder(_OrderRun):
 
     def test_it_stays_open_while_the_order_is_accepted(self) -> None:
         event = self.dispatch()
-        self.move("accepted")
+        self.move("accepted", **_PAYLOADS["accepted"])
         self.assertEqual(open_unclaimed_dispatches(self.ledger, "/here"), [event.dispatch_id])
 
     def test_a_voided_order_dispatch_is_not_open(self) -> None:
