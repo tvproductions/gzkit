@@ -145,7 +145,7 @@ ORD-01-import: opened -> frozen
 | 0 | Frozen |
 | 1 | The order, or its work package, is not in the store |
 | 2 | Usage error |
-| 3 | The freeze is refused: an empty baseline or a baseline entry, the lifecycle, the package's state or footprint, a store that dropped a sealed path, a REQ another live order holds, or approvals other than the alterations due; nothing written |
+| 3 | The freeze is refused: a booked order has lost its record, an empty baseline or a baseline entry, the lifecycle, the order's block, the package's state or footprint, a store that dropped a sealed path, a REQ another live order holds, or approvals other than the alterations due; nothing written |
 
 ## See also
 

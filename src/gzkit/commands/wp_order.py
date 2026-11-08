@@ -254,6 +254,7 @@ def wp_order_transition_cmd(
     catalog = load_catalog(root)
     ledger = Ledger(root / config.paths.ledger)
     to_state = str(fields["to_state"])
+    _booked_lost(catalog, ledger)
     order = _order(catalog, str(fields["order"]))
     package = _package(catalog, order.work_package)
     if refusal := order_move_refusal(ledger, order, to_state):
@@ -329,6 +330,7 @@ def wp_order_accept_cmd(*, order_id: str, evidence: str, as_json: bool) -> None:
     root = get_project_root()
     catalog = load_catalog(root)
     ledger = Ledger(root / config.paths.ledger)
+    _booked_lost(catalog, ledger)
     order = _order(catalog, order_id)
     package = _package(catalog, order.work_package)
     if refusal := order_move_refusal(ledger, order, "accepted"):

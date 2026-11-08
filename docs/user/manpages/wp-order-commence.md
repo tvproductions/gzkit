@@ -58,7 +58,7 @@ gz wp order new <WP-id> --slug <slug> --purpose <text> --operator-text <words>`.
 | 0 | Commenced |
 | 1 | The order, or its work package, is not in the store |
 | 2 | Usage error |
-| 3 | The move is refused: the lifecycle or the package's state; nothing written |
+| 3 | The move is refused: a booked order has lost its record, the lifecycle, the order's block, or the package's state; nothing written |
 
 ## See also
 

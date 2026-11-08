@@ -380,6 +380,22 @@ class OrderLifecycleTests(_OrderCase):
         self.assertEqual(result.exit_code, 3, result.output)
         self.assertIn("ruling 56", " ".join(result.output.split()))
 
+    def test_a_lost_order_record_refuses_every_order_move(self) -> None:
+        """Ruling 70: every later order write is refused until the store is repaired."""
+        self.new("matcher")
+        store = Path("data") / "catalog" / "orders.json"
+        held = json.loads(store.read_text(encoding="utf-8"))
+        held["orders"] = [o for o in held["orders"] if o["id"] != "ORD-02-matcher"]
+        store.write_text(json.dumps(held), encoding="utf-8")
+        before = _ledger_rows()
+        for output in (
+            self.freeze(code=3),
+            self.gz("commence", "ORD-01-import", "--evidence", "tags", code=3),
+            self.gz("accept", "ORD-01-import", "--evidence", "e", code=3),
+        ):
+            self.assertIn("Orders ORD-02-matcher have ledger events but no record", output)
+        self.assertEqual(_ledger_rows(), before)
+
     def test_before_any_seal_a_missing_path_is_replaced_by_a_change_order(self) -> None:
         """RO-14 ruling 24: an unsealed footprint may still drop the path that broke it."""
         Path("src/stamp.py").unlink()

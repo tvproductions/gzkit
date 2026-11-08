@@ -80,7 +80,7 @@ ORD-02-matcher: commenced -> accepted
 | 0 | Accepted |
 | 1 | The order, or its work package, is not in the store |
 | 2 | Usage error |
-| 3 | The move is refused: acceptance does not read ready, the round limit is used, a file lies outside the footprint, or the lifecycle refuses it; nothing booked |
+| 3 | The move is refused: a booked order has lost its record, the lifecycle refuses it, the order is blocked on the operator, acceptance does not read ready, the round limit is used, or a file lies outside the footprint; nothing booked |
 
 ## See also
 
