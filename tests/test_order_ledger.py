@@ -280,12 +280,15 @@ class FreezeTests(_OrderCase):
     def test_an_unknown_state_is_refused(self) -> None:
         self.assert_refused("inspected")
 
-    def test_a_terminated_orders_req_may_be_frozen_again(self) -> None:
-        """Ruling 53: once the holder is accepted, a later order may freeze the REQ."""
+    def test_an_accepted_order_holds_its_req_until_its_gate_5(self) -> None:
+        """Ruling 82: an accepted order awaiting Gate 5 still holds its baseline."""
         self.move("frozen", **_FREEZE)
         self.move("commenced")
         self.move("accepted")
         self.move("opened", order="ORD-02-matcher", **_PAYLOADS["opened"])
+        output = self.assert_refused("frozen", order="ORD-02-matcher", **_FREEZE)
+        self.assertIn("ruling 82", output)
+        self.move("closed", decision="terminate", attestor="g0", attestation_text="stop")
         self.assertEqual(self.move("frozen", order="ORD-02-matcher", **_FREEZE).to_state, "frozen")
 
 

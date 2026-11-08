@@ -45,7 +45,7 @@ from gzkit.work_package_run import (
     run_positions,
     took_stopping_exit,
 )
-from tests.test_order_ledger import _FREEZE, _PAYLOADS, _OrderCase, _rows
+from tests.test_order_ledger import _CLOSE, _FREEZE, _PAYLOADS, _OrderCase, _rows
 
 _PACKAGE = "WP-01-stamp"
 _ORDER = "ORD-01-import"
@@ -288,6 +288,26 @@ class UnblockOnAnOrder(_OrderRun):
             self.catalog, self.ledger, proceed, acceptance_ready=lambda _order: True
         )
         self.assertEqual(event.decision, "proceed")
+
+    def test_a_proceed_on_a_req_another_proceed_holds_is_refused(self) -> None:
+        """Ruling 82: a stopped order's REQ refrozen and proceeded is not held twice."""
+        self.block()
+        self.unblock(exit_taken="terminate")
+        self.walk_to("accepted", order=_SECOND)
+        self.move("closed", order=_SECOND, **_CLOSE)
+        self.move("accepted")
+        first = OrderMove(
+            order=_ORDER, to_state="closed", evidence="e", decision="proceed", attestor="g0",
+            attestation_text="it holds too", residual_risk="none",
+        )  # fmt: skip
+        self.refused(
+            "ruling 82",
+            lambda: record_order_transition(
+                self.catalog, self.ledger, first, acceptance_ready=lambda _order: True
+            ),
+        )
+        stop = {"decision": "terminate", "attestor": "g0", "attestation_text": "stop"}
+        self.assertEqual(self.move("closed", **stop).decision, "terminate")
 
     def test_a_stopped_orders_req_may_be_frozen_again(self) -> None:
         """Ruling 53: a stopped order's REQ is not stranded; a later order may freeze it."""

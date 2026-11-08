@@ -37,8 +37,9 @@ moves one step at a time, `opened` then `frozen`, `commenced` and `accepted`;
   an order frozen on nothing could take no dispatch and reach no acceptance
   (ruling 61).
 - A repair REQ sits in one live order's frozen baseline at a time. A REQ another
-  order's freeze holds is refused until that order is accepted, stopped or closed
-  (ruling 53).
+  order's freeze holds is refused until that order is stopped or closed (ruling
+  53); an accepted order holds it until its Gate 5, so no second order freezes it
+  while the first awaits the operator (ruling 82).
 - A REQ a proceed holds (ruling 78) is delivered at that revision, so it is never
   frozen again there; new work on it is a new revision through a `reopen` exit, or
   a REQ that supersedes it (ruling 81).
@@ -95,11 +96,12 @@ REQ `ORD-01-import` holds, nor freeze on nothing, and an order in repair package
 ```console
 $ uv run gz wp order freeze ORD-02-matcher --baseline REQ-1@1 --risk-note "Touches the matcher." --review-receipt review-02 --evidence "nine-criteria review"
 REQ-1 is in the frozen baseline of live order ORD-01-import; a repair REQ sits
-in one live order's baseline at a time, until that order is accepted, stopped or
-closed (RP-12 ruling 53). Freeze without it, or split it with a REQ that
-supersedes it. Nothing was written; correct the call and re-run `uv run gz wp
-order freeze <ORD-id> --baseline REQ-<n>@<revision> --risk-note <text>
---review-receipt <id> [--approve-alteration <id>] --evidence <text>`.
+in one live order's baseline at a time, until that order is stopped or closed
+(RP-12 ruling 53); an accepted order holds it until its Gate 5 (ruling 82).
+Freeze without it, or split it with a REQ that supersedes it. Nothing was
+written; correct the call and re-run `uv run gz wp order freeze <ORD-id>
+--baseline REQ-<n>@<revision> --risk-note <text> --review-receipt <id>
+[--approve-alteration <id>] --evidence <text>`.
 $ uv run gz wp order freeze ORD-02-matcher --risk-note "Touches the matcher." --review-receipt review-02 --evidence E
 Order ORD-02-matcher freezes at least one repair REQ held on WP-01-stamp; an
 order frozen on nothing takes no dispatch and reaches no acceptance (RP-12

@@ -39,7 +39,9 @@ evidence, and the one field the decision names (ruling 73):
   `validated` lands with RP-14, when orders sit on delivery packages. An order a
   stopping exit excused at acceptance delivered nothing, so its `proceed` is
   refused unless its acceptance reads ready; the order writer itself holds this
-  (ruling 80).
+  (ruling 80). A `proceed` is refused, too, when a REQ its freeze froze already
+  holds at that revision through another order's `proceed`, which a stopped
+  order's REQ refrozen by a later order can reach: no REQ holds twice (ruling 82).
 - `redirect` carries `--superseded-by`, an order of the same package already opened
   with [`gz wp order new`](wp-order-new.md) and not yet frozen (ruling 75). Rework
   freezes this order's REQ again in that order; a remodel freezes a new REQ carrying
@@ -53,8 +55,12 @@ after its final inspection, or from `opened` as a `terminate` alone: an order ne
 frozen holds no REQ (ruling 74). A frozen or commenced order is accepted first; a
 run stopped by a `reopen` or `terminate` exit reaches `accepted` excused of its
 proof through [`gz wp order accept`](wp-order-accept.md). A closed order moves no
-further, holds no REQ, so a later order may freeze it (ruling 53), and holds the
-production-write fence no longer (ruling 58).
+further and holds the production-write fence no longer (ruling 58). Its Gate 5
+ends its hold on its baseline: until then an accepted order still holds it (rulings
+53 and 82). After a `redirect`, `pause` or `terminate` a later order may freeze
+its REQs again; after a `proceed` they hold at the revision it froze, so a later
+order freezes them only at a new revision or through a REQ that supersedes them
+(rulings 78 and 81).
 
 Gate 5 is the operator's act, so a call the dispatch stamp marks as a subagent's
 is refused (ruling 77). A booked order that lost its record refuses the close
@@ -124,7 +130,7 @@ The close it booked, read from the scratch ledger:
 | 0 | Closed |
 | 1 | The order is not in the store |
 | 2 | Usage error |
-| 3 | The close is refused: a subagent's call, a booked order that lost its record, the lifecycle, the order's block, the package's state, a proceed on an order that delivered nothing, missing words or decision, a decision's field missing or another's given, or a redirect's successor; nothing booked |
+| 3 | The close is refused: a subagent's call, a booked order that lost its record, the lifecycle, the order's block, the package's state, a proceed on an order that delivered nothing or on a REQ another proceed holds, missing words or decision, a decision's field missing or another's given, or a redirect's successor; nothing booked |
 
 ## See also
 

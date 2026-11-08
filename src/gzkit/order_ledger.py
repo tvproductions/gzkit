@@ -50,9 +50,10 @@ _NEXT: dict[str | None, str | None] = {
     "accepted": "closed",
     "closed": None,
 }
-#: The states that end an order's hold on its baseline (ruling 53); a stopping exit
-#: ends it too, though the order keeps its state (`order_took_stopping_exit`).
-TERMINATED: frozenset[str] = frozenset({"accepted", "closed"})
+#: The states that end an order's hold on its baseline (ruling 53): only Gate 5, since
+#: an accepted order holds it until then (ruling 82); a stopping exit ends it too,
+#: though the order keeps its state (`order_took_stopping_exit`).
+TERMINATED: frozenset[str] = frozenset({"closed"})
 #: The exits that stop a run: an order's or, for a delivery package, the package's.
 STOPPING_EXITS: frozenset[str] = frozenset({"reopen", "terminate"})
 #: The payload fields each target state carries; any other is refused.
@@ -292,9 +293,9 @@ def _check_entry(
     if holder := holders.get(entry.req):
         _refuse(
             f"{entry.req} is in the frozen baseline of live order {holder}; a repair REQ "
-            "sits in one live order's baseline at a time, until that order is accepted, "
-            "stopped or closed (RP-12 ruling 53). Freeze without it, or split it with a "
-            "REQ that supersedes it."
+            "sits in one live order's baseline at a time, until that order is stopped or "
+            "closed (RP-12 ruling 53); an accepted order holds it until its Gate 5 (ruling "
+            "82). Freeze without it, or split it with a REQ that supersedes it."
         )
 
 
@@ -404,6 +405,19 @@ def _check_closed(
         _check_successor(catalog, ledger, order, str(move.superseded_by))
     if move.decision == "proceed":
         _check_delivered(ledger, order, acceptance_ready)
+        _check_not_held(ledger, order)
+
+
+def _check_not_held(ledger: Ledger, order: Order) -> None:
+    """Refuse a proceed whose baseline another order's proceed already holds (ruling 82)."""
+    held = set(package_held_reqs(ledger, order.work_package))
+    baseline = order_baseline(ledger, order.id)
+    if twice := sorted(f"{r}@{v}" for r, v in baseline.items() if f"{r}@{v}" in held):
+        _refuse(
+            f"{', '.join(twice)} already holds through another order's proceed (RP-12 ruling "
+            f"78), so {order.id}'s proceed would hold it twice (ruling 82). Close it as "
+            "`redirect`, `pause` or `terminate`."
+        )
 
 
 def _check_move(
