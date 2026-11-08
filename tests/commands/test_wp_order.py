@@ -159,6 +159,22 @@ class OrderNewTests(_OrderCase):
         self.assertIn("ORD-01-import", output)
         self.assertIn("gz validate --catalog", output)
 
+    def test_a_failed_store_write_leaves_the_opening_booked_and_refuses_later_writes(
+        self,
+    ) -> None:
+        """Ruling 70: the opening is booked first, so a lost record is refused, never silent."""
+        with patch("gzkit.commands.wp_order.write_orders", side_effect=OSError("disk full")):
+            result = self.runner.invoke(
+                main,
+                ["wp", "order", "new", "WP-01-stamp", "--slug", "import", "--purpose", "P.",
+                 "--operator-text", "open it"],
+            )  # fmt: skip
+        self.assertNotEqual(result.exit_code, 0)
+        opened = [r["order"] for r in _ledger_rows() if r["event"] == "order_transitioned"]
+        self.assertEqual((opened, _orders()), (["ORD-01-import"], []))
+        output = self.new("next", code=3)
+        self.assertIn("Orders ORD-01-import have ledger events but no record", output)
+
     def test_a_refused_order_books_no_opening(self) -> None:
         before = _ledger_rows()
         self.new("resume", package="WP-02-resume", code=3)
