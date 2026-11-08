@@ -1193,6 +1193,12 @@ tests. `string.Template` cannot loop, and RP-9 tranche 6 recorded that Python 3.
 *"are code literals with no template language"* (source: RP-9). jinja2 stays a dependency either
 way, for the control-surface pipeline.
 
+## decision · the justify walkthrough moves off jinja2 to plain Python
+
+Put to the operator (source: the justify walkthrough's template): keep jinja2 for the walkthrough, or
+move it to a plain Python function. Operator, by selection: *"Plain Python"*. jinja2 is confined to
+the control-surface pipeline, its register reason narrowed to that one use. Family F2 is complete.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
@@ -1201,25 +1207,29 @@ way, for the control-surface pipeline.
 | 2 | GHI / direct fix | commissioned | Under RP-7's placement change order: book H1 ruled to the whole package with a shrink-only baseline, and repair F22 so the boundary test runs in the per-change `gz check`; and the `gz init` scaffold's Ruff selection raised from nine families to `ALL` with gzkit's curated exceptions and ty at full strength, its default project type moved from `lib` to uv's `app`, the cognitive ceiling on by default rather than opt-in, and the `forbid-pytest` hook delivered; the scaffold items are corrections of RP-9 tranche 7 (closed 2026-10-29), their owner to be ruled | Corrections of shipped intent (decision: corrections go into the drydock under RP-7). H1 and F22 are already tracked in RP-7's record, so no new GHI; the scaffold corrections have no tracking item yet and need one when their owner is ruled |
 | 3 | chore | commissioned | A hexagonal tidying chore: the implementation-mode audit of what neither gate nor door judges (ports typed in domain terms, policy kept out of adapters, construction at the edge), after gz-skills' `gzs-hexagonal-architecture-audit`, findings filed as GHIs; and a hygiene chore keeping `docs/design/cli-standards-v3.md` current (F2, item 11) | The third reach the operator ruled (*"chore tidyings"*); advise only, the operator directs admission |
 | 4 | control surface, rule, doc, skill, hook | commissioned | (a) the house style named in canon as one data register of its members, each with statement, family, enforcement moment, named check, adopter delivery and owner, a validator over it, and one page generated from it, rules and `AGENTS.md` citing members by id; (b) the hexagonal rule cut to its judgment residue once gate, doors and chore carry the rest (RP-7 placement); (c) the canon page's § Departures *"not a code-organization rule"* reconciled with *"primary code directive"*; (d) the design-time imperative written into the design surfaces; (e) `data/waiver_ratchet_registry.json` given an owner, a close-at-zero plan and a target date per shrink-ratchet, the 29 non-empty ones each owned or ruled accepted debt; (f) the `quality-reviewer` agent's rubric rewritten to the house style, the pythonic rule its Python source text, and the rule's prose retired wherever a Ruff rule is the check (F8); (g) the pythonic rule's size numbers replaced by the threshold table's bands, and item 48's intent noted as carried by the complexity gates (F9); (h) the coverage floor moved into data and read by a gate, the `coverage-40pct` chore renamed, and the test runner enforcing no network and the 200 ms unit limit (F12); (i) the inventory's 13 canon contradictions reconciled, each in favour of the ruling this run took or, where none, put to the operator; (j) the exception register's reasons strengthened, pyyaml's stressed (*"we should stress why"*), and item 12's five-year aging moved from Markdown into data | Drafted on the operator's go per item |
-| 5 | one-shot refactoring | commissioned | gzkit's import sites outside their mapped region driven to zero through the shrink-only baseline; the cognitive ceiling moved from `.gzkit.json` to `[tool.py-gzkit]`; jsonschema retired, each hand-authored schema given a Pydantic model and every validator calling the model, the dependency and its register entry removed at the last site; rich behind the output port, every direct `console.print` routed through `OutputFormatter` with semantic calls and the port made domain-typed; every `# noqa` converted to `# ruff: ignore[<rule name>]` as RUF105's exception is lifted; every CLI leaf given `--json` or a reasoned waiver (F11 item 76; RP-7 finding F18) | The whole-package scope and the split config home, ruled; the operator selects the route |
+| 5 | one-shot refactoring | commissioned | gzkit's import sites outside their mapped region driven to zero through the shrink-only baseline; the cognitive ceiling moved from `.gzkit.json` to `[tool.py-gzkit]`; jsonschema retired, each hand-authored schema given a Pydantic model and every validator calling the model, the dependency and its register entry removed at the last site; rich behind the output port, every direct `console.print` routed through `OutputFormatter` with semantic calls and the port made domain-typed; every `# noqa` converted to `# ruff: ignore[<rule name>]` as RUF105's exception is lifted; every CLI leaf given `--json` or a reasoned waiver (F11 item 76; RP-7 finding F18); the justify walkthrough rendered by a plain Python function, its `.j2` template retired, jinja2 left at the control-surface pipeline only | The whole-package scope and the split config home, ruled; the operator selects the route |
 | 6 | no action | not pursued | Registering `gzkit` on PyPI; the twelve governance items among the borderline (B1–B7, B10–B14) not admitted to the house style | The operator chose `[tool.py-gzkit]`; revisit if the CLI's name and the distribution's are ever unified. (Folder partitions, listed here first, withdrawn 2026-11-08: the operator disagrees with canon rule 7 now, and the question moves to row 7(c).) The twelve governance items fail the admission test; their placement is owned by RP-7's change order item 1, not this run |
 | 7 | further research | commissioned | (a) withdrawn: the other candidates are admitted in this run; (b) an intent trace of ADR-0.33.0's airlock: no production caller supplies `parent_invariants`, and reach is the ontology graph, not imports; (c) a hexagonal specification run: domain-typed ports, Protocol and composition, the second-adapter rule, parameter injection, folder layout (canon rule 7, which the operator now disagrees with), what subsumption into one typed model means, the DDD and ontology relation, the remainders of items 49 and 53, config loaded once at the boundary (item 87), and layered state with an append-only event log (borderline B9), briefed by *"strengthen"* and strong adoption by every adopter; (d) whether `gz init` delivers the post-edit Ruff hook and the reviewer agent to adopters | (b) opened by the read of what the doors are fed; (c) opened by the F1 rulings. The operator opens each |
 
 ## Close
 
-**Challenge restated.** Restated on purpose at the close. The challenge opened as *"a way to reliably
-or strongly express our design intents with hexagonal architecture"* and *"how to get the model to
-be aware of this"*, and the opening read it as the hexagonal rule's missing gate and chore. Restated:
-gzkit needs a **house style**, a named set of preferences each admitted only by the operator's
-ruling, of which hexagonal is the first member; hexagonal is the **whole system's** architecture,
-drawn up front as a map, kept current through classic ADRs, and brought to the model three ways, a
-design-time imperative enforced at the work package freeze from a signal computed at intake,
-guidance at the airlock, and chore tidyings, for gzkit and for every project built with it.
+**Challenge restated.** Restated on purpose a second time, at the close. The challenge opened as *"a way
+to reliably or strongly express our design intents with hexagonal architecture"* and *"how to get the
+model to be aware of this"*. Restated: gzkit needs a **house style**, one register of preferences, each
+admitted only by the operator's ruling against a stated test and each held at the moment that can
+enforce it (as code is written, at the start of work, at review, in a sweep), for gzkit and every
+project built with it, MAXX Astral throughout. Hexagonal architecture is its foundation: the whole
+system's map, drawn up front and kept current through classic ADRs, brought to the model by a
+design-time imperative enforced at the freeze from a signal computed at intake, by airlock guidance,
+and by chore tidyings. Most of what gzkit already prefers is admitted; much of it is only rule text
+today, and the run's rows turn it into checks.
 
-**Frontier.** Reopened 2026-11-08 at review (decision: the deferral of the other candidates was the agent's). Before that: empty. Every open question whose answer would move a disposition is ruled; what
-remains (the map's region vocabulary, the key names, the checks' shapes) is diamond 2.
+**Frontier.** Empty, at the second close. The reopening at review (the other candidates) is settled:
+every candidate family and the borderline set are ruled. What remains is diamond 2 or another run's:
+the register's shape and names, the map's region vocabulary, each check's form, and the hexagonal
+specification run (row 7(c)).
 
-**Review.** —
+**Review.** The account is at [`house-style/review.md`](house-style/review.md), rewritten at the second close. Awaiting the operator's words that they have read it.
 
 **Sign-off.** —
 
