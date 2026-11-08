@@ -901,6 +901,16 @@ suppresses nothing, and RUF105, in preview, moves suppressions to `ruff: ignore[
 holds RUF105 as a standing exception (ruled 2026-10-23). Checking that a suppression carries a written
 reason is no Astral rule; it would be gzkit's own check.
 
+## decision · family F5: item 45 made Ruff-native; F5 complete
+
+Item 45 (the reasoned `noqa`) was answered from Ruff's own rules (source: Ruff's own suppression
+rules): a written reason is no Astral check. Put to the operator: rely on Ruff's and ty's own
+suppression rules at full strength and lift the RUF105 exception, dropping the gzkit-made reason
+clause; or keep RUF105 excepted. Operator, by selection: *"Yes, Ruff-native"*. Item 45 is admitted in
+that form: PGH004, RUF100 and ty's unused-ignore check govern suppressions, RUF105's standing
+exception (ruled 2026-10-23) is lifted, every `# noqa` moves to `# ruff: ignore[<rule name>]`, and the
+reason clause leaves the pythonic rule. Family F5 (items 44, 45, 55, 56) is admitted.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
@@ -909,7 +919,7 @@ reason is no Astral rule; it would be gzkit's own check.
 | 2 | GHI / direct fix | commissioned | Under RP-7's placement change order: book H1 ruled to the whole package with a shrink-only baseline, and repair F22 so the boundary test runs in the per-change `gz check`; and the `gz init` scaffold's Ruff selection raised from nine families to `ALL` with gzkit's curated exceptions and ty at full strength, a correction of RP-9 tranche 7 (closed), its owner to be ruled | Corrections of shipped intent (decision: corrections go into the drydock under RP-7); both already tracked there, so no new GHI |
 | 3 | chore | commissioned | A hexagonal tidying chore: the implementation-mode audit of what neither gate nor door judges (ports typed in domain terms, policy kept out of adapters, construction at the edge), after gz-skills' `gzs-hexagonal-architecture-audit`, findings filed as GHIs; and a hygiene chore keeping `docs/design/cli-standards-v3.md` current (F2, item 11) | The third reach the operator ruled (*"chore tidyings"*); advise only, the operator directs admission |
 | 4 | control surface, rule, doc, skill, hook | commissioned | (a) the house style named in canon, its admission rule and its first member; (b) the hexagonal rule cut to its judgment residue once gate, doors and chore carry the rest (RP-7 placement); (c) the canon page's § Departures *"not a code-organization rule"* reconciled with *"primary code directive"*; (d) the design-time imperative written into the design surfaces | Drafted on the operator's go per item |
-| 5 | one-shot refactoring | commissioned | gzkit's import sites outside their mapped region driven to zero through the shrink-only baseline; the cognitive ceiling moved from `.gzkit.json` to `[tool.py-gzkit]`; jsonschema retired, each hand-authored schema given a Pydantic model and every validator calling the model, the dependency and its register entry removed at the last site; rich behind the output port, every direct `console.print` routed through `OutputFormatter` with semantic calls and the port made domain-typed | The whole-package scope and the split config home, ruled; the operator selects the route |
+| 5 | one-shot refactoring | commissioned | gzkit's import sites outside their mapped region driven to zero through the shrink-only baseline; the cognitive ceiling moved from `.gzkit.json` to `[tool.py-gzkit]`; jsonschema retired, each hand-authored schema given a Pydantic model and every validator calling the model, the dependency and its register entry removed at the last site; rich behind the output port, every direct `console.print` routed through `OutputFormatter` with semantic calls and the port made domain-typed; every `# noqa` converted to `# ruff: ignore[<rule name>]` as RUF105's exception is lifted | The whole-package scope and the split config home, ruled; the operator selects the route |
 | 6 | no action | not pursued | Registering `gzkit` on PyPI | The operator chose `[tool.py-gzkit]`; revisit if the CLI's name and the distribution's are ever unified. (Folder partitions, listed here first, withdrawn 2026-11-08: the operator disagrees with canon rule 7 now, and the question moves to row 7(c).) |
 | 7 | further research | commissioned | (a) withdrawn: the other candidates are admitted in this run; (b) an intent trace of ADR-0.33.0's airlock: no production caller supplies `parent_invariants`, and reach is the ontology graph, not imports; (c) a hexagonal specification run: domain-typed ports, Protocol and composition, the second-adapter rule, parameter injection, folder layout (canon rule 7, which the operator now disagrees with), what subsumption into one typed model means, and the DDD and ontology relation, briefed by *"strengthen"* and strong adoption by every adopter | (b) opened by the read of what the doors are fed; (c) opened by the F1 rulings. The operator opens each |
 
