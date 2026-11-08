@@ -739,6 +739,14 @@ those schema and handle it that way?"* The record has no answer to *why*; the re
 round trip and the hand-authored remainder. Whether jsonschema leaves gzkit, every schema becoming
 a model's output, is put next.
 
+## decision · jsonschema is retired: every schema becomes a Pydantic model's output
+
+Put to the operator: retire jsonschema by making every schema a model's output, every validator
+calling the model directly, any schema published to others kept as a generated file; or keep it for
+some schemas. Operator, by selection: *"Yes, models first"*. The register entry for jsonschema in
+`data/astral_exceptions.json` is to be removed when the last call site moves, and the hand-authored
+schemas (source: which schemas a Pydantic model already produces) each gain a model first.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
@@ -747,7 +755,7 @@ a model's output, is put next.
 | 2 | GHI / direct fix | commissioned | Under RP-7's placement change order: book H1 ruled to the whole package with a shrink-only baseline, and repair F22 so the boundary test runs in the per-change `gz check` | Corrections of shipped intent (decision: corrections go into the drydock under RP-7); both already tracked there, so no new GHI |
 | 3 | chore | commissioned | A hexagonal tidying chore: the implementation-mode audit of what neither gate nor door judges (ports typed in domain terms, policy kept out of adapters, construction at the edge), after gz-skills' `gzs-hexagonal-architecture-audit`, findings filed as GHIs; and a hygiene chore keeping `docs/design/cli-standards-v3.md` current (F2, item 11) | The third reach the operator ruled (*"chore tidyings"*); advise only, the operator directs admission |
 | 4 | control surface, rule, doc, skill, hook | commissioned | (a) the house style named in canon, its admission rule and its first member; (b) the hexagonal rule cut to its judgment residue once gate, doors and chore carry the rest (RP-7 placement); (c) the canon page's § Departures *"not a code-organization rule"* reconciled with *"primary code directive"*; (d) the design-time imperative written into the design surfaces | Drafted on the operator's go per item |
-| 5 | one-shot refactoring | commissioned | gzkit's import sites outside their mapped region driven to zero through the shrink-only baseline; the cognitive ceiling moved from `.gzkit.json` to `[tool.py-gzkit]` | The whole-package scope and the split config home, ruled; the operator selects the route |
+| 5 | one-shot refactoring | commissioned | gzkit's import sites outside their mapped region driven to zero through the shrink-only baseline; the cognitive ceiling moved from `.gzkit.json` to `[tool.py-gzkit]`; jsonschema retired, each hand-authored schema given a Pydantic model and every validator calling the model, the dependency and its register entry removed at the last site | The whole-package scope and the split config home, ruled; the operator selects the route |
 | 6 | no action | not pursued | Registering `gzkit` on PyPI | The operator chose `[tool.py-gzkit]`; revisit if the CLI's name and the distribution's are ever unified. (Folder partitions, listed here first, withdrawn 2026-11-08: the operator disagrees with canon rule 7 now, and the question moves to row 7(c).) |
 | 7 | further research | commissioned | (a) withdrawn: the other candidates are admitted in this run; (b) an intent trace of ADR-0.33.0's airlock: no production caller supplies `parent_invariants`, and reach is the ontology graph, not imports; (c) a hexagonal specification run: domain-typed ports, Protocol and composition, the second-adapter rule, parameter injection, folder layout (canon rule 7, which the operator now disagrees with), what subsumption into one typed model means, and the DDD and ontology relation, briefed by *"strengthen"* and strong adoption by every adopter | (b) opened by the read of what the doors are fed; (c) opened by the F1 rulings. The operator opens each |
 
