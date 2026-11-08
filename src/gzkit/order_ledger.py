@@ -288,6 +288,32 @@ def _check_move(catalog: Catalog, ledger: Ledger, order: Order, move: OrderMove)
         _check_frozen(catalog, ledger, order, move)
 
 
+def order_move_refusal(ledger: Ledger, order: Order, to_state: str) -> str | None:
+    """Say why the order's lifecycle or block refuses the move, or None when it may move.
+
+    Read before the move's own checks, by the writer and by the verbs, so a refusal
+    names the lifecycle or the block (RP-12 ruling 59) before readiness or the seal.
+
+    Returns:
+        The refusal, or None when the move is the next step and the order is not blocked.
+
+    """
+    current = order_state(ledger, order.id)
+    expected = _NEXT.get(current)
+    if to_state not in {"closed", expected}:
+        return (
+            f"Order {order.id} cannot move from {current or 'nothing'} to {to_state!r}; "
+            f"the lifecycle allows {expected or 'no move'} from here."
+        )
+    if is_order_blocked(ledger, order.id):
+        return (
+            f"Order {order.id} is blocked on the operator; it does not move until "
+            f"`uv run gz wp unblock {order.work_package} --order {order.id} --ruling <words> "
+            "--operator <who>` records the ruling (RP-12 ruling 59)."
+        )
+    return None
+
+
 def record_order_transition(
     catalog: Catalog, ledger: Ledger, move: OrderMove
 ) -> OrderTransitionedEvent:
@@ -301,19 +327,9 @@ def record_order_transition(
     if not move.evidence.strip():
         _refuse("A transition names what justifies it; evidence is empty.")
     current = order_state(ledger, order.id)
-    expected = _NEXT.get(current)
-    if move.to_state not in {"closed", expected}:
-        _refuse(
-            f"Order {order.id} cannot move from {current or 'nothing'} to {move.to_state!r}; "
-            f"the lifecycle allows {expected or 'no move'} from here."
-        )
+    if refusal := order_move_refusal(ledger, order, move.to_state):
+        _refuse(refusal)
     _check_move(catalog, ledger, order, move)
-    if is_order_blocked(ledger, order.id):
-        _refuse(
-            f"Order {order.id} is blocked on the operator; it does not move until "
-            f"`uv run gz wp unblock {order.work_package} --order {order.id} --ruling <words> "
-            "--operator <who>` records the ruling (RP-12 ruling 59)."
-        )
     event = OrderTransitionedEvent.model_validate(
         {
             **move.model_dump(exclude_unset=True),

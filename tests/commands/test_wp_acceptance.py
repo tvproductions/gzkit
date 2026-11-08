@@ -411,6 +411,12 @@ class TestTheExits(_PackageCase):
     def _exit(self, name: str) -> None:
         self._wp("unblock", _PACKAGE, "--ruling", name, "--operator", "g0", "--exit", name)
 
+    def test_a_blocked_package_is_refused_for_its_block_before_its_readiness(self) -> None:
+        self._to_the_bound()
+        message = " ".join(self._refused("accept", _PACKAGE, "--evidence", "e").split())
+        self.assertIn("blocked on the operator", message)
+        self.assertNotIn(f"gz wp acceptance {_PACKAGE} status", message)
+
     def test_a_hold_stays_refused_at_accept(self) -> None:
         self._to_the_bound()
         self._exit("hold")

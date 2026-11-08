@@ -54,6 +54,7 @@ from gzkit.work_package_ledger import (
     IssueClosure,
     TransitionRequest,
     WorkPackageLedgerError,
+    block_refusal,
     declared_modules,
     footprint_sealed,
     is_blocked,
@@ -232,6 +233,8 @@ def wp_transition_cmd(
     held = _held(catalog, str(fields["work_package"]))
     current = work_package_state(ledger, held.id)
     if refusal := lifecycle_refusal(held, current, str(fields["to_state"])):
+        raise PolicyBreachError(refusal)
+    if refusal := block_refusal(ledger, held.id):
         raise PolicyBreachError(refusal)
     if fields.get("to_state") == "frozen" and current == "initiated":
         refusal = freeze_refusal(root, held)

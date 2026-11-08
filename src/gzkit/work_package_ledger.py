@@ -335,9 +335,9 @@ def record_work_package_transition(
     current = work_package_state(ledger, move.work_package)
     if refusal := lifecycle_refusal(package, current, move.to_state):
         _refuse(refusal)
+    if refusal := block_refusal(ledger, package.id):
+        _refuse(refusal)
     _check_move(catalog, package, move)
-    if is_blocked(ledger, package.id):
-        _refuse(f"Work package {package.id} is blocked on the operator; it does not move.")
     fields = move.model_dump(exclude_unset=True)
     event = WorkPackageTransitionedEvent.model_validate(
         {
@@ -353,6 +353,21 @@ def record_work_package_transition(
     )
     ledger.append(ledger_row(event))
     return event
+
+
+def block_refusal(ledger: Ledger, work_package: str) -> str | None:
+    """Say that a blocked package does not move, or None when it is not blocked.
+
+    Read after `lifecycle_refusal` and before the move's own checks, by the writer
+    and by the verbs, so a blocked package's refusal names its block first.
+
+    Returns:
+        The refusal, or None.
+
+    """
+    if is_blocked(ledger, work_package):
+        return f"Work package {work_package} is blocked on the operator; it does not move."
+    return None
 
 
 def lifecycle_refusal(package: WorkPackage, current: str | None, to_state: str) -> str | None:

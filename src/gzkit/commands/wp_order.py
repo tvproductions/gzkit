@@ -29,6 +29,7 @@ from gzkit.order_ledger import (
     OrderMove,
     booked_order_ids,
     order_baseline,
+    order_move_refusal,
     order_state,
     order_took_stopping_exit,
     record_order_transition,
@@ -255,6 +256,8 @@ def wp_order_transition_cmd(
     to_state = str(fields["to_state"])
     order = _order(catalog, str(fields["order"]))
     package = _package(catalog, order.work_package)
+    if refusal := order_move_refusal(ledger, order, to_state):
+        _refuse_move(to_state, refusal)
     if to_state == "frozen" and (refusal := freeze_refusal(root, package)):
         _refuse_move(to_state, f"{refusal} An order's freeze seals it (RP-12 ruling 56).")
     entries = [_baseline_entry(to_state, entry) for entry in baseline or ()]
@@ -308,16 +311,18 @@ def wp_order_show_cmd(*, order_id: str, as_json: bool) -> None:
 def wp_order_accept_cmd(*, order_id: str, evidence: str, as_json: bool) -> None:
     """Accept a commenced order once its acceptance reads ready (RP-12 ruling 60).
 
-    The order's own readiness is read, its obligations its frozen REQs and its
-    proofs and reviews under its id, with the review-round limit of GHI #1028; then
-    the repair package's sealed footprint (ruling 56). An order stopped by an exit
-    is excused both, as a stopped package is: it claims no delivery, and Gate 5 is
-    how it closes. The move crosses the airlock outward on the package's slice
-    (ruling 65). An unknown order exits 1; any refusal exits 3 and books nothing.
+    The lifecycle and the order's block are read first, so a refusal names them
+    (ruling 59) before readiness. Then the order's own readiness is read, its
+    obligations its frozen REQs and its proofs and reviews under its id, with the
+    review-round limit of GHI #1028; then the repair package's sealed footprint
+    (ruling 56). An order stopped by an exit is excused both, as a stopped package
+    is: it claims no delivery, and Gate 5 is how it closes. The move crosses the
+    airlock outward on the package's slice (ruling 65). An unknown order exits 1;
+    any refusal exits 3 and books nothing.
 
     Raises:
-        PolicyBreachError: Acceptance reports its blockers, a file lies outside the
-            footprint, or the lifecycle refuses the move.
+        PolicyBreachError: The lifecycle or the block refuses the move, acceptance
+            reports its blockers, or a file lies outside the footprint.
 
     """
     config = ensure_initialized()
@@ -326,6 +331,8 @@ def wp_order_accept_cmd(*, order_id: str, evidence: str, as_json: bool) -> None:
     ledger = Ledger(root / config.paths.ledger)
     order = _order(catalog, order_id)
     package = _package(catalog, order.work_package)
+    if refusal := order_move_refusal(ledger, order, "accepted"):
+        _refuse_move("accepted", refusal)
     if not order_took_stopping_exit(ledger, order.id):
         refusal = round_bound_refusal(root, order.id)
         blockers = [*acceptance_blockers(root, order.id), *([refusal] if refusal else [])]

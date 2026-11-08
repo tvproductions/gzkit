@@ -281,6 +281,28 @@ class TestTheOrdersAcceptRefusal(_OrderAcceptance):
         self.assertIn("re-run `uv run gz wp order accept <ORD-id> --evidence <text>`", output)
         self.assertEqual(self.state(), "commenced")
 
+    def test_a_blocked_order_is_refused_for_its_block_before_its_readiness(self) -> None:
+        """Ruling 59: a blocked order does not move, so its accept names the block."""
+        self.wp("block", _PACKAGE, "--order", _ORDER, "--reason", "r", "--next-action", "n")
+        output = self.accept(code=3)
+        self.assertIn("blocked on the operator", output)
+        self.assertNotIn(f"gz wp acceptance {_ORDER} status", output)
+        self.assertEqual(self.state(), "commenced")
+
+    def test_an_order_not_commenced_is_refused_for_its_lifecycle_first(self) -> None:
+        self.new("matcher")
+        output = self.wp("order", "accept", "ORD-02-matcher", "--evidence", "e", code=3)
+        self.assertIn("cannot move from opened", output)
+
+    def test_a_commenced_order_is_refused_a_freeze_for_its_lifecycle_first(self) -> None:
+        with mock.patch("gzkit.commands.wp_order.freeze_refusal", return_value="Unsealed.") as fp:
+            output = self.gz(
+                "freeze", _ORDER, "--baseline", "REQ-1@1", "--risk-note", "r",
+                "--review-receipt", "v", "--evidence", "E", code=3,
+            )  # fmt: skip
+        fp.assert_not_called()
+        self.assertIn("cannot move from commenced", " ".join(output.split()))
+
 
 if __name__ == "__main__":
     unittest.main()
