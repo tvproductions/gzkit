@@ -288,6 +288,23 @@ or in `pyproject.toml` is a frontier question for discussion, wider than the bou
 it decides where every admitted preference is declared. The admission question stays open, not
 answered.
 
+## decision · a candidate enters the house style by the operator's ruling, against a stated test
+
+Following the operator's correction that presence in the project admits nothing. Put to the
+operator: A, the operator's ruling, one candidate at a time with its reason recorded, the agent
+reporting a stated test that informs and never admits (does the candidate shape how every project
+built with gzkit is designed, not only how gzkit runs its own governance?); B, the ruling alone, no
+stated test; C, the test admits and the operator rules only the test. Operator, by selection:
+*"Your ruling, against a test (Recommended)"*.
+
+## decision · hexagonal architecture is the house style's first member
+
+The test reported: it passes, shaping how every project built with gzkit is designed. The
+operator's reason, from the challenge: *"a foundation for not only GZKit, but whatever is built with
+GZKit"*. Put to the operator: A, admit it now, the other five candidates waiting for their own
+rulings; B, hold admission until the config home and the start-of-work audit are designed.
+Operator, by selection: *"Admit hexagonal (Recommended)"*.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
