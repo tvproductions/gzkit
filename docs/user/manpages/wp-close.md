@@ -34,7 +34,7 @@ package's close is refused until at least one order is closed and while any is
 not (ruling 79), carries no `--decision`
 of its own, and records each order's decision as the ledger holds it in
 `order_decisions` (ruling 76) and each repair REQ a `proceed` holds in `held_reqs`
-(ruling 78); it keeps the attestor, the residual risk, the
+(ruling 78), both printed after the move; it keeps the attestor, the residual risk, the
 alterations and the departures (ruling 62). Return to service, on the operator's
 words, lands with O5 (ruling 32). Gate 5 is the operator's act, so a call the
 dispatch stamp marks as a subagent's is refused (ruling 77). Every alteration is
@@ -77,6 +77,8 @@ each order, `uv run gz wp order close` (RP-12 rulings 30 and 76). Close it
 without --decision.
 $ uv run gz wp close WP-01-stamp --attestor g0 --residual-risk none --evidence closeout
 WP-01-stamp: initiated -> closed
+  orders: ORD-01-import terminate, ORD-02-spare terminate
+  holds: none
 ```
 
 The close it booked, read from the scratch ledger:

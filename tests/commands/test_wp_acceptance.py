@@ -275,6 +275,18 @@ class TestTheGate(_PackageCase):
         with mock.patch("gzkit.commands.wp.footprint_refusal", return_value=None):
             self._wp("accept", _PACKAGE, "--evidence", "e")
 
+    def test_a_move_across_the_airlock_prints_what_it_read(self) -> None:
+        """RO-14 act 6: the package's accept prints the airlock's verdict under the move."""
+        self._init()
+        self._approve(self._proof())
+        with (
+            mock.patch("gzkit.commands.wp.footprint_refusal", return_value=None),
+            mock.patch("gzkit.commands.wp.cross_airlock", return_value="airlock out: clean"),
+        ):
+            lines = self._wp("accept", _PACKAGE, "--evidence", "e").splitlines()
+        # output-contract: the verdict line follows the move line
+        self.assertEqual(lines[-1], "  airlock out: clean")
+
     def test_a_terminated_package_reaches_gate_5_with_no_proof(self) -> None:
         self._commence()
         for role in ("Implementer", "SpecReviewer", "Implementer", "Implementer"):

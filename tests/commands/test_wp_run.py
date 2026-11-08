@@ -90,6 +90,17 @@ class TestTheRepairClose(_RunCase):
         self.assertEqual(result.exit_code, 0, msg=result.output)
         self.assertEqual(json.loads(result.output)["order_decisions"], {_ORDER: "terminate"})
 
+    def test_the_repair_close_prints_its_orders_decisions_and_holds(self) -> None:
+        """Ruling 78: the repair package's close shows what holds, as order show does."""
+        self._stop_and_close_the_order()
+        close = ["wp", "close", _PACKAGE, "--attestor", "g0", "--residual-risk", "R"]
+        result = self.runner.invoke(main, [*close, "--evidence", "E"])
+        self.assertEqual(result.exit_code, 0, msg=result.output)
+        # output-contract: the text form names each order's decision and the holds
+        lines = result.output.splitlines()
+        self.assertIn(f"  orders: {_ORDER} terminate", lines)
+        self.assertIn("  holds: none", lines)
+
     def test_gate_5_on_a_package_refuses_a_subagents_call(self) -> None:
         """RP-12 ruling 77: Gate 5 is the operator's act, at the package as at the order."""
         self._stop_and_close_the_order()

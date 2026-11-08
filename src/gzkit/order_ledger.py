@@ -40,8 +40,8 @@ if TYPE_CHECKING:
     from gzkit.ledger import Ledger, LedgerEvent
     from gzkit.models.catalog import Catalog, CatalogReq, Order, WorkPackage
 
-#: Each state's next state. A table rather than an order of states, so task 4's
-#: close and its re-freeze add edges without reshaping the lifecycle (question 11).
+#: Each state's next state. A table rather than an order of states, so an edge is
+#: added without reshaping the lifecycle (question 11): `closed` is Gate 5 (ruling 74).
 _NEXT: dict[str | None, str | None] = {
     None: "opened",
     "opened": "frozen",
@@ -357,9 +357,10 @@ def _check_successor(catalog: Catalog, ledger: Ledger, order: Order, successor: 
 def _check_decision_fields(move: OrderMove) -> None:
     """Refuse a decision missing its own field or carrying another's (RP-12 ruling 73)."""
     own = _DECISION_FIELD[str(move.decision)]
-    given = {f for f in _DECISION_FIELD.values() if f and (getattr(move, f) or "").strip()}
-    if own is not None and own not in given:
+    if own is not None and not (getattr(move, own) or "").strip():
         _refuse(f"A {move.decision} carries {own.replace('_', '-')} (RP-12 ruling 73).")
+    # Another decision's field is refused whenever it is given, blank or not.
+    given = {f for f in _DECISION_FIELD.values() if f and getattr(move, f) is not None}
     if others := sorted(given - {own}):
         flags = ", ".join(f"--{f.replace('_', '-')}" for f in others)
         _refuse(f"A {move.decision} does not carry {flags} (RP-12 ruling 73).")
@@ -496,6 +497,9 @@ def record_order_transition(
             "from_state": current,
             "evidence": move.evidence.strip(),
             "modules": _package(catalog, order).modules if move.to_state == "frozen" else (),
+            # The attestor is an identity, stripped as the package writer strips it; the
+            # operator's words are booked verbatim (AGENTS.md § Attestation).
+            "attestor": move.attestor.strip() if move.attestor else None,
         }
     )
     ledger.append(ledger_row(event))

@@ -348,6 +348,20 @@ class GateFiveTests(_OrderCase):
         paused = self.close(decision="pause", revisit_condition="after RP-14", **words)
         self.assertEqual(paused.revisit_condition, "after RP-14")
 
+    def test_a_blank_field_of_another_decision_is_refused_too(self) -> None:
+        """Ruling 73: a decision refuses the others' fields, given blank or not."""
+        self.walk_to("accepted")
+        for foreign in ({"revisit_condition": "  "}, {"superseded_by": " "}):
+            with self.subTest(foreign=foreign):
+                self.assertIn("ruling 73", self.refused(**_CLOSE, **foreign))
+        own_blank = self.refused(**{**_CLOSE, "residual_risk": "  "})
+        self.assertIn("carries residual-risk", own_blank)  # its own field, given blank
+
+    def test_the_attestor_is_booked_stripped_and_the_words_verbatim(self) -> None:
+        self.walk_to("accepted")
+        event = self.close(**{**_CLOSE, "attestor": " g0 ", "attestation_text": " my words "})
+        self.assertEqual((event.attestor, event.attestation_text), ("g0", " my words "))
+
     def test_a_redirect_names_an_opened_order_of_the_same_package(self) -> None:
         """Ruling 75: the successor is opened, not frozen, and sits in the same package."""
         self.walk_to("accepted")

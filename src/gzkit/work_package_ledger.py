@@ -7,13 +7,16 @@ change to it rides `work_package_changed`, naming its rung on the change ladder
 (amendment 3) or the alteration or departure from specification it records
 (amendment 4). The shape is the operator's tranche-1 ruling of 2026-10-28,
 "Accept as drafted (Recommended)". A repair package moves only `initiated` to
-`closed`: its orders freeze, commence and accept (RP-12 ruling 44, O2 task 3 act 5),
-and its close keeps the payload every close carries (ruling 62).
+`closed`: its orders freeze, commence, accept and close through Gate 5 (RP-12
+ruling 44), and its close keeps the payload every close carries less a decision
+of its own, refused until at least one order is closed and while any is not, and
+records each order's decision and the REQs a proceed holds (rulings 62, 76, 78,
+79).
 
-No CLI verb calls these yet; the verbs are tranche 2, whose names the operator
-rules. Both writers take the parsed catalog and the ledger as parameters, read
-the current state from the ledger rather than the caller, and refuse a move or
-a change the ruled grammar does not allow, writing nothing.
+The `gz wp` verbs call these writers (tranche 2). Both writers take the parsed
+catalog and the ledger as parameters, read the current state from the ledger
+rather than the caller, and refuse a move or a change the ruled grammar does not
+allow, writing nothing.
 """
 
 from typing import TYPE_CHECKING, NoReturn, get_args

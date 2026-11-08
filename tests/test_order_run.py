@@ -397,6 +397,14 @@ class OrderFenceRecovery(unittest.TestCase):
         for message in self.refusals("stopped"):
             self.assertIn(f"gz wp order accept {_ORDER} --evidence", message)
 
+    def test_an_accepted_or_stopped_order_names_gate_5_at_the_order(self) -> None:
+        """Gate 5 at the order lifts the fence (rulings 58, 73): the refusal names it."""
+        for reason in ("accepted", "stopped"):
+            for message in self.refusals(reason):
+                with self.subTest(reason=reason):
+                    self.assertIn(f"gz wp order close {_ORDER} --decision", message)
+                    self.assertNotIn("nothing lifts this fence", message)
+
     def test_an_accepted_or_stopped_orders_recovery_is_not_the_packages(self) -> None:
         for reason in ("accepted", "stopped"):
             for message in self.refusals(reason):

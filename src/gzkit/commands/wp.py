@@ -38,7 +38,7 @@ from gzkit.core.exceptions import (
     TransientError,
     ValidationError,
 )
-from gzkit.events import BaselinedReq
+from gzkit.events import BaselinedReq, WorkPackageTransitionedEvent
 from gzkit.governance.trust_audits.catalog import footprint_breaches
 from gzkit.ledger import Ledger
 from gzkit.legacy_units import (
@@ -277,12 +277,25 @@ def wp_transition_cmd(
     except (WorkPackageLedgerError, ValueError) as exc:
         raise PolicyBreachError(str(exc)) from exc
     crossed = cross_airlock(root, ledger, held, event.to_state)
+    _emit_transition(event, held, crossed, as_json=as_json)
+
+
+def _emit_transition(
+    event: WorkPackageTransitionedEvent, held: WorkPackage, crossed: str | None, *, as_json: bool
+) -> None:
+    """Print the move, what the airlock read, and a repair close's orders and holds."""
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
-    fmt.emit(
-        event if as_json else f"{event.id}: {event.from_state or 'nothing'} -> {event.to_state}"
-    )
-    if crossed and not as_json:
+    if as_json:
+        fmt.emit(event)
+        return
+    fmt.emit(f"{event.id}: {event.from_state or 'nothing'} -> {event.to_state}")
+    if crossed:
         fmt.emit(f"  {crossed}")
+    if event.to_state == "closed" and held.kind == "repair":
+        # Ruling 78: the repair close shows its orders' Gate 5 and what holds.
+        decided = ", ".join(f"{o} {d}" for o, d in event.order_decisions.items())
+        fmt.emit(f"  orders: {decided or 'none'}")
+        fmt.emit(f"  holds: {', '.join(event.held_reqs) or 'none'}")
 
 
 def _refuse_outside_footprint(root: Path, ledger: Ledger, package: WorkPackage) -> None:

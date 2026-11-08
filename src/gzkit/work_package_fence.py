@@ -138,8 +138,9 @@ def _close(work_package: str) -> str:
 def _order_recovery(fence: FencedPackage) -> str:
     wp, order = fence.work_package, fence.order
     close = (
-        "the operator closes the order through Gate 5 at the order, which lands with RP-12 O2 "
-        "task 4; until it does, nothing lifts this fence"
+        f"the operator closes it through Gate 5 at the order with `uv run gz wp order close "
+        f"{order} --decision <decision> --attestor g0 --attestation-text <words> --evidence "
+        "<text>`, which lifts this fence (RP-12 rulings 58 and 73)"
     )
     return {
         "blocked": (
