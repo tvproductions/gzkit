@@ -429,6 +429,15 @@ witness, or earlier at the operator's word:
    every other open line transferred to its named holder (C12), and each repair order closed through the operator's Gate 5 (replacing the per-commit kept-or-reverted
    list, operator 2026-10-25); this passage log carried; the suspended rules restored. Civil rule
    resumes on the ratification.
+   **Amended 2026-11-08** (operator, by selection: *"Amend item 9 as drafted (Recommended)"*; held
+   ruling H1 of [the classic ADR change orders](harbor-classic-adr-change-order.md)): the handback
+   carries a decision-reconciliation inventory. Every version-shaped legacy ADR is listed with one
+   disposition: retained (still applicable, its recorded approval reused), captured (a significant
+   choice the drydock made or found unrecorded, written as a classic ADR with honest provenance),
+   corrected (an editorial revision, the choice unchanged), retired (no longer applicable, with date,
+   reason and replacement), or open (a rationale or approval gap put to the operator). Originals and
+   their actual approval history are preserved, and no approval is fabricated. The inventory is a
+   handback record, not an omnibus ADR. Pool entries are intentions and are not inventoried.
 10. The sea trial has passed, before the handback in item 9 is put for ratification (added
     2026-10-28; operator: *"A"*; record decision *the sea trial gates exit, in either of two approved
     forms*). The ruled text: *"The ship leaves the drydock only after a sea trial, done by the normal
@@ -1033,8 +1042,8 @@ From the R&D run [`repair-work-organization`](../rnd/repair-work-organization.md
   scope no order is opened: RP-6 takes the authoring surfaces, RP-14 the identity crossover, RP-8 the
   frozen ADR-0.35.0's choices; RP-4, RP-5, RP-12 and RP-14 confirm no ADR containment returns; the
   approval producer joins the existing *design acceptance* line. The decision-reconciliation
-  inventory at handback changes § Exit, so it waits for this contract's own amendment (held ruling
-  H1). Grades, owners and six held rulings: [the classic ADR change orders of
+  inventory at handback changes § Exit, so it went to this contract's own amendment, and the
+  operator ruled H1 the same day by selection: *"Amend item 9 as drafted (Recommended)"* (§ Exit item 9). Grades, owners and six held rulings: [the classic ADR change orders of
   2026-11-08](harbor-classic-adr-change-order.md).
 
 ## Superseded on 2026-10-30 (record, not binding)

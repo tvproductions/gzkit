@@ -94,14 +94,18 @@ Each line names the owning order, what the order gains, and a proposed grade.
 | CO-4 | RP-5, RP-12 and RP-14 | Confirmation only: decomposition, execution, inspection and Gate 5 stay on the work and order surface; no ADR checklist containment returns | inspected at each order's close |
 | CO-5 | RP-8, the in-flight work | ADR-0.35.0's freeze does not retire the architectural choices inside it; each is carried as a decision, retired with a reason, or captured afresh with honest provenance | due by RP-8's carry acts at civil rule |
 | CO-6 | the existing *design acceptance* discrepancy line (RP-0, holder D) | The architectural-approval producer: the event that books `approved_by`, `approved_revision` and `approval_ref` against the reviewed edition. Today only `adr_created` exists | due by a named event: before the first classic ADR is made Current |
-| CO-7 | the contract itself, by amendment only | Exit item 9 gains a decision-reconciliation inventory: decisions retained, missing ones captured with provenance, editorial corrections told apart from changed choices, retirements linked to replacements, and approval gaps put to the operator. Held as H1 | held for the operator's word |
+| CO-7 | the contract itself, by amendment only | Exit item 9 gains a decision-reconciliation inventory: decisions retained, missing ones captured with provenance, editorial corrections told apart from changed choices, retirements linked to replacements, and approval gaps put to the operator | **ruled 2026-11-08** (H1): amended into § Exit item 9 |
 
 ## Held rulings
 
 Put to the operator one at a time; none is assumed.
 
-- **H1.** Amend Exit item 9 with the decision-reconciliation inventory (CO-7)? The contract changes
-  only by its own amendment (§ Records, B1).
+- **H1. Ruled 2026-11-08.** Amend Exit item 9 with the decision-reconciliation inventory (CO-7)? The
+  contract changes only by its own amendment (§ Records, B1). Operator, by selection: *"Amend item 9
+  as drafted (Recommended)"*. The text, put to the operator before the ruling, now stands in § Exit
+  item 9 of the contract. Scope at the ruling: about 74 version-shaped legacy ADRs (44 foundation
+  `0.0.x`, 30 feature) under `docs/design/adr/`, counted by filename on 2026-11-08; the 204 pool
+  entries are excluded.
 - **H2.** RP-2 closed on 2026-10-19 with no identifier changes, and its grammar is legacy-shaped. The
   crossover's resolver work is placed on RP-14 (CO-2) rather than reopening RP-2. Confirm, or reopen
   RP-2 by change order.
