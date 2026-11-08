@@ -95,9 +95,9 @@ T0 is upstream of T1: if a canonical surface only exists in this repo's `.gzkit/
 
 ---
 
-## The three invariants
+## The four invariants
 
-These invariants formalize the lessons as mechanical rules. Each has a regression test or fail-closed audit in the repo.
+These invariants formalize the lessons as mechanical rules. T1–T3 each have a regression test or fail-closed audit in the repo; T4 is advisory outside the one witness it names.
 
 ### Invariant T1 — Every produced value has a read-path assertion
 
@@ -123,6 +123,16 @@ These invariants formalize the lessons as mechanical rules. Each has a regressio
 
 **Anti-pattern caught:** An ARB receipt whose step name says "typecheck" but whose command measures a scope the governance gate does not. The claim and the evidence disagree; the label is wrong. *(Stated as a scope relation rather than by naming the two literal commands: the canonical scope widened from `src` to `. --exclude features/**` on 2026-08-08, and a doctrine statement that names today's strings goes stale the next time it moves. The gate and the receipt producer now both read `CANONICAL_STEP_COMMANDS`, so the pair cannot diverge by construction.)*
 
+### Invariant T4 — No silent skip or drop
+
+**Statement.** A silent skip or drop is a defect as severe as data corruption. A producer that writes an ID reference (parent, child, or similar) resolves it before writing. A consumer that skips an artifact, for a mismatched ID or any other reason, reports the skip and never drops it silently. After a design, specify or register run, the agent checks that the graph matches the artifacts on disk before declaring success.
+
+**Instance:** the `register-adrs` and `gz-design` short-form parent mismatch. ADRs 0.0.9–0.0.13, with more than 25 briefs between them, showed 0/0 OBPIs, and nothing produced an error or a warning. The operator recorded this as feedback in auto memory, and on 2026-11-08 ruled it into this doctrine, verbatim: *"A: trust doctrine T4"* (`.gzkit/chores/instructions-files-diet/proofs/CHORE-LOG.md`).
+
+**Anti-pattern caught:** "Nothing failed, so nothing was lost." T1 and T2 prove at build time that a field has a producer and a test. T4 is the runtime property that neither of them reaches: every input a consumer declines to process is accounted for in its output.
+
+**Enforcement:** advisory except for one instance. `_silent_dropout_errors` (`src/gzkit/governance/trust_audits/release.py`, run by `gz validate --advisory-scorecard`) fails when a scorecard row that looks scored yields no score. No general witness exists yet.
+
 ---
 
 ## Mechanical enforcement surface
@@ -137,6 +147,7 @@ The following tests and validator scopes are the current implementation of this 
 | CLI verb → documentation | `gz validate --cli-alignment` (from `tests/governance/test_behave_cli_alignment.py`) | Stale `gz <verb>` in features, runbook, manpages |
 | ARB step → command provenance | `gz arb validate` (from `src/gzkit/arb/validator.py::CANONICAL_STEP_COMMANDS`) | Heavy-lane receipt measures the wrong scope |
 | Commit → governance intent | `gz validate --commit-trailers` (accepts `Task:` or `Ceremony:` trailer) | Code-touching commits with no governance anchor |
+| Scorecard row → score (T4, one instance) | `gz validate --advisory-scorecard` (`_silent_dropout_errors` in `src/gzkit/governance/trust_audits/release.py`) | A row that looks scored silently drops out of every count |
 | Instruction file → map-not-encyclopedia shape | `gz validate --agents-md-map-conformance` (from `src/gzkit/governance/trust_audits/agents_md_map_conformance.py`) | Rationale prose, anti-pattern sections, or pedagogy accreted into per-turn context files (ADR-0.0.54-03) |
 
 Each audit is fail-closed. Each one catches a specific trust-boundary violation. The pattern they collectively close is trust-chain poisoning.
