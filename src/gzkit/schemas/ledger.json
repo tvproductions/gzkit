@@ -2385,6 +2385,9 @@
         },
         "order_decisions": {
           "type": "object"
+        },
+        "held_reqs": {
+          "type": "array"
         }
       }
     },

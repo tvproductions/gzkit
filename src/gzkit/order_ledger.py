@@ -162,6 +162,21 @@ def order_took_stopping_exit(ledger: Ledger, order: str) -> bool:
     )
 
 
+def order_holds(ledger: Ledger, order: str) -> dict[str, int]:
+    """Read the repair REQs an order holds: its frozen baseline, once closed as proceed.
+
+    Ruling 78: a repair REQ holds at the revision a proceed-closed order froze it.
+
+    Returns:
+        Each REQ the order holds to its revision; empty unless it closed as proceed.
+
+    """
+    moves = _moves(ledger, order)
+    if not moves or moves[-1].get("to_state") != "closed" or moves[-1].get("decision") != "proceed":
+        return {}
+    return order_baseline(ledger, order)
+
+
 def booked_order_ids(ledger: Ledger) -> set[str]:
     """Read every order the ledger names, so none is dropped from the store or reused.
 

@@ -1,6 +1,6 @@
 # gz wp order show
 
-Show an order's record, the kind of the package it sits in, and its state and baseline.
+Show an order's record, the kind of the package it sits in, and its state, baseline and holds.
 
 ## Usage
 
@@ -29,7 +29,10 @@ The order's lifecycle lives only in the ledger (ruling 44), as
 `opened` from `gz wp order new` (ruling 52), then `frozen` and `commenced` from
 [`gz wp order freeze`](wp-order-freeze.md) and
 [`gz wp order commence`](wp-order-commence.md). Before a freeze the baseline is
-empty. `--json` prints the record, the kind, the state and the baseline.
+empty. `holds` names each repair REQ the order holds, at the revision its freeze
+froze it, once it is closed as `proceed` through
+[`gz wp order close`](wp-order-close.md), and is empty otherwise (ruling 78).
+`--json` prints the record, the kind, the state, the baseline and the holds.
 
 ## Examples
 
@@ -42,6 +45,7 @@ $ uv run gz wp order show ORD-01-import
 ORD-01-import in WP-01-stamp (repair)
   state: commenced
   baseline: REQ-1@1
+  holds: none
   aliases: O2
   purpose: Restore the stamp generator's public import.
   procedure: NA
@@ -50,6 +54,7 @@ $ uv run gz wp order show ORD-01-import --json
   "baseline": {
     "REQ-1": 1
   },
+  "holds": {},
   "kind": "repair",
   "record": {
     "aliases": [
@@ -77,4 +82,5 @@ gz wp order new <WP-id> --slug <slug> --purpose <text> --operator-text <words>`.
 
 ## See also
 
-[`gz wp order new`](wp-order-new.md), [`gz wp show`](wp-show.md)
+[`gz wp order new`](wp-order-new.md), [`gz wp order close`](wp-order-close.md),
+[`gz wp show`](wp-show.md)

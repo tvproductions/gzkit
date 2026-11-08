@@ -321,9 +321,10 @@ class RepairLifecycleTests(_LedgerCase):
 
     def book_order(self, order: str, to_state: str, **fields: object) -> None:
         """Book one order move on this test's own ledger, as the order writer would."""
+        package = fields.pop("package", "WP-02-astral")
         event = OrderTransitionedEvent.model_validate(
             {"event": "order_transitioned", "id": order, "order": order,
-             "work_package": "WP-02-astral", "to_state": to_state, "evidence": "e", **fields}
+             "work_package": package, "to_state": to_state, "evidence": "e", **fields}
         )  # fmt: skip
         self.ledger.append(ledger_row(event))
 
@@ -367,6 +368,28 @@ class RepairLifecycleTests(_LedgerCase):
         self.assertEqual(
             self.close().order_decisions, {"ORD-01-x": "terminate", "ORD-02-y": "terminate"}
         )
+
+    def test_the_close_lists_the_reqs_a_proceed_holds(self) -> None:
+        """Ruling 78: each REQ at the revision a proceed-closed order froze it."""
+        frozen = {"baseline": [{"req": "REQ-3", "revision": 2}], "risk_note": "r",
+                  "review_receipt": "v"}  # fmt: skip
+        self.book_order("ORD-01-x", "opened", operator_text="open it")
+        self.book_order("ORD-01-x", "frozen", **frozen)
+        self.book_order("ORD-01-x", "closed", decision="proceed", attestor="g0",
+                        attestation_text="it holds", residual_risk="none")  # fmt: skip
+        self.book_order("ORD-02-y", "opened", operator_text="open it")
+        self.book_order("ORD-02-y", "closed", decision="terminate", attestor="g0",
+                        attestation_text="withdraw it")  # fmt: skip
+        proceed = {"decision": "proceed", "attestor": "g0", "attestation_text": "it holds",
+                   "residual_risk": "none"}  # fmt: skip
+        self.book_order("ORD-03-z", "opened", operator_text="open it")  # the same REQ again
+        self.book_order("ORD-03-z", "frozen", **frozen)
+        self.book_order("ORD-03-z", "closed", **proceed)
+        elsewhere = {**frozen, "baseline": [{"req": "REQ-9", "revision": 1}]}
+        self.book_order("ORD-04-w", "opened", package="WP-01-resume", operator_text="open it")
+        self.book_order("ORD-04-w", "frozen", package="WP-01-resume", **elsewhere)
+        self.book_order("ORD-04-w", "closed", package="WP-01-resume", **proceed)
+        self.assertEqual(self.close().held_reqs, ("REQ-3@2",))
 
 
 class CloseTests(_LedgerCase):

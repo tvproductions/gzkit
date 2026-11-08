@@ -23,6 +23,7 @@ from gzkit.order_ledger import (
     OrderLedgerError,
     OrderMove,
     booked_order_ids,
+    order_holds,
     order_state,
     record_order_transition,
 )
@@ -367,6 +368,18 @@ class GateFiveTests(_OrderCase):
         self.walk_to("frozen", order="ORD-02-matcher", **second)
         words = {"decision": "redirect", "attestor": "g0", "attestation_text": "rework"}
         self.assertIn("ruling 75", self.refused(superseded_by="ORD-02-matcher", **words))
+
+    def test_a_proceed_holds_the_reqs_the_order_froze(self) -> None:
+        """Ruling 78: a repair REQ holds at the revision a proceed-closed order froze it."""
+        self.walk_to("accepted")
+        self.assertEqual(order_holds(self.ledger, "ORD-01-import"), {})
+        self.close(**_CLOSE)
+        self.assertEqual(order_holds(self.ledger, "ORD-01-import"), {"REQ-1": 1})
+
+    def test_no_other_decision_holds_a_req(self) -> None:
+        self.walk_to("accepted")
+        self.close(decision="terminate", attestor="g0", attestation_text="stop")
+        self.assertEqual(order_holds(self.ledger, "ORD-01-import"), {})
 
     def test_a_closed_order_moves_no_further_and_releases_its_reqs(self) -> None:
         """Ruling 53: a closed order holds no REQ, so a later order freezes it again."""

@@ -30,6 +30,7 @@ from gzkit.order_ledger import (
     OrderMove,
     booked_order_ids,
     order_baseline,
+    order_holds,
     order_move_refusal,
     order_state,
     order_took_stopping_exit,
@@ -287,7 +288,7 @@ def _emit_move(event: OrderTransitionedEvent, crossed: str | None, *, as_json: b
 
 
 def wp_order_show_cmd(*, order_id: str, as_json: bool) -> None:
-    """Show an order's record, its package's kind, and its state and baseline (ruling 44)."""
+    """Show an order's record, its package's kind, its state, baseline and holds (44, 78)."""
     config = ensure_initialized()
     root = get_project_root()
     catalog = load_catalog(root)
@@ -296,6 +297,7 @@ def wp_order_show_cmd(*, order_id: str, as_json: bool) -> None:
     package = _package(catalog, order.work_package)
     state = order_state(ledger, order.id)
     baseline = order_baseline(ledger, order.id)
+    holds = order_holds(ledger, order.id)
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
     if as_json:
         fmt.emit(
@@ -304,12 +306,14 @@ def wp_order_show_cmd(*, order_id: str, as_json: bool) -> None:
                 "kind": package.kind,
                 "state": state,
                 "baseline": baseline,
+                "holds": holds,
             }
         )
         return
     fmt.emit(f"{order.id} in {package.id} ({package.kind})")
     fmt.emit(f"  state: {state or 'not opened'}")
     fmt.emit(f"  baseline: {', '.join(f'{r}@{n}' for r, n in baseline.items()) or 'none'}")
+    fmt.emit(f"  holds: {', '.join(f'{r}@{n}' for r, n in holds.items()) or 'none'}")
     fmt.emit(f"  aliases: {', '.join(order.aliases) or 'none'}")
     fmt.emit(f"  purpose: {order.purpose}")
     fmt.emit(f"  procedure: {order.procedure}")
@@ -390,6 +394,14 @@ def wp_order_close_cmd(
     order = _order(catalog, str(fields["order"]))
     if refusal := order_move_refusal(ledger, order, "closed"):
         _refuse_move("closed", refusal)
+    stopped = order_took_stopping_exit(ledger, order.id)
+    if fields.get("decision") == "proceed" and stopped and acceptance_blockers(root, order.id):
+        _refuse_move(
+            "closed",
+            f"{order.id} took a stopping exit and acceptance does not read ready, so it "
+            "delivered nothing to proceed with, and a proceed would hold its REQs (RP-12 "
+            "rulings 30 and 78). Close it as `redirect`, `pause` or `terminate`.",
+        )
     move = OrderMove.model_validate({**fields, "to_state": "closed"})
     try:
         event = record_order_transition(catalog, ledger, move)

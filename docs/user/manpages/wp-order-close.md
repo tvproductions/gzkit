@@ -32,8 +32,13 @@ Books the order's `order_transitioned` to `closed`: Gate 5 at the order
 The event carries the decision, the attestor, the operator's verbatim words and the
 evidence, and the one field the decision names (ruling 73):
 
-- `proceed` carries `--residual-risk`: the order is delivered and its REQs' proofs
-  count toward their outcomes (ruling 30).
+- `proceed` carries `--residual-risk`: the order is delivered, and each repair REQ
+  its freeze froze holds at that revision, which
+  [`gz wp order show`](wp-order-show.md) and the repair package's close name
+  (rulings 30 and 78). A catalog REQ's proofs counting toward its outcome's
+  `validated` lands with RP-14, when orders sit on delivery packages. An order a
+  stopping exit excused at acceptance delivered nothing, so its `proceed` is
+  refused, as a stopped package's is.
 - `redirect` carries `--superseded-by`, an order of the same package already opened
   with [`gz wp order new`](wp-order-new.md) and not yet frozen (ruling 75). Rework
   freezes this order's REQ again in that order; a remodel freezes a new REQ carrying
@@ -85,10 +90,18 @@ $ uv run gz wp order close ORD-02-spare --decision terminate --attestor g0 --att
 ORD-02-spare: opened -> closed
 ```
 
-Once `ORD-01-import` was stopped by a `terminate` exit and accepted, the same close
-from a subagent's call, then from the main session:
+Once `ORD-01-import` was stopped by a `terminate` exit and accepted, a `proceed`,
+then the same `terminate` from a subagent's call and from the main session:
 
 ```console
+$ uv run gz wp order close ORD-01-import --decision proceed --attestor g0 --attestation-text 'it holds' --residual-risk none --evidence 'gate 5'
+ORD-01-import took a stopping exit and acceptance does not read ready, so it
+delivered nothing to proceed with, and a proceed would hold its REQs (RP-12
+rulings 30 and 78). Close it as `redirect`, `pause` or `terminate`. Nothing was
+written; correct the call and re-run `uv run gz wp order close <ORD-id>
+--decision <proceed|redirect|pause|terminate> --attestor g0 --attestation-text
+<words> --evidence <text> [--residual-risk <text> | --superseded-by <ORD-id> |
+--revisit-condition <text>]`.
 $ uv run gz wp order close ORD-01-import --decision terminate --attestor g0 --attestation-text 'stop it' --evidence 'gate 5'
 Gate 5 is refused from a subagent's call: it is the operator's act, recorded on
 the operator's own words (RP-12 ruling 77, AGENTS.md § Attestation). Run it from
@@ -110,7 +123,7 @@ The close it booked, read from the scratch ledger:
 | 0 | Closed |
 | 1 | The order is not in the store |
 | 2 | Usage error |
-| 3 | The close is refused: a subagent's call, a booked order that lost its record, the lifecycle, the order's block, the package's state, missing words or decision, a decision's field missing or another's given, or a redirect's successor; nothing booked |
+| 3 | The close is refused: a subagent's call, a booked order that lost its record, the lifecycle, the order's block, the package's state, a proceed on an order that delivered nothing, missing words or decision, a decision's field missing or another's given, or a redirect's successor; nothing booked |
 
 ## See also
 

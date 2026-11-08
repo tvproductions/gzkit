@@ -1836,6 +1836,9 @@ class WorkPackageTransitionedEvent(_EventBase):
         default_factory=dict,
         description="Each order's Gate 5 decision, read by the writer at a repair close (RP-12 76)",
     )
+    held_reqs: tuple[str, ...] = Field(
+        (), description="Each REQ@revision a proceed holds, read at a repair close (RP-12 78)"
+    )
 
 
 class WorkPackageChangedEvent(_EventBase):

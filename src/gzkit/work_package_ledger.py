@@ -306,6 +306,29 @@ def package_order_moves(ledger: Ledger, work_package: str) -> dict[str, dict[str
     return latest
 
 
+def package_held_reqs(ledger: Ledger, work_package: str) -> tuple[str, ...]:
+    """Read the repair REQs that hold in a package (RP-12 ruling 78).
+
+    A repair REQ holds at the revision an order of the package closed as `proceed`
+    froze it, read from that order's latest `frozen` and its `closed` events.
+
+    Returns:
+        Each ``REQ@revision`` that holds, in the order the orders closed.
+
+    """
+    frozen: dict[str, list[dict[str, object]]] = {}
+    held: list[str] = []
+    for row in ledger.query(event_type="order_transitioned"):
+        if row.extra.get("work_package") != work_package:
+            continue
+        order = str(row.extra["order"])
+        if row.extra.get("to_state") == "frozen":
+            frozen[order] = list(row.extra.get("baseline") or [])
+        elif row.extra.get("to_state") == "closed" and row.extra.get("decision") == "proceed":
+            held += [f"{entry['req']}@{entry['revision']}" for entry in frozen.get(order, [])]
+    return tuple(dict.fromkeys(held))
+
+
 def _check_repair_close(ledger: Ledger, package: WorkPackage, move: TransitionRequest) -> None:
     """Refuse a repair close with a decision of its own or an open order (RP-12 ruling 76)."""
     if move.decision is not None:
@@ -397,6 +420,11 @@ def record_work_package_transition(
                 }
                 if move.to_state == "closed" and package.kind == "repair"
                 else {}
+            ),
+            "held_reqs": (
+                package_held_reqs(ledger, package.id)
+                if move.to_state == "closed" and package.kind == "repair"
+                else ()
             ),
         }
     )

@@ -306,6 +306,26 @@ class TestTheOrdersAcceptRefusal(_OrderAcceptance):
         self.assertIn("cannot move from commenced", " ".join(output.split()))
 
 
+class TestAStoppedOrdersGateFive(_OrderAcceptance):
+    """A stopped order accepted without its proof delivered nothing to proceed with."""
+
+    def test_proceed_is_refused_and_the_other_decisions_close_it(self) -> None:
+        for role in ("Implementer", "SpecReviewer", "Implementer", "Implementer"):
+            self.wp("dispatch", _PACKAGE, "--order", _ORDER, "--role", role, "--model", "m",
+                    "--req", "REQ-1")  # fmt: skip
+        self.wp("block", _PACKAGE, "--order", _ORDER, "--reason", "r", "--next-action", "n")
+        self.wp("unblock", _PACKAGE, "--order", _ORDER, "--ruling", "stop", "--operator", "g0",
+                "--exit", "terminate")  # fmt: skip
+        self.accept()
+        words = ("--attestor", "g0", "--attestation-text", "ruled", "--evidence", "gate 5")
+        output = self.wp("order", "close", _ORDER, "--decision", "proceed", *words,
+                         "--residual-risk", "none", code=3)  # fmt: skip
+        self.assertIn("delivered nothing to proceed with", output)
+        self.assertEqual(self.state(), "accepted")
+        self.wp("order", "close", _ORDER, "--decision", "terminate", *words)
+        self.assertEqual(self.state(), "closed")
+
+
 class TestTheOrdersGateFive(_OrderAcceptance):
     """`gz wp order close`: Gate 5 at the order (RP-12 rulings 73 to 77)."""
 
@@ -329,6 +349,10 @@ class TestTheOrdersGateFive(_OrderAcceptance):
             ("closed", "proceed", "the import holds"),
         )
         self.assertEqual(self.state(), "closed")
+        # output-contract: show's text form names the REQs a proceed holds (ruling 78)
+        self.assertIn("  holds: REQ-1@1", self.wp("order", "show", _ORDER).splitlines())
+        shown = json.loads(self.wp("order", "show", _ORDER, "--json"))
+        self.assertEqual(shown["holds"], {"REQ-1": 1})
 
     def test_a_subagents_call_is_refused_and_books_nothing(self) -> None:
         """Ruling 77: Gate 5 is the operator's act."""

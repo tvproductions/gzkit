@@ -32,7 +32,8 @@ only `initiated` to `closed`, its orders carrying the run (RP-12 ruling 44). Gat
 sits at each of its orders, [`gz wp order close`](wp-order-close.md), so the
 package's close is refused while any order is not closed, carries no `--decision`
 of its own, and records each order's decision as the ledger holds it in
-`order_decisions` (ruling 76); it keeps the attestor, the residual risk, the
+`order_decisions` (ruling 76) and each repair REQ a `proceed` holds in `held_reqs`
+(ruling 78); it keeps the attestor, the residual risk, the
 alterations and the departures (ruling 62). Return to service, on the operator's
 words, lands with O5 (ruling 32). Gate 5 is the operator's act, so a call the
 dispatch stamp marks as a subagent's is refused (ruling 77). Every alteration is
@@ -80,7 +81,7 @@ WP-01-stamp: initiated -> closed
 The close it booked, read from the scratch ledger:
 
 ```json
-{"schema":"gzkit.ledger.v1","event":"work_package_transitioned","id":"WP-01-stamp","ts":"2026-11-08T08:12:29.609905+00:00","work_package":"WP-01-stamp","to_state":"closed","order_decisions":{"ORD-01-import":"terminate","ORD-02-spare":"terminate"},"evidence":"closeout","open_departures":[],"modules":[],"from_state":"initiated","configuration_changes":[],"attestor":"g0","residual_risk":"none","approved_alterations":[],"lane":"lite","baseline":[]}
+{"schema":"gzkit.ledger.v1","event":"work_package_transitioned","id":"WP-01-stamp","ts":"2026-11-08T08:24:20.888579+00:00","to_state":"closed","work_package":"WP-01-stamp","attestor":"g0","configuration_changes":[],"baseline":[],"modules":[],"open_departures":[],"lane":"lite","from_state":"initiated","held_reqs":[],"evidence":"closeout","approved_alterations":[],"residual_risk":"none","order_decisions":{"ORD-01-import":"terminate","ORD-02-spare":"terminate"}}
 ```
 
 ## Exit codes
