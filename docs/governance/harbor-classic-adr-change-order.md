@@ -123,7 +123,16 @@ Put to the operator one at a time; none is assumed.
   prefix before 1.0"* for ADRs only. No `ADR-<4 digits>` id existed in the tree on 2026-11-08
   (`git grep`), so the sequence starts at 0001; the first sequential record is the first decision the
   operator approves after the crossover, none pre-assigned.
-- **H5.** The final id grammar: padding width and slug rules for `ADR-<n>-<rev>-<slug>.md`.
+- **H5. Ruled 2026-11-08.** The final id grammar. Put to the operator: A, minimum widths with the
+  seam's slug; B, exact widths refused at overflow with a stricter, capped slug; C, minimum widths
+  with a stricter slug for classic ADRs only. Operator, by selection: *"Minimum widths, seam slug
+  (Recommended)"*. The id is `ADR-[0-9]{4,}` alone; the edition file is
+  `ADR-[0-9]{4,}-[0-9]{3,}-<slug>.md`, zero-padded to at least four and three digits, so nothing is
+  renamed past 9999 or 999. The slug is the seam's `SLUG_BODY`, `[a-z0-9-]+`
+  (`src/gzkit/core/models.py:29`), which legacy ADR, pool ADR and OBPI ids already share. The
+  filename changes with each revision; the id does not. Correction disclosed: the question put to the
+  operator also said work packages use that slug body; they do not reference it (LSP references,
+  2026-11-08). The ruling does not rest on that clause.
 - **H6.** Whether § The general arrangement states the independent-evolution invariant and the
   Current/Retired states in its ADR row, by contract amendment.
 
