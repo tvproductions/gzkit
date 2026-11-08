@@ -348,6 +348,42 @@ attests, which agent vendors it renders for. One key, `complexity.cognitive_ceil
 how the project's code is written. 54 source files name the file (a text count; how many read it
 through `GzkitConfig` was not traced).
 
+## decision · house-style facts go in `pyproject.toml`'s tool table; `.gzkit.json` keeps governance settings
+
+Read both sides in full (sources: the `[tool]` table, uv's and Ruff's configuration files; what
+gzkit's `pyproject.toml` carries; `.gzkit.json` in full, and its readers). Every other tool gzkit
+runs reads `pyproject.toml`, and RP-15 refuses a competing tool file (source: RP-15); `.gzkit.json`
+holds governance settings no other tool reads, and one code fact.
+
+Put to the operator: A, split by kind, code-design facts (the hexagonal boundary, the cognitive
+ceiling, later members) in a `[tool.<gzkit name>]` table and governance settings in `.gzkit.json`;
+B, all of `.gzkit.json` into the tool table, the file retired; C, all in `.gzkit.json`. Operator, by
+selection: *"Split by kind (Recommended)"*. This supersedes the reopened decision *the boundary is
+declared in `.gzkit.json`*. The cognitive ceiling's move is a consequence, not yet a ruling. The
+table's name waits on the PyPI ownership question (source: who owns the `gzkit` name on PyPI).
+
+## source · the airlock, gzkit's start-of-work and end-of-work doors
+
+`src/gzkit/airlock/model.py` lines 1–160, `src/gzkit/airlock/enter.py:80–125`, `src/gzkit/airlock/exit.py:345–412`; `gz permitted-entry --help` · read 2026-11-08
+
+> ``bodies`` is seam-as-BODY: contiguous regions of similarity — the FOOTPRINT.
+> ``push_edges``/``pull_edges`` are seam-as-BOUNDARY: the join. ``unaccounted``
+> holds edges present but undeclared, and is never folded into the joins.
+
+> """Three-beat airlock-IN gate — DECLARE -> PING -> RECONCILE -> decide."""
+
+> `seam_map = _reconcile(target, declared.declaration, declared.bodies, reach, declared.parent_invariants)`
+
+> `compute_drift_diff(tuple(reach), declared.parent_invariants)`
+
+> Cross the airlock for an ad-hoc/spurious entry: reconnaissance for comprehension with light repair at most. The acknowledge-and-decide gate fires on EVERY transit (permissive ceremony, never skipped).
+
+Every unit of work already crosses a door at its start and its end: a brief or a work package
+through `gz airlock in` and `out`, ad hoc work through `gz permitted-entry`. Entry reconciles the
+declared footprint and `parent_invariants` against observed reach and decides; exit adjudicates drift
+against the same invariants. `Provenance` separates declared LAW from OBSERVED fact. What
+`parent_invariants` holds today and who supplies it was not traced past these call sites.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
