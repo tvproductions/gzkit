@@ -664,13 +664,53 @@ So, of the inventory's items 1–10 (source: the candidate inventory):
 This changes the disposition map: row 6's *no folder partitions* is withdrawn, since the question is
 now the follow-on run's; row 7 gains the hexagonal specification run.
 
+## decision · family F2 ruled item by item
+
+Operator, verbatim:
+
+> 11. strong yes. we need a chore that updates cli-standards (hygiene maintenance)
+> 12. Still agree
+> 13. I am 1000% astral aligned and potentially hostile to anything else - exceptions need strong justification
+> 14. rich would be when TUI-like behavior is needed. jinja2 is for CMS templates I'd like to review why jsonschema and pyyaml are being used.
+> 21. yes, argparse is stdlib
+> 89. Yes, rich for TUIs if they become necessary
+
+- **Admitted:** 11 (stdlib first, *"strong yes"*), 12 (five-year aging, against the recommendation to
+  set it aside; its five years is a value in Markdown, so admission carries moving it to data), 13
+  (the exception register, hardened: *"potentially hostile to anything else - exceptions need strong
+  justification"*), 21 (argparse, *"argparse is stdlib"*), 89 (rich, *"for TUIs if they become
+  necessary"*).
+- **Commissioned:** a hygiene chore that keeps `docs/design/cli-standards-v3.md` current (row 3); the
+  inventory's contradictions 5, 6, 7, 11 and 12 show it stale today.
+- **14, ruled in part, three readings open:** rich *"when TUI-like behavior is needed"*, jinja2 *"for
+  CMS templates"*, and a review asked of why jsonschema and pyyaml are used.
+
+## source · why jinja2, jsonschema, pyyaml and rich are in gzkit today
+
+`data/astral_exceptions.json` (the four entries) and `git grep -n -E "^\s*(import <dep>|from <dep>)" -- 'src/gzkit/**/*.py'` · read and run 2026-11-08
+
+> jsonschema: "Validates documents against the JSON Schema files under src/gzkit/schemas/ at runtime (ADR-0.0.30), in the ARB validator, the catalog, the vendor manifest and the frontmatter audits. Stdlib has no JSON Schema validator, and Pydantic validates its own models, not arbitrary schema documents (RO-9 tranche 6)."
+
+> pyyaml: "Parses YAML frontmatter, mkdocs.yml and workflow files across the governance audits. Stdlib has no YAML parser (tomllib reads TOML only) (RO-9 tranche 6)."
+
+> jinja2: "Renders the control-surface renditions and the justify walkthrough from template files with loops, conditionals and StrictUndefined (src/gzkit/content/render/pipeline.py, src/gzkit/justify/walkthrough.py)."
+
+> rich: "Renders the CLI's tables, styled text and markup across 65 modules, the human-first output the CLI doctrine requires. Stdlib has no table or markup renderer (RO-9 tranche 6)."
+
+Import sites: pyyaml in 12 files (frontmatter readers in `governance/`, `rules/`, `personas/`,
+`models/persona.py`, `ontology/okf.py`, `knowledge/generate.py`, two trust audits, two commands);
+jsonschema in 7 (`arb/validator.py`, `commands/validate_cmd.py`, `complexity/advisor/archetype_rules.py`,
+`governance/invariants.py`, two trust audits); jinja2 in 2 (`content/render/pipeline.py`,
+`justify/walkthrough.py`). Two readings conflict with item 14 as ruled: rich's registered reason is
+all CLI output, not TUIs; jinja2 renders gzkit's control surfaces, not CMS templates.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
 |---|---|---|---|---|
 | 1 | ADR / OBPI | commissioned | The upfront whole-system architecture map, approved once as a classic ADR (the first map edition); and the new machinery admitted at civil rule through the R&D door as catalog outcomes: the map as data under `[tool.py-gzkit]`, the intake signal, the freeze check, the airlock feed, `gz init` delivery to adopters | The map passes the admission question: hard to reverse, surprising without context, a real trade-off. Proposed only: the operator initiates. It waits for the classic ADR form and crossover (CO-1, CO-2 on RP-6) |
 | 2 | GHI / direct fix | commissioned | Under RP-7's placement change order: book H1 ruled to the whole package with a shrink-only baseline, and repair F22 so the boundary test runs in the per-change `gz check` | Corrections of shipped intent (decision: corrections go into the drydock under RP-7); both already tracked there, so no new GHI |
-| 3 | chore | commissioned | A hexagonal tidying chore: the implementation-mode audit of what neither gate nor door judges (ports typed in domain terms, policy kept out of adapters, construction at the edge), after gz-skills' `gzs-hexagonal-architecture-audit`, findings filed as GHIs | The third reach the operator ruled (*"chore tidyings"*); advise only, the operator directs admission |
+| 3 | chore | commissioned | A hexagonal tidying chore: the implementation-mode audit of what neither gate nor door judges (ports typed in domain terms, policy kept out of adapters, construction at the edge), after gz-skills' `gzs-hexagonal-architecture-audit`, findings filed as GHIs; and a hygiene chore keeping `docs/design/cli-standards-v3.md` current (F2, item 11) | The third reach the operator ruled (*"chore tidyings"*); advise only, the operator directs admission |
 | 4 | control surface, rule, doc, skill, hook | commissioned | (a) the house style named in canon, its admission rule and its first member; (b) the hexagonal rule cut to its judgment residue once gate, doors and chore carry the rest (RP-7 placement); (c) the canon page's § Departures *"not a code-organization rule"* reconciled with *"primary code directive"*; (d) the design-time imperative written into the design surfaces | Drafted on the operator's go per item |
 | 5 | one-shot refactoring | commissioned | gzkit's import sites outside their mapped region driven to zero through the shrink-only baseline; the cognitive ceiling moved from `.gzkit.json` to `[tool.py-gzkit]` | The whole-package scope and the split config home, ruled; the operator selects the route |
 | 6 | no action | not pursued | Registering `gzkit` on PyPI | The operator chose `[tool.py-gzkit]`; revisit if the CLI's name and the distribution's are ever unified. (Folder partitions, listed here first, withdrawn 2026-11-08: the operator disagrees with canon rule 7 now, and the question moves to row 7(c).) |
