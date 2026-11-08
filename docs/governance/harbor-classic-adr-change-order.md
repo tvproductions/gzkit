@@ -89,7 +89,7 @@ Each line names the owning order, what the order gains, and a proposed grade.
 | # | Owning order | What it gains | Proposed grade |
 |---|---|---|---|
 | CO-1 | RP-6, contradicted canon | The ADR authoring surfaces moved to the decision-only form for new records, legacy records untouched: `.gzkit/templates/adr.md` (still carries `semver`, § Checklist, § Decomposition Scorecard and an attestation table), `src/gzkit/schemas/adr.json` (status enum `Pool` … `Deprecated`, `kind` derived from semver), the skills that author ADRs (`gz-adr-create`, `gz-plan`, `gz-design`) and their manpages, each through its generator. Canon that still states ADR-checklist containment is listed for its owner: root `AGENTS.md` § Gate Covenant (*"ADR Feature Checklist items and OBPI briefs correspond 1:1"*) is cut only by the operator (RP-7 stage 7) | blocks return to service (exit item 5) |
-| CO-2 | RP-14, the forward migration | The identity crossover: the resolver seam accepts the sequential decision id and the edition reference (`ADR-0001`, `ADR-0001-001`), new ids never collide with a retained id or alias, and the effective crossover commit and first sequential record are booked. The October identifier program's 1.0 timing and bulk-rename clauses are reconciled explicitly, not silently overridden | blocks return to service (exit items 2 and 11) |
+| CO-2 | RP-6, with CO-1 (**ruled 2026-11-08**, H2) | The identity crossover: the resolver seam accepts the sequential decision id and the edition reference (`ADR-0001`, `ADR-0001-001`), new ids never collide with a retained id or alias, and the effective crossover commit and first sequential record are booked. The October identifier program's 1.0 timing and bulk-rename clauses are reconciled explicitly, not silently overridden | blocks return to service (exit items 2 and 11) |
 | CO-3 | RP-4, release | Confirmation only: no ADR-derived release, version or closeout survives, and a legacy semver is never read as a document revision | inspected at RP-4's close |
 | CO-4 | RP-5, RP-12 and RP-14 | Confirmation only: decomposition, execution, inspection and Gate 5 stay on the work and order surface; no ADR checklist containment returns | inspected at each order's close |
 | CO-5 | RP-8, the in-flight work | ADR-0.35.0's freeze does not retire the architectural choices inside it; each is carried as a decision, retired with a reason, or captured afresh with honest provenance | due by RP-8's carry acts at civil rule |
@@ -106,9 +106,11 @@ Put to the operator one at a time; none is assumed.
   item 9 of the contract. Scope at the ruling: about 74 version-shaped legacy ADRs (44 foundation
   `0.0.x`, 30 feature) under `docs/design/adr/`, counted by filename on 2026-11-08; the 204 pool
   entries are excluded.
-- **H2.** RP-2 closed on 2026-10-19 with no identifier changes, and its grammar is legacy-shaped. The
-  crossover's resolver work is placed on RP-14 (CO-2) rather than reopening RP-2. Confirm, or reopen
-  RP-2 by change order.
+- **H2. Ruled 2026-11-08.** RP-2 closed on 2026-10-19 with no identifier changes, and its grammar is
+  legacy-shaped. Put to the operator: A, RP-6 with CO-1, after the precedent of 2026-10-30 that put
+  the capability records on RO-11, their first writer, rather than reopen the closed RO-3; B, RP-14
+  as first drafted; C, reopen RP-2. Operator, by selection: *"RP-6, with CO-1 (Recommended)"*. The
+  new form and its id land in one order; RP-6 takes code in the resolver seam.
 - **H3.** The grades in § The change orders.
 - **H4.** The crossover point: the effective commit or date, and the first sequential record.
 - **H5.** The final id grammar: padding width and slug rules for `ADR-<n>-<rev>-<slug>.md`.
