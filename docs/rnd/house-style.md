@@ -834,6 +834,14 @@ admitted; item 19 (TypedDict for shapes) is confirmed admitted. TypedDict is std
 (`uv run python -c "import typing; print(typing.TypedDict.__module__)"` printed `typing`, 2026-11-08);
 Pydantic can validate one, but does not provide it. Item 17 stays open on the operator's question.
 
+## decision · family F3: item 17 admitted; F3 complete
+
+Item 17 (field descriptions) was answered as a model's self-documentation, not a hexagonal
+constraint: with jsonschema retired, every published schema is generated from a model and a
+field's `description` becomes that schema's documentation, while a field's checking constraints
+are validation, which item 90 leaves on the model. Operator, by selection: *"Admit 17"*. Family F3
+(items 15, 16, 17, 19, 90) is admitted whole.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
