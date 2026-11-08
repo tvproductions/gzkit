@@ -38,7 +38,8 @@ evidence, and the one field the decision names (ruling 73):
   (rulings 30 and 78). A catalog REQ's proofs counting toward its outcome's
   `validated` lands with RP-14, when orders sit on delivery packages. An order a
   stopping exit excused at acceptance delivered nothing, so its `proceed` is
-  refused, as a stopped package's is.
+  refused unless its acceptance reads ready; the order writer itself holds this
+  (ruling 80).
 - `redirect` carries `--superseded-by`, an order of the same package already opened
   with [`gz wp order new`](wp-order-new.md) and not yet frozen (ruling 75). Rework
   freezes this order's REQ again in that order; a remodel freezes a new REQ carrying
@@ -97,7 +98,7 @@ then the same `terminate` from a subagent's call and from the main session:
 $ uv run gz wp order close ORD-01-import --decision proceed --attestor g0 --attestation-text 'it holds' --residual-risk none --evidence 'gate 5'
 ORD-01-import took a stopping exit and acceptance does not read ready, so it
 delivered nothing to proceed with, and a proceed would hold its REQs (RP-12
-rulings 30 and 78). Close it as `redirect`, `pause` or `terminate`. Nothing was
+rulings 78 and 80). Close it as `redirect`, `pause` or `terminate`. Nothing was
 written; correct the call and re-run `uv run gz wp order close <ORD-id>
 --decision <proceed|redirect|pause|terminate> --attestor g0 --attestation-text
 <words> --evidence <text> [--residual-risk <text> | --superseded-by <ORD-id> |

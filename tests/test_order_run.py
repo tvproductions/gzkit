@@ -14,7 +14,13 @@ import unittest
 from pathlib import Path
 
 from gzkit.events import BaselinedReq
-from gzkit.order_ledger import is_order_blocked, order_state, order_took_stopping_exit
+from gzkit.order_ledger import (
+    OrderMove,
+    is_order_blocked,
+    order_state,
+    order_took_stopping_exit,
+    record_order_transition,
+)
 from gzkit.pipeline_dispatch import MAX_REVIEW_FIX_CYCLES
 from gzkit.work_package_fence import (
     FencedPackage,
@@ -260,6 +266,28 @@ class UnblockOnAnOrder(_OrderRun):
         self.assertFalse(took_stopping_exit(self.ledger, _PACKAGE))
         self.refused("terminate exit", self.dispatch)
         self.assertEqual(self.dispatch(order=_SECOND, req="REQ-2").order, _SECOND)
+
+    def test_a_stopped_order_never_ready_does_not_close_as_proceed(self) -> None:
+        """Ruling 80: the writer holds it, reading readiness through its parameter."""
+        self.block()
+        self.unblock(exit_taken="terminate")
+        self.move("accepted")
+        proceed = OrderMove(
+            order=_ORDER, to_state="closed", evidence="e", decision="proceed", attestor="g0",
+            attestation_text="it holds", residual_risk="none",
+        )  # fmt: skip
+        for ready in (None, lambda _order: False):
+            with self.subTest(ready=ready):
+                self.refused(
+                    "rulings 78 and 80",
+                    lambda ready=ready: record_order_transition(
+                        self.catalog, self.ledger, proceed, acceptance_ready=ready
+                    ),
+                )
+        event = record_order_transition(
+            self.catalog, self.ledger, proceed, acceptance_ready=lambda _order: True
+        )
+        self.assertEqual(event.decision, "proceed")
 
     def test_a_stopped_orders_req_may_be_frozen_again(self) -> None:
         """Ruling 53: a stopped order's REQ is not stranded; a later order may freeze it."""

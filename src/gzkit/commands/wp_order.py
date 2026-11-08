@@ -394,17 +394,11 @@ def wp_order_close_cmd(
     order = _order(catalog, str(fields["order"]))
     if refusal := order_move_refusal(ledger, order, "closed"):
         _refuse_move("closed", refusal)
-    stopped = order_took_stopping_exit(ledger, order.id)
-    if fields.get("decision") == "proceed" and stopped and acceptance_blockers(root, order.id):
-        _refuse_move(
-            "closed",
-            f"{order.id} took a stopping exit and acceptance does not read ready, so it "
-            "delivered nothing to proceed with, and a proceed would hold its REQs (RP-12 "
-            "rulings 30 and 78). Close it as `redirect`, `pause` or `terminate`.",
-        )
     move = OrderMove.model_validate({**fields, "to_state": "closed"})
     try:
-        event = record_order_transition(catalog, ledger, move)
+        event = record_order_transition(
+            catalog, ledger, move, acceptance_ready=lambda o: not acceptance_blockers(root, o)
+        )
     except OrderLedgerError as exc:
         _refuse_move("closed", str(exc))
     _emit_move(event, None, as_json=as_json)

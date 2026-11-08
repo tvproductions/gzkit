@@ -325,6 +325,19 @@ class TestAStoppedOrdersGateFive(_OrderAcceptance):
         self.wp("order", "close", _ORDER, "--decision", "terminate", *words)
         self.assertEqual(self.state(), "closed")
 
+    def test_a_stopped_order_whose_acceptance_reads_ready_may_proceed(self) -> None:
+        """Ruling 80: the verb hands the writer acceptance readiness, so a proof earns it."""
+        self.init()
+        self.approve(self.proof())
+        self.wp("block", _PACKAGE, "--order", _ORDER, "--reason", "r", "--next-action", "n")
+        self.wp("unblock", _PACKAGE, "--order", _ORDER, "--ruling", "stop", "--operator", "g0",
+                "--exit", "terminate")  # fmt: skip
+        self.accept()
+        self.wp("order", "close", _ORDER, "--decision", "proceed", "--attestor", "g0",
+                "--attestation-text", "it holds", "--residual-risk", "none",
+                "--evidence", "gate 5")  # fmt: skip
+        self.assertEqual(self.state(), "closed")
+
 
 class TestTheOrdersGateFive(_OrderAcceptance):
     """`gz wp order close`: Gate 5 at the order (RP-12 rulings 73 to 77)."""
