@@ -9,6 +9,7 @@ only for a stamped call.
 
 import argparse
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -156,6 +157,12 @@ class LinkedWorktreeAdmitted(unittest.TestCase):
 
     def test_a_linked_worktree_outside_claude_worktrees_is_refused(self) -> None:
         worktree = self._worktree(self.project, self.base / "elsewhere")
+        self.assertIsNotNone(self._refusal(worktree))
+
+    def test_a_worktree_whose_registration_is_gone_is_refused(self) -> None:
+        """Ruling 51 admits a linked worktree; one the root no longer registers is not."""
+        worktree = self._worktree(self.project, self.project / ".claude/worktrees/agent-x")
+        shutil.rmtree(self.project / ".git" / "worktrees" / "agent-x")
         self.assertIsNotNone(self._refusal(worktree))
 
     def test_a_plain_directory_under_claude_worktrees_is_refused(self) -> None:

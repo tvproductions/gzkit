@@ -73,9 +73,10 @@ def _linked_worktree_of(intended: Path, real: Path) -> bool:
 
     A linked worktree's ``.git`` is a file naming ``<common dir>/worktrees/<name>``.
     It counts as the intended root only when that common dir is the intended root's
-    own ``.git`` and the worktree sits directly in the intended root's
-    ``.claude/worktrees/``, so another repository's worktree placed there, a
-    worktree elsewhere, and a plain directory there all stay other roots.
+    own ``.git``, the root still registers it there, and the worktree sits directly in
+    the intended root's ``.claude/worktrees/``, so another repository's worktree
+    placed there, a worktree elsewhere, one whose registration was pruned, and a
+    plain directory there all stay other roots.
 
     Returns:
         True when both hold; False otherwise, an unreadable link included.
@@ -91,6 +92,7 @@ def _linked_worktree_of(intended: Path, real: Path) -> bool:
     gitdir = gitdir if gitdir.is_absolute() else real / gitdir
     return (
         gitdir.parent.name == "worktrees"
+        and gitdir.is_dir()
         and _same_directory(gitdir.parent.parent, intended / ".git")
         and _same_directory(real.parent, intended / ".claude" / "worktrees")
     )
