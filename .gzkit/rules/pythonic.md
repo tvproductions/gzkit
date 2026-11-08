@@ -7,9 +7,9 @@ description: Pythonic standards and idiomatic code contract
 
 # Pythonic Standards (Idiomatic Code Contract)
 
-<!-- rule-version: 0.5.12 -->
+<!-- rule-version: 0.5.13 -->
 
-> **Rule version:** `0.5.12` — the PEP 563 ban is witnessed: `gz validate --astral-discipline` refuses a 3.14 floor whose Ruff config drops it (RO-9 tranche 4); prior banners in [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd).
+> **Rule version:** `0.5.13` — the module-size row names the `gz check` step that enforces the table's band, and § Error Handling names `gzkit.core.exceptions`, under the operator's *"fix what is stale"* (2026-11-08); prior banners in [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd).
 
 ## Core Principles
 
@@ -42,11 +42,12 @@ description: Pythonic standards and idiomatic code contract
 > |---|---|---|
 > | Classes <=300 | `gz validate --class-size` (`code_quality.py`, `limit = 300` hardcoded, waivers in `_CLASS_SIZE_WAIVERS`) | **live gate** — the table carries no class-size metric, so this rule is the only authority |
 > | Functions <=50 | nothing | authoring-time guidance only |
-> | Modules <=600 | nothing | authoring-time guidance only |
+> | Modules <=600 | nothing reads 600; `gz check`'s "Module size" step runs `.gzkit/chores/module-sloc-cap-radon/check_module_size.py`, which enforces the table's `lizard_file_nloc` `block` band over `src/` with the shrink-only `data/module_size_grandfather.json` | 600 is authoring-time guidance only; the **live gate** is the table's band |
 > | *(cyclomatic)* | `gz validate --complexity-ceiling` and Ruff `C901`, both at `[tool.ruff.lint.mccabe] max-complexity` (each function, module mean and overall mean CC <=20); cognitive complexity by the same gate, scored by gzkit over CPython's `ast` at `.gzkit.json`'s `complexity.cognitive_ceiling` (15, held by the shrink-only `data/cognitive_complexity_baseline.json`) | **live gate** — a *third* ceiling, matching neither authority: the table's `lizard_ccn` blocks at 11.0, so a CC-15 function passes the ceiling while `block` per the table |
 >
-> The table's function/module bands have **no consumer**: `complexity_advise.py` is
-> reads `lizard_ccn` alone (`gzkit.complexity.functions.METRIC_KEY`, `metrics_checked = 1`).
+> The table's function band has **no consumer**: `complexity_advise.py` reads `lizard_ccn`
+> alone (`gzkit.complexity.functions.METRIC_KEY`, `metrics_checked = 1`). Its module band has
+> one, the "Module size" step above.
 > `docs/governance/advisory-rules-audit.md` once miscoded this as *"Mechanical | xenon complexity"* —
 > xenon measured cyclomatic rank, never line count; that Mechanical claim was unbacked.
 >
@@ -63,7 +64,7 @@ description: Pythonic standards and idiomatic code contract
 
 ## Error Handling
 
-- Catch specific exceptions, translate to `core.errors`.
+- Catch specific exceptions, translate to the `GzkitError` hierarchy in `gzkit.core.exceptions`.
 - **No bare `except:` / `except Exception:`** outside CLI boundaries.
 
 **Mechanized 2026-08-08 by ruff `BLE001`, after running nowhere for as long as this clause has existed.** `BLE` was absent from `[tool.ruff.lint] select` while the advisory scorecard recorded row 18 as **Mechanical**, "ruff BLE001 enforces" — a rule declared, scored as witnessed, and enforced by nothing. Six live violations sat in `src/gzkit`, one of them behind a `# noqa: BLE0001` typo that suppressed nothing and was undetectable precisely *because* the rule was off: a wrong suppression code is invisible when the rule it names never runs.

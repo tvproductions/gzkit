@@ -72,6 +72,8 @@ Prior `0.12.0` — the MD-values bullet's remaining carve-out is **measured rath
 
 ## `cli.md`
 
+Prior `0.9.2` banner: *"version narrative lifted to Rule Version History; binding rules unchanged."* Superseded 2026-11-08 by `0.9.3` under the operator's *"fix what is stale"*: § Exit Codes said *"Use `sys.exit(code)`"* while the specification's § CLI Boundary Pattern has the handler return an `int`, and `gzkit.cli.main` returns a typed error's `exit_code`.
+
 ### Lifted 2026-09-17 at version `0.8.1` (rule now at `0.9.0`)
 
 Diet pass under GHI #921 (operator: "A" on the full before/after, 11,949 B → 6,893 B). Binding rules unchanged. Lifted verbatim as dated records — the `0.8.1` note, the 2026-08-22 shape measurements, the lane-vs-route quotations and the `8d9e09a4` worked example:
@@ -399,6 +401,8 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `pythonic.md`
 
+Prior `0.5.12` banner: *"the PEP 563 ban is witnessed: `gz validate --astral-discipline` refuses a 3.14 floor whose Ruff config drops it (RO-9 tranche 4); prior banners in Rule Version History."* Superseded 2026-11-08 by `0.5.13` under the operator's *"fix what is stale"*: the module-size row named no enforcer while `gz check`'s "Module size" step enforces the table's `lizard_file_nloc` `block` band, the no-consumer sentence (garbled "is reads") now covers the function band only, and § Error Handling's `core.errors` names the module that exists, `gzkit.core.exceptions`.
+
 Lifted at version `0.5.0` (rule now at `0.5.1`).
 
 > **Rule version:** `0.5.0` — § Type-check suppression syntax gains the two forms ty actually honors that this rule had never listed: `# type: ignore[ty:<code>]` and the interop `# type: ignore[<foreign-code>, ty:<ty-code>]`. The omission was not cosmetic — the rule's own enforcement regex matched *any* bracketed `type: ignore[`, so `gz validate --type-ignores` flagged two **working** suppressions as violations, and a reader following the two-row table would delete a live suppression to satisfy the gate. The prohibition is unchanged and now stated at its real cause: ty skips codes lacking a `ty:` prefix, so an all-foreign directive suppresses nothing — which is *also* why a shared comment works, making deletion the wrong fix whenever another checker reads the line. Verified against ty 0.0.69 rather than inferred from this file (`# type: ignore[misc]` left an `invalid-assignment` error standing; both `ty:`-bearing forms suppressed it). Scope widened with the corrected predicate: `src` alone had let 512 inert markers accumulate across `tests` and `features`. Prior `0.4.0` — § Imports records the PLC0415 posture as **accepted** rather than deferred (operator ruling 2026-08-08, "record deferred postures as accepted"). "Deferred" named a queue nothing was advancing, and the clause had been carried as an open loop across five handoffs on that word alone; the honest state is a measured, disclosed advisory whose reclassifying evidence is now named. Re-measured at the acceptance: still 138 sites. No binding rule changed. Prior `0.3.0` — Movement C family closure, rules arm. Scoring this rule's clauses for real found **four advisory-scorecard rows asserting enforcement that did not exist**, which is a worse state than the Promotable rows the campaign box counts: a Promotable row honestly says "no witness yet", while a false **Mechanical** row reports green while blind and is invisible to the criterion. Row 18 claimed "ruff BLE001 enforces" with `BLE` absent from `[tool.ruff.lint] select` (6 live violations, one behind a `# noqa: BLE0001` typo that suppressed nothing); row 23 claimed PLC0415 was "partially enforced" with `PL` equally absent (138 live violations); rows 19 and 20 claimed line-count enforcement that § Size Limits has said was unbacked since `0.2.0`. `BLE001` is now enabled and the six sites fixed with cited justifications (operator ruling 2026-08-08); PLC0415 is deferred because its 138 sites need per-site readings against this rule's own optional-dependency and cycle-avoidance carve-outs. Rows 19/20/23 re-scored `Judgment` with the measurements recorded here. Prior `0.2.1` — names the unreconciled three-way threshold conflict in § Size Limits & Refactoring (`0.2.0`); prior version history lifted to [Rule Version History](#pythonicmd).
@@ -465,6 +469,8 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 `0.5.12` names the ban's witness. Ruff supplies the refusal and gzkit owns only the configuration, which a Python canary cannot mutate, so the guard is a rule of the astral-discipline witness: `deferred-annotations-unbanned` fires when the `requires-python` floor is 3.14 or above and no Ruff config bans `__future__.annotations`. The 3.13 floor `gz init` scaffolds is exempt, since 3.13 has no deferred annotations, so the astral baseline did not grow. `NC:astral-discipline-deferred-annotations` plants the unbanned floor beside the baselined decoy, and its canary was reviewed by the operator.
 
 ## `hexagonal-architecture.md`
+
+Prior `0.3.1` banner: *"version narrative lifted to Rule Version History; binding rules unchanged."* Superseded 2026-11-08 by `0.4.1` (0.4.0 was the reverted 532a071b9 stub) under the operator's *"fix what is stale"*: § Verify cited `gz lint` and `gz typecheck`, which check no import boundary, in place of `tests/policy/test_import_boundaries.py`; "~50 top-level modules" is now the counted 128; § Related credited `pythonic.md` with Protocol/DI content it never carried. The `0.4.0` stub (commit `532a071b9`) was reverted by commit `31372200c` before this edit, so `0.3.2` follows the restored `0.3.1`.
 
 Lifted at version `0.2.0` (rule now at `0.2.1`).
 
@@ -1154,6 +1160,8 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 > **Rule version:** `0.5.2` — xenon is no longer named as a consumer of the table: it never read the table, and RO-9 tranche 4 retired it (GHI #1183); prior banners in [Rule Version History](rule-version-history.md#complexity-thresholdsmd). Binding rules unchanged.
 
 ## `models.md`
+
+Prior `0.2.1` banner: *"version narrative lifted to Rule Version History; binding rules unchanged."* Superseded 2026-11-08 by `0.2.2` under the operator's *"fix what is stale"*: § Verify required `extra="forbid"` on every model while eight deliberately use `extra="allow"` to mirror an open schema (the `gzkit.core.models` frontmatter models, `ConceptFrontmatter` per ADR-0.30.0, `ObpiReceiptEvidence`).
 
 Lifted 2026-08-30 at version `0.1.0` (rule now at `0.2.0`).
 

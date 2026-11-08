@@ -7,9 +7,9 @@ description: CLI contract doctrine and design principles
 
 # CLI Contract Doctrine
 
-<!-- rule-version: 0.9.2 -->
+<!-- rule-version: 0.9.3 -->
 
-> **Rule version:** `0.9.2` — version narrative lifted to [Rule Version History](../../docs/governance/rule-version-history.md#climd); binding rules unchanged.
+> **Rule version:** `0.9.3` — § Exit Codes states the specification's return-an-int handler boundary in place of `sys.exit(code)`, under the operator's *"fix what is stale"* (2026-11-08); version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#climd).
 
 **Baseline:** [clig.dev](https://clig.dev/). **Canonical specification:** [`docs/design/cli-standards-v3.md`](../../docs/design/cli-standards-v3.md) (ADR-0.0.4) — read its § Document status before citing a section; parts are live-and-met, live-but-unmet, or retired. **Mechanical check:** `uv run gz cli audit`. **Heavy lane trigger:** any CLI contract change — subcommands, flags, exit codes, output schemas.
 
@@ -45,7 +45,7 @@ Mirrored from the specification's § Command Structure and § Output Rules; scor
 | **2** | Usage or System/IO Error | Usage: fix the invocation. System/IO: check network/disk; retry |
 | **3** | Policy Breach | Review logs; partial success needs review |
 
-Use `sys.exit(code)`; document codes 2/3 in help text.
+A handler returns its exit code as an `int` (specification § CLI Boundary Pattern), and a typed `GzkitError` carries its own `exit_code` (`gzkit.core.exceptions`), which `gzkit.cli.main` returns; document codes 2/3 in help text.
 
 - Code 2 means Usage or System/IO error; every parse error exits 2 — `StableArgumentParser.error`, attested REQ-0.0.4-02-03.
 - Never key a retry on exit 2 without the `BLOCKERS:` usage prefix on stderr — a caller cannot read 2 as an I/O fault alone.

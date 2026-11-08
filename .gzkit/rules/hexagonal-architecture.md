@@ -5,11 +5,11 @@ paths:
 description: Ports & adapters as gzkit's primary code architecture directive
 ---
 
-<!-- rule-version: 0.3.1 -->
+<!-- rule-version: 0.4.1 -->
 
 # Hexagonal Architecture (Ports & Adapters) — Primary Code Directive
 
-> **Rule version:** `0.3.1` — version narrative lifted to [Rule Version History](../../docs/governance/rule-version-history.md#hexagonal-architecturemd); binding rules unchanged.
+> **Rule version:** `0.4.1` — § Verify names the import-boundary test in place of lint and typecheck, the module count is measured, and § Related no longer credits `pythonic.md` with Protocol/DI, under the operator's *"fix what is stale"* (2026-11-08); version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#hexagonal-architecturemd).
 
 > Ports & adapters is gzkit's **primary code-architecture directive**. Every
 > external dependency is confined to an **adapter** behind a **port**; the inner
@@ -75,7 +75,7 @@ rule. The order is load-bearing for gzkit and every adopter project:
 
 **Domain cohesion lives in the type system, not the folder tree.** gzkit grew ad hoc
 as a command catalog; its domain was never modeled as one thing (scattered across
-ledger event types, `triangle.py`, `schemas/`, ~50 top-level modules, with domain
+ledger event types, `triangle.py`, `schemas/`, 128 top-level modules (counted 2026-11-08), with domain
 types split between `core/models.py` and `models/`). The correction is **subsumption
 into one typed model, never a folder restructure** — binding consequences:
 
@@ -110,9 +110,10 @@ let out of hand. Ports keep the seam-map finite and reviewable.
 ## Verify
 
 ```bash
-uv run gz lint
-uv run gz typecheck
+uv run -m unittest tests.policy.test_import_boundaries
 ```
+
+Neither `gz lint` nor `gz typecheck` checks an import boundary; `tests/policy/test_import_boundaries.py` is the witness, and it covers `src/gzkit/core/` only.
 
 - Core/domain modules import only stdlib + Pydantic (third-party imports live in
   adapter packages).
@@ -121,5 +122,5 @@ uv run gz typecheck
 ## Related
 
 - [`docs/governance/hexagonal-architecture.md`](../../docs/governance/hexagonal-architecture.md) — canon; conceptual origin + the Cockburn source
-- [`.gzkit/rules/pythonic.md`](pythonic.md) — idiomatic-code contract (Protocol/DI)
+- [`.gzkit/rules/pythonic.md`](pythonic.md) — idiomatic-code contract
 - `AGENTS.md` § STDLIB-FIRST DOCTRINE — the interior default this rule enforces

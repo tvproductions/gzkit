@@ -120,8 +120,8 @@ project — a coherent, *legible* design. The order is load-bearing:
 
 An honest accounting of the shape: **gzkit grew ad hoc as a command catalog.** Its
 domain was never modeled as one thing — it is scattered across ledger event types,
-`triangle.py`'s drift model, `schemas/*.json`, and ~50 top-level `src/gzkit/`
-modules, with domain types split between `core/models.py` and a separate `models/`
+`triangle.py`'s drift model, `schemas/*.json`, and 128 top-level `src/gzkit/`
+modules (counted 2026-11-08), with domain types split between `core/models.py` and a separate `models/`
 package, and the artifact graph represented three incompatible ways
 (`get_artifact_graph`, `triangle.py`, a dormant `ontology.schema.json`). That
 scatter *is* the DDD-incoherence a reader senses in the tree — it is a modelling

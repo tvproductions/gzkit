@@ -5,11 +5,11 @@ paths:
 description: Pydantic data model policy
 ---
 
-<!-- rule-version: 0.2.1 -->
+<!-- rule-version: 0.2.2 -->
 
 # Data Model Policy (canonical)
 
-> **Rule version:** `0.2.1` — version narrative lifted to [Rule Version History](../../docs/governance/rule-version-history.md#modelsmd); binding rules unchanged.
+> **Rule version:** `0.2.2` — § Verify names the deliberate `extra="allow"` models that mirror an open schema, under the operator's *"fix what is stale"* (2026-11-08); version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#modelsmd).
 
 - Use **Pydantic `BaseModel`** for all data models; no stdlib `dataclasses`.
 - Use `ConfigDict(frozen=True, extra="forbid")` for immutable models.
@@ -46,5 +46,5 @@ class WorldState(BaseModel):
 ## Verify
 
 - All models extend `BaseModel` (not `@dataclass`)
-- All models have `model_config` with at least `extra="forbid"`
+- All models have `model_config`, with `extra="forbid"` unless the model mirrors an open schema and allows unknown keys deliberately (`extra="allow"`: the frontmatter models in `gzkit.core.models`, `ConceptFrontmatter`, `ObpiReceiptEvidence`)
 - Immutable snapshots use `frozen=True`
