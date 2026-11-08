@@ -6,9 +6,9 @@ category: agent-operations
 lifecycle_state: active
 disable-model-invocation: true
 owner: gzkit-governance
-last_reviewed: 2026-10-23
+last_reviewed: 2026-11-08
 metadata:
-  skill-version: "1.4.5"
+  skill-version: "1.5.0"
 model: haiku
 ---
 
@@ -27,6 +27,17 @@ Run the guarded repository sync ritual with lint/test gates.
 ## Behavior
 
 Use the `gz git-sync` command flow (dry-run first, then apply as requested).
+
+## Commit messages (binding)
+
+Every commit's subject says what changed. Operator feedback: *"Every commit must
+describe what actually changed."* It was moved into this skill from auto memory
+on 2026-11-08 (operator: *"A: skill plus GHI"*). `gz git-sync` has no message
+flag. When it commits staged work it writes the generic subject
+`chore: update <areas> (gz git-sync)`, so commit the change yourself first, with
+a descriptive subject and the trailers `gz validate --commit-trailers` requires,
+and run `gz git-sync --apply` on a clean tree to fetch, rebase and push.
+GHI #1313 tracks changing the generic default.
 
 ## Prerequisites
 
