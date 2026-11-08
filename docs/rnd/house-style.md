@@ -305,6 +305,49 @@ GZKit"*. Put to the operator: A, admit it now, the other five candidates waiting
 rulings; B, hold admission until the config home and the start-of-work audit are designed.
 Operator, by selection: *"Admit hexagonal (Recommended)"*.
 
+## source · the `[tool]` table, uv's and Ruff's configuration files
+
+[`house-style/sources/pyproject-tool-table-2026-11-08.md`](house-style/sources/pyproject-tool-table-2026-11-08.md), a research report landed verbatim, of the PyPA specification, PEP 518, uv's configuration page and Ruff's · read 2026-11-08
+
+> "The `[tool]` table is where any tool related to your Python project, not just build tools, can have users specify configuration data as long as they use a sub-table within `[tool]`"
+
+> "Our rule is that a project can use the subtable `tool.$NAME` if, and only if, they own the entry for `$NAME` in the Cheeseshop/PyPI."
+
+> "Note: `uv.toml` files take precedence over `pyproject.toml` files, so if both `uv.toml` and `pyproject.toml` files are present in a directory, configuration will be read from `uv.toml`"
+
+Read by a subagent; cited as a secondary record of the pages. Both Astral tools accept either
+`pyproject.toml` or their own file. gzkit's own ruling picks one: RP-15 tranche 1's structure rules
+refuse *"a competing `uv.toml`, `ruff.toml` or `ty.toml"* (source: RP-15).
+
+## source · who owns the `gzkit` name on PyPI
+
+`curl -s -o /dev/null -w "%{http_code}" https://pypi.org/pypi/<name>/json`; `pyproject.toml:2` · run 2026-11-08
+
+> `gzkit 404` · `py-gzkit 200` · `name = "py-gzkit"`
+
+gzkit's distribution is `py-gzkit`. Nobody holds `gzkit` on PyPI, so by PEP 518's rule gzkit may
+not use `[tool.gzkit]` until it registers that name; `[tool.py-gzkit]` is its own today.
+
+## source · what gzkit's `pyproject.toml` carries
+
+`grep -n '^\[tool' pyproject.toml` · run 2026-11-08
+
+> `[tool.uv.build-backend]`, `[tool.uv]`, `[tool.ruff]` (and nine subtables), `[tool.ty.terminal]`, `[tool.ty.environment]`, `[tool.ty.overrides.rules]` (twice), `[tool.coverage.run]`, `[tool.coverage.report]`
+
+Every tool gzkit runs reads its configuration from `pyproject.toml` except gzkit, which reads
+`.gzkit.json` (source: gzkit's project configuration file).
+
+## source · `.gzkit.json` in full, and its readers
+
+`.gzkit.json` (898 bytes) · read in full 2026-11-08; `git grep -l '\.gzkit\.json' -- 'src/**/*.py'` · 54 files
+
+> `"mode"`, `"paths"` (prd, constitutions, obpis, adrs, source_root, tests_root, docs_root, design_root), `"authorship"` (required_email_suffix, attestor_handle), `"smoke"`, `"project_name"`, `"vendors"` (claude, codex, opencode, each enabled, surface_root, instruction_format), `"complexity"` (`"cognitive_ceiling": 15`)
+
+What the file holds is gzkit's governance settings for the project: where its records live, who
+attests, which agent vendors it renders for. One key, `complexity.cognitive_ceiling`, is a fact about
+how the project's code is written. 54 source files name the file (a text count; how many read it
+through `GzkitConfig` was not traced).
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
