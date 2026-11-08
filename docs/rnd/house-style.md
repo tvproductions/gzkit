@@ -489,6 +489,31 @@ Design for a classic ADR only when the placement moves the boundary; B, always a
 warning carried into the airlock, no freeze block. The operator sent a message in place of an
 answer. Open.
 
+## decision · hexagonal is the whole system, not the core (operator correction)
+
+Operator, verbatim, before answering question 11: *"Don't forget that not all hex architecture is
+core. It's the entire system. So we've got to either do upfront design or just be mindful of at
+designing time when we add, what the current big picture of the architecture is."*
+
+This corrects the run's framing since the reach decision: the boundary was spoken of as which
+modules are core and which may hold each dependency, and sensitivity as an outcome touching core.
+Hexagonal names every part of the system: the core, its ports, the driving and driven adapters and
+the composition root (sources: the hexagonal canon page, its five elements; gz-skills' hexagonal
+audit, its component model). So:
+
+- the declaration is a **map of the whole system's architecture**, every module placed in a
+  region, not a core list with an allowlist;
+- every outcome's `modules` land in some region, so every addition is placed against the map, not
+  only additions that touch core;
+- the decisions on reach, gzkit's scope and the config home stand, read with *boundary* meaning this
+  whole-system map;
+- question 11 as put, which asked what a *core-sensitive* outcome must do, is withdrawn; its
+  premise was the corrected framing.
+
+The operator names two ways to keep the picture in view, *"upfront design"* and being *"mindful
+of at designing time when we add, what the current big picture of the architecture is"*; which,
+or how they combine, is the next frontier question.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
