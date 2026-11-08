@@ -563,19 +563,27 @@ on PyPI). Put to the operator: A, register `gzkit` on PyPI and use `[tool.gzkit]
 
 | # | Disposition | State | What | Reason |
 |---|---|---|---|---|
-| 1 | ADR / OBPI | commissioned (proposed) | The upfront whole-system architecture map, approved once as a classic ADR (the first map edition); and the new machinery admitted at civil rule through the R&D door as catalog outcomes: the map as data under `[tool.py-gzkit]`, the intake signal, the freeze check, the airlock feed, `gz init` delivery to adopters | The map passes the admission question: hard to reverse, surprising without context, a real trade-off. Proposed only: the operator initiates. It waits for the classic ADR form and crossover (CO-1, CO-2 on RP-6) |
+| 1 | ADR / OBPI | commissioned | The upfront whole-system architecture map, approved once as a classic ADR (the first map edition); and the new machinery admitted at civil rule through the R&D door as catalog outcomes: the map as data under `[tool.py-gzkit]`, the intake signal, the freeze check, the airlock feed, `gz init` delivery to adopters | The map passes the admission question: hard to reverse, surprising without context, a real trade-off. Proposed only: the operator initiates. It waits for the classic ADR form and crossover (CO-1, CO-2 on RP-6) |
 | 2 | GHI / direct fix | commissioned | Under RP-7's placement change order: book H1 ruled to the whole package with a shrink-only baseline, and repair F22 so the boundary test runs in the per-change `gz check` | Corrections of shipped intent (decision: corrections go into the drydock under RP-7); both already tracked there, so no new GHI |
-| 3 | chore | commissioned (advised) | A hexagonal tidying chore: the implementation-mode audit of what neither gate nor door judges (ports typed in domain terms, policy kept out of adapters, construction at the edge), after gz-skills' `gzs-hexagonal-architecture-audit`, findings filed as GHIs | The third reach the operator ruled (*"chore tidyings"*); advise only, the operator directs admission |
-| 4 | control surface, rule, doc, skill, hook | commissioned (to draft) | (a) the house style named in canon, its admission rule and its first member; (b) the hexagonal rule cut to its judgment residue once gate, doors and chore carry the rest (RP-7 placement); (c) the canon page's § Departures *"not a code-organization rule"* reconciled with *"primary code directive"*; (d) the design-time imperative written into the design surfaces | Drafted on the operator's go per item |
-| 5 | one-shot refactoring | commissioned (program) | gzkit's import sites outside their mapped region driven to zero through the shrink-only baseline; the cognitive ceiling moved from `.gzkit.json` to `[tool.py-gzkit]` | The whole-package scope and the split config home, ruled; the operator selects the route |
+| 3 | chore | commissioned | A hexagonal tidying chore: the implementation-mode audit of what neither gate nor door judges (ports typed in domain terms, policy kept out of adapters, construction at the edge), after gz-skills' `gzs-hexagonal-architecture-audit`, findings filed as GHIs | The third reach the operator ruled (*"chore tidyings"*); advise only, the operator directs admission |
+| 4 | control surface, rule, doc, skill, hook | commissioned | (a) the house style named in canon, its admission rule and its first member; (b) the hexagonal rule cut to its judgment residue once gate, doors and chore carry the rest (RP-7 placement); (c) the canon page's § Departures *"not a code-organization rule"* reconciled with *"primary code directive"*; (d) the design-time imperative written into the design surfaces | Drafted on the operator's go per item |
+| 5 | one-shot refactoring | commissioned | gzkit's import sites outside their mapped region driven to zero through the shrink-only baseline; the cognitive ceiling moved from `.gzkit.json` to `[tool.py-gzkit]` | The whole-package scope and the split config home, ruled; the operator selects the route |
 | 6 | no action | not pursued | Folder partitions (`domain/`, `adapters/`) to express the map; registering `gzkit` on PyPI | Canon rule 7 forbids folder partitions, and the map is data, not layout. The PyPI name: the operator chose `[tool.py-gzkit]`; revisit if the CLI's name and the distribution's are ever unified |
-| 7 | further research | commissioned (to open) | (a) the admission of the other five candidates (the Astral alliance, stdlib first, Pydantic, unittest, argparse), one at a time against the stated test; (b) an intent trace of ADR-0.33.0's airlock: no production caller supplies `parent_invariants`, and reach is the ontology graph, not imports | (a) opened by the correction that presence admits nothing; (b) opened by the read of what the doors are fed. The operator opens each |
+| 7 | further research | commissioned | (a) the admission of the other five candidates (the Astral alliance, stdlib first, Pydantic, unittest, argparse), one at a time against the stated test; (b) an intent trace of ADR-0.33.0's airlock: no production caller supplies `parent_invariants`, and reach is the ontology graph, not imports | (a) opened by the correction that presence admits nothing; (b) opened by the read of what the doors are fed. The operator opens each |
 
 ## Close
 
-**Challenge restated.** —
+**Challenge restated.** Restated on purpose at the close. The challenge opened as *"a way to reliably
+or strongly express our design intents with hexagonal architecture"* and *"how to get the model to
+be aware of this"*, and the opening read it as the hexagonal rule's missing gate and chore. Restated:
+gzkit needs a **house style**, a named set of preferences each admitted only by the operator's
+ruling, of which hexagonal is the first member; hexagonal is the **whole system's** architecture,
+drawn up front as a map, kept current through classic ADRs, and brought to the model three ways, a
+design-time imperative enforced at the work package freeze from a signal computed at intake,
+guidance at the airlock, and chore tidyings, for gzkit and for every project built with it.
 
-**Frontier.** —
+**Frontier.** Empty. Every open question whose answer would move a disposition is ruled; what
+remains (the map's region vocabulary, the key names, the checks' shapes) is diamond 2.
 
 **Review.** —
 
