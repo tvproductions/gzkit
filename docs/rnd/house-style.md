@@ -947,6 +947,41 @@ work package whose done condition is an empty baseline, with a target date (the 
 `dated-cutover`); the baselines that have not moved each get an owner or an operator's ruling that
 the debt is accepted. Operator, by selection: *"Yes, owned to zero"*. Family F6 is admitted whole.
 
+## decision · family F7 ruled in part
+
+Operator, verbatim:
+
+> 41 - yes, and elaborate/explain - are these all astral?
+> 42 - what convention is this?
+> 93 - ok, we may suggest to adopters - but yes, define.
+
+- **Admitted:** 41 (maximal project structure), its parts explained below by origin.
+- **93, admitted as a definition to write:** binary versus wheel by audience, offered to adopters
+  as a suggestion, not a requirement (*"we may suggest to adopters"*), defined before it binds.
+- **42, a question back:** whose convention the project types are. Answered below; open.
+
+## source · what `uv init` writes for each project type
+
+`uv init <type> --vcs none --name demo .` run in four scratch directories on uv 0.13.7, files listed and `pyproject.toml` read, then deleted; `uv init --help`; `docs/governance/harbor-ro9-uv-project-norms.md` § 3 · run and read 2026-11-08
+
+> `--package  Set up the project to be built as a Python package` · `--app  Create a project for an application` · `--lib  Create a project for a library` · `--bare  Only create a pyproject.toml` · `--script  Create a script`
+
+> "uv prefers to define a build system and place source files in a dedicated `src/<project_name>/` directory." · "Libraries always require a packaged project." · "We strongly recommend configuring a build system."
+
+Observed on uv 0.13.7: with no flag, `uv init` wrote the same project as `--app` and as `--package`:
+`src/demo/__init__.py`, `.python-version`, a `uv_build` build system and a `[project.scripts]` entry.
+`--lib` wrote the same less the script entry, plus `src/demo/py.typed`. None wrote a `tests/`
+directory. uv's default is the application shape; gzkit's `gz init` defaults to `lib` (source: RP-9,
+§ Ruled for tranche 7).
+
+By origin, the parts of item 41: from uv itself, the `src/<name>/` package, a declared build backend
+(`uv_build`), commands in `[project.scripts]` (written for app and package), `py.typed` on a library
+(written by `--lib`), and refusing uv's legacy `tool.uv.dev-dependencies` and `managed = false`, which
+opts out of uv's project management. Not from uv: a separate `tests/` (no type writes one; Python
+convention and the starter's), no `sys.path` injection (Python practice that a packaged project
+makes unnecessary), and no competing `uv.toml`, `ruff.toml` or `ty.toml`, which uv and Ruff both
+permit (source: the `[tool]` table) and gzkit refuses under its own declare-once rule.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
