@@ -748,8 +748,9 @@ def acceptance_blockers(
     if status.ready:
         return []
     return [
-        f"Acceptance blocked: {message}. Required proof and independent closure must remain "
-        f"bound to canon (GHI #985; T1/T2/T3). Run `{acceptance_verb(obpi_id)} {obpi_id} status "
+        f"Acceptance blocked: {message.rstrip('.')}. Required proof and independent closure "
+        f"must remain bound to canon (GHI #985; T1/T2/T3). Run "
+        f"`{acceptance_verb(obpi_id)} {obpi_id} status "
         f"--stage {stage}` and repair the named obligation through the existing pipeline."
         for message in status.blockers
     ]

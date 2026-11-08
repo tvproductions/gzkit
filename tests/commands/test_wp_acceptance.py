@@ -18,6 +18,7 @@ from gzkit.acceptance_execution import canonical_obligations, input_digest, prov
 from gzkit.acceptance_package import PackageContract, binds_by_mutation
 from gzkit.acceptance_store import (
     REVIEW_SCHEMA,
+    acceptance_blockers,
     acceptance_status,
     load_history,
     record_human_review,
@@ -223,6 +224,13 @@ class TestTheContract(_PackageCase):
         self.assertIn(
             "not commenced", self._refused("acceptance", _PACKAGE, "init", "--author", "a")
         )
+
+    def test_a_blocker_ending_in_a_period_reads_as_one_sentence(self) -> None:
+        # output-contract: the shared refusal prose adds its own period to each blocker
+        self._wp("initiate", _PACKAGE, "--operator-text", "go")
+        (blocker,) = acceptance_blockers(self.root, _PACKAGE)
+        self.assertIn("not commenced. Required proof", blocker)
+        self.assertNotIn("..", blocker)
 
     def test_an_edit_to_the_record_makes_the_input_stale(self) -> None:
         self._init()
