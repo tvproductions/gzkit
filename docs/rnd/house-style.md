@@ -570,6 +570,15 @@ question put it to the operator. The candidate list was also the agent's: six pr
 few other choices"* says it is longer. The frontier is reopened by this: whether admission happens in
 this run is the operator's to rule.
 
+## decision · the other candidates are admitted in this run, after the full list is drawn up
+
+Put to the operator: A, here, the list drawn up first from canon with where each is held and how
+strongly, the operator adding what is missing, then each admitted or set aside one question at a
+time; B, a follow-on run, this one signed off on hexagonal and the model. Operator, by selection:
+*"Here, list first (Recommended)"*. Row 7(a) is withdrawn as a follow-on when the admissions land
+here. The inventory is commissioned from a research agent, its report to be landed verbatim under
+`house-style/sources/`.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
