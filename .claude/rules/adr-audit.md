@@ -6,9 +6,9 @@ paths:
 
 # ADR Audit (gzkit)
 
-<!-- rule-version: 0.3.3 -->
+<!-- rule-version: 0.3.4 -->
 
-> **Rule version:** `0.3.3` — version narrative lifted to [Rule Version History](../../docs/governance/rule-version-history.md#adr-auditmd); binding rules unchanged.
+> **Rule version:** `0.3.4` — § Audit sequence step 4's payload cites receipts inside `attestation_text`, after the operator's verbatim words, the one field the gate reads (operator, 2026-11-08: *"fix what is stale"*); version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#adr-auditmd).
 
 Purpose: verify ADR completion claims using reproducible evidence.
 
@@ -37,11 +37,11 @@ uv run gz attest ADR-<X.Y.Z> --status completed
 uv run gz audit ADR-<X.Y.Z>
 ```
 
-4. Emit audit receipt. The `--evidence-json` payload MUST carry the `arb-*` receipt IDs emitted by step 2 — a payload with zero receipt citations fail-closes at exit 3 before the attestation is recorded:
+4. Emit audit receipt. The `--evidence-json` payload MUST carry the `arb-*` receipt IDs emitted by step 2, cited inside `attestation_text` after the operator's verbatim words (`AGENTS.md` § Attestation); the gate parses citations from that field alone (`scope` only when it is absent), so a separate `receipts` key is read by nothing. On Heavy lane and `foundation` kind, a payload with zero receipt citations, or one citing a missing or failed receipt, fail-closes at exit 3 before the attestation is recorded; Lite warns:
 
 ```bash
 uv run gz adr emit-receipt ADR-<X.Y.Z> --event validated --attestor "<attestor-handle>" \
-  --evidence-json '{"scope":"ADR-<X.Y.Z>","date":"YYYY-MM-DD","receipts":["arb-ruff-<id>","arb-step-typecheck-<id>","arb-step-unittest-<id>","arb-step-mkdocs-<id>"]}'
+  --evidence-json '{"scope":"ADR-<X.Y.Z>","date":"YYYY-MM-DD","attestation_text":"<operator verbatim words> — evidence: arb-ruff-<id>, arb-step-typecheck-<id>, arb-step-unittest-<id>, arb-step-mkdocs-<id>"}'
 ```
 
 ## Rules

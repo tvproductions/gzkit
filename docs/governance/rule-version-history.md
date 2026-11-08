@@ -230,6 +230,8 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `adr-audit.md`
 
+Prior `0.3.3` banner: *"version narrative lifted to Rule Version History; binding rules unchanged."* Superseded 2026-11-08 by `0.3.4` (operator, *"fix what is stale"*): § Audit sequence step 4's `--evidence-json` example put the receipt IDs under a `receipts` key that `adr_audit.py` never reads and carried no operator words; the IDs now sit inside `attestation_text` after the operator's verbatim words, and the step states that Heavy lane and `foundation` kind fail closed while Lite warns.
+
 Lifted at version `0.2.0` (rule now at `0.2.1`).
 
 > **Rule version:** `0.2.0` — reconciled to ADR-0.0.24 and ADR-0.0.59 (Pass A
@@ -301,6 +303,8 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 > **Rule version:** `0.7.0` — operator ruling 2026-09-27 (*"Add reopen to the rule"*): § Allowed commands gains `gh issue reopen`. `/ghi-author` Step 0 requires re-opening a GHI closed in the last 30 days when the same root cause regresses, and this allowlist did not carry the verb, the same unreachable-step gap `0.6.0` closed for `comment`. Measured at GHI #1017, whose regression evidence could not be filed as the skill requires. **Binding rules changed: the allowlist widens by one verb.** Prior `0.6.0` and earlier lifted to [Rule Version History](rule-version-history.md#gh-climd).
 
 ## `task-discovery.md`
+
+Prior `0.10.1` banner: *"version narrative lifted to Rule Version History; binding rules unchanged."* Superseded 2026-11-08 by `0.10.2` (operator, *"fix what is stale"*): the ledger `task_id` channel named eight coherence-enforced event types, `artifact_edited` among them, where `_TASK_WORKLOG_TYPES` holds seven after GHI #947 and GHI #950; § Layer-drift fail-close said Lite warns, where the validator and `gz obpi complete` fail closed on every lane.
 
 ### Lifted 2026-09-17 at version `0.9.0` (rule now at `0.10.0`)
 
@@ -983,6 +987,10 @@ Lifted 2026-08-29 at version `0.11.0` (rule now at `0.12.0`).
 
 ## `tests.md`
 
+### Changed 2026-11-08 at version `0.27.4`
+
+Prior `0.27.3` banner: *"§ Run / Verify lints with `gz lint --fix`, Ruff's verdict against `data/ruff_baseline.json` (RO-9 tranche 4)."* Superseded under the operator's *"fix what is stale"*: § Two runners said `unittest` mocks its subprocess boundaries and that "anything needing a real subprocess lives here [`behave`]", while the rule's own § General Rules and the unit tier spawn real `git` under `_isolated_git_env()` (`TestEveryGitSpawnIsInsideTheBoundary`). The row now says a real subprocess is permitted under that boundary.
+
 ### Changed 2026-10-23 at version `0.27.3`
 
 § Run / Verify's lint step is `uv run gz lint --fix` in place of `uv run ruff check . --fix`. Ruff selects `ALL` under RO-9 tranche 4, and its verdict is `gz lint`'s against the counted baseline `data/ruff_baseline.json` (operator rulings 2026-10-23); bare `ruff check` now reports every held finding and exits 1 on a tree the gate passes. Binding rules unchanged.
@@ -1056,6 +1064,10 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `token-block-discipline.md`
 
+### `0.10.1` (2026-11-08)
+
+Prior `0.10.0` banner: *"an expired work lock is booked and announced, never evicted (operator ruling 2026-10-18)."* Superseded under the operator's *"fix what is stale"*: § Sub-Invariant 3 now describes the reap `lock_manager.reap_expired_locks()` performs (record, delete, `obpi_lock_released` with `force: true`; no `--abandon reaping:` release, no ledger statement about ordering); § Sub-Invariant 4 quotes the 50 % warning `session_orientation.py` prints; § Sub-Invariant 6 no longer leaves an unsurrendered lock "for TTL reaping", which the 2026-10-18 ruling retired.
+
 ### `0.10.0` (2026-10-18)
 
 § Sub-Invariants 3 and 4: an expired work lock is booked as `obpi_lock_lease_expired` and
@@ -1099,6 +1111,8 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 > **Rule version:** `0.9.0` — carries the operator's three-subjects ruling verbatim, so the transit/exchange/handoff fence and the airlock's purposes load where lock and exchange work happens (GHI #1091, sweep finding S08). Prior `0.8.0` lifted to [Rule Version History](rule-version-history.md#token-block-disciplinemd). Binding rules unchanged apart from the carried ruling.
 
 ## `tool-skill-runbook-alignment.md`
+
+Prior `0.5.3` banner: *"version narrative lifted to Rule Version History; binding rules unchanged."* Superseded 2026-11-08 by `0.5.4` (operator, *"fix what is stale"*): § Enforcement posture called Invariant 1 mechanical and `gz validate --cli-alignment` fail-closed and "the honest witness"; both scopes are explicit-only and listed in `data/validator_reachability_grandfather.json` as reachable from no gate. The scan is also described as covering multi-word verb paths (GHI #588), not top-level verbs only.
 
 ### Lifted 2026-09-17 at version `0.5.0` (rule now at `0.5.1`)
 

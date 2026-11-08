@@ -10,11 +10,11 @@ paths:
   - ".gzkit/handoffs/**"
   - "scripts/session_orientation.py"
 ---
-<!-- rule-version: 0.10.0 -->
+<!-- rule-version: 0.10.1 -->
 
 # Token-Block Discipline (gzkit)
 
-> **Rule version:** `0.10.0` — an expired work lock is booked and announced, never evicted (operator ruling 2026-10-18); version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#token-block-disciplinemd).
+> **Rule version:** `0.10.1` — the reaping procedure, the 50 % warning text and the completion fallback now match `lock_manager.py`, `session_orientation.py` and the no-eviction ruling (operator, 2026-11-08: *"fix what is stale"*); version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#token-block-disciplinemd).
 
 ## Three subjects (operator ruling, verbatim canon)
 
@@ -45,11 +45,11 @@ An entry lacking any of them fails the validator (exit 3).
 
 ## Sub-Invariant 3: Reaping Register-Entry Rule
 
-Expiry is never an eviction (operator ruling 2026-10-18, verbatim *"at worst, we book a status at least expiry and notify"*, applied to the token block as to the hangar). The one lock `lock_manager.reap_expired_locks()` still reaps is the orphan `mx-session` lock, whose hangar is no longer open (GHI #848) and which no occupant holds. For it the reaping agent writes a degenerate exchange record first — frontmatter `abandoned: true`, `category: reaping`, `abandoned_by`, `abandoned_at`, `previous_agent`; body stating the reason (TTL exceeded, last activity) and the claim event's commit SHA and branch — then releases with `--abandon reaping:<reason>`. The release fails closed if the record does not exist; the ledger's `obpi_lock_released` cites its `handoff_path`, and the ledger entry states that the record was created before the reap. Reaping is not an exception to the invariant; it is the same rule under degenerate circumstances.
+Expiry is never an eviction (operator ruling 2026-10-18, verbatim *"at worst, we book a status at least expiry and notify"*, applied to the token block as to the hangar). The one lock `lock_manager.reap_expired_locks()` still reaps is the orphan `mx-session` lock, whose hangar is no longer open (GHI #848) and which no occupant holds. For it `reap_expired_locks()` itself writes a degenerate exchange record first (`_write_reaping_exchange`) — frontmatter `abandoned: true`, `category: reaping`, `abandoned_by`, `abandoned_at`, `previous_agent` and the § Sub-Invariant 2 fields `last_lock_event_timestamp`, `last_commit_sha` and `branch`; a `## Decisions Made` body stating the reason (TTL exceeded, last claim) — then deletes the lock, then emits `obpi_lock_released` (`force: true`) citing the record's `handoff_path`. No `--abandon` release runs. If the record cannot be written the lock is not deleted and no event is emitted; if the delete fails no event is emitted. That ordering, not a statement in the ledger entry, is what shows the record preceded the reap. Reaping is not an exception to the invariant; it is the same rule under degenerate circumstances.
 
 ## Sub-Invariant 4: TTL Canon and Reaping Discipline
 
-The default TTL is 24 hours (`lock_manager.py`). At 50 % the SessionStart hook warns to console and ledger ("OBPI lock held by <agent> for >12h; consider `gz-session-handoff`"). At 100 % the SessionStart hook, `gz preflight` and `gz obpi lock list` book `obpi_lock_lease_expired` once per claim and announce it; the lock stays held, and another agent's claim is refused as for a live lock. It is freed by its holder's completion (§ Sub-Invariant 6) or by `gz obpi lock release <obpi> --force --abandon <category>:<reason>` on the operator's word, which writes the exchange record first (§ Sub-Invariant 5). The holder may re-claim its own expired lock.
+The default TTL is 24 hours (`lock_manager.py`). At 50 % the SessionStart hook warns to console and ledger ("WARNING: past 50% TTL; hand off and release via gz-session-handoff."). At 100 % the SessionStart hook, `gz preflight` and `gz obpi lock list` book `obpi_lock_lease_expired` once per claim and announce it; the lock stays held, and another agent's claim is refused as for a live lock. It is freed by its holder's completion (§ Sub-Invariant 6) or by `gz obpi lock release <obpi> --force --abandon <category>:<reason>` on the operator's word, which writes the exchange record first (§ Sub-Invariant 5). The holder may re-claim its own expired lock.
 
 ## Sub-Invariant 5: Release Fail-Closed Precondition
 
@@ -62,7 +62,7 @@ The admit predicate `is_exchange_register_entry` is default-DENY: it accepts onl
 
 ## Sub-Invariant 6: Completion Surrender Is Mechanical
 
-`gz obpi complete` (and the pipeline sync stage that calls it) is the token-block exit edge: on success it writes a full completion handoff as the register entry, auto-drafted from completion evidence, and — if a lock is held — deletes it and emits `obpi_lock_released` citing that `handoff_path`. No operator prompt, no manual `gz obpi lock release`. The handoff is written before the delete (if it cannot be written the lock is left for TTL reaping) and after completion's transaction commits. § Sub-Invariant 5 still governs mid-traversal surrender (GHI #619).
+`gz obpi complete` (and the pipeline sync stage that calls it) is the token-block exit edge: on success it writes a full completion handoff as the register entry, auto-drafted from completion evidence, and — if a lock is held — deletes it and emits `obpi_lock_released` citing that `handoff_path`. No operator prompt, no manual `gz obpi lock release`. The handoff is written before the delete (if it cannot be written the lock stays held; expiry books and announces it and never evicts it, § Sub-Invariant 4) and after completion's transaction commits. § Sub-Invariant 5 still governs mid-traversal surrender (GHI #619).
 
 ## Sub-Invariant 7: The Exchange Record Carries an Observation Report
 

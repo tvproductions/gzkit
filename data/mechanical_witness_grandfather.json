@@ -4,7 +4,7 @@
   "gates_step": "advisory scorecard mechanical-row witness (gz validate --advisory-scorecard)",
   "mechanism": "shrink-ratchet",
   "entries_path": "unwitnessed_mechanical_rows",
-  "baseline_count": 65,
+  "baseline_count": 61,
   "unwitnessed_mechanical_rows": [
     {
       "key": "architectural-boundaries-claude-md-architectural-boundaries#1",
@@ -136,12 +136,6 @@
       ]
     },
     {
-      "key": "tool-skill-runbook-alignment-gzkit-rules-tool-skill-runbook-alignment-md#28",
-      "gates": [
-        "--skill-alignment"
-      ]
-    },
-    {
       "key": "skill-surface-sync-gzkit-rules-skill-surface-sync-md#31",
       "gates": []
     },
@@ -162,26 +156,6 @@
     {
       "key": "tests-policy-gzkit-rules-tests-md#36",
       "gates": []
-    },
-    {
-      "key": "tests-policy-gzkit-rules-tests-md#37",
-      "gates": [
-        "--bdd-only",
-        "--e2e",
-        "--integration",
-        "--slow",
-        "--test-tiers"
-      ]
-    },
-    {
-      "key": "tests-policy-gzkit-rules-tests-md#38",
-      "gates": []
-    },
-    {
-      "key": "tests-policy-gzkit-rules-tests-md#39",
-      "gates": [
-        "--behave-req-tags"
-      ]
     },
     {
       "key": "tests-policy-gzkit-rules-tests-md#66",

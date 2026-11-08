@@ -32,7 +32,7 @@ When the layers agree, the cascade works: operator invokes a skill, the skill wi
 
 ## Enforcement
 
-These invariants are currently **advisory** — they govern authoring discipline but are not yet mechanically checked. The long-term home for enforcement is `gz validate --surfaces`, which should grow checks that:
+The rule's § Enforcement posture is the authority on how each invariant is held. Check 1 below exists as `gz validate --skill-alignment` (GHI #202), an explicit-only scope that no `gz check` step, hook, CI workflow or pre-commit entry runs (`data/validator_reachability_grandfather.json`); checks 2 and 3 are not built, and Invariants 2 and 3 stay advisory as a settled disposition. The checks as first sketched, when this page named `gz validate --surfaces` as their home:
 
 1. Enumerate every CLI verb registered in `src/gzkit/cli/**` and confirm at least one skill under `.gzkit/skills/**` references it (either via `gz_command:` frontmatter or in the skill body)
 2. Enumerate every skill's declared CLI target and confirm the runbook prescribes that same verb for the operator moment the skill's name describes
