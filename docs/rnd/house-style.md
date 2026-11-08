@@ -392,6 +392,34 @@ mode; B, design time and a chore, no airlock wiring; C, a chore only. Operator, 
 your recommendation, but I think we need to discuss these options so I understand more clearly."*
 Not ruled; the run walks the options through before putting the question again.
 
+## source · what the airlock's doors are fed today
+
+Callers of `airlock_enter` and `enter_slice` (LSP references), read at `src/gzkit/pipeline_runtime.py:686–698`, `src/gzkit/commands/airlock.py:120–124`, `src/gzkit/commands/permitted_entry.py:258–266`, `src/gzkit/commands/mx_cmd.py:172–181`, `src/gzkit/work_package_transit.py:125–132,180–191`, `src/gzkit/airlock/enter.py:49–62` · read 2026-11-08
+
+> `preflight = airlock_enter(obpi_id, brief_path, ledger=ledger)` (the OBPI pipeline)
+
+> `return enter_slice(package_slice(package, ledger), reach_fn=_no_reach, ledger=ledger if book else None)` (the work package)
+
+> `# Diagnostic-only FOR NOW: a NO-GO is surfaced rather than blocking — a staged posture per parent ADR § Calibration frontier, not the declared end state (BI-4 blocks).` (`gz permitted-entry`)
+
+> `"""Default reach adapter: transitive blast-radius via the ontology projection.` (`_default_reach`)
+
+Four findings, each read from the call sites:
+
+1. No production caller passes `parent_invariants`; every door enters with the default empty
+   tuple. The channel that would carry declared LAW to the doors exists and carries nothing.
+2. *Reach* is the governance ontology's graph (artifacts and their links), not Python imports. A
+   work package enters with no reach at all (`_no_reach`), and the mx door with an empty one.
+3. A work package's footprint is its declared `modules`, the code paths it owns; that is the one
+   place a door already knows which files the work will touch.
+4. `gz permitted-entry`'s NO-GO is diagnostic only, *"for now"*. No hook under `.claude/hooks`,
+   `.gzkit/hooks` or `src/gzkit/hooks` names the airlock or permitted entry (a text search of those
+   three directories, not a read of every hook), so nothing found makes a session cross a door
+   before it edits.
+
+Whether finding 1 falls short of ADR-0.33.0's declared intent for the airlock was not traced; it is a
+question for `gz-intent-trace`, not a conclusion.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
