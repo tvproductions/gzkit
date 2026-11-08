@@ -911,6 +911,15 @@ that form: PGH004, RUF100 and ty's unused-ignore check govern suppressions, RUF1
 exception (ruled 2026-10-23) is lifted, every `# noqa` moves to `# ruff: ignore[<rule name>]`, and the
 reason clause leaves the pythonic rule. Family F5 (items 44, 45, 55, 56) is admitted.
 
+## decision · family F6, the Astral toolchain, admitted save item 43
+
+Put to the operator: admit the nineteen (items 22–26, 28–40, 43), RP-9's rulings gathered; treat
+the scaffold as automation under its own witness, its CI on `uv run gz check` with gzkit locked
+(contradiction 13; RP-15 tranche 3); settle contradiction 9 for `uv version` as the version's one
+home, correcting `AGENTS.md`; deliver items 30, 38, 39 and 40 to adopters through the scaffold.
+Operator, verbatim: *"agree, what is 43?"* The eighteen and the four recommendations are admitted;
+item 43 (shrink-only baselines) waits on the operator's question, answered in session.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
