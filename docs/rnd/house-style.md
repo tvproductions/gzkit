@@ -602,7 +602,8 @@ items, the grouping shown first; B, the operator names the wanted candidates and
 C, all 108 one at a time. Operator, by selection: *"By family (Recommended)"*.
 
 The grouping below is the agent's draft over the inventory's numbering (source: the candidate
-inventory). It binds nothing until the operator has seen it and moved what is misplaced.
+inventory). It binds nothing until the operator has seen it and moved what is misplaced. Operator, by
+selection: *"Grouping is fine"*.
 
 | Family | Inventory items |
 |---|---|
@@ -620,6 +621,12 @@ inventory). It binds nothing until the operator has seen it and moved what is mi
 | F12 Testing | 20, 91, 96–104 |
 | F13 Docs, config and surfaces as code | 86, 88, 94, 95, 107, 108 |
 | Borderline | the inventory's 14 borderline items |
+
+## decision · family F1 put and not answered
+
+Put to the operator, what the admitted hexagonal member contains (inventory items 1–10): A, admit all
+ten, contradiction 1 reconciled in favour of the primary directive; B, admit with named exceptions.
+The operator sent a message in place of an answer. Open.
 
 ## Disposition map
 
