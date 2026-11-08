@@ -514,6 +514,18 @@ The operator names two ways to keep the picture in view, *"upfront design"* and 
 of at designing time when we add, what the current big picture of the architecture is"*; which,
 or how they combine, is the next frontier question.
 
+## decision · the whole-system map is drawn up front and kept current; a change to it is a classic ADR
+
+Put to the operator: A, an upfront map, every module placed in a region (core, a port, a driving or
+driven adapter, the composition root), declared as data and approved once as a classic ADR, each
+addition placed against it at intake, a map change amended by a new ADR; B, no drawn map, the
+picture derived from the code each time; C, an upfront map shown but never checked. Operator, by
+selection: *"Upfront map, kept current (Recommended)"*.
+
+This answers most of the withdrawn question 11: an addition that fits the map proceeds; one that
+changes it goes through Design for a classic ADR (the classic ADR change orders, the approval rule).
+What remains is where that is enforced.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
