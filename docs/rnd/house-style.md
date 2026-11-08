@@ -1045,6 +1045,30 @@ which is untraced; each *Ruff configuration only* row means its prose leaves the
 check being the authority. Commissions: the reviewer's rubric rewritten to the house style (row 4),
 and the delivery of the post-edit hook and the reviewer to adopters traced (row 7).
 
+## decision · items 48 and 53 reopened as possibly unenforceable
+
+Operator, verbatim: *"48 is borderline unenforceable, maybe 53 is too? Don't we use tools for
+59-63?"* Item 48 (clarity over cleverness) and item 53 (no implicit globals) are reopened from the F8
+placement; the F9 recommendation is held on the operator's question.
+
+## source · the tools that carry complexity
+
+`data/astral_exceptions.json` (the `lizard` and `cohesion` entries); `.gzkit/rules/pythonic.md` § Size Limits (its enforcement table); `uv run ruff rule RUF012` · read and run 2026-11-08
+
+> lizard: "Cyclomatic scores and module means for the C/C/C gate (GHI #1183's selection, operator 2026-10-09); Ruff C901 is per-function pass/fail with no metrics."
+
+> cohesion: "LCOM4 class cohesion for the complexity thresholds (ADR-0.0.27); Astral ships no cohesion metric."
+
+> | Modules <=600 | nothing reads 600; `gz check`'s "Module size" step runs `.gzkit/chores/module-sloc-cap-radon/check_module_size.py`, which enforces the table's `lizard_file_nloc` `block` band over `src/` with the shrink-only `data/module_size_grandfather.json` | 600 is authoring-time guidance only; the **live gate** is the table's band |
+
+> `# mutable-class-default (RUF012)`
+
+Items 60 to 63 are tool-held: Ruff `C901` (per function, pass or fail), Lizard (cyclomatic scores,
+module means, function and file NLOC), gzkit's own cognitive scorer over stdlib `ast`, and cohesion
+(LCOM4), Lizard and cohesion both curated exceptions with recorded reasons. Item 59 is partly held:
+the class limit by gzkit's `gz validate --class-size`, modules by Lizard's file NLOC band; the rule's
+50-line function and 600-line module numbers are read by no tool.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
