@@ -318,8 +318,8 @@ def _check_frozen(catalog: Catalog, ledger: Ledger, order: Order, move: OrderMov
             _refuse(
                 f"{entry.req} at revision {entry.revision} is held: a proceed delivered it there "
                 "(RP-12 ruling 78), so no later order freezes it at that revision (ruling 81). "
-                "New work on it is a new revision through a `reopen` exit, or a REQ that "
-                "supersedes it."
+                "New work on it is a REQ that supersedes it, written with `uv run gz wp req "
+                "new` (rulings 50 and 83)."
             )
     package = _package(catalog, order)
     _check_seal_grows(ledger, package)

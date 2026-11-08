@@ -405,6 +405,9 @@ class GateFiveTests(_OrderCase):
         self.move("opened", order="ORD-02-matcher", **_PAYLOADS["opened"])
         output = self.assert_refused("frozen", order="ORD-02-matcher", **_FREEZE)
         self.assertIn("ruling 81", output)
+        # Ruling 83: the route it names is one a held REQ can take; a reopen is not.
+        self.assertIn("supersedes", output)
+        self.assertNotIn("reopen", output)
 
     def test_a_closed_order_moves_no_further_and_releases_its_reqs(self) -> None:
         """Ruling 53: a terminated order holds no REQ, so a later order freezes it again."""

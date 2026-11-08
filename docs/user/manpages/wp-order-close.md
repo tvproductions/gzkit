@@ -59,8 +59,8 @@ further and holds the production-write fence no longer (ruling 58). Its Gate 5
 ends its hold on its baseline: until then an accepted order still holds it (rulings
 53 and 82). After a `redirect`, `pause` or `terminate` a later order may freeze
 its REQs again; after a `proceed` they hold at the revision it froze, so a later
-order freezes them only at a new revision or through a REQ that supersedes them
-(rulings 78 and 81).
+order does not freeze them there, and new work on them is a REQ that supersedes
+them (rulings 78, 81 and 83).
 
 Gate 5 is the operator's act, so a call the dispatch stamp marks as a subagent's
 is refused (ruling 77). A booked order that lost its record refuses the close

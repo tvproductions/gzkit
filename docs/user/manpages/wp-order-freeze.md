@@ -41,8 +41,9 @@ moves one step at a time, `opened` then `frozen`, `commenced` and `accepted`;
   53); an accepted order holds it until its Gate 5, so no second order freezes it
   while the first awaits the operator (ruling 82).
 - A REQ a proceed holds (ruling 78) is delivered at that revision, so it is never
-  frozen again there; new work on it is a new revision through a `reopen` exit, or
-  a REQ that supersedes it (ruling 81).
+  frozen again there (ruling 81); new work on it is a REQ that supersedes it,
+  written with [`gz wp req new`](wp-req-new.md) (rulings 50 and 83). No verb raises
+  a REQ's revision.
 - The freeze seals the repair package's footprint: the event records the
   package's paths, and from then on `gz wp show` and the acceptance fence read the
   latest order freeze plus the change orders after it, never the store, and a
