@@ -628,6 +628,42 @@ Put to the operator, what the admitted hexagonal member contains (inventory item
 ten, contradiction 1 reconciled in favour of the primary directive; B, admit with named exceptions.
 The operator sent a message in place of an answer. Open.
 
+## decision · family F1 ruled item by item; a hexagonal specification R&D run is opened by it
+
+The operator asked for the family as a numbered list (*"please show as a numbered list so I can
+indicate and/or ask questions by number"*), then ruled each item, verbatim:
+
+> 1. and we need a better specification. I'd like for a strong adoption - for all adopters too. strengthen
+> 2. yes, stdlib first (Pydantic being an exception for hexarch core).
+> 3. yes, but that is ha core - we'll want some rnd to define this it seems
+> 4. yes, see the need to rnd ha spec
+> 5. yes, again, rnd
+> 6. yes, but we need ha rnd.
+> 7. I disagree with this now.
+> 8. I am not sure what this mean, ha rnd
+> 9. yes
+> 10. yes, sounds like ddd/ontology ha rnd work. I agree with this whole thing
+
+So, of the inventory's items 1–10 (source: the candidate inventory):
+
+- **Admitted:** 1 (the primary directive, to be strengthened with a better specification and strong
+  adoption by every adopter), 2 (stdlib first, Pydantic the exception for the hexagonal core), 9
+  ("why is this here?"), 10 (the DDD, HA, BDD, TDD cascade).
+- **Admitted, their specification commissioned to a hexagonal R&D run:** 3 (domain-typed ports),
+  4 (Protocol and composition), 5 (the port at the second adapter), 6 (parameter injection, no DI
+  framework).
+- **Not admitted; held for that run:** 7, the rule against folder partitions, which the operator
+  now disagrees with. It is canon (`.gzkit/rules/hexagonal-architecture.md` rule 7, hexagonal
+  directive v0.2.0), so the disagreement reopens a ruled doctrine; canon is unchanged until the
+  operator's go on a row that changes it. 8, subsumption into one typed model, whose meaning the
+  operator asks to have defined.
+- **Opened:** a follow-on R&D run on the hexagonal specification, its subject items 3 to 8 and the
+  DDD and ontology relation item 10 names, with the operator's *"strengthen"* and *"strong
+  adoption - for all adopters too"* as its brief.
+
+This changes the disposition map: row 6's *no folder partitions* is withdrawn, since the question is
+now the follow-on run's; row 7 gains the hexagonal specification run.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
@@ -637,8 +673,8 @@ The operator sent a message in place of an answer. Open.
 | 3 | chore | commissioned | A hexagonal tidying chore: the implementation-mode audit of what neither gate nor door judges (ports typed in domain terms, policy kept out of adapters, construction at the edge), after gz-skills' `gzs-hexagonal-architecture-audit`, findings filed as GHIs | The third reach the operator ruled (*"chore tidyings"*); advise only, the operator directs admission |
 | 4 | control surface, rule, doc, skill, hook | commissioned | (a) the house style named in canon, its admission rule and its first member; (b) the hexagonal rule cut to its judgment residue once gate, doors and chore carry the rest (RP-7 placement); (c) the canon page's § Departures *"not a code-organization rule"* reconciled with *"primary code directive"*; (d) the design-time imperative written into the design surfaces | Drafted on the operator's go per item |
 | 5 | one-shot refactoring | commissioned | gzkit's import sites outside their mapped region driven to zero through the shrink-only baseline; the cognitive ceiling moved from `.gzkit.json` to `[tool.py-gzkit]` | The whole-package scope and the split config home, ruled; the operator selects the route |
-| 6 | no action | not pursued | Folder partitions (`domain/`, `adapters/`) to express the map; registering `gzkit` on PyPI | Canon rule 7 forbids folder partitions, and the map is data, not layout. The PyPI name: the operator chose `[tool.py-gzkit]`; revisit if the CLI's name and the distribution's are ever unified |
-| 7 | further research | commissioned | (a) the admission of the other five candidates (the Astral alliance, stdlib first, Pydantic, unittest, argparse), one at a time against the stated test; (b) an intent trace of ADR-0.33.0's airlock: no production caller supplies `parent_invariants`, and reach is the ontology graph, not imports | (a) opened by the correction that presence admits nothing; (b) opened by the read of what the doors are fed. The operator opens each |
+| 6 | no action | not pursued | Registering `gzkit` on PyPI | The operator chose `[tool.py-gzkit]`; revisit if the CLI's name and the distribution's are ever unified. (Folder partitions, listed here first, withdrawn 2026-11-08: the operator disagrees with canon rule 7 now, and the question moves to row 7(c).) |
+| 7 | further research | commissioned | (a) withdrawn: the other candidates are admitted in this run; (b) an intent trace of ADR-0.33.0's airlock: no production caller supplies `parent_invariants`, and reach is the ontology graph, not imports; (c) a hexagonal specification run: domain-typed ports, Protocol and composition, the second-adapter rule, parameter injection, folder layout (canon rule 7, which the operator now disagrees with), what subsumption into one typed model means, and the DDD and ontology relation, briefed by *"strengthen"* and strong adoption by every adopter | (b) opened by the read of what the doors are fed; (c) opened by the F1 rulings. The operator opens each |
 
 ## Close
 
