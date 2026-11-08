@@ -420,6 +420,26 @@ Four findings, each read from the call sites:
 Whether finding 1 falls short of ADR-0.33.0's declared intent for the airlock was not traced; it is a
 question for `gz-intent-trace`, not a conclusion.
 
+## decision · the pillar reaches the model three ways: a design-time imperative, airlock guidance, chore tidyings
+
+After the walk-through and the read of what the doors are fed (source: what the airlock's doors are
+fed today), the operator, verbatim: *"The reason I wanted to go deeper is it feels like we really
+need all three, right? We need design time imperative, we need perhaps airlock guidance so that we
+know this particular entry is sensitive to that design, and we need sure tidyings so you didn't
+really give me something that was all three unless your A was all three."*, then *"chore tidyings,
+chore, C-H-O-R-E, chore."*
+
+Option A was all three: design time, the airlock, and a periodic chore. Options B and C were A with
+parts removed, so the question put a whole against its own subsets and offered no real alternative.
+The ruling is the operator's words: all three.
+
+1. **A design-time imperative.** The operator's word is *imperative*, which is stronger than the
+   audit the earlier options named: a design states where the boundary falls before it is approved.
+2. **Airlock guidance.** The door tells the model *"this particular entry is sensitive to that
+   design"*. The read shows the doors carry no declared invariants today and reach the ontology
+   graph, not imports; a work package's declared `modules` is where a door already knows the files.
+3. **Chore tidyings.** A periodic chore sweeps what neither the gate nor the doors catch.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
