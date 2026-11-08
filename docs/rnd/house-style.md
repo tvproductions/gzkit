@@ -771,6 +771,27 @@ progress bar and the Markdown renderer are each in one file (`cli/progress.py`;
 this behind one surface is *"Live, UNMET"* (source: the candidate inventory, item 77). Counts of
 `Rule(`, `Status(` and `Text(` call names include gzkit classes of the same names and are not used.
 
+## decision · rich held for more discussion
+
+Put to the operator, after the read of how rich is used: stdlib behind one output port, or rich
+behind one output port. Operator, by selection: *"Discuss more first"*.
+
+## source · the output formatter gzkit already has
+
+`src/gzkit/cli/formatters.py` lines 1–30 and its method list; `src/gzkit/content/tui/__init__.py`; `git grep` counts · read and run 2026-11-08
+
+> """Output formatter — single chokepoint for all CLI output.
+
+> `    def table(self, rich_table: Table) -> None:` · `    def emit_table(self, rich_table: Table) -> None:`
+
+> """Light TUI affordances for gz content commands (OBPI-0.0.34-05)."""
+
+The port exists: `OutputFormatter` (418 lines, five modes: human, json, quiet, verbose, debug),
+with `NO_COLOR` and forced-terminal handling in `gzkit.color_env`. 11 files use it; 77 call
+`console.print(` directly. Its table methods take a rich `Table`, a library-native type crossing the
+port, which F1 item 3, admitted, forbids. The markup styles in direct calls are few and semantic:
+red 91, bold 58, green 55, yellow 40, dim 8 (counted on `console.print("[style]` openings only).
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
