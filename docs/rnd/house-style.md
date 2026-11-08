@@ -552,17 +552,24 @@ feature is not an enhancement, it is a correction"* (`AGENTS.md` § Operator Doc
 is carried as correction of the hexagonal directive's intent, not as enhancement; *civil rule* names
 when it is built, not what kind of work it is.
 
+## decision · the tool table is `[tool.py-gzkit]`
+
+PEP 518's ownership rule and the PyPI read (sources: the `[tool]` table; who owns the `gzkit` name
+on PyPI). Put to the operator: A, register `gzkit` on PyPI and use `[tool.gzkit]`; B,
+`[tool.py-gzkit]`, matching the distribution gzkit owns today. Operator, by selection:
+*"[tool.py-gzkit]"*, against the recommendation.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
 |---|---|---|---|---|
-| 1 | ADR / OBPI | | | |
-| 2 | GHI / direct fix | | | |
-| 3 | chore | | | |
-| 4 | control surface, rule, doc, skill, hook | | | |
-| 5 | one-shot refactoring | | | |
-| 6 | no action | | | |
-| 7 | further research | | | |
+| 1 | ADR / OBPI | commissioned (proposed) | The upfront whole-system architecture map, approved once as a classic ADR (the first map edition); and the new machinery admitted at civil rule through the R&D door as catalog outcomes: the map as data under `[tool.py-gzkit]`, the intake signal, the freeze check, the airlock feed, `gz init` delivery to adopters | The map passes the admission question: hard to reverse, surprising without context, a real trade-off. Proposed only: the operator initiates. It waits for the classic ADR form and crossover (CO-1, CO-2 on RP-6) |
+| 2 | GHI / direct fix | commissioned | Under RP-7's placement change order: book H1 ruled to the whole package with a shrink-only baseline, and repair F22 so the boundary test runs in the per-change `gz check` | Corrections of shipped intent (decision: corrections go into the drydock under RP-7); both already tracked there, so no new GHI |
+| 3 | chore | commissioned (advised) | A hexagonal tidying chore: the implementation-mode audit of what neither gate nor door judges (ports typed in domain terms, policy kept out of adapters, construction at the edge), after gz-skills' `gzs-hexagonal-architecture-audit`, findings filed as GHIs | The third reach the operator ruled (*"chore tidyings"*); advise only, the operator directs admission |
+| 4 | control surface, rule, doc, skill, hook | commissioned (to draft) | (a) the house style named in canon, its admission rule and its first member; (b) the hexagonal rule cut to its judgment residue once gate, doors and chore carry the rest (RP-7 placement); (c) the canon page's § Departures *"not a code-organization rule"* reconciled with *"primary code directive"*; (d) the design-time imperative written into the design surfaces | Drafted on the operator's go per item |
+| 5 | one-shot refactoring | commissioned (program) | gzkit's import sites outside their mapped region driven to zero through the shrink-only baseline; the cognitive ceiling moved from `.gzkit.json` to `[tool.py-gzkit]` | The whole-package scope and the split config home, ruled; the operator selects the route |
+| 6 | no action | not pursued | Folder partitions (`domain/`, `adapters/`) to express the map; registering `gzkit` on PyPI | Canon rule 7 forbids folder partitions, and the map is data, not layout. The PyPI name: the operator chose `[tool.py-gzkit]`; revisit if the CLI's name and the distribution's are ever unified |
+| 7 | further research | commissioned (to open) | (a) the admission of the other five candidates (the Astral alliance, stdlib first, Pydantic, unittest, argparse), one at a time against the stated test; (b) an intent trace of ADR-0.33.0's airlock: no production caller supplies `parent_invariants`, and reach is the ontology graph, not imports | (a) opened by the correction that presence admits nothing; (b) opened by the read of what the doors are fed. The operator opens each |
 
 ## Close
 
