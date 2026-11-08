@@ -317,7 +317,8 @@ def _check_frozen(catalog: Catalog, ledger: Ledger, order: Order, move: OrderMov
         if successor := successors.get(entry.req):
             _refuse(
                 f"{entry.req} is superseded by {successor}, so it is retired whole (RP-12 "
-                f"ruling 31) and no order freezes it (ruling 85). Freeze {successor} instead."
+                f"ruling 31) and no order freezes it (ruling 85). Freeze "
+                f"{_chain_head(successors, successor)} instead."
             )
         if f"{entry.req}@{entry.revision}" in delivered:
             _refuse(
@@ -329,6 +330,15 @@ def _check_frozen(catalog: Catalog, ledger: Ledger, order: Order, move: OrderMov
     package = _package(catalog, order)
     _check_seal_grows(ledger, package)
     _check_alterations(ledger, order, package, move)
+
+
+def _chain_head(successors: dict[str, str], req: str) -> str:
+    """Follow a supersession chain to the REQ nothing supersedes (ruling 85)."""
+    seen = {req}
+    while (later := successors.get(req)) and later not in seen:
+        seen.add(later)
+        req = later
+    return req
 
 
 def _check_seal_grows(ledger: Ledger, package: WorkPackage) -> None:

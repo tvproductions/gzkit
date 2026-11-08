@@ -45,8 +45,8 @@ moves one step at a time, `opened` then `frozen`, `commenced` and `accepted`;
   written with [`gz wp req new`](wp-req-new.md) (rulings 50 and 83). No verb raises
   a REQ's revision.
 - A REQ another REQ in the store supersedes is retired whole (ruling 31), so it is
-  never frozen, alone or beside the REQ that supersedes it; the order freezes the
-  successor (ruling 85). An order frozen on a REQ before a later REQ superseded it
+  never frozen, alone or beside the REQ that supersedes it; the refusal names the
+  REQ to freeze instead, the last of the chain, which nothing supersedes (ruling 85). An order frozen on a REQ before a later REQ superseded it
   runs on to its Gate 5.
 - The freeze seals the repair package's footprint: the event records the
   package's paths, and from then on `gz wp show` and the acceptance fence read the

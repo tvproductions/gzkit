@@ -301,6 +301,14 @@ class FreezeTests(_OrderCase):
         frozen = self.move("frozen", **{**_FREEZE, "baseline": successor})
         self.assertEqual(frozen.baseline, successor)
 
+    def test_a_chain_names_the_req_that_supersedes_it_last(self) -> None:
+        """Ruling 85: the refusal names the REQ that can be frozen, the chain's head."""
+        self.supersede_req_1()
+        head = _repair_req("REQ-5", "WP-01-stamp").model_copy(update={"supersedes": "REQ-4"})
+        self.catalog = self.catalog.model_copy(update={"reqs": (*self.catalog.reqs, head)})
+        output = self.assert_refused("frozen", **_FREEZE)
+        self.assertIn("Freeze REQ-5 instead", output)
+
     def test_an_order_frozen_before_the_supersession_runs_on(self) -> None:
         """Ruling 85: a later supersession leaves an order already frozen on the REQ."""
         self.move("frozen", **_FREEZE)

@@ -329,7 +329,7 @@ class TestAStoppedOrdersGateFive(_OrderAcceptance):
         self.assertEqual(self.state(), "closed")
 
     def test_a_stopped_order_whose_acceptance_reads_ready_may_proceed(self) -> None:
-        """Ruling 80: the verb hands the writer acceptance readiness, so a proof earns it."""
+        """Rulings 80 and 84: readiness read and booked at acceptance earns a proceed."""
         self.init()
         self.approve(self.proof())
         self.wp("block", _PACKAGE, "--order", _ORDER, "--reason", "r", "--next-action", "n")
