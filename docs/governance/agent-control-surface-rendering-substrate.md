@@ -80,6 +80,26 @@ prompt caching, makes drift diffable, and prevents volatile run facts from
 invalidating the invariant surface. Any renderer or hook that injects mutable
 session content ahead of the stable prefix creates a substrate defect.
 
+### Prompt markup — markdown at rest, XML at the LLM boundary
+
+Content passes through three stages: it is authored as markdown, validated
+through its Pydantic content model, and rendered as XML where it reaches an LLM
+consumer. Storage stays markdown so a human can read it. Where a renderer or
+composer assembles content into prompt context, it wraps each validated part in
+an XML tag named for that part (for example `<persona-traits>` or
+`<behavioral-anchors>`), because a model reads a named tag as a cleaner
+semantic boundary than a markdown heading
+([Anthropic, XML tags](https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/use-xml-tags)).
+This is a framework convention for every surface gzkit delivers to an LLM, not a
+persona-only rule. It was set by the operator during the OBPI-0.0.11-02 ceremony
+(2026-04-01), held only in auto memory until 2026-11-08, and ruled into this
+doctrine then, verbatim: *"a"* (option A of the `instructions-files-diet`
+six-source audit, `.gzkit/chores/instructions-files-diet/proofs/CHORE-LOG.md`).
+
+**Not yet applied.** `compose_persona_frame` (`src/gzkit/personas/__init__.py`)
+composes persona frames as plain text, with no XML tags. GHI #1315 tracks the
+gap and the census of other renderers.
+
 ## Why this doctrine is foundation-tier
 
 By the invariance test (foundation = "without it, we wouldn't be doing the project"):
