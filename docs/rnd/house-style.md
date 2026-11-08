@@ -384,6 +384,14 @@ declared footprint and `parent_invariants` against observed reach and decides; e
 against the same invariants. `Provenance` separates declared LAW from OBSERVED fact. What
 `parent_invariants` holds today and who supplies it was not traced past these call sites.
 
+## decision · where the pillar reaches the model is held for discussion
+
+Put to the operator: A, the boundary declaration feeding the airlock as LAW (told at entry, drift
+judged at exit), the audit at design time in design mode, and a periodic chore in implementation
+mode; B, design time and a chore, no airlock wiring; C, a chore only. Operator, verbatim: *"I like
+your recommendation, but I think we need to discuss these options so I understand more clearly."*
+Not ruled; the run walks the options through before putting the question again.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
