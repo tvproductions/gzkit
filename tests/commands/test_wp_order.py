@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any
 from unittest.mock import patch
 
+from gzkit.airlock.model import TransitObservation
 from gzkit.cli import main
 from gzkit.cli.main import _build_parser
 from gzkit.governance.trust_audits.catalog import audit_catalog
@@ -378,6 +379,39 @@ class OrderLifecycleTests(_OrderCase):
         )
         self.assertEqual(result.exit_code, 3, result.output)
         self.assertIn("ruling 56", " ".join(result.output.split()))
+
+    def test_before_any_seal_a_missing_path_is_replaced_by_a_change_order(self) -> None:
+        """RO-14 ruling 24: an unsealed footprint may still drop the path that broke it."""
+        Path("src/stamp.py").unlink()
+        changes = "gzkit.work_package_transit.package_changes"
+        with patch(changes, return_value=TransitObservation(files=())):
+            refused = self.freeze(code=3)
+        self.assertIn("src/stamp.py", refused)
+        self.assertIn("--drop-module=<path> --module=<path>", refused)
+
+    def test_a_sealed_path_the_package_moved_does_not_refuse_a_later_freeze(self) -> None:
+        """Ruling 56: each order's freeze seals the package's paths, so a later one can."""
+        self.freeze()
+        result = self.runner.invoke(
+            main,
+            ["wp", "req", "new", "WP-01-stamp", "--statement", "The matcher holds.",
+             "--criterion", "a match|ok|a test", "--kind", "BEHAVIOR", "--problem-report",
+             "1301"],
+        )  # fmt: skip
+        self.assertEqual(result.exit_code, 0, result.output)
+        self.new("matcher")
+        Path("src/stamp.py").unlink()
+        changes = "gzkit.work_package_transit.package_changes"
+        words = ("freeze", "ORD-02-matcher", "--baseline", "REQ-2@1", "--risk-note", "r",
+                 "--review-receipt", "v", "--evidence", "E")  # fmt: skip
+        with patch(changes, return_value=TransitObservation(files=())):
+            refused = self.gz(*words, code=3)
+        self.assertIn("src/stamp.py", refused)
+        self.assertIn("drops no path (RP-12 ruling 56)", refused)  # the named route is open
+        self.assertNotIn("--drop-module", refused)
+        with patch(changes, return_value=TransitObservation(files=("src/stamp.py",))):
+            frozen = self.gz(*words)
+        self.assertIn("ORD-02-matcher: opened -> frozen", frozen)
 
     def test_an_unknown_order_exits_1(self) -> None:
         self.gz("commence", "ORD-09-ghost", "--evidence", "tags", code=1)

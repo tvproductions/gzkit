@@ -258,7 +258,7 @@ def wp_order_transition_cmd(
     package = _package(catalog, order.work_package)
     if refusal := order_move_refusal(ledger, order, to_state):
         _refuse_move(to_state, refusal)
-    if to_state == "frozen" and (refusal := freeze_refusal(root, package)):
+    if to_state == "frozen" and (refusal := freeze_refusal(root, package, ledger)):
         _refuse_move(to_state, f"{refusal} An order's freeze seals it (RP-12 ruling 56).")
     entries = [_baseline_entry(to_state, entry) for entry in baseline or ()]
     move = OrderMove.model_validate({**fields, **({"baseline": entries} if entries else {})})

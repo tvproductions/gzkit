@@ -237,7 +237,7 @@ def wp_transition_cmd(
     if refusal := block_refusal(ledger, held.id):
         raise PolicyBreachError(refusal)
     if fields.get("to_state") == "frozen" and current == "initiated":
-        refusal = freeze_refusal(root, held)
+        refusal = freeze_refusal(root, held, ledger)
         if refusal:
             raise PolicyBreachError(refusal)
     if fields.get("to_state") == "accepted":

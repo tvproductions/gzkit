@@ -43,7 +43,10 @@ moves one step at a time, `opened` then `frozen`, `commenced` and `accepted`;
   package's paths, and from then on `gz wp show` and the acceptance fence read the
   latest order freeze plus the change orders after it, never the store, and a
   change order may no longer drop a path (ruling 56). The package must declare a
-  footprint that holds, as a package's own freeze requires (RO-14 ruling 24).
+  footprint that holds, as a package's own freeze requires (RO-14 ruling 24). A
+  path the package's own work moved or deleted still holds, as at `gz wp change`,
+  so a later order seals it again; once sealed, a missing path the package never
+  touched is restored, or a corrected one added with `--module`.
 - The freeze approves the package's alterations: exactly those it plans that no
   earlier order's freeze of the package approved, since a repair package never
   freezes itself (ruling 63). Its close still accounts every alteration as a

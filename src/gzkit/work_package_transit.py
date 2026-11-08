@@ -52,7 +52,7 @@ from gzkit.hooks.obpi import (
 from gzkit.models.catalog import CATALOG_FILES
 from gzkit.registries import registry_path
 from gzkit.utils import git_cmd
-from gzkit.work_package_ledger import declared_modules
+from gzkit.work_package_ledger import declared_modules, footprint_sealed
 
 if TYPE_CHECKING:
     from gzkit.ledger import Ledger
@@ -250,12 +250,15 @@ def module_gaps(
     return [*gaps, *(f"Allowed path is a directory and must end `/`: {m}" for m in bare)]
 
 
-def freeze_refusal(project_root: Path, package: WorkPackage) -> str | None:
+def freeze_refusal(project_root: Path, package: WorkPackage, ledger: Ledger) -> str | None:
     """Say why a freeze is refused, or None when the footprint holds.
 
     A delivery package reads its outcome's `modules`, which RO-11 tranche 2 lands, so
     it declares nothing here. The store is read as the freeze will seal it, so the
-    store's own rule runs too: an edit there must not reach the ledger.
+    store's own rule runs too: an edit there must not reach the ledger. A path the
+    package's own work moved or deleted still holds, as at `gz wp change`, so a later
+    order can seal it again (RP-12 ruling 56); once sealed, the refusal names a
+    route that does not drop a path.
 
     Returns:
         What failed, why and the governed next step, or None.
@@ -273,14 +276,22 @@ def freeze_refusal(project_root: Path, package: WorkPackage) -> str | None:
             f"Repair package {package.id} declares no footprint. {why} (RO-14 ruling 24). "
             f"Add one with {order} --module <path>`, then freeze again."
         )
-    gaps = [*footprint_breaches(package), *module_gaps(project_root, package.modules)]
-    if gaps:
+    changes = package_changes(project_root, package.id)
+    touched = frozenset(changes.files) if changes else frozenset()
+    gaps = [*footprint_breaches(package), *module_gaps(project_root, package.modules, touched)]
+    if not gaps:
+        return None
+    held = f"{package.id}'s footprint does not hold: {'; '.join(gaps)}. {why} (RO-14 ruling 24)."
+    if footprint_sealed(ledger, package.id):
         return (
-            f"{package.id}'s footprint does not hold: {'; '.join(gaps)}. {why} (RO-14 ruling "
-            f"24). Replace each path with {order} --drop-module=<path> --module=<path>`, "
-            f"naming {NEW_FILE_ROUTE}, then freeze again."
+            f"{held} An order's freeze sealed it, and a sealed footprint drops no path (RP-12 "
+            "ruling 56): restore each missing path, or add the corrected one with "
+            f"{order} --module <path>` naming {NEW_FILE_ROUTE}, then freeze again."
         )
-    return None
+    return (
+        f"{held} Replace each path with {order} --drop-module=<path> --module=<path>`, "
+        f"naming {NEW_FILE_ROUTE}, then freeze again."
+    )
 
 
 def footprint_refusal(project_root: Path, package: WorkPackage, ledger: Ledger) -> str | None:
