@@ -1079,6 +1079,24 @@ numbers replaced by the threshold table's bands (contradiction 8 settled for ite
 the cognitive ceiling on by default for adopters. Operator, verbatim: *"confirm"*. This supersedes
 the F8 placement's rows for 48 and 53.
 
+## decision · family F10, cross-platform and I/O, admitted whole
+
+Operator, verbatim: *"any not worth admitting? I think I agree with admit all 11. are we now
+managing and keeping these all in one place?"* Items 64 to 74 are admitted. None was found not worth
+admitting; two are scoped by what a project ships: 72 (UTF-8 console at the entry point) binds a
+project with a CLI, 73 (no machine-local paths in delivered text) one that ships instruction text.
+Ruff checks verified with `uv run ruff rule` on 2026-11-08 for the move off the review checklist:
+`PLW1514` (unspecified-encoding) for 67, `PTH118` (os-path-join) and `PTH123` (builtin-open) in the
+`PTH` family for 65; 74 (`newline=""` for CSV) has no rule found and stays with 68 for the chore.
+
+## decision · the house style has no one place yet
+
+The operator's question, *"are we now managing and keeping these all in one place?"*, is answered no.
+The rulings live in this record, which is diamond 1 and authorizes nothing; the admitted members still
+sit where they were found, across eight rules, `AGENTS.md`, ADRs, `cli-standards-v3.md` and RP-9's
+records (source: the candidate inventory). Row 4(a), the house style named in canon, is where one
+place would come from, and its shape is now a frontier question.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
