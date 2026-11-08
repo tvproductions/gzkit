@@ -98,7 +98,7 @@ Each line names the owning order, what the order gains, and a proposed grade.
 
 ## Held rulings
 
-Put to the operator one at a time; none is assumed.
+Put to the operator one at a time; none is assumed. All six were ruled on 2026-11-08.
 
 - **H1. Ruled 2026-11-08.** Amend Exit item 9 with the decision-reconciliation inventory (CO-7)? The
   contract changes only by its own amendment (§ Records, B1). Operator, by selection: *"Amend item 9
@@ -133,8 +133,13 @@ Put to the operator one at a time; none is assumed.
   filename changes with each revision; the id does not. Correction disclosed: the question put to the
   operator also said work packages use that slug body; they do not reference it (LSP references,
   2026-11-08). The ruling does not rest on that clause.
-- **H6.** Whether § The general arrangement states the independent-evolution invariant and the
-  Current/Retired states in its ADR row, by contract amendment.
+- **H6. Ruled 2026-11-08.** Whether § The general arrangement states the classic ADR design, by
+  contract amendment. Put to the operator: A, the ADR row amended and the independent-evolution
+  invariant stated once in § How work moves; B, both in the ADR row; C, no amendment, short of exit
+  item 11. Operator, by selection: *"Row, plus invariant in How work moves (Recommended)"*. Both texts,
+  put to the operator before the ruling, now stand in the contract.
+
+Every held ruling is ruled. What remains is the work itself, under its owning orders.
 
 ## Not carried
 
