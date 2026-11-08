@@ -61,6 +61,11 @@ schema patterns that admit them.
 
 **Phase 0, now (this row's go).** Record the target grammar in one place, the pool ADR this
 program proposes; freeze: no artifact takes a new prefix before 1.0; reconcile
+*(Amended 2026-11-08, for ADRs only: the freeze no longer holds for architectural decision
+records. New decisions take sequential `ADR-<n>` ids from the drydock's RP-6 commit that lands the
+classic ADR form, by held ruling H4 of
+[the classic ADR change orders](../../governance/harbor-classic-adr-change-order.md). Every other
+prefix stays frozen as written.)*
 `adr-lifecycle.md`'s scheme and `releases/README.md`'s carrier sentence with the ladder, as
 corrections under GHI #1188's class or as items of the pool ADR; put the names to the
 operator once more against Q-18.
