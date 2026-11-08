@@ -1158,6 +1158,23 @@ format and home:
 
 Family F13 is complete; the 14 borderline items remain.
 
+## decision · the borderline items: two worked in, twelve left to governance and RP-7's placement
+
+Put to the operator: twelve borderline items (B1 to B7, B10 to B14) set aside as gzkit's governance,
+failing the admission test; B8 (REQ kinds and the constraints step before the first red test)
+admitted with item 10's cascade; B9 (layered state and the append-only event log) sent to the
+hexagonal specification run. Operator, verbatim: *"work them in. if they are governance and not house
+style, then do they reside in the right places now?"*
+
+- **Worked in:** B8, admitted with item 10; B9, into the hexagonal specification run's subject.
+- **Not admitted:** B1 to B7 and B10 to B14, as governance. Whether each sits in the right place is
+  not this run's to settle: it is the question the RP-7 change order of 2026-11-08 already owns, its
+  item 1 placing every clause of the rules, skills, `AGENTS.md`, hooks and orientation as a gate, a
+  chore or a rule (`docs/governance/harbor-ro7-placement.md`). The twelve are inside that population.
+  Two of them carry findings already graded there: B11 (LSP lookups) is F6, the `prefer-lsp` hook's
+  false blocks, *"a repeat always passes, so it enforces nothing"*; B14 (H3 evidence headings) is F5
+  and H12, the code matching H2 only.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
@@ -1167,7 +1184,7 @@ Family F13 is complete; the 14 borderline items remain.
 | 3 | chore | commissioned | A hexagonal tidying chore: the implementation-mode audit of what neither gate nor door judges (ports typed in domain terms, policy kept out of adapters, construction at the edge), after gz-skills' `gzs-hexagonal-architecture-audit`, findings filed as GHIs; and a hygiene chore keeping `docs/design/cli-standards-v3.md` current (F2, item 11) | The third reach the operator ruled (*"chore tidyings"*); advise only, the operator directs admission |
 | 4 | control surface, rule, doc, skill, hook | commissioned | (a) the house style named in canon as one data register of its members, each with statement, family, enforcement moment, named check, adopter delivery and owner, a validator over it, and one page generated from it, rules and `AGENTS.md` citing members by id; (b) the hexagonal rule cut to its judgment residue once gate, doors and chore carry the rest (RP-7 placement); (c) the canon page's § Departures *"not a code-organization rule"* reconciled with *"primary code directive"*; (d) the design-time imperative written into the design surfaces; (e) `data/waiver_ratchet_registry.json` given an owner, a close-at-zero plan and a target date per shrink-ratchet, the 29 non-empty ones each owned or ruled accepted debt; (f) the `quality-reviewer` agent's rubric rewritten to the house style, the pythonic rule its Python source text, and the rule's prose retired wherever a Ruff rule is the check (F8); (g) the pythonic rule's size numbers replaced by the threshold table's bands, and item 48's intent noted as carried by the complexity gates (F9); (h) the coverage floor moved into data and read by a gate, the `coverage-40pct` chore renamed, and the test runner enforcing no network and the 200 ms unit limit (F12) | Drafted on the operator's go per item |
 | 5 | one-shot refactoring | commissioned | gzkit's import sites outside their mapped region driven to zero through the shrink-only baseline; the cognitive ceiling moved from `.gzkit.json` to `[tool.py-gzkit]`; jsonschema retired, each hand-authored schema given a Pydantic model and every validator calling the model, the dependency and its register entry removed at the last site; rich behind the output port, every direct `console.print` routed through `OutputFormatter` with semantic calls and the port made domain-typed; every `# noqa` converted to `# ruff: ignore[<rule name>]` as RUF105's exception is lifted; every CLI leaf given `--json` or a reasoned waiver (F11 item 76; RP-7 finding F18) | The whole-package scope and the split config home, ruled; the operator selects the route |
-| 6 | no action | not pursued | Registering `gzkit` on PyPI | The operator chose `[tool.py-gzkit]`; revisit if the CLI's name and the distribution's are ever unified. (Folder partitions, listed here first, withdrawn 2026-11-08: the operator disagrees with canon rule 7 now, and the question moves to row 7(c).) |
+| 6 | no action | not pursued | Registering `gzkit` on PyPI; the twelve governance items among the borderline (B1–B7, B10–B14) not admitted to the house style | The operator chose `[tool.py-gzkit]`; revisit if the CLI's name and the distribution's are ever unified. (Folder partitions, listed here first, withdrawn 2026-11-08: the operator disagrees with canon rule 7 now, and the question moves to row 7(c).) The twelve governance items fail the admission test; their placement is owned by RP-7's change order item 1, not this run |
 | 7 | further research | commissioned | (a) withdrawn: the other candidates are admitted in this run; (b) an intent trace of ADR-0.33.0's airlock: no production caller supplies `parent_invariants`, and reach is the ontology graph, not imports; (c) a hexagonal specification run: domain-typed ports, Protocol and composition, the second-adapter rule, parameter injection, folder layout (canon rule 7, which the operator now disagrees with), what subsumption into one typed model means, and the DDD and ontology relation, briefed by *"strengthen"* and strong adoption by every adopter; (d) whether `gz init` delivers the post-edit Ruff hook and the reviewer agent to adopters | (b) opened by the read of what the doors are fed; (c) opened by the F1 rulings. The operator opens each |
 
 ## Close
