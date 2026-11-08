@@ -63,7 +63,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `complexity-doctrine.md` | `0.4.1` |
 | `complexity-thresholds.md` | `0.6.0` |
 | `gh-cli.md` | `0.7.1` |
-| `hexagonal-architecture.md` | `0.3.1` |
+| `hexagonal-architecture.md` | `0.4.0` |
 | `models.md` | `0.2.1` |
 | `model-selection.md` | `0.8.0` |
 | `weaponeering.md` | `0.1.1` |
@@ -486,6 +486,8 @@ The Claude-specific invariant 10a is scored as a row rather than in prose:
 | 63 | PRIME DIRECTIVE binds the entire hangar session — ownership never relaxes; operate the skill, not the shell | **Judgment** | "Fix what you know AND what you find; 'not my work' stays forbidden in the bay" requires agent judgment to apply. Mechanizing ownership is the broader gzkit mission, not a single validator scope. `source=.gzkit/rules/mx-mode.md` |
 
 ### Hexagonal Architecture (`.gzkit/rules/hexagonal-architecture.md`)
+
+**Re-scored 2026-11-08 at rule `0.4.0` (operator ruling, verbatim: *"A: stub, core glob"*).** The `instructions-files-diet` rules re-audit found the rule loaded on every `**/*.py` read while its clauses bind only in `src/gzkit/core/` and at dependency declaration; the glob is now `src/gzkit/core/**` and `pyproject.toml`. Rules 1–6 are retained verbatim, so no score below moves; rules 7–9 are condensed with their numbering kept, and the Cockburn framing and tracer-bullet rationale moved to [`hexagonal-architecture.md`](hexagonal-architecture.md). The rule's former § Verify cited `gz lint`/`gz typecheck`, which do not check import purity; it now names `tests/policy/test_import_boundaries.py`, the witness row 64 cites.
 
 | # | Rule | Score | Notes |
 |---|------|-------|-------|

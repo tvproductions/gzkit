@@ -466,6 +466,8 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `hexagonal-architecture.md`
 
+Prior `0.3.1` banner: *"version narrative lifted to Rule Version History; binding rules unchanged."* Superseded 2026-11-08 by `0.4.0`: glob narrowed from `**/*.py` to `src/gzkit/core/**` and `pyproject.toml`, the Cockburn demand, strong form, cascade narrative, tracer-bullet rationale, Do Not and Related sections dropped or lifted to `docs/governance/hexagonal-architecture.md`, § Verify replaced by the real witness.
+
 Lifted at version `0.2.0` (rule now at `0.2.1`).
 
 > **Rule version:** `0.2.0` — seats HA inside the DDD → HA → BDD → TDD spine and
