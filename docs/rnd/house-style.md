@@ -1014,6 +1014,37 @@ independent reviewer agent judges the change before it is accepted, but its rubr
 (*"SOLID principles adherence"*) and names neither the house style nor the pythonic or hexagonal
 rules.
 
+## decision · family F8 admitted, each item placed at its enforcement moment
+
+Put to the operator after the discussion (source: the write-time and review-time mechanisms gzkit
+already has): four moments, write time (the post-edit Ruff hook), work entry (the airlock's brief),
+review (an independent reviewer with the house style as its rubric) and sweep (the chore); the
+pythonic rule kept as the house style's Python chapter, its role the rubric's source text, not the
+enforcement. Operator, verbatim: *"agree, specify where each will go please"*.
+
+Ruff rule names below were read with `uv run ruff rule <code>` on 2026-11-08.
+
+| # | Item | Canon home | Enforced at | Mechanism |
+|---|---|---|---|---|
+| 48 | Clarity over cleverness | pythonic rule | review | the reviewer's house-style rubric; the chore sweeps |
+| 49 | Separation of concerns | hexagonal member, via the hexagonal specification run | review and work entry | the rubric; the airlock's brief names the slice's regions; the hexagonal tidying chore |
+| 50 | EAFP for IO, LBYL for contracts | pythonic rule | write time, in part; review for the rest | Ruff `SIM105` (suppressible-exception) and the `TRY` family; the rubric |
+| 51 | Context managers | pythonic rule | write time, in part; review for the rest | Ruff `SIM115` (open-file-with-context-handler); the rubric |
+| 52 | No mutable defaults | Ruff configuration only; the rule's prose retires | write time | Ruff `B006` (mutable-argument-default), `B008` (function-call-in-default-argument) |
+| 53 | No implicit globals | hexagonal member (parameter injection, F1 item 6), via the hexagonal specification run | write time, in part; review | Ruff `PLW0603` (global-statement); the rubric |
+| 54 | Top-level imports only | Ruff configuration only; the rule keeps the carve-outs | write time | Ruff `I` (`I001` unsorted-imports), `PLC0415` (import-outside-top-level) |
+| 57 | Extra parameters by keyword | Ruff configuration only | write time | Ruff `PLR0917` (too-many-positional-arguments) |
+| 58 | Google docstrings | Ruff configuration only | write time | Ruff `D` with the Google convention, `DOC201` (docstring-missing-returns), `D417` (undocumented-param) |
+| 92 | Naming conventions | Ruff configuration only | write time | Ruff `N` (`N801` invalid-class-name and the family) |
+| 105 | Simplicity first | `AGENTS.md`, cited by the pythonic rule | review | the rubric; the second-adapter rule (F1 item 5) is its hexagonal instance |
+| 106 | Surgical changes | `AGENTS.md` only | — | not admitted: it governs how an agent edits, not how code is designed |
+
+Admitted: every item but 106. For adopters, each *write time* row arrives with the scaffold's Ruff
+`ALL` (F4 ruling); each *review* row arrives only if the reviewer and its rubric reach the adopter,
+which is untraced; each *Ruff configuration only* row means its prose leaves the pythonic rule, the
+check being the authority. Commissions: the reviewer's rubric rewritten to the house style (row 4),
+and the delivery of the post-edit hook and the reviewer to adopters traced (row 7).
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
@@ -1021,10 +1052,10 @@ rules.
 | 1 | ADR / OBPI | commissioned | The upfront whole-system architecture map, approved once as a classic ADR (the first map edition); and the new machinery admitted at civil rule through the R&D door as catalog outcomes: the map as data under `[tool.py-gzkit]`, the intake signal, the freeze check, the airlock feed, `gz init` delivery to adopters | The map passes the admission question: hard to reverse, surprising without context, a real trade-off. Proposed only: the operator initiates. It waits for the classic ADR form and crossover (CO-1, CO-2 on RP-6) |
 | 2 | GHI / direct fix | commissioned | Under RP-7's placement change order: book H1 ruled to the whole package with a shrink-only baseline, and repair F22 so the boundary test runs in the per-change `gz check`; and the `gz init` scaffold's Ruff selection raised from nine families to `ALL` with gzkit's curated exceptions and ty at full strength, and its default project type moved from `lib` to uv's `app`; both corrections of RP-9 tranche 7 (closed), their owner to be ruled | Corrections of shipped intent (decision: corrections go into the drydock under RP-7); both already tracked there, so no new GHI |
 | 3 | chore | commissioned | A hexagonal tidying chore: the implementation-mode audit of what neither gate nor door judges (ports typed in domain terms, policy kept out of adapters, construction at the edge), after gz-skills' `gzs-hexagonal-architecture-audit`, findings filed as GHIs; and a hygiene chore keeping `docs/design/cli-standards-v3.md` current (F2, item 11) | The third reach the operator ruled (*"chore tidyings"*); advise only, the operator directs admission |
-| 4 | control surface, rule, doc, skill, hook | commissioned | (a) the house style named in canon, its admission rule and its first member; (b) the hexagonal rule cut to its judgment residue once gate, doors and chore carry the rest (RP-7 placement); (c) the canon page's § Departures *"not a code-organization rule"* reconciled with *"primary code directive"*; (d) the design-time imperative written into the design surfaces; (e) `data/waiver_ratchet_registry.json` given an owner, a close-at-zero plan and a target date per shrink-ratchet, the 29 non-empty ones each owned or ruled accepted debt | Drafted on the operator's go per item |
+| 4 | control surface, rule, doc, skill, hook | commissioned | (a) the house style named in canon, its admission rule and its first member; (b) the hexagonal rule cut to its judgment residue once gate, doors and chore carry the rest (RP-7 placement); (c) the canon page's § Departures *"not a code-organization rule"* reconciled with *"primary code directive"*; (d) the design-time imperative written into the design surfaces; (e) `data/waiver_ratchet_registry.json` given an owner, a close-at-zero plan and a target date per shrink-ratchet, the 29 non-empty ones each owned or ruled accepted debt; (f) the `quality-reviewer` agent's rubric rewritten to the house style, the pythonic rule its Python source text, and the rule's prose retired wherever a Ruff rule is the check (F8) | Drafted on the operator's go per item |
 | 5 | one-shot refactoring | commissioned | gzkit's import sites outside their mapped region driven to zero through the shrink-only baseline; the cognitive ceiling moved from `.gzkit.json` to `[tool.py-gzkit]`; jsonschema retired, each hand-authored schema given a Pydantic model and every validator calling the model, the dependency and its register entry removed at the last site; rich behind the output port, every direct `console.print` routed through `OutputFormatter` with semantic calls and the port made domain-typed; every `# noqa` converted to `# ruff: ignore[<rule name>]` as RUF105's exception is lifted | The whole-package scope and the split config home, ruled; the operator selects the route |
 | 6 | no action | not pursued | Registering `gzkit` on PyPI | The operator chose `[tool.py-gzkit]`; revisit if the CLI's name and the distribution's are ever unified. (Folder partitions, listed here first, withdrawn 2026-11-08: the operator disagrees with canon rule 7 now, and the question moves to row 7(c).) |
-| 7 | further research | commissioned | (a) withdrawn: the other candidates are admitted in this run; (b) an intent trace of ADR-0.33.0's airlock: no production caller supplies `parent_invariants`, and reach is the ontology graph, not imports; (c) a hexagonal specification run: domain-typed ports, Protocol and composition, the second-adapter rule, parameter injection, folder layout (canon rule 7, which the operator now disagrees with), what subsumption into one typed model means, and the DDD and ontology relation, briefed by *"strengthen"* and strong adoption by every adopter | (b) opened by the read of what the doors are fed; (c) opened by the F1 rulings. The operator opens each |
+| 7 | further research | commissioned | (a) withdrawn: the other candidates are admitted in this run; (b) an intent trace of ADR-0.33.0's airlock: no production caller supplies `parent_invariants`, and reach is the ontology graph, not imports; (c) a hexagonal specification run: domain-typed ports, Protocol and composition, the second-adapter rule, parameter injection, folder layout (canon rule 7, which the operator now disagrees with), what subsumption into one typed model means, and the DDD and ontology relation, briefed by *"strengthen"* and strong adoption by every adopter; (d) whether `gz init` delivers the post-edit Ruff hook and the reviewer agent to adopters | (b) opened by the read of what the doors are fed; (c) opened by the F1 rulings. The operator opens each |
 
 ## Close
 
