@@ -244,11 +244,15 @@ class TestTheExits(_FenceCase):
         self._exit("hold")
         self.assertEqual(self._reasons(), {})
 
-    def test_a_block_on_an_accepted_package_keeps_the_fence(self) -> None:
+    def test_an_accepted_package_refuses_a_block_and_keeps_its_fence(self) -> None:
+        """RP-12 ruling 69: an accepted run takes no block; ruling 58 still fences it."""
         self._commence()
         self._accept()
-        self._block()
-        self.assertEqual(self._reasons(), {_PACKAGE: "blocked"})
+        result = self.runner.invoke(
+            main, ["wp", "block", _PACKAGE, "--reason", "stuck", "--next-action", "rule"]
+        )
+        self.assertEqual(result.exit_code, 3, msg=result.output)
+        self.assertEqual(self._reasons(), {_PACKAGE: "accepted"})
 
 
 class TestTheRecoveryProse(unittest.TestCase):

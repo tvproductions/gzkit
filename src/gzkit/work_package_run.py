@@ -744,22 +744,39 @@ def record_work_package_block(
     return event
 
 
+#: The states that take no block: not open, accepted (ruling 69), or closed.
+_UNBLOCKABLE = frozenset({None, "accepted", "closed"})
+_ACCEPTED_NOTE = (
+    "; final inspection is done, so it closes through Gate 5's own outcomes (RP-12 ruling 69)."
+)
+
+
 def _check_blockable(
     catalog: Catalog, ledger: Ledger, package: WorkPackage, order: str | None
 ) -> None:
-    """Refuse a block on a package or order not open, or already blocked (ruling 59)."""
+    """Refuse a block on a package or order not open, accepted, or already blocked.
+
+    Rulings 59 and 69: an accepted run's final inspection is done, so what remains is
+    Gate 5's own outcomes at the close, not an exit.
+    """
     _require_order(package, order, "block")
     if order is None:
         state = work_package_state(ledger, package.id)
-        if state in {None, "closed"}:
-            _refuse(f"Work package {package.id} is {state or 'not initiated'}; it takes no block.")
+        if state in _UNBLOCKABLE:
+            _refuse(
+                f"Work package {package.id} is {state or 'not initiated'}; it takes no block"
+                f"{_ACCEPTED_NOTE if state == 'accepted' else '.'}"
+            )
         if is_blocked(ledger, package.id):
             _refuse(f"Work package {package.id} is already blocked on the operator.")
         return
     _package_order(catalog, package, order)
     state = order_state(ledger, order)
-    if state in {None, "closed"}:
-        _refuse(f"Order {order} is {state or 'not opened'}; it takes no block.")
+    if state in _UNBLOCKABLE:
+        _refuse(
+            f"Order {order} is {state or 'not opened'}; it takes no block"
+            f"{_ACCEPTED_NOTE if state == 'accepted' else '.'}"
+        )
     if is_order_blocked(ledger, order):
         _refuse(f"Order {order} is already blocked on the operator.")
 

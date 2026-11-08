@@ -15,7 +15,7 @@ gz wp block <WP-id> [--order <ORD-id>] --reason <text> --next-action <text> [OPT
 | `WP-id` | The work package's id. Required |
 | `--reason` | Why the package cannot proceed. Required |
 | `--next-action` | The decision the operator owes. Required |
-| `--order` | The order held alone, `ORD-<NN>-<slug>`, one of the package's, opened and not closed |
+| `--order` | The order held alone, `ORD-<NN>-<slug>`, one of the package's, opened and neither accepted nor closed |
 | `--json` | Output as JSON |
 | `--quiet`, `-q` | Suppress non-error output |
 | `--verbose`, `-v` | Enable verbose output |
@@ -28,6 +28,8 @@ it from the ledger: each subject's fix cycles, the bound, the subjects newly at 
 bound, the subjects a hold left open, the exits the package has used, and any baseline REQ already reopened in
 any package. An escalation may carry the agent's recommendation, and these
 facts sit beside it. A blocked package takes no dispatch until `gz wp unblock`.
+An accepted package or order takes no block (RP-12 ruling 69): its final
+inspection is done, so it closes through Gate 5's own outcomes, not an exit.
 
 With `--order` the block holds that order alone (RP-12 ruling 59,
 `docs/governance/harbor-ro12-contractor-kit.md`). Its facts are the order's own:

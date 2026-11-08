@@ -553,6 +553,12 @@ class Block(_Run):
             record_work_package_transition(self.catalog, self.ledger, move)
         self._refused("closed", "work_package_blocked", self._block)
 
+    def test_an_accepted_package_takes_no_block(self) -> None:
+        """RP-12 ruling 69: final inspection is done; Gate 5's outcomes remain."""
+        move = TransitionRequest(work_package=_FIRST, to_state="accepted", evidence="e")
+        record_work_package_transition(self.catalog, self.ledger, move)
+        self._refused("accepted", "work_package_blocked", self._block)
+
     def test_a_block_holds_the_lifecycle(self) -> None:
         self._block()
         move = TransitionRequest(work_package=_FIRST, to_state="accepted", evidence="e")

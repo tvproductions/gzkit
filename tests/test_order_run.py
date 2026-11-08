@@ -201,6 +201,11 @@ class BlockOnAnOrder(_OrderRun):
         self.block()
         self.refused("already blocked", self.block)
 
+    def test_an_accepted_order_takes_no_block(self) -> None:
+        """RP-12 ruling 69: final inspection is done; Gate 5's outcomes remain."""
+        self.move("accepted")
+        self.refused("accepted", self.block)
+
     def test_an_order_not_opened_or_of_another_package_takes_no_block(self) -> None:
         for order in ("ORD-02-matcher", "ORD-03-other", "ORD-09-ghost"):
             with self.subTest(order=order):
