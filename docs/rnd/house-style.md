@@ -842,12 +842,32 @@ field's `description` becomes that schema's documentation, while a field's check
 are validation, which item 90 leaves on the model. Operator, by selection: *"Admit 17"*. Family F3
 (items 15, 16, 17, 19, 90) is admitted whole.
 
+## decision · family F4, typing, admitted whole; MAXX Astral for gzkit and every adopter
+
+Operator, verbatim:
+
+> 18 - absolutely, I want a VERY HIGH level of aggressive ruff/ty compliance - MAXX
+> 27 - yes. House style is this: when we move to a Python version, strict conformance/refactoring to its new language features and idioms
+> 46 - bsolutely, I want a VERY HIGH level of aggressive ruff/ty compliance - MAXX
+> 47 - bsolutely, I want a VERY HIGH level of aggressive ruff/ty compliance - MAXX
+>
+> MAXX Astral in gzkit and all of its adopters.
+
+Items 18, 27, 46 and 47 are admitted. Item 27 is ruled as a general principle of the house style,
+not only the PEP 563 ban: moving to a Python version means strict conformance and refactoring to
+its new features and idioms (it also covers inventory item 26, in family F6). The closing line
+settles contradiction 7 for adopters: the `gz init` scaffold's nine Ruff families
+(`init_cmd.py:366`, source: the candidate inventory) fall short of the ruled *"MAXX Astral in gzkit
+and all of its adopters"*; the scaffold selects `ALL` with gzkit's curated exceptions, and ty's
+rules at full strength. That shortfall is a correction of RP-9 tranche 7, which closed on
+2026-10-29; its route is row 2's.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
 |---|---|---|---|---|
 | 1 | ADR / OBPI | commissioned | The upfront whole-system architecture map, approved once as a classic ADR (the first map edition); and the new machinery admitted at civil rule through the R&D door as catalog outcomes: the map as data under `[tool.py-gzkit]`, the intake signal, the freeze check, the airlock feed, `gz init` delivery to adopters | The map passes the admission question: hard to reverse, surprising without context, a real trade-off. Proposed only: the operator initiates. It waits for the classic ADR form and crossover (CO-1, CO-2 on RP-6) |
-| 2 | GHI / direct fix | commissioned | Under RP-7's placement change order: book H1 ruled to the whole package with a shrink-only baseline, and repair F22 so the boundary test runs in the per-change `gz check` | Corrections of shipped intent (decision: corrections go into the drydock under RP-7); both already tracked there, so no new GHI |
+| 2 | GHI / direct fix | commissioned | Under RP-7's placement change order: book H1 ruled to the whole package with a shrink-only baseline, and repair F22 so the boundary test runs in the per-change `gz check`; and the `gz init` scaffold's Ruff selection raised from nine families to `ALL` with gzkit's curated exceptions and ty at full strength, a correction of RP-9 tranche 7 (closed), its owner to be ruled | Corrections of shipped intent (decision: corrections go into the drydock under RP-7); both already tracked there, so no new GHI |
 | 3 | chore | commissioned | A hexagonal tidying chore: the implementation-mode audit of what neither gate nor door judges (ports typed in domain terms, policy kept out of adapters, construction at the edge), after gz-skills' `gzs-hexagonal-architecture-audit`, findings filed as GHIs; and a hygiene chore keeping `docs/design/cli-standards-v3.md` current (F2, item 11) | The third reach the operator ruled (*"chore tidyings"*); advise only, the operator directs admission |
 | 4 | control surface, rule, doc, skill, hook | commissioned | (a) the house style named in canon, its admission rule and its first member; (b) the hexagonal rule cut to its judgment residue once gate, doors and chore carry the rest (RP-7 placement); (c) the canon page's § Departures *"not a code-organization rule"* reconciled with *"primary code directive"*; (d) the design-time imperative written into the design surfaces | Drafted on the operator's go per item |
 | 5 | one-shot refactoring | commissioned | gzkit's import sites outside their mapped region driven to zero through the shrink-only baseline; the cognitive ceiling moved from `.gzkit.json` to `[tool.py-gzkit]`; jsonschema retired, each hand-authored schema given a Pydantic model and every validator calling the model, the dependency and its register entry removed at the last site; rich behind the output port, every direct `console.print` routed through `OutputFormatter` with semantic calls and the port made domain-typed | The whole-package scope and the split config home, ruled; the operator selects the route |
