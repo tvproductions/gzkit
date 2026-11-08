@@ -320,6 +320,19 @@ class FootprintSealTests(_OrderCase):
             declared_modules(self.ledger, self.package()), ("src/stamp.py", "src/extra.py")
         )
 
+    def test_a_later_freeze_refuses_a_store_that_dropped_a_sealed_path(self) -> None:
+        """Ruling 71: a sealed footprint only grows, so a narrowed store is refused."""
+        self.move("frozen", **_FREEZE)
+        narrowed = self.package("src/extra.py")
+        self.catalog = self.catalog.model_copy(
+            update={"work_packages": (narrowed, _package("WP-03-other"))}
+        )
+        self.move("opened", order="ORD-02-matcher", **_PAYLOADS["opened"])
+        second = {**_FREEZE, "baseline": (BaselinedReq(req="REQ-2", revision=1),)}
+        output = self.assert_refused("frozen", order="ORD-02-matcher", **second)
+        self.assertIn("src/stamp.py", output)
+        self.assertIn("rulings 56 and 71", output)
+
     def test_another_packages_order_does_not_seal_this_one(self) -> None:
         self.move("opened", order="ORD-03-other", **_PAYLOADS["opened"])
         other = {**_FREEZE, "baseline": (BaselinedReq(req="REQ-3", revision=1),)}

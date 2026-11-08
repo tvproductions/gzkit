@@ -24,7 +24,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from gzkit.events import BaselinedReq, OrderTransitionedEvent
 from gzkit.ledger import ledger_row
 from gzkit.models.catalog import RepairReq
-from gzkit.work_package_ledger import work_package_state
+from gzkit.work_package_ledger import declared_modules, footprint_sealed, work_package_state
 
 if TYPE_CHECKING:
     from gzkit.ledger import Ledger, LedgerEvent
@@ -263,7 +263,21 @@ def _check_frozen(catalog: Catalog, ledger: Ledger, order: Order, move: OrderMov
     holders = _live_holders(ledger, order)
     for entry in move.baseline:
         _check_entry(held, holders, order, entry)
-    _check_alterations(ledger, order, _package(catalog, order), move)
+    package = _package(catalog, order)
+    _check_seal_grows(ledger, package)
+    _check_alterations(ledger, order, package, move)
+
+
+def _check_seal_grows(ledger: Ledger, package: WorkPackage) -> None:
+    """Refuse a freeze whose store dropped a path the seal declares (RP-12 ruling 71)."""
+    if not footprint_sealed(ledger, package.id):
+        return
+    if dropped := [m for m in declared_modules(ledger, package) if m not in package.modules]:
+        _refuse(
+            f"{package.id}'s store dropped {', '.join(dropped)}, which an order's freeze "
+            "sealed; a sealed footprint only grows (RP-12 rulings 56 and 71). Restore each "
+            "path in data/catalog/work_packages.json, then freeze again."
+        )
 
 
 def _check_move(catalog: Catalog, ledger: Ledger, order: Order, move: OrderMove) -> None:

@@ -46,7 +46,9 @@ moves one step at a time, `opened` then `frozen`, `commenced` and `accepted`;
   footprint that holds, as a package's own freeze requires (RO-14 ruling 24). A
   path the package's own work moved or deleted still holds, as at `gz wp change`,
   so a later order seals it again; once sealed, a missing path the package never
-  touched is restored, or a corrected one added with `--module`.
+  touched is restored, or a corrected one added with `--module`. A store that
+  dropped a sealed path, which only a hand edit can do, is refused at the freeze
+  until the path is restored there, so a sealed footprint only grows (ruling 71).
 - The freeze approves the package's alterations: exactly those it plans that no
   earlier order's freeze of the package approved, since a repair package never
   freezes itself (ruling 63). Its close still accounts every alteration as a
@@ -143,7 +145,7 @@ ORD-01-import: opened -> frozen
 | 0 | Frozen |
 | 1 | The order, or its work package, is not in the store |
 | 2 | Usage error |
-| 3 | The freeze is refused: an empty baseline or a baseline entry, the lifecycle, the package's state or footprint, a REQ another live order holds, or approvals other than the alterations due; nothing written |
+| 3 | The freeze is refused: an empty baseline or a baseline entry, the lifecycle, the package's state or footprint, a store that dropped a sealed path, a REQ another live order holds, or approvals other than the alterations due; nothing written |
 
 ## See also
 
