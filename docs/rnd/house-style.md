@@ -862,6 +862,45 @@ and all of its adopters"*; the scaffold selects `ALL` with gzkit's curated excep
 rules at full strength. That shortfall is a correction of RP-9 tranche 7, which closed on
 2026-10-29; its route is row 2's.
 
+## decision · family F5 ruled in part; `gz init` and `uv init` checked
+
+Operator, verbatim:
+
+> btw, `gz init` needs to consider using `uv init` as a part of its bootstrapping
+>
+> 44 - agree, WIDEN. I think AGENTS.md still has some maxim/mantra that says, more or less, fix it now.
+> 45 - sounds flakey, is this maxx astral?
+> 55 - 1000%
+> 56 - 1000%
+
+- **Admitted:** 44, widened from chores to every finding: a finding is never closed by suppressing
+  it. The maxim the operator recalls is `AGENTS.md` § PRIME DIRECTIVE 2, *"COMPLETE ALL WORK FULLY.
+  Fix broken/misaligned things immediately."* 55 (typed errors, no broad `except`) and 56 (a typed
+  exception class per raise).
+- **45, a question back:** whether the reasoned-`noqa` clause is MAXX Astral. Answered from Ruff's own
+  rules below; open until ruled.
+- **`gz init` and `uv init`:** it already bootstraps through `uv init`. `src/gzkit/commands/init_cmd.py:470–497`,
+  `_uv_project`, runs `uv init --<project-type> --name <package> --python <floor> --no-workspace --vcs
+  none --author-from none .`, then `uv add --dev --frozen` for the dev tools, and writes only what uv does
+  not (RP-9 tranche 7, ruled *"even `gz init` should look carefully at `uv init`"*).
+
+## source · Ruff's own suppression rules
+
+`uv run ruff rule RUF105`, `PGH004`, `RUF100`; `pyproject.toml:129–130` · run and read 2026-11-08
+
+> # noqa-comments (RUF105) [...] This rule is in preview and is not stable. [...] Checks for the use of `noqa` comments instead of Ruff-specific `ruff: ignore` comments. [...] `ruff: ignore` comments allow the use of rule names instead of codes and can be used in more places than `noqa` comments.
+
+> # blanket-noqa (PGH004)
+
+> # unused-noqa (RUF100)
+
+> `# a justified one at a genuine boundary; RUF100 already refuses a stale one` · `# (ruled 2026-10-23, "RUF105 exception (Rec.)").`
+
+Ruff governs its own suppressions: PGH004 refuses a `noqa` that names no code, RUF100 refuses one that
+suppresses nothing, and RUF105, in preview, moves suppressions to `ruff: ignore[<rule name>]`. gzkit
+holds RUF105 as a standing exception (ruled 2026-10-23). Checking that a suppression carries a written
+reason is no Astral rule; it would be gzkit's own check.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
