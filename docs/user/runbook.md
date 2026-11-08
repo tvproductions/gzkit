@@ -984,14 +984,18 @@ A repair package moves only `initiated` to `closed`: it carries its issues while
 it is open, and its orders, below, carry the run (RP-12 ruling 44). Its own
 `freeze`, `commence`, `accept` and `acceptance` are refused and name the order's
 verb, and its `dispatch`, `block` and `unblock` name the order with `--order`. Its
-close waits until every order is closed through Gate 5 and carries no decision of
-its own, since Gate 5 sits at the order; it records each order's decision:
+close waits until at least one order is closed and every order is closed through
+Gate 5, and carries no decision of its own, since Gate 5 sits at the order; it
+records each order's decision (RP-12 rulings 76 and 79). So the package runs at
+least one order, below, before it closes:
 
 ```bash
 uv run gz wp new --kind repair --slug astral --issue 1183 --lane lite --alias RO-9
 uv run gz wp attach WP-01-astral --issue 1184
 uv run gz wp initiate WP-01-astral --operator-text "<your exact words>"
+uv run gz wp order new WP-01-astral --slug import --purpose "<purpose>" --operator-text "<your exact words>"
 uv run gz wp resolve WP-01-astral 1183 --commit <fix-sha> --reviewer <reviewer>
+uv run gz wp order close ORD-01-import --decision proceed --attestor g0 --attestation-text "<your exact words>" --residual-risk "<risk>" --evidence <id>
 uv run gz wp close WP-01-astral --attestor g0 --residual-risk "<risk>" --evidence <id>
 ```
 
