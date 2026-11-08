@@ -595,6 +595,32 @@ on the whole run: the rule text reaches every adopter through `gz init` while gz
 do not, so for an adopter nearly every candidate is a weak rule; and the 13 contradictions are
 defects in canon whatever is admitted, each to be tracked under disposition 4.
 
+## decision · candidates are admitted by family; the grouping drafted for the operator to adjust
+
+Put to the operator: A, by family, about a dozen, each ruled admit, set aside, or admit except named
+items, the grouping shown first; B, the operator names the wanted candidates and only those are put;
+C, all 108 one at a time. Operator, by selection: *"By family (Recommended)"*.
+
+The grouping below is the agent's draft over the inventory's numbering (source: the candidate
+inventory). It binds nothing until the operator has seen it and moved what is misplaced.
+
+| Family | Inventory items |
+|---|---|
+| F1 Architecture (the admitted hexagonal member's content) | 1–10 |
+| F2 Dependency posture | 11, 12, 13, 14, 21, 89 |
+| F3 Data models | 15, 16, 17, 19, 90 |
+| F4 Typing | 18, 27, 46, 47 |
+| F5 Errors and suppression | 44, 45, 55, 56 |
+| F6 Astral toolchain | 22–26, 28–40, 43 |
+| F7 Project structure and distribution | 41, 42, 93 |
+| F8 Code craft | 48–54, 57, 58, 92, 105, 106 |
+| F9 Complexity | 59–63 |
+| F10 Cross-platform and I/O | 64–74 |
+| F11 CLI shape | 75–85, 87 |
+| F12 Testing | 20, 91, 96–104 |
+| F13 Docs, config and surfaces as code | 86, 88, 94, 95, 107, 108 |
+| Borderline | the inventory's 14 borderline items |
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
