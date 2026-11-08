@@ -440,6 +440,38 @@ The ruling is the operator's words: all three.
    graph, not imports; a work package's declared `modules` is where a door already knows the files.
 3. **Chore tidyings.** A periodic chore sweeps what neither the gate nor the doors catch.
 
+## decision · where design happens is unresolved; question 10 held
+
+Put to the operator: A, a required § Boundary section in every design artifact that changes code,
+after the mode contract; B, a design-dialogue step in `gz-design`; C, classic ADRs only. Operator,
+verbatim: *"Yeah, but what design dialogue step? Does it go into requirements? Does it go into a
+requirements package? Is it a part of how requirements manifest inside a work package or a work
+order? Is it part of R&D? Do we always do R&D when we know it's going to be required? So I just
+don't know how the reminder that this requires that something requires extra design goes. So that's
+kind of why I'm hesitant."*
+
+The question assumed a design moment the run had not located in the new arrangement. Not ruled;
+the run reads the arrangement before putting it again.
+
+## source · the processes and their edges, and the outcome's `modules`
+
+`docs/governance/harbor-pilotage-candidate-2026-10-15.md` § The processes and their edges and § The records, by band · read in full 2026-11-08
+
+> | 4 | Design | the dialogue opened | the ADR accepted, the fifth intake door | `adr_created` only; no acceptance event |
+
+> | 5 | Intake | a pull through one of the five doors | the outcome `queued` | none; `outcome_transitioned` has no production writer |
+
+> | 6 | Work package | commenced, its baseline frozen | closed through Gate 5, moving the outcome | `work_package_transitioned` |
+
+> an outcome is one reviewable deliverable with its statement, owner, `user_facing`, `governed_by`, `depends_on`, its `source` (the door it came through and the record behind it) and its `modules` (the code paths it owns: its contract)
+
+In the arrangement, Design is its own process, ending in an accepted ADR; R&D is another, ending in
+a disposition map. Neither sits inside intake, a work package or a work order, and no process says
+when work must detour through them. But the code paths are declared early: an outcome names its
+`modules` at intake, and a work package's footprint is drawn from them (source: what the airlock's
+doors are fed today, finding 3). That is the first point at which the arrangement knows which code
+a requirement will touch.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
