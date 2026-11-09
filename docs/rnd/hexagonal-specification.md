@@ -1186,6 +1186,310 @@ revisit condition fires and rhea enters a repository adapter as its library: reu
 Moving rhea's `py-gzkit` dependency to dev dependencies clears that path. Operator, verbatim: *"record
 note, push."*
 
+## decision · rebuilding never validates; each tightened rule declares its strategy for old state (operator ruling)
+
+Put to the operator, from Montenegro V02 §9.2.3 (PDF pp.261–264) and §9.5.1 (p.290): creation checks
+every current rule; rebuilding (his `reconstitute`, Vernon's idiom) takes stored state as ground truth,
+does not validate, raises no events and cannot fail, and its back door is closed by an architecture
+rule. When a rule is tightened after data was stored, a domain strategy decides: migrate, grandfather, or
+revalidate on the next modification. In gzkit terms: migrate means appending a correcting event, as the
+ledger is append-only (precedent: `gz migrate-semver`, `artifact_renamed`); grandfather means a roster or
+cutoff (precedent: `data/foundation_grandfather.json`, `data/module_size_grandfather.json`, terminal OBPI
+briefs exempt as sealed records); revalidate means the entity's next changing method checks the full
+current rule. Example: ADR-0.0.59's REQ-kind rule against OBPIs completed before it. Operator, verbatim:
+*"go with recommendations"*.
+
+Settled:
+
+- rebuilding from the ledger never validates; only the repository adapter may call it (E2's
+  `model_construct()` exemption), and the dependency test enforces that;
+- every tightened rule declares its strategy for old state when it is tightened; the default is
+  revalidate on next change; terminal entities are grandfathered; migration is only by appended events;
+- a tightened rule with no declared strategy is incomplete, on the pattern of the mode contract.
+
+Group B (value objects, entities, rebuilding and old state) is settled.
+
+## decision · the run keeps its method after the accepted-recommendation check (operator ruling)
+
+Per gz-rnd's red flag, the agent said that apart from the operator's pushbacks (purity, ABC, Maven) the
+recommended option had won nearly every question, two recommendations had rested on wrong claims, and
+asked whether the questions were the right ones, offering fewer recommendations, a counter-case per
+question, or different questions. Operator, verbatim: *"carry on"*.
+
+## decision · the stored shape is a separate model, mapped both ways in the repository adapter; the domain uses enums (operator ruling)
+
+Put to the operator, with `ObpiFrontmatter` (`src/gzkit/core/models.py` line 372) as the instance: a
+storage shape in `core/` whose `lane` admits `"lite"`, `"heavy"`, `"Lite"`, `"Heavy"` and whose `status`
+admits eleven values from different eras, `extra="allow"`. (A) a separate stored-shape model in the
+repository adapter, mapped two ways by a mapper inside that adapter; (B) the domain entity doubles as the
+file schema. The agent recommended A: Montenegro explicit (separate persistence model, NOTE PDF p.289;
+mappers are collaborators inside adapters, p.286), Cosmic Python in part, Khorikov contrary (§11.1.3),
+Cockburn silent; 2.5/4. Sub-answers: two-way at repository adapters, one-way each direction at driving
+adapters, no bridge region, Pydantic not dataclasses. Operator, verbatim: *"yes, A and we'd normalize to
+enums (or whatever is close in Python) in the domain to avoid that spelling nonsense. also, Pydantic and
+schema would have avoid that spelling vibe coding because it came from models working in markdown."*
+
+Settled:
+
+- each repository adapter keeps its own stored-shape model and a two-way mapper; the frontmatter models
+  leave `core/`;
+- a closed set in the domain is an `enum.StrEnum` (stdlib, Python 3.11+): one spelling, a named type, and
+  exhaustive `match` with `assert_never` under C1; tolerance of old spellings is the adapter's job.
+
+Finding, measured 2026-11-09, on the operator's second sentence: the schema and the Pydantic model existed
+and were widened to admit the drift rather than refuse it. `src/gzkit/schemas/obpi.json` enumerates
+`"lite"`, `"heavy"`, `"Lite"`, `"Heavy"` for `lane`; 479 files under `docs/`, `design/` and `.gzkit/` carry
+`lane: Lite` or `lane: Heavy` against 397 with the lowercase form. The status list is partly a ruled
+two-vocabulary mapping (its description cites ADR-0.0.16's `STATUS_VOCAB_MAPPING`), not spelling drift
+alone; the lane capitals are drift. Carried to the write-side question.
+
+## decision · canonical on write, tolerant on read (operator ruling)
+
+Put to the operator: new writes canonical only, the schema admitting one spelling for them; old spellings
+accepted on read only, by the adapter's stored-shape model, and handled under the old-state ruling
+(grandfathered or migrated per rule). Also recommended in the same message: widening a schema enum needs a
+recorded ruling. Operator, verbatim: *"agree ==> yes, canonical on write and tolerant on read."*
+
+Settled: the adapter writes only the canonical spelling, produced from the domain enum; the read-side
+tolerance lives in that adapter's stored-shape model alone. Not ruled: the enum-widening rule, which the
+operator's words did not take up, so it is put again.
+
+## decision · widening a closed set needs a recorded ruling (operator ruling)
+
+Put again to the operator: widening a schema `enum`, a `StrEnum` or a `Literal` needs a recorded ruling,
+witnessed by a shrink-only baseline of each closed set's members that `gz validate` compares in `gz
+check` (precedent: `data/ruff_baseline.json`, `data/module_size_grandfather.json`); a new member fails
+unless its commit carries the ruling. The mechanism it stops: a write fails the schema, the agent widens
+the schema, the drift becomes legal (the 479 capitalised-lane files). Operator, verbatim: *"yes to this
+too: "Then add a rule of its own: widening a schema enum needs a recorded ruling, the same as any change
+to doctrine, so the next agent that hits a validation error can't quietly add "Lite".""*
+
+**commissions:** 4, the closed-set widening rule and its shrink-only validator.
+
+## decision · a DTO is a frozen Pydantic model with types and no domain rules (operator ruling)
+
+Put to the operator: a DTO (what a non-repository driven port carries, or a query returns) is a frozen
+Pydantic model checked for types only, built by plain construction, with no `create` factory, exempt from
+the always-valid rule; a command or query is a validated message with `create`; a value object or entity
+holds every domain rule. Montenegro explicit (§9.3.3, PDF pp.271, 273), Cosmic Python's read models
+plain; Khorikov and Cockburn silent; 2/4. A DTO that enforced domain rules would be a second domain model,
+which canon rule 8 forbids. Operator, verbatim: *"agree with your yes to DTOs"*.
+
+## decision · group C closes; the operator's strict chain is answered as a strict graph (derived, not a new ruling)
+
+The operator's opening question, *"Perhaps we layer: shared kernel -> domain -> application/handlers ->
+adpaters as a strict chain?"*, is answered by the per-region dependency table already ruled: the kernel is
+at the bottom; the domain and both port packages each depend on the kernel alone, side by side; handlers
+join them; each adapter reaches only the inner part it needs; the configurator sees everything. A strict
+graph, not a chain, enforced by the widened dependency test. Bleed-through is answered by the same table
+and by the stored-shape ruling. Group C (mapping, DTOs, repositories, package design, the chain, the
+kernel, bleed-through) is settled; uv-build enforcement belongs to group F.
+
+## decision · a command bus and a query bus in the kernel (operator ruling)
+
+Put to the operator: (A) the driving adapter sends each command through a bus, a startup registry from
+command type to handler that fails fast on a missing handler, with cross-cutting work (ledger event, mode
+contract level, `Task:` attribution, guards) in one place, decorators around the bus (Montenegro §4.5.4);
+(B) the configurator injects use-case Protocols into the CLI. Montenegro (§4.5–§4.6; bus contracts in his
+kernel) and Cosmic Python (the message bus is *"the main entrypoint to the service layer"*, ch. 9) are
+explicit; Khorikov and Cockburn have no bus; 2/4. The agent recommended A, stdlib only, use-case Protocols
+kept as the handlers' signatures. Operator, verbatim: *"yes to bus, but montenegro uses @usecase decorators
+too, which you so here: "he use-case Protocols remain as the handlers' signatures.""*
+
+Settled: a command bus and a query bus, stdlib only, in the kernel; the registry is built at startup and
+fails fast; cross-cutting concerns wrap the bus once. The operator's second clause opens the stereotype
+question (Montenegro's `@UseCase` and its siblings), put next.
+
+## decision · stereotype decorators: the agent's revised case challenged on three counts (operator correction)
+
+The agent had revised its recommendation to no stereotype decorators, arguing that location (the package
+map) and kernel base classes already carry a class's region and kind, and citing `@advances` as a
+decorator that goes stale. Operator, verbatim: *"this sounds more like unfinished work rather than a flaw:
+"gzkit also has the opposite case: @advances, the TASK decorator.""*; *"I thought we wanted Prototype
+instead of ABC?"*; *"models will vibe location, I need an answer on kernel base classes. also, decorators
+are method wrappers, so don't we get added business logic enforcement, validation, qc opportunities?"*
+
+The agent's answers:
+
+- `@advances` is withdrawn as evidence. Under the correction-vs-enhancement doctrine, a channel whose
+  declared intent is unmet is a correction, not proof that decorators fail. Carried for row 2: whether
+  `@advances` (`.gzkit/rules/task-discovery.md`, *"advisory and expected to be empty"*, GHI #752)
+  fulfils its declared intent.
+- Canon rule 4's `typing.Protocol` governs ports, whose implementations are swapped by composition. A
+  value object, entity, event, command or DTO is not a port: it already inherits Pydantic's `BaseModel`,
+  and a Protocol cannot carry `model_config` or a validating factory, and would admit any look-alike
+  object. A kernel base class for these kinds does not conflict with rule 4.
+- Location alone can be vibed, so region and kind cross-check each other: the test requires each kernel
+  base to be subclassed only in its region, and each region's classes to subclass the right base.
+- Behaviour-carrying decorators are a separate question from marker stereotypes, put after the base
+  classes.
+
+## decision · the kernel ships the domain and message base classes, cross-checked against region (operator ruling)
+
+Put to the operator: the kernel ships `ValueObject` (frozen, `extra="forbid"`, `create(...) -> Self |
+ValidationErrors`), `Entity`, `DomainEvent` (frozen, primitives), `Command` and `Query` (frozen, primitives,
+`create`) and `Dto` (frozen, types only, no `create`), all Pydantic `BaseModel` subclasses; the dependency
+test cross-checks each class's base against its region (an `Entity` outside `core/domain` fails; a class in
+`core/domain` with no domain base fails; a command with a domain-typed field fails). Ports stay
+`typing.Protocol` under canon rule 4. Operator, verbatim: *"yes: "does the kernel ship these base classes,
+with the test cross-checking each class's base against its region?""*
+
+## source · decorator use cases, pasted by the operator from Gemini (secondary)
+
+Pasted 2026-11-09, a model's generic list, unverified and cited as secondary: logging, timing and
+profiling, authentication, and caching (`functools.lru_cache`) as common decorator uses that keep code
+DRY. Operator's framing, verbatim: *"i want to settle the decorator question because we may be leaving a
+LOT of power on the table"*.
+
+## source · the mode contract names a decorator as a declaration shape
+
+`.gzkit/rules/mode-contract.md`, read 2026-11-09: *"Until RO-13 builds the declaration shapes (decorator,
+Markdown MEL block, `gzkit.mx.alarms` arguments)"*, and *"The level is applied at the place of call, never
+by the declaration."*
+
+## decision · decorator kinds are mapped to regions; a decorator never makes a business decision (operator ruling)
+
+Put to the operator: a map of decorator kinds to regions. Contract QC (`@transition` re-validating the new
+version, checking its type and that an event was recorded; Pydantic `@validate_call` at handler entry) may
+live in the domain, handlers and ports. Caching (`functools.cache`) may live on pure domain functions,
+which point 2 makes safe, and in adapters. Cross-cutting work with I/O (logging, timing, the ledger event,
+the mode level, `Task:` attribution) lives in bus middleware chosen by the configurator, and in adapters for
+their own technology. Gates (a held lock, an attestation, a pipeline stage) are declared per command and
+applied by bus middleware, while a business authorisation rule stays in the entity method (Montenegro,
+`Article.publish`). Retry and timeout live in driven adapters (Montenegro §10, PDF p.328). Declarations
+(`@covers`, `@advances`, the mode-contract declaration) live in tests and controls. Mode levels follow
+`mode-contract.md`: a decorator declares, the middleware applies at the place of call. The rule over all:
+a decorator enforces a contract, applies a policy the configurator chose, or declares a fact; it never makes
+a business decision (Montenegro's handler litmus test, §4.4.2). Operator, verbatim: *"decorators can take
+args, which really increases our power to keep behaviors right"* and *"yes ==> "does gzkit adopt this map
+of decorator kinds to regions, under that rule?""*
+
+Settled: the map and the rule above. The operator's point on arguments is part of it: a parameterised
+decorator states the contract it enforces at the definition, for example a transition's source and target
+states and the event it must record, or the gates a command requires, so the declaration and the check
+cannot drift apart.
+
+## decision · a decorator opportunity review is a follow-on run (operator ruling)
+
+The operator asked, verbatim: *"it sounds like a decorator use opportunity review is a new rnd session?"*
+The agent agreed: this run settles the rules for decorators; surveying gzkit's code, guards, hooks and the
+RO-13 mode-contract shapes for where parameterised decorators can enforce contracts, declare gates and mode
+levels, and move cross-cutting work into bus middleware has its own sources and would stall the
+specification; it builds on the kernel and the bus, so it fits after this run signs off. Put: add it to row 7
+as (b). Operator, verbatim: *"yes: shall I add the decorator opportunity review to row 7 as (b)?"*
+
+**commissions:** 7, (b) a decorator opportunity review within the decorator map this run ruled.
+
+## decision · a domain event and a ledger event are one fact in two shapes (operator ruling)
+
+Put to the operator: an entity method returns its new version and the event it recorded; the handler passes
+the event to the ledger repository (a Protocol in the domain); the ledger adapter writes the event's stored
+shape, canonical on write; rebuilding replays the same events. Sources: entities recording events, 3/4
+(Montenegro, Cosmic Python, Khorikov; Cockburn silent); the domain event as the stored record, 0/4, since
+none of them stores state as events, and the ruling follows from the frozen-entity ruling instead. Held: events
+no entity records, such as `mx_session_lease_expired`, written by the session-orientation script. Operator,
+verbatim: *"agree and this should bring much better cohesion and discipline: "My recommendation is yes: the
+domain event and the ledger event are one fact, in two shapes.""*, quoting the held case as their *"for
+instance"*.
+
+Settled: a ledger row exists because an entity method recorded the event; no handler, command, hook or script
+writes a ledger row any other way.
+
+## source · the ledger's event types, measured
+
+`.gzkit/ledger.jsonl`, counted 2026-11-09: 20,390 rows across 78 event types. The largest are
+`artifact_edited` (5,494), `agent_sync_completed` (1,578), `obpi_created` (969) and `gate_checked` (943).
+Two names break the snake-case convention: `adr-evaluation` (168) and `patch-release` (35). Many types record
+an observation (a check, a sync, an edit) rather than an entity's state change.
+
+## decision · every ledger event type belongs to an entity (operator ruling)
+
+Put to the operator, on the measurement above: (A) every ledger event type has an owning entity, and an event
+with no owner is an entity not yet modelled or does not belong in the ledger; (B) two kinds, entity-owned domain
+events and typed but unowned observations. The agent recommended A as the strict reading that keeps the
+one-fact ruling without exception, warning that under B "observation" becomes the label for whatever nobody
+models. Operator, verbatim: *"oh gosh, that means they've been terribly VIBED!"*; *"yes, you example above
+means strict! A"*; and on the cost, *"gzkit has suffered from sporadic software engineering, so this is the
+challenge: "The cost is real: 78 types each need an owner, a rename into the drydock vocabulary, or a decision
+to leave the ledger.""*
+
+Settled: the principle. Held for the bounded-context question: assigning each of the 78 types an owning entity,
+a drydock name, or an exit from the ledger. The operator's last sentence is carried to the close as material for
+the restated challenge.
+
+**Amended the same turn by the operator**, verbatim: *"we will NOT  leave the ledger"*. Read as removing the
+exit: no event type leaves the ledger; each of the 78 receives an owning entity and a drydock name, telemetry
+such as `artifact_edited` included. The agent's reading was stated to the operator for correction.
+
+## source · `src/gzkit/commands/obpi_complete.py`, surveyed
+
+Read 2026-11-09 by line count and a search of its definitions and calls, not in full: 2,074 lines in one
+command module. It imports `subprocess`; runs the security-review gate inline (reading `arb-step-security-*`
+receipts from disk and checking their age); runs the attestation receipt-binding gate; builds evidence
+payloads; and emits several ledger events itself (`obpi_receipt_emitted`, `audit_receipt_emitted`, a
+meta-receipt-bind event).
+
+## decision · follow-on reactions are listeners on the bus, dispatched after the event is in the ledger (operator ruling)
+
+Put to the operator: (A) a handler appends the event first; the bus then dispatches it to listeners, each of
+which sends a new command, its own use case; a failed reaction leaves the fact recorded and can be retried or
+replayed; (B) the handler performs reactions inline. Montenegro (listeners are driving adapters re-entering the
+command bus; one event, two phases, §9.4.3), Cosmic Python (event handlers on the message bus, ch. 8–9) and
+Khorikov (dispatch after persistence, ch. 7) agree; Cockburn silent; 3/4. In gzkit the ledger is already the
+outbox Montenegro builds separately (§9.5.2), so a missed reaction is found by replay. `obpi_complete.py`
+emitting its events inline was shown as B. Operator, verbatim: *"yes, A"*.
+
+Material for the restated challenge, operator's words during group D: *"gzkit is a vibe coding paradise"*;
+*"gzkit has been a vibe-coder's Valhalla"*; and of the ledger, *"this is a vibe coding megalodon"*, *"the
+epitome and apex of vibe coding"*.
+
+## source · Evans, *Domain-Driven Design: Tackling Complexity in the Heart of Software*, key notes
+
+The operator's licensed copy, PDF, read 2026-11-09 by a research subagent in full for Ch. 2 (Ubiquitous
+Language), Ch. 6 (Aggregates, Factories, Repositories), Ch. 14 (Maintaining Model Integrity) and Ch. 15
+(Core Domain, Generic Subdomains, Segregated Core), with related passages in Ch. 7, 11 and 16 and the Glossary.
+The report is held outside the repository; only these cited key notes land. The ebook carries no printed page
+numbers; printed pages are anchored from its Photo Credits page and marked "~" where interpolated.
+
+- **Aggregates.** Invariants inside an aggregate hold at every commit; rules spanning aggregates may lag and be
+  settled by event processing, batch processing or other update mechanisms (PDF 166, p. ~128). Evans states no
+  one-aggregate-per-transaction rule; that strict form comes from later authors. Ch. 7 refactors the cargo
+  design so a Handling Event no longer touches the Cargo aggregate (PDF 224, p. ~178).
+- **Events.** No domain-event pattern and no Glossary entry for "event". The precursors keep history as data in
+  the model: Handling Event is its own aggregate root and Delivery History is derived from it by a repository
+  query (PDF 214, 224–225); Ch. 11 accounting Entries are never removed (PDF 368).
+- **Bounded Context.** Its boundary is drawn by team organisation, by use within parts of the application, and by
+  code bases and database schemas (PDF 413, p. ~336); it is not a Module, and module namespaces can hide an
+  accidental model split (PDF 415, p. ~338); one team per context is the usual correspondence (PDF 470, p. ~387).
+- **Shared Kernel.** A subset of the model with its code and database design, often the Core Domain or Generic
+  Subdomains, changed only after consulting the other team, with both teams' tests passing (PDF 434, p. ~355).
+  For Evans the term means jointly owned model and code, not a runtime core: it collides with this run's
+  *kernel*, which holds no domain (PDF 433–434).
+- **Published Language.** The interchange language is not the host's model and stays stable while the model
+  changes (PDF 481, p. ~397).
+- **Ubiquitous Language.** Each context speaks its own dialect, and context names enter the language (PDF 414,
+  423).
+- **Repository.** A collection-like access point for aggregate roots only, leaving commits to the caller (PDF
+  191–196).
+
+## decision · new use cases are built outside-in, test first; brownfield code enters by the five-phase migration (operator ruling)
+
+Put to the operator: every new use case is built in this order, each step's test first: (1) the command
+(primitives, `create`) and the use-case Protocol, tested valid and invalid; (2) the handler against fake driven
+ports, the domain never doubled; (3) the domain (entity method, value objects, recorded event), pure unit tests;
+(4) the driven ports the handler needed; (5) the adapters, tested by dependency kind; (6) wiring in the
+configurator, one end-to-end check through the bus. Montenegro's assembly checklist (§7.2, PDF p.175), Cosmic
+Python's test-driven service layer (ch. 4–5) and Khorikov's humble controller agree; Cockburn silent; 3/4. Each
+REQ maps to a step and its `@covers` test is that step's test; step 2 catches a handler reaching for
+`subprocess` or the file system. Brownfield code such as `obpi_complete.py` enters by the five-phase migration
+(Extract, Define, Wrap, Refactor, Replace); the order binds everything new from its first commit, rhea included.
+Operator, verbatim: *"do, and we are going to need this, big time"*, quoting the brownfield sentence, and
+*"yes ==> "The open question is still: is every new use case built outside-in in that order … with each step's
+test written first?""*
+
+Group D is settled except aggregates and bounded contexts, which wait for Khononov's passages (the 78
+event-type assignment rides on them).
+
 ---
 
 ## Disposition map
@@ -1198,7 +1502,7 @@ note, push."*
 | 4 | control surface, rule, doc, skill, hook | | | |
 | 5 | one-shot refactoring | | | |
 | 6 | no action | | | |
-| 7 | further research | commissioned | (a) a knowledge and memory management run: graphify, graphiti and the LightRAG fork against the ontology, the handoff rulings store and the insights log | (a) opened by the operator's graphify/graphiti question, 2026-11-08, outside the hexagonal subject. The operator opens it |
+| 7 | further research | commissioned | (a) a knowledge and memory management run: graphify, graphiti and the LightRAG fork against the ontology, the handoff rulings store and the insights log; (b) a decorator opportunity review: where parameterised decorators can enforce contracts, declare gates and mode levels, and move cross-cutting work into bus middleware, across gzkit's code, guards, hooks and the RO-13 mode-contract shapes | (a) opened by the operator's graphify/graphiti question, 2026-11-08, outside the hexagonal subject; (b) opened by the operator's question of 2026-11-09, within the decorator map this run ruled, best after sign-off. The operator opens each |
 
 ## Close
 
