@@ -2133,3 +2133,4 @@
 {"ts": "2026-11-09T11:01:05Z", "source": "20261109T110105Z-hex-spec-groups-b-to-d.md", "text": "Every ledger event type belongs to an entity, and no type leaves the ledger (verbatim: \"yes, you example above means strict! A\" and \"we will NOT  leave the ledger\")."}
 {"ts": "2026-11-09T11:01:05Z", "source": "20261109T110105Z-hex-spec-groups-b-to-d.md", "text": "Follow-on reactions are bus listeners dispatched after the ledger append (verbatim: \"yes, A\")."}
 {"ts": "2026-11-09T11:01:05Z", "source": "20261109T110105Z-hex-spec-groups-b-to-d.md", "text": "New use cases are built outside-in, test first; brownfield code enters by the five-phase migration (verbatim: \"do, and we are going to need this, big time\")."}
+{"ts": "2026-11-09T23:54:08Z", "source": "20261109T235408Z-hex-spec-lease-renewed.md", "text": "Renew the MX session lease, write a successor handoff and git sync (verbatim: \"renew, new handoff, and git sync\")."}
