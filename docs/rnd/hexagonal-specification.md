@@ -807,6 +807,62 @@ principle governs them. Operator, verbatim: *"Yes, that split"*.
 Group A's principles are now settled: purity (point 2), encapsulation (E1 to E3) and completeness (C1,
 C2). The ontology's DDD role stays open until Evans and Khononov are in reach.
 
+## decision · package design: the hexagon is `core/`, adapters are its siblings, the map names each (put; the operator agrees in principle)
+
+Put to the operator: the six parts become physical packages, overturning canon rule 7 (3/4: Cockburn
+§2.4 and Fig. 4.6, Montenegro §6.1, Cosmic Python; Khorikov silent; none supports rule 7). The operator
+asked whether these are all within *core*, then whether some stay siblings of core, like the CLI. The
+agent answered from the sources: inside the walls, `core/` holds `domain/`, `ports/driving/`,
+`ports/driven/` and `handlers/` (Cockburn §2.4: ports *"are part of the app"*; Montenegro's
+`application-core`); outside, each adapter is its own sibling package beside `core/` (Montenegro §6.1's
+adapter modules; Cockburn Fig. 4.6), the CLI already one (`src/gzkit/cli/`); a `configurator` module
+wires them. Because a sibling's name does not say it is an adapter, the house-style run's whole-system
+map, a short data list in `pyproject.toml` `[tool.py-gzkit]`, names each package's region, and the
+dependency-rules test reads it, as Montenegro's rule configuration names each layer's packages (§7.2).
+A worked sketch of the airlock entry use case was shown. Operator, verbatim: *"okay, that seems like
+better organization. you say we'd track this in pyproject.toml?"*
+
+The home is settled canon from the house-style run: *"house-style facts go in `pyproject.toml`'s tool
+table; `.gzkit.json` keeps governance settings"* (`docs/rnd/house-style.md`, decision of that title,
+superseding its earlier `.gzkit.json` ruling), the table named `[tool.py-gzkit]` because gzkit's
+distribution is `py-gzkit` on PyPI.
+
+## decision · the package list is named the *hexagonal architecture system package map* (operator ruling)
+
+Operator, verbatim: *"why do you keep calling this a map? map to what?"* The agent answered: it maps
+package names to parts of the hexagon; *whole-system map* was the agent's coinage in the house-style
+run; Montenegro calls the equivalent his rule configuration (§7.2); the agent proposed *the hexagon
+declaration*. Operator, verbatim: *"ok, i get it "hexagaonal architecture system package map" -
+pyproject.toml?"*
+
+Settled as a term: **the hexagonal architecture system package map** (the operator's wording, its
+spelling corrected), the list in `pyproject.toml` `[tool.py-gzkit]` that names each top-level package's
+part of the hexagon. *_Avoid_: hexagon declaration, rule configuration*; the house-style run's *whole-
+system map* names the same thing. Its home is confirmed by the house-style ruling above. The table's
+key names are diamond 2's.
+
+## decision · canon rule 7 is overturned; the package design is ruled (operator ruling)
+
+Put to the operator: overturn canon rule 7 with the package design above. Operator, verbatim: *"Yes,
+rule it"*.
+
+Settled:
+
+- `src/gzkit/core/` is the hexagon, everything inside the walls: `domain/`, `ports/driving/`,
+  `ports/driven/`, `handlers/` (names of the inner packages are diamond 2's).
+- Each adapter is its own sibling package of `core/`; the CLI (`src/gzkit/cli/`) is the driving adapter
+  that exists today.
+- One `configurator` module wires them.
+- The hexagonal architecture system package map in `pyproject.toml` `[tool.py-gzkit]` names each
+  top-level package's part, and the dependency rules are derived from it.
+
+Rule 7's one surviving clause is that `core/` stays; it now holds the whole hexagon. Consequences,
+carried to the disposition map and not executed here: rule 7 and the canon page's § *Adapters-outside-
+the-core as a folder discipline is NOT adopted* are rewritten (row 4); `ADR-pool.hexagonal-folder-
+structure-realization`, marked Superseded by the v0.2.0 directive this ruling reverses, is read before
+anything cites it; moving gzkit's 128 top-level modules into the design is the five-phase migration,
+and since a change to the package map is a classic ADR, it routes through one (rows 1 and 5).
+
 ## source · the ontology describes itself as a read-only projection
 
 `src/gzkit/ontology/unified.py` (module docstring) and `src/gzkit/ontology/corpus.py:1` · read 2026-11-08
