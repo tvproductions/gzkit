@@ -1175,6 +1175,17 @@ Finding, carried for row 2 and not executed: rhea's `pyproject.toml` lists `py-g
 **commissions:** the proving-ground work in rhea, whose route (rows 1, 4 or 5) the disposition map
 settles.
 
+**Note, 2026-11-09, on the operator's concern** (verbatim: *"shame, it seems we'll end up duplicating
+rhea as an internal feature of gzkit anyhow."*). The agent's answer: the two sit at different levels.
+rhea is a generic engine, `ReadRepo[T]` with a predicate DSL and parity across backends; gzkit's
+repositories are domain Protocols in governance terms (`events_for(adr_id)`), each backed by a small
+adapter over JSONL or frontmatter, with no DSL and no multi-backend parity. What they share is the
+pattern and the kernel, and the direction without a cycle is that rhea builds on gzkit's kernel (its
+bases, error values and dependency checker), not the reverse. Should gzkit need real querying, the
+revisit condition fires and rhea enters a repository adapter as its library: reuse, not duplication.
+Moving rhea's `py-gzkit` dependency to dev dependencies clears that path. Operator, verbatim: *"record
+note, push."*
+
 ---
 
 ## Disposition map
