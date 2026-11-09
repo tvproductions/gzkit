@@ -972,6 +972,209 @@ its citation in the report:
 - the brownfield route builds the service layer (handlers) first, not ports;
 - the book avoids mocks and prefers fakes, and has no architecture tests or import-linting.
 
+## decision · one kernel package, the adopter-facing toolkit, a sibling of `core/` (operator ruling)
+
+Question put: should gzkit have a small package below the hexagon that every region may import,
+holding only building blocks and no governance concepts? Rated 1/4: only Montenegro has one (his
+architecture kernel, §4.1.1 and Appendix A, which he says is not a DDD shared kernel; his WriteFlow
+also keeps a separate project `shared` module, V02 §9.2.1/§9.2.4). Cosmic Python, Khorikov and
+Cockburn have none.
+
+The agent's reasoning: Montenegro's kernel exists because his input-ports module may not depend on the
+domain, so for gzkit's own code the bases could live in `core.domain`. The case for it is adopters: if
+gzkit imposes hexagonal on every adopter, as Django imposes `Model` and `View`, their code needs
+something to import, and that cannot be gzkit's `core/`, which holds governance. The recommendation was
+one kernel, stdlib and Pydantic only, with no gzkit domain in it, imported by gzkit's hexagon and by
+adopters' hexagons alike. Operator, verbatim: *"ok"*.
+
+Settled:
+
+- one kernel package, a sibling of `core/`, named in the hexagonal architecture system package map;
+- it is the piece adopters build on: candidate contents are the command, query and domain-event bases
+  (frozen Pydantic models), the error-value types such as `ValidationErrors`, and the dependency-rules
+  test; any handler or port markers wait on the decorators question (group F);
+- it depends on stdlib and Pydantic only, and holds no gzkit governance concept. This answers the
+  operator's opening question: strict stdlib use is what makes it a dependable kernel.
+
+Held open: its contents item by item (groups B to F); its name (diamond 2); the DDD shared kernel
+between bounded contexts, which waits for Evans and the bounded-context question (group D). The
+operator's proposed strict chain, shared kernel → domain → handlers → adapters, is answered by this
+entry only for the kernel's place at the bottom.
+
+## source · gzkit's existing identifier value types
+
+`src/gzkit/core/models.py` lines 475 to 515, read 2026-11-09: `AdrId` and `ObpiId`, frozen Pydantic
+models (`extra="forbid"`) with one `raw: str` field held to a pattern, a `parse` classmethod and
+`__str__`. Measured the same day: no module outside `core/models.py` names either type, and 449 fields
+in `src/gzkit` are typed `adr_id: str` or `obpi_id: str`.
+
+## decision · value objects are frozen Pydantic models, and a value's rules are methods on its type (operator ruling)
+
+Put to the operator: three Python shapes for a value object. (A) A frozen Pydantic model: it
+validates, ty tells one type from another, and it can carry behaviour. (B) `Annotated[str,
+StringConstraints(...)]`: it validates only as a model field, and ty sees `str`. (C) `typing.NewType`:
+ty tells the types apart, but there is no validation and no behaviour. The agent recommended A, as
+your E2 ruling already makes Pydantic the validating factory. The example given was semver ordering
+held as `AdrId.__lt__`, so the `AGENTS.md` rule *"never lexicographically"* lives on the type rather
+than at every place that sorts. Operator, verbatim: *"yes, A"*.
+
+Constellation: Montenegro, Khorikov (primitive obsession named as a defect) and Cosmic Python
+(frozen value objects such as `OrderLine`) agree; Cockburn is silent. 3/4.
+
+Settled: a value object is a frozen Pydantic model created through `create(...) -> Self |
+ValidationErrors` (E2), and a rule about the value is a method on its type. Held open: whether raw
+strings convert at the hexagon's walls, which was put in the first form of the question and not
+answered there, so it is put again.
+
+## decision · raw strings become value objects at the hexagon's walls (operator ruling)
+
+Put to the operator: does a raw string become a value object at the walls, so that no value with
+rules enters the hexagon as a plain `str`? Inbound, the adapter calls `create(...)` and reports a bad
+string itself; inside, handlers, ports and the domain take the value type, and ty refuses a `str`;
+outbound, the adapter writes `str(value)`. The alternative, conversion inside handlers, puts `str` on
+the input ports, against point 1 (ports in domain types). Montenegro (the adapter's mapping), Khorikov
+(validate at the edge, trust inside) and Cosmic Python (entrypoints) agree; Cockburn is silent. 3/4.
+Operator, verbatim: *"yes"*.
+
+**Correction, 2026-11-09, after the ruling.** The Montenegro citation above is wrong. Read against the
+V02 key notes (§9.3.1, PDF p.268; p.270): his commands and queries carry primitives only, never domain
+value objects, so the input-ports module does not depend on the domain, which he calls the most
+important decision in that section; the value-object factories validate again on the way into the
+domain, a deliberate double check. Montenegro therefore disagrees with this ruling, and the rating is
+2/4 (Khorikov, Cosmic Python). His reason is the Maven module constraint already weighed in the kernel
+entry; gzkit's ports may import `core.domain`. Put back to the operator in the next entry.
+
+**Second correction, the same day, on the operator's challenge** (verbatim: *"its not that simple, what
+does maven do? what is our rationale for this?"*). Montenegro's pages read in full (§6.1, PDF
+pp.145–149; §9.3.1, PDF pp.268–271). Maven is the fence, not the reason. A Maven module declares its own
+dependencies and the compiler refuses an import from an undeclared one (p.145); his NOTE names Gradle
+subprojects, .NET projects, npm workspaces and Go modules as the same idea. The reason is architectural:
+*"If a command exposed an ArticleId, then every caller of that command—the REST controller, the bus, any
+future adapter—would drag in the domain"* (p.268). Table 6.1 (p.149) bars the REST adapter from the
+domain; only the persistence adapter may see it. And the agent's claim that "ports and adapters may
+already import `core.domain`" under a ruled table is unsourced: no entry in this record rules who may
+import whom. Both this ruling and the kernel entry's reasoning rested on it. The ruling is reopened.
+
+Settled: only adapters hold raw strings for a value with rules. The mapping mechanics stay in group C.
+
+## decision · entities are frozen; each change returns a new version (operator ruling)
+
+Put to the operator: (A) a mutable entity changed in place by its methods, the practice of Montenegro
+(ch. 9 `publish`), Cosmic Python (`Batch.allocate`) and Khorikov; or (B) a frozen entity whose method
+checks its rule and returns a new version. The agent recommended B against all three, for gzkit's own
+reasons: the system of record is an append-only ledger, so a state is rebuilt from events and never
+overwritten; `models.md` already requires frozen models; a frozen object cannot be changed through a
+reference someone else holds. The cost named: a method returns `Self`, `model_copy(update=...)` does not
+validate, so the method checks its rule or rebuilds through `create`. The operator asked whether this
+holds whatever the states are; the agent answered that it does, that the example states were
+illustrative and will take the drydock ladder's names, and that a state in gzkit is derived from
+ledger events, never set. Operator, verbatim: *"yes, B"*.
+
+Settled: entities are frozen Pydantic models; a change is a method that checks its rule and returns the
+new version (with the event it records, under point 2). This departs from the three sources that rule on
+it, and the reason is gzkit's event-sourced ledger.
+
+## decision · driving adapters never import the domain; commands carry primitives; the handler converts (operator ruling)
+
+Put to the operator after the second correction: (A) Montenegro's Table 6.1, where driving adapters see
+only the input ports, commands and queries carry primitives validated in their own `create`, and the
+handler converts them into value objects as they enter the domain; (B) driving adapters may import value
+objects, never entities; (C) domain types everywhere, as first ruled. The agent recommended A, as it
+blocks the bypass in which a CLI command builds entities and calls them without a handler. Operator,
+verbatim: *"if this constrains vibe coding, then it is worth doing"* and *"but, yes, let's do A"*.
+
+Settled, replacing the walls ruling's mechanics:
+
+- driving adapters import the input ports (commands, queries, results) and the kernel, never the domain;
+- commands and queries carry primitives and validate them in `create(...) -> Self | ValidationErrors`;
+  the handler builds the value objects, whose factories check again through the same kernel helpers
+  (Montenegro's deliberate double check, PDF p.270);
+- point 1's "ports in domain types" now reads: driven ports in domain types; input ports in primitive
+  commands, queries and results;
+- the persistence adapter is the one adapter that sees the domain, as repositories do (Table 6.1).
+
+Constellation: Montenegro explicit; the others silent or contrary by default. Held open: the dependency
+table for every region (this ruling fixes the driving adapter's row), and how it is enforced, which the
+operator raised in the same message (*"don't we need something like this too? … does astral supply it?
+does it exist for Python?"*).
+
+## source · Python's import-boundary tooling, a web search (secondary)
+
+Two web searches, 2026-11-09, secondary sources only, none read in full: no Astral tool (ruff, ty, uv)
+enforces which module may import which (ty checks only that an import resolves; pydevtools, *How Astral
+uses its own tools*); ruff's `flake8-tidy-imports` `banned-api`, which `pyproject.toml` already uses, bans
+a name project-wide, with per-file ignores; uv workspace members declare their own dependencies but share
+one environment, so an import is not refused. Third-party: import-linter (layers and forbidden contracts,
+`lint-imports` exit 1), tach (`tach.toml` declared dependencies, written in Rust; the DTach fork calls it
+unmaintained, 2026 status unconfirmed), modguard (tach's predecessor). gzkit's own witness,
+`tests/policy/test_import_boundaries.py`, read 2026-11-09: stdlib `ast`, fences `src/gzkit/core/`
+against three prefixes and a third-party allowlist.
+
+## decision · the dependency rules are enforced by gzkit's own stdlib test, read from the package map (operator ruling)
+
+Put to the operator: enforce the dependency rules with gzkit's own stdlib test reading every region's
+row from the hexagonal architecture system package map, or with import-linter or tach. Python has no
+compile-time fence, so Montenegro's two layers (Maven and ArchUnit, §7.1) become one. The agent
+recommended gzkit's own test: no new dependency (STDLIB-FIRST), the ruled package map as the single
+source both humans and the test read, and it ships in the kernel for adopters. Operator, verbatim: *"yes,
+fortify what gzkit already does."*
+
+Settled: `tests/policy/test_import_boundaries.py` is widened from `core/` alone to every region the
+package map names, and the checker is the kernel's for adopters to run. Held open: the per-region table
+it enforces.
+
+## decision · the per-region dependency table, with repositories in the domain and DTO-only driven ports (operator ruling)
+
+Put to the operator: Montenegro's Table 6.1 (§6.1, PDF p.149) mapped onto gzkit's regions. The kernel
+imports stdlib and Pydantic only. `core.domain` (entities, value objects, events, repository Protocols)
+imports the kernel. `core.ports.driving` (commands, queries, results, use-case Protocols) and
+`core.ports.driven` (non-repository Protocols) import the kernel only. `core.handlers` imports the
+domain, both port packages and the kernel. Driving adapters import the driving ports, the kernel and their
+library. Repository adapters import the domain, the kernel and their library. Other driven adapters
+import the driven ports, the kernel and their library. The configurator imports everything. No adapter
+imports another adapter, handlers or the configurator. Two departures were named: repository Protocols
+live in the domain (Montenegro §5.3, §6.1), and non-repository driven ports carry DTOs only, with the
+handler mapping to and from domain types. Operator, verbatim: *"yes, and we strongly recommend adopters
+do this."*
+
+Settled: the table above is the dependency rules for gzkit, and the widened test enforces it. Point 1 now
+reads: repository Protocols in domain types, in the domain; other driven ports in DTOs; input ports in
+primitive commands, queries and results. For adopters, the table is a strong recommendation, which the
+kernel's checker supports.
+
+## source · rhea, the repository harness gzkit governs
+
+`github.com/tvproductions/rhea` (private), read 2026-11-09 through `gh api`: README, `pyproject.toml`,
+the file tree and the last five commits (newest 2026-05-29). The README calls it a *"Repository Harness
+for Entity Abstraction"*: the Repository pattern only, read-only by design, a `ReadRepo[T]` contract with
+a small predicate DSL (`Eq`, `Gt`, `In_`, `And`, `Or`), in-memory and SQLite adapters planned, inspired by
+the stalled Red Bird library, and *"the first end-to-end development target for gzkit"*. The source tree
+holds `src/rhea/__init__.py` only; the design tree holds a foundation ADR with six OBPIs, a constitution and
+a PRD. `pyproject.toml` lists `py-gzkit>=0.28.0` as a runtime dependency and builds with hatchling.
+Raised by the operator, verbatim: *"we have an opportunity that is deliciously "meta" - we use rhea as a
+target for gzkit proving … and it is an entity repo. so do we adopt rhea?"*
+
+## decision · rhea is gzkit's proving ground (operator ruling)
+
+Put to the operator: (1) rhea as the hexagonal specification's first adopter and proving ground, built
+to the spec from its first commit, the first user of the kernel and its dependency checker outside gzkit;
+(2) gzkit consuming rhea in its own repository adapters, which the agent recommended setting aside: rhea
+lists `py-gzkit` as a runtime dependency, so the two would depend on each other; gzkit's ledger repository
+writes and rhea is read-only; STDLIB-FIRST asks for a named capability and rhea holds no code yet.
+Operator, verbatim: *"rhea is gzkit's proving ground."*
+
+Settled: rhea is the proving ground, where the specification and the kernel are tried by an adopter
+before anyone else meets them. Not ruled: part (2); the agent's recommendation and its revisit condition
+(rhea ships a write side, or gzkit needs several backends at once) are held for the disposition map, and
+should it return, the dependency table places rhea inside a repository adapter as its library, never in
+the domain.
+
+Finding, carried for row 2 and not executed: rhea's `pyproject.toml` lists `py-gzkit>=0.28.0` under
+`[project] dependencies`; governance tooling belongs in its dev dependencies.
+
+**commissions:** the proving-ground work in rhea, whose route (rows 1, 4 or 5) the disposition map
+settles.
+
 ---
 
 ## Disposition map
