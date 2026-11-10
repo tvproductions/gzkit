@@ -1637,6 +1637,318 @@ renamed the hexagonal architecture system package map, together with the outside
 are not taken up: no integration this run found needs a broker, and Montenegro defers the relay and inbound
 consumption to later chapters not yet in the MEAP. The frontier moves to group F.
 
+## source · Montenegro, Ch. 7 on annotation, structural and naming rules and the freeze, read in full
+
+MEAP V02, extracted text held outside the repository, read 2026-11-09: §7.1 (PDF pp.172–174), §7.4 (pp.191–195,
+prose and tables; the listings skimmed), §7.5–§7.6 (pp.196–207), §7.8–§7.9 (pp.212–214). Key notes only.
+
+- **Two layers of defence** (§7.1, Table 7.1): build modules reject wrong imports at compile time; the rule
+  library catches at test time what modules cannot: a handler taking a concrete adapter, a class carrying another
+  layer's stereotype, a handler with an unpredictable name.
+- **Annotation rules** (§7.4, Table 7.3): each stereotype belongs to one layer. `@UseCase` is required on every
+  input port, `@OutputPort` on every output port, `@ApplicationService` on every handler, and each is forbidden
+  elsewhere. The domain may carry its own stereotypes *"or no annotation at all"*. Adapters carry no required
+  stereotype; `@Adapter` exists on output adapters because the assembly's component scan discovers them by it.
+- **Structural rules** (§7.5): ports must be interfaces; commands and queries implement their marker, expose the
+  validating factory and no public default constructor; a use-case interface's type arguments must be a command
+  or a query.
+- **One naming rule** (§7.6): a handler is named after the use-case interface it implements, `XUseCase` to
+  `XHandler`.
+- **The freeze** (§7.8): existing violations are recorded in a committed store, new ones fail, the store only
+  shrinks, and a baseline is never refreshed to make new violations pass. This is gzkit's shrink-only baseline.
+
+What the record already rules against these: the dependency rules and their test; kernel base classes for domain
+and message kinds, cross-checked against region; ports as `typing.Protocol`. Not yet ruled: how a port and a
+handler are identified and cross-checked, which is where Montenegro uses stereotypes, and the naming rule.
+
+## source · uv's documentation on the build backend and workspaces, researched for the uv-build question
+
+[`sources/uv-boundary-enforcement-2026-11-09.md`](hexagonal-specification/sources/uv-boundary-enforcement-2026-11-09.md)
+· a research subagent's report on the uv 0.13.7 documentation, landed verbatim 2026-11-09, with the report's own
+marks for what it observed in a scratch workspace and what it inferred. Not yet put to the operator.
+
+> "uv can't ensure that a package uses its declared dependencies and nothing else."
+
+> "There must only be one top level module, and all data files must either be under the module root or in the
+> appropriate data directory."
+
+What bears on the run: `uv_build` governs which files enter a distribution and restricts no import; a workspace
+member run with `uv run --isolated --package <member>` gets an environment without undeclared sibling members,
+which uv documents as environment selection and not as enforcement; workspace members are separate
+distributions, and the docs describe no way for one wheel to bundle them.
+
+## decision · ports and handlers are identified by Protocol and name, not by marker decorators (operator ruling)
+
+Put to the operator, on the Ch. 7 source above: (A) shape and name, no markers: every class in a ports package is
+a `typing.Protocol` or a kernel message base; every handler explicitly inherits exactly one use-case Protocol and
+takes its name from it (`XUseCase` to `XHandler`, Montenegro §7.6); a driven port appears as a handler's
+constructor parameter; (B) Montenegro's stereotypes as decorators, required in their region and forbidden
+elsewhere (§7.4). The agent recommended A as a departure from Montenegro on the markers alone: his stereotypes
+also feed Spring's component scan, which gzkit's explicit configurator replaces, and a marker is a second
+declaration that can disagree with the type. Cosmic Python uses neither; Cockburn and Khorikov silent. Operator,
+verbatim: *"i like the typing.Protocol approach but I also realize that decorators can serve additional purposes
+for support and checking since they are method wrappers. I don't want to over-follow Montenegro as his project is
+Java Spring. So, I favor A but wanted to discuss it a bit."*
+
+The agent's answer: a marker declares what a class is and wraps nothing; a wrapper checks or changes what a method
+does. A drops only the marker. Wrappers stay governed by the ruled decorator map (`@validate_call` at handler
+entry, gates declared per command, `@transition` on entity methods, middleware around the bus), and they sit on
+the implementing handler, because a decorator on a Protocol method does not carry to the class that implements
+it. A's limit: a handler that omits its Protocol is caught by the checker test, not at import, as a forgotten
+marker would be. Operator, verbatim: *"yes: "Shall I record A with that clarification: identity comes from the
+Protocol and the name, and wrapper decorators stay governed by the decorator map?""*
+
+Settled: A, with that clarification. The checker's structural and naming rules are Montenegro's §7.5–§7.6 in
+Python's terms; his annotation rules (§7.4) are not adopted. Existing violations enter a shrink-only baseline,
+gzkit's standing practice and Montenegro's freeze (§7.8). Recorded as a caution for the specification, the
+operator's words: do not over-follow Montenegro where his answer is Java Spring's.
+
+## decision · gzkit stays one distribution; the checker test is the only fence (operator ruling, against the agent's recommendation)
+
+Put to the operator, on the uv source above, answering *"Can the uv-build system help with boundary/package/module
+enforcement?"*: `uv_build` restricts no import; a uv workspace is a partial fence. The agent named a conflict in
+the record: the kernel ruling has adopters subclass the kernel's bases at runtime, while the rhea finding puts
+`py-gzkit` in rhea's dev dependencies, and both cannot hold while the kernel ships inside the `py-gzkit` wheel.
+Options: (A) one distribution, the checker test the only fence, adopters taking `py-gzkit` at runtime; (B) the
+kernel as its own distribution in a uv workspace with `py-gzkit`, as Montenegro's kernel is its own artifact
+(Appendix A.1); (C) every region a workspace member. The agent recommended B and named its cost: a second PyPI
+name and release, the distribution validator and the version-release rule each extended to two packages.
+Operator, verbatim: *"Keep one distribution"*.
+
+Settled: A. `uv_build` and uv workspaces take no part in boundary enforcement; the dependency-rules test, read
+from the package map, is the fence, as ruled.
+
+The agent's reading of what follows, stated to the operator for correction: the conflict resolves toward the
+kernel ruling. An adopter that builds on the kernel takes `py-gzkit` as a runtime dependency, so the rhea finding
+(*"governance tooling belongs in its dev dependencies"*) is withdrawn and rhea's `[project] dependencies` entry
+stands; the note that moving it to dev dependencies *"clears that path"* for gzkit consuming rhea no longer
+holds, and that route stays set aside under its revisit condition.
+
+## source · Montenegro, Ch. 8 on the testing conventions, and how gzkit's features run today
+
+MEAP V02, extracted text held outside the repository, read 2026-11-10: §8.1–§8.2 (PDF pp.216–220), the opening of
+§8.4 with Table 8.3 (pp.224–225), §8.6.5 with Table 8.5 (pp.247–248) and §8.7–§8.8 (pp.249–253). Key notes only.
+
+- **Given, when, then in every unit test** (§8.2.1): the three phases are labels in ordinary unit tests, *"without
+  Cucumber"*; Cucumber is *"useful when executable scenarios need to be shared with stakeholders and exercised
+  through broader application behavior"*. The structure is *"non-negotiable across all test typologies"*.
+- **Handlers** (§8.4): *"Use mocks or small in-memory fakes for the output ports"*; pass a real command; prefer
+  assertions on results or state, and verify a port call only when the interaction is itself the contract.
+- **Adapters** (§8.6.5): the test follows from the dependency: an in-memory structure is used for real, an
+  interface or HTTP client is simulated in-process.
+- **Not tested** (§8.7): accessors, framework internals, private methods, domain objects as mocks, domain state
+  inside handler tests; and no *"integration tests disguised as unit tests"*.
+
+gzkit, surveyed 2026-11-10 by search, not read in full: 82 feature files under `features/`; their steps drive the
+CLI, in process through `gzkit.cli.main` or as a subprocess, against real temporary repositories. Of 802 test
+modules under `tests/`, 287 use `unittest.mock` or `patch`. Cosmic Python's position, from this run's reading
+(`sources/cosmic-python-reading-2026-11-08.md`, Ch. 3 and Ch. 13): fakes over mocks, in the classicist camp;
+patching *"couples tests to implementation"* (paraphrased there); the recipe for an adapter includes building a
+fake for unit, service-layer and handler tests.
+
+## decision · fakes only inside the hexagon; `unittest.mock` is banned there (operator ruling)
+
+Put to the operator, on the source above, answering *"How shall we do mocking (if at all?)"*: each driven port
+gets a hand-written fake adapter that satisfies its Protocol; handler tests wire the fakes, the test case being the
+configurator; `unittest.mock` and `patch` are not used inside the hexagon; a mock or stub is allowed only at an
+adapter's outer edge, for a dependency gzkit does not own. Montenegro allows mocks or fakes (§8.4); Cosmic Python
+argues for fakes (Ch. 3, Ch. 13); Khorikov keeps mocks for unmanaged out-of-process dependencies; Cockburn sets a
+test double beside each real adapter (Fig. 3.1); 3/4 toward fakes, Montenegro permitting. The cost was stated: 287
+of 802 test modules use `unittest.mock` or `patch` today.
+
+The operator asked for the case on both sides, verbatim: *"discuss the pro's and con's of fake vs mock. what are
+the mock risks?"* The agent's account: a mock accepts calls the port no longer has; a mock test restates the
+implementation; `patch` names a string path and hides a missing port; each test scripts its own version of the
+dependency; and, the agent's own reasoning and not a source's, an agent can make a failing test pass by patching
+one more thing. For mocks: no code to keep, easy failure injection, interaction contracts (Montenegro: verify a
+call only when the interaction is the contract), and honesty about dependencies one does not own. Against fakes: a
+fake can diverge from the real adapter, costs code up front and can grow. The agent offered a middle position (no
+`patch`, fakes by default, an injected mock only to force a failure).
+
+Operator, verbatim: *"if I take the middle position, what imposes discipline?"* The agent's answer: only the
+`patch` ban is checkable; *"a mock only to force a failure"* is a rule about intent with no witness, and canon
+decides between the two: *"Between two options, choose the one that leaves less to unverified guesswork.
+Maintenance burden, speed and lighter ceremony are not reasons to choose."* (AGENTS.md § MAKE LLM STOCHASTIC VIBES
+INERT). The middle position was withdrawn. Operator, verbatim: *"yes ==> "Shall I record the strict rule: fakes
+only inside the hexagon, enforced by banning the unittest.mock import there, with mocks allowed only at an
+adapter's outer edge?""*
+
+Settled: the strict rule. The ban is by the region a test covers, so the outer-edge exception is checkable too.
+Each fake carries what the ban removes: a way to force a failure and a record of calls. Every driven port thereby
+has a second adapter from its first test, which removes canon rule 5's second-adapter threshold as a reason to
+defer a port. Existing uses enter a shrink-only baseline and are reworked as each area migrates. Not ruled, noted:
+a shared contract test run against both the fake and the real adapter is general practice against a fake
+diverging; no source read in this run mandates it.
+
+## decision · where given, when, then is at play, the test is a Behave feature (operator ruling, departing from Montenegro and amending canon)
+
+Put to the operator: must every unit test of the hexagon carry Montenegro's given, when, then labels (§8.2.1), with
+the checker failing one that lacks them. Operator, verbatim: *"yes, but let's call this what it is... BDD and
+Behave and directly embrace this."* The agent asked which was meant, the name or the tool, quoting what the tool
+reading departs from: Montenegro's *"without Cucumber"*, and canon, *"`behave` belongs to heavy-lane OBPI work and
+to CI, never to a per-change gate; Gate 4 precedes Gate 5 on the heavy lane and nowhere else."* (AGENTS.md § Gate
+Covenant). The agent recommended Behave for handlers only. Operator, verbatim:
+
+> *"whereever the use case/given, when, then Gherkin logic is at play. It seems that we are indeed describing
+> behaviors with/to/from handlers/adapters. I just hate to act-as-if and not just go ahead and lean into it. If
+> Behave comes with overhead so too does our design architectural choice. What we need is VERY STRICT oversight on
+> how an agent executes on any of this as drift and "vibing" on tautological tests is a VERY common
+> oversight/failure mode for agents. The models tend too write too many trivial/trite/tautological tests."*
+
+Settled: the tool. Behaviour to and from handlers and adapters is described and tested as Behave features, driven
+through the port with the fake adapters wired; labelled comments in unit tests standing in for Gherkin are not
+adopted. The agent's reading, stated to the operator for correction: commands, queries and domain objects, whose
+recipes are input and output checks with no collaborators, stay `unittest`. The canon sentence quoted above and the
+`@covers` proof channel are amended by this ruling's consequence, carried to disposition row 4 and not executed
+here. The operator's second requirement, strict oversight against tautological tests, is put next.
+
+## source · gzkit's instruments against tests that cannot fail, surveyed
+
+Read 2026-11-10, module docstrings and the rationale section in full, the code not: `gzkit.red_witness` (GHI #642)
+runs a BEHAVIOR-REQ test against the base tree with the production code withheld and classes the result
+`assertion`, `error`, `none` or `not-applicable`, a `none` being *"the test PASSED without the production code. It
+cannot fail."*; `gzkit.mutation_witness` (GHI #963) deletes a guard and reports `killed`, `survived`, `invalid` or
+`inconclusive`, isolating each mutant in its own subprocess; guard canaries bind one reviewed mutant to one claim
+(`data/guard_canaries.json`, GHI #1154); `gzkit.tautological_tests` is an AST scanner over `tests/` with a
+shrink-only baseline; `gzkit.test_shape` is an advisory screen; and the REQ-coverage gate requires a passing
+`@covers` test per BEHAVIOR REQ (`docs/governance/tests-rationale.md` § Mutation-sweep integrity;
+`.gzkit/rules/tests.md`). All of them read `unittest`: `gzkit.unit_run_provenance` parses `unittest -v` output,
+`@covers` decorates unit tests, and the scanner walks `tests/`, not `features/`. None reads a Behave scenario.
+
+## source · the red witness's reconstructed base and the Step 4b adversary's replay, read to check the agent's critiques
+
+Read 2026-11-10, docstrings only: `gzkit.red_witness` records a `base_provenance` of `working-tree` or
+`reconstructed (pre-test parent)`, the second added because the HEAD base is *"vacuous once it lands"* (GHI #849),
+so the witness also runs for work already landed. `gzkit.adversary_workspace` (GHI #961) gives the pipeline's
+Step 4b independent adversary a disposable checkout in which it must *"REPLAY the proof it is judging"*: run the
+baseline, apply the substitution, watch the named test fail on its own assertion, restore the source and re-run.
+The pipeline's Stage 2 reference makes proving a test can fail *"the orchestrator's duty (GHI #968)"*, through
+`gzkit.mutation_witness.run_mutation_sweep`, and says *"Do not build an all-assertions classifier or count
+mutations as coverage."* The cross-family critic at decision moments (`ADR-0.36.0`, `Proposed`) is unbuilt; it
+concerns choices put to the operator, not tests.
+
+## decision · the Behave ruling is reversed: hexagon tests stay `unittest`; Behave is for external contracts (operator ruling)
+
+After the Behave ruling the agent put an oversight standard (a hexagon test accepted only when tied to a REQ, seen
+red, and killing a mutant) and named that gzkit's four instruments read `unittest` only. The operator chose to
+discuss; the agent listed six weaknesses of its own proposal. Operator, verbatim:
+
+> *"i can see there are real tradeoffs with behave vs unittest and I am uncertain now. I am not sure if your
+> proposal means to balance them, but these are strong and hard-fought facilities of gzkit:  red witness, the
+> mutation witness, the tautology scanner, and the REQ-coverage gate.*
+>
+> *your critiques:*
+>
+> *1. same-agent judicial review remains a risk*
+> *2. test proliferate under a model like rabbits multiply - tests require discretion and taste.*
+> *3. agree with the care of requirements and this may be my (human) fault in that I let too many requirements
+> docs to be expressed in a model's writing and not my own hand. If I always direct/produce, and never write, then
+> these things can happen.*
+> *4. can't that be updated?*
+> *5. agree, but don't we have good systems of adversarial review here?*
+> *6. i wonder if this means that our review of Behave testing needs even more strident and stringent review?*
+>
+> *in any case, the decision to lean towards Behave/BDD seems to be somewhat problematic."*
+
+The agent's answers, from the source above: critique 4 was wrong, the red witness already reconstructs a pre-test
+base; critique 5 was understated, Step 4b's adversary replays the proof in its own checkout through a different
+model family; on 6, yes, and gzkit's 82 existing features already sit outside all four instruments. The agent
+recommended reversing: moving handler and adapter tests to Behave would take the hexagon's tests out from under
+the instruments and the Step 4b replay, and the operator's objection to acting-as-if is met by dropping the
+given, when, then label rule, so that nothing imitates Gherkin. Operator, verbatim: *"Yes, reverse it"*, and,
+while the entry was being written: *"Behave stays at the CLI ==> behave is about external contracts"*.
+
+Settled, superseding the previous Behave decision, which stands in the record as made and reversed:
+
+- Hexagon tests (commands, queries, domain, handlers, adapters) stay `unittest`, under the red witness, the
+  mutation witness, the tautology scanner, the REQ-coverage gate and Step 4b.
+- No given, when, then label rule is adopted.
+- Behave is for external contracts. Canon's Gate Covenant sentence on `behave` is not amended.
+
+The agent's reading of the operator's principle, stated for correction: the external contracts are the ones gzkit
+owns in Montenegro's sense (§10.6), the commands and queries it accepts at the CLI and the integration events it
+publishes, so a Behave feature proves an owned contract and nothing inside the walls.
+
+The operator then gave the reason in their own terms, verbatim: *"it is on the CLI because that is outward-facing
+system behavior."* The test of whether something belongs to Behave is therefore whether it is outward-facing system
+behaviour. Whether the published integration events fall under it, as the agent's reading had it, was put back to
+the operator: for, a published event is the one contract outside readers may rely on, and changing it breaks them
+as a changed command breaks an operator; against, the events do not exist yet. The agent recommended including
+them, the features written only when the events are. Operator, verbatim: *"Yes, those too"*.
+
+Settled: Behave proves gzkit's outward-facing system behaviour, which is the CLI and the published integration
+events; nothing inside the walls.
+
+## decision · hexagon tests follow Montenegro's outcome rows, one test per outcome (operator ruling, in part)
+
+Put to the operator, answering critique 2 (tests multiply): every test of the hexagon names the REQ it proves
+(`@covers`), and a REQ has at most one test per distinct outcome, the success case or one named failure, following
+Montenegro's handler recipe (Table 8.3: happy path, not found, persistence failure, business-rule violation) and
+his command recipe (one valid test, one invalid, §8.3). The agent named the limit: the REQ-naming half is checkable
+today; the one-per-outcome half needs each REQ to enumerate its outcomes and is advisory until it does. Operator,
+verbatim: *"yes to the use of table 8.3"*.
+
+Settled: the outcome rows. A handler's tests are one per row of Table 8.3 that applies to it; a command's or
+query's are one valid and one invalid. The agent's reading, stated for correction: the answer rules the outcome
+half and not the REQ-naming half, which is put again after the question below.
+
+## decision · the given, when, then label rule is reopened (operator correction)
+
+The reversal above recorded *"No given, when, then label rule is adopted"*, the agent's own proposal, offered to
+meet the operator's objection to acting-as-if. Operator, verbatim: *"I am not sure I agree here: "No given-when-then
+label rule, so nothing imitates Gherkin." If it helps for alignment, then it is more harmless than the option to
+strictly use Behave within the Hex core."* That bullet of the reversal is withdrawn pending the operator's ruling;
+the question is put again.
+
+## decision · hexagon unit tests carry given, when, then labels, and a checker enforces them (operator ruling)
+
+Put to the operator: every unit test of the hexagon carries the three labels in order (Montenegro's *"BDD
+contract"*, §8.2.1), aligning unit tests with the Behave features' vocabulary and exposing a test with more than
+one action in *when*; (A) checked, a test failing a hexagon unit test that lacks the labels in order, existing
+tests in a shrink-only baseline, the one-action rule left to review; (B) convention only. The agent recommended A
+under canon's *"choose the one that leaves less to unverified guesswork"*. Operator, verbatim: *"Yes, checked"*.
+
+Settled: A. A correction to the agent's description: the labels are comments, which Python's `ast` discards, so
+the checker reads the test source with `tokenize`, not the AST the tautology scanner walks.
+
+The operator then stated the rule as a whole, verbatim: *"the rules for using BDD in gzkit seem clear: if we are
+dealing with the contract of outward/consumer-facing, then Behave and BDD are warranted."* Recorded as the rule's
+canonical wording. The agent's reading, stated for correction: the labels inside unit tests are a layout adopted
+for alignment, not BDD in this sense, although Montenegro calls them *"the BDD contract"*; BDD in gzkit's sense is
+Behave proving an outward-facing contract.
+
+## decision · every hexagon unit test names the REQ it proves (operator ruling)
+
+Put to the operator, the half the Table 8.3 ruling left open: must every unit test in the hexagon's test modules
+carry `@covers` naming the REQ it proves? Canon requires a `@covers` test per BEHAVIOR REQ but refuses no test that
+names none, and a test proving no requirement is never counted. The agent recommended yes, scoped to the hexagon's
+test modules, with fake-adapter tests exempt by declaration, existing unnamed tests in a shrink-only baseline;
+Montenegro's *"if you cannot explain what bug a test would catch, the test probably should not exist"* (§8.7) made
+checkable. Operator, verbatim: *"yes"*.
+
+Settled. With the outcome-row ruling, a hexagon test exists only for a named REQ and one of its outcomes.
+
+## decision · group F closes (derived, not a new ruling)
+
+Group F's questions are answered: uv-build (one distribution; `uv_build` and workspaces enforce nothing; the
+checker test is the fence); decorators (the map of kinds to regions, ruled under group D; no marker stereotypes);
+structural enforcement between components (Protocol and name for ports and handlers; kernel bases cross-checked
+against region); architecture tests and dependency control (the widened dependency-rules test and its per-region
+table, ruled under group C); BDD and TDD (Behave for outward- or consumer-facing contracts; hexagon tests in
+`unittest` under the existing instruments, labelled given, when, then, one per outcome row, each naming its REQ);
+mocking (fakes only inside the hexagon). The frontier moves to group G, transforming gzkit itself, much of which
+the five-phase migration and the outside-in build order already rule, and to the held aggregates and bounded
+contexts, which wait for Khononov's passages.
+
+Derived, not put as a question because canon answers it: the oversight standard for hexagon tests is the
+instruments as they stand. A behaviour REQ needs a passing `@covers` test; the red witness shows it failed before
+the implementation; proving it can fail by mutation is the orchestrator's duty and Step 4b replays it.
+
+Carried to the disposition map: extending the instruments to read Behave, so that the 82 existing features come
+under oversight (critique 6). Carried to the close as material for the restated challenge: the operator's point 3,
+on requirements written in a model's hand. Open, put next: a limit on how many tests a requirement may have
+(critique 2).
+
 ---
 
 ## Disposition map
