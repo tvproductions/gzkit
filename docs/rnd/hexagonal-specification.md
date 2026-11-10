@@ -1940,6 +1940,86 @@ mocking (fakes only inside the hexagon). The frontier moves to group G, transfor
 the five-phase migration and the outside-in build order already rule, and to the held aggregates and bounded
 contexts, which wait for Khononov's passages.
 
+## source · Montenegro §2.4, the five-phase migration map, read in full
+
+MEAP V01, extracted text held outside the repository, read 2026-11-10 (PDF pp.32–38), the map the record had cited
+from a reading report. Key notes only.
+
+- **No big bang** (§2.4): *"never do a big bang rewrite. Every phase delivered working software. The old path and
+  the new path ran in parallel until the new path was proven."*
+- **Each phase has a goal, a key question and a trap.** Extract: what logic must survive deleting every
+  framework, the trap anemic shells. Define: ports named in domain language, one per collaboration surface and
+  not per method. Wrap: facade adapters over the old code with old and new paths compared, the trap business logic
+  in the facade. Refactor: handlers depending only on ports, the trap *"the fake hexagonal anti-pattern"*, a
+  handler calling an adapter directly. Replace: facades swapped for real adapters one at a time, verified by the
+  architecture rules, which *"is not optional"*.
+- **The first deliverable is one use case** (§2.4.6): *"a working prototype of one use case, demonstrating
+  millisecond test runs and a successful adapter swap. Build that first"*; the migration goes *"one bounded
+  context at a time"*.
+- **Timing** (§2.4.6): *"If you are already in crisis ... stabilize first."*
+- **Two named mistakes** (§2.4.7): validation in adapters, and ports that mirror the implementation.
+
+Cosmic Python's Epilogue, from this run's reading (`sources/cosmic-python-reading-2026-11-08.md`, § Transforming
+existing code), agrees on the unit and differs on the order: build the service layer first, one handler per use
+case, tie the clean-up to feature work, then identify aggregates, then a strangler fig by event interception.
+
+## decision · gzkit migrates one use case at a time, old and new paths compared, no big bang (operator ruling)
+
+Put to the operator, on the source above: gzkit's transformation proceeds one use case at a time; no big-bang
+rewrite; the first use case is a tracer taken through all five phases before a second starts; old and new paths
+run side by side, their outputs compared, until the new path is proven and the old is deleted; a use case is
+complete when its tests pass the instruments and the dependency checker shows no leak. Montenegro (§2.4, §2.4.6)
+and Cosmic Python's Epilogue agree on the use case as the unit; Cockburn and Khorikov not read on migration. The
+agent noted that the ledger lets old and new paths each run against a copy and their events be compared. The cost
+was stated: two paths per use case during its migration. Operator, verbatim: *"Yes"*.
+
+Settled. Which use case goes first is held for the disposition map. Montenegro's timing advice is put next.
+
+## source · the drydock's purpose and its open contract, read for the timing question
+
+`docs/governance/safe-mode-doctrine.md`, read in full 2026-11-10: the drydock *"designs and lands the new
+structures; it does not populate them"* (operator, 2026-10-17, *"repair and realign the structure, don't populate
+it"*); *"The pivot happens in this drydock"* (operator: *"this is the best time to pivot, this is exactly why we
+are in dry dock"*); normal voyages are *"ordinary operations under the new structures"*. The open contract,
+`docs/governance/harbor-pilotage-candidate-2026-10-15.md`, read by its headings and its rulings of 2026-11-08: the
+session open since 2026-10-20; change orders placed on owning orders under § Repair orders' frozen scope, among
+them RP-7's placement change order and the classic ADR change orders (RP-6); the hexagonal direction filed under
+RO-9 tranche 4 on 2026-10-24. Not read: the contract's general arrangement in full.
+
+## decision · the hexagon's structures land in this drydock; use-case migration follows return to service (operator ruling)
+
+Put to the operator, on the source above and Montenegro's *"If you are already in crisis ... stabilize first"*
+(§2.4.6): gzkit's transformation splits along the doctrine's line. In this drydock, as change orders on their owning
+repair orders: the kernel package, the hexagonal architecture system package map, the widened dependency checker,
+the rewritten canon rule 7 and canon page, and the testing rules. After return to service, as normal voyages under
+full ceremony: migrating gzkit's use cases into those structures one at a time. The agent noted that one tracer use
+case migrated through the new structures could serve as the sea trial's better form, and named the cost: the
+drydock's scope grows again and return to service moves later, with the MX session's advisory debt aging (567 hours
+at this session's start). Alternative put: everything after return to service. Operator, verbatim: *"Yes"*.
+
+While this entry was written, the operator pasted the full passage of Montenegro §2.4.6 on timing, without comment;
+it adds to *"stabilize first"* that hexagonal architecture rewards patience and that a rushed migration introduces
+the accidental complexity it is meant to remove. The agent put back whether the passage reopens the ruling, naming
+where its own recommendation was weaker than stated (much new design landed with guards advisory; a drydock grown
+all week; structures arriving before any use case exercises them) and a narrower third option (only the package map
+and the rule 7 rewrite in the drydock, the kernel, checker and testing rules built outside-in with the first tracer
+after return to service). Operator, verbatim: *"Ruling stands"*.
+
+Settled: the direction. Not executed and not placed: each change order is opened on the contract, through its own
+amendment where § Repair orders' frozen scope requires one, only on the operator's go on the disposition row that
+carries it. Whether the tracer serves as the sea trial is the contract's question (§ Exit), carried there and not
+ruled here.
+
+## decision · group G closes (derived, not a new ruling)
+
+Group G's questions are answered: the five-phase migration (ruled under group D), the use case as the unit with old
+and new paths compared (above), the outside-in order for new work, rhea as the proving ground, and the split between
+structures landed in the drydock and use cases migrated after return to service. Held for the disposition map: which
+use case goes first. The frontier now holds only items that wait on sources not yet in reach: aggregates and bounded
+contexts, the ontology's DDD role, *"one team per context"* for one operator and many agents, and each of the 78
+ledger event types' owning entity and drydock name, read against Montenegro's *"an event with no consumer is pure
+cost"*. All wait on Khononov's passages.
+
 Derived, not put as a question because canon answers it: the oversight standard for hexagon tests is the
 instruments as they stand. A behaviour REQ needs a passing `@covers` test; the red witness shows it failed before
 the implementation; proving it can fail by mutation is the orchestrator's duty and Step 4b replays it.
@@ -1955,19 +2035,71 @@ on requirements written in a model's hand. Open, put next: a limit on how many t
 
 | # | Disposition | State | What | Reason |
 |---|---|---|---|---|
-| 1 | ADR / OBPI | | | |
-| 2 | GHI / direct fix | | | |
-| 3 | chore | | | |
-| 4 | control surface, rule, doc, skill, hook | | | |
-| 5 | one-shot refactoring | | | |
-| 6 | no action | | | |
+| 1 | catalog, packages, orders and decision records (the skill's *ADR / OBPI* row, relabelled; see the entries below the map) | commissioned (operator, 2026-11-10, verbatim: *"Commission row 1"*) | **Proposed only, mapped from the old system as the contract's ruling of 2026-10-30 and § 12 map it.** (a) **Catalog outcomes**, what an mADR's checklist items were, entering by the R&D-disposition door with this run as their `source`, each admitted on the operator's word and its REQ text in the operator's hand (the agent drafts for rewriting only): the kernel's bases; the hexagonal architecture system package map; the dependency checker widened to every region with the base-to-region and Protocol-and-name checks; the test-discipline checks (the `unittest.mock` ban, the given, when, then labels, `@covers` on every hexagon test, the outcome rows); configuration read once by the configurator; the published integration events and their contract map; the `gz init` scaffold. The last two are `user_facing`, so each BEHAVIOR REQ under them needs a tagged Behave scenario besides its `@covers` test (§ 10). Families proposed from the legend: G for the checkers, L for the integration events, P for `gz init`; the run's cross-cutting constraints possibly as Q outcomes with `applies_to` (decision 8.1); the kernel and configuration unplaced. (b) **One feature package**, the epic: this run's challenge as its story (*"strengthen"*, strong adoption by every adopter), listing those outcomes; its value attested at a work package's or Release Package's attestation. (c) **Work packages**, the mADR's successors, each carrying its bounded advance's intent, rationale, scope and constraints as its story and grouping work orders for cohesion: the structures, the test discipline, configuration, the outward contracts, the `gz init` scaffold. Under the timing ruling the structures land in the drydock as repair packages and repair orders. After return to service, one work package per use case migrated, the tracer first, drawing that use case's existing REQs as invariants. (d) **Work orders**, the OBPI's successors, each delivering REQs through its tasks, with its freeze, inspection, buy-back and Gate 5, sized by the rekeyed decomposition matrix. (e) **Release Packages**: the new structures are construction and ride a minor; each migrated use case is a refactor and advances the patch (§ 12, the input table). (f) **Classic ADRs** only where a consequential choice (ownership, dependencies, interfaces, persistence, recovery, trust, deployment) must stand as its own record: recognised when it arises, put to the operator one at a time, none authored before the RP-6 crossover and none Current without separate approval of its edition; this run's rulings are not that approval. Legacy decisions this run touches (canon rule 7, the canon page's ADR-taxonomy mapping, `ADR-pool.hexagonal-folder-structure-realization`, `ADR-0.32.0`) stay where they are and are reconciled through exit item 9's inventory | The admission question applies to (f) alone, each choice on its own. (a) to (e) follow canon's records and levels. The operator admits each outcome and initiates each package, or not |
+| 2 | GHI / direct fix | commissioned (operator, 2026-11-10, verbatim: *"Commission row 2"*); filed only on the operator's go on this row | (a) whether `@advances` fulfils its declared intent (a correction under the intent test, GHI #752's *"advisory and expected to be empty"*); (b) the 479 files carrying `lane: Lite` or `Heavy`, and the schema widened to admit them, migrated by appended events or grandfathered under the old-state ruling; (c) canon's `project_root` conformance claim, withdrawn by core-model points 2 and 5; (d) the formatter port taking Rich's `Table`, failing point 1; (e) the Harness-Purity Invariant's name, which uses *purity* against the ruled meaning (or row 4); (f) the 82 Behave features outside all four test instruments | Each is a defect in a shipped surface, found by this run; filed through `ghi-author` on the operator's go on this row. The rhea dependency finding is not here: it was withdrawn by the one-distribution ruling |
+| 3 | chore | commissioned (operator, 2026-11-10, verbatim: *"Commission row 3"*); admission to the registry on the operator's direction | Advise: a baseline drawdown chore over the run's new shrink-only baselines (the dependency checker, the `unittest.mock` ban, the given, when, then labels, the `@covers`-per-test rule, the closed-set widening baseline), Montenegro's *"Make reducing the freeze store part of regular sprint work"* (§7.8); and a contract-map currency check, the map updated *"the moment an owned contract changes"* (§10.6) | Baselines that only shrink still need someone to shrink them; the operator directs admission |
+| 4 | control surface, rule, doc, skill, hook | commissioned (operator, 2026-11-10, verbatim: *"Commission row 4"*); each drafted only on the operator's go on this row | Draft: canon rule 7 and the canon page rewritten to the package design, rule 5's second-adapter threshold retired (every port has a fake); `pythonic.md` § Error Handling (`GzkitError` outside the walls); `tests.md` (fakes only inside the hexagon, given, when, then labels, one test per outcome row, `@covers` on every hexagon test, Behave for outward- or consumer-facing contracts in the operator's wording); the configuration rule (read once by the configurator); the closed-set widening rule (commissioned earlier); the drydock contract's change orders placing the structures on their owning repair orders; disposition row 1's label in the `gz-rnd` skill, `rnd-discipline.md` and the record template, relabelled to the requirements model's records; the Behave ruling citing requirements-model § 10; the specification worded in the new records' terms (outcomes, work packages, work orders), carrying no ADR or OBPI vocabulary forward. Listed for the operator, never drafted over: root `AGENTS.md` § Gate Covenant's Behave sentence and its *"ADR Feature Checklist items and OBPI briefs correspond 1:1"*, which only the operator cuts (RP-7 stage 7) | Canon must say what the run ruled before code is held to it; each on the operator's go on this row, the contract change orders through the contract's own amendment where its frozen scope requires |
+| 5 | one-shot refactoring | commissioned (operator, 2026-11-10, verbatim: *"Commission row 5"*, against the agent's recommendation of *not pursued*: its programmes are row 1's work packages, and two records would describe one subject); each programme is routed by pointing to its row 1 work package, never restated here | Propose a program, inside the drydock under the timing ruling: land the kernel package, the package map in `[tool.py-gzkit]`, the widened dependency checker with its region cross-checks, and the test-discipline checkers. Outside it, after return to service and per use case: consolidating configuration (50 loading modules, 35 `manifest.json` readers), moving `GzkitError` out of `core/`, the contract map and the publishing step, and moving rhea's orientation script off the raw ledger | The operator selects each program's route: a repair order in the drydock, a work order after return to service, or a GHI |
+| 6 | no action | not pursued (operator, 2026-11-10, verbatim: *"Record row 6"*) | (a) gzkit consuming rhea; (b) a separate kernel distribution or uv workspace; (c) Behave inside the hexagon; (d) marker stereotype decorators; (e) a message broker, inbox or queue; (f) the middle position on mocks | (a) revisit when rhea ships a write side or gzkit needs several backends at once; (b) revisit when an adopter needs the kernel without gzkit at runtime; (c) revisit when the four instruments read Behave; (d) ruled out, Protocol and name identify; (e) revisit when an integration needs one; (f) ruled out, its second half has no witness |
 | 7 | further research | commissioned | (a) a knowledge and memory management run: graphify, graphiti and the LightRAG fork against the ontology, the handoff rulings store and the insights log; (b) a decorator opportunity review: where parameterised decorators can enforce contracts, declare gates and mode levels, and move cross-cutting work into bus middleware, across gzkit's code, guards, hooks and the RO-13 mode-contract shapes | (a) opened by the operator's graphify/graphiti question, 2026-11-08, outside the hexagonal subject; (b) opened by the operator's question of 2026-11-09, within the decorator map this run ruled, best after sign-off. The operator opens each |
+
+## decision · row 1 is redrafted on the requirements catalog and the four levels (operator correction)
+
+The agent first drafted row 1 as a feature ADR per use case with OBPIs per phase, following the skill's row label,
+*ADR / OBPI*. Operator, verbatim: *"this entire system is meant to be deprecated and superseded by the requirements
+catalog, the feature package, the work package, the work order, and the release package ==> "ADR and OBPI""*. The
+agent then read `docs/governance/ieee/requirements-model.md` § The records, § 6, § 7, § 9, § 10 and § 12 in full and
+redrafted row 1 on its records: the classic ADR as a decision record peer of the catalog (§ 9: *"An ADR carries only
+a decision status ... no checklist, no work packages, no release"*); outcomes and REQs in the catalog; the feature
+package, work package, work order and task (§ 12's level table); the Release Package. Row 5's routes were corrected
+in the same edit from *OBPI* to *a work order*. Booked as an `improvement` insight (scope `gz-rnd`).
+
+Two findings, carried to row 4 and not executed: the `gz-rnd` skill, `docs/governance/rnd-discipline.md` and the
+record template still label disposition row 1 *ADR / OBPI*; and § 10 of the requirements model already places BDD
+on `user_facing` outcomes, a CLI, API, schema or runtime contract used by humans or external systems, which agrees
+with this run's Behave ruling and should be cited by it.
+
+## source · how the old system maps onto the new records, read after two further corrections
+
+The redraft above was not accepted. Operator, verbatim: *"none of that convinces me you understand the new system and
+the role of the ADR within it."*; *"what about requirements catalog, feature package, work package, work order, release
+package?"*; *"the work package is the old mADR, the work order is the old OBPI."*; and, of the agent's claim that
+*"What used to sit inside those mADRs as decisions moves out into classic ADRs"*, *"this is not true either ... can you
+look, gather evidence and see for yourself?"* Read 2026-11-10, in full unless stated:
+`docs/governance/harbor-classic-adr-change-order.md`; `docs/rnd/four-records.md`; the contract's § The records, by
+band and § How work moves; its ruling of 2026-10-30 *The four mapped to what gzkit had* (that entry only);
+`docs/rnd/repair-work-organization.md`, the mADR rulings of 2026-11-03 (that section only);
+`docs/governance/ieee/design-candidates.md` role 2; the campaign plan § 3 (that bullet); and the section headings of a
+legacy mADR, `ADR-0.30.0-okf-documentation-knowledge-structure`.
+
+- **The mADR's jobs were mapped, not extracted** (ruling of 2026-10-30): *"The ADR did five jobs, and only the decision
+  stays with it"*; each Feature Checklist item *"is a catalog outcome and its briefs' `REQ-<semver>-NN-MM` are the
+  outcome's REQs"*; its semver is the Release Package's version and its closeout that package's close; grafted
+  corrections and prerequisites are loose items in the cart. Amended 2026-11-03: the work package is the mADR's
+  successor, the story; the work order the OBPI's; the feature package the epic, succeeding no earlier record.
+- **What the mADR retained** (design-candidates role 2; campaign § 3): *"mADRs retain design intent, decisions,
+  rationale, scope, and constraints for a bounded advance."* The legacy mADR's headings carry them: Intent, Decision,
+  Interfaces, Boundary Invariants, Rationale, Consequences, then Checklist and OBPI Briefs.
+- **Legacy decisions stay where they are** (the change order, § Crossover): legacy ADRs and mADRs *"keep their files,
+  ids, dates and evidence; no blanket rename or deprecation"*, and *"Freezing a legacy container does not retire the
+  choices recorded in it; each is reconciled on its own"*, at handback by exit item 9's inventory (retained, captured
+  with provenance, retired). § How work moves: *"Completed legacy ADRs stand as legacy evidence, unstarted ones as
+  decision records"*.
+- **The classic ADR is a separate, new form**, brought in from another project on 2026-11-08, for a consequential
+  choice recognised as it arises (*"surfaced as a decision before it is built in"*); an accepted one is cited and
+  reused; it starts work only through a queued outcome it governs.
+
+The agent's claim is withdrawn: nothing moves out of an mADR. For new work, the bounded advance's intent, rationale,
+scope and constraints are the work package's story; what an mADR checklist item was is a catalog outcome, not a work
+order; the work order is what an OBPI was. Row 1 is redrafted only after the operator confirms this reading.
 
 ## Close
 
 **Challenge restated.** Not yet.
 
-**Frontier.** Open.
+**Frontier.** Open, 2026-11-10: every remaining item waits on Khononov's passages (aggregates and bounded contexts,
+the ontology's DDD role, *"one team per context"*, each of the 78 ledger event types' owning entity and drydock name).
+All seven disposition rows carry a decision; rows 1 and 5 may change once those items are ruled.
 
 **Review.** Not yet written.
 
