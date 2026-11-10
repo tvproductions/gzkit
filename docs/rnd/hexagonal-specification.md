@@ -1490,6 +1490,153 @@ test written first?""*
 Group D is settled except aggregates and bounded contexts, which wait for Khononov's passages (the 78
 event-type assignment rides on them).
 
+## decision · the run resumes in a new session (operator ruling)
+
+The handoff `.gzkit/handoffs/20261109T235408Z-hex-spec-lease-renewed.md` advised resuming this run. Operator,
+verbatim: *"Yes, resume"*, booked through `gz handoff decide` (`proceed`). The record was checked against git:
+it is unchanged since `df0719fe6`, `main` level with origin, 54 decision entries, the newest the outside-in build
+order. The frontier was recomputed from the subject, not taken from the handoff's list: groups B to D are settled
+except aggregates and bounded contexts, which wait for Khononov's passages; group E is open and its first question,
+configuration, was put in the previous session but never entered here, so under this skill it is put again rather
+than carried; F and G wait on E.
+
+## source · how gzkit reads configuration today, measured
+
+Read 2026-11-09: `src/gzkit/config.py` in its loading part (lines 206–330), and a search of `src/gzkit`.
+`GzkitConfig` is already a frozen Pydantic model (`frozen=True, extra="forbid"`) with sub-models for paths,
+vendors, ARB, authorship, smoke and complexity. `load_config()` is documented as the *"Single entry point for
+config loading"* with the precedence *"defaults → config file → CLI args"*: the model's own defaults are gzkit's,
+`.gzkit.json` is the adopter's override, and the file is read relative to the current directory unless a path is
+passed. It is not the only reader: 50 modules call `GzkitConfig.load` or `load_config` (76 call sites), each
+loading for itself, and 35 modules read `manifest.json` directly, a second configuration surface `load_config`
+does not cover. The previous session's figure of 59 modules is not reproduced by either search and is withdrawn.
+Cosmic Python's position (App. B, Ch. 13, from this run's reading `sources/cosmic-python-reading-2026-11-08.md`):
+configuration is immutable, `config.py` exposes functions, and the bootstrap is the only importer of config.
+
+## decision · configuration is read once, by the configurator, and passed as frozen values (operator ruling)
+
+Put to the operator, on the measurement above: configuration is read only at start-up, by the configurator,
+through one config adapter; it merges gzkit's defaults with the adopter's overrides, `manifest.json` included
+with `.gzkit.json`, validates the result into frozen settings, and passes each part as values to what needs it;
+no handler, domain code or adapter reads a configuration file. Cosmic Python (App. B, Ch. 13) states it directly;
+Montenegro's figures (6.26a/b, 6.28) have the configurator choose adapters, his text on configuration not read;
+Cockburn's configurator passes finished adapters inward without discussing configuration; Khorikov silent; 2/4
+direct, 3/4 counting Cockburn's shape. It follows the earlier rulings that values are taken as parameters and the
+configurator never passes a raw path inward. The cost was stated: 50 modules move from loading to receiving, and
+two configuration surfaces become one. Operator, verbatim: *"Yes"*.
+
+Settled. Carried to the disposition map: the move of the 50 loading modules and the 35 `manifest.json` readers.
+
+## source · who reads gzkit's records from outside, surveyed
+
+Searched 2026-11-09, not read in full: gzkit publishes 39 JSON schemas under `src/gzkit/schemas/`, one of them
+`ledger.json`, and every ledger row carries `"schema":"gzkit.ledger.v1"`. Outside the package, rhea's
+`scripts/session_orientation.py` parses `.gzkit/ledger.jsonl` line by line on its own (line 137 onward), and
+none of rhea, airlineops or flightops imports `gzkit`. So the stored ledger shape is already read across a
+boundary by code gzkit does not own, with no published contract for that reader beyond the schema file.
+
+## source · Montenegro, Ch. 10 and the configuration, event and outbox sections, read in full
+
+The operator's licensed MEAP V02, extracted text held outside the repository, read 2026-11-09 after the operator
+challenged a question that cited Ch. 10 from notes (*"why? you have the text"*): Ch. 10 in full (PDF pp.324–338),
+§7.2 and §7.2.1 (pp.175–178), §9.2.4 (pp.266–267), §9.5.2 (pp.293–295) and §9.6.4 (pp.310–311). Key notes only.
+
+- **What leaves is chosen, not leaked** (§10.5, rule 2, p.334): the application layer decides whether a domain
+  event becomes an integration event and what shape it takes outside; the domain never learns it left. Table 10.2
+  (p.335) assigns *what crosses the boundary* to the application layer.
+- **The outbox payload is not the domain event** (§9.5.2, p.295): the domain event is an in-process signal; what
+  goes to external consumers is a stable, serialization-friendly contract that can outlive a deployment.
+- **Owned contracts are versioned** (§10.6, p.336; §10.7, p.338): the facts a system publishes and the commands
+  and queries it accepts are the contracts it owns, versioned and kept stable; a consumed contract's changes are
+  absorbed inside an adapter. One contract map per bounded context, drawn before the adapter.
+- **Each interaction is classified** by direction, request or fact, mode (synchronous call, event, external
+  orchestration) and owner (§10.1–§10.4); internal orchestration by a handler is not a mode.
+- **An event with no consumer is pure cost** (§9.2.4 sidebar, p.267): raise events only for facts others care
+  about.
+- **Configuration** (§7.2, §9.6.4): settings live in an external file bound into a typed properties record and
+  injected; the configuration code connects the elements and *"should not contain business decisions"* (p.175).
+
+Two corrections follow. The configuration ruling cited Montenegro's text as unread; it is now read and supports
+the ruling. The follow-on-reactions ruling's reasoning said gzkit's ledger *"is already the outbox Montenegro
+builds separately (§9.5.2)"*; §9.5.2 says the outbox holds integration events, not domain events, so the claim
+holds only for the durable-record half (a missed reaction found by replay), not as an outbox of published facts.
+The ruling itself, listeners dispatched after the append, is unaffected.
+
+## decision · the agent's published-language recommendation is withdrawn
+
+The question put before the source above was read recommended that the stored ledger shape, `gzkit.ledger.v1`, be
+gzkit's published language. Montenegro (§10.5 rule 2, §9.5.2), Cosmic Python (internal and external events kept
+distinct, Ch. 11, `sources/cosmic-python-reading-2026-11-08.md`) and Evans (the published language is not the
+host's model) all place the published contract apart from the stored record. The recommendation is withdrawn and
+the question is put again in a corrected form.
+
+## decision · outside readers get a small set of versioned integration events, never ledger rows (operator ruling)
+
+Put to the operator, on the source above: the application layer chooses which ledger events gzkit publishes and
+shapes each as an integration event; each published event is a contract gzkit owns and versions; rhea's
+orientation script, the generated hooks and adopters read only those, never `.gzkit/ledger.jsonl`; the ledger stays
+gzkit's internal record, so the drydock rename of the 78 types breaks no outside reader. Montenegro (§10.5 rule 2,
+§9.5.2, §10.6), Cosmic Python (Ch. 11) and Evans (Published Language) agree; Cockburn and Khorikov silent; 2/4
+hexagonal, 3/6 with DDD, Khononov unread. The cost was stated: a publishing step, a contract map naming each outside
+reader, and rhea's script moved off the raw ledger. Operator, verbatim: *"Yes"*.
+
+Settled. Carried to the disposition map: the contract map, the publishing step, and rhea's reader. Held for the
+78-type assignment: Montenegro's *"an event with no consumer is pure cost"* (§9.2.4), which the strict
+every-type-has-an-owner ruling must be read against.
+
+## source · how an adopter starts: `gz init` today, and Montenegro's Appendix A
+
+`docs/user/manpages/init.md` § What It Does, read 2026-11-09 in full: with no `pyproject.toml`, `gz init` runs
+`uv init --<project-type>` (`lib` by default), adds ruff and ty, `tests/` and a CI workflow; otherwise it lays down
+governance only (`.gzkit/`, `.gzkit.json`, control surfaces, hooks, the pre-push gate). It scaffolds no part of a
+hexagon, no package map and no dependency check. `--no-skeleton` skips the Python skeleton.
+
+Montenegro, Appendix A (MEAP V02, PDF pp.339–352), read 2026-11-09 in full, held outside the repository. The
+adopter's path is three pieces: the architecture kernel, which declares intent and contracts and *"has no runtime
+behavior"* (A.1, p.340); the enforcement library, adopted by adding it as a test dependency, writing a YAML file
+naming the project's packages and one test class per architectural scope (A.6, pp.349–350); and the reference
+application, a template to *"fork and replace the WriteFlow domain with your own"* (A.7, p.351), laid out as a
+shared kernel, an application core holding domain, input ports, output ports and handlers, one module per adapter,
+and an assembly module holding the bootstrap and the architecture tests. He ships no generator.
+
+## decision · `gz init` scaffolds the hexagon for new projects; existing projects get the map and the checker (operator ruling)
+
+Put to the operator, on the source above: for a project with no `pyproject.toml`, `gz init` lays down
+`src/<pkg>/core/` with `domain/`, `ports/driving/`, `ports/driven/` and `handlers/`, a driving-adapter package, a
+`configurator` module, the hexagonal architecture system package map in `[tool.py-gzkit]`, the kernel as a
+dependency, and a test running the kernel's dependency checker from the first commit; an existing project gets the
+package map and the checker test, its code entering by the five-phase migration. Montenegro's Appendix A gives the
+three pieces (kernel, enforcement library, forkable reference application) and ships no generator; none of the four
+hexagonal sources addresses scaffolding; the ruling follows from strict hexagonal imposed on every adopter and the
+outside-in order binding from the first commit. The cost was stated: a skeleton template that must track the
+specification. Operator, verbatim: *"Yes"*.
+
+Settled. Not settled: whether `--no-skeleton` may skip the checker test as well as the folders; the two readings
+were put as alternatives and the answer did not choose between them.
+
+## decision · `--no-skeleton` skips the folders, never the checker test (operator ruling)
+
+Put to the operator: (A) `--no-skeleton` skips the folders, while the package map and the dependency-checker test
+always land; (B) it skips both, as it skips the whole skeleton today. The agent recommended A under the strict
+rulings (*"I want strict"*; *"what is the harm of hex regardless of size?"*), naming its cost: a project that is
+not Python, or wants no hexagon, cannot take `gz init` without the checker. No source addresses it. The agent also
+noted that the operator had taken the recommended option on every question this session, and asked whether the
+questions were the right ones. Operator, verbatim: *"Yes, never the check"*.
+
+Settled: no project initialised by gzkit is without the architecture check.
+
+## decision · group E closes (derived, not a new ruling)
+
+Group E's questions are answered: configuration (read once by the configurator), external contracts and
+integration events (a small versioned set of owned integration events; the ledger internal), bootstrapping
+(the configurator, ruled under point 5 of the core model) and what `gz init` scaffolds (the two rulings above).
+The operator's *"how much design is needed before anything else can proceed?"* is answered by the house-style
+run's rulings, *"the whole-system map is drawn up front and kept current; a change to it is a classic ADR"* and
+placement against it *"enforced at the work package freeze"* (`docs/rnd/house-style.md`), whose map this run
+renamed the hexagonal architecture system package map, together with the outside-in build order. Inbox and queues
+are not taken up: no integration this run found needs a broker, and Montenegro defers the relay and inbound
+consumption to later chapters not yet in the MEAP. The frontier moves to group F.
+
 ---
 
 ## Disposition map
