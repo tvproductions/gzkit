@@ -2435,9 +2435,19 @@ revisited and does not change: none of its programmes (the kernel, the package m
 test-discipline checkers, configuration, `GzkitError`'s move, the contract map and publishing step, rhea's reader)
 depends on which contexts or aggregates diamond 2 designs.
 
+## decision · the challenge is restated (operator ruling)
+
+Put to the operator at the close, the frontier empty: adopt a drafted restatement, or restate the original unchanged
+on purpose. The draft drew on the material carried to the close: the operator's *"gzkit is a vibe coding paradise"*,
+*"vibe-coder's Valhalla"*, the ledger as *"the epitome and apex of vibe coding"*, *"gzkit has suffered from sporadic
+software engineering"*, and point 3 on requirements in the operator's hand. Options put: (A) adopt the draft,
+recommended; (B) keep the original. Operator, verbatim: *"A: adopt draft"*. The restatement stands under § Close.
+
 ## Close
 
-**Challenge restated.** Not yet.
+**Challenge restated.** 2026-11-11, on the operator's *"A: adopt draft"* (decision *the challenge is restated*):
+
+> gzkit grew by sporadic, vibe-coded engineering. Its ledger is the clearest case, its bounded contexts were stated four different ways across its epochs, and its families were drawn before any requirement existed. Strengthen it with a hexagonal specification that every adopter can take up strongly. That means one package design for the whole system, not only the core, enforced by checkers rather than prose. Requirements are written in the operator's hand; subdomains and bounded contexts are derived from them, and the ontology depicts the result. Every ledger event gets an owner and a name in the drydock's vocabulary.
 
 **Frontier.** Empty, 2026-11-11. The derivation order, the AirlineOps practice and ownership are ruled; the list of
 contexts, aggregates and the 78 event types' owners and drydock names go to row 1's (c′) for diamond 2. All seven
