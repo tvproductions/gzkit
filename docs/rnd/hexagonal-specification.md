@@ -2242,6 +2242,48 @@ The four do not agree, and none states the term that carries two meanings, which
 own precedent ran the other way: when *purity* was found carrying two meanings, the operator ruled the second a
 misnomer to be renamed (*"that's semantic drift"*), keeping one language, not splitting a context.
 
+## decision · the bounded-context question is held for discussion, not ruled (operator response)
+
+Put to the operator: is gzkit one bounded context, its ontology subgraphs and PRD contexts becoming subdomains, or
+several contexts inside one distribution? Options put: (A) one context, recommended; (B) several. The operator did not
+rule. Operator, verbatim: *"Montenegro uses a repository. 1. let's review, that might be too ontology defined rather
+that aligned 2. again, we need to more broadly reconcile the various gzkit conceptualizing epochs 3. even if so, quite
+a bit of maturity developed while gzkit was opsdev within AirlineOops 4. aren't bounded contexts derived from, and
+categorically organize, REQs?"*, and *"on A vs. B, we need to discuss here more - but guidance on DDD seems to be more
+relevant that ontology guidance, but I think these are related."*
+
+On the repository point, Montenegro's text was re-read (MEAP V02, §3.5 Listings 3.12–3.13, §6.3.4 Table 6.2): he does
+use a repository, called by the handler inside its transaction; his domain service is handed the existing slugs as
+values and calls nothing (*"No interface needed—there is nothing to invert"*). Khononov's domain service calls the
+repository itself. Both books use repositories; they differ on who calls one. The contradiction recorded under the
+Khononov key notes is that difference, and constellation point 3 stands.
+
+Held, not ruled: whether DDD guidance or the ontology defines gzkit's contexts, the operator leaning to DDD with the two
+related. The question is put again after the four points are discussed.
+
+## source · Khononov Ch. 1, and gzkit's requirements catalog and AirlineOps checkpoint, read for point 4
+
+Khononov, Ch. 1 *Analyzing Business Domains* (pp. 3–18), read by the agent in full 2026-11-11. Subdomains are core
+(competitive advantage, complex, volatile, built in-house), generic (solved, bought or adopted) and supporting
+(simple, CRUD-like, built in-house) (Table 1-1, p. 11). They are *"already there"* and identified by domain analysis
+(p. 11). Their finest boundary: *"From a technical perspective, subdomains resemble sets of interrelated, coherent use
+cases"*, sharing an actor, the business entities and closely related data (p. 12). Read with Ch. 3: requirements and
+use cases are grouped into subdomains, which are discovered; bounded contexts are designed over subdomains, by the
+language's consistency, ownership and lifecycle, and one may hold several (pp. 38–41).
+
+`docs/governance/ieee/requirements-model.md` § The records, decision 8.3 and § Family schemes, read 2026-11-11. A REQ
+is *"one atomic obligation"*, a member of an outcome, grouped into capabilities and those into eleven families
+(Scheme A, product responsibility), banded on MIL-STD-881's model into *product elements* (AIR, SES, CTL, MNT, PKG,
+DEC) and *common elements* serving every product family (RQW, GAT, ATT, LED, QUA). Families were chosen as
+responsibilities *"that stay put when the delivery method changes"*; Scheme B, by loop stage, was rejected because the
+workflow is what the drydock redesigns. Decision 8 § 5 keeps areas and bounded contexts apart.
+
+`docs/governance/GovZero/architectural-enforcement.md` (*Status: Proposed*, last reviewed 2026-02-04) § Layer 2 and
+§ Layer 3, read 2026-11-11. Its six contexts (`Discovery | Planning | Acquisition | Ingestion | Validation |
+Reporting`) sit beside HOT and COLD contracts, dataset formats (`YYYY-Qn`, `YYCC`) and BTS adapters: AirlineOps's
+data-warehouse pipeline, its domain, not gzkit's. Around the names stands a practice: name the context before coding,
+state what it owns and does not own, stop when no context fits, and audit cross-context imports.
+
 ## Close
 
 **Challenge restated.** Not yet.
