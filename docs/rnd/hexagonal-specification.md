@@ -2145,11 +2145,27 @@ proved under, and each hexagon test proves one REQ under one variant. _Avoid_: *
 themselves (happy path, entity not found, persistence failure, business rule violation) are his. Earlier entries in
 this record that say *outcome row* mean a variant and stand as written.
 
+## decision · the run resumes in a third session; the frontier is recomputed (operator ruling)
+
+The handoff `.gzkit/handoffs/20261111T061225Z-hex-spec-critique2-closed.md` advised resuming this run. Operator,
+verbatim: *"resume rnd"*, booked through `gz handoff decide` (`proceed`) under this session's own id,
+`28be5a76-7522-4bcb-89d2-5979ba71b97e`. The record was checked against git: unchanged since `67c110bf6`, 78 decision
+entries and 38 source entries before this one, all seven disposition rows carrying a state.
+
+The frontier was recomputed from the subject by walking every entry that holds an item open. Each was traced to the
+entry that later settled it: the principles' names (the purity rulings), who touches the outside and the handlers
+question (constellation point 3, *"The handler is the only caller of ports"*), raw strings at the walls (the raw-strings
+ruling), the per-region dependency table (its own ruling), port and handler identification and the naming rule (the
+Protocol-and-name ruling, Montenegro §7.5–§7.6), and critique 2 (the variant rulings). One hold has no settling entry:
+the use-case migration ruling held *"which use case goes first"* for the disposition map, and row 1 says only *"the
+tracer first"* without naming it. Its prerequisites are settled, so it is the frontier, and it is put next. The
+Khononov items stay held behind it.
+
 ## Close
 
 **Challenge restated.** Not yet.
 
-**Frontier.** Open, 2026-11-11: every remaining item waits on Khononov's
+**Frontier.** Open, 2026-11-11: which use case goes first, put next; every other remaining item waits on Khononov's
 passages (aggregates and bounded contexts, the ontology's DDD role, *"one team per context"*, each of the 78 ledger
 event types' owning entity and drydock name). All seven disposition rows carry a decision; rows 1 and 5 may change
 once those items are ruled.
