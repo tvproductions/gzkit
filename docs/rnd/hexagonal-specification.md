@@ -2453,7 +2453,7 @@ recommended; (B) keep the original. Operator, verbatim: *"A: adopt draft"*. The 
 contexts, aggregates and the 78 event types' owners and drydock names go to row 1's (c′) for diamond 2. All seven
 disposition rows carry a decision; rows 1 and 5 were revisited (decision *the frontier is empty*).
 
-**Review.** Not yet written.
+**Review.** Written 2026-11-11 at [`hexagonal-specification/review.md`](hexagonal-specification/review.md); awaiting the operator's word that it has been read.
 
 **Sign-off.** Not yet put.
 
