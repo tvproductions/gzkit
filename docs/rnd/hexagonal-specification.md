@@ -2385,6 +2385,28 @@ designs contexts over the discovered subdomains, it splits them by the language'
 Khononov's rule is not broken, since one team may own several contexts; it gives no split here. Personas are not
 teams. Revisit if gzkit gains a second human owner of part of the system.
 
+## source · what a ledger event's `id` names, measured for the aggregates question
+
+`src/gzkit/events.py` `_EventBase` (lines 31–83) and the 78 typed event models, read 2026-11-11 for their fields, not
+every validator: every event carries `id`, `ts`, `schema` and an optional `parent`, and nothing else in common. No
+field names an aggregate, and none carries a version. `.gzkit/ledger.jsonl`, measured 2026-11-11 (20,402 rows, 78
+types), by classifying each row's `id`:
+
+- **48 types key `id` to a governed artifact**, which reads as a stream key: OBPI (21 types), ADR (12), mx session
+  or Claude session UUID (6), TASK (3), handoff path (3), work package (2), PRD (1). Some mix: `pipeline_launched`
+  keys to an ADR 30 times and an OBPI 293 times; `artifact_renamed` to ADRs and OBPIs; `airlock_in` and `airlock_out`
+  to OBPIs, ADRs and file paths.
+- **30 types use `id` for something else**: an id the event mints for itself from its name and a timestamp (18 types,
+  e.g. `composition_rendered`, `corpus_entry_appended`; `insight_recorded` uses the bare timestamp), a file path
+  (`artifact_edited`, 5,460 of its rows, and `chore_decommission_processed`), a receipt id (`red_receipt_emitted`,
+  `adversarial_validation`), a release tag (`patch-release`), or a tool or guard name (`enforcement_claim_verified`
+  keyed `lint`; `guard_canary_reviewed`). For these, `id` names the event, not a subject, and the ledger cannot be read
+  by subject for them.
+
+Set against Khononov Ch. 6 and 7 (key notes above): an aggregate's events are fetched by entity and appended with an
+expected version (p. 107), and a log written beside a state model degrades because nothing enforces each record's
+shape (p. 115). gzkit's `id` does both jobs, subject and event identity, by type, and no row carries a version.
+
 ## Close
 
 **Challenge restated.** Not yet.
