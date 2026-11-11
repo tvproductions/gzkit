@@ -2372,13 +2372,26 @@ line 603) still prescribes them, and with them more AirlineOps residue: HOT and 
 following the template must pick an AirlineOps context or invent one. Carried to row 2 as item (g), filed on the
 operator's go on that row. The template's own future rides on row 1, the OBPI's successors.
 
+## decision · ownership does not split gzkit's contexts (operator ruling)
+
+Put to the operator, on Khononov Ch. 3's ownership boundary (recorded under the Khononov key notes above: a context is
+owned by one team only, and one team may own several, p. 42) and gzkit's side, one human owner with agents taking
+roles from `.gzkit/personas/` per task: drop ownership as a criterion for splitting gzkit's contexts, or count personas
+as teams. Options put: (A) drop ownership, recommended; (B) personas as teams, weak because a persona is a role an
+agent takes for a task, not a standing group that keeps owning something. Operator, verbatim: *"A: drop ownership"*.
+
+Ruled: with one human owner of all of gzkit, ownership never separates one context from another. When diamond 2
+designs contexts over the discovered subdomains, it splits them by the language's consistency and by lifecycle only.
+Khononov's rule is not broken, since one team may own several contexts; it gives no split here. Personas are not
+teams. Revisit if gzkit gains a second human owner of part of the system.
+
 ## Close
 
 **Challenge restated.** Not yet.
 
 **Frontier.** Open, 2026-11-11: the derivation order is ruled (REQs, then subdomains, then contexts; the ontology
 depicts), and the list of contexts goes to row 1 in diamond 2. The AirlineOps context practice is carried without its six
-names. Still open: aggregates, *"one team per context"* as a design criterion, and each of the 78 ledger event
+names. Ownership does not split contexts (one human owner). Still open: aggregates, and each of the 78 ledger event
 types' owning entity and drydock name. All seven disposition rows carry a decision; rows 1 and 5 may change once those
 items are ruled.
 
