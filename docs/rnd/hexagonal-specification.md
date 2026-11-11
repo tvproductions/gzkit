@@ -2284,6 +2284,34 @@ Reporting`) sit beside HOT and COLD contracts, dataset formats (`YYYY-Qn`, `YYCC
 data-warehouse pipeline, its domain, not gzkit's. Around the names stands a practice: name the context before coding,
 state what it owns and does not own, stop when no context fits, and audit cross-context imports.
 
+## decision · two findings on the families, recorded on the operator's correction (operator ruling)
+
+The question *"Do the catalog's families stand as gzkit's subdomains, with contexts drawn over them?"* was put, A
+recommended on the ground that the families *"already sort REQs"*. Operator, verbatim: *"what families?"*. Reading
+`data/catalog/families.json` and its siblings, 2026-11-11, gave two findings. The agent stated them in conversation and
+did not record them. Operator, verbatim: *"These are VERY IMPORTANT and I am disappointed that they are not
+canonized"*. They are recorded here as stated.
+
+1. **The families were not derived from REQs.** `data/catalog/outcomes.json` and `data/catalog/reqs.json` are empty
+   (`"outcomes": []`, `"reqs": []`). The eleven families were drawn top-down from the `gz` verb surface and
+   `src/gzkit` as of 2026-10-18 (`docs/governance/ieee/requirements-model.md` § Family schemes: *"Three schemes
+   follow, drawn from the `gz` verb surface and `src/gzkit` as of 2026-10-18"*). The recommendation's ground, that the
+   families already sort REQs, overstated them: they are a legend with nothing filed under it. This bears on the
+   operator's point 4 and weakens option A. A's best remaining support is that the `gz` verbs are near Khononov's use
+   cases, so the families may come near his coherent-use-case test (Ch. 1, p. 12); that is unchecked.
+2. **The family codes in the data are stale.** On 2026-10-30 the operator ruled the codes a fixed three letters,
+   `AIR`, `SES`, `CTL`, `MNT`, `PKG`, `DEC`, `RQW`, `GAT`, `ATT`, `LED`, `QUA` (`docs/governance/harbor-ro11-intake.md`
+   rulings 4 and 5; `requirements-model.md` decision 8.3, amended 2026-10-30). `families.json` still carries one letter
+   each (`X`, `H`, `C`, `M`, `P`, `D`, `R`, `G`, `A`, `L`, `Q`), and its `_doc` still cites only decision 8.3's
+   original ruling. The re-code is tracked: RP-11 ruling 5 assigns it and RP-11 tranche 1 names `families.json`
+   re-coded, with `Family.code`, `OUTCOME_CODE_PATTERN` and the lookup at
+   `src/gzkit/governance/trust_audits/catalog.py:114`; RP-11 is a sequenced row of the drydock contract
+   (`docs/governance/harbor-pilotage-candidate-2026-10-15.md`), not yet landed. Until it lands, canon and data
+   disagree, and any text naming a family must say which code form it uses.
+
+Carried: finding 1 to the bounded-context question, which is put again with it; finding 2 to row 2 as a tracked
+discrepancy owned by RP-11, not a new filing.
+
 ## Close
 
 **Challenge restated.** Not yet.
