@@ -2359,7 +2359,9 @@ contexts. Operator, verbatim: *"A: carry practice"*.
 Carried, as how work proceeds inside each context once diamond 2 has designed them: name the context before coding;
 state what it owns and what it does not own; stop when no context fits; audit imports that cross contexts. The last
 is the same check as row 1's widened dependency checker and adds no separate machinery. This answers the operator's
-point 3.
+point 3. The operator then added, verbatim: *"a + b is really best"*, and confirmed the reading: the practice is
+carried now (A) and applied once diamond 2 has designed the contexts (B). The entry already said both; nothing else
+changed.
 
 Not carried: the six names (`Discovery | Planning | Acquisition | Ingestion | Validation | Reporting`), which are
 AirlineOps's data-warehouse pipeline. Read 2026-11-11, the OBPI brief template
