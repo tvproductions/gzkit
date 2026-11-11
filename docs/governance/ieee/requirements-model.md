@@ -2,7 +2,7 @@
 
 # The requirements model — families, outcomes, REQs, work and release
 
-**2026-10-18. Status: decisions ruled, including the family legend (decision 8.3).** *Amended 2026-11-03* by § 12, construction and repair at four levels, from the R&D run [`repair-work-organization`](../../rnd/repair-work-organization.md), signed off and funded that day; the amended cells below say so where they stand.
+**2026-10-18. Status: decisions ruled, including the family legend (decision 8.3).** *Amended 2026-11-03* by § 12, construction and repair at four levels, from the R&D run [`repair-work-organization`](../../rnd/repair-work-organization.md), signed off and funded that day; the amended cells below say so where they stand. *Amended 2026-11-11* in § Family schemes: the families were drawn before any REQ and do not yet group any.
 Operator: **g0**. This document replaces
 [`design-candidates.md` § The joined requirements model](design-candidates.md#the-joined-requirements-model),
 which recorded the model of 2026-10-17 for ratification with five open points
@@ -301,6 +301,13 @@ patches through the patch release skill, not one patch per item.
 
 Selected: Scheme A, banded as decision 8.3 records. Schemes B and C are kept as the alternatives
 considered.
+
+*Amended 2026-11-11*, from the R&D run [`hexagonal-specification`](../../rnd/hexagonal-specification.md) (decision
+*two findings on the families*), on the operator's go (*"Yes, amend it"*): **the families were not derived from
+REQs.** Every scheme below was drawn top-down from the `gz` verb surface and `src/gzkit` before any outcome or REQ
+existed, and none has been filed under the legend since: `data/catalog/outcomes.json` and `data/catalog/reqs.json`
+are empty. The legend is a frame for REQs to be filed under, not a grouping found in them. Whether its families
+match the subdomains that the REQs, once admitted, would show is unchecked; that run holds the question.
 
 FDAU's adoption checklist asks which labels "describe stable domain areas, and which currently
 describe a release, team, or temporary campaign", and asks for each family's one-sentence scope.

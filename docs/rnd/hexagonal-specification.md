@@ -2312,6 +2312,14 @@ canonized"*. They are recorded here as stated.
 Carried: finding 1 to the bounded-context question, which is put again with it; finding 2 to row 2 as a tracked
 discrepancy owned by RP-11, not a new filing.
 
+## decision · finding 1 is carried into the requirements model (operator ruling, row 4)
+
+Put to the operator: should finding 1 also go into the requirements model as an amendment? Options put: amend it, or
+leave the record as enough. Operator, verbatim: *"Yes, amend it"*. Done under row 4:
+`docs/governance/ieee/requirements-model.md` § Family schemes carries an amendment dated 2026-11-11 stating that the
+families were drawn top-down before any REQ, that none is filed under them, and that whether they match the
+subdomains the REQs would show is unchecked and held by this run; its status line names the amendment.
+
 ## Close
 
 **Challenge restated.** Not yet.
