@@ -2173,13 +2173,82 @@ adds a reading pass ahead of the Khononov items. Operator, verbatim: *"a"*.
 Settled. Row 1 now says the tracer is *"chosen by the first of those packages in diamond 2"*. The frontier holds only
 the items that wait on Khononov's passages.
 
+## source · Khononov, *Learning Domain-Driven Design*, Ch. 3, 4, 6 and 7, key notes
+
+Vlad Khononov, O'Reilly, ©2022; the operator's licensed copy, supplied as a PDF 2026-11-11 (not as pasted
+passages, which the entry *"Evans and Khononov are held in Kindle form"* had expected), read by the agent in full for
+Ch. 3 *Managing Domain Complexity* (pp. 33–47), Ch. 4 *Integrating Bounded Contexts* (pp. 49–60), Ch. 6 *Tackling
+Complex Business Logic* (pp. 75–97) and Ch. 7 *Modeling the Dimension of Time* (pp. 99–116). The text is held
+outside the repository; only these cited key notes land, paraphrased except where quoted, by printed page. Ch. 1
+(subdomains: core, supporting, generic) is not read.
+
+- **What a bounded context is.** Where domain experts' models conflict on a term (the *lead* of marketing and of
+  sales), the language is split and each part is assigned to the context where it applies: bounded contexts are
+  *"the consistency boundaries of ubiquitous languages"* (p. 36). Prefixing the term (*marketing lead*) is rejected:
+  it adds cognitive load and no one speaks that way (p. 35). The language's consistency sets only the widest
+  boundary; narrower ones are a design choice for teams, lifecycles or scaling, and their cost is integration
+  overhead (pp. 37–38). Coherent use cases on the same data are not split across contexts (p. 38).
+- **Subdomains are discovered, bounded contexts designed** (p. 41). A subdomain is *"a set of interrelated use
+  cases"* the business defines (p. 39); one context may hold several subdomains.
+- **Physical boundary.** Each context is *"implemented as an individual service/project"*, evolved and versioned
+  independently; when a context holds several subdomains, the context is the physical boundary and each subdomain a
+  logical one, a namespace, module or package (p. 41).
+- **Ownership boundary.** A context is owned by one team only; no two teams work on one context; one team may own
+  several contexts (p. 42).
+- **Integration** (Ch. 4). Touchpoints between contexts are contracts (p. 49). Cooperation: partnership, and the shared
+  kernel, an overlapping model that couples the contexts' lifecycles, kept to integration contracts and data
+  structures where possible, justified only when duplication costs more than coordination, and fit for contexts owned
+  by one team because it makes their contracts explicit (pp. 50–52). Customer–supplier: conformist, anticorruption
+  layer, open-host service with its published language, which may be versioned (pp. 53–56). Separate ways (p. 56).
+  The context map plots them (p. 57).
+- **Aggregates** (Ch. 6). An aggregate is an entity and a consistency boundary: only its own methods, the commands,
+  change its state; outside code only reads it (p. 84). It is a transaction boundary: *"one aggregate per database
+  transaction"*, and a need to commit several signals wrong boundaries (p. 87). It holds a hierarchy of entities and
+  value objects that must be strongly consistent; anything that may be eventually consistent stays outside and is
+  referenced by ID (pp. 87–90). One entity is the aggregate root (p. 90). Concurrency is guarded by a version field
+  (p. 86). Entities are not used independently, only inside aggregates (p. 84).
+- **Domain events** are past-tense messages *"part of an aggregate's public interface"*, which the aggregate
+  publishes and others subscribe to (pp. 91–92).
+- **Domain services** are stateless business logic over several aggregates. Khononov's example reads two
+  repositories inside the service, and the service is no loophole round one aggregate per transaction (pp. 92–93).
+  *Contradicts* constellation point 3 (*"The handler is the only caller of ports"*), which follows Montenegro; the
+  ruling stands, and the contradiction is recorded here.
+- **Event sourcing** (Ch. 7). Every state change is persisted as an event, and the events are the source of truth;
+  state, and any number of other models, are projections, and new projections can be added later (pp. 101–107). The
+  event store is append-only, fetches by entity and appends with an expected version (p. 107). The pattern is likened
+  to a ledger: *"an append-only log that documents transactions"* (p. 108). In an event-sourced domain model every
+  change to an aggregate is a domain event (p. 108). A log table written beside a state model degrades: nothing
+  enforces that every record is written, or written in the right shape (p. 115).
+
+## source · gzkit's own statements of its bounded contexts, read for the bounded-context question
+
+Read 2026-11-11 in full where each statement sits. Canon names gzkit's bounded contexts four ways:
+
+- `.gzkit/rules/hexagonal-architecture.md` rule 7, and `docs/governance/hexagonal-architecture.md` § Why gzkit's
+  domain lives in the ontology: *"Bounded contexts are **subgraphs of the ontology** (corpus / work / source), not
+  directories."* The campaign (`docs/governance/build-to-1.0-campaign-2026-06-30.md`, HULL) calls the same three
+  *"three typed **domains (subgraphs)** within one ontology"*.
+- `docs/design/prd/PRD-GZKIT-1.0.0.md` § 2.2 declares two contexts under ADR-0.0.43's schema, `skill-evaluation` and
+  `governance-triage`, both owned by `main-session`, and § 2.3 maps them as a `shared-kernel` over three cross-cutting
+  rubric terms.
+- `src/gzkit/skills/gz-obpi-specify/assets/OBPI_BRIEF-template.md` and
+  `docs/governance/GovZero/architectural-enforcement.md` offer `[Discovery | Planning | Acquisition | Ingestion |
+  Validation | Reporting]`, a list that reads as carried over from AirlineOps.
+- `docs/governance/ieee/design-pivot-session-2026-09-25.md` declines *"the pasted assertion that every capability
+  is a bounded context"*, and `docs/governance/ieee/requirements-model.md` keeps the catalog's areas apart from
+  bounded contexts.
+
+The four do not agree, and none states the term that carries two meanings, which is Khononov's criterion. The run's
+own precedent ran the other way: when *purity* was found carrying two meanings, the operator ruled the second a
+misnomer to be renamed (*"that's semantic drift"*), keeping one language, not splitting a context.
+
 ## Close
 
 **Challenge restated.** Not yet.
 
-**Frontier.** Open, 2026-11-11: every remaining item waits on Khononov's
-passages (aggregates and bounded contexts, the ontology's DDD role, *"one team per context"*, each of the 78 ledger
-event types' owning entity and drydock name). All seven disposition rows carry a decision; rows 1 and 5 may change
+**Frontier.** Open, 2026-11-11: Khononov Ch. 3, 4, 6 and 7 read; the bounded-context question is put first, then
+the items that ride on it: aggregates, the ontology's DDD role, *"one team per context"*, and each of the 78 ledger
+event types' owning entity and drydock name. All seven disposition rows carry a decision; rows 1 and 5 may change
 once those items are ruled.
 
 **Review.** Not yet written.
