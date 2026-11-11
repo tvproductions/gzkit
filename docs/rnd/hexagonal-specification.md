@@ -2035,7 +2035,7 @@ on requirements written in a model's hand. Open, put next: a limit on how many t
 
 | # | Disposition | State | What | Reason |
 |---|---|---|---|---|
-| 1 | catalog, packages, orders and decision records (the skill's *ADR / OBPI* row, relabelled; see the entries below the map) | commissioned (operator, 2026-11-10, verbatim: *"Commission row 1"*) | **Proposed only, mapped from the old system as the contract's ruling of 2026-10-30 and § 12 map it.** (a) **Catalog outcomes**, what an mADR's checklist items were, entering by the R&D-disposition door with this run as their `source`, each admitted on the operator's word and its REQ text in the operator's hand (the agent drafts for rewriting only): the kernel's bases; the hexagonal architecture system package map; the dependency checker widened to every region with the base-to-region and Protocol-and-name checks; the test-discipline checks (the `unittest.mock` ban, the given, when, then labels, `@covers` on every hexagon test, the outcome rows); configuration read once by the configurator; the published integration events and their contract map; the `gz init` scaffold. The last two are `user_facing`, so each BEHAVIOR REQ under them needs a tagged Behave scenario besides its `@covers` test (§ 10). Families proposed from the legend: G for the checkers, L for the integration events, P for `gz init`; the run's cross-cutting constraints possibly as Q outcomes with `applies_to` (decision 8.1); the kernel and configuration unplaced. (b) **One feature package**, the epic: this run's challenge as its story (*"strengthen"*, strong adoption by every adopter), listing those outcomes; its value attested at a work package's or Release Package's attestation. (c) **Work packages**, the mADR's successors, each carrying its bounded advance's intent, rationale, scope and constraints as its story and grouping work orders for cohesion: the structures, the test discipline, configuration, the outward contracts, the `gz init` scaffold. Under the timing ruling the structures land in the drydock as repair packages and repair orders. After return to service, one work package per use case migrated, the tracer first, drawing that use case's existing REQs as invariants. (d) **Work orders**, the OBPI's successors, each delivering REQs through its tasks, with its freeze, inspection, buy-back and Gate 5, sized by the rekeyed decomposition matrix. (e) **Release Packages**: the new structures are construction and ride a minor; each migrated use case is a refactor and advances the patch (§ 12, the input table). (f) **Classic ADRs** only where a consequential choice (ownership, dependencies, interfaces, persistence, recovery, trust, deployment) must stand as its own record: recognised when it arises, put to the operator one at a time, none authored before the RP-6 crossover and none Current without separate approval of its edition; this run's rulings are not that approval. Legacy decisions this run touches (canon rule 7, the canon page's ADR-taxonomy mapping, `ADR-pool.hexagonal-folder-structure-realization`, `ADR-0.32.0`) stay where they are and are reconciled through exit item 9's inventory | The admission question applies to (f) alone, each choice on its own. (a) to (e) follow canon's records and levels. The operator admits each outcome and initiates each package, or not |
+| 1 | catalog, packages, orders and decision records (the skill's *ADR / OBPI* row, relabelled; see the entries below the map) | commissioned (operator, 2026-11-10, verbatim: *"Commission row 1"*) | **Proposed only, mapped from the old system as the contract's ruling of 2026-10-30 and § 12 map it.** (a) **Catalog outcomes**, what an mADR's checklist items were, entering by the R&D-disposition door with this run as their `source`, each admitted on the operator's word and its REQ text in the operator's hand (the agent drafts for rewriting only): the kernel's bases; the hexagonal architecture system package map; the dependency checker widened to every region with the base-to-region and Protocol-and-name checks; the test-discipline checks (the `unittest.mock` ban, the given, when, then labels, `@covers` on every hexagon test, the outcome rows, each hexagon REQ declaring its variants with one test per REQ and variant); configuration read once by the configurator; the published integration events and their contract map; the `gz init` scaffold. The last two are `user_facing`, so each BEHAVIOR REQ under them needs a tagged Behave scenario besides its `@covers` test (§ 10). Families proposed from the legend: G for the checkers, L for the integration events, P for `gz init`; the run's cross-cutting constraints possibly as Q outcomes with `applies_to` (decision 8.1); the kernel and configuration unplaced. (b) **One feature package**, the epic: this run's challenge as its story (*"strengthen"*, strong adoption by every adopter), listing those outcomes; its value attested at a work package's or Release Package's attestation. (c) **Work packages**, the mADR's successors, each carrying its bounded advance's intent, rationale, scope and constraints as its story and grouping work orders for cohesion: the structures, the test discipline, configuration, the outward contracts, the `gz init` scaffold. Under the timing ruling the structures land in the drydock as repair packages and repair orders. After return to service, one work package per use case migrated, the tracer first, drawing that use case's existing REQs as invariants. (d) **Work orders**, the OBPI's successors, each delivering REQs through its tasks, with its freeze, inspection, buy-back and Gate 5, sized by the rekeyed decomposition matrix. (e) **Release Packages**: the new structures are construction and ride a minor; each migrated use case is a refactor and advances the patch (§ 12, the input table). (f) **Classic ADRs** only where a consequential choice (ownership, dependencies, interfaces, persistence, recovery, trust, deployment) must stand as its own record: recognised when it arises, put to the operator one at a time, none authored before the RP-6 crossover and none Current without separate approval of its edition; this run's rulings are not that approval. Legacy decisions this run touches (canon rule 7, the canon page's ADR-taxonomy mapping, `ADR-pool.hexagonal-folder-structure-realization`, `ADR-0.32.0`) stay where they are and are reconciled through exit item 9's inventory | The admission question applies to (f) alone, each choice on its own. (a) to (e) follow canon's records and levels. The operator admits each outcome and initiates each package, or not |
 | 2 | GHI / direct fix | commissioned (operator, 2026-11-10, verbatim: *"Commission row 2"*); filed only on the operator's go on this row | (a) whether `@advances` fulfils its declared intent (a correction under the intent test, GHI #752's *"advisory and expected to be empty"*); (b) the 479 files carrying `lane: Lite` or `Heavy`, and the schema widened to admit them, migrated by appended events or grandfathered under the old-state ruling; (c) canon's `project_root` conformance claim, withdrawn by core-model points 2 and 5; (d) the formatter port taking Rich's `Table`, failing point 1; (e) the Harness-Purity Invariant's name, which uses *purity* against the ruled meaning (or row 4); (f) the 82 Behave features outside all four test instruments | Each is a defect in a shipped surface, found by this run; filed through `ghi-author` on the operator's go on this row. The rhea dependency finding is not here: it was withdrawn by the one-distribution ruling |
 | 3 | chore | commissioned (operator, 2026-11-10, verbatim: *"Commission row 3"*); admission to the registry on the operator's direction | Advise: a baseline drawdown chore over the run's new shrink-only baselines (the dependency checker, the `unittest.mock` ban, the given, when, then labels, the `@covers`-per-test rule, the closed-set widening baseline), Montenegro's *"Make reducing the freeze store part of regular sprint work"* (§7.8); and a contract-map currency check, the map updated *"the moment an owned contract changes"* (§10.6) | Baselines that only shrink still need someone to shrink them; the operator directs admission |
 | 4 | control surface, rule, doc, skill, hook | commissioned (operator, 2026-11-10, verbatim: *"Commission row 4"*); each drafted only on the operator's go on this row | Draft: canon rule 7 and the canon page rewritten to the package design, rule 5's second-adapter threshold retired (every port has a fake); `pythonic.md` § Error Handling (`GzkitError` outside the walls); `tests.md` (fakes only inside the hexagon, given, when, then labels, one test per outcome row, `@covers` on every hexagon test, Behave for outward- or consumer-facing contracts in the operator's wording); the configuration rule (read once by the configurator); the closed-set widening rule (commissioned earlier); the drydock contract's change orders placing the structures on their owning repair orders; disposition row 1's label in the `gz-rnd` skill, `rnd-discipline.md` and the record template, relabelled to the requirements model's records; the Behave ruling citing requirements-model § 10; the specification worded in the new records' terms (outcomes, work packages, work orders), carrying no ADR or OBPI vocabulary forward. Listed for the operator, never drafted over: root `AGENTS.md` § Gate Covenant's Behave sentence and its *"ADR Feature Checklist items and OBPI briefs correspond 1:1"*, which only the operator cuts (RP-7 stage 7) | Canon must say what the run ruled before code is held to it; each on the operator's go on this row, the contract change orders through the contract's own amendment where its frozen scope requires |
@@ -2093,13 +2093,66 @@ The agent's claim is withdrawn: nothing moves out of an mADR. For new work, the 
 scope and constraints are the work package's story; what an mADR checklist item was is a catalog outcome, not a work
 order; the work order is what an OBPI was. Row 1 is redrafted only after the operator confirms this reading.
 
+## decision · the run resumes in a new session; the frontier is recomputed (operator ruling)
+
+The handoff `.gzkit/handoffs/20261110T105134Z-hex-spec-groups-e-to-g.md` advised resuming this run. Operator,
+verbatim: *"renew mx lease, resume rnd"*, booked through `gz handoff decide` (`proceed`) under this session's own id,
+`4d976f7c-1c1a-432d-b098-6a0487a56124`; the MX lease was renewed in the same act. The record was checked against git:
+it is unchanged since `9a492caa8`, `main` level with origin, 75 decision entries, all seven disposition rows carrying
+a state. Row 1 stands as redrafted on the reading above: the row was commissioned with that text, and the
+commissioning is read as the operator's confirmation of it.
+
+The frontier was recomputed from the subject, not taken from the handoff, which said every remaining item waits on
+Khononov. That is not so. The group G close left one question *"Open, put next"*: critique 2's remaining half, a limit
+on how many tests a requirement may have. The Table 8.3 ruling settled the rows and the `@covers` ruling settled
+REQ-naming; the agent had said the one-test-per-row half *"is advisory until"* each REQ enumerates its rows. Whether a
+REQ declares its rows, so the limit is checkable, was never put. Its prerequisites are settled, so it is the frontier,
+and it is put next. The Khononov items stay held behind it.
+
+Re-read for the question, 2026-11-11, from the held Montenegro text: Table 8.3 is titled *"Handler testing recipe"*,
+its rows are *happy path*, *entity not found*, *persistence failure* and *business rule violation*, and its first
+column is headed *Scenario*. Two name collisions follow and are held, not ruled: Montenegro's *Scenario* is gzkit's
+Behave scenario, and this record's *outcome row* is the catalog's Outcome (`SES1.4`, `requirements-model.md`, § The
+records). The row's name is put only after the model is ruled.
+
+## decision · each hexagon REQ declares its Table 8.3 rows, and a checker holds one test per row (operator ruling)
+
+Put to the operator: should each hexagon BEHAVIOR REQ declare the Table 8.3 rows it is proved under, so a checker
+refuses a second test for the same REQ and row, and a test for a row the REQ does not declare? Options put: (A)
+declare and check, recommended: the discretion critique 2 asks for is spent once, in the REQ and in the operator's
+hand (point 3), and a machine holds it after; the cost is a REQ field and one checker; (B) stay advisory, judged by
+the Step 4b adversary and the quality reviewer, which leans on the same-agent review critique 1 names as a risk.
+Operator, verbatim: *"A"*.
+
+Settled. Critique 2 closes: a hexagon test exists only for a named REQ and one of the rows that REQ declares, and no
+two tests share a REQ and a row. Carried to row 1 (a field on the hexagon REQ and the test-discipline checks) and
+held: the row's name, put next.
+
+## decision · term: a Table 8.3 row is a *variant* (operator ruling)
+
+Put to the operator: what a Table 8.3 row is called, since Montenegro's column heading *Scenario* is gzkit's Behave
+scenario and this record's *outcome row* is the catalog's Outcome. Options put: (A) *variant*, recommended: the group B
+ruling makes the hexagon's expected outcomes *"values in closed unions"*, so each row is one variant of the handler's
+result union, the success value or one named error, a pretrained term with no gzkit meaning yet, and one a checker can
+compare against the handler's declared result type; (B) *path*, Montenegro's *happy path*, but also a file path and
+an Outcome's `modules`, and it names how execution runs, not what the handler returns. Operator, verbatim:
+*"A: variant"*.
+
+Settled, held here as a term until the project glossary's home is named: a **variant** is one member of a hexagon
+handler's result union, the success value or one named error; each hexagon BEHAVIOR REQ declares the variants it is
+proved under, and each hexagon test proves one REQ under one variant. _Avoid_: *scenario* (the Behave scenario),
+*outcome* or *outcome row* (the catalog Outcome), *path*, *case*. This departs from Montenegro's *Scenario*; the rows
+themselves (happy path, entity not found, persistence failure, business rule violation) are his. Earlier entries in
+this record that say *outcome row* mean a variant and stand as written.
+
 ## Close
 
 **Challenge restated.** Not yet.
 
-**Frontier.** Open, 2026-11-10: every remaining item waits on Khononov's passages (aggregates and bounded contexts,
-the ontology's DDD role, *"one team per context"*, each of the 78 ledger event types' owning entity and drydock name).
-All seven disposition rows carry a decision; rows 1 and 5 may change once those items are ruled.
+**Frontier.** Open, 2026-11-11: every remaining item waits on Khononov's
+passages (aggregates and bounded contexts, the ontology's DDD role, *"one team per context"*, each of the 78 ledger
+event types' owning entity and drydock name). All seven disposition rows carry a decision; rows 1 and 5 may change
+once those items are ruled.
 
 **Review.** Not yet written.
 
