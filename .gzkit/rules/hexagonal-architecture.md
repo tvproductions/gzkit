@@ -5,16 +5,18 @@ paths:
 description: Ports & adapters as gzkit's primary code architecture directive
 ---
 
-<!-- rule-version: 0.4.1 -->
+<!-- rule-version: 0.5.0 -->
 
 # Hexagonal Architecture (Ports & Adapters) — Primary Code Directive
 
-> **Rule version:** `0.4.1` — § Verify names the import-boundary test in place of lint and typecheck, the module count is measured, and § Related no longer credits `pythonic.md` with Protocol/DI, under the operator's *"fix what is stale"* (2026-11-08); version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#hexagonal-architecturemd).
+> **Rule version:** `0.5.0` — rules 5, 7 and 8 and the cascade follow the hexagonal specification run (operator, 2026-11-12: *"A: page, plus overturned"*); rules 1 to 4 and 6 wait on RP-7; version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#hexagonal-architecturemd).
 
 > Ports & adapters is gzkit's **primary code-architecture directive**. Every
 > external dependency is confined to an **adapter** behind a **port**; the inner
 > world stays **stdlib**. Pydantic is the single ratified exception.
-> Canon: [`docs/governance/hexagonal-architecture.md`](../../docs/governance/hexagonal-architecture.md).
+> The specification (parts, packages, dependency table, testing) is
+> [`docs/governance/hexagonal-architecture.md`](../../docs/governance/hexagonal-architecture.md);
+> gzkit's code does not yet conform to it, and its § Present state lists the tracked gaps.
 
 ## The Cockburn demand (verbatim)
 
@@ -50,11 +52,9 @@ not strong-form.
 4. **Never name the technology in the core; take it as a parameter** (Cockburn).
    Port shape via `typing.Protocol`, not `ABC`; inject adapters by composition,
    not inheritance.
-5. **Encapsulate first; formalize the port when the SECOND adapter is real.**
-   Confining a dep to one adapter IS the swappability. Design the method shape
-   now; extract the `Protocol` + injection when a second implementation lands.
-   One adapter → no formal port yet (a port ABC over a single impl is
-   speculative generality).
+5. *Retired 2026-11-12.* The second-adapter threshold is gone: every driven port
+   has a hand-written fake from its first test, so its second adapter is never
+   speculative (specification § Testing).
 6. **The core is testable without any adapter.** If a domain function cannot be
    exercised without importing networkx/tree-sitter/etc., the dependency has
    leaked inward — the defect this rule exists to catch (Cockburn's *"run
@@ -65,29 +65,29 @@ not strong-form.
 Hexagonal is the **second stage** of gzkit's architectural spine, not a standalone
 rule. The order is load-bearing for gzkit and every adopter project:
 
-1. **DDD** — model the domain in governance's ubiquitous language (ADR, OBPI, REQ,
-   GHI, gate, receipt, ledger), never framework-generic nouns. gzkit's domain is
-   **modeled as the ontology** (typed Objects/Links, ADR-0.32.0) — *not* a folder tree.
+1. **DDD** — model the domain in governance's ubiquitous language (the drydock's
+   ruled record names), never framework-generic nouns. Subdomains are discovered in
+   admitted REQs and bounded contexts designed over them; **the ontology depicts that
+   model, it does not define it**.
 2. **HA** — protect that domain behind parameter-injected seams (rules 1–6 above);
    stdlib + Pydantic core, every external technology in an adapter.
 3. **BDD** — prove operator-visible covenant behavior (`features/`, Gate 4).
 4. **TDD** — harden REQ-derived increments (`unittest` + `@covers`, Gate 2).
 
-**Domain cohesion lives in the type system, not the folder tree.** gzkit grew ad hoc
+**Domain cohesion lives in one typed model inside one package design.** gzkit grew ad hoc
 as a command catalog; its domain was never modeled as one thing (scattered across
 ledger event types, `triangle.py`, `schemas/`, 128 top-level modules (counted 2026-11-08), with domain
-types split between `core/models.py` and `models/`). The correction is **subsumption
-into one typed model, never a folder restructure** — binding consequences:
+types split between `core/models.py` and `models/`). Binding consequences:
 
-7. **`core/` stays; do NOT add `domain/`/`application/`/`adapters/`/`contexts/`
-   folder partitions to "do DDD."** Hexagonal governs the boundary, not internal
-   layout (*"how the app is structured internally is not part of the pattern"* —
-   Cockburn §2.4). Bounded contexts are **subgraphs of the ontology** (corpus /
-   work / source), not directories.
-8. **Prefer subsumption to a parallel model.** A new domain type joins the ontology's
-   `OntologyNode`/`OntologyEdge` type system; never stand up a second, differently-typed
+7. **`core/` is the hexagon; each adapter is a sibling package of `core/`.** `core/`
+   holds `domain/`, `ports/driving/`, `ports/driven/` and `handlers/`; one
+   `configurator` module wires them; the hexagonal architecture system package map in
+   `pyproject.toml` `[tool.py-gzkit]` names each top-level package's part, and the
+   dependency rules are read from it. New code goes where the map places it.
+8. **Prefer subsumption to a parallel model.** One typed representation per domain
+   object, built on the kernel's bases; never stand up a second, differently-typed
    representation of the same objects (differing-semantics-under-a-shared-name is the
-   drift the ontology exists to kill).
+   drift). The ontology is a projection of that model, not a second one.
 9. **"Why is this here?" is a required answer.** Every new module, object, and seam
    earns its place by imaging the *actual* shape, never a convenient one (ADR-0.32.0
    persona). Name which cascade stage a new surface serves before adding it.
@@ -104,7 +104,7 @@ let out of hand. Ports keep the seam-map finite and reviewable.
 
 - Import a third-party library in a core/domain module (put it behind a port).
 - Return a library-native type across a port boundary.
-- Build a port `ABC` + injection wiring with only one adapter (speculative).
+- Define a port as an `ABC`; ports are `typing.Protocol`.
 - Use inheritance to swap implementations — use composition + `Protocol`.
 
 ## Verify
@@ -121,6 +121,6 @@ Neither `gz lint` nor `gz typecheck` checks an import boundary; `tests/policy/te
 
 ## Related
 
-- [`docs/governance/hexagonal-architecture.md`](../../docs/governance/hexagonal-architecture.md) — canon; conceptual origin + the Cockburn source
+- [`docs/governance/hexagonal-architecture.md`](../../docs/governance/hexagonal-architecture.md) — the specification; its rulings are in `docs/rnd/hexagonal-specification.md`
 - [`.gzkit/rules/pythonic.md`](pythonic.md) — idiomatic-code contract
 - `AGENTS.md` § STDLIB-FIRST DOCTRINE — the interior default this rule enforces

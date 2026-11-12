@@ -478,6 +478,10 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `hexagonal-architecture.md`
 
+### Changed 2026-11-12 at version `0.5.0` (R&D run hexagonal-specification, disposition row 4)
+
+Prior `0.4.1` banner, verbatim: *"§ Verify names the import-boundary test in place of lint and typecheck, the module count is measured, and § Related no longer credits `pythonic.md` with Protocol/DI, under the operator's "fix what is stale" (2026-11-08)."* Superseded on the operator's *"A: page, plus overturned"*: the canon page became gzkit's hexagonal specification, and the rule changed only where that run overturned it. Rule 5's second-adapter threshold is retired (every driven port has a fake from its first test); rule 7 no longer forbids `domain/`, `ports/` and `handlers/` partitions or calls bounded contexts ontology subgraphs, and states the package design instead; rule 8 and the cascade's DDD stage no longer make the ontology the domain model, which it now depicts. Rules 1 to 4 and 6 are unchanged: rule 1's scope is RP-7's held ruling H1, and the rule's placement is RP-7's change order. Scorecard row 64d removed; rows 64f and 64g added.
+
 Prior `0.3.1` banner: *"version narrative lifted to Rule Version History; binding rules unchanged."* Superseded 2026-11-08 by `0.4.1` (0.4.0 was the reverted 532a071b9 stub) under the operator's *"fix what is stale"*: § Verify cited `gz lint` and `gz typecheck`, which check no import boundary, in place of `tests/policy/test_import_boundaries.py`; "~50 top-level modules" is now the counted 128; § Related credited `pythonic.md` with Protocol/DI content it never carried. The `0.4.0` stub (commit `532a071b9`) was reverted by commit `31372200c` before this edit, so `0.3.2` follows the restored `0.3.1`.
 
 Lifted at version `0.2.0` (rule now at `0.2.1`).

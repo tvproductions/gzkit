@@ -2471,6 +2471,28 @@ Cross-link comments were posted on #752, #1267, #810, #1230 and #6. Authoring on
 stays open as eligible work, its route (direct fix or work order) chosen at fix time under `AGENTS.md` § Defect-fix
 routing.
 
+## decision · row 4, first item: the canon page becomes the specification; the rule changes only where overturned (operator ruling)
+
+Operator, verbatim, on the row: *"Yes, row 4"*. Before the first edit the agent read the rule and the canon page in
+full and found the rule owned in part elsewhere: RP-7's placement change order (`docs/governance/harbor-ro7-placement.md`)
+owns the rule's placement and holds H1, rule 1's scope, recommending it be narrowed to the core; scorecard rows 64 to
+64e pin rules 1 to 6 under `gz validate --bullet-retention`. Put to the operator: (A) rewrite the canon page in full
+and the rule only where this run overturned it, leaving H1 and placement to RP-7 with a note that this run's
+dependency table bears on H1; (B) also settle H1 now; (C) hold until RP-7 is worked. Recommended A. Operator,
+verbatim: *"A: page, plus overturned"*.
+
+Done in one commit:
+
+- `docs/governance/hexagonal-architecture.md` rewritten as gzkit's hexagonal specification from this record's
+  rulings, with a § Present state naming each tracked gap (#1267, #1319 to #1323, rows 1 and 5); its port/adapter to
+  ADR-kind mapping kept unchanged under a *Legacy* heading, as row 1(f) rules, its contradiction with the
+  specification left to the house-style run's row 4(c).
+- `.gzkit/rules/hexagonal-architecture.md` to `0.5.0`: rule 5 retired; rule 7 states the package design; rule 8 and
+  the cascade's DDD stage make the ontology a depiction; § Do Not and § Related follow. Rules 1 to 4 and 6 unchanged.
+- The scorecard: row 64d and its pinned identity removed, as the option put said; rules 7 and 8 scored as rows 64f
+  (Promotable) and 64g (Judgment); the Coverage Ledger set to `0.5.0`.
+- RP-7's H1 row carries a dated note that this run's dependency table is the universal reading; H1 is not ruled.
+
 ## Close
 
 **Challenge restated.** 2026-11-11, on the operator's *"A: adopt draft"* (decision *the challenge is restated*):
