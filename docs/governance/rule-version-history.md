@@ -991,6 +991,10 @@ Lifted 2026-08-29 at version `0.11.0` (rule now at `0.12.0`).
 
 ## `tests.md`
 
+### Changed 2026-11-12 at version `0.28.0` (R&D run hexagonal-specification, disposition row 4)
+
+Prior `0.27.4` banner, verbatim: *"§ Two runners no longer sends every real subprocess to `behave`, since unit tests spawn `git` under `_isolated_git_env()` (operator, 2026-11-08: "fix what is stale")."* Superseded on the operator's *"tests.md"*: § Hexagon tests carries the run's five test-discipline rulings (fakes only, the labels, `@covers` on every hexagon test, one test per REQ and variant, one recipe per artifact), each advisory until its checker lands; `behave` is narrowed to outward-facing contracts in the operator's wording and cites requirements-model § 10; § General Rules points the `unittest.mock` fixture to the hexagon exception. Scorecard rows 37c and 91 to 91d added.
+
 ### Changed 2026-11-08 at version `0.27.4`
 
 Prior `0.27.3` banner: *"§ Run / Verify lints with `gz lint --fix`, Ruff's verdict against `data/ruff_baseline.json` (RO-9 tranche 4)."* Superseded under the operator's *"fix what is stale"*: § Two runners said `unittest` mocks its subprocess boundaries and that "anything needing a real subprocess lives here [`behave`]", while the rule's own § General Rules and the unit tier spawn real `git` under `_isolated_git_env()` (`TestEveryGitSpawnIsInsideTheBoundary`). The row now says a real subprocess is permitted under that boundary.

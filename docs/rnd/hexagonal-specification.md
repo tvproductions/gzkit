@@ -2493,6 +2493,22 @@ Done in one commit:
   (Promotable) and 64g (Judgment); the Coverage Ledger set to `0.5.0`.
 - RP-7's H1 row carries a dated note that this run's dependency table is the universal reading; H1 is not ruled.
 
+## decision · row 4, second item: tests.md carries the hexagon test discipline (operator ruling)
+
+Operator, verbatim, choosing the next row 4 item: *"tests.md"*. Read in full first: `.gzkit/rules/tests.md` `0.27.4`, its
+scorecard section, RP-7's record (which owns the rule's placement and holds no ruling on its content, only finding
+F13) and `docs/governance/ieee/requirements-model.md` § 10. Done in one commit:
+
+- `tests.md` to `0.28.0`: a new § Hexagon tests with the five rulings (fakes only inside the hexagon; given, when, then
+  labels checked by `tokenize`; `@covers` on every hexagon test; one test per REQ and variant, with *variant* defined;
+  one recipe per artifact), each advisory until its checker lands under row 1; `behave` narrowed to outward-facing
+  contracts, the CLI and published integration events, in the operator's wording, citing requirements-model § 10's
+  `user_facing` test and #1323; § General Rules points the `unittest.mock` fixture to the hexagon exception.
+- This discharges row 4's *"the Behave ruling citing requirements-model § 10"* as well as its `tests.md` item.
+- Scorecard rows 37c (Judgment) and 91 to 91d (four Promotable, one Judgment) added with their identities.
+- The scorecard's Summary roll-up corrected to the rows (Promotable 63, Judgment 82, of 213): the previous item's
+  commit added row 64f without raising the Promotable count, which `gz validate --advisory-scorecard` caught here.
+
 ## Close
 
 **Challenge restated.** 2026-11-11, on the operator's *"A: adopt draft"* (decision *the challenge is restated*):
