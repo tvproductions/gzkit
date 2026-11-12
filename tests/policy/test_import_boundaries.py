@@ -2,6 +2,9 @@
 
 These tests NEVER import or execute application code. They parse source files
 with the `ast` module to verify hexagonal architecture boundaries are respected.
+The one gzkit import is the kernel's dependency checker, which holds no
+application code and parses rather than imports (operator, 2026-11-12:
+*"A: kernel, narrow isolation"*; RP-15 tranche 6).
 """
 
 import ast
@@ -10,11 +13,21 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from gzkit.kernel.dependency_checker import check, compare, load_baseline, load_package_map
+
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
 
-SRC_ROOT = Path(__file__).parent.parent.parent / "src" / "gzkit"
+REPO_ROOT = Path(__file__).parent.parent.parent
+
+SRC_ROOT = REPO_ROOT / "src" / "gzkit"
+
+HEXAGON_BASELINE = REPO_ROOT / "data" / "hexagon_dependency_baseline.json"
+
+#: The one gzkit package a policy test may import: the kernel, which holds the
+#: dependency checker and no application code.
+POLICY_IMPORTABLE = "gzkit.kernel"
 
 CORE_DIR = SRC_ROOT / "core"
 
@@ -749,18 +762,64 @@ class TestPrivateCrossPackageImportRatchet(unittest.TestCase):
         )
 
 
-class TestPolicyTestIsolation(unittest.TestCase):
-    """Policy tests themselves must not import from src/gzkit/."""
+class TestHexagonDependencyRatchet(unittest.TestCase):
+    """The hexagon's dependency rules, read from the package map, hold in place.
 
-    def test_this_module_imports_no_gzkit(self) -> None:
-        """This test file must not import any gzkit application module."""
-        this_file = Path(__file__)
-        tree = _parse_file(this_file)
-        for _kind, module in _collect_imports(tree):
-            self.assertFalse(
-                module == "gzkit" or module.startswith("gzkit."),
-                f"Policy test file imports gzkit module: '{module}'",
-            )
+    gzkit's code migrates into the regions only after return to service, so today's
+    findings sit in a shrink-only baseline (RP-15 tranche 6): a new finding fails,
+    and so does an entry the tree no longer produces.
+    """
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        package_map = load_package_map(REPO_ROOT / "pyproject.toml")
+        findings = check(package_map, REPO_ROOT)
+        cls.new, cls.repaired = compare(findings, load_baseline(HEXAGON_BASELINE))
+
+    def test_no_new_dependency_finding(self) -> None:
+        self.assertEqual(
+            self.new,
+            [],
+            "New hexagon dependency findings (docs/governance/hexagonal-architecture.md "
+            "§ The dependency rules). Place the code where the package map in "
+            "pyproject.toml [tool.py-gzkit.hexagon] puts it and import only what its "
+            "region's row permits; never add to data/hexagon_dependency_baseline.json:\n  "
+            + "\n  ".join(self.new),
+        )
+
+    def test_baseline_carries_no_repaired_finding(self) -> None:
+        self.assertEqual(
+            self.repaired,
+            [],
+            "Findings repaired: remove them from data/hexagon_dependency_baseline.json "
+            "so the baseline shrinks:\n  " + "\n  ".join(self.repaired),
+        )
+
+
+def _imports_application_code(module: str) -> bool:
+    """Whether *module* is gzkit code a policy test may not import (anything outside the kernel)."""
+    is_gzkit = module == "gzkit" or module.startswith("gzkit.")
+    in_kernel = module == POLICY_IMPORTABLE or module.startswith(f"{POLICY_IMPORTABLE}.")
+    return is_gzkit and not in_kernel
+
+
+class TestPolicyTestIsolation(unittest.TestCase):
+    """Policy tests import no gzkit application code; the kernel is the one exception."""
+
+    def test_this_module_imports_no_gzkit_application_code(self) -> None:
+        """This test file imports the kernel and no other gzkit module."""
+        tree = _parse_file(Path(__file__))
+        offenders = [m for _kind, m in _collect_imports(tree) if _imports_application_code(m)]
+        self.assertEqual(offenders, [], "Policy test file imports gzkit application code")
+
+    def test_the_kernel_exception_admits_no_other_package(self) -> None:
+        """Planted imports: the kernel passes; a look-alike name and application code fail."""
+        planted = ast.parse(
+            "import gzkit\nimport gzkit.kernel_extra\nfrom gzkit.core import models\n"
+            "from gzkit.kernel.dependency_checker import check\nimport gzkit.kernel\n"
+        )
+        offenders = [m for _kind, m in _collect_imports(planted) if _imports_application_code(m)]
+        self.assertEqual(offenders, ["gzkit", "gzkit.kernel_extra", "gzkit.core"])
 
 
 if __name__ == "__main__":

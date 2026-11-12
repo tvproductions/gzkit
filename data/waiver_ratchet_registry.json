@@ -412,6 +412,16 @@
           "rule"
         ]
       }
+    },
+    {
+      "data_file": "data/hexagon_dependency_baseline.json",
+      "gates_step": "hexagon dependency rules (gz validate --hexagon-dependencies)",
+      "mechanism": "shrink-ratchet",
+      "entries_path": "findings",
+      "baseline_count": 177,
+      "identity": {
+        "kind": "strings"
+      }
     }
   ],
   "excluded": [

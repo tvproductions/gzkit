@@ -95,6 +95,30 @@ required-environments = [
 # declares no build-system and so takes setuptools (measured 2026-10-28: 84.2.1).
 build-constraint-dependencies = ["setuptools==84.2.1"]
 
+# The hexagonal architecture system package map: each package's part of the
+# hexagon (docs/governance/hexagonal-architecture.md § The packages). The kernel's
+# dependency checker reads the regions from here and enforces the specification's
+# per-region table; a change to this map is a recorded decision.
+#
+# DRAFT (RP-15 tranche 6, 2026-11-12). Its approval as a classic decision record
+# waits on RP-6's identity crossover. Regions name where code goes, whether or not
+# the package exists yet. Every package or module no region names is a finding,
+# held with today's out-of-region imports in the shrink-only
+# data/hexagon_dependency_baseline.json until gzkit's use cases migrate after
+# return to service (operator, 2026-11-12: "A: unmapped is a finding").
+[tool.py-gzkit.hexagon]
+package = "gzkit"
+source-root = "src"
+kernel = ["gzkit.kernel"]
+domain = ["gzkit.core.domain"]
+driving-ports = ["gzkit.core.ports.driving"]
+driven-ports = ["gzkit.core.ports.driven"]
+handlers = ["gzkit.core.handlers"]
+driving-adapters = ["gzkit.cli"]
+repository-adapters = []
+driven-adapters = []
+configurator = ["gzkit.configurator"]
+
 [tool.ruff]
 line-length = 100
 src = ["src", "tests"]
