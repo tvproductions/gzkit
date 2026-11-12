@@ -5,7 +5,7 @@
 > Named `RO-15` until 2026-11-03; `RP-15` replaces it in live text and `RO-15` stays its alias (contract § Rulings of 2026-11-03). The dated rulings below keep the name they were written with.
 
 
-**2026-11-01. Status: scope, the brownfield reach and placement ruled; tranche owner open; no tranche started.** Operator: **g0**. Repair order of the [harbor pilotage contract](harbor-pilotage-candidate-2026-10-15.md), added by amendment. It follows [RO-9](harbor-ro9-astral-toolchain.md), which aligned the toolchain and left the structure of a project unwitnessed.
+**2026-11-01. Status: scope, the brownfield reach and placement ruled; tranche 6 owner ruled 2026-11-12, tranches 1 to 5 owner open; tranche 6 started 2026-11-12.** Operator: **g0**. Repair order of the [harbor pilotage contract](harbor-pilotage-candidate-2026-10-15.md), added by amendment. It follows [RO-9](harbor-ro9-astral-toolchain.md), which aligned the toolchain and left the structure of a project unwitnessed.
 
 ## Scope
 
@@ -54,7 +54,7 @@ The defect that makes this blocking: `gz init` adds `data/` and `design/` beside
 
 ## Open points
 
-1. Who lands the tranches.
+1. Who lands tranches 1 to 5. Tranche 6 is landed by the main session, which the operator chose on 2026-11-12 in answer to *which work moves next* (verbatim: *"RP-15 tranche 6"*).
 2. Whether a scaffold's `.python-version` takes an exact patch, as gzkit's own does.
 3. Whether `build-constraint-dependencies` carries hashes, which uv's build page describes.
 
@@ -81,6 +81,16 @@ on this order, the test gates on RP-7's placement (contract § Rulings of 2026-1
    subclassed only in its region) and the Protocol-and-name check (each handler inherits exactly one use-case
    `Protocol` and takes its name). It runs on a per-change gate, which clears the mechanism of RP-7's finding F22
    (that line stays RP-7's), and ships in the kernel for adopters to run.
+
+**Rulings while landing it (2026-11-12).**
+
+- **The checker lives in the kernel.** The checker is a stdlib `ast` module inside the kernel.
+  `tests/policy/test_import_boundaries.py` imports it, and the policy-test isolation check is narrowed to admit the
+  kernel alone, since the kernel holds no application code. Put to the operator: (A) checker in the kernel, isolation
+  narrowed; (B) a copy in each place; (C) checker in the test only until `gz init` scaffolds the hexagon. Operator,
+  verbatim: *"A: kernel, narrow isolation"*.
+- **The kernel's name is a draft.** The run held the name open to diamond 2. The package lands as `gzkit.kernel`,
+  flagged as a draft name, like the package map.
 
 **Not in tranche 6.** Moving gzkit's modules into the regions (each use case migrates after return to service, the
 run's row 1); `gz init` scaffolding the hexagon (a row 1 work package after return to service); the test-discipline
