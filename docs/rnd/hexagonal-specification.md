@@ -2579,6 +2579,30 @@ REQ, and a count over zero REQs witnesses nothing. Operator, verbatim: *"Yes, re
 change-order record, the contract's § Rulings of 2026-11-12, its discrepancy line and passage log. The `variants`
 field itself stays row 1's, a field on the hexagon REQ that lands with the first one admitted.
 
+## decision · row 3 advice: one registry-wide drawdown chore; the contract-map check is a gate, not a chore (agent's advice)
+
+Operator, verbatim: *"Yes, row 3"*. Row 3 is advice only; the operator directs admission. Prior art read 2026-11-12:
+`.gzkit/chores/registry.json` (searched for baseline, ratchet, grandfather, drawdown, shrink, contract and waiver
+chores: none draws a baseline down; `control-surface-validator-reachability` Pass E audits ungated ratchets, and
+`coverage-40pct`, `module-sloc-cap-radon` and `decommission-tautological-tests` each tend one surface);
+`data/waiver_ratchet_registry.json` (37 registered surfaces, each declaring one honesty mechanism, and an unregistered
+`*_waivers` or `*_grandfather` file fails closed); the house-style run's row 4(e), commissioned, which gives that
+registry *"an owner, a close-at-zero plan and a target date per shrink-ratchet"*; and GHI #998, open, on the registry
+gating debt volume and never coverage, a different question.
+
+1. **The baseline drawdown chore.** Not one for this run's baselines alone. Every new hexagon baseline (the widened
+   dependency rules, the test gates, the closed-set baseline) must register in `data/waiver_ratchet_registry.json`
+   when it lands, so one chore over that whole registry reaches them all. Advised: admit one registry-wide drawdown
+   chore now, measuring each shrink-ratchet's live count against its baseline and reporting the stalled ones,
+   Montenegro's *"Make reducing the freeze store part of regular sprint work"* (§ 7.8); it takes each surface's owner
+   and target date when house-style row 4(e) lands them. A per-run chore would split one population between two
+   sweeps.
+2. **The contract-map currency check.** Advised: not a chore. Its rule, the map updated *"the moment an owned contract
+   changes"* (Montenegro § 10.6), is decidable at the change, so by RP-7's placement principle (*"chores and gates are
+   strong, rules and memory files are weak"*, a check that can detect the violation is a gate) it belongs as a gate in
+   the publishing step's work package: a changed published integration event with no contract-map change fails. The
+   contract map and the published events do not exist yet (row 1, after return to service), so nothing is admitted now.
+
 ## Close
 
 **Challenge restated.** 2026-11-11, on the operator's *"A: adopt draft"* (decision *the challenge is restated*):
