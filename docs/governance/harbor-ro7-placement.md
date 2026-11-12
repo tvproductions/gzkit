@@ -59,6 +59,34 @@ under the operator's *"fix what is stale"*, before this change order, against st
 is removed or reworded"* (#1246). The session did not surface the conflict before landing them. This change
 order supersedes that sentence for rules; the corrections stand, each listed in § Landed.
 
+## Change order of 2026-11-12 — the hexagon test gates
+
+**Authority.** The R&D run [`hexagonal-specification`](../rnd/hexagonal-specification.md) landed `.gzkit/rules/tests.md`
+`0.28.0` § Hexagon tests on 2026-11-12; four of its clauses are scored Promotable, *"a gate to build"* in this change
+order's own terms (item 2). Placed here by the operator, verbatim: *"A: RP-15 plus RP-7"* (contract § Rulings of
+2026-11-12); the hexagon's structures are RP-15's tranche 6.
+
+**Placed as gates**, each a check on a per-change gate whose failure names the fix, today's violations on a
+shrink-only baseline, each declaring its two-way mode contract (`.gzkit/rules/mode-contract.md`):
+
+| Clause | Scorecard row | Gate |
+|---|---|---|
+| Fakes only, inside the hexagon | tests-policy #91 | a test module covering a hexagon region imports no `unittest.mock`; the outer-edge exception read from the region the test covers |
+| Given, when, then labels | tests-policy #91a | each hexagon unit test carries the three comments in order, read with `tokenize` |
+| Every hexagon test names its REQ | tests-policy #91b | each hexagon test method carries `@covers`, fake-adapter tests exempt by declaration |
+| One test per REQ and variant | tests-policy #91c | no two tests share a REQ and a variant, and none proves an undeclared variant |
+
+**Kept as a rule:** *one recipe per artifact* (tests-policy #91d, Judgment).
+
+**Depends on** RP-15 tranche 6: the gates learn which tests are hexagon tests from the package map.
+
+**Held for the operator (H15).** The variant gate (#91c) reads each hexagon REQ's declared variants, and the
+catalog's REQ schema (RP-3, closed) has no such field; `data/catalog/reqs.json` is empty. Either the field is added
+under RP-5's tranche 6 (the catalog verbs after entry) and the gate lands with it, or #91c is regraded *due by the
+first hexagon REQ admitted*. Recommended: regrade, since a count over zero REQs witnesses nothing.
+
+**Grade.** #91, #91a and #91b block return to service, by the timing ruling; #91c as H15 rules.
+
 ## Landed (2026-11-08)
 
 | What | Where | Commit |
@@ -104,6 +132,7 @@ validity table with its evidence.
 | H12 | brief-heading-conventions, `### Closing Argument` *"by H3 heading match"* | `commands/common.py:578` matches H2 only, while 136 briefs use H3, so the Defense Brief gets no closing argument | fix the code |
 | H13 | agents-md-map-doctrine, verdict RETIRE | `test_agents_md_map_doctrine.py` (REQ-0.0.54-01-01) asserts the file exists | operator's choice under the attested-REQ rule |
 | H14 | root `AGENTS.md` (Band A) | 98 % of its entry bytes are `tier: invariant`; the 2026-10-16 ruling declined re-tiering | operator retires or re-tiers named entries (stage 7) |
+| H15 | tests-policy #91c, the variant gate (change order of 2026-11-12) | the catalog's REQ schema has no `variants` field and no REQ is admitted | regrade *due by the first hexagon REQ admitted* |
 
 ## Findings, graded (proposed)
 

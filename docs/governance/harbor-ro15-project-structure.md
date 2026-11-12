@@ -44,6 +44,7 @@ The defect that makes this blocking: `gz init` adds `data/` and `design/` beside
 | 3 | The scaffold: `gz` locked in the project, so `uv run gz` never falls through to `PATH`. |
 | 4 | Clean-install proof: the wheel installed in a fresh environment outside the checkout, with import origins, the CLI and packaged data read (A12), and `--no-editable` behaviour. |
 | 5 | Brownfield: `gz init` leaves a working build working, reports every gap, and a fixture migrates to conformance under the rulings above. |
+| 6 | The hexagon's structures (change order of 2026-11-12, below): the kernel package, the hexagonal architecture system package map, and the dependency-rules test widened to every mapped region. |
 
 ## Kept from gzkit's rulings
 
@@ -56,6 +57,43 @@ The defect that makes this blocking: `gz init` adds `data/` and `design/` beside
 1. Who lands the tranches.
 2. Whether a scaffold's `.python-version` takes an exact patch, as gzkit's own does.
 3. Whether `build-constraint-dependencies` carries hashes, which uv's build page describes.
+
+## Change order of 2026-11-12 — the hexagon's structures (tranche 6)
+
+**Authority.** The R&D run [`hexagonal-specification`](../rnd/hexagonal-specification.md), signed off funded on
+2026-11-11, ruled that the hexagon's structures land in this drydock and gzkit's use cases migrate into them after
+return to service (operator, verbatim: *"Yes"*, then *"Ruling stands"*). The order that first carried the hexagonal
+direction, RP-9, closed on 2026-10-29. Placed here by the operator, verbatim: *"A: RP-15 plus RP-7"*: the structures
+on this order, the test gates on RP-7's placement (contract § Rulings of 2026-11-12). Specification:
+[`docs/governance/hexagonal-architecture.md`](hexagonal-architecture.md).
+
+**What tranche 6 lands.**
+
+1. **The kernel package**, a sibling of `core/`, importing stdlib and Pydantic only and holding no gzkit governance
+   concept: the bases `ValueObject`, `Entity`, `DomainEvent`, `Command`, `Query` and `Dto` (frozen Pydantic models;
+   `create(...) -> Self | ValidationErrors` where the specification gives one), the error-value types, and the
+   command and query buses (a startup registry that fails fast on a missing handler).
+2. **The hexagonal architecture system package map** in `pyproject.toml` `[tool.py-gzkit]`, naming each top-level
+   package's part of the hexagon. Its approval as a classic decision record (the house-style run's ruling) waits on
+   RP-6's identity crossover; until then the map lands as this tranche's draft and is flagged as such.
+3. **The dependency rules, widened.** `tests/policy/test_import_boundaries.py` reads every region's row from the map
+   and enforces the specification's per-region table, with the base-to-region cross-check (each kernel base
+   subclassed only in its region) and the Protocol-and-name check (each handler inherits exactly one use-case
+   `Protocol` and takes its name). It runs on a per-change gate, which clears the mechanism of RP-7's finding F22
+   (that line stays RP-7's), and ships in the kernel for adopters to run.
+
+**Not in tranche 6.** Moving gzkit's modules into the regions (each use case migrates after return to service, the
+run's row 1); `gz init` scaffolding the hexagon (a row 1 work package after return to service); the test-discipline
+gates (RP-7's change order of 2026-11-12).
+
+**Witness.** The kernel's unit tests; controls showing the widened checker refuses a planted out-of-region import, an
+`Entity` outside `core/domain`, and a handler with no use-case `Protocol`; the checker on a per-change gate. Today's
+violations enter a **shrink-only baseline**, because gzkit's code migrates only after return to service: at exit the
+witness reads *in place and only shrinking*, not zero. These checks are their own validator, outside
+`--astral-discipline`'s structure rules, so § Exit item 13 still reads zero on those alone. Each new check declares its
+two-way mode contract in its design (`.gzkit/rules/mode-contract.md`).
+
+**Grade.** Blocks return to service, by the timing ruling.
 
 ## Witness
 
