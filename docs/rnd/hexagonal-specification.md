@@ -2519,6 +2519,16 @@ was never scored) and RP-7's record (its H2 holds the size limits, not this sect
 present home of `GzkitError` in `core/` and its move under row 5 named; scorecard rows 18a (Promotable), 18b and 18c
 (Judgment) with their identities, and the Summary roll-up raised to 216.
 
+## decision · row 4, fourth item: the closed-set widening rule lands in models.md (operator ruling)
+
+Operator, verbatim, choosing the next row 4 item: *"closed-set rule"*. Home chosen by the agent and stated before
+the edit: `.gzkit/rules/models.md`, the data-model policy, rather than a new rule file, whose per-turn load is RP-7's
+placement question. Done in one commit: `models.md` to `0.3.0` with § Closed sets carrying the ruling of the decision
+*widening a closed set needs a recorded ruling*, advisory until its witness lands under row 1, citing #1319; the
+rule's paths widened to `src/gzkit/schemas/**`, since the widening happens in the JSON schemas, which `src/**/*.py`
+never loaded on; scorecard row 27b (Promotable) and the Summary raised to 217. The commissioned shrink-only validator
+is code and stays with row 1.
+
 ## Close
 
 **Challenge restated.** 2026-11-11, on the operator's *"A: adopt draft"* (decision *the challenge is restated*):

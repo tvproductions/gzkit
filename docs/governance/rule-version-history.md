@@ -1205,6 +1205,10 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `models.md`
 
+### Changed 2026-11-12 at version `0.3.0` (R&D run hexagonal-specification, disposition row 4)
+
+Prior `0.2.2` banner, verbatim: *"§ Verify names the deliberate `extra="allow"` models that mirror an open schema, under the operator's "fix what is stale" (2026-11-08)."* Superseded on the operator's *"closed-set rule"*: § Closed sets adds the run's ruling that widening a schema `enum`, `StrEnum` or `Literal` needs a recorded ruling, never a widen-to-pass, with old values tolerated on reading only; the rule's paths gain `src/gzkit/schemas/**`, so it loads where the widening happens. Scorecard row 27b added.
+
 Prior `0.2.1` banner: *"version narrative lifted to Rule Version History; binding rules unchanged."* Superseded 2026-11-08 by `0.2.2` under the operator's *"fix what is stale"*: § Verify required `extra="forbid"` on every model while eight deliberately use `extra="allow"` to mirror an open schema (the `gzkit.core.models` frontmatter models, `ConceptFrontmatter` per ADR-0.30.0, `ObpiReceiptEvidence`).
 
 Lifted 2026-08-30 at version `0.1.0` (rule now at `0.2.0`).

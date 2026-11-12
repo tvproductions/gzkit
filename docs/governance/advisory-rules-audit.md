@@ -64,7 +64,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `complexity-thresholds.md` | `0.6.1` |
 | `gh-cli.md` | `0.7.1` |
 | `hexagonal-architecture.md` | `0.5.0` |
-| `models.md` | `0.2.2` |
+| `models.md` | `0.3.0` |
 | `model-selection.md` | `0.8.1` |
 | `weaponeering.md` | `0.1.1` |
 | `security-sensitivity.md` | `0.6.2` |
@@ -160,6 +160,8 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 
 ### Data Models (`.gzkit/rules/models.md`)
 
+**Re-scored 2026-11-12 at rule `0.3.0`**, on the operator's *"closed-set rule"* (R&D run `docs/rnd/hexagonal-specification.md`, disposition row 4, commissioned there as *"the closed-set widening rule and its shrink-only validator"*): § Closed sets added and scored as row 27b; the rule's paths widened to `src/gzkit/schemas/**`. No existing score moves.
+
 **Re-scored 2026-11-08 at rule `0.2.2`** — stale clause corrected under the operator's *"fix what is stale"*: § Verify's `extra="forbid"` bullet names the eight deliberate `extra="allow"` models that mirror an open schema. No Rule cell quoted that bullet; row 26's Notes now state what `--pydantic-models` checks, and its score is held for an operator ruling.
 
 | # | Rule | Score | Notes |
@@ -168,6 +170,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | 26 | Use `ConfigDict(frozen=True, extra="forbid")` for immutable models | **Mechanical** | Same audit (`--pydantic-models`) — flags `BaseModel` subclasses missing `model_config = ConfigDict(...)`. **Corrected 2026-11-08 (rule `0.2.2`):** `_has_model_config` (`src/gzkit/governance/trust_audits/models.py`) checks only that a `model_config` assignment exists; it never reads `frozen` or `extra`, so the clause's two keywords are unwitnessed, and eight models use `extra="allow"` deliberately (rule § Verify). The score is held at Mechanical pending an operator ruling on re-scoring it Promotable. `source=.gzkit/rules/models.md` |
 | 27 | Use type hints (`str \| None`, `list[str]`) — not `Optional`, `List`. | **Mechanical** | ruff UP045 (`Optional`) and UP006 (`List`), selected under `ALL`; the row cited UP007 (`Union`) until 2026-11-08 `source=.gzkit/rules/models.md` |
 | 27a | Use `Field(...)` with descriptions for required fields; `Field(None, ...)` for optional | **Promotable** | **Scored 2026-08-30 (rule `0.2.0`), GHI #921 — the clause had never been scored.** `audit_pydantic_models` (`src/gzkit/governance/trust_audits/models.py`) AST-scans for `@dataclass` decorators, `BaseModel` inheritance and `model_config` presence; it never inspects a `Field(...)` call, so neither half of this clause is enforced. Promotable rather than Judgment because the check is the same AST shape the audit already walks: for each `BaseModel` subclass, assert every `Field(...)` carries a `description=` keyword and that a `None` default pairs with an optional annotation. Promotion path: extend `_audit_class_node`, then author an `@enforces` control and cite its claim id. `source=.gzkit/rules/models.md` |
+| 27b | **Widening a closed set needs a recorded ruling.** | **Promotable** | Decidable: a committed baseline of each closed set's members (schema `enum`s, `StrEnum`s, `Literal`s), compared by a `gz validate` scope that fails on a new member whose commit cites no ruling, the precedent being `data/ruff_baseline.json` and `data/module_size_grandfather.json`. Unbuilt (the run's row 1). The validator can see that a ruling is cited, not that it is genuine. **Added 2026-11-12 (rule `0.3.0`).** `source=.gzkit/rules/models.md` |
 
 ### Tool / Skill / Runbook Alignment (`.gzkit/rules/tool-skill-runbook-alignment.md`)
 
@@ -612,7 +615,7 @@ decays in whichever direction the next reader's grep happens to point.
 | Score | Rows | % of scored rows |
 |-------|-------|---|
 | **Mechanical** | 68 | 31% |
-| **Promotable** | 64 | 30% |
+| **Promotable** | 65 | 30% |
 | **Judgment** | 84 | 39% |
 | **Ambiguous** | 0 | 0% |
 
@@ -630,7 +633,7 @@ decays in whichever direction the next reader's grep happens to point.
      158 as of row 58c (GHI #962, 2026-09-05), and 159 as of row 88 (the CLI
      lane-is-not-route carve-out, 2026-09-06), and 160 as of row 89 (mutation-sweep
      integrity, GHI #963), and 161 as of row 51c (census-query completeness,
-     GHI #972), and 163 as of rows 91-92 (the exit-code-2 relabel, GHI #1001), and 167 as of rows 56a-56b (suppression is not a repair, GHI #999), and 168 as of row 93 (verbosity flags realigned to the specification, 2026-09-14), and 180 as of row 53c (skill selection routes through gz-how, GHI #1106, 2026-09-27), and 181 as of row 51d (gh issue reopen for ghi-author's regression case, 2026-09-27), and 190 as of row 62g (the MX lease is booked and announced, GHI #1257, 2026-10-18), and 191 as of row 51e (the `block` band's consumers after xenon, RO-9 tranche 4, 2026-10-22), and 192 as of row 23b (deferred annotations at the 3.14 floor, RO-9 tranche 4, 2026-10-23), and 193 as of row 45e (executables resolved off absolute PATH entries, RO-9 tranche 4, 2026-10-24), and 194 as of row 52c (models named by class, never a versioned ID, GHI #1284, 2026-10-27), and 202 as of rows 62h-62k and 99-99c (`mx-mode.md` re-scored at `1.14.1` and `mode-contract.md` scored at `0.1.2`, 2026-10-28), and 205 as of rows 62l-62n (`mx-mode.md` scored at `1.16.0`, out of service as one state, 2026-11-04), and 206 as of row 33d (a retired rule leaves every surface, rule `0.14.0`, 2026-11-08), unchanged when four rows moved from Mechanical on an ungated or absent witness (2026-11-08), and 207 as of rows 64f-64g with row 64d retired (`hexagonal-architecture.md` at `0.5.0`, 2026-11-12), and 213 as of rows 37c and 91-91d (`tests.md` at `0.28.0`, 2026-11-12), and 216 as of rows 18a-18c (`pythonic.md` at `0.6.0`, 2026-11-12); the entries between 131 and 158 were
+     GHI #972), and 163 as of rows 91-92 (the exit-code-2 relabel, GHI #1001), and 167 as of rows 56a-56b (suppression is not a repair, GHI #999), and 168 as of row 93 (verbosity flags realigned to the specification, 2026-09-14), and 180 as of row 53c (skill selection routes through gz-how, GHI #1106, 2026-09-27), and 181 as of row 51d (gh issue reopen for ghi-author's regression case, 2026-09-27), and 190 as of row 62g (the MX lease is booked and announced, GHI #1257, 2026-10-18), and 191 as of row 51e (the `block` band's consumers after xenon, RO-9 tranche 4, 2026-10-22), and 192 as of row 23b (deferred annotations at the 3.14 floor, RO-9 tranche 4, 2026-10-23), and 193 as of row 45e (executables resolved off absolute PATH entries, RO-9 tranche 4, 2026-10-24), and 194 as of row 52c (models named by class, never a versioned ID, GHI #1284, 2026-10-27), and 202 as of rows 62h-62k and 99-99c (`mx-mode.md` re-scored at `1.14.1` and `mode-contract.md` scored at `0.1.2`, 2026-10-28), and 205 as of rows 62l-62n (`mx-mode.md` scored at `1.16.0`, out of service as one state, 2026-11-04), and 206 as of row 33d (a retired rule leaves every surface, rule `0.14.0`, 2026-11-08), unchanged when four rows moved from Mechanical on an ungated or absent witness (2026-11-08), and 207 as of rows 64f-64g with row 64d retired (`hexagonal-architecture.md` at `0.5.0`, 2026-11-12), and 213 as of rows 37c and 91-91d (`tests.md` at `0.28.0`, 2026-11-12), and 216 as of rows 18a-18c (`pythonic.md` at `0.6.0`, 2026-11-12), and 217 as of row 27b (`models.md` at `0.3.0`, 2026-11-12); the entries between 131 and 158 were
      not recorded here as they landed, so this list names the endpoints it can
      evidence rather than reconstructing a history it cannot. -->
 
