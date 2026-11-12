@@ -2443,6 +2443,16 @@ on purpose. The draft drew on the material carried to the close: the operator's 
 software engineering"*, and point 3 on requirements in the operator's hand. Options put: (A) adopt the draft,
 recommended; (B) keep the original. Operator, verbatim: *"A: adopt draft"*. The restatement stands under § Close.
 
+## decision · sign-off: fund (operator ruling)
+
+Both closing conditions met: mechanically, the frontier empty, the challenge restated on purpose, all seven rows
+carrying a decision; and the review account read (*"Read it"*). Put to the operator: kill or fund. Recommended fund,
+with what it does and does not do stated: diamond 1 closes, the rows stand as commissioned, and nothing executes
+until the operator's go on each row. Operator, verbatim: *"Fund"*.
+
+Settled. The run is closed and funded. Rows 1 to 5 and 7 are commissioned and wait on their row-level goes; row 6
+stands as not pursued with its revisit conditions. The run may reopen if later findings send it back.
+
 ## Close
 
 **Challenge restated.** 2026-11-11, on the operator's *"A: adopt draft"* (decision *the challenge is restated*):
@@ -2455,7 +2465,7 @@ disposition rows carry a decision; rows 1 and 5 were revisited (decision *the fr
 
 **Review.** Written 2026-11-11 at [`hexagonal-specification/review.md`](hexagonal-specification/review.md); read by the operator, verbatim: *"Read it"* (2026-11-11).
 
-**Sign-off.** Not yet put.
+**Sign-off.** Funded, 2026-11-11. Operator, verbatim: *"Fund"* (decision *sign-off: fund*). No row is executed by the sign-off; each waits on the operator's go on that row.
 
 ## What this record does not license
 
