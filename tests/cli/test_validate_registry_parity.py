@@ -110,6 +110,10 @@ _POST_SNAPSHOT_DEFAULT_ADDITIONS: tuple[str, ...] = (
     # DEFAULT tier: the detector only ran on a manual invocation, and 87 rows under
     # 21 bare ids accumulated between runs.
     "pending_renames",
+    # hexagon_dependencies — the hexagon's dependency rules over the whole package,
+    # read from the package map (RP-15 tranche 6). DEFAULT tier: the policy test
+    # sharing its checker runs only when its own file changes (RP-7 finding F22).
+    "hexagon_dependencies",
 )
 
 # Explicit-tier scopes run only when their flag is set. Set-parity is what the

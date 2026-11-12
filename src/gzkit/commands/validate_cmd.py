@@ -481,6 +481,15 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
     # invoked `gz migrate-semver`, and 87 rows under 21 bare ids accumulated between
     # runs. Gating on it makes the reconciliation continuous (Boundary 4).
     _ScopeEntry("pending_renames", "default", True, lambda r, _f: _validate_pending_renames(r)),
+    # Default tier (RP-15 tranche 6): the hexagon's dependency rules, read from the
+    # package map, over the whole package. The policy test sharing its checker runs
+    # only when its own file changes (RP-7 finding F22), so the gate lives here.
+    _ScopeEntry(
+        "hexagon_dependencies",
+        "default",
+        in_other_scopes=True,
+        run=lambda r, _f: _ta().audit_hexagon_dependencies(r),
+    ),
     _ScopeEntry("kind_invariance", "explicit", True, lambda r, _f: _ta().audit_kind_invariance(r)),
     _ScopeEntry("persona_witness", "explicit", True, lambda r, _f: _ta().audit_persona_witness(r)),
     _ScopeEntry("receipt_shape", "explicit", True, lambda r, _f: _ta().audit_receipt_shape(r)),
@@ -1197,6 +1206,7 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "frontmatter",
         "how_coverage",
         "pending_renames",
+        "hexagon_dependencies",
         "chores_layout",
         "complexity_doctrine_links",
         "complexity_thresholds",
@@ -1667,6 +1677,7 @@ def validate(
     frontmatter_adr: str | None = None,
     frontmatter_explain: str | None = None,
     check_model_class_only: bool = False,
+    check_hexagon_dependencies: bool = False,
 ) -> None:
     """Validate governance artifacts against schemas.
 
@@ -1760,6 +1771,7 @@ def validate(
         "distribution": check_distribution,
         "wheel_path_literals": check_wheel_path_literals,
         "model_class_only": check_model_class_only,
+        "hexagon_dependencies": check_hexagon_dependencies,
         "changelog": check_changelog,
         "bullet_retention": check_bullet_retention,
         "surface_weight": check_surface_weight,

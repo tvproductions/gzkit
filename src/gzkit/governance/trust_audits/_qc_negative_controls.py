@@ -47,6 +47,8 @@ from ._qc_nc_entrypoints import (
     _ep_catalog_orders,
     _ep_catalog_repair_reqs,
     _ep_catalog_work_packages,
+    _ep_hexagon_dependencies,
+    _ep_hexagon_dependencies_admits_baselined,
     _ep_model_class_only,
     _ep_supply_chain_audit,
     _ep_supply_chain_audit_admits_ignored,
@@ -1439,6 +1441,63 @@ def _build_model_class_only() -> Path:
     return root
 
 
+_HEXAGON_MAP = (
+    '[tool.py-gzkit.hexagon]\npackage = "app"\nsource-root = "src"\n'
+    'domain = ["app.core.domain"]\ndriving-adapters = ["app.cli"]\n'
+)
+
+_HEXAGON_BREACH = "import app.core.domain.record -> app.cli"
+
+
+def _hexagon_root(slug: str) -> Path:
+    """Build a mapped package whose domain imports the driving adapter, plus a decoy.
+
+    The decoy is a domain module importing only stdlib and Pydantic, which the
+    rules admit, so a gate that refused it would report a second finding.
+
+    Returns:
+        The fixture project root.
+
+    """
+    root = _mkroot(slug)
+    _write(root / "pyproject.toml", _HEXAGON_MAP)
+    for rel in ("app", "app/core", "app/core/domain", "app/cli"):
+        _write(root / "src" / rel / "__init__.py", "")
+    _write(root / "src" / "app" / "cli" / "main.py", "")
+    _write(root / "src" / "app" / "core" / "domain" / "record.py", "from app.cli import main\n")
+    _write(root / "src" / "app" / "core" / "domain" / "ok.py", "import json\nimport pydantic\n")
+    return root
+
+
+def _build_hexagon_dependencies() -> Path:
+    """Plant a domain module importing the driving adapter (RP-15 tranche 6).
+
+    Returns:
+        The fixture project root.
+
+    """
+    return _hexagon_root("hexagon-dependencies")
+
+
+def _build_hexagon_dependencies_baselined() -> Path:
+    """Hold the same breach in the shrink-only baseline: the gate MUST admit it.
+
+    The admit half: gzkit's own findings sit in the baseline until its code
+    migrates, so a gate that stopped honouring the baseline would hold the tree red.
+    The refuse half is proven by ``hexagon-dependencies``.
+
+    Returns:
+        The fixture project root, its breach held in the baseline.
+
+    """
+    root = _hexagon_root("hexagon-dependencies-baselined")
+    _write(
+        root / "data" / "hexagon_dependency_baseline.json",
+        json.dumps({"findings": [_HEXAGON_BREACH]}),
+    )
+    return root
+
+
 def _build_wheel_path_literals() -> Path:
     """Plant a wheel-shipped skill doc naming a path rooted in one user's home.
 
@@ -2638,6 +2697,12 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         "Versioned model ID",
     ),
     (
+        "hexagon-dependencies",
+        _build_hexagon_dependencies,
+        _ep_hexagon_dependencies,
+        _HEXAGON_BREACH,
+    ),
+    (
         "doc-code-citations",
         _build_doc_code_citations,
         _ep._ep_doc_code_citations,
@@ -2779,6 +2844,12 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         "brief-size-grandfathered",
         _build_brief_size_grandfathered,
         _ep._ep_brief_size_admits_grandfathered,
+    ),
+    # Admit half: a finding held in the shrink-only baseline (RP-15 tranche 6).
+    (
+        "hexagon-dependencies-baselined",
+        _build_hexagon_dependencies_baselined,
+        _ep_hexagon_dependencies_admits_baselined,
     ),
     (
         "session-green-gate",

@@ -106,6 +106,14 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     "brief-size": "brief-size-grandfathered",
     # The admit half reads the same gate and admits nothing of its own.
     "brief-size-grandfathered": EXEMPTS_NONE,
+    # Checks the package against the hexagon's dependency rules. Its shrink-only
+    # baseline, data/hexagon_dependency_baseline.json, is a data file a project
+    # controls that admits a judged finding, so the admit path is exercised by a
+    # registered control rather than declared away. A project with no package map
+    # has nothing to compare, an artifact-absent return. RP-15 tranche 6.
+    "hexagon-dependencies": "hexagon-dependencies-baselined",
+    # The admit half reads the same gate and admits nothing of its own.
+    "hexagon-dependencies-baselined": EXEMPTS_NONE,
     # Validates data/catalog/ against its schemas and structure. No waiver table,
     # allowlist, baseline or flag admits a finding; the three files are the whole
     # subject, a scope predicate. Drydock RO-3.

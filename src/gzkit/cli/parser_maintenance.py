@@ -717,6 +717,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Heavy-lane CLI-shipping briefs must carry a ## Demo H2 section (GHI #431)",
     )
     p_validate.add_argument(
+        "--hexagon-dependencies",
+        dest="check_hexagon_dependencies",
+        action="store_true",
+        help="Hold the package to the hexagon's dependency rules (RP-15 tranche 6)",
+    )
+    p_validate.add_argument(
         "--chores-layout",
         dest="check_chores_layout",
         action="store_true",
@@ -1244,6 +1250,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_distribution_regenerate=a.check_distribution_regenerate,
             check_wheel_path_literals=a.check_wheel_path_literals,
             check_model_class_only=a.check_model_class_only,
+            check_hexagon_dependencies=a.check_hexagon_dependencies,
             check_changelog=a.check_changelog,
             check_bullet_retention=a.check_bullet_retention,
             check_surface_weight=a.check_surface_weight,

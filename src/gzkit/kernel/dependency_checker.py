@@ -35,6 +35,7 @@ __all__ = [
     "Finding",
     "PackageMap",
     "PackageMapError",
+    "PackageMapMissingError",
     "Region",
     "Rule",
     "check",
@@ -111,6 +112,10 @@ class PackageMapError(ValueError):
     """The package map is missing or malformed: a fault in the project's configuration."""
 
 
+class PackageMapMissingError(PackageMapError):
+    """The project declares no package map: it has not adopted the hexagon yet."""
+
+
 class PackageMap(BaseModel):
     """The hexagonal architecture system package map, as read from ``pyproject.toml``."""
 
@@ -179,15 +184,16 @@ def load_package_map(pyproject: Path) -> PackageMap:
         The package map.
 
     Raises:
-        PackageMapError: the table is absent, a key is unknown, or a package is
-            mapped to two regions or lies outside the package.
+        PackageMapMissingError: the table is absent.
+        PackageMapError: a key is unknown, or a package is mapped to two regions
+            or lies outside the package.
 
     """
     data = tomllib.loads(pyproject.read_text(encoding="utf-8"))
     table = data.get("tool", {}).get("py-gzkit", {}).get("hexagon")
     if not isinstance(table, dict):
         msg = f"{pyproject.as_posix()}: no [tool.py-gzkit.hexagon] package map"
-        raise PackageMapError(msg)
+        raise PackageMapMissingError(msg)
     package = str(table.get("package", ""))
     source_root = str(table.get("source-root", "src"))
     unknown = sorted(set(table) - {"package", "source-root"} - set(Region))

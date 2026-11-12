@@ -832,6 +832,36 @@ def _ep_brief_size(root: Path) -> list[ValidationError]:
     return errors
 
 
+def _ep_hexagon_dependencies(root: Path) -> list[ValidationError]:
+    """Return the finding against the planted import, and nothing when the decoy fired.
+
+    The decoy domain module imports only stdlib and Pydantic. A gate that refused
+    it, or that missed the planted import, reports no catch, so the control fails
+    on either over-reach or a narrowed rule (RP-15 tranche 6).
+
+    Returns:
+        The findings when exactly the planted module fired; otherwise nothing.
+
+    """
+    from gzkit.governance.trust_audits.hexagon_dependencies import (  # noqa: PLC0415
+        audit_hexagon_dependencies,
+    )
+
+    errors = audit_hexagon_dependencies(root)
+    if {error.artifact for error in errors} != {"app.core.domain.record"}:
+        return []
+    return errors
+
+
+def _ep_hexagon_dependencies_admits_baselined(root: Path) -> int:
+    """Truthy only when the gate ADMITS a finding held in the shrink-only baseline."""
+    from gzkit.governance.trust_audits.hexagon_dependencies import (  # noqa: PLC0415
+        audit_hexagon_dependencies,
+    )
+
+    return 0 if audit_hexagon_dependencies(root) else 1
+
+
 def _ep_brief_size_admits_grandfathered(root: Path) -> int:
     """Truthy only when the gate ADMITS a brief at its recorded ceiling."""
     from gzkit.governance.trust_audits.brief_size import audit_brief_size  # noqa: PLC0415

@@ -10,7 +10,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--interviews] [--decomposition]
             [--requirements] [--commit-trailers]
             [--taxonomy] [--chores-layout] [--distribution] [--wheel-path-literals]
-            [--model-class-only] [--changelog]
+            [--model-class-only] [--hexagon-dependencies] [--changelog]
             [--bullet-retention] [--surface-weight] [--pointer-anchors]
             [--surface-fidelity]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
@@ -1103,6 +1103,56 @@ uv run gz validate --model-class-only --json
 ```
 
 Rule home: `.gzkit/rules/model-selection.md` § Skill frontmatter.
+
+### `--hexagon-dependencies`
+
+Holds the package to the hexagon's dependency rules, read from the
+hexagonal architecture system package map in `pyproject.toml`
+`[tool.py-gzkit.hexagon]` (RP-15 tranche 6). Runs in the **default**
+`gz check` scope, so the flag is for scoping a single run.
+
+The kernel's dependency checker (`gzkit.kernel.dependency_checker`) parses
+every module of the mapped package, at any depth, without importing it. It
+reports four kinds of finding, each against
+`docs/governance/hexagonal-architecture.md` § The dependency rules:
+
+| Finding | Meaning |
+|---------|---------|
+| `unmapped` | A package or module no region of the map names |
+| `import` | An import the importer's region may not make: a region outside its row, another adapter, or a library other than Pydantic inside the walls |
+| `base` | A kernel base (`ValueObject`, `Entity`, `DomainEvent`, `Command`, `Query`, `Dto`) subclassed outside its region |
+| `handler` | A handler that does not inherit exactly one use-case `Protocol` from the driving ports, or does not take its name from it |
+
+gzkit's code migrates into the regions only after return to service, so
+today's findings are held in the shrink-only
+`data/hexagon_dependency_baseline.json`, a registered shrink-ratchet. A finding
+the baseline does not hold fails, and so does a held finding the tree no longer
+produces: the list only shrinks. A project with no package map passes; a
+malformed map fails.
+
+#### Exit codes
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | No finding outside the baseline, and none left in it that the tree no longer produces | — |
+| 3 | A new finding, a repaired finding still in the baseline, or a malformed package map | Move the code where the map places it or drop the import; remove a repaired entry from the baseline; then re-run `uv run gz validate --hexagon-dependencies` |
+
+Measured, not transcribed: a temporary project mapping `app.core.domain` and
+`app.cli`, with `app/core/domain/record.py` importing `app.cli`, exits **3**
+with the finding `import app.core.domain.record -> app.cli`. Under an open
+Maintenance Hangar the finding is reported advisory and the run exits 0.
+
+#### Examples
+
+```bash
+# Scope a run to this check alone
+uv run gz validate --hexagon-dependencies
+
+# Machine-readable output
+uv run gz validate --hexagon-dependencies --json
+```
+
+Rule home: `.gzkit/rules/hexagonal-architecture.md` rule 7.
 
 ### `--changelog`
 
@@ -3308,6 +3358,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--waiver-ratchet` | opt-in | Every waiver, grandfather or baseline surface that gates a `gz check` step carries exactly one honesty mechanism (ADR-0.0.73 / OBPI-0.0.73-09) |
 | `--wheel-path-literals` | yes | Wheel-shipped instruction text names no path only its authoring environment can resolve (GHI #900) |
 | `--model-class-only` | yes | Rule, skill and agent canon name Claude models by class, never by a versioned ID (GHI #1284) |
+| `--hexagon-dependencies` | yes | The package holds to the hexagon's dependency rules read from the package map; today's findings in a shrink-only baseline (RP-15 tranche 6) |
 | `--audits` | opt-in | Run all four trust-doctrine pattern audits in one pass |
 
 The `--allowlist-only` flag is a sub-modifier for `--unscoped-rules` —
