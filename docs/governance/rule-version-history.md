@@ -482,6 +482,10 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `hexagonal-architecture.md`
 
+### Changed 2026-11-12 at version `0.6.0` (R&D run hexagonal-specification, disposition row 4)
+
+Prior `0.5.0` banner, verbatim: *"rules 5, 7 and 8 and the cascade follow the hexagonal specification run (operator, 2026-11-12: "A: page, plus overturned"); rules 1 to 4 and 6 wait on RP-7."* Superseded on the operator's *"configuration rule"*: § Configuration adds rule 10, the ruling of the decision *configuration is read once, by the configurator, and passed as frozen values*, with today's loaders measured and their move placed under row 5. Scorecard row 64h added.
+
 ### Changed 2026-11-12 at version `0.5.0` (R&D run hexagonal-specification, disposition row 4)
 
 Prior `0.4.1` banner, verbatim: *"§ Verify names the import-boundary test in place of lint and typecheck, the module count is measured, and § Related no longer credits `pythonic.md` with Protocol/DI, under the operator's "fix what is stale" (2026-11-08)."* Superseded on the operator's *"A: page, plus overturned"*: the canon page became gzkit's hexagonal specification, and the rule changed only where that run overturned it. Rule 5's second-adapter threshold is retired (every driven port has a fake from its first test); rule 7 no longer forbids `domain/`, `ports/` and `handlers/` partitions or calls bounded contexts ontology subgraphs, and states the package design instead; rule 8 and the cascade's DDD stage no longer make the ontology the domain model, which it now depicts. Rules 1 to 4 and 6 are unchanged: rule 1's scope is RP-7's held ruling H1, and the rule's placement is RP-7's change order. Scorecard row 64d removed; rows 64f and 64g added.

@@ -2529,6 +2529,16 @@ rule's paths widened to `src/gzkit/schemas/**`, since the widening happens in th
 never loaded on; scorecard row 27b (Promotable) and the Summary raised to 217. The commissioned shrink-only validator
 is code and stays with row 1.
 
+## decision · row 4, fifth item: the configuration rule lands as hexagonal rule 10 (operator ruling)
+
+Operator, verbatim, choosing the next row 4 item: *"configuration rule"*. No rule governed configuration before
+(searched `.gzkit/rules/`; `pythonic.md` principle 10 says only *"explicit configuration and state"*). Home chosen by
+the agent and stated before the edit: the hexagonal rule, whose configurator the ruling names, under a new
+§ Configuration, leaving rules 1 to 9 untouched. Done in one commit: the rule to `0.6.0` with rule 10 stating the
+ruling of the decision *configuration is read once, by the configurator, and passed as frozen values*, today's 50
+loading modules and 35 `manifest.json` readers named as row 5's move and new code barred from adding a loader;
+scorecard row 64h (Promotable) and the Summary raised to 218.
+
 ## Close
 
 **Challenge restated.** 2026-11-11, on the operator's *"A: adopt draft"* (decision *the challenge is restated*):

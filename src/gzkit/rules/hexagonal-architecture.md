@@ -5,11 +5,11 @@ paths:
 description: Ports & adapters as gzkit's primary code architecture directive
 ---
 
-<!-- rule-version: 0.5.0 -->
+<!-- rule-version: 0.6.0 -->
 
 # Hexagonal Architecture (Ports & Adapters) — Primary Code Directive
 
-> **Rule version:** `0.5.0` — rules 5, 7 and 8 and the cascade follow the hexagonal specification run (operator, 2026-11-12: *"A: page, plus overturned"*); rules 1 to 4 and 6 wait on RP-7; version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#hexagonal-architecturemd).
+> **Rule version:** `0.6.0` — adds rule 10, configuration read once by the configurator, from the hexagonal specification run (operator, 2026-11-12: *"configuration rule"*); rules 1 to 4 and 6 wait on RP-7; version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#hexagonal-architecturemd).
 
 > Ports & adapters is gzkit's **primary code-architecture directive**. Every
 > external dependency is confined to an **adapter** behind a **port**; the inner
@@ -91,6 +91,17 @@ types split between `core/models.py` and `models/`). Binding consequences:
 9. **"Why is this here?" is a required answer.** Every new module, object, and seam
    earns its place by imaging the *actual* shape, never a convenient one (ADR-0.32.0
    persona). Name which cascade stage a new surface serves before adding it.
+
+## Configuration (binding)
+
+10. **Configuration is read once, by the configurator.** At start-up one config
+    adapter merges gzkit's defaults with the adopter's overrides (`.gzkit.json` and
+    `manifest.json`) and validates them into frozen settings; the configurator passes
+    each part as values to what needs it. No handler, domain code or other adapter
+    reads a configuration file. Existing loaders (50 modules call `load_config` or
+    `GzkitConfig.load` and 35 read `manifest.json`, measured 2026-11-09) move under the
+    specification run's row 5 programme; new code takes settings as parameters and
+    adds no loader call.
 
 ## Why — tracer bullets + seam accountability
 

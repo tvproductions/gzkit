@@ -63,7 +63,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `complexity-doctrine.md` | `0.4.2` |
 | `complexity-thresholds.md` | `0.6.1` |
 | `gh-cli.md` | `0.7.1` |
-| `hexagonal-architecture.md` | `0.5.0` |
+| `hexagonal-architecture.md` | `0.6.0` |
 | `models.md` | `0.3.0` |
 | `model-selection.md` | `0.8.1` |
 | `weaponeering.md` | `0.1.1` |
@@ -535,6 +535,8 @@ The Claude-specific invariant 10a is scored as a row rather than in prose:
 
 ### Hexagonal Architecture (`.gzkit/rules/hexagonal-architecture.md`)
 
+**Re-scored 2026-11-12 at rule `0.6.0`**, on the operator's *"configuration rule"* (R&D run `docs/rnd/hexagonal-specification.md`, disposition row 4): rule 10, configuration read once by the configurator, added and scored as row 64h. No existing score moves.
+
 **Re-scored 2026-11-12 at rule `0.5.0`**, on the operator's *"A: page, plus overturned"* (R&D run `docs/rnd/hexagonal-specification.md`, disposition row 4). Rule 5, the second-adapter threshold, is retired and its row 64d removed with its identity; rules 7 and 8, rewritten to the specification, are scored for the first time as rows 64f and 64g. Rules 1 to 4 and 6 are unchanged, rule 1's scope held as RP-7's H1. Rule 9 still has no row.
 
 **Re-scored 2026-11-08 at rule `0.4.1`** — stale clauses corrected under the operator's *"fix what is stale"*: § Verify names `tests/policy/test_import_boundaries.py` in place of `gz lint`/`gz typecheck`; the module count is the counted 128; § Related no longer credits `pythonic.md` with Protocol/DI. Rule 1's first sentence, which row 64 quotes, is unchanged and held for an operator ruling; row 64's Notes now state the witness's `core/`-only scope. No score moves.
@@ -548,6 +550,7 @@ The Claude-specific invariant 10a is scored as a row rather than in prose:
 | 64e | The core is testable without any adapter | **Promotable** | The property is decidable: import every `core/` module in a process with the third-party dependencies absent, and any core function needing an adapter fails. That is the same construction `CorePurityIsAnAllowlist` already performs statically, run dynamically. Not built today, so not Mechanical. **Scored 2026-08-30.** `source=.gzkit/rules/hexagonal-architecture.md` |
 | 64f | **`core/` is the hexagon; each adapter is a sibling package of `core/`.** | **Promotable** | The placement is decidable once the hexagonal architecture system package map exists: the widened dependency-rules test reads each top-level package's part from `pyproject.toml` `[tool.py-gzkit]` and refuses an unmapped package or an out-of-region import. Neither the map nor the widened test exists yet (the run's row 1 and row 5); today's witness fences `src/gzkit/core/` only. **Scored 2026-11-12 (rule `0.5.0`).** `source=.gzkit/rules/hexagonal-architecture.md` |
 | 64g | **Prefer subsumption to a parallel model.** | **Judgment** | Whether two types represent *the same objects* is a modelling reading, not a structural property; a checker comparing field sets would grade by shape. The kernel-base cross-check (each class's base matched to its region) narrows it once built, without deciding sameness. **Scored 2026-11-12 (rule `0.5.0`).** `source=.gzkit/rules/hexagonal-architecture.md` |
+| 64h | **Configuration is read once, by the configurator.** | **Promotable** | Decidable: an AST walk over `src/gzkit` for calls to `load_config` or `GzkitConfig.load`, and for reads of `manifest.json` or `.gzkit.json`, outside the config adapter and the configurator, held by a shrink-only baseline seeded with today's loaders. Unbuilt (the run's row 5 programme moves the loaders). **Added 2026-11-12 (rule `0.6.0`).** `source=.gzkit/rules/hexagonal-architecture.md` |
 
 ### Changelog & Release Notes (`.gzkit/rules/changelog-release-notes.md`)
 
@@ -615,7 +618,7 @@ decays in whichever direction the next reader's grep happens to point.
 | Score | Rows | % of scored rows |
 |-------|-------|---|
 | **Mechanical** | 68 | 31% |
-| **Promotable** | 65 | 30% |
+| **Promotable** | 66 | 30% |
 | **Judgment** | 84 | 39% |
 | **Ambiguous** | 0 | 0% |
 
@@ -633,7 +636,7 @@ decays in whichever direction the next reader's grep happens to point.
      158 as of row 58c (GHI #962, 2026-09-05), and 159 as of row 88 (the CLI
      lane-is-not-route carve-out, 2026-09-06), and 160 as of row 89 (mutation-sweep
      integrity, GHI #963), and 161 as of row 51c (census-query completeness,
-     GHI #972), and 163 as of rows 91-92 (the exit-code-2 relabel, GHI #1001), and 167 as of rows 56a-56b (suppression is not a repair, GHI #999), and 168 as of row 93 (verbosity flags realigned to the specification, 2026-09-14), and 180 as of row 53c (skill selection routes through gz-how, GHI #1106, 2026-09-27), and 181 as of row 51d (gh issue reopen for ghi-author's regression case, 2026-09-27), and 190 as of row 62g (the MX lease is booked and announced, GHI #1257, 2026-10-18), and 191 as of row 51e (the `block` band's consumers after xenon, RO-9 tranche 4, 2026-10-22), and 192 as of row 23b (deferred annotations at the 3.14 floor, RO-9 tranche 4, 2026-10-23), and 193 as of row 45e (executables resolved off absolute PATH entries, RO-9 tranche 4, 2026-10-24), and 194 as of row 52c (models named by class, never a versioned ID, GHI #1284, 2026-10-27), and 202 as of rows 62h-62k and 99-99c (`mx-mode.md` re-scored at `1.14.1` and `mode-contract.md` scored at `0.1.2`, 2026-10-28), and 205 as of rows 62l-62n (`mx-mode.md` scored at `1.16.0`, out of service as one state, 2026-11-04), and 206 as of row 33d (a retired rule leaves every surface, rule `0.14.0`, 2026-11-08), unchanged when four rows moved from Mechanical on an ungated or absent witness (2026-11-08), and 207 as of rows 64f-64g with row 64d retired (`hexagonal-architecture.md` at `0.5.0`, 2026-11-12), and 213 as of rows 37c and 91-91d (`tests.md` at `0.28.0`, 2026-11-12), and 216 as of rows 18a-18c (`pythonic.md` at `0.6.0`, 2026-11-12), and 217 as of row 27b (`models.md` at `0.3.0`, 2026-11-12); the entries between 131 and 158 were
+     GHI #972), and 163 as of rows 91-92 (the exit-code-2 relabel, GHI #1001), and 167 as of rows 56a-56b (suppression is not a repair, GHI #999), and 168 as of row 93 (verbosity flags realigned to the specification, 2026-09-14), and 180 as of row 53c (skill selection routes through gz-how, GHI #1106, 2026-09-27), and 181 as of row 51d (gh issue reopen for ghi-author's regression case, 2026-09-27), and 190 as of row 62g (the MX lease is booked and announced, GHI #1257, 2026-10-18), and 191 as of row 51e (the `block` band's consumers after xenon, RO-9 tranche 4, 2026-10-22), and 192 as of row 23b (deferred annotations at the 3.14 floor, RO-9 tranche 4, 2026-10-23), and 193 as of row 45e (executables resolved off absolute PATH entries, RO-9 tranche 4, 2026-10-24), and 194 as of row 52c (models named by class, never a versioned ID, GHI #1284, 2026-10-27), and 202 as of rows 62h-62k and 99-99c (`mx-mode.md` re-scored at `1.14.1` and `mode-contract.md` scored at `0.1.2`, 2026-10-28), and 205 as of rows 62l-62n (`mx-mode.md` scored at `1.16.0`, out of service as one state, 2026-11-04), and 206 as of row 33d (a retired rule leaves every surface, rule `0.14.0`, 2026-11-08), unchanged when four rows moved from Mechanical on an ungated or absent witness (2026-11-08), and 207 as of rows 64f-64g with row 64d retired (`hexagonal-architecture.md` at `0.5.0`, 2026-11-12), and 213 as of rows 37c and 91-91d (`tests.md` at `0.28.0`, 2026-11-12), and 216 as of rows 18a-18c (`pythonic.md` at `0.6.0`, 2026-11-12), and 217 as of row 27b (`models.md` at `0.3.0`, 2026-11-12), and 218 as of row 64h (`hexagonal-architecture.md` at `0.6.0`, 2026-11-12); the entries between 131 and 158 were
      not recorded here as they landed, so this list names the endpoints it can
      evidence rather than reconstructing a history it cannot. -->
 
