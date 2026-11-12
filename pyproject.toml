@@ -156,6 +156,18 @@ runtime-evaluated-base-classes = [
     "gzkit.events._EventBase",
     "gzkit.events._TaskEventBase",
     "gzkit.models.catalog.ReqBase",
+    # The kernel's bases, by the path inside the kernel and by the public
+    # `gzkit.kernel` path every hexagon imports them through (RP-15 tranche 6).
+    "gzkit.kernel.bases._Frozen",
+    "gzkit.kernel.bases._Created",
+    "gzkit.kernel.errors.ErrorValue",
+    "gzkit.kernel.Command",
+    "gzkit.kernel.DomainEvent",
+    "gzkit.kernel.Dto",
+    "gzkit.kernel.Entity",
+    "gzkit.kernel.ErrorValue",
+    "gzkit.kernel.Query",
+    "gzkit.kernel.ValueObject",
 ]
 
 # A one-line docstring is a summary, which the Google convention exempts from a
