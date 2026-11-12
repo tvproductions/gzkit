@@ -1069,6 +1069,9 @@ From the R&D run [`repair-work-organization`](../rnd/repair-work-organization.md
   RP-7 places three `tests.md` § Hexagon tests clauses as gates and holds the fourth, the variant gate, as H15
   ([the RP-7 change order](harbor-ro7-placement.md#change-order-of-2026-11-12-the-hexagon-test-gates)). Both are graded
   *blocks return to service* by the timing ruling.
+- **H15: the variant gate is regraded.** Put to the operator: regrade RP-7's variant gate (#91c) *due by the first
+  hexagon REQ admitted*, since the catalog's REQ schema has no `variants` field and a count over zero REQs witnesses
+  nothing, or add the field under RP-5's tranche 6. Operator, verbatim: *"Yes, regrade"*.
 
 ## Superseded on 2026-10-30 (record, not binding)
 
@@ -1650,7 +1653,7 @@ Each line is `open` until the restoration contractor clears it with the alarms o
 - `open` **deferred** (proposed) — findings F13 to F16, F18 and F20, each carried with the holder and revisit condition the record names. Authority: § Repair orders' grading.
 - `open` **awaiting the operator** — fourteen held rulings H1 to H14 in the change-order record. Authority: change order item 1.
 - `open` **blocks return to service** — the hexagon test gates (fakes only, the labels, `@covers` on every hexagon test) are unbuilt, so `tests.md` § Hexagon tests rows 91 to 91b are advisory. Authority: change order of 2026-11-12, operator *"A: RP-15 plus RP-7"*.
-- `open` **awaiting the operator** — H15, the variant gate (#91c): no `variants` field on the catalog's REQ schema. Authority: the same.
+- `open` **due by the first hexagon REQ admitted** — the variant gate (#91c): it reads each hexagon REQ's declared variants, and the catalog's REQ schema has no `variants` field yet. Authority: H15, operator, verbatim: *"Yes, regrade"* (2026-11-12).
 
 ### RP-8 — the in-flight work
 
@@ -1825,3 +1828,4 @@ Each order adds a line for whatever else it unplugs, dismantles or modifies as i
 | 2026-11-08 | two defects recorded (operator, verbatim *"Yes, record both"*) | the import-boundary gate's per-change gap and the hexagonal canon page's semver-kind ADR mapping were tracked nowhere | F22 in [the RP-7 change-order record](harbor-ro7-placement.md) with RP-7's due line; the canon page added to CO-1's surfaces and RP-6's authoring-surfaces line; no code changed | the commit landing this row | `uv run gz check` |
 | 2026-11-12 | the hexagonal specification run's row 4 canon landed (operator: *"Yes, row 4"*, then each item by name) | canon rule 7 forbade port and adapter folders; the canon page certified path threading as conformance; no rule held the hexagon's tests, its errors inside the walls, closed-set widening or configuration; gz-rnd's row 1 read *ADR / OBPI* | the canon page is the specification; `hexagonal-architecture.md` 0.6.0, `tests.md` 0.28.0, `pythonic.md` 0.6.0, `models.md` 0.3.0, gz-rnd 0.9.0; scorecard rows 64d retired, 64f to 64h, 37c, 91 to 91d, 18a to 18c and 27b added; a pre-existing distribution-baseline gap fixed on the way (`12b28c66f`) | `c409637da`, `c39ab805d`, `de338acb9`, `cb8b1eeb4`, `6ed800be8`, `b47b1d173` | `gz validate --documents --surfaces --advisory-scorecard --bullet-retention --cli-alignment --distribution`; `mkdocs build --strict` |
 | 2026-11-12 | change orders on RP-15 and RP-7, the hexagon's structures and test gates (operator, verbatim *"A: RP-15 plus RP-7"*) | the hexagon's code ruled into this drydock with no live owning order (RP-9 closed 2026-10-29) | RP-15 tranche 6 (kernel, package map, widened dependency rules) and RP-7's hexagon test gates, graded *blocks return to service*; H15 held; no code changed | the commit landing this row | `uv run gz validate --documents` |
+| 2026-11-12 | RP-7 held ruling H15 (operator, verbatim *"Yes, regrade"*) | the variant gate (#91c) graded *blocks return to service* with no field to read | graded *due by the first hexagon REQ admitted*; the gate lands with the first hexagon REQ that declares its variants | the commit landing this row | `uv run gz validate --documents` |

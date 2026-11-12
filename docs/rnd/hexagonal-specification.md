@@ -2571,6 +2571,14 @@ RP-7's H15 with a recommendation to regrade it *due by the first hexagon REQ adm
 
 Row 4 is complete: every item it listed is landed.
 
+## decision · H15: the variant gate is due by the first hexagon REQ admitted (operator ruling)
+
+Put to the operator: regrade RP-7's variant gate (`tests.md` row 91c) *due by the first hexagon REQ admitted*, or add
+a `variants` field to the catalog's REQ schema under RP-5's tranche 6. Recommended the regrade: the catalog holds no
+REQ, and a count over zero REQs witnesses nothing. Operator, verbatim: *"Yes, regrade"*. Recorded in RP-7's
+change-order record, the contract's § Rulings of 2026-11-12, its discrepancy line and passage log. The `variants`
+field itself stays row 1's, a field on the hexagon REQ that lands with the first one admitted.
+
 ## Close
 
 **Challenge restated.** 2026-11-11, on the operator's *"A: adopt draft"* (decision *the challenge is restated*):

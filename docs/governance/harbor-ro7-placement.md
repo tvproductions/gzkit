@@ -83,9 +83,11 @@ shrink-only baseline, each declaring its two-way mode contract (`.gzkit/rules/mo
 **Held for the operator (H15).** The variant gate (#91c) reads each hexagon REQ's declared variants, and the
 catalog's REQ schema (RP-3, closed) has no such field; `data/catalog/reqs.json` is empty. Either the field is added
 under RP-5's tranche 6 (the catalog verbs after entry) and the gate lands with it, or #91c is regraded *due by the
-first hexagon REQ admitted*. Recommended: regrade, since a count over zero REQs witnesses nothing.
+first hexagon REQ admitted*. Recommended: regrade, since a count over zero REQs witnesses nothing. **Ruled
+2026-11-12**, operator, verbatim: *"Yes, regrade"*.
 
-**Grade.** #91, #91a and #91b block return to service, by the timing ruling; #91c as H15 rules.
+**Grade.** #91, #91a and #91b block return to service, by the timing ruling; #91c is due by the first hexagon REQ
+admitted (H15).
 
 ## Landed (2026-11-08)
 
@@ -132,7 +134,7 @@ validity table with its evidence.
 | H12 | brief-heading-conventions, `### Closing Argument` *"by H3 heading match"* | `commands/common.py:578` matches H2 only, while 136 briefs use H3, so the Defense Brief gets no closing argument | fix the code |
 | H13 | agents-md-map-doctrine, verdict RETIRE | `test_agents_md_map_doctrine.py` (REQ-0.0.54-01-01) asserts the file exists | operator's choice under the attested-REQ rule |
 | H14 | root `AGENTS.md` (Band A) | 98 % of its entry bytes are `tier: invariant`; the 2026-10-16 ruling declined re-tiering | operator retires or re-tiers named entries (stage 7) |
-| H15 | tests-policy #91c, the variant gate (change order of 2026-11-12) | the catalog's REQ schema has no `variants` field and no REQ is admitted | regrade *due by the first hexagon REQ admitted* |
+| H15 | tests-policy #91c, the variant gate (change order of 2026-11-12) | the catalog's REQ schema has no `variants` field and no REQ is admitted | regrade *due by the first hexagon REQ admitted*. **Ruled 2026-11-12:** *"Yes, regrade"* |
 
 ## Findings, graded (proposed)
 
