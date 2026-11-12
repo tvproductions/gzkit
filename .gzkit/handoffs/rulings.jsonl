@@ -2176,3 +2176,6 @@
 {"ts": "2026-11-12T08:11:07Z", "source": "20261112T081105Z-hex-spec-rows-2-to-4-landed.md", "text": "RP-7 H15: the variant gate is due by the first hexagon REQ admitted (verbatim: \"Yes, regrade\")."}
 {"ts": "2026-11-12T08:11:07Z", "source": "20261112T081105Z-hex-spec-rows-2-to-4-landed.md", "text": "Work the hexagonal run's row 3 (verbatim: \"Yes, row 3\")."}
 {"ts": "2026-11-12T08:11:07Z", "source": "20261112T081105Z-hex-spec-rows-2-to-4-landed.md", "text": "Admit the registry-wide waiver-ratchet drawdown chore (verbatim: \"Admit it\")."}
+{"ts": "2026-11-12T08:48:42Z", "source": "20261112T084842Z-rp15-tranche6-landed.md", "text": "RP-15 tranche 6 moves next, landed by the main session (verbatim: \"RP-15 tranche 6\")."}
+{"ts": "2026-11-12T08:48:42Z", "source": "20261112T084842Z-rp15-tranche6-landed.md", "text": "The dependency checker lives in the kernel and the policy-test isolation check is narrowed to admit the kernel alone (verbatim: \"A: kernel, narrow isolation\")."}
+{"ts": "2026-11-12T08:48:42Z", "source": "20261112T084842Z-rp15-tranche6-landed.md", "text": "Every package or module the package map does not name is a finding, held in one shrink-only baseline with today's out-of-region imports (verbatim: \"A: unmapped is a finding\")."}
