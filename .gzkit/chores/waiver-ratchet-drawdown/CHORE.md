@@ -42,6 +42,9 @@ surface's owner and its distance from the target date.
 
 ### 1. Report — observe
 
+`.github/workflows/ratchet-drawdown.yml` runs the self-test and the report on the 1st and 15th of each month, which
+keeps the 14-day cadence true; it is the chore's automatic caller (`gz validate --gate-callers`). By hand:
+
 ```bash
 uv run python .gzkit/chores/waiver-ratchet-drawdown/check_drawdown.py --report
 ```

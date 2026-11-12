@@ -1,0 +1,43 @@
+name: Ratchet drawdown
+
+# The automatic caller for `waiver-ratchet-drawdown` (GHI #785: a gate with no
+# automatic caller can be red indefinitely while every other gate reports green;
+# operator ruling 2026-11-12, "Wire a caller").
+#
+# It lives here and NOT in `gz check` or `.pre-commit-config.yaml`: the chore is a
+# read-only report whose declared cadence is elapsed-time/14d, and it gates nothing
+# a commit changes. A fortnightly schedule is what makes that declaration true
+# rather than aspirational, the shape `queue-hygiene.yml` set for its chore.
+on:
+  schedule:
+    - cron: "0 7 1,15 * *" # 07:00 UTC on the 1st and 15th, matching staleness.periodDays
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# uv refuses to install a package OSV names as malware (MAL- advisories) before
+# syncing; CI and release are where a new locked version is first installed
+# (RO-9 tranche 5, operator ruling 2026-10-28; `gz validate --astral-discipline`).
+env:
+  UV_MALWARE_CHECK: "1"
+
+jobs:
+  waiver-ratchet-drawdown:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          enable-cache: true
+
+      - name: Sync dependencies
+        run: uv sync --locked
+
+      # Runs the self-test, then the report; exit 1 when the self-test fails or a
+      # registered shrink-ratchet surface cannot be counted. The table it prints is
+      # the drawdown record; see the chore's CHORE.md § Workflow.
+      - name: waiver-ratchet-drawdown
+        run: uv run gz chores advise waiver-ratchet-drawdown
