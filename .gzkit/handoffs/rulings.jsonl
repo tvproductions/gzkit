@@ -2162,3 +2162,17 @@
 {"ts": "2026-11-12T02:28:06Z", "source": "20261112T022806Z-hex-spec-funded.md", "text": "The aggregate rule is left to diamond 2, against the agent's recommendation (verbatim: \"B: leave to diamond 2\")."}
 {"ts": "2026-11-12T02:28:06Z", "source": "20261112T022806Z-hex-spec-funded.md", "text": "The challenge is restated as the drafted text recorded under the record's Close (verbatim: \"A: adopt draft\")."}
 {"ts": "2026-11-12T02:28:06Z", "source": "20261112T022806Z-hex-spec-funded.md", "text": "The hexagonal-specification run is signed off funded after the operator read the review (verbatim: \"Read it\" and \"Fund\")."}
+{"ts": "2026-11-12T08:11:07Z", "source": "20261112T081105Z-hex-spec-rows-2-to-4-landed.md", "text": "Renew the expired MX lease on 2026-11-12 (verbatim: \"Renew lease\")."}
+{"ts": "2026-11-12T08:11:07Z", "source": "20261112T081105Z-hex-spec-rows-2-to-4-landed.md", "text": "File the hexagonal run's row 2 defects as GHIs (verbatim: \"Row 2: file GHIs\")."}
+{"ts": "2026-11-12T08:11:07Z", "source": "20261112T081105Z-hex-spec-rows-2-to-4-landed.md", "text": "Work the hexagonal run's row 4 (verbatim: \"Yes, row 4\")."}
+{"ts": "2026-11-12T08:11:07Z", "source": "20261112T081105Z-hex-spec-rows-2-to-4-landed.md", "text": "Rewrite the hexagonal canon page as the specification and change the rule only where the run overturned it, leaving rules 1 to 4 and 6, H1 and placement to RP-7 (verbatim: \"A: page, plus overturned\")."}
+{"ts": "2026-11-12T08:11:07Z", "source": "20261112T081105Z-hex-spec-rows-2-to-4-landed.md", "text": "Land the hexagon test discipline in tests.md (verbatim: \"tests.md\")."}
+{"ts": "2026-11-12T08:11:07Z", "source": "20261112T081105Z-hex-spec-rows-2-to-4-landed.md", "text": "Split pythonic.md error handling inside from outside the walls (verbatim: \"pythonic error rule\")."}
+{"ts": "2026-11-12T08:11:07Z", "source": "20261112T081105Z-hex-spec-rows-2-to-4-landed.md", "text": "Land the closed-set widening rule (verbatim: \"closed-set rule\")."}
+{"ts": "2026-11-12T08:11:07Z", "source": "20261112T081105Z-hex-spec-rows-2-to-4-landed.md", "text": "Land the configuration rule (verbatim: \"configuration rule\")."}
+{"ts": "2026-11-12T08:11:07Z", "source": "20261112T081105Z-hex-spec-rows-2-to-4-landed.md", "text": "Relabel gz-rnd's disposition row 1 to the requirements model's records (verbatim: \"gz-rnd label\")."}
+{"ts": "2026-11-12T08:11:07Z", "source": "20261112T081105Z-hex-spec-rows-2-to-4-landed.md", "text": "Place the hexagon's code on the drydock contract as change orders (verbatim: \"Yes, change orders\")."}
+{"ts": "2026-11-12T08:11:07Z", "source": "20261112T081105Z-hex-spec-rows-2-to-4-landed.md", "text": "The hexagon's structures go to RP-15 tranche 6 and its test gates to RP-7's placement (verbatim: \"A: RP-15 plus RP-7\")."}
+{"ts": "2026-11-12T08:11:07Z", "source": "20261112T081105Z-hex-spec-rows-2-to-4-landed.md", "text": "RP-7 H15: the variant gate is due by the first hexagon REQ admitted (verbatim: \"Yes, regrade\")."}
+{"ts": "2026-11-12T08:11:07Z", "source": "20261112T081105Z-hex-spec-rows-2-to-4-landed.md", "text": "Work the hexagonal run's row 3 (verbatim: \"Yes, row 3\")."}
+{"ts": "2026-11-12T08:11:07Z", "source": "20261112T081105Z-hex-spec-rows-2-to-4-landed.md", "text": "Admit the registry-wide waiver-ratchet drawdown chore (verbatim: \"Admit it\")."}
