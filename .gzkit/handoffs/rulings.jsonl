@@ -2179,3 +2179,4 @@
 {"ts": "2026-11-12T08:48:42Z", "source": "20261112T084842Z-rp15-tranche6-landed.md", "text": "RP-15 tranche 6 moves next, landed by the main session (verbatim: \"RP-15 tranche 6\")."}
 {"ts": "2026-11-12T08:48:42Z", "source": "20261112T084842Z-rp15-tranche6-landed.md", "text": "The dependency checker lives in the kernel and the policy-test isolation check is narrowed to admit the kernel alone (verbatim: \"A: kernel, narrow isolation\")."}
 {"ts": "2026-11-12T08:48:42Z", "source": "20261112T084842Z-rp15-tranche6-landed.md", "text": "Every package or module the package map does not name is a finding, held in one shrink-only baseline with today's out-of-region imports (verbatim: \"A: unmapped is a finding\")."}
+{"ts": "2026-11-12T10:58:26Z", "source": "20261112T105826Z-drawdown-caller-wired.md", "text": "The waiver-ratchet-drawdown chore's missing caller is fixed by wiring a caller, not by grandfathering it (verbatim: \"Wire a caller\")."}
