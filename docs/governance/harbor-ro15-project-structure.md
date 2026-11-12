@@ -91,6 +91,28 @@ on this order, the test gates on RP-7's placement (contract § Rulings of 2026-1
   verbatim: *"A: kernel, narrow isolation"*.
 - **The kernel's name is a draft.** The run held the name open to diamond 2. The package lands as `gzkit.kernel`,
   flagged as a draft name, like the package map.
+- **Unmapped code is a finding.** Put to the operator: (A) every package or module the map does not name is a
+  finding, held with today's out-of-region imports in one shrink-only baseline; (B) a `legacy` region the checker
+  skips. Operator, verbatim: *"A: unmapped is a finding"*.
+
+**Landed 2026-11-12.**
+
+| Item | Where | Commit |
+| --- | --- | --- |
+| 1. The kernel | `src/gzkit/kernel/`: the bases and error values (`bases.py`, `errors.py`), the buses (`buses.py`) | `05e4a6eb4`, `c0e9e9005` |
+| 2. The package map | `pyproject.toml` `[tool.py-gzkit.hexagon]`, a draft | `dfa669511` |
+| 3. The dependency rules, widened | `gzkit.kernel.dependency_checker`; `tests/policy/test_import_boundaries.py`; `gz validate --hexagon-dependencies` in the default tier; the baseline `data/hexagon_dependency_baseline.json` (177 findings: 161 unmapped, 16 imports from `gzkit.cli`) | `dfa669511`, `5a6ec7ac0` |
+
+The witness reads *in place and only shrinking*: the controls `NC:hexagon-dependencies` (a planted out-of-region
+import) and `NC:hexagon-dependencies-baselined` (the baseline admits a held finding) pass, and the checker's unit
+tests plant an `Entity` outside `core/domain` and a handler with no use-case `Protocol`.
+
+**Mode contract** (`.gzkit/rules/mode-contract.md`), stated here until RP-13 builds the declaration shapes.
+
+| Control | Operational | Hangar | Drydock | MEL entry | Self-test |
+| --- | --- | --- | --- | --- | --- |
+| `gz validate --hexagon-dependencies` | on (exit 3) | advisory, demoted by the MX checkpoint | advisory, demoted by the MX checkpoint | (M) none needed: an advisory run still prints every finding; (O) a new finding can land while the hangar is open; placard: the `[MX advisory]` line; restore: the exit re-run at full strength; accepted state: findings no more than the baseline holds | `NC:hexagon-dependencies` and `NC:hexagon-dependencies-baselined`, run on every `gz check` by its *Enforcement floor* step, the enforcement-claim meta-validator, pinned critical so it never demotes in the hangar |
+| `tests/policy/test_import_boundaries.py` ratchet | on | on: a unit test has no MX level | on | none: it never stands down | the planted-baseline check, re-run 2026-11-12: one entry removed and one stale entry added each failed |
 
 **Not in tranche 6.** Moving gzkit's modules into the regions (each use case migrates after return to service, the
 run's row 1); `gz init` scaffolding the hexagon (a row 1 work package after return to service); the test-discipline

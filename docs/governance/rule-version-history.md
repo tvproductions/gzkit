@@ -482,6 +482,10 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `hexagonal-architecture.md`
 
+### Changed 2026-11-12 at version `0.6.1` (RP-15 tranche 6)
+
+Prior `0.6.0` banner, verbatim: *"adds rule 10, configuration read once by the configurator, from the hexagonal specification run (operator, 2026-11-12: "configuration rule"); rules 1 to 4 and 6 wait on RP-7."* Superseded when the package map and the kernel's dependency checker landed (RP-15 tranche 6, operator: *"RP-15 tranche 6"*): § Verify said the witness *"covers `src/gzkit/core/` only"*, which the widened checker and `gz validate --hexagon-dependencies` made stale. Binding rules unchanged.
+
 ### Changed 2026-11-12 at version `0.6.0` (R&D run hexagonal-specification, disposition row 4)
 
 Prior `0.5.0` banner, verbatim: *"rules 5, 7 and 8 and the cascade follow the hexagonal specification run (operator, 2026-11-12: "A: page, plus overturned"); rules 1 to 4 and 6 wait on RP-7."* Superseded on the operator's *"configuration rule"*: § Configuration adds rule 10, the ruling of the decision *configuration is read once, by the configurator, and passed as frozen values*, with today's loaders measured and their move placed under row 5. Scorecard row 64h added.

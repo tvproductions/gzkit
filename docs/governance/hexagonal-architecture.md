@@ -118,11 +118,12 @@ Each region's permitted imports are listed below. Each also imports stdlib.
 No adapter imports another adapter, the handlers or the configurator. Driving adapters never import the domain; only
 the repository adapter sees it. The table binds gzkit and is strongly recommended to adopters.
 
-The dependency rules are enforced by gzkit's own stdlib test, `tests/policy/test_import_boundaries.py`. It is to be
-widened from `core/` to every region the package map names, and it ships in the kernel for adopters to run. The test
-also cross-checks each class's base against its region: an `Entity` outside `core/domain` fails, and so does a
-command with a domain-typed field. Existing violations enter a shrink-only baseline. _Avoid_: core purity, import
-purity.
+The dependency rules are enforced by gzkit's own stdlib checker, `gzkit.kernel.dependency_checker`, which ships in
+the kernel for adopters to run. It reads every region the package map names, and gzkit runs it in
+`tests/policy/test_import_boundaries.py` and as `gz validate --hexagon-dependencies` on every per-change `gz check`.
+It also cross-checks each class's base against its region: an `Entity` outside `core/domain` fails, and so does a
+command with a domain-typed field, which its region's row refuses to import. Existing violations sit in the
+shrink-only `data/hexagon_dependency_baseline.json`. _Avoid_: core purity, import purity.
 
 ## Values, entities and storage
 
@@ -257,7 +258,7 @@ What gzkit's code does today against this specification:
 
 | Gap | Tracked |
 |---|---|
-| The dependency test fences `src/gzkit/core/` only, and one hop deep | #1267, row 5 programme |
+| Most of gzkit's code is outside every region: 161 packages and modules unmapped, 16 out-of-region imports from `gzkit.cli` (the shrink-only `data/hexagon_dependency_baseline.json`, 2026-11-12) | #1267, row 5 programme |
 | `project_root` is threaded inward rather than finished adapters passed | #1320 |
 | The output port's `table` methods take Rich's `Table` | #1321 |
 | *Purity* names an ontology fence and the import check | #1322 |
@@ -265,7 +266,7 @@ What gzkit's code does today against this specification:
 | `GzkitError` lives in `core/` | row 5 programme |
 | A capitalised `lane` was admitted by widening the schema | #1319 |
 | No falsifiability instrument reads a Behave feature | #1323 |
-| No package map, kernel, buses or fakes exist yet | row 1 work packages |
+| The package map is a draft until RP-6's identity crossover; the kernel, its buses and the checker landed (RP-15 tranche 6); no fakes exist yet | row 1 work packages |
 
 The *row* entries refer to the run's disposition map.
 

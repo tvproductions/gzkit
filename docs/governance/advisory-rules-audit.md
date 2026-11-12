@@ -63,7 +63,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `complexity-doctrine.md` | `0.4.2` |
 | `complexity-thresholds.md` | `0.6.1` |
 | `gh-cli.md` | `0.7.1` |
-| `hexagonal-architecture.md` | `0.6.0` |
+| `hexagonal-architecture.md` | `0.6.1` |
 | `models.md` | `0.3.0` |
 | `model-selection.md` | `0.8.1` |
 | `weaponeering.md` | `0.1.1` |
@@ -535,6 +535,8 @@ The Claude-specific invariant 10a is scored as a row rather than in prose:
 
 ### Hexagonal Architecture (`.gzkit/rules/hexagonal-architecture.md`)
 
+**Re-scored 2026-11-12 at rule `0.6.1`** (RP-15 tranche 6, operator: *"RP-15 tranche 6"*): the package map and the kernel's dependency checker landed with a registered control, so row 64f is re-scored in its row. § Verify was corrected to name the new witness. No other score moves.
+
 **Re-scored 2026-11-12 at rule `0.6.0`**, on the operator's *"configuration rule"* (R&D run `docs/rnd/hexagonal-specification.md`, disposition row 4): rule 10, configuration read once by the configurator, added and scored as row 64h. No existing score moves.
 
 **Re-scored 2026-11-12 at rule `0.5.0`**, on the operator's *"A: page, plus overturned"* (R&D run `docs/rnd/hexagonal-specification.md`, disposition row 4). Rule 5, the second-adapter threshold, is retired and its row 64d removed with its identity; rules 7 and 8, rewritten to the specification, are scored for the first time as rows 64f and 64g. Rules 1 to 4 and 6 are unchanged, rule 1's scope held as RP-7's H1. Rule 9 still has no row.
@@ -548,7 +550,7 @@ The Claude-specific invariant 10a is scored as a row rather than in prose:
 | 64b | **Ports are domain-typed contracts** — a port's methods accept/return domain types, never adapter types | **Judgment** | Whether a type is "domain" or "adapter" is a modelling reading; a checker would grade by module path, which is the `shape-graded-not-substance` signature this scorecard exists to close. **Scored 2026-08-30 (rule `0.3.0`), GHI #921**, draining the debt row 64 declared. `source=.gzkit/rules/hexagonal-architecture.md` |
 | 64c | **Never name the technology in the core; take it as a parameter** (Cockburn) | **Promotable** | The import arm is already covered by row 64 — a named technology usually arrives as an import. What is unwitnessed is the residue: a technology named in a core function's *signature, string literal or docstring* without importing it. Promotion path: extend `_core_violations` to flag known adapter technology names appearing as parameter defaults or literals in `core/`. **Scored 2026-08-30.** `source=.gzkit/rules/hexagonal-architecture.md` |
 | 64e | The core is testable without any adapter | **Promotable** | The property is decidable: import every `core/` module in a process with the third-party dependencies absent, and any core function needing an adapter fails. That is the same construction `CorePurityIsAnAllowlist` already performs statically, run dynamically. Not built today, so not Mechanical. **Scored 2026-08-30.** `source=.gzkit/rules/hexagonal-architecture.md` |
-| 64f | **`core/` is the hexagon; each adapter is a sibling package of `core/`.** | **Promotable** | The placement is decidable once the hexagonal architecture system package map exists: the widened dependency-rules test reads each top-level package's part from `pyproject.toml` `[tool.py-gzkit]` and refuses an unmapped package or an out-of-region import. Neither the map nor the widened test exists yet (the run's row 1 and row 5); today's witness fences `src/gzkit/core/` only. **Scored 2026-11-12 (rule `0.5.0`).** `source=.gzkit/rules/hexagonal-architecture.md` |
+| 64f | **`core/` is the hexagon; each adapter is a sibling package of `core/`.** | **Mechanical** | **Promoted 2026-11-12 (rule `0.6.1`, RP-15 tranche 6).** The draft package map in `pyproject.toml` `[tool.py-gzkit.hexagon]` names each package's region, and `gz validate --hexagon-dependencies` (default tier, so every per-change `gz check`) refuses an unmapped package, an import outside its region's row, a kernel base outside its region and a misnamed handler, over the whole package. Registered negative control `NC:hexagon-dependencies` plants a domain module importing the driving adapter beside an admissible decoy and passes only when exactly the planted module fires; `NC:hexagon-dependencies-baselined` proves the admit half. Enforced in place and only shrinking: gzkit's 177 current findings are held in the shrink-only `data/hexagon_dependency_baseline.json` until its use cases migrate after return to service. Under the open drydock the scope reports advisory, like every non-critical guard. First scored Promotable 2026-11-12 (rule `0.5.0`). `source=.gzkit/rules/hexagonal-architecture.md` |
 | 64g | **Prefer subsumption to a parallel model.** | **Judgment** | Whether two types represent *the same objects* is a modelling reading, not a structural property; a checker comparing field sets would grade by shape. The kernel-base cross-check (each class's base matched to its region) narrows it once built, without deciding sameness. **Scored 2026-11-12 (rule `0.5.0`).** `source=.gzkit/rules/hexagonal-architecture.md` |
 | 64h | **Configuration is read once, by the configurator.** | **Promotable** | Decidable: an AST walk over `src/gzkit` for calls to `load_config` or `GzkitConfig.load`, and for reads of `manifest.json` or `.gzkit.json`, outside the config adapter and the configurator, held by a shrink-only baseline seeded with today's loaders. Unbuilt (the run's row 5 programme moves the loaders). **Added 2026-11-12 (rule `0.6.0`).** `source=.gzkit/rules/hexagonal-architecture.md` |
 
@@ -617,8 +619,8 @@ decays in whichever direction the next reader's grep happens to point.
 
 | Score | Rows | % of scored rows |
 |-------|-------|---|
-| **Mechanical** | 68 | 31% |
-| **Promotable** | 66 | 30% |
+| **Mechanical** | 69 | 32% |
+| **Promotable** | 65 | 30% |
 | **Judgment** | 84 | 39% |
 | **Ambiguous** | 0 | 0% |
 
