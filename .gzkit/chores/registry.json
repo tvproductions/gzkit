@@ -1308,6 +1308,33 @@
         "level": "A",
         "provisional": true
       }
+    },
+    {
+      "slug": "waiver-ratchet-drawdown",
+      "projectLocal": true,
+      "title": "Waiver-Ratchet Drawdown — shrink-ratchet surfaces that never shrink",
+      "version": "1.0.0",
+      "path": ".gzkit/chores/waiver-ratchet-drawdown",
+      "lane": "lite",
+      "timeoutSeconds": 120,
+      "class": "curation",
+      "rung": "propose",
+      "idempotent": true,
+      "staleness": {
+        "signal": "elapsed-time",
+        "periodDays": 14,
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "no_fix_planned",
+        "details": "Drawing a list down is the owning work's: each entry's waived condition is fixed there. The chore names stalled surfaces and proposes tightening a drawn-down baseline to its owner."
+      },
+      "nonAuthority": "Never edits a baseline, a waiver file or the registry; never removes an entry; never judges the coverage a waived entry provided.",
+      "governingRule": "none",
+      "check": {
+        "level": "A",
+        "provisional": true
+      }
     }
   ]
 }

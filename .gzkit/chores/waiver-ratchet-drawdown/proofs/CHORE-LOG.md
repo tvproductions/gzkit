@@ -1,0 +1,57 @@
+# CHORE-LOG: waiver-ratchet-drawdown
+
+## 2026-11-12T02:07:14-06:00
+- Status: PASS
+- Chore: waiver-ratchet-drawdown
+- Title: Waiver-Ratchet Drawdown — shrink-ratchet surfaces that never shrink
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uv run python .gzkit/chores/waiver-ratchet-drawdown/check_drawdown.py --self-test` => rc=0 (0.04s) -- exit 0 == 0
+  - [PASS] `uv run python .gzkit/chores/waiver-ratchet-drawdown/check_drawdown.py --report` => rc=0 (0.04s) -- exit 0 == 0
+
+```text
+[uv run python .gzkit/chores/waiver-ratchet-drawdown/check_drawdown.py --self-test] stdout:
+self-test passed: 5 classifications, 2 surfaces measured, closed-set lock skipped
+[uv run python .gzkit/chores/waiver-ratchet-drawdown/check_drawdown.py --report] stdout:
+| Surface | Live | Baseline | State |
+|---|---|---|---|
+| `data/behave_coverage_waivers.json` | 522 | 522 | not drawn down |
+| `data/sensitivity_floor_grandfather.json` | 87 | 87 | not drawn down |
+| `data/fidelity_presence_grandfather.json` | 0 | 0 | at zero |
+| `data/tautological_test_waivers.json` | 2 | 2 | not drawn down |
+| `data/tautological_test_baseline.json` | 202 | 202 | not drawn down |
+| `data/interview_transcript_waivers.json` | 44 | 44 | not drawn down |
+| `data/surface_weight_waivers.json` | 6 | 6 | not drawn down |
+| `data/req_kind_grandfathering.json` | 3 | 3 | not drawn down |
+| `data/chores_layout_waivers.json` | 0 | 0 | at zero |
+| `data/support_proof_grandfather.json` | 2 | 2 | not drawn down |
+| `data/adversarial_validation_grandfather.json` | 225 | 225 | not drawn down |
+| `data/handoff_section_grandfather.json` | 4 | 4 | not drawn down |
+| `data/persona_grandfather.json` | 44 | 44 | not drawn down |
+| `data/module_size_grandfather.json` | 0 | 5 | at zero |
+| `data/uncalled_gate_grandfather.json` | 40 | 40 | not drawn down |
+| `data/advisory_scorecard_grandfather.json` | 0 | 23 | at zero |
+| `data/mechanical_witness_grandfather.json` | 61 | 65 | drawn down; baseline can tighten |
+| `data/exemption_control_grandfather.json` | 55 | 55 | not drawn down |
+| `data/population_control_grandfather.json` | 82 | 82 | not drawn down |
+| `data/validator_reachability_grandfather.json` | 39 | 52 | drawn down; baseline can tighten |
+| `data/ledger_vocabulary_grandfather.json` | 9 | 9 | not drawn down |
+| `data/release_tag_reachability_grandfather.json` | 12 | 12 | not drawn down |
+| `src/gzkit/skill_body_grandfather.json` | 11 | 12 | drawn down; baseline can tighten |
+| `data/ghi_cross_reference_baseline.json` | 3 | 3 | not drawn down |
+| `data/config_derivation_grandfather.json` | 19 | 19 | not drawn down |
+| `data/module_constant_grandfather.json` | 51 | 56 | drawn down; baseline can tighten |
+| `data/direct_data_reach_grandfather.json` | 47 | 49 | drawn down; baseline can tighten |
+| `data/gate_enrollment_grandfather.json` | 56 | 56 | not drawn down |
+| `data/gate_population_grandfather.json` | 49 | 49 | not drawn down |
+| `data/guard_canary_grandfather.json` | 96 | 97 | drawn down; baseline can tighten |
+| `data/brief_size_grandfather.json` | 9 | 9 | not drawn down |
+| `data/id_seam_baseline.json` | 0 | 0 | at zero |
+| `data/astral_discipline_baseline.json` | 0 | 0 | at zero |
+| `data/cognitive_complexity_baseline.json` | 260 | 260 | not drawn down |
+| `data/ruff_baseline.json` | 2567 | 4613 | drawn down; baseline can tighten |
+
+35 shrink-ratchet surfaces; 4607 live entries against 6707 baselined.
+at zero: 6; drawn down; baseline can tighten: 7; not drawn down: 22
+```

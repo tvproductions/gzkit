@@ -1,0 +1,16 @@
+{
+  "criteria": [
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run python .gzkit/chores/waiver-ratchet-drawdown/check_drawdown.py --self-test",
+      "expected": 0,
+      "description": "Detector semantics (deterministic, no repo state): each drawdown state is named from live and baseline counts, and only shrink-ratchet surfaces are measured"
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run python .gzkit/chores/waiver-ratchet-drawdown/check_drawdown.py --report",
+      "expected": 0,
+      "description": "Every registered shrink-ratchet surface is countable, and the drawdown table is reported"
+    }
+  ]
+}
