@@ -5,9 +5,9 @@ description: Run a governed R&D session — diamond 1 of the double diamond, whi
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-03
+last_reviewed: 2026-11-12
 metadata:
-  skill-version: "0.8.0"
+  skill-version: "0.9.0"
 model: opus
 ---
 
@@ -152,7 +152,7 @@ absent row is an unfinished run.
 
 | # | Disposition | You may | Consultation point |
 |---|---|---|---|
-| 1 | ADR / OBPI | **propose only** | the operator initiates, or not (IRON LAW) |
+| 1 | catalog, packages, orders and decision records | **propose only** | the operator admits each outcome and initiates each package, or not (IRON LAW) |
 | 2 | GHI / direct fix | file via `Call the Skill tool with "ghi-author"` | the operator's go on that row |
 | 3 | chore | **advise only** | the operator directs admission |
 | 4 | control surface, rule, doc, skill, hook | draft | the operator's go on that row |
@@ -168,9 +168,11 @@ change is drafted there as an amendment, on the operator's go.
 set aside but worth revisiting, put the revisit condition in the **reason**. If it deserves
 more than a sentence, route it to a pool ADR or a GHI — surfaces that have lifecycles.
 
-**Before proposing disposition 1, ask the admission question:** is the decision hard to
-reverse, surprising without context, **and** the result of a real trade-off? If any is
-false, route to disposition 2 or 4.
+**Before proposing a classic decision record under disposition 1, ask the admission
+question:** is the decision hard to reverse, surprising without context, **and** the result
+of a real trade-off? If any is false, it is no decision record; route it to disposition 2
+or 4. Catalog outcomes, packages and orders follow the requirements model's records and
+levels instead (`docs/governance/ieee/requirements-model.md` § The records, § 12).
 
 ## Closing diamond 1
 

@@ -2539,6 +2539,17 @@ ruling of the decision *configuration is read once, by the configurator, and pas
 loading modules and 35 `manifest.json` readers named as row 5's move and new code barred from adding a loader;
 scorecard row 64h (Promotable) and the Summary raised to 218.
 
+## decision · row 4, sixth item: gz-rnd's row 1 relabelled to the requirements model's records (operator ruling)
+
+Operator, verbatim, choosing the next row 4 item: *"gz-rnd label"*. The label stood in three places, found by search
+and read in context: `.gzkit/skills/gz-rnd/SKILL.md`, its `assets/rnd-record-template.md`, and
+`docs/governance/rnd-discipline.md`; nothing in code or tests reads it. Done in one commit: each relabels row 1
+*catalog, packages, orders and decision records*, the operator admitting each outcome and initiating each package
+(IRON LAW kept); the admission question narrows to the classic decision record, as this run's commissioned row 1
+states, since applied to the whole relabelled row it would gate catalog outcomes with an ADR test; `rnd-discipline.md`
+carries § Amended 2026-11-12 quoting the correction that prompted it; the skill to `0.9.0`. Closed records keep their
+old label, this one included.
+
 ## Close
 
 **Challenge restated.** 2026-11-11, on the operator's *"A: adopt draft"* (decision *the challenge is restated*):

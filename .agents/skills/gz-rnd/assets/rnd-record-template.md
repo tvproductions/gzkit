@@ -55,7 +55,7 @@ put, and their verbatim words.>
 
 | # | Disposition | State | What | Reason |
 |---|---|---|---|---|
-| 1 | ADR / OBPI | | | |
+| 1 | catalog, packages, orders and decision records | | | |
 | 2 | GHI / direct fix | | | |
 | 3 | chore | | | |
 | 4 | control surface, rule, doc, skill, hook | | | |

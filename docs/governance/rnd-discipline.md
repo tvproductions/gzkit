@@ -127,7 +127,7 @@ mechanical stopping condition, so an absent row is an unfinished run, not a tidy
 
 | # | Disposition | The agent may |
 |---|---|---|
-| 1 | ADR / OBPI | **propose only** — the operator initiates, or not (IRON LAW) |
+| 1 | catalog, packages, orders and decision records | **propose only** — the operator admits each outcome and initiates each package, or not (IRON LAW; § Amended 2026-11-12) |
 | 2 | GHI / direct fix | file via the `ghi-author` skill, on the operator's go for that row |
 | 3 | chore | **advise only** — the operator directs admission |
 | 4 | control surface, rule, doc, skill, hook | draft, on the operator's go for that row |
@@ -222,9 +222,11 @@ confidence (the Bainbridge finding in [`chore-class-system.md`](chore-class-syst
 § Consultation points). The stop lives in the skill file, which the run does not edit. This closes the MPAS failure where
 `wayfinder`'s *"Plan, don't do"* was overridable by text the agent wrote into its own notes.
 
-**Before proposing disposition 1, ask the admission question:** is the decision hard to
-reverse, surprising without context, **and** the result of a real trade-off? If any is
-false, the finding routes to disposition 2 or 4.
+**Before proposing a classic decision record under disposition 1, ask the admission
+question:** is the decision hard to reverse, surprising without context, **and** the result
+of a real trade-off? If any is false, it is no decision record, and the finding routes to
+disposition 2 or 4. Catalog outcomes, packages and orders follow the requirements model's
+records and levels instead (§ Amended 2026-11-12).
 
 **No namespace router.** A router over model-invoked disciplines adds a hop that MPAS's
 invocation-class invariant exists to remove.
@@ -414,6 +416,27 @@ A commissioned row 7 opens a new run only on the operator's word, as § Amended 
 starts any run; it never re-enters the run that commissioned it, which re-entry already
 covers. Diamond 1's mechanical condition now reads seven rows. Records closed before this
 amendment keep their six rows.
+
+## Amended 2026-11-12 — row 1 names the requirements model's records
+
+**Status of this amendment.** Commissioned by the hexagonal-specification run
+(`docs/rnd/hexagonal-specification.md`), disposition row 4, on the operator's *"Commission row
+4"* (2026-11-10), and executed on the operator's *"gz-rnd label"* (2026-11-12).
+
+**What prompted it.** That run first drafted row 1 as a feature ADR per use case with OBPIs
+per phase, following the row's label. Operator, verbatim: *"this entire system is meant to be
+deprecated and superseded by the requirements catalog, the feature package, the work package,
+the work order, and the release package ==> "ADR and OBPI""*. The row was redrafted on the
+requirements model's records (`docs/governance/ieee/requirements-model.md` § The records,
+§ 12): catalog outcomes and their REQs, the feature package, work packages (the mADR's
+successor), work orders (the OBPI's successor), the Release Package, and the classic ADR as a
+separate decision record.
+
+**The rule.** Row 1 reads *catalog, packages, orders and decision records*. The agent still
+proposes only: the operator admits each outcome and initiates each package, or not. The
+admission question narrows to the classic decision record, the one record in the row it was
+written for; that run's commissioned row 1 states it (*"The admission question applies to (f)
+alone"*). Records closed before this amendment keep the label they were written under.
 
 ## Still out of scope
 
