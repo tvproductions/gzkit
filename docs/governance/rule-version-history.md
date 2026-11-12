@@ -409,6 +409,10 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `pythonic.md`
 
+### Changed 2026-11-12 at version `0.6.0` (R&D run hexagonal-specification, disposition row 4)
+
+Prior `0.5.13` banner, verbatim: *"the module-size row names the `gz check` step that enforces the table's band, and § Error Handling names `gzkit.core.exceptions`, under the operator's "fix what is stale" (2026-11-08)."* Superseded on the operator's *"pythonic error rule"*: § Error Handling's one translate-to-`GzkitError` bullet becomes the run's ruling, values inside the walls (domain and handlers), `GzkitError` outside (adapters and the configurator), faults uncaught inside, with `GzkitError`'s present home in `core/` and its move under row 5 stated. Scorecard rows 18a to 18c added.
+
 Prior `0.5.12` banner: *"the PEP 563 ban is witnessed: `gz validate --astral-discipline` refuses a 3.14 floor whose Ruff config drops it (RO-9 tranche 4); prior banners in Rule Version History."* Superseded 2026-11-08 by `0.5.13` under the operator's *"fix what is stale"*: the module-size row named no enforcer while `gz check`'s "Module size" step enforces the table's `lizard_file_nloc` `block` band, the no-consumer sentence (garbled "is reads") now covers the function band only, and § Error Handling's `core.errors` names the module that exists, `gzkit.core.exceptions`.
 
 Lifted at version `0.5.0` (rule now at `0.5.1`).

@@ -6,9 +6,9 @@ paths:
 
 # Pythonic Standards (Idiomatic Code Contract)
 
-<!-- rule-version: 0.5.13 -->
+<!-- rule-version: 0.6.0 -->
 
-> **Rule version:** `0.5.13` — the module-size row names the `gz check` step that enforces the table's band, and § Error Handling names `gzkit.core.exceptions`, under the operator's *"fix what is stale"* (2026-11-08); prior banners in [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd).
+> **Rule version:** `0.6.0` — § Error Handling splits inside the hexagon's walls (values) from outside (`GzkitError`), from the hexagonal specification run (operator, 2026-11-12: *"pythonic error rule"*); prior banners in [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd).
 
 ## Core Principles
 
@@ -63,7 +63,9 @@ paths:
 
 ## Error Handling
 
-- Catch specific exceptions, translate to the `GzkitError` hierarchy in `gzkit.core.exceptions`.
+- **Inside the walls, expected failures are values.** In the domain and the handlers, an expected failure is a member of a closed result union (a handler's variants), handled exhaustively under ty; no `GzkitError` is raised there (`docs/governance/hexagonal-architecture.md` § Values, entities and storage). Advisory until the hexagon's packages exist; today's code predates them.
+- **Outside the walls, translate to the `GzkitError` hierarchy.** Adapters and the configurator catch specific exceptions and translate them: a driving adapter turns a returned error into a `GzkitError`, an exit code and a message through an exhaustive `match`; a driven adapter turns an infrastructure failure into a returned error, or raises for a fault. `GzkitError` lives in `gzkit.core.exceptions` today, inside `core/`, and moves outside the walls under the run's row 5 programme.
+- **A fault is not caught inside.** A defect or an exhausted resource may surface inside as an exception; it propagates to the boundary uncaught.
 - **No bare `except:` / `except Exception:`** outside CLI boundaries.
 
 **Mechanized 2026-08-08 by ruff `BLE001`, after running nowhere for as long as this clause has existed.** `BLE` was absent from `[tool.ruff.lint] select` while the advisory scorecard recorded row 18 as **Mechanical**, "ruff BLE001 enforces" — a rule declared, scored as witnessed, and enforced by nothing. Six live violations sat in `src/gzkit`, one of them behind a `# noqa: BLE0001` typo that suppressed nothing and was undetectable precisely *because* the rule was off: a wrong suppression code is invisible when the rule it names never runs.

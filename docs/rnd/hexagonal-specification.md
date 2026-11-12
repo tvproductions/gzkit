@@ -2509,6 +2509,16 @@ F13) and `docs/governance/ieee/requirements-model.md` § 10. Done in one commit:
 - The scorecard's Summary roll-up corrected to the rows (Promotable 63, Judgment 82, of 213): the previous item's
   commit added row 64f without raising the Promotable count, which `gz validate --advisory-scorecard` caught here.
 
+## decision · row 4, third item: pythonic.md § Error Handling splits inside from outside the walls (operator ruling)
+
+Operator, verbatim, choosing the next row 4 item: *"pythonic error rule"*. Read first: `.gzkit/rules/pythonic.md`
+`0.5.13` § Error Handling, its scorecard section (row 18 pins only the no-bare-except bullet; the translate bullet
+was never scored) and RP-7's record (its H2 holds the size limits, not this section). Done in one commit:
+`pythonic.md` to `0.6.0`, § Error Handling stating the ruling of the decision *values inside the hexagon,
+`GzkitError` outside*: values inside the walls, translation to `GzkitError` outside, faults uncaught inside, the
+present home of `GzkitError` in `core/` and its move under row 5 named; scorecard rows 18a (Promotable), 18b and 18c
+(Judgment) with their identities, and the Summary roll-up raised to 216.
+
 ## Close
 
 **Challenge restated.** 2026-11-11, on the operator's *"A: adopt draft"* (decision *the challenge is restated*):

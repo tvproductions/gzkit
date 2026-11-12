@@ -77,7 +77,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `guardrail-feedback-prose.md` | `0.3.1` |
 | `mx-mode.md` | `1.16.1` |
 | `mode-contract.md` | `0.1.2` |
-| `pythonic.md` | `0.5.13` |
+| `pythonic.md` | `0.6.0` |
 | `tool-skill-runbook-alignment.md` | `0.5.4` |
 | `tests.md` | `0.28.0` |
 | `task-discovery.md` | `0.10.2` |
@@ -139,11 +139,16 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 
 ### Pythonic Standards (`.gzkit/rules/pythonic.md`)
 
+**Re-scored 2026-11-12 at rule `0.6.0`**, on the operator's *"pythonic error rule"* (R&D run `docs/rnd/hexagonal-specification.md`, disposition row 4): § Error Handling's translate-to-`GzkitError` bullet, never scored, is split inside from outside the walls and scored with the fault clause as rows 18a to 18c. Row 18 unchanged.
+
 **Re-scored 2026-11-08 at rule `0.5.13`** — stale clauses corrected under the operator's *"fix what is stale"*: the module-size row names the `gz check` "Module size" step that enforces the table's `lizard_file_nloc` `block` band; the no-consumer sentence covers the function band only; § Error Handling names `gzkit.core.exceptions` for the nonexistent `core.errors`. No row's Rule cell quoted the changed text and no score moves; row 20's Notes and rows 22 and 27's Ruff codes are corrected.
 
 | # | Rule | Score | Notes |
 |---|------|-------|-------|
 | 18 | **No bare `except:` / `except Exception:`** | **Mechanical** | **Made true 2026-08-08 (rule `0.3.0`), Movement C rules arm — the row was false when written.** It claimed "ruff BLE001 enforces" while `BLE` was absent from `[tool.ruff.lint] select` in `pyproject.toml`, so the rule ran nowhere and **6 live violations** sat in `src/gzkit` unreported by `gz check` — one of them behind a `# noqa: BLE0001` typo that suppressed nothing and *could not be noticed while the rule was off*. `BLE` is now selected, the six sites carry cited justifications, and the fence is proven by planting a blind `except` and observing BLE001 catch it. Scoped to the shipped package via `per-file-ignores`; boundary surfaces (never-raise hooks, orientation scripts, red-phase test scaffolding) and the generated hook mirrors are excluded with stated reasons. `source=.gzkit/rules/pythonic.md` |
+| 18a | **Inside the walls, expected failures are values.** | **Promotable** | Decidable once the package map names the hexagon's regions: an AST walk refusing a `raise` of a `GzkitError` subclass in the domain or handlers. Neither the map nor the check exists, and today's code raises `GzkitError` everywhere, so it lands with a shrink-only baseline. **Added 2026-11-12 (rule `0.6.0`).** `source=.gzkit/rules/pythonic.md` |
+| 18b | **Outside the walls, translate to the `GzkitError` hierarchy.** | **Judgment** | Whether a caught exception is the specific one and its translation preserves the failure's meaning is a reading of intent; row 18 mechanizes only the breadth arm (BLE001), and ty's exhaustiveness covers the `match` once the result unions exist. Never scored before 2026-11-12. **Added 2026-11-12 (rule `0.6.0`).** `source=.gzkit/rules/pythonic.md` |
+| 18c | **A fault is not caught inside.** | **Judgment** | Telling a fault from an expected failure is the modelling decision the result unions encode; catching a specific fault exception inside is not structurally distinguishable from catching an expected one. Row 18's BLE001 refuses the broad form. **Added 2026-11-12 (rule `0.6.0`).** `source=.gzkit/rules/pythonic.md` |
 | 19 | Functions <=50 lines | **Judgment** | **Corrected 2026-08-08 — the Mechanical claim was unbacked, and the rule said so.** It cited "xenon complexity + pre-commit hooks"; xenon measures *cyclomatic rank*, never line count, so nothing has ever enforced this number. `.gzkit/rules/pythonic.md` § Size Limits states it outright — *"`docs/governance/advisory-rules-audit.md` miscodes this as 'Mechanical \| xenon complexity' — xenon measures cyclomatic rank, never line count; that Mechanical claim is unbacked"* — and its own table lists the enforcer as "nothing / authoring-time guidance only". Additionally unreconciled with the canonical threshold table, which blocks `lizard_nloc` at 37.0; resolving that needs a distillation pass, not a prose fix. `source=.gzkit/rules/pythonic.md` |
 | 20 | Modules <=600 lines | **Judgment** | **Corrected 2026-08-08 — same class as row 19.** It cited a "pre-commit check under `.pre-commit-config.yaml`"; no such hook exists. **Corrected 2026-11-08 (rule `0.5.13`):** nothing enforces 600, but the table's band does run: `gz check`'s "Module size" step (`run_module_size_audit`) runs `.gzkit/chores/module-sloc-cap-radon/check_module_size.py`, which enforces the `lizard_file_nloc` `block` band of `.gzkit/rules/complexity-thresholds.json` over `src/` against the shrink-only `data/module_size_grandfather.json` (the metric was `radon_raw_nloc` until RO-9 tranche 4, GHI #1183). The table's `warn` bands sit below its `block` band, so a 700-line module is a violation here and passes there. The 600 stays Judgment: the gate enforces the table's number, never this rule's. `source=.gzkit/rules/pythonic.md` |
 | 21 | Classes <=300 lines | **Mechanical** | Enforced by `gz validate --class-size` (GHI #204) — AST scan over `src/gzkit/**`, with explicit `_CLASS_SIZE_WAIVERS` for documented exceptions `source=.gzkit/rules/pythonic.md` |
@@ -606,9 +611,9 @@ decays in whichever direction the next reader's grep happens to point.
 
 | Score | Rows | % of scored rows |
 |-------|-------|---|
-| **Mechanical** | 68 | 32% |
-| **Promotable** | 63 | 30% |
-| **Judgment** | 82 | 38% |
+| **Mechanical** | 68 | 31% |
+| **Promotable** | 64 | 30% |
+| **Judgment** | 84 | 39% |
 | **Ambiguous** | 0 | 0% |
 
 <!-- The Rows column is machine-checked by `gz validate --advisory-scorecard`;
@@ -625,7 +630,7 @@ decays in whichever direction the next reader's grep happens to point.
      158 as of row 58c (GHI #962, 2026-09-05), and 159 as of row 88 (the CLI
      lane-is-not-route carve-out, 2026-09-06), and 160 as of row 89 (mutation-sweep
      integrity, GHI #963), and 161 as of row 51c (census-query completeness,
-     GHI #972), and 163 as of rows 91-92 (the exit-code-2 relabel, GHI #1001), and 167 as of rows 56a-56b (suppression is not a repair, GHI #999), and 168 as of row 93 (verbosity flags realigned to the specification, 2026-09-14), and 180 as of row 53c (skill selection routes through gz-how, GHI #1106, 2026-09-27), and 181 as of row 51d (gh issue reopen for ghi-author's regression case, 2026-09-27), and 190 as of row 62g (the MX lease is booked and announced, GHI #1257, 2026-10-18), and 191 as of row 51e (the `block` band's consumers after xenon, RO-9 tranche 4, 2026-10-22), and 192 as of row 23b (deferred annotations at the 3.14 floor, RO-9 tranche 4, 2026-10-23), and 193 as of row 45e (executables resolved off absolute PATH entries, RO-9 tranche 4, 2026-10-24), and 194 as of row 52c (models named by class, never a versioned ID, GHI #1284, 2026-10-27), and 202 as of rows 62h-62k and 99-99c (`mx-mode.md` re-scored at `1.14.1` and `mode-contract.md` scored at `0.1.2`, 2026-10-28), and 205 as of rows 62l-62n (`mx-mode.md` scored at `1.16.0`, out of service as one state, 2026-11-04), and 206 as of row 33d (a retired rule leaves every surface, rule `0.14.0`, 2026-11-08), unchanged when four rows moved from Mechanical on an ungated or absent witness (2026-11-08), and 207 as of rows 64f-64g with row 64d retired (`hexagonal-architecture.md` at `0.5.0`, 2026-11-12), and 213 as of rows 37c and 91-91d (`tests.md` at `0.28.0`, 2026-11-12); the entries between 131 and 158 were
+     GHI #972), and 163 as of rows 91-92 (the exit-code-2 relabel, GHI #1001), and 167 as of rows 56a-56b (suppression is not a repair, GHI #999), and 168 as of row 93 (verbosity flags realigned to the specification, 2026-09-14), and 180 as of row 53c (skill selection routes through gz-how, GHI #1106, 2026-09-27), and 181 as of row 51d (gh issue reopen for ghi-author's regression case, 2026-09-27), and 190 as of row 62g (the MX lease is booked and announced, GHI #1257, 2026-10-18), and 191 as of row 51e (the `block` band's consumers after xenon, RO-9 tranche 4, 2026-10-22), and 192 as of row 23b (deferred annotations at the 3.14 floor, RO-9 tranche 4, 2026-10-23), and 193 as of row 45e (executables resolved off absolute PATH entries, RO-9 tranche 4, 2026-10-24), and 194 as of row 52c (models named by class, never a versioned ID, GHI #1284, 2026-10-27), and 202 as of rows 62h-62k and 99-99c (`mx-mode.md` re-scored at `1.14.1` and `mode-contract.md` scored at `0.1.2`, 2026-10-28), and 205 as of rows 62l-62n (`mx-mode.md` scored at `1.16.0`, out of service as one state, 2026-11-04), and 206 as of row 33d (a retired rule leaves every surface, rule `0.14.0`, 2026-11-08), unchanged when four rows moved from Mechanical on an ungated or absent witness (2026-11-08), and 207 as of rows 64f-64g with row 64d retired (`hexagonal-architecture.md` at `0.5.0`, 2026-11-12), and 213 as of rows 37c and 91-91d (`tests.md` at `0.28.0`, 2026-11-12), and 216 as of rows 18a-18c (`pythonic.md` at `0.6.0`, 2026-11-12); the entries between 131 and 158 were
      not recorded here as they landed, so this list names the endpoints it can
      evidence rather than reconstructing a history it cannot. -->
 
