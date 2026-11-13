@@ -259,7 +259,7 @@ What gzkit's code does today against this specification:
 | Gap | Tracked |
 |---|---|
 | Most of gzkit's code is outside every region: 161 packages and modules unmapped, 16 out-of-region imports from `gzkit.cli` (the shrink-only `data/hexagon_dependency_baseline.json`, 2026-11-12) | #1267, row 5 programme |
-| `project_root` is threaded inward rather than finished adapters passed | #1320 |
+| `project_root` is threaded inward rather than finished adapters passed (point 5) | use-case migration (§ Building and migrating), row 5 programme |
 | The output port's `table` methods take Rich's `Table` | #1321 |
 | *Purity* names an ontology fence and the import check | #1322 |
 | Configuration is loaded by 50 modules for themselves | row 5 programme |

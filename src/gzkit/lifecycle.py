@@ -77,7 +77,7 @@ class LifecycleStateMachine:
             project_root: Project root for the evaluation-justify-binding gate.
                     If None, transitions are validated but the I/O-coupled gate
                     is not evaluated — the same opt-in-by-injection contract as
-                    ``ledger``. Injected by the command-layer configurator; the
+                    ``ledger``. Passed in by the caller; the
                     core never resolves it from the ambient environment
                     (hexagonal rule 4: take external dependencies as parameters).
 

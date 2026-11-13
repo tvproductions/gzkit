@@ -1,8 +1,9 @@
 # Python CLI Tool: Principles, Practices, and Guidelines (v3)
 
-<!-- doc-version: 0.2.0 -->
+<!-- doc-version: 0.2.1 -->
 
-> **Document version:** `0.2.0` — de-duplication and freshness pass (2026-08-16,
+> **Document version:** `0.2.1` — the facade banner records that the hexagonal specification withdrew the
+> 2026-07-06 canonical-hexagon claim (2026-11-13, GHI #1320). Prior `0.2.0` — de-duplication and freshness pass (2026-08-16,
 > operator ruling; GHI #810). `docs/design/CLI_PRINCIPLES.md` was a byte-identical
 > twin of this file and is **deleted**: it was created empty at `db3851814`,
 > filled by copy at `3d0c4ce14`, and thereafter edited in lockstep, so the two
@@ -56,7 +57,10 @@ fulfil it. Measurements and the ten candidate advisory-scorecard rows are in
 > the parameter-injection seam (`Ledger(path)` / `load_config(path=)` /
 > `project_root: Path`, wired by the command-layer configurator — Cockburn Fig 2.1).
 > Read the `ports`/`adapters`/`fakes` sections below as original design intent, not
-> current structure. (The folder-structure question — where real adapters should
+> current structure. **The canonical-hexagon sentence above was withdrawn on 2026-11-12:** the hexagonal specification's points 2 and 5
+> ([`hexagonal-architecture.md`](../governance/hexagonal-architecture.md) § The five points) hold that a
+> configurator passes finished adapters, never a raw path, so threading `project_root` is not conformance and
+> the command layer is not the configurator (GHI #1320). (The folder-structure question — where real adapters should
 > live — is **deferred to future ADR work**, not adopted here.) Canon:
 > [`../governance/hexagonal-architecture.md`](../governance/hexagonal-architecture.md).
 
