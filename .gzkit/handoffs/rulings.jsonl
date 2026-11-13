@@ -2185,3 +2185,8 @@
 {"ts": "2026-11-13T08:29:39Z", "source": "20261113T082936Z-rp15-tranche6-reviewed.md", "text": "Repair the review's checker defects now as one repair act (verbatim: \"Yes, repair them\")."}
 {"ts": "2026-11-13T08:29:39Z", "source": "20261113T082936Z-rp15-tranche6-reviewed.md", "text": "Push the repair commits (verbatim: \"Push them\")."}
 {"ts": "2026-11-13T08:29:39Z", "source": "20261113T082936Z-rp15-tranche6-reviewed.md", "text": "Post the drafted review on GHI 1267 (verbatim: \"Post it\")."}
+{"ts": "2026-11-13T10:01:08Z", "source": "20261113T100108Z-ghi1267-held-and-dispatcher-injected.md", "text": "Proceed on the rp15-tranche6-reviewed handoff (verbatim: \"Proceed\")."}
+{"ts": "2026-11-13T10:01:08Z", "source": "20261113T100108Z-ghi1267-held-and-dispatcher-injected.md", "text": "Renew the expired MX lease (verbatim: \"Renew it\")."}
+{"ts": "2026-11-13T10:01:08Z", "source": "20261113T100108Z-ghi1267-held-and-dispatcher-injected.md", "text": "Hold the placement of core/ until migration, from options A hold, B map core/ now, C build the transitive check on today's core/ (verbatim: \"A: hold to migration\")."}
+{"ts": "2026-11-13T10:01:08Z", "source": "20261113T100108Z-ghi1267-held-and-dispatcher-injected.md", "text": "Remove the req_kind_support to validate_cmd edge now (verbatim: \"Yes, remove it\")."}
+{"ts": "2026-11-13T10:01:08Z", "source": "20261113T100108Z-ghi1267-held-and-dispatcher-injected.md", "text": "Remove it by threading the dispatcher through every caller, from options A thread, B move the scope registry out of commands/, C defer (verbatim: \"A: thread it fully\")."}
