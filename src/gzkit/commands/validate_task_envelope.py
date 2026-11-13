@@ -1,8 +1,8 @@
 """Task-envelope-coherence validator (OBPI-0.0.64-04).
 
 Extracted from ``validate_cmd.py`` (A3 module split). Composite of four
-Heavy-fail signatures: (a)/(b)/(c) over TASK discovery channels (ledger, brief
-frontmatter, commit trailers, ``@advances`` registry) plus (d) ledger obpi_id
+Heavy-fail signatures: (a)/(b)/(c) over the three TASK discovery channels (ledger,
+brief frontmatter, commit trailers) and the ``@advances`` annotation, plus (d) ledger obpi_id
 divergence integrity. ``subprocess`` and ``_sig_c_layer_drift``
 are patched by ``tests/governance/test_task_envelope_coherence.py`` against this
 module's namespace. Shares ``_find_obpi_briefs`` with the briefs validator module.

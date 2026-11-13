@@ -1461,7 +1461,7 @@ class TestDiagnoseCmd(unittest.TestCase):
         trailers (ch3) were previously hardcoded empty, so the ADR's named
         layer-drift recovery surface was blind to the exact channels the
         validator's signature (c) evaluates. The command must delegate to the
-        validator's four-channel collector so a declaration in ANY channel
+        validator's four-source collector so a declaration in ANY source
         surfaces in the readback and participates in drift. If the command
         regressed to a 2-channel subset, ch1/ch3 would render empty and this
         test fails.
@@ -1474,7 +1474,7 @@ class TestDiagnoseCmd(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
             _write_brief(root, {**_BASE_FM, "tasks": ["TASK-0.0.64-04-01-02"]})
-            # Distinct declarations in each of the four channels: the fix must
+            # Distinct declarations in each of the four sources: the fix must
             # surface all four, the old 2-channel version rendered ch1/ch3 empty.
             fake_decls = {
                 "advances": {"TASK-0.0.64-04-01-01"},
