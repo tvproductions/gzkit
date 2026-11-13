@@ -7,13 +7,31 @@ REQ-0.0.69-01-02 [behavior]: cited event absent OR citation unparseable → unpr
 REQ-0.0.69-01-03 [behavior]: cited validator scope non-zero → unproven/fail-close
 """
 
+import ast
 import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import TYPE_CHECKING
 from unittest.mock import patch
 
+import gzkit.req_kind_support as support_channel
+from gzkit.commands.validate_cmd import dispatch_validator_scope
 from gzkit.traceability import covers
+
+if TYPE_CHECKING:
+    from gzkit.req_kind_support import ScopeDispatcher
+
+
+def _dispatch(*, verdict: bool, asked: list[tuple[str, Path]] | None = None) -> ScopeDispatcher:
+    """A fake ScopeDispatcher: answers *verdict* and records each (scope, root) it is asked."""
+
+    def dispatch(scope: str, project_root: Path) -> bool:
+        if asked is not None:
+            asked.append((scope, project_root))
+        return verdict
+
+    return dispatch
 
 
 def _make_ledger(project_root: Path, event_type: str) -> None:
@@ -45,11 +63,11 @@ class TestResolveSupportProofPass(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             project_root = Path(tmp)
             _make_ledger(project_root, "artifact_edited")
-            with patch(
-                "gzkit.req_kind_support._dispatch_validator_scope", return_value=True
-            ) as mock_dispatch:
-                result = resolve_support_proof(req_text, project_root)
-                mock_dispatch.assert_called_once_with("documents", project_root)
+            asked: list[tuple[str, Path]] = []
+            result = resolve_support_proof(
+                req_text, project_root, dispatch_scope=_dispatch(verdict=True, asked=asked)
+            )
+            self.assertEqual(asked, [("documents", project_root)])
 
         self.assertEqual(result, "pass")
         self.assertNotEqual(result, "advisory-support")
@@ -86,13 +104,16 @@ class TestResolveSupportProofPass(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             project_root = Path(tmp)
             _make_ledger(project_root, "artifact_edited")
-            with patch(
-                "gzkit.req_kind_support._dispatch_validator_scope", return_value=True
-            ) as mock_dispatch:
-                enriched = compute_three_channel_coverage(report, [dreq], project_root=project_root)
-                mock_dispatch.assert_called_once_with("documents", project_root)
+            asked: list[tuple[str, Path]] = []
+            enriched = compute_three_channel_coverage(
+                report,
+                [dreq],
+                project_root=project_root,
+                dispatch_scope=_dispatch(verdict=True, asked=asked),
+            )
+            self.assertEqual(asked, [("documents", project_root)])
 
-        # Resolver with patched dispatch should return "pass", not the legacy "advisory-support"
+        # Resolver with a passing dispatcher returns "pass", not the legacy "advisory-support"
         self.assertNotEqual(enriched.entries[0].proof_status, "advisory-support")
         self.assertEqual(enriched.entries[0].proof_status, "pass")
 
@@ -114,9 +135,6 @@ def _ev(event: str, path: str | None) -> dict:
     return rec
 
 
-_PATCH_SCOPE = "gzkit.req_kind_support._dispatch_validator_scope"
-
-
 class TestSupportProofPathAware(unittest.TestCase):
     """GHI #647: the ledger arm must verify an event CITING THE CITED PATH, not
     merely that an event of the type exists somewhere (the hollow-gate facade)."""
@@ -134,8 +152,9 @@ class TestSupportProofPathAware(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             _make_ledger_with_events(root, [_ev("artifact_edited", "docs/x.md")])
-            with patch(_PATCH_SCOPE, return_value=True):
-                result = resolve_support_proof(self._REQ, root, req_id="REQ-0.0.74-06-04")
+            result = resolve_support_proof(
+                self._REQ, root, dispatch_scope=_dispatch(verdict=True), req_id="REQ-0.0.74-06-04"
+            )
             self.assertEqual(result, "unproven-support")
 
     def test_path_cited_and_event_cites_path_passes(self) -> None:
@@ -144,8 +163,9 @@ class TestSupportProofPathAware(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             _make_ledger_with_events(root, [_ev("artifact_edited", "src/gzkit/events.py")])
-            with patch(_PATCH_SCOPE, return_value=True):
-                result = resolve_support_proof(self._REQ, root, req_id="REQ-0.0.74-06-04")
+            result = resolve_support_proof(
+                self._REQ, root, dispatch_scope=_dispatch(verdict=True), req_id="REQ-0.0.74-06-04"
+            )
             self.assertEqual(result, "pass")
 
     def test_grandfathered_req_with_no_event_is_tolerated(self) -> None:
@@ -160,8 +180,9 @@ class TestSupportProofPathAware(unittest.TestCase):
             (root / "data" / "support_proof_grandfather.json").write_text(
                 json.dumps({"grandfathered_reqs": ["REQ-0.0.74-06-04"]}), encoding="utf-8"
             )
-            with patch(_PATCH_SCOPE, return_value=True):
-                result = resolve_support_proof(self._REQ, root, req_id="REQ-0.0.74-06-04")
+            result = resolve_support_proof(
+                self._REQ, root, dispatch_scope=_dispatch(verdict=True), req_id="REQ-0.0.74-06-04"
+            )
             self.assertEqual(result, "grandfathered-support")
 
     def test_live_nc_never_emitted_event_with_path_fails(self) -> None:
@@ -178,8 +199,9 @@ class TestSupportProofPathAware(unittest.TestCase):
             root = Path(tmp)
             # Ledger has events, but NONE of type corpus_entry_appended.
             _make_ledger_with_events(root, [_ev("artifact_edited", "a/b.md")])
-            with patch(_PATCH_SCOPE, return_value=True):
-                result = resolve_support_proof(req, root, req_id="REQ-9.9.9-99-99")
+            result = resolve_support_proof(
+                req, root, dispatch_scope=_dispatch(verdict=True), req_id="REQ-9.9.9-99-99"
+            )
             self.assertEqual(result, "unproven-support")
 
     def test_artifact_edited_cited_file_exists_passes_without_ledger_event(self) -> None:
@@ -194,8 +216,9 @@ class TestSupportProofPathAware(unittest.TestCase):
             _make_ledger_with_events(root, [_ev("obpi_created", None)])  # no artifact_edited
             (root / "src" / "gzkit").mkdir(parents=True)
             (root / "src" / "gzkit" / "events.py").write_text("x", encoding="utf-8")
-            with patch(_PATCH_SCOPE, return_value=True):
-                result = resolve_support_proof(self._REQ, root, req_id="REQ-X")
+            result = resolve_support_proof(
+                self._REQ, root, dispatch_scope=_dispatch(verdict=True), req_id="REQ-X"
+            )
             self.assertEqual(result, "pass")
 
     def test_operation_event_requires_its_event_not_a_bare_file(self) -> None:
@@ -214,8 +237,9 @@ class TestSupportProofPathAware(unittest.TestCase):
             _make_ledger_with_events(root, [_ev("artifact_edited", "x.md")])  # not the op event
             (root / "src" / "gzkit" / "schemas").mkdir(parents=True)
             (root / "src" / "gzkit" / "schemas" / "ledger.json").write_text("{}", encoding="utf-8")
-            with patch(_PATCH_SCOPE, return_value=True):
-                result = resolve_support_proof(req, root, req_id="REQ-X")
+            result = resolve_support_proof(
+                req, root, dispatch_scope=_dispatch(verdict=True), req_id="REQ-X"
+            )
             self.assertEqual(result, "unproven-support")
 
     def test_operation_event_present_proves(self) -> None:
@@ -232,8 +256,9 @@ class TestSupportProofPathAware(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             _make_ledger_with_events(root, [_ev("composition_candidate_emitted", "whatever")])
-            with patch(_PATCH_SCOPE, return_value=True):
-                result = resolve_support_proof(req, root, req_id="REQ-X")
+            result = resolve_support_proof(
+                req, root, dispatch_scope=_dispatch(verdict=True), req_id="REQ-X"
+            )
             self.assertEqual(result, "pass")
 
     def test_a_fence_scope_named_in_the_body_does_not_bind_the_proof(self) -> None:
@@ -267,8 +292,9 @@ class TestSupportProofPathAware(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             _make_ledger_with_events(root, [_ev("artifact_edited", None)])
-            with patch(_PATCH_SCOPE, return_value=True):
-                result = resolve_support_proof(req, root, req_id="REQ-0.0.69-01-04")
+            result = resolve_support_proof(
+                req, root, dispatch_scope=_dispatch(verdict=True), req_id="REQ-0.0.69-01-04"
+            )
             self.assertEqual(result, "pass")
 
 
@@ -286,7 +312,9 @@ class TestResolveSupportProofFailClose(unittest.TestCase):
             project_root = Path(tmp)
             # Ledger contains a DIFFERENT event type — not artifact_edited
             _make_ledger(project_root, "obpi_created")
-            result = resolve_support_proof(req_text, project_root)
+            result = resolve_support_proof(
+                req_text, project_root, dispatch_scope=dispatch_validator_scope
+            )
 
         self.assertNotEqual(result, "pass", "Absent event must not resolve to pass")
         self.assertNotEqual(result, "advisory-support", "Must not fall back to advisory-support")
@@ -301,7 +329,9 @@ class TestResolveSupportProofFailClose(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             project_root = Path(tmp)
             # No .gzkit/ledger.jsonl at all
-            result = resolve_support_proof(req_text, project_root)
+            result = resolve_support_proof(
+                req_text, project_root, dispatch_scope=dispatch_validator_scope
+            )
 
         self.assertNotEqual(result, "pass")
         self.assertNotEqual(result, "advisory-support")
@@ -365,7 +395,9 @@ class TestResolveSupportProofFailClose(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             project_root = Path(tmp)
             _make_ledger(project_root, "artifact_edited")
-            result = resolve_support_proof(req_text, project_root)
+            result = resolve_support_proof(
+                req_text, project_root, dispatch_scope=dispatch_validator_scope
+            )
 
         self.assertNotEqual(result, "pass")
         self.assertNotEqual(result, "advisory-support")
@@ -381,9 +413,10 @@ class TestResolveSupportProofFailClose(unittest.TestCase):
             project_root = Path(tmp)
             _make_ledger(project_root, "artifact_edited")
 
-            # Patch the in-process dispatch to simulate a failing scope
-            with patch("gzkit.req_kind_support._dispatch_validator_scope", return_value=False):
-                result = resolve_support_proof(req_text, project_root)
+            # A dispatcher whose scope reports errors
+            result = resolve_support_proof(
+                req_text, project_root, dispatch_scope=_dispatch(verdict=False)
+            )
 
         self.assertNotEqual(result, "pass", "Non-zero exit must not resolve to pass")
         self.assertNotEqual(result, "advisory-support", "Must not fall back to advisory-support")
@@ -444,7 +477,9 @@ class TestRecursionFence(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             project_root = Path(tmp)
             _make_ledger(project_root, "artifact_edited")
-            result = resolve_support_proof(req_text, project_root)
+            result = resolve_support_proof(
+                req_text, project_root, dispatch_scope=dispatch_validator_scope
+            )
 
         self.assertNotEqual(result, "pass", "Recursion-fenced scope must not resolve to pass")
         self.assertNotEqual(result, "advisory-support", "Must not fall back to advisory-support")
@@ -459,7 +494,9 @@ class TestRecursionFence(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             project_root = Path(tmp)
             _make_ledger(project_root, "artifact_edited")
-            result = resolve_support_proof(req_text, project_root)
+            result = resolve_support_proof(
+                req_text, project_root, dispatch_scope=dispatch_validator_scope
+            )
 
         self.assertNotEqual(result, "pass")
         self.assertNotEqual(result, "advisory-support")
@@ -496,7 +533,9 @@ class TestEarlyReturnScopeDispatch(unittest.TestCase):
                 "gzkit.governance.trust_audits.audit_qc_binding",
                 return_value=[],
             ):
-                result = resolve_support_proof(self._QC_BINDING_REQ, project_root)
+                result = resolve_support_proof(
+                    self._QC_BINDING_REQ, project_root, dispatch_scope=dispatch_validator_scope
+                )
 
         self.assertEqual(result, "pass")
 
@@ -513,7 +552,9 @@ class TestEarlyReturnScopeDispatch(unittest.TestCase):
                 "gzkit.governance.trust_audits.audit_qc_binding",
                 return_value=[object()],  # one error → scope not clean
             ):
-                result = resolve_support_proof(self._QC_BINDING_REQ, project_root)
+                result = resolve_support_proof(
+                    self._QC_BINDING_REQ, project_root, dispatch_scope=dispatch_validator_scope
+                )
 
         self.assertNotEqual(result, "pass")
 
@@ -713,7 +754,56 @@ class TestWitnessClauseGrammar(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             _make_ledger_with_events(root, [_ev("artifact_edited", None)])
-            with patch(_PATCH_SCOPE, return_value=True):
-                result = resolve_support_proof(req, root, req_id="REQ-X")
+            result = resolve_support_proof(
+                req, root, dispatch_scope=_dispatch(verdict=True), req_id="REQ-X"
+            )
         self.assertEqual(result, "undeclared-support")
         self.assertNotEqual(result, "pass")
+
+
+class TestTheDispatcherIsInjected(unittest.TestCase):
+    """GHI #1267 item (c): the resolver takes its validator dispatcher as a parameter.
+
+    The domain side never names the command layer; the command layer supplies the
+    real dispatcher (`gzkit.commands.validate_cmd.dispatch_validator_scope`).
+    """
+
+    _REQ = "manpage updated. Witnessed by `artifact_edited` + `gz validate --documents`"
+
+    def _resolve(self, *, verdict: bool) -> tuple[str, list[str]]:
+        """Resolve the REQ with a fake dispatcher; return the verdict and the scopes asked."""
+        asked: list[str] = []
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+
+            def dispatch(scope: str, project_root: Path) -> bool:
+                self.assertEqual(project_root, root)
+                asked.append(scope)
+                return verdict
+
+            _make_ledger(root, "artifact_edited")
+            result = support_channel.resolve_support_proof(self._REQ, root, dispatch_scope=dispatch)
+        return result, asked
+
+    def test_the_injected_dispatcher_decides_the_validator_arm(self) -> None:
+        self.assertEqual(self._resolve(verdict=True), ("pass", ["documents"]))
+        self.assertEqual(self._resolve(verdict=False), ("unproven-support", ["documents"]))
+
+    def test_the_support_channel_names_no_command_module(self) -> None:
+        tree = ast.parse(Path(support_channel.__file__).read_text(encoding="utf-8"))
+        imported = [
+            name
+            for node in ast.walk(tree)
+            for name in (
+                [a.name for a in node.names]
+                if isinstance(node, ast.Import)
+                else [node.module or ""]
+                if isinstance(node, ast.ImportFrom)
+                else []
+            )
+        ]
+        self.assertEqual([n for n in imported if n.startswith("gzkit.commands")], [])
+
+    def test_the_command_layer_supplies_the_real_dispatcher(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertFalse(dispatch_validator_scope("no-such-scope", Path(tmp)))

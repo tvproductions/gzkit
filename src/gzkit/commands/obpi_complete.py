@@ -38,6 +38,7 @@ from gzkit.commands.common import (
 from gzkit.commands.obpi_complete_adversarial import (
     _build_adversarial_event,
 )
+from gzkit.commands.validate_cmd import dispatch_validator_scope
 from gzkit.commands.validate_task_envelope import pending_obpi_task_envelope_errors
 from gzkit.executables import resolve_argv
 from gzkit.governance.req_coverage import (
@@ -1093,7 +1094,7 @@ def _current_adversarial_event(
 ) -> LedgerEvent | None:
     """Build completion provenance from current independently accepted proof."""
     try:
-        review = completion_review(project_root, obpi_id)
+        review = completion_review(project_root, obpi_id, dispatch_scope=dispatch_validator_scope)
     except ValueError as exc:
         _fail(str(exc), exit_code=3, as_json=as_json, obpi_id=obpi_id)
     event = _build_adversarial_event(

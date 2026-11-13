@@ -32,6 +32,7 @@ from gzkit.acceptance_store import (
 )
 from gzkit.cli.formatters import OutputFormatter
 from gzkit.commands.common import ensure_initialized, get_project_root
+from gzkit.commands.validate_cmd import dispatch_validator_scope
 from gzkit.core.exceptions import (
     PolicyBreachError,
     ResourceNotFoundError,
@@ -328,7 +329,10 @@ def _refuse_unready(root: Path, ledger: Ledger, work_package: str) -> None:
     if took_stopping_exit(ledger, work_package):
         return
     refusal = round_bound_refusal(root, work_package)
-    blockers = [*acceptance_blockers(root, work_package), *([refusal] if refusal else [])]
+    blockers = [
+        *acceptance_blockers(root, work_package, dispatch_scope=dispatch_validator_scope),
+        *([refusal] if refusal else []),
+    ]
     if blockers:
         raise PolicyBreachError("\n".join(blockers))
 
@@ -340,7 +344,9 @@ def _refuse_undelivered_proceed(root: Path, ledger: Ledger, work_package: str) -
         PolicyBreachError: The package was excused at acceptance, so it claims no delivery.
 
     """
-    if took_stopping_exit(ledger, work_package) and acceptance_blockers(root, work_package):
+    if took_stopping_exit(ledger, work_package) and acceptance_blockers(
+        root, work_package, dispatch_scope=dispatch_validator_scope
+    ):
         msg = (
             f"{work_package} took a stopping exit and acceptance does not read ready, so it "
             "delivered nothing to proceed with. Close it as `redirect`, `pause` or `terminate`."

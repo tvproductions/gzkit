@@ -24,6 +24,7 @@ from gzkit.acceptance_store import (
     record_review,
     review_from_receipt,
 )
+from gzkit.commands.validate_cmd import dispatch_validator_scope
 from gzkit.events import parse_typed_event
 from tests.test_acceptance_execution import BRIEF, REQ, ExecutionFixture
 
@@ -107,7 +108,7 @@ class AcceptanceStoreTests(ExecutionFixture):
         with patch(
             "gzkit.acceptance_store.load_history", return_value=SimpleNamespace(contract=None)
         ):
-            status = acceptance_status(self.root, OBPI)
+            status = acceptance_status(self.root, OBPI, dispatch_scope=dispatch_validator_scope)
         self.assertFalse(status.ready)
         self.assertEqual(len(status.blockers), 1)
         self.assertIn("No durable acceptance contract", status.blockers[0])
@@ -115,7 +116,7 @@ class AcceptanceStoreTests(ExecutionFixture):
     def test_changed_obligation_roster_blocks_readiness(self):
         """A roster that no longer matches the contract scope blocks, never replaces it."""
         with patch("gzkit.acceptance_store.owed_ids", return_value={"REQ-9.9.9-99-99"}):
-            status = acceptance_status(self.root, OBPI)
+            status = acceptance_status(self.root, OBPI, dispatch_scope=dispatch_validator_scope)
         self.assertFalse(status.ready)
         self.assertEqual(len(status.blockers), 1)
         self.assertIn("obligation roster changed", status.blockers[0])
@@ -135,7 +136,7 @@ class AcceptanceStoreTests(ExecutionFixture):
         history = load_history(self.root, OBPI)
         self.assertEqual(history.reviews, [observed])
         self.assertEqual(history.reviews[0].input_digest, old.input_digest)
-        status = acceptance_status(self.root, OBPI)
+        status = acceptance_status(self.root, OBPI, dispatch_scope=dispatch_validator_scope)
         self.assertFalse(status.ready)
         self.assertEqual(status.open_findings, (finding["id"],))
         self.assertTrue(any(current.id in blocker for blocker in status.blockers))
@@ -155,12 +156,21 @@ class AcceptanceStoreTests(ExecutionFixture):
         self.accept(current)
         closure = {"finding_id": finding["id"], "obligation_id": REQ, "proof_id": current.id}
         record_review(self.root, OBPI, self.receipt(current, closures=[closure]))
-        self.assertTrue(acceptance_status(self.root, OBPI).ready)
+        self.assertTrue(
+            acceptance_status(self.root, OBPI, dispatch_scope=dispatch_validator_scope).ready
+        )
         record_review(self.root, OBPI, self.receipt(old, findings=[finding], verdict="refuted"))
-        self.assertTrue(acceptance_status(self.root, OBPI).ready)
+        self.assertTrue(
+            acceptance_status(self.root, OBPI, dispatch_scope=dispatch_validator_scope).ready
+        )
         self.assertEqual(load_history(self.root, OBPI).reviews[-1].findings[0].id, finding["id"])
         record_review(self.root, OBPI, self.receipt(current, findings=[finding], verdict="refuted"))
-        self.assertEqual(acceptance_status(self.root, OBPI).open_findings, (finding["id"],))
+        self.assertEqual(
+            acceptance_status(
+                self.root, OBPI, dispatch_scope=dispatch_validator_scope
+            ).open_findings,
+            (finding["id"],),
+        )
 
     def test_scoped_reviews_preserve_complete_completion_provenance(self):
         """AS-6: no single intersecting review represents two required approvals."""
@@ -194,7 +204,9 @@ class AcceptanceStoreTests(ExecutionFixture):
         second = first.model_copy(update={"id": "second-proof", "obligation_id": other})
         record_proof(self.root, OBPI, second)
         self.accept(first)
-        self.assertFalse(acceptance_status(self.root, OBPI).ready)
+        self.assertFalse(
+            acceptance_status(self.root, OBPI, dispatch_scope=dispatch_validator_scope).ready
+        )
         expected = [review.id for review in load_history(self.root, OBPI).reviews]
         for stage in ("spec", "quality", "adversarial"):
             receipt = self.receipt(second, stage)
@@ -209,7 +221,7 @@ class AcceptanceStoreTests(ExecutionFixture):
                 payload["grounds"] = [{"proof_id": second.id, "excerpt": second.evidence}]
             receipt["stdout_tail"] = json.dumps(payload)
             expected.append(record_review(self.root, OBPI, receipt).id)
-        status = acceptance_status(self.root, OBPI)
+        status = acceptance_status(self.root, OBPI, dispatch_scope=dispatch_validator_scope)
         self.assertTrue(status.ready, status.blockers)
         event = _current_adversarial_event(self.root, OBPI, False, None, None, resolution=None)
         assert event is not None
@@ -231,9 +243,13 @@ class AcceptanceStoreTests(ExecutionFixture):
             record_proof(self.root, OBPI, proof)
             self.accept(proof)
             with patch.dict("os.environ", {"COLUMNS": "999"}):
-                self.assertTrue(acceptance_status(self.root, OBPI).ready)
+                self.assertTrue(
+                    acceptance_status(
+                        self.root, OBPI, dispatch_scope=dispatch_validator_scope
+                    ).ready
+                )
             with patch.dict("os.environ", {"ENGINE_MODE": "changed"}):
-                status = acceptance_status(self.root, OBPI)
+                status = acceptance_status(self.root, OBPI, dispatch_scope=dispatch_validator_scope)
                 self.assertFalse(status.ready)
                 self.assertTrue(
                     any("declared execution conditions" in item for item in status.blockers)
@@ -254,21 +270,35 @@ class AcceptanceStoreTests(ExecutionFixture):
         self.accept(proof)
         closure = {"finding_id": finding["id"], "obligation_id": REQ, "proof_id": proof.id}
         record_review(self.root, OBPI, self.receipt(proof, closures=[closure]))
-        self.assertTrue(acceptance_status(self.root, OBPI).ready)
+        self.assertTrue(
+            acceptance_status(self.root, OBPI, dispatch_scope=dispatch_validator_scope).ready
+        )
         record_review(self.root, OBPI, self.receipt(proof, findings=[finding], verdict="refuted"))
-        self.assertEqual(acceptance_status(self.root, OBPI).open_findings, (finding["id"],))
+        self.assertEqual(
+            acceptance_status(
+                self.root, OBPI, dispatch_scope=dispatch_validator_scope
+            ).open_findings,
+            (finding["id"],),
+        )
         repeated = proof.model_copy(update={"id": "later-equivalent-execution"})
         record_proof(self.root, OBPI, repeated)
-        status = acceptance_status(self.root, OBPI)
+        status = acceptance_status(self.root, OBPI, dispatch_scope=dispatch_validator_scope)
         self.assertFalse(status.ready)
         self.assertEqual(status.open_findings, (finding["id"],))
 
     def test_actual_semantic_proof_and_independent_reviews_reach_readiness(self):
         proof = self.prove_and_record()
-        self.assertFalse(acceptance_status(self.root, OBPI).ready)
+        self.assertFalse(
+            acceptance_status(self.root, OBPI, dispatch_scope=dispatch_validator_scope).ready
+        )
         self.accept(proof)
-        self.assertTrue(acceptance_status(self.root, OBPI).ready)
-        self.assertEqual(completion_review(self.root, OBPI).proof_ids, (proof.id,))
+        self.assertTrue(
+            acceptance_status(self.root, OBPI, dispatch_scope=dispatch_validator_scope).ready
+        )
+        self.assertEqual(
+            completion_review(self.root, OBPI, dispatch_scope=dispatch_validator_scope).proof_ids,
+            (proof.id,),
+        )
         for event in acceptance_ledger(self.root).read_all():
             parse_typed_event(event.model_dump())
 
@@ -278,9 +308,11 @@ class AcceptanceStoreTests(ExecutionFixture):
         self.brief.write_text(
             BRIEF.replace("Historical round one was wrong.", "Refuted round 14."), encoding="utf-8"
         )
-        self.assertTrue(acceptance_status(self.root, OBPI).ready)
+        self.assertTrue(
+            acceptance_status(self.root, OBPI, dispatch_scope=dispatch_validator_scope).ready
+        )
         self.write("src/engine.py", "def double(value):\n    return value * 3\n")
-        status = acceptance_status(self.root, OBPI)
+        status = acceptance_status(self.root, OBPI, dispatch_scope=dispatch_validator_scope)
         self.assertFalse(status.ready)
         self.assertTrue(any("stale inputs" in blocker for blocker in status.blockers))
 
@@ -332,10 +364,17 @@ class AcceptanceStoreTests(ExecutionFixture):
         self.write(".gzkit/evidence/optional-audit.txt", "wrong historical count")
         (self.root / ".gzkit/evidence/optional-audit.txt").unlink()
         self.accept(proof)
-        self.assertEqual(acceptance_status(self.root, OBPI).open_findings, ("F-boundary",))
+        self.assertEqual(
+            acceptance_status(
+                self.root, OBPI, dispatch_scope=dispatch_validator_scope
+            ).open_findings,
+            ("F-boundary",),
+        )
         closure = {"finding_id": "F-boundary", "obligation_id": REQ, "proof_id": proof.id}
         record_review(self.root, OBPI, self.receipt(proof, closures=[closure]))
-        self.assertTrue(acceptance_status(self.root, OBPI).ready)
+        self.assertTrue(
+            acceptance_status(self.root, OBPI, dispatch_scope=dispatch_validator_scope).ready
+        )
         self.assertEqual(len(load_history(self.root, OBPI).reviews), 5)
 
     def test_auxiliary_observation_is_retained_without_creating_an_obligation(self):
@@ -348,7 +387,9 @@ class AcceptanceStoreTests(ExecutionFixture):
             "description": "Optional historical count is wrong",
         }
         record_review(self.root, OBPI, self.receipt(proof, findings=[finding]))
-        self.assertTrue(acceptance_status(self.root, OBPI).ready)
+        self.assertTrue(
+            acceptance_status(self.root, OBPI, dispatch_scope=dispatch_validator_scope).ready
+        )
         self.assertEqual(load_history(self.root, OBPI).reviews[-1].findings[0].id, "history-typo")
 
     def test_bad_closure_rejected_before_immutable_append(self):
@@ -359,7 +400,9 @@ class AcceptanceStoreTests(ExecutionFixture):
             record_review(self.root, OBPI, self.receipt(proof, closures=[bad]))
         self.assertEqual(len(acceptance_ledger(self.root).read_all()), count)
         self.accept(proof)
-        self.assertTrue(acceptance_status(self.root, OBPI).ready)
+        self.assertTrue(
+            acceptance_status(self.root, OBPI, dispatch_scope=dispatch_validator_scope).ready
+        )
 
     def test_missing_or_substituted_review_output_does_not_become_evidence(self):
         proof = self.prove_and_record()
@@ -377,7 +420,9 @@ class AcceptanceStoreTests(ExecutionFixture):
         proof = self.prove_and_record()
         self.accept(proof)
         initialize(self.root, OBPI, "implementer-session")
-        self.assertTrue(acceptance_status(self.root, OBPI).ready)
+        self.assertTrue(
+            acceptance_status(self.root, OBPI, dispatch_scope=dispatch_validator_scope).ready
+        )
         with self.assertRaisesRegex(ValueError, "already initialized"):
             initialize(self.root, OBPI, "different-author")
         self.assertEqual(len(load_history(self.root, OBPI).reviews), 3)
@@ -387,12 +432,17 @@ class AcceptanceStoreTests(ExecutionFixture):
         current = self.prove_and_record()
         self.assertEqual(old.input_digest, current.input_digest)
         self.accept(current)
-        selected = completion_review(self.root, OBPI)
+        selected = completion_review(self.root, OBPI, dispatch_scope=dispatch_validator_scope)
         self.assertEqual(selected.proof_ids, (current.id,))
         historical = record_review(self.root, OBPI, self.receipt(old))
         self.assertEqual(historical.proof_ids, (old.id,))
-        self.assertTrue(acceptance_status(self.root, OBPI).ready)
-        self.assertEqual(completion_review(self.root, OBPI).id, selected.id)
+        self.assertTrue(
+            acceptance_status(self.root, OBPI, dispatch_scope=dispatch_validator_scope).ready
+        )
+        self.assertEqual(
+            completion_review(self.root, OBPI, dispatch_scope=dispatch_validator_scope).id,
+            selected.id,
+        )
 
     def test_claude_tier_two_requires_unavailability_reason_and_retains_it(self):
         proof = self.prove_and_record()
@@ -402,7 +452,9 @@ class AcceptanceStoreTests(ExecutionFixture):
         receipt["step"]["command"] = ["claude", "-p", "independent acceptance review"]
         with self.assertRaisesRegex(ValueError, "cross-vendor unavailability"):
             record_review(self.root, OBPI, receipt)
-        self.assertFalse(acceptance_status(self.root, OBPI).ready)
+        self.assertFalse(
+            acceptance_status(self.root, OBPI, dispatch_scope=dispatch_validator_scope).ready
+        )
         payload = json.loads(receipt["stdout_tail"].removeprefix("```json\n").removesuffix("\n```"))
         reason = "Synthetic transport fixture: codex setup returned ready=false, executable absent"
         payload["fallback_reason"] = reason
@@ -412,7 +464,9 @@ class AcceptanceStoreTests(ExecutionFixture):
         review = record_review(self.root, OBPI, receipt)
         self.assertEqual(review.tier, 2)
         self.assertEqual(review.fallback_reason, reason)
-        self.assertTrue(acceptance_status(self.root, OBPI).ready)
+        self.assertTrue(
+            acceptance_status(self.root, OBPI, dispatch_scope=dispatch_validator_scope).ready
+        )
         self.assertEqual(load_history(self.root, OBPI).reviews[-1], review)
 
     def test_review_claiming_its_own_tier_is_refused(self):
@@ -430,14 +484,22 @@ class AcceptanceStoreTests(ExecutionFixture):
         for stage in ("spec", "quality"):
             record_review(self.root, OBPI, self.receipt(proof, stage))
         with self.assertRaisesRegex(ValueError, "verbatim ruling"):
-            record_human_review(self.root, OBPI, attestor="g0", ruling="")
-        self.assertFalse(acceptance_status(self.root, OBPI).ready)
+            record_human_review(
+                self.root, OBPI, attestor="g0", ruling="", dispatch_scope=dispatch_validator_scope
+            )
+        self.assertFalse(
+            acceptance_status(self.root, OBPI, dispatch_scope=dispatch_validator_scope).ready
+        )
         ruling = "I reviewed this proof and accept the required behavior."
-        review = record_human_review(self.root, OBPI, attestor="g0", ruling=ruling)
+        review = record_human_review(
+            self.root, OBPI, attestor="g0", ruling=ruling, dispatch_scope=dispatch_validator_scope
+        )
         self.assertEqual(
             (review.tier, review.reviewer_id, review.fallback_reason), (3, "human:g0", ruling)
         )
-        self.assertTrue(acceptance_status(self.root, OBPI).ready)
+        self.assertTrue(
+            acceptance_status(self.root, OBPI, dispatch_scope=dispatch_validator_scope).ready
+        )
         events = acceptance_ledger(self.root).read_all()
         self.assertEqual(events[-1].extra["record_type"], "human-review")
         self.assertEqual(events[-1].extra["payload"]["ruling"], ruling)
@@ -476,13 +538,22 @@ class AcceptanceStoreTests(ExecutionFixture):
         history = load_history(self.root, OBPI)
         self.assertEqual(history.proofs, [])
         self.assertEqual(history.reviews[0].proof_ids, ())
-        self.assertEqual(acceptance_status(self.root, OBPI).open_findings, ("F-initial-proof",))
+        self.assertEqual(
+            acceptance_status(
+                self.root, OBPI, dispatch_scope=dispatch_validator_scope
+            ).open_findings,
+            ("F-initial-proof",),
+        )
         proof = self.prove_and_record()
         self.accept(proof)
-        self.assertFalse(acceptance_status(self.root, OBPI).ready)
+        self.assertFalse(
+            acceptance_status(self.root, OBPI, dispatch_scope=dispatch_validator_scope).ready
+        )
         closure = {"finding_id": "F-initial-proof", "obligation_id": REQ, "proof_id": proof.id}
         record_review(self.root, OBPI, self.receipt(proof, closures=[closure]))
-        self.assertTrue(acceptance_status(self.root, OBPI).ready)
+        self.assertTrue(
+            acceptance_status(self.root, OBPI, dispatch_scope=dispatch_validator_scope).ready
+        )
 
 
 if __name__ == "__main__":

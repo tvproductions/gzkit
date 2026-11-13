@@ -23,6 +23,7 @@ from gzkit.acceptance_store import (
 )
 from gzkit.commands.obpi_acceptance import _execute_proof
 from gzkit.commands.obpi_stages import _run_pipeline_ceremony_stage
+from gzkit.commands.validate_cmd import dispatch_validator_scope
 from gzkit.mutation_witness import Mutation
 from gzkit.pipeline_procedure import seed_stage_procedures
 
@@ -70,7 +71,7 @@ def repaired_finding(context):
     assert proof.valid, proof.evidence
     record_proof(fixture.root, OBPI, proof)
     _approve(fixture, proof)
-    assert not acceptance_status(fixture.root, OBPI).ready
+    assert not acceptance_status(fixture.root, OBPI, dispatch_scope=dispatch_validator_scope).ready
     closure = {"finding_id": finding["id"], "obligation_id": REQ, "proof_id": proof.id}
     record_review(fixture.root, OBPI, captured_receipt(proof, closures=[closure]))
     context.accepted_proof = proof
@@ -84,7 +85,7 @@ def repeated_proof(context):
     assert repeated.claim_digest == context.accepted_proof.claim_digest
     record_proof(fixture.root, OBPI, repeated)
     assert len(load_history(fixture.root, OBPI).proofs) == 3
-    status = acceptance_status(fixture.root, OBPI)
+    status = acceptance_status(fixture.root, OBPI, dispatch_scope=dispatch_validator_scope)
     assert status.ready, status.blockers
 
 
@@ -231,6 +232,7 @@ def _control(fixture, find, replace):
         mutations=[
             Mutation(find=find, replace=replace, label="bounded control", expected_tests=[SELECTOR])
         ],
+        dispatch_scope=dispatch_validator_scope,
     )
 
 

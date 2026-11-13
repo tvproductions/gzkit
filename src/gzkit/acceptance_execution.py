@@ -25,7 +25,7 @@ from gzkit.frontmatter import read_frontmatter
 from gzkit.governance.req_coverage import discover_covers
 from gzkit.mutation_witness import Mutation, run_mutation_sweep
 from gzkit.req_kind_fence import resolve_fence_proof
-from gzkit.req_kind_support import resolve_support_proof
+from gzkit.req_kind_support import ScopeDispatcher, resolve_support_proof
 from gzkit.triangle import extract_reqs_from_brief
 from gzkit.unit_run_provenance import read_test_observations
 
@@ -556,8 +556,23 @@ def prove(
     mutations: list[Mutation] | None = None,
     selectors: list[str] | None = None,
     environment_keys: tuple[str, ...] = (),
+    dispatch_scope: ScopeDispatcher,
 ) -> Proof:
-    """Execute the required proof channel, returning observed valid or invalid evidence."""
+    """Execute the required proof channel, returning observed valid or invalid evidence.
+
+    A SUPPORT obligation's cited validator scope runs through *dispatch_scope*, which
+    the command layer supplies (GHI #1267, item (c)).
+
+    Returns:
+        The proof record: valid only when the channel passed and neither the input nor
+        the declared execution conditions changed while it ran.
+
+    Raises:
+        NonCanonicalObligationError: *req_id* is not one of the brief's obligations.
+        ExecutionConditionKeyError: an environment key is empty or holds ``=``.
+        NonBehaviorControlError: controls were given for a non-BEHAVIOR obligation.
+
+    """
     root = root.resolve()
     obligations = {item.id: item for item in canonical_obligations(root, brief_path)}
     if req_id not in obligations:
@@ -577,7 +592,9 @@ def prove(
         if source or mutations or selectors:
             raise NonBehaviorControlError
         if obligation.kind == "SUPPORT":
-            result = resolve_support_proof(obligation.statement, root, req_id=req_id)
+            result = resolve_support_proof(
+                obligation.statement, root, dispatch_scope=dispatch_scope, req_id=req_id
+            )
             resolver = "gzkit.req_kind_support.resolve_support_proof"
         else:
             result = resolve_fence_proof(req_id, root, obligation.statement)

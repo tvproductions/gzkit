@@ -36,6 +36,7 @@ from gzkit.commands.common import (
     get_project_root,
     resolve_obpi_file,
 )
+from gzkit.commands.validate_cmd import dispatch_validator_scope
 from gzkit.commands.validate_task_envelope import pending_obpi_task_envelope_errors
 from gzkit.governance.req_coverage import discover_covers, parse_brief_req_kinds
 from gzkit.pipeline_markers import select_obpi_brief
@@ -250,7 +251,7 @@ def _check_acceptance_records(project_root: Path, obpi_id: str) -> CheckResult:
     """Read current proof and closure, never reinterpret historical verdict prose."""
     from gzkit.acceptance_store import acceptance_blockers  # noqa: PLC0415
 
-    blockers = acceptance_blockers(project_root, obpi_id)
+    blockers = acceptance_blockers(project_root, obpi_id, dispatch_scope=dispatch_validator_scope)
     return CheckResult(
         name="adversarial_validation",
         ok=not blockers,

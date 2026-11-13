@@ -11,6 +11,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from gzkit.commands.validate_cmd import dispatch_validator_scope
 from gzkit.governance.stage4_evidence import (
     EvidencePacket,
     _counts_from_covers_summary,
@@ -192,7 +193,9 @@ class TestGenerateBlockers(unittest.TestCase):
         with tempfile.TemporaryDirectory() as t:
             tmp = Path(t)
             brief = _brief(tmp, None)
-            packet = generate_evidence_packet(tmp, brief, "OBPI-x")
+            packet = generate_evidence_packet(
+                tmp, brief, "OBPI-x", dispatch_scope=dispatch_validator_scope
+            )
             self.assertFalse(packet.attestable)
             self.assertTrue(any("No ## Demo" in b for b in packet.blockers))
 
@@ -201,7 +204,9 @@ class TestGenerateBlockers(unittest.TestCase):
         with tempfile.TemporaryDirectory() as t:
             tmp = Path(t)
             brief = _brief(tmp, 'python3 -c "raise SystemExit(1)"')
-            packet = generate_evidence_packet(tmp, brief, "OBPI-x")
+            packet = generate_evidence_packet(
+                tmp, brief, "OBPI-x", dispatch_scope=dispatch_validator_scope
+            )
             self.assertFalse(packet.attestable)
             self.assertTrue(any("Demo exited 1" in b for b in packet.blockers))
 
@@ -212,7 +217,9 @@ class TestGenerateBlockers(unittest.TestCase):
         with tempfile.TemporaryDirectory() as t:
             tmp = Path(t)
             brief = _brief(tmp, "python3 -c '\nimport sys\nraise SystemExit(0)\n'")
-            packet = generate_evidence_packet(tmp, brief, "OBPI-x")
+            packet = generate_evidence_packet(
+                tmp, brief, "OBPI-x", dispatch_scope=dispatch_validator_scope
+            )
             self.assertEqual([b for b in packet.blockers if "Demo exited" in b], [])
             self.assertEqual([d.exit_status for d in packet.demos], [0])
 
@@ -222,7 +229,9 @@ class TestGenerateBlockers(unittest.TestCase):
         with tempfile.TemporaryDirectory() as t:
             tmp = Path(t)
             brief = _brief(tmp, "python3 -c '\nimport sys\nraise SystemExit(1)\n'")
-            packet = generate_evidence_packet(tmp, brief, "OBPI-x")
+            packet = generate_evidence_packet(
+                tmp, brief, "OBPI-x", dispatch_scope=dispatch_validator_scope
+            )
             self.assertTrue(any("Demo exited 1" in b for b in packet.blockers))
 
     def test_missing_receipts_are_blockers(self) -> None:
@@ -230,7 +239,9 @@ class TestGenerateBlockers(unittest.TestCase):
         with tempfile.TemporaryDirectory() as t:
             tmp = Path(t)
             brief = _brief(tmp, 'python3 -c "raise SystemExit(0)"')
-            packet = generate_evidence_packet(tmp, brief, "OBPI-x")
+            packet = generate_evidence_packet(
+                tmp, brief, "OBPI-x", dispatch_scope=dispatch_validator_scope
+            )
             self.assertFalse(packet.attestable)
             self.assertTrue(any("No ARB receipt" in b for b in packet.blockers))
 
@@ -283,7 +294,9 @@ class TestDemoNeverTouchesTheLiveCheckout(unittest.TestCase):
             tmp = Path(t)
             brief = _brief(tmp, self._WRITING_DEMO)
             before = self._live_state(tmp)
-            packet = generate_evidence_packet(tmp, brief, "OBPI-x")
+            packet = generate_evidence_packet(
+                tmp, brief, "OBPI-x", dispatch_scope=dispatch_validator_scope
+            )
             self.assertEqual(self._live_state(tmp), before)
             self.assertFalse((tmp / "probe").exists())
             # The demo still ran, and its writes were real where it ran.
@@ -296,7 +309,9 @@ class TestDemoNeverTouchesTheLiveCheckout(unittest.TestCase):
             brief = _brief(tmp, "grep -q edited README.md && test -f new_module.py")
             (tmp / "README.md").write_text("edited\n", encoding="utf-8")
             (tmp / "new_module.py").write_text("x = 1\n", encoding="utf-8")
-            packet = generate_evidence_packet(tmp, brief, "OBPI-x")
+            packet = generate_evidence_packet(
+                tmp, brief, "OBPI-x", dispatch_scope=dispatch_validator_scope
+            )
             self.assertEqual([d.exit_status for d in packet.demos], [0], packet.demos)
 
     def test_read_only_demo_output_is_reported(self) -> None:
@@ -304,7 +319,9 @@ class TestDemoNeverTouchesTheLiveCheckout(unittest.TestCase):
         with tempfile.TemporaryDirectory() as t:
             tmp = Path(t)
             brief = _brief(tmp, "cat README.md")
-            packet = generate_evidence_packet(tmp, brief, "OBPI-x")
+            packet = generate_evidence_packet(
+                tmp, brief, "OBPI-x", dispatch_scope=dispatch_validator_scope
+            )
             self.assertEqual([d.exit_status for d in packet.demos], [0])
             self.assertIn("base", packet.demos[0].stdout_tail)
 
@@ -314,7 +331,9 @@ class TestDemoNeverTouchesTheLiveCheckout(unittest.TestCase):
             tmp = Path(t)
             brief = tmp / "brief.md"
             brief.write_text("# B\n\n## Demo\n\n```bash\ntouch probe\n```\n", encoding="utf-8")
-            packet = generate_evidence_packet(tmp, brief, "OBPI-x")
+            packet = generate_evidence_packet(
+                tmp, brief, "OBPI-x", dispatch_scope=dispatch_validator_scope
+            )
             self.assertFalse((tmp / "probe").exists())
             self.assertEqual([d.ran for d in packet.demos], [False])
             self.assertFalse(packet.attestable)

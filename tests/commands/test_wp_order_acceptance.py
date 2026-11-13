@@ -25,6 +25,7 @@ from gzkit.acceptance_store import (
     resolve_brief,
     round_bound_refusal,
 )
+from gzkit.commands.validate_cmd import dispatch_validator_scope
 from gzkit.dispatch_stamp import STAMP_ID_ENV, STAMP_ROOT_ENV
 from tests.commands.test_wp_acceptance import _receipt
 from tests.commands.test_wp_order_run import _ORDER, _PACKAGE, _CommencedOrder
@@ -119,7 +120,9 @@ class TestTheOrdersGate(_OrderAcceptance):
         self.init()
         proof = self.proof()
         self.approve(proof)
-        self.assertTrue(acceptance_status(self.root, _ORDER).ready)
+        self.assertTrue(
+            acceptance_status(self.root, _ORDER, dispatch_scope=dispatch_validator_scope).ready
+        )
         self.review(proof)
         self.accept(code=3)
         self.assertEqual(self.state(), "commenced")
@@ -242,7 +245,9 @@ class TestTheOrdersDeparture(_OrderAcceptance):
         obligations = canonical_obligations(self.root, resolve_brief(self.root, order))
         self.assertEqual([item.id for item in obligations], ["REQ-2"])
         self.wp("acceptance", order, "init", "--author", "implementing-session")
-        blockers = " ".join(acceptance_status(self.root, order).blockers)
+        blockers = " ".join(
+            acceptance_status(self.root, order, dispatch_scope=dispatch_validator_scope).blockers
+        )
         self.assertNotIn("roster changed", blockers)
 
     def test_an_order_whose_every_req_departed_owes_nothing_to_accept(self) -> None:
@@ -364,7 +369,9 @@ class TestAStoppedOrdersGateFive(_OrderAcceptance):
         with mock.patch(_FOOTPRINT, return_value=None):
             self.accept()
         self.approve(self.proof())
-        self.assertTrue(acceptance_status(self.root, _ORDER).ready)
+        self.assertTrue(
+            acceptance_status(self.root, _ORDER, dispatch_scope=dispatch_validator_scope).ready
+        )
         output = self.wp("order", "close", _ORDER, "--decision", "proceed", "--attestor", "g0",
                          "--attestation-text", "it holds", "--residual-risk", "none",
                          "--evidence", "gate 5", code=3)  # fmt: skip

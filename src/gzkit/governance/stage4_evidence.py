@@ -29,6 +29,7 @@ import tempfile
 from datetime import UTC, datetime
 from functools import lru_cache
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -36,6 +37,9 @@ from gzkit.acceptance_store import acceptance_blockers
 from gzkit.adversary_workspace import materialize_adversary_workspace
 from gzkit.executables import find_executable, resolve_argv, resolve_executable
 from gzkit.git_spawn_boundary import isolated_git_env
+
+if TYPE_CHECKING:
+    from gzkit.req_kind_support import ScopeDispatcher
 
 # Canonical ARB steps whose receipts back a Heavy-lane completion.
 _REQUIRED_RECEIPT_STEPS: tuple[str, ...] = ("ruff", "typecheck", "unittest")
@@ -550,14 +554,26 @@ def _compute_blockers(
     return blockers
 
 
-def generate_evidence_packet(project_root: Path, brief_path: Path, obpi_id: str) -> EvidencePacket:
-    """Run the brief Demo + read receipts + run covers; build the EvidencePacket."""
+def generate_evidence_packet(
+    project_root: Path, brief_path: Path, obpi_id: str, *, dispatch_scope: ScopeDispatcher
+) -> EvidencePacket:
+    """Run the brief Demo + read receipts + run covers; build the EvidencePacket.
+
+    Acceptance's SUPPORT recheck runs through *dispatch_scope*, which the command layer
+    supplies (GHI #1267, item (c)).
+
+    Returns:
+        The packet: demo results, receipts, coverage counts and every blocker found.
+
+    """
     demos = run_demos(project_root, extract_demo_commands(brief_path))
     receipts = _collect_receipts(project_root)
     total, uncovered = _covers_counts(project_root, obpi_id)
     blockers = _compute_blockers(demos, receipts, uncovered)
-    blockers.extend(acceptance_blockers(project_root, obpi_id, stage="stage2"))
-    review_blockers = acceptance_blockers(project_root, obpi_id)
+    blockers.extend(
+        acceptance_blockers(project_root, obpi_id, stage="stage2", dispatch_scope=dispatch_scope)
+    )
+    review_blockers = acceptance_blockers(project_root, obpi_id, dispatch_scope=dispatch_scope)
     return EvidencePacket(
         obpi_id=obpi_id,
         generated_at=datetime.now(UTC).isoformat(),

@@ -32,6 +32,7 @@ from gzkit.acceptance_store import (
 )
 from gzkit.arb.paths import receipts_root
 from gzkit.cli import main
+from gzkit.commands.validate_cmd import dispatch_validator_scope
 from gzkit.mutation_witness import Mutation
 from gzkit.work_package_fence import fenced_packages
 from tests.commands.common import CliRunner, _quick_init
@@ -228,7 +229,9 @@ class TestTheContract(_PackageCase):
     def test_a_blocker_ending_in_a_period_reads_as_one_sentence(self) -> None:
         # output-contract: the shared refusal prose adds its own period to each blocker
         self._wp("initiate", _PACKAGE, "--operator-text", "go")
-        (blocker,) = acceptance_blockers(self.root, _PACKAGE)
+        (blocker,) = acceptance_blockers(
+            self.root, _PACKAGE, dispatch_scope=dispatch_validator_scope
+        )
         self.assertIn("not commenced. Required proof", blocker)
         self.assertNotIn("..", blocker)
 
@@ -263,15 +266,21 @@ class TestTheGate(_PackageCase):
         self._init()
         proof = self._proof()
         self._approve(proof)
-        self.assertTrue(acceptance_status(self.root, _PACKAGE).ready)
+        self.assertTrue(
+            acceptance_status(self.root, _PACKAGE, dispatch_scope=dispatch_validator_scope).ready
+        )
         self._review(proof)
-        self.assertFalse(acceptance_status(self.root, _PACKAGE).ready)
+        self.assertFalse(
+            acceptance_status(self.root, _PACKAGE, dispatch_scope=dispatch_validator_scope).ready
+        )
         self._refused("accept", _PACKAGE, "--evidence", "e")
 
     def test_accept_admits_a_ready_package(self) -> None:
         self._init()
         self._approve(self._proof())
-        self.assertTrue(acceptance_status(self.root, _PACKAGE).ready)
+        self.assertTrue(
+            acceptance_status(self.root, _PACKAGE, dispatch_scope=dispatch_validator_scope).ready
+        )
         with mock.patch("gzkit.commands.wp.footprint_refusal", return_value=None):
             self._wp("accept", _PACKAGE, "--evidence", "e")
 
@@ -373,7 +382,13 @@ class TestTheRoundBound(_PackageCase):
     def test_a_human_review_under_the_limit_keeps_the_count(self) -> None:
         self._init()
         self._refute(2)
-        record_human_review(self.root, _PACKAGE, attestor="g0", ruling="as it stands")
+        record_human_review(
+            self.root,
+            _PACKAGE,
+            attestor="g0",
+            ruling="as it stands",
+            dispatch_scope=dispatch_validator_scope,
+        )
         self.assertEqual(refuted_rounds(self.root, _PACKAGE), 2)
 
     def test_a_human_review_after_the_unblock_is_admitted(self) -> None:
@@ -381,7 +396,13 @@ class TestTheRoundBound(_PackageCase):
         self._refute(3)
         self._wp("block", _PACKAGE, "--reason", "r", "--next-action", "n")
         self._wp("unblock", _PACKAGE, "--ruling", "as it stands", "--operator", "g0")
-        record_human_review(self.root, _PACKAGE, attestor="g0", ruling="as it stands")
+        record_human_review(
+            self.root,
+            _PACKAGE,
+            attestor="g0",
+            ruling="as it stands",
+            dispatch_scope=dispatch_validator_scope,
+        )
 
     def test_an_identical_receipt_counts_once(self) -> None:
         self._init()
@@ -473,12 +494,16 @@ class TestTheReviewChannels(_PackageCase):
             "--reason", "no dispatch available",
         )  # fmt: skip
         self._review(self._proof(_REQ), verdict="accepted")
-        self.assertTrue(acceptance_status(self.root, _PACKAGE).ready)
+        self.assertTrue(
+            acceptance_status(self.root, _PACKAGE, dispatch_scope=dispatch_validator_scope).ready
+        )
 
     def test_any_other_delivery_needs_all_three_reviews(self) -> None:
         self._delivery()
         self._review(self._proof(_REQ), verdict="accepted")
-        self.assertFalse(acceptance_status(self.root, _PACKAGE).ready)
+        self.assertFalse(
+            acceptance_status(self.root, _PACKAGE, dispatch_scope=dispatch_validator_scope).ready
+        )
 
 
 class TestTheRoundLimitExit(_PackageCase):
@@ -557,14 +582,18 @@ class TestDeparture(_PackageCase):
         obligations = canonical_obligations(self.root, resolve_brief(self.root, _PACKAGE))
         self.assertEqual([item.id for item in obligations], ["REQ-8"])
         self._approve(self._proof("REQ-8"))
-        self.assertTrue(acceptance_status(self.root, _PACKAGE).ready)
+        self.assertTrue(
+            acceptance_status(self.root, _PACKAGE, dispatch_scope=dispatch_validator_scope).ready
+        )
 
     def test_a_departed_req_with_history_leaves_the_rest_acceptable(self) -> None:
         self._delivery()
         self._review(self._proof(_REQ))
         self._depart()
         self._approve(self._proof("REQ-8"))
-        self.assertTrue(acceptance_status(self.root, _PACKAGE).ready)
+        self.assertTrue(
+            acceptance_status(self.root, _PACKAGE, dispatch_scope=dispatch_validator_scope).ready
+        )
         report = json.loads(self._wp("acceptance", _PACKAGE, "status"))
         self.assertTrue(report["ready"])
 
@@ -704,6 +733,7 @@ class TestAMutationProof(ExecutionFixture):
                     expected_tests=[SELECTOR],
                 )
             ],
+            dispatch_scope=dispatch_validator_scope,
         )
 
     def test_killing_the_mutant_proves_a_catalog_req(self) -> None:
@@ -715,7 +745,13 @@ class TestAMutationProof(ExecutionFixture):
 
     def test_a_catalog_req_proof_still_needs_selectors(self) -> None:
         with self.assertRaisesRegex(ValueError, "BEHAVIOR proof requires"):
-            prove(self.root, self._contract(), _REQ, source=Path("src/engine.py"))
+            prove(
+                self.root,
+                self._contract(),
+                _REQ,
+                source=Path("src/engine.py"),
+                dispatch_scope=dispatch_validator_scope,
+            )
 
 
 if __name__ == "__main__":

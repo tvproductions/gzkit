@@ -21,6 +21,7 @@ from pydantic import ValidationError as PydanticValidationError
 from gzkit.acceptance_store import acceptance_blockers, round_bound_refusal
 from gzkit.cli.formatters import OutputFormatter
 from gzkit.commands.common import ensure_initialized, get_project_root
+from gzkit.commands.validate_cmd import dispatch_validator_scope
 from gzkit.core.exceptions import PolicyBreachError, ResourceNotFoundError
 from gzkit.events import BaselinedReq, OrderTransitionedEvent
 from gzkit.ledger import Ledger
@@ -346,7 +347,10 @@ def wp_order_accept_cmd(*, order_id: str, evidence: str, as_json: bool) -> None:
     if refusal := order_move_refusal(ledger, order, "accepted"):
         _refuse_move("accepted", refusal)
     refusal = round_bound_refusal(root, order.id)
-    blockers = [*acceptance_blockers(root, order.id), *([refusal] if refusal else [])]
+    blockers = [
+        *acceptance_blockers(root, order.id, dispatch_scope=dispatch_validator_scope),
+        *([refusal] if refusal else []),
+    ]
     outside = None if blockers else footprint_refusal(root, package, ledger)
     # Ruling 84: a stopped order is excused, but whether it read ready is booked.
     if not order_took_stopping_exit(ledger, order.id):

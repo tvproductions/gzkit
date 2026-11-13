@@ -1091,12 +1091,27 @@ def _ep_session_green_gate(root: Path) -> list[ValidationError]:
     return audit_session_green_gate(root)
 
 
+def _refuse_every_scope(_scope: str, _project_root: Path) -> bool:
+    """Report every scope unclean: a dispatcher for a control that dispatches none.
+
+    The closeout-proof fixture holds only a BEHAVIOR REQ, so no SUPPORT scope is ever
+    dispatched. Passing the command layer's real dispatcher would make the control load it,
+    and the claim would then name it as a gate target, falsely enrolling every gate that
+    loads the dispatcher (GHI #1267, item (c)).
+
+    Returns:
+        False, for every scope.
+
+    """
+    return False
+
+
 def _ep_closeout_proof(root: Path) -> list[ValidationError]:
     from gzkit.governance.trust_audits.closeout_proof import (  # noqa: PLC0415
         validate_closeout_proof,
     )
 
-    return validate_closeout_proof(root, adr_id="ADR-0.0.99")
+    return validate_closeout_proof(root, adr_id="ADR-0.0.99", dispatch_scope=_refuse_every_scope)
 
 
 def _ep_kind_invariance(root: Path) -> list[ValidationError]:

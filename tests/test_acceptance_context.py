@@ -6,6 +6,7 @@ import unittest
 from gzkit.acceptance_context import build_review_context
 from gzkit.acceptance_execution import canonical_obligations, input_digest
 from gzkit.acceptance_store import acceptance_status, load_history, record_proof, record_review
+from gzkit.commands.validate_cmd import dispatch_validator_scope
 from gzkit.pipeline_dispatch import _acceptance_review_frame
 from tests import test_acceptance_store as store_tests
 from tests.test_acceptance_execution import REQ
@@ -40,11 +41,18 @@ class ReviewContextTests(unittest.TestCase):
         )
         record_proof(f.root, store_tests.OBPI, current)
         with self.assertRaisesRegex(ValueError, "roster"):
-            context = build_review_context(f.root, store_tests.OBPI, stage="stage2")
+            context = build_review_context(
+                f.root, store_tests.OBPI, stage="stage2", dispatch_scope=dispatch_validator_scope
+            )
             _acceptance_review_frame("spec", context.model_dump_json())
 
     def test_context_example_uses_current_identity_and_real_closure_schema(self):
-        context = build_review_context(self.fixture.root, store_tests.OBPI, stage="stage2")
+        context = build_review_context(
+            self.fixture.root,
+            store_tests.OBPI,
+            stage="stage2",
+            dispatch_scope=dispatch_validator_scope,
+        )
         frame = "\n".join(_acceptance_review_frame("spec", context.model_dump_json()))
         blocks = frame.split("```json\n")[1:]
         objects = [json.loads(block.split("\n```", 1)[0]) for block in blocks]
@@ -68,7 +76,12 @@ class ReviewContextTests(unittest.TestCase):
             store_tests.OBPI,
             self.fixture.receipt(self.proof, findings=[finding], verdict="refuted"),
         )
-        context = build_review_context(self.fixture.root, store_tests.OBPI, stage="stage2")
+        context = build_review_context(
+            self.fixture.root,
+            store_tests.OBPI,
+            stage="stage2",
+            dispatch_scope=dispatch_validator_scope,
+        )
         frame = "\n".join(_acceptance_review_frame("spec", context.model_dump_json()))
         objects = [json.loads(block.split("\n```", 1)[0]) for block in frame.split("```json\n")[1:]]
         response = next(obj for obj in objects if obj.get("schema") == "gzkit.acceptance.review.v1")
@@ -84,12 +97,20 @@ class ReviewContextTests(unittest.TestCase):
         )
         review = record_review(self.fixture.root, store_tests.OBPI, receipt)
         self.assertEqual(review.closures[0].finding_id, finding["id"])
-        self.assertFalse(acceptance_status(self.fixture.root, store_tests.OBPI).ready)
+        self.assertFalse(
+            acceptance_status(
+                self.fixture.root, store_tests.OBPI, dispatch_scope=dispatch_validator_scope
+            ).ready
+        )
         for stage in ("quality", "adversarial"):
             record_review(
                 self.fixture.root, store_tests.OBPI, self.fixture.receipt(self.proof, stage)
             )
-        self.assertTrue(acceptance_status(self.fixture.root, store_tests.OBPI).ready)
+        self.assertTrue(
+            acceptance_status(
+                self.fixture.root, store_tests.OBPI, dispatch_scope=dispatch_validator_scope
+            ).ready
+        )
 
     def test_malformed_or_mismapped_responses_cannot_gain_credit(self):
         for changes in (
@@ -126,7 +147,11 @@ class ReviewContextTests(unittest.TestCase):
         """WP3: synthetic fresh transport repairs shape, never substantive judgment."""
         f = self.fixture
         f.accept(self.proof)
-        self.assertTrue(acceptance_status(f.root, store_tests.OBPI).ready)
+        self.assertTrue(
+            acceptance_status(
+                f.root, store_tests.OBPI, dispatch_scope=dispatch_validator_scope
+            ).ready
+        )
         source = f.root / "src/engine.py"
         before_source = source.read_bytes()
         original = f.receipt(
@@ -170,7 +195,9 @@ class ReviewContextTests(unittest.TestCase):
         for name, value in judgment.items():
             if name != "schema":
                 self.assertEqual(retained.model_dump(mode="json")[name], value)
-        status = acceptance_status(f.root, store_tests.OBPI)
+        status = acceptance_status(
+            f.root, store_tests.OBPI, dispatch_scope=dispatch_validator_scope
+        )
         self.assertFalse(status.ready)
         self.assertEqual(status.open_findings, ("F-required-oracle",))
         self.assertEqual(original_path.read_bytes(), original_bytes)
@@ -199,7 +226,9 @@ class ReviewContextTests(unittest.TestCase):
         )
         f.write("src/engine.py", "def double(value):\n    return value + value\n")
         current = f.synthetic_proof()
-        context = build_review_context(f.root, store_tests.OBPI, stage="stage2")
+        context = build_review_context(
+            f.root, store_tests.OBPI, stage="stage2", dispatch_scope=dispatch_validator_scope
+        )
         self.assertIn(self.proof.id, [proof.id for proof in context.proofs])
 
         frame = "\n".join(_acceptance_review_frame("spec", context.model_dump_json()))
@@ -213,7 +242,10 @@ class ReviewContextTests(unittest.TestCase):
 
     def test_contradictory_context_is_rejected_before_dispatch(self):
         context = build_review_context(
-            self.fixture.root, store_tests.OBPI, stage="stage2"
+            self.fixture.root,
+            store_tests.OBPI,
+            stage="stage2",
+            dispatch_scope=dispatch_validator_scope,
         ).model_dump(mode="json")
         for changes in (
             {"input_digest": "wrong-subject"},

@@ -21,6 +21,8 @@ import unittest
 from datetime import UTC
 from pathlib import Path
 
+from gzkit.commands.validate_cmd import dispatch_validator_scope
+
 # This import raises ImportError until closeout_proof.py is created.
 # Every test in this file fails RED as required.
 from gzkit.governance.trust_audits.closeout_proof import validate_closeout_proof
@@ -115,7 +117,7 @@ class TestCloseoutProofExitCodes(unittest.TestCase):
     @covers("REQ-0.0.69-03-01")
     def test_no_in_closeout_ceremony_returns_empty_list(self) -> None:
         """No in-progress ceremony → no in-closeout ADRs → empty list (exit 0)."""
-        errors = validate_closeout_proof(self.root)
+        errors = validate_closeout_proof(self.root, dispatch_scope=dispatch_validator_scope)
         self.assertEqual(errors, [])
 
     @covers("REQ-0.0.69-03-01")
@@ -132,7 +134,7 @@ class TestCloseoutProofExitCodes(unittest.TestCase):
         # decorator spelling on purpose: the covers scanner honors comment form,
         # so a comment naming the decorator reads as a citation (GHI #729).
 
-        errors = validate_closeout_proof(self.root)
+        errors = validate_closeout_proof(self.root, dispatch_scope=dispatch_validator_scope)
 
         self.assertGreater(len(errors), 0, "Unproven BEHAVIOR REQ must produce non-empty list")
         self.assertIn("closeout_proof", {e.type for e in errors})
@@ -149,7 +151,7 @@ class TestCloseoutProofExitCodes(unittest.TestCase):
         )
         _write_covers_test(self.root, "REQ-0.0.99-01-01")
 
-        errors = validate_closeout_proof(self.root)
+        errors = validate_closeout_proof(self.root, dispatch_scope=dispatch_validator_scope)
 
         self.assertEqual(errors, [], f"Proven BEHAVIOR REQ must return empty list; got: {errors}")
 
@@ -171,8 +173,8 @@ class TestCloseoutProofExitCodes(unittest.TestCase):
         stored = list(self.root.rglob("*.closeout_proof.json"))
         self.assertEqual(stored, [], "Precondition: no stored proof blocks in temp root")
 
-        first = validate_closeout_proof(self.root)
-        second = validate_closeout_proof(self.root)
+        first = validate_closeout_proof(self.root, dispatch_scope=dispatch_validator_scope)
+        second = validate_closeout_proof(self.root, dispatch_scope=dispatch_validator_scope)
 
         self.assertEqual(
             [e.type for e in first],
@@ -215,12 +217,14 @@ class TestCloseoutProofExitCodes(unittest.TestCase):
 
         # gz-check sweep (no adr_id): parked ceremony excluded → empty.
         self.assertEqual(
-            validate_closeout_proof(self.root),
+            validate_closeout_proof(self.root, dispatch_scope=dispatch_validator_scope),
             [],
             "Parked ceremony (72h stale) must be excluded from the gz-check sweep",
         )
         # ceremony-gate path (explicit adr_id): freshness bypassed → still enforces.
-        gated = validate_closeout_proof(self.root, adr_id=adr_id)
+        gated = validate_closeout_proof(
+            self.root, adr_id=adr_id, dispatch_scope=dispatch_validator_scope
+        )
         self.assertGreater(
             len(gated),
             0,
@@ -258,7 +262,7 @@ class TestCloseoutProofRerunCommand(unittest.TestCase):
             ["REQ-0.0.99-01-01 [SUPPORT]: docs cover topic X -- uv run gz validate --documents"],
         )
 
-        errors = validate_closeout_proof(self.root)
+        errors = validate_closeout_proof(self.root, dispatch_scope=dispatch_validator_scope)
 
         self.assertGreater(len(errors), 0, "SUPPORT REQ without ledger proof must be unproven")
         combined = " ".join(e.message for e in errors)
@@ -279,7 +283,7 @@ class TestCloseoutProofRerunCommand(unittest.TestCase):
             ["REQ-0.0.99-01-01 [SUPPORT]: docs cover topic X -- uv run gz validate --documents"],
         )
 
-        errors = validate_closeout_proof(self.root)
+        errors = validate_closeout_proof(self.root, dispatch_scope=dispatch_validator_scope)
 
         for e in errors:
             self.assertNotIn("Traceback", e.message, "Error must not inline Python tracebacks")
@@ -361,7 +365,7 @@ class TestCloseoutProofKindTagRequired(unittest.TestCase):
             ["REQ-0.0.99-01-01: system does X with no kind tag"],
         )
 
-        errors = validate_closeout_proof(self.root)
+        errors = validate_closeout_proof(self.root, dispatch_scope=dispatch_validator_scope)
 
         self.assertGreater(
             len(errors),
@@ -386,7 +390,7 @@ class TestCloseoutProofKindTagRequired(unittest.TestCase):
         )
         # No @covers test → unproven via proof channel, not tag check.
 
-        errors = validate_closeout_proof(self.root)
+        errors = validate_closeout_proof(self.root, dispatch_scope=dispatch_validator_scope)
 
         self.assertGreater(len(errors), 0, "No @covers → unproven; tag itself must not block")
         self.assertIn(
@@ -417,7 +421,9 @@ class TestCloseoutProofFailOpenSeams(unittest.TestCase):
         ceremonies_dir.mkdir(parents=True, exist_ok=True)
         (ceremonies_dir / f"{adr_id}.ceremony.json").write_text("{not valid json", encoding="utf-8")
 
-        errors = validate_closeout_proof(self.root, adr_id=adr_id)
+        errors = validate_closeout_proof(
+            self.root, adr_id=adr_id, dispatch_scope=dispatch_validator_scope
+        )
         self.assertTrue(
             errors,
             "gate path must fail-close on a corrupt ceremony file, not silently pass",
@@ -435,7 +441,9 @@ class TestCloseoutProofFailOpenSeams(unittest.TestCase):
         (adr_dir / "obpis").mkdir(parents=True, exist_ok=True)
         (adr_dir / "obpis" / "OBPI-0.0.99-01-unreadable.md").mkdir()
 
-        errors = validate_closeout_proof(self.root, adr_id=adr_id)
+        errors = validate_closeout_proof(
+            self.root, adr_id=adr_id, dispatch_scope=dispatch_validator_scope
+        )
         self.assertTrue(
             errors,
             "gate path must fail-close when a discovered brief cannot be read",
@@ -451,7 +459,7 @@ class TestCloseoutProofFailOpenSeams(unittest.TestCase):
         )
 
         # Must not raise; the corrupt sibling is skipped, not promoted to a failure.
-        errors = validate_closeout_proof(self.root)
+        errors = validate_closeout_proof(self.root, dispatch_scope=dispatch_validator_scope)
         self.assertEqual(
             [],
             errors,
@@ -490,7 +498,7 @@ class TestCloseoutProofSupportGrandfatherMalformed(unittest.TestCase):
         (data_dir / "support_proof_grandfather.json").write_text("not valid json", encoding="utf-8")
 
         # Must not raise pydantic.ValidationError -- it must convert to a finding.
-        errors = validate_closeout_proof(self.root)
+        errors = validate_closeout_proof(self.root, dispatch_scope=dispatch_validator_scope)
 
         self.assertGreater(
             len(errors), 0, "malformed grandfather file must be reported as unproven"
@@ -569,7 +577,7 @@ class TestCloseoutProofExemptions(unittest.TestCase):
         # No @covers test — but the OBPI is withdrawn, so it must be skipped.
         _write_ledger_withdrawn(self.root, "OBPI-0.0.99-05-withdrawn-surface")
 
-        errors = validate_closeout_proof(self.root)
+        errors = validate_closeout_proof(self.root, dispatch_scope=dispatch_validator_scope)
 
         self.assertEqual(
             errors, [], f"Withdrawn OBPI's REQ must be skipped, not flagged; got: {errors}"
@@ -588,7 +596,7 @@ class TestCloseoutProofExemptions(unittest.TestCase):
         # No @covers test — but the REQ is waived, so it must be skipped.
         _write_behave_waiver(self.root, "OBPI-0.0.99-02-primitives", ["REQ-0.0.99-02-07"])
 
-        errors = validate_closeout_proof(self.root)
+        errors = validate_closeout_proof(self.root, dispatch_scope=dispatch_validator_scope)
 
         self.assertEqual(errors, [], f"Waived REQ must be skipped, not flagged; got: {errors}")
 
@@ -609,7 +617,7 @@ class TestCloseoutProofExemptions(unittest.TestCase):
         _write_ledger_withdrawn(self.root, "OBPI-0.0.99-99-other")
         _write_behave_waiver(self.root, "OBPI-0.0.99-88-other", ["REQ-0.0.99-88-01"])
 
-        errors = validate_closeout_proof(self.root)
+        errors = validate_closeout_proof(self.root, dispatch_scope=dispatch_validator_scope)
 
         self.assertGreater(
             len(errors), 0, "A genuinely uncovered, non-exempt BEHAVIOR REQ must still flag"
@@ -670,7 +678,7 @@ class TestCloseoutProofEnforcementFence(unittest.TestCase):
             ],
         )
 
-        errors = validate_closeout_proof(self.root)
+        errors = validate_closeout_proof(self.root, dispatch_scope=dispatch_validator_scope)
 
         combined = " ".join(e.message for e in errors)
         self.assertIn(
@@ -693,7 +701,7 @@ class TestCloseoutProofEnforcementFence(unittest.TestCase):
             ["REQ-0.0.99-02-01 [STRUCTURAL-FENCE]: the marker is the single state source"],
         )
 
-        errors = validate_closeout_proof(self.root)
+        errors = validate_closeout_proof(self.root, dispatch_scope=dispatch_validator_scope)
 
         fence_errors = [e for e in errors if "REQ-0.0.99-02-01" in e.message]
         self.assertEqual(
@@ -742,7 +750,7 @@ class TestCloseoutProofMetaPropertyDeferral(unittest.TestCase):
             "gzkit.governance.trust_audits.closeout_proof._enforcement_floor_green",
             return_value=True,
         ):
-            errors = validate_closeout_proof(self.root)
+            errors = validate_closeout_proof(self.root, dispatch_scope=dispatch_validator_scope)
         fence_errors = [e for e in errors if "REQ-0.0.99-01-01" in e.message]
         self.assertEqual(
             fence_errors, [], f"meta-property fence must defer to a green floor; got {fence_errors}"
@@ -758,7 +766,7 @@ class TestCloseoutProofMetaPropertyDeferral(unittest.TestCase):
             "gzkit.governance.trust_audits.closeout_proof._enforcement_floor_green",
             return_value=False,
         ):
-            errors = validate_closeout_proof(self.root)
+            errors = validate_closeout_proof(self.root, dispatch_scope=dispatch_validator_scope)
         fence_errors = [e for e in errors if "REQ-0.0.99-01-01" in e.message]
         self.assertGreater(
             len(fence_errors), 0, "meta-property fence must fail when the enforcement floor is RED"
@@ -783,7 +791,7 @@ class TestCloseoutProofMetaPropertyDeferral(unittest.TestCase):
             "gzkit.governance.trust_audits.closeout_proof._enforcement_floor_green",
             return_value=True,
         ):
-            errors = validate_closeout_proof(self.root)
+            errors = validate_closeout_proof(self.root, dispatch_scope=dispatch_validator_scope)
         fence_errors = [e for e in errors if "REQ-0.0.99-01-01" in e.message]
         self.assertGreater(
             len(fence_errors),

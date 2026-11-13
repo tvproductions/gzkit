@@ -1099,7 +1099,7 @@
     {
       "file": "src/gzkit/req_kind.py",
       "function": "compute_three_channel_coverage",
-      "score": 38
+      "score": 33
     },
     {
       "file": "src/gzkit/rules/__init__.py",

@@ -26,6 +26,8 @@ from gzkit.obpi_lifecycle import WITHDRAWN_EVENTS
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+    from gzkit.req_kind_support import ScopeDispatcher
+
 _REQ_LINE_RE = re.compile(
     rf"^\s*-\s*\[[ xX]\]\s*({REQ_ID_BODY_PLAIN})",
     re.IGNORECASE,
@@ -237,6 +239,7 @@ def _check_req(
     *,
     waived_reqs: set[str],
     floor_green: Callable[[], bool],
+    dispatch_scope: ScopeDispatcher,
 ) -> ValidationError | None:
     """Recompute one REQ's proof over its channel; return an error if unproven."""
     from gzkit.req_kind_fence import (
@@ -264,7 +267,9 @@ def _check_req(
     if kind == "SUPPORT":
         req_text = line.split(":", 1)[-1].strip() if ":" in line else line
         try:
-            proof_status = resolve_support_proof(req_text, project_root, req_id=req_id)
+            proof_status = resolve_support_proof(
+                req_text, project_root, dispatch_scope=dispatch_scope, req_id=req_id
+            )
         except PydanticValidationError as exc:
             return _err(
                 artifact,
@@ -336,6 +341,7 @@ def _check_brief(
     floor_green: Callable[[], bool],
     *,
     fail_close: bool,
+    dispatch_scope: ScopeDispatcher,
 ) -> list[ValidationError]:
     """Recompute proof for every REQ in one OBPI brief.
 
@@ -366,6 +372,7 @@ def _check_brief(
             line,
             waived_reqs=waived_reqs,
             floor_green=floor_green,
+            dispatch_scope=dispatch_scope,
         )
         for req_id, kind, line in _parse_reqs_from_brief(body)
     )
@@ -383,9 +390,13 @@ def _resolve_ceremony_files(ceremonies_dir: Path, adr_id: str | None) -> list[Pa
 def validate_closeout_proof(
     project_root: Path,
     *,
+    dispatch_scope: ScopeDispatcher,
     adr_id: str | None = None,
 ) -> list[ValidationError]:
     """Recompute per-REQ proof for in-closeout ADRs over three channels.
+
+    A SUPPORT REQ's cited validator scope runs through *dispatch_scope*, which the
+    command layer supplies (GHI #1267, item (c)).
 
     Returns an empty list when all REQs are proven (exit 0).
     Returns ValidationError entries when any REQ is unproven (exit 3).
@@ -451,6 +462,7 @@ def validate_closeout_proof(
                     waived_reqs,
                     floor_green,
                     fail_close=not scan_all,
+                    dispatch_scope=dispatch_scope,
                 )
             )
 

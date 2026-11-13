@@ -8347,11 +8347,6 @@
       "count": 1
     },
     {
-      "file": "src/gzkit/req_kind_support.py",
-      "rule": "TC003",
-      "count": 1
-    },
-    {
       "file": "src/gzkit/roles.py",
       "rule": "S105",
       "count": 1

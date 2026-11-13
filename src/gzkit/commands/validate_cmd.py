@@ -545,7 +545,12 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
         True,
         lambda r, _f: _validate_task_envelope_coherence(r),
     ),
-    _ScopeEntry("closeout_proof", "explicit", True, lambda r, _f: _ta().validate_closeout_proof(r)),
+    _ScopeEntry(
+        "closeout_proof",
+        "explicit",
+        True,
+        lambda r, _f: _ta().validate_closeout_proof(r, dispatch_scope=dispatch_validator_scope),
+    ),
     _ScopeEntry("okf_conformance", "explicit", True, lambda r, _f: _ta().audit_okf_conformance(r)),
     _ScopeEntry(
         "deprecated_verb_prescription",
@@ -632,6 +637,29 @@ def _explicit_scope_runners(
         for e in VALIDATOR_REGISTRY
         if e.tier == "explicit"
     }
+
+
+def dispatch_validator_scope(scope: str, project_root: Path) -> bool:
+    """Run one validator scope in-process: the real ``ScopeDispatcher`` the command layer supplies.
+
+    Every scope resolves through the registry-derived runner maps. GHI #630
+    needed a hand-maintained early-return map here because qc-binding,
+    fidelity-presence and waiver-ratchet were absent from ``VALIDATOR_REGISTRY``,
+    so a SUPPORT REQ citing one read ``unproven-support`` regardless of truth;
+    registering the three retired it. It lives here, not in ``req_kind_support``,
+    so the SUPPORT channel never names the command layer (GHI #1267, item (c)).
+
+    Returns:
+        True when the scope's runner returns no errors; False when it returns errors or no runner is
+        registered for the scope.
+
+    """
+    default_runners = _default_scope_runners(project_root, frontmatter_adr=None)
+    explicit_runners = _explicit_scope_runners(project_root)
+    runner = default_runners.get(scope) or explicit_runners.get(scope)
+    if runner is None:
+        return False
+    return len(runner()) == 0
 
 
 def _sensitivity_umbrella_runner(project_root: Path) -> list[ValidationError]:

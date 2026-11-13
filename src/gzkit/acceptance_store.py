@@ -74,6 +74,8 @@ from gzkit.work_package_ledger import package_rows
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
+    from gzkit.req_kind_support import ScopeDispatcher
+
 
 class Contract(BaseModel):
     """The canonical acceptance population captured before verification."""
@@ -568,7 +570,9 @@ def _human_review(payload: dict[str, Any]) -> Review:
     )
 
 
-def record_human_review(root: Path, obpi_id: str, *, attestor: str, ruling: str) -> Review:
+def record_human_review(
+    root: Path, obpi_id: str, *, attestor: str, ruling: str, dispatch_scope: ScopeDispatcher
+) -> Review:
     """Record explicit human judgment of the displayed current proof and findings.
 
     Caller authorization is the same operator-verbatim boundary as attestation;
@@ -590,7 +594,7 @@ def record_human_review(root: Path, obpi_id: str, *, attestor: str, ruling: str)
             raise ValueError(refusal)
     history = load_history(root, obpi_id)
     current = {proof.obligation_id: proof for proof in history.proofs}
-    status = acceptance_status(root, obpi_id)
+    status = acceptance_status(root, obpi_id, dispatch_scope=dispatch_scope)
     known_findings = {
         finding.id: finding for review in history.reviews for finding in review.findings
     }
@@ -652,8 +656,18 @@ def acceptance_status(
     *,
     stage: Literal["stage2", "stage4"] = "stage4",
     obligation_ids: tuple[str, ...] | None = None,
+    dispatch_scope: ScopeDispatcher,
 ) -> Readiness:
-    """Derive readiness from current obligations, bytes and durable closure history."""
+    """Derive readiness from current obligations, bytes and durable closure history.
+
+    A SUPPORT obligation's cited validator scope is rechecked through *dispatch_scope*,
+    which the command layer supplies (GHI #1267, item (c)).
+
+    Returns:
+        The readiness: ready only when the recorded acceptance is complete and every live
+        resolver passes, with each blocker named; never ready on a read failure.
+
+    """
     try:
         brief = resolve_brief(root, obpi_id)
         history = load_history(root, obpi_id)
@@ -689,7 +703,9 @@ def acceptance_status(
             obligation_ids=obligation_ids,
             required_review_stages=required_stages,
         )
-        live_blockers = _live_proof_blockers(root, current, history.proofs, obligation_ids)
+        live_blockers = _live_proof_blockers(
+            root, current, history.proofs, obligation_ids, dispatch_scope
+        )
         return Readiness(
             ready=status.ready and not live_blockers,
             blockers=(*status.blockers, *live_blockers),
@@ -704,6 +720,7 @@ def _live_proof_blockers(
     current: list[Obligation],
     proofs: list[Proof],
     obligation_ids: tuple[str, ...] | None,
+    dispatch_scope: ScopeDispatcher,
 ) -> list[str]:
     """Recheck explicitly declared conditions and the two live canonical resolvers."""
     live_blockers = []
@@ -718,7 +735,9 @@ def _live_proof_blockers(
         if obligation_ids is not None and obligation.id not in obligation_ids:
             continue
         if obligation.kind == "SUPPORT":
-            result = resolve_support_proof(obligation.statement, root, req_id=obligation.id)
+            result = resolve_support_proof(
+                obligation.statement, root, dispatch_scope=dispatch_scope, req_id=obligation.id
+            )
         elif obligation.kind == "STRUCTURAL-FENCE":
             result = resolve_fence_proof(obligation.id, root, obligation.statement)
         else:
@@ -741,10 +760,14 @@ def acceptance_verb(obpi_id: str) -> str:
 
 
 def acceptance_blockers(
-    root: Path, obpi_id: str, *, stage: Literal["stage2", "stage4"] = "stage4"
+    root: Path,
+    obpi_id: str,
+    *,
+    dispatch_scope: ScopeDispatcher,
+    stage: Literal["stage2", "stage4"] = "stage4",
 ) -> list[str]:
     """Shared refusal prose for actual stage and completion consumers."""
-    status = acceptance_status(root, obpi_id, stage=stage)
+    status = acceptance_status(root, obpi_id, stage=stage, dispatch_scope=dispatch_scope)
     if status.ready:
         return []
     return [
@@ -756,9 +779,11 @@ def acceptance_blockers(
     ]
 
 
-def completion_review(root: Path, obpi_id: str) -> CompletionReview:
+def completion_review(
+    root: Path, obpi_id: str, *, dispatch_scope: ScopeDispatcher
+) -> CompletionReview:
     """Retain all required approval/closure provenance and the actual degraded floor."""
-    blockers = acceptance_blockers(root, obpi_id)
+    blockers = acceptance_blockers(root, obpi_id, dispatch_scope=dispatch_scope)
     if blockers:
         raise ValueError("; ".join(blockers))
     history = load_history(root, obpi_id)

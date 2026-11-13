@@ -15,6 +15,7 @@ from pathlib import Path
 
 from gzkit.acceptance import ReviewResponse
 from gzkit.acceptance_store import acceptance_status, load_history, record_review
+from gzkit.commands.validate_cmd import dispatch_validator_scope
 from gzkit.pipeline_dispatch import (
     DispatchTask,
     TaskComplexity,
@@ -175,7 +176,11 @@ class TestVerificationGapsAreNonGoverning(unittest.TestCase):
     def test_gaps_change_no_readiness_outcome(self) -> None:
         for stage in ("spec", "quality", "adversarial"):
             record_review(self.fixture.root, store_tests.OBPI, self._receipt_with_gaps(stage))
-        self.assertTrue(acceptance_status(self.fixture.root, store_tests.OBPI).ready)
+        self.assertTrue(
+            acceptance_status(
+                self.fixture.root, store_tests.OBPI, dispatch_scope=dispatch_validator_scope
+            ).ready
+        )
 
     def test_gaps_grant_no_approval(self) -> None:
         receipt = self._receipt_with_gaps("spec")
@@ -184,7 +189,9 @@ class TestVerificationGapsAreNonGoverning(unittest.TestCase):
         receipt["stdout_tail"] = json.dumps(payload)
         review = record_review(self.fixture.root, store_tests.OBPI, receipt)
         self.assertEqual(review.accepted_proof_ids, ())
-        blockers = acceptance_status(self.fixture.root, store_tests.OBPI).blockers
+        blockers = acceptance_status(
+            self.fixture.root, store_tests.OBPI, dispatch_scope=dispatch_validator_scope
+        ).blockers
         self.assertTrue(any(REQ in b and "spec" in b for b in blockers), blockers)
 
 

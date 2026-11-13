@@ -12,6 +12,7 @@ from gzkit.acceptance_execution import (
     input_digest,
     prove,
 )
+from gzkit.commands.validate_cmd import dispatch_validator_scope
 from gzkit.mutation_witness import Mutation
 
 REQ = "REQ-0.1.0-01-01"
@@ -86,6 +87,7 @@ class ExecutionFixture(unittest.TestCase):
                     expected_tests=[SELECTOR],
                 )
             ],
+            dispatch_scope=dispatch_validator_scope,
         )
 
 
@@ -97,9 +99,21 @@ class AcceptanceInputTests(ExecutionFixture):
             return_value=({"control": "killed"}, True),
         ):
             with patch.dict("os.environ", {"ENGINE_MODE": "one"}):
-                first = prove(self.root, self.brief, REQ, environment_keys=("ENGINE_MODE",))
+                first = prove(
+                    self.root,
+                    self.brief,
+                    REQ,
+                    environment_keys=("ENGINE_MODE",),
+                    dispatch_scope=dispatch_validator_scope,
+                )
             with patch.dict("os.environ", {"ENGINE_MODE": "two"}):
-                changed = prove(self.root, self.brief, REQ, environment_keys=("ENGINE_MODE",))
+                changed = prove(
+                    self.root,
+                    self.brief,
+                    REQ,
+                    environment_keys=("ENGINE_MODE",),
+                    dispatch_scope=dispatch_validator_scope,
+                )
         self.assertEqual(first.input_digest, changed.input_digest)
         self.assertNotEqual(first.claim_digest, changed.claim_digest)
         self.assertEqual(first.environment_keys, ("ENGINE_MODE",))
@@ -233,6 +247,7 @@ class AcceptanceInputTests(ExecutionFixture):
                     mutations=[
                         Mutation(find="2", replace="3", label="wrong", expected_tests=[SELECTOR])
                     ],
+                    dispatch_scope=dispatch_validator_scope,
                 )
             run.assert_not_called()
 
@@ -249,6 +264,7 @@ class AcceptanceInputTests(ExecutionFixture):
                         find="4", replace="6", label="changed oracle", expected_tests=[SELECTOR]
                     )
                 ],
+                dispatch_scope=dispatch_validator_scope,
             )
 
     def test_parent_contract_change_invalidates_and_history_does_not(self):
@@ -305,6 +321,7 @@ class ExecutedBehaviorTests(ExecutionFixture):
                     expected_tests=[SELECTOR],
                 )
             ],
+            dispatch_scope=dispatch_validator_scope,
         )
         self.assertFalse(proof.valid)
         self.assertEqual(
@@ -328,6 +345,7 @@ class ExecutedBehaviorTests(ExecutionFixture):
                     expected_tests=[SELECTOR],
                 )
             ],
+            dispatch_scope=dispatch_validator_scope,
         )
         evidence = json.loads(proof.evidence)
         self.assertEqual(evidence["sweep"]["witnesses"][0]["outcome"], "killed")
@@ -343,7 +361,7 @@ class ExistingProofChannelTests(ExecutionFixture):
             "## Boundary Invariants\nBI-01: Identity is retained (OBPI-01).\n",
         )
         self.brief.write_text(BRIEF.replace("[BEHAVIOR]", "[STRUCTURAL-FENCE]"), encoding="utf-8")
-        proof = prove(self.root, self.brief, REQ)
+        proof = prove(self.root, self.brief, REQ, dispatch_scope=dispatch_validator_scope)
         self.assertTrue(proof.valid)
         evidence = json.loads(proof.evidence)
         self.assertEqual(evidence["resolver"], "gzkit.req_kind_fence.resolve_fence_proof")
@@ -352,12 +370,12 @@ class ExistingProofChannelTests(ExecutionFixture):
 
     def test_missing_fence_anchor_does_not_generate_valid_proof(self):
         self.brief.write_text(BRIEF.replace("[BEHAVIOR]", "[STRUCTURAL-FENCE]"), encoding="utf-8")
-        proof = prove(self.root, self.brief, REQ)
+        proof = prove(self.root, self.brief, REQ, dispatch_scope=dispatch_validator_scope)
         self.assertFalse(proof.valid)
         self.assertEqual(json.loads(proof.evidence)["result"], "unproven-fence")
 
     def test_undeclared_support_witness_is_invalid(self):
         self.brief.write_text(BRIEF.replace("[BEHAVIOR]", "[SUPPORT]"), encoding="utf-8")
-        proof = prove(self.root, self.brief, REQ)
+        proof = prove(self.root, self.brief, REQ, dispatch_scope=dispatch_validator_scope)
         self.assertFalse(proof.valid)
         self.assertEqual(json.loads(proof.evidence)["result"], "undeclared-support")

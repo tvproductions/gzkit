@@ -22,6 +22,7 @@ from gzkit.arb.paths import receipts_root
 from gzkit.cli.helpers.exit_codes import EXIT_USER_ERROR
 from gzkit.commands.common import get_project_root
 from gzkit.commands.obpi_precomplete import ObpiEntryError, resolve_obpi_at_entry
+from gzkit.commands.validate_cmd import dispatch_validator_scope
 from gzkit.config import GzkitConfig
 from gzkit.mutation_witness import Mutation
 from gzkit.pipeline_runtime import RunCrossing, record_run_position
@@ -219,6 +220,7 @@ def _execute_proof(root: Path, obpi_id: str, specification: str | None) -> tuple
         mutations=request.mutations,
         selectors=request.selectors,
         environment_keys=tuple(request.environment_keys),
+        dispatch_scope=dispatch_validator_scope,
     )
     record_proof(root, obpi_id, proof)
     return proof.model_dump(mode="json"), proof.valid
@@ -292,7 +294,9 @@ def _execute_human_review(
     """
     if not attestor or not ruling:
         raise HumanReviewRequiresRulingError
-    review = record_human_review(root, obpi_id, attestor=attestor, ruling=ruling)
+    review = record_human_review(
+        root, obpi_id, attestor=attestor, ruling=ruling, dispatch_scope=dispatch_validator_scope
+    )
     _record_review_round(root, launch_id)
     return review.model_dump(mode="json"), True
 
@@ -302,6 +306,10 @@ def _status_report(
 ) -> tuple[dict, bool]:
     """Assemble the current contract and retained evidence alongside readiness."""
     context = build_review_context(
-        root, obpi_id, stage=stage, obligation_ids=tuple(req_ids) if req_ids else None
+        root,
+        obpi_id,
+        stage=stage,
+        obligation_ids=tuple(req_ids) if req_ids else None,
+        dispatch_scope=dispatch_validator_scope,
     )
     return context.model_dump(mode="json"), context.ready

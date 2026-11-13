@@ -34,6 +34,7 @@ from gzkit.acceptance_store import (
     record_proof,
     record_review,
 )
+from gzkit.commands.validate_cmd import dispatch_validator_scope
 from gzkit.ledger_events import acceptance_recorded_event
 from tests.test_acceptance_execution import REQ, ExecutionFixture
 from tests.test_acceptance_store import captured_receipt
@@ -104,7 +105,9 @@ class CitedApprovalTests(ExecutionFixture):
             self.fail(f"refused a review this contract admits: {exc}")
 
     def assert_spec_approval_counts(self):
-        blockers = acceptance_status(self.root, OBPI, stage="stage2").blockers
+        blockers = acceptance_status(
+            self.root, OBPI, stage="stage2", dispatch_scope=dispatch_validator_scope
+        ).blockers
         self.assertFalse(any("lacks accepted spec review" in item for item in blockers), blockers)
 
     def test_an_approval_citing_a_ledger_row_that_does_not_exist_is_refused(self):
@@ -170,7 +173,12 @@ class CitedApprovalTests(ExecutionFixture):
             "description": "Negative inputs violate the required result.",
         }
         self.assert_imports(self.spec_receipt(verdict="refuted", findings=[finding]))
-        self.assertEqual(acceptance_status(self.root, OBPI).open_findings, ("F-uncited",))
+        self.assertEqual(
+            acceptance_status(
+                self.root, OBPI, dispatch_scope=dispatch_validator_scope
+            ).open_findings,
+            ("F-uncited",),
+        )
 
     def test_an_unresolvable_tool_grant_is_treated_as_unable_to_execute(self):
         for argv in (["claude", "-p", "review"], ["claude", "--agent", "unknown-reviewer", "-p"]):

@@ -2,7 +2,7 @@
 
 import json
 from pathlib import Path
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 from pydantic import Field
 
@@ -26,6 +26,9 @@ from gzkit.acceptance_store import (
     owed_ids,
     resolve_brief,
 )
+
+if TYPE_CHECKING:
+    from gzkit.req_kind_support import ScopeDispatcher
 
 
 class UninitializedReviewContextError(ValueError):
@@ -150,6 +153,7 @@ def build_review_context(
     *,
     stage: Literal["stage2", "stage4"],
     obligation_ids: tuple[str, ...] | None = None,
+    dispatch_scope: ScopeDispatcher,
 ) -> ReviewContext:
     """Capture a stable subject once; refuse concurrent change during assembly."""
     brief = resolve_brief(root, obpi_id)
@@ -160,7 +164,9 @@ def build_review_context(
     obligations = tuple(canonical_obligations(root, brief))
     if {item.id for item in obligations} != owed_ids(root, obpi_id, history.contract):
         raise NarrowedContextRosterError
-    status = acceptance_status(root, obpi_id, stage=stage, obligation_ids=obligation_ids)
+    status = acceptance_status(
+        root, obpi_id, stage=stage, obligation_ids=obligation_ids, dispatch_scope=dispatch_scope
+    )
     context = ReviewContext(
         input_digest=before,
         input_components=digest_components(root, brief),

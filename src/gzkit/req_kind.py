@@ -24,6 +24,7 @@ from gzkit.req_kind_support import resolve_support_proof
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
+    from gzkit.req_kind_support import ScopeDispatcher
     from gzkit.traceability import CoverageReport
     from gzkit.triangle import DiscoveredReq
 
@@ -182,13 +183,44 @@ def load_req_kind_grandfathering_cache(project_root: Path) -> dict[str, ReqKind]
     return dict(ReqKindGrandfatheringCache.model_validate_json(raw).root)
 
 
+def _support_status(
+    req_text: str,
+    req_id: str,
+    project_root: Path | None,
+    dispatch_scope: ScopeDispatcher | None,
+) -> str:
+    """Resolve one SUPPORT REQ, or ``"advisory-support"`` when no project root is given.
+
+    Returns:
+        The resolver's verdict, or ``"advisory-support"`` for a legacy call with no project root.
+
+    Raises:
+        ValueError: a project root is given without the dispatcher its validator arm needs.
+
+    """
+    if project_root is None:
+        return "advisory-support"
+    if dispatch_scope is None:
+        msg = "a SUPPORT REQ resolved against a project root needs a dispatch_scope"
+        raise ValueError(msg)
+    return resolve_support_proof(
+        req_text, project_root, dispatch_scope=dispatch_scope, req_id=req_id
+    )
+
+
 def compute_three_channel_coverage(
     report: CoverageReport,
     known_reqs: list[DiscoveredReq],
     grandfathering_cache: Mapping[str, ReqKind | str] | None = None,
     project_root: Path | None = None,
+    *,
+    dispatch_scope: ScopeDispatcher | None = None,
 ) -> CoverageReport:
     """Enrich a CoverageReport with per-REQ taxonomy kind and proof-channel status.
+
+    A SUPPORT REQ resolved against *project_root* runs its cited validator scope
+    through *dispatch_scope*, which the command layer supplies; resolving one with a
+    project root and no dispatcher raises ``ValueError`` rather than guessing a verdict.
 
     Additive: existing ``compute_coverage`` result passes through unchanged
     except that each ``CoverageEntry`` receives populated ``taxonomy_kind``,
@@ -253,11 +285,8 @@ def compute_three_channel_coverage(
         elif resolved_kind == ReqKind.BEHAVIOR:
             proof_status = "pass" if entry.covered else "fail"
         elif resolved_kind == ReqKind.SUPPORT:
-            if project_root is not None:
-                req_text = dreq.entity.description if dreq else ""
-                proof_status = resolve_support_proof(req_text, project_root, req_id=entry.req_id)
-            else:
-                proof_status = "advisory-support"
+            req_text = dreq.entity.description if dreq else ""
+            proof_status = _support_status(req_text, entry.req_id, project_root, dispatch_scope)
         elif project_root is not None:
             req_text = dreq.entity.description if dreq else ""
             proof_status = resolve_fence_proof(entry.req_id, project_root, req_text)

@@ -34,6 +34,7 @@ from gzkit.commands.obpi_stages import (  # noqa: F401
     _run_pipeline_verify_stage,
 )
 from gzkit.commands.status import _inspect_obpi_brief
+from gzkit.commands.validate_cmd import dispatch_validator_scope
 from gzkit.core.models import normalize_adr_input
 from gzkit.core.obpi_state_machine import CANONICAL_TRANSITIONS, OBPIState
 from gzkit.event_evidence import EventAnchor
@@ -467,7 +468,7 @@ def _require_completed_receipt_acceptance(
     from gzkit.acceptance_store import completion_review  # noqa: PLC0415
 
     try:
-        completion_review(project_root, obpi_id)
+        completion_review(project_root, obpi_id, dispatch_scope=dispatch_validator_scope)
     except ValueError as exc:
         raise GzCliError(str(exc)) from exc
 

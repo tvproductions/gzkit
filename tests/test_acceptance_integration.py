@@ -22,6 +22,7 @@ from gzkit.commands.obpi_stages import (
     _run_pipeline_ceremony_stage,
     _run_pipeline_verify_stage,
 )
+from gzkit.commands.validate_cmd import dispatch_validator_scope
 from gzkit.pipeline_procedure import seed_stage_procedures
 from tests.test_acceptance_execution import BRIEF, REQ, ExecutionFixture
 from tests.test_acceptance_store import OBPI, captured_receipt
@@ -75,7 +76,11 @@ class TestAcceptanceAdvancement(ExecutionFixture):
         record_proof(self.root, OBPI, proof)
         for stage in ("spec", "quality"):
             record_review(self.root, OBPI, captured_receipt(proof, stage))
-        self.assertTrue(acceptance_status(self.root, OBPI, stage="stage2").ready)
+        self.assertTrue(
+            acceptance_status(
+                self.root, OBPI, stage="stage2", dispatch_scope=dispatch_validator_scope
+            ).ready
+        )
         self.assertFalse(_check_acceptance_records(self.root, OBPI).ok)
         with (
             patch("gzkit.commands.obpi_stages.console", self.console),

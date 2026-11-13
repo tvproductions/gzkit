@@ -9,6 +9,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from gzkit.commands.validate_cmd import dispatch_validator_scope
 from gzkit.traceability import covers
 from tests.commands.common import SilencedConsoleTestCase
 
@@ -232,8 +233,11 @@ class TestCoversCmdPassesProjectRoot(SilencedConsoleTestCase):
 
         captured: dict[str, object] = {}
 
-        def _spy(report, known_reqs, grandfathering_cache=None, project_root=None):
+        def _spy(
+            report, known_reqs, grandfathering_cache=None, project_root=None, *, dispatch_scope=None
+        ):
             captured["project_root"] = project_root
+            captured["dispatch_scope"] = dispatch_scope
             return report
 
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -262,6 +266,8 @@ class TestCoversCmdPassesProjectRoot(SilencedConsoleTestCase):
             project_root,
             "covers_cmd MUST forward project_root so STRUCTURAL-FENCE REQs resolve at the CLI",
         )
+        # GHI #1267 item (c): the command layer supplies the real SUPPORT dispatcher.
+        self.assertIs(captured["dispatch_scope"], dispatch_validator_scope)
 
 
 if __name__ == "__main__":

@@ -9,16 +9,25 @@ dispatches clean. Behaviour-preserving move — no logic changed.
 The sibling ``req_kind_fence`` owns the STRUCTURAL-FENCE channel; ``req_kind``
 retains the taxonomy models and the three-channel enrichment orchestrator that
 calls both resolvers.
+
+The validator arm dispatches through a ``ScopeDispatcher`` the caller passes in.
+This module never names the command layer: the command layer supplies the real
+dispatcher, ``gzkit.commands.validate_cmd.dispatch_validator_scope`` (GHI #1267,
+item (c); ``.gzkit/rules/hexagonal-architecture.md`` rule 4).
 """
 
 import json
 import re
+from collections.abc import Callable
 from pathlib import Path
 from typing import get_args
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.events import TypedLedgerEvent
+
+type ScopeDispatcher = Callable[[str, Path], bool]
+"""``(scope, project_root) -> bool``: True when ``gz validate --<scope>`` would find no error."""
 
 # Regex to extract the scope from "gz validate --<scope>" in REQ text.
 _GZ_VALIDATE_SCOPE_RE: re.Pattern[str] = re.compile(r"gz\s+validate\s+--([a-zA-Z][\w-]*)")
@@ -341,37 +350,17 @@ def _support_proof_grandfather(project_root: Path) -> frozenset[str]:
     return frozenset(model.grandfathered_reqs)
 
 
-def _dispatch_validator_scope(scope: str, project_root: Path) -> bool:
-    """Dispatch a validator scope in-process.  Returns True when no errors (exit 0).
+def resolve_support_proof(
+    req_text: str,
+    project_root: Path,
+    *,
+    dispatch_scope: ScopeDispatcher,
+    req_id: str | None = None,
+) -> str:
+    """Resolve SUPPORT proof status via ledger query and the injected validator dispatcher.
 
-    Every scope resolves through the registry-derived runner maps. GHI #630
-    needed a hand-maintained ``_early_return_scope_audit`` map here because
-    qc-binding, fidelity-presence and waiver-ratchet were absent from
-    ``VALIDATOR_REGISTRY`` — so a SUPPORT REQ citing one read
-    ``unproven-support`` regardless of truth. That map was a third copy of the
-    scope->audit knowledge; registering the three retired it.
-
-    Returns:
-        True when the scope's runner returns no errors; False when it returns errors or no runner is
-        registered for the scope.
-
-    """
-    from gzkit.commands.validate_cmd import (  # noqa: PLC0415
-        _default_scope_runners,
-        _explicit_scope_runners,
-    )
-
-    default_runners = _default_scope_runners(project_root, frontmatter_adr=None)
-    explicit_runners = _explicit_scope_runners(project_root)
-    runner = default_runners.get(scope) or explicit_runners.get(scope)
-    if runner is None:
-        return False
-    errors = runner()
-    return len(errors) == 0
-
-
-def resolve_support_proof(req_text: str, project_root: Path, *, req_id: str | None = None) -> str:
-    """Resolve SUPPORT proof status via ledger query and in-process validator dispatch.
+    *dispatch_scope* runs the cited validator scope; the command layer passes
+    ``gzkit.commands.validate_cmd.dispatch_validator_scope``, and a test passes a fake.
 
     Returns one of:
     - ``"pass"`` — cited event found in ledger (citing the cited path, if any)
@@ -418,7 +407,7 @@ def resolve_support_proof(req_text: str, project_root: Path, *, req_id: str | No
     elif not _ledger_has_event(citation.event_types, project_root):
         return "unproven-support"
 
-    if not _dispatch_validator_scope(citation.scope, project_root):
+    if not dispatch_scope(citation.scope, project_root):
         return "unproven-support"
 
     return "grandfathered-support" if grandfathered else "pass"

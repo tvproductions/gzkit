@@ -27,6 +27,7 @@ from rich.markup import escape
 from gzkit.cli.helpers.exit_codes import EXIT_POLICY_BREACH, EXIT_SUCCESS, EXIT_USER_ERROR
 from gzkit.commands.common import console, get_project_root
 from gzkit.commands.obpi_precomplete import ObpiEntryError, resolve_obpi_at_entry
+from gzkit.commands.validate_cmd import dispatch_validator_scope
 from gzkit.governance.stage4_evidence import (
     EvidencePacket,
     generate_evidence_packet,
@@ -88,7 +89,9 @@ def obpi_present_evidence_cmd(*, obpi_id: str, as_json: bool = False) -> int:
         console.print(f"[red]{escape(str(exc))}[/red]")
         raise SystemExit(EXIT_USER_ERROR) from exc
 
-    packet = generate_evidence_packet(project_root, brief_path, obpi_id)
+    packet = generate_evidence_packet(
+        project_root, brief_path, obpi_id, dispatch_scope=dispatch_validator_scope
+    )
     packet_file = write_packet(project_root, packet)
     record_run_position(project_root, obpi_id, RunCrossing(boundary="present-evidence"))
     rel = packet_file.relative_to(project_root).as_posix()

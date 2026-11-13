@@ -18,6 +18,7 @@ from gzkit.acceptance_store import acceptance_blockers
 from gzkit.brief_commands import extract_fenced_commands, is_shell_less_executable
 from gzkit.canonical_steps import CANONICAL_STEP_COMMANDS
 from gzkit.commands.common import GzCliError, _cli_main, console
+from gzkit.commands.validate_cmd import dispatch_validator_scope
 from gzkit.decomposition import extract_markdown_section
 from gzkit.pipeline_markers import find_obpi_brief
 from gzkit.pipeline_procedure import render_pointer, resolve_stage_procedure
@@ -280,7 +281,9 @@ def _run_pipeline_verify_stage(
     starts, which moves the run to ``verify``, and when it fails (with its
     blockers) or passes, which records the result in place.
     """
-    blockers = acceptance_blockers(project_root, obpi_id, stage="stage2")
+    blockers = acceptance_blockers(
+        project_root, obpi_id, stage="stage2", dispatch_scope=dispatch_validator_scope
+    )
     if blockers:
         _print_pipeline_blockers(obpi_id, blockers)
         raise SystemExit(3)
@@ -354,7 +357,9 @@ def _run_pipeline_ceremony_stage(
     Entering the ceremony is a recorded boundary: after a passed verification
     the run has reached Stage 4, and the marker says so.
     """
-    blockers = acceptance_blockers(project_root, obpi_id, stage="stage2")
+    blockers = acceptance_blockers(
+        project_root, obpi_id, stage="stage2", dispatch_scope=dispatch_validator_scope
+    )
     if blockers:
         _print_pipeline_blockers(obpi_id, blockers)
         raise SystemExit(3)
@@ -363,7 +368,9 @@ def _run_pipeline_ceremony_stage(
     console.print("[bold]Stage 4: Ceremony[/bold]")
     console.print(render_pointer(resolve_stage_procedure(project_root, "stage4")))
 
-    review_blockers = acceptance_blockers(project_root, obpi_id)
+    review_blockers = acceptance_blockers(
+        project_root, obpi_id, dispatch_scope=dispatch_validator_scope
+    )
     if review_blockers:
         console.print("Stage 4a proof is ready for independent Step 4b review.")
         console.print(f"Prepare evidence: gz obpi present-evidence {obpi_id}")

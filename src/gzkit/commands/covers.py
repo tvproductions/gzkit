@@ -15,6 +15,7 @@ from itertools import starmap
 from pathlib import Path
 
 from gzkit.commands.common import GzCliError, console, get_project_root
+from gzkit.commands.validate_cmd import dispatch_validator_scope
 from gzkit.core.models import adr_semver, obpi_short_id, req_obpi_id, req_prefix
 from gzkit.traceability import (
     CoverageReport,
@@ -214,7 +215,11 @@ def covers_cmd(
         try:
             cache = load_req_kind_grandfathering_cache(project_root)
             report = compute_three_channel_coverage(
-                report, discovered, grandfathering_cache=cache, project_root=project_root
+                report,
+                discovered,
+                grandfathering_cache=cache,
+                project_root=project_root,
+                dispatch_scope=dispatch_validator_scope,
             )
         except ValidationError as exc:
             msg = f"data/*_grandfather*.json: invalid grandfathering cache ({exc})"

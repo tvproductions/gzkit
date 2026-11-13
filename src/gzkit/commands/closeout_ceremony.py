@@ -61,6 +61,7 @@ from gzkit.commands.status import (
     _adr_closeout_readiness,
     _collect_obpi_files_for_adr,
 )
+from gzkit.commands.validate_cmd import dispatch_validator_scope
 from gzkit.core.models import is_foundation_adr, normalize_adr_input
 from gzkit.ledger import Ledger, resolve_adr_lane
 from gzkit.tasks import in_scope_task_id
@@ -286,7 +287,9 @@ def _gate_closeout_proof(project_root: Path, state: CeremonyState) -> None:
         return
     from gzkit.governance.trust_audits.closeout_proof import validate_closeout_proof
 
-    errors = validate_closeout_proof(project_root, adr_id=state.adr_id)
+    errors = validate_closeout_proof(
+        project_root, adr_id=state.adr_id, dispatch_scope=dispatch_validator_scope
+    )
     if errors:
         from gzkit.core.exceptions import PolicyBreachError
 
