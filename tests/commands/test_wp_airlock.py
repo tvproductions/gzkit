@@ -13,6 +13,7 @@ is what these tests are for: a hand-built list of changed files would hide a
 trailer the exit does not read.
 """
 
+import contextlib
 import json
 import subprocess
 import tempfile
@@ -30,6 +31,8 @@ from tests.commands.test_wp_acceptance import _record as _delivery_record
 from tests.commands.test_wp_acceptance import _req, _seed
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
+
     from gzkit.airlock.model import TransitObservation
 
 _PACKAGE = "WP-01-loop"
@@ -123,6 +126,21 @@ def _changes() -> TransitObservation:
         msg = "git should show this repository's changes"
         raise AssertionError(msg)
     return changes
+
+
+@contextlib.contextmanager
+def _stopped() -> Generator[None]:
+    """Stand in for an order that took a stopping exit, at both places that read it.
+
+    The command excuses a stopped order's blockers, and the order writer re-reads the
+    same fact before it books an acceptance that did not read ready (RP-12 O2, ruling
+    86), so stubbing the command's copy alone books an unready, unstopped acceptance.
+    """
+    with (
+        mock.patch("gzkit.commands.wp_order.order_took_stopping_exit", return_value=True),
+        mock.patch("gzkit.order_ledger.order_took_stopping_exit", return_value=True),
+    ):
+        yield
 
 
 class _AirlockCase(unittest.TestCase):
@@ -349,7 +367,7 @@ class TestAccept(_AirlockCase):
     def test_a_stopped_package_is_excused_and_the_exit_still_names_the_file(self) -> None:
         self._commence()
         _commit(_OUTSIDE, _TRAILER)
-        with mock.patch("gzkit.commands.wp_order.order_took_stopping_exit", return_value=True):
+        with _stopped():
             self._accept()
         rows = self._rows("airlock_out")
         self.assertEqual(rows[0]["verdict"], "surface")
@@ -387,7 +405,7 @@ class TestAccept(_AirlockCase):
         self._commence()
         with (
             mock.patch("gzkit.work_package_transit.package_changes", return_value=None),
-            mock.patch("gzkit.commands.wp_order.order_took_stopping_exit", return_value=True),
+            _stopped(),
         ):
             self._accept()
         row = self._rows("airlock_out")[0]
