@@ -1,6 +1,6 @@
 # gz task envelope diagnose
 
-Render TASK ID declarations from all four discovery channels side-by-side for an OBPI.
+Render TASK ID declarations from the three discovery channels and the `@advances` annotation side-by-side for an OBPI.
 
 ## Usage
 
@@ -15,11 +15,11 @@ Shows per-channel TASK declarations for the named OBPI. When `gz validate
 --task-envelope-coherence` fails with a layer-drift (signature c) error, this
 command names which channel needs updating.
 
-The four discovery channels are:
+The command renders four sources: the three discovery channels and the optional `@advances` annotation, which counts as no channel (`.gzkit/rules/task-discovery.md`, GHI #1318) but is still compared:
 
 | Channel | Source |
 |---------|--------|
-| `@advances (ch1)` | Python `@advances` decorator registrations |
+| `@advances (ch1)` | Python `@advances` decorator registrations (annotation) |
 | `frontmatter tasks: (ch2)` | `tasks: list[str]` in OBPI brief frontmatter |
 | `commit trailers (ch3)` | `Task:` commit trailer in git history |
 | `ledger task_id (ch4)` | `task_started` events in `.gzkit/ledger.jsonl` |

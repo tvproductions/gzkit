@@ -12584,7 +12584,7 @@
     {
       "file": "tests/test_task_obpi_id_canonicalization.py",
       "rule": "PLC0415",
-      "count": 6
+      "count": 5
     },
     {
       "file": "tests/test_tasks.py",

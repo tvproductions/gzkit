@@ -3143,7 +3143,7 @@ See `.gzkit/chores/decommission-tautological-tests/CHORE.md` for the operator wo
 
 ### `--task-envelope-coherence`
 
-Validates TASK attribution coherence across the four discovery channels (ADR-0.0.64 / OBPI-04).
+Validates TASK attribution coherence across the three discovery channels and the optional `@advances` annotation (ADR-0.0.64 / OBPI-04; GHI #1318).
 Fail-closed (exit 3) on four Heavy-fail signatures:
 
 - **(a) Attribution drift** — worklog events (`artifact_edited`, `gate_checked`, etc.) emitted

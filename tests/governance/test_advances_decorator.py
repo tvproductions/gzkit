@@ -5,7 +5,9 @@ existence validation, TaskAttributionRecord registration, metadata-only
 behavior on decorated functions, and registry query API.
 """
 
+import re
 import unittest
+from pathlib import Path
 
 from gzkit.tasks import (
     TaskAttributionRecord,
@@ -178,6 +180,43 @@ class TestAdvancesMultipleDecorations(unittest.TestCase):
         self.assertEqual(len(registry), 2)
         task_ids = {r.task_id for r in registry}
         self.assertEqual(task_ids, {"TASK-0.0.64-02-01-01", "TASK-0.0.64-02-02-01"})
+
+
+_RULE = Path(__file__).resolve().parents[2] / ".gzkit" / "rules" / "task-discovery.md"
+_COUNT_WORDS = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5}
+
+
+def _rule_channel_rows(text: str) -> list[str]:
+    """Return the first cell of each data row in the rule's channel table."""
+    section = text.split("## The ", 1)[1].split("\n## ", 1)[0]
+    rows = [line for line in section.splitlines() if line.startswith("| ")]
+    return [row.split("|")[1].strip() for row in rows[1:]]
+
+
+class TestAdvancesIsNotCountedAsAChannel(unittest.TestCase):
+    """The rule counts only the channels that carry attribution (GHI #1318).
+
+    `@advances` has no producer, so the rule may keep it as an optional
+    annotation but never as one of the channels its invariant counts. The
+    invariant's count and the channel table must agree, so neither can cite
+    the annotation as a channel without the other changing too.
+    """
+
+    def test_channel_table_excludes_advances(self):
+        text = _RULE.read_text(encoding="utf-8")
+        channels = _rule_channel_rows(text)
+        self.assertTrue(channels, "the rule's channel table has no rows")
+        self.assertFalse(
+            [name for name in channels if "@advances" in name],
+            "the rule's channel table still counts @advances as a channel",
+        )
+
+    def test_invariant_count_matches_channel_table(self):
+        text = _RULE.read_text(encoding="utf-8")
+        match = re.search(r"at least one of (\w+) discovery channels", text)
+        self.assertIsNotNone(match, "the rule's invariant names no channel count")
+        assert match is not None
+        self.assertEqual(_COUNT_WORDS.get(match.group(1)), len(_rule_channel_rows(text)))
 
 
 if __name__ == "__main__":

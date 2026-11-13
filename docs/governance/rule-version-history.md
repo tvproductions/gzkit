@@ -304,6 +304,8 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `task-discovery.md`
 
+Prior `0.10.2` banner: *"the coherence-enforced roster and the layer-drift lane claim now match the code (operator, 2026-11-08: "fix what is stale")"*. Superseded 2026-11-13 by `0.11.0` (GHI #1318; operator, *"Demote, keep decorator"*, from demoting `@advances` with the decorator kept, a witnessed rule for when a function must carry it, or retiring it with its registry). The invariant counted four channels while § The Four Channels called `@advances` advisory and expected to be empty, a declared channel with no producer that no witness could report. It now counts three, `@advances` is an optional annotation outside the count, the decorator, registry and readers stay as OBPI-0.0.64-02's REQ-01 and -02 assert, and REQ-03's four-channel taxonomy is amended at the rule's surface. `test_advances_channel_is_asserted_dead_not_assumed_dead` pinned the registry empty and is replaced by `TestAdvancesIsNotCountedAsAChannel`.
+
 Prior `0.10.1` banner: *"version narrative lifted to Rule Version History; binding rules unchanged."* Superseded 2026-11-08 by `0.10.2` (operator, *"fix what is stale"*): the ledger `task_id` channel named eight coherence-enforced event types, `artifact_edited` among them, where `_TASK_WORKLOG_TYPES` holds seven after GHI #947 and GHI #950; § Layer-drift fail-close said Lite warns, where the validator and `gz obpi complete` fail closed on every lane.
 
 ### Lifted 2026-09-17 at version `0.9.0` (rule now at `0.10.0`)
