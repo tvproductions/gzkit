@@ -1088,7 +1088,10 @@ def _register_task_parsers(commands: argparse._SubParsersAction) -> None:
     p_diagnose = envelope_cmds.add_parser(
         "diagnose",
         help="Show per-channel TASK declarations side-by-side for an OBPI",
-        description="Render TASK IDs from all four discovery channels for an OBPI.",
+        description=(
+            "Render TASK IDs from the three discovery channels and the @advances "
+            "annotation for an OBPI."
+        ),
         epilog=build_epilog(
             [
                 "gz task envelope diagnose OBPI-0.0.64-04",

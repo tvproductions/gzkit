@@ -2,7 +2,7 @@
 
 GHI #731 fixed Signature (c)'s key mismatch and repaired the commit-trailer
 channel at its producer. It left the other half declared but unfixed: two of the
-four discovery channels named by `.gzkit/rules/task-discovery.md` produce ZERO
+four discovery channels `.gzkit/rules/task-discovery.md` then named produce ZERO
 keys repo-wide, so only `ledger` x `commit_trailer` can ever pair and the gate
 compares 7 of 534 OBPIs.
 

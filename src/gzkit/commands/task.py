@@ -723,10 +723,11 @@ def task_envelope_diagnose_cmd(obpi_id: str, *, as_json: bool = False) -> None:
         print("Brief is legacy shape; structured frontmatter required.", file=sys.stderr)
         raise SystemExit(1)
 
-    # Collect ALL FOUR discovery channels — the diagnose surface is the ADR-0.0.64
-    # named layer-drift recovery view, so it MUST read the same @advances (ch1) and
+    # Collect all four sources (three channels, the @advances annotation): the
+    # diagnose surface is the ADR-0.0.64 named layer-drift recovery view, so it
+    # MUST read the same @advances (ch1) and
     # commit-trailer (ch3) channels the validator's signature (c) evaluates, not just
-    # frontmatter + ledger. Routes through the validator's own four-channel collector
+    # frontmatter + ledger. Routes through the validator's own four-source collector
     # (single source of truth) rather than re-deriving a 2-channel subset.
     # ``_obpi_lineage_id`` rather than a fourth inline spelling of the same regex:
     # the local one truncated on ``\d{2}`` where every other normalizer reads ``\d+``

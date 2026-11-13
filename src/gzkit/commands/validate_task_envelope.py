@@ -947,7 +947,7 @@ def _ledger_task_channel(ledger_path: Path) -> tuple[dict[str, set[str]], set[st
 
 
 def _sig_c_layer_drift(project_root: Path) -> list[ValidationError]:
-    """Signature (c) — layer-drift across the four discovery channels per OBPI.
+    """Signature (c) — layer-drift across the discovery channels and ``@advances`` per OBPI.
 
     Drift = two or more channels each declare at least one TASK ID for the
     OBPI, but the union of TASK IDs spans more than the intersection (i.e. a
@@ -1214,8 +1214,8 @@ def _validate_task_envelope_coherence(project_root: Path) -> list[ValidationErro
     Composite of five Heavy-fail signatures:
         (a) worklog event under active TASK with no ``task_id`` (attribution drift)
         (b) OBPI default-bucket-only TASKs without ``req_atomic`` exemption
-        (c) layer-drift across the four discovery channels (@advances, frontmatter
-            tasks:, commit trailer, ledger task_id)
+        (c) layer-drift across the three discovery channels (frontmatter tasks:,
+            commit trailer, ledger task_id) and the @advances annotation
         (d) a single ``task_id`` carries divergent ``obpi_id`` across its
             lifecycle events (producer canonicalization drift, GHI #653)
         (e) a brief's ``tasks:`` entry is malformed or derives a parent REQ that

@@ -1447,11 +1447,15 @@ class TestCheckPipelineIntegration(unittest.TestCase):
 
 
 class TestDiagnoseCmd(unittest.TestCase):
-    """REQ-0.0.64-04-05: gz task envelope diagnose renders all four channels."""
+    """REQ-0.0.64-04-05: gz task envelope diagnose renders all four sources.
+
+    The sources are the three discovery channels and the ``@advances`` annotation
+    (GHI #1318); the REQ's "four channels" predates that amendment.
+    """
 
     @covers("REQ-0.0.64-04-05")
     def test_diagnose_renders_all_four_channels(self) -> None:
-        """The diagnose readback reads and renders ALL FOUR discovery channels.
+        """The diagnose readback reads and renders all four sources.
 
         Regression guard for the 2-of-4 bug: `@advances` (ch1) and commit
         trailers (ch3) were previously hardcoded empty, so the ADR's named
