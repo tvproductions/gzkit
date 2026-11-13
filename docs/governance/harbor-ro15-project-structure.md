@@ -95,6 +95,15 @@ on this order, the test gates on RP-7's placement (contract § Rulings of 2026-1
   finding, held with today's out-of-region imports in one shrink-only baseline; (B) a `legacy` region the checker
   skips. Operator, verbatim: *"A: unmapped is a finding"*.
 
+**Ruling after the review (2026-11-13).**
+
+- **#1267 is held to migration.** The independent review found the checker cannot see #1267's edge while `core/` is
+  unmapped. Put to the operator, measured first (mapping the eight `core/*.py` modules into the domain gives seven
+  import findings): (A) hold the placement to migration, amend #1267's closure contract to the current canon's
+  `core/domain`, and grade it due by the first use case migrated; (B) map today's `core/` modules into the domain now;
+  (C) hold the placement and build #1267's transitive check on today's `core/`. Operator, verbatim: *"A: hold to
+  migration"*. The contract's § List of discrepancies carries #1267 on its own line.
+
 **Landed 2026-11-12.**
 
 | Item | Where | Commit |
