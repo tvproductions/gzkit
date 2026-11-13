@@ -10,7 +10,8 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--interviews] [--decomposition]
             [--requirements] [--commit-trailers]
             [--taxonomy] [--chores-layout] [--distribution] [--wheel-path-literals]
-            [--model-class-only] [--hexagon-dependencies] [--changelog]
+            [--model-class-only] [--hexagon-dependencies] [--hexagon-tests]
+            [--changelog]
             [--bullet-retention] [--surface-weight] [--pointer-anchors]
             [--surface-fidelity]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
@@ -1158,6 +1159,70 @@ uv run gz validate --hexagon-dependencies --json
 ```
 
 Rule home: `.gzkit/rules/hexagonal-architecture.md` rule 7.
+
+### `--hexagon-tests`
+
+Holds every test module that covers a hexagon region to `.gzkit/rules/tests.md`
+§ Hexagon tests (RP-7, change order of 2026-11-12). Runs in the **default**
+`gz check` scope, so the flag is for scoping a single run.
+
+A test module covers a region when it imports, at any depth of the file, a
+module that the package map in `pyproject.toml` `[tool.py-gzkit.hexagon]` places
+in the domain, either port package, the handlers or an adapter region. The
+kernel and the configurator are not held. Three gates run over each held module:
+
+| Finding | Gate | Meaning |
+|---------|------|---------|
+| `mock` | fakes only (#91) | A test covering an inner region imports `unittest.mock`; or a test covering only adapters patches a target inside the package, or builds a bare `Mock()`, `MagicMock()` or another double, which nothing shows stands at the outer edge |
+| `labels` | given, when, then (#91a) | A test method lacks `# given`, `# when` and `# then` comments in that order, read with `tokenize` |
+| `covers` | names its REQ (#91b) | A test method carries no `@covers`; a module declaring `# hexagon-test: fake-adapter` is exempt |
+
+The variant gate (#91c) is due by the first hexagon REQ admitted, and is not
+part of this scope.
+
+Today's findings are held in the shrink-only `data/hexagon_test_baseline.json`,
+a registered shrink-ratchet. A finding the baseline does not hold fails, and so
+does a held finding the tree no longer produces, so the list only shrinks. A
+project with no package map passes. A malformed map, a test module that does not
+parse, and an unreadable baseline each fail.
+
+#### Exit codes
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | No finding outside the baseline, and none left in it that the tree no longer produces | — |
+| 3 | A new finding, a repaired finding still in the baseline, a test module that does not parse, or a malformed map or baseline | Rewrite the test with fakes, labels and `@covers`; remove a repaired entry from the baseline; then re-run |
+
+Measured, not transcribed: a temporary project mapping `app.core.domain` and
+`app.cli`, whose `tests/test_run.py` calls `app.cli.main.run` with no labels and
+no `@covers`, exits **3** with two findings:
+
+```text
+❌ Validation failed with 2 error(s):
+
+   → [hexagon_tests] tests/test_run.py
+    covers tests/test_run.py::TestRun.test_run: a new hexagon test finding
+(.gzkit/rules/tests.md § Hexagon tests). ...
+
+   → [hexagon_tests] tests/test_run.py
+    labels tests/test_run.py::TestRun.test_run: a new hexagon test finding
+(.gzkit/rules/tests.md § Hexagon tests). ...
+```
+
+Under an open Maintenance Hangar the findings are reported advisory and the run
+exits 0.
+
+#### Examples
+
+```bash
+# Scope a run to this check alone
+uv run gz validate --hexagon-tests
+
+# Machine-readable output
+uv run gz validate --hexagon-tests --json
+```
+
+Rule home: `.gzkit/rules/tests.md` § Hexagon tests.
 
 ### `--changelog`
 
@@ -3364,6 +3429,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--wheel-path-literals` | yes | Wheel-shipped instruction text names no path only its authoring environment can resolve (GHI #900) |
 | `--model-class-only` | yes | Rule, skill and agent canon name Claude models by class, never by a versioned ID (GHI #1284) |
 | `--hexagon-dependencies` | yes | The package holds to the hexagon's dependency rules read from the package map; today's findings in a shrink-only baseline (RP-15 tranche 6) |
+| `--hexagon-tests` | yes | Every test module covering a hexagon region holds to fakes only, given/when/then labels and `@covers`; today's findings in a shrink-only baseline (RP-7) |
 | `--audits` | opt-in | Run all four trust-doctrine pattern audits in one pass |
 
 The `--allowlist-only` flag is a sub-modifier for `--unscoped-rules` —

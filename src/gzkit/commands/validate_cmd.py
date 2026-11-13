@@ -490,6 +490,15 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
         in_other_scopes=True,
         run=lambda r, _f: _ta().audit_hexagon_dependencies(r),
     ),
+    # Default tier (RP-7, change order of 2026-11-12): the hexagon test gates, fakes
+    # only, given/when/then labels and @covers, over every test module covering a
+    # region of the package map, the kernel excluded (operator rulings 2026-11-13).
+    _ScopeEntry(
+        "hexagon_tests",
+        "default",
+        in_other_scopes=True,
+        run=lambda r, _f: _ta().audit_hexagon_tests(r),
+    ),
     _ScopeEntry("kind_invariance", "explicit", True, lambda r, _f: _ta().audit_kind_invariance(r)),
     _ScopeEntry("persona_witness", "explicit", True, lambda r, _f: _ta().audit_persona_witness(r)),
     _ScopeEntry("receipt_shape", "explicit", True, lambda r, _f: _ta().audit_receipt_shape(r)),
@@ -1235,6 +1244,7 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "how_coverage",
         "pending_renames",
         "hexagon_dependencies",
+        "hexagon_tests",
         "chores_layout",
         "complexity_doctrine_links",
         "complexity_thresholds",
@@ -1706,6 +1716,7 @@ def validate(
     frontmatter_explain: str | None = None,
     check_model_class_only: bool = False,
     check_hexagon_dependencies: bool = False,
+    check_hexagon_tests: bool = False,
 ) -> None:
     """Validate governance artifacts against schemas.
 
@@ -1800,6 +1811,7 @@ def validate(
         "wheel_path_literals": check_wheel_path_literals,
         "model_class_only": check_model_class_only,
         "hexagon_dependencies": check_hexagon_dependencies,
+        "hexagon_tests": check_hexagon_tests,
         "changelog": check_changelog,
         "bullet_retention": check_bullet_retention,
         "surface_weight": check_surface_weight,

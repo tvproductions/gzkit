@@ -49,6 +49,8 @@ from ._qc_nc_entrypoints import (
     _ep_catalog_work_packages,
     _ep_hexagon_dependencies,
     _ep_hexagon_dependencies_admits_baselined,
+    _ep_hexagon_tests,
+    _ep_hexagon_tests_admits_baselined,
     _ep_model_class_only,
     _ep_supply_chain_audit,
     _ep_supply_chain_audit_admits_ignored,
@@ -1479,6 +1481,101 @@ def _build_hexagon_dependencies() -> Path:
     return _hexagon_root("hexagon-dependencies")
 
 
+_HEXAGON_TEST_MAP = (
+    '[tool.py-gzkit.hexagon]\npackage = "app"\nsource-root = "src"\n'
+    'kernel = ["app.kernel"]\ndomain = ["app.core.domain"]\ndriving-adapters = ["app.cli"]\n'
+)
+
+_HEXAGON_TEST_OK = (
+    "import subprocess\nimport unittest\nfrom unittest.mock import patch\n\n"
+    "from app.cli import main\nfrom gzkit.traceability import covers\n\n\n"
+    "class TestOk(unittest.TestCase):\n"
+    '    @covers("REQ-1")\n'
+    "    def test_ok(self):\n"
+    "        # given\n        expected = None\n"
+    '        # when\n        with patch.object(subprocess, "run"):\n'
+    "            result = main.run()\n"
+    "        # then\n        self.assertEqual(result, expected)\n"
+)
+
+#: The three planted findings, one per gate; the control catches only all three.
+HEXAGON_TEST_BREACHES = frozenset(
+    {
+        "mock tests/test_domain.py -> unittest.mock",
+        "labels tests/test_cli.py::TestCli.test_cli",
+        "covers tests/test_cli.py::TestCli.test_cli",
+    }
+)
+
+
+def _hexagon_test_root(slug: str) -> Path:
+    """Build a mapped package with one planted breach per gate, plus decoys.
+
+    The decoys are a conforming adapter test patching only an outer target, a fake
+    adapter's test declaring its exemption with no ``@covers``, and a kernel test
+    importing ``unittest.mock``; a gate that refused any of them would report a
+    finding outside the planted three.
+
+    Returns:
+        The fixture project root.
+
+    """
+    root = _mkroot(slug)
+    _write(root / "pyproject.toml", _HEXAGON_TEST_MAP)
+    for rel in ("app", "app/kernel", "app/core", "app/core/domain", "app/cli"):
+        _write(root / "src" / rel / "__init__.py", "")
+    _write(root / "src" / "app" / "cli" / "main.py", "def run():\n    return None\n")
+    _write(root / "tests" / "test_ok.py", _HEXAGON_TEST_OK)
+    _write(
+        root / "tests" / "test_fake.py",
+        "# hexagon-test: fake-adapter\n" + _HEXAGON_TEST_OK.replace('    @covers("REQ-1")\n', ""),
+    )
+    _write(
+        root / "tests" / "test_kernel.py",
+        "import unittest\nfrom unittest import mock\n\nfrom app.kernel import bases\n",
+    )
+    _write(
+        root / "tests" / "test_domain.py",
+        "import unittest\nfrom unittest import mock\n\nfrom app.core.domain import record\n",
+    )
+    _write(
+        root / "tests" / "test_cli.py",
+        "import unittest\n\nfrom app.cli import main\n\n\n"
+        "class TestCli(unittest.TestCase):\n"
+        "    def test_cli(self):\n        self.assertIsNone(main.run())\n",
+    )
+    return root
+
+
+def _build_hexagon_tests() -> Path:
+    """Plant one breach per hexagon test gate (RP-7, change order of 2026-11-12).
+
+    Returns:
+        The fixture project root.
+
+    """
+    return _hexagon_test_root("hexagon-tests")
+
+
+def _build_hexagon_tests_baselined() -> Path:
+    """Hold the same breaches in the shrink-only baseline: the gate MUST admit them.
+
+    The admit half: gzkit's own findings sit in the baseline until its tests are
+    rewritten, so a gate that stopped honouring the baseline would hold the tree red.
+    The refuse half is proven by ``hexagon-tests``.
+
+    Returns:
+        The fixture project root, its breaches held in the baseline.
+
+    """
+    root = _hexagon_test_root("hexagon-tests-baselined")
+    _write(
+        root / "data" / "hexagon_test_baseline.json",
+        json.dumps({"findings": sorted(HEXAGON_TEST_BREACHES)}),
+    )
+    return root
+
+
 def _build_hexagon_dependencies_baselined() -> Path:
     """Hold the same breach in the shrink-only baseline: the gate MUST admit it.
 
@@ -2703,6 +2800,12 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         _HEXAGON_BREACH,
     ),
     (
+        "hexagon-tests",
+        _build_hexagon_tests,
+        _ep_hexagon_tests,
+        "covers tests/test_cli.py::TestCli.test_cli",
+    ),
+    (
         "doc-code-citations",
         _build_doc_code_citations,
         _ep._ep_doc_code_citations,
@@ -2850,6 +2953,12 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         "hexagon-dependencies-baselined",
         _build_hexagon_dependencies_baselined,
         _ep_hexagon_dependencies_admits_baselined,
+    ),
+    # Admit half: findings held in the shrink-only baseline (RP-7).
+    (
+        "hexagon-tests-baselined",
+        _build_hexagon_tests_baselined,
+        _ep_hexagon_tests_admits_baselined,
     ),
     (
         "session-green-gate",

@@ -114,6 +114,10 @@ _POST_SNAPSHOT_DEFAULT_ADDITIONS: tuple[str, ...] = (
     # read from the package map (RP-15 tranche 6). DEFAULT tier: the policy test
     # sharing its checker runs only when its own file changes (RP-7 finding F22).
     "hexagon_dependencies",
+    # hexagon_tests — the hexagon test gates over every test module covering a region
+    # of the package map (RP-7, change order of 2026-11-12). DEFAULT tier: each gate
+    # is a check on a per-change gate.
+    "hexagon_tests",
 )
 
 # Explicit-tier scopes run only when their flag is set. Set-parity is what the

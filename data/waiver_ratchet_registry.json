@@ -422,6 +422,16 @@
       "identity": {
         "kind": "strings"
       }
+    },
+    {
+      "data_file": "data/hexagon_test_baseline.json",
+      "gates_step": "hexagon test gates (gz validate --hexagon-tests)",
+      "mechanism": "shrink-ratchet",
+      "entries_path": "findings",
+      "baseline_count": 6136,
+      "identity": {
+        "kind": "strings"
+      }
     }
   ],
   "excluded": [

@@ -55,6 +55,10 @@ QC_CLAIM_POPULATIONS: dict[str, Callable[[], Sequence[str]] | str] = {
     # whatever files exist, never a set another surface declares. RP-15 tranche 6.
     "hexagon-dependencies": POPULATION_NONE,
     "hexagon-dependencies-baselined": POPULATION_NONE,
+    # Walks every test module under tests/; the members are whatever files exist and
+    # whichever regions they import, never a set another surface declares. RP-7.
+    "hexagon-tests": POPULATION_NONE,
+    "hexagon-tests-baselined": POPULATION_NONE,
     # Reads the three catalog files the store names; the entries are whatever the
     # files hold, never a set another surface declares (drydock RO-3).
     "requirements-catalog": POPULATION_NONE,

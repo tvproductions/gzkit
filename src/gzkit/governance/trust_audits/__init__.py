@@ -126,6 +126,7 @@ from gzkit.governance.trust_audits.gate_callers import audit_gate_callers
 from gzkit.governance.trust_audits.gate_enrollment import audit_gate_enrollment
 from gzkit.governance.trust_audits.gate_population import audit_gate_population_enrollment
 from gzkit.governance.trust_audits.hexagon_dependencies import audit_hexagon_dependencies
+from gzkit.governance.trust_audits.hexagon_tests import audit_hexagon_tests
 from gzkit.governance.trust_audits.how_coverage import audit_how_coverage
 from gzkit.governance.trust_audits.id_seam import audit_id_seam
 from gzkit.governance.trust_audits.insights import audit_insights_shape
@@ -265,6 +266,7 @@ __all__ = [
     "audit_gate_enrollment",
     "audit_gate_population_enrollment",
     "audit_hexagon_dependencies",
+    "audit_hexagon_tests",
     "audit_how_coverage",
     "audit_id_seam",
     "audit_insights_shape",

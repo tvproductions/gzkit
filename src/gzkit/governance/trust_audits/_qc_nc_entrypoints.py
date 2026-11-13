@@ -862,6 +862,34 @@ def _ep_hexagon_dependencies_admits_baselined(root: Path) -> int:
     return 0 if audit_hexagon_dependencies(root) else 1
 
 
+def _ep_hexagon_tests(root: Path) -> list[ValidationError]:
+    """Return the findings when exactly the three planted breaches fired.
+
+    One breach per gate is planted beside decoys the rules admit. A gate that
+    refused a decoy, or missed a planted breach, reports no catch, so the control
+    fails on over-reach or on any one gate narrowed (RP-7).
+
+    Returns:
+        The findings when exactly the planted three fired; otherwise nothing.
+
+    """
+    from gzkit.governance.trust_audits._qc_negative_controls import (  # noqa: PLC0415
+        HEXAGON_TEST_BREACHES,
+    )
+    from gzkit.governance.trust_audits.hexagon_tests import audit_hexagon_tests  # noqa: PLC0415
+
+    errors = audit_hexagon_tests(root)
+    keys = {error.message.split(": a new hexagon test finding", 1)[0] for error in errors}
+    return errors if keys == HEXAGON_TEST_BREACHES else []
+
+
+def _ep_hexagon_tests_admits_baselined(root: Path) -> int:
+    """Truthy only when the gate ADMITS the findings held in the shrink-only baseline."""
+    from gzkit.governance.trust_audits.hexagon_tests import audit_hexagon_tests  # noqa: PLC0415
+
+    return 0 if audit_hexagon_tests(root) else 1
+
+
 def _ep_brief_size_admits_grandfathered(root: Path) -> int:
     """Truthy only when the gate ADMITS a brief at its recorded ceiling."""
     from gzkit.governance.trust_audits.brief_size import audit_brief_size  # noqa: PLC0415

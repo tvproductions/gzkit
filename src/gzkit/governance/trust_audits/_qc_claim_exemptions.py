@@ -114,6 +114,14 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     "hexagon-dependencies": "hexagon-dependencies-baselined",
     # The admit half reads the same gate and admits nothing of its own.
     "hexagon-dependencies-baselined": EXEMPTS_NONE,
+    # Holds hexagon tests to fakes only, labels and @covers. Its shrink-only
+    # baseline, data/hexagon_test_baseline.json, and the fake-adapter marker each
+    # admit a judged finding, so the admit path is exercised by a registered control
+    # rather than declared away. A project with no package map has nothing to
+    # check, an artifact-absent return. RP-7, change order of 2026-11-12.
+    "hexagon-tests": "hexagon-tests-baselined",
+    # The admit half reads the same gate and admits nothing of its own.
+    "hexagon-tests-baselined": EXEMPTS_NONE,
     # Validates data/catalog/ against its schemas and structure. No waiver table,
     # allowlist, baseline or flag admits a finding; the three files are the whole
     # subject, a scope predicate. Drydock RO-3.
