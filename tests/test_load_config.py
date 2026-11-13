@@ -1,8 +1,9 @@
 """Tests for the load_config() parameter-injection entry point.
 
-`load_config(path=...)` is gzkit's canonical config seam (the hexagonal
-injection point per the 2026-07-06 ruling that blessed parameter injection as
-the canonical hexagon). The former `FileConfigStore` adapter — a ConfigStore
+`load_config(path=...)` takes its path as a parameter. The 2026-07-06 ruling
+that blessed parameter injection as the canonical hexagon was withdrawn on
+2026-11-12: configuration is read once, by the configurator (hexagonal rule
+10; GHI #1320). The former `FileConfigStore` adapter — a ConfigStore
 Protocol impl that duplicated this function and was wired into zero production
 code — was retired with REQ-0.0.3-05-03 superseded. See
 docs/governance/hexagonal-architecture.md.

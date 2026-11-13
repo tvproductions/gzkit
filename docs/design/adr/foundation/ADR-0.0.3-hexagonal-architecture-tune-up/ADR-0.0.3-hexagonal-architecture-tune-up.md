@@ -27,7 +27,7 @@ date: 2026-03-15
 > **⚠ Withdrawn 2026-11-12 — the blessing above.** The hexagonal specification's points 2 and 5
 > ([`hexagonal-architecture.md`](../../../../governance/hexagonal-architecture.md) § The five points) hold that a
 > configurator passes finished adapters, never a raw path, so threading `project_root` is not conformance and the
-> command layer is not the configurator. The 2026-07-06 callouts in OBPI-0.0.3-01 and -05 are sealed records and
+> command layer is not the configurator. The 2026-07-06 callouts in OBPI-0.0.3-01, -04 and -05 are sealed records and
 > read under this note (GHI #1320; operator, 2026-11-13: *"Amend ADR callout only"*).
 
 ## Why foundation tier?

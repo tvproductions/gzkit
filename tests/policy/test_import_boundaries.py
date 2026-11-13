@@ -375,9 +375,11 @@ class TestCommandLayerSanity(unittest.TestCase):
     """commands/ presence sanity.
 
     The former "commands must not import gzkit.adapters" rule was retired
-    (2026-07-06 injection-seam ruling): the command layer IS gzkit's
-    configurator (Cockburn Fig 2.1), so it is precisely where driven adapters
-    are instantiated — forbidding that import contradicts the blessed pattern.
+    with the adapters facade (2026-07-06). That ruling also called the
+    command layer gzkit's configurator; the hexagonal specification withdrew
+    that on 2026-11-12 (points 2 and 5: a configurator passes finished
+    adapters, never a raw path), so the command layer is not the
+    configurator (GHI #1320).
     Core purity from any adapter package is still enforced by
     TestCoreImportBoundaries.
     """
