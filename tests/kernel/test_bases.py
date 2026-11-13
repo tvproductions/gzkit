@@ -85,9 +85,12 @@ class CreateReturnsTheObjectOrItsRefusals(unittest.TestCase):
 
     def test_create_never_raises_on_a_refusal(self) -> None:
         try:
-            Semver.create()
+            result = Semver.create()
         except pydantic.ValidationError:  # pragma: no cover - the failure this test exists to catch
             self.fail("create raised instead of returning ValidationErrors")
+        self.assertIsInstance(result, ValidationErrors)
+        assert isinstance(result, ValidationErrors)
+        self.assertTrue(result.errors)
 
 
 class EveryBaseIsFrozen(unittest.TestCase):

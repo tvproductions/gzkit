@@ -1112,7 +1112,9 @@ hexagonal architecture system package map in `pyproject.toml`
 `gz check` scope, so the flag is for scoping a single run.
 
 The kernel's dependency checker (`gzkit.kernel.dependency_checker`) parses
-every module of the mapped package, at any depth, without importing it. It
+every module of the mapped package, in every subdirectory, without importing it,
+and judges each module's own imports (function-local and `TYPE_CHECKING` ones
+included); it does not follow an import chain to further modules. It
 reports four kinds of finding, each against
 `docs/governance/hexagonal-architecture.md` § The dependency rules:
 
@@ -1120,22 +1122,25 @@ reports four kinds of finding, each against
 |---------|---------|
 | `unmapped` | A package or module no region of the map names |
 | `import` | An import the importer's region may not make: a region outside its row, another adapter, or a library other than Pydantic inside the walls |
-| `base` | A kernel base (`ValueObject`, `Entity`, `DomainEvent`, `Command`, `Query`, `Dto`) subclassed outside its region |
+| `base` | A kernel base (`ValueObject`, `Entity`, `DomainEvent`, `Command`, `Query`, `Dto`) subclassed outside its region, directly or through another class of the package |
 | `handler` | A handler that does not inherit exactly one use-case `Protocol` from the driving ports, or does not take its name from it |
 
 gzkit's code migrates into the regions only after return to service, so
 today's findings are held in the shrink-only
 `data/hexagon_dependency_baseline.json`, a registered shrink-ratchet. A finding
 the baseline does not hold fails, and so does a held finding the tree no longer
-produces: the list only shrinks. A project with no package map passes; a
-malformed map fails.
+produces: the list only shrinks. An unmapped finding names the module's highest
+unmapped ancestor and its imports are not judged, so code added inside an
+already-held package adds no finding. A project with no package map passes; a
+malformed map, a map whose package is not under its source root, and a
+baseline that is not an object of finding keys each fail.
 
 #### Exit codes
 
 | Code | Meaning | Recovery |
 |------|---------|----------|
 | 0 | No finding outside the baseline, and none left in it that the tree no longer produces | — |
-| 3 | A new finding, a repaired finding still in the baseline, or a malformed package map | Move the code where the map places it or drop the import; remove a repaired entry from the baseline; then re-run `uv run gz validate --hexagon-dependencies` |
+| 3 | A new finding, a repaired finding still in the baseline, a malformed package map or baseline, or a package not on disk | Move the code where the map places it or drop the import; remove a repaired entry from the baseline; then re-run `uv run gz validate --hexagon-dependencies` |
 
 Measured, not transcribed: a temporary project mapping `app.core.domain` and
 `app.cli`, with `app/core/domain/record.py` importing `app.cli`, exits **3**

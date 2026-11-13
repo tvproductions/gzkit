@@ -482,6 +482,10 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `hexagonal-architecture.md`
 
+### Changed 2026-11-13 at version `0.6.2` (RP-15 tranche 6, independent review)
+
+Prior `0.6.1` banner, verbatim: *"§ Verify names the kernel's dependency checker and `gz validate --hexagon-dependencies`, which landed with the package map in RP-15 tranche 6; binding rules unchanged."* Superseded when the independent review of tranche 6 (operator: *"Review tranche 6"*, then *"Yes, repair them"*) found § Verify claimed the checker *"refuses an unmapped package"* over the whole package, when an unmapped module's imports are never judged and a module added inside an already-unmapped package adds no finding. § Verify now states both limits and names #1267 as unwitnessed until gzkit's code is mapped. Binding rules unchanged.
+
 ### Changed 2026-11-12 at version `0.6.1` (RP-15 tranche 6)
 
 Prior `0.6.0` banner, verbatim: *"adds rule 10, configuration read once by the configurator, from the hexagonal specification run (operator, 2026-11-12: "configuration rule"); rules 1 to 4 and 6 wait on RP-7."* Superseded when the package map and the kernel's dependency checker landed (RP-15 tranche 6, operator: *"RP-15 tranche 6"*): § Verify said the witness *"covers `src/gzkit/core/` only"*, which the widened checker and `gz validate --hexagon-dependencies` made stale. Binding rules unchanged.

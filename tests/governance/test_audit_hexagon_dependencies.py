@@ -85,6 +85,42 @@ class TheScopeReadsThePackageMap(unittest.TestCase):
         self.assertIn("unknown keys", messages[0])
 
 
+class TheScopeNeverPassesOnWhatItCannotRead(unittest.TestCase):
+    """A misconfigured map or an unreadable baseline fails; it is never a clean pass."""
+
+    def test_a_package_the_source_root_does_not_hold_fails(self) -> None:
+        messages = _audit(MAP.replace("app", "apq"), PLANTED)
+        self.assertEqual(len(messages), 1)
+        self.assertIn("apq", messages[0])
+
+    def test_a_baseline_that_is_not_json_fails(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _project(root, MAP, {}, held=[])
+            (root / "data" / BASELINE_NAME).write_text("{not json", encoding="utf-8")
+            messages = [e.message for e in audit_hexagon_dependencies(root)]
+        self.assertEqual(len(messages), 1)
+        self.assertTrue(messages[0].startswith(f"data/{BASELINE_NAME}: "))
+
+    def test_a_baseline_that_is_not_utf8_fails(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _project(root, MAP, {}, held=[])
+            (root / "data" / BASELINE_NAME).write_bytes(b"\xff\xfe{}")
+            messages = [e.message for e in audit_hexagon_dependencies(root)]
+        self.assertEqual(len(messages), 1)
+        self.assertTrue(messages[0].startswith(f"data/{BASELINE_NAME}: "))
+
+    def test_a_baseline_that_is_not_an_object_fails(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _project(root, MAP, {}, held=[])
+            (root / "data" / BASELINE_NAME).write_text(json.dumps([BREACH]), encoding="utf-8")
+            messages = [e.message for e in audit_hexagon_dependencies(root)]
+        self.assertEqual(len(messages), 1)
+        self.assertTrue(messages[0].startswith(f"data/{BASELINE_NAME}: "))
+
+
 class TheProseNamesTheCauseTheRuleAndTheNextStep(unittest.TestCase):
     """Three-part recovery prose (`.gzkit/rules/guardrail-feedback-prose.md`)."""
 
@@ -96,6 +132,10 @@ class TheProseNamesTheCauseTheRuleAndTheNextStep(unittest.TestCase):
             "new finding": (_audit(MAP, PLANTED), BREACH),
             "repaired finding": (_audit(MAP, {}, held=[BREACH]), BREACH),
             "malformed map": (_audit(MAP + 'adapters = ["app.x"]\n', {}), "unknown keys"),
+            "package not on disk": (
+                _audit(MAP.replace("app", "apq"), {}),
+                "apq",
+            ),
         }
         for name, (messages, cause) in cases.items():
             with self.subTest(name):

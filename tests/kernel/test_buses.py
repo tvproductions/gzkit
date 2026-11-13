@@ -44,6 +44,15 @@ class RegistryFailsFast(unittest.TestCase):
         with self.assertRaises(BusConfigurationError):
             QueryBus({Rename: lambda _c: None}, expected=[])  # ty: ignore[invalid-argument-type]
 
+    def test_a_handler_that_cannot_be_called_refuses_construction(self) -> None:
+        with self.assertRaises(BusConfigurationError) as caught:
+            CommandBus({Rename: None}, expected=[Rename])  # ty: ignore[invalid-argument-type]
+        self.assertIn("Rename", str(caught.exception))
+
+    def test_a_key_that_is_not_a_class_refuses_construction(self) -> None:
+        with self.assertRaises(BusConfigurationError):
+            CommandBus({"Rename": lambda _c: None}, expected=[])  # ty: ignore[invalid-argument-type]
+
     def test_an_unregistered_message_is_a_fault_at_dispatch(self) -> None:
         bus = CommandBus({Rename: lambda _c: None}, expected=[Rename])
         with self.assertRaises(BusConfigurationError):

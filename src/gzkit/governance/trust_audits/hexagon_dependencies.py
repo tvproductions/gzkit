@@ -4,7 +4,9 @@ Runs the kernel's dependency checker over the package the project's package map
 names (``pyproject.toml`` ``[tool.py-gzkit.hexagon]``) and holds the result to the
 shrink-only ``data/hexagon_dependency_baseline.json``: a finding the baseline does
 not hold fails, and so does a held finding the tree no longer produces, so the
-list only shrinks while gzkit's use cases migrate after return to service.
+list only shrinks while gzkit's use cases migrate after return to service. A map
+naming a package that is not on disk, and a baseline that cannot be read as an
+object of finding keys, fail too: what the scope cannot read never passes.
 
 It sits in the default tier, so it runs in every per-change ``gz check``: the
 policy test it shares a checker with runs only when its own file changes, which
@@ -23,9 +25,10 @@ from gzkit.kernel.dependency_checker import (
     PackageMapMissingError,
     check,
     compare,
+    held_keys,
     load_package_map,
 )
-from gzkit.registries import RegistryUnreadableError, load_registry
+from gzkit.registries import RegistryError, load_registry, registry_path
 from gzkit.validate import ValidationError
 
 if TYPE_CHECKING:
@@ -51,7 +54,7 @@ def audit_hexagon_dependencies(project_root: Path) -> list[ValidationError]:
 
     Returns:
         One error per finding the baseline does not hold, one per held finding the
-        tree no longer produces, or one for a malformed package map.
+        tree no longer produces, or one for a malformed package map or baseline.
 
     """
     pyproject = project_root / "pyproject.toml"
@@ -59,12 +62,23 @@ def audit_hexagon_dependencies(project_root: Path) -> list[ValidationError]:
         return []
     try:
         package_map = load_package_map(pyproject)
+        findings = check(package_map, project_root)
     except PackageMapMissingError:
         return []
     except PackageMapError as exc:
         message = f"{exc}: the package map cannot be read ({_SPEC}). {_RERUN}"
         return [ValidationError(type=_TYPE, artifact="pyproject.toml", message=message)]
-    new, repaired = compare(check(package_map, project_root), _held(project_root))
+    try:
+        held = _held(project_root)
+    except (RegistryError, ValueError) as exc:
+        message = (
+            f"{BASELINE}: {exc}. The baseline cannot be read, and a check held to an "
+            f"unreadable baseline would pass silently ({_SPEC}). Restore it from git "
+            "(`git checkout -- data/hexagon_dependency_baseline.json`), then re-run "
+            "`uv run gz validate --hexagon-dependencies`."
+        )
+        return [ValidationError(type=_TYPE, artifact=BASELINE, message=message)]
+    new, repaired = compare(findings, held)
     errors = [
         ValidationError(
             type=_TYPE,
@@ -95,12 +109,13 @@ def audit_hexagon_dependencies(project_root: Path) -> list[ValidationError]:
 def _held(project_root: Path) -> frozenset[str]:
     """Return the finding keys the baseline holds; a project without one holds none.
 
+    A baseline that is present but not UTF-8 or not JSON propagates ``RegistryError``,
+    and one that is not an object of finding keys propagates ``ValueError``.
+
     Returns:
         The held keys.
 
     """
-    try:
-        payload = load_registry(project_root, BASELINE_NAME)
-    except RegistryUnreadableError:
+    if not registry_path(project_root, BASELINE_NAME).is_file():
         return frozenset()
-    return frozenset(payload.get("findings", []))
+    return held_keys(load_registry(project_root, BASELINE_NAME))

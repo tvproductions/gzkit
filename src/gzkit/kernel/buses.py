@@ -42,14 +42,22 @@ class _Bus[M: Command | Query]:
         """Build the registry, refusing it when it is incomplete or mistyped.
 
         Raises:
-            BusConfigurationError: a key is not a message of this bus, or an
-                expected message type has no handler.
+            BusConfigurationError: a key is not a message type of this bus, a handler
+                cannot be called, or an expected message type has no handler.
 
         """
         base = self._message_base
-        foreign = sorted(t.__name__ for t in handlers if not issubclass(t, base))
+        foreign = sorted(
+            getattr(t, "__name__", repr(t))
+            for t in handlers
+            if not (isinstance(t, type) and issubclass(t, base))
+        )
         if foreign:
             msg = f"{type(self).__name__} takes {base.__name__} types only; got {foreign}"
+            raise BusConfigurationError(msg)
+        uncallable = sorted(t.__name__ for t, handler in handlers.items() if not callable(handler))
+        if uncallable:
+            msg = f"{type(self).__name__}: the handler for {uncallable} cannot be called"
             raise BusConfigurationError(msg)
         missing = sorted(t.__name__ for t in expected if t not in handlers)
         if missing:

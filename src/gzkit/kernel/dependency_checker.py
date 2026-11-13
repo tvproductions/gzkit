@@ -15,7 +15,12 @@ It reads the hexagonal architecture system package map from ``pyproject.toml``
   from the driving ports, or does not take its name from it.
 
 A module no region names is reported once, as ``unmapped``; its imports are not
-judged, since it has no region to judge them by.
+judged, since it has no region to judge them by. The finding names the module's
+highest unmapped ancestor, so code added inside an already-unmapped package adds no
+new finding: the count only falls, but held packages can still grow.
+
+A map naming a package its source root does not hold is refused, never read as an
+empty tree that passes.
 """
 
 import ast
@@ -40,6 +45,7 @@ __all__ = [
     "Rule",
     "check",
     "compare",
+    "held_keys",
     "load_baseline",
     "load_package_map",
 ]
@@ -185,8 +191,8 @@ def load_package_map(pyproject: Path) -> PackageMap:
 
     Raises:
         PackageMapMissingError: the table is absent.
-        PackageMapError: a key is unknown, or a package is mapped to two regions
-            or lies outside the package.
+        PackageMapError: the package or source root is not a name, or a key is
+            unknown.
 
     """
     data = tomllib.loads(pyproject.read_text(encoding="utf-8"))
@@ -194,15 +200,39 @@ def load_package_map(pyproject: Path) -> PackageMap:
     if not isinstance(table, dict):
         msg = f"{pyproject.as_posix()}: no [tool.py-gzkit.hexagon] package map"
         raise PackageMapMissingError(msg)
-    package = str(table.get("package", ""))
-    source_root = str(table.get("source-root", "src"))
+    package = table.get("package")
+    source_root = table.get("source-root", "src")
+    if not isinstance(package, str) or not package:
+        msg = "package map: `package` must name the package's import name"
+        raise PackageMapError(msg)
+    if not isinstance(source_root, str):
+        msg = "package map: `source-root` must be a directory name"
+        raise PackageMapError(msg)
     unknown = sorted(set(table) - {"package", "source-root"} - set(Region))
     if unknown:
         msg = f"package map: unknown keys {unknown}; regions are {[r.value for r in Region]}"
         raise PackageMapError(msg)
+    return PackageMap(package=package, source_root=source_root, parts=_parts(table, package))
+
+
+def _parts(table: dict[str, object], package: str) -> dict[str, Region]:
+    """Read each region's list of packages from the map's *table*.
+
+    Returns:
+        Each mapped package and its region.
+
+    Raises:
+        PackageMapError: a region is not a list of names, or a package is mapped to
+            two regions or lies outside the package.
+
+    """
     parts: dict[str, Region] = {}
     for region in Region:
-        for part in table.get(region.value, []):
+        listed = table.get(region.value, [])
+        if not isinstance(listed, list) or not all(isinstance(p, str) for p in listed):
+            msg = f"package map: {region} must be a list of package names"
+            raise PackageMapError(msg)
+        for part in listed:
             if part in parts:
                 msg = f"package map: {part} is mapped to {parts[part]} and {region}"
                 raise PackageMapError(msg)
@@ -210,7 +240,7 @@ def load_package_map(pyproject: Path) -> PackageMap:
                 msg = f"package map: {part} lies outside the package {package}"
                 raise PackageMapError(msg)
             parts[part] = region
-    return PackageMap(package=package, source_root=source_root, parts=parts)
+    return parts
 
 
 class _Module(BaseModel):
@@ -224,9 +254,23 @@ class _Module(BaseModel):
 
 
 def _modules(package_map: PackageMap, project_root: Path) -> list[_Module]:
+    """Parse every module of the mapped package.
+
+    Returns:
+        Each module, in path order.
+
+    Raises:
+        PackageMapError: the source root holds no directory for the package.
+
+    """
     root = project_root / package_map.source_root
+    package_dir = root.joinpath(*package_map.package.split("."))
+    if not package_dir.is_dir():
+        where = package_dir.relative_to(project_root).as_posix()
+        msg = f"package map: package {package_map.package} is not at {where}"
+        raise PackageMapError(msg)
     found: list[_Module] = []
-    for path in sorted((root / package_map.package).rglob("*.py")):
+    for path in sorted(package_dir.rglob("*.py")):
         rel = path.relative_to(root).with_suffix("")
         is_package = rel.name == "__init__"
         parts = rel.parts[:-1] if is_package else rel.parts
@@ -270,7 +314,7 @@ def _import_findings(
 def _import_breach(package_map: PackageMap, own: str | None, region: Region, target: str) -> str:
     """Return what *target* is when the import breaches the table, else an empty string."""
     top = target.split(".", maxsplit=1)[0]
-    if top != package_map.package:
+    if target != package_map.package and not target.startswith(f"{package_map.package}."):
         outside = top in sys.stdlib_module_names or region not in INNER
         return "" if outside or top in _INNER_THIRD_PARTY else f"{top} (third-party)"
     target_part = package_map.part_of(target)
@@ -322,14 +366,34 @@ def _dotted(expr: ast.expr, aliases: dict[str, str]) -> str:
     return ""
 
 
+class _Classes(BaseModel):
+    """Every class and import binding in the package, to follow a base to the kernel."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    bases: dict[str, list[str]] = Field(..., description="Each class's qualified bases")
+    aliases: dict[str, dict[str, str]] = Field(..., description="Each module's import bindings")
+
+
+def _class_index(modules: list[_Module]) -> _Classes:
+    bases: dict[str, list[str]] = {}
+    aliases: dict[str, dict[str, str]] = {}
+    for module in modules:
+        aliases[module.name] = dict(_aliases(module))
+        for cls, qualified in _qualified_bases(module):
+            if cls in module.tree.body:
+                bases[f"{module.name}.{cls.name}"] = qualified
+    return _Classes(bases=bases, aliases=aliases)
+
+
 def _base_findings(
-    package_map: PackageMap, module: _Module, region: Region | None
+    package_map: PackageMap, module: _Module, region: Region | None, classes: _Classes
 ) -> Iterator[Finding]:
     if region is Region.KERNEL:
         return
     where = region.value if region else "no region"
     for cls, bases in _qualified_bases(module):
-        for name in _kernel_bases(package_map, bases):
+        for name in sorted(_kernel_bases(package_map, bases, classes)):
             allowed = BASE_REGIONS.get(name)
             if allowed is not None and region not in allowed:
                 subject = f"{module.name}.{cls.name}"
@@ -338,13 +402,34 @@ def _base_findings(
                 )
 
 
-def _kernel_bases(package_map: PackageMap, bases: list[str]) -> Iterator[str]:
-    """Yield the name of each base in *bases* that the kernel defines."""
-    for base in bases:
+def _kernel_bases(package_map: PackageMap, bases: list[str], classes: _Classes) -> set[str]:
+    """Return the name of each kernel base *bases* reach, directly or through other classes.
+
+    A base defined in the package is followed to its own bases, and a name a package
+    re-exports is followed to the class it binds, so a subclass of a domain ``Entity``
+    is an ``Entity`` wherever it lives.
+
+    Returns:
+        The kernel base names reached.
+
+    """
+    found: set[str] = set()
+    seen: set[str] = set()
+    pending = list(bases)
+    while pending:
+        base = pending.pop()
+        if base in seen:
+            continue
+        seen.add(base)
         owner, _, name = base.rpartition(".")
         owner_part = package_map.part_of(owner) if owner else None
         if owner_part is not None and package_map.parts[owner_part] is Region.KERNEL:
-            yield name
+            found.add(name)
+        elif base in classes.bases:
+            pending.extend(classes.bases[base])
+        elif name in classes.aliases.get(owner, {}):
+            pending.append(classes.aliases[owner][name])
+    return found
 
 
 def _use_case_names(package_map: PackageMap, modules: list[_Module]) -> frozenset[str]:
@@ -391,6 +476,9 @@ def _use_case(package_map: PackageMap, base: str, use_cases: frozenset[str]) -> 
 def check(package_map: PackageMap, project_root: Path) -> list[Finding]:
     """Check every module of the mapped package against the dependency rules.
 
+    A source root holding no directory for the mapped package propagates
+    ``PackageMapError`` from the module walk; it is never read as an empty tree.
+
     Returns:
         Every finding, sorted by key.
 
@@ -398,11 +486,12 @@ def check(package_map: PackageMap, project_root: Path) -> list[Finding]:
     modules = _modules(package_map, project_root)
     known = frozenset(m.name for m in modules)
     use_cases = _use_case_names(package_map, modules)
+    classes = _class_index(modules)
     findings: set[Finding] = set()
     for module in modules:
         part = package_map.part_of(module.name)
         region = package_map.parts[part] if part else None
-        findings.update(_base_findings(package_map, module, region))
+        findings.update(_base_findings(package_map, module, region, classes))
         if region is None:
             if not (module.is_package and package_map.is_container(module.name)):
                 key = package_map.unmapped_key(module.name)
@@ -428,8 +517,28 @@ def compare(findings: list[Finding], baseline: frozenset[str]) -> tuple[list[str
 def load_baseline(path: Path) -> frozenset[str]:
     """Read a baseline file: a JSON object whose ``findings`` list holds finding keys.
 
+    A file that is not JSON, or not such an object, propagates ``ValueError``.
+
     Returns:
         The held keys.
 
     """
-    return frozenset(json.loads(path.read_text(encoding="utf-8")).get("findings", []))
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    return held_keys(payload)
+
+
+def held_keys(payload: object) -> frozenset[str]:
+    """Read the held keys from a parsed baseline payload.
+
+    Returns:
+        The held keys.
+
+    Raises:
+        ValueError: *payload* is not an object whose ``findings`` is a list of keys.
+
+    """
+    findings = payload.get("findings", []) if isinstance(payload, dict) else None
+    if not isinstance(findings, list) or not all(isinstance(k, str) for k in findings):
+        msg = "baseline: expected an object whose `findings` is a list of finding keys"
+        raise ValueError(msg)
+    return frozenset(findings)
