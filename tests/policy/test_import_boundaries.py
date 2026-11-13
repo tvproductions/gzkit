@@ -581,10 +581,6 @@ PRIVATE_CROSS_PACKAGE_IMPORT_BASELINE: dict[str, tuple[str, ...]] = {
     "qc_binding.py": ("commands.quality._build_check_steps",),
     "quality.py": ("commands.chores._resolve_chore_dir",),
     "red_witness.py": ("commands.quality._test_name_from_record",),
-    "req_kind_support.py": (
-        "commands.validate_cmd._default_scope_runners",
-        "commands.validate_cmd._explicit_scope_runners",
-    ),
     "verb_references.py": ("cli.main._get_parser",),
     "verifier_pipe_gate.py": (
         "airlock.enter._AIRLOCK_CLAIM_IDS",
