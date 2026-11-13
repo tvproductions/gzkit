@@ -1009,6 +1009,10 @@ Lifted 2026-08-29 at version `0.11.0` (rule now at `0.12.0`).
 
 ## `tests.md`
 
+### Changed 2026-11-13 at version `0.29.0` (RP-7, change order of 2026-11-12)
+
+Prior `0.28.0` banner, verbatim: *"adds § Hexagon tests and narrows `behave` to outward-facing contracts, from the hexagonal specification run (operator, 2026-11-12: "tests.md")"*. Superseded when `gz validate --hexagon-tests` landed (`f8d1a8f14`, `d6eb328eb`): § Hexagon tests said its checkers were unbuilt and each clause advisory; fakes only, the labels and `@covers` are now gated, and the section states the rulings of 2026-11-13 that bound them: regions including the adapters (*"Regions incl. adapters"*), the kernel excluded (*"Exclude the kernel"*), the outer-edge exception per patch target (*"Per patch target"*), and the fake-adapter declaration as a module comment (*"Module comment marker"*).
+
 ### Changed 2026-11-12 at version `0.28.0` (R&D run hexagonal-specification, disposition row 4)
 
 Prior `0.27.4` banner, verbatim: *"§ Two runners no longer sends every real subprocess to `behave`, since unit tests spawn `git` under `_isolated_git_env()` (operator, 2026-11-08: "fix what is stale")."* Superseded on the operator's *"tests.md"*: § Hexagon tests carries the run's five test-discipline rulings (fakes only, the labels, `@covers` on every hexagon test, one test per REQ and variant, one recipe per artifact), each advisory until its checker lands; `behave` is narrowed to outward-facing contracts in the operator's wording and cites requirements-model § 10; § General Rules points the `unittest.mock` fixture to the hexagon exception. Scorecard rows 37c and 91 to 91d added.

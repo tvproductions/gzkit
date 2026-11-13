@@ -89,6 +89,29 @@ first hexagon REQ admitted*. Recommended: regrade, since a count over zero REQs 
 **Grade.** #91, #91a and #91b block return to service, by the timing ruling; #91c is due by the first hexagon REQ
 admitted (H15).
 
+**Rulings of 2026-11-13**, each from options put with measurements (operator, verbatim):
+
+- *"Regions incl. adapters"*: the gates hold every test module covering the domain, either port package, the handlers
+  or an adapter region, over inner regions only. Today that is the 164 modules importing `gzkit.cli`.
+- *"Exclude the kernel"*: `tests.md`'s list of regions, over the checker's `INNER` set, which includes it.
+- *"Per patch target"*: an inner-region test imports no `unittest.mock`; an adapter test may patch only targets
+  outside the package, and a bare double is a finding. Over judging by region alone, which would hold no CLI test.
+- *"Module comment marker"*: a fake adapter's test module declares `# hexagon-test: fake-adapter` to leave the
+  `@covers` gate, over a class attribute.
+
+**Landed 2026-11-13.**
+
+| What | Where | Commit |
+| --- | --- | --- |
+| The checker, three gates | `gzkit.governance.trust_audits.hexagon_tests`; 21 tests in `tests/governance/test_audit_hexagon_tests.py` | `f8d1a8f14` |
+| The scope, baseline and controls | `gz validate --hexagon-tests` in the default tier; `data/hexagon_test_baseline.json` (6,136 findings: 3,540 labels, 2,295 covers, 301 mock), a registered shrink-ratchet; `NC:hexagon-tests`, `NC:hexagon-tests-baselined` | `d6eb328eb` |
+
+**Mode contract** (`.gzkit/rules/mode-contract.md`), stated here until RP-13 builds the declaration shapes.
+
+| Control | Operational | Hangar | Drydock | MEL entry | Self-test |
+| --- | --- | --- | --- | --- | --- |
+| `gz validate --hexagon-tests` | on (exit 3) | advisory, demoted by the MX checkpoint | advisory, demoted by the MX checkpoint | (M) none needed: an advisory run still prints every finding; (O) a new finding can land while the hangar is open; placard: the `[MX advisory]` line; restore: the exit re-run at full strength; accepted state: findings no more than the baseline holds | `NC:hexagon-tests` and `NC:hexagon-tests-baselined`, run on every `gz check` by its *Enforcement floor* step |
+
 ## Landed (2026-11-08)
 
 | What | Where | Commit |

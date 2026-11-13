@@ -266,6 +266,7 @@ What gzkit's code does today against this specification:
 | `GzkitError` lives in `core/` | row 5 programme |
 | A capitalised `lane` was admitted by widening the schema | #1319 |
 | No falsifiability instrument reads a Behave feature | #1323 |
+| Hexagon tests break the test discipline: 6,136 findings in 164 test modules, all through `gzkit.cli`, held in the shrink-only `data/hexagon_test_baseline.json` (`gz validate --hexagon-tests`, 2026-11-13) | `waiver-ratchet-drawdown` chore, RP-7 |
 | The package map is a draft until RP-6's identity crossover; the kernel, its buses and the checker landed (RP-15 tranche 6); no fakes exist yet | row 1 work packages |
 
 The *row* entries refer to the run's disposition map.
