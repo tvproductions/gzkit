@@ -16,7 +16,7 @@ def step_obpi_has_closing_argument(_context) -> None:
 
     # Insert Closing Argument section before Evidence section
     closing_arg = (
-        "\n## Closing Argument\n\n"
+        "\n### Closing Argument\n\n"
         "1. **What was built** -- Demo feature with docstring proof.\n\n"
         "2. **What it enables** -- Product proof gate validation.\n\n"
         "3. **Why it matters** -- `uv run gz test` proves the gate.\n\n"

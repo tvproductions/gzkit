@@ -28,7 +28,7 @@ class TestExtractClosingArgument(unittest.TestCase):
         brief = (
             "# OBPI-0.1.0-01\n\n"
             "## OBJECTIVE\n\nDo something.\n\n"
-            "## Closing Argument\n\n"
+            "### Closing Argument\n\n"
             "1. **What was built** -- the thing.\n\n"
             "2. **What it enables** -- capability.\n\n"
             "### Implementation Summary\n\n- done\n"
@@ -50,29 +50,48 @@ class TestExtractClosingArgument(unittest.TestCase):
 
     @covers("REQ-0.23.0-04-04")
     def test_returns_none_for_placeholder(self):
-        brief = "## Closing Argument\n\n*To be authored at completion from delivered evidence.*\n"
+        brief = "### Closing Argument\n\n*To be authored at completion from delivered evidence.*\n"
         result = extract_closing_argument(brief)
         self.assertIsNone(result)
 
     @covers("REQ-0.23.0-04-01")
     def test_stops_at_next_h2(self):
         brief = (
-            "## Closing Argument\n\nArgument text here.\n\n## Quality Gates\n\nSomething else.\n"
+            "### Closing Argument\n\nArgument text here.\n\n## Quality Gates\n\nSomething else.\n"
         )
         result = extract_closing_argument(brief)
         self.assertEqual(result, "Argument text here.")
 
     @covers("REQ-0.23.0-04-01")
     def test_stops_at_key_proof(self):
-        brief = "## Closing Argument\n\nArgument text.\n\n### Key Proof\n\nSome proof.\n"
+        brief = "### Closing Argument\n\nArgument text.\n\n### Key Proof\n\nSome proof.\n"
         result = extract_closing_argument(brief)
         self.assertEqual(result, "Argument text.")
 
     @covers("REQ-0.23.0-04-04")
     def test_returns_none_for_empty_section(self):
-        brief = "## Closing Argument\n\n## Next Section\n"
+        brief = "### Closing Argument\n\n## Next Section\n"
         result = extract_closing_argument(brief)
         self.assertIsNone(result)
+
+    @covers("REQ-0.23.0-04-01")
+    def test_extracts_from_the_shipped_brief_layout(self):
+        # The template places the section as an H3 under the evidence H2, between
+        # sibling H3s (brief-heading-conventions.md; RP-7 held ruling H12).
+        brief = (
+            "## QUALITY GATES\n\n"
+            "### Verification Commands (Concrete)\n\n```bash\n# a comment\nuv run gz test\n```\n\n"
+            "### Closing Argument\n\nThe argument.\n\n```bash\n# a fenced comment\n```\n\n"
+            "### Implementation Summary\n\n- done\n"
+        )
+        result = extract_closing_argument(brief)
+        self.assertEqual(result, "The argument.\n\n```bash\n# a fenced comment\n```")
+
+    @covers("REQ-0.23.0-04-01")
+    def test_stops_at_the_next_sibling_h3(self):
+        brief = "### Closing Argument\n\nArgument text.\n\n### Gate 1: ADR\n\nOther.\n"
+        result = extract_closing_argument(brief)
+        self.assertEqual(result, "Argument text.")
 
 
 class TestGatherReviewerAssessments(unittest.TestCase):
@@ -285,7 +304,7 @@ class TestComputeDefenseBrief(unittest.TestCase):
 
             brief = obpis_dir / "OBPI-0.1.0-01-feat.md"
             brief.write_text(
-                "# OBPI\n\n## Closing Argument\n\nWe built it.\n\n"
+                "# OBPI\n\n### Closing Argument\n\nWe built it.\n\n"
                 "### Implementation Summary\n\n- done\n",
                 encoding="utf-8",
             )

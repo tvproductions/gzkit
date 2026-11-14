@@ -575,9 +575,10 @@ from gzkit.commands.version_sync import (  # noqa: E402
 # Ceremony enforcement helpers (ADR-0.23.0 / OBPI-0.23.0-04)
 # ---------------------------------------------------------------------------
 
-_CLOSING_ARG_HEADING_RE = re.compile(r"^## Closing Argument\s*$", re.MULTILINE)
-_NEXT_H2_RE = re.compile(r"^## ", re.MULTILINE)
-_EVIDENCE_SUB_RE = re.compile(r"^### (?:Implementation Summary|Key Proof)\b", re.MULTILINE)
+# The section is an H3 under the evidence H2 (brief-heading-conventions.md); it ends at
+# the next H2 or H3, which covers the evidence subsections (RP-7 held ruling H12).
+_CLOSING_ARG_HEADING_RE = re.compile(r"^### Closing Argument\s*$", re.MULTILINE)
+_NEXT_HEADING_RE = re.compile(r"^#{2,3} ", re.MULTILINE)
 _CLOSING_ARG_PLACEHOLDER = "*To be authored at completion from delivered evidence.*"
 
 
@@ -596,12 +597,8 @@ def extract_closing_argument(brief_text: str) -> str | None:
     if not match:
         return None
     rest = brief_text[match.end() :]
-    end = len(rest)
-    for pattern in (_NEXT_H2_RE, _EVIDENCE_SUB_RE):
-        m = pattern.search(rest)
-        if m:
-            end = min(end, m.start())
-    text = rest[:end].strip()
+    nxt = _NEXT_HEADING_RE.search(rest)
+    text = (rest[: nxt.start()] if nxt else rest).strip()
     if not text or text == _CLOSING_ARG_PLACEHOLDER:
         return None
     return text
