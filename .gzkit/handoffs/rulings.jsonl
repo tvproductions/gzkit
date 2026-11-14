@@ -2190,3 +2190,18 @@
 {"ts": "2026-11-13T10:01:08Z", "source": "20261113T100108Z-ghi1267-held-and-dispatcher-injected.md", "text": "Hold the placement of core/ until migration, from options A hold, B map core/ now, C build the transitive check on today's core/ (verbatim: \"A: hold to migration\")."}
 {"ts": "2026-11-13T10:01:08Z", "source": "20261113T100108Z-ghi1267-held-and-dispatcher-injected.md", "text": "Remove the req_kind_support to validate_cmd edge now (verbatim: \"Yes, remove it\")."}
 {"ts": "2026-11-13T10:01:08Z", "source": "20261113T100108Z-ghi1267-held-and-dispatcher-injected.md", "text": "Remove it by threading the dispatcher through every caller, from options A thread, B move the scope registry out of commands/, C defer (verbatim: \"A: thread it fully\")."}
+{"ts": "2026-11-14T00:31:35Z", "source": "20261114T003134Z-rp7-hexagon-test-gates-landed.md", "text": "Proceed on the ghi1267-held-and-dispatcher-injected handoff (verbatim: \"Proceed\")."}
+{"ts": "2026-11-14T00:31:35Z", "source": "20261114T003134Z-rp7-hexagon-test-gates-landed.md", "text": "Route GHIs 1318 to 1324 next (verbatim: \"Route GHIs 1318-1324\")."}
+{"ts": "2026-11-14T00:31:35Z", "source": "20261114T003134Z-rp7-hexagon-test-gates-landed.md", "text": "GHIs 1318, 1321 and 1324 are direct fixes (verbatim, for each: \"Direct fix now\")."}
+{"ts": "2026-11-14T00:31:35Z", "source": "20261114T003134Z-rp7-hexagon-test-gates-landed.md", "text": "GHI 1319 goes on a line on RP-14, due with tranche 3 (verbatim: \"Line on RP-14\")."}
+{"ts": "2026-11-14T00:31:35Z", "source": "20261114T003134Z-rp7-hexagon-test-gates-landed.md", "text": "GHI 1320 is verified and closed (verbatim: \"Verify and close\")."}
+{"ts": "2026-11-14T00:31:35Z", "source": "20261114T003134Z-rp7-hexagon-test-gates-landed.md", "text": "GHIs 1322 and 1323 become work orders after return to service (verbatim, for each: \"Work order after RTS\")."}
+{"ts": "2026-11-14T00:31:35Z", "source": "20261114T003134Z-rp7-hexagon-test-gates-landed.md", "text": "Record the routing on the contract and post a comment on each GHI (verbatim: \"Yes, record it\")."}
+{"ts": "2026-11-14T00:31:35Z", "source": "20261114T003134Z-rp7-hexagon-test-gates-landed.md", "text": "Amend only ADR-0.0.3's injection-seam callout, leaving its sealed briefs (verbatim: \"Amend ADR callout only\")."}
+{"ts": "2026-11-14T00:31:35Z", "source": "20261114T003134Z-rp7-hexagon-test-gates-landed.md", "text": "GHI 1318 is repaired by demoting @advances to an optional annotation and keeping the decorator (verbatim: \"Demote, keep decorator\")."}
+{"ts": "2026-11-14T00:31:35Z", "source": "20261114T003134Z-rp7-hexagon-test-gates-landed.md", "text": "Return from GHI work to drydock work (verbatim: \"Back to drydock\")."}
+{"ts": "2026-11-14T00:31:35Z", "source": "20261114T003134Z-rp7-hexagon-test-gates-landed.md", "text": "RP-7's hexagon test gates move next (verbatim: \"RP-7 hexagon test gates\")."}
+{"ts": "2026-11-14T00:31:35Z", "source": "20261114T003134Z-rp7-hexagon-test-gates-landed.md", "text": "The hexagon test gates hold every region, adapters included (verbatim: \"Regions incl. adapters\")."}
+{"ts": "2026-11-14T00:31:35Z", "source": "20261114T003134Z-rp7-hexagon-test-gates-landed.md", "text": "The hexagon test gates exclude the kernel (verbatim: \"Exclude the kernel\")."}
+{"ts": "2026-11-14T00:31:35Z", "source": "20261114T003134Z-rp7-hexagon-test-gates-landed.md", "text": "The fakes-only gate judges mocks per patch target (verbatim: \"Per patch target\")."}
+{"ts": "2026-11-14T00:31:35Z", "source": "20261114T003134Z-rp7-hexagon-test-gates-landed.md", "text": "A fake adapter's tests declare their @covers exemption with a module comment marker (verbatim: \"Module comment marker\")."}
