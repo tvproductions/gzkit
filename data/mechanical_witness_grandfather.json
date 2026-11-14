@@ -130,12 +130,6 @@
       ]
     },
     {
-      "key": "data-models-gzkit-rules-models-md#26",
-      "gates": [
-        "--pydantic-models"
-      ]
-    },
-    {
       "key": "skill-surface-sync-gzkit-rules-skill-surface-sync-md#31",
       "gates": []
     },

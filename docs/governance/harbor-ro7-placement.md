@@ -154,7 +154,7 @@ validity table with its evidence.
 | H8 | mx-mode, *"Do not exit the hangar while any detectable defect remains unfixed"* | `safe-mode-doctrine.md` § The instruments 5: the exit clears blockers and the handback transfers the rest; hangar and drydock are synonyms (2026-11-03) | reword to the doctrine. **Ruled 2026-11-13:** *"A: Reword to doctrine"* |
 | H9 | model-selection, *"never on the dispatch call"* | the Agent tool now has a per-call `effort` input | operator's choice. **Ruled 2026-11-13:** *"A: Definition only"*; claim 4 stands, and the definitions' `effort:` is F24 |
 | H10 | scorecard rows 31 and 32, Mechanical | their notes claimed version comparison that does not exist; only version presence is enforced | operator's choice. **Ruled 2026-11-13:** *"A: Re-score row 32"*; row 31 stays Mechanical, row 32 Promotable |
-| H11 | scorecard row 26, Mechanical | `audit_pydantic_models` checks only that `model_config` exists | re-score Promotable, or extend the audit |
+| H11 | scorecard row 26, Mechanical | `audit_pydantic_models` checks only that `model_config` exists | re-score Promotable, or extend the audit. **Ruled 2026-11-13:** *"A: Re-score row 26"* |
 | H12 | brief-heading-conventions, `### Closing Argument` *"by H3 heading match"* | `commands/common.py:578` matches H2 only, while 136 briefs use H3, so the Defense Brief gets no closing argument | fix the code |
 | H13 | agents-md-map-doctrine, verdict RETIRE | `test_agents_md_map_doctrine.py` (REQ-0.0.54-01-01) asserts the file exists | operator's choice under the attested-REQ rule |
 | H14 | root `AGENTS.md` (Band A) | 98 % of its entry bytes are `tier: invariant`; the 2026-10-16 ruling declined re-tiering | operator retires or re-tiers named entries (stage 7) |
