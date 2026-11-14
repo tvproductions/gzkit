@@ -958,9 +958,30 @@ def _run_sensitivity_scope(
                 console.print(f"  [red]→[/red] \\[{finding.type}] {escape(finding.artifact)}")
                 console.print(f"      {escape(finding.message)}")
 
-    if any(f.type in _POLICY_BREACH_ERROR_TYPES for f in findings):
-        raise SystemExit(3)
-    raise SystemExit(0)
+    breached = any(f.type in _POLICY_BREACH_ERROR_TYPES for f in findings)
+    raise SystemExit(_sensitivity_exit_code(project_root, breached=breached))
+
+
+def _sensitivity_exit_code(project_root: Path, *, breached: bool) -> int:
+    """Return the `--sensitivity` exit code, honouring the safe-mode checkpoint (RP-7 H5).
+
+    A policy breach exits 3 unless the hangar demotes the scope, in which case it is
+    announced and exits 0: demoted, never discarded (GHI #843; security-sensitivity clause 3).
+
+    Returns:
+        3 when a breach must block, otherwise 0.
+
+    """
+    if not breached:
+        return 0
+    from gzkit.mx import checkpoint  # noqa: PLC0415
+
+    levels = {e.stem: e.level for e in VALIDATOR_REGISTRY}
+    level = levels.get("sensitivity", _mx_levels.CRITICAL)
+    if checkpoint.blocks("sensitivity", level, project_root):
+        return 3
+    print(checkpoint.demote_notice("sensitivity"), file=sys.stderr)  # noqa: T201
+    return 0
 
 
 def _rule_version_markers_runner(project_root: Path) -> list[ValidationError]:

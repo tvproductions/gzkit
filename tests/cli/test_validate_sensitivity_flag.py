@@ -9,6 +9,7 @@ from pathlib import Path
 from unittest import mock
 
 from gzkit.cli.main import _build_parser
+from gzkit.commands import validate_cmd
 from gzkit.traceability import covers
 
 
@@ -220,6 +221,45 @@ class TestSensitivityAll(unittest.TestCase):
         ):
             validate_audits.run_audits_umbrella(as_json=False)
         self.assertEqual(ctx.exception.code, 3)
+
+
+class TestSensitivityHonoursTheCheckpoint(unittest.TestCase):
+    """`--sensitivity` alone demotes in the hangar, as rule clause 3 says (RP-7 H5)."""
+
+    def _run(self, root: Path, *, demotes: bool) -> tuple[str | int | None, str]:
+        err_buf = io.StringIO()
+        with (
+            mock.patch.object(validate_cmd, "get_project_root", return_value=root),
+            mock.patch("gzkit.mx.checkpoint.hangar_demotes", return_value=demotes),
+            redirect_stdout(io.StringIO()),
+            redirect_stderr(err_buf),
+            self.assertRaises(SystemExit) as ctx,
+        ):
+            validate_cmd.validate(
+                check_manifest=False,
+                check_documents=False,
+                check_surfaces=False,
+                check_ledger=False,
+                check_instructions=False,
+                check_briefs=False,
+                check_sensitivity=True,
+                as_json=False,
+            )
+        return ctx.exception.code, err_buf.getvalue()
+
+    def test_floor_violation_is_advisory_while_the_hangar_demotes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _setup_fixture_root(tmp, with_brief=True)
+            code, err = self._run(root, demotes=True)
+        self.assertEqual(code, 0)
+        self.assertIn("[MX advisory] guard 'sensitivity'", err)
+
+    def test_floor_violation_fails_closed_outside_the_hangar(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _setup_fixture_root(tmp, with_brief=True)
+            code, err = self._run(root, demotes=False)
+        self.assertEqual(code, 3)
+        self.assertNotIn("[MX advisory]", err)
 
 
 if __name__ == "__main__":

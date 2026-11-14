@@ -494,7 +494,7 @@
     {
       "file": "src/gzkit/commands/validate_cmd.py",
       "function": "_run_sensitivity_scope",
-      "score": 25
+      "score": 24
     },
     {
       "file": "src/gzkit/commands/validate_decomposition.py",
