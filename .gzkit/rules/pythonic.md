@@ -7,9 +7,9 @@ description: Pythonic standards and idiomatic code contract
 
 # Pythonic Standards (Idiomatic Code Contract)
 
-<!-- rule-version: 0.6.0 -->
+<!-- rule-version: 0.7.0 -->
 
-> **Rule version:** `0.6.0` — § Error Handling splits inside the hexagon's walls (values) from outside (`GzkitError`), from the hexagonal specification run (operator, 2026-11-12: *"pythonic error rule"*); prior banners in [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd).
+> **Rule version:** `0.7.0` — principle 9 and § Size Limits cite the canonical threshold table for function and module size and keep <=300 lines for classes (RP-7 held ruling H2, operator, 2026-11-13: *"A: Cite the table"*); prior banners in [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd).
 
 ## Core Principles
 
@@ -21,40 +21,22 @@ description: Pythonic standards and idiomatic code contract
 6. **No mutable defaults** — use `None` + factory
 7. **Pydantic BaseModel for data** — TypedDict for shapes; see models policy
 8. **Explicit exceptions** — typed errors; **no bare `except:` / `except Exception:`** (enforced by ruff `BLE001` on `src/gzkit`; see § Error Handling)
-9. **Small units** — <=50 lines/function, <=600 lines/module, <=300 lines/class
+9. **Small units** — function and module size by the canonical threshold table (§ Size Limits); <=300 lines/class
 10. **No implicit globals** — explicit configuration and state
 
 ## Size Limits & Refactoring
 
-**Limits:** Functions <=50 lines | Modules <=600 lines | Classes <=300 lines
+**Function and module size are the canonical threshold table's**, never this rule's: the `lizard_nloc` and
+`lizard_file_nloc` bands of `.gzkit/rules/complexity-thresholds.json`, read through `complexity-thresholds.md`.
+**Classes <=300 lines** stays the one size limit this rule owns, because the table carries no class metric
+(operator, 2026-11-13, RP-7 held ruling H2: *"A: Cite the table"*). Cite the table, never a number copied from it.
 
-> **Unreconciled with the canonical threshold table — read before citing these numbers.**
-> `complexity-thresholds.md` § Invariant declares one canonical threshold table and that
-> *"a new threshold authority appearing anywhere else is doctrine drift by another name."*
-> These three numbers are such an authority, and they **disagree with the table in both
-> directions**: `lizard_nloc` blocks at **37.0** (p95) where this rule permits 50;
-> `lizard_file_nloc` blocks at **3130.24** (p99) where this rule flags 600 (the table's *warn*
-> band is 716.5, so a 700-line module is merely `advise` there and a violation here).
->
-> What is actually enforced today:
->
-> | Limit | Enforced by | Status |
-> |---|---|---|
-> | Classes <=300 | `gz validate --class-size` (`code_quality.py`, `limit = 300` hardcoded, waivers in `_CLASS_SIZE_WAIVERS`) | **live gate** — the table carries no class-size metric, so this rule is the only authority |
-> | Functions <=50 | nothing | authoring-time guidance only |
-> | Modules <=600 | nothing reads 600; `gz check`'s "Module size" step runs `.gzkit/chores/module-sloc-cap-radon/check_module_size.py`, which enforces the table's `lizard_file_nloc` `block` band over `src/` with the shrink-only `data/module_size_grandfather.json` | 600 is authoring-time guidance only; the **live gate** is the table's band |
-> | *(cyclomatic)* | `gz validate --complexity-ceiling` and Ruff `C901`, both at `[tool.ruff.lint.mccabe] max-complexity` (each function, module mean and overall mean CC <=20); cognitive complexity by the same gate, scored by gzkit over CPython's `ast` at `.gzkit.json`'s `complexity.cognitive_ceiling` (15, held by the shrink-only `data/cognitive_complexity_baseline.json`) | **live gate** — a *third* ceiling, matching neither authority: the table's `lizard_ccn` blocks at 11.0, so a CC-15 function passes the ceiling while `block` per the table |
->
-> The table's function band has **no consumer**: `complexity_advise.py` reads `lizard_ccn`
-> alone (`gzkit.complexity.functions.METRIC_KEY`, `metrics_checked = 1`). Its module band has
-> one, the "Module size" step above.
-> `docs/governance/advisory-rules-audit.md` once miscoded this as *"Mechanical | xenon complexity"* —
-> xenon measured cyclomatic rank, never line count; that Mechanical claim was unbacked.
->
-> Resolving this requires a class-size band the corpus does not yet carry (a distillation pass,
-> per `gz-complexity-distill`), so it is **not** a prose fix. Surfaced as Pass A conflict-matrix
-> row 11; routed for operator decision. Until then: treat <=300 as binding (it gates), <=50 and
-> <=600 as guidance, and cite the table — not this rule — for any threshold claim.
+| Limit | Enforced by | Status |
+|---|---|---|
+| Classes <=300 | `gz validate --class-size` (`code_quality.py`, `limit = 300` hardcoded, waivers in `_CLASS_SIZE_WAIVERS`) | **live gate** |
+| Function size (`lizard_nloc`) | nothing: `complexity_advise.py` reads `lizard_ccn` alone (`gzkit.complexity.functions.METRIC_KEY`) | the band has no consumer; authoring-time guidance |
+| Module size (`lizard_file_nloc`) | `gz check`'s "Module size" step runs `.gzkit/chores/module-sloc-cap-radon/check_module_size.py` over `src/` against the shrink-only `data/module_size_grandfather.json` | **live gate** on the table's `block` band |
+| *(cyclomatic)* | `gz validate --complexity-ceiling` and Ruff `C901`, both at `[tool.ruff.lint.mccabe] max-complexity` (each function, module mean and overall mean CC <=20); cognitive complexity by the same gate, scored by gzkit over CPython's `ast` at `.gzkit.json`'s `complexity.cognitive_ceiling` (15, held by the shrink-only `data/cognitive_complexity_baseline.json`) | **live gate** — a *third* ceiling, matching neither authority: the table's `lizard_ccn` blocks at 11.0, so a CC-15 function passes the ceiling while `block` per the table |
 
 ## Imports (PEP 8)
 

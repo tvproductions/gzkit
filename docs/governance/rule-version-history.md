@@ -411,6 +411,10 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `pythonic.md`
 
+### Changed 2026-11-13 at version `0.7.0` (RP-7 held ruling H2)
+
+Prior `0.6.0` banner, verbatim: *"§ Error Handling splits inside the hexagon's walls (values) from outside (`GzkitError`), from the hexagonal specification run (operator, 2026-11-12: "pythonic error rule")"*. Superseded on the operator's *"A: Cite the table"*: principle 9 and § Size Limits carried `<=50 lines/function` and `<=600 lines/module`, a second threshold authority that disagreed with the canonical table in both directions, against `complexity-thresholds.md` § Invariant. Both now cite the table's `lizard_nloc` and `lizard_file_nloc` bands; `<=300 lines/class` stays, because the table carries no class metric. The unreconciled admonition is replaced by the ruling and the enforcement table. Scorecard rows 19 and 20 restated, scores unchanged.
+
 ### Changed 2026-11-12 at version `0.6.0` (R&D run hexagonal-specification, disposition row 4)
 
 Prior `0.5.13` banner, verbatim: *"the module-size row names the `gz check` step that enforces the table's band, and § Error Handling names `gzkit.core.exceptions`, under the operator's "fix what is stale" (2026-11-08)."* Superseded on the operator's *"pythonic error rule"*: § Error Handling's one translate-to-`GzkitError` bullet becomes the run's ruling, values inside the walls (domain and handlers), `GzkitError` outside (adapters and the configurator), faults uncaught inside, with `GzkitError`'s present home in `core/` and its move under row 5 stated. Scorecard rows 18a to 18c added.

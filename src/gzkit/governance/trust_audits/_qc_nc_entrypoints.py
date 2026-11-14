@@ -13,8 +13,8 @@ These are direct, named module-level callables resolving into ``src/gzkit/**`` โ
 Invariant #7). Each runs the real validator against whatever the fixture built; a clean
 fixture would make the entrypoint pass, surfacing the claim as a FACADE.
 
-Split out of ``_qc_negative_controls.py`` for module-size discipline (<=600 lines,
-`.claude/rules/pythonic.md`).
+Split out of ``_qc_negative_controls.py`` for module-size discipline
+(`.claude/rules/pythonic.md` ยง Size Limits).
 """
 
 import contextlib

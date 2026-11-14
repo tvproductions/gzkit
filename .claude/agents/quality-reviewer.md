@@ -20,7 +20,7 @@ You are a Code Quality Reviewer dispatched to independently evaluate code archit
 1. Re-read all changed files independently — do NOT trust the implementer's summary.
 2. Evaluate against these criteria:
    - SOLID principles adherence
-   - Function/module/class size limits (<=50 lines/function, <=600 lines/module, <=300 lines/class)
+   - Size limits: function and module size by the canonical threshold table (`.gzkit/rules/complexity-thresholds.json`, `lizard_nloc` and `lizard_file_nloc`), classes <=300 lines (`.gzkit/rules/pythonic.md` § Size Limits)
    - Test coverage adequacy (>= 40% floor)
    - Assertion semantics: exercise production behavior with expectations derived independently from the contract; shared-helper agreement cannot establish the helper's correctness
    - RED/negative-control evidence: inspect the green baseline, intended broken behavior, and actual failing assertion or exception and its cause; import errors and unrelated failures are not behavioral RED
