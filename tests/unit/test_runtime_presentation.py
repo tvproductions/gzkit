@@ -405,7 +405,7 @@ class TestNoColorDegradation(unittest.TestCase):
         os.environ["NO_COLOR"] = "1"
         try:
             fmt = OutputFormatter(OutputMode.HUMAN)
-            self.assertTrue(fmt.console.no_color)
+            self.assertTrue(fmt._console.no_color)
         finally:
             if old is None:
                 os.environ.pop("NO_COLOR", None)

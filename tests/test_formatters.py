@@ -10,10 +10,16 @@ import os
 import unittest
 from unittest.mock import patch
 
-from pydantic import BaseModel, ConfigDict
-from rich.table import Table
+from pydantic import BaseModel, ConfigDict, ValidationError
 
-from gzkit.cli.formatters import VALID_MODES, OutputFormatter, OutputMode
+from gzkit.cli.formatters import (
+    VALID_MODES,
+    OutputFormatter,
+    OutputMode,
+    TableCell,
+    TableColumn,
+    TableView,
+)
 from gzkit.traceability import covers
 
 
@@ -40,7 +46,7 @@ class TestOutputFormatterInit(unittest.TestCase):
 
     def test_console_property_returns_console(self) -> None:
         fmt = OutputFormatter("human")
-        self.assertIsNotNone(fmt.console)
+        self.assertIsNotNone(fmt._console)
 
 
 class TestHumanMode(unittest.TestCase):
@@ -67,9 +73,7 @@ class TestHumanMode(unittest.TestCase):
             no_color=True,
             width=120,
         )
-        t = Table(title="Test")
-        t.add_column("Col")
-        t.add_row("val")
+        t = TableView(title="Test", columns=(TableColumn(header="Col"),), rows=(("val",),))
         fmt.table(t)
         output = buf.getvalue()
         self.assertIn("Col", output)
@@ -145,9 +149,7 @@ class TestJsonMode(unittest.TestCase):
             no_color=True,
             width=120,
         )
-        t = Table(title="Test")
-        t.add_column("Col")
-        t.add_row("val")
+        t = TableView(title="Test", columns=(TableColumn(header="Col"),), rows=(("val",),))
         fmt.table(t)
         # Table should not be rendered in json mode
         self.assertEqual(buf.getvalue(), "")
@@ -190,8 +192,7 @@ class TestQuietMode(unittest.TestCase):
             no_color=True,
             width=120,
         )
-        t = Table()
-        t.add_column("Col")
+        t = TableView(columns=(TableColumn(header="Col"),))
         fmt.table(t)
         self.assertEqual(buf.getvalue(), "")
 
@@ -315,7 +316,7 @@ class TestNoColor(unittest.TestCase):
     def test_no_color_respected_in_human_mode(self) -> None:
         with patch.dict(os.environ, {"NO_COLOR": "1"}):
             fmt = OutputFormatter("human")
-            self.assertTrue(fmt.console.no_color)
+            self.assertTrue(fmt._console.no_color)
 
     def test_no_color_absent_allows_color(self) -> None:
         env = os.environ.copy()
@@ -323,14 +324,14 @@ class TestNoColor(unittest.TestCase):
         env.pop("FORCE_COLOR", None)
         with patch.dict(os.environ, env, clear=True):
             fmt = OutputFormatter("human")
-            self.assertFalse(fmt.console.no_color)
+            self.assertFalse(fmt._console.no_color)
 
     def test_json_mode_always_no_color(self) -> None:
         env = os.environ.copy()
         env.pop("NO_COLOR", None)
         with patch.dict(os.environ, env, clear=True):
             fmt = OutputFormatter("json")
-            self.assertTrue(fmt.console.no_color)
+            self.assertTrue(fmt._console.no_color)
 
 
 class TestModeFromFlags(unittest.TestCase):
@@ -452,7 +453,7 @@ class TestConsoleParameter(unittest.TestCase):
     @covers("REQ-0.0.4-06-01")
     def test_default_creates_internal_console(self) -> None:
         fmt = OutputFormatter()
-        self.assertIsNotNone(fmt.console)
+        self.assertIsNotNone(fmt._console)
 
     @covers("REQ-0.0.4-06-01")
     def test_provided_console_is_used(self) -> None:
@@ -460,14 +461,14 @@ class TestConsoleParameter(unittest.TestCase):
 
         custom = Console(no_color=True, width=80)
         fmt = OutputFormatter(console=custom)
-        self.assertIs(fmt.console, custom)
+        self.assertIs(fmt._console, custom)
 
     def test_provided_console_returned_by_property(self) -> None:
         from rich.console import Console
 
         custom = Console(no_color=True, width=40)
         fmt = OutputFormatter("human", console=custom)
-        self.assertIs(fmt.console, custom)
+        self.assertIs(fmt._console, custom)
 
 
 # ---------------------------------------------------------------------------
@@ -647,13 +648,11 @@ class TestEmitTable(unittest.TestCase):
     @covers ADR-0.0.4
     """
 
-    def _make_table(self) -> Table:
-        t = Table()
-        t.add_column("Name")
-        t.add_column("Score")
-        t.add_row("alice", "10")
-        t.add_row("bob", "20")
-        return t
+    def _make_table(self) -> TableView:
+        return TableView(
+            columns=(TableColumn(header="Name"), TableColumn(header="Score")),
+            rows=(("alice", "10"), ("bob", "20")),
+        )
 
     @covers("REQ-0.0.4-06-06")
     def test_human_mode_renders_table(self) -> None:
@@ -821,6 +820,52 @@ class TestEmitBlocker(unittest.TestCase):
                     mock_err.getvalue(),
                     f"Prefix missing in {mode} mode",
                 )
+
+
+class TestTableCrossesThePortAsAValue(unittest.TestCase):
+    """A table crosses the output port as a TableView value (GHI #1321)."""
+
+    @covers("REQ-0.0.3-06-02")
+    def test_styled_cell_renders_its_text_and_markup_stays_literal(self) -> None:
+        # given a human-mode formatter and a table with a styled cell and a markup-like cell
+        fmt = OutputFormatter("human")
+        buf = io.StringIO()
+        fmt._console = __import__("rich.console", fromlist=["Console"]).Console(
+            file=buf, no_color=True, width=120
+        )
+        view = TableView(
+            columns=(TableColumn(header="Band"), TableColumn(header="Reason")),
+            rows=((TableCell(text="overdue", style="red"), "kept [bold]literal[/bold]"),),
+        )
+        # when the table is rendered
+        fmt.table(view)
+        # then both cells render as text, the markup-like one literally
+        output = buf.getvalue()
+        self.assertIn("overdue", output)
+        self.assertIn("[bold]literal[/bold]", output)
+
+    @covers("REQ-0.0.3-06-03")
+    def test_json_rows_carry_cell_text_not_styling(self) -> None:
+        # given a json-mode formatter and a table with one styled cell
+        fmt = OutputFormatter("json")
+        view = TableView(
+            columns=(TableColumn(header="Band"),),
+            rows=((TableCell(text="overdue", style="red"),),),
+        )
+        # when the table is emitted
+        with patch("sys.stdout", new_callable=io.StringIO) as mock_out:
+            fmt.emit_table(view)
+        # then stdout carries the cell text keyed by heading, and no styling
+        self.assertEqual(json.loads(mock_out.getvalue()), [{"Band": "overdue"}])
+
+    @covers("REQ-0.0.3-06-02")
+    def test_a_row_of_the_wrong_width_is_refused(self) -> None:
+        # given one column
+        columns = (TableColumn(header="A"),)
+        # when a two-cell row is supplied
+        # then the value refuses it
+        with self.assertRaises(ValidationError):
+            TableView(columns=columns, rows=(("x", "y"),))
 
 
 if __name__ == "__main__":

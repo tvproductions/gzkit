@@ -15,13 +15,91 @@ import enum
 import json
 import sys
 from collections.abc import Mapping
-from typing import Any
+from typing import Any, Self
 
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from rich.console import Console
 from rich.markup import escape
 from rich.table import Table
+from rich.text import Text
 
 from gzkit.color_env import should_disable_color, should_force_terminal
+
+
+class TableColumn(BaseModel):
+    """One column of a table crossing the output port."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    header: str = Field(..., description="Column heading")
+    style: str | None = Field(None, description="Style name applied to the whole column")
+    no_wrap: bool = Field(default=False, description="Keep each cell on one line")
+    fold: bool = Field(default=False, description="Fold over-long cells onto further lines")
+
+
+class TableCell(BaseModel):
+    """One cell carrying its own style; a plain ``str`` cell carries none."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    text: str = Field(..., description="Cell text, rendered literally")
+    style: str | None = Field(None, description="Style name applied to this cell")
+
+
+class TableView(BaseModel):
+    """A table as a value: the port's table type, so no caller needs Rich (GHI #1321)."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    title: str | None = Field(None, description="Title rendered above the table")
+    columns: tuple[TableColumn, ...] = Field(..., description="Columns, in order")
+    rows: tuple[tuple[str | TableCell, ...], ...] = Field((), description="Rows of cells")
+
+    @model_validator(mode="after")
+    def _rows_match_columns(self) -> Self:
+        width = len(self.columns)
+        for index, row in enumerate(self.rows):
+            if len(row) != width:
+                msg = f"row {index} has {len(row)} cells; the table has {width} columns"
+                raise ValueError(msg)
+        return self
+
+    def records(self) -> list[dict[str, str]]:
+        """Return each row as a mapping of column heading to cell text."""
+        headers = [column.header for column in self.columns]
+        return [
+            {header: _cell_text(cell) for header, cell in zip(headers, row, strict=True)}
+            for row in self.rows
+        ]
+
+
+def _cell_text(cell: str | TableCell) -> str:
+    return cell.text if isinstance(cell, TableCell) else cell
+
+
+def _rich_table(view: TableView) -> Table:
+    """Render a :class:`TableView` as a Rich table: the adapter side of the port."""
+    table = Table(title=view.title)
+    for column in view.columns:
+        table.add_column(
+            column.header,
+            style=column.style or "",
+            no_wrap=column.no_wrap,
+            overflow="fold" if column.fold else "ellipsis",
+        )
+    for row in view.rows:
+        table.add_row(*(_rich_cell(cell) for cell in row))
+    return table
+
+
+def _rich_cell(cell: str | TableCell) -> Text:
+    """Return the cell's text, never parsed as markup; a style spans the text, not the padding."""
+    if not isinstance(cell, TableCell):
+        return Text(cell)
+    text = Text(cell.text)
+    if cell.style:
+        text.stylize(cell.style)
+    return text
 
 
 class OutputMode(enum.StrEnum):
@@ -87,11 +165,6 @@ class OutputFormatter:
         """Current output mode."""
         return self._mode
 
-    @property
-    def console(self) -> Console:
-        """Rich Console for human-mode rendering."""
-        return self._console
-
     # ------------------------------------------------------------------
     # Legacy methods (backwards-compatible)
     # ------------------------------------------------------------------
@@ -140,8 +213,8 @@ class OutputFormatter:
         else:
             self._console.print(str(payload))
 
-    def table(self, rich_table: Table) -> None:
-        """Render a Rich Table.
+    def table(self, view: TableView) -> None:
+        """Render a table.
 
         In json mode, this is a no-op — callers should use data() for
         machine-readable output instead.
@@ -150,7 +223,7 @@ class OutputFormatter:
         if self._mode in (OutputMode.QUIET, OutputMode.JSON):
             return
 
-        self._console.print(rich_table)
+        self._console.print(_rich_table(view))
 
     def err(self, message: str) -> None:
         """Output an error message (always to stderr, all modes)."""
@@ -270,8 +343,8 @@ class OutputFormatter:
         """
         print(message, file=sys.stderr)  # noqa: T201
 
-    def emit_table(self, rich_table: Table) -> None:
-        """Render a Rich table in HUMAN mode; emit dict-list JSON in JSON mode.
+    def emit_table(self, view: TableView) -> None:
+        """Render a table in HUMAN mode; emit dict-list JSON in JSON mode.
 
         In quiet mode, suppressed.
         """
@@ -279,18 +352,10 @@ class OutputFormatter:
             return
 
         if self._mode == OutputMode.JSON:
-            rows: list[dict[str, Any]] = []
-            columns = [col.header for col in rich_table.columns]
-            for row_index in range(rich_table.row_count):
-                row_data: dict[str, Any] = {}
-                for col_index, col_name in enumerate(columns):
-                    cell = rich_table.columns[col_index]._cells[row_index]
-                    row_data[str(col_name)] = str(cell)
-                rows.append(row_data)
-            print(json.dumps(rows, indent=2, sort_keys=True), file=sys.stdout)  # noqa: T201
+            print(json.dumps(view.records(), indent=2, sort_keys=True), file=sys.stdout)  # noqa: T201
             return
 
-        self._console.print(rich_table)
+        self._console.print(_rich_table(view))
 
     def emit_status(self, label: str, success: bool) -> None:
         """Render a status line with check/cross symbols in HUMAN mode.

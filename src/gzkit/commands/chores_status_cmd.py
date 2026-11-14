@@ -10,10 +10,7 @@ announces and never gates: every band exits 0 (operator ruling 2026-09-12,
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
-from rich.markup import escape
-from rich.table import Table
-
-from gzkit.cli.formatters import OutputFormatter
+from gzkit.cli.formatters import OutputFormatter, TableCell, TableColumn, TableView
 from gzkit.commands.chores import _filter_registry, _load_chores_registry
 from gzkit.commands.chores_exec import _log_path
 from gzkit.commands.chores_staleness import (
@@ -99,25 +96,30 @@ def chores_status(*, as_json: bool = False, check: CheckLevel | None = None) -> 
         return
 
     title = f"Chore Staleness — {check} check" if check else "Chore Staleness"
-    table = Table(title=title)
-    table.add_column("Slug", style="cyan", no_wrap=True, overflow="fold")
-    table.add_column("Level", no_wrap=True)
-    table.add_column("Signal")
-    table.add_column("Band", no_wrap=True)
-    table.add_column("Last run")
-    table.add_column("Due since")
-    table.add_column("Reason")
-    for reading in readings:
-        style = _BAND_STYLE[reading.band]
-        table.add_row(
-            reading.slug,
-            _level(reading),
-            reading.signal or "-",
-            f"[{style}]{reading.band}[/{style}]",
-            _day(reading.last_run),
-            _day(reading.due_since),
-            escape(reading.reason),
-        )
+    table = TableView(
+        title=title,
+        columns=(
+            TableColumn(header="Slug", style="cyan", no_wrap=True, fold=True),
+            TableColumn(header="Level", no_wrap=True),
+            TableColumn(header="Signal"),
+            TableColumn(header="Band", no_wrap=True),
+            TableColumn(header="Last run"),
+            TableColumn(header="Due since"),
+            TableColumn(header="Reason"),
+        ),
+        rows=tuple(
+            (
+                reading.slug,
+                _level(reading),
+                reading.signal or "-",
+                TableCell(text=reading.band, style=_BAND_STYLE[reading.band]),
+                _day(reading.last_run),
+                _day(reading.due_since),
+                reading.reason,
+            )
+            for reading in readings
+        ),
+    )
     fmt.table(table)
     fmt.print(", ".join(f"{counts[band]} {band}" for band in BAND_ORDER))
     if any(r.check_provisional for r in readings):

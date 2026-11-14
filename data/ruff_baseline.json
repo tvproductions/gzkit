@@ -2443,16 +2443,6 @@
     },
     {
       "file": "src/gzkit/cli/formatters.py",
-      "rule": "SLF001",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/cli/formatters.py",
-      "rule": "TC002",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/cli/formatters.py",
       "rule": "TC003",
       "count": 1
     },

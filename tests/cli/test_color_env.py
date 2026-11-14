@@ -78,8 +78,8 @@ class TestFormatterHonorsConventions(unittest.TestCase):
         from gzkit.cli.formatters import OutputFormatter, OutputMode
 
         formatter = OutputFormatter(mode=OutputMode.HUMAN, env=env)
-        with formatter.console.capture() as capture:
-            formatter.console.print("[red]hello[/red]")
+        with formatter._console.capture() as capture:
+            formatter._console.print("[red]hello[/red]")
         return capture.get()
 
     def test_force_color_zero_yields_no_ansi(self) -> None:
