@@ -895,6 +895,10 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `security-sensitivity.md`
 
+### Changed 2026-11-13 at version `0.7.0` (RP-7 held ruling H4)
+
+Prior `0.6.2` banner, verbatim: *"the frontmatter-read citation, the MX trigger and the GHI #682 status match the code and the tracker (operator, 2026-11-08: *"fix what is stale"*)"*. Superseded on the operator's *"A: Add checklist now"*: `gz obpi complete` reads the walkthrough checklist from a `Walkthrough checklist` heading in this rule, and the rule had none, so every security walkthrough rendered an empty checklist (RP-7 finding F3). The section now lists surface enumeration, receipt confirmation and classification confirmation; the co-presence proxy gate is dropped, since ADR-0.0.36 removed the TTY gate it belonged to. The `security` scanner slot stays empty and is F3's remaining build.
+
 Prior `0.6.1` banner: *"version narrative lifted to Rule Version History; binding rules unchanged."* Superseded 2026-11-08 by `0.6.2` (operator: *"fix what is stale"*): § Registry contract cites the frontmatter read at `src/gzkit/commands/validate_sensitivity.py` (it named `validate_cmd.py`); clause 3's trigger is the marker condition (it read *"When `.gzkit/mx.json` exists"*); and GHI #682 is recorded closed 2026-07-24 (it read *"two post-cutover briefs currently failing"*). § Heightened walkthrough and clause 3's demotion claim were left for an operator ruling.
 
 Lifted 2026-08-29 at version `0.5.1` (rule now at `0.6.0`).

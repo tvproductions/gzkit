@@ -6,11 +6,11 @@ paths:
 description: Security-sensitivity third axis of attestation rigor (ADR-0.0.22).
 ---
 
-<!-- rule-version: 0.6.2 -->
+<!-- rule-version: 0.7.0 -->
 
 # Security Sensitivity (gzkit)
 
-> **Rule version:** `0.6.2` — the frontmatter-read citation, the MX trigger and the GHI #682 status match the code and the tracker (operator, 2026-11-08: *"fix what is stale"*); prior banners in [Rule Version History](../../docs/governance/rule-version-history.md#security-sensitivitymd).
+> **Rule version:** `0.7.0` — § Heightened walkthrough carries the checklist `gz obpi complete` reads, and drops the co-presence proxy gate ADR-0.0.36 removed (RP-7 held ruling H4, operator, 2026-11-13: *"A: Add checklist now"*); prior banners in [Rule Version History](../../docs/governance/rule-version-history.md#security-sensitivitymd).
 
 ## Invariant
 
@@ -34,7 +34,13 @@ The omitted-declaration floor was tightened from informational (`sensitivity-flo
 
 ## Heightened walkthrough
 
-`gz obpi complete` on a `sensitivity: security` brief fires an extended Gate 5 walkthrough: surface enumeration, `arb-step-security-scan-*` receipt confirmation, classification confirmation, and co-presence proxy gate. Scanner-unavailable is fail-closed (no degradation).
+`gz obpi complete` on a `sensitivity: security` brief fires an extended Gate 5 walkthrough over the checklist below, which it reads from this section at runtime (REQ-0.0.22-05-02). Scanner-unavailable is fail-closed (no degradation). The co-presence proxy gate this walkthrough once named was removed with the TTY attestation gate (ADR-0.0.36; its residue is GHI #1308).
+
+### Walkthrough checklist
+
+- Surface enumeration: name every registered security surface the brief touched (`data/security_surfaces.json`), and the operator confirms each.
+- Receipt confirmation: cite the canonical security-scan receipt (`arb-step-security-scan-*`) by its ID.
+- Classification confirmation: the operator confirms the `sensitivity: security` declaration matches the work.
 
 ## Do Not
 

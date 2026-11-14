@@ -37,9 +37,10 @@ not be removed without a brief declaring `sensitivity: security`.
    is required as a cited receipt ID.
 3. **Classification confirmation** — the operator confirms the
    sensitivity declaration matches reality.
-4. **Co-presence proxy** — agent-relayed attestation (`--attestor-present`)
-   permitted only with registered pipeline marker; otherwise PTY-fed
-   `ATTEST` required.
+4. **Co-presence proxy** — *removed.* It permitted agent-relayed attestation
+   only with a registered pipeline marker; ADR-0.0.36 removed the TTY gate it
+   belonged to, and GHI #1308 carries the residue. The rule's
+   § Walkthrough checklist lists items 1 to 3 (RP-7 held ruling H4, 2026-11-13).
 
 ## Scanner-unavailable failure mode
 
