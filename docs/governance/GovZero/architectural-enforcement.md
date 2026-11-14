@@ -2,7 +2,7 @@
 
 **Purpose:** Mechanisms to ensure agents follow architecture, not just read it.
 **Status:** Proposed
-**Last reviewed:** 2026-02-04
+**Last reviewed:** 2026-11-14 (rewritten to the carried practice; operator, verbatim: *"Rewrite to practice"*)
 
 ---
 
@@ -10,169 +10,52 @@
 
 Documentation makes the right answer *findable*. It doesn't make it *unavoidable*.
 
-Previous failures:
+The failure that prompted this protocol: a brief said "delegate to the existing module", the agent wrote a
+standalone implementation anyway, and the tests passed while the architecture was violated.
 
-- OBPI briefs said "delegate to existing adapters"
-- Agents created standalone implementations anyway
-- Tests passed but architecture was violated
+---
+
+## Where the practice comes from
+
+This protocol began in AirlineOps, where it named that project's six data-warehouse contexts, its data
+contracts and its dataset formats. Those are AirlineOps's domain, not gzkit's. The R&D run
+[`hexagonal-specification`](https://github.com/tvproductions/gzkit/blob/main/docs/rnd/hexagonal-specification.md) ruled what carries forward (decision
+*the AirlineOps context practice is carried; its six names are not*; operator, verbatim: *"A: carry
+practice"*, *"a + b is really best"*): the practice, not the names.
+
+gzkit's contexts are not listed here, because none is designed yet. They are derived, not prescribed: REQs
+are admitted first, subdomains are discovered in them, and bounded contexts are designed over the subdomains
+(decision *the order things derive in*; operator, verbatim: *"A: rule the order"*;
+[`hexagonal-architecture.md` § Domain-driven design](../hexagonal-architecture.md#domain-driven-design)).
+Earlier context lists, the AirlineOps six among them, are evidence for that design, not canon.
+
+---
+
+## The practice
+
+Inside each context, once designed:
+
+1. **Name the context before coding.**
+2. **State what it owns and what it does not own.**
+3. **Stop when no context fits**, and emit BLOCKERS rather than invent one.
+4. **Let the dependency checker audit imports that cross contexts.**
+
+Until contexts are designed, an author names the hexagon region the work sits in (domain, ports, handlers,
+an adapter, the configurator; [`hexagonal-architecture.md` § The packages](../hexagonal-architecture.md#the-packages))
+and writes "none designed yet" for the context.
 
 ---
 
 ## Three Enforcement Layers
 
-### Layer 1: Code-Level Validation (Automated)
+| Layer | gzkit mechanism today | What it catches | Automated? |
+|---|---|---|---|
+| 1. Code-level validation | `uv run gz validate --hexagon-dependencies`, reading the package map in `pyproject.toml`; `uv run gz validate --hexagon-tests` | An import outside a region's row of the dependency table; a hexagon test that mocks, lacks its labels or names no REQ | Yes, on every per-change `gz check` |
+| 2. Agent checkpoint | The OBPI template's § Architectural Checkpoint (`.gzkit/skills/gz-obpi-specify/assets/OBPI_BRIEF-template.md`) | Work started without naming its context, or reaching into one it does not own | No (human review) |
+| 3. Compliance in the gate | The two scopes above, in the default tier of `uv run gz check`, today's findings held in shrink-only baselines | A new violation of the dependency table or the test discipline | Yes |
 
-**What:** Tests that validate architectural compliance via AST analysis.
-
-**Location:** `tests/architecture/`
-
-**Implementation:**
-
-```python
-# tests/architecture/test_adapter_compliance.py
-"""Validate all adapters follow delegation pattern (ADR-0.1.16)."""
-
-import ast
-from pathlib import Path
-import unittest
-
-ADAPTER_DIR = Path("src/airlineops/warehouse/adapters")
-REQUIRED_IMPORT = "airlineops.warehouse.ingest.adapters"
-
-
-class TestAdapterArchitecturalCompliance(unittest.TestCase):
-    """AST-based validation of adapter delegation rule."""
-
-    def test_all_adapters_import_from_legacy(self):
-        """Every adapter MUST import from warehouse/ingest/adapters/."""
-        violations = []
-
-        for adapter_file in ADAPTER_DIR.glob("*.py"):
-            if adapter_file.name.startswith("_"):
-                continue
-
-            tree = ast.parse(adapter_file.read_text())
-            has_required_import = False
-
-            for node in ast.walk(tree):
-                if isinstance(node, ast.ImportFrom):
-                    if node.module and REQUIRED_IMPORT in node.module:
-                        has_required_import = True
-                        break
-
-            if not has_required_import:
-                violations.append(adapter_file.name)
-
-        self.assertEqual(
-            violations, [],
-            f"Adapters missing delegation imports: {violations}\n"
-            f"Per ADR-0.1.16, adapters MUST import from {REQUIRED_IMPORT}"
-        )
-
-    def test_adapters_under_line_limit(self):
-        """Adapters should be thin facades (<300 lines)."""
-        violations = []
-
-        for adapter_file in ADAPTER_DIR.glob("*.py"):
-            if adapter_file.name.startswith("_"):
-                continue
-
-            line_count = len(adapter_file.read_text().splitlines())
-            if line_count > 300:
-                violations.append(f"{adapter_file.name}: {line_count} lines")
-
-        self.assertEqual(
-            violations, [],
-            f"Adapters exceeding 300 lines (too much business logic): {violations}"
-        )
-```
-
-**Run:** `uv run -m unittest tests.architecture.test_adapter_compliance -v`
-
----
-
-### Layer 2: Agent Checkpoint Protocol (Process)
-
-**What:** Required verification output BEFORE any implementation.
-
-**Add to OBPI template:**
-
-```markdown
-### ARCHITECTURAL VERIFICATION (MANDATORY — BEFORE CODE)
-
-**Complete this section BEFORE writing any code. Copy-paste and fill in:**
-
-```text
-## Architectural Checkpoint
-
-**Bounded Context:** [Discovery | Planning | Acquisition | Ingestion | Validation | Reporting]
-
-**I am working in the ______ context, which:**
-- OWNS: [list what this context owns]
-- DOES NOT OWN: [list what this context does NOT own]
-
-**Invariants that apply to this work:**
-- [ ] Single-active HOT contract (if applicable)
-- [ ] Single-active COLD contract (if applicable)
-- [ ] Adapter delegation rule (if adapter work)
-- [ ] Manifest determinism (if manifest work)
-
-**Canonical format for this dataset:** [YYYY-Qn | YYYY-MM | YYCC | YYYY | STATIC]
-
-**I will DELEGATE to:** [list existing modules I will import from]
-**I will IMPLEMENT:** [list only the thin facade/protocol compliance]
-
-**STOP CONDITIONS:**
-- [ ] I cannot identify my bounded context → STOP, ask human
-- [ ] I cannot find the module to delegate to → STOP, ask human
-- [ ] I'm writing >50 lines of business logic → STOP, wrong approach
-```
-
-**If you cannot complete this checkpoint, STOP and emit BLOCKERS.**
-
----
-
-### Layer 3: Architectural Compliance Check (Skill)
-
-**What:** A runnable chore that audits the codebase against `.gzkit/manifest.json`.
-
-**Location:** `docs/governance/GovZero/` policy + `gz` quality/validation commands
-
-**Chore definition:**
-
-```json
-{
-  "architectural-compliance-audit": {
-    "description": "Audit code against manifest.json invariants",
-    "command": "uv run gz check",
-    "checks": [
-      "adapter_delegation_rule",
-      "bounded_context_imports",
-      "invariant_enforcement"
-    ]
-  }
-}
-```
-
-**Output format:**
-
-```text
-## Architectural Compliance Audit
-
-### Adapter Delegation Rule (ADR-0.1.16)
-✓ bts_db1b_ticket.py — imports from adapters/bts/db1b_ticket
-✓ bts_db1b_coupon.py — imports from adapters/bts/db1b_coupon
-✗ bts_foo.py — MISSING delegation import
-
-### Bounded Context Violations
-✓ No cross-context imports detected
-
-### Invariant Enforcement
-✓ Single-active HOT — enforced in registrar.py:407
-✓ Single-active COLD — enforced in registrar.py:184
-
-**Result:** 1 violation detected. See above.
-```
+**Not built:** the cross-context arm of layer 1. The dependency checker audits regions today; it audits
+contexts once they are designed and the package map names them (point 4 of the practice).
 
 ---
 
@@ -180,59 +63,20 @@ class TestAdapterArchitecturalCompliance(unittest.TestCase):
 
 ### Before Implementation
 
-1. Agent reads `docs/design/lodestar/architectural-identity.md`
-2. Agent completes **Architectural Checkpoint** in brief
-3. Human reviews checkpoint before approving implementation
+1. Agent completes the **Architectural Checkpoint** in the brief.
+2. Human reviews the checkpoint before approving implementation.
 
-### During Implementation
+### During and After Implementation
 
-1. Agent runs `uv run -m unittest tests.architecture -v` after each file
-2. Violations fail immediately — no "fix later"
-
-### After Implementation
-
-1. Agent runs architectural compliance chore
-2. Results included in OBPI completion evidence
-3. Human attestation includes architectural compliance
-
----
-
-## Enforcement Matrix
-
-| Mechanism | When | What It Catches | Automated? |
-|-----------|------|-----------------|------------|
-| AST import tests | CI/pre-commit | Missing delegation imports | ✓ |
-| Line count tests | CI/pre-commit | Too much business logic | ✓ |
-| Checkpoint protocol | Before coding | Wrong bounded context | ✗ (human review) |
-| Compliance chore | After coding | Cross-context violations | ✓ |
-| Human attestation | Before completion | Architectural misalignment | ✗ (human gate) |
-
----
-
-## Failure Modes This Prevents
-
-| Previous Failure | Enforcement That Blocks It |
-|------------------|---------------------------|
-| Standalone adapter (no delegation) | AST import test fails |
-| Adapter with 500 lines of logic | Line count test fails |
-| Agent in wrong bounded context | Checkpoint requires explicit declaration |
-| Agent bypasses registrar | Cross-context import check |
-| Agent doesn't understand architecture | Checkpoint forces articulation |
-
----
-
-## Implementation Checklist
-
-- [ ] Create `tests/architecture/test_adapter_compliance.py`
-- [ ] Add architectural checkpoint to OBPI template
-- [ ] Create architectural compliance chore
-- [ ] Add to pre-commit hooks (optional)
-- [ ] Update AGENTS.md with enforcement requirements
+1. `uv run gz check` runs the hexagon scopes on every change; violations fail at full strength.
+2. Human attestation includes architectural compliance.
 
 ---
 
 ## See Also
 
-- [Architectural Identity](../../design/lodestar/architectural-identity.md) — Bounded contexts and invariants
-- ADR-0.1.16 — Adapter delegation rule
-- [OBPI Template](https://github.com/tvproductions/gzkit/blob/main/.gzkit/skills/gz-obpi-specify/assets/OBPI_BRIEF-template.md) — Brief format
+- [`hexagonal-architecture.md`](../hexagonal-architecture.md) — gzkit's hexagonal specification, its packages and
+  its dependency table
+- [`hexagonal-specification.md`](https://github.com/tvproductions/gzkit/blob/main/docs/rnd/hexagonal-specification.md) — the R&D run and its rulings on the practice
+- `.gzkit/rules/hexagonal-architecture.md` — the binding rule and its § Verify
+- [OBPI Template](https://github.com/tvproductions/gzkit/blob/main/.gzkit/skills/gz-obpi-specify/assets/OBPI_BRIEF-template.md) — the checkpoint
