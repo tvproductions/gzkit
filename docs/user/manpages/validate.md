@@ -1191,7 +1191,8 @@ What the scope reads, and what it does not:
 - In an adapter test, a patch target is read by position or by keyword
   (`target=`, `attribute=`, `in_dict=`). A string naming a module inside the
   package is a finding even when the attribute it replaces is a library's, as in
-  `"gzkit.cli.main.subprocess.run"`: the patch rewrites the package's namespace.
+  `"gzkit.cli.main.subprocess.run"`: the gate judges a string target by its prefix,
+  so patch the library itself (`"subprocess.run"`) instead.
   The doubles are `Mock`, `MagicMock`, `AsyncMock`, `NonCallableMock`,
   `NonCallableMagicMock`, `PropertyMock`, `ThreadingMock`, `create_autospec` and
   `mock_open`, and a class built on one of them.

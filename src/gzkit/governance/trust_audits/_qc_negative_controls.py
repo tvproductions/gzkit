@@ -1498,12 +1498,13 @@ _HEXAGON_TEST_OK = (
     "        # then\n        self.assertEqual(result, expected)\n"
 )
 
-#: The planted findings, one per gate and one for an adapter patching a package
-#: target; the control catches only all four.
+#: The planted findings: one per gate, an adapter patching a package target and a
+#: bare double; the control catches only all five.
 HEXAGON_TEST_BREACHES = frozenset(
     {
         "mock tests/test_domain.py -> unittest.mock",
         "mock tests/test_patch.py -> app.cli.main.run",
+        "mock tests/test_double.py -> MagicMock()",
         "labels tests/test_cli.py::TestCli.test_cli",
         "covers tests/test_cli.py::TestCli.test_cli",
     }
@@ -1532,6 +1533,13 @@ def _hexagon_test_root(slug: str) -> Path:
         _write(root / "src" / rel / "__init__.py", "")
     _write(root / "src" / "app" / "cli" / "main.py", "def run():\n    return None\n")
     _write(root / "tests" / "test_ok.py", _HEXAGON_TEST_OK)
+    _write(
+        root / "tests" / "test_double.py",
+        "from unittest.mock import MagicMock\n"
+        + _HEXAGON_TEST_OK.replace(
+            "        expected = None\n", "        expected = MagicMock()()\n"
+        ),
+    )
     _write(
         root / "tests" / "test_patch.py",
         _HEXAGON_TEST_OK.replace('patch.object(subprocess, "run")', 'patch("app.cli.main.run")'),
