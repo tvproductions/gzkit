@@ -783,6 +783,10 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `mx-mode.md`
 
+### Changed 2026-11-13 at version `1.17.0` (RP-7 held ruling H8)
+
+Prior `1.16.1` banner, verbatim: *"three facts corrected: the floor-pinned list names `authorship`, the unregistered-name fallback is the validate surface's, and the ledger's corrective route is `gz ledger correct` (operator, 2026-11-08: *"fix what is stale"*)"*. Superseded on the operator's *"A: Reword to doctrine"*: § Do Not read *"Do not exit the hangar while any detectable defect remains unfixed"*, a zero-defect exit that `safe-mode-doctrine.md` replaced when it made the handback a transfer of custody (decision C12, 2026-10-27) and ruled hangar and drydock synonyms (2026-11-03). The clause now waits on lines graded *blocks return to service* and names the handback as where the rest goes. The `gz-mx` skill's matching line moved with it (1.10.2).
+
 ### Changed 2026-11-08 at version `1.16.1` (stale clauses corrected)
 
 Prior `1.16.0` banner: *"out of service is one state decided by the alarm test, with a return to service package and care with the governors off (repair-work-organization, 2026-11-03)"*. The rules validity review (`.gzkit/chores/instructions-files-diet/proofs/rules-validity-D-2026-11-08.md`, clauses M9, M15, M17) found three facts incomplete: the floor-pinned-by-LEVEL list omitted `authorship`, which § Opting a guard names as its precedent; *"An unregistered guard name resolves CRITICAL"* held on the validate surface only; and the corrective-action primitive the ledger clause pointed to exists as `gz ledger correct`. Each is corrected to the code (operator, 2026-11-08: *"fix what is stale"*). Binding rules unchanged.

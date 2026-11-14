@@ -5,11 +5,11 @@ description: Use to open or exit the MX hangar or safe mode, or to check which m
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-04
+last_reviewed: 2026-11-13
 model: haiku
 gz_command: mx
 metadata:
-  skill-version: "1.10.1"
+  skill-version: "1.10.2"
 ---
 
 # gz mx
@@ -225,5 +225,5 @@ since been resolved — it leaves the liveness reading but stays evidence), and
   general arrangement, § What is suspended, § Mandate, § Records, § Repair orders and
   § Exit; exit is attempted only after § Exit and the register are read
 - `gate5_invariants` and the PRIME DIRECTIVE bind throughout the session
-- Exit is a hard gate — do not attempt exit until all detectable defects are fixed
+- Exit is a hard gate — do not attempt exit while any line graded *blocks return to service* stays open; the handback transfers every other open discrepancy, departure and deferred action to its holder (`.gzkit/rules/mx-mode.md`)
 - See `.gzkit/rules/mx-mode.md` for the binding agent rule for hangar sessions
