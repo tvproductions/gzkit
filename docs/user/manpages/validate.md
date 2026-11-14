@@ -3390,7 +3390,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--brief-headings` | opt-in | OBPI brief evidence sections must be H3, not H2 (GHI #238) |
 | `--brief-cross-references` | opt-in | Bare `OBPI-X.Y.Z-NN` / `ADR-X.Y.Z` identifiers in briefs must resolve to on-disk artifacts (GHI #436) |
 | `--brief-demo-section` | opt-in | Heavy-lane CLI-shipping briefs must carry a `## Demo` H2 section so the closeout walkthrough does not fall back to `--help` (GHI #431) |
-| `--sensitivity` | opt-in | ADR-0.0.22 sensitivity-binding (auto-detect floor; escalate-not-escape against `data/security_surfaces.json`) |
+| `--sensitivity` | yes | ADR-0.0.22 sensitivity-binding (auto-detect floor; escalate-not-escape against `data/security_surfaces.json`) |
 | `--absorption-duplicates` | opt-in | Same opsdev source path across parent ADRs needs `paired_with:` frontmatter waiver (GHI #376) |
 | `--orphaned-implementation` | opt-in | Non-completed OBPI with lock-claim + force-release + allowed-path edits and no `obpi_completion_*` is a silent broken state (GHI #438) |
 | `--evaluation-justify-binding` | opt-in | Fail-closed gate: `gz-justify` artifact required when evaluation scores are low (ADR-0.0.26) |

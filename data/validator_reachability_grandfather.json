@@ -32,7 +32,6 @@
     "--reconcile-freshness",
     "--requirements",
     "--router-tables",
-    "--sensitivity",
     "--setpoint-coherence",
     "--skill-alignment",
     "--test-tiers",

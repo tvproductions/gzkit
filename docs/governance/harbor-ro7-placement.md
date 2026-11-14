@@ -149,7 +149,7 @@ validity table with its evidence.
 | H3 | complexity-thresholds, *"none of them owns its own thresholds"* | Ruff max-complexity 20 and cognitive 15 gate while the table blocks `lizard_ccn` at 11 | the gates read the table. **Ruled 2026-11-13:** *"A: Gates read table"*; the build is F23 |
 | H4 | security-sensitivity § Heightened walkthrough | the checklist heading the code reads does not exist, so the checklist renders empty; the `security` scanner slot is empty; the co-presence gate was removed (GHI #1308) | add the checklist section now; route the scanner and renderer to work. **Ruled 2026-11-13:** *"A: Add checklist now"*; the section landed in `security-sensitivity.md` 0.7.0, the scanner slot stays F3's build |
 | H5 | security-sensitivity, *"returns ADVISORY and the exit-3 errors above are dropped"* | `--sensitivity`'s own handler never consults the checkpoint | the handler honours the checkpoint. **Ruled 2026-11-13:** *"A: Handler honours it"*; repaired in the same commit, test-first |
-| H6 | scorecard row 48, Mechanical on `--sensitivity` | no `gz check` step runs the scope; two live floor violations (OBPI-0.39.0-01, -02) go unseen | wire `--sensitivity` into `gz check` |
+| H6 | scorecard row 48, Mechanical on `--sensitivity` | no `gz check` step runs the scope; two live floor violations (OBPI-0.39.0-01, -02) go unseen | wire `--sensitivity` into `gz check`. **Ruled 2026-11-13:** *"A: Wire into gz check"*; default tier, the two briefs on RP-7's list |
 | H7 | complexity-doctrine, *"(e.g. p90 = 7)"* | radon's figure; Lizard's p90 is 8; `test_citation.py` (REQ-0.0.27-05-02) pins the string | change it and loosen the test to the pairing the REQ requires |
 | H8 | mx-mode, *"Do not exit the hangar while any detectable defect remains unfixed"* | `safe-mode-doctrine.md` § The instruments 5: the exit clears blockers and the handback transfers the rest; hangar and drydock are synonyms (2026-11-03) | reword to the doctrine |
 | H9 | model-selection, *"never on the dispatch call"* | the Agent tool now has a per-call `effort` input | operator's choice |
@@ -168,7 +168,7 @@ The list's grades: **blocks** (blocks return to service), **due** (due by the na
 | # | Finding | Grade (proposed) |
 |---|---|---|
 | F1 | `gz content compose AGENTS.md --consumer root` fails its invariant-floor check on `corpus-governance-doctrine-surfaces-2026-10-18…`, though the text is verbatim at `AGENTS.md:239` | due by RP-7 stage 7 |
-| F2 | five `gz validate` scopes canon calls witnesses run on no gate: `--cli-alignment`, `--skill-alignment`, `--test-tiers`, `--brief-headings`, `--behave-req-tags`; `--sensitivity` is explicit-only too, so `AGENTS.md`'s *"`uv run gz check` runs every registered validator"* is false | blocks (change order item 1: a gate's check runs on a gate) |
+| F2 | five `gz validate` scopes canon calls witnesses run on no gate: `--cli-alignment`, `--skill-alignment`, `--test-tiers`, `--brief-headings`, `--behave-req-tags`; `--sensitivity` was explicit-only too (default tier since 2026-11-13, H6), so `AGENTS.md`'s *"`uv run gz check` runs every registered validator"* is false | blocks (change order item 1: a gate's check runs on a gate) |
 | F3 | the security Gate 5 walkthrough renders an empty checklist and no scanner runs (H4) | blocks |
 | F4 | two live sensitivity-floor violations, OBPI-0.39.0-01 and -02, unseen (H6) | blocks |
 | F5 | the Defense Brief gets no closing argument from any H3 brief (H12) | due by RP-12's close |

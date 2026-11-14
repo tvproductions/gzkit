@@ -168,7 +168,7 @@
       "gates_step": "uncalled-gate inventory (gz validate --gate-callers)",
       "mechanism": "shrink-ratchet",
       "entries_path": "accepted_gates",
-      "baseline_count": 40,
+      "baseline_count": 39,
       "identity": {
         "kind": "fields",
         "fields": [
@@ -230,7 +230,7 @@
       "gates_step": "validator reachability (chore: control-surface-validator-reachability)",
       "mechanism": "shrink-ratchet",
       "entries_path": "ungated_scopes",
-      "baseline_count": 52,
+      "baseline_count": 38,
       "identity": {
         "kind": "strings"
       }

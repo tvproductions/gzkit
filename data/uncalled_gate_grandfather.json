@@ -18,10 +18,6 @@
       "reason": "DISCLOSED FINDING, ruling owed. .claude/rules/tool-skill-runbook-alignment.md Enforcement posture names this the mechanical arm for Invariant 1, but the `gz check` step named 'Skill audit' runs `gz skill audit`, a different verb. Same shape as cli_alignment."
     },
     {
-      "gate": "validate:sensitivity",
-      "reason": "Named in GHI #785 as observed instance 2: explicit tier, unreached, and red on a live brief (GHI #784) while `gz check` stayed green throughout the session that found it. Caller ruling owed alongside #784's authoring call."
-    },
-    {
       "gate": "validate:brief_reconcile",
       "reason": "GHI #785 names this one of the scopes deliberately kept explicit because it is expensive -- it reconciles every OBPI brief against current project shape. A per-scope ruling on cost vs. cadence is owed before it joins a per-commit gate."
     },

@@ -332,7 +332,9 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
         "rule_version_markers", "default", True, lambda r, _f: _rule_version_markers_runner(r)
     ),
     _ScopeEntry("invariant_witness", "default", True, lambda r, _f: _invariant_witness_runner(r)),
-    _ScopeEntry("sensitivity", "explicit", False, lambda r, _f: _sensitivity_umbrella_runner(r)),
+    # Default tier (RP-7 H6, operator 2026-11-13: "A: Wire into gz check"): scorecard row 48
+    # scores the security floor Mechanical, and an uncalled scope witnesses nothing.
+    _ScopeEntry("sensitivity", "default", False, lambda r, _f: _sensitivity_umbrella_runner(r)),
     _ScopeEntry(
         "doc_surface_parity", "explicit", True, lambda r, _f: _ta().audit_doc_surface_parity(r)
     ),

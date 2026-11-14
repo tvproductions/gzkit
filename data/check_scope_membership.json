@@ -2,8 +2,8 @@
   "_doc": "Declared gz check membership for gz validate scopes (GHI #744). in_check = scopes the commit-time gate actually invokes, as run_command(\"uv run gz validate --<flag>\") strings reached from _build_check_steps(). out_of_check = registered scopes deliberately outside the gate. Enforced by tests/governance/test_check_scope_parity.py: a new scope in neither list fails closed. Editing this file is a decision, not bookkeeping -- moving a stem into in_check without wiring the step, or vice versa, fails the parity assertion.",
   "_counts": {
     "registry_scopes": 109,
-    "in_check": 69,
-    "out_of_check": 40,
+    "in_check": 70,
+    "out_of_check": 39,
     "reached_outside_registry": []
   },
   "in_check": [
@@ -75,7 +75,8 @@
     "unscoped_rules",
     "version",
     "waiver_ratchet",
-    "wheel_path_literals"
+    "wheel_path_literals",
+    "sensitivity"
   ],
   "out_of_check": [
     "absorption_duplicates",
@@ -108,7 +109,6 @@
     "reconcile_freshness",
     "requirements",
     "router_tables",
-    "sensitivity",
     "setpoint_coherence",
     "skill_alignment",
     "surface_weight",

@@ -71,6 +71,10 @@ _POST_SNAPSHOT_DEFAULT_ADDITIONS: tuple[str, ...] = (
     "commit_trailers",
     "rule_version_markers",
     "invariant_witness",
+    # sensitivity — RE-TIERED explicit -> default 2026-11-13, operator-ruled under RP-7
+    # held ruling H6 ("A: Wire into gz check"): scorecard row 48 scores the security
+    # floor Mechanical on this scope, and nothing ran it (RP-7 finding F2).
+    "sensitivity",
     # wheel_path_literals — environment-rooted path literals in wheel-shipped
     # instruction text (GHI #900). DEFAULT tier deliberately, on the same
     # reasoning as its neighbour below: `--distribution` proved the bytes
@@ -219,7 +223,7 @@ _POST_SNAPSHOT_EXPLICIT_ADDITIONS: frozenset[str] = frozenset(
 # to reproduce" and "what we changed on purpose afterwards" — the same reasoning
 # `_POST_SNAPSHOT_DEFAULT_ADDITIONS` records for growth. A re-tier that appears
 # here is a ruling; one that does not is drift, and the assertion still says so.
-_RETIERED_TO_DEFAULT: frozenset[str] = frozenset({"commit_trailers"})
+_RETIERED_TO_DEFAULT: frozenset[str] = frozenset({"commit_trailers", "sensitivity"})
 
 _GOLDEN_EXPLICIT_SET: frozenset[str] = frozenset(
     {
