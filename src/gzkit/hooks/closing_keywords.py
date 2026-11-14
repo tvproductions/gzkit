@@ -26,14 +26,14 @@ from pathlib import Path
 
 from gzkit.executables import resolve_executable
 
-#: A closing keyword followed, after an optional colon, by an issue reference:
-#: ``#N``, ``owner/repo#N`` or an issue URL (GitHub's linking-keyword grammar).
+#: A closing keyword followed, after a colon or whitespace, by an issue reference:
+#: ``#N``, ``GH-N``, ``owner/repo#N`` or an issue URL (GitHub's linking-keyword grammar).
+#: Refusing a superset of what GitHub acts on costs only a reworded message.
 _CLOSING = re.compile(
-    r"\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\b:?[ \t]+"
-    r"(?:[\w.-]+/[\w.-]+#\d+|#\d+|https://github\.com/[\w.-]+/[\w.-]+/issues/\d+)",
+    r"\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\b(?::[ \t]*|[ \t]+)"
+    r"(?:[\w.-]+/[\w.-]+#\d+|#\d+|GH-\d+|https?://(?:www\.)?github\.com/[\w.-]+/[\w.-]+/issues/\d+)",
     re.IGNORECASE,
 )
-_NO_COMMIT = "0" * 40
 
 
 def closing_references(message: str) -> list[str]:
@@ -71,7 +71,7 @@ def _pushed_range() -> list[str]:
     """
     to_ref = os.environ.get("PRE_COMMIT_TO_REF") or "HEAD"
     from_ref = os.environ.get("PRE_COMMIT_FROM_REF") or ""
-    if from_ref and from_ref != _NO_COMMIT:
+    if from_ref.strip("0"):
         return [f"{from_ref}..{to_ref}"]
     return [to_ref, "--not", "--remotes"]
 

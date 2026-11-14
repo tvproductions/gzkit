@@ -29,6 +29,10 @@ _REFUSED = (
     "resolved tvproductions/gzkit#7",
     "Resolves: #5",
     "fixes https://github.com/tvproductions/gzkit/issues/9",
+    "Fixes:#12",
+    "closes GH-12",
+    "resolves http://www.github.com/tvproductions/gzkit/issues/9/",
+    "the routing read 'direct fix: #1318' last time",
 )
 
 _ACCEPTED = (
@@ -114,6 +118,12 @@ class TestPrePushRange(unittest.TestCase):
             repo = Path(tmp)
             _, old, new = self._repo(repo, ["Closes #1 long ago", "base", "fix(x): y (GHI #2)"])
             self.assertEqual(self._run(repo, old, new), 0)
+
+    def test_a_sha256_zero_ref_counts_as_no_starting_ref(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            self._repo(repo, ["fixes #5 never pushed"])
+            self.assertEqual(self._run(repo, "0" * 64, "HEAD"), 1)
 
     def test_with_no_starting_ref_only_commits_on_no_remote_are_read(self) -> None:
         with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as remote:
