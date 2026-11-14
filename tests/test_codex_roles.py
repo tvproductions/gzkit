@@ -21,7 +21,7 @@ from gzkit.codex_roles import (
 from gzkit.config import GzkitConfig
 from gzkit.surface_write import capture_surface_writes
 from gzkit.sync_surfaces import sync_all
-from gzkit.validate_pkg.sync_parity import snapshot_surfaces
+from gzkit.validate_pkg.sync_parity import check_sync_parity, snapshot_surfaces
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -59,9 +59,9 @@ class TestShippedRoleRendering(unittest.TestCase):
     def test_claude_body_renders_the_same_codex_instructions_as_canon(self):
         """The Claude mirror carries canon, proven by rendering from it.
 
-        ``.claude/agents`` is not in ``SURFACE_ROOTS`` — Claude role content is
-        authored, not machine-synced — so this is the only coherence check that
-        the captured canonical body still matches what Claude ships.
+        Since GHI #1328 the Claude copies are generated from canon and
+        ``.claude/agents`` is a parity root; this check stays as the Codex-side
+        view of the same agreement.
         """
         for name, body in _canonical_bodies().items():
             with self.subTest(role=name):
@@ -314,6 +314,33 @@ class TestClaudeRoleSync(unittest.TestCase):
         self.assertIn(".claude/agents/reviewer.md", planned)
         self.assertTrue(sink.written[role].decode().endswith("\n# Reviewer\n\nCanon.\n"))
         self.assertFalse((self.root / ".claude/agents/reviewer.md").exists())
+
+    def _claude_only(self):
+        return GzkitConfig.model_validate(
+            {
+                "project_name": "role-fixture",
+                "vendors": {"claude": {"enabled": True}, "codex": {"enabled": False}},
+            }
+        )
+
+    def test_a_canonical_edit_reaches_the_claude_copy_on_the_next_sync(self):
+        config = self._claude_only()
+        sync_all(self.root, config, emit_event=False)
+        (self.root / ".gzkit/agents/reviewer.md").write_text("# Reviewer\n\nRevised.\n", "utf-8")
+        sync_all(self.root, config, emit_event=False)
+        text = (self.root / ".claude/agents/reviewer.md").read_text(encoding="utf-8")
+        self.assertTrue(text.endswith("\n# Reviewer\n\nRevised.\n"))
+
+    def test_the_parity_check_reports_a_hand_edited_claude_copy(self):
+        config = self._claude_only()
+        sync_all(self.root, config, emit_event=False)
+        role = ".claude/agents/reviewer.md"
+        clean = [e.artifact for e in check_sync_parity(self.root, config)]
+        self.assertNotIn(role, clean)
+        path = self.root / role
+        path.write_text(path.read_text(encoding="utf-8") + "A hand edit.\n", encoding="utf-8")
+        drifted = [e.artifact for e in check_sync_parity(self.root, config)]
+        self.assertIn(role, drifted)
 
     def test_no_registry_writes_nothing(self):
         (self.root / ".gzkit/agents/roles.json").unlink()
