@@ -58,16 +58,22 @@ def _git(repo: Path, *args: str) -> str:
     ).stdout
 
 
-def _pushed_range(repo: Path) -> str:
+def _pushed_range() -> list[str]:
+    """Return the ``git log`` arguments naming the commits being pushed.
+
+    With no starting ref (a new branch, or a run outside pre-commit), the commits
+    are those on no remote, never the whole reachable history, which already
+    holds commits pushed before this check existed.
+
+    Returns:
+        The revision arguments for ``git log``.
+
+    """
     to_ref = os.environ.get("PRE_COMMIT_TO_REF") or "HEAD"
     from_ref = os.environ.get("PRE_COMMIT_FROM_REF") or ""
     if from_ref and from_ref != _NO_COMMIT:
-        return f"{from_ref}..{to_ref}"
-    try:
-        _git(repo, "rev-parse", "--verify", "--quiet", "@{upstream}")
-    except subprocess.CalledProcessError:
-        return to_ref
-    return f"@{{upstream}}..{to_ref}"
+        return [f"{from_ref}..{to_ref}"]
+    return [to_ref, "--not", "--remotes"]
 
 
 def main(repo: Path | None = None) -> int:
@@ -78,7 +84,7 @@ def main(repo: Path | None = None) -> int:
 
     """
     root = repo or Path.cwd()
-    log = _git(root, "log", "--format=%H%x00%B%x1e", _pushed_range(root))
+    log = _git(root, "log", "--format=%H%x00%B%x1e", *_pushed_range())
     offenders = []
     for record in filter(None, (chunk.strip() for chunk in log.split("\x1e"))):
         sha, _, message = record.partition("\x00")

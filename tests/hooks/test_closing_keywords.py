@@ -9,6 +9,7 @@ commit says ``fix: #N``; ``d0a9b2ffe`` closed three issues that way on
 import io
 import os
 import subprocess
+import sys
 import tempfile
 import unittest
 from contextlib import redirect_stderr
@@ -113,6 +114,46 @@ class TestPrePushRange(unittest.TestCase):
             repo = Path(tmp)
             _, old, new = self._repo(repo, ["Closes #1 long ago", "base", "fix(x): y (GHI #2)"])
             self.assertEqual(self._run(repo, old, new), 0)
+
+    def test_with_no_starting_ref_only_commits_on_no_remote_are_read(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as remote:
+            repo = Path(tmp)
+            self._repo(repo, ["Closes #1 pushed long ago"])
+            self._git(Path(remote), "init", "-q", "--bare")
+            self._git(repo, "remote", "add", "origin", remote)
+            self._git(repo, "push", "-q", "origin", "HEAD:refs/heads/main")
+            self.assertEqual(self._run(repo, "0" * 40, "HEAD"), 0)
+            (repo / "new.txt").write_text("x", encoding="utf-8")
+            self._git(repo, "add", ".")
+            self._git(repo, "commit", "-q", "-m", "resolve #2 unreviewed")
+            err = io.StringIO()
+            with redirect_stderr(err):
+                code = self._run(repo, "0" * 40, "HEAD")
+        self.assertEqual(code, 1)
+        self.assertIn("'resolve #2'", err.getvalue())
+        self.assertNotIn("Closes #1", err.getvalue())
+
+    def test_the_module_runs_as_the_hook_entry(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            base, bad = self._repo(repo, ["base", "fixes #3"])
+            env = _isolated_git_env()
+            codes = []
+            for to_ref in (base, bad):
+                env.update(PRE_COMMIT_FROM_REF=base if to_ref == bad else "0" * 40)
+                env["PRE_COMMIT_TO_REF"] = to_ref
+                done = subprocess.run(
+                    [sys.executable, "-m", "gzkit.hooks.closing_keywords"],
+                    cwd=repo,
+                    env=env,
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    check=False,
+                )
+                codes.append(done.returncode)
+        self.assertEqual(codes, [0, 1])
 
 
 if __name__ == "__main__":
