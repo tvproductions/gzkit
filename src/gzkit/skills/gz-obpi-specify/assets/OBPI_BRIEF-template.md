@@ -276,26 +276,22 @@ context blocks.
 ```text
 ## Architectural Checkpoint
 
-**Bounded Context:** [Discovery | Planning | Acquisition | Ingestion | Validation | Reporting]
+**Bounded Context:** [the project's designed context this work sits in; write "none designed yet" while the project has not derived its contexts from admitted REQs]
 
 **I am working in the ______ context, which:**
-- OWNS: [list what this context owns, from .gzkit/manifest.json]
-- DOES NOT OWN: [list what this context does NOT own]
+- OWNS: [what this context owns]
+- DOES NOT OWN: [what this context does NOT own]
 
 **Invariants that apply to this work:**
-- [ ] Single-active HOT contract (if contract work)
-- [ ] Single-active COLD contract (if contract work)
-- [ ] Adapter delegation rule (if adapter work)
-- [ ] Manifest determinism (if manifest work)
-- [ ] None of the above apply
-
-**Canonical format for this dataset:** [YYYY-Qn | YYYY-MM | YYCC | YYYY | STATIC | N/A]
+- [ ] [each project rule or invariant this change must hold, by name]
+- [ ] None apply
 
 **I will DELEGATE to:** [list existing modules I will import from and delegate to]
 **I will IMPLEMENT:** [list only the thin facade/protocol compliance — should be minimal]
 
 **STOP CONDITIONS (check before proceeding):**
-- [ ] I CAN identify my bounded context
+- [ ] I CAN name my bounded context, or state that none is designed yet
+- [ ] No import I add reaches into a context this work does not own
 - [ ] I CAN find the module(s) to delegate to (or delegation N/A)
 - [ ] I am NOT writing >50 lines of business logic
 ```
@@ -600,26 +596,22 @@ statuses require full ADR folder structure in `adr-X.Y.x/`.
 ```text
 ## Architectural Checkpoint
 
-**Bounded Context:** [Discovery | Planning | Acquisition | Ingestion | Validation | Reporting]
+**Bounded Context:** [the project's designed context this work sits in; write "none designed yet" while the project has not derived its contexts from admitted REQs]
 
 **I am working in the ______ context, which:**
-- OWNS: [list what this context owns, from .gzkit/manifest.json]
-- DOES NOT OWN: [list what this context does NOT own]
+- OWNS: [what this context owns]
+- DOES NOT OWN: [what this context does NOT own]
 
 **Invariants that apply to this work:**
-- [ ] Single-active HOT contract (if contract work)
-- [ ] Single-active COLD contract (if contract work)
-- [ ] Adapter delegation rule (if adapter work)
-- [ ] Manifest determinism (if manifest work)
-- [ ] None of the above apply
-
-**Canonical format for this dataset:** [YYYY-Qn | YYYY-MM | YYCC | YYYY | STATIC | N/A]
+- [ ] [each project rule or invariant this change must hold, by name]
+- [ ] None apply
 
 **I will DELEGATE to:** [list existing modules I will import from and delegate to]
 **I will IMPLEMENT:** [list only the thin facade/protocol compliance — should be minimal]
 
 **STOP CONDITIONS (check before proceeding):**
-- [ ] I CAN identify my bounded context
+- [ ] I CAN name my bounded context, or state that none is designed yet
+- [ ] No import I add reaches into a context this work does not own
 - [ ] I CAN find the module(s) to delegate to (or delegation N/A)
 - [ ] I am NOT writing >50 lines of business logic
 ```
