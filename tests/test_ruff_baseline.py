@@ -329,7 +329,7 @@ class RunRuffJsonTest(unittest.TestCase):
     def test_fix_asks_ruff_for_its_safe_fixes_then_reports_without_writing(self) -> None:
         _, run = self._run(fix=True)
         fix_call, report_call = (call.args[0] for call in run.call_args_list)
-        self.assertIn("--fix", fix_call)
+        self.assertEqual(argv_by_tool_name(fix_call), fix_argv(["a.py"]))
         self.assertNotIn("--fix", report_call)
 
     def test_ruff_failing_before_it_reports_is_a_run_error_naming_its_output(self) -> None:
@@ -486,11 +486,31 @@ class SealedRecordsTest(unittest.TestCase):
             self.assertEqual([p.read_text(encoding="utf-8") for p in sealed], ["import os\n"] * 3)
             self.assertEqual(plain.read_text(encoding="utf-8"), "")
 
-    def test_the_formatter_excludes_every_sealed_glob_even_when_named(self) -> None:
+    def test_the_formatter_excludes_exactly_the_sealed_globs_even_when_named(self) -> None:
         pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
         ruff = tomllib.loads(pyproject.read_text(encoding="utf-8"))["tool"]["ruff"]
         self.assertTrue(ruff.get("force-exclude"))
-        self.assertLessEqual(set(SEALED_RECORD_GLOBS), set(ruff["format"]["exclude"]))
+        sealed = {glob for glob in ruff["format"]["exclude"] if glob != "*.md"}
+        self.assertEqual(sealed, set(SEALED_RECORD_GLOBS))
+
+    def test_a_named_sealed_script_survives_the_formatter_under_that_config(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            sealed, plain = self._tree(root)
+            pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
+            ruff = tomllib.loads(pyproject.read_text(encoding="utf-8"))["tool"]["ruff"]
+            excludes = ", ".join(json.dumps(glob) for glob in ruff["format"]["exclude"])
+            (root / "pyproject.toml").write_text(
+                f"[tool.ruff]\nforce-exclude = true\n[tool.ruff.format]\nexclude = [{excludes}]\n",
+                encoding="utf-8",
+            )
+            for path in [*sealed, plain]:
+                path.write_text("x=[1,2]\n", encoding="utf-8")
+            named = [p.relative_to(root).as_posix() for p in [*sealed, plain]]
+            done = self._ruff(["format", *named], root)
+            self.assertEqual(done.returncode, 0, done.stderr)
+            self.assertEqual([p.read_text(encoding="utf-8") for p in sealed], ["x=[1,2]\n"] * 3)
+            self.assertEqual(plain.read_text(encoding="utf-8"), "x = [1, 2]\n")
 
 
 if __name__ == "__main__":
