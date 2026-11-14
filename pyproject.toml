@@ -120,6 +120,9 @@ driven-adapters = []
 configurator = ["gzkit.configurator"]
 
 [tool.ruff]
+# Excludes hold for files named outright too, as the pre-commit hooks name them, so the
+# formatter's sealed-record excludes below cannot be bypassed by staging a file (GHI #1326).
+force-exclude = true
 line-length = 100
 src = ["src", "tests"]
 
@@ -289,7 +292,14 @@ indent-style = "space"
 # pushed it from the floor (1859) into the yellow band (2601), which demands a
 # waiver for churn that carries no governance meaning. Excluded so the formatter
 # owns Python files and the surface budget owns Markdown.
-exclude = ["*.md"]
+# Dated evidence scripts are sealed records: the formatter never rewrites one
+# (GHI #1326; the same globs as gzkit.ruff_baseline.SEALED_RECORD_GLOBS).
+exclude = [
+  "*.md",
+  ".gzkit/evidence/*.py",
+  "docs/governance/*-evidence/*.py",
+  "docs/governance/ieee/*-evidence/*.py",
+]
 
 # Every warn-level ty rule fails the gate (RO-9 tranche 4): a warning that cannot
 # fail is a finding nobody reads. The ignore-by-default rules stay off. This table

@@ -7,7 +7,10 @@ findings must be lowered, and a row whose findings are gone must be removed.
 """
 
 import json
+import subprocess
+import sys
 import tempfile
+import tomllib
 import unittest
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -15,10 +18,12 @@ from unittest import mock
 
 from gzkit import ruff_baseline
 from gzkit.ruff_baseline import (
+    SEALED_RECORD_GLOBS,
     BaselineError,
     RuffFinding,
     RuffRunError,
     compare,
+    fix_argv,
     lint_against_baseline,
     load_baseline,
     parse_ruff_json,
@@ -321,9 +326,11 @@ class RunRuffJsonTest(unittest.TestCase):
         self.assertNotIn("--fix", argv)
         self.assertEqual(run.call_args.kwargs["cwd"], Path("/repo"))
 
-    def test_fix_asks_ruff_for_its_safe_fixes(self) -> None:
+    def test_fix_asks_ruff_for_its_safe_fixes_then_reports_without_writing(self) -> None:
         _, run = self._run(fix=True)
-        self.assertIn("--fix", run.call_args.args[0])
+        fix_call, report_call = (call.args[0] for call in run.call_args_list)
+        self.assertIn("--fix", fix_call)
+        self.assertNotIn("--fix", report_call)
 
     def test_ruff_failing_before_it_reports_is_a_run_error_naming_its_output(self) -> None:
         with self.assertRaises(RuffRunError) as caught:
@@ -427,6 +434,63 @@ class RenderReportRendering(unittest.TestCase):
         text = render_report(lint_against_baseline(self.root, runner=ruff), max_lines=3)
         self.assertNotIn("new.py:4:1", text)
         self.assertIn("... 3 more lines; re-run `uv run gz lint`", text)
+
+
+class SealedRecordsTest(unittest.TestCase):
+    """No fix or format pass rewrites a dated evidence script (GHI #1326)."""
+
+    def _ruff(self, argv: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(  # noqa: S603 — this interpreter's ruff over a temp tree
+            [sys.executable, "-m", "ruff", *argv],
+            cwd=cwd,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            check=False,
+        )
+
+    def _tree(self, root: Path) -> tuple[list[Path], Path]:
+        (root / "pyproject.toml").write_text(
+            '[tool.ruff.lint]\nselect = ["F401"]\n', encoding="utf-8"
+        )
+        sealed = [
+            root / ".gzkit" / "evidence" / "probe.py",
+            root / "docs" / "governance" / "audit-2026-01-01-evidence" / "probe.py",
+            root / "docs" / "governance" / "ieee" / "audit-2026-01-01-evidence" / "probe.py",
+        ]
+        plain = root / "src" / "module.py"
+        for path in [*sealed, plain]:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("import os\n", encoding="utf-8")
+        return sealed, plain
+
+    def test_the_fix_pass_over_the_tree_leaves_every_sealed_script(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            sealed, plain = self._tree(root)
+            argv = fix_argv(["."])
+            self.assertEqual(argv_by_tool_name(argv)[:3], ["uv", "run", "ruff"])
+            done = self._ruff(argv[3:], root)
+            self.assertEqual(done.returncode, 0, done.stderr)
+            self.assertEqual([p.read_text(encoding="utf-8") for p in sealed], ["import os\n"] * 3)
+            self.assertEqual(plain.read_text(encoding="utf-8"), "")
+
+    def test_a_sealed_script_named_to_the_fix_pass_is_still_left(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            sealed, plain = self._tree(root)
+            named = [p.relative_to(root).as_posix() for p in [*sealed, plain]]
+            done = self._ruff(fix_argv(named)[3:], root)
+            self.assertEqual(done.returncode, 0, done.stderr)
+            self.assertEqual([p.read_text(encoding="utf-8") for p in sealed], ["import os\n"] * 3)
+            self.assertEqual(plain.read_text(encoding="utf-8"), "")
+
+    def test_the_formatter_excludes_every_sealed_glob_even_when_named(self) -> None:
+        pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
+        ruff = tomllib.loads(pyproject.read_text(encoding="utf-8"))["tool"]["ruff"]
+        self.assertTrue(ruff.get("force-exclude"))
+        self.assertLessEqual(set(SEALED_RECORD_GLOBS), set(ruff["format"]["exclude"]))
 
 
 if __name__ == "__main__":

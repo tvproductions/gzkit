@@ -164,9 +164,9 @@ def run_ruff_via_arb(
 
     """
     targets = paths or ["."]
-    cmd = ["uv", "run", "ruff", "check", *targets, "--output-format", "json"]
     if fix:
-        cmd.append("--fix")
+        _run_command(ruff_baseline.fix_argv(targets))
+    cmd = ["uv", "run", "ruff", "check", *targets, "--output-format", "json"]
 
     ruff_result = _run_command(cmd)
     exit_status = int(ruff_result.returncode)

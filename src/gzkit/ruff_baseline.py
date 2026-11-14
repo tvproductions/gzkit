@@ -41,6 +41,7 @@ if TYPE_CHECKING:
 __all__ = [
     "BASELINE_NAME",
     "BASELINE_RELPATH",
+    "SEALED_RECORD_GLOBS",
     "BaselineError",
     "Breach",
     "LintReport",
@@ -49,6 +50,7 @@ __all__ = [
     "Runner",
     "Walker",
     "compare",
+    "fix_argv",
     "lint_against_baseline",
     "load_baseline",
     "lowered_rows",
@@ -64,6 +66,15 @@ BASELINE_RELPATH = f"data/{BASELINE_NAME}"
 _ROWS = "rows"
 _SPEC = "docs/governance/harbor-ro9-astral-toolchain.md"
 _SYNTAX_RULE = "invalid-syntax"
+
+#: Dated evidence scripts are sealed records: no fix or format pass may rewrite one
+#: (GHI #1326). Lint still reads them. pyproject's ``[tool.ruff.format] exclude``
+#: carries the same globs for the formatter; ``tests/test_ruff_baseline.py`` holds them equal.
+SEALED_RECORD_GLOBS: tuple[str, ...] = (
+    ".gzkit/evidence/*.py",
+    "docs/governance/*-evidence/*.py",
+    "docs/governance/ieee/*-evidence/*.py",
+)
 
 BreachKind = Literal["unheld", "lower", "dead"]
 Key = tuple[str, str]
@@ -166,10 +177,28 @@ def run_ruff_json(project_root: Path, targets: Sequence[str], *, fix: bool) -> s
         Ruff's JSON report on stdout.
 
     """
-    argv = ["uv", "run", "ruff", "check", "--output-format", "json", "--exit-zero"]
     if fix:
-        argv.append("--fix")
+        _run_ruff(fix_argv(targets), project_root, "while fixing")
+    argv = ["uv", "run", "ruff", "check", "--output-format", "json", "--exit-zero"]
     return _run_ruff([*argv, *targets], project_root, "before reporting")
+
+
+def fix_argv(targets: Sequence[str]) -> list[str]:
+    """Return the argv of Ruff's safe-fix pass, which never writes a sealed record.
+
+    The pass excludes :data:`SEALED_RECORD_GLOBS` and forces the exclusion onto
+    files named outright, so a fix run, whole-tree or named, leaves every dated
+    evidence script byte-identical (GHI #1326). The report runs afterwards,
+    unexcluded, so lint still judges those scripts against the baseline.
+
+    Returns:
+        The argv, ``uv run ruff check --fix`` first and *targets* last.
+
+    """
+    argv = ["uv", "run", "ruff", "check", "--fix", "--exit-zero", "--quiet", "--force-exclude"]
+    for glob in SEALED_RECORD_GLOBS:
+        argv += ["--extend-exclude", glob]
+    return [*argv, *targets]
 
 
 class Walker(Protocol):

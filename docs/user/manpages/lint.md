@@ -33,7 +33,7 @@ finding too. `gz format` formats.
 | Option | Description |
 |--------|-------------|
 | `PATHS` | Files or directories to lint with Ruff alone (default: the whole repository and the path lints) |
-| `--fix` | Apply Ruff's safe fixes before judging what remains |
+| `--fix` | Apply Ruff's safe fixes before judging what remains; dated evidence scripts (`gzkit.ruff_baseline.SEALED_RECORD_GLOBS`) are sealed records the fix pass never rewrites, though lint still judges them |
 | `--ratchet` | Lower `data/ruff_baseline.json` to the tree's findings: a row is lowered or removed, never raised, and no row is added |
 
 ## Examples

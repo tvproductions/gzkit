@@ -12,6 +12,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from gzkit.arb.ruff_reporter import run_ruff_via_arb
+from gzkit.ruff_baseline import fix_argv
 
 
 def _fake_run_factory(ruff_returncode: int, ruff_stdout: str = "", ruff_stderr: str = ""):
@@ -62,6 +63,20 @@ class TestRunRuffViaArb(unittest.TestCase):
         self.assertEqual(payload["schema"], "gzkit.arb.lint_receipt.v1")
         self.assertEqual(payload["exit_status"], expected_exit)
         return payload
+
+    def test_fix_runs_the_sealed_record_pass_then_reports_without_writing(self) -> None:
+        calls: list[list[str]] = []
+        fake = _fake_run_factory(ruff_returncode=0, ruff_stdout="[]")
+
+        def recording(cmd, **kwargs):
+            calls.append(list(cmd))
+            return fake(cmd, **kwargs)
+
+        with patch("gzkit.arb.ruff_reporter._run_command", side_effect=recording):
+            run_ruff_via_arb(paths=["src"], fix=True, quiet=True, project_root=self._root)
+        checks = [cmd for cmd in calls if "ruff" in cmd and "check" in cmd]
+        self.assertEqual(checks[0], fix_argv(["src"]))
+        self.assertTrue(all("--fix" not in cmd for cmd in checks[1:]))
 
     def test_green_run_writes_receipt_with_empty_findings(self) -> None:
         from gzkit.arb.ruff_reporter import run_ruff_via_arb

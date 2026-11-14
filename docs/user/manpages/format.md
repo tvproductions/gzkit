@@ -10,7 +10,7 @@ gz format [OPTIONS]
 
 ## Description
 
-Applies automatic code formatting to all Python files using Ruff's formatter. Enforces consistent style across the codebase including indentation, line length, and quote style.
+Applies automatic code formatting to all Python files using Ruff's formatter, then `gz lint --fix`. Enforces consistent style across the codebase including indentation, line length, and quote style. Dated evidence scripts are sealed records: `[tool.ruff.format] exclude` in `pyproject.toml` keeps the formatter off them, even when a file is named outright (`force-exclude`).
 
 ## Exit Codes
 
