@@ -104,6 +104,7 @@ admitted (H15).
 | What | Where | Commit |
 | --- | --- | --- |
 | The checker, three gates | `gzkit.governance.trust_audits.hexagon_tests`; 21 tests in `tests/governance/test_audit_hexagon_tests.py` | `f8d1a8f14` |
+| The independent review's repairs | the inner `unittest.mock` reach, keyword patch targets, the missing doubles, an adapter-patch breach planted in `NC:hexagon-tests`, undecodable modules | the commit after `eb76acdd5` |
 | The scope, baseline and controls | `gz validate --hexagon-tests` in the default tier; `data/hexagon_test_baseline.json` (6,136 findings: 3,540 labels, 2,295 covers, 301 mock), a registered shrink-ratchet; `NC:hexagon-tests`, `NC:hexagon-tests-baselined` | `d6eb328eb` |
 
 **Mode contract** (`.gzkit/rules/mode-contract.md`), stated here until RP-13 builds the declaration shapes.

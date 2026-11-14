@@ -1498,10 +1498,12 @@ _HEXAGON_TEST_OK = (
     "        # then\n        self.assertEqual(result, expected)\n"
 )
 
-#: The three planted findings, one per gate; the control catches only all three.
+#: The planted findings, one per gate and one for an adapter patching a package
+#: target; the control catches only all four.
 HEXAGON_TEST_BREACHES = frozenset(
     {
         "mock tests/test_domain.py -> unittest.mock",
+        "mock tests/test_patch.py -> app.cli.main.run",
         "labels tests/test_cli.py::TestCli.test_cli",
         "covers tests/test_cli.py::TestCli.test_cli",
     }
@@ -1509,12 +1511,16 @@ HEXAGON_TEST_BREACHES = frozenset(
 
 
 def _hexagon_test_root(slug: str) -> Path:
-    """Build a mapped package with one planted breach per gate, plus decoys.
+    """Build a mapped package with planted breaches for every gate, plus decoys.
+
+    The breaches are an inner-region test importing ``unittest.mock``, an adapter
+    test patching a package target, and a test method with neither labels nor
+    ``@covers``.
 
     The decoys are a conforming adapter test patching only an outer target, a fake
     adapter's test declaring its exemption with no ``@covers``, and a kernel test
     importing ``unittest.mock``; a gate that refused any of them would report a
-    finding outside the planted three.
+    finding outside the planted ones.
 
     Returns:
         The fixture project root.
@@ -1526,6 +1532,10 @@ def _hexagon_test_root(slug: str) -> Path:
         _write(root / "src" / rel / "__init__.py", "")
     _write(root / "src" / "app" / "cli" / "main.py", "def run():\n    return None\n")
     _write(root / "tests" / "test_ok.py", _HEXAGON_TEST_OK)
+    _write(
+        root / "tests" / "test_patch.py",
+        _HEXAGON_TEST_OK.replace('patch.object(subprocess, "run")', 'patch("app.cli.main.run")'),
+    )
     _write(
         root / "tests" / "test_fake.py",
         "# hexagon-test: fake-adapter\n" + _HEXAGON_TEST_OK.replace('    @covers("REQ-1")\n', ""),

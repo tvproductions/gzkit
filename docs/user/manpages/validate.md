@@ -1180,6 +1180,23 @@ kernel and the configurator are not held. Three gates run over each held module:
 The variant gate (#91c) is due by the first hexagon REQ admitted, and is not
 part of this scope.
 
+What the scope reads, and what it does not:
+
+- Coverage is judged from import statements, at any depth of the file. A module
+  reached only as an attribute of `import gzkit`, through `importlib`, through a
+  helper module, or by running the CLI in a subprocess does not mark a test as
+  covering its region.
+- Inside the walls, any reach into `unittest.mock` is a finding: an import of it,
+  or an attribute path such as `unittest.mock.patch` after `import unittest`.
+- In an adapter test, a patch target is read by position or by keyword
+  (`target=`, `attribute=`, `in_dict=`). A string naming a module inside the
+  package is a finding even when the attribute it replaces is a library's, as in
+  `"gzkit.cli.main.subprocess.run"`: the patch rewrites the package's namespace.
+  The doubles are `Mock`, `MagicMock`, `AsyncMock`, `NonCallableMock`,
+  `NonCallableMagicMock`, `PropertyMock`, `ThreadingMock`, `create_autospec` and
+  `mock_open`, and a class built on one of them.
+- A test module that is not UTF-8 or does not parse fails the scope.
+
 Today's findings are held in the shrink-only `data/hexagon_test_baseline.json`,
 a registered shrink-ratchet. A finding the baseline does not hold fails, and so
 does a held finding the tree no longer produces, so the list only shrinks. A

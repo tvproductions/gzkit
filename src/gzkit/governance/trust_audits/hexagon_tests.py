@@ -98,6 +98,8 @@ _DOUBLES = frozenset(
         "NonCallableMock",
         "NonCallableMagicMock",
         "PropertyMock",
+        "ThreadingMock",
+        "mock_open",
         "create_autospec",
     },
 )
@@ -151,12 +153,12 @@ def check_hexagon_tests(
     root = project_root / tests_dir
     for path in sorted(root.rglob("test*.py")) if root.is_dir() else []:
         rel = path.relative_to(project_root).as_posix()
-        source = path.read_text(encoding="utf-8")
         try:
+            source = path.read_text(encoding="utf-8")
             tree = ast.parse(source)
             comments = _comments(source)
-        except (SyntaxError, tokenize.TokenError) as exc:
-            msg = f"{rel}: the test module does not parse ({exc})"
+        except (UnicodeDecodeError, SyntaxError, tokenize.TokenError) as exc:
+            msg = f"{rel}: the test module cannot be read as UTF-8 Python ({exc})"
             raise HexagonTestReadError(msg) from exc
         regions = _regions(package_map, tree)
         if not regions:
@@ -339,42 +341,73 @@ def _mock_findings(
     """Return the module's mock findings.
 
     Returns:
-        One finding for a mock import in an inner-region test, otherwise one per
-        package target patched and per bare double.
+        One finding for any reach into ``unittest.mock`` from an inner-region test,
+        whether by import or by attribute; otherwise one per package target patched,
+        per bare double and per class built on a double.
 
     """
-    imports_mock = any(n == _MOCK or n.startswith(f"{_MOCK}.") for n in _imported(tree))
+    bound = _bindings(tree)
     if inner:
-        if imports_mock:
+        if _reaches_mock(tree, bound):
             return {HexagonTestFinding(rule=TestRule.MOCK, subject=rel, detail=_MOCK)}
         return set()
-    bound = _bindings(tree)
     out: set[HexagonTestFinding] = set()
     for node in ast.walk(tree):
-        if not isinstance(node, ast.Call):
-            continue
-        func = _dotted(node.func, bound)
-        if func is None or not func.startswith(f"{_MOCK}."):
-            continue
-        helper = func.removeprefix(f"{_MOCK}.")
-        detail = _breach(package_map, helper, node, bound)
+        detail = _node_breach(package_map, node, bound)
         if detail:
             out.add(HexagonTestFinding(rule=TestRule.MOCK, subject=rel, detail=detail))
     return out
 
 
-def _breach(package_map: PackageMap, helper: str, node: ast.Call, bound: dict[str, str]) -> str:
-    """Name what a mock call reaches inside the package, or ``""`` for an outer target.
+def _is_mock(name: str | None) -> bool:
+    return name is not None and (name == _MOCK or name.startswith(f"{_MOCK}."))
+
+
+def _reaches_mock(tree: ast.Module, bound: dict[str, str]) -> bool:
+    """Whether the file imports ``unittest.mock`` or names it through ``unittest``.
 
     Returns:
-        The finding's detail, or an empty string when the call stands at the outer edge.
+        ``True`` on any import of, or attribute path into, ``unittest.mock``.
 
     """
+    if any(_is_mock(n) for n in _imported(tree)):
+        return True
+    return any(_is_mock(_dotted(n, bound)) for n in ast.walk(tree) if isinstance(n, ast.Attribute))
+
+
+def _node_breach(package_map: PackageMap, node: ast.AST, bound: dict[str, str]) -> str:
+    """Name what one node of an adapter test reaches inside the package, or ``""``.
+
+    Returns:
+        The finding's detail for a double, a class built on one, or a package patch.
+
+    """
+    if isinstance(node, ast.ClassDef):
+        bases = [b for b in node.bases if _is_mock(_dotted(b, bound))]
+        return f"class {node.name}({ast.unparse(bases[0])})" if bases else ""
+    if not isinstance(node, ast.Call):
+        return ""
+    func = _dotted(node.func, bound)
+    if not _is_mock(func) or func is None:
+        return ""
+    helper = func.removeprefix(f"{_MOCK}.")
     if helper in _DOUBLES:
         return f"{helper}()"
-    if helper not in _PATCHERS or not node.args:
+    if helper not in _PATCHERS:
         return ""
     return _patch_breach(package_map, helper, node, bound)
+
+
+def _argument(node: ast.Call, index: int, keyword: str) -> ast.expr | None:
+    """Return a call's argument by position, or by keyword when not given positionally.
+
+    Returns:
+        The argument's expression, or ``None`` when the call does not pass it.
+
+    """
+    if len(node.args) > index:
+        return node.args[index]
+    return next((k.value for k in node.keywords if k.arg == keyword), None)
 
 
 def _patch_breach(
@@ -386,7 +419,10 @@ def _patch_breach(
         The patched target inside the package, the unresolved expression, or ``""``.
 
     """
-    target = node.args[0]
+    names = ("in_dict", "values") if helper == "patch.dict" else ("target", "attribute")
+    target = _argument(node, 0, names[0])
+    if target is None:
+        return f"{helper}()"
     if isinstance(target, ast.Constant) and isinstance(target.value, str):
         return target.value if _in_package(package_map, target.value) else ""
     dotted = _dotted(target, bound)
@@ -394,7 +430,7 @@ def _patch_breach(
         return f"{helper}({ast.unparse(target)})"
     if not _in_package(package_map, dotted):
         return ""
-    attr = node.args[1] if len(node.args) > 1 else None
+    attr = _argument(node, 1, names[1]) if helper == "patch.object" else None
     if isinstance(attr, ast.Constant) and isinstance(attr.value, str):
         return f"{dotted}.{attr.value}"
     return dotted

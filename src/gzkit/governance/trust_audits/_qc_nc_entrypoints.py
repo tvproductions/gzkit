@@ -863,14 +863,15 @@ def _ep_hexagon_dependencies_admits_baselined(root: Path) -> int:
 
 
 def _ep_hexagon_tests(root: Path) -> list[ValidationError]:
-    """Return the findings when exactly the three planted breaches fired.
+    """Return the findings when exactly the planted breaches fired.
 
-    One breach per gate is planted beside decoys the rules admit. A gate that
+    A breach per gate, and an adapter patching a package target, are planted beside
+    decoys the rules admit. A gate that
     refused a decoy, or missed a planted breach, reports no catch, so the control
     fails on over-reach or on any one gate narrowed (RP-7).
 
     Returns:
-        The findings when exactly the planted three fired; otherwise nothing.
+        The findings when exactly the planted breaches fired; otherwise nothing.
 
     """
     from gzkit.governance.trust_audits._qc_negative_controls import (  # noqa: PLC0415

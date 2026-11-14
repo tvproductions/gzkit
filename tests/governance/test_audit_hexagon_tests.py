@@ -159,6 +159,53 @@ class FakesOnlyInsideTheWalls(unittest.TestCase):
         self.assertIn("mock tests/test_run.py -> MagicMock()", _keys({"test_run.py": body}))
 
 
+class FakesOnlyEvasions(unittest.TestCase):
+    """Shapes the independent review of 2026-11-13 found the first checker missed."""
+
+    def test_an_inner_test_reaching_mock_through_import_unittest_is_a_finding(self) -> None:
+        body = LABELLED.replace(
+            "from app.cli.main import run", "from app.core.domain import x as run"
+        )
+        body = body.replace(
+            "        result = run()\n",
+            '        with unittest.mock.patch("app.core.domain.x"):\n            result = run()\n',
+        )
+        self.assertIn("mock tests/test_domain.py -> unittest.mock", _keys({"test_domain.py": body}))
+
+    def test_a_patch_target_given_by_keyword_is_judged(self) -> None:
+        body = "from unittest import mock\n" + LABELLED.replace(
+            "        result = run()\n",
+            '        with mock.patch(target="app.cli.main.run"):\n            result = run()\n',
+        )
+        self.assertIn("mock tests/test_run.py -> app.cli.main.run", _keys({"test_run.py": body}))
+
+    def test_patch_object_given_by_keyword_is_judged(self) -> None:
+        body = "from unittest import mock\nfrom app.cli import main\n" + LABELLED.replace(
+            "        result = run()\n",
+            '        with mock.patch.object(target=main, attribute="run"):\n'
+            "            result = run()\n",
+        )
+        self.assertIn("mock tests/test_run.py -> app.cli.main.run", _keys({"test_run.py": body}))
+
+    def test_threading_mock_and_mock_open_are_doubles(self) -> None:
+        body = "from unittest import mock\n" + LABELLED.replace(
+            "        expected = 0\n",
+            "        expected = 0\n        mock.ThreadingMock()\n        mock.mock_open()\n",
+        )
+        keys = _keys({"test_run.py": body})
+        self.assertIn("mock tests/test_run.py -> ThreadingMock()", keys)
+        self.assertIn("mock tests/test_run.py -> mock_open()", keys)
+
+    def test_a_local_subclass_of_a_mock_is_a_double(self) -> None:
+        body = (
+            "from unittest.mock import MagicMock\n\n\nclass Fake(MagicMock):\n    pass\n\n"
+            + LABELLED
+        )
+        self.assertIn(
+            "mock tests/test_run.py -> class Fake(MagicMock)", _keys({"test_run.py": body})
+        )
+
+
 class LabelsInOrder(unittest.TestCase):
     def test_a_test_missing_a_label_is_a_finding(self) -> None:
         body = LABELLED.replace("        # when\n", "")
@@ -225,6 +272,16 @@ class TheScopeJudgesAgainstTheBaseline(unittest.TestCase):
     def test_an_unparseable_test_module_fails(self) -> None:
         errors = _audit({"test_run.py": LABELLED, "test_broken.py": "def (:\n"}, held=[])
         self.assertTrue(any("test_broken.py" in e for e in errors))
+
+    def test_an_undecodable_test_module_fails_with_prose(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _project(root, {"test_run.py": LABELLED}, held=[])
+            (root / "tests" / "test_latin.py").write_bytes(b"# caf\xe9\n")
+            errors = audit_hexagon_tests(root)
+        self.assertEqual(len(errors), 1)
+        self.assertIn("tests/test_latin.py", errors[0].message)
+        self.assertIn("uv run gz validate --hexagon-tests", errors[0].message)
 
     def test_a_project_without_a_package_map_passes(self) -> None:
         with TemporaryDirectory() as tmp:
