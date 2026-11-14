@@ -8,6 +8,7 @@ import io
 import json
 import os
 import unittest
+from contextlib import redirect_stdout
 from unittest.mock import patch
 
 from pydantic import BaseModel, ConfigDict, ValidationError
@@ -20,6 +21,7 @@ from gzkit.cli.formatters import (
     TableColumn,
     TableView,
 )
+from gzkit.commands.chores_status_cmd import chores_status, collect_chore_staleness
 from gzkit.traceability import covers
 
 
@@ -857,6 +859,37 @@ class TestTableCrossesThePortAsAValue(unittest.TestCase):
             fmt.emit_table(view)
         # then stdout carries the cell text keyed by heading, and no styling
         self.assertEqual(json.loads(mock_out.getvalue()), [{"Band": "overdue"}])
+
+    @covers("REQ-0.0.3-06-02")
+    def test_a_cell_style_spans_its_text_not_the_padding(self) -> None:
+        # given a colour console and a styled cell narrower than its column
+        fmt = OutputFormatter("human")
+        buf = io.StringIO()
+        fmt._console = __import__("rich.console", fromlist=["Console"]).Console(
+            file=buf, force_terminal=True, color_system="standard", width=60
+        )
+        view = TableView(
+            columns=(TableColumn(header="Band heading"),),
+            rows=((TableCell(text="due", style="yellow"),),),
+        )
+        # when the table is rendered
+        fmt.table(view)
+        # then the colour opens on the text and closes before the padding
+        self.assertIn("\x1b[33mdue\x1b[0m", buf.getvalue())
+
+    @covers("REQ-0.0.3-06-02")
+    def test_chores_status_renders_every_reading_through_the_port(self) -> None:
+        # given the live chore registry's readings
+        slugs = [reading.slug for reading in collect_chore_staleness()]
+        # when gz chores status renders its human table
+        out = io.StringIO()
+        with patch.dict(os.environ, {"COLUMNS": "240", "NO_COLOR": "1"}), redirect_stdout(out):
+            chores_status()
+        # then the table carries its title and every reading's slug
+        output = out.getvalue()
+        self.assertIn("Chore Staleness", output)
+        missing = [slug for slug in slugs if slug not in output]
+        self.assertEqual(missing, [])
 
     @covers("REQ-0.0.3-06-02")
     def test_a_row_of_the_wrong_width_is_refused(self) -> None:
