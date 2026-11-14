@@ -111,7 +111,9 @@ class MapDoctrineRuleAuthorship(unittest.TestCase):
         frontmatter = RuleFrontmatter(**frontmatter_dict)
 
         self.assertEqual(frontmatter.id, "agents-md-map-doctrine")
-        self.assertEqual(tuple(frontmatter.paths), _PATHS_SCOPE)
+        # The REQ names these three in the scope; the rule may also load on the canon
+        # that renders them (RP-7 held ruling H13), so containment, not equality.
+        self.assertTrue(set(_PATHS_SCOPE) <= set(frontmatter.paths), frontmatter.paths)
 
         # De-pinned from the literal 0.1.0 (GHI #531 content-test anti-pattern;
         # reclassification to the SUPPORT proof channel is deferred to the

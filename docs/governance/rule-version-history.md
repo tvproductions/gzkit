@@ -599,6 +599,10 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `agents-md-map-doctrine.md`
 
+### Changed 2026-11-14 at version `0.14.0` (RP-7 held ruling H13)
+
+Prior `0.13.2` banner, verbatim: *"§ Budget points to the ruled destination range instead of a retired `15000` ceiling, and the attestation note states what each `gz content` verb takes today (operator, 2026-11-08: *"fix what is stale"*)"*. Superseded on the operator's *"A: Keep, re-scope"*: the 2026-11-08 validity batch voted RETIRE because the rule loaded only on `AGENTS.md`, `CLAUDE.md` and `.claude/rules/*.md`, three generated surfaces never edited by hand, so § Writing levers never reached an agent authoring canon; an attested REQ (REQ-0.0.54-01-01) asserts the file. The rule stays and its `paths:` add `.gzkit/corpus/**`, `.gzkit/rules/**` and `.gzkit/skills/**`. `tests/governance/test_agents_md_map_doctrine.py` pinned the three paths by equality; it now asserts they are contained, which is what the REQ states.
+
 ### Changed 2026-11-08 at version `0.13.2` (stale clauses corrected)
 
 Prior `0.13.1` banner: *"version narrative lifted to Rule Version History; binding rules unchanged."* The rules validity review (`.gzkit/chores/instructions-files-diet/proofs/rules-validity-D-2026-11-08.md`, clauses D4 and D16) found § Budget naming *"the tightened `15000`-char ceiling"* as the AGENTS.md destination, which the operator rulings of 2026-09-19 replaced with a range (15,000 ideal, 20,000 ceiling; `docs/governance/agents-md-doctrine.md` § Budget targets), and the attestation note saying *"`gz content remember` and `retire` accept no `--attestor`, while `gz content commit` requires one"*, which `gz content retire --help` and `gz content commit --help` no longer bear out. § Budget now points to the range without restating it, and the note states each verb's current flags (operator, 2026-11-08: *"fix what is stale"*). Binding rules unchanged.

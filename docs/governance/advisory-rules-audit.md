@@ -55,7 +55,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 
 | Rule file | Scored at rule-version |
 |---|---|
-| `agents-md-map-doctrine.md` | `0.13.2` |
+| `agents-md-map-doctrine.md` | `0.14.0` |
 | `adr-audit.md` | `0.3.4` |
 | `agent-failure-modes.md` | `0.8.4` |
 | `brief-heading-conventions.md` | `0.2.1` |
@@ -477,6 +477,8 @@ The Claude-specific invariant 10a is scored as a row rather than in prose:
 | 57 | byte-equivalent to the wheel's authored canonical content | **Mechanical** | Enforced by `gz validate --distribution` (OBPI-0.0.32-07, `src/gzkit/governance/trust_audits/distribution.py`) — static check against `pyproject.toml` include globs + `data/distribution_baseline_manifest.json` + on-disk canonical surface trees; detects three drift classes (ON\_DISK\_NOT\_INCLUDED / BASELINE\_NOT\_ON\_DISK / ON\_DISK\_NOT\_BASELINE); exit 3 on any drift; exit 2 on system error. Receipt-id prefix: `arb-distribution-`. `source=AGENTS.md#governance-doctrine-surfaces entry=corpus-governance-doctrine-surfaces-2026-09-18T01:52:10.930969+00:00` |
 
 ### Map-Not-Encyclopedia Doctrine (`.gzkit/rules/agents-md-map-doctrine.md`)
+
+**Re-scored 2026-11-14 at rule `0.14.0`** (RP-7 held ruling H13, operator: *"A: Keep, re-scope"*): only `paths:` changed, adding the canon the rule governs; no clause added, scores unchanged.
 
 **Re-scored 2026-11-08 at rule `0.13.2`** — stale clauses corrected (operator, *"fix what is stale"*): § Budget named a `15000`-char ceiling as the AGENTS.md destination, which the 2026-09-19 rulings replaced with a range (`agents-md-doctrine.md` § Budget targets); the rule now points to it. § Attestation granularity's advisory note said `gz content remember` and `retire` accept no `--attestor` while `commit` always requires one; `retire` and `commit` now require it conditionally and only `remember` lacks it. No row quoted either passage. Row 58a's note repeated the 2026-08-17 measurement and is corrected; its score is unchanged.
 

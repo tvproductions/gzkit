@@ -156,7 +156,7 @@ validity table with its evidence.
 | H10 | scorecard rows 31 and 32, Mechanical | their notes claimed version comparison that does not exist; only version presence is enforced | operator's choice. **Ruled 2026-11-13:** *"A: Re-score row 32"*; row 31 stays Mechanical, row 32 Promotable |
 | H11 | scorecard row 26, Mechanical | `audit_pydantic_models` checks only that `model_config` exists | re-score Promotable, or extend the audit. **Ruled 2026-11-13:** *"A: Re-score row 26"* |
 | H12 | brief-heading-conventions, `### Closing Argument` *"by H3 heading match"* | `commands/common.py:578` matches H2 only, while 136 briefs use H3, so the Defense Brief gets no closing argument | fix the code. **Ruled 2026-11-13:** *"A: Fix the code"*; repaired test-first |
-| H13 | agents-md-map-doctrine, verdict RETIRE | `test_agents_md_map_doctrine.py` (REQ-0.0.54-01-01) asserts the file exists | operator's choice under the attested-REQ rule |
+| H13 | agents-md-map-doctrine, verdict RETIRE | `test_agents_md_map_doctrine.py` (REQ-0.0.54-01-01) asserts the file exists | operator's choice under the attested-REQ rule. **Ruled 2026-11-14:** *"A: Keep, re-scope"*; the rule stays and also loads on `.gzkit/corpus/**`, `.gzkit/rules/**` and `.gzkit/skills/**` |
 | H14 | root `AGENTS.md` (Band A) | 98 % of its entry bytes are `tier: invariant`; the 2026-10-16 ruling declined re-tiering | operator retires or re-tiers named entries (stage 7) |
 | H15 | tests-policy #91c, the variant gate (change order of 2026-11-12) | the catalog's REQ schema has no `variants` field and no REQ is admitted | regrade *due by the first hexagon REQ admitted*. **Ruled 2026-11-12:** *"Yes, regrade"* |
 

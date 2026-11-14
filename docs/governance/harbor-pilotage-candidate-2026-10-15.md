@@ -1127,6 +1127,14 @@ From the R&D run [`repair-work-organization`](../rnd/repair-work-organization.md
   Brief carried a closing argument; (B) move the rule, the template and 81 briefs to H2. Recommended A. Operator,
   verbatim: *"A: Fix the code"*. Repaired as a direct fix in the commit that records it.
 
+## Rulings of 2026-11-14
+
+- **H13: the map doctrine stays and is re-scoped.** Put to the operator: (A) keep `agents-md-map-doctrine.md`, which
+  REQ-0.0.54-01-01 asserts, and add the canon it governs to its `paths:` so § Writing levers loads while canon is
+  authored, loosening the test's path pin from equality to containment; (B) retire it, moving § Writing levers to
+  `agents-md-doctrine.md` and ruling how the attested REQ is handled. Recommended A. Operator, verbatim: *"A: Keep,
+  re-scope"*.
+
 ## Superseded on 2026-10-30 (record, not binding)
 
 § The general arrangement as it stood before the redraw of 2026-10-30, kept verbatim (operator,
@@ -1708,7 +1716,7 @@ Each line is `open` until the restoration contractor clears it with the alarms o
 - `open` **blocks return to service** (proposed) — the security Gate 5 walkthrough renders an empty checklist and no scanner runs (F3); two sensitivity-floor violations go unseen (F4). Authority: change order item 1.
 - `open` **due by RP-7's close** (proposed) — findings F1, F5 to F12, F17, F19 and F22 (the import-boundary gate runs in no per-change `gz check`, added 2026-11-08 on the operator's *"Yes, record both"*) F23 (the cyclomatic gates read the table, added 2026-11-13 by H3) and F24 (agent definitions carry their `effort:`, added 2026-11-13 by H9) of the change-order record, each with its event. Authority: change order items 1 and 4.
 - `open` **deferred** (proposed) — findings F13 to F16, F18 and F20, each carried with the holder and revisit condition the record names. Authority: § Repair orders' grading.
-- `open` **awaiting the operator** — two held rulings H13 and H14 in the change-order record (H1 to H12 ruled 2026-11-13). Authority: change order item 1.
+- `open` **awaiting the operator** — one held ruling, H14, in the change-order record (H1 to H12 ruled 2026-11-13, H13 on 2026-11-14). Authority: change order item 1.
 - `open` **blocks return to service** — the hexagon test gates (fakes only, the labels, `@covers` on every hexagon test) were unbuilt, so `tests.md` § Hexagon tests rows 91 to 91b were advisory. Authority: change order of 2026-11-12, operator *"A: RP-15 plus RP-7"*. Landed 2026-11-13 with the alarms off (`f8d1a8f14`, `d6eb328eb`) as `gz validate --hexagon-tests` in the default tier, on the operator's rulings of that day: regions including the adapters (*"Regions incl. adapters"*), the kernel excluded (*"Exclude the kernel"*), mocks judged per patch target (*"Per patch target"*), the fake-adapter exemption a module comment (*"Module comment marker"*); 6,136 findings in a shrink-only baseline. Open until cleared with the alarms on.
 - `open` **due by the first hexagon REQ admitted** — the variant gate (#91c): it reads each hexagon REQ's declared variants, and the catalog's REQ schema has no `variants` field yet. Authority: H15, operator, verbatim: *"Yes, regrade"* (2026-11-12).
 
@@ -1907,3 +1915,4 @@ Each order adds a line for whatever else it unplugs, dismantles or modifies as i
 | 2026-11-13 | RP-7 held ruling H10 (operator, verbatim *"A: Re-score row 32"*) | scorecard rows 31 and 32 scored Mechanical with notes claiming a version comparison that does not exist | row 31 stays Mechanical; row 32 re-scored Promotable with its promotion path; row 60a, scored Mechanical earlier on 2026-11-13 without a registered `NC:`, corrected to Promotable; Mechanical 73 → 71, Promotable 62 → 64; the coverage ledger brought to the rule versions H2, H4, H7 and H8 bumped, which those acts left stale while the scope was advisory; its entry leaves `data/mechanical_witness_grandfather.json` (61 → 60 rows, the registry's stale `baseline_count` 65 corrected to 60) | the commit landing this row | `uv run gz validate --advisory-scorecard --waiver-ratchet` |
 | 2026-11-13 | RP-7 held ruling H11 (operator, verbatim *"A: Re-score row 26"*) | scorecard row 26 scored Mechanical on `--pydantic-models`, which checks only `model_config` presence and runs on no gate | row 26 re-scored Promotable with its promotion path; Mechanical 71 → 70, Promotable 64 → 65; its entry leaves `data/mechanical_witness_grandfather.json` (60 → 59 rows) | the commit landing this row | `uv run gz validate --advisory-scorecard --waiver-ratchet` |
 | 2026-11-13 | RP-7 held ruling H12 (operator, verbatim *"A: Fix the code"*) | `extract_closing_argument` matched `## Closing Argument`; 81 briefs use `###` and none `##`, so every Defense Brief rendered no closing argument | the extractor matches the H3 and ends at the next H2 or H3; across the live briefs it extracts 64 closing arguments (0 before); the unit and BDD fixtures that wrote the H2 shape now write H3, and two tests hold the shipped layout | the commit landing this row | `uv run -m unittest tests.test_closeout_ceremony` |
+| 2026-11-14 | RP-7 held ruling H13 (operator, verbatim *"A: Keep, re-scope"*) | `agents-md-map-doctrine.md` loaded only on three generated surfaces, so it never reached an agent authoring canon, and the validity batch voted RETIRE against an attested REQ | the rule stays at 0.14.0 with 6 `paths:` (3 before), adding `.gzkit/corpus/**`, `.gzkit/rules/**` and `.gzkit/skills/**`; the REQ test's path pin moves from equality to containment | the commit landing this row | `uv run -m unittest tests.governance.test_agents_md_map_doctrine` |
