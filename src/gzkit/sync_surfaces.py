@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from gzkit.content.models.base import BaseContentModel
 
 from gzkit.canonical_history import HISTORY_FILE, record_canonical_history
-from gzkit.codex_roles import sync_codex_roles
+from gzkit.codex_roles import sync_claude_roles, sync_codex_roles
 from gzkit.config import (
     CODEX_CONFIG_DEFAULT_PATH,
     CODEX_CONFIG_MARKER,
@@ -1102,6 +1102,8 @@ def sync_all(
     if not vendor_aware or config.vendors.claude.enabled:
         sync_claude_md(project_root, config)
         updated.append(config.paths.claude_md)
+        # Agent role bodies generated from .gzkit/agents, frontmatter kept (GHI #1328).
+        updated.extend(sync_claude_roles(project_root))
 
         if canonical_rules:
             rendered = render_rules_to_dir(

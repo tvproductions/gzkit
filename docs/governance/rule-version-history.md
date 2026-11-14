@@ -921,6 +921,10 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `skill-surface-sync.md`
 
+### Changed 2026-11-14 at version `0.15.0` (GHI #1328)
+
+Prior `0.14.1` banner, verbatim: *"§ Surface layout describes the drift report sync actually gives, and the classifier gives `project_local` to skills as well as chores (operator, 2026-11-08: *"fix what is stale"*)"*. Superseded on the operator's *"A: Generate from canon"*: `.claude/agents/*.md` were authored by hand beside their canonical bodies in `.gzkit/agents/`, sync did not write them and `gz validate --surfaces` did not read them, so an edit to one copy drifted unseen. `gz agent sync control-surfaces` now generates each registered role's Claude body from canon, keeping its frontmatter, as it already did for the Codex copy; `.claude/agents` joins the parity check's roots, so rule 4 binds the Claude copies too.
+
 Prior `0.14.0` banner: *"§ Retirement policy now covers rules as well as skills (operator, 2026-11-08: "Yes, policy first")"*. Superseded 2026-11-08 by `0.14.1` (operator: *"fix what is stale"*). The rules validity review (`.gzkit/chores/instructions-files-diet/proofs/rules-validity-D-2026-11-08.md`, clauses Y9 and Y17) found § Surface layout describing a version-comparing drift report sync does not make (*"If sync reports a mirror ahead of canonical … use the git timestamp"*), and the classifier table marking `project_local` *(chores only)* while `_classify_skill_file` gives it to skills that declare `project_local: true` (GHI #915). Both now state the code; the `package_only` row also names a retired skill. Binding rules unchanged.
 
 Prior `0.13.1` banner: *"version narrative lifted to Rule Version History; binding rules unchanged."* Superseded 2026-11-08 by `0.14.0`, which extends § Retirement policy to rules.

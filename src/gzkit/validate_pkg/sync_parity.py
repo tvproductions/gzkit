@@ -63,6 +63,7 @@ SURFACE_ROOTS: tuple[str, ...] = (
     ".claude/personas",
     ".codex/hooks.json",
     ".codex/agents",
+    ".claude/agents",
 )
 
 

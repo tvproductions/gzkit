@@ -68,7 +68,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `model-selection.md` | `0.8.1` |
 | `weaponeering.md` | `0.1.1` |
 | `security-sensitivity.md` | `0.7.0` |
-| `skill-surface-sync.md` | `0.14.1` |
+| `skill-surface-sync.md` | `0.15.0` |
 | `skill-authoring.md` | `0.2.1` |
 | `chores.md` | `0.6.5` |
 | `cli.md` | `0.9.3` |
@@ -185,6 +185,8 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | 30 | Invariant 3 — Destination verb's default output form | **Judgment** | **Re-scored 2026-08-08 (rule `0.3.0`), same reasoning as row 29 plus a second unmodelled term.** A verb's "default human-readable output form" is established by running it and reading the result, and the skill Output Contract it must honor is prose. Mechanizing means asserting that observed rendering satisfies a prose promise — two judgments, not one check. Related but distinct enforcement exists: row 69 (`gz test-shape`) governs where output-form *assertions* may live in tests, which is a different subject from whether a verb's rendering matches its skill's contract. `source=.gzkit/rules/tool-skill-runbook-alignment.md` |
 
 ### Skill & Surface Sync (`.gzkit/rules/skill-surface-sync.md`)
+
+**Re-scored 2026-11-14 at rule `0.15.0`** (GHI #1328, operator: *"A: Generate from canon"*): § Surface layout gains the `.gzkit/agents/` row; no clause added, scores unchanged. Row 31's witness, `gz validate --surfaces`, now also reads `.claude/agents`.
 
 **Re-scored 2026-11-08 at rule `0.14.1`** — stale clauses corrected (operator, *"fix what is stale"*): § Surface layout said sync reports a mirror ahead of canonical and resolves a same-version conflict by timestamp; sync compares no versions and overwrites every mirror, and the only drift report is `gz validate --surfaces` (`validate_pkg/sync_parity.py`), which the rule now quotes. The classifier table gave `project_local` to chores only; skills declare it too (`_classify_skill_file`, GHI #915). No row quoted either passage, so no score moves. Rows 31, 32 and 33a repeated the same version-comparison or drift-audit claims; their notes are corrected below, and their scores are held unchanged for the operator's review.
 

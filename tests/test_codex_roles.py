@@ -7,10 +7,21 @@ import tomllib
 import unittest
 from pathlib import Path
 
-from gzkit.codex_roles import MARKER, render_codex_role, sync_codex_roles
+from gzkit.codex_roles import (
+    MARKER,
+    EmptyCanonicalRoleError,
+    InvalidRoleMetadataError,
+    InvalidRoleRegistrationError,
+    MalformedClaudeRoleError,
+    render_claude_role,
+    render_codex_role,
+    sync_claude_roles,
+    sync_codex_roles,
+)
 from gzkit.config import GzkitConfig
 from gzkit.surface_write import capture_surface_writes
 from gzkit.sync_surfaces import sync_all
+from gzkit.validate_pkg.sync_parity import snapshot_surfaces
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -213,6 +224,101 @@ class TestCodexRoleSync(unittest.TestCase):
         with self.assertRaises(ValueError):
             sync_codex_roles(self.root)
         self.assertEqual(list(self.native.iterdir()), [])
+
+
+class TestClaudeRoleSync(unittest.TestCase):
+    """Claude role files are generated from canon, their frontmatter kept (GHI #1328)."""
+
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name)
+        (self.root / ".gzkit/agents").mkdir(parents=True)
+        (self.root / ".claude/agents").mkdir(parents=True)
+        registry = {
+            "version": 1,
+            "roles": {
+                "reviewer": {
+                    "description": "Reviews: by reading",
+                    "legacy_codex_body_sha256": "0" * 64,
+                }
+            },
+        }
+        (self.root / ".gzkit/agents/roles.json").write_text(json.dumps(registry), encoding="utf-8")
+        (self.root / ".gzkit/agents/reviewer.md").write_text("# Reviewer\n\nCanon.\n", "utf-8")
+
+    def test_shipped_claude_roles_already_carry_canon(self):
+        for name, body in _canonical_bodies().items():
+            with self.subTest(role=name):
+                shipped = (ROOT / f".claude/agents/{name}.md").read_text(encoding="utf-8")
+                self.assertEqual(render_claude_role(shipped, name, "unused", body), shipped)
+
+    def test_a_drifted_body_is_rewritten_and_its_frontmatter_kept(self):
+        path = self.root / ".claude/agents/reviewer.md"
+        frontmatter = "---\nname: reviewer\ntools: Read, Grep\nmodel: inherit\nmaxTurns: 15\n---\n"
+        path.write_text(frontmatter + "\n# Reviewer\n\nA hand edit.\n", encoding="utf-8")
+        self.assertEqual(sync_claude_roles(self.root), [".claude/agents/reviewer.md"])
+        self.assertEqual(path.read_text(encoding="utf-8"), frontmatter + "\n# Reviewer\n\nCanon.\n")
+
+    def test_a_missing_role_is_created_with_its_name_and_description(self):
+        sync_claude_roles(self.root)
+        text = (self.root / ".claude/agents/reviewer.md").read_text(encoding="utf-8")
+        self.assertEqual(
+            text,
+            '---\nname: reviewer\ndescription: "Reviews: by reading"\n---\n'
+            "\n# Reviewer\n\nCanon.\n",
+        )
+
+    def test_the_parity_check_reads_the_claude_role_files(self):
+        sync_claude_roles(self.root)
+        read = {path.relative_to(self.root).as_posix() for path in snapshot_surfaces(self.root)}
+        self.assertIn(".claude/agents/reviewer.md", read)
+
+    def _register(self, roles):
+        registry = {"version": 1, "roles": roles}
+        (self.root / ".gzkit/agents/roles.json").write_text(json.dumps(registry), encoding="utf-8")
+
+    def test_an_unclosed_frontmatter_is_refused(self):
+        with self.assertRaises(MalformedClaudeRoleError):
+            render_claude_role("---\nname: reviewer\n\n# Body\n", "reviewer", "d", "Canon.")
+
+    def test_an_invalid_registration_writes_no_role(self):
+        cases = [
+            ({"Bad_Name": {"description": "d"}}, InvalidRoleRegistrationError),
+            ({"reviewer": {"legacy_codex_body_sha256": "0" * 64}}, InvalidRoleMetadataError),
+        ]
+        for roles, error in cases:
+            with self.subTest(error=error.__name__):
+                self._register(roles)
+                with self.assertRaises(error):
+                    sync_claude_roles(self.root)
+                self.assertFalse((self.root / ".claude/agents/reviewer.md").exists())
+
+    def test_an_empty_canonical_body_is_refused_before_any_write(self):
+        (self.root / ".gzkit/agents/zeta.md").write_text("\n", encoding="utf-8")
+        self._register({"reviewer": {"description": "d"}, "zeta": {"description": "d"}})
+        with self.assertRaises(EmptyCanonicalRoleError):
+            sync_claude_roles(self.root)
+        self.assertFalse((self.root / ".claude/agents/reviewer.md").exists())
+
+    def test_sync_all_generates_the_claude_roles_under_the_claude_vendor(self):
+        config = GzkitConfig.model_validate(
+            {
+                "project_name": "role-fixture",
+                "vendors": {"claude": {"enabled": True}, "codex": {"enabled": False}},
+            }
+        )
+        with capture_surface_writes() as sink:
+            planned = sync_all(self.root, config, emit_event=False)
+        role = (self.root / ".claude/agents/reviewer.md").resolve()
+        self.assertIn(".claude/agents/reviewer.md", planned)
+        self.assertTrue(sink.written[role].decode().endswith("\n# Reviewer\n\nCanon.\n"))
+        self.assertFalse((self.root / ".claude/agents/reviewer.md").exists())
+
+    def test_no_registry_writes_nothing(self):
+        (self.root / ".gzkit/agents/roles.json").unlink()
+        self.assertEqual(sync_claude_roles(self.root), [])
+        self.assertFalse((self.root / ".claude/agents/reviewer.md").exists())
 
 
 if __name__ == "__main__":
