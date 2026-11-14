@@ -2222,3 +2222,10 @@
 {"ts": "2026-11-14T07:24:06Z", "source": "20261114T072405Z-rp7-held-rulings-ruled.md", "text": "H13, keep agents-md-map-doctrine.md and add the canon it governs to its paths (verbatim: \"A: Keep, re-scope\")."}
 {"ts": "2026-11-14T07:24:06Z", "source": "20261114T072405Z-rp7-held-rulings-ruled.md", "text": "H14, root AGENTS.md tiering is held to RP-7 stage 7, where the agent drafts a named list for per-entry rulings (verbatim: \"A: Hold to stage 7\")."}
 {"ts": "2026-11-14T07:24:06Z", "source": "20261114T072405Z-rp7-held-rulings-ruled.md", "text": "Push the session's commits to origin/main (verbatim: \"Push now\")."}
+{"ts": "2026-11-14T11:14:12Z", "source": "20261114T111410Z-ghis-1321-1324-closed.md", "text": "Renew the drydock lease (verbatim: \"renew the lease\")."}
+{"ts": "2026-11-14T11:14:12Z", "source": "20261114T111410Z-ghis-1321-1324-closed.md", "text": "Push the lease-renewal commit (verbatim: \"Push it\")."}
+{"ts": "2026-11-14T11:14:12Z", "source": "20261114T111410Z-ghis-1321-1324-closed.md", "text": "File the three process defects through ghi-author (verbatim: \"file the three process defects\")."}
+{"ts": "2026-11-14T11:14:12Z", "source": "20261114T111410Z-ghis-1321-1324-closed.md", "text": "Take GHIs 1321 and 1324 as direct fixes (verbatim: \"Take GHIs 1321 and 1324\")."}
+{"ts": "2026-11-14T11:14:12Z", "source": "20261114T111410Z-ghis-1321-1324-closed.md", "text": "Push the fixes and close both issues (verbatim: \"Push and close\")."}
+{"ts": "2026-11-14T11:14:12Z", "source": "20261114T111410Z-ghis-1321-1324-closed.md", "text": "Rewrite architectural-enforcement.md to the carried practice rather than retire it (verbatim: \"Rewrite to practice\")."}
+{"ts": "2026-11-14T11:14:12Z", "source": "20261114T111410Z-ghis-1321-1324-closed.md", "text": "Push the rewrite (verbatim: \"Push it\")."}
