@@ -166,6 +166,17 @@ repos:
         pass_filenames: false
         stages: [pre-push]
 
+      - id: closing-keywords
+        name: no GitHub closing keyword in a pushed commit message
+        # GitHub closes an issue on push when a commit says `fix: #N`, before any
+        # review (GHI #1327). Reads only the commits being pushed, and never routes
+        # through the alarm switch: a wrongly closed issue is outside the repository.
+        entry: uv run python -m gzkit.hooks.closing_keywords
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
+
       - id: gz-check-pre-push
         name: gz check (pre-push gate)
         # Runs the default per-change scope: every validator and the tests the
