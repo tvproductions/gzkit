@@ -2,6 +2,7 @@
 
 import io
 import json
+import os
 import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
@@ -11,6 +12,7 @@ from unittest import mock
 from gzkit.cli.main import _build_parser
 from gzkit.commands import validate_cmd
 from gzkit.traceability import covers
+from tests.mx.held import open_marker
 
 
 def _registry_payload() -> list[dict[str, object]]:
@@ -226,11 +228,12 @@ class TestSensitivityAll(unittest.TestCase):
 class TestSensitivityHonoursTheCheckpoint(unittest.TestCase):
     """`--sensitivity` alone demotes in the hangar, as rule clause 3 says (RP-7 H5)."""
 
-    def _run(self, root: Path, *, demotes: bool) -> tuple[str | int | None, str]:
+    def _run(self, root: Path) -> tuple[str | int | None, str]:
         err_buf = io.StringIO()
+        env = {k: v for k, v in os.environ.items() if k != "GZKIT_MX_FULL_STRENGTH"}
         with (
+            mock.patch.dict(os.environ, env, clear=True),
             mock.patch.object(validate_cmd, "get_project_root", return_value=root),
-            mock.patch("gzkit.mx.checkpoint.hangar_demotes", return_value=demotes),
             redirect_stdout(io.StringIO()),
             redirect_stderr(err_buf),
             self.assertRaises(SystemExit) as ctx,
@@ -247,17 +250,26 @@ class TestSensitivityHonoursTheCheckpoint(unittest.TestCase):
             )
         return ctx.exception.code, err_buf.getvalue()
 
-    def test_floor_violation_is_advisory_while_the_hangar_demotes(self):
+    @covers("REQ-0.0.74-20-01")
+    def test_floor_violation_is_advisory_while_the_hangar_is_open(self):
         with tempfile.TemporaryDirectory() as tmp:
+            # given a brief under the floor, and an open, ledger-bound hangar
             root = _setup_fixture_root(tmp, with_brief=True)
-            code, err = self._run(root, demotes=True)
+            open_marker(root)
+            # when the dedicated --sensitivity handler runs
+            code, err = self._run(root)
+        # then the violation is announced and does not fail the run
         self.assertEqual(code, 0)
         self.assertIn("[MX advisory] guard 'sensitivity'", err)
 
+    @covers("REQ-0.0.22-03-01")
     def test_floor_violation_fails_closed_outside_the_hangar(self):
         with tempfile.TemporaryDirectory() as tmp:
+            # given a brief under the floor, and no hangar
             root = _setup_fixture_root(tmp, with_brief=True)
-            code, err = self._run(root, demotes=False)
+            # when the dedicated --sensitivity handler runs
+            code, err = self._run(root)
+        # then it fails closed and nothing is demoted
         self.assertEqual(code, 3)
         self.assertNotIn("[MX advisory]", err)
 
