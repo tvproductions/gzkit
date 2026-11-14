@@ -1195,6 +1195,10 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `complexity-doctrine.md`
 
+### Changed 2026-11-13 at version `0.4.3` (RP-7 held ruling H7)
+
+Prior `0.4.2` banner, verbatim: *"the canonical-string example cites the binding 2026-10-22 distillation at `§ lizard-ccn`, not retired Radon's `radon-cc` (operator, 2026-11-08: *"fix what is stale"*)"*. Superseded on the operator's *"A: Fix and loosen"*: the pairing example *"(e.g. p90 = 7)"* was retired Radon's `radon_cc` figure; it now cites Lizard's `lizard_ccn` p90 of 8 from the binding 2026-10-22 distillation. `tests/complexity/test_citation.py` pinned the literal 7 beyond what REQ-0.0.27-05-02 requires (*"both forms are required for every cited boundary"*); it now asserts a percentile paired with its absolute value, repaired at the surface under the attested-REQ rule.
+
 Prior `0.4.1` banner: *"version narrative lifted to Rule Version History; binding rules unchanged."* Superseded 2026-11-08 by `0.4.2` (operator: *"fix what is stale"*): the canonical-string example cites the binding 2026-10-22 distillation at `§ lizard-ccn`, where it cited the retired metric at *"distilled-characteristics-2026-05-04.md § radon-cc (corpus revision 1)"* (Radon retired in RO-9 tranche 4, GHI #1183). The pairing example *"(e.g. p90 = 7)"*, also `radon_cc`'s, was left for an operator ruling because an attested test pins it.
 
 Lifted 2026-08-30 at version `0.3.1` (rule now at `0.4.0`).

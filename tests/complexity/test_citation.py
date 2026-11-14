@@ -104,8 +104,8 @@ class TestRuleCitationContractSection(unittest.TestCase):
     def test_percentile_absolute_pairing_required(self) -> None:
         # Both forms must be required for every cited boundary.
         self.assertRegex(self.rule_body, r"(?i)percentile.*?absolute")
-        # Worked example must reference the landed radon_cc p90 boundary.
-        self.assertRegex(self.rule_body, r"p90\s*=\s*7")
+        # The rule shows the pairing it requires: a percentile with its absolute value.
+        self.assertRegex(self.rule_body, r"\bp\d{2}\s*=\s*\d")
 
     @covers("REQ-0.0.27-05-03")
     def test_refresh_portability_rule_codified(self) -> None:

@@ -439,7 +439,7 @@ The Claude-specific invariant 10a is scored as a row rather than in prose:
 
 ### Exemplar Corpus Doctrine (`.gzkit/rules/complexity-doctrine.md`)
 
-**Re-scored 2026-11-08 at rule `0.4.2`** — stale clauses corrected (operator: *"fix what is stale"*): the canonical-string example cites `distilled-characteristics-2026-10-22.md § lizard-ccn`, not retired Radon's `radon-cc`. The pairing example *"(e.g. p90 = 7)"* is still `radon_cc`'s (Lizard's p90 is 8) and stays open for the operator, because `tests/complexity/test_citation.py` (REQ-0.0.27-05-02) pins the string `p90 = 7`. Scores unchanged.
+**Re-scored 2026-11-08 at rule `0.4.2`** — stale clauses corrected (operator: *"fix what is stale"*): the canonical-string example cites `distilled-characteristics-2026-10-22.md § lizard-ccn`, not retired Radon's `radon-cc`. The pairing example *"(e.g. p90 = 7)"* was still `radon_cc`'s (Lizard's p90 is 8), held because `tests/complexity/test_citation.py` (REQ-0.0.27-05-02) pinned the string `p90 = 7`. Scores unchanged. **Corrected 2026-11-13 at rule `0.4.3`** (RP-7 held ruling H7, operator: *"A: Fix and loosen"*): the example cites Lizard's p90 = 8, and the test asserts the pairing the REQ requires rather than the literal.
 
 | # | Rule | Score | Why |
 |---|------|-------|-----|
