@@ -2618,6 +2618,13 @@ drawn down whose baselines can tighten, 6 at zero; 4,607 live entries against 6,
 owner. The contract-map currency check is not admitted, as advised: it is a gate for the publishing step's work
 package once the contract map exists.
 
+## decision · H1: hexagonal rule 1 stays universal (operator ruling)
+
+Put to the operator in RP-7's held rulings: keep rule 1 universal, its witness this run's per-region dependency
+table through `gz validate --hexagon-dependencies`, or narrow it to the core as RP-7's record recommended before
+the table was ruled. Recommended universal. Operator, verbatim: *"A: Universal"*. Recorded in RP-7's change-order
+record, the contract's § Rulings of 2026-11-13, its discrepancy line and passage log, and scorecard row 64.
+
 ## Close
 
 **Challenge restated.** 2026-11-11, on the operator's *"A: adopt draft"* (decision *the challenge is restated*):
