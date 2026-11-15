@@ -132,6 +132,20 @@ class OrderNewTests(_OrderCase):
         self.new("next")
         self.assertEqual([order["id"] for order in _orders()], ["ORD-05-held", "ORD-06-next"])
 
+    def test_a_store_broken_before_the_call_names_the_store_to_repair(self) -> None:
+        """A breach already on disk is the store's to repair, not the call's to correct."""
+        catalog = Path("data") / "catalog" / "orders.json"
+        held = [
+            {"id": f"ORD-05-{slug}", "work_package": "WP-01-stamp", "aliases": [],
+             "purpose": "Held.", "procedure": "NA"}
+            for slug in ("one", "two")
+        ]  # fmt: skip
+        catalog.write_text(json.dumps({"_doc": "Fixture.", "orders": held}), encoding="utf-8")
+        output = self.new("next", code=3)
+        self.assertIn("breaks its rules already", output)
+        self.assertIn("gz validate --catalog", output)
+        self.assertNotIn("correct the call", output)
+
     def test_new_books_the_orders_opening_on_the_operators_words(self) -> None:
         """Ruling 52: the order is born on the ledger, opened with the operator's words."""
         self.new("import")

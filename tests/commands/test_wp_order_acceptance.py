@@ -321,6 +321,14 @@ class TestTheOrdersAcceptRefusal(_OrderAcceptance):
         fp.assert_not_called()
         self.assertIn("cannot move from commenced", " ".join(output.split()))
 
+    def test_a_commenced_order_is_refused_a_close_for_its_lifecycle_first(self) -> None:
+        """Ruling 59: the close names the lifecycle before the call's own faults."""
+        output = self.wp("order", "close", _ORDER, "--decision", "terminate", "--attestor", "g0",
+                         "--attestation-text", "stop it", "--evidence", " ", code=3)  # fmt: skip
+        self.assertIn("cannot move from commenced", " ".join(output.split()))
+        self.assertNotIn("evidence is empty", output)
+        self.assertEqual(self.state(), "commenced")
+
 
 class TestAStoppedOrdersGateFive(_OrderAcceptance):
     """A stopped order accepted without its proof delivered nothing to proceed with."""
