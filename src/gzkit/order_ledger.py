@@ -9,11 +9,17 @@ the decision, the attestor, the operator's verbatim words and the field the
 decision names, the others refused (ruling 73); a redirect names an order of the
 same package already opened and not frozen (ruling 75). A freeze carries the risk note,
 the reviewer's receipt and a baseline of the repair REQs held on the order's
-package (rulings 2, 45), each REQ in one live order's frozen baseline at a time
-(ruling 53), and never on an empty baseline (ruling 61). A freeze approves exactly
+package (rulings 2, 45), each REQ in one live order's frozen baseline at a time,
+an accepted order holding its REQs until its Gate 5 (rulings 53 and 82), never a
+REQ a proceed holds at that revision (ruling 81) nor a superseded REQ, the refusal
+naming each head of its chains (rulings 85 and 87), and never on an empty baseline
+(ruling 61). A freeze approves exactly
 the package's planned alterations no earlier order's freeze approved (ruling 63),
-since a repair package never freezes itself (ruling 44). A blocked order does not
-move (ruling 59).
+since a repair package never freezes itself (ruling 44). An accepted move books
+`acceptance_ready`, false only on an order a stopping exit stopped (rulings 84 and
+86); a proceed reads that booked fact and is refused when another order's proceed
+already holds one of its REQs at that revision (ruling 82). A blocked order does
+not move (ruling 59).
 
 The writer takes the parsed catalog and the ledger as parameters, reads the
 current state from the ledger rather than the caller, and refuses a move the
@@ -423,7 +429,7 @@ def _check_closed(
     order: Order,
     move: OrderMove,
 ) -> None:
-    """Check Gate 5 at the order: the words, the decision and its own field (73 to 75, 80)."""
+    """Check Gate 5 at the order: the words, the decision and its fields (73 to 75, 80, 82, 84)."""
     if not (move.attestor or "").strip() or not (move.attestation_text or "").strip():
         _refuse(
             f"Order {order.id} closes only through Gate 5: an attestor and the operator's "
@@ -537,7 +543,9 @@ def record_order_transition(
     """Book one lifecycle move for an order, or refuse it and write nothing.
 
     A proceed on an order a stopping exit excused is refused unless its `accepted`
-    move booked `acceptance_ready` true, fail-closed (rulings 80 and 84).
+    move booked `acceptance_ready` true, fail-closed (rulings 80 and 84). An
+    `accepted` move that books no `acceptance_ready`, or books it false on an order
+    no stopping exit stopped, is refused (ruling 86).
 
     Returns:
         The event booked.

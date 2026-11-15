@@ -2780,7 +2780,63 @@
             "null"
           ]
         }
-      }
+      },
+      "conditional": [
+        {
+          "when": {
+            "field": "to_state",
+            "in": [
+              "accepted"
+            ]
+          },
+          "then": {
+            "required": [
+              "acceptance_ready"
+            ],
+            "properties": {
+              "acceptance_ready": {
+                "type": "boolean"
+              }
+            }
+          },
+          "because": "An order's acceptance books whether it read ready, the fact its Gate 5 reads, and the order writer refuses an accepted move that books none (RP-12 rulings 84 and 86, docs/governance/harbor-ro12-contractor-kit.md). The ledger is append-only -- do not edit the row; accept an order only through `uv run gz wp order accept <ORD-id> --evidence <text>`, which books it."
+        },
+        {
+          "when": {
+            "field": "to_state",
+            "in": [
+              "closed"
+            ]
+          },
+          "then": {
+            "required": [
+              "decision",
+              "attestor",
+              "attestation_text"
+            ],
+            "properties": {
+              "decision": {
+                "type": "string",
+                "enum": [
+                  "proceed",
+                  "redirect",
+                  "pause",
+                  "terminate"
+                ]
+              },
+              "attestor": {
+                "type": "string",
+                "min_length": 1
+              },
+              "attestation_text": {
+                "type": "string",
+                "min_length": 1
+              }
+            }
+          },
+          "because": "An order closes only through Gate 5 at the order: a decision, an attestor and the operator's verbatim words (RP-12 rulings 30 and 73, docs/governance/harbor-ro12-contractor-kit.md; AGENTS.md § Attestation). The ledger is append-only -- do not edit the row; close an order only through `uv run gz wp order close <ORD-id> --decision <decision> --attestor g0 --attestation-text \"<the operator's words>\"`."
+        }
+      ]
     },
     "work_package_unblocked": {
       "required": [

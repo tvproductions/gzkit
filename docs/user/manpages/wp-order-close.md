@@ -41,9 +41,10 @@ evidence, and the one field the decision names (ruling 73):
   refused unless its acceptance read ready when it was accepted: the readiness
   [`gz wp order accept`](wp-order-accept.md) booked on the `accepted` move, never
   one earned afterwards. The order writer itself holds this, and an accepted move
-  that booked no readiness reads not ready (rulings 80 and 84). A `proceed` is refused, too, when a REQ its freeze froze already
-  holds at that revision through another order's `proceed`, which a stopped
-  order's REQ refrozen by a later order can reach: no REQ holds twice (ruling 82).
+  that booked no readiness reads not ready (rulings 80 and 84). A `proceed` is
+  refused, too, when a REQ its freeze froze already holds at that revision
+  through another order's `proceed`, which a stopped order's REQ refrozen by a
+  later order can reach: no REQ holds twice (ruling 82).
 - `redirect` carries `--superseded-by`, an order of the same package already opened
   with [`gz wp order new`](wp-order-new.md) and not yet frozen (ruling 75). Rework
   freezes this order's REQ again in that order; a remodel freezes a new REQ carrying

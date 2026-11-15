@@ -5,9 +5,9 @@ description: Use to create, attach issues to, move, change, add evidence to or r
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-08
+last_reviewed: 2026-11-15
 metadata:
-  skill-version: "0.17.1"
+  skill-version: "0.18.0"
 model: sonnet
 ---
 
@@ -71,8 +71,8 @@ refuse and name the order's verb (RP-12 ruling 44).
    package id, such as `TASK-wp-02-resume-#1185`: that trailer is how the exit knows
    the commit is the package's. A defect fix keeps its own trailer.
 4. **Prove and review.** `uv run gz wp acceptance <WP-id> init --author <session>`,
-   then `prove --spec <file>` and `review --receipt <run-id>`, on the frozen REQs. Spec, quality and adversarial reviews approve each proof. A
-   package gets three adversarial rounds with a mapped finding; dispatch, accept and
+   then `prove --spec <file>` and `review --receipt <run-id>`, on the frozen REQs.
+   Spec, quality and adversarial reviews approve each proof. A package gets three adversarial rounds with a mapped finding; dispatch, accept and
    `human-review` then refuse until `gz wp block` and the operator's unblock. See
    `docs/user/manpages/wp-acceptance.md`.
 5. **Accept** at final inspection with no tag still hung, once
@@ -85,8 +85,10 @@ refuse and name the order's verb (RP-12 ruling 44).
    defaulted. Account every alteration and name each departure still open. A
    repair package closes from `initiated` once at least one order is closed and
    every order is closed through Gate 5, with no `--decision` of its own (rulings
-   62, 76, 79); a subagent's call is refused (ruling 77).
+   62, 76, 79); a subagent's call is refused (ruling 77). A delivery package:
    `uv run gz wp close <WP-id> --decision proceed --attestor g0 --residual-risk "<risk>" --account <alt-id> --evidence <id>`
+   A repair package:
+   `uv run gz wp close <WP-id> --attestor g0 --residual-risk "<risk>" --account <alt-id> --evidence <id>`
 
 ## Withdrawing a legacy unit
 
@@ -159,7 +161,11 @@ uv run gz wp req new <WP-id> --statement "<what must hold again>" \
 Once its repair requirements are written, freeze the order on them, then record
 commencement. The order moves one step at a time while its package is initiated
 (rulings 2, 44). Its baseline holds only repair REQs held on its package, each in
-one live order's baseline at a time (ruling 53). The freeze seals the package's
+one live order's baseline at a time, an accepted order holding its REQs until its
+Gate 5 (rulings 53 and 82). A REQ a proceed holds at that revision is refused, new
+work on it being a REQ that supersedes it (rulings 81 and 83), and so is a
+superseded REQ, the refusal naming each head of its chains (rulings 85 and 87).
+The freeze seals the package's
 footprint, which must be valid as a brief's Allowed Paths are, so a change order may
 then only add a path (ruling 56), and approves each planned alteration no earlier
 order's freeze approved (ruling 63). Commencement crosses the airlock (ruling 65).
@@ -187,7 +193,9 @@ uv run gz wp unblock <WP-id> --order <ORD-id> --ruling "<their exact words>" --o
 Acceptance runs on the order, its obligations the order's frozen REQs and its
 proofs and reviews under its id; accept refuses until it reads ready and the
 package's sealed footprint holds, the order and requirement stores aside (ruling
-66), a stopped order excused but whether it read ready booked, the fact its Gate 5 reads (rulings 60 and 84), and crosses the airlock outward. A freeze
+66), and a refusal names every blocker, the footprint among them (ruling 88). A
+stopped order is excused, but whether it read ready is booked, the fact its Gate
+5 reads (rulings 60 and 84), and accept crosses the airlock outward. A freeze
 names at least one REQ (ruling 61):
 
 ```bash
@@ -201,7 +209,9 @@ and never author. It closes from `accepted`, or from `opened` as a terminate alo
 each decision carries its own field and refuses the others': proceed the residual
 risk, redirect an order of the same package already opened and not frozen, pause
 the revisit condition, terminate nothing more. A subagent's call is refused
-(rulings 73 to 77):
+(rulings 73 to 77). A proceed is refused unless the order's acceptance booked it
+ready (rulings 80 and 84), and when another order's proceed already holds one of
+its REQs at that revision (ruling 82):
 
 ```bash
 uv run gz wp order close <ORD-id> --decision proceed --attestor g0 --attestation-text "<the operator's words>" --residual-risk "<text>" --evidence "<what justifies it>"
@@ -214,7 +224,7 @@ own approved specification; a difference from the prior shape is not one.
 ## Read
 
 `uv run gz wp order show <ORD-id>` prints an order's record, its package's kind, and
-its state and baseline from the ledger;
+its state, its baseline and the REQs a proceed holds from the ledger (ruling 78);
 `uv run gz wp show <WP-id>` prints the record, the state and the history;
 `uv run gz wp runs` reports what the ledger says every run in flight, a package's or
 an order's, has reached;

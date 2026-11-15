@@ -994,7 +994,11 @@ uv run gz wp new --kind repair --slug astral --issue 1183 --lane lite --alias RO
 uv run gz wp attach WP-01-astral --issue 1184
 uv run gz wp initiate WP-01-astral --operator-text "<your exact words>"
 uv run gz wp order new WP-01-astral --slug import --purpose "<purpose>" --operator-text "<your exact words>"
+uv run gz wp req new WP-01-astral --statement "<what must hold again>" --criterion "<state>|<outcome>|<evidence>" --kind BEHAVIOR --problem-report 1183
+uv run gz wp order freeze ORD-01-import --baseline REQ-1@1 --risk-note "<risk>" --review-receipt <receipt> --evidence "<what justifies it>"
+uv run gz wp order commence ORD-01-import --evidence "<what justifies it>"
 uv run gz wp resolve WP-01-astral 1183 --commit <fix-sha> --reviewer <reviewer>
+uv run gz wp order accept ORD-01-import --evidence "<final inspection>"
 uv run gz wp order close ORD-01-import --decision proceed --attestor g0 --attestation-text "<your exact words>" --residual-risk "<risk>" --evidence <id>
 uv run gz wp close WP-01-astral --attestor g0 --residual-risk "<risk>" --evidence <id>
 ```
@@ -1025,8 +1029,11 @@ uv run gz wp req new WP-01-stamp --statement "<what must hold again>" \
 
 Freeze the order on its repair requirements once they are written, then record
 commencement. The freeze seals the repair package's footprint, so a change order
-may then only add a path, and a requirement another live order has frozen is
-refused. It approves each alteration the package plans that no earlier order's
+may then only add a path. A requirement is refused when another live order has
+frozen it, an accepted order holding it until its Gate 5; when a proceed already
+delivered it at that revision, new work being a requirement that supersedes it;
+and when another requirement supersedes it, the refusal naming each one to
+freeze instead. It approves each alteration the package plans that no earlier order's
 freeze approved. Commencing crosses the airlock inward on the package's slice:
 
 ```bash
@@ -1064,7 +1071,9 @@ uv run gz wp order accept ORD-01-import --evidence "<final inspection>"
 An accepted order closes through Gate 5 at the order, on your own words: proceed
 with its residual risk, redirect to an order you have already opened, pause with
 its revisit condition, or terminate. An order opened by mistake and never frozen
-closes as terminate, and a subagent's call is refused:
+closes as terminate, and a subagent's call is refused. Proceed is refused unless
+the order's acceptance booked it ready, and when another order's proceed already
+holds one of its requirements at that revision:
 
 ```bash
 uv run gz wp order close ORD-01-import --decision proceed --attestor g0 --attestation-text "<your words>" --residual-risk "<residual risk>" --evidence "<what justifies it>"
@@ -1072,13 +1081,15 @@ uv run gz wp order close ORD-01-import --decision proceed --attestor g0 --attest
 
 The lifecycle moves one step at a time: a delivery package's through initiated,
 frozen, commenced, accepted and closed, a repair package's from initiated to
-closed, and an order's through opened, frozen, commenced, accepted and closed. Pen and ink is the coordinator's; every other rung of the change ladder
-is yours. Any refusal exits 3 and writes nothing. Attaching an issue also labels
+closed, and an order's through opened, frozen, commenced, accepted and closed.
+Pen and ink is the coordinator's; every other rung of the change ladder is
+yours. Any refusal exits 3 and writes nothing. Attaching an issue also labels
 it `repair` and comments the package id on it; `ghi-close` records each fixed
-issue with `gz wp resolve`, and the last one's close leaves the package for your
-Gate 5. A REQ may use two fix cycles; the next is refused whatever you
-rule, and a block at that bound clears only by naming an exit: `reopen`, `departure`, `hold`
-or `terminate`.
+issue with `gz wp resolve`, and the last one's close never closes the package,
+which closes once its orders have closed through your Gate 5 at each order. A
+REQ may use two fix cycles; the next is refused whatever you rule, and a block
+at that bound clears only by naming an exit: `reopen`, `departure`, `hold` or
+`terminate`.
 
 When the store accretes, declutter it with the governed move-not-delete
 retention verb — `gz handoff archive` relocates handoffs older than the
