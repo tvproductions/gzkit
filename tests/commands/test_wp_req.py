@@ -90,6 +90,11 @@ class ReqNewTests(_ReqCase):
         self.assertEqual(payloads[0]["id"], _reqs()[-1]["id"])
         self.assertEqual(payloads[0]["held_on"], "WP-01-stamp")
 
+    def test_human_mode_prints_the_line_the_manpage_shows(self) -> None:
+        # output-contract: docs/user/manpages/wp-req-new.md's example is the verb's output.
+        lines = self.new().splitlines()
+        self.assertEqual(lines, ["Wrote REQ-5, a repair REQ held on WP-01-stamp."])
+
     def test_new_writes_a_repair_req_past_the_highest_id_and_the_store_passes(self) -> None:
         self.new("--aligns-to", "REQ-4")
         _, written = _reqs()

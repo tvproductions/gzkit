@@ -168,10 +168,10 @@ class _OrderCase(unittest.TestCase):
 
     def assert_refused(self, to_state: str, **fields: object) -> str:
         before = _rows(self.path)
-        with self.assertRaises(OrderLedgerError) as caught:
-            self.move(to_state, **fields)
+        raised = _raised(lambda: self.move(to_state, **fields))
+        self.assertIsInstance(raised, OrderLedgerError)
         self.assertEqual(_rows(self.path), before)
-        return str(caught.exception)
+        return str(raised)
 
 
 class LifecycleTests(_OrderCase):
@@ -436,17 +436,18 @@ class GateFiveTests(_OrderCase):
         """Ruling 74: a frozen or commenced order closes only after it is accepted."""
         for state in ("frozen", "commenced"):
             with self.subTest(state=state):
+                self.setUp()  # a fresh ledger each time, so one failing case spoils no other
                 self.walk_to(state)
                 self.assertIn("ruling 74", self.refused(**_CLOSE))
-                self.setUp()
 
     def test_an_order_never_frozen_closes_only_as_terminate(self) -> None:
         """Ruling 74: an opened order holds no REQ, so it is only withdrawn."""
         self.move("opened", **_PAYLOADS["opened"])
         self.assertIn("ruling 74", self.refused(**_CLOSE))
         words = {"attestor": "g0", "attestation_text": "withdraw it"}
-        event = self.close(decision="terminate", **words)
-        self.assertEqual((event.from_state, event.decision), ("opened", "terminate"))
+        held: list[OrderTransitionedEvent] = []
+        self.assertIsNone(_raised(lambda: held.append(self.close(decision="terminate", **words))))
+        self.assertEqual((held[0].from_state, held[0].decision), ("opened", "terminate"))
 
     def test_the_attestor_the_words_and_the_decision_are_required(self) -> None:
         self.walk_to("accepted")
@@ -498,8 +499,11 @@ class GateFiveTests(_OrderCase):
         other = self.refused(superseded_by="ORD-03-other", **words)
         self.assertIn("not another order of WP-01-stamp", other)  # opened, but elsewhere
         self.move("opened", order="ORD-02-matcher", **_PAYLOADS["opened"])
-        event = self.close(superseded_by="ORD-02-matcher", **words)
-        self.assertEqual(event.superseded_by, "ORD-02-matcher")
+        held: list[OrderTransitionedEvent] = []
+        self.assertIsNone(
+            _raised(lambda: held.append(self.close(superseded_by="ORD-02-matcher", **words)))
+        )
+        self.assertEqual(held[0].superseded_by, "ORD-02-matcher")
 
     def test_a_redirects_successor_that_has_frozen_is_refused(self) -> None:
         self.walk_to("accepted")
@@ -661,7 +665,11 @@ class AlterationApprovalTests(_OrderCase):
     def test_another_packages_approvals_do_not_count(self) -> None:
         self.plan("ALT-1", package="WP-03-other")
         self.move("opened", order="ORD-03-other", **_PAYLOADS["opened"])
-        self.freeze("ALT-1", order="ORD-03-other", req="REQ-3")
+        held: list[OrderTransitionedEvent] = []
+        self.assertIsNone(
+            _raised(lambda: held.append(self.freeze("ALT-1", order="ORD-03-other", req="REQ-3")))
+        )
+        self.assertEqual(held[0].approved_alterations, ("ALT-1",))
         self.assert_refused("frozen", **_FREEZE, approved_alterations=("ALT-2",))
         self.assertEqual(
             set(self.freeze("ALT-1", "ALT-2").approved_alterations), {"ALT-1", "ALT-2"}

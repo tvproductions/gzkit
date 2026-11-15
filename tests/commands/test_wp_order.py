@@ -107,6 +107,17 @@ class _OrderCase(unittest.TestCase):
             "new", package, "--slug", slug, "--purpose", "Restore it.", *words, *extra, code=code
         )
 
+    def json_of(self, output: str) -> Any:
+        """Read a ``--json`` verb's output as the one JSON document it must be.
+
+        Returns:
+            The parsed document; a text line in its place fails the test, never errors it.
+
+        """
+        parsed: list[Any] = []
+        self.assertIsNone(_raised(lambda: parsed.append(json.loads(output))), output)
+        return parsed[0]
+
 
 class OrderNewTests(_OrderCase):
     def test_json_mode_prints_the_order_record(self) -> None:
@@ -117,6 +128,11 @@ class OrderNewTests(_OrderCase):
         self.assertEqual(
             (payloads[0]["id"], payloads[0]["work_package"]), ("ORD-01-import", "WP-01-stamp")
         )
+
+    def test_human_mode_prints_the_line_the_manpage_shows(self) -> None:
+        # output-contract: docs/user/manpages/wp-order-new.md's example is the verb's output.
+        lines = self.new("import").splitlines()
+        self.assertEqual(lines, ["Wrote ORD-01-import in WP-01-stamp (repair)."])
 
     def test_new_numbers_one_series_and_the_store_passes_its_scope(self) -> None:
         self.new("import", "--alias", "O2")
@@ -228,6 +244,9 @@ class OrderNewTests(_OrderCase):
         self.new("import", "--alias", "O2")
         output = self.new("matcher", "--alias", "O2", code=3)
         self.assertIn("ruling 49", output)
+        # output-contract: the recovery step is the refusal's contract; the call caused it.
+        self.assertIn("correct the call and re-run", output)
+        self.assertNotIn("gz validate --catalog", output)
         self.assertEqual([order["id"] for order in _orders()], ["ORD-01-import"])
 
     def test_a_refusal_names_the_flag_and_the_call_to_rerun(self) -> None:
@@ -503,17 +522,36 @@ class OrderLifecycleTests(_OrderCase):
         self.assertIn("  baseline: REQ-1@1", lines)
 
     def test_show_reads_the_state_and_baseline_from_the_ledger(self) -> None:
-        self.assertEqual(json.loads(self.gz("show", "ORD-01-import", "--json"))["state"], "opened")
+        shown = self.json_of(self.gz("show", "ORD-01-import", "--json"))
+        self.assertEqual(shown["state"], "opened")
         self.freeze()
-        shown = json.loads(self.gz("show", "ORD-01-import", "--json"))
+        shown = self.json_of(self.gz("show", "ORD-01-import", "--json"))
         self.assertEqual(shown["state"], "frozen")
         self.assertEqual(shown["baseline"], {"REQ-1": 1})
+
+
+class FootprintDropTests(_OrderCase):
+    """A change order's dropped path on a repair package (RP-12 ruling 56)."""
+
+    def test_a_drop_on_a_package_never_initiated_names_the_initiation(self) -> None:
+        """A path drops only while a package is initiated; the refusal says to initiate it."""
+        before = _ledger_rows()
+        result = self.runner.invoke(
+            main,
+            ["wp", "change", "WP-03-idle", "--rung", "change_order", "--approver", "operator",
+             "--change", "c", "--superseded", "s", "--work-stopped", "--drop-module",
+             "src/stamp.py"],
+        )  # fmt: skip
+        self.assertEqual(result.exit_code, 3, result.output)
+        self.assertEqual(_ledger_rows(), before)
+        # output-contract: the recovery step is the refusal's contract
+        self.assertIn("Initiate the package first", " ".join(result.output.split()))
 
 
 class OrderShowTests(_OrderCase):
     def test_show_reads_the_kind_from_the_package(self) -> None:
         self.new("import", "--alias", "O2")
-        shown = json.loads(self.gz("show", "ORD-01-import", "--json"))
+        shown = self.json_of(self.gz("show", "ORD-01-import", "--json"))
         self.assertEqual(shown["record"]["id"], "ORD-01-import")
         self.assertEqual(shown["record"]["work_package"], "WP-01-stamp")
         self.assertEqual(shown["kind"], "repair")

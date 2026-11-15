@@ -200,8 +200,8 @@ class _LedgerCase(unittest.TestCase):
 
     def assert_refused(self, call: object, **kwargs: object) -> None:
         before = _rows(self.path)
-        with self.assertRaises(WorkPackageLedgerError):
-            call(**kwargs)  # ty: ignore[call-non-callable]
+        raised = _raised(lambda: call(**kwargs))  # ty: ignore[call-non-callable]
+        self.assertIsInstance(raised, WorkPackageLedgerError)
         self.assertEqual(_rows(self.path), before)
 
 
@@ -226,8 +226,10 @@ class TransitionTests(_LedgerCase):
     def test_the_whole_lifecycle_walks_one_step_at_a_time(self) -> None:
         self.walk_to("closed")
         events = [parse_typed_event(row) for row in _rows(self.path)]
+        moves = [e for e in events if isinstance(e, WorkPackageTransitionedEvent)]
+        self.assertEqual(len(moves), len(events))  # every row is a transition
         self.assertEqual(
-            [(e.from_state, e.to_state) for e in events],  # ty: ignore[unresolved-attribute]
+            [(e.from_state, e.to_state) for e in moves],
             list(zip((None, *_LIFECYCLE[:-1]), _LIFECYCLE, strict=True)),
         )
         self.assertEqual(work_package_state(self.ledger, "WP-01-resume"), "closed")

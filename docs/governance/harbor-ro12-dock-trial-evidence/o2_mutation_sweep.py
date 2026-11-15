@@ -2,7 +2,7 @@
 """RP-12 O2's dock trial: every branch of O2's cited code mutated, red then green.
 
 A dated evidence script (`docs/governance/harbor-ro12-contractor-kit.md`, rulings 27 and
-90 to 96). Ruling 27 has each order's dock trial show each refusal red then green, and
+90 to 97). Ruling 27 has each order's dock trial show each refusal red then green, and
 ruling 90 chose a mutation sweep for O2.
 
 Scope (ruling 92). Every function and verb O2's rows of § Mode Contract cite, each swept
@@ -18,7 +18,9 @@ still binds), each ``raise`` becomes ``pass``, and each early ``return`` (any ``
 that is not the last statement of its function's body) becomes ``pass``. The schema
 conditionals of ``order_transitioned`` are JSON, which the AST pass cannot read; their
 ``required`` lists and property rules keep their hand-written mutants
-(:data:`SCHEMA_MUTANTS`). ``--plan`` prints the scope and the mutants and runs nothing.
+(:data:`SCHEMA_MUTANTS`). A mutant that changes a refusal's recovery step or a
+manpage's documented output is a test gap, never wording (ruling 97). ``--plan`` prints
+the scope and the mutants and runs nothing.
 
 The run. Each mutant runs through :func:`gzkit.mutation_witness.run_mutation_sweep` in an
 isolated copy of the tree against the twelve modules, nominating every test they execute,

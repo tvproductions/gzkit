@@ -15,6 +15,8 @@ from gzkit.cli import main
 from gzkit.dispatch_stamp import STAMP_ID_ENV, STAMP_ROOT_ENV
 from gzkit.work_package_ledger import WorkPackageLedgerError
 from gzkit.work_package_run import read_dispatch_id
+from tests.commands.test_wp_acceptance import _PACKAGE as _DELIVERY
+from tests.commands.test_wp_acceptance import _REQ, _PackageCase
 from tests.commands.test_wp_order_run import _CommencedOrder
 
 _PACKAGE = "WP-01-stamp"
@@ -301,6 +303,31 @@ class TestRunVerbs(_RunCase):
         result = self.runner.invoke(main, ["wp", "show", _PACKAGE, "--json"])
         events = [row["event"] for row in json.loads(result.output)["history"]]
         self.assertIn("work_package_dispatched", events)
+
+
+class PackageRunOutputContract(_PackageCase):
+    """A delivery package's block and unblock name the package, as the manpages show."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self._commence()
+        for role in ("Implementer", "SpecReviewer", "Implementer", "Implementer"):
+            self._wp("dispatch", _DELIVERY, "--role", role, "--model", "m", "--req", _REQ)
+
+    def test_a_package_block_names_the_package_alone(self) -> None:
+        # output-contract: docs/user/manpages/wp-block.md's example is the verb's output.
+        blocked = self._wp("block", _DELIVERY, "--reason", "r", "--next-action", "rule on it")
+        self.assertEqual(
+            blocked.splitlines()[0], f"Blocked {_DELIVERY} on the operator: rule on it"
+        )
+
+    def test_a_package_unblock_names_the_package_and_its_exit(self) -> None:
+        # output-contract: docs/user/manpages/wp-unblock.md's example is the verb's output.
+        self._wp("block", _DELIVERY, "--reason", "r", "--next-action", "rule on it")
+        unblocked = self._wp(
+            "unblock", _DELIVERY, "--ruling", "hold it", "--operator", "g0", "--exit", "hold"
+        )
+        self.assertEqual(unblocked.splitlines(), [f"Unblocked {_DELIVERY} by exit hold."])
 
 
 if __name__ == "__main__":

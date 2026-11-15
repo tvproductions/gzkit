@@ -17,6 +17,7 @@ from gzkit.acceptance_store import (
     REVIEW_SCHEMA,
     acceptance_ledger,
     acceptance_status,
+    acceptance_verb,
     completion_review,
     initialize,
     load_history,
@@ -67,6 +68,13 @@ class AcceptanceStoreTests(ExecutionFixture):
 
     def receipt(self, proof, stage="adversarial", *, findings=(), closures=(), verdict="accepted"):
         return captured_receipt(proof, stage, findings=findings, closures=closures, verdict=verdict)
+
+    def test_the_acceptance_ledger_is_the_one_the_config_names(self):
+        configured = {"paths": {"design_root": "design", "ledger": ".gzkit/scoped-ledger.jsonl"}}
+        self.write(".gzkit.json", json.dumps(configured))
+        self.assertEqual(
+            acceptance_ledger(self.root).path, self.root / ".gzkit" / "scoped-ledger.jsonl"
+        )
 
     def prove_and_record(self):
         proof = self.run_proof()
@@ -658,6 +666,20 @@ class AcceptanceStoreTests(ExecutionFixture):
         self.assertTrue(
             acceptance_status(self.root, OBPI, dispatch_scope=dispatch_validator_scope).ready
         )
+
+
+class AcceptanceVerbTests(unittest.TestCase):
+    """A refusal's next step names the verb that reads the id's acceptance."""
+
+    # output-contract: the verb named is the recovery step a refusal hands the operator.
+    def test_an_obpi_is_read_by_obpi_acceptance_and_a_run_by_wp_acceptance(self):
+        for subject, verb in (
+            (OBPI, "gz obpi acceptance"),
+            ("WP-01-stamp", "gz wp acceptance"),
+            ("ORD-01-import", "gz wp acceptance"),
+        ):
+            with self.subTest(subject=subject):
+                self.assertEqual(acceptance_verb(subject), verb)
 
 
 if __name__ == "__main__":

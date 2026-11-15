@@ -300,11 +300,13 @@ class _Run(unittest.TestCase):
     def _rows(self, event_type: str) -> list[dict[str, object]]:
         return [row.extra for row in self.ledger.query(event_type=event_type)]
 
-    def _refused(self, pattern: str, event_type: str, act) -> None:
+    def _refused(self, pattern: str, event_type: str, act) -> str:
         booked = len(self._rows(event_type))
-        with self.assertRaisesRegex(WorkPackageLedgerError, pattern):
-            act()
+        raised = _raised(act)
+        self.assertIsInstance(raised, WorkPackageLedgerError)
+        self.assertRegex(str(raised), pattern)
         self.assertEqual(len(self._rows(event_type)), booked)
+        return str(raised)
 
 
 class Dispatch(_Run):
@@ -357,7 +359,13 @@ class Dispatch(_Run):
                     "work_package_dispatched",
                     lambda: self._dispatch("Implementer", req="REQ-2"),
                 )
-                self._dispatch("SpecReviewer", req="REQ-2")
+                held: list[WorkPackageDispatchedEvent] = []
+                self.assertIsNone(
+                    _raised(
+                        lambda held=held: held.append(self._dispatch("SpecReviewer", req="REQ-2"))
+                    )
+                )
+                self.assertEqual((held[0].role, held[0].subject), ("SpecReviewer", "REQ-2@2"))
 
     def test_a_hold_leaves_the_other_subjects_open(self) -> None:
         self._reach_the_bound()
@@ -467,7 +475,7 @@ class AcrossPackages(_Run):
         self._unblock("reopen", "REQ-1")
         self.catalog = _catalog(revision=3)
         self._commence(_SECOND, ("REQ-1",), revision=3)
-        self._dispatch("Implementer", _SECOND)
+        self.assertIsNone(_raised(lambda: self._dispatch("Implementer", _SECOND)))
         rows = self._rows("work_package_dispatched")
         self.assertEqual(rows[-1]["subject"], "REQ-1@3")
 
@@ -477,7 +485,7 @@ class AcrossPackages(_Run):
         self._unblock("reopen", "REQ-1")
         self.catalog = _catalog(revision=3)
         self._commence(_SECOND, ("REQ-1",), revision=3)
-        self._reach_the_bound(_SECOND)
+        self.assertIsNone(_raised(lambda: self._reach_the_bound(_SECOND)))
         self._block(_SECOND)
         self.assertEqual(self._rows("work_package_blocked")[-1]["reopened"], ["REQ-1"])
         self._refused(
@@ -538,7 +546,11 @@ class Block(_Run):
         self._refused("already blocked", "work_package_blocked", self._block)
 
     def test_an_uninitiated_package_takes_no_block(self) -> None:
-        self._refused("not initiated", "work_package_blocked", lambda: self._block(_SECOND))
+        refusal = self._refused(
+            "not initiated", "work_package_blocked", lambda: self._block(_SECOND)
+        )
+        # output-contract: the recovery step is the refusal's contract
+        self.assertNotIn("closes through Gate 5", refusal)
 
     def test_a_closed_package_takes_no_block(self) -> None:
         for move in (
@@ -553,13 +565,17 @@ class Block(_Run):
             ),
         ):
             record_work_package_transition(self.catalog, self.ledger, move)
-        self._refused("closed", "work_package_blocked", self._block)
+        refusal = self._refused("closed", "work_package_blocked", self._block)
+        # output-contract: the recovery step is the refusal's contract
+        self.assertNotIn("closes through Gate 5", refusal)
 
     def test_an_accepted_package_takes_no_block(self) -> None:
         """RP-12 ruling 69: final inspection is done; Gate 5's outcomes remain."""
         move = TransitionRequest(work_package=_FIRST, to_state="accepted", evidence="e")
         record_work_package_transition(self.catalog, self.ledger, move)
-        self._refused("accepted", "work_package_blocked", self._block)
+        refusal = self._refused("accepted", "work_package_blocked", self._block)
+        # output-contract: the recovery step is the refusal's contract
+        self.assertIn("closes through Gate 5", refusal)
 
     def test_a_block_holds_the_lifecycle(self) -> None:
         self._block()
@@ -817,8 +833,16 @@ class DispatchRecord(_Run):
             ("/", "/"),
         ):
             with self.subTest(root=root):
-                event = record_work_package_dispatch(self.catalog, self.ledger, self._request(root))
-                self.assertEqual(event.intended_root, booked)
+                request = self._request(root)
+                held: list[WorkPackageDispatchedEvent] = []
+                self.assertIsNone(
+                    _raised(
+                        lambda r=request, held=held: held.append(
+                            record_work_package_dispatch(self.catalog, self.ledger, r)
+                        )
+                    )
+                )
+                self.assertEqual(held[0].intended_root, booked)
 
     def test_a_dispatch_is_found_by_its_id_and_an_unknown_id_finds_none(self) -> None:
         event = self._dispatch("Implementer")
@@ -871,9 +895,13 @@ class DispatchVoid(_Run):
 
     def test_a_voided_dispatch_is_no_dispatch_and_never_open(self) -> None:
         dispatch_id = self._elsewhere()
-        self.assertEqual(
-            open_unclaimed_dispatches(self.ledger, self.root.as_posix()), [dispatch_id]
+        held: list[list[str]] = []
+        self.assertIsNone(
+            _raised(
+                lambda: held.append(open_unclaimed_dispatches(self.ledger, self.root.as_posix()))
+            )
         )
+        self.assertEqual(held, [[dispatch_id]])
         event = record_dispatch_void(self.ledger, _FIRST, dispatch_id, "never spawned")
         self.assertEqual((event.dispatch_id, event.reason), (dispatch_id, "never spawned"))
         self.assertIsNone(find_dispatch(self.ledger, dispatch_id))

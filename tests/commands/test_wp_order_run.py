@@ -55,7 +55,7 @@ class _CommencedOrder(_OrderCase):
 
 class DispatchOrderCli(_CommencedOrder):
     def test_dispatch_on_the_order_books_its_frozen_subject(self) -> None:
-        payload = json.loads(self.dispatch("--json"))
+        payload = self.json_of(self.dispatch("--json"))
         self.assertEqual(
             (payload["order"], payload["subject"], payload["work_package"]),
             (_ORDER, "REQ-1@1", _PACKAGE),
@@ -77,10 +77,14 @@ class DispatchOrderCli(_CommencedOrder):
 
 class BlockOrderCli(_CommencedOrder):
     def test_block_holds_the_order_and_unblock_lifts_it(self) -> None:
-        self.wp("block", _PACKAGE, "--order", _ORDER, "--reason", "R", "--next-action", "rule")
+        blocked = self.json_of(
+            self.wp("block", _PACKAGE, "--order", _ORDER, "--reason", "R", "--next-action",
+                    "rule", "--json")
+        )  # fmt: skip
+        self.assertEqual(blocked["order"], _ORDER)
         self.assertEqual(self.rows("work_package_blocked")[-1]["order"], _ORDER)
         self.assertIn("blocked", self.dispatch(code=3))
-        payload = json.loads(
+        payload = self.json_of(
             self.wp("unblock", _PACKAGE, "--order", _ORDER, "--ruling", "go", "--operator", "g0",
                     "--json")
         )  # fmt: skip

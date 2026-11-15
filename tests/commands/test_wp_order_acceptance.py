@@ -31,6 +31,7 @@ from gzkit.dispatch_stamp import STAMP_ID_ENV, STAMP_ROOT_ENV
 from gzkit.registries import RegistryError
 from tests.commands.test_wp_acceptance import _receipt
 from tests.commands.test_wp_order_run import _ORDER, _PACKAGE, _CommencedOrder
+from tests.test_order_ledger import _raised
 
 _FOOTPRINT = "gzkit.commands.wp_order.footprint_refusal"
 #: The readiness an `accepted` move books (ruling 84), compared by identity.
@@ -109,8 +110,9 @@ class TestTheOrdersContract(_OrderAcceptance):
             resolve_brief(self.root, _PACKAGE)
 
     def test_an_order_the_store_lacks_is_refused(self) -> None:
-        with self.assertRaisesRegex(ValueError, "ORD-09-ghost"):
-            resolve_brief(self.root, "ORD-09-ghost")
+        raised = _raised(lambda: resolve_brief(self.root, "ORD-09-ghost"))
+        self.assertIsInstance(raised, ValueError)
+        self.assertIn("ORD-09-ghost", str(raised))
 
     def test_an_unreadable_order_store_is_refused_as_the_store_never_as_a_brief(self) -> None:
         """An order id resolves against the catalog; it is never looked up as an OBPI brief."""
@@ -143,7 +145,7 @@ class TestTheOrdersGate(_OrderAcceptance):
         self.init()
         self.approve(self.proof())
         with mock.patch(_FOOTPRINT, return_value=None) as footprint:
-            payload = json.loads(
+            payload = self.json_of(
                 self.wp("order", "accept", _ORDER, "--evidence", "final inspection", "--json")
             )
         self.assertEqual((payload["order"], payload["to_state"]), (_ORDER, "accepted"))
@@ -203,7 +205,7 @@ class TestTheOrdersRoundBound(_OrderAcceptance):
 
     def test_the_orders_block_writes_the_orders_refutations(self) -> None:
         self.refute(1)
-        payload = json.loads(
+        payload = self.json_of(
             self.wp("block", _PACKAGE, "--order", _ORDER, "--reason", "r", "--next-action", "n",
                     "--json")
         )  # fmt: skip
@@ -435,7 +437,7 @@ class TestTheOrdersGateFive(_OrderAcceptance):
         return self.wp("order", "close", _ORDER, *words, "--evidence", "gate 5", *extra, code=code)
 
     def test_proceed_books_gate_5_on_the_operators_words(self) -> None:
-        payload = json.loads(
+        payload = self.json_of(
             self.close("--decision", "proceed", "--residual-risk", "none", "--json")
         )
         self.assertEqual(
@@ -445,7 +447,7 @@ class TestTheOrdersGateFive(_OrderAcceptance):
         self.assertEqual(self.state(), "closed")
         # output-contract: show's text form names the REQs a proceed holds (ruling 78)
         self.assertIn("  holds: REQ-1@1", self.wp("order", "show", _ORDER).splitlines())
-        shown = json.loads(self.wp("order", "show", _ORDER, "--json"))
+        shown = self.json_of(self.wp("order", "show", _ORDER, "--json"))
         self.assertEqual(shown["holds"], {"REQ-1": 1})
 
     def test_a_subagents_call_is_refused_and_books_nothing(self) -> None:

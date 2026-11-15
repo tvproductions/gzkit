@@ -11,6 +11,7 @@ import json
 import unittest
 import uuid
 from pathlib import Path
+from typing import Any
 from unittest import mock
 
 from gzkit.acceptance import Proof, Review
@@ -168,6 +169,17 @@ class _PackageCase(unittest.TestCase):
         result = self.runner.invoke(main, ["wp", *args])
         self.assertNotEqual(result.exit_code, 0, msg=result.output)
         return result.output
+
+    def _json_of(self, output: str) -> Any:
+        """Read a ``--json`` verb's output as the one JSON document it must be.
+
+        Returns:
+            The parsed document; a text line in its place fails the test, never errors it.
+
+        """
+        parsed: list[Any] = []
+        self.assertIsNone(_raised(lambda: parsed.append(json.loads(output))), output)
+        return parsed[0]
 
     def _commence(self) -> None:
         self._wp("initiate", _PACKAGE, "--operator-text", "go")
@@ -446,8 +458,10 @@ class TestTheRoundBound(_PackageCase):
     def test_an_identical_receipt_counts_once(self) -> None:
         self._init()
         receipt = _receipt(self._proof(), "adversarial", verdict="refuted")
-        record_review(self.root, _PACKAGE, receipt)
-        record_review(self.root, _PACKAGE, receipt)
+        first = record_review(self.root, _PACKAGE, receipt)
+        held: list[Review] = []
+        self.assertIsNone(_raised(lambda: held.append(record_review(self.root, _PACKAGE, receipt))))
+        self.assertEqual(held[0].id, first.id)
         self.assertEqual(refuted_rounds(self.root, _PACKAGE), 1)
 
 
@@ -742,7 +756,7 @@ class TestDeparture(_PackageCase):
         ids = [i.id for i in canonical_obligations(self.root, resolve_brief(self.root, _PACKAGE))]
         self.assertEqual(ids, ["REQ-8"])
         output = self._wp("block", _PACKAGE, "--reason", "r", "--next-action", "n", "--json")
-        self.assertEqual(json.loads(output)["refutations"][f"{_REQ}@2"], 1)
+        self.assertEqual(self._json_of(output)["refutations"][f"{_REQ}@2"], 1)
 
     def test_a_departed_req_may_change_revision(self) -> None:
         self._delivery()
@@ -780,7 +794,7 @@ class TestTheRefutationCount(_PackageCase):
         with Path(".gzkit/ledger.jsonl").open("a", encoding="utf-8") as ledger:
             ledger.write(json.dumps(row) + "\n")
         output = self._wp("block", _PACKAGE, "--reason", "r", "--next-action", "n", "--json")
-        self.assertIn("refutations not counted", json.loads(output)["reason"])
+        self.assertIn("refutations not counted", self._json_of(output)["reason"])
 
     def test_the_count_keys_a_req_at_its_frozen_revision(self) -> None:
         _seed([_record(_PACKAGE, kind="delivery")], [_req()])
@@ -793,12 +807,12 @@ class TestTheRefutationCount(_PackageCase):
         self._wp("acceptance", _PACKAGE, "init", "--author", "implementing-session")
         self._review(self._proof(_REQ))
         output = self._wp("block", _PACKAGE, "--reason", "r", "--next-action", "n", "--json")
-        self.assertEqual(json.loads(output)["refutations"], {f"{_REQ}@2": 1})
+        self.assertEqual(self._json_of(output)["refutations"], {f"{_REQ}@2": 1})
 
     def test_a_package_with_no_acceptance_counts_zero_for_each_subject(self) -> None:
         self._commence()
         output = self._wp("block", _PACKAGE, "--reason", "r", "--next-action", "n", "--json")
-        self.assertEqual(json.loads(output)["refutations"], {f"{_REQ}@2": 0})
+        self.assertEqual(self._json_of(output)["refutations"], {f"{_REQ}@2": 0})
 
 
 class TestWhatBindsByMutation(unittest.TestCase):

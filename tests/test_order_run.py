@@ -16,6 +16,7 @@ from pathlib import Path
 
 from gzkit.events import BaselinedReq
 from gzkit.order_ledger import (
+    OrderLedgerError,
     is_order_blocked,
     order_state,
     order_took_stopping_exit,
@@ -36,6 +37,7 @@ from gzkit.work_package_ledger import (
 from gzkit.work_package_run import (
     BlockRequest,
     DispatchRequest,
+    RunPosition,
     UnblockRequest,
     open_unclaimed_dispatches,
     record_dispatch_void,
@@ -91,11 +93,13 @@ class _OrderRun(_OrderCase):
         )  # fmt: skip
         return record_work_package_unblock(self.catalog, self.ledger, request)
 
-    def refused(self, pattern: str, act) -> None:
+    def refused(self, pattern: str, act) -> str:
         before = _rows(self.path)
-        with self.assertRaisesRegex(ValueError, pattern):
-            act()
+        raised = _raised(act)
+        self.assertIsInstance(raised, (WorkPackageLedgerError, OrderLedgerError))
+        self.assertRegex(str(raised), pattern)
         self.assertEqual(_rows(self.path), before)
+        return str(raised)
 
     def reach_the_bound(self) -> None:
         for _ in range(MAX_REVIEW_FIX_CYCLES):
@@ -239,7 +243,19 @@ class BlockOnAnOrder(_OrderRun):
     def test_an_accepted_order_takes_no_block(self) -> None:
         """RP-12 ruling 69: final inspection is done; Gate 5's outcomes remain."""
         self.move("accepted", **_PAYLOADS["accepted"])
-        self.refused("accepted", self.block)
+        refusal = self.refused("accepted", self.block)
+        # output-contract: the recovery step is the refusal's contract
+        self.assertIn("closes through Gate 5", refusal)
+
+    def test_an_order_not_opened_or_closed_is_not_sent_to_gate_5_by_the_refusal(self) -> None:
+        """Ruling 69's next step is an accepted order's alone: no other refusal names it."""
+        self.move("accepted", **_PAYLOADS["accepted"])
+        self.move("closed", decision="terminate", attestor="g0", attestation_text="stop")
+        for order, state in ((_SECOND, "not opened"), (_ORDER, "closed")):
+            with self.subTest(order=order):
+                refusal = self.refused(state, lambda order=order: self.block(order=order))
+                # output-contract: the recovery step is the refusal's contract
+                self.assertNotIn("closes through Gate 5", refusal)
 
     def test_a_block_names_its_reason_and_the_decision_owed(self) -> None:
         """Ruling 59: a block carries why the order cannot proceed and what the operator owes."""
@@ -320,9 +336,12 @@ class UnblockOnAnOrder(_OrderRun):
         self.block()
         self.unblock(exit_taken="terminate")
         self.assertTrue(order_took_stopping_exit(self.ledger, _ORDER))
+        self.assertFalse(order_took_stopping_exit(self.ledger, _SECOND))
         self.assertFalse(took_stopping_exit(self.ledger, _PACKAGE))
         self.refused("terminate exit", self.dispatch)
-        self.assertEqual(self.dispatch(order=_SECOND, req="REQ-2").order, _SECOND)
+        held = []
+        self.assertIsNone(_raised(lambda: held.append(self.dispatch(order=_SECOND, req="REQ-2"))))
+        self.assertEqual(held[0].order, _SECOND)
 
     def test_a_stopped_order_never_ready_does_not_close_as_proceed(self) -> None:
         """Rulings 80 and 84: the writer reads the readiness booked at acceptance."""
@@ -407,41 +426,56 @@ class OrderFence(_OrderRun):
 class InFlightOnAnOrder(_OrderRun):
     """Every reader of a run in flight reads the order, whose package stays initiated."""
 
+    def open_dispatches(self) -> list[str]:
+        held: list[list[str]] = []
+        self.assertIsNone(
+            _raised(lambda: held.append(open_unclaimed_dispatches(self.ledger, "/here")))
+        )
+        return held[0]
+
+    def runs(self) -> list[RunPosition]:
+        held: list[RunPosition] = []
+        self.assertIsNone(_raised(lambda: held.extend(run_positions(self.catalog, self.ledger))))
+        return held
+
     def test_an_unclaimed_order_dispatch_for_another_root_is_open(self) -> None:
         """Ruling 40's guard does not go silent on repair work."""
         event = self.dispatch()
-        self.assertEqual(open_unclaimed_dispatches(self.ledger, "/here"), [event.dispatch_id])
+        self.assertEqual(self.open_dispatches(), [event.dispatch_id])
 
     def test_it_stays_open_while_the_order_is_accepted(self) -> None:
         event = self.dispatch()
         self.move("accepted", **_PAYLOADS["accepted"])
-        self.assertEqual(open_unclaimed_dispatches(self.ledger, "/here"), [event.dispatch_id])
+        self.assertEqual(self.open_dispatches(), [event.dispatch_id])
 
     def test_a_dispatch_of_a_closed_order_is_not_open(self) -> None:
         """Ruling 40's guard reads runs in flight; a closed order's run is over."""
         self.dispatch()
         self.move("accepted", **_PAYLOADS["accepted"])
         self.move("closed", decision="terminate", attestor="g0", attestation_text="stop")
-        self.assertEqual(open_unclaimed_dispatches(self.ledger, "/here"), [])
+        self.assertEqual(self.open_dispatches(), [])
 
     def test_a_voided_order_dispatch_is_not_open(self) -> None:
         event = self.dispatch()
         record_dispatch_void(self.ledger, _PACKAGE, str(event.dispatch_id), "never spawned")
-        self.assertEqual(open_unclaimed_dispatches(self.ledger, "/here"), [])
+        self.assertEqual(self.open_dispatches(), [])
 
     def test_the_runs_in_flight_include_the_commenced_order(self) -> None:
         self.dispatch()
         self.block()
-        [run] = run_positions(self.catalog, self.ledger)
+        [run] = self.runs()
         self.assertEqual(
             (run.work_package, run.order, run.kind, run.state, run.blocked, run.subject),
             (_PACKAGE, _ORDER, "repair", "commenced", True, "REQ-1@1"),
         )
         self.assertEqual(run.event, "work_package_blocked")
 
+    def test_a_commenced_order_with_no_dispatch_is_in_flight_with_no_subject(self) -> None:
+        self.assertEqual([(run.order, run.subject) for run in self.runs()], [(_ORDER, None)])
+
     def test_an_order_not_commenced_is_not_in_flight(self) -> None:
         self.walk_to("frozen", order=_SECOND, baseline=(BaselinedReq(req="REQ-2", revision=1),))
-        self.assertEqual([run.order for run in run_positions(self.catalog, self.ledger)], [_ORDER])
+        self.assertEqual([run.order for run in self.runs()], [_ORDER])
 
 
 class OrderFenceRecovery(unittest.TestCase):
@@ -461,12 +495,21 @@ class OrderFenceRecovery(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             (Path(tmp) / ".gzkit.json").write_text("{", encoding="utf-8")
             fences = fenced_packages(Path(tmp))
-        self.assertEqual([fence.reason for fence in fences], ["unreadable"])
-        fence = fences[0]
-        for message in (
-            work_package_write_message(fence, "src/gzkit/x.py"),
-            work_package_commit_message(fence, ["src/gzkit/x.py"]),
-        ):
+        fence = FencedPackage(work_package="the ledger", reason="unreadable")
+        self.assertEqual(fences, (fence,))
+        messages: list[str] = []
+        self.assertIsNone(
+            _raised(
+                lambda: messages.extend(
+                    (
+                        work_package_write_message(fence, "src/gzkit/x.py"),
+                        work_package_commit_message(fence, ["src/gzkit/x.py"]),
+                    )
+                )
+            )
+        )
+        self.assertEqual(len(messages), 2)
+        for message in messages:
             self.assertIn("cannot be read", message)
 
     def test_each_reason_names_the_order(self) -> None:
