@@ -16,6 +16,7 @@ from pathlib import Path
 from unittest import mock
 
 from gzkit.acceptance import Proof
+from gzkit.acceptance_errors import NoCanonicalBriefError
 from gzkit.acceptance_execution import canonical_obligations, input_digest
 from gzkit.acceptance_store import (
     acceptance_status,
@@ -27,6 +28,7 @@ from gzkit.acceptance_store import (
 )
 from gzkit.commands.validate_cmd import dispatch_validator_scope
 from gzkit.dispatch_stamp import STAMP_ID_ENV, STAMP_ROOT_ENV
+from gzkit.registries import RegistryError
 from tests.commands.test_wp_acceptance import _receipt
 from tests.commands.test_wp_order_run import _ORDER, _PACKAGE, _CommencedOrder
 
@@ -109,6 +111,16 @@ class TestTheOrdersContract(_OrderAcceptance):
     def test_an_order_the_store_lacks_is_refused(self) -> None:
         with self.assertRaisesRegex(ValueError, "ORD-09-ghost"):
             resolve_brief(self.root, "ORD-09-ghost")
+
+    def test_an_unreadable_order_store_is_refused_as_the_store_never_as_a_brief(self) -> None:
+        """An order id resolves against the catalog; it is never looked up as an OBPI brief."""
+        store = Path("data") / "catalog" / "orders.json"
+        store.write_text("{not json", encoding="utf-8")
+        with self.assertRaises(ValueError) as caught:
+            resolve_brief(self.root, _ORDER)
+        self.assertNotIsInstance(caught.exception, NoCanonicalBriefError)
+        self.assertIsInstance(caught.exception.__cause__, RegistryError)
+        self.assertIn("orders.json", str(caught.exception))
 
 
 class TestTheOrdersGate(_OrderAcceptance):

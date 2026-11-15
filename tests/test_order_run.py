@@ -29,6 +29,7 @@ from gzkit.work_package_fence import (
 )
 from gzkit.work_package_ledger import (
     TransitionRequest,
+    WorkPackageLedgerError,
     is_blocked,
     record_work_package_transition,
 )
@@ -142,6 +143,23 @@ class DispatchOnAnOrder(_OrderRun):
 
     def test_an_order_the_store_lacks_is_refused(self) -> None:
         self.refused("ORD-09-ghost", lambda: self.dispatch(order="ORD-09-ghost"))
+
+    def test_a_package_the_catalog_lacks_is_refused_not_crashed_on(self) -> None:
+        """A dispatch naming no catalogued package is a refusal, never a crash on its absence."""
+        request = DispatchRequest(
+            work_package="WP-99-ghost", order=_ORDER, role="Implementer", model="m",
+            req="REQ-1", root=_ROOT,
+        )  # fmt: skip
+        before = _rows(self.path)
+        try:
+            record_work_package_dispatch(self.catalog, self.ledger, request)
+        except Exception as exc:  # a crash must fail this test, not error it
+            raised: Exception | None = exc
+        else:
+            raised = None
+        self.assertIsInstance(raised, WorkPackageLedgerError)
+        self.assertIn("WP-99-ghost", str(raised))
+        self.assertEqual(_rows(self.path), before)
 
     def test_another_packages_commenced_order_takes_no_dispatch(self) -> None:
         """Ruling 44: an order dispatches only as an order of the package the call names."""
