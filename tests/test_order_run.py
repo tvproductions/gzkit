@@ -10,6 +10,7 @@ silent on repair work, whose package stays initiated (ruling 44). A refusal
 writes nothing.
 """
 
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -142,6 +143,16 @@ class DispatchOnAnOrder(_OrderRun):
     def test_an_order_the_store_lacks_is_refused(self) -> None:
         self.refused("ORD-09-ghost", lambda: self.dispatch(order="ORD-09-ghost"))
 
+    def test_another_packages_commenced_order_takes_no_dispatch(self) -> None:
+        """Ruling 44: an order dispatches only as an order of the package the call names."""
+        self.walk_to(
+            "commenced", order="ORD-03-other", baseline=(BaselinedReq(req="REQ-3", revision=1),)
+        )
+        self.refused(
+            "not one of WP-01-stamp's orders",
+            lambda: self.dispatch(order="ORD-03-other", req="REQ-3"),
+        )
+
     def test_the_fix_cycle_bound_counts_against_the_orders_subject(self) -> None:
         self.reach_the_bound()
         self.refused("bound", self.dispatch)
@@ -211,6 +222,27 @@ class BlockOnAnOrder(_OrderRun):
         """RP-12 ruling 69: final inspection is done; Gate 5's outcomes remain."""
         self.move("accepted", **_PAYLOADS["accepted"])
         self.refused("accepted", self.block)
+
+    def test_a_block_names_its_reason_and_the_decision_owed(self) -> None:
+        """Ruling 59: a block carries why the order cannot proceed and what the operator owes."""
+        for reason, next_action in (("  ", "rule on it"), ("refuted", "  ")):
+            request = BlockRequest(
+                work_package=_PACKAGE, order=_ORDER, reason=reason, next_action=next_action
+            )
+            with self.subTest(reason=reason, next_action=next_action):
+                self.refused(
+                    "names its reason",
+                    lambda request=request: record_work_package_block(
+                        self.catalog, self.ledger, request, refutations={}
+                    ),
+                )
+
+    def test_another_packages_commenced_order_takes_no_block(self) -> None:
+        """Ruling 59: a block on an order holds only an order of the package the call names."""
+        self.walk_to(
+            "commenced", order="ORD-03-other", baseline=(BaselinedReq(req="REQ-3", revision=1),)
+        )
+        self.refused("not one of WP-01-stamp's orders", lambda: self.block(order="ORD-03-other"))
 
     def test_an_order_not_opened_or_of_another_package_takes_no_block(self) -> None:
         for order in ("ORD-02-matcher", "ORD-03-other", "ORD-09-ghost"):
@@ -389,6 +421,19 @@ class OrderFenceRecovery(unittest.TestCase):
             work_package_write_message(fence, "src/gzkit/x.py"),
             work_package_commit_message(fence, ["src/gzkit/x.py"]),
         )
+
+    def test_an_unreadable_ledger_says_no_state_can_be_shown(self) -> None:
+        """The fence an unreadable ledger raises names that cause, never a package's state."""
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / ".gzkit.json").write_text("{", encoding="utf-8")
+            fences = fenced_packages(Path(tmp))
+        self.assertEqual([fence.reason for fence in fences], ["unreadable"])
+        fence = fences[0]
+        for message in (
+            work_package_write_message(fence, "src/gzkit/x.py"),
+            work_package_commit_message(fence, ["src/gzkit/x.py"]),
+        ):
+            self.assertIn("cannot be read", message)
 
     def test_each_reason_names_the_order(self) -> None:
         for reason in ("blocked", "accepted", "stopped"):

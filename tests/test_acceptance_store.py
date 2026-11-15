@@ -7,6 +7,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from gzkit.acceptance import Proof
+from gzkit.acceptance_errors import NoCanonicalBriefError
 from gzkit.acceptance_execution import (
     canonical_obligations,
     execution_conditions_digest,
@@ -22,6 +23,7 @@ from gzkit.acceptance_store import (
     record_human_review,
     record_proof,
     record_review,
+    resolve_brief,
     review_from_receipt,
 )
 from gzkit.commands.validate_cmd import dispatch_validator_scope
@@ -376,6 +378,31 @@ class AcceptanceStoreTests(ExecutionFixture):
             acceptance_status(self.root, OBPI, dispatch_scope=dispatch_validator_scope).ready
         )
         self.assertEqual(len(load_history(self.root, OBPI).reviews), 5)
+
+    def test_a_human_review_closes_each_open_finding_its_current_proof_answers(self):
+        proof = self.prove_and_record()
+        finding = {
+            "id": "F-boundary",
+            "obligation_id": REQ,
+            "kind": "missing-proof",
+            "description": "Required boundary expectation was production-derived",
+        }
+        record_review(self.root, OBPI, self.receipt(proof, findings=[finding], verdict="refuted"))
+        self.accept(proof)
+        review = record_human_review(
+            self.root,
+            OBPI,
+            attestor="g0",
+            ruling="I accept it.",
+            dispatch_scope=dispatch_validator_scope,
+        )
+        self.assertEqual([closure.finding_id for closure in review.closures], ["F-boundary"])
+        status = acceptance_status(self.root, OBPI, dispatch_scope=dispatch_validator_scope)
+        self.assertEqual(status.open_findings, ())
+
+    def test_an_obpi_with_no_canonical_brief_is_refused(self):
+        with self.assertRaises(NoCanonicalBriefError):
+            resolve_brief(self.root, "OBPI-9.9.9-99-ghost")
 
     def test_auxiliary_observation_is_retained_without_creating_an_obligation(self):
         proof = self.prove_and_record()

@@ -181,7 +181,10 @@ class ReqNewTests(_ReqCase):
         self.assertEqual(len(_reqs()), 1)
 
     def test_an_unknown_package_exits_1(self) -> None:
-        self.new(package="WP-09-ghost", code=1)
+        """The refusal names the package and the store it is missing from, not a crash."""
+        output = self.new(package="WP-09-ghost", code=1)
+        self.assertIn("WP-09-ghost", output)
+        self.assertIn("work_packages.json", output)
         self.assertEqual(len(_reqs()), 1)
 
 

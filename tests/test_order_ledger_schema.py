@@ -80,6 +80,52 @@ class TestOrderRowsAgainstTheSchema(unittest.TestCase):
                 self.assertTrue(any(field in m and decision in m for m in found), found)
                 self.assertEqual(self.messages(**gate_5, **{field: "named"}), [])
 
+    def test_an_accepted_row_booking_null_readiness_fails(self) -> None:
+        """Ruling 86: readiness is booked as true or false, never left null."""
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "ledger.jsonl"
+            event = OrderTransitionedEvent.model_validate(
+                {**_BASE, "from_state": "commenced", "to_state": "accepted"}
+            )
+            row = ledger_row(event)
+            row.extra["acceptance_ready"] = None
+            Ledger(path).append(row)
+            found = [error.message for error in validate_ledger(path)]
+        self.assertTrue(any("acceptance_ready" in m for m in found), found)
+
+    def test_a_closed_row_with_blank_gate_5_words_fails(self) -> None:
+        """Ruling 73: the attestor and the operator's words are never blank."""
+        gate_5 = {
+            "from_state": "opened",
+            "to_state": "closed",
+            "decision": "terminate",
+            "attestor": "g0",
+            "attestation_text": "terminate it",
+        }
+        for field in ("attestor", "attestation_text"):
+            with self.subTest(field=field):
+                found = self.messages(**{**gate_5, field: ""})
+                self.assertTrue(any(field in m for m in found), found)
+
+    def test_each_decisions_own_field_is_never_blank(self) -> None:
+        """Ruling 73: the field a decision names carries words, not an empty string."""
+        for decision, field in (
+            ("proceed", "residual_risk"),
+            ("redirect", "superseded_by"),
+            ("pause", "revisit_condition"),
+        ):
+            with self.subTest(decision=decision):
+                gate_5 = {
+                    "from_state": "accepted",
+                    "to_state": "closed",
+                    "decision": decision,
+                    "attestor": "g0",
+                    "attestation_text": "x",
+                    field: "",
+                }
+                found = self.messages(**gate_5)
+                self.assertTrue(any(field in m for m in found), found)
+
     def test_a_frozen_row_needs_neither(self) -> None:
         self.assertEqual(
             self.messages(

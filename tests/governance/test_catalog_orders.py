@@ -15,7 +15,7 @@ from pydantic import ValidationError as PydanticValidationError
 
 from gzkit.governance.trust_audits.catalog import audit_catalog
 from gzkit.models.catalog import Order, load_catalog
-from gzkit.order_store import next_order_id
+from gzkit.order_store import OrderStoreError, next_order_id, stage_order
 from gzkit.registries import RegistryError
 from tests.governance.test_catalog import _Tree, _wp
 
@@ -90,6 +90,16 @@ class TestOrderStore(_Tree):
             with self.subTest(second=second):
                 self.write("orders", [_order("ORD-01-a"), _order(second)])
                 self.assertEqual(self.fields(), ["orders"])
+
+    def test_staging_an_id_the_store_holds_is_refused_by_that_id(self):
+        """Ruling 43: the writer names the held id itself, before the number series reads it."""
+        self.write("orders", [_order("ORD-01-a")])
+        catalog = load_catalog(self.root)
+        with self.assertRaises(OrderStoreError) as caught:
+            stage_order(catalog, Order.model_validate(_order("ORD-01-a")))
+        self.assertFalse(caught.exception.in_store)
+        self.assertEqual(len(caught.exception.breaches), 1)
+        self.assertIn("ORD-01-a", caught.exception.breaches[0])
 
     def test_an_alias_is_unique_within_its_package(self):
         """Ruling 49: two orders of one package may not share an alias."""

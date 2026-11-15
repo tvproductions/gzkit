@@ -134,6 +134,7 @@ class OrderNewTests(_OrderCase):
 
     def test_a_store_broken_before_the_call_names_the_store_to_repair(self) -> None:
         """A breach already on disk is the store's to repair, not the call's to correct."""
+        # given
         catalog = Path("data") / "catalog" / "orders.json"
         held = [
             {"id": f"ORD-05-{slug}", "work_package": "WP-01-stamp", "aliases": [],
@@ -141,7 +142,9 @@ class OrderNewTests(_OrderCase):
             for slug in ("one", "two")
         ]  # fmt: skip
         catalog.write_text(json.dumps({"_doc": "Fixture.", "orders": held}), encoding="utf-8")
+        # when
         output = self.new("next", code=3)
+        # then
         self.assertIn("breaks its rules already", output)
         self.assertIn("gz validate --catalog", output)
         self.assertNotIn("correct the call", output)
@@ -236,7 +239,10 @@ class OrderNewTests(_OrderCase):
         self.assertEqual(_orders(), [])
 
     def test_an_unknown_package_exits_1_and_nothing_written(self) -> None:
-        self.new("import", package="WP-09-ghost", code=1)
+        """The refusal names the package and the store it is missing from, not a crash."""
+        out = self.new("import", package="WP-09-ghost", code=1)
+        self.assertIn("WP-09-ghost", out)
+        self.assertIn("work_packages.json", out)
         self.assertEqual(_orders(), [])
 
 
@@ -406,7 +412,12 @@ class OrderLifecycleTests(_OrderCase):
             self.freeze(code=3),
             self.gz("commence", "ORD-01-import", "--evidence", "tags", code=3),
             self.gz("accept", "ORD-01-import", "--evidence", "e", code=3),
-        ):
+            self.gz(
+                "close", "ORD-01-import", "--decision", "terminate",
+                "--attestor", "g0", "--attestation-text", "stop it", "--evidence", "e",
+                code=3,
+            ),
+        ):  # fmt: skip
             self.assertIn("Orders ORD-02-matcher have ledger events but no record", output)
         self.assertEqual(_ledger_rows(), before)
 

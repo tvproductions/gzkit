@@ -16,6 +16,7 @@ from pydantic import ValidationError as PydanticValidationError
 
 from gzkit.governance.trust_audits.catalog import audit_catalog
 from gzkit.models.catalog import CatalogReq, RepairReq, Req, load_catalog
+from gzkit.req_store import ReqStoreError, stage_repair_req
 from tests.governance.test_catalog import _req, _Tree, _wp
 
 _REQ = TypeAdapter(Req)
@@ -93,6 +94,17 @@ class TestRepairReqStore(_Tree):
         self.assertEqual(audit_catalog(self.root), [])
         catalog = load_catalog(self.root)
         self.assertEqual([req.id for req in catalog.catalog_reqs()], ["REQ-1"])
+
+    def test_staging_an_id_the_store_holds_is_refused_by_that_id(self):
+        """Ruling 48's writer refuses a held id by name; an id is never reused (model § 2)."""
+        self.write("reqs", [_req("REQ-1"), _repair_req("REQ-2", aligns_to="REQ-1")])
+        catalog = load_catalog(self.root)
+        with self.assertRaises(ReqStoreError) as caught:
+            stage_repair_req(catalog, RepairReq.model_validate(_repair_req("REQ-2")))
+        self.assertFalse(caught.exception.in_store)
+        self.assertEqual(len(caught.exception.breaches), 1)
+        self.assertIn("REQ-2", caught.exception.breaches[0])
+        self.assertIn("never reused", caught.exception.breaches[0])
 
     def test_held_on_names_a_repair_package_the_catalog_holds(self):
         for held_on in ("WP-09-gone", "WP-02-d"):
