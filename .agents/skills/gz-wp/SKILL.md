@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-15
 metadata:
-  skill-version: "0.18.0"
+  skill-version: "0.18.1"
 model: sonnet
 ---
 
@@ -72,8 +72,9 @@ refuse and name the order's verb (RP-12 ruling 44).
    the commit is the package's. A defect fix keeps its own trailer.
 4. **Prove and review.** `uv run gz wp acceptance <WP-id> init --author <session>`,
    then `prove --spec <file>` and `review --receipt <run-id>`, on the frozen REQs.
-   Spec, quality and adversarial reviews approve each proof. A package gets three adversarial rounds with a mapped finding; dispatch, accept and
-   `human-review` then refuse until `gz wp block` and the operator's unblock. See
+   Spec, quality and adversarial reviews approve each proof. A package gets three
+   adversarial rounds with a mapped finding; dispatch, accept and `human-review`
+   then refuse until `gz wp block` and the operator's unblock. See
    `docs/user/manpages/wp-acceptance.md`.
 5. **Accept** at final inspection with no tag still hung, once
    `uv run gz wp acceptance <WP-id> status` reads ready:

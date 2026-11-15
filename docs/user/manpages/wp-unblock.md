@@ -33,7 +33,7 @@ one names one exit, and no exit opens a further repair cycle:
 
 | Exit | Meaning |
 |------|---------|
-| `reopen` | The REQ at the bound changes through a reopening, which takes a new package. Usable once per requirement, across packages. The package takes no further repair |
+| `reopen` | The REQ at the bound changes through a reopening, which takes a new package. Usable once per requirement, across packages. The package takes no further repair. The exit names the reopening and performs none: no verb raises a REQ's revision, so the new work is a REQ that supersedes it (RP-12 rulings 83 and 89) |
 | `departure` | A bounded claim on the REQ at the bound, a waiver recorded through `gz wp change --rung departure` since the block. The package carries on; the REQ takes no further repair |
 | `hold` | The block clears; the subjects at the bound take no further repair, other subjects continue, and a held subject stays open to a later exit |
 | `terminate` | The package takes no further repair and closes through Gate 5: a delivery package by `gz wp close --decision terminate`; with `--order`, the order stops and closes by `gz wp order close --decision terminate`, its repair package closing with no decision of its own once its orders have (RP-12 ruling 76) |

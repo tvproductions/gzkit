@@ -997,7 +997,11 @@ uv run gz wp order new WP-01-astral --slug import --purpose "<purpose>" --operat
 uv run gz wp req new WP-01-astral --statement "<what must hold again>" --criterion "<state>|<outcome>|<evidence>" --kind BEHAVIOR --problem-report 1183
 uv run gz wp order freeze ORD-01-import --baseline REQ-1@1 --risk-note "<risk>" --review-receipt <receipt> --evidence "<what justifies it>"
 uv run gz wp order commence ORD-01-import --evidence "<what justifies it>"
+uv run gz wp dispatch WP-01-astral --order ORD-01-import --role Implementer --model sonnet --req REQ-1
 uv run gz wp resolve WP-01-astral 1183 --commit <fix-sha> --reviewer <reviewer>
+uv run gz wp acceptance ORD-01-import init --author <implementing session>
+uv run gz wp acceptance ORD-01-import prove --spec <file>
+uv run gz wp acceptance ORD-01-import review --receipt <run-id>
 uv run gz wp order accept ORD-01-import --evidence "<final inspection>"
 uv run gz wp order close ORD-01-import --decision proceed --attestor g0 --attestation-text "<your exact words>" --residual-risk "<risk>" --evidence <id>
 uv run gz wp close WP-01-astral --attestor g0 --residual-risk "<risk>" --evidence <id>

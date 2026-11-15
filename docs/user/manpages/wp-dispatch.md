@@ -36,9 +36,10 @@ those rows (GHI #1200, `docs/governance/harbor-ro14-obpi-forward-migration.md`).
 The bound counts against a frozen subject: a REQ of the package's or the order's
 baseline at its revision. A carried issue is never a subject; `--issue` is retired
 and is a usage error (RP-12 ruling 64). The count
-follows a REQ at its revision across packages, so a new package at that revision
-starts where the last stopped, and a reopening, which raises the revision, starts
-clean.
+follows a REQ at its revision across packages, so a new package or order at that
+revision starts where the last stopped. No verb raises a REQ's revision (RP-12
+ruling 83), so past the bound new work is a REQ that supersedes it, whose count
+starts clean (rulings 50 and 89).
 
 A subject's first implementing dispatch is free. After it, any review in the
 package arms every subject the package has started, a review of a subject arms it

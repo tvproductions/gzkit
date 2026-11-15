@@ -61,6 +61,25 @@ class TestOrderRowsAgainstTheSchema(unittest.TestCase):
         )
         self.assertTrue(any("attestor" in m and "closed" in m for m in found), found)
 
+    def test_each_decision_requires_its_own_field(self) -> None:
+        """Ruling 73: proceed, redirect and pause each carry the field the decision names."""
+        for decision, field in (
+            ("proceed", "residual_risk"),
+            ("redirect", "superseded_by"),
+            ("pause", "revisit_condition"),
+        ):
+            with self.subTest(decision=decision):
+                gate_5 = {
+                    "from_state": "accepted",
+                    "to_state": "closed",
+                    "decision": decision,
+                    "attestor": "g0",
+                    "attestation_text": "x",
+                }
+                found = self.messages(**gate_5)
+                self.assertTrue(any(field in m and decision in m for m in found), found)
+                self.assertEqual(self.messages(**gate_5, **{field: "named"}), [])
+
     def test_a_frozen_row_needs_neither(self) -> None:
         self.assertEqual(
             self.messages(

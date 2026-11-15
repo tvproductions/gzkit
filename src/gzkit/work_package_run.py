@@ -10,8 +10,9 @@ REQ of the package's or the order's baseline at its revision. A repair package's
 run is its orders' (RP-12 ruling 44), so its dispatch, block and unblock name the
 order, and a carried issue is never a subject (RP-12 ruling 64).
 The count follows the subject across packages (ruling 15), so a new package at
-the same revision starts where the last one stopped, and a reopening, which
-raises the revision, starts clean. A subject's first dispatch is free, a review
+the same revision starts where the last one stopped. No verb raises a REQ's
+revision, so past the bound new work is a REQ that supersedes it, whose count
+starts clean (RP-12 rulings 83 and 89). A subject's first dispatch is free, a review
 anywhere in its package arms it, and each later implementing dispatch is a fix
 cycle (ruling 16). The cycle past `MAX_REVIEW_FIX_CYCLES` is refused whatever was
 ruled (ruling 6).
