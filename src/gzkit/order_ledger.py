@@ -323,12 +323,7 @@ def _check_frozen(catalog: Catalog, ledger: Ledger, order: Order, move: OrderMov
             successors.setdefault(req.supersedes, []).append(req.id)
     for entry in move.baseline:
         _check_entry(held, holders, order, entry)
-        if later := successors.get(entry.req):
-            _refuse(
-                f"{entry.req} is superseded by {' and '.join(later)}, so it is retired whole "
-                f"(RP-12 ruling 31) and no order freezes it (ruling 85). Freeze "
-                f"{' or '.join(_chain_heads(successors, entry.req))} instead (ruling 87)."
-            )
+        _check_not_superseded(successors, entry.req)
         if f"{entry.req}@{entry.revision}" in delivered:
             _refuse(
                 f"{entry.req} at revision {entry.revision} is held: a proceed delivered it there "
@@ -341,11 +336,29 @@ def _check_frozen(catalog: Catalog, ledger: Ledger, order: Order, move: OrderMov
     _check_alterations(ledger, order, package, move)
 
 
+def _check_not_superseded(successors: dict[str, list[str]], req: str) -> None:
+    """Refuse freezing a superseded REQ, naming every REQ to freeze instead (85, 87)."""
+    if not (later := successors.get(req)):
+        return
+    heads = _chain_heads(successors, req)
+    instead = (
+        f"Freeze {' or '.join(heads)} instead (ruling 87)."
+        if heads
+        else "Its chain cycles, so no REQ ends it; correct one `supersedes` in "
+        "data/catalog/reqs.json, as `uv run gz validate --catalog` reports (ruling 87)."
+    )
+    _refuse(
+        f"{req} is superseded by {' and '.join(later)}, so it is retired whole (RP-12 "
+        f"ruling 31) and no order freezes it (ruling 85). {instead}"
+    )
+
+
 def _chain_heads(successors: dict[str, list[str]], req: str) -> list[str]:
     """Name every REQ nothing supersedes that ``req``'s chains reach (rulings 85 and 87).
 
-    A split gives one REQ two successors (ruling 53), so the chains are a tree; a cycle,
-    which the catalog validator refuses, ends the walk at the REQ it revisits.
+    A split gives one REQ two successors (ruling 53), so the chains are a tree. A head
+    is a REQ no REQ supersedes; a cycle, which only a hand edit makes and the catalog
+    validator refuses, has none, so the walk names none for it.
 
     Returns:
         The chain heads, in the order the walk reaches them.
@@ -359,7 +372,7 @@ def _chain_heads(successors: dict[str, list[str]], req: str) -> list[str]:
         if current in seen:
             continue
         seen.add(current)
-        if later := [r for r in successors.get(current, ()) if r not in seen]:
+        if later := successors.get(current):
             pending.extend(later)
         else:
             heads.append(current)

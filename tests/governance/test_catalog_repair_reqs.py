@@ -124,6 +124,20 @@ class TestRepairReqStore(_Tree):
         self.write("reqs", reqs)
         self.assertEqual(audit_catalog(self.root), [])
 
+    def test_a_supersession_cycle_is_refused(self):
+        """Ruling 87: a chain ends at a REQ nothing supersedes, so no chain cycles."""
+        self.write(
+            "reqs",
+            [
+                _req("REQ-1"),
+                _repair_req("REQ-2", supersedes="REQ-3"),
+                _repair_req("REQ-3", supersedes="REQ-2"),
+            ],
+        )
+        errors = audit_catalog(self.root)
+        self.assertEqual([e.field for e in errors], ["reqs"])
+        self.assertIn("cycle", errors[0].message)
+
     def test_a_repair_req_never_supersedes_a_catalog_req(self):
         """Ruling 50: superseding a catalog REQ is a remodel, the catalog's path."""
         self.write("reqs", [_req("REQ-1"), _repair_req("REQ-2", supersedes="REQ-1")])

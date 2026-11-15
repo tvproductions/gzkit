@@ -329,6 +329,18 @@ class FreezeTests(_OrderCase):
         output = self.assert_refused("frozen", **_FREEZE)
         self.assertIn("Freeze REQ-4 or REQ-7 instead", output)
 
+    def test_a_cycled_chain_names_no_req_to_freeze(self) -> None:
+        """Ruling 87: a hand-made cycle has no head, so the refusal names none."""
+        self.supersede_req_1()
+        reqs = tuple(
+            req.model_copy(update={"supersedes": "REQ-4"}) if req.id == "REQ-1" else req
+            for req in self.catalog.reqs
+        )
+        self.catalog = self.catalog.model_copy(update={"reqs": reqs})
+        output = self.assert_refused("frozen", **_FREEZE)
+        self.assertIn("chain cycles", output)
+        self.assertNotIn("Freeze REQ", output)
+
     def test_an_order_frozen_before_the_supersession_runs_on(self) -> None:
         """Ruling 85: a later supersession leaves an order already frozen on the REQ."""
         self.move("frozen", **_FREEZE)

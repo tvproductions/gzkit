@@ -177,6 +177,7 @@ def req_breaches(catalog: Catalog) -> list[str]:
         for req in catalog.reqs
         if req.supersedes is not None and (req.supersedes == req.id or req.supersedes not in ids)
     ]
+    breaches += _supersession_cycles(catalog)
     designs = {held.id for held in catalog.catalog_reqs()}
     breaches += [
         f"Repair REQ {req.id} supersedes catalog REQ {req.supersedes}; a remodel of a catalog "
@@ -188,6 +189,35 @@ def req_breaches(catalog: Catalog) -> list[str]:
     for req in catalog.repair_reqs():
         breaches += _repair_req_breaches(req, catalog)
     return breaches
+
+
+def _supersession_cycles(catalog: Catalog) -> list[str]:
+    """Refuse a supersession chain that returns to a REQ on it (RP-12 ruling 87).
+
+    Each chain ends at a REQ nothing supersedes, which the freeze names as the REQ to
+    freeze instead; a cycle has no such REQ. A REQ superseding itself is the one-REQ
+    cycle ``req_breaches`` already names, so it is left to that sentence.
+
+    Returns:
+        One sentence per cycle, naming its REQs, empty when no chain cycles.
+
+    """
+    earlier = {req.id: req.supersedes for req in catalog.reqs if req.supersedes}
+    cycles: set[tuple[str, ...]] = set()
+    for start in earlier:
+        path: list[str] = []
+        current: str | None = start
+        while current is not None and current not in path:
+            path.append(current)
+            current = earlier.get(current)
+        if current is not None and current != path[-1]:
+            cycles.add(tuple(sorted(path[path.index(current) :])))
+    return [
+        f"{', '.join(cycle)} supersede one another in a cycle, so no chain ends at a REQ "
+        "nothing supersedes (RP-12 ruling 87). Correct one `supersedes` in "
+        "data/catalog/reqs.json."
+        for cycle in sorted(cycles)
+    ]
 
 
 def _kind_breaches(package: WorkPackage, outcomes: frozenset[str]) -> list[str]:
