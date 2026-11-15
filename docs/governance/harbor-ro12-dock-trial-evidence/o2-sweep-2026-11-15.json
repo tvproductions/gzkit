@@ -1,0 +1,2574 @@
+{
+  "modules": [
+    "tests.test_order_ledger",
+    "tests.test_order_ledger_schema",
+    "tests.test_order_run",
+    "tests.test_work_package_ledger",
+    "tests.commands.test_wp_order",
+    "tests.commands.test_wp_order_run",
+    "tests.commands.test_wp_order_acceptance",
+    "tests.commands.test_wp_req",
+    "tests.governance.test_catalog_orders",
+    "tests.governance.test_catalog_repair_reqs",
+    "tests.commands.test_wp_run",
+    "tests.commands.test_wp_acceptance"
+  ],
+  "sweeps": [
+    {
+      "source": "src/gzkit/order_ledger.py",
+      "baseline_green": true,
+      "baseline_tests_run": 348,
+      "source_restored": true,
+      "conclusive": false,
+      "counts": {
+        "killed": 23,
+        "survived": 0,
+        "invalid": 0,
+        "inconclusive": 8
+      },
+      "mutants": [
+        {
+          "label": "order_ledger.py:_order:230 held is None",
+          "outcome": "inconclusive",
+          "reason": "the run did not report a clean assertion failure",
+          "failure_class": "error",
+          "failing_tests": [
+            "tests.test_order_ledger.LifecycleTests.test_an_order_the_store_lacks_is_refused"
+          ]
+        },
+        {
+          "label": "order_ledger.py:_check_alterations:257 set(move.approved_alterations) != due",
+          "outcome": "inconclusive",
+          "reason": "the run did not report a clean assertion failure",
+          "failure_class": "error",
+          "failing_tests": [
+            "tests.test_order_ledger.AlterationApprovalTests.test_the_first_freeze_approves_every_planned_alteration",
+            "tests.test_order_ledger.AlterationApprovalTests.test_a_later_freeze_approves_only_what_was_planned_since",
+            "tests.test_order_ledger.AlterationApprovalTests.test_another_packages_approvals_do_not_count",
+            "tests.commands.test_wp_order.OrderLifecycleTests.test_the_freeze_approves_the_packages_planned_alterations"
+          ]
+        },
+        {
+          "label": "order_ledger.py:_check_entry:290 req is None or req.revision != entry.revision",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger.FreezeTests.test_the_baseline_holds_repair_reqs_held_on_the_orders_package",
+            "tests.commands.test_wp_order.OrderLifecycleTests.test_a_freeze_the_writer_refuses_names_the_ruling_and_writes_nothing"
+          ]
+        },
+        {
+          "label": "order_ledger.py:_check_entry:292 not isinstance(req, RepairReq) or req.held_on != order.work_package",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger.FreezeTests.test_the_baseline_holds_repair_reqs_held_on_the_orders_package"
+          ]
+        },
+        {
+          "label": "order_ledger.py:_check_entry:298 holder := holders.get(entry.req)",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger.FreezeTests.test_a_req_sits_in_one_live_orders_baseline_at_a_time",
+            "tests.test_order_ledger.FreezeTests.test_an_accepted_order_holds_its_req_until_its_gate_5",
+            "tests.test_order_run.UnblockOnAnOrder.test_a_stopped_orders_req_may_be_frozen_again"
+          ]
+        },
+        {
+          "label": "order_ledger.py:_check_frozen:309 not (move.risk_note or \"\").strip() or not (move.review_receipt or \"\").",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger.FreezeTests.test_a_freeze_lacking_its_risk_note_or_receipt_is_refused"
+          ]
+        },
+        {
+          "label": "order_ledger.py:_check_frozen:311 not move.baseline",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger.FreezeTests.test_an_empty_baseline_is_refused"
+          ]
+        },
+        {
+          "label": "order_ledger.py:_check_frozen:322 req.supersedes",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger.FreezeTests.test_a_chain_names_the_req_that_supersedes_it_last",
+            "tests.test_order_ledger.FreezeTests.test_a_cycled_chain_names_no_req_to_freeze",
+            "tests.test_order_ledger.FreezeTests.test_a_split_names_every_head_of_the_chain",
+            "tests.test_order_ledger.FreezeTests.test_a_superseded_req_alone_is_never_frozen",
+            "tests.test_order_ledger.FreezeTests.test_a_superseded_req_beside_its_successor_is_never_frozen"
+          ]
+        },
+        {
+          "label": "order_ledger.py:_check_frozen:327 f\"{entry.req}@{entry.revision}\" in delivered",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger.GateFiveTests.test_a_held_req_is_never_frozen_again_at_that_revision"
+          ]
+        },
+        {
+          "label": "order_ledger.py:_chain_heads:375 later := successors.get(current)",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger.FreezeTests.test_a_chain_names_the_req_that_supersedes_it_last",
+            "tests.test_order_ledger.FreezeTests.test_a_cycled_chain_names_no_req_to_freeze",
+            "tests.test_order_ledger.FreezeTests.test_a_split_names_every_head_of_the_chain"
+          ]
+        },
+        {
+          "label": "order_ledger.py:_check_seal_grows:386 dropped := [m for m in declared_modules(ledger, package) if m not in p",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger.FootprintSealTests.test_a_later_freeze_refuses_a_store_that_dropped_a_sealed_path"
+          ]
+        },
+        {
+          "label": "order_ledger.py:_check_successor:398 held is None or held.id == order.id or held.work_package != order.work",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger.GateFiveTests.test_a_redirect_names_an_opened_order_of_the_same_package"
+          ]
+        },
+        {
+          "label": "order_ledger.py:_check_successor:403 state != \"opened\"",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger.GateFiveTests.test_a_redirect_names_an_opened_order_of_the_same_package",
+            "tests.test_order_ledger.GateFiveTests.test_a_redirects_successor_that_has_frozen_is_refused"
+          ]
+        },
+        {
+          "label": "order_ledger.py:_check_decision_fields:414 own is not None and not (getattr(move, own) or \"\").strip()",
+          "outcome": "inconclusive",
+          "reason": "the run did not report a clean assertion failure",
+          "failure_class": "error",
+          "failing_tests": [
+            "tests.test_order_ledger.GateFiveTests.test_each_decision_carries_its_own_field_and_refuses_the_others",
+            "tests.test_order_ledger.GateFiveTests.test_a_blank_field_of_another_decision_is_refused_too",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersGateFive.test_a_refused_close_names_the_call_to_rerun"
+          ]
+        },
+        {
+          "label": "order_ledger.py:_check_decision_fields:418 others := sorted(given - {own})",
+          "outcome": "inconclusive",
+          "reason": "the run did not report a clean assertion failure",
+          "failure_class": "error",
+          "failing_tests": [
+            "tests.test_order_ledger.GateFiveTests.test_each_decision_carries_its_own_field_and_refuses_the_others",
+            "tests.test_order_ledger.GateFiveTests.test_a_blank_field_of_another_decision_is_refused_too"
+          ]
+        },
+        {
+          "label": "order_ledger.py:_check_delivered:431 order_took_stopping_exit(ledger, order.id) and not ready",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_run.UnblockOnAnOrder.test_a_stopped_order_never_ready_does_not_close_as_proceed",
+            "tests.commands.test_wp_order_acceptance.TestAStoppedOrdersGateFive.test_proceed_is_refused_and_the_other_decisions_close_it",
+            "tests.commands.test_wp_order_acceptance.TestAStoppedOrdersGateFive.test_readiness_earned_after_acceptance_earns_no_proceed"
+          ]
+        },
+        {
+          "label": "order_ledger.py:_check_closed:446 not (move.attestor or \"\").strip() or not (move.attestation_text or \"\")",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger.GateFiveTests.test_the_attestor_the_words_and_the_decision_are_required"
+          ]
+        },
+        {
+          "label": "order_ledger.py:_check_closed:451 move.decision is None",
+          "outcome": "inconclusive",
+          "reason": "the run did not report a clean assertion failure",
+          "failure_class": "error",
+          "failing_tests": [
+            "tests.test_order_ledger.GateFiveTests.test_the_attestor_the_words_and_the_decision_are_required"
+          ]
+        },
+        {
+          "label": "order_ledger.py:_check_closed:453 order_state(ledger, order.id) == \"opened\" and move.decision != \"termin",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger.GateFiveTests.test_an_order_never_frozen_closes_only_as_terminate"
+          ]
+        },
+        {
+          "label": "order_ledger.py:_check_accepted:468 move.acceptance_ready is None",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger.LifecycleTests.test_an_accepted_move_books_its_readiness"
+          ]
+        },
+        {
+          "label": "order_ledger.py:_check_accepted:473 not move.acceptance_ready and not order_took_stopping_exit(ledger, ord",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger.LifecycleTests.test_an_order_not_stopped_is_never_booked_not_ready"
+          ]
+        },
+        {
+          "label": "order_ledger.py:_check_not_held:484 twice := sorted(f\"{r}@{v}\" for r, v in baseline.items() if f\"{r}@{v}\" ",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_run.UnblockOnAnOrder.test_a_proceed_on_a_req_another_proceed_holds_is_refused"
+          ]
+        },
+        {
+          "label": "order_ledger.py:_check_move:499 stray",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger.LifecycleTests.test_a_field_the_target_state_does_not_carry_is_refused",
+            "tests.test_order_run.UnblockOnAnOrder.test_readiness_is_booked_at_acceptance_alone"
+          ]
+        },
+        {
+          "label": "order_ledger.py:_check_move:501 move.to_state == \"opened\" and not (move.operator_text or \"\").strip()",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger.LifecycleTests.test_opening_without_the_operators_words_is_refused"
+          ]
+        },
+        {
+          "label": "order_ledger.py:_check_move:504 package_state != \"initiated\"",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger.LifecycleTests.test_an_order_moves_only_while_its_package_is_open"
+          ]
+        },
+        {
+          "label": "order_ledger.py:order_move_refusal:532 to_state not in allowed",
+          "outcome": "inconclusive",
+          "reason": "the run did not report a clean assertion failure",
+          "failure_class": "error",
+          "failing_tests": [
+            "tests.test_order_ledger.FreezeTests.test_an_unknown_state_is_refused",
+            "tests.test_order_ledger.GateFiveTests.test_a_closed_order_moves_no_further_and_releases_its_reqs",
+            "tests.test_order_ledger.GateFiveTests.test_a_frozen_or_commenced_order_does_not_close",
+            "tests.test_order_ledger.LifecycleTests.test_a_skipped_or_backward_step_is_refused",
+            "tests.test_order_ledger.LifecycleTests.test_an_accepted_order_moves_no_further",
+            "tests.commands.test_wp_order.OrderLifecycleTests.test_commence_before_the_freeze_is_refused_and_nothing_written",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersAcceptRefusal.test_a_commenced_order_is_refused_a_close_for_its_lifecycle_first",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersAcceptRefusal.test_a_commenced_order_is_refused_a_freeze_for_its_lifecycle_first",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersAcceptRefusal.test_an_order_not_commenced_is_refused_for_its_lifecycle_first"
+          ]
+        },
+        {
+          "label": "order_ledger.py:order_move_refusal:542 is_order_blocked(ledger, order.id)",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_run.BlockOnAnOrder.test_a_blocked_order_does_not_move",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersAcceptRefusal.test_a_blocked_order_is_refused_for_its_block_before_its_readiness",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersAcceptRefusal.test_a_stopped_order_blocked_again_names_the_accept_to_rerun"
+          ]
+        },
+        {
+          "label": "order_ledger.py:record_order_transition:568 not move.evidence.strip()",
+          "outcome": "inconclusive",
+          "reason": "the run did not report a clean assertion failure",
+          "failure_class": "error",
+          "failing_tests": [
+            "tests.test_order_ledger.LifecycleTests.test_empty_evidence_is_refused"
+          ]
+        },
+        {
+          "label": "order_ledger.py:record_order_transition:571 refusal := order_move_refusal(ledger, order, move.to_state)",
+          "outcome": "inconclusive",
+          "reason": "the run did not report a clean assertion failure",
+          "failure_class": "error",
+          "failing_tests": [
+            "tests.test_order_ledger.FreezeTests.test_an_unknown_state_is_refused",
+            "tests.test_order_ledger.GateFiveTests.test_a_closed_order_moves_no_further_and_releases_its_reqs",
+            "tests.test_order_ledger.GateFiveTests.test_a_frozen_or_commenced_order_does_not_close",
+            "tests.test_order_ledger.LifecycleTests.test_a_skipped_or_backward_step_is_refused",
+            "tests.test_order_ledger.LifecycleTests.test_an_accepted_order_moves_no_further",
+            "tests.test_order_run.BlockOnAnOrder.test_a_blocked_order_does_not_move"
+          ]
+        },
+        {
+          "label": "order_ledger.py:_check_not_superseded a superseded REQ freezes",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger.FreezeTests.test_a_chain_names_the_req_that_supersedes_it_last",
+            "tests.test_order_ledger.FreezeTests.test_a_cycled_chain_names_no_req_to_freeze",
+            "tests.test_order_ledger.FreezeTests.test_a_split_names_every_head_of_the_chain",
+            "tests.test_order_ledger.FreezeTests.test_a_superseded_req_alone_is_never_frozen",
+            "tests.test_order_ledger.FreezeTests.test_a_superseded_req_beside_its_successor_is_never_frozen"
+          ]
+        },
+        {
+          "label": "order_ledger.py:_check_seal_grows a sealed footprint drops a path",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger.FootprintSealTests.test_a_later_freeze_refuses_a_store_that_dropped_a_sealed_path"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "src/gzkit/commands/wp_order.py",
+      "baseline_green": true,
+      "baseline_tests_run": 348,
+      "source_restored": true,
+      "conclusive": false,
+      "counts": {
+        "killed": 20,
+        "survived": 0,
+        "invalid": 0,
+        "inconclusive": 1
+      },
+      "mutants": [
+        {
+          "label": "wp_order.py:_package:47 held is None",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order.OrderNewTests.test_an_unknown_package_exits_1_and_nothing_written"
+          ]
+        },
+        {
+          "label": "wp_order.py:_order:58 held is None",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order.OrderShowTests.test_an_unknown_order_exits_1_naming_the_call_that_writes_one"
+          ]
+        },
+        {
+          "label": "wp_order.py:_booked_lost:141 missing := sorted(booked_order_ids(ledger) - {order.id for order in ca",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order.OrderLifecycleTests.test_a_lost_order_record_refuses_every_order_move",
+            "tests.commands.test_wp_order.OrderNewTests.test_a_failed_store_write_leaves_the_opening_booked_and_refuses_later_writes",
+            "tests.commands.test_wp_order.OrderNewTests.test_new_numbers_past_an_order_the_ledger_names"
+          ]
+        },
+        {
+          "label": "wp_order.py:wp_order_new_cmd:179 not _SLUG.match(slug)",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order.OrderNewTests.test_a_refusal_names_the_flag_and_the_call_to_rerun"
+          ]
+        },
+        {
+          "label": "wp_order.py:wp_order_new_cmd:204 refusal := open_package_refusal(ledger, package, \"An order\", why)",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order.OrderNewTests.test_a_package_not_initiated_or_closed_takes_no_order"
+          ]
+        },
+        {
+          "label": "wp_order.py:wp_order_new_cmd:172 not value.strip()",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order.OrderNewTests.test_new_without_the_operators_words_is_refused_and_nothing_written"
+          ]
+        },
+        {
+          "label": "wp_order.py:wp_order_new_cmd:197 exc.in_store",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order.OrderNewTests.test_a_store_broken_before_the_call_names_the_store_to_repair"
+          ]
+        },
+        {
+          "label": "wp_order.py:_baseline_entry:243 not req or not revision.isdigit()",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order.OrderLifecycleTests.test_a_baseline_entry_not_req_at_revision_is_refused"
+          ]
+        },
+        {
+          "label": "wp_order.py:wp_order_transition_cmd:268 refusal := order_move_refusal(ledger, order, to_state)",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersAcceptRefusal.test_a_commenced_order_is_refused_a_freeze_for_its_lifecycle_first"
+          ]
+        },
+        {
+          "label": "wp_order.py:wp_order_transition_cmd:270 to_state == \"frozen\" and (refusal := freeze_refusal(root, package, led",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order.OrderLifecycleTests.test_a_package_with_no_footprint_cannot_seal_one",
+            "tests.commands.test_wp_order.OrderLifecycleTests.test_a_sealed_path_the_package_moved_does_not_refuse_a_later_freeze",
+            "tests.commands.test_wp_order.OrderLifecycleTests.test_before_any_seal_a_missing_path_is_replaced_by_a_change_order"
+          ]
+        },
+        {
+          "label": "wp_order.py:wp_order_accept_cmd:350 refusal := order_move_refusal(ledger, order, \"accepted\")",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersAcceptRefusal.test_a_blocked_order_is_refused_for_its_block_before_its_readiness",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersAcceptRefusal.test_an_order_not_commenced_is_refused_for_its_lifecycle_first"
+          ]
+        },
+        {
+          "label": "wp_order.py:wp_order_accept_cmd:358 outside := footprint_refusal(root, package, ledger)",
+          "outcome": "inconclusive",
+          "reason": "the run did not report a clean assertion failure",
+          "failure_class": "error",
+          "failing_tests": [
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersGate.test_accept_admits_a_ready_order",
+            "tests.commands.test_wp_order_acceptance.TestAStoppedOrdersGateFive.test_a_stopped_order_outside_its_footprint_books_not_ready",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersGate.test_the_footprint_is_named_beside_another_blocker",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersGate.test_the_sealed_footprint_holds_a_ready_order"
+          ]
+        },
+        {
+          "label": "wp_order.py:wp_order_accept_cmd:361 blockers and not order_took_stopping_exit(ledger, order.id)",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersGate.test_accept_refuses_an_order_with_no_acceptance_and_books_nothing",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersGate.test_the_footprint_is_named_beside_another_blocker",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersGate.test_the_sealed_footprint_holds_a_ready_order",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersRoundBound.test_three_rounds_stop_dispatch_and_accept_and_name_the_orders_block"
+          ]
+        },
+        {
+          "label": "wp_order.py:wp_order_close_cmd:391 called_by_subagent",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersGateFive.test_a_subagents_call_is_refused_and_books_nothing"
+          ]
+        },
+        {
+          "label": "wp_order.py:wp_order_close_cmd:404 refusal := order_move_refusal(ledger, order, \"closed\")",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersAcceptRefusal.test_a_commenced_order_is_refused_a_close_for_its_lifecycle_first"
+          ]
+        },
+        {
+          "label": "wp_order.py:wp_order_new_cmd a lost order record takes a new order",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order.OrderNewTests.test_a_failed_store_write_leaves_the_opening_booked_and_refuses_later_writes",
+            "tests.commands.test_wp_order.OrderNewTests.test_new_numbers_past_an_order_the_ledger_names"
+          ]
+        },
+        {
+          "label": "wp_order.py:wp_order_transition_cmd a lost order record takes a move",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order.OrderLifecycleTests.test_a_lost_order_record_refuses_every_order_move"
+          ]
+        },
+        {
+          "label": "wp_order.py:wp_order_accept_cmd a lost order record takes an accept",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order.OrderLifecycleTests.test_a_lost_order_record_refuses_every_order_move"
+          ]
+        },
+        {
+          "label": "wp_order.py:wp_order_close_cmd a lost order record takes a close",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order.OrderLifecycleTests.test_a_lost_order_record_refuses_every_order_move"
+          ]
+        },
+        {
+          "label": "wp_order.py:wp_order_accept_cmd the round bound's refusal is dropped",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order_acceptance.TestAStoppedOrdersGateFive.test_a_stopped_order_past_its_round_bound_books_not_ready",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersRoundBound.test_three_rounds_stop_dispatch_and_accept_and_name_the_orders_block"
+          ]
+        },
+        {
+          "label": "wp_order.py:open_package_refusal a package not initiated takes an order",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order.OrderNewTests.test_a_package_not_initiated_or_closed_takes_no_order",
+            "tests.commands.test_wp_req.ReqNewTests.test_a_package_not_open_takes_no_req"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "src/gzkit/governance/trust_audits/catalog.py",
+      "baseline_green": true,
+      "baseline_tests_run": 348,
+      "source_restored": true,
+      "conclusive": false,
+      "counts": {
+        "killed": 14,
+        "survived": 0,
+        "invalid": 0,
+        "inconclusive": 2
+      },
+      "mutants": [
+        {
+          "label": "catalog.py:_repair_req_breaches:148 package is None or package.kind != \"repair\"",
+          "outcome": "inconclusive",
+          "reason": "the run did not report a clean assertion failure",
+          "failure_class": "error",
+          "failing_tests": [
+            "tests.governance.test_catalog_repair_reqs.TestRepairReqStore.test_held_on_names_a_repair_package_the_catalog_holds",
+            "tests.commands.test_wp_req.ReqNewTests.test_a_delivery_package_takes_no_repair_req"
+          ]
+        },
+        {
+          "label": "catalog.py:_repair_req_breaches:152 req.problem_report not in package.issues",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_req.ReqNewTests.test_a_store_broken_before_the_call_names_the_validator",
+            "tests.commands.test_wp_req.ReqNewTests.test_an_issue_the_package_does_not_carry_is_refused",
+            "tests.governance.test_catalog_repair_reqs.TestRepairReqStore.test_the_problem_report_is_an_issue_its_package_carries"
+          ]
+        },
+        {
+          "label": "catalog.py:_repair_req_breaches:158 req.aligns_to is not None and req.aligns_to not in designs",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_req.ReqNewTests.test_a_refusal_names_the_value_at_fault_and_the_call_to_rerun",
+            "tests.governance.test_catalog_repair_reqs.TestRepairReqStore.test_aligns_to_names_a_catalog_req_the_store_holds"
+          ]
+        },
+        {
+          "label": "catalog.py:_repair_req_breaches:147 wp.id == req.held_on",
+          "outcome": "inconclusive",
+          "reason": "a fixture assertion failed outside the test body",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order.OrderLifecycleTests.test_a_baseline_entry_not_req_at_revision_is_refused",
+            "tests.commands.test_wp_order.OrderLifecycleTests.test_a_freeze_the_writer_refuses_names_the_ruling_and_writes_nothing",
+            "tests.commands.test_wp_order.OrderLifecycleTests.test_a_lost_order_record_refuses_every_order_move",
+            "tests.commands.test_wp_order.OrderLifecycleTests.test_a_package_with_no_footprint_cannot_seal_one",
+            "tests.commands.test_wp_order.OrderLifecycleTests.test_a_sealed_path_the_package_moved_does_not_refuse_a_later_freeze",
+            "tests.commands.test_wp_order.OrderLifecycleTests.test_an_unknown_order_exits_1",
+            "tests.commands.test_wp_order.OrderLifecycleTests.test_before_any_seal_a_missing_path_is_replaced_by_a_change_order",
+            "tests.commands.test_wp_order.OrderLifecycleTests.test_commence_before_the_freeze_is_refused_and_nothing_written",
+            "tests.commands.test_wp_order.OrderLifecycleTests.test_freeze_then_commence_book_one_step_each",
+            "tests.commands.test_wp_order.OrderLifecycleTests.test_show_prints_the_state_and_baseline_lines",
+            "tests.commands.test_wp_order.OrderLifecycleTests.test_show_reads_the_state_and_baseline_from_the_ledger",
+            "tests.commands.test_wp_order.OrderLifecycleTests.test_the_freeze_approves_the_packages_planned_alterations",
+            "tests.commands.test_wp_order.OrderLifecycleTests.test_the_sealed_footprint_drops_no_path",
+            "tests.commands.test_wp_order_run.BlockOrderCli.test_a_block_on_the_repair_package_alone_exits_3",
+            "tests.commands.test_wp_order_run.BlockOrderCli.test_an_unblock_on_the_package_leaves_the_orders_block",
+            "tests.commands.test_wp_order_run.BlockOrderCli.test_block_holds_the_order_and_unblock_lifts_it",
+            "tests.commands.test_wp_order_run.DispatchOrderCli.test_a_req_outside_the_orders_freeze_exits_3_and_books_nothing",
+            "tests.commands.test_wp_order_run.DispatchOrderCli.test_dispatch_on_the_order_books_its_frozen_subject",
+            "tests.commands.test_wp_order_run.DispatchOrderCli.test_void_takes_no_order",
+            "tests.commands.test_wp_order_run.OrderRunOutputContract.test_each_verb_names_the_order",
+            "tests.commands.test_wp_order_acceptance.TestAStoppedOrdersGateFive.test_a_stopped_order_outside_its_footprint_books_not_ready",
+            "tests.commands.test_wp_order_acceptance.TestAStoppedOrdersGateFive.test_a_stopped_order_past_its_round_bound_books_not_ready",
+            "tests.commands.test_wp_order_acceptance.TestAStoppedOrdersGateFive.test_a_stopped_order_whose_acceptance_reads_ready_may_proceed",
+            "tests.commands.test_wp_order_acceptance.TestAStoppedOrdersGateFive.test_proceed_is_refused_and_the_other_decisions_close_it",
+            "tests.commands.test_wp_order_acceptance.TestAStoppedOrdersGateFive.test_readiness_earned_after_acceptance_earns_no_proceed",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersAcceptRefusal.test_a_blocked_order_is_refused_for_its_block_before_its_readiness",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersAcceptRefusal.test_a_commenced_order_is_refused_a_close_for_its_lifecycle_first",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersAcceptRefusal.test_a_commenced_order_is_refused_a_freeze_for_its_lifecycle_first",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersAcceptRefusal.test_a_stopped_order_blocked_again_names_the_accept_to_rerun",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersAcceptRefusal.test_an_order_not_commenced_is_refused_for_its_lifecycle_first",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersContract.test_a_repair_package_id_runs_no_acceptance_of_its_own",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersContract.test_a_req_moved_past_its_frozen_revision_is_refused",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersContract.test_acceptance_starts_only_on_a_commenced_order",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersContract.test_an_order_the_store_lacks_is_refused",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersContract.test_the_order_owes_its_frozen_reqs_alone",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersContract.test_the_records_are_kept_under_the_orders_id",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersDeparture.test_a_departed_req_leaves_the_orders_obligations_and_roster",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersDeparture.test_an_order_whose_every_req_departed_owes_nothing_to_accept",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersGate.test_a_finding_refuses_an_order_every_channel_approved",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersGate.test_a_terminated_order_is_accepted_with_no_proof",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersGate.test_accept_admits_a_ready_order",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersGate.test_accept_refuses_an_order_with_no_acceptance_and_books_nothing",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersGate.test_the_footprint_is_named_beside_another_blocker",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersGate.test_the_sealed_footprint_holds_a_ready_order",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersGateFive.test_a_refused_close_names_the_call_to_rerun",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersGateFive.test_a_subagents_call_is_refused_and_books_nothing",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersGateFive.test_proceed_books_gate_5_on_the_operators_words",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersHumanReview.test_a_human_review_past_the_orders_limit_is_refused",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersHumanReview.test_the_operators_review_is_recorded_on_the_order",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersRoundBound.test_the_orders_block_writes_the_orders_refutations",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersRoundBound.test_the_orders_unblock_restarts_the_count",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersRoundBound.test_three_rounds_stop_dispatch_and_accept_and_name_the_orders_block",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersRoundBound.test_two_rounds_leave_the_orders_dispatch_open",
+            "tests.commands.test_wp_req.ReqNewTests.test_a_delivery_package_takes_no_repair_req",
+            "tests.commands.test_wp_req.ReqNewTests.test_a_new_req_may_supersede_one_the_store_holds",
+            "tests.commands.test_wp_req.ReqNewTests.test_a_package_not_open_takes_no_req",
+            "tests.commands.test_wp_req.ReqNewTests.test_a_refusal_names_the_value_at_fault_and_the_call_to_rerun",
+            "tests.commands.test_wp_req.ReqNewTests.test_a_store_broken_before_the_call_names_the_validator",
+            "tests.commands.test_wp_req.ReqNewTests.test_an_id_the_ledger_names_is_never_minted_again",
+            "tests.commands.test_wp_req.ReqNewTests.test_an_issue_the_package_does_not_carry_is_refused",
+            "tests.commands.test_wp_req.ReqNewTests.test_new_writes_a_repair_req_past_the_highest_id_and_the_store_passes",
+            "tests.governance.test_catalog_repair_reqs.TestRepairReqStore.test_a_repair_req_held_on_its_repair_package_passes",
+            "tests.governance.test_catalog_repair_reqs.TestRepairReqStore.test_a_repair_req_never_supersedes_a_catalog_req",
+            "tests.governance.test_catalog_repair_reqs.TestRepairReqStore.test_a_req_the_ledger_names_stays_in_the_store",
+            "tests.governance.test_catalog_repair_reqs.TestRepairReqStore.test_a_supersession_cycle_is_refused",
+            "tests.governance.test_catalog_repair_reqs.TestRepairReqStore.test_aligns_to_names_a_catalog_req_the_store_holds",
+            "tests.governance.test_catalog_repair_reqs.TestRepairReqStore.test_one_sequence_across_both_specializations",
+            "tests.governance.test_catalog_repair_reqs.TestRepairReqStore.test_staging_an_id_the_store_holds_is_refused_by_that_id",
+            "tests.governance.test_catalog_repair_reqs.TestRepairReqStore.test_supersedes_names_another_req_the_store_holds",
+            "tests.governance.test_catalog_repair_reqs.TestRepairReqStore.test_the_catalog_edge_checks_read_catalog_reqs_only",
+            "tests.governance.test_catalog_repair_reqs.TestRepairReqStore.test_the_problem_report_is_an_issue_its_package_carries",
+            "tests.commands.test_wp_run.TestRunVerbs.test_a_block_records_the_count_and_an_unblock_clears_it",
+            "tests.commands.test_wp_run.TestRunVerbs.test_a_booking_still_needs_its_role_and_model",
+            "tests.commands.test_wp_run.TestRunVerbs.test_a_call_stamped_for_another_root_is_refused_before_any_write",
+            "tests.commands.test_wp_run.TestRunVerbs.test_a_call_stamped_for_this_root_proceeds",
+            "tests.commands.test_wp_run.TestRunVerbs.test_a_call_that_passes_runs_on_without_the_stamp",
+            "tests.commands.test_wp_run.TestRunVerbs.test_a_dispatch_on_the_repair_package_alone_exits_3",
+            "tests.commands.test_wp_run.TestRunVerbs.test_a_marker_fault_costs_the_dispatch_no_row",
+            "tests.commands.test_wp_run.TestRunVerbs.test_a_named_root_reaches_the_ledger_and_a_missing_one_exits_1",
+            "tests.commands.test_wp_run.TestRunVerbs.test_a_void_books_its_reason_and_needs_one",
+            "tests.commands.test_wp_run.TestRunVerbs.test_a_void_from_a_subagents_call_is_refused",
+            "tests.commands.test_wp_run.TestRunVerbs.test_an_issue_is_no_dispatch_subject",
+            "tests.commands.test_wp_run.TestRunVerbs.test_an_unknown_package_exits_1",
+            "tests.commands.test_wp_run.TestRunVerbs.test_an_unstamped_call_proceeds",
+            "tests.commands.test_wp_run.TestRunVerbs.test_show_lists_the_run_in_the_history",
+            "tests.commands.test_wp_run.TestRunVerbs.test_the_cycle_past_the_bound_exits_3_and_books_nothing",
+            "tests.commands.test_wp_run.TestRunVerbs.test_the_exit_and_req_flags_reach_the_ledger",
+            "tests.commands.test_wp_run.TestRunVerbs.test_the_intended_root_defaults_to_this_project_and_the_line_names_the_dispatch",
+            "tests.commands.test_wp_run.TestRunVerbs.test_the_operator_is_never_defaulted",
+            "tests.commands.test_wp_run.TestRunVerbs.test_the_req_flags_reach_their_requests",
+            "tests.commands.test_wp_run.TestTheRepairClose.test_a_closed_package_takes_no_new_issue",
+            "tests.commands.test_wp_run.TestTheRepairClose.test_a_repair_package_closes_only_once_its_orders_have_closed",
+            "tests.commands.test_wp_run.TestTheRepairClose.test_gate_5_on_a_package_refuses_a_subagents_call",
+            "tests.commands.test_wp_run.TestTheRepairClose.test_the_repair_close_prints_its_orders_decisions_and_holds"
+          ]
+        },
+        {
+          "label": "catalog.py:req_breaches:178 req.supersedes is not None and (req.supersedes == req.id or req.supers",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_req.ReqNewTests.test_a_refusal_names_the_value_at_fault_and_the_call_to_rerun",
+            "tests.governance.test_catalog_repair_reqs.TestRepairReqStore.test_supersedes_names_another_req_the_store_holds"
+          ]
+        },
+        {
+          "label": "catalog.py:req_breaches:187 req.supersedes in designs",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_req.ReqNewTests.test_a_repair_req_never_supersedes_a_catalog_req",
+            "tests.governance.test_catalog_repair_reqs.TestRepairReqStore.test_a_repair_req_never_supersedes_a_catalog_req"
+          ]
+        },
+        {
+          "label": "catalog.py:_supersession_cycles:205 req.supersedes",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.governance.test_catalog_repair_reqs.TestRepairReqStore.test_a_supersession_cycle_is_refused"
+          ]
+        },
+        {
+          "label": "catalog.py:_alias_breaches:399 shaped",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.governance.test_catalog_orders.TestOrderStore.test_an_alias_is_never_an_order_or_package_id"
+          ]
+        },
+        {
+          "label": "catalog.py:_alias_breaches:388 repeated := _repeated(aliases)",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order.OrderNewTests.test_a_repeated_alias_in_one_package_is_refused_and_nothing_written",
+            "tests.governance.test_catalog_orders.TestOrderStore.test_an_alias_is_unique_within_its_package"
+          ]
+        },
+        {
+          "label": "catalog.py:_alias_breaches:397 re.match(ORDER_ID_PATTERN, alias) or re.match(WORK_PACKAGE_ID_PATTERN,",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.governance.test_catalog_orders.TestOrderStore.test_an_alias_is_never_an_order_or_package_id"
+          ]
+        },
+        {
+          "label": "catalog.py:_alias_breaches:387 o.work_package == package",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order.OrderNewTests.test_a_repeated_alias_in_one_package_is_refused_and_nothing_written",
+            "tests.governance.test_catalog_orders.TestOrderStore.test_an_alias_is_unique_within_its_package"
+          ]
+        },
+        {
+          "label": "catalog.py:_booked_order_findings:559 missing := sorted(booked_order_ids(ledger) - {order.id for order in ca",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.governance.test_catalog_orders.TestBookedOrders.test_an_order_the_ledger_names_stays_in_the_store"
+          ]
+        },
+        {
+          "label": "catalog.py:_booked_req_findings:578 missing := sorted(booked_req_ids(ledger) - {req.id for req in catalog.",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.governance.test_catalog_orders.TestBookedOrders.test_a_req_an_orders_freeze_names_stays_in_the_store",
+            "tests.governance.test_catalog_repair_reqs.TestRepairReqStore.test_a_req_the_ledger_names_stays_in_the_store"
+          ]
+        },
+        {
+          "label": "catalog.py:_supersession_cycles a supersession cycle is not named",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.governance.test_catalog_repair_reqs.TestRepairReqStore.test_a_supersession_cycle_is_refused"
+          ]
+        },
+        {
+          "label": "catalog.py:order_breaches a repeated order number passes",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order.OrderNewTests.test_a_store_broken_before_the_call_names_the_store_to_repair",
+            "tests.governance.test_catalog_orders.TestOrderStore.test_an_id_or_its_number_is_never_reused"
+          ]
+        },
+        {
+          "label": "catalog.py:order_breaches an order outside a repair package is accepted",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order.OrderNewTests.test_an_order_on_a_delivery_package_is_refused_and_nothing_written",
+            "tests.governance.test_catalog_orders.TestOrderStore.test_an_order_names_a_package_the_catalog_holds",
+            "tests.governance.test_catalog_orders.TestOrderStore.test_an_order_on_a_delivery_package_waits_for_rp14"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "src/gzkit/work_package_run.py",
+      "baseline_green": true,
+      "baseline_tests_run": 348,
+      "source_restored": true,
+      "conclusive": false,
+      "counts": {
+        "killed": 14,
+        "survived": 8,
+        "invalid": 0,
+        "inconclusive": 4
+      },
+      "mutants": [
+        {
+          "label": "work_package_run.py:_require_order:329 package.kind == \"repair\" and order is None",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_run.BlockOnAnOrder.test_a_block_on_the_repair_package_names_its_order",
+            "tests.test_order_run.DispatchOnAnOrder.test_a_dispatch_on_the_repair_package_names_its_order",
+            "tests.test_order_run.UnblockOnAnOrder.test_a_package_unblock_does_not_lift_an_orders_block",
+            "tests.commands.test_wp_order_run.BlockOrderCli.test_a_block_on_the_repair_package_alone_exits_3"
+          ]
+        },
+        {
+          "label": "work_package_run.py:_package_order:351 held is None or held.work_package != package.id",
+          "outcome": "inconclusive",
+          "reason": "the run did not report a clean assertion failure",
+          "failure_class": "error",
+          "failing_tests": [
+            "tests.test_order_run.DispatchOnAnOrder.test_an_order_the_store_lacks_is_refused",
+            "tests.test_order_run.BlockOnAnOrder.test_another_packages_commenced_order_takes_no_block",
+            "tests.test_order_run.DispatchOnAnOrder.test_another_packages_commenced_order_takes_no_dispatch",
+            "tests.test_order_run.UnblockOnAnOrder.test_another_packages_blocked_order_is_refused"
+          ]
+        },
+        {
+          "label": "work_package_run.py:_order_subject:365 state != \"commenced\"",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_run.DispatchOnAnOrder.test_an_accepted_order_takes_no_dispatch",
+            "tests.test_order_run.DispatchOnAnOrder.test_an_order_not_commenced_takes_no_dispatch"
+          ]
+        },
+        {
+          "label": "work_package_run.py:_order_subject:367 request.req is None",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_run.DispatchOnAnOrder.test_an_order_dispatch_names_a_req"
+          ]
+        },
+        {
+          "label": "work_package_run.py:_order_subject:370 revision is None",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_run.DispatchOnAnOrder.test_a_req_held_on_the_package_but_not_frozen_by_the_order_is_refused",
+            "tests.test_order_run.DispatchOnAnOrder.test_another_orders_req_is_refused",
+            "tests.commands.test_wp_order_run.DispatchOrderCli.test_a_req_outside_the_orders_freeze_exits_3_and_books_nothing"
+          ]
+        },
+        {
+          "label": "work_package_run.py:_dispatch_subject:389 state != \"commenced\"",
+          "outcome": "survived",
+          "reason": "",
+          "failure_class": "none",
+          "failing_tests": []
+        },
+        {
+          "label": "work_package_run.py:_dispatch_subject:391 request.req is None",
+          "outcome": "survived",
+          "reason": "",
+          "failure_class": "none",
+          "failing_tests": []
+        },
+        {
+          "label": "work_package_run.py:_dispatch_subject:394 revision is None",
+          "outcome": "survived",
+          "reason": "",
+          "failure_class": "none",
+          "failing_tests": []
+        },
+        {
+          "label": "work_package_run.py:_dispatch_subject:383 state != \"initiated\"",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_run.DispatchOnAnOrder.test_an_order_whose_package_closed_takes_no_dispatch"
+          ]
+        },
+        {
+          "label": "work_package_run.py:_check_not_stopped:447 row.extra.get(\"exit_taken\") in STOPPING_EXITS",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_run.UnblockOnAnOrder.test_terminate_stops_the_order_and_not_its_package"
+          ]
+        },
+        {
+          "label": "work_package_run.py:record_work_package_dispatch:486 is_blocked(ledger, package.id)",
+          "outcome": "survived",
+          "reason": "",
+          "failure_class": "none",
+          "failing_tests": []
+        },
+        {
+          "label": "work_package_run.py:record_work_package_dispatch:488 request.order is not None and is_order_blocked(ledger, request.order)",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_run.BlockOnAnOrder.test_a_blocked_order_takes_no_dispatch",
+            "tests.commands.test_wp_order_run.BlockOrderCli.test_block_holds_the_order_and_unblock_lifts_it",
+            "tests.commands.test_wp_run.TestRunVerbs.test_a_block_records_the_count_and_an_unblock_clears_it"
+          ]
+        },
+        {
+          "label": "work_package_run.py:record_work_package_dispatch:500 count_fix_cycles(rows)[subject] > MAX_REVIEW_FIX_CYCLES",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_run.DispatchOnAnOrder.test_the_fix_cycle_bound_counts_against_the_orders_subject",
+            "tests.commands.test_wp_run.TestRunVerbs.test_the_cycle_past_the_bound_exits_3_and_books_nothing"
+          ]
+        },
+        {
+          "label": "work_package_run.py:open_unclaimed_dispatches:632 in_flight[run] and dispatch_id not in found",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_run.InFlightOnAnOrder.test_an_unclaimed_order_dispatch_for_another_root_is_open",
+            "tests.test_order_run.InFlightOnAnOrder.test_it_stays_open_while_the_order_is_accepted"
+          ]
+        },
+        {
+          "label": "work_package_run.py:record_work_package_block:713 not request.reason.strip() or not request.next_action.strip()",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_run.BlockOnAnOrder.test_a_block_names_its_reason_and_the_decision_owed"
+          ]
+        },
+        {
+          "label": "work_package_run.py:_check_blockable:776 state in _UNBLOCKABLE",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_run.BlockOnAnOrder.test_an_accepted_order_takes_no_block",
+            "tests.test_order_run.BlockOnAnOrder.test_an_order_not_opened_or_of_another_package_takes_no_block"
+          ]
+        },
+        {
+          "label": "work_package_run.py:_check_blockable:781 is_order_blocked(ledger, order)",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_run.BlockOnAnOrder.test_a_second_block_while_the_order_is_blocked_is_refused"
+          ]
+        },
+        {
+          "label": "work_package_run.py:_check_blockable:766 state in _UNBLOCKABLE",
+          "outcome": "survived",
+          "reason": "",
+          "failure_class": "none",
+          "failing_tests": []
+        },
+        {
+          "label": "work_package_run.py:_check_blockable:771 is_blocked(ledger, package.id)",
+          "outcome": "survived",
+          "reason": "",
+          "failure_class": "none",
+          "failing_tests": []
+        },
+        {
+          "label": "work_package_run.py:record_work_package_unblock:855 not _held_by_block(ledger, package.id, order)",
+          "outcome": "inconclusive",
+          "reason": "the run did not report a clean assertion failure",
+          "failure_class": "error",
+          "failing_tests": [
+            "tests.test_order_run.UnblockOnAnOrder.test_an_order_not_blocked_is_refused"
+          ]
+        },
+        {
+          "label": "work_package_run.py:record_work_package_unblock:857 not request.ruling.strip() or not request.operator.strip()",
+          "outcome": "survived",
+          "reason": "",
+          "failure_class": "none",
+          "failing_tests": []
+        },
+        {
+          "label": "work_package_run.py:record_work_package_unblock:865 request.exit_taken == \"reopen\" and _reopened(ledger, str(request.req))",
+          "outcome": "survived",
+          "reason": "",
+          "failure_class": "none",
+          "failing_tests": []
+        },
+        {
+          "label": "work_package_run.py:_dispatch_subject another package's order takes a dispatch",
+          "outcome": "inconclusive",
+          "reason": "the run did not report a clean assertion failure",
+          "failure_class": "error",
+          "failing_tests": [
+            "tests.test_order_run.DispatchOnAnOrder.test_an_order_the_store_lacks_is_refused",
+            "tests.test_order_run.DispatchOnAnOrder.test_another_packages_commenced_order_takes_no_dispatch"
+          ]
+        },
+        {
+          "label": "work_package_run.py:_check_blockable another package's order takes a block",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_run.BlockOnAnOrder.test_another_packages_commenced_order_takes_no_block"
+          ]
+        },
+        {
+          "label": "work_package_run.py:open_unclaimed_dispatches an order's dispatch reads its package's state",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_run.InFlightOnAnOrder.test_an_unclaimed_order_dispatch_for_another_root_is_open",
+            "tests.test_order_run.InFlightOnAnOrder.test_it_stays_open_while_the_order_is_accepted"
+          ]
+        },
+        {
+          "label": "work_package_run.py:run_positions no order is read as a run in flight",
+          "outcome": "inconclusive",
+          "reason": "the run did not report a clean assertion failure",
+          "failure_class": "error",
+          "failing_tests": [
+            "tests.test_order_run.InFlightOnAnOrder.test_the_runs_in_flight_include_the_commenced_order",
+            "tests.test_order_run.InFlightOnAnOrder.test_an_order_not_commenced_is_not_in_flight",
+            "tests.commands.test_wp_order_run.OrderRunOutputContract.test_each_verb_names_the_order"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "src/gzkit/work_package_ledger.py",
+      "baseline_green": true,
+      "baseline_tests_run": 348,
+      "source_restored": true,
+      "conclusive": false,
+      "counts": {
+        "killed": 6,
+        "survived": 1,
+        "invalid": 0,
+        "inconclusive": 3
+      },
+      "mutants": [
+        {
+          "label": "work_package_ledger.py:_check_baselined:267 req is None or req.revision != entry.revision",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_work_package_ledger.FreezeTests.test_the_baseline_holds_the_catalogs_revision_of_the_packages_own_outcome"
+          ]
+        },
+        {
+          "label": "work_package_ledger.py:_check_baselined:269 not isinstance(req, CatalogReq)",
+          "outcome": "inconclusive",
+          "reason": "the run did not report a clean assertion failure",
+          "failure_class": "error",
+          "failing_tests": [
+            "tests.test_work_package_ledger.FreezeTests.test_the_baseline_holds_the_catalogs_revision_of_the_packages_own_outcome"
+          ]
+        },
+        {
+          "label": "work_package_ledger.py:_check_baselined:275 req.member_of != package.outcome",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_work_package_ledger.FreezeTests.test_the_baseline_holds_the_catalogs_revision_of_the_packages_own_outcome"
+          ]
+        },
+        {
+          "label": "work_package_ledger.py:_check_repair_close:337 move.decision is not None",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_work_package_ledger.RepairLifecycleTests.test_a_repair_close_books_no_gate_5_decision_of_its_own",
+            "tests.commands.test_wp_run.TestTheRepairClose.test_a_repair_package_closes_only_once_its_orders_have_closed"
+          ]
+        },
+        {
+          "label": "work_package_ledger.py:_check_repair_close:344 not moves",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_work_package_ledger.RepairLifecycleTests.test_a_package_with_no_closed_order_does_not_close"
+          ]
+        },
+        {
+          "label": "work_package_ledger.py:_check_repair_close:351 open_orders := [order for order, row in moves.items() if row.get(\"to_s",
+          "outcome": "inconclusive",
+          "reason": "the run did not report a clean assertion failure",
+          "failure_class": "error",
+          "failing_tests": [
+            "tests.test_work_package_ledger.RepairLifecycleTests.test_the_close_waits_for_every_order_and_records_their_decisions",
+            "tests.commands.test_wp_run.TestTheRepairClose.test_a_repair_package_closes_only_once_its_orders_have_closed"
+          ]
+        },
+        {
+          "label": "work_package_ledger.py:footprint_sealed no freeze seals the footprint",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger.FootprintSealTests.test_a_later_freeze_refuses_a_store_that_dropped_a_sealed_path",
+            "tests.test_order_ledger.FootprintSealTests.test_a_store_edited_after_the_freeze_moves_nothing",
+            "tests.commands.test_wp_order.OrderLifecycleTests.test_a_sealed_path_the_package_moved_does_not_refuse_a_later_freeze",
+            "tests.commands.test_wp_order.OrderLifecycleTests.test_the_sealed_footprint_drops_no_path"
+          ]
+        },
+        {
+          "label": "work_package_ledger.py:declared_modules the store, not the seal, is the footprint",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger.FootprintSealTests.test_a_later_freeze_refuses_a_store_that_dropped_a_sealed_path",
+            "tests.test_order_ledger.FootprintSealTests.test_a_later_orders_freeze_seals_the_store_as_it_then_reads",
+            "tests.test_order_ledger.FootprintSealTests.test_a_store_edited_after_the_freeze_moves_nothing"
+          ]
+        },
+        {
+          "label": "work_package_ledger.py:declared_modules a change order adds nothing to the seal",
+          "outcome": "survived",
+          "reason": "",
+          "failure_class": "none",
+          "failing_tests": []
+        },
+        {
+          "label": "work_package_ledger.py:_check_closed a repair close skips its order checks",
+          "outcome": "inconclusive",
+          "reason": "the run did not report a clean assertion failure",
+          "failure_class": "error",
+          "failing_tests": [
+            "tests.test_work_package_ledger.RepairLifecycleTests.test_the_close_waits_for_every_order_and_records_their_decisions",
+            "tests.test_work_package_ledger.RepairLifecycleTests.test_a_package_with_no_closed_order_does_not_close",
+            "tests.test_work_package_ledger.RepairLifecycleTests.test_a_repair_close_books_no_gate_5_decision_of_its_own",
+            "tests.commands.test_wp_run.TestTheRepairClose.test_a_repair_package_closes_only_once_its_orders_have_closed"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "src/gzkit/order_store.py",
+      "baseline_green": true,
+      "baseline_tests_run": 348,
+      "source_restored": true,
+      "conclusive": true,
+      "counts": {
+        "killed": 3,
+        "survived": 0,
+        "invalid": 0,
+        "inconclusive": 0
+      },
+      "mutants": [
+        {
+          "label": "order_store.py:stage_order:65 existing := order_breaches(catalog)",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order.OrderNewTests.test_a_store_broken_before_the_call_names_the_store_to_repair"
+          ]
+        },
+        {
+          "label": "order_store.py:stage_order:67 any(held.id == order.id for held in catalog.orders)",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.governance.test_catalog_orders.TestOrderStore.test_staging_an_id_the_store_holds_is_refused_by_that_id"
+          ]
+        },
+        {
+          "label": "order_store.py:stage_order:71 breaches := order_breaches(staged)",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order.OrderNewTests.test_a_repeated_alias_in_one_package_is_refused_and_nothing_written",
+            "tests.commands.test_wp_order.OrderNewTests.test_an_order_on_a_delivery_package_is_refused_and_nothing_written"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "src/gzkit/commands/wp_req.py",
+      "baseline_green": true,
+      "baseline_tests_run": 348,
+      "source_restored": true,
+      "conclusive": true,
+      "counts": {
+        "killed": 4,
+        "survived": 0,
+        "invalid": 0,
+        "inconclusive": 0
+      },
+      "mutants": [
+        {
+          "label": "wp_req.py:_criterion:53 len(parts) != len(_CRITERION_PARTS) or not all(parts)",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_req.ReqNewTests.test_a_refusal_names_the_value_at_fault_and_the_call_to_rerun"
+          ]
+        },
+        {
+          "label": "wp_req.py:wp_req_new_cmd:95 package is None",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_req.ReqNewTests.test_an_unknown_package_exits_1"
+          ]
+        },
+        {
+          "label": "wp_req.py:wp_req_new_cmd:124 refusal := open_package_refusal(ledger, package, \"A repair REQ\", why)",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_req.ReqNewTests.test_a_package_not_open_takes_no_req"
+          ]
+        },
+        {
+          "label": "wp_req.py:wp_req_new_cmd:117 exc.in_store",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_req.ReqNewTests.test_a_store_broken_before_the_call_names_the_validator"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "src/gzkit/req_store.py",
+      "baseline_green": true,
+      "baseline_tests_run": 348,
+      "source_restored": true,
+      "conclusive": true,
+      "counts": {
+        "killed": 3,
+        "survived": 0,
+        "invalid": 0,
+        "inconclusive": 0
+      },
+      "mutants": [
+        {
+          "label": "req_store.py:stage_repair_req:62 existing := req_breaches(catalog)",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_req.ReqNewTests.test_a_store_broken_before_the_call_names_the_validator"
+          ]
+        },
+        {
+          "label": "req_store.py:stage_repair_req:64 any(held.id == req.id for held in catalog.reqs)",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.governance.test_catalog_repair_reqs.TestRepairReqStore.test_staging_an_id_the_store_holds_is_refused_by_that_id"
+          ]
+        },
+        {
+          "label": "req_store.py:stage_repair_req:67 breaches := req_breaches(staged)",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_req.ReqNewTests.test_a_delivery_package_takes_no_repair_req",
+            "tests.commands.test_wp_req.ReqNewTests.test_a_refusal_names_the_value_at_fault_and_the_call_to_rerun",
+            "tests.commands.test_wp_req.ReqNewTests.test_a_repair_req_never_supersedes_a_catalog_req",
+            "tests.commands.test_wp_req.ReqNewTests.test_an_issue_the_package_does_not_carry_is_refused"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "src/gzkit/work_package_fence.py",
+      "baseline_green": true,
+      "baseline_tests_run": 348,
+      "source_restored": true,
+      "conclusive": true,
+      "counts": {
+        "killed": 8,
+        "survived": 3,
+        "invalid": 0,
+        "inconclusive": 0
+      },
+      "mutants": [
+        {
+          "label": "work_package_fence.py:_why:186 fence.reason == \"unreadable\"",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_run.OrderFenceRecovery.test_an_unreadable_ledger_says_no_state_can_be_shown"
+          ]
+        },
+        {
+          "label": "work_package_fence.py:_why:188 fence.order is not None",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_run.OrderFenceRecovery.test_each_reason_names_the_order"
+          ]
+        },
+        {
+          "label": "work_package_fence.py:fenced_packages an unreadable ledger fences nothing",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_run.OrderFenceRecovery.test_an_unreadable_ledger_says_no_state_can_be_shown"
+          ]
+        },
+        {
+          "label": "work_package_fence.py:_read_fence a closed package is read for the fence",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_acceptance.TestTheGate.test_a_terminated_package_reaches_gate_5_with_no_proof"
+          ]
+        },
+        {
+          "label": "work_package_fence.py:_read_fence a blocked package holds no fence",
+          "outcome": "survived",
+          "reason": "",
+          "failure_class": "none",
+          "failing_tests": []
+        },
+        {
+          "label": "work_package_fence.py:_read_fence an accepted package holds no fence",
+          "outcome": "survived",
+          "reason": "",
+          "failure_class": "none",
+          "failing_tests": []
+        },
+        {
+          "label": "work_package_fence.py:_read_fence a stopped package holds no fence",
+          "outcome": "survived",
+          "reason": "",
+          "failure_class": "none",
+          "failing_tests": []
+        },
+        {
+          "label": "work_package_fence.py:_read_order_fence no order holds the fence",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_run.OrderFence.test_a_blocked_order_fences_until_the_operator_rules",
+            "tests.test_order_run.OrderFence.test_an_accepted_order_fences",
+            "tests.test_order_run.OrderFence.test_an_order_stopped_by_an_exit_fences",
+            "tests.test_order_run.OrderFence.test_one_fenced_order_fences_beside_a_working_one"
+          ]
+        },
+        {
+          "label": "work_package_fence.py:_read_order_fence a blocked order holds no fence",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_run.OrderFence.test_a_blocked_order_fences_until_the_operator_rules",
+            "tests.test_order_run.OrderFence.test_one_fenced_order_fences_beside_a_working_one"
+          ]
+        },
+        {
+          "label": "work_package_fence.py:_read_order_fence an accepted order holds no fence",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_run.OrderFence.test_an_accepted_order_fences"
+          ]
+        },
+        {
+          "label": "work_package_fence.py:_read_order_fence a stopped order holds no fence",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_run.OrderFence.test_an_order_stopped_by_an_exit_fences"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "src/gzkit/commands/wp.py",
+      "baseline_green": true,
+      "baseline_tests_run": 348,
+      "source_restored": true,
+      "conclusive": true,
+      "counts": {
+        "killed": 4,
+        "survived": 0,
+        "invalid": 0,
+        "inconclusive": 0
+      },
+      "mutants": [
+        {
+          "label": "wp.py:wp_dispatch_cmd:700 not intended.is_dir()",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_run.TestRunVerbs.test_a_named_root_reaches_the_ledger_and_a_missing_one_exits_1"
+          ]
+        },
+        {
+          "label": "wp.py:wp_dispatch_cmd:709 refusal := round_bound_refusal(root, run)",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersRoundBound.test_three_rounds_stop_dispatch_and_accept_and_name_the_orders_block",
+            "tests.commands.test_wp_acceptance.TestTheRoundBound.test_three_rounds_stop_dispatch_and_accept_and_name_the_block"
+          ]
+        },
+        {
+          "label": "wp.py:_with_modules a change order drops a sealed path",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order.OrderLifecycleTests.test_the_sealed_footprint_drops_no_path"
+          ]
+        },
+        {
+          "label": "wp.py:wp_dispatch_cmd an order's round bound is not read at dispatch",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersRoundBound.test_three_rounds_stop_dispatch_and_accept_and_name_the_orders_block"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "src/gzkit/acceptance_package.py",
+      "baseline_green": true,
+      "baseline_tests_run": 348,
+      "source_restored": true,
+      "conclusive": false,
+      "counts": {
+        "killed": 2,
+        "survived": 0,
+        "invalid": 0,
+        "inconclusive": 1
+      },
+      "mutants": [
+        {
+          "label": "acceptance_package.py:order_contract an unknown order takes a contract",
+          "outcome": "inconclusive",
+          "reason": "the run did not report a clean assertion failure",
+          "failure_class": "error",
+          "failing_tests": [
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersContract.test_an_order_the_store_lacks_is_refused"
+          ]
+        },
+        {
+          "label": "acceptance_package.py:order_contract an order not commenced takes a contract",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersContract.test_acceptance_starts_only_on_a_commenced_order"
+          ]
+        },
+        {
+          "label": "acceptance_package.py:order_contract an order owing nothing takes a contract",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersDeparture.test_an_order_whose_every_req_departed_owes_nothing_to_accept"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "src/gzkit/acceptance_store.py",
+      "baseline_green": true,
+      "baseline_tests_run": 348,
+      "source_restored": true,
+      "conclusive": false,
+      "counts": {
+        "killed": 6,
+        "survived": 3,
+        "invalid": 0,
+        "inconclusive": 3
+      },
+      "mutants": [
+        {
+          "label": "acceptance_store.py:record_human_review:604 obligation_id is not None and obligation_id in current",
+          "outcome": "survived",
+          "reason": "",
+          "failure_class": "none",
+          "failing_tests": []
+        },
+        {
+          "label": "acceptance_store.py:resolve_brief a missing brief takes a contract",
+          "outcome": "survived",
+          "reason": "",
+          "failure_class": "none",
+          "failing_tests": []
+        },
+        {
+          "label": "acceptance_store.py:_without_departed a departure removes no proof",
+          "outcome": "inconclusive",
+          "reason": "the run did not report a clean assertion failure",
+          "failure_class": "error",
+          "failing_tests": [
+            "tests.commands.test_wp_acceptance.TestDeparture.test_a_departed_req_with_history_leaves_the_rest_acceptable",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersDeparture.test_a_departed_req_leaves_the_orders_obligations_and_roster",
+            "tests.commands.test_wp_acceptance.TestDeparture.test_a_finding_on_a_departed_req_leaves_a_review_of_both",
+            "tests.commands.test_wp_acceptance.TestDeparture.test_the_departed_history_stays_on_the_ledger"
+          ]
+        },
+        {
+          "label": "acceptance_store.py:initialize a changed contract re-initializes",
+          "outcome": "survived",
+          "reason": "",
+          "failure_class": "none",
+          "failing_tests": []
+        },
+        {
+          "label": "acceptance_store.py:record_human_review a run past its round bound takes a review",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersHumanReview.test_a_human_review_past_the_orders_limit_is_refused",
+            "tests.commands.test_wp_acceptance.TestTheRoundBound.test_a_human_review_is_refused_past_the_limit"
+          ]
+        },
+        {
+          "label": "acceptance_store.py:round_bound_refusal a run past its rounds is not refused",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersHumanReview.test_a_human_review_past_the_orders_limit_is_refused",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersRoundBound.test_three_rounds_stop_dispatch_and_accept_and_name_the_orders_block",
+            "tests.commands.test_wp_acceptance.TestTheRoundBound.test_a_human_review_is_refused_past_the_limit",
+            "tests.commands.test_wp_acceptance.TestTheRoundBound.test_three_rounds_stop_dispatch_and_accept_and_name_the_block"
+          ]
+        },
+        {
+          "label": "acceptance_store.py:round_bound_refusal an order's block recovery names no order",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersHumanReview.test_a_human_review_past_the_orders_limit_is_refused",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersRoundBound.test_three_rounds_stop_dispatch_and_accept_and_name_the_orders_block"
+          ]
+        },
+        {
+          "label": "acceptance_store.py:resolve_brief a run's contract is read as a brief's",
+          "outcome": "inconclusive",
+          "reason": "the run did not report a clean assertion failure",
+          "failure_class": "error",
+          "failing_tests": [
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersContract.test_the_order_owes_its_frozen_reqs_alone",
+            "tests.commands.test_wp_acceptance.TestTheContract.test_a_delivery_package_owes_its_frozen_reqs",
+            "tests.commands.test_wp_order_acceptance.TestAStoppedOrdersGateFive.test_a_stopped_order_outside_its_footprint_books_not_ready",
+            "tests.commands.test_wp_order_acceptance.TestAStoppedOrdersGateFive.test_a_stopped_order_past_its_round_bound_books_not_ready",
+            "tests.commands.test_wp_order_acceptance.TestAStoppedOrdersGateFive.test_a_stopped_order_whose_acceptance_reads_ready_may_proceed",
+            "tests.commands.test_wp_order_acceptance.TestAStoppedOrdersGateFive.test_readiness_earned_after_acceptance_earns_no_proceed",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersContract.test_a_repair_package_id_runs_no_acceptance_of_its_own",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersContract.test_a_req_moved_past_its_frozen_revision_is_refused",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersContract.test_acceptance_starts_only_on_a_commenced_order",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersContract.test_the_records_are_kept_under_the_orders_id",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersDeparture.test_a_departed_req_leaves_the_orders_obligations_and_roster",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersDeparture.test_an_order_whose_every_req_departed_owes_nothing_to_accept",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersGate.test_a_finding_refuses_an_order_every_channel_approved",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersGate.test_accept_admits_a_ready_order",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersGate.test_the_sealed_footprint_holds_a_ready_order",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersGateFive.test_a_refused_close_names_the_call_to_rerun",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersGateFive.test_a_subagents_call_is_refused_and_books_nothing",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersGateFive.test_proceed_books_gate_5_on_the_operators_words",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersHumanReview.test_a_human_review_past_the_orders_limit_is_refused",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersHumanReview.test_the_operators_review_is_recorded_on_the_order",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersRoundBound.test_the_orders_block_writes_the_orders_refutations",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersRoundBound.test_the_orders_unblock_restarts_the_count",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersRoundBound.test_three_rounds_stop_dispatch_and_accept_and_name_the_orders_block",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersRoundBound.test_two_rounds_leave_the_orders_dispatch_open",
+            "tests.commands.test_wp_acceptance.TestAMalformedReviewRow.test_accept_refuses_that_history",
+            "tests.commands.test_wp_acceptance.TestAMalformedReviewRow.test_it_never_stops_a_dispatch_or_a_block",
+            "tests.commands.test_wp_acceptance.TestDeparture.test_a_departed_req_is_no_longer_owed_and_the_rest_is_acceptable",
+            "tests.commands.test_wp_acceptance.TestDeparture.test_a_departed_req_may_change_revision",
+            "tests.commands.test_wp_acceptance.TestDeparture.test_a_departed_req_with_history_leaves_the_rest_acceptable",
+            "tests.commands.test_wp_acceptance.TestDeparture.test_a_finding_on_a_departed_req_leaves_a_review_of_both",
+            "tests.commands.test_wp_acceptance.TestDeparture.test_a_later_block_still_counts_a_departed_reqs_refutations",
+            "tests.commands.test_wp_acceptance.TestDeparture.test_the_departed_history_stays_on_the_ledger",
+            "tests.commands.test_wp_acceptance.TestTheCommandSurface.test_review_and_status_run_through_the_verb",
+            "tests.commands.test_wp_acceptance.TestTheCommandSurface.test_status_exits_3_until_ready",
+            "tests.commands.test_wp_acceptance.TestTheContract.test_a_blocker_ending_in_a_period_reads_as_one_sentence",
+            "tests.commands.test_wp_acceptance.TestTheContract.test_a_repair_package_runs_no_acceptance_of_its_own",
+            "tests.commands.test_wp_acceptance.TestTheContract.test_a_req_moved_past_its_frozen_revision_is_refused",
+            "tests.commands.test_wp_acceptance.TestTheContract.test_a_source_change_makes_the_input_stale",
+            "tests.commands.test_wp_acceptance.TestTheContract.test_acceptance_starts_only_on_a_commenced_package",
+            "tests.commands.test_wp_acceptance.TestTheContract.test_an_edit_to_the_record_makes_the_input_stale",
+            "tests.commands.test_wp_acceptance.TestTheContract.test_appending_evidence_makes_no_review_stale",
+            "tests.commands.test_wp_acceptance.TestTheGate.test_a_finding_refuses_a_package_every_channel_approved",
+            "tests.commands.test_wp_acceptance.TestTheGate.test_a_move_across_the_airlock_prints_what_it_read",
+            "tests.commands.test_wp_acceptance.TestTheGate.test_accept_admits_a_ready_package",
+            "tests.commands.test_wp_acceptance.TestTheGate.test_accept_refuses_a_package_with_no_acceptance",
+            "tests.commands.test_wp_acceptance.TestTheRefutationCount.test_a_bad_acceptance_row_never_costs_the_block",
+            "tests.commands.test_wp_acceptance.TestTheRefutationCount.test_a_block_carries_the_runtimes_own_count",
+            "tests.commands.test_wp_acceptance.TestTheRefutationCount.test_an_accepted_review_refutes_nothing",
+            "tests.commands.test_wp_acceptance.TestTheRefutationCount.test_the_count_keys_a_req_at_its_frozen_revision",
+            "tests.commands.test_wp_acceptance.TestTheReviewChannels.test_a_single_driver_delivery_needs_the_adversarial_review_alone",
+            "tests.commands.test_wp_acceptance.TestTheReviewChannels.test_any_other_delivery_needs_all_three_reviews",
+            "tests.commands.test_wp_acceptance.TestTheRoundBound.test_a_clean_adversarial_round_does_not_count",
+            "tests.commands.test_wp_acceptance.TestTheRoundBound.test_a_human_review_after_the_unblock_is_admitted",
+            "tests.commands.test_wp_acceptance.TestTheRoundBound.test_a_human_review_is_refused_past_the_limit",
+            "tests.commands.test_wp_acceptance.TestTheRoundBound.test_a_human_review_under_the_limit_keeps_the_count",
+            "tests.commands.test_wp_acceptance.TestTheRoundBound.test_a_mapped_finding_counts_whatever_the_verdict_token_says",
+            "tests.commands.test_wp_acceptance.TestTheRoundBound.test_a_review_past_the_limit_is_still_recorded",
+            "tests.commands.test_wp_acceptance.TestTheRoundBound.test_an_identical_receipt_counts_once",
+            "tests.commands.test_wp_acceptance.TestTheRoundBound.test_spec_and_quality_rounds_do_not_count",
+            "tests.commands.test_wp_acceptance.TestTheRoundBound.test_the_operators_unblock_restarts_the_count",
+            "tests.commands.test_wp_acceptance.TestTheRoundBound.test_three_rounds_stop_dispatch_and_accept_and_name_the_block",
+            "tests.commands.test_wp_acceptance.TestTheRoundBound.test_two_rounds_leave_dispatch_open",
+            "tests.commands.test_wp_acceptance.TestTheRoundLimitExit.test_terminate_is_open_at_the_round_limit"
+          ]
+        },
+        {
+          "label": "acceptance_store.py:_without_departed a run's departures are not read",
+          "outcome": "inconclusive",
+          "reason": "the run did not report a clean assertion failure",
+          "failure_class": "error",
+          "failing_tests": [
+            "tests.commands.test_wp_acceptance.TestDeparture.test_a_departed_req_with_history_leaves_the_rest_acceptable",
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersDeparture.test_a_departed_req_leaves_the_orders_obligations_and_roster",
+            "tests.commands.test_wp_acceptance.TestDeparture.test_a_finding_on_a_departed_req_leaves_a_review_of_both",
+            "tests.commands.test_wp_acceptance.TestDeparture.test_the_departed_history_stays_on_the_ledger"
+          ]
+        },
+        {
+          "label": "acceptance_store.py:initialize a run's departure loses its author exemption",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersDeparture.test_a_departed_req_leaves_the_orders_obligations_and_roster"
+          ]
+        },
+        {
+          "label": "acceptance_store.py:record_human_review a run's round bound is not read",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersHumanReview.test_a_human_review_past_the_orders_limit_is_refused",
+            "tests.commands.test_wp_acceptance.TestTheRoundBound.test_a_human_review_is_refused_past_the_limit"
+          ]
+        },
+        {
+          "label": "acceptance_store.py:owed_ids a run owes what it departed",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.commands.test_wp_order_acceptance.TestTheOrdersDeparture.test_a_departed_req_leaves_the_orders_obligations_and_roster",
+            "tests.commands.test_wp_acceptance.TestDeparture.test_a_departed_req_is_no_longer_owed_and_the_rest_is_acceptable",
+            "tests.commands.test_wp_acceptance.TestDeparture.test_a_departed_req_with_history_leaves_the_rest_acceptable"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "src/gzkit/schemas/ledger.json",
+      "baseline_green": true,
+      "baseline_tests_run": 348,
+      "source_restored": true,
+      "conclusive": true,
+      "counts": {
+        "killed": 11,
+        "survived": 0,
+        "invalid": 0,
+        "inconclusive": 0
+      },
+      "mutants": [
+        {
+          "label": "ledger.json:order_transitioned a blank attestor passes",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger_schema.TestOrderRowsAgainstTheSchema.test_a_closed_row_with_blank_gate_5_words_fails"
+          ]
+        },
+        {
+          "label": "ledger.json:order_transitioned a blank attestation_text passes",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger_schema.TestOrderRowsAgainstTheSchema.test_a_closed_row_with_blank_gate_5_words_fails"
+          ]
+        },
+        {
+          "label": "ledger.json:order_transitioned a blank residual_risk passes",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger_schema.TestOrderRowsAgainstTheSchema.test_each_decisions_own_field_is_never_blank"
+          ]
+        },
+        {
+          "label": "ledger.json:order_transitioned a blank superseded_by passes",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger_schema.TestOrderRowsAgainstTheSchema.test_each_decisions_own_field_is_never_blank"
+          ]
+        },
+        {
+          "label": "ledger.json:order_transitioned a blank revisit_condition passes",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger_schema.TestOrderRowsAgainstTheSchema.test_each_decisions_own_field_is_never_blank"
+          ]
+        },
+        {
+          "label": "ledger.json:order_transitioned a null acceptance_ready passes",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger_schema.TestOrderRowsAgainstTheSchema.test_an_accepted_row_booking_null_readiness_fails"
+          ]
+        },
+        {
+          "label": "ledger.json:order_transitioned accepted books without acceptance_ready",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger_schema.TestOrderRowsAgainstTheSchema.test_an_accepted_row_booking_no_readiness_fails"
+          ]
+        },
+        {
+          "label": "ledger.json:order_transitioned closed books without decision",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger_schema.TestOrderRowsAgainstTheSchema.test_a_closed_row_with_no_attestor_fails"
+          ]
+        },
+        {
+          "label": "ledger.json:order_transitioned proceed books without residual_risk",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger_schema.TestOrderRowsAgainstTheSchema.test_each_decision_requires_its_own_field"
+          ]
+        },
+        {
+          "label": "ledger.json:order_transitioned redirect books without superseded_by",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger_schema.TestOrderRowsAgainstTheSchema.test_each_decision_requires_its_own_field"
+          ]
+        },
+        {
+          "label": "ledger.json:order_transitioned pause books without revisit_condition",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_order_ledger_schema.TestOrderRowsAgainstTheSchema.test_each_decision_requires_its_own_field"
+          ]
+        }
+      ]
+    }
+  ],
+  "narrowed": [
+    {
+      "source": "src/gzkit/order_ledger.py",
+      "label": "order_ledger.py:_order:230 held is None",
+      "broad_outcome": "inconclusive",
+      "tests": [
+        "tests.test_order_ledger.LifecycleTests.test_an_order_the_store_lacks_is_refused"
+      ],
+      "baseline_green": true,
+      "outcome": "inconclusive",
+      "reason": "the run did not report a clean assertion failure",
+      "failure_class": "error",
+      "failing_tests": [
+        "tests.test_order_ledger.LifecycleTests.test_an_order_the_store_lacks_is_refused"
+      ],
+      "errors": [
+        "AttributeError: 'NoneType' object has no attribute 'id'"
+      ]
+    },
+    {
+      "source": "src/gzkit/order_ledger.py",
+      "label": "order_ledger.py:_check_alterations:257 set(move.approved_alterations) != due",
+      "broad_outcome": "inconclusive",
+      "tests": [
+        "tests.test_order_ledger.AlterationApprovalTests.test_the_first_freeze_approves_every_planned_alteration",
+        "tests.test_order_ledger.AlterationApprovalTests.test_a_later_freeze_approves_only_what_was_planned_since"
+      ],
+      "baseline_green": true,
+      "outcome": "inconclusive",
+      "reason": "the run did not report a clean assertion failure",
+      "failure_class": "error",
+      "failing_tests": [
+        "tests.test_order_ledger.AlterationApprovalTests.test_the_first_freeze_approves_every_planned_alteration",
+        "tests.test_order_ledger.AlterationApprovalTests.test_a_later_freeze_approves_only_what_was_planned_since"
+      ],
+      "errors": [
+        "AssertionError: 'ruling 63' not found in \"Order ORD-01-import cannot move from frozen to 'frozen'; the lifecycle allows commenced from here.\"",
+        "AssertionError: 'ruling 63' not found in \"Order ORD-01-import cannot move from frozen to 'frozen'; the lifecycle allows commenced from here.\"",
+        "    with self.assertRaises(OrderLedgerError) as caught:",
+        "AssertionError: OrderLedgerError not raised"
+      ]
+    },
+    {
+      "source": "src/gzkit/order_ledger.py",
+      "label": "order_ledger.py:_check_decision_fields:414 own is not None and not (getattr(move, own) or \"\").strip()",
+      "broad_outcome": "inconclusive",
+      "tests": [
+        "tests.test_order_ledger.GateFiveTests.test_each_decision_carries_its_own_field_and_refuses_the_others",
+        "tests.test_order_ledger.GateFiveTests.test_a_blank_field_of_another_decision_is_refused_too"
+      ],
+      "baseline_green": true,
+      "outcome": "inconclusive",
+      "reason": "the run did not report a clean assertion failure",
+      "failure_class": "error",
+      "failing_tests": [
+        "tests.test_order_ledger.GateFiveTests.test_each_decision_carries_its_own_field_and_refuses_the_others",
+        "tests.test_order_ledger.GateFiveTests.test_a_blank_field_of_another_decision_is_refused_too"
+      ],
+      "errors": [
+        "    with self.assertRaises(OrderLedgerError) as caught:",
+        "AssertionError: OrderLedgerError not raised",
+        "    with self.assertRaises(OrderLedgerError) as caught:",
+        "AssertionError: OrderLedgerError not raised"
+      ]
+    },
+    {
+      "source": "src/gzkit/order_ledger.py",
+      "label": "order_ledger.py:_check_decision_fields:418 others := sorted(given - {own})",
+      "broad_outcome": "inconclusive",
+      "tests": [
+        "tests.test_order_ledger.GateFiveTests.test_each_decision_carries_its_own_field_and_refuses_the_others",
+        "tests.test_order_ledger.GateFiveTests.test_a_blank_field_of_another_decision_is_refused_too"
+      ],
+      "baseline_green": true,
+      "outcome": "inconclusive",
+      "reason": "the run did not report a clean assertion failure",
+      "failure_class": "error",
+      "failing_tests": [
+        "tests.test_order_ledger.GateFiveTests.test_each_decision_carries_its_own_field_and_refuses_the_others",
+        "tests.test_order_ledger.GateFiveTests.test_a_blank_field_of_another_decision_is_refused_too"
+      ],
+      "errors": [
+        "    with self.assertRaises(OrderLedgerError) as caught:",
+        "AssertionError: OrderLedgerError not raised",
+        "AssertionError: 'ruling 73' not found in \"Order ORD-01-import cannot move from closed to 'closed'; the lifecycle allows no move from here. An order closes from accepted, or from opened as a terminate (RP-12 ruling 74).\"",
+        "AssertionError: 'carries residual-risk' not found in \"Order ORD-01-import cannot move from closed to 'closed'; the lifecycle allows no move from here. An order closes from accepted, or from opened as a terminate (RP-12 ruling 74).\""
+      ]
+    },
+    {
+      "source": "src/gzkit/order_ledger.py",
+      "label": "order_ledger.py:_check_closed:451 move.decision is None",
+      "broad_outcome": "inconclusive",
+      "tests": [
+        "tests.test_order_ledger.GateFiveTests.test_the_attestor_the_words_and_the_decision_are_required"
+      ],
+      "baseline_green": true,
+      "outcome": "inconclusive",
+      "reason": "the run did not report a clean assertion failure",
+      "failure_class": "error",
+      "failing_tests": [
+        "tests.test_order_ledger.GateFiveTests.test_the_attestor_the_words_and_the_decision_are_required"
+      ],
+      "errors": [
+        "KeyError: 'None'"
+      ]
+    },
+    {
+      "source": "src/gzkit/order_ledger.py",
+      "label": "order_ledger.py:order_move_refusal:532 to_state not in allowed",
+      "broad_outcome": "inconclusive",
+      "tests": [
+        "tests.test_order_ledger.LifecycleTests.test_a_skipped_or_backward_step_is_refused"
+      ],
+      "baseline_green": true,
+      "outcome": "killed",
+      "reason": "",
+      "failure_class": "assertion",
+      "failing_tests": [
+        "tests.test_order_ledger.LifecycleTests.test_a_skipped_or_backward_step_is_refused"
+      ],
+      "errors": [
+        "    with self.assertRaises(OrderLedgerError) as caught:",
+        "AssertionError: OrderLedgerError not raised"
+      ]
+    },
+    {
+      "source": "src/gzkit/order_ledger.py",
+      "label": "order_ledger.py:record_order_transition:568 not move.evidence.strip()",
+      "broad_outcome": "inconclusive",
+      "tests": [
+        "tests.test_order_ledger.LifecycleTests.test_empty_evidence_is_refused"
+      ],
+      "baseline_green": true,
+      "outcome": "inconclusive",
+      "reason": "the run did not report a clean assertion failure",
+      "failure_class": "error",
+      "failing_tests": [
+        "tests.test_order_ledger.LifecycleTests.test_empty_evidence_is_refused"
+      ],
+      "errors": [
+        "pydantic_core._pydantic_core.ValidationError: 1 validation error for OrderTransitionedEvent"
+      ]
+    },
+    {
+      "source": "src/gzkit/order_ledger.py",
+      "label": "order_ledger.py:record_order_transition:571 refusal := order_move_refusal(ledger, order, move.to_state)",
+      "broad_outcome": "inconclusive",
+      "tests": [
+        "tests.test_order_ledger.LifecycleTests.test_a_skipped_or_backward_step_is_refused"
+      ],
+      "baseline_green": true,
+      "outcome": "killed",
+      "reason": "",
+      "failure_class": "assertion",
+      "failing_tests": [
+        "tests.test_order_ledger.LifecycleTests.test_a_skipped_or_backward_step_is_refused"
+      ],
+      "errors": [
+        "    with self.assertRaises(OrderLedgerError) as caught:",
+        "AssertionError: OrderLedgerError not raised"
+      ]
+    },
+    {
+      "source": "src/gzkit/commands/wp_order.py",
+      "label": "wp_order.py:wp_order_accept_cmd:358 outside := footprint_refusal(root, package, ledger)",
+      "broad_outcome": "inconclusive",
+      "tests": [
+        "tests.commands.test_wp_order_acceptance.TestTheOrdersGate.test_the_sealed_footprint_holds_a_ready_order",
+        "tests.commands.test_wp_order_acceptance.TestTheOrdersGate.test_the_footprint_is_named_beside_another_blocker"
+      ],
+      "baseline_green": true,
+      "outcome": "killed",
+      "reason": "",
+      "failure_class": "assertion",
+      "failing_tests": [
+        "tests.commands.test_wp_order_acceptance.TestTheOrdersGate.test_the_sealed_footprint_holds_a_ready_order",
+        "tests.commands.test_wp_order_acceptance.TestTheOrdersGate.test_the_footprint_is_named_beside_another_blocker"
+      ],
+      "errors": [
+        "AssertionError: 0 != 3 : ORD-01-import: commenced -> accepted",
+        "AssertionError: 'outside the footprint' not found in 'Acceptance blocked: No durable acceptance contract/proof history. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz wp acceptance ORD-01-import status --stage stage4` and repair the named obligation through the existing pipeline.'"
+      ]
+    },
+    {
+      "source": "src/gzkit/governance/trust_audits/catalog.py",
+      "label": "catalog.py:_repair_req_breaches:148 package is None or package.kind != \"repair\"",
+      "broad_outcome": "inconclusive",
+      "tests": [
+        "tests.commands.test_wp_req.ReqNewTests.test_a_delivery_package_takes_no_repair_req"
+      ],
+      "baseline_green": true,
+      "outcome": "killed",
+      "reason": "",
+      "failure_class": "assertion",
+      "failing_tests": [
+        "tests.commands.test_wp_req.ReqNewTests.test_a_delivery_package_takes_no_repair_req"
+      ],
+      "errors": [
+        "AssertionError: 'delivery package' not found in \"Repair REQ REQ-5 names problem report #1301, which WP-02-resume does not carry. The rulings are in docs/governance/harbor-ro12-contractor-kit.md. Nothing was written; correct the call and re-run `uv run gz wp req new <WP-id> --statement <text> --criterion '<state>|<outcome>|<evidence>' --kind <kind> --problem-report <issue>`.\""
+      ]
+    },
+    {
+      "source": "src/gzkit/governance/trust_audits/catalog.py",
+      "label": "catalog.py:_repair_req_breaches:147 wp.id == req.held_on",
+      "broad_outcome": "inconclusive",
+      "tests": [
+        "tests.governance.test_catalog_repair_reqs.TestRepairReqStore.test_a_repair_req_held_on_its_repair_package_passes"
+      ],
+      "baseline_green": true,
+      "outcome": "killed",
+      "reason": "",
+      "failure_class": "assertion",
+      "failing_tests": [
+        "tests.governance.test_catalog_repair_reqs.TestRepairReqStore.test_a_repair_req_held_on_its_repair_package_passes"
+      ],
+      "errors": [
+        "AssertionError: Lists differ: [ValidationError(type='catalog', artifact=[508 chars]one)] != []",
+        "ValidationError(type='catalog', artifact='data/catalog/reqs.json', message=\"Repair REQ REQ-2 is held on WP-01-x, which is not in the catalog. RP-12 rulings 31 and 45 rule the repair requirement and `supersedes` (docs/governance/harbor-ro12-contractor-kit.md). The catalog's shape is ruled in docs/governance/harbor-ro3-requirements-store.md (The store), and its families in docs/governance/ieee/requirements-model.md (decision 8.3). Correct the file, then re-run `uv run gz validate --catalog`.\", field='reqs', ledger_value=None, frontmatter_value=None)",
+        "- [ValidationError(type='catalog', artifact='data/catalog/reqs.json', message=\"Repair REQ REQ-2 is held on WP-01-x, which is not in the catalog. RP-12 rulings 31 and 45 rule the repair requirement and `supersedes` (docs/governance/harbor-ro12-contractor-kit.md). The catalog's shape is ruled in docs/governance/harbor-ro3-requirements-store.md (The store), and its families in docs/governance/ieee/requirements-model.md (decision 8.3). Correct the file, then re-run `uv run gz validate --catalog`.\", field='reqs', ledger_value=None, frontmatter_value=None)]"
+      ]
+    },
+    {
+      "source": "src/gzkit/work_package_run.py",
+      "label": "work_package_run.py:_package_order:351 held is None or held.work_package != package.id",
+      "broad_outcome": "inconclusive",
+      "tests": [
+        "tests.test_order_run.UnblockOnAnOrder.test_another_packages_blocked_order_is_refused"
+      ],
+      "baseline_green": true,
+      "outcome": "killed",
+      "reason": "",
+      "failure_class": "assertion",
+      "failing_tests": [
+        "tests.test_order_run.UnblockOnAnOrder.test_another_packages_blocked_order_is_refused"
+      ],
+      "errors": [
+        "    with self.assertRaisesRegex(ValueError, pattern):",
+        "AssertionError: ValueError not raised"
+      ]
+    },
+    {
+      "source": "src/gzkit/work_package_run.py",
+      "label": "work_package_run.py:_dispatch_subject:389 state != \"commenced\"",
+      "broad_outcome": "survived",
+      "tests": [
+        "tests.test_work_package_run.Dispatch.test_work_before_commencement_is_refused"
+      ],
+      "baseline_green": true,
+      "outcome": "killed",
+      "reason": "",
+      "failure_class": "assertion",
+      "failing_tests": [
+        "tests.test_work_package_run.Dispatch.test_work_before_commencement_is_refused"
+      ],
+      "errors": [
+        "gzkit.work_package_ledger.WorkPackageLedgerError: REQ-1 is not in WP-03-again's frozen baseline.",
+        "    with self.assertRaisesRegex(WorkPackageLedgerError, pattern):",
+        "AssertionError: \"commenced\" does not match \"REQ-1 is not in WP-03-again's frozen baseline.\""
+      ]
+    },
+    {
+      "source": "src/gzkit/work_package_run.py",
+      "label": "work_package_run.py:_dispatch_subject:391 request.req is None",
+      "broad_outcome": "survived",
+      "tests": [
+        "tests.test_work_package_run.Dispatch.test_a_dispatch_names_one_held_subject"
+      ],
+      "baseline_green": true,
+      "outcome": "killed",
+      "reason": "",
+      "failure_class": "assertion",
+      "failing_tests": [
+        "tests.test_work_package_run.Dispatch.test_a_dispatch_names_one_held_subject"
+      ],
+      "errors": [
+        "gzkit.work_package_ledger.WorkPackageLedgerError: None is not in WP-01-resume's frozen baseline.",
+        "    with self.assertRaisesRegex(WorkPackageLedgerError, pattern):",
+        "AssertionError: \"names its subject\" does not match \"None is not in WP-01-resume's frozen baseline.\""
+      ]
+    },
+    {
+      "source": "src/gzkit/work_package_run.py",
+      "label": "work_package_run.py:_dispatch_subject:394 revision is None",
+      "broad_outcome": "survived",
+      "tests": [
+        "tests.test_work_package_run.Dispatch.test_a_dispatch_names_one_held_subject"
+      ],
+      "baseline_green": true,
+      "outcome": "killed",
+      "reason": "",
+      "failure_class": "assertion",
+      "failing_tests": [
+        "tests.test_work_package_run.Dispatch.test_a_dispatch_names_one_held_subject"
+      ],
+      "errors": [
+        "    with self.assertRaisesRegex(WorkPackageLedgerError, pattern):",
+        "AssertionError: WorkPackageLedgerError not raised"
+      ]
+    },
+    {
+      "source": "src/gzkit/work_package_run.py",
+      "label": "work_package_run.py:record_work_package_dispatch:486 is_blocked(ledger, package.id)",
+      "broad_outcome": "survived",
+      "tests": [
+        "tests.test_work_package_run.Dispatch.test_a_blocked_package_takes_no_dispatch_on_any_subject"
+      ],
+      "baseline_green": true,
+      "outcome": "killed",
+      "reason": "",
+      "failure_class": "assertion",
+      "failing_tests": [
+        "tests.test_work_package_run.Dispatch.test_a_blocked_package_takes_no_dispatch_on_any_subject"
+      ],
+      "errors": [
+        "    with self.assertRaisesRegex(WorkPackageLedgerError, pattern):",
+        "AssertionError: WorkPackageLedgerError not raised"
+      ]
+    },
+    {
+      "source": "src/gzkit/work_package_run.py",
+      "label": "work_package_run.py:_check_blockable:766 state in _UNBLOCKABLE",
+      "broad_outcome": "survived",
+      "tests": [
+        "tests.test_work_package_run.Block.test_a_closed_package_takes_no_block",
+        "tests.test_work_package_run.Block.test_an_accepted_package_takes_no_block"
+      ],
+      "baseline_green": true,
+      "outcome": "killed",
+      "reason": "",
+      "failure_class": "assertion",
+      "failing_tests": [
+        "tests.test_work_package_run.Block.test_a_closed_package_takes_no_block",
+        "tests.test_work_package_run.Block.test_an_accepted_package_takes_no_block"
+      ],
+      "errors": [
+        "    with self.assertRaisesRegex(WorkPackageLedgerError, pattern):",
+        "AssertionError: WorkPackageLedgerError not raised",
+        "    with self.assertRaisesRegex(WorkPackageLedgerError, pattern):",
+        "AssertionError: WorkPackageLedgerError not raised"
+      ]
+    },
+    {
+      "source": "src/gzkit/work_package_run.py",
+      "label": "work_package_run.py:_check_blockable:771 is_blocked(ledger, package.id)",
+      "broad_outcome": "survived",
+      "tests": [
+        "tests.test_work_package_run.Block.test_a_second_block_while_blocked_is_refused"
+      ],
+      "baseline_green": true,
+      "outcome": "killed",
+      "reason": "",
+      "failure_class": "assertion",
+      "failing_tests": [
+        "tests.test_work_package_run.Block.test_a_second_block_while_blocked_is_refused"
+      ],
+      "errors": [
+        "    with self.assertRaisesRegex(WorkPackageLedgerError, pattern):",
+        "AssertionError: WorkPackageLedgerError not raised"
+      ]
+    },
+    {
+      "source": "src/gzkit/work_package_run.py",
+      "label": "work_package_run.py:record_work_package_unblock:855 not _held_by_block(ledger, package.id, order)",
+      "broad_outcome": "inconclusive",
+      "tests": [
+        "tests.test_order_run.UnblockOnAnOrder.test_an_order_not_blocked_is_refused"
+      ],
+      "baseline_green": true,
+      "outcome": "inconclusive",
+      "reason": "the run did not report a clean assertion failure",
+      "failure_class": "error",
+      "failing_tests": [
+        "tests.test_order_run.UnblockOnAnOrder.test_an_order_not_blocked_is_refused"
+      ],
+      "errors": [
+        "IndexError: list index out of range"
+      ]
+    },
+    {
+      "source": "src/gzkit/work_package_run.py",
+      "label": "work_package_run.py:record_work_package_unblock:857 not request.ruling.strip() or not request.operator.strip()",
+      "broad_outcome": "survived",
+      "tests": [
+        "tests.test_work_package_run.Unblock.test_an_empty_ruling_is_refused"
+      ],
+      "baseline_green": true,
+      "outcome": "killed",
+      "reason": "",
+      "failure_class": "assertion",
+      "failing_tests": [
+        "tests.test_work_package_run.Unblock.test_an_empty_ruling_is_refused"
+      ],
+      "errors": [
+        "    with self.assertRaisesRegex(WorkPackageLedgerError, pattern):",
+        "AssertionError: WorkPackageLedgerError not raised"
+      ]
+    },
+    {
+      "source": "src/gzkit/work_package_run.py",
+      "label": "work_package_run.py:record_work_package_unblock:865 request.exit_taken == \"reopen\" and _reopened(ledger, str(request.req))",
+      "broad_outcome": "survived",
+      "tests": [
+        "tests.test_work_package_run.AcrossPackages.test_reopen_is_once_per_requirement_across_packages"
+      ],
+      "baseline_green": true,
+      "outcome": "killed",
+      "reason": "",
+      "failure_class": "assertion",
+      "failing_tests": [
+        "tests.test_work_package_run.AcrossPackages.test_reopen_is_once_per_requirement_across_packages"
+      ],
+      "errors": [
+        "    with self.assertRaisesRegex(WorkPackageLedgerError, pattern):",
+        "AssertionError: WorkPackageLedgerError not raised"
+      ]
+    },
+    {
+      "source": "src/gzkit/work_package_run.py",
+      "label": "work_package_run.py:_dispatch_subject another package's order takes a dispatch",
+      "broad_outcome": "inconclusive",
+      "tests": [
+        "tests.test_order_run.DispatchOnAnOrder.test_another_packages_commenced_order_takes_no_dispatch"
+      ],
+      "baseline_green": true,
+      "outcome": "killed",
+      "reason": "",
+      "failure_class": "assertion",
+      "failing_tests": [
+        "tests.test_order_run.DispatchOnAnOrder.test_another_packages_commenced_order_takes_no_dispatch"
+      ],
+      "errors": [
+        "    with self.assertRaisesRegex(ValueError, pattern):",
+        "AssertionError: ValueError not raised"
+      ]
+    },
+    {
+      "source": "src/gzkit/work_package_run.py",
+      "label": "work_package_run.py:run_positions no order is read as a run in flight",
+      "broad_outcome": "inconclusive",
+      "tests": [
+        "tests.test_order_run.InFlightOnAnOrder.test_an_order_not_commenced_is_not_in_flight",
+        "tests.commands.test_wp_order_run.OrderRunOutputContract.test_each_verb_names_the_order"
+      ],
+      "baseline_green": true,
+      "outcome": "killed",
+      "reason": "",
+      "failure_class": "assertion",
+      "failing_tests": [
+        "tests.test_order_run.InFlightOnAnOrder.test_an_order_not_commenced_is_not_in_flight",
+        "tests.commands.test_wp_order_run.OrderRunOutputContract.test_each_verb_names_the_order"
+      ],
+      "errors": [
+        "AssertionError: Lists differ: [] != ['ORD-01-import']",
+        "AssertionError: 'order ORD-01-import of WP-01-stamp (repair), state: commenced' not found in 'No work package is in flight.\\n'"
+      ]
+    },
+    {
+      "source": "src/gzkit/work_package_ledger.py",
+      "label": "work_package_ledger.py:_check_baselined:269 not isinstance(req, CatalogReq)",
+      "broad_outcome": "inconclusive",
+      "tests": [
+        "tests.test_work_package_ledger.FreezeTests.test_the_baseline_holds_the_catalogs_revision_of_the_packages_own_outcome"
+      ],
+      "baseline_green": true,
+      "outcome": "inconclusive",
+      "reason": "the run did not report a clean assertion failure",
+      "failure_class": "error",
+      "failing_tests": [
+        "tests.test_work_package_ledger.FreezeTests.test_the_baseline_holds_the_catalogs_revision_of_the_packages_own_outcome"
+      ],
+      "errors": [
+        "    raise AttributeError(f'{type(self).__name__!r} object has no attribute {item!r}')",
+        "AttributeError: 'RepairReq' object has no attribute 'member_of'"
+      ]
+    },
+    {
+      "source": "src/gzkit/work_package_ledger.py",
+      "label": "work_package_ledger.py:_check_repair_close:351 open_orders := [order for order, row in moves.items() if row.get(\"to_s",
+      "broad_outcome": "inconclusive",
+      "tests": [
+        "tests.test_work_package_ledger.RepairLifecycleTests.test_the_close_waits_for_every_order_and_records_their_decisions"
+      ],
+      "baseline_green": true,
+      "outcome": "inconclusive",
+      "reason": "the run did not report a clean assertion failure",
+      "failure_class": "error",
+      "failing_tests": [
+        "tests.test_work_package_ledger.RepairLifecycleTests.test_the_close_waits_for_every_order_and_records_their_decisions"
+      ],
+      "errors": [
+        "KeyError: 'decision'"
+      ]
+    },
+    {
+      "source": "src/gzkit/work_package_ledger.py",
+      "label": "work_package_ledger.py:declared_modules a change order adds nothing to the seal",
+      "broad_outcome": "survived",
+      "tests": [
+        "tests.commands.test_wp_airlock.TestAccept.test_the_order_that_adds_a_path_lets_the_package_be_accepted"
+      ],
+      "baseline_green": true,
+      "outcome": "killed",
+      "reason": "",
+      "failure_class": "assertion",
+      "failing_tests": [
+        "tests.commands.test_wp_airlock.TestAccept.test_the_order_that_adds_a_path_lets_the_package_be_accepted"
+      ],
+      "errors": [
+        "AssertionError: 3 != 0 : 1 changed file(s) outside WP-01-loop's footprint: src/gzkit/outside.py. "
+      ]
+    },
+    {
+      "source": "src/gzkit/work_package_ledger.py",
+      "label": "work_package_ledger.py:_check_closed a repair close skips its order checks",
+      "broad_outcome": "inconclusive",
+      "tests": [
+        "tests.test_work_package_ledger.RepairLifecycleTests.test_a_package_with_no_closed_order_does_not_close",
+        "tests.test_work_package_ledger.RepairLifecycleTests.test_a_repair_close_books_no_gate_5_decision_of_its_own"
+      ],
+      "baseline_green": true,
+      "outcome": "killed",
+      "reason": "",
+      "failure_class": "assertion",
+      "failing_tests": [
+        "tests.test_work_package_ledger.RepairLifecycleTests.test_a_package_with_no_closed_order_does_not_close",
+        "tests.test_work_package_ledger.RepairLifecycleTests.test_a_repair_close_books_no_gate_5_decision_of_its_own"
+      ],
+      "errors": [
+        "    with self.assertRaisesRegex(WorkPackageLedgerError, \"ruling 79\"):",
+        "AssertionError: WorkPackageLedgerError not raised",
+        "    with self.assertRaisesRegex(WorkPackageLedgerError, \"rulings 30 and 76\"):",
+        "AssertionError: WorkPackageLedgerError not raised"
+      ]
+    },
+    {
+      "source": "src/gzkit/work_package_fence.py",
+      "label": "work_package_fence.py:_read_fence a blocked package holds no fence",
+      "broad_outcome": "survived",
+      "tests": [
+        "tests.commands.test_wp_fence.TestTheCommitGuard.test_a_blocked_package_refuses_a_production_commit"
+      ],
+      "baseline_green": true,
+      "outcome": "killed",
+      "reason": "",
+      "failure_class": "assertion",
+      "failing_tests": [
+        "tests.commands.test_wp_fence.TestTheCommitGuard.test_a_blocked_package_refuses_a_production_commit"
+      ],
+      "errors": [
+        "AssertionError: 0 != 1"
+      ]
+    },
+    {
+      "source": "src/gzkit/work_package_fence.py",
+      "label": "work_package_fence.py:_read_fence an accepted package holds no fence",
+      "broad_outcome": "survived",
+      "tests": [
+        "tests.commands.test_wp_fence.TestTheCommitGuard.test_an_accepted_package_refuses_a_production_commit"
+      ],
+      "baseline_green": true,
+      "outcome": "killed",
+      "reason": "",
+      "failure_class": "assertion",
+      "failing_tests": [
+        "tests.commands.test_wp_fence.TestTheCommitGuard.test_an_accepted_package_refuses_a_production_commit"
+      ],
+      "errors": [
+        "AssertionError: 0 != 1"
+      ]
+    },
+    {
+      "source": "src/gzkit/work_package_fence.py",
+      "label": "work_package_fence.py:_read_fence a stopped package holds no fence",
+      "broad_outcome": "survived",
+      "tests": [
+        "tests.commands.test_wp_fence.TestTheExits.test_terminate_fences_until_the_package_closes"
+      ],
+      "baseline_green": true,
+      "outcome": "killed",
+      "reason": "",
+      "failure_class": "assertion",
+      "failing_tests": [
+        "tests.commands.test_wp_fence.TestTheExits.test_terminate_fences_until_the_package_closes"
+      ],
+      "errors": [
+        "AssertionError: {} != {'WP-01-loop': 'stopped'}"
+      ]
+    },
+    {
+      "source": "src/gzkit/acceptance_package.py",
+      "label": "acceptance_package.py:order_contract an unknown order takes a contract",
+      "broad_outcome": "inconclusive",
+      "tests": [
+        "tests.commands.test_wp_order_acceptance.TestTheOrdersContract.test_an_order_the_store_lacks_is_refused"
+      ],
+      "baseline_green": true,
+      "outcome": "inconclusive",
+      "reason": "the run did not report a clean assertion failure",
+      "failure_class": "error",
+      "failing_tests": [
+        "tests.commands.test_wp_order_acceptance.TestTheOrdersContract.test_an_order_the_store_lacks_is_refused"
+      ],
+      "errors": [
+        "AttributeError: 'NoneType' object has no attribute 'id'"
+      ]
+    },
+    {
+      "source": "src/gzkit/acceptance_store.py",
+      "label": "acceptance_store.py:record_human_review:604 obligation_id is not None and obligation_id in current",
+      "broad_outcome": "survived",
+      "tests": [
+        "tests.test_acceptance_store.AcceptanceStoreTests.test_a_human_review_closes_each_open_finding_its_current_proof_answers"
+      ],
+      "baseline_green": true,
+      "outcome": "killed",
+      "reason": "",
+      "failure_class": "assertion",
+      "failing_tests": [
+        "tests.test_acceptance_store.AcceptanceStoreTests.test_a_human_review_closes_each_open_finding_its_current_proof_answers"
+      ],
+      "errors": [
+        "AssertionError: Lists differ: [] != ['F-boundary']"
+      ]
+    },
+    {
+      "source": "src/gzkit/acceptance_store.py",
+      "label": "acceptance_store.py:resolve_brief a missing brief takes a contract",
+      "broad_outcome": "survived",
+      "tests": [
+        "tests.test_acceptance_store.AcceptanceStoreTests.test_an_obpi_with_no_canonical_brief_is_refused"
+      ],
+      "baseline_green": true,
+      "outcome": "killed",
+      "reason": "",
+      "failure_class": "assertion",
+      "failing_tests": [
+        "tests.test_acceptance_store.AcceptanceStoreTests.test_an_obpi_with_no_canonical_brief_is_refused"
+      ],
+      "errors": [
+        "    with self.assertRaises(NoCanonicalBriefError):",
+        "AssertionError: NoCanonicalBriefError not raised"
+      ]
+    },
+    {
+      "source": "src/gzkit/acceptance_store.py",
+      "label": "acceptance_store.py:_without_departed a departure removes no proof",
+      "broad_outcome": "inconclusive",
+      "tests": [
+        "tests.commands.test_wp_order_acceptance.TestTheOrdersDeparture.test_a_departed_req_leaves_the_orders_obligations_and_roster",
+        "tests.commands.test_wp_acceptance.TestDeparture.test_a_finding_on_a_departed_req_leaves_a_review_of_both"
+      ],
+      "baseline_green": true,
+      "outcome": "killed",
+      "reason": "",
+      "failure_class": "assertion",
+      "failing_tests": [
+        "tests.commands.test_wp_order_acceptance.TestTheOrdersDeparture.test_a_departed_req_leaves_the_orders_obligations_and_roster",
+        "tests.commands.test_wp_acceptance.TestDeparture.test_a_finding_on_a_departed_req_leaves_a_review_of_both"
+      ],
+      "errors": [
+        "AssertionError: Lists differ: [Proof(id='proof-3b7e4b4ad8f84ca2a86bb6dfe[325 chars]one)] != []",
+        "AssertionError: Lists differ: [('REQ-7', 'REQ-8')] != [('REQ-8',)]"
+      ]
+    },
+    {
+      "source": "src/gzkit/acceptance_store.py",
+      "label": "acceptance_store.py:initialize a changed contract re-initializes",
+      "broad_outcome": "survived",
+      "tests": [
+        "tests.test_acceptance_store.AcceptanceStoreTests.test_reinitialization_cannot_erase_prior_history"
+      ],
+      "baseline_green": true,
+      "outcome": "killed",
+      "reason": "",
+      "failure_class": "assertion",
+      "failing_tests": [
+        "tests.test_acceptance_store.AcceptanceStoreTests.test_reinitialization_cannot_erase_prior_history"
+      ],
+      "errors": [
+        "    with self.assertRaisesRegex(ValueError, \"already initialized\"):",
+        "AssertionError: ValueError not raised"
+      ]
+    },
+    {
+      "source": "src/gzkit/acceptance_store.py",
+      "label": "acceptance_store.py:resolve_brief a run's contract is read as a brief's",
+      "broad_outcome": "inconclusive",
+      "tests": [
+        "tests.commands.test_wp_order_acceptance.TestAStoppedOrdersGateFive.test_a_stopped_order_whose_acceptance_reads_ready_may_proceed",
+        "tests.commands.test_wp_order_acceptance.TestAStoppedOrdersGateFive.test_readiness_earned_after_acceptance_earns_no_proceed"
+      ],
+      "baseline_green": true,
+      "outcome": "killed",
+      "reason": "",
+      "failure_class": "assertion",
+      "failing_tests": [
+        "tests.commands.test_wp_order_acceptance.TestAStoppedOrdersGateFive.test_a_stopped_order_whose_acceptance_reads_ready_may_proceed",
+        "tests.commands.test_wp_order_acceptance.TestAStoppedOrdersGateFive.test_readiness_earned_after_acceptance_earns_no_proceed"
+      ],
+      "errors": [
+        "AssertionError: 3 != 0 : Acceptance blocked: No canonical brief for ORD-01-import. GHI #985 and T1/T2/T3 require current, executed proof and receipt-bound independent closure. Use `gz wp acceptance ORD-01-import status` to inspect the retained obligations; repair or record the named evidence through the existing pipeline.",
+        "AssertionError: 3 != 0 : Acceptance blocked: No canonical brief for ORD-01-import. GHI #985 and T1/T2/T3 require current, executed proof and receipt-bound independent closure. Use `gz wp acceptance ORD-01-import status` to inspect the retained obligations; repair or record the named evidence through the existing pipeline."
+      ]
+    },
+    {
+      "source": "src/gzkit/acceptance_store.py",
+      "label": "acceptance_store.py:_without_departed a run's departures are not read",
+      "broad_outcome": "inconclusive",
+      "tests": [
+        "tests.commands.test_wp_order_acceptance.TestTheOrdersDeparture.test_a_departed_req_leaves_the_orders_obligations_and_roster",
+        "tests.commands.test_wp_acceptance.TestDeparture.test_a_finding_on_a_departed_req_leaves_a_review_of_both"
+      ],
+      "baseline_green": true,
+      "outcome": "killed",
+      "reason": "",
+      "failure_class": "assertion",
+      "failing_tests": [
+        "tests.commands.test_wp_order_acceptance.TestTheOrdersDeparture.test_a_departed_req_leaves_the_orders_obligations_and_roster",
+        "tests.commands.test_wp_acceptance.TestDeparture.test_a_finding_on_a_departed_req_leaves_a_review_of_both"
+      ],
+      "errors": [
+        "AssertionError: Lists differ: [Proof(id='proof-dce7bbae92e5465b898254c11[325 chars]one)] != []",
+        "AssertionError: Lists differ: [('REQ-7', 'REQ-8')] != [('REQ-8',)]"
+      ]
+    }
+  ]
+}
