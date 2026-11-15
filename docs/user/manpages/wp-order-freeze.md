@@ -43,11 +43,14 @@ moves one step at a time, `opened` then `frozen`, `commenced` and `accepted`;
 - A REQ a proceed holds (ruling 78) is delivered at that revision, so it is never
   frozen again there (ruling 81); new work on it is a REQ that supersedes it,
   written with [`gz wp req new`](wp-req-new.md) (rulings 50 and 83). No verb raises
-  a REQ's revision.
+  a REQ's revision, so a revision above 1 comes only from a hand edit of
+  `data/catalog/reqs.json` (ruling 83).
 - A REQ another REQ in the store supersedes is retired whole (ruling 31), so it is
-  never frozen, alone or beside the REQ that supersedes it; the refusal names the
-  REQ to freeze instead, the last of the chain, which nothing supersedes (ruling 85). An order frozen on a REQ before a later REQ superseded it
-  runs on to its Gate 5.
+  never frozen, alone or beside the REQ that supersedes it (ruling 85). The
+  refusal names every REQ to freeze instead: each head of its chains, which
+  nothing supersedes, since a split gives one REQ two successors (rulings 53 and
+  87). An order frozen on a REQ before a later REQ superseded it runs on to its
+  Gate 5.
 - The freeze seals the repair package's footprint: the event records the
   package's paths, and from then on `gz wp show` and the acceptance fence read the
   latest order freeze plus the change orders after it, never the store, and a
@@ -125,15 +128,16 @@ REQ-<n>@<revision> --risk-note <text> --review-receipt <id>
 [--approve-alteration <id>] --evidence <text>`.
 ```
 
-In a scratch project where `REQ-2` was written with `--supersedes REQ-1`, the
-order freezes the successor and never the REQ it replaced:
+In a scratch project where `REQ-1` was split, `REQ-2` and `REQ-3` each written
+with `--supersedes REQ-1`, the order freezes a successor and never the REQ they
+replaced, and the refusal names both:
 
 ```console
 $ uv run gz wp order freeze ORD-01-import --baseline REQ-1@1 --risk-note 'Touches the hook.' --review-receipt review-01 --evidence 'nine-criteria review'
-REQ-1 is superseded by REQ-2, so it is retired whole (RP-12 ruling 31) and no
-order freezes it (ruling 85). Freeze REQ-2 instead. Nothing was written; correct
-the call and re-run `uv run gz wp order freeze <ORD-id> --baseline
-REQ-<n>@<revision> --risk-note <text> --review-receipt <id>
+REQ-1 is superseded by REQ-2 and REQ-3, so it is retired whole (RP-12 ruling 31)
+and no order freezes it (ruling 85). Freeze REQ-2 or REQ-3 instead (ruling 87).
+Nothing was written; correct the call and re-run `uv run gz wp order freeze
+<ORD-id> --baseline REQ-<n>@<revision> --risk-note <text> --review-receipt <id>
 [--approve-alteration <id>] --evidence <text>`.
 $ uv run gz wp order freeze ORD-01-import --baseline REQ-2@1 --risk-note 'Touches the hook.' --review-receipt review-01 --evidence 'nine-criteria review'
 ORD-01-import: opened -> frozen

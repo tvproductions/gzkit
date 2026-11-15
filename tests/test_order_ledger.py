@@ -320,6 +320,15 @@ class FreezeTests(_OrderCase):
         output = self.assert_refused("frozen", **_FREEZE)
         self.assertIn("Freeze REQ-5 instead", output)
 
+    def test_a_split_names_every_head_of_the_chain(self) -> None:
+        """Ruling 87: a REQ split into two successors names both as REQs to freeze."""
+        self.supersede_req_1()
+        split = _repair_req("REQ-6", "WP-01-stamp").model_copy(update={"supersedes": "REQ-1"})
+        head = _repair_req("REQ-7", "WP-01-stamp").model_copy(update={"supersedes": "REQ-6"})
+        self.catalog = self.catalog.model_copy(update={"reqs": (*self.catalog.reqs, split, head)})
+        output = self.assert_refused("frozen", **_FREEZE)
+        self.assertIn("Freeze REQ-4 or REQ-7 instead", output)
+
     def test_an_order_frozen_before_the_supersession_runs_on(self) -> None:
         """Ruling 85: a later supersession leaves an order already frozen on the REQ."""
         self.move("frozen", **_FREEZE)
