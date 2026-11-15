@@ -144,6 +144,14 @@ class TestTheOrdersGate(_OrderAcceptance):
             self.assertIn("outside the footprint", self.accept(code=3))
         self.assertEqual(self.state(), "commenced")
 
+    def test_the_footprint_is_named_beside_another_blocker(self) -> None:
+        """Ruling 88: a refusal names a write outside the footprint with every other blocker."""
+        with mock.patch(_FOOTPRINT, return_value="1 changed file outside the footprint"):
+            output = self.accept(code=3)
+        self.assertIn(f"gz wp acceptance {_ORDER} status", output)
+        self.assertIn("outside the footprint", output)
+        self.assertEqual(self.state(), "commenced")
+
     def test_a_terminated_order_is_accepted_with_no_proof(self) -> None:
         for role in ("Implementer", "SpecReviewer", "Implementer", "Implementer"):
             self.wp("dispatch", _PACKAGE, "--order", _ORDER, "--role", role, "--model", "m",

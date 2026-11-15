@@ -326,9 +326,12 @@ def wp_order_accept_cmd(*, order_id: str, evidence: str, as_json: bool) -> None:
     The lifecycle and the order's block are read first, so a refusal names them
     (ruling 59) before readiness. Then the order's own readiness is read, its
     obligations its frozen REQs and its proofs and reviews under its id, with the
-    review-round limit of GHI #1028; then the repair package's sealed footprint
-    (ruling 56). An order stopped by an exit is excused both, as a stopped package
-    is: it claims no delivery, and Gate 5 is how it closes. The move crosses the
+    review-round limit of GHI #1028, and the repair package's sealed footprint
+    (ruling 56), all on every order, so a refusal names each blocker (ruling 88).
+    An order stopped by an exit is excused them, and Gate 5 is how it closes; the
+    move books whether the order read ready as ``acceptance_ready``, which its
+    Gate 5 reads, so a stopped order that read ready may still proceed (rulings
+    80 and 84). The move crosses the
     airlock outward on the package's slice (ruling 65). An unknown order exits 1;
     any refusal exits 3 and books nothing.
 
@@ -351,14 +354,13 @@ def wp_order_accept_cmd(*, order_id: str, evidence: str, as_json: bool) -> None:
         *acceptance_blockers(root, order.id, dispatch_scope=dispatch_validator_scope),
         *([refusal] if refusal else []),
     ]
-    outside = None if blockers else footprint_refusal(root, package, ledger)
+    # Ruling 88: the footprint is read on every order, beside any other blocker.
+    if outside := footprint_refusal(root, package, ledger):
+        blockers.append(outside)
     # Ruling 84: a stopped order is excused, but whether it read ready is booked.
-    if not order_took_stopping_exit(ledger, order.id):
-        if blockers:
-            raise PolicyBreachError("\n".join(blockers))
-        if outside:
-            raise PolicyBreachError(outside)
-    ready = not blockers and not outside
+    if blockers and not order_took_stopping_exit(ledger, order.id):
+        raise PolicyBreachError("\n".join(blockers))
+    ready = not blockers
     move = OrderMove(order=order.id, to_state="accepted", evidence=evidence, acceptance_ready=ready)
     try:
         event = record_order_transition(catalog, ledger, move)

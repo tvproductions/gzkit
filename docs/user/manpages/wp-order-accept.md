@@ -23,7 +23,8 @@ gz wp order accept <ORD-id> --evidence <text> [OPTIONS]
 
 Books the order's `order_transitioned` from `commenced` to `accepted`
 (`docs/governance/harbor-ro12-contractor-kit.md`, RP-12 ruling 60), after two
-gates, in order:
+gates. Both are read on every order, and a refusal names every blocker it found,
+a file outside the footprint beside the others (ruling 88):
 
 1. The order's own acceptance reads ready. [`gz wp acceptance <ORD-id>`](wp-acceptance.md)
    runs the acceptance runtime on the order: its obligations are its frozen REQs at
@@ -43,19 +44,22 @@ does for a package (ruling 65). A stopped order crosses too, and its verdict
 names any file outside the footprint.
 
 An order stopped by a `reopen` or `terminate` exit is excused both gates, as a
-stopped package is: it claims no delivery, and Gate 5 at the order is how it
-closes. Its readiness is still read in full, the acceptance, the round limit and
-the footprint, and every accepted move books whether it read ready as
-`acceptance_ready`. Gate 5 reads that booked fact, so a stopped order that did not
-read ready here never closes as `proceed`, whatever it earns afterwards (rulings 80
-and 84). The order writer refuses an accepted move that books no readiness, and one
-that books an order no exit stopped as not ready (ruling 86). It holds no project
-root, so it cannot read readiness itself: a stopped order booked ready is trusted
-from this verb, which reads it in full. The lifecycle moves one step at a time, an order blocked on the operator
-does not move (ruling 59), and its repair package must be initiated and not
-closed (rulings 2 and 44).
+stopped package is, and Gate 5 at the order is how it closes. Its readiness is
+still read in full, the acceptance, the round limit and the footprint, and every
+accepted move books whether it read ready as `acceptance_ready`. Gate 5 reads
+that booked fact: a stopped order that read ready here may still close as
+`proceed`, and one that did not never does, whatever it earns afterwards (rulings
+80 and 84). The order writer refuses an accepted move that books no readiness,
+and one that books an order no exit stopped as not ready (ruling 86); this verb
+never supplies either. The writer holds no project root, so it cannot read
+readiness itself: a stopped order booked ready is trusted from this verb, which
+reads it in full. The lifecycle moves one step at a time, an order blocked on
+the operator does not move (ruling 59), and its repair package must be initiated
+and not closed (rulings 2 and 44).
 
-An accepted order holds the production-write fence until it closes (ruling 58).
+An accepted order holds the production-write fence until it closes (ruling 58),
+and keeps its frozen REQs from every other order's freeze until its Gate 5
+(ruling 82).
 Its close is Gate 5 at the order, [`gz wp order close`](wp-order-close.md).
 
 The inspection points of rulings 14 and 15 are not read by the runtime yet, so an
@@ -87,7 +91,7 @@ ORD-02-matcher: commenced -> accepted
 | 0 | Accepted |
 | 1 | The order, or its work package, is not in the store |
 | 2 | Usage error |
-| 3 | The move is refused: a booked order has lost its record, the lifecycle refuses it, the order is blocked on the operator, acceptance does not read ready, the round limit is used, or a file lies outside the footprint; nothing booked |
+| 3 | The move is refused: a booked order has lost its record, the lifecycle refuses it, the order is blocked on the operator, the package is not initiated or is closed, acceptance does not read ready, the round limit is used, or a file lies outside the footprint; nothing booked |
 
 ## See also
 
