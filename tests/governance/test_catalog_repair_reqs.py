@@ -10,14 +10,19 @@ to (ruling 45). Both live in `data/catalog/reqs.json`, one `REQ-<n>` sequence.
 
 import json
 import unittest
+from typing import TYPE_CHECKING
 
 from pydantic import TypeAdapter
 from pydantic import ValidationError as PydanticValidationError
 
-from gzkit.governance.trust_audits.catalog import audit_catalog
+from gzkit.governance.trust_audits.catalog import audit_catalog, booked_req_ids
+from gzkit.ledger import Ledger
 from gzkit.models.catalog import CatalogReq, RepairReq, Req, load_catalog
 from gzkit.req_store import ReqStoreError, stage_repair_req
 from tests.governance.test_catalog import _req, _Tree, _wp
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 _REQ = TypeAdapter(Req)
 
@@ -178,6 +183,36 @@ class TestRepairReqStore(_Tree):
         self.assertIn("REQ-7", errors[0].message)
         self.write("reqs", [_req("REQ-1"), _repair_req("REQ-7")])
         self.assertEqual(audit_catalog(self.root), [])
+
+    def _booked(self, *rows: Mapping[str, object]) -> set[str]:
+        ledger = self.root / ".gzkit" / "ledger.jsonl"
+        ledger.parent.mkdir(exist_ok=True)
+        base = {"schema": "gzkit.ledger.v1", "ts": "2026-11-05T08:00:00+00:00"}
+        text = "".join(json.dumps({**base, **row}) + "\n" for row in rows)
+        ledger.write_text(text, encoding="utf-8")
+        return booked_req_ids(Ledger(ledger))
+
+    def test_a_dispatch_and_an_unblock_each_book_the_req_they_name(self):
+        """A REQ the run names only by a dispatch subject or an unblock is booked all the same."""
+        dispatch = {
+            "event": "work_package_dispatched", "id": "WP-01-x",
+            "work_package": "WP-01-x", "subject": "REQ-7@1",
+        }  # fmt: skip
+        unblock = {
+            "event": "work_package_unblocked", "id": "WP-01-x",
+            "work_package": "WP-01-x", "req": "REQ-8",
+        }  # fmt: skip
+        self.assertEqual(self._booked(dispatch), {"REQ-7"})
+        self.assertEqual(self._booked(unblock), {"REQ-8"})
+        self.assertEqual(self._booked(dispatch, unblock), {"REQ-7", "REQ-8"})
+
+    def test_an_id_outside_the_catalog_grammar_is_not_booked(self):
+        """Only `REQ-<n>` ids are catalog REQs; a legacy id is not one the store must hold."""
+        proof = {
+            "event": "req_proof_recorded", "id": "REQ-0.0.1-01-01", "req": "REQ-0.0.1-01-01",
+            "revision": 1, "commit": "abc1234", "verdict": "SATISFIED", "evidence": "e",
+        }  # fmt: skip
+        self.assertEqual(self._booked(proof), set())
 
     def test_one_sequence_across_both_specializations(self):
         self.write("reqs", [_req("REQ-1"), _repair_req("REQ-1")])

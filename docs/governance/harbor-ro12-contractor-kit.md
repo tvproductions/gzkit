@@ -107,7 +107,7 @@ Inspected under ruling 27, *"an independent reviewer subagent that never did the
 
 ### O2's dock trial, swept 2026-11-15
 
-**Status: does not stand.** The fourth independent inspection failed the prose below, which predates rulings 94 to 96. The script and its JSON record are now the every-branch run under rulings 94 to 96: 675 mutants, every baseline green and every file restored. 94 of the mutants are killed by no test, and each is still to be routed to a new test or to a disclosure. The prose below still gives the earlier run's figures and does not describe this record.
+**Status: does not stand.** The fourth independent inspection failed the prose below, which predates rulings 94 to 96. The script and its JSON record are now the second every-branch run under rulings 94 to 96: 675 mutants, every baseline green and every file restored. The 94 mutants no test killed in the first run were each read: 53 were test gaps, now killed by 34 new tests, and the 43 that no test kills were read as wording only or as no observable change. 46 rows still cannot be graded, 45 because the code crashes in place of a refusal and one because it hangs; each is being read for a test that grades it. The prose below still gives the earlier run's figures and does not describe this record.
 
 O2's task 5 (rulings 27, 90, 91, 92 and 93; a dated record). The script is `docs/governance/harbor-ro12-dock-trial-evidence/o2_mutation_sweep.py` and its record `o2-sweep-2026-11-15.json` beside it.
 

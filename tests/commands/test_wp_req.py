@@ -18,6 +18,7 @@ from gzkit.cli import main
 from gzkit.governance.trust_audits.catalog import audit_catalog
 from tests.commands.common import CliRunner, _quick_init
 from tests.commands.test_wp_order import _OUTCOME, _package
+from tests.test_order_ledger import _raised
 
 _CATALOG_REQ = {
     "id": "REQ-4",
@@ -83,6 +84,12 @@ class _ReqCase(unittest.TestCase):
 
 
 class ReqNewTests(_ReqCase):
+    def test_json_mode_prints_the_req_record(self) -> None:
+        payloads: list[dict[str, Any]] = []
+        self.assertIsNone(_raised(lambda: payloads.append(json.loads(self.new("--json")))))
+        self.assertEqual(payloads[0]["id"], _reqs()[-1]["id"])
+        self.assertEqual(payloads[0]["held_on"], "WP-01-stamp")
+
     def test_new_writes_a_repair_req_past_the_highest_id_and_the_store_passes(self) -> None:
         self.new("--aligns-to", "REQ-4")
         _, written = _reqs()

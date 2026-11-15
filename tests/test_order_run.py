@@ -45,7 +45,7 @@ from gzkit.work_package_run import (
     run_positions,
     took_stopping_exit,
 )
-from tests.test_order_ledger import _CLOSE, _FREEZE, _PAYLOADS, _OrderCase, _rows
+from tests.test_order_ledger import _CLOSE, _FREEZE, _PAYLOADS, _OrderCase, _raised, _rows
 
 _PACKAGE = "WP-01-stamp"
 _ORDER = "ORD-01-import"
@@ -267,6 +267,15 @@ class BlockOnAnOrder(_OrderRun):
             with self.subTest(order=order):
                 self.refused(order, lambda order=order: self.block(order=order))
 
+    def test_an_unblock_with_no_exit_spends_none_for_the_next_block(self) -> None:
+        """Ruling 69's exits are counted from the exits taken; an unblock without one takes none."""
+        self.dispatch()
+        self.block()
+        self.unblock()
+        events = []
+        self.assertIsNone(_raised(lambda: events.append(self.block())))
+        self.assertEqual(events[0].exits_used, ())
+
 
 class UnblockOnAnOrder(_OrderRun):
     """Only `gz wp unblock --order` lifts an order's block (ruling 59)."""
@@ -407,6 +416,13 @@ class InFlightOnAnOrder(_OrderRun):
         event = self.dispatch()
         self.move("accepted", **_PAYLOADS["accepted"])
         self.assertEqual(open_unclaimed_dispatches(self.ledger, "/here"), [event.dispatch_id])
+
+    def test_a_dispatch_of_a_closed_order_is_not_open(self) -> None:
+        """Ruling 40's guard reads runs in flight; a closed order's run is over."""
+        self.dispatch()
+        self.move("accepted", **_PAYLOADS["accepted"])
+        self.move("closed", decision="terminate", attestor="g0", attestation_text="stop")
+        self.assertEqual(open_unclaimed_dispatches(self.ledger, "/here"), [])
 
     def test_a_voided_order_dispatch_is_not_open(self) -> None:
         event = self.dispatch()

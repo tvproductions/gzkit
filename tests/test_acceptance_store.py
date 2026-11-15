@@ -7,7 +7,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from gzkit.acceptance import Proof
-from gzkit.acceptance_errors import NoCanonicalBriefError
+from gzkit.acceptance_errors import HumanReviewAttestorError, NoCanonicalBriefError
 from gzkit.acceptance_execution import (
     canonical_obligations,
     execution_conditions_digest,
@@ -29,6 +29,7 @@ from gzkit.acceptance_store import (
 from gzkit.commands.validate_cmd import dispatch_validator_scope
 from gzkit.events import parse_typed_event
 from tests.test_acceptance_execution import BRIEF, REQ, ExecutionFixture
+from tests.test_order_ledger import _raised
 
 OBPI = "OBPI-0.1.0-01-engine"
 
@@ -532,6 +533,82 @@ class AcceptanceStoreTests(ExecutionFixture):
         self.assertEqual(events[-1].extra["payload"]["ruling"], ruling)
         self.assertEqual({event.event for event in events}, {"acceptance_recorded"})
         self.assertEqual(load_history(self.root, OBPI).reviews[-1], review)
+
+    def _human_review(self, attestor="g0", ruling="I accept the current proof."):
+        held = []
+        raised = _raised(
+            lambda: held.append(
+                record_human_review(
+                    self.root,
+                    OBPI,
+                    attestor=attestor,
+                    ruling=ruling,
+                    dispatch_scope=dispatch_validator_scope,
+                )
+            )
+        )
+        return raised, held
+
+    def _rows(self, record_type):
+        return [
+            event
+            for event in acceptance_ledger(self.root).read_all()
+            if event.extra.get("record_type") == record_type
+        ]
+
+    def test_reinitialization_records_the_contract_once(self):
+        """A repeated initialize returns the captured contract and appends nothing."""
+        first = load_history(self.root, OBPI).contract
+        again = initialize(self.root, OBPI, "implementer-session")
+        self.assertEqual(again, first)
+        self.assertEqual(len(self._rows("contract")), 1)
+
+    def test_the_round_bound_never_stops_an_obpis_human_review(self):
+        """The adversarial round bound is a work package's; an OBPI has none (GHI #1028)."""
+        proof = self.prove_and_record()
+        finding = {
+            "id": "F-repeated",
+            "obligation_id": REQ,
+            "kind": "counterexample",
+            "description": "Negative inputs violate the required result.",
+        }
+        for _ in range(3):
+            record_review(
+                self.root, OBPI, self.receipt(proof, findings=[finding], verdict="refuted")
+            )
+        self.accept(proof)
+        raised, held = self._human_review()
+        self.assertIsNone(raised)
+        (review,) = held
+        self.assertEqual(review.tier, 3)
+        self.assertEqual([closure.finding_id for closure in review.closures], ["F-repeated"])
+        status = acceptance_status(self.root, OBPI, dispatch_scope=dispatch_validator_scope)
+        self.assertTrue(status.ready, status.blockers)
+
+    def test_an_identical_human_review_is_recorded_once(self):
+        proof = self.prove_and_record()
+        for stage in ("spec", "quality"):
+            record_review(self.root, OBPI, self.receipt(proof, stage))
+        first, _ = self._human_review()
+        second, _ = self._human_review()
+        self.assertIsNone(first)
+        self.assertIsNone(second)
+        self.assertEqual(len(self._rows("human-review")), 1)
+        self.assertTrue(
+            acceptance_status(self.root, OBPI, dispatch_scope=dispatch_validator_scope).ready
+        )
+
+    def test_a_human_review_naming_no_attestor_is_refused(self):
+        proof = self.prove_and_record()
+        for stage in ("spec", "quality"):
+            record_review(self.root, OBPI, self.receipt(proof, stage))
+        count = len(acceptance_ledger(self.root).read_all())
+        raised, _ = self._human_review(attestor="  ")
+        self.assertIsInstance(raised, HumanReviewAttestorError)
+        self.assertEqual(len(acceptance_ledger(self.root).read_all()), count)
+        self.assertFalse(
+            acceptance_status(self.root, OBPI, dispatch_scope=dispatch_validator_scope).ready
+        )
 
     def test_missing_proof_can_be_recorded_before_first_execution_and_survives_new_proof(self):
         finding = {

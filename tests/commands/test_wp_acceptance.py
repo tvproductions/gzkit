@@ -13,7 +13,8 @@ import uuid
 from pathlib import Path
 from unittest import mock
 
-from gzkit.acceptance import Proof
+from gzkit.acceptance import Proof, Review
+from gzkit.acceptance_errors import AcceptanceUninitializedError
 from gzkit.acceptance_execution import canonical_obligations, input_digest, prove
 from gzkit.acceptance_package import PackageContract, binds_by_mutation
 from gzkit.acceptance_store import (
@@ -37,6 +38,7 @@ from gzkit.mutation_witness import Mutation
 from gzkit.work_package_fence import fenced_packages
 from tests.commands.common import CliRunner, _quick_init
 from tests.test_acceptance_execution import SELECTOR, ExecutionFixture
+from tests.test_order_ledger import _raised
 
 _PACKAGE = "WP-01-loop"
 _REQ = "REQ-7"
@@ -133,6 +135,22 @@ def _receipt(
     }
 
 
+def _rewritten(receipt: dict[str, object], **fields: object) -> dict[str, object]:
+    """Return *receipt* with its captured review's *fields* replaced."""
+    review = json.loads(str(receipt["stdout_tail"]).split("```")[1].removeprefix("json\n"))
+    review.update(fields)
+    return {**receipt, "stdout_tail": "```json\n" + json.dumps(review) + "\n```"}
+
+
+def _finding(finding_id: str, obligation: str, kind: str = "counterexample") -> dict[str, object]:
+    return {
+        "id": finding_id,
+        "obligation_id": obligation,
+        "kind": kind,
+        "description": "A concrete violation.",
+    }
+
+
 class _PackageCase(unittest.TestCase):
     def setUp(self) -> None:
         self.runner = CliRunner()
@@ -184,6 +202,21 @@ class _PackageCase(unittest.TestCase):
     def _approve(self, proof: Proof) -> None:
         for stage in ("spec", "quality", "adversarial"):
             self._review(proof, stage, "accepted")
+
+    def _human_review(self) -> tuple[Exception | None, list[Review]]:
+        held: list[Review] = []
+        raised = _raised(
+            lambda: held.append(
+                record_human_review(
+                    self.root,
+                    _PACKAGE,
+                    attestor="g0",
+                    ruling="as it stands",
+                    dispatch_scope=dispatch_validator_scope,
+                )
+            )
+        )
+        return raised, held
 
 
 class TestTheContract(_PackageCase):
@@ -257,6 +290,12 @@ class TestTheContract(_PackageCase):
 
 
 class TestTheGate(_PackageCase):
+    def test_a_human_review_before_acceptance_init_is_refused(self) -> None:
+        self._commence()
+        raised, held = self._human_review()
+        self.assertIsInstance(raised, AcceptanceUninitializedError)
+        self.assertEqual(held, [])
+
     def test_accept_refuses_a_package_with_no_acceptance(self) -> None:
         self._commence()
         message = self._refused("accept", _PACKAGE, "--evidence", "e")
@@ -498,6 +537,20 @@ class TestTheReviewChannels(_PackageCase):
             acceptance_status(self.root, _PACKAGE, dispatch_scope=dispatch_validator_scope).ready
         )
 
+    def test_a_single_driver_owes_the_adversary_at_stage_4_and_nothing_at_stage_2(self) -> None:
+        self._delivery()
+        self._wp(
+            "dispatch", _PACKAGE, "--role", "SingleDriver", "--model", "m", "--req", _REQ,
+            "--reason", "no dispatch available",
+        )  # fmt: skip
+        self._proof(_REQ)
+        stage4 = acceptance_status(self.root, _PACKAGE, dispatch_scope=dispatch_validator_scope)
+        stage2 = acceptance_status(
+            self.root, _PACKAGE, stage="stage2", dispatch_scope=dispatch_validator_scope
+        )
+        self.assertFalse(stage4.ready)
+        self.assertTrue(stage2.ready, stage2.blockers)
+
     def test_any_other_delivery_needs_all_three_reviews(self) -> None:
         self._delivery()
         self._review(self._proof(_REQ), verdict="accepted")
@@ -610,6 +663,58 @@ class TestDeparture(_PackageCase):
         kept = load_history(self.root, _PACKAGE).reviews
         self.assertEqual([item.obligation_ids for item in kept], [("REQ-8",)])
         self.assertEqual(kept[0].findings, ())
+
+    def test_a_departure_scopes_every_field_of_a_review_of_both(self) -> None:
+        """Ruling 12: each id and finding of the departed REQ leaves; the rest stays."""
+        self._delivery()
+        departing, staying = self._proof(_REQ), self._proof("REQ-8")
+        both = {"obligation_ids": [_REQ, "REQ-8"], "proof_ids": [departing.id, staying.id]}
+        refuted = _rewritten(
+            _receipt(departing, "adversarial", verdict="refuted"),
+            **both,
+            findings=[_finding("F7", _REQ), _finding("F8", "REQ-8")],
+        )
+        accepted = _rewritten(
+            _receipt(departing, "adversarial"),
+            **both,
+            accepted_proof_ids=[departing.id, staying.id],
+            closures=[
+                {"finding_id": "F7", "obligation_id": _REQ, "proof_id": departing.id},
+                {"finding_id": "F8", "obligation_id": "REQ-8", "proof_id": staying.id},
+            ],
+        )
+        record_review(self.root, _PACKAGE, refuted)
+        record_review(self.root, _PACKAGE, accepted)
+        self._depart()
+        first, second = load_history(self.root, _PACKAGE).reviews
+        self.assertEqual(first.proof_ids, (staying.id,))
+        self.assertEqual([item.id for item in first.findings], ["F8"])
+        self.assertEqual(first.recorded_current_ids, (staying.id,))
+        self.assertEqual(second.accepted_proof_ids, (staying.id,))
+        self.assertEqual([item.finding_id for item in second.closures], ["F8"])
+        status = acceptance_status(self.root, _PACKAGE, dispatch_scope=dispatch_validator_scope)
+        self.assertEqual(status.open_findings, ())
+
+    def test_a_human_review_closes_no_finding_whose_req_has_no_proof(self) -> None:
+        self._delivery()
+        staying = self._proof("REQ-8")
+        source = resolve_brief(self.root, _PACKAGE)
+        unproved = _rewritten(
+            _receipt(staying, "spec", verdict="refuted"),
+            input_digest=input_digest(self.root, source),
+            obligation_ids=[_REQ],
+            proof_ids=[],
+            findings=[_finding("F7", _REQ, "missing-proof")],
+        )
+        record_review(self.root, _PACKAGE, unproved)
+        self._approve(staying)
+        raised, held = self._human_review()
+        self.assertIsNone(raised)
+        (review,) = held
+        self.assertEqual(review.closures, ())
+        self.assertEqual(review.obligation_ids, ("REQ-8",))
+        status = acceptance_status(self.root, _PACKAGE, dispatch_scope=dispatch_validator_scope)
+        self.assertEqual(status.open_findings, ("F7",))
 
     def test_the_departed_history_stays_on_the_ledger(self) -> None:
         self._delivery()

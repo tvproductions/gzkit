@@ -39,6 +39,7 @@ from gzkit.work_package_ledger import (
     IssueClosure,
     TransitionRequest,
     WorkPackageLedgerError,
+    declared_modules,
     open_issues,
     record_work_package_change,
     record_work_package_issue_closed,
@@ -46,6 +47,7 @@ from gzkit.work_package_ledger import (
     work_package_lane,
     work_package_state,
 )
+from tests.test_order_ledger import _raised
 
 _ALTERATION = Alteration(
     id="ALT-1", description="Rekey the matrix.", configuration_change="replaced"
@@ -336,6 +338,14 @@ class RepairLifecycleTests(_LedgerCase):
         self.book_order(order, "closed", decision="terminate", attestor="g0",
                         attestation_text="withdraw it")  # fmt: skip
 
+    def test_another_packages_open_order_does_not_hold_the_close(self) -> None:
+        """Ruling 62: a repair package's close reads its own orders alone."""
+        self.withdraw_an_order()
+        self.book_order("ORD-09-y", "opened", package="WP-01-resume", operator_text="open it")
+        closed = []
+        self.assertIsNone(_raised(lambda: closed.append(self.close())))
+        self.assertEqual(closed[0].order_decisions, {"ORD-01-x": "terminate"})
+
     def test_a_package_with_no_closed_order_does_not_close(self) -> None:
         """Ruling 79: Gate 5 is recorded somewhere, so at least one order has closed."""
         before = _rows(self.path)
@@ -403,6 +413,23 @@ class RepairLifecycleTests(_LedgerCase):
         self.book_order("ORD-04-w", "frozen", package="WP-01-resume", **elsewhere)
         self.book_order("ORD-04-w", "closed", package="WP-01-resume", **proceed)
         self.assertEqual(self.close().held_reqs, ("REQ-3@2",))
+
+
+class SealedFootprintTests(_LedgerCase):
+    """Ruling 56: the sealed footprint grows by a change order after the seal, and nothing else."""
+
+    def test_a_change_order_after_the_seal_adds_its_paths(self) -> None:
+        self.walk_to("frozen")
+        self.change(
+            "change_order", approver="operator", superseded="x", work_stopped=True,
+            modules=("src/new.py",),
+        )  # fmt: skip
+        self.assertEqual(declared_modules(self.ledger, _package("WP-01-resume")), ("src/new.py",))
+
+    def test_a_change_on_another_rung_adds_nothing_to_the_seal(self) -> None:
+        self.walk_to("frozen")
+        self.change("attachment", approver="operator", modules=("src/stray.py",))
+        self.assertEqual(declared_modules(self.ledger, _package("WP-01-resume")), ())
 
 
 class CloseTests(_LedgerCase):

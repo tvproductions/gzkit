@@ -28,7 +28,8 @@ is then re-run, and the record keeps the two outcomes apart:
 * inconclusive (ruling 91): re-run against each test that failed in the broad run, one
   at a time, until one kills it alone; a row none kills is disclosed with its tests.
 * survived (ruling 95): re-run against the test modules outside the twelve that import
-  the swept module; each test that fails there is then run alone the same way.
+  the swept module or are named for it (``test_<stem>``, ``test_<stem>_*``, which reaches
+  a verb's CLI tests); each test that fails there is then run alone the same way.
 
 Usage:
 
@@ -334,7 +335,11 @@ def mutants(path: Path, functions: list[str]) -> list[Mutation]:
 
 
 def _importers(relative: str) -> list[str]:
-    """Return the test modules outside the twelve that import the swept module."""
+    """Return the test modules outside the twelve that import or are named for the module.
+
+    A verb's tests reach it through ``gzkit.cli.main`` and import nothing of it, so a test
+    module whose file name begins ``test_<stem>`` is taken as well.
+    """
     dotted = relative.removeprefix("src/").removesuffix(".py").replace("/", ".")
     parent, _, leaf = dotted.rpartition(".")
     found: list[str] = []
@@ -343,7 +348,8 @@ def _importers(relative: str) -> list[str]:
         if module in MODULES:
             continue
         tree = ast.parse(path.read_text(encoding="utf-8"))
-        if any(_imports(node, parent, leaf) for node in ast.walk(tree)):
+        named = path.stem == f"test_{leaf}" or path.stem.startswith(f"test_{leaf}_")
+        if named or any(_imports(node, parent, leaf) for node in ast.walk(tree)):
             found.append(module)
     return found
 

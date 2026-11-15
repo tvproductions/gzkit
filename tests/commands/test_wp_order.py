@@ -20,6 +20,7 @@ from gzkit.cli import main
 from gzkit.cli.main import _build_parser
 from gzkit.governance.trust_audits.catalog import audit_catalog
 from tests.commands.common import CliRunner, _quick_init
+from tests.test_order_ledger import _raised
 
 
 def _package(wp_id: str, kind: str, issues: list[int]) -> dict[str, object]:
@@ -108,6 +109,15 @@ class _OrderCase(unittest.TestCase):
 
 
 class OrderNewTests(_OrderCase):
+    def test_json_mode_prints_the_order_record(self) -> None:
+        payloads: list[dict[str, Any]] = []
+        self.assertIsNone(
+            _raised(lambda: payloads.append(json.loads(self.new("import", "--json"))))
+        )
+        self.assertEqual(
+            (payloads[0]["id"], payloads[0]["work_package"]), ("ORD-01-import", "WP-01-stamp")
+        )
+
     def test_new_numbers_one_series_and_the_store_passes_its_scope(self) -> None:
         self.new("import", "--alias", "O2")
         self.new("matcher", "--procedure", "Task one, then task two.")
@@ -399,6 +409,30 @@ class OrderLifecycleTests(_OrderCase):
         )
         self.assertEqual(result.exit_code, 3, result.output)
         self.assertIn("ruling 56", " ".join(result.output.split()))
+
+    def change_order(self, *paths: str, code: int = 0) -> None:
+        args = ["wp", "change", "WP-01-stamp", "--rung", "change_order", "--approver", "operator"]
+        args += ["--change", "Widen it.", "--superseded", "s", "--work-stopped", *paths]
+        result = self.runner.invoke(main, args)
+        self.assertEqual(result.exit_code, code, result.output)
+
+    def footprint(self) -> tuple[str, ...]:
+        held = json.loads((Path("data") / "catalog" / "work_packages.json").read_text("utf-8"))
+        return tuple(held["work_packages"][0]["modules"])
+
+    def test_a_change_order_adds_a_path_beside_the_unsealed_footprint(self) -> None:
+        """Ruling 56: before the seal a change order adds what exists and keeps what is held."""
+        Path("src/new.py").write_text("x = 1\n", encoding="utf-8")
+        self.change_order("--module", "src/new.py")
+        self.assertEqual(self.footprint(), ("src/stamp.py", "src/new.py"))
+        changed = [row for row in _ledger_rows() if row["event"] == "work_package_changed"]
+        self.assertEqual(changed[-1]["modules"], ["src/new.py"])
+
+    def test_a_path_already_declared_is_not_added_again(self) -> None:
+        self.change_order("--module", "src/stamp.py")
+        self.assertEqual(self.footprint(), ("src/stamp.py",))
+        changed = [row for row in _ledger_rows() if row["event"] == "work_package_changed"]
+        self.assertIn(changed[-1].get("modules"), (None, []))
 
     def test_a_lost_order_record_refuses_every_order_move(self) -> None:
         """Ruling 70: every later order write is refused until the store is repaired."""

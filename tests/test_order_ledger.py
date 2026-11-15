@@ -14,10 +14,19 @@ import json
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import TYPE_CHECKING
 
 from gzkit.events import BaselinedReq, OrderTransitionedEvent, parse_typed_event
 from gzkit.ledger import Ledger
-from gzkit.models.catalog import Alteration, Catalog, Criterion, Order, RepairReq, WorkPackage
+from gzkit.models.catalog import (
+    Alteration,
+    Catalog,
+    CatalogReq,
+    Criterion,
+    Order,
+    RepairReq,
+    WorkPackage,
+)
 from gzkit.ontology.corpus import project_corpus
 from gzkit.order_ledger import (
     OrderLedgerError,
@@ -25,8 +34,13 @@ from gzkit.order_ledger import (
     booked_order_ids,
     order_holds,
     order_state,
+    order_work_package,
     record_order_transition,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
 from gzkit.work_package_ledger import (
     TransitionRequest,
     declared_modules,
@@ -88,6 +102,15 @@ def _catalog() -> Catalog:
             _order("ORD-03-other", "WP-03-other"),
         ),
     )
+
+
+def _raised(act: Callable[[], object]) -> Exception | None:
+    """Run *act* and return what it raised, so a crash fails an assertion rather than erroring."""
+    try:
+        act()
+    except Exception as exc:  # a crash in place of the behaviour must fail, not error
+        return exc
+    return None
 
 
 def _rows(path: Path) -> list[dict[str, object]]:
@@ -154,6 +177,23 @@ class _OrderCase(unittest.TestCase):
 class LifecycleTests(_OrderCase):
     def test_an_order_with_no_event_is_not_opened(self) -> None:
         self.assertIsNone(order_state(self.ledger, "ORD-01-import"))
+
+    def test_an_order_with_no_event_has_no_package_on_the_ledger(self) -> None:
+        held: list[str | None] = []
+        self.assertIsNone(
+            _raised(lambda: held.append(order_work_package(self.ledger, "ORD-01-import")))
+        )
+        self.assertEqual(held, [None])
+        self.move("opened", **_PAYLOADS["opened"])
+        self.assertEqual(order_work_package(self.ledger, "ORD-01-import"), "WP-01-stamp")
+
+    def test_only_the_freeze_books_the_packages_footprint(self) -> None:
+        """Ruling 56: the footprint is sealed at the freeze, so no other move carries it."""
+        for state in ("opened", "frozen", "commenced", "accepted"):
+            with self.subTest(state=state):
+                event = self.move(state, **_PAYLOADS[state])
+                expected = ("src/stamp.py",) if state == "frozen" else ()
+                self.assertEqual(event.modules, expected)
 
     def test_opening_is_booked_on_the_operators_words(self) -> None:
         """Ruling 52: the order is born on the ledger, as a package is initiated."""
@@ -252,6 +292,20 @@ class FreezeTests(_OrderCase):
         for missing in ("risk_note", "review_receipt"):
             with self.subTest(missing=missing):
                 self.assert_refused("frozen", **{**_FREEZE, missing: " "})
+
+    def test_a_catalog_req_in_the_baseline_is_refused(self) -> None:
+        """Rulings 2 and 45: an order freezes only repair REQs held on its own package."""
+        catalog_req = CatalogReq(
+            id="REQ-5", specialization="catalog", member_of="H1", derives_from=(),
+            applies_to=(), statement="s", kind="BEHAVIOR", revision=1,
+            criteria=(Criterion(state_or_input="a", required_outcome="b", evidence="c"),),
+        )  # fmt: skip
+        self.catalog = self.catalog.model_copy(update={"reqs": (*self.catalog.reqs, catalog_req)})
+        before = _rows(self.path)
+        freeze = {**_FREEZE, "baseline": (BaselinedReq(req="REQ-5", revision=1),)}
+        raised = _raised(lambda: self.move("frozen", **freeze))
+        self.assertIsInstance(raised, OrderLedgerError)
+        self.assertEqual(_rows(self.path), before)
 
     def test_an_empty_baseline_is_refused(self) -> None:
         """Ruling 61: an order freezes at least one requirement."""

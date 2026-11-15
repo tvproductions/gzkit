@@ -42,7 +42,9 @@ from gzkit.work_package_run import (
     record_work_package_block,
     record_work_package_dispatch,
     record_work_package_unblock,
+    run_position,
 )
+from tests.test_order_ledger import _raised
 
 _NAMES = {"I": "Implementer", "S": "SpecReviewer", "Q": "QualityReviewer", "D": "SingleDriver"}
 #: Task 1 and Task 2 up to the first unblock, as the ledger holds them.
@@ -586,6 +588,15 @@ class Unblock(_Run):
         self._block()
         self._unblock()
 
+    def test_another_packages_unblock_leaves_this_package_blocked(self) -> None:
+        """A package's block is cleared only by an unblock of that package."""
+        self._block()
+        self._commence(_SECOND, ("REQ-1",))
+        self._block(_SECOND)
+        self._unblock(package=_SECOND)
+        self.assertIsNone(_raised(self._unblock))
+        self.assertEqual(len(self._rows("work_package_unblocked")), 2)
+
     def test_nothing_to_unblock_is_refused(self) -> None:
         self._refused("not blocked", "work_package_unblocked", self._unblock)
 
@@ -731,6 +742,40 @@ class Unblock(_Run):
             "ruling",
             "work_package_unblocked",
             lambda: record_work_package_unblock(self.catalog, self.ledger, request),
+        )
+
+
+class RunPosition(_Run):
+    """A package's run position is replayed from its own ledger rows."""
+
+    def position(self):
+        held = []
+        self.assertIsNone(
+            _raised(lambda: held.append(run_position(self.catalog, self.ledger, _FIRST)))
+        )
+        return held[0]
+
+    def test_a_commenced_package_with_no_dispatch_is_in_flight_with_no_subject(self) -> None:
+        position = self.position()
+        self.assertIsNotNone(position)
+        self.assertEqual(
+            (
+                position.work_package,
+                position.kind,
+                position.state,
+                position.blocked,
+                position.subject,
+            ),
+            (_FIRST, "delivery", "commenced", False, None),
+        )
+
+    def test_the_subject_is_the_last_dispatchs_beneath_a_later_block(self) -> None:
+        self._dispatch("Implementer")
+        self._block()
+        position = self.position()
+        self.assertEqual(
+            (position.subject, position.event, position.blocked),
+            ("REQ-1@2", "work_package_blocked", True),
         )
 
 
