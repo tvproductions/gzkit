@@ -316,17 +316,23 @@ class PackageRunOutputContract(_PackageCase):
 
     def test_a_package_block_names_the_package_alone(self) -> None:
         # output-contract: docs/user/manpages/wp-block.md's example is the verb's output.
+        # given the fixture's delivery package
+        # when
         blocked = self._wp("block", _DELIVERY, "--reason", "r", "--next-action", "rule on it")
+        # then
         self.assertEqual(
             blocked.splitlines()[0], f"Blocked {_DELIVERY} on the operator: rule on it"
         )
 
     def test_a_package_unblock_names_the_package_and_its_exit(self) -> None:
         # output-contract: docs/user/manpages/wp-unblock.md's example is the verb's output.
+        # given
         self._wp("block", _DELIVERY, "--reason", "r", "--next-action", "rule on it")
+        # when
         unblocked = self._wp(
             "unblock", _DELIVERY, "--ruling", "hold it", "--operator", "g0", "--exit", "hold"
         )
+        # then
         self.assertEqual(unblocked.splitlines(), [f"Unblocked {_DELIVERY} by exit hold."])
 
 

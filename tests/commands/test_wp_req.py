@@ -85,14 +85,21 @@ class _ReqCase(unittest.TestCase):
 
 class ReqNewTests(_ReqCase):
     def test_json_mode_prints_the_req_record(self) -> None:
+        # given
         payloads: list[dict[str, Any]] = []
-        self.assertIsNone(_raised(lambda: payloads.append(json.loads(self.new("--json")))))
+        # when
+        raised = _raised(lambda: payloads.append(json.loads(self.new("--json"))))
+        # then
+        self.assertIsNone(raised)
         self.assertEqual(payloads[0]["id"], _reqs()[-1]["id"])
         self.assertEqual(payloads[0]["held_on"], "WP-01-stamp")
 
     def test_human_mode_prints_the_line_the_manpage_shows(self) -> None:
         # output-contract: docs/user/manpages/wp-req-new.md's example is the verb's output.
+        # given the fixture's repair package WP-01-stamp
+        # when
         lines = self.new().splitlines()
+        # then
         self.assertEqual(lines, ["Wrote REQ-5, a repair REQ held on WP-01-stamp."])
 
     def test_new_writes_a_repair_req_past_the_highest_id_and_the_store_passes(self) -> None:

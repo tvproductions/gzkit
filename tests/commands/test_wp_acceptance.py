@@ -303,8 +303,11 @@ class TestTheContract(_PackageCase):
 
 class TestTheGate(_PackageCase):
     def test_a_human_review_before_acceptance_init_is_refused(self) -> None:
+        # given
         self._commence()
+        # when
         raised, held = self._human_review()
+        # then
         self.assertIsInstance(raised, AcceptanceUninitializedError)
         self.assertEqual(held, [])
 
@@ -552,16 +555,19 @@ class TestTheReviewChannels(_PackageCase):
         )
 
     def test_a_single_driver_owes_the_adversary_at_stage_4_and_nothing_at_stage_2(self) -> None:
+        # given
         self._delivery()
         self._wp(
             "dispatch", _PACKAGE, "--role", "SingleDriver", "--model", "m", "--req", _REQ,
             "--reason", "no dispatch available",
         )  # fmt: skip
         self._proof(_REQ)
+        # when
         stage4 = acceptance_status(self.root, _PACKAGE, dispatch_scope=dispatch_validator_scope)
         stage2 = acceptance_status(
             self.root, _PACKAGE, stage="stage2", dispatch_scope=dispatch_validator_scope
         )
+        # then
         self.assertFalse(stage4.ready)
         self.assertTrue(stage2.ready, stage2.blockers)
 
@@ -680,6 +686,7 @@ class TestDeparture(_PackageCase):
 
     def test_a_departure_scopes_every_field_of_a_review_of_both(self) -> None:
         """Ruling 12: each id and finding of the departed REQ leaves; the rest stays."""
+        # given
         self._delivery()
         departing, staying = self._proof(_REQ), self._proof("REQ-8")
         both = {"obligation_ids": [_REQ, "REQ-8"], "proof_ids": [departing.id, staying.id]}
@@ -699,7 +706,9 @@ class TestDeparture(_PackageCase):
         )
         record_review(self.root, _PACKAGE, refuted)
         record_review(self.root, _PACKAGE, accepted)
+        # when
         self._depart()
+        # then
         first, second = load_history(self.root, _PACKAGE).reviews
         self.assertEqual(first.proof_ids, (staying.id,))
         self.assertEqual([item.id for item in first.findings], ["F8"])
@@ -710,6 +719,7 @@ class TestDeparture(_PackageCase):
         self.assertEqual(status.open_findings, ())
 
     def test_a_human_review_closes_no_finding_whose_req_has_no_proof(self) -> None:
+        # given
         self._delivery()
         staying = self._proof("REQ-8")
         source = resolve_brief(self.root, _PACKAGE)
@@ -722,7 +732,9 @@ class TestDeparture(_PackageCase):
         )
         record_review(self.root, _PACKAGE, unproved)
         self._approve(staying)
+        # when
         raised, held = self._human_review()
+        # then
         self.assertIsNone(raised)
         (review,) = held
         self.assertEqual(review.closures, ())

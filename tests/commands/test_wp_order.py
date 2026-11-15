@@ -121,17 +121,22 @@ class _OrderCase(unittest.TestCase):
 
 class OrderNewTests(_OrderCase):
     def test_json_mode_prints_the_order_record(self) -> None:
+        # given
         payloads: list[dict[str, Any]] = []
-        self.assertIsNone(
-            _raised(lambda: payloads.append(json.loads(self.new("import", "--json"))))
-        )
+        # when
+        raised = _raised(lambda: payloads.append(json.loads(self.new("import", "--json"))))
+        # then
+        self.assertIsNone(raised)
         self.assertEqual(
             (payloads[0]["id"], payloads[0]["work_package"]), ("ORD-01-import", "WP-01-stamp")
         )
 
     def test_human_mode_prints_the_line_the_manpage_shows(self) -> None:
         # output-contract: docs/user/manpages/wp-order-new.md's example is the verb's output.
+        # given the fixture's repair package WP-01-stamp
+        # when
         lines = self.new("import").splitlines()
+        # then
         self.assertEqual(lines, ["Wrote ORD-01-import in WP-01-stamp (repair)."])
 
     def test_new_numbers_one_series_and_the_store_passes_its_scope(self) -> None:
@@ -441,14 +446,20 @@ class OrderLifecycleTests(_OrderCase):
 
     def test_a_change_order_adds_a_path_beside_the_unsealed_footprint(self) -> None:
         """Ruling 56: before the seal a change order adds what exists and keeps what is held."""
+        # given
         Path("src/new.py").write_text("x = 1\n", encoding="utf-8")
+        # when
         self.change_order("--module", "src/new.py")
+        # then
         self.assertEqual(self.footprint(), ("src/stamp.py", "src/new.py"))
         changed = [row for row in _ledger_rows() if row["event"] == "work_package_changed"]
         self.assertEqual(changed[-1]["modules"], ["src/new.py"])
 
     def test_a_path_already_declared_is_not_added_again(self) -> None:
+        # given the fixture's footprint, which declares src/stamp.py
+        # when
         self.change_order("--module", "src/stamp.py")
+        # then
         self.assertEqual(self.footprint(), ("src/stamp.py",))
         changed = [row for row in _ledger_rows() if row["event"] == "work_package_changed"]
         self.assertIn(changed[-1].get("modules"), (None, []))
@@ -535,13 +546,16 @@ class FootprintDropTests(_OrderCase):
 
     def test_a_drop_on_a_package_never_initiated_names_the_initiation(self) -> None:
         """A path drops only while a package is initiated; the refusal says to initiate it."""
+        # given
         before = _ledger_rows()
+        # when
         result = self.runner.invoke(
             main,
             ["wp", "change", "WP-03-idle", "--rung", "change_order", "--approver", "operator",
              "--change", "c", "--superseded", "s", "--work-stopped", "--drop-module",
              "src/stamp.py"],
         )  # fmt: skip
+        # then
         self.assertEqual(result.exit_code, 3, result.output)
         self.assertEqual(_ledger_rows(), before)
         # output-contract: the recovery step is the refusal's contract
