@@ -347,6 +347,22 @@ class Dispatch(_Run):
         self._dispatch("Implementer", req="REQ-2")
         self._refused("bound", "work_package_dispatched", lambda: self._dispatch("Implementer"))
 
+    def test_a_stopped_packages_refusal_names_the_package(self) -> None:
+        # output-contract: the refusal's what-failed part, RP-12 ruling 101
+        self._reach_the_bound()
+        self._block()
+        self._unblock("terminate", None)
+        refusal = self._refused(
+            "terminate",
+            "work_package_dispatched",
+            lambda: self._dispatch("Implementer", req="REQ-2"),
+        )
+        self.assertEqual(
+            refusal,
+            f"Work package {_FIRST} took the terminate exit; it takes no further repair and "
+            "closes through Gate 5.",
+        )
+
     def test_a_stopping_exit_stops_every_subject_of_the_package(self) -> None:
         for exit_taken, req in (("terminate", None), ("reopen", "REQ-1")):
             with self.subTest(exit_taken=exit_taken):
@@ -613,8 +629,14 @@ class Unblock(_Run):
         self.assertIsNone(_raised(self._unblock))
         self.assertEqual(len(self._rows("work_package_unblocked")), 2)
 
-    def test_nothing_to_unblock_is_refused(self) -> None:
-        self._refused("not blocked", "work_package_unblocked", self._unblock)
+    def test_nothing_to_unblock_is_refused_in_three_parts(self) -> None:
+        # output-contract: guardrail-feedback-prose's three parts, RP-12 ruling 101
+        self.assertEqual(
+            self._refused("not blocked", "work_package_unblocked", self._unblock),
+            f"Work package {_FIRST} is not blocked; an unblock records the operator's ruling on "
+            "an open block (RP-14 specification ruling 13). Read the run's position with "
+            "`uv run gz wp runs`.",
+        )
 
     def test_at_the_bound_the_unblock_names_an_exit(self) -> None:
         self._reach_the_bound()

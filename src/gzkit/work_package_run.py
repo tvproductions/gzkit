@@ -350,7 +350,11 @@ def _package_order(catalog: Catalog, package: WorkPackage, order_id: str) -> Ord
     held = next((order for order in catalog.orders if order.id == order_id), None)
     if held is None or held.work_package != package.id:
         where = f"an order of {held.work_package}" if held else "not in data/catalog/orders.json"
-        _refuse(f"Order {order_id!r} is {where}; it is not one of {package.id}'s orders.")
+        _refuse(
+            f"Order {order_id!r} is {where}; it is not one of {package.id}'s orders, and a run "
+            "verb's --order takes an order of the package it names (RP-12 rulings 57 and 59). "
+            f"Read the order's package with `uv run gz wp order show {order_id}` and re-run."
+        )
     return held
 
 
@@ -853,7 +857,12 @@ def record_work_package_unblock(
     if order is not None:
         _package_order(catalog, package, order)
     if not _held_by_block(ledger, package.id, order):
-        _refuse(f"{f'Order {order}' if order else f'Work package {package.id}'} is not blocked.")
+        why = "RP-12 ruling 59" if order else "RP-14 specification ruling 13"
+        _refuse(
+            f"{f'Order {order}' if order else f'Work package {package.id}'} is not blocked; an "
+            f"unblock records the operator's ruling on an open block ({why}). Read the run's "
+            "position with `uv run gz wp runs`."
+        )
     if not request.ruling.strip() or not request.operator.strip():
         _refuse("An unblock carries the operator's ruling and who ruled.")
     block = _run_rows(ledger, "work_package_blocked", package.id, order)[-1]

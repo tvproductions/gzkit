@@ -1,0 +1,1225 @@
+{
+ "description": "RP-12 O2 dock trial red proofs: each test the trial added or changed, run alone against the mutant it was written for (rulings 27, 90 to 101). Written by o2_red_proofs.py --run.",
+ "cases": [
+  {
+   "file": "src/gzkit/order_ledger.py",
+   "mutant": "_chain_heads:375:11 if forced true",
+   "test": "tests.test_order_ledger.FreezeTests.test_a_superseded_req_alone_is_never_frozen",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/order_ledger.py",
+   "mutant": "_chain_heads:375:11 if forced true",
+   "test": "tests.test_order_ledger.FreezeTests.test_a_chain_names_the_req_that_supersedes_it_last",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/order_ledger.py",
+   "mutant": "_check_closed:451:7 if forced false",
+   "test": "tests.test_order_ledger.GateFiveTests.test_the_attestor_the_words_and_the_decision_are_required",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/order_ledger.py",
+   "mutant": "_order:230:7 if forced false",
+   "test": "tests.test_order_ledger.LifecycleTests.test_an_order_the_store_lacks_is_refused",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/order_ledger.py",
+   "mutant": "record_order_transition:568:7 if forced false",
+   "test": "tests.test_order_ledger.LifecycleTests.test_empty_evidence_is_refused",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/order_ledger.py",
+   "mutant": "_check_successor:398:7 if forced true",
+   "test": "tests.test_order_ledger.GateFiveTests.test_a_redirect_names_an_opened_order_of_the_same_package",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/order_ledger.py",
+   "mutant": "_check_successor:403:7 if forced true",
+   "test": "tests.test_order_ledger.GateFiveTests.test_a_redirect_names_an_opened_order_of_the_same_package",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/order_ledger.py",
+   "mutant": "_check_successor:397:46 ifexp forced false",
+   "test": "tests.test_order_ledger.GateFiveTests.test_a_redirect_names_an_opened_order_of_the_same_package",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/order_ledger.py",
+   "mutant": "_check_successor:396:46 filter forced true",
+   "test": "tests.test_order_ledger.GateFiveTests.test_a_redirect_names_an_opened_order_of_the_same_package",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/order_ledger.py",
+   "mutant": "_check_successor:396:46 filter forced false",
+   "test": "tests.test_order_ledger.GateFiveTests.test_a_redirect_names_an_opened_order_of_the_same_package",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/order_ledger.py",
+   "mutant": "_package:236:54 filter forced true",
+   "test": "tests.test_order_ledger.AlterationApprovalTests.test_another_packages_approvals_do_not_count",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/order_ledger.py",
+   "mutant": "order_move_refusal:531:38 ifexp forced false",
+   "test": "tests.test_order_ledger.GateFiveTests.test_an_order_never_frozen_closes_only_as_terminate",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/order_ledger.py",
+   "mutant": "order_move_refusal:535:15 ifexp forced false",
+   "test": "tests.test_order_ledger.GateFiveTests.test_a_frozen_or_commenced_order_does_not_close",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/order_ledger.py",
+   "mutant": "order_rows:146:66 filter forced true",
+   "test": "tests.test_order_run.UnblockOnAnOrder.test_terminate_stops_the_order_and_not_its_package",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "_package_order:352:54 ifexp forced true",
+   "test": "tests.test_order_run.DispatchOnAnOrder.test_an_order_the_store_lacks_is_refused",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "record_work_package_unblock:859:7 if forced false",
+   "test": "tests.test_order_run.UnblockOnAnOrder.test_an_order_not_blocked_is_refused",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "record_work_package_unblock:859:7 if forced false",
+   "test": "tests.test_work_package_run.Unblock.test_nothing_to_unblock_is_refused_in_three_parts",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "_check_role:406:7 if forced false",
+   "test": "tests.test_work_package_run.Dispatch.test_an_unknown_role_and_an_empty_model_are_refused",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "_exit_subjects:831:7 if forced false",
+   "test": "tests.test_work_package_run.Unblock.test_an_exit_outside_the_four_is_refused",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "_exit_subjects:840:7 if forced false",
+   "test": "tests.test_work_package_run.Unblock.test_the_requirement_is_the_one_at_the_bound",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "open_unclaimed_dispatches:633:11 if forced false",
+   "test": "tests.test_order_run.InFlightOnAnOrder.test_an_unclaimed_order_dispatch_for_another_root_is_open",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "open_unclaimed_dispatches:633:11 if forced false",
+   "test": "tests.test_order_run.InFlightOnAnOrder.test_it_stays_open_while_the_order_is_accepted",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "open_unclaimed_dispatches:633:11 if forced false",
+   "test": "tests.test_order_run.InFlightOnAnOrder.test_a_dispatch_of_a_closed_order_is_not_open",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "open_unclaimed_dispatches:630:15 ifexp forced true",
+   "test": "tests.test_work_package_run.DispatchVoid.test_a_voided_dispatch_is_no_dispatch_and_never_open",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "record_work_package_dispatch:499:7 if forced true",
+   "test": "tests.test_work_package_run.Dispatch.test_a_stopping_exit_stops_every_subject_of_the_package",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "_intended_root:469:22 ifexp forced false",
+   "test": "tests.test_work_package_run.DispatchRecord.test_an_absolute_root_of_either_platform_is_booked_in_one_form",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "_intended_root:474:31 ifexp forced true",
+   "test": "tests.test_work_package_run.DispatchRecord.test_an_absolute_root_of_either_platform_is_booked_in_one_form",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "_run_rows:437:7 if forced true",
+   "test": "tests.test_work_package_run.AcrossPackages.test_a_raised_revision_starts_clean",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "_run_rows:437:7 if forced true",
+   "test": "tests.test_work_package_run.AcrossPackages.test_reopen_is_once_per_requirement_across_packages",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "order_run_position:256:7 if forced false",
+   "test": "tests.test_order_run.InFlightOnAnOrder.test_the_runs_in_flight_include_the_commenced_order",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "order_run_position:256:7 if forced false",
+   "test": "tests.test_order_run.InFlightOnAnOrder.test_a_commenced_order_with_no_dispatch_is_in_flight_with_no_subject",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "order_run_position:257:8 early return removed",
+   "test": "tests.test_order_run.InFlightOnAnOrder.test_the_runs_in_flight_include_the_commenced_order",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "order_run_position:257:8 early return removed",
+   "test": "tests.test_order_run.InFlightOnAnOrder.test_a_commenced_order_with_no_dispatch_is_in_flight_with_no_subject",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "order_run_position:270:56 ifexp forced true",
+   "test": "tests.test_order_run.InFlightOnAnOrder.test_an_order_not_commenced_is_not_in_flight",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "order_run_position:270:56 ifexp forced true",
+   "test": "tests.test_order_run.InFlightOnAnOrder.test_a_commenced_order_with_no_dispatch_is_in_flight_with_no_subject",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_ledger.py",
+   "mutant": "_check_baselined:269:7 if forced false",
+   "test": "tests.test_work_package_ledger.FreezeTests.test_the_baseline_holds_the_catalogs_revision_of_the_packages_own_outcome",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_fence.py",
+   "mutant": "_recovery:160:7 if forced true",
+   "test": "tests.test_order_run.OrderFenceRecovery.test_an_unreadable_ledger_says_no_state_can_be_shown",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_fence.py",
+   "mutant": "fenced_packages:75:8 early return removed",
+   "test": "tests.test_order_run.OrderFenceRecovery.test_an_unreadable_ledger_says_no_state_can_be_shown",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "_check_blockable:783:33 ifexp forced true",
+   "test": "tests.test_order_run.BlockOnAnOrder.test_an_order_not_opened_or_closed_is_not_sent_to_gate_5_by_the_refusal",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "_check_blockable:783:33 ifexp forced false",
+   "test": "tests.test_order_run.BlockOnAnOrder.test_an_accepted_order_takes_no_block",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "_check_blockable:773:37 ifexp forced true",
+   "test": "tests.test_work_package_run.Block.test_an_uninitiated_package_takes_no_block",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "_check_blockable:773:37 ifexp forced true",
+   "test": "tests.test_work_package_run.Block.test_a_closed_package_takes_no_block",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "_check_blockable:773:37 ifexp forced false",
+   "test": "tests.test_work_package_run.Block.test_an_accepted_package_takes_no_block",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/order_ledger.py",
+   "mutant": "_chain_heads:372:11 if forced false",
+   "test": "tests.test_order_ledger.FreezeTests.test_a_cycled_chain_names_no_req_to_freeze",
+   "baseline_green": true,
+   "outcome": "inconclusive",
+   "failure_class": ""
+  },
+  {
+   "file": "src/gzkit/commands/wp_order.py",
+   "mutant": "_emit_move:287:7 if forced true",
+   "test": "tests.commands.test_wp_order_acceptance.TestTheOrdersGate.test_accept_admits_a_ready_order",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp_order.py",
+   "mutant": "_emit_move:287:7 if forced true",
+   "test": "tests.commands.test_wp_order_acceptance.TestTheOrdersGateFive.test_proceed_books_gate_5_on_the_operators_words",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp_order.py",
+   "mutant": "_emit_move:285:17 ifexp forced false",
+   "test": "tests.commands.test_wp_order_acceptance.TestTheOrdersGate.test_accept_admits_a_ready_order",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp_order.py",
+   "mutant": "_emit_move:285:17 ifexp forced false",
+   "test": "tests.commands.test_wp_order_acceptance.TestTheOrdersGateFive.test_proceed_books_gate_5_on_the_operators_words",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp_order.py",
+   "mutant": "wp_order_show_cmd:303:7 if forced false",
+   "test": "tests.commands.test_wp_order.OrderShowTests.test_show_reads_the_kind_from_the_package",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp_order.py",
+   "mutant": "wp_order_show_cmd:303:7 if forced false",
+   "test": "tests.commands.test_wp_order.OrderLifecycleTests.test_show_reads_the_state_and_baseline_from_the_ledger",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp_order.py",
+   "mutant": "wp_order_show_cmd:313:8 early return removed",
+   "test": "tests.commands.test_wp_order.OrderShowTests.test_show_reads_the_kind_from_the_package",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp_order.py",
+   "mutant": "wp_order_show_cmd:313:8 early return removed",
+   "test": "tests.commands.test_wp_order_acceptance.TestTheOrdersGateFive.test_proceed_books_gate_5_on_the_operators_words",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp_order.py",
+   "mutant": "wp_order_new_cmd:197:11 if forced true",
+   "test": "tests.commands.test_wp_order.OrderNewTests.test_a_repeated_alias_in_one_package_is_refused_and_nothing_written",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp_order.py",
+   "mutant": "wp_order_new_cmd:218:22 ifexp forced true",
+   "test": "tests.commands.test_wp_order.OrderNewTests.test_human_mode_prints_the_line_the_manpage_shows",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp.py",
+   "mutant": "wp_block_cmd:801:7 if forced false",
+   "test": "tests.commands.test_wp_order_run.BlockOrderCli.test_block_holds_the_order_and_unblock_lifts_it",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp.py",
+   "mutant": "wp_block_cmd:801:7 if forced false",
+   "test": "tests.commands.test_wp_acceptance.TestTheRefutationCount.test_a_package_with_no_acceptance_counts_zero_for_each_subject",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp.py",
+   "mutant": "wp_block_cmd:801:7 if forced false",
+   "test": "tests.commands.test_wp_order_acceptance.TestTheOrdersRoundBound.test_the_orders_block_writes_the_orders_refutations",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp.py",
+   "mutant": "wp_block_cmd:803:8 early return removed",
+   "test": "tests.commands.test_wp_order_run.BlockOrderCli.test_block_holds_the_order_and_unblock_lifts_it",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp.py",
+   "mutant": "wp_block_cmd:803:8 early return removed",
+   "test": "tests.commands.test_wp_acceptance.TestTheRefutationCount.test_a_bad_acceptance_row_never_costs_the_block",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp.py",
+   "mutant": "wp_block_cmd:803:8 early return removed",
+   "test": "tests.commands.test_wp_acceptance.TestDeparture.test_a_later_block_still_counts_a_departed_reqs_refutations",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp.py",
+   "mutant": "wp_block_cmd:803:8 early return removed",
+   "test": "tests.commands.test_wp_acceptance.TestTheRefutationCount.test_the_count_keys_a_req_at_its_frozen_revision",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp.py",
+   "mutant": "wp_block_cmd:804:49 ifexp forced true",
+   "test": "tests.commands.test_wp_run.PackageRunOutputContract.test_a_package_block_names_the_package_alone",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp.py",
+   "mutant": "wp_dispatch_cmd:716:7 if forced false",
+   "test": "tests.commands.test_wp_order_run.DispatchOrderCli.test_dispatch_on_the_order_books_its_frozen_subject",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp.py",
+   "mutant": "wp_dispatch_cmd:718:8 early return removed",
+   "test": "tests.commands.test_wp_order_run.DispatchOrderCli.test_dispatch_on_the_order_books_its_frozen_subject",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp.py",
+   "mutant": "wp_unblock_cmd:833:7 if forced false",
+   "test": "tests.commands.test_wp_order_run.BlockOrderCli.test_block_holds_the_order_and_unblock_lifts_it",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp.py",
+   "mutant": "wp_unblock_cmd:836:8 early return removed",
+   "test": "tests.commands.test_wp_order_run.BlockOrderCli.test_block_holds_the_order_and_unblock_lifts_it",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp.py",
+   "mutant": "wp_unblock_cmd:837:46 ifexp forced false",
+   "test": "tests.commands.test_wp_run.PackageRunOutputContract.test_a_package_unblock_names_the_package_and_its_exit",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp.py",
+   "mutant": "wp_unblock_cmd:838:50 ifexp forced true",
+   "test": "tests.commands.test_wp_run.PackageRunOutputContract.test_a_package_unblock_names_the_package_and_its_exit",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp.py",
+   "mutant": "_with_modules:497:7 if forced false",
+   "test": "tests.commands.test_wp_order.FootprintDropTests.test_a_drop_on_a_package_never_initiated_names_the_initiation",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp.py",
+   "mutant": "_with_modules:504:8 raise removed",
+   "test": "tests.commands.test_wp_order.FootprintDropTests.test_a_drop_on_a_package_never_initiated_names_the_initiation",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp_req.py",
+   "mutant": "wp_req_new_cmd:128:20 ifexp forced true",
+   "test": "tests.commands.test_wp_req.ReqNewTests.test_human_mode_prints_the_line_the_manpage_shows",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/acceptance_package.py",
+   "mutant": "order_contract:172:7 if forced false",
+   "test": "tests.commands.test_wp_order_acceptance.TestTheOrdersContract.test_an_order_the_store_lacks_is_refused",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/acceptance_package.py",
+   "mutant": "order_contract:174:8 raise removed",
+   "test": "tests.commands.test_wp_order_acceptance.TestTheOrdersContract.test_an_order_the_store_lacks_is_refused",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/acceptance_store.py",
+   "mutant": "_validate_new_review:409:7 if forced false",
+   "test": "tests.commands.test_wp_acceptance.TestTheRoundBound.test_an_identical_receipt_counts_once",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/acceptance_store.py",
+   "mutant": "_validate_new_review:410:8 early return removed",
+   "test": "tests.commands.test_wp_acceptance.TestTheRoundBound.test_an_identical_receipt_counts_once",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/acceptance_store.py",
+   "mutant": "acceptance_ledger:110:11 ifexp forced false",
+   "test": "tests.test_acceptance_store.AcceptanceStoreTests.test_the_acceptance_ledger_is_the_one_the_config_names",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/acceptance_store.py",
+   "mutant": "acceptance_verb:759:33 ifexp forced true",
+   "test": "tests.test_acceptance_store.AcceptanceVerbTests.test_an_obpi_is_read_by_obpi_acceptance_and_a_run_by_wp_acceptance",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/acceptance_store.py",
+   "mutant": "initialize:260:8 early return removed",
+   "test": "tests.test_acceptance_store.AcceptanceStoreTests.test_reinitialization_records_the_contract_once",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/acceptance_store.py",
+   "mutant": "record_human_review:591:7 if forced true",
+   "test": "tests.test_acceptance_store.AcceptanceStoreTests.test_the_round_bound_never_stops_an_obpis_human_review",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/acceptance_store.py",
+   "mutant": "record_human_review:626:7 if forced true",
+   "test": "tests.test_acceptance_store.AcceptanceStoreTests.test_an_identical_human_review_is_recorded_once",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/acceptance_store.py",
+   "mutant": "record_human_review:604:11 if forced true",
+   "test": "tests.commands.test_wp_acceptance.TestDeparture.test_a_human_review_closes_no_finding_whose_req_has_no_proof",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/acceptance_store.py",
+   "mutant": "_human_review:558:7 if forced false",
+   "test": "tests.test_acceptance_store.AcceptanceStoreTests.test_a_human_review_naming_no_attestor_is_refused",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/acceptance_store.py",
+   "mutant": "_human_review:559:8 raise removed",
+   "test": "tests.test_acceptance_store.AcceptanceStoreTests.test_a_human_review_naming_no_attestor_is_refused",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/acceptance_store.py",
+   "mutant": "_validate_new_review:407:7 if forced false",
+   "test": "tests.commands.test_wp_acceptance.TestTheGate.test_a_human_review_before_acceptance_init_is_refused",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/acceptance_store.py",
+   "mutant": "_validate_new_review:408:8 raise removed",
+   "test": "tests.commands.test_wp_acceptance.TestTheGate.test_a_human_review_before_acceptance_init_is_refused",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/acceptance_store.py",
+   "mutant": "acceptance_status:695:36 ifexp forced true",
+   "test": "tests.commands.test_wp_acceptance.TestTheReviewChannels.test_a_single_driver_owes_the_adversary_at_stage_4_and_nothing_at_stage_2",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/acceptance_store.py",
+   "mutant": "acceptance_status:695:36 ifexp forced false",
+   "test": "tests.commands.test_wp_acceptance.TestTheReviewChannels.test_a_single_driver_owes_the_adversary_at_stage_4_and_nothing_at_stage_2",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/acceptance_store.py",
+   "mutant": "_scoped:229:62 filter forced true",
+   "test": "tests.commands.test_wp_acceptance.TestDeparture.test_a_departure_scopes_every_field_of_a_review_of_both",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/acceptance_store.py",
+   "mutant": "_scoped:230:80 filter forced true",
+   "test": "tests.commands.test_wp_acceptance.TestDeparture.test_a_departure_scopes_every_field_of_a_review_of_both",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/acceptance_store.py",
+   "mutant": "_scoped:232:64 filter forced true",
+   "test": "tests.commands.test_wp_acceptance.TestDeparture.test_a_departure_scopes_every_field_of_a_review_of_both",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/acceptance_store.py",
+   "mutant": "_scoped:232:64 filter forced false",
+   "test": "tests.commands.test_wp_acceptance.TestDeparture.test_a_departure_scopes_every_field_of_a_review_of_both",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/acceptance_store.py",
+   "mutant": "_scoped:234:60 filter forced false",
+   "test": "tests.commands.test_wp_acceptance.TestDeparture.test_a_departure_scopes_every_field_of_a_review_of_both",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/acceptance_store.py",
+   "mutant": "_scoped:235:60 filter forced true",
+   "test": "tests.commands.test_wp_acceptance.TestDeparture.test_a_departure_scopes_every_field_of_a_review_of_both",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/acceptance_store.py",
+   "mutant": "_scoped:235:60 filter forced false",
+   "test": "tests.commands.test_wp_acceptance.TestDeparture.test_a_departure_scopes_every_field_of_a_review_of_both",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/order_ledger.py",
+   "mutant": "_check_entry:293:44 ifexp forced true",
+   "test": "tests.test_order_ledger.FreezeTests.test_a_catalog_req_in_the_baseline_is_refused",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/order_ledger.py",
+   "mutant": "order_work_package:211:44 ifexp forced true",
+   "test": "tests.test_order_ledger.LifecycleTests.test_an_order_with_no_event_has_no_package_on_the_ledger",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/order_ledger.py",
+   "mutant": "record_order_transition:582:59 ifexp forced true",
+   "test": "tests.test_order_ledger.LifecycleTests.test_only_the_freeze_books_the_packages_footprint",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/governance/trust_audits/catalog.py",
+   "mutant": "booked_req_ids:540:13 if forced true",
+   "test": "tests.governance.test_catalog_repair_reqs.TestRepairReqStore.test_a_dispatch_and_an_unblock_each_book_the_req_they_name",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/governance/trust_audits/catalog.py",
+   "mutant": "booked_req_ids:542:13 if forced true",
+   "test": "tests.governance.test_catalog_repair_reqs.TestRepairReqStore.test_a_dispatch_and_an_unblock_each_book_the_req_they_name",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/governance/trust_audits/catalog.py",
+   "mutant": "booked_req_ids:542:13 if forced false",
+   "test": "tests.governance.test_catalog_repair_reqs.TestRepairReqStore.test_a_dispatch_and_an_unblock_each_book_the_req_they_name",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/governance/trust_audits/catalog.py",
+   "mutant": "booked_req_ids:544:13 if forced false",
+   "test": "tests.governance.test_catalog_repair_reqs.TestRepairReqStore.test_a_dispatch_and_an_unblock_each_book_the_req_they_name",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/governance/trust_audits/catalog.py",
+   "mutant": "booked_req_ids:546:36 filter forced true",
+   "test": "tests.governance.test_catalog_repair_reqs.TestRepairReqStore.test_an_id_outside_the_catalog_grammar_is_not_booked",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "open_unclaimed_dispatches:636:11 if forced true",
+   "test": "tests.test_order_run.InFlightOnAnOrder.test_a_dispatch_of_a_closed_order_is_not_open",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "record_work_package_block:743:68 filter forced true",
+   "test": "tests.test_order_run.BlockOnAnOrder.test_an_unblock_with_no_exit_spends_none_for_the_next_block",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "_held_by_block:444:43 ifexp forced true",
+   "test": "tests.test_work_package_run.Unblock.test_another_packages_unblock_leaves_this_package_blocked",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "run_position:220:7 if forced true",
+   "test": "tests.test_work_package_run.RunPosition.test_a_commenced_package_with_no_dispatch_is_in_flight_with_no_subject",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "run_position:224:44 filter forced true",
+   "test": "tests.test_work_package_run.RunPosition.test_the_subject_is_the_last_dispatchs_beneath_a_later_block",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "run_position:224:44 filter forced false",
+   "test": "tests.test_work_package_run.RunPosition.test_the_subject_is_the_last_dispatchs_beneath_a_later_block",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "run_position:233:56 ifexp forced true",
+   "test": "tests.test_work_package_run.RunPosition.test_a_commenced_package_with_no_dispatch_is_in_flight_with_no_subject",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "run_position:233:56 ifexp forced false",
+   "test": "tests.test_work_package_run.RunPosition.test_the_subject_is_the_last_dispatchs_beneath_a_later_block",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_ledger.py",
+   "mutant": "declared_modules:252:11 filter forced true",
+   "test": "tests.test_work_package_ledger.SealedFootprintTests.test_a_change_on_another_rung_adds_nothing_to_the_seal",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_ledger.py",
+   "mutant": "declared_modules:252:11 filter forced false",
+   "test": "tests.test_work_package_ledger.SealedFootprintTests.test_a_change_order_after_the_seal_adds_its_paths",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_ledger.py",
+   "mutant": "package_order_moves:307:11 if forced true",
+   "test": "tests.test_work_package_ledger.RepairLifecycleTests.test_another_packages_open_order_does_not_hold_the_close",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp_order.py",
+   "mutant": "wp_order_new_cmd:218:22 ifexp forced false",
+   "test": "tests.commands.test_wp_order.OrderNewTests.test_json_mode_prints_the_order_record",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp_req.py",
+   "mutant": "wp_req_new_cmd:128:20 ifexp forced false",
+   "test": "tests.commands.test_wp_req.ReqNewTests.test_json_mode_prints_the_req_record",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp.py",
+   "mutant": "_with_modules:505:7 if forced true",
+   "test": "tests.commands.test_wp_order.OrderLifecycleTests.test_a_change_order_adds_a_path_beside_the_unsealed_footprint",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp.py",
+   "mutant": "_with_modules:521:7 if forced true",
+   "test": "tests.commands.test_wp_order.OrderLifecycleTests.test_a_change_order_adds_a_path_beside_the_unsealed_footprint",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp.py",
+   "mutant": "_with_modules:513:53 filter forced false",
+   "test": "tests.commands.test_wp_order.OrderLifecycleTests.test_a_change_order_adds_a_path_beside_the_unsealed_footprint",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp.py",
+   "mutant": "_with_modules:514:54 filter forced false",
+   "test": "tests.commands.test_wp_order.OrderLifecycleTests.test_a_change_order_adds_a_path_beside_the_unsealed_footprint",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp.py",
+   "mutant": "_with_modules:520:64 ifexp forced true",
+   "test": "tests.commands.test_wp_order.OrderLifecycleTests.test_a_change_order_adds_a_path_beside_the_unsealed_footprint",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp.py",
+   "mutant": "_with_modules:513:53 filter forced true",
+   "test": "tests.commands.test_wp_order.OrderLifecycleTests.test_a_path_already_declared_is_not_added_again",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/acceptance_store.py",
+   "mutant": "resolve_brief:137:12 raise removed",
+   "test": "tests.commands.test_wp_order_acceptance.TestTheOrdersContract.test_an_unreadable_order_store_is_refused_as_the_store_never_as_a_brief",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "_package:176:7 if forced false",
+   "test": "tests.test_order_run.DispatchOnAnOrder.test_a_package_the_catalog_lacks_is_refused_not_crashed_on",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp.py",
+   "mutant": "wp_dispatch_cmd:719:39 ifexp forced true",
+   "test": "tests.commands.test_wp_run.PackageDispatchOutputContract.test_a_package_dispatch_names_the_package_alone",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/order_ledger.py",
+   "mutant": "order_move_refusal:535:15 ifexp forced true",
+   "test": "tests.commands.test_wp_order.OrderLifecycleTests.test_a_commence_refusal_reads_as_the_manpage_shows",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/order_ledger.py",
+   "mutant": "_check_entry:293:44 ifexp forced false",
+   "test": "tests.test_order_ledger.FreezeTests.test_a_baseline_req_held_elsewhere_is_named_where_it_is_held",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/governance/trust_audits/catalog.py",
+   "mutant": "_repair_req_breaches:149:42 ifexp forced false",
+   "test": "tests.governance.test_catalog_repair_reqs.TestRepairReqStore.test_a_held_on_breach_names_why_the_package_is_refused",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/governance/trust_audits/catalog.py",
+   "mutant": "req_breaches:176:23 ifexp forced true",
+   "test": "tests.governance.test_catalog_repair_reqs.TestRepairReqStore.test_a_supersedes_breach_names_its_cause",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/governance/trust_audits/catalog.py",
+   "mutant": "req_breaches:176:23 ifexp forced false",
+   "test": "tests.governance.test_catalog_repair_reqs.TestRepairReqStore.test_a_supersedes_breach_names_its_cause",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/governance/trust_audits/catalog.py",
+   "mutant": "order_breaches:434:15 ifexp forced false",
+   "test": "tests.governance.test_catalog_orders.TestOrderStore.test_an_order_breach_names_why_its_package_is_refused",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "_check_not_stopped:449:32 ifexp forced true",
+   "test": "tests.test_work_package_run.Dispatch.test_a_stopped_packages_refusal_names_the_package",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "_check_not_stopped:449:32 ifexp forced false",
+   "test": "tests.test_order_run.UnblockOnAnOrder.test_a_stopped_orders_refusal_names_the_order",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "record_work_package_unblock:860:35 ifexp forced true",
+   "test": "tests.test_work_package_run.Unblock.test_nothing_to_unblock_is_refused_in_three_parts",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "record_work_package_unblock:860:35 ifexp forced false",
+   "test": "tests.test_order_run.UnblockOnAnOrder.test_an_unblock_of_an_unblocked_order_reads_in_three_parts",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "record_work_package_unblock:862:35 ifexp forced true",
+   "test": "tests.test_work_package_run.Unblock.test_nothing_to_unblock_is_refused_in_three_parts",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "record_work_package_unblock:862:35 ifexp forced false",
+   "test": "tests.test_order_run.UnblockOnAnOrder.test_an_unblock_of_an_unblocked_order_reads_in_three_parts",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "_package_order:352:54 ifexp forced false",
+   "test": "tests.test_order_run.UnblockOnAnOrder.test_an_order_outside_the_package_reads_in_three_parts",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_fence.py",
+   "mutant": "_why:188:7 if forced true",
+   "test": "tests.test_order_run.OrderFenceRecovery.test_the_why_names_the_order_or_the_package_fenced",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp_order.py",
+   "mutant": "wp_order_accept_cmd:367:4 handler re-raises",
+   "test": "tests.commands.test_wp_order_acceptance.TestTheOrdersAcceptRefusal.test_a_blank_evidence_is_refused_with_the_accept_to_rerun",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/commands/wp_req.py",
+   "mutant": "wp_req_new_cmd:112:4 handler re-raises",
+   "test": "tests.commands.test_wp_req.ReqNewTests.test_a_field_the_record_refuses_exits_3_with_the_call_to_rerun",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/governance/trust_audits/catalog.py",
+   "mutant": "audit_catalog:621:7 if forced true",
+   "test": "tests.governance.test_catalog_edges.TestAuditOverAProject.test_the_coverage_report_lists_only_the_needs_no_req_derives_from",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/governance/trust_audits/catalog.py",
+   "mutant": "audit_catalog:621:7 if forced false",
+   "test": "tests.governance.test_catalog_edges.TestAuditOverAProject.test_the_coverage_report_lists_only_the_needs_no_req_derives_from",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/governance/trust_audits/catalog.py",
+   "mutant": "audit_catalog:602:7 if forced false",
+   "test": "tests.governance.test_catalog_orders.TestOrderStore.test_a_missing_store_is_a_tree_defect",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/governance/trust_audits/catalog.py",
+   "mutant": "audit_catalog:603:8 early return removed",
+   "test": "tests.governance.test_catalog_orders.TestOrderStore.test_a_missing_store_is_a_tree_defect",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/governance/trust_audits/catalog.py",
+   "mutant": "_schema_findings:83:8 handler re-raises",
+   "test": "tests.governance.test_catalog_orders.TestOrderStore.test_a_missing_store_is_a_tree_defect",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/governance/trust_audits/catalog.py",
+   "mutant": "_forward_rule_findings:642:7 if forced true",
+   "test": "tests.governance.test_catalog_forward_rule.TestAuditRefuses.test_one_unnamed_event_of_two_read_is_a_finding",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/governance/trust_audits/catalog.py",
+   "mutant": "_forward_rule_findings:649:7 if forced true",
+   "test": "tests.governance.test_catalog_forward_rule.TestAuditRefuses.test_one_unnamed_event_of_two_read_is_a_finding",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/governance/trust_audits/catalog.py",
+   "mutant": "_gates:465:7 if forced true",
+   "test": "tests.governance.test_catalog_edges.TestAuditOverAProject.test_a_project_whose_edges_resolve_passes",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "_reopened:691:11 boolreturn forced true",
+   "test": "tests.test_order_run.BlockOnAnOrder.test_a_later_block_carries_the_orders_exits_and_reopenings",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "_reopened:691:11 boolreturn forced false",
+   "test": "tests.test_order_run.BlockOnAnOrder.test_a_later_block_carries_the_orders_exits_and_reopenings",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_fence.py",
+   "mutant": "fenced_packages:74:4 handler re-raises",
+   "test": "tests.test_order_run.OrderFenceRecovery.test_an_unreadable_ledger_says_no_state_can_be_shown",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/acceptance_store.py",
+   "mutant": "resolve_brief:136:8 handler re-raises",
+   "test": "tests.commands.test_wp_order_acceptance.TestTheOrdersContract.test_an_unreadable_order_store_is_refused_as_the_store_never_as_a_brief",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  }
+ ],
+ "counts": {
+  "killed/assertion": 151,
+  "inconclusive/-": 1
+ }
+}

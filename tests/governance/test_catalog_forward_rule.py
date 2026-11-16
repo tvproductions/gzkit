@@ -195,7 +195,9 @@ class TestAuditRefuses(unittest.TestCase):
 
     def test_one_unnamed_event_of_two_read_is_a_finding(self):
         errors = audit_catalog(self.root)
-        (finding,) = [e for e in errors if e.field == "delivery_events"]
+        findings = [e for e in errors if e.field == "delivery_events"]
+        self.assertEqual(len(findings), 1)
+        finding = findings[0]
         self.assertIn(f"1 of 2 delivery events since {_CUTOVER}", finding.message)
         self.assertIn("task_started 1", finding.message)
 

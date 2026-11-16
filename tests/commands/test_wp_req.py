@@ -199,6 +199,21 @@ class ReqNewTests(_ReqCase):
                 self.assertNotIn("errors.pydantic.dev", output)
         self.assertEqual(len(_reqs()), 1)
 
+    def test_a_field_the_record_refuses_exits_3_with_the_call_to_rerun(self) -> None:
+        # output-contract: guardrail-feedback-prose's three parts, RP-12 ruling 101
+        # given a value outside the REQ id grammar
+        # when
+        output = self.new("--aligns-to", "not-a-req", code=3)
+        # then
+        self.assertIn("--aligns-to:", output)
+        self.assertIn(
+            "The repair requirement is ruled by RP-12 ruling 45. Nothing was written; correct "
+            "the call and re-run `uv run gz wp req new <WP-id> --statement <text> --criterion "
+            "'<state>|<outcome>|<evidence>' --kind <kind> --problem-report <issue>`.",
+            output,
+        )
+        self.assertEqual(len(_reqs()), 1)
+
     def test_an_unknown_package_exits_1(self) -> None:
         """The refusal names the package and the store it is missing from, not a crash."""
         output = self.new(package="WP-09-ghost", code=1)

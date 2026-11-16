@@ -11,6 +11,7 @@ import json
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import TYPE_CHECKING
 from unittest.mock import patch
 
 from pydantic import ValidationError as PydanticValidationError
@@ -27,6 +28,10 @@ from gzkit.models.catalog import (
     load_catalog,
 )
 from gzkit.schemas import load_schema
+from tests.test_order_ledger import _raised
+
+if TYPE_CHECKING:
+    from gzkit.core.validation_rules import ValidationError
 
 _REPO = Path(__file__).resolve().parents[2]
 
@@ -132,8 +137,15 @@ class _Tree(unittest.TestCase):
     def write_raw(self, kind: str, text: str) -> None:
         (self.root / "data" / "catalog" / f"{kind}.json").write_text(text, encoding="utf-8")
 
+    def audit(self) -> list[ValidationError]:
+        """Run the audit; a crash in place of its findings fails by assertion (RP-12 ruling 100)."""
+        found: list[ValidationError] = []
+        raised = _raised(lambda: found.extend(audit_catalog(self.root)))
+        self.assertIsNone(raised, f"the audit crashed instead of reporting: {raised!r}")
+        return found
+
     def fields(self) -> list[str | None]:
-        return [error.field for error in audit_catalog(self.root)]
+        return [error.field for error in self.audit()]
 
 
 class TestModels(unittest.TestCase):

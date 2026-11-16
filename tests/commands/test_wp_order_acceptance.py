@@ -118,11 +118,11 @@ class TestTheOrdersContract(_OrderAcceptance):
         """An order id resolves against the catalog; it is never looked up as an OBPI brief."""
         store = Path("data") / "catalog" / "orders.json"
         store.write_text("{not json", encoding="utf-8")
-        with self.assertRaises(ValueError) as caught:
-            resolve_brief(self.root, _ORDER)
-        self.assertNotIsInstance(caught.exception, NoCanonicalBriefError)
-        self.assertIsInstance(caught.exception.__cause__, RegistryError)
-        self.assertIn("orders.json", str(caught.exception))
+        raised = _raised(lambda: resolve_brief(self.root, _ORDER))
+        self.assertIsInstance(raised, ValueError)
+        self.assertNotIsInstance(raised, NoCanonicalBriefError)
+        self.assertIsInstance(getattr(raised, "__cause__", None), RegistryError)
+        self.assertIn("orders.json", str(raised))
 
 
 class TestTheOrdersGate(_OrderAcceptance):
@@ -311,6 +311,19 @@ class TestTheOrdersAcceptRefusal(_OrderAcceptance):
         self.wp("block", _PACKAGE, "--order", _ORDER, "--reason", "r", "--next-action", "n")
         output = self.accept(code=3)
         self.assertIn("re-run `uv run gz wp order accept <ORD-id> --evidence <text>`", output)
+        self.assertEqual(self.state(), "commenced")
+
+    def test_a_blank_evidence_is_refused_with_the_accept_to_rerun(self) -> None:
+        # output-contract: guardrail-feedback-prose's three parts, RP-12 ruling 101
+        self.init()
+        self.approve(self.proof())
+        with mock.patch(_FOOTPRINT, return_value=None):
+            output = self.wp("order", "accept", _ORDER, "--evidence", " ", code=3)
+        self.assertEqual(
+            output,
+            "A transition names what justifies it; evidence is empty. Nothing was written; "
+            "correct the call and re-run `uv run gz wp order accept <ORD-id> --evidence <text>`.",
+        )
         self.assertEqual(self.state(), "commenced")
 
     def test_a_blocked_order_is_refused_for_its_block_before_its_readiness(self) -> None:

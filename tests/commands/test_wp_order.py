@@ -280,8 +280,8 @@ class OrderNewTests(_OrderCase):
         self.assertEqual(_orders(), [])
 
 
-class OrderLifecycleTests(_OrderCase):
-    """`gz wp order freeze` and `commence` (RP-12 O2 task 3, rulings 53 and 56)."""
+class _LifecycleCase(_OrderCase):
+    """A repair package with one footprint module, one repair REQ and one opened order."""
 
     def setUp(self) -> None:
         super().setUp()
@@ -325,6 +325,10 @@ class OrderLifecycleTests(_OrderCase):
     def moves(self) -> list[dict[str, Any]]:
         return [r for r in _ledger_rows() if r["event"] == "order_transitioned"]
 
+
+class OrderLifecycleTests(_LifecycleCase):
+    """`gz wp order freeze` and `commence` (RP-12 O2 task 3, rulings 53 and 56)."""
+
     def test_freeze_then_commence_book_one_step_each(self) -> None:
         self.assertIn("ORD-01-import: opened -> frozen", self.freeze())
         commenced = self.gz("commence", "ORD-01-import", "--evidence", "tags")
@@ -361,6 +365,19 @@ class OrderLifecycleTests(_OrderCase):
         self.assertIn("allows frozen", output)
         self.assertIn("Nothing was written", output)
         self.assertEqual(_ledger_rows(), before)
+
+    def test_a_commence_refusal_reads_as_the_manpage_shows(self) -> None:
+        # output-contract: docs/user/manpages/wp-order-commence.md's example is the refusal.
+        # given the fixture's order, opened and not frozen
+        # when
+        output = self.gz("commence", "ORD-01-import", "--evidence", "tags-hung", code=3)
+        # then
+        self.assertEqual(
+            " ".join(output.split()),
+            "Order ORD-01-import cannot move from opened to 'commenced'; the lifecycle allows "
+            "frozen from here. Nothing was written; correct the call and re-run `uv run gz wp "
+            "order commence <ORD-id> --evidence <text>`.",
+        )
 
     def test_a_baseline_entry_not_req_at_revision_is_refused(self) -> None:
         before = _ledger_rows()

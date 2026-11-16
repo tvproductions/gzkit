@@ -233,7 +233,7 @@ class BlockOnAnOrder(_OrderRun):
         self.unblock(exit_taken="hold")
         event = self.block()
         self.assertEqual((event.exits_used, event.held), (("hold",), ("REQ-1@1",)))
-        self.unblock(exit_taken="reopen", req="REQ-1")
+        self.assertIsNone(_raised(lambda: self.unblock(exit_taken="reopen", req="REQ-1")))
         self.assertEqual(self.block().reopened, ("REQ-1",))
 
     def test_a_second_block_while_the_order_is_blocked_is_refused(self) -> None:
@@ -320,6 +320,29 @@ class UnblockOnAnOrder(_OrderRun):
     def test_an_order_not_blocked_is_refused(self) -> None:
         self.refused("not blocked", self.unblock)
 
+    def test_an_unblock_of_an_unblocked_order_reads_in_three_parts(self) -> None:
+        # output-contract: guardrail-feedback-prose's three parts, RP-12 ruling 101
+        self.assertEqual(
+            self.refused("not blocked", self.unblock),
+            f"Order {_ORDER} is not blocked; an unblock records the operator's ruling on an open "
+            "block (RP-12 ruling 59). Read the run's position with `uv run gz wp runs`.",
+        )
+
+    def test_an_order_outside_the_package_reads_in_three_parts(self) -> None:
+        # output-contract: guardrail-feedback-prose's three parts, RP-12 ruling 101
+        for order, where in (
+            ("ORD-03-other", "an order of WP-03-other"),
+            ("ORD-09-ghost", "not in data/catalog/orders.json"),
+        ):
+            with self.subTest(order=order):
+                self.assertEqual(
+                    self.refused("not one of", lambda order=order: self.unblock(order=order)),
+                    f"Order {order!r} is {where}; it is not one of {_PACKAGE}'s orders, and a "
+                    "run verb's --order takes an order of the package it names (RP-12 rulings 57 "
+                    f"and 59). Read the order's package with `uv run gz wp order show {order}` "
+                    "and re-run.",
+                )
+
     def test_a_package_unblock_does_not_lift_an_orders_block(self) -> None:
         self.block()
         self.refused("--order", lambda: self.unblock(order=None))
@@ -342,6 +365,17 @@ class UnblockOnAnOrder(_OrderRun):
         held = []
         self.assertIsNone(_raised(lambda: held.append(self.dispatch(order=_SECOND, req="REQ-2"))))
         self.assertEqual(held[0].order, _SECOND)
+
+    def test_a_stopped_orders_refusal_names_the_order(self) -> None:
+        # output-contract: the refusal's what-failed part, RP-12 ruling 101
+        self.reach_the_bound()
+        self.block()
+        self.unblock(exit_taken="terminate")
+        self.assertEqual(
+            self.refused("terminate exit", self.dispatch),
+            f"Order {_ORDER} took the terminate exit; it takes no further repair and closes "
+            "through Gate 5.",
+        )
 
     def test_a_stopped_order_never_ready_does_not_close_as_proceed(self) -> None:
         """Rulings 80 and 84: the writer reads the readiness booked at acceptance."""
@@ -494,9 +528,10 @@ class OrderFenceRecovery(unittest.TestCase):
         """The fence an unreadable ledger raises names that cause, never a package's state."""
         with tempfile.TemporaryDirectory() as tmp:
             (Path(tmp) / ".gzkit.json").write_text("{", encoding="utf-8")
-            fences = fenced_packages(Path(tmp))
+            fences: list[FencedPackage] = []
+            self.assertIsNone(_raised(lambda: fences.extend(fenced_packages(Path(tmp)))))
         fence = FencedPackage(work_package="the ledger", reason="unreadable")
-        self.assertEqual(fences, (fence,))
+        self.assertEqual(fences, [fence])
         messages: list[str] = []
         self.assertIsNone(
             _raised(
@@ -517,6 +552,31 @@ class OrderFenceRecovery(unittest.TestCase):
             for message in self.refusals(reason):
                 with self.subTest(reason=reason):
                     self.assertIn(f"order {_ORDER}", message)
+
+    def test_the_why_names_the_order_or_the_package_fenced(self) -> None:
+        # output-contract: the fence message's why part, RP-12 ruling 101
+        order = FencedPackage(work_package=_PACKAGE, order=_ORDER, reason="blocked")
+        package = FencedPackage(work_package=_PACKAGE, reason="blocked")
+        for fence, why in (
+            (
+                order,
+                (
+                    f"order {_ORDER} of work package {_PACKAGE} is blocked, and `gz wp dispatch "
+                    "--order` refuses implementing work on it, so a write here would step "
+                    "around that refusal (RP-12 ruling 58)"
+                ),
+            ),
+            (
+                package,
+                (
+                    f"work package {_PACKAGE} is blocked, and `gz wp dispatch` refuses "
+                    "implementing work on it, so a write here would step around that refusal"
+                ),
+            ),
+        ):
+            with self.subTest(order=fence.order):
+                message = " ".join(work_package_write_message(fence, "src/gzkit/x.py").split())
+                self.assertIn(why, message)
 
     def test_a_blocked_order_names_the_unblock_on_the_order(self) -> None:
         for message in self.refusals("blocked"):

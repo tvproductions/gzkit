@@ -336,5 +336,28 @@ class PackageRunOutputContract(_PackageCase):
         self.assertEqual(unblocked.splitlines(), [f"Unblocked {_DELIVERY} by exit hold."])
 
 
+class PackageDispatchOutputContract(_PackageCase):
+    """A delivery package's dispatch names the package, as the manpage shows."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self._commence()
+
+    def test_a_package_dispatch_names_the_package_alone(self) -> None:
+        # output-contract: docs/user/manpages/wp-dispatch.md's example is the verb's output.
+        # given the fixture's commenced delivery package
+        # when
+        output = self._wp("dispatch", _DELIVERY, "--role", "Implementer", "--model", "m",
+                          "--req", _REQ)  # fmt: skip
+        # then
+        dispatch_id = read_dispatch_id(output)
+        self.assertIsNotNone(dispatch_id)
+        self.assertEqual(
+            " ".join(output.split()).split(" Put this line")[0],
+            f"Recorded Implementer on {_REQ}@2 of {_DELIVERY} as dispatch {dispatch_id}, "
+            f"for {Path.cwd().resolve().as_posix()}.",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

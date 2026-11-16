@@ -13,7 +13,6 @@ import unittest
 
 from pydantic import ValidationError as PydanticValidationError
 
-from gzkit.governance.trust_audits.catalog import audit_catalog
 from gzkit.models.catalog import Order, load_catalog
 from gzkit.order_store import OrderStoreError, next_order_id, stage_order
 from gzkit.registries import RegistryError
@@ -68,21 +67,46 @@ class TestOrderStore(_Tree):
 
     def test_an_order_on_a_repair_package_the_catalog_holds_passes(self):
         self.write("orders", [_order("ORD-01-a"), _order("ORD-02-b", aliases=["O2"])])
-        self.assertEqual(audit_catalog(self.root), [])
+        self.assertEqual(self.audit(), [])
         catalog = load_catalog(self.root)
         self.assertEqual([order.id for order in catalog.orders], ["ORD-01-a", "ORD-02-b"])
 
     def test_an_order_names_a_package_the_catalog_holds(self):
         self.write("orders", [_order("ORD-01-a", work_package="WP-09-gone")])
-        errors = audit_catalog(self.root)
+        errors = self.audit()
         self.assertEqual([e.field for e in errors], ["orders"])
         self.assertIn("WP-09-gone", errors[0].message)
 
     def test_an_order_on_a_delivery_package_waits_for_rp14(self):
         self.write("orders", [_order("ORD-01-a", work_package="WP-02-d")])
-        errors = audit_catalog(self.root)
+        errors = self.audit()
         self.assertEqual([e.field for e in errors], ["orders"])
         self.assertIn("ruling 44", errors[0].message)
+
+    def test_an_order_breach_names_why_its_package_is_refused(self):
+        # output-contract: a breach's what-failed part, RP-12 ruling 101
+        for work_package, breach in (
+            (
+                "WP-09-gone",
+                (
+                    "Order ORD-01-a names WP-09-gone, which data/catalog/work_packages.json does "
+                    "not hold; an order sits in a package the catalog holds."
+                ),
+            ),
+            (
+                "WP-02-d",
+                (
+                    "Order ORD-01-a sits in delivery package WP-02-d; a delivery package keeps "
+                    "its five states until RP-14 moves construction onto the order (RP-12 ruling "
+                    "44)."
+                ),
+            ),
+        ):
+            with self.subTest(work_package=work_package):
+                self.write("orders", [_order("ORD-01-a", work_package=work_package)])
+                messages = [error.message for error in self.audit()]
+                self.assertEqual(len(messages), 1)
+                self.assertIn(breach, messages[0])
 
     def test_an_id_or_its_number_is_never_reused(self):
         """The series compares numbers, so ORD-001 reuses ORD-01's number."""
@@ -106,7 +130,7 @@ class TestOrderStore(_Tree):
         self.write(
             "orders", [_order("ORD-01-a", aliases=["O2"]), _order("ORD-02-b", aliases=["O2"])]
         )
-        errors = audit_catalog(self.root)
+        errors = self.audit()
         self.assertEqual([e.field for e in errors], ["orders"])
         self.assertIn("ruling 49", errors[0].message)
 
@@ -116,7 +140,7 @@ class TestOrderStore(_Tree):
             "orders",
             [_order("ORD-01-a", aliases=["O2"]), _order("ORD-02-b", "WP-03-y", aliases=["O2"])],
         )
-        self.assertEqual(audit_catalog(self.root), [])
+        self.assertEqual(self.audit(), [])
 
     def test_an_alias_is_never_an_order_or_package_id(self):
         for alias in ("ORD-02-b", "WP-03-y"):
@@ -169,17 +193,17 @@ class TestBookedOrders(_Tree):
 
     def test_an_order_the_ledger_names_stays_in_the_store(self):
         self.book("opened", operator_text="open it")
-        errors = audit_catalog(self.root)
+        errors = self.audit()
         self.assertEqual([e.field for e in errors], ["orders"])
         self.assertIn("ORD-07-gone", errors[0].message)
         self.write("orders", [_order("ORD-07-gone")])
-        self.assertEqual(audit_catalog(self.root), [])
+        self.assertEqual(self.audit(), [])
 
     def test_a_package_an_order_names_stays_in_the_store(self):
         """RO-5 ruling 6: a package the ledger names, by an order's event too, is kept."""
         self.book("opened", operator_text="open it")
         self.write("work_packages", [])
-        errors = [e for e in audit_catalog(self.root) if e.field == "work_packages"]
+        errors = [e for e in self.audit() if e.field == "work_packages"]
         self.assertEqual(len(errors), 1)
         self.assertIn("WP-01-x", errors[0].message)
 
@@ -187,7 +211,7 @@ class TestBookedOrders(_Tree):
         """Requirements model § 2: a REQ id the ledger names is never minted again."""
         self.write("orders", [_order("ORD-07-gone")])
         self.book("frozen", baseline=[{"req": "REQ-9", "revision": 1}])
-        errors = audit_catalog(self.root)
+        errors = self.audit()
         self.assertEqual([e.field for e in errors], ["reqs"])
         self.assertIn("REQ-9", errors[0].message)
 

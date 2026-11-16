@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING
 from pydantic import TypeAdapter
 from pydantic import ValidationError as PydanticValidationError
 
-from gzkit.governance.trust_audits.catalog import audit_catalog, booked_req_ids
+from gzkit.governance.trust_audits.catalog import booked_req_ids
 from gzkit.ledger import Ledger
 from gzkit.models.catalog import CatalogReq, RepairReq, Req, load_catalog
 from gzkit.req_store import ReqStoreError, stage_repair_req
@@ -96,7 +96,7 @@ class TestRepairReqStore(_Tree):
 
     def test_a_repair_req_held_on_its_repair_package_passes(self):
         self.write("reqs", [_req("REQ-1"), _repair_req("REQ-2", aligns_to="REQ-1")])
-        self.assertEqual(audit_catalog(self.root), [])
+        self.assertEqual(self.audit(), [])
         catalog = load_catalog(self.root)
         self.assertEqual([req.id for req in catalog.catalog_reqs()], ["REQ-1"])
 
@@ -117,9 +117,21 @@ class TestRepairReqStore(_Tree):
                 self.write("reqs", [_req("REQ-1"), _repair_req("REQ-2", held_on)])
                 self.assertEqual(self.fields(), ["reqs"])
 
+    def test_a_held_on_breach_names_why_the_package_is_refused(self):
+        # output-contract: a breach's what-failed part, RP-12 ruling 101
+        for held_on, why in (
+            ("WP-09-gone", "is not in the catalog"),
+            ("WP-02-d", "is a delivery package"),
+        ):
+            with self.subTest(held_on=held_on):
+                self.write("reqs", [_req("REQ-1"), _repair_req("REQ-2", held_on)])
+                messages = [error.message for error in self.audit()]
+                self.assertEqual(len(messages), 1)
+                self.assertIn(f"Repair REQ REQ-2 is held on {held_on}, which {why}.", messages[0])
+
     def test_the_problem_report_is_an_issue_its_package_carries(self):
         self.write("reqs", [_req("REQ-1"), _repair_req("REQ-2", problem_report=7)])
-        errors = audit_catalog(self.root)
+        errors = self.audit()
         self.assertEqual([e.field for e in errors], ["reqs"])
         self.assertIn("#7", errors[0].message)
 
@@ -139,7 +151,16 @@ class TestRepairReqStore(_Tree):
         reqs: list[object] = [_req("REQ-1"), _repair_req("REQ-2"), _repair_req("REQ-3")]
         reqs[2] = _repair_req("REQ-3", supersedes="REQ-2")
         self.write("reqs", reqs)
-        self.assertEqual(audit_catalog(self.root), [])
+        self.assertEqual(self.audit(), [])
+
+    def test_a_supersedes_breach_names_its_cause(self):
+        # output-contract: a breach's what-failed part, RP-12 ruling 101
+        for supersedes, cause in (("REQ-9", "no REQ the store holds"), ("REQ-2", "itself")):
+            with self.subTest(supersedes=supersedes):
+                self.write("reqs", [_req("REQ-1"), _repair_req("REQ-2", supersedes=supersedes)])
+                messages = [error.message for error in self.audit()]
+                self.assertEqual(len(messages), 1)
+                self.assertIn(f"REQ-2 supersedes {supersedes}, which is {cause}.", messages[0])
 
     def test_a_supersession_cycle_is_refused(self):
         """Ruling 87: a chain ends at a REQ nothing supersedes, so no chain cycles."""
@@ -151,14 +172,14 @@ class TestRepairReqStore(_Tree):
                 _repair_req("REQ-3", supersedes="REQ-2"),
             ],
         )
-        errors = audit_catalog(self.root)
+        errors = self.audit()
         self.assertEqual([e.field for e in errors], ["reqs"])
         self.assertIn("cycle", errors[0].message)
 
     def test_a_repair_req_never_supersedes_a_catalog_req(self):
         """Ruling 50: superseding a catalog REQ is a remodel, the catalog's path."""
         self.write("reqs", [_req("REQ-1"), _repair_req("REQ-2", supersedes="REQ-1")])
-        errors = audit_catalog(self.root)
+        errors = self.audit()
         self.assertEqual([e.field for e in errors], ["reqs"])
         self.assertIn("ruling 50", errors[0].message)
 
@@ -178,11 +199,11 @@ class TestRepairReqStore(_Tree):
         ledger = self.root / ".gzkit" / "ledger.jsonl"
         ledger.parent.mkdir(exist_ok=True)
         ledger.write_text(json.dumps(row) + "\n", encoding="utf-8")
-        errors = audit_catalog(self.root)
+        errors = self.audit()
         self.assertEqual([e.field for e in errors], ["reqs"])
         self.assertIn("REQ-7", errors[0].message)
         self.write("reqs", [_req("REQ-1"), _repair_req("REQ-7")])
-        self.assertEqual(audit_catalog(self.root), [])
+        self.assertEqual(self.audit(), [])
 
     def _booked(self, *rows: Mapping[str, object]) -> set[str]:
         ledger = self.root / ".gzkit" / "ledger.jsonl"
@@ -221,7 +242,7 @@ class TestRepairReqStore(_Tree):
     def test_the_catalog_edge_checks_read_catalog_reqs_only(self):
         """A repair REQ has no outcome, so `member_of` and `derives_from` never read it."""
         self.write("reqs", [_req("REQ-1"), _repair_req("REQ-2")])
-        self.assertEqual(audit_catalog(self.root), [])
+        self.assertEqual(self.audit(), [])
 
 
 if __name__ == "__main__":

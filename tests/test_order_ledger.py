@@ -325,6 +325,16 @@ class FreezeTests(_OrderCase):
                 baseline = (BaselinedReq(req=req, revision=revision),)
                 self.assert_refused("frozen", **{**_FREEZE, "baseline": baseline})
 
+    def test_a_baseline_req_held_elsewhere_is_named_where_it_is_held(self) -> None:
+        # output-contract: the refusal's what-failed part, RP-12 ruling 101
+        baseline = (BaselinedReq(req="REQ-3", revision=1),)
+        refusal = self.assert_refused("frozen", **{**_FREEZE, "baseline": baseline})
+        self.assertEqual(
+            refusal,
+            "REQ-3 is held on WP-03-other; order ORD-01-import freezes only the repair REQs "
+            "held on its package WP-01-stamp (RP-12 rulings 2 and 45).",
+        )
+
     def test_a_req_sits_in_one_live_orders_baseline_at_a_time(self) -> None:
         """Ruling 53: a second live order cannot freeze a REQ the first holds."""
         self.move("frozen", **_FREEZE)

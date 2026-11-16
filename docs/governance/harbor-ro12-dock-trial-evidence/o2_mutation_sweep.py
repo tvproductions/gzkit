@@ -2,21 +2,26 @@
 """RP-12 O2's dock trial: every branch of O2's cited code mutated, red then green.
 
 A dated evidence script (`docs/governance/harbor-ro12-contractor-kit.md`, rulings 27 and
-90 to 97). Ruling 27 has each order's dock trial show each refusal red then green, and
+90 to 99). Ruling 27 has each order's dock trial show each refusal red then green, and
 ruling 90 chose a mutation sweep for O2.
 
 Scope (ruling 92). Every function and verb O2's rows of § Mode Contract cite, each swept
 whole, with ``gzkit.acceptance_store`` taken in the functions that branch on
-``is_run_id`` (:data:`CITED`), and (ruling 94) every helper of the same module those
+``is_run_id`` (:data:`CITED`), ``gz validate --catalog``'s own path among them (ruling 98),
+and (ruling 94) every helper of the same module those
 functions call by name directly, ruling 96 (:func:`scope`). The tests are the
 twelve modules ruling 92 names (:data:`MODULES`).
 
 Mutants (ruling 94). Every branch is mutated by a mechanical AST rule, with no judgement
-of what refuses: each ``if`` test, comprehension filter and conditional expression is
-forced true and forced false (``(test) or True``, ``(test) and False``, so a walrus
-still binds), each ``raise`` becomes ``pass``, and each early ``return`` (any ``return``
-that is not the last statement of its function's body) becomes ``pass``. The schema
-conditionals of ``order_transitioned`` are JSON, which the AST pass cannot read; their
+of what refuses: each ``if`` test, ``while`` test (ruling 99), comprehension filter and
+conditional expression is forced true and forced false (``(test) or True``,
+``(test) and False``, so a walrus still binds), each ``raise`` becomes ``pass``, and each
+early ``return`` (any ``return`` that is not the last statement of its function's body)
+becomes ``pass``. Ruling 99 adds two more: each ``except`` handler's body becomes
+``raise``, so the error it caught passes through, and each boolean return has its value
+forced true and forced false, a boolean return being one whose value is a comparison, a
+``not`` or a boolean operation of those, or any return of a function annotated ``-> bool``.
+The schema conditionals of ``order_transitioned`` are JSON, which the AST pass cannot read; their
 ``required`` lists and property rules keep their hand-written mutants
 (:data:`SCHEMA_MUTANTS`). A mutant that changes a refusal's recovery step or a
 manpage's documented output is a test gap, never wording (ruling 97). ``--plan`` prints
@@ -78,6 +83,10 @@ CITED: dict[str, tuple[str, ...] | None] = {
     "src/gzkit/order_ledger.py": None,
     "src/gzkit/commands/wp_order.py": None,
     "src/gzkit/governance/trust_audits/catalog.py": (
+        # Ruling 98: the path of `gz validate --catalog` that reads the rows' breaches.
+        "audit_catalog",
+        "_structure_findings",
+        "order_findings",
         "_repair_req_breaches",
         "req_breaches",
         "_supersession_cycles",
@@ -291,14 +300,62 @@ def _final_returns(func: _Func) -> set[int]:
     }
 
 
+def _is_boolean(value: ast.expr) -> bool:
+    """Return whether *value* is a comparison, a ``not`` or a boolean operation of those."""
+    if isinstance(value, ast.Compare):
+        return True
+    if isinstance(value, ast.UnaryOp):
+        return isinstance(value.op, ast.Not)
+    if isinstance(value, ast.BoolOp):
+        return all(_is_boolean(operand) for operand in value.values)
+    return False
+
+
+def _boolean_returns(func: _Func) -> list[ast.expr]:
+    """Return the values of ruling 99's boolean returns in *func* and its nested functions."""
+    found: list[ast.expr] = []
+
+    def visit(node: ast.AST, owner: _Func) -> None:
+        for child in ast.iter_child_nodes(node):
+            if isinstance(child, _Func):
+                visit(child, child)
+                continue
+            if isinstance(child, ast.Return) and child.value is not None:
+                annotated = isinstance(owner.returns, ast.Name) and owner.returns.id == "bool"
+                if annotated or _is_boolean(child.value):
+                    found.append(child.value)
+            visit(child, owner)
+
+    visit(func, func)
+    return found
+
+
+def _handler_body(handler: ast.ExceptHandler) -> ast.stmt:
+    """Return a node spanning *handler*'s whole body, for one edit."""
+    span = ast.Pass()
+    first, last = handler.body[0], handler.body[-1]
+    span.lineno, span.col_offset = first.lineno, first.col_offset
+    span.end_lineno, span.end_col_offset = last.end_lineno, last.end_col_offset
+    return span
+
+
 def _branch_mutants(src: _Source, name: str, func: _Func, prefix: str) -> list[Mutation]:
-    """Apply ruling 94's rule to every branch of one function."""
+    """Apply ruling 94's rule, widened by ruling 99, to every branch of one function."""
     finals = _final_returns(func)
     found: list[Mutation | None] = []
+    for value in _boolean_returns(func):
+        where = f"{prefix}:{name}:{value.lineno}:{value.col_offset}"
+        text = src.segment(value)
+        found.extend((
+            src.edit(value, f"(({text}) or True)", f"{where} boolreturn forced true"),
+            src.edit(value, f"(({text}) and False)", f"{where} boolreturn forced false"),
+        ))
     for node in ast.walk(func):
         tests: list[tuple[ast.expr, str]] = []
         if isinstance(node, ast.If):
             tests.append((node.test, "if"))
+        elif isinstance(node, ast.While):
+            tests.append((node.test, "while"))
         elif isinstance(node, ast.IfExp):
             tests.append((node.test, "ifexp"))
         elif isinstance(node, ast.comprehension):
@@ -313,6 +370,8 @@ def _branch_mutants(src: _Source, name: str, func: _Func, prefix: str) -> list[M
         where = f"{prefix}:{name}:{getattr(node, 'lineno', 0)}:{getattr(node, 'col_offset', 0)}"
         if isinstance(node, ast.Raise):
             found.append(src.edit(node, "pass", f"{where} raise removed"))
+        if isinstance(node, ast.ExceptHandler):
+            found.append(src.edit(_handler_body(node), "raise", f"{where} handler re-raises"))
         if isinstance(node, ast.Return) and id(node) not in finals:
             found.append(src.edit(node, "pass", f"{where} early return removed"))
     return [m for m in found if m is not None]

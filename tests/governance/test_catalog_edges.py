@@ -10,6 +10,8 @@ REQ's BDD binding is its scenario tag and its `@covers` test. The freeze lock
 moved to RO-5.
 """
 
+import contextlib
+import io
 import json
 import textwrap
 import unittest
@@ -17,6 +19,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
+from gzkit.advisory import advisory_lines
 from gzkit.governance.trust_audits.catalog import audit_catalog
 from gzkit.governance.trust_audits.catalog_edges import (
     bdd_findings,
@@ -297,6 +300,21 @@ class TestAuditOverAProject(unittest.TestCase):
                 outcome = _outcome("H1", governed_by=[adr]).model_dump(mode="json")
                 self.write("outcomes", [outcome])
                 self.assertEqual([e.field for e in audit_catalog(self.root)], expected)
+
+    def test_the_coverage_report_lists_only_the_needs_no_req_derives_from(self):
+        # output-contract: docs/user/manpages/validate.md, the advisory coverage report
+        line = (
+            "[advisory] catalog-coverage: 3 of 4 PRD needs have no deriving REQ: FR-005a, "
+            "NFR-performance, NFR-explainability"
+        )
+        for derives_from, expected in ((["FR-001"], [line]), (list(prd_needs(_PRD)), [])):
+            with self.subTest(derives_from=derives_from):
+                req = _req("REQ-1", kind="SUPPORT", derives_from=derives_from)
+                self.write("reqs", [req.model_dump(mode="json")])
+                stderr = io.StringIO()
+                with contextlib.redirect_stderr(stderr):
+                    self.assertEqual(audit_catalog(self.root), [])
+                self.assertEqual(advisory_lines(stderr.getvalue()), expected)
 
     def test_depends_on_reads_the_roster_from_the_externals_file(self):
         outcome = _outcome("H1", depends_on=["external:github"]).model_dump(mode="json")
