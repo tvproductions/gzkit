@@ -1,5 +1,5 @@
 {
- "description": "RP-12 O2 dock trial red proofs: each test the trial added or whose assertions it changed, run alone against the mutant it was written for (rulings 27, 90 to 102). Written by o2_red_proofs.py --run over 152 cases, then by subset re-runs through its _run after later edits: the 26 cases of test_wp_order and test_wp_order_acceptance, the audit_catalog:619 case, and the 46 cases of work_package_run.py, twice, after each change to _package_order's refusal. Outcomes carry no reason; the one inconclusive case is the 600-second hang bound.",
+ "description": "RP-12 O2 dock trial red proofs: each test the trial added or whose assertions it changed, run alone against the mutant it was written for (rulings 27, 90 to 102). Written by o2_red_proofs.py --run over 152 cases, then by subset re-runs through its _run after later edits: the 26 cases of test_wp_order and test_wp_order_acceptance, the audit_catalog:619 case, and the 46 cases of work_package_run.py, three times, after each change to _package_order's refusal, the last adding its ruling-44 guard (ruling 103). Outcomes carry no reason; the one inconclusive case is the 600-second hang bound.",
  "cases": [
   {
    "file": "src/gzkit/order_ledger.py",
@@ -115,7 +115,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "_package_order:352:54 ifexp forced true",
+   "mutant": "_package_order:358:54 ifexp forced true",
    "test": "tests.test_order_run.DispatchOnAnOrder.test_an_order_the_store_lacks_is_refused",
    "baseline_green": true,
    "outcome": "killed",
@@ -123,7 +123,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "record_work_package_unblock:865:7 if forced false",
+   "mutant": "record_work_package_unblock:871:7 if forced false",
    "test": "tests.test_order_run.UnblockOnAnOrder.test_an_order_not_blocked_is_refused",
    "baseline_green": true,
    "outcome": "killed",
@@ -131,7 +131,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "record_work_package_unblock:865:7 if forced false",
+   "mutant": "record_work_package_unblock:871:7 if forced false",
    "test": "tests.test_work_package_run.Unblock.test_nothing_to_unblock_is_refused_in_three_parts",
    "baseline_green": true,
    "outcome": "killed",
@@ -139,7 +139,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "_check_role:412:7 if forced false",
+   "mutant": "_check_role:418:7 if forced false",
    "test": "tests.test_work_package_run.Dispatch.test_an_unknown_role_and_an_empty_model_are_refused",
    "baseline_green": true,
    "outcome": "killed",
@@ -147,7 +147,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "_exit_subjects:837:7 if forced false",
+   "mutant": "_exit_subjects:843:7 if forced false",
    "test": "tests.test_work_package_run.Unblock.test_an_exit_outside_the_four_is_refused",
    "baseline_green": true,
    "outcome": "killed",
@@ -155,7 +155,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "_exit_subjects:846:7 if forced false",
+   "mutant": "_exit_subjects:852:7 if forced false",
    "test": "tests.test_work_package_run.Unblock.test_the_requirement_is_the_one_at_the_bound",
    "baseline_green": true,
    "outcome": "killed",
@@ -163,7 +163,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "open_unclaimed_dispatches:639:11 if forced false",
+   "mutant": "open_unclaimed_dispatches:645:11 if forced false",
    "test": "tests.test_order_run.InFlightOnAnOrder.test_an_unclaimed_order_dispatch_for_another_root_is_open",
    "baseline_green": true,
    "outcome": "killed",
@@ -171,7 +171,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "open_unclaimed_dispatches:639:11 if forced false",
+   "mutant": "open_unclaimed_dispatches:645:11 if forced false",
    "test": "tests.test_order_run.InFlightOnAnOrder.test_it_stays_open_while_the_order_is_accepted",
    "baseline_green": true,
    "outcome": "killed",
@@ -179,7 +179,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "open_unclaimed_dispatches:639:11 if forced false",
+   "mutant": "open_unclaimed_dispatches:645:11 if forced false",
    "test": "tests.test_order_run.InFlightOnAnOrder.test_a_dispatch_of_a_closed_order_is_not_open",
    "baseline_green": true,
    "outcome": "killed",
@@ -187,7 +187,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "open_unclaimed_dispatches:636:15 ifexp forced true",
+   "mutant": "open_unclaimed_dispatches:642:15 ifexp forced true",
    "test": "tests.test_work_package_run.DispatchVoid.test_a_voided_dispatch_is_no_dispatch_and_never_open",
    "baseline_green": true,
    "outcome": "killed",
@@ -195,7 +195,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "record_work_package_dispatch:505:7 if forced true",
+   "mutant": "record_work_package_dispatch:511:7 if forced true",
    "test": "tests.test_work_package_run.Dispatch.test_a_stopping_exit_stops_every_subject_of_the_package",
    "baseline_green": true,
    "outcome": "killed",
@@ -203,7 +203,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "_intended_root:475:22 ifexp forced false",
+   "mutant": "_intended_root:481:22 ifexp forced false",
    "test": "tests.test_work_package_run.DispatchRecord.test_an_absolute_root_of_either_platform_is_booked_in_one_form",
    "baseline_green": true,
    "outcome": "killed",
@@ -211,7 +211,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "_intended_root:480:31 ifexp forced true",
+   "mutant": "_intended_root:486:31 ifexp forced true",
    "test": "tests.test_work_package_run.DispatchRecord.test_an_absolute_root_of_either_platform_is_booked_in_one_form",
    "baseline_green": true,
    "outcome": "killed",
@@ -219,7 +219,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "_run_rows:443:7 if forced true",
+   "mutant": "_run_rows:449:7 if forced true",
    "test": "tests.test_work_package_run.AcrossPackages.test_a_raised_revision_starts_clean",
    "baseline_green": true,
    "outcome": "killed",
@@ -227,7 +227,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "_run_rows:443:7 if forced true",
+   "mutant": "_run_rows:449:7 if forced true",
    "test": "tests.test_work_package_run.AcrossPackages.test_reopen_is_once_per_requirement_across_packages",
    "baseline_green": true,
    "outcome": "killed",
@@ -307,7 +307,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "_check_blockable:789:33 ifexp forced true",
+   "mutant": "_check_blockable:795:33 ifexp forced true",
    "test": "tests.test_order_run.BlockOnAnOrder.test_an_order_not_opened_or_closed_is_not_sent_to_gate_5_by_the_refusal",
    "baseline_green": true,
    "outcome": "killed",
@@ -315,7 +315,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "_check_blockable:789:33 ifexp forced false",
+   "mutant": "_check_blockable:795:33 ifexp forced false",
    "test": "tests.test_order_run.BlockOnAnOrder.test_an_accepted_order_takes_no_block",
    "baseline_green": true,
    "outcome": "killed",
@@ -323,7 +323,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "_check_blockable:779:37 ifexp forced true",
+   "mutant": "_check_blockable:785:37 ifexp forced true",
    "test": "tests.test_work_package_run.Block.test_an_uninitiated_package_takes_no_block",
    "baseline_green": true,
    "outcome": "killed",
@@ -331,7 +331,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "_check_blockable:779:37 ifexp forced true",
+   "mutant": "_check_blockable:785:37 ifexp forced true",
    "test": "tests.test_work_package_run.Block.test_a_closed_package_takes_no_block",
    "baseline_green": true,
    "outcome": "killed",
@@ -339,7 +339,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "_check_blockable:779:37 ifexp forced false",
+   "mutant": "_check_blockable:785:37 ifexp forced false",
    "test": "tests.test_work_package_run.Block.test_an_accepted_package_takes_no_block",
    "baseline_green": true,
    "outcome": "killed",
@@ -819,7 +819,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "open_unclaimed_dispatches:642:11 if forced true",
+   "mutant": "open_unclaimed_dispatches:648:11 if forced true",
    "test": "tests.test_order_run.InFlightOnAnOrder.test_a_dispatch_of_a_closed_order_is_not_open",
    "baseline_green": true,
    "outcome": "killed",
@@ -827,7 +827,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "record_work_package_block:749:68 filter forced true",
+   "mutant": "record_work_package_block:755:68 filter forced true",
    "test": "tests.test_order_run.BlockOnAnOrder.test_an_unblock_with_no_exit_spends_none_for_the_next_block",
    "baseline_green": true,
    "outcome": "killed",
@@ -835,7 +835,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "_held_by_block:450:43 ifexp forced true",
+   "mutant": "_held_by_block:456:43 ifexp forced true",
    "test": "tests.test_work_package_run.Unblock.test_another_packages_unblock_leaves_this_package_blocked",
    "baseline_green": true,
    "outcome": "killed",
@@ -1043,7 +1043,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "_check_not_stopped:455:32 ifexp forced true",
+   "mutant": "_check_not_stopped:461:32 ifexp forced true",
    "test": "tests.test_work_package_run.Dispatch.test_a_stopped_packages_refusal_names_the_package",
    "baseline_green": true,
    "outcome": "killed",
@@ -1051,7 +1051,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "_check_not_stopped:455:32 ifexp forced false",
+   "mutant": "_check_not_stopped:461:32 ifexp forced false",
    "test": "tests.test_order_run.UnblockOnAnOrder.test_a_stopped_orders_refusal_names_the_order",
    "baseline_green": true,
    "outcome": "killed",
@@ -1059,7 +1059,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "record_work_package_unblock:866:35 ifexp forced true",
+   "mutant": "record_work_package_unblock:872:35 ifexp forced true",
    "test": "tests.test_work_package_run.Unblock.test_nothing_to_unblock_is_refused_in_three_parts",
    "baseline_green": true,
    "outcome": "killed",
@@ -1067,7 +1067,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "record_work_package_unblock:866:35 ifexp forced false",
+   "mutant": "record_work_package_unblock:872:35 ifexp forced false",
    "test": "tests.test_order_run.UnblockOnAnOrder.test_an_unblock_of_an_unblocked_order_reads_in_three_parts",
    "baseline_green": true,
    "outcome": "killed",
@@ -1075,7 +1075,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "record_work_package_unblock:868:35 ifexp forced true",
+   "mutant": "record_work_package_unblock:874:35 ifexp forced true",
    "test": "tests.test_work_package_run.Unblock.test_nothing_to_unblock_is_refused_in_three_parts",
    "baseline_green": true,
    "outcome": "killed",
@@ -1083,7 +1083,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "record_work_package_unblock:868:35 ifexp forced false",
+   "mutant": "record_work_package_unblock:874:35 ifexp forced false",
    "test": "tests.test_order_run.UnblockOnAnOrder.test_an_unblock_of_an_unblocked_order_reads_in_three_parts",
    "baseline_green": true,
    "outcome": "killed",
@@ -1091,7 +1091,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "_package_order:352:54 ifexp forced false",
+   "mutant": "_package_order:358:54 ifexp forced false",
    "test": "tests.test_order_run.UnblockOnAnOrder.test_an_order_outside_the_package_reads_in_three_parts",
    "baseline_green": true,
    "outcome": "killed",
@@ -1187,7 +1187,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "_reopened:697:11 boolreturn forced true",
+   "mutant": "_reopened:703:11 boolreturn forced true",
    "test": "tests.test_order_run.BlockOnAnOrder.test_a_later_block_carries_the_orders_exits_and_reopenings",
    "baseline_green": true,
    "outcome": "killed",
@@ -1195,7 +1195,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "_reopened:697:11 boolreturn forced false",
+   "mutant": "_reopened:703:11 boolreturn forced false",
    "test": "tests.test_order_run.BlockOnAnOrder.test_a_later_block_carries_the_orders_exits_and_reopenings",
    "baseline_green": true,
    "outcome": "killed",
@@ -1227,7 +1227,7 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "_package_order:356:15 ifexp forced true",
+   "mutant": "_package_order:362:15 ifexp forced true",
    "test": "tests.test_order_run.UnblockOnAnOrder.test_an_order_outside_the_package_reads_in_three_parts",
    "baseline_green": true,
    "outcome": "killed",
@@ -1235,7 +1235,23 @@
   },
   {
    "file": "src/gzkit/work_package_run.py",
-   "mutant": "_package_order:356:15 ifexp forced false",
+   "mutant": "_package_order:362:15 ifexp forced false",
+   "test": "tests.test_order_run.UnblockOnAnOrder.test_an_order_outside_the_package_reads_in_three_parts",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "_package_order:350:7 if forced false",
+   "test": "tests.test_order_run.OrderOnADeliveryPackage.test_each_run_verb_refuses_an_order_on_a_delivery_package_in_three_parts",
+   "baseline_green": true,
+   "outcome": "killed",
+   "failure_class": "assertion"
+  },
+  {
+   "file": "src/gzkit/work_package_run.py",
+   "mutant": "_package_order:350:7 if forced true",
    "test": "tests.test_order_run.UnblockOnAnOrder.test_an_order_outside_the_package_reads_in_three_parts",
    "baseline_green": true,
    "outcome": "killed",
@@ -1243,7 +1259,7 @@
   }
  ],
  "counts": {
-  "killed/assertion": 154,
+  "killed/assertion": 156,
   "inconclusive/-": 1
  }
 }

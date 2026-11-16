@@ -347,6 +347,12 @@ def _dispatch_rows(ledger: Ledger) -> list[tuple[str, str, str]]:
 
 
 def _package_order(catalog: Catalog, package: WorkPackage, order_id: str) -> Order:
+    if package.kind != "repair":
+        _refuse(
+            f"Work package {package.id} is a {package.kind} package and holds no orders; a "
+            "delivery package keeps its five states until RP-14 moves construction onto the "
+            f"order (RP-12 ruling 44). Re-run the call without --order {order_id}."
+        )
     held = next((order for order in catalog.orders if order.id == order_id), None)
     if held is None or held.work_package != package.id:
         where = f"an order of {held.work_package}" if held else "not in data/catalog/orders.json"

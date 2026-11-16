@@ -47,7 +47,15 @@ from gzkit.work_package_run import (
     run_positions,
     took_stopping_exit,
 )
-from tests.test_order_ledger import _CLOSE, _FREEZE, _PAYLOADS, _OrderCase, _raised, _rows
+from tests.test_order_ledger import (
+    _CLOSE,
+    _FREEZE,
+    _PAYLOADS,
+    _OrderCase,
+    _package,
+    _raised,
+    _rows,
+)
 
 _PACKAGE = "WP-01-stamp"
 _ORDER = "ORD-01-import"
@@ -291,6 +299,45 @@ class BlockOnAnOrder(_OrderRun):
         events = []
         self.assertIsNone(_raised(lambda: events.append(self.block())))
         self.assertEqual(events[0].exits_used, ())
+
+
+class OrderOnADeliveryPackage(_OrderRun):
+    """A delivery package holds no orders, so a run verb refuses its --order (ruling 44)."""
+
+    def test_each_run_verb_refuses_an_order_on_a_delivery_package_in_three_parts(self) -> None:
+        # output-contract: guardrail-feedback-prose's three parts, RP-12 rulings 44 and 103
+        delivery = _package("WP-05-feat", "delivery")
+        self.catalog = self.catalog.model_copy(
+            update={"work_packages": (*self.catalog.work_packages, delivery)}
+        )
+        record_work_package_transition(
+            self.catalog,
+            self.ledger,
+            TransitionRequest(
+                work_package="WP-05-feat", to_state="initiated", evidence="e", operator_text="go"
+            ),
+        )
+        dispatch = DispatchRequest(
+            work_package="WP-05-feat", order=_ORDER, role="Implementer", model="m",
+            req="REQ-1", root=_ROOT,
+        )  # fmt: skip
+        block = BlockRequest(work_package="WP-05-feat", order=_ORDER, reason="r", next_action="n")
+        unblock = UnblockRequest(work_package="WP-05-feat", order=_ORDER, ruling="a", operator="g0")
+        calls = {
+            "dispatch": lambda: record_work_package_dispatch(self.catalog, self.ledger, dispatch),
+            "block": lambda: record_work_package_block(
+                self.catalog, self.ledger, block, refutations={}
+            ),
+            "unblock": lambda: record_work_package_unblock(self.catalog, self.ledger, unblock),
+        }
+        for verb, call in calls.items():
+            with self.subTest(verb=verb):
+                self.assertEqual(
+                    self.refused("holds no orders", call),
+                    "Work package WP-05-feat is a delivery package and holds no orders; a "
+                    "delivery package keeps its five states until RP-14 moves construction onto "
+                    f"the order (RP-12 ruling 44). Re-run the call without --order {_ORDER}.",
+                )
 
 
 class UnblockOnAnOrder(_OrderRun):
