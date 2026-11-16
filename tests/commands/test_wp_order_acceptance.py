@@ -314,7 +314,8 @@ class TestTheOrdersAcceptRefusal(_OrderAcceptance):
         self.assertEqual(self.state(), "commenced")
 
     def test_a_blank_evidence_is_refused_with_the_accept_to_rerun(self) -> None:
-        # output-contract: guardrail-feedback-prose's three parts, RP-12 ruling 101
+        # output-contract: the refusal's what-failed part and its next step, RP-12 ruling 101;
+        # the order writer cites no rule here, a guardrail-feedback-prose defect booked apart
         self.init()
         self.approve(self.proof())
         with mock.patch(_FOOTPRINT, return_value=None):

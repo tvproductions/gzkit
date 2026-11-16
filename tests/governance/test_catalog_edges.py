@@ -29,6 +29,7 @@ from gzkit.governance.trust_audits.catalog_edges import (
 )
 from gzkit.models.catalog import Catalog, CatalogReq, Criterion, External, Outcome
 from gzkit.traceability import CatalogBindings
+from tests.test_order_ledger import _raised
 
 _PRD = textwrap.dedent(
     """
@@ -275,6 +276,16 @@ class TestAuditOverAProject(unittest.TestCase):
 
     def test_a_project_whose_edges_resolve_passes(self):
         self.assertEqual(audit_catalog(self.root), [])
+
+    def test_a_catalog_with_no_user_facing_outcome_reads_no_feature_file(self):
+        """Feature bindings are read for user-facing outcomes alone (the BDD scope)."""
+        features = self.root / "features"
+        features.mkdir()
+        (features / "x.feature").write_bytes(b"Feature: \xe9\n")
+        found: list[object] = []
+        raised = _raised(lambda: found.extend(audit_catalog(self.root)))
+        self.assertIsNone(raised, f"the audit read a feature file it does not bind: {raised!r}")
+        self.assertEqual(found, [])
 
     def test_the_audit_reads_the_live_prd_and_the_manifest_gates(self):
         bad = _req("REQ-1", kind="SUPPORT", derives_from=["FR-004"]).model_dump(mode="json")
