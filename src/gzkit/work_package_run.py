@@ -350,14 +350,16 @@ def _package_order(catalog: Catalog, package: WorkPackage, order_id: str) -> Ord
     held = next((order for order in catalog.orders if order.id == order_id), None)
     if held is None or held.work_package != package.id:
         where = f"an order of {held.work_package}" if held else "not in data/catalog/orders.json"
-        show = f"Read its package with `uv run gz wp order show {order_id}`"
         step = (
-            show if held else f"Name one, or open one with `uv run gz wp order new {package.id}`,"
+            f"Read its package with `uv run gz wp order show {order_id}`, and re-run with an "
+            f"order of {package.id}."
+            if held
+            else f"Check the id; an order is written with `uv run gz wp order new {package.id} "
+            "--slug <slug> --purpose <text> --operator-text <words>`."
         )
         _refuse(
-            f"Order {order_id!r} is {where}; it is not one of {package.id}'s orders, and a run "
-            "verb's --order takes an order of the package it names (RP-12 rulings 57 and 59). "
-            f"{step} and re-run."
+            f"Order {order_id!r} is {where}; it is not one of {package.id}'s orders; a run verb's "
+            f"--order takes an order of the package it names (RP-12 rulings 57 and 59). {step}"
         )
     return held
 

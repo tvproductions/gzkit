@@ -334,20 +334,26 @@ class UnblockOnAnOrder(_OrderRun):
             (
                 "ORD-03-other",
                 "an order of WP-03-other",
-                "Read its package with `uv run gz wp order show ORD-03-other`",
+                (
+                    "Read its package with `uv run gz wp order show ORD-03-other`, and re-run "
+                    f"with an order of {_PACKAGE}."
+                ),
             ),
             (
                 "ORD-09-ghost",
                 "not in data/catalog/orders.json",
-                f"Name one, or open one with `uv run gz wp order new {_PACKAGE}`,",
+                (
+                    f"Check the id; an order is written with `uv run gz wp order new {_PACKAGE} "
+                    "--slug <slug> --purpose <text> --operator-text <words>`."
+                ),
             ),
         ):
             with self.subTest(order=order):
                 self.assertEqual(
                     self.refused("not one of", lambda order=order: self.unblock(order=order)),
-                    f"Order {order!r} is {where}; it is not one of {_PACKAGE}'s orders, and a "
+                    f"Order {order!r} is {where}; it is not one of {_PACKAGE}'s orders; a "
                     "run verb's --order takes an order of the package it names (RP-12 rulings 57 "
-                    f"and 59). {step} and re-run.",
+                    f"and 59). {step}",
                 )
 
     def test_a_package_unblock_does_not_lift_an_orders_block(self) -> None:
