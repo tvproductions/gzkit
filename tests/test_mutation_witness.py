@@ -596,6 +596,61 @@ class TestDocumentedTestsAreObservable(unittest.TestCase):
         self.assertNotIn("test_accepts_one", " ".join(sweep.baseline_executed_tests))
 
 
+_ADVISING_TESTS = '''import sys
+import unittest
+
+from subject import guard
+
+
+class TestGuard(unittest.TestCase):
+    def test_rejects_zero(self) -> None:
+        sys.stderr.write("[advisory] the code under test announces something\\n")
+        self.assertFalse(guard(0))
+
+    def test_accepts_one(self) -> None:
+        """One is accepted, announced from a documented test."""
+        sys.stderr.write("[advisory] the code under test announces something\\n")
+        self.assertTrue(guard(1))
+'''
+
+
+class TestTestsThatWriteToStderrAreObservable(unittest.TestCase):
+    """A test that writes to stderr must not hide its result from the sweep.
+
+    `unittest` writes the verbose result line to stderr, which is where the code under
+    test writes an advisory, so a test that announces something lands its text between
+    ` ... ` and its status, and the status on a line of its own. Measured on RP-12 O2's
+    dock trial: `audit_catalog`'s coverage advisory hid every test that runs it, so a
+    green baseline read red and a kill read as collateral.
+    """
+
+    def test_an_advising_baseline_reads_green_and_still_yields_an_assertion_kill(self) -> None:
+        with TemporaryDirectory() as td:
+            root = Path(td)
+            (root / "subject.py").write_text(_MODULE, encoding="utf-8", newline="\n")
+            (root / "test_subject.py").write_text(_ADVISING_TESTS, encoding="utf-8", newline="\n")
+            sweep = run_mutation_sweep(
+                root,
+                root / "subject.py",
+                [
+                    Mutation(
+                        find="if value <= 0:",
+                        replace="if False:",
+                        label="guard",
+                        expected_tests=["test_rejects_zero"],
+                    )
+                ],
+                _TEST_CMD,
+            )
+        self.assertTrue(sweep.baseline_green, "a passing advising baseline must read green")
+        executed = " ".join(sweep.baseline_executed_tests)
+        self.assertIn("test_rejects_zero", executed)
+        self.assertIn("test_accepts_one", executed)
+        witness = sweep.witnesses[0]
+        self.assertEqual(witness.outcome, "killed")
+        self.assertEqual(witness.failure_class, "assertion")
+
+
 class TestHungRun(unittest.TestCase):
     """A test run that exceeds the hang bound is an outcome about the run (GHI #1179)."""
 

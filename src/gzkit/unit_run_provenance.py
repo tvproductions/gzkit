@@ -26,6 +26,8 @@ _BEHAVE_PASSED_RE = re.compile(r"^(\d+) scenarios? passed,", re.MULTILINE)
 _TEST_LINE = re.compile(r"^\s*(\w+) \(([^)]+)\)(?: \(.*\))? \.\.\. (ok|FAIL|ERROR|skipped.*)$")
 _TEST_ID_LINE = re.compile(r"^\s*(\w+) \(([^)]+)\)(?: \(.*\))?$")
 _STATUS_TAIL = re.compile(r" \.\.\. (ok|FAIL|ERROR|skipped.*)$")
+_INTERRUPTED = re.compile(r"^(.*?) \.\.\. (?!(?:ok|FAIL|ERROR|skipped.*)$)")
+_STATUS_ALONE = re.compile(r"^(ok|FAIL|ERROR|skipped.*)$")
 _FAILURE_LINE = re.compile(r"^(FAIL|ERROR): (\w+) \(([^)]+)\)")
 
 
@@ -59,9 +61,42 @@ def _one_line_descriptions(output: str) -> list[str]:
             folded.append(f"{lines[index]} ... {status.group(1)}")
             index += 2
             continue
+        if interrupted := _interrupted(lines, index):
+            line, end = interrupted
+            folded.append(line)
+            folded.extend(lines[index:end])
+            index = end + 1
+            continue
         folded.append(lines[index])
         index += 1
     return folded
+
+
+def _interrupted(lines: list[str], index: int) -> tuple[str, int] | None:
+    """Fold a result the test's own output interrupted, as one line ending "... <status>".
+
+    The verbose result line goes to stderr, where the code under test writes too, so a
+    test that announces something lands its text after `` ... `` and its status alone
+    on a later line. Read from *index*: the test's identity (one line, or two with a
+    docstring), then the first line that is a status alone, before the next test.
+
+    Returns:
+        The folded line and the index of its status line, or None.
+
+    """
+    head = lines[index]
+    if not _TEST_ID_LINE.match(head.split(" ... ", 1)[0]):
+        return None
+    dots = index if " ... " in head else index + 1
+    if dots >= len(lines) or not _INTERRUPTED.match(lines[dots]):
+        return None
+    identity = head.split(" ... ", 1)[0]
+    for end in range(dots + 1, len(lines)):
+        if _TEST_ID_LINE.match(lines[end].split(" ... ", 1)[0]):
+            return None
+        if status := _STATUS_ALONE.match(lines[end]):
+            return f"{identity} ... {status.group(1)}", end
+    return None
 
 
 def read_test_observations(output: str) -> tuple[set[str], list[str], int]:
