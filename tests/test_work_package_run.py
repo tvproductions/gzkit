@@ -192,6 +192,28 @@ class CountFixCycles(unittest.TestCase):
         ]
         self.assertEqual(count_fix_cycles(rows)["A"], 1)
 
+    def test_a_craftsman_dispatch_arms_no_cycle(self) -> None:
+        """RP-12 ruling 132: a restoration is not a review; nor is a repair dispatch."""
+        for role in ("Restoration", "Repair"):
+            with self.subTest(role=role):
+                rows = [
+                    ("P", "REQ-1@1", "Implementer"),
+                    ("P", "ORD-01-x", role),
+                    ("P", "REQ-1@1", "Implementer"),
+                ]
+                self.assertEqual(count_fix_cycles(rows)["REQ-1@1"], 0)
+
+    def test_a_craftsman_dispatch_is_never_counted_as_a_cycle(self) -> None:
+        """RP-12 ruling 132: a repeated craftsman dispatch after a review is no fix cycle."""
+        for role in ("Restoration", "Repair"):
+            with self.subTest(role=role):
+                rows = [
+                    ("P", "ORD-01-x", role),
+                    ("P", "REQ-1@1", "SpecReviewer"),
+                    ("P", "ORD-01-x", role),
+                ]
+                self.assertEqual(count_fix_cycles(rows)["ORD-01-x"], 0)
+
     def test_the_count_follows_a_subject_into_a_new_package(self) -> None:
         rows = [
             ("P", "A", "Implementer"),
@@ -536,6 +558,28 @@ class SingleDriver(_Run):
         )
 
 
+class CraftsmanRolesOnADeliveryPackage(_Run):
+    """RP-12 ruling 109: Repair and Restoration are taken only on a repair package's order."""
+
+    def test_either_role_is_refused_on_a_delivery_package_with_or_without_an_order(self) -> None:
+        for role in ("Repair", "Restoration"):
+            for order in (None, "ORD-01-x"):
+                with self.subTest(role=role, order=order):
+                    request = DispatchRequest(
+                        work_package=_FIRST, role=role, model="m", req=None, order=order,
+                        root=self.root.as_posix(),
+                    )  # fmt: skip
+                    refusal = self._refused(
+                        "repair package's order",
+                        "work_package_dispatched",
+                        lambda r=request: record_work_package_dispatch(
+                            self.catalog, self.ledger, r
+                        ),
+                    )
+                    self.assertIn("ruling 109", refusal)
+                    self.assertIn("uv run gz wp", refusal)
+
+
 class Block(_Run):
     def test_the_block_carries_the_runtimes_facts_for_every_subject(self) -> None:
         self._reach_the_bound()
@@ -873,6 +917,7 @@ class DispatchRecord(_Run):
         assert found is not None
         self.assertEqual(found.intended_root, self.root.as_posix())
         self.assertEqual(found.role, "Implementer")
+        self.assertIsNone(found.order)
         self.assertIsNone(find_dispatch(self.ledger, "D-0000000000000000"))
 
     def test_the_dispatch_line_is_read_back_from_a_prompt(self) -> None:

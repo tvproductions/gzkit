@@ -130,12 +130,15 @@ def _register_wp_run(wp_commands: argparse._SubParsersAction) -> None:
             "the dispatched agent's prompt (RP-12 rulings 1 and 35). --void abandons\n"
             "a booked dispatch, refused from a subagent's call (ruling 42). --order\n"
             "dispatches on a commenced order, against a REQ its freeze holds (ruling 57);\n"
-            "a repair package's dispatch names its order (RP-12 ruling 44)."
+            "a repair package's dispatch names its order (RP-12 ruling 44). Repair\n"
+            "takes a frozen order and Restoration a commenced one, a repair package's\n"
+            "order alone, each naming no REQ, its subject the order (rulings 109, 131, 132)."
         ),
         epilog=build_epilog(
             [
                 "gz wp dispatch WP-01-x --role Implementer --model sonnet --req REQ-1",
                 "gz wp dispatch WP-01-x --order ORD-01-y --role Implementer --model m --req REQ-1",
+                "gz wp dispatch WP-01-x --order ORD-01-y --role Repair --model m",
                 "gz wp dispatch WP-01-x --role Implementer --model m --req REQ-1 --root ../tmp",
                 "gz wp dispatch WP-01-x --void D-0123456789abcdef --reason 'never spawned'",
             ]
@@ -145,10 +148,18 @@ def _register_wp_run(wp_commands: argparse._SubParsersAction) -> None:
     p_dispatch.add_argument(
         "--role",
         default=None,
-        help="Implementer, SpecReviewer, QualityReviewer or SingleDriver; required to book",
+        help=(
+            "Implementer, SpecReviewer, QualityReviewer, SingleDriver, or on a repair "
+            "package's order Repair (frozen order) or Restoration (commenced order); "
+            "required to book"
+        ),
     )
     p_dispatch.add_argument("--model", default=None, help="The model tier; required to book")
-    p_dispatch.add_argument("--req", default=None, help="The frozen REQ dispatched against")
+    p_dispatch.add_argument(
+        "--req",
+        default=None,
+        help="The frozen REQ dispatched against; Repair and Restoration name none",
+    )
     p_dispatch.add_argument(
         "--reason", default=None, help="Why the run is single-driver, or why a dispatch is voided"
     )

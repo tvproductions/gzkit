@@ -39,6 +39,7 @@ from gzkit.work_package_run import (
     DispatchRequest,
     RunPosition,
     UnblockRequest,
+    find_dispatch,
     open_unclaimed_dispatches,
     record_dispatch_void,
     record_work_package_block,
@@ -200,6 +201,62 @@ class DispatchOnAnOrder(_OrderRun):
 
     def test_a_dispatch_on_the_repair_package_names_its_order(self) -> None:
         self.refused("--order", lambda: self.dispatch(order=None))
+
+
+class RepairOnAnOrder(_OrderRun):
+    """Rulings 108, 130 and 131: a Repair dispatch takes a frozen order and no REQ."""
+
+    def freeze_second(self) -> None:
+        self.walk_to("frozen", order=_SECOND, baseline=(BaselinedReq(req="REQ-2", revision=1),))
+
+    def test_a_frozen_order_takes_it_with_the_order_as_its_subject(self) -> None:
+        self.freeze_second()
+        event = self.dispatch("Repair", order=_SECOND, req=None)
+        self.assertEqual((event.role, event.order, event.subject), ("Repair", _SECOND, _SECOND))
+
+    def test_its_record_carries_its_order(self) -> None:
+        """Task 3's hang reads a dispatch's order from its record."""
+        self.freeze_second()
+        event = self.dispatch("Repair", order=_SECOND, req=None)
+        found = find_dispatch(self.ledger, str(event.dispatch_id))
+        assert found is not None
+        self.assertEqual((found.role, found.order, found.subject), ("Repair", _SECOND, _SECOND))
+
+    def test_a_commenced_order_refuses_it(self) -> None:
+        refusal = self.refused("frozen order", lambda: self.dispatch("Repair", req=None))
+        self.assertIn("131", refusal)
+        self.assertIn("uv run gz wp order show", refusal)
+
+    def test_it_names_no_req(self) -> None:
+        self.freeze_second()
+        refusal = self.refused(
+            "names no REQ", lambda: self.dispatch("Repair", order=_SECOND, req="REQ-2")
+        )
+        self.assertIn("without --req", refusal)
+
+    def test_a_blocked_frozen_order_refuses_it(self) -> None:
+        self.freeze_second()
+        self.block(order=_SECOND)
+        self.refused("blocked", lambda: self.dispatch("Repair", order=_SECOND, req=None))
+
+
+class RestorationOnAnOrder(_OrderRun):
+    """Ruling 132: a Restoration dispatch takes a commenced order and no REQ."""
+
+    def test_a_commenced_order_takes_it_with_the_order_as_its_subject(self) -> None:
+        event = self.dispatch("Restoration", req=None)
+        self.assertEqual((event.role, event.order, event.subject), ("Restoration", _ORDER, _ORDER))
+
+    def test_a_frozen_order_refuses_it(self) -> None:
+        self.walk_to("frozen", order=_SECOND, baseline=(BaselinedReq(req="REQ-2", revision=1),))
+        refusal = self.refused(
+            "commenced order", lambda: self.dispatch("Restoration", order=_SECOND, req=None)
+        )
+        self.assertIn("132", refusal)
+
+    def test_it_names_no_req(self) -> None:
+        refusal = self.refused("names no REQ", lambda: self.dispatch("Restoration"))
+        self.assertIn("without --req", refusal)
 
 
 class BlockOnAnOrder(_OrderRun):
@@ -535,6 +592,12 @@ class InFlightOnAnOrder(_OrderRun):
     def test_an_unclaimed_order_dispatch_for_another_root_is_open(self) -> None:
         """Ruling 40's guard does not go silent on repair work."""
         event = self.dispatch()
+        self.assertEqual(self.open_dispatches(), [event.dispatch_id])
+
+    def test_an_unclaimed_repair_dispatch_on_a_frozen_order_is_open(self) -> None:
+        """Ruling 40's guard does not go silent on a Repair dispatch before commencement."""
+        self.walk_to("frozen", order=_SECOND, baseline=(BaselinedReq(req="REQ-2", revision=1),))
+        event = self.dispatch("Repair", order=_SECOND, req=None)
         self.assertEqual(self.open_dispatches(), [event.dispatch_id])
 
     def test_it_stays_open_while_the_order_is_accepted(self) -> None:

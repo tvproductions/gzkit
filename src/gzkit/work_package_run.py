@@ -77,11 +77,27 @@ if TYPE_CHECKING:
 
 IMPLEMENTER = "Implementer"
 SINGLE_DRIVER = "SingleDriver"
-ROLES: tuple[str, ...] = (IMPLEMENTER, "SpecReviewer", "QualityReviewer", SINGLE_DRIVER)
+REPAIR = "Repair"
+RESTORATION = "Restoration"
+# The closed set of roles widened by Repair and Restoration, the craftsman's two
+# positions (RP-12 ruling 109, operator, 2026-11-16).
+ROLES: tuple[str, ...] = (
+    IMPLEMENTER,
+    "SpecReviewer",
+    "QualityReviewer",
+    SINGLE_DRIVER,
+    REPAIR,
+    RESTORATION,
+)
 EXITS: tuple[str, ...] = get_args(WorkPackageExit)
 _IMPLEMENTING = frozenset({IMPLEMENTER, SINGLE_DRIVER})
+_REVIEWING = frozenset({"SpecReviewer", "QualityReviewer"})
+_CRAFTSMAN = frozenset({REPAIR, RESTORATION})
 _REQ_EXITS = frozenset({"reopen", "departure"})
 _IN_FLIGHT = frozenset({"commenced", "accepted"})
+# A Repair dispatch is booked on a frozen order (RP-12 ruling 108), so ruling 40's
+# guard reads a frozen order's dispatch as open too.
+_ORDER_DISPATCH_OPEN = _IN_FLIGHT | {"frozen"}
 _DISPATCHED = "work_package_dispatched"
 _CLAIMED = "dispatch_claimed"
 _VOIDED = "dispatch_voided"
@@ -125,6 +141,9 @@ class DispatchRecord(BaseModel):
     role: str = Field(..., description="The position dispatched")
     subject: str = Field(..., description="The subject dispatched against")
     intended_root: str = Field(..., description="The absolute project root the dispatch is for")
+    order: str | None = Field(
+        None, description="The order dispatched on, None for a package's dispatch (ruling 57)"
+    )
 
 
 class BlockRequest(BaseModel):
@@ -293,7 +312,8 @@ def count_fix_cycles(rows: Iterable[tuple[str, str, str]]) -> dict[str, int]:
     the package arms every subject that package has started (ruling 16), a review of
     the subject itself arms it in any package (ruling 15), and each later implementing
     dispatch on an armed subject counts. A single-driver run has no review, so its first dispatch
-    arms its own subject, and a later change of role keeps the count.
+    arms its own subject, and a later change of role keeps the count. A Repair or Restoration
+    dispatch is not a review and arms nothing (RP-12 ruling 132).
 
     Returns:
         Each subject's fix cycles.
@@ -306,10 +326,12 @@ def count_fix_cycles(rows: Iterable[tuple[str, str, str]]) -> dict[str, int]:
     for package, subject, role in rows:
         cycles.setdefault(subject, 0)
         started_here = in_package.setdefault(package, set())
-        if role not in _IMPLEMENTING:
+        if role in _REVIEWING:
             armed |= started_here
             if subject in started:
                 armed.add(subject)
+            continue
+        if role not in _IMPLEMENTING:
             continue
         if subject in armed:
             cycles[subject] += 1
@@ -370,6 +392,42 @@ def _package_order(catalog: Catalog, package: WorkPackage, order_id: str) -> Ord
     return held
 
 
+def _craftsman_subject(order: Order, request: DispatchRequest, state: str | None) -> str:
+    """Bind the craftsman's dispatch to its order, naming no REQ (RP-12 ruling 130).
+
+    A Repair dispatch takes a frozen order, to hang its tags before commencement
+    (rulings 108 and 131); a Restoration dispatch takes a commenced one (ruling 132).
+
+    Returns:
+        The subject, the order's id.
+
+    """
+    wanted, cited, step = (
+        (
+            "frozen",
+            "rulings 108 and 131",
+            f"Read the order's state with `uv run gz wp order show {order.id}`.",
+        )
+        if request.role == REPAIR
+        else (
+            "commenced",
+            "ruling 132",
+            f"Commence the order first: `uv run gz wp order commence {order.id} --evidence <ref>`.",
+        )
+    )
+    if state != wanted:
+        _refuse(
+            f"Order {order.id} is {state or 'not opened'}; a {request.role} dispatch takes a "
+            f"{wanted} order alone (RP-12 {cited}). {step}"
+        )
+    if request.req is not None:
+        _refuse(
+            f"A {request.role} dispatch is bound to its order and names no REQ (RP-12 ruling "
+            f"130 and {cited}). Re-run the call without --req {request.req}."
+        )
+    return order.id
+
+
 def _order_subject(ledger: Ledger, order: Order, request: DispatchRequest) -> str:
     """Ruling 57: an order's dispatch takes a REQ its freeze holds, at the frozen revision.
 
@@ -378,6 +436,8 @@ def _order_subject(ledger: Ledger, order: Order, request: DispatchRequest) -> st
 
     """
     state = order_state(ledger, order.id)
+    if request.role in _CRAFTSMAN:
+        return _craftsman_subject(order, request, state)
     if state != "commenced":
         _refuse(f"Order {order.id} is {state or 'not opened'}, not commenced.")
     if request.req is None:
@@ -422,6 +482,13 @@ def _check_role(package: WorkPackage, request: DispatchRequest) -> None:
         _refuse(f"{package.id} is a repair package: nobody inspects their own work.")
     if single_driver != bool((request.reason or "").strip()):
         _refuse("A single-driver dispatch carries its reason, and only it does.")
+    if request.role in _CRAFTSMAN and (package.kind != "repair" or request.order is None):
+        _refuse(
+            f"A {request.role} dispatch is taken only on a repair package's order; "
+            f"{package.id} is a {package.kind} package (RP-12 ruling 109). Dispatch it on an "
+            "order of a repair package: `uv run gz wp dispatch <WP-id> --order <ORD-id> "
+            f"--role {request.role} --model <tier>`."
+        )
 
 
 def took_stopping_exit(ledger: Ledger, work_package: str) -> bool:
@@ -576,6 +643,7 @@ def find_dispatch(ledger: Ledger, dispatch_id: str) -> DispatchRecord | None:
             role=str(held["role"]),
             subject=str(held["subject"]),
             intended_root=str(held["intended_root"]),
+            order=str(held["order"]) if held.get("order") else None,
         )
         for held in (row.extra for row in ledger.query(event_type=_DISPATCHED))
         if held.get("dispatch_id") == dispatch_id and held.get("intended_root")
@@ -620,7 +688,8 @@ def open_unclaimed_dispatches(ledger: Ledger, project_root: str) -> list[str]:
 
     Open: booked for a root other than ``project_root``, on a package or an order
     whose run is in flight; a dispatch on an order reads the order's state, since its
-    repair package stays initiated (RP-12 rulings 44 and 57). While one is open, an
+    repair package stays initiated (RP-12 rulings 44 and 57), and a frozen order's
+    counts, where a Repair dispatch is booked (ruling 108). While one is open, an
     undispatched subagent may be that dispatch's, its line lost, so it is held to no
     root.
 
@@ -643,8 +712,10 @@ def open_unclaimed_dispatches(ledger: Ledger, project_root: str) -> list[str]:
             else ("package", str(held["work_package"]))
         )
         if run not in in_flight:
-            read = order_state if run[0] == "order" else work_package_state
-            in_flight[run] = read(ledger, run[1]) in _IN_FLIGHT
+            if run[0] == "order":
+                in_flight[run] = order_state(ledger, run[1]) in _ORDER_DISPATCH_OPEN
+            else:
+                in_flight[run] = work_package_state(ledger, run[1]) in _IN_FLIGHT
         if in_flight[run] and dispatch_id not in found:
             found.append(str(dispatch_id))
     return found

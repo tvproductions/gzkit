@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-17
 metadata:
-  skill-version: "0.19.2"
+  skill-version: "0.19.3"
 model: sonnet
 ---
 
@@ -201,7 +201,10 @@ uv run gz wp order commence <ORD-id> --evidence "<what justifies it>"
 ```
 
 The order's run is the package's run with `--order`: dispatch only against a REQ
-the order's freeze holds, while the order is commenced (ruling 57). A block on the
+the order's freeze holds, while the order is commenced (ruling 57). The craftsman's
+two roles name no REQ, their subject the order, and arm no fix cycle: `Repair`
+takes the order while it is frozen, to hang its tags, and `Restoration` once it is
+commenced (rulings 108, 109, 131 and 132). A block on the
 order holds that order alone, its dispatches and moves refused until the operator
 rules; the package's other orders carry on (ruling 59). A blocked, accepted or
 stopped order fences production writes across the tree, as a package does
@@ -209,6 +212,8 @@ stopped order fences production writes across the tree, as a package does
 
 ```bash
 uv run gz wp dispatch <WP-id> --order <ORD-id> --role Implementer --model <tier> --req REQ-<n>
+uv run gz wp dispatch <WP-id> --order <ORD-id> --role Repair --model <tier>
+uv run gz wp dispatch <WP-id> --order <ORD-id> --role Restoration --model <tier>
 uv run gz wp block <WP-id> --order <ORD-id> --reason "<why>" --next-action "<decision>"
 uv run gz wp unblock <WP-id> --order <ORD-id> --ruling "<their exact words>" --operator g0
 ```
