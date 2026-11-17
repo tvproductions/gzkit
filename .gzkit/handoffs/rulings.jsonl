@@ -2263,3 +2263,39 @@
 {"ts": "2026-11-16T09:39:20Z", "source": "20261116T093918Z-rp12-o2-complete.md", "text": "RP-12 ruling 106: O2's citation of sweeps that are not conclusive is a departure from specification, O2's alone (verbatim: \"Accept as O2's DFS (Recommended)\")."}
 {"ts": "2026-11-16T09:39:20Z", "source": "20261116T093918Z-rp12-o2-complete.md", "text": "RP-12 ruling 107: ruling 100's kill admits a test that asserts the refusal's type and that nothing was written (verbatim: \"Yes, type and no write (Recommended)\")."}
 {"ts": "2026-11-16T09:39:20Z", "source": "20261116T093918Z-rp12-o2-complete.md", "text": "RP-12 O2 is complete (verbatim: \"Yes, O2 is complete\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Push main's 11 commits (verbatim: \"Yes, push\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Open RP-12 O3, the tag-out log (verbatim: \"Open O3\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Ruling 108, the repair position dispatched on a frozen order to hang its tags (verbatim: \"A: frozen order (Rec.)\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Ruling 109, two roles Repair and Restoration (verbatim: \"A: two roles (Rec.)\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Ruling 110, the gz wp tag verb group (verbatim: \"A: gz wp tag (Rec.)\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Ruling 111, tag ids TAG-<NN>-<slug> (verbatim: \"B: TAG-<NN>-<slug>\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Ruling 112, a surface is <kind>:<name> resolved against today's registries (verbatim: \"A: kind-prefixed (Rec.)\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Ruling 113, check level C or D typed at issue (verbatim: \"A: typed at issue (Rec.)\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Ruling 114, the coordinator's mark is an unstamped call with the MX session (verbatim: \"A: unstamped call (Rec.)\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Ruling 115, dispatch_ended booked by the SubagentStop hook (verbatim: \"A: SubagentStop hook (Rec.)\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Ruling 116, a frozen order not yet commenced fences its footprint (verbatim: \"A: fence footprint (Rec.)\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Ruling 117, an order with no tag commences only on a stated no-isolation (verbatim: \"A: declared none (Rec.)\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Renew the mx-session lease (verbatim: \"Renew the lease first\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Approve O3's seven-task cut and start task 1 (verbatim: \"Approve, start task 1\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Ruling 118, a killed dispatch ends by its void (verbatim: \"A: void as its end (Rec.)\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Start task 2 (verbatim: \"Start task 2\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Ruling 119, the writer lives in gzkit/mx/tag_out.py (verbatim: \"A: gzkit/mx/tag_out.py (Rec.)\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Ruling 120, the issue carries the whole line item (verbatim: \"A: issue carries item (Rec.)\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Ruling 121, issue on an opened or frozen order (verbatim: \"A: opened or frozen (Rec.)\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Ruling 122, one open tag per surface refused at issue (verbatim: \"A: refuse at issue (Rec.)\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Ruling 123, hooks from settings and pre-commit, command-line spellings (verbatim: \"A: settings + pre-commit (Rec.)\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Ruling 124, four source kinds, no reference (verbatim: \"A: four kinds, no ref (Rec.)\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Ruling 125, refusals proved unheld, CLI wiring held (verbatim: \"A+B: refusals unheld (Rec.)\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Track the 7 pre-existing full-tier failures one line each (verbatim: \"A: a line each (Rec.)\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Ruling 126, gz wp tag show as a block per tag (verbatim: \"A: a block per tag (Rec.)\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Ruling 127, a hook surface names its registry (verbatim: \"A: name the registry (Rec.)\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Ruling 128, ruling 119 amended to the port (verbatim: \"A: amend 119 to the port (Rec.)\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Start task 3 (verbatim: \"Start task 3\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Ruling 129, a hung tag stays open until cleared (verbatim: \"A: open until cleared (Rec.)\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Ruling 130, a Repair dispatch may hang any tag of its order (verbatim: \"A: bound to the order (Rec.)\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Ruling 131, Repair and the hang on a frozen order not blocked (verbatim: \"A: frozen, not blocked (Rec.)\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Ruling 132, Restoration on a commenced order, no REQ (verbatim: \"A: commenced, no REQ (Rec.)\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Ruling 133, a hang is the stamped call of the dispatch it names (verbatim: \"A: stamp matches (Rec.)\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Ruling 134, a frozen order's dispatch is open for ruling 40's guard (verbatim: \"A: rule frozen in (Rec.)\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Ruling 135, a craftsman dispatch is not held by a stopping exit (verbatim: \"A: rule craftsman exempt (Rec.)\")."}
+{"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Write a fresh handoff and git sync (verbatim: \"we need a fresh handoff and git sync\")."}
