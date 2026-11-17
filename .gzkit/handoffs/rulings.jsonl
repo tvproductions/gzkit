@@ -2299,3 +2299,8 @@
 {"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Ruling 134, a frozen order's dispatch is open for ruling 40's guard (verbatim: \"A: rule frozen in (Rec.)\")."}
 {"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Ruling 135, a craftsman dispatch is not held by a stopping exit (verbatim: \"A: rule craftsman exempt (Rec.)\")."}
 {"ts": "2026-11-17T09:30:10Z", "source": "20261117T093009Z-rp12-o3-task3-built.md", "text": "Write a fresh handoff and git sync (verbatim: \"we need a fresh handoff and git sync\")."}
+{"ts": "2026-11-17T10:59:15Z", "source": "20261117T105912Z-ci-green-canaries-reviewed.md", "text": "Push the six CI-fix commits to main (verbatim: \"Push them\")."}
+{"ts": "2026-11-17T10:59:15Z", "source": "20261117T105912Z-ci-green-canaries-reviewed.md", "text": "Accept the four hexagon guard canaries, booked by gz canary review (verbatim: \"accept all four\")."}
+{"ts": "2026-11-17T10:59:15Z", "source": "20261117T105912Z-ci-green-canaries-reviewed.md", "text": "Push the review and insight commits (verbatim: \"Push them\")."}
+{"ts": "2026-11-17T10:59:15Z", "source": "20261117T105912Z-ci-green-canaries-reviewed.md", "text": "The closing-keywords pre-push hook is excused from the MX checkpoint under ADR-0.0.74 BI#2, staying hard at every level (by selection: \"Excused (Recommended)\")."}
+{"ts": "2026-11-17T10:59:15Z", "source": "20261117T105912Z-ci-green-canaries-reviewed.md", "text": "Write a fresh handoff and git sync (verbatim: \"fresh handoff and git sync\")."}
