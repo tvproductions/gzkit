@@ -1,10 +1,12 @@
-"""``gz wp tag issue``'s wiring: RP-12 O3 task 2, act 2.
+"""``gz wp tag``'s wiring: RP-12 O3 task 2, acts 2 and 3.
 
 `docs/governance/harbor-ro12-contractor-kit.md` § Rulings: the coordinator issues
 a tag with `gz wp tag issue` (rulings 6 and 110), an unstamped call recorded with
-the open MX session (ruling 114). Every refusal of the tag-out log is proved in
-`tests/test_tag_out.py` against the writer; these held tests prove the wiring
-alone, the verb's exit codes, its stamp refusal and its epilog (ruling 125).
+the open MX session (ruling 114), and `gz wp tag show` renders the log, the open
+tags by default and every tag on request (rulings 4 and 110). Every refusal of
+the tag-out log, and the reducer that reads a tag open or closed, is proved in
+`tests/test_tag_out.py`; these held tests prove the wiring alone, the verbs' exit
+codes, the stamp refusal and the epilogs (ruling 125).
 """
 
 import json
@@ -76,6 +78,10 @@ class _TagCase(unittest.TestCase):
         result = self.runner.invoke(main, ["wp", "tag", "issue", *args])
         return result.exit_code, " ".join(result.output.split())
 
+    def show(self, *args: str) -> tuple[int, str]:
+        result = self.runner.invoke(main, ["wp", "tag", "show", *args])
+        return result.exit_code, result.output
+
 
 class TagIssueWiringTests(_TagCase):
     def test_an_issue_under_an_open_session_books_the_tag_and_prints_its_id(self) -> None:
@@ -133,20 +139,100 @@ class TagIssueWiringTests(_TagCase):
         self.assertEqual(_tag_rows(), [])
 
 
+class TagShowWiringTests(_TagCase):
+    def close_order(self) -> None:
+        """Terminate ORD-01-import from opened, so its tag reads closed (ruling 122)."""
+        result = self.runner.invoke(
+            main,
+            [
+                *("wp", "order", "close", "ORD-01-import", "--decision", "terminate"),
+                *("--attestor", "g0", "--attestation-text", "stop it", "--evidence", "e"),
+            ],
+        )
+        self.assertEqual(result.exit_code, 0, result.output)
+
+    def test_show_with_no_tag_issued_says_none_is_open(self) -> None:
+        # given no tag issued
+        # when
+        code, output = self.show()
+        # then
+        self.assertEqual((code, output.strip()), (0, "No tag is open."))
+
+    def test_show_after_an_issue_lists_the_open_tag(self) -> None:
+        # given a tag issued on ORD-01-import under an open MX session
+        open_marker(Path.cwd())
+        self.assertEqual(self.issue(*_ISSUE)[0], 0)
+        # when
+        code, output = self.show()
+        # then
+        self.assertEqual(code, 0, output)
+        self.assertIn("TAG-01-stamp-hook", output)
+        self.assertIn("ORD-01-import", output)
+
+    def test_show_writes_each_tag_as_its_whole_line_item(self) -> None:
+        # output-contract: ruling 126 names the labelled-block rendering the view's form
+        # given a tag issued on ORD-01-import under an open MX session
+        open_marker(Path.cwd())
+        self.assertEqual(self.issue(*_ISSUE)[0], 0)
+        # when
+        code, output = self.show()
+        # then each field of the line item is on its own labelled line
+        lines = [line.strip() for line in output.splitlines()]
+        self.assertEqual(code, 0, output)
+        self.assertEqual(lines[0], "TAG-01-stamp-hook on ORD-01-import")
+        self.assertEqual(
+            [line.split(":", 1)[0] for line in lines[1:]],
+            ["Class", "Surface", "Position", "Check level", "Source", "Hazard", "Removal"],
+        )
+        self.assertIn("Hazard:      The scope reads a half-built map.", lines)
+        self.assertIn("Removal:     Run the scope; it passes.", lines)
+
+    def test_all_lists_a_closed_orders_tag_the_default_omits(self) -> None:
+        # given a tag issued on ORD-01-import, then the order terminated
+        open_marker(Path.cwd())
+        self.assertEqual(self.issue(*_ISSUE)[0], 0)
+        self.close_order()
+        # when
+        default, every, every_json = self.show(), self.show("--all"), self.show("--all", "--json")
+        # then the default omits it, and --all lists it, read closed
+        self.assertEqual(default, (0, "No tag is open.\n"))
+        self.assertEqual((every[0], every_json[0]), (0, 0), every[1] + every_json[1])
+        self.assertIn("TAG-01-stamp-hook", every[1])
+        self.assertEqual(
+            [(tag["tag_id"], tag["is_open"]) for tag in json.loads(every_json[1])],
+            [("TAG-01-stamp-hook", False)],
+        )
+
+    def test_json_mode_prints_each_tag_with_whether_it_is_open(self) -> None:
+        # given one tag issued and still open
+        open_marker(Path.cwd())
+        self.assertEqual(self.issue(*_ISSUE)[0], 0)
+        # when
+        code, output = self.show("--json")
+        # then
+        self.assertEqual(code, 0, output)
+        printed = json.loads(output)
+        self.assertEqual(
+            [(tag["tag_id"], tag["order"], tag["is_open"]) for tag in printed],
+            [("TAG-01-stamp-hook", "ORD-01-import", True)],
+        )
+        self.assertEqual({k: v for k, v in printed[0].items() if k != "is_open"}, _tag_rows()[0])
+
+
 class TagEpilogTests(unittest.TestCase):
     def test_every_example_parses_as_a_real_invocation(self) -> None:
-        # given the help of `gz wp tag` and `gz wp tag issue`
+        # given the help of `gz wp tag`, `gz wp tag issue` and `gz wp tag show`
         parser = _build_parser()
         examples = [
             line.strip()
-            for path in (["wp", "tag"], ["wp", "tag", "issue"])
+            for path in (["wp", "tag"], ["wp", "tag", "issue"], ["wp", "tag", "show"])
             for line in (_help_parser(parser, path).epilog or "").splitlines()
             if line.strip().startswith("gz ")
         ]
         # when
         parsed = [parser.parse_args(shlex.split(example)[1:]) for example in examples]
         # then each parses, every required flag present, onto a handler
-        self.assertGreaterEqual(len(examples), 3)
+        self.assertGreaterEqual(len(examples), 5)
         self.assertTrue(all(callable(args.func) for args in parsed))
 
 

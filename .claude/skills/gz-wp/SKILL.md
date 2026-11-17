@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-17
 metadata:
-  skill-version: "0.19.0"
+  skill-version: "0.19.1"
 model: sonnet
 ---
 
@@ -183,6 +183,14 @@ path. One open tag per surface (rulings 110 to 124):
 uv run gz wp tag issue <ORD-id> --slug <slug> --class <Danger|Caution> --surface <kind>:<name> \
   --position <off|advisory|recording> --hazard "<hazard>" --removal-procedure "<how>" \
   --source order-work --check-level <C|D>
+```
+
+Read the tag-out log with `gz wp tag show`, the open tags by default and every
+tag, each marked open or closed, with `--all`. It writes nothing, needs no MX
+session, and any session may run it (RP-12 rulings 4 and 110):
+
+```bash
+uv run gz wp tag show [--all] [--json]
 ```
 
 ```bash

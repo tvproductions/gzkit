@@ -132,4 +132,5 @@ the main session.
 
 ## See also
 
-[`gz wp order new`](wp-order-new.md), [`gz wp order show`](wp-order-show.md)
+[`gz wp tag show`](wp-tag-show.md), [`gz wp order new`](wp-order-new.md),
+[`gz wp order show`](wp-order-show.md)

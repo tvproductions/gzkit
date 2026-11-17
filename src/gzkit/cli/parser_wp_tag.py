@@ -1,4 +1,4 @@
-"""``gz wp tag`` subparser registrations (RP-12 O3 task 2).
+"""``gz wp tag`` subparser registrations (RP-12 O3 task 2, acts 2 and 3).
 
 The nested group the operator ruled on 2026-11-16 (RP-12 ruling 110, *"A: gz wp
 tag (Rec.)"*). Each leaf is written out literally, ``p_x = tag_commands.add_parser(...)``
@@ -29,10 +29,17 @@ _ISSUE_EXAMPLES = [
         " --removal-procedure 'Run the scope.' --source standard-disconnect --check-level D"
     ),
 ]
+_SHOW_EXAMPLES = ["gz wp tag show", "gz wp tag show --all --json"]
+#: `show` writes nothing and refuses nothing, so it never exits 3.
+_SHOW_EXIT_CODES = """Exit codes
+    0   Shown, an empty log included
+    1   User/config error: the project is not initialized
+    2   Usage or System/IO error
+"""
 
 
 def _register_wp_tag(wp_commands: argparse._SubParsersAction) -> None:
-    """Register ``gz wp tag`` and its leaf ``issue``."""
+    """Register ``gz wp tag`` and its leaves, ``issue`` and ``show``."""
     p_tag = wp_commands.add_parser(
         "tag",
         help="The tag-out log: tags isolating surfaces for a repair",
@@ -40,7 +47,7 @@ def _register_wp_tag(wp_commands: argparse._SubParsersAction) -> None:
             "Commands over the tag-out log, ledger events whose open tags are a\n"
             "derived view. A tag is TAG-<NN>-<slug> (RP-12 rulings 4, 110, 111)."
         ),
-        epilog=build_epilog(_ISSUE_EXAMPLES[:1]),
+        epilog=build_epilog([*_ISSUE_EXAMPLES[:1], _SHOW_EXAMPLES[0]]),
     )
     tag_commands = p_tag.add_subparsers(dest="tag_command")
     tag_commands.required = True
@@ -102,4 +109,24 @@ def _register_wp_tag(wp_commands: argparse._SubParsersAction) -> None:
             called_by_subagent=bool(getattr(a, "called_by_subagent", False)),
             as_json=a.as_json,
         )
+    )
+
+    p_tag_show = tag_commands.add_parser(
+        "show",
+        help="Show the tag-out log: the open tags, or every tag with --all",
+        description=(
+            "Render the tag-out log from the ledger's tag events, a read-only Layer 3\n"
+            "view: the open tags by default, every tag with --all (RP-12 rulings 4, 110)."
+        ),
+        epilog=build_epilog(_SHOW_EXAMPLES, exit_codes=_SHOW_EXIT_CODES),
+    )
+    p_tag_show.add_argument(
+        "--all",
+        dest="every",
+        action="store_true",
+        help="Every tag issued, open and closed, each marked which",
+    )
+    add_json_flag(p_tag_show)
+    p_tag_show.set_defaults(
+        func=lambda a: _lazy("wp_tag_show_cmd")(every=a.every, as_json=a.as_json)
     )

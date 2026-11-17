@@ -1,6 +1,7 @@
 """``gz wp tag`` commands over the tag-out log (RP-12 O3 task 2).
 
-The group the operator ruled on 2026-11-16 (RP-12 ruling 110). `issue` is the
+The group the operator ruled on 2026-11-16 (RP-12 ruling 110). `show` renders
+the log from the ledger's tag events, read-only (ruling 4). `issue` is the
 coordinator's act (ruling 6): a call stamped as a subagent's is refused (ruling
 114); the open MX session, read from the marker here and passed as a parameter,
 holds the tag and is the coordinator's mark (rulings 3 and 114); the surface
@@ -18,10 +19,12 @@ from gzkit.core.exceptions import PolicyBreachError
 from gzkit.ledger import Ledger
 from gzkit.models.catalog import load_catalog
 from gzkit.mx import marker
-from gzkit.mx.tag_out import TagIssue, TagOutError, record_tag_issue
+from gzkit.mx.tag_out import TagIssue, TagOutError, open_tags, record_tag_issue, tag_log
 
 if TYPE_CHECKING:
     from pathlib import Path
+
+    from gzkit.mx.tag_out import Tag
 
 
 def _open_session_id(root: Path, ledger_path: Path) -> str | None:
@@ -73,3 +76,54 @@ def wp_tag_issue_cmd(*, line_item: dict[str, str], called_by_subagent: bool, as_
         raise PolicyBreachError(str(exc)) from exc
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
     fmt.emit(event if as_json else f"Issued {event.tag_id} on {event.order}.")
+
+
+def _tag_block(tag: Tag, *, every: bool) -> str:
+    """Write one tag as a block of labelled lines, its whole line item legible (ruling 126).
+
+    Returns:
+        The tag's id and order, its state under ``--all``, then each field on its own line.
+
+    """
+    issue = tag.issue
+    state = f" ({'open' if tag.is_open else 'closed'})" if every else ""
+    fields = (
+        ("Class", issue.tag_class),
+        ("Surface", issue.surface),
+        ("Position", issue.position),
+        ("Check level", issue.check_level),
+        ("Source", issue.source),
+        ("Hazard", issue.hazard),
+        ("Removal", issue.removal_procedure),
+    )
+    return "\n".join(
+        (
+            f"{issue.tag_id} on {issue.order}{state}",
+            *(f"  {label + ':':<13}{value}" for label, value in fields),
+        )
+    )
+
+
+def wp_tag_show_cmd(*, every: bool, as_json: bool) -> None:
+    """Show the tag-out log: the open tags, or every tag with ``--all`` (RP-12 rulings 4, 110).
+
+    The log is a Layer 3 view rendered from the ledger's `tag_issued` events
+    through `gzkit.mx.tag_out` (`open_tags`, or `tag_log` for ``every``); a tag
+    reads closed once its order has closed (ruling 122). The human form is a
+    block of labelled lines per tag (ruling 126), and a plain line when there is none; ``--json``
+    prints the list, each tag its issue event's fields with ``is_open``.
+
+    The verb writes nothing and needs no MX session. Unlike `issue`, it is not
+    refused from a subagent's call: a read is not the coordinator's act (rulings
+    6 and 114 gate the acts, not the view).
+    """
+    config = ensure_initialized()
+    ledger = Ledger(get_project_root() / config.paths.ledger)
+    tags = tag_log(ledger) if every else open_tags(ledger)
+    fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
+    if as_json:
+        fmt.emit([{**tag.issue.model_dump(mode="json"), "is_open": tag.is_open} for tag in tags])
+    elif not tags:
+        fmt.emit("No tag has been issued." if every else "No tag is open.")
+    else:
+        fmt.emit("\n\n".join(_tag_block(tag, every=every) for tag in tags))

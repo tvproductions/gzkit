@@ -1030,6 +1030,14 @@ is `<kind>:<name>`, resolved against today's registries (RP-12 rulings 110 to 12
 uv run gz wp tag issue ORD-01-import --slug stamp-hook --class Danger --surface hook:dispatch-stamp --position off --hazard "<hazard>" --removal-procedure "<how it is removed>" --source order-work --check-level C
 ```
 
+The tag-out log reads back from the ledger: the open tags by default, every tag
+issued, open or closed, with `--all` (RP-12 rulings 4 and 110):
+
+```bash
+uv run gz wp tag show
+uv run gz wp tag show --all
+```
+
 A repair requirement states what must hold again after the repair. It lives in
 `data/catalog/reqs.json` beside the catalog's, written only by `gz wp req new`
 on an open repair package, and names the issue it answers:
