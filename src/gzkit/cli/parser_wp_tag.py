@@ -1,0 +1,105 @@
+"""``gz wp tag`` subparser registrations (RP-12 O3 task 2).
+
+The nested group the operator ruled on 2026-11-16 (RP-12 ruling 110, *"A: gz wp
+tag (Rec.)"*). Each leaf is written out literally, ``p_x = tag_commands.add_parser(...)``
+then ``p_x.set_defaults(func=lambda a: _lazy(...)(...))``, and the group hangs from
+a parameter named ``wp_commands``, the name ``register_wp_parsers`` binds to the
+``gz wp`` subparsers, because the doc-coverage scanner discovers commands from that
+shape. The closed sets are written here, not imported from ``gzkit.events``, so
+building the parser tree imports no handler-only module (GHI #180).
+"""
+
+from typing import TYPE_CHECKING
+
+from gzkit.cli.helpers import add_json_flag, build_epilog
+from gzkit.cli.parser_handler_manifest import _lazy
+
+if TYPE_CHECKING:
+    import argparse
+
+_ISSUE_EXAMPLES = [
+    (
+        "gz wp tag issue ORD-01-import --slug stamp-hook --class Danger"
+        " --surface hook:dispatch-stamp --position off --hazard 'Stamps no root.'"
+        " --removal-procedure 'Re-register the hook.' --source order-work --check-level C"
+    ),
+    (
+        "gz wp tag issue ORD-01-import --slug hexagon --class Caution"
+        " --surface validator:hexagon-tests --position advisory --hazard 'Map half built.'"
+        " --removal-procedure 'Run the scope.' --source standard-disconnect --check-level D"
+    ),
+]
+
+
+def _register_wp_tag(wp_commands: argparse._SubParsersAction) -> None:
+    """Register ``gz wp tag`` and its leaf ``issue``."""
+    p_tag = wp_commands.add_parser(
+        "tag",
+        help="The tag-out log: tags isolating surfaces for a repair",
+        description=(
+            "Commands over the tag-out log, ledger events whose open tags are a\n"
+            "derived view. A tag is TAG-<NN>-<slug> (RP-12 rulings 4, 110, 111)."
+        ),
+        epilog=build_epilog(_ISSUE_EXAMPLES[:1]),
+    )
+    tag_commands = p_tag.add_subparsers(dest="tag_command")
+    tag_commands.required = True
+
+    p_tag_issue = tag_commands.add_parser(
+        "issue",
+        help="Issue a tag on an opened or frozen order, as the coordinator",
+        description=(
+            "Book the coordinator's issue of one tag, its whole line item, with the\n"
+            "next TAG-<NN>-<slug>, held by the open MX session. A subagent's call is\n"
+            "refused (RP-12 rulings 6, 113, 114, 120 to 124)."
+        ),
+        epilog=build_epilog(_ISSUE_EXAMPLES),
+    )
+    p_tag_issue.add_argument("order", help="The order's id, ORD-<NN>-<slug>")
+    p_tag_issue.add_argument("--slug", required=True, help="Lowercase words joined by hyphens")
+    p_tag_issue.add_argument(
+        "--class",
+        dest="tag_class",
+        required=True,
+        choices=("Danger", "Caution"),
+        help="Danger or Caution",
+    )
+    p_tag_issue.add_argument(
+        "--surface", required=True, help="<kind>:<name>, kind validator|check|hook|path"
+    )
+    p_tag_issue.add_argument(
+        "--position",
+        required=True,
+        choices=("off", "advisory", "recording"),
+        help="The position it is to be hung in",
+    )
+    p_tag_issue.add_argument("--hazard", required=True, help="The hazard it guards against")
+    p_tag_issue.add_argument(
+        "--removal-procedure", required=True, help="How it is removed, legible to anyone"
+    )
+    p_tag_issue.add_argument(
+        "--source",
+        required=True,
+        choices=("order-work", "standard-disconnect", "mel-bypass", "surveillant-stop"),
+        metavar="SOURCE",
+        help="order-work, standard-disconnect, mel-bypass or surveillant-stop",
+    )
+    p_tag_issue.add_argument("--check-level", required=True, help="The check level, C or D")
+    add_json_flag(p_tag_issue)
+    p_tag_issue.set_defaults(
+        func=lambda a: _lazy("wp_tag_issue_cmd")(
+            line_item={
+                "slug": a.slug,
+                "order": a.order,
+                "tag_class": a.tag_class,
+                "surface": a.surface,
+                "position": a.position,
+                "hazard": a.hazard,
+                "removal_procedure": a.removal_procedure,
+                "source": a.source,
+                "check_level": a.check_level,
+            },
+            called_by_subagent=bool(getattr(a, "called_by_subagent", False)),
+            as_json=a.as_json,
+        )
+    )

@@ -1022,6 +1022,14 @@ uv run gz wp order new WP-01-stamp --slug import --purpose "<what it restores>" 
 uv run gz wp order show ORD-01-import
 ```
 
+Before the order commences, the coordinator issues a tag for each surface the
+repair isolates, from the main session while an MX session is open; the surface
+is `<kind>:<name>`, resolved against today's registries (RP-12 rulings 110 to 124):
+
+```bash
+uv run gz wp tag issue ORD-01-import --slug stamp-hook --class Danger --surface hook:dispatch-stamp --position off --hazard "<hazard>" --removal-procedure "<how it is removed>" --source order-work --check-level C
+```
+
 A repair requirement states what must hold again after the repair. It lives in
 `data/catalog/reqs.json` beside the catalog's, written only by `gz wp req new`
 on an open repair package, and names the issue it answers:

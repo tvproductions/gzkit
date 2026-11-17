@@ -14,6 +14,7 @@ from gzkit.cli.parser_acceptance import acceptance_handler, configure_acceptance
 from gzkit.cli.parser_handler_manifest import _lazy
 from gzkit.cli.parser_wp_order import _register_wp_order
 from gzkit.cli.parser_wp_req import _register_wp_req
+from gzkit.cli.parser_wp_tag import _register_wp_tag
 
 if TYPE_CHECKING:
     import argparse
@@ -46,6 +47,7 @@ def register_wp_parsers(commands: argparse._SubParsersAction) -> None:
     _register_wp_acceptance(wp_commands)
     _register_wp_order(wp_commands)
     _register_wp_req(wp_commands)
+    _register_wp_tag(wp_commands)
     _register_wp_withdraw_legacy(wp_commands)
 
 

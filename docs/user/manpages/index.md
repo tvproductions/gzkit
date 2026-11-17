@@ -119,6 +119,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz wp order accept`](wp-order-accept.md) | Accept a commenced order once its own acceptance reads ready (RP-12 O2) |
 | [`gz wp order close`](wp-order-close.md) | Close an order through Gate 5 with the operator's words (RP-12 O2) |
 | [`gz wp order show`](wp-order-show.md) | Show an order's record, its package's kind, its state and its baseline |
+| [`gz wp tag issue`](wp-tag-issue.md) | Issue a tag on an opened or frozen order, as the coordinator (RP-12 O3) |
 | [`gz wp req new`](wp-req-new.md) | Write a repair requirement with the next `REQ-<n>`, held on its repair package (RP-12 O2) |
 | [`gz handoff authorize`](handoff-authorize.md) | Deprecated alias for `gz handoff decide` |
 | [`gz handoff archive`](handoff-archive.md) | Move handoffs older than a threshold into `.gzkit/handoffs/archive/` (move-not-delete) |

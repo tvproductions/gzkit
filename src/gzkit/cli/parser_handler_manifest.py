@@ -79,6 +79,8 @@ _LAZY_HANDLERS: dict[str, str] = {
     "wp_order_close_cmd": "gzkit.commands.wp_order",
     # --- wp req group (parser_wp_req, RP-12 O2 task 2) ---
     "wp_req_new_cmd": "gzkit.commands.wp_req",
+    # --- wp tag group (parser_wp_tag, RP-12 O3 task 2) ---
+    "wp_tag_issue_cmd": "gzkit.commands.wp_tag",
     # --- handoff group (parser_maintenance) ---
     "handoff_archive_cmd": "gzkit.commands.handoff_archive",
     "handoff_authorize_cmd": "gzkit.commands.handoff",

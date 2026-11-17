@@ -5,9 +5,9 @@ description: Use to create, attach issues to, move, change, add evidence to or r
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-15
+last_reviewed: 2026-11-17
 metadata:
-  skill-version: "0.18.1"
+  skill-version: "0.19.0"
 model: sonnet
 ---
 
@@ -171,6 +171,19 @@ footprint, which must be valid as a brief's Allowed Paths are, so a change order
 then only add a path (ruling 56), and approves each planned alteration no earlier
 order's freeze approved (ruling 63). Commencement crosses the airlock (ruling 65).
 Commit the order's work under the package's `Task:` trailer, as step 3 says:
+
+Before the order commences, issue a tag for each surface the repair isolates. The
+issue is the coordinator's act, from the main session while an MX session is open,
+on an opened or frozen order; a subagent's call is refused. The surface is
+`<kind>:<name>`: `validator:` a scope in its flag's spelling, `check:` a step lower
+case and hyphenated, `hook:` a registered script or pre-commit id, `path:` a repo
+path. One open tag per surface (rulings 110 to 124):
+
+```bash
+uv run gz wp tag issue <ORD-id> --slug <slug> --class <Danger|Caution> --surface <kind>:<name> \
+  --position <off|advisory|recording> --hazard "<hazard>" --removal-procedure "<how>" \
+  --source order-work --check-level <C|D>
+```
 
 ```bash
 uv run gz wp order freeze <ORD-id> --baseline REQ-<n>@<rev> --risk-note "<risk>" \

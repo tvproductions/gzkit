@@ -49,6 +49,13 @@ Feature: Work packages run through the gz wp verbs
     Then the command exits with code 1
     And the output contains "is not in data/catalog/work_packages.json"
 
+  Scenario: issuing a tag with no MX session open is a policy breach
+    Given the workspace is initialized
+    And the requirements catalog is seeded
+    When I run the gz command "wp tag issue ORD-01-x --slug s --class Danger --surface path:README.md --position off --hazard H --removal-procedure R --source order-work --check-level C"
+    Then the command exits with code 3
+    And the output contains "No MX session is open"
+
   Scenario: a package the store does not hold is a user error
     Given the workspace is initialized
     And the requirements catalog is seeded
