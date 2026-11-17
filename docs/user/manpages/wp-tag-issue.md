@@ -45,7 +45,11 @@ line item (rulings 5 and 120). `docs/governance/harbor-ro12-contractor-kit.md`
   written. An unresolved name, and a path escaping the project root, is refused.
 - The check level is C or D, the two levels that disconnect (ruling 113).
 - The open MX session holds the tag and is the coordinator's mark (rulings 3 and
-  114); with no session open the issue is refused.
+  114); with no session open the issue is refused, and a marker present but
+  unreadable, unbound or exiting is refused with the repair its cause names,
+  never `gz mx enter`, which a present marker refuses.
+- A surface is named as the tree or registry spells it, so `path:SRC/Stamp.py`
+  on a case-insensitive volume names `src/stamp.py`.
 - A tag is issued on an opened or frozen order of an initiated repair package
   (ruling 121), and a surface carries one open tag at a time (ruling 122).
 - The source is one of ruling 5's four kinds, with no reference yet (ruling 124).
@@ -81,8 +85,9 @@ A second tag on the same surface, exit 3:
 $ uv run gz wp tag issue ORD-01-import --slug again --class Caution --surface validator:hexagon-tests --position advisory --hazard 'The scope reads a half-built map.' --removal-procedure 'Run the scope; it passes.' --source order-work --check-level D
 Surface 'validator:hexagon-tests' already carries open tag TAG-01-hexagon,
 issued on ORD-01-import; a surface carries one tag-out at a time (RP-12 ruling
-122). The tag leaves the open log when ORD-01-import closes; issue this one
-after, or isolate another surface.
+122). The tag leaves the open log when ORD-01-import closes; read the open log
+with `uv run gz wp tag show`, and issue this one after it closes or isolate
+another surface.
 ```
 
 A check level that does not disconnect, exit 3:
@@ -128,7 +133,7 @@ the main session.
 | 0 | Issued |
 | 1 | A hook registry does not parse, or the project is not initialized |
 | 2 | Usage error |
-| 3 | Refused: a subagent's call, no MX session open, the check level, the slug, a blank hazard or removal procedure, the surface, the order, its package or its state, or a surface already tagged; nothing booked |
+| 3 | Refused: a subagent's call, no MX session open or a marker present but not on (its repair named), the check level, the slug, a blank hazard or removal procedure, the surface, the order, its package or its state, or a surface already tagged; nothing booked |
 
 ## See also
 

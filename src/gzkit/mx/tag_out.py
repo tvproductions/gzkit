@@ -20,7 +20,7 @@ refusal writes nothing.
 import re
 from typing import TYPE_CHECKING, NoReturn, Protocol, get_args
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from gzkit.events import (
     TagCheckLevel,
@@ -105,10 +105,29 @@ def _refuse(message: str) -> NoReturn:
 
 
 def _issues(ledger: Ledger) -> list[TagIssuedEvent]:
-    return [
-        TagIssuedEvent.model_validate(row.model_dump())
-        for row in ledger.query(event_type="tag_issued")
-    ]
+    """Read every live issue, refusing a row the event's shape does not admit.
+
+    A void correction drops a row from the live stream (`gzkit.ledger_corrections`),
+    so a malformed row is recovered by voiding it, never by editing the ledger.
+
+    Returns:
+        Each issue the live ledger holds, oldest first.
+
+    """
+    issues: list[TagIssuedEvent] = []
+    for row in ledger.query(event_type="tag_issued"):
+        try:
+            issues.append(TagIssuedEvent.model_validate(row.model_dump()))
+        except ValidationError as exc:
+            _refuse(
+                f"The ledger's tag_issued row {row.id!r} at {row.ts} does not parse "
+                f"({exc.error_count()} field errors), so the tag-out log cannot be read; it is "
+                "ledger events alone (RP-12 ruling 4) and a ledger row is never hand-edited. "
+                "Have the operator void it: `uv run gz ledger correct --subject-event "
+                f"tag_issued --subject-id {row.id} --subject-ts {row.ts} --disposition void "
+                '--cause agent-error --reason "<why>" --attestor g0`.'
+            )
+    return issues
 
 
 def next_tag_id(ledger: Ledger, slug: str) -> str:
@@ -155,8 +174,9 @@ def _order(catalog: Catalog, order_id: str) -> Order:
     if held is None:
         _refuse(
             f"Order {order_id!r} is not in data/catalog/orders.json, and a tag is issued on "
-            "an order of a repair package (RP-12 rulings 2 and 44). Name an order `uv run "
-            "gz wp order show <ORD-id>` finds, or write one with `uv run gz wp order new`."
+            "an order the store holds, opened or frozen (RP-12 rulings 47 and 121). Name an "
+            "order `uv run gz wp order show <ORD-id>` finds, or write one with `uv run gz wp "
+            "order new`."
         )
     return held
 
@@ -266,8 +286,8 @@ def record_tag_issue(
         _refuse(
             f"Surface {request.surface!r} already carries open tag {held.tag_id}, issued on "
             f"{held.order}; a surface carries one tag-out at a time (RP-12 ruling 122). The "
-            f"tag leaves the open log when {held.order} closes; issue this one after, or "
-            "isolate another surface."
+            f"tag leaves the open log when {held.order} closes; read the open log with `uv "
+            "run gz wp tag show`, and issue this one after it closes or isolate another surface."
         )
     tag_id = next_tag_id(ledger, request.slug)
     event = TagIssuedEvent.model_validate(

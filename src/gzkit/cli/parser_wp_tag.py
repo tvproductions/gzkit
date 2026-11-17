@@ -30,11 +30,12 @@ _ISSUE_EXAMPLES = [
     ),
 ]
 _SHOW_EXAMPLES = ["gz wp tag show", "gz wp tag show --all --json"]
-#: `show` writes nothing and refuses nothing, so it never exits 3.
+#: `show` writes nothing; it exits 3 only on a ledger row it cannot read.
 _SHOW_EXIT_CODES = """Exit codes
     0   Shown, an empty log included
     1   User/config error: the project is not initialized
     2   Usage or System/IO error
+    3   Policy breach: a tag_issued row does not parse; void it
 """
 
 

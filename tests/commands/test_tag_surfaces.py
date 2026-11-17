@@ -193,6 +193,14 @@ class PathSurfaceTests(_ProjectCase):
         # then
         self.assertEqual(resolved, [None, None, None])
 
+    def test_a_path_written_in_another_case_never_names_a_second_surface(self) -> None:
+        # given src/stamp.py in the tree, written as SRC/Stamp.py
+        # when
+        resolved = self.surfaces.resolve("path", "SRC/Stamp.py")
+        # then a case-insensitive volume names the file as the tree spells it, and a
+        # case-sensitive one names nothing, so one tag-out per surface holds (ruling 122)
+        self.assertIn(resolved, {"src/stamp.py", None})
+
     def test_an_absolute_path_inside_the_tree_resolves_to_nothing(self) -> None:
         # given src/stamp.py written as an absolute path, not repo-relative (ruling 123)
         written = (self.root / "src" / "stamp.py").as_posix()

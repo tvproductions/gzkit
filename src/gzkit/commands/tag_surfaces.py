@@ -42,6 +42,29 @@ def _unreadable(registry: PurePosixPath, why: str) -> ValidationError:
     )
 
 
+def _as_spelled(root: Path, parts: tuple[str, ...]) -> str:
+    """Spell an existing repo path as the tree's directory entries spell it.
+
+    `Path.resolve` keeps the case a path was written in on a case-insensitive
+    volume, so each part is matched against its parent's entries, exactly first,
+    then without regard to case.
+
+    Returns:
+        The repo-relative posix path in the tree's own spelling.
+
+    """
+    spelled: list[str] = []
+    here = root
+    for part in parts:
+        names = [entry.name for entry in here.iterdir()]
+        exact = part if part in names else None
+        folded = [name for name in names if name.casefold() == part.casefold()]
+        name = exact or (folded[0] if len(folded) == 1 else part)
+        spelled.append(name)
+        here /= name
+    return PurePosixPath(*spelled).as_posix()
+
+
 def _validator_scopes() -> dict[str, str]:
     """Map each `gz validate` scope's flag spelling to its stem.
 
@@ -152,8 +175,12 @@ class ProjectSurfaces:
     def _path(self, name: str) -> str | None:
         """Resolve a repo path in the tree, refusing one that escapes the root.
 
+        The registry's own name is the tree's own spelling (ruling 123), so on a
+        case-insensitive volume `SRC/Stamp.py` names `src/stamp.py` and one tag-out
+        per surface holds however the path is written (ruling 122).
+
         Returns:
-            The normalized repo-relative posix path, or None.
+            The normalized repo-relative posix path, as the tree spells it, or None.
 
         """
         written = PurePosixPath(name)
@@ -163,4 +190,4 @@ class ProjectSurfaces:
         target = root.joinpath(*written.parts).resolve()
         if target == root or not target.is_relative_to(root) or not target.exists():
             return None
-        return target.relative_to(root).as_posix()
+        return _as_spelled(root, target.relative_to(root).parts)

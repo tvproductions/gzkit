@@ -265,7 +265,7 @@ class IssueRefusalTests(_TagCase):
                 self.assert_refused(surface=surface)
 
     def test_an_order_the_catalog_does_not_hold_is_refused(self) -> None:
-        """A tag is issued on an order of the store (RP-12 rulings 5 and 47)."""
+        """A tag is issued on an order of the store (RP-12 rulings 47 and 121)."""
         self.assert_refused(order="ORD-09-absent")
 
     def test_an_order_of_a_delivery_package_is_refused(self) -> None:
@@ -342,13 +342,28 @@ class TagLogTests(_TagCase):
         self.assertEqual(second.tag_id, "TAG-02-again")
 
     def test_the_next_id_is_numbered_past_every_tag_the_ledger_books(self) -> None:
-        """Ruling 111: one series read from the ledger, never reused past a gap."""
+        """Ruling 111: one series read from the ledger, by number, never reused past a gap.
+
+        TAG-99 against TAG-100 is the case a lexicographic maximum gets wrong
+        (`AGENTS.md`: versioned identifiers are ordered semantically).
+        """
         self.issue()
-        booked = self.issue(slug="far", surface="path:src/stamp.py").model_copy(
-            update={"id": "TAG-07-far", "tag_id": "TAG-07-far"}
-        )
-        self.ledger.append(ledger_row(booked))
-        self.assertEqual(next_tag_id(self.ledger, "next"), "TAG-08-next")
+        far = self.issue(slug="far", surface="path:src/stamp.py")
+        for number in ("99", "100"):
+            tag_id = f"TAG-{number}-far"
+            self.ledger.append(ledger_row(far.model_copy(update={"id": tag_id, "tag_id": tag_id})))
+        self.assertEqual(next_tag_id(self.ledger, "next"), "TAG-101-next")
+
+    def test_a_malformed_issue_row_is_refused_with_its_void_not_a_crash(self) -> None:
+        """Ruling 4: the log is ledger events; a row it cannot read stops it, named."""
+        self.issue()
+        row = {"schema": "gzkit.ledger.v1", "event": "tag_issued", "id": "TAG-7-bad"}
+        with self.path.open("a", encoding="utf-8") as stream:
+            stream.write(json.dumps({**row, "ts": "2026-11-17T00:00:00+00:00"}) + "\n")
+        raised = _raised(lambda: tag_log(self.ledger))
+        self.assertIsInstance(raised, TagOutError)
+        self.assertIn("TAG-7-bad", str(raised))
+        self.assertIn("uv run gz ledger correct", str(raised))
 
 
 class RefusalProseOutputContract(_TagCase):
@@ -360,3 +375,18 @@ class RefusalProseOutputContract(_TagCase):
         self.assertIn("No MX session is open", text)
         self.assertIn("RP-12 rulings 3, 113 and 114", text)
         self.assertIn("`uv run gz mx enter`", text)
+
+    def test_the_unknown_order_refusal_cites_the_store_and_the_issuable_states(self) -> None:
+        # output-contract: the refusal's cited rulings are its contract (guardrail-feedback-prose)
+        text = self.assert_refused(order="ORD-09-absent")
+        self.assertIn("not in data/catalog/orders.json", text)
+        self.assertIn("RP-12 rulings 47 and 121", text)
+        self.assertIn("`uv run gz wp order new`", text)
+
+    def test_the_one_open_tag_refusal_names_the_log_to_read(self) -> None:
+        # output-contract: the refusal's next step is its contract (guardrail-feedback-prose)
+        self.issue()
+        text = self.assert_refused(slug="second")
+        self.assertIn("already carries open tag TAG-01-stamp-hook", text)
+        self.assertIn("RP-12 ruling 122", text)
+        self.assertIn("`uv run gz wp tag show`", text)

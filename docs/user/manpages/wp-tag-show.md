@@ -117,6 +117,7 @@ $ uv run gz wp tag show --all --json
 | 0 | Shown, an empty log included |
 | 1 | The project is not initialized |
 | 2 | Usage error |
+| 3 | A `tag_issued` row on the ledger does not parse; the refusal names it and its void |
 
 ## See also
 

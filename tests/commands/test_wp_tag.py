@@ -19,6 +19,8 @@ from typing import Any
 from gzkit.cli import main
 from gzkit.cli.main import _build_parser
 from gzkit.dispatch_stamp import STAMP_ID_ENV, STAMP_ROOT_ENV
+from gzkit.mx import marker
+from gzkit.mx.marker import Marker
 from tests.commands.common import CliRunner, _quick_init
 from tests.commands.test_wp_order import _help_parser, _seed_catalog
 from tests.mx.held import open_marker
@@ -118,7 +120,6 @@ class TagIssueWiringTests(_TagCase):
         code, output = self.issue(*_ISSUE)
         # then
         self.assertEqual(code, 3, output)
-        self.assertIn("ruling 114", output)
         self.assertEqual(_tag_rows(), [])
 
     def test_an_issue_with_no_mx_session_is_refused_and_books_nothing(self) -> None:
@@ -127,6 +128,18 @@ class TagIssueWiringTests(_TagCase):
         code, output = self.issue(*_ISSUE)
         # then
         self.assertEqual(code, 3, output)
+        self.assertEqual(_tag_rows(), [])
+
+    def test_a_marker_present_but_unbound_names_its_repair_not_entry(self) -> None:
+        # output-contract: the refusal's next step is its contract (guardrail-feedback-prose)
+        # given a marker no open session binds, which `gz mx enter` would refuse to replace
+        marker.write(Marker(session_id="ghost-session"), Path.cwd())
+        # when
+        code, output = self.issue(*_ISSUE)
+        # then the refusal names the repair its cause needs, and nothing is booked
+        self.assertEqual(code, 3, output)
+        self.assertIn("present but unbound", output)
+        self.assertIn("gz mx repair", output)
         self.assertEqual(_tag_rows(), [])
 
     def test_an_issue_on_an_unknown_order_is_refused_and_books_nothing(self) -> None:
@@ -186,6 +199,16 @@ class TagShowWiringTests(_TagCase):
         )
         self.assertIn("Hazard:      The scope reads a half-built map.", lines)
         self.assertIn("Removal:     Run the scope; it passes.", lines)
+
+    def test_show_over_a_row_it_cannot_read_exits_3(self) -> None:
+        # given a tag_issued row on the ledger that the event's shape does not admit
+        row = {"schema": "gzkit.ledger.v1", "event": "tag_issued", "id": "TAG-7-bad"}
+        with (Path(".gzkit") / "ledger.jsonl").open("a", encoding="utf-8") as stream:
+            stream.write(json.dumps({**row, "ts": "2026-11-17T00:00:00+00:00"}) + "\n")
+        # when
+        code, output = self.show()
+        # then the view refuses, a policy breach, rather than crash
+        self.assertEqual(code, 3, output)
 
     def test_all_lists_a_closed_orders_tag_the_default_omits(self) -> None:
         # given a tag issued on ORD-01-import, then the order terminated

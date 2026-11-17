@@ -27,15 +27,39 @@ if TYPE_CHECKING:
     from gzkit.mx.tag_out import Tag
 
 
+#: The recovery for a marker present but not on, by its cause (`.gzkit/rules/mx-mode.md`).
+_MARKER_RECOVERY = {
+    "unreadable": "Have the operator repair it through the gz-mx skill (`uv run gz mx repair`)",
+    "unbound": "Have the operator repair it through the gz-mx skill (`uv run gz mx repair`)",
+    "exiting": "Let the exit finish, then have the operator open a session through the gz-mx skill",
+}
+
+
 def _open_session_id(root: Path, ledger_path: Path) -> str | None:
-    """Read the open MX session's id, or None when the condition is not on.
+    """Read the open MX session's id, or None when no marker is present.
+
+    A marker present but not on, unreadable, unbound to an open session or
+    exiting, holds no tag either, and its recovery is not `gz mx enter`, which a
+    present marker refuses; so it is refused here with the recovery its cause names.
 
     Returns:
-        The marker's session id while the condition is on (`gzkit.mx.marker.condition`).
+        The marker's session id while the condition is on, or None when it is absent.
+
+    Raises:
+        PolicyBreachError: A marker is present and the condition is not on.
 
     """
     held = marker.condition(root, ledger_path)
-    return held.marker.session_id if held.on and held.marker is not None else None
+    if held.on and held.marker is not None:
+        return held.marker.session_id
+    if held.cause in _MARKER_RECOVERY:
+        msg = (
+            f"The MX marker is present but {held.cause}, so no session is open to hold the "
+            "tag. A tag is held by the open MX session, whose id is the coordinator's mark "
+            f"(RP-12 rulings 3 and 114). {_MARKER_RECOVERY[held.cause]}, then issue the tag."
+        )
+        raise PolicyBreachError(msg)
+    return None
 
 
 def wp_tag_issue_cmd(*, line_item: dict[str, str], called_by_subagent: bool, as_json: bool) -> None:
@@ -110,16 +134,25 @@ def wp_tag_show_cmd(*, every: bool, as_json: bool) -> None:
     The log is a Layer 3 view rendered from the ledger's `tag_issued` events
     through `gzkit.mx.tag_out` (`open_tags`, or `tag_log` for ``every``); a tag
     reads closed once its order has closed (ruling 122). The human form is a
-    block of labelled lines per tag (ruling 126), and a plain line when there is none; ``--json``
-    prints the list, each tag its issue event's fields with ``is_open``.
+    block of labelled lines per tag (ruling 126), and a plain line when there is
+    none; ``--json`` prints the list, each tag its issue event's fields with
+    ``is_open``.
 
     The verb writes nothing and needs no MX session. Unlike `issue`, it is not
     refused from a subagent's call: a read is not the coordinator's act (rulings
     6 and 114 gate the acts, not the view).
+
+    Raises:
+        PolicyBreachError: A `tag_issued` row on the ledger does not parse; the
+            refusal names the row and the void that recovers it.
+
     """
     config = ensure_initialized()
     ledger = Ledger(get_project_root() / config.paths.ledger)
-    tags = tag_log(ledger) if every else open_tags(ledger)
+    try:
+        tags = tag_log(ledger) if every else open_tags(ledger)
+    except TagOutError as exc:
+        raise PolicyBreachError(str(exc)) from exc
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
     if as_json:
         fmt.emit([{**tag.issue.model_dump(mode="json"), "is_open": tag.is_open} for tag in tags])
