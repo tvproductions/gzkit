@@ -30,7 +30,8 @@ surface's owner and its distance from the target date.
 
 ## Policy and Guardrails
 
-- **Lane:** Lite. Read-only: the chore reads the registry and each registered file, and writes nothing.
+- **Lane:** Lite — read-only: the chore reads the registry and each registered file, and writes
+  only its dated table under `proofs/`.
 - **It never tightens a baseline.** Lowering `baseline_count` to the live count locks progress in, and is a change to
   a gate's data, so it is proposed per surface and landed by whoever owns the surface, never by this chore.
 - **It never removes an entry.** Drawing a list down means fixing what each entry waives; that is the owning work's.
@@ -49,13 +50,13 @@ keeps the 14-day cadence true; it is the chore's automatic caller (`gz validate 
 uv run python .gzkit/chores/waiver-ratchet-drawdown/check_drawdown.py --report
 ```
 
-### 2. Propose
+### 2. Propose — propose
 
 For each surface **drawn down**, propose tightening its `baseline_count` to the live count, to its owner. For each
 surface **not drawn down**, name it to its owner with its count. A surface **over baseline** is the gate's failure;
 route it to `uv run gz validate --waiver-ratchet`.
 
-### 3. Record
+### 3. Record — observe
 
 Write the table to `proofs/` with the date.
 
