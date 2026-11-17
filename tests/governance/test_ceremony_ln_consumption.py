@@ -22,6 +22,7 @@ from unittest.mock import MagicMock, patch
 
 import yaml
 
+from gzkit.commands.validate_cmd import dispatch_validator_scope
 from gzkit.traceability import covers
 
 # ---------------------------------------------------------------------------
@@ -86,7 +87,10 @@ class TestExecuteToAttestationGate(unittest.TestCase):
         with patch(_PATCH_TARGET, return_value=[mock_error]) as mock_validate:
             with self.assertRaises(PolicyBreachError):
                 _gate_closeout_proof(project_root, state)
-            mock_validate.assert_called_once_with(project_root, adr_id="ADR-0.0.63-test")
+            # The gate supplies the command layer's validator dispatcher (GHI #1267, a64767193).
+            mock_validate.assert_called_once_with(
+                project_root, adr_id="ADR-0.0.63-test", dispatch_scope=dispatch_validator_scope
+            )
 
     @covers("REQ-0.0.63-06-04")
     def test_gate_succeeds_and_calls_validator_when_no_errors(self) -> None:
@@ -106,7 +110,10 @@ class TestExecuteToAttestationGate(unittest.TestCase):
         with patch(_PATCH_TARGET, return_value=[]) as mock_validate:
             # Must not raise
             _gate_closeout_proof(project_root, state)
-            mock_validate.assert_called_once_with(project_root, adr_id="ADR-0.0.63-test")
+            # The gate supplies the command layer's validator dispatcher (GHI #1267, a64767193).
+            mock_validate.assert_called_once_with(
+                project_root, adr_id="ADR-0.0.63-test", dispatch_scope=dispatch_validator_scope
+            )
 
     @covers("REQ-0.0.63-06-03")
     def test_gate_is_noop_on_non_execute_step(self) -> None:
