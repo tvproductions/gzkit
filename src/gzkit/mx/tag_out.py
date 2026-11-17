@@ -12,7 +12,7 @@ Its id is `TAG-<NN>-<slug>` (ruling 111).
 
 The writer sits beside the marker and the lease, since the MX session holds the
 tag (ruling 119). It takes the catalog, the ledger, the open session's id and the
-surface registry as parameters, and reads neither the marker nor a registry nor
+surface registry as parameters (ruling 128), and reads neither the marker nor a registry nor
 the filesystem itself (`.gzkit/rules/hexagonal-architecture.md` rule 4). A
 refusal writes nothing.
 """
