@@ -1038,6 +1038,15 @@ uv run gz wp tag show
 uv run gz wp tag show --all
 ```
 
+Once the order is frozen, the coordinator books a Repair dispatch on it, and that
+dispatch's subagent hangs each tag. The hang is the call stamped with the
+dispatch it names, so the main session cannot hang (RP-12 rulings 6, 131 and 133):
+
+```bash
+uv run gz wp dispatch WP-01-stamp --order ORD-01-import --role Repair --model sonnet
+uv run gz wp tag hang TAG-01-stamp-hook --dispatch D-<id>
+```
+
 A repair requirement states what must hold again after the repair. It lives in
 `data/catalog/reqs.json` beside the catalog's, written only by `gz wp req new`
 on an open repair package, and names the issue it answers:

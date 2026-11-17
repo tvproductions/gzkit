@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-17
 metadata:
-  skill-version: "0.19.3"
+  skill-version: "0.19.4"
 model: sonnet
 ---
 
@@ -192,6 +192,17 @@ session, and any session may run it (RP-12 rulings 4 and 110):
 
 ```bash
 uv run gz wp tag show [--all] [--json]
+```
+
+Once the order is frozen, book a `Repair` dispatch on it; that dispatch's subagent
+hangs each tag. The hang is the call stamped with the dispatch `--dispatch` names,
+a live `Repair` on the tag's own order, so the main session cannot hang; the order
+is frozen and not blocked, the tag issued, open and not yet hung, and the open MX
+session is recorded as the hang's holder. A hung tag reads open until its clear
+(RP-12 rulings 6, 120 and 129 to 133):
+
+```bash
+uv run gz wp tag hang <TAG-id> --dispatch D-<id> [--json]
 ```
 
 ```bash

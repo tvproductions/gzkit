@@ -1,4 +1,4 @@
-"""``gz wp tag`` commands over the tag-out log (RP-12 O3 task 2).
+"""``gz wp tag`` commands over the tag-out log (RP-12 O3 tasks 2 and 3).
 
 The group the operator ruled on 2026-11-16 (RP-12 ruling 110). `show` renders
 the log from the ledger's tag events, read-only (ruling 4). `issue` is the
@@ -8,6 +8,9 @@ holds the tag and is the coordinator's mark (rulings 3 and 114); the surface
 resolves against today's registries through `ProjectSurfaces` (rulings 112 and
 123). The writer, `gzkit.mx.tag_out.record_tag_issue`, reads neither the marker
 nor a registry (ruling 119), and every refusal it raises exits 3 and books nothing.
+`hang` is the stamped call of the Repair dispatch it names (ruling 133): the entry
+keeps the stamped dispatch id before it consumes the stamp, and the writer,
+`record_tag_hang`, refuses a call not stamped with the dispatch named.
 """
 
 from typing import TYPE_CHECKING
@@ -19,7 +22,14 @@ from gzkit.core.exceptions import PolicyBreachError
 from gzkit.ledger import Ledger
 from gzkit.models.catalog import load_catalog
 from gzkit.mx import marker
-from gzkit.mx.tag_out import TagIssue, TagOutError, open_tags, record_tag_issue, tag_log
+from gzkit.mx.tag_out import (
+    TagIssue,
+    TagOutError,
+    open_tags,
+    record_tag_hang,
+    record_tag_issue,
+    tag_log,
+)
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -100,6 +110,43 @@ def wp_tag_issue_cmd(*, line_item: dict[str, str], called_by_subagent: bool, as_
         raise PolicyBreachError(str(exc)) from exc
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
     fmt.emit(event if as_json else f"Issued {event.tag_id} on {event.order}.")
+
+
+def wp_tag_hang_cmd(
+    *, tag_id: str, dispatch_id: str, stamped_dispatch_id: str | None, as_json: bool
+) -> None:
+    """Book the Repair dispatch's hang of one issued tag (RP-12 rulings 6, 120, 129 to 133).
+
+    The hang is the stamped call of the dispatch ``--dispatch`` names: the entry
+    keeps the dispatch id the call was stamped with, ``stamped_dispatch_id``, None
+    for an unstamped call, and the writer refuses unless it is the one named. The
+    open MX session, read from the marker here, is recorded as the hang's holder;
+    the issue's line item and mark are copied from the ledger. Prints
+    ``Hung <TAG-id> by <D-id>.``, or with ``--json`` the `tag_hung` event booked.
+
+    Raises:
+        PolicyBreachError: The marker is present but not on, or the writer refuses
+            the hang (no MX session open, the call not stamped with the dispatch
+            named, the tag not issued, already hung or not open, the dispatch not a
+            live Repair on the tag's order, the order not frozen or blocked);
+            nothing is booked.
+
+    """
+    config = ensure_initialized()
+    root = get_project_root()
+    ledger_path = root / config.paths.ledger
+    try:
+        event = record_tag_hang(
+            Ledger(ledger_path),
+            tag_id,
+            dispatch_id,
+            stamped_id=stamped_dispatch_id,
+            mx_session_id=_open_session_id(root, ledger_path),
+        )
+    except TagOutError as exc:
+        raise PolicyBreachError(str(exc)) from exc
+    fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
+    fmt.emit(event if as_json else f"Hung {event.tag_id} by {event.dispatch_id}.")
 
 
 def _tag_block(tag: Tag, *, every: bool) -> str:

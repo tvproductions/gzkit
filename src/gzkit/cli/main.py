@@ -20,7 +20,7 @@ from gzkit.cli.parser_maintenance import register_maintenance_parsers
 from gzkit.commands.content import register_content_parsers
 from gzkit.commands.insights import register_insights_parsers
 from gzkit.core.exceptions import GzkitError
-from gzkit.dispatch_stamp import consume_stamp, is_stamped, stamp_refusal
+from gzkit.dispatch_stamp import STAMP_ID_ENV, consume_stamp, is_stamped, stamp_refusal
 
 
 class UnknownModuleAttributeError(AttributeError):
@@ -231,8 +231,12 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     # Read before the check consumes it: a verb an operator or the coordinator
-    # alone may run refuses a call stamped as a subagent's (RP-12 ruling 42).
+    # alone may run refuses a call stamped as a subagent's (RP-12 ruling 42), and
+    # a hang is the stamped call of the dispatch it names (ruling 133). An id with
+    # no stamped root is no stamp, so it is kept only beside the flag.
     args.called_by_subagent = is_stamped(os.environ)
+    stamped_id = os.environ.get(STAMP_ID_ENV, "").strip() if args.called_by_subagent else ""
+    args.stamped_dispatch_id = stamped_id or None
     if _refused_by_stamp(forwards=bool(getattr(args, "forwards_command", False))):
         return 3
 

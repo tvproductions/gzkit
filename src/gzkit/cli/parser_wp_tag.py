@@ -1,4 +1,4 @@
-"""``gz wp tag`` subparser registrations (RP-12 O3 task 2, acts 2 and 3).
+"""``gz wp tag`` subparser registrations (RP-12 O3 tasks 2 and 3).
 
 The nested group the operator ruled on 2026-11-16 (RP-12 ruling 110, *"A: gz wp
 tag (Rec.)"*). Each leaf is written out literally, ``p_x = tag_commands.add_parser(...)``
@@ -30,6 +30,19 @@ _ISSUE_EXAMPLES = [
     ),
 ]
 _SHOW_EXAMPLES = ["gz wp tag show", "gz wp tag show --all --json"]
+_HANG_EXAMPLES = [
+    "gz wp tag hang TAG-01-stamp-hook --dispatch D-717d53816678475f",
+    "gz wp tag hang TAG-02-hexagon --dispatch D-717d53816678475f --json",
+]
+#: Every refusal of the hang is the writer's, a policy breach that books nothing.
+_HANG_EXIT_CODES = """Exit codes
+    0   Hung: the tag_hung event is booked
+    1   User/config error: the project is not initialized
+    2   Usage or System/IO error
+    3   Policy breach: no MX session, the call not stamped with the named dispatch,
+        the tag not open or already hung, the dispatch not a live Repair on its
+        order, or the order not frozen, or blocked; nothing is booked
+"""
 #: `show` writes nothing; it exits 3 only on a ledger row it cannot read.
 _SHOW_EXIT_CODES = """Exit codes
     0   Shown, an empty log included
@@ -40,7 +53,7 @@ _SHOW_EXIT_CODES = """Exit codes
 
 
 def _register_wp_tag(wp_commands: argparse._SubParsersAction) -> None:
-    """Register ``gz wp tag`` and its leaves, ``issue`` and ``show``."""
+    """Register ``gz wp tag`` and its leaves, ``issue``, ``show`` and ``hang``."""
     p_tag = wp_commands.add_parser(
         "tag",
         help="The tag-out log: tags isolating surfaces for a repair",
@@ -130,4 +143,31 @@ def _register_wp_tag(wp_commands: argparse._SubParsersAction) -> None:
     add_json_flag(p_tag_show)
     p_tag_show.set_defaults(
         func=lambda a: _lazy("wp_tag_show_cmd")(every=a.every, as_json=a.as_json)
+    )
+
+    p_tag_hang = tag_commands.add_parser(
+        "hang",
+        help="Hang an issued tag, as the Repair dispatch's stamped call",
+        description=(
+            "Book the Repair dispatch's hang of one issued tag, its line item copied\n"
+            "from the issue, held by the open MX session. Only the call stamped with\n"
+            "the dispatch it names may hang (RP-12 rulings 6, 120, 129 to 133)."
+        ),
+        epilog=build_epilog(_HANG_EXAMPLES, exit_codes=_HANG_EXIT_CODES),
+    )
+    p_tag_hang.add_argument("tag", help="The tag's id, TAG-<NN>-<slug>")
+    p_tag_hang.add_argument(
+        "--dispatch",
+        required=True,
+        metavar="D-ID",
+        help="The live Repair dispatch hanging it, the one this call is stamped with",
+    )
+    add_json_flag(p_tag_hang)
+    p_tag_hang.set_defaults(
+        func=lambda a: _lazy("wp_tag_hang_cmd")(
+            tag_id=a.tag,
+            dispatch_id=a.dispatch,
+            stamped_dispatch_id=getattr(a, "stamped_dispatch_id", None),
+            as_json=a.as_json,
+        )
     )
