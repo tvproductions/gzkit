@@ -22,6 +22,7 @@ from gzkit.commands.obpi_complete_adversarial import (
     _is_cross_vendor_adversary,
     _receipt_proves_cross_vendor,
 )
+from gzkit.commands.validate_cmd import dispatch_validator_scope
 from gzkit.events import AdversarialValidationEvent, parse_typed_event
 
 
@@ -186,9 +187,11 @@ class TestGateIsWiredIntoCompletion(unittest.TestCase):
 
         gate.assert_called_once()
         # The durable closure reader is the governing boundary. Old caller
-        # verdict/tier flags are not arguments capable of licensing this gate.
+        # verdict/tier flags are not arguments capable of licensing this gate;
+        # its one keyword is the validator dispatcher the command layer supplies
+        # (GHI #1267, a64767193).
         self.assertEqual(gate.call_args.args[1], obpi_id)
-        self.assertEqual(gate.call_args.kwargs, {})
+        self.assertEqual(gate.call_args.kwargs, {"dispatch_scope": dispatch_validator_scope})
         # The transaction must never run when Step 4b is unrecorded.
         execute.assert_not_called()
 
