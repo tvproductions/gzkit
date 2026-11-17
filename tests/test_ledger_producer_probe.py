@@ -68,6 +68,13 @@ class ProducerProbeTests(unittest.TestCase):
         self.assertEqual(observation.producer, "gzkit.mx.tag_out.record_tag_issue")
         self.assertEqual(observation.subject, "TAG-01-producer-probe")
 
+    def test_the_tag_hang_writer_is_verified_and_refuses_a_second_hang(self) -> None:
+        """RP-12 rulings 6, 120 and 133: one hang booked, a second refused."""
+        observation = probe_producer("tag_hung")
+        self.assertEqual(observation.status, "verified", observation.error)
+        self.assertEqual(observation.producer, "gzkit.mx.tag_out.record_tag_hang")
+        self.assertEqual(observation.subject, "TAG-01-producer-probe")
+
     def test_the_claim_writer_is_verified_and_books_each_pair_once(self) -> None:
         """RP-12 ruling 40: one claim per dispatch and agent, none for no dispatch."""
         observation = probe_producer("dispatch_claimed")
@@ -641,3 +648,96 @@ class TagIssueProducerProbeTests(unittest.TestCase):
         observation = self._observe(elsewhere)
         self.assertEqual(observation.status, "failed")
         self.assertIn("disagrees with the issue", observation.error)
+
+
+class TagHangProducerProbeTests(unittest.TestCase):
+    """RP-12 O3 task 3: the tag hang writer gets credit only for one true hang."""
+
+    @staticmethod
+    def _writer(book: Callable[[Any], None]) -> Callable[..., None]:
+        """A writer that books ``book``'s rows once, then refuses as the real one does.
+
+        Returns:
+            The stand-in writer.
+
+        """
+        from gzkit.mx.tag_out import TagOutError  # noqa: PLC0415
+
+        calls: list[int] = []
+
+        def write(ledger: Any, _tag: Any, _dispatch: Any, **_fields: Any) -> None:
+            if calls:
+                msg = "the tag is already hung"
+                raise TagOutError(msg)
+            calls.append(1)
+            book(ledger)
+
+        return write
+
+    def _observe(self, book: Callable[[Any], None]) -> Any:
+        with patch("gzkit.mx.tag_out.record_tag_hang", self._writer(book)):
+            return probe_producer("tag_hung")
+
+    @staticmethod
+    def _hang(order: str = "ORD-01-producer-probe") -> Any:
+        from gzkit.events import TagHungEvent  # noqa: PLC0415
+
+        return TagHungEvent(
+            event="tag_hung",
+            id="TAG-01-producer-probe",
+            tag_id="TAG-01-producer-probe",
+            dispatch_id="D-00000000000000aa",
+            order=order,
+            work_package="WP-02-producer-probe",
+            tag_class="Danger",
+            surface="path:src/producer_probe.py",
+            surface_kind="path",
+            surface_name="src/producer_probe.py",
+            position="off",
+            hazard="probe",
+            removal_procedure="probe",
+            source="order-work",
+            check_level="C",
+            issued_by_session="isolated-producer-probe",
+            mx_session_id="isolated-producer-probe",
+        )
+
+    def test_a_writer_that_books_the_hang_twice_gets_no_credit(self) -> None:
+        from gzkit.ledger import ledger_row  # noqa: PLC0415
+
+        def twice(ledger: Any) -> None:
+            for _ in range(2):
+                ledger.append(ledger_row(self._hang()))
+
+        observation = self._observe(twice)
+        self.assertEqual(observation.status, "failed")
+        self.assertIn("exactly one hang", observation.error)
+
+    def test_a_writer_that_books_another_event_gets_no_credit(self) -> None:
+        from gzkit.events import WorkPackageChangedEvent  # noqa: PLC0415
+        from gzkit.ledger import ledger_row  # noqa: PLC0415
+
+        def other(ledger: Any) -> None:
+            event = WorkPackageChangedEvent(
+                event="work_package_changed",
+                id="WP-02-producer-probe",
+                work_package="WP-02-producer-probe",
+                rung="attachment",
+                approver="operator",
+                change="probe",
+            )
+            ledger.append(ledger_row(event))
+
+        observation = self._observe(other)
+        self.assertEqual(observation.status, "failed")
+        self.assertIn("wrong event type", observation.error)
+
+    def test_a_writer_that_books_the_wrong_record_gets_no_credit(self) -> None:
+        from gzkit.ledger import ledger_row  # noqa: PLC0415
+
+        def elsewhere(ledger: Any) -> None:
+            ledger.append(ledger_row(self._hang("ORD-09-elsewhere")))
+
+        observation = self._observe(elsewhere)
+        self.assertEqual(observation.status, "failed")
+        self.assertIn("disagrees with the hang", observation.error)

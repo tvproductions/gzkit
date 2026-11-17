@@ -2989,6 +2989,107 @@
         }
       }
     },
+    "tag_hung": {
+      "required": [
+        "tag_id",
+        "dispatch_id",
+        "order",
+        "work_package",
+        "tag_class",
+        "surface",
+        "surface_kind",
+        "surface_name",
+        "position",
+        "hazard",
+        "removal_procedure",
+        "source",
+        "check_level",
+        "issued_by_session",
+        "mx_session_id"
+      ],
+      "properties": {
+        "tag_id": {
+          "type": "string",
+          "pattern": "^TAG-[0-9]{2,}-[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "dispatch_id": {
+          "type": "string",
+          "pattern": "^D-[0-9a-f]{16}$"
+        },
+        "order": {
+          "type": "string",
+          "min_length": 1
+        },
+        "work_package": {
+          "type": "string",
+          "min_length": 1
+        },
+        "tag_class": {
+          "type": "string",
+          "enum": [
+            "Danger",
+            "Caution"
+          ]
+        },
+        "surface": {
+          "type": "string",
+          "min_length": 1
+        },
+        "surface_kind": {
+          "type": "string",
+          "enum": [
+            "validator",
+            "check",
+            "hook",
+            "path"
+          ]
+        },
+        "surface_name": {
+          "type": "string",
+          "min_length": 1
+        },
+        "position": {
+          "type": "string",
+          "enum": [
+            "off",
+            "advisory",
+            "recording"
+          ]
+        },
+        "hazard": {
+          "type": "string",
+          "min_length": 1
+        },
+        "removal_procedure": {
+          "type": "string",
+          "min_length": 1
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "order-work",
+            "standard-disconnect",
+            "mel-bypass",
+            "surveillant-stop"
+          ]
+        },
+        "check_level": {
+          "type": "string",
+          "enum": [
+            "C",
+            "D"
+          ]
+        },
+        "issued_by_session": {
+          "type": "string",
+          "min_length": 1
+        },
+        "mx_session_id": {
+          "type": "string",
+          "min_length": 1
+        }
+      }
+    },
     "work_package_unblocked": {
       "required": [
         "work_package",

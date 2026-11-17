@@ -88,9 +88,9 @@ A second tag on the same surface, exit 3:
 $ uv run gz wp tag issue ORD-01-import --slug again --class Caution --surface validator:hexagon-tests --position advisory --hazard 'The scope reads a half-built map.' --removal-procedure 'Run the scope; it passes.' --source order-work --check-level D
 Surface 'validator:hexagon-tests' already carries open tag TAG-01-hexagon,
 issued on ORD-01-import; a surface carries one tag-out at a time (RP-12 ruling
-122). The tag leaves the open log when ORD-01-import closes; read the open log
-with `uv run gz wp tag show`, and issue this one after it closes or isolate
-another surface.
+122). The tag leaves the open log when ORD-01-import closes. Read the open log
+with `uv run gz wp tag show`, and issue this one once the surface is free or
+isolate another surface.
 ```
 
 A check level that does not disconnect, exit 3:

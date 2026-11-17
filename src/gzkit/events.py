@@ -2096,6 +2096,46 @@ class TagIssuedEvent(_EventBase):
     )
 
 
+class TagHungEvent(_EventBase):
+    """tag_hung event — the Repair dispatch hung an issued tag (RP-12 O3 task 3).
+
+    Ruling 6's second act, hang, by the repair dispatch citing the issue. It adds
+    its dispatch id and copies the issue's line item from the ledger (ruling 120),
+    so it alone carries ruling 5's set: the issue's mark as ``issued_by_session``
+    and the MX session open at the hang, the tag's holder, as ``mx_session_id``
+    (rulings 3 and 133). Written only by ``gzkit.mx.tag_out.record_tag_hang``, on
+    the stamped call of a live ``Repair`` dispatch on the tag's frozen, unblocked
+    order (rulings 109, 130, 131 and 133). ``id`` is the tag id.
+    """
+
+    event: Literal["tag_hung"]
+    tag_id: str = Field(..., pattern=f"^{TAG_ID_PATTERN}$", description="TAG-<NN>-<slug>")
+    dispatch_id: str = Field(
+        ..., pattern=f"^{DISPATCH_ID_PATTERN}$", description="The Repair dispatch that hung it"
+    )
+    order: str = Field(..., min_length=1, description="The order the tag is issued on")
+    work_package: str = Field(..., min_length=1, description="The repair package of the order")
+    tag_class: TagClass = Field(..., description="Danger or Caution (ruling 5)")
+    surface: str = Field(..., min_length=1, description="The surface as written, <kind>:<name>")
+    surface_kind: TagSurfaceKind = Field(..., description="The surface's kind (ruling 112)")
+    surface_name: str = Field(
+        ..., min_length=1, description="The registry's own name for it (rulings 112 and 123)"
+    )
+    position: TagPosition = Field(..., description="The position it is hung in")
+    hazard: str = Field(..., min_length=1, description="The hazard the tag guards against")
+    removal_procedure: str = Field(
+        ..., min_length=1, description="How the tag is removed, legible to a worker not involved"
+    )
+    source: TagSource = Field(..., description="What the tag is hung for (ruling 124)")
+    check_level: TagCheckLevel = Field(..., description="The check level it is hung under")
+    issued_by_session: str = Field(
+        ..., min_length=1, description="The issue's mark, the coordinator's session (ruling 120)"
+    )
+    mx_session_id: str = Field(
+        ..., min_length=1, description="The holder, the MX session open at the hang (ruling 133)"
+    )
+
+
 TypedLedgerEvent = Annotated[
     ProjectInitEvent
     | PrdCreatedEvent
@@ -2196,7 +2236,8 @@ TypedLedgerEvent = Annotated[
     | WorkPackageBlockedEvent
     | WorkPackageUnblockedEvent
     | OrderTransitionedEvent
-    | TagIssuedEvent,
+    | TagIssuedEvent
+    | TagHungEvent,
     Field(discriminator="event"),
 ]
 

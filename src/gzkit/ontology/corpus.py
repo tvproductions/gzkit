@@ -244,6 +244,9 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         # The tag-out log's issue (RP-12 O3 task 2). A tag isolates a surface for
         # an order's repair, a run record, not a node of this projection.
         "tag_issued",
+        # The tag-out log's hang (RP-12 O3 task 3), the repair dispatch's act on an
+        # issued tag, a run record, not a node of this projection.
+        "tag_hung",
     }
 )
 

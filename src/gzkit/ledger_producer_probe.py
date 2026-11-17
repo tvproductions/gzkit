@@ -27,6 +27,7 @@ from gzkit.events import (
     OutcomeTransitionedEvent,
     ReportPublishedEvent,
     ReqProofRecordedEvent,
+    TagHungEvent,
     TagIssuedEvent,
     WorkPackageBlockedEvent,
     WorkPackageChangedEvent,
@@ -77,6 +78,7 @@ _REPAIR_PACKAGE = "WP-02-producer-probe"
 _ISSUE = 1
 _ORDER = "ORD-01-producer-probe"
 _TAG_SURFACE_PATH = "src/producer_probe.py"
+_REPAIR_REQ = "REQ-2"
 _BRIEF_PATH = f"design/adr/obpis/{_OBPI}.md"
 _STATEMENT = "Retain the canonical acceptance obligation."
 
@@ -879,6 +881,135 @@ def _probe_tag_issue(root: Path) -> ProducerObservation:
     )
 
 
+def _probe_tag_hang(root: Path) -> ProducerObservation:
+    """Hang an issued tag from its frozen order's Repair dispatch, then again; the second refused.
+
+    Returns:
+        The verified observation.
+
+    Raises:
+        TypeError: The writer persisted another event type.
+        ValueError: The writer booked the wrong record or a second hang of the tag.
+
+    """
+    from gzkit import order_ledger  # noqa: PLC0415 - the writer; import only when probed
+    from gzkit import work_package_ledger as wpl  # noqa: PLC0415
+    from gzkit import work_package_run as run  # noqa: PLC0415
+    from gzkit.ledger import Ledger  # noqa: PLC0415
+    from gzkit.models.catalog import Criterion, Order, RepairReq  # noqa: PLC0415
+    from gzkit.mx import tag_out  # noqa: PLC0415
+
+    order = Order(
+        id=_ORDER, work_package=_REPAIR_PACKAGE, aliases=(), purpose=_STATEMENT, procedure="NA"
+    )
+    req = RepairReq(
+        id=_REPAIR_REQ,
+        specialization="repair",
+        held_on=_REPAIR_PACKAGE,
+        problem_report=_ISSUE,
+        statement=_STATEMENT,
+        criteria=(Criterion(state_or_input="probe", required_outcome="probe", evidence="probe"),),
+        kind="BEHAVIOR",
+        revision=1,
+    )
+    seat = _seat_catalog(root)
+    catalog = seat.model_copy(update={"orders": (order,), "reqs": (*seat.reqs, req)})
+    ledger_path = root / ".gzkit/ledger.jsonl"
+    ledger = Ledger(ledger_path)
+    wpl.record_work_package_transition(
+        catalog,
+        ledger,
+        wpl.TransitionRequest(
+            work_package=_REPAIR_PACKAGE,
+            to_state="initiated",
+            evidence=_AUTHOR,
+            operator_text=_STATEMENT,
+        ),
+    )
+    order_ledger.record_order_transition(
+        catalog,
+        ledger,
+        order_ledger.OrderMove(
+            order=_ORDER, to_state="opened", evidence=_AUTHOR, operator_text=_STATEMENT
+        ),
+    )
+    issue = tag_out.record_tag_issue(
+        catalog,
+        ledger,
+        tag_out.TagIssue(
+            slug="producer-probe",
+            order=_ORDER,
+            tag_class="Danger",
+            surface=f"path:{_TAG_SURFACE_PATH}",
+            position="off",
+            hazard=_STATEMENT,
+            removal_procedure=_STATEMENT,
+            source="order-work",
+            check_level="C",
+        ),
+        mx_session_id=_AUTHOR,
+        registry=_ProbeRegistry("path", _TAG_SURFACE_PATH),
+    )
+    order_ledger.record_order_transition(
+        catalog,
+        ledger,
+        order_ledger.OrderMove(
+            order=_ORDER,
+            to_state="frozen",
+            evidence=_AUTHOR,
+            risk_note=_AUTHOR,
+            review_receipt=_AUTHOR,
+            baseline=(BaselinedReq(req=_REPAIR_REQ, revision=1),),
+        ),
+    )
+    dispatched = run.record_work_package_dispatch(
+        catalog,
+        ledger,
+        run.DispatchRequest(
+            work_package=_REPAIR_PACKAGE,
+            role=run.REPAIR,
+            model=_AUTHOR,
+            root=root.resolve().as_posix(),
+            order=_ORDER,
+        ),
+    )
+    dispatch_id = str(dispatched.dispatch_id)
+    seated = ledger_path.read_bytes()
+
+    def write() -> object:
+        return tag_out.record_tag_hang(
+            ledger,
+            issue.tag_id,
+            dispatch_id,
+            stamped_id=dispatch_id,
+            mx_session_id=_AUTHOR,
+        )
+
+    write()
+    _expect_refusal(write, "a tag hung twice", tag_out.TagOutError, "already hung")
+    persisted = ledger_path.read_bytes()
+    added = persisted[len(seated) :].decode("utf-8").splitlines()
+    if not persisted.startswith(seated) or len(added) != 1:
+        msg = "Writer must persist exactly one hang and nothing for a refusal"
+        raise ValueError(msg)
+    event = parse_typed_event(json.loads(added[0]))
+    if not isinstance(event, TagHungEvent):
+        msg = "Writer persisted the wrong event type"
+        raise TypeError(msg)
+    observed = (event.id, event.order, event.surface_name, event.issued_by_session)
+    if observed != (issue.tag_id, _ORDER, _TAG_SURFACE_PATH, _AUTHOR):
+        msg = "Tag record disagrees with the hang"
+        raise ValueError(msg)
+    return ProducerObservation(
+        event_type="tag_hung",
+        producer=_PRODUCERS["tag_hung"],
+        status="verified",
+        ledger_sha256=hashlib.sha256(persisted).hexdigest(),
+        record_count=1,
+        subject=event.id,
+    )
+
+
 def _commence_delivery(catalog: Catalog, ledger: Ledger) -> None:
     """Move the probe's delivery package to commenced on its one catalog REQ."""
     from gzkit import work_package_ledger as wpl  # noqa: PLC0415 - the writer; import only when probed
@@ -1155,6 +1286,7 @@ _PRODUCERS = {
     "legacy_unit_withdrawn": "gzkit.legacy_units.withdraw_legacy_unit",
     "order_transitioned": "gzkit.order_ledger.record_order_transition",
     "tag_issued": "gzkit.mx.tag_out.record_tag_issue",
+    "tag_hung": "gzkit.mx.tag_out.record_tag_hang",
 }
 
 
@@ -1170,6 +1302,7 @@ _ROOT_PROBES = {
     "work_package_issue_closed": _probe_work_package_issue_closed,
     "order_transitioned": _probe_order_transition,
     "tag_issued": _probe_tag_issue,
+    "tag_hung": _probe_tag_hang,
     "legacy_unit_withdrawn": _probe_legacy_withdrawal,
     "dispatch_claimed": _probe_dispatch_claim,
     "dispatch_voided": lambda root: _probe_dispatch_claim(root, "dispatch_voided"),

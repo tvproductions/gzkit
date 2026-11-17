@@ -1,4 +1,4 @@
-"""The tag-out log's issue writer and reducer: RP-12 O3 task 2, act 1.
+"""The tag-out log's issue and hang writers and reducer: RP-12 O3 tasks 2 and 3.
 
 `docs/governance/harbor-ro12-contractor-kit.md` § Rulings: the tag-out log is
 ledger events (ruling 4); the coordinator issues a tag (ruling 6) whose
@@ -7,8 +7,11 @@ open MX session (rulings 3, 113 and 114), under check level C or D (113), on a
 surface written `<kind>:<name>` and resolved against today's registries (112,
 123), from one of ruling 124's four sources, on an opened or frozen order of an
 initiated repair package (121), one open tag per surface (122). Its id is
-`TAG-<NN>-<slug>` (111). Every refusal is proved here against the writer, which
-imports no `gzkit.cli` (ruling 125). A refusal writes nothing.
+`TAG-<NN>-<slug>` (111). The repair dispatch hangs it (ruling 6), a stamped call
+of a live `Repair` dispatch on the tag's frozen, unblocked order (rulings 109, 130,
+131 and 133), copying the issue's line item (120); a hung tag reads open whatever
+its order's state (129). Every refusal is proved here against the writers, which
+import no `gzkit.cli` (ruling 125). A refusal writes nothing.
 """
 
 import json
@@ -17,7 +20,14 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING
 
-from gzkit.events import BaselinedReq, OrderTransitionedEvent, TagIssuedEvent, parse_typed_event
+from gzkit.events import (
+    BaselinedReq,
+    OrderTransitionedEvent,
+    TagHungEvent,
+    TagIssuedEvent,
+    WorkPackageDispatchedEvent,
+    parse_typed_event,
+)
 from gzkit.ledger import Ledger, ledger_row
 from gzkit.models.catalog import Catalog, Criterion, Order, RepairReq, WorkPackage
 from gzkit.mx.tag_out import (
@@ -25,11 +35,19 @@ from gzkit.mx.tag_out import (
     TagOutError,
     next_tag_id,
     open_tags,
+    record_tag_hang,
     record_tag_issue,
     tag_log,
 )
 from gzkit.order_ledger import OrderMove, record_order_transition
 from gzkit.work_package_ledger import TransitionRequest, record_work_package_transition
+from gzkit.work_package_run import (
+    BlockRequest,
+    DispatchRequest,
+    record_dispatch_void,
+    record_work_package_block,
+    record_work_package_dispatch,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -39,6 +57,8 @@ _REPAIR = "WP-01-stamp"
 _SPARE = "WP-03-spare"
 _DELIVERY = "WP-02-build"
 _ORDER = "ORD-01-import"
+#: A hang's call stamped with the dispatch it names, as the stamp hook would (ruling 133).
+_AS_NAMED = "as-named"
 
 
 class _Registry:
@@ -396,3 +416,260 @@ class RefusalProseOutputContract(_TagCase):
         self.assertIn("already carries open tag TAG-01-stamp-hook", text)
         self.assertIn("RP-12 ruling 122", text)
         self.assertIn("`uv run gz wp tag show`", text)
+
+
+class _HangCase(_TagCase):
+    """A tag issued on the opened order, the order frozen, a Repair dispatch booked on it."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.tag = self.issue()
+        self.freeze()
+        self.dispatch = self.book("Repair")
+
+    def book(self, role: str, order: str = _ORDER, package: str = _REPAIR) -> str:
+        request = DispatchRequest(
+            work_package=package,
+            role=role,
+            model="opus",
+            root=Path(self._dir.name).resolve().as_posix(),
+            order=order,
+        )
+        return str(record_work_package_dispatch(self.catalog, self.ledger, request).dispatch_id)
+
+    def seat_dispatch(self, role: str, order: str, package: str = _REPAIR) -> str:
+        """Seat a dispatch row by hand, the gate under test the hang writer's own.
+
+        The dispatch writer books no Repair dispatch off a frozen order and no other
+        role on one, so a row the hang must refuse is seated directly.
+
+        Returns:
+            The seated dispatch's id.
+
+        """
+        dispatch_id = f"D-{len(_rows(self.path)):016x}"
+        seated = WorkPackageDispatchedEvent.model_validate(
+            {
+                "event": "work_package_dispatched",
+                "id": package,
+                "work_package": package,
+                "role": role,
+                "model": "opus",
+                "subject": order,
+                "dispatch_id": dispatch_id,
+                "intended_root": Path(self._dir.name).resolve().as_posix(),
+                "order": order,
+            }
+        )
+        self.ledger.append(ledger_row(seated))
+        return dispatch_id
+
+    def hang(
+        self,
+        tag_id: str | None = None,
+        dispatch_id: str | None = None,
+        *,
+        stamped: str | None = _AS_NAMED,
+        session: str | None = _SESSION,
+    ) -> TagHungEvent:
+        dispatch_id = dispatch_id or self.dispatch
+        return record_tag_hang(
+            self.ledger,
+            tag_id or self.tag.tag_id,
+            dispatch_id,
+            stamped_id=dispatch_id if stamped == _AS_NAMED else stamped,
+            mx_session_id=session,
+        )
+
+    def assert_hang_refused(self, failed: str, act: Callable[[], object] | None = None) -> str:
+        """Assert the hang is refused by the check named, and nothing is written.
+
+        ``failed`` is a fragment of the refusal's what-failed part, so a test cannot pass
+        on an earlier check's refusal.
+
+        Returns:
+            The refusal's text.
+
+        """
+        # output-contract: the refusal's what-failed part names the check that refused
+        before = _rows(self.path)
+        raised = _raised(act or self.hang)
+        self.assertIsInstance(raised, TagOutError)
+        self.assertIn(failed, str(raised))
+        self.assertEqual(_rows(self.path), before)
+        return str(raised)
+
+
+class HangTests(_HangCase):
+    def test_a_hang_copies_the_issue_and_records_its_dispatch_and_holder(self) -> None:
+        """Rulings 5, 120 and 133: the hang adds its dispatch, copies the item, names its holder."""
+        holder = "mx-20261118-relief"
+        returned = self.hang(session=holder)
+        event = parse_typed_event(_rows(self.path)[-1])
+        self.assertIsInstance(event, TagHungEvent)
+        assert isinstance(event, TagHungEvent)
+        # The ledger stamps the row's time; every other field is the writer's return.
+        written, read = returned.model_dump(), event.model_dump()
+        written.pop("ts")
+        read.pop("ts")
+        self.assertEqual(written, read)
+        self.assertEqual(
+            (event.id, event.tag_id, event.dispatch_id),
+            (self.tag.tag_id, self.tag.tag_id, self.dispatch),
+        )
+        copied = (
+            "order",
+            "work_package",
+            "tag_class",
+            "surface",
+            "surface_kind",
+            "surface_name",
+            "position",
+            "hazard",
+            "removal_procedure",
+            "source",
+            "check_level",
+        )
+        for field in copied:
+            with self.subTest(field=field):
+                self.assertEqual(getattr(event, field), getattr(self.tag, field))
+        # The issue's mark is carried; the open session at the hang is the holder.
+        self.assertEqual(event.issued_by_session, _SESSION)
+        self.assertEqual(event.mx_session_id, holder)
+
+
+class HangRefusalTests(_HangCase):
+    def test_a_hang_with_no_mx_session_open_is_refused(self) -> None:
+        """Rulings 3 and 133: the open MX session holds the hung tag; with none, no holder."""
+        for session in (None, "", "  "):
+            with self.subTest(session=session):
+                self.assert_hang_refused(
+                    "No MX session is open", lambda session=session: self.hang(session=session)
+                )
+
+    def test_a_hang_not_stamped_with_the_dispatch_it_names_is_refused(self) -> None:
+        """Ruling 133: a hang is the stamped call of the Repair dispatch it names."""
+        other = self.book("Repair")
+        for stamped in (None, other):
+            with self.subTest(stamped=stamped):
+                self.assert_hang_refused(
+                    "a hang is the stamped call", lambda stamped=stamped: self.hang(stamped=stamped)
+                )
+
+    def test_a_tag_the_ledger_does_not_hold_is_refused(self) -> None:
+        """Rulings 6 and 120: a hang cites an issue; with none there is nothing to copy."""
+        self.assert_hang_refused(
+            "is not issued in the ledger", lambda: self.hang(tag_id="TAG-09-absent")
+        )
+
+    def test_a_tag_already_hung_is_refused(self) -> None:
+        """Ruling 6: a tag is hung once, by the repair dispatch citing its issue."""
+        self.hang()
+        with self.subTest(by="the same dispatch"):
+            self.assert_hang_refused("is already hung")
+        other = self.book("Repair")
+        with self.subTest(by="another Repair dispatch"):
+            self.assert_hang_refused("is already hung", lambda: self.hang(dispatch_id=other))
+
+    def test_a_tag_not_open_is_refused(self) -> None:
+        """Ruling 122: an unhung tag on a closed order reads closed; it is hung no more.
+
+        An order closes from opened only as a terminate, where no Repair dispatch is
+        booked, so the spare order's dispatch is seated by hand.
+        """
+        self.initiate(_SPARE)
+        self.move("opened", order="ORD-03-spare", operator_text="open the spare order")
+        spare = self.issue(slug="spare", order="ORD-03-spare", surface="path:src/stamp.py")
+        self.move(
+            "closed",
+            order="ORD-03-spare",
+            decision="terminate",
+            attestor="g0",
+            attestation_text="terminate it",
+        )
+        seated = self.seat_dispatch("Repair", "ORD-03-spare", package=_SPARE)
+        self.assert_hang_refused(
+            "is not open", lambda: self.hang(tag_id=spare.tag_id, dispatch_id=seated)
+        )
+
+    def test_a_dispatch_the_ledger_does_not_hold_live_is_refused(self) -> None:
+        """Rulings 1 and 42: a hang names a booked dispatch, never a voided one."""
+        with self.subTest(dispatch="none booked"):
+            self.assert_hang_refused(
+                "is not a live dispatch", lambda: self.hang(dispatch_id="D-00000000000000ff")
+            )
+        record_dispatch_void(self.ledger, _REPAIR, self.dispatch, "abandoned")
+        with self.subTest(dispatch="voided"):
+            self.assert_hang_refused("is not a live dispatch")
+
+    def test_a_dispatch_whose_role_is_not_repair_is_refused(self) -> None:
+        """Rulings 6 and 109: a hang requires a Repair dispatch, the craftsman's position."""
+        seated = {role: self.seat_dispatch(role, _ORDER) for role in ("Restoration", "Implementer")}
+        for role, dispatch_id in seated.items():
+            with self.subTest(role=role):
+                self.assert_hang_refused(
+                    "a tag is hung by a Repair dispatch",
+                    lambda d=dispatch_id: self.hang(dispatch_id=d),
+                )
+
+    def test_a_repair_dispatch_on_another_order_is_refused(self) -> None:
+        """Ruling 130: a Repair dispatch is bound to its order and hangs that order's tags."""
+        seated = self.seat_dispatch("Repair", "ORD-03-spare")
+        self.assert_hang_refused("is bound to", lambda: self.hang(dispatch_id=seated))
+
+    def test_a_tag_whose_order_is_not_frozen_is_refused(self) -> None:
+        """Ruling 131: the hang belongs to a frozen order; after commencement it is refused."""
+        self.move("commenced")
+        self.assert_hang_refused("a tag is hung on a frozen order")
+
+    def test_a_tag_whose_order_is_blocked_is_refused(self) -> None:
+        """Rulings 59 and 131: a blocked order's acts are held, the hang among them."""
+        request = BlockRequest(
+            work_package=_REPAIR, reason="stuck", next_action="rule on it", order=_ORDER
+        )
+        record_work_package_block(self.catalog, self.ledger, request, refutations={})
+        self.assert_hang_refused("is blocked on the operator")
+
+
+class HungTagLogTests(_HangCase):
+    def close_the_order(self) -> None:
+        self.move("commenced")
+        self.move("accepted", acceptance_ready=True)
+        self.move("closed", decision="terminate", attestor="g0", attestation_text="terminate it")
+
+    def test_a_hung_tag_reads_open_after_its_order_closes(self) -> None:
+        """Ruling 129: a hung tag stays open until cleared, whatever its order's state."""
+        hung = self.hang()
+        self.close_the_order()
+        (tag,) = tag_log(self.ledger)
+        self.assertTrue(tag.is_open)
+        assert tag.hang is not None
+        self.assertEqual((tag.hang.tag_id, tag.hang.dispatch_id), (hung.tag_id, hung.dispatch_id))
+        self.assertEqual([t.issue.tag_id for t in open_tags(self.ledger)], [self.tag.tag_id])
+
+    def test_an_unhung_tag_keeps_ruling_122s_reading(self) -> None:
+        """Rulings 122 and 129: an unhung tag reads open until its order closes, hang None."""
+        (tag,) = tag_log(self.ledger)
+        self.assertEqual((tag.is_open, tag.hang), (True, None))
+
+    def test_a_closed_orders_hung_tag_still_holds_its_surface(self) -> None:
+        """Rulings 122 and 129: until cleared, a hung tag refuses a new issue on its surface."""
+        self.hang()
+        self.close_the_order()
+        self.initiate(_SPARE)
+        self.move("opened", order="ORD-03-spare", operator_text="open the spare order")
+        text = self.assert_refused(slug="second", order="ORD-03-spare")
+        # output-contract: the refusal says why the surface is still held (ruling 129)
+        self.assertIn(f"It is hung, by dispatch {self.dispatch}", text)
+        self.assertIn("until it is cleared", text)
+
+    def test_a_malformed_hang_row_is_refused_with_its_void_not_a_crash(self) -> None:
+        """Ruling 4: the log is ledger events; a hang row it cannot read stops it, named."""
+        row = {"schema": "gzkit.ledger.v1", "event": "tag_hung", "id": "TAG-7-bad"}
+        with self.path.open("a", encoding="utf-8") as stream:
+            stream.write(json.dumps({**row, "ts": "2026-11-17T00:00:00+00:00"}) + "\n")
+        raised = _raised(lambda: tag_log(self.ledger))
+        # output-contract: the refusal names the row's event and the void that recovers it
+        self.assertIsInstance(raised, TagOutError)
+        self.assertIn("ledger's tag_hung row 'TAG-7-bad'", str(raised))
+        self.assertIn("--subject-event tag_hung --subject-id TAG-7-bad", str(raised))

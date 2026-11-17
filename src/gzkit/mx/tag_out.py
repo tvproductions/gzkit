@@ -25,14 +25,16 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from gzkit.events import (
     TagCheckLevel,
     TagClass,
+    TagHungEvent,
     TagIssuedEvent,
     TagPosition,
     TagSource,
     TagSurfaceKind,
 )
 from gzkit.ledger import ledger_row
-from gzkit.order_ledger import TERMINATED, order_state
+from gzkit.order_ledger import TERMINATED, is_order_blocked, order_state
 from gzkit.work_package_ledger import work_package_state
+from gzkit.work_package_run import REPAIR, find_dispatch
 
 if TYPE_CHECKING:
     from gzkit.ledger import Ledger
@@ -55,6 +57,20 @@ _SPELLING: dict[str, str] = {
     ),
     "path": "a path in the tree, repo-relative with forward slashes, `path:src/gzkit/ledger.py`",
 }
+#: The issue's line item a hang copies from the ledger, typing none of it (ruling 120).
+LINE_ITEM: tuple[str, ...] = (
+    "order",
+    "work_package",
+    "tag_class",
+    "surface",
+    "surface_kind",
+    "surface_name",
+    "position",
+    "hazard",
+    "removal_procedure",
+    "source",
+    "check_level",
+)
 #: A tag's slug: lowercase words joined by hyphens, as an order's (rulings 43 and 111).
 _SLUG = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 
@@ -93,42 +109,68 @@ class TagIssue(BaseModel):
 
 
 class Tag(BaseModel):
-    """One tag as the log reads it: its issue and whether it is open (ruling 122)."""
+    """One tag as the log reads it: its issue, its hang, and whether it is open.
+
+    A hung tag reads open until it is cleared, whatever its order's state (ruling
+    129); an unhung tag reads closed once its order has closed (ruling 122).
+    """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     issue: TagIssuedEvent = Field(..., description="The tag's issue, its whole line item")
-    is_open: bool = Field(..., description="False once its order has reached closed")
+    hang: TagHungEvent | None = Field(None, description="Its hang, None while unhung (ruling 6)")
+    is_open: bool = Field(
+        ..., description="True while hung (ruling 129); unhung, false once its order has closed"
+    )
 
 
 def _refuse(message: str) -> NoReturn:
     raise TagOutError(message)
 
 
-def _issues(ledger: Ledger) -> list[TagIssuedEvent]:
-    """Read every live issue, refusing a row the event's shape does not admit.
+def _read[E: (TagIssuedEvent, TagHungEvent)](
+    ledger: Ledger, event_type: str, model: type[E]
+) -> list[E]:
+    """Read every live row of one tag-out event, refusing a row its shape does not admit.
 
     A void correction drops a row from the live stream (`gzkit.ledger_corrections`),
     so a malformed row is recovered by voiding it, never by editing the ledger.
 
     Returns:
-        Each issue the live ledger holds, oldest first.
+        Each event the live ledger holds, oldest first.
 
     """
-    issues: list[TagIssuedEvent] = []
-    for row in ledger.query(event_type="tag_issued"):
+    events: list[E] = []
+    for row in ledger.query(event_type=event_type):
         try:
-            issues.append(TagIssuedEvent.model_validate(row.model_dump()))
+            events.append(model.model_validate(row.model_dump()))
         except ValidationError as exc:
             _refuse(
-                f"The ledger's tag_issued row {row.id!r} at {row.ts} does not parse "
+                f"The ledger's {event_type} row {row.id!r} at {row.ts} does not parse "
                 f"({exc.error_count()} field errors), so the tag-out log cannot be read; it is "
                 "ledger events alone (RP-12 ruling 4) and a ledger row is never hand-edited. "
                 "Have the operator void it: `uv run gz ledger correct --subject-event "
-                f"tag_issued --subject-id {row.id} --subject-ts {row.ts} --disposition void "
+                f"{event_type} --subject-id {row.id} --subject-ts {row.ts} --disposition void "
                 '--cause agent-error --reason "<why>" --attestor g0`.'
             )
-    return issues
+    return events
+
+
+def _issues(ledger: Ledger) -> list[TagIssuedEvent]:
+    return _read(ledger, "tag_issued", TagIssuedEvent)
+
+
+def _hangs(ledger: Ledger) -> dict[str, TagHungEvent]:
+    """Read each hung tag's hang, by tag id; the first stands, as a tag is hung once (ruling 6).
+
+    Returns:
+        Each hang the live ledger holds, keyed by its tag.
+
+    """
+    hangs: dict[str, TagHungEvent] = {}
+    for hang in _read(ledger, "tag_hung", TagHungEvent):
+        hangs.setdefault(hang.tag_id, hang)
+    return hangs
 
 
 def next_tag_id(ledger: Ledger, slug: str) -> str:
@@ -147,15 +189,22 @@ def next_tag_id(ledger: Ledger, slug: str) -> str:
 def tag_log(ledger: Ledger) -> list[Tag]:
     """Read every tag the ledger names, oldest first.
 
-    A tag reads closed once its order has reached `closed` (ruling 122), so a
-    terminated order's unhung tag frees its surface; otherwise it is open.
+    A hung tag reads open until it is cleared, whatever its order's state (ruling
+    129), and so holds its surface. An unhung tag reads closed once its order has
+    reached `closed` (ruling 122), so a terminated order's unhung tag frees its
+    surface; otherwise it is open.
 
     Returns:
-        Each tag with whether it is open.
+        Each tag with its hang and whether it is open.
 
     """
+    hangs = _hangs(ledger)
     return [
-        Tag(issue=issue, is_open=order_state(ledger, issue.order) not in TERMINATED)
+        Tag(
+            issue=issue,
+            hang=hangs.get(issue.tag_id),
+            is_open=issue.tag_id in hangs or order_state(ledger, issue.order) not in TERMINATED,
+        )
         for issue in _issues(ledger)
     ]
 
@@ -202,6 +251,37 @@ def _surface(written: str) -> tuple[str, str]:
             "`hook:<script or hook id>` or `path:<repo path>`."
         )
     return kind, name
+
+
+def _check_surface_free(ledger: Ledger, written: str, kind: str, resolved: str) -> None:
+    """Refuse a surface that already carries an open tag (rulings 122 and 129).
+
+    Surfaces compare on their kind and the registry's own name, so two spellings of
+    one surface hold it once.
+    """
+    held = next(
+        (
+            tag
+            for tag in open_tags(ledger)
+            if (tag.issue.surface_kind, tag.issue.surface_name) == (kind, resolved)
+        ),
+        None,
+    )
+    if held is None:
+        return
+    issued = held.issue
+    leaves = (
+        f"It is hung, by dispatch {held.hang.dispatch_id}, and holds the surface until "
+        "it is cleared, whatever its order's state (RP-12 ruling 129)"
+        if held.hang
+        else f"The tag leaves the open log when {issued.order} closes"
+    )
+    _refuse(
+        f"Surface {written!r} already carries open tag {issued.tag_id}, issued on "
+        f"{issued.order}; a surface carries one tag-out at a time (RP-12 ruling 122). "
+        f"{leaves}. Read the open log with `uv run gz wp tag show`, and issue this one "
+        "once the surface is free or isolate another surface."
+    )
 
 
 def record_tag_issue(
@@ -276,20 +356,7 @@ def record_tag_issue(
             "would isolate nothing and one tag-out per surface could not be compared "
             f"(RP-12 rulings 112 and 123). Name {_SPELLING[kind]}."
         )
-    if held := next(
-        (
-            tag.issue
-            for tag in open_tags(ledger)
-            if (tag.issue.surface_kind, tag.issue.surface_name) == (kind, resolved)
-        ),
-        None,
-    ):
-        _refuse(
-            f"Surface {request.surface!r} already carries open tag {held.tag_id}, issued on "
-            f"{held.order}; a surface carries one tag-out at a time (RP-12 ruling 122). The "
-            f"tag leaves the open log when {held.order} closes; read the open log with `uv "
-            "run gz wp tag show`, and issue this one after it closes or isolate another surface."
-        )
+    _check_surface_free(ledger, request.surface, kind, resolved)
     tag_id = next_tag_id(ledger, request.slug)
     event = TagIssuedEvent.model_validate(
         {
@@ -307,6 +374,105 @@ def record_tag_issue(
             "removal_procedure": request.removal_procedure,
             "source": request.source,
             "check_level": request.check_level,
+            "mx_session_id": mx_session_id,
+        }
+    )
+    ledger.append(ledger_row(event))
+    return event
+
+
+def record_tag_hang(
+    ledger: Ledger,
+    tag_id: str,
+    dispatch_id: str,
+    *,
+    stamped_id: str | None,
+    mx_session_id: str | None,
+) -> TagHungEvent:
+    """Book the Repair dispatch's hang of one issued tag, or refuse it and write nothing.
+
+    Returns:
+        The event booked.
+
+    """
+    if not (mx_session_id or "").strip():
+        _refuse(
+            "No MX session is open, so the hung tag would have no holder. A hung tag is held "
+            "by the open MX session (RP-12 rulings 3 and 133). Have the operator open one "
+            "through the gz-mx skill (`uv run gz mx enter`), then hang the tag."
+        )
+    if stamped_id != dispatch_id:
+        stamp = f"stamped with {stamped_id}" if stamped_id else "not stamped"
+        _refuse(
+            f"This call is {stamp}, and a hang is the stamped call of the Repair dispatch it "
+            f"names, {dispatch_id} (RP-12 ruling 133). The hang is run by that dispatch's "
+            f"own subagent: `uv run gz wp tag hang {tag_id} --dispatch {dispatch_id}`."
+        )
+    issue = next((issue for issue in _issues(ledger) if issue.tag_id == tag_id), None)
+    if issue is None:
+        _refuse(
+            f"Tag {tag_id!r} is not issued in the ledger, so the hang has no line item to "
+            "copy; the coordinator issues a tag before the repair dispatch hangs it (RP-12 "
+            "rulings 6 and 120). Read the open log with `uv run gz wp tag show` and hang a "
+            "tag it lists."
+        )
+    if hung := _hangs(ledger).get(tag_id):
+        _refuse(
+            f"Tag {tag_id} is already hung, by dispatch {hung.dispatch_id}; a tag is hung "
+            "once (RP-12 ruling 6). Read it with `uv run gz wp tag show --all`; nothing "
+            "remains to hang."
+        )
+    if order_state(ledger, issue.order) in TERMINATED:
+        _refuse(
+            f"Tag {tag_id} is not open: its order {issue.order} has closed with the tag "
+            "unhung, so it left the open log and freed its surface (RP-12 ruling 122). Have "
+            "the coordinator issue a new tag on an opened or frozen order: `uv run gz wp tag "
+            "issue`."
+        )
+    dispatch = find_dispatch(ledger, dispatch_id)
+    if dispatch is None:
+        _refuse(
+            f"Dispatch {dispatch_id} is not a live dispatch in the ledger, none booked or "
+            "voided, so the ledger says it may do nothing (RP-12 rulings 1 and 42). Have the "
+            f"coordinator book one: `uv run gz wp dispatch {issue.work_package} --order "
+            f"{issue.order} --role {REPAIR} --model <tier>`."
+        )
+    if dispatch.role != REPAIR:
+        _refuse(
+            f"Dispatch {dispatch_id} is a {dispatch.role} dispatch; a tag is hung by a "
+            f"{REPAIR} dispatch, the craftsman's repair position (RP-12 rulings 6 and 109). "
+            f"Hang it from a {REPAIR} dispatch on {issue.order}: `uv run gz wp dispatch "
+            f"{issue.work_package} --order {issue.order} --role {REPAIR} --model <tier>`."
+        )
+    if dispatch.order != issue.order:
+        _refuse(
+            f"Dispatch {dispatch_id} is bound to {dispatch.order}, and tag {tag_id} is "
+            f"issued on {issue.order}; a {REPAIR} dispatch hangs its own order's tags (RP-12 "
+            f"ruling 130). Hang it from a {REPAIR} dispatch booked on {issue.order}."
+        )
+    order_now = order_state(ledger, issue.order)
+    if order_now != "frozen":
+        _refuse(
+            f"Order {issue.order} is {order_now or 'not opened'}; a tag is hung on a frozen "
+            "order, before it commences (RP-12 rulings 108 and 131). A tag left unhung at "
+            f"commencement is hung no more; `uv run gz wp order show {issue.order}` reads "
+            "its state."
+        )
+    if is_order_blocked(ledger, issue.order):
+        _refuse(
+            f"Order {issue.order} is blocked on the operator, and a blocked order's acts are "
+            "held, its hangs among them (RP-12 rulings 59 and 131). Hang the tag once `uv run "
+            f"gz wp unblock {issue.work_package} --order {issue.order} --ruling <words> "
+            "--operator <who>` records the ruling."
+        )
+    event = TagHungEvent.model_validate(
+        {
+            **{field: getattr(issue, field) for field in LINE_ITEM},
+            "event": "tag_hung",
+            "id": tag_id,
+            "tag_id": tag_id,
+            "dispatch_id": dispatch_id,
+            "issued_by_session": issue.mx_session_id,
             "mx_session_id": mx_session_id,
         }
     )
