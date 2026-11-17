@@ -616,6 +616,62 @@
       "authority": "docs/governance/harbor-ro12-contractor-kit.md (RP-12 O2 task 2, rulings 45 and 48)",
       "proposed_by": "claude-code session 2026-11-05",
       "reviewed_by": "g0"
+    },
+    {
+      "claim_id": "hexagon-dependencies",
+      "guard": "gzkit.governance.trust_audits.hexagon_dependencies:audit_hexagon_dependencies",
+      "failing_test": "tests.governance.test_audit_hexagon_dependencies.TheScopeJudgesAgainstTheBaseline.test_a_new_finding_fails",
+      "mutation": {
+        "find": "        for key in new\n",
+        "replace": "        for key in ()\n",
+        "label": "a new dependency finding is never reported"
+      },
+      "binding_sha256": "9c673236b17f7f94d287ce164b372204b15a8bff9b7954c0861ada4ba7ceebeb",
+      "authority": "RP-7 change order of 2026-11-12 (gz validate --hexagon-dependencies and --hexagon-tests on the per-change gate); GHI #1154 item 5 (every registered claim binds a reviewed canary)",
+      "proposed_by": "claude-code session 2026-11-17",
+      "reviewed_by": null
+    },
+    {
+      "claim_id": "hexagon-dependencies-baselined",
+      "guard": "gzkit.governance.trust_audits.hexagon_dependencies:audit_hexagon_dependencies",
+      "failing_test": "tests.governance.test_audit_hexagon_dependencies.TheScopeJudgesAgainstTheBaseline.test_a_held_finding_passes",
+      "mutation": {
+        "find": "        held = _held(project_root)\n",
+        "replace": "        held = frozenset()\n",
+        "label": "the baseline is never read, so a held finding is refused as new"
+      },
+      "binding_sha256": "ba8f1f1a87bdbc96a409e5e69284b8f71243ad13c64fae3d06a373a8f8438e73",
+      "authority": "RP-7 change order of 2026-11-12 (gz validate --hexagon-dependencies and --hexagon-tests on the per-change gate); GHI #1154 item 5 (every registered claim binds a reviewed canary)",
+      "proposed_by": "claude-code session 2026-11-17",
+      "reviewed_by": null
+    },
+    {
+      "claim_id": "hexagon-tests",
+      "guard": "gzkit.governance.trust_audits.hexagon_tests:audit_hexagon_tests",
+      "failing_test": "tests.governance.test_audit_hexagon_tests.TheScopeJudgesAgainstTheBaseline.test_a_new_finding_fails_and_names_the_fix",
+      "mutation": {
+        "find": "        for key in sorted(found - held)\n",
+        "replace": "        for key in ()\n",
+        "label": "a new hexagon test finding is never reported"
+      },
+      "binding_sha256": "cfb5bc19fccc875bc5fd54993c886d58c228633699fb78feaefe74031edb4295",
+      "authority": "RP-7 change order of 2026-11-12 (gz validate --hexagon-dependencies and --hexagon-tests on the per-change gate); GHI #1154 item 5 (every registered claim binds a reviewed canary)",
+      "proposed_by": "claude-code session 2026-11-17",
+      "reviewed_by": null
+    },
+    {
+      "claim_id": "hexagon-tests-baselined",
+      "guard": "gzkit.governance.trust_audits.hexagon_tests:audit_hexagon_tests",
+      "failing_test": "tests.governance.test_audit_hexagon_tests.TheScopeJudgesAgainstTheBaseline.test_a_held_finding_passes",
+      "mutation": {
+        "find": "        held = _held(project_root)\n",
+        "replace": "        held = frozenset()\n",
+        "label": "the baseline is never read, so a held finding is refused as new"
+      },
+      "binding_sha256": "692b3055915029b6b232b6d513e8bddbcdf282c399c6cc3549ef3936b1a80960",
+      "authority": "RP-7 change order of 2026-11-12 (gz validate --hexagon-dependencies and --hexagon-tests on the per-change gate); GHI #1154 item 5 (every registered claim binds a reviewed canary)",
+      "proposed_by": "claude-code session 2026-11-17",
+      "reviewed_by": null
     }
   ]
 }
