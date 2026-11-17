@@ -27,6 +27,7 @@ from gzkit.events import (
     OutcomeTransitionedEvent,
     ReportPublishedEvent,
     ReqProofRecordedEvent,
+    TagIssuedEvent,
     WorkPackageBlockedEvent,
     WorkPackageChangedEvent,
     WorkPackageIssueClosedEvent,
@@ -75,6 +76,7 @@ _WORK_PACKAGE = "WP-01-producer-probe"
 _REPAIR_PACKAGE = "WP-02-producer-probe"
 _ISSUE = 1
 _ORDER = "ORD-01-producer-probe"
+_TAG_SURFACE_PATH = "src/producer_probe.py"
 _BRIEF_PATH = f"design/adr/obpis/{_OBPI}.md"
 _STATEMENT = "Retain the canonical acceptance obligation."
 
@@ -780,6 +782,103 @@ def _probe_order_transition(root: Path) -> ProducerObservation:
     )
 
 
+class _ProbeRegistry:
+    """Resolve one surface, the probe's path, as a registry of today would hold it."""
+
+    def __init__(self, kind: str, name: str) -> None:
+        self.held = (kind, name)
+
+    def resolve(self, kind: str, name: str) -> str | None:
+        return name if (kind, name) == self.held else None
+
+
+def _probe_tag_issue(root: Path) -> ProducerObservation:
+    """Issue a tag on an opened repair order, then the same surface again; the second refused.
+
+    Returns:
+        The verified observation.
+
+    Raises:
+        TypeError: The writer persisted another event type.
+        ValueError: The writer booked the wrong record or a second tag on the surface.
+
+    """
+    from gzkit import order_ledger  # noqa: PLC0415 - the writer; import only when probed
+    from gzkit import work_package_ledger as wpl  # noqa: PLC0415
+    from gzkit.ledger import Ledger  # noqa: PLC0415
+    from gzkit.models.catalog import Order  # noqa: PLC0415
+    from gzkit.mx import tag_out  # noqa: PLC0415
+
+    order = Order(
+        id=_ORDER, work_package=_REPAIR_PACKAGE, aliases=(), purpose=_STATEMENT, procedure="NA"
+    )
+    catalog = _seat_catalog(root).model_copy(update={"orders": (order,)})
+    ledger_path = root / ".gzkit/ledger.jsonl"
+    ledger = Ledger(ledger_path)
+    wpl.record_work_package_transition(
+        catalog,
+        ledger,
+        wpl.TransitionRequest(
+            work_package=_REPAIR_PACKAGE,
+            to_state="initiated",
+            evidence=_AUTHOR,
+            operator_text=_STATEMENT,
+        ),
+    )
+    order_ledger.record_order_transition(
+        catalog,
+        ledger,
+        order_ledger.OrderMove(
+            order=_ORDER, to_state="opened", evidence=_AUTHOR, operator_text=_STATEMENT
+        ),
+    )
+    seated = ledger_path.read_bytes()
+    issue = tag_out.TagIssue(
+        slug="producer-probe",
+        order=_ORDER,
+        tag_class="Danger",
+        surface=f"path:{_TAG_SURFACE_PATH}",
+        position="off",
+        hazard=_STATEMENT,
+        removal_procedure=_STATEMENT,
+        source="order-work",
+        check_level="C",
+    )
+
+    def write() -> object:
+        return tag_out.record_tag_issue(
+            catalog,
+            ledger,
+            issue,
+            mx_session_id=_AUTHOR,
+            registry=_ProbeRegistry("path", _TAG_SURFACE_PATH),
+        )
+
+    write()
+    _expect_refusal(write, "a second tag on one surface", tag_out.TagOutError, "open tag")
+    persisted = ledger_path.read_bytes()
+    added = persisted[len(seated) :].decode("utf-8").splitlines()
+    if not persisted.startswith(seated) or len(added) != 1:
+        msg = "Writer must persist exactly one issue and nothing for a refusal"
+        raise ValueError(msg)
+    event = parse_typed_event(json.loads(added[0]))
+    if not isinstance(event, TagIssuedEvent):
+        msg = "Writer persisted the wrong event type"
+        raise TypeError(msg)
+    observed = (event.id, event.order, event.work_package, event.surface_name)
+    if observed != ("TAG-01-producer-probe", _ORDER, _REPAIR_PACKAGE, _TAG_SURFACE_PATH):
+        msg = "Tag record disagrees with the issue"
+        raise ValueError(msg)
+    return ProducerObservation(
+        event_type="tag_issued",
+        producer=_PRODUCERS["tag_issued"],
+        status="verified",
+        ledger_sha256=hashlib.sha256(persisted).hexdigest(),
+        record_count=1,
+        subject=event.id,
+    )
+
+
 def _commence_delivery(catalog: Catalog, ledger: Ledger) -> None:
     """Move the probe's delivery package to commenced on its one catalog REQ."""
     from gzkit import work_package_ledger as wpl  # noqa: PLC0415 - the writer; import only when probed
@@ -1055,6 +1154,7 @@ _PRODUCERS = {
     "dispatch_voided": "gzkit.work_package_run.record_dispatch_void",
     "legacy_unit_withdrawn": "gzkit.legacy_units.withdraw_legacy_unit",
     "order_transitioned": "gzkit.order_ledger.record_order_transition",
+    "tag_issued": "gzkit.mx.tag_out.record_tag_issue",
 }
 
 
@@ -1069,6 +1169,7 @@ _ROOT_PROBES = {
     "work_package_changed": _probe_work_package_change,
     "work_package_issue_closed": _probe_work_package_issue_closed,
     "order_transitioned": _probe_order_transition,
+    "tag_issued": _probe_tag_issue,
     "legacy_unit_withdrawn": _probe_legacy_withdrawal,
     "dispatch_claimed": _probe_dispatch_claim,
     "dispatch_voided": lambda root: _probe_dispatch_claim(root, "dispatch_voided"),

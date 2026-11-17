@@ -99,6 +99,7 @@ from gzkit.events import (
     Stage2DispatchRecordedEvent,
     Stage2SingleDriverDeclaredEvent,
     SurfaceWeightRecalibratedEvent,
+    TagIssuedEvent,
     TaskBlockedEvent,
     TaskCompletedEvent,
     TaskEscalatedEvent,
@@ -405,6 +406,8 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "work_package_unblocked": WorkPackageUnblockedEvent,
     # An order's lifecycle (RP-12 O2 task 3)
     "order_transitioned": OrderTransitionedEvent,
+    # The tag-out log's issue (RP-12 O3 task 2)
+    "tag_issued": TagIssuedEvent,
     # Reversible retirement of OBPIs whose parent ADR demoted to pool (GHI #584)
     "obpi_parked": ObpiParkedEvent,
     "obpi_blocked_on_operator": ObpiBlockedOnOperatorEvent,

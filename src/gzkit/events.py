@@ -1883,6 +1883,8 @@ class WorkPackageIssueClosedEvent(_EventBase):
 
 #: A dispatch id as the runtime mints it (RP-12 ruling 1): ``D-`` and 16 hex digits.
 DISPATCH_ID_PATTERN = "D-[0-9a-f]{16}"
+#: A tag's id, in the grammar of orders and packages (RP-12 ruling 111): ``TAG-<NN>-<slug>``.
+TAG_ID_PATTERN = "TAG-[0-9]{2,}-[a-z0-9]+(-[a-z0-9]+)*"
 
 
 class WorkPackageDispatchedEvent(_EventBase):
@@ -2047,6 +2049,53 @@ class OrderTransitionedEvent(_EventBase):
     )
 
 
+#: A tag's class (RP-12 ruling 5): Danger forbids operating the surface, Caution limits it.
+TagClass = Literal["Danger", "Caution"]
+#: The position a surface is to be hung in (RP-12 ruling 5).
+TagPosition = Literal["off", "advisory", "recording"]
+#: What a tag is hung for, ruling 5's four sources, a closed set with no record behind
+#: it yet (RP-12 ruling 124): the order's own work, a standard disconnect list entry,
+#: an MEL (M) bypass, a surveillant's stop.
+TagSource = Literal["order-work", "standard-disconnect", "mel-bypass", "surveillant-stop"]
+#: A surface's kind, resolved against the registry that holds it today (RP-12 ruling 112).
+TagSurfaceKind = Literal["validator", "check", "hook", "path"]
+#: The check levels that disconnect, the only ones a tag is issued under (RP-12 ruling 113).
+TagCheckLevel = Literal["C", "D"]
+
+
+class TagIssuedEvent(_EventBase):
+    """tag_issued event — the coordinator issued a tag on an order (RP-12 O3 task 2).
+
+    Ruling 6's first act, issue, by the coordinator as Authorizing Officer. It
+    carries the whole line item (ruling 120), so the hang copies it from here and
+    types nothing. Written only by ``gzkit.mx.tag_out.record_tag_issue``, which
+    reads the order's package from the store, takes the registry's own name for the
+    surface (rulings 112 and 123) and records the open MX session as the tag's
+    holder and the coordinator's mark (rulings 3, 113 and 114). ``id`` is the tag id.
+    """
+
+    event: Literal["tag_issued"]
+    tag_id: str = Field(..., pattern=f"^{TAG_ID_PATTERN}$", description="TAG-<NN>-<slug>")
+    order: str = Field(..., min_length=1, description="The order the tag is issued on")
+    work_package: str = Field(..., min_length=1, description="The repair package of the order")
+    tag_class: TagClass = Field(..., description="Danger or Caution (ruling 5)")
+    surface: str = Field(..., min_length=1, description="The surface as written, <kind>:<name>")
+    surface_kind: TagSurfaceKind = Field(..., description="The surface's kind (ruling 112)")
+    surface_name: str = Field(
+        ..., min_length=1, description="The registry's own name for it (rulings 112 and 123)"
+    )
+    position: TagPosition = Field(..., description="The position it is to be hung in")
+    hazard: str = Field(..., min_length=1, description="The hazard the tag guards against")
+    removal_procedure: str = Field(
+        ..., min_length=1, description="How the tag is removed, legible to a worker not involved"
+    )
+    source: TagSource = Field(..., description="What the tag is hung for (ruling 124)")
+    check_level: TagCheckLevel = Field(..., description="The check level it is issued under")
+    mx_session_id: str = Field(
+        ..., min_length=1, description="The holder and the coordinator's mark (rulings 3, 114)"
+    )
+
+
 TypedLedgerEvent = Annotated[
     ProjectInitEvent
     | PrdCreatedEvent
@@ -2146,7 +2195,8 @@ TypedLedgerEvent = Annotated[
     | DispatchVoidedEvent
     | WorkPackageBlockedEvent
     | WorkPackageUnblockedEvent
-    | OrderTransitionedEvent,
+    | OrderTransitionedEvent
+    | TagIssuedEvent,
     Field(discriminator="event"),
 ]
 

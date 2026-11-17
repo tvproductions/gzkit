@@ -241,6 +241,9 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         # An order's lifecycle (RP-12 O2 task 3). An order is a catalog record
         # inside its package, not a node of this projection.
         "order_transitioned",
+        # The tag-out log's issue (RP-12 O3 task 2). A tag isolates a surface for
+        # an order's repair, a run record, not a node of this projection.
+        "tag_issued",
     }
 )
 
