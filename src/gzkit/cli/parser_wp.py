@@ -148,11 +148,7 @@ def _register_wp_run(wp_commands: argparse._SubParsersAction) -> None:
     p_dispatch.add_argument(
         "--role",
         default=None,
-        help=(
-            "Implementer, SpecReviewer, QualityReviewer, SingleDriver, or on a repair "
-            "package's order Repair (frozen order) or Restoration (commenced order); "
-            "required to book"
-        ),
+        help="Implementer, SpecReviewer, QualityReviewer, SingleDriver, Repair or Restoration",
     )
     p_dispatch.add_argument("--model", default=None, help="The model tier; required to book")
     p_dispatch.add_argument(
