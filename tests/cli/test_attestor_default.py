@@ -61,6 +61,8 @@ _HUMAN_ACT = frozenset(
         "gz canary review",
         # RO-5 tranche 2: closing a work package is Gate 5, the operator's own act.
         "gz wp close",
+        # RP-12 O2 task 4: closing an order is Gate 5 at the order, the operator's own act.
+        "gz wp order close",
     }
 )
 
