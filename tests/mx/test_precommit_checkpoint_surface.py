@@ -50,6 +50,9 @@ _NOT_A_GZKIT_GUARD = {
     "its `gz check` step is pinned CRITICAL at quality.py `_STEP_GUARD_META`",
     "forbid-pytest": "the gzkit.hooks.guards seam itself; fenced by "
     "tests/test_hooks_guards.py::TestMxCheckpointSeam",
+    "closing-keywords": "hard at every level by its own mode contract (GHI #1327): a "
+    "wrongly closed issue is outside the repository, so no exit re-run could restore it; "
+    "self-test tests/hooks/test_closing_keywords.py",
 }
 
 _CHORES = {

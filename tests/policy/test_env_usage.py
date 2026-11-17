@@ -34,6 +34,8 @@ ENV_VAR_ALLOWLIST: frozenset[str] = frozenset(
         "EDITOR",  # Operator editor invocation (gz content edit, OBPI-0.0.34-04)
         "VISUAL",  # Operator editor invocation (gz content edit, OBPI-0.0.34-04)
         "PATH",  # Executables resolved off absolute entries only (gzkit.executables, RO-9)
+        "PRE_COMMIT_FROM_REF",  # Pushed range from pre-commit (closing_keywords, GHI #1327)
+        "PRE_COMMIT_TO_REF",  # Pushed range from pre-commit (closing_keywords, GHI #1327)
     }
 )
 
