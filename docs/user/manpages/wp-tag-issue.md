@@ -39,8 +39,11 @@ line item (rulings 5 and 120). `docs/governance/harbor-ro12-contractor-kit.md`
   kind today (rulings 112 and 123): `validator:` a `gz validate` scope in its
   flag's spelling, `validator:hexagon-tests`; `check:` a `gz check` step's name in
   lower case with its spaces hyphenated, `check:module-size`; `hook:` a hook
-  script `.claude/settings.json` registers, with or without `.py`, or a hook id
-  `.pre-commit-config.yaml` declares; `path:` a path in the tree, repo-relative
+  script `.claude/settings.json` registers, by its file name with or without its
+  suffix, or a hook id `.pre-commit-config.yaml` declares, written bare or with its
+  registry, `hook:settings:<script>` or `hook:pre-commit:<id>`, and recorded with
+  its registry; a bare name both registries hold is refused as ambiguous (ruling
+  127); `path:` a path in the tree, repo-relative
   with forward slashes. The event records the registry's own name beside what was
   written. An unresolved name, and a path escaping the project root, is refused.
 - The check level is C or D, the two levels that disconnect (ruling 113).

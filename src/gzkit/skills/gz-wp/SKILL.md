@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-17
 metadata:
-  skill-version: "0.19.1"
+  skill-version: "0.19.2"
 model: sonnet
 ---
 
@@ -176,8 +176,9 @@ Before the order commences, issue a tag for each surface the repair isolates. Th
 issue is the coordinator's act, from the main session while an MX session is open,
 on an opened or frozen order; a subagent's call is refused. The surface is
 `<kind>:<name>`: `validator:` a scope in its flag's spelling, `check:` a step lower
-case and hyphenated, `hook:` a registered script or pre-commit id, `path:` a repo
-path. One open tag per surface (rulings 110 to 124):
+case and hyphenated, `hook:` a registered script or pre-commit id, bare or as
+`hook:settings:<script>` or `hook:pre-commit:<id>`, `path:` a repo path. One open
+tag per surface (rulings 110 to 127):
 
 ```bash
 uv run gz wp tag issue <ORD-id> --slug <slug> --class <Danger|Caution> --surface <kind>:<name> \

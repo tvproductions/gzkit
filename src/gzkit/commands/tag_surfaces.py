@@ -9,8 +9,10 @@ today, since no one control registry exists until RP-13's MEL (ruling 112):
 - `check:<step>`, a `gz check` step's name in lower case with its spaces
   hyphenated, `check:module-size`; the registry's own name is the step's;
 - `hook:<name>`, a hook script `.claude/settings.json` registers, by its file name
-  with or without `.py`, or a hook id `.pre-commit-config.yaml` declares
-  (ruling 123); the registry's own name is the script's file name or the id;
+  with or without its suffix, or a hook id `.pre-commit-config.yaml` declares,
+  written bare or as `hook:settings:<script>` or `hook:pre-commit:<id>`; the
+  registry's own name records its registry, `settings:<script file>` or
+  `pre-commit:<id>`, and a bare name both hold is refused (rulings 123 and 127);
 - `path:<repo path>`, a path in the tree under the project root, written with
   forward slashes; the registry's own name is the normalized repo path.
 
@@ -96,8 +98,8 @@ class ProjectSurfaces:
     def resolve(self, kind: str, name: str) -> str | None:
         """Return the registry's own name for ``kind:name``, or None when it holds none.
 
-        A hook registry present that does not parse raises `ValidationError` (exit 1)
-        rather than reading as empty.
+        A hook registry present that does not parse, or a bare hook name both
+        registries hold, raises `ValidationError` (exit 1) rather than guessing.
 
         Returns:
             The registry's own name, or None.
@@ -105,30 +107,54 @@ class ProjectSurfaces:
         """
         if kind == "path":
             return self._path(name)
-        readers = {
-            "validator": _validator_scopes,
-            "check": _check_steps,
-            "hook": self._hooks,
-        }
+        if kind == "hook":
+            return self._hook(name)
+        readers = {"validator": _validator_scopes, "check": _check_steps}
         if kind not in readers:
             return None
         if kind not in self._held:
             self._held[kind] = readers[kind]()
-        held = self._held[kind]
-        if kind == "hook" and f"{name}.py" in held:
-            return held[f"{name}.py"]
-        return held.get(name)
+        return self._held[kind].get(name)
 
-    def _hooks(self) -> dict[str, str]:
-        """Map every hook name either registry holds to the registry's own name.
+    def _hook(self, name: str) -> str | None:
+        """Resolve a hook by its registry, `settings:<script>` or `pre-commit:<id>` (ruling 127).
+
+        A bare name resolves when one registry alone holds it; a script is named by
+        its file name with or without its suffix.
 
         Returns:
-            Each registered script's file name and each declared id, mapped to itself.
+            The registry's own name, prefixed by its registry, or None.
+
+        Raises:
+            ValidationError: Both registries hold the bare name, or two scripts share it.
 
         """
-        names = {script: script for script in self._settings_scripts()}
-        names.update({hook_id: hook_id for hook_id in self._pre_commit_ids()})
-        return names
+        if "hook" not in self._held:
+            self._held["hook"] = {
+                **{f"settings:{script}": script for script in self._settings_scripts()},
+                **{f"pre-commit:{hook_id}": hook_id for hook_id in self._pre_commit_ids()},
+            }
+        held = self._held["hook"]
+        registry, colon, rest = name.partition(":")
+        if colon and registry in {"settings", "pre-commit"}:
+            wanted, written = (registry,), rest
+        else:
+            wanted, written = ("settings", "pre-commit"), name
+        found = sorted(
+            own
+            for own, held_name in held.items()
+            if own.partition(":")[0] in wanted
+            and written in {held_name, PurePosixPath(held_name).stem}
+        )
+        if len(found) > 1:
+            msg = (
+                f"Hook {name!r} names more than one registered hook ({', '.join(found)}), so "
+                "the tag could isolate the wrong control; a hook surface names the registry "
+                "it comes from (RP-12 ruling 127). Issue it again with one of "
+                f"{', '.join(f'hook:{own}' for own in found)}."
+            )
+            raise ValidationError(msg)
+        return found[0] if found else None
 
     def _settings_scripts(self) -> set[str]:
         path = self._root.joinpath(*_SETTINGS.parts)
@@ -152,7 +178,7 @@ class ProjectSurfaces:
             for command in commands
             if isinstance(command, str)
             for token in shlex.split(command)
-            if token.endswith(".py")
+            if "/" in token and "." in PurePosixPath(token).name
         }
 
     def _pre_commit_ids(self) -> set[str]:

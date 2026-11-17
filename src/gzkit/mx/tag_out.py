@@ -50,7 +50,8 @@ _SPELLING: dict[str, str] = {
     "check": "a `gz check` step's name in lower case, spaces hyphenated, `check:module-size`",
     "hook": (
         "a hook script .claude/settings.json registers or a hook id .pre-commit-config.yaml "
-        "declares; a guard is tagged as the `check:` step that runs it"
+        "declares, bare or as `hook:settings:<script>` or `hook:pre-commit:<id>` (ruling 127); "
+        "a guard is tagged as the `check:` step that runs it"
     ),
     "path": "a path in the tree, repo-relative with forward slashes, `path:src/gzkit/ledger.py`",
 }

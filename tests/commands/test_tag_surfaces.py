@@ -113,18 +113,60 @@ class HookSurfaceTests(_ProjectCase):
             name: self.surfaces.resolve("hook", name)
             for name in ("dispatch-stamp", "dispatch-stamp.py")
         }
-        # then both spellings name the one script, so one tag-out per surface compares
+        # then both spellings name the one script, recorded with its registry (ruling 127)
         self.assertEqual(
             resolved,
-            {"dispatch-stamp": "dispatch-stamp.py", "dispatch-stamp.py": "dispatch-stamp.py"},
+            {
+                "dispatch-stamp": "settings:dispatch-stamp.py",
+                "dispatch-stamp.py": "settings:dispatch-stamp.py",
+            },
         )
 
     def test_a_declared_pre_commit_id_resolves_to_itself(self) -> None:
         # given .pre-commit-config.yaml declares the hook id forbid-pytest
         # when
         resolved = self.surfaces.resolve("hook", "forbid-pytest")
-        # then
-        self.assertEqual(resolved, "forbid-pytest")
+        # then it is named with its registry (ruling 127)
+        self.assertEqual(resolved, "pre-commit:forbid-pytest")
+
+    def test_a_hook_written_with_its_registry_resolves_in_that_registry_alone(self) -> None:
+        # given dispatch-stamp.py registered in settings and forbid-pytest declared in pre-commit
+        # when
+        resolved = [
+            self.surfaces.resolve("hook", written)
+            for written in (
+                "settings:dispatch-stamp",
+                "pre-commit:forbid-pytest",
+                "pre-commit:dispatch-stamp",
+                "settings:forbid-pytest",
+            )
+        ]
+        # then each resolves only in the registry it names (ruling 127)
+        self.assertEqual(
+            resolved, ["settings:dispatch-stamp.py", "pre-commit:forbid-pytest", None, None]
+        )
+
+    def test_a_bare_name_both_registries_hold_is_refused_as_ambiguous(self) -> None:
+        # given a pre-commit id trailing-space beside a settings script trailing-space.sh
+        config = (self.root / ".pre-commit-config.yaml").read_text(encoding="utf-8")
+        config += "      - id: trailing-space\n        name: trim\n        entry: x\n"
+        config += "        language: system\n"
+        (self.root / ".pre-commit-config.yaml").write_text(config, encoding="utf-8")
+        settings = json.loads((self.root / ".claude" / "settings.json").read_text(encoding="utf-8"))
+        settings["hooks"]["PreToolUse"][0]["hooks"].append(
+            {"type": "command", "command": "bash .claude/hooks/trailing-space.sh"}
+        )
+        (self.root / ".claude" / "settings.json").write_text(json.dumps(settings), encoding="utf-8")
+        surfaces = ProjectSurfaces(self.root)
+        # when
+        with self.assertRaises(ValidationError) as raised:
+            surfaces.resolve("hook", "trailing-space")
+        qualified = surfaces.resolve("hook", "settings:trailing-space")
+        # then the bare name is refused, naming both forms, and a qualified one resolves,
+        # a non-Python script counting as a script (ruling 127)
+        self.assertIn("hook:pre-commit:trailing-space", str(raised.exception))
+        self.assertIn("hook:settings:trailing-space.sh", str(raised.exception))
+        self.assertEqual(qualified, "settings:trailing-space.sh")
 
     def test_a_script_no_settings_register_resolves_to_nothing(self) -> None:
         # given a hook script on disk that .claude/settings.json does not register

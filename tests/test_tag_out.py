@@ -383,6 +383,12 @@ class RefusalProseOutputContract(_TagCase):
         self.assertIn("RP-12 rulings 47 and 121", text)
         self.assertIn("`uv run gz wp order new`", text)
 
+    def test_an_unresolved_hook_refusal_names_the_qualified_forms(self) -> None:
+        # output-contract: the refusal's next step is its contract (guardrail-feedback-prose)
+        text = self.assert_refused(surface="hook:nothing-registered")
+        self.assertIn("RP-12 rulings 112 and 123", text)
+        self.assertIn("`hook:settings:<script>` or `hook:pre-commit:<id>` (ruling 127)", text)
+
     def test_the_one_open_tag_refusal_names_the_log_to_read(self) -> None:
         # output-contract: the refusal's next step is its contract (guardrail-feedback-prose)
         self.issue()
