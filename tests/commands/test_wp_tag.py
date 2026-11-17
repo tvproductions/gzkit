@@ -196,8 +196,18 @@ class TagShowWiringTests(_TagCase):
         self.assertEqual(lines[0], "TAG-01-stamp-hook on ORD-01-import")
         self.assertEqual(
             [line.split(":", 1)[0] for line in lines[1:]],
-            ["Class", "Surface", "Position", "Check level", "Source", "Hazard", "Removal"],
+            [
+                "Hung by",
+                "Class",
+                "Surface",
+                "Position",
+                "Check level",
+                "Source",
+                "Hazard",
+                "Removal",
+            ],
         )
+        self.assertIn("Hung by:     not hung", lines)
         self.assertIn("Hazard:      The scope reads a half-built map.", lines)
         self.assertIn("Removal:     Run the scope; it passes.", lines)
 
@@ -222,8 +232,10 @@ class TagShowWiringTests(_TagCase):
         self.assertEqual(default, (0, "No tag is open.\n"))
         self.assertEqual((every[0], every_json[0]), (0, 0), every[1] + every_json[1])
         self.assertIn("TAG-01-stamp-hook", every[1])
+        listed = json.loads(every_json[1])
+        self.assertEqual([type(tag) for tag in listed], [dict])
         self.assertEqual(
-            [(tag["tag_id"], tag["is_open"]) for tag in json.loads(every_json[1])],
+            [(tag["tag_id"], tag["is_open"]) for tag in listed],
             [("TAG-01-stamp-hook", False)],
         )
 
@@ -236,11 +248,22 @@ class TagShowWiringTests(_TagCase):
         # then
         self.assertEqual(code, 0, output)
         printed = json.loads(output)
+        self.assertEqual([type(tag) for tag in printed], [dict])
         self.assertEqual(
-            [(tag["tag_id"], tag["order"], tag["is_open"]) for tag in printed],
-            [("TAG-01-stamp-hook", "ORD-01-import", True)],
+            [
+                (
+                    tag["tag_id"],
+                    tag["order"],
+                    tag["is_open"],
+                    tag.get("state"),
+                    tag.get("hang", "absent"),
+                )
+                for tag in printed
+            ],
+            [("TAG-01-stamp-hook", "ORD-01-import", True, "issued", None)],
         )
-        self.assertEqual({k: v for k, v in printed[0].items() if k != "is_open"}, _tag_rows()[0])
+        added = {"is_open", "state", "hang"}
+        self.assertEqual({k: v for k, v in printed[0].items() if k not in added}, _tag_rows()[0])
 
 
 class TagHangWiringTests(_TagCase):
@@ -280,6 +303,23 @@ class TagHangWiringTests(_TagCase):
         )
         self.assertEqual(result.exit_code, 0, result.output)
         self.dispatch = json.loads(result.output)["dispatch_id"]
+
+    def test_show_names_a_hung_tags_dispatch_in_its_block_and_json(self) -> None:
+        # output-contract: ruling 129 names the hang's dispatch in the view's block and JSON
+        # given the tag hung by the Repair dispatch's stamped call
+        self.stamp_as(self.dispatch)
+        self.assertEqual(self.hang("TAG-01-stamp-hook", "--dispatch", self.dispatch)[0], 0)
+        for name in (STAMP_ROOT_ENV, STAMP_ID_ENV):
+            os.environ.pop(name, None)
+        # when
+        block = self.runner.invoke(main, ["wp", "tag", "show"])
+        printed = self.runner.invoke(main, ["wp", "tag", "show", "--json"])
+        # then
+        self.assertIn(f"Hung by:     {self.dispatch}", block.output)
+        record = json.loads(printed.output)[0]
+        self.assertIsInstance(record, dict)
+        hang = record.get("hang") or {}
+        self.assertEqual((record.get("state"), hang.get("dispatch_id")), ("hung", self.dispatch))
 
     def stamp_as(self, dispatch_id: str) -> None:
         """Stamp the call as the named dispatch's subagent, held to this root (ruling 133)."""

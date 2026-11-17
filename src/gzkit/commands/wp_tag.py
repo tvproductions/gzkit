@@ -152,6 +152,8 @@ def wp_tag_hang_cmd(
 def _tag_block(tag: Tag, *, every: bool) -> str:
     """Write one tag as a block of labelled lines, its whole line item legible (ruling 126).
 
+    A hung tag names its hang's dispatch (ruling 129).
+
     Returns:
         The tag's id and order, its state under ``--all``, then each field on its own line.
 
@@ -159,6 +161,7 @@ def _tag_block(tag: Tag, *, every: bool) -> str:
     issue = tag.issue
     state = f" ({'open' if tag.is_open else 'closed'})" if every else ""
     fields = (
+        ("Hung by", tag.hang.dispatch_id if tag.hang else "not hung"),
         ("Class", issue.tag_class),
         ("Surface", issue.surface),
         ("Position", issue.position),
@@ -173,6 +176,22 @@ def _tag_block(tag: Tag, *, every: bool) -> str:
             *(f"  {label + ':':<13}{value}" for label, value in fields),
         )
     )
+
+
+def _tag_record(tag: Tag) -> dict[str, object]:
+    """Lay one tag out for ``--json``: its issue, its state and its hang (ruling 129).
+
+    Returns:
+        The issue event's fields with ``is_open``, ``state`` (issued or hung) and
+        ``hang``, the hang event or None.
+
+    """
+    return {
+        **tag.issue.model_dump(mode="json"),
+        "is_open": tag.is_open,
+        "state": "hung" if tag.hang else "issued",
+        "hang": tag.hang.model_dump(mode="json") if tag.hang else None,
+    }
 
 
 def wp_tag_show_cmd(*, every: bool, as_json: bool) -> None:
@@ -202,7 +221,7 @@ def wp_tag_show_cmd(*, every: bool, as_json: bool) -> None:
         raise PolicyBreachError(str(exc)) from exc
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
     if as_json:
-        fmt.emit([{**tag.issue.model_dump(mode="json"), "is_open": tag.is_open} for tag in tags])
+        fmt.emit([_tag_record(tag) for tag in tags])
     elif not tags:
         fmt.emit("No tag has been issued." if every else "No tag is open.")
     else:
