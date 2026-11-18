@@ -26,18 +26,31 @@ from gzkit.events import (
     TagCheckLevel,
     TagClass,
     TagClearanceAuthorizedEvent,
+    TagClearedEvent,
     TagHungEvent,
     TagIssuedEvent,
     TagPosition,
+    TagPositionFound,
     TagSource,
     TagSurfaceKind,
+    WorkPackageBlockedEvent,
 )
 from gzkit.ledger import ledger_row
 from gzkit.order_ledger import TERMINATED, is_order_blocked, order_state
 from gzkit.work_package_ledger import work_package_state
-from gzkit.work_package_run import REPAIR, dispatch_over, find_dispatch
+from gzkit.work_package_run import (
+    REPAIR,
+    RESTORATION,
+    BlockRequest,
+    claiming_agents,
+    dispatch_over,
+    find_dispatch,
+    record_work_package_block,
+)
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from gzkit.ledger import Ledger
     from gzkit.models.catalog import Catalog, Order, WorkPackage
 
@@ -45,6 +58,8 @@ if TYPE_CHECKING:
 _CHECK_LEVELS: frozenset[str] = frozenset(get_args(TagCheckLevel))
 #: The order states a tag is issued in (ruling 121).
 _ISSUABLE: frozenset[str | None] = frozenset({"opened", "frozen"})
+#: The positions a clear may find a surface in, hung ones or back `on` (ruling 140).
+POSITIONS_FOUND: tuple[str, ...] = get_args(TagPositionFound)
 #: The kinds a surface is written with, each resolved by today's registry (ruling 112).
 SURFACE_KINDS: tuple[str, ...] = get_args(TagSurfaceKind)
 #: How each kind's registry spells a name (ruling 123), the refusal's next step.
@@ -123,8 +138,10 @@ class Tag(BaseModel):
     clearance: TagClearanceAuthorizedEvent | None = Field(
         None, description="Its clearance authorized, None until then (ruling 6)"
     )
+    clear: TagClearedEvent | None = Field(None, description="Its clear, None until then (ruling 6)")
     is_open: bool = Field(
-        ..., description="True while hung (ruling 129); unhung, false once its order has closed"
+        ...,
+        description="Hung, open until cleared (ruling 129); unhung, closed once its order closes",
     )
 
 
@@ -132,7 +149,7 @@ def _refuse(message: str) -> NoReturn:
     raise TagOutError(message)
 
 
-def _read[E: (TagIssuedEvent, TagHungEvent, TagClearanceAuthorizedEvent)](
+def _read[E: (TagIssuedEvent, TagHungEvent, TagClearanceAuthorizedEvent, TagClearedEvent)](
     ledger: Ledger, event_type: str, model: type[E]
 ) -> list[E]:
     """Read every live row of one tag-out event, refusing a row its shape does not admit.
@@ -190,6 +207,19 @@ def _clearances(ledger: Ledger) -> dict[str, TagClearanceAuthorizedEvent]:
     return clearances
 
 
+def _clears(ledger: Ledger) -> dict[str, TagClearedEvent]:
+    """Read each cleared tag's clear, by tag id; the first stands, as a tag is cleared once.
+
+    Returns:
+        Each clear the live ledger holds, keyed by its tag.
+
+    """
+    clears: dict[str, TagClearedEvent] = {}
+    for clear in _read(ledger, "tag_cleared", TagClearedEvent):
+        clears.setdefault(clear.tag_id, clear)
+    return clears
+
+
 def next_tag_id(ledger: Ledger, slug: str) -> str:
     """Return the next id in the one series (ruling 111): the highest number plus one.
 
@@ -207,21 +237,28 @@ def tag_log(ledger: Ledger) -> list[Tag]:
     """Read every tag the ledger names, oldest first.
 
     A hung tag reads open until it is cleared, whatever its order's state (ruling
-    129), and so holds its surface. An unhung tag reads closed once its order has
-    reached `closed` (ruling 122), so a terminated order's unhung tag frees its
-    surface; otherwise it is open.
+    129), and so holds its surface; a cleared tag reads closed and frees it. An
+    unhung tag reads closed once its order has reached `closed` (ruling 122), so a
+    terminated order's unhung tag frees its surface; otherwise it is open.
 
     Returns:
-        Each tag with its hang and whether it is open.
+        Each tag with its hang, clearance and clear, and whether it is open.
 
     """
-    hangs, clearances = _hangs(ledger), _clearances(ledger)
+    hangs, clearances, clears = _hangs(ledger), _clearances(ledger), _clears(ledger)
+
+    def is_open(issue: TagIssuedEvent) -> bool:
+        if issue.tag_id in hangs:
+            return issue.tag_id not in clears
+        return order_state(ledger, issue.order) not in TERMINATED
+
     return [
         Tag(
             issue=issue,
             hang=hangs.get(issue.tag_id),
             clearance=clearances.get(issue.tag_id),
-            is_open=issue.tag_id in hangs or order_state(ledger, issue.order) not in TERMINATED,
+            clear=clears.get(issue.tag_id),
+            is_open=is_open(issue),
         )
         for issue in _issues(ledger)
     ]
@@ -520,27 +557,27 @@ def record_tag_hang(
     return event
 
 
-def _check_clearable(ledger: Ledger, tag: Tag) -> None:
-    """Refuse a clearance on an order not commenced, or blocked (rulings 59, 132, 135).
+def _check_clearable(ledger: Ledger, issue: TagIssuedEvent, act: str = "clearance") -> None:
+    """Refuse a clearance or a clear on an order not commenced, or blocked.
 
     A Restoration dispatch clears on a commenced order, a stopped one included
     (rulings 132 and 135), so its clearance is authorized there; a blocked order's
     acts are held, an out-of-position find's block among them (rulings 59 and 137).
     """
-    issue = tag.issue
     order_now = order_state(ledger, issue.order)
+    done = "authorized" if act == "clearance" else "made"
     if order_now != "commenced":
         _refuse(
-            f"Order {issue.order} is {order_now or 'not opened'}; a tag's clearance is "
-            "authorized on a commenced order, where the Restoration dispatch that clears it "
+            f"Order {issue.order} is {order_now or 'not opened'}; a tag's {act} is "
+            f"{done} on a commenced order, where the Restoration dispatch that clears it "
             "is booked (RP-12 rulings 132 and 135). `uv run gz wp order show "
             f"{issue.order}` reads its state."
         )
     if is_order_blocked(ledger, issue.order):
         _refuse(
             f"Order {issue.order} is blocked on the operator, and a blocked order's acts are "
-            "held, its clearances among them (RP-12 rulings 59 and 137). Authorize the "
-            f"clearance once `uv run gz wp unblock {issue.work_package} --order {issue.order} "
+            f"held, its {act}s among them (RP-12 rulings 59 and 137). Run the {act} again "
+            f"once `uv run gz wp unblock {issue.work_package} --order {issue.order} "
             "--ruling <words> --operator <who>` records the ruling."
         )
 
@@ -584,7 +621,7 @@ def record_tag_clearance(
             f"{tag.clearance.mx_session_id}; it is authorized once (RP-12 ruling 6). The "
             "Restoration dispatch clears it next."
         )
-    _check_clearable(ledger, tag)
+    _check_clearable(ledger, tag.issue)
     hanging = tag.hang.dispatch_id
     over = dispatch_over(ledger, hanging)
     if over is None:
@@ -605,6 +642,175 @@ def record_tag_clearance(
             "hanging_dispatch_id": hanging,
             "repair_activity": "not-available",
             "hanging_dispatch_over": over,
+            "mx_session_id": mx_session_id,
+        }
+    )
+    ledger.append(ledger_row(event))
+    return event
+
+
+def _cleared_tag(
+    ledger: Ledger, tag_id: str
+) -> tuple[TagIssuedEvent, TagHungEvent, TagClearanceAuthorizedEvent]:
+    """Read the tag a clear acts on, refusing one not issued, hung, authorized or cleared.
+
+    Returns:
+        The tag's issue, its hang and its clearance.
+
+    """
+    tag = next((tag for tag in tag_log(ledger) if tag.issue.tag_id == tag_id), None)
+    if tag is None:
+        _refuse(
+            f"Tag {tag_id!r} is not issued in the ledger, so there is nothing to clear (RP-12 "
+            "ruling 6). Read the open log with `uv run gz wp tag show` and clear a tag it lists."
+        )
+    if tag.hang is None:
+        _refuse(
+            f"Tag {tag_id} is not hung, so nothing isolates its surface to clear; a clear "
+            "follows a hang (RP-12 ruling 6). `uv run gz wp tag show --all` reads it."
+        )
+    if tag.clear is not None:
+        _refuse(
+            f"Tag {tag_id} is already cleared, by dispatch {tag.clear.dispatch_id}; a tag is "
+            "cleared once (RP-12 ruling 6). `uv run gz wp tag show --all` reads it."
+        )
+    if tag.clearance is None:
+        _refuse(
+            f"Tag {tag_id}'s clearance is not authorized; the coordinator authorizes it "
+            "before the Restoration dispatch clears it (RP-12 ruling 6). Have the coordinator "
+            f"run `uv run gz wp tag authorize {tag_id}`."
+        )
+    return tag.issue, tag.hang, tag.clearance
+
+
+def _check_restorer(ledger: Ledger, issue: TagIssuedEvent, hanging: str, dispatch_id: str) -> None:
+    """Refuse a clearing dispatch not live, not Restoration, on another order, or the hanger's.
+
+    Refusal 1 compares the dispatch ids and the subagents that claimed them (rulings
+    6, 109 and 139), so one subagent never both hangs and clears a tag.
+    """
+    book = (
+        f"`uv run gz wp dispatch {issue.work_package} --order {issue.order} --role "
+        f"{RESTORATION} --model <tier>`"
+    )
+    dispatch = find_dispatch(ledger, dispatch_id)
+    over = dispatch_over(ledger, dispatch_id)
+    if dispatch is None or over is not None:
+        state = over or "not booked"
+        _refuse(
+            f"Dispatch {dispatch_id} is not a live dispatch in the ledger ({state}), so the "
+            "ledger says it may do nothing (RP-12 rulings 1, 42 and 115). Have the "
+            f"coordinator book one: {book}."
+        )
+    if dispatch.role != RESTORATION:
+        _refuse(
+            f"Dispatch {dispatch_id} is a {dispatch.role} dispatch; a tag is cleared by a "
+            f"{RESTORATION} dispatch, the craftsman's restoration position (RP-12 rulings 6, "
+            f"109 and 132). Have the coordinator book one: {book}."
+        )
+    if dispatch.order != issue.order:
+        _refuse(
+            f"Dispatch {dispatch_id} is bound to {dispatch.order}, and tag {issue.tag_id} is "
+            f"issued on {issue.order}; a {RESTORATION} dispatch clears its own order's tags "
+            f"(RP-12 rulings 130 and 132). Clear it from one booked on {issue.order}: {book}."
+        )
+    shared = claiming_agents(ledger, hanging) & claiming_agents(ledger, dispatch_id)
+    if dispatch_id == hanging or shared:
+        who = f"subagent {', '.join(sorted(shared))}" if shared else f"dispatch {dispatch_id}"
+        _refuse(
+            f"Tag {issue.tag_id} was hung by dispatch {hanging}, and {who} would clear it too; "
+            "the one who hung a tag never clears it (RP-12 rulings 6, 109 and 139, refusal 1). "
+            f"Clear it from another subagent on a fresh dispatch: {book}."
+        )
+
+
+def _block_out_of_position(
+    catalog: Catalog,
+    ledger: Ledger,
+    hang: TagHungEvent,
+    found: str,
+    refutations: Mapping[str, int],
+) -> WorkPackageBlockedEvent:
+    """Book the order block an out-of-position find owes, its words the runtime's (ruling 137).
+
+    Returns:
+        The block booked; the tag stays hung.
+
+    """
+    issue, hung = hang, hang.position  # the hang carries the issue's line item (ruling 120)
+    reason = (
+        f"Tag {issue.tag_id} was hung with {issue.surface} {hung}, and its clear found it "
+        f"{found}: out of position, so restoration stops and the discrepancy goes to the "
+        "Authorizing Officer (RP-12 ruling 137, TUM 1.8.5.b(2)). The tag stays hung."
+    )
+    decision = (
+        f"Rule on how {issue.surface} came to be {found}, not {hung}, and what restores it; "
+        f"then unblock {issue.order} and have a {RESTORATION} dispatch clear {issue.tag_id} "
+        "again."
+    )
+    request = BlockRequest(
+        work_package=issue.work_package, reason=reason, next_action=decision, order=issue.order
+    )
+    return record_work_package_block(catalog, ledger, request, refutations=refutations)
+
+
+def record_tag_clear(
+    catalog: Catalog,
+    ledger: Ledger,
+    tag_id: str,
+    dispatch_id: str,
+    position_found: str,
+    *,
+    stamped_id: str | None,
+    mx_session_id: str | None,
+    refutations: Mapping[str, int],
+) -> TagClearedEvent | WorkPackageBlockedEvent:
+    """Book the Restoration dispatch's clear of one hung tag, its block, or refuse and write none.
+
+    A position found other than the hung one books one `work_package_blocked` on the
+    tag's order instead, its reason and decision written here from the tag and the
+    two positions, and the tag stays hung (ruling 137). `refutations` is the
+    acceptance runtime's own count, which the block carries (ruling 8).
+
+    Returns:
+        The clear booked, or the block an out-of-position find booked.
+
+    """
+    if not (mx_session_id or "").strip():
+        _refuse(
+            "No MX session is open, so the cleared tag would have no holder. A tag is held by "
+            "the open MX session (RP-12 rulings 3 and 133). Have the operator open one through "
+            "the gz-mx skill (`uv run gz mx enter`), then clear the tag."
+        )
+    if stamped_id != dispatch_id:
+        stamp = f"stamped with {stamped_id}" if stamped_id else "not stamped"
+        _refuse(
+            f"This call is {stamp}, and a clear is the stamped call of the {RESTORATION} "
+            f"dispatch it names, {dispatch_id} (RP-12 rulings 6 and 133). Run the clear from "
+            f"{dispatch_id}'s own subagent, its prompt carrying the dispatch line."
+        )
+    if position_found not in POSITIONS_FOUND:
+        _refuse(
+            f"--position-found {position_found!r} is not one of {', '.join(POSITIONS_FOUND)}: "
+            "a position a tag is hung in, or back on (RP-12 ruling 140). Clear it again "
+            "naming the position the surface was found in."
+        )
+    issue, hang, clearance = _cleared_tag(ledger, tag_id)
+    _check_restorer(ledger, issue, hang.dispatch_id, dispatch_id)
+    _check_clearable(ledger, issue, "clear")
+    if position_found != hang.position:
+        return _block_out_of_position(catalog, ledger, hang, position_found, refutations)
+    event = TagClearedEvent.model_validate(
+        {
+            "event": "tag_cleared",
+            "id": tag_id,
+            "tag_id": tag_id,
+            "order": issue.order,
+            "work_package": issue.work_package,
+            "dispatch_id": dispatch_id,
+            "hanging_dispatch_id": hang.dispatch_id,
+            "position_found": position_found,
+            "authorized_by_session": clearance.mx_session_id,
             "mx_session_id": mx_session_id,
         }
     )

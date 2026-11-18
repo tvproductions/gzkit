@@ -28,6 +28,7 @@ from gzkit.events import (
     ReportPublishedEvent,
     ReqProofRecordedEvent,
     TagClearanceAuthorizedEvent,
+    TagClearedEvent,
     TagHungEvent,
     TagIssuedEvent,
     WorkPackageBlockedEvent,
@@ -885,7 +886,8 @@ def _probe_tag_issue(root: Path) -> ProducerObservation:
 def _probe_tag_hang(root: Path, event_type: str = "tag_hung") -> ProducerObservation:
     """Hang an issued tag from its frozen order's Repair dispatch, then again; the second refused.
 
-    For ``tag_clearance_authorized`` the hung tag's clearance is observed instead.
+    For ``tag_clearance_authorized`` the hung tag's clearance is observed instead, and
+    for ``tag_cleared`` its clear.
 
     Returns:
         The verified observation.
@@ -979,6 +981,8 @@ def _probe_tag_hang(root: Path, event_type: str = "tag_hung") -> ProducerObserva
     dispatch_id = str(dispatched.dispatch_id)
     if event_type == "tag_clearance_authorized":
         return _observe_tag_clearance(catalog, ledger, ledger_path, issue.tag_id, dispatch_id)
+    if event_type == "tag_cleared":
+        return _observe_tag_clear(catalog, ledger, ledger_path, issue.tag_id, dispatch_id)
     seated = ledger_path.read_bytes()
 
     def write() -> object:
@@ -1015,6 +1019,92 @@ def _probe_tag_hang(root: Path, event_type: str = "tag_hung") -> ProducerObserva
     )
 
 
+def _seat_hung_and_ended(catalog: Catalog, ledger: Ledger, tag_id: str, dispatch_id: str) -> None:
+    """Hang the tag, commence its order and end the hanging dispatch, a clearance's ground."""
+    from gzkit import order_ledger  # noqa: PLC0415 - the writers; import only when probed
+    from gzkit import work_package_run as run  # noqa: PLC0415
+    from gzkit.mx import tag_out  # noqa: PLC0415
+
+    tag_out.record_tag_hang(
+        ledger, tag_id, dispatch_id, stamped_id=dispatch_id, mx_session_id=_AUTHOR
+    )
+    order_ledger.record_order_transition(
+        catalog,
+        ledger,
+        order_ledger.OrderMove(order=_ORDER, to_state="commenced", evidence=_AUTHOR),
+    )
+    run.record_dispatch_end(ledger, dispatch_id, "a-probe")
+
+
+def _observe_tag_clear(
+    catalog: Catalog, ledger: Ledger, ledger_path: Path, tag_id: str, hanging: str
+) -> ProducerObservation:
+    """Authorize the clearance, book a Restoration dispatch, then clear twice (RP-12 O3 task 4).
+
+    Returns:
+        The verified observation.
+
+    Raises:
+        TypeError: The writer persisted another event type.
+        ValueError: The writer booked a second clear, or a record other than the tag's.
+
+    """
+    from gzkit import work_package_run as run  # noqa: PLC0415 - the writers; import when probed
+    from gzkit.mx import tag_out  # noqa: PLC0415
+
+    _seat_hung_and_ended(catalog, ledger, tag_id, hanging)
+    tag_out.record_tag_clearance(ledger, tag_id, mx_session_id=_AUTHOR)
+    restorer = str(
+        run.record_work_package_dispatch(
+            catalog,
+            ledger,
+            run.DispatchRequest(
+                work_package=_REPAIR_PACKAGE,
+                role=run.RESTORATION,
+                model=_AUTHOR,
+                root=ledger_path.parents[1].resolve().as_posix(),  # the probe root
+                order=_ORDER,
+            ),
+        ).dispatch_id
+    )
+    seated = ledger_path.read_bytes()
+
+    def write() -> object:
+        return tag_out.record_tag_clear(
+            catalog,
+            ledger,
+            tag_id,
+            restorer,
+            "off",
+            stamped_id=restorer,
+            mx_session_id=_AUTHOR,
+            refutations={},
+        )
+
+    write()
+    _expect_refusal(write, "a tag cleared twice", tag_out.TagOutError, "already cleared")
+    persisted = ledger_path.read_bytes()
+    added = persisted[len(seated) :].decode("utf-8").splitlines()
+    if not persisted.startswith(seated) or len(added) != 1:
+        msg = "Writer must persist exactly one clear and nothing for a refusal"
+        raise ValueError(msg)
+    event = parse_typed_event(json.loads(added[0]))
+    if not isinstance(event, TagClearedEvent):
+        msg = "Writer persisted the wrong event type"
+        raise TypeError(msg)
+    if (event.id, event.dispatch_id, event.hanging_dispatch_id) != (tag_id, restorer, hanging):
+        msg = "Clear record disagrees with the tag and its two dispatches"
+        raise ValueError(msg)
+    return ProducerObservation(
+        event_type="tag_cleared",
+        producer=_PRODUCERS["tag_cleared"],
+        status="verified",
+        ledger_sha256=hashlib.sha256(persisted).hexdigest(),
+        record_count=1,
+        subject=event.id,
+    )
+
+
 def _observe_tag_clearance(
     catalog: Catalog, ledger: Ledger, ledger_path: Path, tag_id: str, dispatch_id: str
 ) -> ProducerObservation:
@@ -1028,19 +1118,9 @@ def _observe_tag_clearance(
         ValueError: The writer booked a second clearance, or a mark other than not available.
 
     """
-    from gzkit import order_ledger  # noqa: PLC0415 - the writer; import only when probed
-    from gzkit import work_package_run as run  # noqa: PLC0415
-    from gzkit.mx import tag_out  # noqa: PLC0415
+    from gzkit.mx import tag_out  # noqa: PLC0415 - the writer; import only when probed
 
-    tag_out.record_tag_hang(
-        ledger, tag_id, dispatch_id, stamped_id=dispatch_id, mx_session_id=_AUTHOR
-    )
-    order_ledger.record_order_transition(
-        catalog,
-        ledger,
-        order_ledger.OrderMove(order=_ORDER, to_state="commenced", evidence=_AUTHOR),
-    )
-    run.record_dispatch_end(ledger, dispatch_id, "a-probe")
+    _seat_hung_and_ended(catalog, ledger, tag_id, dispatch_id)
     seated = ledger_path.read_bytes()
 
     def write() -> object:
@@ -1394,6 +1474,7 @@ _PRODUCERS = {
     "tag_issued": "gzkit.mx.tag_out.record_tag_issue",
     "tag_hung": "gzkit.mx.tag_out.record_tag_hang",
     "tag_clearance_authorized": "gzkit.mx.tag_out.record_tag_clearance",
+    "tag_cleared": "gzkit.mx.tag_out.record_tag_clear",
 }
 
 
@@ -1411,6 +1492,7 @@ _ROOT_PROBES = {
     "tag_issued": _probe_tag_issue,
     "tag_hung": _probe_tag_hang,
     "tag_clearance_authorized": lambda root: _probe_tag_hang(root, "tag_clearance_authorized"),
+    "tag_cleared": lambda root: _probe_tag_hang(root, "tag_cleared"),
     "legacy_unit_withdrawn": _probe_legacy_withdrawal,
     "dispatch_claimed": _probe_dispatch_claim,
     "dispatch_voided": lambda root: _probe_dispatch_claim(root, "dispatch_voided"),

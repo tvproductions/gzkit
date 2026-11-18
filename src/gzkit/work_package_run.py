@@ -710,6 +710,20 @@ def record_dispatch_claim(
     return event
 
 
+def claiming_agents(ledger: Ledger, dispatch_id: str) -> set[str]:
+    """Read every subagent that claimed one dispatch, by its `dispatch_claimed` agent id.
+
+    Returns:
+        The agent ids, empty when no subagent claimed it (rulings 35, 139).
+
+    """
+    return {
+        str(row.extra["agent_id"])
+        for row in ledger.query(event_type=_CLAIMED)
+        if row.extra.get("dispatch_id") == dispatch_id and row.extra.get("agent_id")
+    }
+
+
 def record_dispatch_end(
     ledger: Ledger, dispatch_id: str, agent_id: str
 ) -> DispatchEndedEvent | None:

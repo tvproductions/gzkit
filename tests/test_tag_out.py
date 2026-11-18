@@ -1,4 +1,4 @@
-"""The tag-out log's issue and hang writers and reducer: RP-12 O3 tasks 2 and 3.
+"""The tag-out log's writers and reducer: RP-12 O3 tasks 2, 3 and 4.
 
 `docs/governance/harbor-ro12-contractor-kit.md` § Rulings: the tag-out log is
 ledger events (ruling 4); the coordinator issues a tag (ruling 6) whose
@@ -12,9 +12,12 @@ of a live `Repair` dispatch on the tag's frozen, unblocked order (rulings 109, 1
 131 and 133), copying the issue's line item (120); a hung tag reads open whatever
 its order's state (129). The coordinator authorizes its clearance on a commenced,
 unblocked order once the hanging dispatch is over, ended or voided, marking the
-repair activity not available (rulings 7, 115, 118, 132, 138). Every refusal is
-proved here against the writers, which import no `gzkit.cli` (ruling 125). A
-refusal writes nothing.
+repair activity not available (rulings 7, 115, 118, 132, 138). A live `Restoration`
+dispatch on that order clears it by its stamped call, never a subagent that claimed
+the hanging dispatch (refusal 1, rulings 6 and 139), recording the position found
+(140); found out of position, it books an order block and the tag stays hung (137),
+and a cleared tag reads closed (129). Every refusal is proved here against the
+writers, which import no `gzkit.cli` (ruling 125). A refusal writes nothing.
 """
 
 import json
@@ -27,8 +30,10 @@ from gzkit.events import (
     BaselinedReq,
     OrderTransitionedEvent,
     TagClearanceAuthorizedEvent,
+    TagClearedEvent,
     TagHungEvent,
     TagIssuedEvent,
+    WorkPackageBlockedEvent,
     WorkPackageDispatchedEvent,
     parse_typed_event,
 )
@@ -39,6 +44,7 @@ from gzkit.mx.tag_out import (
     TagOutError,
     next_tag_id,
     open_tags,
+    record_tag_clear,
     record_tag_clearance,
     record_tag_hang,
     record_tag_issue,
@@ -49,6 +55,7 @@ from gzkit.work_package_ledger import TransitionRequest, record_work_package_tra
 from gzkit.work_package_run import (
     BlockRequest,
     DispatchRequest,
+    record_dispatch_claim,
     record_dispatch_end,
     record_dispatch_void,
     record_work_package_block,
@@ -865,6 +872,216 @@ class FrozenClearanceTests(_HangCase):
         )
         self.assertIsInstance(raised, TagOutError)
         self.assertIn("Order ORD-01-import is frozen", str(raised))
+        self.assertEqual(_rows(self.path), before)
+
+
+class _ClearCase(_ClearanceCase):
+    """The tag's clearance authorized and a Restoration dispatch booked on the commenced order."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.clearance = self.authorize()
+        self.restorer = self.book("Restoration")
+
+    def clear(
+        self,
+        found: str = "off",
+        dispatch_id: str | None = None,
+        *,
+        tag_id: str | None = None,
+        stamped: str | None = _AS_NAMED,
+        session: str | None = _SESSION,
+    ) -> TagClearedEvent | WorkPackageBlockedEvent:
+        dispatch_id = dispatch_id or self.restorer
+        return record_tag_clear(
+            self.catalog,
+            self.ledger,
+            tag_id or self.tag.tag_id,
+            dispatch_id,
+            found,
+            stamped_id=dispatch_id if stamped == _AS_NAMED else stamped,
+            mx_session_id=session,
+            refutations={},
+        )
+
+    def assert_clear_refused(self, failed: str, act: Callable[[], object] | None = None) -> str:
+        """Assert the clear is refused by the check named, and nothing is written.
+
+        Returns:
+            The refusal's text.
+
+        """
+        # output-contract: the refusal's what-failed part names the check that refused
+        before = _rows(self.path)
+        raised = _raised(act or self.clear)
+        self.assertIsInstance(raised, TagOutError)
+        self.assertIn(failed, str(raised))
+        self.assertEqual(_rows(self.path), before)
+        return str(raised)
+
+
+class ClearTests(_ClearCase):
+    def test_a_clear_in_position_books_the_clear_and_the_tag_reads_closed(self) -> None:
+        """Rulings 5, 6 and 129: the clear records its dispatch, the position found, the
+        coordinator's authorization and the holder; the cleared tag leaves the open log."""
+        returned = self.clear("off")
+        event = parse_typed_event(_rows(self.path)[-1])
+        self.assertIsInstance(event, TagClearedEvent)
+        assert isinstance(event, TagClearedEvent)
+        written, read = returned.model_dump(), event.model_dump()
+        written.pop("ts")
+        read.pop("ts")
+        self.assertEqual(written, read)
+        self.assertEqual(
+            (event.tag_id, event.order, event.work_package, event.dispatch_id),
+            (self.tag.tag_id, _ORDER, _REPAIR, self.restorer),
+        )
+        self.assertEqual(
+            (event.hanging_dispatch_id, event.position_found, event.authorized_by_session),
+            (self.dispatch, "off", _SESSION),
+        )
+        self.assertEqual(event.mx_session_id, _SESSION)
+        (tag,) = tag_log(self.ledger)
+        self.assertFalse(tag.is_open)
+        self.assertIsNotNone(tag.clear)
+        self.assertEqual(open_tags(self.ledger), [])
+
+    def test_a_cleared_tag_frees_its_surface_for_a_new_issue(self) -> None:
+        """Rulings 122 and 129: one tag-out per surface; the clear is how a hung tag lets go."""
+        self.clear("off")
+        self.initiate(_SPARE)
+        self.move("opened", order="ORD-03-spare", operator_text="open the spare order")
+        issued = self.issue(slug="stamp-again", order="ORD-03-spare")
+        self.assertEqual(issued.surface_name, self.tag.surface_name)
+
+
+class OutOfPositionTests(_ClearCase):
+    def test_a_position_found_other_than_the_hung_one_blocks_the_order(self) -> None:
+        """Rulings 137 and 140: found `on`, not `off`; the order is blocked, the tag stays hung."""
+        returned = self.clear("on")
+        rows = _rows(self.path)
+        event = parse_typed_event(rows[-1])
+        self.assertIsInstance(event, WorkPackageBlockedEvent)
+        assert isinstance(event, WorkPackageBlockedEvent)
+        self.assertEqual(returned.event, "work_package_blocked")
+        self.assertEqual((event.work_package, event.order), (_REPAIR, _ORDER))
+        self.assertNotIn("tag_cleared", [row["event"] for row in rows])
+        (tag,) = tag_log(self.ledger)
+        self.assertTrue(tag.is_open)
+        self.assertIsNone(tag.clear)
+        self.assert_clear_refused("is blocked on the operator", lambda: self.clear("off"))
+
+    def test_the_block_is_worded_by_the_runtime_from_the_tag_and_both_positions(self) -> None:
+        """Ruling 137: the reason and the decision owed come from the tag, never the caller."""
+        event = self.clear("advisory")
+        assert isinstance(event, WorkPackageBlockedEvent)
+        # output-contract: the block names the tag, the surface, the hung and found positions
+        for named in (self.tag.tag_id, self.tag.surface, "off", "advisory", "ruling 137"):
+            self.assertIn(named, event.reason)
+        self.assertIn(f"unblock {_ORDER}", event.next_operator_action)
+
+
+class ClearRefusalTests(_ClearCase):
+    def test_a_clear_with_no_mx_session_open_is_refused(self) -> None:
+        """Rulings 3 and 133: the open MX session holds the tag; with none, no holder."""
+        for session in (None, "", "  "):
+            with self.subTest(session=session):
+                self.assert_clear_refused(
+                    "No MX session is open", lambda s=session: self.clear(session=s)
+                )
+
+    def test_a_clear_not_stamped_with_the_dispatch_it_names_is_refused(self) -> None:
+        """Rulings 6 and 133: the clear is the named Restoration dispatch's own call."""
+        for stamped in (None, "D-00000000000000ff"):
+            with self.subTest(stamped=stamped):
+                self.assert_clear_refused(
+                    "a clear is the stamped call", lambda s=stamped: self.clear(stamped=s)
+                )
+
+    def test_a_position_found_outside_the_ruled_set_is_refused(self) -> None:
+        """Ruling 140: off, advisory, recording or on, nothing else."""
+        self.assert_clear_refused("is not one of", lambda: self.clear("open"))
+
+    def test_a_tag_the_ledger_does_not_hold_is_refused(self) -> None:
+        self.assert_clear_refused(
+            "is not issued in the ledger", lambda: self.clear(tag_id="TAG-09-absent")
+        )
+
+    def test_a_tag_already_cleared_is_refused(self) -> None:
+        """Ruling 6: a tag is cleared once."""
+        self.clear()
+        self.assert_clear_refused("is already cleared")
+
+    def test_a_voided_or_ended_clearing_dispatch_is_refused(self) -> None:
+        """Rulings 1, 42 and 115: a dispatch over may do nothing."""
+        record_dispatch_end(self.ledger, self.restorer, "a-restorer")
+        self.assert_clear_refused("is not a live dispatch in the ledger (ended)")
+        voided = self.book("Restoration")
+        record_dispatch_void(self.ledger, _REPAIR, voided, "never spawned")
+        self.assert_clear_refused("is not a live dispatch", lambda: self.clear(dispatch_id=voided))
+
+    def test_a_clearing_dispatch_whose_role_is_not_restoration_is_refused(self) -> None:
+        """Rulings 6, 109 and 132: the restoration position clears."""
+        implementer = self.seat_dispatch("Implementer", _ORDER)
+        self.assert_clear_refused(
+            "a tag is cleared by a Restoration dispatch",
+            lambda: self.clear(dispatch_id=implementer),
+        )
+
+    def test_a_restoration_dispatch_on_another_order_is_refused(self) -> None:
+        """Rulings 130 and 132: a craftsman dispatch acts on its own order's tags."""
+        elsewhere = self.seat_dispatch("Restoration", "ORD-03-spare", _SPARE)
+        self.assert_clear_refused(
+            "is bound to ORD-03-spare", lambda: self.clear(dispatch_id=elsewhere)
+        )
+
+    def test_a_subagent_that_claimed_the_hanging_dispatch_is_refused_the_clear(self) -> None:
+        """Ruling 139, refusal 1: the subagent that hung the tag never clears it."""
+        record_dispatch_claim(self.ledger, self.dispatch, "a-craftsman", "stamp")
+        record_dispatch_claim(self.ledger, self.restorer, "a-craftsman", "stamp")
+        refusal = self.assert_clear_refused("the one who hung a tag never clears it")
+        # output-contract: refusal 1 names the subagent that claimed both dispatches
+        self.assertIn("subagent a-craftsman", refusal)
+
+    def test_distinct_subagents_on_the_two_dispatches_clear(self) -> None:
+        """Ruling 139: refusal 1 refuses only a shared claimant."""
+        record_dispatch_claim(self.ledger, self.dispatch, "a-craftsman", "stamp")
+        record_dispatch_claim(self.ledger, self.restorer, "a-restorer", "stamp")
+        self.assertIsInstance(self.clear(), TagClearedEvent)
+
+    def test_an_order_not_commenced_is_refused(self) -> None:
+        """Rulings 132 and 135: a clear is made where the Restoration dispatch works."""
+        self.move("accepted", acceptance_ready=True)
+        self.assert_clear_refused("a tag's clear is made on a commenced order")
+
+    def test_a_blocked_order_is_refused(self) -> None:
+        """Rulings 59 and 137: a blocked order's acts are held, its clears among them."""
+        request = BlockRequest(
+            work_package=_REPAIR, reason="stuck", next_action="rule on it", order=_ORDER
+        )
+        record_work_package_block(self.catalog, self.ledger, request, refutations={})
+        self.assert_clear_refused("is blocked on the operator")
+
+
+class UnauthorizedClearTests(_ClearanceCase):
+    def test_a_tag_whose_clearance_is_not_authorized_is_refused(self) -> None:
+        """Ruling 6: clearance authorized by the coordinator, then the clear."""
+        restorer = self.book("Restoration")
+        before = _rows(self.path)
+        raised = _raised(
+            lambda: record_tag_clear(
+                self.catalog,
+                self.ledger,
+                self.tag.tag_id,
+                restorer,
+                "off",
+                stamped_id=restorer,
+                mx_session_id=_SESSION,
+                refutations={},
+            )
+        )
+        self.assertIsInstance(raised, TagOutError)
+        self.assertIn("clearance is not authorized", str(raised))
         self.assertEqual(_rows(self.path), before)
 
 

@@ -2085,6 +2085,9 @@ TagCheckLevel = Literal["C", "D"]
 #: How a clearance found the hanging dispatch over: ended on its own (ruling 115) or
 #: voided (ruling 118); a live one is refused (ruling 138).
 DispatchOver = Literal["ended", "voided"]
+#: The position a clear finds its surface in: one a tag is hung in, or back `on`, a
+#: closed set admitted by RP-12 ruling 140; any but the hung one is out of position.
+TagPositionFound = Literal["off", "advisory", "recording", "on"]
 
 
 class TagIssuedEvent(_EventBase):
@@ -2193,6 +2196,42 @@ class TagClearanceAuthorizedEvent(_EventBase):
     )
 
 
+class TagClearedEvent(_EventBase):
+    """tag_cleared event — the Restoration dispatch cleared a hung tag (RP-12 O3 task 4).
+
+    Ruling 6's fourth act, clear, by the restoration dispatch on the coordinator's
+    clearance, recording the position found (ruling 5, TUM 1.8.5.b). Booked only in
+    position: a position found other than the hung one books an order block instead
+    and leaves the tag hung (ruling 137), so ``position_found`` is always the hung
+    position. It carries the clearing dispatch and the hanging one, so refusal 1 reads
+    from the record (rulings 6, 139); the clearance's mark as ``authorized_by_session``;
+    and the MX session open at the clear as ``mx_session_id``. A cleared tag reads
+    closed (ruling 129). Written only by ``gzkit.mx.tag_out.record_tag_clear``, on the
+    stamped call of a live ``Restoration`` dispatch on the tag's commenced, unblocked
+    order (rulings 59, 132, 135). ``id`` is the tag id.
+    """
+
+    event: Literal["tag_cleared"]
+    tag_id: str = Field(..., pattern=f"^{TAG_ID_PATTERN}$", description="TAG-<NN>-<slug>")
+    order: str = Field(..., min_length=1, description="The order the tag is issued on")
+    work_package: str = Field(..., min_length=1, description="The repair package of the order")
+    dispatch_id: str = Field(
+        ..., pattern=f"^{DISPATCH_ID_PATTERN}$", description="The Restoration dispatch clearing it"
+    )
+    hanging_dispatch_id: str = Field(
+        ..., pattern=f"^{DISPATCH_ID_PATTERN}$", description="The Repair dispatch that hung it"
+    )
+    position_found: TagPositionFound = Field(
+        ..., description="The position the surface was found in, the hung one (ruling 140)"
+    )
+    authorized_by_session: str = Field(
+        ..., min_length=1, description="The clearance's mark, the coordinator's session"
+    )
+    mx_session_id: str = Field(
+        ..., min_length=1, description="The MX session open at the clear, the tag's holder"
+    )
+
+
 TypedLedgerEvent = Annotated[
     ProjectInitEvent
     | PrdCreatedEvent
@@ -2296,7 +2335,8 @@ TypedLedgerEvent = Annotated[
     | OrderTransitionedEvent
     | TagIssuedEvent
     | TagHungEvent
-    | TagClearanceAuthorizedEvent,
+    | TagClearanceAuthorizedEvent
+    | TagClearedEvent,
     Field(discriminator="event"),
 ]
 
