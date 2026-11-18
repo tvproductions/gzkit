@@ -5,9 +5,9 @@ description: Use to create, attach issues to, move, change, add evidence to or r
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-18
+last_reviewed: 2026-11-17
 metadata:
-  skill-version: "0.19.5"
+  skill-version: "0.19.6"
 model: sonnet
 ---
 
@@ -170,7 +170,8 @@ The freeze seals the package's
 footprint, which must be valid as a brief's Allowed Paths are, so a change order may
 then only add a path (ruling 56), and approves each planned alteration no earlier
 order's freeze approved (ruling 63). Commencement crosses the airlock (ruling 65).
-Commit the order's work under the package's `Task:` trailer, as step 3 says:
+Commit the order's work under the package's `Task:` trailer, as step 3 says.
+Freeze the order:
 
 ```bash
 uv run gz wp order freeze <ORD-id> --baseline REQ-<n>@<rev> --risk-note "<risk>" \
@@ -220,7 +221,8 @@ The order's run is the package's run with `--order`: dispatch only against a REQ
 the order's freeze holds, while the order is commenced (ruling 57). The craftsman's
 two roles name no REQ, their subject the order, and arm no fix cycle: `Repair`
 takes the order while it is frozen, to hang its tags, and `Restoration` once it is
-commenced (rulings 108, 109, 131 and 132). A block on the
+commenced (rulings 108, 109, 131 and 132); a stopping exit on the order holds
+neither (ruling 135). A block on the
 order holds that order alone, its dispatches and moves refused until the operator
 rules; the package's other orders carry on (ruling 59). A blocked, accepted or
 stopped order fences production writes across the tree, as a package does

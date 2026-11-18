@@ -556,7 +556,7 @@ def _intended_root(root: str) -> str:
 def record_work_package_dispatch(
     catalog: Catalog, ledger: Ledger, request: DispatchRequest
 ) -> WorkPackageDispatchedEvent:
-    """Book one dispatch on a commenced package or order, or refuse it and write nothing.
+    """Book one dispatch on a package's or an order's run, or refuse it and write nothing.
 
     Returns:
         The event booked.

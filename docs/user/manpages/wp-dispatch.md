@@ -1,7 +1,7 @@
 # gz wp dispatch
 
-Record one dispatch on a commenced work package or order, or a craftsman's on a
-repair package's frozen or commenced order, holding the fix-cycle bound, or void
+Record one dispatch on a commenced work package or order, holding the fix-cycle
+bound, or a craftsman's on a repair package's frozen or commenced order, or void
 one the coordinator abandoned.
 
 ## Usage
@@ -24,7 +24,7 @@ gz wp dispatch <WP-id> --void <D-id> --reason <why> [OPTIONS]
 | `--reason` | Why the run is single-driver: required with `SingleDriver`, refused otherwise. With `--void`, why the dispatch is abandoned, required |
 | `--void` | Abandon this booked dispatch, `D-` and 16 hex digits, instead of booking one; takes none of booking's flags |
 | `--root` | The project root the dispatch is for, an existing directory. Defaults to this project's root |
-| `--order` | The order dispatched on, `ORD-<NN>-<slug>`, one of the package's. Required on a repair package. It must be commenced, and `--req` must name a REQ its freeze holds; a `Repair` dispatch takes it frozen instead, naming no REQ. Taken by no `--void` |
+| `--order` | The order dispatched on, `ORD-<NN>-<slug>`, one of the package's. Required on a repair package. It must be commenced, and `--req` must name a REQ its freeze holds; a `Repair` dispatch takes it frozen instead and a `Restoration` dispatch commenced, each naming no REQ. Taken by no `--void` |
 | `--json` | Output as JSON: the booked event, `dispatch_id`, `intended_root` and `order` included |
 | `--quiet`, `-q` | Suppress non-error output |
 | `--verbose`, `-v` | Enable verbose output |
@@ -164,7 +164,7 @@ BLOCKERS: gz: error: unrecognized arguments: --issue 1301
 ```
 
 On the same repair package's order, its craftsman's two roles (rulings 108, 109
-and 130 to 132), observed 2026-11-18 in a temporary project set up as
+and 130 to 132), observed 2026-11-17 in a temporary project set up as
 `tests/commands/test_wp_tag.py` sets one up, `ORD-01-import` frozen. While the
 order is frozen, Restoration is refused, Repair is booked, and a Repair naming a
 REQ is refused:

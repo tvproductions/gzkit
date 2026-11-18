@@ -678,7 +678,7 @@ def wp_evidence_cmd(*, work_package: str, items: list[str], as_json: bool) -> No
 
 
 def wp_dispatch_cmd(*, fields: dict[str, object], as_json: bool) -> None:
-    """Book one dispatch on a commenced package or order, holding the bound (GHI #1200).
+    """Book one dispatch on a package's or an order's run, holding the bound (GHI #1200).
 
     The dispatch is bound to a minted id and its intended root, by default this
     project's, and the line naming the id goes in the dispatched agent's prompt

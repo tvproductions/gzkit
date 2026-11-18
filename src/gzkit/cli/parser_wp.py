@@ -124,7 +124,7 @@ def _register_wp_run(wp_commands: argparse._SubParsersAction) -> None:
         "dispatch",
         help="Record a dispatch on a package or order, holding the fix-cycle bound",
         description=(
-            "Record one dispatch on a commenced work package or order. The cycle past\n"
+            "Record one dispatch on a work package's or an order's run. The cycle past\n"
             "the fix-cycle bound is refused whatever was ruled (GHI #1200). The dispatch\n"
             "is bound to a minted id and its intended root; put the printed line in\n"
             "the dispatched agent's prompt (RP-12 rulings 1 and 35). --void abandons\n"
@@ -168,7 +168,7 @@ def _register_wp_run(wp_commands: argparse._SubParsersAction) -> None:
         help="The project root the dispatch is for; defaults to this project's",
     )
     p_dispatch.add_argument(
-        "--order", default=None, help="The commenced order dispatched on, ORD-<NN>-<slug>"
+        "--order", default=None, help="The order dispatched on, ORD-<NN>-<slug>"
     )
     add_json_flag(p_dispatch)
     p_dispatch.set_defaults(func=lambda a: _dispatch_or_void(p_dispatch, a))
