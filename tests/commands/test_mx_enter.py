@@ -10,12 +10,15 @@ exit 0 + artifact_edited ledger event — verified at Stage 3, not here.
 """
 
 import json
+import os
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 from gzkit import lock_manager
 from gzkit.cli import main
+from gzkit.commands.mx_cmd import mx_enter_cmd
 from gzkit.mx import marker
 from gzkit.traceability import covers
 from tests.commands.common import CliRunner, SilencedConsoleTestCase
@@ -43,6 +46,47 @@ def _read_ledger_events(root: Path, event_type: str) -> list[dict]:
         if ev.get("event") == event_type:
             events.append(ev)
     return events
+
+
+_HARNESS = {
+    "CLAUDECODE": "1",
+    "CLAUDE_CODE_SESSION_ID": "harness-session-1",
+    "CLAUDE_SESSION_ID": "harness-session-1",
+}
+
+
+class TestTheMxSessionIsTheHolder(SilencedConsoleTestCase):
+    """RP-12 rulings 3 and 149: enter mints the MX session's own id, and it holds the lease."""
+
+    def _enter(self, tmp: str) -> Path:
+        root = _mk_root(tmp)
+        with patch.dict(os.environ, _HARNESS):
+            mx_enter_cmd(reason="drydock", attestor="g0", inspection_scope=[], project_root=root)
+        return root
+
+    def test_enter_mints_an_id_no_harness_session_carries(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = self._enter(tmp)
+            held = marker.read(root)
+            (opened,) = _read_ledger_events(root, "mx_session_opened")
+        assert held is not None
+        self.assertNotIn(held.session_id, set(_HARNESS.values()))
+        self.assertEqual(opened["session_id"], held.session_id)
+
+    def test_each_entry_mints_its_own_id(self) -> None:
+        with TemporaryDirectory() as first, TemporaryDirectory() as second:
+            ids = {(marker.read(self._enter(tmp)) or self.fail()).session_id
+                   for tmp in (first, second)}  # fmt: skip
+        self.assertEqual(len(ids), 2)
+
+    def test_the_lease_is_held_by_the_mx_session(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = self._enter(tmp)
+            held = marker.read(root)
+            lock = lock_manager.read_lock(root, marker.SESSION_LOCK_KEY)
+        assert held is not None
+        assert lock is not None
+        self.assertEqual((lock.agent, lock.session_id), (held.session_id, held.session_id))
 
 
 class TestMxEnterSetsMarkerAndEvent(SilencedConsoleTestCase):

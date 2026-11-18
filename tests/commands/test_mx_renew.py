@@ -8,6 +8,7 @@ advisory debt aging from the contract's first open (GHI #1258).
 """
 
 import json
+import os
 import unittest
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -15,7 +16,9 @@ from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 from gzkit import lock_manager
+from gzkit.commands import mx_cmd
 from gzkit.mx import marker
+from gzkit.mx.lease import book_lease_expiries
 from tests.commands.common import SilencedConsoleTestCase
 
 _LEASE = timedelta(minutes=lock_manager.DEFAULT_LOCK_TTL_MINUTES)
@@ -112,6 +115,70 @@ class TestRenewRefreshesTheLease(SilencedConsoleTestCase):
             after = hardening.debt_aging_status(root, now=later).age_hours
             self.assertAlmostEqual(after, before, places=3)
             self.assertGreater(after, hardening.lease_hours())
+
+
+class TestRenewKeepsTheMxSessionAsHolder(SilencedConsoleTestCase):
+    """RP-12 rulings 3 and 149: a renewal from any harness session is held by the MX session."""
+
+    def test_the_renewed_lease_is_held_by_the_mx_session(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _open_session(tmp)
+            harness = {"CLAUDECODE": "1", "CLAUDE_CODE_SESSION_ID": "after-a-clear"}
+            with patch.dict(os.environ, harness):
+                mx_cmd.mx_renew_cmd(attestor="g0", project_root=root)
+            held = marker.read(root)
+            lock = lock_manager.read_lock(root, marker.SESSION_LOCK_KEY)
+        assert held is not None
+        assert lock is not None
+        self.assertEqual((lock.agent, lock.session_id), (held.session_id, held.session_id))
+
+
+class TestRenewBooksALapsedLeasesExpiry(SilencedConsoleTestCase):
+    """GHI #1257 and #1261: a lease that ran out mid-session is booked expired at its renewal."""
+
+    def renew_at(self, root: Path, when: datetime) -> str:
+        """Renew at ``when`` and return what the verb printed."""
+        with (
+            patch("gzkit.commands.mx_cmd._now", return_value=when),
+            patch.object(mx_cmd.console, "print") as printed,
+        ):
+            mx_cmd.mx_renew_cmd(attestor="g0", project_root=root)
+        return "\n".join(str(call.args[0]) for call in printed.call_args_list)
+
+    def test_a_lapsed_lease_is_booked_expired_before_the_renewal(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _open_session(tmp)
+            printed = self.renew_at(root, datetime.now(UTC) + 2 * _LEASE)
+            rows = [
+                row["event"]
+                for row in _events(root, "mx_session_lease_expired")
+                + _events(root, "mx_session_lease_renewed")
+            ]
+            (opened,) = _events(root, "mx_session_opened")
+            (expired,) = _events(root, "mx_session_lease_expired")
+            lines = (root / ".gzkit" / "ledger.jsonl").read_text(encoding="utf-8")
+        self.assertEqual(rows, ["mx_session_lease_expired", "mx_session_lease_renewed"])
+        self.assertEqual(expired["lease_started_at"], opened["ts"])
+        self.assertLess(
+            lines.index('"mx_session_lease_expired"'), lines.index('"mx_session_lease_renewed"')
+        )
+        # output-contract: the expiry is booked and announced, never silent (ruling 2026-10-18)
+        self.assertIn("Lease expiry booked", printed)
+
+    def test_a_live_lease_books_no_expiry(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _open_session(tmp)
+            printed = self.renew_at(root, datetime.now(UTC))
+            self.assertEqual(_events(root, "mx_session_lease_expired"), [])
+        self.assertNotIn("Lease expiry booked", printed)
+
+    def test_an_expiry_the_orientation_booked_is_not_booked_again(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _open_session(tmp)
+            later = datetime.now(UTC) + 2 * _LEASE
+            book_lease_expiries(root, now=later)
+            self.renew_at(root, later)
+            self.assertEqual(len(_events(root, "mx_session_lease_expired")), 1)
 
 
 class TestRenewIsReachableFromTheCli(SilencedConsoleTestCase):

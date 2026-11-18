@@ -38,6 +38,9 @@ gz mx enter --reason REASON --attestor ATTESTOR [--scope ADR_OR_OBPI ...] [--lev
   safe mode `gzkit.mx.checkpoint` demotes every guard outside `gate5_invariants` to
   advisory, as the hangar does (operator ruling 2026-10-17); the marker also suspends
   ceremony, and the awareness banner names the contract every turn.
+- Mints a fresh MX session id, independent of the harness session, which each `/clear`
+  replaces, and claims the `mx-session` lock held by that id (RP-12 rulings 3 and 149);
+  the hung tags and the lease are the MX session's until `gz mx exit` ends it.
 - Writes the marker file (`.gzkit/mx.json`) with `session_id`, `opened_at`, `reason`,
   `attestor`, `inspection_scope`, `level`, and `contract`.
 - Writes one `mx_session_opened` ledger event carrying those fields with the level as `mode`, binding the marker to

@@ -13,6 +13,7 @@ narrow your way out).
 import os
 import subprocess
 import sys
+import uuid
 from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
@@ -29,7 +30,7 @@ from gzkit.commands.common import console, get_project_root
 from gzkit.executables import resolve_executable
 from gzkit.ledger import Ledger, LedgerEvent
 from gzkit.lock_manager import LockData
-from gzkit.mx import hardening, log, marker
+from gzkit.mx import hardening, lease, log, marker
 from gzkit.mx.contract import contract_pin_for
 from gzkit.mx.marker import Marker
 
@@ -325,10 +326,12 @@ def mx_enter_cmd(
         sys.exit(1)
 
     # Acquire the session on the lock_manager token rail to serialize concurrent entry.
-    session_id = lock_manager.resolve_session_id()
+    # The MX session mints its own id, never a harness session's, which each /clear
+    # replaces, and that id holds the lease (RP-12 rulings 3 and 149).
+    session_id = str(uuid.uuid4())
     lock = LockData(
         obpi_id=marker.SESSION_LOCK_KEY,
-        agent=lock_manager.resolve_agent(),
+        agent=session_id,
         pid=os.getpid(),
         session_id=session_id,
         claimed_at=datetime.now(UTC).isoformat(),
@@ -595,12 +598,20 @@ def mx_renew_cmd(attestor: str, project_root: Path | None = None) -> None:
         sys.exit(1)
 
     renewed_at = _now()
+    # A lease that ran out mid-session is booked expired before the new one starts,
+    # once, as the session orientation books it at boot, and announced (GHI #1257, #1261).
+    if lapsed := lease.book_lease_expiries(root, now=renewed_at):
+        console.print(
+            f"[yellow]Lease expiry booked.[/yellow] The lease of session {', '.join(lapsed)} "
+            "ran out before this renewal; its expiry is booked once, never an eviction."
+        )
     lock_manager.delete_lock(root, marker.SESSION_LOCK_KEY)
     lock_manager.write_lock(
         root,
         LockData(
             obpi_id=marker.SESSION_LOCK_KEY,
-            agent=lock_manager.resolve_agent(),
+            # The MX session holds the lease, whichever harness session renews it (3, 149).
+            agent=held.session_id,
             pid=os.getpid(),
             session_id=held.session_id,
             claimed_at=renewed_at.isoformat(),

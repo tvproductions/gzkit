@@ -217,8 +217,9 @@ def _scan_open_session_ids(ledger: Path, _size: int, _mtime_ns: int) -> frozense
     """Scan *ledger*; ``_size`` and ``_mtime_ns`` exist only to key the memo.
 
     Returns:
-        The ids whose last open has no close after it: the harness's session id
-        survives a close, so ``gz mx enter`` can reopen one.
+        The ids whose last open has no close after it: before RP-12 ruling 149 an
+        entry carried the opening harness session's id, which a later entry from
+        that harness session could reopen; ``gz mx enter`` now mints a fresh one.
 
     """
     opened: set[str] = set()
