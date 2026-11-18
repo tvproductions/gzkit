@@ -2304,3 +2304,7 @@
 {"ts": "2026-11-17T10:59:15Z", "source": "20261117T105912Z-ci-green-canaries-reviewed.md", "text": "Push the review and insight commits (verbatim: \"Push them\")."}
 {"ts": "2026-11-17T10:59:15Z", "source": "20261117T105912Z-ci-green-canaries-reviewed.md", "text": "The closing-keywords pre-push hook is excused from the MX checkpoint under ADR-0.0.74 BI#2, staying hard at every level (by selection: \"Excused (Recommended)\")."}
 {"ts": "2026-11-17T10:59:15Z", "source": "20261117T105912Z-ci-green-canaries-reviewed.md", "text": "Write a fresh handoff and git sync (verbatim: \"fresh handoff and git sync\")."}
+{"ts": "2026-11-18T00:57:49Z", "source": "20261118T005747Z-rp12-o3-task3-repaired-reviewed.md", "text": "Ruling on the predecessor handoff, booked by gz handoff decide with steps 4 and 5 set aside (verbatim: \"Proceed: renew, then 3\")."}
+{"ts": "2026-11-18T00:57:49Z", "source": "20261118T005747Z-rp12-o3-task3-repaired-reviewed.md", "text": "An independent review of the five repair acts before pushing (verbatim: \"Review, then push\")."}
+{"ts": "2026-11-18T00:57:49Z", "source": "20261118T005747Z-rp12-o3-task3-repaired-reviewed.md", "text": "Ruling 136, gz wp runs reports a frozen order holding a live dispatch (by selection: \"Yes, report it\")."}
+{"ts": "2026-11-18T00:57:49Z", "source": "20261118T005747Z-rp12-o3-task3-repaired-reviewed.md", "text": "Push a38024152 (verbatim: \"Push it\")."}
