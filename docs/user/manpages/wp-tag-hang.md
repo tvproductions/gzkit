@@ -51,33 +51,45 @@ A refusal names what failed, why and what to do, and books nothing.
 
 ## Examples
 
-Observed 2026-11-17 in a scratch project set up as `tests/commands/test_wp_tag.py`
-sets one up: `TAG-01-stamp-hook` issued on `ORD-01-import`, the order frozen and a
-`Repair` dispatch booked on it. Its MX marker was opened by the test helper, and
-the stamped call was stamped as the stamp hook stamps that dispatch's subagent.
+Observed 2026-11-18 in a scratch project set up as `tests/commands/test_wp_tag.py`
+sets one up: `TAG-01-stamp-hook` issued on `ORD-01-import`, the order frozen and two
+`Repair` dispatches booked on it. Its MX marker was opened by the test helper, and
+each stamped call was stamped as the stamp hook stamps that dispatch's subagent.
 
 From an unstamped call, exit 3:
 
 ```console
-$ uv run gz wp tag hang TAG-01-stamp-hook --dispatch D-1f672afece40f9fa
+$ uv run gz wp tag hang TAG-01-stamp-hook --dispatch D-74ee53f602ec1dff
 This call is not stamped, and a hang is the stamped call of the Repair dispatch
-it names, D-1f672afece40f9fa (RP-12 ruling 133). The hang is run by that
-dispatch's own subagent: `uv run gz wp tag hang TAG-01-stamp-hook --dispatch
-D-1f672afece40f9fa`.
+it names, D-74ee53f602ec1dff (RP-12 ruling 133). Run the hang from
+D-74ee53f602ec1dff's own subagent, its prompt carrying the dispatch line; with
+none booked for the tag's order, have the coordinator book one: `uv run gz wp
+dispatch <WP-id> --order <ORD-id> --role Repair --model <tier>`.
 ```
 
-From the `Repair` dispatch's stamped call, exit 0:
+From a call stamped as the other `Repair` dispatch, `D-7343505e9112c75a`, exit 3:
 
 ```console
-$ uv run gz wp tag hang TAG-01-stamp-hook --dispatch D-1f672afece40f9fa
-Hung TAG-01-stamp-hook by D-1f672afece40f9fa.
+$ uv run gz wp tag hang TAG-01-stamp-hook --dispatch D-74ee53f602ec1dff
+This call is stamped with D-7343505e9112c75a, and a hang is the stamped call of
+the Repair dispatch it names, D-74ee53f602ec1dff (RP-12 ruling 133). If
+D-7343505e9112c75a is the Repair dispatch meant, name it: `uv run gz wp tag hang
+TAG-01-stamp-hook --dispatch D-7343505e9112c75a`; otherwise the hang belongs to
+D-74ee53f602ec1dff's own subagent.
 ```
 
-The same tag again, exit 3:
+From the named dispatch's stamped call, exit 0:
 
 ```console
-$ uv run gz wp tag hang TAG-01-stamp-hook --dispatch D-1f672afece40f9fa
-Tag TAG-01-stamp-hook is already hung, by dispatch D-1f672afece40f9fa; a tag is
+$ uv run gz wp tag hang TAG-01-stamp-hook --dispatch D-74ee53f602ec1dff
+Hung TAG-01-stamp-hook by D-74ee53f602ec1dff.
+```
+
+The same tag again, from the same dispatch's stamped call, exit 3:
+
+```console
+$ uv run gz wp tag hang TAG-01-stamp-hook --dispatch D-74ee53f602ec1dff
+Tag TAG-01-stamp-hook is already hung, by dispatch D-74ee53f602ec1dff; a tag is
 hung once (RP-12 ruling 6). Read it with `uv run gz wp tag show --all`; nothing
 remains to hang.
 ```

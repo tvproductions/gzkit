@@ -381,6 +381,32 @@ def record_tag_issue(
     return event
 
 
+def _refuse_unstamped_hang(tag_id: str, dispatch_id: str, stamped_id: str | None) -> None:
+    """Refuse a hang whose call is not stamped as the dispatch it names (RP-12 ruling 133).
+
+    The next step is one that can succeed: naming the dispatch the call is stamped
+    with, or running the hang from the named dispatch's subagent, never the same call.
+    """
+    if stamped_id:
+        stamp = f"stamped with {stamped_id}"
+        step = (
+            f"If {stamped_id} is the {REPAIR} dispatch meant, name it: `uv run gz wp tag hang "
+            f"{tag_id} --dispatch {stamped_id}`; otherwise the hang belongs to {dispatch_id}'s "
+            "own subagent."
+        )
+    else:
+        stamp = "not stamped"
+        step = (
+            f"Run the hang from {dispatch_id}'s own subagent, its prompt carrying the dispatch "
+            "line; with none booked for the tag's order, have the coordinator book one: "
+            f"`uv run gz wp dispatch <WP-id> --order <ORD-id> --role {REPAIR} --model <tier>`."
+        )
+    _refuse(
+        f"This call is {stamp}, and a hang is the stamped call of the Repair dispatch it "
+        f"names, {dispatch_id} (RP-12 ruling 133). {step}"
+    )
+
+
 def record_tag_hang(
     ledger: Ledger,
     tag_id: str,
@@ -402,12 +428,7 @@ def record_tag_hang(
             "through the gz-mx skill (`uv run gz mx enter`), then hang the tag."
         )
     if stamped_id != dispatch_id:
-        stamp = f"stamped with {stamped_id}" if stamped_id else "not stamped"
-        _refuse(
-            f"This call is {stamp}, and a hang is the stamped call of the Repair dispatch it "
-            f"names, {dispatch_id} (RP-12 ruling 133). The hang is run by that dispatch's "
-            f"own subagent: `uv run gz wp tag hang {tag_id} --dispatch {dispatch_id}`."
-        )
+        _refuse_unstamped_hang(tag_id, dispatch_id, stamped_id)
     issue = next((issue for issue in _issues(ledger) if issue.tag_id == tag_id), None)
     if issue is None:
         _refuse(

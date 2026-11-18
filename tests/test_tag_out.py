@@ -556,6 +556,23 @@ class HangRefusalTests(_HangCase):
                     "a hang is the stamped call", lambda stamped=stamped: self.hang(stamped=stamped)
                 )
 
+    def test_the_stamp_refusal_names_a_step_other_than_the_failed_call(self) -> None:
+        """Ruling 133: the refusal's next step is one that can succeed, never the same call."""
+        failed = f"--dispatch {self.dispatch}`"
+        with self.subTest(stamped="none"):
+            refusal = self.assert_hang_refused(
+                "a hang is the stamped call", lambda: self.hang(stamped=None)
+            )
+            self.assertNotIn(failed, refusal)
+            self.assertIn("--role Repair", refusal)
+        other = self.book("Repair")
+        with self.subTest(stamped="another dispatch"):
+            refusal = self.assert_hang_refused(
+                "a hang is the stamped call", lambda: self.hang(stamped=other)
+            )
+            self.assertNotIn(failed, refusal)
+            self.assertIn(f"--dispatch {other}`", refusal)
+
     def test_a_tag_the_ledger_does_not_hold_is_refused(self) -> None:
         """Rulings 6 and 120: a hang cites an issue; with none there is nothing to copy."""
         self.assert_hang_refused(
@@ -621,6 +638,22 @@ class HangRefusalTests(_HangCase):
         """Ruling 131: the hang belongs to a frozen order; after commencement it is refused."""
         self.move("commenced")
         self.assert_hang_refused("a tag is hung on a frozen order")
+
+    def test_a_tag_whose_order_was_never_frozen_is_refused(self) -> None:
+        """Rulings 108 and 131: a tag issued on an opened order waits for the freeze.
+
+        The dispatch writer books no Repair dispatch off a frozen order, so the spare
+        order's dispatch is seated by hand.
+        """
+        self.initiate(_SPARE)
+        self.move("opened", order="ORD-03-spare", operator_text="open the spare order")
+        spare = self.issue(slug="spare", order="ORD-03-spare", surface="path:src/stamp.py")
+        seated = self.seat_dispatch("Repair", "ORD-03-spare", package=_SPARE)
+        refusal = self.assert_hang_refused(
+            "a tag is hung on a frozen order",
+            lambda: self.hang(tag_id=spare.tag_id, dispatch_id=seated),
+        )
+        self.assertIn("Order ORD-03-spare is opened", refusal)
 
     def test_a_tag_whose_order_is_blocked_is_refused(self) -> None:
         """Rulings 59 and 131: a blocked order's acts are held, the hang among them."""
