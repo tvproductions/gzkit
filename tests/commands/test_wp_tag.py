@@ -347,8 +347,30 @@ class TagHangWiringTests(_TagCase):
         # given the main session's call, carrying no stamp
         # when
         code, output = self.hang("TAG-01-stamp-hook", "--dispatch", self.dispatch)
-        # then
+        # then refused for its own reason, not an earlier check's
         self.assertEqual(code, 3, output)
+        self.assertIn("This call is not stamped", output)
+        self.assertEqual(_tag_rows("tag_hung"), [])
+
+    def test_an_id_with_no_stamped_root_is_no_stamp(self) -> None:
+        # given the dispatch's id in the environment and no stamped root (ruling 133)
+        os.environ[STAMP_ID_ENV] = self.dispatch
+        self.addCleanup(os.environ.pop, STAMP_ID_ENV, None)
+        # when
+        code, output = self.hang("TAG-01-stamp-hook", "--dispatch", self.dispatch)
+        # then gz's entry keeps no id, so the call reads unstamped
+        self.assertEqual(code, 3, output)
+        self.assertIn("This call is not stamped", output)
+        self.assertEqual(_tag_rows("tag_hung"), [])
+
+    def test_a_stamped_root_with_a_blank_id_keeps_no_id(self) -> None:
+        # given a stamped root and a dispatch id of whitespace alone
+        self.stamp_as("  ")
+        # when
+        code, output = self.hang("TAG-01-stamp-hook", "--dispatch", self.dispatch)
+        # then the blank id is no id, never a stamp of blanks
+        self.assertEqual(code, 3, output)
+        self.assertIn("This call is not stamped", output)
         self.assertEqual(_tag_rows("tag_hung"), [])
 
 
