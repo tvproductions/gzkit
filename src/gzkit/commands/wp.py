@@ -717,8 +717,10 @@ def wp_dispatch_cmd(*, fields: dict[str, object], as_json: bool) -> None:
         fmt.emit(event)
         return
     on = f"order {event.order} of " if event.order else ""
+    # A craftsman's dispatch is subject to its order itself (RP-12 ruling 130): name it once.
+    subject = "" if event.subject == event.order else f"{event.subject} of "
     fmt.emit(
-        f"Recorded {event.role} on {event.subject} of {on}{event.work_package} as dispatch "
+        f"Recorded {event.role} on {subject}{on}{event.work_package} as dispatch "
         f"{event.dispatch_id}, for {event.intended_root}."
     )
     fmt.emit("Put this line in the dispatched agent's prompt:")

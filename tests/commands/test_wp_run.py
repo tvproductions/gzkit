@@ -165,6 +165,22 @@ class TestRunVerbs(_RunCase):
         self.assertEqual(row["intended_root"], Path.cwd().resolve().as_posix())
         self.assertEqual(read_dispatch_id(result.output), row["dispatch_id"])
 
+    def test_a_craftsman_dispatch_line_names_its_order_once(self) -> None:
+        # output-contract: the booking line names what was dispatched against, once
+        # given a commenced order, whose Restoration dispatch is subject to the order itself
+        args = ["wp", "dispatch", _PACKAGE, *_ON_ORDER, "--role", "Restoration", "--model", "m"]
+        # when
+        result = self.runner.invoke(main, args)
+        # then the order is the subject, so it is not named a second time
+        self.assertEqual(result.exit_code, 0, msg=result.output)
+        (row,) = _rows("work_package_dispatched")
+        line = " ".join(result.output.split())
+        self.assertIn(
+            f"Recorded Restoration on order {_ORDER} of {_PACKAGE} as dispatch "
+            f"{row['dispatch_id']}",
+            line,
+        )
+
     def test_a_named_root_reaches_the_ledger_and_a_missing_one_exits_1(self) -> None:
         scratch = Path("scratch")
         scratch.mkdir()
