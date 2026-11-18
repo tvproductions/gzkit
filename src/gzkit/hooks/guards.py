@@ -398,6 +398,29 @@ def forbid_skill_sync_drift(root: Path) -> int:
     return 0
 
 
+def _work_package_commit_refusal(root: Path, production: list[str]) -> str | None:
+    """Return the first work-package fence's refusal of the staged production paths it holds.
+
+    A fence holds the whole tree, or a frozen order's footprint alone (RP-12 ruling 116),
+    so the refusal lists only the paths that fence holds.
+
+    Returns:
+        The message to print, or None when no fence holds a staged production path.
+
+    """
+    if not production:
+        return None
+    from gzkit.work_package_fence import (  # noqa: PLC0415
+        fenced_packages,
+        work_package_commit_message,
+    )
+
+    for fence in fenced_packages(root):
+        if held := [path for path in production if fence.holds(path)]:
+            return work_package_commit_message(fence, held)
+    return None
+
+
 def forbid_post_authoring_src_commits(root: Path) -> int:
     """Refuse a commit carrying production code past Stage 2 (GHI #844).
 
@@ -429,10 +452,6 @@ def forbid_post_authoring_src_commits(root: Path) -> int:
         post_authoring_commit_message,
         refuses_production_commit,
     )
-    from gzkit.work_package_fence import (  # noqa: PLC0415
-        fenced_packages,
-        work_package_commit_message,
-    )
 
     staged = _run_git(["diff", "--cached", "--name-status"], root)
     if not staged:
@@ -442,9 +461,8 @@ def forbid_post_authoring_src_commits(root: Path) -> int:
         return 0
 
     production = [path for path in changed if is_production_path(path)]
-    fenced = fenced_packages(root) if production else ()
-    if fenced:
-        _safe_print(work_package_commit_message(fenced[0], production))
+    if refusal := _work_package_commit_refusal(root, production):
+        _safe_print(refusal)
         return 1
 
     plans_dir = root / ".claude" / "plans"

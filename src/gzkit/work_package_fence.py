@@ -16,8 +16,11 @@ shown. A package names no paths, so one fenced package fences the whole tree.
 
 An order fences as a package does (RP-12 ruling 58): one commenced or accepted
 that is blocked on the operator, accepted, or stopped by an exit holds every
-write in the tree, and its refusal names the order. An order closed, or not yet
-commenced, does not fence.
+write in the tree, and its refusal names the order. An order frozen and not yet
+commenced holds its repair package's sealed footprint alone, blocked or not, so
+no work lands on a surface before its tag hangs (rulings 116 and 145); a frozen
+order whose seal names nothing holds the whole tree, failing closed (ruling 147).
+An order closed, or only opened, does not fence.
 
 Three refusals of `gz wp dispatch` are not fenced. A package not yet commenced has
 not been worked, so nothing re-enters; it is fenced only while blocked or stopped.
@@ -28,18 +31,20 @@ ends. A held subject: ruling 17 stops only that subject, and a write names none.
 Mode contract: the commit arm is on at the operational condition and at both
 standby levels, under the `post-authoring-src-commits` pin. The write arm is on at
 the operational condition and advisory at both standby levels, under the
-`pipeline-gate` demotion. MEL entry: `docs/governance/harbor-ro14-obpi-forward-migration.md`
-§ Act 4's reading. Self-test: `tests/commands/test_wp_fence.py`.
+`pipeline-gate` demotion, except the frozen-order footprint, which the hook checks
+before that demotion and so is on at every level (ruling 146). MEL entry:
+`docs/governance/harbor-ro14-obpi-forward-migration.md` § Act 4's reading. Self-test:
+`tests/commands/test_wp_fence.py`.
 """
 
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, Self
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from gzkit.config import GzkitConfig
 from gzkit.ledger import Ledger
 from gzkit.order_ledger import is_order_blocked, order_took_stopping_exit
-from gzkit.work_package_ledger import is_blocked
+from gzkit.work_package_ledger import is_blocked, sealed_footprint
 from gzkit.work_package_run import took_stopping_exit
 
 if TYPE_CHECKING:
@@ -54,10 +59,36 @@ class FencedPackage(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     work_package: str = Field(..., description="The package's id, or the ledger itself")
-    reason: Literal["blocked", "accepted", "stopped", "unreadable"] = Field(
+    # "frozen" widens the closed set by RP-12 ruling 116.
+    reason: Literal["blocked", "accepted", "stopped", "unreadable", "frozen"] = Field(
         ..., description="Why it holds the fence"
     )
     order: str | None = Field(None, description="The order that holds it (RP-12 ruling 58)")
+    footprint: tuple[str, ...] | None = Field(
+        None, description="The paths a frozen order holds; None holds the whole tree (116, 147)"
+    )
+
+    @model_validator(mode="after")
+    def _frozen_names_its_order(self) -> Self:
+        if self.reason == "frozen" and self.order is None:
+            msg = "A frozen fence is an order's: it names the order (RP-12 ruling 116)."
+            raise ValueError(msg)
+        return self
+
+    def holds(self, rel_path: str) -> bool:
+        """Say whether this fence holds a path: every path, or one in a frozen footprint.
+
+        Returns:
+            True when a write to ``rel_path`` is held by this fence.
+
+        """
+        if self.footprint is None:
+            return True
+        # The matcher brings git_sync with it, so it is read only for a frozen footprint,
+        # keeping every other write's hook import light.
+        from gzkit.hooks.obpi import allow_pattern, path_is_allowlisted  # noqa: PLC0415
+
+        return path_is_allowlisted(rel_path, [allow_pattern(m) for m in self.footprint])
 
 
 def fenced_packages(project_root: Path) -> tuple[FencedPackage, ...]:
@@ -96,15 +127,16 @@ def _read_fence(ledger: Ledger) -> tuple[FencedPackage, ...]:
     return (*fenced, *_read_order_fence(ledger))
 
 
-#: An order not yet commenced has not been worked, and a closed one is done (ruling 58).
+#: An order commenced or accepted holds the tree in a refused state (ruling 58).
 _ORDER_FENCEABLE = frozenset({"commenced", "accepted"})
 
 
 def _read_order_fence(ledger: Ledger) -> list[FencedPackage]:
-    """Read the orders that hold the fence, as a package does (RP-12 ruling 58).
+    """Read the orders that hold the fence, as a package does (RP-12 rulings 58 and 116).
 
     Returns:
-        Each commenced or accepted order that is blocked, accepted or stopped, oldest first.
+        Each frozen order with its sealed footprint, and each commenced or accepted
+        order that is blocked, accepted or stopped, oldest first.
 
     """
     latest = {
@@ -113,6 +145,15 @@ def _read_order_fence(ledger: Ledger) -> list[FencedPackage]:
     fenced = []
     for order, move in latest.items():
         state = str(move["to_state"])
+        package = str(move["work_package"])
+        if state == "frozen":
+            footprint = sealed_footprint(ledger, package)
+            fenced.append(
+                FencedPackage(
+                    work_package=package, order=order, reason="frozen", footprint=footprint or None
+                )
+            )
+            continue
         if state not in _ORDER_FENCEABLE:
             continue
         if is_order_blocked(ledger, order):
@@ -123,7 +164,6 @@ def _read_order_fence(ledger: Ledger) -> list[FencedPackage]:
             reason = "stopped"
         else:
             continue
-        package = str(move["work_package"])
         fenced.append(FencedPackage(work_package=package, order=order, reason=reason))
     return fenced
 
@@ -137,6 +177,15 @@ def _close(work_package: str) -> str:
 
 def _order_recovery(fence: FencedPackage) -> str:
     wp, order = fence.work_package, fence.order
+    if fence.reason == "frozen":
+        return (
+            f"read the order's tags with `uv run gz wp tag show`, have its Repair dispatch "
+            f"hang each (`uv run gz wp tag hang <TAG-id> --dispatch D-<id>`), then commence "
+            f"it with `uv run gz wp order commence {order} --evidence <text>`, which lifts "
+            "this fence; if the order is blocked, the operator's `uv run gz wp unblock "
+            f"{wp} --order {order} --ruling <words> --operator <who>` comes first. A write "
+            "outside the footprint is not held"
+        )
     close = (
         f"the operator closes it through Gate 5 at the order with `uv run gz wp order close "
         f"{order} --decision <decision> --attestor g0 --attestation-text <words> --evidence "
@@ -185,6 +234,13 @@ def _recovery(fence: FencedPackage) -> str:
 def _why(fence: FencedPackage) -> str:
     if fence.reason == "unreadable":
         return "the ledger or `.gzkit.json` cannot be read, so no work package's state can be shown"
+    if fence.reason == "frozen":
+        held = "its sealed footprint" if fence.footprint else "the whole tree, its seal empty"
+        return (
+            f"order {fence.order} of work package {fence.work_package} is frozen and not "
+            f"commenced, and it holds {held}: work before commencement lands on a surface "
+            "before its tag hangs (refusal 2; RP-12 rulings 108, 116 and 147)"
+        )
     if fence.order is not None:
         return (
             f"order {fence.order} of work package {fence.work_package} is {fence.reason}, and "

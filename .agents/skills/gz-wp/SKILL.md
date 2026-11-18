@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-18
 metadata:
-  skill-version: "0.22.0"
+  skill-version: "0.23.0"
 model: sonnet
 ---
 
@@ -238,7 +238,8 @@ takes the order while it is frozen, to hang its tags, and `Restoration` once it 
 commenced (rulings 108, 109, 131 and 132); a stopping exit on the order holds
 neither (ruling 135). A block on the
 order holds that order alone, its dispatches and moves refused until the operator
-rules; the package's other orders carry on (ruling 59). A blocked, accepted or
+rules; the package's other orders carry on (ruling 59). A frozen order fences
+writes to its footprint until it commences (ruling 116); a blocked, accepted or
 stopped order fences production writes across the tree, as a package does
 (ruling 58):
 

@@ -128,8 +128,33 @@ def work_package_write_refusal(project_root: Path, rel_path: str) -> str | None:
         work_package_write_message,
     )
 
-    fenced = fenced_packages(project_root)
-    return work_package_write_message(fenced[0], rel_path) if fenced else None
+    fence = next((f for f in fenced_packages(project_root) if f.holds(rel_path)), None)
+    return work_package_write_message(fence, rel_path) if fence else None
+
+
+def frozen_order_write_refusal(project_root: Path, rel_path: str) -> str | None:
+    """Return the refusal for a production write a frozen order's footprint holds, if any.
+
+    The hook runs this before its MX demotion, so the frozen-order fence refuses at
+    write time while the hangar is open, where tags exist (RP-12 ruling 146); every
+    other fence keeps its demotion.
+
+    Returns:
+        The message to print, or None when no frozen order holds the path.
+
+    """
+    if not is_production_path(rel_path):
+        return None
+    from gzkit.work_package_fence import (  # noqa: PLC0415 - keeps this module a stdlib leaf
+        fenced_packages,
+        work_package_write_message,
+    )
+
+    fence = next(
+        (f for f in fenced_packages(project_root) if f.reason == "frozen" and f.holds(rel_path)),
+        None,
+    )
+    return work_package_write_message(fence, rel_path) if fence else None
 
 
 def post_authoring_message(obpi_id: str, stage: str, rel_path: str) -> str:

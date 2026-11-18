@@ -51,6 +51,10 @@ moves one step at a time, `opened` then `frozen`, `commenced` and `accepted`;
   nothing supersedes, since a split gives one REQ two successors (rulings 53 and
   87). An order frozen on a REQ before a later REQ superseded it runs on to its
   Gate 5.
+- Until the order commences, its frozen footprint is fenced: a production write
+  (`src/`) to a footprint path is refused by the write hook, even with the MX
+  hangar open, and by the commit guard, while a write outside it passes; an order
+  frozen on an empty seal holds the whole tree (rulings 116, 145 to 147).
 - The freeze seals the repair package's footprint: the event records the
   package's paths, and from then on `gz wp show` and the acceptance fence read the
   latest order freeze plus the change orders after it, never the store, and a

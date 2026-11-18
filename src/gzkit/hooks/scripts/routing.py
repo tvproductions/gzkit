@@ -170,6 +170,13 @@ def _pipeline_gate_script() -> str:
                 return paths
 
 
+            def _refuse_if(refusal: str | None) -> None:
+                \"\"\"Exit 2 with a fence's refusal on stderr, when there is one.\"\"\"
+                if refusal:
+                    sys.stderr.write(refusal + "\\n")
+                    sys.exit(2)
+
+
             def main() -> None:
                 \"\"\"Gate implementation writes until the pipeline is active.\"\"\"
                 try:
@@ -204,6 +211,7 @@ def _pipeline_gate_script() -> str:
                     # second copy would drift from the pre-commit guard that shares
                     # it, and this hook is the arm Bash writes bypass (GHI #844).
                     from gzkit.pipeline_stage_fence import (
+                        frozen_order_write_refusal,
                         marker_stage,
                         post_authoring_message,
                         refuses_production_write,
@@ -211,6 +219,11 @@ def _pipeline_gate_script() -> str:
                     )
                 except Exception:
                     sys.exit(0)
+
+                # A frozen order's footprint is held before the MX demotion: tags
+                # exist only while an MX session is open, so a demoted check would
+                # never refuse where it is needed (RP-12 ruling 146).
+                _refuse_if(frozen_order_write_refusal(project_root, rel_path))
 
                 # An open MX marker, the hangar or safe mode, lowers this gate to
                 # advisory with every other guard outside the floor; the hard-gate
@@ -227,10 +240,7 @@ def _pipeline_gate_script() -> str:
 
                 # A blocked, accepted or stopped work package fences the tree, so
                 # a write here cannot dodge `gz wp dispatch` (GHI #1206).
-                refusal = work_package_write_refusal(project_root, rel_path)
-                if refusal:
-                    sys.stderr.write(refusal + "\\n")
-                    sys.exit(2)
+                _refuse_if(work_package_write_refusal(project_root, rel_path))
 
                 plans_dir = pipeline_plans_dir(project_root)
                 docs_root = project_root / "docs"

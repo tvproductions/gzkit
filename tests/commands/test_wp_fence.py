@@ -29,6 +29,7 @@ from gzkit.work_package_fence import (
     work_package_write_message,
 )
 from tests.commands.common import CliRunner, _quick_init
+from tests.mx.held import open_marker
 
 _PACKAGE = "WP-01-loop"
 _OTHER = "WP-02-other"
@@ -92,6 +93,24 @@ def _seed_store() -> None:
     ):
         text = json.dumps({"_doc": "Fixture catalog.", kind: entries})
         (catalog / f"{kind}.json").write_text(text, encoding="utf-8")
+
+
+def _seat_frozen_order(modules: list[str]) -> None:
+    """Seat a frozen order's row: the fence reads the ledger alone (RP-12 ruling 116)."""
+    row = {
+        "schema": "gzkit.ledger.v1",
+        "event": "order_transitioned",
+        "id": "ORD-01-fix",
+        "ts": "2026-11-18T00:00:00+00:00",
+        "order": "ORD-01-fix",
+        "work_package": "WP-09-repair",
+        "from_state": "opened",
+        "to_state": "frozen",
+        "evidence": "seated",
+        "modules": modules,
+    }
+    with Path(".gzkit/ledger.jsonl").open("a", encoding="utf-8") as ledger:
+        ledger.write(json.dumps(row) + "\n")
 
 
 class _FenceCase(unittest.TestCase):
@@ -322,6 +341,19 @@ class TestTheCommitGuard(_FenceCase):
         self._block()
         self.assertEqual(self._guard(f"D\t{_SOURCE}\n"), 0)
 
+    def test_a_frozen_orders_footprint_refuses_its_paths_alone(self) -> None:
+        # given an order frozen on a footprint holding the source path (ruling 116)
+        _seat_frozen_order([_SOURCE])
+        other = "src/gzkit/elsewhere.py"
+        # when
+        with contextlib.redirect_stdout(io.StringIO()) as printed:
+            held = self._guard(f"M\t{_SOURCE}\nM\t{other}\n")
+        outside = self._guard(f"M\t{other}\n")
+        # then the footprint path is refused and listed, and a path outside it passes
+        self.assertEqual((held, outside), (1, 0))
+        self.assertIn(f"  - {_SOURCE}", printed.getvalue())
+        self.assertNotIn(f"  - {other}", printed.getvalue())
+
     def test_it_binds_with_no_plans_directory(self) -> None:
         self._commence()
         self._block()
@@ -364,6 +396,16 @@ class TestTheGeneratedHook(_FenceCase):
         result = self._hook(_SOURCE)
         self.assertEqual(result.returncode, 2, msg=result.stderr)
         self.assertIn("gz wp close", result.stderr)
+
+    def test_a_frozen_footprint_refuses_the_write_under_the_marker(self) -> None:
+        # given an open MX marker and an order frozen on the source path (rulings 116, 146)
+        open_marker(Path.cwd())
+        _seat_frozen_order([_SOURCE])
+        # when
+        held, outside = self._hook(_SOURCE), self._hook("src/gzkit/elsewhere.py")
+        # then the footprint write is refused before the demotion; one outside passes
+        self.assertEqual((held.returncode, outside.returncode), (2, 0), msg=held.stderr)
+        self.assertIn("ORD-01-fix", held.stderr)
 
     def test_tests_stay_writable_under_a_block(self) -> None:
         self._commence()

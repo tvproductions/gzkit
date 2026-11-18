@@ -230,6 +230,30 @@ def footprint_sealed(ledger: Ledger, work_package: str) -> bool:
     return bool(_seals(ledger, work_package))
 
 
+def sealed_footprint(ledger: Ledger, work_package: str) -> tuple[str, ...] | None:
+    """Read a package's sealed footprint from the ledger alone: the latest seal and later orders.
+
+    The latest freeze's `modules`, the package's own or an order's (RP-12 ruling 56),
+    plus each change order booked after it. Read by the frozen-order fence, which has
+    no catalog (ruling 116).
+
+    Returns:
+        The paths, in the order they were declared; None before any freeze seals it.
+
+    """
+    frozen = _seals(ledger, work_package)
+    if not frozen:
+        return None
+    seal = frozen[-1]
+    orders = [
+        row
+        for row in package_rows(ledger, "work_package_changed", work_package)
+        if row.ts > seal.ts and row.extra.get("rung") == "change_order"
+    ]
+    rows = (seal, *orders)
+    return tuple(dict.fromkeys(str(m) for row in rows for m in row.extra.get("modules") or ()))
+
+
 def declared_modules(ledger: Ledger, package: WorkPackage) -> tuple[str, ...]:
     """Read a package's footprint: what the latest freeze sealed, plus later change orders.
 
@@ -242,17 +266,8 @@ def declared_modules(ledger: Ledger, package: WorkPackage) -> tuple[str, ...]:
         The paths, in the order they were declared.
 
     """
-    frozen = _seals(ledger, package.id)
-    if not frozen:
-        return package.modules
-    seal = frozen[-1]
-    orders = [
-        row
-        for row in package_rows(ledger, "work_package_changed", package.id)
-        if row.ts > seal.ts and row.extra.get("rung") == "change_order"
-    ]
-    rows = (seal, *orders)
-    return tuple(dict.fromkeys(str(m) for row in rows for m in row.extra.get("modules") or ()))
+    sealed = sealed_footprint(ledger, package.id)
+    return package.modules if sealed is None else sealed
 
 
 def _check_baselined(

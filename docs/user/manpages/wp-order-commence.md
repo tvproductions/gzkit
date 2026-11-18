@@ -34,7 +34,8 @@ not hung (ruling 108). An order with no tag issued commences only on the
 coordinator's stated reason, `--no-isolation "<why>"`, recorded on the
 `commenced` event; with a tag issued the option is refused (ruling 117). An order
 a `terminate` or `reopen` exit stopped does no work, so it commences without its
-tags or a statement (ruling 143). Commencement is the coordinator's act from the
+tags or a statement (ruling 143). Commencing lifts the frozen order's fence on
+its footprint (ruling 116). Commencement is the coordinator's act from the
 main session: a call stamped as a subagent's is refused before anything is read
 (ruling 144).
 

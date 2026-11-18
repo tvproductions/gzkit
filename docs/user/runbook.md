@@ -1103,8 +1103,10 @@ Once the order is commenced, its work runs through the package's run verbs with
 order's freeze holds; a Restoration dispatch, the craftsman's that clears the
 order's tags, names none, its subject the order (RP-12 ruling 132); a block
 on the order holds that order alone until you rule, while the package's other
-orders carry on; and a blocked, accepted or stopped order fences production
-writes across the tree, as a package does. `gz wp runs` reports the order's run:
+orders carry on; a frozen order not yet commenced fences production writes to its
+footprint alone, even with the hangar open, until it commences (RP-12 rulings 116
+and 146); and a blocked, accepted or stopped order fences production writes
+across the tree, as a package does. `gz wp runs` reports the order's run:
 
 ```bash
 uv run gz wp dispatch WP-01-stamp --order ORD-01-import --role Implementer --model sonnet --req REQ-1

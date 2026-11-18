@@ -14,7 +14,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from gzkit.events import BaselinedReq
+from gzkit.events import BaselinedReq, OrderTransitionedEvent
+from gzkit.ledger import ledger_row
 from gzkit.order_ledger import (
     OrderLedgerError,
     is_order_blocked,
@@ -22,6 +23,7 @@ from gzkit.order_ledger import (
     order_took_stopping_exit,
 )
 from gzkit.pipeline_dispatch import MAX_REVIEW_FIX_CYCLES
+from gzkit.pipeline_stage_fence import frozen_order_write_refusal, work_package_write_refusal
 from gzkit.work_package_fence import (
     FencedPackage,
     fenced_packages,
@@ -588,15 +590,97 @@ class OrderFence(_OrderRun):
         self.unblock(exit_taken="terminate")
         self.assertEqual(self.fences(), [(_PACKAGE, _ORDER, "stopped")])
 
-    def test_an_order_not_yet_commenced_does_not_fence_even_blocked(self) -> None:
+    def test_a_blocked_frozen_order_fences_its_footprint_not_the_tree(self) -> None:
+        """Rulings 58 and 116: before commencement an order holds its footprint alone."""
         self.walk_to("frozen", order=_SECOND, baseline=(BaselinedReq(req="REQ-2", revision=1),))
         self.block(order=_SECOND)
-        self.assertEqual(self.fences(), [])
+        self.assertEqual(self.fences(), [(_PACKAGE, _SECOND, "frozen")])
 
     def test_one_fenced_order_fences_beside_a_working_one(self) -> None:
         self.commence_second()
         self.block(order=_SECOND)
         self.assertEqual(self.fences(), [(_PACKAGE, _SECOND, "blocked")])
+
+
+class FrozenOrderFence(_OrderRun):
+    """Rulings 116, 145 and 147: a frozen order fences its sealed footprint until it commences."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.root = Path(self._dir.name)
+        (self.root / ".gzkit.json").write_text(
+            '{"paths": {"ledger": "ledger.jsonl"}}', encoding="utf-8"
+        )
+
+    def freeze_second(self) -> None:
+        self.walk_to("frozen", order=_SECOND, baseline=(BaselinedReq(req="REQ-2", revision=1),))
+
+    def test_a_frozen_order_fences_its_sealed_footprint(self) -> None:
+        """Ruling 116: the footprint sealed at the order's freeze (ruling 56)."""
+        self.freeze_second()
+        (fence,) = fenced_packages(self.root)
+        self.assertEqual(
+            (fence.work_package, fence.order, fence.reason, fence.footprint),
+            (_PACKAGE, _SECOND, "frozen", ("src/stamp.py",)),
+        )
+
+    def test_a_footprint_write_is_refused_and_one_outside_passes(self) -> None:
+        """Ruling 116: a write outside the footprint passes; one inside is held."""
+        self.freeze_second()
+        self.assertIsNotNone(work_package_write_refusal(self.root, "src/stamp.py"))
+        self.assertIsNone(work_package_write_refusal(self.root, "src/other.py"))
+
+    def test_the_frozen_check_runs_alone_above_the_demotion(self) -> None:
+        """Ruling 146: the hook's pre-demotion check reads only a frozen order's footprint."""
+        self.freeze_second()
+        self.assertIsNotNone(frozen_order_write_refusal(self.root, "src/stamp.py"))
+        self.assertIsNone(frozen_order_write_refusal(self.root, "src/other.py"))
+
+    def test_the_frozen_check_ignores_a_tree_fence(self) -> None:
+        """Ruling 146: every other fence keeps its demotion, ruling 58's included."""
+        self.block()
+        self.assertIsNotNone(work_package_write_refusal(self.root, "src/other.py"))
+        self.assertIsNone(frozen_order_write_refusal(self.root, "src/other.py"))
+
+    def test_commencement_lifts_the_frozen_fence(self) -> None:
+        """Ruling 116: the footprint is held only while the order is frozen."""
+        self.commence_second()
+        self.assertEqual(fenced_packages(self.root), ())
+
+    def test_tests_stay_open_under_a_frozen_fence(self) -> None:
+        """Ruling 145: the fence holds production writes, `src/`, alone."""
+        self.freeze_second()
+        self.assertIsNone(work_package_write_refusal(self.root, "tests/test_stamp.py"))
+
+    def test_an_empty_seal_fences_the_whole_tree(self) -> None:
+        """Ruling 147: a frozen order whose seal names nothing fails closed."""
+        seated = OrderTransitionedEvent(
+            event="order_transitioned",
+            id=_SECOND,
+            order=_SECOND,
+            work_package="WP-03-other",
+            from_state="opened",
+            to_state="frozen",
+            evidence="seated",
+            modules=(),
+        )
+        self.ledger.append(ledger_row(seated))
+        fence = next(f for f in fenced_packages(self.root) if f.order == _SECOND)
+        self.assertIsNone(fence.footprint)
+        self.assertIsNotNone(frozen_order_write_refusal(self.root, "src/anything.py"))
+
+    def test_a_frozen_fence_names_its_order(self) -> None:
+        """Ruling 116: the frozen fence is an order's; one with no order is refused."""
+        with self.assertRaises(ValueError):
+            FencedPackage(work_package=_PACKAGE, reason="frozen")
+
+    def test_the_refusal_names_the_tags_and_the_commencement(self) -> None:
+        """Rulings 108 and 116: the recovery is the hang and the commence, not a dispatch."""
+        self.freeze_second()
+        refusal = work_package_write_refusal(self.root, "src/stamp.py") or ""
+        # output-contract: the next step names the tag log, the hang and the commence
+        for named in ("gz wp tag show", "gz wp tag hang", f"gz wp order commence {_SECOND}"):
+            self.assertIn(named, refusal)
 
 
 class InFlightOnAnOrder(_OrderRun):
